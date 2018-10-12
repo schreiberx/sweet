@@ -4,9 +4,9 @@ import sys
 import math
 import glob
 
-from .JobData import *
-from .JobsData import *
-from .SphereDataPhysicalDiff import *
+from mule.postprocessing.JobData import *
+from mule.postprocessing.JobsData import *
+from sweet.postprocessing.SphereDataPhysicalDiff import *
 
 
 

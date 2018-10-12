@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 from SWEET import *
-from sweet.postprocessing.JobData import *
-from sweet.postprocessing.JobsData import *
+from mule.postprocessing.JobData import *
+from mule.postprocessing.JobsData import *
 import glob
 import os
 import re
@@ -14,13 +14,15 @@ import sys
 class JobsDataConsolidate(InfoError):
 	def __init__(
 			self,
+			jobs_data,
 			verbosity = 0
 	):
+		self.jobs_data = jobs_data
 		self.verbosity = verbosity
+
 
 	def create_groups(
 		self,
-		jobs_data,
 		group_identifiers : list,
 	):
 		"""
@@ -34,7 +36,7 @@ class JobsDataConsolidate(InfoError):
 
 		groups = {}
 
-		for jobdir, job_data in jobs_data.__flattened_jobs_data.items():
+		for jobdir, job_data in self.jobs_data.get_flattened_data().items():
 			group_attributes = []
 			group_attributes_short = []
 
@@ -68,7 +70,6 @@ class JobsDataConsolidate(InfoError):
 
 	def create_data_plotting(
 		self,
-		jobs_data,
 		group_identifiers : list,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
@@ -99,7 +100,7 @@ class JobsDataConsolidate(InfoError):
 		
 		plot_data = {}
 
-		groups = self.create_groups(jobs_data, group_identifiers)
+		groups = self.create_groups(group_identifiers)
 		for group_id in sorted(groups):
 			group_jobs = groups[group_id]
 
@@ -161,7 +162,6 @@ class JobsDataConsolidate(InfoError):
 
 	def create_data_plotting_float(
 		self,
-		jobs_data,
 		group_identifiers : list,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
@@ -170,7 +170,7 @@ class JobsDataConsolidate(InfoError):
 		data_filter = None
 
 	):
-		data_plotting = self.create_data_plotting(jobs_data, group_identifiers, primary_key_attribute_name, data_attribute_name, placeholder, data_filter = data_filter)
+		data_plotting = self.create_data_plotting(group_identifiers, primary_key_attribute_name, data_attribute_name, placeholder, data_filter = data_filter)
 
 		for key, values in data_plotting.items():
 			x = []
@@ -193,7 +193,6 @@ class JobsDataConsolidate(InfoError):
 
 	def create_data_table(
 		self,
-		jobs_data,
 		group_identifiers : list,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
@@ -219,7 +218,7 @@ class JobsDataConsolidate(InfoError):
 		"""
 
 		
-		groups = self.create_groups(jobs_data, group_identifiers)
+		groups = self.create_groups(group_identifiers)
 
 		#
 		# Determine full set of primary keys in case that primary key is missing somewhere

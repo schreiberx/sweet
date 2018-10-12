@@ -5,10 +5,10 @@ from SWEET import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-class SWEETPostprocessingPlotting(InfoError):
+class Plotting(InfoError):
 
 	def __init__(self):
-		InfoError.__init__(self, 'SWEETPostprocessingPlotting')
+		InfoError.__init__(self, 'Plotting')
 
 		self.reset()
 
@@ -117,5 +117,5 @@ class SWEETPostprocessingPlotting(InfoError):
 
 if __name__ == "__main__":
 
-	p = SWEETPostprocessingPlotting()
+	p = Plotting()
 

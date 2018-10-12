@@ -6,12 +6,11 @@ import math
 from SWEET import *
 from mule.plotting.Plotting import *
 from mule.postprocessing.JobsData import *
-from mule.postprocessing.JobsDataConsolidate import *
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-groups = ['runtime.timestepping_method']
+groups = ['runtime.timestepping_method', 'runtime.h']
 
 
 tagnames_y = [
@@ -68,6 +67,7 @@ for tagname_y in tagnames_y:
 				'xscale': 'log',
 				'yscale': 'log',
 			},
+"""
 			{
 				'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
 				'xlabel': "Wallclock time (seconds)",
@@ -76,6 +76,7 @@ for tagname_y in tagnames_y:
 				'xscale': 'log',
 				'yscale': 'log',
 			},
+"""
 		]
 
 

@@ -4,8 +4,8 @@ import sys
 import math
 
 from SWEET import *
-from SWEETPostprocessingPlotting import *
-from SWEETPostprocessingJobsData import *
+from mule.plotting.Plotting import *
+from mule.postprocessing.JobsData import *
 
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
@@ -18,6 +18,42 @@ tagnames_y = [
 ]
 
 
+
+j = JobsData('./job_bench_*', verbosity=0)
+
+c = JobsDataConsolidate(j)
+print("")
+print("Groups:")
+job_groups = c.create_groups(groups)
+for g in job_groups:
+	print(g)
+
+# Filter out errors beyond this value!
+def data_filter(group_id, x, y):
+	x = float(x)
+	y = float(y)
+
+	if 'timings' in tagname_x:
+		# Filter out NaNs for wallclock time studies
+		# NaNs require significantly more computation time
+		if math.isnan(y):
+			return True
+	# No filter!
+	# No filter!
+	# No filter!
+	return False
+
+	if y > 9.0:
+		return True
+
+	if False:
+		if x > 30 and x < 100:
+			return True
+
+		if x < 20:
+			return True
+
+	return False
 
 for tagname_y in tagnames_y:
 
@@ -54,46 +90,11 @@ for tagname_y in tagnames_y:
 		print("Processing tag "+tagname_x)
 		print("*"*80)
 
-		j = SWEETPostprocessingJobsData('./job_bench_*', verbosity=0)
-
-		print("")
-		print("Groups:")
-		job_groups = j.create_groups(groups)
-		for g in job_groups:
-			print(g)
-
-		# Filter out errors beyond this value!
-		def data_filter(group_id, x, y):
-			x = float(x)
-			y = float(y)
-
-			if 'timings' in tagname_x:
-				# Filter out NaNs for wallclock time studies
-				# NaNs require significantly more computation time
-				if math.isnan(y):
-					return True
-			# No filter!
-			# No filter!
-			# No filter!
-			return False
-
-			if y > 9.0:
-				return True
-
-			if False:
-				if x > 30 and x < 100:
-					return True
-
-				if x < 20:
-					return True
-
-			return False
-
 		"""
 		Table format
 		"""
 
-		data_table = j.create_data_table_float(
+		data_table = c.create_data_table_float(
 				groups,
 				tagname_x,
 				tagname_y,
@@ -102,15 +103,15 @@ for tagname_y in tagnames_y:
 		fileid = "output_table_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
 
 		print("Data table:")
-		j.print_data_table(data_table)
-		j.write_data_table(data_table, fileid+".csv")
+		c.print_data_table(data_table)
+		c.write_data_table(data_table, fileid+".csv")
 
 
 		"""
 		Plotting format
 		"""
 
-		data_plotting = j.create_data_plotting_float(
+		data_plotting = c.create_data_plotting_float(
 				groups,
 				tagname_x,
 				tagname_y,
@@ -119,7 +120,7 @@ for tagname_y in tagnames_y:
 
 		fileid = "output_plotting_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
 
-		p = SWEETPostprocessingPlotting()
+		p = Plotting()
 		p.plot_scattered(
 				data_plotting = data_plotting,
 				xlabel = xlabel,
@@ -131,8 +132,8 @@ for tagname_y in tagnames_y:
 			)
 
 		print("Data plotting:")
-		j.print_data_plotting(data_plotting)
-		j.write_data_plotting(data_plotting, fileid+".csv")
+		c.print_data_plotting(data_plotting)
+		c.write_data_plotting(data_plotting, fileid+".csv")
 
 		print("Info:")
 		print("	NaN: Errors in simulations")

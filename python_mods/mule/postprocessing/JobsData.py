@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 from SWEET import *
-from sweet.postprocessing.JobData import *
-from sweet.postprocessing.JobsDataConsolidate import *
+from mule.postprocessing.JobData import *
+from mule.postprocessing.JobsDataConsolidate import *
 import glob
 import os
 import re
