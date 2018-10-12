@@ -109,7 +109,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	if (simVars.misc.sphere_use_robert_functions)
 		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
 	else
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
 
 	SphereDataPhysical tmpg1 = ug*(vrtg/*+fg*/);

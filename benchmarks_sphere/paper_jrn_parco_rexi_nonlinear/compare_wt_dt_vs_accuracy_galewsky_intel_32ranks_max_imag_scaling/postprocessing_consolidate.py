@@ -29,7 +29,7 @@ for g in job_groups:
 	print(g)
 
 # Filter out errors beyond this value!
-def data_filter(group_id, x, y):
+def data_filter(x, y, jobdata):
 	x = float(x)
 	y = float(y)
 
@@ -98,7 +98,7 @@ for tagname_y in tagnames_y:
 				groups,
 				tagname_x,
 				tagname_y,
-				data_filter = lambda a,b,c: data_filter(a,b,c)
+				data_filter = data_filter
 			)
 		fileid = "output_table_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
 

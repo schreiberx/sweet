@@ -121,7 +121,7 @@ class JobsDataConsolidate(InfoError):
 					y = jobdata[data_attribute_name]
 
 					if data_filter != None:
-						if data_filter(group_id, x, y):
+						if data_filter(x, y, jobdata):
 							continue
 
 				x_values.append(x)
@@ -254,14 +254,14 @@ class JobsDataConsolidate(InfoError):
 			col_key = group_id
 			col_id = col_keys.index(col_key)
 
-			for jobdir, jobdata in group_jobs.items():
+			for jobkey, jobdata in group_jobs.items():
 				if self.verbosity > 5:
-					print("Job: "+jobdir)
+					print("Job: "+jobkey)
 
 				if not primary_key_attribute_name in jobdata:
 					print("")
 					print("WARNING: No data for attribute "+primary_key_attribute_name+" found")
-					print("WARNING: Job: "+jobdir)
+					print("WARNING: Job key: "+jobkey)
 					continue
 
 				row_key = jobdata[primary_key_attribute_name]
@@ -279,7 +279,7 @@ class JobsDataConsolidate(InfoError):
 
 				if not data_attribute_name in jobdata:
 					print("WARNING: attribute "+data_attribute_name+" not found")
-					print("Job directory: "+jobdir)
+					print("Job key: "+jobkey)
 					#for key, value in jobdata.items():
 					#	print(" + "+key+": "+str(value))
 
@@ -290,7 +290,7 @@ class JobsDataConsolidate(InfoError):
 					x = row_key
 					y = jobdata[data_attribute_name]
 					if data_filter != None:
-						if data_filter(group_id, x, y):
+						if data_filter(x, y, jobdata):
 							continue
 
 					data[row_id+1][col_id+1] = y

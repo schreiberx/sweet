@@ -36,7 +36,7 @@ for tagname_x in params_tagname_x:
 		print(g)
 
 	# Filter out errors beyond this value!
-	def data_filter(group_id, x, y):
+	def data_filter(x, y, jobdata):
 		x = float(x)
 		y = float(y)
 
@@ -56,7 +56,7 @@ for tagname_x in params_tagname_x:
 			groups,
 			tagname_x,
 			tagname_y,
-			data_filter = lambda a,b,c: data_filter(a,b,c)
+			data_filter = data_filter
 		)
 
 	print("Data table:")
