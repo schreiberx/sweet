@@ -18,6 +18,7 @@ class SphereDataPhysicalDiff:
 		pass
 
 
+
 	def compute_diff(
 			self,
 			filename_a,

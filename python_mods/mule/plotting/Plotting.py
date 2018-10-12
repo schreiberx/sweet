@@ -101,6 +101,78 @@ class Plotting(InfoError):
 
 		plt.legend()
 
+
+	def plot_scattered_data_annotated(
+			self,
+			data_plotting,
+			xlabel = None,
+			ylabel = None,
+			title = None,
+			xscale = "linear",
+			yscale = "linear",
+			annotation_render_each_nth_value = 3
+		):
+
+		self.fig, self.ax = plt.subplots(figsize=(10,7))
+
+		self.ax.set_xscale(xscale, nonposx='clip')
+		self.ax.set_yscale(yscale, nonposy='clip')
+
+		if title != None:
+			plt.title(title)
+
+		if xlabel != None:
+			plt.xlabel(xlabel)
+
+		if ylabel != None:
+			plt.ylabel(ylabel)
+
+
+		c = 0
+		for key, values in data_plotting.items():
+			marker = self.__get_marker(c)
+			linestyle = self.__get_linestyle(c)
+			color = self.__get_color(c)
+
+			label = key
+			x_values = values['x_values']
+			y_values = values['y_values']
+
+			self.ax.plot(x_values, y_values, marker=marker, linestyle=linestyle, label=label)
+
+			if True:
+				x = x_values
+				y = y_values
+
+				px = x[:]
+				py = y[:]
+
+				px = px[0::annotation_render_each_nth_value]
+				py = py[0::annotation_render_each_nth_value]
+
+				if len(px) % 2 == 0:
+					px.append(x[-1])
+					py.append(y[-1])
+
+				for i, txt in enumerate(px):
+
+					self.ax.annotate(px[i], (px[i]*1.03, py[i]*0.92), fontsize=8)
+					if False:
+						if mode == 'dt':
+							#self.ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=8)
+							self.ax.annotate(px[i], (px[i]*1.03, py[i]*0.92), fontsize=8)
+						elif mode == 'wallclocktime':
+							text = "%.1f/%.1f" % (py[i], px[i])
+							self.ax.annotate(text, (px[i]*1.03, py[i]*1.03), fontsize=8)
+
+
+			c += 1
+
+
+	plt.legend()
+
+	
+
 		
 
 	def plot_scattered(
