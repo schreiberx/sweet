@@ -2,5 +2,6 @@
 
 rm -f output_*txt
 rm -f output_*pdf
+rm -f output_*csv
 
 exit 0

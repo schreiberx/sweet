@@ -34,9 +34,9 @@ export SWEET_CC=/glade/u/apps/opt/intel/2018u1/compilers_and_libraries/linux/bin
 export SWEET_CXX=/glade/u/apps/opt/intel/2018u1/compilers_and_libraries/linux/bin/intel64/icpc
 export SWEET_F90=/glade/u/apps/opt/intel/2018u1/compilers_and_libraries/linux/bin/intel64/ifort
 
-export SWEET_MPICC=mpicc
-export SWEET_MPICXX=mpicxx
-export SWEET_MPIF90=mpif90
+export SWEET_MPICC=/opt/sgi/mpt/mpt-2.15/bin/mpicc
+export SWEET_MPICXX=/opt/sgi/mpt/mpt-2.15/bin/mpicxx
+export SWEET_MPIF90=/opt/sgi/mpt/mpt-2.15/bin/mpif90
 
 export SWEET_LINK=$SWEET_CXX
 export SWEET_MPILINK=$SWEET_MPICXX
