@@ -11,11 +11,11 @@ from mule.postprocessing.JobsDataConsolidate import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-groups = ['runtime.timestepping_method', 'runtime.h']
+groups = ['runtime.timestepping_method']
 
 
 tagnames_y = [
-	'sphere_data_diff_prog_h.norm_l1',
+	'sphere_data_diff_prog_h.norm_linf',
 ]
 
 
@@ -68,21 +68,12 @@ for tagname_y in tagnames_y:
 				'xscale': 'log',
 				'yscale': 'log',
 			},
-"""
-			{
-				'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
-				'xlabel': "Wallclock time (seconds)",
-				'ylabel': tagname_y,
-				'title': 'Wallclock time vs. error',
-				'xscale': 'log',
-				'yscale': 'log',
-			},
-"""
 		]
 
 
 	for param in params:
 
+		print(param)
 		tagname_x = param['tagname_x']
 		xlabel = param['xlabel']
 		ylabel = param['ylabel']
@@ -108,6 +99,8 @@ for tagname_y in tagnames_y:
 
 		print("Data table:")
 		d.print()
+		print()
+		continue
 		d.write(fileid+".csv")
 
 
@@ -125,6 +118,7 @@ for tagname_y in tagnames_y:
 		fileid = "output_plotting_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
 
 		p = Plotting()
+		"""
 		p.plot_scattered(
 				data_plotting = d.data,
 				xlabel = xlabel,
@@ -134,11 +128,11 @@ for tagname_y in tagnames_y:
 				yscale = yscale,
 				outfile=fileid+".pdf",
 			)
-
+		"""
 		print("Data plotting:")
 		d.print()
 		d.write(fileid+".csv")
 
-		print("Info:")
-		print("	NaN: Errors in simulations")
-		print("	None: No data available")
+print("Info:")
+print("	NaN: Errors in simulations")
+print("	None: No data available")

@@ -55,6 +55,7 @@ def data_filter(x, y, jobdata):
 
 	return False
 
+
 for tagname_y in tagnames_y:
 
 	params = [
@@ -94,8 +95,8 @@ for tagname_y in tagnames_y:
 		Table format
 		"""
 
-		data_table = c.create_data_table_float(
-				groups,
+		d = JobsData_GroupsDataTable(
+				job_groups,
 				tagname_x,
 				tagname_y,
 				data_filter = data_filter
@@ -103,16 +104,16 @@ for tagname_y in tagnames_y:
 		fileid = "output_table_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
 
 		print("Data table:")
-		c.print_data_table(data_table)
-		c.write_data_table(data_table, fileid+".csv")
+		d.print()
+		d.write(fileid+".csv")
 
 
 		"""
 		Plotting format
 		"""
 
-		data_plotting = c.create_data_plotting_float(
-				groups,
+		d = JobsData_GroupsPlottingScattered(
+				job_groups,
 				tagname_x,
 				tagname_y,
 				data_filter = data_filter
@@ -122,7 +123,7 @@ for tagname_y in tagnames_y:
 
 		p = Plotting()
 		p.plot_scattered(
-				data_plotting = data_plotting,
+				data_plotting = d.data,
 				xlabel = xlabel,
 				ylabel = ylabel,
 				title = title,
@@ -132,8 +133,8 @@ for tagname_y in tagnames_y:
 			)
 
 		print("Data plotting:")
-		c.print_data_plotting(data_plotting)
-		c.write_data_plotting(data_plotting, fileid+".csv")
+		d.print()
+		d.write(fileid+".csv")
 
 		print("Info:")
 		print("	NaN: Errors in simulations")
