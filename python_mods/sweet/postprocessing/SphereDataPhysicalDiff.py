@@ -41,12 +41,13 @@ class SphereDataPhysicalDiff:
 		multiplier_i = (size_ref_i+1)/(size_cmp_i+1)
 
 
+		print ("Dimensions of reference solution: ", size_ref_i, size_ref_j)
+		print ("Dimensions of method under analysis: ", size_cmp_i, size_cmp_j)
 		if not float(multiplier_i).is_integer() or not float(multiplier_j).is_integer() : 
-			print ("Dimensions of reference solution: ", size_ref_i, size_ref_j)
-			print ("Dimensions of method under analysis: ", size_cmp_i, size_cmp_j)
-			print ("Multipliers: ", multiplier_i, multiplier_j)
 			print ("Grids are not aligned")
 			print ("Try to use (TODO) interpolation script")
+			print ("Dimensions of method under analysis: ", size_cmp_i, size_cmp_j)
+			print ("Multipliers: ", multiplier_i, multiplier_j)
 			raise Exception("Grids not properly aligned")
 
 		multiplier_j = int(multiplier_j)
