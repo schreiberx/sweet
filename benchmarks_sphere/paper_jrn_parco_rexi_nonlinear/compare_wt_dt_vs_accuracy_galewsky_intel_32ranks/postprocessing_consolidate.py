@@ -16,6 +16,9 @@ groups = ['runtime.timestepping_method']
 
 tagnames_y = [
 	'sphere_data_diff_prog_h.norm_l1',
+#	'sphere_data_diff_prog_h.norm_l2',
+#	'sphere_data_diff_prog_h.norm_linf',
+#	'sphere_data_diff_prog_h.norm_rms',
 ]
 
 
@@ -34,14 +37,19 @@ def data_filter(x, y, jobdata):
 	x = float(x)
 	y = float(y)
 
+	if math.isnan(y):
+		return True
+
 	if 'timings' in tagname_x:
 		# Filter out NaNs for wallclock time studies
 		# NaNs require significantly more computation time
 		if math.isnan(y):
 			return True
-	# No filter!
-	# No filter!
-	# No filter!
+
+	# Filter out main timestepping loops which take over 10 minutes
+	if float(jobdata['output.simulation_benchmark_timings.main_timestepping']) > 60*10:
+		return True
+
 	return False
 
 	if y > 9.0:
@@ -55,6 +63,9 @@ def data_filter(x, y, jobdata):
 			return True
 
 	return False
+
+
+
 
 
 for tagname_y in tagnames_y:
@@ -92,9 +103,6 @@ for tagname_y in tagnames_y:
 		print("Processing tag "+tagname_x)
 		print("*"*80)
 
-		"""
-		Table format
-		"""
 
 		d = JobsData_GroupsDataTable(
 				job_groups,
@@ -110,9 +118,8 @@ for tagname_y in tagnames_y:
 
 
 		"""
-		Plotting format
+		Plotting with annotation
 		"""
-
 		d = JobsData_GroupsPlottingScattered(
 				job_groups,
 				tagname_x,
@@ -137,6 +144,7 @@ for tagname_y in tagnames_y:
 		d.print()
 		d.write(fileid+".csv")
 
-		print("Info:")
-		print("	NaN: Errors in simulations")
-		print("	None: No data available")
+print("Info:")
+print("	NaN: Errors in simulations")
+print("	None: No data available")
+
