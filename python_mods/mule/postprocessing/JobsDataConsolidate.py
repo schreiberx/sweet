@@ -3,6 +3,7 @@
 from SWEET import *
 from mule.postprocessing.JobData import *
 from mule.postprocessing.JobsData import *
+import copy
 import glob
 import os
 import re
@@ -10,80 +11,23 @@ import sys
 
 
 
-
-class JobsDataConsolidate(InfoError):
+class JobsData_GroupsPlottingScattered:
 	def __init__(
 			self,
-			jobs_data,
-			verbosity = 0
-	):
-		self.jobs_data = jobs_data
-		self.verbosity = verbosity
-
-
-	def create_groups(
-		self,
-		group_identifiers : list,
-	):
-		"""
-		Group together particular job data, e.g. jobs using the same time stepping method
-
-		Parameters:
-		-----------
-			group_attributes: list
-				List with attributes which are identical within jobs of the same group
-		"""
-
-		groups = {}
-
-		for jobdir, job_data in self.jobs_data.get_flattened_data().items():
-			group_attributes = []
-			group_attributes_short = []
-
-			# collect values of group attributes
-			for i in group_identifiers:
-				group_attributes_short.append(str(job_data[i]))
-				group_attributes.append(i+'_'+str(job_data[i]))
-
-			# create string identifier
-			group_attributes_id = "_".join(group_attributes)
-			group_attributes_short_id = "_".join(group_attributes_short)
-
-			# create new group if it doesn't exist
-			if not group_attributes_short_id in groups:
-				groups[group_attributes_short_id] = {}
-
-			# append job data to group
-			groups[group_attributes_short_id][jobdir] = job_data
-
-		return groups
-
-
-	def print_data_table(self, data_table):
-		for row in data_table:
-			print("\t".join([str(d) for d in row]))
-
-	def write_data_table(self, data_table, filename):
-		with open(filename, 'w') as f:
-			for row in data_table:
-				f.write("\t".join([str(d) for d in row])+"\n")
-
-	def create_data_plotting(
-		self,
-		group_identifiers : list,
-		primary_key_attribute_name : str,
-		data_attribute_name : str,
-		placeholder = None,
-		data_filter = None
+			groups,
+			primary_key_attribute_name : str,
+			data_attribute_name : str,
+			placeholder = None,
+			data_filter = None,
+			verbosity = 0,
 	):
 		"""
 		Create a data structure which is suitable for plotting
 
 		Parameters:
 		-----------
-			group_identifiers: list
-				List with attributes of jobs which are grouped together
-				This also assembles the column name
+			groups: dict
+				Dictionary with groups
 
 			primary_attribute_key: str
 				Row Key: attribute which should serve as primary key
@@ -97,12 +41,13 @@ class JobsDataConsolidate(InfoError):
 			dict { job_dir : { x_values: list, y_values: list }}
 		"""
 
+		self.verbosity = verbosity
+		self.groups = groups
 		
 		plot_data = {}
 
-		groups = self.create_groups(group_identifiers)
-		for group_id in sorted(groups):
-			group_jobs = groups[group_id]
+		for group_id in sorted(self.groups):
+			group_jobs = self.groups[group_id]
 
 			x_values = []
 			y_values = []
@@ -132,14 +77,14 @@ class JobsDataConsolidate(InfoError):
 				'y_values': y_values
 			}
 
-		return plot_data
+		self.data = plot_data
 
 
 
-	def print_data_plotting(self, data_plotting):
-		for group_key in sorted(data_plotting):
+	def print(self):
+		for group_key in sorted(self.data):
 			print("Group '"+group_key+"'")
-			group_data = data_plotting[group_key]
+			group_data = self.data[group_key]
 
 			for x, y in zip(group_data['x_values'], group_data['y_values']):
 				print("	"+str(x)+" -> "+str(y))
@@ -147,11 +92,11 @@ class JobsDataConsolidate(InfoError):
 
 
 
-	def write_data_plotting(self, data_plotting, filename):
+	def write(self, filename):
 		with open(filename, 'w') as f:
-			for group_key in sorted(data_plotting):
+			for group_key in sorted(self.data):
 				f.write("Group '"+group_key+"'\n")
-				group_data = data_plotting[group_key]
+				group_data = self.data[group_key]
 
 				f.write("x_values\ty_values\n")
 				for x, y in zip(group_data['x_values'], group_data['y_values']):
@@ -160,18 +105,17 @@ class JobsDataConsolidate(InfoError):
 
 
 
-	def create_data_plotting_float(
-		self,
-		group_identifiers : list,
-		primary_key_attribute_name : str,
-		data_attribute_name : str,
-		placeholder = None,
-		sort_data = True,
-		data_filter = None
-
+	def get_data(
+		self
 	):
-		data_plotting = self.create_data_plotting(group_identifiers, primary_key_attribute_name, data_attribute_name, placeholder, data_filter = data_filter)
+		return self.data
 
+
+
+	def get_data_float(
+		self
+	):
+		data_plotting = copy.deepcopy(self.data)
 		for key, values in data_plotting.items():
 			x = []
 			y = []
@@ -191,40 +135,69 @@ class JobsDataConsolidate(InfoError):
 		
 
 
-	def create_data_table(
+
+class JobsData_GroupsDataTable:
+	def __init__(
 		self,
-		group_identifiers : list,
+		groups : dict,
 		primary_key_attribute_name : str,
 		data_attribute_name : str,
 		placeholder = None,
 		sort_data = True,
-		data_filter = None
+		data_filter = None,
+		verbosity = 0
 	):
+
 		"""
 		Create a table-like data structure
 
 		Parameters:
 		-----------
-			group_identifiers: list
-				List with attributes of jobs which are grouped together
-				This also assembles the column name
+			groups: dict
+				Dictionary with groups
 
 			primary_attribute_key: str
 				Row Key: attribute which should serve as primary key
-				(e.g. number of cores, time step size)
 
 			data_attribute_name : str:
 				Column data: attribute which should serve as data field
+
+
+		Return:
+		-------
+			Table with filled in group data
+
+
+		Example:
+		--------
+			Group was generated with ['timestepping_method']
+
+			primary_attribute_key: number_of_cores
+			data_attribute_name: simulation_wallclock_time
+
+			Result:
+			Table which looks like this
+
+			-	| val(attr1) | val(attr2) | ...
+			---------------------------------------
+			1	|        1.1 |        2.1 | ...
+			2	|        2.4 |        nan | ...
+			7	|       None |        nan | ...
+			10	|       ....
+			40	|
+			^
+			|
+			primary key
 		"""
 
-		
-		groups = self.create_groups(group_identifiers)
+		self.verbosity = verbosity
+		self.groups = groups
 
 		#
 		# Determine full set of primary keys in case that primary key is missing somewhere
 		#
 		row_keys = []
-		for group_id, group_jobs in groups.items():
+		for group_id, group_jobs in self.groups.items():
 			for jobdir, jobdata in group_jobs.items():
 				if not primary_key_attribute_name in jobdata:
 					print("")
@@ -241,16 +214,16 @@ class JobsDataConsolidate(InfoError):
 			row_keys.sort()
 
 		# get column names
-		col_keys = sorted(list(groups.keys()))
+		col_keys = sorted(list(self.groups.keys()))
 
 		# get dimensions of table
-		ncols = len(groups)
+		ncols = len(self.groups)
 		nrows = len(row_keys)
 
 		# Create table data
 		data = [[None for i in range(ncols+1)] for j in range(nrows+1)]
 
-		for group_id, group_jobs in groups.items():
+		for group_id, group_jobs in self.groups.items():
 			col_key = group_id
 			col_id = col_keys.index(col_key)
 
@@ -313,7 +286,8 @@ class JobsDataConsolidate(InfoError):
 					if data[j][i] == None:
 						data[j][i] = placeholder
 
-		return data
+		self.data = data
+
 
 
 	def create_data_table_float(
@@ -335,5 +309,253 @@ class JobsDataConsolidate(InfoError):
 					data[j][i] = float(data[j][i])
 
 		return data
+
+
+
+
+	def print(self):
+		for row in self.data:
+			print("\t".join([str(d) for d in row]))
+
+
+
+	def write(self, filename):
+		with open(filename, 'w') as f:
+			for row in self.data:
+				f.write("\t".join([str(d) for d in row])+"\n")
+
+
+
+
+
+class JobsData_DataTable:
+	def __init__(
+		self,
+		jobs_data : dict,
+		primary_key_attribute_name : str,
+		data_attribute_list : list,
+		placeholder = None,
+		sort_data = True,
+		data_filter = None,
+		verbosity = 0,
+	):
+
+		"""
+		Create a table-like data structure
+
+		Parameters:
+		-----------
+			jobs_data:
+				Dictionary with Job Data
+
+			primary_attribute_key: str
+				Row Key: attribute which should serve as primary key
+
+			data_attribute_list : list
+				Column data: list of attributes which should serve as data field
+
+		Return:
+		-------
+			Table with information
+
+		Example:
+		--------
+			primary_attribute_key = 'number_of_ranks'
+			data_attribute_list = ['timestepping', 'rexi_timestepping']
+
+			Table which looks like this
+			-	|      foo |      bar | ...
+			---------------------------------------
+			1	|      1.1 |      2.1 | ...
+			2	|      2.4 |      nan | ...
+			7	|     None |      nan | ...
+			10	|     ....
+			40	|
+			^
+			|
+			primary key
+		"""
+
+		self.verbosity = verbosity
+		jobs_data_flattened = jobs_data.get_flattened_data()
+
+		#
+		# Determine full set of primary keys in case that primary key is missing somewhere
+		#
+		row_keys = []
+		for job_id, jobdata in jobs_data_flattened.items():
+			if not primary_key_attribute_name in jobdata:
+				print("")
+				print("WARNING: No data for attribute "+primary_key_attribute_name+" found")
+				print("WARNING: Job: "+jobdir)
+				continue
+
+			primary_key = jobdata[primary_key_attribute_name]
+			if not primary_key in row_keys:
+				row_keys.append(primary_key)
+
+		# Sort the primary keys
+		# Not sure if this is always a good idea, but it makes sense for plots with numerical values
+		if sort_data:
+			row_keys.sort()
+
+		# get column names
+		col_keys = data_attribute_list
+
+		# get dimensions of table
+		ncols = len(col_keys)
+		nrows = len(row_keys)
+
+		# Create table data
+		data = [[None for i in range(ncols+1)] for j in range(nrows+1)]
+
+		for jobkey, jobdata in jobs_data_flattened.items():
+			if self.verbosity > 5:
+				print("Job: "+jobkey)
+
+			for col_id in range(len(col_keys)):
+
+				if not primary_key_attribute_name in jobdata:
+					print("")
+					print("WARNING: No data for attribute "+primary_key_attribute_name+" found")
+					print("WARNING: Job key: "+jobkey)
+					continue
+
+				row_key = jobdata[primary_key_attribute_name]
+				row_id = row_keys.index(row_key)
+
+				col_key = col_keys[col_id]
+
+				if data[row_id+1][col_id+1] != None:
+					self.print_data_table(data)
+					print("")
+					print("ERROR: Duplicate entry detected")
+					print("ERROR: This typically happens if either")
+					print("ERROR:  a) Groups are colliding")
+					print("ERROR:  b) axis variables are incorrect")
+					print("")
+					raise Exception("Duplicate entry!")
+
+				if not col_key in jobdata:
+					print("WARNING: attribute "+str(col_key)+" not found")
+					print("Job key: "+jobkey)
+					#for key, value in jobdata.items():
+					#	print(" + "+key+": "+str(value))
+
+					# Ignore missing data, will be filled in by placeholder :-)
+					#raise Exception("attribute '"+data_attribute_name+"' not found")
+
+				else:
+					x = row_key
+					y = jobdata[col_key]
+					if data_filter != None:
+						if data_filter(x, y, jobdata):
+							continue
+
+					data[row_id+1][col_id+1] = y
+
+		data[0][0] = '-'
+		#data[0][0] = primary_key_attribute_name+'\\'+data_attribute_name
+
+		# Setup row labels (primary keys)
+		for i in range(len(row_keys)):
+			data[i+1][0] = row_keys[i]
+
+		# Setup col labels
+		for j in range(len(col_keys)):
+			data[0][j+1] = col_keys[j]
+
+		if placeholder != None:
+			# Replace None fields with placeholder
+			for j in range(1,len(row_keys)):
+				for i in range(1,len(col_keys)):
+					if data[j][i] == None:
+						data[j][i] = placeholder
+
+		self.data = data
+
+
+	def get_data(self):
+		return self.data
+
+
+	def get_data_float(
+			self,
+			placeholder = None
+		):
+
+		data = copy.deepcopy(self.data)
+		# Replace None fields with placeholder
+		for j in range(1,len(data)):
+			for i in range(1,len(data[0])):
+				if placeholder != None:
+					if self.data[j][i] == None:
+						data[j][i] = placeholder
+					else:
+						data[j][i] = float(data[j][i])
+
+		return data
+
+
+
+	def print(self):
+		for row in self.data:
+			print("\t".join([str(d) for d in row]))
+
+	def write(self, filename):
+		with open(filename, 'w') as f:
+			for row in self.data:
+				f.write("\t".join([str(d) for d in row])+"\n")
+
+
+
+
+class JobsDataConsolidate(InfoError):
+	def __init__(
+			self,
+			jobs_data,
+			verbosity = 0
+	):
+		self.jobs_data = jobs_data
+		self.verbosity = verbosity
+
+
+	def create_groups(
+		self,
+		group_identifiers : list,
+	):
+		"""
+		Group together particular job data, e.g. jobs using the same time stepping method
+
+		Parameters:
+		-----------
+			group_identifiers: list
+				List with attributes of jobs which are grouped together
+				This also assembles the column name
+		"""
+
+		groups = {}
+
+		for jobdir, job_data in self.jobs_data.get_flattened_data().items():
+			group_attributes = []
+			group_attributes_short = []
+
+			# collect values of group attributes
+			for i in group_identifiers:
+				group_attributes_short.append(str(job_data[i]))
+				group_attributes.append(i+'_'+str(job_data[i]))
+
+			# create string identifier
+			group_attributes_id = "_".join(group_attributes)
+			group_attributes_short_id = "_".join(group_attributes_short)
+
+			# create new group if it doesn't exist
+			if not group_attributes_short_id in groups:
+				groups[group_attributes_short_id] = {}
+
+			# append job data to group
+			groups[group_attributes_short_id][jobdir] = job_data
+
+		return groups
 
 
