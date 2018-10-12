@@ -225,6 +225,8 @@ public:
 		if (simVars == nullptr)
 			FatalError("Benchmarks are not yet initialized");
 
+		simVars->misc.output_time_scale = 1.0/(60.0*60.0);
+
 		if (simVars->setup.benchmark_name != "")
 		{
 			if (simVars->setup.benchmark_name == "gaussian_bump_advection")
@@ -346,8 +348,6 @@ public:
 				// setup velocities with initial time stamp
 				callback_external_forces_advection_field(1, simVars->timecontrol.current_simulation_time, &o_vort, this);
 				callback_external_forces_advection_field(2, simVars->timecontrol.current_simulation_time, &o_div, this);
-
-				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 			}
 			else if (
 					simVars->setup.benchmark_name == "williamson1"		||
@@ -413,8 +413,6 @@ public:
 
 				o_vort = op->laplace(stream_function);
 				o_div.spectral_set_zero();
-
-				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 
 	//			std::cout << "advection_rotation_angle: " << simVars->setup.advection_rotation_angle << std::endl;
 			}
@@ -498,8 +496,6 @@ public:
 				);
 	#endif
 				o_div.spectral_set_zero();
-
-				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 			}
 			else if (
 					simVars->setup.benchmark_name == "galewsky" ||			///< Standard Galewsky benchmark
@@ -524,8 +520,6 @@ public:
 				}
 
 				op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
-
-				simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 
 				/*
 				 * Parameters from Galewsky paper setup
@@ -1169,8 +1163,6 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-			simVars->misc.output_time_scale = 1.0/(60.0*60.0);
-
 			std::cout << "advection_rotation_angle: " << simVars->setup.advection_rotation_angle << std::endl;
 		}
 		else if (simVars->setup.benchmark_id == 22)
@@ -1289,8 +1281,6 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-
-			simVars->misc.output_time_scale = 1.0/(60.0*60.0);
 
 			std::cout << "advection_rotation_angle: " << simVars->setup.advection_rotation_angle << std::endl;
 		}

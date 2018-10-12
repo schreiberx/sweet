@@ -179,16 +179,16 @@ public:
 			SphereDataComplex rhs = gh*div0 + alpha*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
-			div = -1.0/gh*(phi0 - alpha*phi);
 			vort = (1.0/alpha)*vort0;
+			div = -1.0/gh*(phi0 - alpha*phi);
 		}
 		else if (use_f_sphere)
 		{
 			SphereDataComplex rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);
 
-			div = -1.0/gh*(phi0 - alpha*phi);
 			vort = (1.0/alpha)*(vort0 + f0*(div));
+			div = -1.0/gh*(phi0 - alpha*phi);
 		}
 		else
 		{

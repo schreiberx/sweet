@@ -133,23 +133,6 @@ public:
 
 		simVars.reset();
 
-#if 0
-		if (simVars.misc.sphere_use_robert_functions != 1)
-			FatalError("Only Robert formulation allowed");
-#endif
-
-		// one month runtime
-		if (simVars.timecontrol.max_simulation_time == -1)
-		{
-			if (simVars.setup.benchmark_id == 10)
-			{
-				simVars.timecontrol.max_simulation_time = 31*60*60*24;
-
-				// 200 h
-				simVars.timecontrol.max_simulation_time = 200*60*60;
-			}
-		}
-
 		// Diagnostics measures
 		last_timestep_nr_update_diagnostics = -1;
 
