@@ -85,7 +85,13 @@ class SWEETPostprocessingJobsData(InfoError):
 				self.info("Processing '"+job_dir+"'")
 
 
-			self.__jobs_data[job_dir] = SWEETPostprocessingJobData(job_dir, verbosity=self.verbosity)
+			job = SWEETPostprocessingJobData(job_dir, verbosity=self.verbosity)
+			if 'jobgeneration.job_unique_id' not in job.get_flattened_data():
+				# Be backward compatible
+				self.__jobs_data[job_dir] = job
+			else:
+				job_unique_id = job.get_flattened_data()['jobgeneration.job_unique_id']
+				self.__jobs_data[job_unique_id] = job
 
 
 

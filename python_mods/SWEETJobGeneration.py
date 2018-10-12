@@ -67,6 +67,32 @@ class SWEETJobGeneration(InfoError):
 		# Should the compile command be part of the job script
 		self.compilecommand_in_jobscript = True
 
+
+		# List with filter names to reduce unique ID
+		self.unique_id_filter = []
+
+		# Unique ID of reference job to compare data to
+		# This is extremely handy for postprocessing
+		# This variable must be 'None' if this is a reference job
+		self.reference_job_unique_id = None
+
+		#
+		# Unique ID of this job script
+		# This is *** automatically generated *** if the job run.sh file is written!
+		#
+		self.job_unique_id = None
+
+		# Path to directory
+		self.job_dirpath = None
+
+		#
+		# p_ denote private variables
+		# This should be changed
+		#
+
+		# directory path to job data
+		self.p_job_dirpath = None
+
 		# Filepath to jobscript
 		self.p_job_scriptpath = None
 
@@ -82,8 +108,6 @@ class SWEETJobGeneration(InfoError):
 		# Accumulator for compile commands
 		self.p_compilecommands_accum = []
 
-		# List with filter names to reduce unique ID
-		self.unique_id_filter = []
 
 		self.init_phase = False
 
@@ -318,6 +342,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 		# Job directory
 		self.p_job_dirpath = os.path.abspath(i_job_dirpath)
+		self.job_dirpath = self.p_job_dirpath
 
 		# path to jobscript file
 		self.p_job_scriptpath = self.p_job_dirpath+'/run.sh'
@@ -329,6 +354,8 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		self.p_job_stdout_filepath = self.p_job_dirpath+"/output.out"
 		self.p_job_stderr_filepath = self.p_job_dirpath+"/output.err"
 
+		# Generate full unfiltered unique ID
+		self.job_unique_id = self.getUniqueID([])
 
 		# Generate directory of scriptfile if it does not exist
 		if not os.path.exists(self.p_job_dirpath):
@@ -361,6 +388,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 		# Job directory
 		self.p_job_dirpath = os.path.abspath(os.path.dirname(jobscript_filepath))
+		self.job_dirpath = self.p_job_dirpath
 
 		# path to jobscript file
 		if os.path.basename(jobscript_filepath) != 'run.sh':
@@ -382,27 +410,30 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 		self.p_write_jobscript()
 
 
-	def getUniqueID(self):
+	def getUniqueID(self, unique_id_filter = None):
 		"""
 		Return a unique ID including *all* string and number attributes of this class
 		"""
 		self.parallelization.dummy_setup_if_no_setup(self.platform_resources)
 
+		if unique_id_filter == None:
+			unique_id_filter = self.unique_id_filter
+
 		unique_id = ''
-		if 'runtime' not in self.unique_id_filter:
-			s = self.runtime.getUniqueID(self.compile, self.unique_id_filter)
+		if 'runtime' not in unique_id_filter:
+			s = self.runtime.getUniqueID(self.compile, unique_id_filter)
 			if s != '':
 				unique_id += s
 
-		if 'parallelization' not in self.unique_id_filter:
-			s = self.parallelization.getUniqueID(self.unique_id_filter)
+		if 'parallelization' not in unique_id_filter:
+			s = self.parallelization.getUniqueID(unique_id_filter)
 			if unique_id != '':
 				unique_id += '_'
 			if s != '':
 				unique_id += s
 
-		if 'compile' not in self.unique_id_filter:
-			s = self.compile.getUniqueID(self.unique_id_filter)
+		if 'compile' not in unique_id_filter:
+			s = self.compile.getUniqueID(unique_id_filter)
 			if unique_id != '':
 				unique_id += '_'
 			if s != '':
@@ -424,6 +455,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 	def get_attributes_dict(self):
 		attr_dict = {}
+		attr_dict['jobgeneration'] = self.__get_sub_attributes(self)
 		attr_dict['compile'] = self.__get_sub_attributes(self.compile)
 		attr_dict['runtime'] = self.__get_sub_attributes(self.runtime)
 		attr_dict['parallelization'] = self.__get_sub_attributes(self.parallelization)
