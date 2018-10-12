@@ -255,7 +255,7 @@ class SWEETPostprocessingJobsData(InfoError):
 				f.write("Group '"+group_key+"'\n")
 				group_data = data_plotting[group_key]
 
-				f.write("x_values\ty_values")
+				f.write("x_values\ty_values\n")
 				for x, y in zip(group_data['x_values'], group_data['y_values']):
 					f.write(str(x)+"\t"+str(y)+"\n")
 				f.write("\n")
