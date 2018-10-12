@@ -22,7 +22,10 @@ testrun = False
 ##################################################
 
 p.compile.mode = 'release'
-p.compile.compiler = 'intel'
+if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'
 
 p.runtime.mode_res = 128
@@ -89,7 +92,7 @@ params_ci_max_real = [10.0]
 # Otherwise, CI would not behave consistently
 #
 params_ci_max_imag_scaling_relative_to_timestep_size = 480
-params_ci_max_imag_scaling_relative_to_timestep_size = None
+#params_ci_max_imag_scaling_relative_to_timestep_size = None
 
 ##################################################
 
@@ -109,8 +112,8 @@ def estimateWallclockTime(p):
 	###
 	### ALWAYS RETURN 15 MINUTES
 	### We're interested in runs which take up to 10 minutes
-	###
-	return 60*15
+	### Increase it due to reduced number of ranks
+	return 60*42
 	###
 	###
 	###
@@ -369,6 +372,7 @@ if __name__ == "__main__":
 			p.reference_job_unique_id = p.job_unique_id
 
 
+
 		#
 		# Create job scripts
 		#
@@ -446,6 +450,7 @@ if __name__ == "__main__":
 						if testrun:
 							time_ranks = 4
 							#time_ranks = 1
+						time_ranks = 32
 
 						#for time_ranks in params_ptime_num_cores_per_rank:
 						if True:

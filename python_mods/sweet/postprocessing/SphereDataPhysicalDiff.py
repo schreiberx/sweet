@@ -4,34 +4,18 @@ import numpy as np
 import sys
 import math
 
+from .SphereDataPhysical import *
+
 
 
 class SphereDataPhysicalDiff:
 
-	def __init__(self):
+	def __init__(self, filename_a = None, filename_b = None):
+
+		if filename_b != None:
+			self.compute_diff(filename_a, filename_b)
+
 		pass
-
-	def _loadSphereDataFromFile(self, filename):
-		"""
-		Load sphere data stored in physical space from .csv file
-
-		Return:
-		-------
-			Tuple with (data, longitude angles, latitude angles)
-		"""
-		print("Loading file: "+filename)
-
-		try:
-			data = np.loadtxt(filename, skiprows=0)
-		except Exception as e:
-			raise e
-
-		# First row and col are longitude and latitude coordinates
-		labelsx = data[0,0:]
-		labelsy = data[0:,0]
-		data = data[1:,1:]
-		return data, labelsx, labelsy
-
 
 
 	def compute_diff(
@@ -40,18 +24,18 @@ class SphereDataPhysicalDiff:
 			filename_b
 		):
 
-		file_a_data, file_a_labelsx, file_a_labelsy = self._loadSphereDataFromFile(filename_a)
-		file_b_data, file_b_labelsx, file_b_labelsy = self._loadSphereDataFromFile(filename_b)
+		file_a = SphereDataPhysical(filename_a)
+		file_b = SphereDataPhysical(filename_b)
 
 		self.norm_l1_value = 0.0
 		self.norm_l2_value = 0.0
 		self.norm_linf_value = 0.0
 		self.norm_rms_value = 0.0
 
-		size_ref_j = len(file_a_data)
-		size_ref_i = len(file_a_data[0])
-		size_cmp_j = len(file_b_data)
-		size_cmp_i = len(file_b_data[0])
+		size_ref_j = len(file_a.data)
+		size_ref_i = len(file_a.data[0])
+		size_cmp_j = len(file_b.data)
+		size_cmp_i = len(file_b.data[0])
 
 		multiplier_j = (size_ref_j+1)/(size_cmp_j+1)
 		multiplier_i = (size_ref_i+1)/(size_cmp_i+1)
@@ -72,7 +56,7 @@ class SphereDataPhysicalDiff:
 
 		for j in range(0, size_cmp_j):
 			for i in range(0, size_cmp_i):
-				value = file_b_data[j,i]-file_a_data[j*multiplier_j,i*multiplier_i]
+				value = file_b.data[j,i]-file_a.data[j*multiplier_j,i*multiplier_i]
 
 				# http://mathworld.wolfram.com/L1-Norm.html
 				self.norm_l1_value += abs(value)

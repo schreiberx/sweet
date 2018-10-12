@@ -22,7 +22,10 @@ testrun = False
 ##################################################
 
 p.compile.mode = 'release'
-p.compile.compiler = 'intel'
+if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'
 
 p.runtime.mode_res = 128
@@ -109,8 +112,8 @@ def estimateWallclockTime(p):
 	###
 	### ALWAYS RETURN 15 MINUTES
 	### We're interested in runs which take up to 10 minutes
-	###
-	return 60*15
+	### Increase it due to reduced number of ranks
+	return 60*42
 	###
 	###
 	###
@@ -366,7 +369,9 @@ if __name__ == "__main__":
 
 			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID())
 
+			# set reference job id
 			p.reference_job_unique_id = p.job_unique_id
+
 
 
 		#
@@ -446,6 +451,7 @@ if __name__ == "__main__":
 						if testrun:
 							time_ranks = 4
 							#time_ranks = 1
+						time_ranks = 32
 
 						#for time_ranks in params_ptime_num_cores_per_rank:
 						if True:

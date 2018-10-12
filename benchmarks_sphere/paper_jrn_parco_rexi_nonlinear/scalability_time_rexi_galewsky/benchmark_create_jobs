@@ -22,7 +22,10 @@ testrun = False
 ##################################################
 
 p.compile.mode = 'release'
-p.compile.compiler = 'intel'
+if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'
 
 p.runtime.mode_res = 128
@@ -35,6 +38,7 @@ p.compile.threading = 'omp'
 p.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
+gen_reference_solution = False
 
 p.runtime.simtime = 60*60*24*5	# 5 days
 
@@ -47,6 +51,9 @@ params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
 
 #params_timestep_sizes_rexi = [30]
 params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
+params_timestep_sizes_rexi = [300]
+
+p.runtime.simtime = 300*100	# 100 time steps
 
 if testrun:
 	params_timestep_sizes_explicit = [20, 30]
@@ -58,7 +65,7 @@ if testrun:
 params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
 #params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_socket+1)]
 params_pspace_num_threads_per_rank = [p.platform_resources.num_cores_per_socket]
-params_ptime_num_cores_per_rank = [1]
+params_ptime_num_cores_per_rank = [2**i for i in range(0, 8)]
 
 unique_id_filter = []
 #unique_id_filter.append('simparams')
@@ -281,31 +288,31 @@ if __name__ == "__main__":
 				###########
 				# Runge-Kutta
 				###########
-				['ln_erk',		2,	2,	0],
+#				['ln_erk',		2,	2,	0],
 
 				###########
 				# CN
 				###########
-				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
-				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
+#				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+#				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 
-				['l_irk_n_erk_ver0',	2,	2,	0],
-				['l_irk_n_erk_ver1',	2,	2,	0],
+#				['l_irk_n_erk_ver0',	2,	2,	0],
+#				['l_irk_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# REXI
 				###########
-				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+#				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
 
-				['l_rexi_n_erk_ver0',	2,	2,	0],
-				['l_rexi_n_erk_ver1',	2,	2,	0],
+#				['l_rexi_n_erk_ver0',	2,	2,	0],
+#				['l_rexi_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# ETDRK
 				###########
-				['lg_rexi_lc_n_etdrk',	2,	2,	0],
-				['l_rexi_n_etdrk',	2,	2,	0],
+#				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+#				['l_rexi_n_etdrk',	2,	2,	0],
 			]
 
 			if testrun:
@@ -442,13 +449,13 @@ if __name__ == "__main__":
 							#'ci_gaussian_filter_exp_N':0.0,
 						})
 
-						time_ranks = ci_N
-						if testrun:
-							time_ranks = 4
+						#time_ranks = ci_N
+						#if testrun:
+							#time_ranks = 4
 							#time_ranks = 1
 
-						#for time_ranks in params_ptime_num_cores_per_rank:
-						if True:
+						for time_ranks in params_ptime_num_cores_per_rank:
+						#if True:
 
 							# Update TIME parallelization
 							ptime = SWEETParallelizationDimOptions('time')

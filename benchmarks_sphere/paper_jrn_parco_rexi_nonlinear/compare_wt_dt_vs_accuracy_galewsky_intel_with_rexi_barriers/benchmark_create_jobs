@@ -22,8 +22,13 @@ testrun = False
 ##################################################
 
 p.compile.mode = 'release'
-p.compile.compiler = 'intel'
+if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'
+
+p.compile.rexi_timings_additional_barriers = 'enable'
 
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
@@ -62,7 +67,8 @@ params_ptime_num_cores_per_rank = [1]
 
 unique_id_filter = []
 #unique_id_filter.append('simparams')
-unique_id_filter.append('compile')
+#unique_id_filter.append('compile')
+unique_id_filter.append('compile_misc')
 unique_id_filter.append('disc_space')
 unique_id_filter.append('timestep_order')
 #unique_id_filter.append('timestep_size')
@@ -281,31 +287,31 @@ if __name__ == "__main__":
 				###########
 				# Runge-Kutta
 				###########
-				['ln_erk',		2,	2,	0],
+#				['ln_erk',		2,	2,	0],
 
 				###########
 				# CN
 				###########
-				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
-				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
+#				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+#				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
 
-				['l_irk_n_erk_ver0',	2,	2,	0],
-				['l_irk_n_erk_ver1',	2,	2,	0],
+#				['l_irk_n_erk_ver0',	2,	2,	0],
+#				['l_irk_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# REXI
 				###########
-				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+#				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
 
-				['l_rexi_n_erk_ver0',	2,	2,	0],
-				['l_rexi_n_erk_ver1',	2,	2,	0],
+#				['l_rexi_n_erk_ver0',	2,	2,	0],
+#				['l_rexi_n_erk_ver1',	2,	2,	0],
 
 				###########
 				# ETDRK
 				###########
-				['lg_rexi_lc_n_etdrk',	2,	2,	0],
-				['l_rexi_n_etdrk',	2,	2,	0],
+#				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+#				['l_rexi_n_etdrk',	2,	2,	0],
 			]
 
 			if testrun:
@@ -367,6 +373,7 @@ if __name__ == "__main__":
 			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID())
 
 			p.reference_job_unique_id = p.job_unique_id
+
 
 
 		#
