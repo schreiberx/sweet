@@ -20,9 +20,10 @@ def autodetect():
 
 	# Autodetect based on source folder name for SWEET source
 	# This helps to utilize different versions of SWEET on cheyenne
-	if sweet_src_dirname=="sweet_intel_economy":
+	if sweet_src_dirname=="sweet_gnu":
 		return True
 
+	return False
 
 
 if __name__ == "__main__":

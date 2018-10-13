@@ -6,9 +6,6 @@ import os
 from SWEET import *
 from . import SWEETPlatformAutodetect
 
-# Underscore defines symbols to be private
-_job_id = None
-
 def _whoami(depth=1):
 	"""
 	String of function name to recycle code
@@ -25,12 +22,10 @@ def _whoami(depth=1):
 
 
 def p_gen_script_info(j : SWEETJobGeneration):
-	global _job_id
-
 	return """#
 # Generating function: """+_whoami(2)+"""
 # Platform: """+get_platform_id()+"""
-# Job id: """+_job_id+"""
+# Job id: """+j.getUniqueID()+"""
 #
 """
 
@@ -58,7 +53,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "cheyenne_gnu_economy"
+	return "cheyenne_gnu"
 
 
 
@@ -87,8 +82,6 @@ def jobscript_setup(j : SWEETJobGeneration):
 	Setup data to generate job script
 	"""
 
-	global _job_id
-	_job_id = j.getUniqueID()
 	return
 
 
@@ -102,12 +95,26 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	global _job_id
+	job_id = j.getUniqueID()
 
 	p = j.parallelization
 
 	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 	
+	# Available queues:
+	# premium	(only use this in extreme cases)
+	# regular
+	# economy
+	queue = 'economy'
+
+	# Use regular queue if we need more than 32 nodes
+	# Otherwise, the job doesn't seem to be scheduled
+
+	if p.num_nodes >= 32:
+		queue = 'premium'
+	elif p.num_nodes >= 16:
+		queue = 'regular'
+
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
 	#

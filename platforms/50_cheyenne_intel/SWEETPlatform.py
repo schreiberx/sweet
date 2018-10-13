@@ -53,7 +53,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "cheyenne_intel_economy"
+	return "cheyenne_intel"
 
 
 
@@ -101,6 +101,21 @@ def jobscript_get_header(j : SWEETJobGeneration):
 
 	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 	
+	# Available queues:
+	# premium	(only use this in extreme cases)
+	# regular
+	# economy
+	queue = 'economy'
+
+	# Use regular queue if we need more than 32 nodes
+	# Otherwise, the job doesn't seem to be scheduled
+
+	if p.num_nodes >= 32:
+		queue = 'premium'
+	elif p.num_nodes >= 16:
+		queue = 'regular'
+
+
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
 	#
@@ -109,7 +124,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 ## project code
 #PBS -A NCIS0002
 ## economy queue
-#PBS -q economy
+#PBS -q """+queue+"""
 ## wall-clock time (hrs:mins:secs)
 #PBS -l walltime="""+time_str+"""
 ## select: number of nodes
