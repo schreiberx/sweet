@@ -186,6 +186,17 @@ class Plotting(InfoError):
 		self.plot_finish(outfile)
 
 
+	def plot_scattered_annotated(
+			self,
+			data_plotting,
+			outfile=None,
+			**kwargs
+		):
+		self.reset()
+		self.plot_scattered_data_annotated(data_plotting, **kwargs)
+		self.plot_finish(outfile)
+
+
 
 if __name__ == "__main__":
 

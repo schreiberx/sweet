@@ -19,6 +19,7 @@ class JobsData_GroupsPlottingScattered:
 			data_attribute_name : str,
 			placeholder = None,
 			data_filter = None,
+			sort_data = True,
 			verbosity = 0,
 	):
 		"""
@@ -77,6 +78,18 @@ class JobsData_GroupsPlottingScattered:
 				'y_values': y_values
 			}
 
+
+		if sort_data:
+			for group_id, data in plot_data.items():
+				x = data['x_values']
+				y = data['y_values']
+
+				y = [y for _,y in sorted(zip(x,y))]
+				x.sort()
+
+				data['x_values'] = x
+				data['y_values'] = y
+
 		self.data = plot_data
 
 
@@ -123,10 +136,6 @@ class JobsData_GroupsPlottingScattered:
 				if j != None:
 					x.append(float(i))
 					y.append(float(j))
-
-			if sort_data:
-				y = [y for _,y in sorted(zip(x,y))]
-				x.sort()
 
 			values['x_values'] = x
 			values['y_values'] = y
@@ -208,9 +217,13 @@ class JobsData_GroupsDataTable:
 				primary_key = jobdata[primary_key_attribute_name]
 				if not primary_key in row_keys:
 					row_keys.append(primary_key)
+
+		# Convert to floating point
+		# Here, we assume that it's numeric data
+		#row_keys = [float(i) for i in row_keys]
+
 		# Sort the primary keys
-		# Not sure if this is always a good idea, but it makes sense for plots with numerical values
-		if (sort_data):
+		if sort_data:
 			row_keys.sort()
 
 		# get column names
