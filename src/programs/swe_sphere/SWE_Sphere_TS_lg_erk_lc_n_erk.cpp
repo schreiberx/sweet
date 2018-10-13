@@ -96,6 +96,10 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear
 )
 {
 
+#if SWEET_REXI_TIMINGS
+	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.start();
+#endif
+
 	/*
 	 * NON-LINEAR
 	 *
@@ -144,6 +148,11 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear
 
 	tmpspec = tmpg;
 	o_div_t += -op.laplace(tmpspec);
+
+
+#if SWEET_REXI_TIMINGS
+	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.stop();
+#endif
 }
 
 

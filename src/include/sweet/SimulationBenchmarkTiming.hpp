@@ -17,6 +17,9 @@ public:
 	Stopwatch main_timestepping;
 
 #if SWEET_REXI_TIMINGS
+	// TODO: call SWEET_REXI_TIMINGS somehow different, e.g. SWEET_BENCHMARK_MICRO_TIMINGS
+	Stopwatch main_timestepping_nonlinearities;
+
 	Stopwatch rexi;
 	Stopwatch rexi_setup;
 	Stopwatch rexi_shutdown;
@@ -38,6 +41,7 @@ public:
 		main.reset();
 		main_setup.reset();
 		main_timestepping.reset();
+		main_timestepping_nonlinearities.reset();
 
 
 #if SWEET_REXI_TIMINGS
@@ -60,6 +64,7 @@ public:
 			std::cout << "[MULE] simulation_benchmark_timings.main: " << main() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.main_setup: " << main_setup() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.main_timestepping: " << main_timestepping() << std::endl;
+			std::cout << "[MULE] simulation_benchmark_timings.main_timestepping_nonlinearities: " << main_timestepping_nonlinearities() << std::endl;
 		}
 
 #if SWEET_REXI_TIMINGS
