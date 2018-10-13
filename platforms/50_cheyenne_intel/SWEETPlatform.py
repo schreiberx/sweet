@@ -6,9 +6,6 @@ import os
 from SWEET import *
 from . import SWEETPlatformAutodetect
 
-# Underscore defines symbols to be private
-_job_id = None
-
 def _whoami(depth=1):
 	"""
 	String of function name to recycle code
@@ -25,12 +22,10 @@ def _whoami(depth=1):
 
 
 def p_gen_script_info(j : SWEETJobGeneration):
-	global _job_id
-
 	return """#
 # Generating function: """+_whoami(2)+"""
 # Platform: """+get_platform_id()+"""
-# Job id: """+_job_id+"""
+# Job id: """+j.getUniqueID()+"""
 #
 """
 
@@ -58,7 +53,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "cheyenne_gnu_economy"
+	return "cheyenne_intel"
 
 
 
@@ -87,8 +82,6 @@ def jobscript_setup(j : SWEETJobGeneration):
 	Setup data to generate job script
 	"""
 
-	global _job_id
-	_job_id = j.getUniqueID()
 	return
 
 
@@ -102,12 +95,26 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	global _job_id
+	job_id = j.getUniqueID()
 
 	p = j.parallelization
 
 	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 	
+	# Available queues:
+	# premium	(only use this in extreme cases)
+	# regular
+	# economy
+	queue = 'economy'
+
+	# Use regular queue if we need more than 32 nodes
+	# Otherwise, the job doesn't seem to be scheduled
+	if p.num_nodes >= 16:
+		queue = 'regular'
+
+	elif p.num_nodes >= 32:
+		queue = 'premium'
+
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
 	#
@@ -116,7 +123,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 ## project code
 #PBS -A NCIS0002
 ## economy queue
-#PBS -q economy
+#PBS -q """+queue+"""
 ## wall-clock time (hrs:mins:secs)
 #PBS -l walltime="""+time_str+"""
 ## select: number of nodes
@@ -132,7 +139,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 		content += "#PBS -l select=cpufreq=2300000\n"
 
 	content += """#
-#PBS -N """+_job_id[0:100]+"""
+#PBS -N """+job_id[0:100]+"""
 #PBS -o """+j.p_job_stdout_filepath+"""
 #PBS -e """+j.p_job_stderr_filepath+"""
 
@@ -165,24 +172,39 @@ echo
 	if j.compile.threading != 'off':
 		content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
-export OMP_DISPLAY_ENV=VERBOSE
 """
 
-	if p.core_oversubscription:
-		raise Exception("Not supported with this script!")
-	else:
-		if p.core_affinity != None:
-			content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
-			if p.core_affinity == 'compact':
-				content += "source $SWEET_ROOT/platforms/bin/setup_omp_places.sh nooversubscription close\n"
-				#content += "\nexport OMP_PROC_BIND=close\n"
-			elif p.core_affinity == 'scatter':
-				raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
-				content += "\nexport OMP_PROC_BIND=spread\n"
+#	if j.compile.sweet_mpi != 'enable':
+	if True:
+		#
+		# https://software.intel.com/en-us/node/522691
+		if p.core_oversubscription:
+			if p.core_affinity != None:
+				if p.core_affinity == 'compact':
+					content += "export KMP_AFFINITY=granularity=fine,compact\n"
+				elif p.core_affinity == 'scatter':
+					content += "export KMP_AFFINITY=granularity=fine,scatter\n"
+				else:
+					Exception("Affinity '"+str(p.core_affinity)+"' not supported")
 			else:
-				raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+				raise Exception("Please specify core_affinity!")
 
-			content += "\n"
+		else:
+			if p.core_affinity != None:
+				content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+				if p.core_affinity == 'compact':
+					content += "export KMP_AFFINITY=granularity=fine,compact,1,0\n"
+				elif p.core_affinity == 'scatter':
+					content += "export KMP_AFFINITY=granularity=fine,scatter\n"
+				else:
+					raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+			else:
+				raise Exception("Please specify core_affinity!")
+
+				content += "\n"
+
+		if p.core_affinity != None:
+			content += "export KMP_AFFINITY=\"verbose,$KMP_AFFINITY\"\n"
 
 	return content
 
@@ -275,10 +297,8 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 			mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
 
 			mpiexec += " omplace "
-			#mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
-			mpiexec += " -nt "+str(p.num_cores_per_rank)+" "
-			# Don't know if intel mode really works with gnu
-			mpiexec += " -tm intel "
+			mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
+			mpiexec += " -tm intel"
 			mpiexec += " -vv"
 			if mpiexec[-1] != ' ':
 				mpiexec += ' '

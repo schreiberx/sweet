@@ -53,7 +53,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "cheyenne_intel_economy"
+	return "cheyenne_gnu"
 
 
 
@@ -101,6 +101,20 @@ def jobscript_get_header(j : SWEETJobGeneration):
 
 	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 	
+	# Available queues:
+	# premium	(only use this in extreme cases)
+	# regular
+	# economy
+	queue = 'economy'
+
+	# Use regular queue if we need more than 32 nodes
+	# Otherwise, the job doesn't seem to be scheduled
+	if p.num_nodes >= 16:
+		queue = 'regular'
+
+	elif p.num_nodes >= 32:
+		queue = 'premium'
+
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
 	#
@@ -125,7 +139,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 		content += "#PBS -l select=cpufreq=2300000\n"
 
 	content += """#
-#PBS -N """+job_id[0:100]+"""
+#PBS -N """+_job_id[0:100]+"""
 #PBS -o """+j.p_job_stdout_filepath+"""
 #PBS -e """+j.p_job_stderr_filepath+"""
 
@@ -158,39 +172,24 @@ echo
 	if j.compile.threading != 'off':
 		content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+export OMP_DISPLAY_ENV=VERBOSE
 """
 
-#	if j.compile.sweet_mpi != 'enable':
-	if True:
-		#
-		# https://software.intel.com/en-us/node/522691
-		if p.core_oversubscription:
-			if p.core_affinity != None:
-				if p.core_affinity == 'compact':
-					content += "export KMP_AFFINITY=granularity=fine,compact\n"
-				elif p.core_affinity == 'scatter':
-					content += "export KMP_AFFINITY=granularity=fine,scatter\n"
-				else:
-					Exception("Affinity '"+str(p.core_affinity)+"' not supported")
-			else:
-				raise Exception("Please specify core_affinity!")
-
-		else:
-			if p.core_affinity != None:
-				content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
-				if p.core_affinity == 'compact':
-					content += "export KMP_AFFINITY=granularity=fine,compact,1,0\n"
-				elif p.core_affinity == 'scatter':
-					content += "export KMP_AFFINITY=granularity=fine,scatter\n"
-				else:
-					raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
-			else:
-				raise Exception("Please specify core_affinity!")
-
-				content += "\n"
-
+	if p.core_oversubscription:
+		raise Exception("Not supported with this script!")
+	else:
 		if p.core_affinity != None:
-			content += "export KMP_AFFINITY=\"verbose,$KMP_AFFINITY\"\n"
+			content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+			if p.core_affinity == 'compact':
+				content += "source $SWEET_ROOT/platforms/bin/setup_omp_places.sh nooversubscription close\n"
+				#content += "\nexport OMP_PROC_BIND=close\n"
+			elif p.core_affinity == 'scatter':
+				raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+				content += "\nexport OMP_PROC_BIND=spread\n"
+			else:
+				raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+
+			content += "\n"
 
 	return content
 
@@ -283,8 +282,10 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 			mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
 
 			mpiexec += " omplace "
-			mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
-			mpiexec += " -tm intel"
+			#mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
+			mpiexec += " -nt "+str(p.num_cores_per_rank)+" "
+			# Don't know if intel mode really works with gnu
+			mpiexec += " -tm intel "
 			mpiexec += " -vv"
 			if mpiexec[-1] != ' ':
 				mpiexec += ' '
