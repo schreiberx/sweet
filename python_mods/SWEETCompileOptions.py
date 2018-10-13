@@ -613,7 +613,7 @@ class SWEETCompileOptions(InfoError):
 			return self.program_binary_name
 
 		retval = self.program_name
-		s = self.getUniqueID()
+		s = self.getUniqueID([])
 
 		if s != '':
 			retval += '_'+s
