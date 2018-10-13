@@ -123,7 +123,7 @@ def jobscript_get_header(j : SWEETJobGeneration):
 ## project code
 #PBS -A NCIS0002
 ## economy queue
-#PBS -q economy
+#PBS -q """+queue+"""
 ## wall-clock time (hrs:mins:secs)
 #PBS -l walltime="""+time_str+"""
 ## select: number of nodes
