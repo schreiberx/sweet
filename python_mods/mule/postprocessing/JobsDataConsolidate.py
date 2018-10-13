@@ -81,11 +81,14 @@ class JobsData_GroupsPlottingScattered:
 
 		if sort_data:
 			for group_id, data in plot_data.items():
+
+				sort_key = [float(i) for i in data['x_values']]
+
 				x = data['x_values']
 				y = data['y_values']
 
-				y = [y for _,y in sorted(zip(x,y))]
-				x.sort()
+				y = [y for _,y in sorted(zip(sort_key,y))]
+				x = [x for _,x in sorted(zip(sort_key,x))]
 
 				data['x_values'] = x
 				data['y_values'] = y
@@ -501,11 +504,11 @@ class JobsData_DataTable:
 		# Replace None fields with placeholder
 		for j in range(1,len(data)):
 			for i in range(1,len(data[0])):
-				if placeholder != None:
-					if self.data[j][i] == None:
+				if self.data[j][i] == None:
+					if placeholder != None:
 						data[j][i] = placeholder
-					else:
-						data[j][i] = float(data[j][i])
+				else:
+					data[j][i] = float(data[j][i])
 
 		return data
 
