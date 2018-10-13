@@ -109,11 +109,12 @@ def jobscript_get_header(j : SWEETJobGeneration):
 
 	# Use regular queue if we need more than 32 nodes
 	# Otherwise, the job doesn't seem to be scheduled
-	if p.num_nodes >= 16:
+
+	if p.num_nodes >= 32:
+		queue = 'premium'
+	elif p.num_nodes >= 16:
 		queue = 'regular'
 
-	elif p.num_nodes >= 32:
-		queue = 'premium'
 
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
