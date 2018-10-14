@@ -232,9 +232,9 @@ class SWEETRuntimeOptions(InfoError):
 				idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
 		if not 'simparams' in filter_list:
-			idstr += '_g'+str(self.g)
-			idstr += '_h'+str(self.h)
-			idstr += '_f'+str(self.f)
+			idstr += '_g'+str("{:05.2f}".format(self.g))
+			idstr += '_h'+str("{:010.3f}".format(self.h))
+			idstr += '_f'+str("{:e}".format(self.f))
 
 			#idstr += '_p'+str(self.pde_id)
 
@@ -254,7 +254,7 @@ class SWEETRuntimeOptions(InfoError):
 				idstr += '_tsob'+str(self.timestepping_order2)
 
 			if not 'timestep_size' in filter_list:
-				idstr += '_C'+str(self.timestep_size).zfill(6)
+				idstr += '_C'+str("{:08.3f}".format(self.timestep_size))
 
 		if self.max_timesteps != -1:
 			idstr += '_T'+str(self.max_timesteps).zfill(3)
