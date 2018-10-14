@@ -157,6 +157,7 @@ cd "$SCRIPTDIR"
 #echo_info " + Setting up platform independent environment variables..."
 
 export PATH="$SCRIPTDIR/local/bin:$PATH"
+export PATH="$SWEET_ROOT/mule/bin:$PATH"
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 #
