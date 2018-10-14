@@ -55,8 +55,8 @@ class JobsData_GroupsPlottingScattered:
 			for jobdir, jobdata in group_jobs.items():
 				if not primary_key_attribute_name in jobdata:
 					print("")
-					print("WARNING: No data for attribute "+primary_key_attribute_name+" found")
-					print("WARNING: Job: "+jobdir)
+					print("WARNING: No data for attribute "+str(primary_key_attribute_name)+" found")
+					print("WARNING: Job: "+str(jobdir))
 					continue
 
 				x = jobdata[primary_key_attribute_name]

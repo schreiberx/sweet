@@ -7,9 +7,14 @@ from mule.InfoError import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-import matplotlib
+
+def mule_plotting_usetex(usetex = True):
+	import matplotlib
+	matplotlib.rcParams['text.usetex'] = usetex
+
+
 print("Warning: mule.plotting activates 'tex' per default")
-matplotlib.rcParams['text.usetex'] = True
+mule_plotting_usetex(True)
 
 
 class Plotting(InfoError):
@@ -384,9 +389,10 @@ class Plotting_Bars(Plotting):
 			outfile=None,
 			**kwargs
 		):
-		self.plot_start(**kwargs)
+		self.plot_setup(outfile=outfile, legend=False)
+		self.plot_start()
 		self.plot_data_from_tabledata(data_plotting, **kwargs)
-		self.plot_finish(outfile, **kwargs)
+		self.plot_finish()
 
 
 

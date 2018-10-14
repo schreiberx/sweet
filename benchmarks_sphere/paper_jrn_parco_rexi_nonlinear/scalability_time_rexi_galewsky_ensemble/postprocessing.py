@@ -10,6 +10,8 @@ from mule.plotting.Plotting import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+mule_plotting_usetex(False)
+
 
 bar_data = 	[
 				'output.simulation_benchmark_timings.main_timestepping',
@@ -122,12 +124,12 @@ for iy in range(1, sy):
 
 for ix in range(1, sx):
 	accum_data[0][ix] = ensemble_data[0][0][ix]
-	accum_data[0][ix] = str(accum_data[0][ix]).replace('output.simulation_benchmark_timings.', '')
+	accum_data[0][ix] = str(accum_data[0][ix]).replace('output.simulation_benchmark_timings.', '').replace('_', ' ')
 
 for iy in range(1, sy):
 	for ix in range(1, sx):
 		accum_data[iy][ix] = ensemble_data[0][iy][ix]
-	accum_data[iy][0] = str(accum_data[iy][0]).replace('output.simulation_benchmark_timings.', '')
+	accum_data[iy][0] = str(accum_data[iy][0]).replace('output.simulation_benchmark_timings.', '').replace('_', ' ')
 
 
 ensemble_range = range(1, len(ensemble_data))
@@ -155,6 +157,6 @@ p.gen_plot_from_tabledata(
 		annotate_bars_with_values=True,
 		annotate_bars_with_labels=True,
 		legend=False,
-		ylim=(1e-12, 200),
+		ylim=(1e-12, 800),
 		filled_bars=False,
 	)
