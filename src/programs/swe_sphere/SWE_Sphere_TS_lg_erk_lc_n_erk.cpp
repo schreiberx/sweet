@@ -6,6 +6,7 @@
  */
 
 #include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include <sweet/SimulationBenchmarkTiming.hpp>
 
 
 
