@@ -16,6 +16,8 @@ groups = ['runtime.timestepping_method', 'runtime.h']
 
 tagnames_y = [
 	'sphere_data_diff_prog_h.norm_l1',
+	'sphere_data_diff_prog_h.norm_l2',
+	'sphere_data_diff_prog_h.norm_linf',
 ]
 
 
@@ -29,32 +31,6 @@ job_groups = c.create_groups(groups)
 for key, g in job_groups.items():
 	print(key)
 
-# Filter out errors beyond this value!
-def data_filter(x, y, jobdata):
-	x = float(x)
-	y = float(y)
-
-	if 'timings' in tagname_x:
-		# Filter out NaNs for wallclock time studies
-		# NaNs require significantly more computation time
-		if math.isnan(y):
-			return True
-	# No filter!
-	# No filter!
-	# No filter!
-	return False
-
-	if y > 9.0:
-		return True
-
-	if False:
-		if x > 30 and x < 100:
-			return True
-
-		if x < 20:
-			return True
-
-	return False
 
 
 for tagname_y in tagnames_y:
@@ -68,7 +44,9 @@ for tagname_y in tagnames_y:
 				'xscale': 'log',
 				'yscale': 'log',
 			},
-"""
+		]
+	"""
+	params += [
 			{
 				'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
 				'xlabel': "Wallclock time (seconds)",
@@ -77,8 +55,8 @@ for tagname_y in tagnames_y:
 				'xscale': 'log',
 				'yscale': 'log',
 			},
-"""
 		]
+	"""
 
 
 	for param in params:
@@ -94,50 +72,50 @@ for tagname_y in tagnames_y:
 		print("Processing tag "+tagname_x)
 		print("*"*80)
 
-		"""
-		Table format
-		"""
 
-		d = JobsData_GroupsDataTable(
-				job_groups,
-				tagname_x,
-				tagname_y,
-				data_filter = data_filter
-			)
-		fileid = "output_table_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
+		if True:
+			"""
+			Plotting format
+			"""
 
-		print("Data table:")
-		d.print()
-		d.write(fileid+".csv")
+			# Filter out errors beyond this value!
+			def data_filter(x, y, jobdata):
+				x = float(x)
+				y = float(y)
 
+				if 'timings' in tagname_x:
+					# Filter out NaNs for wallclock time studies
+					# NaNs require significantly more computation time
+					if math.isnan(y):
+						return True
+				if x >= 480:
+					return True
 
-		"""
-		Plotting format
-		"""
+				return False
 
-		d = JobsData_GroupsPlottingScattered(
-				job_groups,
-				tagname_x,
-				tagname_y,
-				data_filter = data_filter
-			)
+			d = JobsData_GroupsPlottingScattered(
+					job_groups,
+					tagname_x,
+					tagname_y,
+					data_filter = data_filter
+				)
 
-		fileid = "output_plotting_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
+			fileid = "output_plotting_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
 
-		p = Plotting()
-		p.plot_scattered(
-				data_plotting = d.data,
-				xlabel = xlabel,
-				ylabel = ylabel,
-				title = title,
-				xscale = xscale,
-				yscale = yscale,
-				outfile=fileid+".pdf",
-			)
+			p = Plotting_ScatteredData()
+			p.plot(
+					data_plotting = d.data,
+					xlabel = xlabel,
+					ylabel = ylabel,
+					title = title,
+					xscale = xscale,
+					yscale = yscale,
+					outfile=fileid+".pdf",
+				)
 
-		print("Data plotting:")
-		d.print()
-		d.write(fileid+".csv")
+			print("Data plotting:")
+			d.print()
+			d.write(fileid+".csv")
 
 		print("Info:")
 		print("	NaN: Errors in simulations")

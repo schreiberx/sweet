@@ -55,9 +55,7 @@ params_timestep_sizes_explicit = [20, 30, 60, 120, 180, 360]
 params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
 
 #params_timestep_sizes_rexi = [30]
-params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
-params_timestep_sizes_rexi = [180, 240, 300, 360, 480, 600, 720, 840]
-params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 420, 480, 540, 600, 660, 720, 800]
+params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 960]
 
 # Parallelization
 params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
@@ -93,7 +91,7 @@ params_ci_max_real = [10.0]
 # Otherwise, CI would not behave consistently
 #
 params_ci_max_imag_scaling_relative_to_timestep_size = 480
-params_ci_max_imag_scaling_relative_to_timestep_size = None
+#params_ci_max_imag_scaling_relative_to_timestep_size = None
 
 ##################################################
 
@@ -165,6 +163,8 @@ def estimateWallclockTime(p):
 		wallclock_seconds = p.platform_resources.max_wallclock_seconds
 
 	return wallclock_seconds
+
+
 
 p.compile.lapack = 'enable'
 p.compile.mkl = 'disable'
@@ -469,61 +469,66 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
+								if int(p.runtime.simtime / p.runtime.timestep_size) * p.runtime.timestep_size != p.runtime.simtime:
+									raise Exception("Simtime "+str(p.runtime.simtime)+" not dividable without remainder by "+str(p.runtime.timestep_size))
+
 								p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
-	#
-	# SHTNS plan generation scripts
-	#
-	p.runtime.reuse_plans = 1	# search for awesome plans and store them
 
-	#
-	# Create dummy scripts to be used for SHTNS script generation
-	#
+	if p.runtime.reuse_plans >= 0:
+		#
+		# SHTNS plan generation scripts
+		#
+		p.runtime.reuse_plans = 1	# search for awesome plans and store them
 
-	# No parallelization in time
-	ptime = SWEETParallelizationDimOptions('time')
-	ptime.num_cores_per_rank = 1
-	ptime.num_threads_per_rank = 1
-	ptime.num_ranks = 1
-	ptime.setup()
+		#
+		# Create dummy scripts to be used for SHTNS script generation
+		#
 
-	for tsm in ts_methods[1:2]:
+		# No parallelization in time
+		ptime = SWEETParallelizationDimOptions('time')
+		ptime.num_cores_per_rank = 1
+		ptime.num_threads_per_rank = 1
+		ptime.num_ranks = 1
+		ptime.setup()
 
-		p.runtime.timestepping_method = tsm[0]
-		p.runtime.timestepping_order = tsm[1]
-		p.runtime.timestepping_order2 = tsm[2]
-		p.runtime.rexi_use_direct_solution = tsm[3]
+		for tsm in ts_methods[1:2]:
 
-		if not '_rexi' in p.runtime.timestepping_method:
-			p.runtime.rexi_method = ''
-		else:
-			p.runtime.rexi_method = 'ci'
+			p.runtime.timestepping_method = tsm[0]
+			p.runtime.timestepping_order = tsm[1]
+			p.runtime.timestepping_order2 = tsm[2]
+			p.runtime.rexi_use_direct_solution = tsm[3]
 
-		if len(tsm) > 4:
-			s = tsm[4]
-			p.runtime.load_from_dict(tsm[4])
+			if not '_rexi' in p.runtime.timestepping_method:
+				p.runtime.rexi_method = ''
+			else:
+				p.runtime.rexi_method = 'ci'
+
+			if len(tsm) > 4:
+				s = tsm[4]
+				p.runtime.load_from_dict(tsm[4])
 
 
-		for pspace_num_cores_per_rank, pspace_num_threads_per_rank, p.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, [params_timestep_sizes_explicit[0]]):
-			pspace = SWEETParallelizationDimOptions('space')
-			pspace.num_cores_per_rank = pspace_num_cores_per_rank
-			pspace.num_threads_per_rank = pspace_num_threads_per_rank
-			pspace.num_ranks = 1
-			pspace.setup()
+			for pspace_num_cores_per_rank, pspace_num_threads_per_rank, p.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, [params_timestep_sizes_explicit[0]]):
+				pspace = SWEETParallelizationDimOptions('space')
+				pspace.num_cores_per_rank = pspace_num_cores_per_rank
+				pspace.num_threads_per_rank = pspace_num_threads_per_rank
+				pspace.num_ranks = 1
+				pspace.setup()
 
-			p.setup_parallelization([pspace, ptime])
+				p.setup_parallelization([pspace, ptime])
 
-			# Use 10 minutes per default to generate plans
-			p.parallelization.max_wallclock_seconds = 60*10
+				# Use 10 minutes per default to generate plans
+				p.parallelization.max_wallclock_seconds = 60*10
 
-			# Set simtime to 0
-			p.runtime.simtime = 0
+				# Set simtime to 0
+				p.runtime.simtime = 0
 
-			# No output
-			p.runtime.output_timestep_size = -1
-			p.runtime.output_filename = "-"
+				# No output
+				p.runtime.output_timestep_size = -1
+				p.runtime.output_filename = "-"
 
-			p.gen_jobscript_directory('job_plan_'+p.getUniqueID())
+				p.gen_jobscript_directory('job_plan_'+p.getUniqueID())
 
 
 

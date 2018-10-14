@@ -45,8 +45,8 @@ public:
 	void setup_shifted_circle(
 			const std::string &i_function_name,
 			int N,
-			T max_real_evalue,
-			T max_imag_evalue,
+			T max_real_evalue,	/// maximum real value which must be part of the circle
+			T inc_imag_evalue,	/// imaginary value which should be included in circle
 			T i_ci_gaussian_filter_scale_a,
 			T i_ci_gaussian_filter_dt_norm,
 			T i_ci_gaussian_filter_exp_N,
@@ -59,8 +59,11 @@ public:
 		 * Here we compute a circle which is given by the boundary points.
 		 * This avoids large positive EValues leading to numerical cancellation effects
 		 */
+		if (max_real_evalue > inc_imag_evalue)
+			max_real_evalue = inc_imag_evalue;
+
 		T x0 = max_real_evalue;
-		T xm = max_imag_evalue;
+		T xm = inc_imag_evalue;
 		T r = (x0*x0 + xm*xm)/(2.0*x0);
 		T center = max_real_evalue-r;
 
