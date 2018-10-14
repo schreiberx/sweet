@@ -13,12 +13,19 @@ p = SWEETJobGeneration()
 verbose = False
 #verbose = True
 
+
+#testrun = True
+testrun = False
+
 ##################################################
 
 ##################################################
 
 p.compile.mode = 'release'
-p.compile.compiler = 'gnu'
+if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'
 
 p.runtime.mode_res = 128
@@ -28,21 +35,26 @@ p.parallelization.core_oversubscription = False
 p.parallelization.core_affinity = 'compact'
 
 p.compile.threading = 'omp'
-p.compile.rexi_thread_parallel_sum = 'enable'
+p.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
 
-p.runtime.simtime = 432000
+p.runtime.simtime = 60*60*24*5	# 5 days
 
 #params_timestep_sizes_explicit = [30]
-params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180, 360]
-params_timestep_sizes_explicit = [20, 30, 60, 120, 180, 360]
+params_timestep_sizes_explicit = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360]
 
 #params_timestep_sizes_implicit = [30]
-params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
+params_timestep_sizes_implicit = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360, 480, 600, 720, 960]
 
 #params_timestep_sizes_rexi = [30]
-params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
+params_timestep_sizes_rexi = [15, 30, 60, 120, 180, 240, 300, 360, 480, 600, 720, 960]
+
+if testrun:
+	params_timestep_sizes_explicit = [20, 30]
+	params_timestep_sizes_implicit = [360, 480, 600]
+	params_timestep_sizes_rexi = [360, 480, 600]
+
 
 # Parallelization
 params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
@@ -52,7 +64,7 @@ params_ptime_num_cores_per_rank = [1]
 
 unique_id_filter = []
 #unique_id_filter.append('simparams')
-unique_id_filter.append('compiler')
+unique_id_filter.append('compile')
 unique_id_filter.append('disc_space')
 unique_id_filter.append('timestep_order')
 #unique_id_filter.append('timestep_size')
@@ -68,7 +80,14 @@ p.runtime.output_timestep_size = p.runtime.simtime
 #p.runtime.output_filename = "-"
 
 # REXI stuff
-params_ci_N = [128]
+def fun_params_ci_N(ci_max_real, ci_max_imag):
+	if ci_max_imag >= 7:
+		return 128
+	else:
+		return 32
+
+
+#params_ci_N = [128]
 #params_ci_N = [1]
 params_ci_max_imag = [30.0]
 params_ci_max_real = [10.0]
@@ -78,7 +97,10 @@ params_ci_max_real = [10.0]
 # We do this simply to get a consistent time stepping method
 # Otherwise, CI would not behave consistently
 #
-params_ci_max_real_scaling_relative_to_timestep_size = 480
+params_ci_max_imag_scaling_relative_to_timestep_size = 480
+#params_ci_max_imag_scaling_relative_to_timestep_size = None
+
+params_ci_min_imag = 5.0
 
 ##################################################
 
@@ -93,6 +115,20 @@ def estimateWallclockTime(p):
 	"""
 	Return an estimated wallclock time
 	"""
+
+
+	if 'rexi' in p.runtime.timestepping_method:
+		return 60*30
+
+	# This runtime is required for CN and explicit methods
+	if p.parallelization.num_ranks > 1:
+		raise Exception("Shouldn't happen")
+
+	# Give 1h for non-REXI runs
+	return 60*60
+
+
+
 	#
 	# Reference wallclock time and corresponding time step size
 	# e.g. for explicit RK2 integration scheme
@@ -199,7 +235,8 @@ p.runtime.compute_error = 0
 p.runtime.rexi_sphere_preallocation = 1
 
 # Leave instability checks activated
-p.runtime.instability_checks = 1
+# Don't activate them since they are pretty costly!!!
+p.runtime.instability_checks = 0
 
 
 #
@@ -284,6 +321,16 @@ if __name__ == "__main__":
 				['l_rexi_n_etdrk',	2,	2,	0],
 			]
 
+			if testrun:
+				ts_methods = [
+					['ln_erk',		4,	4,	0],	# reference solution
+					['ln_erk',		2,	2,	0],
+
+					['lg_irk_lc_n_erk_ver1',	2,	2,	0],
+					['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
+					['lg_rexi_lc_n_etdrk',	2,	2,	0],
+				]
+
 		# 4th order nonlinear
 		if group == 'ln4':
 			ts_methods = [
@@ -330,7 +377,9 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('job_ref_'+p.getUniqueID())
+			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID())
+
+			p.reference_job_unique_id = p.job_unique_id
 
 
 
@@ -391,10 +440,19 @@ if __name__ == "__main__":
 
 				else:
 
-					for ci_N, ci_max_imag, ci_max_real in product(params_ci_N, params_ci_max_imag, params_ci_max_real):
+					for ci_max_imag, ci_max_real in product(params_ci_max_imag, params_ci_max_real):
+						if params_ci_max_imag_scaling_relative_to_timestep_size != None:
+							ci_max_imag *= (p.runtime.timestep_size/params_ci_max_imag_scaling_relative_to_timestep_size)
 
-						if params_ci_max_real_scaling_relative_to_timestep_size != None:
-							ci_max_imag = ci_max_imag * (params_ci_max_real_scaling_relative_to_timestep_size/p.runtime.timestep_size)
+						if params_ci_min_imag != None:
+							# Limit shrinking of circle
+							if ci_max_imag < params_ci_min_imag:
+								ci_max_imag = params_ci_min_imag
+
+						if ci_max_real > ci_max_imag:
+							ci_max_real = ci_max_imag
+
+						ci_N = fun_params_ci_N(ci_max_real, ci_max_imag)
 
 						p.runtime.load_from_dict({
 							'rexi_method': 'ci',
@@ -408,6 +466,10 @@ if __name__ == "__main__":
 						})
 
 						time_ranks = ci_N
+						if testrun:
+							time_ranks = 4
+							#time_ranks = 1
+
 						#for time_ranks in params_ptime_num_cores_per_rank:
 						if True:
 
@@ -427,6 +489,9 @@ if __name__ == "__main__":
 
 							# Generate only scripts with max number of cores
 							p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
+
+							if int(p.runtime.simtime / p.runtime.timestep_size) * p.runtime.timestep_size != p.runtime.simtime:
+								raise Exception("Simtime "+str(p.runtime.simtime)+" not dividable without remainder by "+str(p.runtime.timestep_size))
 
 							p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
@@ -482,7 +547,8 @@ if __name__ == "__main__":
 			p.runtime.output_timestep_size = -1
 			p.runtime.output_filename = "-"
 
-			p.gen_jobscript_directory('job_plan_'+p.getUniqueID())
+			jobdir = 'job_plan_'+p.getUniqueID()
+			p.gen_jobscript_directory(jobdir)
 
 
 
