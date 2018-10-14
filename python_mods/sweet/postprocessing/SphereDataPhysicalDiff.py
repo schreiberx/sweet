@@ -23,10 +23,7 @@ class SphereDataPhysicalDiff:
 			self,
 			filename_a,
 			filename_b,
-			res_normalize = False
 		):
-		self.res_normalize = res_normalize
-
 		file_a = SphereDataPhysical(filename_a)
 		file_b = SphereDataPhysical(filename_b)
 
@@ -72,17 +69,16 @@ class SphereDataPhysicalDiff:
 				# http://mathworld.wolfram.com/Root-Mean-Square.html
 				self.norm_rms_value += value*value
 
-		# RMS final sqrt(N) computation
-		self.norm_rms_value /= math.sqrt(size_cmp_i*size_cmp_j)
+		self.N = size_cmp_i*size_cmp_j
 
 		# Compute sqrt() for Euklidian L2 norm
 		self.norm_l2_value = math.sqrt(self.norm_l2_value)
 
-		self.N = size_cmp_i*size_cmp_j
+		# RMS final sqrt(N) computation
+		self.norm_rms_value  = math.sqrt(self.norm_rms_value/self.N)
 
-		if self.res_normalize:
-			self.res_norm_l1_value /= float(self.N)
-			self.res_norm_l2_value /= math.sqrt(float(self.N))
+		# resolution normalized L1 value
+		self.res_norm_l1_value = self.norm_l1_value/float(self.N)
 
 
 	def print(self):
@@ -92,11 +88,7 @@ class SphereDataPhysicalDiff:
 		print(" + norm l2: "+str(self.norm_l2_value))
 		print(" + norm linf: "+str(self.norm_linf_value))
 		print(" + norm rms: "+str(self.norm_rms_value))
-
-
-		if self.res_normalize:
-			print(" + res norm l1: "+str(self.res_norm_l1_value))
-			print(" + res norm l2: "+str(self.res_norm_l2_value))
+		print(" + res norm l1: "+str(self.res_norm_l1_value))
 
 
 
@@ -119,17 +111,22 @@ class SphereDataPhysicalDiff:
 				tagname = ''
 
 			pickle_data = {
+				tagname+'N' : self.N,
 				tagname+'norm_l1' : self.norm_l1_value,
 				tagname+'norm_l2' : self.norm_l2_value,
 				tagname+'norm_linf' : self.norm_linf_value,
 				tagname+'norm_rms' : self.norm_rms_value,
 			}
 
-			if self.res_normalize:
-				pickle_data.update({
-					tagname+'res_norm_l1' : self.res_norm_l1_value,
-					tagname+'res_norm_l2' : self.res_norm_l2_value,
-				})
+			# Write values for resolution neutral values into the .pickle files
+			pickle_data.update({
+				tagname+'res_norm_l1' : self.res_norm_l1_value,
+				tagname+'res_norm_l2' : self.norm_rms_value,	# This is the RMS = L2
+				tagname+'res_norm_linf' : self.norm_linf_value,	# No normalization required
+				tagname+'res_norm_rms' : self.norm_rms_value,	# Already normalized
+			})
+
+			pickle_data['WARNING'] = "L1, L2 and RMS don't include scaling factors for differen cell spacings around the sphere!!!"
 
 			print(" + picklefile: "+str(picklefile))
 
