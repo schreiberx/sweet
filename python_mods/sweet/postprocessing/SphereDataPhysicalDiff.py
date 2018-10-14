@@ -22,8 +22,10 @@ class SphereDataPhysicalDiff:
 	def compute_diff(
 			self,
 			filename_a,
-			filename_b
+			filename_b,
+			res_normalize = False
 		):
+		self.res_normalize = res_normalize
 
 		file_a = SphereDataPhysical(filename_a)
 		file_b = SphereDataPhysical(filename_b)
@@ -70,29 +72,31 @@ class SphereDataPhysicalDiff:
 				# http://mathworld.wolfram.com/Root-Mean-Square.html
 				self.norm_rms_value += value*value
 
-		# Compute sqrt() for l2 norm
-		self.norm_l2_value  = math.sqrt(self.norm_l2_value)
-
-		# Divide by 1/sqrt(N)
+		# RMS final sqrt(N) computation
 		self.norm_rms_value /= math.sqrt(size_cmp_i*size_cmp_j)
 
-		#
-		# Warning! We normalize here with the number of samples!
-		# This doesn't really follow the definition of the Ln norms
-		#
-		self.norm_l1_value /= (size_cmp_i*size_cmp_j)
-		self.norm_l2_value /= (size_cmp_i*size_cmp_j)
+		# Compute sqrt() for Euklidian L2 norm
+		self.norm_l2_value = math.sqrt(self.norm_l2_value)
 
+		self.N = size_cmp_i*size_cmp_j
+
+		if self.res_normalize:
+			self.res_norm_l1_value /= float(self.N)
+			self.res_norm_l2_value /= math.sqrt(float(self.N))
 
 
 	def print(self):
 
 		print("")
-		print(" + Warning: L1 and L2 norm are normalized here to be able to compare different resolutions!")
 		print(" + norm l1: "+str(self.norm_l1_value))
 		print(" + norm l2: "+str(self.norm_l2_value))
 		print(" + norm linf: "+str(self.norm_linf_value))
 		print(" + norm rms: "+str(self.norm_rms_value))
+
+
+		if self.res_normalize:
+			print(" + res norm l1: "+str(self.res_norm_l1_value))
+			print(" + res norm l2: "+str(self.res_norm_l2_value))
 
 
 
@@ -120,6 +124,12 @@ class SphereDataPhysicalDiff:
 				tagname+'norm_linf' : self.norm_linf_value,
 				tagname+'norm_rms' : self.norm_rms_value,
 			}
+
+			if self.res_normalize:
+				pickle_data.update({
+					tagname+'res_norm_l1' : self.res_norm_l1_value,
+					tagname+'res_norm_l2' : self.res_norm_l2_value,
+				})
 
 			print(" + picklefile: "+str(picklefile))
 

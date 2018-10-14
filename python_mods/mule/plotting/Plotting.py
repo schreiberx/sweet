@@ -7,6 +7,10 @@ from mule.InfoError import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+import matplotlib
+print("Warning: mule.plotting activates 'tex' per default")
+matplotlib.rcParams['text.usetex'] = True
+
 
 class Plotting(InfoError):
 
@@ -17,7 +21,6 @@ class Plotting(InfoError):
 
 
 	def reset(self):
-
 		self.colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
 		self.markers = []
@@ -49,20 +52,77 @@ class Plotting(InfoError):
 		return self.linestyles[i % len(self.linestyles)]
 
 
-	def plot_start(self):
-		self.reset()
-
-
-	def plot_finish(
+	def plot_setup(
 			self,
+
+			figsize = (8,8/1.61803398875),
+
+			title = None,
+			xlabel = None,
+			xscale = "linear",
+			yscale = "linear",
+			ylabel = None,
+
+			annotate = False,
+
+			legend = True,
+			legend_fontsize = None,
+
+			tight_layout = True,
 			outfile = None,
 		):
+		self.figsize = figsize
 
-		if outfile != None:
-			self.info("Plotting to '"+outfile+"'")
-			plt.savefig(outfile)
+		self.title = title
+
+		self.xlabel = xlabel
+		self.xscale = xscale
+
+		self.ylabel = ylabel
+		self.yscale = yscale
+
+		self.annotate = annotate,
+
+		self.legend = legend
+		self.legend_fontsize = legend_fontsize
+
+		self.tight_layout = tight_layout
+
+		self.outfile = outfile
+
+	def plot_start(self):
+
+		self.reset()
+
+		self.fig, self.ax = plt.subplots(figsize=self.figsize)
+
+		self.ax.set_xscale(self.xscale, nonposx='clip')
+		self.ax.set_yscale(self.yscale, nonposy='clip')
+
+		if self.title != None:
+			plt.title(self.title)
+
+		if self.xlabel != None:
+			plt.xlabel(self.xlabel)
+
+		if self.ylabel != None:
+			plt.ylabel(self.ylabel)
+
+
+	def plot_finish(self):
+		if self.legend:
+			plt.legend(fontsize=self.legend_fontsize)
+
+		if self.tight_layout:
+			plt.tight_layout()
+
+		if self.outfile != None:
+			self.info("Plotting to '"+self.outfile+"'")
+			plt.savefig(self.outfile)
 		else:
 			plt.show()
+
+
 
 
 class Plotting_ScatteredData(Plotting):
@@ -72,83 +132,42 @@ class Plotting_ScatteredData(Plotting):
 	def plot_data(
 			self,
 			data_plotting,
-			xlabel = None,
-			ylabel = None,
-			title = None,
-			xscale = "linear",
-			yscale = "linear",
+			annotation = False,
 		):
-
-		self.fig, self.ax = plt.subplots(figsize=(10,7))
-
-		self.ax.set_xscale(xscale, nonposx='clip')
-		self.ax.set_yscale(yscale, nonposy='clip')
-
-		if title != None:
-			plt.title(title)
-
-		if xlabel != None:
-			plt.xlabel(xlabel)
-
-		if ylabel != None:
-			plt.ylabel(ylabel)
-
+		"""
+		Parameters:
+		data_plotting: dict
+			key:	string which is also used to sort the data
+				'label': Label to use for legend
+				'x_values': x coordinates
+				'y_values': y coordinates
+		"""
 
 		c = 0
-		for key, values in data_plotting.items():
+		for key in sorted(data_plotting.keys()):
+			data = data_plotting[key]
+
 			marker = self._get_marker(c)
 			linestyle = self._get_linestyle(c)
 			color = self._get_color(c)
 
-			label = key
-			x_values = values['x_values']
-			y_values = values['y_values']
+			if 'label' in data:
+				label = data['label']
+			else:
+				label = key
 
-			self.ax.plot(x_values, y_values, marker=marker, linestyle=linestyle, label=label)
-			c += 1
+			x_values = data['x_values']
+			y_values = data['y_values']
 
-		plt.legend()
+			self.ax.plot(
+					x_values,
+					y_values,
+					marker=marker,
+					linestyle=linestyle,
+					label=label
+				)
 
-
-	def plot_data_annotated(
-			self,
-			data_plotting,
-			xlabel = None,
-			ylabel = None,
-			title = None,
-			xscale = "linear",
-			yscale = "linear",
-			annotation_render_each_nth_value = 3
-		):
-
-		self.fig, self.ax = plt.subplots(figsize=(10,7))
-
-		self.ax.set_xscale(xscale, nonposx='clip')
-		self.ax.set_yscale(yscale, nonposy='clip')
-
-		if title != None:
-			plt.title(title)
-
-		if xlabel != None:
-			plt.xlabel(xlabel)
-
-		if ylabel != None:
-			plt.ylabel(ylabel)
-
-
-		c = 0
-		for key, values in data_plotting.items():
-			marker = self._get_marker(c)
-			linestyle = self._get_linestyle(c)
-			color = self._get_color(c)
-
-			label = key
-			x_values = values['x_values']
-			y_values = values['y_values']
-
-			self.ax.plot(x_values, y_values, marker=marker, linestyle=linestyle, label=label)
-
-			if True:
+			if annotation:
 				x = x_values
 				y = y_values
 
@@ -174,34 +193,18 @@ class Plotting_ScatteredData(Plotting):
 							text = "%.1f/%.1f" % (py[i], px[i])
 							self.ax.annotate(text, (px[i]*1.03, py[i]*1.03), fontsize=8)
 
-
 			c += 1
-
-
-		plt.legend()
-
 	
 
 	def plot(
 			self,
 			data_plotting,
-			outfile=None,
 			**kwargs
 		):
-		self.reset()
-		self.plot_data(data_plotting, **kwargs)
-		self.plot_finish(outfile)
-
-
-	def plot_annotated(
-			self,
-			data_plotting,
-			outfile=None,
-			**kwargs
-		):
-		self.reset()
-		self.plot_data_annotated(data_plotting, **kwargs)
-		self.plot_finish(outfile)
+		self.plot_setup(**kwargs)
+		self.plot_start()
+		self.plot_data(data_plotting)
+		self.plot_finish()
 
 
 
@@ -223,9 +226,10 @@ class Plotting_Bars(Plotting):
 			legend = True,
 			filled_bars = True,
 			ylim = None,
+			figsize=(8,8/1.61803398875)
 		):
 
-		self.fig, self.ax = plt.subplots(figsize=(12,7))
+		self.fig, self.ax = plt.subplots(figsize=figsize)
 
 		# Size of table data
 		sx = len(data_table[0])-1
@@ -380,9 +384,9 @@ class Plotting_Bars(Plotting):
 			outfile=None,
 			**kwargs
 		):
-		self.reset()
+		self.plot_start(**kwargs)
 		self.plot_data_from_tabledata(data_plotting, **kwargs)
-		self.plot_finish(outfile)
+		self.plot_finish(outfile, **kwargs)
 
 
 
