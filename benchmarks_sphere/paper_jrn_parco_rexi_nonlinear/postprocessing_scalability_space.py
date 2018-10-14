@@ -5,38 +5,59 @@ from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
 from mule.plotting.Plotting import *
 
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
+sys.path.append('../')
+import pretty_plotting as pp
+sys.path.pop()
 
 
+#
+# Load data
+#
+j = JobsData('job_bench_*', verbosity=0)
 
-j = JobsData('job_bench_*', verbosity=100)
 
+#
+# Create groups
+#
+groups = ['runtime.timestepping_method']
 c = JobsDataConsolidate(j)
-data_table = c.create_data_table_float(
-		['runtime.timestepping_method'],
-		'parallelization.num_threads_per_rank',
-		'output.simulation_benchmark_timings.main_timestepping'
-	)
+job_groups = c.create_groups(groups)
 
-print("Data table:")
-c.print_data_table(data_table)
-c.write_data_table(data_table, "output_threads_vs_wallclock_time.csv")
+print("Groups:")
+for key, g in job_groups.items():
+	print(key)
 
 
-data_plotting = c.create_data_plotting_float(
-		['runtime.timestepping_method'],
-		'parallelization.num_threads_per_rank',
-		'output.simulation_benchmark_timings.main_timestepping'
-	)
-
-
-p = Plotting()
+tagname_x = 'parallelization.num_threads_per_rank'
+tagname_y = 'output.simulation_benchmark_timings.main_timestepping'
 
 #
-# Wallclock time
+# Make ready for plotting
 #
-p.plot_scattered(data_plotting, xlabel="Number of threads", ylabel="Wallclock time (seconds)", title = "Wallclock time", outfile="output_threads_vs_wallclock_time.pdf")
+d = JobsData_GroupsPlottingScattered(
+		job_groups,
+		tagname_x,
+		tagname_y
+	)
+
+data_plotting = d.get_data_float()
+
+# Make pretty
+for key, data in data_plotting.items():
+	data['label'] = pp.get_pretty_name(key)
+
+#
+# Plot!
+#
+p = Plotting_ScatteredData()
+p.plot(
+	data_plotting = data_plotting,
+	xlabel = "Number of threads",
+	ylabel = "Wallclock time (seconds)",
+	title = "Wallclock time",
+	outfile = "output_threads_vs_wallclock_time.pdf"
+)
+
 
 
 #
@@ -58,4 +79,11 @@ for key, values in data_plotting.items():
 	# Convert to scalability
 	values['y_values'] = [y_values[i]/y for y in y_values]
 
-p.plot_scattered(data_plotting, xlabel="Number of threads", ylabel="Scalability", title = "Scalability", outfile="output_threads_vs_scalability.pdf")
+p.plot(
+	data_plotting,
+	xlabel="Number of threads",
+	ylabel="Scalability",
+	title = "Scalability",
+	outfile="output_threads_vs_scalability.pdf"
+)
+

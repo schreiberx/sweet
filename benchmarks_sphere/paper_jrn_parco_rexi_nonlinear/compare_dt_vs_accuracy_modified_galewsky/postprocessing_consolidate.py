@@ -17,9 +17,9 @@ groups = [
 
 
 tagnames_and_prettynames_y = {
-	'sphere_data_diff_prog_h.norm_l1': "$L_1$ norm surface height",
-	'sphere_data_diff_prog_h.norm_l2': "$L_2$ norm surface height",
-	'sphere_data_diff_prog_h.norm_linf': "$L_{\infty}$ norm surface height",
+	'sphere_data_diff_prog_h.res_norm_l1': "$L_1$ norm surface height (res.\,normalized)",
+	'sphere_data_diff_prog_h.res_norm_l2': "$L_2$ norm surface height (res.\,normalized)",
+	'sphere_data_diff_prog_h.res_norm_linf': "$L_{\infty}$ norm surface height",
 }
 
 tagnames_y = tagnames_and_prettynames_y.keys()
@@ -111,15 +111,15 @@ for tagname_y in tagnames_y:
 					return True
 
 				if 'l1' in tagname_y:
-					if y > 10:
+					if y > 1e1:
 						print("Sorting out L1 data "+str(y))
 						return True
 				elif 'l2' in tagname_y:
-					if y > 1:
+					if y > 1e1:
 						print("Sorting out L2 data "+str(y))
 						return True
 				elif 'linf' in tagname_y:
-					if y > 10:
+					if y > 1e1:
 						print("Sorting out Linf data "+str(y))
 						return True
 				else:
