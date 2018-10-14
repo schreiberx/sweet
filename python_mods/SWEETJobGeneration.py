@@ -342,7 +342,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 		# Job directory
 		self.p_job_dirpath = os.path.abspath(i_job_dirpath)
-		self.job_dirpath = self.p_job_dirpath
+		self.job_dirpath = os.path.relpath(i_job_dirpath)
 
 		# path to jobscript file
 		self.p_job_scriptpath = self.p_job_dirpath+'/run.sh'

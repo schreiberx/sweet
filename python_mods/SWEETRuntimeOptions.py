@@ -259,6 +259,8 @@ class SWEETRuntimeOptions(InfoError):
 		if self.max_timesteps != -1:
 			idstr += '_T'+str(self.max_timesteps).zfill(3)
 
+		idstr += '_S'+str(self.simtime).zfill(6)
+
 		if self.rexi_method != '':
 			if self.rexi_method == 'direct' or self.rexi_use_direct_solution:
 				idstr += '_REXIDIR'

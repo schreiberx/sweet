@@ -14,7 +14,7 @@ class pickle_SphereDataPhysicalDiff:
 
 	def __init__(
 			self,
-			ref_file_ending,
+			ref_file_ending = None,
 			jobdir_pattern = None,
 		):
 		"""
@@ -30,17 +30,6 @@ class pickle_SphereDataPhysicalDiff:
 
 
 
-	def get_matching_files_in_dir(
-		self,
-		path,
-		needle
-	):
-		files = os.listdir(path)
-		retval = []
-		for f in files:
-			if needle in f:
-				retval.append(f)
-		return retval
 
 
 	def _setup(
@@ -51,9 +40,6 @@ class pickle_SphereDataPhysicalDiff:
 
 		if jobdir_pattern == None:
 			jobdir_pattern = './job_bench*'
-
-		if ref_file_ending == None:
-			ref_file_ending = "_t00000000120.00000000.csv"
 
 		j = JobsData(jobdir_pattern, verbosity=0)
 		jobs = j.get_flattened_data()
@@ -83,13 +69,34 @@ class pickle_SphereDataPhysicalDiff:
 
 			if ref_key == None:
 				print("Fatal: missing reference job with id "+reference_job_unique_id)
+				print("Fatal: reference job was intended for job with dirpath: "+job['jobgeneration.job_dirpath'])
 				raise Exception("Reference job not found!")
 
 			# Load reference job
 			ref_job = jobs[ref_key]
 
+			if ref_file_ending != None:
+				use_ref_file_ending = ref_file_ending
+			else:
+				# "output_%s_t%020.8f.csv"
+				use_ref_file_ending = "_t{:020.8f}.csv".format(float(ref_job['runtime.simtime'])/(60*60))
+
+			if use_ref_file_ending == "":
+				raise Exception("No reference file ending provided / found")
+
 			# Load reference files
-			ref_files = self.get_matching_files_in_dir(ref_job['jobgeneration.job_dirpath'], ref_file_ending)
+			ref_files = []
+			files = os.listdir(ref_job['jobgeneration.job_dirpath'])
+			for f in files:
+				if use_ref_file_ending in f:
+					ref_files.append(f)
+			if len(ref_files) == 0:
+				print("No reference files found!")
+				print("*"*80)
+				print("Reference directory: "+ref_job['jobgeneration.job_dirpath'])
+				print("Reference file endings: "+use_ref_file_ending)
+				print("*"*80)
+				raise Exception("Reference files not found!")
 
 			for ref_file in ref_files:
 				s = None
@@ -106,7 +113,7 @@ class pickle_SphereDataPhysicalDiff:
 
 				s.print()
 
-				pickle_filename = 'sphere_data_diff_'+ref_file.replace('output_', '').replace(ref_file_ending, '')+'.pickle'
+				pickle_filename = 'sphere_data_diff_'+ref_file.replace('output_', '').replace(use_ref_file_ending, '')+'.pickle'
 				print("Writing file "+pickle_filename)
 				s.write_file(job['jobgeneration.job_dirpath']+'/'+pickle_filename)
 
