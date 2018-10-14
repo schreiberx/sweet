@@ -80,6 +80,9 @@ class SWEETCompileOptions(InfoError):
 		# Additional barriers to overcome issues of turbo boost
 		self.rexi_timings_additional_barriers = 'disable'
 
+		# Use reduce all instead of reduce to root rank
+		self.rexi_allreduce = 'disable'
+
 		# Memory allocator
 		if _exec_command('uname -s') == "Darwin":
 			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h file)
@@ -157,6 +160,7 @@ class SWEETCompileOptions(InfoError):
 		retval += ' --rexi-thread-parallel-sum='+self.rexi_thread_parallel_sum
 		retval += ' --rexi-timings='+self.rexi_timings
 		retval += ' --rexi-timings-additional-barriers='+self.rexi_timings_additional_barriers
+		retval += ' --rexi-allreduce='+self.rexi_allreduce
 
 		# Memory allocator
 		retval += ' --numa-block-allocator='+str(self.numa_block_allocator)
@@ -491,6 +495,15 @@ class SWEETCompileOptions(InfoError):
 		)
 		self.rexi_timings_additional_barriers = scons.GetOption('rexi_timings_additional_barriers')
 
+		scons.AddOption(	'--rexi-allreduce',
+				dest='rexi_allreduce',
+				type='choice',
+				choices=['enable','disable'],
+				default='disable',
+				help='For REXI, use MPI_Allreduce operations instead of MPI_Reduce: enable, disable [default: %default]'
+		)
+		self.rexi_allreduce = scons.GetOption('rexi_allreduce')
+
 
 		scons.AddOption(	'--sweet-mpi',
 				dest='sweet_mpi',
@@ -682,6 +695,9 @@ class SWEETCompileOptions(InfoError):
 
 			if self.rexi_timings_additional_barriers == 'enable':
 				retval+='_rxtbar'
+
+			if self.rexi_allreduce == 'enable':
+				retval+='_redall'
 
 		retval += '_'+self.mode
 

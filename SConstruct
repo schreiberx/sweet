@@ -625,6 +625,11 @@ if p.rexi_timings_additional_barriers == 'enable':
 else:
 	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=0')
 
+if p.rexi_allreduce == 'enable':
+	env.Append(CXXFLAGS=' -DSWEET_REXI_ALLREDUCE=1')
+else:
+	env.Append(CXXFLAGS=' -DSWEET_REXI_ALLREDUCE=0')
+
 
 if p.threading == 'omp' or p.rexi_thread_parallel_sum == 'enable':
 	env.Append(CXXFLAGS=' -DSWEET_THREADING=1')

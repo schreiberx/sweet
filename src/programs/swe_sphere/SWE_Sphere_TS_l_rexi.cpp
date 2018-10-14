@@ -32,8 +32,6 @@
 #endif
 
 
-#define SWEET_REXI_ALLREDUCE 0
-
 
 #if SWEET_MPI
 #	include <mpi.h>

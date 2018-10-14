@@ -6,6 +6,7 @@
  */
 
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include <sweet/SimulationBenchmarkTiming.hpp>
 
 
 
@@ -92,6 +93,9 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 		double i_simulation_timestamp
 )
 {
+#if SWEET_REXI_TIMINGS
+	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.start();
+#endif
 
 	/*
 	 * NON-LINEAR
@@ -141,6 +145,11 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	tmpspec = /*phig+*/tmpg;
 
 	o_div_dt += -op.laplace(tmpspec);
+
+
+#if SWEET_REXI_TIMINGS
+	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.stop();
+#endif
 }
 
 
@@ -157,6 +166,10 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 		double i_simulation_timestamp
 )
 {
+#if SWEET_REXI_TIMINGS
+	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.start();
+#endif
+
 	SphereData tmp_phi(io_phi.sphereDataConfig);
 	SphereData tmp_vort(io_vort.sphereDataConfig);
 	SphereData tmp_div(io_div.sphereDataConfig);
@@ -176,6 +189,10 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	io_phi += i_dt*tmp_phi;
 	io_vort += i_dt*tmp_vort;
 	io_div += i_dt*tmp_div;
+
+#if SWEET_REXI_TIMINGS
+	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.stop();
+#endif
 }
 
 

@@ -100,7 +100,11 @@ public:
 #if SWEET_GUI
 		viz_plane_data(planeDataConfig),
 #endif
-		sphereDiagnostics(sphereDataConfig, simVars)
+		sphereDiagnostics(
+				sphereDataConfig,
+				simVars,
+				simVars.misc.verbosity
+		)
 	{
 #if SWEET_MPI
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
