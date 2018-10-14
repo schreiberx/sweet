@@ -62,6 +62,10 @@ class JobsData_GroupsPlottingScattered:
 				x = jobdata[primary_key_attribute_name]
 
 				if not data_attribute_name in jobdata:
+					# Provide the option to filter out 'None'
+					if data_filter(x, placeholder, jobdata):
+						continue
+
 					y = placeholder
 				else:
 					y = jobdata[data_attribute_name]
@@ -99,8 +103,12 @@ class JobsData_GroupsPlottingScattered:
 
 	def print(self):
 		for group_key in sorted(self.data):
-			print("Group '"+group_key+"'")
 			group_data = self.data[group_key]
+
+			print("Group '"+group_key+"'")
+
+			if 'label' in group_data:
+				print(" label: '"+group_data['label']+"'")
 
 			for x, y in zip(group_data['x_values'], group_data['y_values']):
 				print("	"+str(x)+" -> "+str(y))
@@ -111,8 +119,11 @@ class JobsData_GroupsPlottingScattered:
 	def write(self, filename):
 		with open(filename, 'w') as f:
 			for group_key in sorted(self.data):
-				f.write("Group '"+group_key+"'\n")
 				group_data = self.data[group_key]
+
+				f.write("group\t"+group_key+"\n")
+				if 'label' in group_data:
+					f.write("label\t"+group_data['label']+"\n")
 
 				f.write("x_values\ty_values\n")
 				for x, y in zip(group_data['x_values'], group_data['y_values']):
