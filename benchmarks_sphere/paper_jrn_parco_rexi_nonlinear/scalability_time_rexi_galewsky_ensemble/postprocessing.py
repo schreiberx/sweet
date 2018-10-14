@@ -83,8 +83,11 @@ for ensemble_id in range(num_ensembles):
 
 		data = data_new
 
-		data = arraylist_swap_cols(data, 1, -1)
-		data = arraylist_remove_last_col(data)
+		data = arraylist_swap_cols(data, -2, -1)
+		data = arraylist_swap_cols(data, -3, -2)
+		data = arraylist_swap_cols(data, -4, -3)
+		data = arraylist_swap_cols(data, -5, -4)
+		#data = arraylist_remove_last_col(data)
 
 	if True:
 		"""

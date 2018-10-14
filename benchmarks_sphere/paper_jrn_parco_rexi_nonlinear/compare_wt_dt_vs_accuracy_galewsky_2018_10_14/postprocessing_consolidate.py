@@ -15,8 +15,8 @@ groups = ['runtime.timestepping_method']
 
 
 tagnames_y = [
-#	'sphere_data_diff_prog_h.norm_l1',
-#	'sphere_data_diff_prog_h.norm_l2',
+	'sphere_data_diff_prog_h.norm_l1',
+	'sphere_data_diff_prog_h.norm_l2',
 	'sphere_data_diff_prog_h.norm_linf',
 ]
 
@@ -33,8 +33,7 @@ for key, g in job_groups.items():
 
 for tagname_y in tagnames_y:
 
-	params = []
-	params += [
+	params = [
 			{
 				'tagname_x': 'runtime.timestep_size',
 				'xlabel': "Timestep size",
@@ -44,7 +43,7 @@ for tagname_y in tagnames_y:
 				'yscale': 'log',
 			},
 		]
-	"""
+
 	params += [
 			{
 				'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
@@ -55,7 +54,6 @@ for tagname_y in tagnames_y:
 				'yscale': 'log',
 			},
 		]
-	"""
 
 
 	for param in params:
