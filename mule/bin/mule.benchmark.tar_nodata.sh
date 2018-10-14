@@ -17,8 +17,9 @@ TARBALL="$BENCHDIR.tar.xz"
 
 if [[ -e "$TARBALL" ]]; then
 	echo "Error: File $TARBALL already exists"
-	exit(1)
+	exit 1
 fi
 
+echo "Creating tarball $TARBALL"
 tar cJvf "$TARBALL" $BENCHDIR --exclude=*csv
 
