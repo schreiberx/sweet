@@ -503,15 +503,16 @@ public:
 					simVars->setup.benchmark_name == "galewsky_nosetparam"	///< Galewsky benchmark without overriding parameters
 			)
 			{
-				if (simVars->timecontrol.current_simulation_time == 0)
-				{
-					std::cout << "!!! WARNING !!!" << std::endl;
-					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-					std::cout << "!!! WARNING !!!" << std::endl;
-				}
 
 				if (simVars->setup.benchmark_name != "galewsky_nosetparam")
 				{
+					if (simVars->timecontrol.current_simulation_time == 0)
+					{
+						std::cout << "!!! WARNING !!!" << std::endl;
+						std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+						std::cout << "!!! WARNING !!!" << std::endl;
+					}
+
 					/// Setup Galewski parameters
 					simVars->sim.coriolis_omega = 7.292e-5;
 					simVars->sim.gravitation = 9.80616;
