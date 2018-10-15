@@ -63,12 +63,22 @@ class Plotting(InfoError):
 			figsize = (8,8/1.61803398875),
 
 			title = None,
+
 			xlabel = None,
 			xscale = "linear",
+			xlim = None,
+
 			yscale = "linear",
 			ylabel = None,
+			ylim = None,
 
 			annotate = False,
+			annotate_each_nth_value = 3,
+			annotate_fontsize = False,
+
+			bars_annotate_with_values = False,
+			bars_annotate_with_labels = False,
+			bars_filled = False,
 
 			legend = True,
 			legend_fontsize = None,
@@ -76,17 +86,30 @@ class Plotting(InfoError):
 			tight_layout = True,
 			outfile = None,
 		):
-		self.figsize = figsize
+
+		if isinstance(figsize, float) or isinstance(figsize, int):
+			self.figsize = (figsize,figsize/1.61803398875)
+		else:
+			self.figsize = figsize
 
 		self.title = title
 
 		self.xlabel = xlabel
 		self.xscale = xscale
+		self.xlim = xlim
 
 		self.ylabel = ylabel
 		self.yscale = yscale
+		self.ylim = ylim
 
-		self.annotate = annotate,
+		self.annotate = annotate
+		self.annotate_each_nth_value = annotate_each_nth_value
+		self.annotate_fontsize = annotate_fontsize
+
+		self.bars_annotate_with_values = bars_annotate_with_values
+		self.bars_annotate_with_labels = bars_annotate_with_labels
+		self.bars_filled = bars_filled
+
 
 		self.legend = legend
 		self.legend_fontsize = legend_fontsize
@@ -101,17 +124,23 @@ class Plotting(InfoError):
 
 		self.fig, self.ax = plt.subplots(figsize=self.figsize)
 
-		self.ax.set_xscale(self.xscale, nonposx='clip')
-		self.ax.set_yscale(self.yscale, nonposy='clip')
 
 		if self.title != None:
 			plt.title(self.title)
 
 		if self.xlabel != None:
 			plt.xlabel(self.xlabel)
+		if self.xscale != None:
+			self.ax.set_xscale(self.xscale, nonposx='clip')
+		if self.xlim != None:
+			self.ax.set_xlim(self.xlim[0], self.xlim[1])
 
 		if self.ylabel != None:
 			plt.ylabel(self.ylabel)
+		if self.yscale != None:
+			self.ax.set_yscale(self.yscale, nonposy='clip')
+		if self.ylim != None:
+			self.ax.set_ylim(self.ylim[0], self.ylim[1])
 
 
 	def plot_finish(self):
@@ -137,7 +166,6 @@ class Plotting_ScatteredData(Plotting):
 	def plot_data(
 			self,
 			data_plotting,
-			annotation = False,
 		):
 		"""
 		Parameters:
@@ -172,15 +200,15 @@ class Plotting_ScatteredData(Plotting):
 					label=label
 				)
 
-			if annotation:
+			if self.annotate:
 				x = x_values
 				y = y_values
 
 				px = x[:]
 				py = y[:]
 
-				px = px[0::annotation_render_each_nth_value]
-				py = py[0::annotation_render_each_nth_value]
+				px = px[0::self.annotate_each_nth_value]
+				py = py[0::self.annotate_each_nth_value]
 
 				if len(px) % 2 == 0:
 					px.append(x[-1])
@@ -189,14 +217,7 @@ class Plotting_ScatteredData(Plotting):
 				for i, txt in enumerate(px):
 
 					text = "%.1f" % (px[i])
-					self.ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=8)
-					if False:
-						if mode == 'dt':
-							#self.ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=8)
-							self.ax.annotate(px[i], (px[i]*1.03, py[i]*0.92), fontsize=8)
-						elif mode == 'wallclocktime':
-							text = "%.1f/%.1f" % (py[i], px[i])
-							self.ax.annotate(text, (px[i]*1.03, py[i]*1.03), fontsize=8)
+					self.ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=annotate_fontsize)
 
 			c += 1
 	
@@ -220,21 +241,9 @@ class Plotting_Bars(Plotting):
 	def plot_data_from_tabledata(
 			self,
 			data_table,
-			xlabel = None,
-			ylabel = None,
-			title = None,
-			subtitle = None,
-			xscale = None,
-			yscale = None,
-			annotate_bars_with_values = False,
-			annotate_bars_with_labels = False,
-			legend = True,
-			filled_bars = True,
-			ylim = None,
-			figsize=(8,8/1.61803398875)
 		):
 
-		self.fig, self.ax = plt.subplots(figsize=figsize)
+		#self.fig, self.ax = plt.subplots(figsize=figsize)
 
 		# Size of table data
 		sx = len(data_table[0])-1
@@ -261,7 +270,7 @@ class Plotting_Bars(Plotting):
 		# adjust depending on number of bar_names
 		group_width = 1.0/len(group_names)
 
-		if filled_bars == True:
+		if self.bars_filled == True:
 			group_width *= 0.9
 		else:
 			# More space if there's no filling in bars
@@ -302,7 +311,7 @@ class Plotting_Bars(Plotting):
 			bars_x = [x + bar_width*j for x in bars_x]
 			bars_height = [data[i][j] for i in range(len(group_names))]
 
-			if filled_bars:
+			if self.bars_filled:
 				rects_ = self.ax.bar(
 						bars_x,
 						bars_height,
@@ -321,65 +330,26 @@ class Plotting_Bars(Plotting):
 			rects.append(rects_)
 
 
-		if annotate_bars_with_values or annotate_bars_with_labels:
+		if self.bars_annotate_with_values or self.bars_annotate_with_labels:
 			for j in range(len(bar_names)):
 				for rect in rects[j]:
 					pos_x = rect.get_x() + rect.get_width()/2
 
-					if annotate_bars_with_values:
+					if self.bars_annotate_with_values:
 						height = rect.get_height()
 						pos_y = height+math.log(1.0+0.1*height)
 						text = "%.2f" % height
 						self.ax.text(pos_x, pos_y, text, ha='center', va='bottom', size=8, rotation=90)
 
-					if annotate_bars_with_labels:
+					if self.bars_annotate_with_labels:
 						pos_y = 1e-10
-						if ylim != None:
-							pos_y = ylim[0]*1.5
+						if self.ylim != None:
+							pos_y = self.ylim[0]*1.5
 						text = bar_names[j]
 						self.ax.text(pos_x, pos_y, text, ha='center', va='bottom', size=8, rotation=90)
 
-		if ylim != None:
-			self.ax.set_ylim(ylim[0], ylim[1])
-
-		if legend:
-			self.ax.legend([rect[0] for rect in rects], bar_names)
-
-		if xscale != None:
-			self.ax.set_xscale(xscale, nonposx='clip')
-
-		if yscale != None:
-			self.ax.set_yscale(yscale, nonposy='clip')
-
-		if title != None:
-			plt.title(title)
-
-		if xlabel != None:
-			plt.xlabel(xlabel)
-
-		# Doesn't work :-(
-		#if subtitle != None:
-		#	plt.suptitle(subtitle)
-		#	plt.subplots_adjust(top=0.85)
-
-		if ylabel != None:
-			plt.ylabel(ylabel)
-
-		self.fig.tight_layout()
 
 
-
-	def plot_data_annotated(
-			self,
-			data_plotting,
-			xlabel = None,
-			ylabel = None,
-			title = None,
-			xscale = "linear",
-			yscale = "linear",
-			annotation_render_each_nth_value = 3
-		):
-		raise Exception("TODO")
 
 	
 
@@ -389,9 +359,9 @@ class Plotting_Bars(Plotting):
 			outfile=None,
 			**kwargs
 		):
-		self.plot_setup(outfile=outfile, legend=False)
+		self.plot_setup(outfile=outfile, **kwargs)
 		self.plot_start()
-		self.plot_data_from_tabledata(data_plotting, **kwargs)
+		self.plot_data_from_tabledata(data_plotting)
 		self.plot_finish()
 
 

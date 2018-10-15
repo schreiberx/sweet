@@ -148,15 +148,15 @@ p = Plotting_Bars()
 
 p.gen_plot_from_tabledata(
 		accum_data,
-		#xlabel="Number of ranks",
+		figsize = 10,
 		ylabel="Wallclock time",
 		yscale="log",
 		title="Breakdown of NL-REXI wallclock times (min filter over "+str(num_ensembles)+" ensembles)",
 		#subtitle=str(num_ensembles)+" ensembles using min. filter",
 		outfile="output_breakdown_wallclocktimes.pdf",
-		annotate_bars_with_values=True,
-		annotate_bars_with_labels=True,
+		bars_annotate_with_values=True,
+		bars_annotate_with_labels=True,
+		bars_filled=False,
 		legend=False,
-		ylim=(1e-12, 800),
-		filled_bars=False,
+		ylim=(1e-12, 1000),
 	)

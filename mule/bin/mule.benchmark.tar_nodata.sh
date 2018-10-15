@@ -11,7 +11,8 @@ if [[ -z "$1" ]]; then
 fi
 
 
-BENCHDIR=$1
+BENCHDIR="$(realpath $1)"
+
 
 TARBALL="$BENCHDIR.tar.xz"
 
