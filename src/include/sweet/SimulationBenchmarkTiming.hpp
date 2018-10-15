@@ -41,10 +41,10 @@ public:
 		main.reset();
 		main_setup.reset();
 		main_timestepping.reset();
+#if SWEET_REXI_TIMINGS
 		main_timestepping_nonlinearities.reset();
 
 
-#if SWEET_REXI_TIMINGS
 		rexi.reset();
 		rexi_setup.reset();
 		rexi_shutdown.reset();
@@ -64,7 +64,9 @@ public:
 			std::cout << "[MULE] simulation_benchmark_timings.main: " << main() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.main_setup: " << main_setup() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.main_timestepping: " << main_timestepping() << std::endl;
+#if SWEET_REXI_TIMINGS
 			std::cout << "[MULE] simulation_benchmark_timings.main_timestepping_nonlinearities: " << main_timestepping_nonlinearities() << std::endl;
+#endif
 		}
 
 #if SWEET_REXI_TIMINGS

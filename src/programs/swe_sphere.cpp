@@ -173,13 +173,6 @@ public:
 		}
 
 
-#if SWEET_MPI
-		if (mpi_rank == 0)
-#endif
-		{
-			simVars.outputConfig();
-		}
-
 		/*
 		 * SETUP time steppers
 		 */
@@ -191,8 +184,18 @@ public:
 
 		SimulationBenchmarkTimings::getInstance().main_setup.stop();
 
-		// start at one second before to ensure output at t=0
+		// start at one second in the past to ensure output at t=0
 		timestep_last_output_simtime = simVars.timecontrol.current_simulation_time-1.0;
+
+		/*
+		 * Output configuration here to ensure that updated variables are included in this output
+		 */
+#if SWEET_MPI
+		if (mpi_rank == 0)
+#endif
+		{
+			simVars.outputConfig();
+		}
 	}
 
 
