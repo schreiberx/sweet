@@ -62,7 +62,7 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - clang++-7
+            - clang-7
 #            - gfortran-8
       env:
         - MATRIX_EVAL="export CC=clang-7 && export CXX=clang++7"
