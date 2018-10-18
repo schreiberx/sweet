@@ -1,20 +1,5 @@
 
 
-SWEET_SYSTEM_PACKAGES="libxft-dev libssl-dev texinfo"
-if [[ "$DISPLAY" = ":0" ]]; then
-	export SWEET_SYSTEM_PACKAGES="$SWEET_SYSTEM_PACKAGES libgl1-mesa-dev libxext-dev"
-fi
-
-for i in $SWEET_SYSTEM_PACKAGES; do
-	dpkg -s "$i" >/dev/null 2>&1
-	if [[ "$?" != "0" ]]; then
-		echo_error "Debian-based system detected and packages missing, please use"
-		echo_error "    sudo apt-get install $SWEET_SYSTEM_PACKAGES"
-		return 2>/dev/null
-		exit 1
-	fi
-done
-
 
 #PKGS+=("install_autoconf.sh")
 #PKGS+=("install_make.sh")

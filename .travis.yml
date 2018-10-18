@@ -3,6 +3,13 @@ language: cpp
 
 dist: trusty
 
+addons:
+  apt:
+    packages:
+      - libopenmpi-dev
+      - numactl
+      - cmake
+
 # Build matrix
 matrix:
   include:
@@ -32,6 +39,7 @@ matrix:
 
 
 before_install:
+  - echo "${MATRIX_EVAL}"
   - eval "${MATRIX_EVAL}"
   - hostname
   - cd local_software || exit 1
