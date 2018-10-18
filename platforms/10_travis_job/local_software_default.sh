@@ -15,7 +15,7 @@ PKGS+=("install_eigen3.sh")
 #PKGS+=("install_gcc7.2.sh")
 
 PKGS+=("install_likwid.sh")
-#PKGS+=("install_numactl.sh")
+PKGS+=("install_numactl.sh")
 #PKGS+=("install_pfasst++.sh")
 
 PKGS+=("install_python3.sh")
