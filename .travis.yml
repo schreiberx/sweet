@@ -95,7 +95,6 @@ before_install:
 # Skip installation phase (install: true)
 #
 install: true
-  - echo "Dummy installer"
 
 
 
