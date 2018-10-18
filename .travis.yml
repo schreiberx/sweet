@@ -55,17 +55,17 @@ matrix:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
 
 
-    # Test with clang-7
+    # Test with clang
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - clang-7
+            - clang
 #            - gfortran-8
       env:
-        - MATRIX_EVAL="export CC=clang-7 && export CXX=clang++7"
+        - MATRIX_EVAL="export CC=clang && export CXX=clang++"
         #- MATRIX_EVAL="export CC=clang-7 && export CXX=clang++7 && export FC=gfortran-8 && export F90=gfortran-8"
 
 
