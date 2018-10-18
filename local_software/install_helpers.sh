@@ -159,7 +159,7 @@ function config_package_test_existing_dir_fun()
 	echo_info "Package: ${PKG_NAME}"
 	echo_info_hline
 
-	echo ${PKG_INSTALLED_FILE}
+	#echo ${PKG_INSTALLED_FILE}
 	if [ "$1" = "FORCE"  ]; then
 		echo_warning "FORCE detected => reinstallation of package"
 	else
