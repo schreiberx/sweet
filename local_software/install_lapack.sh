@@ -18,24 +18,24 @@ ulimit -s 100000 || echo_warning "Warning: failed to increase ulimit"
 
 if true; then
 	# Use cmake
-	mkdir -p build || exit
-	cd build || exit
+	mkdir -p build || exit 1
+	cd build || exit 1
 
 	echo_info "Executing 'cmake'..."
-	cmake ../ || exit
+	config_exec cmake ../ || exit 1
 
 	echo_info "Executing 'make'..."
-	make $MAKE_DEFAULT_OPTS
+	config_exec make $MAKE_DEFAULT_OPTS || exit 1
 
 
 	echo "Installing..."
-	mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib"
+	config_exec mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib"
 
 	echo " + liblapack.a"
-	cp ./lib/liblapack.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || echo_error_exit "Failed to install liblapack.a"
+	config_exec cp ./lib/liblapack.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || echo_error_exit "Failed to install liblapack.a"
 
 	echo " + liblas.a"
-	cp ./lib/libblas.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || echo_error_exit "Failed to install libblas.a"
+	config_exec cp ./lib/libblas.a "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib" || echo_error_exit "Failed to install libblas.a"
 else
 	# create default configuration
 	cp make.inc.example make.inc

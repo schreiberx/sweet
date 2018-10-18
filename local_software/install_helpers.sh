@@ -166,10 +166,10 @@ function config_package()
 	echo "" > $PKG_CONFIG_STD_OUTPUT
 	
 	echo_info "Downloading package..."
-	config_package_download $@ || exit 1
+	config_package_download $@ >> $PKG_CONFIG_STD_OUTPUT || exit 1
 
 	echo_info "Extracting package..."
-	config_package_extract || exit 1
+	config_package_extract $@ >> $PKG_CONFIG_STD_OUTPUT || exit 1
 
 	echo_info "Suggesting to use '${NPROCS}' parallel build processes"
 }
