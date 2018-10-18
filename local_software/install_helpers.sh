@@ -232,7 +232,6 @@ function config_package_extract()
 
 	EXTRACT_PROG="tar x${TAR_CMD} ${PKG_FILENAME}"
 	LIST_TAR="tar t${TAR_CMD} ${PKG_FILENAME}"
-	echo $LIST_TAR
 
 	if [ -z "${PKG_SRC_SUBDIR}" ]; then
 		echo_info "Detecting target directory"
