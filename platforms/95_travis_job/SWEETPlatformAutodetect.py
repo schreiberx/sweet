@@ -11,6 +11,7 @@ def autodetect():
 	"""
 
 	prefix = "travis-job"
+	print(platform.node())
 	if platform.node()[:len(prefix)] != prefix:
 		return False
 

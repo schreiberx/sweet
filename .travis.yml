@@ -1,10 +1,23 @@
+
 language: cpp
 
 
-
+# Build matrix
 matrix:
   include:
-    # works on Precise and Trusty
+
+    # Test with G++-7
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
+    # Test with G++-8
     - os: linux
       addons:
         apt:
