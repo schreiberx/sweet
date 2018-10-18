@@ -364,7 +364,7 @@ public:
 			if (mpi_rank == 0)
 #endif
 			{
-				std::cout << "[ERRORS]\t";
+				std::cout << "[MULE] errors: ";
 				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
 				std::cout << "\terror_l1_phi=" << error_phi;
 				std::cout << "\terror_l1_vort=" << error_vort;
