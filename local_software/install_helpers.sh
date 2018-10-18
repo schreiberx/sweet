@@ -51,13 +51,12 @@ MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
 function config_alive_thread()
 {
 	PREV_OUTPUT_LINES=$(wc -l < "${PKG_CONFIG_STD_OUTPUT}")
-	CONFIG_ALIVE_THREAD_EXIT=false
-	while [[ "$CONFIG_ALIVE_THREAD_EXIT" == "false" ]]; do
+	while true; do
 		OUTPUT_LINES=$(wc -l < "${PKG_CONFIG_STD_OUTPUT}")
-		DIFF=$((OUTPUT_LINES-PREV_OUTPUT_LINES))
-		while [[ $DIFF -gt 0 ]]; do
+		C=$((OUTPUT_LINES-PREV_OUTPUT_LINES))
+		while [[ $C -gt 0 ]]; do
 			echo -n "."
-			DIFF=$(($DIFF-1))
+			C=$(($C-1))
 		done
 		PREV_OUTPUT_LINES=$OUTPUT_LINES
 		sleep 1
@@ -229,8 +228,6 @@ function config_package_test_existing_dir()
 
 function config_package_download()
 {
-	config_package_test_existing_dir $@
-
 	if [ "${PKG_URL_SRC:0:4}" != "http" ]; then
 		export PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/${PKG_URL_SRC}"
 	fi
@@ -357,6 +354,9 @@ function config_exec()
 
 function config_package()
 {
+	echo_info "Testing for existing package installation..."
+	config_package_test_existing_dir $@
+
 	echo_info "Downloading package..."
 	config_package_download $@
 
