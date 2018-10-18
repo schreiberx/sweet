@@ -1,14 +1,9 @@
 #! /bin/bash
 
-source ./install_helpers.sh "" || exit 1
+source ./install_helpers.sh ""
 
-# Name of package
 PKG_NAME="make"
-
-# Path to one file of installed package to test for existing installation
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/make"
-
-# URL to source code to fetch it
 PKG_URL_SRC="make-4.2.tar.gz"
 
 if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
@@ -16,12 +11,14 @@ if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
 	exit 1
 fi
 
-config_package $@ || exit 1
+config_setup
 
-config_configure || exit 1
+config_package $@
 
-./build.sh || echo_error_exit "Failed build"
+config_configure
 
-./make install || echo_error_exit "Failed to .make install"
+config_exec ./build.sh || echo_error_exit "Failed build"
 
-config_success || exit 1
+config_exec ./make install || echo_error_exit "Failed to .make install"
+
+config_success

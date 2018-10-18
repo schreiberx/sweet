@@ -1,31 +1,27 @@
 #! /bin/bash
 
-source ./install_helpers.sh "" || exit 1
+source ./install_helpers.sh ""
 
-
-# Name of package
 PKG_NAME="lapack"
-
-# Path to one file of installed package to test for existing installation
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/liblapack.a"
-
-# URL to source code to fetch it
 PKG_URL_SRC="lapack-3.8.0.tar.gz"
 
-config_package $@ || exit 1
+config_setup
+
+config_package $@
 
 ulimit -s 100000 || echo_warning "Warning: failed to increase ulimit"
 
 if true; then
 	# Use cmake
-	mkdir -p build || exit 1
-	cd build || exit 1
+	mkdir -p build
+	cd build
 
 	echo_info "Executing 'cmake'..."
-	config_exec cmake ../ || exit 1
+	config_exec cmake ../
 
 	echo_info "Executing 'make'..."
-	config_exec make $MAKE_DEFAULT_OPTS || exit 1
+	config_exec make $MAKE_DEFAULT_OPTS
 
 
 	echo "Installing..."
@@ -60,8 +56,8 @@ else
 		
 	fi
 	
-	make $MAKE_DEFAULT_OPTS blaslib || exit 1
-	make $MAKE_DEFAULT_OPTS || exit 1
+	make $MAKE_DEFAULT_OPTS blaslib
+	make $MAKE_DEFAULT_OPTS
 
 	echo "Installing..."
 	mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib"

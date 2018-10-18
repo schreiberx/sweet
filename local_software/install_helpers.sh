@@ -2,6 +2,7 @@
 # Helper functions and environment variables for install scripts
 #
 
+
 if [ -z "$SWEET_ROOT" ]; then
 	echo "****************************************************************************************************"
 	echo "* ERROR: SWEET environment variables missing!"
@@ -9,7 +10,6 @@ if [ -z "$SWEET_ROOT" ]; then
 	exit 1
 fi
 
-#source ./env_vars.sh "" || exit 1
 
 
 #
@@ -45,21 +45,100 @@ MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
 
 
 
-function download() {
-	echo_info "Downloading from '${1}'"
+function config_setup()
+{
+	if [[ -z "$PKG_NAME" ]]; then
+		echo_error_exit "config_setup() PKG_NAME is not set"
+	fi
 
-	#curl -C - "$1" -o "$2" || exit 1
-	wget --continue --progress=bar "$1" -O "$2" || exit 1
+	if [[ ! -z "DEBUG" ]]; then
+		export PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
+
+		echo_info "config_setup() Creating std output file ${PKG_CONFIG_STD_OUTPUT}"
+		echo -n "" > "$PKG_CONFIG_STD_OUTPUT"
+	else
+		export PKG_CONFIG_STD_OUTPUT="/dev/stdout"
+	fi
 }
 
 
-function config_package_download()
+
+function config_error_exit()
 {
-	if [[ -z "$PKG_FILENAME" ]]; then
-		echo_error "Package filename not detected / not set, skipping extraction" >&2
-		return
+	#
+	# print output message
+	# print log file
+	# exit
+	#
+	echo_error_hline
+	echo_error "ERROR: $@"
+	echo_error_hline
+	echo_error "An error occurred during the build"
+	echo_error "Showing last 100 lines from build output file"
+	echo_error "$PKG_CONFIG_STD_OUTPUT"
+
+	tail -n 100 "$PKG_CONFIG_STD_OUTPUT"
+	exit 1
+}
+
+
+
+function config_extract_fun()
+{
+	EXT="${0##*.}"
+	EXTRACT_PROG=""
+	if [ "#$EXT" = "#gz" ]; then
+		TAR_CMD="zf"
+	elif [ "#$EXT" = "#tgz" ]; then
+		TAR_CMD="zf"
+	elif [ "#$EXT" = "#xz" ]; then
+		TAR_CMD="f"
+	elif [ "#$EXT" = "#bz2" ]; then
+		TAR_CMD="jf"
+	else
+		config_error_exit "Unknown extension '${EXT}'"
 	fi
 
+	EXTRACT_PROG="tar x${TAR_CMD} ${PKG_FILENAME}"
+	LIST_TAR="tar t${TAR_CMD} ${PKG_FILENAME}"
+	echo $LIST_TAR
+
+	echo_info "Extracting '${EXTRACT_PROG}'"
+	EXTRACT_OUTPUT="$($EXTRACT_PROG || config_error_exit 'Failed to extract archive')"
+}
+
+function config_extract()
+{
+	echo "Exctracting $@"
+	config_extract_fun $@ >> $PKG_CONFIG_STD_OUTPUT
+}
+
+
+
+function config_download_fun()
+{
+	PKG_FILENAME="$(basename ${1})"
+	wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit
+}
+
+function config_download()
+{
+	echo_info "Downloading $@"
+	config_download_fun $@ >> $PKG_CONFIG_STD_OUTPUT 2>&1
+}
+
+
+
+function config_download_and_extract()
+{
+	config_download $@
+	config_extract $@
+}
+
+
+
+function config_package_test_existing_dir_fun()
+{
 	#
 	# PKG_NAME: string
 	#	Name of package. This is just for convenience.
@@ -96,25 +175,40 @@ function config_package_download()
 			exit 0	# Exit with success code since software was already successfully installed
 		fi
 	fi
+}
+
+function config_package_test_existing_dir()
+{
+	config_package_test_existing_dir_fun $@	# We really want to get the message that this package was already installed
+						# >> "$PKG_CONFIG_STD_OUTPUT" 2>&1
+}
+
+function config_package_download()
+{
+	config_package_test_existing_dir $@
 
 	if [ "${PKG_URL_SRC:0:4}" != "http" ]; then
-		PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/${PKG_URL_SRC}"
+		export PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/${PKG_URL_SRC}"
 	fi
 
-	PKG_FILENAME="$(basename ${PKG_URL_SRC})"
-
 	echo_info "Changing to directory '${SWEET_LOCAL_SOFTWARE_SRC_DIR}'"
-	cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
+	config_exec cd "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 
-	# Download file
-	echo_info "Downloading '${PKG_URL_SRC}'"
-	download "$PKG_URL_SRC" "$PKG_FILENAME"
+	config_download  "$PKG_URL_SRC"
 }
+
 
 function config_package_extract()
 {
 	if [[ -z "$PKG_FILENAME" ]]; then
-		echo_error "Package filename not detected / not set, skipping extraction" >&2
+		echo_error "Package filename not set, skipping extraction but generating directory"
+
+		echo_info "Changing to directory '${SWEET_LOCAL_SOFTWARE_SRC_DIR}'"
+		cd "${SWEET_LOCAL_SOFTWARE_SRC_DIR}"
+
+		PKG_SRC_SUBDIR="$(echo -n "${PKG_NAME}" | tr '[:upper:]' '[:lower:]')"
+		mkdir -p "${PKG_SRC_SUBDIR}"
+		cd "${PKG_SRC_SUBDIR}"
 		return
 	fi
 
@@ -133,7 +227,7 @@ function config_package_extract()
 	elif [ "#$EXT" = "#bz2" ]; then
 		TAR_CMD="jf"
 	else
-		echo_error_exit "Unknown extension '${EXT}'"
+		config_error_exit "Unknown extension '${EXT}'"
 	fi
 
 	EXTRACT_PROG="tar x${TAR_CMD} ${PKG_FILENAME}"
@@ -142,7 +236,7 @@ function config_package_extract()
 
 	if [ -z "${PKG_SRC_SUBDIR}" ]; then
 		echo_info "Detecting target directory"
-		LIST_OUTPUT="$($LIST_TAR || echo_error_exit 'Failed to determine content of archive')"
+		LIST_OUTPUT="$($LIST_TAR || config_error_exit 'Failed to determine content of archive')"
 		PKG_SRC_SUBDIR=$(echo "$LIST_OUTPUT" | head -n 1 | sed "s/\/.*//")
 		echo_info "Detected source foldername to be '${PKG_SRC_SUBDIR}'"
 	fi
@@ -157,73 +251,61 @@ function config_package_extract()
 	fi
 
 	echo_info "Extracting '${EXTRACT_PROG}'"
-	EXTRACT_OUTPUT="$($EXTRACT_PROG || echo_error_exit 'Failed to extract archive')"
+	EXTRACT_OUTPUT="$($EXTRACT_PROG || config_error_exit 'Failed to extract archive')"
 
 	if [ ! -e "${PKG_SRC_SUBDIR}" ]; then
-		echo_error_exit "Source folder '${PKG_SRC_SUBDIR}' not found"
+		config_error_exit "Source folder '${PKG_SRC_SUBDIR}' not found"
 	fi
 
 	echo_info "Changing to package directory '${PKG_SRC_SUBDIR}'"
 	cd "$PKG_SRC_SUBDIR"
 }
 
-function config_package()
-{
-	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
-
-	echo_info "Creating std output file ${PKG_CONFIG_STD_OUTPUT}"
-	echo "" > "$PKG_CONFIG_STD_OUTPUT"
-
-	echo_info "Downloading package..."
-	config_package_download $@ >> $PKG_CONFIG_STD_OUTPUT || exit 1
-
-	echo_info "Extracting package..."
-	config_package_extract $@ >> $PKG_CONFIG_STD_OUTPUT || exit 1
-
-	echo_info "Suggesting to use '${NPROCS}' parallel build processes"
-}
 
 
 function config_configure()
 {
-	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
-
 	M="./configure --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR $@"
 	echo_info "Executing '${M}'"
-	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
 }
 function config_make_default()	# make
 {
-	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
-
 	M="make $MAKE_DEFAULT_OPTS $@"
 	echo_info "Executing '${M}'"
-	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
 }
 function config_make_clean()	# make clean
 {
-	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
-
 	M="make $MAKE_DEFAULT_OPTS $@ clean"
 	echo_info "Executing '${M}'"
-	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
 }
 function config_make_install()	# make install
 {
-	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
-
 	M="make $MAKE_DEFAULT_OPTS $@ install"
 	echo_info "Executing '${M}'"
-	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
 }
 function config_exec()
 {
-	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
-
 	M="$@"
 	echo_info "Executing '${M}'"
-	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
 }
+
+
+function config_package()
+{
+	echo_info "Downloading package..."
+	config_package_download $@
+
+	echo_info "Extracting package..."
+	config_package_extract $@
+
+	echo_info "Suggesting to use '${NPROCS}' parallel build processes"
+}
+
 
 # Combined functions
 function config_configure_make_default()	# ./configure...; make ...;

@@ -1,6 +1,6 @@
 #! /bin/bash
 
-source ./install_helpers.sh "" || exit 1
+source ./install_helpers.sh ""
 
 # Name of package
 PKG_NAME="automake"
@@ -16,8 +16,10 @@ if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
 	exit 1
 fi
 
-config_package $@ || exit 1
+config_setup
 
-config_configure_make_default_install || exit 1
+config_package $@
 
-config_success || exit 1
+config_configure_make_default_install
+
+config_success
