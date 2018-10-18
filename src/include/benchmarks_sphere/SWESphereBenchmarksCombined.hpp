@@ -520,6 +520,9 @@ public:
 					simVars->sim.h0 = 10000;
 				}
 
+				/*
+				 * Rerun setup to update the operators with the potentially new values
+				 */
 				op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
 
 				/*

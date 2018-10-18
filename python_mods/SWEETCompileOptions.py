@@ -621,7 +621,6 @@ class SWEETCompileOptions(InfoError):
 			if not ignore_errors:
 				sys.exit(1)
 
-
 		if self.program_binary_name != '':
 			return self.program_binary_name
 

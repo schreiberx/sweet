@@ -686,7 +686,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -713,7 +713,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -864,12 +864,14 @@ public:
 	void physical_file_write(
 			const std::string &i_filename,
 			const char *i_title = "",
-			int i_precision = 20
+			int i_precision = -1
 	)	const
 	{
 		std::ofstream file(i_filename, std::ios_base::trunc);
 
-		file << std::setprecision(i_precision);
+		if (i_precision >= 0)
+			file << std::setprecision(i_precision);
+
 		file << "#TI " << i_title << std::endl;
 		file << "#TX Longitude" << std::endl;
 		file << "#TY Latitude" << std::endl;

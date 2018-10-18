@@ -5,6 +5,7 @@ import sys
 import platform
 
 
+
 sys.path.append("./python_mods")
 from SWEETCompileOptions import *
 sys.path.remove("./python_mods")
@@ -128,8 +129,6 @@ else:
 
 
 
-
-
 if p.parareal == 'none':
 	env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=0')
 elif p.parareal == 'serial':
@@ -143,14 +142,30 @@ else:
 
 
 
+#
+# Override compiler settings from environment variable
+#
+override_list = ['CC', 'CXX', 'F90', 'FC', 'LINK', 'LD']
+for i in override_list:
+	if i in env['ENV']:
+		print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
+		env[i] = env['ENV'][i]
+
+	if p.sweet_mpi == 'enable':
+		if 'SWEET_MPI'+i in env['ENV']:
+			print("INFO: Using SWEET_MPI* environment variable to set "+i+"="+env['ENV']['SWEET_MPI'+i])
+			env[i] = env['ENV']['SWEET_MPI'+i]
+
+
+
 if p.compiler == 'gnu':
-	reqversion = [4,6,1]
+	reqversion = [6,0,0]
 
 	#
 	# get gcc version using -v instead of -dumpversion since SUSE gnu compiler
 	# returns only 2 instead of 3 digits with -dumpversion
 	#
-	gccv = exec_command('g++ -v').splitlines()
+	gccv = exec_command(env['CC']+' -v').splitlines()
 
 	# updated to search for 'gcc version ' line prefix
 	found = False
@@ -217,9 +232,6 @@ if p.compiler == 'gnu':
 			#env.Replace(F90='gfortran')
 			env.Append(F90FLAGS=' -cpp')
 			env.Append(LIBS=['gfortran'])
-
-	#	env.Replace(CXX = 'g++-4.7')
-	#	env.Replace(CXX = 'g++')
 
 
 
@@ -481,57 +493,22 @@ if p.sweet_mpi == 'enable':
 	print("Warning: Compiler checks not done")
 
 	if p.compiler == 'gnu':
-		#env.Replace(CXX = 'mpiCC')
-		#env.Replace(LINK = 'mpiCC')
-		#env.Replace(F90 = 'mpif90')
-
 		# GNU compiler needs special treatment!
 		# Linking with Fortran MPI requires
 		# for OpenMPI: -lmpi_mpifh
 		# for MPICH: -lmpif90
 
-		output = exec_command('mpiCC -v')
+		output = exec_command(env['CC']+' -v')
 		if 'MPICH' in output:
 			if p.fortran_source == 'enabled':
 				env.Append(LINKFLAGS='-lmpif90')
 		else:
 			pass
-			#print("*"*80)
-			#print("ERROR: MPI VERSION NOT DETECTED, ASSUMING OPENMPI!!!!!")
-			#print("*"*80)
-			#env.Append(LINKFLAGS='-lmpi_mpifh')
-			
 		
-
-	elif p.compiler == 'intel':
-		#env.Replace(CXX = 'mpiicpc')
-		#env.Replace(LINK = 'mpiicpc')
-		#env.Replace(F90 = 'mpif90')
-		pass
-
 	if p.threading != 'off' and p.compiler == 'intel':
 		env.Append(CXXFLAGS='-mt_mpi')
 		env.Append(LINKFLAGS='-mt_mpi')
 
-
-
-#
-# Override compiler settings from environment variable
-#
-override_list = ['CC', 'CXX', 'F90', 'LINK']
-for i in override_list:
-	if p.sweet_mpi == 'enable':
-		if 'SWEET_MPI'+i in env['ENV']:
-			print("INFO: Using SWEET_MPI* environment variable to set "+i+"="+env['ENV']['SWEET_MPI'+i])
-			env[i] = env['ENV']['SWEET_MPI'+i]
-
-
-	else:
-		if 'SWEET_'+i in env['ENV']:
-			print("INFO: This feature seems to be not required anymore.")
-			print("INFO: Environment variables can be set in the platform scripts.")
-			print("INFO: Overriding environment variable "+i+"="+env['ENV']['SWEET_'+i])
-			env[i] = env['ENV']['SWEET_'+i]
 
 
 

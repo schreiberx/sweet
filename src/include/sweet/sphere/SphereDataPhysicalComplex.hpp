@@ -737,7 +737,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -764,7 +764,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{

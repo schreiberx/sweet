@@ -707,7 +707,7 @@ public:
 
 		std::complex<double> maxabs = -1;
 #if SWEET_THREADING_SPACE
-		//#pragma omp parallel for proc_bind(close) reduction(max:maxabs)
+		//#pragma omp parallel for PROC_BIND_CLOSE reduction(max:maxabs)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			maxabs = std::max(maxabs, std::abs(physical_space_data[i]));
@@ -727,7 +727,7 @@ public:
 
 		std::complex<double> sum = 0;
 #if SWEET_THREADING_SPACE
-//#pragma omp parallel for proc_bind(close) reduction(+:sum)
+//#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i]*physical_space_data[i];
@@ -820,7 +820,7 @@ public:
 		std::complex<double> c = 0;
 
 #if SWEET_THREADING_SPACE
-//#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+//#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -850,7 +850,7 @@ public:
 
 		double maxvalue = -std::numeric_limits<double>::max();
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			maxvalue = std::max(maxvalue, std::abs(physical_space_data[i].real()));
@@ -869,7 +869,7 @@ public:
 
 		std::complex<double> minvalue = std::numeric_limits<double>::max();
 #if SWEET_THREADING_SPACE
-//#pragma omp parallel for proc_bind(close) reduction(min:minvalue)
+//#pragma omp parallel for PROC_BIND_CLOSE reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			minvalue = std::min(minvalue, physical_space_data[i]);
@@ -887,7 +887,7 @@ public:
 
 		std::complex<double> sum = 0;
 #if SWEET_THREADING_SPACE
-//#pragma omp parallel for proc_bind(close) reduction(+:sum)
+//#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i];
@@ -907,7 +907,7 @@ public:
 		std::complex<double> sum = 0;
 		std::complex<double> c = 0;
 #if SWEET_THREADING_SPACE
-//#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+//#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -934,7 +934,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += std::abs(physical_space_data[i]);
@@ -953,7 +953,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -981,7 +981,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i]*physical_space_data[i];
@@ -1003,9 +1003,9 @@ public:
 		double sum = 0.0;
 		double c = 0.0;
 
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
-#endif
+		#if SWEET_THREADING_SPACE
+			#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
+		#endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
 			double value = physical_space_data[i].real()*physical_space_data[i].real() + physical_space_data[i].imag()*physical_space_data[i].imag();

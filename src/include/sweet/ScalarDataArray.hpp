@@ -221,7 +221,7 @@ public:
 		bool isallfinite = true;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(&&:isallfinite)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 #if __GNUC__ == 5
@@ -244,7 +244,7 @@ public:
 		double maxabs = -1.0;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(max:maxabs)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(max:maxabs)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 			maxabs = std::max(maxabs, std::abs(scalar_data[i]));
@@ -261,7 +261,7 @@ public:
 	{
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 			sum += scalar_data[i]*scalar_data[i];
@@ -281,7 +281,7 @@ public:
 		double c = 0;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
@@ -310,7 +310,7 @@ public:
 	{
 		double maxvalue = -std::numeric_limits<double>::max();
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 			maxvalue = std::max(maxvalue, scalar_data[i]);
@@ -326,7 +326,7 @@ public:
 	{
 		double minvalue = std::numeric_limits<double>::max();
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(min:minvalue)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 			minvalue = std::min(minvalue, scalar_data[i]);
@@ -342,7 +342,7 @@ public:
 	{
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 			sum += scalar_data[i];
@@ -359,7 +359,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
@@ -384,7 +384,7 @@ public:
 	{
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 			sum += std::abs(scalar_data[i]);
@@ -401,7 +401,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
@@ -427,7 +427,7 @@ public:
 	{
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 			sum += scalar_data[i]*scalar_data[i];
@@ -446,7 +446,7 @@ public:
 		double c = 0.0;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{

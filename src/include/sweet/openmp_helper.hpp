@@ -8,6 +8,7 @@
 #define SRC_EXAMPLES_OPENMP_HELPER_HPP_
 
 
+
 /**
  * This is a class to overcome SIMD instruction issues with older GNU compilers
  */
@@ -27,9 +28,18 @@
 	#define SWEET_THREADING_TIME_PARALLEL_FOR_SIMD
 	#define SWEET_THREADING_TIME_PARALLEL_FOR_SIMD_COLLAPSE2
 
+	#define PROC_BIND_CLOSE
+
 #else
 
 	#define SWEET_OMP_PARALLEL_FOR _Pragma("omp parallel for")
+
+	// http://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+	#if __GNUC__ >= 7
+		#define PROC_BIND_CLOSE proc_bind(close)
+	#else
+		#define PROC_BIND_CLOSE 
+	#endif
 
 	#if SWEET_SIMD_ENABLE
 		#define SWEET_OMP_PARALLEL_FOR_SIMD _Pragma("omp parallel for simd")

@@ -68,7 +68,7 @@
 
 
 #define PLANE_DATA_PHYSICAL_FOR_IDX_REDUCTION(CORE, REDUCTION)				\
-		_Pragma("omp parallel for "##REDUCTION##" proc_bind(close)")	\
+		_Pragma("omp parallel for "##REDUCTION##" "##PROC_BIND_CLOSE##"")	\
 		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
 		{	CORE;	}
 
@@ -914,7 +914,7 @@ public:
 		bool isallfinite = true;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(&&:isallfinite)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 #if __GNUC__ == 5
@@ -938,7 +938,7 @@ public:
 
 		double maxabs = -1;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(max:maxabs)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(max:maxabs)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			maxabs = std::max(std::abs(physical_space_data[i]), maxabs);
@@ -958,7 +958,7 @@ public:
 		double sum = 0;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i]*physical_space_data[i];
@@ -980,7 +980,7 @@ public:
 		double c = 0;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -1012,7 +1012,7 @@ public:
 		double maxvalue = -std::numeric_limits<double>::max();
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(max:maxvalue)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			maxvalue = std::max(physical_space_data[i], maxvalue);
@@ -1031,7 +1031,7 @@ public:
 		double minvalue = std::numeric_limits<double>::max();
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(min:minvalue)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			minvalue = std::min(physical_space_data[i], minvalue);
@@ -1049,7 +1049,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i];
@@ -1068,7 +1068,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -1095,7 +1095,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += std::abs(physical_space_data[i]);
@@ -1114,7 +1114,7 @@ public:
 		double sum = 0;
 		double c = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -1142,7 +1142,7 @@ public:
 
 		double sum = 0;
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			sum += physical_space_data[i]*physical_space_data[i];
@@ -1163,7 +1163,7 @@ public:
 		double c = 0.0;
 
 #if SWEET_THREADING_SPACE
-#pragma omp parallel for proc_bind(close) reduction(+:sum,c)
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
