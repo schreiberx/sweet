@@ -17,7 +17,7 @@ matrix:
             - g++-7
             - gfortran-7
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && F90=gfortran-7"
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && FC=gfortran-7 && F90=gfortran-7"
 
     # Test with G++-8
     - os: linux
@@ -29,7 +29,7 @@ matrix:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && F90=gfortran-8"
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && FC=gfortran-8 && F90=gfortran-8"
 
 
 addons:
@@ -51,5 +51,6 @@ before_install:
   - ./setup_local_software.sh || exit 1
 
 
-install:
+# Skip installation phase (install: true)
+install: true
   - echo "Dummy installer"
