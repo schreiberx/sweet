@@ -28,7 +28,6 @@ if [[ "#$1" != "#" && "#$1" != "#auto" ]]; then
 	echo_info_hline
 
 	PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_$1/env_vars.sh")
-	echo "PLATFORM_ENV_VARS: ${PLATFORM_ENV_VARS}"
 
 	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
 		echo_error "File '${PLATFORM_ENV_VARS}' not found!"
@@ -82,6 +81,7 @@ else
 	# Try with autodetection of platforms
 	#
 	for i in $SWEET_ROOT/platforms/??_*; do
+		echo "Testing for platform directory $i"
 		cd "$i"
 		load_this_platform
 		if [ $? -eq 0 ]; then
