@@ -29,8 +29,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_parareal_ode/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_parareal_ode/test.sh
 
 
     # Test with G++-8
@@ -43,8 +43,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_spectral_visualization/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_spectral_visualization/test.sh
 
 
     # Test with G++-8
@@ -57,8 +57,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_swe_plane/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_swe_plane/test.sh
 
 
     # Test with G++-8
@@ -71,8 +71,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_burgers/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_burgers/test.sh
 
 
     # Test with G++-8
@@ -85,8 +85,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_burgers.sh/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_burgers.sh/test.sh
 
 
     # Test with G++-8
@@ -99,8 +99,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_advection/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_advection/test.sh
 
 
     # Test with G++-8
@@ -113,8 +113,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_swe_plane_staggered_vector_invariant/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_swe_plane_staggered_vector_invariant/test.sh
 
 
     # Test with G++-8
@@ -127,8 +127,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_swe_plane_nonstaggered_vector_invariant/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_swe_plane_nonstaggered_vector_invariant/test.sh
 
 
     # Test with G++-8
@@ -141,8 +141,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_swe_sphere/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_swe_sphere/test.sh
 
 
     # Test with G++-8
@@ -155,8 +155,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_lagrangian_plane_test/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_lagrangian_plane_test/test.sh
 
 
     # Test with G++-8
@@ -169,8 +169,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/10_compile_test_sphere_output_spherical_harmonics/test.sh && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/10_compile_test_sphere_output_spherical_harmonics/test.sh
 
 
     # Test with G++-8
@@ -183,8 +183,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/50_planedata_antialiasing_frequencies/test.py && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_planedata_antialiasing_frequencies/test.py
 
 
     # Test with G++-8
@@ -197,8 +197,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/50_prog_swe_sphere_geostrophic_balance/test.py && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_prog_swe_sphere_geostrophic_balance/test.py
 
 
     # Test with G++-8
@@ -211,8 +211,8 @@ jobs:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="TESTSCRIPT=./tests/50_planedata_antialiasing_patterns/test.py && export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: $TESTSCRIPT
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_planedata_antialiasing_patterns/test.py
 
 
 

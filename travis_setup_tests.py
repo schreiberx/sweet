@@ -109,10 +109,12 @@ jobs:
 
 	c = 0
 	for (j, test) in product(jobs_list, tests):
-		j = j.replace('MATRIX_EVAL="', 'MATRIX_EVAL="TESTSCRIPT='+test+' && ')
-		f.write(j)
-#		f.write("      script: "+test)
-		f.write("      script: $TESTSCRIPT")
+		if True:
+			f.write(j)
+			f.write("      script: "+test)
+		else:
+			j = j.replace('MATRIX_EVAL="', 'MATRIX_EVAL="TESTSCRIPT='+test+' && ')
+			f.write("      script: $TESTSCRIPT")
 		f.write("\n")
 		f.write("\n")
 		c += 1
