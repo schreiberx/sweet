@@ -51,6 +51,10 @@ function config_setup()
 		echo_error_exit "config_setup() PKG_NAME is not set"
 	fi
 
+	echo_info_hline
+	echo_info "Package: ${PKG_NAME}"
+	echo_info_hline
+
 	if [[ ! -z "DEBUG" ]]; then
 		export PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
 
@@ -155,10 +159,6 @@ function config_package_test_existing_dir_fun()
 	# PKG_SRC_SUBDIR: string
 	#	Name of folder in which the source code can be found after extracting the package
 	#
-	echo_info_hline
-	echo_info "Package: ${PKG_NAME}"
-	echo_info_hline
-
 	#echo ${PKG_INSTALLED_FILE}
 	if [ "$1" = "FORCE"  ]; then
 		echo_warning "FORCE detected => reinstallation of package"
