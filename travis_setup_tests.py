@@ -110,6 +110,7 @@ jobs:
 	c = 0
 	for (j, test) in product(jobs_list, tests):
 		if True:
+			# This version allows reutilizing the cache
 			f.write(j)
 			f.write("      script: "+test)
 		else:
