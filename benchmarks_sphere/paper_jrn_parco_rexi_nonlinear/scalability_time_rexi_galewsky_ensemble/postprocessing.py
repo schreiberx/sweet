@@ -158,5 +158,5 @@ p.gen_plot_from_tabledata(
 		bars_annotate_with_labels=True,
 		bars_filled=False,
 		legend=False,
-		ylim=(1e-12, 1000),
+		ylim=(1e-6, 1000),
 	)

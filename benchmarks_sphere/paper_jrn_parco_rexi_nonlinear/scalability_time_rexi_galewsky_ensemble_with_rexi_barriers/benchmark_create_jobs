@@ -6,6 +6,7 @@ import math
 
 from itertools import product
 
+from mule.exec_program import *
 
 from SWEET import *
 p = SWEETJobGeneration()
@@ -13,47 +14,73 @@ p = SWEETJobGeneration()
 verbose = False
 #verbose = True
 
+
+#testrun = True
+testrun = False
+
 ##################################################
 
-p.compile.compiler = 'gnu'
-p.compile.sweet_mpi = 'disable'
+##################################################
+
+p.compile.mode = 'release'
+if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gnu'
+else:
+	p.compile.compiler = 'intel'
+p.compile.sweet_mpi = 'enable'
+
+p.compile.rexi_timings_additional_barriers = 'enable'
+
 p.runtime.mode_res = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
-p.compile.threading = 'omp'
 
-p.parallelization.core_affinity = 'compact'
 p.parallelization.core_oversubscription = False
+p.parallelization.core_affinity = 'compact'
 
+p.compile.threading = 'omp'
+p.compile.rexi_thread_parallel_sum = 'disable'
+
+gen_reference_solution = True
 gen_reference_solution = False
 
-#p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
-p.runtime.simtime = 720 #timestep_size_reference*(2**6)*10
+p.runtime.simtime = 60*60*24*5	# 5 days
 
-params_timestep_sizes_explicit = [30]
-#timestep_sizes_explicit = [10, 20, 30, 60, 120, 180]
+#params_timestep_sizes_explicit = [30]
+params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180, 360]
+params_timestep_sizes_explicit = [20, 30, 60, 120, 180, 360]
 
-params_timestep_sizes_implicit = [30]
-#timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720]
+#params_timestep_sizes_implicit = [30]
+params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
 
-params_timestep_sizes_rexi = [30]
-#timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720]
+#params_timestep_sizes_rexi = [30]
+params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
+params_timestep_sizes_rexi = [300]
+
+p.runtime.simtime = 300*100	# 100 time steps
+
+if testrun:
+	params_timestep_sizes_explicit = [20, 30]
+	params_timestep_sizes_implicit = [360, 480, 600]
+	params_timestep_sizes_rexi = [360, 480, 600]
+
 
 # Parallelization
-#params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
-params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_node]
+params_pspace_num_cores_per_rank = [p.platform_resources.num_cores_per_socket]
 #params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_socket+1)]
-params_pspace_num_threads_per_rank = [i for i in range(1, p.platform_resources.num_cores_per_node+1)]
-
-params_ptime_num_cores_per_rank = [1]
+params_pspace_num_threads_per_rank = [p.platform_resources.num_cores_per_socket]
+params_ptime_num_cores_per_rank = [2**i for i in range(0, 8)]
 
 unique_id_filter = []
-unique_id_filter.append('simparams')
-unique_id_filter.append('rexi_params')
-unique_id_filter.append('compiler')
+#unique_id_filter.append('simparams')
+unique_id_filter.append('compile')
 unique_id_filter.append('disc_space')
 unique_id_filter.append('timestep_order')
-unique_id_filter.append('timestep_size')
+#unique_id_filter.append('timestep_size')
+unique_id_filter.append('rexi_params')
 unique_id_filter.append('benchmark')
+
+# 10 ensemble runs
+params_ensemble_range = range(0, 10)
 
 p.unique_id_filter = unique_id_filter
 
@@ -61,13 +88,21 @@ p.unique_id_filter = unique_id_filter
 p.runtime.output_timestep_size = p.runtime.simtime
 
 # No output
-p.runtime.output_filename = "-"
+#p.runtime.output_filename = "-"
 
 # REXI stuff
 params_ci_N = [128]
 #params_ci_N = [1]
 params_ci_max_imag = [30.0]
 params_ci_max_real = [10.0]
+
+#
+# Scale the CI circle radius relative to this time step size
+# We do this simply to get a consistent time stepping method
+# Otherwise, CI would not behave consistently
+#
+params_ci_max_imag_scaling_relative_to_timestep_size = 480
+params_ci_max_imag_scaling_relative_to_timestep_size = None
 
 ##################################################
 
@@ -82,6 +117,18 @@ def estimateWallclockTime(p):
 	"""
 	Return an estimated wallclock time
 	"""
+
+
+	###
+	### ALWAYS RETURN 15 MINUTES
+	### We're interested in runs which take up to 10 minutes
+	###
+	return 60*15
+	###
+	###
+	###
+
+
 	#
 	# Reference wallclock time and corresponding time step size
 	# e.g. for explicit RK2 integration scheme
@@ -108,8 +155,8 @@ def estimateWallclockTime(p):
 	# linear with time step size
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
 
-	# inverse quadratic with resolution
-	wallclock_seconds *= pow(p.runtime.mode_res/ref_mode_res, 2.0)
+	# quadratic with resolution
+	wallclock_seconds *= pow(ref_mode_res/p.runtime.mode_res, 2.0)
 
 	if p.runtime.rexi_method != '':
 		if p.runtime.rexi_method != 'ci':
@@ -129,6 +176,9 @@ def estimateWallclockTime(p):
 
 	wallclock_seconds *= safety_scaling
 	wallclock_seconds += safety_add
+
+	if wallclock_seconds > p.platform_resources.max_wallclock_seconds:
+		wallclock_seconds = p.platform_resources.max_wallclock_seconds
 
 	return wallclock_seconds
 
@@ -184,12 +234,9 @@ p.runtime.compute_error = 0
 #
 p.runtime.rexi_sphere_preallocation = 1
 
-#
-# Deactivate instability checks
-#
+# Leave instability checks activated
+# Don't activate them since they are pretty costly!!!
 p.runtime.instability_checks = 0
-
-p.compile.rexi_thread_parallel_sum = 'disable'
 
 
 #
@@ -243,21 +290,46 @@ if __name__ == "__main__":
 		if group == 'ln2':
 			ts_methods = [
 				['ln_erk',		4,	4,	0],	# reference solution
-				['ln_erk',		2,	2,	0],
 
-				#['lg_irk_lc_n_erk_ver0',	2,	2,	0],
-				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
-				#['l_irk_n_erk_ver0',	2,	2,	0],
-				#['l_irk_n_erk_ver1',	2,	2,	0],
+				###########
+				# Runge-Kutta
+				###########
+#				['ln_erk',		2,	2,	0],
 
-				#['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
+				###########
+				# CN
+				###########
+#				['lg_irk_lc_n_erk_ver0',	2,	2,	0],
+#				['lg_irk_lc_n_erk_ver1',	2,	2,	0],
+
+#				['l_irk_n_erk_ver0',	2,	2,	0],
+#				['l_irk_n_erk_ver1',	2,	2,	0],
+
+				###########
+				# REXI
+				###########
+#				['lg_rexi_lc_n_erk_ver0',	2,	2,	0],
 				['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
-				#['l_rexi_n_erk_ver0',	2,	2,	0],
-				#['l_rexi_n_erk_ver1',	2,	2,	0],
 
-				['lg_rexi_lc_n_etdrk',	2,	2,	0],
-				#['l_rexi_n_etdrk',	2,	2,	0],
+#				['l_rexi_n_erk_ver0',	2,	2,	0],
+#				['l_rexi_n_erk_ver1',	2,	2,	0],
+
+				###########
+				# ETDRK
+				###########
+#				['lg_rexi_lc_n_etdrk',	2,	2,	0],
+#				['l_rexi_n_etdrk',	2,	2,	0],
 			]
+
+			if testrun:
+				ts_methods = [
+					['ln_erk',		4,	4,	0],	# reference solution
+					['ln_erk',		2,	2,	0],
+
+					['lg_irk_lc_n_erk_ver1',	2,	2,	0],
+					['lg_rexi_lc_n_erk_ver1',	2,	2,	0],
+					['lg_rexi_lc_n_etdrk',	2,	2,	0],
+				]
 
 		# 4th order nonlinear
 		if group == 'ln4':
@@ -266,6 +338,7 @@ if __name__ == "__main__":
 				['l_rexi_n_etdrk',	4,	4,	0],
 				['ln_erk',		4,	4,	0],
 			]
+
 
 		#
 		# Reference solution
@@ -304,8 +377,9 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID(unique_id_filter))
+			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID())
 
+			p.reference_job_unique_id = p.job_unique_id
 
 
 		#
@@ -324,24 +398,33 @@ if __name__ == "__main__":
 
 			tsm_name = tsm[0]
 			if 'ln_erk' in tsm_name:
-				timestep_sizes = params_timestep_sizes_explicit
+				params_timestep_sizes = params_timestep_sizes_explicit
 			elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
-				timestep_sizes = params_timestep_sizes_explicit
+				params_timestep_sizes = params_timestep_sizes_explicit
 			elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
-				timestep_sizes = params_timestep_sizes_implicit
+				params_timestep_sizes = params_timestep_sizes_implicit
 			elif 'l_rexi' in tsm_name or 'lg_rexi' in tsm_name:
-				timestep_sizes = params_timestep_sizes_rexi
+				params_timestep_sizes = params_timestep_sizes_rexi
 			else:
 				print("Unable to identify time stepping method "+tsm_name)
 				sys.exit(1)
 
-			for pspace_num_cores_per_rank, pspace_num_threads_per_rank, p.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, timestep_sizes):
+			for	(
+					pspace_num_cores_per_rank,
+					pspace_num_threads_per_rank,
+					p.runtime.timestep_size,
+					ensemble_id
+				) in product(
+					params_pspace_num_cores_per_rank,
+					params_pspace_num_threads_per_rank,
+					params_timestep_sizes,
+					params_ensemble_range
+				):
 				pspace = SWEETParallelizationDimOptions('space')
 				pspace.num_cores_per_rank = pspace_num_cores_per_rank
 				pspace.num_threads_per_rank = pspace_num_threads_per_rank
 				pspace.num_ranks = 1
 				pspace.setup()
-
 
 				if not '_rexi' in p.runtime.timestepping_method:
 					p.runtime.rexi_method = ''
@@ -367,6 +450,10 @@ if __name__ == "__main__":
 				else:
 
 					for ci_N, ci_max_imag, ci_max_real in product(params_ci_N, params_ci_max_imag, params_ci_max_real):
+
+						if params_ci_max_imag_scaling_relative_to_timestep_size != None:
+							ci_max_imag *= (p.runtime.timestep_size/params_ci_max_imag_scaling_relative_to_timestep_size)
+
 						p.runtime.load_from_dict({
 							'rexi_method': 'ci',
 							'ci_n':ci_N,
@@ -378,26 +465,37 @@ if __name__ == "__main__":
 							#'ci_gaussian_filter_exp_N':0.0,
 						})
 
+						#time_ranks = ci_N
+						#if testrun:
+							#time_ranks = 4
+							#time_ranks = 1
+
 						for time_ranks in params_ptime_num_cores_per_rank:
+						#if True:
 
-								# Update TIME parallelization
-								ptime = SWEETParallelizationDimOptions('time')
-								ptime.num_cores_per_rank = 1
-								ptime.num_threads_per_rank = 1
-								ptime.num_ranks = time_ranks
-								ptime.setup()
+							# Update TIME parallelization
+							ptime = SWEETParallelizationDimOptions('time')
+							ptime.num_cores_per_rank = 1
+							ptime.num_threads_per_rank = 1
+							ptime.num_ranks = time_ranks
+							ptime.setup()
 
-								p.setup_parallelization([pspace, ptime])
+							p.setup_parallelization([pspace, ptime])
 
-								if verbose:
-									pspace.print()
-									ptime.print()
-									p.parallelization.print()
+							if verbose:
+								pspace.print()
+								ptime.print()
+								p.parallelization.print()
 
-								# Generate only scripts with max number of cores
-								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
+							# Generate only scripts with max number of cores
+							p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
+							jobdir = 'job_bench_ensemble'+str(ensemble_id).zfill(2)+'_'+p.getUniqueID()
+							p.gen_jobscript_directory(jobdir)
+
+#							if p.parallelization.num_nodes > 32:
+#								# If we have more than 64 ranks, hence more than 32 nodes, use this hack on Cheyenne on get higher priority
+#								o = exec_program(['sed', '-i', 's/#PBS -q economy/#PBS -q premium/', jobdir+'/run.sh'])
 
 	#
 	# SHTNS plan generation scripts
@@ -432,7 +530,7 @@ if __name__ == "__main__":
 			p.runtime.load_from_dict(tsm[4])
 
 
-		for pspace_num_cores_per_rank, pspace_num_threads_per_rank, p.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, timestep_sizes):
+		for pspace_num_cores_per_rank, pspace_num_threads_per_rank, p.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, [params_timestep_sizes_explicit[0]]):
 			pspace = SWEETParallelizationDimOptions('space')
 			pspace.num_cores_per_rank = pspace_num_cores_per_rank
 			pspace.num_threads_per_rank = pspace_num_threads_per_rank

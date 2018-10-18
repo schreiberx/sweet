@@ -221,7 +221,8 @@ for tagname_y in tagnames_y:
 					yscale = yscale,
 					outfile = fileid+".pdf",
 					lambda_fun = fun,
-					xlim = (10, 1000),
+					#xlim = (20, 800),
+					ylim = (1e-4, 1e+3),
 				)
 
 			print("Data plotting:")
