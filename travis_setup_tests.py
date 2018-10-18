@@ -43,7 +43,8 @@ jobs:
 
 	jobs_list = []
 
-	if False:
+	#if False:
+	if True:
 		jobs_list += [
 """
     # Test with G++-5
@@ -59,7 +60,8 @@ jobs:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
 """]
 
-	if False:
+	#if False:
+	if True:
 		jobs_list += [
 """
     # Test with G++-6
@@ -75,7 +77,8 @@ jobs:
         - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
 """]
 
-	if False:
+	#if False:
+	if True:
 		jobs_list += [
 """
     # Test with G++-7
