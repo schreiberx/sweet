@@ -18,6 +18,18 @@ dist: trusty
 matrix:
   include:
 
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+
     # Test with G++-6
     - os: linux
       addons:
@@ -55,18 +67,19 @@ matrix:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
 
 
-    # Test with clang
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang
-#            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=clang && export CXX=clang++"
-        #- MATRIX_EVAL="export CC=clang-7 && export CXX=clang++7 && export FC=gfortran-8 && export F90=gfortran-8"
+# lapack: Not possible yet to build with with clang (no Fortran...)
+#    # Test with clang
+#    - os: linux
+#      addons:
+#        apt:
+#          sources:
+#            - ubuntu-toolchain-r-test
+#          packages:
+#            - clang
+##            - gfortran-8
+#      env:
+#        - MATRIX_EVAL="export CC=clang && export CXX=clang++"
+#        #- MATRIX_EVAL="export CC=clang-7 && export CXX=clang++7 && export FC=gfortran-8 && export F90=gfortran-8"
 
 
 #
