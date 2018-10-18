@@ -11,7 +11,6 @@ if [ -z "$SWEET_ROOT" ]; then
 fi
 
 
-
 #
 # Setup variables where to download source, to compile and to install
 #
@@ -44,6 +43,46 @@ fi
 MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
 
 
+#
+# Travis build server requires output every 10 minutes, otherwise it's assumed to be dead and killed
+#
+# We use this alive thread to output some dots
+#
+function config_alive_thread()
+{
+	PREV_OUTPUT_LINES=$(wc -l < "${PKG_CONFIG_STD_OUTPUT}")
+	CONFIG_ALIVE_THREAD_EXIT=false
+	while [[ "$CONFIG_ALIVE_THREAD_EXIT" == "false" ]]; do
+		OUTPUT_LINES=$(wc -l < "${PKG_CONFIG_STD_OUTPUT}")
+		DIFF=$((OUTPUT_LINES-PREV_OUTPUT_LINES))
+		while [[ $DIFF -gt 0 ]]; do
+			echo -n "."
+			DIFF=$(($DIFF-1))
+		done
+		PREV_OUTPUT_LINES=$OUTPUT_LINES
+		sleep 1
+	done
+}
+
+function config_alive_thread_start()
+{
+	config_alive_thread &
+	CONFIG_ALIVE_THREAD_PID=$!
+
+	echo -n "MULE: Status ["
+}
+
+function config_alive_thread_stop()
+{
+	kill -0 $CONFIG_ALIVE_THREAD_PID
+	if [[ $? -eq 0 ]]; then
+		# Disown thread to avoid any "Terminated" message
+		disown $CONFIG_ALIVE_THREAD_PID
+		kill $CONFIG_ALIVE_THREAD_PID >/dev/null 2>&1
+		echo "] done"
+	fi
+}
+
 
 function config_setup()
 {
@@ -69,6 +108,9 @@ function config_setup()
 
 function config_error_exit()
 {
+	# Kill alive thread if it exists
+	config_alive_thread_stop
+
 	#
 	# print output message
 	# print log file
@@ -92,13 +134,13 @@ function config_extract_fun()
 	EXT="${0##*.}"
 	EXTRACT_PROG=""
 	if [ "#$EXT" = "#gz" ]; then
-		TAR_CMD="zf"
+		TAR_CMD="zvf"
 	elif [ "#$EXT" = "#tgz" ]; then
-		TAR_CMD="zf"
+		TAR_CMD="zvf"
 	elif [ "#$EXT" = "#xz" ]; then
-		TAR_CMD="f"
+		TAR_CMD="fv"
 	elif [ "#$EXT" = "#bz2" ]; then
-		TAR_CMD="jf"
+		TAR_CMD="jvf"
 	else
 		config_error_exit "Unknown extension '${EXT}'"
 	fi
@@ -108,13 +150,15 @@ function config_extract_fun()
 	echo $LIST_TAR
 
 	echo_info "Extracting '${EXTRACT_PROG}'"
-	EXTRACT_OUTPUT="$($EXTRACT_PROG || config_error_exit 'Failed to extract archive')"
+	$EXTRACT_PROG || config_error_exit 'Failed to extract archive'
 }
 
 function config_extract()
 {
 	echo "Exctracting $@"
-	config_extract_fun $@ >> $PKG_CONFIG_STD_OUTPUT
+	config_alive_thread_start
+	config_extract_fun $@ >> $PKG_CONFIG_STD_OUTPUT 2>&1
+	config_alive_thread_stop
 }
 
 
@@ -250,7 +294,9 @@ function config_package_extract()
 	fi
 
 	echo_info "Extracting '${EXTRACT_PROG}'"
-	EXTRACT_OUTPUT="$($EXTRACT_PROG || config_error_exit 'Failed to extract archive')"
+	config_alive_thread_start
+	$EXTRACT_PROG || config_error_exit 'Failed to extract archive'
+	config_alive_thread_stop
 
 	if [ ! -e "${PKG_SRC_SUBDIR}" ]; then
 		config_error_exit "Source folder '${PKG_SRC_SUBDIR}' not found"
@@ -266,31 +312,46 @@ function config_configure()
 {
 	M="./configure --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR $@"
 	echo_info "Executing '${M}'"
+
+	config_alive_thread_start
 	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
+	config_alive_thread_stop
 }
 function config_make_default()	# make
 {
 	M="make $MAKE_DEFAULT_OPTS $@"
 	echo_info "Executing '${M}'"
+
+	config_alive_thread_start
 	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
+	config_alive_thread_stop
 }
 function config_make_clean()	# make clean
 {
 	M="make $MAKE_DEFAULT_OPTS $@ clean"
 	echo_info "Executing '${M}'"
+
+	config_alive_thread_start
 	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
+	config_alive_thread_stop
 }
 function config_make_install()	# make install
 {
 	M="make $MAKE_DEFAULT_OPTS $@ install"
 	echo_info "Executing '${M}'"
+
+	config_alive_thread_start
 	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
+	config_alive_thread_stop
 }
 function config_exec()
 {
 	M="$@"
 	echo_info "Executing '${M}'"
+
+	config_alive_thread_start
 	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
+	config_alive_thread_stop
 }
 
 

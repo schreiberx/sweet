@@ -35,7 +35,7 @@ BACKDIR="$PWD"
 #	Output a horizontal separator line
 #
 
-export SWEET_ECHO_PREFIX="echo -n \"SWEET: \""
+export SWEET_ECHO_PREFIX="echo -n \"MULE: \""
 
 # Pretty output
 echo_info()( eval ${SWEET_ECHO_PREFIX}; echo "${@}"; )
