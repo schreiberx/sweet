@@ -1,5 +1,6 @@
 
 
+PKGS+=("install_lapack.sh")
 
 #PKGS+=("install_autoconf.sh")
 #PKGS+=("install_make.sh")
@@ -12,7 +13,6 @@ PKGS+=("install_fftw3.sh")
 PKGS+=("install_eigen3.sh")
 #PKGS+=("install_gcc5.3.sh")
 #PKGS+=("install_gcc7.2.sh")
-PKGS+=("install_lapack.sh")
 
 PKGS+=("install_likwid.sh")
 #PKGS+=("install_numactl.sh")

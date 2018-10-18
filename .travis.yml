@@ -3,7 +3,12 @@ language: cpp
 
 dist: trusty
 
-# Build matrix
+#
+# We want to setup the 3rd party libraries and test SWEET
+# with different software consellations
+#
+# This is called a build matrix and further described here
+#
 matrix:
   include:
 
@@ -17,7 +22,7 @@ matrix:
             - g++-7
             - gfortran-7
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7 && FC=gfortran-7 && F90=gfortran-7"
+        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
 
     # Test with G++-8
     - os: linux
@@ -29,9 +34,12 @@ matrix:
             - g++-8
             - gfortran-8
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8 && FC=gfortran-8 && F90=gfortran-8"
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
 
 
+#
+# 3rd party libraries which should be downloaded from the ubuntu repository
+#
 addons:
   apt:
     sources:
@@ -43,14 +51,30 @@ addons:
 
 
 before_install:
+  # Load matrix environment
   - echo "${MATRIX_EVAL}"
   - eval "${MATRIX_EVAL}"
+
+  # Debug output
   - hostname
+
+  # Load SEET environment variables
   - cd local_software || exit 1
   - source env_vars.sh || exit 1
+
+  # Setup additional SWEET software packages
   - ./setup_local_software.sh || exit 1
 
 
 # Skip installation phase (install: true)
 install: true
   - echo "Dummy installer"
+
+
+
+# Cache installed software
+# Once cached, the install scripts aren't executed anymore
+cache:
+  directories:
+    # Cache the install directory for SWEET's 3rd party software
+    local_software/local
