@@ -21,11 +21,9 @@ fi
 sed -i "s/ftn/${SWEET_MPIF90}/" Makefile.defaults || echo_error_exit "Replacing compiler failed"
 
 echo_info "Executing 'make clean'..."
-make clean || exit 1
+config_exec make clean || exit 1
 
-M="make FC=${SWEET_MPIF90}"
-echo_info "Executing '${M}'..."
-$M || exit 1
+config_exec make FC=${SWEET_MPIF90} || exit 1
 
 echo_info "Installing..."
 
