@@ -80,8 +80,8 @@ else
 	#
 	# Try with autodetection of platforms
 	#
+	echo "Testing debug output " $SWEET_ROOT/platforms/??_*
 	for i in $SWEET_ROOT/platforms/??_*; do
-		echo "Testing for platform directory $i"
 		cd "$i"
 		load_this_platform
 		if [ $? -eq 0 ]; then
