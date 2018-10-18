@@ -18,12 +18,11 @@ matrix:
 
 
 before_install:
-    - eval "${MATRIX_EVAL}"
-
-
-install:
+  - eval "${MATRIX_EVAL}"
   - hostname
   - cd local_software
   - source env_vars.sh
   - ./setup_local_software.sh
 
+
+install:
