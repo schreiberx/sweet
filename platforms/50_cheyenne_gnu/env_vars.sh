@@ -26,29 +26,15 @@ done
 #	g++ --show
 # to see what's really executed for the compiler
 #
-#export SWEET_CC=gcc
-#export SWEET_CXX=g++
-#export SWEET_F90=gfortran
 
-export SWEET_CC=/glade/u/apps/ch/opt/gnu/8.1.0/bin/gcc
-export SWEET_CXX=/glade/u/apps/ch/opt/gnu/8.1.0/bin/g++
-export SWEET_F90=/glade/u/apps/ch/opt/gnu/8.1.0/bin/gfortran
+export CC=/glade/u/apps/ch/opt/gnu/8.1.0/bin/gcc
+export CXX=/glade/u/apps/ch/opt/gnu/8.1.0/bin/g++
+export F90=/glade/u/apps/ch/opt/gnu/8.1.0/bin/gfortran
+export FC=/glade/u/apps/ch/opt/gnu/8.1.0/bin/gfortran
+export LINK=$CXX
+export LD=ld
 
 export SWEET_MPICC=mpicc
 export SWEET_MPICXX=mpicxx
 export SWEET_MPIF90=mpif90
-
-export SWEET_LINK=$SWEET_CXX
 export SWEET_MPILINK=$SWEET_MPICXX
-
-#
-# local software compile overrides
-#
-export F90=$SWEET_F90
-export FC=$F90
-export CC=$SWEET_CC
-export CXX=$SWEET_CXX
-export LINK=$SWEET_CXX
-export LD=ld
-
-

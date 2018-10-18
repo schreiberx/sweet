@@ -22,25 +22,15 @@ module load gcc/8
 # Compiler environment
 #
 
-export SWEET_CC=gcc
-export SWEET_CXX=g++
-export SWEET_F90=gfortran
+export CC=gcc
+export CXX=g++
+export F90=gfortran
+export FC=gfortran
+export LINK=$CXX
+export LD=ld
 
 export SWEET_MPICC=mpigcc
 export SWEET_MPICXX=mpigxx
 export SWEET_MPIF90=mpifc
-
-export SWEET_LINK=$SWEET_CXX
 export SWEET_MPILINK=$SWEET_MPICXX
-
-
-#
-# local software compile overrides
-#
-export F90=$SWEET_F90
-export FC=$F90
-export CC=$SWEET_CC
-export CXX=$SWEET_CXX
-export LINK=$SWEET_CXX
-export LD=ld
 
