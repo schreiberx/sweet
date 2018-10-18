@@ -4,7 +4,7 @@ source ./install_helpers.sh "" || exit 1
 
 
 # Name of package
-PKG_NAME="SHTNS Python"
+PKG_NAME="SHTNS_python"
 
 # Path to one file of installed package to test for existing installation
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python3.6/site-packages/shtns.py"
