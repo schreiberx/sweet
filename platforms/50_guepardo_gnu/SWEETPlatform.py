@@ -178,7 +178,7 @@ echo \"${EXEC} ${PARAMS}\"
 	if jobgeneration.compile.sweet_mpi == 'enable':
 		content += 'mpiexec -n '+str(p.num_ranks)+' '
 
-	content += "$EXEC $PARAMS"
+	content += "$EXEC $PARAMS || exit 1"
 	content += "\n"
 	content += "\n"
 

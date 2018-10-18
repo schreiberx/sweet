@@ -37,6 +37,8 @@ p.compile.quadmath = 'enable'
 
 params_compile_sweet_mpi = ['enable', 'disable']
 
+params_runtime_use_robert_functions = [0, 1]
+
 
 
 # Verbosity mode
@@ -57,12 +59,15 @@ p.runtime.instability_checks = 0
 ptime = SWEETParallelizationDimOptions('time')
 ptime.num_cores_per_rank = 1
 ptime.num_threads_per_rank = 1
-ptime.num_ranks = 4
+ptime.num_ranks = 2
 
 pspace = SWEETParallelizationDimOptions('space')
 pspace.num_cores_per_rank = 1
-pspace.num_threads_per_rank = p.platform_resources.num_cores_per_socket//4
+pspace.num_threads_per_rank = p.platform_resources.num_cores_per_socket//ptime.num_threads_per_rank
 pspace.num_ranks = 1
+
+if pspace.num_threads_per_rank == 0:
+	pspace.num_threads_per_rank = 1
 
 # Setup parallelization
 p.setup_parallelization([pspace, ptime])
@@ -197,18 +202,29 @@ if __name__ == "__main__":
 
 		for p.runtime.timestep_size in timestep_sizes:
 
-			for p.compile.threading, p.compile.rexi_thread_parallel_sum, p.runtime.rexi_extended_modes, p.compile.sweet_mpi in product(params_compile_threading, params_compile_thread_parallel_sum, params_ext_modes, params_compile_sweet_mpi):
-				if 'rexi_' in p.runtime.timestepping_method:
-					p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
+			for (p.compile.threading, p.compile.rexi_thread_parallel_sum, p.runtime.rexi_extended_modes, p.compile.sweet_mpi) in product(params_compile_threading, params_compile_thread_parallel_sum, params_ext_modes, params_compile_sweet_mpi):
 
-				else:
-					if p.compile.sweet_mpi == 'enable':
-						continue
+				for p.runtime.use_robert_functions in params_runtime_use_robert_functions:
+					if 'rexi_' in p.runtime.timestepping_method:
 
-					if p.compile.rexi_thread_parallel_sum == 'enable':
-						continue
+						# Not implemented?
+						if p.runtime.use_robert_functions == 0 and '_l_rexi_' in p.runtime.timestepping_method:
+							continue
 
-					if p.runtime.rexi_extended_modes != 0:
-						continue
+						p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
-					p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
+					else:
+						# Not implemented?
+						if p.runtime.use_robert_functions == 0 and '_l_irk_' in p.runtime.timestepping_method:
+							continue
+
+						if p.compile.sweet_mpi == 'enable':
+							continue
+
+						if p.compile.rexi_thread_parallel_sum == 'enable':
+							continue
+
+						if p.runtime.rexi_extended_modes != 0:
+							continue
+
+						p.gen_jobscript_directory('job_bench_'+p.getUniqueID())

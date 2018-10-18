@@ -76,6 +76,9 @@ class SWEETJobGeneration(InfoError):
 		# This variable must be 'None' if this is a reference job
 		self.reference_job_unique_id = None
 
+		# Is this job a reference job?
+		self.reference_job = False
+
 		#
 		# Unique ID of this job script
 		# This is *** automatically generated *** if the job run.sh file is written!
@@ -327,7 +330,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 
 
 
-	def gen_jobscript_directory(self, i_job_dirpath):
+	def gen_jobscript_directory(self, i_job_dirpath = None):
 		"""
 		Generate a job script directory with
 			run.sh:		Job script
@@ -339,6 +342,14 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 			Directory to generate job script in.
 			There is one directory per job!
 		"""
+
+		# Generate default jobname
+		if i_job_dirpath == None:
+			# Follow MULE's naming convention for job scripts
+			if self.reference_job:
+				i_job_dirpath = 'job_benchref_'+self.getUniqueID()
+			else:
+				i_job_dirpath = 'job_bench_'+self.getUniqueID()
 
 		# Job directory
 		self.p_job_dirpath = os.path.abspath(i_job_dirpath)

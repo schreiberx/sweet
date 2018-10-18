@@ -337,7 +337,7 @@ E=\""""+mpiexec+"""${EXEC} ${PARAMS}\"
 echo
 echo "Executing..."
 echo "$E"
-$E
+$E || exit 1
 
 """
 

@@ -13,9 +13,8 @@ class SWEETRuntimeOptions(InfoError):
 
 		InfoError.__init__(self, "SWEETRuntimeOptions")
 
-	#	self.mode_res = 32
-		self.mode_res = -1
-		self.phys_res = -1
+		self.mode_res = None
+		self.phys_res = None
 
 		self.output_timestep_size = 0.0001
 		self.output_filename = ''
@@ -261,6 +260,10 @@ class SWEETRuntimeOptions(InfoError):
 
 		idstr += '_S'+str(self.simtime).zfill(6)
 
+		if self.spectralderiv != 0:
+			idstr += '_spd'+str(self.spectralderiv)
+
+
 		if self.rexi_method != '':
 			if self.rexi_method == 'direct' or self.rexi_use_direct_solution:
 				idstr += '_REXIDIR'
@@ -314,11 +317,17 @@ class SWEETRuntimeOptions(InfoError):
 			idstr += '_PF'+str(self.polvani_froude)
 
 		if not 'disc_space' in filter_list:
-			if self.mode_res != -1:
-				idstr += '_M'+str(self.mode_res).zfill(4)
+			if self.mode_res != None:
+				if isinstance(self.mode_res, (list, tuple)):
+					idstr += '_M'+str("x".join([str(x).zfill(4) for x in self.mode_res]))
+				else:
+					idstr += '_M'+str(self.mode_res).zfill(4)
 
-			if self.phys_res != -1:
-				idstr += '_N'+str(self.phys_res).zfill(4)
+			if self.phys_res != None:
+				if isinstance(self.phys_res, (list, tuple)):
+					idstr += '_N'+str("x".join([str(x).zfill(4) for x in self.phys_res]))
+				else:
+					idstr += '_N'+str(self.phys_res).zfill(4)
 
 			idstr += '_rob'+str(self.use_robert_functions)
 
@@ -335,10 +344,11 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' -f '+str(self.f)
 		retval += ' -F '+str(self.f_sphere)
 		retval += ' -a '+str(self.r)
-		if self.mode_res != -1:
-			retval += ' -M '+str(self.mode_res)
-		if self.phys_res != -1:
-			retval += ' -N '+str(self.phys_res)
+		if self.mode_res != None:
+			retval += ' -M '+str(",".join([str(x) for x in self.mode_res]))
+
+		if self.phys_res != None:
+			retval += ' -N '+str(",".join([str(x) for x in self.phys_res]))
 
 		retval += ' --pde-id '+str(self.pde_id)
 		retval += ' --staggering='+str(self.staggering)

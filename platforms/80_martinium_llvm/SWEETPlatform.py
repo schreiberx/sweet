@@ -61,7 +61,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "martinium_gnu"
+	return "martinium_llvm"
 
 
 def get_platform_resources():
@@ -162,7 +162,7 @@ PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
 # Ensure that program is only executed on physical cores!
-"""+limit_to_physical_cores+""" $EXEC $PARAMS
+"""+limit_to_physical_cores+""" $EXEC $PARAMS || exit 1
 
 """
 

@@ -6,6 +6,8 @@ import os
 import sys
 from subprocess import Popen, PIPE
 
+from sweet.postprocessing.SphereDataPhysicalDiff import *
+
 
 # Load simulation time to get reference file
 import jobs_create as jc
@@ -33,6 +35,7 @@ groups = [
 	['ln2space', 2]
 ]
 
+error = False
 for group_info in groups:
 	group = group_info[0]
 	conv_order = group_info[1]
@@ -91,36 +94,19 @@ for group_info in groups:
 		print("")
 		print("Running tests for new group:")
 		for rundir in g:
-			progparams = ['./pp_compute_max_and_rms_errors.py', ref_dir+"/"+datafile, rundir+"/"+datafile, rundir]
-
-			p = Popen(progparams, stdout=PIPE, stderr=PIPE)
-			output, error = p.communicate()
-
-			if p.returncode != 0:
-				print("*"*80)
-				print("Exit code "+str(p.returncode))
-				print("EXEC: "+(" ".join(progparams)))
-				print("STDOUT: "+str(output))
-				print("STDERR: "+str(error))
+			try:
+				s = SphereDataPhysicalDiff(ref_dir+"/"+datafile, rundir+"/"+datafile)
+			except:
 				continue
 
-			result = output
-
-			result = result.decode()
-
-			# last line contains convergence info
-			if result[-1] == '\n':
-				result = result[0:-1]
-
-			# load error
-			last_conv_value = float(result.split('\t')[-1])
+			last_conv_value = s.norm_linf_value
 
 			if prev_conv_value == 0.0:
 				conv_test.append(0.0)
 			else:
 				conv_test.append(float(last_conv_value)/float(prev_conv_value))
 
-			print(result+"\t"+str(conv_test[-1]))
+			print(str(s.norm_linf_value)+"\t"+str(conv_test[-1]))
 			prev_conv_value = last_conv_value
 
 

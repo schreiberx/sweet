@@ -75,6 +75,7 @@ class Plotting(InfoError):
 			annotate = False,
 			annotate_each_nth_value = 3,
 			annotate_fontsize = False,
+			annotate_text_template = None,
 
 			bars_annotate_with_values = False,
 			bars_annotate_with_labels = False,
@@ -83,8 +84,12 @@ class Plotting(InfoError):
 			legend = True,
 			legend_fontsize = None,
 
+			grid = False,
+
 			tight_layout = True,
 			outfile = None,
+
+			lambda_fun = None,
 		):
 
 		if isinstance(figsize, float) or isinstance(figsize, int):
@@ -105,6 +110,7 @@ class Plotting(InfoError):
 		self.annotate = annotate
 		self.annotate_each_nth_value = annotate_each_nth_value
 		self.annotate_fontsize = annotate_fontsize
+		self.annotate_text_template = annotate_text_template
 
 		self.bars_annotate_with_values = bars_annotate_with_values
 		self.bars_annotate_with_labels = bars_annotate_with_labels
@@ -114,9 +120,14 @@ class Plotting(InfoError):
 		self.legend = legend
 		self.legend_fontsize = legend_fontsize
 
+		self.grid = grid
+
 		self.tight_layout = tight_layout
 
 		self.outfile = outfile
+
+		self.lambda_fun = lambda_fun
+
 
 	def plot_start(self):
 
@@ -141,6 +152,14 @@ class Plotting(InfoError):
 			self.ax.set_yscale(self.yscale, nonposy='clip')
 		if self.ylim != None:
 			self.ax.set_ylim(self.ylim[0], self.ylim[1])
+
+		if self.grid != False:
+			#plt.grid(True, which="both", ls="-", color='0.65')
+			plt.grid(True, ls="-", color='0.5')
+
+	
+		if self.lambda_fun != None:
+			self.lambda_fun(self)
 
 
 	def plot_finish(self):
@@ -215,9 +234,12 @@ class Plotting_ScatteredData(Plotting):
 					py.append(y[-1])
 
 				for i, txt in enumerate(px):
-
-					text = "%.1f" % (px[i])
-					self.ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=annotate_fontsize)
+					if self.annotate_text_template != None:
+						text = self.annotate_text_template.format(px[i], py[i])
+						self.ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=self.annotate_fontsize)
+					else:
+						text = "{:.1f}" % (px[i])
+						self.ax.annotate(text, (px[i]*1.03, py[i]*0.92), fontsize=self.annotate_fontsize)
 
 			c += 1
 	
@@ -296,6 +318,7 @@ class Plotting_Bars(Plotting):
 
 		self.ax.set_xticks(group_bars_center)
 		self.ax.set_xticklabels(group_names)
+
 		self.ax.set_ylabel('Wallclock time (seconds)')
 
 		for tick in self.ax.get_xticklabels():

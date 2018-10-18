@@ -180,7 +180,7 @@ EXEC=\"$SWEET_ROOT/build/"""+j.compile.getProgramName()+"""\"
 PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
-"""+mpiexec+""" $EXEC $PARAMS
+"""+mpiexec+""" $EXEC $PARAMS || exit 1
 
 """
 

@@ -145,10 +145,9 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 
 """+p_gen_script_info(jobgeneration)+"""
 
-# mpiexec ... would be here without a line break
 EXEC=\""""+jobgeneration.get_program_exec()+"""\"
 echo \"$EXEC\"
-$EXEC
+$EXEC || exit 1
 
 """
 

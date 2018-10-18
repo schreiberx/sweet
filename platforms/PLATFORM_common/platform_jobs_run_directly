@@ -28,10 +28,13 @@ for i in $DIRS; do
 
 	if [[ 0 -ne $EXIT_CODE ]]; then
 		echo_error_hline
-		echo_error_exit "ERROR"
+		echo_error "ERROR during job execution"
 		echo_error_hline
-		cat "output.out"
-		cat "output.err"
+		echo_error " Job directory: '$P'"
+		echo_error " See output.out and output.err in job directory for more information"
+		echo_error_hline
+		tail -n 100 "output.out"
+		tail -n 100 "output.err"
 		exit 1
 	fi
 
