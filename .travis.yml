@@ -55,6 +55,19 @@ matrix:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
 
 
+    # Test with clang-7
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang++-7
+#            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+
+
 #
 # 3rd party libraries which should be downloaded from the ubuntu repository
 #
@@ -128,4 +141,6 @@ script:
   - ./tests/10_compile_test_swe_sphere/test.sh || exit 1
   - ./tests/10_compile_test_lagrangian_plane_test/test.sh || exit 1
   - ./tests/10_compile_test_sphere_output_spherical_harmonics/test.sh || exit 1
+  - ./tests/50_planedata_antialiasing_frequencies/test.py || exit 1
+  - ./tests/50_planedata_antialiasing_patterns/test.py || exit 1
 ###SCRIPT_END###

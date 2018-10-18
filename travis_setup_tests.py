@@ -9,6 +9,7 @@ print("Setting up tests in travis file '"+travis_file+"'")
 
 
 files = glob.glob('./tests/??_*/test.sh')
+files += glob.glob('./tests/??_*/test.py')
 
 tests = ""
 
