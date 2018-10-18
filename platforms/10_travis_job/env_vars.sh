@@ -15,9 +15,13 @@ echo_warning_hline
 #export SWEET_CC=gcc-8
 #export SWEET_CXX=g++-8
 
-#export SWEET_MPICC=mpicc
-#export SWEET_MPICXX=mpic+_
-#export SWEET_MPIF90=mpif90
+# Other variables are automatically set via
+
+# OpenMPI
+export SWEET_MPICC=mpicc
+export SWEET_MPICXX=mpic++
+export SWEET_MPIF90=mpif90
+export SWEET_MPILINK=mpic++
 
 #export SWEET_LINK=$SWEET_CXX
 #export SWEET_MPILINK=$SWEET_MPICXX

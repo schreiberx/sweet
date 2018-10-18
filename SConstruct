@@ -522,12 +522,14 @@ override_list = ['CC', 'CXX', 'F90', 'LINK']
 for i in override_list:
 	if p.sweet_mpi == 'enable':
 		if 'SWEET_MPI'+i in env['ENV']:
-			print("INFO: Overriding environment variable "+i+"="+env['ENV']['SWEET_MPI'+i])
+			print("INFO: Using SWEET_MPI* environment variable to set "+i+"="+env['ENV']['SWEET_MPI'+i])
 			env[i] = env['ENV']['SWEET_MPI'+i]
 
 
 	else:
 		if 'SWEET_'+i in env['ENV']:
+			print("INFO: This feature seems to be not required anymore.")
+			print("INFO: Environment variables can be set in the platform scripts.")
 			print("INFO: Overriding environment variable "+i+"="+env['ENV']['SWEET_'+i])
 			env[i] = env['ENV']['SWEET_'+i]
 
