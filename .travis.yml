@@ -91,8 +91,6 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-     - libopenmpi-dev
-      - numactl
       - cmake
 
 
