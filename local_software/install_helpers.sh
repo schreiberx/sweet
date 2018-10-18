@@ -160,8 +160,15 @@ function config_package_extract()
 
 function config_package()
 {
+	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
+
+	echo_info "Creating std output file ${PKG_CONFIG_STD_OUTPUT}"
+	echo "" > $PKG_CONFIG_STD_OUTPUT
+	
+	echo_info "Downloading package..."
 	config_package_download $@ || exit 1
 
+	echo_info "Extracting package..."
 	config_package_extract || exit 1
 
 	echo_info "Suggesting to use '${NPROCS}' parallel build processes"
@@ -170,33 +177,43 @@ function config_package()
 
 function config_configure()
 {
+	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
+
 	M="./configure --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR $@"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED '${M}'"
+	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
 }
 function config_make_default()	# make
 {
+	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
+
 	M="make $MAKE_DEFAULT_OPTS $@"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED '${M}'"
+	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
 }
 function config_make_clean()	# make clean
 {
+	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
+
 	M="make $MAKE_DEFAULT_OPTS $@ clean"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED '${M}'"
+	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
 }
 function config_make_install()	# make install
 {
+	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
+
 	M="make $MAKE_DEFAULT_OPTS $@ install"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED '${M}'"
+	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
 }
 function config_exec()
 {
+	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
+
 	M="$@"
 	echo_info "Executing '${M}'"
-	$M || echo_error_exit "FAILED '${M}'"
+	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
 }
 
 # Combined functions
