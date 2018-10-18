@@ -55,6 +55,11 @@ function download() {
 
 function config_package_download()
 {
+	if [[ -z "$PKG_FILENAME" ]]; then
+		echo_error "Package filename not detected / not set, skipping extraction" >&2
+		return
+	fi
+
 	#
 	# PKG_NAME: string
 	#	Name of package. This is just for convenience.
@@ -108,6 +113,10 @@ function config_package_download()
 
 function config_package_extract()
 {
+	if [[ -z "$PKG_FILENAME" ]]; then
+		echo_error "Package filename not detected / not set, skipping extraction" >&2
+		return
+	fi
 
 	# Determine how to extract compressed file
 	# !!!
@@ -163,8 +172,8 @@ function config_package()
 	PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
 
 	echo_info "Creating std output file ${PKG_CONFIG_STD_OUTPUT}"
-	echo "" > $PKG_CONFIG_STD_OUTPUT
-	
+	echo "" > "$PKG_CONFIG_STD_OUTPUT"
+
 	echo_info "Downloading package..."
 	config_package_download $@ >> $PKG_CONFIG_STD_OUTPUT || exit 1
 
@@ -181,7 +190,7 @@ function config_configure()
 
 	M="./configure --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR $@"
 	echo_info "Executing '${M}'"
-	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
 }
 function config_make_default()	# make
 {
@@ -189,7 +198,7 @@ function config_make_default()	# make
 
 	M="make $MAKE_DEFAULT_OPTS $@"
 	echo_info "Executing '${M}'"
-	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
 }
 function config_make_clean()	# make clean
 {
@@ -197,7 +206,7 @@ function config_make_clean()	# make clean
 
 	M="make $MAKE_DEFAULT_OPTS $@ clean"
 	echo_info "Executing '${M}'"
-	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
 }
 function config_make_install()	# make install
 {
@@ -205,7 +214,7 @@ function config_make_install()	# make install
 
 	M="make $MAKE_DEFAULT_OPTS $@ install"
 	echo_info "Executing '${M}'"
-	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
 }
 function config_exec()
 {
@@ -213,7 +222,7 @@ function config_exec()
 
 	M="$@"
 	echo_info "Executing '${M}'"
-	$M >> $PKG_CONFIG_STD_OUTPUT || echo_error_exit "FAILED '${M}'"
+	$M >> "$PKG_CONFIG_STD_OUTPUT" || echo_error_exit "FAILED '${M}'"
 }
 
 # Combined functions

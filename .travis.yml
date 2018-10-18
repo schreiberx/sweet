@@ -1,3 +1,8 @@
+#
+# Script for Travis CI
+#
+# See doc/travis_ci.txt for more information
+#
 
 language: cpp
 
