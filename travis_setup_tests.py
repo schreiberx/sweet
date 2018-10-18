@@ -14,7 +14,7 @@ tests = ""
 
 for f in files:
 	print(" + Found test script "+f)
-	tests += '  - '+f+"\n"
+	tests += '  - '+f+" || exit 1\n"
 
 
 with open(travis_file, 'r') as f:
