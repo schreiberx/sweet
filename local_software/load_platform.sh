@@ -80,7 +80,7 @@ else
 	#
 	# Try with autodetection of platforms
 	#
-	echo "Testing debug output " $SWEET_ROOT/platforms/??_*
+	#echo "Testing debug output " $SWEET_ROOT/platforms/??_*
 	for i in $SWEET_ROOT/platforms/??_*; do
 		cd "$i"
 		load_this_platform
