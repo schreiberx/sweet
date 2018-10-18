@@ -103,10 +103,10 @@ if [ -z "${SWEET_PLATFORM_ID}" ]; then
 	return
 fi
 
+export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
+
 echo_info "         Using platform: '${SWEET_PLATFORM_ID}'"
 echo_info "     Platform directory: '${SWEET_PLATFORM_DIR}'"
-
-export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
 
 
 echo_success_hline
