@@ -54,7 +54,7 @@ function config_setup()
 	if [[ ! -z "DEBUG" ]]; then
 		export PKG_CONFIG_STD_OUTPUT="${SWEET_LOCAL_SOFTWARE_SRC_DIR}/${PKG_NAME}_config.out"
 
-		echo_info "config_setup() Creating std output file ${PKG_CONFIG_STD_OUTPUT}"
+		echo_info "Writing installer output to '${PKG_CONFIG_STD_OUTPUT}'"
 		echo -n "" > "$PKG_CONFIG_STD_OUTPUT"
 	else
 		export PKG_CONFIG_STD_OUTPUT="/dev/stdout"
