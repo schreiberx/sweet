@@ -118,7 +118,9 @@ install: true
 #
 # Cache installed software
 #
-# Once cached, the install scripts aren't executed anymore
+# After restoring the cache, the install scripts check for found
+# software and avoid recompiling and installing it.
+#
 # See https://docs.travis-ci.com/user/caching/
 #
 # The cache is setup amongst others based on the environment variables
