@@ -33,9 +33,10 @@ matrix:
 before_install:
   - eval "${MATRIX_EVAL}"
   - hostname
-  - cd local_software
-  - source env_vars.sh
-  - ./setup_local_software.sh
+  - cd local_software || exit 1
+  - source env_vars.sh || exit 1
+  - ./setup_local_software.sh || exit 1
 
 
 install:
+  - echo "Dummy installer"
