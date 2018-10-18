@@ -27,10 +27,7 @@ SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=enable --p
 echo "$SCONS"
 $SCONS  || exit
 
-
-
-mpiCC -v 2>&1 2> /dev/null
-if [ $? -eq 0 ]; then
+if [ "$SWEET_MPICXX" != "" ]; then
 	SCONS="scons --program=swe_plane --sweet-mpi=enable --rexi-thread-parallel-sum=enable --threading=off"
 	echo "$SCONS"
 	$SCONS  || exit
