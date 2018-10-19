@@ -63,8 +63,9 @@ class JobsData_GroupsPlottingScattered:
 
 				if not data_attribute_name in jobdata:
 					# Provide the option to filter out 'None'
-					if data_filter(x, placeholder, jobdata):
-						continue
+					if data_filter != None:
+						if data_filter(x, placeholder, jobdata):
+							continue
 
 					y = placeholder
 				else:

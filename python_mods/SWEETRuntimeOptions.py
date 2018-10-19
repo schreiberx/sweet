@@ -345,10 +345,16 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' -F '+str(self.f_sphere)
 		retval += ' -a '+str(self.r)
 		if self.mode_res != None:
-			retval += ' -M '+str(",".join([str(x) for x in self.mode_res]))
+			if isinstance(self.mode_res, (list, tuple)):
+				retval += ' -M '+str(",".join([str(x) for x in self.mode_res]))
+			else:
+				retval += ' -M '+str(self.mode_res)
 
 		if self.phys_res != None:
-			retval += ' -N '+str(",".join([str(x) for x in self.phys_res]))
+			if isinstance(self.phys_res, (list, tuple)):
+				retval += ' -N '+str(",".join([str(x) for x in self.phys_res]))
+			else:
+				retval += ' -N '+str(self.phys_res)
 
 		retval += ' --pde-id '+str(self.pde_id)
 		retval += ' --staggering='+str(self.staggering)
