@@ -159,79 +159,81 @@ for i in override_list:
 
 
 if p.compiler == 'gnu':
-	reqversion = [6,0,0]
 
-	#
-	# get gcc version using -v instead of -dumpversion since SUSE gnu compiler
-	# returns only 2 instead of 3 digits with -dumpversion
-	#
-	gccv = exec_command(env['CC']+' -v').splitlines()
+	if False:
+		reqversion = [5,0,0]
 
-	# updated to search for 'gcc version ' line prefix
-	found = False
-	found_line = ''
+		#
+		# get gcc version using -v instead of -dumpversion since SUSE gnu compiler
+		# returns only 2 instead of 3 digits with -dumpversion
+		#
 
-	search_string = 'gcc version '
-	for l in gccv:
-		if l[:len(search_string)] == search_string:
-			found_line = l
-			found = True
+		gccv = exec_command(env['CC']+' -v').splitlines()
 
-			gccversion = found_line.split(' ')[2].split('.')
-			break
+		# updated to search for 'gcc version ' line prefix
+		found = False
+		found_line = ''
 
-	if not found:
-		print(search_string+" not found... testing for next search string")
-		search_string = 'gcc-Version '
+		search_string = 'gcc version '
 		for l in gccv:
 			if l[:len(search_string)] == search_string:
 				found_line = l
 				found = True
-	
-				gccversion = found_line.split(' ')[1].split('.')
+
+				gccversion = found_line.split(' ')[2].split('.')
 				break
 
-	if not found:
-		print(search_string+" not found... testing if this is LLVM on MacOSX")
-		found = False
-		for l in gccv:
-			if 'Apple LLVM' in l:
-				found = True
-				break
 		if not found:
-			print("LLVM not detected")
-			sys.exit(1)
+			print(search_string+" not found... testing for next search string")
+			search_string = 'gcc-Version '
+			for l in gccv:
+				if l[:len(search_string)] == search_string:
+					found_line = l
+					found = True
+		
+					gccversion = found_line.split(' ')[1].split('.')
+					break
 
-		p.llvm_gnu_override = True
-		p.compiler = 'llvm'
+		if not found:
+			print(search_string+" not found... testing if this is LLVM on MacOSX")
+			found = False
+			for l in gccv:
+				if 'Apple LLVM' in l:
+					found = True
+					break
+			if not found:
+				print("LLVM not detected")
+				sys.exit(1)
 
-	else:
-		for i in range(0, 3):
-			if (int(gccversion[i]) > int(reqversion[i])):
-				break
-			if (int(gccversion[i]) < int(reqversion[i])):
-				print('At least GCC Version 4.6.1 necessary.')
-				Exit(1)
+			p.llvm_gnu_override = True
+			p.compiler = 'llvm'
 
-	if p.compiler == 'gnu':
-		# eclipse specific flag
-		env.Append(CXXFLAGS=' -fmessage-length=0')
+		else:
+			for i in range(0, 3):
+				if (int(gccversion[i]) > int(reqversion[i])):
+					break
+				if (int(gccversion[i]) < int(reqversion[i])):
+					print('At least GCC Version 4.6.1 necessary.')
+					Exit(1)
 
-		# c++0x flag
-		env.Append(CXXFLAGS=' -std=c++0x')
+	# eclipse specific flag
+	env.Append(CXXFLAGS=' -fmessage-length=0')
 
-		# be pedantic to avoid stupid programming errors
-	#	env.Append(CXXFLAGS=' -pedantic')
+	# c++0x flag
+	env.Append(CXXFLAGS=' -std=c++0x')
 
-		# speedup compilation - remove this when compiler slows down or segfaults by running out of memory
-		env.Append(CXXFLAGS=' -pipe')
+	# be pedantic to avoid stupid programming errors
+#	env.Append(CXXFLAGS=' -pedantic')
 
-		# activate gnu C++ compiler
+	# speedup compilation - remove this when compiler slows down or segfaults by running out of memory
+	env.Append(CXXFLAGS=' -pipe')
 
-		if p.fortran_source=='enable':
-			#env.Replace(F90='gfortran')
-			env.Append(F90FLAGS=' -cpp')
-			env.Append(LIBS=['gfortran'])
+	# activate gnu C++ compiler
+
+	if p.fortran_source=='enable':
+		#env.Replace(F90='gfortran')
+		env.Append(F90FLAGS=' -cpp')
+		env.Append(LIBS=['gfortran'])
 
 
 
