@@ -64,3 +64,4 @@ err_threshold = 1e-10
 if max_error > err_threshold or not math.isfinite(max_error):
 	raise Exception("Relative overall error exceeeds threshold "+str(err_threshold))
 
+print("Tests successful")
