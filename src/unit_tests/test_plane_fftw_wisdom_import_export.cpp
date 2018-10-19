@@ -2,6 +2,7 @@
 #include <fftw3.h>
 #include <omp.h>
 #include <cstdlib>
+#include <sweet/SimulationVariables.hpp>
 
 
 class TestFFTPlans
@@ -58,9 +59,7 @@ public:
 			int i_nthreads
 	)
 	{
-		static const char *wisdom_file = "sweet_fftw";
-
-
+#if SWEET_THREADING
 		std::cout << "fftw_init_threads()" << std::endl;
 		int retval = fftw_init_threads();
 		if (retval == 0)
@@ -72,6 +71,7 @@ public:
 
 		std::cout << "fftw_plan_with_nthreads(" << i_nthreads << ")" << std::endl;
 		fftw_plan_with_nthreads(i_nthreads);
+#endif
 
 		importWisdom(i_reuse_spectral_transformation_plans);
 
@@ -132,7 +132,9 @@ public:
 
 		exportWisdom();
 
+#if SWEET_THREADING
 		fftw_cleanup_threads();
+#endif
 		fftw_cleanup();
 
 		return 0;
@@ -143,34 +145,21 @@ public:
 
 int main(int i_argc, char **i_argv)
 {
-	int res[2] = {128, 128};
-	if (i_argc > 1)
-		res[0] = atoi(i_argv[1]);
-	if (i_argc > 2)
-		res[1] = atoi(i_argv[2]);
+	SimulationVariables simVars;
 
-	std::cout << "omp_get_max_threads() -> " << omp_get_max_threads() << std::endl;
-	std::cout << "omp_get_num_procs() -> " << omp_get_num_procs() << std::endl;
+	simVars.setupFromMainParameters(i_argc, i_argv, nullptr, true);
+	simVars.outputConfig();
 
-	int nthreads = -1;
-	if (i_argc > 3)
-		nthreads = atoi(i_argv[3]);
-
-	if (nthreads < 0)
-		nthreads = omp_get_max_threads();
-
-	int reuse_spectral_transformation_plans = 1;
-	if (i_argc > 4)
-		reuse_spectral_transformation_plans = atoi(i_argv[4]);
-
-	std::cout << " + res[0]: " << res[0] << std::endl;
-	std::cout << " + res[1]: " << res[1] << std::endl;
+#if SWEET_THREADING
+	int nthreads = omp_get_max_threads();
 	std::cout << " + nthreads: " << nthreads << std::endl;
-	std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
+#else
+	int nthreads = 0;
+#endif
 
 	TestFFTPlans t;
 
-	int retval = t.run(reuse_spectral_transformation_plans, res, nthreads);
+	t.run(simVars.misc.reuse_spectral_transformation_plans, simVars.disc.res_physical, nthreads);
 
 	std::cout << "FIN" << std::endl;
 
