@@ -78,11 +78,7 @@ public:
 	constexpr
 	bool isNone(T i_value)
 	{
-#if __GNUC__ == 5
-		return isnan(i_value);
-#else
 		return std::isnan(i_value);
-#endif
 	}
 
 

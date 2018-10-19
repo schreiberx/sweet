@@ -224,12 +224,7 @@ public:
 #pragma omp parallel for PROC_BIND_CLOSE reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
-#if __GNUC__ == 5
-			isallfinite = isallfinite && isfinite(scalar_data[i]);
-#else
 			isallfinite = isallfinite && std::isfinite(scalar_data[i]);
-#endif
-
 
 		return isallfinite;
 	}

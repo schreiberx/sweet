@@ -753,11 +753,7 @@ public:
 		)
 			return true;
 
-#if __GNUC__ == 5
-		if (!isinf(simVars.timecontrol.max_simulation_time))
-#else
 		if (!std::isinf(simVars.timecontrol.max_simulation_time))
-#endif
 			if (simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time+simVars.timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
 				return true;
 
