@@ -1,1 +1,0 @@
-../ref_solutions_sph_galewsky/postprocessing_script_output_2_output_benchmark.py
