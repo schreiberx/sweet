@@ -15,7 +15,7 @@ exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode != 0:
 	sys.exit(exitcode)
 
-exitcode = exec_program('./postprocess', catch_output=False)
+exitcode = exec_program('./postprocessing', catch_output=False)
 if exitcode != 0:
 	sys.exit(exitcode)
 
