@@ -7,6 +7,26 @@ __all__ = ['SWEETRuntimeOptions']
 
 class SWEETRuntimeOptions(InfoError):
 
+	"""
+	class RuntimeOption:
+		def __init__(self):
+			self.variable = None
+			self.name = 'rexi_use_direct_solution'
+
+		def load_from_dict(self, d):
+			if self.name in d:
+				self.variable = d[self.name]
+
+		def getUniqueID(self, filter_list = []):
+			if self.variable:
+				return '_REXIDIR'
+
+		def getRuntimeOptions(self):
+			return ' --rexi-use-direct-solution='+str(self.variable)
+	"""
+
+
+
 	def __init__(self, dummy_init = False):
 
 		self.init_phase = True
@@ -214,13 +234,13 @@ class SWEETRuntimeOptions(InfoError):
 	def getUniqueID(self, compileOptions : SWEETCompileOptions, filter_list : list = []):
 		idstr = ''
 
-		if not 'benchmark' in filter_list:
+		if not 'runtime.benchmark' in filter_list:
 			if self.benchmark_name != '':
 				idstr += '_b'+str(self.benchmark_name)
 			else:
 				idstr += '_b'+str(self.bench_id)
 
-		if not 'galewsky_params' in filter_list:
+		if not 'runtime.galewsky_params' in filter_list:
 			if self.benchmark_galewsky_umax > 0:
 				idstr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
 
@@ -230,7 +250,7 @@ class SWEETRuntimeOptions(InfoError):
 			if self.benchmark_galewsky_phi2 > 0:
 				idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
-		if not 'simparams' in filter_list:
+		if not 'runtime.simparams' in filter_list:
 			idstr += '_g'+str("{:05.2f}".format(self.g))
 			idstr += '_h'+str("{:010.3f}".format(self.h))
 			idstr += '_f'+str("{:e}".format(self.f))
@@ -244,77 +264,81 @@ class SWEETRuntimeOptions(InfoError):
 			idstr += '_u'+str(self.viscosity)
 			idstr += '_U'+str(self.viscosity_order)
 
-		if not 'timestep' in filter_list:
-			if not 'timestep_method' in filter_list:
+		if 'timestep' in filter_list:
+			raise Exception("Deprecated")
+
+		if not 'runtime.timestepping' in filter_list:
+			if not 'runtime.timestepping_method' in filter_list:
 				idstr += '_tsm_'+self.timestepping_method
 
-			if not 'timestep_order' in filter_list:
+			if not 'runtime.timestepping_order' in filter_list:
 				idstr += '_tso'+str(self.timestepping_order)
 				idstr += '_tsob'+str(self.timestepping_order2)
 
-			if not 'timestep_size' in filter_list:
+			if not 'runtime.timestepping_size' in filter_list:
 				idstr += '_C'+str("{:08.3f}".format(self.timestep_size))
 
-		if self.max_timesteps != -1:
-			idstr += '_T'+str(self.max_timesteps).zfill(3)
+			if self.max_timesteps != -1:
+				idstr += '_T'+str(self.max_timesteps).zfill(3)
 
-		idstr += '_S'+str(self.simtime).zfill(6)
-
-		if self.spectralderiv != 0:
-			idstr += '_spd'+str(self.spectralderiv)
+			idstr += '_S'+str(self.simtime).zfill(6)
 
 
-		if self.rexi_method != '':
-			if self.rexi_method == 'direct' or self.rexi_use_direct_solution:
-				idstr += '_REXIDIR'
-			else:
-				if self.rexi_method == "file":
-					idstr += '_REXIFIL'
-					if not 'rexi_params' in filter_list:
-						idstr += '_n'+str(self.rexi_file_n).zfill(8)
-						idstr += '_h'+str(self.rexi_file_h)
-						idstr += '_teabs'+str(self.rexi_file_test_abs).zfill(3)
-						idstr += '_mxer'+str(self.rexi_file_max_error)
+		if not 'runtime.rexi' in filter_list:
+			if self.rexi_method != '':
+				if self.rexi_method == 'direct' or self.rexi_use_direct_solution:
+					idstr += '_REXIDIR'
+				else:
+					if self.rexi_method == "file":
+						idstr += '_REXIFIL'
+						if not 'runtime.rexi_params' in filter_list:
+							idstr += '_n'+str(self.rexi_file_n).zfill(8)
+							idstr += '_h'+str(self.rexi_file_h)
+							idstr += '_teabs'+str(self.rexi_file_test_abs).zfill(3)
+							idstr += '_mxer'+str(self.rexi_file_max_error)
 
-				elif self.rexi_method == "terry":
-					idstr += '_REXITER'
-					if not 'rexi_params' in filter_list:
-						idstr += '_m'+str(self.rexi_terry_m).zfill(8)
-						idstr += '_h'+str(self.rexi_terry_h)
+					elif self.rexi_method == "terry":
+						idstr += '_REXITER'
+						if not 'runtime.rexi_params' in filter_list:
+							idstr += '_m'+str(self.rexi_terry_m).zfill(8)
+							idstr += '_h'+str(self.rexi_terry_h)
 
-				elif self.rexi_method == "ci":
-					idstr += '_REXICI'
+					elif self.rexi_method == "ci":
+						idstr += '_REXICI'
 
-					if not 'rexi_params' in filter_list:
-						idstr += '_n'+str(self.rexi_ci_n).zfill(8)
-						if self.rexi_ci_max_real > 0:
-							idstr += '_mr'+str(float(self.rexi_ci_max_real))
-							idstr += '_mi'+str(float(self.rexi_ci_max_imag))
-						else:
-							idstr += '_sx'+str(float(self.rexi_ci_sx))
-							idstr += '_sy'+str(float(self.rexi_ci_sy))
-							idstr += '_mu'+str(float(self.rexi_ci_mu))
-						idstr += '_pr'+str(self.rexi_ci_primitive)
-						idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
-						idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
-						idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
+						if not 'runtime.rexi_params' in filter_list:
+							idstr += '_n'+str(self.rexi_ci_n).zfill(8)
+							if self.rexi_ci_max_real > 0:
+								idstr += '_mr'+str(float(self.rexi_ci_max_real))
+								idstr += '_mi'+str(float(self.rexi_ci_max_imag))
+							else:
+								idstr += '_sx'+str(float(self.rexi_ci_sx))
+								idstr += '_sy'+str(float(self.rexi_ci_sy))
+								idstr += '_mu'+str(float(self.rexi_ci_mu))
+							idstr += '_pr'+str(self.rexi_ci_primitive)
+							idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
+							idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
+							idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
 
-				if not 'rexi_params' in filter_list:
-					idstr += '_nrm'+str(self.rexi_normalization)
-					idstr += '_hlf'+str(self.rexi_half_poles)
-					idstr += '_bf'+str(self.rexi_beta_cutoff)
+					if not 'runtime.rexi_params' in filter_list:
+						idstr += '_nrm'+str(self.rexi_normalization)
+						idstr += '_hlf'+str(self.rexi_half_poles)
+						idstr += '_bf'+str(self.rexi_beta_cutoff)
 
-				#if self.plane_or_sphere == 'sphere':
-				#idstr += '_pre'+str(self.rexi_sphere_preallocation)
-				idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
+					#if self.plane_or_sphere == 'sphere':
+					#idstr += '_pre'+str(self.rexi_sphere_preallocation)
+					idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
 
-				#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
+					#idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
 
-		if self.polvani_rossby >= 0:
-			idstr += '_PR'+str(self.polvani_rossby)
 
-		if self.polvani_froude >= 0:
-			idstr += '_PF'+str(self.polvani_froude)
+		if not 'runtime.polvani' in filter_list:
+			if self.polvani_rossby >= 0:
+				idstr += '_PR'+str(self.polvani_rossby)
+
+			if self.polvani_froude >= 0:
+				idstr += '_PF'+str(self.polvani_froude)
+
 
 		if not 'disc_space' in filter_list:
 			if self.mode_res != None:
@@ -330,6 +354,12 @@ class SWEETRuntimeOptions(InfoError):
 					idstr += '_N'+str(self.phys_res).zfill(4)
 
 			idstr += '_rob'+str(self.use_robert_functions)
+
+			if self.spectralderiv != 1:
+				idstr += '_spd'+str(self.spectralderiv)
+
+		if self.reuse_plans != -1:
+			idstr += '_plans'+str(self.reuse_plans)
 
 		if idstr != '':
 			idstr = "RT"+idstr
@@ -460,6 +490,85 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' --reuse-plans='+str(self.reuse_plans)
 
 		return retval
+
+
+	def get_jobscript_plan_exec_prefix(self, compile, runtime):
+		content = ""
+
+		plan_files = []
+		if compile.plane_spectral_space == 'enable':
+			plan_files.append('sweet_fftw')
+
+		if compile.sphere_spectral_space == 'enable':
+			plan_files.append('shtns_cfg')
+			plan_files.append('shtns_cfg_fftw')
+
+		#
+		# Reusing plans assumes them to be stored in the folder one level up in the hierarchy
+		#
+		if runtime.reuse_plans == -1:
+			# Quick plan generation mode, nothing to do
+			pass
+
+		elif runtime.reuse_plans == 0:
+			# Create plans, don't load/store them
+			pass
+
+		elif runtime.reuse_plans == 1:
+			content += "\n"
+			# Reuse plans if available
+			# No error if plans don't exist
+			for i in plan_files:
+				content += "cp ../"+i+" ./ 2>/dev/null\n"
+				
+		elif runtime.reuse_plans == 2:
+			content += "\n"
+			# Reuse and trigger error if they are not available
+			for i in plan_files:
+				content += "cp ../"+i+" ./ || exit 1\n"
+		else:
+			raise Exception("Invalid reuse_plans value"+str(jg.runtime.reuse_plans))
+
+		return content
+
+
+
+	def get_jobscript_plan_exec_suffix(self, compile, runtime):
+		content = ""
+
+		plan_files = []
+		if compile.plane_spectral_space == 'enable':
+			plan_files.append('sweet_fftw')
+
+		if compile.sphere_spectral_space == 'enable':
+			plan_files.append('shtns_cfg')
+			plan_files.append('shtns_cfg_fftw')
+
+		#
+		# Reusing plans assumes them to be stored in the folder one level up in the hierarchy
+		#
+		if runtime.reuse_plans == -1:
+			# Quick plan generation mode, nothing to do
+			pass
+
+		elif runtime.reuse_plans == 0:
+			# Create plans, don't load/store them
+			pass
+
+		elif runtime.reuse_plans == 1:
+			content += "\n"
+			# Write back plans to main directory to reuse them
+			for i in plan_files:
+				content += "cp ./"+i+" ../ 2>/dev/null\n"
+				
+		elif runtime.reuse_plans == 2:
+			pass
+
+		else:
+			raise Exception("Invalid reuse_plans value"+str(jg.runtime.reuse_plans))
+
+
+		return content
 
 
 if __name__ == "__main__":

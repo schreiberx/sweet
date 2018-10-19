@@ -88,9 +88,6 @@ env.Append(LINKFLAGS = p.ld_flags)
 
 
 
-p.llvm_gnu_override = False
-p.llvm_omp_override = False
-
 
 if p.plane_spectral_space == 'enable':
 	env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
@@ -205,7 +202,6 @@ if p.compiler == 'gnu':
 				print("LLVM not detected")
 				sys.exit(1)
 
-			p.llvm_gnu_override = True
 			p.compiler = 'llvm'
 
 		else:
@@ -326,7 +322,6 @@ if p.compiler == 'llvm':
 		print('WARNING: OpenMP with LLVM not supported, deactivating')
 		print("")
 
-		p.llvm_omp_override = True
 		p.threading = 'off'
 
 	# todo: fix me also for intel mpicxx compiler

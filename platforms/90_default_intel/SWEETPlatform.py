@@ -28,7 +28,7 @@ def _whoami(depth=1):
 
 
 
-def p_gen_script_info(jobgeneration : SWEETJobGeneration):
+def p_gen_script_info(jg : SWEETJobGeneration):
 	global _job_id
 
 	return """#
@@ -82,18 +82,18 @@ def get_platform_resources():
 
 
 
-def jobscript_setup(jobgeneration : SWEETJobGeneration):
+def jobscript_setup(jg : SWEETJobGeneration):
 	"""
 	Setup data to generate job script
 	"""
 
 	global _job_id
-	_job_id = jobgeneration.runtime.getUniqueID(jobgeneration.compile)
+	_job_id = jg.runtime.getUniqueID(jg.compile)
 	return
 
 
 
-def jobscript_get_header(jobgeneration : SWEETJobGeneration):
+def jobscript_get_header(jg : SWEETJobGeneration):
 	"""
 	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
@@ -104,7 +104,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	"""
 	content = """#! /bin/bash
 
-"""+p_gen_script_info(jobgeneration)+"""
+"""+p_gen_script_info(jg)+"""
 
 """
 
@@ -113,7 +113,7 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 
 
 
-def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
+def jobscript_get_exec_prefix(jg : SWEETJobGeneration):
 	"""
 	Prefix before executable
 
@@ -122,17 +122,14 @@ def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	content = """
-
-"""+p_gen_script_info(jobgeneration)+"""
-
-"""
+	content = ""
+	content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
 
 	return content
 
 
 
-def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
+def jobscript_get_exec_command(jg : SWEETJobGeneration):
 	"""
 	Prefix to executable command
 
@@ -143,10 +140,10 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 	"""
 	content = """
 
-"""+p_gen_script_info(jobgeneration)+"""
+"""+p_gen_script_info(jg)+"""
 
 # mpiexec ... would be here without a line break
-EXEC=\""""+jobgeneration.get_program_exec()+"""\"
+EXEC=\""""+jg.get_program_exec()+"""\"
 echo \"$EXEC\"
 $EXEC || exit 1
 
@@ -156,7 +153,7 @@ $EXEC || exit 1
 
 
 
-def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
+def jobscript_get_exec_suffix(jg : SWEETJobGeneration):
 	"""
 	Suffix before executable
 
@@ -165,17 +162,14 @@ def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	content = """
-
-"""+p_gen_script_info(jobgeneration)+"""
-
-"""
+	content = ""
+	content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
 
 	return content
 
 
 
-def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
+def jobscript_get_footer(jg : SWEETJobGeneration):
 	"""
 	Footer at very end of job script
 
@@ -186,7 +180,7 @@ def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 	"""
 	content = """
 
-"""+p_gen_script_info(jobgeneration)+"""
+"""+p_gen_script_info(jg)+"""
 
 """
 
@@ -195,7 +189,7 @@ def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 
 
 
-def jobscript_get_compile_command(jobgeneration, separate_file_output = False):
+def jobscript_get_compile_command(jg, separate_file_output = False):
 	"""
 	Compile command(s)
 
@@ -212,7 +206,7 @@ def jobscript_get_compile_command(jobgeneration, separate_file_output = False):
 
 	content = """
 
-SCONS="scons """+jobgeneration.compile.getSConsParams()+' -j 4"'+"""
+SCONS="scons """+jg.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """

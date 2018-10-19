@@ -54,18 +54,18 @@ def get_platform_resources():
 
 
 
-def jobscript_setup(j : SWEETJobGeneration):
+def jobscript_setup(jg : SWEETJobGeneration):
 	"""
 	Setup data to generate job script
 	"""
 
 	global _job_id
-	_job_id = j.runtime.getUniqueID(j.compile, j.unique_id_filter)
+	_job_id = jg.runtime.getUniqueID(jg.compile, jg.unique_id_filter)
 	return
 
 
 
-def jobscript_get_header(j : SWEETJobGeneration):
+def jobscript_get_header(jg : SWEETJobGeneration):
 	"""
 	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
@@ -76,16 +76,16 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	"""
 	global _job_id
 
-	p = j.parallelization
+	p = jg.parallelization
 	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 
 	#
 	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
 	#
 	content = """#! /bin/bash
-#SBATCH -o """+j.p_job_stdout_filepath+"""
-#SBATCH -e """+j.p_job_stderr_filepath+"""
-#SBATCH -D """+j.p_job_dirpath+"""
+#SBATCH -o """+jg.p_job_stdout_filepath+"""
+#SBATCH -e """+jg.p_job_stderr_filepath+"""
+#SBATCH -D """+jg.p_job_dirpath+"""
 #SBATCH -J """+_job_id+"""
 #SBATCH --get-user-env 
 #SBATCH --clusters=mpp2
@@ -110,7 +110,7 @@ source /etc/profile.d/modules.sh
 
 """
 
-	if j.compile.threading != 'off':
+	if jg.compile.threading != 'off':
 		content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 """
@@ -135,7 +135,7 @@ export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 
 
 
-def jobscript_get_exec_prefix(j : SWEETJobGeneration):
+def jobscript_get_exec_prefix(jg : SWEETJobGeneration):
 	"""
 	Prefix before executable
 
@@ -145,14 +145,14 @@ def jobscript_get_exec_prefix(j : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	p = j.parallelization
 	content = ""
+	content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
 
 	return content
 
 
 
-def jobscript_get_exec_command(j : SWEETJobGeneration):
+def jobscript_get_exec_command(jg : SWEETJobGeneration):
 	"""
 	Prefix to executable command
 
@@ -162,7 +162,7 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	p = j.parallelization
+	p = jg.parallelization
 
 	mpiexec = ''
 
@@ -176,8 +176,8 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 	content = """
 
 # mpiexec ... would be here without a line break
-EXEC=\"$SWEET_ROOT/build/"""+j.compile.getProgramName()+"""\"
-PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"
+EXEC=\"$SWEET_ROOT/build/"""+jg.compile.getProgramName()+"""\"
+PARAMS=\""""+jg.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
 """+mpiexec+""" $EXEC $PARAMS || exit 1
@@ -188,7 +188,7 @@ echo \"${EXEC} ${PARAMS}\"
 
 
 
-def jobscript_get_exec_suffix(j : SWEETJobGeneration):
+def jobscript_get_exec_suffix(jg : SWEETJobGeneration):
 	"""
 	Suffix before executable
 
@@ -199,11 +199,12 @@ def jobscript_get_exec_suffix(j : SWEETJobGeneration):
 	"""
 
 	content = ""
+	content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
 	return content
 
 
 
-def jobscript_get_footer(j : SWEETJobGeneration):
+def jobscript_get_footer(jg : SWEETJobGeneration):
 	"""
 	Footer at very end of job script
 
@@ -218,7 +219,7 @@ def jobscript_get_footer(j : SWEETJobGeneration):
 
 
 
-def jobscript_get_compile_command(j : SWEETJobGeneration):
+def jobscript_get_compile_command(jg : SWEETJobGeneration):
 	"""
 	Compile command(s)
 
@@ -235,7 +236,7 @@ def jobscript_get_compile_command(j : SWEETJobGeneration):
 
 	content = """
 
-SCONS="scons """+j.compile.getSConsParams()+' -j 4"'+"""
+SCONS="scons """+jg.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """

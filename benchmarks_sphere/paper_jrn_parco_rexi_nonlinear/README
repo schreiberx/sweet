@@ -1,31 +1,37 @@
-compare_wt_dt_vs_accuracy_galewsky_intel_32ranks_max_imag_scaling
-	wallclock time and time step studies on up to 32 ranks
-	the imaginary max. value for REXI is scaled linearly to the time step size
-	this might lead to improved consistency
-
 compare_dt_vs_accuracy_modified_galewsky
 	study sensitivity with varying average geopotential
 
-compare_wt_dt_vs_accuracy_galewsky_intel
-	wallclock time studies with REXI barriers
+compare_dt_vs_accuracy_modified_galewsky_irk
+	study sensitivity with varying average geopotential
+	Using IRK time stepping method
 
-compare_wt_dt_vs_accuracy_galewsky_intel_32ranks
-	wallclock time and time step size studies on up to 32 ranks
-
-compare_wt_dt_vs_accuracy_galewsky_intel_32ranks_max_imag_scaling
-	accuracy studies on 32 ranks
+compare_wt_dt_vs_accuracy_galewsky
+	wallclock time studies without REXI barriers
 	scale CI radius
-
-compare_wt_dt_vs_accuracy_galewsky_intel_with_rexi_barriers
-	wallclock time studies with REXI barriers
-
-scalability_time_rexi_galewsky
-	Detailed studies of REXI performance
-
-README
-	this file
 
 scalability_space_galewsky_cheyenne_gnu
 scalability_space_galewsky_cheyenne_intel
 	Scalability in space studies on a single node
+
+scalability_time_rexi_galewsky_ensemble_with_rexi_barriers
+	wallclock time studies with REXI barriers
+
+scalability_time_rexi_galewsky_ensemble
+	Detailed studies of REXI performance without barriers
+
+test_ln2_convergence
+	Test script to check for convergence of LN2 time integration methods
+
+README
+	this file
 	
+
+postprocessing_consolidate_modified_galewsky.py
+postprocessing_pickle.py
+postprocessing_scalability_space.py
+pretty_plotting.py
+	Some Python helper files used by all benchmark scripts
+
+README
+	This file
+

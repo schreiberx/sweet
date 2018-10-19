@@ -21,11 +21,11 @@ def _whoami(depth=1):
 
 
 
-def p_gen_script_info(j : SWEETJobGeneration):
+def p_gen_script_info(jg : SWEETJobGeneration):
 	return """#
 # Generating function: """+_whoami(2)+"""
 # Platform: """+get_platform_id()+"""
-# Job id: """+j.getUniqueID()+"""
+# Job id: """+jg.getUniqueID()+"""
 #
 """
 
@@ -77,7 +77,7 @@ def get_platform_resources():
 
 
 
-def jobscript_setup(j : SWEETJobGeneration):
+def jobscript_setup(jg : SWEETJobGeneration):
 	"""
 	Setup data to generate job script
 	"""
@@ -86,7 +86,7 @@ def jobscript_setup(j : SWEETJobGeneration):
 
 
 
-def jobscript_get_header(j : SWEETJobGeneration):
+def jobscript_get_header(jg : SWEETJobGeneration):
 	"""
 	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
@@ -95,9 +95,9 @@ def jobscript_get_header(j : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
-	job_id = j.getUniqueID()
+	job_id = jg.getUniqueID()
 
-	p = j.parallelization
+	p = jg.parallelization
 
 	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 	
@@ -122,7 +122,6 @@ def jobscript_get_header(j : SWEETJobGeneration):
 #
 ## project code
 #PBS -A NCIS0002
-## economy queue
 #PBS -q """+queue+"""
 ## wall-clock time (hrs:mins:secs)
 #PBS -l walltime="""+time_str+"""
@@ -139,17 +138,17 @@ def jobscript_get_header(j : SWEETJobGeneration):
 		content += "#PBS -l select=cpufreq=2300000\n"
 
 	content += """#
-#PBS -N """+_job_id[0:100]+"""
-#PBS -o """+j.p_job_stdout_filepath+"""
-#PBS -e """+j.p_job_stderr_filepath+"""
+#PBS -N """+job_id[0:100]+"""
+#PBS -o """+jg.p_job_stdout_filepath+"""
+#PBS -e """+jg.p_job_stderr_filepath+"""
 
 #source /etc/profile.d/modules.sh
 
 #module load openmpi
-"""+("module load mkl" if j.compile.mkl==True or j.compile.mkl=='enable' else "")+"""
+"""+("module load mkl" if jg.compile.mkl==True or jg.compile.mkl=='enable' else "")+"""
 
 
-"""+p_gen_script_info(j)+"""
+"""+p_gen_script_info(jg)+"""
 
 
 echo
@@ -169,7 +168,7 @@ echo
 
 """
 
-	if j.compile.threading != 'off':
+	if jg.compile.threading != 'off':
 		content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 export OMP_DISPLAY_ENV=VERBOSE
@@ -198,7 +197,7 @@ export OMP_DISPLAY_ENV=VERBOSE
 
 
 
-def jobscript_get_exec_prefix(j : SWEETJobGeneration):
+def jobscript_get_exec_prefix(jg : SWEETJobGeneration):
 	"""
 	Prefix before executable
 
@@ -209,45 +208,13 @@ def jobscript_get_exec_prefix(j : SWEETJobGeneration):
 	"""
 
 	content = ""
-	p = j.parallelization
 
-	plan_files = []
-	if j.compile.plane_spectral_space == 'enable':
-		plan_files.append('sweet_fftw')
-
-	if j.compile.sphere_spectral_space == 'enable':
-		plan_files.append('shtns_cfg')
-		plan_files.append('shtns_cfg_fftw')
-
-	#
-	# Reusing plans assumes them to be stored in the folder one level up in the hierarchy
-	#
-	if j.runtime.reuse_plans == -1:
-		# Quick plan generation mode, nothing to do
-		pass
-
-	elif j.runtime.reuse_plans == 0:
-		# Create plans, don't load/store them
-		pass
-
-	elif j.runtime.reuse_plans == 1:
-		content += "\n"
-		# Reuse plans if available
-		for i in plan_files:
-			content += "cp ../"+i+" ./ 2>/dev/null\n"
-			
-	elif j.runtime.reuse_plans == 2:
-		content += "\n"
-		# Reuse and trigger error if they are not available
-		for i in plan_files:
-			content += "cp ../"+i+" ./ || exit 1\n"
-	else:
-		raise Exception("Invalid reuse_plans value"+str(p.runtime.reuse_plans))
+	content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
 
 	content += """
 
-EXEC=\"$SWEET_ROOT/build/"""+j.compile.getProgramName()+"""\"
-PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"
+EXEC=\"$SWEET_ROOT/build/"""+jg.compile.getProgramName()+"""\"
+PARAMS=\""""+jg.runtime.getRuntimeOptions()+"""\"
 
 """
 
@@ -255,7 +222,7 @@ PARAMS=\""""+j.runtime.getRuntimeOptions()+"""\"
 
 
 
-def jobscript_get_exec_command(j : SWEETJobGeneration):
+def jobscript_get_exec_command(jg : SWEETJobGeneration):
 	"""
 	Prefix to executable command
 
@@ -265,7 +232,7 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	p = j.parallelization
+	p = jg.parallelization
 
 	mpiexec = ""
 
@@ -278,7 +245,7 @@ def jobscript_get_exec_command(j : SWEETJobGeneration):
 		#mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
 
 		# Use mpiexec for GNU
-		if j.compile.sweet_mpi == 'enable':
+		if jg.compile.sweet_mpi == 'enable':
 			mpiexec = "mpiexec_mpt -n "+str(p.num_ranks)
 
 			mpiexec += " omplace "
@@ -335,7 +302,7 @@ $E || exit 1
 
 
 
-def jobscript_get_exec_suffix(j : SWEETJobGeneration):
+def jobscript_get_exec_suffix(jg : SWEETJobGeneration):
 	"""
 	Suffix before executable
 
@@ -353,11 +320,13 @@ echo
 
 """
 
+	content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
+
 	return content
 
 
 
-def jobscript_get_footer(j : SWEETJobGeneration):
+def jobscript_get_footer(jg : SWEETJobGeneration):
 	"""
 	Footer at very end of job script
 
@@ -372,7 +341,7 @@ def jobscript_get_footer(j : SWEETJobGeneration):
 
 
 
-def jobscript_get_compile_command(j : SWEETJobGeneration):
+def jobscript_get_compile_command(jg : SWEETJobGeneration):
 	"""
 	Compile command(s)
 
@@ -389,7 +358,7 @@ def jobscript_get_compile_command(j : SWEETJobGeneration):
 
 	content = """
 
-SCONS="scons """+j.compile.getSConsParams()+' -j 4"'+"""
+SCONS="scons """+jg.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """

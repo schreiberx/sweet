@@ -4,7 +4,7 @@
 export CC=gcc-8
 export CXX=g++-8
 export F90=gfortran-8
-export LINK=$SWEET_CXX
+export LINK=$CXX
 export LD=ld
 
 export SWEET_MPICC=mpicc

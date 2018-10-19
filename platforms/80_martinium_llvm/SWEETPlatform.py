@@ -27,7 +27,7 @@ def _whoami(depth=1):
 
 
 
-def p_gen_script_info(jobgeneration : SWEETJobGeneration):
+def p_gen_script_info(jg : SWEETJobGeneration):
 	global _job_id
 
 	return """#
@@ -83,18 +83,18 @@ def get_platform_resources():
 
 
 
-def jobscript_setup(jobgeneration : SWEETJobGeneration):
+def jobscript_setup(jg : SWEETJobGeneration):
 	"""
 	Setup data to generate job script
 	"""
 
 	global _job_id
-	_job_id = jobgeneration.runtime.getUniqueID(jobgeneration.compile)
+	_job_id = jg.runtime.getUniqueID(jg.compile)
 	return
 
 
 
-def jobscript_get_header(jobgeneration : SWEETJobGeneration):
+def jobscript_get_header(jg : SWEETJobGeneration):
 	"""
 	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
@@ -103,32 +103,10 @@ def jobscript_get_header(jobgeneration : SWEETJobGeneration):
 	string
 		multiline text for scripts
 	"""
+
+	p = jg.parallelization
+
 	content = """#! /bin/bash
-
-"""+p_gen_script_info(jobgeneration)+"""
-
-"""
-
-	return content
-
-
-
-
-def jobscript_get_exec_prefix(jobgeneration : SWEETJobGeneration):
-	"""
-	Prefix before executable
-
-	Returns
-	-------
-	string
-		multiline text for scripts
-	"""
-
-	p = jobgeneration.parallelization
-
-	content = """
-
-"""+p_gen_script_info(jobgeneration)+"""
 
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 
@@ -138,7 +116,25 @@ export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 
 
 
-def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
+
+def jobscript_get_exec_prefix(jg : SWEETJobGeneration):
+	"""
+	Prefix before executable
+
+	Returns
+	-------
+	string
+		multiline text for scripts
+	"""
+
+	content = ""
+	content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
+
+	return content
+
+
+
+def jobscript_get_exec_command(jg : SWEETJobGeneration):
 	"""
 	Prefix to executable command
 
@@ -148,17 +144,17 @@ def jobscript_get_exec_command(jobgeneration : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	p = jobgeneration.parallelization
+	p = jg.parallelization
 
 	limit_to_physical_cores = "$SWEET_ROOT/platforms/bin/exec_on_physical_cores.sh "
 
 	content = """
 
-"""+p_gen_script_info(jobgeneration)+"""
+"""+p_gen_script_info(jg)+"""
 
 # mpiexec ... would be here without a line break
-EXEC=\"$SWEET_ROOT/build/"""+jobgeneration.compile.getProgramName()+"""\"
-PARAMS=\""""+jobgeneration.runtime.getRuntimeOptions()+"""\"
+EXEC=\"$SWEET_ROOT/build/"""+jg.compile.getProgramName()+"""\"
+PARAMS=\""""+jg.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
 # Ensure that program is only executed on physical cores!
@@ -170,7 +166,7 @@ echo \"${EXEC} ${PARAMS}\"
 
 
 
-def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
+def jobscript_get_exec_suffix(jg : SWEETJobGeneration):
 	"""
 	Suffix before executable
 
@@ -180,17 +176,14 @@ def jobscript_get_exec_suffix(jobgeneration : SWEETJobGeneration):
 		multiline text for scripts
 	"""
 
-	content = """
-
-"""+p_gen_script_info(jobgeneration)+"""
-
-"""
+	content = ""
+	content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
 
 	return content
 
 
 
-def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
+def jobscript_get_footer(jg : SWEETJobGeneration):
 	"""
 	Footer at very end of job script
 
@@ -201,7 +194,7 @@ def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 	"""
 	content = """
 
-"""+p_gen_script_info(jobgeneration)+"""
+"""+p_gen_script_info(jg)+"""
 
 """
 
@@ -209,7 +202,7 @@ def jobscript_get_footer(jobgeneration : SWEETJobGeneration):
 
 
 
-def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
+def jobscript_get_compile_command(jg : SWEETJobGeneration):
 	"""
 	Compile command(s)
 
@@ -226,7 +219,7 @@ def jobscript_get_compile_command(jobgeneration : SWEETJobGeneration):
 
 	content = """
 
-SCONS="scons """+jobgeneration.compile.getSConsParams()+' -j 4"'+"""
+SCONS="scons """+jg.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """

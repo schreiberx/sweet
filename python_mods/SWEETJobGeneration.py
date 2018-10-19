@@ -233,6 +233,7 @@ cd \""""+self.p_job_dirpath+"""\"
 		content += self.user_script_exec_prefix
 		content += "# %SCRIPT_EXEC_PREFIX%\n"
 
+
 		# EXEC
 		content += self.platform_functions.jobscript_get_exec_command(self)
 
@@ -431,20 +432,27 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
 			unique_id_filter = self.unique_id_filter
 
 		unique_id = ''
-		if 'runtime' not in unique_id_filter:
-			s = self.runtime.getUniqueID(self.compile, unique_id_filter)
-			if s != '':
-				unique_id += s
 
-		if 'parallelization' not in unique_id_filter:
-			s = self.parallelization.getUniqueID(unique_id_filter)
+		# First compile
+		if 'compile' not in unique_id_filter:
+			s = self.compile.getUniqueID(unique_id_filter)
+
 			if unique_id != '':
 				unique_id += '_'
 			if s != '':
 				unique_id += s
 
-		if 'compile' not in unique_id_filter:
-			s = self.compile.getUniqueID(unique_id_filter)
+		# Then runtime
+		if 'runtime' not in unique_id_filter:
+			s = self.runtime.getUniqueID(self.compile, unique_id_filter)
+			if unique_id != '':
+				unique_id += '_'
+			if s != '':
+				unique_id += s
+
+		# At the end the parallelization
+		if 'parallelization' not in unique_id_filter:
+			s = self.parallelization.getUniqueID(unique_id_filter)
 			if unique_id != '':
 				unique_id += '_'
 			if s != '':

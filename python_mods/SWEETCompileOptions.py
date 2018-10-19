@@ -65,11 +65,6 @@ class SWEETCompileOptions(InfoError):
 
 		self.program_binary_name = ''
 
-		# LLVM overrides
-		self.llvm_gnu_override = False
-		self.llvm_omp_override = False
-
-
 		# Parallelization
 		self.sweet_mpi = 'disable'
 		self.threading = 'omp'
@@ -635,10 +630,11 @@ class SWEETCompileOptions(InfoError):
 
 
 	def getUniqueID(self, i_filter_list = []):
-
 		"""
 		Return a unique ID representing the compile parameters 
 		"""
+		self.makeOptionsConsistent()
+
 		retval = ''
 
 		if not 'compile_misc' in i_filter_list:
@@ -647,15 +643,15 @@ class SWEETCompileOptions(InfoError):
 				if self.plane_spectral_space == 'enable':
 					retval+='_plspec'
 
-				if self.plane_spectral_dealiasing == 'enable':
-					retval+='_pldeal'
+					if self.plane_spectral_dealiasing == 'enable':
+						retval+='_pldeal'
 
 			if not 'compile_sphere' in i_filter_list:
 				if self.sphere_spectral_space == 'enable':
 					retval+='_spspec'
 
-				if self.sphere_spectral_dealiasing == 'enable':
-					retval+='_spdeal'
+					if self.sphere_spectral_dealiasing == 'enable':
+						retval+='_spdeal'
 
 			if self.gui == 'enable':
 				retval+='_gui'
@@ -669,22 +665,14 @@ class SWEETCompileOptions(InfoError):
 			if self.libfft == 'enable':
 				retval+='_fft'
 
-			if self.llvm_gnu_override:
-				print("WARNING: adding _omp despite program was not compiled with LLVM. This is for compatibility reasons only!")
-				retval += '_gnu'
-			else:
-				retval += '_'+self.compiler
+			retval += '_'+self.compiler
 
-		if not 'compile_parallelization' in i_filter_list:
+		if not 'compile.parallelization' in i_filter_list:
 			if self.sweet_mpi == 'enable':
 				retval+='_mpi'
 
 			if self.threading in ['omp']:
-				retval+='_'+self.threading
-			else:
-				if self.llvm_omp_override:
-					print("WARNING: adding _omp despite program was not compiled with OpenMP activated. This is for compatibility reasons only!")
-					retval+='_omp'
+				retval+='_th'+self.threading
 				
 			if self.rexi_thread_parallel_sum == 'enable':
 				retval+='_rxthpar'
@@ -710,6 +698,8 @@ class SWEETCompileOptions(InfoError):
 
 	def getOptionList(self):
 		return self.__dict__
+
+
 
 
 if __name__ == "__main__":

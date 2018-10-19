@@ -3,6 +3,7 @@
 
 rm -f shtns_cfg
 rm -f shtns_cfg_fftw
+rm -f sweet_fftw
 
 rm -rf genplans_*
 

@@ -4,7 +4,7 @@ CHANGE_PLATFORM_PWD=$PWD
 
 if [ -z "$SWEET_ROOT" ]; then
 	echo "********************************************************************************"
-	echo "* ERROR: SWEET environment variables missing!"
+	echo "* ERROR: SWEET_ROOT environment variables missing!"
 	echo "********************************************************************************"
 	return 2>/dev/null
 	exit 1
@@ -30,14 +30,21 @@ if [[ "#$1" != "#" && "#$1" != "#auto" ]]; then
 	PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/"??"_$1/env_vars.sh")
 
 	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
-		echo_error "File '${PLATFORM_ENV_VARS}' not found!"
-		return 2>/dev/null
-		exit 1
+
+		PLATFORM_ENV_VARS=$(eval echo "${SWEET_ROOT}/platforms/$1/env_vars.sh")
+
+		if [ ! -e "$PLATFORM_ENV_VARS" ]; then
+			echo_error "File '${PLATFORM_ENV_VARS}' not found!"
+			return 2>/dev/null
+			exit 1
+		fi
+
+		export SWEET_PLATFORM_ID="${1:3}"
+	else
+		export SWEET_PLATFORM_ID="${1}"
 	fi
 
 	source "$PLATFORM_ENV_VARS" || return 1
-
-	export SWEET_PLATFORM_ID="$1"
 
 	export SWEET_PLATFORM_DIR="$(eval echo "${SWEET_ROOT}/platforms/"??"_${SWEET_PLATFORM_ID}/")"
 
