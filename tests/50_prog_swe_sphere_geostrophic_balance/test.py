@@ -17,6 +17,7 @@ if exitcode != 0:
 
 exitcode = exec_program('./postprocessing', catch_output=False)
 if exitcode != 0:
+	print("FAILED")
 	sys.exit(exitcode)
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
