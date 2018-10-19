@@ -6,7 +6,7 @@ if [[ -z "$SWEET_ROOT" ]]; then
 fi
 
 
-BACKDIR="$(pwd)"
+SCRIPTDIR="$(dirname $0)"
 
 
 cd "${SWEET_ROOT}"
@@ -21,7 +21,7 @@ for PLATFORM  in $PLATFORMS; do
 
 	cd "${SWEET_ROOT}"
 	. ./local_software/load_platform.sh $TEST_PLATFORM_DIR || exit 1
-	cd "${BACKDIR}"
+	cd "${SCRIPTDIR}"
 
 	# Generate some dummy job
 	mule.benchmark.cleanup_all || exit 1
