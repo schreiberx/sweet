@@ -449,10 +449,10 @@ private:
 			spectral_data_size[1] = physical_data_size[1];
 
 			if ((physical_data_size[0] & 1) == 1)
-				FatalError("Not supported resolution a");
+				FatalError("Unsupported odd resolution in x-direction");
 
 			if ((physical_data_size[1] & 1) == 1)
-				FatalError("Not supported resolution b");
+				FatalError("Unsupported odd resolution in y-direction");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
