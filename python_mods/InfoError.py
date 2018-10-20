@@ -14,10 +14,18 @@ class InfoError:
 		o = "INFO ["+self.prefix+"] "+i_str
 		print(o)
 
+	def success(self, i_str):
+		o = "SUCCESS ["+self.prefix+"] "+i_str
+		print(o)
+
 	def error(self, i_str):
 		o = "ERROR ["+self.prefix+"] "+i_str
 		print(o)
 		raise Exception(o)
+
+	def success_hline(self):
+		o = "SUCCESS ["+self.prefix+"] "
+		print(o+("*"*(80-len(o))))
 
 	def hline(self):
 		print("INFO ["+self.prefix+"] "+"*"*60)
