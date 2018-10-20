@@ -105,7 +105,7 @@ class SWEETRuntimeOptions(InfoError):
 		#self.f = 2.0*f	# Coriolis effect for constant f (not multiplied with 2.0)
 
 		self.r = 6371220	# Sphere: Radius
-		self.domain_size = 1	# Plane: Domain size
+		self.domain_size = None	# Plane: Domain size
 
 		# 3: gaussian breaking dam
 		# 4: geostrophic balance test case
@@ -126,10 +126,11 @@ class SWEETRuntimeOptions(InfoError):
 		self.pde_id = 0
 		self.staggering = 0
 		self.spectralderiv = 1
-		self.uselineardiv = 0
 		self.viscosity = 0
 		self.viscosity_order = 0
-		self.uselocalvisc = 0
+		self.uselineardiv = None
+		self.uselocalvisc = None
+		self.advection_velocity = None
 		self.simtime = 0.001
 
 		self.compute_error = 0
@@ -264,6 +265,9 @@ class SWEETRuntimeOptions(InfoError):
 			idstr += '_u'+str(self.viscosity)
 			idstr += '_U'+str(self.viscosity_order)
 
+			if self.advection_velocity != None:
+				idstr += '_av'+str(self.advection_velocity).replace(",", "_")
+
 		if 'timestep' in filter_list:
 			raise Exception("Deprecated")
 
@@ -390,8 +394,9 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' --staggering='+str(self.staggering)
 		retval += ' -S '+str(self.spectralderiv)
 
-		retval += ' -X '+str(self.domain_size)
-		retval += ' -Y '+str(self.domain_size)
+		if self.domain_size != None:
+			retval += ' -X '+str(self.domain_size[0])
+			retval += ' -Y '+str(self.domain_size[1])
 
 		retval += ' -s '+str(self.bench_id)
 		retval += ' --benchmark-name='+str(self.benchmark_name)
@@ -426,8 +431,15 @@ class SWEETRuntimeOptions(InfoError):
 		if self.floating_point_output_digits >= 0:
 			retval += ' -d '+str(self.floating_point_output_digits)
 
-		retval += ' --use-linear-div='+str(self.uselineardiv)
-		retval += ' --use-local-visc='+str(self.uselocalvisc)
+		if self.uselineardiv != None:
+			retval += ' --use-linear-div='+str(self.uselineardiv)
+
+		if self.uselocalvisc != None:
+			retval += ' --use-local-visc='+str(self.uselocalvisc)
+
+		if self.advection_velocity != None:
+			retval += ' --advection-velocity='+str(self.advection_velocity)
+
 		retval += ' --timestepping-method='+self.timestepping_method
 		retval += ' --timestepping-order='+str(self.timestepping_order)
 		retval += ' --timestepping-order2='+str(self.timestepping_order2)
