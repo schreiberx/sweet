@@ -22,6 +22,7 @@ params_domain_size_scales = [2]
 
 #params_compile_mode = ['release', 'debug']
 params_compile_mode = ['release']
+
 #params_compile_plane_spectral_dealiasing = ['enable', 'disable']
 params_compile_plane_spectral_dealiasing = ['enable']
 
@@ -29,11 +30,15 @@ params_runtime_spectral_derivs = [0, 1]
 
 #params_runtime_mode_res_x = [64, 128]
 #params_runtime_mode_res_y = [64, 128]
-params_runtime_mode_res_x = [128, 192]
-params_runtime_mode_res_y = [128, 192]
+params_runtime_mode_res_x = [128]
+params_runtime_mode_res_y = [128]
 
 params_runtime_timestep_sizes = [0.05, 0.1]
 
+# rotation speeds
+# 0: no rotation
+# 20=simtime: one rotation
+# 1: fast rotaitons
 params_rotation_velocity = [1, 20]
 params_advection_velocity_u = [0.1, -0.2]
 params_advection_velocity_v = [-0.1, 0.2]
