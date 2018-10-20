@@ -1,7 +1,7 @@
 /*
- * output_plane_data_modes.cpp
+ * test_planedata_convert_complex_to_from_real.cpp
  *
- *  Created on: 18 Juli 2017
+ *  Created on: 18 July 2017
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
