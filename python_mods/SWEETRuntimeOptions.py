@@ -137,6 +137,19 @@ class SWEETRuntimeOptions(InfoError):
 
 		self.reuse_plans = -1
 
+		#
+		# User defined parameters
+		# Each new entry must set three values:
+		# 
+		# 'id': The id for the unique id
+		# 'value': The value of the parameter
+		# 'option': The program option
+		#
+		# example:
+		# self.user_defined_parameters['test-mode'] = {'id': 'tm', 'value': 1, 'option': '--test-mode='}
+		#
+		self.user_defined_parameters = {}
+
 		self.init_phase = False
 
 
@@ -229,6 +242,7 @@ class SWEETRuntimeOptions(InfoError):
 
 		if 'reuse_plans' in d:
 			self.reuse_plans = int(d['reuse_plans'])
+
 
 
 
@@ -368,6 +382,9 @@ class SWEETRuntimeOptions(InfoError):
 		if idstr != '':
 			idstr = "RT"+idstr
 
+		for key, param in self.user_defined_parameters.items():
+			idstr += '_'+param['id']+str(param['value'])
+
 		return idstr
 
 
@@ -500,6 +517,9 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' --compute-error='+str(self.compute_error)
 
 		retval += ' --reuse-plans='+str(self.reuse_plans)
+
+		for key, param in self.user_defined_parameters.items():
+			retval += ' '+param['option']+str(param['value'])
 
 		return retval
 
