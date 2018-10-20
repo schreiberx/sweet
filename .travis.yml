@@ -184,7 +184,49 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/05_jobs_run_directly_parameter_error/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/50_planedata_fftw_wisdom_import_export/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_planedata_operators/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_planedata_operators_complex/test.py
 
 
     # Test with G++-5
@@ -212,6 +254,20 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/05_jobs_run_directly_compile_error/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/50_prog_swe_sphere_geostrophic_balance/test.py
 
 
@@ -226,426 +282,6 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_planedata_antialiasing_patterns/test.py
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/20_platforms_job_generation/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_parareal_ode/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_spectral_visualization/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_swe_plane/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_burgers/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_advection/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_swe_plane_staggered_vector_invariant/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_swe_plane_nonstaggered_vector_invariant/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_swe_sphere/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_lagrangian_plane_test/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/10_compile_test_sphere_output_spherical_harmonics/test.sh
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/50_planedata_fftw_wisdom_import_export/test.py
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/50_planedata_antialiasing_frequencies/test.py
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/50_prog_swe_sphere_geostrophic_balance/test.py
-
-
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-      script: ./tests/50_planedata_antialiasing_patterns/test.py
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/20_platforms_job_generation/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_parareal_ode/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_spectral_visualization/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_swe_plane/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_burgers/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_advection/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_swe_plane_staggered_vector_invariant/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_swe_plane_nonstaggered_vector_invariant/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_swe_sphere/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_lagrangian_plane_test/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/10_compile_test_sphere_output_spherical_harmonics/test.sh
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/50_planedata_fftw_wisdom_import_export/test.py
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/50_planedata_antialiasing_frequencies/test.py
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-      script: ./tests/50_prog_swe_sphere_geostrophic_balance/test.py
-
-
-    # Test with G++-7
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-7
-            - gfortran-7
-      env:
-        - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
       script: ./tests/50_planedata_antialiasing_patterns/test.py
 
 
@@ -814,6 +450,20 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/05_jobs_run_directly_parameter_error/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_planedata_fftw_wisdom_import_export/test.py
 
 
@@ -828,7 +478,49 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_planedata_operators/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_planedata_operators_complex/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_planedata_antialiasing_frequencies/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/05_jobs_run_directly_compile_error/test.py
 
 
     # Test with G++-8
