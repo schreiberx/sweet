@@ -1,6 +1,6 @@
 #! /bin/bash
 
-
+cd "$(dirname $0)"
 
 for i in $(ls -1 -d *); do
 	echo_info_hline
