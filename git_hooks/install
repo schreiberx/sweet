@@ -1,0 +1,9 @@
+#! /bin/bash
+
+echo "Changing to hooks directory"
+cd ../.git/hooks || exit 1
+
+echo "Installing hooks"
+ln ../../git_hooks/pre-commit  ./ -fs || exit 1
+
+echo "Done..."
