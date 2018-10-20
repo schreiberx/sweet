@@ -12,10 +12,10 @@ else
 fi
 
 P="$(pwd)"
-for i in $DIRS; do
-	cd "$i"
+for JOBDIR in $DIRS; do
+	cd "$JOBDIR"
 
-	echo_info "Executing '$i'"
+	echo_info "Executing job in directory '$JOBDIR'"
 
 	./run.sh 2>"output.err" > "./output.out" &
 
@@ -27,14 +27,14 @@ for i in $DIRS; do
 	EXIT_CODE=$?
 
 	if [[ 0 -ne $EXIT_CODE ]]; then
-		echo_error_hline
-		echo_error "ERROR during job execution"
-		echo_error_hline
-		echo_error " Job directory: '$P'"
-		echo_error " See output.out and output.err in job directory for more information"
-		echo_error_hline
 		tail -n 100 "output.out"
 		tail -n 100 "output.err"
+		echo_error_hline
+		echo_error "ERROR during job execution (see above)"
+		echo_error " See output.out and output.err in job directory for full output"
+		echo_error_hline
+		echo_error " Job directory: '$JOBDIR'"
+		echo_error_hline
 		exit 1
 	fi
 
