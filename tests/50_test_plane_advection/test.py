@@ -49,8 +49,8 @@ params_runtime_ts_methods = [
 		# [ method_id, order ]
 		["na_sl", 1],
 		["na_sl", 2],
-		["nl_erk", 2],
-		["nl_erk", 4],
+		["na_erk", 2],
+		["na_erk", 4],
 	]
 
 
