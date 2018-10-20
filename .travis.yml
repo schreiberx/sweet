@@ -30,21 +30,10 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/20_platforms_job_generation/test.sh
+      script:
+        - cd "./tests/20_platforms_job_generation"
+        - ./tests/20_platforms_job_generation/test.sh
 
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/10_compile/test.sh
 
 
     # Test with G++-8
@@ -58,21 +47,10 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_program_swe_sphere_geostrophic_balance/test.py
+      script:
+        - cd "./tests/10_compile"
+        - ./tests/10_compile/test.sh
 
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/05_jobs_run_directly_parameter_error/test.py
 
 
     # Test with G++-8
@@ -86,21 +64,10 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_antialiasing_frequencies/test.py
+      script:
+        - cd "./tests/50_program_swe_sphere_geostrophic_balance"
+        - ./tests/50_program_swe_sphere_geostrophic_balance/test.py
 
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_antialiasing_patterns/test.py
 
 
     # Test with G++-8
@@ -114,21 +81,10 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_fftw_wisdom_import_export/test.py
+      script:
+        - cd "./tests/05_jobs_run_directly_parameter_error"
+        - ./tests/05_jobs_run_directly_parameter_error/test.py
 
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_basic_advection/test.py
 
 
     # Test with G++-8
@@ -142,21 +98,10 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_operators_complex/test.py
+      script:
+        - cd "./tests/50_test_plane_antialiasing_frequencies"
+        - ./tests/50_test_plane_antialiasing_frequencies/test.py
 
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_advection/test.py
 
 
     # Test with G++-8
@@ -170,7 +115,10 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/05_jobs_run_directly_compile_error/test.py
+      script:
+        - cd "./tests/50_test_plane_antialiasing_patterns"
+        - ./tests/50_test_plane_antialiasing_patterns/test.py
+
 
 
     # Test with G++-8
@@ -184,7 +132,112 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_operators/test.py
+      script:
+        - cd "./tests/50_test_planedata_convert_complex_to_from_real"
+        - ./tests/50_test_planedata_convert_complex_to_from_real/test.py
+
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script:
+        - cd "./tests/50_test_plane_fftw_wisdom_import_export"
+        - ./tests/50_test_plane_fftw_wisdom_import_export/test.py
+
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script:
+        - cd "./tests/50_test_plane_basic_advection"
+        - ./tests/50_test_plane_basic_advection/test.py
+
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script:
+        - cd "./tests/50_test_plane_operators_complex"
+        - ./tests/50_test_plane_operators_complex/test.py
+
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script:
+        - cd "./tests/50_test_plane_advection"
+        - ./tests/50_test_plane_advection/test.py
+
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script:
+        - cd "./tests/05_jobs_run_directly_compile_error"
+        - ./tests/05_jobs_run_directly_compile_error/test.py
+
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script:
+        - cd "./tests/50_test_plane_operators"
+        - ./tests/50_test_plane_operators/test.py
+
 
 
     # Test with G++-5
@@ -198,21 +251,10 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/20_platforms_job_generation/test.sh
+      script:
+        - cd "./tests/20_platforms_job_generation"
+        - ./tests/20_platforms_job_generation/test.sh
 
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/10_compile/test.sh
 
 
     # Test with G++-5
@@ -226,21 +268,10 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_program_swe_sphere_geostrophic_balance/test.py
+      script:
+        - cd "./tests/10_compile"
+        - ./tests/10_compile/test.sh
 
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/05_jobs_run_directly_parameter_error/test.py
 
 
     # Test with G++-5
@@ -254,21 +285,10 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_antialiasing_frequencies/test.py
+      script:
+        - cd "./tests/50_program_swe_sphere_geostrophic_balance"
+        - ./tests/50_program_swe_sphere_geostrophic_balance/test.py
 
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_antialiasing_patterns/test.py
 
 
     # Test with G++-5
@@ -282,21 +302,10 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_fftw_wisdom_import_export/test.py
+      script:
+        - cd "./tests/05_jobs_run_directly_parameter_error"
+        - ./tests/05_jobs_run_directly_parameter_error/test.py
 
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_basic_advection/test.py
 
 
     # Test with G++-5
@@ -310,21 +319,10 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_operators_complex/test.py
+      script:
+        - cd "./tests/50_test_plane_antialiasing_frequencies"
+        - ./tests/50_test_plane_antialiasing_frequencies/test.py
 
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_advection/test.py
 
 
     # Test with G++-5
@@ -338,7 +336,10 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/05_jobs_run_directly_compile_error/test.py
+      script:
+        - cd "./tests/50_test_plane_antialiasing_patterns"
+        - ./tests/50_test_plane_antialiasing_patterns/test.py
+
 
 
     # Test with G++-5
@@ -352,7 +353,112 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_operators/test.py
+      script:
+        - cd "./tests/50_test_planedata_convert_complex_to_from_real"
+        - ./tests/50_test_planedata_convert_complex_to_from_real/test.py
+
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script:
+        - cd "./tests/50_test_plane_fftw_wisdom_import_export"
+        - ./tests/50_test_plane_fftw_wisdom_import_export/test.py
+
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script:
+        - cd "./tests/50_test_plane_basic_advection"
+        - ./tests/50_test_plane_basic_advection/test.py
+
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script:
+        - cd "./tests/50_test_plane_operators_complex"
+        - ./tests/50_test_plane_operators_complex/test.py
+
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script:
+        - cd "./tests/50_test_plane_advection"
+        - ./tests/50_test_plane_advection/test.py
+
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script:
+        - cd "./tests/05_jobs_run_directly_compile_error"
+        - ./tests/05_jobs_run_directly_compile_error/test.py
+
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script:
+        - cd "./tests/50_test_plane_operators"
+        - ./tests/50_test_plane_operators/test.py
+
 
 
 

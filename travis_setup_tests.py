@@ -2,6 +2,7 @@
 
 import glob
 import re
+import os
 from itertools import product
 
 travis_file=".travis.yml"
@@ -117,7 +118,11 @@ jobs:
 		if True:
 			# This version allows reutilizing the cache
 			f.write(j)
-			f.write("      script: "+test)
+			#f.write("      script: "+test)
+			f.write("      script:\n")
+			f.write("        - cd \""+os.path.dirname(test)+"\"\n")
+			f.write("        - "+test+"\n")
+
 		else:
 			j = j.replace('MATRIX_EVAL="', 'MATRIX_EVAL="TESTSCRIPT='+test+' && ')
 			f.write("      script: $TESTSCRIPT")
