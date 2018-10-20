@@ -1,3 +1,5 @@
+
+
 Overview of helpful git commands
 
 # Overview of remote URLs:
@@ -5,6 +7,7 @@ git remote show -v
 
 # Update URL
 git remote  set-url origin https://github.com/schreiberx/sweet.git
+
 
 
 # Checkout URL
@@ -38,8 +41,11 @@ git pull schreiberx master
 git merge schreiberx/master
 
 
-#
 # Checkout older versions
-#
-
 git checkout `git rev-list -n 1 --before="2017-11-20 00:00" master`
+
+# Revert file to HEAD version
+git checkout -- [filename]
+
+# Undo a commit
+git reset -- [filename]
