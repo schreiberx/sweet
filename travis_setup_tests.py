@@ -3,22 +3,31 @@
 import glob
 import re
 import os
+import sys
 from itertools import product
 
 travis_file=".travis.yml"
 
-print("Setting up tests in travis file '"+travis_file+"'")
+verbosity = 10
+if len(sys.argv) > 1:
+	verbosity = int(sys.argv[1])
+
+if verbosity >= 10:
+	print("Setting up tests in travis file '"+travis_file+"'")
 
 tests = glob.glob('./tests/??_*/test.sh')
 tests += glob.glob('./tests/??_*/test.py')
 
 
-for test in tests:
-	print(" + Found test script '"+test+"'")
+if verbosity >= 10:
+	for test in tests:
+		print(" + Found test script '"+test+"'")
 
 
 
-print("Writing content to file '"+travis_file+"'")
+if verbosity >= 10:
+	print("Writing content to file '"+travis_file+"'")
+
 with open(travis_file, 'w') as f:
 	f.write("""#
 # Script for Travis CI
@@ -184,4 +193,5 @@ cache:
 
 """)
 
-print("Job combinations: "+str(c))
+if verbosity >= 10:
+	print("Job combinations: "+str(c))
