@@ -5,6 +5,8 @@ echo "***********************************************"
 echo "Running comparisons of SWEET SWE on the sphere implementation with Python reference implementation"
 echo "***********************************************"
 
+cd "${SWEET_ROOT}"
+
 
 mule.benchmark.cleanup_all || exit 1
 
