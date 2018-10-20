@@ -299,7 +299,7 @@ if __name__ == "__main__":
 
 	# Create dummy run.sh script in this folder for automized job processing
 	with open("job_benchref_solution/run.sh", "w") as rfile:
-		rfile.write("#!/bin/bash\necho\"Dummy\"")
+		rfile.write("#!/bin/bash\necho \"Dummy\"")
 		os.fchmod(rfile.fileno(), stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
 
 	def savefile(data, name, t):
