@@ -43,38 +43,21 @@ jobs:
 
 	jobs_list = []
 
-	#if False:
+
 	if True:
 		jobs_list += [
 """
-    # Test with G++-5
+    # Test with G++-8
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-5
-            - gfortran-5
+            - g++-8
+            - gfortran-8
       env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-"""]
-
-	if False:
-	#if True:
-		jobs_list += [
-"""
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
 """]
 
 	if False:
@@ -94,21 +77,40 @@ jobs:
         - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
 """]
 
-	if True:
+	if False:
+	#if True:
 		jobs_list += [
 """
-    # Test with G++-8
+    # Test with G++-6
     - os: linux
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-8
-            - gfortran-8
+            - g++-6
+            - gfortran-6
       env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
 """]
+
+	#if False:
+	if True:
+		jobs_list += [
+"""
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+"""]
+
 
 	c = 0
 	for (j, test) in product(jobs_list, tests):
