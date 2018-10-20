@@ -293,8 +293,8 @@ if __name__ == "__main__":
 
 
 	t = 0
-	os.makedirs("job_ref_solution", exist_ok=True)
-	output_file_name = "job_ref_solution/output_{:s}_t{:020.8f}.csv"
+	os.makedirs("job_benchref_solution", exist_ok=True)
+	output_file_name = "job_benchref_solution/output_{:s}_t{:020.8f}.csv"
 
 	def savefile(data, name, t):
 		d = x.spectogrd(data)

@@ -15,7 +15,7 @@ filename_sweet = sys.argv[2]
 
 
 
-#filename_ref = 'job_ref_solution/'+filename
+#filename_ref = 'job_benchref_solution/'+filename
 data_ref = np.loadtxt(filename_ref)
 #print("Reference data size:")
 #print(data_ref.shape)
