@@ -2,12 +2,11 @@
 
 import sys
 import os
+os.chdir(os.path.dirname(sys.argv[0]))
 
 from SWEET import *
 from mule.exec_program import *
 from InfoError import *
-
-os.chdir(os.path.dirname(sys.argv[0]))
 
 exec_program('./benchmark_create_job_scripts', catch_output=False)
 

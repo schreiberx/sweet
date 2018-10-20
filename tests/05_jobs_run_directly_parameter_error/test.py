@@ -1,6 +1,8 @@
 #! /usr/bin/env python3
 
 import sys
+import os
+os.chdir(os.path.dirname(sys.argv[0]))
 
 from SWEET import *
 from itertools import product
