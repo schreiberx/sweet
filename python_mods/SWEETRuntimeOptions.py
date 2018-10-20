@@ -98,13 +98,15 @@ class SWEETRuntimeOptions(InfoError):
 		#self.g = 1		# gravity
 		#self.h = 100000	# avg. height
 
-		self.g = 9.81		# gravity
-		self.h = 10000	# avg. height
+		self.g = None
+		self.h = None
+		self.f = None
+		self.r = None
 
-		self.f = 0.000072921	# \Omega coriolis effect
-		#self.f = 2.0*f	# Coriolis effect for constant f (not multiplied with 2.0)
-
-		self.r = 6371220	# Sphere: Radius
+#		self.g = 9.81		# gravity
+#		self.h = 10000	# avg. height
+#		self.f = 0.000072921	# \Omega coriolis effect
+#		self.r = 6371220	# Sphere: Radius
 		self.domain_size = None	# Plane: Domain size
 
 		# 3: gaussian breaking dam
@@ -112,7 +114,7 @@ class SWEETRuntimeOptions(InfoError):
 
 		# Create error if bench_id is not specified!
 		# This variable is DEPRECATED!!! Use benchmark_name instead!!!
-		self.bench_id = -1
+		self.bench_id = None
 
 		# Specify benchmark name
 		self.benchmark_name = None
@@ -126,8 +128,8 @@ class SWEETRuntimeOptions(InfoError):
 		self.pde_id = 0
 		self.staggering = 0
 		self.spectralderiv = 1
-		self.viscosity = 0
-		self.viscosity_order = 0
+		self.viscosity = None
+		self.viscosity_order = None
 		self.uselineardiv = None
 		self.uselocalvisc = None
 		self.advection_velocity = None
@@ -252,7 +254,7 @@ class SWEETRuntimeOptions(InfoError):
 		if not 'runtime.benchmark' in filter_list:
 			if self.benchmark_name != None:
 				idstr += '_b'+str(self.benchmark_name)
-			else:
+			elif self.bench_id != None:
 				idstr += '_b'+str(self.bench_id)
 
 		if not 'runtime.galewsky_params' in filter_list:
@@ -266,18 +268,24 @@ class SWEETRuntimeOptions(InfoError):
 				idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
 		if not 'runtime.simparams' in filter_list:
-			idstr += '_g'+str("{:05.2f}".format(self.g))
-			idstr += '_h'+str("{:010.3f}".format(self.h))
-			idstr += '_f'+str("{:e}".format(self.f))
+			if self.g != None:
+				idstr += '_g'+str("{:05.2f}".format(self.g))
+			if self.h != None:
+				idstr += '_h'+str("{:010.3f}".format(self.h))
+			if self.f != None:
+				idstr += '_f'+str("{:e}".format(self.f))
 
 			#idstr += '_p'+str(self.pde_id)
 
 			if compileOptions.sphere_spectral_space == 'enable':
-				idstr += '_a'+str(self.r)
+				if self.r != None:
+					idstr += '_a'+str(self.r)
 				idstr += '_fsph'+str(self.f_sphere)
 
-			idstr += '_u'+str(self.viscosity)
-			idstr += '_U'+str(self.viscosity_order)
+			if self.viscosity != None:
+				idstr += '_u'+str(self.viscosity)
+			if self.viscosity_order != None:
+				idstr += '_U'+str(self.viscosity_order)
 
 			if self.advection_velocity != None:
 				idstr += '_av'+str(self.advection_velocity).replace(",", "_")
@@ -400,11 +408,15 @@ class SWEETRuntimeOptions(InfoError):
 
 	def getRuntimeOptions(self):
 		retval = ''
-		retval += ' -g '+str(self.g)
-		retval += ' -H '+str(self.h)
-		retval += ' -f '+str(self.f)
+		if self.g != None:
+			retval += ' -g '+str(self.g)
+		if self.h != None:
+			retval += ' -H '+str(self.h)
+		if self.f != None:
+			retval += ' -f '+str(self.f)
+		if self.r != None:
+			retval += ' -a '+str(self.r)
 		retval += ' -F '+str(self.f_sphere)
-		retval += ' -a '+str(self.r)
 		if self.mode_res != None:
 			if isinstance(self.mode_res, (list, tuple)):
 				retval += ' -M '+str(",".join([str(x) for x in self.mode_res]))
@@ -425,7 +437,8 @@ class SWEETRuntimeOptions(InfoError):
 			retval += ' -X '+str(self.domain_size[0])
 			retval += ' -Y '+str(self.domain_size[1])
 
-		retval += ' -s '+str(self.bench_id)
+		if self.bench_id != None:
+			retval += ' -s '+str(self.bench_id)
 
 		if self.benchmark_name != None:
 			retval += ' --benchmark-name='+str(self.benchmark_name)
@@ -448,9 +461,10 @@ class SWEETRuntimeOptions(InfoError):
 		if self.output_timestep_size < 0:
 			retval += ' --output-file-name=-'
 
-		retval += ' -u '+str(self.viscosity)
+		if self.viscosity != None:
+			retval += ' -u '+str(self.viscosity)
 
-		if self.viscosity_order > 0:
+		if self.viscosity_order != None:
 			retval += ' -U '+str(self.viscosity_order)
 
 		retval += ' -t '+str(self.simtime)
