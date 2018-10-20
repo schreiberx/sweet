@@ -11,7 +11,7 @@ from mule.exec_program import *
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = SWEETJobGeneration()
-jg.compile.unit_test="test_planedata_convert_complex_to_from_real"
+jg.compile.unit_test="test_plane_convert_complex_to_from_real"
 
 jg.compile.plane_spectral_space="enable"
 
