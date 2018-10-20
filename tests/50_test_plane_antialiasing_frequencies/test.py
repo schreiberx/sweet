@@ -9,7 +9,7 @@ from InfoError import *
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = SWEETJobGeneration()
-jg.compile.unit_test="test_antialiasing_frequencies"
+jg.compile.unit_test="test_plane_antialiasing_frequencies"
 jg.compile.plane_spectral_space="enable"
 jg.compile.plane_spectral_dealiasing="enable"
 jg.compile.mode="release"
