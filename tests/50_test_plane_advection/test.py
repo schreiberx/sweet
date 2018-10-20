@@ -35,8 +35,6 @@ params_runtime_spectral_derivs = [0, 1]
 params_runtime_mode_res_x = [128]
 params_runtime_mode_res_y = [128]
 
-params_runtime_timestep_sizes = [0.05, 0.1]
-
 # rotation speeds
 # 0: no rotation
 # 20=simtime: one rotation
@@ -72,6 +70,17 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
 			):
 				jg.runtime.advection_velocity = ",".join(str(x) for x in vel)
 
+				if jg.runtime.timestepping_method == "na_sl":
+					params_runtime_timestep_sizes = [0.05, 0.1]
+				elif jg.runtime.timestepping_method == "na_erk":
+					if jg.runtime.timestepping_order == 1:
+						params_runtime_timestep_sizes = [0.002]
+					elif jg.runtime.timestepping_order == 2:
+						params_runtime_timestep_sizes = [0.01]
+					else:
+						params_runtime_timestep_sizes = [0.02]
+				else:
+					raise Exception("Args!!!")
 				for (
 					jg.compile.mode,
 					jg.compile.plane_spectral_dealiasing,
