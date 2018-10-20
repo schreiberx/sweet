@@ -49,14 +49,14 @@ class SWEETRuntimeOptions(InfoError):
 		# Use 14 digits per default
 		self.floating_point_output_digits = 12
 
-		self.timestepping_method = 'ln_erk'
+		self.timestepping_method = None#'ln_erk'
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
 
 		self.timestep_size = 0.001
 		self.max_timesteps = -1
 
-		self.normal_mode_analysis = 0
+		self.normal_mode_analysis = None
 
 		self.rexi_method = ''
 
@@ -69,15 +69,15 @@ class SWEETRuntimeOptions(InfoError):
 		self.rexi_file_faf_dir = None
 
 		self.rexi_ci_n = 128
-		self.rexi_ci_max_real = -999
-		self.rexi_ci_max_imag = -999
-		self.rexi_ci_sx = 50
-		self.rexi_ci_sy = 50
-		self.rexi_ci_mu = 0
+		self.rexi_ci_max_real = None
+		self.rexi_ci_max_imag = None
+		self.rexi_ci_sx = None
+		self.rexi_ci_sy = None
+		self.rexi_ci_mu = None
 		self.rexi_ci_primitive = 'circle'
-		self.rexi_ci_gaussian_filter_scale = 0
-		self.rexi_ci_gaussian_filter_dt_norm = 0
-		self.rexi_ci_gaussian_filter_exp_N = 0
+		self.rexi_ci_gaussian_filter_scale = None
+		self.rexi_ci_gaussian_filter_dt_norm = None
+		self.rexi_ci_gaussian_filter_exp_N = None
 
 		self.rexi_terry_m = 0
 		self.rexi_terry_l = 11
@@ -115,7 +115,7 @@ class SWEETRuntimeOptions(InfoError):
 		self.bench_id = -1
 
 		# Specify benchmark name
-		self.benchmark_name = ""
+		self.benchmark_name = None
 
 		self.benchmark_galewsky_umax = -1
 		self.benchmark_galewsky_hamp = -1
@@ -250,7 +250,7 @@ class SWEETRuntimeOptions(InfoError):
 		idstr = ''
 
 		if not 'runtime.benchmark' in filter_list:
-			if self.benchmark_name != '':
+			if self.benchmark_name != None:
 				idstr += '_b'+str(self.benchmark_name)
 			else:
 				idstr += '_b'+str(self.bench_id)
@@ -286,12 +286,13 @@ class SWEETRuntimeOptions(InfoError):
 			raise Exception("Deprecated")
 
 		if not 'runtime.timestepping' in filter_list:
-			if not 'runtime.timestepping_method' in filter_list:
-				idstr += '_tsm_'+self.timestepping_method
+			if self.timestepping_method != None:
+				if not 'runtime.timestepping_method' in filter_list:
+					idstr += '_tsm_'+self.timestepping_method
 
-			if not 'runtime.timestepping_order' in filter_list:
-				idstr += '_tso'+str(self.timestepping_order)
-				idstr += '_tsob'+str(self.timestepping_order2)
+				if not 'runtime.timestepping_order' in filter_list:
+					idstr += '_tso'+str(self.timestepping_order)
+					idstr += '_tsob'+str(self.timestepping_order2)
 
 			if not 'runtime.timestepping_size' in filter_list:
 				idstr += '_C'+str("{:08.3f}".format(self.timestep_size))
@@ -326,17 +327,26 @@ class SWEETRuntimeOptions(InfoError):
 
 						if not 'runtime.rexi_params' in filter_list:
 							idstr += '_n'+str(self.rexi_ci_n).zfill(8)
-							if self.rexi_ci_max_real > 0:
-								idstr += '_mr'+str(float(self.rexi_ci_max_real))
-								idstr += '_mi'+str(float(self.rexi_ci_max_imag))
+							if self.rexi_ci_max_real != None:
+								if self.rexi_ci_max_real != None:
+									idstr += '_mr'+str(float(self.rexi_ci_max_real))
+								if self.rexi_ci_max_imag != None:
+									idstr += '_mi'+str(float(self.rexi_ci_max_imag))
 							else:
-								idstr += '_sx'+str(float(self.rexi_ci_sx))
-								idstr += '_sy'+str(float(self.rexi_ci_sy))
-								idstr += '_mu'+str(float(self.rexi_ci_mu))
+								if self.rexi_ci_sx != None:
+									idstr += '_sx'+str(float(self.rexi_ci_sx))
+								if self.rexi_ci_sy != None:
+									idstr += '_sy'+str(float(self.rexi_ci_sy))
+								if self.rexi_ci_mu != None:
+									idstr += '_mu'+str(float(self.rexi_ci_mu))
 							idstr += '_pr'+str(self.rexi_ci_primitive)
-							idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
-							idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
-							idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
+
+							if self.rexi_ci_gaussian_filter_scale != None:
+								idstr += '_gfs'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_scale))
+							if self.rexi_ci_gaussian_filter_dt_norm != None:
+								idstr += '_gfd'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_dt_norm))
+							if self.rexi_ci_gaussian_filter_exp_N != None:
+								idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
 
 					if not 'runtime.rexi_params' in filter_list:
 						idstr += '_nrm'+str(self.rexi_normalization)
@@ -416,7 +426,9 @@ class SWEETRuntimeOptions(InfoError):
 			retval += ' -Y '+str(self.domain_size[1])
 
 		retval += ' -s '+str(self.bench_id)
-		retval += ' --benchmark-name='+str(self.benchmark_name)
+
+		if self.benchmark_name != None:
+			retval += ' --benchmark-name='+str(self.benchmark_name)
 
 		retval += ' -v '+str(self.verbosity)
 
@@ -457,11 +469,13 @@ class SWEETRuntimeOptions(InfoError):
 		if self.advection_velocity != None:
 			retval += ' --advection-velocity='+str(self.advection_velocity)
 
-		retval += ' --timestepping-method='+self.timestepping_method
-		retval += ' --timestepping-order='+str(self.timestepping_order)
-		retval += ' --timestepping-order2='+str(self.timestepping_order2)
+		if self.timestepping_method != None:
+			retval += ' --timestepping-method='+self.timestepping_method
+			retval += ' --timestepping-order='+str(self.timestepping_order)
+			retval += ' --timestepping-order2='+str(self.timestepping_order2)
 
-		retval += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
+		if self.normal_mode_analysis != None:
+			retval += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
 
 		retval += ' --rexi-method='+str(self.rexi_method)
 
@@ -496,13 +510,19 @@ class SWEETRuntimeOptions(InfoError):
 
 				elif self.rexi_method == 'ci':
 					retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
-					if self.rexi_ci_max_real > 0:
+
+					if self.rexi_ci_max_real != None:
 						retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
-						retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
+						if self.rexi_ci_max_imag != None:
+							retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
 					else:
-						retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
-						retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
-						retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
+						if self.rexi_ci_sx != None:
+							retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
+						if self.rexi_ci_sy != None:
+							retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
+						if self.rexi_ci_mu != None:
+							retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
+
 					retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
 					retval += ' --rexi-ci-gaussian-filter-scale='+str(self.rexi_ci_gaussian_filter_scale)
 					retval += ' --rexi-ci-gaussian-filter-dt-norm='+str(self.rexi_ci_gaussian_filter_dt_norm)
