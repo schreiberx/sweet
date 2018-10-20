@@ -350,8 +350,6 @@ int main(int i_argc, char *i_argv[])
 			simVars.disc.res_spectral[0] = i;
 			simVars.disc.res_spectral[1] = i;
 
-//			simVars.disc.res_physical[0] = 2*i;
-//			simVars.disc.res_physical[1] = i;
 			simVars.disc.res_physical[0] = 0;
 			simVars.disc.res_physical[1] = 0;
 		}
