@@ -121,7 +121,7 @@ public:
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
 
-		if (simVars.misc.verbosity > 2)
+		if (simVars.misc.verbosity >= 10)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
 		max_error_h0 = (prog_h-prog_h0).reduce_maxAbs();
@@ -321,6 +321,10 @@ int main(int i_argc, char *i_argv[])
 
 
 	int initial_spectral_modes = simVars.disc.res_spectral[0];
+	if (initial_spectral_modes <= 0)
+	{
+		FatalError("Please specify the number of MODES");
+	}
 
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
