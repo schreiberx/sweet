@@ -296,6 +296,10 @@ if __name__ == "__main__":
 	os.makedirs("job_benchref_solution", exist_ok=True)
 	output_file_name = "job_benchref_solution/output_{:s}_t{:020.8f}.csv"
 
+	# Create dummy run.sh script in this folder for automized job processing
+	with open("job_benchref_solution/run.sh", "w") as rfile:
+		rfile.write("#!/bin/bash\necho\"Dummy\"")
+
 	def savefile(data, name, t):
 		d = x.spectogrd(data)
 		d = np.flip(d, 0)
