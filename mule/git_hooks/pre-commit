@@ -1,0 +1,11 @@
+#! /bin/bash
+
+echo "Hello! This is a .git/hooks/pre-commit hook"
+
+echo "Updating Travis files"
+./mule/bin/mule.travis.setup_tests.py 0 || exit 1
+
+echo "Adding potential travis updates"
+git add ./.travis.yml || exit 1
+
+exit 0
