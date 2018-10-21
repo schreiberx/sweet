@@ -132,6 +132,7 @@ class SWEETRuntimeOptions(InfoError):
 		self.viscosity_order = None
 		self.uselineardiv = None
 		self.uselocalvisc = None
+		self.advection_rotation_angle = None
 		self.advection_velocity = None
 		self.simtime = 0.001
 
@@ -286,6 +287,9 @@ class SWEETRuntimeOptions(InfoError):
 				idstr += '_u'+str(self.viscosity)
 			if self.viscosity_order != None:
 				idstr += '_U'+str(self.viscosity_order)
+
+			if self.advection_rotation_angle != None:
+				idstr += '_ar'+str(self.advection_rotation_angle)
 
 			if self.advection_velocity != None:
 				idstr += '_av'+str(self.advection_velocity).replace(",", "_")
@@ -486,6 +490,9 @@ class SWEETRuntimeOptions(InfoError):
 
 		if self.uselocalvisc != None:
 			retval += ' --use-local-visc='+str(self.uselocalvisc)
+
+		if self.advection_rotation_angle != None:
+			retval += ' --advection-rotation-angle='+str(self.advection_rotation_angle)
 
 		if self.advection_velocity != None:
 			retval += ' --advection-velocity='+str(self.advection_velocity)
