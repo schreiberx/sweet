@@ -5,8 +5,6 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
-#include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/Stopwatch.hpp>
 
 #include <ostream>
@@ -32,8 +30,6 @@ public:
 	PlaneData prog_h;
 	PlaneData prog_u;
 	PlaneData prog_v;
-
-	PlaneOperators op;
 
 	PlaneDataTimesteppingExplicitRK timestepping;
 
@@ -74,6 +70,8 @@ public:
 					+z
 					+2.0;
 		}
+
+		FatalError("Not supported (i_order)");
 	}
 
 
@@ -104,6 +102,7 @@ public:
 					+(10./12.)*z
 					+1.0;
 		}
+		FatalError("Not supported test_function_diff (i_order)");
 	}
 
 
@@ -111,9 +110,7 @@ public:
 	SimulationTestRK()	:
 		prog_h(planeDataConfig),
 		prog_u(planeDataConfig),
-		prog_v(planeDataConfig),
-
-		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		prog_v(planeDataConfig)
 	{
 		reset();
 	}
@@ -161,7 +158,6 @@ public:
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
 		//simVars.timecontrol.current_timestep_size = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 0);
-		assert(simVars.sim.CFL < 0);
 		assert(simVars.timecontrol.current_timestep_size > 0);
 
 		timestepping.run_timestep(
@@ -259,19 +255,19 @@ int main(
 )
 {
 	const char *bogus_var_names[] = {
-			"function-order",
 			nullptr
 	};
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
-	{
-		std::cout << std::endl;
-		std::cout << "Program-specific options:" << std::endl;
-		std::cout << "	--function-order [order of function to test]" << std::endl;
-		std::cout << std::endl;
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names, false))
 		return -1;
-	}
 
+	if (simVars.timecontrol.current_timestep_size <= 0)
+		FatalError("Timestep size <= 0!");
+
+	if (simVars.disc.res_physical[0] <= 0)
+		simVars.disc.res_physical[0] = 16;
+	if (simVars.disc.res_physical[1] <= 0)
+		simVars.disc.res_physical[1] = 16;
 
 	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
@@ -291,9 +287,6 @@ int main(
 		return -1;
 	}
 
-	if (simVars.bogus.var[0] != "")
-		time_test_function_order = atof(simVars.bogus.var[0].c_str());
-
 	for (int fun_order = 0; fun_order <= 4; fun_order++)
 	{
 		time_test_function_order = fun_order;
@@ -311,7 +304,7 @@ int main(
 
 			while(true)
 			{
-				if (simVars.misc.verbosity > 2)
+				if (simVars.misc.verbosity >= 10)
 					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.p_physical_get(0,0) << std::endl;
 
 				simulationTestRK->run_timestep();
@@ -329,25 +322,29 @@ int main(
 					benchmark_h.physical_set_all(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
 
 					double error = (simulationTestRK->prog_h-benchmark_h).reduce_rms_quad();
-					std::cout << "with function order " << fun_order << " with RK timestepping " << ts_order << " resulted in RMS error " << error << std::endl;
+					std::cout << "with function order " << fun_order << " with RK timestepping of order " << ts_order << " resulted in RMS error " << error << "\t\t" << std::flush;
 
 					if (fun_order <= ts_order)
 					{
-						if (error > 0.0000001)
+						if (error > 1e-8)
 						{
 							std::cout << "ERROR threshold exceeded!" << std::endl;
 							return 1;
 						}
+
+						std::cout << "OK" << std::endl;
 					}
 					else
 					{
-						if (error < 0.0000001)
+						std::cout << "OK (errors expected)" << std::endl;
+
+						if (error < 1e-8)
 						{
-							std::cout << "ERROR threshold is expected to be larger, can still be valid!" << std::endl;
+							std::cout << "WARNING: Error expected to be larger, however relatively small error found" << std::endl;
 							return 1;
 						}
+
 					}
-					std::cout << "OK" << std::endl;
 
 					break;
 				}

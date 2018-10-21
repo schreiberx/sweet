@@ -36,7 +36,7 @@ class SWEETRuntimeOptions(InfoError):
 		self.mode_res = None
 		self.phys_res = None
 
-		self.output_timestep_size = 0.0001
+		self.output_timestep_size = None
 		self.output_filename = ''
 		self.output_file_mode = ''
 
@@ -53,7 +53,7 @@ class SWEETRuntimeOptions(InfoError):
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
 
-		self.timestep_size = 0.001
+		self.timestep_size = None
 		self.max_timesteps = -1
 
 		self.normal_mode_analysis = None
@@ -303,7 +303,8 @@ class SWEETRuntimeOptions(InfoError):
 					idstr += '_tsob'+str(self.timestepping_order2)
 
 			if not 'runtime.timestepping_size' in filter_list:
-				idstr += '_C'+str("{:08.3f}".format(self.timestep_size))
+				if self.timestep_size != None:
+					idstr += '_C'+str("{:08.3f}".format(self.timestep_size))
 
 			if self.max_timesteps != -1:
 				idstr += '_T'+str(self.max_timesteps).zfill(3)
@@ -449,21 +450,23 @@ class SWEETRuntimeOptions(InfoError):
 
 		retval += ' -v '+str(self.verbosity)
 
-		retval += ' --dt='+str(self.timestep_size)
+		if self.timestep_size != None:
+			retval += ' --dt='+str(self.timestep_size)
 
 		if self.max_timesteps != -1:
 			retval += ' -T '+str(self.max_timesteps)
 
-		retval += ' -o '+str(self.output_timestep_size)
+		if self.output_timestep_size != None:
+			retval += ' -o '+str(self.output_timestep_size)
 
 		if self.output_filename != '':
 			retval += ' --output-file-name='+self.output_filename
+		elif self.output_timestep_size == None:
+			retval += ' --output-file-name=-'
 
 		if self.output_file_mode != '':
 			retval += ' --output-file-mode='+self.output_file_mode
 
-		if self.output_timestep_size < 0:
-			retval += ' --output-file-name=-'
 
 		if self.viscosity != None:
 			retval += ' -u '+str(self.viscosity)
