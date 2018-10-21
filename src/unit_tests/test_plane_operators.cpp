@@ -1,4 +1,3 @@
-
 //#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 //	#error "Spectral space not activated"
 //#endif
@@ -6,8 +5,6 @@
 #if SWEET_GUI
 #	error	"GUI not supported"
 #endif
-
-
 
 #include "../include/sweet/plane/PlaneData.hpp"
 #include <sweet/SimulationVariables.hpp>
@@ -19,6 +16,7 @@
 #include <unistd.h>
 #include <iomanip>
 #include <stdio.h>
+#include <cassert>
 
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
@@ -55,7 +53,6 @@ int main(int i_argc, char *i_argv[])
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
 
-
 	double prev_error_diff_x = 0;
 	double prev_error_diff_y = 0;
 
@@ -82,7 +79,7 @@ int main(int i_argc, char *i_argv[])
 
 		double max_aspect = simVars.sim.domain_size[0] / simVars.sim.domain_size[1];
 		if (max_aspect < 1.0)
-			max_aspect = 1.0/max_aspect;
+			max_aspect = 1.0 / max_aspect;
 
 		tolerance_increase *= max_aspect;
 
@@ -91,7 +88,7 @@ int main(int i_argc, char *i_argv[])
 		 *
 		 * We assume 1e-12 for double precision
 		 */
-		double eps = 1e-9*tolerance_increase;
+		double eps = 1e-9 * tolerance_increase;
 
 		/*
 		 * error tolerance for convergence
@@ -100,35 +97,37 @@ int main(int i_argc, char *i_argv[])
 		 * are not really representable in the Fouerier space where the discretization errors
 		 * are dominating.
 		 */
-		double eps_convergence = 1e-4*tolerance_increase;
-
+		double eps_convergence = 1e-4 * tolerance_increase;
 
 		std::cout << "*************************************************************" << std::endl;
 		std::cout << "Testing operators with resolution " << res_x << " x " << res_y << std::endl;
 		std::cout << "*************************************************************" << std::endl;
-		std::size_t res[2] = {res_x, res_y};
+		std::size_t res[2] =
+		{ res_x, res_y };
 
 		simVars.disc.res_physical[0] = res[0];
 		simVars.disc.res_physical[1] = res[1];
+
+		simVars.disc.res_spectral[0] = 0;
+		simVars.disc.res_spectral[1] = 0;
+
 		simVars.reset();
 
 		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
-
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
 		PlaneData h(planeDataConfig);
 
-
 		{
 			std::cout << "**********************************************" << std::endl;
-			std::cout << "> Resolution (" << res_x << "x" << res_y << ")" << std::endl;
+			std::cout << "> Physical resolution (" << simVars.disc.res_physical[0] << "x" << simVars.disc.res_physical[1] << ")" << std::endl;
+			std::cout << "> Spectral resolution (" << simVars.disc.res_spectral[0] << "x" << simVars.disc.res_spectral[1] << ")" << std::endl;
 			std::cout << "> Domain size (" << simVars.sim.domain_size[0] << "x" << simVars.sim.domain_size[1] << ")" << std::endl;
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
-
 
 			/**
 			 * 2nd order differential operators on high mode functions (nyquist frequency)
@@ -150,103 +149,110 @@ int main(int i_argc, char *i_argv[])
 
 				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-
 				double freq_x = 0;
 				double freq_y = 0;
 
 				//Nyquist freq
-				std::size_t nyq=simVars.disc.res_physical[0]/2;
+				std::size_t nyq = simVars.disc.res_physical[0] / 2;
 
 				//Vary frequencies
 				for (std::size_t k = 0; k <= 4; k++)
 				{
-					if(k==0) //Fix a given frequency
+					if (k == 0) //Fix a given frequency
 					{
 						freq_x = 5;
 						freq_y = 5;
 					}
 					else
 					{    // Vary with k
-						freq_x = ((double)k* (double) nyq)/ 4.0;
-						freq_y = ((double)k* (double) nyq)/ 4.0;
+						freq_x = ((double)k * (double)nyq) / 4.0;
+						freq_y = ((double)k * (double)nyq) / 4.0;
 					}
 
-					double fx = 2.0*freq_x*M_PIl;
-					double fy = 2.0*freq_y*M_PIl;
+					double fx = 2.0 * freq_x * M_PIl;
+					double fy = 2.0 * freq_y * M_PIl;
 
 					for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 					{
 						for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 						{
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0]);//*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);//*simVars.sim.domain_size[1];
+							double x = (((double)i + 0.5) / (double)simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
+							double y = (((double)j + 0.5) / (double)simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
 
-							double sin_x = sin(fx*x);
-							double cos_x = cos(fx*x);
-							double sin_y = sin(fy*y);
-							double cos_y = cos(fy*y);
+							double sin_x = sin(fx * x);
+							double cos_x = cos(fx * x);
+							double sin_y = sin(fy * y);
+							double cos_y = cos(fy * y);
 
 							double dx = simVars.sim.domain_size[0];
 							double dy = simVars.sim.domain_size[1];
 
-							h.p_physical_set(j, i,	sin_x*sin_y);
+							h.p_physical_set(j, i, sin_x * sin_y);
 
-							double diff_x = fx*cos_x*sin_y/(simVars.sim.domain_size[0]);
-							double diff_y = fy*sin_x*cos_y/(simVars.sim.domain_size[1]);
+							double diff_x = fx * cos_x * sin_y / (simVars.sim.domain_size[0]);
+							double diff_y = fy * sin_x * cos_y / (simVars.sim.domain_size[1]);
 
 							h_diff_x.p_physical_set(j, i, diff_x);
 							h_diff_y.p_physical_set(j, i, diff_y);
 
-							h_diff2_x.p_physical_set(j, i, -fx*fx*sin_x*sin_y/(dx*dx));
-							h_diff2_y.p_physical_set(j, i, -fy*fy*sin_x*sin_y/(dy*dy));
+							h_diff2_x.p_physical_set(j, i, -fx * fx * sin_x * sin_y / (dx * dx));
+							h_diff2_y.p_physical_set(j, i, -fy * fy * sin_x * sin_y / (dy * dy));
 
-							h_bilaplace.p_physical_set(j, i,	
-										// d/dx
-										  fx*fx*fx*fx*sin_x*sin_y/(dx*dx*dx*dx)
-										+ fx*fx*fy*fy*sin_x*sin_y/(dy*dy*dx*dx)
-										// d/dy
-										+ fy*fy*fx*fx*sin_x*sin_y/(dx*dx*dy*dy)
-										+ fy*fy*fy*fy*sin_x*sin_y/(dy*dy*dy*dy)
-							);
+							h_bilaplace.p_physical_set(j, i,
+							// d/dx
+									fx * fx * fx * fx * sin_x * sin_y / (dx * dx * dx * dx) + fx * fx * fy * fy * sin_x * sin_y / (dy * dy * dx * dx)
+									// d/dy
+											+ fy * fy * fx * fx * sin_x * sin_y / (dx * dx * dy * dy) + fy * fy * fy * fy * sin_x * sin_y / (dy * dy * dy * dy));
 						}
 					}
 
 					//This assumes freq_x = freq_y
 					//h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
 
+					// Normalization of errors
+					double norm_fx = fx / simVars.sim.domain_size[0];
+					double norm_fy = fy / simVars.sim.domain_size[1];
 
-					double err_x = (op.diff_c_x(h)-h_diff_x).reduce_maxAbs()/fx;
-					double err_y = (op.diff_c_y(h)-h_diff_y).reduce_maxAbs()/fy;
+					// Also take into account the errors of FFT
+					double norm_fft_x = std::sqrt(simVars.disc.res_physical[0]);
+					double norm_fft_y = std::sqrt(simVars.disc.res_physical[1]);
+
+					double err_x = (op.diff_c_x(h) - h_diff_x).reduce_maxAbs() / norm_fx / norm_fft_x;
+					double err_y = (op.diff_c_y(h) - h_diff_y).reduce_maxAbs() / norm_fy / norm_fft_y;
 
 					// diff2 normalization = 4.0 pi^2 / L^2
-					double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_maxAbs()/(fx*fx);
-					double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_maxAbs()/(fy*fy);
+					double err2_x = (op.diff2_c_x(h) - h_diff2_x).reduce_maxAbs() / (norm_fx * norm_fx) / norm_fft_x;
+					double err2_y = (op.diff2_c_y(h) - h_diff2_y).reduce_maxAbs() / (norm_fy * norm_fy) / norm_fft_y;
 
-					double err_laplace = (op.laplace(h)-h_diff2_x-h_diff2_y).reduce_maxAbs()/(fx*fx+fy*fy);
-					double err_bilaplace = (op.laplace(op.laplace(h))-h_bilaplace).reduce_maxAbs()/(fx*fx*fx*fx + fy*fy*fy*fy);
+					double err_laplace = (op.laplace(h) - h_diff2_x - h_diff2_y).reduce_maxAbs()
+							/ (norm_fx * norm_fx + norm_fy * norm_fy)
+							/ (norm_fft_x + norm_fft_y);
+
+					double err_bilaplace = (op.laplace(op.laplace(h)) - h_bilaplace).reduce_maxAbs()
+							/ (norm_fx * norm_fx * norm_fx * norm_fx + norm_fy * norm_fy * norm_fy * norm_fy)
+							/ (norm_fft_x + norm_fft_y)	// for first laplace operator
+							/ (norm_fft_x + norm_fft_y) // for second laplace operator
+							;
 
 					if (simVars.disc.use_spectral_basis_diffs)
 					{
-						std::cout << "frequency = " << freq_x << " of " << simVars.disc.res_physical[0]/2 << std::endl;
-						std::cout << "error diff x = " << err_x << std::endl;
-						std::cout << "error diff y = " << err_y << std::endl;
-						std::cout << "error diff2 x = " << err2_x << std::endl;
-						std::cout << "error diff2 y = " << err2_y << std::endl;
-						std::cout << "error laplace = " << err_laplace << std::endl;
-						std::cout << "error bilaplace = " << err_bilaplace << std::endl;
+						std::cout << "frequency = " << freq_x << " of " << simVars.disc.res_physical[0] / 2 << std::endl;
+						std::cout << " + error diff x = " << err_x << std::endl;
+						std::cout << " + error diff y = " << err_y << std::endl;
+						std::cout << " + error diff2 x = " << err2_x << std::endl;
+						std::cout << " + error diff2 y = " << err2_y << std::endl;
+						std::cout << " + error laplace = " << err_laplace << std::endl;
+						std::cout << " + error bilaplace = " << err_bilaplace << std::endl;
 
-						if ( std::max({err_x, err_y, err2_x, err2_y, err_laplace, err_bilaplace})  > eps)
+						if (std::max({ err_x, err_y, err2_x, err2_y, err_laplace, err_bilaplace }) > eps)
 							FatalError("SPEC: Error threshold for diff operators too high for spectral differentiation!");
-#if 1
-						if ( err_bilaplace  > eps) //there is more error associated because of the magnitude of round off errors (forth order operator)?
-							FatalError("SPEC: Error threshold for diff operator bilaplacian too high for spectral differentiation!");
-#endif
 					}
 					else
 					{
+						std::cout << "Tests skipped: Test without spectral derivatives are not applicable here!" << std::endl;
 
 #if 0
-// THESE TESTS ARE NOW DEACTIVATED
+						// THESE TESTS ARE NOW DEACTIVATED
 						if(k==0)
 						{
 							double conv_x = prev_error_diff_x/err_x;
@@ -270,9 +276,11 @@ int main(int i_argc, char *i_argv[])
 							std::cout << "conv lap = " << conv_lap << std::endl;
 							std::cout << "conv bilap = " << conv_bilap << std::endl;
 
-							if (std::min(std::abs({conv_x, conv_y, conv2_x, conv2_y, conv_lap, conv_bilap})) != 0)
+							if (std::min(std::abs(
+													{	conv_x, conv_y, conv2_x, conv2_y, conv_lap, conv_bilap})) != 0)
 							{
-								if (std::max({std::abs(conv_x-4.0), std::abs(conv_y-4.0), std::abs(conv2_x-4.0), std::abs(conv2_y-4.0), std::abs(conv_lap-4.0), std::abs(conv_bilap-4.0)}) > eps_convergence)
+								if (std::max(
+												{	std::abs(conv_x-4.0), std::abs(conv_y-4.0), std::abs(conv2_x-4.0), std::abs(conv2_y-4.0), std::abs(conv_lap-4.0), std::abs(conv_bilap-4.0)}) > eps_convergence)
 								{
 									std::cerr << "Cart: Error threshold exceeded, no convergence given!" << std::endl;
 									exit(-1);
@@ -294,136 +302,173 @@ int main(int i_argc, char *i_argv[])
 
 			std::cout << "TEST A: DONE" << std::endl;
 
+
 			/*
 			 * Test * operator and anti-aliasing
 			 */
+#if !SWEET_USE_PLANE_SPECTRAL_DEALIASING && 0
+
+			std::cout << "Skipping dealiasing tests since SWEET is compiled without anti-aliasing" << std::endl;
+
+#else
 
 			{
-				std::cout << std::endl;
+				std::cout << "----------------------------------------" << std::endl;
 				std::cout << " Testing multiplication and de-aliasing" << std::endl;
-				std::cout << " ----------------------------------------" << std::endl;
+				std::cout << "----------------------------------------" << std::endl;
+
 				PlaneData h1(planeDataConfig);
 				PlaneData h2(planeDataConfig);
-				PlaneData h12(planeDataConfig);
+				PlaneData h12_analytical(planeDataConfig);
 				PlaneData h12_dealiased(planeDataConfig);
-				PlaneData h12_alias(planeDataConfig);
 				PlaneData h12_noalias(planeDataConfig);
 				PlaneData h12_truncated(planeDataConfig);
 
-
 				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
 
-				//Nyquist freq
-				std::size_t nyq=simVars.disc.res_physical[0]/2;
-				//Truncated nyquist freq
-				std::size_t nyqtrunc=(int) floor(2.0*nyq/3.0);
-				//Total num of freqs
-				std::size_t n=simVars.disc.res_physical[0];
+				// Nyquist freq in physical space
+				int physical_nyq_freq = simVars.disc.res_physical[0] / 2;
+				std::cout << "> Nyquist frequency: " << physical_nyq_freq << std::endl;
 
-				//dx, dy
-				double dx=simVars.sim.domain_size[0]/simVars.disc.res_physical[0];
-				double dy=simVars.sim.domain_size[1]/simVars.disc.res_physical[1];
+				// Truncated Nyquist freq in spectral space
+				int spectral_nyq_trunc_freq = 2 * physical_nyq_freq / 3;
+				std::cout << "> Truncated Nyquist frequency: " << spectral_nyq_trunc_freq << std::endl;
+				std::cout << "> Spectral space modes[0] / 2: " << simVars.disc.res_spectral[0]/2 << std::endl;
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+				if (spectral_nyq_trunc_freq != simVars.disc.res_spectral[0]/2)
+					FatalError("Inconsistent effective Nyquist frequency!");
+#endif
+
+				std::cout << std::endl;
+
+				// Total num of freqs
+				int n = simVars.disc.res_physical[0];
+
+				// dx, dy
+				double dx = 1.0 / simVars.disc.res_physical[0];
+				double dy = 1.0 / simVars.disc.res_physical[1];
 
 				for (std::size_t k = 0; k < 7; k++)
 				{
+					// We test with two different frequencies for the tests
 
-					//Frequencies for tests
-					// Important: Make sure freq_1 > freq_2 always !!!!!!!!!!!
-					double freq_1 = nyq/4.0+k*nyq/8.0; // 2 dx wave
-					//double freq_1 = 2*nyq-freq_2-1;2*k;
-					double freq_2 = nyq/4.0; // 10 dx wave
+					int freq_1 = physical_nyq_freq / 4.0 + k * physical_nyq_freq / 8.0; // 2 dx wave
 
-					//Product frequencies
-					double freq_sum=freq_1+freq_2;
-					double freq_sub=freq_1-freq_2;
+					// double freq_1 = 2*nyq_freq-freq_2-1;2*k;
+					int freq_2 = physical_nyq_freq / 4.0; // 10 dx wave
 
-					//Frequency info
-					std::cout << "Freq_1 = " << freq_1 << ", freq_2 = " << freq_2
-							<< ", freq_sum = " << freq_sum << ", freq_sub = " << freq_sub
-							<< ", Nyq limit = " << nyq << ", Truncated Nyq limit = " << nyqtrunc
-							<< std::endl;
+					// Important: Make sure freq_1 >= freq_2 always !!!!!!!!!!!
+					assert(freq_1 >= freq_2);
 
-					//Check aliasing on original spectrum
-					double trunc_sum = 1.0;
-					bool alias_present = 0;
-					if(freq_sum > (double) nyq) //these modes cannot be represented on the grid, and will be aliased
+					// Product frequencies
+					int freq_sum = freq_1 + freq_2;
+					int freq_sub = freq_1 - freq_2;
+					assert(freq_sum > freq_sub);
+
+					// Frequency info
+					std::cout << "freq_1 = " << freq_1 << ", freq_2 = " << freq_2 << std::endl;
+					std::cout << "freq_sum = " << freq_sum << ", freq_sub = " << freq_sub << std::endl;
+
+					/*
+					 * Aliasing on original (physical) spectrum
+					 */
+					double physical_trunc_sum = 1.0;
+					bool is_alias_present = false;
+					if (freq_sum > (double)physical_nyq_freq) //these modes cannot be represented on the grid, and will be aliased
 					{
-						trunc_sum=0.0;
-						alias_present = 1;
+						physical_trunc_sum = 0.0;
+						is_alias_present = true;
 					}
 
-					if(alias_present)
+					if (is_alias_present)
 					{
-						std::cout << "Frequency " << freq_sum << " is not representable on this grid and will"
-						 << " contaminate the mode " << n-freq_sum << " (alias on low frequency)" << std::endl;
+						std::cout << " + Frequency " << freq_sum << " is not representable on this grid and will contaminate the mode " << n - freq_sum
+								<< " (alias on low frequency)" << std::endl;
 					}
 					else
 					{
-						std::cout << "No aliasing present on original multiplication spectrum" << std::endl;
+						std::cout << " + Frequency " << freq_sum << " will not produce an aliasing on original multiplication spectrum" << std::endl;
 					}
 
-					//Check aliasing on truncated spectrum
-					double trunc_freq1=1.0;
-					double trunc_freq2=1.0;
-					double trunc_freq_sum=1.0;
-					bool alias_trunc_present=0;
-					bool alias_trunc_mult_present=0;
+					/*
+					 * Aliasing on truncated (spectral) spectrum
+					 */
+					int spectral_trunc_freq1 = 1;
+					int spectral_trunc_freq2 = 1;
+					int spectral_trunc_freq_sum = 1;
+					bool is_alias_trunc_present = false;
+					bool is_alias_trunc_multiplication_present = false;
 
-					if(freq_1 > (double) nyqtrunc)  //these modes cannot be represented on the truncated spectrum
+					if (freq_1 > spectral_nyq_trunc_freq) //these modes cannot be represented on the truncated spectrum
 					{
-						trunc_freq1=0.0;
-						alias_trunc_present=1;
-						std::cout << "Frequency " << freq_1 << " is not representable on the truncated spectrum so multiplication will be zero for truncated spectrum" << std::endl;
+						spectral_trunc_freq1 = 0;
+						is_alias_trunc_present = true;
+						std::cout << " + Frequency " << freq_1 << " is not representable on the truncated spectrum so multiplication will be zero for truncated spectrum" << std::endl;
 					}
-					if(freq_2 > (double) nyqtrunc) //these modes cannot be represented on the truncated spectrum
+					if (freq_2 > spectral_nyq_trunc_freq) //these modes cannot be represented on the truncated spectrum
 					{
-						trunc_freq2=0.0;
-						alias_trunc_present=1;
-						std::cout << "Frequency " << freq_2 << " is not representable on the truncated spectrum so multiplication will be zero for truncated spectrum" << std::endl;
+						spectral_trunc_freq2 = 0;
+						is_alias_trunc_present = true;
+						std::cout << " + Frequency " << freq_2 << " is not representable on the truncated spectrum so multiplication will be zero for truncated spectrum" << std::endl;
 					}
-					if(freq_sum > (double) nyqtrunc) //these modes cannot be represented on the truncated spectrum
+					if (freq_sum > spectral_nyq_trunc_freq) //these modes cannot be represented on the truncated spectrum
 					{
-						trunc_freq_sum=0.0;
-						alias_trunc_mult_present=1;
-						std::cout << "Frequency " << freq_sum << " is not representable on the truncated spectrum so multiplication will truncate this high mode" << std::endl;
+						spectral_trunc_freq_sum = 0;
+						is_alias_trunc_multiplication_present = true;
+						std::cout << " + Frequency " << freq_sum << " is not representable on the truncated spectrum so multiplication will truncate this high mode" << std::endl;
 					}
-					if(!alias_trunc_present && !alias_trunc_mult_present)
-						std::cout << "No aliasing present on truncated multiplication spectrum" << std::endl;
+					if (!is_alias_trunc_present && !is_alias_trunc_multiplication_present)
+						std::cout << " + Frequency " << freq_sum << " will not introduce an aliasing on truncated multiplication spectrum" << std::endl;
 
-					//cos(a x) cos(b x)  = 1/2 (cos( (a-b) x)+cos( (a+b) x))
+					// cos(a x) cos(b x)  = 1/2 (cos( (a-b) x) + cos( (a+b) x))
 					for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 					{
 						for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 						{
 							double x = (double)i * dx;
 							double y = (double)j * dy;
-							h1.p_physical_set(j, i,	cos(2.0*freq_1*M_PIl*x)*cos(2.0*freq_1*M_PIl*y)	);
-							h2.p_physical_set(j, i,	cos(2.0*freq_2*M_PIl*x)*cos(2.0*freq_2*M_PIl*y)	);
+							h1.p_physical_set(j, i, cos(2.0 * freq_1 * M_PIl * x) * cos(2.0 * freq_1 * M_PIl * y));
+							h2.p_physical_set(j, i, cos(2.0 * freq_2 * M_PIl * x) * cos(2.0 * freq_2 * M_PIl * y));
 
-							//                            ok                      aliased
-							h12.p_physical_set(j, i,	0.5*(cos(2.0*(freq_sub)*M_PIl*x)+cos(2.0*(freq_sum)*M_PIl*x))
-									*0.5*(cos(2.0*(freq_sub)*M_PIl*y)+cos(2.0*(freq_sum)*M_PIl*y)));
+							/*
+							 * Analytical solution
+							 * Doesn't care about resolution
+							 */
+							h12_analytical.p_physical_set(j, i,
+									0.5 * (cos(2.0 * (freq_sub) * M_PIl * x) + cos(2.0 * (freq_sum) * M_PIl * x))
+									* 0.5 * (cos(2.0 * (freq_sub) * M_PIl * y) + cos(2.0 * (freq_sum) * M_PIl * y)));
 
-							// just the representable wave
-							h12_noalias.p_physical_set(j, i,	0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*x))
-									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_sum*cos(2.0*(freq_sum)*M_PIl*y)));
+							/*
+							 * Solution without aliasing.
+							 * This is how SWEET should behave.
+							 *
+							 * "trunc_sum" controls if the frequency is included or not
+							 */
+							h12_noalias.p_physical_set(j, i,
+									0.5 * (cos(2.0 * (freq_sub) * M_PIl * x) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PIl * x)) * 0.5
+											* (cos(2.0 * (freq_sub) * M_PIl * y) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PIl * y)));
 
-							h12_truncated.p_physical_set(j, i,	trunc_freq1*trunc_freq2*0.5*( cos(2.0*(freq_sub)*M_PIl*x)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*x))
-									*0.5*( cos(2.0*(freq_sub)*M_PIl*y)+trunc_freq_sum*cos(2.0*(freq_sum)*M_PIl*y)));
+							h12_truncated.p_physical_set(j, i,
+									spectral_trunc_freq1 * spectral_trunc_freq2 * 0.5 * (cos(2.0 * (freq_sub) * M_PIl * x) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PIl * x)) * 0.5
+											* (cos(2.0 * (freq_sub) * M_PIl * y) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PIl * y)));
 						}
 					}
 
-					//Standard multiplication
-					double err_mult = (h1*h2-h12).reduce_maxAbs();
-					//Multiplication with dealiasing from * operator
-					double err_mult_dealias = (h1*h2-h12_noalias).reduce_maxAbs();
+					// Standard multiplication
+					// Iff there's no aliasing possible, this should return the correct solution
+					double err_mult = (h1 * h2 - h12_analytical).reduce_maxAbs();
+
+					// Multiplication with dealiasing from * operator
+					// Even if there's dealiasing, this should return the non-aliased result
+					double err_mult_dealias = (h1 * h2 - h12_noalias).reduce_maxAbs();
+
 					//Multiplication with dealiasing from mult function (truncation)
-/// TODO: CHECK THIS
-/// TODO: CHECK THIS
-/// TODO: CHECK THIS
+					/// TODO: CHECK THIS
+					/// TODO: CHECK THIS
+					/// TODO: CHECK THIS
 					//double err_mult_dealias2 = (h1.mult(h2)-h12_truncated).reduce_maxAbs();
 					double err_mult_dealias2 = 0;
-
 
 #if 0
 					std::cout << "error mult * with possibly aliased exact solution = " << err_mult << std::endl;
@@ -432,55 +477,67 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE && SWEET_USE_PLANE_SPECTRAL_DEALIASING
+					if (!is_alias_trunc_multiplication_present)
+					{
+						if (err_mult > eps)
+						{
+							std::cout << "ERROR" << std::endl;
+							std::cout << " + err_mult: " << err_mult << std::endl;
+							std::cout << " + eps: " << eps << std::endl;
+							FatalError("No aliasing present, but error significantly high");
+						}
+					}
+
 					/**
 					 * Check correct dealiasing.
 					 * If error is too high, dealiasing obviously failed
 					 */
-					if (err_mult_dealias  > eps)
+					if (err_mult_dealias > eps)
 					{
-						std::cout << "error operator*(...) with possibly aliased exact solution = " << err_mult << std::endl;
 						std::cout << "error operator*(...) with respect to dealised exact solution = " << err_mult_dealias << std::endl;
-						std::cout << "error mult() function with respect to truncated and dealiased exact solution = " << err_mult_dealias2 << std::endl;
+//						std::cout << "error operator*(...) with possibly aliased exact solution = " << err_mult << std::endl;
+//						std::cout << "error mult() function with respect to truncated and dealiased exact solution = " << err_mult_dealias2 << std::endl;
 
 						std::cerr << " WARNING: threshold for multiplication * operator too high !" << std::endl;
-						if(alias_present)
+						if (is_alias_present)
 							std::cerr << "    Multiplication has alias but dealiasing not able to remove it or removed it incorrectly" << std::endl;
 						else
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
-						(h1*h2).print_spectralNonZero();
+						(h1 * h2).print_spectralNonZero();
 						FatalError("EXIT");
 					}
 
-					if (err_mult_dealias2  > eps)
+					if (err_mult_dealias2 > eps)
 					{
 						std::cerr << " WARNING: error for multiplication function 'mult' too high !" << std::endl;
 						FatalError("EXIT");
 					}
 
 #else
-					if (err_mult_dealias  > eps || err_mult_dealias2 > eps)
-						std::cerr << " Turn on de-aliasing on compile time to analyse de-aliasing errors" << std::endl;
+					if (err_mult_dealias > eps || err_mult_dealias2 > eps)
+					std::cerr << " Turn on de-aliasing on compile time to analyse de-aliasing errors" << std::endl;
 
-					if (err_mult  > eps)
+					if (err_mult > eps)
 					{
 						std::cerr << " Error threshold for multiplication operator too high !" << std::endl;
 						FatalError("EXIT");
 					}
 #endif
 
-
 					std::cout << " " << std::endl;
-
 
 				}
 			}
 
 			std::cout << "TEST B: DONE" << std::endl;
+#endif
 		}
+
 	}
 
-	std::cout << "SUCCESSFULLY FINISHED -- check warnings" << std::endl;
+
+	std::cout << "SUCCESSFULLY FINISHED -- check warnings!" << std::endl;
 
 	return 0;
 }

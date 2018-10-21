@@ -15,9 +15,13 @@ jg.compile.unit_test="test_plane_operators"
 
 jg.compile.plane_spectral_space="enable"
 
-params_domain_size_scales = [0.01, 10000*1000]
+#params_domain_size_scales = [0.01, 1.0, 10000*1000]
+params_domain_size_scales = [0.1, 10000*1000]
+#params_domain_size_scales = [1.0]
+#params_domain_size_scales = [10000*1000]
 
-params_compile_mode = ['release', 'debug']
+#params_compile_mode = ['release', 'debug']
+params_compile_mode = ['debug']
 params_compile_plane_spectral_dealiasing = ['enable', 'disable']
 
 params_runtime_spectral_derivs = [0, 1]
