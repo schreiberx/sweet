@@ -2,6 +2,11 @@
 
 import sys
 import os
+
+if not 'SWEET_ROOT' in os.environ:
+	print("No SWEET environment variables detected, skipping Travis updates")
+	sys.exit(0)
+
 os.chdir(os.environ['SWEET_ROOT'])
 
 
