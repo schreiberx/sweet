@@ -1,9 +1,11 @@
 #! /bin/bash
 
-source ./local_software/env_vars.sh
+cd "$(basename $0)"
+
+source ../local_software/env_vars.sh
 
 if [[ -z "$1" ]]; then
-	TESTS=$(ls -1 tests/??_*/test.sh tests/??_*/test.py)
+	TESTS=$(ls -1 ??_*/test.sh tests/??_*/test.py)
 else
 	TESTS=$@
 fi

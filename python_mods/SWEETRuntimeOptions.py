@@ -389,6 +389,10 @@ class SWEETRuntimeOptions(InfoError):
 				else:
 					idstr += '_N'+str(self.phys_res).zfill(4)
 
+			if self.domain_size != None:
+				if isinstance(self.domain_size, (list, tuple)):
+					idstr += '_X'+str("x".join([str(x).zfill(4) for x in self.domain_size]))
+
 			idstr += '_rob'+str(self.use_robert_functions)
 
 			if self.spectralderiv != 1:
