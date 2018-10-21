@@ -863,9 +863,9 @@ public:
         	long_options[i].val = 0;
         }
 
-		int next_free_program_option = 0;
+	int next_free_program_option = 0;
 
-		// SETUP
+	// SETUP
         long_options[next_free_program_option] = {"random-seed", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 

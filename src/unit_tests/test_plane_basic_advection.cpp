@@ -728,7 +728,7 @@ int main(
 
 			while(true)
 			{
-				if (simVars.misc.verbosity > 0)
+				if (simVars.misc.verbosity >= 10)
 					std::cout << "time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
 				simulationAdvection->run_timestep();
@@ -848,7 +848,7 @@ int main(
 
 			while(true)
 			{
-				if (simVars.misc.verbosity > 0)
+				if (simVars.misc.verbosity >= 10)
 					std::cout << "time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
 				simulationAdvection->run_timestep();

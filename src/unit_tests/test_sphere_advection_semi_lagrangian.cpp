@@ -123,7 +123,7 @@ public:
 		simVars.timecontrol.current_simulation_time += dt;
 		simVars.timecontrol.current_timestep_nr++;
 
-		if (simVars.misc.verbosity > 2)
+		if (simVars.misc.verbosity >= 10)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
 		max_error_h0 = (prog_h0-prog_h).physical_reduce_max_abs();
@@ -410,11 +410,12 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "Convergence: " << conv << std::endl;
 
 				if (conv*1.1 < std::pow(2.0, (double)simVars.disc.timestepping_order))
-				{
-					std::cerr << "Convergence not given!" << std::endl;
-					exit(1);
-				}
+					FatalError("Convergence not given!");
 			}
+
+			if (simulation.max_error_h0  > 1e10)
+				FatalError("Lmax error exceeded threshold!");
+
 			prev_max_error = simulation.max_error_h0;
 
 			std::cout << "*********************************************" << std::endl;
