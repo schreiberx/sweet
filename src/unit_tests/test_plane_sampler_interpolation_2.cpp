@@ -11,7 +11,6 @@
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
