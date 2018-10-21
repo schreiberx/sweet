@@ -89,8 +89,8 @@ class SWEETRuntimeOptions(InfoError):
 		self.rexi_sphere_preallocation = 0
 		self.rexi_use_direct_solution = 0
 
-		self.polvani_rossby = -1.0
-		self.polvani_froude = -1.0
+		self.polvani_rossby = None
+		self.polvani_froude = None
 
 
 
@@ -369,10 +369,10 @@ class SWEETRuntimeOptions(InfoError):
 
 
 		if not 'runtime.polvani' in filter_list:
-			if self.polvani_rossby >= 0:
+			if self.polvani_rossby != None:
 				idstr += '_PR'+str(self.polvani_rossby)
 
-			if self.polvani_froude >= 0:
+			if self.polvani_froude != None:
 				idstr += '_PF'+str(self.polvani_froude)
 
 
@@ -543,8 +543,11 @@ class SWEETRuntimeOptions(InfoError):
 					retval += ' --rexi-ci-gaussian-filter-exp-N='+str(self.rexi_ci_gaussian_filter_exp_N)
 
 
-		retval += ' --polvani-rossby='+str(self.polvani_rossby)
-		retval += ' --polvani-froude='+str(self.polvani_froude)
+		if self.polvani_rossby != None:
+			retval += ' --polvani-rossby='+str(self.polvani_rossby)
+
+		if self.polvani_froude != None:
+			retval += ' --polvani-froude='+str(self.polvani_froude)
 
 		retval += ' --use-robert-functions='+str(self.use_robert_functions)
 
