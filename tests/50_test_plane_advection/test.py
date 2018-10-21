@@ -71,7 +71,11 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
 				jg.runtime.advection_velocity = ",".join(str(x) for x in vel)
 
 				if jg.runtime.timestepping_method == "na_sl":
-					params_runtime_timestep_sizes = [0.05, 0.1]
+					if jg.runtime.timestepping_order == 1:
+						params_runtime_timestep_sizes = [0.05]
+					else:
+						params_runtime_timestep_sizes = [0.1]
+
 				elif jg.runtime.timestepping_method == "na_erk":
 					if jg.runtime.timestepping_order == 1:
 						params_runtime_timestep_sizes = [0.002]
