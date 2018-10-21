@@ -1,5 +1,5 @@
 /*
- * PlaneBenchmarkCombined.hpp
+ * SWEPlaneBenchmarksCombined.hpp
  *
  *  Created on: 30 Nov 2016
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
@@ -85,12 +85,12 @@ public:
 			std::cout << "WARNING: TODO: change to use --benchmark [string] for benchmarks" << std::endl;
 
 			o_h_pert.physical_update_lambda_array_indices(
-					[&](int i, int j, double &io_data)
+				[&](int i, int j, double &io_data)
 				{
-				double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
-				double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
+					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
 
-				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h_perturbed(io_simVars, x, y);
+					io_data = SWEPlaneBenchmarks_DEPRECATED::return_h_perturbed(io_simVars, x, y);
 				}
 			);
 
@@ -273,6 +273,182 @@ public:
 					io_data = callback_gaussian_bump(center_x, center_y, x, y, exp_fac);
 				}
 			);
+			return true;
+		}
+		else if (
+				io_simVars.setup.benchmark_name == "benchmark_id_0" ||
+				io_simVars.setup.benchmark_name == "cylinder"
+		)
+		{
+			double sx = simVars->sim.domain_size[0];
+			double sy = simVars->sim.domain_size[1];
+
+
+			o_h_pert.physical_set_zero();
+			o_h_pert.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
+					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+
+					// radial dam break
+					double dx = x-simVars->setup.setup_coord_x*sx;
+					double dy = y-simVars->setup.setup_coord_y*sy;
+
+					double radius = simVars->setup.radius_scale*sqrt(sx*sx+sy*sy);
+					if (dx*dx+dy*dy < radius*radius)
+						io_data = 1.0;
+					else
+						io_data = 0.0;
+				}
+			);
+
+			o_u.physical_set_zero();
+			o_v.physical_set_zero();
+
+			return true;
+		}
+		else if (
+				io_simVars.setup.benchmark_name == "benchmark_id_1" ||
+				io_simVars.setup.benchmark_name == "radial_gaussian_bump"
+		)
+		{
+			double sx = simVars->sim.domain_size[0];
+			double sy = simVars->sim.domain_size[1];
+
+
+			o_h_pert.physical_set_zero();
+			o_h_pert.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
+					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+
+					// radial dam break
+					double dx = x-simVars->setup.setup_coord_x*sx;
+					double dy = y-simVars->setup.setup_coord_y*sy;
+
+					double radius = simVars->setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+					dx /= radius;
+					dy /= radius;
+
+					io_data = std::exp(-50.0*(dx*dx + dy*dy));
+				}
+			);
+
+			o_u.physical_set_zero();
+			o_v.physical_set_zero();
+
+			return true;
+		}
+		else if (
+				io_simVars.setup.benchmark_name == "benchmark_id_2" ||
+				io_simVars.setup.benchmark_name == "steady_state_meridional_flow"
+		)
+		{
+			double f = simVars->sim.f0;
+			double sx = simVars->sim.domain_size[0];
+			//double sy = simVars->sim.domain_size[1];
+
+			if (io_simVars.sim.f0 == 0)
+				FatalError("Coriolis = 0!");
+
+			o_h_pert.physical_set_zero();
+			o_h_pert.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i/(double)simVars->disc.res_physical[0];
+					//double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					io_data = std::sin(2.0*M_PI*x);
+				}
+			);
+
+			o_u.physical_set_zero();
+
+			o_v.physical_set_zero();
+			o_v.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i/(double)simVars->disc.res_physical[0];
+					//double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					io_data = simVars->sim.gravitation/f*2.0*M_PIl*std::cos(2.0*M_PIl*x)/sx;
+				}
+			);
+
+			return true;
+		}
+
+		else if (
+				io_simVars.setup.benchmark_name == "benchmark_id_3" ||
+				io_simVars.setup.benchmark_name == "steady_state_zonal_flow"
+		)
+		{
+			double f = simVars->sim.f0;
+			//double sx = simVars->sim.domain_size[0];
+			double sy = simVars->sim.domain_size[1];
+
+			if (io_simVars.sim.f0 == 0)
+				FatalError("Coriolis = 0!");
+
+			o_h_pert.physical_set_zero();
+			o_h_pert.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					//double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
+					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					io_data = std::sin(2.0*M_PI*y/sy);
+				}
+			);
+
+			o_u.physical_set_zero();
+			o_u.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					//double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
+					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					io_data = -simVars->sim.gravitation*2.0*M_PI*std::cos(2.0*M_PI*y/sy)/(f*sy);
+				}
+			);
+
+			o_v.physical_set_zero();
+
+			return true;
+		}
+
+
+		else if (
+				io_simVars.setup.benchmark_name == "benchmark_id_4" ||
+				io_simVars.setup.benchmark_name == "yadda_yadda_whatever_this_is"
+		)
+		{
+			double sx = simVars->sim.domain_size[0];
+			double sy = simVars->sim.domain_size[1];
+
+			if (io_simVars.sim.f0 == 0)
+				FatalError("Coriolis = 0!");
+
+			o_h_pert.physical_set_zero();
+			o_h_pert.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
+					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					// radial dam break
+					double dx = x-simVars->setup.setup_coord_x*sx;
+					double dy = y-simVars->setup.setup_coord_y*sy;
+
+					io_data = (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
+				}
+			);
+
+			o_u.physical_set_zero();
+			o_v.physical_set_zero();
+
 			return true;
 		}
 

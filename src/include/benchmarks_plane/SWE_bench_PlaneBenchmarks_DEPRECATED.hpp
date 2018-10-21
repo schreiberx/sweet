@@ -42,6 +42,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 		double sx = i_simVars.sim.domain_size[0];
 		double sy = i_simVars.sim.domain_size[1];
 
+#if 1
 		if (i_simVars.setup.benchmark_id == 0)
 		{
 			// radial dam break
@@ -194,7 +195,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 				return 0;
 			}
 		}
-
+#endif
 		if (i_simVars.setup.benchmark_id == 5)
 		{
 			double dx = x/sx;

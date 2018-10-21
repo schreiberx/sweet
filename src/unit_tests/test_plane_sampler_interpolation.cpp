@@ -391,6 +391,9 @@ int main(int i_argc, char *i_argv[])
 
 						if (prev_max_error >= 0)
 						{
+							if (std::isnan(simulation.max_error))
+								FatalError("NaN detected");
+
 							//double conv = (prev_max_error - simulation.max_error) / simulation.max_error;
 							double conv = prev_max_error / simulation.max_error;
 							std::cout << "Convergence: " << conv << std::endl;

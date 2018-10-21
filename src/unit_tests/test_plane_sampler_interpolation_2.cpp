@@ -12,13 +12,12 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
 #include <unistd.h>
 #include <stdio.h>
-#include <vector>
-#include <array>
 
 // Plane data config
 PlaneDataConfig planeDataConfigInstance;
@@ -57,57 +56,63 @@ int main(
 
 	for (; res_x <= max_res && res_y <= max_res; res_x *= 2, res_y *= 2)
 	{
-		simVars.disc.res_physical[0] = res_x;
-		simVars.disc.res_physical[1] = res_y;
-		int res[2] = {res_x, res_y};
-
-		//simVars.reset();
-		planeDataConfigInstance.setupAutoSpectralSpace(res, simVars.misc.reuse_spectral_transformation_plans);
-
-		PlaneData prog_h(planeDataConfig);
-
-		// setup initial conditions
-		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
-		{
-			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
-			{
-				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
-				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
-
-				prog_h.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y));
-			}
-		}
-
-
 		double resolution_factor = 2;
-
 		int res3[2] = {res_x*(int)resolution_factor, res_y*(int)resolution_factor};
 
+		simVars.disc.res_physical[0] = res3[0];
+		simVars.disc.res_physical[1] = res3[1];
+		simVars.disc.res_spectral[0] = 0;
+		simVars.disc.res_spectral[1] = 0;
 
 		//simVars.reset();
 		planeDataConfigInstance3.setupAutoSpectralSpace(res3, simVars.misc.reuse_spectral_transformation_plans);
+		PlaneData prog_h3_pert(planeDataConfig3);
 
-		PlaneData prog_h3(planeDataConfig3);
-
-		// setup initial conditions
+		//PlaneData prog_test3(planeDataConfig3);
 		{
-//			simVars.disc.res_physical[0] = res3[0];
-//			simVars.disc.res_physical[1] = res3[1];
+			PlaneData prog_u3(planeDataConfig3);
+			PlaneData prog_v3(planeDataConfig3);
 
-			for (int j = 0; j < res3[1]; j++)
-			{
-				for (int i = 0; i < res3[0]; i++)
-				{
-					double x = ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]);
-					double y = ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]);
+			PlaneOperators op3(planeDataConfig3, simVars.sim.domain_size);
+			SWEPlaneBenchmarksCombined b;
 
-					prog_h3.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y));
-				}
-			}
-
-//			simVars.disc.res_physical[0] = res[0];
-//			simVars.disc.res_physical[1] = res[1];
+			b.setupInitialConditions(
+					prog_h3_pert,
+					//prog_test3,
+					prog_u3,
+					prog_v3,
+					simVars,
+					op3
+			);
 		}
+
+		int res[2] = {res_x, res_y};
+
+		simVars.disc.res_physical[0] = res[0];
+		simVars.disc.res_physical[1] = res[1];
+		simVars.disc.res_spectral[0] = 0;
+		simVars.disc.res_spectral[1] = 0;
+
+		//simVars.reset();
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		PlaneData prog_h_pert(planeDataConfig);
+
+		{
+			PlaneData prog_u(planeDataConfig);
+			PlaneData prog_v(planeDataConfig);
+
+			PlaneOperators op(planeDataConfig, simVars.sim.domain_size);
+			SWEPlaneBenchmarksCombined b;
+
+			b.setupInitialConditions(
+					prog_h_pert,
+					prog_u,
+					prog_v,
+					simVars,
+					op
+			);
+		}
+
 
 		/*
 		 * Sampling points with different resolution
@@ -121,8 +126,8 @@ int main(
 		{
 			for (int i = 0; i < res3[0]; i++)
 			{
-				px.p_physical_set(j, i, ((double)i/resolution_factor)*(simVars.sim.domain_size[0]/(double)res3[0]));
-				py.p_physical_set(j, i, ((double)j/resolution_factor)*(simVars.sim.domain_size[1]/(double)res3[1]));
+				px.p_physical_set(j, i, ((double)i)*(simVars.sim.domain_size[0]/(double)res3[0]));
+				py.p_physical_set(j, i, ((double)j)*(simVars.sim.domain_size[1]/(double)res3[1]));
 			}
 		}
 
@@ -141,15 +146,14 @@ int main(
 			PlaneData prog_h3_bilinear(planeDataConfig3);
 
 			sampler2D.bilinear_scalar(
-					prog_h,	///< input scalar field
+					prog_h_pert,	///< input scalar field
 					Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
 					Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
 					prog_h3_bilinear
 			);
 
-	//		double error_norm2 = (prog_h3_bicubic-prog_h3).reduce_norm2()/((double)res3[0] * (double)res3[1]);
-			double error_rms = (prog_h3_bilinear-prog_h3).reduce_rms();
-			double error_max = (prog_h3_bilinear-prog_h3).reduce_maxAbs();
+			double error_rms = (prog_h3_bilinear-prog_h3_pert).reduce_rms();
+			double error_max = (prog_h3_bilinear-prog_h3_pert).reduce_maxAbs();
 
 			double rate_rms = 0;
 			double rate_max = 0;
@@ -158,6 +162,12 @@ int main(
 			{
 				rate_rms = prev_linear_error_rms/error_rms;
 				rate_max = prev_linear_error_max/error_max;
+
+				if (std::isnan(rate_rms))
+					FatalError("NaN detected: error_rms");
+
+				if (std::isnan(rate_max))
+					FatalError("NaN detected: error_max");
 
 				if (
 						rate_rms < 3.9 || rate_rms > 4 ||
@@ -183,15 +193,15 @@ int main(
 			PlaneData prog_h3_bicubic(planeDataConfig3);
 
 			sampler2D.bicubic_scalar(
-					prog_h,	///< input scalar field
+					prog_h_pert,	///< input scalar field
 					Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
 					Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
 					prog_h3_bicubic	///< output field
 			);
 
 	//		double error_norm2 = (prog_h3_bicubic-prog_h3).reduce_norm2()/((double)res3[0] * (double)res3[1]);
-			double error_rms = (prog_h3_bicubic-prog_h3).reduce_rms();
-			double error_max = (prog_h3_bicubic-prog_h3).reduce_maxAbs();
+			double error_rms = (prog_h3_bicubic-prog_h3_pert).reduce_rms();
+			double error_max = (prog_h3_bicubic-prog_h3_pert).reduce_maxAbs();
 
 			double rate_rms = 0;
 			double rate_max = 0;
@@ -200,18 +210,27 @@ int main(
 				rate_rms = prev_cubic_error_rms/error_rms;
 				rate_max = prev_cubic_error_max/error_max;
 
+				if (std::isnan(error_rms))
+					FatalError("NaN detected: error_rms");
+
+				if (std::isnan(error_max))
+					FatalError("NaN detected: error_max");
+
 				if (
-						rate_rms < 7.9 || rate_rms > 9 ||
-						rate_max < 7.9 || rate_max > 9
+						//rate_rms < 7.9 || rate_rms > 9 ||
+						//rate_max < 7.9 || rate_max > 9
+						rate_rms < 15 || rate_rms > 17 ||
+						rate_max < 15 || rate_max > 17
 				)
 				{
-					std::cout << "Bicubic: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\t" << rate_rms << "\t" << rate_max << std::endl;
-					std::cerr << "Convergence of 8 expected for bicubic " << std::endl;
+					std::cout << "Bicubic: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\trate_rms: " << rate_rms << "\trate_max: " << rate_max << std::endl;
+					std::cerr << "ERROR: Convergence of 16 expected for bicubic expected" << std::endl;
+					//std::cerr << "Convergence of 8 expected for bicubic expected" << std::endl;
 					exit(1);
 				}
 			}
 
-			std::cout << "Bicubic: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\t" << rate_rms << "\t" << rate_max << std::endl;
+			std::cout << "Bicubic: " << res_x << "x" << res_y << "\t" << error_rms << "\t" << error_max << "\trate_rms: " << rate_rms << "\trate_max: " << rate_max << std::endl;
 
 			prev_cubic_error_rms = error_rms;
 			prev_cubic_error_max = error_max;
