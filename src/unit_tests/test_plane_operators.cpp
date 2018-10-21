@@ -142,10 +142,10 @@ int main(int i_argc, char *i_argv[])
 				std::cout << std::endl;
 				std::cout << " Testing differentiation for different frequencies (including Nyquist)" << std::endl;
 
-				PlaneData h_diff2_x(planeDataConfig);
-				PlaneData h_diff2_y(planeDataConfig);
 				PlaneData h_diff_x(planeDataConfig);
 				PlaneData h_diff_y(planeDataConfig);
+				PlaneData h_diff2_x(planeDataConfig);
+				PlaneData h_diff2_y(planeDataConfig);
 				PlaneData h_bilaplace(planeDataConfig);
 
 				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
@@ -171,44 +171,59 @@ int main(int i_argc, char *i_argv[])
 						freq_y = ((double)k* (double) nyq)/ 4.0;
 					}
 
+					double fx = 2.0*freq_x*M_PIl;
+					double fy = 2.0*freq_y*M_PIl;
+
 					for (int j = 0; j < simVars.disc.res_physical[1]; j++)
 					{
 						for (int i = 0; i < simVars.disc.res_physical[0]; i++)
 						{
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
-							h.p_physical_set(j, i,	sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)	);
-							h_diff_x.p_physical_set(j, i,
-									2.0*freq_x*M_PIl*cos(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[0])
-							);
+							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0]);//*simVars.sim.domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1]);//*simVars.sim.domain_size[1];
 
-							h_diff_y.p_physical_set(j, i,
-									2.0*freq_y*M_PIl*sin(2.0*freq_x*M_PIl*x)*cos(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[1])
-							);
-							h_diff2_x.p_physical_set(j, i,
-									4.0*freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])
-							);
+							double sin_x = sin(fx*x);
+							double cos_x = cos(fx*x);
+							double sin_y = sin(fy*y);
+							double cos_y = cos(fy*y);
 
-							h_diff2_y.p_physical_set(j, i,
-									4.0*freq_y*freq_y*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_x*M_PIl*x)*sin(2.0*freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])
+							double dx = simVars.sim.domain_size[0];
+							double dy = simVars.sim.domain_size[1];
+
+							h.p_physical_set(j, i,	sin_x*sin_y);
+
+							double diff_x = fx*cos_x*sin_y/(simVars.sim.domain_size[0]);
+							double diff_y = fy*sin_x*cos_y/(simVars.sim.domain_size[1]);
+
+							h_diff_x.p_physical_set(j, i, diff_x);
+							h_diff_y.p_physical_set(j, i, diff_y);
+
+							h_diff2_x.p_physical_set(j, i, -fx*fx*sin_x*sin_y/(dx*dx));
+							h_diff2_y.p_physical_set(j, i, -fy*fy*sin_x*sin_y/(dy*dy));
+
+							h_bilaplace.p_physical_set(j, i,	
+										// d/dx
+										  fx*fx*fx*fx*sin_x*sin_y/(dx*dx*dx*dx)
+										+ fx*fx*fy*fy*sin_x*sin_y/(dy*dy*dx*dx)
+										// d/dy
+										+ fy*fy*fx*fx*sin_x*sin_y/(dx*dx*dy*dy)
+										+ fy*fy*fy*fy*sin_x*sin_y/(dy*dy*dy*dy)
 							);
 						}
 					}
 
-
 					//This assumes freq_x = freq_y
-					h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
+					//h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
 
-					double err_x = (op.diff_c_x(h)-h_diff_x).reduce_maxAbs()/(2.0*freq_x*M_PIl); // .reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[0])/(2.0*M_PIl);
-					double err_y = (op.diff_c_y(h)-h_diff_y).reduce_maxAbs()/(2.0*freq_y*M_PIl); //.reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[1])/(2.0*M_PIl);
+
+					double err_x = (op.diff_c_x(h)-h_diff_x).reduce_maxAbs()/fx;
+					double err_y = (op.diff_c_y(h)-h_diff_y).reduce_maxAbs()/fy;
+
 					// diff2 normalization = 4.0 pi^2 / L^2
-					double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_maxAbs()/(2.0*freq_x*M_PIl)/(2.0*freq_x*M_PIl); //.reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])/(4.0*M_PIl*M_PIl);
-					double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_maxAbs()/(2.0*freq_y*M_PIl)/(2.0*freq_y*M_PIl); //.reduce_norm2_quad();//*normalization*(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])/(4.0*M_PIl*M_PIl);
+					double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_maxAbs()/(fx*fx);
+					double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_maxAbs()/(fy*fy);
 
-					double err_laplace = (op.laplace(h)-h_diff2_x-h_diff2_y).reduce_maxAbs()/(2.0*freq_y*M_PIl)/(2.0*freq_y*M_PIl);
-
-					double err_bilaplace = (op.laplace(op.laplace(h))-h_bilaplace).reduce_maxAbs()/(8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl);
-					err_bilaplace /= res[0]*res[1];
+					double err_laplace = (op.laplace(h)-h_diff2_x-h_diff2_y).reduce_maxAbs()/(fx*fx+fy*fy);
+					double err_bilaplace = (op.laplace(op.laplace(h))-h_bilaplace).reduce_maxAbs()/(fx*fx*fx*fx + fy*fy*fy*fy);
 
 					if (simVars.disc.use_spectral_basis_diffs)
 					{
@@ -221,16 +236,10 @@ int main(int i_argc, char *i_argv[])
 						std::cout << "error bilaplace = " << err_bilaplace << std::endl;
 
 						if ( std::max({err_x, err_y, err2_x, err2_y, err_laplace, err_bilaplace})  > eps)
-						{
-							std::cerr << "SPEC: Error threshold for diff operators too high for spectral differentiation!" << std::endl;
-							exit(-1);
-						}
+							FatalError("SPEC: Error threshold for diff operators too high for spectral differentiation!");
 #if 1
 						if ( err_bilaplace  > eps) //there is more error associated because of the magnitude of round off errors (forth order operator)?
-						{
-							std::cerr << "SPEC: Error threshold for diff operator bilaplacian too high for spectral differentiation!" << std::endl;
-							exit(-1);
-						}
+							FatalError("SPEC: Error threshold for diff operator bilaplacian too high for spectral differentiation!");
 #endif
 					}
 					else
