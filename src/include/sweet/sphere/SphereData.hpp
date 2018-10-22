@@ -743,6 +743,19 @@ public:
 
 
 
+	const SphereData& operator+=(
+			double i_value
+	)	const
+	{
+		request_data_spectral();
+
+		spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
+
+		return *this;
+	}
+
+
+
 
 	SphereData operator-(
 			double i_value
