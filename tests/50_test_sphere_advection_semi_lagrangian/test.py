@@ -27,7 +27,7 @@ params_compile_mode = ['release']
 params_runtime_mode_res_x = [64]
 params_runtime_mode_res_y = [64]
 
-params_advection_rotation_angles = [1.5708, 0, 1.4, -0.7]
+params_advection_rotation_angles = [1.5708, 0, -0.7]
 params_rotation_velocity = [0, 60*60*24*12]
 
 params_runtime_ts_methods = [
