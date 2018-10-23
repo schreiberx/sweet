@@ -30,28 +30,28 @@ function platform_exec {
 
 
 if [[ "$FILENAME" = "mule.benchmark.jobs_cancel" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_cancel"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_cancel" $@
 
 elif [[ "$FILENAME" = "mule.benchmark.jobs_cancel_all" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_cancel_all"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_cancel_all" $@
 
 elif [[ "$FILENAME" = "mule.benchmark.jobs_interactive" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_interactive"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_interactive" $@
 
 elif [[ "$FILENAME" = "mule.benchmark.jobs_run_directly" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_run_directly"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_run_directly" $@
 
 elif [[ "$FILENAME" = "mule.benchmark.jobs_status" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_status"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_status" $@
 
 elif [[ "$FILENAME" = "mule.benchmark.jobs_submit" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_submit"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_submit" $@
 
 elif [[ "$FILENAME" = "mule.benchmark.jobs_submit_with_queue_limit" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_submit_with_queue_limit"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_jobs_submit_with_queue_limit" $@
 
 elif [[ "$FILENAME" = "mule.benchmark.plans_create" ]]; then
-	platform_exec "${SWEET_PLATFORM_DIR}/platform_plans_create"
+	platform_exec "${SWEET_PLATFORM_DIR}/platform_plans_create" $@
 
 #if [[ "$FILENAME" = "mule.benchmark." ]]; then
 #	platform_exec "${SWEET_PLATFORM_DIR}/"
