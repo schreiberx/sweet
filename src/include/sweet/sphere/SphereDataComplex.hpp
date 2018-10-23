@@ -652,6 +652,19 @@ public:
 
 
 
+	SphereDataComplex& operator+=(
+			double i_value
+	)
+	{
+		request_data_spectral();
+
+		spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
+
+		return *this;
+	}
+
+
+
 	SphereDataComplex operator+(
 			const std::complex<double> &i_value
 	)	const

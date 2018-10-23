@@ -15,8 +15,6 @@
 #include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
 #include <libmath/shtns_inc.hpp>
 
-#define SHTNS_COMPLEX_SPH_SPHTOR	1
-
 
 
 class SphereOperatorsComplex	:
@@ -28,6 +26,10 @@ class SphereOperatorsComplex	:
 
 public:
 	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolver_inv_one_minus_mu2;
+
+private:
+	double r;
+	double ir;
 
 
 	/**
@@ -58,6 +60,9 @@ public:
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
+
+		r = i_earth_radius;
+		ir = 1.0/r;
 
 		sphSolver_inv_one_minus_mu2.setup(sphereDataConfig, 2);
 		sphSolver_inv_one_minus_mu2.solver_component_rexi_z1(1.0, 1.0);	// (1.0
@@ -580,9 +585,12 @@ public:
 	 */
 	SphereDataComplex inv_laplace(
 			const SphereDataComplex &i_sph_data,
-			double i_radius
+			double i_radius = -1
 	)	const
 	{
+		if (i_radius == -1)
+			i_radius = this->r;
+
 		double ir = 1.0/i_radius;
 
 		SphereDataComplex out(i_sph_data);
@@ -609,16 +617,18 @@ public:
 			SphereDataComplex &o_vort,
 			SphereDataComplex &o_div,
 
-			double r
+			double r = -1
 	)	const
 	{
+		if (r == -1)
+			r = this->r;
+
 		/*
 		 * Generate a copy because of destructive SHT operations
 		 */
 		SphereDataPhysicalComplex ug = i_u;
 		SphereDataPhysicalComplex vg = i_v;
 
-		shtns_robert_form(sphereDataConfig->shtns, 1);
 		spat_cplx_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
@@ -636,6 +646,45 @@ public:
 	}
 
 
+
+	void uv_to_vortdiv(
+			const SphereDataPhysicalComplex &i_u,
+			const SphereDataPhysicalComplex &i_v,
+			SphereDataComplex &o_vort,
+			SphereDataComplex &o_div,
+
+			double r = -1		// FIXME / TODO: Remove me!!!
+	)	const
+	{
+		if (r == -1)
+			r = this->r;
+
+		/*
+		 * Generate a copy because of destructive SHT operations
+		 */
+		SphereDataPhysicalComplex ug = i_u;
+		SphereDataPhysicalComplex vg = i_v;
+
+		shtns_robert_form(sphereDataConfig->shtns, 0);
+		spat_cplx_to_SHsphtor(
+				sphereDataConfig->shtns,
+				ug.physical_space_data,
+				vg.physical_space_data,
+				o_vort.spectral_space_data,
+				o_div.spectral_space_data
+		);
+		shtns_robert_form(sphereDataConfig->shtns, 1);
+		o_vort.spectral_space_data_valid = true;
+		o_vort.physical_space_data_valid = false;
+		o_div.spectral_space_data_valid = true;
+		o_div.physical_space_data_valid = false;
+
+
+		o_vort = laplace(o_vort, r)*r;
+		o_div = laplace(o_div, r)*r;
+	}
+
+
 	/**
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */
@@ -644,11 +693,17 @@ public:
 			const SphereDataComplex &i_div,
 			SphereDataPhysicalComplex &o_u,
 			SphereDataPhysicalComplex &o_v,
-			double i_radius
+
+			double i_radius = -1
 
 	)	const
 	{
-		double ir = 1.0/i_radius;
+		double ir;
+
+		if (i_radius == -1)
+			ir = this->ir;
+		else
+			ir = 1.0/i_radius;
 
 		i_vrt.request_data_spectral();
 		i_div.request_data_spectral();
@@ -659,7 +714,6 @@ public:
 		psi.request_data_spectral();
 		chi.request_data_spectral();
 
-		shtns_robert_form(sphereDataConfig->shtns, 1);
 		SHsphtor_to_spat_cplx(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -677,11 +731,17 @@ public:
 			const SphereDataComplex &i_phi,
 			SphereDataPhysicalComplex &o_u,
 			SphereDataPhysicalComplex &o_v,
-			double i_radius
+
+			double i_radius = -1
 
 	)	const
 	{
-		double ir = 1.0/i_radius;
+		double ir;
+
+		if (i_radius == -1)
+			ir = this->ir;
+		else
+			ir = 1.0/i_radius;
 
 		SphereDataComplex psi(sphereDataConfig);
 		psi.spectral_set_zero();
@@ -689,7 +749,6 @@ public:
 		SphereDataComplex chi = i_phi;
 		chi.request_data_spectral();
 
-		shtns_robert_form(sphereDataConfig->shtns, 1);
 		SHsphtor_to_spat_cplx(
 						sphereDataConfig->shtns,
 						psi.spectral_space_data,
