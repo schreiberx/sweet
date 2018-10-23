@@ -531,10 +531,14 @@ public:
 	 */
 	SphereDataComplex laplace(
 			const SphereDataComplex &i_sph_data,
-			double i_r
+			double r = -1
 	)	const
 	{
-		double ir = 1.0/i_r;
+		if (r == -1)
+			r = this->r;
+
+		double ir = 1.0/r;
+
 		i_sph_data.request_data_spectral();
 
 		SphereDataComplex out(i_sph_data);
@@ -641,7 +645,7 @@ public:
 		o_div.spectral_space_data_valid = true;
 		o_div.physical_space_data_valid = false;
 
-		o_vort = laplace(o_vort, r)*r;
+		o_vort = laplace(o_vort)*r;
 		o_div = laplace(o_div, r)*r;
 	}
 

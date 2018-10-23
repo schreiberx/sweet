@@ -202,24 +202,60 @@ public:
 			double i_r
 	)
 	{
-#if SWEET_THREADING_SPACE
-#pragma omp parallel for
-#endif
-
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
 			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				T *row = lhs.getMatrixRow(n, m);
 
-				lhs.rowElement_add(row, n, m, -4, i_scalar*(A(n-2,m)*A(n-4.0,m)));
-				lhs.rowElement_add(row, n, m, -2, i_scalar*(A(n-2,m)*B(n-2,m)+B(n,m)*A(n-2,m)));
-				lhs.rowElement_add(row, n, m,  0, i_scalar*(A(n-2,m)*C(n,m)+B(n,m)*B(n,m)+C(n+2,m)*A(n,m)));
-				lhs.rowElement_add(row, n, m, +2, i_scalar*(B(n,m)*C(n+2,m)+C(n+2,m)*B(n+2,m)));
+				lhs.rowElement_add(row, n, m, -4, i_scalar*(A(n-2,m)*A(n-4,m)));
+				lhs.rowElement_add(row, n, m, -2, i_scalar*(A(n-2,m)*B(n-2,m)+B(n  ,m)*A(n-2,m)));
+				lhs.rowElement_add(row, n, m,  0, i_scalar*(A(n-2,m)*C(n,  m)+B(n  ,m)*B(n  ,m)+C(n+2,m)*A(n,m)));
+				lhs.rowElement_add(row, n, m, +2, i_scalar*(B(n,  m)*C(n+2,m)+C(n+2,m)*B(n+2,m)));
 				lhs.rowElement_add(row, n, m, +4, i_scalar*(C(n+2,m)*C(n+4,m)));
 			}
 		}
 	}
+
+
+#if 0
+	/**
+	 * Solver for
+	 * 	mu^4*phi(lambda,mu)
+	 */
+	void solver_component_rexi_z3c(
+			const std::complex<double> &i_scalar,
+			double i_r
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = -sphereDataConfig->spectral_modes_m_max; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+//			std::cout << "**********************************" << std::endl;
+			for (int n = std::abs(m); n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				T *row = lhs.getMatrixRow(n, m);
+
+//				std::cout << std::endl;
+//				std::cout << Ac(n-2,m) << "\t" << Ac(n-4,m) << std::endl;
+				lhs.rowElement_add(row, n, m, -4, i_scalar*(Ac(n-2,m)*Ac(n-4,m)));
+
+//				std::cout << Ac(n-2,m)*Bc(n-2,m) << "\t" << Bc(n  ,m)*Ac(n-2,m) << std::endl;
+				lhs.rowElement_add(row, n, m, -2, i_scalar*(Ac(n-2,m)*Bc(n-2,m) + Bc(n  ,m)*Ac(n-2,m)));
+
+//				std::cout << Ac(n-2,m)*Cc(n,  m) << "\t" << Bc(n  ,m)*Bc(n  ,m) << "\t" << Cc(n+2,m)*Ac(n,m) << std::endl;
+				lhs.rowElement_add(row, n, m,  0, i_scalar*(Ac(n-2,m)*Cc(n,  m) + Bc(n  ,m)*Bc(n  ,m) + Cc(n+2,m)*Ac(n,m)));
+
+//				std::cout << Bc(n,  m)*Cc(n+2,m) << "\t" << Cc(n+2,m)*Bc(n+2,m) << std::endl;
+				lhs.rowElement_add(row, n, m, +2, i_scalar*(Bc(n,  m)*Cc(n+2,m) + Cc(n+2,m)*Bc(n+2,m)));
+
+//				std::cout << Cc(n+2,m)*Cc(n+4,m) << std::endl;
+				lhs.rowElement_add(row, n, m, +4, i_scalar*(Cc(n+2,m)*Cc(n+4,m)));
+			}
+		}
+	}
+#endif
 
 
 	/**
