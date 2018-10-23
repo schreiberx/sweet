@@ -68,7 +68,8 @@ int main(int i_argc, char *i_argv[])
 	std::size_t res_x = simVars.disc.res_physical[0];
 	std::size_t res_y = simVars.disc.res_physical[1];
 
-	std::size_t max_res = 2048;
+	//std::size_t max_res = 2048;
+	std::size_t max_res = 1024;
 
 	if (res_x > max_res || res_y > max_res)
 		max_res = std::max(res_x, res_y);
