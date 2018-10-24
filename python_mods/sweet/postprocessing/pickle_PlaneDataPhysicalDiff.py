@@ -98,7 +98,6 @@ class pickle_PlaneDataPhysicalDiff:
 					use_ref_file_ending = ref_file_ending
 				else:
 					print("*"*80)
-					print(ref_job['runtime.simtime'])
 
 					# "output_%s_t%020.8f.csv"
 					use_ref_file_ending = "_t{:020.8f}.csv".format(float(ref_job['runtime.simtime'])/(60*60))

@@ -179,14 +179,9 @@ elif group == "ln1":
 			'l_erk_n_erk',
 
 			'l_irk_n_erk',
-			'l_irk_n_erk_ver1',
 
 			'l_rexi_n_erk',
-			'lg_rexi_lc_n_erk',
-			'lg_rexi_lc_n_erk_ver1',
-
 			'l_rexi_n_etdrk',
-			'lg_rexi_lc_n_etdrk',
 		]
 
 
@@ -203,7 +198,7 @@ elif group == "ln2":
 			'ln_erk',
 
 			'l_cn_n_erk',
-			'l_erk_n_n_erk',
+			'l_erk_n_erk',
 
 			'l_rexi_n_erk',
 			'l_rexi_n_etdrk',
