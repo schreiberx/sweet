@@ -308,7 +308,7 @@ class SWEETRuntimeOptions(InfoError):
 
 			if not 'runtime.timestepping_size' in filter_list:
 				if self.timestep_size != None:
-					idstr += '_C'+str("{:08.3f}".format(self.timestep_size))
+					idstr += '_C'+str("{:05.3e}".format(self.timestep_size))
 
 			if self.max_timesteps != -1:
 				idstr += '_T'+str(self.max_timesteps).zfill(3)
@@ -397,6 +397,8 @@ class SWEETRuntimeOptions(InfoError):
 			if self.domain_size != None:
 				if isinstance(self.domain_size, (list, tuple)):
 					idstr += '_X'+str("x".join([str(x).zfill(4) for x in self.domain_size]))
+				else:
+					idstr += '_X'+str(self.domain_size)
 
 			idstr += '_rob'+str(self.use_robert_functions)
 
@@ -443,8 +445,12 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' -S '+str(self.spectralderiv)
 
 		if self.domain_size != None:
-			retval += ' -X '+str(self.domain_size[0])
-			retval += ' -Y '+str(self.domain_size[1])
+			if isinstance(self.domain_size, (int, float)):
+				retval += ' -X '+str(self.domain_size)
+				retval += ' -Y '+str(self.domain_size)
+			else:
+				retval += ' -X '+str(self.domain_size[0])
+				retval += ' -Y '+str(self.domain_size[1])
 
 		if self.bench_id != None:
 			retval += ' -s '+str(self.bench_id)

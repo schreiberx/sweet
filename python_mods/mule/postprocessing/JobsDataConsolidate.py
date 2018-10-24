@@ -15,12 +15,13 @@ class JobsData_GroupsPlottingScattered:
 	def __init__(
 			self,
 			groups,
-			primary_key_attribute_name : str,
-			data_attribute_name : str,
+			x_attribute_name : str,
+			y_attribute_name : str,
 			placeholder = None,
 			data_filter = None,
 			sort_data = True,
 			verbosity = 0,
+			meta_attribute_name = None
 	):
 		"""
 		Create a data structure which is suitable for plotting
@@ -30,11 +31,11 @@ class JobsData_GroupsPlottingScattered:
 			groups: dict
 				Dictionary with groups
 
-			primary_attribute_key: str
+			x_attribute_key: str
 				Row Key: attribute which should serve as primary key
 				(e.g. number of cores, time step size)
 
-			data_attribute_name : str:
+			y_attribute_name : str:
 				Column data: attribute which should serve as data field
 
 		Return:
@@ -52,16 +53,19 @@ class JobsData_GroupsPlottingScattered:
 
 			x_values = []
 			y_values = []
+			if meta_attribute_name != None:
+				meta_values = []
+
 			for jobdir, jobdata in group_jobs.items():
-				if not primary_key_attribute_name in jobdata:
+				if not x_attribute_name in jobdata:
 					print("")
-					print("WARNING: No data for attribute "+str(primary_key_attribute_name)+" found")
+					print("WARNING: No data for attribute "+str(x_attribute_name)+" found")
 					print("WARNING: Job: "+str(jobdir))
 					continue
 
-				x = jobdata[primary_key_attribute_name]
+				x = jobdata[x_attribute_name]
 
-				if not data_attribute_name in jobdata:
+				if not y_attribute_name in jobdata:
 					# Provide the option to filter out 'None'
 					if data_filter != None:
 						if data_filter(x, placeholder, jobdata):
@@ -69,19 +73,30 @@ class JobsData_GroupsPlottingScattered:
 
 					y = placeholder
 				else:
-					y = jobdata[data_attribute_name]
+					y = jobdata[y_attribute_name]
 
 					if data_filter != None:
 						if data_filter(x, y, jobdata):
 							continue
 
+				meta_value = None
+				if meta_attribute_name != None:
+					if meta_attribute_name in jobdata:
+						meta_value = jobdata[meta_attribute_name]
+
 				x_values.append(x)
 				y_values.append(y)
+
+				if meta_attribute_name != None:
+					meta_values.append(meta_value)
 
 			plot_data[group_id] = {
 				'x_values': x_values,
 				'y_values': y_values
 			}
+
+			if meta_attribute_name != None:
+				plot_data[group_id]['meta_values'] = meta_values
 
 
 		if sort_data:
