@@ -84,7 +84,10 @@ jg.runtime.domain_size = 1
 jg.runtime.viscosity = 0.0
 
 
-timestep_size_min = 0.0001
+# This is the minimum for each ln2 time stepping methods to run below 10 minutes.
+# This is important for Travis.
+timestep_size_min = 0.0002
+
 timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 9)]
 
 # Don't use a smaller TS since convergence is not computable anymore
