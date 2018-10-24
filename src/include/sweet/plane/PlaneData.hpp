@@ -2512,7 +2512,7 @@ public:
 	bool file_physical_saveData_ascii(
 			const char *i_filename,		///< Name of file to store data to
 			char i_separator = '\t',	///< separator to use for each line
-			int i_precision = 12,		///< number of floating point digits
+			int i_precision = 16,		///< number of floating point digits
 			int dimension = 2			///< store 1D or 2D
 	)	const
 	{
@@ -2520,6 +2520,8 @@ public:
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
+
+		file << "#SWEET_PLANE_PHYSICAL_DATA_ASCII" << std::endl;
 
 		std::size_t ymin = 0;
 		if (dimension == 2)
@@ -2565,6 +2567,8 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
+		file << "#SWEET_PLANE_SPECTRAL_DATA_ASCII" << std::endl;
+
 		size_t ymax = 0;
 		if (dimension == 2)
 			ymax = planeDataConfig->spectral_data_size[1];
@@ -2605,6 +2609,8 @@ public:
 
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
+
+		file << "#SWEET_PLANE_SPECTRAL_DATA_ASCII" << std::endl;
 
 		size_t ymax = 0;
 		if (dimension == 2)

@@ -1679,6 +1679,8 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 
 		file << std::setprecision(i_precision);
+		file << "#SWEET_SPHERE_PHYSICAL_DATA_ASCII" << std::endl;
+
 		file << "#TI " << i_title << std::endl;
 		file << "#TX Longitude" << std::endl;
 		file << "#TY Latitude" << std::endl;
@@ -1731,6 +1733,8 @@ public:
   		std::ofstream file(i_filename, std::ios_base::trunc);
 
   		file << std::setprecision(i_precision);
+		file << "#SWEET_SPHERE_SPECTRAL_DATA_ASCII" << std::endl;
+
   		file << "#TI " << i_title << std::endl;
 
   		// Use 0 to make it processable by python
@@ -1881,6 +1885,8 @@ public:
   		physical_space_data_valid = false;
 	}
 
+
+
 	void physical_file_write_lon_pi_shifted(
 			const char *i_filename,
 			std::string i_title = "",
@@ -1892,6 +1898,8 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 
 		file << std::setprecision(i_precision);
+		file << "#SWEET_SPHERE_PHYSICAL_DATA_ASCII" << std::endl;
+
 		file << "#TI " << i_title << std::endl;
 		file << "#TX Longitude" << std::endl;
 		file << "#TY Latitude" << std::endl;
