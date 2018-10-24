@@ -133,9 +133,9 @@ elif group == "l2":
 	ts_methods = [
 			'l_erk',
 			'l_cn',
-			'l_lf',
 		]
 
+	"""
 elif group == "lg1":
 
 	ts_order = 1
@@ -161,8 +161,9 @@ elif group == "lg2":
 
 	ts_methods = [
 			'lg_erk',
-			'lg_cn',
+			'lg_irk',
 		]
+"""
 
 elif group == "ln1":
 
@@ -176,11 +177,18 @@ elif group == "ln1":
 	ts_methods = [
 			'ln_erk',
 			'l_erk_n_erk',
-			'lg_erk_lc_n_erk',
+
 			'l_irk_n_erk',
-			'lg_irk_lc_n_erk',
-		#	'l_rexi_n_etdrk',
+			'l_irk_n_erk_ver1',
+
+			'l_rexi_n_erk',
+			'lg_rexi_lc_n_erk',
+			'lg_rexi_lc_n_erk_ver1',
+
+			'l_rexi_n_etdrk',
+			'lg_rexi_lc_n_etdrk',
 		]
+
 
 elif group == "ln2":
 
@@ -194,26 +202,11 @@ elif group == "ln2":
 	ts_methods = [
 			'ln_erk',
 
-			'l_erk_n_erk',
-			'lg_erk_lc_n_erk',
+			'l_cn_n_erk',
+			'l_erk_n_n_erk',
 
-			'l_irk_n_erk_ver0',
-			'l_irk_n_erk_ver1',
-
-			'lg_irk_lc_n_erk_ver0',
-			'lg_irk_lc_n_erk_ver1',
-
-			'lg_erk_lc_n_erk_ver0',
-			'lg_erk_lc_n_erk_ver1',
-
-			'l_rexi_n_erk_ver0',
-			'l_rexi_n_erk_ver1',
-
-			'lg_rexi_lc_n_erk_ver0',
-			'lg_rexi_lc_n_erk_ver1',
-
+			'l_rexi_n_erk',
 			'l_rexi_n_etdrk',
-			'lg_rexi_lc_n_etdrk',
 		]
 
 else:
