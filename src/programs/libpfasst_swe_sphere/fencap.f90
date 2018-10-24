@@ -152,16 +152,18 @@ contains
     integer,                     intent(in   )              :: n, level, kind, nvars, shape(:)
 
     integer                                                 :: i
+    class(sweet_data_encap_t), pointer                      :: x_ptr
 
     allocate(sweet_data_encap_t::x(n))    
 
     do i = 1, n
-       select type(x(i))
+       x_ptr => as_sweet_data_encap(x(i))
+       select type(x_ptr)
        type is (sweet_data_encap_t)
           call c_sweet_data_create(this%ctx,              &
                                    level-1,               & 
-                                   x(i)%c_sweet_data_ptr, &
-                                   x(i)%data_size) ! conversion to C++ indexing    
+                                   x_ptr%c_sweet_data_ptr, &
+                                   x_ptr%data_size) ! conversion to C++ indexing    
        class default
           stop "TYPE ERROR"
        end select          

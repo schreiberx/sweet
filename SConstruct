@@ -142,16 +142,41 @@ else:
 #
 # Override compiler settings from environment variable
 #
-override_list = ['CC', 'CXX', 'F90', 'FC', 'LINK', 'LD']
+override_list = [
+		'CC', 'CCFLAGS',
+		'CXX', 'CXXFLAGS',
+		'F90', 'F90FLAGS',
+		'FC', 'FCFLAGS',
+		'LINK', 'LINKFLAGS',
+		'LIBS',
+		#'LD'
+		]
 for i in override_list:
-	if i in env['ENV']:
-		print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
-		env[i] = env['ENV'][i]
 
 	if p.sweet_mpi == 'enable':
-		if 'SWEET_MPI'+i in env['ENV']:
-			print("INFO: Using SWEET_MPI* environment variable to set "+i+"="+env['ENV']['SWEET_MPI'+i])
-			env[i] = env['ENV']['SWEET_MPI'+i]
+		mi = 'SWEET_MPI'+i
+		if mi in env['ENV']:
+			if 'FLAGS' in mi:
+				print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
+				env[i].append(env['ENV'][mi])
+			elif 'LIBS'==i:
+				print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
+				env.Append(LIBS=env['ENV'][mi])
+			else:
+				print("INFO: Using SWEET_MPI* environment variable to set "+i+"="+env['ENV'][mi])
+				env[i] = env['ENV'][mi]
+			continue
+
+	if i in env['ENV']:
+		if 'FLAGS' in i:
+			print("INFO: Appending to "+i+"+= "+env['ENV'][i])
+			env[i] = env[i]+' '+env['ENV'][i]
+		if 'LIBS' == i:
+			print("INFO: Appending to "+i+"+= "+env['ENV'][i])
+			env.Append(LIBS=env['ENV'][i])
+		else:
+			print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
+			env[i] = env['ENV'][i]
 
 
 

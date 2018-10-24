@@ -548,6 +548,8 @@ public:
 #endif
 
 
+	std::string output_filenames;
+
 
 public:
 	bool timestep_output(
@@ -593,18 +595,21 @@ public:
 			// Dump  data in csv, if output filename is not empty
 			if (simVars.misc.output_file_name.size() > 0)
 			{
-				write_file(t_h, "prog_h_pert");
-				write_file(t_u, "prog_u");
-				write_file(t_v, "prog_v");
+				output_filenames = "";
 
-				write_file(op.ke(t_u,t_v),"diag_ke");
+				output_filenames = write_file(t_h, "prog_h_pert");
+				output_filenames += ";" + write_file(t_u, "prog_u");
+				output_filenames += ";" + write_file(t_v, "prog_v");
+
+				output_filenames += ";" + write_file(op.ke(t_u,t_v),"diag_ke");
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-				write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
+				output_filenames += ";" + write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
 #endif
 
-				write_file(op.vort(t_u, t_v), "diag_vort");
-				write_file(op.div(t_u, t_v), "diag_div");
+				output_filenames += ";" + write_file(op.vort(t_u, t_v), "diag_vort");
+				output_filenames += ";" + write_file(op.div(t_u, t_v), "diag_div");
+
 			}
 		}
 
@@ -1494,6 +1499,9 @@ int main(int i_argc, char *i_argv[])
 			time.stop();
 
 			double wallclock_time = time();
+
+			if (simVars.misc.output_file_name.size() > 0)
+				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_filenames << std::endl;
 
 			// End of run output results
 			std::cout << "***************************************************" << std::endl;
