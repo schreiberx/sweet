@@ -19,6 +19,10 @@
 	#include <mpi.h>
 #endif
 
+#if !SWEET_USE_SPHERE_SPECTRAL_SPACE
+	#error "SWEET_USE_SPHERE_SPECTRAL_SPACE not enabled"
+#endif
+
 class SWESphereBenchmarksCombined
 {
 public:

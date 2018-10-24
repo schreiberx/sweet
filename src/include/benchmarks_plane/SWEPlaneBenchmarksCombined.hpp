@@ -25,6 +25,9 @@
 #include <benchmarks_plane/SWE_bench_GaussianBump.hpp>
 
 
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+	#error "SWEET_USE_PLANE_SPECTRAL_SPACE not enabled"
+#endif
 
 class SWEPlaneBenchmarksCombined
 {

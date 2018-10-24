@@ -245,6 +245,7 @@ public:
 	}
 
 
+	std::string output_reference_filenames;
 
 	void write_file_output()
 	{
@@ -265,9 +266,11 @@ public:
 			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 
 			output_filename = write_file_csv(prog_phi, "prog_phi", simVars.setup.benchmark_id == 0);
+			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
 			output_filename = write_file_csv(h, "prog_h", simVars.setup.benchmark_id == 0);
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
 			SphereDataPhysical u(sphereDataConfig);
@@ -276,20 +279,25 @@ public:
 			op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 
 			output_filename = write_file_csv(u, "prog_u", simVars.setup.benchmark_id == 0);
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
 			output_filename = write_file_csv(v, "prog_v", simVars.setup.benchmark_id == 0);
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
 			output_filename = write_file_csv(prog_vort, "prog_vort", simVars.setup.benchmark_id == 0);
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
 			output_filename = write_file_csv(prog_div, "prog_div", simVars.setup.benchmark_id == 0);
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
 			SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
 
 			output_filename = write_file_csv(potvort, "prog_potvort", simVars.setup.benchmark_id == 0);
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 		}
 		else if (simVars.misc.output_file_mode == "bin")
@@ -297,12 +305,15 @@ public:
 			std::string output_filename;
 
 			output_filename = write_file_bin(prog_phi, "prog_phi");
+			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
 			output_filename = write_file_bin(prog_vort, "prog_vort");
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
 			output_filename = write_file_bin(prog_div, "prog_div");
+			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 		}
 		else
@@ -945,6 +956,8 @@ int main(int i_argc, char *i_argv[])
 				simulationSWE->timestep_check_output();
 			}
 
+			if (simVars.misc.output_file_name.size() > 0)
+				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_reference_filenames << std::endl;
 
 			delete simulationSWE;
 		}
@@ -960,6 +973,7 @@ int main(int i_argc, char *i_argv[])
 		// End of run output results
 		std::cout << std::endl;
 		SimulationBenchmarkTimings::getInstance().output();
+
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (direct)" << std::endl;
 		std::cout << "***************************************************" << std::endl;

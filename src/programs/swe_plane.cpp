@@ -1472,7 +1472,6 @@ int main(int i_argc, char *i_argv[])
 			if (simVars.disc.normal_mode_analysis_generation > 0)
 			{
 				simulationSWE->normal_mode_analysis();
-
 			}
 			else
 			{
