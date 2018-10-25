@@ -81,10 +81,10 @@ jg.runtime.rexi_ci_primitive = 'circle'
 jg.runtime.viscosity = 0.0
 
 
-# This is the minimum for each ln2 time stepping methods to run below 10 minutes.
-# This is important for Travis.
-timestep_size_min = 2
-timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 11)]
+
+timestep_size_min = 2	# original value
+timestep_size_min = 4
+timestep_sizes = [timestep_size_min*(2.0**i) for i in range(2, 7)]
 
 jg.runtime.simtime = timestep_size_min*2000
 jg.runtime.output_timestep_size = jg.runtime.simtime
