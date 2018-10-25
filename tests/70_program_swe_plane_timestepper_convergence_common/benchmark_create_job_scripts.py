@@ -88,7 +88,8 @@ jg.runtime.viscosity = 0.0
 # This is important for Travis.
 timestep_size_min = 0.0002
 
-timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 9)]
+#timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 9)]
+timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
 # Don't use a smaller TS since convergence is not computable anymore
 jg.runtime.simtime = 0.1
@@ -138,35 +139,6 @@ elif group == "l2":
 			'l_cn',
 		]
 
-	"""
-elif group == "lg1":
-
-	ts_order = 1
-	jg.runtime.rexi_use_direct_solution = 1
-
-	ref_ts_method = 'lg_erk'
-	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
-
-	ts_methods = [
-			'lg_erk',
-			'lg_irk'
-		]
-
-elif group == "lg2":
-
-	ts_order = 2
-	jg.runtime.rexi_use_direct_solution = 1
-
-	ref_ts_method = 'lg_erk'
-	ref_ts_order = 4
-	ref_ts_size = 0.0002
-
-	ts_methods = [
-			'lg_erk',
-			'lg_irk',
-		]
-"""
 
 elif group == "ln1":
 
@@ -209,59 +181,6 @@ elif group == "ln2":
 
 else:
 	raise Exception("Unknown group")
-
-"""
-# 1st order nonlinear
-if group == 'ln1':
-	ts_methods = [
-		['ln_erk',		4,	4,	0],	# reference solution
-		['l_erk_n_erk',		1,	1,	0],
-		['l_irk_n_erk',		1,	1,	0],
-		['ln_erk',		1,	1,	0],
-		['l_rexi_n_erk',	1,	1,	0],
-	]
-
-# 1st order nonlinear
-if group == 'ln1test':
-	ts_methods = [
-		['ln_erk',		4,	4,	0],	# reference solution
-		['l_erk_n_erk',		1,	1,	0],
-		['l_irk_n_erk',		1,	1,	0],
-		['ln_erk',		1,	1,	0],
-		['ln_etdrk',		1,	1,	0],
-	]
-
-# 2nd order nonlinear
-if group == 'ln2':
-	ts_methods = [
-		['ln_erk',		4,	4,	0],	# reference solution
-		['l_cn_n_erk',		2,	2,	0],
-		['l_erk_n_erk',		2,	2,	0],
-		['l_irk_n_erk',		2,	2,	0],
-		['ln_erk',		2,	2,	0],
-		['ln_etdrk',		2,	2,	0],
-		['l_rexi_n_erk',	2,	2,	0],
-	]
-
-# 2nd order nonlinear
-if group == 'ln2space':
-	ts_methods = [
-		['ln_erk',		4,	4,	0],	# reference solution
-		['l_cn_n_erk',		2,	2,	0],
-		['l_erk_n_erk',		2,	2,	0],
-#			['l_rexi_n_erk',	2,	2,	0],
-	]
-
-# 4th order nonlinear
-if group == 'ln4':
-	ts_methods = [
-		['ln_erk',		4,	4,	0],	# reference solution
-		#['ln_etdrk',		4,	4,	1],	# reference solution
-
-		['ln_etdrk',		4,	4,	1],
-		['ln_erk',		4,	4,	0],
-	]
-"""
 
 
 #
