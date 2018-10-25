@@ -21,5 +21,7 @@ echo_warning_hline
 export SWEET_MPICC=mpicc
 export SWEET_MPICXX=mpic++
 export SWEET_MPIF90=mpif90
-export SWEET_MPILINK=mpic++
 
+export SWEET_MPILINK=mpif90
+# If we link with mpif90, we have to add stdc++ for C++
+export SWEET_MPILIBS=stdc++
