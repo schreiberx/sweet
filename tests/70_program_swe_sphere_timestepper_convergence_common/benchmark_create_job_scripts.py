@@ -142,7 +142,7 @@ elif group == "l2":
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
-	ref_ts_size = 0.0002
+	ref_ts_size = timestep_size_min*0.5
 
 	ts_methods = [
 			'l_erk',
@@ -155,9 +155,9 @@ elif group == "lg2":
 
 	ts_order = 2
 
-	ref_ts_method = 'l_erk'
+	ref_ts_method = 'lg_erk'
 	ref_ts_order = 4
-	ref_ts_size = 0.0002
+	ref_ts_size = timestep_size_min*0.5
 
 	ts_methods = [
 			'lg_erk',
@@ -191,7 +191,7 @@ elif group == "ln2":
 
 	ref_ts_method = 'ln_erk'
 	ref_ts_order = 4
-	ref_ts_size = 0.0002
+	ref_ts_size = timestep_size_min*0.5
 
 	ts_methods = [
 			'ln_erk',
