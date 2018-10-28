@@ -84,9 +84,10 @@ jg.runtime.viscosity = 0.0
 
 timestep_size_min = 2	# original value
 timestep_size_min = 4
-timestep_sizes = [timestep_size_min*(2.0**i) for i in range(2, 7)]
+timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 4)]
 
-jg.runtime.simtime = timestep_size_min*2000
+#jg.runtime.simtime = timestep_size_min*2000
+jg.runtime.simtime = timestep_size_min*500
 jg.runtime.output_timestep_size = jg.runtime.simtime
 
 jg.runtime.rexi_use_direct_solution = 0
