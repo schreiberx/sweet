@@ -63,13 +63,20 @@ else:
 
 
 #
-# REXI method
-# N=64, SX,SY=50 and MU=0 with circle primitive provide good results
+# CI REXI method
 #
 jg.runtime.rexi_method = 'ci'
-jg.runtime.rexi_ci_n = 128
-jg.runtime.rexi_ci_max_real = 10
-jg.runtime.rexi_ci_max_imag = 20
+
+if not True:
+	jg.runtime.rexi_ci_n = 128
+	jg.runtime.rexi_ci_max_real = 10
+	jg.runtime.rexi_ci_max_imag = 20
+else:
+	# Use reduced number of REXI coefficients for convergence studies
+	jg.runtime.rexi_ci_n = 32
+	jg.runtime.rexi_ci_max_real = 6
+	jg.runtime.rexi_ci_max_imag = 6
+
 jg.runtime.rexi_ci_mu = 0
 jg.runtime.rexi_ci_primitive = 'circle'
 
@@ -195,7 +202,11 @@ elif group == "ln1":
 
 			'l_irk_n_erk',
 			'lg_irk_lc_n_erk',
-			#'l_rexi_n_etdrk',
+
+			'l_rexi_n_erk',
+			'lg_rexi_lc_n_erk',
+
+			'l_rexi_n_etdrk',
 		]
 
 
@@ -270,5 +281,10 @@ jg.runtime.timestepping_order2 = ts_order
 for tsm in ts_methods:
 	for jg.runtime.timestep_size in timestep_sizes:
 		jg.runtime.timestepping_method = tsm
+
+		if jg.runtime.simtime % jg.runtime.timestep_size != 0:
+			print("simtime: "+str(jg.runtime.simtime))
+			print("timestep_size: "+str(jg.runtime.timestep_size))
+			raise Exception("Invalid time step size (not remainder-less dividable)")
 
 		jg.gen_jobscript_directory()
