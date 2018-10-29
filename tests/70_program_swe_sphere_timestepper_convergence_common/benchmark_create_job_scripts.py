@@ -82,16 +82,6 @@ jg.runtime.viscosity = 0.0
 
 
 
-timestep_size_min = 2
-timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 4)]
-
-#jg.runtime.simtime = timestep_size_min*2000
-jg.runtime.simtime = timestep_size_min*500
-jg.runtime.output_timestep_size = jg.runtime.simtime
-
-jg.runtime.rexi_use_direct_solution = 0
-
-
 jg.unique_id_filter = ['compile']
 
 if len(sys.argv) <= 1:
@@ -102,6 +92,30 @@ if len(sys.argv) <= 1:
 	sys.exit(1)
 	
 group = sys.argv[1]
+
+
+
+if group in ['l1', 'l2', 'lg1', 'lg2']:
+
+	timestep_size_min = 2
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 5)]
+
+	jg.runtime.simtime = timestep_size_min*2000
+	#jg.runtime.simtime = timestep_size_min*500
+	jg.runtime.output_timestep_size = jg.runtime.simtime
+
+else:
+	timestep_size_min = 2
+	#timestep_size_min = 0.5
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 5)]
+
+	jg.runtime.simtime = timestep_size_min*2000
+	#jg.runtime.simtime = timestep_size_min*500
+	jg.runtime.output_timestep_size = jg.runtime.simtime
+
+
+jg.runtime.rexi_use_direct_solution = 0
+
 
 
 #
