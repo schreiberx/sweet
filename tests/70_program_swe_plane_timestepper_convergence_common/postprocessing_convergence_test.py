@@ -19,7 +19,7 @@ def get_test_parameters(method, order):
 		( start range, end range, error tolerance )
 	"""
 	# Test first 4 fields for convergence
-	return 0, 4, 0.95
+	return 0, 4, 0.05
 
 
 
@@ -123,15 +123,19 @@ for tagname_y in tagnames_y:
 				if prev_value >= 0:
 					conv = y/prev_value
 
+				error = '-'
 				if conv != '-':
+					# Convergence order is stored in meta value
 					target_conv = pow(2.0, meta)
 					error = abs(conv - target_conv)/target_conv
 
+				print("\t"+str(x)+"\t=>\t"+str(y)+"\tconvergence: "+str(conv)+"\terror: "+str(error))
+
+				if error != '-':
 					if error > error_tolerance:
 						print("Error: "+str(error))
 						raise Exception("Convergence exceeds tolerance of "+str(error_tolerance))
-				
-				print("\t"+str(x)+"\t=>\t"+str(y)+"\tconvergence: "+str(conv))
+
 				prev_value = y
 
 			print("[OK]")
