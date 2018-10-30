@@ -786,7 +786,7 @@ public:
 				o_vort.physical_set_all_value(0);
 				o_div.physical_set_all_value(0);
 			}
-			else if (simVars->setup.benchmark_name == "gaussian_bumps2")
+			else if (simVars->setup.benchmark_name == "gaussian_bumps2" || simVars->setup.benchmark_name == "three_gaussian_bumps")
 			{
 				SphereData tmp(o_phi.sphereDataConfig);
 				SphereData o_h(o_phi.sphereDataConfig);
