@@ -50,14 +50,17 @@ jg.runtime.rexi_sphere_preallocation = 0
 #
 # Threading accross all REXI terms
 #
-rexi_thread_par = True
-if rexi_thread_par:
-	# OMP parallel for over REXI terms
-	jg.compile.threading = 'off'
-	jg.compile.rexi_thread_parallel_sum = 'enable'
-else:
-	jg.compile.threading = 'omp'
-	jg.compile.rexi_thread_parallel_sum = 'disable'
+#rexi_thread_par = True
+#if rexi_thread_par:
+#	# OMP parallel for over REXI terms
+#	jg.compile.threading = 'off'
+#	jg.compile.rexi_thread_parallel_sum = 'enable'
+#else:
+#	jg.compile.threading = 'omp'
+#	jg.compile.rexi_thread_parallel_sum = 'disable'
+
+jg.compile.threading = 'omp'
+jg.compile.rexi_thread_parallel_sum = 'disable'
 
 
 #
