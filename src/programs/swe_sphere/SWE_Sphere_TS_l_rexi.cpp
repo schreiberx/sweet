@@ -474,18 +474,17 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		{
 			std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << ", threshold " << update_dt_delta << " exceeded" << std::endl;
 
-			std::cout << timestep_size << std::endl;
-			std::cout << i_fixed_dt << std::endl;
-			std::cout << std::abs(timestep_size - i_fixed_dt) << std::endl;
-			std::cout << std::max(timestep_size, i_fixed_dt) << std::endl;
-			std::cout << std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) << std::endl;
-			std::cout << update_dt_delta << std::endl;
+			std::cout << "timestep_size: " << timestep_size << std::endl;
+			std::cout << "i_fixed_dt: " << i_fixed_dt << std::endl;
+			std::cout << "a: " << std::abs(timestep_size - i_fixed_dt) << std::endl;
+			std::cout << "b: " << std::max(timestep_size, i_fixed_dt) << std::endl;
+			std::cout << "c: " << std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) << std::endl;
+			std::cout << "update_dt_delta: " << update_dt_delta << std::endl;
 
 			timestep_size = i_fixed_dt;
 
 			p_update_coefficients(true);
 		}
-
 
 		io_prog_phi0.request_data_spectral();
 		io_prog_vort0.request_data_spectral();

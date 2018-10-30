@@ -362,6 +362,7 @@ void SWE_Sphere_TS_l_rexi_n_etdrk::setup(
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
 		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, false);	/* set use_f_sphere to true */
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, false);
 	}
 	else if (timestepping_order == 2)
 	{

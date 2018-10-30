@@ -361,10 +361,11 @@ class SWEETRuntimeOptions(InfoError):
 							if self.rexi_ci_gaussian_filter_exp_N != None:
 								idstr += '_gfe'+str( "{:.4E}".format(self.rexi_ci_gaussian_filter_exp_N))
 
-					if not 'runtime.rexi_params' in filter_list:
-						idstr += '_nrm'+str(self.rexi_normalization)
-						idstr += '_hlf'+str(self.rexi_half_poles)
-						idstr += '_bf'+str(self.rexi_beta_cutoff)
+					if self.rexi_method != '' and self.rexi_method != None:
+						if not 'runtime.rexi_params' in filter_list:
+							idstr += '_nrm'+str(self.rexi_normalization)
+							idstr += '_hlf'+str(self.rexi_half_poles)
+							idstr += '_bf'+str(self.rexi_beta_cutoff)
 
 					#if self.plane_or_sphere == 'sphere':
 					#idstr += '_pre'+str(self.rexi_sphere_preallocation)
