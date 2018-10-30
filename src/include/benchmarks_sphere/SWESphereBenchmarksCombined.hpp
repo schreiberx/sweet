@@ -818,16 +818,18 @@ public:
 					simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 
 					// Scale geopotential to make NL influencing the stiffness stronger
-					simVars->sim.h0 *= 0.1;
-					simVars->sim.gravitation *= 0.1;
+					simVars->sim.h0 *= 0.2;
+					simVars->sim.gravitation *= 0.2;
 				}
 
-				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_phi, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_phi, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+				o_phi *= 0.1;
 				o_phi += simVars->sim.h0*simVars->sim.gravitation;
 
-				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_vort, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
-				o_vort *= 1e-8;
-				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_div, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_vort, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+				o_vort *= -1e-8;
+				//o_vort *= 0;
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_div, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
 				o_div *= 1e-8;
 			}
 			else if (
