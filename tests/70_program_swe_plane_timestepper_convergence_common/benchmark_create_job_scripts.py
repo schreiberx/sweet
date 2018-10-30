@@ -86,13 +86,19 @@ jg.runtime.viscosity = 0.0
 
 # This is the minimum for each ln2 time stepping methods to run below 10 minutes.
 # This is important for Travis.
-timestep_size_min = 0.0002
+timestep_size_min = 0.0001
 
-#timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 9)]
-timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+#
+# This benchmark gets unstable for l_erk with dt=0.0016
+#
+timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 5)]
 
 # Don't use a smaller TS since convergence is not computable anymore
-jg.runtime.simtime = 0.1
+
+# Run for 500 time steps
+jg.runtime.simtime = timestep_size_min*500
+
+
 jg.runtime.output_timestep_size = jg.runtime.simtime
 
 
