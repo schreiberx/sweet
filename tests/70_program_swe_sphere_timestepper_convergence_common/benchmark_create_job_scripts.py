@@ -31,7 +31,7 @@ jg.runtime.verbosity = 2
 # Mode and Physical resolution
 #
 jg.runtime.mode_res = 64
-jg.runtime.phys_res = -1
+jg.runtime.phys_res = None
 
 #
 # Benchmark ID
@@ -71,11 +71,13 @@ if not True:
 	jg.runtime.rexi_ci_n = 128
 	jg.runtime.rexi_ci_max_real = 10
 	jg.runtime.rexi_ci_max_imag = 20
+
 else:
 	# Use reduced number of REXI coefficients for convergence studies
-	jg.runtime.rexi_ci_n = 32
-	jg.runtime.rexi_ci_max_real = 6
-	jg.runtime.rexi_ci_max_imag = 6
+	jg.runtime.rexi_ci_n = 64
+	jg.runtime.rexi_ci_max_real = 10
+	jg.runtime.rexi_ci_max_imag = 10
+	jg.runtime.rexi_normalization = 1
 
 jg.runtime.rexi_ci_mu = 0
 jg.runtime.rexi_ci_primitive = 'circle'
@@ -88,8 +90,7 @@ jg.runtime.rexi_ci_primitive = 'circle'
 jg.runtime.viscosity = 0.0
 
 
-
-jg.unique_id_filter = ['compile']
+jg.unique_id_filter = ['compile', 'parallelization']
 
 if len(sys.argv) <= 1:
 	print("")
@@ -104,17 +105,17 @@ group = sys.argv[1]
 
 if group in ['l1', 'l2', 'lg1', 'lg2']:
 
-	timestep_size_min = 2
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 5)]
+	timestep_size_min = 4
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 4)]
 
 	jg.runtime.simtime = timestep_size_min*2000
 	#jg.runtime.simtime = timestep_size_min*500
 	jg.runtime.output_timestep_size = jg.runtime.simtime
 
 else:
-	timestep_size_min = 2
+	timestep_size_min = 4
 	#timestep_size_min = 0.5
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 5)]
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 4)]
 
 	jg.runtime.simtime = timestep_size_min*2000
 	#jg.runtime.simtime = timestep_size_min*500
@@ -135,7 +136,7 @@ if group == "l1":
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
+	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'l_erk',
@@ -149,7 +150,7 @@ elif group == "lg1":
 
 	ref_ts_method = 'lg_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
+	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'lg_erk',
@@ -163,7 +164,7 @@ elif group == "l2":
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
+	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'l_erk',
@@ -178,7 +179,7 @@ elif group == "lg2":
 
 	ref_ts_method = 'lg_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
+	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'lg_erk',
@@ -203,10 +204,10 @@ elif group == "ln1":
 			'l_irk_n_erk',
 			'lg_irk_lc_n_erk',
 
-			'l_rexi_n_erk',
+#			'l_rexi_n_erk',
 			'lg_rexi_lc_n_erk',
 
-			'l_rexi_n_etdrk',
+#			'l_rexi_n_etdrk',
 		]
 
 
@@ -251,16 +252,11 @@ else:
 #
 # Reference solution
 #
-tsm = ts_methods[0]
-
+jg.runtime.rexi_method = None
 jg.runtime.timestepping_method = ref_ts_method
 jg.runtime.timestepping_order = ref_ts_order
 jg.runtime.timestepping_order2 = ref_ts_order
 jg.runtime.timestep_size = ref_ts_size
-
-if len(tsm) > 4:
-	s = tsm[4]
-	jg.runtime.load_from_dict(tsm[4])
 
 jg.reference_job = True
 jg.gen_jobscript_directory()
@@ -286,5 +282,10 @@ for tsm in ts_methods:
 			print("simtime: "+str(jg.runtime.simtime))
 			print("timestep_size: "+str(jg.runtime.timestep_size))
 			raise Exception("Invalid time step size (not remainder-less dividable)")
+
+		if 'rexi' in jg.runtime.timestepping_method:
+			jg.runtime.rexi_method = 'ci'
+		else:
+			jg.runtime.rexi_method = None
 
 		jg.gen_jobscript_directory()
