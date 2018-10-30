@@ -19,9 +19,6 @@ jg.compile.plane_spectral_dealiasing = 'enable'
 jg.compile.sphere_spectral_space = 'disable'
 jg.compile.sphere_spectral_dealiasing = 'disable'
 
-jg.compile.numa_block_allocator = 0
-
-
 # Verbosity mode
 jg.runtime.verbosity = 2
 
