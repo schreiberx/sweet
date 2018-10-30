@@ -1,5 +1,5 @@
 /*
- * BenchmarkCombined.hpp
+ * SWESphereBenchmarksCombined.hpp
  *
  *  Created on: 30 Nov 2016
  *	  Author: Martin Schreiber <SchreiberX@gmail.com>
@@ -802,6 +802,33 @@ public:
 
 				o_phi = o_h*simVars->sim.gravitation;
 			}
+			else if (simVars->setup.benchmark_name == "gaussian_bumps_phi_vort_div")
+			{
+				{
+					if (simVars->timecontrol.current_simulation_time == 0)
+					{
+						std::cout << "!!! WARNING !!!" << std::endl;
+						std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+						std::cout << "!!! WARNING !!!" << std::endl;
+					}
+
+					simVars->sim.coriolis_omega = 7.292e-5;
+					simVars->sim.gravitation = 9.80616;
+					simVars->sim.earth_radius = 6.37122e6;
+					simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+
+					// Scale height to make NL influencing the stiffness stronger
+					simVars->sim.h0 *= 0.1;
+				}
+
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_phi, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
+				o_phi += simVars->sim.h0*simVars->sim.gravitation;
+
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_vort, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
+				o_vort *= 1e-8;
+				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_div, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
+				o_div *= 1e-8;
+			}
 			else if (
 					simVars->setup.benchmark_name == "geostrophic_balance"	||
 					simVars->setup.benchmark_name == "geostrophic_balance_1"	||
@@ -826,15 +853,15 @@ public:
 				 * "geostrophic_balance_N" means that N is the multiplier for the frequency
 				 * in the direction of the Latitude
 				 */
-				if (simVars->timecontrol.current_simulation_time == 0)
-				{
-					std::cout << "!!! WARNING !!!" << std::endl;
-					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-					std::cout << "!!! WARNING !!!" << std::endl;
-				}
-
 				if (simVars->setup.benchmark_name != "geostrophic_balance_nosetparam")
 				{
+					if (simVars->timecontrol.current_simulation_time == 0)
+					{
+						std::cout << "!!! WARNING !!!" << std::endl;
+						std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+						std::cout << "!!! WARNING !!!" << std::endl;
+					}
+
 					simVars->sim.coriolis_omega = 7.292e-5;
 					simVars->sim.gravitation = 9.80616;
 					simVars->sim.earth_radius = 6.37122e6;

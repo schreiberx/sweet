@@ -608,11 +608,23 @@ public:
 		{
 		default:
 		case 0:
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_phi), planeDataConfig);
+			break;
+
+		case 1:
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_vort), planeDataConfig);
+			break;
+
+		case 2:
+			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_div), planeDataConfig);
+			break;
+
+		case 3:
 			// USE COPY TO AVOID FORWARD/BACKWARD TRANSFORMATION
 			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_phi)/simVars.sim.gravitation, planeDataConfig);
 			break;
 
-		case 1:
+		case 4:
 		{
 			SphereDataPhysical u(prog_vort.sphereDataConfig);
 			SphereDataPhysical v(prog_vort.sphereDataConfig);
@@ -623,7 +635,7 @@ public:
 			break;
 		}
 
-		case 2:
+		case 5:
 		{
 			SphereDataPhysical u(prog_vort.sphereDataConfig);
 			SphereDataPhysical v(prog_vort.sphereDataConfig);
@@ -634,13 +646,6 @@ public:
 			break;
 		}
 
-		case 3:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_vort), planeDataConfig);
-			break;
-
-		case 4:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_div), planeDataConfig);
-			break;
 		}
 
 		*o_dataArray = &viz_plane_data;
@@ -662,7 +667,7 @@ public:
 		{
 		default:
 		case 0:
-			description = "H";
+			description = "phi";
 			break;
 
 		case 1:
@@ -671,6 +676,18 @@ public:
 
 		case 2:
 			description = "div";
+			break;
+
+		case 3:
+			description = "h";
+			break;
+
+		case 4:
+			description = "u";
+			break;
+
+		case 5:
+			description = "v";
 			break;
 		}
 
