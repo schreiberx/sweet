@@ -27,8 +27,8 @@ groups = ['runtime.timestepping_method']
 
 
 tagnames_y = [
-	'plane_data_diff_prog_h_pert.res_norm_l1',
-#	'plane_data_diff_prog_h_pert.res_norm_linf',
+#	'plane_data_diff_prog_h_pert.res_norm_l1',
+	'plane_data_diff_prog_h_pert.res_norm_linf',
 ]
 
 
