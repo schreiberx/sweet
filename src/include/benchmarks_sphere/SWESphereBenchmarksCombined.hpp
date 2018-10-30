@@ -817,8 +817,9 @@ public:
 					simVars->sim.earth_radius = 6.37122e6;
 					simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 
-					// Scale height to make NL influencing the stiffness stronger
+					// Scale geopotential to make NL influencing the stiffness stronger
 					simVars->sim.h0 *= 0.1;
+					simVars->sim.gravitation *= 0.1;
 				}
 
 				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_phi, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
