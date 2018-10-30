@@ -38,7 +38,7 @@ params_runtime_timestep_sizes = [30]
 jg.runtime.benchmark_name = 'geostrophic_balance'
 
 jg.runtime.mode_res = 128
-jg.runtime.phys_res = -1
+jg.runtime.phys_res = None
 
 jg.runtime.compute_error = 1
 
@@ -47,7 +47,8 @@ jg.runtime.simtime = 10*30
 
 
 # Use moderate CI-REXI values
-jg.runtime.rexi_method = 'ci'
+# Set later on
+#jg.runtime.rexi_method = 'ci'
 jg.runtime.rexi_ci_n = 16
 jg.runtime.rexi_ci_max_real = 1
 jg.runtime.rexi_ci_max_imag = 1
@@ -154,7 +155,9 @@ if __name__ == "__main__":
 						if jg.runtime.use_robert_functions == 0 and 'l_rexi_' in jg.runtime.timestepping_method:
 							continue
 
+						jg.runtime.rexi_method = 'ci'
 						jg.gen_jobscript_directory()
+						jg.runtime.rexi_method = ''
 
 					else:
 						# Not implemented?
