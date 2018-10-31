@@ -33,11 +33,6 @@ jg.runtime.verbosity = 2
 jg.runtime.mode_res = 64
 jg.runtime.phys_res = None
 
-#
-# Benchmark ID
-# 1: Gaussian breaking dam
-#
-#jg.runtime.bench_id = 4
 jg.runtime.benchmark_name = "gaussian_bumps_phi_vort_div"
 
 #
@@ -63,25 +58,6 @@ else:
 	jg.compile.rexi_thread_parallel_sum = 'disable'
 
 
-#
-# CI REXI method
-#
-jg.runtime.rexi_method = 'ci'
-
-if not True:
-	jg.runtime.rexi_ci_n = 64
-	jg.runtime.rexi_ci_max_real = 10
-	jg.runtime.rexi_ci_max_imag = 20
-
-else:
-	# Use reduced number of REXI coefficients for convergence studies
-	jg.runtime.rexi_ci_n = 64
-	jg.runtime.rexi_ci_max_real = 10
-	jg.runtime.rexi_ci_max_imag = 10
-	jg.runtime.rexi_normalization = 0
-
-jg.runtime.rexi_ci_mu = 0
-jg.runtime.rexi_ci_primitive = 'circle'
 
 jg.runtime.f_sphere = 0
 
@@ -131,8 +107,9 @@ if group == "l1":
 			'l_irk',
 			'lg_irk_lc_erk',
 
-			#'l_rexi',
+			'l_rexi',
 		]
+
 
 elif group == "lg1":
 
@@ -144,8 +121,8 @@ elif group == "lg1":
 	ts_methods = [
 			'lg_erk',
 			'lg_irk',
-			#'ltest_irk',
-			#'lg_rexi',
+
+			'lg_rexi',
 		]
 
 elif group == "l2":
@@ -164,7 +141,7 @@ elif group == "l2":
 			'lg_irk_lc_erk',
 
 			'l_lf',
-			#'l_rexi',
+			'l_rexi',
 		]
 
 elif group == "lg2":
@@ -177,6 +154,8 @@ elif group == "lg2":
 	ts_methods = [
 			'lg_erk',
 			'lg_cn',
+
+			'lg_rexi',
 		]
 
 elif group == "ln1":
@@ -187,7 +166,7 @@ elif group == "ln1":
 	ref_ts_order = 4
 
 	ts_methods = [
-#			'ln_erk',
+			'ln_erk',
 
 			'l_erk_n_erk',
 
@@ -200,13 +179,13 @@ elif group == "ln1":
 			'lg_irk_lc_n_erk_ver0',
 			'lg_irk_lc_n_erk_ver1',
 
-#			'l_rexi_n_erk_ver0',
-#			'l_rexi_n_erk_ver1',
+			'l_rexi_n_erk_ver0',
+			'l_rexi_n_erk_ver1',
 
-#			'lg_rexi_lc_n_erk_ver0',
-#			'lg_rexi_lc_n_erk_ver1',
+			'lg_rexi_lc_n_erk_ver0',
+			'lg_rexi_lc_n_erk_ver1',
 
-#			'l_rexi_n_etdrk',
+			'l_rexi_n_etdrk',
 		]
 
 
@@ -231,14 +210,14 @@ elif group == "ln2":
 			'lg_irk_lc_n_erk_ver0',
 			'lg_irk_lc_n_erk_ver1',
 
-#			'l_rexi_n_erk_ver0',
-#			'l_rexi_n_erk_ver1',
+			'l_rexi_n_erk_ver0',
+			'l_rexi_n_erk_ver1',
 
-#			'lg_rexi_lc_n_erk_ver0',
-#			'lg_rexi_lc_n_erk_ver1',
+			'lg_rexi_lc_n_erk_ver0',
+			'lg_rexi_lc_n_erk_ver1',
 
-#			'l_rexi_n_etdrk',
-#			'lg_rexi_lc_n_etdrk',
+			'l_rexi_n_etdrk',
+			'lg_rexi_lc_n_etdrk',
 
 		]
 
@@ -247,8 +226,8 @@ else:
 
 
 if ts_order == 1:
-	ref_ts_size = 1
-	timestep_size_min = 4
+	ref_ts_size = 8
+	timestep_size_min = 64
 	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
 	jg.runtime.simtime = timestep_size_min*512
@@ -270,6 +249,26 @@ elif ts_order == 2:
 	
 else:
 	raise Exception("Unsupported time integration order")
+
+#
+# CI REXI method
+#
+jg.runtime.rexi_method = 'ci'
+
+if ts_order == 1:
+	jg.runtime.rexi_ci_n = 16
+	jg.runtime.rexi_ci_max_real = 1
+	jg.runtime.rexi_ci_max_imag = 1
+
+else:
+	# Use reduced number of REXI coefficients for convergence studies
+	jg.runtime.rexi_ci_n = 16
+	jg.runtime.rexi_ci_max_real = 1
+	jg.runtime.rexi_ci_max_imag = 1
+
+
+jg.runtime.rexi_ci_mu = 0
+jg.runtime.rexi_ci_primitive = 'circle'
 
 
 

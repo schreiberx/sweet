@@ -73,9 +73,9 @@ for tagname_y in tagnames_y:
 #				data_filter = data_filter
 			)
 
-		for key, group_data in d.get_data_float().items():
+		for group_name, group_data in d.get_data_float().items():
 			print("*"*80)
-			print("Group: "+key)
+			print("Group: "+group_name)
 			prev_value = -1.0
 			conv = '-'
 			convergence_order = None
@@ -102,14 +102,17 @@ for tagname_y in tagnames_y:
 			if 'vort' in tagname_y:
 				conv_test_range_start = 0
 				conv_test_range_end = 4
-				error_tolerance = 0.1
+				error_tolerance_convergence = 0.1
+				error_tolerance_rexi = 1e-7
 			else:
 				conv_test_range_start = 0
 				conv_test_range_end = 4
-				error_tolerance = 0.05
+				error_tolerance_convergence = 0.05
+				error_tolerance_rexi = 1e-7
 
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
-			print(" + error_tolerancce: "+str(error_tolerance))
+			print(" + error_tolerance_convergence: "+str(error_tolerance_convergence))
+			print(" + error_tolerance_rexi: "+str(error_tolerance_rexi))
 
 			if len(group_data['meta_values']) < conv_test_range_end:
 				raise Exception("Not enough samples to run convergence test")
@@ -130,18 +133,25 @@ for tagname_y in tagnames_y:
 				elif prev_value == 0:
 					conv = '[error=0]'
 
-				error = '-'
+				error_convergence = '-'
 				if isinstance(conv, float):
 					# Convergence order is stored in meta value
 					target_conv = pow(2.0, meta)
-					error = abs(conv - target_conv)/target_conv
+					error_convergence = abs(conv - target_conv)/target_conv
 
-				print("\t"+str(x)+"\t=>\t"+str(y)+"\tconvergence: "+str(conv)+"\terror: "+str(error))
+				print("\t"+str(x)+"\t=>\t"+str(y)+"\tconvergence: "+str(conv)+"\terror: "+str(error_convergence))
 
-				if error != '-':
-					if error > error_tolerance:
-						print("Error: "+str(error))
-						raise Exception("Convergence exceeds tolerance of "+str(error_tolerance))
+				if error_convergence != '-':
+					if group_name in ['l_rexi', 'lg_rexi']:
+						# Convergence doesn't really make sense for REXI in the way how it's applied
+						# Just ensure that the errors are below a certain level
+						if y > error_tolerance_rexi:
+							print("Error: "+str(y))
+							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_rexi))
+					else:
+						if error_convergence > error_tolerance_convergence:
+							print("Error: "+str(error_convergence))
+							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_convergence))
 
 				prev_value = y
 
