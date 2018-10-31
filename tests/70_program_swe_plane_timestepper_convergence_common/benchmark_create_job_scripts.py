@@ -25,14 +25,10 @@ jg.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-jg.runtime.mode_res = -1
+jg.runtime.mode_res = None
 jg.runtime.phys_res = 128
 
-#
-# Benchmark ID
-# 1: Gaussian breaking dam
-#
-jg.runtime.bench_id = 1
+jg.runtime.benchmark_name = "radial_gaussian_bump"
 
 #
 # Compute error
@@ -102,6 +98,7 @@ jg.runtime.simtime = timestep_size_min*500
 jg.runtime.output_timestep_size = jg.runtime.simtime
 
 
+jg.unique_id_filter = ['compile', 'parallelization']
 
 if len(sys.argv) <= 1:
 	print("")
