@@ -63,8 +63,8 @@ jg.compile.rexi_thread_parallel_sum = 'disable'
 #jg.runtime.rexi_method = 'ci'
 jg.runtime.rexi_method = 'direct'
 jg.runtime.rexi_ci_n = 64
-jg.runtime.rexi_ci_max_real = 10
-jg.runtime.rexi_ci_max_imag = 10
+jg.runtime.rexi_ci_max_real = 4
+jg.runtime.rexi_ci_max_imag = 4
 jg.runtime.rexi_ci_mu = 0
 jg.runtime.rexi_ci_primitive = 'circle'
 
@@ -117,7 +117,7 @@ group = sys.argv[1]
 if group == "l1":
 
 	ts_order = 1
-	jg.runtime.rexi_use_direct_solution = 1
+	jg.runtime.rexi_use_direct_solution = 0
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
@@ -125,13 +125,14 @@ if group == "l1":
 
 	ts_methods = [
 			'l_erk',
-			'l_irk'
+			'l_irk',
+			'l_rexi'
 		]
 
 elif group == "l2":
 
 	ts_order = 2
-	jg.runtime.rexi_use_direct_solution = 1
+	jg.runtime.rexi_use_direct_solution = 0
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
@@ -140,6 +141,7 @@ elif group == "l2":
 	ts_methods = [
 			'l_erk',
 			'l_cn',
+			'l_rexi',
 		]
 
 
