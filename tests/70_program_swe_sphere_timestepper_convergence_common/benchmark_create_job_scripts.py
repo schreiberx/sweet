@@ -37,7 +37,8 @@ jg.runtime.phys_res = None
 # Benchmark ID
 # 1: Gaussian breaking dam
 #
-jg.runtime.bench_id = 4
+#jg.runtime.bench_id = 4
+jg.runtime.benchmark_name = "gaussian_bumps_phi_vort_div"
 
 #
 # Compute error
@@ -74,10 +75,10 @@ if not True:
 
 else:
 	# Use reduced number of REXI coefficients for convergence studies
-	jg.runtime.rexi_ci_n = 64
+	jg.runtime.rexi_ci_n = 128
 	jg.runtime.rexi_ci_max_real = 10
 	jg.runtime.rexi_ci_max_imag = 10
-	jg.runtime.rexi_normalization = 1
+	jg.runtime.rexi_normalization = 0
 
 jg.runtime.rexi_ci_mu = 0
 jg.runtime.rexi_ci_primitive = 'circle'
@@ -105,20 +106,23 @@ group = sys.argv[1]
 
 if group in ['l1', 'l2', 'lg1', 'lg2']:
 
+	ref_ts_size = 1
 	timestep_size_min = 4
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 4)]
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
-	jg.runtime.simtime = timestep_size_min*2000
-	#jg.runtime.simtime = timestep_size_min*500
+	#jg.runtime.simtime = timestep_size_min*2000
+	#jg.runtime.simtime = timestep_size_min*1000
+	jg.runtime.simtime = timestep_size_min*512
 	jg.runtime.output_timestep_size = jg.runtime.simtime
 
 else:
-	timestep_size_min = 4
-	#timestep_size_min = 0.5
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 4)]
+	ref_ts_size = 1
+	timestep_size_min = 64
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
-	jg.runtime.simtime = timestep_size_min*2000
-	#jg.runtime.simtime = timestep_size_min*500
+	#jg.runtime.simtime = timestep_size_min*2048
+	#jg.runtime.simtime = timestep_size_min*1024
+	jg.runtime.simtime = timestep_size_min*512
 	jg.runtime.output_timestep_size = jg.runtime.simtime
 
 
@@ -136,7 +140,6 @@ if group == "l1":
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'l_erk',
@@ -150,7 +153,6 @@ elif group == "lg1":
 
 	ref_ts_method = 'lg_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'lg_erk',
@@ -164,7 +166,6 @@ elif group == "l2":
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'l_erk',
@@ -179,7 +180,6 @@ elif group == "lg2":
 
 	ref_ts_method = 'lg_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.25
 
 	ts_methods = [
 			'lg_erk',
@@ -193,7 +193,6 @@ elif group == "ln1":
 
 	ref_ts_method = 'ln_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
 
 	ts_methods = [
 			'ln_erk',
@@ -201,13 +200,19 @@ elif group == "ln1":
 			'l_erk_n_erk',
 			'lg_erk_lc_n_erk',
 
-			'l_irk_n_erk',
-			'lg_irk_lc_n_erk',
+			'l_irk_n_erk_ver0',
+			'l_irk_n_erk_ver1',
 
-#			'l_rexi_n_erk',
-			'lg_rexi_lc_n_erk',
+			'lg_irk_lc_n_erk_ver0',
+			'lg_irk_lc_n_erk_ver1',
 
-#			'l_rexi_n_etdrk',
+			'l_rexi_n_erk_ver0',
+			'l_rexi_n_erk_ver1',
+
+			'lg_rexi_lc_n_erk_ver0',
+			'lg_rexi_lc_n_erk_ver1',
+
+			'l_rexi_n_etdrk',
 		]
 
 
@@ -217,7 +222,6 @@ elif group == "ln2":
 
 	ref_ts_method = 'ln_erk'
 	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
 
 	ts_methods = [
 			'ln_erk',
