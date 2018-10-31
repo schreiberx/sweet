@@ -462,7 +462,7 @@ extern "C"
 	SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 		  
 	// compute the explicit nonlinear right-hand side
-	timestepper->euler_timestep_update_nonlinear(
+	timestepper->euler_timestep_update_n(
 						     phi_Y, 
 						     vort_Y,
 						     div_Y,
@@ -481,7 +481,7 @@ extern "C"
 	    SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
 	    
 	    // compute the explicit nonlinear right-hand side
-	    timestepper->euler_timestep_update_coriolis_and_nonlinear(
+	    timestepper->euler_timestep_update_lc_n(
 								      phi_Y, 
 								      vort_Y,
 								      div_Y,

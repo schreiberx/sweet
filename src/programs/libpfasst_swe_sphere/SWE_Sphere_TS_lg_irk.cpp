@@ -86,7 +86,7 @@ void SWE_Sphere_TS_lg_irk::run_timestep(
 		SphereData rhs = gh*div0 + alpha*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
-		vort = 1.0/alpha*(vort0);
+		vort = vort0;
 		div = -1.0/gh*(phi0 - alpha*phi);
 	}
 

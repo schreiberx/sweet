@@ -831,6 +831,21 @@ public:
 				//o_vort *= 0;
 				BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_div, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
 				o_div *= 1e-8;
+
+				/*
+				 * Convert forward/backward to velocity space to apply a certain truncation
+				 */
+				SphereDataPhysical ug(o_phi.sphereDataConfig);
+				SphereDataPhysical vg(o_phi.sphereDataConfig);
+				if (simVars->misc.sphere_use_robert_functions)
+					op->robert_vortdiv_to_uv(o_vort, o_div, ug, vg);
+				else
+					op->vortdiv_to_uv(o_vort, o_div, ug, vg);
+				if (simVars->misc.sphere_use_robert_functions)
+					op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				else
+					op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+
 			}
 			else if (
 					simVars->setup.benchmark_name == "geostrophic_balance"	||

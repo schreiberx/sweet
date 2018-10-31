@@ -20,33 +20,39 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 {
 	if (timestepping_order == 1)
 	{
-		SphereData tmp_phi = io_phi;
-		SphereData tmp_vort = io_vort;
-		SphereData tmp_div = io_div;
-
-		// first order IRK for linear
-		timestepping_lg_irk.run_timestep(
-				io_phi, io_vort, io_div,
-				i_dt,
-				i_simulation_timestamp
-			);
+		if (version_id == 0)
+		{
+			// first order IRK for linear
+			timestepping_lg_irk.run_timestep(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
 
 
-		SphereData phi_dt(io_phi.sphereDataConfig);
-		SphereData vort_dt(io_vort.sphereDataConfig);
-		SphereData div_dt(io_div.sphereDataConfig);
+			// first order explicit for non-linear
+			timestepping_lg_erk_lc_erk.euler_timestep_update_lc(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
+		}
+		else if (version_id == 0)
+		{
+			// first order explicit for non-linear
+			timestepping_lg_erk_lc_erk.euler_timestep_update_lc(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
 
-		// first order explicit for non-linear
-		timestepping_lg_erk_lc_erk.euler_timestep_update_coriolis_and_nonlinear(
-				tmp_phi, tmp_vort, tmp_div,
-				phi_dt, vort_dt, div_dt,
-				i_simulation_timestamp
-			);
-
-
-		io_phi += i_dt*phi_dt;
-		io_vort += i_dt*vort_dt;
-		io_div += i_dt*div_dt;
+			// first order IRK for linear
+			timestepping_lg_irk.run_timestep(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
+		}
 	}
 	else if (timestepping_order == 2)
 	{
@@ -62,7 +68,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 			// FULL time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_lg_erk_lc_erk,
-					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt,
 					timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -81,7 +87,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_lg_erk_lc_erk,
-					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -98,7 +104,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_lg_erk_lc_erk,
-					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method

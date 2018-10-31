@@ -65,7 +65,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
 }
 
 
-void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
+void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 		const SphereData &i_phi,	///< prognostic variables
 		const SphereData &i_vort,	///< prognostic variables
 		const SphereData &i_div,	///< prognostic variables
@@ -121,7 +121,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 /**
  * This routine is used by other time step implementations
  */
-void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
+void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 		SphereData &io_phi,		///< prognostic variables
 		SphereData &io_vort,	///< prognostic variables
 		SphereData &io_div,		///< prognostic variables
@@ -134,7 +134,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	SphereData tmp_vort(io_vort.sphereDataConfig);
 	SphereData tmp_div(io_div.sphereDataConfig);
 
-	euler_timestep_update_nonlinear(
+	euler_timestep_update_n(
 			io_phi,
 			io_vort,
 			io_div,
@@ -237,7 +237,7 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
 
 		timestepping_rk_nonlinear.run_timestep(
 				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt,
 				timestepping_order2,
@@ -259,7 +259,7 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
 		// FULL time step for non-linear part
 		timestepping_rk_nonlinear.run_timestep(
 				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
 				io_phi, io_vort, io_div,
 				i_dt,
 				timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method

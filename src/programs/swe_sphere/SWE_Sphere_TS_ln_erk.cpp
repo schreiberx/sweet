@@ -55,6 +55,9 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 
 	o_vort_t *= -1.0;
 
+	/*
+	 * Compute divergence of velocity field for tendencies of \Phi
+	 */
 	tmpg1 = ug*phig;
 	tmpg2 = vg*phig;
 
@@ -66,6 +69,9 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 
 	o_phi_t *= -1.0;
 
+	/*
+	 * Add non-linearities
+	 */
 	SphereDataPhysical tmpg = 0.5*(ug*ug+vg*vg);
 
 	if (simVars.misc.sphere_use_robert_functions)

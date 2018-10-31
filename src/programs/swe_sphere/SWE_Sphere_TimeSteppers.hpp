@@ -12,6 +12,7 @@
 #include "SWE_Sphere_TS_interface.hpp"
 
 #include "SWE_Sphere_TS_l_erk.hpp"
+#include "SWE_Sphere_TS_l_erk_pvd.hpp"
 #include "SWE_Sphere_TS_l_rexi.hpp"
 #include "SWE_Sphere_TS_l_lf.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
@@ -42,6 +43,8 @@ class SWE_Sphere_TimeSteppers
 {
 public:
 	SWE_Sphere_TS_l_erk *l_erk = nullptr;
+
+	SWE_Sphere_TS_l_erk_pvd *l_erk_pvd = nullptr;
 	SWE_Sphere_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
 	SWE_Sphere_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
 
@@ -210,6 +213,13 @@ public:
 			l_erk->setup(i_simVars.disc.timestepping_order);
 
 			master = &(SWE_Sphere_TS_interface&)*l_erk;
+		}
+		else if (i_timestepping_method == "l_erk_pvd")
+		{
+			l_erk_pvd = new SWE_Sphere_TS_l_erk_pvd(i_simVars, i_op);
+			l_erk_pvd->setup(i_simVars.disc.timestepping_order);
+
+			master = &(SWE_Sphere_TS_interface&)*l_erk_pvd;
 		}
 		else if (i_timestepping_method == "l_erk_n_erk")
 		{

@@ -69,19 +69,21 @@ else:
 jg.runtime.rexi_method = 'ci'
 
 if not True:
-	jg.runtime.rexi_ci_n = 128
+	jg.runtime.rexi_ci_n = 64
 	jg.runtime.rexi_ci_max_real = 10
 	jg.runtime.rexi_ci_max_imag = 20
 
 else:
 	# Use reduced number of REXI coefficients for convergence studies
-	jg.runtime.rexi_ci_n = 128
+	jg.runtime.rexi_ci_n = 64
 	jg.runtime.rexi_ci_max_real = 10
 	jg.runtime.rexi_ci_max_imag = 10
 	jg.runtime.rexi_normalization = 0
 
 jg.runtime.rexi_ci_mu = 0
 jg.runtime.rexi_ci_primitive = 'circle'
+
+jg.runtime.f_sphere = 0
 
 #jg.runtime.g = 1
 #jg.runtime.f = 1
@@ -104,27 +106,6 @@ group = sys.argv[1]
 
 
 
-if group in ['l1', 'l2', 'lg1', 'lg2']:
-
-	ref_ts_size = 1
-	timestep_size_min = 4
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
-
-	#jg.runtime.simtime = timestep_size_min*2000
-	#jg.runtime.simtime = timestep_size_min*1000
-	jg.runtime.simtime = timestep_size_min*512
-	jg.runtime.output_timestep_size = jg.runtime.simtime
-
-else:
-	ref_ts_size = 1
-	timestep_size_min = 64
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
-
-	#jg.runtime.simtime = timestep_size_min*2048
-	#jg.runtime.simtime = timestep_size_min*1024
-	jg.runtime.simtime = timestep_size_min*512
-	jg.runtime.output_timestep_size = jg.runtime.simtime
-
 
 jg.runtime.rexi_use_direct_solution = 0
 
@@ -142,8 +123,14 @@ if group == "l1":
 	ref_ts_order = 4
 
 	ts_methods = [
+			#'l_erk_pvd',
+
 			'l_erk',
+			'lg_erk_lc_erk',
+
 			'l_irk',
+			'lg_irk_lc_erk',
+
 			#'l_rexi',
 		]
 
@@ -157,6 +144,7 @@ elif group == "lg1":
 	ts_methods = [
 			'lg_erk',
 			'lg_irk',
+			#'ltest_irk',
 			#'lg_rexi',
 		]
 
@@ -168,8 +156,13 @@ elif group == "l2":
 	ref_ts_order = 4
 
 	ts_methods = [
+
 			'l_erk',
+			'lg_erk_lc_erk',
+
 			'l_cn',
+			'lg_irk_lc_erk',
+
 			'l_lf',
 			#'l_rexi',
 		]
@@ -184,7 +177,6 @@ elif group == "lg2":
 	ts_methods = [
 			'lg_erk',
 			'lg_cn',
-			#'lg_rexi',
 		]
 
 elif group == "ln1":
@@ -195,10 +187,12 @@ elif group == "ln1":
 	ref_ts_order = 4
 
 	ts_methods = [
-			'ln_erk',
+#			'ln_erk',
 
 			'l_erk_n_erk',
-			'lg_erk_lc_n_erk',
+
+			'lg_erk_lc_n_erk_ver0',
+			'lg_erk_lc_n_erk_ver1',
 
 			'l_irk_n_erk_ver0',
 			'l_irk_n_erk_ver1',
@@ -206,13 +200,13 @@ elif group == "ln1":
 			'lg_irk_lc_n_erk_ver0',
 			'lg_irk_lc_n_erk_ver1',
 
-			'l_rexi_n_erk_ver0',
-			'l_rexi_n_erk_ver1',
+#			'l_rexi_n_erk_ver0',
+#			'l_rexi_n_erk_ver1',
 
-			'lg_rexi_lc_n_erk_ver0',
-			'lg_rexi_lc_n_erk_ver1',
+#			'lg_rexi_lc_n_erk_ver0',
+#			'lg_rexi_lc_n_erk_ver1',
 
-			'l_rexi_n_etdrk',
+#			'l_rexi_n_etdrk',
 		]
 
 
@@ -227,7 +221,9 @@ elif group == "ln2":
 			'ln_erk',
 
 			'l_erk_n_erk',
-			'lg_erk_lc_n_erk',
+
+			'lg_erk_lc_n_erk_ver0',
+			'lg_erk_lc_n_erk_ver1',
 
 			'l_irk_n_erk_ver0',
 			'l_irk_n_erk_ver1',
@@ -235,22 +231,46 @@ elif group == "ln2":
 			'lg_irk_lc_n_erk_ver0',
 			'lg_irk_lc_n_erk_ver1',
 
-			'lg_erk_lc_n_erk_ver0',
-			'lg_erk_lc_n_erk_ver1',
+#			'l_rexi_n_erk_ver0',
+#			'l_rexi_n_erk_ver1',
 
-			'l_rexi_n_erk_ver0',
-			'l_rexi_n_erk_ver1',
+#			'lg_rexi_lc_n_erk_ver0',
+#			'lg_rexi_lc_n_erk_ver1',
 
-			'lg_rexi_lc_n_erk_ver0',
-			'lg_rexi_lc_n_erk_ver1',
-
-			'l_rexi_n_etdrk',
-			'lg_rexi_lc_n_etdrk',
+#			'l_rexi_n_etdrk',
+#			'lg_rexi_lc_n_etdrk',
 
 		]
 
 else:
 	raise Exception("Unknown group")
+
+
+if ts_order == 1:
+	ref_ts_size = 1
+	timestep_size_min = 4
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+	jg.runtime.simtime = timestep_size_min*512
+	jg.runtime.output_timestep_size = jg.runtime.simtime
+
+
+elif ts_order == 2:
+	#
+	# A 2nd order accurate method already considerably reduces the errors
+	# Therefore, we use larger time step sizes to increase the errors
+	# to get errors larger than numerical precision
+	#
+	ref_ts_size = 8
+	timestep_size_min = 64
+	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+	jg.runtime.simtime = timestep_size_min*512
+	jg.runtime.output_timestep_size = jg.runtime.simtime
+	
+else:
+	raise Exception("Unsupported time integration order")
+
 
 
 #

@@ -37,7 +37,7 @@ void SWE_Sphere_TS_l_irk::setup(
 	use_f_sphere = simVars.sim.f_sphere;
 
 	if (i_timestep_order != 1)
-		FatalError("Only 1st order IRK supported so far!");
+		FatalError("Only 1st order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
 
 	use_extended_modes = i_use_extended_modes;
 
@@ -125,12 +125,12 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
 	        std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
-	  
+
 	        timestep_size = i_fixed_dt;
-	  
+
 	        alpha = -1.0/timestep_size;
 	        beta = -1.0/timestep_size;
-	  
+
 	        update_coefficients();
 	}
 

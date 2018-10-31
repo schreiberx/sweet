@@ -38,15 +38,32 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 	}
 	else
 	{
+#if 0
 		double gh = simVars.sim.gravitation * simVars.sim.h0;
 
+		o_phi_t = -gh*i_div;
+		o_div_t = -op.laplace(i_phi);
+
+		/*
+		 * This doesn't converge to the reference solution
+		 */
+		SphereData f(fg);
+		o_vort_t = -f*i_div;
+		o_div_t += f*i_vort;
+
+#else
+
+		double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+		/*
+		 * Apply Coriolis Effect in physical VELOCITY space
+		 */
 		SphereDataPhysical ug(i_phi.sphereDataConfig);
 		SphereDataPhysical vg(i_phi.sphereDataConfig);
 		if (simVars.misc.sphere_use_robert_functions)
 			op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
 		else
 			op.vortdiv_to_uv(i_vort, i_div, ug, vg);
-		SphereDataPhysical phig = i_phi.getSphereDataPhysical();
 
 		SphereDataPhysical tmpg1 = ug*fg;
 		SphereDataPhysical tmpg2 = vg*fg;
@@ -57,28 +74,13 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 			op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 		o_vort_t *= -1.0;
+		o_div_t += -op.laplace(i_phi);
 
-#if 0
-		// Non-linear divergence
-		tmpg1 = ug*phig;
-		tmpg2 = vg*phig;
-#else
-		// Linearized divergence around avg. geopotential
-		tmpg1 = ug*gh;
-		tmpg2 = vg*gh;
+		/*
+		 * DIV on velocity field
+		 */
+		o_phi_t = (-gh)*i_div;
 #endif
-
-		SphereData tmpspec(i_phi.sphereDataConfig);
-		if (simVars.misc.sphere_use_robert_functions)
-			op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-		else
-			op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-
-		o_phi_t *= -1.0;
-
-		tmpspec = phig;
-		tmpspec.request_data_spectral();
-		o_div_t += -op.laplace(tmpspec);
 	}
 }
 

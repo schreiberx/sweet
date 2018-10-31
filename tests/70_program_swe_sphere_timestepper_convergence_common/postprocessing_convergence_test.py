@@ -12,14 +12,6 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 
-def get_test_parameters(method, order):
-	"""
-	Return:
-	-------
-		( start range, end range, error tolerance )
-	"""
-	# Test first 4 fields for convergence
-	return 0, 4, 0.05
 
 
 
@@ -27,8 +19,9 @@ groups = ['runtime.timestepping_method']
 
 
 tagnames_y = [
-#	'sphere_data_diff_prog_phi.res_norm_l1',
 	'sphere_data_diff_prog_phi.res_norm_linf',
+	'sphere_data_diff_prog_div.res_norm_linf',
+	'sphere_data_diff_prog_vort.res_norm_linf',
 ]
 
 
@@ -87,8 +80,11 @@ for tagname_y in tagnames_y:
 			conv = '-'
 			convergence_order = None
 			for (x, y, convergence_order_) in zip(group_data['x_values'], group_data['y_values'], group_data['meta_values']):
-				if prev_value >= 0:
+
+				if prev_value > 0:
 					conv = y/prev_value
+				elif prev_value == 0:
+					conv = '[error=0]'
 
 				print("\t"+str(x)+"\t=>\t"+str(y)+"\tconvergence: "+str(conv))
 				prev_value = y
@@ -102,7 +98,16 @@ for tagname_y in tagnames_y:
 
 			print("")
 			print("Testing convergence")
-			(conv_test_range_start, conv_test_range_end, error_tolerance) = get_test_parameters(key, convergence_order)
+
+			if 'vort' in tagname_y:
+				conv_test_range_start = 0
+				conv_test_range_end = 4
+				error_tolerance = 0.1
+			else:
+				conv_test_range_start = 0
+				conv_test_range_end = 4
+				error_tolerance = 0.05
+
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
 			print(" + error_tolerancce: "+str(error_tolerance))
 
@@ -120,11 +125,13 @@ for tagname_y in tagnames_y:
 				y = group_data['y_values'][i]
 				meta = group_data['meta_values'][i]
 
-				if prev_value >= 0:
+				if prev_value > 0:
 					conv = y/prev_value
+				elif prev_value == 0:
+					conv = '[error=0]'
 
 				error = '-'
-				if conv != '-':
+				if isinstance(conv, float):
 					# Convergence order is stored in meta value
 					target_conv = pow(2.0, meta)
 					error = abs(conv - target_conv)/target_conv

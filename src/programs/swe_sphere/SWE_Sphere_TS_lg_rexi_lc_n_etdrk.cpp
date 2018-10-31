@@ -45,7 +45,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData FUn_u(sphereDataConfig);
 		SphereData FUn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
@@ -87,7 +87,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData FUn_u(sphereDataConfig);
 		SphereData FUn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
@@ -117,7 +117,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData FAn_u(sphereDataConfig);
 		SphereData FAn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				A_h, A_u, A_v,
 				FAn_h, FAn_u, FAn_v,
 				i_simulation_timestamp
@@ -168,7 +168,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData FUn_u(sphereDataConfig);
 		SphereData FUn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
@@ -209,7 +209,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData FAn_u(sphereDataConfig);
 		SphereData FAn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				A_h, A_u, A_v,
 				FAn_h, FAn_u, FAn_v,
 				i_simulation_timestamp + dt_half
@@ -248,7 +248,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData FBn_u(sphereDataConfig);
 		SphereData FBn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				B_h, B_u, B_v,
 				FBn_h, FBn_u, FBn_v,
 				i_simulation_timestamp + dt_half
@@ -276,7 +276,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData FCn_u(sphereDataConfig);
 		SphereData FCn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				C_h, C_u, C_v,
 				FCn_h, FCn_u, FCn_v,
 				i_simulation_timestamp + dt

@@ -29,9 +29,15 @@ SWE_Sphere_TS_lg_irk::SWE_Sphere_TS_lg_irk(
  */
 void SWE_Sphere_TS_lg_irk::setup(
 		int i_timestep_order,
-		double i_timestep_size
+		double i_timestep_size,
+		int i_extended_modes
 )
 {
+#if SWEET_DEBUG
+	if (i_extended_modes != 0)
+		FatalError("Not supported");
+#endif
+
 	if (i_timestep_order != 1)
 		FatalError("Only 1st order IRK supported so far!");
 
@@ -66,12 +72,12 @@ void SWE_Sphere_TS_lg_irk::run_timestep(
 
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
-	        std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
+		std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
 
-	        timestep_size = i_fixed_dt;
+		timestep_size = i_fixed_dt;
 
-	        alpha = -1.0/timestep_size;
-	        beta = -1.0/timestep_size;
+		alpha = -1.0/timestep_size;
+		beta = -1.0/timestep_size;
 	}
 
 	SphereData phi0 = io_phi;
@@ -85,14 +91,14 @@ void SWE_Sphere_TS_lg_irk::run_timestep(
 	{
 		SphereData rhs = gh*div0 + alpha*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
+		io_phi = phi*beta;
 
-		vort = 1.0/alpha*(vort0);
-		div = -1.0/gh*(phi0 - alpha*phi);
+		rhs = alpha*div0 + op.laplace(phi0);
+		div = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
+		io_div = div*beta;
+
+		io_vort = vort0;
 	}
-
-	io_phi = phi * beta;
-	io_vort = vort * beta;
-	io_div = div * beta;
 }
 
 

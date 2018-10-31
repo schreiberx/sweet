@@ -37,7 +37,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
 		SphereData div_dt(io_div.sphereDataConfig);
 
 		// first order explicit for non-linear
-		timestepping_lg_erk_lc_n_erk.euler_timestep_update_coriolis_and_nonlinear(
+		timestepping_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				tmp_phi, tmp_vort, tmp_div,
 				phi_dt, vort_dt, div_dt,
 				i_simulation_timestamp
@@ -62,7 +62,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
 			// FULL time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -81,7 +81,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -98,7 +98,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep(
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_coriolis_and_nonlinear,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method

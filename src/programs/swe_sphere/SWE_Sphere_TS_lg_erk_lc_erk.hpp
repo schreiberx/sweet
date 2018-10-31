@@ -31,10 +31,11 @@ class SWE_Sphere_TS_lg_erk_lc_erk	: public SWE_Sphere_TS_interface
 
 	// Coriolis effect
 	SphereDataPhysical fg;
+	SphereData f;
 
 
 public:
-	void euler_timestep_update_linear(
+	void euler_timestep_update_lg(
 			const SphereData &i_h,	///< prognostic variables
 			const SphereData &i_u,	///< prognostic variables
 			const SphereData &i_v,	///< prognostic variables
@@ -48,7 +49,7 @@ public:
 
 
 public:
-	void euler_timestep_update_coriolis_and_nonlinear(
+	void euler_timestep_update_lc(
 			const SphereData &i_h,	///< prognostic variables
 			const SphereData &i_u,	///< prognostic variables
 			const SphereData &i_v,	///< prognostic variables
@@ -62,7 +63,7 @@ public:
 
 
 public:
-	void euler_timestep_update_coriolis_and_nonlinear(
+	void euler_timestep_update_lc(
 			SphereData &io_phi,		///< prognostic variables
 			SphereData &io_vort,	///< prognostic variables
 			SphereData &io_div,		///< prognostic variables

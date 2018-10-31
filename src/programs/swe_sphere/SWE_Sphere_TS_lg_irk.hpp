@@ -66,7 +66,8 @@ public:
 public:
 	void setup(
 		int i_timestep_order,
-		double i_timestep_size
+		double i_timestep_size,
+		int i_extended_modes = 0
 	);
 
 
