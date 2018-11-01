@@ -240,7 +240,7 @@ elif ts_order == 2:
 	# Therefore, we use larger time step sizes to increase the errors
 	# to get errors larger than numerical precision
 	#
-	ref_ts_size = 8*4
+	ref_ts_size = 8
 	timestep_size_min = 64*4
 	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
