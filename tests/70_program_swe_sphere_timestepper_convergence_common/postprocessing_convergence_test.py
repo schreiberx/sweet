@@ -147,16 +147,20 @@ for tagname_y in tagnames_y:
 						# Just ensure that the errors are below a certain level
 						if y > error_tolerance_rexi:
 							print("Error: "+str(y))
-							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_rexi))
+							if len(sys.argv) <= 1:
+								raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_rexi))
 					else:
 						if error_convergence > error_tolerance_convergence:
 							print("Error: "+str(error_convergence))
-							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_convergence))
+							if len(sys.argv) <= 1:
+								raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_convergence))
 
 				prev_value = y
 
-			print("[OK]")
+			if len(sys.argv) <= 1:
+				print("[OK]")
 
-		print("*"*80)
-		print("Convergence tests successful")
-		print("*"*80)
+		if len(sys.argv) <= 1:
+			print("*"*80)
+			print("Convergence tests successful")
+			print("*"*80)
