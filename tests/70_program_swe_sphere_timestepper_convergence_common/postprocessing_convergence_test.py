@@ -184,7 +184,6 @@ for tagname_y in tagnames_y:
 								print("Error: "+str(y))
 								if len(sys.argv) <= 1:
 									raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_rexi))
-					else:
 
 				prev_value = y
 
