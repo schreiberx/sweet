@@ -19,9 +19,10 @@ echo_warning_hline
 #export LINK=$CXX
 #export LD=ld
 
-#export SWEET_MPICC=mpicc
-#export SWEET_MPICXX=mpic+_
-#export SWEET_MPIF90=mpif90
+export SWEET_MPICC=mpicc
+export SWEET_MPICXX=mpic++
+export SWEET_MPIF90=mpif90
 
-#export SWEET_MPILINK=$SWEET_MPICXX
-
+export SWEET_MPILINK=mpif90
+# If we link with mpif90, we have to add stdc++ for C++
+export SWEET_MPILIBS=stdc++
