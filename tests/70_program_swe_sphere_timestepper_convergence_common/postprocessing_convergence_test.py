@@ -118,7 +118,7 @@ for tagname_y in tagnames_y:
 
 						# Test only last 2 values for REXI
 						conv_test_range_end = len(group_data['x_values'])
-						conv_test_range_start = conv_test_range_end-3
+						conv_test_range_start = conv_test_range_end-2
 
 					else:
 						raise Exception("Unsupported convergence_order")
