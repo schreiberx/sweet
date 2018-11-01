@@ -99,31 +99,41 @@ for tagname_y in tagnames_y:
 			print("")
 			print("Testing convergence")
 
-			convergence_check = True
+			# 'convergence', 'error'
+			test_type = 'convergence'
 
 			if 'vort' in tagname_y:
-				conv_test_range_start = 0
-				conv_test_range_end = 4
-				error_tolerance_convergence = 0.1
-				error_tolerance_rexi = 1e-7
 
 				if 'rexi' in group_name:
 					# Convergence for rexi fracking fast
 					# Be a little bit more tolerant for convergence due to high accuracy
-					error_tolerance_convergence = 0.2
-					conv_test_range_start = 1
-					conv_test_range_end = 5
+					if convergence_order == 1:
+						error_tolerance_convergence = 0.1
+						conv_test_range_start = 1
+						conv_test_range_end = 5
 
-					# No convergence check for 2nd order on vorticity field
-					# This is already insanely accurate since it's primarily driven by linear parts
-					if convergence_order == 2:
-						convergence_check = False
+					elif convergence_order == 2:
+						# No convergence check for 2nd order on vorticity field
+						# This is already insanely accurate since it's primarily driven by linear parts
+
+						# Test only last 2 values for REXI
+						conv_test_range_end = len(group_data['x_values'])
+						conv_test_range_start = conv_test_range_end-3
+						test_type = 'error'
+
+					else:
+						raise Exception("Unsupported convergence_order")
+				else:
+					conv_test_range_start = 0
+					conv_test_range_end = 4
+					error_tolerance_convergence = 0.1
+					error_tolerance_error = 1e-7
 
 			else:
 				conv_test_range_start = 0
 				conv_test_range_end = 4
 				error_tolerance_convergence = 0.05
-				error_tolerance_rexi = 1e-7
+				error_tolerance_error = 1e-7
 
 				if 'rexi' in group_name:
 					# Convergence for rexi fracking fast
@@ -132,13 +142,14 @@ for tagname_y in tagnames_y:
 					conv_test_range_start = 2
 					conv_test_range_end = 5
 
-			if group_name in ['l_rexi', 'lg_rexi']:
-				convergence_check = False
 
-			print(" + convergence_check: "+str(convergence_check))
+			if group_name in ['l_rexi', 'lg_rexi']:
+				test_type = 'error'
+
+			print(" + test_type: "+str(error))
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
 			print(" + error_tolerance_convergence: "+str(error_tolerance_convergence))
-			print(" + error_tolerance_rexi: "+str(error_tolerance_rexi))
+			print(" + error_tolerance_error: "+str(error_tolerance_error))
 
 			if len(group_data['meta_values']) < conv_test_range_end:
 				raise Exception("Not enough samples to run convergence test")
@@ -167,23 +178,24 @@ for tagname_y in tagnames_y:
 
 				print("\t"+str(x)+"\t=>\t"+str(y)+"\tconvergence: "+str(conv)+"\terror: "+str(error_convergence))
 
-				if error_convergence != '-':
-					if convergence_check:
-						if error_convergence > error_tolerance_convergence:
-							print("Error: "+str(error_convergence))
-							if len(sys.argv) <= 1:
-								raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_convergence))
+				if test_type == 'convergence':
+					# Test for convergence
+					if error_convergence > error_tolerance_convergence:
+						print("Error: "+str(error_convergence))
+						if len(sys.argv) <= 1:
+							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_convergence))
 
-					else:
-						# Alternate tests instead of convergence check
-
-						if group_name in ['l_rexi', 'lg_rexi']:
-							# Convergence doesn't really make sense for REXI in the way how it's applied
-							# Just ensure that the errors are below a certain level
-							if y > error_tolerance_rexi:
-								print("Error: "+str(y))
-								if len(sys.argv) <= 1:
-									raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_rexi))
+				elif test_type == 'error':
+					# Alternate tests instead of convergence check
+					# Convergence doesn't really make sense for REXI in the way how it's applied
+					# This should be only used for l_rexi and lg_rexi
+					# Just ensure that the errors are below a certain level
+					if y > error_tolerance_error:
+						print("Error: "+str(y))
+						if len(sys.argv) <= 1:
+							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_error))
+				else:
+					raise Exception("Unknown test type "+test_type)
 
 				prev_value = y
 
