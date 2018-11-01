@@ -1,12 +1,14 @@
 #! /bin/bash
 
+cd "$(dirname $0)"
+
 if [[ -z "$SWEET_ROOT" ]]; then
 	echo "SWEET_ROOT environment variable not found"
 	exit 1
 fi
 
-
-SCRIPTDIR="$(dirname $0)"
+# Get Script directory
+SCRIPTDIR="$(pwd)"
 
 
 cd "${SWEET_ROOT}"
