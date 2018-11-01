@@ -20,32 +20,42 @@ void SWE_Sphere_TS_l_rexi_n_erk::run_timestep(
 {
 	if (timestepping_order2 == 1)
 	{
-		SphereData tmp_phi = io_phi;
-		SphereData tmp_vort = io_vort;
-		SphereData tmp_div = io_div;
+		if (version_id == 0)
+		{
+			// first order REXI for linear part
+			timestepping_l_rexi.run_timestep(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
 
-		// first order REXI for linear part
-		timestepping_l_rexi.run_timestep(
-				io_phi, io_vort, io_div,
-				i_dt,
-				i_simulation_timestamp
-			);
-/*
-		SphereData phi_dt(io_phi.sphereDataConfig);
-		SphereData vort_dt(io_vort.sphereDataConfig);
-		SphereData div_dt(io_div.sphereDataConfig);
+			// first order explicit for non-linear
+			timestepping_l_erk_n_erk.euler_timestep_update_n(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
+		}
+		else if (version_id == 1)
+		{
+			// first order explicit for non-linear
+			timestepping_l_erk_n_erk.euler_timestep_update_n(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
 
-		// first order explicit for non-linear
-		timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-				tmp_phi, tmp_vort, tmp_div,
-				phi_dt, vort_dt, div_dt,
-				i_simulation_timestamp
-			);
-
-		io_phi += i_dt*phi_dt;
-		io_vort += i_dt*vort_dt;
-		io_div += i_dt*div_dt;
-*/
+			// first order REXI for linear part
+			timestepping_l_rexi.run_timestep(
+					io_phi, io_vort, io_div,
+					i_dt,
+					i_simulation_timestamp
+				);
+		}
+		else
+		{
+			FatalError("Invalid version id");
+		}
 	}
 	else if (timestepping_order2 == 2 || timestepping_order2 == 4)
 	{
