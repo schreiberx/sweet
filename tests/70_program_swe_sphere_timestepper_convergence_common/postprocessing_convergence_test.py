@@ -117,6 +117,7 @@ for tagname_y in tagnames_y:
 						# This is already insanely accurate since it's primarily driven by linear parts
 
 						# Test only last 2 values for REXI
+						error_tolerance_convergence = 0.2
 						conv_test_range_end = len(group_data['x_values'])
 						conv_test_range_start = conv_test_range_end-2
 
