@@ -146,7 +146,7 @@ for tagname_y in tagnames_y:
 			if group_name in ['l_rexi', 'lg_rexi']:
 				test_type = 'error'
 
-			print(" + test_type: "+str(error))
+			print(" + test_type: "+test_type)
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
 			print(" + error_tolerance_convergence: "+str(error_tolerance_convergence))
 			print(" + error_tolerance_error: "+str(error_tolerance_error))
