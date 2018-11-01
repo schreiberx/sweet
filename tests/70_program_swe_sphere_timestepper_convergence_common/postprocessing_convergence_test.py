@@ -104,6 +104,14 @@ for tagname_y in tagnames_y:
 				conv_test_range_end = 4
 				error_tolerance_convergence = 0.1
 				error_tolerance_rexi = 1e-7
+
+				if 'rexi' in group_name:
+					# Convergence for rexi fracking fast
+					# Be a little bit more tolerant for convergence due to high accuracy
+					error_tolerance_convergence = 0.2
+					conv_test_range_start = 1
+					conv_test_range_end = 5
+
 			else:
 				conv_test_range_start = 0
 				conv_test_range_end = 4
@@ -114,6 +122,8 @@ for tagname_y in tagnames_y:
 					# Convergence for rexi fracking fast
 					# Be a little bit more tolerant for convergence due to high accuracy
 					error_tolerance_convergence = 0.2
+					conv_test_range_start = 1
+					conv_test_range_end = 5
 
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
 			print(" + error_tolerance_convergence: "+str(error_tolerance_convergence))
