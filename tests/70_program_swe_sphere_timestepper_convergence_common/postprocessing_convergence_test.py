@@ -119,7 +119,6 @@ for tagname_y in tagnames_y:
 						# Test only last 2 values for REXI
 						conv_test_range_end = len(group_data['x_values'])
 						conv_test_range_start = conv_test_range_end-3
-						test_type = 'error'
 
 					else:
 						raise Exception("Unsupported convergence_order")
@@ -194,7 +193,8 @@ for tagname_y in tagnames_y:
 					if y > error_tolerance_error:
 						print("Error: "+str(y))
 						if len(sys.argv) <= 1:
-							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_error))
+							raise Exception("Error exceeds tolerance of "+str(error_tolerance_error))
+
 				else:
 					raise Exception("Unknown test type "+test_type)
 
