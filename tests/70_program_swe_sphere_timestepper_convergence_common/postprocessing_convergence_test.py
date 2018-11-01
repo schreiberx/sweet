@@ -110,6 +110,11 @@ for tagname_y in tagnames_y:
 				error_tolerance_convergence = 0.05
 				error_tolerance_rexi = 1e-7
 
+				if 'rexi' in group_name:
+					# Convergence for rexi fracking fast
+					# Be a little bit more tolerant for convergence due to high accuracy
+					error_tolerance_convergence = 0.2
+
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
 			print(" + error_tolerance_convergence: "+str(error_tolerance_convergence))
 			print(" + error_tolerance_rexi: "+str(error_tolerance_rexi))
