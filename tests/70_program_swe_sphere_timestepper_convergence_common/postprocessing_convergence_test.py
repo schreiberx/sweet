@@ -102,6 +102,8 @@ for tagname_y in tagnames_y:
 			# 'convergence', 'error'
 			test_type = 'convergence'
 
+			error_tolerance_convergence = -1
+			error_tolerance_error = -1
 			if 'vort' in tagname_y:
 
 				if 'rexi' in group_name:
@@ -117,9 +119,16 @@ for tagname_y in tagnames_y:
 						# This is already insanely accurate since it's primarily driven by linear parts
 
 						# Test only last 2 values for REXI
-						error_tolerance_convergence = 0.2
-						conv_test_range_end = len(group_data['x_values'])
-						conv_test_range_start = conv_test_range_end-2
+						if group_name.startswith('lg_rexi'):
+							error_tolerance_convergence = 0.2
+							conv_test_range_start = 1
+							# Exclude results which seems to be unstable
+							conv_test_range_end = 5
+						else:
+							error_tolerance_convergence = 0.1
+							# Start later with convergence tests due to very high accuracy
+							conv_test_range_end = 3
+							conv_test_range_start = 6
 
 					else:
 						raise Exception("Unsupported convergence_order")
@@ -127,13 +136,11 @@ for tagname_y in tagnames_y:
 					conv_test_range_start = 0
 					conv_test_range_end = 4
 					error_tolerance_convergence = 0.1
-					error_tolerance_error = 1e-7
 
 			else:
 				conv_test_range_start = 0
 				conv_test_range_end = 4
 				error_tolerance_convergence = 0.05
-				error_tolerance_error = 1e-7
 
 				if 'rexi' in group_name:
 					# Convergence for rexi fracking fast
@@ -145,6 +152,7 @@ for tagname_y in tagnames_y:
 
 			if group_name in ['l_rexi', 'lg_rexi']:
 				test_type = 'error'
+				error_tolerance_error = 1e-7
 
 			print(" + test_type: "+test_type)
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
