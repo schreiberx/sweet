@@ -240,8 +240,14 @@ elif ts_order == 2:
 	# Therefore, we use larger time step sizes to increase the errors
 	# to get errors larger than numerical precision
 	#
-	ref_ts_size = 8
+	# We still want to have a very small time step size for the reference solution
+	# This is in particular important for REXI comparisons with ln2-type tests
+	#
+	ref_ts_size = 8*2
+
+	# Larger minimal time step size
 	timestep_size_min = 64*4
+
 	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
 	jg.runtime.simtime = timestep_size_min*512
@@ -255,16 +261,16 @@ else:
 #
 jg.runtime.rexi_method = 'ci'
 
+# Use reduced number of REXI coefficients for convergence studies
 if ts_order == 1:
 	jg.runtime.rexi_ci_n = 16
 	jg.runtime.rexi_ci_max_real = 1
 	jg.runtime.rexi_ci_max_imag = 1
 
 else:
-	# Use reduced number of REXI coefficients for convergence studies
-	jg.runtime.rexi_ci_n = 16
-	jg.runtime.rexi_ci_max_real = 1
-	jg.runtime.rexi_ci_max_imag = 1
+	jg.runtime.rexi_ci_n = 32
+	jg.runtime.rexi_ci_max_real = 2
+	jg.runtime.rexi_ci_max_imag = 2
 
 
 jg.runtime.rexi_ci_mu = 0

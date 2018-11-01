@@ -122,7 +122,7 @@ for tagname_y in tagnames_y:
 					# Convergence for rexi fracking fast
 					# Be a little bit more tolerant for convergence due to high accuracy
 					error_tolerance_convergence = 0.2
-					conv_test_range_start = 1
+					conv_test_range_start = 2
 					conv_test_range_end = 5
 
 			print(" + range start/end: "+str(conv_test_range_start)+", "+str(conv_test_range_end))
