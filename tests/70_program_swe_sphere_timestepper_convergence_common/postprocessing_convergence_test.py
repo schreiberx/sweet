@@ -179,11 +179,12 @@ for tagname_y in tagnames_y:
 				print("\t"+str(x)+"\t=>\t"+str(y)+"\tconvergence: "+str(conv)+"\terror: "+str(error_convergence))
 
 				if test_type == 'convergence':
-					# Test for convergence
-					if error_convergence > error_tolerance_convergence:
-						print("Error: "+str(error_convergence))
-						if len(sys.argv) <= 1:
-							raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_convergence))
+					# Test for convergence if exists
+					if error_convergence != '-':
+						if error_convergence > error_tolerance_convergence:
+							print("Error: "+str(error_convergence))
+							if len(sys.argv) <= 1:
+								raise Exception("Convergence exceeds tolerance of "+str(error_tolerance_convergence))
 
 				elif test_type == 'error':
 					# Alternate tests instead of convergence check
