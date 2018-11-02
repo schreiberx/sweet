@@ -67,7 +67,7 @@ export -f echo_exec
 
 if [ "#$SWEET_ROOT" != "#" ]; then
 
-	echo_warning "Environment variables already loaded (skipping)"
+	echo_warning "Environment variables already loaded for platform '${SWEET_PLATFORM_ID}'(skipping)"
 	return 2>/dev/null
 	exit
 fi
