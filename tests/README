@@ -1,0 +1,15 @@
+This is the directory with all test routines in SWEET.
+
+All tests are prefixed with a number which determines a certain order in which tests should be executed first.
+
+
+05: The functionality of detecting failure of tests (failure of test) is tested first
+
+10: Compilation of programs is tested next.
+
+20: Some tests for properly working scripts to create jobs
+
+50: Basic functionality of SWEET routines
+
+70: Tests for particular programs realized in SWEET
+
