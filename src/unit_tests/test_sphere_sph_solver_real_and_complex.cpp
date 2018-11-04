@@ -276,7 +276,7 @@ public:
 
 				if (max_error > eps)
 				{
-					double eps_new = eps*1e7;
+					double eps_new = eps*1e8;
 
 					std::cout << "**************************************" << std::endl;
 					std::cout << "* WARNING: ERROR TOO HIGH" << std::endl;
