@@ -1545,7 +1545,7 @@ public:
 
 
 	/**
-	 * Return the maximum absolute value
+	 * Return Linf (maximum absolute value)
 	 */
 	double physical_reduce_max_abs()	const
 	{
@@ -1581,7 +1581,7 @@ public:
 
 
 	/**
-	 * Return the minimum value
+	 * Return the maximal value
 	 */
 	double physical_reduce_max()	const
 	{

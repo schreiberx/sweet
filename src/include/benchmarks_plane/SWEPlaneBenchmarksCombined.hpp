@@ -452,6 +452,53 @@ public:
 			return true;
 		}
 
+
+
+		else if (
+				io_simVars.setup.benchmark_name == "benchmark_id_14" ||
+				io_simVars.setup.benchmark_name == "rotated_steady_state"
+		)
+		{
+			double freq = 10.0;
+
+			double sx = simVars->sim.domain_size[0];
+			double sy = simVars->sim.domain_size[1];
+
+			o_h_pert.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
+					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					io_data = std::cos(2.0*M_PI*freq*(x/sx+y/sy));
+				}
+			);
+
+			o_u.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
+					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					double factor = simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.f0*sy);
+					io_data = factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));
+				}
+			);
+
+			o_v.physical_update_lambda_array_indices(
+				[&](int i, int j, double &io_data)
+				{
+					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
+					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+
+					double factor = -simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.f0*sx);
+					io_data = factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));
+				}
+			);
+
+			return true;
+		}
+
 		printBenchmarkInformation();
 		FatalError(std::string("Benchmark ")+io_simVars.setup.benchmark_name+ " not found (or not availble)");
 

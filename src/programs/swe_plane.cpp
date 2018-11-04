@@ -412,7 +412,7 @@ public:
 		diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
 
 
-		timestep_output();
+		timestep_do_output();
 	}
 
 
@@ -507,7 +507,7 @@ public:
 		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
 			FatalError("Max simulation time exceeded!");
 
-		timestep_output();
+		timestep_do_output();
 	}
 
 
@@ -552,7 +552,7 @@ public:
 
 
 public:
-	bool timestep_output(
+	bool timestep_do_output(
 			std::ostream &o_ostream = std::cout
 	)
 	{
@@ -1511,17 +1511,28 @@ int main(int i_argc, char *i_argv[])
 
 			simulationSWE->compute_errors();
 
-			if (simVars.misc.verbosity > 0)
-			{
-				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
-				std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
-				std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_entrophy_start)/simulationSWE->diagnostics_potential_entrophy_start) << std::endl;
 
-				if (simVars.misc.compute_errors)
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
+			{
+				if (simVars.misc.verbosity > 0)
 				{
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
-					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
+					std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
+					std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
+					std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_entrophy_start)/simulationSWE->diagnostics_potential_entrophy_start) << std::endl;
+
+					if (simVars.misc.compute_errors)
+					{
+						std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
+						std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
+						std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
+					}
+
+					std::cout << "[MULE] error_end_linf_h_pert: " << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
+					std::cout << "[MULE] error_end_linf_u: " << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
+					std::cout << "[MULE] error_end_linf_v: " << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
+					std::cout << std::endl;
 				}
 			}
 

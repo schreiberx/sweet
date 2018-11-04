@@ -368,18 +368,19 @@ public:
 			SphereData diff_vort = prog_vort - anal_solution_vort;
 			SphereData diff_div = prog_div - anal_solution_div;
 
-			double error_phi = diff_phi.physical_reduce_max_abs();
-			double error_vort = diff_vort.physical_reduce_max_abs();
-			double error_div = diff_div.physical_reduce_max_abs();
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
 			{
+				double error_phi = diff_phi.physical_reduce_max_abs();
+				double error_vort = diff_vort.physical_reduce_max_abs();
+				double error_div = diff_div.physical_reduce_max_abs();
+
 				std::cout << "[MULE] errors: ";
 				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
-				std::cout << "\terror_l1_phi=" << error_phi;
-				std::cout << "\terror_l1_vort=" << error_vort;
-				std::cout << "\terror_l1_div=" << error_div;
+				std::cout << "\terror_linf_phi=" << error_phi;
+				std::cout << "\terror_linf_vort=" << error_vort;
+				std::cout << "\terror_linf_div=" << error_div;
 				std::cout << std::endl;
 			}
 		}
