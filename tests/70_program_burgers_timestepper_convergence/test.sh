@@ -21,3 +21,4 @@ $COMMON/postprocessing_pickle.py || exit 1
 $COMMON/postprocessing_convergence_test.py || exit 1
 
 mule.benchmark.cleanup_all || exit 1
+

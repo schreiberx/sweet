@@ -44,11 +44,11 @@ for key, jobs_data in job_groups.items():
 		if abs(float(simtime.replace('simtime=', '')) - job_data['runtime.simtime']) > 1e-10:
 			continue
 
-		error_l1_phi = float(error_split[1].replace('error_l1_phi=', ''))
+		error_linf_phi = float(error_split[1].replace('error_linf_phi=', ''))
 
 		g = 9.80616
 		gh = 29400
-		rel_error_h = error_l1_phi / gh
+		rel_error_h = error_linf_phi / gh
 
 		print(job_data['jobgeneration.job_dirpath']+": rel_error_h = "+str(rel_error_h))
 		errors.append(rel_error_h)
