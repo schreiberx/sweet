@@ -28,8 +28,14 @@ if exitcode == 0:
 	sys.exit(1)
 
 ie.success_hline()
+ie.success_hline()
+ie.success_hline()
+ie.success("")
 ie.success("The benchmark job script was intended to fail!")
 ie.success("Benchmarks successfully finished")
+ie.success("")
+ie.success_hline()
+ie.success_hline()
 ie.success_hline()
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
