@@ -2521,7 +2521,16 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
-		file << "#SWEET_PLANE_PHYSICAL_DATA_ASCII" << std::endl;
+		file << "#SWEET" << std::endl;
+		file << "#FORMAT ASCII" << std::endl;
+		file << "#PRIMITIVE PLANE" << std::endl;
+
+		std::size_t resx = planeDataConfig->physical_res[0];
+		std::size_t resy = planeDataConfig->physical_res[1];
+
+		file << "#SPACE PHYSICAL" << std::endl;
+		file << "#RESX " << resx << std::endl;
+		file << "#RESY " << resy << std::endl;
 
 		std::size_t ymin = 0;
 		if (dimension == 2)
@@ -2529,9 +2538,9 @@ public:
 		else
 			ymin = planeDataConfig->physical_res[1]-1;
 
-		for (int y = (int) planeDataConfig->physical_res[1]-1; y >= (int) ymin; y--)
+		for (int y = (int) resy-1; y >= (int) ymin; y--)
 		{
-			for (std::size_t x = 0; x < planeDataConfig->physical_res[0]; x++)
+			for (std::size_t x = 0; x < resx; x++)
 			{
 				file << p_physical_get(y, x);
 

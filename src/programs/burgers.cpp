@@ -371,20 +371,14 @@ public:
 
 		const char* filename_template = simVars.misc.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
-		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
-
-		/*
-		char tmp[128];
-		strcpy(tmp,i_name);
-		strcat(tmp,"_spec");
-		sprintf(buffer, filename_template, tmp, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
-		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
-		*/
+		i_planeData.file_physical_saveData_ascii(buffer, '\n', 12, 1);
 
 		return buffer;
 	}
 
 
+
+	std::string output_filenames;
 
 public:
 	bool timestep_output(
@@ -404,7 +398,8 @@ public:
 		// Dump data in csv, if requested
 		if (simVars.misc.output_file_name.size() > 0)
 		{
-			write_file(tmp_u, "prog_u");
+			output_filenames = "";
+			output_filenames += write_file(tmp_u, "prog_u");
 			//write_file(tmp_v, "prog_v");
 
 			tmp_u.request_data_spectral();
@@ -1463,6 +1458,9 @@ int main(int i_argc, char *i_argv[])
 			time.stop();
 
 			double seconds = time();
+
+			if (simVars.misc.output_file_name.size() > 0)
+				std::cout << "[MULE] reference_filenames: " << simulationBurgers->output_filenames << std::endl;
 
 			//End of output results
 			std::cout << "Simulation time (seconds): " << seconds << std::endl;

@@ -19,7 +19,11 @@ class PlaneDataPhysical:
 		print("Loading file: "+filename)
 
 		try:
-			data = np.loadtxt(filename, skiprows=0)
+			data = np.loadtxt(
+					filename,
+					skiprows=0,	# Don't skip any data rows
+					ndmin=2		# Generate at least 2 dimensional array
+				)
 		except Exception as e:
 			raise e
 

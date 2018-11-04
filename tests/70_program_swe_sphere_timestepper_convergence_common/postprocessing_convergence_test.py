@@ -164,6 +164,10 @@ for tagname_y in tagnames_y:
 
 			for i in range(len(group_data['meta_values'])):
 				if group_data['meta_values'][i] != group_data['meta_values'][0]:
+					print("FATAL: Different convergence orders in same test")
+					for i in range(len(group_data['meta_values'])):
+						print("order: "+str(group_data['meta_values']))
+
 					raise Exception("FATAL: Different convergence orders in same test")
 
 			prev_value = -1.0

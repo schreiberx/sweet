@@ -147,8 +147,8 @@ public:
 	{
 		reset();
 
-		if (i_simVars.sim.CFL >= 0)
-			FatalError("Only constant time step size supported with Burgers' equation, use negative CFL to set constant time step size");
+//		if (i_simVars.sim.CFL >= 0)
+//			FatalError("Only constant time step size supported with Burgers' equation, use negative CFL to set constant time step size");
 
 		/// Always allocate analytical solution
 		l_direct = new Burgers_Plane_TS_l_direct(i_simVars, i_op);
