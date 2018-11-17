@@ -447,13 +447,15 @@ extern "C"
 
     // get the time step parameters
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
-    
+
+#if 0
     // return immediately if no nonlinear terms
     if (simVars->pde.use_only_linear_divergence == 1)
       {
 	c_sweet_data_setval(o_F1, 0.0);
 	return;
       }
+#endif
 
 
     if (simVars->libpfasst.implicit_coriolis_force) 
