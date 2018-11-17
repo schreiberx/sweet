@@ -41,7 +41,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	o_u_t.physical_set_zero(); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t.physical_set_zero(); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-	if (simVars.pde.use_linear_div == 1) // linear div only
+	if (use_only_linear_divergence) // linear div only
 		o_h_t.physical_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	else
 	{//nonlinear div
@@ -138,7 +138,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		// Calculate term to be interpolated: u+dt*psi_1(dt L)N(U_{0})
 		//Calculate N(U_{0})
 
-		if (simVars.pde.use_linear_div == 0) //Full nonlinear case
+		if (!use_only_linear_divergence) //Full nonlinear case
 		{
 
 			euler_timestep_update_nonlinear(
@@ -197,7 +197,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 
 	//Aditional steps for SL-ETD2RK (it depends on SL-ETD1RK) - only for full nonlinear case
-	if (timestepping_order == 2 && simVars.pde.use_linear_div == 0)
+	if (timestepping_order == 2 && !use_only_linear_divergence)
 	{
 
 		/*
@@ -314,19 +314,22 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
  */
 void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 		//REXI_SimulationVariables &i_rexiSimVars,
-		int i_timestepping_order
+		int i_timestepping_order,
+
+		bool i_use_only_linear_divergence
 )
 {
 	timestepping_order = i_timestepping_order;
+	use_only_linear_divergence = i_use_only_linear_divergence;
 
 	ts_phi0_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
 
-	if (timestepping_order == 1 && simVars.pde.use_linear_div == 0)
+	if (timestepping_order == 1 && !use_only_linear_divergence)
 	{
 		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size);
 		ts_psi1_rexi.setup(simVars.rexi, "psi1", simVars.timecontrol.current_timestep_size);
 	}
-	else if (timestepping_order == 2 && simVars.pde.use_linear_div == 0)
+	else if (timestepping_order == 2 && !use_only_linear_divergence)
 	{
 		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size);
 		ts_phi2_rexi.setup(simVars.rexi, "phi2", simVars.timecontrol.current_timestep_size);
@@ -335,7 +338,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 		ts_psi2_rexi.setup(simVars.rexi, "psi2", simVars.timecontrol.current_timestep_size);
 
 	}
-	else if (timestepping_order == 4 && simVars.pde.use_linear_div == 0)
+	else if (timestepping_order == 4 && !use_only_linear_divergence)
 	{
 		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size*0.5);
 		ts_phi2_rexi.setup(simVars.rexi, "phi2", simVars.timecontrol.current_timestep_size*0.5);

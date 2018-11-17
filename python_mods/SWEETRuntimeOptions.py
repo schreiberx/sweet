@@ -125,12 +125,11 @@ class SWEETRuntimeOptions(InfoError):
 
 		self.use_robert_functions = 1
 
-		self.pde_id = 0
 		self.staggering = 0
 		self.spectralderiv = 1
 		self.viscosity = None
 		self.viscosity_order = None
-		self.uselineardiv = None
+		#self.uselineardiv = None
 		self.uselocalvisc = None
 		self.advection_rotation_angle = None
 		self.advection_velocity = None
@@ -275,8 +274,6 @@ class SWEETRuntimeOptions(InfoError):
 				idstr += '_h'+str("{:010.3f}".format(self.h))
 			if self.f != None:
 				idstr += '_f'+str("{:e}".format(self.f))
-
-			#idstr += '_p'+str(self.pde_id)
 
 			if compileOptions.sphere_spectral_space == 'enable':
 				if self.r != None:
@@ -441,7 +438,6 @@ class SWEETRuntimeOptions(InfoError):
 			else:
 				retval += ' -N '+str(self.phys_res)
 
-		retval += ' --pde-id '+str(self.pde_id)
 		retval += ' --staggering='+str(self.staggering)
 		retval += ' -S '+str(self.spectralderiv)
 
@@ -492,8 +488,8 @@ class SWEETRuntimeOptions(InfoError):
 		if self.floating_point_output_digits >= 0:
 			retval += ' -d '+str(self.floating_point_output_digits)
 
-		if self.uselineardiv != None:
-			retval += ' --use-linear-div='+str(self.uselineardiv)
+		#if self.uselineardiv != None:
+		#	retval += ' --use-only-linear-div='+str(self.uselineardiv)
 
 		if self.uselocalvisc != None:
 			retval += ' --use-local-visc='+str(self.uselocalvisc)

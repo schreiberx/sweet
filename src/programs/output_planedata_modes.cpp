@@ -625,7 +625,7 @@ public:
 	PlaneDataModes()	:
 		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
 	{
-		if (simVars.pde.id == 0)
+		if (simVars.pde.number_of_prognostic_variables == 0)
 		{
 			test_planedata_planedatacomplex_physicalphysical_convert();
 			test_planedata_planedatacomplex_physicalspectral_convert();

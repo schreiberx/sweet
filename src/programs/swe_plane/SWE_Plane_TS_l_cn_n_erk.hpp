@@ -28,6 +28,8 @@ class SWE_Plane_TS_l_cn_n_erk	: public SWE_Plane_TS_interface
 	int timestepping_order_linear;
 	int timestepping_order_nonlinear;
 
+	bool use_only_linear_divergence;
+
 	PlaneDataTimesteppingExplicitRK timestepping_rk;
 	SWE_Plane_TS_l_cn ts_l_cn;
 
@@ -55,7 +57,8 @@ public:
 	void setup(
 			int i_l_order,
 			int i_n_order,
-			double i_crank_nicolson_damping_factor
+			double i_crank_nicolson_damping_factor,
+			bool use_only_linear_divergence
 	);
 
 	void run_timestep(

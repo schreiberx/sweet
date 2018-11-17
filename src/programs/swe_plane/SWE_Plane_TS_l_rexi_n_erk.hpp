@@ -26,6 +26,8 @@ class SWE_Plane_TS_l_rexi_n_erk	: public SWE_Plane_TS_interface
 
 	int timestepping_order_nonlinear;
 
+	bool use_only_linear_divergence;
+
 	PlaneDataTimesteppingExplicitRK timestepping_rk;
 	SWE_Plane_TS_l_rexi ts_l_rexi;
 
@@ -53,7 +55,9 @@ public:
 	void setup(
 			REXI_SimulationVariables &i_rexi,
 
-			int i_nonlinear_order
+			int i_nonlinear_order,
+
+			bool use_only_linear_divergence
 	);
 
 	void run_timestep(

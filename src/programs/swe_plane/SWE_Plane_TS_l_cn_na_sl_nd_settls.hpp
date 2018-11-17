@@ -30,7 +30,7 @@ class SWE_Plane_TS_l_cn_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
-	//int with_linear_div_only;
+	bool use_only_linear_divergence;
 
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
@@ -50,7 +50,7 @@ public:
 		);
 
 	void setup(
-			//int i_with_nonlinear
+			bool i_use_only_linear_divergence
 	);
 
 	void run_timestep(

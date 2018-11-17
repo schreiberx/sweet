@@ -9,12 +9,8 @@
  *					which was also written by Pedro Peixoto
  */
 
+
 #include "../swe_plane/SWE_Plane_TS_l_irk_n_erk.hpp"
-
-
-
-
-
 
 
 /*
@@ -40,7 +36,7 @@ void SWE_Plane_TS_l_irk_n_erk::euler_timestep_update_nonlinear(
 	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
-	if (simVars.pde.use_linear_div == 1) //only nonlinear advection left to solve
+	if (use_only_linear_divergence) //only nonlinear advection left to solve
 		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
 	else //full nonlinear equation on h
 		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
@@ -94,10 +90,14 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
  */
 void SWE_Plane_TS_l_irk_n_erk::setup(
 		int i_l_order,
-		int i_n_order
+		int i_n_order,
+
+		bool i_use_only_linear_divergence
 )
 {
 	timestepping_order_linear = i_l_order;
+	use_only_linear_divergence = i_use_only_linear_divergence;
+
 	ts_l_irk.setup(timestepping_order_linear);
 
 	if (simVars.disc.use_staggering)
@@ -120,7 +120,7 @@ SWE_Plane_TS_l_irk_n_erk::SWE_Plane_TS_l_irk_n_erk(
 		op(i_op),
 		ts_l_irk(simVars, op)
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
+	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, false);
 	ts_l_irk.setup(simVars.disc.timestepping_order);
 }
 

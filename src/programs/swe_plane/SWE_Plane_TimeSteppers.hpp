@@ -157,19 +157,46 @@ public:
 		/// Always allocate analytical solution
 		l_direct = new SWE_Plane_TS_l_direct(i_simVars, i_op);
 
+		if (i_timestepping_method == "l_ld_na_erk")
+		{
+			ln_erk = new SWE_Plane_TS_ln_erk(i_simVars, i_op);
+			ln_erk->setup(i_timestepping_order, true);
+
+			master = &(SWE_Plane_TS_interface&)*ln_erk;
+
+			linear_only = false;
+		}
 		if (i_timestepping_method == "ln_erk")
 		{
 			ln_erk = new SWE_Plane_TS_ln_erk(i_simVars, i_op);
-			ln_erk->setup(i_timestepping_order);
+			ln_erk->setup(i_timestepping_order, false);
 
 			master = &(SWE_Plane_TS_interface&)*ln_erk;
+
+			linear_only = false;
+		}
+		else if (i_timestepping_method == "l_rexi_ld_na_etdrk")
+		{
+			l_rexi_n_etdrk = new SWE_Plane_TS_l_rexi_n_etdrk(i_simVars, i_op);
+			l_rexi_n_etdrk->setup(
+					i_simVars.rexi,
+					i_simVars.disc.timestepping_order,
+					true
+				);
+
+			master = &(SWE_Plane_TS_interface&)*l_rexi_n_etdrk;
 
 			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_rexi_n_etdrk")
 		{
 			l_rexi_n_etdrk = new SWE_Plane_TS_l_rexi_n_etdrk(i_simVars, i_op);
-			l_rexi_n_etdrk->setup(i_simVars.rexi, i_simVars.disc.timestepping_order);
+			l_rexi_n_etdrk->setup(
+					i_simVars.rexi,
+					i_simVars.disc.timestepping_order,
+					false
+				);
+
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_n_etdrk;
 
@@ -195,21 +222,56 @@ public:
 
 			linear_only = true;
 		}
+		else if (i_timestepping_method == "l_erk_na_nd2_erk")
+		{
+			/*
+			 * Special case which treats div(u*h) as u.div(h)
+			 */
+			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
+			l_erk_n_erk->setup(i_timestepping_order, i_timestepping_order2, true);
+
+			master = &(SWE_Plane_TS_interface&)*l_erk_n_erk;
+		}
 		else if (i_timestepping_method == "l_erk_n_erk")
 		{
-
 			l_erk_n_erk = new SWE_Plane_TS_l_erk_n_erk(i_simVars, i_op);
 			l_erk_n_erk->setup(i_timestepping_order, i_timestepping_order2);
 
 			master = &(SWE_Plane_TS_interface&)*l_erk_n_erk;
 		}
+		else if (i_timestepping_method == "l_cn_na_nd2_erk")
+		{
+			/*
+			 * Special case which treats div(u*h) as u.div(h)
+			 */
+			l_cn_n_erk = new SWE_Plane_TS_l_cn_n_erk(i_simVars, i_op);
+			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter, true);
+
+			master = &(SWE_Plane_TS_interface&)*l_cn_n_erk;
+
+			linear_only = false;
+		}
 		else if (i_timestepping_method == "l_cn_n_erk")
 		{
 
 			l_cn_n_erk = new SWE_Plane_TS_l_cn_n_erk(i_simVars, i_op);
-			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter);
+			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter, false);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_n_erk;
+
+			linear_only = false;
+		}
+		else if (i_timestepping_method == "l_rexi_ld_na_erk")
+		{
+
+			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
+			l_rexi_n_erk->setup(
+					i_simVars.rexi,
+					i_timestepping_order2,
+					true
+				);
+
+			master = &(SWE_Plane_TS_interface&)*l_rexi_n_erk;
 
 			linear_only = false;
 		}
@@ -219,7 +281,8 @@ public:
 			l_rexi_n_erk = new SWE_Plane_TS_l_rexi_n_erk(i_simVars, i_op);
 			l_rexi_n_erk->setup(
 					i_simVars.rexi,
-					i_timestepping_order2
+					i_timestepping_order2,
+					false
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_n_erk;
@@ -265,23 +328,51 @@ public:
 
 			linear_only = true;
 		}
+		else if (i_timestepping_method == "l_rexi_na_sl_ld_settls")
+		{
+
+			l_rexi_na_sl_nd_settls = new SWE_Plane_TS_l_rexi_na_sl_nd_settls(i_simVars, i_op);
+			l_rexi_na_sl_nd_settls->setup(true);
+
+			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_settls;
+
+			linear_only = false;
+		}
 		else if (i_timestepping_method == "l_rexi_na_sl_nd_settls")
 		{
 
 			l_rexi_na_sl_nd_settls = new SWE_Plane_TS_l_rexi_na_sl_nd_settls(i_simVars, i_op);
-
-			l_rexi_na_sl_nd_settls->setup( );
+			l_rexi_na_sl_nd_settls->setup(false);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_settls;
+
+			linear_only = false;
+		}
+		else if (i_timestepping_method == "l_rexi_na_sl_ld_etdrk")
+		{
+			l_rexi_na_sl_nd_etdrk = new SWE_Plane_TS_l_rexi_na_sl_nd_etdrk(i_simVars, i_op);
+			l_rexi_na_sl_nd_etdrk->setup(i_simVars.disc.timestepping_order, true);
+
+			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_etdrk;
 
 			linear_only = false;
 		}
 		else if (i_timestepping_method == "l_rexi_na_sl_nd_etdrk")
 		{
 			l_rexi_na_sl_nd_etdrk = new SWE_Plane_TS_l_rexi_na_sl_nd_etdrk(i_simVars, i_op);
-			l_rexi_na_sl_nd_etdrk->setup(i_simVars.disc.timestepping_order);
+			l_rexi_na_sl_nd_etdrk->setup(i_simVars.disc.timestepping_order, false);
 
 			master = &(SWE_Plane_TS_interface&)*l_rexi_na_sl_nd_etdrk;
+
+			linear_only = false;
+		}
+		else if (i_timestepping_method == "l_cn_na_sl_ld2_settls")
+		{
+			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
+
+			l_cn_na_sl_nd_settls->setup(true);
+
+			master = &(SWE_Plane_TS_interface&)*l_cn_na_sl_nd_settls;
 
 			linear_only = false;
 		}
@@ -290,9 +381,24 @@ public:
 
 			l_cn_na_sl_nd_settls = new SWE_Plane_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
 
-			l_cn_na_sl_nd_settls->setup();
+			l_cn_na_sl_nd_settls->setup(false);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_na_sl_nd_settls;
+
+			linear_only = false;
+		}
+		else if (i_timestepping_method == "l_irk_ld_n_erk")
+		{
+
+			l_irk_n_erk = new SWE_Plane_TS_l_irk_n_erk(i_simVars, i_op);
+
+			l_irk_n_erk->setup(
+					i_timestepping_order,
+					i_timestepping_order2,
+					true
+				);
+
+			master = &(SWE_Plane_TS_interface&)*l_irk_n_erk;
 
 			linear_only = false;
 		}
@@ -303,7 +409,8 @@ public:
 
 			l_irk_n_erk->setup(
 					i_timestepping_order,
-					i_timestepping_order2
+					i_timestepping_order2,
+					false
 				);
 
 			master = &(SWE_Plane_TS_interface&)*l_irk_n_erk;

@@ -124,7 +124,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
 
-	if (simVars.pde.use_linear_div == 0) //full nonlinear case
+	if (!use_only_linear_divergence) //full nonlinear case
 	{
 		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
 		PlaneData nonlin(io_h.planeDataConfig);
@@ -180,8 +180,11 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup()
+void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
+		bool i_use_only_linear_divergence
+)
 {
+	use_only_linear_divergence = i_use_only_linear_divergence;
 
 	if (simVars.disc.use_staggering)
 		FatalError("SWE_Plane_TS_l_cn_na_sl_nd_settls: Staggering not supported for l_cn_na_sl_nd_settls");
@@ -229,18 +232,18 @@ SWE_Plane_TS_l_cn_na_sl_nd_settls::SWE_Plane_TS_l_cn_na_sl_nd_settls(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
-				simVars(i_simVars),
-				op(i_op),
+		simVars(i_simVars),
+		op(i_op),
 
-				h_prev(i_op.planeDataConfig),
-				u_prev(i_op.planeDataConfig),
-				v_prev(i_op.planeDataConfig),
+		h_prev(i_op.planeDataConfig),
+		u_prev(i_op.planeDataConfig),
+		v_prev(i_op.planeDataConfig),
 
-				posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-				posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+		posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
+		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-				posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-				posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
 {
 }
 

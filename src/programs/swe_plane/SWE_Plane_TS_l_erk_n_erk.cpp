@@ -30,11 +30,11 @@
  */
 
 void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
-		const PlaneData &i_h,	///< prognostic variables
+		const PlaneData &i_h_pert,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
+		PlaneData &o_h_pert_t,	///< time updates
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
@@ -44,24 +44,24 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 	/*
 	 * linearized non-conservative (advective) formulation:
 	 *
-	 * h_t = -h0*u_x - h0*v_ym
+	 * h_pert_t = -h0*u_x - h0*v_ym
 	 * u_t = -g * h_x + f*v
 	 * v_t = -g * h_y - f*u
 	 */
-	o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
-	o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
-	o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
+	o_h_pert_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
+	o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h_pert) + simVars.sim.f0*i_v;
+	o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h_pert) - simVars.sim.f0*i_u;
 
 }
 
 
 
 void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
-		const PlaneData &i_h,	///< prognostic variables
+		const PlaneData &i_h_pert,	///< prognostic variables
 		const PlaneData &i_u,	///< prognostic variables
 		const PlaneData &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
+		PlaneData &o_h_pert_t,	///< time updates
 		PlaneData &o_u_t,	///< time updates
 		PlaneData &o_v_t,	///< time updates
 
@@ -78,16 +78,17 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
-	if (simVars.pde.use_linear_div == 1) //only nonlinear advection left to solve
-		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+
+	if (use_only_linear_divergence) //only nonlinear advection left to solve
+		o_h_pert_t = - (i_u*op.diff_c_x(i_h_pert) + i_v*op.diff_c_y(i_h_pert));
 	else //full nonlinear equation on h
-		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_pert_t = -op.diff_c_x(i_u*i_h_pert) - op.diff_c_y(i_v*i_h_pert);
 }
 
 
 
 void SWE_Plane_TS_l_erk_n_erk::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
+		PlaneData &io_h_pert,	///< prognostic variables
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
@@ -103,7 +104,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		timestepping_rk_linear.run_timestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
-				io_h, io_u, io_v,
+				io_h_pert, io_u, io_v,
 				i_dt,
 				1,
 				i_simulation_timestamp
@@ -112,7 +113,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		timestepping_rk_nonlinear.run_timestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
-				io_h, io_u, io_v,
+				io_h_pert, io_u, io_v,
 				i_dt,
 				1,
 				i_simulation_timestamp
@@ -124,7 +125,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		timestepping_rk_linear.run_timestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
-				io_h, io_u, io_v,
+				io_h_pert, io_u, io_v,
 				i_dt*0.5,
 				2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
@@ -134,7 +135,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		timestepping_rk_nonlinear.run_timestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
-				io_h, io_u, io_v,
+				io_h_pert, io_u, io_v,
 				i_dt,
 				2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
@@ -144,7 +145,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 		timestepping_rk_linear.run_timestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
-				io_h, io_u, io_v,
+				io_h_pert, io_u, io_v,
 				i_dt*0.5,
 				2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
 				i_simulation_timestamp
@@ -165,11 +166,13 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
  */
 void SWE_Plane_TS_l_erk_n_erk::setup(
 		int i_order,	///< order of RK time stepping method
-		int i_order2	///< order of RK time stepping method
+		int i_order2,	///< order of RK time stepping method
+		bool i_use_only_linear_divergence
 )
 {
 	timestepping_order = i_order;
 	timestepping_order2 = i_order2;
+	use_only_linear_divergence = i_use_only_linear_divergence;
 
 	if (timestepping_order != timestepping_order2)
 		FatalError("TODO: Currently, both time stepping orders (1 and 2) have to match!");
@@ -190,7 +193,7 @@ SWE_Plane_TS_l_erk_n_erk::SWE_Plane_TS_l_erk_n_erk(
 		simVars(i_simVars),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
+	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, false);
 }
 
 

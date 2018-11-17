@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_IRK_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_IRK_HPP_
+#ifndef SRC_PROGRAMS_XX_SWE_PLANE_REXI_SWE_PLANE_TS_L_IRK_HPP_
+#define SRC_PROGRAMS_XX_SWE_PLANE_REXI_SWE_PLANE_TS_L_IRK_HPP_
 
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>

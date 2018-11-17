@@ -41,10 +41,13 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-	if (simVars.pde.use_linear_div == 1)
+	if (use_only_linear_divergence)
+	{
 		//only nonlinear advection left to solve
 		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+	}
 	else //full nonlinear equation on h
+	{
 		if(simVars.misc.use_local_visc != 0)
 		{
 			//solve nonlinear divergence
@@ -59,8 +62,10 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 			o_h_t = o_h_t - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
 		}
 		else
+		{
 			o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-
+		}
+	}
 
 }
 
@@ -405,7 +410,8 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
  */
 void SWE_Plane_TS_l_rexi_n_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
-		int i_timestepping_order
+		int i_timestepping_order,
+		bool i_use_only_linear_divergence
 )
 {
 	timestepping_order = i_timestepping_order;

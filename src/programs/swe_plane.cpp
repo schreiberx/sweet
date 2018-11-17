@@ -8,6 +8,7 @@
 #endif
 
 #ifndef SWEET_MPI
+	// just for programming purpose
 	#define  SWEET_MPI 1
 #endif
 
@@ -456,6 +457,7 @@ public:
 								prog_h_pert,
 								prog_u,
 								prog_v,
+								3,
 								simVars,
 								this,
 								&SimulationInstance::run_timestep

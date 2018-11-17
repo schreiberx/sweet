@@ -25,6 +25,7 @@ class SWE_Plane_TS_l_erk_n_erk	: public SWE_Plane_TS_interface
 
 	int timestepping_order;
 	int timestepping_order2;
+	bool use_only_linear_divergence;
 
 	PlaneDataTimesteppingExplicitRK timestepping_rk_linear;
 	PlaneDataTimesteppingExplicitRK timestepping_rk_nonlinear;
@@ -65,13 +66,14 @@ public:
 
 	void setup(
 			int i_order,	///< order of RK time stepping method
-			int i_order2
+			int i_order2,
+			bool i_use_only_linear_divergence = false
 	);
 
 	void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData &io_h_pert,	///< prognostic variables
+			PlaneData &io_u,		///< prognostic variables
+			PlaneData &io_v,		///< prognostic variables
 
 			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1

@@ -449,7 +449,7 @@ extern "C"
     SimulationVariables* simVars = i_ctx->get_simulation_variables();
     
     // return immediately if no nonlinear terms
-    if (simVars->pde.use_linear_div == 1)
+    if (simVars->pde.use_only_linear_divergence == 1)
       {
 	c_sweet_data_setval(o_F1, 0.0);
 	return;

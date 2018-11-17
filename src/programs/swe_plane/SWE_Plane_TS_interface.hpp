@@ -18,7 +18,7 @@ class SWE_Plane_TS_interface
 {
 public:
 	virtual void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
+			PlaneData &io_h_pert,	///< prognostic variables
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 

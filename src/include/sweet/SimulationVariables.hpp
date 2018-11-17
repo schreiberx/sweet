@@ -134,45 +134,6 @@ public:
 
 
 
-public:
-	/**
-	 * Information on Partial Differential Equation
-	 */
-	struct PDE
-	{
-		/*
-		 * ID of PDE to use
-		 */
-		int id = 0; //SWE is default
-
-		/// Use non-linear equations for simulations
-		///int use_nonlinear_equations = 1;
-		int use_linear_div = 0;
-
-
-
-		void outputConfig()
-		{
-			std::cout << std::endl;
-			std::cout << "PDE:" << std::endl;
-			std::cout << " + id: " << id << std::endl;
-			std::cout << " + use-linear-div: " << use_linear_div << std::endl;
-			std::cout << std::endl;
-		}
-
-
-		void outputProgParams()
-		{
-			std::cout << std::endl;
-			std::cout << "Partial differential equation:" << std::endl;
-			std::cout << "	--pde-id [0/1]		    PDE to solve (0: SWE, 1: advection)" << std::endl;
-			std::cout << "	--use-linear-div [0/1]	Nonlinear equations will use linear divergence of mass equations, default:0" << std::endl;
-
-			std::cout << "" << std::endl;
-		}
-	} pde;
-
-
 
 public:
 	/**
@@ -699,7 +660,6 @@ public:
 
 		rexi.outputConfig();
 		swe_polvani.outputConfig();
-		pde.outputConfig();
 		misc.outputConfig();
 		diag.outputConfig();
 
@@ -920,13 +880,6 @@ public:
         long_options[next_free_program_option] = {"reuse-plans", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        // PDE
-        long_options[next_free_program_option] = {"use-linear-div", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"pde-id", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
         // DISC
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
@@ -1085,8 +1038,6 @@ public:
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	misc.use_local_visc = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	misc.reuse_spectral_transformation_plans = atoi(optarg);			continue;	}
-					c++;		if (i == c)	{	pde.use_linear_div = atoi(optarg);			continue;	}
-					c++;		if (i == c)	{	pde.id = atoi(optarg);								continue;	}
 
 					c++;		if (i == c)	{	disc.timestepping_method = optarg;					continue;	}
 					c++;		if (i == c)	{	disc.timestepping_order = atoi(optarg);				continue;	}
@@ -1311,7 +1262,6 @@ public:
 			default:
 				sim.outputProgParams();
 				setup.outputProgParams();
-				pde.outputProgParams();
 				disc.outputProgParams();
 
 				std::cout << "" << std::endl;

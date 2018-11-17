@@ -49,7 +49,7 @@ void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
-	if (simVars.pde.use_linear_div == 1) //only nonlinear advection left to solve
+	if (use_only_linear_divergence) //only nonlinear advection left to solve
 		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
 	else //full nonlinear equation on h
 		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
@@ -102,12 +102,14 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 void SWE_Plane_TS_l_cn_n_erk::setup(
 		int i_l_order,
 		int i_n_order,
-		double i_crank_nicolson_damping_factor
+		double i_crank_nicolson_damping_factor,
+		bool i_use_only_linear_divergence
 )
 {
 	timestepping_order_linear = i_l_order;
 	timestepping_order_nonlinear = i_n_order;
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
+	use_only_linear_divergence = i_use_only_linear_divergence;
 
 	if (simVars.disc.use_staggering)
 		FatalError("SWE_Plane_TS_l_cn_n_erk: Staggering not supported for l_cn_n_erk");
@@ -133,7 +135,7 @@ SWE_Plane_TS_l_cn_n_erk::SWE_Plane_TS_l_cn_n_erk(
 		op(i_op),
 		ts_l_cn(simVars, op)
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, simVars.disc.crank_nicolson_filter);
+	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, simVars.disc.crank_nicolson_filter, false);
 }
 
 

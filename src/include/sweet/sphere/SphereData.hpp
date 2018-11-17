@@ -967,6 +967,33 @@ public:
 		return spectral_space_data[sphereDataConfig->getArrayIndexByModes(i_n, i_m)];
 	}
 
+	const void spectral_set(
+			int i_n,
+			int i_m,
+			const std::complex<double> &i_data
+	)	const
+	{
+#if SWEET_DEBUG
+		assert(spectral_space_data_valid);
+
+		if (i_n < 0 ||  i_m < 0)
+			FatalError("Out of boundary a");
+
+		if (i_n > sphereDataConfig->spectral_modes_n_max)
+			FatalError("Out of boundary b");
+
+		if (i_m > sphereDataConfig->spectral_modes_m_max)
+			FatalError("Out of boundary c");
+
+		if (i_m > i_n)
+			FatalError("Out of boundary d");
+
+		assert (i_m <= sphereDataConfig->spectral_modes_m_max);
+#endif
+
+		spectral_space_data[sphereDataConfig->getArrayIndexByModes(i_n, i_m)] = i_data;
+	}
+
 
 	double p_physical_get(
 			int i_lon,
@@ -1621,7 +1648,7 @@ public:
 
 
 	void spectral_print(
-			int i_precision = 20
+			int i_precision = 16
 	)	const
 	{
 		request_data_spectral();

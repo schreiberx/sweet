@@ -26,6 +26,8 @@ class SWE_Plane_TS_ln_erk	: public SWE_Plane_TS_interface
 	int timestepping_order;
 	PlaneDataTimesteppingExplicitRK timestepping_rk;
 
+	bool use_only_linear_divergence;
+
 private:
 	void euler_timestep_update(
 			const PlaneData &i_h,	///< prognostic variables
@@ -46,7 +48,8 @@ public:
 		);
 
 	void setup(
-			int i_order	///< order of RK time stepping method
+			int i_order,	///< order of RK time stepping method
+			bool use_only_linear_divergence
 	);
 
 	void run_timestep(

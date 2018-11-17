@@ -30,6 +30,7 @@ public:
 			PlaneData &io_prog_h_pert, // h: surface height (perturbation)
 			PlaneData &io_prog_u, // u: velocity in x-direction
 			PlaneData &io_prog_v, // v: velocity in y-direction
+			int number_of_prognostic_variables,
 			SimulationVariables &i_simVars, // Simulation variables
 			TCallbackClass *i_class,
 			void(TCallbackClass::* const i_run_timestep_method)(void)
@@ -118,7 +119,7 @@ public:
 
 			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
 
-			int max_prog_id = 3;
+			int number_of_prognostic_variables = 3;
 			//The basic state is with zero in all variables
 			// The only non zero variable in the basic state is the total height
 			//    for which the constant is added within run_timestep()
@@ -153,14 +154,14 @@ public:
 					//std::cout << "Mode (i,j)= (" << i << " , " << j <<")"<< std::endl;
 
 
-					for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
+					for (int outer_prog_id = 0; outer_prog_id < number_of_prognostic_variables; outer_prog_id++)
 					{
 
 						// reset time control
 						i_simVars.timecontrol.current_timestep_nr = 0;
 						i_simVars.timecontrol.current_simulation_time = 0;
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode via real coefficient
@@ -185,10 +186,10 @@ public:
 						val = val - 1.0; //subtract U(0) from mode
 						prog[outer_prog_id]->p_spectral_set(j, i, val);
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 							(*prog[inner_prog_id]) /= eps;
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							A(inner_prog_id,outer_prog_id)=prog[inner_prog_id]->p_spectral_get(j, i);;
 						}
@@ -301,18 +302,22 @@ public:
 			 *
 			 * Advection e.g. has only one
 			 */
-			int max_prog_id = -1;
-			if (i_simVars.pde.id == 0 || i_simVars.pde.id == 1)
+			if (number_of_prognostic_variables <= 0)
+				FatalError("simVars.pde.number_of_prognostic_variables must be set!");
+
+			if (number_of_prognostic_variables == 3)
 			{
-				max_prog_id = 3;
 				io_prog_h_pert.physical_set_zero();
 				io_prog_u.physical_set_zero();
 				io_prog_v.physical_set_zero();
 			}
+			else if (number_of_prognostic_variables == 1)
+			{
+				io_prog_h_pert.physical_set_zero();
+			}
 			else
 			{
-				max_prog_id = 1;
-				io_prog_h_pert.physical_set_zero();
+				FatalError("Not yet supported");
 			}
 
 #if 0
@@ -367,7 +372,7 @@ public:
 
 
 			// iterate over all prognostic variables
-			for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
+			for (int outer_prog_id = 0; outer_prog_id < number_of_prognostic_variables; outer_prog_id++)
 			{
 				if (i_simVars.disc.normal_mode_analysis_generation == 1 || i_simVars.disc.normal_mode_analysis_generation == 11)
 				{
@@ -380,7 +385,7 @@ public:
 
 						std::cout << "." << std::flush;
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 							prog[inner_prog_id]->physical_set_zero();
 
 						// activate mode
@@ -402,17 +407,17 @@ public:
 							prog[outer_prog_id]->request_data_physical();
 							prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
 
-							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
 						}
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							prog[inner_prog_id]->request_data_physical();
 							for (std::size_t k = 0; k < planeDataConfig->physical_array_data_number_of_elements; k++)
 							{
 								file << prog[inner_prog_id]->physical_space_data[k];
-								if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->physical_array_data_number_of_elements-1)
+								if (inner_prog_id != number_of_prognostic_variables-1 || k != planeDataConfig->physical_array_data_number_of_elements-1)
 									file << "\t";
 								else
 									file << std::endl;
@@ -441,7 +446,7 @@ public:
 
 								std::cout << "." << std::flush;
 
-								for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+								for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 									prog[inner_prog_id]->spectral_set_zero();
 
 								// activate mode via real coefficient
@@ -465,12 +470,12 @@ public:
 									val = val - 1.0;
 									prog[outer_prog_id]->p_spectral_set(j, i, val);
 
-									for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+									for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 										(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
 								}
 
 
-								for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+								for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								{
 									prog[inner_prog_id]->request_data_spectral();
 
@@ -492,7 +497,7 @@ public:
 								}
 
 
-								for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+								for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								{
 									/*
 									 * IMAG
@@ -506,7 +511,7 @@ public:
 											{
 												file << prog[inner_prog_id]->p_spectral_get(j, i).imag();
 
-												if (inner_prog_id != max_prog_id-1 || c != specmodes-1)
+												if (inner_prog_id != number_of_prognostic_variables-1 || c != specmodes-1)
 													file << "\t";
 												else
 													file << std::endl;
@@ -538,7 +543,7 @@ public:
 
 						std::cout << "." << std::flush;
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 							prog_cplx[inner_prog_id]->spectral_set_zero();
 
 						// activate mode via real coefficient
@@ -546,7 +551,7 @@ public:
 						prog_cplx[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
 						// convert PlaneDataComplex to PlaneData
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							*prog[inner_prog_id] = Convert_PlaneDataComplex_To_PlaneData::physical_convert(*prog_cplx[inner_prog_id]);
 							prog[inner_prog_id]->spectral_zeroAliasingModes();
@@ -558,7 +563,7 @@ public:
 						 */
 						(i_class->*i_run_timestep_method)();
 
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							prog[inner_prog_id]->spectral_zeroAliasingModes();
 #warning "update this physical_convert maybe to spectral_convert"
@@ -577,13 +582,13 @@ public:
 							prog_cplx[outer_prog_id]->request_data_spectral();
 							prog_cplx[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
-							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+							for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								prog_cplx[inner_prog_id]->operator*=(1.0/i_simVars.timecontrol.current_timestep_size);
 						}
 
 
 						// convert PlaneDataComplex to PlaneData
-						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
+						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							prog_cplx[inner_prog_id]->request_data_spectral();
 
@@ -603,7 +608,7 @@ public:
 							{
 								file << prog_cplx[inner_prog_id]->spectral_space_data[k].imag();
 
-								if (inner_prog_id != max_prog_id-1 || k != planeDataConfig->spectral_complex_array_data_number_of_elements-1)
+								if (inner_prog_id != number_of_prognostic_variables-1 || k != planeDataConfig->spectral_complex_array_data_number_of_elements-1)
 									file << "\t";
 								else
 									file << std::endl;

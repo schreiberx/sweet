@@ -88,7 +88,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	//Original more stable scheme
 
 	//Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
-	if (simVars.pde.use_linear_div == 0) // Full nonlinear case
+	if (!use_only_linear_divergence) // Full nonlinear case
 	{
 		//FatalError("Not yet tested");
 
@@ -139,7 +139,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 
 
 	// Add nonlinearity in h
-	if (simVars.pde.use_linear_div == 0) // Full nonlinear case
+	if (!use_only_linear_divergence) // Full nonlinear case
 	{
 		h = h + 0.5 * dt * hdiv;
 	}
@@ -180,10 +180,11 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
-		//REXI_SimulationVariables &i_rexi,
-		//int i_use_linear_div
+		bool i_use_only_linear_divergence
 )
 {
+	use_only_linear_divergence = i_use_only_linear_divergence;
+
 	ts_l_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
 
 	if (simVars.disc.use_staggering)

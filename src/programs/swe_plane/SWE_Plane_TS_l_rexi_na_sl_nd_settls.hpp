@@ -47,6 +47,8 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
 
+	bool use_only_linear_divergence;
+
 public:
 	SWE_Plane_TS_l_rexi_na_sl_nd_settls(
 			SimulationVariables &i_simVars,
@@ -56,6 +58,7 @@ public:
 	void setup(
 			//REXI_SimulationVariables &i_rexi,
 			//int i_with_nonlinear
+			bool use_only_linear_divergence
 	);
 
 	void run_timestep(

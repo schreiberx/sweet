@@ -34,6 +34,7 @@ class SWE_Plane_TS_l_rexi_n_etdrk	: public SWE_Plane_TS_interface
 	SWE_Plane_TS_l_rexi ts_ups3_rexi;
 
 	int timestepping_order;
+	bool use_only_linear_divergence;
 
 
 public:
@@ -44,7 +45,8 @@ public:
 
 	void setup(
 			REXI_SimulationVariables &i_rexi,
-			int i_timestepping_order
+			int i_timestepping_order,
+			bool i_use_only_linear_divergence
 	);
 
 	void euler_timestep_update_nonlinear(
