@@ -555,7 +555,7 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
-		if (simVars.disc.normal_mode_analysis_generation > 0)
+		if (simVars.misc.normal_mode_analysis_generation > 0)
 			return false;
 
 		// output each time step
@@ -1468,7 +1468,7 @@ int main(int i_argc, char *i_argv[])
 			time.start();
 
 
-			if (simVars.disc.normal_mode_analysis_generation > 0)
+			if (simVars.misc.normal_mode_analysis_generation > 0)
 			{
 				simulationSWE->normal_mode_analysis();
 			}

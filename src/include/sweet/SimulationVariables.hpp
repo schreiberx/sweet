@@ -442,13 +442,6 @@ public:
 		/// Order of 2nd time stepping which might be used
 		int timestepping_order2 = -1;
 
-		/*
-		 * Do a normal mode analysis, see
-		 * Hillary Weller, John Thuburn, Collin J. Cotter,
-		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
-		 */
-		int normal_mode_analysis_generation = 0;
-
 
 		void outputConfig()
 		{
@@ -463,7 +456,6 @@ public:
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_leapfrog_robert_asselin_filter: " << timestepping_leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + timestepping_crank_nicolson_filter: " << timestepping_crank_nicolson_filter << std::endl;
-			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 			std::cout << " + plane_dealiasing (compile time): " <<
 		#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 					1
@@ -542,6 +534,7 @@ public:
 			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
 			std::cout << " + use_local_visc: " << use_local_visc << std::endl;
 			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
+			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -589,6 +582,13 @@ public:
 
 		/// Load / Save plans for SHTNS (useful for reproducibility)
 		int reuse_spectral_transformation_plans = -1;
+
+		/*
+		 * Do a normal mode analysis, see
+		 * Hillary Weller, John Thuburn, Collin J. Cotter,
+		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+		 */
+		int normal_mode_analysis_generation = 0;
 
 	} misc;
 
@@ -999,7 +999,7 @@ public:
 					c++;		if (i == c)	{	disc.timestepping_order = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	disc.timestepping_order2 = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	disc.timestepping_leapfrog_robert_asselin_filter = atof(optarg);	continue;	}
-					c++;		if (i == c)	{	disc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
+					c++;		if (i == c)	{	misc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	disc.timestepping_crank_nicolson_filter = atof(optarg);			continue;	}
 					c++;		if (i == c)	{	disc.space_grid_use_c_staggering = atof(optarg);					continue;	}
 

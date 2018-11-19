@@ -50,7 +50,7 @@ public:
 		 *
 		 */
 
-		if (i_simVars.disc.normal_mode_analysis_generation == 4)
+		if (i_simVars.misc.normal_mode_analysis_generation == 4)
 		{
 #if SWEET_EIGEN
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -108,7 +108,7 @@ public:
 
 			file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 			file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
-			file << "# normalmodegeneration " << i_simVars.disc.normal_mode_analysis_generation << std::endl;
+			file << "# normalmodegeneration " << i_simVars.misc.normal_mode_analysis_generation << std::endl;
 			file << "# antialiasing ";
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 			file << 1;
@@ -334,7 +334,7 @@ public:
 #endif
 
 			int num_timesteps = 1;
-			if (i_simVars.disc.normal_mode_analysis_generation >= 10)
+			if (i_simVars.misc.normal_mode_analysis_generation >= 10)
 			{
 				if (i_simVars.timecontrol.max_timesteps_nr > 0)
 					num_timesteps = i_simVars.timecontrol.max_timesteps_nr;
@@ -359,7 +359,7 @@ public:
 
 			file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 			file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
-			file << "# normalmodegeneration " << i_simVars.disc.normal_mode_analysis_generation << std::endl;
+			file << "# normalmodegeneration " << i_simVars.misc.normal_mode_analysis_generation << std::endl;
 			file << "# antialiasing ";
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -374,7 +374,7 @@ public:
 			// iterate over all prognostic variables
 			for (int outer_prog_id = 0; outer_prog_id < number_of_prognostic_variables; outer_prog_id++)
 			{
-				if (i_simVars.disc.normal_mode_analysis_generation == 1 || i_simVars.disc.normal_mode_analysis_generation == 11)
+				if (i_simVars.misc.normal_mode_analysis_generation == 1 || i_simVars.misc.normal_mode_analysis_generation == 11)
 				{
 					// iterate over physical space
 					for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
@@ -398,7 +398,7 @@ public:
 
 						(i_class->*i_run_timestep_method)();
 
-						if (i_simVars.disc.normal_mode_analysis_generation == 1)
+						if (i_simVars.misc.normal_mode_analysis_generation == 1)
 						{
 							/*
 							 * compute
@@ -426,7 +426,7 @@ public:
 					}
 				}
 #if 1
-				else if (i_simVars.disc.normal_mode_analysis_generation == 3 || i_simVars.disc.normal_mode_analysis_generation == 13)
+				else if (i_simVars.misc.normal_mode_analysis_generation == 3 || i_simVars.misc.normal_mode_analysis_generation == 13)
 				{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 					FatalError("Only available with if plane spectral space is activated during compile time!");
@@ -458,7 +458,7 @@ public:
 								(i_class->*i_run_timestep_method)();
 
 
-								if (i_simVars.disc.normal_mode_analysis_generation == 3)
+								if (i_simVars.misc.normal_mode_analysis_generation == 3)
 								{
 									/*
 									 * compute
@@ -527,7 +527,7 @@ public:
 #endif
 				}
 #else
-				else if (i_simVars.disc.normal_mode_analysis_generation == 3 || i_simVars.disc.normal_mode_analysis_generation == 13)
+				else if (i_simVars.misc.normal_mode_analysis_generation == 3 || i_simVars.misc.normal_mode_analysis_generation == 13)
 				{
 					PlaneDataComplex t1(planeDataConfig);
 					PlaneDataComplex t2(planeDataConfig);
@@ -573,7 +573,7 @@ public:
 							prog_cplx[inner_prog_id]->request_data_spectral();
 						}
 
-						if (i_simVars.disc.normal_mode_analysis_generation == 3)
+						if (i_simVars.misc.normal_mode_analysis_generation == 3)
 						{
 							/*
 							 * compute

@@ -81,7 +81,7 @@ public:
 		}
 
 		int num_timesteps = 1;
-		if (i_simVars.disc.normal_mode_analysis_generation >= 10)
+		if (i_simVars.misc.normal_mode_analysis_generation >= 10)
 		{
 			if (i_simVars.timecontrol.max_timesteps_nr > 0)
 				num_timesteps = i_simVars.timecontrol.max_timesteps_nr;
@@ -102,7 +102,7 @@ public:
 		{
 			std::cout << "normal mode analysis for prog " << outer_prog_id << std::endl;
 
-			if (i_simVars.disc.normal_mode_analysis_generation == 1 || i_simVars.disc.normal_mode_analysis_generation == 11)
+			if (i_simVars.misc.normal_mode_analysis_generation == 1 || i_simVars.misc.normal_mode_analysis_generation == 11)
 			{
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
@@ -150,7 +150,7 @@ public:
 					}
 
 
-					if (i_simVars.disc.normal_mode_analysis_generation == 1)
+					if (i_simVars.misc.normal_mode_analysis_generation == 1)
 					{
 						/*
 						 * compute
@@ -177,7 +177,7 @@ public:
 					}
 				}
 			}
-			else if (i_simVars.disc.normal_mode_analysis_generation == 2 || i_simVars.disc.normal_mode_analysis_generation == 12)
+			else if (i_simVars.misc.normal_mode_analysis_generation == 2 || i_simVars.misc.normal_mode_analysis_generation == 12)
 			{
 
 				// iterate over physical space
@@ -226,7 +226,7 @@ public:
 
 
 
-						if (i_simVars.disc.normal_mode_analysis_generation == 2)
+						if (i_simVars.misc.normal_mode_analysis_generation == 2)
 						{
 							/*
 							 * compute
@@ -265,7 +265,7 @@ public:
 					}
 				}
 			}
-			else if (i_simVars.disc.normal_mode_analysis_generation == 3 || i_simVars.disc.normal_mode_analysis_generation == 13)
+			else if (i_simVars.misc.normal_mode_analysis_generation == 3 || i_simVars.misc.normal_mode_analysis_generation == 13)
 			{
 				// iterate over spectral space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
@@ -314,7 +314,7 @@ public:
 						(i_class->*i_run_timestep_method)();
 					}
 
-					if (i_simVars.disc.normal_mode_analysis_generation == 3)
+					if (i_simVars.misc.normal_mode_analysis_generation == 3)
 					{
 						/*
 						 * Compute
