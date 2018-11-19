@@ -228,7 +228,7 @@ int main(int i_argc, char *i_argv[])
 			PlaneDataComplex h(res);
 			h.setAll(0, 0);
 
-			double tau = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 1);
+			double tau = 1;
 
 			PlaneOperators op(simVars.disc.space_res_physical, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 

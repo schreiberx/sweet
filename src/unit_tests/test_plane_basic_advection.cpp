@@ -413,18 +413,6 @@ public:
 	}
 
 
-	double getMaxTimestepsize(
-			const PlaneData &i_u,
-			const PlaneData &i_v
-	)
-	{
-		double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
-		double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
-
-		assert(simVars.sim.CFL > 0);
-		return simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
-	}
-
 
 	void run()
 	{
@@ -434,9 +422,6 @@ public:
 
 	void run_timestep()
 	{
-		if (simVars.sim.CFL > 0)
-			simVars.timecontrol.current_timestep_size = getMaxTimestepsize(prog_u, prog_v);
-
 		timestepping.run_timestep(
 				this,
 				&SimulationAdvection::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
@@ -812,6 +797,7 @@ int main(
 		std::cout << "Convergence rate in space (inc. resolution):";
 		std::cout << output_string_conv.str() << std::endl;
 	}
+#if 0
 	else if (asdf == 1)
 	{
 		std::ostringstream output_string_conv;
@@ -939,9 +925,11 @@ int main(
 		std::cout << "Convergence rate in time (inc. resolution):";
 		std::cout << output_string_conv.str() << std::endl;
 	}
+#endif
 	else
 	{
-		std::cout << "Use -e [0/1] to specify convergence test: 0 = spatial refinement, 1 = time refinement" << std::endl;
+		FatalError("Not supported!");
+//		std::cout << "Use -e [0/1] to specify convergence test: 0 = spatial refinement, 1 = time refinement" << std::endl;
 	}
 
 	if (error_detected)
