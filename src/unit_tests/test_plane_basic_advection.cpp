@@ -5,7 +5,8 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+//#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include "../include/sweet/plane/PlaneOperators.hpp"
 #include <sweet/Stopwatch.hpp>
 
@@ -118,6 +119,7 @@ public:
 				io_data = value;
 
 #elif ADV_FUNCTION==1
+
 				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
