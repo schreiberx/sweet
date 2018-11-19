@@ -40,7 +40,7 @@ class SWEETRuntimeOptions(InfoError):
 		self.output_filename = ''
 		self.output_file_mode = ''
 
-		self.f_sphere = 0
+		self.f_sphere = None
 		self.verbosity = 0
 
 		# Deactivated per default for more performance
@@ -272,7 +272,8 @@ class SWEETRuntimeOptions(InfoError):
 			if compileOptions.sphere_spectral_space == 'enable':
 				if self.r != None:
 					idstr += '_a'+str(self.r)
-				idstr += '_fsph'+str(self.f_sphere)
+				if self.f_sphere != None:
+					idstr += '_fsph'+str(self.f_sphere)
 
 			if self.viscosity != None:
 				idstr += '_u'+str(self.viscosity)
@@ -419,7 +420,9 @@ class SWEETRuntimeOptions(InfoError):
 			retval += ' -f '+str(self.f)
 		if self.r != None:
 			retval += ' -a '+str(self.r)
-		retval += ' -F '+str(self.f_sphere)
+		if self.f_sphere != None:
+			retval += ' -F '+str(self.f_sphere)
+
 		if self.mode_res != None:
 			if isinstance(self.mode_res, (list, tuple)):
 				retval += ' -M '+str(",".join([str(x) for x in self.mode_res]))

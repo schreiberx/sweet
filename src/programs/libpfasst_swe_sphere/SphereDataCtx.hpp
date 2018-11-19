@@ -87,7 +87,7 @@ public:
 	else 
 	  {
 	    timestepper_lg_irk.resize(levelSingletons->size());
-	    if (!simVars->sim.use_topography)
+	    if (!simVars->benchmark.use_topography)
 	      timestepper_lg_erk_lc_n_erk.resize(levelSingletons->size());
 	    else 
 	      timestepper_lg_erk_lc_n_t_erk.resize(levelSingletons->size());
@@ -114,7 +114,7 @@ public:
 	  }
 	else
 	  {
-  	      if (simVars->sim.use_topography) 
+  	      if (simVars->benchmark.use_topography)
 	        {
   	          timestepper_lg_erk_lc_n_t_erk[level] = 
 	          new SWE_Sphere_TS_lg_erk_lc_n_t_erk(
@@ -199,7 +199,7 @@ public:
   ~SphereDataCtx() 
   {
     int m = 0;
-    if (!simVars->sim.use_topography)
+    if (!simVars->benchmark.use_topography)
       m = (timestepper_l_erk_n_erk.size() > timestepper_lg_erk_lc_n_erk.size()) 
 	? timestepper_l_erk_n_erk.size()
 	: timestepper_lg_erk_lc_n_erk.size();
@@ -228,7 +228,7 @@ public:
 	delete timestepper_l_erk_n_erk[level];
       else 
 	{
-	  if (!simVars->sim.use_topography)
+	  if (!simVars->benchmark.use_topography)
 	    delete timestepper_lg_erk_lc_n_erk[level];
 	  else 
 	    delete timestepper_lg_erk_lc_n_t_erk[level];
@@ -297,7 +297,7 @@ public:
 								 int i_level
 								 ) const
   {
-    if (simVars->libpfasst.implicit_coriolis_force || simVars->sim.use_topography)
+    if (simVars->libpfasst.implicit_coriolis_force || simVars->benchmark.use_topography)
       return NULL;
     else
       return timestepper_lg_erk_lc_n_erk[i_level];
@@ -308,7 +308,7 @@ public:
 								     int i_level
 								     ) const
   {
-    if (simVars->libpfasst.implicit_coriolis_force || !simVars->sim.use_topography)
+    if (simVars->libpfasst.implicit_coriolis_force || !simVars->benchmark.use_topography)
       return NULL;
     else
       return timestepper_lg_erk_lc_n_t_erk[i_level];

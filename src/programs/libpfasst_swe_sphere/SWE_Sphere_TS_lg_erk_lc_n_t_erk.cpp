@@ -325,7 +325,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::setup(
 	}
 
 	// restrict the topography to this space-time level
-	phi_topo = simVars.sim.h_topo.spectral_returnWithDifferentModes(phi_topo.sphereDataConfig);
+	phi_topo = simVars.benchmark.h_topo.spectral_returnWithDifferentModes(phi_topo.sphereDataConfig);
 	
 	// convert to phi
 	phi_topo *= simVars.sim.gravitation;

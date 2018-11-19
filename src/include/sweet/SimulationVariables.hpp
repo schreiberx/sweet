@@ -227,6 +227,22 @@ public:
 		double sphere_advection_rotation_angle = 0;
 
 
+		/**
+		 * Flag to indicate the presence of topography
+		 */
+		bool use_topography = false;
+
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		/**
+		 * Topography vector
+		 */
+		SphereData h_topo;
+#endif
+
+
+
+
 		void outputConfig()
 		{
 			std::cout << std::endl;
@@ -316,17 +332,6 @@ public:
 		double plane_rotating_f0 = 1.0; //Plane
 #endif
 
-		/**
-		 * Flag to indicate the presence of topography
-		 */
-		bool use_topography = false;
-
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE
-		/**
-		 * Topography vector
-		 */
-		SphereData h_topo;
-#endif
 
 		/**
 		 * Gravitational constant

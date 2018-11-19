@@ -178,7 +178,7 @@ public:
 		if (simVars->benchmark.benchmark_name == "flow_over_mountain")
 		{
 			// set the topography flag to true
-			simVars->sim.use_topography = true;
+			simVars->benchmark.use_topography = true;
 
 			// setup the parameters for the flow-over-mountain test case
 			const double R			= M_PI/9.;
@@ -187,11 +187,11 @@ public:
 			const double i_center_lat = M_PI/6.;
 
 			// initialize the topography
-			simVars->sim.h_topo.physical_set_zero();
+			simVars->benchmark.h_topo.physical_set_zero();
 
 			// setup the topography vector
 			BenchmarkFlowOverMountain::setup_topography(
-					simVars->sim.h_topo,
+					simVars->benchmark.h_topo,
 					*simVars,
 					R,
 					h_topo_0,
@@ -199,12 +199,12 @@ public:
 					i_center_lat
 			);
 
-			simVars->sim.h_topo.spectral_truncate();
+			simVars->benchmark.h_topo.spectral_truncate();
 		}
 		else
 		{
 			// set the topography flag to false
-			simVars->sim.use_topography = false;
+			simVars->benchmark.use_topography = false;
 		}
 	}
 
