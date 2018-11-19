@@ -34,7 +34,7 @@ void SWE_Sphere_TS_l_irk::setup(
 )
 {
 	timestep_size = i_timestep_size;
-	use_f_sphere = simVars.sim.f_sphere;
+	use_f_sphere = simVars.sim.sphere_use_fsphere;
 
 	if (i_timestep_order != 1)
 		FatalError("Only 1st order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
@@ -60,19 +60,19 @@ void SWE_Sphere_TS_l_irk::setup(
 
 	if (use_f_sphere)
 	{
-		f0 = simVars.sim.f0;
+		f0 = simVars.sim.sphere_fsphere_f0;
 		two_coriolis = 0;
 	}
 	else
 	{
-		two_coriolis = 2.0*simVars.sim.coriolis_omega;
+		two_coriolis = 2.0*simVars.sim.sphere_rotating_coriolis_omega;
 		f0 = 0;
 	}
 
 	alpha = -1.0/timestep_size;
 	beta = -1.0/timestep_size;
 
-	r = simVars.sim.earth_radius;
+	r = simVars.sim.sphere_radius;
 	inv_r = 1.0/r;
 
 	gh = simVars.sim.gravitation*simVars.sim.h0;

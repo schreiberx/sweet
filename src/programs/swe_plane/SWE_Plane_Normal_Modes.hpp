@@ -96,8 +96,8 @@ public:
 			file << "# dt " << i_simVars.timecontrol.current_timestep_size << std::endl;
 			file << "# g " << i_simVars.sim.gravitation << std::endl;
 			file << "# h " << i_simVars.sim.h0 << std::endl;
-			file << "# r " << i_simVars.sim.earth_radius << std::endl;
-			file << "# f " << i_simVars.sim.f0 << std::endl;
+			file << "# r " << i_simVars.sim.sphere_radius << std::endl;
+			file << "# f " << i_simVars.sim.plane_rotating_f0 << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
@@ -217,7 +217,7 @@ public:
 					int count_geo=0;
 					for(int i=0; i<3; i++)
 					{
-						if(eval[i].imag() > 0.5 * i_simVars.sim.f0)
+						if(eval[i].imag() > 0.5 * i_simVars.sim.plane_rotating_f0)
 						{
 							//std::cout<< "IG pos mode: " << eval[i].imag() << std::endl;
 							//file_igpos << eval[i].imag();
@@ -225,7 +225,7 @@ public:
 							file_igpos << "\t";
 							count_igpos++;
 						}
-						if(eval[i].imag() < - 0.5 * i_simVars.sim.f0)
+						if(eval[i].imag() < - 0.5 * i_simVars.sim.plane_rotating_f0)
 						{
 							//std::cout<< "IG neg mode: " << eval[i].imag() << std::endl;
 							//file_igneg << eval[i].imag();
@@ -233,7 +233,7 @@ public:
 							file_igneg << "\t";
 							count_igneg++;
 						}
-						if(eval[i].imag() >= - 0.5 * i_simVars.sim.f0 && eval[i].imag() <=  0.5 * i_simVars.sim.f0 )
+						if(eval[i].imag() >= - 0.5 * i_simVars.sim.plane_rotating_f0 && eval[i].imag() <=  0.5 * i_simVars.sim.plane_rotating_f0 )
 						{
 							//std::cout<< "IG geo mode: " << eval[i].imag() << std::endl;
 							//file_geo << eval[i].imag();
@@ -343,12 +343,12 @@ public:
 			if (i_simVars.timecontrol.max_simulation_time > 0)
 				file << "# t " << i_simVars.timecontrol.max_simulation_time << std::endl;
 			else
-				file << "# t " << (num_timesteps*(-i_simVars.sim.CFL)) << std::endl;
+				file << "# t " << (num_timesteps*(-i_simVars.timecontrol.current_timestep_size)) << std::endl;
 
 			file << "# g " << i_simVars.sim.gravitation << std::endl;
 			file << "# h " << i_simVars.sim.h0 << std::endl;
-			file << "# r " << i_simVars.sim.earth_radius << std::endl;
-			file << "# f " << i_simVars.sim.coriolis_omega << std::endl;
+//			file << "# r " << i_simVars.sim.sphere_radius << std::endl;
+			file << "# f " << i_simVars.sim.plane_rotating_f0 << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);

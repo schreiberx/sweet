@@ -91,8 +91,8 @@ public:
 
 public:
 	SimulationInstance()	:
-		op(sphereDataConfig, simVars.sim.earth_radius),
-		op_nodealiasing(sphereDataConfig_nodealiasing, simVars.sim.earth_radius),
+		op(sphereDataConfig, simVars.sim.sphere_radius),
+		op_nodealiasing(sphereDataConfig_nodealiasing, simVars.sim.sphere_radius),
 		prog_phi(sphereDataConfig),
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
@@ -141,10 +141,6 @@ public:
 		last_timestep_nr_update_diagnostics = -1;
 
 		simVars.misc.output_next_sim_seconds = 0;
-
-
-		if (simVars.sim.CFL < 0)
-			simVars.timecontrol.current_timestep_size = -simVars.sim.CFL;
 
 		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Only fixed time step size supported");
@@ -537,7 +533,7 @@ public:
 		if (simVars.sim.viscosity != 0)
 		{
 			double scalar = simVars.sim.viscosity*simVars.timecontrol.current_timestep_size;
-			double r = simVars.sim.earth_radius;
+			double r = simVars.sim.sphere_radius;
 
 			/*
 			 * (1-dt*visc*D2)p(t+dt) = p(t)

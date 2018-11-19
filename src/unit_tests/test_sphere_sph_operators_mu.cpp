@@ -56,7 +56,7 @@ void run_tests()
 		f.physical_update_lambda_gaussian_grid(
 			[&](double i_lon, double i_lat_gauss, double &io_data)
 			{
-				io_data = i_lat_gauss*2.0*simVars.sim.coriolis_omega;
+				io_data = i_lat_gauss*2.0*simVars.sim.sphere_rotating_coriolis_omega;
 			}
 		);
 		double max_f = f.physical_reduce_max_abs();	// 2*\Omega
@@ -81,7 +81,7 @@ void run_tests()
 				test_fun.spectral_set(m_lat, m_lon, 1);
 
 				SphereData physical_test_mul_f = (test_fun*f);
-				SphereData operator_test_mul_f = op.mu(test_fun)*2.0*simVars.sim.coriolis_omega;
+				SphereData operator_test_mul_f = op.mu(test_fun)*2.0*simVars.sim.sphere_rotating_coriolis_omega;
 
 				double forward_diff_error_linf = (physical_test_mul_f - operator_test_mul_f).physical_reduce_max_abs();
 				forward_diff_error_linf /= max_f;

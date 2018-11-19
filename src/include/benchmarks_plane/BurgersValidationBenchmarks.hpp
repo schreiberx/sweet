@@ -76,19 +76,19 @@ public:
 
 		if (benchmark_id == 56)
 		{
-			return std::sin(2*M_PI*i_parameters.timecontrol.current_simulation_time*i_parameters.sim.f0)/i_parameters.sim.f0;
+			return std::sin(2*M_PI*i_parameters.timecontrol.current_simulation_time*i_parameters.sim.plane_rotating_f0)/i_parameters.sim.plane_rotating_f0;
 		}
 
 		if (benchmark_id == 57)
 		{
-			double k=i_parameters.sim.f0;
+			double k=i_parameters.sim.plane_rotating_f0;
 			double t=i_parameters.timecontrol.current_simulation_time;
 			return std::sin(2*M_PI*x*k)*std::sin(2*M_PI*t*k)/k;
 		}
 
 		if (benchmark_id == 58)
 		{
-			double k=i_parameters.sim.f0;
+			double k=i_parameters.sim.plane_rotating_f0;
 			double t=i_parameters.timecontrol.current_simulation_time;
 			return std::sin(2*M_PI*x)*std::sin(2*M_PI*t) + std::sin(2*M_PI*x*k)*std::sin(2*M_PI*t*k)/k;
 		}
@@ -102,7 +102,7 @@ public:
 		{
 			double t=i_parameters.timecontrol.current_simulation_time;
 			double tmpvar = 0;
-			int kmax = i_parameters.sim.f0;
+			int kmax = i_parameters.sim.plane_rotating_f0;
 			double eps = 0.1;
 			for (int k=1; k<kmax; k++)
 			{
@@ -149,7 +149,7 @@ public:
 		 */
 		if (benchmark_id == 57)
 		{
-			double k = i_parameters.sim.f0;
+			double k = i_parameters.sim.plane_rotating_f0;
 
 			io_u_t.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
@@ -181,7 +181,7 @@ public:
 		 */
 		if (benchmark_id == 59)
 		{
-			double k = i_parameters.sim.f0;
+			double k = i_parameters.sim.plane_rotating_f0;
 
 
 			io_u_t.physical_update_lambda_array_indices(
@@ -215,7 +215,7 @@ public:
 		 */
 		if (benchmark_id == 58)
 		{
-			double k = i_parameters.sim.f0;
+			double k = i_parameters.sim.plane_rotating_f0;
 
 			io_u_t.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
@@ -313,7 +313,7 @@ public:
 		 */
 		if (benchmark_id == 56)
 		{
-			double k=i_parameters.sim.f0;
+			double k=i_parameters.sim.plane_rotating_f0;
 			io_u_t.physical_set_all(tp*std::cos(tp*k*t));
 		}
 
@@ -379,7 +379,7 @@ public:
 		 */
 		if (benchmark_id == 62)
 		{
-			int kmax = i_parameters.sim.f0;
+			int kmax = i_parameters.sim.plane_rotating_f0;
 			double eps = 0.1;
 
 

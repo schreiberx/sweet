@@ -130,7 +130,7 @@ public:
 		f.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = 2.0*simVars->sim.coriolis_omega*mu;
+				o_data = 2.0*simVars->sim.sphere_rotating_coriolis_omega*mu;
 			}
 		);
 
@@ -254,7 +254,7 @@ public:
 
 				if (i_field_id == 1)
 				{
-					double a = s->simVars->sim.earth_radius;
+					double a = s->simVars->sim.sphere_radius;
 					double alpha = s->simVars->benchmark.sphere_advection_rotation_angle;
 					double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
 
@@ -313,12 +313,12 @@ public:
 				}
 			}
 
-			simVars->sim.coriolis_omega = 7.292e-5;
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 			simVars->sim.gravitation = 9.80616;
-			simVars->sim.earth_radius = 6.37122e6;
+			simVars->sim.sphere_radius = 6.37122e6;
 			simVars->sim.h0 = 1000.0;
 
-			op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_phi.sphereDataConfig, simVars->sim.sphere_radius);
 
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0.0;
@@ -372,17 +372,17 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-			simVars->sim.coriolis_omega = 7.292e-5;
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 			simVars->sim.gravitation = 9.80616;
-			simVars->sim.earth_radius = 6.37122e6;
+			simVars->sim.sphere_radius = 6.37122e6;
 			simVars->sim.h0 = 1000.0;
 
 			// reset operator
-			op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_phi.sphereDataConfig, simVars->sim.sphere_radius);
 
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0.0;
-			double a = simVars->sim.earth_radius;
+			double a = simVars->sim.sphere_radius;
 
 			double R = a/3.0;
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
@@ -439,16 +439,16 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-			simVars->sim.coriolis_omega = 7.292e-5;
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 			simVars->sim.gravitation = 9.80616;
-			simVars->sim.earth_radius = 6.37122e6;
+			simVars->sim.sphere_radius = 6.37122e6;
 			simVars->sim.h0 = 1000.0;
 
-			op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_phi.sphereDataConfig, simVars->sim.sphere_radius);
 
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0.0;
-			double a = simVars->sim.earth_radius;
+			double a = simVars->sim.sphere_radius;
 
 			//double R = a/3.0;
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
@@ -520,16 +520,16 @@ public:
 				}
 
 				/// Setup Galewski parameters
-				simVars->sim.coriolis_omega = 7.292e-5;
+				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 				simVars->sim.gravitation = 9.80616;
-				simVars->sim.earth_radius = 6.37122e6;
+				simVars->sim.sphere_radius = 6.37122e6;
 				simVars->sim.h0 = 10000;
 			}
 
 			/*
 			 * Rerun setup to update the operators with the potentially new values
 			 */
-			op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_phi.sphereDataConfig, simVars->sim.sphere_radius);
 
 			/*
 			 * Parameters from Galewsky paper setup
@@ -636,14 +636,14 @@ public:
 			}
 
 			/// Setup Williamson's parameters
-			simVars->sim.coriolis_omega = 7.292e-5;
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 			simVars->sim.gravitation	= 9.80616;
-			simVars->sim.earth_radius   = 6.37122e6;
+			simVars->sim.sphere_radius   = 6.37122e6;
 			simVars->sim.h0			 = 5600;
 
 
 			// update operator because we changed the simulation parameters
-			op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_phi.sphereDataConfig, simVars->sim.sphere_radius);
 
 			const double u0 = 20.0;
 
@@ -708,18 +708,18 @@ public:
 			}
 
 			/// Setup Williamson's parameters
-			simVars->sim.coriolis_omega = 7.292e-5;
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 			simVars->sim.gravitation = 9.80616;
-			simVars->sim.earth_radius = 6.37122e6;
+			simVars->sim.sphere_radius = 6.37122e6;
 			simVars->sim.h0 = 8000;
 
 			// update operator because we changed the simulation parameters
-			op->setup(o_phi.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_phi.sphereDataConfig, simVars->sim.sphere_radius);
 
 			const double omega = 7.484e-6;
 			const double K = omega;
 			const int R	= 4;
-			const double a = simVars->sim.earth_radius;
+			const double a = simVars->sim.sphere_radius;
 
 			/*
 			 * Setup U=...
@@ -814,9 +814,9 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				simVars->sim.coriolis_omega = 7.292e-5;
+				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 				simVars->sim.gravitation = 9.80616;
-				simVars->sim.earth_radius = 6.37122e6;
+				simVars->sim.sphere_radius = 6.37122e6;
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 
 				// Scale geopotential to make NL influencing the stiffness stronger
@@ -882,16 +882,16 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				simVars->sim.coriolis_omega = 7.292e-5;
+				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 				simVars->sim.gravitation = 9.80616;
-				simVars->sim.earth_radius = 6.37122e6;
+				simVars->sim.sphere_radius = 6.37122e6;
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 			}
 
 			SphereData o_h(o_phi.sphereDataConfig);
 
 			// update operator because we changed the simulation parameters
-			op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
 
 			//double u0 = (2.0*M_PI*simVars->sim.earth_radius)/(12.0*24.0*60.0*60.0);
 			//double a = simVars->sim.earth_radius;
@@ -1068,23 +1068,23 @@ public:
 					std::cout << "!!! WARNING !!!" << std::endl;
 				}
 
-				simVars->sim.coriolis_omega = 7.292e-5;
+				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 				simVars->sim.gravitation = 9.80616;
-				simVars->sim.earth_radius = 6.37122e6;
+				simVars->sim.sphere_radius = 6.37122e6;
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 
-				op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+				op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
 
-				u0 = (2.0*M_PI*simVars->sim.earth_radius)/(12.0*24.0*60.0*60.0);
+				u0 = (2.0*M_PI*simVars->sim.sphere_radius)/(12.0*24.0*60.0*60.0);
 			}
-			double a = simVars->sim.earth_radius;
+			double a = simVars->sim.sphere_radius;
 
 			double phi0 = simVars->sim.h0*simVars->sim.gravitation;
 
 			o_h.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
-					io_data = (phi0 + (a*simVars->sim.coriolis_omega*u0*std::cos(i_lat)*std::cos(i_lat)))/simVars->sim.gravitation;
+					io_data = (phi0 + (a*simVars->sim.sphere_rotating_coriolis_omega*u0*std::cos(i_lat)*std::cos(i_lat)))/simVars->sim.gravitation;
 				}
 			);
 
@@ -1126,16 +1126,16 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-			simVars->sim.coriolis_omega = 7.292e-5;
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 			simVars->sim.gravitation = 9.80616;
-			simVars->sim.earth_radius = 6.37122e6;
+			simVars->sim.sphere_radius = 6.37122e6;
 			simVars->sim.h0 = 1000.0;
 
-			op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
 
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = M_PI/4.0;
-			double a = simVars->sim.earth_radius;
+			double a = simVars->sim.sphere_radius;
 
 			double R = a/3.0;
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
@@ -1240,16 +1240,16 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-			simVars->sim.coriolis_omega = 7.292e-5;
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 			simVars->sim.gravitation = 9.80616;
-			simVars->sim.earth_radius = 6.37122e6;
+			simVars->sim.sphere_radius = 6.37122e6;
 			simVars->sim.h0 = 1000.0;
 
-			op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
 
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0;
-			double a = simVars->sim.earth_radius;
+			double a = simVars->sim.sphere_radius;
 
 			double R = a/3.0;
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
@@ -1363,19 +1363,19 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-			if (simVars->sim.coriolis_omega != 0)
-				simVars->sim.coriolis_omega = 7.292e-5;
+			if (simVars->sim.sphere_rotating_coriolis_omega != 0)
+				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 
 			simVars->sim.gravitation = 9.80616;
-			simVars->sim.earth_radius = 6.37122e6;
+			simVars->sim.sphere_radius = 6.37122e6;
 			simVars->sim.h0 = 29400.0;
 
-			op->setup(o_h.sphereDataConfig, simVars->sim.earth_radius);
+			op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
 
 			o_u.physical_set_zero();
 			o_v.physical_set_zero();
 
-			const double a = simVars->sim.earth_radius;
+			const double a = simVars->sim.sphere_radius;
 			const double A = 6000.0;
 			const double alpha = 10;
 

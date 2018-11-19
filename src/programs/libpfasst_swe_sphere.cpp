@@ -67,8 +67,6 @@ int main(int i_argc, char *i_argv[])
       return -1;
     }
 
-  simVars.timecontrol.current_timestep_size = - simVars.sim.CFL; 
-
   // define the number of levels and SDC nodes for each level
   // note: level #nlevels-1 is the finest, level #0 is the coarsest
 
@@ -154,11 +152,11 @@ int main(int i_argc, char *i_argv[])
   
   levelSingletons[fineLevelId].op.setup(
 					&(levelSingletons[fineLevelId].dataConfig),
-					simVars.sim.earth_radius
+					simVars.sim.sphere_radius
 					);
   levelSingletons[fineLevelId].opNoDealiasing.setup(
 						    &(levelSingletons[fineLevelId].dataConfigNoDealiasing),
-						    simVars.sim.earth_radius
+						    simVars.sim.sphere_radius
 						    );
   
   // define the number of modes for the coarser levels
@@ -180,7 +178,7 @@ int main(int i_argc, char *i_argv[])
   
       levelSingletons[thisLevelId].op.setup(
 					    &(levelSingletons[thisLevelId].dataConfig),
-					    simVars.sim.earth_radius
+					    simVars.sim.sphere_radius
 					    );
     }
 

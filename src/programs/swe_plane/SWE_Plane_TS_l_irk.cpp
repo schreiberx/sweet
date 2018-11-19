@@ -54,7 +54,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	v0 *= alpha;
 
 	// load kappa (k)
-	double kappa = alpha*alpha + simVars.sim.f0*simVars.sim.f0;
+	double kappa = alpha*alpha + simVars.sim.plane_rotating_f0*simVars.sim.plane_rotating_f0;
 
 	double eta_bar = simVars.sim.h0;
 	double g = simVars.sim.gravitation;
@@ -62,7 +62,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneData rhs =
 			(kappa/alpha) * eta0
 			- eta_bar*(op.diff_c_x(u0) + op.diff_c_y(v0))
-			- (simVars.sim.f0*eta_bar/alpha) * (op.diff_c_x(v0) - op.diff_c_y(u0))
+			- (simVars.sim.plane_rotating_f0*eta_bar/alpha) * (op.diff_c_x(v0) - op.diff_c_y(u0))
 		;
 
 	PlaneData lhs = (-g*eta_bar*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(kappa);
@@ -71,8 +71,8 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneData uh = u0 - g*op.diff_c_x(io_h);
 	PlaneData vh = v0 - g*op.diff_c_y(io_h);
 
-	io_u = alpha/kappa * uh     + simVars.sim.f0/kappa * vh;
-	io_v =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
+	io_u = alpha/kappa * uh     + simVars.sim.plane_rotating_f0/kappa * vh;
+	io_v =    -simVars.sim.plane_rotating_f0/kappa * uh + alpha/kappa * vh;
 
 #else
 
@@ -87,7 +87,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	v0 *= alpha;
 
 	// load kappa (k)
-	double kappa = alpha*alpha + simVars.sim.f0*simVars.sim.f0;
+	double kappa = alpha*alpha + simVars.sim.plane_rotating_f0*simVars.sim.plane_rotating_f0;
 
 	double eta_bar = simVars.sim.h0;
 	double g = simVars.sim.gravitation;
@@ -95,7 +95,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneDataComplex rhs =
 			(kappa/alpha) * eta0
 			- eta_bar*(opComplex.diff_c_x(u0) + opComplex.diff_c_y(v0))
-			- (simVars.sim.f0*eta_bar/alpha) * (opComplex.diff_c_x(v0) - opComplex.diff_c_y(u0))
+			- (simVars.sim.plane_rotating_f0*eta_bar/alpha) * (opComplex.diff_c_x(v0) - opComplex.diff_c_y(u0))
 		;
 
 	PlaneDataComplex lhs = (-g*eta_bar*(opComplex.diff2_c_x + opComplex.diff2_c_y)).spectral_addScalarAll(kappa);
@@ -104,8 +104,8 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneDataComplex uh = u0 - g*opComplex.diff_c_x(eta);
 	PlaneDataComplex vh = v0 - g*opComplex.diff_c_y(eta);
 
-	PlaneDataComplex u1 = alpha/kappa * uh     + simVars.sim.f0/kappa * vh;
-	PlaneDataComplex v1 =    -simVars.sim.f0/kappa * uh + alpha/kappa * vh;
+	PlaneDataComplex u1 = alpha/kappa * uh     + simVars.sim.plane_rotating_f0/kappa * vh;
+	PlaneDataComplex v1 =    -simVars.sim.plane_rotating_f0/kappa * uh + alpha/kappa * vh;
 
 	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta);
 	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);

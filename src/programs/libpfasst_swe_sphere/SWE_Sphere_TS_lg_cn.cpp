@@ -54,7 +54,7 @@ void SWE_Sphere_TS_lg_cn::setup(
 		beta /= crank_nicolson_damping_factor;
 	}
 
-	r = simVars.sim.earth_radius;
+	r = simVars.sim.sphere_radius;
 	inv_r = 1.0/r;
 
 	gh = simVars.sim.gravitation*simVars.sim.h0;

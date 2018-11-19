@@ -46,7 +46,7 @@ void SWE_Sphere_TS_lg_irk::setup(
 	alpha = -1.0/timestep_size;
 	beta = -1.0/timestep_size;
 
-	r = simVars.sim.earth_radius;
+	r = simVars.sim.sphere_radius;
 	inv_r = 1.0/r;
 
 	gh = simVars.sim.gravitation*simVars.sim.h0;

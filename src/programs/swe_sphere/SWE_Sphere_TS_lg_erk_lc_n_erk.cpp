@@ -315,12 +315,12 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::setup(
 
 	version_id = i_version_id;
 
-	if (simVars.sim.f_sphere)
+	if (simVars.sim.sphere_use_fsphere)
 	{
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = simVars.sim.f0;
+				o_data = simVars.sim.sphere_fsphere_f0;
 			}
 		);
 	}
@@ -329,7 +329,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::setup(
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = mu*2.0*simVars.sim.coriolis_omega;
+				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
 			}
 		);
 	}

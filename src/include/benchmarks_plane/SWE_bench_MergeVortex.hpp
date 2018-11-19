@@ -34,7 +34,7 @@ class SWE_bench_MergeVortex
 
 	PlaneOperators &op;
 
-	double f = simVars.sim.f0;
+	double f = simVars.sim.plane_rotating_f0;
 	double g = simVars.sim.gravitation;
 	double sx = simVars.sim.domain_size[0];
 	double sy = simVars.sim.domain_size[1];

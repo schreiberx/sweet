@@ -970,9 +970,9 @@ public:
 
 		case 'l':
 			// load data arrays
-			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.benchmark.initial_condition_input_data_binary);
-			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.benchmark.initial_condition_input_data_binary);
-			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.benchmark.initial_condition_input_data_binary);
+			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.inputoutput.initial_condition_input_data_binary);
+			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.inputoutput.initial_condition_input_data_binary);
+			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.inputoutput.initial_condition_input_data_binary);
 			break;
 		}
 	}
@@ -1579,7 +1579,7 @@ int main(int i_argc, char *i_argv[])
 						prog_h_pert,
 						prog_u,
 						prog_v,
-						-simVars.sim.CFL,		///< if this value is not equal to 0, use this time step size instead of computing one
+						simVars.timecontrol.current_timestep_size,
 						simVars.timecontrol.current_simulation_time
 
 				);

@@ -62,7 +62,7 @@ public:
 		int leapfrog_start_num_timesteps = 16;
 		double leapfrog_start_timesteps_size;
 		double leapfrog_end_timestep_size;
-		double leapfrog_original_cfl;
+		double leapfrog_original_timestep_size;
 
 		if (i_simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 		{
@@ -72,10 +72,9 @@ public:
 			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 			std::cout << "Therefore, we also halve the time step size here" << std::endl;
 
-			leapfrog_original_cfl = i_simVars.sim.CFL;
+			leapfrog_original_timestep_size = i_simVars.timecontrol.current_timestep_size;
 			// do 2 leapfrog time steps -> half time step size
-			i_simVars.sim.CFL *= 0.5;
-			i_simVars.timecontrol.current_timestep_size = -i_simVars.sim.CFL;
+			i_simVars.timecontrol.current_timestep_size *= 0.5;
 
 			leapfrog_start_timesteps_size = i_simVars.timecontrol.current_timestep_size/(double)leapfrog_start_num_timesteps;
 			leapfrog_end_timestep_size = i_simVars.timecontrol.current_timestep_size;
@@ -91,12 +90,12 @@ public:
 		if (i_simVars.timecontrol.max_simulation_time > 0)
 			file << "# t " << i_simVars.timecontrol.max_simulation_time << std::endl;
 		else
-			file << "# t " << (num_timesteps*(-i_simVars.sim.CFL)) << std::endl;
+			file << "# t " << (num_timesteps*i_simVars.timecontrol.current_timestep_size) << std::endl;
 
 		file << "# g " << i_simVars.sim.gravitation << std::endl;
 		file << "# h " << i_simVars.sim.h0 << std::endl;
-		file << "# r " << i_simVars.sim.earth_radius << std::endl;
-		file << "# f " << i_simVars.sim.coriolis_omega << std::endl;
+		file << "# r " << i_simVars.sim.sphere_radius << std::endl;
+		file << "# f " << i_simVars.sim.sphere_rotating_coriolis_omega << std::endl;
 
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
@@ -129,19 +128,16 @@ public:
 						FatalError("TODO 01943934");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
 
-						i_simVars.sim.CFL = -leapfrog_start_timesteps_size;
 						i_simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
 
 						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
 							(i_class->*i_run_timestep_method)();
 
-						i_simVars.sim.CFL = -leapfrog_end_timestep_size;
 						i_simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
 
 						(i_class->*i_run_timestep_method)();
 
-						i_simVars.sim.CFL = leapfrog_original_cfl;
-						i_simVars.timecontrol.current_timestep_size = -i_simVars.sim.CFL;
+						i_simVars.timecontrol.current_timestep_size = leapfrog_original_timestep_size;
 					}
 					else
 					{
@@ -209,19 +205,16 @@ public:
 							FatalError("TODO 01943934");
 							//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
 
-							i_simVars.sim.CFL = -leapfrog_start_timesteps_size;
 							i_simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
 
 							for (int i = 0; i < leapfrog_start_num_timesteps; i++)
 								(i_class->*i_run_timestep_method)();
 
-							i_simVars.sim.CFL = -leapfrog_end_timestep_size;
 							i_simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
 
 							(i_class->*i_run_timestep_method)();
 
-							i_simVars.sim.CFL = leapfrog_original_cfl;
-							i_simVars.timecontrol.current_timestep_size = -i_simVars.sim.CFL;
+							i_simVars.timecontrol.current_timestep_size = leapfrog_original_timestep_size;
 						}
 						else
 						{
@@ -297,19 +290,16 @@ public:
 						FatalError("TODO 01839471");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
 
-						i_simVars.sim.CFL = -leapfrog_start_timesteps_size;
 						i_simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
 
 						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
 							(i_class->*i_run_timestep_method)();
 
-						i_simVars.sim.CFL = -leapfrog_end_timestep_size;
 						i_simVars.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
 
 						(i_class->*i_run_timestep_method)();
 
-						i_simVars.sim.CFL = leapfrog_original_cfl;
-						i_simVars.timecontrol.current_timestep_size = -i_simVars.sim.CFL;
+						i_simVars.timecontrol.current_timestep_size = leapfrog_original_timestep_size;
 
 						if (num_timesteps > 1)
 							FatalError("Doesn't make sense because the previous time step is half the time step size in advance");

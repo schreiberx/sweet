@@ -38,7 +38,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			int i_variable_id	//< 0:h, 1:u, 2:v, 3:force h, 4:force u, 5:force v, 6:coriolis, 7:divergence, 8: vorticity
 	)
 	{
-		double f = i_simVars.sim.f0;
+		double f = i_simVars.sim.plane_rotating_f0;
 		double sx = i_simVars.sim.domain_size[0];
 		double sy = i_simVars.sim.domain_size[1];
 
@@ -67,7 +67,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -99,7 +99,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -129,7 +129,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -161,7 +161,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -188,7 +188,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -222,7 +222,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -268,7 +268,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -299,7 +299,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -325,7 +325,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -360,7 +360,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -406,7 +406,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -441,7 +441,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{
@@ -478,7 +478,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else if (i_variable_id == 7) // divergence
 			{
@@ -527,7 +527,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			// Preparation for flow over mountain
 			double u0 = 20.0; //mean constant velocity
 			double g = i_simVars.sim.gravitation; // gravity
-			double f = i_simVars.sim.f0; // gravity
+			double f = i_simVars.sim.plane_rotating_f0; // gravity
 
 			if (i_variable_id == 0)
 			{
@@ -574,7 +574,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 			else if (i_variable_id == 6) // f-term
 			{
-				return i_simVars.sim.f0;
+				return i_simVars.sim.plane_rotating_f0;
 			}
 			else
 			{

@@ -28,7 +28,7 @@ void SWE_Sphere_TS_l_erk_pvd::euler_timestep_update(
 		double i_simulation_timestamp
 )
 {
-	if (simVars.sim.f_sphere)
+	if (simVars.sim.sphere_use_fsphere)
 		FatalError("f-sphere Not supported");
 
 
@@ -80,12 +80,12 @@ void SWE_Sphere_TS_l_erk_pvd::setup(
 {
 	timestepping_order = i_order;
 
-	if (simVars.sim.f_sphere)
+	if (simVars.sim.sphere_use_fsphere)
 	{
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = simVars.sim.f0;
+				o_data = simVars.sim.sphere_fsphere_f0;
 			}
 		);
 	}
@@ -94,7 +94,7 @@ void SWE_Sphere_TS_l_erk_pvd::setup(
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = mu*2.0*simVars.sim.coriolis_omega;
+				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
 			}
 		);
 	}

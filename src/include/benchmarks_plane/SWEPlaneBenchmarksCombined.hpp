@@ -349,11 +349,11 @@ public:
 				io_simVars.benchmark.benchmark_name == "steady_state_meridional_flow"
 		)
 		{
-			double f = simVars->sim.f0;
+			double f = simVars->sim.plane_rotating_f0;
 			double sx = simVars->sim.domain_size[0];
 			//double sy = simVars->sim.domain_size[1];
 
-			if (io_simVars.sim.f0 == 0)
+			if (io_simVars.sim.plane_rotating_f0 == 0)
 				FatalError("Coriolis = 0!");
 
 			o_h_pert.physical_set_zero();
@@ -387,11 +387,11 @@ public:
 				io_simVars.benchmark.benchmark_name == "steady_state_zonal_flow"
 		)
 		{
-			double f = simVars->sim.f0;
+			double f = simVars->sim.plane_rotating_f0;
 			//double sx = simVars->sim.domain_size[0];
 			double sy = simVars->sim.domain_size[1];
 
-			if (io_simVars.sim.f0 == 0)
+			if (io_simVars.sim.plane_rotating_f0 == 0)
 				FatalError("Coriolis = 0!");
 
 			o_h_pert.physical_set_zero();
@@ -428,7 +428,7 @@ public:
 			double sx = simVars->sim.domain_size[0];
 			double sy = simVars->sim.domain_size[1];
 
-			if (io_simVars.sim.f0 == 0)
+			if (io_simVars.sim.plane_rotating_f0 == 0)
 				FatalError("Coriolis = 0!");
 
 			o_h_pert.physical_set_zero();
@@ -479,7 +479,7 @@ public:
 					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
 					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
 
-					double factor = simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.f0*sy);
+					double factor = simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.plane_rotating_f0*sy);
 					io_data = factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));
 				}
 			);
@@ -490,7 +490,7 @@ public:
 					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
 					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
 
-					double factor = -simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.f0*sx);
+					double factor = -simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.plane_rotating_f0*sx);
 					io_data = factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));
 				}
 			);

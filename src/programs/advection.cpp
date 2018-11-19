@@ -112,13 +112,13 @@ public:
 
 	void run_timestep()
 	{
-		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+		//double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		//double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
 
-		double dt = simVars.sim.CFL*std::min(cell_size_x/u.reduce_maxAbs(), cell_size_y/v.reduce_maxAbs());
+		double dt = simVars.timecontrol.current_timestep_size;//*std::min(cell_size_x/u.reduce_maxAbs(), cell_size_y/v.reduce_maxAbs());
 
 		if (std::isinf(dt) != 0)
-			dt = simVars.sim.CFL*cell_size_x/0.000001;
+			dt = simVars.timecontrol.current_timestep_size;//*cell_size_x/0.000001;
 
 		simVars.timecontrol.current_timestep_size = dt;
 

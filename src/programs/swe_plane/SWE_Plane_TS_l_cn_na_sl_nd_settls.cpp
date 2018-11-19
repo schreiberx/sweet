@@ -77,7 +77,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	// Parameters
 	double h_bar = simVars.sim.h0;
 	double g = simVars.sim.gravitation;
-	double f0 = simVars.sim.f0;
+	double f0 = simVars.sim.plane_rotating_f0;
 	double dt = i_dt;
 	double alpha = 2.0/dt;
 	double kappa = alpha*alpha;

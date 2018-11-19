@@ -196,12 +196,12 @@ public:
 
 	void setup()
 	{
-		op.setup(sphereDataConfig, simVars.sim.earth_radius);
+		op.setup(sphereDataConfig, simVars.sim.sphere_radius);
 
 		f.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = 2.0*simVars.sim.coriolis_omega*mu;
+				o_data = 2.0*simVars.sim.sphere_rotating_coriolis_omega*mu;
 			}
 		);
 		outputMinMaxSum(f, "f");

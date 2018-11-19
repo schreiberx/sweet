@@ -49,8 +49,8 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		o_u_t = -simVars.sim.gravitation*op.diff_c_x(total_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 		o_v_t = -simVars.sim.gravitation*op.diff_c_y(total_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-		o_u_t += simVars.sim.f0*i_v;
-		o_v_t -= simVars.sim.f0*i_u;
+		o_u_t += simVars.sim.plane_rotating_f0*i_v;
+		o_v_t -= simVars.sim.plane_rotating_f0*i_u;
 
 		// standard update
 		/*
@@ -126,7 +126,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 			FatalError("SWE_Plane_TS_ln_erk: Methods unstable or inadequate for vector invariant swe");;
 		}
 
-		PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.f0) / total_h_pv;
+		PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
 
 		// u, v tendencies
 		// Energy conserving scheme

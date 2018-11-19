@@ -62,7 +62,7 @@ public:
 		eps *= std::sqrt(sphereDataConfig->spectral_modes_n_max)*std::sqrt(sphereDataConfig->spectral_modes_m_max);
 		std::cout << "Using max allowed error of eps=" << eps << std::endl;
 
-		sphere_operators_type op(sphereDataConfig, simVars.sim.earth_radius);
+		sphere_operators_type op(sphereDataConfig, simVars.sim.sphere_radius);
 
 		{
 			SphereTestSolutions_Gaussian testSolutions;
@@ -86,11 +86,11 @@ public:
 
 			double x_result_Lmax = x_result.physical_reduce_max_abs();
 
-			double r = simVars.sim.earth_radius;
-			double two_omega = 2.0*simVars.sim.coriolis_omega;
+			double r = simVars.sim.sphere_radius;
+			double two_omega = 2.0*simVars.sim.sphere_rotating_coriolis_omega;
 
 			std::cout << " + alpha: " << alpha << std::endl;
-			std::cout << " + earth_radius: " << simVars.sim.earth_radius << std::endl;
+			std::cout << " + earth_radius: " << simVars.sim.sphere_radius << std::endl;
 			std::cout << " + 2*coriolis_omega: " << two_omega << std::endl;
 			std::cout << " + Lmax(reference_solution): " << x_result_Lmax << std::endl;
 

@@ -262,7 +262,7 @@ public:
 					i_simVars.disc.timestepping_order,
 					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size,
-					i_simVars.sim.f_sphere,
+					i_simVars.sim.sphere_use_fsphere,
 					0	// VERSION 0
 				);
 
@@ -277,7 +277,7 @@ public:
 					i_simVars.disc.timestepping_order,
 					i_simVars.disc.timestepping_order2,
 					i_simVars.timecontrol.current_timestep_size,
-					i_simVars.sim.f_sphere,
+					i_simVars.sim.sphere_use_fsphere,
 					1	// VERSION 1
 				);
 
@@ -384,7 +384,7 @@ public:
 					i_simVars.timecontrol.current_timestep_size
 				);
 
-			if (i_simVars.sim.f_sphere)
+			if (i_simVars.sim.sphere_use_fsphere)
 				FatalError("TODO: Not yet supported");
 
 			master = &(SWE_Sphere_TS_interface&)*l_rexi_n_etdrk;
@@ -399,7 +399,7 @@ public:
 					i_simVars.timecontrol.current_timestep_size
 				);
 
-			if (i_simVars.sim.f_sphere)
+			if (i_simVars.sim.sphere_use_fsphere)
 				FatalError("TODO: Not yet supported");
 
 			master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_etdrk;
@@ -446,7 +446,7 @@ public:
 					i_simVars.rexi,
 					"phi0",
 					i_simVars.timecontrol.current_timestep_size,
-					i_simVars.sim.f_sphere,
+					i_simVars.sim.sphere_use_fsphere,
 					false
 				);
 #if 0
@@ -470,7 +470,7 @@ public:
 					i_simVars.rexi,
 					"phi0",
 					i_simVars.timecontrol.current_timestep_size,
-					i_simVars.sim.f_sphere,
+					i_simVars.sim.sphere_use_fsphere,
 					true
 				);
 

@@ -194,7 +194,7 @@ public:
 		 * Equation (2.3.a)
 		 * => Infer f0 and gravitation
 		 */
-		simVars.sim.f0 = 1.0/R;
+		simVars.sim.plane_rotating_f0 = 1.0/R;
 		//simVars.sim.gravitation = 1.0/R;
 		simVars.sim.gravitation = 1.0/(F*F);
 

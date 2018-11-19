@@ -34,15 +34,15 @@ void SWE_Sphere_TS_l_lf::euler_timestep_update(
 		FatalError("Only fixed time step size allowed");
 
 
-	if (simVars.sim.f_sphere)
+	if (simVars.sim.sphere_use_fsphere)
 	{
 		double gh = simVars.sim.gravitation * simVars.sim.h0;
 
 		o_phi_t = -gh*i_div;
 		o_div_t = -op.laplace(i_phi);
 
-		o_vort_t = -simVars.sim.f0*i_div;
-		o_div_t += simVars.sim.f0*i_vort;
+		o_vort_t = -simVars.sim.sphere_fsphere_f0*i_div;
+		o_div_t += simVars.sim.sphere_fsphere_f0*i_vort;
 	}
 	else
 	{
@@ -126,12 +126,12 @@ void SWE_Sphere_TS_l_lf::setup(
 
 	timestepping_lf.setup(robert_asselin_filter);
 
-	if (simVars.sim.f_sphere)
+	if (simVars.sim.sphere_use_fsphere)
 	{
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = simVars.sim.f0;
+				o_data = simVars.sim.sphere_fsphere_f0;
 			}
 		);
 	}
@@ -140,7 +140,7 @@ void SWE_Sphere_TS_l_lf::setup(
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = mu*2.0*simVars.sim.coriolis_omega;
+				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
 			}
 		);
 	}

@@ -96,7 +96,7 @@ public:
 		fg.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
-				o_data = mu*2.0*i_simVars.sim.coriolis_omega;
+				o_data = mu*2.0*i_simVars.sim.sphere_rotating_coriolis_omega;
 			}
 		);
 
@@ -220,7 +220,7 @@ public:
 		u = u.robert_convertToNonRobert();
 		v = v.robert_convertToNonRobert();
 
-		double normalization = 4.0*M_PI*(io_simVars.sim.earth_radius*io_simVars.sim.earth_radius);
+		double normalization = 4.0*M_PI*(io_simVars.sim.sphere_radius*io_simVars.sim.sphere_radius);
 
 		// mass
 		io_simVars.diag.total_mass = compute_zylinder_integral(h) * normalization;
@@ -270,7 +270,7 @@ public:
 		else
 			op.vortdiv_to_uv(i_prog_vort, i_prog_div, u, v);
 
-		double normalization = (io_simVars.sim.earth_radius*io_simVars.sim.earth_radius);
+		double normalization = (io_simVars.sim.sphere_radius*io_simVars.sim.sphere_radius);
 
 		// mass
 		io_simVars.diag.total_mass = compute_zylinder_integral(h) * normalization;

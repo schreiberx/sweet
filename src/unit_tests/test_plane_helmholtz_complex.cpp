@@ -201,7 +201,7 @@ int main(int i_argc, char *i_argv[])
 					0.2,		// h
 					16,			// REXI M
 					0,			// REXI N (0 for auto detection)
-					simVars.sim.f0,
+					simVars.sim.plane_rotating_f0,
 					res,
 					simVars.sim.domain_size,
 					true,		// use only half of REXI
@@ -235,7 +235,7 @@ int main(int i_argc, char *i_argv[])
 			for (std::size_t i = 0; i < rexiSWE.rexi.alpha.size(); i++)
 			{
 				std::complex<double> alpha = -rexiSWE.rexi.alpha[i]/tau;
-				std::complex<double> kappa = alpha*alpha + simVars.sim.f0*simVars.sim.f0;
+				std::complex<double> kappa = alpha*alpha + simVars.sim.plane_rotating_f0*simVars.sim.plane_rotating_f0;
 
 				double gh = simVars.sim.gravitation * simVars.benchmark.h0;
 

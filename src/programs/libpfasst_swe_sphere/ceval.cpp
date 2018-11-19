@@ -718,7 +718,7 @@ extern "C"
       return;
 
     // get the parameters used to apply diffusion
-    const double r    = simVars->sim.earth_radius;
+    const double r    = simVars->sim.sphere_radius;
     const double visc = simVars->sim.viscosity;
 
     phi_F3 = phi_Y;
@@ -788,7 +788,7 @@ extern "C"
 
     // get the parameters used to apply diffusion
     const double scalar = simVars->sim.viscosity*i_dt;
-    const double r      = simVars->sim.earth_radius;
+    const double r      = simVars->sim.sphere_radius;
 
     // solve (1-dt*visc*diff_op)*rhs = y
     phi_Y  = phi_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r); 
@@ -825,7 +825,7 @@ extern "C"
     SphereData& div_Y  = io_Y->get_div();
 
     const double scalar = simVars->sim.viscosity*i_dt;
-    const double r      = simVars->sim.earth_radius;
+    const double r      = simVars->sim.sphere_radius;
 	    
     phi_Y  = phi_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
     vort_Y = vort_Y.spectral_solve_helmholtz(1.0, -scalar, r);

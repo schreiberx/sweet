@@ -391,9 +391,9 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 							sphereDataConfigSolver,
 							perThreadVars[i]->alpha[thread_local_idx],
 							perThreadVars[i]->beta_re[thread_local_idx],
-							simCoeffs.earth_radius,
-							simCoeffs.coriolis_omega,
-							simCoeffs.f0,
+							simCoeffs.sphere_radius,
+							simCoeffs.sphere_rotating_coriolis_omega,
+							simCoeffs.plane_rotating_f0,
 							simCoeffs.h0 * simCoeffs.gravitation,
 							timestep_size,
 							use_f_sphere,
@@ -633,9 +633,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 						alpha,
 						beta_re,
 
-						simCoeffs.earth_radius,
-						simCoeffs.coriolis_omega,
-						simCoeffs.f0,
+						simCoeffs.sphere_radius,
+						simCoeffs.sphere_rotating_coriolis_omega,
+						simCoeffs.plane_rotating_f0,
 						simCoeffs.h0*simCoeffs.gravitation,
 						i_fixed_dt,
 
@@ -791,9 +791,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 							alpha,
 							beta_re,
 
-							simCoeffs.earth_radius,
-							simCoeffs.coriolis_omega,
-							simCoeffs.f0,
+							simCoeffs.sphere_radius,
+							simCoeffs.sphere_rotating_coriolis_omega,
+							simCoeffs.plane_rotating_f0,
 							simCoeffs.h0*simCoeffs.gravitation,
 							i_fixed_dt,
 

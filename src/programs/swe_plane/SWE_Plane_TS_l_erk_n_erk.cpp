@@ -49,8 +49,8 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 	 * v_t = -g * h_y - f*u
 	 */
 	o_h_pert_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
-	o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h_pert) + simVars.sim.f0*i_v;
-	o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h_pert) - simVars.sim.f0*i_u;
+	o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h_pert) + simVars.sim.plane_rotating_f0*i_v;
+	o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h_pert) - simVars.sim.plane_rotating_f0*i_u;
 
 }
 

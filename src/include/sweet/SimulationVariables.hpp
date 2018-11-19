@@ -46,6 +46,10 @@
 #       include <libpfasst/LibPFASST_SimulationVariables.hpp>
 #endif
 
+
+#define SWEET_USE_PLANE_TEST 1
+
+
 /*
  * REXI program parameters
  */
@@ -283,38 +287,34 @@ public:
 		/// hyper viscosity-term on velocities with 4th order diff operator
 		int viscosity_order = 2;
 
-		/// CFL condition
-		double CFL = 0.05;
 
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+		/**
+		 * Earth radius for simulations on the sphere
+		 */
+		double sphere_radius = 6.37122e6;
+
+		/**
+		 * Simulation on f-sphere? (constant f0 term over entire sphere)
+		 */
+		bool sphere_use_fsphere = false;
 
 		/**
 		 * Coriolis effect
 		 * 7.2921 x 10^{-5}
 		 */
-		double coriolis_omega = 0.000072921;
+		double sphere_rotating_coriolis_omega = 0.000072921;
 
-
-		/**
-		 * Coriolis frequency f0
-		 */
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE
-		double f0 = 0.00007292*2; //Sphere
-#else
-		double f0 = 1.0; //Plane
+		double sphere_fsphere_f0 = 0.00007292*2; //Sphere
 #endif
 
-		// constants from Galwesky et al. paper
 
 		/**
-		 * Earth radius for simulations on the sphere
+		 * Plane with f-Coriolis rotation
 		 */
-		double earth_radius = 6.37122e6;
-
-
-		/**
-		 * Simulation on f-sphere? (constant f0 term over entire sphere)
-		 */
-		bool f_sphere = false;
+#if SWEET_USE_PLANE_TEST
+		double plane_rotating_f0 = 1.0; //Plane
+#endif
 
 		/**
 		 * Flag to indicate the presence of topography
@@ -358,14 +358,20 @@ public:
 			std::cout << " + h0: " << h0 << std::endl;
 			std::cout << " + viscosity: " << viscosity << std::endl;
 			std::cout << " + viscosity_order: " << viscosity_order << std::endl;
-			std::cout << " + CFL: " << CFL << std::endl;
-			std::cout << " + f0: " << f0 << std::endl;
-			std::cout << " + earth_radius: " << earth_radius << std::endl;
-			std::cout << " + coriolis_omega: " << coriolis_omega << std::endl;
-			std::cout << " + f_sphere: " << f_sphere << std::endl;
 			std::cout << " + gravitation: " << gravitation << std::endl;
 			std::cout << " + domain_size (2D): " << domain_size[0] << " x " << domain_size[1] << std::endl;
 			std::cout << " + advection_velocity (x, y, rotation speed): " << advection_velocity[0] << ", " << advection_velocity[1] << ", " << advection_velocity[2] << std::endl;
+
+#if SWEET_USE_PLANE_TEST
+			std::cout << " + plane_rotating_f0: " << plane_rotating_f0 << std::endl;
+#endif
+
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+			std::cout << " + sphere_radius: " << sphere_radius << std::endl;
+			std::cout << " + sphere_rotating_coriolis_omega: " << sphere_rotating_coriolis_omega << std::endl;
+			std::cout << " + sphere_use_fsphere: " << sphere_use_fsphere << std::endl;
+			std::cout << " + sphere_fsphere_f0: " << sphere_fsphere_f0 << std::endl;
+#endif
 
 			std::cout << std::endl;
 		}
@@ -488,7 +494,6 @@ public:
 			std::cout << "  >Time:" << std::endl;
 			std::cout << "	-W [0/1]					use up- and downwinding, default:0" << std::endl;
 			std::cout << "	-R [1-RKn]					order of time stepping method, default:0" << std::endl;
-			std::cout << "	-C [cfl]					CFL condition, use negative value for fixed time step size, default=0.05" << std::endl;
 			std::cout << "	--timestepping-method [string]	String of time stepping method" << std::endl;
 			std::cout << "	--timestepping-order [int]			Specify the order of the time stepping" << std::endl;
 			std::cout << "	--timestepping-order2 [int]			Specify the order of the time stepping" << std::endl;
@@ -1169,13 +1174,6 @@ public:
 				disc.res_physical[1] = atoi(optarg);
 				break;
 
-			case 'C':
-				sim.CFL = atof(optarg);
-				if (sim.CFL < 0)
-					timecontrol.current_timestep_size = -sim.CFL;
-
-				break;
-
 			case 'r':
 				benchmark.object_scale = atof(optarg);
 				break;
@@ -1217,17 +1215,24 @@ public:
 				break;
 
 			case 'f':
-				sim.f0 = atof(optarg);
-				sim.coriolis_omega = atof(optarg);
+#if SWEET_USE_PLANE_TEST
+				sim.plane_rotating_f0 = atof(optarg);
+#endif
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+				sim.sphere_rotating_coriolis_omega = atof(optarg);
+				sim.sphere_fsphere_f0 = atof(optarg);
+#endif
 				break;
 
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
 			case 'F':
-				sim.f_sphere = atoi(optarg);
+				sim.sphere_use_fsphere = atoi(optarg);
 				break;
 
 			case 'a':
-				sim.earth_radius = atof(optarg);
+				sim.sphere_radius = atof(optarg);
 				break;
+#endif
 
 			case 'G':
 				misc.gui_enabled = atoi(optarg);

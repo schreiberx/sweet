@@ -42,7 +42,7 @@ public:
 		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
 
 		// absolute vorticity
-		PlaneData eta = (op.diff_c_x(i_prog_v) - op.diff_c_y(i_prog_u) + io_simVars.sim.f0);
+		PlaneData eta = (op.diff_c_x(i_prog_v) - op.diff_c_y(i_prog_u) + io_simVars.sim.plane_rotating_f0);
 
 		// enstrophy
 		io_simVars.diag.total_potential_enstrophy = 0.5*(eta*eta).reduce_sum_quad() * normalization;
@@ -76,7 +76,7 @@ public:
 		io_simVars.diag.total_energy = (pot_energy + kin_energy).reduce_sum_quad();
 
 		// total vorticity
-		PlaneData eta = (op.diff_c_x(v) - op.diff_c_y(u) + io_simVars.sim.f0);
+		PlaneData eta = (op.diff_c_x(v) - op.diff_c_y(u) + io_simVars.sim.plane_rotating_f0);
 
 		// enstrophy
 		io_simVars.diag.total_potential_enstrophy = 0.5*(eta*eta).reduce_sum_quad() * normalization;

@@ -84,8 +84,8 @@ public:
 
 		double u_phi = t->initial_condition_u(0, phi);
 
-		return t->simVars.sim.earth_radius*u_phi*
-				(2.0*t->simVars.sim.coriolis_omega*std::sin(phi)+(std::tan(phi)/t->simVars.sim.earth_radius)*u_phi);
+		return t->simVars.sim.sphere_radius*u_phi*
+				(2.0*t->simVars.sim.sphere_rotating_coriolis_omega*std::sin(phi)+(std::tan(phi)/t->simVars.sim.sphere_radius)*u_phi);
 	};
 
 	double error_threshold = 1.e-12;

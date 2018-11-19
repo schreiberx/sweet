@@ -39,8 +39,8 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		 */
 
 #if 1
-		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
-		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.f0*i_u;
+		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.plane_rotating_f0*i_v;
+		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.plane_rotating_f0*i_u;
 
 		// standard update
 		o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
@@ -48,9 +48,9 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 
 	#if 0
 		// U-only
-		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.f0*i_v;
+		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.plane_rotating_f0*i_v;
 		//o_v_t.physical_set_zero();
-		o_v_t = - simVars.sim.f0*i_u;
+		o_v_t = - simVars.sim.plane_rotating_f0*i_u;
 
 		// standard update
 		o_h_t = -(op.diff_c_x(i_u))*simVars.sim.h0;
@@ -58,8 +58,8 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 	#else
 		// V-only
 		//o_u_t.spectral_set_zero();
-		o_u_t = +simVars.sim.f0*i_v;
-		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.f0*i_u;// - simVars.sim.f0*i_u;
+		o_u_t = +simVars.sim.plane_rotating_f0*i_v;
+		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.plane_rotating_f0*i_u;// - simVars.sim.f0*i_u;
 
 		// standard update
 		o_h_t = -(op.diff_c_y(i_v))*simVars.sim.h0;
@@ -105,8 +105,8 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 
 		H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
-		o_u_t = op.avg_f_y(simVars.sim.f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
-		o_v_t = -op.avg_f_x(simVars.sim.f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+		o_u_t = op.avg_f_y(simVars.sim.plane_rotating_f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
+		o_v_t = -op.avg_f_x(simVars.sim.plane_rotating_f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
 
 		/*
 		 * P UPDATE

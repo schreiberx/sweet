@@ -145,7 +145,7 @@ public:
             timestepper_l_rexi[level]->setup(simVars->rexi,
 					     "phi0",
 					     simVars->timecontrol.current_timestep_size,
-					     simVars->sim.f_sphere,
+					     simVars->sim.sphere_use_fsphere,
 					     false
 
 					     );

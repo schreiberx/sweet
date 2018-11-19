@@ -141,7 +141,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	io_u.request_data_spectral();
 	io_v.request_data_spectral();
 
-	T f = simVars.sim.f0;
+	T f = simVars.sim.plane_rotating_f0;
 	T h = simVars.sim.h0;
 	T g = simVars.sim.gravitation;
 
@@ -185,7 +185,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 			 */
 			complex lambda[3];
 
-			if (simVars.sim.f0 == 0)
+			if (simVars.sim.plane_rotating_f0 == 0)
 			{
 				/*
 				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
@@ -654,7 +654,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	o_v.physical_space_data_valid = false;
 #endif
 
-	T f = simVars.sim.f0;
+	T f = simVars.sim.plane_rotating_f0;
 	T h = simVars.sim.h0;
 	T g = simVars.sim.gravitation;
 
@@ -699,7 +699,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			 */
 			complex lambda[3];
 
-			if (simVars.sim.f0 == 0)
+			if (simVars.sim.plane_rotating_f0 == 0)
 			{
 				/*
 				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D

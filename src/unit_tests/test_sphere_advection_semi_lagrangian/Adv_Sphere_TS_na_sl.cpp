@@ -48,7 +48,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 			diag_u, diag_v,
 			posx_a, posy_a,
 			dt,
-			simVars.sim.earth_radius,
+			simVars.sim.sphere_radius,
 			posx_d, posy_d,
 			timestepping_order
 	);

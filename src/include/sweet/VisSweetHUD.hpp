@@ -251,7 +251,7 @@ public:
 		cGlHudConfigMainRight.insert(o.setupText("|--- EdgeComm parameters ---|"));
 		cGlHudConfigMainRight.insert(o.setupFloat("Gravitation length (TODO): ", &cSimulationParameters->simulation_parameter_gravitation, 0.1, -100, 0));
 		cGlHudConfigMainRight.insert(o.setupFloatHI("Timestep size: ", &cSimulationParameters->simulation_parameter_timestep_size, 0.01));
-		cGlHudConfigMainRight.insert(o.setupFloatHI("CFL: ", &cSimulationParameters->simulation_parameter_cfl, 0.001, 0, 1));
+		//cGlHudConfigMainRight.insert(o.setupFloatHI("CFL: ", &cSimulationParameters->simulation_parameter_cfl, 0.001, 0, 1));
 
 
 

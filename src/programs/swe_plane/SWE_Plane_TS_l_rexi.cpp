@@ -405,7 +405,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 			complex alpha = rexi_alpha[n]/i_dt;
 			complex beta = rexi_beta[n];
 
-			if (simVars.sim.f0 == 0)
+			if (simVars.sim.plane_rotating_f0 == 0)
 			{
 				/*
 				 * TODO: we can even get more performance out of this operations
@@ -431,7 +431,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 			else
 			{
 				// load kappa (k)
-				complex kappa = alpha*alpha + simVars.sim.f0*simVars.sim.f0;
+				complex kappa = alpha*alpha + simVars.sim.plane_rotating_f0*simVars.sim.plane_rotating_f0;
 
 				/*
 				 * TODO: we can even get more performance out of this operations
@@ -439,7 +439,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				 */
 				PlaneDataComplex rhs =
 						(kappa/alpha) * eta0
-						+ (-simVars.sim.f0*eta_bar/alpha) * rhs_b
+						+ (-simVars.sim.plane_rotating_f0*eta_bar/alpha) * rhs_b
 						+ rhs_a
 					;
 
@@ -449,8 +449,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				PlaneDataComplex uh = u0 + g*opc.diff_c_x(eta);
 				PlaneDataComplex vh = v0 + g*opc.diff_c_y(eta);
 
-				PlaneDataComplex u1 = (alpha/kappa) * uh     - (simVars.sim.f0/kappa) * vh;
-				PlaneDataComplex v1 = (simVars.sim.f0/kappa) * uh + (alpha/kappa) * vh;
+				PlaneDataComplex u1 = (alpha/kappa) * uh     - (simVars.sim.plane_rotating_f0/kappa) * vh;
+				PlaneDataComplex v1 = (simVars.sim.plane_rotating_f0/kappa) * uh + (alpha/kappa) * vh;
 
 				PlaneData tmp(h_sum.planeDataConfig);
 
