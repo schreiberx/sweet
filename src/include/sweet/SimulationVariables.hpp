@@ -137,21 +137,21 @@ public:
 
 public:
 	/**
-	 * Values and parameters to setup simulations
+	 * Values and parameters to setup benchmarks simulations
 	 */
-	struct Setup
+	struct Benchmark
 	{
 		/// seed for random number generator
 		int random_seed = 0;
 
-		/// setup scenario
-		int benchmark_id = -1;
+		/// benchmark scenario
+//		int benchmark_id = -1;
 
-		/// setup scenario
+		/// benchmark scenario
 		std::string benchmark_name = "";
 
 		/// Use 2/3 rule in physical space for dealiasing
-		bool benchmark_setup_dealiased = true;
+		bool setup_dealiased = true;
 
 
 		/// Galewsky-benchmark specific: velocity
@@ -165,13 +165,13 @@ public:
 
 
 		/// radius
-		double radius_scale = 1;
+		double initial_condition_radius_scale = 1;
 
 		/// setup coordinate of e.g. radial breaking dam, x-placement \in [0;1]
-		double setup_coord_x = 0.5;
+		double initial_condition_setup_coord_x = 0.5;
 
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
-		double setup_coord_y = 0.5;
+		double initial_condition_setup_coord_y = 0.5;
 
 		/// rotation angle for advection equation
 		double advection_rotation_angle = 0;
@@ -215,15 +215,15 @@ public:
 			std::cout << std::endl;
 			std::cout << "SETUP:" << std::endl;
 			std::cout << " + random_seed: " << random_seed << std::endl;
-			std::cout << " + benchmark_id: " << benchmark_id << std::endl;
+//			std::cout << " + benchmark_id: " << benchmark_id << std::endl;
 			std::cout << " + benchmark_name: " << benchmark_name << std::endl;
-			std::cout << " + benchmark_setup_dealiased: " << benchmark_setup_dealiased << std::endl;
+			std::cout << " + benchmark_setup_dealiased: " << setup_dealiased << std::endl;
 			std::cout << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
 			std::cout << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;
 			std::cout << " + benchmark_galewsky_phi2: " << benchmark_galewsky_phi2 << std::endl;
-			std::cout << " + radius_scale: " << radius_scale << std::endl;
-			std::cout << " + setup_coord_x: " << setup_coord_x << std::endl;
-			std::cout << " + setup_coord_y: " << setup_coord_y << std::endl;
+			std::cout << " + radius_scale: " << initial_condition_radius_scale << std::endl;
+			std::cout << " + setup_coord_x: " << initial_condition_setup_coord_x << std::endl;
+			std::cout << " + setup_coord_y: " << initial_condition_setup_coord_y << std::endl;
 			std::cout << " + advection_rotation_angle: " << advection_rotation_angle << std::endl;
 			std::cout << " + input_data_filenames:" << std::endl;
 			for (std::size_t i = 0; i < input_data_filenames.size(); i++)
@@ -251,7 +251,7 @@ public:
 
 			std::cout << "" << std::endl;
 		}
-	} setup;
+	} benchmark;
 
 
 
@@ -655,7 +655,7 @@ public:
 	{
 		sim.outputConfig();
 		disc.outputConfig();
-		setup.outputConfig();
+		benchmark.outputConfig();
 		timecontrol.outputConfig();
 
 		rexi.outputConfig();
@@ -696,8 +696,8 @@ public:
 			std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
 
 
-		if (setup.random_seed >= 0)
-			srandom(setup.random_seed);
+		if (benchmark.random_seed >= 0)
+			srandom(benchmark.random_seed);
 	}
 
 
@@ -1015,20 +1015,20 @@ public:
 				{
 					int c = 0;
 
-								if (i == c)	{	setup.random_seed = atoi(optarg);		continue;	}
-					c++;		if (i == c)	{	setup.setup_coord_x = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	setup.setup_coord_y = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	setup.advection_rotation_angle = atof(optarg);		continue;	}
+								if (i == c)	{	benchmark.random_seed = atoi(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.initial_condition_setup_coord_x = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.initial_condition_setup_coord_y = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.advection_rotation_angle = atof(optarg);		continue;	}
 					c++;		if (i == c) {
 							split3double(optarg, &sim.advection_velocity[0], &sim.advection_velocity[1], &sim.advection_velocity[2]);
 							continue;
 					}
-					c++;		if (i == c)	{	setup.benchmark_name = optarg;		continue;	}
-					c++;		if (i == c)	{	setup.benchmark_setup_dealiased = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.benchmark_name = optarg;		continue;	}
+					c++;		if (i == c)	{	benchmark.setup_dealiased = atof(optarg);		continue;	}
 
-					c++;		if (i == c)	{	setup.benchmark_galewsky_umax = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	setup.benchmark_galewsky_hamp = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	setup.benchmark_galewsky_phi2 = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.benchmark_galewsky_umax = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.benchmark_galewsky_hamp = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.benchmark_galewsky_phi2 = atof(optarg);		continue;	}
 
 					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
 					c++;		if (i == c)	{	misc.output_file_name = optarg;					continue;	}
@@ -1168,7 +1168,7 @@ public:
 				break;
 
 			case 'r':
-				setup.radius_scale = atof(optarg);
+				benchmark.initial_condition_radius_scale = atof(optarg);
 				break;
 
 			case 't':
@@ -1187,9 +1187,9 @@ public:
 				sim.viscosity_order = atoi(optarg);
 				break;
 
-			case 's':
-				setup.benchmark_id = atoi(optarg);
-				break;
+//			case 's':
+//				benchmark.benchmark_id = atoi(optarg);
+//				break;
 
 			case 'S':
 				disc.use_spectral_basis_diffs = atoi(optarg);
@@ -1204,11 +1204,11 @@ public:
 				break;
 
 			case 'x':
-				setup.setup_coord_x = atof(optarg);
+				benchmark.initial_condition_setup_coord_x = atof(optarg);
 				break;
 
 			case 'y':
-				setup.setup_coord_y = atof(optarg);
+				benchmark.initial_condition_setup_coord_y = atof(optarg);
 				break;
 
 			case 'f':
@@ -1255,13 +1255,13 @@ public:
 				break;
 
 			case 'i':
-				setup.setup_initial_condition_filenames(optarg);
+				benchmark.setup_initial_condition_filenames(optarg);
 				break;
 
 
 			default:
 				sim.outputProgParams();
-				setup.outputProgParams();
+				benchmark.outputProgParams();
 				disc.outputProgParams();
 
 				std::cout << "" << std::endl;

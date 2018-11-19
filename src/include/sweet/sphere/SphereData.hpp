@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#ifndef SPHERE_DATA_HPP_
-#define SPHERE_DATA_HPP_
+#ifndef SWEET_SPHERE_DATA_HPP_
+#define SWEET_SPHERE_DATA_HPP_
 
 #include <complex>
 #include <functional>
@@ -2144,4 +2144,4 @@ SphereData operator*(
 
 
 
-#endif /* SPHDATA_HPP_ */
+#endif /* SWEET_SPHERE_DATA_HPP_ */

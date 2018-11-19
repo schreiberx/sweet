@@ -229,8 +229,8 @@ public:
 			/*
 			 * Manually reset the seed
 			 */
-			if (simVars.setup.random_seed >= 0)
-				srandom(simVars.setup.random_seed);
+			if (simVars.benchmark.random_seed >= 0)
+				srandom(simVars.benchmark.random_seed);
 
 			std::cout << "POLVANI"<< std::endl;
 			std::cout << "POLVANI ITERATION " << k << std::endl;

@@ -196,17 +196,11 @@ public:
 	{
 		simVars.reset();
 
-		if (simVars.setup.benchmark_id < 0 && simVars.setup.benchmark_name == "" )
+		if (simVars.benchmark.benchmark_name == "")
 		{
-			std::cout << std::endl;
-			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
-			SWEPlaneBenchmarks_DEPRECATED::printScenarioInformation();
-			std::cout << std::endl;
-
-			std::cout << "Benchmark scenario not selected (option --benchmark [string])" << std::endl;
+			std::cout << "Benchmark scenario not selected (option --benchmark-name [string])" << std::endl;
 			swePlaneBenchmarks.printBenchmarkInformation();
-
-			FatalError("Benchmark scenario not selected");
+			FatalError("Benchmark name not given");
 		}
 
 
@@ -255,8 +249,10 @@ public:
 			gridMapping.setup(simVars, planeDataConfig);
 
 
-		if (simVars.setup.benchmark_name == "")
+#if 0
+		if (simVars.benchmark.benchmark_name == "")
 		{
+			FatalError("Benchmark name not given");
 			// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
 			auto return_h_perturbed = [] (
 					SimulationVariables &i_parameters,
@@ -363,23 +359,24 @@ public:
 			}
 		}
 		else
-		{
-			swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
+#endif
 
-			prog_h_pert = t0_prog_h_pert;
-			prog_u = t0_prog_u;
-			prog_v = t0_prog_v;
-		}
+		swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
+
+		prog_h_pert = t0_prog_h_pert;
+		prog_u = t0_prog_u;
+		prog_v = t0_prog_v;
+
 
 		// Load data, if requested
-		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_h_pert.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+		if (simVars.benchmark.input_data_filenames.size() > 0)
+			prog_h_pert.file_physical_loadData(simVars.benchmark.input_data_filenames[0].c_str(), simVars.benchmark.input_data_binary);
 
-		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+		if (simVars.benchmark.input_data_filenames.size() > 1)
+			prog_u.file_physical_loadData(simVars.benchmark.input_data_filenames[1].c_str(), simVars.benchmark.input_data_binary);
 
-		if (simVars.setup.input_data_filenames.size() > 2)
-			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[2].c_str(), simVars.setup.input_data_binary);
+		if (simVars.benchmark.input_data_filenames.size() > 2)
+			prog_v.file_physical_loadData(simVars.benchmark.input_data_filenames[2].c_str(), simVars.benchmark.input_data_binary);
 
 		timeSteppers.setup(
 				simVars.disc.timestepping_method,
@@ -973,9 +970,9 @@ public:
 
 		case 'l':
 			// load data arrays
-			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup.input_data_binary);
-			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.setup.input_data_binary);
-			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.setup.input_data_binary);
+			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.benchmark.input_data_binary);
+			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.benchmark.input_data_binary);
+			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.benchmark.input_data_binary);
 			break;
 		}
 	}

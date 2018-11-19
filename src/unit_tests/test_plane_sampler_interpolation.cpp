@@ -95,8 +95,8 @@ public:
 		else if (dy < -0.5*simVars.sim.domain_size[1])
 			dy += simVars.sim.domain_size[1];
 
-		dx /= sx*simVars.setup.radius_scale;
-		dy /= sy*simVars.setup.radius_scale;
+		dx /= sx*simVars.benchmark.initial_condition_radius_scale;
+		dy /= sy*simVars.benchmark.initial_condition_radius_scale;
 
 		return std::exp(-i_exp_fac*(dx*dx + dy*dy));
 	}

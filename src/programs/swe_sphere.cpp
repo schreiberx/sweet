@@ -150,7 +150,7 @@ public:
 			FatalError("Only fixed time step size supported");
 
 
-		if (simVars.setup.benchmark_setup_dealiased)
+		if (simVars.benchmark.setup_dealiased)
 		{
 			// use dealiased physical space for setup
 			sphereBenchmarks.setup(simVars, op);
@@ -206,7 +206,7 @@ public:
 	std::string write_file_csv(
 			const SphereData &i_sphereData,
 			const char* i_name,		///< name of output variable
-			bool i_phi_shifted
+			bool i_phi_shifted = false
 	)
 	{
 		char buffer[1024];
@@ -265,11 +265,11 @@ public:
 			std::string output_filename;
 			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
 
-			output_filename = write_file_csv(prog_phi, "prog_phi", simVars.setup.benchmark_id == 0);
+			output_filename = write_file_csv(prog_phi, "prog_phi");
 			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
-			output_filename = write_file_csv(h, "prog_h", simVars.setup.benchmark_id == 0);
+			output_filename = write_file_csv(h, "prog_h");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
 
@@ -278,25 +278,25 @@ public:
 
 			op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 
-			output_filename = write_file_csv(u, "prog_u", simVars.setup.benchmark_id == 0);
+			output_filename = write_file_csv(u, "prog_u");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_csv(v, "prog_v", simVars.setup.benchmark_id == 0);
+			output_filename = write_file_csv(v, "prog_v");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_csv(prog_vort, "prog_vort", simVars.setup.benchmark_id == 0);
+			output_filename = write_file_csv(prog_vort, "prog_vort");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_csv(prog_div, "prog_div", simVars.setup.benchmark_id == 0);
+			output_filename = write_file_csv(prog_div, "prog_div");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
 			SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
 
-			output_filename = write_file_csv(potvort, "prog_potvort", simVars.setup.benchmark_id == 0);
+			output_filename = write_file_csv(potvort, "prog_potvort");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 		}
@@ -329,29 +329,21 @@ public:
 		if (simVars.misc.compute_errors)
 		{
 			if (
-					simVars.setup.benchmark_name != "geostrophic_balance"		&&
-					simVars.setup.benchmark_name != "geostrophic_balance_1"		&&
-					simVars.setup.benchmark_name != "geostrophic_balance_2"		&&
-					simVars.setup.benchmark_name != "geostrophic_balance_4"		&&
-					simVars.setup.benchmark_name != "geostrophic_balance_8"		&&
-					simVars.setup.benchmark_name != "geostrophic_balance_16"	&&
-					simVars.setup.benchmark_name != "geostrophic_balance_32"	&&
-					simVars.setup.benchmark_name != "geostrophic_balance_64"	&&
-					simVars.setup.benchmark_name != "geostrophic_balance_128"	&&
-					simVars.setup.benchmark_name != "geostrophic_balance_256"	&&
-					simVars.setup.benchmark_name != "geostrophic_balance_512"
+					simVars.benchmark.benchmark_name != "geostrophic_balance"		&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_1"		&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_2"		&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_4"		&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_8"		&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_16"	&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_32"	&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_64"	&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_128"	&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_256"	&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_512"
 			)
 			{
-				if (
-						simVars.setup.benchmark_id != 10	 &&
-						simVars.setup.benchmark_id != 11	 &&
-						simVars.setup.benchmark_id != 101
-				)
-				{
-					std::cout << "Benchamrk name: " << simVars.setup.benchmark_name << std::endl;
-					std::cout << "Benchmark scenario id: " << simVars.setup.benchmark_id << std::endl;
-					FatalError("Analytical solution not available for this benchmark");
-				}
+				std::cout << "Benchamrk name: " << simVars.benchmark.benchmark_name << std::endl;
+				FatalError("Analytical solution not available for this benchmark");
 			}
 
 			SphereData anal_solution_phi(sphereDataConfig);
@@ -498,16 +490,18 @@ public:
 
 	bool detect_instability()
 	{
+#if 0
 		double max_abs_value = std::abs(simVars.sim.h0)*2.0*simVars.sim.gravitation;
 
 		if (
 				SphereData(prog_phi).physical_reduce_max_abs() > max_abs_value &&
-				simVars.setup.benchmark_id != 4
+				simVars.benchmark.benchmark_id != 4
 		)
 		{
 			std::cerr << "Instability detected (max abs value of h > " << max_abs_value << ")" << std::endl;
 			return true;
 		}
+#endif
 
 		if (SphereData(prog_phi).physical_isAnyNaNorInf())
 		{
@@ -876,7 +870,7 @@ int main(int i_argc, char *i_argv[])
 			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
 
 			// setup controller. This initializes several simulation instances
-			parareal_Controller_Serial.setup(&simVars.parareal);
+			parareal_Controller_Serial.benchmark(&simVars.parareal);
 
 			// execute the simulation
 			parareal_Controller_Serial.run();

@@ -110,10 +110,10 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 		double i_simulation_timestamp
 )
 {
-	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
+//	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
 
 #if 1
-	double gh = simVars.sim.gravitation*simVars.sim.h0;
+//	double gh = simVars.sim.gravitation*simVars.sim.h0;
 
 	/*
 	 * Apply Coriolis Effect in physical VELOCITY space

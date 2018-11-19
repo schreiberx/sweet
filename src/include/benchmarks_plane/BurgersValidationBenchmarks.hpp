@@ -14,15 +14,17 @@
 
 class BurgersValidationBenchmarks
 {
-#if 1
+	/*
+	 * Ugly hack to get set_source running with static method
+	 */
 	static
-	void error(const char *i_string)
+	int &getBurgersBenchmarkID()
 	{
-		std::cerr << "ERROR: " << i_string << std::endl;
-		assert(false);
-		exit(1);
+		static int benchmark_id = -1;
+		return benchmark_id;
 	}
-#endif
+
+
 
 public:
 	static
@@ -32,61 +34,71 @@ public:
 			double y
 	)
 	{
-		if (i_parameters.setup.benchmark_id == 70)
+		int benchmark_id = atoi(i_parameters.benchmark.benchmark_name.c_str());
+
+		getBurgersBenchmarkID() = benchmark_id;
+
+		if (benchmark_id <= 0)
+		{
+			FatalError("Invalid benchmark-name (number) selected");
+		}
+
+
+		if (benchmark_id == 70)
 		{
 			return sin(2*M_PI*x);
 		}
 
-		if (i_parameters.setup.benchmark_id == 51)
+		if (benchmark_id == 51)
 		{
 			return i_parameters.timecontrol.current_simulation_time;
 		}
 
-		if (i_parameters.setup.benchmark_id == 52)
+		if (benchmark_id == 52)
 		{
 			return i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time;
 		}
 
-		if (i_parameters.setup.benchmark_id == 53)
+		if (benchmark_id == 53)
 		{
 			return i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time*i_parameters.timecontrol.current_simulation_time;
 		}
 
-		if (i_parameters.setup.benchmark_id == 54)
+		if (benchmark_id == 54)
 		{
 			return 1000*i_parameters.timecontrol.current_simulation_time*std::sin(2*M_PI*x);
 		}
 
-		if (i_parameters.setup.benchmark_id == 55)
+		if (benchmark_id == 55)
 		{
 			return std::sin(2*M_PI*i_parameters.timecontrol.current_simulation_time);
 		}
 
-		if (i_parameters.setup.benchmark_id == 56)
+		if (benchmark_id == 56)
 		{
 			return std::sin(2*M_PI*i_parameters.timecontrol.current_simulation_time*i_parameters.sim.f0)/i_parameters.sim.f0;
 		}
 
-		if (i_parameters.setup.benchmark_id == 57)
+		if (benchmark_id == 57)
 		{
 			double k=i_parameters.sim.f0;
 			double t=i_parameters.timecontrol.current_simulation_time;
 			return std::sin(2*M_PI*x*k)*std::sin(2*M_PI*t*k)/k;
 		}
 
-		if (i_parameters.setup.benchmark_id == 58)
+		if (benchmark_id == 58)
 		{
 			double k=i_parameters.sim.f0;
 			double t=i_parameters.timecontrol.current_simulation_time;
 			return std::sin(2*M_PI*x)*std::sin(2*M_PI*t) + std::sin(2*M_PI*x*k)*std::sin(2*M_PI*t*k)/k;
 		}
 
-		if (i_parameters.setup.benchmark_id >= 59 && i_parameters.setup.benchmark_id <= 61)
+		if (benchmark_id >= 59 && benchmark_id <= 61)
 		{
 			return 0;
 		}
 
-		if (i_parameters.setup.benchmark_id == 62)
+		if (benchmark_id == 62)
 		{
 			double t=i_parameters.timecontrol.current_simulation_time;
 			double tmpvar = 0;
@@ -101,36 +113,20 @@ public:
 			return tmpvar;
 		}
 
-		if (i_parameters.setup.benchmark_id == 63)
+		if (benchmark_id == 63)
 		{
 			double tmpvar = 0;
 			tmpvar = sin(2*M_PIl*x)*sin(2*M_PIl*y);
 			return tmpvar;
 		}
 
-		std::cerr << "Invalid setup scenario id " << i_parameters.setup.benchmark_id << std::endl;
+		std::cerr << "Invalid setup scenario id " << benchmark_id << std::endl;
 		exit(1);
 		return 0;
 	}
 
 
 
-	static
-	double return_v(
-			SimulationVariables &i_parameters,
-			double x,
-			double y
-	)
-	{
-		if (i_parameters.setup.benchmark_id >= 51 && i_parameters.setup.benchmark_id <= 70)
-		{
-			return 0;
-		}
-
-		std::cerr << "Invalid setup scenario id " << i_parameters.setup.benchmark_id << std::endl;
-		exit(1);
-		return 0;
-	}
 
 	static
 	void set_source(
@@ -140,6 +136,8 @@ public:
 			PlaneData &io_u_t
 	)
 	{
+		int benchmark_id = getBurgersBenchmarkID();
+
 		double t = i_simulation_time;
 		double tp = 2.0*M_PIl;
 
@@ -149,7 +147,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1/k * sin(2*PI*k*x)*sin(2*PI*k*t)
 		 */
-		if (i_parameters.setup.benchmark_id == 57)
+		if (benchmark_id == 57)
 		{
 			double k = i_parameters.sim.f0;
 
@@ -181,7 +179,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 2/k * sin(2*PI*k*x)*sin(2*PI*k*t)
 		 */
-		if (i_parameters.setup.benchmark_id == 59)
+		if (benchmark_id == 59)
 		{
 			double k = i_parameters.sim.f0;
 
@@ -215,7 +213,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)*sin(2*PI*t)+1/k*sin(2*PI*k*x)*sin(2*PI*k*t)
 		 */
-		if (i_parameters.setup.benchmark_id == 58)
+		if (benchmark_id == 58)
 		{
 			double k = i_parameters.sim.f0;
 
@@ -246,7 +244,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = t
 		 */
-		if (i_parameters.setup.benchmark_id == 51)
+		if (benchmark_id == 51)
 		{
 			io_u_t.physical_set_all(1.0);
 		}
@@ -256,7 +254,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = t^2
 		 */
-		if (i_parameters.setup.benchmark_id == 52)
+		if (benchmark_id == 52)
 		{
 			io_u_t.physical_set_all(2.0*t);
 		}
@@ -266,7 +264,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = t^3
 		 */
-		if (i_parameters.setup.benchmark_id == 53)
+		if (benchmark_id == 53)
 		{
 			io_u_t.physical_set_all(3.0*t*t);
 		}
@@ -276,7 +274,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1000*t*sin(2*PI*x)
 		 */
-		if (i_parameters.setup.benchmark_id == 54)
+		if (benchmark_id == 54)
 		{
 
 			io_u_t.physical_update_lambda_array_indices(
@@ -303,7 +301,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*t)
 		 */
-		if (i_parameters.setup.benchmark_id == 55)
+		if (benchmark_id == 55)
 		{
 			io_u_t.physical_set_all(tp*std::cos(tp*t));
 		}
@@ -313,7 +311,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 1/k*sin(2*PI*k*t)
 		 */
-		if (i_parameters.setup.benchmark_id == 56)
+		if (benchmark_id == 56)
 		{
 			double k=i_parameters.sim.f0;
 			io_u_t.physical_set_all(tp*std::cos(tp*k*t));
@@ -324,7 +322,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)
 		 */
-		if (i_parameters.setup.benchmark_id == 60)
+		if (benchmark_id == 60)
 		{
 
 			io_u_t.physical_update_lambda_array_indices(
@@ -351,7 +349,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = sin(2*PI*x)
 		 */
-		if (i_parameters.setup.benchmark_id == 61)
+		if (benchmark_id == 61)
 		{
 
 			io_u_t.physical_update_lambda_array_indices(
@@ -379,7 +377,7 @@ public:
 		 * matching to:
 		 * u(t,x,y) = 0.5*SUM_(k=1)^(k_max) sin(2*PI*k*x-PI*k*t+PI*k)*EPS/sinh(0.5*PI*k*EPS)
 		 */
-		if (i_parameters.setup.benchmark_id == 62)
+		if (benchmark_id == 62)
 		{
 			int kmax = i_parameters.sim.f0;
 			double eps = 0.1;
@@ -417,10 +415,10 @@ public:
 			);
 		}
 
-		if (i_parameters.setup.benchmark_id == 63)
+		if (benchmark_id == 63)
 			io_u_t.physical_set_all(0.0);
 
-		if (i_parameters.setup.benchmark_id == 70)
+		if (benchmark_id == 70)
 			io_u_t.physical_set_all(0.0);
 	}
 

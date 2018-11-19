@@ -13,7 +13,8 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+//#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
@@ -34,9 +35,9 @@ double param_velocity_v;
 class SimulationSWE
 {
 public:
-	PlaneData prog_h;
+	PlaneData prog_h_pert;
 
-	PlaneData prog_h0;	// at t0
+	PlaneData prog_h0_pert;	// at t0
 
 	PlaneData prog_u, prog_v;
 	PlaneData prog_u_prev, prog_v_prev;
@@ -55,8 +56,8 @@ public:
 
 public:
 	SimulationSWE()	:
-		prog_h(planeDataConfig),
-		prog_h0(planeDataConfig),
+		prog_h_pert(planeDataConfig),
+		prog_h0_pert(planeDataConfig),
 
 		prog_u(planeDataConfig),
 		prog_v(planeDataConfig),
@@ -80,7 +81,11 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		prog_h.physical_update_lambda_array_indices(
+		SWEPlaneBenchmarksCombined swePlaneBenchmarks;
+		swePlaneBenchmarks.setupInitialConditions(prog_h_pert, prog_u, prog_v, simVars, op);
+
+#if 0
+		prog_h_pert.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
@@ -89,8 +94,9 @@ public:
 				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 			}
 		);
+#endif
 
-		prog_h0 = prog_h;
+		prog_h0_pert = prog_h_pert;
 
 		prog_u = param_velocity_u;
 		prog_v = param_velocity_v;
@@ -159,13 +165,13 @@ public:
 
 		PlaneData new_prog_h(planeDataConfig);
 		sampler2D.bicubic_scalar(
-				prog_h,
+				prog_h_pert,
 				posx_d,
 				posy_d,
 				new_prog_h
 		);
 
-		prog_h = new_prog_h;
+		prog_h_pert = new_prog_h;
 
 
 		// advance in time
@@ -176,6 +182,8 @@ public:
 
 	void compute_error()
 	{
+
+#if 0
 		double t = simVars.timecontrol.current_simulation_time;
 
 		PlaneData prog_testh(planeDataConfig);
@@ -200,8 +208,10 @@ public:
 				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 			}
 		);
+#endif
+		std::cerr << "TODO: This was removed due to removal of the benchmark_id parameter. A new benchmark must be generated for this" << std::endl;
 
-		std::cout << "Lmax Error: " << (prog_h-prog_testh).reduce_maxAbs() << std::endl;
+		std::cout << "Lmax Error: " << (prog_h_pert-prog_h0_pert).reduce_maxAbs() << std::endl;
 	}
 
 
@@ -233,7 +243,7 @@ public:
 		switch (simVars.misc.vis_id)
 		{
 		case 0:
-			*o_dataArray = &prog_h;
+			*o_dataArray = &prog_h_pert;
 			break;
 
 		case 1:

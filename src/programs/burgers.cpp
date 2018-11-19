@@ -12,7 +12,7 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
 
-
+#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
@@ -161,14 +161,15 @@ public:
 
 	void reset()
 	{
-		if (simVars.setup.benchmark_id <0)
+#if 0
+		if (simVars.benchmark.benchmark_id <0)
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
 			BurgersValidationBenchmarks::printScenarioInformation();
 			FatalError("Benchmark scenario not selected");
 		}
-
+#endif
 		// Initialize diagnostics
 		last_timestep_nr_update_diagnostics = -1;
 
@@ -217,9 +218,12 @@ public:
 			prog_v.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
+				io_data = 0.0;
+#if 0
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
 				}
 			);
 		}
@@ -237,9 +241,12 @@ public:
 			prog_v.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
+				io_data = 0.0;
+#if 0
 					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
 				}
 			);
 		}
@@ -252,11 +259,11 @@ public:
 		t0_prog_v = prog_v;
 
 		// Load data, if requested
-		if (simVars.setup.input_data_filenames.size() > 0)
-			prog_u.file_physical_loadData(simVars.setup.input_data_filenames[0].c_str(), simVars.setup.input_data_binary);
+		if (simVars.benchmark.input_data_filenames.size() > 0)
+			prog_u.file_physical_loadData(simVars.benchmark.input_data_filenames[0].c_str(), simVars.benchmark.input_data_binary);
 
-		if (simVars.setup.input_data_filenames.size() > 1)
-			prog_v.file_physical_loadData(simVars.setup.input_data_filenames[1].c_str(), simVars.setup.input_data_binary);
+		if (simVars.benchmark.input_data_filenames.size() > 1)
+			prog_v.file_physical_loadData(simVars.benchmark.input_data_filenames[1].c_str(), simVars.benchmark.input_data_binary);
 
 
 		timeSteppers.setup(
@@ -529,9 +536,12 @@ public:
 					ts_v.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
+							io_data = 0.0;
+#if 0
 							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
 						}
 					);
 				}
@@ -550,10 +560,13 @@ public:
 					ts_v.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
+							io_data = 0.0;
+#if 0
 							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
 						}
 					);
 				}
@@ -621,9 +634,12 @@ public:
 					ts_v.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
+							io_data = 0.0;
+#if 0
 							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
 						}
 					);
 				}
@@ -642,10 +658,13 @@ public:
 					ts_v.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
+							io_data = 0.0;
+#if 0
 							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
 							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
 
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
 						}
 					);
 				}
@@ -846,8 +865,8 @@ public:
 
 		case 'l':
 			// load data arrays
-			prog_u.file_physical_loadData("burgers_dump_u.csv", simVars.setup.input_data_binary);
-			prog_v.file_physical_loadData("burgers_dump_v.csv", simVars.setup.input_data_binary);
+			prog_u.file_physical_loadData("burgers_dump_u.csv", simVars.benchmark.input_data_binary);
+			prog_v.file_physical_loadData("burgers_dump_v.csv", simVars.benchmark.input_data_binary);
 			break;
 		}
 	}

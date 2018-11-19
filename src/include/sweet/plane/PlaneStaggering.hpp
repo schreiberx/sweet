@@ -26,7 +26,7 @@ public:
 public:
 	Staggering()
 	{
-		setup_a_staggering();
+		setup_zero_staggering();
 	}
 
 
@@ -45,6 +45,23 @@ public:
 
 		v[0] = -0.5;
 		v[1] = -0.5;
+	}
+
+
+
+public:
+	void setup_zero_staggering()
+	{
+		staggering_type = 'z';
+
+		h[0] = 0;
+		h[1] = 0;
+
+		u[0] = 0;
+		u[1] = 0;
+
+		v[0] = 0;
+		v[1] = 0;
 	}
 
 

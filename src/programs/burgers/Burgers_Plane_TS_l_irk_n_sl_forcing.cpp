@@ -68,7 +68,12 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 	// Initialize and set timestep dependent source for manufactured solution
 	PlaneData f(io_u.planeDataConfig);
 
-	BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+i_fixed_dt,simVars,simVars.disc.use_staggering,f);
+	BurgersValidationBenchmarks::set_source(
+			simVars.timecontrol.current_simulation_time+i_fixed_dt,
+			simVars,
+			simVars.disc.use_staggering,
+			f
+		);
 
 	f.request_data_spectral();
 

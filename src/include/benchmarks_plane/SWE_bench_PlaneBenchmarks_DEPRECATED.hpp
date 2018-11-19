@@ -43,15 +43,15 @@ class SWEPlaneBenchmarks_DEPRECATED
 		double sy = i_simVars.sim.domain_size[1];
 
 #if 1
-		if (i_simVars.setup.benchmark_id == 0)
+		if (i_simVars.benchmark.benchmark_id == 0)
 		{
 			// radial dam break
-			double dx = x-i_simVars.setup.setup_coord_x*sx;
-			double dy = y-i_simVars.setup.setup_coord_y*sy;
+			double dx = x-i_simVars.benchmark.setup_coord_x*sx;
+			double dy = y-i_simVars.benchmark.setup_coord_y*sy;
 
 			if (i_variable_id == 0)	// height
 			{
-				double radius = i_simVars.setup.radius_scale*sqrt(sx*sx+sy*sy);
+				double radius = i_simVars.benchmark.radius_scale*sqrt(sx*sx+sy*sy);
 				if (dx*dx+dy*dy < radius*radius)
 					return i_simVars.sim.h0+1.0;
 				else
@@ -75,15 +75,15 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 
-		if (i_simVars.setup.benchmark_id == 1)
+		if (i_simVars.benchmark.benchmark_id == 1)
 		{
 			// Gaussian
-			double dx = x-i_simVars.setup.setup_coord_x*sx;
-			double dy = y-i_simVars.setup.setup_coord_y*sy;
+			double dx = x-i_simVars.benchmark.setup_coord_x*sx;
+			double dy = y-i_simVars.benchmark.setup_coord_y*sy;
 
 			if (i_variable_id == 0)
 			{
-				double radius = i_simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				double radius = i_simVars.benchmark.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 				dx /= radius;
 				dy /= radius;
 
@@ -107,7 +107,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 
-		if (i_simVars.setup.benchmark_id == 2)
+		if (i_simVars.benchmark.benchmark_id == 2)
 		{
 			// Steady state (linear and nonlinear) with dominant meridional (y) flow
 
@@ -137,7 +137,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 
-		if (i_simVars.setup.benchmark_id == 3)
+		if (i_simVars.benchmark.benchmark_id == 3)
 		{
 			// Steady state (linear and nonlinear) with dominant zonal (x) flow
 
@@ -169,7 +169,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 
-		if (i_simVars.setup.benchmark_id == 4)
+		if (i_simVars.benchmark.benchmark_id == 4)
 		{
 				double dx = x/sx;
 				double dy = y/sy;
@@ -196,7 +196,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 #endif
-		if (i_simVars.setup.benchmark_id == 5)
+		if (i_simVars.benchmark.benchmark_id == 5)
 		{
 			double dx = x/sx;
 			double dy = y/sy;
@@ -231,13 +231,13 @@ class SWEPlaneBenchmarks_DEPRECATED
 		}
 
 
-		if (i_simVars.setup.benchmark_id == 6)
+		if (i_simVars.benchmark.benchmark_id == 6)
 		{
 			// Gaussian
-			double dx = x-i_simVars.setup.setup_coord_x*sx;
-			double dy = y-i_simVars.setup.setup_coord_y*sy;
+			double dx = x-i_simVars.benchmark.setup_coord_x*sx;
+			double dy = y-i_simVars.benchmark.setup_coord_y*sy;
 
-			double radius = i_simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+			double radius = i_simVars.benchmark.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 			double e = 50;
 			dx /= radius;
 			dy /= radius;
@@ -255,10 +255,10 @@ class SWEPlaneBenchmarks_DEPRECATED
 			else if (i_variable_id == 2) // velocity v
 			{
 				// Gaussian
-				double dx = x-i_simVars.setup.setup_coord_x*sx;
-				double dy = y-i_simVars.setup.setup_coord_y*sy;
+				double dx = x-i_simVars.benchmark.setup_coord_x*sx;
+				double dy = y-i_simVars.benchmark.setup_coord_y*sy;
 
-				double radius = i_simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				double radius = i_simVars.benchmark.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 				double e = 50;
 				dx /= radius;
 				dy /= radius;
@@ -276,15 +276,15 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 
-		if (i_simVars.setup.benchmark_id == 8)
+		if (i_simVars.benchmark.benchmark_id == 8)
 		{
 			// gaussian in x
-			double dx = x-i_simVars.setup.setup_coord_x*sx;
+			double dx = x-i_simVars.benchmark.setup_coord_x*sx;
 
 
 			if (i_variable_id == 0)
 			{
-				double radius = i_simVars.setup.radius_scale*sx;
+				double radius = i_simVars.benchmark.radius_scale*sx;
 				dx /= radius;
 
 				return i_simVars.sim.h0+std::exp(-50.0*(dx*dx));
@@ -308,7 +308,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 		}
 
 
-		if (i_simVars.setup.benchmark_id == 9)
+		if (i_simVars.benchmark.benchmark_id == 9)
 		{
 
 			if (i_variable_id == 0)
@@ -333,7 +333,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 
-		if (i_simVars.setup.benchmark_id == 10)
+		if (i_simVars.benchmark.benchmark_id == 10)
 		{
 			// beta plane
 			// use e.g. parameters -N 64 -C 0.5 -R 4 -f 0.000001  -g 9.81 -H 1000 -X 100000 -Y 100000 -b 0.0000001 -z -S 1 -s 10
@@ -345,10 +345,10 @@ class SWEPlaneBenchmarks_DEPRECATED
 			else if (i_variable_id == 1) // velocity u
 			{
 				// Gaussian
-				double dx = x-i_simVars.setup.setup_coord_x*sx;
-				double dy = y-i_simVars.setup.setup_coord_y*sy;
+				double dx = x-i_simVars.benchmark.setup_coord_x*sx;
+				double dy = y-i_simVars.benchmark.setup_coord_y*sy;
 
-				double radius = i_simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				double radius = i_simVars.benchmark.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 				dx /= radius;
 				dy /= radius;
 
@@ -369,7 +369,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 		}
 
 		//Forced nonlinear case - trigonometric
-		if (i_simVars.setup.benchmark_id == 13)
+		if (i_simVars.benchmark.benchmark_id == 13)
 		{
 
 			if (i_variable_id == 0)
@@ -415,7 +415,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 		}
 
 		//Rotated steady state
-		if (i_simVars.setup.benchmark_id == 14)
+		if (i_simVars.benchmark.benchmark_id == 14)
 		{
 			//if ( std::abs(f) < 0.01 )
 				//std::cout<<"SWEPlaneBenchmarks Warning: f-value is equal to zero or is very small! Problem may be ill posed. Please be careful or set appropriate -f "<<std::endl;
@@ -453,7 +453,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 
 
 		// Waves scenario for fixed frequencies
-		if (i_simVars.setup.benchmark_id == 16)
+		if (i_simVars.benchmark.benchmark_id == 16)
 		{
 			double param_initial_freq_x_mul=1.0;
 			double param_initial_freq_y_mul=1.0;
@@ -491,15 +491,15 @@ class SWEPlaneBenchmarks_DEPRECATED
 		}
 
 		// Diagonal advection
-		if (i_simVars.setup.benchmark_id == 17)
+		if (i_simVars.benchmark.benchmark_id == 17)
 		{
 			// Gaussian
-			double dx = x-i_simVars.setup.setup_coord_x*sx;
-			double dy = y-i_simVars.setup.setup_coord_y*sy;
+			double dx = x-i_simVars.benchmark.setup_coord_x*sx;
+			double dy = y-i_simVars.benchmark.setup_coord_y*sy;
 
 			if (i_variable_id == 0)
 			{
-				double radius = i_simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				double radius = i_simVars.benchmark.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 				dx /= radius;
 				dy /= radius;
 
@@ -522,7 +522,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 				return 0;
 			}
 		}
-		if (i_simVars.setup.benchmark_id == 18)
+		if (i_simVars.benchmark.benchmark_id == 18)
 		{
 			// Preparation for flow over mountain
 			double u0 = 20.0; //mean constant velocity
@@ -550,15 +550,15 @@ class SWEPlaneBenchmarks_DEPRECATED
 				return 0;
 			}
 		}
-		if (i_simVars.setup.benchmark_id == 19)
+		if (i_simVars.benchmark.benchmark_id == 19)
 		{
 			// Rotating Gaussian
-			double dx = x-i_simVars.setup.setup_coord_x*sx;
-			double dy = y-i_simVars.setup.setup_coord_y*sy;
+			double dx = x-i_simVars.benchmark.setup_coord_x*sx;
+			double dy = y-i_simVars.benchmark.setup_coord_y*sy;
 
 			if (i_variable_id == 0)
 			{
-				double radius = i_simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				double radius = i_simVars.benchmark.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 				dx /= radius;
 				dy /= radius;
 
@@ -582,7 +582,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			}
 		}
 
-		std::cerr << "Invalid setup scenario id " << i_simVars.setup.benchmark_id << std::endl;
+		std::cerr << "Invalid setup scenario id " << i_simVars.benchmark.benchmark_id << std::endl;
 		exit(1);
 		return 0;
 	}
@@ -695,40 +695,40 @@ public:
 				SimulationVariables &i_simVars
 	)
 	{
-		if (i_simVars.setup.benchmark_id == 0)// radial dam break
+		if (i_simVars.benchmark.benchmark_id == 0)// radial dam break
 			return false;
 
-		if (i_simVars.setup.benchmark_id == 1) // Gaussian
+		if (i_simVars.benchmark.benchmark_id == 1) // Gaussian
 			return false;
 
-		if (i_simVars.setup.benchmark_id == 2) // Steady state (linear and nonlinear) with dominant zonal (x) flow
+		if (i_simVars.benchmark.benchmark_id == 2) // Steady state (linear and nonlinear) with dominant zonal (x) flow
 			return true;
 
-		if (i_simVars.setup.benchmark_id == 3) // Steady state (linear and nonlinear) with dominant meridional (y) flow
+		if (i_simVars.benchmark.benchmark_id == 3) // Steady state (linear and nonlinear) with dominant meridional (y) flow
 			return true;
 
-		if (i_simVars.setup.benchmark_id == 4)// Square break
+		if (i_simVars.benchmark.benchmark_id == 4)// Square break
 			return false;
 
-		if (i_simVars.setup.benchmark_id == 5) // Trigonometric
+		if (i_simVars.benchmark.benchmark_id == 5) // Trigonometric
 			return false;
 
-		if (i_simVars.setup.benchmark_id == 6) // Gaussian
+		if (i_simVars.benchmark.benchmark_id == 6) // Gaussian
 			return false;
 
-		if (i_simVars.setup.benchmark_id == 8) // gaussian in x
+		if (i_simVars.benchmark.benchmark_id == 8) // gaussian in x
 			return false;
 
-		if (i_simVars.setup.benchmark_id == 9) //Constant
+		if (i_simVars.benchmark.benchmark_id == 9) //Constant
 			return false;
 
-		if (i_simVars.setup.benchmark_id == 13) //Forced nonlinear case - trigonometric
+		if (i_simVars.benchmark.benchmark_id == 13) //Forced nonlinear case - trigonometric
 			return true;
 
-		if (i_simVars.setup.benchmark_id == 14) //Rotated steady state
+		if (i_simVars.benchmark.benchmark_id == 14) //Rotated steady state
 			return true;
 
-		if (i_simVars.setup.benchmark_id == 16) // Waves
+		if (i_simVars.benchmark.benchmark_id == 16) // Waves
 			return false;
 
 		return false;

@@ -9,7 +9,7 @@
 #define SRC_INCLUDE_BENCHMARKS_PLANE_SWEPLANEBENCHMARKSCOMBINED_HPP_
 
 #include <iostream>
-#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
+//#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -73,14 +73,16 @@ public:
 					else if (dy < -0.5*simVars->sim.domain_size[1])
 						dy += simVars->sim.domain_size[1];
 
-					dx /= sx*simVars->setup.radius_scale;
-					dy /= sy*simVars->setup.radius_scale;
+					dx /= sx*simVars->benchmark.initial_condition_radius_scale;
+					dy /= sy*simVars->benchmark.initial_condition_radius_scale;
 
 					return std::exp(-i_exp_fac*(dx*dx + dy*dy));
 				};
 
-		if (io_simVars.setup.benchmark_name == "")
+		if (io_simVars.benchmark.benchmark_name == "")
 		{
+			FatalError("Benchmark name not given");
+#if 0
 			std::cout << "WARNING: Using -s [int] is deprecated" << std::endl;
 			std::cout << "WARNING: TODO: change to use --benchmark [string] for benchmarks" << std::endl;
 
@@ -115,11 +117,12 @@ public:
 			);
 
 			return true;
+#endif
 		}
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (io_simVars.setup.benchmark_name == "polvani")
+		if (io_simVars.benchmark.benchmark_name == "polvani")
 		{
 			SWE_bench_Polvani swe_polvani(io_simVars, io_op);
 
@@ -131,7 +134,7 @@ public:
 
 			return true;
 		}
-		else if (io_simVars.setup.benchmark_name == "mergevortex")
+		else if (io_simVars.benchmark.benchmark_name == "mergevortex")
 		{
 			SWE_bench_MergeVortex swe_mergevortex(io_simVars, io_op);
 
@@ -143,7 +146,7 @@ public:
 
 			return true;
 		}
-		else if (io_simVars.setup.benchmark_name == "unstablejet")
+		else if (io_simVars.benchmark.benchmark_name == "unstablejet")
 		{
 			SWE_bench_UnstableJet swe_unstablejet(io_simVars, io_op);
 
@@ -155,7 +158,7 @@ public:
 
 			return true;
 		}
-		else if (io_simVars.setup.benchmark_name == "unstablejetfast")
+		else if (io_simVars.benchmark.benchmark_name == "unstablejetfast")
 			{
 				SWE_bench_UnstableJetFast swe_unstablejetfast(io_simVars, io_op);
 
@@ -168,7 +171,7 @@ public:
 				return true;
 			}
 
-		else if (io_simVars.setup.benchmark_name == "unstablejetadv")
+		else if (io_simVars.benchmark.benchmark_name == "unstablejetadv")
 		{
 			SWE_bench_UnstableJetAdv swe_unstablejetadv(io_simVars, io_op);
 
@@ -181,7 +184,7 @@ public:
 			return true;
 		}
 #endif
-		else if (io_simVars.setup.benchmark_name == "gaussian_bump")
+		else if (io_simVars.benchmark.benchmark_name == "gaussian_bump")
 		{
 			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, io_op);
 
@@ -194,7 +197,7 @@ public:
 			return true;
 		}
 
-		else if (io_simVars.setup.benchmark_name == "gaussian_bump_advection")
+		else if (io_simVars.benchmark.benchmark_name == "gaussian_bump_advection")
 		{
 
 			auto callback_external_forces_advection_field =
@@ -276,8 +279,8 @@ public:
 			return true;
 		}
 		else if (
-				io_simVars.setup.benchmark_name == "benchmark_id_0" ||
-				io_simVars.setup.benchmark_name == "cylinder"
+				io_simVars.benchmark.benchmark_name == "benchmark_id_0" ||
+				io_simVars.benchmark.benchmark_name == "cylinder"
 		)
 		{
 			double sx = simVars->sim.domain_size[0];
@@ -292,10 +295,10 @@ public:
 					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
 
 					// radial dam break
-					double dx = x-simVars->setup.setup_coord_x*sx;
-					double dy = y-simVars->setup.setup_coord_y*sy;
+					double dx = x-simVars->benchmark.initial_condition_setup_coord_x*sx;
+					double dy = y-simVars->benchmark.initial_condition_setup_coord_y*sy;
 
-					double radius = simVars->setup.radius_scale*sqrt(sx*sx+sy*sy);
+					double radius = simVars->benchmark.initial_condition_radius_scale*sqrt(sx*sx+sy*sy);
 					if (dx*dx+dy*dy < radius*radius)
 						io_data = 1.0;
 					else
@@ -309,8 +312,8 @@ public:
 			return true;
 		}
 		else if (
-				io_simVars.setup.benchmark_name == "benchmark_id_1" ||
-				io_simVars.setup.benchmark_name == "radial_gaussian_bump"
+				io_simVars.benchmark.benchmark_name == "benchmark_id_1" ||
+				io_simVars.benchmark.benchmark_name == "radial_gaussian_bump"
 		)
 		{
 			double sx = simVars->sim.domain_size[0];
@@ -325,10 +328,10 @@ public:
 					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
 
 					// radial dam break
-					double dx = x-simVars->setup.setup_coord_x*sx;
-					double dy = y-simVars->setup.setup_coord_y*sy;
+					double dx = x-simVars->benchmark.initial_condition_setup_coord_x*sx;
+					double dy = y-simVars->benchmark.initial_condition_setup_coord_y*sy;
 
-					double radius = simVars->setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+					double radius = simVars->benchmark.initial_condition_radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 					dx /= radius;
 					dy /= radius;
 
@@ -342,8 +345,8 @@ public:
 			return true;
 		}
 		else if (
-				io_simVars.setup.benchmark_name == "benchmark_id_2" ||
-				io_simVars.setup.benchmark_name == "steady_state_meridional_flow"
+				io_simVars.benchmark.benchmark_name == "benchmark_id_2" ||
+				io_simVars.benchmark.benchmark_name == "steady_state_meridional_flow"
 		)
 		{
 			double f = simVars->sim.f0;
@@ -381,8 +384,8 @@ public:
 		}
 
 		else if (
-				io_simVars.setup.benchmark_name == "benchmark_id_3" ||
-				io_simVars.setup.benchmark_name == "steady_state_zonal_flow"
+				io_simVars.benchmark.benchmark_name == "benchmark_id_3" ||
+				io_simVars.benchmark.benchmark_name == "steady_state_zonal_flow"
 		)
 		{
 			double f = simVars->sim.f0;
@@ -421,8 +424,8 @@ public:
 
 
 		else if (
-				io_simVars.setup.benchmark_name == "benchmark_id_4" ||
-				io_simVars.setup.benchmark_name == "yadda_yadda_whatever_this_is"
+				io_simVars.benchmark.benchmark_name == "benchmark_id_4" ||
+				io_simVars.benchmark.benchmark_name == "yadda_yadda_whatever_this_is"
 		)
 		{
 			double sx = simVars->sim.domain_size[0];
@@ -439,8 +442,8 @@ public:
 					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
 
 					// radial dam break
-					double dx = x-simVars->setup.setup_coord_x*sx;
-					double dy = y-simVars->setup.setup_coord_y*sy;
+					double dx = x-simVars->benchmark.initial_condition_setup_coord_x*sx;
+					double dy = y-simVars->benchmark.initial_condition_setup_coord_y*sy;
 
 					io_data = (std::abs(dx-0.5) < 0.3)*(std::abs(dy-0.5) < 0.1);
 				}
@@ -455,8 +458,8 @@ public:
 
 
 		else if (
-				io_simVars.setup.benchmark_name == "benchmark_id_14" ||
-				io_simVars.setup.benchmark_name == "rotated_steady_state"
+				io_simVars.benchmark.benchmark_name == "benchmark_id_14" ||
+				io_simVars.benchmark.benchmark_name == "rotated_steady_state"
 		)
 		{
 			double freq = 10.0;
@@ -500,7 +503,7 @@ public:
 		}
 
 		printBenchmarkInformation();
-		FatalError(std::string("Benchmark ")+io_simVars.setup.benchmark_name+ " not found (or not availble)");
+		FatalError(std::string("Benchmark ")+io_simVars.benchmark.benchmark_name+ " not found (or not availble)");
 
 
 		return false;

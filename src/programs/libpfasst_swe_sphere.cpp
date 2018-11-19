@@ -192,11 +192,11 @@ int main(int i_argc, char *i_argv[])
     nvars_per_field[i] = 2*levelSingletons[i].dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
   // initialize the topography before instantiating the SphereDataCtx object
-  if (simVars.setup.benchmark_name == "flow_over_mountain") 
+  if (simVars.benchmark.benchmark_name == "flow_over_mountain") 
   {
 
       // create h_topo with the configuration at the finest level
-      simVars.sim.h_topo.setup(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
+      simVars.sim.h_topo = SphereData(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
 
       // initialize the topography
       (levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).setupTopography();
