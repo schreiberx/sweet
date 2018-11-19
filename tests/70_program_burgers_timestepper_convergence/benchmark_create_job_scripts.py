@@ -34,7 +34,7 @@ jg.runtime.mode_res = None
 jg.runtime.phys_res = 128
 
 #jg.runtime.benchmark_name = "gaussian_bumps_phi_vort_div"
-jg.runtime.bench_id = 70
+jg.runtime.benchmark_name = "70"
 
 # Viscosity
 jg.runtime.viscosity = 0.01

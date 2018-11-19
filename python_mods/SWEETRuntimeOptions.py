@@ -112,10 +112,6 @@ class SWEETRuntimeOptions(InfoError):
 		# 3: gaussian breaking dam
 		# 4: geostrophic balance test case
 
-		# Create error if bench_id is not specified!
-		# This variable is DEPRECATED!!! Use benchmark_name instead!!!
-		self.bench_id = None
-
 		# Specify benchmark name
 		self.benchmark_name = None
 
@@ -254,8 +250,6 @@ class SWEETRuntimeOptions(InfoError):
 		if not 'runtime.benchmark' in filter_list:
 			if self.benchmark_name != None:
 				idstr += '_b'+str(self.benchmark_name)
-			elif self.bench_id != None:
-				idstr += '_b'+str(self.bench_id)
 
 		if not 'runtime.galewsky_params' in filter_list:
 			if self.benchmark_galewsky_umax > 0:
@@ -448,9 +442,6 @@ class SWEETRuntimeOptions(InfoError):
 			else:
 				retval += ' -X '+str(self.domain_size[0])
 				retval += ' -Y '+str(self.domain_size[1])
-
-		if self.bench_id != None:
-			retval += ' -s '+str(self.bench_id)
 
 		if self.benchmark_name != None:
 			retval += ' --benchmark-name='+str(self.benchmark_name)
