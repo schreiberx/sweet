@@ -26,6 +26,7 @@ public:
 	// Staggering
 	SphereStaggering staggering;
 
+
 public:
 	SphereDataGridMapping()
 	{

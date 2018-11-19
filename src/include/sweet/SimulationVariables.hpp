@@ -859,6 +859,9 @@ public:
         long_options[next_free_program_option] = {"reuse-plans", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
+        long_options[next_free_program_option] = {"normal-mode-analysis-generation", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
         // DISC
         long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
@@ -870,9 +873,6 @@ public:
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"normal-mode-analysis-generation", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
@@ -994,12 +994,12 @@ public:
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	misc.use_local_visc = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	misc.reuse_spectral_transformation_plans = atoi(optarg);			continue;	}
+					c++;		if (i == c)	{	misc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
 
 					c++;		if (i == c)	{	disc.timestepping_method = optarg;					continue;	}
 					c++;		if (i == c)	{	disc.timestepping_order = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	disc.timestepping_order2 = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	disc.timestepping_leapfrog_robert_asselin_filter = atof(optarg);	continue;	}
-					c++;		if (i == c)	{	misc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
 					c++;		if (i == c)	{	disc.timestepping_crank_nicolson_filter = atof(optarg);			continue;	}
 					c++;		if (i == c)	{	disc.space_grid_use_c_staggering = atof(optarg);					continue;	}
 
