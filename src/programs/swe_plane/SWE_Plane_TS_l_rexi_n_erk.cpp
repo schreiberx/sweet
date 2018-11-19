@@ -129,7 +129,7 @@ void SWE_Plane_TS_l_rexi_n_erk::setup(
 	timestepping_order_nonlinear = i_nonlinear_order;
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
 
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("Staggering not supported for l_rexi_n_erk");
 
 }

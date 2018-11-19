@@ -808,24 +808,24 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	int res_physical_nodealias[2] = {
-			2*simVars.disc.res_spectral[0],
-			simVars.disc.res_spectral[1]
+			2*simVars.disc.space_res_spectral[0],
+			simVars.disc.space_res_spectral[1]
 		};
 
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations (nodealiasing)..." << std::endl;
 
-	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 
 #if SWEET_GUI
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup FFT plane transformations..." << std::endl;
 
-	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 #endif
 
 	std::ostringstream buf;

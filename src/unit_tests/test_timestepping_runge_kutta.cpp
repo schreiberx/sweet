@@ -203,7 +203,7 @@ public:
 	)
 	{
 		*o_dataArray = &prog_h;
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 	}
 
 	const char* vis_get_status_string()
@@ -264,12 +264,12 @@ int main(
 	if (simVars.timecontrol.current_timestep_size <= 0)
 		FatalError("Timestep size <= 0!");
 
-	if (simVars.disc.res_physical[0] <= 0)
-		simVars.disc.res_physical[0] = 16;
-	if (simVars.disc.res_physical[1] <= 0)
-		simVars.disc.res_physical[1] = 16;
+	if (simVars.disc.space_res_physical[0] <= 0)
+		simVars.disc.space_res_physical[0] = 16;
+	if (simVars.disc.space_res_physical[1] <= 0)
+		simVars.disc.space_res_physical[1] = 16;
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 #if SWEET_GUI
 	if (simVars.misc.gui_enabled)

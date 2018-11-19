@@ -100,7 +100,7 @@ void SWE_Plane_TS_l_irk_n_erk::setup(
 	timestepping_order_linear = i_l_order;
 	ts_l_irk.setup(timestepping_order_linear);
 
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("Staggering not supported for l_irk_n_erk");
 
 

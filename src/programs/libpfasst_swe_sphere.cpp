@@ -132,19 +132,19 @@ int main(int i_argc, char *i_argv[])
 	// setup data configuration in fine level
 
 	levelSingletons[fineLevelId].dataConfig.setupAuto(
-			simVars.disc.res_physical,
-			simVars.disc.res_spectral,
+			simVars.disc.space_res_physical,
+			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans
 	);
 
 	int res_physical_nodealiasing[2] = {
-			2*(simVars.disc.res_spectral[0]+1),
-			simVars.disc.res_spectral[1]+2
+			2*(simVars.disc.space_res_spectral[0]+1),
+			simVars.disc.space_res_spectral[1]+2
 	};
 
 	levelSingletons[fineLevelId].dataConfigNoDealiasing.setupAuto(
 			res_physical_nodealiasing,
-			simVars.disc.res_spectral,
+			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans
 	);
 
@@ -169,8 +169,8 @@ int main(int i_argc, char *i_argv[])
 
 		levelSingletons[thisLevelId].dataConfig.setupAdditionalModes(
 				&(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
-				-std::ceil(simVars.disc.res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
-				-std::ceil(simVars.disc.res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i)),
+				-std::ceil(simVars.disc.space_res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
+				-std::ceil(simVars.disc.space_res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i)),
 				simVars.misc.reuse_spectral_transformation_plans
 		);
 

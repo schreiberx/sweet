@@ -24,10 +24,10 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
-	if (simVars.sim.getExternalForcesCallback != nullptr)
+	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
-		simVars.sim.getExternalForcesCallback(1, i_simulation_timestamp, &io_vort, simVars.sim.getExternalForcesUserData);
-		simVars.sim.getExternalForcesCallback(2, i_simulation_timestamp, &io_div, simVars.sim.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(1, i_simulation_timestamp, &io_vort, simVars.benchmark.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(2, i_simulation_timestamp, &io_div, simVars.benchmark.getExternalForcesUserData);
 	}
 
 	// IMPORTANT!!! WE DO NOT USE THE ROBERT TRANSFORMATION HERE!!!
@@ -138,7 +138,7 @@ void Adv_Sphere_TS_na_sl::setup(
 	sampler2D.setup(sphereDataConfig);
 
 	//PXT- This just calls sampler2D.setup, so any reason for having it?
-	semiLagrangian.setup(simVars.sim.domain_size, sphereDataConfig);
+	semiLagrangian.setup(simVars.sim.plane_domain_size, sphereDataConfig);
 }
 
 

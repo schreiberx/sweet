@@ -36,8 +36,8 @@ class SWE_bench_MergeVortex
 
 	double f = simVars.sim.plane_rotating_f0;
 	double g = simVars.sim.gravitation;
-	double sx = simVars.sim.domain_size[0];
-	double sy = simVars.sim.domain_size[1];
+	double sx = simVars.sim.plane_domain_size[0];
+	double sy = simVars.sim.plane_domain_size[1];
 
 
 	double stream(
@@ -88,14 +88,14 @@ class SWE_bench_MergeVortex
 	)
 	{
 
-		for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 		{
-			for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+			for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 			{
 
 				// h - lives in the center of the cell
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				o_psi.p_physical_set(j, i, stream(x, y));
 			}

@@ -122,7 +122,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 			posx_a,		posy_a,
 			i_dt,
 			posx_d,	posy_d,			// output
-			simVars.sim.domain_size,
+			simVars.sim.plane_domain_size,
 			&staggering,
 			2 //simVars.disc.timestepping_order
 	);
@@ -355,23 +355,23 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 		ts_ups3_rexi.setup(simVars.rexi, "ups3", simVars.timecontrol.current_timestep_size);
 	}
 
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_etdrk: Staggering not supported for l_rexi_na_sl_nd_etdrk");
 
 	//with_linear_div_only = i_use_linear_div;
 
 	// Setup sampler for future interpolations
-	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
+	sampler2D.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 	// Setup semi-lag
-	semiLagrangian.setup(simVars.sim.domain_size, op.planeDataConfig);
+	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
 	PlaneData tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+		io_data = ((double)i)*simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 			},
 			false
 	);
@@ -380,7 +380,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+		io_data = ((double)j)*simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 			},
 			false
 	);
@@ -390,8 +390,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
 
 
-	double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-	double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
 	// Initialize arrival points with h position
 	posx_a = pos_x+0.5*cell_size_x;

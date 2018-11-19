@@ -88,7 +88,7 @@ void SWE_Plane_TS_l_cn::setup(
 	//	//FatalError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
 	//}
 
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("Staggering not supported for l_cn");
 
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;

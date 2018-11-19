@@ -165,7 +165,7 @@ public:
 		force_v(planeDataConfig),
 
 		// Initialises operators
-		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
 		_parareal_data_start_h(planeDataConfig), _parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
@@ -236,16 +236,16 @@ public:
 		prog_v.physical_set_all(0);
 
 		// Check if input parameters are adequate for this simulation
-		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
+		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
 			FatalError("Staggering and spectral basis not supported!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		if (simVars.disc.use_staggering ||  !simVars.disc.use_spectral_basis_diffs)
+		if (simVars.disc.space_grid_use_c_staggering ||  !simVars.disc.space_use_spectral_basis_diffs)
 			FatalError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
 
-		if (simVars.disc.use_staggering)
+		if (simVars.disc.space_grid_use_c_staggering)
 			gridMapping.setup(simVars, planeDataConfig);
 
 
@@ -265,8 +265,8 @@ public:
 
 				// Waves scenario
 				// Remember to set up initial_freq_x_mul and initial_freq_y_mul
-				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+				double dx = x/i_parameters.sim.plane_domain_size[0]*param_initial_freq_x_mul*M_PIl;
+				double dy = y/i_parameters.sim.plane_domain_size[1]*param_initial_freq_y_mul*M_PIl;
 				return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy);
 			};
 
@@ -280,8 +280,8 @@ public:
 				if (param_initial_freq_x_mul == 0)
 					return SWEPlaneBenchmarks_DEPRECATED::return_u(simVars, x, y);
 
-				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+				double dx = x/i_parameters.sim.plane_domain_size[0]*param_initial_freq_x_mul*M_PIl;
+				double dy = y/i_parameters.sim.plane_domain_size[1]*param_initial_freq_y_mul*M_PIl;
 				return std::cos(4.0*dx)*std::cos(2.0*dy);
 			};
 
@@ -295,22 +295,22 @@ public:
 				if (param_initial_freq_x_mul == 0)
 					return SWEPlaneBenchmarks_DEPRECATED::return_v(simVars, x, y);
 
-				double dx = x/i_parameters.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-				double dy = y/i_parameters.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+				double dx = x/i_parameters.sim.plane_domain_size[0]*param_initial_freq_x_mul*M_PIl;
+				double dy = y/i_parameters.sim.plane_domain_size[1]*param_initial_freq_y_mul*M_PIl;
 				return std::cos(2.0*dx)*std::cos(4.0*dy);
 			};
 
 			// Set initial conditions given from SWEValidationBenchmarks
-			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 			{
-				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 				{
-					if (simVars.disc.use_staggering) // C-grid
+					if (simVars.disc.space_grid_use_c_staggering) // C-grid
 					{
 						{
 							// h - lives in the center of the cell
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 							prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
 							t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
@@ -320,8 +320,8 @@ public:
 
 						{
 							// u space
-							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 							prog_u.p_physical_set(j,i, return_u(simVars, x, y));
 							t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
@@ -330,8 +330,8 @@ public:
 
 						{
 							// v space
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 							prog_v.p_physical_set(j, i, return_v(simVars, x, y));
 							t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
@@ -340,8 +340,8 @@ public:
 					}
 					else // A-Grid (colocated grid)
 					{
-						double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+						double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+						double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 						prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
 						prog_u.p_physical_set(j, i, return_u(simVars, x, y));
@@ -424,7 +424,7 @@ public:
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
 
-		if (simVars.disc.use_staggering)
+		if (simVars.disc.space_grid_use_c_staggering)
 		{
 			PlaneDiagnostics::update_staggered_huv_to_mass_energy_enstrophy(
 					op,
@@ -576,7 +576,7 @@ public:
 			PlaneData t_u(planeDataConfig);
 			PlaneData t_v(planeDataConfig);
 
-			if (simVars.disc.use_staggering) // Remap in case of C-grid
+			if (simVars.disc.space_grid_use_c_staggering) // Remap in case of C-grid
 			{
 				t_h = prog_h_pert;
 				gridMapping.mapCtoA_u(prog_u, t_u);
@@ -859,7 +859,7 @@ public:
 			}
 #endif
 			*o_dataArray = &vis;
-			*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+			*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 			return;
 		}
 
@@ -874,7 +874,7 @@ public:
 			*o_dataArray = vis_arrays[id].data;
 
 		vis=**o_dataArray;
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 	}
 
 
@@ -1391,7 +1391,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 5)
 		std::cout << " + Setting up FFT plans..." << std::flush;
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	if (simVars.misc.verbosity > 5)
 		std::cout << " done" << std::endl;
@@ -1555,7 +1555,7 @@ int main(int i_argc, char *i_argv[])
 	{
 		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
 		{
-			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
 			SWE_Plane_TS_l_rexi rexiSWE(simVars, op);
 

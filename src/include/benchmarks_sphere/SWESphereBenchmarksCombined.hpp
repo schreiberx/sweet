@@ -345,10 +345,10 @@ public:
 				ext_forces_data_config = o_phi.sphereDataConfig;
 
 				// set callback
-				simVars->sim.getExternalForcesCallback = callback_external_forces_advection_field;
+				simVars->benchmark.getExternalForcesCallback = callback_external_forces_advection_field;
 
 				// set user data to this class
-				simVars->sim.getExternalForcesUserData = this;
+				simVars->benchmark.getExternalForcesUserData = this;
 			}
 
 			// setup velocities with initial time stamp

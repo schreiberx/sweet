@@ -186,8 +186,8 @@ public:
 		 * Overwrite domain size
 		 * Page 179, right column
 		 */
-		simVars.sim.domain_size[0] = 2.0*M_PI*k0;
-		simVars.sim.domain_size[1] = simVars.sim.domain_size[0];
+		simVars.sim.plane_domain_size[0] = 2.0*M_PI*k0;
+		simVars.sim.plane_domain_size[1] = simVars.sim.plane_domain_size[0];
 
 
 		/*
@@ -211,7 +211,7 @@ public:
 		/*
 		 * update domain size
 		 */
-		op.setup(simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+		op.setup(simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
 
 //		normalize_ek = 1.5967e+21;

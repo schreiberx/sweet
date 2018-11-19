@@ -56,22 +56,22 @@ public:
 						double i_exp_fac
 				)
 				{
-					double sx = simVars->sim.domain_size[0];
-					double sy = simVars->sim.domain_size[1];
+					double sx = simVars->sim.plane_domain_size[0];
+					double sy = simVars->sim.plane_domain_size[1];
 
 					// Gaussian
 					double dx = i_x-i_center_x*sx;
 					double dy = i_y-i_center_y*sy;
 
-					if (dx > 0.5*simVars->sim.domain_size[0])
-						dx -= simVars->sim.domain_size[0];
-					else if (dx < -0.5*simVars->sim.domain_size[0])
-						dx += simVars->sim.domain_size[0];
+					if (dx > 0.5*simVars->sim.plane_domain_size[0])
+						dx -= simVars->sim.plane_domain_size[0];
+					else if (dx < -0.5*simVars->sim.plane_domain_size[0])
+						dx += simVars->sim.plane_domain_size[0];
 
-					if (dy > 0.5*simVars->sim.domain_size[1])
-						dy -= simVars->sim.domain_size[1];
-					else if (dy < -0.5*simVars->sim.domain_size[1])
-						dy += simVars->sim.domain_size[1];
+					if (dy > 0.5*simVars->sim.plane_domain_size[1])
+						dy -= simVars->sim.plane_domain_size[1];
+					else if (dy < -0.5*simVars->sim.plane_domain_size[1])
+						dy += simVars->sim.plane_domain_size[1];
 
 					dx /= sx*simVars->benchmark.object_scale;
 					dy /= sy*simVars->benchmark.object_scale;
@@ -89,8 +89,8 @@ public:
 			o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
-					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
+					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
 
 					io_data = SWEPlaneBenchmarks_DEPRECATED::return_h_perturbed(io_simVars, x, y);
 				}
@@ -99,8 +99,8 @@ public:
 			o_u.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
-					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
+					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
 
 					io_data = SWEPlaneBenchmarks_DEPRECATED::return_u(io_simVars, x, y);
 				}
@@ -109,8 +109,8 @@ public:
 			o_v.physical_update_lambda_array_indices(
 					[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
-					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
+					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
 
 					io_data = SWEPlaneBenchmarks_DEPRECATED::return_v(io_simVars, x, y);
 				}
@@ -248,14 +248,14 @@ public:
 				ext_forces_data_config = o_h_pert.planeDataConfig;
 
 				// set callback
-				io_simVars.sim.getExternalForcesCallback = callback_external_forces_advection_field;
+				io_simVars.benchmark.getExternalForcesCallback = callback_external_forces_advection_field;
 
 				// set user data to this class
-				io_simVars.sim.getExternalForcesUserData = this;
+				io_simVars.benchmark.getExternalForcesUserData = this;
 
 				// setup velocities with initial time stamp
-				callback_external_forces_advection_field(1, simVars->timecontrol.current_simulation_time, &o_u, simVars->sim.getExternalForcesUserData);
-				callback_external_forces_advection_field(2, simVars->timecontrol.current_simulation_time, &o_v, simVars->sim.getExternalForcesUserData);
+				callback_external_forces_advection_field(1, simVars->timecontrol.current_simulation_time, &o_u, simVars->benchmark.getExternalForcesUserData);
+				callback_external_forces_advection_field(2, simVars->timecontrol.current_simulation_time, &o_v, simVars->benchmark.getExternalForcesUserData);
 			}
 			else
 			{
@@ -270,8 +270,8 @@ public:
 			o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
-					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
+					double y = (double)j*(simVars->sim.plane_domain_size[1]/(double)simVars->disc.space_res_physical[1]);
 
 					io_data = callback_gaussian_bump(center_x, center_y, x, y, exp_fac);
 				}
@@ -283,16 +283,16 @@ public:
 				io_simVars.benchmark.benchmark_name == "cylinder"
 		)
 		{
-			double sx = simVars->sim.domain_size[0];
-			double sy = simVars->sim.domain_size[1];
+			double sx = simVars->sim.plane_domain_size[0];
+			double sy = simVars->sim.plane_domain_size[1];
 
 
 			o_h_pert.physical_set_zero();
 			o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
-					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
+					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
 
 					// radial dam break
 					double dx = x-simVars->benchmark.object_coord_x*sx;
@@ -316,16 +316,16 @@ public:
 				io_simVars.benchmark.benchmark_name == "radial_gaussian_bump"
 		)
 		{
-			double sx = simVars->sim.domain_size[0];
-			double sy = simVars->sim.domain_size[1];
+			double sx = simVars->sim.plane_domain_size[0];
+			double sy = simVars->sim.plane_domain_size[1];
 
 
 			o_h_pert.physical_set_zero();
 			o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(io_simVars.sim.domain_size[0]/(double)io_simVars.disc.res_physical[0]);
-					double y = (double)j*(io_simVars.sim.domain_size[1]/(double)io_simVars.disc.res_physical[1]);
+					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
+					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
 
 					// radial dam break
 					double dx = x-simVars->benchmark.object_coord_x*sx;
@@ -350,7 +350,7 @@ public:
 		)
 		{
 			double f = simVars->sim.plane_rotating_f0;
-			double sx = simVars->sim.domain_size[0];
+			double sx = simVars->sim.plane_domain_size[0];
 			//double sy = simVars->sim.domain_size[1];
 
 			if (io_simVars.sim.plane_rotating_f0 == 0)
@@ -360,7 +360,7 @@ public:
 			o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i/(double)simVars->disc.res_physical[0];
+					double x = (double)i/(double)simVars->disc.space_res_physical[0];
 					//double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
 
 					io_data = std::sin(2.0*M_PI*x);
@@ -373,7 +373,7 @@ public:
 			o_v.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i/(double)simVars->disc.res_physical[0];
+					double x = (double)i/(double)simVars->disc.space_res_physical[0];
 					//double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
 
 					io_data = simVars->sim.gravitation/f*2.0*M_PIl*std::cos(2.0*M_PIl*x)/sx;
@@ -389,7 +389,7 @@ public:
 		{
 			double f = simVars->sim.plane_rotating_f0;
 			//double sx = simVars->sim.domain_size[0];
-			double sy = simVars->sim.domain_size[1];
+			double sy = simVars->sim.plane_domain_size[1];
 
 			if (io_simVars.sim.plane_rotating_f0 == 0)
 				FatalError("Coriolis = 0!");
@@ -399,7 +399,7 @@ public:
 				[&](int i, int j, double &io_data)
 				{
 					//double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
-					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+					double y = (double)j*(simVars->sim.plane_domain_size[1]/(double)simVars->disc.space_res_physical[1]);
 
 					io_data = std::sin(2.0*M_PI*y/sy);
 				}
@@ -410,7 +410,7 @@ public:
 				[&](int i, int j, double &io_data)
 				{
 					//double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
-					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+					double y = (double)j*(simVars->sim.plane_domain_size[1]/(double)simVars->disc.space_res_physical[1]);
 
 					io_data = -simVars->sim.gravitation*2.0*M_PI*std::cos(2.0*M_PI*y/sy)/(f*sy);
 				}
@@ -425,8 +425,8 @@ public:
 				io_simVars.benchmark.benchmark_name == "yadda_yadda_whatever_this_is"
 		)
 		{
-			double sx = simVars->sim.domain_size[0];
-			double sy = simVars->sim.domain_size[1];
+			double sx = simVars->sim.plane_domain_size[0];
+			double sy = simVars->sim.plane_domain_size[1];
 
 			if (io_simVars.sim.plane_rotating_f0 == 0)
 				FatalError("Coriolis = 0!");
@@ -435,8 +435,8 @@ public:
 			o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
-					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
+					double y = (double)j*(simVars->sim.plane_domain_size[1]/(double)simVars->disc.space_res_physical[1]);
 
 					// radial dam break
 					double dx = x-simVars->benchmark.object_coord_x*sx;
@@ -460,14 +460,14 @@ public:
 		{
 			double freq = 10.0;
 
-			double sx = simVars->sim.domain_size[0];
-			double sy = simVars->sim.domain_size[1];
+			double sx = simVars->sim.plane_domain_size[0];
+			double sy = simVars->sim.plane_domain_size[1];
 
 			o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
-					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
+					double y = (double)j*(simVars->sim.plane_domain_size[1]/(double)simVars->disc.space_res_physical[1]);
 
 					io_data = std::cos(2.0*M_PI*freq*(x/sx+y/sy));
 				}
@@ -476,8 +476,8 @@ public:
 			o_u.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
-					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
+					double y = (double)j*(simVars->sim.plane_domain_size[1]/(double)simVars->disc.space_res_physical[1]);
 
 					double factor = simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.plane_rotating_f0*sy);
 					io_data = factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));
@@ -487,8 +487,8 @@ public:
 			o_v.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
-					double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
+					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
+					double y = (double)j*(simVars->sim.plane_domain_size[1]/(double)simVars->disc.space_res_physical[1]);
 
 					double factor = -simVars->sim.gravitation*2.0*M_PI*freq/(simVars->sim.plane_rotating_f0*sx);
 					io_data = factor*std::sin(2.0*M_PI*freq*(x/sx+y/sy));

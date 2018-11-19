@@ -43,14 +43,14 @@ public:
 			PlaneData &o_v
 	)
 	{
-		double sx = simVars.sim.domain_size[0];
-		double sy = simVars.sim.domain_size[1];
+		double sx = simVars.sim.plane_domain_size[0];
+		double sy = simVars.sim.plane_domain_size[1];
 
 		o_h_pert.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 			{
-				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
-				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
+				double x = (double)i*(simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0]);
+				double y = (double)j*(simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1]);
 
 				// Gaussian
 				double dx = x-simVars.benchmark.object_coord_x*sx;

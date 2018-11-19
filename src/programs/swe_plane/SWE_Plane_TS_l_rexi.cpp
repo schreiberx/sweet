@@ -32,8 +32,8 @@ void SWE_Plane_TS_l_rexi::setup(
 
 	rexiSimVars = &i_rexi;
 
-	domain_size[0] = simVars.sim.domain_size[0];
-	domain_size[1] = simVars.sim.domain_size[1];
+	domain_size[0] = simVars.sim.plane_domain_size[0];
+	domain_size[1] = simVars.sim.plane_domain_size[1];
 
 	if (rexiSimVars->use_direct_solution)
 	{

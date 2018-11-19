@@ -35,7 +35,7 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	if (simVars.disc.use_spectral_basis_diffs)
+	if (simVars.disc.space_use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -43,8 +43,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res_physical[0];
-	std::size_t res_y = simVars.disc.res_physical[1];
+	std::size_t res_x = simVars.disc.space_res_physical[0];
+	std::size_t res_y = simVars.disc.space_res_physical[1];
 
 	std::size_t max_res = 64;
 
@@ -58,11 +58,11 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "*************************************************************" << std::endl;
 		std::size_t res[2] = {res_x, res_y};
 
-		simVars.disc.res_physical[0] = res[0];
-		simVars.disc.res_physical[1] = res[1];
+		simVars.disc.space_res_physical[0] = res[0];
+		simVars.disc.space_res_physical[1] = res[1];
 		simVars.reset();
 
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		planeDataConfigInstance.printInformation();
 

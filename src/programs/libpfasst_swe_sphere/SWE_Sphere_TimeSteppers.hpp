@@ -421,21 +421,21 @@ public:
 		else if (i_timestepping_method == "l_lf")
 		{
 			l_leapfrog = new SWE_Sphere_TS_l_lf(i_simVars, i_op);
-			l_leapfrog->setup(i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
+			l_leapfrog->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_leapfrog_robert_asselin_filter);
 
 			master = &(SWE_Sphere_TS_interface&)*l_leapfrog;
 		}
 		else if (i_timestepping_method == "l_cn")
 		{
 			l_cn = new SWE_Sphere_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_simVars.disc.crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size, i_simVars.rexi.use_sphere_extended_modes);
+			l_cn->setup(i_simVars.disc.timestepping_crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size, i_simVars.rexi.use_sphere_extended_modes);
 
 			master = &(SWE_Sphere_TS_interface&)*l_cn;
 		}
 		else if (i_timestepping_method == "lg_cn")
 		{
 			lg_cn = new SWE_Sphere_TS_lg_cn(i_simVars, i_op);
-			lg_cn->setup(i_simVars.disc.crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size);
+			lg_cn->setup(i_simVars.disc.timestepping_crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size);
 
 			master = &(SWE_Sphere_TS_interface&)*lg_cn;
 		}

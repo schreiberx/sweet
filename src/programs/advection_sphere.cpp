@@ -98,7 +98,7 @@ public:
 		prog_h0 = prog_h;
 
 		// setup sphereDataconfig instance again
-		sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
@@ -139,8 +139,8 @@ public:
 		prog_testh.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.domain_size[1];
 
 				x -= param_velocity_u*t;
 				y -= param_velocity_v*t;
@@ -339,7 +339,7 @@ int main(int i_argc, char *i_argv[])
 	SphereDataSemiLagrangian::alpha() = simVars.benchmark.advection_rotation_angle;
 
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	SimulationInstance *simulation = new SimulationInstance;
 
@@ -347,7 +347,7 @@ int main(int i_argc, char *i_argv[])
 
 	if (simVars.misc.gui_enabled)
 	{
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		VisSweet<SimulationInstance> visSweet(simulation);
 	}

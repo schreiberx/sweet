@@ -144,7 +144,7 @@ void SWE_Sphere_TS_l_irk_n_erk::setup(
 		if (version_id == 0)
 		{
 			timestepping_l_cn.setup(
-					simVars.disc.crank_nicolson_filter,
+					simVars.disc.timestepping_crank_nicolson_filter,
 					timestep_size*0.5,	// Half time step size for linear implicit part (applied 2x at start/end of TS)
 					simVars.rexi.use_sphere_extended_modes
 			);
@@ -152,7 +152,7 @@ void SWE_Sphere_TS_l_irk_n_erk::setup(
 		else if (version_id == 1)
 		{
 			timestepping_l_cn.setup(
-					simVars.disc.crank_nicolson_filter,
+					simVars.disc.timestepping_crank_nicolson_filter,
 					timestep_size,	// Full time step size for linear implicit part (applied once at center)
 					simVars.rexi.use_sphere_extended_modes
 			);

@@ -35,7 +35,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 			posx_a, posy_a,
 			i_fixed_dt,
 			posx_d, posy_d,
-			simVars.sim.domain_size,
+			simVars.sim.plane_domain_size,
 			&staggering,
 			2
 			);
@@ -71,7 +71,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 	BurgersValidationBenchmarks::set_source(
 			simVars.timecontrol.current_simulation_time+i_fixed_dt,
 			simVars,
-			simVars.disc.use_staggering,
+			simVars.disc.space_grid_use_c_staggering,
 			f
 		);
 
@@ -83,7 +83,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 
 	rhs_u += i_fixed_dt*f;
 
-	if (simVars.disc.use_spectral_basis_diffs) //spectral
+	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 	{
 		PlaneData lhs = u;
 
@@ -106,17 +106,17 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::setup()
 {
 
 	// Setup sampler for future interpolations
-	sampler2D.setup(simVars.sim.domain_size, op.planeDataConfig);
+	sampler2D.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 	// Setup semi-lag
-	semiLagrangian.setup(simVars.sim.domain_size, op.planeDataConfig);
+	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
 	PlaneData tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
-			io_data = ((double)i)*simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
+			io_data = ((double)i)*simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 		},
 		false
 	);
@@ -125,7 +125,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::setup()
 	tmp_y.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
-			io_data = ((double)j)*simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+			io_data = ((double)j)*simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 		},
 		false
 	);
@@ -134,8 +134,8 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::setup()
 	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
 	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
 
-	double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-	double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
 	// Initialize arrival points with h position
 	posx_a = pos_x+0.5*cell_size_x;

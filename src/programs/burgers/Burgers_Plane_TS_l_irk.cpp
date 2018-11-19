@@ -35,7 +35,7 @@ void Burgers_Plane_TS_l_irk::run_timestep(
 	PlaneData rhs_u = io_u;
 	PlaneData rhs_v = io_v;
 
-	if (simVars.disc.use_spectral_basis_diffs) //spectral
+	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 	{
 		PlaneData lhs = io_u;
 

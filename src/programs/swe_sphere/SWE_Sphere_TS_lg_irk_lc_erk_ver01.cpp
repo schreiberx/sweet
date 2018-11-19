@@ -149,14 +149,14 @@ void SWE_Sphere_TS_lg_irk_lc_erk::setup(
 		if (version_id == 0)
 		{
 			timestepping_lg_cn.setup(
-					simVars.disc.crank_nicolson_filter,
+					simVars.disc.timestepping_crank_nicolson_filter,
 					timestep_size*0.5
 			);
 		}
 		else if (version_id == 1)
 		{
 			timestepping_lg_cn.setup(
-					simVars.disc.crank_nicolson_filter,
+					simVars.disc.timestepping_crank_nicolson_filter,
 					timestep_size
 			);
 		}

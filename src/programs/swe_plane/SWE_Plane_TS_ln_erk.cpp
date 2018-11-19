@@ -34,7 +34,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 )
 {
 	// A-grid method
-	if (!simVars.disc.use_staggering)
+	if (!simVars.disc.space_grid_use_c_staggering)
 	{
 		/*
 		 * non-conservative (advective) formulation:

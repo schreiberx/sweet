@@ -39,8 +39,8 @@ int main(
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	int res_x = simVars.disc.res_physical[0];
-	int res_y = simVars.disc.res_physical[1];
+	int res_x = simVars.disc.space_res_physical[0];
+	int res_y = simVars.disc.space_res_physical[1];
 
 	int max_res = 1024;
 
@@ -58,10 +58,10 @@ int main(
 		double resolution_factor = 2;
 		int res3[2] = {res_x*(int)resolution_factor, res_y*(int)resolution_factor};
 
-		simVars.disc.res_physical[0] = res3[0];
-		simVars.disc.res_physical[1] = res3[1];
-		simVars.disc.res_spectral[0] = 0;
-		simVars.disc.res_spectral[1] = 0;
+		simVars.disc.space_res_physical[0] = res3[0];
+		simVars.disc.space_res_physical[1] = res3[1];
+		simVars.disc.space_res_spectral[0] = 0;
+		simVars.disc.space_res_spectral[1] = 0;
 
 		//simVars.reset();
 		planeDataConfigInstance3.setupAutoSpectralSpace(res3, simVars.misc.reuse_spectral_transformation_plans);
@@ -72,7 +72,7 @@ int main(
 			PlaneData prog_u3(planeDataConfig3);
 			PlaneData prog_v3(planeDataConfig3);
 
-			PlaneOperators op3(planeDataConfig3, simVars.sim.domain_size);
+			PlaneOperators op3(planeDataConfig3, simVars.sim.plane_domain_size);
 			SWEPlaneBenchmarksCombined b;
 
 			b.setupInitialConditions(
@@ -87,20 +87,20 @@ int main(
 
 		int res[2] = {res_x, res_y};
 
-		simVars.disc.res_physical[0] = res[0];
-		simVars.disc.res_physical[1] = res[1];
-		simVars.disc.res_spectral[0] = 0;
-		simVars.disc.res_spectral[1] = 0;
+		simVars.disc.space_res_physical[0] = res[0];
+		simVars.disc.space_res_physical[1] = res[1];
+		simVars.disc.space_res_spectral[0] = 0;
+		simVars.disc.space_res_spectral[1] = 0;
 
 		//simVars.reset();
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 		PlaneData prog_h_pert(planeDataConfig);
 
 		{
 			PlaneData prog_u(planeDataConfig);
 			PlaneData prog_v(planeDataConfig);
 
-			PlaneOperators op(planeDataConfig, simVars.sim.domain_size);
+			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size);
 			SWEPlaneBenchmarksCombined b;
 
 			b.setupInitialConditions(
@@ -125,8 +125,8 @@ int main(
 		{
 			for (int i = 0; i < res3[0]; i++)
 			{
-				px.p_physical_set(j, i, ((double)i)*(simVars.sim.domain_size[0]/(double)res3[0]));
-				py.p_physical_set(j, i, ((double)j)*(simVars.sim.domain_size[1]/(double)res3[1]));
+				px.p_physical_set(j, i, ((double)i)*(simVars.sim.plane_domain_size[0]/(double)res3[0]));
+				py.p_physical_set(j, i, ((double)j)*(simVars.sim.plane_domain_size[1]/(double)res3[1]));
 			}
 		}
 
@@ -135,7 +135,7 @@ int main(
 		 * setup sampler
 		 */
 		PlaneDataSampler sampler2D;
-		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
+		sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
 
 
 		{

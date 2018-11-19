@@ -65,7 +65,7 @@ public:
 		prog_u(planeDataConfig),
 		prog_v(planeDataConfig),
 
-		op(planeDataConfig, simVars.sim.domain_size)
+		op(planeDataConfig, simVars.sim.plane_domain_size)
 
 #if SWEET_GUI
 		,
@@ -94,7 +94,7 @@ public:
 
 
 		// setup planeDataconfig instance again
-		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
@@ -139,20 +139,20 @@ public:
 		prog_testh.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x -= param_velocity_u*t;
 				y -= param_velocity_v*t;
 
 				while (x < 0)
-					x += simVars.sim.domain_size[0];
+					x += simVars.sim.plane_domain_size[0];
 
 				while (y < 0)
-					y += simVars.sim.domain_size[1];
+					y += simVars.sim.plane_domain_size[1];
 
-				x = std::fmod(x, simVars.sim.domain_size[0]);
-				y = std::fmod(y, simVars.sim.domain_size[1]);
+				x = std::fmod(x, simVars.sim.plane_domain_size[0]);
+				y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
 				io_data = SWEPlaneBenchmarks::return_h(simVars, x, y);
 			}
@@ -320,7 +320,7 @@ int main(int i_argc, char *i_argv[])
 		FatalError("Timestep size not set");
 
 
-	int initial_spectral_modes = simVars.disc.res_spectral[0];
+	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 	if (initial_spectral_modes <= 0)
 	{
 		FatalError("Please specify the number of MODES");
@@ -347,24 +347,24 @@ int main(int i_argc, char *i_argv[])
 
 		if (simVars.disc.timestepping_method == "na_sl")
 		{
-			simVars.disc.res_spectral[0] = i;
-			simVars.disc.res_spectral[1] = i;
+			simVars.disc.space_res_spectral[0] = i;
+			simVars.disc.space_res_spectral[1] = i;
 
-			simVars.disc.res_physical[0] = 0;
-			simVars.disc.res_physical[1] = 0;
+			simVars.disc.space_res_physical[0] = 0;
+			simVars.disc.space_res_physical[1] = 0;
 		}
 		else
 		{
-			simVars.disc.res_spectral[0] = initial_spectral_modes;
-			simVars.disc.res_spectral[1] = initial_spectral_modes;
+			simVars.disc.space_res_spectral[0] = initial_spectral_modes;
+			simVars.disc.space_res_spectral[1] = initial_spectral_modes;
 
-			simVars.disc.res_physical[0] = 0;
-			simVars.disc.res_physical[1] = 0;
+			simVars.disc.space_res_physical[0] = 0;
+			simVars.disc.space_res_physical[1] = 0;
 		}
 
 
 
-		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
 		std::cout << "Testing with dt=" << simVars.timecontrol.current_timestep_size << std::endl;
@@ -374,7 +374,7 @@ int main(int i_argc, char *i_argv[])
 	#if SWEET_GUI
 		if (simVars.misc.gui_enabled)
 		{
-			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 			VisSweet<SimulationInstance> visSweet(&simulation);
 			return 0;
 		}

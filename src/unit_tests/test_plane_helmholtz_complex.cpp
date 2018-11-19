@@ -50,7 +50,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	SimulationVariables simVars;
-	simVars.disc.use_spectral_basis_diffs = 1;
+	simVars.disc.space_use_spectral_basis_diffs = 1;
 
 	const char *bogus_var_names[] =
 	{
@@ -106,7 +106,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "********************************************************" << std::endl;
 	}
 
-	if (simVars.disc.use_spectral_basis_diffs)
+	if (simVars.disc.space_use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -117,8 +117,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res_physical[0];
-	std::size_t res_y = simVars.disc.res_physical[1];
+	std::size_t res_x = simVars.disc.space_res_physical[0];
+	std::size_t res_y = simVars.disc.space_res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -142,11 +142,11 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] = {res_x, res_y};
 
 
-		simVars.disc.res_physical[0] = res[0];
-		simVars.disc.res_physical[1] = res[1];
+		simVars.disc.space_res_physical[0] = res[0];
+		simVars.disc.space_res_physical[1] = res[1];
 		simVars.reset();
 
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
@@ -165,12 +165,12 @@ int main(int i_argc, char *i_argv[])
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 			{
-				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 					// H to reconstruct
 					h_cart.p_physical_set(
@@ -181,14 +181,14 @@ int main(int i_argc, char *i_argv[])
 
 					h_diff2_x.p_physical_set(
 						j, i,
-						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0]),
-						-sin(2.0*freq_y*M_PIl*y)*2.0*freq_x*M_PIl*2.0*freq_x*M_PIl*cos(2.0*freq_x*M_PIl*x)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1])
+						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0]),
+						-sin(2.0*freq_y*M_PIl*y)*2.0*freq_x*M_PIl*2.0*freq_x*M_PIl*cos(2.0*freq_x*M_PIl*x)/(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])
 					);
 
 					h_diff2_y.p_physical_set(
 						j, i,
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(simVars.sim.domain_size[1]*simVars.sim.domain_size[1]),
-						2.0*freq_y*2.0*freq_y*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_y*M_PIl*y)*cos(2.0*freq_x*M_PIl*x)/(simVars.sim.domain_size[0]*simVars.sim.domain_size[0])
+						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1]),
+						2.0*freq_y*2.0*freq_y*M_PIl*M_PIl*(-1.0)*sin(2.0*freq_y*M_PIl*y)*cos(2.0*freq_x*M_PIl*x)/(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])
 					);
 				}
 			}
@@ -203,7 +203,7 @@ int main(int i_argc, char *i_argv[])
 					0,			// REXI N (0 for auto detection)
 					simVars.sim.plane_rotating_f0,
 					res,
-					simVars.sim.domain_size,
+					simVars.sim.plane_domain_size,
 					true,		// use only half of REXI
 					use_spectral_differences_for_complex_array,	// use finite differences
 					helmholtz_solver_id,						// iterative solver
@@ -213,13 +213,13 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneDataComplex op_diff2_c_x(res);
 			PlaneDataComplex op_diff2_c_y(res);
-			op_diff2_c_x.op_setup_diff2_x(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
-			op_diff2_c_y.op_setup_diff2_y(simVars.sim.domain_size, use_spectral_differences_for_complex_array);
+			op_diff2_c_x.op_setup_diff2_x(simVars.sim.plane_domain_size, use_spectral_differences_for_complex_array);
+			op_diff2_c_y.op_setup_diff2_y(simVars.sim.plane_domain_size, use_spectral_differences_for_complex_array);
 
 
 			double inv_helm_h[2];
-			inv_helm_h[0] = (double)res[0]/(double)simVars.sim.domain_size[0];
-			inv_helm_h[1] = (double)res[1]/(double)simVars.sim.domain_size[1];
+			inv_helm_h[0] = (double)res[0]/(double)simVars.sim.plane_domain_size[0];
+			inv_helm_h[1] = (double)res[1]/(double)simVars.sim.plane_domain_size[1];
 
 			double scalar_Dx = inv_helm_h[0]*inv_helm_h[0];
 			double scalar_Dy = inv_helm_h[1]*inv_helm_h[1];
@@ -230,7 +230,7 @@ int main(int i_argc, char *i_argv[])
 
 			double tau = (simVars.sim.CFL < 0 ? -simVars.sim.CFL : 1);
 
-			PlaneOperators op(simVars.disc.res_physical, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(simVars.disc.space_res_physical, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
 			for (std::size_t i = 0; i < rexiSWE.rexi.alpha.size(); i++)
 			{
@@ -285,7 +285,7 @@ int main(int i_argc, char *i_argv[])
 								simVars.sim.gravitation * simVars.benchmark.h0,
 								rhs,
 								h,
-								simVars.sim.domain_size,
+								simVars.sim.plane_domain_size,
 								helmholtz_solver_eps,
 								iter_max,
 								helmholtz_solver_sor,	// SOR omega
@@ -302,7 +302,7 @@ int main(int i_argc, char *i_argv[])
 							simVars.sim.gravitation * simVars.benchmark.h0,
 							rhs,
 							h,
-							simVars.sim.domain_size,
+							simVars.sim.plane_domain_size,
 							helmholtz_solver_eps,
 							iter_max,
 							-123,
@@ -320,7 +320,7 @@ int main(int i_argc, char *i_argv[])
 							rhs,
 							h,
 							RexiSWE_HelmholtzSolver::smoother_jacobi,
-							simVars.sim.domain_size,
+							simVars.sim.plane_domain_size,
 							helmholtz_solver_eps,
 							iter_max,
 							helmholtz_solver_sor,
@@ -339,7 +339,7 @@ int main(int i_argc, char *i_argv[])
 							rhs,
 							h,
 							RexiSWE_HelmholtzSolver::smoother_conjugate_gradient,
-							simVars.sim.domain_size,
+							simVars.sim.plane_domain_size,
 							helmholtz_solver_eps,
 							iter_max,
 							-999,	/// sor obsolete for CG
@@ -359,7 +359,7 @@ int main(int i_argc, char *i_argv[])
 							rhs,
 							h,
 							op,
-							simVars.sim.domain_size,
+							simVars.sim.plane_domain_size,
 							helmholtz_solver_eps,
 							iter_max,
 							-123,
@@ -382,7 +382,7 @@ int main(int i_argc, char *i_argv[])
 						simVars.sim.gravitation * simVars.benchmark.h0,
 						rhs,
 						h,
-						simVars.sim.domain_size
+						simVars.sim.plane_domain_size
 					);
 
 				// compare with analytical solution (e.g. for convergence test)

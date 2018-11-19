@@ -127,7 +127,7 @@ void SWE_Plane_TS_l_irk::setup(
 	if (timestepping_order != 1)
 		FatalError("SWE_Plane_TS_l_irk: Only 1st order IRK is supported. Please set --timestepping-order 1.");
 
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("Staggering not supported for l_irk");
 
 }
@@ -142,7 +142,7 @@ SWE_Plane_TS_l_irk::SWE_Plane_TS_l_irk(
 		op(i_op)
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 		,
-		opComplex(i_op.planeDataConfig, i_simVars.sim.domain_size)
+		opComplex(i_op.planeDataConfig, i_simVars.sim.plane_domain_size)
 #endif
 {
 	setup(1);

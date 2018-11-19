@@ -111,7 +111,7 @@ void SWE_Plane_TS_l_cn_n_erk::setup(
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 	use_only_linear_divergence = i_use_only_linear_divergence;
 
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("SWE_Plane_TS_l_cn_n_erk: Staggering not supported for l_cn_n_erk");
 
 	if (timestepping_order_linear > 0 && timestepping_order_linear != 2)
@@ -135,7 +135,7 @@ SWE_Plane_TS_l_cn_n_erk::SWE_Plane_TS_l_cn_n_erk(
 		op(i_op),
 		ts_l_cn(simVars, op)
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, simVars.disc.crank_nicolson_filter, false);
+	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, simVars.disc.timestepping_crank_nicolson_filter, false);
 }
 
 

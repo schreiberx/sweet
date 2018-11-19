@@ -70,7 +70,7 @@ public:
 
 		tmp(i_planeDataConfig),
 
-		op(	i_planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(	i_planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -87,8 +87,8 @@ public:
 
 		double radius = simVars.benchmark.object_scale*
 			std::sqrt(
-				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
-				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
+				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
+				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
 		ret_h.physical_update_lambda_array_indices(
@@ -97,20 +97,20 @@ public:
 
 #if ADV_FUNCTION==0
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
+				if (x < 0)	x = simVars.sim.plane_domain_size[0]-std::fmod(-x, simVars.sim.plane_domain_size[0]);
+				else		x = std::fmod(x, simVars.sim.plane_domain_size[0]);
 
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
+				if (y < 0)	y = simVars.sim.plane_domain_size[1]-std::fmod(-y, simVars.sim.plane_domain_size[1]);
+				else		y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
-				double dx = x-simVars.benchmark.coord_x*simVars.sim.domain_size[0];
-				double dy = y-simVars.benchmark.coord_y*simVars.sim.domain_size[1];
+				double dx = x-simVars.benchmark.coord_x*simVars.sim.plane_domain_size[0];
+				double dy = y-simVars.benchmark.coord_y*simVars.sim.plane_domain_size[1];
 
 				dx /= radius;
 				dy /= radius;
@@ -120,20 +120,20 @@ public:
 
 #elif ADV_FUNCTION==1
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
+				if (x < 0)	x = simVars.sim.plane_domain_size[0]-std::fmod(-x, simVars.sim.plane_domain_size[0]);
+				else		x = std::fmod(x, simVars.sim.plane_domain_size[0]);
 
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
+				if (y < 0)	y = simVars.sim.plane_domain_size[1]-std::fmod(-y, simVars.sim.plane_domain_size[1]);
+				else		y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
-				x /= simVars.sim.domain_size[0];
-				y /= simVars.sim.domain_size[1];
+				x /= simVars.sim.plane_domain_size[0];
+				y /= simVars.sim.plane_domain_size[1];
 
 				io_data = std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y);
 #endif
@@ -155,8 +155,8 @@ public:
 		double adv_y = -vel1*i_timestamp;
 
 		double radius_scale = std::sqrt(
-				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
-				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
+				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
+				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
 		double radius = simVars.benchmark.object_scale*radius_scale;
@@ -167,20 +167,20 @@ public:
 			{
 #if ADV_FUNCTION==0
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
+				if (x < 0)	x = simVars.sim.plane_domain_size[0]-std::fmod(-x, simVars.sim.plane_domain_size[0]);
+				else		x = std::fmod(x, simVars.sim.plane_domain_size[0]);
 
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
+				if (y < 0)	y = simVars.sim.plane_domain_size[1]-std::fmod(-y, simVars.sim.plane_domain_size[1]);
+				else		y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
-				double dx = x-simVars.benchmark.coord_x*simVars.sim.domain_size[0];
-				double dy = y-simVars.benchmark.coord_y*simVars.sim.domain_size[1];
+				double dx = x-simVars.benchmark.coord_x*simVars.sim.plane_domain_size[0];
+				double dy = y-simVars.benchmark.coord_y*simVars.sim.plane_domain_size[1];
 
 				dx /= radius;
 				dy /= radius;
@@ -192,22 +192,22 @@ public:
 
 #elif ADV_FUNCTION==1
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
+				if (x < 0)	x = simVars.sim.plane_domain_size[0]-std::fmod(-x, simVars.sim.plane_domain_size[0]);
+				else		x = std::fmod(x, simVars.sim.plane_domain_size[0]);
 
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
+				if (y < 0)	y = simVars.sim.plane_domain_size[1]-std::fmod(-y, simVars.sim.plane_domain_size[1]);
+				else		y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
-				x /= simVars.sim.domain_size[0];
-				y /= simVars.sim.domain_size[1];
+				x /= simVars.sim.plane_domain_size[0];
+				y /= simVars.sim.plane_domain_size[1];
 
-				io_data = freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.domain_size[0];
+				io_data = freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.plane_domain_size[0];
 #endif
 			}
 		);
@@ -227,8 +227,8 @@ public:
 		double adv_y = -vel1*i_timestamp;
 
 		double radius_scale = std::sqrt(
-				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
-				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
+				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
+				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
 		double radius = simVars.benchmark.object_scale*radius_scale;
@@ -239,20 +239,20 @@ public:
 			{
 #if ADV_FUNCTION==0
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
+				if (x < 0)	x = simVars.sim.plane_domain_size[0]-std::fmod(-x, simVars.sim.plane_domain_size[0]);
+				else		x = std::fmod(x, simVars.sim.plane_domain_size[0]);
 
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
+				if (y < 0)	y = simVars.sim.plane_domain_size[1]-std::fmod(-y, simVars.sim.plane_domain_size[1]);
+				else		y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
-				double dx = x-simVars.benchmark.coord_x*simVars.sim.domain_size[0];
-				double dy = y-simVars.benchmark.coord_y*simVars.sim.domain_size[1];
+				double dx = x-simVars.benchmark.coord_x*simVars.sim.plane_domain_size[0];
+				double dy = y-simVars.benchmark.coord_y*simVars.sim.plane_domain_size[1];
 
 				dx /= radius;
 				dy /= radius;
@@ -264,22 +264,22 @@ public:
 
 #elif ADV_FUNCTION==1
 
-				double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x += adv_x;
 				y += adv_y;
 
-				if (x < 0)	x = simVars.sim.domain_size[0]-std::fmod(-x, simVars.sim.domain_size[0]);
-				else		x = std::fmod(x, simVars.sim.domain_size[0]);
+				if (x < 0)	x = simVars.sim.plane_domain_size[0]-std::fmod(-x, simVars.sim.plane_domain_size[0]);
+				else		x = std::fmod(x, simVars.sim.plane_domain_size[0]);
 
-				if (y < 0)	y = simVars.sim.domain_size[1]-std::fmod(-y, simVars.sim.domain_size[1]);
-				else		y = std::fmod(y, simVars.sim.domain_size[1]);
+				if (y < 0)	y = simVars.sim.plane_domain_size[1]-std::fmod(-y, simVars.sim.plane_domain_size[1]);
+				else		y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
-				x /= simVars.sim.domain_size[0];
-				y /= simVars.sim.domain_size[1];
+				x /= simVars.sim.plane_domain_size[0];
+				y /= simVars.sim.plane_domain_size[1];
 
-				io_data = freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.domain_size[1];
+				io_data = freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.plane_domain_size[1];
 #endif
 		});
 
@@ -314,8 +314,8 @@ public:
 			double i_simulation_timestamp = -1
 	)
 	{
-		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+		double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+		double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
 		int asdf = atoi(simVars.bogus.var[2].c_str());
 		if (asdf == 0)
@@ -418,8 +418,8 @@ public:
 			const PlaneData &i_v
 	)
 	{
-		double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-		double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+		double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+		double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
 		assert(simVars.sim.CFL > 0);
 		return simVars.sim.CFL*std::min(cell_size_x/i_u.reduce_maxAbs(), cell_size_y/i_v.reduce_maxAbs());
@@ -513,7 +513,7 @@ public:
 			break;
 		}
 
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 	}
 
 
@@ -645,24 +645,24 @@ int main(
 	if (u != 0 && v == 0)
 	{
 		total_speed = u;
-		turnaround_time = simVars.sim.domain_size[0]/u;
+		turnaround_time = simVars.sim.plane_domain_size[0]/u;
 	}
 	else if (u == 0 && v != 0)
 	{
 		total_speed = v;
-		turnaround_time = simVars.sim.domain_size[1]/v;
+		turnaround_time = simVars.sim.plane_domain_size[1]/v;
 	}
 	else
 	{
 		total_speed = v;
-		if (std::abs(simVars.sim.domain_size[1]/simVars.sim.domain_size[0]-v/u) > 0.000000001)
+		if (std::abs(simVars.sim.plane_domain_size[1]/simVars.sim.plane_domain_size[0]-v/u) > 0.000000001)
 		{
 			std::cerr << "ratio of domain sizes and speed have to be similar" << std::endl;
 			exit(1);
 		}
 
 		total_speed = std::sqrt(u*u+v*v);
-		double diagonal = std::sqrt(simVars.sim.domain_size[0]*simVars.sim.domain_size[0] + simVars.sim.domain_size[1]*simVars.sim.domain_size[1]);
+		double diagonal = std::sqrt(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0] + simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1]);
 		turnaround_time = diagonal/total_speed;
 	}
 
@@ -697,8 +697,8 @@ int main(
 		double *computed_errors = new double[1024];
 		double *conv_rate = new double[1024];
 
-		std::size_t res_x = simVars.disc.res_physical[0];
-		std::size_t res_y = simVars.disc.res_physical[1];
+		std::size_t res_x = simVars.disc.space_res_physical[0];
+		std::size_t res_y = simVars.disc.space_res_physical[1];
 
 		std::size_t max_res = 128;
 
@@ -717,11 +717,11 @@ int main(
 			std::cout << "Testing convergence with resolution " << res_x << " x " << res_y << " and RK order " << simVars.disc.timestepping_order << std::endl;
 			std::cout << "*******************************************************************************" << std::endl;
 
-			simVars.disc.res_physical[0] = res_x;
-			simVars.disc.res_physical[1] = res_y;
+			simVars.disc.space_res_physical[0] = res_x;
+			simVars.disc.space_res_physical[1] = res_y;
 			simVars.reset();
 
-			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
 
@@ -819,10 +819,10 @@ int main(
 		double *computed_errors = new double[1024];
 		double *conv_rate = new double[1024];
 
-		std::size_t res_x = simVars.disc.res_physical[0];
-		std::size_t res_y = simVars.disc.res_physical[1];
+		std::size_t res_x = simVars.disc.space_res_physical[0];
+		std::size_t res_y = simVars.disc.space_res_physical[1];
 
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		double cfl_limitation = simVars.sim.CFL;
 
@@ -880,8 +880,8 @@ int main(
 //					double error_max = (simulationAdvection->prog_h-benchmark_h).reduce_maxAbs();
 //					std::cout << "Max error in height: " << error_max << std::endl;
 
-					double cell_size_x = simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0];
-					double cell_size_y = simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1];
+					double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+					double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
 					std::cout << "          dt = " << simVars.timecontrol.current_timestep_size << "    dx = " << cell_size_x << " x " << cell_size_x << std::endl;
 

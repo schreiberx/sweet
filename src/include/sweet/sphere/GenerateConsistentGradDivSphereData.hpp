@@ -174,7 +174,7 @@ public:
 
 		// NOTE: This is only a very rough approximation of the time step size
 		double timestep_size = simVars.sim.sphere_radius/(
-				std::max(simVars.disc.res_physical[0], simVars.disc.res_physical[1])*
+				std::max(simVars.disc.space_res_physical[0], simVars.disc.space_res_physical[1])*
 					std::max(simVars.sim.gravitation, std::max(simVars.sim.h0, simVars.sim.sphere_rotating_coriolis_omega))
 		)*0.1;
 

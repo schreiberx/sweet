@@ -75,19 +75,19 @@ int main(int i_argc, char *i_argv[])
 
 	SphereDataConfig sphereDataConfig;
 
-	if (simVars.disc.res_physical[0] <= 0)
+	if (simVars.disc.space_res_physical[0] <= 0)
 	{
 		sphereDataConfig.setupAutoPhysicalSpace(
-				simVars.disc.res_spectral[0], simVars.disc.res_spectral[1],		// spectral (lon/lat)
-				&simVars.disc.res_physical[0], &simVars.disc.res_physical[1],	// physical (lon/lat)
+				simVars.disc.space_res_spectral[0], simVars.disc.space_res_spectral[1],		// spectral (lon/lat)
+				&simVars.disc.space_res_physical[0], &simVars.disc.space_res_physical[1],	// physical (lon/lat)
 				simVars.misc.reuse_spectral_transformation_plans
 		);
 	}
 	else
 	{
 		sphereDataConfig.setup(
-				simVars.disc.res_spectral[0], simVars.disc.res_spectral[1],		// spectral (lon/lat)
-				simVars.disc.res_physical[0], simVars.disc.res_physical[1],	// physical (lon/lat)
+				simVars.disc.space_res_spectral[0], simVars.disc.space_res_spectral[1],		// spectral (lon/lat)
+				simVars.disc.space_res_physical[0], simVars.disc.space_res_physical[1],	// physical (lon/lat)
 				simVars.misc.reuse_spectral_transformation_plans
 			);
 	}

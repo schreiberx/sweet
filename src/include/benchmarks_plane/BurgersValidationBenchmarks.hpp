@@ -158,11 +158,11 @@ public:
 					double x = 0.0;
 					if (i_use_staggering)
 					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					else
 					{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					double tmpvar = tp * std::sin(tp*k*x) * std::cos(tp*k*t)
 								  + tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x)*std::sin(tp*k*t)
@@ -191,9 +191,9 @@ public:
 					double x = 0.0;
 					if (i_use_staggering)
 					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					double tmpvar = 2*tp * std::sin(tp*k*x) * std::cos(tp*k*t)
 								  + 4*tp * std::sin(tp*k*x) * std::sin(tp*k*t) * std::cos(tp*k*x) * std::sin(tp*k*t)
@@ -224,9 +224,9 @@ public:
 					double x = 0.0;
 					if (i_use_staggering)
 					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					double tmpvar = tp * std::sin(tp*x) * std::cos(tp*t) + tp * std::sin(tp*k*x) * std::cos(tp*k*t)
 								  + (std::sin(tp*x) * std::sin(tp*t) + 1/k * std::sin(tp*k*x) * std::sin(tp*k*t))
@@ -284,9 +284,9 @@ public:
 					double x = 0.0;
 					if (i_use_staggering)
 					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					double tmpvar = 1000 * std::sin(tp*x) + 1000*1000*t * std::sin(tp*x) * t * std::cos(tp*x) * tp
 								  - 1000 * i_parameters.sim.viscosity * (-tp*tp*t * std::sin(tp*x));
@@ -332,9 +332,9 @@ public:
 					double x = 0.0;
 					if (i_use_staggering)
 					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					double tmpvar = std::sin(tp*x) * std::cos(tp*x) * tp
 								  - i_parameters.sim.viscosity * (-tp*tp * std::sin(tp*x));
@@ -359,9 +359,9 @@ public:
 					double x = 0.0;
 					if (i_use_staggering)
 					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					double tmpvar = (1+tp*tp) * std::sin(tp*x);
 
@@ -390,9 +390,9 @@ public:
 					double x = 0.0;
 					if (i_use_staggering)
 					{
-						x = (((double)i)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}else{
-						x = (((double)i+0.5)/(double)i_parameters.disc.res_physical[0])*i_parameters.sim.domain_size[0];
+						x = (((double)i+0.5)/(double)i_parameters.disc.space_res_physical[0])*i_parameters.sim.plane_domain_size[0];
 					}
 					double tmpvar = 0;
 					double A1 = 0;

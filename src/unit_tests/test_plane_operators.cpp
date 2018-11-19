@@ -43,12 +43,12 @@ int main(int i_argc, char *i_argv[])
 
 	// override flag
 	SimulationVariables simVars;
-	simVars.disc.use_spectral_basis_diffs = true;
+	simVars.disc.space_use_spectral_basis_diffs = true;
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	if (simVars.disc.use_spectral_basis_diffs)
+	if (simVars.disc.space_use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -65,8 +65,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res_physical[0];
-	std::size_t res_y = simVars.disc.res_physical[1];
+	std::size_t res_x = simVars.disc.space_res_physical[0];
+	std::size_t res_y = simVars.disc.space_res_physical[1];
 
 	//std::size_t max_res = 2048;
 	std::size_t max_res = 1024;
@@ -78,7 +78,7 @@ int main(int i_argc, char *i_argv[])
 	{
 		double tolerance_increase = sqrt(res_x) + sqrt(res_y);
 
-		double max_aspect = simVars.sim.domain_size[0] / simVars.sim.domain_size[1];
+		double max_aspect = simVars.sim.plane_domain_size[0] / simVars.sim.plane_domain_size[1];
 		if (max_aspect < 1.0)
 			max_aspect = 1.0 / max_aspect;
 
@@ -106,15 +106,15 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] =
 		{ res_x, res_y };
 
-		simVars.disc.res_physical[0] = res[0];
-		simVars.disc.res_physical[1] = res[1];
+		simVars.disc.space_res_physical[0] = res[0];
+		simVars.disc.space_res_physical[1] = res[1];
 
-		simVars.disc.res_spectral[0] = 0;
-		simVars.disc.res_spectral[1] = 0;
+		simVars.disc.space_res_spectral[0] = 0;
+		simVars.disc.space_res_spectral[1] = 0;
 
 		simVars.reset();
 
-		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
@@ -123,9 +123,9 @@ int main(int i_argc, char *i_argv[])
 
 		{
 			std::cout << "**********************************************" << std::endl;
-			std::cout << "> Physical resolution (" << simVars.disc.res_physical[0] << "x" << simVars.disc.res_physical[1] << ")" << std::endl;
-			std::cout << "> Spectral resolution (" << simVars.disc.res_spectral[0] << "x" << simVars.disc.res_spectral[1] << ")" << std::endl;
-			std::cout << "> Domain size (" << simVars.sim.domain_size[0] << "x" << simVars.sim.domain_size[1] << ")" << std::endl;
+			std::cout << "> Physical resolution (" << simVars.disc.space_res_physical[0] << "x" << simVars.disc.space_res_physical[1] << ")" << std::endl;
+			std::cout << "> Spectral resolution (" << simVars.disc.space_res_spectral[0] << "x" << simVars.disc.space_res_spectral[1] << ")" << std::endl;
+			std::cout << "> Domain size (" << simVars.sim.plane_domain_size[0] << "x" << simVars.sim.plane_domain_size[1] << ")" << std::endl;
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
@@ -148,13 +148,13 @@ int main(int i_argc, char *i_argv[])
 				PlaneData h_diff2_y(planeDataConfig);
 				PlaneData h_bilaplace(planeDataConfig);
 
-				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+				PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
 				double freq_x = 0;
 				double freq_y = 0;
 
 				//Nyquist freq
-				std::size_t nyq = simVars.disc.res_physical[0] / 2;
+				std::size_t nyq = simVars.disc.space_res_physical[0] / 2;
 
 				//Vary frequencies
 				for (std::size_t k = 0; k <= 4; k++)
@@ -173,25 +173,25 @@ int main(int i_argc, char *i_argv[])
 					double fx = 2.0 * freq_x * M_PIl;
 					double fy = 2.0 * freq_y * M_PIl;
 
-					for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+					for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 					{
-						for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+						for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 						{
-							double x = (((double)i + 0.5) / (double)simVars.disc.res_physical[0]); //*simVars.sim.domain_size[0];
-							double y = (((double)j + 0.5) / (double)simVars.disc.res_physical[1]); //*simVars.sim.domain_size[1];
+							double x = (((double)i + 0.5) / (double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
+							double y = (((double)j + 0.5) / (double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 
 							double sin_x = sin(fx * x);
 							double cos_x = cos(fx * x);
 							double sin_y = sin(fy * y);
 							double cos_y = cos(fy * y);
 
-							double dx = simVars.sim.domain_size[0];
-							double dy = simVars.sim.domain_size[1];
+							double dx = simVars.sim.plane_domain_size[0];
+							double dy = simVars.sim.plane_domain_size[1];
 
 							h.p_physical_set(j, i, sin_x * sin_y);
 
-							double diff_x = fx * cos_x * sin_y / (simVars.sim.domain_size[0]);
-							double diff_y = fy * sin_x * cos_y / (simVars.sim.domain_size[1]);
+							double diff_x = fx * cos_x * sin_y / (simVars.sim.plane_domain_size[0]);
+							double diff_y = fy * sin_x * cos_y / (simVars.sim.plane_domain_size[1]);
 
 							h_diff_x.p_physical_set(j, i, diff_x);
 							h_diff_y.p_physical_set(j, i, diff_y);
@@ -211,12 +211,12 @@ int main(int i_argc, char *i_argv[])
 					//h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
 
 					// Normalization of errors
-					double norm_fx = fx / simVars.sim.domain_size[0];
-					double norm_fy = fy / simVars.sim.domain_size[1];
+					double norm_fx = fx / simVars.sim.plane_domain_size[0];
+					double norm_fy = fy / simVars.sim.plane_domain_size[1];
 
 					// Also take into account the errors of FFT
-					double norm_fft_x = std::sqrt(simVars.disc.res_physical[0]);
-					double norm_fft_y = std::sqrt(simVars.disc.res_physical[1]);
+					double norm_fft_x = std::sqrt(simVars.disc.space_res_physical[0]);
+					double norm_fft_y = std::sqrt(simVars.disc.space_res_physical[1]);
 
 					double err_x = (op.diff_c_x(h) - h_diff_x).reduce_maxAbs() / norm_fx / norm_fft_x;
 					double err_y = (op.diff_c_y(h) - h_diff_y).reduce_maxAbs() / norm_fy / norm_fft_y;
@@ -235,9 +235,9 @@ int main(int i_argc, char *i_argv[])
 							/ (norm_fft_x + norm_fft_y) // for second laplace operator
 							;
 
-					if (simVars.disc.use_spectral_basis_diffs)
+					if (simVars.disc.space_use_spectral_basis_diffs)
 					{
-						std::cout << "frequency = " << freq_x << " of " << simVars.disc.res_physical[0] / 2 << std::endl;
+						std::cout << "frequency = " << freq_x << " of " << simVars.disc.space_res_physical[0] / 2 << std::endl;
 						std::cout << " + error diff x = " << err_x << std::endl;
 						std::cout << " + error diff y = " << err_y << std::endl;
 						std::cout << " + error diff2 x = " << err2_x << std::endl;
@@ -262,8 +262,8 @@ int main(int i_argc, char *i_argv[])
 							double conv2_y = prev_error_diff2_y/err2_y;
 							double conv_lap = prev_error_lap/err_laplace;
 							double conv_bilap = prev_error_bilap/err_bilaplace;
-							std::cout << "frequency x = " << freq_x << " of " << simVars.disc.res_physical[0]/2 << std::endl;
-							std::cout << "frequency y = " << freq_y << " of " << simVars.disc.res_physical[1]/2 << std::endl;
+							std::cout << "frequency x = " << freq_x << " of " << simVars.disc.space_res_physical[0]/2 << std::endl;
+							std::cout << "frequency y = " << freq_y << " of " << simVars.disc.space_res_physical[1]/2 << std::endl;
 							std::cout << "error diff x = " << err_x << std::endl;
 							std::cout << "error diff y = " << err_y << std::endl;
 							std::cout << "error diff2 x = " << err2_x << std::endl;
@@ -325,30 +325,30 @@ int main(int i_argc, char *i_argv[])
 				PlaneData h12_noalias(planeDataConfig);
 				PlaneData h12_truncated(planeDataConfig);
 
-				PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+				PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
 				// Nyquist freq in physical space
-				int physical_nyq_freq = simVars.disc.res_physical[0] / 2;
+				int physical_nyq_freq = simVars.disc.space_res_physical[0] / 2;
 				std::cout << "> Nyquist frequency: " << physical_nyq_freq << std::endl;
 
 				// Truncated Nyquist freq in spectral space
 				int spectral_nyq_trunc_freq = 2 * physical_nyq_freq / 3;
 				std::cout << "> Truncated Nyquist frequency: " << spectral_nyq_trunc_freq << std::endl;
-				std::cout << "> Spectral space modes[0] / 2: " << simVars.disc.res_spectral[0]/2 << std::endl;
+				std::cout << "> Spectral space modes[0] / 2: " << simVars.disc.space_res_spectral[0]/2 << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-				if (spectral_nyq_trunc_freq != simVars.disc.res_spectral[0]/2)
+				if (spectral_nyq_trunc_freq != simVars.disc.space_res_spectral[0]/2)
 					FatalError("Inconsistent effective Nyquist frequency!");
 #endif
 
 				std::cout << std::endl;
 
 				// Total num of freqs
-				int n = simVars.disc.res_physical[0];
+				int n = simVars.disc.space_res_physical[0];
 
 				// dx, dy
-				double dx = 1.0 / simVars.disc.res_physical[0];
-				double dy = 1.0 / simVars.disc.res_physical[1];
+				double dx = 1.0 / simVars.disc.space_res_physical[0];
+				double dy = 1.0 / simVars.disc.space_res_physical[1];
 
 				for (std::size_t k = 0; k < 7; k++)
 				{
@@ -423,9 +423,9 @@ int main(int i_argc, char *i_argv[])
 						std::cout << " + Frequency " << freq_sum << " will not introduce an aliasing on truncated multiplication spectrum" << std::endl;
 
 					// cos(a x) cos(b x)  = 1/2 (cos( (a-b) x) + cos( (a+b) x))
-					for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+					for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 					{
-						for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+						for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 						{
 							double x = (double)i * dx;
 							double y = (double)j * dy;

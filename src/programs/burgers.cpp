@@ -129,7 +129,7 @@ public:
 		t0_prog_v(planeDataConfig),
 
 		// Initialise operators
-		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
 		,
 		_parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
@@ -196,22 +196,22 @@ public:
 		prog_v_prev.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
-		if (simVars.disc.use_staggering && simVars.disc.use_spectral_basis_diffs)
+		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
 			FatalError("Staggering and spectral basis not supported!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		if (simVars.disc.use_staggering ||  !simVars.disc.use_spectral_basis_diffs)
+		if (simVars.disc.space_grid_use_c_staggering ||  !simVars.disc.space_use_spectral_basis_diffs)
 			FatalError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
 		// Set initial conditions given from BurgersValidationBenchmarks
-		if (simVars.disc.use_staggering)
+		if (simVars.disc.space_grid_use_c_staggering)
 		{
 			prog_u.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 				}
 			);
@@ -220,8 +220,8 @@ public:
 				{
 				io_data = 0.0;
 #if 0
-					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+					double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
 #endif
 				}
@@ -232,8 +232,8 @@ public:
 			prog_u.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 				}
 			);
@@ -243,8 +243,8 @@ public:
 				{
 				io_data = 0.0;
 #if 0
-					double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+					double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
 #endif
 				}
@@ -307,8 +307,8 @@ public:
 
 		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
 
-		double normalization = (simVars.sim.domain_size[0]*simVars.sim.domain_size[1]) /
-								((double)simVars.disc.res_physical[0]*(double)simVars.disc.res_physical[1]);
+		double normalization = (simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[1]) /
+								((double)simVars.disc.space_res_physical[0]*(double)simVars.disc.space_res_physical[1]);
 
 		// Reduce amount of possible FFTs to minimize numerical error
 		PlaneData tmp_u = prog_u;
@@ -522,13 +522,13 @@ public:
 			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
 			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
-				if (simVars.disc.use_staggering)
+				if (simVars.disc.space_grid_use_c_staggering)
 				{
 					ts_u.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 						}
 					);
@@ -538,8 +538,8 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
 #endif
 						}
@@ -550,8 +550,8 @@ public:
 					ts_u.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 						}
@@ -562,8 +562,8 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
 #endif
@@ -620,13 +620,13 @@ public:
 			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
 			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
-				if (simVars.disc.use_staggering)
+				if (simVars.disc.space_grid_use_c_staggering)
 				{
 					ts_u.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 						}
 					);
@@ -636,8 +636,8 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
 #endif
 						}
@@ -648,8 +648,8 @@ public:
 					ts_u.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 						}
@@ -660,8 +660,8 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
 #endif
@@ -783,7 +783,7 @@ public:
 		}
 
 		*o_dataArray = &vis;
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 		return;
 	}
 
@@ -1400,7 +1400,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	// Print header
 	std::cout << "---------------------------------" << std::endl;

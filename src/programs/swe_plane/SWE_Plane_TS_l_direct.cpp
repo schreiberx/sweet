@@ -35,7 +35,7 @@ void SWE_Plane_TS_l_direct::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		run_timestep_cgrid(io_h_pert, io_u, io_v, i_dt, i_simulation_timestamp);
 	else
 		run_timestep_agrid(io_h_pert, io_u, io_v, i_dt, i_simulation_timestamp);
@@ -60,20 +60,20 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 	PlaneData t_u(io_h_pert.planeDataConfig);
 	PlaneData t_v(io_h_pert.planeDataConfig);
 
-	if (!simVars.disc.use_staggering)
+	if (!simVars.disc.space_grid_use_c_staggering)
 		FatalError("Expected staggering");
 
 	planeDataGridMapping.mapCtoA_u(io_u, t_u);
 	planeDataGridMapping.mapCtoA_v(io_v, t_v);
 
-	simVars.disc.use_staggering = false;
+	simVars.disc.space_grid_use_c_staggering = false;
 
 	run_timestep_agrid(
 			io_h_pert, t_u, t_v,
 			i_dt, i_simulation_timestamp
 	);
 
-	simVars.disc.use_staggering = true;
+	simVars.disc.space_grid_use_c_staggering = true;
 
 	planeDataGridMapping.mapAtoC_u(t_u, io_u);
 	planeDataGridMapping.mapAtoC_v(t_v, io_v);
@@ -118,7 +118,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		double i_simulation_timestamp
 )
 {
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("Staggering not supported");
 
 	//if (i_dt < 0)
@@ -134,8 +134,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	/*
 	 * This implementation works directly on PlaneData
 	 */
-	T s0 = simVars.sim.domain_size[0];
-	T s1 = simVars.sim.domain_size[1];
+	T s0 = simVars.sim.plane_domain_size[0];
+	T s1 = simVars.sim.plane_domain_size[1];
 
 	io_h_pert.request_data_spectral();
 	io_u.request_data_spectral();
@@ -640,8 +640,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 	T dt = i_dt;
 
-	T s0 = simVars.sim.domain_size[0];
-	T s1 = simVars.sim.domain_size[1];
+	T s0 = simVars.sim.plane_domain_size[0];
+	T s1 = simVars.sim.plane_domain_size[1];
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	o_h_pert.spectral_space_data_valid = true;
@@ -1103,7 +1103,7 @@ SWE_Plane_TS_l_direct::SWE_Plane_TS_l_direct(
 		simVars(i_simVars),
 		op(i_op)
 {
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		planeDataGridMapping.setup(i_simVars, op.planeDataConfig);
 }
 

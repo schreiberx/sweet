@@ -59,7 +59,7 @@ public:
 	SimulationInstance()	:
 		prog_h(planeDataConfig),
 
-		op(planeDataConfig, simVars.sim.domain_size)
+		op(planeDataConfig, simVars.sim.plane_domain_size)
 
 #if SWEET_GUI
 		,
@@ -78,22 +78,22 @@ public:
 			double i_exp_fac
 	)
 	{
-		double sx = simVars.sim.domain_size[0];
-		double sy = simVars.sim.domain_size[1];
+		double sx = simVars.sim.plane_domain_size[0];
+		double sy = simVars.sim.plane_domain_size[1];
 
 		// Gaussian
 		double dx = i_x-i_center_x*sx;
 		double dy = i_y-i_center_y*sy;
 
-		if (dx > 0.5*simVars.sim.domain_size[0])
-			dx -= simVars.sim.domain_size[0];
-		else if (dx < -0.5*simVars.sim.domain_size[0])
-			dx += simVars.sim.domain_size[0];
+		if (dx > 0.5*simVars.sim.plane_domain_size[0])
+			dx -= simVars.sim.plane_domain_size[0];
+		else if (dx < -0.5*simVars.sim.plane_domain_size[0])
+			dx += simVars.sim.plane_domain_size[0];
 
-		if (dy > 0.5*simVars.sim.domain_size[1])
-			dy -= simVars.sim.domain_size[1];
-		else if (dy < -0.5*simVars.sim.domain_size[1])
-			dy += simVars.sim.domain_size[1];
+		if (dy > 0.5*simVars.sim.plane_domain_size[1])
+			dy -= simVars.sim.plane_domain_size[1];
+		else if (dy < -0.5*simVars.sim.plane_domain_size[1])
+			dy += simVars.sim.plane_domain_size[1];
 
 		dx /= sx*simVars.benchmark.object_scale;
 		dy /= sy*simVars.benchmark.object_scale;
@@ -110,8 +110,8 @@ public:
 		prog_h.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 			{
-				double x = (double)i*(simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
-				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
+				double x = (double)i*(simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0]);
+				double y = (double)j*(simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1]);
 
 				io_data = gaussianValue(center_x, center_y, x, y, exp_fac);
 			}
@@ -129,9 +129,9 @@ public:
 				int i = idx % planeDataConfigOversampling->physical_res[0];
 				//int j = idx / planeDataConfig->physical_data_size[0];
 
-				io_data = simVars.sim.domain_size[0]*(double)i/(double)planeDataConfigOversampling->physical_res[0];
+				io_data = simVars.sim.plane_domain_size[0]*(double)i/(double)planeDataConfigOversampling->physical_res[0];
 				assert(io_data >= 0);
-				assert(io_data < simVars.sim.domain_size[0]);
+				assert(io_data < simVars.sim.plane_domain_size[0]);
 			}
 		);
 		posy_a.update_lambda_array_indices(
@@ -140,14 +140,14 @@ public:
 				//int i = idx % planeDataConfig->physical_data_size[0];
 				int j = idx / planeDataConfigOversampling->physical_res[0];
 
-				io_data = simVars.sim.domain_size[1]*(double)j/(double)planeDataConfigOversampling->physical_res[1];
+				io_data = simVars.sim.plane_domain_size[1]*(double)j/(double)planeDataConfigOversampling->physical_res[1];
 
 				assert(io_data >= -M_PI*0.5);
-				assert(io_data < simVars.sim.domain_size[1]);
+				assert(io_data < simVars.sim.plane_domain_size[1]);
 			}
 		);
 
-		planeDataSampler.setup(simVars.sim.domain_size, planeDataConfig);
+		planeDataSampler.setup(simVars.sim.plane_domain_size, planeDataConfig);
 	}
 
 
@@ -309,7 +309,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	int initial_spectral_modes = simVars.disc.res_spectral[0];
+	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 
 	double gaussian_center_array[6][2] = {
 			{0.5, 0.5},
@@ -343,18 +343,18 @@ int main(int i_argc, char *i_argv[])
 			double prev_max_error = -1;
 			for (int i = initial_spectral_modes; i <= 256; i *= 2)
 			{
-				simVars.disc.res_physical[0] = 0;
-				simVars.disc.res_physical[1] = 0;
+				simVars.disc.space_res_physical[0] = 0;
+				simVars.disc.space_res_physical[1] = 0;
 
-				simVars.disc.res_spectral[0] = i;
-				simVars.disc.res_spectral[1] = i;
+				simVars.disc.space_res_spectral[0] = i;
+				simVars.disc.space_res_spectral[1] = i;
 
-				planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+				planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 				std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
 
-				int res_physical_overs[2] = {simVars.disc.res_physical[0]*oversampling, simVars.disc.res_physical[1]*oversampling};
-				int res_spectral_overs[2] = {simVars.disc.res_spectral[0]*oversampling, simVars.disc.res_spectral[1]*oversampling};
+				int res_physical_overs[2] = {simVars.disc.space_res_physical[0]*oversampling, simVars.disc.space_res_physical[1]*oversampling};
+				int res_spectral_overs[2] = {simVars.disc.space_res_spectral[0]*oversampling, simVars.disc.space_res_spectral[1]*oversampling};
 
 				planeDataConfigOversamplingInstance.setupAuto(res_physical_overs, res_spectral_overs, simVars.misc.reuse_spectral_transformation_plans);
 
@@ -377,7 +377,7 @@ int main(int i_argc, char *i_argv[])
 
 					if (simVars.misc.gui_enabled)
 					{
-						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 						VisSweet<SimulationInstance> visSweet(&simulation);
 						return 0;

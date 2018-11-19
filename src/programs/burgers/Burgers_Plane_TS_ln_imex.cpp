@@ -44,7 +44,7 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 	else
 		FatalError("The chosen timestepping-order is not possible with IMEX");
 
-	if (simVars.disc.use_spectral_basis_diffs) //spectral
+	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 	{
 
 		PlaneData lhs = u;

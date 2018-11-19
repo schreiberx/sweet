@@ -92,7 +92,6 @@ class SWEETCompileOptions(InfoError):
 		# PinT
 		self.parareal = 'none'
 		self.libpfasst = 'disable'
-		self.pfasst_cpp = 'disable'
 
 		# Eigen library
 		self.eigen = 'disable'
@@ -169,7 +168,6 @@ class SWEETCompileOptions(InfoError):
 		# PinT
 		retval += ' --parareal='+self.parareal
 		retval += ' --libpfasst='+self.libpfasst
-		retval += ' --pfasst-cpp='+self.pfasst_cpp
 
 		retval += ' --eigen='+self.eigen
 
@@ -289,17 +287,6 @@ class SWEETCompileOptions(InfoError):
 				help="Activate utilization of Eigen library [default: %default]"
 		)
 		self.eigen = scons.GetOption('eigen')
-
-
-
-		scons.AddOption(	'--pfasst-cpp',
-				dest='pfasst_cpp',
-				type='choice',
-				choices=['enable', 'disable'],
-				default='disable',
-				help="Activate utilization of PFASST++ (C++ version) [default: %default]"
-		)
-		self.pfasst_cpp = scons.GetOption('pfasst_cpp')
 
 
 		scons.AddOption(	'--libpfasst',

@@ -108,7 +108,7 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 			t = simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time;
 */
 
-		if (simVars.disc.use_spectral_basis_diffs) //spectral
+		if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 		{
 			PlaneData u1 = u + t*simVars.sim.viscosity*(op.diff2_c_x(u)+op.diff2_c_y(u))
 						   - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u));

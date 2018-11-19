@@ -30,8 +30,8 @@ void Burgers_Plane_TS_ln_imex_forcing::run_timestep(
 	// Initialize and set timestep dependent source for manufactured solution
 	PlaneData f(io_u.planeDataConfig);
 	PlaneData ff(io_u.planeDataConfig);
-	BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,simVars.disc.use_staggering,f);
-	BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*dt,simVars,simVars.disc.use_staggering,ff);
+	BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,simVars.disc.space_grid_use_c_staggering,f);
+	BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*dt,simVars,simVars.disc.space_grid_use_c_staggering,ff);
 	f.request_data_spectral();
 	ff.request_data_spectral();
 
@@ -45,7 +45,7 @@ void Burgers_Plane_TS_ln_imex_forcing::run_timestep(
 	//std::cout << std::endl << std::endl << "rhs_u" << std::endl;
 	//rhs_u.print_physicalArrayData();
 
-	if (simVars.disc.use_spectral_basis_diffs) //spectral
+	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 	{
 
 		PlaneData lhs = u;

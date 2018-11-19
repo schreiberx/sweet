@@ -70,7 +70,7 @@ public:
 
 		h_t(planeDataConfig),
 
-		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -88,8 +88,8 @@ public:
 		prog_h_pert.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 			}
@@ -116,7 +116,7 @@ public:
 				int i = idx % planeDataConfig->physical_data_size[0];
 				//int j = idx / planeDataConfig->physical_data_size[0];
 
-				io_data = ((double)i)*((double)simVars.sim.domain_size[0]/(double)simVars.disc.res_physical[0]);
+				io_data = ((double)i)*((double)simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0]);
 			}
 		);
 		posy_a.update_lambda_array_indices(
@@ -125,14 +125,14 @@ public:
 				//int i = idx % planeDataConfig->physical_data_size[0];
 				int j = idx / planeDataConfig->physical_data_size[0];
 
-				io_data = ((double)j)*((double)simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
+				io_data = ((double)j)*((double)simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1]);
 			}
 		);
 
-		sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
+		sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
 
 		//PXT- This just calls sampler2D.setup, so any reason for having it?
-		semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
+		semiLagrangian.setup(simVars.sim.plane_domain_size, planeDataConfig);
 	}
 
 
@@ -155,7 +155,7 @@ public:
 				posx_a, posy_a,
 				dt,
 				posx_d, posy_d,
-				simVars.sim.domain_size,
+				simVars.sim.plane_domain_size,
 				nullptr,
 				simVars.disc.timestepping_order
 		);
@@ -190,20 +190,20 @@ public:
 		prog_testh.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				double x = (((double)i)/(double)simVars.disc.res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j)/(double)simVars.disc.res_physical[1])*simVars.sim.domain_size[1];
+				double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+				double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
 				x -= param_velocity_u*t;
 				y -= param_velocity_v*t;
 
 				while (x < 0)
-					x += simVars.sim.domain_size[0];
+					x += simVars.sim.plane_domain_size[0];
 
 				while (y < 0)
-					y += simVars.sim.domain_size[1];
+					y += simVars.sim.plane_domain_size[1];
 
-				x = std::fmod(x, simVars.sim.domain_size[0]);
-				y = std::fmod(y, simVars.sim.domain_size[1]);
+				x = std::fmod(x, simVars.sim.plane_domain_size[0]);
+				y = std::fmod(y, simVars.sim.plane_domain_size[1]);
 
 				io_data = SWEPlaneBenchmarks_DEPRECATED::return_h(simVars, x, y);
 			}
@@ -254,7 +254,7 @@ public:
 			*o_dataArray = &prog_v;
 			break;
 		}
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 	}
 
 
@@ -321,7 +321,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

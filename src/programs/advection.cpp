@@ -44,7 +44,7 @@ public:
 
 		h_t(planeDataConfig),
 
-		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 	{
 		reset();
 	}
@@ -75,8 +75,8 @@ public:
 			h.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
@@ -96,8 +96,8 @@ public:
 			h.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 					double dx = x-center_x;
 					double dy = y-center_y;
@@ -211,7 +211,7 @@ public:
 			*o_dataArray = &v;
 			break;
 		}
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 	}
 
 
@@ -275,7 +275,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	SimulationSWE *simulationSWE = new SimulationSWE;
 

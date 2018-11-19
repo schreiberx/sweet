@@ -49,7 +49,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	SimulationVariables simVars;
-	simVars.disc.use_spectral_basis_diffs = 1;
+	simVars.disc.space_use_spectral_basis_diffs = 1;
 
 	const char *bogus_var_names[] = {
 			nullptr
@@ -62,7 +62,7 @@ int main(int i_argc, char *i_argv[])
 	}
 
 
-	if (simVars.disc.use_spectral_basis_diffs)
+	if (simVars.disc.space_use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -73,8 +73,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res_physical[0];
-	std::size_t res_y = simVars.disc.res_physical[1];
+	std::size_t res_x = simVars.disc.space_res_physical[0];
+	std::size_t res_y = simVars.disc.space_res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -130,11 +130,11 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] = {res_x, res_y};
 
 
-		simVars.disc.res_physical[0] = res[0];
-		simVars.disc.res_physical[1] = res[1];
+		simVars.disc.space_res_physical[0] = res[0];
+		simVars.disc.space_res_physical[1] = res[1];
 		simVars.reset();
 
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 
 		/*
@@ -146,7 +146,7 @@ int main(int i_argc, char *i_argv[])
 		{
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "> Resolution (" << res_x << "x" << res_y << ")" << std::endl;
-			std::cout << "> Domain size (" << simVars.sim.domain_size[0] << "x" << simVars.sim.domain_size[1] << ")" << std::endl;
+			std::cout << "> Domain size (" << simVars.sim.plane_domain_size[0] << "x" << simVars.sim.plane_domain_size[1] << ")" << std::endl;
 			std::cout << "**********************************************" << std::endl;
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
@@ -260,9 +260,9 @@ int main(int i_argc, char *i_argv[])
 
 
 			// create sinus curve
-			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 			{
-				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 				{
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
@@ -315,14 +315,14 @@ int main(int i_argc, char *i_argv[])
 			PlaneDataComplex u(planeDataConfig);
 			PlaneDataComplex v(planeDataConfig);
 
-			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.domain_size);
+			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.plane_domain_size);
 
-			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 			{
-				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 					u.p_physical_set(j, i, sin(freq_x*M_PIl*x), 0.0);
 					v.p_physical_set(j, i, cos(freq_y*M_PIl*y), 0.0);
@@ -385,7 +385,7 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for 1st order differential operator
 		 */
 		{
-			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.domain_size);
+			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.plane_domain_size);
 
 			PlaneDataComplex u(planeDataConfig);
 			PlaneDataComplex v(planeDataConfig);
@@ -394,12 +394,12 @@ int main(int i_argc, char *i_argv[])
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
-			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 			{
-				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 //					double x = ((double)i)/(double)parameters.discretization.res[0];
 //					double y = ((double)j)/(double)parameters.discretization.res[1];
 
@@ -414,24 +414,24 @@ int main(int i_argc, char *i_argv[])
 
 					h_diff_x.p_physical_set(
 						j, i,
-						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)simVars.sim.domain_size[0],
+						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)simVars.sim.plane_domain_size[0],
 						0
 					);
 
 					h_diff_y.p_physical_set(
 						j, i,
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)simVars.sim.domain_size[1],
+						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)simVars.sim.plane_domain_size[1],
 						0
 					);
 				}
 			}
 
 
-			double res_normalization = std::sqrt(1.0/(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
+			double res_normalization = std::sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op.diff_c_x(h_cart)-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[0]/(2.0*M_PIl);
-			double err_y = (op.diff_c_y(h_cart)-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.domain_size[1]/(2.0*M_PIl);
+			double err_x = (op.diff_c_x(h_cart)-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PIl);
+			double err_y = (op.diff_c_y(h_cart)-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PIl);
 			double err_z = (u*v-h_cart).reduce_norm2_quad()*res_normalization;
 
 			std::cout << "error diff x = " << err_x << std::endl;

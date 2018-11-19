@@ -30,10 +30,6 @@
 #	define SWEET_GUI 1
 #endif
 
-#ifndef SWEET_PFASST_CPP
-#	define SWEET_PFASST_CPP 1
-#endif
-
 #ifndef SWEET_LIBPFASST
 #	define SWEET_LIBPFASST 1
 #endif
@@ -241,6 +237,17 @@ public:
 #endif
 
 
+#if 0
+		static void fun_no_forces(int, double, void*, void*)
+		{
+			FatalError("External forces not available");
+		};
+#endif
+
+		/// load external forces if available from benchmark scenario
+		void (*getExternalForcesCallback)(int, double, void*, void*) = nullptr;// = &fun_no_forces;		/// SET TO NULLPTR
+		void *getExternalForcesUserData = nullptr;
+
 
 
 		void outputConfig()
@@ -339,21 +346,13 @@ public:
 		double gravitation = 9.80616;
 
 
-		/// domain size
-		double domain_size[2] = {1.0, 1.0};
+		/**
+		 * domain size if running simulation on the plane
+		 */
+		double plane_domain_size[2] = {1.0, 1.0};
 
 
 		double advection_velocity[3] = {0, 0, 0};
-
-
-		static void fun_no_forces(int, double, void*, void*)
-		{
-			FatalError("External forces not available");
-		};
-
-		/// load external forces if available from benchmark scenario
-		void (*getExternalForcesCallback)(int, double, void*, void*) = nullptr;// = &fun_no_forces;		/// SET TO NULLPTR
-		void *getExternalForcesUserData = nullptr;
 
 
 		void outputConfig()
@@ -364,7 +363,7 @@ public:
 			std::cout << " + viscosity: " << viscosity << std::endl;
 			std::cout << " + viscosity_order: " << viscosity_order << std::endl;
 			std::cout << " + gravitation: " << gravitation << std::endl;
-			std::cout << " + domain_size (2D): " << domain_size[0] << " x " << domain_size[1] << std::endl;
+			std::cout << " + domain_size (2D): " << plane_domain_size[0] << " x " << plane_domain_size[1] << std::endl;
 			std::cout << " + advection_velocity (x, y, rotation speed): " << advection_velocity[0] << ", " << advection_velocity[1] << ", " << advection_velocity[2] << std::endl;
 
 #if SWEET_USE_PLANE_TEST
@@ -408,19 +407,29 @@ public:
 	struct Discretization
 	{
 		/// resolution in physical space (grid cells)
-		int res_physical[2] = {0, 0};
+		int space_res_physical[2] = {0, 0};
 
 		/// resolution in spectral space (number of modes)
-		int res_spectral[2] = {0, 0};
+		int space_res_spectral[2] = {0, 0};
 
+		/// use spectral differential operators
+		bool space_use_spectral_basis_diffs =
+#if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
+				true;
+#else
+				false;
+#endif
+
+		bool space_grid_use_c_staggering = false;
 
 
 
 		/// Leapfrog: Robert Asselin filter
-		double leapfrog_robert_asselin_filter = 0;
+		double timestepping_leapfrog_robert_asselin_filter = 0;
 
 		/// Crank-Nicolson filter
-		double crank_nicolson_filter = 0.5;
+		double timestepping_crank_nicolson_filter = 0.5;
+
 
 
 		/// String of time stepping method
@@ -432,17 +441,6 @@ public:
 
 		/// Order of 2nd time stepping which might be used
 		int timestepping_order2 = -1;
-
-
-		/// use spectral differential operators
-		bool use_spectral_basis_diffs =
-#if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
-				true;
-#else
-				false;
-#endif
-
-		bool use_staggering = false;
 
 		/*
 		 * Do a normal mode analysis, see
@@ -456,19 +454,17 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "DISCRETIZATION:" << std::endl;
-			std::cout << " + res_physical: " << res_physical[0] << " x " << res_physical[1] << std::endl;
-			std::cout << " + res_spectral: " << res_spectral[0] << " x " << res_spectral[1] << std::endl;
-//			std::cout << " + cell_size (2D): " << res_physical[0] << " x " << cell_size[1] << std::endl;
+			std::cout << " + space_res_physical: " << space_res_physical[0] << " x " << space_res_physical[1] << std::endl;
+			std::cout << " + space_res_spectral: " << space_res_spectral[0] << " x " << space_res_spectral[1] << std::endl;
+			std::cout << " + space_use_spectral_basis_diffs: " << space_use_spectral_basis_diffs << std::endl;
+			std::cout << " + space_grid_use_c_staggering: " << space_grid_use_c_staggering << std::endl;
 			std::cout << " + timestepping_method: " << timestepping_method << std::endl;
 			std::cout << " + timestepping_order: " << timestepping_order << std::endl;
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
-			std::cout << " + leapfrog_robert_asselin_filter: " << leapfrog_robert_asselin_filter << std::endl;
-			std::cout << " + crank_nicolson_filter: " << crank_nicolson_filter << std::endl;
-			std::cout << " + use_spectral_basis_diffs: " << use_spectral_basis_diffs << std::endl;
-			std::cout << " + use_staggering: " << use_staggering << std::endl;
+			std::cout << " + timestepping_leapfrog_robert_asselin_filter: " << timestepping_leapfrog_robert_asselin_filter << std::endl;
+			std::cout << " + timestepping_crank_nicolson_filter: " << timestepping_crank_nicolson_filter << std::endl;
 			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
-
-			std::cout << " + dealiasing (compile time): " <<
+			std::cout << " + plane_dealiasing (compile time): " <<
 		#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 					1
 		#else
@@ -497,8 +493,6 @@ public:
 #endif
 
 			std::cout << "  >Time:" << std::endl;
-			std::cout << "	-W [0/1]					use up- and downwinding, default:0" << std::endl;
-			std::cout << "	-R [1-RKn]					order of time stepping method, default:0" << std::endl;
 			std::cout << "	--timestepping-method [string]	String of time stepping method" << std::endl;
 			std::cout << "	--timestepping-order [int]			Specify the order of the time stepping" << std::endl;
 			std::cout << "	--timestepping-order2 [int]			Specify the order of the time stepping" << std::endl;
@@ -513,35 +507,6 @@ public:
 
 	} disc;
 
-
-
-#if SWEET_PFASST_CPP 
-	struct Pfasst
-	{
-		int nlevels;
-		int nnodes;
-		int nspace;
-		int nsteps;
-		int niters;
-		double dt;
-#if 0
-		// TODO: encapsulate this in sweet SimVars
-		auto const nlevels   = pfasst::config::get_value<int>("nlevels" << std::endl; 1);
-		auto const nnodes    = pfasst::config::get_value<int>("nnodes" << std::endl; 3);
-		auto const nspace    = pfasst::config::get_value<int>("nspace" << std::endl; 8193);
-		auto const nsteps    = pfasst::config::get_value<int>("nsteps" << std::endl; 16);
-		auto const niters    = pfasst::config::get_value<int>("niters" << std::endl; 4);
-		auto const dt        = pfasst::config::get_value<double>("dt" << std::endl; 0.1);
-#endif
-		void outputConfig()
-		{
-			std::cout << std::endl;
-			std::cout << "PFASST:" << std::endl;
-			std::cout << " [TODO]" << std::endl;
-			std::cout << std::endl;
-		}
-	} pfasst;
-#endif
 
 
 	/**
@@ -689,11 +654,6 @@ public:
 #if SWEET_LIBPFASST
 		libpfasst.outputConfig();
 #endif
-
-
-#if SWEET_PFASST_CPP 
-		pfasst.outputConfig();
-#endif
 	}
 
 
@@ -711,7 +671,7 @@ public:
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
 
-		if ((disc.res_physical[0] & 1) || (disc.res_physical[1] & 1))
+		if ((disc.space_res_physical[0] & 1) || (disc.space_res_physical[1] & 1))
 			std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
 
 
@@ -926,29 +886,6 @@ public:
 
 
 
-// leave this commented to avoid mismatch with following parameters!
-#if SWEET_PFASST_CPP 
-
-		long_options[next_free_program_option] = {"pfasst-nlevels", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-
-		long_options[next_free_program_option] = {"pfasst-nnodes", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-
-		long_options[next_free_program_option] = {"pfasst-nspace", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-
-		long_options[next_free_program_option] = {"pfasst-nsteps", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-
-		long_options[next_free_program_option] = {"pfasst-niters", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-
-		long_options[next_free_program_option] = {"pfasst-dt", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-#endif
-
-
 
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
@@ -1061,21 +998,12 @@ public:
 					c++;		if (i == c)	{	disc.timestepping_method = optarg;					continue;	}
 					c++;		if (i == c)	{	disc.timestepping_order = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	disc.timestepping_order2 = atoi(optarg);			continue;	}
-					c++;		if (i == c)	{	disc.leapfrog_robert_asselin_filter = atof(optarg);	continue;	}
+					c++;		if (i == c)	{	disc.timestepping_leapfrog_robert_asselin_filter = atof(optarg);	continue;	}
 					c++;		if (i == c)	{	disc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	disc.crank_nicolson_filter = atof(optarg);			continue;	}
-					c++;		if (i == c)	{	disc.use_staggering = atof(optarg);					continue;	}
+					c++;		if (i == c)	{	disc.timestepping_crank_nicolson_filter = atof(optarg);			continue;	}
+					c++;		if (i == c)	{	disc.space_grid_use_c_staggering = atof(optarg);					continue;	}
 
 					c++;		if (i == c)	{	timecontrol.current_timestep_size = atof(optarg);		continue;	}
-
-#if SWEET_PFASST_CPP 
-					c++;		if (i == c)	{	pfasst.nlevels = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	pfasst.nnodes = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	pfasst.nspace = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	pfasst.nsteps = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	pfasst.niters = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	pfasst.dt = atof(optarg);	continue;	}
-#endif
 
 #if SWEET_PARAREAL
 					{
@@ -1157,26 +1085,26 @@ public:
 
 			case 'N':
 				{
-					int c = split2int(optarg, &disc.res_physical[0], &disc.res_physical[1]);
+					int c = split2int(optarg, &disc.space_res_physical[0], &disc.space_res_physical[1]);
 					if (c == 1)
-						disc.res_physical[1] = disc.res_physical[0];
+						disc.space_res_physical[1] = disc.space_res_physical[0];
 				}
 				break;
 
 			case 'M':
 				{
-					int c = split2int(optarg, &disc.res_spectral[0], &disc.res_spectral[1]);
+					int c = split2int(optarg, &disc.space_res_spectral[0], &disc.space_res_spectral[1]);
 					if (c == 1)
-						disc.res_spectral[1] = disc.res_spectral[0];
+						disc.space_res_spectral[1] = disc.space_res_spectral[0];
 				}
 				break;
 
 			case 'n':
-				disc.res_physical[0] = atoi(optarg);
+				disc.space_res_physical[0] = atoi(optarg);
 				break;
 
 			case 'm':
-				disc.res_physical[1] = atoi(optarg);
+				disc.space_res_physical[1] = atoi(optarg);
 				break;
 
 			case 'r':
@@ -1200,15 +1128,15 @@ public:
 				break;
 
 			case 'S':
-				disc.use_spectral_basis_diffs = atoi(optarg);
+				disc.space_use_spectral_basis_diffs = atoi(optarg);
 				break;
 
 			case 'X':
-				sim.domain_size[0] = atof(optarg);
+				sim.plane_domain_size[0] = atof(optarg);
 				break;
 
 			case 'Y':
-				sim.domain_size[1] = atof(optarg);
+				sim.plane_domain_size[1] = atof(optarg);
 				break;
 
 			case 'x':
@@ -1329,8 +1257,8 @@ public:
 
 		if (i_run_prog_parameter_validation)
 		{
-			if (	(disc.res_physical[0] == 0 || disc.res_physical[1] == 0)	&&
-					(disc.res_spectral[0] == 0 || disc.res_spectral[1] == 0)
+			if (	(disc.space_res_physical[0] == 0 || disc.space_res_physical[1] == 0)	&&
+					(disc.space_res_spectral[0] == 0 || disc.space_res_spectral[1] == 0)
 				)
 			{
 				FatalError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");

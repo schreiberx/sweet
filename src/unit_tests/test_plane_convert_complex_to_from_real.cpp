@@ -445,7 +445,7 @@ public:
 	}
 
 	PlaneDataModes()	:
-		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 	{
 		test_planedata_planedatacomplex_physicalphysical_convert();
 		test_planedata_planedatacomplex_physicalspectral_convert();
@@ -463,7 +463,7 @@ int main(
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	simVars.outputConfig();
 

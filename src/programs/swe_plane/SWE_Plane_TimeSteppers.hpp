@@ -206,7 +206,7 @@ public:
 		{
 
 			l_cn= new SWE_Plane_TS_l_cn(i_simVars, i_op);
-			l_cn->setup(i_simVars.disc.crank_nicolson_filter);
+			l_cn->setup(i_simVars.disc.timestepping_crank_nicolson_filter);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn;
 
@@ -245,7 +245,7 @@ public:
 			 * Special case which treats div(u*h) as u.div(h)
 			 */
 			l_cn_n_erk = new SWE_Plane_TS_l_cn_n_erk(i_simVars, i_op);
-			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter, true);
+			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.timestepping_crank_nicolson_filter, true);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_n_erk;
 
@@ -255,7 +255,7 @@ public:
 		{
 
 			l_cn_n_erk = new SWE_Plane_TS_l_cn_n_erk(i_simVars, i_op);
-			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.crank_nicolson_filter, false);
+			l_cn_n_erk->setup(i_timestepping_order, i_timestepping_order2, i_simVars.disc.timestepping_crank_nicolson_filter, false);
 
 			master = &(SWE_Plane_TS_interface&)*l_cn_n_erk;
 
@@ -291,7 +291,7 @@ public:
 		}
 		else if (i_timestepping_method == "l_irk")
 		{
-			if (i_simVars.disc.use_staggering)
+			if (i_simVars.disc.space_grid_use_c_staggering)
 				FatalError("Staggering not supported for l_irk");
 
 			l_irk = new SWE_Plane_TS_l_irk(i_simVars, i_op);
@@ -303,7 +303,7 @@ public:
 		}
 		else if (i_timestepping_method == "l_rexi")
 		{
-			if (i_simVars.disc.use_staggering)
+			if (i_simVars.disc.space_grid_use_c_staggering)
 				FatalError("Staggering not supported for l_rexi");
 
 			l_rexi = new SWE_Plane_TS_l_rexi(i_simVars, i_op);

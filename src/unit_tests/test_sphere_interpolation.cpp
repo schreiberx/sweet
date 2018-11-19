@@ -309,7 +309,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	int initial_spectral_modes = simVars.disc.res_spectral[0];
+	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 
 	double gaussian_center_array[6][2] = {
 			{0.0, M_PI*0.5},	// equator
@@ -343,22 +343,22 @@ int main(int i_argc, char *i_argv[])
 			double prev_max_error = -1;
 			for (int i = initial_spectral_modes; i <= 256; i *= 2)
 			{
-				simVars.disc.res_physical[0] = 2*i;
-				simVars.disc.res_physical[1] = i;
+				simVars.disc.space_res_physical[0] = 2*i;
+				simVars.disc.space_res_physical[1] = i;
 
-				simVars.disc.res_spectral[0] = i;
-				simVars.disc.res_spectral[1] = i;
+				simVars.disc.space_res_spectral[0] = i;
+				simVars.disc.space_res_spectral[1] = i;
 
 				sphereDataConfigInstance.setupAuto(
-						simVars.disc.res_physical,
-						simVars.disc.res_spectral,
+						simVars.disc.space_res_physical,
+						simVars.disc.space_res_spectral,
 						simVars.misc.reuse_spectral_transformation_plans
 					);
 
 				std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
 
-				int res_physical_overs[2] = {simVars.disc.res_physical[0]*oversampling, simVars.disc.res_physical[1]*oversampling};
-				int res_spectral_overs[2] = {simVars.disc.res_spectral[0]*oversampling, simVars.disc.res_spectral[1]*oversampling};
+				int res_physical_overs[2] = {simVars.disc.space_res_physical[0]*oversampling, simVars.disc.space_res_physical[1]*oversampling};
+				int res_spectral_overs[2] = {simVars.disc.space_res_spectral[0]*oversampling, simVars.disc.space_res_spectral[1]*oversampling};
 
 				sphereDataConfigOversamplingInstance.setupAuto(
 						res_physical_overs,
@@ -382,7 +382,7 @@ int main(int i_argc, char *i_argv[])
 
 					if (simVars.misc.gui_enabled)
 					{
-						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 						VisSweet<SimulationInstance> visSweet(&simulation);
 						return 0;

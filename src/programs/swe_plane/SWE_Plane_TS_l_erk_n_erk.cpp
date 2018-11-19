@@ -180,7 +180,7 @@ void SWE_Plane_TS_l_erk_n_erk::setup(
 	timestepping_rk_linear.setupBuffers(op.planeDataConfig, timestepping_order);
 	timestepping_rk_nonlinear.setupBuffers(op.planeDataConfig, timestepping_order2);
 
-	if (simVars.disc.use_staggering)
+	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("SWE_Plane_TS_l_erk_n_erk: Staggering not supported");
 }
 

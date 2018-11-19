@@ -24,10 +24,10 @@ void Adv_Plane_TS_na_sl::run_timestep(
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
-	if (simVars.sim.getExternalForcesCallback != nullptr)
+	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
-		simVars.sim.getExternalForcesCallback(1, i_simulation_timestamp, &io_u, simVars.sim.getExternalForcesUserData);
-		simVars.sim.getExternalForcesCallback(2, i_simulation_timestamp, &io_v, simVars.sim.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(1, i_simulation_timestamp, &io_u, simVars.benchmark.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(2, i_simulation_timestamp, &io_v, simVars.benchmark.getExternalForcesUserData);
 	}
 
 	if (i_simulation_timestamp == 0)
@@ -47,7 +47,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 			posx_a, posy_a,
 			dt,
 			posx_d, posy_d,
-			simVars.sim.domain_size,
+			simVars.sim.plane_domain_size,
 			nullptr,
 			timestepping_order
 	);
@@ -106,10 +106,10 @@ void Adv_Plane_TS_na_sl::setup(
 		{
 			int i = idx % planeDataConfig->physical_res[0];
 
-			io_data = (double)i*(double)simVars.sim.domain_size[0]/(double)planeDataConfig->physical_res[0];
+			io_data = (double)i*(double)simVars.sim.plane_domain_size[0]/(double)planeDataConfig->physical_res[0];
 
 			assert(io_data >= 0.0);
-			assert(io_data <= simVars.sim.domain_size[0]);
+			assert(io_data <= simVars.sim.plane_domain_size[0]);
 		}
 	);
 	posy_a.update_lambda_array_indices(
@@ -118,18 +118,18 @@ void Adv_Plane_TS_na_sl::setup(
 			//int i = idx % planeDataConfig->physical_data_size[0];
 			int j = idx / (double)planeDataConfig->physical_res[0];
 
-			io_data = (double)j*(double)simVars.sim.domain_size[1]/(double)planeDataConfig->physical_res[1];
+			io_data = (double)j*(double)simVars.sim.plane_domain_size[1]/(double)planeDataConfig->physical_res[1];
 
 			assert(io_data >= 0.0);
-			assert(io_data <= simVars.sim.domain_size[1]);
+			assert(io_data <= simVars.sim.plane_domain_size[1]);
 		}
 	);
 
 	// TODO: Use semiLagrangian.sampler2D
-	sampler2D.setup(simVars.sim.domain_size, planeDataConfig);
+	sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
 
 	//PXT- This just calls sampler2D.setup, so any reason for having it?
-	semiLagrangian.setup(simVars.sim.domain_size, planeDataConfig);
+	semiLagrangian.setup(simVars.sim.plane_domain_size, planeDataConfig);
 }
 
 

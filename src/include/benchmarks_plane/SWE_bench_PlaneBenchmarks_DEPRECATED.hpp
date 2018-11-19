@@ -39,8 +39,8 @@ class SWEPlaneBenchmarks_DEPRECATED
 	)
 	{
 		double f = i_simVars.sim.plane_rotating_f0;
-		double sx = i_simVars.sim.domain_size[0];
-		double sy = i_simVars.sim.domain_size[1];
+		double sx = i_simVars.sim.plane_domain_size[0];
+		double sy = i_simVars.sim.plane_domain_size[1];
 
 #if 1
 		if (i_simVars.benchmark.benchmark_id == 0)
@@ -457,8 +457,8 @@ class SWEPlaneBenchmarks_DEPRECATED
 		{
 			double param_initial_freq_x_mul=1.0;
 			double param_initial_freq_y_mul=1.0;
-			double dx = x/i_simVars.sim.domain_size[0]*param_initial_freq_x_mul*M_PIl;
-			double dy = y/i_simVars.sim.domain_size[1]*param_initial_freq_y_mul*M_PIl;
+			double dx = x/i_simVars.sim.plane_domain_size[0]*param_initial_freq_x_mul*M_PIl;
+			double dy = y/i_simVars.sim.plane_domain_size[1]*param_initial_freq_y_mul*M_PIl;
 
 			if (i_variable_id == 0) // height
 			{

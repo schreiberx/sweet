@@ -44,7 +44,7 @@ void Burgers_Plane_TS_ln_erk_forcing::euler_timestep_update(
 	o_v_t.physical_set_all(0);
 	f.physical_set_all(0);
 
-	BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,simVars.disc.use_staggering,f);
+	BurgersValidationBenchmarks::set_source(i_simulation_timestamp,simVars,simVars.disc.space_grid_use_c_staggering,f);
 
 	// u and v updates
 	o_u_t = -(i_u*op.diff_c_x(i_u) + i_v*op.diff_c_y(i_u));
@@ -118,13 +118,13 @@ void Burgers_Plane_TS_ln_erk_forcing::run_timestep(
 		PlaneData f(io_u.planeDataConfig);
 		PlaneData ff(io_u.planeDataConfig);
 
-		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,simVars.disc.use_staggering,f);
-		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*t,simVars,simVars.disc.use_staggering,ff);
+		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,simVars.disc.space_grid_use_c_staggering,f);
+		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*t,simVars,simVars.disc.space_grid_use_c_staggering,ff);
 
 		f.request_data_spectral();
 		ff.request_data_spectral();
 
-		if (simVars.disc.use_spectral_basis_diffs) //spectral
+		if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 		{
 			PlaneData u1 = u + t*simVars.sim.viscosity*(op.diff2_c_x(u)+op.diff2_c_y(u))
 						   - 0.5*t*(u*op.diff_c_x(u)+v*op.diff_c_y(u)) + f*t;

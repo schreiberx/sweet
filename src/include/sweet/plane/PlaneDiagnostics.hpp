@@ -22,8 +22,8 @@ public:
 			SimulationVariables &io_simVars
 	)
 	{
-		double normalization = (io_simVars.sim.domain_size[0]*io_simVars.sim.domain_size[1]) /
-								((double)io_simVars.disc.res_physical[0]*(double)io_simVars.disc.res_physical[1]);
+		double normalization = (io_simVars.sim.plane_domain_size[0]*io_simVars.sim.plane_domain_size[1]) /
+								((double)io_simVars.disc.space_res_physical[0]*(double)io_simVars.disc.space_res_physical[1]);
 
 		//std::cout << "Size x, sixe y" << (io_simVars.sim.domain_size[0]) << (io_simVars.sim.domain_size[1]) << std::endl;
 		//std::cout << "resphysx, resphysy" << (double)io_simVars.disc.res_physical[0] << (double)io_simVars.disc.res_physical[1] << std::endl;
@@ -60,8 +60,8 @@ public:
 			SimulationVariables &io_simVars
 	)
 	{
-		double normalization = (io_simVars.sim.domain_size[0]*io_simVars.sim.domain_size[1]) /
-								((double)io_simVars.disc.res_physical[0]*(double)io_simVars.disc.res_physical[1]);
+		double normalization = (io_simVars.sim.plane_domain_size[0]*io_simVars.sim.plane_domain_size[1]) /
+								((double)io_simVars.disc.space_res_physical[0]*(double)io_simVars.disc.space_res_physical[1]);
 
 		// mass
 		io_simVars.diag.total_mass = (i_prog_h+ io_simVars.sim.h0).reduce_sum_quad() * normalization;

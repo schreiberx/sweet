@@ -51,7 +51,7 @@ public:
 	TestSpectral()	:
 		tmp(planeDataConfig),
 
-		op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs)
+		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 	{
 		stopwatch.reset();
 
@@ -138,7 +138,7 @@ public:
 	)
 	{
 		*o_dataArray = &tmp;
-		*o_aspect_ratio = simVars.sim.domain_size[1] / simVars.sim.domain_size[0];
+		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 
 		if (simVars.timecontrol.run_simulation_timesteps)
 		{
@@ -167,25 +167,25 @@ public:
 					{1, 1, 0, 1},
 					{1, 1, 1, 1},
 
-					{(int)simVars.disc.res_physical[1]-1, 0, 1, 0},
-					{(int)simVars.disc.res_physical[1]-1, 0, 0, 1},
-					{(int)simVars.disc.res_physical[1]-1, 0, 1, 1},
+					{(int)simVars.disc.space_res_physical[1]-1, 0, 1, 0},
+					{(int)simVars.disc.space_res_physical[1]-1, 0, 0, 1},
+					{(int)simVars.disc.space_res_physical[1]-1, 0, 1, 1},
 
-					{(int)simVars.disc.res_physical[1]-2, 0, 1, 0},
-					{(int)simVars.disc.res_physical[1]-2, 0, 0, 1},
-					{(int)simVars.disc.res_physical[1]-2, 0, 1, 1},
+					{(int)simVars.disc.space_res_physical[1]-2, 0, 1, 0},
+					{(int)simVars.disc.space_res_physical[1]-2, 0, 0, 1},
+					{(int)simVars.disc.space_res_physical[1]-2, 0, 1, 1},
 
-					{0, (int)simVars.disc.res_physical[0]/2, 1, 0},
-					{0, (int)simVars.disc.res_physical[0]/2, 0, 1},
-					{0, (int)simVars.disc.res_physical[0]/2, 1, 1},
+					{0, (int)simVars.disc.space_res_physical[0]/2, 1, 0},
+					{0, (int)simVars.disc.space_res_physical[0]/2, 0, 1},
+					{0, (int)simVars.disc.space_res_physical[0]/2, 1, 1},
 
-					{0, (int)simVars.disc.res_physical[0]/2-1, 1, 0},
-					{0, (int)simVars.disc.res_physical[0]/2-1, 0, 1},
-					{0, (int)simVars.disc.res_physical[0]/2-1, 1, 1},
+					{0, (int)simVars.disc.space_res_physical[0]/2-1, 1, 0},
+					{0, (int)simVars.disc.space_res_physical[0]/2-1, 0, 1},
+					{0, (int)simVars.disc.space_res_physical[0]/2-1, 1, 1},
 
-					{0, (int)simVars.disc.res_physical[0]/2-2, 1, 0},
-					{0, (int)simVars.disc.res_physical[0]/2-2, 0, 1},
-					{0, (int)simVars.disc.res_physical[0]/2-2, 1, 1},
+					{0, (int)simVars.disc.space_res_physical[0]/2-2, 1, 0},
+					{0, (int)simVars.disc.space_res_physical[0]/2-2, 0, 1},
+					{0, (int)simVars.disc.space_res_physical[0]/2-2, 1, 1},
 			};
 
 			int id = simVars.misc.vis_id % (sizeof(spec_array)/sizeof(spec_array[0]));
@@ -222,7 +222,7 @@ public:
 	{
 		static char output_string[2048];
 
-		sprintf(output_string, "%i: %s, res x/y: %i/%i, inv: %f", simVars.misc.vis_id, vis_description, simVars.disc.res_physical[0], simVars.disc.res_physical[1], 1.0/(double)(simVars.disc.res_physical[0]*simVars.disc.res_physical[1]));
+		sprintf(output_string, "%i: %s, res x/y: %i/%i, inv: %f", simVars.misc.vis_id, vis_description, simVars.disc.space_res_physical[0], simVars.disc.space_res_physical[1], 1.0/(double)(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 		return output_string;
 	}
 
@@ -261,7 +261,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 	TestSpectral *testSpectral = new TestSpectral;
 

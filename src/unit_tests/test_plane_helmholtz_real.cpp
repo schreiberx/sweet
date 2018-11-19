@@ -45,7 +45,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	SimulationVariables simVars;
-	simVars.disc.use_spectral_basis_diffs = 1;
+	simVars.disc.space_use_spectral_basis_diffs = 1;
 
 	const char *bogus_var_names[] =
 	{
@@ -54,7 +54,7 @@ int main(int i_argc, char *i_argv[])
 
 
 
-	if (simVars.disc.use_spectral_basis_diffs)
+	if (simVars.disc.space_use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
 	else
 		std::cout << "Using kernel-based diffs" << std::endl;
@@ -62,8 +62,8 @@ int main(int i_argc, char *i_argv[])
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res_physical[0];
-	std::size_t res_y = simVars.disc.res_physical[1];
+	std::size_t res_x = simVars.disc.space_res_physical[0];
+	std::size_t res_y = simVars.disc.space_res_physical[1];
 
 	std::size_t max_res = 2048;
 
@@ -87,11 +87,11 @@ int main(int i_argc, char *i_argv[])
 		std::size_t res[2] = {res_x, res_y};
 
 
-		simVars.disc.res_physical[0] = res[0];
-		simVars.disc.res_physical[1] = res[1];
+		simVars.disc.space_res_physical[0] = res[0];
+		simVars.disc.space_res_physical[1] = res[1];
 		simVars.reset();
 
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 
 		/*
@@ -112,12 +112,12 @@ int main(int i_argc, char *i_argv[])
 		 * v = cos(2*PI*x)*sin(2*PI*y)
 		 */
 		{
-			for (int j = 0; j < simVars.disc.res_physical[1]; j++)
+			for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 			{
-				for (int i = 0; i < simVars.disc.res_physical[0]; i++)
+				for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
 				{
-					double x = ((double)i+0.5)/(double)simVars.disc.res_physical[0];
-					double y = ((double)j+0.5)/(double)simVars.disc.res_physical[1];
+					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
+					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 					// u and v to reconstruct
 					u_ana.p_physical_set(
@@ -149,7 +149,7 @@ int main(int i_argc, char *i_argv[])
 			u.physical_set_all(0);
 			v.physical_set_all(0);
 
-			PlaneOperators op(planeDataConfig, simVars.sim.domain_size, simVars.disc.use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
 			PlaneData rhs_u = u_ana;
 			PlaneData rhs_v = v_ana;

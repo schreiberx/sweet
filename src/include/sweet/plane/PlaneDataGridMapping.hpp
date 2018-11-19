@@ -46,16 +46,16 @@ public:
 		{
 			for (std::size_t i = 0; i < i_planeDataConfig->physical_res[0]; i++)
 			{
-				pos_ll_x.scalar_data[idx] = ((double)i)*i_simVars.sim.domain_size[0]/(double)i_simVars.disc.res_physical[0];
-				pos_ll_y.scalar_data[idx] = ((double)j)*i_simVars.sim.domain_size[1]/(double)i_simVars.disc.res_physical[1];
+				pos_ll_x.scalar_data[idx] = ((double)i)*i_simVars.sim.plane_domain_size[0]/(double)i_simVars.disc.space_res_physical[0];
+				pos_ll_y.scalar_data[idx] = ((double)j)*i_simVars.sim.plane_domain_size[1]/(double)i_simVars.disc.space_res_physical[1];
 				idx++;
 			}
 		}
 
 		// Setup sampler for future interpolations
-		sampler2D.setup(i_simVars.sim.domain_size, i_planeDataConfig);
+		sampler2D.setup(i_simVars.sim.plane_domain_size, i_planeDataConfig);
 
-		if (i_simVars.disc.use_staggering)
+		if (i_simVars.disc.space_grid_use_c_staggering)
 			staggering.setup_c_staggering();
 		else
 			staggering.setup_a_staggering();

@@ -45,21 +45,21 @@ int main(
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.res_physical[0];
-	std::size_t res_y = simVars.disc.res_physical[1];
+	std::size_t res_x = simVars.disc.space_res_physical[0];
+	std::size_t res_y = simVars.disc.space_res_physical[1];
 
 	std::cout << "*************************************************************" << std::endl;
 	std::cout << "Testing aliasing pattern with resolution " << res_x << " x " << res_y << std::endl;
 	std::cout << "*************************************************************" << std::endl;
 	std::size_t res[2] = {res_x, res_y};
 
-	simVars.disc.res_physical[0] = res[0];
-	simVars.disc.res_physical[1] = res[1];
+	simVars.disc.space_res_physical[0] = res[0];
+	simVars.disc.space_res_physical[1] = res[1];
 	simVars.reset();
 
 	planeDataConfigInstance.setupAuto(
-			simVars.disc.res_physical,
-			simVars.disc.res_spectral,
+			simVars.disc.space_res_physical,
+			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans
 		);
 

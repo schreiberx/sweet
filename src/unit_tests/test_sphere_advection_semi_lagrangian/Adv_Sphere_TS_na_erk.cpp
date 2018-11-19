@@ -35,13 +35,13 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 	 * This is the case because the velocity field is divergence free!!!
 	 */
 
-	if (simVars.sim.getExternalForcesCallback != nullptr)
+	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
 		SphereData vort(i_phi.sphereDataConfig);
 		SphereData div(i_phi.sphereDataConfig);
 
-		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &vort, simVars.sim.getExternalForcesUserData);
-		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &div, simVars.sim.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &vort, simVars.benchmark.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &div, simVars.benchmark.getExternalForcesUserData);
 
 		SphereDataPhysical ug(i_phi.sphereDataConfig);
 		SphereDataPhysical vg(i_phi.sphereDataConfig);
@@ -104,11 +104,11 @@ void Adv_Sphere_TS_na_erk::run_timestep(
 			i_simulation_timestamp
 		);
 
-	if (simVars.sim.getExternalForcesCallback != nullptr)
+	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
 		// this is just called for cosmetic reasons to update the velocity field
-		simVars.sim.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_vort, simVars.sim.getExternalForcesUserData);
-		simVars.sim.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_div, simVars.sim.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_vort, simVars.benchmark.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_div, simVars.benchmark.getExternalForcesUserData);
 	}
 }
 

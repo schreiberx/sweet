@@ -663,15 +663,15 @@ int main(
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	if (simVars.disc.res_spectral[0] == 0)
+	if (simVars.disc.space_res_spectral[0] == 0)
 		FatalError("Set number of spectral modes to use SPH!");
 
 	SphereDataConfig sphereDataConfig;
 	sphereDataConfig.setupAutoPhysicalSpace(
-					simVars.disc.res_spectral[0],
-					simVars.disc.res_spectral[1],
-					&simVars.disc.res_physical[0],
-					&simVars.disc.res_physical[1],
+					simVars.disc.space_res_spectral[0],
+					simVars.disc.space_res_spectral[1],
+					&simVars.disc.space_res_physical[0],
+					&simVars.disc.space_res_physical[1],
 					simVars.misc.reuse_spectral_transformation_plans
 			);
 

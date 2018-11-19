@@ -159,7 +159,7 @@ int main(int i_argc, char **i_argv)
 
 	TestFFTPlans t;
 
-	t.run(simVars.misc.reuse_spectral_transformation_plans, simVars.disc.res_physical, nthreads);
+	t.run(simVars.misc.reuse_spectral_transformation_plans, simVars.disc.space_res_physical, nthreads);
 
 	std::cout << "FIN" << std::endl;
 

@@ -82,15 +82,15 @@ int main(int i_argc, char *i_argv[])
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
 
-	if (simVars.disc.res_spectral[0] <= 0)
+	if (simVars.disc.space_res_spectral[0] <= 0)
 	{
-		simVars.disc.res_spectral[0] = simVars.disc.res_physical[0];
-		simVars.disc.res_spectral[1] = simVars.disc.res_physical[1];
+		simVars.disc.space_res_spectral[0] = simVars.disc.space_res_physical[0];
+		simVars.disc.space_res_spectral[1] = simVars.disc.space_res_physical[1];
 	}
 	else
 	{
-		simVars.disc.res_physical[0] = simVars.disc.res_spectral[0];
-		simVars.disc.res_physical[1] = simVars.disc.res_spectral[1];
+		simVars.disc.space_res_physical[0] = simVars.disc.space_res_spectral[0];
+		simVars.disc.space_res_physical[1] = simVars.disc.space_res_spectral[1];
 	}
 
 
@@ -98,18 +98,18 @@ int main(int i_argc, char *i_argv[])
 
 	double epsilon = 1e-12;
 
-	for (int res = simVars.disc.res_spectral[0]; res <= max_res; res+=2)
+	for (int res = simVars.disc.space_res_spectral[0]; res <= max_res; res+=2)
 	{
-		simVars.disc.res_physical[0] = res;
-		simVars.disc.res_physical[1] = res;
-		simVars.disc.res_spectral[0] = 0;
-		simVars.disc.res_spectral[1] = 0;
+		simVars.disc.space_res_physical[0] = res;
+		simVars.disc.space_res_physical[1] = res;
+		simVars.disc.space_res_spectral[0] = 0;
+		simVars.disc.space_res_spectral[1] = 0;
 		simVars.reset();
 
 		/**
 		 * Here we enforce the same physical and spectral resolution
 		 */
-		planeDataConfigInstance.setupAuto(simVars.disc.res_physical, simVars.disc.res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 		planeDataConfigInstance.printInformation();
 		std::cout << std::endl;
 
@@ -122,8 +122,8 @@ int main(int i_argc, char *i_argv[])
 		for (int spec_delta = -4; spec_delta <= 4; spec_delta+=2)
 		{
 			int dst_res_physical[2] = {
-					(int)simVars.disc.res_physical[0]+spec_delta,
-					(int)simVars.disc.res_physical[1]+spec_delta
+					(int)simVars.disc.space_res_physical[0]+spec_delta,
+					(int)simVars.disc.space_res_physical[1]+spec_delta
 			};
 
 			if (dst_res_physical[0] < 4 || dst_res_physical[1] < 4)
