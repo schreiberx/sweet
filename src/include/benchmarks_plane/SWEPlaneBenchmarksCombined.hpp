@@ -382,7 +382,6 @@ public:
 
 			return true;
 		}
-
 		else if (
 				io_simVars.benchmark.benchmark_name == "benchmark_id_3" ||
 				io_simVars.benchmark.benchmark_name == "steady_state_zonal_flow"
@@ -421,8 +420,6 @@ public:
 
 			return true;
 		}
-
-
 		else if (
 				io_simVars.benchmark.benchmark_name == "benchmark_id_4" ||
 				io_simVars.benchmark.benchmark_name == "yadda_yadda_whatever_this_is"
@@ -454,7 +451,6 @@ public:
 
 			return true;
 		}
-
 
 
 		else if (

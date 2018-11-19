@@ -26,7 +26,8 @@ public:
 public:
 	Staggering()
 	{
-		setup_zero_staggering();
+		//setup_zero_staggering();
+		setup_a_staggering();
 	}
 
 

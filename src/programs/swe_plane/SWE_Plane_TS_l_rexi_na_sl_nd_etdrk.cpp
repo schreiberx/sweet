@@ -41,13 +41,17 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	o_u_t.physical_set_zero(); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 	o_v_t.physical_set_zero(); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
-	if (use_only_linear_divergence) // linear div only
+	// linear div only
+	if (use_only_linear_divergence)
+	{
 		o_h_t.physical_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+	}
 	else
-	{//nonlinear div
+	{
+		//nonlinear div
 		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
 		//Smooth spectrum to avoid instability
-		if(simVars.misc.use_local_visc != 0)
+		if (simVars.misc.use_local_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			FatalError("Implicit diffusion only supported with spectral space activated");
@@ -309,14 +313,12 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 
 
-/*
+/**
  * Setup
  */
 void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
-		//REXI_SimulationVariables &i_rexiSimVars,
-		int i_timestepping_order,
-
-		bool i_use_only_linear_divergence
+	int i_timestepping_order,
+	bool i_use_only_linear_divergence
 )
 {
 	timestepping_order = i_timestepping_order;

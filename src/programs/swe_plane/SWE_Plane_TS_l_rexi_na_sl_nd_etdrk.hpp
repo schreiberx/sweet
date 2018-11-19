@@ -63,11 +63,12 @@ public:
 			PlaneOperators &i_op
 		);
 
+
 	void setup(
-			//REXI_SimulationVariables &i_rexi,
-			int i_timestepping_order,
-			bool i_use_only_linear_divergence
+		int i_timestepping_order,
+		bool i_use_only_linear_divergence
 	);
+
 
 	void euler_timestep_update_nonlinear(
 			const PlaneData &i_h,	///< prognostic variables
@@ -81,6 +82,7 @@ public:
 			double i_timestamp
 	);
 
+
 	void run_timestep(
 			PlaneData &io_h,	///< prognostic variables
 			PlaneData &io_u,	///< prognostic variables
@@ -89,7 +91,6 @@ public:
 			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	);
-
 
 
 	virtual ~SWE_Plane_TS_l_rexi_na_sl_nd_etdrk();
