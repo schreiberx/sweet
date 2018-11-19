@@ -369,14 +369,14 @@ public:
 
 
 		// Load data, if requested
-		if (simVars.benchmark.input_data_filenames.size() > 0)
-			prog_h_pert.file_physical_loadData(simVars.benchmark.input_data_filenames[0].c_str(), simVars.benchmark.input_data_binary);
+		if (simVars.inputoutput.initial_condition_data_filenames.size() > 0)
+			prog_h_pert.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[0].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
 
-		if (simVars.benchmark.input_data_filenames.size() > 1)
-			prog_u.file_physical_loadData(simVars.benchmark.input_data_filenames[1].c_str(), simVars.benchmark.input_data_binary);
+		if (simVars.inputoutput.initial_condition_data_filenames.size() > 1)
+			prog_u.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[1].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
 
-		if (simVars.benchmark.input_data_filenames.size() > 2)
-			prog_v.file_physical_loadData(simVars.benchmark.input_data_filenames[2].c_str(), simVars.benchmark.input_data_binary);
+		if (simVars.inputoutput.initial_condition_data_filenames.size() > 2)
+			prog_v.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[2].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
 
 		timeSteppers.setup(
 				simVars.disc.timestepping_method,
@@ -970,9 +970,9 @@ public:
 
 		case 'l':
 			// load data arrays
-			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.benchmark.input_data_binary);
-			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.benchmark.input_data_binary);
-			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.benchmark.input_data_binary);
+			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.benchmark.initial_condition_input_data_binary);
+			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.benchmark.initial_condition_input_data_binary);
+			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.benchmark.initial_condition_input_data_binary);
 			break;
 		}
 	}

@@ -255,7 +255,7 @@ public:
 				if (i_field_id == 1)
 				{
 					double a = s->simVars->sim.earth_radius;
-					double alpha = s->simVars->benchmark.advection_rotation_angle;
+					double alpha = s->simVars->benchmark.sphere_advection_rotation_angle;
 					double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
 
 					double r;
@@ -411,7 +411,7 @@ public:
 				{
 					double i_theta = i_lat;
 					double i_lambda = i_lon;
-					double alpha = simVars->benchmark.advection_rotation_angle;
+					double alpha = simVars->benchmark.sphere_advection_rotation_angle;
 
 					io_data = -a*u0*(std::sin(i_theta)*std::cos(alpha) - std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha));
 				}
@@ -480,7 +480,7 @@ public:
 				{
 					double i_theta = i_lat;
 					double i_lambda = i_lon;
-					double alpha = simVars->benchmark.advection_rotation_angle;
+					double alpha = simVars->benchmark.sphere_advection_rotation_angle;
 
 					io_data = -a*u0*(std::sin(i_theta)*std::cos(alpha) - std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha));
 				}
@@ -495,7 +495,7 @@ public:
 				{
 					double i_theta = i_lat;
 					double i_lambda = i_lon;
-					double alpha = simVars->benchmark.advection_rotation_angle;
+					double alpha = simVars->benchmark.sphere_advection_rotation_angle;
 
 					io_data = 2.0*u0/a*(-std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha) + std::sin(i_theta)*std::cos(alpha));
 				}
@@ -1165,8 +1165,8 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 							u0*(
-									std::cos(i_theta)*std::cos(simVars->benchmark.advection_rotation_angle) +
-									std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+									std::cos(i_theta)*std::cos(simVars->benchmark.sphere_advection_rotation_angle) +
+									std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 								);
 
 						io_data *= std::cos(i_lat);
@@ -1180,7 +1180,7 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 							-u0*(
-									std::sin(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+									std::sin(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 								);
 
 						io_data *= std::cos(i_lat);
@@ -1196,8 +1196,8 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 							u0*(
-								std::cos(i_theta)*std::cos(simVars->benchmark.advection_rotation_angle) +
-								std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+								std::cos(i_theta)*std::cos(simVars->benchmark.sphere_advection_rotation_angle) +
+								std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 								);
 					}
 				);
@@ -1209,7 +1209,7 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 							-u0*(
-								std::sin(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+								std::sin(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 							);
 					}
 				);
@@ -1222,7 +1222,7 @@ public:
 				std::cout << "!!! WARNING !!!" << std::endl;
 			}
 
-			std::cout << "advection_rotation_angle: " << simVars->benchmark.advection_rotation_angle << std::endl;
+			std::cout << "advection_rotation_angle: " << simVars->benchmark.sphere_advection_rotation_angle << std::endl;
 		}
 		else if (simVars->benchmark.benchmark_id == 22)
 		{
@@ -1279,8 +1279,8 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 								u0*(
-									std::cos(i_theta)*std::cos(simVars->benchmark.advection_rotation_angle) +
-									std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+									std::cos(i_theta)*std::cos(simVars->benchmark.sphere_advection_rotation_angle) +
+									std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 							);
 
 						io_data *= std::cos(i_lat);
@@ -1294,7 +1294,7 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 							-u0*(
-									std::sin(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+									std::sin(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 							);
 
 						io_data *= std::cos(i_lat);
@@ -1310,8 +1310,8 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 								u0*(
-									std::cos(i_theta)*std::cos(simVars->benchmark.advection_rotation_angle) +
-									std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+									std::cos(i_theta)*std::cos(simVars->benchmark.sphere_advection_rotation_angle) +
+									std::sin(i_theta)*std::cos(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 							);
 					}
 				);
@@ -1323,7 +1323,7 @@ public:
 						double i_lambda = i_lon;
 						io_data =
 							-u0*(
-									std::sin(i_lambda)*std::sin(simVars->benchmark.advection_rotation_angle)
+									std::sin(i_lambda)*std::sin(simVars->benchmark.sphere_advection_rotation_angle)
 							);
 					}
 				);
@@ -1341,7 +1341,7 @@ public:
 			}
 
 
-			std::cout << "advection_rotation_angle: " << simVars->benchmark.advection_rotation_angle << std::endl;
+			std::cout << "advection_rotation_angle: " << simVars->benchmark.sphere_advection_rotation_angle << std::endl;
 		}
 		else if (simVars->benchmark.benchmark_id == 40)
 		{

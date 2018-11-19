@@ -85,7 +85,7 @@ public:
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
 
-		double radius = simVars.benchmark.initial_condition_radius_scale*
+		double radius = simVars.benchmark.object_scale*
 			std::sqrt(
 				 (double)simVars.sim.domain_size[0]*(double)simVars.sim.domain_size[0]
 				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
@@ -159,7 +159,7 @@ public:
 				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
 			);
 
-		double radius = simVars.benchmark.initial_condition_radius_scale*radius_scale;
+		double radius = simVars.benchmark.object_scale*radius_scale;
 
 
 		ret_h.physical_update_lambda_array_indices(
@@ -186,7 +186,7 @@ public:
 				dy /= radius;
 
 				double value = -50.0*2.0*dx*std::exp(-50.0*(dx*dx + dy*dy));
-				value /= initial_condition_radius_scale
+				value /= object_scale
 
 				io_data = value;
 
@@ -231,7 +231,7 @@ public:
 				+(double)simVars.sim.domain_size[1]*(double)simVars.sim.domain_size[1]
 			);
 
-		double radius = simVars.benchmark.initial_condition_radius_scale*radius_scale;
+		double radius = simVars.benchmark.object_scale*radius_scale;
 
 
 		ret_h.physical_update_lambda_array_indices(
@@ -258,7 +258,7 @@ public:
 				dy /= radius;
 
 				double value = -50.0*2.0*dy*std::exp(-50.0*(dx*dx + dy*dy));
-				value /= initial_condition_radius_scale;
+				value /= object_scale;
 
 				io_data = value;
 

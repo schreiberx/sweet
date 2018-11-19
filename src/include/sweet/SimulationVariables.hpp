@@ -133,6 +133,55 @@ public:
 	} diag;
 
 
+	/**
+	 * Input and output data
+	 */
+	struct InputOutput
+	{
+		/// filenames of input data for setup (this has to be setup by each application individually)
+		std::vector<std::string> initial_condition_data_filenames;
+
+		/// use "BINARY;filename1;filename2" to specify that the binary files should be read in binary format
+		bool initial_condition_input_data_binary = false;
+
+
+
+		void setup_initial_condition_filenames(
+				const std::string i_string
+		)
+		{
+			std::size_t last_pos = 0;
+			for (std::size_t pos = 0; i_string[pos] != '\0'; pos++)
+			{
+				if (i_string[pos] != ';')
+					continue;
+
+				initial_condition_data_filenames.push_back(i_string.substr(last_pos, pos-last_pos));
+				last_pos = pos+1;
+			}
+
+			initial_condition_data_filenames.push_back(i_string.substr(last_pos));
+
+			if (initial_condition_data_filenames.size() > 0)
+			{
+				if (initial_condition_data_filenames[0] == "BINARY")
+				{
+					initial_condition_data_filenames.erase(initial_condition_data_filenames.begin());
+					initial_condition_input_data_binary = true;
+				}
+			}
+		}
+
+		void outputConfig()
+		{
+			std::cout << std::endl;
+			std::cout << "INPUT/OUTPUT:" << std::endl;
+			for (std::size_t i = 0; i < initial_condition_data_filenames.size(); i++)
+				std::cout << "    - filename " << i << " " << initial_condition_data_filenames[i] << std::endl;
+			std::cout << " + input_data_binary: " << initial_condition_input_data_binary << std::endl;
+			std::cout << std::endl;
+		}
+	} inputoutput;
 
 
 public:
@@ -143,9 +192,6 @@ public:
 	{
 		/// seed for random number generator
 		int random_seed = 0;
-
-		/// benchmark scenario
-//		int benchmark_id = -1;
 
 		/// benchmark scenario
 		std::string benchmark_name = "";
@@ -165,70 +211,33 @@ public:
 
 
 		/// radius
-		double initial_condition_radius_scale = 1;
+		double object_scale = 1;
 
 		/// setup coordinate of e.g. radial breaking dam, x-placement \in [0;1]
-		double initial_condition_setup_coord_x = 0.5;
+		double object_coord_x = 0.5;
 
 		/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
-		double initial_condition_setup_coord_y = 0.5;
+		double object_coord_y = 0.5;
 
 		/// rotation angle for advection equation
-		double advection_rotation_angle = 0;
-
-		/// filenames of input data for setup (this has to be setup by each application individually)
-		std::vector<std::string> input_data_filenames;
-
-		/// use "BINARY;filename1;filename2" to specify that the binary files should be read in binary format
-		bool input_data_binary = false;
-
-
-		void setup_initial_condition_filenames(
-				const std::string i_string
-		)
-		{
-			std::size_t last_pos = 0;
-			for (std::size_t pos = 0; i_string[pos] != '\0'; pos++)
-			{
-				if (i_string[pos] != ';')
-					continue;
-
-				input_data_filenames.push_back(i_string.substr(last_pos, pos-last_pos));
-				last_pos = pos+1;
-			}
-
-			input_data_filenames.push_back(i_string.substr(last_pos));
-
-			if (input_data_filenames.size() > 0)
-			{
-				if (input_data_filenames[0] == "BINARY")
-				{
-					input_data_filenames.erase(input_data_filenames.begin());
-					input_data_binary = true;
-				}
-			}
-		}
+		double sphere_advection_rotation_angle = 0;
 
 
 		void outputConfig()
 		{
 			std::cout << std::endl;
-			std::cout << "SETUP:" << std::endl;
+			std::cout << "BENCHMARK:" << std::endl;
 			std::cout << " + random_seed: " << random_seed << std::endl;
-//			std::cout << " + benchmark_id: " << benchmark_id << std::endl;
 			std::cout << " + benchmark_name: " << benchmark_name << std::endl;
-			std::cout << " + benchmark_setup_dealiased: " << setup_dealiased << std::endl;
+			std::cout << " + setup_dealiased: " << setup_dealiased << std::endl;
 			std::cout << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
 			std::cout << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;
 			std::cout << " + benchmark_galewsky_phi2: " << benchmark_galewsky_phi2 << std::endl;
-			std::cout << " + radius_scale: " << initial_condition_radius_scale << std::endl;
-			std::cout << " + setup_coord_x: " << initial_condition_setup_coord_x << std::endl;
-			std::cout << " + setup_coord_y: " << initial_condition_setup_coord_y << std::endl;
-			std::cout << " + advection_rotation_angle: " << advection_rotation_angle << std::endl;
+			std::cout << " + object_scale: " << object_scale << std::endl;
+			std::cout << " + object_coord_x: " << object_coord_x << std::endl;
+			std::cout << " + object_coord_y: " << object_coord_y << std::endl;
+			std::cout << " + sphere_advection_rotation_angle: " << sphere_advection_rotation_angle << std::endl;
 			std::cout << " + input_data_filenames:" << std::endl;
-			for (std::size_t i = 0; i < input_data_filenames.size(); i++)
-				std::cout << "    - filename " << i << " " << input_data_filenames[i] << std::endl;
-			std::cout << " + input_data_binary: " << input_data_binary << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -238,7 +247,6 @@ public:
 			std::cout << std::endl;
 			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
 			std::cout << "	--random-seed [int]		random seed for random number generator" << std::endl;
-			std::cout << "	-s [int]				benchmark scenario id, set to -1 for overview" << std::endl;
 			std::cout << "	--benchmark [string]	benchmark name, only used if -s not set, set -1 for overview " << std::endl;
 			std::cout << "	-x [float]				x coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-y [float]				y coordinate for setup \\in [0;1], default=0.5" << std::endl;
@@ -656,6 +664,7 @@ public:
 		sim.outputConfig();
 		disc.outputConfig();
 		benchmark.outputConfig();
+		inputoutput.outputConfig();
 		timecontrol.outputConfig();
 
 		rexi.outputConfig();
@@ -1016,9 +1025,9 @@ public:
 					int c = 0;
 
 								if (i == c)	{	benchmark.random_seed = atoi(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.initial_condition_setup_coord_x = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.initial_condition_setup_coord_y = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.advection_rotation_angle = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.object_coord_x = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.object_coord_y = atof(optarg);		continue;	}
+					c++;		if (i == c)	{	benchmark.sphere_advection_rotation_angle = atof(optarg);		continue;	}
 					c++;		if (i == c) {
 							split3double(optarg, &sim.advection_velocity[0], &sim.advection_velocity[1], &sim.advection_velocity[2]);
 							continue;
@@ -1168,7 +1177,7 @@ public:
 				break;
 
 			case 'r':
-				benchmark.initial_condition_radius_scale = atof(optarg);
+				benchmark.object_scale = atof(optarg);
 				break;
 
 			case 't':
@@ -1187,10 +1196,6 @@ public:
 				sim.viscosity_order = atoi(optarg);
 				break;
 
-//			case 's':
-//				benchmark.benchmark_id = atoi(optarg);
-//				break;
-
 			case 'S':
 				disc.use_spectral_basis_diffs = atoi(optarg);
 				break;
@@ -1204,11 +1209,11 @@ public:
 				break;
 
 			case 'x':
-				benchmark.initial_condition_setup_coord_x = atof(optarg);
+				benchmark.object_coord_x = atof(optarg);
 				break;
 
 			case 'y':
-				benchmark.initial_condition_setup_coord_y = atof(optarg);
+				benchmark.object_coord_y = atof(optarg);
 				break;
 
 			case 'f':
@@ -1255,7 +1260,7 @@ public:
 				break;
 
 			case 'i':
-				benchmark.setup_initial_condition_filenames(optarg);
+				inputoutput.setup_initial_condition_filenames(optarg);
 				break;
 
 

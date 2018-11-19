@@ -53,11 +53,11 @@ public:
 				double y = (double)j*(simVars.sim.domain_size[1]/(double)simVars.disc.res_physical[1]);
 
 				// Gaussian
-				double dx = x-simVars.benchmark.initial_condition_setup_coord_x*sx;
-				double dy = y-simVars.benchmark.initial_condition_setup_coord_y*sy;
+				double dx = x-simVars.benchmark.object_coord_x*sx;
+				double dy = y-simVars.benchmark.object_coord_y*sy;
 
 
-				double radius = simVars.benchmark.initial_condition_radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				double radius = simVars.benchmark.object_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 				dx /= radius;
 				dy /= radius;
 
