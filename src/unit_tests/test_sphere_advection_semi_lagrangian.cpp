@@ -340,7 +340,7 @@ int main(int i_argc, char *i_argv[])
 		FatalError("Timestep size not set");
 
 
-	SphereDataSemiLagrangian::alpha() = simVars.benchmark.advection_rotation_angle;
+	SphereDataSemiLagrangian::alpha() = simVars.benchmark.sphere_advection_rotation_angle;
 
 	int max_modes = 256;
 
