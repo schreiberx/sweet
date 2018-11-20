@@ -292,7 +292,6 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
-		simVars.timecontrol.current_timestep_size = -1;
 
 		prog_u.physical_set_all(vel0);
 		prog_v.physical_set_all(vel1);
@@ -704,6 +703,15 @@ int main(
 
 			simVars.disc.space_res_physical[0] = res_x;
 			simVars.disc.space_res_physical[1] = res_y;
+			simVars.disc.space_res_spectral[0] = 0;
+			simVars.disc.space_res_spectral[1] = 0;
+
+			simVars.timecontrol.current_simulation_time = 0;
+			simVars.timecontrol.current_timestep_nr = 0;
+			simVars.timecontrol.current_timestep_size *= 0.5;
+
+			std::cout << " + current_timestep_size: " << simVars.timecontrol.current_timestep_size << std::endl;
+
 			simVars.reset();
 
 			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
@@ -731,7 +739,7 @@ int main(
 					print_output = true;
 
 				if (simVars.timecontrol.max_simulation_time != -1)
-					if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time)
+					if (simVars.timecontrol.current_simulation_time >= simVars.timecontrol.max_simulation_time-simVars.timecontrol.current_simulation_time*1e-10)
 						print_output = true;
 
 				if (print_output)
@@ -739,6 +747,10 @@ int main(
 					double &this_error = computed_errors[res_iterator_id];
 					double &this_conv_rate_space = conv_rate[res_iterator_id];
 
+					/*
+					 * TODO: Something's not right here.
+					 * If we don't reduce the time step size, the errors are not converging.
+					 */
 					double error = compute_current_error(simulationAdvection);
 					std::cout << "RMS error in height: " << error << std::endl;
 
