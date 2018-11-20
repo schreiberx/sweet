@@ -136,13 +136,33 @@ public:
 	/**
 	 * Input and output data
 	 */
-	struct InputOutput
+	struct IOData
 	{
 		/// filenames of input data for setup (this has to be setup by each application individually)
 		std::vector<std::string> initial_condition_data_filenames;
 
 		/// use "BINARY;filename1;filename2" to specify that the binary files should be read in binary format
 		bool initial_condition_input_data_binary = false;
+
+
+		/// prefix of filename for outputConfig of data
+		std::string output_file_name = "";
+
+		/// output mode of variables
+		std::string output_file_mode = "default";
+
+		/// prefix of filename for outputConfig of data
+		double output_each_sim_seconds = -1;
+
+		/// Simulation seconds for next outputConfig
+		double output_next_sim_seconds = 0;
+
+		/// time scaling for outputConfig
+		/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
+		double output_time_scale = 1.0;
+
+		/// precision for floating point outputConfig to std::cout and std::endl
+		int output_floating_point_precision = -1;
 
 
 
@@ -179,9 +199,16 @@ public:
 			for (std::size_t i = 0; i < initial_condition_data_filenames.size(); i++)
 				std::cout << "    - filename " << i << " " << initial_condition_data_filenames[i] << std::endl;
 			std::cout << " + input_data_binary: " << initial_condition_input_data_binary << std::endl;
+			std::cout << " + output_file_name " << output_file_name << std::endl;
+			std::cout << " + output_file_mode " << output_file_mode << std::endl;
+			std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
+			std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
+			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
+			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << std::endl;
 		}
-	} inputoutput;
+	} iodata;
+
 
 
 public:
@@ -352,6 +379,9 @@ public:
 		double plane_domain_size[2] = {1.0, 1.0};
 
 
+		/**
+		 * Velocity and additional parameter for advection test cases
+		 */
 		double advection_velocity[3] = {0, 0, 0};
 
 
@@ -406,13 +436,21 @@ public:
 	 */
 	struct Discretization
 	{
-		/// resolution in physical space (grid cells)
+		/**
+		 * resolution in physical space (grid cells)
+		 */
 		int space_res_physical[2] = {0, 0};
 
-		/// resolution in spectral space (number of modes)
+
+		/**
+		 * resolution in spectral space (number of modes)
+		 */
 		int space_res_spectral[2] = {0, 0};
 
-		/// use spectral differential operators
+
+		/**
+		 * use spectral differential operators
+		 */
 		bool space_use_spectral_basis_diffs =
 #if SWEET_USE_PLANE_SPECTRAL_SPACE || SWEET_USE_SPHERE_SPECTRAL_SPACE
 				true;
@@ -420,6 +458,9 @@ public:
 				false;
 #endif
 
+		/**
+		 * Use C-grid staggering
+		 */
 		bool space_grid_use_c_staggering = false;
 
 
@@ -523,16 +564,10 @@ public:
 			std::cout << " + verbosity: " << verbosity << std::endl;
 			std::cout << " + compute_errors " << compute_errors << std::endl;
 			std::cout << " + instability_checks: " << instability_checks << std::endl;
-			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
-			std::cout << " + output_file_name " << output_file_name << std::endl;
-			std::cout << " + output_file_mode " << output_file_mode << std::endl;
-			std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
-			std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
 			std::cout << " + vis_id: " << vis_id << std::endl;
 			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
-			std::cout << " + output_time_scale: " << output_time_scale << std::endl;
-			std::cout << " + use_local_visc: " << use_local_visc << std::endl;
+			std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
 			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
 			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 			std::cout << std::endl;
@@ -548,23 +583,9 @@ public:
 		/// do instability checks for simulation
 		int instability_checks = 1;
 
-		/// precision for floating point outputConfig to std::cout and std::endl
-		int output_floating_point_precision = -1;
-
 		/// activate GUI mode?
 		bool gui_enabled = (SWEET_GUI == 0 ? false : true);
 
-		/// prefix of filename for outputConfig of data
-		std::string output_file_name = "";
-
-		/// output mode of variables
-		std::string output_file_mode = "default";
-
-		/// prefix of filename for outputConfig of data
-		double output_each_sim_seconds = -1;
-
-		/// Simulation seconds for next outputConfig
-		double output_next_sim_seconds = 0;
 
 		/// id for visualization
 		int vis_id = 0;
@@ -573,12 +594,8 @@ public:
 		/// Use robert function formulation on the sphere
 		bool sphere_use_robert_functions = true;
 
-		/// time scaling for outputConfig
-		/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
-		double output_time_scale = 1.0;
-
 		/// Diffusion applied only on nonlinear divergence
-		int use_local_visc = 0;
+		int use_nonlinear_only_visc = 0;
 
 		/// Load / Save plans for SHTNS (useful for reproducibility)
 		int reuse_spectral_transformation_plans = -1;
@@ -639,7 +656,7 @@ public:
 		sim.outputConfig();
 		disc.outputConfig();
 		benchmark.outputConfig();
-		inputoutput.outputConfig();
+		iodata.outputConfig();
 		timecontrol.outputConfig();
 
 		rexi.outputConfig();
@@ -838,13 +855,14 @@ public:
 
 
         // MISC
-        long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
 
         long_options[next_free_program_option] = {"output-file-name", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"output-file-mode", required_argument, 0, 256+next_free_program_option};
+        next_free_program_option++;
+
+        long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"instability-checks", required_argument, 0, 256+next_free_program_option};
@@ -986,13 +1004,13 @@ public:
 					c++;		if (i == c)	{	benchmark.benchmark_galewsky_hamp = atof(optarg);		continue;	}
 					c++;		if (i == c)	{	benchmark.benchmark_galewsky_phi2 = atof(optarg);		continue;	}
 
-					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
-					c++;		if (i == c)	{	misc.output_file_name = optarg;					continue;	}
-					c++;		if (i == c)	{	misc.output_file_mode = optarg;					continue;	}
+					c++;		if (i == c)	{	iodata.output_file_name = optarg;					continue;	}
+					c++;		if (i == c)	{	iodata.output_file_mode = optarg;					continue;	}
 
+					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
 					c++;		if (i == c)	{	misc.instability_checks = atoi(optarg);				continue;	}
 					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	misc.use_local_visc = atoi(optarg);			continue;	}
+					c++;		if (i == c)	{	misc.use_nonlinear_only_visc = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	misc.reuse_spectral_transformation_plans = atoi(optarg);			continue;	}
 					c++;		if (i == c)	{	misc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
 
@@ -1080,7 +1098,7 @@ public:
 			 * SHORT OPTIONS
 			 */
 			case 'd':
-				misc.output_floating_point_precision = atoi(optarg);
+				iodata.output_floating_point_precision = atoi(optarg);
 				break;
 
 			case 'N':
@@ -1180,13 +1198,13 @@ public:
 				break;
 
 			case 'O':
-				misc.output_file_name = optarg;
-				if (misc.output_file_name == "-")
-					misc.output_file_name = "";
+				iodata.output_file_name = optarg;
+				if (iodata.output_file_name == "-")
+					iodata.output_file_name = "";
 				break;
 
 			case 'o':
-				misc.output_each_sim_seconds = atof(optarg);
+				iodata.output_each_sim_seconds = atof(optarg);
 				break;
 
 			case 'H':
@@ -1198,7 +1216,7 @@ public:
 				break;
 
 			case 'i':
-				inputoutput.setup_initial_condition_filenames(optarg);
+				iodata.setup_initial_condition_filenames(optarg);
 				break;
 
 
@@ -1264,23 +1282,23 @@ public:
 				FatalError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");
 			}
 
-			if (misc.output_file_mode == "default")
+			if (iodata.output_file_mode == "default")
 			{
-				misc.output_file_mode = "csv";
+				iodata.output_file_mode = "csv";
 
-				if (misc.output_file_name == "")
-					misc.output_file_name = "output_%s_t%020.8f.csv";
+				if (iodata.output_file_name == "")
+					iodata.output_file_name = "output_%s_t%020.8f.csv";
 			}
 			else
 			{
-				if (misc.output_file_name == "")
+				if (iodata.output_file_name == "")
 				{
-					if (misc.output_file_mode == "csv")
-						misc.output_file_name = "output_%s_t%020.8f.csv";
-					else if (misc.output_file_mode == "bin")
-						misc.output_file_name = "output_%s_t%020.8f.sweet";
+					if (iodata.output_file_mode == "csv")
+						iodata.output_file_name = "output_%s_t%020.8f.csv";
+					else if (iodata.output_file_mode == "bin")
+						iodata.output_file_name = "output_%s_t%020.8f.sweet";
 					else
-						FatalError("Unknown filemode '"+misc.output_file_mode+"'");
+						FatalError("Unknown filemode '"+iodata.output_file_mode+"'");
 				}
 			}
 		}
@@ -1308,13 +1326,13 @@ public:
 		 * to specify it in all other programs.
 		 */
 
-		if (misc.output_file_name == "-")
-			misc.output_file_name = "";
+		if (iodata.output_file_name == "-")
+			iodata.output_file_name = "";
 
-		if (misc.output_floating_point_precision >= 0)
+		if (iodata.output_floating_point_precision >= 0)
 		{
-			std::cout << std::setprecision(misc.output_floating_point_precision);
-			std::cerr << std::setprecision(misc.output_floating_point_precision);
+			std::cout << std::setprecision(iodata.output_floating_point_precision);
+			std::cerr << std::setprecision(iodata.output_floating_point_precision);
 		}
 
 		if (disc.timestepping_order2 <= 0)

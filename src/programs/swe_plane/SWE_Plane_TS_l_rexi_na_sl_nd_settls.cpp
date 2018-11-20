@@ -95,7 +95,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		// Calculate nonlinear term for the previous time step
 		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
 
-		if(simVars.misc.use_local_visc != 0)
+		if (simVars.misc.use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			FatalError("Implicit diffusion only supported with spectral space activated");
@@ -112,7 +112,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		// N=dtN^n-0.5dt exp(dtL)N^n-1 from paper
 		// N=-h*div is calculate in cartesian space (pseudo-spectrally)
 		hdiv =  - h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
-		if (simVars.misc.use_local_visc != 0)
+		if (simVars.misc.use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			FatalError("Implicit diffusion only supported with spectral space activated");

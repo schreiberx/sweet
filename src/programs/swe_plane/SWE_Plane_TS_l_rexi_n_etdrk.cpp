@@ -48,7 +48,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 	}
 	else //full nonlinear equation on h
 	{
-		if(simVars.misc.use_local_visc != 0)
+		if(simVars.misc.use_nonlinear_only_visc != 0)
 		{
 			//solve nonlinear divergence
 			o_h_t = - (i_h*op.diff_c_x(i_u) + i_h*op.diff_c_y(i_v));

@@ -229,7 +229,7 @@ public:
 		if (simVars == nullptr)
 			FatalError("Benchmarks are not yet initialized");
 
-		simVars->misc.output_time_scale = 1.0/(60.0*60.0);
+		simVars->iodata.output_time_scale = 1.0/(60.0*60.0);
 
 		if (simVars->benchmark.benchmark_name == "")
 			FatalError("Benchmark name not specified!");

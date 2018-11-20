@@ -369,14 +369,14 @@ public:
 
 
 		// Load data, if requested
-		if (simVars.inputoutput.initial_condition_data_filenames.size() > 0)
-			prog_h_pert.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[0].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
+		if (simVars.iodata.initial_condition_data_filenames.size() > 0)
+			prog_h_pert.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[0].c_str(), simVars.iodata.initial_condition_input_data_binary);
 
-		if (simVars.inputoutput.initial_condition_data_filenames.size() > 1)
-			prog_u.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[1].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
+		if (simVars.iodata.initial_condition_data_filenames.size() > 1)
+			prog_u.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[1].c_str(), simVars.iodata.initial_condition_input_data_binary);
 
-		if (simVars.inputoutput.initial_condition_data_filenames.size() > 2)
-			prog_v.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[2].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
+		if (simVars.iodata.initial_condition_data_filenames.size() > 2)
+			prog_v.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[2].c_str(), simVars.iodata.initial_condition_input_data_binary);
 
 		timeSteppers.setup(
 				simVars.disc.timestepping_method,
@@ -480,7 +480,7 @@ public:
 
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 
-		if (simVars.sim.viscosity != 0 && simVars.misc.use_local_visc == 0)
+		if (simVars.sim.viscosity != 0 && simVars.misc.use_nonlinear_only_visc == 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE //TODO: this needs checking
 
@@ -520,8 +520,8 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		const char* filename_template = simVars.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 		i_planeData.file_physical_saveData_ascii(buffer);
 		return buffer;
 	}
@@ -538,8 +538,8 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		const char* filename_template = simVars.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
 		//i_planeData.file_spectral_saveData_ascii(buffer);
 		return buffer;
@@ -559,10 +559,10 @@ public:
 			return false;
 
 		// output each time step
-		if (simVars.misc.output_each_sim_seconds < 0)
+		if (simVars.iodata.output_each_sim_seconds < 0)
 			return false;
 
-		if (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
+		if (simVars.iodata.output_next_sim_seconds-simVars.iodata.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
 			return false;
 
 		/*
@@ -589,10 +589,10 @@ public:
 				t_v = prog_v;
 			}
 
-			//std::cout << simVars.misc.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
+			//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
 
 			// Dump  data in csv, if output filename is not empty
-			if (simVars.misc.output_file_name.size() > 0)
+			if (simVars.iodata.output_file_name.size() > 0)
 			{
 				output_filenames = "";
 
@@ -688,17 +688,17 @@ public:
 
 		}
 
-		if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
+		if (simVars.iodata.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
 		{
-			simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+			simVars.iodata.output_next_sim_seconds = std::numeric_limits<double>::infinity();
 		}
 		else
 		{
-			while (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) <= simVars.timecontrol.current_simulation_time)
-				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+			while (simVars.iodata.output_next_sim_seconds-simVars.iodata.output_next_sim_seconds*(1e-12) <= simVars.timecontrol.current_simulation_time)
+				simVars.iodata.output_next_sim_seconds += simVars.iodata.output_each_sim_seconds;
 
-			if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
-				simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
+			if (simVars.iodata.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
+				simVars.iodata.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
 		}
 
 		return true;
@@ -970,9 +970,9 @@ public:
 
 		case 'l':
 			// load data arrays
-			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.inputoutput.initial_condition_input_data_binary);
-			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.inputoutput.initial_condition_input_data_binary);
-			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.inputoutput.initial_condition_input_data_binary);
+			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.iodata.initial_condition_input_data_binary);
+			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.iodata.initial_condition_input_data_binary);
+			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.iodata.initial_condition_input_data_binary);
 			break;
 		}
 	}
@@ -1498,7 +1498,7 @@ int main(int i_argc, char *i_argv[])
 
 			double wallclock_time = time();
 
-			if (simVars.misc.output_file_name.size() > 0)
+			if (simVars.iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_filenames << std::endl;
 
 			// End of run output results

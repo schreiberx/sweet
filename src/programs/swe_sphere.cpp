@@ -140,7 +140,7 @@ public:
 		// Diagnostics measures
 		last_timestep_nr_update_diagnostics = -1;
 
-		simVars.misc.output_next_sim_seconds = 0;
+		simVars.iodata.output_next_sim_seconds = 0;
 
 		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Only fixed time step size supported");
@@ -210,8 +210,8 @@ public:
 		// create copy
 		SphereData sphereData(i_sphereData);
 
-		const char* filename_template = simVars.misc.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		const char* filename_template = simVars.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 		if (i_phi_shifted)
 			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
 		else
@@ -233,8 +233,8 @@ public:
 		char buffer[1024];
 
 		SphereData sphereData(i_sphereData);
-		const char* filename_template = simVars.misc.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		const char* filename_template = simVars.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 		sphereData.file_write_binary_spectral(buffer);
 
 		return buffer;
@@ -250,13 +250,13 @@ public:
 			return;
 #endif
 
-		if (simVars.misc.output_file_name.length() == 0)
+		if (simVars.iodata.output_file_name.length() == 0)
 			return;
 
 
 		std::cout << "Writing output files as simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
 
-		if (simVars.misc.output_file_mode == "csv")
+		if (simVars.iodata.output_file_mode == "csv")
 		{
 			std::string output_filename;
 			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
@@ -296,7 +296,7 @@ public:
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 		}
-		else if (simVars.misc.output_file_mode == "bin")
+		else if (simVars.iodata.output_file_mode == "bin")
 		{
 			std::string output_filename;
 
@@ -314,7 +314,7 @@ public:
 		}
 		else
 		{
-			FatalError("Unknown output file mode '"+simVars.misc.output_file_mode+"'");
+			FatalError("Unknown output file mode '"+simVars.iodata.output_file_mode+"'");
 		}
 	}
 
@@ -419,9 +419,9 @@ public:
 				std::cout << "prog_phi min/max:\t" << SphereData(prog_phi).physical_reduce_min() << ", " << SphereData(prog_phi).physical_reduce_max() << std::endl;
 		}
 
-		if (simVars.misc.output_each_sim_seconds > 0)
-			while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-				simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+		if (simVars.iodata.output_each_sim_seconds > 0)
+			while (simVars.iodata.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+				simVars.iodata.output_next_sim_seconds += simVars.iodata.output_each_sim_seconds;
 	}
 
 
@@ -439,7 +439,7 @@ public:
 			std::cout << "." << std::flush;
 
 		// output each time step
-		if (simVars.misc.output_each_sim_seconds < 0)
+		if (simVars.iodata.output_each_sim_seconds < 0)
 			return false;
 
 		if (simVars.timecontrol.current_simulation_time == timestep_last_output_simtime)
@@ -447,9 +447,9 @@ public:
 
 		timestep_last_output_simtime = simVars.timecontrol.current_simulation_time;
 
-		if (simVars.timecontrol.current_simulation_time < simVars.timecontrol.max_simulation_time - simVars.misc.output_each_sim_seconds*1e-10)
+		if (simVars.timecontrol.current_simulation_time < simVars.timecontrol.max_simulation_time - simVars.iodata.output_each_sim_seconds*1e-10)
 		{
-			if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
+			if (simVars.iodata.output_next_sim_seconds > simVars.timecontrol.current_simulation_time)
 				return false;
 		}
 
@@ -844,7 +844,7 @@ int main(int i_argc, char *i_argv[])
 		 * Deactivate all output for ranks larger than the current one
 		 */
 		simVars.misc.verbosity = 0;
-		simVars.misc.output_each_sim_seconds = -1;
+		simVars.iodata.output_each_sim_seconds = -1;
 	}
 #endif
 
@@ -964,7 +964,7 @@ int main(int i_argc, char *i_argv[])
 				simulationSWE->timestep_check_output();
 			}
 
-			if (simVars.misc.output_file_name.size() > 0)
+			if (simVars.iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_reference_filenames << std::endl;
 
 			delete simulationSWE;

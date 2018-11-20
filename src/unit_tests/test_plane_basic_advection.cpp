@@ -809,7 +809,7 @@ int main(
 		std::cout << "Convergence rate in space (inc. resolution):";
 		std::cout << output_string_conv.str() << std::endl;
 	}
-#if 0
+#if 1
 	else if (asdf == 1)
 	{
 		std::ostringstream output_string_conv;
@@ -822,22 +822,18 @@ int main(
 
 		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
-		double cfl_limitation = simVars.sim.CFL;
 
 		double end_cfl = 0.0025;
 		for (	int cfl_iterator_id = 0;
 				cfl_iterator_id < 7;
 //				cfl_limitation > end_cfl || cfl_limitation < -end_cfl;
-				cfl_limitation *= 0.5, cfl_iterator_id++
+				simVars.timecontrol.current_timestep_size *= 0.5, cfl_iterator_id++
 		)
 		{
-			simVars.sim.CFL = cfl_limitation;
-
 			output_string_conv << std::endl;
-			output_string_conv << "CFL=" << simVars.sim.CFL << "\t";
 
 			std::cout << "*********************************************************************************************************" << std::endl;
-			std::cout << "Testing time convergence with CFL " << simVars.sim.CFL << " and RK order " << simVars.disc.timestepping_order << std::endl;
+			std::cout << "Testing time convergence with time step size " << simVars.timecontrol.current_timestep_size << " and RK order " << simVars.disc.timestepping_order << std::endl;
 			std::cout << "*********************************************************************************************************" << std::endl;
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);

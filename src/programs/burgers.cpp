@@ -259,11 +259,11 @@ public:
 		t0_prog_v = prog_v;
 
 		// Load data, if requested
-		if (simVars.inputoutput.initial_condition_data_filenames.size() > 0)
-			prog_u.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[0].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
+		if (simVars.iodata.initial_condition_data_filenames.size() > 0)
+			prog_u.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[0].c_str(), simVars.iodata.initial_condition_input_data_binary);
 
-		if (simVars.inputoutput.initial_condition_data_filenames.size() > 1)
-			prog_v.file_physical_loadData(simVars.inputoutput.initial_condition_data_filenames[1].c_str(), simVars.inputoutput.initial_condition_input_data_binary);
+		if (simVars.iodata.initial_condition_data_filenames.size() > 1)
+			prog_v.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[1].c_str(), simVars.iodata.initial_condition_input_data_binary);
 
 
 		timeSteppers.setup(
@@ -376,8 +376,8 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.misc.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		const char* filename_template = simVars.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 		i_planeData.file_physical_saveData_ascii(buffer, '\n', 12, 1);
 
 		return buffer;
@@ -393,17 +393,17 @@ public:
 	)
 	{
 		// output each time step
-		if (simVars.misc.output_each_sim_seconds < 0)
+		if (simVars.iodata.output_each_sim_seconds < 0)
 			return false;
 
-		if (simVars.misc.output_next_sim_seconds-simVars.misc.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
+		if (simVars.iodata.output_next_sim_seconds-simVars.iodata.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
 			return false;
 
 		PlaneData tmp_u = prog_u;
 		PlaneData tmp_v = prog_v;
 
 		// Dump data in csv, if requested
-		if (simVars.misc.output_file_name.size() > 0)
+		if (simVars.iodata.output_file_name.size() > 0)
 		{
 			output_filenames = "";
 			output_filenames += write_file(tmp_u, "prog_u");
@@ -412,8 +412,8 @@ public:
 			tmp_u.request_data_spectral();
 
 			char buffer[1024];
-			const char* filename_template = simVars.misc.output_file_name.c_str();
-			sprintf(buffer,filename_template,"prog_u_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+			const char* filename_template = simVars.iodata.output_file_name.c_str();
+			sprintf(buffer,filename_template,"prog_u_amp_phase",simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 
 			std::ofstream file(buffer, std::ios_base::trunc);
 			file << std::setprecision(12);
@@ -438,8 +438,8 @@ public:
 				tmp.request_data_spectral();
 
 				char buffer[1024];
-				const char* filename_template = simVars.misc.output_file_name.c_str();
-				sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+				const char* filename_template = simVars.iodata.output_file_name.c_str();
+				sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 
 				std::ofstream file(buffer, std::ios_base::trunc);
 				file << std::setprecision(12);
@@ -483,19 +483,19 @@ public:
 			o_ostream << rows.str() << std::endl;
 		}
 
-		if (simVars.misc.output_each_sim_seconds > 0)
+		if (simVars.iodata.output_each_sim_seconds > 0)
 		{
-			if (simVars.misc.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
+			if (simVars.iodata.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
 			{
-				simVars.misc.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+				simVars.iodata.output_next_sim_seconds = std::numeric_limits<double>::infinity();
 			}
 			else
 			{
-				while (simVars.misc.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-					simVars.misc.output_next_sim_seconds += simVars.misc.output_each_sim_seconds;
+				while (simVars.iodata.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
+					simVars.iodata.output_next_sim_seconds += simVars.iodata.output_each_sim_seconds;
 
-				if (simVars.misc.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
-					simVars.misc.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
+				if (simVars.iodata.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
+					simVars.iodata.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
 			}
 		}
 
@@ -1245,14 +1245,14 @@ public:
 	{
 		char buffer[1024];
 
-		sprintf(buffer, (simVars.misc.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), i_name, i_iteration_id, i_time_slice_id);
+		sprintf(buffer, (simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), i_name, i_iteration_id, i_time_slice_id);
 		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
 
 		/*
 		char tmp[128];
 		strcpy(tmp,i_name);
 		strcat(tmp,"_spec");
-		sprintf(buffer, (simVars.misc.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), tmp, simVars.timecontrol.current_simulation_time*simVars.misc.output_time_scale);
+		sprintf(buffer, (simVars.inputoutput.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), tmp, simVars.timecontrol.current_simulation_time*simVars.inputoutput.output_time_scale);
 		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
 		*/
 
@@ -1281,7 +1281,7 @@ public:
 		write_file_parareal(tmp_u,"prog_u",iteration_id,time_slice_id);
 
 		char buffer[1024];
-		sprintf(buffer,(simVars.misc.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
+		sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
 
 		std::ofstream file(buffer, std::ios_base::trunc);
 		file << std::setprecision(12);
@@ -1300,7 +1300,7 @@ public:
 
 			write_file_parareal(ana,"analytical",iteration_id,time_slice_id);
 
-			sprintf(buffer,(simVars.misc.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
+			sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
 
 			file.open(buffer, std::ios_base::trunc);
 			file << std::setprecision(12);
@@ -1478,7 +1478,7 @@ int main(int i_argc, char *i_argv[])
 
 			double seconds = time();
 
-			if (simVars.misc.output_file_name.size() > 0)
+			if (simVars.iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << simulationBurgers->output_filenames << std::endl;
 
 			//End of output results

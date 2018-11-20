@@ -64,25 +64,25 @@ public:
 			const char* filename; //general filename
 			char buffer_real[1024];
 
-			if (i_simVars.misc.output_file_name == "")
+			if (i_simVars.iodata.output_file_name == "")
 				filename = "output_%s_t%020.8f.csv";
 			else
-				filename = i_simVars.misc.output_file_name.c_str();
+				filename = i_simVars.iodata.output_file_name.c_str();
 
-			sprintf(buffer_real, filename, "normal_modes_plane", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane", i_simVars.timecontrol.current_timestep_size*i_simVars.iodata.output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
 			std::cout << "Writing normal mode analysis to files of the form '" << buffer_real << "'" << std::endl;
 
 			//Positive inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igpos", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igpos", i_simVars.timecontrol.current_timestep_size*i_simVars.iodata.output_time_scale);
 			std::ofstream file_igpos(buffer_real, std::ios_base::trunc);
 
 			//Negative inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igneg", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igneg", i_simVars.timecontrol.current_timestep_size*i_simVars.iodata.output_time_scale);
 			std::ofstream file_igneg(buffer_real, std::ios_base::trunc);
 
 			//Geostrophic modes
-			sprintf(buffer_real, filename, "normal_modes_plane_geo", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_geo", i_simVars.timecontrol.current_timestep_size*i_simVars.iodata.output_time_scale);
 			std::ofstream file_geo(buffer_real, std::ios_base::trunc);
 
 			//std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
@@ -280,13 +280,13 @@ public:
 			const char* filename;
 			char buffer_real[1024];
 
-			if (i_simVars.misc.output_file_name == "")
+			if (i_simVars.iodata.output_file_name == "")
 				filename = "output_%s_normalmodes.csv";
 			else
-				filename = i_simVars.misc.output_file_name.c_str();
+				filename = i_simVars.iodata.output_file_name.c_str();
 
 
-			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.iodata.output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
 			std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
 

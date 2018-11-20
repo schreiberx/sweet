@@ -37,12 +37,12 @@ public:
 		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
 		 */
 		char buffer_real[1024];
-		const char* filename = i_simVars.misc.output_file_name.c_str();
+		const char* filename = i_simVars.iodata.output_file_name.c_str();
 
 		if (i_simVars.timecontrol.max_timesteps_nr > 0)
-			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.timecontrol.max_timesteps_nr*i_simVars.misc.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.timecontrol.max_timesteps_nr*i_simVars.iodata.output_time_scale);
 		else
-			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.misc.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_physical", i_simVars.timecontrol.current_timestep_size*i_simVars.iodata.output_time_scale);
 
 		std::ofstream file(buffer_real, std::ios_base::trunc);
 		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
