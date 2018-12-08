@@ -17,7 +17,7 @@ jg.compile.mode="debug"
 
 jg.unique_id_filter = ['runtime.benchmark', 'runtime.time']
 
-jg.runtime.phys_res = (128, 128)
+jg.runtime.space_res_physical = (128, 128)
 
 
 

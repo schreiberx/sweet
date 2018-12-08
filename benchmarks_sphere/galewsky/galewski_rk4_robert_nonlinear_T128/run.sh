@@ -13,21 +13,10 @@ cd "$BASEDIR"
 
 # h0=g=f=1
 
-# Stable time step size for T64
-TS=30
-
-# unstable for explicit RK4 time stepping
-#TS=0.01
 
 OTS=$((120*20))
 
 RES=128
-#RES=16
-
-REXI_M=128
-REXI_H=0.2
-REXI_HALF_POLES=1
-REXI_EXTENDED_MODES=4
 
 BENCH="galewsky"
 
@@ -37,7 +26,7 @@ VISCOSITY=0
 SIMTIME=720000
 
 
-EXEC="$SPHROOT/build/swe_sphere_*_release -M $RES -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --rexi-m=$REXI_M --rexi-h=$REXI_H --rexi-half=$REXI_HALF_POLES --benchmark $BENCH --rexi-ext-modes $REXI_EXTENDED_MODES --timestepping-method=ln_erk --timestepping-order=4"
+EXEC="$SPHROOT/build/swe_sphere_*_release -M $RES -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --benchmark $BENCH --timestepping-method=ln_erk --timestepping-order=4"
 echo "******************************************************************"
 echo "$EXEC"
 echo "******************************************************************"

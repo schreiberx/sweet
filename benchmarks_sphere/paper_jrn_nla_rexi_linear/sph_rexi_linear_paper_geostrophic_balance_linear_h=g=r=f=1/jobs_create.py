@@ -26,7 +26,7 @@ p.compile.threading = 'off'
 
 
 
-p.runtime.mode_res = 64
+p.runtime.space_res_spectral = 64
 p.runtime.output_filename = '-'
 p.runtime.timestepping_order = 4
 
@@ -39,11 +39,11 @@ p.runtime.rexi_half_poles = 1
 p.runtime.rexi_extended_modes = 2
 p.runtime.rexi_normalization = 1
 
-p.runtime.g = 1	# gravity
-p.runtime.h = 1	# avg height
-p.runtime.f = 1	# coriolis effect
+p.runtime.gravitation= 1	# gravity
+p.runtime.h0 = 1	# avg height
+p.runtime.sphere_rotating_coriolis_omega = 1	# coriolis effect
 
-p.runtime.r = 1	# radius
+p.runtime.sphere_radius = 1	# radius
 
 # 10: geostrophic balance test case
 p.runtime.bench_id = 10
@@ -66,10 +66,10 @@ p.runtime.bench_id = 10	# Geostrophic balance benchmark
 
 
 if False:
-	self.g = -1
-	self.h = -1
-	self.f = -1
-	self.r = -1
+	self.gravitation= -1
+	self.h0 = -1
+	self.sphere_rotating_coriolis_omega = -1
+	self.sphere_radius = -1
 
 
 if True:
@@ -84,7 +84,7 @@ if True:
 	for p.runtime.rexi_half_poles in [0, 1]:
 		for p.runtime.rexi_normalization in [1,0]:
 			for p.runtime.rexi_extended_modes in [0, 2]:
-				for p.runtime.mode_res in [64]:
+				for p.runtime.space_res_spectral in [64]:
 					for p.runtime.rexi_m in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
 						p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
@@ -101,7 +101,7 @@ if True:
 	p.runtime.timestep_size = 0.01
 	p.runtime.output_timestep_size = 0.01
 
-	for p.runtime.mode_res in [64]:
+	for p.runtime.space_res_spectral in [64]:
 		p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 

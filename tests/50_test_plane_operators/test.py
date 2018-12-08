@@ -30,10 +30,10 @@ params_runtime_phys_res_x = [16]
 params_runtime_phys_res_y = [16]
 
 for (res_x, res_y) in product(params_runtime_phys_res_x, params_runtime_phys_res_y):
-	jg.runtime.phys_res = (res_x, res_y)
+	jg.runtime.space_res_physical = (res_x, res_y)
 
 	# Try out different variants of domain size
-	for jg.runtime.domain_size in product(params_domain_size_scales, params_domain_size_scales):
+	for jg.runtime.plane_domain_size in product(params_domain_size_scales, params_domain_size_scales):
 
 		for (
 			jg.compile.mode,

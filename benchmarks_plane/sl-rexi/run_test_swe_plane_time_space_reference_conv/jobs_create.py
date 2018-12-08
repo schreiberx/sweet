@@ -29,8 +29,8 @@ p.runtime.verbosity = 3
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = -1
-p.runtime.phys_res = 512
+p.runtime.space_res_spectral = -1
+p.runtime.space_res_physical = 512
 
 #
 # Benchmark ID
@@ -75,10 +75,10 @@ p.runtime.rexi_use_direct_solution = 1
          
 # Parameters for SL-REXI paper
 #-----------------------------       
-p.runtime.g = 9.80616
-p.runtime.f = 0.00014584
-p.runtime.h = 10000
-p.runtime.domain_size = 40031555.8928087
+p.runtime.gravitation= 9.80616
+p.runtime.sphere_rotating_coriolis_omega = 0.00014584
+p.runtime.h0 = 10000
+p.runtime.plane_domain_size = 40031555.8928087
 
 p.runtime.viscosity = 0.0
 
@@ -142,7 +142,7 @@ for group in groups:
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
-		p.runtime.phys_res = 512
+		p.runtime.space_res_physical = 512
 
 		if len(tsm) > 4:
 			s = tsm[4]
@@ -153,15 +153,15 @@ for group in groups:
 	for tsm in ts_methods[1:]:
 
 		if group == 'ln2space' and 'ln_erk' in tsm[0]:
-			p.runtime.staggering = 1
-			p.runtime.spectralderiv = 0
+			p.runtime.space_grid_use_c_staggering = 1
+			p.runtime.space_use_spectral_basis_diffs = 0
 
 			#p.compile.plane_spectral_space = 'disable'
 			p.compile.plane_spectral_dealiasing = 'disable'
 			p.compile.libfft = 'enable'
 		else:
-			p.runtime.staggering = 0
-			p.runtime.spectralderiv = 1
+			p.runtime.space_grid_use_c_staggering = 0
+			p.runtime.space_use_spectral_basis_diffs = 1
 
 			p.compile.plane_spectral_space = 'enable'
 			p.compile.plane_spectral_dealiasing = 'enable'
@@ -177,9 +177,9 @@ for group in groups:
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.phys_res = phys_res_list[idx]
+			p.runtime.space_res_physical = phys_res_list[idx]
 			print("id   dt       N  ")
-			print(idx, p.runtime.timestep_size, p.runtime.phys_res)
+			print(idx, p.runtime.timestep_size, p.runtime.space_res_physical)
 
 			if len(tsm) > 4:
 				s = tsm[4]

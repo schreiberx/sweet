@@ -54,8 +54,8 @@ p.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 200
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 200
+p.runtime.space_res_physical = -1
 
 #
 # Benchmark ID
@@ -85,12 +85,12 @@ p.runtime.rexi_sphere_preallocation = 0
 #p.runtime.viscosity = 1e-8
 
 # Stable
-if p.runtime.mode_res == 200:
+if p.runtime.space_res_spectral == 200:
 	#p.runtime.viscosity = 1e-5
 	p.runtime.viscosity = 2e-5
 	p.runtime.viscosity_order = 8
 else:
-	p.runtime.viscosity = 1e-5*200.0/p.runtime.mode_res
+	p.runtime.viscosity = 1e-5*200.0/p.runtime.space_res_spectral
 	p.runtime.viscosity_order = 8
 
 #

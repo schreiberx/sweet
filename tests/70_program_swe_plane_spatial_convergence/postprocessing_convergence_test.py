@@ -41,7 +41,7 @@ for tagname_y in tagnames_y:
 	print("Processing tagname "+tagname_y)
 	print("*"*80)
 
-	tagname_x = 'runtime.phys_res'
+	tagname_x = 'runtime.space_res_physical'
 
 	if True:
 		"""

@@ -30,8 +30,8 @@ jg.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-jg.runtime.mode_res = 64
-jg.runtime.phys_res = None
+jg.runtime.space_res_spectral = 64
+jg.runtime.space_res_physical = None
 
 jg.runtime.benchmark_name = "gaussian_bumps_phi_vort_div"
 
@@ -61,10 +61,10 @@ else:
 
 jg.runtime.f_sphere = 0
 
-#jg.runtime.g = 1
-#jg.runtime.f = 1
-#jg.runtime.h = 1
-#jg.runtime.domain_size = 1
+#jg.runtime.gravitation= 1
+#jg.runtime.sphere_rotating_coriolis_omega = 1
+#jg.runtime.h0 = 1
+#jg.runtime.plane_domain_size = 1
 
 jg.runtime.viscosity = 0.0
 

@@ -10,12 +10,12 @@ import sys
 first = True
 
 s = 2e-5
-eta_contour_levels = np.append(np.arange(-1e-4, 0, s), np.arange(s, 1e-4, s))
+vort_contour_levels = np.append(np.arange(-1e-4, 0, s), np.arange(s, 1e-4, s))
 
 zoom_lat = True
 zoom_lat = False
 
-zoom_lat = 'eta' in sys.argv[1]
+zoom_lat = 'vort' in sys.argv[1]
 
 fontsize=8
 
@@ -68,7 +68,7 @@ for filename in sys.argv[1:]:
 		cmin = np.amin(data)
 		cmax = np.amax(data)
 
-		if 'eta' in filename:
+		if 'vort' in filename:
 			cmin *= 1.2
 			cmax *= 1.2
 
@@ -84,8 +84,8 @@ for filename in sys.argv[1:]:
 
 	plt.title(filename, fontsize=fontsize)
 
-	if 'eta' in filename:
-		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
+	if 'vort' in filename:
+		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=vort_contour_levels, linewidths=0.5)
 	else:
 		if cmin != cmax:
 			plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)

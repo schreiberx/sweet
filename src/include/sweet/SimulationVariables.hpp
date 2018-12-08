@@ -413,7 +413,7 @@ public:
 
 		void outputProgParams()
 		{
-			std::cout << "Simulation parameters" << std::endl;
+			std::cout << "Simulation parameters:" << std::endl;
 			std::cout << "	-X [length]	length of simulation domain in x direction, default=1" << std::endl;
 			std::cout << "	-Y [width]	width of simulation domain in y direction, default=1" << std::endl;
 			std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
@@ -511,7 +511,7 @@ public:
 		{
 			std::cout << "Discretization:" << std::endl;
 			std::cout << "  >Space:" << std::endl;
-			std::cout << "	--staggering [0/1]	Use staggering" << std::endl;
+			std::cout << "	--space-grid-use-c-staggering [0/1]	Use staggering" << std::endl;
 			std::cout << "	-N [res]		resolution in x and y direction, default=0" << std::endl;
 			std::cout << "	-n [resx]		resolution in x direction, default=0" << std::endl;
 			std::cout << "	-m [resy]		resolution in y direction, default=0" << std::endl;
@@ -871,7 +871,7 @@ public:
         long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"use-local-visc", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"use-nonlinear-only-visc", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"reuse-plans", required_argument, 0, 256+next_free_program_option};
@@ -896,7 +896,7 @@ public:
         long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        long_options[next_free_program_option] = {"staggering", required_argument, 0, 256+next_free_program_option};
+        long_options[next_free_program_option] = {"space-grid-use-c-staggering", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
         long_options[next_free_program_option] = {"dt", required_argument, 0, 256+next_free_program_option};

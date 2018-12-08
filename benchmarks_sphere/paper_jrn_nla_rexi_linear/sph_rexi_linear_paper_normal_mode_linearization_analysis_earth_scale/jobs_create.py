@@ -21,13 +21,13 @@ p.compile.sphere_spectral_dealiasing = 'enable'
 p.compile.rexi_thread_parallel_sum = 'enable'
 p.compile.threading = 'off'
 
-p.runtime.mode_res = 16
+p.runtime.space_res_spectral = 16
 p.runtime.output_timestep_size = 0.01
 
-p.runtime.g = 1	# gravity
-p.runtime.h = 100000	# avg height
-p.runtime.f = 0.000145842	# coriolis effect
-p.runtime.r = 6371220	# radius
+p.runtime.gravitation= 1	# gravity
+p.runtime.h0 = 100000	# avg height
+p.runtime.sphere_rotating_coriolis_omega = 0.000145842	# coriolis effect
+p.runtime.sphere_radius = 6371220	# radius
 
 # 3: gaussian breaking dam
 # 4: geostrophic balance test case
@@ -39,7 +39,7 @@ p.runtime.simtime = 0.001 #math.inf
 p.runtime.compute_error = 0
 
 
-p.runtime.mode_res = 16
+p.runtime.space_res_spectral = 16
 p.runtime.normal_mode_analysis = 3
 
 p.runtime.f_sphere = 1
@@ -54,16 +54,16 @@ default_timesteps=1
 for p.runtime.f_sphere in [0, 1]:
 #for p.f_sphere in [0, 1]:
 	if p.runtime.f_sphere == -1:
-		p.runtime.f = 0
+		p.runtime.sphere_rotating_coriolis_omega = 0
 		p.runtime.f_sphere = 0
 
 	elif p.runtime.f_sphere == 0:
 		# f-sphere
-		p.runtime.f = 0.000072921	# \Omega coriolis effect
+		p.runtime.sphere_rotating_coriolis_omega = 0.000072921	# \Omega coriolis effect
 
 	elif p.runtime.f_sphere == 1:
-		p.runtime.f = 0.000072921
-		p.runtime.f = 2.0*p.runtime.f
+		p.runtime.sphere_rotating_coriolis_omega = 0.000072921
+		p.runtime.sphere_rotating_coriolis_omega = 2.0*p.runtime.f
 	else:
 		print("ERROR")
 		sys.exit(1)

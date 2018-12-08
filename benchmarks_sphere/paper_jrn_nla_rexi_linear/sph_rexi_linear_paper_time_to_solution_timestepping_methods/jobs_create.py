@@ -58,7 +58,7 @@ p.compile.fortran_source = 'enable'
 
 
 p.runtime.timestep_size = 0.001
-p.runtime.mode_res = 128
+p.runtime.space_res_spectral = 128
 p.runtime.output_timestep_size = 129600
 p.runtime.simtime = 129600
 #p.runtime.output_filename = '-'
@@ -73,10 +73,10 @@ p.runtime.rexi_normalization = 1
 
 p.runtime.f_sphere = 0
 
-p.runtime.g = 9.80616	# gravity
-p.runtime.h = 10000	# avg height
-p.runtime.f = 7.292e-5	# coriolis effect
-p.runtime.r = 6371220	# radius
+p.runtime.gravitation= 9.80616	# gravity
+p.runtime.h0 = 10000	# avg height
+p.runtime.sphere_rotating_coriolis_omega = 7.292e-5	# coriolis effect
+p.runtime.sphere_radius = 6371220	# radius
 
 p.runtime.bench_id = -1
 p.runtime.benchmark_name = "gaussian_bumps2"
@@ -93,7 +93,7 @@ p.runtime.simtime = 9999999999999999
 
 
 
-for p.mode_res in [512]:
+for p.space_res_spectral in [512]:
 	####################################
 	# REXI
 	####################################

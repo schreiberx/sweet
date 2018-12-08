@@ -46,8 +46,8 @@ p.runtime.normal_mode_analysis = 1
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 16
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 16
+p.runtime.space_res_physical = -1
 
 #
 # Benchmark ID
@@ -113,10 +113,10 @@ p.runtime.rexi_ci_primitive = 'circle'
 #p.compile.debug_symbols = False
 
 
-#p.runtime.g = 1
-#p.runtime.f = 1
-#p.runtime.h = 1
-#p.runtime.domain_size = 1
+#p.runtime.gravitation= 1
+#p.runtime.sphere_rotating_coriolis_omega = 1
+#p.runtime.h0 = 1
+#p.runtime.plane_domain_size = 1
 
 p.runtime.viscosity = 0.0
 

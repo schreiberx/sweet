@@ -19,7 +19,7 @@ This assures that we are able to catch failing jobs in case of malfunctioning sc
 
 jg = SWEETJobGeneration()
 jg.compile.program="swe_plane"
-jg.runtime.phys_res=128
+jg.runtime.space_res_physical=128
 jg.runtime.timestepping_method="ln_erk"
 jg.runtime.timestepping_order=2
 jg.runtime.timestep_size = 0.0001

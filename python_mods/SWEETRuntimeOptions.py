@@ -33,8 +33,8 @@ class SWEETRuntimeOptions(InfoError):
 
 		InfoError.__init__(self, "SWEETRuntimeOptions")
 
-		self.mode_res = None
-		self.phys_res = None
+		self.space_res_spectral = None
+		self.space_res_physical = None
 
 		self.output_timestep_size = None
 		self.output_filename = ''
@@ -49,7 +49,7 @@ class SWEETRuntimeOptions(InfoError):
 		# Use 14 digits per default
 		self.floating_point_output_digits = 12
 
-		self.timestepping_method = None#'ln_erk'
+		self.timestepping_method = None
 		self.timestepping_order = 1
 		self.timestepping_order2 = 1
 
@@ -95,19 +95,19 @@ class SWEETRuntimeOptions(InfoError):
 
 
 
-		#self.g = 1		# gravity
-		#self.h = 100000	# avg. height
+		#self.gravitation= 1		# gravity
+		#self.h0 = 100000	# avg. height
 
-		self.g = None
-		self.h = None
-		self.f = None
-		self.r = None
+		self.gravitation= None
+		self.h0 = None
+		self.sphere_rotating_coriolis_omega = None
+		self.sphere_radius = None
 
-#		self.g = 9.81		# gravity
-#		self.h = 10000	# avg. height
-#		self.f = 0.000072921	# \Omega coriolis effect
-#		self.r = 6371220	# Sphere: Radius
-		self.domain_size = None	# Plane: Domain size
+#		self.gravitation= 9.81		# gravity
+#		self.h0 = 10000	# avg. height
+#		self.sphere_rotating_coriolis_omega = 0.000072921	# \Omega coriolis effect
+#		self.sphere_radius = 6371220	# Sphere: Radius
+		self.plane_domain_size = None	# Plane: Domain size
 
 		# 3: gaussian breaking dam
 		# 4: geostrophic balance test case
@@ -121,12 +121,13 @@ class SWEETRuntimeOptions(InfoError):
 
 		self.use_robert_functions = 1
 
-		self.staggering = 0
-		self.spectralderiv = 1
+		self.space_grid_use_c_staggering = 0
+		self.space_use_spectral_basis_diffs = 1
 		self.viscosity = None
 		self.viscosity_order = None
+
 		#self.uselineardiv = None
-		self.uselocalvisc = None
+		self.use_nonlinear_only_visc = None
 		self.advection_rotation_angle = None
 		self.advection_velocity = None
 		self.simtime = 0.001
@@ -262,15 +263,15 @@ class SWEETRuntimeOptions(InfoError):
 				idstr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
 		if not 'runtime.simparams' in filter_list:
-			if self.g != None:
+			if self.gravitation!= None:
 				idstr += '_g'+str("{:05.2f}".format(self.g))
-			if self.h != None:
+			if self.h0 != None:
 				idstr += '_h'+str("{:010.3f}".format(self.h))
-			if self.f != None:
+			if self.sphere_rotating_coriolis_omega != None:
 				idstr += '_f'+str("{:e}".format(self.f))
 
 			if compileOptions.sphere_spectral_space == 'enable':
-				if self.r != None:
+				if self.sphere_radius != None:
 					idstr += '_a'+str(self.r)
 				if self.f_sphere != None:
 					idstr += '_fsph'+str(self.f_sphere)
@@ -375,19 +376,19 @@ class SWEETRuntimeOptions(InfoError):
 
 
 		if not 'disc_space' in filter_list:
-			if self.mode_res != None:
-				if isinstance(self.mode_res, (list, tuple)):
-					idstr += '_M'+str("x".join([str(x).zfill(4) for x in self.mode_res]))
+			if self.space_res_spectral != None:
+				if isinstance(self.space_res_spectral, (list, tuple)):
+					idstr += '_M'+str("x".join([str(x).zfill(4) for x in self.space_res_spectral]))
 				else:
-					idstr += '_M'+str(self.mode_res).zfill(4)
+					idstr += '_M'+str(self.space_res_spectral).zfill(4)
 
-			if self.phys_res != None:
-				if isinstance(self.phys_res, (list, tuple)):
-					idstr += '_N'+str("x".join([str(x).zfill(4) for x in self.phys_res]))
+			if self.space_res_physical != None:
+				if isinstance(self.space_res_physical, (list, tuple)):
+					idstr += '_N'+str("x".join([str(x).zfill(4) for x in self.space_res_physical]))
 				else:
-					idstr += '_N'+str(self.phys_res).zfill(4)
+					idstr += '_N'+str(self.space_res_physical).zfill(4)
 
-			if self.domain_size != None:
+			if self.plane_domain_size != None:
 				if isinstance(self.domain_size, (list, tuple)):
 					idstr += '_X'+str("x".join([str(x).zfill(4) for x in self.domain_size]))
 				else:
@@ -395,8 +396,8 @@ class SWEETRuntimeOptions(InfoError):
 
 			idstr += '_rob'+str(self.use_robert_functions)
 
-			if self.spectralderiv != 1:
-				idstr += '_spd'+str(self.spectralderiv)
+			if self.space_use_spectral_basis_diffs != 1:
+				idstr += '_spd'+str(self.space_use_spectral_basis_diffs)
 
 		if self.reuse_plans != -1:
 			idstr += '_plans'+str(self.reuse_plans)
@@ -412,33 +413,33 @@ class SWEETRuntimeOptions(InfoError):
 
 	def getRuntimeOptions(self):
 		retval = ''
-		if self.g != None:
+		if self.gravitation!= None:
 			retval += ' -g '+str(self.g)
-		if self.h != None:
+		if self.h0 != None:
 			retval += ' -H '+str(self.h)
-		if self.f != None:
+		if self.sphere_rotating_coriolis_omega != None:
 			retval += ' -f '+str(self.f)
-		if self.r != None:
+		if self.sphere_radius != None:
 			retval += ' -a '+str(self.r)
 		if self.f_sphere != None:
 			retval += ' -F '+str(self.f_sphere)
 
-		if self.mode_res != None:
-			if isinstance(self.mode_res, (list, tuple)):
-				retval += ' -M '+str(",".join([str(x) for x in self.mode_res]))
+		if self.space_res_spectral != None:
+			if isinstance(self.space_res_spectral, (list, tuple)):
+				retval += ' -M '+str(",".join([str(x) for x in self.space_res_spectral]))
 			else:
-				retval += ' -M '+str(self.mode_res)
+				retval += ' -M '+str(self.space_res_spectral)
 
-		if self.phys_res != None:
-			if isinstance(self.phys_res, (list, tuple)):
-				retval += ' -N '+str(",".join([str(x) for x in self.phys_res]))
+		if self.space_res_physical != None:
+			if isinstance(self.space_res_physical, (list, tuple)):
+				retval += ' -N '+str(",".join([str(x) for x in self.space_res_physical]))
 			else:
-				retval += ' -N '+str(self.phys_res)
+				retval += ' -N '+str(self.space_res_physical)
 
-		retval += ' --staggering='+str(self.staggering)
-		retval += ' -S '+str(self.spectralderiv)
+		retval += ' --space-grid-use-c-staggering='+str(self.space_grid_use_c_staggering)
+		retval += ' -S '+str(self.space_use_spectral_basis_diffs)
 
-		if self.domain_size != None:
+		if self.plane_domain_size != None:
 			if isinstance(self.domain_size, (int, float)):
 				retval += ' -X '+str(self.domain_size)
 				retval += ' -Y '+str(self.domain_size)
@@ -485,8 +486,8 @@ class SWEETRuntimeOptions(InfoError):
 		#if self.uselineardiv != None:
 		#	retval += ' --use-only-linear-div='+str(self.uselineardiv)
 
-		if self.uselocalvisc != None:
-			retval += ' --use-local-visc='+str(self.uselocalvisc)
+		if self.use_nonlinear_only_visc != None:
+			retval += ' --use-nonlinear-only-visc='+str(self.use_nonlinear_only_visc)
 
 		if self.advection_rotation_angle != None:
 			retval += ' --advection-rotation-angle='+str(self.advection_rotation_angle)

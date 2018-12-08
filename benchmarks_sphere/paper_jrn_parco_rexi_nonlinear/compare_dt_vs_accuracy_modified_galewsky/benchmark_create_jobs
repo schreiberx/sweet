@@ -26,7 +26,7 @@ else:
 	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'
 
-p.runtime.mode_res = 128
+p.runtime.space_res_spectral = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
 
 p.parallelization.core_oversubscription = False
@@ -37,13 +37,13 @@ p.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
 
-p.runtime.h = 10000
+p.runtime.h0 = 10000
 #params_h = [p.runtime.h*i for i in np.linspace(0.2, 1.8, 9, endpoint=True)]
-#params_h = [p.runtime.h * 2**i for i in range(-5, 5)]
-params_h = [p.runtime.h * 2**i for i in range(-3, 5)]
-p.runtime.f = 7.292e-5
-p.runtime.g = 9.80616
-p.runtime.r = 6.37122e6
+#params_h = [p.runtime.h0 * 2**i for i in range(-5, 5)]
+params_h = [p.runtime.h0 * 2**i for i in range(-3, 5)]
+p.runtime.sphere_rotating_coriolis_omega = 7.292e-5
+p.runtime.gravitation= 9.80616
+p.runtime.sphere_radius = 6.37122e6
 p.runtime.benchmark_name = "galewsky_nosetparam"
 
 p.runtime.simtime = 60*60*24*5	# 5 days
@@ -160,7 +160,7 @@ def estimateWallclockTime(p):
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
 
 	# quadratic with resolution
-	wallclock_seconds *= pow(ref_mode_res/p.runtime.mode_res, 2.0)
+	wallclock_seconds *= pow(ref_mode_res/p.runtime.space_res_spectral, 2.0)
 
 	if p.runtime.rexi_method != '':
 		if p.runtime.rexi_method != 'ci':
@@ -220,8 +220,8 @@ p.runtime.verbosity = 0
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 128
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 128
+p.runtime.space_res_physical = -1
 
 
 #
@@ -334,7 +334,7 @@ if __name__ == "__main__":
 		#
 		# Create job scripts
 		#
-		for p.runtime.h in params_h:
+		for p.runtime.h0 in params_h:
 
 			#
 			# Reference solution

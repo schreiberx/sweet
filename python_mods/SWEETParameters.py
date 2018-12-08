@@ -39,18 +39,18 @@ def CompileSWEPlane(p):
 
 
 def RuntimeSWEPlaneNondimParameters(p):
-	p.runtime.g = 1
-	p.runtime.f = 1
-	p.runtime.h = 1
-	p.runtime.domain_size = 1
+	p.runtime.gravitation= 1
+	p.runtime.sphere_rotating_coriolis_omega = 1
+	p.runtime.h0 = 1
+	p.runtime.plane_domain_size = 1
 	return p
 
 def RuntimeSWEPlaneEarthParam(p):
 	s = EarthMKSDimensions()
-	p.runtime.g = s.g
-	p.runtime.f = s.f
-	p.runtime.h = 10000
-	p.runtime.domain_size = 2.0*math.pi*s.erad # 40031555.8928087
+	p.runtime.gravitation= s.g
+	p.runtime.sphere_rotating_coriolis_omega = s.f
+	p.runtime.h0 = 10000
+	p.runtime.plane_domain_size = 2.0*math.pi*s.erad # 40031555.8928087
 	return p
 
 
@@ -67,8 +67,8 @@ def DisableGUI(p):
 
 
 def SetupFDCMethods(p):
-	p.runtime.staggering = 1
-	p.runtime.spectralderiv = 0
+	p.runtime.space_grid_use_c_staggering = 1
+	p.runtime.space_use_spectral_basis_diffs = 0
 
 	#p.compile.plane_spectral_space = 'disable'
 	p.compile.plane_spectral_dealiasing = 'disable'
@@ -77,8 +77,8 @@ def SetupFDCMethods(p):
 
 
 def SetupSpectralMethods(p):
-	p.runtime.staggering = 0
-	p.runtime.spectralderiv = 1
+	p.runtime.space_grid_use_c_staggering = 0
+	p.runtime.space_use_spectral_basis_diffs = 1
 
 	p.compile.plane_spectral_space = 'enable'
 	p.compile.plane_spectral_dealiasing = 'enable'

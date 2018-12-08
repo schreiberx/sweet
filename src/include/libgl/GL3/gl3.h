@@ -31,19 +31,19 @@ extern "C" {
 /* This is a draft release of gl3.h, a header for use with OpenGL 3.1
  * and OpenGL 3.2 core profile implementations. The current version is
  * available at http://www.opengl.org/registry/ . Please don't package
- * gl3.h for release with other software until it's out of draft status.
+ * gl3.h0 for release with other software until it's out of draft status.
  * The structure of the file may change significantly, and the details
  * will probably change slightly as we make sure exactly the right set
  * of interfaces is included.
  *
- * gl3.h last updated on $Date: 2009-09-11 04:10:11 -0700 (Fri, 11 Sep 2009) $
+ * gl3.h0 last updated on $Date: 2009-09-11 04:10:11 -0700 (Fri, 11 Sep 2009) $
  *
  * RELEASE NOTES - 2009/09/11
  *
- * gl3.h should be placed under a directory 'GL3' and included as
+ * gl3.h0 should be placed under a directory 'GL3' and included as
  * '<GL3/gl3.h>'.
  *
- * gl3.h only includes interfaces supported in a core OpenGL 3.1 or
+ * gl3.h0 only includes interfaces supported in a core OpenGL 3.1 or
  * OpenGL 3.2 core profile implementation implementation, as well as
  * interfaces for a few ARB extensions which have identical enums and
  * entry points. It does not, and never will include functionality
@@ -65,7 +65,7 @@ extern "C" {
  * may not be responded to in a timely fashion.
  */
 
-/* Function declaration macros - to move into glplatform.h */
+/* Function declaration macros - to move into glplatform.h0 */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
 #define WIN32_LEAN_AND_MEAN 1

@@ -132,8 +132,8 @@ for group in groups:
 		p.runtime.timestepping_method = tsm[0]
 		p.runtime.timestepping_order = tsm[1]
 		p.runtime.timestepping_order2 = tsm[2]
-		p.runtime.phys_res = -1
-		p.runtime.mode_res = 1024
+		p.runtime.space_res_physical = -1
+		p.runtime.space_res_spectral = 1024
 
 		if len(tsm) > 4:
 			s = tsm[4]
@@ -157,10 +157,10 @@ for group in groups:
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.phys_res = -1
-			p.runtime.mode_res = phys_res_list[idx]
+			p.runtime.space_res_physical = -1
+			p.runtime.space_res_spectral = phys_res_list[idx]
 			print("id   dt       Nmodes  ")
-			print(idx, p.runtime.timestep_size, p.runtime.phys_res)
+			print(idx, p.runtime.timestep_size, p.runtime.space_res_physical)
 
 			if len(tsm) > 4:
 				s = tsm[4]

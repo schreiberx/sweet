@@ -72,20 +72,20 @@ cd "$BASEDIR"
 		#content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_*_release'
 		content += 'EXEC="$SWEETROOT/build/swe_sphere_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
 
-		if self.g >= 0:
+		if self.gravitation>= 0:
 			content += ' -g '+str(self.g)
 
-		if self.h >= 0:
+		if self.h0 >= 0:
 			content += ' -H '+str(self.h)
 
-		if self.f >= 0:
+		if self.sphere_rotating_coriolis_omega >= 0:
 			content += ' -f '+str(self.f)
 
-		if self.r >= 0:
+		if self.sphere_radius >= 0:
 			content += ' -a '+str(self.r)
 
 		content += ' -s '+str(self.bench_id)
-		content += ' -M '+str(self.mode_res)
+		content += ' -M '+str(self.space_res_spectral)
 		content += ' -C '+str(-self.timestep_size)
 		content += ' -o '+str(self.output_timestep_size)
 		content += ' -O -'	# deactivate file output
@@ -126,7 +126,7 @@ $EXEC || exit 1
 	def create_job_id(self):
 		idstr = ''
 
-		idstr += '_modes'+str(self.mode_res).zfill(3)
+		idstr += '_modes'+str(self.space_res_spectral).zfill(3)
 		idstr += '_bench'+str(self.bench_id)
 		idstr += '_nonlin'+str(self.nonlinear)
 
@@ -188,10 +188,10 @@ p.bench_id = 10	# Geostrophic balance benchmark
 p.output_timestep_size = 0.01
 
 if False:
-	self.g = -1
-	self.h = -1
-	self.f = -1
-	self.r = -1
+	self.gravitation= -1
+	self.h0 = -1
+	self.sphere_rotating_coriolis_omega = -1
+	self.sphere_radius = -1
 
 if True:
 	# 10 times larger than RK4 time step size
@@ -204,7 +204,7 @@ if True:
 	for p.rexi_half_poles in [0, 1]:
 		for p.rexi_normalization in [1,0]:
 			for p.rexi_extended_modes in [2]:
-				for p.mode_res in [64]:
+				for p.space_res_spectral in [64]:
 					for p.rexi_m in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
 						p.gen_script('script'+p.create_job_id(), 'run.sh')
 
@@ -220,7 +220,7 @@ if True:
 
 	p.timestep_size = 0.01
 
-	for p.mode_res in [64]:
+	for p.space_res_spectral in [64]:
 		p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 

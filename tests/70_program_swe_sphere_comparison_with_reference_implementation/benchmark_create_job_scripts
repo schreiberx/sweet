@@ -14,8 +14,8 @@ p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
-p.runtime.mode_res = "66,66"
-p.runtime.phys_res = "196,100"
+p.runtime.space_res_spectral = "66,66"
+p.runtime.space_res_physical = "196,100"
 p.runtime.instability_checks = 0
 p.runtime.benchmark_name = 'galewsky'
 
@@ -24,10 +24,10 @@ p.compile.threading = 'off'
 
 p.unique_id_filter = ['runtime', 'compile', 'parallelization']
 
-#p.runtime.g = 1
-#p.runtime.f = 1
-#p.runtime.h = 1
-#p.runtime.domain_size = 1
+#p.runtime.gravitation= 1
+#p.runtime.sphere_rotating_coriolis_omega = 1
+#p.runtime.h0 = 1
+#p.runtime.plane_domain_size = 1
 
 p.runtime.verbosity = 10
 

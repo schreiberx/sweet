@@ -49,8 +49,8 @@ p.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 128
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 128
+p.runtime.space_res_physical = -1
 
 #
 # Benchmark ID

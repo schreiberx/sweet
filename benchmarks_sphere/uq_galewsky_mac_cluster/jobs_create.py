@@ -207,8 +207,8 @@ p.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 128
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 128
+p.runtime.space_res_physical = -1
 
 #
 # Benchmark name
@@ -275,10 +275,10 @@ p.runtime.rexi_beta_cutoff = 0
 #p.compile.debug_symbols = False
 
 
-#p.runtime.g = 1
-#p.runtime.f = 1
-#p.runtime.h = 1
-#p.runtime.domain_size = 1
+#p.runtime.gravitation= 1
+#p.runtime.sphere_rotating_coriolis_omega = 1
+#p.runtime.h0 = 1
+#p.runtime.plane_domain_size = 1
 
 p.runtime.viscosity = 0.0
 
@@ -398,10 +398,10 @@ if __name__ == "__main__":
 
 		for t in all_sg_points:
 			p.runtime.f	 	= t[0]
-			p.runtime.g 		= t[1]
-			p.runtime.r 		= t[2]
+			p.runtime.gravitation		= t[1]
+			p.runtime.sphere_radius 		= t[2]
 			p.runtime.viscosity 	= t[3]
-			p.runtime.mode_res 	= int(t[4])
+			p.runtime.space_res_spectral 	= int(t[4])
 			p.runtime.timestep_size 	= t[5]
 
 			p.runtime.benchmark_galewsky_umax = t[6]

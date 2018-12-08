@@ -15,7 +15,7 @@ jg.compile.unit_test="test_sphere_interpolation"
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
 
-jg.runtime.mode_res = 64
+jg.runtime.space_res_spectral = 64
 jg.runtime.verbosity = 5
 
 jg.gen_jobscript_directory()

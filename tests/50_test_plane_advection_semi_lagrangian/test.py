@@ -53,10 +53,10 @@ params_runtime_ts_methods = [
 
 
 for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res_y):
-	jg.runtime.mode_res = (res_x, res_y)
+	jg.runtime.space_res_spectral = (res_x, res_y)
 
 	# Try out different variants of domain size
-	for jg.runtime.domain_size in product(params_domain_size_scales, params_domain_size_scales):
+	for jg.runtime.plane_domain_size in product(params_domain_size_scales, params_domain_size_scales):
 
 		# Iterate over time stepping methods and the order
 		for ts_method in params_runtime_ts_methods:

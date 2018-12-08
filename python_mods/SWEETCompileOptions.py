@@ -80,7 +80,7 @@ class SWEETCompileOptions(InfoError):
 
 		# Memory allocator
 		if _exec_command('uname -s') == "Darwin":
-			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h file)
+			# Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h0 file)
 			self.numa_block_allocator = 0
 		else:
 			self.numa_block_allocator = 2

@@ -14,17 +14,17 @@ p.verbosity = 2
 
 p.plane_or_sphere = 'plane'
 
-p.mode_res = -1
-p.phys_res = 128
+p.space_res_spectral = -1
+p.space_res_physical = 128
 
 p.bench_id = 1
 
 p.rexi_sphere_preallocation = 0
 
-p.g = 1
-p.f = 1
-p.h = 1
-p.domain_size = 1
+p.gravitation= 1
+p.sphere_rotating_coriolis_omega = 1
+p.h0 = 1
+p.plane_domain_size = 1
 
 #p.viscosity = 0.0005
 p.viscosity = 0.0

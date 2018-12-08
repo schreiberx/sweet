@@ -88,7 +88,7 @@ cd "$BASEDIR"
 		content += ' -f '+str(self.f)
 		content += ' -F '+str(self.f_sphere)
 		content += ' -a '+str(self.r)
-		content += ' -M '+str(self.mode_res)
+		content += ' -M '+str(self.space_res_spectral)
 
 		content += ' --pde-id '+str(self.pde_id)
 
@@ -139,7 +139,7 @@ $EXEC || exit 1
 	def create_job_id(self):
 		idstr = ''
 
-#		idstr += '_modes'+str(self.mode_res).zfill(3)
+#		idstr += '_modes'+str(self.space_res_spectral).zfill(3)
 #		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
 
@@ -193,10 +193,10 @@ p = default_params()
 
 
 
-p.mode_res = 16
+p.space_res_spectral = 16
 
 # TODO: REPLACE THIS
-#p.mode_res = 12
+#p.space_res_spectral = 12
 
 p.normal_mode_analysis = 13
 
@@ -215,16 +215,16 @@ for p.pde_id in [0]:
 	for p.f_sphere in [0, 1]:
 
 		if p.f_sphere == -1:
-			p.f = 0
+			p.sphere_rotating_coriolis_omega = 0
 			p.f_sphere = 0
 
 		elif p.f_sphere == 0:
 			# f-sphere
-			p.f = 0.000072921	# \Omega coriolis effect
+			p.sphere_rotating_coriolis_omega = 0.000072921	# \Omega coriolis effect
 
 		else:
-			p.f = 0.000072921	# \Omega coriolis effect
-			p.f = 2.0*p.f	# Constant f requires multiplication with 2.0
+			p.sphere_rotating_coriolis_omega = 0.000072921	# \Omega coriolis effect
+			p.sphere_rotating_coriolis_omega = 2.0*p.f	# Constant f requires multiplication with 2.0
 
 
 		####################################

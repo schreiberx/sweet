@@ -13,8 +13,8 @@
 #define SHTNS_COMPLEX_SPH_OLD_INTERFACE	0
 
 /**
- * This is a wrapper to avoid including shtns.h twice.
- * #ifndef stuff is missing in the shtns.h header file
+ * This is a wrapper to avoid including shtns.h0 twice.
+ * #ifndef stuff is missing in the shtns.h0 header file
  */
 
 // undef for C++11 support

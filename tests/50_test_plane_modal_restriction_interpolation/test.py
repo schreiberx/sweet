@@ -30,11 +30,11 @@ params_runtime_mode_res_x = [64]
 params_runtime_mode_res_y = [64]
 
 for (phys_res_x, phys_res_y, mode_res_x, mode_res_y) in product(params_runtime_phys_res_x, params_runtime_phys_res_y, params_runtime_mode_res_x, params_runtime_mode_res_y):
-	jg.runtime.phys_res = (phys_res_x, phys_res_y)
-	jg.runtime.mode_res = (mode_res_x, mode_res_y)
+	jg.runtime.space_res_physical = (phys_res_x, phys_res_y)
+	jg.runtime.space_res_spectral = (mode_res_x, mode_res_y)
 
 	# Try out different variants of domain size
-	for jg.runtime.domain_size in product(params_domain_size_scales, params_domain_size_scales):
+	for jg.runtime.plane_domain_size in product(params_domain_size_scales, params_domain_size_scales):
 #	if True:
 
 		for (

@@ -50,16 +50,16 @@ def load_data(filename):
 			p.time = float(headerstr[4:])
 
 		elif headerstr[2] == 'g':
-			p.g = float(headerstr[4:])
+			p.gravitation= float(headerstr[4:])
 
 		elif headerstr[2] == 'h':
-			p.h = float(headerstr[4:])
+			p.h0 = float(headerstr[4:])
 
 		elif headerstr[2] == 'r':
-			p.r = float(headerstr[4:])
+			p.sphere_radius = float(headerstr[4:])
 
 		elif headerstr[2] == 'f':
-			p.f = float(headerstr[4:])
+			p.sphere_rotating_coriolis_omega = float(headerstr[4:])
 
 		else:
 			print("ERROR: Unknown tag "+headerstr[2])
@@ -72,22 +72,22 @@ def load_data(filename):
 		print(filename)
 		sys.exit(1)
 
-	if p.g == -1:
+	if p.gravitation== -1:
 		print("Warning: g meta information not found")
 		print(filename)
 		sys.exit(1)
 
-	if p.h == -1:
+	if p.h0 == -1:
 		print("Warning: h meta information not found")
 		print(filename)
 		sys.exit(1)
 
-	if p.r == -1:
+	if p.sphere_radius == -1:
 		print("Warning: r meta information not found")
 		print(filename)
 		sys.exit(1)
 
-	if p.f == -1:
+	if p.sphere_rotating_coriolis_omega == -1:
 		print("Warning: f meta information not found")
 		print(filename)
 		sys.exit(1)

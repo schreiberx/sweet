@@ -25,8 +25,8 @@ jg.runtime.verbosity = 3
 #
 # Mode and Physical resolution
 #
-jg.runtime.mode_res = -1
-jg.runtime.phys_res = 512
+jg.runtime.space_res_spectral = -1
+jg.runtime.space_res_physical = 512
 
 #
 # Benchmark ID
@@ -71,10 +71,10 @@ jg.runtime.rexi_method = 'direct'
 #jg.runtime.rexi_ci_primitive = 'circle'
 jg.runtime.rexi_use_direct_solution = 1
                 
-jg.runtime.g = 1
-jg.runtime.f = 1
-jg.runtime.h = 100
-jg.runtime.domain_size = 1
+jg.runtime.gravitation= 1
+jg.runtime.sphere_rotating_coriolis_omega = 1
+jg.runtime.h0 = 100
+jg.runtime.plane_domain_size = 1
 
 jg.runtime.viscosity = 0.0
 
@@ -208,7 +208,7 @@ for group in groups:
 		jg.runtime.timestepping_method = tsm[0]
 		jg.runtime.timestepping_order = tsm[1]
 		jg.runtime.timestepping_order2 = tsm[2]
-		jg.phys_res = 512
+		jg.space_res_physical = 512
 
 		if len(tsm) > 4:
 			s = tsm[4]
@@ -220,15 +220,15 @@ for group in groups:
 	for tsm in ts_methods:
 
 		if group == 'ln2space' and 'ln_erk' in tsm[0]:
-			jg.runtime.staggering = 1
-			jg.runtime.spectralderiv = 0
+			jg.runtime.space_grid_use_c_staggering = 1
+			jg.runtime.space_use_spectral_basis_diffs = 0
 
 			#jg.compile.plane_spectral_space = 'disable'
 			jg.compile.plane_spectral_dealiasing = 'disable'
 			jg.compile.libfft = 'enable'
 		else:
-			jg.runtime.staggering = 0
-			jg.runtime.spectralderiv = 1
+			jg.runtime.space_grid_use_c_staggering = 0
+			jg.runtime.space_use_spectral_basis_diffs = 1
 
 			jg.compile.plane_spectral_space = 'enable'
 			jg.compile.plane_spectral_dealiasing = 'enable'
@@ -239,7 +239,7 @@ for group in groups:
 			jg.runtime.timestepping_method = tsm[0]
 			jg.runtime.timestepping_order = tsm[1]
 			jg.runtime.timestepping_order2 = tsm[2]
-			jg.runtime.phys_res = phys_res
+			jg.runtime.space_res_physical = phys_res
 
 
 			if len(tsm) > 4:

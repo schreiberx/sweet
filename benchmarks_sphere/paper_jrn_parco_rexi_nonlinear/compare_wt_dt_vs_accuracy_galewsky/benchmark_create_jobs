@@ -28,7 +28,7 @@ else:
 	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'
 
-p.runtime.mode_res = 128
+p.runtime.space_res_spectral = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
 
 p.parallelization.core_oversubscription = False
@@ -156,7 +156,7 @@ def estimateWallclockTime(p):
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
 
 	# quadratic with resolution
-	wallclock_seconds *= pow(ref_mode_res/p.runtime.mode_res, 2.0)
+	wallclock_seconds *= pow(ref_mode_res/p.runtime.space_res_spectral, 2.0)
 
 	if p.runtime.rexi_method != '':
 		if p.runtime.rexi_method != 'ci':
@@ -216,8 +216,8 @@ p.runtime.verbosity = 0
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 128
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 128
+p.runtime.space_res_physical = -1
 
 #
 # Benchmark
@@ -377,7 +377,9 @@ if __name__ == "__main__":
 
 			p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
+			p.reference_job = True
 			p.gen_jobscript_directory('job_benchref_'+p.getUniqueID())
+			p.reference_job = False
 
 			p.reference_job_unique_id = p.job_unique_id
 

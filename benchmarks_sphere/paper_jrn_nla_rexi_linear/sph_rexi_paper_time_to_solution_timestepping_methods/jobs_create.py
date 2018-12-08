@@ -87,7 +87,7 @@ cd "$BASEDIR"
 		content += ' -f '+str(self.f)
 		content += ' -F '+str(self.f_sphere)
 		content += ' -a '+str(self.r)
-		content += ' -M '+str(self.mode_res)
+		content += ' -M '+str(self.space_res_spectral)
 
 		content += ' --pde-id '+str(self.pde_id)
 
@@ -137,7 +137,7 @@ taskset -c 1 $EXEC || exit 1
 	def create_job_id(self):
 		idstr = ''
 
-		idstr += '_modes'+str(self.mode_res).zfill(3)
+		idstr += '_modes'+str(self.space_res_spectral).zfill(3)
 #		idstr += '_bench'+str(self.bench_id)
 #		idstr += '_nonlin'+str(self.nonlinear)
 
@@ -205,7 +205,7 @@ p.max_timesteps = 10
 p.simtime = p.timestep_size*p.max_timesteps
 
 
-for p.mode_res in [64, 128, 256]:
+for p.space_res_spectral in [64, 128, 256]:
 	####################################
 	# REXI
 	####################################

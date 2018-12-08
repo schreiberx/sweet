@@ -16,8 +16,8 @@ jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
 #jg.compile.mode = "debug"
 
-jg.runtime.r = 1
-jg.runtime.f = 1
+jg.runtime.sphere_radius = 1
+jg.runtime.sphere_rotating_coriolis_omega = 1
 
 params_runtime_mode_res = [64, 128, 256, 512, 1024, 2048]
 #params_runtime_mode_res = [64, 128]
@@ -28,7 +28,7 @@ params_runtime_f = [1, 1e-3, 1e-6]
 jg.runtime.verbosity = 5
 
 for (
-		jg.runtime.mode_res,
+		jg.runtime.space_res_spectral,
 		jg.runtime.r,
 		jg.runtime.f,
 	) in product(

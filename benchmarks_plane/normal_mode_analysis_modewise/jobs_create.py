@@ -36,8 +36,8 @@ p.runtime.normal_mode_analysis = 1
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 16
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 16
+p.runtime.space_res_physical = -1
 
 #
 # Benchmark ID

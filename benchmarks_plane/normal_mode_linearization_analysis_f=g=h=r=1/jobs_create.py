@@ -30,8 +30,8 @@ p.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-p.runtime.mode_res = 32
-p.runtime.phys_res = -1
+p.runtime.space_res_spectral = 32
+p.runtime.space_res_physical = -1
 
 #
 # Benchmark ID
@@ -48,9 +48,9 @@ p.runtime.compute_error = 0
 #
 # Simulation parameters
 #
-p.runtime.f = 1
-p.runtime.h = 1
-p.runtime.g = 1
+p.runtime.sphere_rotating_coriolis_omega = 1
+p.runtime.h0 = 1
+p.runtime.gravitation= 1
 p.runtime.a = 1
 
 

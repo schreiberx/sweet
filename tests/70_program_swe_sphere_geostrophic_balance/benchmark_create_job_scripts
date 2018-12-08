@@ -37,8 +37,8 @@ params_runtime_timestep_sizes = [30]
 
 jg.runtime.benchmark_name = 'geostrophic_balance'
 
-jg.runtime.mode_res = 128
-jg.runtime.phys_res = None
+jg.runtime.space_res_spectral = 128
+jg.runtime.space_res_physical = None
 
 jg.runtime.compute_error = 1
 

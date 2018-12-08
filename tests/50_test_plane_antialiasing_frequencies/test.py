@@ -17,7 +17,7 @@ jg.compile.plane_spectral_dealiasing="enable"
 jg.compile.mode="release"
 for nx in [4, 8, 36]:
 	for ny in [4, 8, 36]:
-		jg.runtime.phys_res = (nx, ny)
+		jg.runtime.space_res_physical = (nx, ny)
 		jg.gen_jobscript_directory()
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
