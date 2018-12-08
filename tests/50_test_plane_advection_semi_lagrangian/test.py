@@ -88,7 +88,7 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
 				for (
 					jg.compile.mode,
 					jg.compile.plane_spectral_dealiasing,
-					jg.runtime.spectralderiv,
+					jg.runtime.space_use_spectral_basis_diffs,
 					jg.runtime.timestep_size,
 				) in product(
 					params_compile_mode,

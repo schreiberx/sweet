@@ -43,7 +43,7 @@ for (phys_res_x, phys_res_y, mode_res_x, mode_res_y) in product(params_runtime_p
 		for (
 			jg.compile.mode,
 			jg.compile.plane_spectral_dealiasing,
-#			jg.runtime.spectralderiv,
+#			jg.runtime.space_use_spectral_basis_diffs,
 			jg.runtime.benchmark_name,
 		) in product(
 			params_compile_mode,
