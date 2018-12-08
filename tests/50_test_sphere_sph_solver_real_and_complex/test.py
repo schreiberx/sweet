@@ -29,8 +29,8 @@ jg.runtime.verbosity = 5
 
 for (
 		jg.runtime.space_res_spectral,
-		jg.runtime.r,
-		jg.runtime.f,
+		jg.runtime.sphere_radius,
+		jg.runtime.sphere_rotating_coriolis_omega,
 	) in product(
 		params_runtime_mode_res,
 		params_runtime_r,
