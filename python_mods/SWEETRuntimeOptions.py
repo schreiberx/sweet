@@ -264,15 +264,15 @@ class SWEETRuntimeOptions(InfoError):
 
 		if not 'runtime.simparams' in filter_list:
 			if self.gravitation!= None:
-				idstr += '_g'+str("{:05.2f}".format(self.g))
+				idstr += '_g'+str("{:05.2f}".format(self.gravitation))
 			if self.h0 != None:
-				idstr += '_h'+str("{:010.3f}".format(self.h))
+				idstr += '_h'+str("{:010.3f}".format(self.h0))
 			if self.sphere_rotating_coriolis_omega != None:
-				idstr += '_f'+str("{:e}".format(self.f))
+				idstr += '_f'+str("{:e}".format(self.sphere_rotating_coriolis_omega))
 
 			if compileOptions.sphere_spectral_space == 'enable':
 				if self.sphere_radius != None:
-					idstr += '_a'+str(self.r)
+					idstr += '_a'+str(self.sphere_radius)
 				if self.f_sphere != None:
 					idstr += '_fsph'+str(self.f_sphere)
 
@@ -389,10 +389,10 @@ class SWEETRuntimeOptions(InfoError):
 					idstr += '_N'+str(self.space_res_physical).zfill(4)
 
 			if self.plane_domain_size != None:
-				if isinstance(self.domain_size, (list, tuple)):
-					idstr += '_X'+str("x".join([str(x).zfill(4) for x in self.domain_size]))
+				if isinstance(self.plane_domain_size, (list, tuple)):
+					idstr += '_X'+str("x".join([str(x).zfill(4) for x in self.plane_domain_size]))
 				else:
-					idstr += '_X'+str(self.domain_size)
+					idstr += '_X'+str(self.plane_domain_size)
 
 			idstr += '_rob'+str(self.use_robert_functions)
 
@@ -414,13 +414,13 @@ class SWEETRuntimeOptions(InfoError):
 	def getRuntimeOptions(self):
 		retval = ''
 		if self.gravitation!= None:
-			retval += ' -g '+str(self.g)
+			retval += ' -g '+str(self.gravitation)
 		if self.h0 != None:
-			retval += ' -H '+str(self.h)
+			retval += ' -H '+str(self.h0)
 		if self.sphere_rotating_coriolis_omega != None:
-			retval += ' -f '+str(self.f)
+			retval += ' -f '+str(self.sphere_rotating_coriolis_omega)
 		if self.sphere_radius != None:
-			retval += ' -a '+str(self.r)
+			retval += ' -a '+str(self.sphere_radius)
 		if self.f_sphere != None:
 			retval += ' -F '+str(self.f_sphere)
 
@@ -440,12 +440,12 @@ class SWEETRuntimeOptions(InfoError):
 		retval += ' -S '+str(self.space_use_spectral_basis_diffs)
 
 		if self.plane_domain_size != None:
-			if isinstance(self.domain_size, (int, float)):
-				retval += ' -X '+str(self.domain_size)
-				retval += ' -Y '+str(self.domain_size)
+			if isinstance(self.plane_domain_size, (int, float)):
+				retval += ' -X '+str(self.plane_domain_size)
+				retval += ' -Y '+str(self.plane_domain_size)
 			else:
-				retval += ' -X '+str(self.domain_size[0])
-				retval += ' -Y '+str(self.domain_size[1])
+				retval += ' -X '+str(self.plane_domain_size[0])
+				retval += ' -Y '+str(self.plane_domain_size[1])
 
 		if self.benchmark_name != None:
 			retval += ' --benchmark-name='+str(self.benchmark_name)
