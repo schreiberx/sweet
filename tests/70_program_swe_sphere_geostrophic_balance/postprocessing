@@ -41,7 +41,7 @@ for key, jobs_data in job_groups.items():
 
 		# Avoid including unstable results
 		simtime = error_split[0]
-		if abs(float(simtime.replace('simtime=', '')) - job_data['runtime.simtime']) > 1e-10:
+		if abs(float(simtime.replace('simtime=', '')) - job_data['runtime.max_simulation_time']) > 1e-10:
 			continue
 
 		error_linf_phi = float(error_split[1].replace('error_linf_phi=', ''))

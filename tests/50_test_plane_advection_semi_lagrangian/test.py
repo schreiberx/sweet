@@ -16,7 +16,7 @@ jg.compile.unit_test="test_plane_advection"
 jg.compile.plane_spectral_space="enable"
 jg.runtime.benchmark_name = "gaussian_bump_advection"
 
-jg.runtime.simtime = 20
+jg.runtime.max_simulation_time = 20
 jg.runtime.verbosity = 5
 
 params_domain_size_scales = [1, 2]

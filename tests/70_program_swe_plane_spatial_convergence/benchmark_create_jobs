@@ -84,8 +84,8 @@ timestep_size_reference = 0.001
 
 # Execute just a single time step
 # Otherwise space interpolation errors are accumulating
-jg.runtime.simtime = timestep_size_reference
-jg.runtime.output_timestep_size = jg.runtime.simtime
+jg.runtime.max_simulation_time = timestep_size_reference
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 phys_res_list = [16*(2**i) for i in range(0, 7)]
 
@@ -110,7 +110,7 @@ for group in groups:
 	if group == 'l1':
 		ref_ts_method = 'l_direct'
 		ref_ts_order = 1
-		ref_ts_size = jg.simtime
+		ref_ts_size = jg.max_simulation_time
 
 		ts_methods = [
 			['l_erk',	1,	0],
@@ -122,7 +122,7 @@ for group in groups:
 	if group == 'l2':
 		ref_ts_method = 'l_direct'
 		ref_ts_order = 2
-		ref_ts_size = jg.simtime
+		ref_ts_size = jg.max_simulation_time
 
 		ts_methods = [
 			['l_erk',	2,	0],

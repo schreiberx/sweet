@@ -40,10 +40,10 @@ jg.runtime.benchmark_name = "70"
 jg.runtime.viscosity = 0.01
 
 # Simulation time
-jg.runtime.simtime = 0.1
+jg.runtime.max_simulation_time = 0.1
 
 # Output data
-jg.runtime.output_timestep_size = jg.runtime.simtime
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 # Compute error
 jg.runtime.compute_error = 0
@@ -175,8 +175,8 @@ for tsm in ts_methods:
 	for jg.runtime.timestep_size in timestep_sizes:
 		jg.runtime.timestepping_method = tsm
 
-		#if jg.runtime.simtime % jg.runtime.timestep_size != 0:
-		#	print("simtime: "+str(jg.runtime.simtime))
+		#if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+		#	print("simtime: "+str(jg.runtime.max_simulation_time))
 		#	print("timestep_size: "+str(jg.runtime.timestep_size))
 		#	raise Exception("Invalid time step size (not remainder-less dividable)")
 

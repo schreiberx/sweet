@@ -142,7 +142,7 @@ def estimateWallclockTime(p):
 	wallclock_seconds = ref_wallclock_seconds
 
 	# inv. linear with simulation time
-	wallclock_seconds *= p.runtime.simtime/ref_simtime
+	wallclock_seconds *= p.runtime.max_simulation_time/ref_simtime
 
 	# linear with time step size
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
@@ -322,9 +322,9 @@ if __name__ == "__main__":
 
 
 
-		for p.runtime.simtime in params_simtime:
+		for p.runtime.max_simulation_time in params_simtime:
 
-			p.runtime.output_timestep_size = p.runtime.simtime
+			p.runtime.output_timestep_size = p.runtime.max_simulation_time
 
 			#
 			# Reference solution
@@ -463,8 +463,8 @@ if __name__ == "__main__":
 								# Generate only scripts with max number of cores
 								p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-								if int(p.runtime.simtime / p.runtime.timestep_size) * p.runtime.timestep_size != p.runtime.simtime:
-									raise Exception("Simtime "+str(p.runtime.simtime)+" not dividable without remainder by "+str(p.runtime.timestep_size))
+								if int(p.runtime.max_simulation_time / p.runtime.timestep_size) * p.runtime.timestep_size != p.runtime.max_simulation_time:
+									raise Exception("Simtime "+str(p.runtime.max_simulation_time)+" not dividable without remainder by "+str(p.runtime.timestep_size))
 
 								p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
@@ -515,7 +515,7 @@ if __name__ == "__main__":
 				p.parallelization.max_wallclock_seconds = 60*10
 
 				# Set simtime to 0
-				p.runtime.simtime = 0
+				p.runtime.max_simulation_time = 0
 
 				# No output
 				p.runtime.output_timestep_size = -1

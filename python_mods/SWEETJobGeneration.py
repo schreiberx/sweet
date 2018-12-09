@@ -528,19 +528,19 @@ if __name__ == "__main__":
 	p.info(s)
 
 
-	print("simtime: "+str(p.runtime.simtime))
-	p.runtime.simtime = 666
-	print("simtime: "+str(p.runtime.simtime))
+	print("simtime: "+str(p.runtime.max_simulation_time))
+	p.runtime.max_simulation_time = 666
+	print("simtime: "+str(p.runtime.max_simulation_time))
 
 	print("save_file()")
 	p.save_file("/tmp/test.pickle")
 
-	print("simtime: "+str(p.runtime.simtime))
-	p.runtime.simtime = 123
-	print("simtime: "+str(p.runtime.simtime))
+	print("simtime: "+str(p.runtime.max_simulation_time))
+	p.runtime.max_simulation_time = 123
+	print("simtime: "+str(p.runtime.max_simulation_time))
 
 	print("load_file()")
 	p.load_file("/tmp/test.pickle")
-	print("simtime: "+str(p.runtime.simtime))
+	print("simtime: "+str(p.runtime.max_simulation_time))
 
 	p.info("FIN")

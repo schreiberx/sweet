@@ -67,8 +67,8 @@ if 1:
 	p.runtime.timestepping_method = 'l_erk'
 	p.runtime.timestepping_order = 1
 
-	p.runtime.simtime = p.runtime.timestep_size*default_timesteps
-	p.runtime.max_timesteps = default_timesteps
+	p.runtime.max_simulation_time = p.runtime.timestep_size*default_timesteps
+	p.runtime.max_timesteps_nr = default_timesteps
 
 	p.gen_script('script_'+p.runtime.getUniqueID(p.compile), 'run.sh')
 

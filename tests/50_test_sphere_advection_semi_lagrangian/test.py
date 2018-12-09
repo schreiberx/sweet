@@ -17,7 +17,7 @@ jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
 jg.runtime.benchmark_name = "adv_gauss_bump"
 
-jg.runtime.simtime = 60*60*24*12
+jg.runtime.max_simulation_time = 60*60*24*12
 
 jg.runtime.verbosity = 5
 

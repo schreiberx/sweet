@@ -23,7 +23,7 @@ jg.runtime.space_res_physical=128
 jg.runtime.timestepping_method="ln_erk"
 jg.runtime.timestepping_order=2
 jg.runtime.timestep_size = 0.0001
-jg.runtime.max_timesteps = 10
+jg.runtime.max_timesteps_nr = 10
 jg.runtime.benchmark_name="I_DONT_EXIST"	# Use benchmark which doesn't exist
 jg.gen_jobscript_directory()
 

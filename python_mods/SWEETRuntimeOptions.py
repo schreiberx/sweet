@@ -54,7 +54,7 @@ class SWEETRuntimeOptions(InfoError):
 		self.timestepping_order2 = 1
 
 		self.timestep_size = None
-		self.max_timesteps = -1
+		self.max_timesteps_nr = -1
 
 		self.normal_mode_analysis = None
 
@@ -130,7 +130,7 @@ class SWEETRuntimeOptions(InfoError):
 		self.use_nonlinear_only_visc = None
 		self.advection_rotation_angle = None
 		self.advection_velocity = None
-		self.simtime = 0.001
+		self.max_simulation_time = 0.001
 
 		self.compute_error = 0
 
@@ -303,10 +303,10 @@ class SWEETRuntimeOptions(InfoError):
 				if self.timestep_size != None:
 					idstr += '_C'+str("{:05.3e}".format(self.timestep_size))
 
-			if self.max_timesteps != -1:
-				idstr += '_T'+str(self.max_timesteps).zfill(3)
+			if self.max_timesteps_nr != -1:
+				idstr += '_T'+str(self.max_timesteps_nr).zfill(3)
 
-			idstr += '_S'+str(self.simtime).zfill(6)
+			idstr += '_S'+str(self.max_simulation_time).zfill(6)
 
 
 		if not 'runtime.rexi' in filter_list:
@@ -455,8 +455,8 @@ class SWEETRuntimeOptions(InfoError):
 		if self.timestep_size != None:
 			retval += ' --dt='+str(self.timestep_size)
 
-		if self.max_timesteps != -1:
-			retval += ' -T '+str(self.max_timesteps)
+		if self.max_timesteps_nr != -1:
+			retval += ' -T '+str(self.max_timesteps_nr)
 
 		if self.output_timestep_size != None:
 			retval += ' -o '+str(self.output_timestep_size)
@@ -476,7 +476,7 @@ class SWEETRuntimeOptions(InfoError):
 		if self.viscosity_order != None:
 			retval += ' -U '+str(self.viscosity_order)
 
-		retval += ' -t '+str(self.simtime)
+		retval += ' -t '+str(self.max_simulation_time)
 
 		retval += ' --instability-checks='+str(self.instability_checks)
 

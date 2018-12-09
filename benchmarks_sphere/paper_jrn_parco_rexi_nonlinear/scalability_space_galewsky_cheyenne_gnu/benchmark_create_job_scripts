@@ -26,8 +26,8 @@ p.parallelization.core_oversubscription = False
 
 gen_reference_solution = False
 
-#p.runtime.simtime = 432000 #timestep_size_reference*(2**6)*10
-p.runtime.simtime = 720 #timestep_size_reference*(2**6)*10
+#p.runtime.max_simulation_time = 432000 #timestep_size_reference*(2**6)*10
+p.runtime.max_simulation_time = 720 #timestep_size_reference*(2**6)*10
 
 params_timestep_sizes_explicit = [30]
 #timestep_sizes_explicit = [10, 20, 30, 60, 120, 180]
@@ -58,7 +58,7 @@ unique_id_filter.append('benchmark')
 p.unique_id_filter = unique_id_filter
 
 
-p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.output_timestep_size = p.runtime.max_simulation_time
 
 # No output
 p.runtime.output_filename = "-"
@@ -103,7 +103,7 @@ def estimateWallclockTime(p):
 	wallclock_seconds = ref_wallclock_seconds
 
 	# inv. linear with simulation time
-	wallclock_seconds *= p.runtime.simtime/ref_simtime
+	wallclock_seconds *= p.runtime.max_simulation_time/ref_simtime
 
 	# linear with time step size
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
@@ -445,7 +445,7 @@ if __name__ == "__main__":
 			p.parallelization.max_wallclock_seconds = 60*10
 
 			# Set simtime to 0
-			p.runtime.simtime = 0
+			p.runtime.max_simulation_time = 0
 
 			# No output
 			p.runtime.output_timestep_size = -1

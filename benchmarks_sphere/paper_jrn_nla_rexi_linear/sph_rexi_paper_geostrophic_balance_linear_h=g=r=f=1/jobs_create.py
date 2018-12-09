@@ -90,7 +90,7 @@ cd "$BASEDIR"
 		content += ' -o '+str(self.output_timestep_size)
 		content += ' -O -'	# deactivate file output
 		content += ' -u '+str(self.viscosity)
-		content += ' -t '+str(self.simtime)
+		content += ' -t '+str(self.max_simulation_time)
 		content += ' -R '+str(self.rk_order)
 		content += ' --pde-id '+str(self.pde_id)
 		content += ' --nonlinear='+str(self.nonlinear)
@@ -151,7 +151,7 @@ $EXEC || exit 1
 			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
 		idstr += '_C'+str(self.timestep_size).zfill(8)
-		idstr += '_t'+str(self.simtime).zfill(8)
+		idstr += '_t'+str(self.max_simulation_time).zfill(8)
 		idstr += '_o'+str(self.output_timestep_size).zfill(8)
 
 		idstr += '_robert'+str(self.use_robert_functions)
@@ -182,7 +182,7 @@ p = default_params()
 # REXI
 ####################################
 
-p.simtime = 0.1
+p.max_simulation_time = 0.1
 p.bench_id = 10	# Geostrophic balance benchmark
 
 p.output_timestep_size = 0.01

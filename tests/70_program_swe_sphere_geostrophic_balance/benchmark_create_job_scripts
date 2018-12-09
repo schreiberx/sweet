@@ -43,7 +43,7 @@ jg.runtime.space_res_physical = None
 jg.runtime.compute_error = 1
 
 # run 10 time steps
-jg.runtime.simtime = 10*30
+jg.runtime.max_simulation_time = 10*30
 
 
 # Use moderate CI-REXI values
@@ -60,7 +60,7 @@ jg.runtime.instability_checks = 0
 jg.runtime.verbosity = 10
 
 # output results after end
-jg.runtime.output_timestep_size = jg.runtime.simtime
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 jg.runtime.output_filename = "-"
 
 

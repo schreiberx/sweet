@@ -43,7 +43,7 @@ p.compile.rexi_thread_parallel_sum = 'disable'
 gen_reference_solution = True
 gen_reference_solution = False
 
-p.runtime.simtime = 60*60*24*5	# 5 days
+p.runtime.max_simulation_time = 60*60*24*5	# 5 days
 
 #params_timestep_sizes_explicit = [30]
 params_timestep_sizes_explicit = [10, 20, 30, 60, 120, 180, 360]
@@ -56,7 +56,7 @@ params_timestep_sizes_implicit = [60, 120, 180, 360, 480, 600, 720, 840]
 params_timestep_sizes_rexi = [60, 120, 180, 240, 300, 360, 480, 600, 720, 840]
 params_timestep_sizes_rexi = [300]
 
-p.runtime.simtime = 300*100	# 100 time steps
+p.runtime.max_simulation_time = 300*100	# 100 time steps
 
 if testrun:
 	params_timestep_sizes_explicit = [20, 30]
@@ -85,7 +85,7 @@ params_ensemble_range = range(0, 10)
 p.unique_id_filter = unique_id_filter
 
 
-p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.output_timestep_size = p.runtime.max_simulation_time
 
 # No output
 #p.runtime.output_filename = "-"
@@ -150,7 +150,7 @@ def estimateWallclockTime(p):
 	wallclock_seconds = ref_wallclock_seconds
 
 	# inv. linear with simulation time
-	wallclock_seconds *= p.runtime.simtime/ref_simtime
+	wallclock_seconds *= p.runtime.max_simulation_time/ref_simtime
 
 	# linear with time step size
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
@@ -543,7 +543,7 @@ if __name__ == "__main__":
 			p.parallelization.max_wallclock_seconds = 60*10
 
 			# Set simtime to 0
-			p.runtime.simtime = 0
+			p.runtime.max_simulation_time = 0
 
 			# No output
 			p.runtime.output_timestep_size = -1

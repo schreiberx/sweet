@@ -230,8 +230,8 @@ if ts_order == 1:
 	timestep_size_min = 64
 	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
-	jg.runtime.simtime = timestep_size_min*512
-	jg.runtime.output_timestep_size = jg.runtime.simtime
+	jg.runtime.max_simulation_time = timestep_size_min*512
+	jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 
 elif ts_order == 2:
@@ -250,8 +250,8 @@ elif ts_order == 2:
 
 	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
-	jg.runtime.simtime = timestep_size_min*512
-	jg.runtime.output_timestep_size = jg.runtime.simtime
+	jg.runtime.max_simulation_time = timestep_size_min*512
+	jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 	
 else:
 	raise Exception("Unsupported time integration order")
@@ -307,8 +307,8 @@ for tsm in ts_methods:
 	for jg.runtime.timestep_size in timestep_sizes:
 		jg.runtime.timestepping_method = tsm
 
-		if jg.runtime.simtime % jg.runtime.timestep_size != 0:
-			print("simtime: "+str(jg.runtime.simtime))
+		if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+			print("simtime: "+str(jg.runtime.max_simulation_time))
 			print("timestep_size: "+str(jg.runtime.timestep_size))
 			raise Exception("Invalid time step size (not remainder-less dividable)")
 

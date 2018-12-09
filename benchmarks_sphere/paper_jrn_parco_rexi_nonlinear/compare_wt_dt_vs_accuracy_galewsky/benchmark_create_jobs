@@ -39,7 +39,7 @@ p.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
 
-p.runtime.simtime = 60*60*24*5	# 5 days
+p.runtime.max_simulation_time = 60*60*24*5	# 5 days
 
 #params_timestep_sizes_explicit = [30]
 params_timestep_sizes_explicit = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360]
@@ -74,7 +74,7 @@ unique_id_filter.append('benchmark')
 p.unique_id_filter = unique_id_filter
 
 
-p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.output_timestep_size = p.runtime.max_simulation_time
 
 # No output
 #p.runtime.output_filename = "-"
@@ -150,7 +150,7 @@ def estimateWallclockTime(p):
 	wallclock_seconds = ref_wallclock_seconds
 
 	# inv. linear with simulation time
-	wallclock_seconds *= p.runtime.simtime/ref_simtime
+	wallclock_seconds *= p.runtime.max_simulation_time/ref_simtime
 
 	# linear with time step size
 	wallclock_seconds *= ref_timestep_size/p.runtime.timestep_size
@@ -492,8 +492,8 @@ if __name__ == "__main__":
 							# Generate only scripts with max number of cores
 							p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-							if int(p.runtime.simtime / p.runtime.timestep_size) * p.runtime.timestep_size != p.runtime.simtime:
-								raise Exception("Simtime "+str(p.runtime.simtime)+" not dividable without remainder by "+str(p.runtime.timestep_size))
+							if int(p.runtime.max_simulation_time / p.runtime.timestep_size) * p.runtime.timestep_size != p.runtime.max_simulation_time:
+								raise Exception("Simtime "+str(p.runtime.max_simulation_time)+" not dividable without remainder by "+str(p.runtime.timestep_size))
 
 							p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
 
@@ -543,7 +543,7 @@ if __name__ == "__main__":
 			p.parallelization.max_wallclock_seconds = 60*10
 
 			# Set simtime to 0
-			p.runtime.simtime = 0
+			p.runtime.max_simulation_time = 0
 
 			# No output
 			p.runtime.output_timestep_size = -1

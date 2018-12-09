@@ -92,10 +92,10 @@ timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 5)]
 # Don't use a smaller TS since convergence is not computable anymore
 
 # Run for 500 time steps
-jg.runtime.simtime = timestep_size_min*500
+jg.runtime.max_simulation_time = timestep_size_min*500
 
 
-jg.runtime.output_timestep_size = jg.runtime.simtime
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 
 jg.unique_id_filter = ['compile', 'parallelization']

@@ -100,7 +100,7 @@ cd "$BASEDIR"
 		content += ' -o '+str(self.output_timestep_size)
 #		content += ' -O -'	# deactivate file output
 		content += ' -u '+str(self.viscosity)
-		content += ' -t '+str(self.simtime)
+		content += ' -t '+str(self.max_simulation_time)
 		content += ' --nonlinear='+str(self.nonlinear)
 
 		content += ' --timestepping-method='+self.timestepping_method
@@ -155,7 +155,7 @@ $EXEC || exit 1
 
 		idstr += '_C'+str(self.timestep_size).zfill(8)
 		idstr += '_Tn'+str(self.max_timesteps).zfill(3)
-		idstr += '_t'+str(self.simtime).zfill(8)
+		idstr += '_t'+str(self.max_simulation_time).zfill(8)
 		idstr += '_o'+str(self.output_timestep_size).zfill(8)
 
 		idstr += '_tsm_'+self.timestepping_method
@@ -236,8 +236,8 @@ for p.pde_id in [0]:
 				p.timestepping_order = 0
 
 				p.timestep_size = default_timestep_size
-				p.simtime = default_timestep_size*default_timesteps
-				p.max_timesteps = default_timesteps
+				p.max_simulation_time = default_timestep_size*default_timesteps
+				p.max_timesteps_nr = default_timesteps
 
 				for p.rexi_m in [2**i for i in range(4, 15)]:
 					p.gen_script('script'+p.create_job_id(), 'run.sh')
@@ -252,8 +252,8 @@ for p.pde_id in [0]:
 			p.timestepping_order = 1
 
 			p.timestep_size = default_timestep_size
-			p.simtime = default_timestep_size*default_timesteps
-			p.max_timesteps = default_timesteps
+			p.max_simulation_time = default_timestep_size*default_timesteps
+			p.max_timesteps_nr = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
@@ -266,8 +266,8 @@ for p.pde_id in [0]:
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
-			p.simtime = default_timestep_size*default_timesteps
-			p.max_timesteps = default_timesteps
+			p.max_simulation_time = default_timestep_size*default_timesteps
+			p.max_timesteps_nr = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
@@ -280,8 +280,8 @@ for p.pde_id in [0]:
 			p.timestepping_order = 4
 
 			p.timestep_size = default_timestep_size
-			p.simtime = default_timestep_size*default_timesteps
-			p.max_timesteps = default_timesteps
+			p.max_simulation_time = default_timestep_size*default_timesteps
+			p.max_timesteps_nr = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
@@ -294,8 +294,8 @@ for p.pde_id in [0]:
 			p.timestepping_order = 1
 
 			p.timestep_size = default_timestep_size
-			p.simtime = default_timestep_size*default_timesteps
-			p.max_timesteps = default_timesteps
+			p.max_simulation_time = default_timestep_size*default_timesteps
+			p.max_timesteps_nr = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
@@ -308,8 +308,8 @@ for p.pde_id in [0]:
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
-			p.simtime = default_timestep_size*default_timesteps
-			p.max_timesteps = default_timesteps
+			p.max_simulation_time = default_timestep_size*default_timesteps
+			p.max_timesteps_nr = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
@@ -322,8 +322,8 @@ for p.pde_id in [0]:
 			p.timestepping_order = 2
 
 			p.timestep_size = default_timestep_size
-			p.simtime = default_timestep_size*default_timesteps
-			p.max_timesteps = default_timesteps
+			p.max_simulation_time = default_timestep_size*default_timesteps
+			p.max_timesteps_nr = default_timesteps
 
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 

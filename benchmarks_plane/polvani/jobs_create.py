@@ -123,7 +123,7 @@ else:
 
 p.runtime.timestep_size = 0.005
 p.runtime.timestep_size = 0.0025
-p.runtime.simtime = 1000
+p.runtime.max_simulation_time = 1000
 p.runtime.output_timestep_size = 1000
 
 

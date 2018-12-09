@@ -60,7 +60,7 @@ p.compile.fortran_source = 'enable'
 p.runtime.timestep_size = 0.001
 p.runtime.space_res_spectral = 128
 p.runtime.output_timestep_size = 129600
-p.runtime.simtime = 129600
+p.runtime.max_simulation_time = 129600
 #p.runtime.output_filename = '-'
 p.runtime.timestepping_order = 4
 
@@ -89,7 +89,7 @@ default_rexi_ci_n = 50
 default_rexi_max_timesteps = default_ts_max_timesteps // default_rexi_ci_n
 
 p.runtime.timestep_size = 1
-p.runtime.simtime = 9999999999999999
+p.runtime.max_simulation_time = 9999999999999999
 
 
 
@@ -106,12 +106,12 @@ for p.space_res_spectral in [512]:
 		p.runtime.rexi_ci_max_imag = 10
 		p.runtime.rexi_half_poles = 0
 		p.runtime.rexi_extended_modes = 0
-		p.runtime.max_timesteps = default_rexi_max_timesteps
+		p.runtime.max_timesteps_nr = default_rexi_max_timesteps
 
 		p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 	p.runtime.rexi_method = ''
-	p.runtime.max_timesteps = default_ts_max_timesteps
+	p.runtime.max_timesteps_nr = default_ts_max_timesteps
 
 
 	####################################

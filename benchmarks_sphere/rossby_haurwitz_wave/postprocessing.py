@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 
 # Load simulation time to get reference file
 import jobs_create as jc
-simtime = jc.p.runtime.simtime
+simtime = jc.p.runtime.max_simulation_time
 print(simtime)
 t = ("%8.8f" % simtime).zfill(20)
 

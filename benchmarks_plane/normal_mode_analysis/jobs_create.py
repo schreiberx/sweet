@@ -127,9 +127,9 @@ timestep_size_reference = 100
 #timestep_sizes = [timestep_size_reference*(2**i) for i in range(0, 5)]
 timestep_sizes = [timestep_size_reference]
 
-#p.runtime.simtime = timestep_sizes[-1]*10 #timestep_size_reference*2000
-p.runtime.simtime = 100*(2**5)*10
-p.runtime.output_timestep_size = p.runtime.simtime
+#p.runtime.max_simulation_time = timestep_sizes[-1]*10 #timestep_size_reference*2000
+p.runtime.max_simulation_time = 100*(2**5)*10
+p.runtime.output_timestep_size = p.runtime.max_simulation_time
 #p.runtime.output_timestep_size = -1
 
 

@@ -90,10 +90,10 @@ timestep_size_reference = 1
 timestep_sizes = [1*(2**i) for i in range(0, 10)]
 
 # 24 days
-p.runtime.simtime = 24*24*60*60
+p.runtime.max_simulation_time = 24*24*60*60
 
 # only one hour for convergence tests
-p.runtime.simtime = 60*60
+p.runtime.max_simulation_time = 60*60
 
 p.runtime.output_timestep_size = 60*60
 #p.runtime.output_timestep_size = -1

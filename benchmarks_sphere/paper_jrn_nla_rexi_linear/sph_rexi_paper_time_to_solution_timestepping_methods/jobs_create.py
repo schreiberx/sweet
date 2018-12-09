@@ -100,7 +100,7 @@ cd "$BASEDIR"
 		content += ' -o '+str(self.output_timestep_size)
 		content += ' -O -'	# deactivate file output
 		content += ' -u '+str(self.viscosity)
-		content += ' -t '+str(self.simtime)
+		content += ' -t '+str(self.max_simulation_time)
 		content += ' --nonlinear='+str(self.nonlinear)
 
 		content += ' --timestepping-method='+self.timestepping_method
@@ -153,7 +153,7 @@ taskset -c 1 $EXEC || exit 1
 
 		idstr += '_C'+str(self.timestep_size).zfill(8)
 		idstr += '_Tn'+str(self.max_timesteps).zfill(3)
-		idstr += '_t'+str(self.simtime).zfill(8)
+		idstr += '_t'+str(self.max_simulation_time).zfill(8)
 		idstr += '_o'+str(self.output_timestep_size).zfill(8)
 
 		idstr += '_tsm_'+str(self.timestepping_method)
@@ -201,8 +201,8 @@ p.rexi_extended_modes = 2
 #
 
 p.timestep_size = 100
-p.max_timesteps = 10
-p.simtime = p.timestep_size*p.max_timesteps
+p.max_timesteps_nr = 10
+p.max_simulation_time = p.timestep_size*p.max_timesteps
 
 
 for p.space_res_spectral in [64, 128, 256]:

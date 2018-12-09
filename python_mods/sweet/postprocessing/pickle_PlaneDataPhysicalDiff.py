@@ -100,7 +100,7 @@ class pickle_PlaneDataPhysicalDiff:
 					print("*"*80)
 
 					# "output_%s_t%020.8f.csv"
-					use_ref_file_ending = "_t{:020.8f}.csv".format(float(ref_job['runtime.simtime'])/(60*60))
+					use_ref_file_ending = "_t{:020.8f}.csv".format(float(ref_job['runtime.max_simulation_time'])/(60*60))
 
 				if use_ref_file_ending == "":
 					raise Exception("No reference file ending provided / found")

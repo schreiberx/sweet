@@ -29,8 +29,8 @@ p.plane_domain_size = 1
 #p.viscosity = 0.0005
 p.viscosity = 0.0
 
-p.simtime = 0.1
-p.output_timestep_size = p.simtime
+p.max_simulation_time = 0.1
+p.output_timestep_size = p.max_simulation_time
 
 timestep_size_reference = 0.0001
 timestep_sizes = [0.0001*(2.0**i) for i in range(0, 11)]

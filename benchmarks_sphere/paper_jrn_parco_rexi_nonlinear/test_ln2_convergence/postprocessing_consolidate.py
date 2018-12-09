@@ -11,7 +11,7 @@ from mule.postprocessing.JobsDataConsolidate import *
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-groups = ['runtime.timestepping_method', 'runtime.simtime']
+groups = ['runtime.timestepping_method', 'runtime.max_simulation_time']
 
 
 tagnames_y = [

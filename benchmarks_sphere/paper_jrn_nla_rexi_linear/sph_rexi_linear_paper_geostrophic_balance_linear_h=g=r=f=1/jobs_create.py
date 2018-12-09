@@ -48,7 +48,7 @@ p.runtime.sphere_radius = 1	# radius
 # 10: geostrophic balance test case
 p.runtime.bench_id = 10
 
-p.runtime.simtime = 1
+p.runtime.max_simulation_time = 1
 
 
 p.runtime.compute_error = 1

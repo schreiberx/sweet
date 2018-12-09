@@ -14,7 +14,7 @@ jg = SWEETJobGeneration()
 
 jg.compile.unit_test="test_timestepping_runge_kutta"
 jg.runtime.verbosity=5
-jg.runtime.simtime = 5
+jg.runtime.max_simulation_time = 5
 jg.runtime.timestep_size = 0.01
 
 jg.gen_jobscript_directory()

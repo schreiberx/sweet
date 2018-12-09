@@ -24,7 +24,7 @@ p.compile.threading = 'off'
 p.runtime.timestep_size = 0.001
 p.runtime.space_res_spectral = 128
 p.runtime.output_timestep_size = 129600
-p.runtime.simtime = 129600
+p.runtime.max_simulation_time = 129600
 #p.runtime.output_filename = '-'
 p.runtime.timestepping_order = 4
 

@@ -86,8 +86,8 @@ timelevels = 6
 timestep_size_reference = 864000 #10 day 864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
-p.runtime.simtime = 864000 #10 day
-#p.runtime.output_timestep_size = p.runtime.simtime
+p.runtime.max_simulation_time = 864000 #10 day
+#p.runtime.output_timestep_size = p.runtime.max_simulation_time
 p.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))
 
 phys_res_levels = timelevels
