@@ -4,7 +4,7 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from SWEET import *
+from mule_local.JobMule import *
 from itertools import product
 from mule.exec_program import *
 
@@ -17,7 +17,7 @@ Generate a job which fails.
 This assures that we are able to catch failing jobs in case of malfunctioning scripts
 """
 
-jg = SWEETJobGeneration()
+jg = JobGeneration()
 jg.compile.program="swe_plane"
 jg.runtime.space_res_physical=128
 jg.runtime.timestepping_method="ln_erk"

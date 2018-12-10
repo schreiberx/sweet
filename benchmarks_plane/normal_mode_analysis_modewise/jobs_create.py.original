@@ -5,13 +5,13 @@ import sys
 import stat
 import math
 
-from SWEETJobGeneration import *
+from JobGeneration import *
 
 #Specifit tests pre-setup
 from SWEETParameters import *
 
 #Create basic parameter setting
-p = SWEETJobGeneration()
+p = JobGeneration()
 
 #
 # Run simulation on plane or sphere

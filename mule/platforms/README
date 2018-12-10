@@ -1,0 +1,41 @@
+
+
+Special configuration has to be setup for each cluster.
+This is required due to the different configurations on each cluster.
+
+Each platform requries a directory to be created in the ./platform directory:
+
+./mule/platform/[uniqueIdentiier]/[config files]
+
+The placeholder [uniqueIdentifier] should be related to the platform.
+
+All files in [config files] should include a test for each specific platform.
+Only if the correct platform is detected, the platform-specific parts should
+be executed.
+
+Possible config files:
+
+	./env_vars.sh:
+		Included by ./local_software/env_vars.sh
+		Setup additional environment variables, e.g.
+		MULE_CC,
+		MULE_CXX,
+		MULE_F90,
+		MULE_MPICC,
+		MULE_MPICXX,
+		MULE_MPIF90
+		to override compiler environment variables
+
+	./JobPlatformAutodetect.py
+		Script which includes autodetect() function to
+		automatically determine the right environment
+
+	./JobPlatform.py
+		Included by files ./python_mods/MULE*.py
+		
+
+	./local_software_default.sh
+		Information on software packages in
+			[sweet root]/local_sofware/
+		to install on this platform, see
+			[sweet root]/local_sofware/setup_local_software.sh

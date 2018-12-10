@@ -4,13 +4,13 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from SWEET import *
+from mule_local.JobMule import *
 from mule.exec_program import *
 from InfoError import *
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
-jg = SWEETJobGeneration()
+jg = JobGeneration()
 jg.compile.unit_test="test_plane_antialiasing_frequencies"
 jg.compile.plane_spectral_space="enable"
 jg.compile.plane_spectral_dealiasing="enable"

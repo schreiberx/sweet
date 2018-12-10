@@ -4,20 +4,22 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from SWEET import *
 from itertools import product
+
+from mule_local.JobMule import *
 from mule.exec_program import *
 
 ie = InfoError("test")
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
+
 """
 Generate a job which fails.
 This assures that we are able to catch failing jobs in case of malfunctioning scripts
 """
 
-jg = SWEETJobGeneration()
+jg = JobGeneration()
 jg.compile.program="I_DONT_EXIST"
 jg.gen_jobscript_directory()
 

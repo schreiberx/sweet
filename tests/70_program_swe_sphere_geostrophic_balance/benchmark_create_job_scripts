@@ -3,11 +3,11 @@
 import sys
 from itertools import product
 
-from SWEET import *
+from mule_local.JobMule import *
 from mule.exec_program import *
 from InfoError import *
 
-jg = SWEETJobGeneration()
+jg = JobGeneration()
 
 
 """
@@ -71,12 +71,12 @@ Parallelization parameters
 """
 
 # Update TIME parallelization
-ptime = SWEETParallelizationDimOptions('time')
+ptime = JobParallelizationDimOptions('time')
 ptime.num_cores_per_rank = 1
 ptime.num_threads_per_rank = 1
 ptime.num_ranks = 2
 
-pspace = SWEETParallelizationDimOptions('space')
+pspace = JobParallelizationDimOptions('space')
 pspace.num_cores_per_rank = 1
 pspace.num_threads_per_rank = jg.platform_resources.num_cores_per_socket//ptime.num_threads_per_rank
 pspace.num_ranks = 1

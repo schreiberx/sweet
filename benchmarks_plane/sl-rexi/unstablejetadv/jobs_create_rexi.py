@@ -13,12 +13,12 @@ import stat
 import math
 
 #Classes containing sweet compile/run basic option
-sys.path.append(os.environ['SWEET_ROOT']+'/python_mods/')
-from SWEETJobGeneration import *
+sys.path.append(os.environ['MULE_SOFTWARE_ROOT']+'/python_mods/')
+from JobGeneration import *
 from SWEETParameters import *
 
 #Create main compile/run options
-p = SWEETJobGeneration()
+p = JobGeneration()
 
 #Get Earth parameters (if necessary)
 earth = EarthMKSDimensions()

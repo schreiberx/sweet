@@ -4,13 +4,13 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from SWEET import *
+from mule_local.JobMule import *
 from itertools import product
 from mule.exec_program import *
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
-jg = SWEETJobGeneration()
+jg = JobGeneration()
 jg.compile.unit_test="test_sphere_sph_solver_real_and_complex"
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"

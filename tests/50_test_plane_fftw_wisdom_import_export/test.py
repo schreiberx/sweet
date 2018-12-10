@@ -4,12 +4,12 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from SWEET import *
+from mule_local.JobMule import *
 from mule.exec_program import *
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
-jg = SWEETJobGeneration()
+jg = JobGeneration()
 jg.compile.unit_test="test_plane_fftw_wisdom_import_export"
 jg.compile.plane_spectral_space="enable"
 jg.compile.plane_spectral_dealiasing="enable"
@@ -25,7 +25,7 @@ if True:
 	# No parallelization
 	jg.compile.threading = 'off'
 
-	pspace = SWEETParallelizationDimOptions('space')
+	pspace = JobParallelizationDimOptions('space')
 	pspace.num_cores_per_rank = 1
 	pspace.num_threads_per_rank = 1
 	pspace.num_ranks = 1
@@ -46,7 +46,7 @@ if True:
 	# Parallelization
 	jg.compile.threading = 'omp'
 	for i in range(1, jg.platform_resources.num_cores_per_socket+1):
-		pspace = SWEETParallelizationDimOptions('space')
+		pspace = JobParallelizationDimOptions('space')
 		pspace.num_cores_per_rank = i
 		pspace.num_ranks = 1
 		jg.setup_parallelization(pspace)

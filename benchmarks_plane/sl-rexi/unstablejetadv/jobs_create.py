@@ -17,7 +17,7 @@ from SWEET import *
 from SWEETParameters import *
 
 #Create main compile/run options
-p = SWEETJobGeneration()
+p = JobGeneration()
 
 #Get Earth parameters (if necessary)
 earth = EarthMKSDimensions()

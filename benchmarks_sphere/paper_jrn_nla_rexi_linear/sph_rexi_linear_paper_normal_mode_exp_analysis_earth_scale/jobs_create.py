@@ -6,7 +6,7 @@ matplotlib.use('agg')
 import sys
 
 from SWEET import *
-p = SWEETJobGeneration()
+p = JobGeneration()
 
 p.compile.compiler = 'intel'
 p.compile.program = 'swe_sphere'

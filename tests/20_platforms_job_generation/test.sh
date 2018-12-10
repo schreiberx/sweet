@@ -2,8 +2,8 @@
 
 cd "$(dirname $0)"
 
-if [[ -z "$SWEET_ROOT" ]]; then
-	echo "SWEET_ROOT environment variable not found"
+if [[ -z "$MULE_SOFTWARE_ROOT" ]]; then
+	echo "MULE_SOFTWARE_ROOT environment variable not found"
 	exit 1
 fi
 
@@ -11,7 +11,7 @@ fi
 SCRIPTDIR="$(pwd)"
 
 
-cd "${SWEET_ROOT}"
+cd "${MULE_SOFTWARE_ROOT}"
 PLATFORMS=$(ls -d -1 platforms/??_*)
 
 for PLATFORM  in $PLATFORMS; do
@@ -21,7 +21,7 @@ for PLATFORM  in $PLATFORMS; do
 	echo_info "Testing platform from directory '$TEST_PLATFORM_DIR'"
 	echo_info_hline
 
-	cd "${SWEET_ROOT}"
+	cd "${MULE_SOFTWARE_ROOT}"
 	. ./local_software/load_platform.sh $TEST_PLATFORM_DIR || exit 1
 	cd "${SCRIPTDIR}"
 

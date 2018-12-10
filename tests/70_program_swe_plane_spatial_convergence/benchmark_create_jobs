@@ -5,8 +5,8 @@ import sys
 import stat
 import math
 
-from SWEET import *
-jg = SWEETJobGeneration()
+from mule_local.JobMule import *
+jg = JobGeneration()
 
 
 #

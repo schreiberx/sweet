@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd "$SWEET_ROOT"
+cd "$MULE_SOFTWARE_ROOT"
 
 echo
 echo "PARAREAL ODE"

@@ -3,7 +3,7 @@
 import sys
 
 from SWEET import *
-p = SWEETJobGeneration()
+p = JobGeneration()
 
 
 p.compilecommand_in_jobscript = False
@@ -270,7 +270,7 @@ if __name__ == "__main__":
 
 
 			# SPACE parallelization
-			pspace = SWEETParallelizationDimOptions('space')
+			pspace = JobParallelizationDimOptions('space')
 			pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 			pspace.num_threads_per_rank = pspace.num_cores_per_rank
 			pspace.num_ranks = 1
@@ -279,7 +279,7 @@ if __name__ == "__main__":
 
 
 			# TIME parallelization
-			ptime = SWEETParallelizationDimOptions('time')
+			ptime = JobParallelizationDimOptions('time')
 			ptime.num_cores_per_rank = 1
 			ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
 			ptime.num_ranks = 1
@@ -336,7 +336,7 @@ if __name__ == "__main__":
 					p.runtime.rexi_method = ''
 
 					# SPACE parallelization
-					pspace = SWEETParallelizationDimOptions('space')
+					pspace = JobParallelizationDimOptions('space')
 					pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 					pspace.num_threads_per_rank = pspace.num_cores_per_rank
 					pspace.num_ranks = 1
@@ -345,7 +345,7 @@ if __name__ == "__main__":
 
 
 					# TIME parallelization
-					ptime = SWEETParallelizationDimOptions('time')
+					ptime = JobParallelizationDimOptions('time')
 					ptime.num_cores_per_rank = 1
 					ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
 					ptime.num_ranks = 1
@@ -414,7 +414,7 @@ if __name__ == "__main__":
 												if True:
 
 													# SPACE parallelization
-													pspace = SWEETParallelizationDimOptions('space')
+													pspace = JobParallelizationDimOptions('space')
 													pspace.num_cores_per_rank = p.platform_resources.num_cores_per_socket
 													pspace.num_threads_per_rank = pspace.num_cores_per_rank
 													pspace.num_ranks = 1
@@ -423,7 +423,7 @@ if __name__ == "__main__":
 
 
 													# TIME parallelization
-													ptime = SWEETParallelizationDimOptions('time')
+													ptime = JobParallelizationDimOptions('time')
 													ptime.num_cores_per_rank = 1
 													ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
 													ptime.num_ranks = min(par_time_cores, p.platform_resources.num_cores // pspace.num_cores_per_rank)

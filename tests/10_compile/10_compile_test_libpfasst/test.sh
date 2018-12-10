@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd "$SWEET_ROOT"
+cd "$MULE_SOFTWARE_ROOT"
 
 echo_info_hline
 echo_info "PFASST"

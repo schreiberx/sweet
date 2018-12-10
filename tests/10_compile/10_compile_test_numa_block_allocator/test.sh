@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd "$SWEET_ROOT"
+cd "$MULE_SOFTWARE_ROOT"
 
 for i in 0 1 2 3; do
 	SCONS="scons --program=advection --numa-block-allocator=$i --threading=omp --mode=debug"

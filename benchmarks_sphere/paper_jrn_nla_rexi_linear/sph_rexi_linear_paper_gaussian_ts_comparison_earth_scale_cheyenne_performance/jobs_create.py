@@ -4,7 +4,7 @@ import sys
 import math
 
 from SWEET import *
-p = SWEETJobGeneration()
+p = JobGeneration()
 
 
 #

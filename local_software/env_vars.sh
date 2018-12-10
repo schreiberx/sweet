@@ -1,7 +1,7 @@
 #
 # This is a template to set up environment variables correctly
 #
-# It assumes that you install all your libraries in subdirectories in $SWEETROOT/local_software/local
+# It assumes that you install all your libraries in subdirectories in $MULE_SOFTWARE_ROOT/local_software/local
 #
 
 
@@ -35,13 +35,13 @@ BACKDIR="$PWD"
 #	Output a horizontal separator line
 #
 
-export SWEET_ECHO_PREFIX="echo -n \"MULE: \""
+export MULE_ECHO_PREFIX="echo -n \"MULE: \""
 
 # Pretty output
-echo_info()( eval ${SWEET_ECHO_PREFIX}; echo "${@}"; )
-echo_success()( eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;32m"; echo "${@}"; echo -en "\033[0m"; )
-echo_warning()( eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;33m"; echo "${@}"; echo -en "\033[0m"; )
-echo_error()( eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; )
+echo_info()( eval ${MULE_ECHO_PREFIX}; echo "${@}"; )
+echo_success()( eval ${MULE_ECHO_PREFIX}; echo -en "\033[0;32m"; echo "${@}"; echo -en "\033[0m"; )
+echo_warning()( eval ${MULE_ECHO_PREFIX}; echo -en "\033[0;33m"; echo "${@}"; echo -en "\033[0m"; )
+echo_error()( eval ${MULE_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; )
 
 # hlines
 echo_info_hline()( echo_info "*************************************************************************"; )
@@ -50,10 +50,10 @@ echo_warning_hline()( echo_warning "********************************************
 echo_error_hline()( echo_error "*************************************************************************"; )
 
 # output error and exit
-echo_error_exit(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
-#echo_error_return(){ echo_error_hline; eval ${SWEET_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return; }
+echo_error_exit(){ echo_error_hline; eval ${MULE_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; exit 1; }
+#echo_error_return(){ echo_error_hline; eval ${MULE_ECHO_PREFIX}; echo -en "\033[0;31m"; echo "${@}"; echo -en "\033[0m"; echo_error_hline; return; }
 
-echo_exec()( eval ${SWEET_ECHO_PREFIX}; echo "Executing '${@}'"; ${@})
+echo_exec()( eval ${MULE_ECHO_PREFIX}; echo "Executing '${@}'"; ${@})
 
 export -f echo_info echo_success echo_warning echo_error
 export -f echo_info_hline echo_success_hline echo_warning_hline echo_error_hline
@@ -62,12 +62,12 @@ export -f echo_exec
 
 
 #######################################################################
-# Check if SWEET environment are already setup ########################
+# Check if MULE_SOFTWARE_ROOT environment are already setup ########################
 #######################################################################
 
-if [ "#$SWEET_ROOT" != "#" ]; then
+if [ "#$MULE_SOFTWARE_ROOT" != "#" ]; then
 
-	echo_warning "Environment variables already loaded for platform '${SWEET_PLATFORM_ID}'(skipping)"
+	echo_warning "Environment variables already loaded for platform '${MULE_PLATFORM_ID}'(skipping)"
 	return 2>/dev/null
 	exit
 fi
@@ -122,29 +122,32 @@ cd "$SCRIPTDIR"
 # Get full path
 SCRIPTDIR="$PWD"
 
-# Get SWEET root directory
+# Get SOFTWARE root directory
 cd "../"
-export SWEET_ROOT="$PWD"
+export MULE_SOFTWARE_ROOT="$PWD"
 
+# Setup mule main path
+export MULE_ROOT="$MULE_SOFTWARE_ROOT/mule"
+export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
 
 
 #######################################################################
 # Setup platform specific parts
 #######################################################################
 
-source $SWEET_ROOT/local_software/load_platform.sh $@ || exit 1
+source $MULE_ROOT/bin/load_platform.sh $@ || exit 1
 
-if [[ -z "$SWEET_PLATFORM_DIR" ]]; then
-	unset SWEET_ROOT
+if [[ -z "$MULE_PLATFORM_DIR" ]]; then
+	unset MULE_ROOT
+	unset MULE_LOCAL_ROOT
+	unset MULE_SOFTWARE_ROOT
 	unset SCRIPTDIR
 	return
 fi
 
-export SWEET_ROOT="$SWEET_ROOT"
-
 
 #######################################################################
-# Setup SWEET specific parts
+# Setup SOFTWARE specific parts
 #######################################################################
 # This must be done after the platform specific parts to ensure
 # that environment variables are correctly overwritten/extended with
@@ -157,7 +160,11 @@ cd "$SCRIPTDIR"
 #echo_info " + Setting up platform independent environment variables..."
 
 export PATH="$SCRIPTDIR/local/bin:$PATH"
-export PATH="$SWEET_ROOT/mule/bin:$PATH"
+
+export PATH="$MULE_ROOT/bin:$PATH"
+export PATH="$MULE_LOCAL_ROOT/bin:$PATH"
+export PATH="$MULE_SOFTWARE_ROOT/bin:$PATH"
+
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 #
@@ -181,8 +188,14 @@ fi
 
 export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
 
-# Add SWEET python_mods to pythonpath
-export PYTHONPATH="$PYTHONPATH:$SWEET_ROOT/python_mods"
+
+# Add MULE python path
+# DO NOT INCLUDE THIS, SINCE ONLY ONE 'mule' MODULE WILL BE AVAILABLE!
+# We link from the SWEET module path to the MULE module path
+export PYTHONPATH="$PYTHONPATH:$MULE_ROOT/site-packages"
+
+# Add MULE SWEET python path
+export PYTHONPATH="$PYTHONPATH:$MULE_LOCAL_ROOT/site-packages"
 
 
 # Back to local software
@@ -191,11 +204,11 @@ cd "$SCRIPTDIR"
 # Test if 'realpath' exists
 type realpath >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
-	SWEET_SHELL_PATH='$(realpath  --relative-base=$SWEET_ROOT ./)'
-	#export PS1='\[\033[01;32m\][SWEET \u@$SWEET_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
+	SWEET_SHELL_PATH='$(realpath  --relative-base=$MULE_SOFTWARE_ROOT ./)'
+	#export PS1='\[\033[01;32m\][SWEET \u@$MULE_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
 else
 	SWEET_SHELL_PATH='\w'
-	export PS1="\[\033[01;32m\][SWEET @ $SWEET_PLATFORM_ID]\[\033[00m\] $SWEET_SHELL_PATH\$ "
+	export PS1="\[\033[01;32m\][SWEET @ $MULE_PLATFORM_ID]\[\033[00m\] $SWEET_SHELL_PATH\$ "
 fi
 
 
@@ -207,6 +220,6 @@ fi
 cd "$BACKDIR"
 
 echo_success_hline
-echo_success " SWEET environment setup successfully"
+echo_success " MULE SOFTWARE environment setup successfully"
 echo_success_hline
 

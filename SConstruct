@@ -5,10 +5,10 @@ import sys
 import platform
 
 
-
-sys.path.append("./python_mods")
-from SWEETCompileOptions import *
-sys.path.remove("./python_mods")
+# SCons doesn't inherit the python environment variables
+sys.path.append("./mule_local/site-packages/mule_local")
+from JobCompileOptions import *
+sys.path.remove("./mule_local/site-packages/mule_local")
 
 #
 # Setup parallel compilation
@@ -35,11 +35,11 @@ hostname = hostname.replace("\n", "")
 
 env = Environment(ENV = os.environ)
 
-if 'SWEET_ROOT' not in os.environ:
+if 'MULE_SOFTWARE_ROOT' not in os.environ:
 	print("*"*80)
 	print("* Welcome to SWEET, Awesome!")
 	print("*"*80)
-	print("* The SWEET_ROOT environment variable was not found.")
+	print("* The MULE_SOFTWARE_ROOT environment variable was not found.")
 	print("* Please load all SWEET environment variables with")
 	print("*   $ source ./local_software/env_vars.sh")
 	print("* or")
@@ -48,9 +48,9 @@ if 'SWEET_ROOT' not in os.environ:
 	print("*"*80)
 	Exit(1)
 
-env['SWEET_ROOT'] = os.environ['SWEET_ROOT']
+env['MULE_SOFTWARE_ROOT'] = os.environ['MULE_SOFTWARE_ROOT']
 
-p = SWEETCompileOptions()
+p = JobCompileOptions()
 
 
 
@@ -154,7 +154,7 @@ override_list = [
 for i in override_list:
 
 	if p.sweet_mpi == 'enable':
-		mi = 'SWEET_MPI'+i
+		mi = 'MULE_MPI'+i
 		if mi in env['ENV']:
 			if 'FLAGS' in mi:
 				print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
@@ -163,7 +163,7 @@ for i in override_list:
 				print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
 				env.Append(LIBS=env['ENV'][mi])
 			else:
-				print("INFO: Using SWEET_MPI* environment variable to set "+i+"="+env['ENV'][mi])
+				print("INFO: Using MULE_MPI* environment variable to set "+i+"="+env['ENV'][mi])
 				env[i] = env['ENV'][mi]
 			continue
 
@@ -657,7 +657,6 @@ if p.libpfasst == 'enable':
 #
 env.Append(F90FLAGS = '-J'+build_dir)
 
-
 env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 
 
@@ -667,17 +666,10 @@ env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
 # FORTRAN stuff
 #
 
-#fortran_mod_dir = build_dir+'/fortran_mods'
-
-
-
-#if not os.path.exists(fortran_mod_dir):
-#    os.makedirs(fortran_mod_dir)
-#env = env.Clone(FORTRANMODDIR = fortran_mod_dir)
-
 
 # also include the 'src' directory to search for dependencies
 env.Append(CPPPATH = ['.', './src/', './src/include'])
+
 # also for Fortran!
 env.Append(F90PATH = ['.', './src/'])
 

@@ -3,7 +3,7 @@
 import sys
 
 from SWEET import *
-p = SWEETJobGeneration()
+p = JobGeneration()
 
 p.cluster.setupTargetMachine('auto')
 

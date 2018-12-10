@@ -2,14 +2,14 @@
 
 source ./install_helpers.sh "" || exit 1
 
-if [ ! -e "$SWEET_PLATFORM_DIR" ]; then
+if [ ! -e "$MULE_PLATFORM_DIR" ]; then
 	echo_error ""
-	echo_error "SWEET Platform directory '${SWEET_PLATFORM_DIR}' not found"
+	echo_error "MULE Platform directory '${MULE_PLATFORM_DIR}' not found"
 	echo_error ""
 	exit 1
 fi
 
-LOCAL_SOFTWARE_PLATFORM="${SWEET_PLATFORM_DIR}/local_software_default.sh"
+LOCAL_SOFTWARE_PLATFORM="${MULE_PLATFORM_DIR}/local_software_default.sh"
 if [ ! -e "$LOCAL_SOFTWARE_PLATFORM" ]; then
 	echo_error ""
 	echo_error "ERROR: File '${LOCAL_SOFTWARE_PLATFORM}' not found"

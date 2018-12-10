@@ -4,7 +4,7 @@ import glob
 
 Import('env', 'p')
 
-sweet_root = env['SWEET_ROOT']+'/'
+sweet_root = env['MULE_SOFTWARE_ROOT']+'/'
 
 
 mainsrcadddir = ''
