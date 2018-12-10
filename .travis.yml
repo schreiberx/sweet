@@ -1161,7 +1161,7 @@ before_install:
   - ./setup_local_software.sh || exit 1
 
   # Go back to SWEET's root directory
-  - cd $SWEET_ROOT
+  - cd $MULE_SOFTWARE_ROOT
 
 
 

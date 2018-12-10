@@ -5,7 +5,7 @@ from itertools import product
 
 from mule_local.JobMule import *
 from mule.exec_program import *
-from InfoError import *
+from mule.InfoError import *
 
 jg = JobGeneration()
 

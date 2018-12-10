@@ -11,7 +11,7 @@ fi
 SCRIPTDIR="$(pwd)"
 
 
-cd "${MULE_SOFTWARE_ROOT}"
+cd "${MULE_ROOT}"
 PLATFORMS=$(ls -d -1 platforms/??_*)
 
 for PLATFORM  in $PLATFORMS; do
@@ -21,8 +21,8 @@ for PLATFORM  in $PLATFORMS; do
 	echo_info "Testing platform from directory '$TEST_PLATFORM_DIR'"
 	echo_info_hline
 
-	cd "${MULE_SOFTWARE_ROOT}"
-	. ./local_software/load_platform.sh $TEST_PLATFORM_DIR || exit 1
+	cd "${MULE_ROOT}"
+	. ./bin/load_platform.sh $TEST_PLATFORM_DIR || exit 1
 	cd "${SCRIPTDIR}"
 
 	# Generate some dummy job

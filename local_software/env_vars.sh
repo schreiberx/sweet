@@ -168,17 +168,17 @@ export PATH="$MULE_SOFTWARE_ROOT/bin:$PATH"
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 #
-# setup SWEET_LD_LIBRARY_PATH which stored additional library paths
+# setup MULE_LD_LIBRARY_PATH which stored additional library paths
 # This is used
 #	1) to extend LD_LIBRARY_PATH in this script
 #	2) to fix the mess in job schedulers (Cheyenne, e.g.) which
 #	   otherwise prioritize their own system libraries such as libfftw.
 #
-export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib"
+export MULE_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib"
 # Always include lib64 even if it doesn exist.
 # Thatś important to install software into this directory
-export SWEET_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$SWEET_LD_LIBRARY_PATH"
-export LD_LIBRARY_PATH="$SWEET_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
+export MULE_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$MULE_LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$MULE_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
 
 
 export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib:$LD_LIBRARY_PATH"
