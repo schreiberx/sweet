@@ -186,7 +186,11 @@ if [ -d "$SCRIPTDIR/local/lib64" ]; then
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 fi
 
-export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
+if [ -z "$PYTHONPATH" ]; then
+	export PYTHONPATH="$SCRIPTDIR/local/lib/python3.6/site-packages/"
+else
+	export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
+fi
 
 
 # Add MULE python path
