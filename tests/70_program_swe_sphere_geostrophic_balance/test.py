@@ -6,7 +6,7 @@ os.chdir(os.path.dirname(sys.argv[0]))
 
 from mule_local.JobMule import *
 from mule.exec_program import *
-from InfoError import *
+from mule.InfoError import *
 
 exec_program('./benchmark_create_job_scripts', catch_output=False)
 
