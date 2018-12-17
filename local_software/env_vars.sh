@@ -210,6 +210,7 @@ type realpath >/dev/null 2>&1
 if [[ $? -eq 0 ]]; then
 	SWEET_SHELL_PATH='$(realpath  --relative-base=$MULE_SOFTWARE_ROOT ./)'
 	#export PS1='\[\033[01;32m\][SWEET \u@$MULE_PLATFORM_ID]\[\033[00m\] $($PS_RELPATH)\$ '
+	export PS1="\[\033[01;32m\][SWEET @ $MULE_PLATFORM_ID]\[\033[00m\] $SWEET_SHELL_PATH\$ "
 else
 	SWEET_SHELL_PATH='\w'
 	export PS1="\[\033[01;32m\][SWEET @ $MULE_PLATFORM_ID]\[\033[00m\] $SWEET_SHELL_PATH\$ "
