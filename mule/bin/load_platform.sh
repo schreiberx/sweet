@@ -112,9 +112,11 @@ if [ -z "${MULE_PLATFORM_ID}" ]; then
 fi
 
 export MULE_PLATFORM_DIR="$(eval echo "${MULE_ROOT}/platforms/"??"_${MULE_PLATFORM_ID}/")"
+export MULE_LOCAL_PLATFORM_DIR="$(eval echo "${MULE_LOCAL_ROOT}/platforms/"??"_${MULE_PLATFORM_ID}/")"
 
-echo_info "         Using platform: '${MULE_PLATFORM_ID}'"
-echo_info "     Platform directory: '${MULE_PLATFORM_DIR}'"
+echo_info "               Using platform: '${MULE_PLATFORM_ID}'"
+echo_info "      Platform mule directory: '${MULE_PLATFORM_DIR}'"
+echo_info "Platform mule_local directory: '${MULE_LOCAL_PLATFORM_DIR}'"
 
 
 echo_success_hline
