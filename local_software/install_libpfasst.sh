@@ -10,16 +10,16 @@ config_setup
 
 config_package $@
 
-if [ -z "$SWEET_MPIF90" ]; then
-	echo_error_exit "SWEET_MPIF90 environment variable must be set for libpfasst compilation, see platform configuration"
+if [ -z "$MULE_MPIF90" ]; then
+	echo_error_exit "MULE_MPIF90 environment variable must be set for libpfasst compilation, see platform configuration"
 fi
 
-sed -i "s/ftn/${SWEET_MPIF90}/" Makefile.defaults || echo_error_exit "Replacing compiler failed"
+sed -i "s/ftn/${MULE_MPIF90}/" Makefile.defaults || echo_error_exit "Replacing compiler failed"
 
 echo_info "Executing 'make clean'..."
 config_exec make clean
 
-config_exec make FC=${SWEET_MPIF90}
+config_exec make FC=${MULE_MPIF90}
 
 echo_info "Installing..."
 
