@@ -1,8 +1,9 @@
 #! /usr/bin/env python3
 
 
-from SWEET import *
-j = SWEETJobGeneration()
+from mule import *
+from mule_local.JobMule import *
+j = JobGeneration()
 
 j.compile.program = 'thread_affinities'
 j.unique_id_filter = ['runtime', 'compile']
@@ -17,7 +18,7 @@ j.parallelization.max_wallclock_seconds = "00:01:00"
 
 for i in range(j.platform_resources.num_cores_per_socket):
 
-	pspace = SWEETParallelizationDimOptions()
+	pspace = JobParallelizationDimOptions()
 	pspace.num_cores_per_rank = j.platform_resources.num_cores_per_socket
 	pspace.num_threads_per_rank = i
 	pspace.num_ranks = 1
