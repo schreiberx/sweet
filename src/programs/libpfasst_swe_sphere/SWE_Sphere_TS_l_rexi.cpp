@@ -226,12 +226,12 @@ void SWE_Sphere_TS_l_rexi::setup(
 	timestep_size = i_timestep_size;
 	function_name = i_function_name;
 
-	REXI::load(
+	REXI<>::load(
 			rexiSimVars,
 			function_name,
 			rexi_alpha,
 			rexi_beta,
-			timestep_size,
+			rexi_gamma,
 			simVars.misc.verbosity
 	);
 
@@ -354,12 +354,12 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 {
 	if (i_update_rexi)
 	{
-		REXI::load(
+		REXI<>::load(
 				rexiSimVars,
 				function_name,
 				rexi_alpha,
 				rexi_beta,
-				timestep_size,
+				rexi_gamma,
 				simVars.misc.verbosity
 		);
 	}

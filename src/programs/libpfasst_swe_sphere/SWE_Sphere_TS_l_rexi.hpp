@@ -68,6 +68,7 @@ private:
 public:
 	std::vector<std::complex<double>> rexi_alpha;
 	std::vector<std::complex<double>> rexi_beta;
+	std::complex<double> rexi_gamma;
 
 
 	const SphereDataConfig *sphereDataConfig;
@@ -79,11 +80,6 @@ public:
 	/// Extend modes for REXI time stepping?
 	int rexi_use_sphere_extended_modes;
 
-#if SWEET_MPI
-public:
-//	bool final_timestep;
-
-#endif
 
 private:
 

@@ -10,18 +10,22 @@
  * http://docs.cray.com/books/S-2496-4101/html-S-2496-4101/cnlexamples.html
  */
 
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+#	define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <sched.h>
+#include <omp.h>
+#include <time.h>
+#include <stdlib.h>     /* srand, rand */
+
 #if SWEET_MPI
 	#include <mpi.h>
 #endif
-#include <omp.h>
-#include <time.h>
 
-#include <stdlib.h>     /* srand, rand */
 
 
 #define SEED 35791246

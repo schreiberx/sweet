@@ -69,7 +69,7 @@ class REXI_Terry_FunApproximation
 	const T pi = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
 	const T pi2 = pi*DQStuff::fromString<T>("2.0");
 	const T pi4 = pi*DQStuff::fromString<T>("4.0");
-	const T sqrtpi4 = DQStuff::sqrt(pi4);
+	//const T sqrtpi4 = DQStuff::sqrt(pi4);
 	const std::complex<T> I = std::complex<T>(0, 1);
 	T int_threshold;
 

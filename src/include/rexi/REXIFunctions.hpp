@@ -19,12 +19,33 @@
  *
  * See Cox-Matthews paper for the provided REXI functions
  */
-template <typename T>
+template <typename T = double>
 class REXIFunctions
 {
-public:
-	int phi_id;
+	enum fun_id_enum
+	{
+		INVALID,
 
+		PHI0,
+		PHI1,
+		PHI2,
+		PHI3,
+		PHI4,
+		PHI5,
+
+		UPS1,
+		UPS2,
+		UPS3,
+
+		PSI1,
+		PSI2,
+		PSI3
+	};
+
+	fun_id_enum function_id;
+
+
+public:
 	T eps_phi;
 	T eps_ups;
 	T pi2;
@@ -59,7 +80,7 @@ public:
 
 public:
 	REXIFunctions()	:
-		phi_id(0)
+		function_id(INVALID)
 	{
 		setup_constvars();
 	}
@@ -67,13 +88,11 @@ public:
 
 public:
 	REXIFunctions(const std::string &i_function_name)	:
-		phi_id(0)
+		function_id(INVALID)
 	{
 		setup_constvars();
 		setup(i_function_name);
 	}
-
-
 
 public:
 	void setup(
@@ -81,37 +100,37 @@ public:
 	)
 	{
 		if (i_function_name  == "phi0")
-			phi_id = 0;
+			function_id = PHI0;
 		else if (i_function_name  == "phi1")
-			phi_id = 1;
+			function_id = PHI1;
 		else if (i_function_name  == "phi2")
-			phi_id = 2;
+			function_id = PHI2;
 		else if (i_function_name  == "phi3")
-			phi_id = 3;
+			function_id = PHI3;
 		else if (i_function_name  == "phi4")
-			phi_id = 4;
+			function_id = PHI4;
 		else if (i_function_name  == "phi5")
-			phi_id = 5;
+			function_id = PHI5;
 
 		else if (i_function_name  == "ups1")
-			phi_id = 101;
+			function_id = UPS1;
 		else if (i_function_name  == "ups2")
-			phi_id = 102;
+			function_id = UPS2;
 		else if (i_function_name  == "ups3")
-			phi_id = 103;
+			function_id = UPS3;
 
-		//Semi-Lag phi functions (phi0 factored out) - see sl-rexi paper
+		// Semi-Lag phi functions (phi0 factored out) - see sl-rexi paper
 		else if (i_function_name  == "psi1")
-			phi_id = 1001;
+			function_id = PSI1;
 		else if (i_function_name  == "psi2")
-			phi_id = 1002;
+			function_id = PSI2;
 		else if (i_function_name  == "psi3")
-			phi_id = 1003;
+			function_id = PSI3;
 
 		else
 			FatalError("This phi function is not supported!");
-
-		if (phi_id == 1 || phi_id == 2 || phi_id == 3 || phi_id == 101 || phi_id == 102 || phi_id == 103 || phi_id == 1002 || phi_id == 1003)
+/*
+		if (function_id == 1 || function_id == 2 || function_id == 3 || function_id == 101 || function_id == 102 || function_id == 103 || function_id == 1002 || function_id == 1003)
 		{
 			if (typeid(T) == typeid(double))
 			{
@@ -121,6 +140,7 @@ public:
 //				FatalError("Seriously, you shouldn't use me with only double precision!");
 			}
 		}
+*/
 	}
 
 
@@ -211,11 +231,137 @@ public:
 		if (n == 0)
 			return l_expcplx(z);
 
-        if (std::abs((double)z.real()) < eps_phi && std::abs((double)z.imag()) < eps_phi)
-				return (T)1.0/(T)factorial(n);
+		T linf = z.real()*z.real() + z.imag()*z.imag();
+        if (linf < eps_phi)
+			return (T)1.0/(T)factorial(n);
 
         return (phi(n-1, z) - (T)1.0/(T)factorial(n-1))/z;
 	}
+
+
+
+	std::complex<T> ups(
+			int n,
+			const std::complex<T> &i_K
+	)
+	{
+		// for tests of numerical instability
+		T lamdt = i_K.real()*i_K.real() + i_K.imag()*i_K.imag();
+
+		switch(n)
+		{
+		case 1:
+			// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
+			if (lamdt*lamdt*lamdt < eps_ups)
+			{
+				return 1.0/(2.0*3.0);
+			}
+			else
+			{
+				return (std::complex<T>(-4.0)-i_K+l_expcplx(i_K)*(std::complex<T>(4.0)-std::complex<T>(3.0)*i_K+i_K*i_K))/(i_K*i_K*i_K);
+			}
+			break;
+
+
+		case 2:	// \ups_2
+			// http://www.wolframalpha.com/input/?i=(2%2BK%2Bexp(K)*(-2%2BK))%2F(K*K*K)
+			if (lamdt*lamdt*lamdt < eps_ups)
+			{
+				return 1.0/(2.0*3.0);
+			}
+			else
+			{
+				return (std::complex<T>(2.0)+i_K+l_expcplx(i_K)*(std::complex<T>(-2.0)+i_K))/(i_K*i_K*i_K);
+			}
+			break;
+
+
+		case 3:	// \ups_3
+			// http://www.wolframalpha.com/input/?i=(-4-3*K-K*K%2Bexp(K)*(4-K))%2F(K*K*K)
+			if (lamdt*lamdt*lamdt < eps_ups)
+			{
+				return 1.0/(2.0*3.0);
+			}
+			else
+			{
+				return (std::complex<T>(-4.0)-std::complex<T>(3.0)*i_K-i_K*i_K+l_expcplx(i_K)*(std::complex<T>(4.0)-i_K))/(i_K*i_K*i_K);
+			}
+			break;
+
+
+
+		default:
+			FatalError("This ups number is not yet supported");
+		}
+	}
+
+
+
+	/*
+	 * Semi-Lagrangian psi functions
+	 */
+	std::complex<T> psi(
+			int n,
+			const std::complex<T> &i_K
+	)
+	{
+		// for tests of numerical instability
+		T lamdt = i_K.real()*i_K.real() + i_K.imag()*i_K.imag();
+
+		switch(n)
+		{
+		case 1:	// psi1
+			//
+			if (lamdt < eps_phi)
+			{
+				return 1.0;
+			}
+			else
+			{
+				//psi1(z)=phi(-z)
+				return (l_expcplx(i_K) - std::complex<T>(1.0))/i_K;
+			}
+			break;
+
+
+		case 2:	// psi2
+			//
+			if (lamdt < eps_phi)
+				//					if (lamdt*lamdt < rexiFunctions.eps_phi)
+			{
+				return 1.0/2.0;
+			}
+			else
+			{
+				//psi2(z)=-phi2(-z)+phi1(-z)
+				return -(l_expcplx(i_K) - std::complex<T>(1.0) - i_K)/(i_K*i_K)
+								+(l_expcplx(i_K) - std::complex<T>(1.0))/i_K;
+			}
+			break;
+
+
+		case 3:	// psi3
+			if (lamdt < eps_phi)
+				//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
+			{
+				return 1.0/(2.0*3.0);
+			}
+			else
+			{
+				return (l_expcplx(i_K) - std::complex<T>(1.0) - i_K - i_K*i_K)/(i_K*i_K*i_K)
+						- (l_expcplx(i_K) - std::complex<T>(1.0) - i_K)/(i_K*i_K)
+						+ std::complex<T>(0.5)*(l_expcplx(i_K) - std::complex<T>(1.0))/i_K;
+			}
+			break;
+
+
+		default:
+			FatalError("This psi number is not yet supported");
+		}
+
+		return -1;
+	}
+
 
 	/**
 	 * Evaluate the function (phi/ups)
@@ -226,99 +372,52 @@ public:
 	{
 		std::complex<T> K = i_K;
 
-		// for tests of numerical instability
-		T lamdt = K.imag();
-		if (lamdt < 0)
-			lamdt = -lamdt;
-
-		switch(phi_id)
+		switch(function_id)
 		{
-#if 0
-		case 0:	// \phi_0
-			K = l_expcplx(K);
-			break;
+		case PHI0:
+			return phi(0, i_K);
+
+		case PHI1:
+			return phi(1, i_K);
+
+		case PHI2:
+			return phi(2, i_K);
+
+		case PHI3:
+			return phi(3, i_K);
+
+		case PHI4:
+			return phi(4, i_K);
+
+		case PHI5:
+			return phi(5, i_K);
 
 
-		case 1:	// \phi_1
-			// http://www.wolframalpha.com/input/?i=(exp(i*x)-1)%2F(i*x)
-			if (lamdt < eps_phi)
-			{
-				K = 1.0;
-			}
-			else
-			{
-				K = (l_expcplx(K) - std::complex<T>(1.0))/K;
-			}
-			break;
+
+		case UPS1:
+			return ups(1, i_K);
+
+		case UPS2:
+			return ups(2, i_K);
+
+		case UPS3:
+			return ups(3, i_K);
 
 
-		case 2:	// \phi_2
-			// http://www.wolframalpha.com/input/?i=(exp(i*x)-1-i*x)%2F(i*x*i*x)
-			if (lamdt*lamdt < eps_phi)
-			{
-				K = 1.0/2.0;
-			}
-			else
-			{
-				K = (l_expcplx(K) - std::complex<T>(1.0) - K)/(K*K);
-			}
-			break;
 
+		case PSI1:
+			return psi(1, i_K);
 
-		case 3:	// \phi_3
-			if (lamdt*lamdt*lamdt < eps_phi)
-			{
-				K = 1.0/(2.0*3.0);
-			}
-			else
-			{
-				K = (l_expcplx(K) - std::complex<T>(1.0) - K - K*K)/(K*K*K);
-			}
-			break;
-#endif
+		case PSI2:
+			return psi(2, i_K);
 
-		case 101:	// \ups_1
-			// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
-			if (lamdt*lamdt*lamdt < eps_ups)
-			{
-				K = 1.0/(2.0*3.0);
-			}
-			else
-			{
-				K = (std::complex<T>(-4.0)-K+l_expcplx(K)*(std::complex<T>(4.0)-std::complex<T>(3.0)*K+K*K))/(K*K*K);
-			}
-			break;
+		case PSI3:
+			return psi(3, i_K);
 
-
-		case 102:	// \ups_2
-			// http://www.wolframalpha.com/input/?i=(2%2BK%2Bexp(K)*(-2%2BK))%2F(K*K*K)
-			if (lamdt*lamdt*lamdt < eps_ups)
-			{
-				K = 1.0/(2.0*3.0);
-			}
-			else
-			{
-				K = (std::complex<T>(2.0)+K+l_expcplx(K)*(std::complex<T>(-2.0)+K))/(K*K*K);
-			}
-			break;
-
-
-		case 103:	// \ups_3
-			// http://www.wolframalpha.com/input/?i=(-4-3*K-K*K%2Bexp(K)*(4-K))%2F(K*K*K)
-			if (lamdt*lamdt*lamdt < eps_ups)
-			{
-				K = 1.0/(2.0*3.0);
-			}
-			else
-			{
-				K = (std::complex<T>(-4.0)-std::complex<T>(3.0)*K-K*K+l_expcplx(K)*(std::complex<T>(4.0)-K))/(K*K*K);
-			}
-			break;
 
 
 		default:
-			return phi(phi_id, i_K);
-			//FatalError("This phi is not yet supported");
+			FatalError("This phi is not yet supported");
 		}
 
 		return K;

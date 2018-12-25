@@ -68,6 +68,7 @@ private:
 public:
 	std::vector<std::complex<double>> rexi_alpha;
 	std::vector<std::complex<double>> rexi_beta;
+	std::complex<double> rexi_gamma;
 
 
 	const SphereDataConfig *sphereDataConfig;

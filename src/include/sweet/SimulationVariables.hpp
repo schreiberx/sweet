@@ -1276,7 +1276,7 @@ public:
 		{
 			if (	(disc.space_res_physical[0] == 0 || disc.space_res_physical[1] == 0)	&&
 					(disc.space_res_spectral[0] == 0 || disc.space_res_spectral[1] == 0)
-				)
+			)
 			{
 				FatalError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");
 			}
@@ -1308,15 +1308,6 @@ public:
 		// if max simulation time was not set for parareal, copy max simulation time from default parameters to parareal parameters.
 		if (parareal.max_simulation_time <= 0)
 			parareal.max_simulation_time = timecontrol.max_simulation_time;
-#endif
-
-#if 0
-		if (misc.verbosity > 1)
-		{
-			for (int i = 0; i < i_argc; i++)
-				std::cout << i_argv[i] << " ";
-			std::cout << std::endl;
-		}
 #endif
 
 		/*

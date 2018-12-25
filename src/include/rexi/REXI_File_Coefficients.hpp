@@ -1,12 +1,14 @@
 /*
- * RexiNGCoefficients.hpp
+ * Rexi_File_Coefficients.hpp
  *
  *  Created on: 4 Jul 2017
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_REXI_REXIFILECOEFFICIENTS_HPP_
-#define SRC_INCLUDE_REXI_REXIFILECOEFFICIENTS_HPP_
+
+
+#ifndef SRC_INCLUDE_REXI_FILE_COEFFICIENTS_HPP_
+#define SRC_INCLUDE_REXI_FILE_COEFFICIENTS_HPP_
 
 #include <string>
 #include <fstream>
@@ -20,19 +22,6 @@ public:
 //	std::string function_name;		///< "phi0"; "phi1"; "phi2"; etc.
 
 	int N;							///< Number of approximation poles
-#if 0
-	T max_error;
-	T max_error_double_precision;
-
-	T test_min;
-	T test_max;
-
-	T basis_function_scaling;
-	T basis_function_spacing;
-	T basis_function_rat_shift;
-
-	std::vector< std::complex<T> > weights_cplx;
-#endif
 
 	std::vector< std::complex<T> > alpha;
 	std::vector< std::complex<T> > beta;

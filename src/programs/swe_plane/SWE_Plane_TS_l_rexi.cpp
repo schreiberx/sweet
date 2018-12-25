@@ -41,16 +41,17 @@ void SWE_Plane_TS_l_rexi::setup(
 		return;
 	}
 
-	REXI::load(
+	REXI<>::load(
 			rexiSimVars,
 			i_function_name,
+
 			rexi_alpha,
 			rexi_beta,
-			i_timestep_size,
+			rexi_gamma,
+
 			simVars.misc.verbosity
 	);
 
-	std::cout << "Halving rule = " << rexiSimVars->use_half_poles << std::endl;
 	std::cout << "Number of total REXI coefficients N = " << rexi_alpha.size() << std::endl;
 
 	std::size_t N = rexi_alpha.size();
@@ -177,15 +178,6 @@ void SWE_Plane_TS_l_rexi::setup(
 	stopwatch_reduce.reset();
 	stopwatch_solve_rexi_terms.reset();
 #endif
-
-	if (simVars.rexi.rexi_terms_add_u0)
-	{
-		gamma0 = 1.0;
-		for (int i = 0; i < (int)rexi_alpha.size(); i++)
-			gamma0 -= rexi_beta[i] / rexi_alpha[i];
-	}
-
-
 }
 
 
@@ -329,7 +321,10 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
 		v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
 #else
-		if (simVars.rexi.use_half_poles)
+
+// TODO: find a nice solution for this
+//		if (simVars.rexi.use_half_poles)
+		if (true)
 		{
 			eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_h_pert);
 			u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
@@ -531,7 +526,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 #else
 
-	if (simVars.rexi.use_half_poles)
+// TODO: find a nice solution for this
+//		if (simVars.rexi.use_half_poles)
+	if (true)
 	{
 		o_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
 		o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
@@ -546,14 +543,11 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #endif
 
 
-	/*
-	 * INITIALIZATION - THIS IS THE NON-PARALLELIZABLE PART!
-	 */
-	if (simVars.rexi.rexi_terms_add_u0)
+	if (rexi_gamma.real() != 0)
 	{
-		o_h_pert += gamma0.real() * i_h_pert;
-		o_u += gamma0.real() * i_u;
-		o_v += gamma0.real() * i_v;
+		o_h_pert += rexi_gamma.real() * i_h_pert;
+		o_u += rexi_gamma.real() * i_u;
+		o_v += rexi_gamma.real() * i_v;
 	}
 
 

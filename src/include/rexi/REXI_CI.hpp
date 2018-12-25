@@ -16,10 +16,11 @@
 
 template <
 #if SWEET_QUADMATH
-	typename T =  __float128
+	typename T =  __float128,
 #else
-	typename T =  double
+	typename T =  double,
 #endif
+	typename TStorage = double	///< storage precision of coefficients - use quad precision per default
 >
 class REXI_CI
 {
@@ -34,8 +35,8 @@ class REXI_CI
 	const std::complex<T> I = std::complex<T>(0, 1);
 
 public:
-	std::vector<std::complex<double>> alpha;
-	std::vector<std::complex<double>> beta;
+	std::vector<std::complex<TStorage>> alpha;
+	std::vector<std::complex<TStorage>> beta;
 
 	REXI_CI()
 	{
@@ -46,11 +47,7 @@ public:
 			const std::string &i_function_name,
 			int N,
 			T max_real_evalue,	/// maximum real value which must be part of the circle
-			T inc_imag_evalue,	/// imaginary value which should be included in circle
-			T i_ci_gaussian_filter_scale_a,
-			T i_ci_gaussian_filter_dt_norm,
-			T i_ci_gaussian_filter_exp_N,
-			T i_ci_gaussian_filter_dt
+			T inc_imag_evalue	/// imaginary value which should be included in circle
 	)
 	{
 		/*
@@ -73,11 +70,7 @@ public:
 				"circle",
 				r*2.0,
 				r*2.0,
-				center,
-				i_ci_gaussian_filter_scale_a,
-				i_ci_gaussian_filter_dt_norm,
-				i_ci_gaussian_filter_exp_N,
-				i_ci_gaussian_filter_dt
+				center
 			);
 	}
 
@@ -88,11 +81,7 @@ public:
 			const std::string &i_primitive_name,
 			T i_size_real,
 			T i_size_imag,
-			T i_mu,
-			T i_ci_gaussian_filter_scale_a,
-			T i_ci_gaussian_filter_dt_norm,
-			T i_ci_gaussian_filter_exp_N,
-			T i_ci_gaussian_filter_dt
+			T i_mu
 	)
 	{
 #if !SWEET_QUADMATH
@@ -143,18 +132,6 @@ public:
 				 * We use a Gaussian bump to filter out the fast modes
 				 */
 				T filter_value = 1.0;
-				if (i_ci_gaussian_filter_dt_norm != 0 && i_ci_gaussian_filter_scale_a != 0)
-				{
-					T dist = DQStuff::abs(gamma_j.imag());
-
-					filter_value = DQStuff::exp(
-										-DQStuff::pow(
-												i_ci_gaussian_filter_dt_norm/(i_ci_gaussian_filter_scale_a*i_ci_gaussian_filter_dt)*dist,
-												i_ci_gaussian_filter_exp_N
-										)
-									);
-					std::cout << (double)dist << "\t" << (double)filter_value << std::endl;
-				}
 
 				beta_eval[j] = filter_value*fun.eval(gamma_j)*pos;
 				alpha_eval[j] = gamma_j;
@@ -270,12 +247,11 @@ public:
 
 		for (int j = 0; j < N; j++)
 		{
-			alpha[j] = {(double)alpha_eval[j].real(), (double)alpha_eval[j].imag()};
+			alpha[j] = {(TStorage)alpha_eval[j].real(), (TStorage)alpha_eval[j].imag()};
 			alpha[j] = -alpha[j];
 
-			beta[j] = {(double)beta_eval[j].real(), (double)beta_eval[j].imag()};
+			beta[j] = {(TStorage)beta_eval[j].real(), (TStorage)beta_eval[j].imag()};
 			beta[j] = -beta[j];
-//			std::cout << j << ":\t" << alpha[j] << std::endl;
 		}
 	}
 };
