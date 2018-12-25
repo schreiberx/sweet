@@ -73,7 +73,6 @@ class Spharmt(object):
 
 
 if __name__ == "__main__":
-	import matplotlib.pyplot as plt
 	import time
 
 	# non-linear barotropically unstable shallow water test case

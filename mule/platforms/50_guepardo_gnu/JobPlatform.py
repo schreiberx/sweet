@@ -2,7 +2,8 @@ import platform
 import socket
 import sys
 
-from mule_local.JobMule import *
+from mule_local.JobGeneration import *
+from mule.JobPlatformResources import *
 from . import JobPlatformAutodetect
 
 import multiprocessing

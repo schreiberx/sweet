@@ -17,12 +17,12 @@ jg.compile.quadmath="enable"
 jg.runtime.verbosity=5
 
 jg.runtime.rexi_method="terry"
-jg.runtime.rexi_terry_l=11
+jg.runtime.rexi_terry_m=256
 
-jg.runtime.rexi_half_poles=0
+jg.runtime.rexi_terry_reduce_to_half=0
 jg.gen_jobscript_directory()
 
-jg.runtime.rexi_half_poles=1
+jg.runtime.rexi_terry_reduce_to_half=1
 jg.gen_jobscript_directory()
 
 

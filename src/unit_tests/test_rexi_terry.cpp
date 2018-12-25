@@ -170,7 +170,7 @@ int main(
 
 		for (int half = 0; half < 2; half++)
 		{
-			simVars.rexi.use_half_poles = half;
+			simVars.rexi.terry_reduce_to_half = half;
 
 			std::cout << "******************************************************" << std::endl;
 			std::cout << "PHI " << fun_id << " - REXI real: Test for partition of unity and accuracy" << std::endl;
@@ -190,7 +190,7 @@ int main(
 					std::cout << " + half: " << half << std::endl;
 					std::cout << "******************************************************" << std::endl;
 					std::cout << "Setup coefficients... " << std::flush;
-					REXI_Terry<TGeneration, T> rexi(function_name, h, M, simVars.rexi.terry_L, simVars.rexi.use_half_poles, simVars.rexi.normalization);
+					REXI_Terry<TGeneration, T> rexi(function_name, h, M, simVars.rexi.terry_L, simVars.rexi.terry_reduce_to_half, simVars.rexi.terry_normalization);
 					std::cout << "OK" << std::endl;
 					std::cout << " + number of rexi coefficients: " << rexi.alpha.size() << std::endl;
 
@@ -220,7 +220,7 @@ int main(
 					{
 						std::complex<__float128> correct_ = rexiFunctions.eval(std::complex<__float128>(0, x));
 						TComplex correct(correct_.real(), correct_.imag());
-						TComplex approx = rexi.approx_returnComplex(x, simVars.rexi.use_half_poles);
+						TComplex approx = rexi.approx_returnComplex(x, simVars.rexi.terry_reduce_to_half);
 
 						if (DQStuff::abs(approx.real()) > 1.0)
 							std::cerr << "approx value_real " << approx.real() << " not bounded by unity (just a warning and not a problem) at x=" << (double)x << std::endl;

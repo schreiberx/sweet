@@ -224,9 +224,6 @@ int main(
 	if (simVars.rexi.rexi_method != "ci")
 		FatalError("This test is for rexi_method=='ci' only");
 
-	if (simVars.rexi.use_half_poles)
-		FatalError("Not yet supported");
-
 	std::string function_names[9] =
 	{
 			"phi0",
@@ -261,7 +258,7 @@ int main(
 		cplx lambda = {0.0, 1.0};
 		std::vector<cplx> alpha, beta;
 
-		REXI::load(
+		REXI<T>::load(
 				&simVars.rexi,
 				function_name,
 				alpha,
