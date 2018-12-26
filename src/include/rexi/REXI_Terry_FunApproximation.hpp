@@ -66,15 +66,59 @@ class REXI_Terry_FunApproximation
 	T h;
 	int M;
 
-	const T pi = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
-	const T pi2 = pi*DQStuff::fromString<T>("2.0");
-	const T pi4 = pi*DQStuff::fromString<T>("4.0");
-	//const T sqrtpi4 = DQStuff::sqrt(pi4);
-	const std::complex<T> I = std::complex<T>(0, 1);
+	T pi, pi2;
+	std::complex<T> I;
+
 	T int_threshold;
 
 public:
 	std::vector<TComplex> b;
+
+
+
+	REXI_Terry_FunApproximation()
+	{
+		setupConstants();
+	}
+
+
+	REXI_Terry_FunApproximation(
+			const std::string &i_function_name,
+			T i_h,
+			int i_M
+	)
+	{
+		setupConstants();
+		setup(i_function_name, i_h, i_M);
+	}
+
+
+	void setupConstants()
+	{
+
+#if SWEET_QUADMATH
+		if (sizeof(T) == 16)
+		{
+			// T == __float128
+			pi = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
+			pi2 = pi*DQStuff::fromString<T>("2.0");
+			I = std::complex<T>(0, 1);
+		}
+		else
+#endif
+		if (sizeof(T) == 8)
+		{
+			// T == double
+			pi = M_PI;
+			pi2 = M_PI*2.0;
+			I = std::complex<T>(0, 1);
+
+		}
+		else
+		{
+			FatalError("Type T not supported");
+		}
+	}
 
 
 
@@ -210,22 +254,6 @@ public:
 
 
 
-	REXI_Terry_FunApproximation()
-	{
-	}
-
-
-
-	REXI_Terry_FunApproximation(
-			const std::string &i_function_name,
-			T i_h,
-			int i_M
-	)
-	{
-		setup(i_function_name, i_h, i_M);
-	}
-
-
 
 	void setup(
 			const std::string &i_function_name,
@@ -252,13 +280,6 @@ public:
 		M = (i_M == -1 ? (T)i_M/h : i_M);
 		b.resize(i_M*2+1);
 
-#if SWEET_QUADMATH
-#if 1
-		__float128 asdf = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
-		if (asdf - pi != 0)
-			FatalError("Compiled constant not equal to string-induced constant!");
-#endif
-#endif
 
 		if (i_function_name == "phi0")
 		{

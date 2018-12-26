@@ -14,6 +14,7 @@
 #include <vector>
 
 
+
 template <
 #if SWEET_QUADMATH
 	typename T =  __float128,
@@ -29,10 +30,8 @@ class REXI_CI
 	std::vector<TComplex> alpha_eval;
 	std::vector<TComplex> beta_eval;
 
-	const T pi = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
-	const T pi2 = pi*DQStuff::fromString<T>("2.0");
-	const T pi4 = pi*DQStuff::fromString<T>("4.0");
-	const std::complex<T> I = std::complex<T>(0, 1);
+	T pi, pi2;
+	std::complex<T> I;
 
 public:
 	std::vector<std::complex<TStorage>> alpha;
@@ -40,6 +39,28 @@ public:
 
 	REXI_CI()
 	{
+#if SWEET_QUADMATH
+		if (sizeof(T) == 16)
+		{
+			// T == __float128
+			pi = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
+			pi2 = pi*DQStuff::fromString<T>("2.0");
+			I = std::complex<T>(0, 1);
+		}
+		else
+#endif
+		if (sizeof(T) == 8)
+		{
+			// T == double
+			pi = M_PI;
+			pi2 = M_PI*2.0;
+			I = std::complex<T>(0, 1);
+
+		}
+		else
+		{
+			FatalError("Type T not supported");
+		}
 	}
 
 
@@ -84,10 +105,6 @@ public:
 			T i_mu
 	)
 	{
-#if !SWEET_QUADMATH
-		FatalError("Don't use this without quad precision support to generate the coefficients!");
-#endif
-
 		alpha_eval.resize(N);
 		beta_eval.resize(N);
 
@@ -108,7 +125,7 @@ public:
 				 * for the upsN functions (forgot the reason for it)
 				 */
 				T theta_j;
-				if (i_function_name.substr(0, 3) == "ups" || 1 || 1 || 1 || 1 || 1 || 1 || 1)
+				if (i_function_name.substr(0, 3) == "ups" || 1)
 				{
 					// avoid points directly on axes for upsN functions
 					theta_j = (T)pi2*((T)j+(T)0.5)/(T)N;

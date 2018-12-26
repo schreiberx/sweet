@@ -55,8 +55,6 @@ public:
 	typedef std::complex<T> TComplex;
 	typedef std::complex<TStorage> TStorageComplex;
 
-//	REXIFunctions<T> rexiFunctions;
-
 public:
 	std::vector<TStorageComplex> alpha;
 	std::vector<TStorageComplex> beta;
@@ -65,11 +63,6 @@ public:
 	std::vector<TComplex> beta_eval;
 
 private:
-#if 0
-	std::vector<TStorageComplex> alpha_reim;
-	std::vector<TStorageComplex> beta_re;
-	std::vector<TStorageComplex> beta_im;
-#endif
 	std::vector<TComplex> alpha_reim_eval;
 	std::vector<TComplex> beta_re_eval;
 	std::vector<TComplex> beta_im_eval;

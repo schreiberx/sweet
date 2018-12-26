@@ -8,6 +8,7 @@
 #define SRC_INCLUDE_REXI_REXI_TERRY_GAUSSIANAPPROXIMATION_HPP_
 
 #include <sweet/sweetmath.hpp>
+#include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
 #include <iostream>
 #include <complex>
@@ -32,10 +33,7 @@ class REXI_Terry_GaussianApproximation
 {
 	typedef std::complex<T> TComplex;
 
-	const T pi = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
-	const T pi2 = pi*DQStuff::fromString<T>("2.0");
-	const T pi4 = pi*DQStuff::fromString<T>("4.0");
-	const T sqrtpi4 = DQStuff::sqrt(pi4);
+	T pi, pi2, pi4, sqrtpi4;
 
 public:
 	T mu;					///< average
@@ -46,6 +44,33 @@ public:
 			int i_L = 0	///< L
 	)
 	{
+
+#if SWEET_QUADMATH
+		if (sizeof(T) == 16)
+		{
+			// T == __float128
+			pi = DQStuff::fromString<T>("3.14159265358979323846264338327950288");
+			pi2 = pi*DQStuff::fromString<T>("2.0");
+			pi4 = pi*DQStuff::fromString<T>("4.0");
+			sqrtpi4 = DQStuff::sqrt(pi4);
+		}
+		else
+#endif
+		if (sizeof(T) == 8)
+		{
+			// T == double
+			pi = M_PI;
+			pi2 = M_PI*2.0;
+			pi4 = M_PI*4.0;
+			sqrtpi4 = DQStuff::sqrt(pi4);
+
+		}
+		else
+		{
+			FatalError("Type T not supported");
+		}
+
+
 		L = i_L;
 
 		if (L == 0)

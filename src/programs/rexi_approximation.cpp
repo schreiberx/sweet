@@ -53,7 +53,7 @@ int main(
 	/*
 	 * Load analytical function
 	 */
-	REXIFunctions<> rexiFunctions;
+	REXIFunctions<double> rexiFunctions;
 	rexiFunctions.setup(function_name);
 
 	/*

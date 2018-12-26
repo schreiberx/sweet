@@ -9,7 +9,6 @@
 #include <sweet/SimulationVariables.hpp>
 #include <quadmath.h>
 #include <rexi/REXI.hpp>
-#include <rexi/REXI_File.hpp>
 #include <rexi/REXIFunctions.hpp>
 #include <rexi/REXICoefficients.hpp>
 
@@ -146,53 +145,6 @@ void rexiIntegrationBasedOnPDE(
 }
 
 
-#if 0
-void rexiIntegrationBasedOnEValues(
-		const cplx &i_lambda,	///< stiffness
-		T i_dt,		///< timestep size
-		std::vector<cplx> &i_alpha,
-		std::vector<cplx> &i_beta,
-		cplx io_u[2]		///< state variable
-)
-{
-	cplx I(0, 1);
-
-	cplx tmp[2];
-	tmp[0] = cplx(0.5)*(-I*io_u[0] + io_u[1]);
-	tmp[1] = cplx(0.5)*(I*io_u[0] + io_u[1]);
-
-	cplx tmp_exp[2] = {0.0, 0.0};
-	for (std::size_t i = 0; i < i_alpha.size(); i++)
-	{
-		const cplx alpha = i_alpha[i]/i_dt;
-		const cplx beta = i_beta[i]/i_dt;
-
-		tmp_exp[0] += beta/(i_lambda + alpha);
-		tmp_exp[1] += beta/(-i_lambda + alpha);
-	}
-
-	tmp_exp[0] = tmp_exp[0]*tmp[0];
-	tmp_exp[1] = tmp_exp[1]*tmp[1];
-
-	io_u[0] = I*tmp_exp[0] - I*tmp_exp[1];
-	io_u[1] = tmp_exp[0] + tmp_exp[1];
-}
-#endif
-
-
-#if 0
-T lenreal(
-		const cplx &a,
-		const cplx &b
-)
-{
-	T av = a.real();
-	T bv = b.real();
-	return rexiFunctions.l_sqrt(av*av+bv*bv);
-}
-#endif
-
-
 
 /**
  * \return \f$ Re(cos(x) + i*sin(x)) = cos(x) \f$
@@ -241,8 +193,33 @@ int main(
 
 	if (simVars.rexi.rexi_method != "file")
 	{
-		simVars.rexi.p_rexi_files_processed.push_back(REXI_SimulationVariables::REXIFile("phi0", ""));
-//		FatalError("This test is for rexi_method=='file' only");
+		if (simVars.rexi.rexi_method == "terry")
+		{
+			simVars.rexi.p_rexi_files_processed.push_back(REXI_SimulationVariables::REXIFile("phi0", ""));
+		}
+		else if (simVars.rexi.rexi_method == "ci")
+		{
+			std::string function_names[9] =
+			{
+					"phi0",
+					"phi1",
+					"phi2",
+					"phi3",
+					"phi4",
+					"phi5",
+
+					"ups1",
+					"ups2",
+					"ups3",
+			};
+
+			for (int i = 0; i < 9; i++)
+				simVars.rexi.p_rexi_files_processed.push_back(REXI_SimulationVariables::REXIFile(function_names[i], ""));
+		}
+		else
+		{
+			FatalError("rexi_method not supported");
+		}
 	}
 
 
@@ -316,7 +293,6 @@ int main(
 					Uanal
 				);
 
-
 			if (function_name == "phi0")
 			{
 				rexiIntegrationBasedOnPDE(
@@ -344,7 +320,6 @@ int main(
 
 			U[0].imag(0);
 			U[1].imag(0);
-
 
 			double error = lmax(Uanal, U);
 

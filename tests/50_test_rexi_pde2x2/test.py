@@ -31,7 +31,7 @@ from itertools import product
 jg = JobGeneration()
 
 
-jg.compile.unit_test = "test_rexi_file"
+jg.compile.unit_test = "test_rexi_pde2x2"
 
 #
 # Use file-based REXI method
@@ -46,6 +46,7 @@ rexi_file_methods = ["trexi", "cirexi", "brexi"]
 
 #function_name_list = ["phi0", "phi1", "phi2", "phi3", "phi4", "ups1", "ups2", "ups3", "psi1", "psi2", "psi3"]
 function_name_list = ["phi0", "phi1", "phi2", "phi3", "phi4", "ups1", "ups2", "ups3"]
+
 
 efloat_mode = "float"
 #efloat_mode = "mpfloat"
@@ -98,6 +99,17 @@ for function_name in function_name_list:
 				coeffs = cirexi.setup(function_name=function_name, N=N, lambda_include_imag=lambda_include_imag, lambda_max_real=lambda_max_real).toFloat()
 				jg.runtime.rexi_files_coefficients = [coeffs]
 				jg.gen_jobscript_directory()
+
+				if True:
+					# Validate with C-implementation of CI-REXI method
+					jg.runtime.rexi_method = "ci"
+					jg.runtime.rexi_ci_n = N
+					jg.runtime.rexi_ci_max_real = lambda_max_real
+					jg.runtime.rexi_ci_max_imag = lambda_include_imag
+					jg.gen_jobscript_directory()
+
+					# Back to original version
+					jg.runtime.rexi_method = "file"
 
 
 		elif rexi_file_method == "brexi":

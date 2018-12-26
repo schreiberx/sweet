@@ -13,7 +13,6 @@
 
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
-#include <rexi/REXIFunctions.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
 
 
