@@ -3,8 +3,12 @@
 READ THIS CAREFULLY!!! DON'T SKIP ANY PARTS!!!
 ******************************************************
 
-There are scripts in the directory 'local_software' to make handling
-external software requirements easier. Not all software packages are
+There are scripts in the directory
+
+	'local_software'
+
+to make handling external software requirements easier.
+Not all software packages are
 required on all platforms. E.g. installing `autoconf` is only required
 if the version on the platform is too old.
 

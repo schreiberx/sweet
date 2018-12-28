@@ -296,20 +296,6 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_rexi_ci_2x2pde/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_antialiasing_patterns/test.py
 
 
@@ -464,20 +450,6 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_rexi_file/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_diff_stencil_ops/test.py
 
 
@@ -506,7 +478,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_rexi_terry/test.py
+      script: ./tests/50_test_rexi_pde2x2/test.py
 
 
     # Test with G++-8
@@ -870,20 +842,6 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_rexi_ci_2x2pde/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/50_test_plane_antialiasing_patterns/test.py
 
 
@@ -1038,20 +996,6 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_rexi_file/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/50_test_plane_diff_stencil_ops/test.py
 
 
@@ -1080,7 +1024,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_rexi_terry/test.py
+      script: ./tests/50_test_rexi_pde2x2/test.py
 
 
     # Test with G++-5

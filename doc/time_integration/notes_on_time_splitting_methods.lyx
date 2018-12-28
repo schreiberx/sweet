@@ -1,0 +1,1423 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage[
+% these settings create hierarchical bookmarks which follow the
+% document hierarchy
+        bookmarks=true,
+        bookmarksopen=true,
+        bookmarksnumbered=true,
+% theese parameters are useful only if you build a pdf file
+% pdftitle={ DOCUMENT TITLE },
+% pdfauthor={ YOUR INFO },
+% pdfcreator={LyX, the LaTeX frontend with hyperref},
+% pdfkeywords={ DOCUMENT KEYWORDS },
+% pdfsubject={ DOCUMENT SUBJECT },
+% see http://www.tex.ac.uk/cgi-bin/texfaq2html?label=pdfpagelabels
+        pdfpagelabels, plainpages=false,
+% these settings remove all colours around any kind of link
+        colorlinks=true,
+        linkcolor=black,
+        urlcolor=black,
+        filecolor=black,
+        citecolor=black,
+]{hyperref}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures false
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 1.5cm
+\topmargin 1.5cm
+\rightmargin 1.5cm
+\bottommargin 1.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Time splitting methods
+\end_layout
+
+\begin_layout Author
+Martin Schreiber <schreiberx@gmail.com>
+\end_layout
+
+\begin_layout Date
+October 21, 2017
+\end_layout
+
+\begin_layout Abstract
+This document discusses how time methods can be applied to ordinary and
+ partial differential equations which are split into two different parts.
+ One part is assumed to be linear and the other one non-linear.
+\end_layout
+
+\begin_layout Abstract
+The first goal is to gain understanding in the the formulation of higher-order
+ time integrations and how they can be realized in software.
+ Based on this step, the second goal is to investigate the accuracy of the
+ time stepping methods.
+\end_layout
+
+\begin_layout Section*
+Changelog
+\end_layout
+
+\begin_layout Standard
+2018-12-28: (Martin) Added series section to avoid singularities
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+Let a physical system be described 
+\emph on
+explicitly
+\emph default
+ by its time derivative
+\begin_inset Formula 
+\[
+\frac{\partial U}{\partial t}=LU+N(U)
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $U$
+\end_inset
+
+ denoting the state variables and 
+\begin_inset Formula $L$
+\end_inset
+
+ and 
+\begin_inset Formula $N$
+\end_inset
+
+ a stiff linear and non-stiff non-linear operator, respectively.
+ Here, stiff part 
+\begin_inset Formula $L$
+\end_inset
+
+ is assumed to require by far smaller time step sizes than for the non-stiff
+ part
+\end_layout
+
+\begin_layout Section
+Related work
+\end_layout
+
+\begin_layout Itemize
+Dale Duran's book 
+\begin_inset Quotes eld
+\end_inset
+
+Numerical Methods for Fluid Dynamics
+\begin_inset Quotes erd
+\end_inset
+
+ for basic time stepping methods (explicit, implicit, Strang splitting,
+ ...)
+\end_layout
+
+\begin_layout Itemize
+Hilary Weller's paper 
+\begin_inset Quotes eld
+\end_inset
+
+Runge–Kutta IMEX schemes for the Horizontally Explicit/Vertically Implicit
+ (HEVI) solution of wave equations
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Time splitting methods
+\end_layout
+
+\begin_layout Subsection
+Explicit time stepping
+\end_layout
+
+\begin_layout Standard
+Explicit time stepping methods treat each tendency term with an explicit
+ time stepping method.
+\end_layout
+
+\begin_layout Subsection
+Implicit Explicit time stepping (IMEX)
+\end_layout
+
+\begin_layout Subsubsection
+1st order
+\end_layout
+
+\begin_layout Standard
+The most trivial 1st order accurate implicit time stepping method is given
+ by
+\begin_inset Formula 
+\[
+\frac{U^{n+1}-U^{n}}{\Delta t}=LU^{n+1}+N(U^{n})
+\]
+
+\end_inset
+
+hence requiring to solve for
+\begin_inset Formula 
+\begin{eqnarray*}
+U^{n+1}-U^{n} & = & \Delta tLU^{n+1}+\Delta tN(U^{n})\\
+\left(I-\Delta tL\right)U^{n+1} & = & U^{n}+\Delta tN(U^{n})
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+2nd order
+\end_layout
+
+\begin_layout Standard
+We can get a 2nd order accurate time stepping by combining 2nd order accurate
+ time steppers in a particular way.
+ Let
+\begin_inset Formula 
+\[
+L^{imp}(\Delta t,U)=\left(I-\Delta tL\right)^{-1}U
+\]
+
+\end_inset
+
+compute one implicit time step for the linear parts and let 
+\begin_inset Formula $L^{imp2}$
+\end_inset
+
+ be the 2nd order pedant , then
+\begin_inset Formula 
+\[
+U^{n+1}=L_{2}^{imp2}\left(\frac{1}{2}\Delta t,\,N\left(\Delta t,\,L_{2}^{imp2}\left(\frac{1}{2}\Delta t,\,U^{n}\right)\right)\right).
+\]
+
+\end_inset
+
+Hence, we first run a half time step for the linear part, then a full one
+ for the nonlinear part and again a half time step for the linear one.
+ An alternative interpretation would be a full time step with the linear
+ and non-linear operator, but shifted by 
+\begin_inset Formula $1/2$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+For sake of applying some analysis we assume that the non-linear operator
+ is linear as use denote 
+\begin_inset Formula $N_{\Delta}^{2}$
+\end_inset
+
+ a second order accurate time stepping method (e.g.
+ using Runge-Kutta 2)
+\begin_inset Formula 
+\[
+L_{\Delta t}^{2}\circ U^{n}=L^{2,imp}(\Delta t,U^{n})
+\]
+
+\end_inset
+
+We can then write
+\begin_inset Formula 
+\[
+U^{n+1}=L_{\frac{1}{2}\Delta t}^{2}N_{\Delta t}^{2}L_{\frac{1}{2}\Delta t}^{2}U^{n}
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $L^{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $N^{2}$
+\end_inset
+
+ represent a 2nd order accurate time stepping methods.
+\end_layout
+
+\begin_layout Subsection
+Explicit and implicit time stepping, 2nd order with multistepping
+\end_layout
+
+\begin_layout Standard
+A common leap-frog-like choice is a 2nd order multistep method
+\begin_inset Formula 
+\[
+\frac{U^{t+1}-U^{t-1}}{2\Delta t}=L\left(\frac{U^{t-1}+U^{t+1}}{2\Delta t}\right)+N(U^{t})
+\]
+
+\end_inset
+
+Here the implicitness comes into play with a centered averaging.
+ The centered difference and averaging is known to be 2nd order accurate.
+ Solving this for 
+\begin_inset Formula $U^{t+1}$
+\end_inset
+
+ yields
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+U^{t+1} & = & U^{t-1}+LU^{t-1}+LU^{t+1}+2\Delta tN(U^{t})\\
+U^{t+1}-LU^{t+1} & = & U^{t-1}+LU^{t-1}+2\Delta tN(U^{t})\\
+\left(I-W_{f}\right)U^{t+1} & = & U^{t-1}+LU^{t-1}+2\Delta tN(U^{t})
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Fractional-Step methods
+\end_layout
+
+\begin_layout Standard
+Using the formulation
+\begin_inset Formula 
+\[
+U(t)=exp\left(\left(L_{1}+L_{2}\right)\Delta t\right)U(0)
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $L_{1/2}$
+\end_inset
+
+ two linear operators and assuming a linearity of both terms, we can treat
+ both terms independently
+\begin_inset Formula 
+\[
+U(t)=exp\left(\left(L_{1}+L_{1}\right)\Delta t\right)U(0)=exp\left(L_{1}\Delta t\right)exp\left(L_{2}\Delta t\right)U(0)
+\]
+
+\end_inset
+
+We can in particular evaluate both terms in arbitrary order:
+\begin_inset Formula 
+\[
+U(t)=exp\left(L_{1}\Delta t\right)exp\left(L_{2}\Delta t\right)U(0)=exp\left(L_{1}\Delta t\right)exp\left(L_{2}\Delta t\right)U(0)
+\]
+
+\end_inset
+
+Note, that each 
+\begin_inset Formula $exp()$
+\end_inset
+
+ term can be replaced with an arbitrary time stepping method, however each
+ time stepping method executable with different time step sizes.
+\end_layout
+
+\begin_layout Standard
+In case of non-linear terms, Strang splitting can be used in non-linear
+ cases where a commutative property of 
+\begin_inset Formula $L_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $L_{2}$
+\end_inset
+
+ is not given:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U(t)=exp\left(L_{1}\frac{\Delta t}{2}\right)exp\left(L_{2}\Delta t\right)exp\left(L_{1}\frac{\Delta t}{2}\right)U(0)
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $L_{2}$
+\end_inset
+
+ typically the non-linear term 
+\begin_inset Formula $N$
+\end_inset
+
+, yielding for a 1st order accurate scheme including non-linearities 
+\begin_inset Formula $N$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U(t)=exp\left(L_{1}\frac{\Delta t}{2}\right)\Delta tN\left(exp\left(L_{1}\frac{\Delta t}{2}\right)U(0)\right)
+\]
+
+\end_inset
+
+or
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U(t)=\frac{\Delta t}{2}N\left(exp\left(\Delta tL_{1}\right)\frac{\Delta t}{2}N\left(U(0)\right)\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can also in general swap the order of operators if
+\begin_inset Formula 
+\begin{align*}
+L_{1}L_{2} & =\Sigma_{1}\Lambda_{1}\Sigma_{1}^{-1}\Sigma_{2}\Lambda_{2}\Sigma_{2}^{-1}\\
+ & =\Sigma_{1}\Lambda_{1}\Lambda_{2}\Sigma_{2}^{-1}\\
+ & =\Sigma_{1}\Lambda_{2}\Lambda_{1}\Sigma_{2}^{-1}\\
+ & =\Sigma_{1}\Lambda_{2}\Sigma_{2}^{-1}\Sigma_{1}\Lambda_{1}\Sigma_{2}^{-1}\\
+ & =L_{2}L_{1}
+\end{align*}
+
+\end_inset
+
+Hence, this requires that the eigenvectors are identical: 
+\begin_inset Formula $\Sigma_{1}=\Sigma_{2}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Split-explicit methods
+\end_layout
+
+\begin_layout Standard
+(See e.g.
+ Knoth and Wensch, Generalized Split-Explicit ...)
+\end_layout
+
+\begin_layout Standard
+These methods are similar to the previous ones, assume the non-linear part
+ to be constant over one time step size and to subcycling for the linear
+ stiff part.
+\end_layout
+
+\begin_layout Subsection
+Exponential integrator methods
+\end_layout
+
+\begin_layout Standard
+See also Will Wright, History of Exponential Integrators
+\end_layout
+
+\begin_layout Subsubsection
+Integrating factor method (IF)
+\end_layout
+
+\begin_layout Standard
+The IF method was introduced in Lawson (1967).
+ First, we solve the linear part exactly:
+\begin_inset Formula 
+\[
+V=e^{-tL}U
+\]
+
+\end_inset
+
+where we emphasize a time step backward in time which we can also write
+ with
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U=e^{tL}V
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is followed by a change of variables with 
+\begin_inset Formula $U=e^{tL}V$
+\end_inset
+
+ leading to
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{\partial U}{\partial t}-LU & = & N(U)\\
+\frac{\partial e^{tL}V}{\partial t}-Le^{tL}V & = & N(e^{tL}V)\\
+Le^{tL}V+e^{tL}\frac{\partial V}{\partial t}-Le^{tL}V & = & N(e^{tL}V)\\
+\frac{\partial V}{\partial t} & = & e^{-tL}N(e^{tL}V)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here, we first factor out the linear parts and can then apply whatever higher
+ order TS method for the non-linear parts.
+ It it important to note that the backward transformation to 
+\begin_inset Formula $U$
+\end_inset
+
+ only has to be done if the prognostic fields are required (e.g.
+ for Semi-Lagrangian methods).
+\end_layout
+
+\begin_layout Paragraph
+IFAB2
+\end_layout
+
+\begin_layout Standard
+Second order Integrating Factor method mixed with Adams-Bashforth (see [Cox
+ & Matthews]):
+\begin_inset Formula 
+\begin{eqnarray*}
+u_{n+1} & = & u_{n}e^{ch}+\frac{3h}{2}F_{n}e^{ch}-\frac{h}{2}F_{n-1}e^{2ch}
+\end{eqnarray*}
+
+\end_inset
+
+For linear operators, we get
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+U_{n+1} & = & e^{\Delta tL}U_{n}+\frac{3\Delta t}{2}F(U_{n})e^{\Delta tL}-\frac{h}{2}F(U_{n-1})e^{2\Delta tL}\\
+ & = & \varphi_{0}(\Delta tL)U_{n}+\frac{3\Delta t}{2}\varphi_{0}(\Delta tL)F(U_{n})-\frac{h}{2}\varphi_{0}(2\Delta tL)F(U_{n-1})
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+IFRK2
+\end_layout
+
+\begin_layout Standard
+Written with RK2, we get (see [Cox & Matthews])
+\begin_inset Formula 
+\[
+u_{n+1}=u_{n}e^{ch}+\frac{h}{2}(F(u_{n})e^{ch}+F((u_{n}+hF(u_{n})e^{ch},t_{n}+h))
+\]
+
+\end_inset
+
+which is in terms of linear operators:
+\begin_inset Formula 
+\begin{eqnarray*}
+u_{n+1} & = & e^{\Delta tL}U_{n}+\frac{\Delta t}{2}(e^{\Delta tL}F(U_{n})+F((U_{n}+\Delta te^{\Delta tL}F(U_{n}),t_{n}+\Delta t))\\
+ & = & \varphi_{0}(\Delta tL)U_{n}\\
+ &  & +\frac{\Delta t}{2}(\\
+ &  & \,\,\,\,\,\,\,\,\,\,\varphi_{0}(\Delta tL)F(U_{n})\\
+ &  & \,\,\,\,\,\,\,\,\,\,+F((U_{n}+\Delta t\varphi_{0}(\Delta tL)F(U_{n}),t_{n}+\Delta t)\\
+ &  & )
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Exponential time differencing (ETD)
+\end_layout
+
+\begin_layout Standard
+See [Cox and Matthews].
+ We first multiply both sides with 
+\begin_inset Formula $e^{-tL}$
+\end_inset
+
+, yielding
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+e^{-tL}\frac{\partial U}{\partial t}=e^{-tL}LU+e^{-tL}N(U)
+\]
+
+\end_inset
+
+and computes the integral over the time 
+\begin_inset Formula $[0;t]$
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+\int_{0}^{t}e^{-\tau L}\frac{\partial U}{\partial\tau}d\tau & = & \int_{0}^{t}e^{-\tau L}LUd\tau+\int_{0}^{t}e^{-\tau L}N(U)d\tau\\
+\int_{0}^{t}e^{-\tau L}\frac{\partial U}{\partial\tau}d\tau-\int_{0}^{t}e^{-\tau L}LUd\tau & = & \int_{0}^{t}e^{-\tau L}N(U)d\tau
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can write
+\begin_inset Formula 
+\begin{eqnarray*}
+\int_{0}^{t}e^{-\tau L}\frac{\partial U}{\partial\tau}d\tau-\int e^{-\tau L}LUd\tau & = & \int_{0}^{t}\left(e^{-\tau L}\frac{\partial U}{\partial\tau}-e^{-\tau L}LU\right)d\tau\\
+ & = & \int_{0}^{t}\frac{\partial}{\partial\tau}\left(e^{-\tau L}U\right)d\tau\\
+ & = & \left[e^{-tL}U\right]_{0}^{t}
+\end{eqnarray*}
+
+\end_inset
+
+leading to
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+\left[e^{-tL}U\right]_{0}^{t} & = & \int_{0}^{t}e^{-\tau L}N(U)d\tau\\
+e^{-tL}U(t)-U(0) & = & \int_{0}^{t}e^{-\tau L}N(U)d\tau\\
+U(t) & = & e^{tL}U(0)+e^{tL}\int_{0}^{t}e^{-\tau L}N(U)d\tau
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+So far, there's no time integration error introduced and the integral on
+ the RHS then requires to be approximated.
+ The following formulations can be efficiently written with the 
+\begin_inset Formula $\varphi_{i}$
+\end_inset
+
+ function (see Hockbruck and Ostermann): 
+\begin_inset Formula 
+\begin{eqnarray*}
+\varphi_{0}(K) & = & e^{K}\\
+\varphi_{1}(K) & = & K^{-1}\left(e^{K}-I\right)\\
+\varphi_{2}(K) & = & K^{-2}\left(e^{K}-I-K\right)\\
+\varphi_{3}(K) & = & K^{-3}\left(2e^{K}-2-2K-K^{2}\right)/2\\
+\varphi_{4}(K) & = & K^{-4}\left(6e^{K}-6-6K-3K^{2}-K^{3}\right)/6
+\end{eqnarray*}
+
+\end_inset
+
+(using equation below) or in general given by
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+[numerically validated in REXI test script test_function_identities.py]
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\varphi_{N}(K)=K^{-N}\left((N-1)!e^{K}-\sum_{i=0}^{N-1}\frac{(N-1)!}{i!}K^{i}\right)/(N-1)!.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A generic analytical formulation is given by given by
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+http://www.wolframalpha.com/input/?i=k%3D2;+int(exp((1-t)*z)*(t%5E(k-1))%2F(k-1)!,
+t%3D0..1)
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+\varphi_{i}(K)=\int_{0}^{1}e^{(1-\tau)K}\frac{\tau^{i-1}}{(i-1)!}d\tau\,\text{for}\,i\geq1
+\]
+
+\end_inset
+
+or
+\begin_inset Formula 
+\[
+\varphi_{i+1}(K)=\frac{\varphi_{i}(K)-\varphi_{i}(0)}{K}\,\text{for}\,i\geq0
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+ETD1:
+\end_layout
+
+\begin_layout Standard
+A first order approximation is given by the assumption of 
+\begin_inset Formula $N(U)$
+\end_inset
+
+ not significantly changing over the time integration interval.
+ Using 
+\begin_inset Formula $U(0)=U_{0}$
+\end_inset
+
+ and 
+\begin_inset Formula $U(\tau)=U_{1}$
+\end_inset
+
+, this leads to the approximation
+\begin_inset Formula 
+\begin{eqnarray*}
+\int_{0}^{t}e^{-\tau L}N(U(\tau))d\tau & \approx & \int_{0}^{t}e^{-\tau L}N(U_{0})d\tau\\
+ & = & \int_{0}^{t}e^{-\tau L}d\tau N(U_{0})\\
+ & = & \left[-L^{-1}e^{-tL}\right]_{0}^{t}N(U_{0})\\
+ & = & \left(L^{-1}e^{-tL}-L^{-1}\right)N(U_{0})\\
+ & = & \left(L^{-1}\left(e^{-tL}-I\right)\right)N(U_{0})
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Finally, we get the ETD1 time stepping method
+\begin_inset Formula 
+\[
+U_{1}=e^{\Delta tL}U_{0}+\left(L^{-1}\left(e^{-\Delta tL}-I\right)\right)N(U_{0}).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For ETD1, we can then write
+\begin_inset Formula 
+\[
+U_{1}=\varphi_{0}(\Delta tL)U_{0}+\Delta t\varphi_{1}(\Delta tL)N(U_{0}).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is also known as Rosenbrock method which has order 2 (TODO: Check this
+ order 2, should be only 1st order in the nonlinearities!)
+\end_layout
+
+\begin_layout Paragraph
+ETD2 (multi-step):
+\end_layout
+
+\begin_layout Standard
+We can approximate the quadrature of the nonlinearities with a 2nd order
+ accurate method and using a multi-step method for the non-linearities over
+ time interval
+\begin_inset Formula 
+\[
+N(\tau)\approx N_{0}+\frac{\tau}{\Delta t}\left(N_{-1}-N_{0}\right)
+\]
+
+\end_inset
+
+With the exponential integrator formulation above this leads to
+\begin_inset Formula 
+\[
+\int_{0}^{t}e^{-\tau L}N(U)d\tau\approx\int_{0}^{t}e^{-\tau L}\left(N_{0}+\frac{\tau}{\Delta t}\left(N_{-1}-N_{0}\right)\right)d\tau.
+\]
+
+\end_inset
+
+For an ODE, this leads to (see paper)
+\begin_inset Formula 
+\[
+u_{n+1}=u_{n}e^{ch}+F(u_{n})\left(\left(1+hc\right)e^{ch}-1-2hc\right)/hc^{2}+F(u_{n-1})\left(-e^{ch}+1+hc\right)/hc^{2}
+\]
+
+\end_inset
+
+which we can rewrite with matrix notation to [TODO: This is not checked!]
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+u_{n+1}=u_{n}e^{\Delta tL}+\left(\Delta tL^{2}\right)^{-1}\left(\left(1+\Delta tL\right)e^{\Delta tL}-I-2\Delta tL\right)F(u_{n})+\left(\Delta tL^{2}\right)^{-1}\left(-e^{\Delta tL}+I+\Delta tL\right)F(u_{n-1})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Using the 
+\begin_inset Formula $\varphi$
+\end_inset
+
+ notations, this can be compactly written as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+u_{n+1} & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\left(1+\Delta tL\right)e^{\Delta tL}-I-2\Delta tL\right)F(u_{n})-\Delta t\left(\Delta tL\right)^{-2}\left(e^{\Delta tL}-I-\Delta tL\right)F(u_{n-1})\\
+ & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL+e^{\Delta tL}-I-\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
+ & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL\right)F(u_{n})+\Delta t\left(\Delta tL\right)^{-2}\left(e^{\Delta tL}-I-\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
+ & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
+ & = & \varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\varphi_{1}\left(\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)\left(F(u_{n})-F(u_{n-1})\right)
+\end{eqnarray*}
+
+\end_inset
+
+That's fracking pretty! We can even parallelize over the different sum terms
+ in this equation!
+\begin_inset Formula 
+\[
+\boldsymbol{TODO:\,IMPLEMENT}\,u_{n+1}=\varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\varphi_{1}\left(\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)\left(F(u_{n},t_{n})-F(u_{n-1})\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+Exponential time differencing Runge-Kutta (ETDRK):
+\end_layout
+
+\begin_layout Standard
+The main issue with ETD is that it requires storing the previous stages.
+ E.g.
+ This gets a problem for the first few time steps.
+ In this section we summarize (see [Cox and Matthews, Exp.
+ time diff.]).
+ We use a 
+\begin_inset Quotes eld
+\end_inset
+
+change
+\begin_inset Quotes erd
+\end_inset
+
+ of variables:
+\begin_inset Formula 
+\begin{eqnarray*}
+h & = & \Delta t\\
+c & = & L
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+ETD1RK
+\end_layout
+
+\begin_layout Standard
+Same as ETD1
+\end_layout
+
+\begin_layout Paragraph
+ETD2RK
+\end_layout
+
+\begin_layout Standard
+The ODE version (See [C&M]) is given by
+\begin_inset Formula 
+\[
+a_{n}=u_{n}e^{ch}+F(u_{n},t_{n})\left(e^{ch}-1\right)/c,
+\]
+
+\end_inset
+
+
+\begin_inset Formula 
+\[
+F(t)=F(u_{n},t_{n})+\Delta t\left(F(a_{n},t_{n}+\Delta t)-F(u_{n},t_{n})\right)/h+O(h^{2})
+\]
+
+\end_inset
+
+and finally
+\begin_inset Formula 
+\[
+u_{n+1}=a_{n}+\left(F(a_{n},t_{n}+\Delta t)-F(u_{n},t_{n})\right)\left(e^{ch}-1-hc\right)/hc^{2}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+ETD2RK for linear operators can then be formulated by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+A_{n}=\varphi_{0}(\Delta tL)U_{n}+\Delta t\varphi_{1}(\Delta tL)F(U_{n},t_{n})
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U_{n+1}=A_{n}+\Delta t\varphi_{2}(\Delta tL)\left(F(A_{n},t_{n}+\Delta t)-F(U_{n},t_{n})\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+ETD4RK
+\end_layout
+
+\begin_layout Standard
+This version for ODE (See [C&M])is given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+a_{n} & = & u_{n}e^{ch/2}+\left(e^{ch/2}-1\right)F(u_{n},t_{n})/c\\
+b_{n} & = & u_{n}e^{ch/2}+\left(e^{ch/2}-1\right)F(a_{n},t_{n}+h/2)/c\\
+c_{n} & = & a_{n}e^{ch/2}+\left(e^{ch/2}-1\right)\left(2F(b_{n},t_{n}+h/2)-F(u_{n},t_{n})\right)/c
+\end{eqnarray*}
+
+\end_inset
+
+Then the solution for an ODE is given by
+\begin_inset Formula 
+\begin{eqnarray*}
+u_{n+1} & = & u_{n}e^{ch}+\\
+ &  & \{\\
+ &  & \,\,F(u_{n},t_{n})\left[-4-hc+e^{ch}\left(4-3hc+h^{2}c^{2}\right)\right]\\
+ &  & +2\left(F(a_{n},t_{n}+h/2)+F(b_{n},t_{n}+h/2)\right)\left[2+hc+e^{ch}\left(-2+hc\right)\right]\\
+ &  & +F(c_{n},t_{n}+h)\left[-4-3hc-h^{2}c^{2}+e^{ch}(4-hc)\right]\\
+ &  & \}/h^{2}c^{3}
+\end{eqnarray*}
+
+\end_inset
+
+For a linear operator matrix 
+\begin_inset Formula $L$
+\end_inset
+
+, this yields
+\begin_inset Formula 
+\begin{eqnarray*}
+A_{n} & = & e^{\frac{1}{2}\Delta tL}U_{n}+L^{-1}\left(e^{\frac{1}{2}\Delta tL}-I\right)F(U_{n},t_{n})\\
+B_{n} & = & e^{\frac{1}{2}\Delta tL}U_{n}+L^{-1}\left(e^{\frac{1}{2}\Delta tL}-I\right)F(A_{n},t_{n}+\frac{1}{2}\Delta t)\\
+C_{n} & = & e^{\frac{1}{2}\Delta tL}A_{n}+L^{-1}\left(e^{\frac{1}{2}\Delta tL}-I\right)\left(2F(B_{n},t_{n}+\frac{1}{2}\Delta t)-F(U_{n},t_{n})\right)
+\end{eqnarray*}
+
+\end_inset
+
+and with 
+\begin_inset Formula $\varphi$
+\end_inset
+
+ functions
+\begin_inset Formula 
+\begin{eqnarray*}
+A_{n} & = & \varphi_{0}\left(\frac{1}{2}\Delta tL\right)U_{n}+\frac{1}{2}\Delta t\varphi_{1}\left(\frac{1}{2}\Delta tL\right)F(U_{n},t_{n})\\
+B_{n} & = & \varphi_{0}\left(\frac{1}{2}\Delta tL\right)U_{n}+\frac{1}{2}\Delta t\varphi_{1}\left(\frac{1}{2}\Delta tL\right)F(A_{n},t_{n}+\frac{1}{2}\Delta t)\\
+C_{n} & = & \varphi_{0}\left(\frac{1}{2}\Delta tL\right)A_{n}+\frac{1}{2}\Delta t\varphi_{1}\left(\frac{1}{2}\Delta tL\right)\left(2F(B_{n},t_{n}+\frac{1}{2}\Delta t)-F(U_{n},t_{n})\right)
+\end{eqnarray*}
+
+\end_inset
+
+Note, that the 
+\begin_inset Formula $\varphi_{0}$
+\end_inset
+
+ function is applied to 
+\begin_inset Formula $A_{n}$
+\end_inset
+
+ and not 
+\begin_inset Formula $U_{n}$
+\end_inset
+
+!
+\end_layout
+
+\begin_layout Standard
+Furthermore, we set
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+R_{0} & = & U_{n}\\
+R_{1} & = & F(U_{n},t_{n})\\
+R_{2} & = & F(A_{n},t_{n}+\frac{1}{2}\Delta t)+F(B_{n},t_{n}+\frac{1}{2}\Delta t)\\
+R_{3} & = & F(C_{n},t_{n}+\Delta t)
+\end{eqnarray*}
+
+\end_inset
+
+and further
+\begin_inset Formula 
+\begin{eqnarray*}
+U_{n+1} & = & \varphi_{0}\left(\Delta tL\right)R_{0}\\
+ &  & +\Delta t\left(\Delta tL\right)^{-3}\left[-4I-\Delta tL+e^{\Delta tL}\left(4I-3\Delta tL+\left(\Delta tL\right)^{2}\right)\right]R_{1}\\
+ &  & +2\Delta t\left(\Delta tL\right)^{-3}\left[2I+\Delta tL+e^{\Delta tL}\left(-2I+\Delta tL\right)\right]R_{2}\\
+ &  & +\Delta t\left(\Delta tL\right)^{-3}\left[-4I-3\Delta tL-\left(\Delta tL\right)^{2}+e^{\Delta tL}(4-\Delta tL)\right]R_{3}.
+\end{eqnarray*}
+
+\end_inset
+
+We introduce the 
+\begin_inset Formula $\upsilon_{n}$
+\end_inset
+
+ functions which are given by
+\begin_inset Formula 
+\begin{align*}
+\upsilon_{1}(K) & =\frac{-4-K+e^{K}\cdot\left(4-3K+K^{2}\right)}{K^{3}}\\
+\upsilon_{2}(K) & =\frac{2+K+e^{K}\cdot\left(-2+K\right)}{K^{3}}\\
+\upsilon_{3}(K) & =\frac{-4-3K-K^{2}+e^{K}\cdot(4-K)}{K^{3}}
+\end{align*}
+
+\end_inset
+
+and we can write
+\begin_inset Formula 
+\begin{eqnarray*}
+U_{n+1} & = & \varphi_{0}\left(\Delta tL\right)R_{0}+\Delta t\left(\upsilon_{1}\left(\Delta tL\right)R_{1}+2\upsilon_{2}\left(\Delta tL\right)R_{2}+\upsilon_{3}\left(\Delta tL\right)R_{3}\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Coping with 
+\begin_inset Formula $\varphi$
+\end_inset
+
+ and 
+\begin_inset Formula $\upsilon$
+\end_inset
+
+ functions and their singularity
+\end_layout
+
+\begin_layout Standard
+Next we discuss how to cope with the singularity for 
+\begin_inset Formula $K\rightarrow0$
+\end_inset
+
+ for e.g.
+ 
+\begin_inset Formula $\varphi_{n}$
+\end_inset
+
+ functions with 
+\begin_inset Formula $n>0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Limit
+\end_layout
+
+\begin_layout Standard
+We can write the recurrence equation as
+\begin_inset Formula 
+\[
+\lim_{K\rightarrow0}\varphi_{i+1}(K)=\lim_{K\rightarrow0}\frac{\varphi_{k}(K)-\varphi_{k}(0)}{K}\approx\frac{\partial}{\partial K}\varphi_{k}(K).
+\]
+
+\end_inset
+
+Hence, we get
+\begin_inset Formula 
+\begin{eqnarray*}
+\lim_{K\rightarrow0}\varphi_{1}(K) & = & e^{K}=1\\
+\lim_{K\rightarrow0}\varphi_{2}(K) & = & \frac{\partial}{\partial K}\left(K^{-1}\left(e^{K}-I\right)\right)\\
+ & = & K^{-2}\left(e^{K}K^{-1}+\left(e^{K}-I\right)K^{-2}\right)\\
+ & = & K^{-1}\left(e^{K}+\left(e^{K}-I\right)K^{-1}\right)
+\end{eqnarray*}
+
+\end_inset
+
+Similarly, we can handle the 
+\begin_inset Formula $\upsilon_{n}$
+\end_inset
+
+ functions for RK4 which all have 
+\begin_inset Formula $1.0/6.0$
+\end_inset
+
+ as their limit for 
+\begin_inset Formula $K\rightarrow0$
+\end_inset
+
+.
+ For the 
+\begin_inset Formula $K^{-3}$
+\end_inset
+
+, 
+\begin_inset Formula $K^{-2}$
+\end_inset
+
+ and 
+\begin_inset Formula $K^{-1}$
+\end_inset
+
+ terms this leads to
+\begin_inset Formula 
+\begin{align*}
+\lim_{K\rightarrow0}\upsilon_{1}(K) & =\lim_{K\rightarrow0}\frac{-4-K+e^{K}\left(4-3K+K^{2}\right)}{K^{3}}\\
+ & =\lim_{K\rightarrow0}\frac{e^{K}(K^{2}-K+1)-1}{3K^{2}}\\
+ & =\lim_{K\rightarrow0}\frac{e^{K}K(K+1)}{6K}\\
+ & =\lim_{K\rightarrow0}\frac{e^{K}(K^{2}+3K+1)}{6}\\
+ & =\frac{1}{6}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\lim_{K\rightarrow0}\upsilon_{2}(K) & =\lim_{K\rightarrow0}\frac{2+K+e^{K}\left(-2+K\right)}{K^{3}}\\
+ & =\lim_{K\rightarrow0}\frac{e^{K}(K-1)+1}{3K^{2}}\\
+ & =\lim_{K\rightarrow0}\frac{e^{K}K}{6K}\\
+ & =\lim_{K\rightarrow0}\frac{e^{K}(K+1)}{6}\\
+ & =\frac{1}{6}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\lim_{K\rightarrow0}\upsilon_{3}(K) & =\lim_{K\rightarrow0}\frac{-4-3K-K^{2}+e^{K}(4-K)}{K^{3}}\\
+ & =\lim_{K\rightarrow0}\frac{-e^{K}(K-3)-2K-3}{3K^{2}}\\
+ & =\lim_{K\rightarrow0}\frac{-e^{K}(K-2)-2}{6K}\\
+ & =\lim_{K\rightarrow0}\frac{-e^{K}(K-1)}{6}\\
+ & =\frac{1}{6}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Series
+\end_layout
+
+\begin_layout Standard
+An alternative way is given by a series form of the exponential
+\begin_inset Formula 
+\[
+\exp(K)=\sum_{l=0}^{\infty}\frac{K^{l}}{l!},
+\]
+
+\end_inset
+
+helping to canceling out the singularity.
+\end_layout
+
+\begin_layout Paragraph
+\begin_inset Formula $\varphi_{i}$
+\end_inset
+
+ functions
+\end_layout
+
+\begin_layout Standard
+We can find a generalization by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\varphi_{N}(K) & =K^{-N}\left((N-1)!e^{K}-\sum_{i=0}^{N-1}\frac{(N-1)!}{i!}K^{i}\right)/(N-1)!\\
+ & =K^{-N}\left((N-1)!\sum_{i=0}^{\infty}\frac{K^{i}}{i!}-\sum_{i=0}^{N-1}\frac{(N-1)!}{i!}K^{i}\right)/(N-1)!\\
+ & =K^{-N}\left(\sum_{i=0}^{\infty}\frac{(N-1)!}{i!}K^{i}-\sum_{i=0}^{N-1}\frac{(N-1)!}{i!}K^{i}\right)/(N-1)!\\
+ & =K^{-N}\left(\sum_{i=N}^{\infty}\frac{(N-1)!}{i!}K^{i}\right)/(N-1)!\\
+ & =\sum_{i=0}^{\infty}\frac{K^{i}}{(i+N)!}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph*
+\begin_inset Formula $\upsilon_{i}$
+\end_inset
+
+ functions:
+\end_layout
+
+\begin_layout Standard
+Given the 
+\begin_inset Formula $\upsilon_{i}$
+\end_inset
+
+ equations, we can try to find a similar formulation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\upsilon_{1}(K) & =\frac{-4-K+e^{K}\cdot\left(4-3K+K^{2}\right)}{K^{3}}\\
+\upsilon_{1}(K)K^{3} & =-4-K+\sum_{l=0}^{\infty}\frac{K^{l}}{l!}\left(4-3K+K^{2}\right)\\
+ & =-4-K+\sum_{l=0}^{\infty}\frac{K^{l}}{l!}4-\sum_{l=0}^{\infty}\frac{K^{l}}{l!}3K+\sum_{l=0}^{\infty}\frac{K^{l}}{l!}K^{2}\\
+ & =-4-K+4\sum_{l=0}^{\infty}\frac{K^{l}}{l!}-3\sum_{l=0}^{\infty}\frac{K^{l+1}}{l!}+\sum_{l=0}^{\infty}\frac{K^{l+2}}{l!}\\
+ & =-K+4\sum_{l=1}^{\infty}\frac{K^{l}}{l!}-3\sum_{l=0}^{\infty}\frac{K^{l+1}}{l!}+\sum_{l=0}^{\infty}\frac{K^{l+2}}{l!}\\
+ & =4\sum_{l=2}^{\infty}\frac{K^{l}}{l!}-3\sum_{l=1}^{\infty}\frac{K^{l+1}}{l!}+\sum_{l=0}^{\infty}\frac{K^{l+2}}{l!}\\
+ & =2K^{2}+4\sum_{l=3}^{\infty}\frac{K^{l}}{l!}-3K^{2}-3\sum_{l=2}^{\infty}\frac{K^{l+1}}{l!}+K^{2}+\sum_{l=1}^{\infty}\frac{K^{l+2}}{l!}\\
+ & =4\sum_{l=3}^{\infty}\frac{K^{l}}{l!}-3\sum_{l=2}^{\infty}\frac{K^{l+1}}{l!}+\sum_{l=1}^{\infty}\frac{K^{l+2}}{l!}\\
+ & =4\sum_{l=3}^{\infty}\frac{K^{l}}{l!}-3\sum_{l=3}^{\infty}\frac{K^{l+1}l}{l!}+\sum_{l=3}^{\infty}\frac{K^{l+2}l(l-1)}{l!}\\
+ & =\sum_{l=3}^{\infty}\frac{K^{l}(4-3l+l(l-1))}{l!}\\
+\upsilon_{1}(K) & =\sum_{l=0}^{\infty}\frac{K^{l}(4-3(l+3)+(l+3)((l+3)-1))}{(l+3)!}\\
+ & =\sum_{l=0}^{\infty}\frac{K^{l}(l+1)^{2}}{(l+3)!}
+\end{align*}
+
+\end_inset
+
+Next, we work on deriving a similar formulation for 
+\begin_inset Formula $\upsilon_{2}$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{align*}
+\upsilon_{2}(K)K^{3} & =2+K+e^{K}\cdot\left(-2+K\right)\\
+ & =2+K+\sum_{l=0}^{\infty}\frac{K^{l}}{l!}\left(-2+K\right)\\
+ & =2+K-2\sum_{l=0}^{\infty}\frac{K^{l}}{l!}+K\sum_{l=0}^{\infty}\frac{K^{l}}{l!}\\
+ & =2+K-2-2\sum_{l=1}^{\infty}\frac{K^{l}}{l!}+K+K\sum_{l=1}^{\infty}\frac{K^{l}}{l!}\\
+ & =2K-2\sum_{l=1}^{\infty}\frac{K^{l}}{l!}+K\sum_{l=1}^{\infty}\frac{K^{l}}{l!}\\
+ & =2K-2K-2\sum_{l=2}^{\infty}\frac{K^{l}}{l!}+K^{2}+K\sum_{l=2}^{\infty}\frac{K^{l}}{l!}\\
+ & =-K^{2}-2\sum_{l=3}^{\infty}\frac{K^{l}}{l!}+K^{2}+\frac{1}{2}K^{3}+K\sum_{l=3}^{\infty}\frac{K^{l}}{l!}\\
+ & =\frac{1}{2}K^{3}+(K-2)\sum_{l=3}^{\infty}\frac{K^{l}}{l!}\\
+\upsilon_{2}(K) & =\frac{1}{2}+(K-2)\sum_{l=0}^{\infty}\frac{K^{l}}{(l+3)!}
+\end{align*}
+
+\end_inset
+
+And the same for 
+\begin_inset Formula $\upsilon_{3}$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{align*}
+\upsilon_{3}(K)K^{3} & =-4-3K-K^{2}+e^{K}\cdot(4-K)\\
+ & =-4-3K-K^{2}+\sum_{l=0}^{\infty}\frac{K^{l}}{l!}\cdot(4-K)\\
+ & =-4-3K-K^{2}+4\sum_{l=0}^{\infty}\frac{K^{l}}{l!}-K\sum_{l=0}^{\infty}\frac{K^{l}}{l!}\\
+ & =-4K-K^{2}+4\sum_{l=1}^{\infty}\frac{K^{l}}{l!}-K\sum_{l=1}^{\infty}\frac{K^{l}}{l!}\\
+ & =-2K^{2}+4\sum_{l=2}^{\infty}\frac{K^{l}}{l!}-K\sum_{l=2}^{\infty}\frac{K^{l}}{l!}\\
+ & =4\sum_{l=3}^{\infty}\frac{K^{l}}{l!}-\frac{1}{2}K^{3}-K\sum_{l=3}^{\infty}\frac{K^{l}}{l!}\\
+ & =-\frac{1}{2}K^{3}+4\sum_{l=3}^{\infty}\frac{K^{l}}{l!}-K\sum_{l=3}^{\infty}\frac{K^{l}}{l!}\\
+ & =-\frac{1}{2}K^{3}+(4-K)\sum_{l=3}^{\infty}\frac{K^{l}}{l!}\\
+\upsilon_{3}(K) & =-\frac{1}{2}+(4-K)\sum_{l=0}^{\infty}\frac{K^{l}}{(l+3)!}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph*
+SL-related functions
+\end_layout
+
+\begin_layout Standard
+Next, we study a particular SL-REXI formulation (see Pedro et al.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+SEMI-LAGRANGIAN EXPONENTIAL INTEGRATION WITH APPLICATION TO THE ROTATING
+ SHALLOW WATER EQUATIONS
+\begin_inset Quotes erd
+\end_inset
+
+):
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\varphi_{1}^{SL}(K) & =\varphi_{1}(-K)
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\varphi_{2}^{SL}(K) & =-\varphi_{2}(-K)+\varphi_{1}(-K)\\
+ & =-\sum_{i=0}^{\infty}\frac{(-K)^{i}}{(i+2)!}+\sum_{i=0}^{\infty}\frac{(-K)^{i}}{(i+1)!}\\
+ & =-\sum_{i=0}^{\infty}\frac{(-K)^{i}}{(i+2)!}+\sum_{i=0}^{\infty}\frac{(i+2)!(-K)^{i}}{(i+2)!}\\
+ & =\sum_{i=0}^{\infty}\frac{\left((i+2)!-1\right)(-K)^{i}}{(i+2)!}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\varphi_{3}^{SL}(K) & =???
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+EPIRK
+\end_layout
+
+\begin_layout Standard
+[TODO], see Tokman (2011) - A new class of exponential propagation iterative
+ methods of Runge-Kutta type (EPIRK).pdf
+\end_layout
+
+\end_body
+\end_document

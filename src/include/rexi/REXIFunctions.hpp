@@ -199,21 +199,9 @@ public:
 	};
 
 
-
-	template <typename D>
-	static
-	std::complex<D> convert(
-			const std::complex<T> &i_value
+	int factorial(
+			int N
 	)
-	{
-		std::complex<D> data;
-		data.real(i_value.real());
-		data.imag(i_value.imag());
-
-		return data;
-	}
-
-	int factorial(int N)
 	{
 		int retval = 1;
 
@@ -223,6 +211,73 @@ public:
 		return retval;
 	}
 
+
+
+	/*
+	 * \phi_N: Recursive computations
+	 *
+	 * ATTENTION: There's a singularity close to 0!
+	 */
+	std::complex<T> phiNRec(
+		int n,
+		const std::complex<T> &z
+	)
+	{
+		if (n == 0)
+			return l_expcplx(z);
+
+        return (phiNRec(n-1, z) - (T)1.0/(T)factorial(n-1))/z;
+	}
+
+
+
+
+	/*
+	 * \phi_N: Series-based computation
+	 *
+	 * This avoids the singularity close to 0
+	 */
+	std::complex<T> phiNSeries(
+		int n,
+		const std::complex<T> &z
+	)
+	{
+		std::complex<T> powz = 1.0;
+		T facn = factorial(n);
+
+		std::complex<T> retval = powz/facn;
+
+		for (int i = 1; i < 20; i++)
+		{
+			powz *= z;
+			facn *= (n+i);
+
+			retval += powz/facn;
+		}
+
+		return retval;
+	}
+
+
+
+	/*
+	 * \phi_N: default caller switching between recursive formulation and series
+	 */
+	std::complex<T> phiN(
+			int N,
+			const std::complex<T> &z
+	)
+	{
+		T linf = z.real()*z.real() + z.imag()*z.imag();
+        if (linf < 0.2)
+			return phiNSeries(N, z);
+
+        return phiNRec(N, z);
+	}
+
+
+
+#if 0
 	std::complex<T> phi(
 			int n,
 			const std::complex<T> &z
@@ -237,80 +292,133 @@ public:
 
         return (phi(n-1, z) - (T)1.0/(T)factorial(n-1))/z;
 	}
+#endif
 
 
-
-	std::complex<T> ups(
+	std::complex<T> upsNDirect(
 			int n,
-			const std::complex<T> &i_K
-	)
+			const std::complex<T> &z
+    )
 	{
-		// for tests of numerical instability
-		T lamdt = i_K.real()*i_K.real() + i_K.imag()*i_K.imag();
-
 		switch(n)
 		{
 		case 1:
 			// http://www.wolframalpha.com/input/?i=(-4-K%2Bexp(K)*(4-3K%2BK*K))%2F(K*K*K)
-			if (lamdt*lamdt*lamdt < eps_ups)
-			{
-				return 1.0/(2.0*3.0);
-			}
-			else
-			{
-				return (std::complex<T>(-4.0)-i_K+l_expcplx(i_K)*(std::complex<T>(4.0)-std::complex<T>(3.0)*i_K+i_K*i_K))/(i_K*i_K*i_K);
-			}
-			break;
+			return (-4.0-z+l_expcplx(z)*(4.0-3.0*z+z*z)) / (z*z*z);
 
-
-		case 2:	// \ups_2
+		case 2:
 			// http://www.wolframalpha.com/input/?i=(2%2BK%2Bexp(K)*(-2%2BK))%2F(K*K*K)
-			if (lamdt*lamdt*lamdt < eps_ups)
-			{
-				return 1.0/(2.0*3.0);
-			}
-			else
-			{
-				return (std::complex<T>(2.0)+i_K+l_expcplx(i_K)*(std::complex<T>(-2.0)+i_K))/(i_K*i_K*i_K);
-			}
-			break;
+			return (2.0+z+l_expcplx(z)*(-2.0+z)) / (z*z*z);
 
-
-		case 3:	// \ups_3
+		case 3:
 			// http://www.wolframalpha.com/input/?i=(-4-3*K-K*K%2Bexp(K)*(4-K))%2F(K*K*K)
-			if (lamdt*lamdt*lamdt < eps_ups)
-			{
-				return 1.0/(2.0*3.0);
-			}
-			else
-			{
-				return (std::complex<T>(-4.0)-std::complex<T>(3.0)*i_K-i_K*i_K+l_expcplx(i_K)*(std::complex<T>(4.0)-i_K))/(i_K*i_K*i_K);
-			}
-			break;
-
-
-
-		default:
-			FatalError("This ups number is not yet supported");
+			return (-4.0-3.0*z-z*z+l_expcplx(z)*(4.0-z)) / (z*z*z);
 		}
+
+		FatalError("ups number not supported!");
 	}
+
+
+	std::complex<T> upsNSeries(
+			int n,
+			const std::complex<T> &z
+    )
+	{
+		std::complex<T> powz;
+		T facn;
+
+		std::complex<T> retval;
+
+		int niters = 20;
+
+		switch(n)
+		{
+		case 1:
+			powz = 1.0;
+			facn = factorial(3);
+
+			retval = powz/facn;
+			for (int l = 1; l < niters; l++)
+			{
+		        powz *= z;
+		        facn *= (l+3);
+		        retval += powz*(l+1.0)*(l+1.0)/facn;
+			}
+			return retval;
+
+		case 2:
+            retval = 1.0/2.0;
+
+            powz = 1.0;
+            facn = factorial(3);
+
+            retval += (z-2.0)*powz/facn;
+			for (int l = 1; l < niters; l++)
+			{
+				powz *= z;
+				facn *= (l+3);
+				retval += (z-2.0)*powz/facn;
+			}
+
+			return retval;
+
+		case 3:
+            retval = -1.0/2.0;
+
+            powz = 1.0;
+            facn = factorial(3);
+
+            retval += (4.0-z)*powz/facn;
+			for (int l = 1; l < niters; l++)
+			{
+				powz *= z;
+				facn *= (l+3);
+				retval += (4.0-z)*powz/facn;
+			}
+
+			return retval;
+		}
+
+		FatalError("This Upsilon function is not supported!");
+	}
+
+
+	/*
+	 * \phi_N: default caller switching between recursive formulation and series
+	 */
+	std::complex<T> upsN(
+			int N,
+			const std::complex<T> &z
+	)
+	{
+		T linf = z.real()*z.real() + z.imag()*z.imag();
+        if (linf < 0.2)
+			return upsNSeries(N, z);
+
+        return upsNDirect(N, z);
+	}
+
 
 
 
 	/*
 	 * Semi-Lagrangian psi functions
 	 */
-	std::complex<T> psi(
+	std::complex<T> psiN(
 			int n,
 			const std::complex<T> &i_K
 	)
 	{
 		// for tests of numerical instability
-		T lamdt = i_K.real()*i_K.real() + i_K.imag()*i_K.imag();
+//		T lamdt = i_K.real()*i_K.real() + i_K.imag()*i_K.imag();
 
 		switch(n)
 		{
 		case 1:	// psi1
+#if 1
+			// psi1(z) = phi1(-z)
+			return phiN(1, -i_K);
+#else
 			//
 			if (lamdt < eps_phi)
 			{
@@ -321,11 +429,15 @@ public:
 				//psi1(z)=phi(-z)
 				return (l_expcplx(i_K) - std::complex<T>(1.0))/i_K;
 			}
+#endif
 			break;
 
 
 		case 2:	// psi2
-			//
+#if 1
+			// psi2(z)=-phi2(-z)+phi1(-z)
+			return -phiN(2, -i_K) + phiN(1, -i_K);
+#else
 			if (lamdt < eps_phi)
 				//					if (lamdt*lamdt < rexiFunctions.eps_phi)
 			{
@@ -337,10 +449,14 @@ public:
 				return -(l_expcplx(i_K) - std::complex<T>(1.0) - i_K)/(i_K*i_K)
 								+(l_expcplx(i_K) - std::complex<T>(1.0))/i_K;
 			}
+#endif
 			break;
 
 
 		case 3:	// psi3
+#if 1
+			FatalError("TODO: Redo this with e.g. series treatment");
+#else
 			if (lamdt < eps_phi)
 				//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
 			{
@@ -352,6 +468,7 @@ public:
 						- (l_expcplx(i_K) - std::complex<T>(1.0) - i_K)/(i_K*i_K)
 						+ std::complex<T>(0.5)*(l_expcplx(i_K) - std::complex<T>(1.0))/i_K;
 			}
+#endif
 			break;
 
 
@@ -375,44 +492,44 @@ public:
 		switch(function_id)
 		{
 		case PHI0:
-			return phi(0, i_K);
+			return phiN(0, i_K);
 
 		case PHI1:
-			return phi(1, i_K);
+			return phiN(1, i_K);
 
 		case PHI2:
-			return phi(2, i_K);
+			return phiN(2, i_K);
 
 		case PHI3:
-			return phi(3, i_K);
+			return phiN(3, i_K);
 
 		case PHI4:
-			return phi(4, i_K);
+			return phiN(4, i_K);
 
 		case PHI5:
-			return phi(5, i_K);
+			return phiN(5, i_K);
 
 
 
 		case UPS1:
-			return ups(1, i_K);
+			return upsN(1, i_K);
 
 		case UPS2:
-			return ups(2, i_K);
+			return upsN(2, i_K);
 
 		case UPS3:
-			return ups(3, i_K);
+			return upsN(3, i_K);
 
 
 
 		case PSI1:
-			return psi(1, i_K);
+			return psiN(1, i_K);
 
 		case PSI2:
-			return psi(2, i_K);
+			return psiN(2, i_K);
 
 		case PSI3:
-			return psi(3, i_K);
+			return psiN(3, i_K);
 
 
 
