@@ -49,6 +49,7 @@ public:
 
 		if (i_rexiSimVars->rexi_method == "terry")
 		{
+			std::cout << "WARNING: This way of using REXI is deprecated" << std::endl;
 			/// REXI stuff
 			REXI_Terry<T, T> rexi_terry;
 			rexi_terry.setup(i_function_name, i_rexiSimVars->terry_h, i_rexiSimVars->terry_M, i_rexiSimVars->terry_L, i_rexiSimVars->terry_reduce_to_half, i_rexiSimVars->terry_normalization);
@@ -58,6 +59,9 @@ public:
 		}
 		else if (i_rexiSimVars->rexi_method == "ci")
 		{
+			std::cout << "WARNING: This way of using REXI is deprecated" << std::endl;
+			std::cout << "WARNING: Compile SWEET with quad precision if using an order > 2." << std::endl;
+
 			/// REXI stuff
 			REXI_CI<T, T> rexi_ci;
 
