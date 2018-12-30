@@ -19,8 +19,8 @@ jg.compile.sphere_spectral_space="enable"
 jg.runtime.sphere_radius = 1
 jg.runtime.sphere_rotating_coriolis_omega = 1
 
-params_runtime_mode_res = [64, 128, 256, 512, 1024, 2048]
-#params_runtime_mode_res = [64, 128]
+#params_runtime_mode_res = [64, 128, 256, 512, 1024, 2048]
+params_runtime_mode_res = [64, 128, 256, 512, 1024]
 
 params_runtime_r = [1, 1e3, 1e6]
 params_runtime_f = [1, 1e-3, 1e-6]
