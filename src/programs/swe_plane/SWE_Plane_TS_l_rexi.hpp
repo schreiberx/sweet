@@ -93,6 +93,9 @@ public:
 	/// final time step
 	bool final_timestep;
 
+	/// use direct solution instead of REXI
+	bool rexi_use_direct_solution;
+
 	/// Direct solution for linear parts
 	SWE_Plane_TS_l_direct ts_l_direct;
 

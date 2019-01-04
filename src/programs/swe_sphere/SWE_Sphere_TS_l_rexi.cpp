@@ -223,7 +223,9 @@ void SWE_Sphere_TS_l_rexi::setup(
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();
 	#endif
 
-	if (i_rexi.use_direct_solution)
+	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
+
+	if (rexi_use_direct_solution)
 		FatalError("Direct solution for linear operator not available");
 
 	timestep_size = i_timestep_size;

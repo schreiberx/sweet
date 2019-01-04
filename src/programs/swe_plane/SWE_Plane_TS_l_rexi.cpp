@@ -35,7 +35,9 @@ void SWE_Plane_TS_l_rexi::setup(
 	domain_size[0] = simVars.sim.plane_domain_size[0];
 	domain_size[1] = simVars.sim.plane_domain_size[1];
 
-	if (rexiSimVars->use_direct_solution)
+	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
+
+	if (rexi_use_direct_solution)
 	{
 		ts_l_direct.setup(i_function_name);
 		return;
@@ -216,7 +218,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 {
 	final_timestep = false;
 
-	if (simVars.rexi.use_direct_solution)
+	if (rexi_use_direct_solution)
 	{
 		o_h_pert = i_h_pert;
 		o_u = i_u;

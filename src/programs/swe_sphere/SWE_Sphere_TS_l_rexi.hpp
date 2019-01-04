@@ -110,6 +110,11 @@ private:
 	 */
 	bool use_f_sphere;
 
+	/*
+	 * True, if REXI method is "direct"
+	 */
+	bool rexi_use_direct_solution;
+
 	bool use_rexi_sphere_solver_preallocation;
 
 	std::size_t block_size;

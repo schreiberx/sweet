@@ -90,6 +90,8 @@ private:
 	 */
 	double timestep_size;
 
+	bool rexi_use_direct_solution;
+
 	/*
 	 * Function name to be used by REXI
 	 */

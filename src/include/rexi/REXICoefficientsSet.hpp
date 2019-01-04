@@ -22,6 +22,7 @@ public:
 
 	std::vector< REXICoefficients<> > rexiCoefficients;
 
+
 	/**
 	 * Load REXI coefficients from filenames
 	 */
@@ -66,13 +67,6 @@ public:
 				FatalError("Too many split variable names");
 			}
 		}
-	}
-
-
-	void add(
-			REXICoefficients<> &i_rexiCoefficients
-	)
-	{
 	}
 
 

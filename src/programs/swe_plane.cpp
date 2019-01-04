@@ -1485,10 +1485,10 @@ int main(int i_argc, char *i_argv[])
 					simulationSWE->run_timestep();
 
 					// Instability
-					if (simulationSWE->instability_detected())
+					if (simVars.misc.instability_checks)
 					{
-						std::cout << "INSTABILITY DETECTED" << std::endl;
-						break;
+						if (simulationSWE->instability_detected())
+							FatalError("INSTABILITY DETECTED");
 					}
 				}
 			}
