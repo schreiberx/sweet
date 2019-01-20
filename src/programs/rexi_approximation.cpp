@@ -30,7 +30,7 @@ int main(
 			"function-name",		/// Frequency multipliers for special scenario setup
 			"lambda-real",			/// Real part of lambda
 			"lambda-imag",			/// Imaginary part of lambda
-			"test-type",			/// Type of test
+			"test-mode",			/// Type of test
 			nullptr
 	};
 
@@ -59,11 +59,11 @@ int main(
 	if (simVars.bogus.var[0] != "")
 		function_name = simVars.bogus.var[0];
 
-	double lambda_real = 0.0;
+	double lambda_real = std::numeric_limits<double>::infinity();
 	if (simVars.bogus.var[1] != "")
 		lambda_real = atof(simVars.bogus.var[1].c_str());
 
-	double lambda_imag = 0.0;
+	double lambda_imag = std::numeric_limits<double>::infinity();
 	if (simVars.bogus.var[2] != "")
 		lambda_imag = atof(simVars.bogus.var[2].c_str());
 
@@ -79,7 +79,7 @@ int main(
 		return -1;
 	}
 
-	if (std::abs(lambda) == 0)
+	if (std::isinf(std::abs(lambda)))
 	{
 		std::cerr << "Error: Specify \\lambda of linear operators" << std::endl;
 		return -1;
@@ -96,14 +96,39 @@ int main(
 	 * Load REXI coefficients from file
 	 */
 	REXICoefficientsSet<> rexiCoefficientsSet;
-	rexiCoefficientsSet.setup_from_files(simVars.rexi.rexi_files);
 
+	if (simVars.rexi.rexi_method == "direct")
+	{
+		FatalError("Direct REXI mode not supported");
+	}
+	else if (simVars.rexi.rexi_method == "file")
+	{
+		rexiCoefficientsSet.setup_from_files(simVars.rexi.rexi_files);
+
+		if (rexiCoefficientsSet.rexiCoefficientVector.size() == 0)
+			FatalError("No REXI coefficient loaded");
+	}
+	else if (simVars.rexi.rexi_method == "terry" || simVars.rexi.rexi_method == "ci")
+	{
+		REXICoefficients<> rexiCoefficients;
+
+		REXI<> rexi;
+		rexi.load(&simVars.rexi, function_name, rexiCoefficients, 0);
+
+		rexiCoefficientsSet.rexiCoefficientVector.push_back(rexiCoefficients);
+	}
+	else
+	{
+		FatalError("This REXI method is not supported");
+	}
 
 	std::cout << "+ test_mode: " << test_mode << std::endl;
 
-	for (std::size_t i = 0; i < rexiCoefficientsSet.rexiCoefficients.size(); i++)
+	simVars.rexi.outputConfig();
+
+	for (std::size_t i = 0; i < rexiCoefficientsSet.rexiCoefficientVector.size(); i++)
 	{
-		const std::string &function_name = rexiCoefficientsSet.rexiCoefficients[i].function_name;
+		const std::string &function_name = rexiCoefficientsSet.rexiCoefficientVector[i].function_name;
 
 		std::cout << "Running tests for function " << function_name << std::endl;
 
@@ -151,7 +176,6 @@ int main(
 		std::cout << "[MULE] error: " << error << std::endl;
 	}
 
-	simVars.rexi.outputConfig();
 /*
 	std::vector< std::complex<double> > alpha;
 	std::vector< std::complex<double> > beta;

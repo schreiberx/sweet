@@ -20,7 +20,7 @@ class REXICoefficientsSet
 public:
 	typedef std::complex<T> TComplex;
 
-	std::vector< REXICoefficients<> > rexiCoefficients;
+	std::vector< REXICoefficients<> > rexiCoefficientVector;
 
 
 	/**
@@ -30,7 +30,7 @@ public:
 			const std::string &i_rexi_filenames
 	)
 	{
-		rexiCoefficients.clear();
+		rexiCoefficientVector.clear();
 
 		// do simply nothing if there's no file name
 		if (i_rexi_filenames == "")
@@ -61,6 +61,8 @@ public:
 				if (rexiCoefficients.filename != "")
 					if (rexiCoefficients.function_name != split2[0])
 						FatalError("Function name mismatch!");
+
+				this->rexiCoefficientVector.push_back(rexiCoefficients);
 			}
 			else
 			{
@@ -74,7 +76,7 @@ public:
 			const std::string &i_function_name
 	)	const
 	{
-		for (auto iter = rexiCoefficients.begin(); iter != rexiCoefficients.end(); iter++)
+		for (auto iter = rexiCoefficientVector.begin(); iter != rexiCoefficientVector.end(); iter++)
 		{
 			if (iter->function_name == i_function_name)
 				return *iter;
