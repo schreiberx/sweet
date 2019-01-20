@@ -34,24 +34,6 @@ job_groups = c.create_groups(groups)
 for key, g in job_groups.items():
 	print(" + "+key)
 
-# Filter out errors beyond this value!
-def data_filter(x, y, jobdata):
-
-	if y == None:
-		return True
-
-	# Filter out NaNs for wallclock time studies
-	# NaNs require significantly more computation time
-	if math.isnan(y):
-		return True
-
-	return False
-
-	if y > 10.0:
-		return True
-
-	return False
-
 
 for tagname_y in tagnames_y:
 	print("*"*80)
@@ -62,15 +44,13 @@ for tagname_y in tagnames_y:
 
 	if True:
 		"""
-		Plotting format
+		Use plotting format to create (x/y) data
 		"""
-
 		d = JobsData_GroupsPlottingScattered(
 				job_groups,
 				tagname_x,
 				tagname_y,
 				meta_attribute_name = 'runtime.timestepping_order',
-#				data_filter = data_filter
 			)
 
 		for group_name, group_data in d.get_data_float().items():
@@ -169,6 +149,11 @@ for tagname_y in tagnames_y:
 						print("order: "+str(group_data['meta_values']))
 
 					raise Exception("FATAL: Different convergence orders in same test")
+
+			l = len(group_data['x_values'])
+			if l < conv_test_range_end:
+				print("There are only "+str(l)+" values, but we need at least "+str(conv_test_range_end)+" values")
+				raise Exception("Not enough values to study convergence")
 
 			prev_value = -1.0
 			conv = '-'
