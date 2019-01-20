@@ -117,7 +117,6 @@ group = sys.argv[1]
 if group == "l1":
 
 	ts_order = 1
-	jg.runtime.rexi_use_direct_solution = 0
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
@@ -132,7 +131,6 @@ if group == "l1":
 elif group == "l2":
 
 	ts_order = 2
-	jg.runtime.rexi_use_direct_solution = 0
 
 	ref_ts_method = 'l_erk'
 	ref_ts_order = 4
@@ -148,7 +146,6 @@ elif group == "l2":
 elif group == "ln1":
 
 	ts_order = 1
-	jg.runtime.rexi_use_direct_solution = 1
 
 	ref_ts_method = 'ln_erk'
 	ref_ts_order = 4
@@ -168,7 +165,6 @@ elif group == "ln1":
 elif group == "ln2":
 
 	ts_order = 2
-	jg.runtime.rexi_use_direct_solution = 1
 
 	ref_ts_method = 'ln_erk'
 	ref_ts_order = 4

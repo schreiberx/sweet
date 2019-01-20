@@ -129,7 +129,6 @@ if __name__ == "__main__":
 		jg.runtime.timestepping_method = tsm[0]
 		jg.runtime.timestepping_order = tsm[1]
 		jg.runtime.timestepping_order2 = tsm[2]
-		jg.runtime.rexi_use_direct_solution = tsm[3]
 
 		if len(tsm) > 4:
 			s = tsm[4]

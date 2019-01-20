@@ -83,9 +83,6 @@ group = sys.argv[1]
 
 
 
-jg.runtime.rexi_use_direct_solution = 0
-
-
 
 #
 # allow including this file

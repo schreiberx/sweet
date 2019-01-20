@@ -69,7 +69,6 @@ jg.runtime.rexi_method = 'direct'
 #jg.runtime.rexi_ci_sy = 50
 #jg.runtime.rexi_ci_mu = 0
 #jg.runtime.rexi_ci_primitive = 'circle'
-jg.runtime.rexi_use_direct_solution = 1
                 
 jg.runtime.gravitation= 1
 jg.runtime.sphere_rotating_coriolis_omega = 1
