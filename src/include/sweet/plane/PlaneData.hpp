@@ -2576,7 +2576,7 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
-		file << "#SWEET_PLANE_SPECTRAL_DATA_ASCII" << std::endl;
+		file << "#SWEET_PLANE_SPECTRAL_CPLX_DATA_ASCII" << std::endl;
 
 		size_t ymax = 0;
 		if (dimension == 2)
@@ -2602,7 +2602,7 @@ public:
 	}
 
 	/**
-	 * Write spectral data to ASCII file
+	 * Write amplitude of spectral data to ASCII file
 	 *
 	 * Each array row is stored to a line.
 	 * Per default, a tab separator is used in each line to separate the values.
@@ -2619,7 +2619,7 @@ public:
 		std::ofstream file(i_filename, std::ios_base::trunc);
 		file << std::setprecision(i_precision);
 
-		file << "#SWEET_PLANE_SPECTRAL_DATA_ASCII" << std::endl;
+		file << "#SWEET_PLANE_SPECTRAL_ABS_DATA_ASCII" << std::endl;
 
 		size_t ymax = 0;
 		if (dimension == 2)
@@ -2631,7 +2631,6 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-
 				file << spectral_return_amplitude(y, x);
 
 				if (x < planeDataConfig->spectral_data_size[0]-1)
