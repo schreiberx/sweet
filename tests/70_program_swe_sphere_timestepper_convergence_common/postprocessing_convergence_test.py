@@ -13,8 +13,6 @@ from matplotlib.lines import Line2D
 
 
 
-
-
 groups = ['runtime.timestepping_method']
 
 
