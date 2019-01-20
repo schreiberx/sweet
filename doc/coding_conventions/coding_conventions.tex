@@ -3,9 +3,15 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{url}
 \usepackage{listings}
+
 \author{Martin Schreiber}
-\title{Coding Conventions for SWEET}
+\title{Coding guidelines for SWEET}
+\date{Last updated: \today}
+	
+	
+	
 \begin{document}
 
 \maketitle
@@ -15,8 +21,23 @@ Different developers working together have usually different coding conventions.
 Therefore an agreement to coding conventions has to be achieved when working together on one project for several reasons.
 One of the main reasons is to keep the code clean and thus to maintain a better code structure.
 
+\section{Coding conventions for Python}
 
-\section{Coding conventions}
+The entire workflow to compile and execute code written in SWEET as well as the postprocessing is mainly written in Python.
+We use Python 3 without any exceptions!
+Generally, please try to follow PEP8 guidelines which can be found at \url{https://www.python.org/dev/peps/pep-0008/} with the following exceptions:
+
+\begin{itemize}
+	\item Use tab indentation with tabs configures to take 4 spaces\\
+	In VIM, this can be configured with\\
+	\texttt{autocmd Filetype python setlocal tabstop=4 shiftwidth=4}
+	\item Use Unix encoded python source code files
+\end{itemize}
+
+
+
+
+\section{Coding conventions for C++}
 
 \subsection{Eclipse configuration}
 Eclipse supports features for automatic formattation of code via [Source] $\rightarrow$ [Format].

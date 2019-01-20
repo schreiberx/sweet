@@ -688,9 +688,9 @@ public:
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
 
-		if ((disc.space_res_physical[0] & 1) || (disc.space_res_physical[1] & 1))
-			std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
-
+		if ((disc.space_res_physical[0] != -1) && (disc.space_res_physical[1] != -1))
+			if ((disc.space_res_physical[0] & 1) || (disc.space_res_physical[1] & 1))
+				std::cout << "WARNING: Typically there are only even resolutions supported!" << std::endl;
 
 		if (benchmark.random_seed >= 0)
 			srandom(benchmark.random_seed);
