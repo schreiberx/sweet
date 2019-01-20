@@ -1,0 +1,10 @@
+
+postprocessing_errors_to_pickle.py:
+	Compute errors to reference solution
+
+postprocessing_all_kineticenergy_to_pickle.py:
+	Compute the kinetic energy spectrum for all velocity files and store in pickle file
+
+postprocessing_kineticenergy_to_pickle.py
+	Compute the kinetic energy spectrum for the last velocity file (likely the reference solution) and store result in pickle files for each time frame
+

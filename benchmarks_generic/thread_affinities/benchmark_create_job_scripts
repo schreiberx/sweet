@@ -27,7 +27,7 @@ for i in range(j.platform_resources.num_cores_per_socket):
 	j.parallelization.core_oversubscription = False
 
 	j.parallelization.core_affinity = 'compact'
-	j.gen_jobscript_directory('job_'+j.getUniqueID())
+	j.gen_jobscript_directory()
 
 #	j.parallelization.core_affinity = 'scatter'
 #	j.gen_jobscript_directory('job_'+j.getUniqueID())
