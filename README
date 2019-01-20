@@ -34,8 +34,8 @@ File structure:
 	doc/		Documentation
 	local_software/	3rd party software with installer scripts
 			If you get compile errors, please checkout this directory
-	package/	Used for creating tarballs to deploy to servers
-	python_mods/	Python helper files
+	mule/		Compile, run and parallelization (PRC) framework
+	mule_local/	Software-specific PRC scripts
 	src/		Source folder
 	src/programs	Example programs
 	src/unit_tests	Unit tests to validate SWEET
@@ -48,7 +48,6 @@ File structure:
 	run_tests_validation.sh		Test script to validate computations
 	run_valgrind.sh		Convenient script to call valgrind with preset options (Useful for debugging)
 	SConstruct	Required for compilation (scons)
-	TODO		TODO list
 
 
 
