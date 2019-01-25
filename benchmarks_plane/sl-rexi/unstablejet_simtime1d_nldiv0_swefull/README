@@ -1,0 +1,50 @@
+
+
+benchmarks_create.py
+=========================
+	Create all benchmark scripts
+
+
+
+pp_pickle.sh:
+=========================
+
+	Calling the following scripts
+
+	pp_pickle_errors.py:
+		Compute errors to reference solution
+
+	pp_pickle_kineticenergy_all_timeframes.py
+		Create kinetic energy spectrum across all time frames
+
+	pp_pickle_kineticenergy_last_timeframe.py
+		Create energy spectrum only for last time frame
+
+
+
+pp_plot_errors_all.sh:
+==================================
+
+	Create all error plots based on the following script
+
+	pp_plot_errors_single.py:
+		Create particular error plots based on the specified job directories
+
+
+
+pp_plot_energy_all.sh:
+==================================
+
+	Create all kinds of energy plots
+
+	pp_plot_energy_single.py:
+		Create a particular energy plot based on specified job directories
+
+
+
+pp_plot_plane.py:
+==================================
+
+	Create a plot of the height or velocity field
+
+
