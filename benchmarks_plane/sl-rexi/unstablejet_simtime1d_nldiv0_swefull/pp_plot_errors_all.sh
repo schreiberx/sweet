@@ -25,5 +25,5 @@ DATA+=" *tsm_ln_erk_tso2*"
 DATA+=" *tsm_l_rexi_n_erk_tso2*"
 
 
-./postprocessing_plot_errors_single.py plot_errors.pdf $DATA
+./pp_plot_errors_single.py plot_errors.pdf $DATA
 

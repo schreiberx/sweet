@@ -16,7 +16,7 @@
 #SBATCH --clusters=serial
 #SBATCH --time=96:00:00
 #
-# since the job takes over 2 days to be executed
+# if a job might take over 2 days to be executed
 
 import os
 import sys
@@ -33,9 +33,8 @@ jg = JobGeneration()
 # Request dedicated compile script
 jg.compilecommand_in_jobscript = False
 
-# Run for up to 4 hours
 max_wallclock_seconds = 12*60*60
-ref_max_wallclock_seconds = 48*60*60
+ref_max_wallclock_seconds = 12*60*60
 
 #Get Earth parameters (if necessary)
 earth = EarthMKSDimensions()
@@ -163,8 +162,8 @@ for tsm in ts_methods[1:]:
 		jg.runtime.timestepping_order2 = tsm[2]
 		jg.runtime.space_res_physical = -1
 		jg.runtime.space_res_spectral = phys_res_list[idx]
-		print("id   dt       Nmodes  ")
-		print(idx, jg.runtime.timestep_size, jg.runtime.space_res_physical)
+		#print("id\tdt\tNmodes")
+		#print(idx, jg.runtime.timestep_size, jg.runtime.space_res_physical)
 
 		jg.gen_jobscript_directory()
 
