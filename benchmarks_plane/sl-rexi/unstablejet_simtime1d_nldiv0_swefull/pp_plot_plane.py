@@ -1,4 +1,5 @@
-#! /usr/bin/python3
+#! /usr/bin/env python3
+#
 # Plot unstable jet fields
 # 
 #--------------------------------------
@@ -19,6 +20,14 @@ import os
 fontsize=18
 figsize=(9, 7)
 
+if len(sys.argv) <= 1:
+	print("")
+	print("Usage:")
+	print("")
+	print(" $ "+sys.argv[0]+" [physdata1] [physdata2] [...]")
+	print("")
+	sys.exit(1)
+
 for filename in sys.argv[1:]:
 
 	jd = JobData(os.path.split(filename)[0])
@@ -27,7 +36,7 @@ for filename in sys.argv[1:]:
 	#Load data
 	print(filename)
 	data = np.loadtxt(filename)
-	
+
 	if 'prog_h' in filename:
 		depth = jobdata['runtime.h0']
 
