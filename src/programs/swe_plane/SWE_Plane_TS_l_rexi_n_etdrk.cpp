@@ -415,6 +415,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::setup(
 )
 {
 	timestepping_order = i_timestepping_order;
+	use_only_linear_divergence = i_use_only_linear_divergence;
 
 	if (timestepping_order == 1)
 	{
