@@ -4,47 +4,31 @@ READ THIS CAREFULLY!!! DON'T SKIP ANY PARTS!!!
 ******************************************************
 
 There are scripts in the directory
-
 	'local_software'
-
 to make handling external software requirements easier.
-Not all software packages are
-required on all platforms. E.g. installing `autoconf` is only required
-if the version on the platform is too old.
 
-The scripts are named as follows:
+Not all software packages are required on all platforms. E.g. installing
+`autoconf` is only required if the version on the platform is too old.
 
- * ./install_*.sh
-   Build and install the 3rd party software automatically
-   Please note that this does not necessarily generate highly optimized
-   3rd party software, but focusses on getting SWEET running.
 
- * ./env_vars.sh (See below for more information on how to use this script!)
-   This script sets up all the environment variables to compile and run SWEET.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!   FIRST THING TO DO BEFORE ANYTHING              !!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-After installing the software, you can setup your environment variable via
+Before doing anything, you *must* setup your environment variable via
 	source ./local_software/env_vars.sh
 
 or inside the local_software directory via
 	source ./env_vars.sh
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!   FIRST THING TO DO BEFORE COMPILING ANYTHING    !!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Within the 3rd party software directory in local_software,
+there are installation scripts named as follows:
 
-First include the content of
-
-  local_softare/env_vars.sh
-
-in your current environment e.g. by using
-
-  $ source ./local_software/env_vars.sh
-
-Otherwise the scripts are maybe using the system-wide installed
-software packages which is also fine.
-
-
+ * ./install_*.sh
+   Build and install the 3rd party software automatically
+   Please note that this does not necessarily generate highly optimized
+   3rd party software, but focusses on getting SWEET running.
 
 
 
@@ -55,8 +39,6 @@ software packages which is also fine.
 This is a list of recommended scripts to trigger for installation.
 First of all, include the environment variables which make the
 installed software available to the other install scripts:
-
-  $ source ./local_software/env_vars.sh
 
 Once going into the local_software directory
   $ cd ./local_software
@@ -102,7 +84,7 @@ Packages required for libpfasst (Fortran PFASST):
 If there are any compilation problems, please send the last
 lines of the output and more information on the used system to
 
-	Martin Schreiber <M.Schreiber@exeter.ac.uk>
+Martin Schreiber <schreiberx@gmail.com>
 
 
 
