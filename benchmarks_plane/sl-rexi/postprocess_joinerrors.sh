@@ -1,1 +1,0 @@
-../../scripts/postprocess_joinerrors.sh
