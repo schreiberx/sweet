@@ -14,7 +14,7 @@ import matplotlib.ticker as ticker
 
 from mule.postprocessing.JobsData import *
 
-if len(sys.argv) > 1:
+if len(sys.argv) >= 3:
 	pickle_tag = sys.argv[1]
 	output_filename = sys.argv[2]
 
@@ -44,10 +44,10 @@ def label(d):
 	return val
 
 def x_values(d):
-	return d['plane_data_kinetic_energy.spectrum_wavelength']
+	return d[pickle_tag+'.spectrum_wavelength']
 
 def y_values(d):
-	return d['plane_data_kinetic_energy.spectrum']
+	return d[pickle_tag+'.spectrum']
 
 
 ##########################################################

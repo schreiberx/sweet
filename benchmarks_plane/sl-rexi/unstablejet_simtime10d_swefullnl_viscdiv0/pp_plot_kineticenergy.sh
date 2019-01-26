@@ -31,6 +31,7 @@ DATA+=" job_bench_RT_tsm_l_rexi_n_etdrk_tso2_tsob2_C1.125e+02_S864000"
 
 # Plot Energy
 ../pp_plot_kineticenergy_spectrum_single.py		\
+	plane_data_kinetic_energy_t00000864000.00000000		\
 	plot_kineticenergy_spectrum_simtime_1day.pdf 		\
 	$DATA
 	

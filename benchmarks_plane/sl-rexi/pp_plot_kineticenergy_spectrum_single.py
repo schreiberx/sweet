@@ -14,8 +14,10 @@ import matplotlib.ticker as ticker
 
 from mule.postprocessing.JobsData import *
 
-if len(sys.argv) > 1:
-	output_filename = sys.argv[1]
+if len(sys.argv) >= 3:
+	#return d['plane_data_kinetic_energy.spectrum']
+	muletag = sys.argv[1]
+	output_filename = sys.argv[2]
 else:
 	print("")
 	print("Usage:")
@@ -25,9 +27,9 @@ else:
 	sys.exit(1)
 
 
-if len(sys.argv) > 2:
+if len(sys.argv) >= 4:
 	# Load Jobs specified via program parameters
-	jd = JobsData(job_dirs=sys.argv[2:])
+	jd = JobsData(job_dirs=sys.argv[3:])
 else:
 	# Load all Jobs
 	jd = JobsData()
@@ -42,10 +44,10 @@ def label(d):
 	return val
 
 def x_values(d):
-	return d['plane_data_kinetic_energy.spectrum_wavelength']
+	return d[muletag+'.spectrum_wavelength']
 
 def y_values(d):
-	return d['plane_data_kinetic_energy.spectrum']
+	return d[muletag+'.spectrum']
 
 
 ##########################################################

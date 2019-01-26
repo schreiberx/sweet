@@ -13,7 +13,7 @@ if true; then
 	OUTPUTFILE="plot_prog_h_pert_spectrum_simtime_10_days_C1.406e+01.pdf"
 
 	# Plot!
-	../pp_plot_spectrum.py $SPECTAG $OUTPUTFILE $DIRS
+	../pp_plot_planedata_spectrum.py $SPECTAG $OUTPUTFILE $DIRS
 
 fi
 
@@ -31,6 +31,6 @@ if true; then
 	OUTPUTFILE="plot_prog_h_pert_spectrum_simtime_10days_C1.125e+02.pdf"
 
 	# Plot!
-	../pp_plot_spectrum.py $SPECTAG $OUTPUTFILE $DIRS
+	../pp_plot_planedata_spectrum.py $SPECTAG $OUTPUTFILE $DIRS
 
 fi
