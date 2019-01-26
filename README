@@ -28,6 +28,7 @@ File structure:
 
 	archive/	Old stuff which should be still visible when checking out repository
 	benchmarks_sphere/	Scripts for running benchmarks (numerical and HPC) on the sphere
+	benchmarks_generic/	Benchmarks without plane or sphere spatial discretization
 	benchmarks_plane/	Scripts for running benchmarks (numerical and HPC) on the plane
 	build/		Build directory, note, that also /tmp is used for storing object files
 	data/		Data such as OpenGL shaders
@@ -79,7 +80,7 @@ Compilation on personal workstation:
 	The compilation is then done by calling 'scons' which is a
 	makefile alternative and offers the flexibility of Python.
 
-	$ scons --program=swe_staggered_vector_invariant
+	$ scons --program=swe_plane
 
 
 	The possible compilation (maybe not complete) options are visible via
@@ -94,4 +95,4 @@ Compilation on personal workstation:
 Compilation on cluster:
 **************************
 
-	Please see ./platform/HOWTO
+	TODO: Describe how to use MULE
