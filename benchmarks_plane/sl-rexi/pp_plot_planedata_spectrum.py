@@ -112,9 +112,11 @@ c = 0
 
 title = ''
 for key, d in data.items():
+	print("Processing job in directory: "+d['jobgeneration.job_dirpath'])
+
+	l = label(d)
 	x = x_values(d)
 	y = y_values(d)
-	l = label(d)
 
 	print(" + "+l)
 	plt.loglog(x[1:], y[1:], markers[c % len(markers)], linestyle=linestyles[c % len(linestyles)], label=l)	
