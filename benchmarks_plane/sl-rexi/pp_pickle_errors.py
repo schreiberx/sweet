@@ -9,12 +9,12 @@ from mule.exec_program import *
 if len(sys.argv) > 1:
 	pickle_PlaneDataPhysicalDiff(
 				job_dirs=sys.argv[1:],
-				params=["interpolate_ref_to_cmp", "ignore_missing_file"]
-				#params=["reduce_ref_to_cmp", "ignore_missing_file"]
+				#params=["interpolate_ref_to_cmp", "ignore_missing_file"]
+				params=["spectral_ref_to_cmp", "ignore_missing_file"]
 		)
 
 else:
 	pickle_PlaneDataPhysicalDiff(
-				params=["interpolate_ref_to_cmp", "ignore_missing_file"]
-				#params=["reduce_ref_to_cmp", "ignore_missing_file"]
+				#params=["interpolate_ref_to_cmp", "ignore_missing_file"]
+				params=["spectral_ref_to_cmp", "ignore_missing_file"]
 		)

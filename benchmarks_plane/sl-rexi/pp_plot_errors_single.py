@@ -48,8 +48,13 @@ def data_filter(x, y, jd):
 	if y == None:
 		return True
 
-	if y > 100:
-		return True
+	if 'runtime.max_simulation_time' in jd:
+		if jd['runtime.max_simulation_time'] <= 24*60*60:
+			if y > 100:
+				return True
+		elif jd['runtime.max_simulation_time'] <= 10*24*60*60:
+			if y > 1000:
+				return True
 
 	return False
 

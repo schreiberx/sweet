@@ -27,6 +27,6 @@ DATA+=" *tsm_l_rexi_n_erk_tso2*"
 
 ../pp_plot_errors_single.py			\
 	plane_data_diff_prog_h_pert.norm_linf	\
-	plot_errors_simtime_10days.pdf			\
+	plot_errors_simtime_prog_h_10days.pdf			\
 	$DATA
 
