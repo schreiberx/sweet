@@ -74,7 +74,12 @@ Parallelization parameters
 ptime = JobParallelizationDimOptions('time')
 ptime.num_cores_per_rank = 1
 ptime.num_threads_per_rank = 1
-ptime.num_ranks = 2
+
+if jg.platform_resources.num_cores_per_node <= 1:
+    ptime.num_ranks = 1
+else:
+    ptime.num_ranks = 2
+
 
 pspace = JobParallelizationDimOptions('space')
 pspace.num_cores_per_rank = 1
