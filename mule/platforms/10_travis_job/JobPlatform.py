@@ -71,7 +71,12 @@ def get_platform_resources():
 
 	h = JobPlatformResources()
 
-	h.num_cores_per_node = multiprocessing.cpu_count()
+        # Python returned once a wrong number
+	#h.num_cores_per_node = multiprocessing.cpu_count()
+
+        # Travis CI runs on a 2-core machine
+	h.num_cores_per_node = 2
+
 	h.num_nodes = 1
 
 	# TODO: So far, we only assume a single socket system as a fallback
