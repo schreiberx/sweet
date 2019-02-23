@@ -32,22 +32,22 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	 * Follows Hack & Jakob formulation
 	 */
 
-	SphereDataPhysical ug(i_phi.sphereDataConfig);
-	SphereDataPhysical vg(i_phi.sphereDataConfig);
+	SphereData_Physical ug(i_phi.sphereDataConfig);
+	SphereData_Physical vg(i_phi.sphereDataConfig);
 
-	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
-	SphereDataPhysical divg = i_div.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+	SphereData_Physical divg = i_div.getSphereDataPhysical();
 	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-	SphereDataPhysical tmpg1 = ug*(vrtg+fg);
-	SphereDataPhysical tmpg2 = vg*(vrtg+fg);
+	SphereData_Physical tmpg1 = ug*(vrtg+fg);
+	SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
 	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
-	SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+	SphereData_Physical tmpg = o_div_t.getSphereDataPhysical();
 
 	tmpg1 = ug*phig;
 	tmpg2 = vg*phig;
@@ -122,7 +122,7 @@ void SWE_Sphere_TS_ln_erk::setup(
 
 SWE_Sphere_TS_ln_erk::SWE_Sphere_TS_ln_erk(
 		SimulationVariables &i_simVars,
-		SphereOperators &i_op
+		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),

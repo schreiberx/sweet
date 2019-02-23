@@ -8,20 +8,20 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICALCOMPLEX_TO_SPHEREDATAPHYSICAL_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICALCOMPLEX_TO_SPHEREDATAPHYSICAL_HPP_
 
-#include <sweet/sphere/SphereDataPhysical.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/SphereData_Physical.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
 class Convert_SphereDataPhysicalComplex_To_SphereDataPhysical
 {
 public:
 	static
-	SphereDataPhysical physical_convert_real(
-			const SphereDataPhysicalComplex &i_sphereData
+	SphereData_Physical physical_convert_real(
+			const SphereData_PhysicalComplex &i_sphereData
 	)
 	{
-		SphereDataPhysical out(i_sphereData.sphereDataConfig);
+		SphereData_Physical out(i_sphereData.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -34,11 +34,11 @@ public:
 
 public:
 	static
-	SphereDataPhysical physical_convert_imag(
-			const SphereDataPhysicalComplex &i_sphereData
+	SphereData_Physical physical_convert_imag(
+			const SphereData_PhysicalComplex &i_sphereData
 	)
 	{
-		SphereDataPhysical out(i_sphereData.sphereDataConfig);
+		SphereData_Physical out(i_sphereData.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int i = 0; i < out.sphereDataConfig->physical_array_data_number_of_elements; i++)

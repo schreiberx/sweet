@@ -8,12 +8,12 @@
 #ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_
 #define SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 //#include <benchmarks_sphere/BenchmarkGalewsky.hpp>
 #include <benchmarks_sphere/BenchmarkGaussianDam.hpp>
 #include <benchmarks_sphere/BenchmarkFlowOverMountain.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 #if SWEET_MPI
 	#include <mpi.h>
@@ -30,7 +30,7 @@ public:
 	SimulationVariables *simVars;
 
 	// Sphere operators
-	SphereOperators *op;
+	SphereOperators_SphereData *op;
 
 	// plane or sphere data config
 	const void* ext_forces_data_config;
@@ -116,9 +116,9 @@ public:
 	 * (Inspired by code of Jeffrey Whitaker)
 	 */
 	void computeGeostrophicBalance(
-			SphereDataSpectral &o_phi,
-			SphereDataSpectral &i_vort,
-			SphereDataSpectral &i_div,
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &i_vort,
+			SphereData_Spectral &i_div,
 			// Don't use robert formulation per default! Otherwise bugs in here can cancel out bugs in the Robert time stepper
 			bool i_use_robert_formulation = false
 	)
@@ -126,7 +126,7 @@ public:
 		/*
 		 * Setup Coriolis effect
 		 */
-		SphereDataPhysical f(o_phi.sphereDataConfig);
+		SphereData_Physical f(o_phi.sphereDataConfig);
 		f.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
@@ -137,21 +137,21 @@ public:
 		/*
 		 * Compute vorticity and divergence from velocities
 		 */
-		SphereDataPhysical u(o_phi.sphereDataConfig);
-		SphereDataPhysical v(o_phi.sphereDataConfig);
+		SphereData_Physical u(o_phi.sphereDataConfig);
+		SphereData_Physical v(o_phi.sphereDataConfig);
 
 		if (i_use_robert_formulation)
 			op->robert_vortdiv_to_uv(i_vort, i_div, u, v);
 		else
 			op->vortdiv_to_uv(i_vort, i_div, u, v);
 
-		SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
+		SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
 
-		SphereDataPhysical tmpg1 = u*(vrtg+f);
-		SphereDataPhysical tmpg2 = v*(vrtg+f);
+		SphereData_Physical tmpg1 = u*(vrtg+f);
+		SphereData_Physical tmpg2 = v*(vrtg+f);
 
-		SphereDataSpectral tmpspec1(o_phi.sphereDataConfig);
-		SphereDataSpectral tmpspec2(o_phi.sphereDataConfig);
+		SphereData_Spectral tmpspec1(o_phi.sphereDataConfig);
+		SphereData_Spectral tmpspec2(o_phi.sphereDataConfig);
 
 		if (i_use_robert_formulation)
 		  op->robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
@@ -163,7 +163,7 @@ public:
 		if (i_use_robert_formulation)
 			tmpspec2 = tmpspec2.robert_convertToNonRobertSquared();
 
-		SphereDataSpectral phispec = op->inv_laplace(tmpspec1) - tmpspec2;
+		SphereData_Spectral phispec = op->inv_laplace(tmpspec1) - tmpspec2;
 
 		o_phi = phispec + simVars->sim.h0*simVars->sim.gravitation;
 	}
@@ -210,7 +210,7 @@ public:
 
 	void setup(
 			SimulationVariables &io_simVars,
-			SphereOperators &io_op
+			SphereOperators_SphereData &io_op
 	)
 	{
 		simVars = &io_simVars;
@@ -219,9 +219,9 @@ public:
 
 
 	void setupInitialConditions(
-			SphereDataSpectral &o_phi,
-			SphereDataSpectral &o_vort,
-			SphereDataSpectral &o_div
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vort,
+			SphereData_Spectral &o_div
 	)
 	{
 		if (simVars == nullptr)
@@ -247,7 +247,7 @@ public:
 							void* o_data_user_void		/// user data (pointer to this class)
 			)
 			{
-				SphereDataSpectral* o_sphere_data = (SphereDataSpectral*)o_data_void;
+				SphereData_Spectral* o_sphere_data = (SphereData_Spectral*)o_data_void;
 				SWESphereBenchmarksCombined* s = (SWESphereBenchmarksCombined*)o_data_user_void;
 
 				if (i_field_id == 1)
@@ -268,7 +268,7 @@ public:
 					// change velocity
 					u0 = u0*(1.0 + std::cos(r));
 
-					SphereDataPhysical stream_function(o_sphere_data->sphereDataConfig);
+					SphereData_Physical stream_function(o_sphere_data->sphereDataConfig);
 
 					stream_function.physical_update_lambda(
 						[&](double i_lon, double i_lat, double &io_data)
@@ -321,7 +321,7 @@ public:
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0.0;
 
-			SphereDataPhysical phi_phys(o_phi.sphereDataConfig);
+			SphereData_Physical phi_phys(o_phi.sphereDataConfig);
 
 			phi_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
@@ -389,7 +389,7 @@ public:
 			double R = a/3.0;
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
 
-			SphereDataPhysical phi_phys(o_phi.sphereDataConfig);
+			SphereData_Physical phi_phys(o_phi.sphereDataConfig);
 
 			phi_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
@@ -410,7 +410,7 @@ public:
 
 			o_phi.loadSphereDataPhysical(phi_phys);
 
-			SphereDataPhysical stream_function(o_phi.sphereDataConfig);
+			SphereData_Physical stream_function(o_phi.sphereDataConfig);
 
 			stream_function.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
@@ -460,7 +460,7 @@ public:
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
 			//double u0 = (2.0*M_PI*a*1000.0);
 
-			SphereDataPhysical phi_phys(o_phi.sphereDataConfig);
+			SphereData_Physical phi_phys(o_phi.sphereDataConfig);
 
 			phi_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
@@ -483,7 +483,7 @@ public:
 			 * Both versions are working
 			 */
 #if 1
-			SphereDataPhysical stream_function(o_phi.sphereDataConfig);
+			SphereData_Physical stream_function(o_phi.sphereDataConfig);
 
 			stream_function.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
@@ -566,14 +566,14 @@ public:
 			/*
 			 * Setup V=0
 			 */
-			SphereDataPhysical vg(o_phi.sphereDataConfig);
+			SphereData_Physical vg(o_phi.sphereDataConfig);
 			vg.physical_set_zero();
 
 			/*
 			 * Setup U=...
 			 * initial velocity along longitude
 			 */
-			SphereDataPhysical ug(o_phi.sphereDataConfig);
+			SphereData_Physical ug(o_phi.sphereDataConfig);
 			ug.physical_update_lambda(
 				[&](double lon, double phi, double &o_data)
 				{
@@ -613,7 +613,7 @@ public:
 					o_div
 			);
 
-			SphereDataPhysical hbump(o_phi.sphereDataConfig);
+			SphereData_Physical hbump(o_phi.sphereDataConfig);
 			if (simVars->benchmark.benchmark_name == "galewsky")
 			{
 				hbump.physical_update_lambda(
@@ -660,14 +660,14 @@ public:
 			/*
 			 * Setup V=0
 			 */
-			SphereDataPhysical vg(o_phi.sphereDataConfig);
+			SphereData_Physical vg(o_phi.sphereDataConfig);
 			vg.physical_set_zero();
 
 			/*
 			 * Setup U=...
 			 * initial velocity along longitude
 			 */
-			SphereDataPhysical ug(o_phi.sphereDataConfig);
+			SphereData_Physical ug(o_phi.sphereDataConfig);
 			ug.physical_update_lambda(
 				[&](double lon, double phi, double &o_data)
 				{
@@ -698,7 +698,7 @@ public:
 				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
 			}
 
-			SphereDataPhysical hg(o_phi.sphereDataConfig);
+			SphereData_Physical hg(o_phi.sphereDataConfig);
 			computeGeostrophicBalance(
 					o_phi,
 					o_vort,
@@ -734,7 +734,7 @@ public:
 			/*
 			 * Setup U=...
 			 */
-			SphereDataPhysical ug(o_phi.sphereDataConfig);
+			SphereData_Physical ug(o_phi.sphereDataConfig);
 			ug.physical_update_lambda(
 							[&](double lon, double phi, double &o_data)
 								{
@@ -747,7 +747,7 @@ public:
 			/*
 			 * Setup V=...
 			 */
-			SphereDataPhysical vg(o_phi.sphereDataConfig);
+			SphereData_Physical vg(o_phi.sphereDataConfig);
 			vg.physical_update_lambda(
 							  [&](double lon, double phi, double &o_data)
 									{
@@ -778,7 +778,7 @@ public:
 				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
 			}
 
-			SphereDataPhysical hg(o_phi.sphereDataConfig);
+			SphereData_Physical hg(o_phi.sphereDataConfig);
 			computeGeostrophicBalance(
 					o_phi,
 					o_vort,
@@ -794,8 +794,8 @@ public:
 		}
 		else if (simVars->benchmark.benchmark_name == "flat")
 		{
-			SphereDataPhysical tmp(o_phi.sphereDataConfig);
-			SphereDataSpectral o_h(o_phi.sphereDataConfig);
+			SphereData_Physical tmp(o_phi.sphereDataConfig);
+			SphereData_Spectral o_h(o_phi.sphereDataConfig);
 			tmp.physical_set_all_value(simVars->sim.h0*simVars->sim.gravitation);
 			o_phi.loadSphereDataPhysical(tmp);
 
@@ -805,18 +805,18 @@ public:
 		}
 		else if (simVars->benchmark.benchmark_name == "gaussian_bumps2" || simVars->benchmark.benchmark_name == "three_gaussian_bumps")
 		{
-			SphereDataPhysical tmp(o_phi.sphereDataConfig);
-			SphereDataSpectral o_h(o_phi.sphereDataConfig);
+			SphereData_Physical tmp(o_phi.sphereDataConfig);
+			SphereData_Spectral o_h(o_phi.sphereDataConfig);
 
 			tmp.physical_set_all_value(simVars->sim.h0);
 			o_h.loadSphereDataPhysical(tmp);
 
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
-			o_h += (SphereDataSpectral(tmp)-simVars->sim.h0);
+			o_h += (SphereData_Spectral(tmp)-simVars->sim.h0);
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, *simVars, 2.0*M_PI*0.6, M_PI/5.0, 80.0);
-			o_h += (SphereDataSpectral(tmp)-simVars->sim.h0);
+			o_h += (SphereData_Spectral(tmp)-simVars->sim.h0);
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, *simVars, 2.0*M_PI*0.8, -M_PI/4, 360.0);
-			o_h += (SphereDataSpectral(tmp)-simVars->sim.h0);
+			o_h += (SphereData_Spectral(tmp)-simVars->sim.h0);
 
 			o_phi = o_h*simVars->sim.gravitation;
 		}
@@ -840,7 +840,7 @@ public:
 				simVars->sim.gravitation *= 0.2;
 			}
 
-			SphereDataPhysical tmp(o_phi.sphereDataConfig);
+			SphereData_Physical tmp(o_phi.sphereDataConfig);
 
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
 			o_phi.loadSphereDataPhysical(tmp);
@@ -858,8 +858,8 @@ public:
 			/*
 			 * Convert forward/backward to velocity space to apply a certain truncation
 			 */
-			SphereDataPhysical ug(o_phi.sphereDataConfig);
-			SphereDataPhysical vg(o_phi.sphereDataConfig);
+			SphereData_Physical ug(o_phi.sphereDataConfig);
+			SphereData_Physical vg(o_phi.sphereDataConfig);
 			if (simVars->misc.sphere_use_robert_functions)
 				op->robert_vortdiv_to_uv(o_vort, o_div, ug, vg);
 			else
@@ -909,7 +909,7 @@ public:
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 			}
 
-			SphereDataSpectral o_h(o_phi.sphereDataConfig);
+			SphereData_Spectral o_h(o_phi.sphereDataConfig);
 
 			// update operator because we changed the simulation parameters
 			op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
@@ -944,14 +944,14 @@ public:
 			/*
 			 * Setup V=0
 			 */
-			SphereDataPhysical vg(o_h.sphereDataConfig);
+			SphereData_Physical vg(o_h.sphereDataConfig);
 			vg.physical_set_zero();
 
 			/*
 			 * Setup U=...
 			 * initial velocity along longitude
 			 */
-			SphereDataPhysical ug(o_h.sphereDataConfig);
+			SphereData_Physical ug(o_h.sphereDataConfig);
 			ug.physical_update_lambda(
 				[&](double lon, double phi, double &o_data)
 				{
@@ -997,9 +997,9 @@ public:
 		}
 		else
 		{
-			SphereDataSpectral h(o_phi.sphereDataConfig);
-			SphereDataPhysical u(o_phi.sphereDataConfig);
-			SphereDataPhysical v(o_phi.sphereDataConfig);
+			SphereData_Spectral h(o_phi.sphereDataConfig);
+			SphereData_Physical u(o_phi.sphereDataConfig);
+			SphereData_Physical v(o_phi.sphereDataConfig);
 
 			setupInitialConditions_HUV(h, u, v);
 
@@ -1016,9 +1016,9 @@ public:
 #if 0
 public:
 	void setupInitialConditions_HUV(
-			SphereDataSpectral &o_h,
-			SphereDataPhysical &o_u,
-			SphereDataPhysical &o_v
+			SphereData_Spectral &o_h,
+			SphereData_Physical &o_u,
+			SphereData_Physical &o_v
 	)
 	{
 		if (simVars->benchmark.benchmark_id < 0)
@@ -1057,7 +1057,7 @@ public:
 		}
 		else if (simVars->benchmark.benchmark_id == 9)
 		{
-			SphereDataSpectral tmp(o_h.sphereDataConfig);
+			SphereData_Spectral tmp(o_h.sphereDataConfig);
 
 			o_u.physical_set_all_value(0);
 			o_v.physical_set_all_value(0);

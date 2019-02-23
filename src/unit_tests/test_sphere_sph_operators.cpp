@@ -7,21 +7,21 @@
 
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
 
 SimulationVariables simVars;
 
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig sphereDataConfigExtInstance;
+SphereData_Config sphereDataConfigInstance;
+SphereData_Config sphereDataConfigExtInstance;
 
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
+SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
+SphereData_Config *sphereDataConfigExt = &sphereDataConfigExtInstance;
 
 
 void test_header(const std::string &i_str)
@@ -41,7 +41,7 @@ void run_tests()
 	std::cout << "Using max allowed error of " << eps << std::endl;
 
 	// Use earth radius of 1
-	SphereOperators op(sphereDataConfig, 1);
+	SphereOperators_SphereData op(sphereDataConfig, 1);
 
 
 	if (true)
@@ -64,7 +64,7 @@ void run_tests()
 
 				std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
 
-				SphereDataPhysical u(sphereDataConfig);
+				SphereData_Physical u(sphereDataConfig);
 				u.physical_update_lambda(
 					[&](double i_lon, double i_lat, double &io_data)
 					{
@@ -78,7 +78,7 @@ void run_tests()
 					}
 				);
 
-				SphereDataPhysical v(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
 				v.physical_update_lambda(
 					[&](double i_lon, double i_lat, double &io_data)
 					{
@@ -91,8 +91,8 @@ void run_tests()
 					}
 				);
 
-				SphereDataSpectral vort(sphereDataConfig);
-				SphereDataSpectral div(sphereDataConfig);
+				SphereData_Spectral vort(sphereDataConfig);
+				SphereData_Spectral div(sphereDataConfig);
 				op.uv_to_vortdiv(u, v, vort, div);
 
 				double div_max_error = div.getSphereDataPhysical().physical_reduce_max_abs();
@@ -111,7 +111,7 @@ void run_tests()
 
 				std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
 
-				SphereDataPhysical u(sphereDataConfig);
+				SphereData_Physical u(sphereDataConfig);
 				u.physical_update_lambda(
 					[&](double i_lon, double i_lat, double &io_data)
 					{
@@ -127,7 +127,7 @@ void run_tests()
 					}
 				);
 
-				SphereDataPhysical v(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
 				v.physical_update_lambda(
 					[&](double i_lon, double i_lat, double &io_data)
 					{
@@ -142,8 +142,8 @@ void run_tests()
 					}
 				);
 
-				SphereDataSpectral vort(sphereDataConfig);
-				SphereDataSpectral div(sphereDataConfig);
+				SphereData_Spectral vort(sphereDataConfig);
+				SphereData_Spectral div(sphereDataConfig);
 				op.robert_uv_to_vortdiv(u, v, vort, div);
 
 				double div_max_error = div.getSphereDataPhysical().physical_reduce_max_abs();
@@ -165,8 +165,8 @@ void run_tests()
 		{
 			test_header("Testing Multiplication (a*b) with b=123.0");
 
-			SphereDataSpectral data(sphereDataConfig);
-			SphereDataPhysical data_phys(sphereDataConfig);
+			SphereData_Spectral data(sphereDataConfig);
+			SphereData_Physical data_phys(sphereDataConfig);
 
 			data_phys.physical_update_lambda(
 				[&](double x, double y, double &io_data)
@@ -178,8 +178,8 @@ void run_tests()
 			data.loadSphereDataPhysical(data_phys);
 			data = data*123.0;
 
-			SphereDataSpectral data2(sphereDataConfig);
-			SphereDataPhysical data2_phys(sphereDataConfig);
+			SphereData_Spectral data2(sphereDataConfig);
+			SphereData_Physical data2_phys(sphereDataConfig);
 			data2_phys.physical_update_lambda(
 				[&](double x, double y, double &io_data)
 				{
@@ -204,8 +204,8 @@ void run_tests()
 			{
 				test_header("Testing Multiplication (a *= b) with b=123.0");
 
-				SphereDataSpectral data(sphereDataConfig);
-				SphereDataPhysical data_phys(sphereDataConfig);
+				SphereData_Spectral data(sphereDataConfig);
+				SphereData_Physical data_phys(sphereDataConfig);
 				data_phys.physical_update_lambda(
 						[&](double x, double y, double &io_data)
 						{
@@ -216,8 +216,8 @@ void run_tests()
 
 				data *= 123.0;
 
-				SphereDataSpectral data2(sphereDataConfig);
-				SphereDataPhysical data2_phys(sphereDataConfig);
+				SphereData_Spectral data2(sphereDataConfig);
+				SphereData_Physical data2_phys(sphereDataConfig);
 				data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -238,8 +238,8 @@ void run_tests()
 		{
 			test_header("Testing add (a+b) operation with 123.0");
 
-			SphereDataSpectral data(sphereDataConfig);
-			SphereDataPhysical data_phys(sphereDataConfig);
+			SphereData_Spectral data(sphereDataConfig);
+			SphereData_Physical data_phys(sphereDataConfig);
 			data_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -250,8 +250,8 @@ void run_tests()
 			data.loadSphereDataPhysical(data_phys);
 			data = data + 123.0;
 
-			SphereDataSpectral data2(sphereDataConfig);
-			SphereDataPhysical data2_phys(sphereDataConfig);
+			SphereData_Spectral data2(sphereDataConfig);
+			SphereData_Physical data2_phys(sphereDataConfig);
 			data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -272,8 +272,8 @@ void run_tests()
 		{
 			test_header("Testing add (a+=b) operation with 123.0");
 
-			SphereDataSpectral data(sphereDataConfig);
-			SphereDataPhysical data_phys(sphereDataConfig);
+			SphereData_Spectral data(sphereDataConfig);
+			SphereData_Physical data_phys(sphereDataConfig);
 			data_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -284,8 +284,8 @@ void run_tests()
 
 			data += 123.0;
 
-			SphereDataSpectral data2(sphereDataConfig);
-			SphereDataPhysical data2_phys(sphereDataConfig);
+			SphereData_Spectral data2(sphereDataConfig);
+			SphereData_Physical data2_phys(sphereDataConfig);
 			data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
@@ -305,15 +305,15 @@ void run_tests()
 		{
 			test_header("Testing Gaussian latitude coordinates");
 
-			SphereDataSpectral h(sphereDataConfig);
-			SphereDataPhysical h_phys(sphereDataConfig);
+			SphereData_Spectral h(sphereDataConfig);
+			SphereData_Physical h_phys(sphereDataConfig);
 			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h.loadSphereDataPhysical(h_phys);
 
-			SphereDataSpectral hphi(sphereDataConfig);
-			SphereDataPhysical hphi_phys(sphereDataConfig);
+			SphereData_Spectral hphi(sphereDataConfig);
+			SphereData_Physical hphi_phys(sphereDataConfig);
 			hphi_phys.physical_update_lambda(
 					[&](double a, double b, double &c){testSolutions.test_function_phi__grid_phi(a,b,c);}
 			);
@@ -332,16 +332,16 @@ void run_tests()
 			test_header("Testing multiplication with Gaussian latitude");
 
 			// mu*F(\lambda,\mu)
-			SphereDataSpectral h(sphereDataConfig);
-			SphereDataPhysical h_phys(sphereDataConfig);
+			SphereData_Spectral h(sphereDataConfig);
+			SphereData_Physical h_phys(sphereDataConfig);
 			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h.loadSphereDataPhysical(h_phys);
 			h = op.mu(h);
 
-			SphereDataSpectral result(sphereDataConfig);
-			SphereDataPhysical result_phys(sphereDataConfig);
+			SphereData_Spectral result(sphereDataConfig);
+			SphereData_Physical result_phys(sphereDataConfig);
 			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_mu__grid_gaussian(a,b,c);}
 			);
@@ -359,16 +359,16 @@ void run_tests()
 			test_header("Testing multiplication with pow2 of Gaussian latitude");
 
 			// mu*mu*F(\lambda,\mu)
-			SphereDataSpectral h(sphereDataConfig);
-			SphereDataPhysical h_phys(sphereDataConfig);
+			SphereData_Spectral h(sphereDataConfig);
+			SphereData_Physical h_phys(sphereDataConfig);
 			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
 			h.loadSphereDataPhysical(h_phys);
 			h = op.mu2(h);
 
-			SphereDataSpectral result(sphereDataConfig);
-			SphereDataPhysical result_phys(sphereDataConfig);
+			SphereData_Spectral result(sphereDataConfig);
+			SphereData_Physical result_phys(sphereDataConfig);
 			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &i_data){
 						testSolutions.test_function__grid_gaussian(lat, mu, i_data);

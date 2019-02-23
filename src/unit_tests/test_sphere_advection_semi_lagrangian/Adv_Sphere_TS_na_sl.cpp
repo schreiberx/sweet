@@ -11,9 +11,9 @@
 
 
 void Adv_Sphere_TS_na_sl::run_timestep(
-		SphereDataSpectral &io_phi,		///< prognostic variables
-		SphereDataSpectral &io_vort,	///< prognostic variables
-		SphereDataSpectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_phi,		///< prognostic variables
+		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -56,12 +56,12 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	diag_u_prev = diag_u;
 	diag_v_prev = diag_v;
 
-	SphereDataSpectral new_prog_phi(io_phi.sphereDataConfig);
+	SphereData_Physical new_prog_phi(io_phi.sphereDataConfig);
 
 	if (timestepping_order == 1 && 0)
 	{
 		sampler2D.bilinear_scalar(
-				io_phi,
+				io_phi.getSphereDataPhysical(),
 				posx_d,
 				posy_d,
 				new_prog_phi,
@@ -71,7 +71,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	else
 	{
 		sampler2D.bicubic_scalar(
-						io_phi,
+						io_phi.getSphereDataPhysical(),
 						posx_d,
 						posy_d,
 						new_prog_phi,
@@ -79,7 +79,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 				);
 	}
 
-	io_phi = new_prog_phi;
+	io_phi.loadSphereDataPhysical(new_prog_phi);
 }
 
 
@@ -96,7 +96,7 @@ void Adv_Sphere_TS_na_sl::setup(
 	if (timestepping_order > 2 || timestepping_order <= 0)
 		FatalError("Only 1st and 2nd order for SL integration supported");
 
-	const SphereDataConfig *sphereDataConfig = op.sphereDataConfig;
+	const SphereData_Config *sphereDataConfig = op.sphereDataConfig;
 
 	posx_a.setup(sphereDataConfig->physical_array_data_number_of_elements);
 	posy_a.setup(sphereDataConfig->physical_array_data_number_of_elements);
@@ -144,7 +144,7 @@ void Adv_Sphere_TS_na_sl::setup(
 
 Adv_Sphere_TS_na_sl::Adv_Sphere_TS_na_sl(
 		SimulationVariables &i_simVars,
-		SphereOperators &i_op
+		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),

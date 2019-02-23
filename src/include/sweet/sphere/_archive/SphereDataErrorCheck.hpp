@@ -5,13 +5,13 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAERRORCHECK_HPP_
-#define SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAERRORCHECK_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHERE__ARCHIVE_SPHEREDATAERRORCHECK_HPP_
+#define SRC_INCLUDE_SWEET_SPHERE__ARCHIVE_SPHEREDATAERRORCHECK_HPP_
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
 
 
 class SphereDataErrorCheck
@@ -19,18 +19,18 @@ class SphereDataErrorCheck
 public:
 	static
 	bool check(
-			const SphereDataSpectral &i_lhs,
-			const SphereDataSpectral &i_rhs,
+			const SphereData_Spectral &i_lhs,
+			const SphereData_Spectral &i_rhs,
 			const std::string &i_id,
 			double i_error_threshold = 1.0,
 			bool i_ignore_error = false,
 			bool i_normalization = true
 	)
 	{
-		const SphereDataSpectral lhs = i_lhs;
-		const SphereDataSpectral rhs = i_rhs;
+		const SphereData_Spectral lhs = i_lhs;
+		const SphereData_Spectral rhs = i_rhs;
 
-		SphereDataPhysical diff = i_lhs.getSphereDataPhysical()-rhs.getSphereDataPhysical();
+		SphereData_Physical diff = i_lhs.getSphereDataPhysical()-rhs.getSphereDataPhysical();
 
 		double lhs_maxabs = lhs.getSphereDataPhysical().physical_reduce_max_abs();
 		double rhs_maxabs = rhs.getSphereDataPhysical().physical_reduce_max_abs();
@@ -79,8 +79,8 @@ public:
 public:
 	static
 	bool check(
-			const SphereDataSpectralComplex &i_lhs,
-			const SphereDataSpectralComplex &i_rhs,
+			const SphereData_SpectralComplex &i_lhs,
+			const SphereData_SpectralComplex &i_rhs,
 			const std::string &i_id,
 			double i_error_threshold = 1.0,
 			bool i_ignore_error = false,
@@ -88,10 +88,10 @@ public:
 	)
 	{
 //		SphereDataSpectral diff = i_lhs - i_rhs;
-		SphereDataSpectralComplex diff = i_lhs.physical_diff_realconst(i_rhs);
+		SphereData_SpectralComplex diff = i_lhs.physical_diff_realconst(i_rhs);
 
-		double lhs_maxabs = SphereDataSpectralComplex(i_lhs).physical_reduce_max_abs();
-		double rhs_maxabs = SphereDataSpectralComplex(i_rhs).physical_reduce_max_abs();
+		double lhs_maxabs = SphereData_SpectralComplex(i_lhs).physical_reduce_max_abs();
+		double rhs_maxabs = SphereData_SpectralComplex(i_rhs).physical_reduce_max_abs();
 
 		double normalize_fac = 1.0;
 
@@ -137,22 +137,22 @@ public:
 public:
 	static
 	bool checkTruncated(
-			const SphereDataSpectral &i_lhs,
-			const SphereDataSpectral &i_rhs,
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Spectral &i_lhs,
+			const SphereData_Spectral &i_rhs,
+			const SphereData_Config *i_sphereDataConfig,
 			const std::string &i_id,
 			double i_error_threshold,	// = 1.0,
 			double i_ignore_error,		// = false,
 			bool i_normalization		// = true
 	)
 	{
-		SphereDataSpectral lhsr = SphereDataSpectral(i_lhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
-		SphereDataSpectral rhsr = SphereDataSpectral(i_rhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
+		SphereData_Spectral lhsr = SphereData_Spectral(i_lhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
+		SphereData_Spectral rhsr = SphereData_Spectral(i_rhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
 
-		SphereDataPhysical diff = lhsr.getSphereDataPhysical()-rhsr.getSphereDataPhysical();
+		SphereData_Physical diff = lhsr.getSphereDataPhysical()-rhsr.getSphereDataPhysical();
 
-		double lhs_maxabs = SphereDataSpectral(lhsr).getSphereDataPhysical().physical_reduce_max_abs();
-		double rhs_maxabs = SphereDataSpectral(rhsr).getSphereDataPhysical().physical_reduce_max_abs();
+		double lhs_maxabs = SphereData_Spectral(lhsr).getSphereDataPhysical().physical_reduce_max_abs();
+		double rhs_maxabs = SphereData_Spectral(rhsr).getSphereDataPhysical().physical_reduce_max_abs();
 
 		double normalize_fac = std::min(lhs_maxabs, rhs_maxabs);
 
@@ -191,19 +191,19 @@ public:
 public:
 	static
 	bool checkTruncated(
-			const SphereDataSpectralComplex &i_lhs,
-			const SphereDataSpectralComplex &i_rhs,
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_SpectralComplex &i_lhs,
+			const SphereData_SpectralComplex &i_rhs,
+			const SphereData_Config *i_sphereDataConfig,
 			const std::string &i_id,
 			double i_error_threshold = 1.0,
 			bool i_ignore_error = false,
 			bool i_normalization = true
 	)
 	{
-		SphereDataSpectralComplex lhsr = i_lhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
-		SphereDataSpectralComplex rhsr = i_rhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
+		SphereData_SpectralComplex lhsr = i_lhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
+		SphereData_SpectralComplex rhsr = i_rhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
 
-		SphereDataSpectralComplex diff = lhsr.physical_diff_realconst(rhsr);
+		SphereData_SpectralComplex diff = lhsr.physical_diff_realconst(rhsr);
 
 		double normalize_fac;
 
@@ -260,19 +260,19 @@ public:
 public:
 	static
 	bool checkTruncatedSpectral(
-			const SphereDataSpectralComplex &i_lhs,
-			const SphereDataSpectralComplex &i_rhs,
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_SpectralComplex &i_lhs,
+			const SphereData_SpectralComplex &i_rhs,
+			const SphereData_Config *i_sphereDataConfig,
 			const std::string &i_id,
 			double i_error_threshold = 1.0,
 			bool i_ignore_error = false,
 			bool i_normalization = true
 	)
 	{
-		SphereDataSpectralComplex lhsr = i_lhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
-		SphereDataSpectralComplex rhsr = i_rhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
+		SphereData_SpectralComplex lhsr = i_lhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
+		SphereData_SpectralComplex rhsr = i_rhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
 
-		SphereDataSpectralComplex diff = lhsr-rhsr;
+		SphereData_SpectralComplex diff = lhsr-rhsr;
 
 		double normalize_fac = 1.0;
 
@@ -323,4 +323,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAERRORCHECK_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_SPHERE__ARCHIVE_SPHEREDATAERRORCHECK_HPP_ */

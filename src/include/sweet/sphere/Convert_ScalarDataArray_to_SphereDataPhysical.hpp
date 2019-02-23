@@ -8,20 +8,20 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_SPHEREDATA_TO_SCALARDATAARRAY_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_SPHEREDATA_TO_SCALARDATAARRAY_HPP_
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
 class Convert_ScalarDataArray_to_SphereDataPhysical
 {
 public:
 	static
-	SphereDataPhysical convert(
+	SphereData_Physical convert(
 			const ScalarDataArray &i_scalarDataArray,
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)
 	{
-		SphereDataPhysical out(i_sphereDataConfig);
+		SphereData_Physical out(i_sphereDataConfig);
 
 		for (std::size_t i = 0; i < (std::size_t)out.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_scalarDataArray.scalar_data[i];

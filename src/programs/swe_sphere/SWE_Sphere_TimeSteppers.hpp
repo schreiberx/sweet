@@ -203,7 +203,7 @@ public:
 
 	void setup(
 			const std::string &i_timestepping_method,
-			SphereOperators &i_op,
+			SphereOperators_SphereData &i_op,
 			SimulationVariables &i_simVars
 	)
 	{

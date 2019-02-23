@@ -1,11 +1,11 @@
 #ifndef _SPHERE_DATA_CTX_HPP_
 #define _SPHERE_DATA_CTX_HPP_
 
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereHelpers_Diagnostics.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <vector>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/sphere/SphereDiagnostics.hpp>
 #include "LevelSingleton.hpp"
 
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
@@ -187,7 +187,7 @@ public:
     residuals.resize(nprocs,std::vector<double>(0,0.));
 
     // initialize the diagnostics object
-    sphereDiagnostics = new SphereDiagnostics(
+    sphereDiagnostics = new SphereHelpers_Diagnostics(
 					      &((*levelSingletons)[levelSingletons->size()-1].dataConfig),
 					      *simVars,
 					      0
@@ -239,7 +239,7 @@ public:
   }
 
   // Getter for the sphere data configuration at level i_level
-  SphereDataConfig* get_sphere_data_config(
+  SphereData_Config* get_sphere_data_config(
 					 int i_level
 					 ) const 
   {
@@ -255,13 +255,13 @@ public:
   }
 
   // Getter for the sphere data configuration with no dealiasing at the fine level
-  SphereDataConfig* get_sphere_data_config_nodealiasing() const 
+  SphereData_Config* get_sphere_data_config_nodealiasing() const 
   {
     return &((*levelSingletons)[levelSingletons->size()-1].dataConfigNoDealiasing);
   }
 
   // Getter for the sphere data operators at level i_level
-  SphereOperators* get_sphere_operators(
+  SphereOperators_SphereData* get_sphere_operators(
 					int i_level
 					) const
   {
@@ -269,14 +269,14 @@ public:
   }
 
   // Getter for the sphere data operators with no dealiasing at the fine level
-  SphereOperators* get_sphere_operators_nodealiasing() const
+  SphereOperators_SphereData* get_sphere_operators_nodealiasing() const
   {
     return &((*levelSingletons)[levelSingletons->size()-1].opNoDealiasing);
   }
 
 
   // Getter for the sphere diagnostics at the fine level
-  SphereDiagnostics* get_sphere_diagnostics() 
+  SphereHelpers_Diagnostics* get_sphere_diagnostics() 
   {
     return sphereDiagnostics;
   }
@@ -435,7 +435,7 @@ protected:
   std::vector<std::vector<double> > residuals;
 
   // Diagnostics (mass, energy, enstrophy)
-  SphereDiagnostics* sphereDiagnostics;
+  SphereHelpers_Diagnostics* sphereDiagnostics;
 
   // Some contructors and operator= are disabled
   SphereDataCtx() {};

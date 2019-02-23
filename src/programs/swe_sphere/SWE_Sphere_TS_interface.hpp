@@ -8,19 +8,19 @@
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_HPP_
 #define SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_HPP_
 
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 
 
 class SWE_Sphere_TS_interface
 {
 public:
 	virtual void run_timestep(
-			SphereDataSpectral &io_h,	///< prognostic variables
-			SphereDataSpectral &io_u,	///< prognostic variables
-			SphereDataSpectral &io_v,	///< prognostic variables
+			SphereData_Spectral &io_h,	///< prognostic variables
+			SphereData_Spectral &io_u,	///< prognostic variables
+			SphereData_Spectral &io_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp

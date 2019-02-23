@@ -7,7 +7,7 @@ p.runtime.floating_point_output_digits = 16
 
 p.compile.program = 'swe_sphere'
 p.compile.mode = 'release'
-p.compile.mode = 'debug'
+#p.compile.mode = 'debug'
 
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'

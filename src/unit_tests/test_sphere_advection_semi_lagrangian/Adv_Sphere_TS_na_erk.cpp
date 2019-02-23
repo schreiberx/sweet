@@ -15,13 +15,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void Adv_Sphere_TS_na_erk::euler_timestep_update(
-		const SphereDataSpectral &i_phi,	///< prognostic variables
-		const SphereDataSpectral &i_vort,	///< prognostic variables
-		const SphereDataSpectral &i_div,	///< prognostic variables
+		const SphereData_Spectral &i_phi,	///< prognostic variables
+		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereDataSpectral &o_phi_t,	///< time updates
-		SphereDataSpectral &o_vort_t,	///< time updates
-		SphereDataSpectral &o_div_t,	///< time updates
+		SphereData_Spectral &o_phi_t,	///< time updates
+		SphereData_Spectral &o_vort_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -37,40 +37,40 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 
 	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
-		SphereDataSpectral vort(i_phi.sphereDataConfig);
-		SphereDataSpectral div(i_phi.sphereDataConfig);
+		SphereData_Spectral vort(i_phi.sphereDataConfig);
+		SphereData_Spectral div(i_phi.sphereDataConfig);
 
 		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &vort, simVars.benchmark.getExternalForcesUserData);
 		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &div, simVars.benchmark.getExternalForcesUserData);
 
-		SphereDataPhysical ug(i_phi.sphereDataConfig);
-		SphereDataPhysical vg(i_phi.sphereDataConfig);
+		SphereData_Physical ug(i_phi.sphereDataConfig);
+		SphereData_Physical vg(i_phi.sphereDataConfig);
 
 		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-		SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+		SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-		SphereDataPhysical tmpg1 = ug*phig;
-		SphereDataPhysical tmpg2 = vg*phig;
+		SphereData_Physical tmpg1 = ug*phig;
+		SphereData_Physical tmpg2 = vg*phig;
 
-		SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
+		SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 		op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
 
 		o_phi_t *= -1.0;
 	}
 	else
 	{
-		SphereDataPhysical ug(i_phi.sphereDataConfig);
-		SphereDataPhysical vg(i_phi.sphereDataConfig);
+		SphereData_Physical ug(i_phi.sphereDataConfig);
+		SphereData_Physical vg(i_phi.sphereDataConfig);
 
-		SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
-		SphereDataPhysical divg = i_div.getSphereDataPhysical();
+		SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+		SphereData_Physical divg = i_div.getSphereDataPhysical();
 		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-		SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+		SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-		SphereDataPhysical tmpg1 = ug*phig;
-		SphereDataPhysical tmpg2 = vg*phig;
+		SphereData_Physical tmpg1 = ug*phig;
+		SphereData_Physical tmpg2 = vg*phig;
 
-		SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
+		SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 		op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
 
 		o_phi_t *= -1.0;
@@ -83,9 +83,9 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 
 
 void Adv_Sphere_TS_na_erk::run_timestep(
-		SphereDataSpectral &io_phi,		///< prognostic variables
-		SphereDataSpectral &io_vort,	///< prognostic variables
-		SphereDataSpectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_phi,		///< prognostic variables
+		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -127,7 +127,7 @@ void Adv_Sphere_TS_na_erk::setup(
 
 Adv_Sphere_TS_na_erk::Adv_Sphere_TS_na_erk(
 		SimulationVariables &i_simVars,
-		SphereOperators &i_op
+		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op)

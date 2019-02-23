@@ -8,20 +8,20 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATASPECTRAL_TO_SPHEREDATASPECTRALCOMPLEX_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATASPECTRAL_TO_SPHEREDATASPECTRALCOMPLEX_HPP_
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
 class Convert_SphereDataSpectral_To_SphereDataSpectralComplex
 {
 public:
 	static
-	SphereDataSpectralComplex physical_convert(
-			const SphereDataSpectral &i_sphereData
+	SphereData_SpectralComplex physical_convert(
+			const SphereData_Spectral &i_sphereData
 	)
 	{
-		SphereDataPhysical tmp = i_sphereData.getSphereDataPhysical();
-		SphereDataPhysicalComplex tmpc(i_sphereData.sphereDataConfig);
+		SphereData_Physical tmp = i_sphereData.getSphereDataPhysical();
+		SphereData_PhysicalComplex tmpc(i_sphereData.sphereDataConfig);
 
 #if SWEET_THREADING_SPACE
 #pragma omp parallel for
@@ -30,7 +30,7 @@ public:
 			tmpc.physical_space_data[i] = tmp.physical_space_data[i];
 
 
-		SphereDataSpectralComplex ret(tmpc);
+		SphereData_SpectralComplex ret(tmpc);
 		return ret;
 	}
 };

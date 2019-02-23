@@ -11,9 +11,9 @@
 
 
 #include <complex>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
@@ -29,10 +29,10 @@ class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
 	SimulationVariables &simVars;
 
 	/// Operators for sphere
-	SphereOperators &op;
+	SphereOperators_SphereData &op;
 
 	/// SPH configuration
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 	/// alpha/beta (time step related component for implicit solver)
 	double alpha;
@@ -56,7 +56,7 @@ class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
 public:
 	SWE_Sphere_TS_lg_irk(
 			SimulationVariables &i_simVars,
-			SphereOperators &i_op
+			SphereOperators_SphereData &i_op
 	);
 
 
@@ -76,9 +76,9 @@ public:
 	 */
 public:
 	void run_timestep(
-		SphereDataSpectral &io_phi,		///< prognostic variables
-		SphereDataSpectral &io_vort,	///< prognostic variables
-		SphereDataSpectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_phi,		///< prognostic variables
+		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp = -1

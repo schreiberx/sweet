@@ -10,13 +10,13 @@
 	#define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/sphere/SphereDataSpectral.hpp"
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
@@ -25,8 +25,8 @@
 
 
 // Sphere data config
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+SphereData_Config sphereDataConfigInstance;
+SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
 #if SWEET_GUI
 	PlaneDataConfig planeDataConfigInstance;
@@ -39,14 +39,14 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereDataSpectral prog_h;
-	SphereDataSpectral prog_h0;	// at t0
-	SphereDataSpectral prog_vort, prog_div;
+	SphereData_Spectral prog_h;
+	SphereData_Spectral prog_h0;	// at t0
+	SphereData_Spectral prog_vort, prog_div;
 
 	Adv_Sphere_TimeSteppers timeSteppers;
 
 
-	SphereOperators op;
+	SphereOperators_SphereData op;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;
@@ -89,8 +89,8 @@ public:
 	{
 		simVars.reset();
 
-		SphereDataSpectral tmp_vort(sphereDataConfig);
-		SphereDataSpectral tmp_div(sphereDataConfig);
+		SphereData_Spectral tmp_vort(sphereDataConfig);
+		SphereData_Spectral tmp_div(sphereDataConfig);
 
 		sphereBenchmarks.setup(simVars, op);
 		sphereBenchmarks.setupInitialConditions(prog_h, prog_vort, prog_div);
@@ -135,7 +135,7 @@ public:
 #if 0
 		double t = simVars.timecontrol.current_simulation_time;
 
-		SphereDataSpectral prog_testh(sphereDataConfig);
+		SphereData_Spectral prog_testh(sphereDataConfig);
 		prog_testh.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -216,8 +216,8 @@ public:
 
 		case 1:
 			{
-				SphereDataPhysical u(sphereDataConfig);
-				SphereDataPhysical v(sphereDataConfig);
+				SphereData_Physical u(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
 
 				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
@@ -226,8 +226,8 @@ public:
 
 		case 2:
 			{
-				SphereDataPhysical u(sphereDataConfig);
-				SphereDataPhysical v(sphereDataConfig);
+				SphereData_Physical u(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
 
 				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
@@ -336,7 +336,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
 
-	SphereDataSemiLagrangian::alpha() = simVars.benchmark.advection_rotation_angle;
+	SphereTimestepping_SemiLagrangian::alpha() = simVars.benchmark.advection_rotation_angle;
 
 
 	sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);

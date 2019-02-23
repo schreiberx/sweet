@@ -9,24 +9,24 @@
 #define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/sphere/SphereDataSpectral.hpp"
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/sphere/SphereDataSampler.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
 
 
 // Sphere data config
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+SphereData_Config sphereDataConfigInstance;
+SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
-SphereDataConfig sphereDataConfigOversamplingInstance;
-SphereDataConfig *sphereDataConfigOversampling = &sphereDataConfigOversamplingInstance;
+SphereData_Config sphereDataConfigOversamplingInstance;
+SphereData_Config *sphereDataConfigOversampling = &sphereDataConfigOversamplingInstance;
 
 
 #if SWEET_GUI
@@ -40,9 +40,9 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereDataSpectral prog_h;
+	SphereData_Spectral prog_h;
 
-	SphereOperators op;
+	SphereOperators_SphereData op;
 
 #if SWEET_GUI
 	PlaneData viz_plane_data;
@@ -58,7 +58,7 @@ public:
 	double center_lat = 0;
 	double exp_fac = 10.0;
 
-	SphereDataSampler sphereDataSampler;
+	SphereOperators_Sampler_SphereDataPhysical sphereDataSampler;
 
 	double max_error;
 
@@ -105,10 +105,10 @@ public:
 	{
 		simVars.reset();
 
-		SphereDataSpectral tmp_vort(sphereDataConfig);
-		SphereDataSpectral tmp_div(sphereDataConfig);
+		SphereData_Spectral tmp_vort(sphereDataConfig);
+		SphereData_Spectral tmp_div(sphereDataConfig);
 
-		SphereDataPhysical prog_h_phys(sphereDataConfig);
+		SphereData_Physical prog_h_phys(sphereDataConfig);
 		prog_h_phys.physical_update_lambda(
 			[&](double i_lon, double i_lat, double &o_data)
 			{

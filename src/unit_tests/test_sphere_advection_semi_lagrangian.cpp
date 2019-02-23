@@ -10,13 +10,13 @@
 	#define SWEET_GUI 1
 #endif
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
@@ -25,8 +25,8 @@
 
 
 // Sphere data config
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+SphereData_Config sphereDataConfigInstance;
+SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
 #if SWEET_GUI
 	PlaneDataConfig planeDataConfigInstance;
@@ -39,13 +39,13 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereDataSpectral prog_h;
-	SphereDataSpectral prog_h0;	// at t0
-	SphereDataSpectral prog_vort, prog_div;
+	SphereData_Spectral prog_h;
+	SphereData_Spectral prog_h0;	// at t0
+	SphereData_Spectral prog_vort, prog_div;
 
 	Adv_Sphere_TimeSteppers timeSteppers;
 
-	SphereOperators op;
+	SphereOperators_SphereData op;
 
 	/*
 	 * LMax error to h0
@@ -136,7 +136,7 @@ public:
 #if 0
 		double t = simVars.timecontrol.current_simulation_time;
 
-		SphereDataSpectral prog_testh(sphereDataConfig);
+		SphereData_Spectral prog_testh(sphereDataConfig);
 		prog_testh.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -215,8 +215,8 @@ public:
 
 		case 1:
 			{
-				SphereDataPhysical u(sphereDataConfig);
-				SphereDataPhysical v(sphereDataConfig);
+				SphereData_Physical u(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
 
 //				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
@@ -226,8 +226,8 @@ public:
 
 		case 2:
 			{
-				SphereDataPhysical u(sphereDataConfig);
-				SphereDataPhysical v(sphereDataConfig);
+				SphereData_Physical u(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
 
 //				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
@@ -340,7 +340,7 @@ int main(int i_argc, char *i_argv[])
 		FatalError("Timestep size not set");
 
 
-	SphereDataSemiLagrangian::alpha() = simVars.benchmark.sphere_advection_rotation_angle;
+	SphereTimestepping_SemiLagrangian::alpha() = simVars.benchmark.sphere_advection_rotation_angle;
 
 	int max_modes = 256;
 

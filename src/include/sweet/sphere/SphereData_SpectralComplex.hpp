@@ -19,18 +19,18 @@
 #include <utility>
 #include <functional>
 
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataPhysicalComplex.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/parmemcpy.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_PhysicalComplex.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
 
 
 
-class SphereDataSpectralComplex
+class SphereData_SpectralComplex
 {
 public:
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 public:
 	std::complex<double> *physical_space_data;
@@ -40,7 +40,7 @@ public:
 	bool spectral_space_data_valid;
 
 public:
-	SphereDataSpectralComplex()	:
+	SphereData_SpectralComplex()	:
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr),
 		spectral_space_data(nullptr)
@@ -49,8 +49,8 @@ public:
 
 
 public:
-	SphereDataSpectralComplex(
-			const SphereDataConfig *i_sphereDataConfig
+	SphereData_SpectralComplex(
+			const SphereData_Config *i_sphereDataConfig
 	)	:
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr),
@@ -63,8 +63,8 @@ public:
 
 
 public:
-	SphereDataSpectralComplex(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex(
+			const SphereData_SpectralComplex &i_sph_data
 	)	:
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr),
@@ -79,8 +79,8 @@ public:
 
 
 public:
-	SphereDataSpectralComplex(
-			SphereDataSpectralComplex &&i_sph_data
+	SphereData_SpectralComplex(
+			SphereData_SpectralComplex &&i_sph_data
 	)	:
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr),
@@ -103,8 +103,8 @@ public:
 
 
 
-	SphereDataSpectralComplex(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_SpectralComplex(
+			const SphereData_PhysicalComplex &i_sph_data
 	):
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr),
@@ -128,7 +128,7 @@ public:
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
 public:
-	inline void check_sphereDataConfig_identical_res(const SphereDataConfig *i_sphereDataConfig)	const
+	inline void check_sphereDataConfig_identical_res(const SphereData_Config *i_sphereDataConfig)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
 		assert(sphereDataConfig->physical_num_lon == i_sphereDataConfig->physical_num_lon);
@@ -142,8 +142,8 @@ public:
 
 
 public:
-	SphereDataSpectralComplex& operator=(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex& operator=(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		if (sphereDataConfig == nullptr)
@@ -165,8 +165,8 @@ public:
 
 
 public:
-	SphereDataSpectralComplex& operator=(
-			SphereDataSpectralComplex &&i_sph_data
+	SphereData_SpectralComplex& operator=(
+			SphereData_SpectralComplex &&i_sph_data
 	)
 	{
 		if (sphereDataConfig == nullptr)
@@ -186,8 +186,8 @@ public:
 
 
 
-	SphereDataSpectralComplex spectral_returnWithTruncatedModes(
-			const SphereDataConfig *i_sphereDataConfigTargetTruncation
+	SphereData_SpectralComplex spectral_returnWithTruncatedModes(
+			const SphereData_Config *i_sphereDataConfigTargetTruncation
 	)	const
 	{
 		return spectral_returnWithDifferentModes(i_sphereDataConfigTargetTruncation).spectral_returnWithDifferentModes(sphereDataConfig);
@@ -195,11 +195,11 @@ public:
 
 
 public:
-	SphereDataSpectralComplex spectral_returnWithDifferentModes(
-			const SphereDataConfig *i_sphereDataConfigNew
+	SphereData_SpectralComplex spectral_returnWithDifferentModes(
+			const SphereData_Config *i_sphereDataConfigNew
 	)	const
 	{
-		SphereDataSpectralComplex out(i_sphereDataConfigNew);
+		SphereData_SpectralComplex out(i_sphereDataConfigNew);
 
 		/*
 		 *  0 = invalid
@@ -291,14 +291,14 @@ public:
 	}
 
 
-	SphereDataPhysicalComplex getSphereDataPhysical()	const
+	SphereData_PhysicalComplex getSphereDataPhysical()	const
 	{
 		return getSphereDataPhysicalComplex();
 	}
 
-	SphereDataPhysicalComplex getSphereDataPhysicalComplex()	const
+	SphereData_PhysicalComplex getSphereDataPhysicalComplex()	const
 	{
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		if (physical_space_data_valid)
 		{
@@ -314,7 +314,7 @@ public:
 		 * WARNING:
 		 * We have to use a temporary array here because of destructive SH transformations
 		 */
-		SphereDataSpectralComplex tmp = *this;
+		SphereData_SpectralComplex tmp = *this;
 		tmp.request_data_spectral();
 		SH_to_spat_cplx(sphereDataConfig->shtns, tmp.spectral_space_data, tmp.physical_space_data);
 
@@ -342,14 +342,14 @@ public:
 		 */
 		spat_cplx_to_SH(sphereDataConfig->shtns, physical_space_data, spectral_space_data);
 
-		SphereDataSpectralComplex *this_var = (SphereDataSpectralComplex*)this;
+		SphereData_SpectralComplex *this_var = (SphereData_SpectralComplex*)this;
 
 		this_var->physical_space_data_valid = false;
 		this_var->spectral_space_data_valid = true;
 	}
 
 
-	const SphereDataSpectralComplex& request_data_physical()	const
+	const SphereData_SpectralComplex& request_data_physical()	const
 	{
 		if (physical_space_data_valid)
 			return *this;
@@ -362,7 +362,7 @@ public:
 		 */
 		SH_to_spat_cplx(sphereDataConfig->shtns, spectral_space_data, physical_space_data);
 
-		SphereDataSpectralComplex *this_var = (SphereDataSpectralComplex*)this;
+		SphereData_SpectralComplex *this_var = (SphereData_SpectralComplex*)this;
 
 		this_var->physical_space_data_valid = true;
 		this_var->spectral_space_data_valid = false;
@@ -371,8 +371,8 @@ public:
 	}
 
 
-	SphereDataSpectralComplex operator+(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex operator+(
+			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
@@ -380,7 +380,7 @@ public:
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -395,8 +395,8 @@ public:
 
 
 
-	SphereDataSpectralComplex& operator+=(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex& operator+=(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
@@ -416,8 +416,8 @@ public:
 	}
 
 
-	SphereDataSpectralComplex& operator-=(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex& operator-=(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
@@ -438,8 +438,8 @@ public:
 
 
 
-	SphereDataSpectralComplex operator-(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex operator-(
+			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
@@ -447,7 +447,7 @@ public:
 		request_data_spectral();
 		i_sph_data.request_data_spectral();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -461,11 +461,11 @@ public:
 	}
 
 
-	SphereDataSpectralComplex operator-()	const
+	SphereData_SpectralComplex operator-()	const
 	{
 		request_data_spectral();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -479,8 +479,8 @@ public:
 	}
 
 
-	SphereDataSpectralComplex operator*(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex operator*(
+			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
@@ -488,7 +488,7 @@ public:
 		request_data_physical();
 		i_sph_data.request_data_physical();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -502,8 +502,8 @@ public:
 	}
 
 
-	SphereDataSpectralComplex operator/(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex operator/(
+			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
 		check_sphereDataConfig_identical_res(i_sph_data.sphereDataConfig);
@@ -511,7 +511,7 @@ public:
 		request_data_physical();
 		i_sph_data.request_data_physical();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -525,13 +525,13 @@ public:
 	}
 
 
-	SphereDataSpectralComplex operator*(
+	SphereData_SpectralComplex operator*(
 			const double i_value
 	)	const
 	{
 		request_data_spectral();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -546,7 +546,7 @@ public:
 	}
 
 #if 0
-	const SphereDataSpectralComplex& operator*=(
+	const SphereData_SpectralComplex& operator*=(
 			const double i_value
 	)	const
 	{
@@ -562,7 +562,7 @@ public:
 #endif
 
 
-	const SphereDataSpectralComplex& operator*=(
+	const SphereData_SpectralComplex& operator*=(
 			const std::complex<double> &i_value
 	)	const
 	{
@@ -577,13 +577,13 @@ public:
 	}
 
 
-	SphereDataSpectralComplex operator/(
+	SphereData_SpectralComplex operator/(
 			double i_value
 	)	const
 	{
 		request_data_spectral();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -597,7 +597,7 @@ public:
 	}
 
 
-	const SphereDataSpectralComplex& operator/=(
+	const SphereData_SpectralComplex& operator/=(
 			const std::complex<double> &i_value
 	)	const
 	{
@@ -613,13 +613,13 @@ public:
 
 
 
-	SphereDataSpectralComplex operator+(
+	SphereData_SpectralComplex operator+(
 			double i_value
 	)	const
 	{
 		request_data_spectral();
 
-		SphereDataSpectralComplex out_sph_data(*this);
+		SphereData_SpectralComplex out_sph_data(*this);
 
 		out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
 
@@ -631,7 +631,7 @@ public:
 
 
 
-	SphereDataSpectralComplex& operator+=(
+	SphereData_SpectralComplex& operator+=(
 			double i_value
 	)
 	{
@@ -644,11 +644,11 @@ public:
 
 
 
-	SphereDataSpectralComplex operator+(
+	SphereData_SpectralComplex operator+(
 			const std::complex<double> &i_value
 	)	const
 	{
-		SphereDataSpectralComplex out_sph_data(*this);
+		SphereData_SpectralComplex out_sph_data(*this);
 
 		out_sph_data.request_data_spectral();
 		out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
@@ -661,13 +661,13 @@ public:
 
 
 
-	SphereDataSpectralComplex operator-(
+	SphereData_SpectralComplex operator-(
 			const std::complex<double> &i_value
 	)	const
 	{
 		std::cout << "MINUS OPERATOR" << std::endl;
 
-		SphereDataSpectralComplex out_sph_data(*this);
+		SphereData_SpectralComplex out_sph_data(*this);
 		out_sph_data.request_data_spectral();
 
 		out_sph_data.spectral_space_data[0] -= i_value*std::sqrt(4.0*M_PI);
@@ -680,13 +680,13 @@ public:
 
 
 
-	SphereDataSpectralComplex operator*(
+	SphereData_SpectralComplex operator*(
 			const std::complex<double> &i_value
 	)	const
 	{
 		request_data_spectral();
 
-		SphereDataSpectralComplex out_sph_data(sphereDataConfig);
+		SphereData_SpectralComplex out_sph_data(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -703,7 +703,7 @@ public:
 
 public:
 	void setup(
-			const SphereDataConfig *i_sphereConfig
+			const SphereData_Config *i_sphereConfig
 	)
 	{
 		// assure that the initialization is not done twice!
@@ -719,7 +719,7 @@ public:
 	}
 
 public:
-	~SphereDataSpectralComplex()
+	~SphereData_SpectralComplex()
 	{
 		MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(cplx));
 		MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_complex_array_data_number_of_elements * sizeof(cplx));
@@ -733,13 +733,13 @@ public:
 	 * (a + b D^2) x = rhs
 	 */
 	inline
-	SphereDataSpectralComplex spectral_solve_helmholtz(
+	SphereData_SpectralComplex spectral_solve_helmholtz(
 			const std::complex<double> &i_a,
 			const std::complex<double> &i_b,
 			double r
 	)	const
 	{
-		SphereDataSpectralComplex out(*this);
+		SphereData_SpectralComplex out(*this);
 
 		out.request_data_spectral();
 
@@ -765,7 +765,7 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereDataSpectralComplex& physical_truncate()
+	SphereData_SpectralComplex& physical_truncate()
 	{
 		request_data_physical();
 
@@ -783,7 +783,7 @@ public:
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
-	SphereDataSpectralComplex& spectral_truncate()
+	SphereData_SpectralComplex& spectral_truncate()
 	{
 		request_data_spectral();
 
@@ -1067,18 +1067,18 @@ public:
 
 
 
-	SphereDataSpectralComplex physical_diff_realconst(
-			const SphereDataSpectralComplex &i_sphereData
+	SphereData_SpectralComplex physical_diff_realconst(
+			const SphereData_SpectralComplex &i_sphereData
 	)	const
 	{
 		// make a copy to avoid modifications
-		SphereDataSpectralComplex a = SphereDataSpectralComplex(i_sphereData);
-		SphereDataSpectralComplex b = SphereDataSpectralComplex(*this);
+		SphereData_SpectralComplex a = SphereData_SpectralComplex(i_sphereData);
+		SphereData_SpectralComplex b = SphereData_SpectralComplex(*this);
 
 		a.request_data_physical();
 		b.request_data_physical();
 
-		SphereDataSpectralComplex out(sphereDataConfig);
+		SphereData_SpectralComplex out(sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -1097,7 +1097,7 @@ public:
 	 * Return the maximum error norm
 	 */
 	double physical_reduce_max(
-			const SphereDataSpectralComplex &i_data
+			const SphereData_SpectralComplex &i_data
 	)
 	{
 		check_sphereDataConfig_identical_res(i_data.sphereDataConfig);
@@ -1410,12 +1410,12 @@ public:
  */
 inline
 static
-SphereDataSpectralComplex operator*(
+SphereData_SpectralComplex operator*(
 		const double i_value,
-		const SphereDataSpectralComplex &i_array_data
+		const SphereData_SpectralComplex &i_array_data
 )
 {
-	return ((SphereDataSpectralComplex&)i_array_data)*i_value;
+	return ((SphereData_SpectralComplex&)i_array_data)*i_value;
 }
 
 
@@ -1427,9 +1427,9 @@ SphereDataSpectralComplex operator*(
  */
 inline
 static
-SphereDataSpectralComplex operator*(
+SphereData_SpectralComplex operator*(
 		const std::complex<double> &i_value,
-		const SphereDataSpectralComplex &i_array_data
+		const SphereData_SpectralComplex &i_array_data
 )
 {
 	return i_array_data*i_value;
@@ -1447,12 +1447,12 @@ SphereDataSpectralComplex operator*(
 #if 0
 inline
 static
-SphereDataSpectralComplex operator-(
+SphereData_SpectralComplex operator-(
 		const double i_value,
-		const SphereDataSpectralComplex &i_array_data
+		const SphereData_SpectralComplex &i_array_data
 )
 {
-	return ((SphereDataSpectralComplex&)i_array_data).valueMinusThis(i_value);
+	return ((SphereData_SpectralComplex&)i_array_data).valueMinusThis(i_value);
 //	return -(((SPHDataComplex&)i_array_data).operator-(i_value));
 }
 #endif
@@ -1467,19 +1467,19 @@ SphereDataSpectralComplex operator-(
 
 inline
 static
-SphereDataSpectralComplex operator+(
+SphereData_SpectralComplex operator+(
 		const double i_value,
-		const SphereDataSpectralComplex &i_array_data
+		const SphereData_SpectralComplex &i_array_data
 )
 {
-	return ((SphereDataSpectralComplex&)i_array_data)+i_value;
+	return ((SphereData_SpectralComplex&)i_array_data)+i_value;
 }
 
 inline
 static
-SphereDataSpectralComplex operator+(
+SphereData_SpectralComplex operator+(
 		const std::complex<double> &i_value,
-		const SphereDataSpectralComplex &i_array_data
+		const SphereData_SpectralComplex &i_array_data
 )
 {
 	return i_array_data+i_value;
@@ -1487,14 +1487,14 @@ SphereDataSpectralComplex operator+(
 
 inline
 static
-SphereDataSpectralComplex operator-(
+SphereData_SpectralComplex operator-(
 		const std::complex<double> &i_value,
-		const SphereDataSpectralComplex &i_array_data
+		const SphereData_SpectralComplex &i_array_data
 )
 {
 	i_array_data.request_data_spectral();
 
-	SphereDataSpectralComplex out_sph_data(i_array_data.sphereDataConfig);
+	SphereData_SpectralComplex out_sph_data(i_array_data.sphereDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR

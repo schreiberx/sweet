@@ -11,9 +11,9 @@
 
 
 void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
-		SphereDataSpectral &io_phi,	///< prognostic variables
-		SphereDataSpectral &io_u,	///< prognostic variables
-		SphereDataSpectral &io_v,	///< prognostic variables
+		SphereData_Spectral &io_phi,	///< prognostic variables
+		SphereData_Spectral &io_u,	///< prognostic variables
+		SphereData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -22,7 +22,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
 
-	const SphereDataConfig *sphereDataConfig = io_phi.sphereDataConfig;
+	const SphereData_Config *sphereDataConfig = io_phi.sphereDataConfig;
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
@@ -31,9 +31,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		 * 			+\Delta t \psi_{1}(\Delta tL) N(U_{0}).
 		 */
 
-		SphereDataSpectral phi0_Un_h(sphereDataConfig);
-		SphereDataSpectral phi0_Un_u(sphereDataConfig);
-		SphereDataSpectral phi0_Un_v(sphereDataConfig);
+		SphereData_Spectral phi0_Un_h(sphereDataConfig);
+		SphereData_Spectral phi0_Un_u(sphereDataConfig);
+		SphereData_Spectral phi0_Un_v(sphereDataConfig);
 		ts_phi0_rexi.run_timestep(
 				io_phi, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
@@ -41,9 +41,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereDataSpectral FUn_h(sphereDataConfig);
-		SphereDataSpectral FUn_u(sphereDataConfig);
-		SphereDataSpectral FUn_v(sphereDataConfig);
+		SphereData_Spectral FUn_h(sphereDataConfig);
+		SphereData_Spectral FUn_u(sphereDataConfig);
+		SphereData_Spectral FUn_v(sphereDataConfig);
 
 		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
@@ -51,9 +51,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 		);
 
-		SphereDataSpectral phi1_FUn_h(sphereDataConfig);
-		SphereDataSpectral phi1_FUn_u(sphereDataConfig);
-		SphereDataSpectral phi1_FUn_v(sphereDataConfig);
+		SphereData_Spectral phi1_FUn_h(sphereDataConfig);
+		SphereData_Spectral phi1_FUn_u(sphereDataConfig);
+		SphereData_Spectral phi1_FUn_v(sphereDataConfig);
 
 		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
@@ -72,9 +72,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		 * A_{n}=\psi_{0}(\Delta tL)U_{n}+\Delta t\psi_{1}(\Delta tL)F(U_{n})
 		 */
 
-		SphereDataSpectral phi0_Un_h(sphereDataConfig);
-		SphereDataSpectral phi0_Un_u(sphereDataConfig);
-		SphereDataSpectral phi0_Un_v(sphereDataConfig);
+		SphereData_Spectral phi0_Un_h(sphereDataConfig);
+		SphereData_Spectral phi0_Un_u(sphereDataConfig);
+		SphereData_Spectral phi0_Un_v(sphereDataConfig);
 
 		ts_phi0_rexi.run_timestep(
 				io_phi, io_u, io_v,
@@ -83,9 +83,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereDataSpectral FUn_h(sphereDataConfig);
-		SphereDataSpectral FUn_u(sphereDataConfig);
-		SphereDataSpectral FUn_v(sphereDataConfig);
+		SphereData_Spectral FUn_h(sphereDataConfig);
+		SphereData_Spectral FUn_u(sphereDataConfig);
+		SphereData_Spectral FUn_v(sphereDataConfig);
 
 		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
@@ -93,9 +93,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 		);
 
-		SphereDataSpectral phi1_FUn_h(sphereDataConfig);
-		SphereDataSpectral phi1_FUn_u(sphereDataConfig);
-		SphereDataSpectral phi1_FUn_v(sphereDataConfig);
+		SphereData_Spectral phi1_FUn_h(sphereDataConfig);
+		SphereData_Spectral phi1_FUn_u(sphereDataConfig);
+		SphereData_Spectral phi1_FUn_v(sphereDataConfig);
 
 		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
@@ -104,18 +104,18 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereDataSpectral A_h = phi0_Un_h + i_dt*phi1_FUn_h;
-		SphereDataSpectral A_u = phi0_Un_u + i_dt*phi1_FUn_u;
-		SphereDataSpectral A_v = phi0_Un_v + i_dt*phi1_FUn_v;
+		SphereData_Spectral A_h = phi0_Un_h + i_dt*phi1_FUn_h;
+		SphereData_Spectral A_u = phi0_Un_u + i_dt*phi1_FUn_u;
+		SphereData_Spectral A_v = phi0_Un_v + i_dt*phi1_FUn_v;
 
 		/*
 		 * U_{n+1} = A_{n}+ \Delta t \psi_{2}(\Delta tL)
 		 * 				\left(F(A_{n},t_{n}+\Delta t)-F(U_{n})\right)
 		 */
 
-		SphereDataSpectral FAn_h(sphereDataConfig);
-		SphereDataSpectral FAn_u(sphereDataConfig);
-		SphereDataSpectral FAn_v(sphereDataConfig);
+		SphereData_Spectral FAn_h(sphereDataConfig);
+		SphereData_Spectral FAn_u(sphereDataConfig);
+		SphereData_Spectral FAn_v(sphereDataConfig);
 
 		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				A_h, A_u, A_v,
@@ -124,9 +124,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		);
 
 
-		SphereDataSpectral phi2_X_h(sphereDataConfig);
-		SphereDataSpectral phi2_X_u(sphereDataConfig);
-		SphereDataSpectral phi2_X_v(sphereDataConfig);
+		SphereData_Spectral phi2_X_h(sphereDataConfig);
+		SphereData_Spectral phi2_X_u(sphereDataConfig);
+		SphereData_Spectral phi2_X_v(sphereDataConfig);
 
 		ts_phi2_rexi.run_timestep(
 				FAn_h - FUn_h,
@@ -153,9 +153,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		/*
 		 * Precompute commonly used terms
 		 */
-		SphereDataSpectral phi0_Un_h(sphereDataConfig);
-		SphereDataSpectral phi0_Un_u(sphereDataConfig);
-		SphereDataSpectral phi0_Un_v(sphereDataConfig);
+		SphereData_Spectral phi0_Un_h(sphereDataConfig);
+		SphereData_Spectral phi0_Un_u(sphereDataConfig);
+		SphereData_Spectral phi0_Un_v(sphereDataConfig);
 
 		ts_phi0_rexi.run_timestep(
 				io_phi, io_u, io_v,
@@ -164,9 +164,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereDataSpectral FUn_h(sphereDataConfig);
-		SphereDataSpectral FUn_u(sphereDataConfig);
-		SphereDataSpectral FUn_v(sphereDataConfig);
+		SphereData_Spectral FUn_h(sphereDataConfig);
+		SphereData_Spectral FUn_u(sphereDataConfig);
+		SphereData_Spectral FUn_v(sphereDataConfig);
 
 		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
@@ -180,9 +180,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		 * Some commonly shared buffers
 		 */
 
-		SphereDataSpectral phi1_h(sphereDataConfig);
-		SphereDataSpectral phi1_u(sphereDataConfig);
-		SphereDataSpectral phi1_v(sphereDataConfig);
+		SphereData_Spectral phi1_h(sphereDataConfig);
+		SphereData_Spectral phi1_u(sphereDataConfig);
+		SphereData_Spectral phi1_v(sphereDataConfig);
 
 
 		/*
@@ -195,9 +195,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereDataSpectral A_h = phi0_Un_h + dt_half*phi1_h;
-		SphereDataSpectral A_u = phi0_Un_u + dt_half*phi1_u;
-		SphereDataSpectral A_v = phi0_Un_v + dt_half*phi1_v;
+		SphereData_Spectral A_h = phi0_Un_h + dt_half*phi1_h;
+		SphereData_Spectral A_u = phi0_Un_u + dt_half*phi1_u;
+		SphereData_Spectral A_v = phi0_Un_v + dt_half*phi1_v;
 
 
 
@@ -205,9 +205,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		 * B_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + 0.5*\Delta t\psi_{1}(0.5*\Delta tL) F(A_{n}, t_{n} + 0.5*\Delta t)
 		 */
 
-		SphereDataSpectral FAn_h(sphereDataConfig);
-		SphereDataSpectral FAn_u(sphereDataConfig);
-		SphereDataSpectral FAn_v(sphereDataConfig);
+		SphereData_Spectral FAn_h(sphereDataConfig);
+		SphereData_Spectral FAn_u(sphereDataConfig);
+		SphereData_Spectral FAn_v(sphereDataConfig);
 
 		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				A_h, A_u, A_v,
@@ -222,9 +222,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereDataSpectral B_h = phi0_Un_h + dt_half*phi1_h;
-		SphereDataSpectral B_u = phi0_Un_u + dt_half*phi1_u;
-		SphereDataSpectral B_v = phi0_Un_v + dt_half*phi1_v;
+		SphereData_Spectral B_h = phi0_Un_h + dt_half*phi1_h;
+		SphereData_Spectral B_u = phi0_Un_u + dt_half*phi1_u;
+		SphereData_Spectral B_v = phi0_Un_v + dt_half*phi1_v;
 
 
 
@@ -232,9 +232,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		 * C_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + 0.5*\Delta t\psi_{1}(0.5* \Delta tL) ( 2 F(B_{n},t_{n} + 0.5*\Delta t)-F(U_{n},t_{n})).
 		 */
 
-		SphereDataSpectral phi0_An_h(sphereDataConfig);
-		SphereDataSpectral phi0_An_u(sphereDataConfig);
-		SphereDataSpectral phi0_An_v(sphereDataConfig);
+		SphereData_Spectral phi0_An_h(sphereDataConfig);
+		SphereData_Spectral phi0_An_u(sphereDataConfig);
+		SphereData_Spectral phi0_An_v(sphereDataConfig);
 
 		ts_phi0_rexi.run_timestep(
 				A_h, A_u, A_v,
@@ -244,9 +244,9 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 			);
 
 
-		SphereDataSpectral FBn_h(sphereDataConfig);
-		SphereDataSpectral FBn_u(sphereDataConfig);
-		SphereDataSpectral FBn_v(sphereDataConfig);
+		SphereData_Spectral FBn_h(sphereDataConfig);
+		SphereData_Spectral FBn_u(sphereDataConfig);
+		SphereData_Spectral FBn_v(sphereDataConfig);
 
 		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				B_h, B_u, B_v,
@@ -263,18 +263,18 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereDataSpectral C_h = phi0_An_h + dt_half*phi1_h;
-		SphereDataSpectral C_u = phi0_An_u + dt_half*phi1_u;
-		SphereDataSpectral C_v = phi0_An_v + dt_half*phi1_v;
+		SphereData_Spectral C_h = phi0_An_h + dt_half*phi1_h;
+		SphereData_Spectral C_u = phi0_An_u + dt_half*phi1_u;
+		SphereData_Spectral C_v = phi0_An_v + dt_half*phi1_v;
 
 
 
 		/*
 		 * R0 - R3
 		 */
-		SphereDataSpectral FCn_h(sphereDataConfig);
-		SphereDataSpectral FCn_u(sphereDataConfig);
-		SphereDataSpectral FCn_v(sphereDataConfig);
+		SphereData_Spectral FCn_h(sphereDataConfig);
+		SphereData_Spectral FCn_u(sphereDataConfig);
+		SphereData_Spectral FCn_v(sphereDataConfig);
 
 		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
 				C_h, C_u, C_v,
@@ -282,21 +282,21 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt
 		);
 
-		SphereDataSpectral R0_h = io_phi;
-		SphereDataSpectral R0_u = io_u;
-		SphereDataSpectral R0_v = io_v;
+		SphereData_Spectral R0_h = io_phi;
+		SphereData_Spectral R0_u = io_u;
+		SphereData_Spectral R0_v = io_v;
 
-		SphereDataSpectral &R1_h = FUn_h;
-		SphereDataSpectral &R1_u = FUn_u;
-		SphereDataSpectral &R1_v = FUn_v;
+		SphereData_Spectral &R1_h = FUn_h;
+		SphereData_Spectral &R1_u = FUn_u;
+		SphereData_Spectral &R1_v = FUn_v;
 
-		SphereDataSpectral R2_h = FAn_h + FBn_h;
-		SphereDataSpectral R2_u = FAn_u + FBn_u;
-		SphereDataSpectral R2_v = FAn_v + FBn_v;
+		SphereData_Spectral R2_h = FAn_h + FBn_h;
+		SphereData_Spectral R2_u = FAn_u + FBn_u;
+		SphereData_Spectral R2_v = FAn_v + FBn_v;
 
-		SphereDataSpectral &R3_h = FCn_h;
-		SphereDataSpectral &R3_u = FCn_u;
-		SphereDataSpectral &R3_v = FCn_v;
+		SphereData_Spectral &R3_h = FCn_h;
+		SphereData_Spectral &R3_u = FCn_u;
+		SphereData_Spectral &R3_v = FCn_v;
 
 
 		/*
@@ -390,7 +390,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
 
 SWE_Sphere_TS_lg_rexi_lc_n_etdrk::SWE_Sphere_TS_lg_rexi_lc_n_etdrk(
 		SimulationVariables &i_simVars,
-		SphereOperators &i_op
+		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),

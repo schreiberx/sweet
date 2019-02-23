@@ -1,21 +1,21 @@
 
-#ifndef TIMESTEPPING_EXPLICIT_RK_HPP
-#define TIMESTEPPING_EXPLICIT_RK_HPP
+#ifndef SPHEREDATA_TIMESTEPPING_EXPLICITRK_HPP__
+#define SPHEREDATA_TIMESTEPPING_EXPLICITRK_HPP__
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #include <limits>
 
-class SphereDataTimesteppingExplicitRK
+class SphereTimestepping_ExplicitRK
 {
 	// Runge-Kutta data storages
-	std::vector<SphereDataSpectral*> RK_h_t;
-	std::vector<SphereDataSpectral*> RK_u_t;
-	std::vector<SphereDataSpectral*> RK_v_t;
+	std::vector<SphereData_Spectral*> RK_h_t;
+	std::vector<SphereData_Spectral*> RK_u_t;
+	std::vector<SphereData_Spectral*> RK_v_t;
 
 	int runge_kutta_order;
 
 public:
-	SphereDataTimesteppingExplicitRK()	:
+	SphereTimestepping_ExplicitRK()	:
 		runge_kutta_order(-1)
 	{
 	}
@@ -23,7 +23,7 @@ public:
 
 
 	void resetAndSetup(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{
@@ -42,15 +42,15 @@ public:
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_t[i] = new SphereDataSpectral(i_sphereDataConfig);
-			RK_u_t[i] = new SphereDataSpectral(i_sphereDataConfig);
-			RK_v_t[i] = new SphereDataSpectral(i_sphereDataConfig);
+			RK_h_t[i] = new SphereData_Spectral(i_sphereDataConfig);
+			RK_u_t[i] = new SphereData_Spectral(i_sphereDataConfig);
+			RK_v_t[i] = new SphereData_Spectral(i_sphereDataConfig);
 		}
 	}
 
 
 
-	~SphereDataTimesteppingExplicitRK()
+	~SphereTimestepping_ExplicitRK()
 	{
 		int N = runge_kutta_order;
 
@@ -79,20 +79,20 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereDataSpectral &i_P,	///< prognostic variables
-					const SphereDataSpectral &i_u,	///< prognostic variables
-					const SphereDataSpectral &i_v,	///< prognostic variables
+					const SphereData_Spectral &i_P,	///< prognostic variables
+					const SphereData_Spectral &i_u,	///< prognostic variables
+					const SphereData_Spectral &i_v,	///< prognostic variables
 
-					SphereDataSpectral &o_P_t,		///< time updates
-					SphereDataSpectral &o_u_t,		///< time updates
-					SphereDataSpectral &o_v_t,		///< time updates
+					SphereData_Spectral &o_P_t,		///< time updates
+					SphereData_Spectral &o_u_t,		///< time updates
+					SphereData_Spectral &o_v_t,		///< time updates
 
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereDataSpectral &io_h,
-			SphereDataSpectral &io_u,
-			SphereDataSpectral &io_v,
+			SphereData_Spectral &io_h,
+			SphereData_Spectral &io_u,
+			SphereData_Spectral &io_v,
 
 			double i_dt,	///< If this value is not equal to 0,
 					///< Use this time step size instead of computing one
@@ -304,17 +304,17 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereDataSpectral &i_u,	///< prognostic variables
-					const SphereDataSpectral &i_v,	///< prognostic variables
+					const SphereData_Spectral &i_u,	///< prognostic variables
+					const SphereData_Spectral &i_v,	///< prognostic variables
 
-					SphereDataSpectral &o_u_t,	///< time updates
-					SphereDataSpectral &o_v_t,	///< time updates
+					SphereData_Spectral &o_u_t,	///< time updates
+					SphereData_Spectral &o_v_t,	///< time updates
 
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereDataSpectral &io_u,
-			SphereDataSpectral &io_v,
+			SphereData_Spectral &io_u,
+			SphereData_Spectral &io_v,
 
 			double i_dt = 0,	///< If this value is not equal to 0,
 						///< Use this time step size instead of computing one
@@ -498,13 +498,13 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereDataSpectral &i_h,		///< prognostic variables
-					SphereDataSpectral &o_h_t,			///< time updates
+					const SphereData_Spectral &i_h,		///< prognostic variables
+					SphereData_Spectral &o_h_t,			///< time updates
 
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereDataSpectral &io_h,
+			SphereData_Spectral &io_h,
 
 			double i_dt,		///< If this value is not equal to 0,
 											///< Use this time step size instead of computing one

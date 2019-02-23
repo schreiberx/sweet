@@ -10,17 +10,17 @@
  */
 
 #include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataPhysical.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/sphere/SphereData_Physical.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
 #define THIS_DEBUG	0
 
 
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+SphereData_Config sphereDataConfigInstance;
+SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
 SimulationVariables simVars;
 
@@ -50,7 +50,7 @@ public:
 	double hamp = 120.;
 
 
-	SphereOperators op;
+	SphereOperators_SphereData op;
 
 
 	//double simtime = 66400;
@@ -58,13 +58,13 @@ public:
 	double dt = 60;
 	int itmax = 6*int(simtime/dt);
 
-	SphereDataConfig *sphereDataConfig;
+	SphereData_Config *sphereDataConfig;
 	//f = 2.*omega*np.sin(lats) # coriolis
 
 
 #if THIS_DEBUG
 	void outputMinMaxSum(
-			const SphereDataPhysical i_data,
+			const SphereData_Physical i_data,
 			const std::string i_prefix
 	)
 	{
@@ -120,20 +120,20 @@ public:
 			SphereData &o_dphi_dt
 	)
 	{
-		SphereDataPhysical ug(sphereDataConfig);
-		SphereDataPhysical vg(sphereDataConfig);
+		SphereData_Physical ug(sphereDataConfig);
+		SphereData_Physical vg(sphereDataConfig);
 
-		SphereDataPhysical vrtg = vrtspec.getSphereDataPhysical();
+		SphereData_Physical vrtg = vrtspec.getSphereDataPhysical();
 		op.vortdiv_to_uv(vrtspec, divspec, ug, vg);
-		SphereDataPhysical phig = phispec.getSphereDataPhysical();
+		SphereData_Physical phig = phispec.getSphereDataPhysical();
 
 		outputMinMaxSum(vrtg, "vrtg");
 		outputMinMaxSum(ug, "ug");
 		outputMinMaxSum(vg, "vg");
 		outputMinMaxSum(phig, "phig");
 
-		SphereDataPhysical tmpg1 = ug*(vrtg+f);
-		SphereDataPhysical tmpg2 = vg*(vrtg+f);
+		SphereData_Physical tmpg1 = ug*(vrtg+f);
+		SphereData_Physical tmpg2 = vg*(vrtg+f);
 		outputMinMaxSum(tmpg1, "tmpg1");
 		outputMinMaxSum(tmpg2, "tmpg2");
 
@@ -143,7 +143,7 @@ public:
 
 		o_dvrt_dt *= -1.0;
 
-		SphereDataPhysical tmpg = o_ddiv_dt.getSphereDataPhysical();
+		SphereData_Physical tmpg = o_ddiv_dt.getSphereDataPhysical();
 		outputMinMaxSum(tmpg, "tmpg");
 
 		tmpg1 = ug*phig;
@@ -173,7 +173,7 @@ public:
 	}
 
 
-	SphereDataPhysical f;
+	SphereData_Physical f;
 	SphereData phispec;
 	SphereData vrtspec;
 	SphereData divspec;
@@ -181,7 +181,7 @@ public:
 	SimulationVariables &simVars;
 
 	Sim(
-			SphereDataConfig *sphereDataConfig,
+			SphereData_Config *sphereDataConfig,
 			SimulationVariables &i_simVars
 	)	:
 		sphereDataConfig(sphereDataConfig),
@@ -208,11 +208,11 @@ public:
 
 
 
-		SphereDataPhysical vg(sphereDataConfig);
+		SphereData_Physical vg(sphereDataConfig);
 		vg.physical_set_zero();
 
 	    //u1 = (umax/en)*np.exp(1./((x.lats-phi0)*(x.lats-phi1)))
-		SphereDataPhysical u1(sphereDataConfig);
+		SphereData_Physical u1(sphereDataConfig);
 		u1.physical_update_lambda(
 			[&](double lon, double phi, double &o_data)
 			{
@@ -230,7 +230,7 @@ public:
 	     ug = ug*np.ones((nlats,nlons),dtype=np.float) # broadcast to shape (nlats,nlonss)
 	    */
 
-		SphereDataPhysical ug = u1;
+		SphereData_Physical ug = u1;
 		ug.physical_update_lambda(
 			[&](double lon, double phi, double &o_data)
 			{
@@ -244,7 +244,7 @@ public:
 		 * hbump = hamp*np.cos(lats)*np.exp(-(lons/alpha)**2)*np.exp(-(phi2-lats)**2/beta)
 		 */
 
-		SphereDataPhysical hbump(sphereDataConfig);
+		SphereData_Physical hbump(sphereDataConfig);
 		hbump.physical_update_lambda(
 			[&](double lon, double phi, double &o_data)
 			{
@@ -262,13 +262,13 @@ public:
 		outputSpecMinMaxSum(divspec, "divspec");
 
 
-		SphereDataPhysical vrtg = vrtspec.getSphereDataPhysical();
+		SphereData_Physical vrtg = vrtspec.getSphereDataPhysical();
 		outputMinMaxSum(vrtg, "vrtg");
 		outputMinMaxSum(ug, "ug");
 		outputMinMaxSum(vg, "vg");
 
-		SphereDataPhysical tmpg1 = ug*(vrtg+f);
-		SphereDataPhysical tmpg2 = vg*(vrtg+f);
+		SphereData_Physical tmpg1 = ug*(vrtg+f);
+		SphereData_Physical tmpg2 = vg*(vrtg+f);
 
 		outputMinMaxSum((vrtg+f), "(vrtg+f)");
 		outputMinMaxSum(ug*(vrtg+f), "ug*(vrtg+f)");
@@ -291,7 +291,7 @@ public:
 
 
 		simVars.sim.h0 = 10000.0;
-		SphereDataPhysical phig = simVars.sim.gravitation*(hbump+simVars.sim.h0) + phispec.getSphereDataPhysical();
+		SphereData_Physical phig = simVars.sim.gravitation*(hbump+simVars.sim.h0) + phispec.getSphereDataPhysical();
 		outputMinMaxSum(phig, "phig");
 
 		phispec = phig;
@@ -326,11 +326,11 @@ public:
 			phispec += dt*phispecdt;
 		}
 
-		SphereDataPhysical vrtg = vrtspec.getSphereDataPhysical();
-		SphereDataPhysical ug(sphereDataConfig);
-		SphereDataPhysical vg(sphereDataConfig);
+		SphereData_Physical vrtg = vrtspec.getSphereDataPhysical();
+		SphereData_Physical ug(sphereDataConfig);
+		SphereData_Physical vg(sphereDataConfig);
 		op.vortdiv_to_uv(vrtspec, divspec, ug, vg);
-		SphereDataPhysical phig = phispec.getSphereDataPhysical();
+		SphereData_Physical phig = phispec.getSphereDataPhysical();
 
 		outputMinMaxSum(vrtg, "vrtg");
 		outputMinMaxSum(ug, "ug");

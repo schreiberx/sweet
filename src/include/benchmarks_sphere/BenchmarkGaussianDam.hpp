@@ -15,7 +15,7 @@ class BenchmarkGaussianDam
 public:
 	static
 	void setup_initial_conditions_gaussian(
-			SphereDataPhysical &o_h,
+			SphereData_Physical &o_h,
 			SimulationVariables &i_simVars,
 			double i_center_lon = M_PI/3,
 			double i_center_lat = M_PI/3,
@@ -50,7 +50,7 @@ public:
 public:
 	static
 	void setup_initial_conditions_gaussian_normalized(
-			SphereDataPhysical &o_data,
+			SphereData_Physical &o_data,
 			const SimulationVariables &i_simVars,
 			double i_center_lon = M_PI/3,
 			double i_center_lat = M_PI/3,
@@ -81,9 +81,9 @@ public:
 public:
 	static
 	void setup_initial_conditions_gaussian(
-			SphereDataPhysical &o_h,
-			SphereDataPhysical &o_u,
-			SphereDataPhysical &o_v,
+			SphereData_Physical &o_h,
+			SphereData_Physical &o_u,
+			SphereData_Physical &o_v,
 			SimulationVariables &i_simVars,
 			double i_center_lon = M_PI/3,
 			double i_center_lat = M_PI/3,

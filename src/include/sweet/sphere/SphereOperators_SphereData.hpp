@@ -9,18 +9,18 @@
 #define SPHOPERATORS_HPP_
 
 #include <sweet/MemBlockAlloc.hpp>
-#include "../sphere/SphereDataSpectral.hpp"
-#include "../sphere/SphereSPHIdentities.hpp"
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
 
 
-class SphereOperators	:
-	public SphereSPHIdentities
+class SphereOperators_SphereData	:
+	public SphereHelpers_SPHIdentities
 {
-	friend SphereDataConfig;
+	friend SphereData_Config;
 
 public:
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 private:
 
@@ -29,8 +29,8 @@ private:
 
 
 public:
-	SphereOperators(
-		SphereDataConfig *i_sphereDataConfig,
+	SphereOperators_SphereData(
+		SphereData_Config *i_sphereDataConfig,
 		double i_earth_radius
 	)
 	{
@@ -39,7 +39,7 @@ public:
 
 
 public:
-	SphereOperators()
+	SphereOperators_SphereData()
 	{
 	}
 
@@ -47,7 +47,7 @@ public:
 
 public:
 	void setup(
-		const SphereDataConfig *i_sphereDataConfig,
+		const SphereData_Config *i_sphereDataConfig,
 		double i_earth_radius
 	)
 	{
@@ -102,13 +102,13 @@ public:
 	 *
 	 * d/d lambda f(lambda,mu)
 	 */
-	SphereDataSpectral diff_lon(
-			const SphereDataSpectral &i_sph_data
+	SphereData_Spectral diff_lon(
+			const SphereData_Spectral &i_sph_data
 	)	const
 	{
 		i_sph_data.request_data_spectral();
 
-		SphereDataSpectral out_sph_data(i_sph_data.sphereDataConfig);
+		SphereData_Spectral out_sph_data(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -136,15 +136,15 @@ public:
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */
 	void robert_vortdiv_to_uv(
-			const SphereDataSpectral &i_vrt,
-			const SphereDataSpectral &i_div,
-			SphereDataPhysical &o_u,
-			SphereDataPhysical &o_v
+			const SphereData_Spectral &i_vrt,
+			const SphereData_Spectral &i_div,
+			SphereData_Physical &o_u,
+			SphereData_Physical &o_v
 
 	)	const
 	{
-		SphereDataSpectral psi = inv_laplace(i_vrt)*ir;
-		SphereDataSpectral chi = inv_laplace(i_div)*ir;
+		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
+		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
@@ -160,20 +160,20 @@ public:
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */
 	void robert_grad_to_vec(
-			const SphereDataSpectral &i_phi,
-			SphereDataPhysical &o_u,
-			SphereDataPhysical &o_v,
+			const SphereData_Spectral &i_phi,
+			SphereData_Physical &o_u,
+			SphereData_Physical &o_v,
 			double i_radius
 
 	)	const
 	{
 		double ir = 1.0/i_radius;
 
-		SphereDataSpectral psi(sphereDataConfig);
+		SphereData_Spectral psi(sphereDataConfig);
 		psi.spectral_set_zero();
 
-		SphereDataPhysical u(sphereDataConfig);
-		SphereDataPhysical v(sphereDataConfig);
+		SphereData_Physical u(sphereDataConfig);
+		SphereData_Physical v(sphereDataConfig);
 
 		SHsphtor_to_spat(
 						sphereDataConfig->shtns,
@@ -193,15 +193,15 @@ public:
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */
 	void vortdiv_to_uv(
-			const SphereDataSpectral &i_vrt,
-			const SphereDataSpectral &i_div,
-			SphereDataPhysical &o_u,
-			SphereDataPhysical &o_v
+			const SphereData_Spectral &i_vrt,
+			const SphereData_Spectral &i_div,
+			SphereData_Physical &o_u,
+			SphereData_Physical &o_v
 
 	)	const
 	{
-		SphereDataSpectral psi = inv_laplace(i_vrt)*ir;
-		SphereDataSpectral chi = inv_laplace(i_div)*ir;
+		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
+		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
@@ -223,17 +223,17 @@ public:
 
 
 
-	SphereDataSpectral robert_uv_to_vort(
-			const SphereDataPhysical &i_u,
-			const SphereDataPhysical &i_v
+	SphereData_Spectral robert_uv_to_vort(
+			const SphereData_Physical &i_u,
+			const SphereData_Physical &i_v
 
 	)	const
 	{
-		SphereDataSpectral tmp(sphereDataConfig);
-		SphereDataSpectral vort(sphereDataConfig);
+		SphereData_Spectral tmp(sphereDataConfig);
+		SphereData_Spectral vort(sphereDataConfig);
 
-		SphereDataPhysical ug = i_u;
-		SphereDataPhysical vg = i_v;
+		SphereData_Physical ug = i_u;
+		SphereData_Physical vg = i_v;
 
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 		spat_to_SHsphtor(
@@ -249,14 +249,14 @@ public:
 
 
 
-	SphereDataSpectral uv_to_vort(
-			const SphereDataPhysical &i_u,
-			const SphereDataPhysical &i_v
+	SphereData_Spectral uv_to_vort(
+			const SphereData_Physical &i_u,
+			const SphereData_Physical &i_v
 
 	)	const
 	{
-		SphereDataSpectral tmp(sphereDataConfig);
-		SphereDataSpectral vort(sphereDataConfig);
+		SphereData_Spectral tmp(sphereDataConfig);
+		SphereData_Spectral vort(sphereDataConfig);
 
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
@@ -281,15 +281,15 @@ public:
 
 
 	void robert_uv_to_vortdiv(
-			const SphereDataPhysical &i_u,
-			const SphereDataPhysical &i_v,
-			SphereDataSpectral &o_vort,
-			SphereDataSpectral &o_div
+			const SphereData_Physical &i_u,
+			const SphereData_Physical &i_v,
+			SphereData_Spectral &o_vort,
+			SphereData_Spectral &o_div
 
 	)	const
 	{
-		SphereDataPhysical ug = i_u;
-		SphereDataPhysical vg = i_v;
+		SphereData_Physical ug = i_u;
+		SphereData_Physical vg = i_v;
 
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
@@ -307,10 +307,10 @@ public:
 
 
 	void uv_to_vortdiv(
-			const SphereDataPhysical &i_u,
-			const SphereDataPhysical &i_v,
-			SphereDataSpectral &o_stream,
-			SphereDataSpectral &o_potential
+			const SphereData_Physical &i_u,
+			const SphereData_Physical &i_v,
+			SphereData_Spectral &o_stream,
+			SphereData_Spectral &o_potential
 
 	)	const
 	{
@@ -339,8 +339,8 @@ public:
 
 
 
-	SphereDataSpectral spectral_one_minus_sinphi_squared_diff_lat_mu(
-			const SphereDataSpectral &i_sph_data
+	SphereData_Spectral spectral_one_minus_sinphi_squared_diff_lat_mu(
+			const SphereData_Spectral &i_sph_data
 	)	const
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
@@ -348,8 +348,8 @@ public:
 
 
 
-	SphereDataSpectral spectral_cosphi2_diff_lat_mu(
-			const SphereDataSpectral &i_sph_data
+	SphereData_Spectral spectral_cosphi2_diff_lat_mu(
+			const SphereData_Spectral &i_sph_data
 	)	const
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
@@ -360,13 +360,13 @@ public:
 	/**
 	 * (1-mu^2) d/dmu ()
 	 */
-	SphereDataSpectral spectral_one_minus_mu_squared_diff_lat_mu(
-			const SphereDataSpectral &i_sph_data
+	SphereData_Spectral spectral_one_minus_mu_squared_diff_lat_mu(
+			const SphereData_Spectral &i_sph_data
 	)	const
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
-		SphereDataSpectral out_sph_data(sphereDataConfig);
+		SphereData_Spectral out_sph_data(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int m = 0; m <= i_sph_data.sphereDataConfig->spectral_modes_m_max; m++)
@@ -392,13 +392,13 @@ public:
 	 * Compute
 	 * mu*F(\lambda,\mu)
 	 */
-	SphereDataSpectral mu(
-			const SphereDataSpectral &i_sphere_data
+	SphereData_Spectral mu(
+			const SphereData_Spectral &i_sphere_data
 	)	const
 	{
-		const SphereDataConfig *sphereDataConfig = i_sphere_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sphere_data.sphereDataConfig;
 
-		SphereDataSpectral out_sph_data = SphereDataSpectral(sphereDataConfig);
+		SphereData_Spectral out_sph_data = SphereData_Spectral(sphereDataConfig);
 
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -423,13 +423,13 @@ public:
 	 * Compute
 	 * mu*F(\lambda,\mu)
 	 */
-	SphereDataSpectral mu2(
-			const SphereDataSpectral &i_sph_data
+	SphereData_Spectral mu2(
+			const SphereData_Spectral &i_sph_data
 	)	const
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
-		SphereDataSpectral out_sph_data = SphereDataSpectral(sphereDataConfig);
+		SphereData_Spectral out_sph_data = SphereData_Spectral(sphereDataConfig);
 
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -456,11 +456,11 @@ public:
 	/**
 	 * Laplace operator
 	 */
-	SphereDataSpectral laplace(
-			const SphereDataSpectral &i_sph_data
+	SphereData_Spectral laplace(
+			const SphereData_Spectral &i_sph_data
 	)	const
 	{
-		SphereDataSpectral out_sph_data(i_sph_data);
+		SphereData_Spectral out_sph_data(i_sph_data);
 
 		out_sph_data.spectral_update_lambda(
 				[&](int n, int m, std::complex<double> &o_data)
@@ -477,11 +477,11 @@ public:
 	/**
 	 * Laplace operator
 	 */
-	SphereDataSpectral inv_laplace(
-			const SphereDataSpectral &i_sph_data
+	SphereData_Spectral inv_laplace(
+			const SphereData_Spectral &i_sph_data
 	)	const
 	{
-		SphereDataSpectral out(i_sph_data);
+		SphereData_Spectral out(i_sph_data);
 
 		out.spectral_update_lambda(
 				[&](int n, int m, std::complex<double> &o_data)

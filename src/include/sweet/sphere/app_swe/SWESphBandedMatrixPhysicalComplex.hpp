@@ -9,9 +9,9 @@
 #define SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
 
 #include <libmath/BandedMatrixPhysicalComplex.hpp>
-#include <sweet/sphere/SphereSPHIdentities.hpp>
 #include <libmath/LapackBandedMatrixSolver.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
+#include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
 
 
 
@@ -20,7 +20,7 @@
  */
 template < typename T = std::complex<double> >	// T: complex valued single or double precision method
 class SphBandedMatrixPhysicalComplex	:
-		SphereSPHIdentities
+		SphereHelpers_SPHIdentities
 {
 public:
 	/**
@@ -31,7 +31,7 @@ public:
 	/**
 	 * SPH configuration
 	 */
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 	/**
 	 * Solver for banded matrix
@@ -53,7 +53,7 @@ public:
 	 */
 public:
 	void setup(
-			const SphereDataConfig *i_sphereDataConfig,		///< Handler to sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig,		///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
@@ -491,11 +491,11 @@ public:
 	 * WARNING: This only multiplies the i_x values with the matrix.
 	 * Use solve(...) to solve for the matrix
 	 */
-	SphereDataSpectralComplex apply(
-			const SphereDataSpectralComplex &i_x	///< solution to be searched
+	SphereData_SpectralComplex apply(
+			const SphereData_SpectralComplex &i_x	///< solution to be searched
 	)
 	{
-		SphereDataSpectralComplex out(sphereDataConfig);
+		SphereData_SpectralComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -525,19 +525,19 @@ public:
 
 
 
-	SphereDataSpectralComplex solve(
-			const SphereDataPhysicalComplex &i_rhs
+	SphereData_SpectralComplex solve(
+			const SphereData_PhysicalComplex &i_rhs
 	)
 	{
-		SphereDataSpectralComplex tmp = i_rhs;
+		SphereData_SpectralComplex tmp = i_rhs;
 		return solve(tmp);
 	}
 
-	SphereDataSpectralComplex solve(
-			const SphereDataSpectralComplex &i_rhs
+	SphereData_SpectralComplex solve(
+			const SphereData_SpectralComplex &i_rhs
 	)
 	{
-		SphereDataSpectralComplex out(sphereDataConfig);
+		SphereData_SpectralComplex out(sphereDataConfig);
 
 		i_rhs.check_sphereDataConfig_identical_res(sphereDataConfig);
 

@@ -8,14 +8,14 @@
 
 #include "SWE_Sphere_TS_lg_irk.hpp"
 #include <complex>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
 SWE_Sphere_TS_lg_irk::SWE_Sphere_TS_lg_irk(
 		SimulationVariables &i_simVars,
-		SphereOperators &i_op
+		SphereOperators_SphereData &i_op
 )	:
 	simVars(i_simVars),
 	op(i_op),
@@ -53,9 +53,9 @@ void SWE_Sphere_TS_lg_irk::setup(
  */
 
 void SWE_Sphere_TS_lg_irk::run_timestep(
-		SphereDataSpectral &io_phi,		///< prognostic variables
-		SphereDataSpectral &io_vort,	///< prognostic variables
-		SphereDataSpectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_phi,		///< prognostic variables
+		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -74,16 +74,16 @@ void SWE_Sphere_TS_lg_irk::run_timestep(
 	        beta = -1.0/timestep_size;
 	}
 
-	SphereDataSpectral phi0 = io_phi;
-	SphereDataSpectral vort0 = io_vort;
-	SphereDataSpectral div0 = io_div;
+	SphereData_Spectral phi0 = io_phi;
+	SphereData_Spectral vort0 = io_vort;
+	SphereData_Spectral div0 = io_div;
 
-	SphereDataSpectral phi(sphereDataConfig);
-	SphereDataSpectral vort(sphereDataConfig);
-	SphereDataSpectral div(sphereDataConfig);
+	SphereData_Spectral phi(sphereDataConfig);
+	SphereData_Spectral vort(sphereDataConfig);
+	SphereData_Spectral div(sphereDataConfig);
 
 	{
-		SphereDataSpectral rhs = gh*div0 + alpha*phi0;
+		SphereData_Spectral rhs = gh*div0 + alpha*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
 		vort = vort0;

@@ -1,5 +1,5 @@
 /*
- * SPHIdentities.hpp
+ * Sphere_SPHIdentities.hpp
  *
  *  Created on: 26 Aug 2016
  *      Author: Martin Schreiber <schreiberx@gmail.com>
@@ -10,7 +10,7 @@
 
 #include <cassert>
 
-class SphereSPHIdentities
+class SphereHelpers_SPHIdentities
 {
 public:
 

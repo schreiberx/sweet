@@ -18,11 +18,11 @@
 #include <rexi/REXI_Terry.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <string.h>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/sphere/SphereOperatorsComplex.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
 #include <sweet/sphere/app_swe/SWERexiTerm_SPHRobert.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
@@ -62,7 +62,7 @@ public:
 
 private:
 	/// Sphere operators
-	SphereOperators &op;
+	SphereOperators_SphereData &op;
 
 
 public:
@@ -71,11 +71,11 @@ public:
 	std::complex<double> rexi_gamma;
 
 
-	const SphereDataConfig *sphereDataConfig;
-	const SphereDataConfig *sphereDataConfigSolver;
+	const SphereData_Config *sphereDataConfig;
+	const SphereData_Config *sphereDataConfigSolver;
 
 	/// This class is only setp and used in case of added modes
-	SphereDataConfig sphereDataConfigInstance;
+	SphereData_Config sphereDataConfigInstance;
 
 	/// Extend modes for REXI time stepping?
 	int rexi_use_sphere_extended_modes;
@@ -127,9 +127,9 @@ private:
 		std::vector< std::complex<double> > alpha;
 		std::vector< std::complex<double> > beta_re;
 
-		SphereDataSpectral accum_phi;
-		SphereDataSpectral accum_vort;
-		SphereDataSpectral accum_div;
+		SphereData_Spectral accum_phi;
+		SphereData_Spectral accum_vort;
+		SphereData_Spectral accum_div;
 	};
 
 	// per-thread allocated variables to avoid NUMA domain effects
@@ -158,7 +158,7 @@ private:
 public:
 	SWE_Sphere_TS_l_rexi(
 			SimulationVariables &i_simVars,
-			SphereOperators &i_op
+			SphereOperators_SphereData &i_op
 		);
 
 private:
@@ -184,9 +184,9 @@ public:
 	);
 
 	void run_timestep(
-			SphereDataSpectral &io_h,	///< prognostic variables
-			SphereDataSpectral &io_u,	///< prognostic variables
-			SphereDataSpectral &io_v,	///< prognostic variables
+			SphereData_Spectral &io_h,	///< prognostic variables
+			SphereData_Spectral &io_u,	///< prognostic variables
+			SphereData_Spectral &io_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
@@ -194,13 +194,13 @@ public:
 
 
 	void run_timestep(
-			const SphereDataSpectral &i_h,	///< prognostic variables
-			const SphereDataSpectral &i_u,	///< prognostic variables
-			const SphereDataSpectral &i_v,	///< prognostic variables
+			const SphereData_Spectral &i_h,	///< prognostic variables
+			const SphereData_Spectral &i_u,	///< prognostic variables
+			const SphereData_Spectral &i_v,	///< prognostic variables
 
-			SphereDataSpectral &o_h,	///< prognostic variables
-			SphereDataSpectral &o_u,	///< prognostic variables
-			SphereDataSpectral &o_v,	///< prognostic variables
+			SphereData_Spectral &o_h,	///< prognostic variables
+			SphereData_Spectral &o_u,	///< prognostic variables
+			SphereData_Spectral &o_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
@@ -216,9 +216,9 @@ public:
 	 */
 public:
 	bool run_timestep_rexi_vectorinvariant_progphivortdiv(
-		SphereDataSpectral &io_phi0,
-		SphereDataSpectral &io_u0,
-		SphereDataSpectral &io_v0,
+		SphereData_Spectral &io_phi0,
+		SphereData_Spectral &io_u0,
+		SphereData_Spectral &io_v0,
 
 		double i_timestep_size,	///< timestep size
 

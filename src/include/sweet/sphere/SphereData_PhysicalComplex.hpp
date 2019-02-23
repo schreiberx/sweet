@@ -22,25 +22,25 @@
 
 #include <sweet/sweetmath.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/openmp_helper.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
 
 
 
-class SphereDataPhysicalComplex
+class SphereData_PhysicalComplex
 {
-	friend class SphereDataSpectralComplex;
+	friend class SphereData_SpectralComplex;
 
 public:
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 public:
 	std::complex<double> *physical_space_data;
 
 
 	void swap(
-			SphereDataPhysicalComplex &i_sphereData
+			SphereData_PhysicalComplex &i_sphereData
 	)
 	{
 		assert(sphereDataConfig == i_sphereData.sphereDataConfig);
@@ -49,8 +49,8 @@ public:
 	}
 
 public:
-	SphereDataPhysicalComplex(
-			const SphereDataConfig *i_sphereDataConfig
+	SphereData_PhysicalComplex(
+			const SphereData_Config *i_sphereDataConfig
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
 		physical_space_data(nullptr)
@@ -60,7 +60,7 @@ public:
 
 
 public:
-	SphereDataPhysicalComplex()	:
+	SphereData_PhysicalComplex()	:
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr)
 	{
@@ -68,8 +68,8 @@ public:
 
 
 public:
-	SphereDataPhysicalComplex(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex(
+			const SphereData_PhysicalComplex &i_sph_data
 	)	:
 		sphereDataConfig(i_sph_data.sphereDataConfig),
 		physical_space_data(nullptr)
@@ -81,8 +81,8 @@ public:
 
 
 public:
-	SphereDataPhysicalComplex(
-			const SphereDataPhysical &i_sph_data
+	SphereData_PhysicalComplex(
+			const SphereData_Physical &i_sph_data
 	)	:
 		sphereDataConfig(i_sph_data.sphereDataConfig),
 		physical_space_data(nullptr)
@@ -97,8 +97,8 @@ public:
 	 * load real and imaginary data from physical arrays
 	 */
 	void loadRealImag(
-			const SphereDataPhysical &i_re,
-			const SphereDataPhysical &i_im
+			const SphereData_Physical &i_re,
+			const SphereData_Physical &i_im
 	)
 	{
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -121,7 +121,7 @@ public:
 	 */
 public:
 	inline void check(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
@@ -131,8 +131,8 @@ public:
 
 
 public:
-	SphereDataPhysicalComplex& operator=(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex& operator=(
+			const SphereData_PhysicalComplex &i_sph_data
 	)
 	{
 		if (sphereDataConfig == nullptr)
@@ -145,8 +145,8 @@ public:
 
 
 public:
-	SphereDataPhysicalComplex& operator=(
-			SphereDataPhysicalComplex &&i_sph_data
+	SphereData_PhysicalComplex& operator=(
+			SphereData_PhysicalComplex &&i_sph_data
 	)
 	{
 		if (sphereDataConfig == nullptr)
@@ -160,8 +160,8 @@ public:
 
 
 public:
-	SphereDataPhysicalComplex& operator=(
-			const SphereDataPhysical &i_sph_data
+	SphereData_PhysicalComplex& operator=(
+			const SphereData_Physical &i_sph_data
 	)
 	{
 		if (sphereDataConfig == nullptr)
@@ -174,9 +174,9 @@ public:
 	}
 
 #if 0
-	SphereDataPhysicalComplex robert_convertToRobert()
+	SphereData_PhysicalComplex robert_convertToRobert()
 	{
-		SphereDataPhysicalComplex out = *this;
+		SphereData_PhysicalComplex out = *this;
 
 		out.physical_update_lambda(
 				[](double i_lon, double i_lat, double &io_data)
@@ -190,9 +190,9 @@ public:
 
 
 
-	SphereDataPhysicalComplex robert_convertToNonRobert()
+	SphereData_PhysicalComplex robert_convertToNonRobert()
 	{
-		SphereDataPhysicalComplex out = *this;
+		SphereData_PhysicalComplex out = *this;
 
 		out.physical_update_lambda(
 				[](double i_lon, double i_lat, double &io_data)
@@ -205,13 +205,13 @@ public:
 	}
 #endif
 
-	SphereDataPhysicalComplex operator+(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex operator+(
+			const SphereData_PhysicalComplex &i_sph_data
 	)	const
 	{
 		check(i_sph_data.sphereDataConfig);
 
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -222,8 +222,8 @@ public:
 
 
 
-	SphereDataPhysicalComplex& operator+=(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex& operator+=(
+			const SphereData_PhysicalComplex &i_sph_data
 	)
 	{
 		check(i_sph_data.sphereDataConfig);
@@ -236,8 +236,8 @@ public:
 	}
 
 
-	SphereDataPhysicalComplex& operator-=(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex& operator-=(
+			const SphereData_PhysicalComplex &i_sph_data
 	)
 	{
 		check(i_sph_data.sphereDataConfig);
@@ -251,13 +251,13 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator-(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex operator-(
+			const SphereData_PhysicalComplex &i_sph_data
 	)	const
 	{
 		check(i_sph_data.sphereDataConfig);
 
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -268,9 +268,9 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator-()
+	SphereData_PhysicalComplex operator-()
 	{
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -281,13 +281,13 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator*(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex operator*(
+			const SphereData_PhysicalComplex &i_sph_data
 	)	const
 	{
 		check(i_sph_data.sphereDataConfig);
 
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -298,13 +298,13 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator/(
-			const SphereDataPhysicalComplex &i_sph_data
+	SphereData_PhysicalComplex operator/(
+			const SphereData_PhysicalComplex &i_sph_data
 	)	const
 	{
 		check(i_sph_data.sphereDataConfig);
 
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -315,11 +315,11 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator*(
+	SphereData_PhysicalComplex operator*(
 			const double i_value
 	)	const
 	{
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
@@ -330,11 +330,11 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator*(
+	SphereData_PhysicalComplex operator*(
 			const std::complex<double> &i_value
 	)	const
 	{
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -346,7 +346,7 @@ public:
 
 
 
-	const SphereDataPhysicalComplex& operator*=(
+	const SphereData_PhysicalComplex& operator*=(
 			const double i_value
 	)	const
 	{
@@ -359,11 +359,11 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator/(
+	SphereData_PhysicalComplex operator/(
 			double i_value
 	)	const
 	{
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -374,11 +374,11 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator+(
+	SphereData_PhysicalComplex operator+(
 			const std::complex<double> &i_value
 	)	const
 	{
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -389,11 +389,11 @@ public:
 
 
 
-	SphereDataPhysicalComplex operator-(
+	SphereData_PhysicalComplex operator-(
 			const std::complex<double> &i_value
 	)	const
 	{
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
@@ -407,7 +407,7 @@ public:
 
 public:
 	void setup(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -418,7 +418,7 @@ public:
 
 
 public:
-	~SphereDataPhysicalComplex()
+	~SphereData_PhysicalComplex()
 	{
 		if (physical_space_data != nullptr)
 			MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
@@ -684,7 +684,7 @@ public:
 	 * Return the maximum error norm between this and the given data in physical space
 	 */
 	double physical_reduce_max(
-			const SphereDataPhysicalComplex &i_sph_data
+			const SphereData_PhysicalComplex &i_sph_data
 	)
 	{
 		check(i_sph_data.sphereDataConfig);
@@ -853,14 +853,14 @@ public:
 	/**
 	 * Rescale data so that max_abs returns the given value
 	 */
-	SphereDataPhysicalComplex physical_rescale_to_max_abs(
+	SphereData_PhysicalComplex physical_rescale_to_max_abs(
 			double i_new_max_abs
 	)	const
 	{
 		double max_abs = physical_reduce_max_abs();
 		double scale = i_new_max_abs/max_abs;
 
-		SphereDataPhysicalComplex out(sphereDataConfig);
+		SphereData_PhysicalComplex out(sphereDataConfig);
 
 		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 			out.physical_space_data[j] = physical_space_data[j]*scale;
@@ -1137,23 +1137,23 @@ public:
  */
 inline
 static
-SphereDataPhysicalComplex operator*(
+SphereData_PhysicalComplex operator*(
 		const double i_value,
-		const SphereDataPhysicalComplex &i_array_data
+		const SphereData_PhysicalComplex &i_array_data
 )
 {
-	return ((SphereDataPhysicalComplex&)i_array_data)*i_value;
+	return ((SphereData_PhysicalComplex&)i_array_data)*i_value;
 }
 
 
 inline
 static
-SphereDataPhysicalComplex operator*(
+SphereData_PhysicalComplex operator*(
 		const std::complex<double> &i_value,
-		const SphereDataPhysicalComplex &i_array_data
+		const SphereData_PhysicalComplex &i_array_data
 )
 {
-	return ((SphereDataPhysicalComplex&)i_array_data)*i_value;
+	return ((SphereData_PhysicalComplex&)i_array_data)*i_value;
 }
 
 
@@ -1168,12 +1168,12 @@ SphereDataPhysicalComplex operator*(
 #if 0
 inline
 static
-SphereDataPhysicalComplex operator-(
+SphereData_PhysicalComplex operator-(
 		const double i_value,
-		const SphereDataPhysicalComplex &i_array_data
+		const SphereData_PhysicalComplex &i_array_data
 )
 {
-	return ((SphereDataPhysicalComplex&)i_array_data).valueMinusThis(i_value);
+	return ((SphereData_PhysicalComplex&)i_array_data).valueMinusThis(i_value);
 //	return -(((SPHData&)i_array_data).operator-(i_value));
 }
 #endif
@@ -1189,13 +1189,13 @@ SphereDataPhysicalComplex operator-(
 #if 0
 inline
 static
-SphereDataPhysicalComplex operator+(
+SphereData_PhysicalComplex operator+(
 		const double i_value,
-		const SphereDataPhysicalComplex &i_array_data
+		const SphereData_PhysicalComplex &i_array_data
 )
 {
 	i_array_data.checkConsistency();
-	return ((SphereDataPhysicalComplex&)i_array_data)+i_value;
+	return ((SphereData_PhysicalComplex&)i_array_data)+i_value;
 }
 #endif
 

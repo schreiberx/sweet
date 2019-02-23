@@ -8,15 +8,15 @@
 
 #include "SWE_Sphere_TS_l_cn.hpp"
 #include <complex>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
 
 SWE_Sphere_TS_l_cn::SWE_Sphere_TS_l_cn(
 		SimulationVariables &i_simVars,
-		SphereOperators &i_op
+		SphereOperators_SphereData &i_op
 )	:
 	simVars(i_simVars),
 	op(i_op),
@@ -135,9 +135,9 @@ void SWE_Sphere_TS_l_cn::update_coefficients()
  */
 
 void SWE_Sphere_TS_l_cn::run_timestep(
-		SphereDataSpectral &io_phi,		///< prognostic variables
-		SphereDataSpectral &io_vort,	///< prognostic variables
-		SphereDataSpectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_phi,		///< prognostic variables
+		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -157,9 +157,9 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	}
 
 
-	SphereDataSpectral phi0 = io_phi;
-	SphereDataSpectral vort0 = io_vort;
-	SphereDataSpectral div0 = io_div;
+	SphereData_Spectral phi0 = io_phi;
+	SphereData_Spectral vort0 = io_vort;
+	SphereData_Spectral div0 = io_div;
 
 	/*
 	 * Crank-Nicolson method:
@@ -169,9 +169,9 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	 * with q the CN damping facor with no damping for q=0.5
 	 */
 
-	SphereDataSpectral o_phi_t(sphereDataConfig);
-	SphereDataSpectral o_vort_t(sphereDataConfig);
-	SphereDataSpectral o_div_t(sphereDataConfig);
+	SphereData_Spectral o_phi_t(sphereDataConfig);
+	SphereData_Spectral o_vort_t(sphereDataConfig);
+	SphereData_Spectral o_div_t(sphereDataConfig);
 
 	/*
 	 * LINEAR
@@ -187,18 +187,18 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 		if (!simVars.misc.sphere_use_robert_functions)
 			FatalError("Robert functions not yet supported in this time integrator");
 
-		SphereDataPhysical ug(sphereDataConfig);
-		SphereDataPhysical vg(sphereDataConfig);
+		SphereData_Physical ug(sphereDataConfig);
+		SphereData_Physical vg(sphereDataConfig);
 
 		if (simVars.misc.sphere_use_robert_functions)
 			op.robert_vortdiv_to_uv(vort0, div0, ug, vg);
 		else
 			op.vortdiv_to_uv(vort0, div0, ug, vg);
 
-		SphereDataPhysical phig = phi0.getSphereDataPhysical();
+		SphereData_Physical phig = phi0.getSphereDataPhysical();
 
-		SphereDataPhysical tmpg1 = ug*fg;
-		SphereDataPhysical tmpg2 = vg*fg;
+		SphereData_Physical tmpg1 = ug*fg;
+		SphereData_Physical tmpg2 = vg*fg;
 
 		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
@@ -207,7 +207,7 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 		tmpg1 = ug*gh;
 		tmpg2 = vg*gh;
 
-		SphereDataSpectral tmpspec(sphereDataConfig);
+		SphereData_Spectral tmpspec(sphereDataConfig);
 
 		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
@@ -225,13 +225,13 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	div0 += fac*o_div_t;
 
 
-	SphereDataSpectral phi(sphereDataConfig);
-	SphereDataSpectral vort(sphereDataConfig);
-	SphereDataSpectral div(sphereDataConfig);
+	SphereData_Spectral phi(sphereDataConfig);
+	SphereData_Spectral vort(sphereDataConfig);
+	SphereData_Spectral div(sphereDataConfig);
 
 	if (use_f_sphere)
 	{
-		SphereDataSpectral rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
+		SphereData_Spectral rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);
 
 		div = -1.0/gh*(phi0 - alpha*phi);
@@ -239,28 +239,28 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	}
 	else
 	{
-		SphereDataSpectral rhs(sphereDataConfig);
+		SphereData_Spectral rhs(sphereDataConfig);
 
-		SphereDataPhysical u0g(sphereDataConfig);
-		SphereDataPhysical v0g(sphereDataConfig);
+		SphereData_Physical u0g(sphereDataConfig);
+		SphereData_Physical v0g(sphereDataConfig);
 		if (simVars.misc.sphere_use_robert_functions)
 			op.robert_vortdiv_to_uv(vort0, div0, u0g, v0g);
 		else
 			op.vortdiv_to_uv(vort0, div0, u0g, v0g);
 
-		SphereDataPhysical phi0g = phi0.getSphereDataPhysical();
+		SphereData_Physical phi0g = phi0.getSphereDataPhysical();
 
-		SphereDataPhysical Fc_k =
+		SphereData_Physical Fc_k =
 				two_coriolis*inv_r*(
 						-(-two_coriolis*two_coriolis*mug*mug + alpha*alpha)*u0g
 						+ 2.0*alpha*two_coriolis*mug*v0g
 				);
 
-		SphereDataPhysical foo =
+		SphereData_Physical foo =
 				(gh*(div0.getSphereDataPhysical() - (1.0/alpha)*two_coriolis*mug*vort0.getSphereDataPhysical())) +
 				(alpha*phi0g + (1.0/alpha)*two_coriolis*two_coriolis*mug*mug*phi0g);
 
-		SphereDataPhysical rhsg =
+		SphereData_Physical rhsg =
 				alpha*alpha*foo +
 				two_coriolis*two_coriolis*mug*mug*foo
 				- (gh/alpha)*Fc_k;
@@ -270,20 +270,20 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 		phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
 
 
-		SphereDataPhysical u0(sphereDataConfig);
-		SphereDataPhysical v0(sphereDataConfig);
+		SphereData_Physical u0(sphereDataConfig);
+		SphereData_Physical v0(sphereDataConfig);
 		op.robert_vortdiv_to_uv(vort0, div0, u0, v0);
 
-		SphereDataPhysical gradu(sphereDataConfig);
-		SphereDataPhysical gradv(sphereDataConfig);
+		SphereData_Physical gradu(sphereDataConfig);
+		SphereData_Physical gradv(sphereDataConfig);
 		op.robert_grad_to_vec(phi, gradu, gradv, r);
 
-		SphereDataPhysical a = u0 + gradu;
-		SphereDataPhysical b = v0 + gradv;
+		SphereData_Physical a = u0 + gradu;
+		SphereData_Physical b = v0 + gradv;
 
-		SphereDataPhysical k = (two_coriolis*two_coriolis*mug*mug+alpha*alpha);
-		SphereDataPhysical u = (alpha*a - two_coriolis*mug*(b))/k;
-		SphereDataPhysical v = (two_coriolis*mug*(a) + alpha*b)/k;
+		SphereData_Physical k = (two_coriolis*two_coriolis*mug*mug+alpha*alpha);
+		SphereData_Physical u = (alpha*a - two_coriolis*mug*(b))/k;
+		SphereData_Physical v = (two_coriolis*mug*(a) + alpha*b)/k;
 
 		op.robert_uv_to_vortdiv(u, v, vort, div);
 	}

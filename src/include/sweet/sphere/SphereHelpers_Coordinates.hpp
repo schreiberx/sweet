@@ -10,7 +10,7 @@
 
 #include <array>
 
-class SPHHelper
+class SphereHelpers_Coordinates
 {
 public:
 	static void angles_to_cart(

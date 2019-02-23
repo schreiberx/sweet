@@ -4,7 +4,7 @@
 
 extern "C"
 {
-  void cecho_error(SphereDataSpectral* sd,
+  void cecho_error(SphereData_Spectral* sd,
 		   int step)
   {
     // not implemented
@@ -35,9 +35,9 @@ extern "C"
 			       int i_niters
 			       )
   {
-    const SphereDataSpectral& phi_Y  = i_Y->get_phi();
-    const SphereDataSpectral& vort_Y = i_Y->get_vort();
-    const SphereDataSpectral& div_Y  = i_Y->get_div();
+    const SphereData_Spectral& phi_Y  = i_Y->get_phi();
+    const SphereData_Spectral& vort_Y = i_Y->get_vort();
+    const SphereData_Spectral& div_Y  = i_Y->get_div();
 
     // get the current space-time level
     const int level = i_Y->get_level();
@@ -46,10 +46,10 @@ extern "C"
     SimulationVariables* simVars         = i_ctx->get_simulation_variables();
 
     // get the SphereDiagnostics object from context
-    SphereDiagnostics* sphereDiagnostics = i_ctx->get_sphere_diagnostics();
+    SphereHelpers_Diagnostics* sphereDiagnostics = i_ctx->get_sphere_diagnostics();
 
     // get the SphereOperators object from context
-    SphereOperators* sphereOperators     = i_ctx->get_sphere_operators(level);
+    SphereOperators_SphereData* sphereOperators     = i_ctx->get_sphere_operators(level);
 
     // compute the invariants
     sphereDiagnostics->update_phi_vort_div_2_mass_energy_enstrophy(
@@ -81,9 +81,9 @@ extern "C"
 			 int i_niters
 			 )
   {
-    const SphereDataSpectral& phi_Y  = i_Y->get_phi();
-    const SphereDataSpectral& vort_Y = i_Y->get_vort();
-    const SphereDataSpectral& div_Y  = i_Y->get_div();
+    const SphereData_Spectral& phi_Y  = i_Y->get_phi();
+    const SphereData_Spectral& vort_Y = i_Y->get_vort();
+    const SphereData_Spectral& div_Y  = i_Y->get_div();
 
     // write the data to file
     std::string filename = "prog_jump_phi_current_proc_"+std::to_string(i_current_proc)
@@ -121,9 +121,9 @@ void cecho_output_solution(
 			     int i_niters
 			     )
   {
-    const SphereDataSpectral& phi_Y  = i_Y->get_phi();
-    const SphereDataSpectral& vort_Y = i_Y->get_vort();
-    const SphereDataSpectral& div_Y  = i_Y->get_div();
+    const SphereData_Spectral& phi_Y  = i_Y->get_phi();
+    const SphereData_Spectral& vort_Y = i_Y->get_vort();
+    const SphereData_Spectral& div_Y  = i_Y->get_div();
 
     // write the data to file
     std::string filename = "prog_phi_current_proc_"+std::to_string(i_current_proc)

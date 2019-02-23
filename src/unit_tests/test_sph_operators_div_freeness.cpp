@@ -9,24 +9,23 @@
 #define TEST_SPH_OPERATORS_DIV_FREENESS_HPP_
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/sphere/SphereDataErrorCheck.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
 
 
 
 SimulationVariables simVars;
 
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig sphereDataConfigExtInstance;
+SphereData_Config sphereDataConfigInstance;
+SphereData_Config sphereDataConfigExtInstance;
 
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
+SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
+SphereData_Config *sphereDataConfigExt = &sphereDataConfigExtInstance;
 
 
 
@@ -38,8 +37,8 @@ void run_tests()
 	error_threshold *= (sphereDataConfig->spectral_modes_n_max);
 	std::cout << "Using max allowed error of " << error_threshold << std::endl;
 
-	SphereOperators op(sphereDataConfig, 1);
-	SphereOperatorsComplex opComplex(sphereDataConfig, 1);
+	SphereOperators_SphereData op(sphereDataConfig, 1);
+	SphereOperators_SphereDataComplex opComplex(sphereDataConfig, 1);
 
 
 	if (true)
@@ -58,10 +57,10 @@ void run_tests()
 
 		double alpha[] = {0, M_PI/3, M_PI/2};
 
-		SphereDataSpectral zero(sphereDataConfig);
+		SphereData_Spectral zero(sphereDataConfig);
 		zero.physical_set_zero();
 
-		SphereDataSpectralComplex zeroc(sphereDataConfig);
+		SphereData_SpectralComplex zeroc(sphereDataConfig);
 		zeroc.physical_set_zero();
 
 		for (int i = 0; i < 3; i++)
@@ -71,7 +70,7 @@ void run_tests()
 			std::cout << "****************************************" << std::endl;
 			std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
 
-			SphereDataSpectral phi(sphereDataConfig);
+			SphereData_Spectral phi(sphereDataConfig);
 			phi.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
@@ -87,7 +86,7 @@ void run_tests()
 				}
 			);
 
-			SphereDataSpectral u(sphereDataConfig);
+			SphereData_Spectral u(sphereDataConfig);
 			u.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
@@ -103,7 +102,7 @@ void run_tests()
 				}
 			);
 
-			SphereDataSpectral v(sphereDataConfig);
+			SphereData_Spectral v(sphereDataConfig);
 			v.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
@@ -120,7 +119,7 @@ void run_tests()
 
 
 
-			SphereDataSpectralComplex phic(sphereDataConfig);
+			SphereData_SpectralComplex phic(sphereDataConfig);
 			phic.physical_update_lambda(
 				[&](double i_lambda, double i_theta, std::complex<double> &io_data)
 				{
@@ -136,7 +135,7 @@ void run_tests()
 				}
 			);
 
-			SphereDataSpectralComplex uc(sphereDataConfig);
+			SphereData_SpectralComplex uc(sphereDataConfig);
 			uc.physical_update_lambda(
 				[&](double i_lon, double i_lat, std::complex<double> &io_data)
 				{
@@ -152,7 +151,7 @@ void run_tests()
 				}
 			);
 
-			SphereDataSpectralComplex vc(sphereDataConfig);
+			SphereData_SpectralComplex vc(sphereDataConfig);
 			vc.physical_update_lambda(
 				[&](double i_lon, double i_lat, std::complex<double> &io_data)
 				{

@@ -8,15 +8,15 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_TO_PLANEDATA_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_TO_PLANEDATA_HPP_
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/plane/PlaneData.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
 
 class Convert_SphereDataSpectral_To_PlaneData
 {
 public:
 	static
 	PlaneData physical_convert(
-			const SphereDataSpectral &i_sphereDataSpectral,
+			const SphereData_Spectral &i_sphereDataSpectral,
 			PlaneDataConfig *i_planeDataConfig
 	)
 	{
@@ -24,7 +24,7 @@ public:
 		assert(i_sphereData.sphereDataConfig->physical_num_lat == (int)i_planeDataConfig->physical_res[1]);
 		assert((int)i_planeDataConfig->physical_array_data_number_of_elements == i_sphereData.sphereDataConfig->physical_array_data_number_of_elements);
 
-		SphereDataPhysical i_sphereData = i_sphereDataSpectral.getSphereDataPhysical();
+		SphereData_Physical i_sphereData = i_sphereDataSpectral.getSphereDataPhysical();
 
 		PlaneData out(i_planeDataConfig);
 

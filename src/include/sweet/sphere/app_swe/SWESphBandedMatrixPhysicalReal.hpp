@@ -9,8 +9,9 @@
 #define SRC_INCLUDE_SPH_BANDED_MATRIX_REAL_HPP_
 
 #include <libmath/BandedMatrixPhysicalReal.hpp>
-#include <sweet/sphere/SphereSPHIdentities.hpp>
 #include <libmath/LapackBandedMatrixSolver.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
 
 
 
@@ -21,7 +22,7 @@
  */
 template <typename T = std::complex<double> >
 class SphBandedMatrixPhysicalReal	:
-		SphereSPHIdentities
+		SphereHelpers_SPHIdentities
 {
 public:
 	/**
@@ -32,7 +33,7 @@ public:
 	/**
 	 * SPH configuration
 	 */
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 	/**
 	 * Solver for banded matrix
@@ -44,7 +45,7 @@ public:
 	 */
 public:
 	void setup(
-			const SphereDataConfig *i_sphereConfig,		///< Handler to sphereDataConfig
+			const SphereData_Config *i_sphereConfig,		///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
@@ -448,11 +449,11 @@ public:
 	 * WARNING: This only multiplies the i_x values with the matrix.
 	 * Use solve(...) to solve for the matrix
 	 */
-	SphereDataSpectral apply(
-			const SphereDataSpectral &i_x	///< solution to be searched
+	SphereData_Spectral apply(
+			const SphereData_Spectral &i_x	///< solution to be searched
 	)
 	{
-		SphereDataSpectral out(sphereDataConfig);
+		SphereData_Spectral out(sphereDataConfig);
 
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
@@ -476,11 +477,11 @@ public:
 	}
 
 
-	SphereDataSpectral solve(
-			const SphereDataSpectral &i_rhs
+	SphereData_Spectral solve(
+			const SphereData_Spectral &i_rhs
 	)	const
 	{
-		SphereDataSpectral out(sphereDataConfig);
+		SphereData_Spectral out(sphereDataConfig);
 
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{

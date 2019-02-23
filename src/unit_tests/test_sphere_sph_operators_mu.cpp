@@ -6,21 +6,21 @@
  */
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
 
 SimulationVariables simVars;
 
-SphereDataConfig sphereDataConfigInstance;
-SphereDataConfig sphereDataConfigExtInstance;
+SphereData_Config sphereDataConfigInstance;
+SphereData_Config sphereDataConfigExtInstance;
 
-SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
-SphereDataConfig *sphereDataConfigExt = &sphereDataConfigExtInstance;
+SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
+SphereData_Config *sphereDataConfigExt = &sphereDataConfigExtInstance;
 
 
 void test_header(const std::string &i_str)
@@ -40,19 +40,19 @@ void run_tests()
 	std::cout << "Using max allowed error of " << eps << std::endl;
 
 	// Use earth radius of 1
-	SphereOperators op(sphereDataConfig, 1);
+	SphereOperators_SphereData op(sphereDataConfig, 1);
 
 
 	{
 		test_header("Testing Coriolis operators");
 
-		SphereDataSpectral one(sphereDataConfig);
+		SphereData_Spectral one(sphereDataConfig);
 		one.physical_set_all_value(1.0);
 
 		/*
 		 * Coriolis frequency
 		 */
-		SphereDataSpectral f(sphereDataConfig);
+		SphereData_Spectral f(sphereDataConfig);
 		f.physical_update_lambda_gaussian_grid(
 			[&](double i_lon, double i_lat_gauss, double &io_data)
 			{
@@ -76,12 +76,12 @@ void run_tests()
 				std::cout << std::endl;
 				std::cout << "Mode lon=" << m_lon << ", lat=" << m_lat << std::endl;
 
-				SphereDataSpectral test_fun(sphereDataConfig);
+				SphereData_Spectral test_fun(sphereDataConfig);
 				test_fun.spectral_set_zero();
 				test_fun.spectral_set(m_lat, m_lon, 1);
 
-				SphereDataSpectral physical_test_mul_f = (test_fun*f);
-				SphereDataSpectral operator_test_mul_f = op.mu(test_fun)*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+				SphereData_Spectral physical_test_mul_f = (test_fun*f);
+				SphereData_Spectral operator_test_mul_f = op.mu(test_fun)*2.0*simVars.sim.sphere_rotating_coriolis_omega;
 
 				double forward_diff_error_linf = (physical_test_mul_f - operator_test_mul_f).physical_reduce_max_abs();
 				forward_diff_error_linf /= max_f;
@@ -107,7 +107,7 @@ void run_tests()
 				 */
 				bool freq_limit = m_lat == sphereDataConfig->spectral_modes_n_max;
 
-				SphereDataSpectral invert_physical_test_mul_f = physical_test_mul_f / f;
+				SphereData_Spectral invert_physical_test_mul_f = physical_test_mul_f / f;
 
 				double backward_error_linf = (test_fun-invert_physical_test_mul_f).physical_reduce_max_abs();
 				std::cout << "backward error_linf: " << backward_error_linf << std::endl;

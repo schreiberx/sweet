@@ -8,21 +8,21 @@
 #ifndef SPHEREOPERATORS_COMPLEX_HPP_
 #define SPHEREOPERATORS_COMPLEX_HPP_
 
-#include <sweet/sphere/SphereSPHIdentities.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
 #include <libmath/shtns_inc.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
+#include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
 
 
 
-class SphereOperatorsComplex	:
-		public SphereSPHIdentities
+class SphereOperators_SphereDataComplex	:
+		public SphereHelpers_SPHIdentities
 {
-	friend SphereDataConfig;
+	friend SphereData_Config;
 
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 public:
 	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolver_inv_one_minus_mu2;
@@ -36,8 +36,8 @@ private:
 	 * Constructor
 	 */
 public:
-	SphereOperatorsComplex(
-			SphereDataConfig *i_sphereDataConfig,
+	SphereOperators_SphereDataComplex(
+			SphereData_Config *i_sphereDataConfig,
 			double i_earth_radius
 	)
 	{
@@ -46,7 +46,7 @@ public:
 
 
 public:
-	SphereOperatorsComplex()	:
+	SphereOperators_SphereDataComplex()	:
 		sphereDataConfig(nullptr)
 	{
 
@@ -55,7 +55,7 @@ public:
 
 public:
 	void setup(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			double i_earth_radius
 	)
 	{
@@ -76,13 +76,13 @@ public:
 	 *
 	 * d/d lambda f(lambda,mu)
 	 */
-	SphereDataSpectralComplex diff_lon(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex diff_lon(
+			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
 		i_sph_data.request_data_spectral();
 
-		SphereDataSpectralComplex out(i_sph_data.sphereDataConfig);
+		SphereData_SpectralComplex out(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -110,8 +110,8 @@ public:
 	 *
 	 * sqrt(1-mu*mu)*d/dmu P_n^m = ...
 	 */
-	SphereDataSpectralComplex diff_lat_mu(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex diff_lat_mu(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 
@@ -125,8 +125,8 @@ public:
 	 *
 	 * Compute d/d phi f(lambda,mu)
 	 */
-	SphereDataSpectralComplex diff_lat_phi(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex diff_lat_phi(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		return grad_lat(i_sph_data);
@@ -137,11 +137,11 @@ public:
 	/**
 	 * Compute gradient component along longitude (lambda)
 	 */
-	SphereDataSpectralComplex grad_lon(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex grad_lon(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
-		SphereDataSpectralComplex out = diff_lon(i_sph_data);
+		SphereData_SpectralComplex out = diff_lon(i_sph_data);
 
 		out.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
@@ -156,8 +156,8 @@ public:
 
 
 
-	SphereDataSpectralComplex inv_one_minus_mu2(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex inv_one_minus_mu2(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 #if 1
@@ -165,7 +165,7 @@ public:
 		return sphSolver_inv_one_minus_mu2.solve(i_sph_data);
 
 #else
-		SphereDataSpectralComplex out(i_sph_data);
+		SphereData_SpectralComplex out(i_sph_data);
 
 		out.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
@@ -178,14 +178,14 @@ public:
 	}
 
 
-	SphereDataSpectralComplex spectral_one_minus_mu_squared_diff_lat_mu(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex spectral_one_minus_mu_squared_diff_lat_mu(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		i_sph_data.request_data_spectral();
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
-		SphereDataSpectralComplex out(sphereDataConfig);
+		SphereData_SpectralComplex out(sphereDataConfig);
 
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -216,14 +216,14 @@ public:
 	 * Compute
 	 * mu*F(\lambda,\mu)
 	 */
-	SphereDataSpectralComplex mu(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex mu(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
-		SphereDataSpectralComplex out = SphereDataSpectralComplex(sphereDataConfig);
+		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
@@ -249,14 +249,14 @@ public:
 	 * Compute
 	 * mu*F(\lambda,\mu)
 	 */
-	SphereDataSpectralComplex mu2(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex mu2(
+			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 		i_sph_data.request_data_spectral();
 
-		SphereDataSpectralComplex out = SphereDataSpectralComplex(sphereDataConfig);
+		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
@@ -283,8 +283,8 @@ public:
 	/**
 	 * Compute gradient component along latitude
 	 */
-	SphereDataSpectralComplex grad_lat(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex grad_lat(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		/*
@@ -295,7 +295,7 @@ public:
 		 * 	first divide by sin(M_PI*0.5-phi) and
 		 * 	second multiply by sqrt(1-mu*mu)
 		 */
-		SphereDataSpectralComplex out = spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
+		SphereData_SpectralComplex out = spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 
 		out.physical_update_lambda_gaussian_grid(
 				[](double lambda, double mu, std::complex<double> &o_data)
@@ -340,8 +340,8 @@ public:
 	 *
 	 * Identical to gradient operator along longitude
 	 */
-	SphereDataSpectralComplex div_lon(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex div_lon(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		return grad_lon(i_sph_data);
@@ -355,11 +355,11 @@ public:
 	 *
 	 * d(sqrt(1-mu*mu)*F)/dmu
 	 */
-	SphereDataSpectralComplex div_lat(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex div_lat(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
-		SphereDataSpectralComplex out(i_sph_data);
+		SphereData_SpectralComplex out(i_sph_data);
 
 #if 1
 		out.physical_update_lambda_cogaussian_grid(
@@ -416,8 +416,8 @@ public:
 	 * This computes
 	 * 	1/cos^2(phi)  d/dlambda U
 	 */
-	SphereDataSpectralComplex robert_div_lon(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex robert_div_lon(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		return inv_one_minus_mu2(diff_lon(i_sph_data));
@@ -433,8 +433,8 @@ public:
 	 *
 	 * There's no other metric term involved!
 	 */
-	SphereDataSpectralComplex robert_div_lat(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex robert_div_lat(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		/*
@@ -446,8 +446,8 @@ public:
 
 
 
-	SphereDataSpectralComplex robert_cos2phi_div_lat(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex robert_cos2phi_div_lat(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		/*
@@ -465,8 +465,8 @@ public:
 	 * This computes
 	 * 		d/dlambda Phi
 	 */
-	SphereDataSpectralComplex robert_grad_lon(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex robert_grad_lon(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		return diff_lon(i_sph_data);
@@ -481,8 +481,8 @@ public:
 	 *
 	 * with Phi the geopotential
 	 */
-	SphereDataSpectralComplex robert_grad_lat(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex robert_grad_lat(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
@@ -493,10 +493,10 @@ public:
 	 * Special formulation for Robert gradient,
 	 * see REXI with spherical harmonics
 	 */
-	SphereDataSpectralComplex robert_grad_M(
-			const SphereDataSpectralComplex &i_phi,
-			const SphereDataSpectralComplex &i_u,
-			const SphereDataSpectralComplex &i_v
+	SphereData_SpectralComplex robert_grad_M(
+			const SphereData_SpectralComplex &i_phi,
+			const SphereData_SpectralComplex &i_u,
+			const SphereData_SpectralComplex &i_v
 	)
 	{
 		return inv_one_minus_mu2(
@@ -507,8 +507,8 @@ public:
 
 
 	inline
-	SphereDataSpectralComplex spectral_one_minus_sinphi_squared_diff_lat_mu(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex spectral_one_minus_sinphi_squared_diff_lat_mu(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
@@ -517,8 +517,8 @@ public:
 
 
 	inline
-	SphereDataSpectralComplex spectral_cosphi2_diff_lat_mu(
-			const SphereDataSpectralComplex &i_sph_data
+	SphereData_SpectralComplex spectral_cosphi2_diff_lat_mu(
+			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
@@ -529,8 +529,8 @@ public:
 	/**
 	 * Laplace operator
 	 */
-	SphereDataSpectralComplex laplace(
-			const SphereDataSpectralComplex &i_sph_data,
+	SphereData_SpectralComplex laplace(
+			const SphereData_SpectralComplex &i_sph_data,
 			double r = -1
 	)	const
 	{
@@ -541,7 +541,7 @@ public:
 
 		i_sph_data.request_data_spectral();
 
-		SphereDataSpectralComplex out(i_sph_data);
+		SphereData_SpectralComplex out(i_sph_data);
 
 		out.spectral_update_lambda(
 				[&](int n, int m, std::complex<double> &o_data)
@@ -560,9 +560,9 @@ public:
 	 *
 	 * \eta = div_lat(V_lon) - div_lon(V_lat)
 	 */
-	SphereDataSpectralComplex vort(
-			const SphereDataSpectralComplex &i_lon,
-			const SphereDataSpectralComplex &i_lat
+	SphereData_SpectralComplex vort(
+			const SphereData_SpectralComplex &i_lon,
+			const SphereData_SpectralComplex &i_lat
 	)
 	{
 		return div_lon(i_lat) - div_lat(i_lon);
@@ -575,9 +575,9 @@ public:
 	 *
 	 * \eta = grad_lat(V_lon) - grad_lon(V_lat)
 	 */
-	SphereDataSpectralComplex robert_vort(
-			const SphereDataSpectralComplex &i_lon,
-			const SphereDataSpectralComplex &i_lat
+	SphereData_SpectralComplex robert_vort(
+			const SphereData_SpectralComplex &i_lon,
+			const SphereData_SpectralComplex &i_lat
 	)
 	{
 		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
@@ -587,8 +587,8 @@ public:
 	/**
 	 * Laplace operator
 	 */
-	SphereDataSpectralComplex inv_laplace(
-			const SphereDataSpectralComplex &i_sph_data,
+	SphereData_SpectralComplex inv_laplace(
+			const SphereData_SpectralComplex &i_sph_data,
 			double i_radius = -1
 	)	const
 	{
@@ -597,7 +597,7 @@ public:
 
 		double ir = 1.0/i_radius;
 
-		SphereDataSpectralComplex out(i_sph_data);
+		SphereData_SpectralComplex out(i_sph_data);
 		out.request_data_spectral();
 
 		out.spectral_update_lambda(
@@ -616,10 +616,10 @@ public:
 
 
 	void robert_uv_to_vortdiv(
-			const SphereDataPhysicalComplex &i_u,
-			const SphereDataPhysicalComplex &i_v,
-			SphereDataSpectralComplex &o_vort,
-			SphereDataSpectralComplex &o_div,
+			const SphereData_PhysicalComplex &i_u,
+			const SphereData_PhysicalComplex &i_v,
+			SphereData_SpectralComplex &o_vort,
+			SphereData_SpectralComplex &o_div,
 
 			double r = -1
 	)	const
@@ -630,8 +630,8 @@ public:
 		/*
 		 * Generate a copy because of destructive SHT operations
 		 */
-		SphereDataPhysicalComplex ug = i_u;
-		SphereDataPhysicalComplex vg = i_v;
+		SphereData_PhysicalComplex ug = i_u;
+		SphereData_PhysicalComplex vg = i_v;
 
 		spat_cplx_to_SHsphtor(
 				sphereDataConfig->shtns,
@@ -652,10 +652,10 @@ public:
 
 
 	void uv_to_vortdiv(
-			const SphereDataPhysicalComplex &i_u,
-			const SphereDataPhysicalComplex &i_v,
-			SphereDataSpectralComplex &o_vort,
-			SphereDataSpectralComplex &o_div,
+			const SphereData_PhysicalComplex &i_u,
+			const SphereData_PhysicalComplex &i_v,
+			SphereData_SpectralComplex &o_vort,
+			SphereData_SpectralComplex &o_div,
 
 			double r = -1		// FIXME / TODO: Remove me!!!
 	)	const
@@ -666,8 +666,8 @@ public:
 		/*
 		 * Generate a copy because of destructive SHT operations
 		 */
-		SphereDataPhysicalComplex ug = i_u;
-		SphereDataPhysicalComplex vg = i_v;
+		SphereData_PhysicalComplex ug = i_u;
+		SphereData_PhysicalComplex vg = i_v;
 
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_cplx_to_SHsphtor(
@@ -693,10 +693,10 @@ public:
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */
 	void robert_vortdiv_to_uv(
-			const SphereDataSpectralComplex &i_vrt,
-			const SphereDataSpectralComplex &i_div,
-			SphereDataPhysicalComplex &o_u,
-			SphereDataPhysicalComplex &o_v,
+			const SphereData_SpectralComplex &i_vrt,
+			const SphereData_SpectralComplex &i_div,
+			SphereData_PhysicalComplex &o_u,
+			SphereData_PhysicalComplex &o_v,
 
 			double i_radius = -1
 
@@ -712,8 +712,8 @@ public:
 		i_vrt.request_data_spectral();
 		i_div.request_data_spectral();
 
-		SphereDataSpectralComplex psi = inv_laplace(i_vrt, i_radius)*ir;
-		SphereDataSpectralComplex chi = inv_laplace(i_div, i_radius)*ir;
+		SphereData_SpectralComplex psi = inv_laplace(i_vrt, i_radius)*ir;
+		SphereData_SpectralComplex chi = inv_laplace(i_div, i_radius)*ir;
 
 		psi.request_data_spectral();
 		chi.request_data_spectral();
@@ -732,9 +732,9 @@ public:
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */
 	void robert_grad_to_vec(
-			const SphereDataSpectralComplex &i_phi,
-			SphereDataPhysicalComplex &o_u,
-			SphereDataPhysicalComplex &o_v,
+			const SphereData_SpectralComplex &i_phi,
+			SphereData_PhysicalComplex &o_u,
+			SphereData_PhysicalComplex &o_v,
 
 			double i_radius = -1
 
@@ -747,10 +747,10 @@ public:
 		else
 			ir = 1.0/i_radius;
 
-		SphereDataSpectralComplex psi(sphereDataConfig);
+		SphereData_SpectralComplex psi(sphereDataConfig);
 		psi.spectral_set_zero();
 
-		SphereDataSpectralComplex chi = i_phi;
+		SphereData_SpectralComplex chi = i_phi;
 		chi.request_data_spectral();
 
 		SHsphtor_to_spat_cplx(
@@ -773,9 +773,9 @@ public:
 	 *
 	 * \delta = div_lon(i_lon) + div_lan(i_lan)
 	 */
-	SphereDataSpectralComplex div(
-			const SphereDataSpectralComplex &i_lon,
-			const SphereDataSpectralComplex &i_lat
+	SphereData_SpectralComplex div(
+			const SphereData_SpectralComplex &i_lon,
+			const SphereData_SpectralComplex &i_lat
 	)
 	{
 		return div_lon(i_lon) + div_lat(i_lat);

@@ -9,16 +9,15 @@
 #define SRC_SWEREXI_SPHROBERT_HPP_
 
 #include <complex>
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataPhysicalComplex.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/sphere/SphereOperatorsComplex.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
-
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_PhysicalComplex.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
 
 
 
@@ -31,14 +30,14 @@ class SWERexiTerm_SPHRobert
 //	SphereDataConfig *sphereDataConfig;
 
 	/// SPH configuration
-	const SphereDataConfig *sphereDataConfigSolver;
+	const SphereData_Config *sphereDataConfigSolver;
 
 	/// Solver for given alpha
 	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverPhi;
 	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolverVel;
 
-	SphereOperators op;
-	SphereOperatorsComplex opComplex;
+	SphereOperators_SphereData op;
+	SphereOperators_SphereDataComplex opComplex;
 
 	/// scalar in front of RHS
 	std::complex<double> rhs_scalar;
@@ -72,7 +71,7 @@ class SWERexiTerm_SPHRobert
 	/// Average geopotential
 	double gh;
 
-	SphereDataPhysicalComplex mug;
+	SphereData_PhysicalComplex mug;
 
 public:
 	SWERexiTerm_SPHRobert()	:
@@ -88,7 +87,7 @@ public:
 	 * Setup the SWE REXI solver with SPH
 	 */
 	void setup_vectorinvariant_progphivortdiv(
-			const SphereDataConfig *i_sphereDataConfigSolver,
+			const SphereData_Config *i_sphereDataConfigSolver,
 
 			const std::complex<double> &i_alpha,
 			const std::complex<double> &i_beta,
@@ -156,27 +155,27 @@ public:
 	 */
 	inline
 	void solve_vectorinvariant_progphivortdiv(
-			const SphereDataSpectral &i_phi0,
-			const SphereDataSpectral &i_vort0,
-			const SphereDataSpectral &i_div0,
+			const SphereData_Spectral &i_phi0,
+			const SphereData_Spectral &i_vort0,
+			const SphereData_Spectral &i_div0,
 
-			SphereDataSpectral &o_phi,
-			SphereDataSpectral &o_vort,
-			SphereDataSpectral &o_div
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vort,
+			SphereData_Spectral &o_div
 	)
 	{
 
-		const SphereDataSpectralComplex phi0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_phi0);
-		const SphereDataSpectralComplex vort0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_vort0);
-		const SphereDataSpectralComplex div0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_div0);
+		const SphereData_SpectralComplex phi0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_phi0);
+		const SphereData_SpectralComplex vort0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_vort0);
+		const SphereData_SpectralComplex div0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_div0);
 
-		SphereDataSpectralComplex phi(sphereDataConfigSolver);
-		SphereDataSpectralComplex vort(sphereDataConfigSolver);
-		SphereDataSpectralComplex div(sphereDataConfigSolver);
+		SphereData_SpectralComplex phi(sphereDataConfigSolver);
+		SphereData_SpectralComplex vort(sphereDataConfigSolver);
+		SphereData_SpectralComplex div(sphereDataConfigSolver);
 
 		if (no_coriolis)
 		{
-			SphereDataSpectralComplex rhs = gh*div0 + alpha*phi0;
+			SphereData_SpectralComplex rhs = gh*div0 + alpha*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
 			vort = (1.0/alpha)*vort0;
@@ -184,7 +183,7 @@ public:
 		}
 		else if (use_f_sphere)
 		{
-			SphereDataSpectralComplex rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
+			SphereData_SpectralComplex rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);
 
 			vort = (1.0/alpha)*(vort0 + f0*(div));
@@ -192,27 +191,27 @@ public:
 		}
 		else
 		{
-			SphereDataPhysicalComplex u0g(sphereDataConfigSolver);
-			SphereDataPhysicalComplex v0g(sphereDataConfigSolver);
+			SphereData_PhysicalComplex u0g(sphereDataConfigSolver);
+			SphereData_PhysicalComplex v0g(sphereDataConfigSolver);
 
 			opComplex.robert_vortdiv_to_uv(vort0, div0, u0g, v0g, r);
 
-			SphereDataSpectralComplex rhs(sphereDataConfigSolver);
+			SphereData_SpectralComplex rhs(sphereDataConfigSolver);
 
 
-			SphereDataPhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
+			SphereData_PhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
 
-			SphereDataPhysicalComplex Fc_k =
+			SphereData_PhysicalComplex Fc_k =
 					two_coriolis_omega*inv_r*(
 							-(-two_coriolis_omega*two_coriolis_omega*mug*mug + alpha*alpha)*u0g
 							+ 2.0*alpha*two_coriolis_omega*mug*v0g
 					);
 
-			SphereDataPhysicalComplex foo =
+			SphereData_PhysicalComplex foo =
 					(gh*(div0.getSphereDataPhysicalComplex() - (1.0/alpha)*two_coriolis_omega*mug*vort0.getSphereDataPhysicalComplex())) +
 					(alpha*phi0g + (1.0/alpha)*two_coriolis_omega*two_coriolis_omega*mug*mug*phi0g);
 
-			SphereDataPhysicalComplex rhsg =
+			SphereData_PhysicalComplex rhsg =
 					alpha*alpha*foo +
 					two_coriolis_omega*two_coriolis_omega*mug*mug*foo
 					- (gh/alpha)*Fc_k;
@@ -225,18 +224,18 @@ public:
 			/*
 			 * Solve without inverting a matrix
 			 */
-			SphereDataPhysicalComplex u0(sphereDataConfigSolver);
-			SphereDataPhysicalComplex v0(sphereDataConfigSolver);
+			SphereData_PhysicalComplex u0(sphereDataConfigSolver);
+			SphereData_PhysicalComplex v0(sphereDataConfigSolver);
 
 			opComplex.robert_vortdiv_to_uv(vort0, div0, u0, v0, r);
 
-			SphereDataPhysicalComplex a(sphereDataConfigSolver);
-			SphereDataPhysicalComplex b(sphereDataConfigSolver);
+			SphereData_PhysicalComplex a(sphereDataConfigSolver);
+			SphereData_PhysicalComplex b(sphereDataConfigSolver);
 
 #if 1
 
-			SphereDataPhysicalComplex gradu(sphereDataConfigSolver);
-			SphereDataPhysicalComplex gradv(sphereDataConfigSolver);
+			SphereData_PhysicalComplex gradu(sphereDataConfigSolver);
+			SphereData_PhysicalComplex gradv(sphereDataConfigSolver);
 
 			opComplex.robert_grad_to_vec(phi, gradu, gradv, r);
 			a = u0 + gradu;
@@ -252,9 +251,9 @@ public:
 
 #endif
 
-			SphereDataPhysicalComplex k = (two_coriolis_omega*two_coriolis_omega*(mug*mug)+alpha*alpha);
-			SphereDataPhysicalComplex u = (alpha*a - two_coriolis_omega*mug*(b))/k;
-			SphereDataPhysicalComplex v = (two_coriolis_omega*mug*(a) + alpha*b)/k;
+			SphereData_PhysicalComplex k = (two_coriolis_omega*two_coriolis_omega*(mug*mug)+alpha*alpha);
+			SphereData_PhysicalComplex u = (alpha*a - two_coriolis_omega*mug*(b))/k;
+			SphereData_PhysicalComplex v = (two_coriolis_omega*mug*(a) + alpha*b)/k;
 
 			opComplex.robert_uv_to_vortdiv(u, v, vort, div, r);
 

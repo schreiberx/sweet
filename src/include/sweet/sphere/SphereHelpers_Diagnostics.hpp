@@ -8,15 +8,17 @@
 #ifndef SRC_INCLUDE_SWEET_PLANE_SPHEREDIAGNOSTICS_HPP_
 #define SRC_INCLUDE_SWEET_PLANE_SPHEREDIAGNOSTICS_HPP_
 
-#include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/SimulationVariables.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
-class SphereDiagnostics
+class SphereHelpers_Diagnostics
 {
-	SphereDataConfig *sphereDataConfig;
-	SphereDataSpectral modeIntegralValues;
+	SphereData_Config *sphereDataConfig;
+	SphereData_Spectral modeIntegralValues;
 
-	SphereDataPhysical fg;
+	SphereData_Physical fg;
 
 	/*
 	 * Gaussian quadrature weights
@@ -25,8 +27,8 @@ class SphereDiagnostics
 
 
 public:
-	SphereDiagnostics(
-			SphereDataConfig *i_sphereDataConfig,
+	SphereHelpers_Diagnostics(
+			SphereData_Config *i_sphereDataConfig,
 			SimulationVariables &i_simVars,
 			int i_verbose = 1
 	)	:
@@ -36,7 +38,7 @@ public:
 	{
 		gauss_weights.resize(sphereDataConfig->physical_num_lat);
 
-		SphereDataSpectral modeSelector(sphereDataConfig);
+		SphereData_Spectral modeSelector(sphereDataConfig);
 		modeSelector.spectral_set_zero();
 
 		if (i_verbose > 0)
@@ -133,7 +135,7 @@ public:
 
 public:
 	double compute_sphere_integral(
-			const SphereDataPhysical &i_data
+			const SphereData_Physical &i_data
 	)	const
 	{
 		double sum = 0;
@@ -170,10 +172,10 @@ public:
 	 * The integral similar to the zylinder is used because of the lat-related scaling factor.
 	 */
 	double compute_zylinder_integral(
-			const SphereDataSpectral &i_data
+			const SphereData_Spectral &i_data
 	)	const
 	{
-		SphereDataPhysical data = i_data.getSphereDataPhysical();
+		SphereData_Physical data = i_data.getSphereDataPhysical();
 
 		double sum = 0;
 
@@ -203,17 +205,17 @@ public:
 
 public:
 	void update_h_u_v_2_mass_energy_enstrophy_4_zylinder(
-			const SphereOperators &op,
-			const SphereDataSpectral &i_prog_h,
-			const SphereDataSpectral &i_prog_u,
-			const SphereDataSpectral &i_prog_v,
+			const SphereOperators_SphereData &op,
+			const SphereData_Spectral &i_prog_h,
+			const SphereData_Spectral &i_prog_u,
+			const SphereData_Spectral &i_prog_v,
 
 			SimulationVariables &io_simVars
 	)
 	{
-		SphereDataPhysical h = i_prog_h.getSphereDataPhysical();
-		SphereDataPhysical u = i_prog_u.getSphereDataPhysical();
-		SphereDataPhysical v = i_prog_v.getSphereDataPhysical();
+		SphereData_Physical h = i_prog_h.getSphereDataPhysical();
+		SphereData_Physical u = i_prog_u.getSphereDataPhysical();
+		SphereData_Physical v = i_prog_v.getSphereDataPhysical();
 
 		// Convert to non-robert formulation
 		// no problem, since we do everything in physical space
@@ -226,8 +228,8 @@ public:
 		io_simVars.diag.total_mass = compute_zylinder_integral(h) * normalization;
 
 		// energy
-		SphereDataPhysical pot_energy = h*(io_simVars.sim.gravitation*normalization);
-		SphereDataPhysical kin_energy = h*(u*u+v*v)*(0.5*normalization);
+		SphereData_Physical pot_energy = h*(io_simVars.sim.gravitation*normalization);
+		SphereData_Physical kin_energy = h*(u*u+v*v)*(0.5*normalization);
 
 		io_simVars.diag.potential_energy = compute_zylinder_integral(pot_energy);
 		io_simVars.diag.kinetic_energy = compute_zylinder_integral(kin_energy);
@@ -235,7 +237,7 @@ public:
 		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
 
 		// total vorticity
-		SphereDataPhysical eta(i_prog_h.sphereDataConfig);
+		SphereData_Physical eta(i_prog_h.sphereDataConfig);
 //		if (io_simVars.misc.sphere_use_robert_functions)
 //			eta = op.robert_uv_to_vort(u, v).getSphereDataPhysical();
 //		else
@@ -252,17 +254,17 @@ public:
 
 public:
 	void update_phi_vort_div_2_mass_energy_enstrophy(
-			const SphereOperators &op,
-			const SphereDataSpectral &i_prog_phi,
-			const SphereDataSpectral &i_prog_vort,
-			const SphereDataSpectral &i_prog_div,
+			const SphereOperators_SphereData &op,
+			const SphereData_Spectral &i_prog_phi,
+			const SphereData_Spectral &i_prog_vort,
+			const SphereData_Spectral &i_prog_div,
 
 			SimulationVariables &io_simVars
 	)
 	{
-		SphereDataPhysical h(sphereDataConfig);
-		SphereDataPhysical u(sphereDataConfig);
-		SphereDataPhysical v(sphereDataConfig);
+		SphereData_Physical h(sphereDataConfig);
+		SphereData_Physical u(sphereDataConfig);
+		SphereData_Physical v(sphereDataConfig);
 
 		h = i_prog_phi.getSphereDataPhysical()*(1.0/io_simVars.sim.gravitation);
 		if (io_simVars.misc.sphere_use_robert_functions)
@@ -277,8 +279,8 @@ public:
 
 		// energy
 		//SphereDataPhysical pot_energy = h*(io_simVars.sim.gravitation*normalization);
-		SphereDataPhysical pot_energy = h*h*0.5*normalization;
-		SphereDataPhysical kin_energy = h*(u*u+v*v)*(0.5*normalization);
+		SphereData_Physical pot_energy = h*h*0.5*normalization;
+		SphereData_Physical kin_energy = h*(u*u+v*v)*(0.5*normalization);
 
 		io_simVars.diag.potential_energy = compute_zylinder_integral(pot_energy);
 		io_simVars.diag.kinetic_energy = compute_zylinder_integral(kin_energy);
@@ -296,7 +298,7 @@ public:
 
 		// total vorticity
 		// TODO: maybe replace this with the i_vort parameter
-		SphereDataPhysical eta(h.sphereDataConfig);
+		SphereData_Physical eta(h.sphereDataConfig);
 		if (io_simVars.misc.sphere_use_robert_functions)
 			eta = op.robert_uv_to_vort(u, v).getSphereDataPhysical();
 		else

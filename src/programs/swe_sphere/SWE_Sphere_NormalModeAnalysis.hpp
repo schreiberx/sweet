@@ -8,7 +8,7 @@
 #ifndef SRC_PROGRAMS_SWE_SPHERE_SWE_SPHERE_NORMALMODEANALYSIS_HPP_
 #define SRC_PROGRAMS_SWE_SPHERE_SWE_SPHERE_NORMALMODEANALYSIS_HPP_
 
-#include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
 
 
 
@@ -19,9 +19,9 @@ public:
 	template <typename TCallbackClass>
 	static
 	void normal_mode_analysis(
-			SphereDataSpectral &io_prog_phi,
-			SphereDataSpectral &io_prog_vort,
-			SphereDataSpectral &io_prog_div,
+			SphereData_Spectral &io_prog_phi,
+			SphereData_Spectral &io_prog_vort,
+			SphereData_Spectral &io_prog_div,
 
 			SimulationVariables &i_simVars,
 
@@ -29,7 +29,7 @@ public:
 			void(TCallbackClass::* const i_run_timestep_method)(void)
 	)
 	{
-		const SphereDataConfig *sphereDataConfig = io_prog_phi.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = io_prog_phi.sphereDataConfig;
 
 		/*
 		 * Do a normal mode analysis, see
@@ -52,7 +52,7 @@ public:
 		// use very high precision
 		file << std::setprecision(20);
 
-		SphereDataSpectral* prog[3] = {&io_prog_phi, &io_prog_vort, &io_prog_div};
+		SphereData_Spectral* prog[3] = {&io_prog_phi, &io_prog_vort, &io_prog_div};
 
 		int max_prog_id = 3;
 		prog[0]->spectral_set_zero();

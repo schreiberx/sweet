@@ -9,9 +9,9 @@
 #define SRC_OUTPUTSPHERICALHARMONICS_HPP_
 
 
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #include <cassert>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/SimulationVariables.hpp>
 
 
@@ -22,9 +22,9 @@ SimulationVariables simVars;
 class AppOutputSphericalHarmonics
 {
 public:
-	void run(SphereDataConfig *sphereConfig)
+	void run(SphereData_Config *sphereConfig)
 	{
-		SphereDataSpectral h(sphereConfig);
+		SphereData_Spectral h(sphereConfig);
 
 		int counter = 0;
 		// iterate over modes
@@ -45,7 +45,7 @@ public:
 				char buffer[1024];
 				sprintf(buffer, "SPH_n%i_m%i.csv", n, m);
 
-				h.physical_file_write(buffer);
+				h.getSphereDataPhysical().physical_file_write(buffer);
 
 				counter++;
 			}
@@ -73,7 +73,7 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 		return -1;
 
-	SphereDataConfig sphereDataConfig;
+	SphereData_Config sphereDataConfig;
 
 	if (simVars.disc.space_res_physical[0] <= 0)
 	{

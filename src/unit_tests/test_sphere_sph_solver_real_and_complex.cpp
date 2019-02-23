@@ -10,17 +10,16 @@
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_SPH.hpp>
 #include <libmath/BandedMatrixPhysicalReal.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataErrorCheck.hpp>
 
 
-#include <sweet/sphere/SphereDataSpectral.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 
-#include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
-#include <sweet/sphere/SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereData_SpectralComplex.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
 
 
 
@@ -54,7 +53,7 @@ class Test
 
 public:
 	void run_tests(
-			SphereDataConfig *sphereDataConfig,
+			SphereData_Config *sphereDataConfig,
 			phys_value_type &alpha
 	)
 	{
@@ -350,7 +349,7 @@ public:
 
 				test_header("Test Z3 = mu^4*Phi(lam,mu) (extended modes)");
 
-				SphereDataConfig sphereDataConfigDouble;
+				SphereData_Config sphereDataConfigDouble;
 				sphereDataConfigDouble.setupAdditionalModes(sphereDataConfig, 4, 4, simVars.misc.reuse_spectral_transformation_plans);
 
 				sph_banded_solver_type sphSolver;
@@ -675,7 +674,7 @@ int main(
 	if (simVars.disc.space_res_spectral[0] == 0)
 		FatalError("Set number of spectral modes to use SPH!");
 
-	SphereDataConfig sphereDataConfig;
+	SphereData_Config sphereDataConfig;
 	sphereDataConfig.setupAutoPhysicalSpace(
 					simVars.disc.space_res_spectral[0],
 					simVars.disc.space_res_spectral[1],
@@ -695,9 +694,9 @@ int main(
 
 		Test<
 			double,
-			SphereDataSpectral,
-			SphereDataPhysical,
-			SphereOperators,
+			SphereData_Spectral,
+			SphereData_Physical,
+			SphereOperators_SphereData,
 			SphBandedMatrixPhysicalReal<std::complex<double>>
 		>t_real;
 
@@ -716,9 +715,9 @@ int main(
 
 		Test<
 			std::complex<double>,
-			SphereDataSpectralComplex,
-			SphereDataPhysicalComplex,
-			SphereOperatorsComplex,
+			SphereData_SpectralComplex,
+			SphereData_PhysicalComplex,
+			SphereOperators_SphereDataComplex,
 			SphBandedMatrixPhysicalComplex<std::complex<double>>
 		>t_complex;
 

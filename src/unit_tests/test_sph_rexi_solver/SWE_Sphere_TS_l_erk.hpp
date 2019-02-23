@@ -10,8 +10,8 @@
 
 #include <limits>
 #include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
-#include <sweet/sphere/SphereOperators.hpp>
+#include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 
 #include "../../programs/swe_sphere/SWE_Sphere_TS_interface.hpp"
@@ -21,15 +21,15 @@
 class SWE_Sphere_TS_l_erk	: public SWE_Sphere_TS_interface
 {
 	SimulationVariables &simVars;
-	SphereOperators &op;
+	SphereOperators_SphereData &op;
 
 	int timestepping_order;
 
 	// Sampler
-	SphereDataTimesteppingExplicitRK timestepping_rk;
+	SphereTimestepping_ExplicitRK timestepping_rk;
 
 	// Coriolis effect
-	SphereDataPhysical fg;
+	SphereData_Physical fg;
 
 private:
 	void euler_timestep_update(
@@ -47,7 +47,7 @@ private:
 public:
 	SWE_Sphere_TS_l_erk(
 			SimulationVariables &i_simVars,
-			SphereOperators &i_op
+			SphereOperators_SphereData &i_op
 		);
 
 	void setup(

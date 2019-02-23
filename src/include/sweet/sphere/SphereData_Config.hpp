@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SPHEREDATACONFIG_HPP_
-#define SPHEREDATACONFIG_HPP_
+#ifndef SPHEREDATA_CONFIG_HPP_
+#define SPHEREDATA_CONFIG_HPP_
 
 
 #include <libmath/shtns_inc.hpp>
@@ -29,12 +29,12 @@
 // SHTNS shallow water example
 #define SPHERE_DATA_GRID_LAYOUT	SPHERE_DATA_LON_CONTINUOUS
 
-class SphereDataConfig
+class SphereData_Config
 {
-	friend class SphereOperators;
-	friend class SphereOperatorsComplex;
+	friend class SphereOperators_SphereData;
+	friend class SphereOperators_SphereDataComplex;
 	friend class SphereData;
-	friend class SphereDataSpectralComplex;
+	friend class SphereData_SpectralComplex;
 
 public:
 	shtns_cfg shtns;
@@ -108,7 +108,7 @@ public:
 
 
 public:
-	SphereDataConfig()	:
+	SphereData_Config()	:
 		shtns(nullptr),
 		physical_num_lon(-1),
 		physical_num_lat(-1),
@@ -671,7 +671,7 @@ public:
 
 
 	void setupAdditionalModes(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
 			int i_load_save_plan
@@ -723,7 +723,7 @@ public:
 
 
 
-	~SphereDataConfig()
+	~SphereData_Config()
 	{
 		cleanup();
 	}

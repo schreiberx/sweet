@@ -9,7 +9,7 @@
 #define SRC_INCLUDE_SPH_BANDEDMATRIX_HPP_
 
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
 
 
 
@@ -46,7 +46,7 @@ public:
 	int halosize_off_diagonal;
 	int num_diagonals;
 
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 
 public:
@@ -76,7 +76,7 @@ public:
 	 * Setup data storage
 	 */
 	void setup(
-			const SphereDataConfig *i_sphereDataConfig,				///< Handler to sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig,				///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal = 0		///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{

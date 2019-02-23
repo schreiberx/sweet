@@ -5,14 +5,14 @@
  *      Author: martin
  */
 
-#ifndef SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAGRIDMAPPING_HPP_
-#define SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAGRIDMAPPING_HPP_
+#ifndef SRC_INCLUDE_SWEET_SPHERE__ARCHIVE_SPHEREDATAGRIDMAPPING_HPP_
+#define SRC_INCLUDE_SWEET_SPHERE__ARCHIVE_SPHEREDATAGRIDMAPPING_HPP_
 
+#include <sweet/sphere/_archive/SphereStaggering.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
 #include <sweet/ScalarDataArray.hpp>
-#include <sweet/sphere/SphereStaggering.hpp>
-#include <sweet/sphere/SphereDataSampler.hpp>
 
 class SphereDataGridMapping
 {
@@ -21,7 +21,7 @@ public:
 	ScalarDataArray pos_ll_x, pos_ll_y;
 
 	// Interpolation stuff
-	SphereDataSampler sampler2D;
+	SphereOperators_Sampler_SphereDataPhysical sampler2D;
 
 	// Staggering
 	SphereStaggering staggering;
@@ -35,7 +35,7 @@ public:
 
 	void setup(
 			SimulationVariables i_simVars,
-			SphereDataConfig *i_sphereDataConfig
+			SphereData_Config *i_sphereDataConfig
 	)
 	{
 		// ll  refers to lower left corner of the cell.
@@ -107,4 +107,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHEREDATAGRIDMAPPING_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_SPHERE__ARCHIVE_SPHEREDATAGRIDMAPPING_HPP_ */

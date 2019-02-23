@@ -9,24 +9,23 @@
 #ifndef SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 #define SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 
-#include <sweet/sphere/Convert_ScalarDataArray_to_SphereDataPhysical.hpp>
-#include <sweet/sphere/Convert_SphereDataPhysical_to_ScalarDataArray.hpp>
-//#include <sweet/sphere/Convert_SphereDataSpectral_to_ScalarDataArray.hpp>
-#include <sweet/sphere/SphereStaggering.hpp>
-#include <sweet/sphere/SphereDataSampler.hpp>
-#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/ScalarDataArray.hpp>
+#include <sweet/sphere/SphereData_Physical.hpp>
+#include <sweet/sphere/Convert_ScalarDataArray_to_SphereDataPhysical.hpp>
+
+#include <sweet/sphere/Convert_SphereDataPhysical_to_ScalarDataArray.hpp>
+#include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
 
 
 
-class SphereDataSemiLagrangian
+class SphereTimestepping_SemiLagrangian
 {
-	SphereDataSampler sample2D;
-	const SphereDataConfig *sphereDataConfig;
+	SphereOperators_Sampler_SphereDataPhysical sample2D;
+	const SphereData_Config *sphereDataConfig;
 
 
 public:
-	SphereDataSemiLagrangian()	:
+	SphereTimestepping_SemiLagrangian()	:
 		sphereDataConfig(nullptr)
 	{
 	}
@@ -34,7 +33,7 @@ public:
 
 	void setup(
 		double i_domain_size[2],
-		const SphereDataConfig *i_sphereDataConfig
+		const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -176,11 +175,11 @@ public:
 
 
 	void semi_lag_departure_points_settls(
-			const SphereDataPhysical &i_u_lon_prev,	// Velocities at time t-1
-			const SphereDataPhysical &i_v_lat_prev,
+			const SphereData_Physical &i_u_lon_prev,	// Velocities at time t-1
+			const SphereData_Physical &i_v_lat_prev,
 
-			const SphereDataPhysical &i_u_lon, 		// Velocities at time t
-			const SphereDataPhysical &i_v_lat,
+			const SphereData_Physical &i_u_lon, 		// Velocities at time t
+			const SphereData_Physical &i_v_lat,
 
 			const ScalarDataArray &i_pos_lon_a,	// Position of arrival points lon/lat
 			const ScalarDataArray &i_pos_lat_a,
@@ -211,8 +210,8 @@ public:
 					pos_x_a, pos_y_a, pos_z_a
 				);
 
-			ScalarDataArray u_lon = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_u_lon);
-			ScalarDataArray v_lat = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_v_lat);
+			ScalarDataArray u_lon = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
+			ScalarDataArray v_lat = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
 
 			ScalarDataArray vel_x(num_elements);
 			ScalarDataArray vel_y(num_elements);
@@ -244,8 +243,8 @@ public:
 		if (i_timestepping_order == 2)
 		{
 			// Extrapolate velocities at departure points
-			SphereDataPhysical u_extrapol = 2.0*i_u_lon - i_u_lon_prev;
-			SphereDataPhysical v_extrapol = 2.0*i_v_lat - i_v_lat_prev;
+			SphereData_Physical u_extrapol = 2.0*i_u_lon - i_u_lon_prev;
+			SphereData_Physical v_extrapol = 2.0*i_v_lat - i_v_lat_prev;
 
 			// Compute cartesian arrival points
 			ScalarDataArray pos_x_a(num_elements);
@@ -257,8 +256,8 @@ public:
 				);
 
 			// convert velocities along lon/lat to scalardata array
-			ScalarDataArray u_lon = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_u_lon);
-			ScalarDataArray v_lat = Convert_SphereDataPhysical_To_ScalarDataArray::physical_convert(i_v_lat);
+			ScalarDataArray u_lon = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
+			ScalarDataArray v_lat = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
 
 			// compute Cartesian velocities
 			ScalarDataArray vel_x(num_elements);

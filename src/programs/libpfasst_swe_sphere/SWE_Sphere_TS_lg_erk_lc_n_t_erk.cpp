@@ -10,13 +10,13 @@
 
 
 void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_linear(
-		const SphereDataSpectral &i_phi,	///< prognostic variables
-		const SphereDataSpectral &i_vort,	///< prognostic variables
-		const SphereDataSpectral &i_div,	///< prognostic variables
+		const SphereData_Spectral &i_phi,	///< prognostic variables
+		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereDataSpectral &o_phi_t,	///< time updates
-		SphereDataSpectral &o_vort_t,	///< time updates
-		SphereDataSpectral &o_div_t,	///< time updates
+		SphereData_Spectral &o_phi_t,	///< time updates
+		SphereData_Spectral &o_vort_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -29,24 +29,24 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_linear(
 
 	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
 
-	SphereDataPhysical ug(i_phi.sphereDataConfig);
-	SphereDataPhysical vg(i_phi.sphereDataConfig);
+	SphereData_Physical ug(i_phi.sphereDataConfig);
+	SphereData_Physical vg(i_phi.sphereDataConfig);
 
-	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
-	SphereDataPhysical divg = i_div.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+	SphereData_Physical divg = i_div.getSphereDataPhysical();
 	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
 	// No Coriolis here
 #if 0
-	SphereDataPhysical tmpg1 = ug*(/*vrtg+*/fg);
-	SphereDataPhysical tmpg2 = vg*(/*vrtg+*/fg);
+	SphereData_Physical tmpg1 = ug*(/*vrtg+*/fg);
+	SphereData_Physical tmpg2 = vg*(/*vrtg+*/fg);
 
 	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
-	SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+	SphereData_Physical tmpg = o_div_t.getSphereDataPhysical();
 #else
 	o_vort_t.spectral_set_zero();
 #endif
@@ -55,29 +55,29 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_linear(
 	tmpg1 = ug*phig;
 	tmpg2 = vg*phig;
 	*/
-	SphereDataPhysical tmpg1 = ug*avgphi;
-	SphereDataPhysical tmpg2 = vg*avgphi;
+	SphereData_Physical tmpg1 = ug*avgphi;
+	SphereData_Physical tmpg2 = vg*avgphi;
 
-	SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
+	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 	op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
-	tmpspec = (phig/*+0.5*(ug*ug+vg*vg)*/);
-	tmpspec.request_data_spectral();
+	tmpspec.loadSphereDataPhysical(phig/*+0.5*(ug*ug+vg*vg)*/);
+
 //	o_div_t += -op.laplace(tmpspec);
 	o_div_t = -op.laplace(tmpspec);
 }
 
 
 void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_coriolis_and_nonlinear(
-		const SphereDataSpectral &i_phi,	///< prognostic variables
-		const SphereDataSpectral &i_vort,	///< prognostic variables
-		const SphereDataSpectral &i_div,	///< prognostic variables
+		const SphereData_Spectral &i_phi,	///< prognostic variables
+		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereDataSpectral &o_phi_t,	///< time updates
-		SphereDataSpectral &o_vort_t,	///< time updates
-		SphereDataSpectral &o_div_t,	///< time updates
+		SphereData_Spectral &o_phi_t,	///< time updates
+		SphereData_Spectral &o_vort_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -91,33 +91,33 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_coriolis_and_nonline
 
 	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
 
-	SphereDataPhysical ug(i_phi.sphereDataConfig);
-	SphereDataPhysical vg(i_phi.sphereDataConfig);
+	SphereData_Physical ug(i_phi.sphereDataConfig);
+	SphereData_Physical vg(i_phi.sphereDataConfig);
 
-	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
-	SphereDataPhysical divg = i_div.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+	SphereData_Physical divg = i_div.getSphereDataPhysical();
 	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-	SphereDataPhysical tmpg1 = ug*(vrtg+fg);
-	SphereDataPhysical tmpg2 = vg*(vrtg+fg);
+	SphereData_Physical tmpg1 = ug*(vrtg+fg);
+	SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
 	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
-	SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+	SphereData_Physical tmpg = o_div_t.getSphereDataPhysical();
 
 	tmpg1 = ug*(phig-avgphi);
 	tmpg2 = vg*(phig-avgphi);
 
-	SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
+	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
-	tmpspec = (/*phig+*/0.5*(ug*ug+vg*vg));
-	tmpspec.request_data_spectral();
+	tmpspec.loadSphereDataPhysical(/*phig+*/0.5*(ug*ug+vg*vg));
+
 	o_div_t += -op.laplace(tmpspec);
 
 	// include the topography term
@@ -131,17 +131,17 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_coriolis_and_nonline
  * This routine is used by other time step implementations
  */
 void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_coriolis_and_nonlinear(
-		SphereDataSpectral &io_phi,		///< prognostic variables
-		SphereDataSpectral &io_vort,	///< prognostic variables
-		SphereDataSpectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_phi,		///< prognostic variables
+		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
 )
 {
-	SphereDataSpectral tmp_phi(io_phi.sphereDataConfig);
-	SphereDataSpectral tmp_vort(io_vort.sphereDataConfig);
-	SphereDataSpectral tmp_div(io_div.sphereDataConfig);
+	SphereData_Spectral tmp_phi(io_phi.sphereDataConfig);
+	SphereData_Spectral tmp_vort(io_vort.sphereDataConfig);
+	SphereData_Spectral tmp_div(io_div.sphereDataConfig);
 
 	euler_timestep_update_coriolis_and_nonlinear(
 			io_phi,
@@ -168,13 +168,13 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update_coriolis_and_nonline
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update(
-		const SphereDataSpectral &i_phi,	///< prognostic variables
-		const SphereDataSpectral &i_vort,	///< prognostic variables
-		const SphereDataSpectral &i_div,	///< prognostic variables
+		const SphereData_Spectral &i_phi,	///< prognostic variables
+		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereDataSpectral &o_phi_t,	///< time updates
-		SphereDataSpectral &o_vort_t,	///< time updates
-		SphereDataSpectral &o_div_t,	///< time updates
+		SphereData_Spectral &o_phi_t,	///< time updates
+		SphereData_Spectral &o_vort_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -192,27 +192,27 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update(
 	 * Follows Hack & Jakob formulation
 	 */
 
-	SphereDataPhysical ug(i_phi.sphereDataConfig);
-	SphereDataPhysical vg(i_phi.sphereDataConfig);
+	SphereData_Physical ug(i_phi.sphereDataConfig);
+	SphereData_Physical vg(i_phi.sphereDataConfig);
 
-	SphereDataPhysical vrtg = i_vort.getSphereDataPhysical();
-	SphereDataPhysical divg = i_div.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+	SphereData_Physical divg = i_div.getSphereDataPhysical();
 	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	SphereDataPhysical phig = i_phi.getSphereDataPhysical();
+	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-	SphereDataPhysical tmpg1 = ug*(vrtg+fg);
-	SphereDataPhysical tmpg2 = vg*(vrtg+fg);
+	SphereData_Physical tmpg1 = ug*(vrtg+fg);
+	SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
 	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
-	SphereDataPhysical tmpg = o_div_t.getSphereDataPhysical();
+	SphereData_Physical tmpg = o_div_t.getSphereDataPhysical();
 
 	tmpg1 = ug*phig;
 	tmpg2 = vg*phig;
 
-	SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
+	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
@@ -228,9 +228,9 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::euler_timestep_update(
 
 
 void SWE_Sphere_TS_lg_erk_lc_n_t_erk::run_timestep(
-		SphereDataSpectral &io_phi,		///< prognostic variables
-		SphereDataSpectral &io_vort,	///< prognostic variables
-		SphereDataSpectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_phi,		///< prognostic variables
+		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -324,8 +324,10 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::setup(
 		);
 	}
 
+	SphereData_Spectral tmp(simVars.benchmark.h_topo);
+
 	// restrict the topography to this space-time level
-	phi_topo = simVars.benchmark.h_topo.spectral_returnWithDifferentModes(phi_topo.sphereDataConfig);
+	phi_topo = tmp.spectral_returnWithDifferentModes(phi_topo.sphereDataConfig);
 	
 	// convert to phi
 	phi_topo *= simVars.sim.gravitation;
@@ -335,7 +337,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_t_erk::setup(
 
 SWE_Sphere_TS_lg_erk_lc_n_t_erk::SWE_Sphere_TS_lg_erk_lc_n_t_erk(
 		SimulationVariables &i_simVars,
-		SphereOperators &i_op
+		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),

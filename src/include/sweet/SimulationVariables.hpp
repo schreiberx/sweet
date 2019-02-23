@@ -23,7 +23,7 @@
 #endif
 
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
-#	include <sweet/sphere/SphereDataSpectral.hpp>
+#	include <sweet/sphere/SphereData_Spectral.hpp>
 #endif
 
 #ifndef SWEET_PARAREAL
@@ -264,7 +264,7 @@ public:
 		/**
 		 * Topography vector
 		 */
-		SphereDataPhysical h_topo;
+		SphereData_Physical h_topo;
 #endif
 
 
