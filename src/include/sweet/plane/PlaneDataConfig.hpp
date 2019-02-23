@@ -19,6 +19,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <iostream>
+#include <complex>
+#include <iomanip>
 #include <sweet/sweetmath.hpp>
 #include <sweet/FatalError.hpp>
 

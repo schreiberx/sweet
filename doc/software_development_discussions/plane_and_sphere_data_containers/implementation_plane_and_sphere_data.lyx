@@ -206,6 +206,33 @@ Memory: No additional memory consumption
 \end_layout
 
 \begin_layout Section
+Data containers
+\end_layout
+
+\begin_layout Subsection
+Physical data
+\end_layout
+
+\begin_layout Standard
+We require physical data to e.g.
+ setup the initial conditions and, related to the spectral data, to evaluate
+ multiplications in pseudo-spectral space.
+\end_layout
+
+\begin_layout Subsection
+Data arrays
+\end_layout
+
+\begin_layout Standard
+The data arrays are required as pure arrays, containing e.g.
+ a list of departure points for semi-Lagrangian methods.
+\end_layout
+
+\begin_layout Subsection
+Spectral data
+\end_layout
+
+\begin_layout Subsubsection
 Spectral methods: FFT and SPH
 \end_layout
 
@@ -216,7 +243,7 @@ We rely on existing libraries to convert data from spectral to physical
 n document.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Requirements for spectral/physical conversions
 \end_layout
 
@@ -257,7 +284,7 @@ On the other hand, SHTns and also related libraries for spherical harmonics
 .
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Comment on 
 \begin_inset Quotes eld
 \end_inset
@@ -283,11 +310,11 @@ plans
  A reference counter is used to free plans if they are not required anymore.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 (Anti-)aliasing
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 No anti-aliasing
 \end_layout
 
@@ -304,7 +331,7 @@ Without anti-aliasing it is sufficient to have the same number of modes
 .
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 SPH Anti-aliasing
 \end_layout
 
@@ -351,7 +378,7 @@ Using SPH libraries, they typically support resolutions and a maximum number
 .
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Paragraph
 FFTW anti-aliasing
 \end_layout
 
@@ -591,33 +618,29 @@ ADVANTAGES: Only a single buffer, reassembles the SPH implementation
 
 \end_deeper
 \begin_layout Section
-Physical data
-\end_layout
-
-\begin_layout Standard
-We require physical data to e.g.
- setup the initial conditions and, related to the spectral data, to evaluate
- multiplications in pseudo-spectral space.
-\end_layout
-
-\begin_layout Section
-Data Arrays
-\end_layout
-
-\begin_layout Standard
-The data arrays are required as pure arrays, containing e.g.
- a list of departure points for semi-Lagrangian methods.
-\end_layout
-
-\begin_layout Section
 Realization
+\end_layout
+
+\begin_layout Subsection
+Plane Data
+\end_layout
+
+\begin_layout Standard
+Some of the plane-based simulations also require support for finite-differences.
+ However, this requires a class supporting both spectral and physical data.
+ Therefore, a clear separation of this is not possible with Plane Data,
+ yet.
+\end_layout
+
+\begin_layout Subsection
+Sphere Data
 \end_layout
 
 \begin_layout Standard
 This is the summary of the different sphere-related classes in SWEET.
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Data storage (SphereData_*)
 \end_layout
 
@@ -662,7 +685,7 @@ SphereData_Config
 : Information how to convert data from/to physical/spectral space
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Operations with data(SphereOperators_*)
 \end_layout
 
@@ -688,9 +711,13 @@ SphereOperators_SphereDataComplex
 SphereOperators_Sampler_SphereDataPhysical
 \series default
 : Sampling operators for real-valued physical data
+\begin_inset Separator plain
+\end_inset
+
+
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Time integration (SphereTimestepping_*)
 \end_layout
 
@@ -718,7 +745,7 @@ SphereTimestepping_SemiLagrangian
 : SL-time stepping method
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Helper routines (SphereHelpers_*)
 \end_layout
 
@@ -746,15 +773,16 @@ SphereHelpers_SPHIdentities
 : Useful identities for Spherical Harmonics
 \end_layout
 
-\begin_layout Section
+\begin_layout Subsection
 Converting between different data representations
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Target: SphereDataPhysical
 \end_layout
 
 \begin_layout Standard
+\align left
 \begin_inset Tabular
 <lyxtabular version="3" rows="5" columns="2">
 <features tabularvalignment="middle">
@@ -881,7 +909,7 @@ SphereDataSpectral.getSphereDataPhysical()
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Target: SphereDataPhysicalComplex
 \end_layout
 
@@ -1034,7 +1062,7 @@ SphereDataSpectralComplex.getSphereDataPhysicalComplex()
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Target: ScalarDataArray
 \end_layout
 
@@ -1192,7 +1220,7 @@ SphereDataSpectralComplex
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Target: SphereDataSpectral
 \end_layout
 
@@ -1345,7 +1373,7 @@ Convert_SphereDataSpectralComplex_to_SphereDataSpectral
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Subsubsection
 Target: SphereDataSpectralComplex
 \end_layout
 

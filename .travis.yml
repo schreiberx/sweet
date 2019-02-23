@@ -534,6 +534,20 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_sph_quadrature_nodes/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_operators_complex/test.py
 
 
@@ -1067,6 +1081,20 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/50_test_plane_modal_restriction_interpolation/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_sph_quadrature_nodes/test.py
 
 
     # Test with G++-5
