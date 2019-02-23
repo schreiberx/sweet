@@ -159,7 +159,7 @@ public:
 		if (interpolation_order == 2)
 		{
 			sphereDataSampler.bilinear_scalar(
-					prog_h,
+					prog_h.getSphereDataPhysical(),
 					posx_a,
 					posy_a,
 					out_data,
@@ -169,7 +169,7 @@ public:
 		else if (interpolation_order == 3)
 		{
 			sphereDataSampler.bicubic_scalar(
-					prog_h,
+					prog_h.getSphereDataPhysical(),
 					posx_a,
 					posy_a,
 					out_data,
