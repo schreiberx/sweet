@@ -10,14 +10,14 @@
 	#define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/sphere/SphereData.hpp"
+#include "../include/sweet/sphere/SphereDataSpectral.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
-#include <sweet/Convert_SphereData_To_PlaneData.hpp>
+#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
 #include "advection_sphere/Adv_Sphere_TimeSteppers.hpp"
@@ -39,9 +39,9 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereData prog_h;
-	SphereData prog_h0;	// at t0
-	SphereData prog_vort, prog_div;
+	SphereDataSpectral prog_h;
+	SphereDataSpectral prog_h0;	// at t0
+	SphereDataSpectral prog_vort, prog_div;
 
 	Adv_Sphere_TimeSteppers timeSteppers;
 
@@ -89,8 +89,8 @@ public:
 	{
 		simVars.reset();
 
-		SphereData tmp_vort(sphereDataConfig);
-		SphereData tmp_div(sphereDataConfig);
+		SphereDataSpectral tmp_vort(sphereDataConfig);
+		SphereDataSpectral tmp_div(sphereDataConfig);
 
 		sphereBenchmarks.setup(simVars, op);
 		sphereBenchmarks.setupInitialConditions(prog_h, prog_vort, prog_div);
@@ -135,7 +135,7 @@ public:
 #if 0
 		double t = simVars.timecontrol.current_simulation_time;
 
-		SphereData prog_testh(sphereDataConfig);
+		SphereDataSpectral prog_testh(sphereDataConfig);
 		prog_testh.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -211,7 +211,7 @@ public:
 		switch (id)
 		{
 		case 0:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_h, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_h, planeDataConfig);
 			break;
 
 		case 1:
@@ -235,11 +235,11 @@ public:
 			break;
 
 		case 3:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
 			break;
 
 		case 4:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_div, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_div, planeDataConfig);
 			break;
 		}
 

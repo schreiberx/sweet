@@ -67,9 +67,9 @@ void SWE_Sphere_TS_lg_cn::setup(
  */
 
 void SWE_Sphere_TS_lg_cn::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -78,9 +78,9 @@ void SWE_Sphere_TS_lg_cn::run_timestep(
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
-	SphereData phi0 = io_phi;
-	SphereData vort0 = io_vort;
-	SphereData div0 = io_div;
+	SphereDataSpectral phi0 = io_phi;
+	SphereDataSpectral vort0 = io_vort;
+	SphereDataSpectral div0 = io_div;
 
 	/*
 	 * Crank-Nicolson method:
@@ -90,9 +90,9 @@ void SWE_Sphere_TS_lg_cn::run_timestep(
 	 * with q the CN damping facor with no damping for q=0.5
 	 */
 
-	SphereData o_phi_t(sphereDataConfig);
-	SphereData o_vort_t(sphereDataConfig);
-	SphereData o_div_t(sphereDataConfig);
+	SphereDataSpectral o_phi_t(sphereDataConfig);
+	SphereDataSpectral o_vort_t(sphereDataConfig);
+	SphereDataSpectral o_div_t(sphereDataConfig);
 
 	/*
 	 * LINEAR
@@ -111,12 +111,12 @@ void SWE_Sphere_TS_lg_cn::run_timestep(
 	div0 += fac*o_div_t;
 
 
-	SphereData phi(sphereDataConfig);
-	SphereData vort(sphereDataConfig);
-	SphereData div(sphereDataConfig);
+	SphereDataSpectral phi(sphereDataConfig);
+	SphereDataSpectral vort(sphereDataConfig);
+	SphereDataSpectral div(sphereDataConfig);
 
 	{
-		SphereData rhs = gh*div0 + alpha*phi0;
+		SphereDataSpectral rhs = gh*div0 + alpha*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
 		vort = 1.0/alpha*(vort0);

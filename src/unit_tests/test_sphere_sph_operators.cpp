@@ -8,7 +8,7 @@
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
@@ -91,11 +91,11 @@ void run_tests()
 					}
 				);
 
-				SphereData vort(sphereDataConfig);
-				SphereData div(sphereDataConfig);
+				SphereDataSpectral vort(sphereDataConfig);
+				SphereDataSpectral div(sphereDataConfig);
 				op.uv_to_vortdiv(u, v, vort, div);
 
-				double div_max_error = div.physical_reduce_max_abs();
+				double div_max_error = div.getSphereDataPhysical().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
@@ -142,11 +142,11 @@ void run_tests()
 					}
 				);
 
-				SphereData vort(sphereDataConfig);
-				SphereData div(sphereDataConfig);
+				SphereDataSpectral vort(sphereDataConfig);
+				SphereDataSpectral div(sphereDataConfig);
 				op.robert_uv_to_vortdiv(u, v, vort, div);
 
-				double div_max_error = div.physical_reduce_max_abs();
+				double div_max_error = div.getSphereDataPhysical().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
@@ -165,25 +165,30 @@ void run_tests()
 		{
 			test_header("Testing Multiplication (a*b) with b=123.0");
 
-			SphereData data(sphereDataConfig);
-			data.physical_update_lambda(
-					[&](double x, double y, double &io_data)
-					{
-						io_data = y;
-					}
+			SphereDataSpectral data(sphereDataConfig);
+			SphereDataPhysical data_phys(sphereDataConfig);
+
+			data_phys.physical_update_lambda(
+				[&](double x, double y, double &io_data)
+				{
+					io_data = y;
+				}
 			);
 
+			data.loadSphereDataPhysical(data_phys);
 			data = data*123.0;
 
-			SphereData data2(sphereDataConfig);
-			data2.physical_update_lambda(
+			SphereDataSpectral data2(sphereDataConfig);
+			SphereDataPhysical data2_phys(sphereDataConfig);
+			data2_phys.physical_update_lambda(
 				[&](double x, double y, double &io_data)
 				{
 					io_data = y*123.0;
 				}
 			);
+			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).physical_reduce_max_abs();
+			double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -199,25 +204,29 @@ void run_tests()
 			{
 				test_header("Testing Multiplication (a *= b) with b=123.0");
 
-				SphereData data(sphereDataConfig);
-				data.physical_update_lambda(
+				SphereDataSpectral data(sphereDataConfig);
+				SphereDataPhysical data_phys(sphereDataConfig);
+				data_phys.physical_update_lambda(
 						[&](double x, double y, double &io_data)
 						{
 							io_data = y;
 						}
 				);
+				data.loadSphereDataPhysical(data_phys);
 
 				data *= 123.0;
 
-				SphereData data2(sphereDataConfig);
-				data2.physical_update_lambda(
+				SphereDataSpectral data2(sphereDataConfig);
+				SphereDataPhysical data2_phys(sphereDataConfig);
+				data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
 						io_data = y*123.0;
 					}
 				);
+				data2.loadSphereDataPhysical(data2_phys);
 
-				double div_max_error = (data-data2).physical_reduce_max_abs();
+				double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
@@ -229,25 +238,29 @@ void run_tests()
 		{
 			test_header("Testing add (a+b) operation with 123.0");
 
-			SphereData data(sphereDataConfig);
-			data.physical_update_lambda(
+			SphereDataSpectral data(sphereDataConfig);
+			SphereDataPhysical data_phys(sphereDataConfig);
+			data_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
 						io_data = y;
 					}
 			);
 
+			data.loadSphereDataPhysical(data_phys);
 			data = data + 123.0;
 
-			SphereData data2(sphereDataConfig);
-			data2.physical_update_lambda(
+			SphereDataSpectral data2(sphereDataConfig);
+			SphereDataPhysical data2_phys(sphereDataConfig);
+			data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
 						io_data = y+123.0;
 					}
 			);
+			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).physical_reduce_max_abs();
+			double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -259,25 +272,29 @@ void run_tests()
 		{
 			test_header("Testing add (a+=b) operation with 123.0");
 
-			SphereData data(sphereDataConfig);
-			data.physical_update_lambda(
+			SphereDataSpectral data(sphereDataConfig);
+			SphereDataPhysical data_phys(sphereDataConfig);
+			data_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
 						io_data = y;
 					}
 			);
+			data.loadSphereDataPhysical(data_phys);
 
 			data += 123.0;
 
-			SphereData data2(sphereDataConfig);
-			data2.physical_update_lambda(
+			SphereDataSpectral data2(sphereDataConfig);
+			SphereDataPhysical data2_phys(sphereDataConfig);
+			data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
 					{
 						io_data = y+123.0;
 					}
 			);
+			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).physical_reduce_max_abs();
+			double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -288,17 +305,21 @@ void run_tests()
 		{
 			test_header("Testing Gaussian latitude coordinates");
 
-			SphereData h(sphereDataConfig);
-			h.physical_update_lambda_gaussian_grid(
+			SphereDataSpectral h(sphereDataConfig);
+			SphereDataPhysical h_phys(sphereDataConfig);
+			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
+			h.loadSphereDataPhysical(h_phys);
 
-			SphereData hphi(sphereDataConfig);
-			hphi.physical_update_lambda(
+			SphereDataSpectral hphi(sphereDataConfig);
+			SphereDataPhysical hphi_phys(sphereDataConfig);
+			hphi_phys.physical_update_lambda(
 					[&](double a, double b, double &c){testSolutions.test_function_phi__grid_phi(a,b,c);}
 			);
+			hphi.loadSphereDataPhysical(hphi_phys);
 
-			double div_max_error = (h-hphi).physical_reduce_max_abs();
+			double div_max_error = (h-hphi).getSphereDataPhysical().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -311,18 +332,22 @@ void run_tests()
 			test_header("Testing multiplication with Gaussian latitude");
 
 			// mu*F(\lambda,\mu)
-			SphereData h(sphereDataConfig);
-			h.physical_update_lambda_gaussian_grid(
+			SphereDataSpectral h(sphereDataConfig);
+			SphereDataPhysical h_phys(sphereDataConfig);
+			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
+			h.loadSphereDataPhysical(h_phys);
 			h = op.mu(h);
 
-			SphereData result(sphereDataConfig);
-			result.physical_update_lambda_gaussian_grid(
+			SphereDataSpectral result(sphereDataConfig);
+			SphereDataPhysical result_phys(sphereDataConfig);
+			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_mu__grid_gaussian(a,b,c);}
 			);
+			result.loadSphereDataPhysical(result_phys);
 
-			double div_max_error = (h-result).physical_reduce_max_abs();
+			double div_max_error = (h-result).getSphereDataPhysical().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -334,22 +359,26 @@ void run_tests()
 			test_header("Testing multiplication with pow2 of Gaussian latitude");
 
 			// mu*mu*F(\lambda,\mu)
-			SphereData h(sphereDataConfig);
-			h.physical_update_lambda_gaussian_grid(
+			SphereDataSpectral h(sphereDataConfig);
+			SphereDataPhysical h_phys(sphereDataConfig);
+			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
 			);
+			h.loadSphereDataPhysical(h_phys);
 			h = op.mu2(h);
 
-			SphereData result(sphereDataConfig);
-			result.physical_update_lambda_gaussian_grid(
+			SphereDataSpectral result(sphereDataConfig);
+			SphereDataPhysical result_phys(sphereDataConfig);
+			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &i_data){
 						testSolutions.test_function__grid_gaussian(lat, mu, i_data);
 						i_data *= mu*mu;
 					}
 			);
+			result.loadSphereDataPhysical(result_phys);
 
 
-			double div_max_error = (h-result).physical_reduce_max_abs();
+			double div_max_error = (h-result).getSphereDataPhysical().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)

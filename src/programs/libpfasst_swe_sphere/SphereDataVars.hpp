@@ -1,10 +1,10 @@
 #ifndef _SPHERE_DATA_VARS_HPP_
 #define _SPHERE_DATA_VARS_HPP_
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
-// Class containing the prognotic SphereData variables phi, vort, and div
+// Class containing the prognotic SphereDataSpectral variables phi, vort, and div
 
 class SphereDataVars {
 
@@ -49,13 +49,13 @@ public:
       }						   
   }
   
-  // getters for the SphereData variables
-  const SphereData& get_phi() const  {return prog_phi;}
-  SphereData&       get_phi()        {return prog_phi;}
-  const SphereData& get_vort() const {return prog_vort;}
-  SphereData&       get_vort()       {return prog_vort;}
-  const SphereData& get_div() const  {return prog_div;}
-  SphereData&       get_div()        {return prog_div;}
+  // getters for the SphereDataSpectral variables
+  const SphereDataSpectral& get_phi() const  {return prog_phi;}
+  SphereDataSpectral&       get_phi()        {return prog_phi;}
+  const SphereDataSpectral& get_vort() const {return prog_vort;}
+  SphereDataSpectral&       get_vort()       {return prog_vort;}
+  const SphereDataSpectral& get_div() const  {return prog_div;}
+  SphereDataSpectral&       get_div()        {return prog_div;}
 
   // getters for the flat data array
   double*&         get_flat_data_array()            {return flat_data_array;}
@@ -67,9 +67,9 @@ public:
 
 protected:
   
-  SphereData prog_phi;
-  SphereData prog_vort;
-  SphereData prog_div;
+  SphereDataSpectral prog_phi;
+  SphereDataSpectral prog_vort;
+  SphereDataSpectral prog_div;
 
   // flat data array vector (currently used to pack and unpack)
   double *flat_data_array;

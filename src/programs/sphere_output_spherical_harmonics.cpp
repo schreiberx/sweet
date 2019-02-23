@@ -11,7 +11,7 @@
 
 #include <cassert>
 #include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/SimulationVariables.hpp>
 
 
@@ -24,7 +24,7 @@ class AppOutputSphericalHarmonics
 public:
 	void run(SphereDataConfig *sphereConfig)
 	{
-		SphereData h(sphereConfig);
+		SphereDataSpectral h(sphereConfig);
 
 		int counter = 0;
 		// iterate over modes

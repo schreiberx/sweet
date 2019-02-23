@@ -2,7 +2,7 @@
 #ifndef TIMESTEPPING_EXPLICIT_LEAPFROG_HPP
 #define TIMESTEPPING_EXPLICIT_LEAPFROG_HPP
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <limits>
 
 
@@ -12,19 +12,19 @@ class SphereDataTimesteppingExplicitLeapfrog
 	const SphereDataConfig *sphereDataConfig;
 
 	// Previous time step values
-	SphereData RK_h_prev;
-	SphereData RK_u_prev;
-	SphereData RK_v_prev;
+	SphereDataSpectral RK_h_prev;
+	SphereDataSpectral RK_u_prev;
+	SphereDataSpectral RK_v_prev;
 
 	// time step tendencies
-	SphereData RK_h_dt;
-	SphereData RK_u_dt;
-	SphereData RK_v_dt;
+	SphereDataSpectral RK_h_dt;
+	SphereDataSpectral RK_u_dt;
+	SphereDataSpectral RK_v_dt;
 
 	// Temporary time step values
-	SphereData RK_h_tmp;
-	SphereData RK_u_tmp;
-	SphereData RK_v_tmp;
+	SphereDataSpectral RK_h_tmp;
+	SphereDataSpectral RK_u_tmp;
+	SphereDataSpectral RK_v_tmp;
 
 
 	/**
@@ -85,22 +85,22 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereData &i_P,	///< prognostic variables
-					const SphereData &i_u,	///< prognostic variables
-					const SphereData &i_v,	///< prognostic variables
+					const SphereDataSpectral &i_P,	///< prognostic variables
+					const SphereDataSpectral &i_u,	///< prognostic variables
+					const SphereDataSpectral &i_v,	///< prognostic variables
 
-					SphereData &o_P_t,		///< time updates
-					SphereData &o_u_t,		///< time updates
-					SphereData &o_v_t,		///< time updates
+					SphereDataSpectral &o_P_t,		///< time updates
+					SphereDataSpectral &o_u_t,		///< time updates
+					SphereDataSpectral &o_v_t,		///< time updates
 
 					double i_use_fixed_dt,		///< if this value is not equal to 0,
 												///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereData &io_h,
-			SphereData &io_u,
-			SphereData &io_v,
+			SphereDataSpectral &io_h,
+			SphereDataSpectral &io_u,
+			SphereDataSpectral &io_v,
 
 			double i_use_fixed_dt = 0,		///< If this value is not equal to 0,
 											///< Use this time step size instead of computing one
@@ -153,9 +153,9 @@ public:
 				double b[2] = {0.0, 1.0};
 				double c[1] = {0.5};
 
-				SphereData h_t0(io_h.sphereDataConfig);
-				SphereData u_t0(io_h.sphereDataConfig);
-				SphereData v_t0(io_h.sphereDataConfig);
+				SphereDataSpectral h_t0(io_h.sphereDataConfig);
+				SphereDataSpectral u_t0(io_h.sphereDataConfig);
+				SphereDataSpectral v_t0(io_h.sphereDataConfig);
 
 				// STAGE 1
 				(i_baseClass->*i_compute_euler_timestep_update)(
@@ -169,9 +169,9 @@ public:
 						i_simulation_time
 				);
 
-				SphereData h_t1(io_h.sphereDataConfig);
-				SphereData u_t1(io_h.sphereDataConfig);
-				SphereData v_t1(io_h.sphereDataConfig);
+				SphereDataSpectral h_t1(io_h.sphereDataConfig);
+				SphereDataSpectral u_t1(io_h.sphereDataConfig);
+				SphereDataSpectral v_t1(io_h.sphereDataConfig);
 
 				// STAGE 2
 				(i_baseClass->*i_compute_euler_timestep_update)(
@@ -267,19 +267,19 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereData &i_u,	///< prognostic variables
-					const SphereData &i_v,	///< prognostic variables
+					const SphereDataSpectral &i_u,	///< prognostic variables
+					const SphereDataSpectral &i_v,	///< prognostic variables
 
-					SphereData &o_u_t,	///< time updates
-					SphereData &o_v_t,	///< time updates
+					SphereDataSpectral &o_u_t,	///< time updates
+					SphereDataSpectral &o_v_t,	///< time updates
 
 					double i_use_fixed_dt,	///< if this value is not equal to 0,
 											///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereData &io_u,
-			SphereData &io_v,
+			SphereDataSpectral &io_u,
+			SphereDataSpectral &io_v,
 
 			double i_use_fixed_dt = 0,		///< If this value is not equal to 0,
 											///< Use this time step size instead of computing one
@@ -381,15 +381,15 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const SphereData &i_h,		///< prognostic variables
-					SphereData &o_h_t,			///< time updates
+					const SphereDataSpectral &i_h,		///< prognostic variables
+					SphereDataSpectral &o_h_t,			///< time updates
 
 					double i_use_fixed_dt,		///< if this value is not equal to 0,
 												///< use this time step size instead of computing one
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			SphereData &io_h,
+			SphereDataSpectral &io_h,
 
 			double i_use_fixed_dt = 0,		///< If this value is not equal to 0,
 											///< Use this time step size instead of computing one

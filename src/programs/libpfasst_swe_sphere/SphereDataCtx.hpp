@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDiagnostics.hpp>
 #include "LevelSingleton.hpp"

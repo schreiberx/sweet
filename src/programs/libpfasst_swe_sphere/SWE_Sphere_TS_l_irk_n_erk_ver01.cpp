@@ -10,9 +10,9 @@
 
 
 void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -20,9 +20,9 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 {
 	if (timestepping_order == 1 && timestepping_order2 == 1)
 	{
-		SphereData tmp_phi = io_phi;
-		SphereData tmp_vort = io_vort;
-		SphereData tmp_div = io_div;
+		SphereDataSpectral tmp_phi = io_phi;
+		SphereDataSpectral tmp_vort = io_vort;
+		SphereDataSpectral tmp_div = io_div;
 
 		// first order IRK for linear
 		timestepping_l_irk.run_timestep(
@@ -31,9 +31,9 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		SphereData phi_dt(io_phi.sphereDataConfig);
-		SphereData vort_dt(io_vort.sphereDataConfig);
-		SphereData div_dt(io_div.sphereDataConfig);
+		SphereDataSpectral phi_dt(io_phi.sphereDataConfig);
+		SphereDataSpectral vort_dt(io_vort.sphereDataConfig);
+		SphereDataSpectral div_dt(io_div.sphereDataConfig);
 
 		// first order explicit for non-linear
 		timestepping_l_erk_n_erk.euler_timestep_update_n(

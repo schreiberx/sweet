@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_ERK_N_ERK_HPP_
 
 #include <limits>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -35,27 +35,13 @@ class SWE_Sphere_TS_l_erk_n_erk	: public SWE_Sphere_TS_interface
 
 public:
 	void euler_timestep_update_linear(
-			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
+			const SphereDataSpectral &i_h,	///< prognostic variables
+			const SphereDataSpectral &i_u,	///< prognostic variables
+			const SphereDataSpectral &i_v,	///< prognostic variables
 
-			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
-
-			double i_simulation_timestamp
-	);
-
-
-public:
-	void euler_timestep_update_n(
-			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
-
-			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
+			SphereDataSpectral &o_h_t,	///< time updates
+			SphereDataSpectral &o_u_t,	///< time updates
+			SphereDataSpectral &o_v_t,	///< time updates
 
 			double i_simulation_timestamp
 	);
@@ -63,9 +49,23 @@ public:
 
 public:
 	void euler_timestep_update_n(
-			SphereData &io_phi,	///< prognostic variables
-			SphereData &io_vort,	///< prognostic variables
-			SphereData &io_div,	///< prognostic variables
+			const SphereDataSpectral &i_h,	///< prognostic variables
+			const SphereDataSpectral &i_u,	///< prognostic variables
+			const SphereDataSpectral &i_v,	///< prognostic variables
+
+			SphereDataSpectral &o_h_t,	///< time updates
+			SphereDataSpectral &o_u_t,	///< time updates
+			SphereDataSpectral &o_v_t,	///< time updates
+
+			double i_simulation_timestamp
+	);
+
+
+public:
+	void euler_timestep_update_n(
+			SphereDataSpectral &io_phi,	///< prognostic variables
+			SphereDataSpectral &io_vort,	///< prognostic variables
+			SphereDataSpectral &io_div,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -73,13 +73,13 @@ public:
 
 public:
 	void euler_timestep_update(
-			const SphereData &i_phi,	///< prognostic variables
-			const SphereData &i_vort,	///< prognostic variables
-			const SphereData &i_div,	///< prognostic variables
+			const SphereDataSpectral &i_phi,	///< prognostic variables
+			const SphereDataSpectral &i_vort,	///< prognostic variables
+			const SphereDataSpectral &i_div,	///< prognostic variables
 
-			SphereData &o_phi_t,	///< time updates
-			SphereData &o_vort_t,	///< time updates
-			SphereData &o_div_t,	///< time updates
+			SphereDataSpectral &o_phi_t,	///< time updates
+			SphereDataSpectral &o_vort_t,	///< time updates
+			SphereDataSpectral &o_div_t,	///< time updates
 
 			double i_simulation_timestamp = -1
 	);
@@ -96,9 +96,9 @@ public:
 	);
 
 	void run_timestep(
-			SphereData &io_phi,	///< prognostic variables
-			SphereData &io_vort,	///< prognostic variables
-			SphereData &io_div,	///< prognostic variables
+			SphereDataSpectral &io_phi,	///< prognostic variables
+			SphereDataSpectral &io_vort,	///< prognostic variables
+			SphereDataSpectral &io_div,	///< prognostic variables
 
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1

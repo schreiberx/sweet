@@ -15,13 +15,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_l_erk::euler_timestep_update(
-		const SphereData &i_phi,	///< prognostic variables
-		const SphereData &i_vort,	///< prognostic variables
-		const SphereData &i_div,	///< prognostic variables
+		const SphereDataSpectral &i_phi,	///< prognostic variables
+		const SphereDataSpectral &i_vort,	///< prognostic variables
+		const SphereDataSpectral &i_div,	///< prognostic variables
 
-		SphereData &o_phi_t,	///< time updates
-		SphereData &o_vort_t,	///< time updates
-		SphereData &o_div_t,	///< time updates
+		SphereDataSpectral &o_phi_t,	///< time updates
+		SphereDataSpectral &o_vort_t,	///< time updates
+		SphereDataSpectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -47,7 +47,7 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 		/*
 		 * This doesn't converge to the reference solution
 		 */
-		SphereData f(fg);
+		SphereDataSpectral f(fg);
 		o_vort_t = -f*i_div;
 		o_div_t += f*i_vort;
 
@@ -87,9 +87,9 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 
 
 void SWE_Sphere_TS_l_erk::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp

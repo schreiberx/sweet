@@ -9,19 +9,19 @@
 	#include <sweet/VisSweet.hpp>
 	#include <sweet/plane/PlaneDataConfig.hpp>
 	#include <sweet/plane/PlaneData.hpp>
-	#include <sweet/Convert_SphereData_To_PlaneData.hpp>
+	#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #endif
 
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereDataPhysical.hpp>
 #include <sweet/sphere/SphereDiagnostics.hpp>
 
 
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 
@@ -65,9 +65,9 @@ public:
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
 
-	SphereData prog_phi;
-	SphereData prog_vort;
-	SphereData prog_div;
+	SphereDataSpectral prog_phi;
+	SphereDataSpectral prog_vort;
+	SphereDataSpectral prog_div;
 
 
 	REXI_Terry<> rexi;
@@ -145,7 +145,6 @@ public:
 		if (simVars.timecontrol.current_timestep_size <= 0)
 			FatalError("Only fixed time step size supported");
 
-
 		if (simVars.benchmark.setup_dealiased)
 		{
 			// use dealiased physical space for setup
@@ -156,9 +155,9 @@ public:
 		{
 			// this is not the default since noone uses it
 			// use reduced physical space for setup to avoid spurious modes
-			SphereData prog_phi_nodealiasing(sphereDataConfig_nodealiasing);
-			SphereData prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
-			SphereData prog_div_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereDataSpectral prog_phi_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereDataSpectral prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereDataSpectral prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
 			sphereBenchmarks.setup(simVars, op_nodealiasing);
 			sphereBenchmarks.setupInitialConditions(prog_phi_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing);
@@ -200,7 +199,7 @@ public:
 	 * Write file to data and return string of file name
 	 */
 	std::string write_file_csv(
-			const SphereData &i_sphereData,
+			const SphereDataSpectral &i_sphereData,
 			const char* i_name,		///< name of output variable
 			bool i_phi_shifted = false
 	)
@@ -208,10 +207,11 @@ public:
 		char buffer[1024];
 
 		// create copy
-		SphereData sphereData(i_sphereData);
+		SphereDataPhysical sphereData = i_sphereData.getSphereDataPhysical();
 
 		const char* filename_template = simVars.iodata.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+
 		if (i_phi_shifted)
 			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
 		else
@@ -226,13 +226,13 @@ public:
 	 * Write file to data and return string of file name
 	 */
 	std::string write_file_bin(
-			const SphereData &i_sphereData,
+			const SphereDataSpectral &i_sphereData,
 			const char* i_name
 	)
 	{
 		char buffer[1024];
 
-		SphereData sphereData(i_sphereData);
+		SphereDataSpectral sphereData(i_sphereData);
 		const char* filename_template = simVars.iodata.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 		sphereData.file_write_binary_spectral(buffer);
@@ -259,15 +259,15 @@ public:
 		if (simVars.iodata.output_file_mode == "csv")
 		{
 			std::string output_filename;
-			SphereData h = prog_phi*(1.0/simVars.sim.gravitation);
+			SphereDataSpectral h = prog_phi*(1.0/simVars.sim.gravitation);
 
 			output_filename = write_file_csv(prog_phi, "prog_phi");
 			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
+			std::cout << " + " << output_filename << " (min: " << h.getSphereDataPhysical().physical_reduce_min() << ", max: " << h.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
 
 			output_filename = write_file_csv(h, "prog_h");
 			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << " (min: " << SphereData(h).physical_reduce_min() << ", max: " << SphereData(h).physical_reduce_max() << ")" << std::endl;
+			std::cout << " + " << output_filename << " (min: " << h.getSphereDataPhysical().physical_reduce_min() << ", max: " << h.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
 
 			SphereDataPhysical u(sphereDataConfig);
 			SphereDataPhysical v(sphereDataConfig);
@@ -290,7 +290,7 @@ public:
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			SphereData potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
+			SphereDataSpectral potvort = (prog_phi/simVars.sim.gravitation)*prog_vort;
 
 			output_filename = write_file_csv(potvort, "prog_potvort");
 			output_reference_filenames += ";"+output_filename;
@@ -342,9 +342,9 @@ public:
 				FatalError("Analytical solution not available for this benchmark");
 			}
 
-			SphereData anal_solution_phi(sphereDataConfig);
-			SphereData anal_solution_vort(sphereDataConfig);
-			SphereData anal_solution_div(sphereDataConfig);
+			SphereDataSpectral anal_solution_phi(sphereDataConfig);
+			SphereDataSpectral anal_solution_vort(sphereDataConfig);
+			SphereDataSpectral anal_solution_div(sphereDataConfig);
 
 			sphereBenchmarks.setup(simVars, op);
 			sphereBenchmarks.setupInitialConditions(anal_solution_phi, anal_solution_vort, anal_solution_div);
@@ -352,17 +352,17 @@ public:
 			/*
 			 * Compute difference
 			 */
-			SphereData diff_phi = prog_phi - anal_solution_phi;
-			SphereData diff_vort = prog_vort - anal_solution_vort;
-			SphereData diff_div = prog_div - anal_solution_div;
+			SphereDataSpectral diff_phi = prog_phi - anal_solution_phi;
+			SphereDataSpectral diff_vort = prog_vort - anal_solution_vort;
+			SphereDataSpectral diff_div = prog_div - anal_solution_div;
 
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
 			{
-				double error_phi = diff_phi.physical_reduce_max_abs();
-				double error_vort = diff_vort.physical_reduce_max_abs();
-				double error_div = diff_div.physical_reduce_max_abs();
+				double error_phi = diff_phi.getSphereDataPhysical().physical_reduce_max_abs();
+				double error_vort = diff_vort.getSphereDataPhysical().physical_reduce_max_abs();
+				double error_div = diff_div.getSphereDataPhysical().physical_reduce_max_abs();
 
 				std::cout << "[MULE] errors: ";
 				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
@@ -416,7 +416,7 @@ public:
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
-				std::cout << "prog_phi min/max:\t" << SphereData(prog_phi).physical_reduce_min() << ", " << SphereData(prog_phi).physical_reduce_max() << std::endl;
+				std::cout << "prog_phi min/max:\t" << prog_phi.getSphereDataPhysical().physical_reduce_min() << ", " << prog_phi.getSphereDataPhysical().physical_reduce_max() << std::endl;
 		}
 
 		if (simVars.iodata.output_each_sim_seconds > 0)
@@ -490,7 +490,7 @@ public:
 		double max_abs_value = std::abs(simVars.sim.h0)*2.0*simVars.sim.gravitation;
 
 		if (
-				SphereData(prog_phi).physical_reduce_max_abs() > max_abs_value &&
+				SphereDataSpectral(prog_phi).physical_reduce_max_abs() > max_abs_value &&
 				simVars.benchmark.benchmark_id != 4
 		)
 		{
@@ -499,7 +499,7 @@ public:
 		}
 #endif
 
-		if (SphereData(prog_phi).physical_isAnyNaNorInf())
+		if (prog_phi.getSphereDataPhysical().physical_isAnyNaNorInf())
 		{
 			std::cerr << "Inf value detected" << std::endl;
 			return true;
@@ -599,20 +599,20 @@ public:
 		{
 		default:
 		case 0:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_phi), planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereDataSpectral(prog_phi), planeDataConfig);
 			break;
 
 		case 1:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_vort), planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereDataSpectral(prog_vort), planeDataConfig);
 			break;
 
 		case 2:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_div), planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereDataSpectral(prog_div), planeDataConfig);
 			break;
 
 		case 3:
 			// USE COPY TO AVOID FORWARD/BACKWARD TRANSFORMATION
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(SphereData(prog_phi)/simVars.sim.gravitation, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereDataSpectral(prog_phi)/simVars.sim.gravitation, planeDataConfig);
 			break;
 
 		case 4:
@@ -622,7 +622,7 @@ public:
 
 			// Don't use Robert, since we're not interested in the Robert formulation here
 			op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(u, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(u, planeDataConfig);
 			break;
 		}
 
@@ -633,7 +633,7 @@ public:
 
 			// Don't use Robert, since we're not interested in the Robert formulation here
 			op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(v, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(v, planeDataConfig);
 			break;
 		}
 

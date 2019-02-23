@@ -14,13 +14,13 @@
 #include <sweet/sphere/SphereDataErrorCheck.hpp>
 
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 
-#include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 
 
 
@@ -31,7 +31,8 @@ SimulationVariables simVars;
 
 template<
 	typename phys_value_type,
-	typename sphere_data_type,
+	typename sphere_data_spec_type,
+	typename sphere_data_phys_type,
 	typename sphere_operators_type,
 	typename sph_banded_solver_type
 >
@@ -70,21 +71,21 @@ public:
 			/*
 			 * Use test function as expected result
 			 */
-			sphere_data_type x_result(sphereDataConfig);
-			x_result.physical_update_lambda_gaussian_grid(
+			sphere_data_phys_type x_result_phys(sphereDataConfig);
+			x_result_phys.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, phys_value_type &io_data){
 						double tmp;
 						testSolutions.test_function__grid_gaussian(lat,mu,tmp);
 						io_data = tmp;
 					}
 			);
-			x_result.spectral_truncate();
+			sphere_data_spec_type x_result(x_result_phys);
 
 			// we make a copy of x_result to setup other data
 			// Otherwise, x_result might be converted to/from spectral/physical space all the time
-			sphere_data_type x_result_setup = x_result;
+			sphere_data_spec_type x_result_setup = x_result;
 
-			double x_result_Lmax = x_result.physical_reduce_max_abs();
+			double x_result_Lmax = x_result.getSphereDataPhysical().physical_reduce_max_abs();
 
 			double r = simVars.sim.sphere_radius;
 			double two_omega = 2.0*simVars.sim.sphere_rotating_coriolis_omega;
@@ -111,8 +112,8 @@ public:
 				/*
 				 * Setup RHS = scalar_a * phi(lambda,mu)
 				 */
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys(x_result_setup.sphereDataConfig);
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							double tmp;
@@ -120,10 +121,11 @@ public:
 							io_data = tmp*alpha;
 						}
 				);
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(alpha));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -147,17 +149,18 @@ public:
 				sphSolver.solver_component_scalar_phi(alpha);
 				sphSolver.solver_component_mu_phi();
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							io_data *= mu+alpha;
 						}
 				);
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(alpha+1.0));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -181,8 +184,8 @@ public:
 				sphSolver.solver_component_scalar_phi(alpha);
 				sphSolver.solver_component_one_minus_mu_mu_diff_mu_phi();
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							double one_minus_m2_dfun;
@@ -191,12 +194,11 @@ public:
 							io_data = one_minus_m2_dfun + alpha*io_data;
 						}
 				);
-				//b.spectral_truncate();
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(alpha+1.0));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -225,18 +227,19 @@ public:
 				phys_value_type scalar = (alpha*alpha)*(alpha*alpha);
 				sphSolver.solver_component_rexi_z1(scalar, r);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							io_data *= scalar;
-						}
+					{
+						io_data *= scalar;
+					}
 				);
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -260,16 +263,17 @@ public:
 				phys_value_type scalar = alpha*alpha*two_omega*two_omega;
 				sphSolver.solver_component_rexi_z2(scalar, r);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data){
-							io_data *= scalar*(mu*mu);
-						}
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
+					[&](double lat, double mu, phys_value_type &io_data){
+						io_data *= scalar*(mu*mu);
+					}
 				);
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -303,16 +307,17 @@ public:
 
 				sphSolver.solver_component_rexi_z3(scalar, r);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data){
 							io_data *= scalar*(mu*mu)*(mu*mu);
 						}
 				);
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -355,7 +360,7 @@ public:
 				std::complex<double> scalar = two_omega*two_omega*two_omega*two_omega;
 				sphSolver.solver_component_rexi_z3c(scalar, r);
 
-				sphere_data_type b(&sphereDataConfigDouble);
+				sphere_data_spec_type b(&sphereDataConfigDouble);
 				b.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data){
 							double value;
@@ -365,9 +370,9 @@ public:
 							io_data *= scalar.real()*(mu*mu)*(mu*mu);
 						}
 				);
-				sphere_data_type x_numerical_double = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical_double = sphSolver.solve(b);
 
-				sphere_data_type x_numerical(sphereDataConfig);
+				sphere_data_spec_type x_numerical(sphereDataConfig);
 
 				x_numerical.spectral_set_zero();
 				x_numerical.spectral_update_lambda(
@@ -410,8 +415,8 @@ public:
 				// ADD OFFSET FOR NON-SINGULAR SOLUTION
 				sphSolver.solver_component_scalar_phi(alpha);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							double fun;
@@ -423,11 +428,11 @@ public:
 							io_data = scalar/(r*r)*dlambda_fun + fun*alpha;
 						}
 				);
-				//b.spectral_truncate();
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -454,8 +459,8 @@ public:
 				// ADD OFFSET FOR NON-SINGULAR SOLUTION
 				sphSolver.solver_component_scalar_phi(alpha);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							double fun;
@@ -467,10 +472,11 @@ public:
 							io_data = scalar/(r*r)*std::sqrt(1.0-mu*mu)*mu*mu*dgrad_lambda_fun + fun*alpha;
 						}
 				);
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -507,8 +513,8 @@ public:
 				// ADD OFFSET FOR NON-SINGULAR SOLUTION
 				sphSolver.solver_component_scalar_phi(alpha);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							double fun;
@@ -520,10 +526,11 @@ public:
 							io_data = scalar/(r*r)*std::sqrt(1.0-mu*mu)*mu*dgrad_mu_fun + fun*alpha;
 						}
 				);
+				sphere_data_spec_type b(b_phys);
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -560,8 +567,8 @@ public:
 				// ADD OFFSET FOR NON-SINGULAR SOLUTION
 				sphSolver.solver_component_scalar_phi(alpha);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							double tmp;
@@ -569,12 +576,13 @@ public:
 							io_data = tmp;
 						}
 				);
+				sphere_data_spec_type b(b_phys);
 
 				b = op.laplace(b)*scalar + b*alpha;
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -602,8 +610,8 @@ public:
 				// ADD OFFSET FOR NON-SINGULAR SOLUTION
 				sphSolver.solver_component_scalar_phi(alpha);
 
-				sphere_data_type b = x_result_setup;
-				b.physical_update_lambda_gaussian_grid(
+				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
+				b_phys.physical_update_lambda_gaussian_grid(
 						[&](double lat, double mu, phys_value_type &io_data)
 						{
 							double tmp;
@@ -611,12 +619,13 @@ public:
 							io_data = tmp;
 						}
 				);
+				sphere_data_spec_type b(b_phys);
 
 				b = op.mu2(op.laplace(b))*scalar + b*alpha;
 
-				sphere_data_type x_numerical = sphSolver.solve(b);
+				sphere_data_spec_type x_numerical = sphSolver.solve(b);
 
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
+				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
 				max_error = max_error/(x_result_Lmax*Lmax(scalar));
 
 				std::cout << " + max_error: " << max_error << std::endl;
@@ -686,7 +695,8 @@ int main(
 
 		Test<
 			double,
-			SphereData,
+			SphereDataSpectral,
+			SphereDataPhysical,
 			SphereOperators,
 			SphBandedMatrixPhysicalReal<std::complex<double>>
 		>t_real;
@@ -706,7 +716,8 @@ int main(
 
 		Test<
 			std::complex<double>,
-			SphereDataComplex,
+			SphereDataSpectralComplex,
+			SphereDataPhysicalComplex,
 			SphereOperatorsComplex,
 			SphBandedMatrixPhysicalComplex<std::complex<double>>
 		>t_complex;

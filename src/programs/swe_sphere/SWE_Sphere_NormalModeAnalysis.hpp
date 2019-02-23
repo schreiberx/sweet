@@ -19,9 +19,9 @@ public:
 	template <typename TCallbackClass>
 	static
 	void normal_mode_analysis(
-			SphereData &io_prog_phi,
-			SphereData &io_prog_vort,
-			SphereData &io_prog_div,
+			SphereDataSpectral &io_prog_phi,
+			SphereDataSpectral &io_prog_vort,
+			SphereDataSpectral &io_prog_div,
 
 			SimulationVariables &i_simVars,
 
@@ -52,12 +52,12 @@ public:
 		// use very high precision
 		file << std::setprecision(20);
 
-		SphereData* prog[3] = {&io_prog_phi, &io_prog_vort, &io_prog_div};
+		SphereDataSpectral* prog[3] = {&io_prog_phi, &io_prog_vort, &io_prog_div};
 
 		int max_prog_id = 3;
-		prog[0]->physical_set_zero();
-		prog[1]->physical_set_zero();
-		prog[2]->physical_set_zero();
+		prog[0]->spectral_set_zero();
+		prog[1]->spectral_set_zero();
+		prog[2]->spectral_set_zero();
 
 		int leapfrog_start_num_timesteps = 16;
 		double leapfrog_start_timesteps_size;
@@ -104,6 +104,8 @@ public:
 
 			if (i_simVars.misc.normal_mode_analysis_generation == 1 || i_simVars.misc.normal_mode_analysis_generation == 11)
 			{
+				FatalError("Not supported anymore");
+#if 0
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
@@ -112,7 +114,7 @@ public:
 					i_simVars.timecontrol.current_simulation_time = 0;
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-						prog[inner_prog_id]->physical_set_zero();
+						prog[inner_prog_id]->spectral_set_zero();
 
 					// activate mode
 					prog[outer_prog_id]->request_data_physical();
@@ -176,6 +178,7 @@ public:
 						}
 					}
 				}
+#endif
 			}
 			else if (i_simVars.misc.normal_mode_analysis_generation == 2 || i_simVars.misc.normal_mode_analysis_generation == 12)
 			{
@@ -193,7 +196,6 @@ public:
 							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode
-						prog[outer_prog_id]->request_data_spectral();
 						if (imag_i)
 							prog[outer_prog_id]->spectral_space_data[outer_i].imag(1);
 						else
@@ -232,7 +234,6 @@ public:
 							 * compute
 							 * 1/dt * (U(t+1) - U(t))
 							 */
-							prog[outer_prog_id]->request_data_spectral();
 							prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -241,7 +242,6 @@ public:
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						{
-							prog[inner_prog_id]->request_data_spectral();
 							for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 							{
 								file << prog[inner_prog_id]->spectral_space_data[k].real();
@@ -251,8 +251,6 @@ public:
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						{
-							prog[inner_prog_id]->request_data_spectral();
-
 							for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 							{
 								file << prog[inner_prog_id]->spectral_space_data[k].imag();
@@ -280,7 +278,6 @@ public:
 						prog[inner_prog_id]->spectral_set_zero();
 
 					// activate mode via real coefficient
-					prog[outer_prog_id]->request_data_spectral();
 					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
 
@@ -321,7 +318,6 @@ public:
 						 *    1/dt * (U(t+1) - U(t))
 						 * for linearization
 						 */
-						prog[outer_prog_id]->request_data_spectral();
 						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -330,8 +326,6 @@ public:
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
-						prog[inner_prog_id]->request_data_spectral();
-
 						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 						{
 							file << prog[inner_prog_id]->spectral_space_data[k].real();
@@ -341,8 +335,6 @@ public:
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 					{
-						prog[inner_prog_id]->request_data_spectral();
-
 						for (int k = 0; k < sphereDataConfig->spectral_array_data_number_of_elements; k++)
 						{
 							file << prog[inner_prog_id]->spectral_space_data[k].imag();

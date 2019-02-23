@@ -9,12 +9,12 @@
 #ifndef SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 #define SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 
-#include <sweet/sphere/Convert_SphereData_to_ScalarDataArray.hpp>
+#include <sweet/sphere/Convert_ScalarDataArray_to_SphereDataPhysical.hpp>
 #include <sweet/sphere/Convert_SphereDataPhysical_to_ScalarDataArray.hpp>
-#include <sweet/sphere/Convert_ScalarDataArray_to_SphereData.hpp>
+//#include <sweet/sphere/Convert_SphereDataSpectral_to_ScalarDataArray.hpp>
 #include <sweet/sphere/SphereStaggering.hpp>
 #include <sweet/sphere/SphereDataSampler.hpp>
-#include "SphereData.hpp"
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
 

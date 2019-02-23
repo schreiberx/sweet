@@ -111,9 +111,9 @@ void SWE_Sphere_TS_l_irk::update_coefficients()
  * Solve an implicit time step for the given initial conditions
  */
 void SWE_Sphere_TS_l_irk::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -134,17 +134,17 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 	        update_coefficients();
 	}
 
-	SphereData phi0 = io_phi;
-	SphereData vort0 = io_vort;
-	SphereData div0 = io_div;
+	SphereDataSpectral phi0 = io_phi;
+	SphereDataSpectral vort0 = io_vort;
+	SphereDataSpectral div0 = io_div;
 
-	SphereData phi(sphereDataConfig);
-	SphereData vort(sphereDataConfig);
-	SphereData div(sphereDataConfig);
+	SphereDataSpectral phi(sphereDataConfig);
+	SphereDataSpectral vort(sphereDataConfig);
+	SphereDataSpectral div(sphereDataConfig);
 
 	if (use_f_sphere)
 	{
-		SphereData rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
+		SphereDataSpectral rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);
 
 		div = -1.0/gh*(phi0 - alpha*phi);
@@ -152,7 +152,7 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 	}
 	else
 	{
-		SphereData rhs(sphereDataConfig);
+		SphereDataSpectral rhs(sphereDataConfig);
 
 		SphereDataPhysical u0g(sphereDataConfig);
 		SphereDataPhysical v0g(sphereDataConfig);

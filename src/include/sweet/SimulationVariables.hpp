@@ -18,8 +18,12 @@
 #include <sweet/FatalError.hpp>
 #include <sweet/StringSplit.hpp>
 
+#ifndef SWEET_USE_SPHERE_SPECTRAL_SPACE
+#	define SWEET_USE_SPHERE_SPECTRAL_SPACE 1
+#endif
+
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
-#	include <sweet/sphere/SphereData.hpp>
+#	include <sweet/sphere/SphereDataSpectral.hpp>
 #endif
 
 #ifndef SWEET_PARAREAL
@@ -260,7 +264,7 @@ public:
 		/**
 		 * Topography vector
 		 */
-		SphereData h_topo;
+		SphereDataPhysical h_topo;
 #endif
 
 

@@ -14,7 +14,7 @@ class BenchmarkFlowOverMountain
 public:
 	static
 	void setup_topography(
-			SphereData          &o_h_topo,
+			SphereDataPhysical          &o_h_topo,
 			SimulationVariables &i_simVars,
 			double i_R            = M_PI/9.,
 			double i_h_topo_0     = 2000.,  

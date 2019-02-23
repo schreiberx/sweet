@@ -9,16 +9,16 @@
 #define SRC_SWEREXI_SPHROBERT_HPP_
 
 #include <complex>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 #include <sweet/sphere/SphereDataPhysicalComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
-#include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
-#include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 
 
 
@@ -156,27 +156,27 @@ public:
 	 */
 	inline
 	void solve_vectorinvariant_progphivortdiv(
-			const SphereData &i_phi0,
-			const SphereData &i_vort0,
-			const SphereData &i_div0,
+			const SphereDataSpectral &i_phi0,
+			const SphereDataSpectral &i_vort0,
+			const SphereDataSpectral &i_div0,
 
-			SphereData &o_phi,
-			SphereData &o_vort,
-			SphereData &o_div
+			SphereDataSpectral &o_phi,
+			SphereDataSpectral &o_vort,
+			SphereDataSpectral &o_div
 	)
 	{
 
-		const SphereDataComplex phi0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_phi0);
-		const SphereDataComplex vort0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_vort0);
-		const SphereDataComplex div0 = Convert_SphereData_To_SphereDataComplex::physical_convert(i_div0);
+		const SphereDataSpectralComplex phi0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_phi0);
+		const SphereDataSpectralComplex vort0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_vort0);
+		const SphereDataSpectralComplex div0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_div0);
 
-		SphereDataComplex phi(sphereDataConfigSolver);
-		SphereDataComplex vort(sphereDataConfigSolver);
-		SphereDataComplex div(sphereDataConfigSolver);
+		SphereDataSpectralComplex phi(sphereDataConfigSolver);
+		SphereDataSpectralComplex vort(sphereDataConfigSolver);
+		SphereDataSpectralComplex div(sphereDataConfigSolver);
 
 		if (no_coriolis)
 		{
-			SphereDataComplex rhs = gh*div0 + alpha*phi0;
+			SphereDataSpectralComplex rhs = gh*div0 + alpha*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 
 			vort = (1.0/alpha)*vort0;
@@ -184,7 +184,7 @@ public:
 		}
 		else if (use_f_sphere)
 		{
-			SphereDataComplex rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
+			SphereDataSpectralComplex rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
 			phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);
 
 			vort = (1.0/alpha)*(vort0 + f0*(div));
@@ -197,7 +197,7 @@ public:
 
 			opComplex.robert_vortdiv_to_uv(vort0, div0, u0g, v0g, r);
 
-			SphereDataComplex rhs(sphereDataConfigSolver);
+			SphereDataSpectralComplex rhs(sphereDataConfigSolver);
 
 
 			SphereDataPhysicalComplex phi0g = phi0.getSphereDataPhysicalComplex();
@@ -260,9 +260,9 @@ public:
 
 		}
 
-		o_phi = Convert_SphereDataComplex_To_SphereData::physical_convert_real(phi * beta);
-		o_vort = Convert_SphereDataComplex_To_SphereData::physical_convert_real(vort * beta);
-		o_div = Convert_SphereDataComplex_To_SphereData::physical_convert_real(div * beta);
+		o_phi = Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(phi * beta);
+		o_vort = Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(vort * beta);
+		o_div = Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(div * beta);
 	}
 
 

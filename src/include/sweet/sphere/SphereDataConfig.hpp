@@ -34,7 +34,7 @@ class SphereDataConfig
 	friend class SphereOperators;
 	friend class SphereOperatorsComplex;
 	friend class SphereData;
-	friend class SphereDataComplex;
+	friend class SphereDataSpectralComplex;
 
 public:
 	shtns_cfg shtns;

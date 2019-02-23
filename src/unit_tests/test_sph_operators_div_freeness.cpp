@@ -10,13 +10,13 @@
 
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereDataErrorCheck.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 
 
 
@@ -58,10 +58,10 @@ void run_tests()
 
 		double alpha[] = {0, M_PI/3, M_PI/2};
 
-		SphereData zero(sphereDataConfig);
+		SphereDataSpectral zero(sphereDataConfig);
 		zero.physical_set_zero();
 
-		SphereDataComplex zeroc(sphereDataConfig);
+		SphereDataSpectralComplex zeroc(sphereDataConfig);
 		zeroc.physical_set_zero();
 
 		for (int i = 0; i < 3; i++)
@@ -71,7 +71,7 @@ void run_tests()
 			std::cout << "****************************************" << std::endl;
 			std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
 
-			SphereData phi(sphereDataConfig);
+			SphereDataSpectral phi(sphereDataConfig);
 			phi.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
@@ -87,7 +87,7 @@ void run_tests()
 				}
 			);
 
-			SphereData u(sphereDataConfig);
+			SphereDataSpectral u(sphereDataConfig);
 			u.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
@@ -103,7 +103,7 @@ void run_tests()
 				}
 			);
 
-			SphereData v(sphereDataConfig);
+			SphereDataSpectral v(sphereDataConfig);
 			v.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
@@ -120,7 +120,7 @@ void run_tests()
 
 
 
-			SphereDataComplex phic(sphereDataConfig);
+			SphereDataSpectralComplex phic(sphereDataConfig);
 			phic.physical_update_lambda(
 				[&](double i_lambda, double i_theta, std::complex<double> &io_data)
 				{
@@ -136,7 +136,7 @@ void run_tests()
 				}
 			);
 
-			SphereDataComplex uc(sphereDataConfig);
+			SphereDataSpectralComplex uc(sphereDataConfig);
 			uc.physical_update_lambda(
 				[&](double i_lon, double i_lat, std::complex<double> &io_data)
 				{
@@ -152,7 +152,7 @@ void run_tests()
 				}
 			);
 
-			SphereDataComplex vc(sphereDataConfig);
+			SphereDataSpectralComplex vc(sphereDataConfig);
 			vc.physical_update_lambda(
 				[&](double i_lon, double i_lat, std::complex<double> &io_data)
 				{

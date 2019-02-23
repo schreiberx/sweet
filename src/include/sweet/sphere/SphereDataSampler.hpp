@@ -9,14 +9,14 @@
 #define SRC_INCLUDE_SWEET_SPHEREDATASAMPLER_HPP_
 
 #include <sweet/ScalarDataArray.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
 
 
 /**
  * this is a sampler class which provides method to provide
  * interpolated sampled values on 2D physical sphere data which
- * is provided by SphereData
+ * is provided by SphereDataSpectral
  */
 class SphereDataSampler
 {
@@ -152,11 +152,11 @@ public:
 
 
 	void updateSamplingData(
-			const SphereData &i_data,
+			const SphereDataSpectral &i_data_spec,
 			bool i_velocity_sampling
 	)
 	{
-		i_data.request_data_physical();
+		SphereDataPhysical i_data = i_data_spec.getSphereDataPhysical();
 
 		sampling_data.resize(sphereDataConfig->physical_num_lon*(sphereDataConfig->physical_num_lat+4));
 //		for (int i = 0; i < sampling_data.size(); i++)
@@ -170,7 +170,7 @@ public:
 		assert((num_lon & 1) == 0);
 
 #if 0
-		((SphereData&)i_data).physical_update_lambda_array(
+		((SphereDataSpectral&)i_data).physical_update_lambda_array(
 				[&](int x, int y, double &io_data)
 				{
 					io_data = x*10000+y;
@@ -383,7 +383,7 @@ public:
 
 public:
 	void bicubic_scalar(
-			const SphereData &i_data,			///< sampling data
+			const SphereDataSpectral &i_data,			///< sampling data
 
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
@@ -616,12 +616,12 @@ public:
 
 public:
 	void bicubic_scalar(
-			const SphereData &i_data,			///< sampling data
+			const SphereDataSpectral &i_data,			///< sampling data
 
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			SphereData &o_data,					///< output values
+			SphereDataSpectral &o_data,					///< output values
 			bool i_velocity_sampling
 	)
 	{
@@ -630,18 +630,16 @@ public:
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling);
+		SphereDataPhysical o_data_phys(o_data.sphereDataConfig);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data_phys.physical_space_data,  i_velocity_sampling);
 
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE
-		o_data.physical_space_data_valid = true;
-		o_data.spectral_space_data_valid = false;
-#endif
+		o_data.loadSphereDataPhysical(o_data_phys);
 	}
 
 
 public:
 	void bicubic_scalar(
-			const SphereData &i_data,				///< sampling data
+			const SphereDataSpectral &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,			///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
@@ -662,7 +660,7 @@ public:
 
 public:
 	void bilinear_scalar(
-			const SphereData &i_data,			///< sampling data
+			const SphereDataSpectral &i_data,			///< sampling data
 
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
@@ -769,7 +767,7 @@ public:
 
 public:
 	void bilinear_scalar(
-			const SphereData &i_data,				///< sampling data
+			const SphereDataSpectral &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
@@ -786,30 +784,28 @@ public:
 
 public:
 	void bilinear_scalar(
-			const SphereData &i_data,				///< sampling data
+			const SphereDataSpectral &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
 
-			SphereData &o_data,				///< output values
+			SphereDataSpectral &o_data,				///< output values
 			bool i_velocity_sampling
 	)
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 
-		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_velocity_sampling);
+		SphereDataPhysical o_data_phys(o_data.sphereDataConfig);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data_phys.physical_space_data, i_velocity_sampling);
 
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE
-		o_data.physical_space_data_valid = true;
-		o_data.spectral_space_data_valid = false;
-#endif
+		o_data.loadSphereDataPhysical(o_data_phys);
 	}
 
 
 public:
 	const ScalarDataArray bilinear_scalar(
-			const SphereData &i_data,				///< sampling data
+			const SphereDataSpectral &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
@@ -825,7 +821,7 @@ public:
 
 public:
 	const ScalarDataArray bicubic_scalar(
-			const SphereData &i_data,				///< sampling data
+			const SphereDataSpectral &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points

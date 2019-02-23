@@ -1,7 +1,7 @@
 #ifndef _LEVEL_SINGLETON_CTX_HPP_
 #define _LEVEL_SINGLETON_CTX_HPP_
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 

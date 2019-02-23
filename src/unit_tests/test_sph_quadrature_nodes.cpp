@@ -14,11 +14,11 @@
 #include <benchmarks_sphere/SphereTestSolutions_SPH.hpp>
 #include <libmath/BandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereDataErrorCheck.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 
 
 SimulationVariables simVars;
@@ -34,7 +34,7 @@ void run_tests(
 	std::cout << std::setprecision(10);
 
 	{
-		SphereData physical(sphereDataConfig);
+		SphereDataSpectral physical(sphereDataConfig);
 		physical.physical_update_lambda_cogaussian_grid(
 			[&](double lat, double mu, double &io_data)
 			{
@@ -42,7 +42,7 @@ void run_tests(
 			}
 		);
 
-		SphereData spectral(sphereDataConfig);
+		SphereDataSpectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{
@@ -57,7 +57,7 @@ void run_tests(
 	}
 
 	{
-		SphereData physical(sphereDataConfig);
+		SphereDataSpectral physical(sphereDataConfig);
 		physical.physical_update_lambda_cogaussian_grid(
 			[&](double lat, double mu, double &io_data)
 			{
@@ -65,7 +65,7 @@ void run_tests(
 			}
 		);
 
-		SphereData spectral(sphereDataConfig);
+		SphereDataSpectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{
@@ -80,7 +80,7 @@ void run_tests(
 	}
 
 	{
-		SphereData physical(sphereDataConfig);
+		SphereDataSpectral physical(sphereDataConfig);
 		physical.physical_update_lambda_cogaussian_grid(
 			[&](double lat, double mu, double &io_data)
 			{
@@ -88,7 +88,7 @@ void run_tests(
 			}
 		);
 
-		SphereData spectral(sphereDataConfig);
+		SphereDataSpectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{
@@ -104,7 +104,7 @@ void run_tests(
 
 
 	{
-		SphereData physical(sphereDataConfig);
+		SphereDataSpectral physical(sphereDataConfig);
 		physical.physical_update_lambda_cogaussian_grid(
 			[&](double lat, double mu, double &io_data)
 			{
@@ -112,7 +112,7 @@ void run_tests(
 			}
 		);
 
-		SphereData spectral(sphereDataConfig);
+		SphereDataSpectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{

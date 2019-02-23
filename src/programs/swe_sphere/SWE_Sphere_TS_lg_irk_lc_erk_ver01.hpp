@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_IRK_LC_ERK_HPP_
 
 #include <limits>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereDataTimesteppingExplicitRK.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -59,9 +59,9 @@ public:
 	);
 
 	void run_timestep(
-			SphereData &io_phi,	///< prognostic variables
-			SphereData &io_vort,	///< prognostic variables
-			SphereData &io_div,	///< prognostic variables
+			SphereDataSpectral &io_phi,	///< prognostic variables
+			SphereDataSpectral &io_vort,	///< prognostic variables
+			SphereDataSpectral &io_div,	///< prognostic variables
 
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1

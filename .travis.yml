@@ -30,6 +30,48 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_lg2/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_plane_timestepper_convergence_ln1/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_sphere_comparison_with_reference_implementation/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/20_platforms_job_generation/test.sh
 
 
@@ -44,7 +86,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_l2/test.sh
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln2/test.sh
 
 
     # Test with G++-8
@@ -58,7 +100,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_l1/test.sh
+      script: ./tests/10_compile/test.sh
 
 
     # Test with G++-8
@@ -72,7 +114,21 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_lg2/test.sh
+      script: ./tests/70_program_burgers_timestepper_convergence/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_plane_spatial_convergence/test.sh
 
 
     # Test with G++-8
@@ -100,7 +156,49 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_comparison_with_reference_implementation/test.sh
+      script: ./tests/70_program_swe_plane_timestepper_convergence_l2/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_plane_timestepper_convergence_ln2/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_l1/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln1/test.sh
 
 
     # Test with G++-8
@@ -142,7 +240,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_plane_spatial_convergence/test.sh
+      script: ./tests/50_test_sphere_interpolation/test.py
 
 
     # Test with G++-8
@@ -156,7 +254,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_ln2/test.sh
+      script: ./tests/50_test_plane_basic_advection/test.py
 
 
     # Test with G++-8
@@ -170,7 +268,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_ln1/test.sh
+      script: ./tests/05_jobs_run_directly_compile_error/test.py
 
 
     # Test with G++-8
@@ -184,7 +282,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/10_compile/test.sh
+      script: ./tests/50_test_plane_operators/test.py
 
 
     # Test with G++-8
@@ -198,7 +296,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln2/test.sh
+      script: ./tests/50_test_plane_convert_complex_to_from_real/test.py
 
 
     # Test with G++-8
@@ -212,7 +310,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln1/test.sh
+      script: ./tests/50_test_plane_diff_stencil_ops/test.py
 
 
     # Test with G++-8
@@ -226,7 +324,119 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_burgers_timestepper_convergence/test.sh
+      script: ./tests/50_test_rexi_pde2x2/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_sphere_coordinates/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_sphere_advection_semi_lagrangian/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_quadrature/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_timestepping_runge_kutta/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_plane_fftw_wisdom_import_export/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_sphere_sph_operators/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_sphere_sph_solver_real_and_complex/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/50_test_plane_antialiasing_patterns/test.py
 
 
     # Test with G++-8
@@ -254,7 +464,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_geostrophic_balance/test.py
+      script: ./tests/50_test_plane_sampler_interpolation_2/test.py
 
 
     # Test with G++-8
@@ -296,63 +506,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_antialiasing_patterns/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_sphere_advection_semi_lagrangian/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_sphere_sph_operators/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_fftw_wisdom_import_export/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_timestepping_runge_kutta/test.py
+      script: ./tests/50_test_plane_sampler_interpolation/test.py
 
 
     # Test with G++-8
@@ -380,62 +534,6 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_sampler_interpolation/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_sphere_interpolation/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_basic_advection/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_quadrature/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_operators_complex/test.py
 
 
@@ -450,7 +548,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_diff_stencil_ops/test.py
+      script: ./tests/70_program_swe_sphere_geostrophic_balance/test.py
 
 
     # Test with G++-8
@@ -465,146 +563,6 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_sphere_sph_operators_complex/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_rexi_pde2x2/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_sphere_sph_solver_real_and_complex/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_convert_complex_to_from_real/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/05_jobs_run_directly_compile_error/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_sphere_coordinates/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_operators/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_plane_sampler_interpolation_2/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/20_platforms_job_generation/test.sh
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_l2/test.sh
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_l1/test.sh
 
 
     # Test with G++-5
@@ -632,7 +590,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_l1/test.sh
+      script: ./tests/70_program_swe_plane_timestepper_convergence_ln1/test.sh
 
 
     # Test with G++-5
@@ -647,6 +605,146 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/70_program_swe_sphere_comparison_with_reference_implementation/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/20_platforms_job_generation/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln2/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/10_compile/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_burgers_timestepper_convergence/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_swe_plane_spatial_convergence/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_swe_plane_timestepper_convergence_l1/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_swe_plane_timestepper_convergence_l2/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_swe_plane_timestepper_convergence_ln2/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_l1/test.sh
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln1/test.sh
 
 
     # Test with G++-5
@@ -688,7 +786,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_plane_spatial_convergence/test.sh
+      script: ./tests/50_test_sphere_interpolation/test.py
 
 
     # Test with G++-5
@@ -702,7 +800,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_ln2/test.sh
+      script: ./tests/50_test_plane_basic_advection/test.py
 
 
     # Test with G++-5
@@ -716,7 +814,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_ln1/test.sh
+      script: ./tests/05_jobs_run_directly_compile_error/test.py
 
 
     # Test with G++-5
@@ -730,7 +828,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/10_compile/test.sh
+      script: ./tests/50_test_plane_operators/test.py
 
 
     # Test with G++-5
@@ -744,7 +842,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln2/test.sh
+      script: ./tests/50_test_plane_convert_complex_to_from_real/test.py
 
 
     # Test with G++-5
@@ -758,7 +856,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln1/test.sh
+      script: ./tests/50_test_plane_diff_stencil_ops/test.py
 
 
     # Test with G++-5
@@ -772,7 +870,119 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_burgers_timestepper_convergence/test.sh
+      script: ./tests/50_test_rexi_pde2x2/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_sphere_coordinates/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_sphere_advection_semi_lagrangian/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_quadrature/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_timestepping_runge_kutta/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_plane_fftw_wisdom_import_export/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_sphere_sph_operators/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_sphere_sph_solver_real_and_complex/test.py
+
+
+    # Test with G++-5
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - gfortran-5
+      env:
+        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
+      script: ./tests/50_test_plane_antialiasing_patterns/test.py
 
 
     # Test with G++-5
@@ -800,7 +1010,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/70_program_swe_sphere_geostrophic_balance/test.py
+      script: ./tests/50_test_plane_sampler_interpolation_2/test.py
 
 
     # Test with G++-5
@@ -842,63 +1052,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_antialiasing_patterns/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_sphere_advection_semi_lagrangian/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_sphere_sph_operators/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_fftw_wisdom_import_export/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_timestepping_runge_kutta/test.py
+      script: ./tests/50_test_plane_sampler_interpolation/test.py
 
 
     # Test with G++-5
@@ -926,62 +1080,6 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_sampler_interpolation/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_sphere_interpolation/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_basic_advection/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_quadrature/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/50_test_plane_operators_complex/test.py
 
 
@@ -996,7 +1094,7 @@ jobs:
             - gfortran-5
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_diff_stencil_ops/test.py
+      script: ./tests/70_program_swe_sphere_geostrophic_balance/test.py
 
 
     # Test with G++-5
@@ -1011,104 +1109,6 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
       script: ./tests/50_test_sphere_sph_operators_complex/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_rexi_pde2x2/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_sphere_sph_solver_real_and_complex/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_convert_complex_to_from_real/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/05_jobs_run_directly_compile_error/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_sphere_coordinates/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_operators/test.py
-
-
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
-      script: ./tests/50_test_plane_sampler_interpolation_2/test.py
 
 
 

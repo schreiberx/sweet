@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 
 
@@ -18,9 +18,9 @@ class SWE_Sphere_TS_interface
 {
 public:
 	virtual void run_timestep(
-			SphereData &io_h,	///< prognostic variables
-			SphereData &io_u,	///< prognostic variables
-			SphereData &io_v,	///< prognostic variables
+			SphereDataSpectral &io_h,	///< prognostic variables
+			SphereDataSpectral &io_u,	///< prognostic variables
+			SphereDataSpectral &io_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp

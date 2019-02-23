@@ -9,14 +9,14 @@
 #define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/sphere/SphereData.hpp"
+#include "../include/sweet/sphere/SphereDataSpectral.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDataSampler.hpp>
-#include <sweet/Convert_SphereData_To_PlaneData.hpp>
+#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
 
@@ -40,7 +40,7 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereData prog_h;
+	SphereDataSpectral prog_h;
 
 	SphereOperators op;
 
@@ -105,16 +105,17 @@ public:
 	{
 		simVars.reset();
 
-		SphereData tmp_vort(sphereDataConfig);
-		SphereData tmp_div(sphereDataConfig);
+		SphereDataSpectral tmp_vort(sphereDataConfig);
+		SphereDataSpectral tmp_div(sphereDataConfig);
 
-		prog_h.physical_update_lambda(
+		SphereDataPhysical prog_h_phys(sphereDataConfig);
+		prog_h_phys.physical_update_lambda(
 			[&](double i_lon, double i_lat, double &o_data)
 			{
 				o_data = gaussianValue(center_lon, center_lat, i_lon, i_lat, exp_fac);
 			}
 		);
-
+		prog_h.loadSphereDataPhysical(prog_h_phys);
 
 		posx_a.setup(sphereDataConfigOversampling->physical_array_data_number_of_elements);
 		posy_a.setup(sphereDataConfigOversampling->physical_array_data_number_of_elements);
@@ -224,7 +225,7 @@ public:
 		switch (id)
 		{
 		case 0:
-			viz_plane_data = Convert_SphereData_To_PlaneData::physical_convert(prog_h, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_h, planeDataConfig);
 			break;
 		}
 

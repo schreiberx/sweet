@@ -19,8 +19,8 @@
 #include <sweet/SimulationVariables.hpp>
 #include <string.h>
 #include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/sphere/app_swe/SWERexiTerm_SPHRobert.hpp>
@@ -119,9 +119,9 @@ private:
 		std::vector< std::complex<double> > alpha;
 		std::vector< std::complex<double> > beta_re;
 
-		SphereData accum_phi;
-		SphereData accum_vort;
-		SphereData accum_div;
+		SphereDataSpectral accum_phi;
+		SphereDataSpectral accum_vort;
+		SphereDataSpectral accum_div;
 	};
 
 	// per-thread allocated variables to avoid NUMA domain effects
@@ -175,9 +175,9 @@ public:
 	);
 
 	void run_timestep(
-			SphereData &io_h,	///< prognostic variables
-			SphereData &io_u,	///< prognostic variables
-			SphereData &io_v,	///< prognostic variables
+			SphereDataSpectral &io_h,	///< prognostic variables
+			SphereDataSpectral &io_u,	///< prognostic variables
+			SphereDataSpectral &io_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
@@ -185,13 +185,13 @@ public:
 
 
 	void run_timestep(
-			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
+			const SphereDataSpectral &i_h,	///< prognostic variables
+			const SphereDataSpectral &i_u,	///< prognostic variables
+			const SphereDataSpectral &i_v,	///< prognostic variables
 
-			SphereData &o_h,	///< prognostic variables
-			SphereData &o_u,	///< prognostic variables
-			SphereData &o_v,	///< prognostic variables
+			SphereDataSpectral &o_h,	///< prognostic variables
+			SphereDataSpectral &o_u,	///< prognostic variables
+			SphereDataSpectral &o_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
@@ -207,9 +207,9 @@ public:
 	 */
 public:
 	bool run_timestep_rexi_vectorinvariant_progphivortdiv(
-		SphereData &io_phi0,
-		SphereData &io_u0,
-		SphereData &io_v0,
+		SphereDataSpectral &io_phi0,
+		SphereDataSpectral &io_u0,
+		SphereDataSpectral &io_v0,
 
 		double i_timestep_size,	///< timestep size
 

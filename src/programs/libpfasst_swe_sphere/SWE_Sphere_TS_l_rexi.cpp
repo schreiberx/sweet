@@ -10,8 +10,8 @@
 #include <iostream>
 #include <rexi/REXI.hpp>
 #include <cassert>
-#include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
-#include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
 #ifndef SWEET_THREADING_TIME_REXI
@@ -411,13 +411,13 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 
 
 void SWE_Sphere_TS_l_rexi::run_timestep(
-	const SphereData &i_prog_phi0,
-	const SphereData &i_prog_vort0,
-	const SphereData &i_prog_div0,
+	const SphereDataSpectral &i_prog_phi0,
+	const SphereDataSpectral &i_prog_vort0,
+	const SphereDataSpectral &i_prog_div0,
 
-	SphereData &o_prog_phi0,
-	SphereData &o_prog_vort0,
-	SphereData &o_prog_div0,
+	SphereDataSpectral &o_prog_phi0,
+	SphereDataSpectral &o_prog_vort0,
+	SphereDataSpectral &o_prog_div0,
 
 	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 	double i_simulation_timestamp
@@ -452,9 +452,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
  * for further information
  */
 void SWE_Sphere_TS_l_rexi::run_timestep(
-	SphereData &io_prog_phi0,
-	SphereData &io_prog_vort0,
-	SphereData &io_prog_div0,
+	SphereDataSpectral &io_prog_phi0,
+	SphereDataSpectral &io_prog_vort0,
+	SphereDataSpectral &io_prog_div0,
 
 	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 	double i_simulation_timestamp
@@ -574,9 +574,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		/*
 		 * DO SUM IN PARALLEL
 		 */
-		SphereData& thread_prog_phi0 = io_prog_phi0;
-		SphereData& thread_prog_vort0 = io_prog_vort0;
-		SphereData& thread_prog_div0 = io_prog_div0;
+		SphereDataSpectral& thread_prog_phi0 = io_prog_phi0;
+		SphereDataSpectral& thread_prog_vort0 = io_prog_vort0;
+		SphereDataSpectral& thread_prog_div0 = io_prog_div0;
 
 	#if SWEET_DEBUG
 		/**
@@ -594,9 +594,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		}
 	#endif
 
-		SphereData tmp_prog_phi(sphereDataConfigSolver);
-		SphereData tmp_prog_vort(sphereDataConfigSolver);
-		SphereData tmp_prog_div(sphereDataConfigSolver);
+		SphereDataSpectral tmp_prog_phi(sphereDataConfigSolver);
+		SphereDataSpectral tmp_prog_vort(sphereDataConfigSolver);
+		SphereDataSpectral tmp_prog_div(sphereDataConfigSolver);
 
 		perThreadVars[0]->accum_phi.spectral_set_zero();
 		perThreadVars[0]->accum_vort.spectral_set_zero();
@@ -727,9 +727,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			/*
 			 * DO SUM IN PARALLEL
 			 */
-			SphereData thread_prog_phi0(sphereDataConfigSolver);
-			SphereData thread_prog_vort0(sphereDataConfigSolver);
-			SphereData thread_prog_div0(sphereDataConfigSolver);
+			SphereDataSpectral thread_prog_phi0(sphereDataConfigSolver);
+			SphereDataSpectral thread_prog_vort0(sphereDataConfigSolver);
+			SphereDataSpectral thread_prog_div0(sphereDataConfigSolver);
 
 
 	#if SWEET_DEBUG
@@ -752,9 +752,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			thread_prog_vort0 = io_prog_vort0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 			thread_prog_div0 = io_prog_div0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 
-			SphereData tmp_prog_phi(sphereDataConfigSolver);
-			SphereData tmp_prog_vort(sphereDataConfigSolver);
-			SphereData tmp_prog_div(sphereDataConfigSolver);
+			SphereDataSpectral tmp_prog_phi(sphereDataConfigSolver);
+			SphereDataSpectral tmp_prog_vort(sphereDataConfigSolver);
+			SphereDataSpectral tmp_prog_div(sphereDataConfigSolver);
 
 			perThreadVars[thread_id]->accum_phi.spectral_set_zero();
 			perThreadVars[thread_id]->accum_vort.spectral_set_zero();
@@ -876,7 +876,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			{
 				assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == sphereDataConfig->spectral_array_data_number_of_elements);
 
-				SphereData tmp(sphereDataConfig);
+				SphereDataSpectral tmp(sphereDataConfig);
 
 				tmp = perThreadVars[thread_id]->accum_phi.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
 				tmp.request_data_physical();
@@ -961,7 +961,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 		std::size_t physical_data_num_doubles = io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements;
 
-		SphereData tmp(sphereDataConfig);
+		SphereDataSpectral tmp(sphereDataConfig);
 
 		int retval = MPI_Reduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 		if (retval != MPI_SUCCESS)

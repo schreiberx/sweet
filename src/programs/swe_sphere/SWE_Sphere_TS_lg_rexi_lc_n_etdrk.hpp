@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_Sphere_TS_lg_rexi_lf_n_etdrk_HPP_
 
 #include <limits>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereDataPhysicalTimesteppingExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
@@ -40,13 +40,13 @@ class SWE_Sphere_TS_lg_rexi_lc_n_etdrk	: public SWE_Sphere_TS_interface
 
 private:
 	void euler_timestep_update_linear(
-			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
+			const SphereDataSpectral &i_h,	///< prognostic variables
+			const SphereDataSpectral &i_u,	///< prognostic variables
+			const SphereDataSpectral &i_v,	///< prognostic variables
 
-			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
+			SphereDataSpectral &o_h_t,	///< time updates
+			SphereDataSpectral &o_u_t,	///< time updates
+			SphereDataSpectral &o_v_t,	///< time updates
 
 			double i_max_timestamp
 	);
@@ -55,13 +55,13 @@ private:
 
 private:
 	void euler_timestep_update_nonlinear(
-			const SphereData &i_h,	///< prognostic variables
-			const SphereData &i_u,	///< prognostic variables
-			const SphereData &i_v,	///< prognostic variables
+			const SphereDataSpectral &i_h,	///< prognostic variables
+			const SphereDataSpectral &i_u,	///< prognostic variables
+			const SphereDataSpectral &i_v,	///< prognostic variables
 
-			SphereData &o_h_t,	///< time updates
-			SphereData &o_u_t,	///< time updates
-			SphereData &o_v_t,	///< time updates
+			SphereDataSpectral &o_h_t,	///< time updates
+			SphereDataSpectral &o_u_t,	///< time updates
+			SphereDataSpectral &o_v_t,	///< time updates
 
 			double i_max_timestamp
 	);
@@ -81,9 +81,9 @@ public:
 	);
 
 	void run_timestep(
-			SphereData &io_h,	///< prognostic variables
-			SphereData &io_u,	///< prognostic variables
-			SphereData &io_v,	///< prognostic variables
+			SphereDataSpectral &io_h,	///< prognostic variables
+			SphereDataSpectral &io_u,	///< prognostic variables
+			SphereDataSpectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1

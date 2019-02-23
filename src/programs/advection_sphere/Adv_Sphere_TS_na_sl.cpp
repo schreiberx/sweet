@@ -11,9 +11,9 @@
 
 
 void Adv_Sphere_TS_na_sl::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -56,7 +56,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	diag_u_prev = diag_u;
 	diag_v_prev = diag_v;
 
-	SphereData new_prog_phi(io_phi.sphereDataConfig);
+	SphereDataSpectral new_prog_phi(io_phi.sphereDataConfig);
 
 	if (timestepping_order == 1 && 0)
 	{

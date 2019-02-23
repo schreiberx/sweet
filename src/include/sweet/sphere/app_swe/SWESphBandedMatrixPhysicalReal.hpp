@@ -448,11 +448,11 @@ public:
 	 * WARNING: This only multiplies the i_x values with the matrix.
 	 * Use solve(...) to solve for the matrix
 	 */
-	SphereData apply(
-			const SphereData &i_x	///< solution to be searched
+	SphereDataSpectral apply(
+			const SphereDataSpectral &i_x	///< solution to be searched
 	)
 	{
-		SphereData out(sphereDataConfig);
+		SphereDataSpectral out(sphereDataConfig);
 
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
@@ -472,20 +472,15 @@ public:
 			}
 		}
 
-		out.physical_space_data_valid = false;
-		out.spectral_space_data_valid = true;
-
 		return out;
 	}
 
 
-	SphereData solve(
-			const SphereData &i_rhs
+	SphereDataSpectral solve(
+			const SphereDataSpectral &i_rhs
 	)	const
 	{
-		i_rhs.request_data_spectral();
-
-		SphereData out(sphereDataConfig);
+		SphereDataSpectral out(sphereDataConfig);
 
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
@@ -498,9 +493,6 @@ public:
 							sphereDataConfig->spectral_modes_n_max+1-m	// size of block
 					);
 		}
-
-		out.physical_space_data_valid = false;
-		out.spectral_space_data_valid = true;
 
 		return out;
 	}

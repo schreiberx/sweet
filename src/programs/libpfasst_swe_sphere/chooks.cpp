@@ -4,7 +4,7 @@
 
 extern "C"
 {
-  void cecho_error(SphereData* sd, 
+  void cecho_error(SphereDataSpectral* sd,
 		   int step)
   {
     // not implemented
@@ -35,9 +35,9 @@ extern "C"
 			       int i_niters
 			       )
   {
-    const SphereData& phi_Y  = i_Y->get_phi();
-    const SphereData& vort_Y = i_Y->get_vort();
-    const SphereData& div_Y  = i_Y->get_div();
+    const SphereDataSpectral& phi_Y  = i_Y->get_phi();
+    const SphereDataSpectral& vort_Y = i_Y->get_vort();
+    const SphereDataSpectral& div_Y  = i_Y->get_div();
 
     // get the current space-time level
     const int level = i_Y->get_level();
@@ -81,9 +81,9 @@ extern "C"
 			 int i_niters
 			 )
   {
-    const SphereData& phi_Y  = i_Y->get_phi();
-    const SphereData& vort_Y = i_Y->get_vort();
-    const SphereData& div_Y  = i_Y->get_div();
+    const SphereDataSpectral& phi_Y  = i_Y->get_phi();
+    const SphereDataSpectral& vort_Y = i_Y->get_vort();
+    const SphereDataSpectral& div_Y  = i_Y->get_div();
 
     // write the data to file
     std::string filename = "prog_jump_phi_current_proc_"+std::to_string(i_current_proc)
@@ -121,9 +121,9 @@ void cecho_output_solution(
 			     int i_niters
 			     )
   {
-    const SphereData& phi_Y  = i_Y->get_phi();
-    const SphereData& vort_Y = i_Y->get_vort();
-    const SphereData& div_Y  = i_Y->get_div();
+    const SphereDataSpectral& phi_Y  = i_Y->get_phi();
+    const SphereDataSpectral& vort_Y = i_Y->get_vort();
+    const SphereDataSpectral& div_Y  = i_Y->get_div();
 
     // write the data to file
     std::string filename = "prog_phi_current_proc_"+std::to_string(i_current_proc)

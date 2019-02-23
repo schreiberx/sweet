@@ -14,7 +14,7 @@
 class SphereDiagnostics
 {
 	SphereDataConfig *sphereDataConfig;
-	SphereData modeIntegralValues;
+	SphereDataSpectral modeIntegralValues;
 
 	SphereDataPhysical fg;
 
@@ -36,7 +36,7 @@ public:
 	{
 		gauss_weights.resize(sphereDataConfig->physical_num_lat);
 
-		SphereData modeSelector(sphereDataConfig);
+		SphereDataSpectral modeSelector(sphereDataConfig);
 		modeSelector.spectral_set_zero();
 
 		if (i_verbose > 0)
@@ -170,10 +170,10 @@ public:
 	 * The integral similar to the zylinder is used because of the lat-related scaling factor.
 	 */
 	double compute_zylinder_integral(
-			const SphereData &i_data
+			const SphereDataSpectral &i_data
 	)	const
 	{
-		i_data.request_data_physical();
+		SphereDataPhysical data = i_data.getSphereDataPhysical();
 
 		double sum = 0;
 
@@ -184,7 +184,7 @@ public:
 		{
 			for (int ilon = 0; ilon < sphereDataConfig->physical_num_lon; ilon++)
 			{
-				double value = i_data.physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon];
+				double value = data.physical_space_data[jlat*sphereDataConfig->physical_num_lon + ilon];
 
 				sum += value*gauss_weights[jlat];
 			}
@@ -204,9 +204,9 @@ public:
 public:
 	void update_h_u_v_2_mass_energy_enstrophy_4_zylinder(
 			const SphereOperators &op,
-			const SphereData &i_prog_h,
-			const SphereData &i_prog_u,
-			const SphereData &i_prog_v,
+			const SphereDataSpectral &i_prog_h,
+			const SphereDataSpectral &i_prog_u,
+			const SphereDataSpectral &i_prog_v,
 
 			SimulationVariables &io_simVars
 	)
@@ -253,9 +253,9 @@ public:
 public:
 	void update_phi_vort_div_2_mass_energy_enstrophy(
 			const SphereOperators &op,
-			const SphereData &i_prog_phi,
-			const SphereData &i_prog_vort,
-			const SphereData &i_prog_div,
+			const SphereDataSpectral &i_prog_phi,
+			const SphereDataSpectral &i_prog_vort,
+			const SphereDataSpectral &i_prog_div,
 
 			SimulationVariables &io_simVars
 	)

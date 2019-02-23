@@ -8,7 +8,7 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_PHYSICAL_TO_PLANEDATA_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_PHYSICAL_TO_PLANEDATA_HPP_
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataPhysical.hpp>
 #include <sweet/plane/PlaneData.hpp>
 
 class Convert_SphereDataPhysical_To_PlaneData

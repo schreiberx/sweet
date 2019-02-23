@@ -10,8 +10,8 @@
 #include <iostream>
 #include <rexi/REXI.hpp>
 #include <cassert>
-#include <sweet/sphere/Convert_SphereDataComplex_to_SphereData.hpp>
-#include <sweet/sphere/Convert_SphereData_to_SphereDataComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
+#include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
 #ifndef SWEET_THREADING_TIME_REXI
@@ -407,13 +407,13 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 
 
 void SWE_Sphere_TS_l_rexi::run_timestep(
-	const SphereData &i_prog_phi0,
-	const SphereData &i_prog_vort0,
-	const SphereData &i_prog_div0,
+	const SphereDataSpectral &i_prog_phi0,
+	const SphereDataSpectral &i_prog_vort0,
+	const SphereDataSpectral &i_prog_div0,
 
-	SphereData &o_prog_phi0,
-	SphereData &o_prog_vort0,
-	SphereData &o_prog_div0,
+	SphereDataSpectral &o_prog_phi0,
+	SphereDataSpectral &o_prog_vort0,
+	SphereDataSpectral &o_prog_div0,
 
 	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 	double i_simulation_timestamp
@@ -448,9 +448,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
  * for further information
  */
 void SWE_Sphere_TS_l_rexi::run_timestep(
-	SphereData &io_prog_phi0,
-	SphereData &io_prog_vort0,
-	SphereData &io_prog_div0,
+	SphereDataSpectral &io_prog_phi0,
+	SphereDataSpectral &io_prog_vort0,
+	SphereDataSpectral &io_prog_div0,
 
 	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 	double i_simulation_timestamp
@@ -487,10 +487,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 			p_update_coefficients(true);
 		}
-
-		io_prog_phi0.request_data_spectral();
-		io_prog_vort0.request_data_spectral();
-		io_prog_div0.request_data_spectral();
 
 		#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -538,22 +534,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			std::size_t start, end;
 			p_get_workload_start_end(start, end, 0);
 
-			#if SWEET_DEBUG
-				/**
-				 * THIS ASSERTION IS VERY IMPORTANT!
-				 * OTHERWISE io_prog_*0 will be converted to
-				 * spectral space *in parallel* with write
-				 * access raceconditions
-				 */
-				if (	!io_prog_phi0.spectral_space_data_valid		||
-						!io_prog_vort0.spectral_space_data_valid	||
-						!io_prog_div0.spectral_space_data_valid
-				)
-				{
-					FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
-				}
-			#endif
-
 			perThreadVars[0]->accum_phi.spectral_set_zero();
 			perThreadVars[0]->accum_vort.spectral_set_zero();
 			perThreadVars[0]->accum_div.spectral_set_zero();
@@ -565,9 +545,9 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				 * -> No extended modes
 				 */
 
-				SphereData tmp_prog_phi(sphereDataConfigSolver);
-				SphereData tmp_prog_vort(sphereDataConfigSolver);
-				SphereData tmp_prog_div(sphereDataConfigSolver);
+				SphereDataSpectral tmp_prog_phi(sphereDataConfigSolver);
+				SphereDataSpectral tmp_prog_vort(sphereDataConfigSolver);
+				SphereDataSpectral tmp_prog_div(sphereDataConfigSolver);
 
 				for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 				{
@@ -617,16 +597,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				io_prog_phi0 = perThreadVars[0]->accum_phi;
 				io_prog_vort0 = perThreadVars[0]->accum_vort;
 				io_prog_div0 = perThreadVars[0]->accum_div;
-
-				#if SWEET_DEBUG
-					if (	!io_prog_phi0.spectral_space_data_valid		||
-							!io_prog_vort0.spectral_space_data_valid	||
-							!io_prog_div0.spectral_space_data_valid
-						)
-					{
-						FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
-					}
-				#endif
 			}
 			else
 			{
@@ -635,13 +605,13 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				 * with extended modes
 				 */
 
-				SphereData thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
-				SphereData thread_prog_vort0 = io_prog_vort0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
-				SphereData thread_prog_div0 = io_prog_div0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
+				SphereDataSpectral thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
+				SphereDataSpectral thread_prog_vort0 = io_prog_vort0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
+				SphereDataSpectral thread_prog_div0 = io_prog_div0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 
-				SphereData tmp_prog_phi(sphereDataConfigSolver);
-				SphereData tmp_prog_vort(sphereDataConfigSolver);
-				SphereData tmp_prog_div(sphereDataConfigSolver);
+				SphereDataSpectral tmp_prog_phi(sphereDataConfigSolver);
+				SphereDataSpectral tmp_prog_vort(sphereDataConfigSolver);
+				SphereDataSpectral tmp_prog_div(sphereDataConfigSolver);
 
 				for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 				{
@@ -690,12 +660,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				io_prog_phi0 = perThreadVars[0]->accum_phi.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
 				io_prog_vort0 = perThreadVars[0]->accum_vort.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
 				io_prog_div0 = perThreadVars[0]->accum_div.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
-
 			}
-
-			io_prog_phi0.request_data_physical();
-			io_prog_vort0.request_data_physical();
-			io_prog_div0.request_data_physical();
 
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
@@ -704,22 +669,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	#else	/* SWEET_THREADING_TIME_REXI */
 
-
-		#if SWEET_DEBUG
-			/**
-			 * THIS ASSERTION IS VERY IMPORTANT!
-			 * OTHERWISE io_prog_*0 will be converted to
-			 * spectral space *in parallel* with write
-			 * access raceconditions
-			 */
-			if (	!io_prog_phi0.spectral_space_data_valid		||
-					!io_prog_vort0.spectral_space_data_valid	||
-					!io_prog_div0.spectral_space_data_valid
-			)
-			{
-				FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
-			}
-		#endif
 
 		if (simVars.rexi.use_sphere_extended_modes == 0)
 		{
@@ -736,13 +685,13 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					/*
 					* Make a copy to ensure that there are no race conditions by converting to physical space
 					*/
-					SphereData thread_io_prog_phi0 = io_prog_phi0;
-					SphereData thread_io_prog_vort0 = io_prog_vort0;
-					SphereData thread_io_prog_div0 = io_prog_div0;
+					SphereDataSpectral thread_io_prog_phi0 = io_prog_phi0;
+					SphereDataSpectral thread_io_prog_vort0 = io_prog_vort0;
+					SphereDataSpectral thread_io_prog_div0 = io_prog_div0;
 
-					SphereData tmp_prog_phi(sphereDataConfigSolver);
-					SphereData tmp_prog_vort(sphereDataConfigSolver);
-					SphereData tmp_prog_div(sphereDataConfigSolver);
+					SphereDataSpectral tmp_prog_phi(sphereDataConfigSolver);
+					SphereDataSpectral tmp_prog_vort(sphereDataConfigSolver);
+					SphereDataSpectral tmp_prog_div(sphereDataConfigSolver);
 
 					perThreadVars[local_thread_id]->accum_phi.spectral_set_zero();
 					perThreadVars[local_thread_id]->accum_vort.spectral_set_zero();
@@ -855,17 +804,17 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					 * threaded rexi sum 
 					 * extended modes
 					 */
-					SphereData thread_prog_phi0(sphereDataConfigSolver);
-					SphereData thread_prog_vort0(sphereDataConfigSolver);
-					SphereData thread_prog_div0(sphereDataConfigSolver);
+					SphereDataSpectral thread_prog_phi0(sphereDataConfigSolver);
+					SphereDataSpectral thread_prog_vort0(sphereDataConfigSolver);
+					SphereDataSpectral thread_prog_div0(sphereDataConfigSolver);
 
 					thread_prog_phi0 = io_prog_phi0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 					thread_prog_vort0 = io_prog_vort0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 					thread_prog_div0 = io_prog_div0.spectral_returnWithDifferentModes(sphereDataConfigSolver);
 
-					SphereData tmp_prog_phi(sphereDataConfigSolver);
-					SphereData tmp_prog_vort(sphereDataConfigSolver);
-					SphereData tmp_prog_div(sphereDataConfigSolver);
+					SphereDataSpectral tmp_prog_phi(sphereDataConfigSolver);
+					SphereDataSpectral tmp_prog_vort(sphereDataConfigSolver);
+					SphereDataSpectral tmp_prog_div(sphereDataConfigSolver);
 
 					perThreadVars[local_thread_id]->accum_phi.spectral_set_zero();
 					perThreadVars[local_thread_id]->accum_vort.spectral_set_zero();
@@ -927,7 +876,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			io_prog_vort0.physical_set_zero();
 			io_prog_div0.physical_set_zero();
 
-			SphereData tmp(sphereDataConfig);
+			SphereDataSpectral tmp(sphereDataConfig);
 			for (int thread_id = 0; thread_id < num_local_rexi_par_threads; thread_id++)
 			{
 				tmp = perThreadVars[thread_id]->accum_phi.spectral_returnWithDifferentModes(tmp.sphereDataConfig);
@@ -957,18 +906,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	#endif	// END SWEET_THREADING_TIME_REXI
 
-
-
-	#if SWEET_DEBUG
-		if (	!io_prog_phi0.physical_space_data_valid	||
-				!io_prog_vort0.physical_space_data_valid	||
-				!io_prog_div0.physical_space_data_valid
-			)
-		{
-			FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
-		}
-	#endif
-
 	#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
@@ -988,6 +925,10 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 		#endif
 
+			SphereDataPhysical prog_phi0_phys = io_prog_phi0.getSphereDataPhysical();
+			SphereDataPhysical prog_vort0_phys = io_prog_vort0.getSphereDataPhysical();
+			SphereDataPhysical prog_div0_phys = io_prog_vort0.getSphereDataPhysical();
+
 			/*
 			 * Physical data reduction
 			 *
@@ -995,23 +936,21 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			 *
 			 * Comment from Martin to Martin: I forgot why this was necessary :-(
 			 */
-			if (!io_prog_phi0.physical_space_data_valid)
-				FatalError("Physical data should be available here");
 
-			SphereData tmp(sphereDataConfig);
+			SphereDataPhysical tmp(sphereDataConfig);
 
-			std::size_t physical_data_num_doubles = io_prog_phi0.sphereDataConfig->physical_array_data_number_of_elements;
+			std::size_t physical_data_num_doubles = prog_phi0_phys.sphereDataConfig->physical_array_data_number_of_elements;
 
 			#if SWEET_REXI_ALLREDUCE
 
-				MPI_Allreduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-				std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
+				MPI_Allreduce(prog_phi0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(prog_phi0_phys.physical_space_data, tmp.physical_space_data);
 
-				MPI_Allreduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-				std::swap(io_prog_vort0.physical_space_data, tmp.physical_space_data);
+				MPI_Allreduce(prog_vort0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(prog_vort0.physical_space_data, tmp.physical_space_data);
 
-				MPI_Allreduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
-				std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
+				MPI_Allreduce(prog_div0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(prog_div0.physical_space_data, tmp.physical_space_data);
 
 			#else
 
@@ -1020,19 +959,23 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				 * This helps to utilize garbage data, resulting in NaN's and hence
 				 * maybe reduce performance on other ranks.
 				 */
-				MPI_Reduce(io_prog_phi0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(prog_phi0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 				if (mpi_rank == 0)
-					std::swap(io_prog_phi0.physical_space_data, tmp.physical_space_data);
+					std::swap(prog_phi0_phys.physical_space_data, tmp.physical_space_data);
 
-				MPI_Reduce(io_prog_vort0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(prog_vort0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 				if (mpi_rank == 0)
-					std::swap(io_prog_vort0.physical_space_data, tmp.physical_space_data);
+					std::swap(prog_vort0_phys.physical_space_data, tmp.physical_space_data);
 
-				MPI_Reduce(io_prog_div0.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(prog_div0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 				if (mpi_rank == 0)
-					std::swap(io_prog_div0.physical_space_data, tmp.physical_space_data);
+					std::swap(prog_div0_phys.physical_space_data, tmp.physical_space_data);
 
 			#endif
+
+			io_prog_phi0.loadSphereDataPhysical(prog_phi0_phys);
+			io_prog_vort0.loadSphereDataPhysical(prog_vort0_phys);
+			io_prog_div0.loadSphereDataPhysical(prog_div0_phys);
 
 
 		#if SWEET_REXI_TIMINGS

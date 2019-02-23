@@ -59,9 +59,9 @@ void SWE_Sphere_TS_lg_irk::setup(
  */
 
 void SWE_Sphere_TS_lg_irk::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -80,16 +80,16 @@ void SWE_Sphere_TS_lg_irk::run_timestep(
 		beta = -1.0/timestep_size;
 	}
 
-	SphereData phi0 = io_phi;
-	SphereData vort0 = io_vort;
-	SphereData div0 = io_div;
+	SphereDataSpectral phi0 = io_phi;
+	SphereDataSpectral vort0 = io_vort;
+	SphereDataSpectral div0 = io_div;
 
-	SphereData phi(sphereDataConfig);
-	SphereData vort(sphereDataConfig);
-	SphereData div(sphereDataConfig);
+	SphereDataSpectral phi(sphereDataConfig);
+	SphereDataSpectral vort(sphereDataConfig);
+	SphereDataSpectral div(sphereDataConfig);
 
 	{
-		SphereData rhs = gh*div0 + alpha*phi0;
+		SphereDataSpectral rhs = gh*div0 + alpha*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 		io_phi = phi*beta;
 

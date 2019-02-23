@@ -8,7 +8,7 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICAL_TO_SCALARDATAARRAY_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICAL_TO_SCALARDATAARRAY_HPP_
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataPhysical.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
 class Convert_SphereDataPhysical_To_ScalarDataArray

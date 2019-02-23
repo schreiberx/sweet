@@ -135,9 +135,9 @@ void SWE_Sphere_TS_l_cn::update_coefficients()
  */
 
 void SWE_Sphere_TS_l_cn::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -157,9 +157,9 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	}
 
 
-	SphereData phi0 = io_phi;
-	SphereData vort0 = io_vort;
-	SphereData div0 = io_div;
+	SphereDataSpectral phi0 = io_phi;
+	SphereDataSpectral vort0 = io_vort;
+	SphereDataSpectral div0 = io_div;
 
 	/*
 	 * Crank-Nicolson method:
@@ -169,9 +169,9 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	 * with q the CN damping facor with no damping for q=0.5
 	 */
 
-	SphereData o_phi_t(sphereDataConfig);
-	SphereData o_vort_t(sphereDataConfig);
-	SphereData o_div_t(sphereDataConfig);
+	SphereDataSpectral o_phi_t(sphereDataConfig);
+	SphereDataSpectral o_vort_t(sphereDataConfig);
+	SphereDataSpectral o_div_t(sphereDataConfig);
 
 	/*
 	 * LINEAR
@@ -207,14 +207,13 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 		tmpg1 = ug*gh;
 		tmpg2 = vg*gh;
 
-		SphereData tmpspec(sphereDataConfig);
+		SphereDataSpectral tmpspec(sphereDataConfig);
 
 		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 		o_phi_t *= -1.0;
 
 		tmpspec = phig;
-		tmpspec.request_data_spectral();
 		o_div_t += -op.laplace(tmpspec);
 	}
 
@@ -226,13 +225,13 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	div0 += fac*o_div_t;
 
 
-	SphereData phi(sphereDataConfig);
-	SphereData vort(sphereDataConfig);
-	SphereData div(sphereDataConfig);
+	SphereDataSpectral phi(sphereDataConfig);
+	SphereDataSpectral vort(sphereDataConfig);
+	SphereDataSpectral div(sphereDataConfig);
 
 	if (use_f_sphere)
 	{
-		SphereData rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
+		SphereDataSpectral rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);
 
 		div = -1.0/gh*(phi0 - alpha*phi);
@@ -240,7 +239,7 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	}
 	else
 	{
-		SphereData rhs(sphereDataConfig);
+		SphereDataSpectral rhs(sphereDataConfig);
 
 		SphereDataPhysical u0g(sphereDataConfig);
 		SphereDataPhysical v0g(sphereDataConfig);

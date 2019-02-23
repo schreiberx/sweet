@@ -10,8 +10,8 @@
 
 #include <libmath/BandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/SphereSPHIdentities.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
 #include <libmath/LapackBandedMatrixSolver.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 
 
 
@@ -491,11 +491,11 @@ public:
 	 * WARNING: This only multiplies the i_x values with the matrix.
 	 * Use solve(...) to solve for the matrix
 	 */
-	SphereDataComplex apply(
-			const SphereDataComplex &i_x	///< solution to be searched
+	SphereDataSpectralComplex apply(
+			const SphereDataSpectralComplex &i_x	///< solution to be searched
 	)
 	{
-		SphereDataComplex out(sphereDataConfig);
+		SphereDataSpectralComplex out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
@@ -525,19 +525,19 @@ public:
 
 
 
-	SphereDataComplex solve(
+	SphereDataSpectralComplex solve(
 			const SphereDataPhysicalComplex &i_rhs
 	)
 	{
-		SphereDataComplex tmp = i_rhs;
+		SphereDataSpectralComplex tmp = i_rhs;
 		return solve(tmp);
 	}
 
-	SphereDataComplex solve(
-			const SphereDataComplex &i_rhs
+	SphereDataSpectralComplex solve(
+			const SphereDataSpectralComplex &i_rhs
 	)
 	{
-		SphereDataComplex out(sphereDataConfig);
+		SphereDataSpectralComplex out(sphereDataConfig);
 
 		i_rhs.check_sphereDataConfig_identical_res(sphereDataConfig);
 

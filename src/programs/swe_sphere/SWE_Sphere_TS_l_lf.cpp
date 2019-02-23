@@ -15,13 +15,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_l_lf::euler_timestep_update(
-		const SphereData &i_phi,	///< prognostic variables
-		const SphereData &i_vort,	///< prognostic variables
-		const SphereData &i_div,	///< prognostic variables
+		const SphereDataSpectral &i_phi,	///< prognostic variables
+		const SphereDataSpectral &i_vort,	///< prognostic variables
+		const SphereDataSpectral &i_div,	///< prognostic variables
 
-		SphereData &o_phi_t,	///< time updates
-		SphereData &o_vort_t,	///< time updates
-		SphereData &o_div_t,	///< time updates
+		SphereDataSpectral &o_phi_t,	///< time updates
+		SphereDataSpectral &o_vort_t,	///< time updates
+		SphereDataSpectral &o_div_t,	///< time updates
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -70,7 +70,7 @@ void SWE_Sphere_TS_l_lf::euler_timestep_update(
 		tmpg1 = ug*gh;
 		tmpg2 = vg*gh;
 
-		SphereData tmpspec(i_phi.sphereDataConfig);
+		SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
 		if (simVars.misc.sphere_use_robert_functions)
 			op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 		else
@@ -79,7 +79,6 @@ void SWE_Sphere_TS_l_lf::euler_timestep_update(
 		o_phi_t *= -1.0;
 
 		tmpspec = phig;
-		tmpspec.request_data_spectral();
 		o_div_t += -op.laplace(tmpspec);
 	}
 }
@@ -87,9 +86,9 @@ void SWE_Sphere_TS_l_lf::euler_timestep_update(
 
 
 void SWE_Sphere_TS_l_lf::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp

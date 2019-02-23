@@ -8,7 +8,7 @@
 #ifndef SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_
 #define SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 //#include <benchmarks_sphere/BenchmarkGalewsky.hpp>
@@ -116,9 +116,9 @@ public:
 	 * (Inspired by code of Jeffrey Whitaker)
 	 */
 	void computeGeostrophicBalance(
-			SphereData &o_phi,
-			SphereData &i_vort,
-			SphereData &i_div,
+			SphereDataSpectral &o_phi,
+			SphereDataSpectral &i_vort,
+			SphereDataSpectral &i_div,
 			// Don't use robert formulation per default! Otherwise bugs in here can cancel out bugs in the Robert time stepper
 			bool i_use_robert_formulation = false
 	)
@@ -150,8 +150,8 @@ public:
 		SphereDataPhysical tmpg1 = u*(vrtg+f);
 		SphereDataPhysical tmpg2 = v*(vrtg+f);
 
-		SphereData tmpspec1(o_phi.sphereDataConfig);
-		SphereData tmpspec2(o_phi.sphereDataConfig);
+		SphereDataSpectral tmpspec1(o_phi.sphereDataConfig);
+		SphereDataSpectral tmpspec2(o_phi.sphereDataConfig);
 
 		if (i_use_robert_formulation)
 		  op->robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
@@ -163,7 +163,7 @@ public:
 		if (i_use_robert_formulation)
 			tmpspec2 = tmpspec2.robert_convertToNonRobertSquared();
 
-		SphereData phispec = op->inv_laplace(tmpspec1) - tmpspec2;
+		SphereDataSpectral phispec = op->inv_laplace(tmpspec1) - tmpspec2;
 
 		o_phi = phispec + simVars->sim.h0*simVars->sim.gravitation;
 	}
@@ -198,8 +198,6 @@ public:
 					i_center_lon,
 					i_center_lat
 			);
-
-			simVars->benchmark.h_topo.spectral_truncate();
 		}
 		else
 		{
@@ -221,9 +219,9 @@ public:
 
 
 	void setupInitialConditions(
-			SphereData &o_phi,
-			SphereData &o_vort,
-			SphereData &o_div
+			SphereDataSpectral &o_phi,
+			SphereDataSpectral &o_vort,
+			SphereDataSpectral &o_div
 	)
 	{
 		if (simVars == nullptr)
@@ -249,7 +247,7 @@ public:
 							void* o_data_user_void		/// user data (pointer to this class)
 			)
 			{
-				SphereData* o_sphere_data = (SphereData*)o_data_void;
+				SphereDataSpectral* o_sphere_data = (SphereDataSpectral*)o_data_void;
 				SWESphereBenchmarksCombined* s = (SWESphereBenchmarksCombined*)o_data_user_void;
 
 				if (i_field_id == 1)
@@ -270,7 +268,7 @@ public:
 					// change velocity
 					u0 = u0*(1.0 + std::cos(r));
 
-					SphereData stream_function(o_sphere_data->sphereDataConfig);
+					SphereDataPhysical stream_function(o_sphere_data->sphereDataConfig);
 
 					stream_function.physical_update_lambda(
 						[&](double i_lon, double i_lat, double &io_data)
@@ -323,7 +321,9 @@ public:
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0.0;
 
-			o_phi.physical_update_lambda(
+			SphereDataPhysical phi_phys(o_phi.sphereDataConfig);
+
+			phi_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 			{
 					double d = std::acos(
@@ -337,6 +337,8 @@ public:
 					io_data *= simVars->sim.gravitation;
 				}
 			);
+
+			o_phi.loadSphereDataPhysical(phi_phys);
 
 
 			if (simVars->sim.advection_velocity[2] != 0)
@@ -387,7 +389,9 @@ public:
 			double R = a/3.0;
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
 
-			o_phi.physical_update_lambda(
+			SphereDataPhysical phi_phys(o_phi.sphereDataConfig);
+
+			phi_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 			{
 					double r = a * std::acos(
@@ -404,7 +408,9 @@ public:
 				}
 			);
 
-			SphereData stream_function(o_phi.sphereDataConfig);
+			o_phi.loadSphereDataPhysical(phi_phys);
+
+			SphereDataPhysical stream_function(o_phi.sphereDataConfig);
 
 			stream_function.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
@@ -454,7 +460,9 @@ public:
 			double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
 			//double u0 = (2.0*M_PI*a*1000.0);
 
-			o_phi.physical_update_lambda(
+			SphereDataPhysical phi_phys(o_phi.sphereDataConfig);
+
+			phi_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 			{
 					double d = std::acos(
@@ -469,11 +477,13 @@ public:
 				}
 			);
 
+			o_phi.loadSphereDataPhysical(phi_phys);
+
 			/*
 			 * Both versions are working
 			 */
 #if 1
-			SphereData stream_function(o_phi.sphereDataConfig);
+			SphereDataPhysical stream_function(o_phi.sphereDataConfig);
 
 			stream_function.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
@@ -784,23 +794,29 @@ public:
 		}
 		else if (simVars->benchmark.benchmark_name == "flat")
 		{
-			o_phi.physical_set_all_value(simVars->sim.h0*simVars->sim.gravitation);
-			o_vort.physical_set_all_value(0);
-			o_div.physical_set_all_value(0);
+			SphereDataPhysical tmp(o_phi.sphereDataConfig);
+			SphereDataSpectral o_h(o_phi.sphereDataConfig);
+			tmp.physical_set_all_value(simVars->sim.h0*simVars->sim.gravitation);
+			o_phi.loadSphereDataPhysical(tmp);
+
+//			o_phi.physical_set_all_value(simVars->sim.h0);
+			o_vort.spectral_set_zero();
+			o_div.spectral_set_zero();
 		}
 		else if (simVars->benchmark.benchmark_name == "gaussian_bumps2" || simVars->benchmark.benchmark_name == "three_gaussian_bumps")
 		{
-			SphereData tmp(o_phi.sphereDataConfig);
-			SphereData o_h(o_phi.sphereDataConfig);
+			SphereDataPhysical tmp(o_phi.sphereDataConfig);
+			SphereDataSpectral o_h(o_phi.sphereDataConfig);
 
-			o_h.physical_set_all_value(simVars->sim.h0);
+			tmp.physical_set_all_value(simVars->sim.h0);
+			o_h.loadSphereDataPhysical(tmp);
 
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 20.0);
-			o_h += (tmp-simVars->sim.h0);
+			o_h += (SphereDataSpectral(tmp)-simVars->sim.h0);
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, *simVars, 2.0*M_PI*0.6, M_PI/5.0, 80.0);
-			o_h += (tmp-simVars->sim.h0);
+			o_h += (SphereDataSpectral(tmp)-simVars->sim.h0);
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian(tmp, *simVars, 2.0*M_PI*0.8, -M_PI/4, 360.0);
-			o_h += (tmp-simVars->sim.h0);
+			o_h += (SphereDataSpectral(tmp)-simVars->sim.h0);
 
 			o_phi = o_h*simVars->sim.gravitation;
 		}
@@ -824,14 +840,19 @@ public:
 				simVars->sim.gravitation *= 0.2;
 			}
 
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_phi, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+			SphereDataPhysical tmp(o_phi.sphereDataConfig);
+
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+			o_phi.loadSphereDataPhysical(tmp);
 			o_phi *= 0.1;
 			o_phi += simVars->sim.h0*simVars->sim.gravitation;
 
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_vort, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+			o_vort.loadSphereDataPhysical(tmp);
 			o_vort *= -1e-8;
 			//o_vort *= 0;
-			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(o_div, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
+			o_div.loadSphereDataPhysical(tmp);
 			o_div *= 1e-8;
 
 			/*
@@ -888,7 +909,7 @@ public:
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 			}
 
-			SphereData o_h(o_phi.sphereDataConfig);
+			SphereDataSpectral o_h(o_phi.sphereDataConfig);
 
 			// update operator because we changed the simulation parameters
 			op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
@@ -976,7 +997,7 @@ public:
 		}
 		else
 		{
-			SphereData h(o_phi.sphereDataConfig);
+			SphereDataSpectral h(o_phi.sphereDataConfig);
 			SphereDataPhysical u(o_phi.sphereDataConfig);
 			SphereDataPhysical v(o_phi.sphereDataConfig);
 
@@ -995,7 +1016,7 @@ public:
 #if 0
 public:
 	void setupInitialConditions_HUV(
-			SphereData &o_h,
+			SphereDataSpectral &o_h,
 			SphereDataPhysical &o_u,
 			SphereDataPhysical &o_v
 	)
@@ -1036,7 +1057,7 @@ public:
 		}
 		else if (simVars->benchmark.benchmark_id == 9)
 		{
-			SphereData tmp(o_h.sphereDataConfig);
+			SphereDataSpectral tmp(o_h.sphereDataConfig);
 
 			o_u.physical_set_all_value(0);
 			o_v.physical_set_all_value(0);

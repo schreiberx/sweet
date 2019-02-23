@@ -8,8 +8,9 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICALCOMPLEX_TO_SPHEREDATAPHYSICAL_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICALCOMPLEX_TO_SPHEREDATAPHYSICAL_HPP_
 
-#include <sweet/sphere/SphereData.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
+#include <sweet/sphere/SphereDataPhysical.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
 class Convert_SphereDataPhysicalComplex_To_SphereDataPhysical

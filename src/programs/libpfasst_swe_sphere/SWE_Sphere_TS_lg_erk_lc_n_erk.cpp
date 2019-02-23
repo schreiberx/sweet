@@ -10,13 +10,13 @@
 
 
 void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear(
-		const SphereData &i_phi,	///< prognostic variables
-		const SphereData &i_vort,	///< prognostic variables
-		const SphereData &i_div,	///< prognostic variables
+		const SphereDataSpectral &i_phi,	///< prognostic variables
+		const SphereDataSpectral &i_vort,	///< prognostic variables
+		const SphereDataSpectral &i_div,	///< prognostic variables
 
-		SphereData &o_phi_t,	///< time updates
-		SphereData &o_vort_t,	///< time updates
-		SphereData &o_div_t,	///< time updates
+		SphereDataSpectral &o_phi_t,	///< time updates
+		SphereDataSpectral &o_vort_t,	///< time updates
+		SphereDataSpectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -58,7 +58,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear(
 	SphereDataPhysical tmpg1 = ug*avgphi;
 	SphereDataPhysical tmpg2 = vg*avgphi;
 
-	SphereData tmpspec(i_phi.sphereDataConfig);
+	SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
 	op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
@@ -71,13 +71,13 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_linear(
 
 
 void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
-		const SphereData &i_phi,	///< prognostic variables
-		const SphereData &i_vort,	///< prognostic variables
-		const SphereData &i_div,	///< prognostic variables
+		const SphereDataSpectral &i_phi,	///< prognostic variables
+		const SphereDataSpectral &i_vort,	///< prognostic variables
+		const SphereDataSpectral &i_div,	///< prognostic variables
 
-		SphereData &o_phi_t,	///< time updates
-		SphereData &o_vort_t,	///< time updates
-		SphereData &o_div_t,	///< time updates
+		SphereDataSpectral &o_phi_t,	///< time updates
+		SphereDataSpectral &o_vort_t,	///< time updates
+		SphereDataSpectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -111,7 +111,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 	tmpg1 = ug*(phig-avgphi);
 	tmpg2 = vg*(phig-avgphi);
 
-	SphereData tmpspec(i_phi.sphereDataConfig);
+	SphereDataSpectral tmpspec(i_phi.sphereDataConfig);
 	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
@@ -127,17 +127,17 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
  * This routine is used by other time step implementations
  */
 void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
 )
 {
-	SphereData tmp_phi(io_phi.sphereDataConfig);
-	SphereData tmp_vort(io_vort.sphereDataConfig);
-	SphereData tmp_div(io_div.sphereDataConfig);
+	SphereDataSpectral tmp_phi(io_phi.sphereDataConfig);
+	SphereDataSpectral tmp_vort(io_vort.sphereDataConfig);
+	SphereDataSpectral tmp_div(io_div.sphereDataConfig);
 
 	euler_timestep_update_lc_n(
 			io_phi,
@@ -160,9 +160,9 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 
 
 void SWE_Sphere_TS_lg_erk_lc_n_erk::run_timestep(
-		SphereData &io_phi,		///< prognostic variables
-		SphereData &io_vort,	///< prognostic variables
-		SphereData &io_div,		///< prognostic variables
+		SphereDataSpectral &io_phi,		///< prognostic variables
+		SphereDataSpectral &io_vort,	///< prognostic variables
+		SphereDataSpectral &io_div,		///< prognostic variables
 
 		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp

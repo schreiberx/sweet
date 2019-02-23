@@ -30,7 +30,7 @@
 
 class SphereDataPhysical
 {
-	friend class SphereDataComplex;
+	friend class SphereDataSpectralComplex;
 
 public:
 	const SphereDataConfig *sphereDataConfig;
@@ -784,7 +784,7 @@ public:
 			error = std::max(
 						std::abs(physical_space_data[j]),
 						error		// leave the error variable as the 2nd parameter. In case of NaN of the 1st parameter, std::max returns NaN
-						);
+				);
 		}
 		return error;
 	}
@@ -837,6 +837,23 @@ public:
 	}
 
 
+
+	bool physical_isAnyNaNorInf()
+	{
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			if (std::isnan(physical_space_data[i]) || std::isinf(physical_space_data[i]) != 0)
+				return true;
+		}
+
+		return false;
+	}
+
+
+
+
+
+
 	void physical_print(
 			int i_precision = -1
 	)	const
@@ -865,7 +882,7 @@ public:
 	void physical_file_write(
 			const std::string &i_filename,
 			const char *i_title = "",
-			int i_precision = -1
+			int i_precision = 20
 	)	const
 	{
 		std::ofstream file(i_filename, std::ios_base::trunc);

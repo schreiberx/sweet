@@ -8,10 +8,10 @@
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
 #include <sweet/sphere/SphereDataConfig.hpp>
-#include <sweet/sphere/SphereDataComplex.hpp>
 #include <sweet/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
+#include <sweet/sphere/SphereDataSpectralComplex.hpp>
 
 
 
@@ -91,8 +91,8 @@ void run_tests()
 					}
 				);
 
-				SphereDataComplex vort(sphereDataConfig);
-				SphereDataComplex div(sphereDataConfig);
+				SphereDataSpectralComplex vort(sphereDataConfig);
+				SphereDataSpectralComplex div(sphereDataConfig);
 				op.uv_to_vortdiv(u, v, vort, div);
 
 				double div_max_error = div.physical_reduce_max_abs();
@@ -142,8 +142,8 @@ void run_tests()
 					}
 				);
 
-				SphereDataComplex vort(sphereDataConfig);
-				SphereDataComplex div(sphereDataConfig);
+				SphereDataSpectralComplex vort(sphereDataConfig);
+				SphereDataSpectralComplex div(sphereDataConfig);
 				op.robert_uv_to_vortdiv(u, v, vort, div);
 
 				double div_max_error = div.physical_reduce_max_abs();
@@ -165,7 +165,7 @@ void run_tests()
 		{
 			test_header("Testing Multiplication (a*b) with b=123.0");
 
-			SphereDataComplex data(sphereDataConfig);
+			SphereDataSpectralComplex data(sphereDataConfig);
 			data.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
@@ -175,7 +175,7 @@ void run_tests()
 
 			data = data*123.0;
 
-			SphereDataComplex data2(sphereDataConfig);
+			SphereDataSpectralComplex data2(sphereDataConfig);
 			data2.physical_update_lambda(
 				[&](double x, double y, std::complex<double> &io_data)
 				{
@@ -199,7 +199,7 @@ void run_tests()
 			{
 				test_header("Testing Multiplication (a *= b) with b=123.0");
 
-				SphereDataComplex data(sphereDataConfig);
+				SphereDataSpectralComplex data(sphereDataConfig);
 				data.physical_update_lambda(
 						[&](double x, double y, std::complex<double> &io_data)
 						{
@@ -209,7 +209,7 @@ void run_tests()
 
 				data *= 123.0;
 
-				SphereDataComplex data2(sphereDataConfig);
+				SphereDataSpectralComplex data2(sphereDataConfig);
 				data2.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
@@ -229,7 +229,7 @@ void run_tests()
 		{
 			test_header("Testing add (a+b) operation with 123.0");
 
-			SphereDataComplex data(sphereDataConfig);
+			SphereDataSpectralComplex data(sphereDataConfig);
 			data.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
@@ -239,7 +239,7 @@ void run_tests()
 
 			data = data + 123.0;
 
-			SphereDataComplex data2(sphereDataConfig);
+			SphereDataSpectralComplex data2(sphereDataConfig);
 			data2.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
@@ -259,7 +259,7 @@ void run_tests()
 		{
 			test_header("Testing add (a+=b) operation with 123.0");
 
-			SphereDataComplex data(sphereDataConfig);
+			SphereDataSpectralComplex data(sphereDataConfig);
 			data.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
@@ -269,7 +269,7 @@ void run_tests()
 
 			data += 123.0;
 
-			SphereDataComplex data2(sphereDataConfig);
+			SphereDataSpectralComplex data2(sphereDataConfig);
 			data2.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
@@ -288,7 +288,7 @@ void run_tests()
 		{
 			test_header("Testing Gaussian latitude coordinates");
 
-			SphereDataComplex h(sphereDataConfig);
+			SphereDataSpectralComplex h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
@@ -298,7 +298,7 @@ void run_tests()
 					}
 			);
 
-			SphereDataComplex hphi(sphereDataConfig);
+			SphereDataSpectralComplex hphi(sphereDataConfig);
 			hphi.physical_update_lambda(
 					[&](double a, double b, std::complex<double> &c)
 					{
@@ -321,7 +321,7 @@ void run_tests()
 			test_header("Testing multiplication with Gaussian latitude");
 
 			// mu*F(\lambda,\mu)
-			SphereDataComplex h(sphereDataConfig);
+			SphereDataSpectralComplex h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
@@ -332,7 +332,7 @@ void run_tests()
 			);
 			h = op.mu(h);
 
-			SphereDataComplex result(sphereDataConfig);
+			SphereDataSpectralComplex result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
@@ -354,7 +354,7 @@ void run_tests()
 			test_header("Testing multiplication with pow2 of Gaussian latitude");
 
 			// mu*mu*F(\lambda,\mu)
-			SphereDataComplex h(sphereDataConfig);
+			SphereDataSpectralComplex h(sphereDataConfig);
 			h.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
@@ -365,7 +365,7 @@ void run_tests()
 			);
 			h = op.mu2(h);
 
-			SphereDataComplex result(sphereDataConfig);
+			SphereDataSpectralComplex result(sphereDataConfig);
 			result.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, std::complex<double> &i_data)
 					{

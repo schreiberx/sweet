@@ -10,7 +10,7 @@
 
 std::string write_file(
 		       SphereDataCtx  &i_ctx,
-		       const SphereData &i_sphereData,
+		       const SphereDataSpectral &i_sphereData,
 		       const char* i_name	///< name of output variable
 		       );
 

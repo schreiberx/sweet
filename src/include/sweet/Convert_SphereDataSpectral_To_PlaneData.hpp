@@ -1,5 +1,5 @@
 /*
- * SphereData_To_ScalarDataArray.cpp
+ * SphereDataSpectral_To_ScalarDataArray.cpp
  *
  *  Created on: 20 Oct 2016
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
@@ -8,15 +8,15 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_TO_PLANEDATA_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_TO_PLANEDATA_HPP_
 
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/plane/PlaneData.hpp>
 
-class Convert_SphereData_To_PlaneData
+class Convert_SphereDataSpectral_To_PlaneData
 {
 public:
 	static
 	PlaneData physical_convert(
-			const SphereData &i_sphereData,
+			const SphereDataSpectral &i_sphereDataSpectral,
 			PlaneDataConfig *i_planeDataConfig
 	)
 	{
@@ -24,7 +24,7 @@ public:
 		assert(i_sphereData.sphereDataConfig->physical_num_lat == (int)i_planeDataConfig->physical_res[1]);
 		assert((int)i_planeDataConfig->physical_array_data_number_of_elements == i_sphereData.sphereDataConfig->physical_array_data_number_of_elements);
 
-		i_sphereData.request_data_physical();
+		SphereDataPhysical i_sphereData = i_sphereDataSpectral.getSphereDataPhysical();
 
 		PlaneData out(i_planeDataConfig);
 

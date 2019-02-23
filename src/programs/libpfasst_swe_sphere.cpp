@@ -11,7 +11,7 @@
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 #include <sweet/sphere/SphereDiagnostics.hpp>
 #include "libpfasst_swe_sphere/LevelSingleton.hpp"
@@ -194,7 +194,7 @@ int main(int i_argc, char *i_argv[])
 	{
 
 		// create h_topo with the configuration at the finest level
-		simVars.benchmark.h_topo = SphereData(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
+		simVars.benchmark.h_topo = SphereDataSpectral(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
 
 		// initialize the topography
 		(levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).setupTopography();

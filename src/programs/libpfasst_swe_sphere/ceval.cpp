@@ -3,7 +3,7 @@
 #include <string>
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/sphere/SphereData.hpp>
+#include <sweet/sphere/SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereOperators.hpp>
 
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
@@ -27,7 +27,7 @@
  */
 std::string write_file(
 		SphereDataCtx  &i_ctx,
-		const SphereData &i_sphereData,
+		const SphereDataSpectral &i_sphereData,
 		const char* i_name	///< name of output variable
 )
 {
@@ -37,7 +37,7 @@ std::string write_file(
 	SimulationVariables* simVars = i_ctx.get_simulation_variables();
 
 	// create copy
-	SphereData sphereData(i_sphereData);
+	SphereDataSpectral sphereData(i_sphereData);
 
 	// Write the data into the file
 	const char* filename_template = simVars->iodata.output_file_name.c_str();
@@ -55,7 +55,7 @@ std::string write_file(
  **/
 std::string write_spectrum_to_file(
 		SphereDataCtx &i_ctx,
-		const SphereData &i_sphereData,
+		const SphereDataSpectral &i_sphereData,
 		const char* i_name
 )
 {
@@ -65,7 +65,7 @@ std::string write_spectrum_to_file(
 	SimulationVariables* simVars = i_ctx.get_simulation_variables();
 
 	// create copy
-	SphereData sphereData(i_sphereData);
+	SphereDataSpectral sphereData(i_sphereData);
 
 	// Write the spectrum into the file
 	const char* filename_template = simVars->iodata.output_file_name.c_str();
@@ -176,9 +176,9 @@ void cinitial(
 	int rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-	SphereData& phi_Y  = o_Y->get_phi();
-	SphereData& vort_Y = o_Y->get_vort();
-	SphereData& div_Y  = o_Y->get_div();
+	SphereDataSpectral& phi_Y  = o_Y->get_phi();
+	SphereDataSpectral& vort_Y = o_Y->get_vort();
+	SphereDataSpectral& div_Y  = o_Y->get_div();
 
 	// set the time stepping params
 	i_ctx->setup_time_steps(
@@ -201,9 +201,9 @@ void cinitial(
 	SWESphereBenchmarksCombined *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
 	// // instantiate phi, vort, and div without dealiasing to get the initial condition
-	SphereData phi_Y_nodealiasing(data_config_nodealiasing);
-	SphereData vort_Y_nodealiasing(data_config_nodealiasing);
-	SphereData div_Y_nodealiasing(data_config_nodealiasing);
+	SphereDataSpectral phi_Y_nodealiasing(data_config_nodealiasing);
+	SphereDataSpectral vort_Y_nodealiasing(data_config_nodealiasing);
+	SphereDataSpectral div_Y_nodealiasing(data_config_nodealiasing);
 
 	phi_Y_nodealiasing.physical_set_zero();
 	vort_Y_nodealiasing.physical_set_zero();
@@ -234,22 +234,22 @@ void cinitial(
 	// write_spectrum_to_file(*i_ctx, vort_Y, "init_spectrum_vort");
 	// write_spectrum_to_file(*i_ctx, div_Y,  "init_spectrum_div");
 
-	SphereData phi_Y_init(phi_Y);
-	SphereData phi_Y_final(phi_Y);
+	SphereDataSpectral phi_Y_init(phi_Y);
+	SphereDataSpectral phi_Y_final(phi_Y);
 	phi_Y_final.request_data_spectral();
 	phi_Y_final.request_data_physical();
 	phi_Y_init -= phi_Y_final;
 	//std::cout << "Geopotential error during conversion (infty norm) = " << phi_Y_init.physical_reduce_max_abs() << std::endl;
 
-	SphereData div_Y_init(div_Y);
-	SphereData div_Y_final(div_Y);
+	SphereDataSpectral div_Y_init(div_Y);
+	SphereDataSpectral div_Y_final(div_Y);
 	div_Y_final.request_data_spectral();
 	div_Y_final.request_data_physical();
 	div_Y_init -= div_Y_final;
 	//std::cout << "Divergence error during conversion (infty norm) = " << div_Y_init.physical_reduce_max_abs() << std::endl;
 
-	SphereData vort_Y_init(vort_Y);
-	SphereData vort_Y_final(vort_Y);
+	SphereDataSpectral vort_Y_init(vort_Y);
+	SphereDataSpectral vort_Y_final(vort_Y);
 	vort_Y_final.request_data_spectral();
 	vort_Y_final.request_data_physical();
 	vort_Y_init -= vort_Y_final;
@@ -337,30 +337,30 @@ void cfinal(
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-	const SphereData& phi_Y  = i_Y->get_phi();
-	const SphereData& vort_Y = i_Y->get_vort();
-	const SphereData& div_Y  = i_Y->get_div();
+	const SphereDataSpectral& phi_Y  = i_Y->get_phi();
+	const SphereDataSpectral& vort_Y = i_Y->get_vort();
+	const SphereDataSpectral& div_Y  = i_Y->get_div();
 
 	const int& level_id = i_Y->get_level();
 
 	// get the SimulationVariables object from context
 	SimulationVariables* simVars(i_ctx->get_simulation_variables());
 
-	SphereData phi_Y_init(phi_Y);
-	SphereData phi_Y_final(phi_Y);
+	SphereDataSpectral phi_Y_init(phi_Y);
+	SphereDataSpectral phi_Y_final(phi_Y);
 	phi_Y_final.request_data_spectral();
 	phi_Y_final.request_data_physical();
 	phi_Y_init -= phi_Y_final;
 	//std::cout << "Geopotential error during conversion (infty norm) = " << phi_Y_init.physical_reduce_max_abs() << std::endl;
 
-	SphereData div_Y_init(div_Y);
-	SphereData div_Y_final(div_Y);                                                                      div_Y_final.request_data_spectral();
+	SphereDataSpectral div_Y_init(div_Y);
+	SphereDataSpectral div_Y_final(div_Y);                                                                      div_Y_final.request_data_spectral();
 	div_Y_final.request_data_physical();
 	div_Y_init -= div_Y_final;
 	//std::cout << "Divergence error during conversion (infty norm) = " << div_Y_init.physical_reduce_max_abs() << std::endl;
 
-	SphereData vort_Y_init(vort_Y);
-	SphereData vort_Y_final(vort_Y);
+	SphereDataSpectral vort_Y_init(vort_Y);
+	SphereDataSpectral vort_Y_final(vort_Y);
 	vort_Y_final.request_data_spectral();
 	vort_Y_final.request_data_physical();
 	vort_Y_init -= vort_Y_final;
@@ -437,13 +437,13 @@ void ceval_f1(SphereDataVars *i_Y,
 		SphereDataVars *o_F1
 )
 {
-	const SphereData& phi_Y  = i_Y->get_phi();
-	const SphereData& vort_Y = i_Y->get_vort();
-	const SphereData& div_Y  = i_Y->get_div();
+	const SphereDataSpectral& phi_Y  = i_Y->get_phi();
+	const SphereDataSpectral& vort_Y = i_Y->get_vort();
+	const SphereDataSpectral& div_Y  = i_Y->get_div();
 
-	SphereData& phi_F1  = o_F1->get_phi();
-	SphereData& vort_F1 = o_F1->get_vort();
-	SphereData& div_F1  = o_F1->get_div();
+	SphereDataSpectral& phi_F1  = o_F1->get_phi();
+	SphereDataSpectral& vort_F1 = o_F1->get_vort();
+	SphereDataSpectral& div_F1  = o_F1->get_div();
 
 	// get the time step parameters
 	SimulationVariables* simVars = i_ctx->get_simulation_variables();
@@ -523,13 +523,13 @@ void ceval_f2 (
 		SphereDataVars *o_F2
 )
 {
-	const SphereData& phi_Y  = i_Y->get_phi();
-	const SphereData& vort_Y = i_Y->get_vort();
-	const SphereData& div_Y  = i_Y->get_div();
+	const SphereDataSpectral& phi_Y  = i_Y->get_phi();
+	const SphereDataSpectral& vort_Y = i_Y->get_vort();
+	const SphereDataSpectral& div_Y  = i_Y->get_div();
 
-	SphereData& phi_F2  = o_F2->get_phi();
-	SphereData& vort_F2 = o_F2->get_vort();
-	SphereData& div_F2  = o_F2->get_div();
+	SphereDataSpectral& phi_F2  = o_F2->get_phi();
+	SphereDataSpectral& vort_F2 = o_F2->get_vort();
+	SphereDataSpectral& div_F2  = o_F2->get_div();
 
 	// initialize the right-hand side
 	c_sweet_data_setval(o_F2, 0.0);
@@ -608,13 +608,13 @@ void ccomp_f2 (
 		SphereDataVars *o_F2
 )
 {
-	SphereData& phi_Y  = io_Y->get_phi();
-	SphereData& vort_Y = io_Y->get_vort();
-	SphereData& div_Y  = io_Y->get_div();
+	SphereDataSpectral& phi_Y  = io_Y->get_phi();
+	SphereDataSpectral& vort_Y = io_Y->get_vort();
+	SphereDataSpectral& div_Y  = io_Y->get_div();
 
-	const SphereData& phi_Rhs  = i_Rhs->get_phi();
-	const SphereData& vort_Rhs = i_Rhs->get_vort();
-	const SphereData& div_Rhs  = i_Rhs->get_div();
+	const SphereDataSpectral& phi_Rhs  = i_Rhs->get_phi();
+	const SphereDataSpectral& vort_Rhs = i_Rhs->get_vort();
+	const SphereDataSpectral& div_Rhs  = i_Rhs->get_div();
 
 	// get the simulation variables
 	SimulationVariables* simVars = i_ctx->get_simulation_variables();
@@ -679,9 +679,9 @@ void ccomp_f2 (
 	}
 
 
-	SphereData& phi_F2  = o_F2->get_phi();
-	SphereData& vort_F2 = o_F2->get_vort();
-	SphereData& div_F2  = o_F2->get_div();
+	SphereDataSpectral& phi_F2  = o_F2->get_phi();
+	SphereDataSpectral& vort_F2 = o_F2->get_vort();
+	SphereDataSpectral& div_F2  = o_F2->get_div();
 
 	phi_F2  = (phi_Y  - phi_Rhs)  / i_dt;
 	vort_F2 = (vort_Y - vort_Rhs) / i_dt;
@@ -699,13 +699,13 @@ void ceval_f3 (
 		SphereDataVars *o_F3
 )
 {
-	const SphereData& phi_Y  = i_Y->get_phi();
-	const SphereData& vort_Y = i_Y->get_vort();
-	const SphereData& div_Y  = i_Y->get_div();
+	const SphereDataSpectral& phi_Y  = i_Y->get_phi();
+	const SphereDataSpectral& vort_Y = i_Y->get_vort();
+	const SphereDataSpectral& div_Y  = i_Y->get_div();
 
-	SphereData& phi_F3  = o_F3->get_phi();
-	SphereData& vort_F3 = o_F3->get_vort();
-	SphereData& div_F3  = o_F3->get_div();
+	SphereDataSpectral& phi_F3  = o_F3->get_phi();
+	SphereDataSpectral& vort_F3 = o_F3->get_vort();
+	SphereDataSpectral& div_F3  = o_F3->get_div();
 
 	// initialize F3 to zero in case no artificial viscosity
 	c_sweet_data_setval(o_F3, 0.0);
@@ -768,13 +768,13 @@ void ccomp_f3 (
 		SphereDataVars *o_F3
 )
 {
-	SphereData& phi_Y  = io_Y->get_phi();
-	SphereData& vort_Y = io_Y->get_vort();
-	SphereData& div_Y  = io_Y->get_div();
+	SphereDataSpectral& phi_Y  = io_Y->get_phi();
+	SphereDataSpectral& vort_Y = io_Y->get_vort();
+	SphereDataSpectral& div_Y  = io_Y->get_div();
 
-	SphereData& phi_Rhs  = i_Rhs->get_phi();
-	SphereData& vort_Rhs = i_Rhs->get_vort();
-	SphereData& div_Rhs  = i_Rhs->get_div();
+	SphereDataSpectral& phi_Rhs  = i_Rhs->get_phi();
+	SphereDataSpectral& vort_Rhs = i_Rhs->get_vort();
+	SphereDataSpectral& div_Rhs  = i_Rhs->get_div();
 
 	// initialize F3 to zero in case no artificial viscosity
 	c_sweet_data_setval(o_F3, 0.0);
@@ -796,9 +796,9 @@ void ccomp_f3 (
 	div_Y  = div_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r);
 
 	// now recompute F3 with the new value of Y
-	SphereData& phi_F3  = o_F3->get_phi();
-	SphereData& vort_F3 = o_F3->get_vort();
-	SphereData& div_F3  = o_F3->get_div();
+	SphereDataSpectral& phi_F3  = o_F3->get_phi();
+	SphereDataSpectral& vort_F3 = o_F3->get_vort();
+	SphereDataSpectral& div_F3  = o_F3->get_div();
 
 	phi_F3  = (phi_Y  - phi_Rhs)  / i_dt;
 	vort_F3 = (vort_Y - vort_Rhs) / i_dt;
@@ -820,9 +820,9 @@ void cfinalize(
 	if (simVars->sim.viscosity == 0)
 		return;
 
-	SphereData& phi_Y  = io_Y->get_phi();
-	SphereData& vort_Y = io_Y->get_vort();
-	SphereData& div_Y  = io_Y->get_div();
+	SphereDataSpectral& phi_Y  = io_Y->get_phi();
+	SphereDataSpectral& vort_Y = io_Y->get_vort();
+	SphereDataSpectral& div_Y  = io_Y->get_div();
 
 	const double scalar = simVars->sim.viscosity*i_dt;
 	const double r      = simVars->sim.sphere_radius;
