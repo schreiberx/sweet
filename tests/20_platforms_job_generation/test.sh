@@ -27,7 +27,7 @@ for PLATFORM  in $PLATFORMS; do
 
 	# Generate some dummy job
 	mule.benchmark.cleanup_all || exit 1
-	./benchmark_create_job_scripts || exit 1
+	./benchmark_create_job_scripts.py || exit 1
 	mule.benchmark.cleanup_all || exit 1
 done
 
