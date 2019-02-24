@@ -953,9 +953,55 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 		#endif
 
+		#if 1
+			/*
+			 * Reduction in spectral space
+			 *
+			 * There was once a reason for this to be done in physical space.
+			 * However, eventually, it seems to work also in spectral space.
+			 */
+
+			SphereData_Spectral tmp(sphereDataConfig);
+
+// already setup
+//			std::size_t spectral_data_num_doubles = io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements*2;
+
+			#if SWEET_REXI_ALLREDUCE
+
+				MPI_Allreduce(prog_phi0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(prog_phi0_phys.spectral_space_data, tmp.spectral_space_data);
+
+				MPI_Allreduce(prog_vort0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(prog_vort0.spectral_space_data, tmp.spectral_space_data);
+
+				MPI_Allreduce(prog_div0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				std::swap(prog_div0.spectral_space_data, tmp.spectral_space_data);
+
+			#else
+
+				MPI_Reduce(io_prog_phi0.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				if (mpi_rank == 0)
+					std::swap(io_prog_phi0.spectral_space_data, tmp.spectral_space_data);
+
+				MPI_Reduce(io_prog_vort0.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				if (mpi_rank == 0)
+					std::swap(io_prog_vort0.spectral_space_data, tmp.spectral_space_data);
+
+				MPI_Reduce(io_prog_div0.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				if (mpi_rank == 0)
+					std::swap(io_prog_div0.spectral_space_data, tmp.spectral_space_data);
+
+			#endif
+
+		#else
+
+			/*
+			 * Reduction in physical space
+			 */
+
 			SphereData_Physical prog_phi0_phys = io_prog_phi0.getSphereDataPhysical();
 			SphereData_Physical prog_vort0_phys = io_prog_vort0.getSphereDataPhysical();
-			SphereData_Physical prog_div0_phys = io_prog_vort0.getSphereDataPhysical();
+			SphereData_Physical prog_div0_phys = io_prog_div0.getSphereDataPhysical();
 
 			/*
 			 * Physical data reduction
@@ -982,11 +1028,6 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 			#else
 
-				/*
-				 * We only swap the buffer for the 1st rank
-				 * This helps to utilize garbage data, resulting in NaN's and hence
-				 * maybe reduce performance on other ranks.
-				 */
 				MPI_Reduce(prog_phi0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 				if (mpi_rank == 0)
 					std::swap(prog_phi0_phys.physical_space_data, tmp.physical_space_data);
@@ -1005,6 +1046,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			io_prog_vort0.loadSphereDataPhysical(prog_vort0_phys);
 			io_prog_div0.loadSphereDataPhysical(prog_div0_phys);
 
+		#endif
 
 		#if SWEET_REXI_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();

@@ -164,7 +164,6 @@ public:
 			SphereData_Spectral &o_div
 	)
 	{
-
 		const SphereData_SpectralComplex phi0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_phi0);
 		const SphereData_SpectralComplex vort0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_vort0);
 		const SphereData_SpectralComplex div0 = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(i_div0);

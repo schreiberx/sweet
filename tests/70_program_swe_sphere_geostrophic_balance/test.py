@@ -8,13 +8,13 @@ from mule_local.JobMule import *
 from mule.exec_program import *
 from mule.InfoError import *
 
-exec_program('./benchmark_create_job_scripts', catch_output=False)
+exec_program('./benchmark_create_job_scripts.py', catch_output=False)
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode != 0:
 	sys.exit(exitcode)
 
-exitcode = exec_program('./postprocessing', catch_output=False)
+exitcode = exec_program('./postprocessing.py', catch_output=False)
 if exitcode != 0:
 	print("FAILED")
 	sys.exit(exitcode)
