@@ -18,7 +18,6 @@ else:
 
 if mainsrcadddir != '':
 
-
 	#
 	# Add an action to move any module files
 	#
@@ -48,7 +47,7 @@ if mainsrcadddir != '':
 		for i in cpp_files:
 			filerelpath = i.replace(sweet_root, '')
 
-			# SWE REXI SPECIAL FILE HANDLING for threaded parallelization over the REXI sum
+			# SWE REXI special file handling for threaded parallelization over the REXI sum
 			filetmp = os.path.basename(filerelpath)
 			if 'l_rexi' in filetmp or 'lg_rexi' in filetmp or 'lf_rexi' in filetmp:
 				if p.rexi_thread_parallel_sum=='enable':

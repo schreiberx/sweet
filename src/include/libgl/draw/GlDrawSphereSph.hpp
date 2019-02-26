@@ -27,7 +27,7 @@
 	#error "SWEET_USE_SPHERE_SPECTRAL_SPACE not activated"
 #endif
 
-#include <sweet/sphere/SphereDataConfig.hpp>
+#include <sweet/sphere/SphereData_Config.hpp>
 
 /**
  * \brief	create and render a sphere with polygons and
@@ -48,7 +48,7 @@ public:
 	 * initialize OpenGL buffers to render a sphere with the given parameters
 	 */
 	void initBuffers(
-			SphereDataConfig *i_sphereDataConfig
+			SphereData_Config *i_sphereDataConfig
 	)
 	{
 		int hsegments = i_sphereDataConfig->physical_num_lon;
@@ -189,7 +189,7 @@ public:
 	 * initialize buffers to render sphere with given parameters
 	 */
 	void initSphere(
-			SphereDataConfig *i_sphereDataConfig
+			SphereData_Config *i_sphereDataConfig
 	)
 	{
 		initBuffers(i_sphereDataConfig);

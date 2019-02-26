@@ -8,8 +8,9 @@
 #include "SWE_Sphere_TS_l_rexi.hpp"
 
 #include <iostream>
-#include <rexi/REXI.hpp>
 #include <cassert>
+#include <utility>
+#include <rexi/REXI.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
@@ -58,7 +59,6 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 	#if !SWEET_USE_LIBFFT
 		FatalError("Spectral space required for solvers, use compile option --libfft=enable");
 	#endif
-
 
 	#if SWEET_THREADING_TIME_REXI
 
@@ -226,7 +226,10 @@ void SWE_Sphere_TS_l_rexi::setup(
 	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
 
 	if (rexi_use_direct_solution)
-		FatalError("Direct solution for linear operator not available");
+	{
+		if (!no_coriolis)
+			FatalError("Direct solution for linear operator not available");
+	}
 
 	timestep_size = i_timestep_size;
 	function_name = i_function_name;
@@ -244,106 +247,110 @@ void SWE_Sphere_TS_l_rexi::setup(
 	use_f_sphere = i_use_f_sphere;
 	use_rexi_sphere_solver_preallocation = rexiSimVars->sphere_solver_preallocation;
 
-	if (rexi_use_sphere_extended_modes == 0)
+	if (!rexi_use_direct_solution)
 	{
-		sphereDataConfigSolver = sphereDataConfig;
-	}
-	else
-	{
-		// Add modes only along latitude since these are the "problematic" modes
-		sphereDataConfigInstance.setupAdditionalModes(
-				sphereDataConfig,
-				rexi_use_sphere_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
-				rexi_use_sphere_extended_modes,
-				simVars.misc.reuse_spectral_transformation_plans
-		);
-
-		sphereDataConfigSolver = &sphereDataConfigInstance;
-	}
-
-	std::size_t N = rexi_alpha.size();
-	block_size = N/num_global_threads;
-	if (block_size*num_global_threads != N)
-		block_size++;
-
-	perThreadVars.resize(num_local_rexi_par_threads);
-
-
-	/**
-	 * We split the setup from the utilization here.
-	 *
-	 * This is necessary, since it has to be assured that
-	 * the FFTW plans are initialized before using them.
-	 */
-	if (num_local_rexi_par_threads == 0)
-	{
-		std::cerr << "FATAL ERROR B: omp_get_max_threads == 0" << std::endl;
-		exit(-1);
-	}
-
-	#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-		if (omp_in_parallel())
+		if (rexi_use_sphere_extended_modes == 0)
 		{
-			std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
+			sphereDataConfigSolver = sphereDataConfig;
+		}
+		else
+		{
+			// Add modes only along latitude since these are the "problematic" modes
+			sphereDataConfigInstance.setupAdditionalModes(
+					sphereDataConfig,
+					rexi_use_sphere_extended_modes,	// TODO: Extend SPH wrapper to also support m != n to set this guy to 0
+					rexi_use_sphere_extended_modes,
+					simVars.misc.reuse_spectral_transformation_plans
+			);
+
+			sphereDataConfigSolver = &sphereDataConfigInstance;
+		}
+
+		std::size_t N = rexi_alpha.size();
+		block_size = N/num_global_threads;
+		if (block_size*num_global_threads != N)
+			block_size++;
+
+		perThreadVars.resize(num_local_rexi_par_threads);
+
+
+		/**
+		 * We split the setup from the utilization here.
+		 *
+		 * This is necessary, since it has to be assured that
+		 * the FFTW plans are initialized before using them.
+		 */
+		if (num_local_rexi_par_threads == 0)
+		{
+			std::cerr << "FATAL ERROR B: omp_get_max_threads == 0" << std::endl;
 			exit(-1);
 		}
-	#endif
 
-	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
-	for (int j = 0; j < num_local_rexi_par_threads; j++)
-	{
-		#if SWEET_THREADING_TIME_REXI
-		#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
-		#endif
-		for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
-		{
-			if (local_thread_id != j)
-				continue;
-
-			#if SWEET_DEBUG && SWEET_THREADING_TIME_REXI
-				if (omp_get_thread_num() != local_thread_id)
-				{
-					// leave this dummy std::cout in it to avoid the intel compiler removing this part
-					std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << local_thread_id << std::endl;
-					exit(-1);
-				}
-			#endif
-
-			perThreadVars[local_thread_id] = new PerThreadVars;
-
-			std::size_t start, end;
-			p_get_workload_start_end(start, end, local_thread_id);
-			int local_size = (int)end-(int)start;
-
-			#if SWEET_DEBUG
-				if (local_size < 0)
-					FatalError("local_size < 0");
-			#endif
-
-			perThreadVars[local_thread_id]->alpha.resize(local_size);
-			perThreadVars[local_thread_id]->beta_re.resize(local_size);
-
-			perThreadVars[local_thread_id]->accum_phi.setup(sphereDataConfigSolver);
-			perThreadVars[local_thread_id]->accum_vort.setup(sphereDataConfigSolver);
-			perThreadVars[local_thread_id]->accum_div.setup(sphereDataConfigSolver);
-
-			for (std::size_t n = start; n < end; n++)
+		#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+			if (omp_in_parallel())
 			{
-				int thread_local_idx = n-start;
+				std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
+				exit(-1);
+			}
+		#endif
 
-				perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alpha[n];
-				perThreadVars[local_thread_id]->beta_re[thread_local_idx] = rexi_beta[n];
+		// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
+		for (int j = 0; j < num_local_rexi_par_threads; j++)
+		{
+			#if SWEET_THREADING_TIME_REXI
+			#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
+			#endif
+			for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
+			{
+				if (local_thread_id != j)
+					continue;
+
+				#if SWEET_DEBUG && SWEET_THREADING_TIME_REXI
+					if (omp_get_thread_num() != local_thread_id)
+					{
+						// leave this dummy std::cout in it to avoid the intel compiler removing this part
+						std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << local_thread_id << std::endl;
+						exit(-1);
+					}
+				#endif
+
+				perThreadVars[local_thread_id] = new PerThreadVars;
+
+				std::size_t start, end;
+				p_get_workload_start_end(start, end, local_thread_id);
+				int local_size = (int)end-(int)start;
+
+				#if SWEET_DEBUG
+					if (local_size < 0)
+						FatalError("local_size < 0");
+				#endif
+
+				perThreadVars[local_thread_id]->alpha.resize(local_size);
+				perThreadVars[local_thread_id]->beta_re.resize(local_size);
+
+				perThreadVars[local_thread_id]->accum_phi.setup(sphereDataConfigSolver);
+				perThreadVars[local_thread_id]->accum_vort.setup(sphereDataConfigSolver);
+				perThreadVars[local_thread_id]->accum_div.setup(sphereDataConfigSolver);
+
+				for (std::size_t n = start; n < end; n++)
+				{
+					int thread_local_idx = n-start;
+
+					perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alpha[n];
+					perThreadVars[local_thread_id]->beta_re[thread_local_idx] = rexi_beta[n];
+				}
 			}
 		}
-	}
 
-	p_update_coefficients(false);
+		p_update_coefficients(false);
 
-	if (num_local_rexi_par_threads == 0)
-	{
-		std::cerr << "FATAL ERROR C: omp_get_max_threads == 0" << std::endl;
-		exit(-1);
-	}
+		if (num_local_rexi_par_threads == 0)
+		{
+			std::cerr << "FATAL ERROR C: omp_get_max_threads == 0" << std::endl;
+			exit(-1);
+		}
+
+	}	// rexi_use_direct_solution
 
 	#if SWEET_REXI_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_setup.stop();
@@ -460,6 +467,74 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
 	#endif
+
+	if (rexi_use_direct_solution)
+	{
+		// no Coriolis force active
+
+		/*
+		 * Using exponential integrators, we must compute an
+		 */
+
+		double ir = 1.0/simVars.sim.sphere_radius;
+		// avg. geopotential
+
+		double G = -simCoeffs.h0*simCoeffs.gravitation;
+
+		/*
+		 * See doc/rexi/rexi_for_swe_on_nonrotating_sphere.pdf
+		 */
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				double D = -(double)n*((double)n+1.0)*ir*ir;
+				D = -D;
+
+				if (D == 0)
+				{
+					idx++;
+					continue;
+				}
+
+				std::complex<double> &phi0 = io_prog_phi0.spectral_space_data[idx];
+				std::complex<double> &div0 = io_prog_div0.spectral_space_data[idx];
+
+				// TODO: precompute this
+
+				// result will be imaginary only!
+				std::complex<double> sqrt_D = std::sqrt(std::complex<double>(D));
+				std::complex<double> sqrt_G = std::sqrt(std::complex<double>(G));
+				std::complex<double> sqrt_DG = std::sqrt(std::complex<double>(D*G));
+
+				// Multiply with Q^{-1}
+				std::complex<double> l0 = -sqrt_DG/(2*G) * phi0 + 0.5*div0;
+				std::complex<double> l1 = +sqrt_DG/(2*G) * phi0 + 0.5*div0;
+
+				l0 = std::exp(timestep_size*(-sqrt_DG))*l0;
+				l1 = std::exp(timestep_size*sqrt_DG)*l1;
+
+				phi0 = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
+				div0 = l0 + l1;
+
+				//std::cout << phi0 << std::endl;
+				//std::cout << div0 << std::endl;
+
+				idx++;
+			}
+		}
+
+
+		#if SWEET_REXI_TIMINGS
+			SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+			SimulationBenchmarkTimings::getInstance().rexi.stop();
+		#endif
+
+		return;
+	} // direct solution
 
 	/*
 	 * PREPROCESSING

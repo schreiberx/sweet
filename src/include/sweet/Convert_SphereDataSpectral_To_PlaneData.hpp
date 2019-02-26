@@ -20,9 +20,9 @@ public:
 			PlaneDataConfig *i_planeDataConfig
 	)
 	{
-		assert(i_sphereData.sphereDataConfig->physical_num_lon == (int)i_planeDataConfig->physical_res[0]);
-		assert(i_sphereData.sphereDataConfig->physical_num_lat == (int)i_planeDataConfig->physical_res[1]);
-		assert((int)i_planeDataConfig->physical_array_data_number_of_elements == i_sphereData.sphereDataConfig->physical_array_data_number_of_elements);
+		assert(i_sphereDataSpectral.sphereDataConfig->physical_num_lon == (int)i_planeDataConfig->physical_res[0]);
+		assert(i_sphereDataSpectral.sphereDataConfig->physical_num_lat == (int)i_planeDataConfig->physical_res[1]);
+		assert((int)i_planeDataConfig->physical_array_data_number_of_elements == i_sphereDataSpectral.sphereDataConfig->physical_array_data_number_of_elements);
 
 		SphereData_Physical i_sphereData = i_sphereDataSpectral.getSphereDataPhysical();
 

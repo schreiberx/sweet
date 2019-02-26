@@ -190,7 +190,7 @@ class VisSweet	:
 
 				if (glDrawSphereSph == nullptr)
 				{
-					SphereDataConfig *sphereDataConfig = (SphereDataConfig*)bogus_data;
+					SphereData_Config *sphereDataConfig = (SphereData_Config*)bogus_data;
 
 					glDrawSphereSph = new GlDrawSphereSph;
 					glDrawSphereSph->initSphere(sphereDataConfig);

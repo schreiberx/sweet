@@ -7,7 +7,9 @@ import math
 from itertools import product
 
 
-from SWEET import *
+from mule_local.JobGeneration import *
+from mule.JobParallelizationDimOptions import *
+from mule.JobParallelization import *
 p = JobGeneration()
 
 verbose = False
@@ -20,7 +22,7 @@ verbose = False
 ##################################################
 
 p.compile.mode = 'release'
-if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
+if '_gnu' in os.getenv('MULE_PLATFORM_ID'):
 	p.compile.compiler = 'gnu'
 else:
 	p.compile.compiler = 'intel'
@@ -245,7 +247,7 @@ p.runtime.rexi_ci_mu = 0
 p.runtime.rexi_ci_primitive = 'circle'
 
 #p.runtime.rexi_beta_cutoff = 1e-16
-p.runtime.rexi_beta_cutoff = 0
+#p.runtime.rexi_beta_cutoff = 0
 
 p.runtime.viscosity = 0.0
 
@@ -336,7 +338,6 @@ if __name__ == "__main__":
 				p.runtime.timestepping_method = tsm[0]
 				p.runtime.timestepping_order = tsm[1]
 				p.runtime.timestepping_order2 = tsm[2]
-				p.runtime.rexi_use_direct_solution = tsm[3]
 
 				# Update TIME parallelization
 				ptime = JobParallelizationDimOptions('time')
@@ -374,7 +375,6 @@ if __name__ == "__main__":
 				p.runtime.timestepping_method = tsm[0]
 				p.runtime.timestepping_order = tsm[1]
 				p.runtime.timestepping_order2 = tsm[2]
-				p.runtime.rexi_use_direct_solution = tsm[3]
 
 				if len(tsm) > 4:
 					s = tsm[4]
@@ -490,7 +490,6 @@ if __name__ == "__main__":
 			p.runtime.timestepping_method = tsm[0]
 			p.runtime.timestepping_order = tsm[1]
 			p.runtime.timestepping_order2 = tsm[2]
-			p.runtime.rexi_use_direct_solution = tsm[3]
 
 			if not '_rexi' in p.runtime.timestepping_method:
 				p.runtime.rexi_method = ''

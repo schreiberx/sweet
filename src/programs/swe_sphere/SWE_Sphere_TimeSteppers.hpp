@@ -486,13 +486,16 @@ public:
 
 			if (i_simVars.misc.verbosity > 2)
 			{
-				std::cout << "ALPHA:" << std::endl;
-				for (std::size_t n = 0; n < l_rexi->rexi_alpha.size(); n++)
-					std::cout << l_rexi->rexi_alpha[n] << std::endl;
+				if (i_simVars.rexi.rexi_method != "direct")
+				{
+					std::cout << "ALPHA:" << std::endl;
+					for (std::size_t n = 0; n < lg_rexi->rexi_alpha.size(); n++)
+						std::cout << lg_rexi->rexi_alpha[n] << std::endl;
 
-				std::cout << "BETA:" << std::endl;
-				for (std::size_t n = 0; n < l_rexi->rexi_beta.size(); n++)
-					std::cout << l_rexi->rexi_beta[n] << std::endl;
+					std::cout << "BETA:" << std::endl;
+					for (std::size_t n = 0; n < lg_rexi->rexi_beta.size(); n++)
+						std::cout << lg_rexi->rexi_beta[n] << std::endl;
+				}
 			}
 
 			master = &(SWE_Sphere_TS_interface&)*lg_rexi;
