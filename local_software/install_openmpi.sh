@@ -4,7 +4,7 @@ source ./install_helpers.sh ""
 
 PKG_NAME="OpenMPI"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/mpicc"
-PKG_URL_SRC="openmpi-3.1.2.tar.bz2"
+PKG_URL_SRC="openmpi-4.0.1.tar.bz2"
 
 config_setup
 
