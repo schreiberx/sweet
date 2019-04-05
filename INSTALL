@@ -156,11 +156,13 @@ SCons:
 	OR
 	apt-get install scons
 
+	A version compatible with Python 3 is required
+
 	
 	
 
 ================
-FFTW (optional): mandatory if Fourier space is required
+FFTW (almost mandatory): mandatory if Fourier space is required
 ================
 	$ ./install_fftw3.sh
 
