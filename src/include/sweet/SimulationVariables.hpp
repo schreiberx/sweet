@@ -1260,8 +1260,6 @@ public:
 				{
 					int c = 0;
 
-					std::cout << i << std::endl;
-
 					{
 						int retval = benchmark.setup_longOptionValue(i-benchmark_start_option_index, optarg);
 						if (retval == 0)
