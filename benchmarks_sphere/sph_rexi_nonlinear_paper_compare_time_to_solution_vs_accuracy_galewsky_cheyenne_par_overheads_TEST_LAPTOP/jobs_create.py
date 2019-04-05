@@ -46,7 +46,7 @@ p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
-p.compile.rexi_timings = 'enable'
+p.compile.benchmark_timings = 'enable'
 p.compile.rexi_timings_additional_barriers = 'enable'
 
 
