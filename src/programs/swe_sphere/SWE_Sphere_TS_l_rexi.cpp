@@ -506,8 +506,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				// TODO: precompute this
 
 				// result will be imaginary only!
-				std::complex<double> sqrt_D = std::sqrt(std::complex<double>(D));
-				std::complex<double> sqrt_G = std::sqrt(std::complex<double>(G));
+				//std::complex<double> sqrt_D = std::sqrt(std::complex<double>(D));
+				//std::complex<double> sqrt_G = std::sqrt(std::complex<double>(G));
 				std::complex<double> sqrt_DG = std::sqrt(std::complex<double>(D*G));
 
 				// Multiply with Q^{-1}

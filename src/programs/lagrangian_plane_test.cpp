@@ -157,7 +157,10 @@ public:
 				posx_d, posy_d,
 				simVars.sim.plane_domain_size,
 				nullptr,
-				simVars.disc.timestepping_order
+				simVars.disc.timestepping_order,
+
+				simVars.disc.semi_lagrangian_iterations,
+				simVars.disc.semi_lagrangian_convergence_threshold
 		);
 
 		prog_u_prev = prog_u;

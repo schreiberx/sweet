@@ -97,7 +97,11 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 			posx_d,	posy_d,
 			simVars.sim.plane_domain_size,
 			&staggering,
-			simVars.disc.timestepping_order
+			simVars.disc.timestepping_order,
+
+			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_convergence_threshold
+
 	);
 
 

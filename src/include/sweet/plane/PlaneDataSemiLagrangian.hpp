@@ -64,8 +64,9 @@ public:
 			const Staggering *i_staggering,	///< staggering, if any (ux, uy, vx, vy)
 
 			int i_timestepping_order,
-			int max_iters = 10,
-			double i_convergence_tolerance = 1e-8
+
+			int max_iters,
+			double convergence_tolerance
 	)
 	{
 		Staggering s;
@@ -144,17 +145,20 @@ public:
 					o_posy_d.scalar_data[i] = sample2D.wrapPeriodic(ry_d_new.scalar_data[i], sample2D.domain_size[1]);
 				}
 
-				if (diff < i_convergence_tolerance)
+				if (diff < convergence_tolerance)
 				   break;
 			}
 
 
-			if (diff > i_convergence_tolerance)
+			if (convergence_tolerance > 0)
 			{
-				std::cout << "WARNING: Over convergence tolerance" << std::endl;
-				std::cout << "+ Iterations: " << iters << std::endl;
-				std::cout << "+ maxAbs: " << diff << std::endl;
-				std::cout << "+ Convergence tolerance: " << i_convergence_tolerance << std::endl;
+				if (diff > convergence_tolerance)
+				{
+					std::cout << "WARNING: Over convergence tolerance" << std::endl;
+					std::cout << "+ Iterations: " << iters << std::endl;
+					std::cout << "+ maxAbs: " << diff << std::endl;
+					std::cout << "+ Convergence tolerance: " << convergence_tolerance << std::endl;
+				}
 			}
 			return;
 		}

@@ -211,6 +211,43 @@ public:
 			std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 			std::cout << std::endl;
 		}
+
+
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+	        // MISC
+	        long_options[next_free_program_option] = {"output-file-name", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"output-file-mode", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+		}
+
+
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+			switch(i_option_index)
+			{
+			case 0:
+				output_file_name = i_value;
+				return 0;
+
+			case 1:
+				output_file_mode = i_value;
+				return 0;
+			}
+
+			return 2;
+		}
+
 	} iodata;
 
 
@@ -316,6 +353,91 @@ public:
 			std::cout << "	--advection-rotation-angle [float]	Rotation angle for e.g. advection test case" << std::endl;
 
 			std::cout << "" << std::endl;
+		}
+
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+	        long_options[next_free_program_option] = {"random-seed", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"benchmark-name", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"benchmark-setup-dealiased", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+
+	        long_options[next_free_program_option] = {"benchmark-galewsky-umax", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"benchmark-galewsky-hamp", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"benchmark-galewsky-phi2", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+		}
+
+
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+
+			switch(i_option_index)
+			{
+			case 0:
+				random_seed = atoi(i_value);
+				return 0;
+
+			case 1:
+				object_coord_x = atof(i_value);
+				return 0;
+
+			case 2:
+				object_coord_y = atof(i_value);
+				return 0;
+
+			case 3:
+				sphere_advection_rotation_angle = atof(i_value);
+				return 0;
+
+			case 4:
+				benchmark_name = i_value;
+				return 0;
+
+			case 5:
+				setup_dealiased = atof(i_value);
+				return 0;
+
+			case 6:
+				benchmark_galewsky_umax = atof(i_value);
+				return 0;
+
+			case 7:
+				benchmark_galewsky_hamp = atof(i_value);
+				return 0;
+
+			case 8:
+				benchmark_galewsky_phi2 = atof(i_value);
+				return 0;
+			}
+
+			return 9;
 		}
 	} benchmark;
 
@@ -430,6 +552,32 @@ public:
 			std::cout << "" << std::endl;
 
 		}
+
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+	        // sim
+	        long_options[next_free_program_option] = {"advection-velocity", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+		}
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+			switch(i_option_index)
+			{
+			case 0:
+				split3double(i_value, &advection_velocity[0], &advection_velocity[1], &advection_velocity[2]);
+				return 0;
+			}
+
+			return 1;
+		}
 	} sim;
 
 
@@ -475,6 +623,11 @@ public:
 		/// Crank-Nicolson filter
 		double timestepping_crank_nicolson_filter = 0.5;
 
+		/// Number of iterations for semi-Lagrangian methods
+		int semi_lagrangian_iterations = 999;
+
+		/// Convergence threshold for semi-Lagrangian methods (set to -1 to ignore error)
+		double semi_lagrangian_convergence_threshold = 1e-8;
 
 
 		/// String of time stepping method
@@ -486,6 +639,7 @@ public:
 
 		/// Order of 2nd time stepping which might be used
 		int timestepping_order2 = -1;
+
 
 
 		void outputConfig()
@@ -501,6 +655,8 @@ public:
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_leapfrog_robert_asselin_filter: " << timestepping_leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + timestepping_crank_nicolson_filter: " << timestepping_crank_nicolson_filter << std::endl;
+			std::cout << " + semi_lagrangian_iterations: " << semi_lagrangian_iterations << std::endl;
+			std::cout << " + semi_lagrangian_convergence_threshold: " << semi_lagrangian_convergence_threshold << std::endl;
 			std::cout << " + plane_dealiasing (compile time): " <<
 		#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 					1
@@ -539,9 +695,90 @@ public:
 			std::cout << "							1: generate in physical space" << std::endl;
 			std::cout << "							2: generate in spectral space" << std::endl;
 			std::cout << "							3: generate in spectral space with complex matrix)" << std::endl;
+			std::cout << "	--semi-lagrangian-iterations [int]		Number of iterations during semi-Lagrangian time integration" << std::endl;
+			std::cout << "	--semi-lagrangian-convergence-threshold [float]	Threshold to stop iterating, Use -1 to disable" << std::endl;
 
 		}
 
+
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+
+	        // DISC
+	        long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"timestepping-order", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"timestepping-order2", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+
+	        long_options[next_free_program_option] = {"semi-lagrangian-iterations", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"semi-lagrangian-convergence-threshold", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+
+	        long_options[next_free_program_option] = {"space-grid-use-c-staggering", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+		}
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+
+			switch(i_option_index)
+			{
+			case 0:
+				timestepping_method = i_value;
+				return 0;
+
+			case 1:
+				timestepping_order = atoi(i_value);
+				return 0;
+
+			case 2:
+				timestepping_order2 = atoi(i_value);
+				return 0;
+
+			case 3:
+				timestepping_leapfrog_robert_asselin_filter = atof(i_value);
+				return 0;
+
+			case 4:
+				timestepping_crank_nicolson_filter = atof(i_value);
+				return 0;
+
+			case 5:
+				semi_lagrangian_iterations = atoi(i_value);
+				return 0;
+
+			case 6:
+				semi_lagrangian_convergence_threshold = atof(i_value);
+				return 0;
+
+			case 7:
+				space_grid_use_c_staggering = atof(i_value);
+				return 0;
+			}
+
+			return 8;
+		}
 	} disc;
 
 
@@ -561,23 +798,6 @@ public:
 	 */
 	struct Misc
 	{
-		void outputConfig()
-		{
-			std::cout << std::endl;
-			std::cout << "MISC:" << std::endl;
-			std::cout << " + verbosity: " << verbosity << std::endl;
-			std::cout << " + compute_errors " << compute_errors << std::endl;
-			std::cout << " + instability_checks: " << instability_checks << std::endl;
-			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
-			std::cout << " + vis_id: " << vis_id << std::endl;
-			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
-			std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
-			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
-			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
-			std::cout << std::endl;
-		}
-
-
 		/// set verbosity of simulation
 		int verbosity = 0;
 
@@ -610,6 +830,89 @@ public:
 		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
 		 */
 		int normal_mode_analysis_generation = 0;
+
+
+		void outputConfig()
+		{
+			std::cout << std::endl;
+			std::cout << "MISC:" << std::endl;
+			std::cout << " + verbosity: " << verbosity << std::endl;
+			std::cout << " + compute_errors " << compute_errors << std::endl;
+			std::cout << " + instability_checks: " << instability_checks << std::endl;
+			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
+			std::cout << " + vis_id: " << vis_id << std::endl;
+			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
+			std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
+			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
+			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
+			std::cout << std::endl;
+		}
+
+
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+
+	        // MISC
+	        long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"instability-checks", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"use-nonlinear-only-visc", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"reuse-plans", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"normal-mode-analysis-generation", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+		}
+
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+
+			switch(i_option_index)
+			{
+			case 0:
+				compute_errors = atoi(i_value);
+				return 0;
+
+			case 1:
+				instability_checks = atoi(i_value);
+				return 0;
+
+			case 2:
+				sphere_use_robert_functions = atoi(i_value);
+				return 0;
+
+			case 3:
+				use_nonlinear_only_visc = atoi(i_value);
+				return 0;
+
+			case 4:
+				reuse_spectral_transformation_plans = atoi(i_value);
+				return 0;
+
+			case 5:
+				normal_mode_analysis_generation = atoi(i_value);
+				return 0;
+			}
+
+			return 6;
+		}
+
 
 	} misc;
 
@@ -652,7 +955,34 @@ public:
 			std::cout << std::endl;
 		}
 
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+			long_options[next_free_program_option] = {"dt", required_argument, 0, 256+next_free_program_option};
+			next_free_program_option++;
+		}
+
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+			switch(i_option_index)
+			{
+			case 0:
+				current_timestep_size = atof(i_value);
+				return 0;
+			}
+
+			return 1;
+		}
+
 	} timecontrol;
+
 
 
 	void outputConfig()
@@ -825,87 +1155,23 @@ public:
 
 		int next_free_program_option = 0;
 
-		// SETUP
-        long_options[next_free_program_option] = {"random-seed", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+        int benchmark_start_option_index = next_free_program_option;
+		benchmark.setup_longOptionsList(long_options, next_free_program_option);
 
-        long_options[next_free_program_option] = {"initial-coord-x", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+        int sim_start_option_index = next_free_program_option;
+		sim.setup_longOptionsList(long_options, next_free_program_option);
 
-        long_options[next_free_program_option] = {"initial-coord-y", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+        int iodata_start_option_index = next_free_program_option;
+		iodata.setup_longOptionsList(long_options, next_free_program_option);
 
-        long_options[next_free_program_option] = {"advection-rotation-angle", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+        int misc_start_option_index = next_free_program_option;
+		misc.setup_longOptionsList(long_options, next_free_program_option);
 
-        long_options[next_free_program_option] = {"advection-velocity", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
+        int disc_start_option_index = next_free_program_option;
+		disc.setup_longOptionsList(long_options, next_free_program_option);
 
-        long_options[next_free_program_option] = {"benchmark-name", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"benchmark-setup-dealiased", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-
-        long_options[next_free_program_option] = {"benchmark-galewsky-umax", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"benchmark-galewsky-hamp", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"benchmark-galewsky-phi2", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-
-        // MISC
-        long_options[next_free_program_option] = {"output-file-name", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"output-file-mode", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"instability-checks", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"use-nonlinear-only-visc", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"reuse-plans", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"normal-mode-analysis-generation", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        // DISC
-        long_options[next_free_program_option] = {"timestepping-method", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"timestepping-order", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"timestepping-order2", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"leapfrog-robert-asselin-filter", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"space-grid-use-c-staggering", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-        long_options[next_free_program_option] = {"dt", required_argument, 0, 256+next_free_program_option};
-        next_free_program_option++;
-
-
+        int timecontrol_start_option_index = next_free_program_option;
+		timecontrol.setup_longOptionsList(long_options, next_free_program_option);
 
 
 #if SWEET_PARAREAL
@@ -917,6 +1183,7 @@ public:
 			);
 #endif
 
+
 #if SWEET_LIBPFASST
         int libpfasst_start_option_index = next_free_program_option;
         libpfasst.setup_longOptionList(
@@ -925,6 +1192,7 @@ public:
 				       max_options
 				       );
 #endif
+
 
 
         int rexi_start_option_index = next_free_program_option;
@@ -992,39 +1260,50 @@ public:
 				{
 					int c = 0;
 
-								if (i == c)	{	benchmark.random_seed = atoi(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.object_coord_x = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.object_coord_y = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.sphere_advection_rotation_angle = atof(optarg);		continue;	}
-					c++;		if (i == c) {
-							split3double(optarg, &sim.advection_velocity[0], &sim.advection_velocity[1], &sim.advection_velocity[2]);
+					std::cout << i << std::endl;
+
+					{
+						int retval = benchmark.setup_longOptionValue(i-benchmark_start_option_index, optarg);
+						if (retval == 0)
 							continue;
+						c += retval;
 					}
-					c++;		if (i == c)	{	benchmark.benchmark_name = optarg;		continue;	}
-					c++;		if (i == c)	{	benchmark.setup_dealiased = atof(optarg);		continue;	}
 
-					c++;		if (i == c)	{	benchmark.benchmark_galewsky_umax = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.benchmark_galewsky_hamp = atof(optarg);		continue;	}
-					c++;		if (i == c)	{	benchmark.benchmark_galewsky_phi2 = atof(optarg);		continue;	}
+					{
+						int retval = sim.setup_longOptionValue(i-sim_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
 
-					c++;		if (i == c)	{	iodata.output_file_name = optarg;					continue;	}
-					c++;		if (i == c)	{	iodata.output_file_mode = optarg;					continue;	}
+					{
+						int retval = iodata.setup_longOptionValue(i-iodata_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
 
-					c++;		if (i == c)	{	misc.compute_errors = atoi(optarg);					continue;	}
-					c++;		if (i == c)	{	misc.instability_checks = atoi(optarg);				continue;	}
-					c++;		if (i == c)	{	misc.sphere_use_robert_functions = atoi(optarg);	continue;	}
-					c++;		if (i == c)	{	misc.use_nonlinear_only_visc = atoi(optarg);			continue;	}
-					c++;		if (i == c)	{	misc.reuse_spectral_transformation_plans = atoi(optarg);			continue;	}
-					c++;		if (i == c)	{	misc.normal_mode_analysis_generation = atoi(optarg);	continue;	}
 
-					c++;		if (i == c)	{	disc.timestepping_method = optarg;					continue;	}
-					c++;		if (i == c)	{	disc.timestepping_order = atoi(optarg);				continue;	}
-					c++;		if (i == c)	{	disc.timestepping_order2 = atoi(optarg);			continue;	}
-					c++;		if (i == c)	{	disc.timestepping_leapfrog_robert_asselin_filter = atof(optarg);	continue;	}
-					c++;		if (i == c)	{	disc.timestepping_crank_nicolson_filter = atof(optarg);			continue;	}
-					c++;		if (i == c)	{	disc.space_grid_use_c_staggering = atof(optarg);					continue;	}
+					{
+						int retval = misc.setup_longOptionValue(i-misc_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
 
-					c++;		if (i == c)	{	timecontrol.current_timestep_size = atof(optarg);		continue;	}
+					{
+						int retval = disc.setup_longOptionValue(i-disc_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
+
+					{
+						int retval = timecontrol.setup_longOptionValue(i-timecontrol_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
 
 #if SWEET_PARAREAL
 					{
@@ -1064,7 +1343,10 @@ public:
 					 * This can be tested with the --dummy parameter
 					 */
 					if (c != next_free_program_option-1)
+					{
+						outputConfig();
 						FatalError("Inconsistent processing of arguments");
+					}
 
 				}
 				else

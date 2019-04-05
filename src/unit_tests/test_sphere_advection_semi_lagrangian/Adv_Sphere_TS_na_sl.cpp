@@ -50,7 +50,10 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 			dt,
 			simVars.sim.sphere_radius,
 			posx_d, posy_d,
-			timestepping_order
+			timestepping_order,
+
+			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_convergence_threshold
 	);
 
 	diag_u_prev = diag_u;

@@ -40,7 +40,10 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			posx_d, posy_d,
 			simVars.sim.plane_domain_size,
 			&staggering,
-			2
+			2,
+
+			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_convergence_threshold
 			);
 
 	// Save old velocities
