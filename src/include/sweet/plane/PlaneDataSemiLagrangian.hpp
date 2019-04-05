@@ -13,6 +13,7 @@
 #include "PlaneData.hpp"
 #include "PlaneDataSampler.hpp"
 #include <sweet/ScalarDataArray.hpp>
+#include <sweet/SimulationBenchmarkTiming.hpp>
 
 class PlaneDataSemiLagrangian
 {
@@ -69,6 +70,10 @@ public:
 			double convergence_tolerance
 	)
 	{
+#if SWEET_BENCHMARK_TIMINGS
+	SimulationBenchmarkTimings::getInstance().main_timestepping_semi_lagrangian.start();
+#endif
+
 		Staggering s;
 		if (i_staggering == nullptr)
 		{
@@ -82,10 +87,8 @@ public:
 		{
 			o_posx_d = i_posx_a - i_dt*Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u, false);
 			o_posy_d = i_posy_a - i_dt*Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v, false);
-			return;
 		}
-
-		if (i_timestepping_order == 2)
+		else if (i_timestepping_order == 2)
 		{
 			ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u_prev, false);
 			ScalarDataArray v_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v_prev, false);
@@ -160,10 +163,17 @@ public:
 					std::cout << "+ Convergence tolerance: " << convergence_tolerance << std::endl;
 				}
 			}
-			return;
+		}
+		else
+		{
+			FatalError("This time integration order is not implemented");
 		}
 
-		FatalError("This time integration order is not implemented");
+
+#if SWEET_BENCHMARK_TIMINGS
+		SimulationBenchmarkTimings::getInstance().main_timestepping_semi_lagrangian.stop();
+#endif
+
 	}
 };
 

@@ -6,6 +6,9 @@
  */
 
 
+#ifndef SIMULATION_BENCHMARK_TIMINGS_HPP
+#define SIMULATION_BENCHMARK_TIMINGS_HPP
+
 
 #include <sweet/Stopwatch.hpp>
 
@@ -107,3 +110,5 @@ public:
 		reset();
 	}
 };
+
+#endif

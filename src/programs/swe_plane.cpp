@@ -32,6 +32,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <sweet/SimulationBenchmarkTiming.hpp>
+
 
 #include "swe_plane/SWE_Plane_TimeSteppers.hpp"
 #include "swe_plane/SWE_Plane_Normal_Modes.hpp"
@@ -194,6 +196,8 @@ public:
 
 	void reset()
 	{
+		SimulationBenchmarkTimings::getInstance().main_setup.start();
+
 		simVars.reset();
 
 		if (simVars.benchmark.benchmark_name == "")
@@ -411,6 +415,9 @@ public:
 
 
 		timestep_do_output();
+
+		SimulationBenchmarkTimings::getInstance().main_setup.stop();
+
 	}
 
 
@@ -1420,6 +1427,8 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "MPI_RANK: " << mpi_rank << std::endl;
 #endif
 
+		SimulationBenchmarkTimings::getInstance().main.start();
+
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
 		{
@@ -1437,7 +1446,6 @@ int main(int i_argc, char *i_argv[])
 		}
 		else
 #endif
-
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
@@ -1533,26 +1541,38 @@ int main(int i_argc, char *i_argv[])
 					std::cout << "[MULE] error_end_linf_v: " << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
 					std::cout << std::endl;
 				}
-			}
 
 
-			if (simulationSWE->compute_error_to_analytical_solution)
-			{
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark.analytical_error_rms_h << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark.analytical_error_rms_u << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark.analytical_error_rms_v << std::endl;
 
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark.analytical_error_maxabs_h << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark.analytical_error_maxabs_u << std::endl;
-				std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark.analytical_error_maxabs_v << std::endl;
+				if (simulationSWE->compute_error_to_analytical_solution)
+				{
+					std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark.analytical_error_rms_h << std::endl;
+					std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark.analytical_error_rms_u << std::endl;
+					std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark.analytical_error_rms_v << std::endl;
+
+					std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark.analytical_error_maxabs_h << std::endl;
+					std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark.analytical_error_maxabs_u << std::endl;
+					std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark.analytical_error_maxabs_v << std::endl;
+				}
 			}
 
 			delete simulationSWE;
+		} // end of gui not enabled
+
+		SimulationBenchmarkTimings::getInstance().main.stop();
+
+#if SWEET_MPI
+		if (mpi_rank == 0)
+#endif
+		{
+			std::cout << std::endl;
+			SimulationBenchmarkTimings::getInstance().output();
 		}
 	}
 #if SWEET_MPI
-	else
+	else	// mpi_rank != 0
 	{
+
 		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
 		{
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);

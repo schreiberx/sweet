@@ -10,7 +10,6 @@
  */
 
 #include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
-#include <sweet/SimulationBenchmarkTiming.hpp>
 
 /**
  * Solve  SWE with Crank-Nicolson implicit time stepping
@@ -52,10 +51,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		double i_simulation_timestamp
 )
 {
-#if SWEET_BENCHMARK_TIMINGS
-	SimulationBenchmarkTimings::getInstance().main_timestepping_semi_lagrangian.start();
-#endif
-
 	if (i_dt <= 0)
 		FatalError("SWE_Plane_TS_l_cn_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
 
@@ -181,10 +176,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	io_h = h;
 	io_u = u;
 	io_v = v;
-
-#if SWEET_BENCHMARK_TIMINGS
-	SimulationBenchmarkTimings::getInstance().main_timestepping_semi_lagrangian.stop();
-#endif
 }
 
 
