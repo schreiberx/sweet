@@ -28,8 +28,8 @@
 #include "SWE_Sphere_TS_interface.hpp"
 
 
-#ifndef SWEET_REXI_TIMINGS
-	#define SWEET_REXI_TIMINGS 1
+#ifndef SWEET_BENCHMARK_TIMINGS
+	#define SWEET_BENCHMARK_TIMINGS 1
 #endif
 
 #ifndef SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS
@@ -38,7 +38,7 @@
 
 
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 #include <sweet/Stopwatch.hpp>
 #endif
 

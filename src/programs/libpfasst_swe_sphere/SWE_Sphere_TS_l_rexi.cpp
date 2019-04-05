@@ -15,7 +15,7 @@
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
 #ifndef SWEET_THREADING_TIME_REXI
-#	define SWEET_THREADING_TIME_REXI 1
+#	define SWEET_THREADING_TIME_REXI 0
 #endif
 
 
@@ -50,7 +50,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 	sphereDataConfigSolver(nullptr)
 {
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();
 	#endif
@@ -87,7 +87,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 	#endif
 
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_setup.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
@@ -97,7 +97,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 
 void SWE_Sphere_TS_l_rexi::reset()
 {
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();
 	#endif
@@ -112,7 +112,7 @@ void SWE_Sphere_TS_l_rexi::reset()
 
 	sphereDataConfigSolver = nullptr;
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_setup.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
@@ -122,7 +122,7 @@ void SWE_Sphere_TS_l_rexi::reset()
 
 SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 {
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_shutdown.start();
 	#endif
@@ -133,7 +133,7 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 		delete p;
 	}
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		#if SWEET_MPI
 
 			int num_ranks;
@@ -218,7 +218,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 
 	reset();
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();
 	#endif
@@ -345,7 +345,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 		exit(-1);
 	}
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_setup.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
@@ -419,7 +419,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	double i_simulation_timestamp
 )
 {
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
 	#endif
@@ -430,7 +430,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	run_timestep(o_prog_phi0, o_prog_vort0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
@@ -456,7 +456,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	double i_simulation_timestamp
 )
 {
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
 	#endif
@@ -464,7 +464,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	/*
 	 * PREPROCESSING
 	 */
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
 	#endif
 
@@ -488,11 +488,11 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			p_update_coefficients(true);
 		}
 
-		#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
+		#if SWEET_BENCHMARK_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 		#endif
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
 	#endif
 
@@ -500,7 +500,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	 * BROADCAST
 	 */
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping_broadcast.start();
 	#endif
 
@@ -517,7 +517,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 		#endif
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping_broadcast.stop();
 	#endif
 
@@ -527,7 +527,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	 */
 	#if !SWEET_THREADING_TIME_REXI
 
-		#if SWEET_REXI_TIMINGS
+		#if SWEET_BENCHMARK_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
 		#endif
 
@@ -662,7 +662,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 				io_prog_div0 = perThreadVars[0]->accum_div.spectral_returnWithDifferentModes(io_prog_phi0.sphereDataConfig);
 			}
 
-		#if SWEET_REXI_TIMINGS
+		#if SWEET_BENCHMARK_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
 		#endif
 
@@ -672,7 +672,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 		if (simVars.rexi.use_sphere_extended_modes == 0)
 		{
-			#if SWEET_REXI_TIMINGS
+			#if SWEET_BENCHMARK_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
 			#endif
 
@@ -753,7 +753,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					#endif
 				}
 
-			#if SWEET_REXI_TIMINGS
+			#if SWEET_BENCHMARK_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 			#endif
@@ -783,14 +783,14 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 						io_prog_div0.physical_space_data[i] += perThreadVars[thread_id]->accum_div.physical_space_data[i];
 				}
 
-			#if SWEET_REXI_TIMINGS
+			#if SWEET_BENCHMARK_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 			#endif
 			
 		}
 		else
 		{
-			#if SWEET_REXI_TIMINGS
+			#if SWEET_BENCHMARK_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.start();
 			#endif
 
@@ -867,7 +867,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 				assert(io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements == sphereDataConfig->spectral_array_data_number_of_elements);
 
-			#if SWEET_REXI_TIMINGS
+			#if SWEET_BENCHMARK_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_solver.stop();
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 			#endif
@@ -898,7 +898,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 					io_prog_div0.physical_space_data[i] += tmp.physical_space_data[i];
 			}
 
-			#if SWEET_REXI_TIMINGS
+			#if SWEET_BENCHMARK_TIMINGS
 				SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 			#endif
 		}
@@ -906,14 +906,14 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	#endif	// END SWEET_THREADING_TIME_REXI
 
-	#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
-		#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
+		#if SWEET_BENCHMARK_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
 		#endif
 
 			MPI_Barrier(MPI_COMM_WORLD);
 
-		#if SWEET_REXI_TIMINGS
+		#if SWEET_BENCHMARK_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
 		#endif
 	#endif
@@ -921,7 +921,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 	#if SWEET_MPI
 
-		#if SWEET_REXI_TIMINGS
+		#if SWEET_BENCHMARK_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 		#endif
 
@@ -978,14 +978,14 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 			io_prog_div0.loadSphereDataPhysical(prog_div0_phys);
 
 
-		#if SWEET_REXI_TIMINGS
+		#if SWEET_BENCHMARK_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.stop();
 		#endif
 	#endif
 
 
 
-	#if SWEET_REXI_TIMINGS
+	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif

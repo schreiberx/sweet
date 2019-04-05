@@ -16,8 +16,7 @@ public:
 	Stopwatch main_setup;
 	Stopwatch main_timestepping;
 
-#if SWEET_REXI_TIMINGS
-	// TODO: call SWEET_REXI_TIMINGS somehow different, e.g. SWEET_BENCHMARK_MICRO_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	Stopwatch main_timestepping_nonlinearities;
 
 	Stopwatch rexi;
@@ -28,7 +27,12 @@ public:
 	Stopwatch rexi_timestepping_broadcast;
 	Stopwatch rexi_timestepping_reduce;
 	Stopwatch rexi_timestepping_miscprocessing;
+
+
+	Stopwatch main_timestepping_semi_lagrangian;
 #endif
+
+
 
 	static SimulationBenchmarkTimings& getInstance()
 	{
@@ -41,7 +45,7 @@ public:
 		main.reset();
 		main_setup.reset();
 		main_timestepping.reset();
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 		main_timestepping_nonlinearities.reset();
 
 
@@ -53,6 +57,8 @@ public:
 		rexi_timestepping_broadcast.reset();
 		rexi_timestepping_reduce.reset();
 		rexi_timestepping_miscprocessing.reset();
+
+		main_timestepping_semi_lagrangian.reset();
 #endif
 	}
 
@@ -64,12 +70,12 @@ public:
 			std::cout << "[MULE] simulation_benchmark_timings.main: " << main() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.main_setup: " << main_setup() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.main_timestepping: " << main_timestepping() << std::endl;
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 			std::cout << "[MULE] simulation_benchmark_timings.main_timestepping_nonlinearities: " << main_timestepping_nonlinearities() << std::endl;
 #endif
 		}
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 		if (
 				rexi() != 0 ||
 				rexi_setup() != 0 ||
@@ -89,6 +95,8 @@ public:
 			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping_broadcast: " << rexi_timestepping_broadcast() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping_reduce: " << rexi_timestepping_reduce() << std::endl;
 			std::cout << "[MULE] simulation_benchmark_timings.rexi_timestepping_miscprocessing: " << rexi_timestepping_miscprocessing() << std::endl;
+
+			std::cout << "[MULE] simulation_benchmark_timings.semi_lagrangian: " << main_timestepping_semi_lagrangian() << std::endl;
 		}
 #endif
 	}

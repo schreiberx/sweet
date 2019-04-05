@@ -610,10 +610,10 @@ else:
 	env.Append(CXXFLAGS=' -DSWEET_THREADING_TIME_REXI=0')
 
 
-if p.rexi_timings == 'enable':
-	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS=1')
+if p.benchmark_timings == 'enable':
+	env.Append(CXXFLAGS=' -DSWEET_BENCHMARK_TIMINGS=1')
 else:
-	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS=0')
+	env.Append(CXXFLAGS=' -DSWEET_BENCHMARK_TIMINGS=0')
 
 if p.rexi_timings_additional_barriers == 'enable':
 	env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=1')

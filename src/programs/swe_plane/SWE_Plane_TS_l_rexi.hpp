@@ -20,11 +20,11 @@
 #include "SWE_Plane_TS_l_direct.hpp"
 
 
-#ifndef SWEET_REXI_TIMINGS
-	#define SWEET_REXI_TIMINGS	0
+#ifndef SWEET_BENCHMARK_TIMINGS
+	#define SWEET_BENCHMARK_TIMINGS	0
 #endif
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 #	include <sweet/Stopwatch.hpp>
 #endif
 
@@ -51,7 +51,7 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 
 	PlaneDataConfig *planeDataConfig;
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	Stopwatch stopwatch_preprocessing;
 	Stopwatch stopwatch_broadcast;
 	Stopwatch stopwatch_reduce;

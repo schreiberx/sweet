@@ -96,7 +96,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 		double i_simulation_timestamp
 )
 {
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.start();
 #endif
 
@@ -150,7 +150,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 	o_div_t += -op.laplace(tmpspec);
 
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	SimulationBenchmarkTimings::getInstance().main_timestepping_nonlinearities.stop();
 #endif
 }

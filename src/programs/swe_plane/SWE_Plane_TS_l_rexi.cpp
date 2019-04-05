@@ -15,6 +15,7 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
+#include <sweet/SimulationBenchmarkTiming.hpp>
 
 #if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 #include <omp.h>
@@ -174,7 +175,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	}
 
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	stopwatch_preprocessing.reset();
 	stopwatch_broadcast.reset();
 	stopwatch_reduce.reset();
@@ -216,6 +217,10 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		double i_simulation_timestamp
 )
 {
+#if SWEET_BENCHMARK_TIMINGS
+	SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
+#endif
+
 	final_timestep = false;
 
 	if (rexi_use_direct_solution)
@@ -224,6 +229,11 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		o_u = i_u;
 		o_v = i_v;
 		ts_l_direct.run_timestep(o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
+
+#if SWEET_BENCHMARK_TIMINGS
+	SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+#endif
+
 		return;
 	}
 
@@ -251,7 +261,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 #if SWEET_MPI
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	if (mpi_rank == 0)
 		stopwatch_broadcast.start();
 #endif
@@ -262,6 +272,10 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	if (std::isnan(i_h_pert.p_physical_get(0,0)))
 	{
 		final_timestep = true;
+
+#if SWEET_BENCHMARK_TIMINGS
+	SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+#endif
 		return;
 	}
 
@@ -269,7 +283,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	MPI_Bcast(i_u.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	MPI_Bcast(i_v.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	if (mpi_rank == 0)
 		stopwatch_broadcast.stop();
 #endif
@@ -283,7 +297,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #endif
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 		bool stopwatch_measure = false;
 	#if SWEET_THREADING_TIME_REXI
 		if (omp_get_thread_num() == 0)
@@ -292,7 +306,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				stopwatch_measure = true;
 #endif
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 		if (stopwatch_measure)
 			stopwatch_preprocessing.start();
 #endif
@@ -386,12 +400,12 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 		PlaneDataComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 		if (stopwatch_measure)
 			stopwatch_preprocessing.stop();
 #endif
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 		if (stopwatch_measure)
 			stopwatch_solve_rexi_terms.start();
 #endif
@@ -457,7 +471,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 			}
 		}
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 		if (stopwatch_measure)
 			stopwatch_solve_rexi_terms.stop();
 #endif
@@ -466,7 +480,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	if (mpi_rank == 0)
 		stopwatch_reduce.start();
 #endif
@@ -588,9 +602,13 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #endif
 
 
-#if SWEET_REXI_TIMINGS
+#if SWEET_BENCHMARK_TIMINGS
 	if (mpi_rank == 0)
 		stopwatch_reduce.stop();
+#endif
+
+#if SWEET_BENCHMARK_TIMINGS
+	SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
 #endif
 }
 
