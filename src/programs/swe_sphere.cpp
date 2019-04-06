@@ -967,6 +967,8 @@ int main(int i_argc, char *i_argv[])
 			if (simVars.iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_reference_filenames << std::endl;
 
+			std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
+
 			delete simulationSWE;
 		}
 

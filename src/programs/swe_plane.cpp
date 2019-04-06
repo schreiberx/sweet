@@ -1548,6 +1548,9 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
+			std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
+
+
 			delete simulationSWE;
 		} // end of gui not enabled
 
