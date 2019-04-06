@@ -1464,16 +1464,9 @@ int main(int i_argc, char *i_argv[])
 			// already called in constructor
 			//simulationSWE->reset();
 
-			//Time counter
-			Stopwatch time;
-
 #if SWEET_MPI
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
-
-			// Start counting time
-			time.reset();
-			time.start();
 
 
 			if (simVars.misc.normal_mode_analysis_generation > 0)
@@ -1482,6 +1475,8 @@ int main(int i_argc, char *i_argv[])
 			}
 			else
 			{
+				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
+
 				// Main time loop
 				while (true)
 				{
@@ -1499,21 +1494,18 @@ int main(int i_argc, char *i_argv[])
 							FatalError("INSTABILITY DETECTED");
 					}
 				}
+
+				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
 			}
 
-			// Stop counting time
-			time.stop();
-
-			double wallclock_time = time();
 
 			if (simVars.iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_filenames << std::endl;
 
 			// End of run output results
 			std::cout << "***************************************************" << std::endl;
-			std::cout << "Wallclock time (seconds): " << wallclock_time << std::endl;
 			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-			std::cout << "Time per time step: " << wallclock_time/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+			std::cout << "Time per time step: " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
 			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
 
 			simulationSWE->compute_errors();
