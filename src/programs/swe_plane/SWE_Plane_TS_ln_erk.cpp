@@ -117,6 +117,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		PlaneData total_h_pv = total_h;
 		total_h_pv = op.avg_b_x(op.avg_b_y(total_h));
 
+#if 0
 		if (total_h_pv.reduce_min() < 0.00000001)
 		{
 			std::cerr << "Test case not adequate for vector invariant formulation. Null or negative water height" << std::endl;
@@ -125,6 +126,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 			std::cerr << "Min h_pert : " << i_h.reduce_min() << std::endl;
 			FatalError("SWE_Plane_TS_ln_erk: Methods unstable or inadequate for vector invariant swe");;
 		}
+#endif
 
 		PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
 
