@@ -7,6 +7,7 @@ DATA=""
 DATA+=""
 
 # Reference solution
+#DATA+=" job_benchref_RT_tsm_ln_erk_tso4_tsob4_C2.000e+00_S086400 "
 DATA+=" job_benchref_RT_tsm_ln_erk_tso4_tsob4_C2.000e+00_S086400 "
 
 # SL-SI-SETTLS_dt0112.5
