@@ -47,6 +47,11 @@ earth = EarthMKSDimensions()
 CompileSWEPlane(jg)
 
 
+# Activate benchmark timers
+jg.compile.benchmark_timings='enable'
+
+
+
 # Verbosity mode
 jg.runtime.verbosity = 3
 
@@ -157,6 +162,15 @@ if True:
 
 	# Use this one as the reference solution!
 	jg.reference_job_unique_id = jg.job_unique_id
+
+
+
+#
+# Use only 2 iterations for Semi-Lagrangian methods
+#
+unique_id_filter.append('runtime.semi_lagrangian')
+jg.runtime.semi_lagrangian_iterations = 2
+jg.runtime.semi_lagrangian_convergence_threshold = -1
 
 
 jg.parallelization.max_wallclock_seconds = max_wallclock_seconds
