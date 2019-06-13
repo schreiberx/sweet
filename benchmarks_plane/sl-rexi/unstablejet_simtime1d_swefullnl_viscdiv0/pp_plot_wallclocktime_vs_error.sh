@@ -1,5 +1,4 @@
-#! /usr/bin/env bash
-
+#! /bin/bash
 
 DATA=""
 
@@ -25,8 +24,10 @@ DATA+=" *tsm_ln_erk_tso2*"
 DATA+=" *tsm_l_rexi_n_erk_tso2*"
 
 
-../pp_plot_errors_single.py			\
+#../pp_plot_errors_single.py			\
+
+../pp_plot_wallclocktime_vs_error.py	\
 	plane_data_diff_prog_h_pert.norm_linf	\
-	plot_errors_simtime_10days.pdf			\
+	plot_errors_wallclocktime_prog_h_1days.pdf			\
 	$DATA
 

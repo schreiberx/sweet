@@ -112,6 +112,7 @@ c = 0
 
 title = ''
 for key, d in data.items():
+	print(d['jobgeneration.job_dirpath'])
 	x = x_values(d)
 	y = y_values(d)
 	l = label(d)

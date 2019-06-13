@@ -35,6 +35,7 @@ jg.compilecommand_in_jobscript = False
 
 # Wallclock time
 max_wallclock_seconds = 2*24*60*60
+max_wallclock_seconds = 1*24*60*60
 ref_max_wallclock_seconds = 48*60*60
 
 #Get Earth parameters (if necessary)
@@ -45,6 +46,11 @@ earth = EarthMKSDimensions()
 #
 #Basic plane options
 CompileSWEPlane(jg)
+
+
+# Activate benchmark timers
+jg.compile.benchmark_timings='enable'
+
 
 
 # Verbosity mode
@@ -131,7 +137,6 @@ unique_id_filter.append('parallelization')
 jg.unique_id_filter = unique_id_filter
 
 
-
 #
 # Reference solution
 if True:
@@ -156,6 +161,15 @@ if True:
 
 	# Use this one as the reference solution!
 	jg.reference_job_unique_id = jg.job_unique_id
+
+
+
+#
+# Use only 2 iterations for Semi-Lagrangian methods
+#
+unique_id_filter.append('runtime.semi_lagrangian')
+jg.runtime.semi_lagrangian_iterations = 2
+jg.runtime.semi_lagrangian_convergence_threshold = -1
 
 
 jg.parallelization.max_wallclock_seconds = max_wallclock_seconds
