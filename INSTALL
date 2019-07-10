@@ -46,14 +46,13 @@ install the following packages if required:
 
 Install python3 and pip:
   $ ./install_python3.sh
-  $ ./install_python3_pip.sh
 
 Use pip to install other packages:
   $ pip3 install matplotlib sympy mpmath
 
 
 If your compiler is older than gcc 5.3 (check with gcc --version), then
-  $ ./install_gcc5.3.sh	# GNU compiler
+  $ ./install_gcc8.2.sh	# GNU compiler
 
 The other librar(ies)/y can be installed via:
   $ ./install_scons.sh	# Makefile replacement
