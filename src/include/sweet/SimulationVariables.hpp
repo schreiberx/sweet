@@ -1510,6 +1510,7 @@ public:
 
 				std::cout << "" << std::endl;
 				std::cout << "Control:" << std::endl;
+				std::cout << "	-dt [time]	timestep size, default=?" << std::endl;
 				std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
 				std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
 				std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
