@@ -58,10 +58,11 @@ def get_platform_id():
 	Returns
 	-------
 	string
-		unique ID of platform
+		unique ID of platform, should match the folder name of the platform description
 	"""
 
 	return "guepardo_gnu"
+
 
 
 def get_platform_resources():
