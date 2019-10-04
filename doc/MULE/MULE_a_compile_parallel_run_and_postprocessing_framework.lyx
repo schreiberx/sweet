@@ -1,0 +1,1844 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage[
+% these settings create hierarchical bookmarks which follow the
+% document hierarchy
+        bookmarks=true,
+        bookmarksopen=true,
+        bookmarksnumbered=true,
+% theese parameters are useful only if you build a pdf file
+% pdftitle={ DOCUMENT TITLE },
+% pdfauthor={ YOUR INFO },
+% pdfcreator={LyX, the LaTeX frontend with hyperref},
+% pdfkeywords={ DOCUMENT KEYWORDS },
+% pdfsubject={ DOCUMENT SUBJECT },
+% see http://www.tex.ac.uk/cgi-bin/texfaq2html?label=pdfpagelabels
+        pdfpagelabels, plainpages=false,
+% these settings remove all colours around any kind of link
+        colorlinks=true,
+        linkcolor=black,
+        urlcolor=black,
+        filecolor=black,
+        citecolor=black,
+]{hyperref}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2.5cm
+\topmargin 2.5cm
+\rightmargin 2.5cm
+\bottommargin 2.5cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+MULE: compile, execution and postprocessing framework
+\end_layout
+
+\begin_layout Date
+February 24, 2019
+\end_layout
+
+\begin_layout Author
+Martin Schreiber
+\end_layout
+
+\begin_layout Standard
+This is a description of SWEET's build and execution framework.
+ The reason for this development is a unified framework to support execution
+ in a variety of environments without requiring to make changes in the scripts
+ throughout many scripts used in the software development.
+\end_layout
+
+\begin_layout Standard
+With Python being available on all systems, SWEET strongly uses Python in
+ a variety of cases, from compilation, job script generation to analysis
+ of output data.
+\end_layout
+
+\begin_layout Section*
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+MULE? Martin's Unbelievable Laidback Environment ;-)
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Terminology
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Platform
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+A computer system which can be e.g.
+ a laptop, single workstation, supercomputer
+\end_layout
+
+\begin_layout Itemize
+Physical resources:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Core
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+Physical processing cores, each core can have its own execution thread without
+ being stalled by other cores.
+\end_layout
+
+\begin_layout Itemize
+Socket:
+\begin_inset Newline newline
+\end_inset
+
+On multi-core systems, several cores are realized on one processor which
+ is attached to a socket.
+ Typically, there's a dedicatd memory controller to each socket.
+ Therefore, sockets must be considered separately to be able to optimize
+ for efficient memory access.
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Node
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+One compute node can consist out of multiple sockets which can access a
+ shared memory.
+ Nodes are able to communicate with each other via distributed memory access
+ interfaces such as MPI.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Logical resources:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\emph on
+Rank
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+A rank which is associated to a set of cores on a particular node.
+\begin_inset Newline newline
+\end_inset
+
+One rank cannot be associated to multiple nodes
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Thread
+\emph default
+:
+\begin_inset Newline newline
+\end_inset
+
+A set of threads for concurrent execution within one rank.
+\begin_inset Newline newline
+\end_inset
+
+One rank can have multiple exclusive threads assigned to it.
+\begin_inset Newline newline
+\end_inset
+
+The number of threads is not required to be identical to the number of cores
+ per rank!
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Software:
+\begin_inset Newline newline
+\end_inset
+
+This refers to any program which is using MULE.
+\begin_inset Newline newline
+\end_inset
+
+[SWEET] The SWEET software development is the only one using MULE so far.
+\end_layout
+
+\begin_layout Section
+Processing pipeline
+\end_layout
+
+\begin_layout Standard
+The execution of software in the area of scientific computing is a non-trivial
+ task, once facing high-performance computing requirements and the pipeline
+ involved of it.
+ Assuming a software product to be given, several steps are involved to
+ execute the software and to postprocess its data.
+ MULE is intended to support these steps under the assumption that the software
+ is willing to support interfaces to and from MULE.
+\end_layout
+
+\begin_layout Subsection
+Requirements & Strategy
+\end_layout
+
+\begin_layout Standard
+We start with a requirement overview imposed by scientific computing.
+\end_layout
+
+\begin_layout Subsubsection
+Parameter studies
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Parameter-studies"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It should be possible to run a variety of parameter studies.
+ Such parameter studies can include
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Simulation parameters
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+Examples: Density, initial condition.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+HPC parameters
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+Examples: Number of cores and nodes, threading activated/deactivated.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Compile parameters
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+Examples involve both different simulations, different HPC parameters or
+ debug features.
+\end_layout
+
+\begin_layout Paragraph
+
+\series bold
+Strategy
+\end_layout
+
+\begin_layout Standard
+Provide an interface to/from MULE for all these parameters and to make it
+ processable in a convenient way.
+\end_layout
+
+\begin_layout Subsubsection
+Performance portability
+\end_layout
+
+\begin_layout Standard
+The software should be executable on a variety of different platforms (supportin
+g Linux)
+\end_layout
+
+\begin_layout Itemize
+Laptops
+\end_layout
+
+\begin_layout Itemize
+Workstations
+\end_layout
+
+\begin_layout Itemize
+Compute Clusters
+\end_layout
+
+\begin_layout Itemize
+Super Computers
+\end_layout
+
+\begin_layout Standard
+The challenge here is, that all these systems require a different execution
+ environment.
+ E.g.
+ programs on a laptop and on workstations are directly executed whereas
+ programs on compute clusters are started by a scheduler based on an information
+ provided via a batch job description file.
+\end_layout
+
+\begin_layout Paragraph
+
+\series bold
+Strategy
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Hiding platform name
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+The software user should not be required to check on which platform the
+ software is executed on to set e.g.
+ the number of cores per rank to its maximum.
+ In contrast, the user should only see platform specific data via an abstraction
+ interface which provides e.g.
+\begin_inset space ~
+\end_inset
+
+the maximum number of per-socket cores or the maximum number of ranks.
+ Based on this, the user should describe how the software should be parallelized.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Execution transparency
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+The software user should only provide a description how the application
+ should utilize parallel processing power (see above).
+ The execution itself should be then transparent on laptops and compute
+ clusters.
+ In this way, jobs can be executed on only on compute clusters even if they
+ were written on laptops, but they can be also executed in a variety of
+ computer clusters with different hardware resources.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Platform description
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+Platforms which are used to execute the software on are described in an
+ abstract way which is independent to each software.
+\end_layout
+
+\begin_layout Subsubsection
+Support for efficient postprocessing
+\end_layout
+
+\begin_layout Standard
+Postprocessing of a large number of different simulations and coping with
+ huge data sizes for each simulation can be a very challenging task.
+ Therefore, the generated data in form of output files and console output
+ should be post processable in a very efficient way.
+\end_layout
+
+\begin_layout Paragraph
+Strategy
+\end_layout
+
+\begin_layout Standard
+Provide convenient postprocessing scripts which support MULE users in
+\end_layout
+
+\begin_layout Itemize
+extraction of data and the
+\end_layout
+
+\begin_layout Itemize
+consolidation of the data
+\end_layout
+
+\begin_layout Section
+Files
+\end_layout
+
+\begin_layout Standard
+MULE consists out of two components, the generic MULE parts which can be
+ shared among different software developments and the software-specific
+ MULE parts which typically have to be provided by the software developer.
+\end_layout
+
+\begin_layout Subsection
+Setting up MULE's environment variables
+\end_layout
+
+\begin_layout Standard
+MULE relies on properly setup environment variables
+\end_layout
+
+\begin_layout Verbatim
+
+# Setup directory where 'mule/' and 'mule_local/' directories are stored
+ into
+\end_layout
+
+\begin_layout Verbatim
+
+# This is typically the software's root directory
+\end_layout
+
+\begin_layout Verbatim
+
+export MULE_SOFTWARE_ROOT="$PWD"
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+# Setup paths in environment to 'mule/' and 'mule_local/'
+\end_layout
+
+\begin_layout Verbatim
+
+export MULE_ROOT="$MULE_SOFTWARE_ROOT/mule"
+\end_layout
+
+\begin_layout Verbatim
+
+export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
+\end_layout
+
+\begin_layout Standard
+After this, MULE is able to load all other environment variables via
+\end_layout
+
+\begin_layout Verbatim
+
+source $MULE_ROOT/bin/load_platform.sh $@
+\end_layout
+
+\begin_layout Standard
+After this, we're ready to go.
+\end_layout
+
+\begin_layout Standard
+[SWEET specific], all this is done by loading SWEET's environment variables
+ via
+\end_layout
+
+\begin_layout Verbatim
+
+source ./local_software/env_vars.sh
+\end_layout
+
+\begin_layout Subsection
+MULE's software independent files
+\end_layout
+
+\begin_layout Standard
+We start with the MULE files which are independent to the software (e.g.
+ SWEET).
+ These are available in the directory ./mule/ and are briefly described as
+ follows.
+ It should not be required for standard software developers to make any
+ changes in these directories.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+mule/bin/
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+load_platform.sh
+\begin_inset Newline newline
+\end_inset
+
+This file should be called to load platform specific environment variables.
+\begin_inset Newline newline
+\end_inset
+
+[SWEET] This script is e.g.
+ included by ./local_software/env_vars.sh
+\end_layout
+
+\begin_layout Itemize
+mule.*
+\begin_inset Newline newline
+\end_inset
+
+These are very important 
+\series bold
+MULE helper scripts 
+\series default
+which are discussed separately in Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:MULE-helper-scripts"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\series bold
+mule/platforms/
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+This directory contains descriptions for a variety of different platforms
+ as well as additional environment variable settings (e.g.
+ platform specific compiler).
+ See mule/platforms/README for additional information and Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Platform-configuration"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+mule/site-packages/
+\series default
+
+\begin_inset Newline newline
+\end_inset
+
+MULE's Python package
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+mule/site-packages/mule:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+exec_program.py:
+\begin_inset Newline newline
+\end_inset
+
+Convenience function to execute a program
+\end_layout
+
+\begin_layout Itemize
+InfoError.py:
+\begin_inset Newline newline
+\end_inset
+
+Pretty output for information and Errors
+\end_layout
+
+\begin_layout Itemize
+JobParallelizationDimOptions.py
+\begin_inset Newline newline
+\end_inset
+
+Specify the parallelization degrees in each dimension (see examples)
+\end_layout
+
+\begin_layout Itemize
+JobParallelization.py
+\begin_inset Newline newline
+\end_inset
+
+Information on the parallelization for the entire simulation (based on DimOption
+s above).
+\end_layout
+
+\begin_layout Itemize
+JobPlatformResources.py
+\begin_inset Newline newline
+\end_inset
+
+Description of available resources for each individual platform
+\end_layout
+
+\begin_layout Itemize
+JobPlatforms.py
+\begin_inset Newline newline
+\end_inset
+
+Accumulation of all available platforms
+\end_layout
+
+\begin_layout Itemize
+mule/site-packages/mule/plotting/:
+\begin_inset Newline newline
+\end_inset
+
+Plotting support (just for convenience)
+\end_layout
+
+\begin_layout Itemize
+mule/site-packages/mule/postprocessing/:
+\begin_inset Newline newline
+\end_inset
+
+Scripts to support the consolidation of the output data
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Subsection
+MULE's software dependent files
+\end_layout
+
+\begin_layout Standard
+[SWEET] This section is SWEET-specific.
+ Travis CI is a continuous integration server to validate SWEET based on
+ tests provided in '[SWEET]/tests'.
+\end_layout
+
+\begin_layout Itemize
+mule_local/bin/
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+mule.travis.install_git_hook
+\begin_inset Newline newline
+\end_inset
+
+[TRAVIS-CI] Install the git hooks to automatically update the Travis description
+ file in '[SWEET]/.travis.yml' every time a git commit is done based on the
+ following file:
+\end_layout
+
+\begin_layout Itemize
+mule.travis.setup_tests.py
+\begin_inset Newline newline
+\end_inset
+
+[TRAVIS-CI] Update '[SWEET]/.travis.yml' based on '[SWEET]/tests/'
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+mule_local/git_hook/pre-commit
+\begin_inset Newline newline
+\end_inset
+
+[TRAVIS-CI] Git hook for Travis CI
+\end_layout
+
+\begin_layout Itemize
+mule_local/platforms/*/local_software_default.sh
+\begin_inset Newline newline
+\end_inset
+
+These scripts provide information on additional 3rd party libraries which
+ has to be installed for each individual platform.
+ Since this has to be specified individually for each platform, it's stored
+ in 'mule_local'
+\end_layout
+
+\begin_layout Itemize
+mule_local/site-packages/mule_local/:
+\begin_inset Newline newline
+\end_inset
+
+Software specific Python packages
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+mule_local/site-packages/mule_local/:
+\end_layout
+
+\begin_layout Itemize
+JobCompileOptions.py
+\begin_inset Newline newline
+\end_inset
+
+Software-specific compile options
+\end_layout
+
+\begin_layout Itemize
+JobGeneration.py
+\begin_inset Newline newline
+\end_inset
+
+Software-specific class to support job generation
+\end_layout
+
+\begin_layout Itemize
+JobMule.py
+\begin_inset Newline newline
+\end_inset
+
+This class includes everything.
+\end_layout
+
+\begin_layout Itemize
+JobRuntimeOptions.py
+\begin_inset Newline newline
+\end_inset
+
+Runtime parameters (software program options)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+[SWEETROOT]/SConstruct
+\begin_inset Newline newline
+\end_inset
+
+SCons makefile replacement
+\end_layout
+
+\begin_layout Subsection
+MULE helper scripts
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:MULE-helper-scripts"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+There are various helper scripts available to unify the execution and postproces
+sing of jobs with MULE on different platforms.
+ These scripts are available in 'mule/bin/' which is included in the environment
+ variable PATH.
+ Therefore, these scripts can be directly executed in the command line without
+ specifying the full path.
+\end_layout
+
+\begin_layout Itemize
+load_platform.sh
+\begin_inset Newline newline
+\end_inset
+
+Load platform specific environment variables
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.cleanup_all
+\begin_inset Newline newline
+\end_inset
+
+Call 'mule.benchmark.cleanup_job_dirs', 'mule.benchmark.cleanup_plans' and 'mule.benc
+hmark.cleanup_postprocessing'.
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.cleanup_job_dirs
+\begin_inset Newline newline
+\end_inset
+
+Remove all job_* directories
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.cleanup_plans
+\begin_inset Newline newline
+\end_inset
+
+Remove 'shtns_cfg', 'shtns_cfg_fftw', 'sweet_fftw' and 'genplans_*'
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.cleanup_postprocessing
+\begin_inset Newline newline
+\end_inset
+
+Remove 'output_*txt', 'output_*pdf'
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.jobs_cancel [job ids...]
+\begin_inset Newline newline
+\end_inset
+
+(Compute Cluster specific) Cancel particular jobs currently submitted to
+ job scheduler
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.jobs_cancel_all
+\begin_inset Newline newline
+\end_inset
+
+(Compute Cluster specific) Cancel all jobs currently submitted to job scheduler
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.jobs_interactive
+\begin_inset Newline newline
+\end_inset
+
+(Compute Cluster specific) Request an interactive job
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.jobs_run_directly
+\begin_inset Newline newline
+\end_inset
+
+Run jobs directly within the current shell
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.jobs_status
+\begin_inset Newline newline
+\end_inset
+
+Return the status of all jobs
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.jobs_submit
+\begin_inset Newline newline
+\end_inset
+
+Submit all jobs in the current directory
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.jobs_submit_with_queue_limit
+\begin_inset Newline newline
+\end_inset
+
+Submit jobs in a way which respects the queue limit.
+ Once reaching the queue limit, it waits until a job is finished before
+ submitting another one.
+\end_layout
+
+\begin_layout Itemize
+MULE.benchmarks.jobs_multiplexer
+\end_layout
+
+\begin_layout Itemize
+mule.benchmark.tar_nodata.sh
+\begin_inset Newline newline
+\end_inset
+
+Generate a tarball of the benchmark directory without the simulation output
+ data (stored in .csv files)
+\end_layout
+
+\begin_layout Itemize
+mule.jobdata [job directory]
+\begin_inset Newline newline
+\end_inset
+
+Print all Python-accessible information which is available for the given
+ job.
+\begin_inset Newline newline
+\end_inset
+
+This is extremely handy for postprocessing.
+\end_layout
+
+\begin_layout Subsection
+MULE Platforms
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Platform-configuration"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We briefly describe the platform configurations in 'mule/platforms/'.
+ To add a new platform, it's best to duplicate an existing platform (e.g.
+ 99_default).
+ The first numbers specify the priority (00: highest, 99: lowest) of the
+ order in which the platform-specific information is processed.
+\end_layout
+
+\begin_layout Subsubsection
+platforms/??_[platform_id]/env_var.sh
+\end_layout
+
+\begin_layout Standard
+Platform specific environments
+\end_layout
+
+\begin_layout Subsubsection
+platforms/??_[platform_id]/JobPlatformAutodetect.py
+\end_layout
+
+\begin_layout Standard
+autodetect() function which returns if the current platform matches
+\end_layout
+
+\begin_layout Subsubsection
+platforms/??_[platform_id]/JobPlatform.py
+\end_layout
+
+\begin_layout Standard
+Must implement the following interfaces¨ with a reference to JobGeneration
+ handed over as a parameter to all these functions
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+get_platform_id
+\emph default
+: Unique string for platform (e.g.
+ pedros_awesome_laptop)
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+get_platform_autodetect
+\emph default
+: Return true if this platform was detected, based on MULEPlatformAutodetect.py
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+get_platform_hardware
+\emph default
+: Return MULEPlatformHardware with filled in information
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_setup
+\emph default
+: setup return of job script content
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_header
+\emph default
+: header (e.g.
+ scheduler print_information) for job script
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_exec_prefix
+\emph default
+: prefix before MPI executable
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_exec_command
+\emph default
+: MPI execution (something like "mpirun -n ### 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_exec_suffix
+\emph default
+: suffix aftere MPI executable
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_footer
+\emph default
+: footer (e.g.
+ postprocessing) for job script
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+jobscript_get_compile_command
+\emph default
+: suffix aftere MPI executable
+\end_layout
+
+\begin_layout Section
+Using MULE with SWEET
+\end_layout
+
+\begin_layout Subsection
+Setting up the environment (First step!)
+\end_layout
+
+\begin_layout Standard
+Before doing anything within SWEET, we have to load the SWEET environment
+ variables which can be accomplished by
+\end_layout
+
+\begin_layout Verbatim
+
+[SWEETROOT]$ source ./local_software/env_vars.sh
+\end_layout
+
+\begin_layout Standard
+Doing so, there should be a prefix [SWEET...] at the beginning of every line
+ of the prompt.
+\end_layout
+
+\begin_layout Subsection
+Manual building (without MULE and only recommended for development and debugging
+)
+\end_layout
+
+\begin_layout Standard
+The SCons build system is used to compile SWEET programs.
+ Type
+\end_layout
+
+\begin_layout Verbatim
+
+$ scons --help
+\end_layout
+
+\begin_layout Standard
+in the root SWEET folder for more information.
+ Specifying a program to compile, e.g.
+ 'swe_plane', we can also get additional compile information via
+\end_layout
+
+\begin_layout Verbatim
+
+$ scons --program=swe_plane --help
+\end_layout
+
+\begin_layout Standard
+HINT: Programs can be also compiled with the support of MULE (following
+ section).
+ Then, the SCons parameters are printed to the console using the compile
+ scripts generated by MULE.
+\end_layout
+
+\begin_layout Subsection
+Building via MULE
+\end_layout
+
+\begin_layout Standard
+This section briefly discusses how the job generation works
+\end_layout
+
+\begin_layout Subsubsection
+Initialize JobGeneration
+\end_layout
+
+\begin_layout Standard
+We first get a fresh JobGeneration instance:
+\end_layout
+
+\begin_layout Verbatim
+
+jg = JobGeneration([platform_id_override])
+\end_layout
+
+\begin_layout Standard
+JobGeneration is the centralized point for SWEET's jobscript generation.
+\end_layout
+
+\begin_layout Paragraph
+User-specified platform
+\end_layout
+
+\begin_layout Standard
+Instead of auto-detecting the environment, one can also request a particular
+ platform with the 
+\emph on
+platform_id_override
+\emph default
+ parameter.
+ An alternate to this is to specify the SWEET_PLATFORM environment variable.
+\end_layout
+
+\begin_layout Paragraph
+Options
+\end_layout
+
+\begin_layout Standard
+A variety of options is made accessible which can be set by the user:
+\end_layout
+
+\begin_layout Itemize
+jg.
+\series bold
+runtime
+\series default
+: JobRuntimeOptions:
+\begin_inset Newline newline
+\end_inset
+
+with parameters for executing SWEET programs
+\end_layout
+
+\begin_layout Itemize
+jg.
+\series bold
+compile
+\series default
+: JobCompileOptions
+\begin_inset Newline newline
+\end_inset
+
+with compile-time parameters
+\end_layout
+
+\begin_layout Itemize
+jg.
+\series bold
+parallelization
+\series default
+: JobParallelizationOptions
+\begin_inset Newline newline
+\end_inset
+
+with options regarding parallelization to execute SWEET on clusters
+\end_layout
+
+\begin_layout Itemize
+jg.platforms: list(JobPlatforms)
+\begin_inset Newline newline
+\end_inset
+
+with all available platforms
+\end_layout
+
+\begin_layout Itemize
+jg.platform: JobPlatform
+\begin_inset Newline newline
+\end_inset
+
+with the currently used platform (from self.platform).
+ This is automatically loaded based on the information in 'mule/platforms/*/JobP
+latform.py'
+\end_layout
+
+\begin_layout Itemize
+jg.platform_hardware: MULEPlatformHardware
+\begin_inset Newline newline
+\end_inset
+
+With information provided by platform on the available hardware (number
+ of nodes, number of cores per node, etc.)
+\end_layout
+
+\begin_layout Itemize
+jg.platform_functions: Callback functions which have to be implemented by
+ each platform's description.
+ Such callbacks are related to e.g.
+ returning particular parts of a batch job description file.
+\end_layout
+
+\begin_layout Standard
+The 'runtime', 'compile', and 'parallelization' parts also reflect parts
+ of the described requirements (see Sec.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Parameter-studies"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Subsubsection
+SWEET compile & runtime options
+\end_layout
+
+\begin_layout Standard
+Next, some SWEET options can be specified where we differentiate between
+ compile and runtime options.
+\end_layout
+
+\begin_layout Paragraph
+Program compile options
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Verbatim
+
+jg.compile.program = 'swe_sphere'
+\end_layout
+
+\begin_layout Verbatim
+
+jg.compile.mode = 'release'
+\end_layout
+
+\begin_layout Verbatim
+
+jg.compile.sphere_spectral_space = 'disable'
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Paragraph
+Program runtime options
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Verbatim
+
+jg.runtime.verbosity = 2
+\end_layout
+
+\begin_layout Verbatim
+
+jg.runtime.space_res_spectral = 128
+\end_layout
+
+\begin_layout Verbatim
+
+...
+\end_layout
+
+\begin_layout Subsubsection
+Program (parallel) execution options
+\end_layout
+
+\begin_layout Standard
+SWEET was originally developed to study parallel-in-time approaches, therefore
+ requiring an additional dimension also for parallelization.
+ Without loss of generality, we use only a single dimension for the spatial
+ parallelization.
+ With more than one dimension for parallelization, we have to specify the
+ way how to parallelize in each dimension.
+ For a separation of concert, we do this first of all individually for each
+ dimension:
+\end_layout
+
+\begin_layout Verbatim
+
+pspace = JobParallelizationDimOptions()
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+# Use all cores on one socket for each rank
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_cores_per_rank = jg.platform_hardware.num_cores_per_socket
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+# Use only one rank in space, since MPI parallelization in space is not
+ available
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_ranks = 1
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+# Use as many threads as there are cores per rank
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_threads_per_rank = pspace.num_cores_per_rank
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+ptime = JobParallelizationDimOptions()
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+# Use only one core per rank in the time dimension
+\end_layout
+
+\begin_layout Verbatim
+
+pspace.num_cores_per_rank = 1
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+# Limit the number of ranks by param_max_space_ranks
+\end_layout
+
+\begin_layout Verbatim
+
+ptime.num_ranks = min(
+\end_layout
+
+\begin_layout Verbatim
+
+			param_max_time_ranks,
+\end_layout
+
+\begin_layout Verbatim
+
+			jg.platform_hardware.num_nodes*jg.platform_hardware.num_sockets_per_node
+\end_layout
+
+\begin_layout Verbatim
+
+		)
+\end_layout
+
+\begin_layout Verbatim
+
+\end_layout
+
+\begin_layout Verbatim
+
+# Use same number of cores for threading
+\end_layout
+
+\begin_layout Verbatim
+
+ptime.num_threads_per_rank = ptime.num_cores_per_rank
+\end_layout
+
+\begin_layout Standard
+Note, how easy we can specify e.g.
+ to use the max.
+ number of cores on one socket depending on the platform.
+ On a different platform, this will also lead to the utilization of the
+ full number of cores on one socket.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Disclaimer
+\series default
+: Even if it is possible to specify a variety of different configurations,
+ this must be supported by the platform specific implementation
+\end_layout
+
+\begin_layout Standard
+The different dimensions are finally combined with
+\end_layout
+
+\begin_layout Verbatim
+
+jg.parallelization.setup([pspace, ptime], mode)
+\end_layout
+
+\begin_layout Standard
+where 
+\emph on
+mode
+\emph default
+ does not yet exist, but is planned to specify the way how the space and
+ time parallelization is combined together.
+\end_layout
+
+\begin_layout Standard
+More information on this is available in JobParallelization.py.
+\end_layout
+
+\begin_layout Standard
+Note, that every time if the parallelization parameters are changes, 
+\emph on
+p.parallelization.setup(...) 
+\emph default
+must be executed again!
+\end_layout
+
+\begin_layout Subsubsection
+Generation of job script
+\end_layout
+
+\begin_layout Standard
+To generate the job script, we can simply call
+\end_layout
+
+\begin_layout Verbatim
+
+jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID()) 
+\end_layout
+
+\begin_layout Standard
+where jg.getUniqueID creates a parameter-specific unique ID.
+\end_layout
+
+\begin_layout Standard
+The method
+\end_layout
+
+\begin_layout Itemize
+creates the required directory
+\end_layout
+
+\begin_layout Itemize
+creates the job script file 'run.sh' including the compilation commands before
+ execution of the binary and
+\end_layout
+
+\begin_layout Itemize
+writes out the job script file.
+\end_layout
+
+\begin_layout Subsubsection
+Pickled data for postprocessing (!!!)
+\end_layout
+
+\begin_layout Standard
+One of the most important parts of MULE's way of job generation is that
+ all the parameters which describe how the particular job script was generated
+ is stored in a post processable format in each job's directory in the file
+ 'jobgeneration.pickle'.
+ This allows to extract the information for each job for postprocessing.
+\end_layout
+
+\begin_layout Subsubsection
+Pre-compilation
+\end_layout
+
+\begin_layout Standard
+For HPC systems, it's very often required to compile code on the login nodes.
+ We can accumulate the compile commands by specifying
+\end_layout
+
+\begin_layout Verbatim
+
+jg.compilecommand_in_jobscript = False
+\end_layout
+
+\begin_layout Standard
+This accumulates all compile commands and also ensures, that each compile
+ command exists only once.
+ After all job scripts were generated, we can write out a script with compile
+ commands, e.g.
+ using
+\end_layout
+
+\begin_layout Verbatim
+
+jg.write_compilecommands("./compile_platform_"+jg.platforms.platform_id+".sh")
+\end_layout
+
+\begin_layout Subsection
+Executing jobs
+\end_layout
+
+\begin_layout Standard
+The jobs can be executed directly on the current computer by using
+\end_layout
+
+\begin_layout Verbatim
+
+$ mule.benchmark.jobs_run_directly
+\end_layout
+
+\begin_layout Standard
+or they can be submitted to a compute cluster via
+\end_layout
+
+\begin_layout Verbatim
+
+$ mule.benchmark.jobs_submit
+\end_layout
+
+\begin_layout Subsection
+Checking for finished jobs
+\end_layout
+
+\begin_layout Standard
+On a compute cluster, we can check for all jobs to be finished with
+\end_layout
+
+\begin_layout Verbatim
+
+$ mule.benchmark.jobs_status
+\end_layout
+
+\begin_layout Standard
+which prints the status of all still enqueued or running jobs.
+\end_layout
+
+\begin_layout Subsection
+Postprocessing jobs
+\end_layout
+
+\begin_layout Standard
+Once the jobs are executed, the postprocessing starts and can consist out
+ of several steps.
+\end_layout
+
+\begin_layout Subsubsection
+JobData description
+\end_layout
+
+\begin_layout Standard
+MULE supports the postprocessing by extracting information from the job's
+ console output and from pickled file which is described in the following
+ sections.
+ Such an information can be requested e.g.
+ via
+\end_layout
+
+\begin_layout Verbatim
+
+$ mule.jobdata job_bench_[...]
+\end_layout
+
+\begin_layout Standard
+This will output the content of a dictionary which is generated based on
+ the information available in the specified job directory.
+ Note, that this is based on a 'JobData' class provided by MULE which becomes
+ handy for postprocessing.
+ Next, we will discuss the different ways how to add entries for this dictionary.
+\end_layout
+
+\begin_layout Subsubsection
+Job's console output: [MULE]
+\end_layout
+
+\begin_layout Standard
+Each job's output to the console is stored into a file 'output.out'.
+ This is processed by 'JobData' and searched for lines starting in the following
+ way:
+\end_layout
+
+\begin_layout Enumerate
+Detect lines starting with '[MULE] ', skip other lines
+\end_layout
+
+\begin_layout Enumerate
+The following string is used as a dictionary entry with the name prefixed
+ with 'output.'
+\end_layout
+
+\begin_layout Enumerate
+The string followed after the colon and space (': ') is used as a value.
+\end_layout
+
+\begin_layout Standard
+An example is given by
+\end_layout
+
+\begin_layout Verbatim
+
+[MULE] simulation_benchmark_timings.main: 19.203482231
+\end_layout
+
+\begin_layout Standard
+which will lead to a dictionary entry (using Python notation)
+\end_layout
+
+\begin_layout Verbatim
+
+'output.simulation_benchmark_timings.main': '19.203482231',
+\end_layout
+
+\begin_layout Standard
+in JobData.
+\end_layout
+
+\begin_layout Subsubsection
+Pickled Data
+\end_layout
+
+\begin_layout Standard
+During the job generation, MULE is generating 'jobgeneration.pickle' files
+ containing all information about the particular job.
+ This is stored as a dictionary and is loaded directly by the JobData.
+ To give an example of this information, we see that:
+\end_layout
+
+\begin_layout Verbatim
+
+compile.sphere_spectral_space => enable
+\end_layout
+
+\begin_layout Verbatim
+
+compile.sweet_mpi => enable
+\end_layout
+
+\begin_layout Verbatim
+
+compile.threading => omp
+\end_layout
+
+\begin_layout Verbatim
+
+compile.unit_test => 
+\end_layout
+
+\begin_layout Verbatim
+
+runtime.bench_id => -1
+\end_layout
+
+\begin_layout Subsubsection
+Generating pickled data for MULE-processable output
+\end_layout
+
+\begin_layout Standard
+For some cases, the data is not already accessible by the previously described
+ outputs.
+ This can be e.g.
+\begin_inset space ~
+\end_inset
+
+the case if the output data should be compared to a reference data, basically
+ reducing the amount of data to a few scalar values.
+\end_layout
+
+\begin_layout Standard
+MULE supports this, as long as this data is written into pickle files.
+\end_layout
+
+\begin_layout Standard
+Generating a file '[filename].pickle' by pickling a dictionary, these dictionarie
+s will be directly added to the JobData, but the directory indices prefixed
+ by '[filename].'.
+\end_layout
+
+\begin_layout Subsubsection
+Reading and processing job data
+\end_layout
+
+\begin_layout Standard
+For the final postprocessing, we need to consolidate all available data.
+ As a first step, we use
+\end_layout
+
+\begin_layout Verbatim
+
+j = JobsData('./job_bench_*', verbosity=0)
+\end_layout
+
+\begin_layout Standard
+which loads the pickled data of all jobs.
+\end_layout
+
+\begin_layout Standard
+It is now possible to directly work on this data or to use further features
+ of MULE:
+\end_layout
+
+\begin_layout Paragraph
+Grouping together
+\end_layout
+
+\begin_layout Standard
+We can finally groups data together in the following way
+\end_layout
+
+\begin_layout Verbatim
+
+c = JobsDataConsolidate(j)
+\end_layout
+
+\begin_layout Verbatim
+
+print("")
+\end_layout
+
+\begin_layout Verbatim
+
+print("Groups:")
+\end_layout
+
+\begin_layout Verbatim
+
+groups = ['runtime.timestepping_method', 'runtime.max_simulation_time'] 
+\end_layout
+
+\begin_layout Verbatim
+
+job_groups = c.create_groups(groups)
+\end_layout
+
+\begin_layout Verbatim
+
+for key, g in job_groups.items():     
+\end_layout
+
+\begin_layout Verbatim
+
+    print(key) 
+\end_layout
+
+\begin_layout Section
+Summary
+\end_layout
+
+\begin_layout Standard
+That's it folks! May the Mule be with you!
+\end_layout
+
+\end_body
+\end_document
