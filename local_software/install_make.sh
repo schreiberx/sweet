@@ -4,7 +4,7 @@ source ./install_helpers.sh ""
 
 PKG_NAME="make"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/make"
-PKG_URL_SRC="make-4.2.tar.gz"
+PKG_URL_SRC="make-4.2.1.tar.bz2"
 
 if [ "`uname -s`" != "Linux" ] && [ "`uname -s`" != "Darwin" ]; then
 	echo "This script only supports make on Linux systems"
