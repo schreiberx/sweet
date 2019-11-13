@@ -17,13 +17,13 @@
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	#include <benchmarks_plane/SWE_bench_Polvani.hpp>
 	#include <benchmarks_plane/SWE_bench_MergeVortex.hpp>
+	#include <benchmarks_plane/SWE_bench_NormalModes.hpp>
 #endif
 
 #include <benchmarks_plane/SWE_bench_UnstableJet.hpp>
 #include <benchmarks_plane/SWE_bench_UnstableJetFast.hpp>
 #include <benchmarks_plane/SWE_bench_UnstableJetAdv.hpp>
 #include <benchmarks_plane/SWE_bench_GaussianBump.hpp>
-
 
 
 class SWEPlaneBenchmarksCombined
@@ -176,6 +176,18 @@ public:
 			SWE_bench_UnstableJetAdv swe_unstablejetadv(io_simVars, io_op);
 
 			swe_unstablejetadv.setup(
+					o_h_pert,
+					o_u,
+					o_v
+			);
+
+			return true;
+		}
+		else if (io_simVars.benchmark.benchmark_name == "normalmodes")
+		{
+			SWE_bench_NormalModes swe_normalmodes(io_simVars, io_op);
+
+			swe_normalmodes.setup(
 					o_h_pert,
 					o_u,
 					o_v
@@ -507,11 +519,12 @@ public:
 
 	void printBenchmarkInformation()
 	{
-		std::cout << "Available benchmark scenarios (--benchmark):" << std::endl;
+		std::cout << "Some available benchmark scenarios (--benchmark-name):" << std::endl;
 		std::cout << "		polvani : Polvani et al (1994) initial condition" << std::endl;
 		std::cout << "		mergevortex : Vortex merging initial conditions from McRae QJ 2014 paper" << std::endl;
 		std::cout << "		unstablejet : Unstable Jet test case" << std::endl;
 		std::cout << "		gaussian_bump : Gaussian bump" << std::endl;
+		std::cout << "Check out more options in benchmarks_plane/SWEPlaneBenchmarksCombined.hpp" << std::endl;
 	}
 };
 
