@@ -30,8 +30,6 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
 
-
-
 int main(
 		int i_argc,
 		char *i_argv[]
@@ -45,16 +43,13 @@ int main(
 
 	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
-	std::size_t res_x = simVars.disc.space_res_physical[0];
-	std::size_t res_y = simVars.disc.space_res_physical[1];
-
 	std::cout << "*************************************************************" << std::endl;
 	std::cout << "Testing normal mode conversion tool" << std::endl;
 	std::cout << "*************************************************************" << std::endl;
-	std::size_t res[2] = {res_x, res_y};
+	//std::size_t res[2] = {res_x, res_y};
 
-	std::size_t test_max_freqx = planeDataConfig->spectral_real_modes[0];
-	std::size_t test_max_freqy = planeDataConfig->spectral_real_modes[1];
+	//std::size_t test_max_freqx = planeDataConfig->spectral_real_modes[0];
+	//std::size_t test_max_freqy = planeDataConfig->spectral_real_modes[1];
 
 	std::cout << "*************************************************************" << std::endl;
 	planeDataConfig->printInformation();
@@ -65,26 +60,23 @@ int main(
 	PlaneData u(planeDataConfig);
 	PlaneData v(planeDataConfig);
 
-	double epsilon = 1e-10;
-	double alpha = 1.0;
-
 	// Spectral mode to be converted (x,y) respectively
-	int k0, k1;
+	std::size_t k0, k1;
 
-	double igwest_mode;
-	double igeast_mode;
-	double geo_mode;
+	double igwest_mode=0.0;
+	double igeast_mode=0.0;
+	double geo_mode=0.0;
 
 	//Normal modes to be generated
 	
-	std::size_t max_modes_x = planeDataConfig->spectral_real_modes[0];
-	std::size_t max_modes_y = planeDataConfig->spectral_real_modes[1];
-	k0=2;
+	//std::size_t max_modes_x = planeDataConfig->spectral_real_modes[0];
+	//std::size_t max_modes_y = planeDataConfig->spectral_real_modes[1];
+	k0=7;
 	k1=3;
 	h.spectral_set_zero();
 	u.spectral_set_zero();
 	v.spectral_set_zero();
-	std::cout<< "out:" << h.planeDataConfig->spectral_data_size[1] << std::endl;
+	//std::cout<< "out:" << h.planeDataConfig->spectral_data_size[1] << std::endl;
 
 	SWE_Plane_Normal_Modes::add_normal_mode(
 								k0, k1,
@@ -96,9 +88,6 @@ int main(
 								v,
 								simVars
 						);
-
-		std::cout << "\n Done normal mode analysis in separate class" << std::endl;
-	
 		
 
 	std::cout << "SUCCESSFULLY FINISHED" << std::endl;

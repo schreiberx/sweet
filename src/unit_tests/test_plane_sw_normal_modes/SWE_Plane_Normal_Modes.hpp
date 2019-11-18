@@ -37,8 +37,8 @@ public:
 
 	static
 	void add_normal_mode(
-			int ik0,				//wavenumber in x
-			int ik1,				// wavenumeber in y
+			std::size_t ik0,				//wavenumber in x
+			std::size_t ik1,				// wavenumeber in y
 			double igwest_mode, //Coeficient multiplying west gravity mode
 			double igeast_mode, //Coeficient multiplying east gravity mode
 			double geo_mode,    //Coeficient multiplying geostrophic mode
@@ -51,23 +51,12 @@ public:
 
 		REXIFunctions<T> rexiFunctions;
 
-		double sx = i_simVars.sim.plane_domain_size[0];
-		double sy = i_simVars.sim.plane_domain_size[1];
-
 		const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			FatalError("Staggering not supported");
-
 		
-		complex I(0.0, 1.0);
 		std::cout<<"Adding mode to fields \n "<<std::endl;
-
-		/*
-		* This implementation works directly on PlaneData
-		*/
-		T s0 = i_simVars.sim.plane_domain_size[0];
-		T s1 = i_simVars.sim.plane_domain_size[1];
 
 		io_h.request_data_spectral();
 		io_u.request_data_spectral();
@@ -94,9 +83,9 @@ public:
 		complex v_inv[3][3];
 		complex lambda[3];
 
-		sw_eigen_decomp(
-				ik0,				//wavenumber in x
-				ik1,				// wavenumeber in y
+		SWE_Plane_Normal_Modes::sw_eigen_decomp(
+				k0,				//wavenumber in x
+				k1,				// wavenumeber in y
 				v, // output eigen vector
 				v_inv, // output eigen vector
 				lambda, // output eigen values
@@ -110,10 +99,9 @@ public:
 		U[2] = igeast_mode;
 
 		std::cout<<"EV matrix"<<std::endl;
-		for (int j = 0; j < 3; j++)
-		{
+		for (int j = 0; j < 3; j++)	{
 			for (int i = 0; i < 3; i++)
-				std::cout<< v[j,i]<<" "; 
+				std::cout<< v[j][i]<<" "; 
 			std::cout<<std::endl;
 		}
 
@@ -126,12 +114,9 @@ public:
 
 
 		std::cout<<"EV-1 matrix"<<std::endl;
-		for (int j = 0; j < 3; j++)
-		{
+		for (int j = 0; j < 3; j++)	{
 			for (int i = 0; i < 3; i++)
-			{
-				std::cout<< v_inv[j,i] <<" "; 
-			}	
+				std::cout<< v_inv[j][i] <<" "; 
 			std::cout<<std::endl;
 		}
 
@@ -186,8 +171,8 @@ public:
 	/* Get linear shallow water operator eigen decomposition */
 	static
 	void sw_eigen_decomp(
-			int ik0,				//wavenumber in x
-			int ik1,				// wavenumeber in y
+			T k0,				//wavenumber in x
+			T k1,				// wavenumeber in y
 			complex v[3][3], // output eigen vector
 			complex v_inv[3][3], // output eigen vector
 			complex lambda[3], // output eigen values
@@ -197,15 +182,11 @@ public:
 
 		REXIFunctions<T> rexiFunctions;
 
-		double sx = i_simVars.sim.plane_domain_size[0];
-		double sy = i_simVars.sim.plane_domain_size[1];
-
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			FatalError("Staggering not supported");
 
-		typedef std::complex<T> complex;
 		complex I(0.0, 1.0);
-		std::cout<<"Calculating EV for mode (" << ik0 << ", " << ik1 << ")" << std::endl;
+		std::cout<<"Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
 
 		T s0 = i_simVars.sim.plane_domain_size[0];
 		T s1 = i_simVars.sim.plane_domain_size[1];
@@ -216,10 +197,6 @@ public:
 
 		T sqrt_h = rexiFunctions.l_sqrt(h);
 		T sqrt_g = rexiFunctions.l_sqrt(g);
-
-		
-		T k1 = (T)ik1;
-		T k0 = (T)ik0;
 
 		complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 		complex c = -k1*I;
@@ -434,35 +411,11 @@ public:
 		complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
 
 
-		for (int j = 0; j < 3; j++)
-		{
+		for (int j = 0; j < 3; j++)	{
 			for (int i = 0; i < 3; i++)
 				v_inv[j][i] /= s;
 		}
 
-
-		std::cout<<"EV matrix"<<std::endl;
-		for (int j = 0; j < 3; j++)
-		{
-			for (int i = 0; i < 3; i++)
-				std::cout<< v[j,i]<<" "; 
-			std::cout<<std::endl;
-		}
-
-		std::cout<<"EV-1 matrix"<<std::endl;
-		for (int j = 0; j < 3; j++)
-		{
-			for (int i = 0; i < 3; i++)
-				std::cout<< v_inv[j,i] <<" "; 
-			std::cout<<std::endl;
-		}
-
-		std::cout<<"Eigen values"<<std::endl;
-		for (int j = 0; j < 3; j++)
-		{
-			std::cout<< lambda[j] <<" "; 
-		}
-		std::cout<<std::endl;
 }
 
 
