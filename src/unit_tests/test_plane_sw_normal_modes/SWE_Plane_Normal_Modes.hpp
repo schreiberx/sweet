@@ -28,6 +28,13 @@ class SWE_Plane_Normal_Modes
 {
 public:
 
+#if SWEET_QUADMATH && 0
+	typedef __float128 T;
+#else
+	typedef double T;
+#endif
+	typedef std::complex<T> complex;
+
 	static
 	void add_normal_mode(
 			int ik0,				//wavenumber in x
@@ -42,12 +49,6 @@ public:
 	)
 	{
 
-#if SWEET_QUADMATH && 0
-		typedef __float128 T;
-#else
-		typedef double T;
-#endif
-
 		REXIFunctions<T> rexiFunctions;
 
 		double sx = i_simVars.sim.plane_domain_size[0];
@@ -58,10 +59,9 @@ public:
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			FatalError("Staggering not supported");
 
-		typedef std::complex<T> complex;
+		
 		complex I(0.0, 1.0);
-		std::cout<<"Adding mode to fields"<<std::endl;
-		std::cout << "spectral_modes: " << ik0 << ", " << ik1 << std::endl;
+		std::cout<<"Adding mode to fields \n "<<std::endl;
 
 		/*
 		* This implementation works directly on PlaneData
@@ -72,13 +72,6 @@ public:
 		io_h.request_data_spectral();
 		io_u.request_data_spectral();
 		io_v.request_data_spectral();
-
-		T f = i_simVars.sim.plane_rotating_f0;
-		T h = i_simVars.sim.h0;
-		T g = i_simVars.sim.gravitation;
-
-		T sqrt_h = rexiFunctions.l_sqrt(h);
-		T sqrt_g = rexiFunctions.l_sqrt(g);
 
 		//Check if k0 is in correct sprectral area
 		std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
@@ -97,10 +90,136 @@ public:
 
 		T k0 = (T)ik0;
 
+		complex v[3][3];
+		complex v_inv[3][3];
+		complex lambda[3];
+
+		sw_eigen_decomp(
+				ik0,				//wavenumber in x
+				ik1,				// wavenumeber in y
+				v, // output eigen vector
+				v_inv, // output eigen vector
+				lambda, // output eigen values
+				i_simVars // Simulation variables
+		);
+
 		complex U[3];
-		U[0] = io_h.spectral_get(ik1, ik0);
-		U[1] = io_u.spectral_get(ik1, ik0);
-		U[2] = io_v.spectral_get(ik1, ik0);
+		// Set normal mode acording to desired wave type
+		U[0] = geo_mode;
+		U[1] = igwest_mode;
+		U[2] = igeast_mode;
+
+		std::cout<<"EV matrix"<<std::endl;
+		for (int j = 0; j < 3; j++)
+		{
+			for (int i = 0; i < 3; i++)
+				std::cout<< v[j,i]<<" "; 
+			std::cout<<std::endl;
+		}
+
+		//Define normal mode as combination of eigen vectors
+		/* Convert U to EV basis */
+		complex UEV[3] = {0.0, 0.0, 0.0};
+		for (int k = 0; k < 3; k++)
+			for (int j = 0; j < 3; j++)
+				UEV[k] += v[k][j] * U[j];
+
+
+		std::cout<<"EV-1 matrix"<<std::endl;
+		for (int j = 0; j < 3; j++)
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				std::cout<< v_inv[j,i] <<" "; 
+			}	
+			std::cout<<std::endl;
+		}
+
+		std::cout<<"Eigen values"<<std::endl;
+		for (int j = 0; j < 3; j++)
+			std::cout<< lambda[j]<<" "; 
+		std::cout<<std::endl;
+
+		/* Convert U to EV basis */
+		//complex UEV[3] = {0.0, 0.0, 0.0};
+		//for (int k = 0; k < 3; k++)
+		//	for (int j = 0; j < 3; j++)
+		//		UEV[k] += v_inv[k][j] * U[j];
+
+		/* Apply eigen values */
+		//for (int k = 0; k < 3; k++)
+		//{
+		//	std::complex<T> &lam = lambda[k];
+
+		//		std::complex<T> K = rexiFunctions.eval(lam);
+
+		//	UEV[k] = K*UEV[k];
+		//}
+
+		/* Put back to spectral space */
+		//for (int k = 0; k < 3; k++)
+		//	U[k] = 0.0;
+
+		//for (int k = 0; k < 3; k++)
+		//	for (int j = 0; j < 3; j++)
+		//		U[k] += v[k][j] * UEV[j];
+
+
+#if SWEET_QUADMATH
+		std::complex<double> tmp0(U[0].real(), U[0].imag());
+		io_h.p_spectral_set(ik1, ik0, tmp0);
+
+		std::complex<double> tmp1(U[1].real(), U[1].imag());
+		io_u.p_spectral_set(ik1, ik0, tmp1);
+
+		std::complex<double> tmp2(U[2].real(), U[2].imag());
+		io_v.p_spectral_set(ik1, ik0, tmp2);
+#else
+		io_h.p_spectral_set(ik1, ik0, U[0]);
+		io_u.p_spectral_set(ik1, ik0, U[1]);
+		io_v.p_spectral_set(ik1, ik0, U[2]);
+#endif
+	
+	}
+
+
+	/* Get linear shallow water operator eigen decomposition */
+	static
+	void sw_eigen_decomp(
+			int ik0,				//wavenumber in x
+			int ik1,				// wavenumeber in y
+			complex v[3][3], // output eigen vector
+			complex v_inv[3][3], // output eigen vector
+			complex lambda[3], // output eigen values
+			SimulationVariables &i_simVars // Simulation variables
+	)
+	{
+
+		REXIFunctions<T> rexiFunctions;
+
+		double sx = i_simVars.sim.plane_domain_size[0];
+		double sy = i_simVars.sim.plane_domain_size[1];
+
+		if (i_simVars.disc.space_grid_use_c_staggering)
+			FatalError("Staggering not supported");
+
+		typedef std::complex<T> complex;
+		complex I(0.0, 1.0);
+		std::cout<<"Calculating EV for mode (" << ik0 << ", " << ik1 << ")" << std::endl;
+
+		T s0 = i_simVars.sim.plane_domain_size[0];
+		T s1 = i_simVars.sim.plane_domain_size[1];
+
+		T f = i_simVars.sim.plane_rotating_f0;
+		T h = i_simVars.sim.h0;
+		T g = i_simVars.sim.gravitation;
+
+		T sqrt_h = rexiFunctions.l_sqrt(h);
+		T sqrt_g = rexiFunctions.l_sqrt(g);
+
+		
+		T k1 = (T)ik1;
+		T k0 = (T)ik0;
 
 		complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 		complex c = -k1*I;
@@ -111,12 +230,12 @@ public:
 		/*
 		 * Matrix with Eigenvectors (column-wise)
 		 */
-		complex v[3][3];
+		//complex v[3][3];
 
 		/*
 		 * Eigenvalues
 		 */
-		complex lambda[3];
+		//complex lambda[3];
 
 		if (i_simVars.sim.plane_rotating_f0 == 0)
 		{
@@ -299,7 +418,6 @@ public:
 			/*
 			 * Invert Eigenvalue matrix
 			 */
-		complex v_inv[3][3];
 
 		v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
 		v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
@@ -315,6 +433,14 @@ public:
 
 		complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
 
+
+		for (int j = 0; j < 3; j++)
+		{
+			for (int i = 0; i < 3; i++)
+				v_inv[j][i] /= s;
+		}
+
+
 		std::cout<<"EV matrix"<<std::endl;
 		for (int j = 0; j < 3; j++)
 		{
@@ -327,57 +453,18 @@ public:
 		for (int j = 0; j < 3; j++)
 		{
 			for (int i = 0; i < 3; i++)
-			{
-				v_inv[j][i] /= s;
 				std::cout<< v_inv[j,i] <<" "; 
-			}	
 			std::cout<<std::endl;
 		}
 
 		std::cout<<"Eigen values"<<std::endl;
 		for (int j = 0; j < 3; j++)
-			std::cout<< lambda[j]<<" "; 
-		std::cout<<std::endl;
-
-		complex UEV[3] = {0.0, 0.0, 0.0};
-		for (int k = 0; k < 3; k++)
-			for (int j = 0; j < 3; j++)
-				UEV[k] += v_inv[k][j] * U[j];
-
-
-		for (int k = 0; k < 3; k++)
 		{
-			std::complex<T> &lam = lambda[k];
-
-			std::complex<T> K = rexiFunctions.eval(lam);
-
-			UEV[k] = K*UEV[k];
+			std::cout<< lambda[j] <<" "; 
 		}
+		std::cout<<std::endl;
+}
 
-		for (int k = 0; k < 3; k++)
-			U[k] = 0.0;
-
-		for (int k = 0; k < 3; k++)
-			for (int j = 0; j < 3; j++)
-				U[k] += v[k][j] * UEV[j];
-
-
-#if SWEET_QUADMATH
-		std::complex<double> tmp0(U[0].real(), U[0].imag());
-		io_h.p_spectral_set(ik1, ik0, tmp0);
-
-		std::complex<double> tmp1(U[1].real(), U[1].imag());
-		io_u.p_spectral_set(ik1, ik0, tmp1);
-
-		std::complex<double> tmp2(U[2].real(), U[2].imag());
-		io_v.p_spectral_set(ik1, ik0, tmp2);
-#else
-		io_h.p_spectral_set(ik1, ik0, U[0]);
-		io_u.p_spectral_set(ik1, ik0, U[1]);
-		io_v.p_spectral_set(ik1, ik0, U[2]);
-#endif
-	
-	}
 
 	template <typename TCallbackClass>
 	static
