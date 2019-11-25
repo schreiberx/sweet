@@ -94,6 +94,7 @@ public:
 
 		complex U[3];
 		// Set normal mode acording to desired wave type
+		// These are weights for the modes
 		U[0] = geo_mode;
 		U[1] = igwest_mode;
 		U[2] = igeast_mode;
@@ -106,7 +107,6 @@ public:
 		}
 
 		//Define normal mode as combination of eigen vectors
-		/* Convert U to EV basis */
 		complex UEV[3] = {0.0, 0.0, 0.0};
 		for (int k = 0; k < 3; k++)
 			for (int j = 0; j < 3; j++)
@@ -123,6 +123,11 @@ public:
 		std::cout<<"Eigen values"<<std::endl;
 		for (int j = 0; j < 3; j++)
 			std::cout<< lambda[j]<<" "; 
+		std::cout<<std::endl;
+
+		std::cout<<"New normal mode"<<std::endl;
+		for (int j = 0; j < 3; j++)
+			std::cout<< UEV[j]<<" "; 
 		std::cout<<std::endl;
 
 		/* Convert U to EV basis */
@@ -149,22 +154,31 @@ public:
 		//	for (int j = 0; j < 3; j++)
 		//		U[k] += v[k][j] * UEV[j];
 
+		io_h.print_spectralData();
+		io_h.print_physicalArrayData();
 
-#if SWEET_QUADMATH
-		std::complex<double> tmp0(U[0].real(), U[0].imag());
-		io_h.p_spectral_set(ik1, ik0, tmp0);
+		io_h.p_spectral_set(ik1, ik0, io_h.p_spectral_get(ik1, ik0)+UEV[0]);
+		io_u.p_spectral_set(ik1, ik0, io_u.p_spectral_get(ik1, ik0)+UEV[1]);
+		io_v.p_spectral_set(ik1, ik0, io_v.p_spectral_get(ik1, ik0)+UEV[2]);
+		
+		std::cout<<"spectral "<< ik1<<std::endl;
+		io_h.print_spectralData();
+		std::cout<<"physical"<<std::endl;
+		io_h.request_data_physical();
+		io_h.print_physicalArrayData();
 
-		std::complex<double> tmp1(U[1].real(), U[1].imag());
-		io_u.p_spectral_set(ik1, ik0, tmp1);
-
-		std::complex<double> tmp2(U[2].real(), U[2].imag());
-		io_v.p_spectral_set(ik1, ik0, tmp2);
-#else
-		io_h.p_spectral_set(ik1, ik0, U[0]);
-		io_u.p_spectral_set(ik1, ik0, U[1]);
-		io_v.p_spectral_set(ik1, ik0, U[2]);
-#endif
-	
+		//Mirror wavenumbers planeDataConfig->spectral_data_size[1]
+		ik1 = (T)((int)planeDataConfig->spectral_data_size[1]-(int)ik1 - (int)1);
+		
+		io_h.p_spectral_set(ik1, ik0, io_h.p_spectral_get(ik1, ik0)+UEV[0]);
+		io_u.p_spectral_set(ik1, ik0, io_u.p_spectral_get(ik1, ik0)+UEV[1]);
+		io_v.p_spectral_set(ik1, ik0, io_v.p_spectral_get(ik1, ik0)+UEV[2]);
+		
+		std::cout<<"spectral with mirror "<< ik1<<std::endl;
+		io_h.print_spectralData();
+		std::cout<<"physical"<<std::endl;
+		io_h.request_data_physical();
+		io_h.print_physicalArrayData();
 	}
 
 

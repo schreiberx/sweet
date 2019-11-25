@@ -63,7 +63,7 @@ int main(
 	// Spectral mode to be converted (x,y) respectively
 	std::size_t k0, k1;
 
-	double igwest_mode=0.0;
+	double igwest_mode=1.0;
 	double igeast_mode=0.0;
 	double geo_mode=0.0;
 
@@ -71,7 +71,7 @@ int main(
 	
 	//std::size_t max_modes_x = planeDataConfig->spectral_real_modes[0];
 	//std::size_t max_modes_y = planeDataConfig->spectral_real_modes[1];
-	k0=7;
+	k0=5;
 	k1=3;
 	h.spectral_set_zero();
 	u.spectral_set_zero();
