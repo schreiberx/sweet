@@ -31,6 +31,7 @@
 	#define PROC_BIND_CLOSE
 
 #else
+	// PARALLEL FOR
 
 	#define SWEET_OMP_PARALLEL_FOR _Pragma("omp parallel for")
 
@@ -42,13 +43,18 @@
 	#endif
 
 	#if SWEET_SIMD_ENABLE
+		// SIMD
 		#define SWEET_OMP_PARALLEL_FOR_SIMD _Pragma("omp parallel for simd")
 		#define SWEET_OMP_PARALLEL_FOR_SIMD_COLLAPSE2 _Pragma("omp parallel for simd collapse(2)")
 	#else
+		// no SIMD
 		#define SWEET_OMP_PARALLEL_FOR_SIMD _Pragma("omp parallel for")
+		#define SWEET_OMP_PARALLEL_FOR_SIMD_COLLAPSE2 _Pragma("omp parallel for collapse(2)")
 	#endif
 
 	#if SWEET_THREADING_SPACE
+		#define SWEET_OMP_PARALLEL_FOR_SIMD_COLLAPSE2 _Pragma("omp parallel for simd collapse(2)")
+
 		#define SWEET_THREADING_SPACE_PARALLEL_FOR SWEET_OMP_PARALLEL_FOR
 		#define SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD SWEET_OMP_PARALLEL_FOR_SIMD
 		#define SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2 SWEET_OMP_PARALLEL_FOR_SIMD_COLLAPSE2
