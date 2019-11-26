@@ -28,7 +28,7 @@ struct REXI_SimulationVariables
 	/**
 	 * Extend modes for certain operations
 	 */
-	int use_sphere_extended_modes = 2;
+	int use_sphere_extended_modes = 0;
 
 	/**
 	 * Use REXI preallocation

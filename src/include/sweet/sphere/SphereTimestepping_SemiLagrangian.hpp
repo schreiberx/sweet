@@ -32,7 +32,7 @@ public:
 
 
 	void setup(
-		double i_domain_size[2],
+//		double i_domain_size[2],
 		const SphereData_Config *i_sphereDataConfig
 	)
 	{

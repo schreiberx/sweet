@@ -225,6 +225,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 	if (rexi_use_direct_solution)
 	{
+
 		o_h_pert = i_h_pert;
 		o_u = i_u;
 		o_v = i_v;

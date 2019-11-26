@@ -129,7 +129,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 	T dt = i_dt;
 
-
 	/*
 	 * This implementation works directly on PlaneData
 	 */

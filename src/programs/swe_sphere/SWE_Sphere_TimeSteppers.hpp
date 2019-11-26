@@ -36,6 +36,9 @@
 #include "SWE_Sphere_TS_lg_irk_lc_erk_ver01.hpp"
 
 
+#include "SWE_Sphere_TS_l_cn_na_sl_nd_settls.hpp"
+
+
 /**
  * SWE Plane time steppers
  */
@@ -71,6 +74,8 @@ public:
 	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
 	SWE_Sphere_TS_lg_irk *lg_irk = nullptr;
 	SWE_Sphere_TS_lg_cn *lg_cn = nullptr;
+
+	SWE_Sphere_TS_l_cn_na_sl_nd_settls *l_cn_na_sl_nd_settls = nullptr;
 
 	SWE_Sphere_TS_interface *master = nullptr;
 
@@ -196,6 +201,12 @@ public:
 		{
 			delete lg_cn;
 			lg_cn = nullptr;
+		}
+
+		if (l_cn_na_sl_nd_settls != nullptr)
+		{
+			delete l_cn_na_sl_nd_settls;
+			l_cn_na_sl_nd_settls = nullptr;
 		}
 	}
 
@@ -499,6 +510,13 @@ public:
 			}
 
 			master = &(SWE_Sphere_TS_interface&)*lg_rexi;
+		}
+		else if (i_timestepping_method == "l_cn_na_sl_nd_settls")
+		{
+			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
+			l_cn_na_sl_nd_settls->setup(i_simVars.misc.use_nonlinear_only_visc);
+
+			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
 		}
 		else
 		{

@@ -1451,7 +1451,13 @@ int main(int i_argc, char *i_argv[])
 		if (simVars.misc.gui_enabled)
 		{
 			SimulationInstance *simulationSWE = new SimulationInstance;
+
+			SimulationBenchmarkTimings::getInstance().main_timestepping.start();
+
 			VisSweet<SimulationInstance> visSweet(simulationSWE);
+
+			SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
+
 			delete simulationSWE;
 		}
 		else

@@ -12,7 +12,7 @@
 
 void Adv_Sphere_TS_na_sl::run_timestep(
 		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_vort,		///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -141,7 +141,7 @@ void Adv_Sphere_TS_na_sl::setup(
 	sampler2D.setup(sphereDataConfig);
 
 	//PXT- This just calls sampler2D.setup, so any reason for having it?
-	semiLagrangian.setup(simVars.sim.plane_domain_size, sphereDataConfig);
+	semiLagrangian.setup(sphereDataConfig);
 }
 
 
