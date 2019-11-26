@@ -342,7 +342,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
 			std::cout << "	--random-seed [int]		random seed for random number generator" << std::endl;
-			std::cout << "	--benchmark [string]	benchmark name, only used if -s not set, set -1 for overview " << std::endl;
+			std::cout << "	--benchmark-name [string]	benchmark name" << std::endl;
 			std::cout << "	-x [float]				x coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-y [float]				y coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-r [radius]				scale factor of radius for initial condition, default=1" << std::endl;
@@ -694,7 +694,7 @@ public:
 			std::cout << "							0: don't generate" << std::endl;
 			std::cout << "							1: generate in physical space" << std::endl;
 			std::cout << "							2: generate in spectral space" << std::endl;
-			std::cout << "							3: generate in spectral space with complex matrix)" << std::endl;
+			std::cout << "							3: generate in spectral space with complex matrix" << std::endl;
 			std::cout << "	--semi-lagrangian-iterations [int]		Number of iterations during semi-Lagrangian time integration" << std::endl;
 			std::cout << "	--semi-lagrangian-convergence-threshold [float]	Threshold to stop iterating, Use -1 to disable" << std::endl;
 
@@ -1029,7 +1029,6 @@ public:
 		if (benchmark.random_seed >= 0)
 			srandom(benchmark.random_seed);
 	}
-
 
 	static
 	int split2int(
