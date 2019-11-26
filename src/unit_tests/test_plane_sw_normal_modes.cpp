@@ -71,7 +71,7 @@ int main(
 	
 	//std::size_t max_modes_x = planeDataConfig->spectral_real_modes[0];
 	//std::size_t max_modes_y = planeDataConfig->spectral_real_modes[1];
-	k0=5;
+	k0=2;
 	k1=3;
 	h.spectral_set_zero();
 	u.spectral_set_zero();
