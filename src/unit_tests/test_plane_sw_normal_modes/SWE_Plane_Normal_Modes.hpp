@@ -154,44 +154,20 @@ public:
 		//	for (int j = 0; j < 3; j++)
 		//		U[k] += v[k][j] * UEV[j];
 
-		PlaneData tmp(planeDataConfig);
-
-		tmp.spectral_set_all(0.0, 0.0);
 
 		io_h.print_spectralIndex();
 		io_h.print_physicalArrayData();
-		complex tmp_h = io_h.p_spectral_get(ik1, ik0)+UEV[0];
-		std::cout<<ik0<<" "<<ik1<<"tmp_h "<<tmp_h<< io_h.p_spectral_get(ik1, ik0) << UEV[0] << std::endl;
-		io_h.p_spectral_set(ik1, ik0, tmp_h);
+		
+		std::cout<<ik0<<" "<<ik1<< " "<< io_h.p_spectral_get(ik1, ik0) << UEV[0] << std::endl;
+		io_h.p_spectral_set(ik1, ik0, io_h.p_spectral_get(ik1, ik0)+UEV[0]);
 		io_u.p_spectral_set(ik1, ik0, io_u.p_spectral_get(ik1, ik0)+UEV[1]);
 		io_v.p_spectral_set(ik1, ik0, io_v.p_spectral_get(ik1, ik0)+UEV[2]);
 
-		std::cout<<"spectral "<< ik1<<std::endl;
+		std::cout<<"spectral "<< std::endl;
 		io_h.print_spectralIndex();
 		std::cout<<"physical"<<std::endl;
-		io_h.request_data_physical();
 		io_h.print_physicalArrayData(3);
-		tmp.physical_space_data = io_h.physical_space_data;
-		std::cout<<"physical->spectral"<<std::endl;
-		tmp.print_spectralIndex();
-		
-		//Mirror wavenumbers planeDataConfig->spectral_data_size[1]
-		ik1 = (T)((int)planeDataConfig->spectral_data_size[1]-(int)ik1);
-		tmp_h = io_h.p_spectral_get(ik1, ik0)+UEV[0];
-		std::cout<<ik0<<" "<<ik1<<" tmp_h "<<tmp_h<< io_h.p_spectral_get(ik1, ik0) << UEV[0] << std::endl;
-		io_h.p_spectral_set(ik1, ik0, tmp_h);
-		io_u.p_spectral_set(ik1, ik0, io_u.p_spectral_get(ik1, ik0)+UEV[1]);
-		io_v.p_spectral_set(ik1, ik0, io_v.p_spectral_get(ik1, ik0)+UEV[2]);
-		
-		std::cout<<"spectral with mirror "<< ik1<<std::endl;
-		io_h.print_spectralIndex();
-		std::cout<<"physical"<<std::endl;
-		io_h.request_data_physical();
-		io_h.print_physicalArrayData(3);
-		io_h.request_data_spectral();
-		io_h.print_spectralIndex();
-
-		
+				
 
 	}
 

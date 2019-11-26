@@ -64,7 +64,7 @@ int main(
 	std::size_t k0, k1;
 
 	double igwest_mode=1.0;
-	double igeast_mode=0.0;
+	double igeast_mode=1.0;
 	double geo_mode=0.0;
 
 	//Normal modes to be generated
@@ -73,6 +73,7 @@ int main(
 	//std::size_t max_modes_y = planeDataConfig->spectral_real_modes[1];
 	k0=2;
 	k1=3;
+	//k1=planeDataConfig->spectral_data_size[1]-k1;
 	h.spectral_set_zero();
 	u.spectral_set_zero();
 	v.spectral_set_zero();
