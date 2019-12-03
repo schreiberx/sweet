@@ -111,24 +111,32 @@ int main(
 
 	//std::cout<< "Projecting fields on wavenumber (" << ik0 << ","<< ik1<<") to normal modes"<< std::endl;
 	std::cout<< "\n\n Extracting Normal Modes:"<< std::endl;
+
+	PlaneData geo(planeDataConfig);
+	PlaneData igwest(planeDataConfig);
+	PlaneData igeast(planeDataConfig);
 	complex geo_mode_c;
 	complex igwest_mode_c;
 	complex igeast_mode_c;
+
+	SWE_Plane_Normal_Modes::convert_allspectralmodes_to_normalmodes(
+		h,	
+		u,
+		v,
+		simVars,
+		geo,
+		igwest,
+		igeast
+	);
+
 	for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]/4; ik1++)
 	{
 		for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]/2; ik0++)
 		{
 			std::cout<< "From wavenumber (" << ik0 << ","<< ik1<<"):";
-			SWE_Plane_Normal_Modes::project_to_normal_mode(
-								ik0, ik1,
-								h,
-								u,
-								v,
-								simVars,
-								geo_mode_c,
-								igwest_mode_c,
-								igeast_mode_c
-						);
+			geo_mode_c = geo.p_spectral_get(ik1, ik0);
+			igwest_mode_c = igwest.p_spectral_get(ik1, ik0);
+			igeast_mode_c = igeast.p_spectral_get(ik1, ik0);
 
 			std::cout<< " Geost: "<< geo_mode_c;
 			std::cout<< " IGWest: "<< igwest_mode_c;

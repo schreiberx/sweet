@@ -152,8 +152,53 @@ public:
 		return;
 	}
 
+
 	static
-	void project_to_normal_mode(
+	void convert_allspectralmodes_to_normalmodes(
+			PlaneData &i_h, // h: surface height (perturbation)
+			PlaneData &i_u, // u: velocity in x-direction
+			PlaneData &i_v, // v: velocity in y-direction
+			SimulationVariables &i_simVars, // Simulation variables
+			PlaneData &o_geo_mode,    //Output: Coeficients multiplying geostrophic mode
+			PlaneData &o_igwest_mode, //Output: Coeficients multiplying west gravity mode
+			PlaneData &o_igeast_mode //Output: Coeficients multiplying east gravity mode
+	)
+	{
+		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
+
+		o_geo_mode.spectral_set_zero();
+		o_igwest_mode.spectral_set_zero();
+		o_igeast_mode.spectral_set_zero();
+
+		complex geo_mode_c;
+		complex igwest_mode_c;
+		complex igeast_mode_c;
+		for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
+		{
+			for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
+			{
+				
+				SWE_Plane_Normal_Modes::convert_spectralmode_to_normalmode(
+									ik0, ik1,
+									i_h,
+									i_u,
+									i_v,
+									i_simVars,
+									geo_mode_c,
+									igwest_mode_c,
+									igeast_mode_c
+							);
+				o_geo_mode.p_spectral_set(ik1, ik0, geo_mode_c);
+				o_igwest_mode.p_spectral_set(ik1, ik0, igwest_mode_c);
+				o_igeast_mode.p_spectral_set(ik1, ik0, igeast_mode_c);
+
+			}
+		}	
+		return;
+	};
+
+	static
+	void convert_spectralmode_to_normalmode(
 			std::size_t ik0,				//wavenumber in x
 			std::size_t ik1,				// wavenumeber in y
 			PlaneData &i_h, // h: surface height (perturbation)
