@@ -20,7 +20,7 @@ done
 #PKGS+=("install_make.sh")
 PKGS+=("install_gcc8.2.sh")
 
-#PKGS+=("install_cmake.sh")
+PKGS+=("install_cmake.sh")
 #PKGS+=("install_automake.sh")
 
 PKGS+=("install_fftw3.sh")

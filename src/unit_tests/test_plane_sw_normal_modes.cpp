@@ -83,7 +83,7 @@ int main(
 	std::cout<< " Geost: "<< geo_mode<<std::endl;
 	std::cout<< " IGWest: "<< igwest_mode<<std::endl;
 	std::cout<< " IGEast: "<< igeast_mode<<std::endl;
-	std::cout<< "To wavenumber ";
+	std::cout<< "To wavenumber  ";
 	for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]/4; ik1++)
 	{
 		for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]/2; ik0++)
@@ -103,6 +103,7 @@ int main(
 		}
 	}
 	//std::cout<<"spectral "<< std::endl;
+	//std::cout<< std::endl;
 	//v.print_spectralIndex();
 	//std::cout<<"physical"<<std::endl;
 	//v.print_physicalArrayData(3);
