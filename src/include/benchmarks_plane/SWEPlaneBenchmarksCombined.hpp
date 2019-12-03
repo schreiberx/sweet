@@ -524,7 +524,8 @@ public:
 		std::cout << "		mergevortex : Vortex merging initial conditions from McRae QJ 2014 paper" << std::endl;
 		std::cout << "		unstablejet : Unstable Jet test case" << std::endl;
 		std::cout << "		gaussian_bump : Gaussian bump" << std::endl;
-		std::cout << "Check out more options in benchmarks_plane/SWEPlaneBenchmarksCombined.hpp" << std::endl;
+		std::cout << "		normalmodes : Normal mode initialization" << std::endl;
+		std::cout << "Check out more options in src/include/benchmarks_plane/SWEPlaneBenchmarksCombined.hpp" << std::endl;
 	}
 };
 
