@@ -23,7 +23,7 @@ public:
 	{
 		std::string sweet_root;
 
-		char *a = getenv("SWEET_ROOT");
+		char *a = getenv("MULE_SOFTWARE_ROOT");
 		if (a == nullptr)
 		{
 			sweet_root = "./";
