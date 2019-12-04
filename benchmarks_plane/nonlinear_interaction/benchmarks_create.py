@@ -68,8 +68,8 @@ jg.runtime.benchmark_name = "normalmodes"
 jg.runtime.compute_error = 1
 
 # Enable/Disbale GUI
-#EnableGUI(jg)
-DisableGUI(jg)
+EnableGUI(jg)
+#DisableGUI(jg)
 
 #
 # REXI method
