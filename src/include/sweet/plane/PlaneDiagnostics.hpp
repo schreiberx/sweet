@@ -14,6 +14,7 @@ class PlaneDiagnostics
 {
 public:
 	static
+
 	void update_nonstaggered_huv_to_mass_energy_enstrophy(
 			PlaneOperators &op,
 			PlaneData &i_prog_h, //h perturbation

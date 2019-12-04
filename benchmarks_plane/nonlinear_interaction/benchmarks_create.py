@@ -31,7 +31,7 @@ from sweet.SWEETRuntimeParametersScenarios import *
 jg = JobGeneration()
 
 # Request dedicated compile script
-jg.compilecommand_in_jobscript = False
+jg.compilecommand_in_jobscript = True
 
 # Wallclock time
 max_wallclock_seconds = 2*24*60*60
@@ -60,7 +60,7 @@ jg.runtime.verbosity = 3
 # 14: Steady diagonal benchmark
 #
 #jg.runtime.bench_id = 1
-jg.runtime.benchmark_name = "unstablejet"
+jg.runtime.benchmark_name = "normalmodes"
 
 #
 # Compute error or difference to initial data
@@ -68,8 +68,8 @@ jg.runtime.benchmark_name = "unstablejet"
 jg.runtime.compute_error = 1
 
 # Enable/Disbale GUI
-EnableGUI(jg)
-#DisableGUI(jg)
+#EnableGUI(jg)
+DisableGUI(jg)
 
 #
 # REXI method
@@ -102,11 +102,11 @@ jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 #jg.runtime.output_timestep_size = timestep_size_reference*(2.0**(-timelevels))/10.0
 
 phys_res_levels = timelevels
-phys_res_reference = 512
+phys_res_reference = 128 #512
 #phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
 phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 
-
+jg.runtime.benchmark_normal_modes_case ="test"
 
 ts_methods = [
 	['ln_erk',		4,	4]#,	# reference solution

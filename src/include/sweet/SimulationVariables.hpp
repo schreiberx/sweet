@@ -277,6 +277,8 @@ public:
 		/// Galewsky-benchmark specific: latitude coordinate
 		double benchmark_galewsky_phi2 = -1;
 
+		/// Normal modes benchmark scenario
+		std::string benchmark_normal_modes_case = "";
 
 		/// radius
 		double object_scale = 1;
@@ -328,6 +330,7 @@ public:
 			std::cout << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
 			std::cout << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;
 			std::cout << " + benchmark_galewsky_phi2: " << benchmark_galewsky_phi2 << std::endl;
+			std::cout << " + benchmark_normal_modes_case: " << benchmark_normal_modes_case << std::endl;
 			std::cout << " + object_scale: " << object_scale << std::endl;
 			std::cout << " + object_coord_x: " << object_coord_x << std::endl;
 			std::cout << " + object_coord_y: " << object_coord_y << std::endl;
@@ -388,6 +391,9 @@ public:
 
 	        long_options[next_free_program_option] = {"benchmark-galewsky-phi2", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
+
+			long_options[next_free_program_option] = {"benchmark-normal-modes-case", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
 		}
 
 
@@ -435,9 +441,13 @@ public:
 			case 8:
 				benchmark_galewsky_phi2 = atof(i_value);
 				return 0;
+
+			case 9:
+				benchmark_normal_modes_case = i_value;
+				return 0;
 			}
 
-			return 9;
+			return 10;
 		}
 	} benchmark;
 
