@@ -61,7 +61,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "guepardo_gnu"
+	return "pedrosp_ime_gnu"
 
 
 def get_platform_resources():

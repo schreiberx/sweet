@@ -30,6 +30,15 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 SimulationVariables simVars;
 
+
+#if SWEET_QUADMATH && 0
+	typedef __float128 T;
+#else
+	typedef double T;
+#endif
+	typedef std::complex<T> complex;
+
+
 int main(
 		int i_argc,
 		char *i_argv[]
@@ -37,6 +46,8 @@ int main(
 {
 	// override flag
 	SimulationVariables simVars;
+
+	double eps = 1e-9;
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
@@ -60,35 +71,85 @@ int main(
 	PlaneData u(planeDataConfig);
 	PlaneData v(planeDataConfig);
 
-	// Spectral mode to be converted (x,y) respectively
-	std::size_t k0, k1;
-
+	//Normal modes to be generated
+	double geo_mode=1.0;
 	double igwest_mode=1.0;
 	double igeast_mode=0.0;
-	double geo_mode=0.0;
-
-	//Normal modes to be generated
 	
-	//std::size_t max_modes_x = planeDataConfig->spectral_real_modes[0];
-	//std::size_t max_modes_y = planeDataConfig->spectral_real_modes[1];
-	k0=2;
-	k1=3;
 	h.spectral_set_zero();
 	u.spectral_set_zero();
 	v.spectral_set_zero();
-	//std::cout<< "out:" << h.planeDataConfig->spectral_data_size[1] << std::endl;
+	std::cout<< "Adding normal mode with coefficients:"<< std::endl;
+	std::cout<< " Geost: "<< geo_mode<<std::endl;
+	std::cout<< " IGWest: "<< igwest_mode<<std::endl;
+	std::cout<< " IGEast: "<< igeast_mode<<std::endl;
+	std::cout<< "To wavenumber ";
+	for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]/4; ik1++)
+	{
+		for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]/2; ik0++)
+		{
+			std::cout<< " (" << ik0 << ","<< ik1<<") , ";
 
-	SWE_Plane_Normal_Modes::add_normal_mode(
-								k0, k1,
-								igwest_mode,
-								igeast_mode,
-								geo_mode,
+			SWE_Plane_Normal_Modes::add_normal_mode(
+									ik0, ik1,
+									geo_mode,
+									igwest_mode,
+									igeast_mode,
+									h,
+									u,
+									v,
+									simVars
+							);
+		}
+	}
+	//std::cout<<"spectral "<< std::endl;
+	//v.print_spectralIndex();
+	//std::cout<<"physical"<<std::endl;
+	//v.print_physicalArrayData(3);
+	
+
+	//std::cout<< "Projecting fields on wavenumber (" << ik0 << ","<< ik1<<") to normal modes"<< std::endl;
+	std::cout<< "\n\n Extracting Normal Modes:"<< std::endl;
+	complex geo_mode_c;
+	complex igwest_mode_c;
+	complex igeast_mode_c;
+	for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]/4; ik1++)
+	{
+		for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]/2; ik0++)
+		{
+			std::cout<< "From wavenumber (" << ik0 << ","<< ik1<<"):";
+			SWE_Plane_Normal_Modes::project_to_normal_mode(
+								ik0, ik1,
 								h,
 								u,
 								v,
-								simVars
+								simVars,
+								geo_mode_c,
+								igwest_mode_c,
+								igeast_mode_c
 						);
-		
+
+			std::cout<< " Geost: "<< geo_mode_c;
+			std::cout<< " IGWest: "<< igwest_mode_c;
+			std::cout<< " IGEast: "<< igeast_mode_c;
+			double error = abs(geo_mode_c.real()-geo_mode)+abs(igwest_mode_c.real()-igwest_mode)+abs(igeast_mode_c.real()-igeast_mode);
+			std::cout<< " Error: "<< error ;
+			if(error<10e-10)
+				std::cout<< " PASSED "<< std::endl;
+			else //mode may have been split to mirror
+			{
+				error = abs(geo_mode_c.real()-geo_mode/2.0)+abs(igwest_mode_c.real()-igwest_mode/2.0)+abs(igeast_mode_c.real()-igeast_mode/2.0);
+				if ( error < eps )
+					std::cout<< " PASSED "<< std::endl;
+				else
+				{
+					std::cout<< " FAIL "<< std::endl;
+					std::cerr << "NORMAL_MODES: Failed to convert back and forward to/from normal modes!" << error << std::endl;
+					exit(-1);
+				}
+			}
+		}
+	}	
 
 	std::cout << "SUCCESSFULLY FINISHED" << std::endl;
 

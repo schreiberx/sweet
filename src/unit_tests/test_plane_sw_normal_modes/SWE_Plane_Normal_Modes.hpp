@@ -39,9 +39,9 @@ public:
 	void add_normal_mode(
 			std::size_t ik0,				//wavenumber in x
 			std::size_t ik1,				// wavenumeber in y
+			double geo_mode,    //Coeficient multiplying geostrophic mode
 			double igwest_mode, //Coeficient multiplying west gravity mode
 			double igeast_mode, //Coeficient multiplying east gravity mode
-			double geo_mode,    //Coeficient multiplying geostrophic mode
 			PlaneData &io_h, // h: surface height (perturbation)
 			PlaneData &io_u, // u: velocity in x-direction
 			PlaneData &io_v, // v: velocity in y-direction
@@ -56,40 +56,38 @@ public:
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			FatalError("Staggering not supported");
 		
-		std::cout<<"Adding mode to fields \n "<<std::endl;
+		//std::cout<<"Adding mode to fields"<<std::endl;
 
 		io_h.request_data_spectral();
 		io_u.request_data_spectral();
 		io_v.request_data_spectral();
 
 		//Check if k0 is in correct sprectral area
-		std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
+		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
 		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
 			FatalError("Normal_mode: mode not within reach");
 
 		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
 			FatalError("Normal_mode: mode not within reach");
 	
-		//Check for mirror efffects
+		//Check for mirror effects
+		T k0 = (T)ik0;
 		T k1;
 		if (ik1 < planeDataConfig->spectral_data_size[1]/2)
 			k1 = (T)ik1;
 		else
 			k1 = (T)((int)ik1-(int)planeDataConfig->spectral_data_size[1]);
-
-		T k0 = (T)ik0;
-
+		
 		complex v[3][3];
-		complex v_inv[3][3];
 		complex lambda[3];
 
 		SWE_Plane_Normal_Modes::sw_eigen_decomp(
 				k0,				//wavenumber in x
 				k1,				// wavenumeber in y
-				v, // output eigen vector
-				v_inv, // output eigen vector
-				lambda, // output eigen values
-				i_simVars // Simulation variables
+				i_simVars,  // Input Simulation variables
+				false, // Direct EV matrix (not inverse)
+				v , // EV matrix
+				lambda // output eigen values */
 		);
 
 		complex U[3];
@@ -99,12 +97,6 @@ public:
 		U[1] = igwest_mode;
 		U[2] = igeast_mode;
 
-		std::cout<<"EV matrix"<<std::endl;
-		for (int j = 0; j < 3; j++)	{
-			for (int i = 0; i < 3; i++)
-				std::cout<< v[j][i]<<" "; 
-			std::cout<<std::endl;
-		}
 
 		//Define normal mode as combination of eigen vectors
 		complex UEV[3] = {0.0, 0.0, 0.0};
@@ -112,97 +104,163 @@ public:
 			for (int j = 0; j < 3; j++)
 				UEV[k] += v[k][j] * U[j];
 
+		//std::cout<<"spectral before"<< std::endl;
+		//io_v.print_spectralIndex();
 
-		std::cout<<"EV-1 matrix"<<std::endl;
+		complex h_add, u_add, v_add;
+		h_add = io_h.p_spectral_get(ik1, ik0)+UEV[0];
+		u_add = io_u.p_spectral_get(ik1, ik0)+UEV[1];
+		v_add = io_v.p_spectral_get(ik1, ik0)+UEV[2];
+
+		/* Add normal mode to data */
+		io_h.p_spectral_set(ik1, ik0, h_add);
+		io_u.p_spectral_set(ik1, ik0, u_add);
+		io_v.p_spectral_set(ik1, ik0, v_add);
+
+		io_h.spectral_zeroAliasingModes();
+		io_u.spectral_zeroAliasingModes();
+		io_v.spectral_zeroAliasingModes();
+
+		//Request physical data, to ensure that irroring is well well balanced (it may fill in the mirror mode)
+		io_h.request_data_physical();
+		io_u.request_data_physical();
+		io_v.request_data_physical();
+
+/*Debug output*/
+#if 0
+
+		std::cout<<"EV matrix"<<std::endl;
 		for (int j = 0; j < 3; j++)	{
 			for (int i = 0; i < 3; i++)
-				std::cout<< v_inv[j][i] <<" "; 
+				std::cout<< v[j][i]<<" "; 
 			std::cout<<std::endl;
 		}
-
+	
 		std::cout<<"Eigen values"<<std::endl;
 		for (int j = 0; j < 3; j++)
 			std::cout<< lambda[j]<<" "; 
 		std::cout<<std::endl;
-
-		std::cout<<"New normal mode"<<std::endl;
+		
+		std::cout<<"Adding normal mode"<<std::endl;
 		for (int j = 0; j < 3; j++)
 			std::cout<< UEV[j]<<" "; 
 		std::cout<<std::endl;
+	
+		std::cout<<ik0<<" "<<ik1<< " "<< io_v.p_spectral_get(ik1, ik0) << UEV[2] << std::endl;
 
-		/* Convert U to EV basis */
-		//complex UEV[3] = {0.0, 0.0, 0.0};
-		//for (int k = 0; k < 3; k++)
-		//	for (int j = 0; j < 3; j++)
-		//		UEV[k] += v_inv[k][j] * U[j];
-
-		/* Apply eigen values */
-		//for (int k = 0; k < 3; k++)
-		//{
-		//	std::complex<T> &lam = lambda[k];
-
-		//		std::complex<T> K = rexiFunctions.eval(lam);
-
-		//	UEV[k] = K*UEV[k];
-		//}
-
-		/* Put back to spectral space */
-		//for (int k = 0; k < 3; k++)
-		//	U[k] = 0.0;
-
-		//for (int k = 0; k < 3; k++)
-		//	for (int j = 0; j < 3; j++)
-		//		U[k] += v[k][j] * UEV[j];
-		io_h.print_spectralIndex();
-		io_h.print_physicalArrayData();
-		complex tmp_h = io_h.p_spectral_get(ik1, ik0)+UEV[0];
-		std::cout<<ik0<<" "<<ik1<<"tmp_h "<<tmp_h<< io_h.p_spectral_get(ik1, ik0) << UEV[0] << std::endl;
-		io_h.p_spectral_set(ik1, ik0, tmp_h);
-		io_u.p_spectral_set(ik1, ik0, io_u.p_spectral_get(ik1, ik0)+UEV[1]);
-		io_v.p_spectral_set(ik1, ik0, io_v.p_spectral_get(ik1, ik0)+UEV[2]);
-		
-		std::cout<<"spectral "<< ik1<<std::endl;
-		io_h.print_spectralIndex();
-		std::cout<<"physical"<<std::endl;
-		io_h.request_data_physical();
-		io_h.print_physicalArrayData(3);
-
-		//Mirror wavenumbers planeDataConfig->spectral_data_size[1]
-		ik1 = (T)((int)planeDataConfig->spectral_data_size[1]-(int)ik1);
-		tmp_h = io_h.p_spectral_get(ik1, ik0)+UEV[0];
-		std::cout<<ik0<<" "<<ik1<<" tmp_h "<<tmp_h<< io_h.p_spectral_get(ik1, ik0) << UEV[0] << std::endl;
-		io_h.p_spectral_set(ik1, ik0, tmp_h);
-		io_u.p_spectral_set(ik1, ik0, io_u.p_spectral_get(ik1, ik0)+UEV[1]);
-		io_v.p_spectral_set(ik1, ik0, io_v.p_spectral_get(ik1, ik0)+UEV[2]);
-		
-		std::cout<<"spectral with mirror "<< ik1<<std::endl;
-		io_h.print_spectralIndex();
-		std::cout<<"physical"<<std::endl;
-		io_h.request_data_physical();
-		io_h.print_physicalArrayData(3);
+#endif
+		return;
 	}
 
+	static
+	void project_to_normal_mode(
+			std::size_t ik0,				//wavenumber in x
+			std::size_t ik1,				// wavenumeber in y
+			PlaneData &i_h, // h: surface height (perturbation)
+			PlaneData &i_u, // u: velocity in x-direction
+			PlaneData &i_v, // v: velocity in y-direction
+			SimulationVariables &i_simVars, // Simulation variables
+			complex &o_geo_mode,    //Output: Coeficient multiplying geostrophic mode
+			complex &o_igwest_mode, //Output: Coeficient multiplying west gravity mode
+			complex &o_igeast_mode //Output: Coeficient multiplying east gravity mode
+	)
+	{
+
+		REXIFunctions<T> rexiFunctions;
+
+		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
+
+		if (i_simVars.disc.space_grid_use_c_staggering)
+			FatalError("Staggering not supported");
+		
+		//std::cout<<"Adding mode to fields"<<std::endl;
+
+		i_h.request_data_spectral();
+		i_u.request_data_spectral();
+		i_v.request_data_spectral();
+
+		//Check if k0 is in correct sprectral area
+		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
+		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
+			FatalError("Normal_mode: mode not within reach");
+
+		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
+			FatalError("Normal_mode: mode not within reach");
+	
+		//Check for mirror effects
+		T k0 = (T)ik0;
+		T k1;
+		if (ik1 < planeDataConfig->spectral_data_size[1]/2)
+			k1 = (T)ik1;
+		else
+			k1 = (T)((int)ik1-(int)planeDataConfig->spectral_data_size[1]);
+		
+		complex v[3][3];
+		complex lambda[3];
+
+		SWE_Plane_Normal_Modes::sw_eigen_decomp(
+				k0,				//wavenumber in x
+				k1,				// wavenumeber in y
+				i_simVars,  // Input Simulation variables
+				true, // Inverse ev matrix
+				v , // inverse EV matrix
+				lambda // output eigen values */
+		);
+
+		complex U[3];
+		// Set (h,u,v) spectral coeficients
+		// These are weights for the modes
+		U[0] = i_h.p_spectral_get(ik1, ik0);
+		U[1] = i_u.p_spectral_get(ik1, ik0);
+		U[2] = i_v.p_spectral_get(ik1, ik0);
+
+
+		//Apply inverse EV matrix to obtain data in EV space
+		complex UEV[3] = {0.0, 0.0, 0.0};
+		for (int k = 0; k < 3; k++)
+			for (int j = 0; j < 3; j++)
+				UEV[k] += v[k][j] * U[j];
+
+		//Return the modes
+		o_geo_mode=UEV[0];
+		o_igwest_mode=UEV[1];
+		o_igeast_mode=UEV[2];
+		//std::cout<< " Geost: "<< o_geo_mode<<std::endl;
+		//std::cout<< " IGWest: "<< o_igwest_mode<<std::endl;
+		//std::cout<< " IGEast: "<< o_igeast_mode<<std::endl;
+
+		return;		
+	}
 
 	/* Get linear shallow water operator eigen decomposition */
 	static
 	void sw_eigen_decomp(
 			T k0,				//wavenumber in x
 			T k1,				// wavenumeber in y
-			complex v[3][3], // output eigen vector
-			complex v_inv[3][3], // output eigen vector
-			complex lambda[3], // output eigen values
-			SimulationVariables &i_simVars // Simulation variables
+			SimulationVariables &i_simVars, // Input Simulation variables
+			bool i_inverse = false, // Input true, returns inverse matriz, false: returns direct
+			complex o_v[3][3] = {0}, // output eigen vector (direct or inverse)
+			complex o_evalues[3] =  0 // output eigen values (optional)
 	)
 	{
-
 		REXIFunctions<T> rexiFunctions;
+		bool i_evalues = false;
+		if (o_evalues){
+			i_evalues = true;
+			//std::cout<<i_evalues<<" "<< o_evalues[0]   << std::endl;
+		}
+		else{
+			i_evalues = false;
+		}
+		//std::cout<<o_evalues[1]<<std::endl;
+		//std::cout<<i_inverse<<std::endl;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			FatalError("Staggering not supported");
-
+		
 		complex I(0.0, 1.0);
-		std::cout<<"Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
-
+		//std::cout<<"Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
+		//std::cout<<"hi"<< std::endl;
 		T s0 = i_simVars.sim.plane_domain_size[0];
 		T s1 = i_simVars.sim.plane_domain_size[1];
 
@@ -222,13 +280,15 @@ public:
 		/*
 		 * Matrix with Eigenvectors (column-wise)
 		 */
-		//complex v[3][3];
+		complex v[3][3];
+		complex v_inv[3][3];
 
 		/*
 		 * Eigenvalues
 		 */
-		//complex lambda[3];
+		complex lambda[3];
 
+		
 		if (i_simVars.sim.plane_rotating_f0 == 0)
 		{
 			/*
@@ -248,9 +308,11 @@ public:
 				v[1][2] = 0;
 				v[2][2] = 1;
 
-				lambda[0] = 0;
-				lambda[1] = 0;
-				lambda[2] = 0;
+				if (i_evalues){
+					lambda[0] = 0;
+					lambda[1] = 0;
+					lambda[2] = 0;
+				}
 			}
 			else if (k0 == 0)
 			{
@@ -266,9 +328,11 @@ public:
 				v[1][2] = 0;
 				v[2][2] = 1;
 
-				lambda[0] = 0;
-				lambda[1] = -c*sqrt_g*sqrt_h;
-				lambda[2] = c*sqrt_g*sqrt_h;;
+				if (i_evalues){
+					lambda[0] = 0;
+					lambda[1] = -c*sqrt_g*sqrt_h;
+					lambda[2] = c*sqrt_g*sqrt_h;;
+				}
 			}
 			else if (k1 == 0)
 			{
@@ -288,9 +352,11 @@ public:
 				v[1][2] = 1;
 				v[2][2] = 0;
 
-				lambda[0] = 0;
-				lambda[1] = -b*sqrt_g*sqrt_h;
-				lambda[2] = b*sqrt_g*sqrt_h;
+				if (i_evalues){
+					lambda[0] = 0;
+					lambda[1] = -b*sqrt_g*sqrt_h;
+					lambda[2] = b*sqrt_g*sqrt_h;
+				}
 			}
 			else
 			{
@@ -306,9 +372,11 @@ public:
 				v[1][2] = b/c;
 				v[2][2] = 1.0;
 
-				lambda[0] = 0.0;
-				lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
-				lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+				if (i_evalues){
+					lambda[0] = 0.0;
+					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+					lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+				}
 			}
 		}
 		else
@@ -330,9 +398,11 @@ public:
 				v[1][2] = 0;
 				v[2][2] = 0;
 
-				lambda[0] = I*f;
-				lambda[1] = -I*f;
-				lambda[2] = 0;
+				if (i_evalues){
+					lambda[0] = I*f;
+					lambda[1] = -I*f;
+					lambda[2] = 0;
+				}
 			}
 			else if (k0 == 0)
 			{
@@ -351,9 +421,11 @@ public:
 				v[1][2] = f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
 				v[2][2] = 1;
 
-				lambda[0] = 0;
-				lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
-				lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+				if (i_evalues){
+					lambda[0] = 0;
+					lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+					lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+				}
 			}
 			else if (k1 == 0)
 			{
@@ -372,9 +444,11 @@ public:
 				v[1][2] = -rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
 				v[2][2] = 1;
 
-				lambda[0] = 0;
-				lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
-				lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+				if (i_evalues){
+					lambda[0] = 0;
+					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+					lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+				}
 			}
 			else
 				{
@@ -401,9 +475,11 @@ public:
 					v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
 					v[2][2] = 1.0;
 
-					lambda[0] = 0.0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
-					lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+					if (i_evalues){
+						lambda[0] = 0.0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+						lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+					}
 				}
 		}
 
@@ -411,26 +487,44 @@ public:
 			 * Invert Eigenvalue matrix
 			 */
 
-		v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
-		v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
-		v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
+		if (i_inverse){
+			v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
+			v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
+			v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
 
-		v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
-		v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
-		v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
+			v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
+			v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
+			v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
 
-		v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
-		v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
-		v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
+			v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
+			v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
+			v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
 
-		complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
+			complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
 
-
-		for (int j = 0; j < 3; j++)	{
-			for (int i = 0; i < 3; i++)
-				v_inv[j][i] /= s;
+			for (int j = 0; j < 3; j++)	{
+				for (int i = 0; i < 3; i++)
+					v_inv[j][i] /= s;
+			}
+			//Return inverse matrix
+			for (int j = 0; j < 3; j++)	{
+				for (int i = 0; i < 3; i++)
+					o_v[j][i] = v_inv[j][i] ;
+			}
+		}	
+		else{
+			//Return direct matrix
+			for (int j = 0; j < 3; j++)	{
+				for (int i = 0; i < 3; i++)
+					o_v[j][i] = v[j][i] ;
+			}
 		}
-
+		if (i_evalues){
+			for (int j = 0; j < 3; j++)	{
+				o_evalues[j] = lambda[j] ;
+			}
+		}
+		return;
 }
 
 
