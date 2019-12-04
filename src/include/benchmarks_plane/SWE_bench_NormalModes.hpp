@@ -588,8 +588,6 @@ class SWE_bench_NormalModes
  *
  *
  **/
-
-
 public:
 	SWE_bench_NormalModes(
 		SimulationVariables &io_simVars,
