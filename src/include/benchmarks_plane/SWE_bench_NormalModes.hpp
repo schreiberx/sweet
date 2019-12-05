@@ -24,7 +24,7 @@
  * SWE Plane normal mode benchmark
  */
 
-
+		
 
 class SWE_bench_NormalModes
 {
@@ -41,32 +41,6 @@ class SWE_bench_NormalModes
 	std::size_t k0, k1;   // wavenumber to be used (-1,-1) refers to all wavenumbers
 	double d0, dwest, deast; //coefficients of normal modes eigen vectors
 
-	class NormalModesData
-	{
-	public:
-		// Diagnostic information about the projection to 
-		//    the linear normal wave mode eigenspace (see SWE_bench_NormalModes.hpp)
-		
-		PlaneData geo;    //Coefficients multiplying geostrophic mode
-		PlaneData igwest; //Coefficients multiplying west gravity mode
-		PlaneData igeast; //Coefficients multiplying east gravity mode
-		
-		double geo_max_abs_amplitudes, nm_geo_rms_amplitudes;
-		double igwest_max_abs_amplitudes, nm_igwest_rms_amplitudes;
-		double igeast_max_abs_amplitudes, nm_igeast_rms_amplitudes;
-		
-	public:
-		NormalModesData(
-			PlaneDataConfig *planeDataConfig
-		)	:
-			geo(planeDataConfig),
-			igwest(planeDataConfig),
-			igeast(planeDataConfig)
-		{
-		}
-	};
-
-	
 /**
  * SWE Plane normal mode benchmark helper functions
  */
@@ -140,7 +114,6 @@ public:
 		U[0] = geo_mode;
 		U[1] = igwest_mode;
 		U[2] = igeast_mode;
-
 
 		//Define normal mode as combination of eigen vectors
 		complex UEV[3] = {0.0, 0.0, 0.0};
@@ -650,6 +623,30 @@ public:
 
 	}
 
+public:
+	static
+	void normal_mode_statistics(
+			PlaneData &i_geo,    //Input: Coeficients multiplying geostrophic mode
+			PlaneData &i_igwest, //Input: Coeficients multiplying west gravity mode
+			PlaneData &i_igeast //Input: Coeficients multiplying east gravity mode
+	)
+	{
+		const PlaneDataConfig *planeDataConfig = i_geo.planeDataConfig;
+
+		complex geo_mode_c;
+		complex igwest_mode_c;
+		complex igeast_mode_c;
+		std::cout<<"normal mode stats:";
+		for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
+		{
+			for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
+			{
+				//std::cout<<".";
+			}
+		}	
+		return;
+	}
+
 /**
  * Implement normal mode initialization
  *
@@ -657,7 +654,8 @@ public:
  **/
 	public:
 	SWE_bench_NormalModes(
-		SimulationVariables &io_simVars
+		SimulationVariables &io_simVars,
+		PlaneOperators &io_op
 	)	:
 		simVars(io_simVars)
 	{
@@ -720,7 +718,6 @@ public:
 		
 		std::cout<< "Initial Conditions Generated Successfully! " << std::endl;
 	}
-
 
 };
 

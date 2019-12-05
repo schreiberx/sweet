@@ -35,8 +35,6 @@ public:
 	// plane or sphere data config
 	const void* ext_forces_data_config;
 
-
-
 public:
 	bool setupInitialConditions(
 			PlaneData &o_h_pert,
@@ -149,7 +147,9 @@ public:
 		}
 		else if (io_simVars.benchmark.benchmark_name == "normalmodes")
 		{
-			SWE_bench_NormalModes swe_normalmodes(io_simVars);
+			//PlaneDataConfig *planeDataConfig = o_h_pert.planeDataConfig;
+
+			SWE_bench_NormalModes swe_normalmodes(io_simVars, io_op);
 
 			swe_normalmodes.setup(
 					o_h_pert,

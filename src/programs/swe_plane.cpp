@@ -128,10 +128,7 @@ public:
 
 	BenchmarkErrors benchmark;
 
-	// Finite difference operators
-	PlaneOperators op;
-
-	class NormalWaveModes
+	class NormalModesData
 	{
 	public:
 		// Diagnostic information about the projection to 
@@ -146,7 +143,7 @@ public:
 		double igeast_max_abs_amplitudes, nm_igeast_rms_amplitudes;
 		
 	public:
-		NormalWaveModes(
+		NormalModesData(
 			PlaneDataConfig *planeDataConfig
 		)	:
 			geo(planeDataConfig),
@@ -155,7 +152,10 @@ public:
 		{
 		}
 	};
-	NormalWaveModes normalmodes;
+	NormalModesData normalmodes;
+
+	// Finite difference operators
+	PlaneOperators op;
 
 	/// Diagnostic measures at initial stage, Initialize with 0
 	double diagnostics_energy_start = 0;
@@ -277,17 +277,7 @@ public:
 		prog_h_pert = t0_prog_h_pert;
 		prog_u = t0_prog_u;
 		prog_v = t0_prog_v;
-
-		if (simVars.benchmark.benchmark_name == "normalmodes" ){
-			//Setup diagnostics for normal mode projection
-			SWE_bench_NormalModes::convert_allspectralmodes_to_normalmodes(
-				prog_h_pert, prog_u, prog_v, simVars, // Input fields
-				normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
-			);
-			
-			//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
-		}
-
+		
 		// Load data, if requested
 		if (simVars.iodata.initial_condition_data_filenames.size() > 0)
 			prog_h_pert.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[0].c_str(), simVars.iodata.initial_condition_input_data_binary);
@@ -324,7 +314,9 @@ public:
 			compute_error_to_analytical_solution = false;
 		}
 
+		update_normal_modes();
 		update_diagnostics();
+		
 
 		diagnostics_energy_start = simVars.diag.total_energy;
 		diagnostics_mass_start = simVars.diag.total_mass;
@@ -337,6 +329,28 @@ public:
 
 	}
 
+	//Update diagnostic variables related to normal modes
+	void update_normal_modes()
+	{
+		if (simVars.benchmark.benchmark_name != "normalmodes" )
+			return;
+
+		// assure, that the diagnostics are only updated for new time steps
+		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
+			return;
+
+		//Setup diagnostics for normal mode projection
+		SWE_bench_NormalModes::convert_allspectralmodes_to_normalmodes(
+			prog_h_pert, prog_u, prog_v, simVars, // Input fields
+			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
+		);
+
+		SWE_bench_NormalModes::normal_mode_statistics(
+			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
+		);
+		//normalmodes.geo.print_spectralIndex();
+		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
+	}
 
 	//Calculate the model diagnostics
 	void update_diagnostics()
@@ -536,9 +550,11 @@ public:
 			}
 		}
 
+		update_normal_modes();
 
 		if (simVars.misc.verbosity > 0)
 		{
+			
 			update_diagnostics();
 			compute_errors();
 
@@ -738,12 +754,15 @@ public:
 
 			if(simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
 			{
-				// Run exact solution for linear case
+				//Missing to setup REXIFunctions, so invalid phi function set
+				
+				// Run exact solution for linear case				
 				timeSteppers.l_direct->run_timestep(
 						ts_h_pert, ts_u, ts_v,
 						simVars.timecontrol.current_simulation_time,
 						0			// initial condition given at time 0
 				);
+				
 			}
 
 #if 0
@@ -808,7 +827,8 @@ public:
 	 */
 	const char* vis_get_status_string()
 	{
-		// first, update diagnostic values if required
+		// first, update diagnostics if required
+		update_normal_modes();
 		update_diagnostics();
 
 		const char* description = "";

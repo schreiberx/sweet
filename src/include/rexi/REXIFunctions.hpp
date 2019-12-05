@@ -128,7 +128,12 @@ public:
 			function_id = PSI3;
 
 		else
-			FatalError("This phi function is not supported!");
+		{
+			std::cout<<"REXIFunctions error: i_function_name ="<< i_function_name <<std::endl;
+			FatalError("This phi function is not supported! : ");
+		}
+
+		
 /*
 		if (function_id == 1 || function_id == 2 || function_id == 3 || function_id == 101 || function_id == 102 || function_id == 103 || function_id == 1002 || function_id == 1003)
 		{
@@ -530,8 +535,6 @@ public:
 
 		case PSI3:
 			return psiN(3, i_K);
-
-
 
 		default:
 			FatalError("This phi is not yet supported");
