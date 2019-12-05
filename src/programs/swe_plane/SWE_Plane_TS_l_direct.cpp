@@ -120,9 +120,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	if (simVars.disc.space_grid_use_c_staggering)
 		FatalError("Staggering not supported");
 
-	//if (i_dt < 0)
-	//	FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed (please set --dt )");
-
 
 	typedef std::complex<T> complex;
 	complex I(0.0, 1.0);
@@ -146,7 +143,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	T sqrt_h = rexiFunctions.l_sqrt(h);
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
-
 #if SWEET_THREADING_SPACE
 	SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 #endif
@@ -162,6 +158,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 			T k0 = (T)ik0;
 
+
 			complex U[3];
 			U[0] = io_h_pert.spectral_get(ik1, ik0);
 			U[1] = io_u.spectral_get(ik1, ik0);
@@ -172,7 +169,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 			b = b*rexiFunctions.pi2/s0;
 			c = c*rexiFunctions.pi2/s1;
-
+			
 			/*
 			 * Matrix with Eigenvectors (column-wise)
 			 */
@@ -388,8 +385,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 			for (int k = 0; k < 3; k++)
 				for (int j = 0; j < 3; j++)
 					UEV[k] += v_inv[k][j] * U[j];
-
-
+			
 			for (int k = 0; k < 3; k++)
 			{
 				std::complex<T> &lam = lambda[k];
@@ -423,7 +419,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 #endif
 		}
 	}
-
+	
 	io_h_pert.spectral_zeroAliasingModes();
 	io_u.spectral_zeroAliasingModes();
 	io_v.spectral_zeroAliasingModes();
@@ -807,6 +803,7 @@ SWE_Plane_TS_l_direct::SWE_Plane_TS_l_direct(
 {
 	if (simVars.disc.space_grid_use_c_staggering)
 		planeDataGridMapping.setup(i_simVars, op.planeDataConfig);
+	
 }
 
 

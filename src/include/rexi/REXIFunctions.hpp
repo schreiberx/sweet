@@ -128,10 +128,8 @@ public:
 			function_id = PSI3;
 
 		else
-		{
-			std::cout<<"REXIFunctions error: i_function_name ="<< i_function_name <<std::endl;
 			FatalError("This phi function is not supported! : ");
-		}
+
 
 		
 /*
