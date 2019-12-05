@@ -23,22 +23,53 @@
 /**
  * SWE Plane normal mode benchmark
  */
+
+
+
 class SWE_bench_NormalModes
 {
 
 	SimulationVariables &simVars;
-
-	PlaneOperators &op;
 
 	double f = simVars.sim.plane_rotating_f0;
 	double g = simVars.sim.gravitation;
 	double sx = simVars.sim.plane_domain_size[0];
 	double sy = simVars.sim.plane_domain_size[1];
 
-	std::string bcasename;
-	std::size_t k0, k1;
-	double d0, dwest, deast;
+	public:
+	std::string bcasename; //Benchmark case name
+	std::size_t k0, k1;   // wavenumber to be used (-1,-1) refers to all wavenumbers
+	double d0, dwest, deast; //coefficients of normal modes eigen vectors
 
+	class NormalModesData
+	{
+	public:
+		// Diagnostic information about the projection to 
+		//    the linear normal wave mode eigenspace (see SWE_bench_NormalModes.hpp)
+		
+		PlaneData geo;    //Coefficients multiplying geostrophic mode
+		PlaneData igwest; //Coefficients multiplying west gravity mode
+		PlaneData igeast; //Coefficients multiplying east gravity mode
+		
+		double geo_max_abs_amplitudes, nm_geo_rms_amplitudes;
+		double igwest_max_abs_amplitudes, nm_igwest_rms_amplitudes;
+		double igeast_max_abs_amplitudes, nm_igeast_rms_amplitudes;
+		
+	public:
+		NormalModesData(
+			PlaneDataConfig *planeDataConfig
+		)	:
+			geo(planeDataConfig),
+			igwest(planeDataConfig),
+			igeast(planeDataConfig)
+		{
+		}
+	};
+
+	
+/**
+ * SWE Plane normal mode benchmark helper functions
+ */
 
 #if SWEET_QUADMATH && 0
 	typedef __float128 T;
@@ -47,6 +78,7 @@ class SWE_bench_NormalModes
 #endif
 	typedef std::complex<T> complex;
 
+public:
 	static
 	void add_normal_mode(
 			std::size_t ik0,				//wavenumber in x
@@ -81,7 +113,7 @@ class SWE_bench_NormalModes
 
 		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
 			FatalError("Normal_mode: mode not within reach");
-	
+
 		//Check for mirror effects
 		T k0 = (T)ik0;
 		T k1;
@@ -138,8 +170,8 @@ class SWE_bench_NormalModes
 		io_u.request_data_physical();
 		io_v.request_data_physical();
 
-/*Debug output*/
-#if 0
+	/*Debug output*/
+	#if 0
 
 		std::cout<<"EV matrix"<<std::endl;
 		for (int j = 0; j < 3; j++)	{
@@ -147,7 +179,7 @@ class SWE_bench_NormalModes
 				std::cout<< v[j][i]<<" "; 
 			std::cout<<std::endl;
 		}
-	
+
 		std::cout<<"Eigen values"<<std::endl;
 		for (int j = 0; j < 3; j++)
 			std::cout<< lambda[j]<<" "; 
@@ -157,14 +189,15 @@ class SWE_bench_NormalModes
 		for (int j = 0; j < 3; j++)
 			std::cout<< UEV[j]<<" "; 
 		std::cout<<std::endl;
-	
+
 		std::cout<<ik0<<" "<<ik1<< " "<< io_v.p_spectral_get(ik1, ik0) << UEV[2] << std::endl;
 
-#endif
+	#endif
 		return;
 	}
 
 
+public:
 	static
 	void convert_allspectralmodes_to_normalmodes(
 			PlaneData &i_h, // h: surface height (perturbation)
@@ -207,8 +240,10 @@ class SWE_bench_NormalModes
 			}
 		}	
 		return;
-	};
+	}
 
+
+public:
 	static
 	void convert_spectralmode_to_normalmode(
 			std::size_t ik0,				//wavenumber in x
@@ -243,7 +278,7 @@ class SWE_bench_NormalModes
 
 		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
 			FatalError("Normal_mode: mode not within reach");
-	
+
 		//Check for mirror effects
 		T k0 = (T)ik0;
 		T k1;
@@ -290,6 +325,8 @@ class SWE_bench_NormalModes
 	}
 
 	/* Get linear shallow water operator eigen decomposition */
+
+public:
 	static
 	void sw_eigen_decomp(
 			T k0,				//wavenumber in x
@@ -335,22 +372,22 @@ class SWE_bench_NormalModes
 		c = c*rexiFunctions.pi2/s1;
 
 		/*
-		 * Matrix with Eigenvectors (column-wise)
-		 */
+			* Matrix with Eigenvectors (column-wise)
+			*/
 		complex v[3][3];
 		complex v_inv[3][3];
 
 		/*
-		 * Eigenvalues
-		 */
+			* Eigenvalues
+			*/
 		complex lambda[3];
 
 		
 		if (i_simVars.sim.plane_rotating_f0 == 0)
 		{
 			/*
-			 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
-			 */
+				* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
+				*/
 			if (k0 == 0 && k1 == 0)
 			{
 				v[0][0] = 1;
@@ -394,8 +431,8 @@ class SWE_bench_NormalModes
 			else if (k1 == 0)
 			{
 				/*
-				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
-				 */
+					* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
+					*/
 
 				v[0][0] = 0;
 				v[1][0] = 0;
@@ -441,8 +478,8 @@ class SWE_bench_NormalModes
 			if (k0 == 0 && k1 == 0)
 			{
 				/*
-				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
-				 */
+					* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
+					*/
 				v[0][0] = 0;
 				v[1][0] = -I;
 				v[2][0] = 1;
@@ -464,8 +501,8 @@ class SWE_bench_NormalModes
 			else if (k0 == 0)
 			{
 				/*
-				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
-				 */
+					* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
+					*/
 				v[0][0] = f/(c*g);
 				v[1][0] = 1;
 				v[2][0] = 0;
@@ -487,8 +524,8 @@ class SWE_bench_NormalModes
 			else if (k1 == 0)
 			{
 					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
-					 */
+						* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
+						*/
 				v[0][0] = -f/(b*g);
 				v[1][0] = 0;
 				v[2][0] = 1;
@@ -510,15 +547,15 @@ class SWE_bench_NormalModes
 			else
 				{
 					/*
-					 * Compute EV's of
-					 * Linear operator
-					 *
-					 * [ 0  hb  hc ]
-					 * [ gb  0   f ]
-					 * [ gc -f   0 ]
-					 *
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
-					 */
+						* Compute EV's of
+						* Linear operator
+						*
+						* [ 0  hb  hc ]
+						* [ gb  0   f ]
+						* [ gc -f   0 ]
+						*
+						* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
+						*/
 
 					v[0][0] = -f/(b*g);
 					v[1][0] = -c/b;
@@ -541,8 +578,8 @@ class SWE_bench_NormalModes
 		}
 
 			/*
-			 * Invert Eigenvalue matrix
-			 */
+				* Invert Eigenvalue matrix
+				*/
 
 		if (i_inverse){
 			v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
@@ -582,19 +619,47 @@ class SWE_bench_NormalModes
 			}
 		}
 		return;
-}
+	}
+
+	private:
+	void extract_bench_info(const std::string &bcase)
+	{
+		
+		if(bcase==""){
+			FatalError("SWE_bench_NormalModes: please choose the normal mode case with --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");
+		};
+		std::cout<< bcase <<std::endl;
+
+		//Convert parameter to words
+		std::string str = bcase;
+		std::replace( str.begin(), str.end(), '_', ' ');
+		//std::cout<< str<<std::endl;
+
+		std::stringstream iss(str);
+		iss >> bcasename;
+		std::cout<< "Benchmark case: "<< bcasename << std::endl;
+		iss >> k0;
+		iss >> k1;
+		std::cout<< "Wavenumbers: "<< k0 << "," <<k1 << std::endl;
+		iss >> d0;
+		iss >> dwest;
+		iss >> deast;
+		std::cout<< "Normal mode coefficients:" << d0 << " " << dwest << " " << deast << std::endl;
+		
+		return;
+
+	}
+
 /**
  * Implement normal mode initialization
  *
  *
  **/
-public:
+	public:
 	SWE_bench_NormalModes(
-		SimulationVariables &io_simVars,
-		PlaneOperators &io_op
+		SimulationVariables &io_simVars
 	)	:
-		simVars(io_simVars),
-		op(io_op)
+		simVars(io_simVars)
 	{
 	}
 
@@ -629,72 +694,33 @@ public:
 				{
 					for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
 					{
-
 						add_normal_mode(
-											ik0, ik1,
-											d0,
-											dwest,
-											deast,
-											o_h,
-											o_u,
-											o_v,
-											simVars
-									);
+									ik0, ik1,
+									d0, dwest, deast,
+									o_h, o_u, o_v,
+									simVars
+								);
 					}
 				}
 			}
-			else{
-				if(k0>0 && k1 >0 ){
+			else if(k0>0 && k1 >0 ){
 					add_normal_mode(
 								k0, k1,
-								d0,
-								dwest,
-								deast,
-								o_h,
-								o_u,
-								o_v,
+								d0, dwest, deast,
+								o_h, o_u, o_v,
 								simVars
 						);
-				}
-				else
-				{
-					FatalError("SWE_bench_NormalModes: invalid wavenumber selection in --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");		
-				}
+			}
+			else
+			{
+				FatalError("SWE_bench_NormalModes: invalid wavenumber selection in --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");		
+			
 			}
 		};
 		
-		std::cout<< "   Done! " << std::endl;
+		std::cout<< "Initial Conditions Generated Successfully! " << std::endl;
 	}
 
-	//not in use
-	private:
-	void extract_bench_info(const std::string &bcase)
-	{
-		
-		if(bcase==""){
-			FatalError("SWE_bench_NormalModes: please choose the normal mode case with --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");
-		};
-		std::cout<< bcase <<std::endl;
-
-		//Convert parameter to words
-		std::string str = bcase;
-		std::replace( str.begin(), str.end(), '_', ' ');
-		//std::cout<< str<<std::endl;
-
-		std::stringstream iss(str);
-		iss >> bcasename;
-		std::cout<< "Benchmark case: "<< bcasename << std::endl;
-		iss >> k0;
-		iss >> k1;
-		std::cout<< "Wavenumbers: "<< k0 << "," <<k1 << std::endl;
-		iss >> d0;
-		iss >> dwest;
-		iss >> deast;
-		std::cout<< "Normal mode coefficients:" << d0 << " " << dwest << " " << deast << std::endl;
-		FatalError("SWE_bench_NormalModes: please choose the normal mode case with --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");
-		return;
-		
-	}
 
 };
 

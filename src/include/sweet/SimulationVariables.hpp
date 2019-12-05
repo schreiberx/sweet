@@ -104,15 +104,11 @@ public:
 		/// total potential enstropy
 		double total_potential_enstrophy = 0;
 
-
-
 		double ref_total_mass = -1;
 		double ref_kinetic_energy = -1;
 		double ref_potential_energy = -1;
 		double ref_total_energy = -1;
 		double ref_total_potential_enstrophy = -1;
-
-
 
 		void outputConfig()
 		{

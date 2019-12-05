@@ -106,7 +106,7 @@ phys_res_reference = 128 #512
 #phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
 phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 
-jg.runtime.benchmark_normal_modes_case ="test"
+jg.runtime.benchmark_normal_modes_case ="single_2_1_1_0_0"
 
 ts_methods = [
 	['ln_erk',		4,	4]#,	# reference solution

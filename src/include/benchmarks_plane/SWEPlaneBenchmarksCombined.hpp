@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_SWEPLANEBENCHMARKSCOMBINED_HPP_
-#define SRC_INCLUDE_BENCHMARKS_PLANE_SWEPLANEBENCHMARKSCOMBINED_HPP_
+#ifndef SRC_INCLUDE_BENCHMARKS_PLANE_COMBINED_HPP
+#define SRC_INCLUDE_BENCHMARKS_PLANE_COMBINED_HPP
 
 #include <iostream>
 //#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
@@ -81,43 +81,7 @@ public:
 
 		if (io_simVars.benchmark.benchmark_name == "")
 		{
-			FatalError("Benchmark name not given");
-#if 0
-			std::cout << "WARNING: Using -s [int] is deprecated" << std::endl;
-			std::cout << "WARNING: TODO: change to use --benchmark [string] for benchmarks" << std::endl;
-
-			o_h_pert.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
-					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
-
-					io_data = SWEPlaneBenchmarks_DEPRECATED::return_h_perturbed(io_simVars, x, y);
-				}
-			);
-
-			o_u.physical_update_lambda_array_indices(
-				[&](int i, int j, double &io_data)
-				{
-					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
-					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
-
-					io_data = SWEPlaneBenchmarks_DEPRECATED::return_u(io_simVars, x, y);
-				}
-			);
-
-			o_v.physical_update_lambda_array_indices(
-					[&](int i, int j, double &io_data)
-				{
-					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
-					double y = (double)j*(io_simVars.sim.plane_domain_size[1]/(double)io_simVars.disc.space_res_physical[1]);
-
-					io_data = SWEPlaneBenchmarks_DEPRECATED::return_v(io_simVars, x, y);
-				}
-			);
-
-			return true;
-#endif
+			FatalError("SWEPlaneBenchmarksCombined: Benchmark name not given");
 		}
 
 
@@ -185,7 +149,7 @@ public:
 		}
 		else if (io_simVars.benchmark.benchmark_name == "normalmodes")
 		{
-			SWE_bench_NormalModes swe_normalmodes(io_simVars, io_op);
+			SWE_bench_NormalModes swe_normalmodes(io_simVars);
 
 			swe_normalmodes.setup(
 					o_h_pert,
@@ -511,7 +475,7 @@ public:
 		}
 
 		printBenchmarkInformation();
-		FatalError(std::string("Benchmark ")+io_simVars.benchmark.benchmark_name+ " not found (or not availble)");
+		FatalError(std::string("Benchmark ")+io_simVars.benchmark.benchmark_name+ " not found (or not available)");
 
 
 		return false;
@@ -531,4 +495,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_BENCHMARKS_SPHERE_SPHEREBENCHMARKSCOMBINED_HPP_ */
+#endif /* SRC_INCLUDE_BENCHMARKS_PLANE_COMBINED_HPP_ */

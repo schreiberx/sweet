@@ -36,6 +36,8 @@
 
 
 #include "swe_plane/SWE_Plane_TimeSteppers.hpp"
+
+//Required to get diagnostics on normal modes estruture - TODO: put this as a compiler flag? Necessary?
 #include "swe_plane/SWE_Plane_Normal_Modes.hpp"
 
 
@@ -61,12 +63,8 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 	#include <parareal/Parareal.hpp>
 #endif
 
-
 /// general parameters
 SimulationVariables simVars;
-
-double param_initial_freq_x_mul;
-double param_initial_freq_y_mul;
 
 class SimulationInstance
 #if SWEET_PARAREAL
@@ -95,15 +93,15 @@ public:
 
 	PlaneDataGridMapping gridMapping;
 
-
-	// implementation of different time steppers
+	// Implementation of different time steppers
 	SWE_Plane_TimeSteppers timeSteppers;
 
 #if SWEET_PARAREAL
-	// implementation of different time steppers
+	// Implementation of different time steppers
 	SWE_Plane_TimeSteppers timeSteppersCoarse;
 #endif
 
+	//Swe benchmarks
 	SWEPlaneBenchmarksCombined swePlaneBenchmarks;
 
 	// Diagnostics measures
@@ -133,11 +131,36 @@ public:
 	// Finite difference operators
 	PlaneOperators op;
 
+	class NormalWaveModes
+	{
+	public:
+		// Diagnostic information about the projection to 
+		//    the linear normal wave mode eigenspace (see SWE_bench_NormalModes.hpp)
+		
+		PlaneData geo;    //Coefficients multiplying geostrophic mode
+		PlaneData igwest; //Coefficients multiplying west gravity mode
+		PlaneData igeast; //Coefficients multiplying east gravity mode
+		
+		double geo_max_abs_amplitudes, nm_geo_rms_amplitudes;
+		double igwest_max_abs_amplitudes, nm_igwest_rms_amplitudes;
+		double igeast_max_abs_amplitudes, nm_igeast_rms_amplitudes;
+		
+	public:
+		NormalWaveModes(
+			PlaneDataConfig *planeDataConfig
+		)	:
+			geo(planeDataConfig),
+			igwest(planeDataConfig),
+			igeast(planeDataConfig)
+		{
+		}
+	};
+	NormalWaveModes normalmodes;
 
 	/// Diagnostic measures at initial stage, Initialize with 0
 	double diagnostics_energy_start = 0;
 	double diagnostics_mass_start = 0;
-	double diagnostics_potential_entrophy_start = 0;
+	double diagnostics_potential_enstrophy_start = 0;
 
 
 	bool compute_error_difference_to_initial_condition = false;
@@ -166,6 +189,8 @@ public:
 		force_u(planeDataConfig),
 		force_v(planeDataConfig),
 
+		normalmodes(planeDataConfig),
+
 		// Initialises operators
 		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
 #if SWEET_PARAREAL != 0
@@ -186,13 +211,9 @@ public:
 #endif
 	}
 
-
-
 	virtual ~SimulationInstance()
 	{
 	}
-
-
 
 	void reset()
 	{
@@ -210,7 +231,6 @@ public:
 
 		// Initialise diagnostics
 		last_timestep_nr_update_diagnostics = -1;
-
 
 		benchmark.t0_error_max_abs_h_pert = -1;
 		benchmark.t0_error_max_abs_u = -1;
@@ -252,125 +272,21 @@ public:
 		if (simVars.disc.space_grid_use_c_staggering)
 			gridMapping.setup(simVars, planeDataConfig);
 
-
-#if 0
-		if (simVars.benchmark.benchmark_name == "")
-		{
-			FatalError("Benchmark name not given");
-			// Waves test case - separate from SWEValidationBench because it depends on certain local input parameters
-			auto return_h_perturbed = [] (
-					SimulationVariables &i_parameters,
-					double x,
-					double y
-			) -> double
-			{
-				if (param_initial_freq_x_mul == 0)
-					return SWEPlaneBenchmarks_DEPRECATED::return_h_perturbed(simVars, x, y);
-
-				// Waves scenario
-				// Remember to set up initial_freq_x_mul and initial_freq_y_mul
-				double dx = x/i_parameters.sim.plane_domain_size[0]*param_initial_freq_x_mul*M_PIl;
-				double dy = y/i_parameters.sim.plane_domain_size[1]*param_initial_freq_y_mul*M_PIl;
-				return std::sin(2.0*dx)*std::cos(2.0*dy) - (1.0/5.0)*std::cos(2.0*dx)*std::sin(4.0*dy);
-			};
-
-
-			auto return_u = [] (
-					SimulationVariables &i_parameters,
-					double x,
-					double y
-			) -> double
-			{
-				if (param_initial_freq_x_mul == 0)
-					return SWEPlaneBenchmarks_DEPRECATED::return_u(simVars, x, y);
-
-				double dx = x/i_parameters.sim.plane_domain_size[0]*param_initial_freq_x_mul*M_PIl;
-				double dy = y/i_parameters.sim.plane_domain_size[1]*param_initial_freq_y_mul*M_PIl;
-				return std::cos(4.0*dx)*std::cos(2.0*dy);
-			};
-
-
-			auto return_v = [] (
-					SimulationVariables &i_parameters,
-					double x,
-					double y
-			) -> double
-			{
-				if (param_initial_freq_x_mul == 0)
-					return SWEPlaneBenchmarks_DEPRECATED::return_v(simVars, x, y);
-
-				double dx = x/i_parameters.sim.plane_domain_size[0]*param_initial_freq_x_mul*M_PIl;
-				double dy = y/i_parameters.sim.plane_domain_size[1]*param_initial_freq_y_mul*M_PIl;
-				return std::cos(2.0*dx)*std::cos(4.0*dy);
-			};
-
-			// Set initial conditions given from SWEValidationBenchmarks
-			for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
-			{
-				for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
-				{
-					if (simVars.disc.space_grid_use_c_staggering) // C-grid
-					{
-						{
-							// h - lives in the center of the cell
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-
-							prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-							t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-							force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_h_perturbed(simVars, x, y));
-						}
-
-
-						{
-							// u space
-							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-
-							prog_u.p_physical_set(j,i, return_u(simVars, x, y));
-							t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
-							force_u.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_u(simVars, x, y));
-						}
-
-						{
-							// v space
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-
-							prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-							t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-							force_v.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_v(simVars, x, y));
-						}
-					}
-					else // A-Grid (colocated grid)
-					{
-						double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-						double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-
-						prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-						prog_u.p_physical_set(j, i, return_u(simVars, x, y));
-						prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-
-						t0_prog_h_pert.p_physical_set(j, i, return_h_perturbed(simVars, x, y));
-						t0_prog_u.p_physical_set(j, i, return_u(simVars, x, y));
-						t0_prog_v.p_physical_set(j, i, return_v(simVars, x, y));
-
-						force_h_pert.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_h_perturbed(simVars, x, y));
-						force_u.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_u(simVars, x, y));
-						force_v.p_physical_set(j, i, SWEPlaneBenchmarks_DEPRECATED::return_force_v(simVars, x, y));
-					}
-				}
-			}
-		}
-		else
-#endif
-
 		swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
 
 		prog_h_pert = t0_prog_h_pert;
 		prog_u = t0_prog_u;
 		prog_v = t0_prog_v;
 
+		if (simVars.benchmark.benchmark_name == "normalmodes" ){
+			//Setup diagnostics for normal mode projection
+			SWE_bench_NormalModes::convert_allspectralmodes_to_normalmodes(
+				prog_h_pert, prog_u, prog_v, simVars, // Input fields
+				normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
+			);
+			
+			//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
+		}
 
 		// Load data, if requested
 		if (simVars.iodata.initial_condition_data_filenames.size() > 0)
@@ -381,6 +297,7 @@ public:
 
 		if (simVars.iodata.initial_condition_data_filenames.size() > 2)
 			prog_v.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[2].c_str(), simVars.iodata.initial_condition_input_data_binary);
+
 
 		timeSteppers.setup(
 				simVars.disc.timestepping_method,
@@ -411,7 +328,7 @@ public:
 
 		diagnostics_energy_start = simVars.diag.total_energy;
 		diagnostics_mass_start = simVars.diag.total_mass;
-		diagnostics_potential_entrophy_start = simVars.diag.total_potential_enstrophy;
+		diagnostics_potential_enstrophy_start = simVars.diag.total_potential_enstrophy;
 
 
 		timestep_do_output();
@@ -657,7 +574,7 @@ public:
 			header << "\tTOTAL_MASS_REL_ERROR\tTOTAL_ENERGY_REL_ERROR\tPOT_ENSTROPHY_REL_ERROR";
 			rows << "\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start);
 			rows << "\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) ;
-			rows << "\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_entrophy_start)/diagnostics_potential_entrophy_start);
+			rows << "\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_enstrophy_start)/diagnostics_potential_enstrophy_start);
 #endif
 
 #if 1
@@ -1385,16 +1302,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 		return -1;
 	}
-	// Frequency for certain initial conditions
-	param_initial_freq_x_mul = 0;
-	param_initial_freq_y_mul = 0;
-
-	if (simVars.bogus.var[0] != "")
-		param_initial_freq_x_mul = atof(simVars.bogus.var[0].c_str());
-
-	if (simVars.bogus.var[1] != "")
-		param_initial_freq_y_mul = atof(simVars.bogus.var[1].c_str());
-
+	
 	if (simVars.misc.verbosity > 5)
 		std::cout << " + Setting up FFT plans..." << std::flush;
 
@@ -1525,7 +1433,7 @@ int main(int i_argc, char *i_argv[])
 				{
 					std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
 					std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
-					std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_entrophy_start)/simulationSWE->diagnostics_potential_entrophy_start) << std::endl;
+					std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_enstrophy_start)/simulationSWE->diagnostics_potential_enstrophy_start) << std::endl;
 
 					if (simVars.misc.compute_errors)
 					{
