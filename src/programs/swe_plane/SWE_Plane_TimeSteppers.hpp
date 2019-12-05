@@ -156,6 +156,7 @@ public:
 
 		/// Always allocate analytical solution
 		l_direct = new SWE_Plane_TS_l_direct(i_simVars, i_op);
+		l_direct->setup("phi0");
 
 		if (i_timestepping_method == "l_ld_na_erk")
 		{
