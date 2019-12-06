@@ -165,7 +165,7 @@ public:
 
 	bool compute_error_difference_to_initial_condition = false;
 	bool compute_error_to_analytical_solution = false;
-
+	bool compute_normal_modes = false;
 
 
 public:
@@ -314,14 +314,15 @@ public:
 			compute_error_to_analytical_solution = false;
 		}
 
+		if (simVars.benchmark.benchmark_name == "normalmodes" )
+			compute_normal_modes = true;
+			
 		update_normal_modes();
 		update_diagnostics();
 		
-
 		diagnostics_energy_start = simVars.diag.total_energy;
 		diagnostics_mass_start = simVars.diag.total_mass;
 		diagnostics_potential_enstrophy_start = simVars.diag.total_potential_enstrophy;
-
 
 		timestep_do_output();
 
@@ -332,7 +333,7 @@ public:
 	//Update diagnostic variables related to normal modes
 	void update_normal_modes()
 	{
-		if (simVars.benchmark.benchmark_name != "normalmodes" )
+		if (!compute_normal_modes )
 			return;
 
 		// assure, that the diagnostics are only updated for new time steps
@@ -345,9 +346,10 @@ public:
 			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
 		);
 
-		SWE_bench_NormalModes::normal_mode_statistics(
-			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
-		);
+		normalmodes.nm_geo_rms_amplitudes = normalmodes.geo.reduce_rms_spec();
+		normalmodes.nm_igwest_rms_amplitudes = normalmodes.igwest.reduce_rms_spec();
+		normalmodes.nm_igeast_rms_amplitudes = normalmodes.igeast.reduce_rms_spec();
+
 		//normalmodes.geo.print_spectralIndex();
 		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
 	}
@@ -508,61 +510,63 @@ public:
 		 *
 		 * We write everything in non-staggered output
 		 */
+		// For output, variables need to be on unstaggered A-grid
+		PlaneData t_h(planeDataConfig);
+		PlaneData t_u(planeDataConfig);
+		PlaneData t_v(planeDataConfig);
+
+		if (simVars.disc.space_grid_use_c_staggering) // Remap in case of C-grid
 		{
-			// For output, variables need to be on unstaggered A-grid
-			PlaneData t_h(planeDataConfig);
-			PlaneData t_u(planeDataConfig);
-			PlaneData t_v(planeDataConfig);
-
-			if (simVars.disc.space_grid_use_c_staggering) // Remap in case of C-grid
-			{
-				t_h = prog_h_pert;
-				gridMapping.mapCtoA_u(prog_u, t_u);
-				gridMapping.mapCtoA_v(prog_v, t_v);
-			}
-			else
-			{
-				t_h = prog_h_pert;
-				t_u = prog_u;
-				t_v = prog_v;
-			}
-
-			//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
-
-			// Dump  data in csv, if output filename is not empty
-			if (simVars.iodata.output_file_name.size() > 0)
-			{
-				output_filenames = "";
-
-				output_filenames = write_file(t_h, "prog_h_pert");
-				output_filenames += ";" + write_file(t_u, "prog_u");
-				output_filenames += ";" + write_file(t_v, "prog_v");
-
-				output_filenames += ";" + write_file(op.ke(t_u,t_v),"diag_ke");
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-				output_filenames += ";" + write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
-#endif
-
-				output_filenames += ";" + write_file(op.vort(t_u, t_v), "diag_vort");
-				output_filenames += ";" + write_file(op.div(t_u, t_v), "diag_div");
-
-			}
+			t_h = prog_h_pert;
+			gridMapping.mapCtoA_u(prog_u, t_u);
+			gridMapping.mapCtoA_v(prog_v, t_v);
+		}
+		else
+		{
+			t_h = prog_h_pert;
+			t_u = prog_u;
+			t_v = prog_v;
 		}
 
-		update_normal_modes();
+		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
+
+		if(compute_normal_modes)
+			update_normal_modes();
+
+		// Dump  data in csv, if output filename is not empty
+		if (simVars.iodata.output_file_name.size() > 0)
+		{
+			output_filenames = "";
+
+			output_filenames = write_file(t_h, "prog_h_pert");
+			output_filenames += ";" + write_file(t_u, "prog_u");
+			output_filenames += ";" + write_file(t_v, "prog_v");
+
+			output_filenames += ";" + write_file(op.ke(t_u,t_v),"diag_ke");
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+			output_filenames += ";" + write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
+#endif
+
+			output_filenames += ";" + write_file(op.vort(t_u, t_v), "diag_vort");
+			output_filenames += ";" + write_file(op.div(t_u, t_v), "diag_div");
+
+			if(compute_normal_modes){
+				output_filenames += ";" + write_file_spec(normalmodes.geo, "nm_geo");
+				output_filenames += ";" + write_file_spec(normalmodes.igwest, "nm_igwest");
+				output_filenames += ";" + write_file_spec(normalmodes.igeast, "nm_igeast");
+			}
+			
+
+		}
 
 		if (simVars.misc.verbosity > 0)
 		{
-			
 			update_diagnostics();
 			compute_errors();
 
-
 			if (simVars.timecontrol.current_timestep_nr == 0)
-			{
 				simVars.diag.outputConfig();
-			}
 
 			std::stringstream header;
 			std::stringstream rows;
@@ -614,10 +618,24 @@ public:
 			}
 #endif
 
+
+#if 1
+			if (compute_normal_modes)
+			{
+				// normal modes energy
+				if (simVars.timecontrol.current_timestep_nr == 0)
+					header << "\tNM_GEO_RMS\tNM_IGWEST_RMS\tNM_IGEAST_RMS";
+
+				rows << "\t" << normalmodes.nm_geo_rms_amplitudes << "\t" << normalmodes.nm_igwest_rms_amplitudes << "\t" << normalmodes.nm_igeast_rms_amplitudes;
+			}
+#endif
+
 			if (simVars.timecontrol.current_timestep_nr == 0)
 				o_ostream << header.str() << std::endl;
 
 			o_ostream << rows.str() << std::endl;
+
+
 
 #if 1
 			if (diagnostics_mass_start > 0.00001 && std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000000.0)
@@ -625,6 +643,7 @@ public:
 				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 			}
 #endif
+
 
 		}
 
@@ -737,7 +756,6 @@ public:
 	};
 
 
-
 	void vis_get_vis_data_array(
 			const PlaneData **o_dataArray,
 			double *o_aspect_ratio,
@@ -765,31 +783,14 @@ public:
 				
 			}
 
-#if 0
 			switch(simVars.misc.vis_id)
 			{
 			case -1:
-				vis = ts_h_pert+simVars.sim.h0;			//Exact solution
+				vis = ts_h_pert+simVars.sim.h0;			//Exact linear solution
 				break;
 
 			case -2:
-				vis = ts_u-prog_u;	// difference to exact linear solution
-				break;
-
-			case -3:
-				vis = t0_prog_u-prog_u;	// difference to initial condition
-				break;
-			}
-#else
-			switch(simVars.misc.vis_id)
-			{
-			case -1:
-				vis = ts_h_pert+simVars.sim.h0;			//Exact solution
-//				vis = ts_u;
-				break;
-
-			case -2:
-				vis = ts_h_pert-prog_h_pert;	// difference to exact solution
+				vis = ts_h_pert-prog_h_pert;	// difference to exact linear solution
 				break;
 
 			case -3:
@@ -799,8 +800,17 @@ public:
 			case -4:
 				vis = op.diff_c_x(prog_v) - op.diff_c_y(prog_u);	// relative vorticity
 				break;
+			case -5:
+				vis = normalmodes.geo ;	// geostrophic mode
+				break;
+			case -6:
+				vis = normalmodes.igwest;	// inertia grav mode west
+				break;
+			case -7:
+				vis = normalmodes.igeast;	// inertia grav mode east
+				break;
 			}
-#endif
+
 			*o_dataArray = &vis;
 			*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 			return;
@@ -855,6 +865,15 @@ public:
 				break;
 			case -4:
 				description = "Relative vorticity";
+				break;
+			case -5:
+				description = "Geostrophic wave";
+				break;
+			case -6:
+				description = "Inertia-gravity west wave";
+				break;
+			case -7:
+				description = "Inertia-gravity east wave";
 				break;
 			}
 		}

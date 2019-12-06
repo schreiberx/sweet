@@ -623,29 +623,6 @@ public:
 
 	}
 
-public:
-	static
-	void normal_mode_statistics(
-			PlaneData &i_geo,    //Input: Coeficients multiplying geostrophic mode
-			PlaneData &i_igwest, //Input: Coeficients multiplying west gravity mode
-			PlaneData &i_igeast //Input: Coeficients multiplying east gravity mode
-	)
-	{
-		const PlaneDataConfig *planeDataConfig = i_geo.planeDataConfig;
-
-		complex geo_mode_c;
-		complex igwest_mode_c;
-		complex igeast_mode_c;
-		std::cout<<"normal mode stats:";
-		for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
-		{
-			for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
-			{
-				//std::cout<<".";
-			}
-		}	
-		return;
-	}
 
 /**
  * Implement normal mode initialization
