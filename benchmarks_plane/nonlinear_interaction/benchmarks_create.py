@@ -23,9 +23,14 @@ import sys
 import stat
 import math
 
-#Classes containing sweet compile/run basic option
-from mule_local.JobGeneration import *
 from sweet.SWEETRuntimeParametersScenarios import *
+from mule_local.JobGeneration import *
+from mule.JobParallelization import *
+from mule.JobParallelizationDimOptions import *
+
+#Classes containing sweet compile/run basic option
+#from mule_local.JobGeneration import *
+#from sweet.SWEETRuntimeParametersScenarios import *
 
 #Create main compile/run options
 jg = JobGeneration()
@@ -84,9 +89,15 @@ jg.runtime.viscosity = 0.0
 
 #######################
 # HPC stuff
-########################3
-jg.parallelization.num_cores_per_rank=8
-jg.parallelization.num_threads_per_rank=8
+########################
+# Setup parallelization
+pspace = JobParallelizationDimOptions('space')
+pspace.num_cores_per_rank = 8
+pspace.num_threads_per_rank = 2
+pspace.num_ranks = 1
+
+# Setup parallelization
+jg.setup_parallelization([pspace])
 
 #
 # Time, Mode and Physical resolution
@@ -152,7 +163,7 @@ if True:
 	jg.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
 
 	SetupSpectralMethods(jg)
-	jg.runtime.timestep_size = timestep_size_reference/10.0
+	jg.runtime.timestep_size = timestep_size_reference/100.0
 	jg.runtime.timestepping_method = tsm[0]
 	jg.runtime.timestepping_order = tsm[1]
 	jg.runtime.timestepping_order2 = tsm[2]
