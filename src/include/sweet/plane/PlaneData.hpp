@@ -963,6 +963,27 @@ public:
 		return sum;
 	}
 
+	/**
+	 * reduce to root mean square in spectrum
+	 */
+	double reduce_rms_spec()
+	{
+		request_data_spectral();
+
+		std::complex<double> sum = 0;
+
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				sum += spectral_space_data[idx]*spectral_space_data[idx];
+		);
+
+		sum = std::sqrt(sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
+
+		if(sum.imag()>DBL_EPSILON)
+			FatalError("Reduce operation of complex values (rms) error");
+
+		return sum.real();
+	}
+
 
 	/**
 	 * reduce to root mean square
