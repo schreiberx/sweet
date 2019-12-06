@@ -50,10 +50,9 @@ CompileSWEPlane(jg)
 # Activate benchmark timers
 jg.compile.benchmark_timings='enable'
 
-
-
 # Verbosity mode
 jg.runtime.verbosity = 3
+
 
 #
 # Benchmark ID
@@ -83,6 +82,11 @@ RuntimeSWEPlaneEarthParam(jg)
 
 jg.runtime.viscosity = 0.0
 
+#######################
+# HPC stuff
+########################3
+jg.parallelization.num_cores_per_rank=8
+jg.parallelization.num_threads_per_rank=8
 
 #
 # Time, Mode and Physical resolution
@@ -90,6 +94,9 @@ jg.runtime.viscosity = 0.0
 timelevels = 1 #7 #5
 timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
+
+print(timestep_size_reference)
+print(timestep_sizes)
 
 # Use 10 days as the reference solution
 jg.runtime.max_simulation_time = earth.day*10 #1 day #timestep_size_reference #864000 #10 days
@@ -106,7 +113,7 @@ phys_res_reference = 128 #512
 #phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
 phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
 
-jg.runtime.benchmark_normal_modes_case ="single_2_1_0_1_0"
+jg.runtime.benchmark_normal_modes_case ="single_2_1_1_1_1"
 
 ts_methods = [
 	['ln_erk',		4,	4]#,	# reference solution
@@ -145,7 +152,7 @@ if True:
 	jg.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
 
 	SetupSpectralMethods(jg)
-	jg.runtime.timestep_size = 2 # second #jg.runtime.output_timestep_size/100.0
+	jg.runtime.timestep_size = timestep_size_reference/10.0
 	jg.runtime.timestepping_method = tsm[0]
 	jg.runtime.timestepping_order = tsm[1]
 	jg.runtime.timestepping_order2 = tsm[2]
