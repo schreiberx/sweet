@@ -973,7 +973,7 @@ public:
 		std::complex<double> sum = 0;
 
 		PLANE_DATA_SPECTRAL_FOR_IDX(
-				sum += spectral_space_data[idx]*spectral_space_data[idx];
+				sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
 		);
 
 		sum = std::sqrt(sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
