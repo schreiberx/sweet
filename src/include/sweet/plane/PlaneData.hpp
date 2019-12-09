@@ -968,6 +968,8 @@ public:
 	 */
 	double reduce_rms_spec()
 	{
+		double rms = 0.0;
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		request_data_spectral();
 
 		std::complex<double> sum = 0;
@@ -981,7 +983,10 @@ public:
 		if(sum.imag()>DBL_EPSILON)
 			FatalError("Reduce operation of complex values (rms) error");
 
-		return sum.real();
+		rms = sum.real(); 
+#endif
+		return rms;
+
 	}
 
 

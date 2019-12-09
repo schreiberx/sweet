@@ -34,10 +34,8 @@
 
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
-
 #include "swe_plane/SWE_Plane_TimeSteppers.hpp"
 
-//Required to get diagnostics on normal modes estruture - TODO: put this as a compiler flag? Necessary?
 #include "swe_plane/SWE_Plane_Normal_Modes.hpp"
 
 
@@ -316,7 +314,7 @@ public:
 
 		if (simVars.benchmark.benchmark_name == "normalmodes" )
 			compute_normal_modes = true;
-			
+
 		update_normal_modes();
 		update_diagnostics();
 		
@@ -335,7 +333,7 @@ public:
 	{
 		if (!compute_normal_modes )
 			return;
-
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		// assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
@@ -349,9 +347,10 @@ public:
 		normalmodes.nm_geo_rms_amplitudes = normalmodes.geo.reduce_rms_spec();
 		normalmodes.nm_igwest_rms_amplitudes = normalmodes.igwest.reduce_rms_spec();
 		normalmodes.nm_igeast_rms_amplitudes = normalmodes.igeast.reduce_rms_spec();
-
+#endif
 		//normalmodes.geo.print_spectralIndex();
 		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
+		return;
 	}
 
 	//Calculate the model diagnostics
@@ -551,11 +550,13 @@ public:
 			output_filenames += ";" + write_file(op.vort(t_u, t_v), "diag_vort");
 			output_filenames += ";" + write_file(op.div(t_u, t_v), "diag_div");
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 			if(compute_normal_modes){
 				output_filenames += ";" + write_file_spec(normalmodes.geo, "nm_geo");
 				output_filenames += ";" + write_file_spec(normalmodes.igwest, "nm_igwest");
 				output_filenames += ";" + write_file_spec(normalmodes.igeast, "nm_igeast");
 			}
+#endif
 			
 
 		}
