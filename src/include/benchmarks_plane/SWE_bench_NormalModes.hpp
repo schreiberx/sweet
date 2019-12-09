@@ -678,7 +678,7 @@ public:
 					}
 				}
 			}
-			else if(k0>0 && k1 >0 ){
+			else if(k0>=0 && k1 >=0 ){
 					add_normal_mode(
 								k0, k1,
 								d0, dwest, deast,

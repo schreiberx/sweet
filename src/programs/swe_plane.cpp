@@ -466,6 +466,24 @@ public:
 	}
 
 	/**
+	 * Write current time step info to file
+	 */
+	/*
+	std::string write_output_file(
+			std::stringstream buffer
+		)
+	{
+		const char* filename_template = "output_evolution.txt";
+		std::ofstream file(filename_template, std::ios_base::trunc);
+		file << std::setprecision(12);
+  		file << buffer << std::endl;
+
+		return ;
+	}
+    */
+
+
+	/**
 	 * Write spectrum info to data and return string of file name
 	 */
 
@@ -485,9 +503,7 @@ public:
 	}
 #endif
 
-
 	std::string output_filenames;
-
 
 public:
 	bool timestep_do_output(
@@ -630,13 +646,20 @@ public:
 				rows << "\t" << normalmodes.nm_geo_rms_amplitudes << "\t" << normalmodes.nm_igwest_rms_amplitudes << "\t" << normalmodes.nm_igeast_rms_amplitudes;
 			}
 #endif
-
+			//screen output
 			if (simVars.timecontrol.current_timestep_nr == 0)
 				o_ostream << header.str() << std::endl;
 
 			o_ostream << rows.str() << std::endl;
 
+#if 0
+			//output to file
+			if (simVars.timecontrol.current_timestep_nr == 0)
+				write_output_file(header.str());
+			
+			write_output_file(rows.str());
 
+#endif
 
 #if 1
 			if (diagnostics_mass_start > 0.00001 && std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000000.0)
