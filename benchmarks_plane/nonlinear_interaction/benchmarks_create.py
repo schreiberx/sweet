@@ -41,16 +41,18 @@ jg.compilecommand_in_jobscript = True
 # Wallclock time
 max_wallclock_seconds = 2*24*60*60
 ref_max_wallclock_seconds = 48*60*60
+jg.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
 
-#Get Earth parameters (if necessary)
-earth = EarthMKSDimensions()
+# HPC stuff
+pspace = JobParallelizationDimOptions('space')
+pspace.num_cores_per_rank =jg.platform_resources.num_cores_per_node/2
+pspace.num_threads_per_rank = 1
+pspace.num_ranks = 1
+jg.setup_parallelization([pspace])
 
-#
-# Run simulation on plane or sphere
-#
+
 #Basic plane options
 CompileSWEPlane(jg)
-
 
 # Activate benchmark timers
 jg.compile.benchmark_timings='enable'
@@ -58,161 +60,84 @@ jg.compile.benchmark_timings='enable'
 # Verbosity mode
 jg.runtime.verbosity = 3
 
-
-#
 # Benchmark ID
-# 14: Steady diagonal benchmark
-#
-#jg.runtime.bench_id = 1
 jg.runtime.benchmark_name = "normalmodes"
 
-#
 # Compute error or difference to initial data
-#
 jg.runtime.compute_error = 1
 
 # Enable/Disbale GUI
 EnableGUI(jg)
 #DisableGUI(jg)
 
-#
 # REXI method
 jg.runtime.rexi_method = 'direct'
-#jg.runtime.rexi_use_direct_solution = 1
 
-# Parameters for SL-REXI paper
-#-----------------------------
+#Earth like parameters
+earth = EarthMKSDimensions()
 RuntimeSWEPlaneEarthParam(jg)
-#RuntimeSWENonDimParam(jg)
-
-jg.runtime.viscosity = 0.0
-
-#######################
-# HPC stuff
-########################
-# Setup parallelization
-pspace = JobParallelizationDimOptions('space')
-pspace.num_cores_per_rank = 8
-pspace.num_threads_per_rank = 2
-pspace.num_ranks = 1
-
-# Setup parallelization
-jg.setup_parallelization([pspace])
-
-#
-# Time, Mode and Physical resolution
-#
-timelevels = 1 #7 #5
-timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
-timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
-
-print(timestep_size_reference)
-print(timestep_sizes)
 
 # Use 10 days as the reference solution
 jg.runtime.max_simulation_time = earth.day*10 #1 day #timestep_size_reference #864000 #10 days
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
-#datastorage = jg.runtime.max_simulation_time / jg.runtime.output_timestep_size
-#if datastorage > 200:
-#	print("Warning::Too much data will be stored, are you sure you wish to run this?")
 
-jg.runtime.output_filename = ""
+#Output info
+jg.runtime.output_filename = "\"\""
 jg.runtime.output_timestep_size = 2 #timestep_size_reference*(2.0**(-timelevels))/10.0
 
-phys_res_levels = timelevels
-phys_res_reference = 128 #512
-#phys_res_list = [phys_res_reference*(2**i) for i in range(0, phys_res_levels)]
-phys_res_list = [phys_res_reference for i in range(0, phys_res_levels)]
-
-jg.runtime.benchmark_normal_modes_case ="single_2_1_1_1_1"
-
-ts_methods = [
-	['ln_erk',		4,	4]#,	# reference solution
-	#['ln_erk',		2,	2],	# FD- C-grid
-	#['l_cn_na_sl_nd_settls', 2,	2],	# SI-SL-SP
-	#['l_rexi_na_sl_nd_settls',	2,	2], #SL-EXP-SETTLS
-	#['l_rexi_na_sl_nd_etdrk',	2,	2], #SL-EXP-ETDRK
-	#['l_rexi_n_etdrk',	2,	2], #ETDRK2
-	#['l_rexi_n_erk',	2,	2], #strang split
-]
+datastorage = jg.runtime.max_simulation_time / jg.runtime.output_timestep_size
+if datastorage > 200 and len(jg.runtime.output_filename)>3 :
+	print("Warning::Too much data will be stored, are you sure you wish to run this?")
 
 
+#UNIQUE ID - what to cut out of naming!
 unique_id_filter = []
 
 # Compile
 unique_id_filter.append('compile')
 
 # Runtime
-unique_id_filter.append('runtime.disc_space')
-unique_id_filter.append('runtime.rexi')
-unique_id_filter.append('runtime.simparams')
-unique_id_filter.append('runtime.benchmark')
+#unique_id_filter.append('runtime.disc_space')
+#unique_id_filter.append('runtime.rexi')
+#unique_id_filter.append('runtime.simparams')
+#unique_id_filter.append('runtime.benchmark')
 
 # Parallelization
 unique_id_filter.append('parallelization')
 
 jg.unique_id_filter = unique_id_filter
 
-#
-# Reference solution
-if True:
-#if False:
-	print("Reference")
-	tsm = ts_methods[0]
-	
-	jg.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
+#Setup spectral space
+jg.runtime.space_grid_use_c_staggering = 0
+jg.runtime.space_use_spectral_basis_diffs = 1
+jg.compile.plane_spectral_space = 'enable'
+jg.compile.plane_spectral_dealiasing = 'enable'
 
-	SetupSpectralMethods(jg)
-	jg.runtime.timestep_size = timestep_size_reference/100.0
-	jg.runtime.timestepping_method = tsm[0]
-	jg.runtime.timestepping_order = tsm[1]
-	jg.runtime.timestepping_order2 = tsm[2]
-	jg.runtime.space_res_physical = -1
-	#jg.runtime.space_res_spectral = 1024
-	jg.runtime.space_res_spectral = phys_res_list[0]
+#Setup method
+jg.runtime.timestepping_method = 'ln_erk'
+jg.runtime.timestepping_order = 4
+jg.runtime.timestepping_order2 = 4
+jg.runtime.space_res_physical = -1
 
-	# Tag this as a reference job
-	jg.reference_job = True
-	jg.gen_jobscript_directory()
-	jg.reference_job = False
+#Setup  space info
+jg.runtime.space_res_spectral = 128 
 
-	# Use this one as the reference solution!
-	jg.reference_job_unique_id = jg.job_unique_id
+#Setup time info
+timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
+jg.runtime.timestep_size = 100 #seconds
 
+#Viscosity
+jg.runtime.viscosity = 0.0
 
+#Banchmark to be used
+jg.runtime.benchmark_normal_modes_case ="single_2_1_1_1_1"
 
-#
-# Use only 2 iterations for Semi-Lagrangian methods
-#
-unique_id_filter.append('runtime.semi_lagrangian')
-jg.runtime.semi_lagrangian_iterations = 2
-jg.runtime.semi_lagrangian_convergence_threshold = -1
+# Tag this as a reference job
+jg.reference_job = True
+jg.gen_jobscript_directory()
 
-
-jg.parallelization.max_wallclock_seconds = max_wallclock_seconds
-
-for tsm in ts_methods[1:]:
-
-	if 'ln_erk' in tsm[0]:
-		SetupFDCMethods(jg)
-	else:
-		SetupSpectralMethods(jg)
-
-	for idx in range(0, timelevels): #, phys_res in phys_res_list:
-
-		jg.runtime.timestep_size = timestep_sizes[idx]
-
-		jg.runtime.timestepping_method = tsm[0]
-		jg.runtime.timestepping_order = tsm[1]
-		jg.runtime.timestepping_order2 = tsm[2]
-		jg.runtime.space_res_physical = -1
-		jg.runtime.space_res_spectral = phys_res_list[idx]
-		print("id   dt       Nmodes  ")
-		print(idx, jg.runtime.timestep_size, jg.runtime.space_res_physical)
-
-		jg.gen_jobscript_directory()
-
-
+# Use this one as the reference solution!
+jg.reference_job_unique_id = jg.job_unique_id
 
 # Write compile script
 jg.write_compilecommands()
