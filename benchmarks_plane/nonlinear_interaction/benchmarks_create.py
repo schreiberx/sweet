@@ -46,7 +46,7 @@ jg.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
 # HPC stuff
 pspace = JobParallelizationDimOptions('space')
 pspace.num_cores_per_rank =jg.platform_resources.num_cores_per_node/2
-pspace.num_threads_per_rank = 1
+pspace.num_threads_per_rank = 8
 pspace.num_ranks = 1
 jg.setup_parallelization([pspace])
 
@@ -82,10 +82,13 @@ jg.runtime.max_simulation_time = earth.day*10 #1 day #timestep_size_reference #8
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 #Output info
-jg.runtime.output_filename = "\"\""
-jg.runtime.output_timestep_size = 2 #timestep_size_reference*(2.0**(-timelevels))/10.0
+jg.runtime.output_filename = "-"
+jg.runtime.output_timestep_size = 1 #timestep_size_reference*(2.0**(-timelevels))/10.0
 
-datastorage = jg.runtime.max_simulation_time / jg.runtime.output_timestep_size
+datastorage = 0
+if jg.runtime.output_timestep_size > 0:
+	datastorage = jg.runtime.max_simulation_time / jg.runtime.output_timestep_size
+
 if datastorage > 200 and len(jg.runtime.output_filename)>3 :
 	print("Warning::Too much data will be stored, are you sure you wish to run this?")
 
