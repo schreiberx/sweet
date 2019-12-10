@@ -974,16 +974,24 @@ public:
 
 		std::complex<double> sum = 0;
 
-		PLANE_DATA_SPECTRAL_FOR_IDX(
-				sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
-		);
+		for (int r = 0; r < 2; r++)								
+		{														
+			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+			{	
+				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+				{	
+					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	
+					sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+				}
+			}
+		}
 
-		sum = std::sqrt(sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
+		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
 
 		if(sum.imag()>DBL_EPSILON)
 			FatalError("Reduce operation of complex values (rms) error");
 
-		rms = sum.real(); 
+		rms = std::sqrt((sum.real()*sum.real()+sum.imag()*sum.imag())/(double)(planeDataConfig->spectral_array_data_number_of_elements)); 
 #endif
 		return rms;
 
