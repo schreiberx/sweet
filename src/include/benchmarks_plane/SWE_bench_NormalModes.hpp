@@ -111,10 +111,13 @@ public:
 		complex U[3];
 		// Set normal mode acording to desired wave type
 		// These are weights for the modes
+		
 		U[0] = geo_mode;
 		U[1] = igwest_mode;
 		U[2] = igeast_mode;
-
+		//std::cout<<U[0]<<std::endl;
+		//std::cout<<U[1]<<std::endl;
+		//std::cout<<U[2]<<std::endl;
 		//Define normal mode as combination of eigen vectors
 		complex UEV[3] = {0.0, 0.0, 0.0};
 		for (int k = 0; k < 3; k++)
@@ -124,10 +127,14 @@ public:
 		//std::cout<<"spectral before"<< std::endl;
 		//io_v.print_spectralIndex();
 
+		//Add normal mode to spectral space of variables
+		// The scale factor is required to ensure the normal mode is dimensionally of order 1 (normalized)
+		//     since in the backwards transform a scale factor is also applied.
 		complex h_add, u_add, v_add;
-		h_add = io_h.p_spectral_get(ik1, ik0)+UEV[0];
-		u_add = io_u.p_spectral_get(ik1, ik0)+UEV[1];
-		v_add = io_v.p_spectral_get(ik1, ik0)+UEV[2];
+		double scale_factor = ((double)(planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1]));
+		h_add = io_h.p_spectral_get(ik1, ik0)+UEV[0]*scale_factor;
+		u_add = io_u.p_spectral_get(ik1, ik0)+UEV[1]*scale_factor;
+		v_add = io_v.p_spectral_get(ik1, ik0)+UEV[2]*scale_factor;
 
 		/* Add normal mode to data */
 		io_h.p_spectral_set(ik1, ik0, h_add);
@@ -138,7 +145,7 @@ public:
 		io_u.spectral_zeroAliasingModes();
 		io_v.spectral_zeroAliasingModes();
 
-		//Request physical data, to ensure that irroring is well well balanced (it may fill in the mirror mode)
+		//Request physical data, to ensure that mirroring is well well balanced (it may fill in the mirror mode)
 		io_h.request_data_physical();
 		io_u.request_data_physical();
 		io_v.request_data_physical();
@@ -158,12 +165,11 @@ public:
 			std::cout<< lambda[j]<<" "; 
 		std::cout<<std::endl;
 		
-		std::cout<<"Adding normal mode"<<std::endl;
-		for (int j = 0; j < 3; j++)
-			std::cout<< UEV[j]<<" "; 
-		std::cout<<std::endl;
-
-		std::cout<<ik0<<" "<<ik1<< " "<< io_v.p_spectral_get(ik1, ik0) << UEV[2] << std::endl;
+		std::cout<<"Adding normal mode to wavenumber : ("<<ik0<<","<<ik1<<")"<<std::endl;
+		std::cout<< "h: " << UEV[0]<<std::endl; 
+		std::cout<< "u: " << UEV[1]<<std::endl; 
+		std::cout<< "v: " << UEV[2]<<std::endl; 
+		
 
 	#endif
 		return;
@@ -549,6 +555,31 @@ public:
 					}
 				}
 		}
+		/*
+		std::cout<<"EV matrix"<<std::endl;
+		for (int j = 0; j < 3; j++)	{
+			for (int i = 0; i < 3; i++)
+				std::cout<< v[j][i]<<" "; 
+			std::cout<<std::endl;
+		}
+		*/
+
+		//Normalize EV matrix (each EV has norm 1)
+		complex evnorm[3];
+		for (int j = 0; j < 3; j++)	{
+			//Calculate EV norms
+			evnorm[j]=0;
+			for (int i = 0; i < 3; i++){
+					//std::cout<< j << ":" << evnorm[j] << std::endl;
+					evnorm[j] += v[i][j]*std::conj(v[i][j]);
+			}
+		}
+		for (int j = 0; j < 3; j++)	{
+			for (int i = 0; i < 3; i++){
+				//std::cout << k0 << " , " << k1 << " , " << i << " , " << j << " , " << v[i][j] <<std::endl;
+				v[i][j] /= std::__complex_sqrt(evnorm[j]) ;
+			}
+		}
 
 			/*
 				* Invert Eigenvalue matrix
@@ -613,7 +644,7 @@ public:
 		std::cout<< "Benchmark case: "<< bcasename << std::endl;
 		iss >> k0;
 		iss >> k1;
-		std::cout<< "Wavenumbers: "<< k0 << "," <<k1 << std::endl;
+		std::cout<< "Wavenumbers: ("<< k0 << "," <<k1 << ")" << std::endl;
 		iss >> d0;
 		iss >> dwest;
 		iss >> deast;
@@ -692,8 +723,13 @@ public:
 			
 			}
 		};
+		std::cout<<o_u.reduce_maxAbs()<<std::endl;
+		std::cout<<o_v.reduce_maxAbs()<<std::endl;
+		std::cout<<o_h.reduce_maxAbs()<<std::endl;
+		//o_h.print_spectralData_zeroNumZero();
 		
 		std::cout<< "Initial Conditions Generated Successfully! " << std::endl;
+
 	}
 
 };

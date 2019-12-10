@@ -136,10 +136,6 @@ public:
 		PlaneData igwest; //Coefficients multiplying west gravity mode
 		PlaneData igeast; //Coefficients multiplying east gravity mode
 		
-		double geo_max_abs_amplitudes, nm_geo_rms_amplitudes;
-		double igwest_max_abs_amplitudes, nm_igwest_rms_amplitudes;
-		double igeast_max_abs_amplitudes, nm_igeast_rms_amplitudes;
-		
 	public:
 		NormalModesData(
 			PlaneDataConfig *planeDataConfig
@@ -343,10 +339,6 @@ public:
 			prog_h_pert, prog_u, prog_v, simVars, // Input fields
 			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
 		);
-
-		normalmodes.nm_geo_rms_amplitudes = normalmodes.geo.reduce_rms_spec();
-		normalmodes.nm_igwest_rms_amplitudes = normalmodes.igwest.reduce_rms_spec();
-		normalmodes.nm_igeast_rms_amplitudes = normalmodes.igeast.reduce_rms_spec();
 #endif
 		//normalmodes.geo.print_spectralIndex();
 		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
@@ -468,20 +460,18 @@ public:
 	/**
 	 * Write current time step info to file
 	 */
-	/*
+	
 	std::string write_output_file(
-			std::stringstream buffer
+			std::stringstream &buffer
 		)
 	{
 		const char* filename_template = "output_evolution.txt";
-		std::ofstream file(filename_template, std::ios_base::trunc);
+		std::ofstream file(filename_template, std::ofstream::out | std::ofstream::app);
 		file << std::setprecision(12);
-  		file << buffer << std::endl;
+  		file << buffer.str() << std::endl;
 
-		return ;
+		return buffer.str();
 	}
-    */
-
 
 	/**
 	 * Write spectrum info to data and return string of file name
@@ -637,13 +627,14 @@ public:
 
 
 #if 1
+			//Normal mode stuff
 			if (compute_normal_modes)
 			{
 				// normal modes energy
 				if (simVars.timecontrol.current_timestep_nr == 0)
 					header << "\tNM_GEO_RMS\tNM_IGWEST_RMS\tNM_IGEAST_RMS";
 
-				rows << "\t" << normalmodes.nm_geo_rms_amplitudes << "\t" << normalmodes.nm_igwest_rms_amplitudes << "\t" << normalmodes.nm_igeast_rms_amplitudes;
+				rows << "\t" << normalmodes.geo.reduce_rms() << "\t" << normalmodes.igwest.reduce_rms_spec() << "\t" << normalmodes.igeast.reduce_rms_spec();
 			}
 #endif
 			//screen output
@@ -652,13 +643,11 @@ public:
 
 			o_ostream << rows.str() << std::endl;
 
-#if 0
+#if 1
 			//output to file
 			if (simVars.timecontrol.current_timestep_nr == 0)
-				write_output_file(header.str());
-			
-			write_output_file(rows.str());
-
+				write_output_file(header);
+			write_output_file(rows);
 #endif
 
 #if 1
@@ -825,12 +814,15 @@ public:
 				vis = op.diff_c_x(prog_v) - op.diff_c_y(prog_u);	// relative vorticity
 				break;
 			case -5:
-				vis = normalmodes.geo ;	// geostrophic mode
+				vis = prog_h_pert;			//Perturbation of depth
 				break;
 			case -6:
-				vis = normalmodes.igwest;	// inertia grav mode west
+				vis = normalmodes.geo ;	// geostrophic mode
 				break;
 			case -7:
+				vis = normalmodes.igwest;	// inertia grav mode west
+				break;
+			case -8:
 				vis = normalmodes.igeast;	// inertia grav mode east
 				break;
 			}
@@ -879,7 +871,6 @@ public:
 				description = "Direct solution for h (linear only)";
 				break;
 
-
 			case -2:
 				description = "Diff in h to exact linear solution";
 				break;
@@ -891,12 +882,15 @@ public:
 				description = "Relative vorticity";
 				break;
 			case -5:
-				description = "Geostrophic wave";
+				description = "Depth perturbation";
 				break;
 			case -6:
-				description = "Inertia-gravity west wave";
+				description = "Geostrophic wave";
 				break;
 			case -7:
+				description = "Inertia-gravity west wave";
+				break;
+			case -8:
 				description = "Inertia-gravity east wave";
 				break;
 			}
@@ -943,23 +937,23 @@ public:
 
 		case 'c':
 			// dump data arrays
-			prog_h_pert.file_physical_saveData_ascii("swe_rexi_dump_h.csv");
-			prog_u.file_physical_saveData_ascii("swe_rexi_dump_u.csv");
-			prog_v.file_physical_saveData_ascii("swe_rexi_dump_v.csv");
+			prog_h_pert.file_physical_saveData_ascii("swe_plane_dump_h.csv");
+			prog_u.file_physical_saveData_ascii("swe_plane_dump_u.csv");
+			prog_v.file_physical_saveData_ascii("swe_plane_dump_v.csv");
 			break;
 
 		case 'C':
 			// dump data arrays to VTK
-			prog_h_pert.file_physical_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
-			prog_u.file_physical_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
-			prog_v.file_physical_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
+			prog_h_pert.file_physical_saveData_vtk("swe_plane_dump_h.vtk", "Height");
+			prog_u.file_physical_saveData_vtk("swe_plane_dump_u.vtk", "U-Velocity");
+			prog_v.file_physical_saveData_vtk("swe_plane_dump_v.vtk", "V-Velocity");
 			break;
 
 		case 'l':
 			// load data arrays
-			prog_h_pert.file_physical_loadData("swe_rexi_dump_h.csv", simVars.iodata.initial_condition_input_data_binary);
-			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.iodata.initial_condition_input_data_binary);
-			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.iodata.initial_condition_input_data_binary);
+			prog_h_pert.file_physical_loadData("swe_plane_dump_h.csv", simVars.iodata.initial_condition_input_data_binary);
+			prog_u.file_physical_loadData("swe_plane_dump_u.csv", simVars.iodata.initial_condition_input_data_binary);
+			prog_v.file_physical_loadData("swe_plane_dump_v.csv", simVars.iodata.initial_condition_input_data_binary);
 			break;
 		}
 	}

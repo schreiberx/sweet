@@ -79,7 +79,7 @@ RuntimeSWEPlaneEarthParam(jg)
 
 # Use 10 days as the reference solution
 jg.runtime.max_simulation_time = earth.day*10 #1 day #timestep_size_reference #864000 #10 days
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/10/24/4
 
 #Output info
 jg.runtime.output_filename = "-"
@@ -117,13 +117,13 @@ jg.compile.plane_spectral_space = 'enable'
 jg.compile.plane_spectral_dealiasing = 'enable'
 
 #Setup method
-jg.runtime.timestepping_method = 'ln_erk'
+jg.runtime.timestepping_method = 'l_direct'
 jg.runtime.timestepping_order = 4
 jg.runtime.timestepping_order2 = 4
 jg.runtime.space_res_physical = -1
 
 #Setup  space info
-jg.runtime.space_res_spectral = 128 
+jg.runtime.space_res_spectral = 16
 
 #Setup time info
 timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
@@ -133,7 +133,7 @@ jg.runtime.timestep_size = 100 #seconds
 jg.runtime.viscosity = 0.0
 
 #Banchmark to be used
-jg.runtime.benchmark_normal_modes_case ="single_2_1_1_1_1"
+jg.runtime.benchmark_normal_modes_case ="single_2_1_0_1_0"
 
 # Tag this as a reference job
 jg.reference_job = True
