@@ -329,6 +329,7 @@ public:
 	{
 		if (!compute_normal_modes )
 			return;
+
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		// assure, that the diagnostics are only updated for new time steps
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
@@ -339,6 +340,40 @@ public:
 			prog_h_pert, prog_u, prog_v, simVars, // Input fields
 			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
 		);
+		
+#endif
+		//normalmodes.geo.print_spectralIndex();
+		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
+		return;
+	}
+
+//Update diagnostic variables related to normal modes
+	void dump_normal_modes()
+	{
+		if (!compute_normal_modes )
+			return;
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+
+		std::stringstream buffer;
+
+		const char* filename_template = "output_evolution_normal_modes_geo.txt";
+		std::ofstream file1(filename_template, std::ofstream::out | std::ofstream::app);
+		buffer = SWE_bench_NormalModes::dump_normal_modes(simVars, normalmodes.geo);
+		file1 << buffer.str() << std::endl;
+		buffer.str(std::string());
+
+		filename_template = "output_evolution_normal_modes_igwest.txt";
+		std::ofstream file2(filename_template, std::ofstream::out | std::ofstream::app);
+		buffer = SWE_bench_NormalModes::dump_normal_modes(simVars, normalmodes.igwest);
+		file2 << buffer.str() << std::endl;
+		buffer.str(std::string());
+
+		filename_template = "output_evolution_normal_modes_igeast.txt";
+		std::ofstream file3(filename_template, std::ofstream::out | std::ofstream::app);
+		buffer = SWE_bench_NormalModes::dump_normal_modes(simVars, normalmodes.igeast);
+		file3 << buffer.str() << std::endl;
+		buffer.str(std::string());
 #endif
 		//normalmodes.geo.print_spectralIndex();
 		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
@@ -635,6 +670,9 @@ public:
 					header << "\tNM_GEO_RMS\tNM_IGWEST_RMS\tNM_IGEAST_RMS";
 
 				rows << "\t" << normalmodes.geo.reduce_rms() << "\t" << normalmodes.igwest.reduce_rms_spec() << "\t" << normalmodes.igeast.reduce_rms_spec();
+
+				//Dump to file all normal mode evolution
+				dump_normal_modes();
 			}
 #endif
 			//screen output

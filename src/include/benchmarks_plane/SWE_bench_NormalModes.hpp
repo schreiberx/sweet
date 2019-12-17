@@ -625,6 +625,55 @@ public:
 		return;
 	}
 
+public:
+	static
+	std::stringstream dump_normal_modes(
+			SimulationVariables &i_simVars, // Simulation variables
+			PlaneData &i_mode    //Output: Coeficients multiplying  mode
+	)
+	{
+		const PlaneDataConfig *planeDataConfig = i_mode.planeDataConfig;
+
+		std::stringstream buffer;
+		buffer << std::setprecision(8);
+
+		if (i_simVars.timecontrol.current_timestep_nr == 0){
+			//header
+			buffer << "n \t time";
+			for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
+			{
+				for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
+				{
+					buffer << "\t("<< ik0 <<","<<ik1<<")";
+				}
+			}
+			buffer << std::endl;
+		}
+		
+		buffer << i_simVars.timecontrol.current_timestep_nr;
+		buffer << "\t" << i_simVars.timecontrol.current_simulation_time;
+		const double zero=0.0;
+		const double scale_factor = ((double)(planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1]));
+		for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
+		{
+			for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
+			{
+				const std::complex<double> &value = i_mode.p_spectral_get(ik1, ik0);
+				const double norm = value.real()*value.real()+value.imag()*value.imag();
+
+				if (norm > 1.0e-13)
+				{
+					buffer << "\t" << norm/scale_factor;
+				}
+				else
+				{
+					buffer << "\t" << zero;
+				}
+			}
+		}	
+		return buffer;
+	}
+
 	private:
 	void extract_bench_info(const std::string &bcase)
 	{
@@ -723,9 +772,9 @@ public:
 			
 			}
 		};
-		std::cout<<o_u.reduce_maxAbs()<<std::endl;
-		std::cout<<o_v.reduce_maxAbs()<<std::endl;
-		std::cout<<o_h.reduce_maxAbs()<<std::endl;
+		std::cout<<"u_max: "<<o_u.reduce_maxAbs()<<std::endl;
+		std::cout<<"v_max: "<<o_v.reduce_maxAbs()<<std::endl;
+		std::cout<<"h_max: "<<o_h.reduce_maxAbs()<<std::endl;
 		//o_h.print_spectralData_zeroNumZero();
 		
 		std::cout<< "Initial Conditions Generated Successfully! " << std::endl;
