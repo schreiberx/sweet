@@ -357,19 +357,19 @@ public:
 
 		std::stringstream buffer;
 
-		const char* filename_template = "output_evolution_normal_modes_geo.txt";
+		const char* filename_template = "output_nm_geo_evol.txt";
 		std::ofstream file1(filename_template, std::ofstream::out | std::ofstream::app);
 		buffer = SWE_bench_NormalModes::dump_normal_modes(simVars, normalmodes.geo);
 		file1 << buffer.str() << std::endl;
 		buffer.str(std::string());
 
-		filename_template = "output_evolution_normal_modes_igwest.txt";
+		filename_template = "output_nm_igwest_evol.txt";
 		std::ofstream file2(filename_template, std::ofstream::out | std::ofstream::app);
 		buffer = SWE_bench_NormalModes::dump_normal_modes(simVars, normalmodes.igwest);
 		file2 << buffer.str() << std::endl;
 		buffer.str(std::string());
 
-		filename_template = "output_evolution_normal_modes_igeast.txt";
+		filename_template = "output_nm_igeast_evol.txt";
 		std::ofstream file3(filename_template, std::ofstream::out | std::ofstream::app);
 		buffer = SWE_bench_NormalModes::dump_normal_modes(simVars, normalmodes.igeast);
 		file3 << buffer.str() << std::endl;
@@ -500,7 +500,7 @@ public:
 			std::stringstream &buffer
 		)
 	{
-		const char* filename_template = "output_evolution.txt";
+		const char* filename_template = "output_diag_evol.txt";
 		std::ofstream file(filename_template, std::ofstream::out | std::ofstream::app);
 		file << std::setprecision(12);
   		file << buffer.str() << std::endl;

@@ -77,13 +77,15 @@ jg.runtime.rexi_method = 'ln_erk'
 earth = EarthMKSDimensions()
 RuntimeSWEPlaneEarthParam(jg)
 
-# Use 10 days as the reference solution
+#Setup time info
+timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
+jg.runtime.timestep_size = 60 #seconds
 jg.runtime.max_simulation_time = earth.day*100 #1 day #timestep_size_reference #864000 #10 days
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/100
+jg.runtime.output_timestep_size = jg.runtime.timestep_size #jg.runtime.max_simulation_time/100
 
 #Output info
 #jg.runtime.output_filename = "-" #do this to avoid dumping data files
-jg.runtime.output_filename = ""
+jg.runtime.output_filename = "-"
 
 datastorage = 0
 if jg.runtime.output_timestep_size > 0:
@@ -125,15 +127,12 @@ jg.runtime.space_res_physical = -1
 #Setup  space info
 jg.runtime.space_res_spectral = 64
 
-#Setup time info
-timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
-jg.runtime.timestep_size = 60 #seconds
 
 #Viscosity
 jg.runtime.viscosity = 0.0
 
-#Banchmark to be used
-jg.runtime.benchmark_normal_modes_case ="single_2_3_0_1_0"
+#Banchmark to be used naming: waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest
+jg.runtime.benchmark_normal_modes_case ="waves_1_2_3_0_1_0"
 
 # Tag this as a reference job
 jg.reference_job = True

@@ -38,8 +38,10 @@ class SWE_bench_NormalModes
 
 	public:
 	std::string bcasename; //Benchmark case name
-	std::size_t k0, k1;   // wavenumber to be used (-1,-1) refers to all wavenumbers
-	double d0, dwest, deast; //coefficients of normal modes eigen vectors
+	std::size_t nwaves;   //number of waves to be added
+	static const int maxwaves=10; //max number of waves
+	std::size_t k0[maxwaves], k1[maxwaves];   // wavenumber to be used (-1,-1) refers to all wavenumbers
+	double d0[maxwaves], dwest[maxwaves], deast[maxwaves]; //coefficients of normal modes eigen vectors
 
 /**
  * SWE Plane normal mode benchmark helper functions
@@ -639,7 +641,7 @@ public:
 
 		if (i_simVars.timecontrol.current_timestep_nr == 0){
 			//header
-			buffer << "n \t time";
+			buffer << "n\t time";
 			for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
 			{
 				for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
@@ -690,15 +692,35 @@ public:
 
 		std::stringstream iss(str);
 		iss >> bcasename;
-		std::cout<< "Benchmark case: "<< bcasename << std::endl;
-		iss >> k0;
-		iss >> k1;
-		std::cout<< "Wavenumbers: ("<< k0 << "," <<k1 << ")" << std::endl;
-		iss >> d0;
-		iss >> dwest;
-		iss >> deast;
-		std::cout<< "Normal mode coefficients:" << d0 << " " << dwest << " " << deast << std::endl;
-		
+		std::cout<< "[MULE] benchmark_normal_modes.case:"<< bcasename << std::endl;
+		if(bcasename=="waves"){
+			iss >> nwaves;
+			if(nwaves>maxwaves){
+				std::cout<< "Waves:"<<nwaves<<" , maxwaves hardcoded:"<<maxwaves<<std::endl;
+				FatalError("SWE_bench_NormalModes: Adjust maximun number of waves");	
+			}
+			std::cout<< "[MULE] simulation_benchmark_normal_modes.case: "<<bcasename<< std::endl;
+			std::cout<< "[MULE] simulation_benchmark_normal_modes.nwaves: " << nwaves << std::endl;
+			
+			//loop over waves
+			for (int n = 0; n<nwaves; n++){
+				//get a single wave
+				iss >> k0[n];
+				iss >> k1[n];
+				iss >> d0[n];
+				iss >> dwest[n];
+				iss >> deast[n];
+				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".k0: "<< k0[n] << std::endl;
+				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".k1: "<< k1[n] << std::endl;
+				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".d0: "<< d0[n] << std::endl;
+				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".dwest: "<< dwest[n] << std::endl;
+				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".deast: "<< deast[n] << std::endl;
+				//FatalError("SWE_bench_NormalModes: Adjust maximun number of waves");	
+			}
+		}
+		else{
+			FatalError("SWE_bench_NormalModes: Please follow naming convention for nomal mode initialization: waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest");
+		}
 		return;
 
 	}
@@ -733,6 +755,9 @@ public:
 		// (k0,k1) are wave numbers (set to -1 for all wavenumbers)
 		// d0, dwest, deast are numbers (floats) that are coefficients for different normal wave types
 
+		// General convention (for N waves, repeat pattern N times)
+		// waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest
+
 		//zero initial conditions
 		const PlaneDataConfig *planeDataConfig = o_h.planeDataConfig;
 
@@ -740,44 +765,47 @@ public:
 		o_u.spectral_set_zero();
 		o_v.spectral_set_zero();
 
-		if(bcasename=="single")
+		if(bcasename=="waves")
 		{
-			//Set a single wavenumber with appropriate modes
-			if(k0<0 && k1 <0 ){
-				std::cout<<"Adding normal modes to all wavenumbers"<<std::endl;
-				for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
-				{
-					for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
+			for (int n = 0; n<nwaves; n++){
+				//Set a single wavenumber with appropriate modes
+				if(k0[n]<0 && k1[n] <0 ){
+					std::cout<<"Adding normal modes to all wavenumbers"<<std::endl;
+					for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
 					{
-						add_normal_mode(
-									ik0, ik1,
-									d0, dwest, deast,
-									o_h, o_u, o_v,
-									simVars
-								);
+						for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
+						{
+							add_normal_mode(
+										ik0, ik1,
+										d0[n], dwest[n], deast[n],
+										o_h, o_u, o_v,
+										simVars
+									);
+						}
 					}
 				}
-			}
-			else if(k0>=0 && k1 >=0 ){
-					add_normal_mode(
-								k0, k1,
-								d0, dwest, deast,
-								o_h, o_u, o_v,
-								simVars
-						);
-			}
-			else
-			{
-				FatalError("SWE_bench_NormalModes: invalid wavenumber selection in --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");		
-			
+				else if(k0[n]>=0 && k1[n] >=0 ){
+						add_normal_mode(
+									k0[n], k1[n],
+									d0[n], dwest[n], deast[n],
+									o_h, o_u, o_v,
+									simVars
+							);
+				}
+				else
+				{
+					FatalError("SWE_bench_NormalModes: invalid wavenumber selection in --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");		
+				
+				}
 			}
 		};
-		std::cout<<"u_max: "<<o_u.reduce_maxAbs()<<std::endl;
-		std::cout<<"v_max: "<<o_v.reduce_maxAbs()<<std::endl;
-		std::cout<<"h_max: "<<o_h.reduce_maxAbs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.h_max:"<<o_h.reduce_maxAbs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.u_max:"<<o_u.reduce_maxAbs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.v_max:"<<o_v.reduce_maxAbs()<<std::endl;
+		
 		//o_h.print_spectralData_zeroNumZero();
 		
-		std::cout<< "Initial Conditions Generated Successfully! " << std::endl;
+		std::cout<< "Normal mode initial conditions generated successfully! " << std::endl;
 
 	}
 
