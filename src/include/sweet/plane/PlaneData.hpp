@@ -991,12 +991,46 @@ public:
 		if(sum.imag()>DBL_EPSILON)
 			FatalError("Reduce operation of complex values (rms) error");
 
-		rms = std::sqrt((sum.real()*sum.real()+sum.imag()*sum.imag())/(double)(planeDataConfig->spectral_array_data_number_of_elements)); 
+		rms = std::sqrt(sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements)); 
 #endif
 		return rms;
 
 	}
 
+	/**
+	 * reduce to sum square in spectrum
+	 */
+	double reduce_sum_sq_spec()
+	{
+		double rms = 0.0;
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		request_data_spectral();
+
+		std::complex<double> sum = 0;
+
+		for (int r = 0; r < 2; r++)								
+		{														
+			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+			{	
+				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+				{	
+					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	
+					sum += (spectral_space_data[idx]*std::conj(spectral_space_data[idx]));
+				}
+			}
+		}
+
+		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
+
+		if(sum.imag()>DBL_EPSILON)
+			FatalError("Reduce operation of complex values (rms) error");
+
+		rms = sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements); 
+		//rms = (sum.real()*sum.real()+sum.imag()*sum.imag()); 
+#endif
+		return rms;
+
+	}
 
 	/**
 	 * reduce to root mean square

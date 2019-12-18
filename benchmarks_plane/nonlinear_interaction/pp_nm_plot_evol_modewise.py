@@ -27,8 +27,8 @@ else:
 #List all parameters of job
 jd = JobData(sys.argv[2])
 jd_flat = jd.get_flattened_data()
-for key in jd_flat:
-	print(key, '->', jd_flat[key])		
+#for key in jd_flat:
+	#print(key, '->', jd_flat[key])		
 jd_raw = jd.get_job_raw_data()
 
 output=jd_raw['output']
@@ -78,16 +78,17 @@ nm_igeast_file=jd_flat['runtime.p_job_dirpath']+"/output_nm_igeast_evol.txt"
 exclude = ['n', 'time']
 
 df_geo=pd.read_csv(nm_geo_file, sep='\t', skipinitialspace=True, engine="python")
-df_geo=df_geo.loc[:, (df_geo != 0).any(axis=0)]
+eps=10e-10
+df_geo=df_geo.loc[:, (df_geo > eps).any(axis=0)]
 time=df_geo['time']
 df_geo=df_geo.loc[:, df_geo.columns.difference(exclude)]
 
 df_west=pd.read_csv(nm_igwest_file, sep='\t', skipinitialspace=True, engine="python")
-df_west=df_west.loc[:, (df_west != 0).any(axis=0)]
+df_west=df_west.loc[:, (df_west > eps).any(axis=0)]
 df_west=df_west.loc[:, df_west.columns.difference(exclude)]
 
 df_east=pd.read_csv(nm_igeast_file, sep='\t', skipinitialspace=True, engine="python")
-df_east=df_east.loc[:, (df_east != 0).any(axis=0)]
+df_east=df_east.loc[:, (df_east > eps).any(axis=0)]
 df_east=df_east.loc[:, df_east.columns.difference(exclude)]
 
 print(df_geo)
@@ -136,69 +137,32 @@ linestyles = ['-', '--', ':', '-.']
 
 c = 0
 
+#ncol=2,handleheight=2.4, labelspacing=0.05
+ncol=1
+if len(df_geo.columns):
+	ncol = 2	
 axs[0].set(ylabel='Geostrophic Mode')
 df_geo.plot(ax=axs[0])
-axs[0].legend(loc='center left', bbox_to_anchor= (1.01, 0.5))
+axs[0].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
+ncol=1
+if len(df_west.columns):
+	ncol = 2	
 axs[1].set(ylabel='IGWest Mode')
 df_west.plot(ax=axs[1])
-axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5))
+axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
+ncol=1
+if len(df_east.columns):
+	ncol = 2	
 axs[2].set(xlabel="Time (seconds)", ylabel='IG East Mode')
 df_east.plot(ax=axs[2])
-axs[2].legend(loc='center left', bbox_to_anchor= (1.01, 0.5))
+axs[2].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
+fig.subplots_adjust(right=0.7)
 
-plt.savefig(output_filename, transparent=True) #, bbox_inches='tight', pad_inches=0)
-
-plt.close()
-
-plt.show()
-exit()
-
-
-
-
-for key, d in data.items():
-	x = d['x_values']
-	y = d['y_values']
-	l = key.replace('_', '\\_')
-
-	print(" + "+l)
-	print(x)
-	print(y)
-	ax.plot(x, y, marker=markers[c % len(markers)], linestyle=linestyles[c % len(linestyles)], label=l)
-
-	c = c + 1
-
-
-if title != '':
-	plt.title(title, fontsize=fontsize)
-
-plt.xlabel("Timestep size $\Delta t$ (sec)", fontsize=fontsize)
-
-#
-# Name of data
-#
-dataname = "TODO"
-if 'prog_h' in muletag:
-	dataname = "surface height $h$"
-
-#
-# Norm
-#
-if 'linf' in muletag:
-	norm = "$L_\infty$"
-else:
-	norm = "$L_{TODO}$"
-
-plt.ylabel(norm+" error on "+dataname, fontsize=fontsize)
-
-
-
-plt.legend(fontsize=15)
-
-plt.savefig(output_filename, transparent=True, bbox_inches='tight', pad_inches=0)
+plt.savefig(output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
 plt.close()
+
 

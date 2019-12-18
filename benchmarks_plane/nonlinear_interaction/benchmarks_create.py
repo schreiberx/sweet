@@ -133,6 +133,7 @@ jg.runtime.viscosity = 0.0
 
 #Banchmark to be used naming: waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest
 jg.runtime.benchmark_normal_modes_case ="waves_1_2_3_0_1_0"
+jg.runtime.benchmark_normal_modes_case ="waves_2_2_3_0_1_0_4_1_1_0_1"
 
 # Tag this as a reference job
 jg.reference_job = True

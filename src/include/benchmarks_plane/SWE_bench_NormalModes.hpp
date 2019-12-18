@@ -219,7 +219,10 @@ public:
 				o_igeast_mode.p_spectral_set(ik1, ik0, igeast_mode_c);
 
 			}
-		}	
+		}
+		o_geo_mode.request_data_physical();	
+		o_igwest_mode.request_data_physical();	
+		o_igeast_mode.request_data_physical();	
 		return;
 	}
 
@@ -655,17 +658,18 @@ public:
 		buffer << i_simVars.timecontrol.current_timestep_nr;
 		buffer << "\t" << i_simVars.timecontrol.current_simulation_time;
 		const double zero=0.0;
-		const double scale_factor = ((double)(planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1]));
+		const double scale_factor =((double)(planeDataConfig->spectral_array_data_number_of_elements)); 
+		//planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1]));
 		for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
 		{
 			for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
 			{
 				const std::complex<double> &value = i_mode.p_spectral_get(ik1, ik0);
-				const double norm = value.real()*value.real()+value.imag()*value.imag();
-
-				if (norm > 1.0e-13)
+				double norm = value.real()*value.real()+value.imag()*value.imag();
+				norm=std::sqrt(norm/scale_factor);
+				if (norm > 1.0e-10)
 				{
-					buffer << "\t" << norm/scale_factor;
+					buffer << "\t" << norm;
 				}
 				else
 				{

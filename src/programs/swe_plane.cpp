@@ -135,6 +135,7 @@ public:
 		PlaneData geo;    //Coefficients multiplying geostrophic mode
 		PlaneData igwest; //Coefficients multiplying west gravity mode
 		PlaneData igeast; //Coefficients multiplying east gravity mode
+		double norm_spec;
 		
 	public:
 		NormalModesData(
@@ -331,9 +332,8 @@ public:
 			return;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		// assure, that the diagnostics are only updated for new time steps
-		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
-			return;
+		//std::cout<<std::endl;
+		//std::cout<<simVars.timecontrol.current_timestep_nr<<std::endl;
 
 		//Setup diagnostics for normal mode projection
 		SWE_bench_NormalModes::convert_allspectralmodes_to_normalmodes(
@@ -341,10 +341,27 @@ public:
 			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
 		);
 		
+		if ( simVars.timecontrol.current_timestep_nr == 0){
+			//save the reference normalization parameter
+			std::cout<<normalmodes.geo.reduce_rms_spec()<<std::endl;
+			std::cout<<normalmodes.igwest.reduce_rms_spec()<<std::endl;
+			std::cout<<normalmodes.igeast.reduce_rms_spec()<<std::endl;
+			normalmodes.norm_spec = normalmodes.geo.reduce_sum_sq_spec()+\
+				normalmodes.igwest.reduce_sum_sq_spec()+
+				normalmodes.igeast.reduce_sum_sq_spec();
+			normalmodes.norm_spec=std::sqrt(normalmodes.norm_spec);
+			if(normalmodes.norm_spec < 10e-14 ){
+				normalmodes.norm_spec = 1.0;
+				return;
+			}
+				
+		}
+		normalmodes.geo=normalmodes.geo/normalmodes.norm_spec;
+		normalmodes.igwest=normalmodes.igwest/normalmodes.norm_spec;
+		normalmodes.igeast=normalmodes.igeast/normalmodes.norm_spec;
 #endif
 		//normalmodes.geo.print_spectralIndex();
 		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
-		return;
 	}
 
 //Update diagnostic variables related to normal modes
