@@ -54,17 +54,19 @@ for i in range(nwaves):
 	waves = waves+"\n ("+str(k0[i])+","+str(k1[i])+"):("+str(d0[i])+","+str(dwest[i])+","+str(deast[i])+") "
 
 print("Initial conditions")
-print("k0:        ", k0)
-print("k1:        ", k1)
-print("Geo_mode:  ", d0)
-print("West_mode: ", dwest)
-print("East_mode: ", deast)
+print(waves)
+#print("k1:        ", k1)
+#print("Geo_mode:  ", d0)
+#print("West_mode: ", dwest)
+#print("East_mode: ", deast)
 
 params = "h0="+str(runtime['h0'])+", "\
 	+"f="+str(runtime['sphere_rotating_coriolis_omega'])+", "\
 	+"g="+str(runtime['gravitation'])+", "\
 	+"L="+str(runtime['plane_domain_size'])+", "\
-	+"M="+str(runtime['space_res_spectral'])
+	+"L="+str(runtime['plane_domain_size'])+", "\
+	+"N="+str(runtime['space_res_physical'])
+
 
 
 
@@ -78,7 +80,7 @@ nm_igeast_file=jd_flat['runtime.p_job_dirpath']+"/output_nm_igeast_evol.txt"
 exclude = ['n', 'time']
 
 df_geo=pd.read_csv(nm_geo_file, sep='\t', skipinitialspace=True, engine="python")
-eps=10e-10
+eps=10e-4
 print(df_geo)
 df_geo=df_geo.loc[:, (df_geo > eps).any(axis=0)]
 time=df_geo['time']
@@ -117,7 +119,7 @@ fig.suptitle(title)
 for ax in axs:
 	ax.set_xscale("linear", nonposx='clip')
 	ax.set_yscale("log", nonposy='clip')
-	ax.set_ylim([eps, 1])
+	ax.set_ylim([eps, 1.1])
 
 
 

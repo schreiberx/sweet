@@ -131,9 +131,9 @@ jg.runtime.space_res_spectral = 64
 #Viscosity
 jg.runtime.viscosity = 0.0
 
-#Banchmark to be used naming: waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest
-jg.runtime.benchmark_normal_modes_case ="waves_1_2_3_0_1_0"
-#jg.runtime.benchmark_normal_modes_case ="waves_2_2_3_0_1_0_4_1_1_0_1"
+#Banchmark to be used naming: waves_N_k0_k1_d0_dwest_deast_k0_k1_d0_dwest_deast_k0_k1_d0_dwest_deast
+jg.runtime.benchmark_normal_modes_case ="waves_1_91_2_0_100_0"
+#jg.runtime.benchmark_normal_modes_case ="waves_2_1_3_0_100_0_7_2_0_0_100"
 
 # Tag this as a reference job
 jg.reference_job = True
