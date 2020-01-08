@@ -74,8 +74,8 @@ EnableGUI(jg)
 jg.runtime.rexi_method = 'ln_erk'
 
 #Earth like parameters
-earth = EarthMKSDimensions()
-RuntimeSWEPlaneEarthParam(jg)
+earth = EarthMKSDimensionsApprox()
+RuntimeSWEPlaneEarthParamApprox(jg)
 
 #Setup time info
 timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
@@ -133,7 +133,7 @@ jg.runtime.viscosity = 0.0
 
 #Banchmark to be used naming: waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest
 jg.runtime.benchmark_normal_modes_case ="waves_1_2_3_0_1_0"
-jg.runtime.benchmark_normal_modes_case ="waves_2_2_3_0_1_0_4_1_1_0_1"
+#jg.runtime.benchmark_normal_modes_case ="waves_2_2_3_0_1_0_4_1_1_0_1"
 
 # Tag this as a reference job
 jg.reference_job = True

@@ -79,6 +79,7 @@ exclude = ['n', 'time']
 
 df_geo=pd.read_csv(nm_geo_file, sep='\t', skipinitialspace=True, engine="python")
 eps=10e-10
+print(df_geo)
 df_geo=df_geo.loc[:, (df_geo > eps).any(axis=0)]
 time=df_geo['time']
 df_geo=df_geo.loc[:, df_geo.columns.difference(exclude)]
@@ -116,6 +117,8 @@ fig.suptitle(title)
 for ax in axs:
 	ax.set_xscale("linear", nonposx='clip')
 	ax.set_yscale("log", nonposy='clip')
+	ax.set_ylim([eps, 1])
+
 
 
 for ax in axs.flat:
