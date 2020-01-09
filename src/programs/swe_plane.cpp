@@ -146,7 +146,8 @@ public:
 			igeast(planeDataConfig)
 		{
 		}
-	};
+	}; 
+
 	NormalModesData normalmodes;
 
 	// Finite difference operators
@@ -372,6 +373,8 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
+		SWE_bench_NormalModes::dump_all_normal_modes(simVars, normalmodes.geo, normalmodes.igwest, normalmodes.igeast);
+/*
 		std::stringstream buffer;
 
 		const char* filename_template = "output_nm_geo_evol.txt";
@@ -391,6 +394,7 @@ public:
 		buffer = SWE_bench_NormalModes::dump_normal_modes(simVars, normalmodes.igeast);
 		file3 << buffer.str() << std::endl;
 		buffer.str(std::string());
+	*/
 #endif
 		//normalmodes.geo.print_spectralIndex();
 		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
