@@ -126,7 +126,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 			&staggering,
 			2, //simVars.disc.timestepping_order,
 
-			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold
 	);
 

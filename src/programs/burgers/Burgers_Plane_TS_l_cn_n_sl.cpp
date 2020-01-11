@@ -42,7 +42,7 @@ void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
 			&staggering,
 			2,
 
-			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold
 			);
 

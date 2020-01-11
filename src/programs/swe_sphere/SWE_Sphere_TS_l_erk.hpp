@@ -31,7 +31,7 @@ class SWE_Sphere_TS_l_erk	: public SWE_Sphere_TS_interface
 	// Coriolis effect
 	SphereData_Physical fg;
 
-private:
+public:
 	void euler_timestep_update(
 			const SphereData_Spectral &i_phi,	///< prognostic variables
 			const SphereData_Spectral &i_vort,	///< prognostic variables
@@ -43,6 +43,7 @@ private:
 
 			double i_simulation_timestamp = -1
 	);
+
 
 public:
 	SWE_Sphere_TS_l_erk(

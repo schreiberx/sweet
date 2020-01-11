@@ -52,7 +52,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 			posx_d, posy_d,
 			timestepping_order,
 
-			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold
 	);
 

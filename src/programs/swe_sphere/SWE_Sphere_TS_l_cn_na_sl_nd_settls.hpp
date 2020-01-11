@@ -20,7 +20,8 @@
 #include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_cn.hpp"
+#include "SWE_Sphere_TS_l_irk.hpp"
+#include "SWE_Sphere_TS_l_erk.hpp"
 
 
 
@@ -29,20 +30,22 @@ class SWE_Sphere_TS_l_cn_na_sl_nd_settls	: public SWE_Sphere_TS_interface
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
-	bool use_only_linear_divergence;
+	bool include_nonlinear_divergence;
+	bool original_linear_operator_sl_tretment;
 
 	SphereTimestepping_SemiLagrangian semiLagrangian;
-	SphereOperators_Sampler_SphereDataPhysical sampler2D;
+	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
 
 	SphereData_Spectral phi_prev, vort_prev, div_prev;
 
 	// Arrival points for semi-lag
-	ScalarDataArray posx_a, posy_a;
+	ScalarDataArray pos_lon_a, pos_lat_a;
 
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
 
-	SWE_Sphere_TS_l_cn swe_sphere_ts_l_cn;
+	SWE_Sphere_TS_l_erk swe_sphere_ts_l_erk;
+	SWE_Sphere_TS_l_irk swe_sphere_ts_l_irk;
 
 public:
 	SWE_Sphere_TS_l_cn_na_sl_nd_settls(
@@ -51,7 +54,8 @@ public:
 		);
 
 	void setup(
-			bool i_use_only_linear_divergence
+			bool include_nonlinear_divergence = true,
+			bool original_linear_operator_sl_tretment = true
 	);
 
 	void run_timestep(

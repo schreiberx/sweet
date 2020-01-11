@@ -30,7 +30,7 @@ SWE_Sphere_TS_l_irk::SWE_Sphere_TS_l_irk(
 void SWE_Sphere_TS_l_irk::setup(
 		int i_timestep_order,
 		double i_timestep_size,
-		int i_use_extended_modes
+		int i_use_extended_modes = 0
 )
 {
 	timestep_size = i_timestep_size;
