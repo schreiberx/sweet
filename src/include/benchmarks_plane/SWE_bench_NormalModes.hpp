@@ -634,7 +634,7 @@ public:
 	static
 	std::stringstream dump_normal_modes(
 			SimulationVariables &i_simVars, // Simulation variables
-			PlaneData &i_mode    //Output: Coeficients multiplying  mode
+			PlaneData &i_mode    //Coeficients multiplying  mode
 	)
 	{
 		const PlaneDataConfig *planeDataConfig = i_mode.planeDataConfig;
@@ -642,6 +642,7 @@ public:
 		std::stringstream buffer;
 		buffer << std::setprecision(8);
 
+		/*
 		if (i_simVars.timecontrol.current_timestep_nr == 0){
 			//header
 			buffer << "n\t time";
@@ -654,7 +655,8 @@ public:
 			}
 			buffer << std::endl;
 		}
-		
+		*/
+
 		buffer << i_simVars.timecontrol.current_timestep_nr;
 		buffer << "\t" << i_simVars.timecontrol.current_simulation_time;
 		const double zero=0.0;
@@ -667,7 +669,7 @@ public:
 				const std::complex<double> &value = i_mode.p_spectral_get(ik1, ik0);
 				double norm = value.real()*value.real()+value.imag()*value.imag();
 				norm=std::sqrt(norm/scale_factor);
-				if (norm > 1.0e-10)
+				if (norm > 1.0e-15)
 				{
 					buffer << "\t" << norm;
 				}
@@ -678,6 +680,91 @@ public:
 			}
 		}	
 		return buffer;
+	}
+
+public:
+	static
+	void dump_all_normal_modes(
+			SimulationVariables &i_simVars, // Simulation variables
+			PlaneData &i_mode_geo,    //Coeficients multiplying  mode
+			PlaneData &i_mode_igwest,    //Coeficients multiplying  mode
+			PlaneData &i_mode_igeast    //Coeficients multiplying  mode
+	)
+	{
+		const char* filename_geo = "output_nm_geo_evol.txt";
+		const char* filename_igwest = "output_nm_igwest_evol.txt";
+		const char* filename_igeast = "output_nm_igeast_evol.txt";
+
+		const PlaneDataConfig *planeDataConfig = i_mode_geo.planeDataConfig;
+
+		std::ofstream file0;	
+		std::ofstream file1;	
+		std::ofstream file2;	
+		if (i_simVars.timecontrol.current_timestep_nr == 0){
+			file0.open(filename_geo, std::ofstream::out | std::ofstream::trunc);	
+			file1.open(filename_igwest, std::ofstream::out | std::ofstream::trunc);	
+			file2.open(filename_igeast, std::ofstream::out | std::ofstream::trunc);	
+		}
+		else
+		{
+			file0.open(filename_geo, std::ofstream::out | std::ofstream::app);	
+			file1.open(filename_igwest, std::ofstream::out | std::ofstream::app);	
+			file2.open(filename_igeast, std::ofstream::out | std::ofstream::app);	
+		}
+
+		std::stringstream buffer0, buffer1, buffer2;
+		buffer0 << std::setprecision(8);
+		buffer1 << std::setprecision(8);
+		buffer2 << std::setprecision(8);
+
+		//Headers
+		if (i_simVars.timecontrol.current_timestep_nr == 0){
+			//header
+			buffer0 << "n\t time";
+			buffer1 << "n\t time";
+			buffer2 << "n\t time";
+			T k0, k1;
+			for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
+			{
+				for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
+				{
+					k0 = (T) ik0;
+					if (ik1 <= planeDataConfig->spectral_data_size[1]/2)
+						k1 = (T)ik1;
+					else
+						k1 = (T)((int)ik1-(int)planeDataConfig->spectral_data_size[1]);
+
+					//Geo modes
+					buffer0 << "\t("<< k0 <<","<<k1<<")";
+					//West modes (adjust y_mode index)
+					buffer1 << "\t("<< k0 <<","<<k1<<")";
+					//East mode (adjust x_mode index)
+					buffer2 << "\t("<< (k0 == 0 ? abs(k0) : -k0)  <<","<< (k1 == 0 ? abs(k1) : -k1) <<")";
+
+				}
+			}
+			file0 << buffer0.str() << std::endl;
+			file1 << buffer1.str() << std::endl;
+			file2 << buffer2.str() << std::endl;
+		}
+
+		buffer0 = dump_normal_modes(i_simVars, i_mode_geo);
+		file0 << buffer0.str() << std::endl;
+		buffer0.str(std::string());
+
+		buffer1 = dump_normal_modes(i_simVars, i_mode_igwest);
+		file1 << buffer1.str() << std::endl;
+		buffer1.str(std::string());
+
+		buffer2 = dump_normal_modes(i_simVars, i_mode_igeast);
+		file2 << buffer2.str() << std::endl;
+		buffer2.str(std::string());
+
+		file0.close();
+		file1.close();
+		file2.close();
+
+		return ;
 	}
 
 	private:
