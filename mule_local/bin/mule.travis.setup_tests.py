@@ -75,6 +75,7 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - texinfo
             - g++-9
             - gfortran-9
       env:
@@ -82,6 +83,7 @@ jobs:
 """]
     #if False:
     if True:
+        # texinfo is required for compiling 'make'
         jobs_list += [
 """
     # Test with G++-8
@@ -109,44 +111,11 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - texinfo
             - g++-7
             - gfortran-7
       env:
         - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
-"""]
-
-    if False:
-    #if True:
-        jobs_list += [
-"""
-    # Test with G++-6
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-6
-            - gfortran-6
-      env:
-        - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
-"""]
-
-    #if False:
-    if True:
-        jobs_list += [
-"""
-    # Test with G++-5
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-5
-            - gfortran-5
-      env:
-        - MATRIX_EVAL="export CC=gcc-5 && export CXX=g++-5 && export FC=gfortran-5 && export F90=gfortran-5"
 """]
 
 

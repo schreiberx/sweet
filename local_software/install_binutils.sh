@@ -1,5 +1,9 @@
 #! /bin/bash
 
+#
+# Required for Travis CI
+#
+
 source ./install_helpers.sh ""
 
 #echo_error "ERROR: There are some issues if installing binutils such as 'configure: error: memset not found in libc' if configuring libpng\nTherefore, we disable this right here"
