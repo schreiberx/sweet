@@ -1,7 +1,8 @@
 
-PKGS+=("install_python3.sh")
 PKGS+=("install_openssl.sh")
 PKGS+=("install_cacerts.sh")
+
+PKGS+=("install_python3.sh")
 
 
 PKGS+=("install_lapack.sh")
