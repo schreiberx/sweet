@@ -1,6 +1,6 @@
 
 # Install binutils since they are outdated on Travis
-PKGS+=("install_make.sh")
+#PKGS+=("install_make.sh")
 PKGS+=("install_binutils.sh")
 
 PKGS+=("install_fftw3.sh")

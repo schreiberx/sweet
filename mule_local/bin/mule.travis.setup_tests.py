@@ -91,6 +91,7 @@ jobs:
           sources:
             - ubuntu-toolchain-r-test
           packages:
+            - texinfo
             - g++-8
             - gfortran-8
       env:
