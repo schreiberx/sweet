@@ -1,4 +1,7 @@
 
+# Install binutils since they are outdated on Travis
+PKGS+=("install_binutils.sh")
+
 PKGS+=("install_fftw3.sh")
 PKGS+=("install_shtns.sh")
 PKGS+=("install_shtns_python.sh")
