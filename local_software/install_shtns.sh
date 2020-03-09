@@ -19,17 +19,18 @@ echo_info "SHTNS noOpenMP:"
 
 if [ "#$TRAVIS" != "#" ]; then
 	echo_info "Detected Travis"
-	EXTRA_FLAGS="--disable-mkl --disable-knl --disable-cuda --disable-avx512"
+	echo_info "Disabling SIMD because of Travis"
+	EXTRA_FLAGS="--disable-mkl --disable-knl --disable-cuda --disable-simd"
 fi
 
-config_configure --disable-mem --disable-openmp $EXTRA_FLAGS
+config_configure --disable-openmp $EXTRA_FLAGS
 config_make_clean
 config_make_default_install
 
 echo_info_hline
 echo_info "SHTNS OpenMP:"
 # Python, OpenMP
-config_configure --disable-mem --enable-openmp $EXTRA_FLAGS
+config_configure --enable-openmp $EXTRA_FLAGS
 #config_configure --enable-openmp
 config_make_clean
 config_make_default_install
