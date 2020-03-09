@@ -4,8 +4,8 @@ import sys
 import os
 
 if not 'MULE_SOFTWARE_ROOT' in os.environ:
-	print("No SWEET environment variables detected, skipping Travis updates")
-	sys.exit(0)
+    print("No SWEET environment variables detected, skipping Travis updates")
+    sys.exit(0)
 
 os.chdir(os.environ['MULE_SOFTWARE_ROOT'])
 
@@ -19,27 +19,27 @@ travis_file=".travis.yml"
 
 verbosity = 10
 if len(sys.argv) > 1:
-	verbosity = int(sys.argv[1])
+    verbosity = int(sys.argv[1])
 
 if verbosity >= 10:
-	print("Working directory: "+os.path.abspath(os.curdir))
-	print("Setting up tests in travis file '"+travis_file+"'")
+    print("Working directory: "+os.path.abspath(os.curdir))
+    print("Setting up tests in travis file '"+travis_file+"'")
 
 tests = glob.glob('./tests/??_*/test.sh')
 tests += glob.glob('./tests/??_*/test.py')
 
 
 if verbosity >= 10:
-	for test in tests:
-		print(" + Found test script '"+test+"'")
+    for test in tests:
+        print(" + Found test script '"+test+"'")
 
 
 
 if verbosity >= 10:
-	print("Writing content to file '"+travis_file+"'")
+    print("Writing content to file '"+travis_file+"'")
 
 with open(travis_file, 'w') as f:
-	f.write("""#
+    f.write("""#
 # Script for Travis CI
 #
 # See doc/travis_ci.txt for more information
@@ -47,7 +47,7 @@ with open(travis_file, 'w') as f:
 
 language: cpp
 
-dist: bionic
+dist: trusty
 
 #
 # We want to setup the 3rd party libraries and test SWEET
@@ -61,11 +61,12 @@ jobs:
 
 """)
 
-	jobs_list = []
+    jobs_list = []
 
 
-	if True:
-		jobs_list += [
+    if False:
+    #if True:
+        jobs_list += [
 """
     # Test with G++-9
     - os: linux
@@ -79,8 +80,9 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-9 && export CXX=g++-9 && export FC=gfortran-9 && export F90=gfortran-9"
 """]
-	if False:
-		jobs_list += [
+    if False:
+    #if True:
+        jobs_list += [
 """
     # Test with G++-8
     - os: linux
@@ -95,9 +97,9 @@ jobs:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
 """]
 
-	if False:
-	#if True:
-		jobs_list += [
+    #if False:
+    if True:
+        jobs_list += [
 """
     # Test with G++-7
     - os: linux
@@ -112,9 +114,9 @@ jobs:
         - MATRIX_EVAL="export CC=gcc-7 && export CXX=g++-7 && export FC=gfortran-7 && export F90=gfortran-7"
 """]
 
-	if False:
-	#if True:
-		jobs_list += [
+    if False:
+    #if True:
+        jobs_list += [
 """
     # Test with G++-6
     - os: linux
@@ -129,9 +131,9 @@ jobs:
         - MATRIX_EVAL="export CC=gcc-6 && export CXX=g++-6 && export FC=gfortran-6 && export F90=gfortran-6"
 """]
 
-	#if False:
-	if True:
-		jobs_list += [
+    #if False:
+    if True:
+        jobs_list += [
 """
     # Test with G++-5
     - os: linux
@@ -147,27 +149,27 @@ jobs:
 """]
 
 
-	c = 0
-	for (j, test) in product(jobs_list, tests):
-		if True:
-			# This version allows reutilizing the cache
-			f.write(j)
-			if True:
-				f.write("      script: "+test)
-			else:
-				f.write("      script:\n")
-				f.write("        - cd \""+os.path.dirname(test)+"\"\n")
-				f.write("        - ./"+os.path.basename(test)+"\n")
+    c = 0
+    for (j, test) in product(jobs_list, tests):
+        if True:
+            # This version allows reutilizing the cache
+            f.write(j)
+            if True:
+                f.write("      script: "+test)
+            else:
+                f.write("      script:\n")
+                f.write("        - cd \""+os.path.dirname(test)+"\"\n")
+                f.write("        - ./"+os.path.basename(test)+"\n")
 
-		else:
-			j = j.replace('MATRIX_EVAL="', 'MATRIX_EVAL="TESTSCRIPT='+test+' && ')
-			f.write("      script: $TESTSCRIPT")
-		f.write("\n")
-		f.write("\n")
-		c += 1
+        else:
+            j = j.replace('MATRIX_EVAL="', 'MATRIX_EVAL="TESTSCRIPT='+test+' && ')
+            f.write("      script: $TESTSCRIPT")
+        f.write("\n")
+        f.write("\n")
+        c += 1
 
 
-	f.write("""
+    f.write("""
 
 #
 # Install dependencies
@@ -219,4 +221,4 @@ cache:
 """)
 
 if verbosity >= 10:
-	print("Job combinations: "+str(c))
+    print("Job combinations: "+str(c))
