@@ -17,12 +17,15 @@ jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
 jg.runtime.benchmark_name = "adv_gauss_bump"
 
+jg.runtime.semi_lagrangian_approximate_sphere_geometry = 1
+
 jg.runtime.max_simulation_time = 60*60*24*12
 
 jg.runtime.verbosity = 5
 
 #params_compile_mode = ['release', 'debug']
 params_compile_mode = ['release']
+#params_compile_mode = ['debug']
 
 params_runtime_mode_res_x = [64]
 params_runtime_mode_res_y = [64]

@@ -198,7 +198,9 @@ public:
 	)
 	{
 		if (i_approximate_sphere_geometry == 0)
-			FatalError("TODO: Implement me");
+		{
+			FatalError("TODO: Implement me: i_approximate_sphere_geometry==0 to avoid approximation of SL on sphere");
+		}
 
 		std::size_t num_elements = i_pos_lon_a.number_of_elements;
 		double inv_earth_radius = 1.0/i_earth_radius;
