@@ -80,8 +80,8 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-9 && export CXX=g++-9 && export FC=gfortran-9 && export F90=gfortran-9"
 """]
-    if False:
-    #if True:
+    #if False:
+    if True:
         jobs_list += [
 """
     # Test with G++-8
@@ -97,8 +97,8 @@ jobs:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
 """]
 
-    #if False:
-    if True:
+    if False:
+    #if True:
         jobs_list += [
 """
     # Test with G++-7
