@@ -4,7 +4,11 @@ source ./install_helpers.sh ""
 
 PKG_NAME="SHTNS"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns.a"
-PKG_URL_SRC="shtns-3.3.1-r694.tar.gz"
+
+# This version doesn't work on Travis CI
+#PKG_URL_SRC="shtns-3.3.1-r694.tar.gz"
+
+PKG_URL_SRC="shtns-3.1-r633.tar.gz"
 
 config_setup
 
