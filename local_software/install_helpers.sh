@@ -124,8 +124,8 @@ function config_error_exit()
 	echo_error "Showing last 100 lines from build output file"
 	echo_error "$PKG_CONFIG_STD_OUTPUT"
 
-	#tail -n 100 "$PKG_CONFIG_STD_OUTPUT"
-	cat "$PKG_CONFIG_STD_OUTPUT"
+	tail -n 100 "$PKG_CONFIG_STD_OUTPUT"
+	#cat "$PKG_CONFIG_STD_OUTPUT"
 	exit 1
 }
 
