@@ -8,7 +8,7 @@ PKG_URL_SRC="git-2.19.0.tar.gz"
 
 if [ "${HOSTNAME:0:10}" != "mpp2-login" ]; then
 	echo_error_hline
-	echo_error "The git installer is not supported on MPP2"
+	echo_error "The git installer is only supported on MPP2"
 	echo_error "git pull/push results in empty output without doing anything"
 	echo_error_hline
 	exit 1

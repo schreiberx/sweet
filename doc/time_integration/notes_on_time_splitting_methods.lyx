@@ -133,8 +133,13 @@ The first goal is to gain understanding in the the formulation of higher-order
 Changelog
 \end_layout
 
-\begin_layout Standard
+\begin_layout Itemize
 2018-12-28: (Martin) Added series section to avoid singularities
+\end_layout
+
+\begin_layout Itemize
+2019-03-24: (Martin) Added equation for exp.
+ integrator
 \end_layout
 
 \begin_layout Section
@@ -495,6 +500,17 @@ Exponential integrator methods
 
 \begin_layout Standard
 See also Will Wright, History of Exponential Integrators
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+U(t+\Delta t)=\exp(\Delta tL)+\int_{0}^{\Delta t}\exp(\Delta tL)N(U(t+\tau))d\tau
+\]
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsubsection

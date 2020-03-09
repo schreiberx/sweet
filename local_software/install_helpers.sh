@@ -110,6 +110,8 @@ function config_error_exit()
 	# Kill alive thread if it exists
 	config_alive_thread_stop
 
+	echo_info "ERROR occured, please check log file in ./local_src"
+
 	#
 	# print output message
 	# print log file
@@ -165,7 +167,7 @@ function config_extract()
 function config_download_fun()
 {
 	PKG_FILENAME="$(basename ${1})"
-	wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit
+	wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
 }
 
 function config_download()

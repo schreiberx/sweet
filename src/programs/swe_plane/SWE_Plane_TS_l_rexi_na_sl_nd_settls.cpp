@@ -40,11 +40,11 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	PlaneData N_h_prev(io_h.planeDataConfig);
 	PlaneData N_h_ext(io_h.planeDataConfig);
 
-	//Departure points and arrival points
+	// Departure points
 	ScalarDataArray posx_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
 	ScalarDataArray posy_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
 
-	//Parameters
+	// Parameters
 	double dt = i_dt;
 
 	Staggering staggering;
@@ -93,8 +93,6 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	//Calculate nonlinear terms - not done in case of only linear divergence (linear div is already in linear part)
 	if (!use_only_linear_divergence) // Full nonlinear case
 	{
-		//FatalError("Not yet tested");
-
 		// Calculate nonlinear term for the previous time step
 		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
 
