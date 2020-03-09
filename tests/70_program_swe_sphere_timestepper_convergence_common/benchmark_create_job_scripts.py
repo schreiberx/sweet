@@ -217,6 +217,48 @@ elif group == "ln2":
 			'lg_rexi_lc_n_etdrk',
 
 		]
+elif group == "ln2_part1":
+
+	ts_order = 2
+
+	ref_ts_method = 'ln_erk'
+	ref_ts_order = 4
+
+	ts_methods = [
+			'ln_erk',
+
+			'l_erk_n_erk',
+
+			'lg_erk_lc_n_erk_ver0',
+			'lg_erk_lc_n_erk_ver1',
+
+			'l_irk_n_erk_ver0',
+			'l_irk_n_erk_ver1',
+
+			'lg_irk_lc_n_erk_ver0',
+			'lg_irk_lc_n_erk_ver1',
+
+			'l_rexi_n_erk_ver0',
+			'l_rexi_n_erk_ver1',
+		]
+
+elif group == "ln2_part2":
+
+	ts_order = 2
+
+	ref_ts_method = 'ln_erk'
+	ref_ts_order = 4
+
+	ts_methods = [
+			'ln_erk',
+
+			'lg_rexi_lc_n_erk_ver0',
+			'lg_rexi_lc_n_erk_ver1',
+
+			'l_rexi_n_etdrk',
+			'lg_rexi_lc_n_etdrk',
+
+		]
 
 else:
 	raise Exception("Unknown group")
