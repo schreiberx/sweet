@@ -47,7 +47,7 @@ with open(travis_file, 'w') as f:
 
 language: cpp
 
-dist: trusty
+dist: bionic
 
 #
 # We want to setup the 3rd party libraries and test SWEET
@@ -65,6 +65,21 @@ jobs:
 
 
 	if True:
+		jobs_list += [
+"""
+    # Test with G++-9
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+            - gfortran-9
+      env:
+        - MATRIX_EVAL="export CC=gcc-9 && export CXX=g++-9 && export FC=gfortran-9 && export F90=gfortran-9"
+"""]
+	if False:
 		jobs_list += [
 """
     # Test with G++-8
