@@ -3,7 +3,7 @@
 cd "$(dirname $0)"
 
 
-TIMESTEPPING_GROUP="ln2"
+TIMESTEPPING_GROUP="ln2_part2"
 
 COMMON="../70_program_swe_plane_timestepper_convergence_common/"
 
