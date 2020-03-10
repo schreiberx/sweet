@@ -319,6 +319,7 @@ public:
 		}
 
 		FatalError("ups number not supported!");
+		return 0;
 	}
 
 
@@ -350,12 +351,12 @@ public:
 			return retval;
 
 		case 2:
-            retval = 1.0/2.0;
+			    retval = 1.0/2.0;
 
-            powz = 1.0;
-            facn = factorial(3);
+			    powz = 1.0;
+			    facn = factorial(3);
 
-            retval += (z-2.0)*powz/facn;
+			    retval += (z-2.0)*powz/facn;
 			for (int l = 1; l < niters; l++)
 			{
 				powz *= z;
@@ -366,23 +367,24 @@ public:
 			return retval;
 
 		case 3:
-            retval = -1.0/2.0;
+		    retval = -1.0/2.0;
 
-            powz = 1.0;
-            facn = factorial(3);
+		    powz = 1.0;
+		    facn = factorial(3);
 
-            retval += (4.0-z)*powz/facn;
-			for (int l = 1; l < niters; l++)
-			{
-				powz *= z;
-				facn *= (l+3);
-				retval += (4.0-z)*powz/facn;
-			}
+		    retval += (4.0-z)*powz/facn;
+		    for (int l = 1; l < niters; l++)
+		    {
+			    powz *= z;
+			    facn *= (l+3);
+			    retval += (4.0-z)*powz/facn;
+		    }
 
-			return retval;
+		    return retval;
 		}
 
 		FatalError("This Upsilon function is not supported!");
+		return 0;
 	}
 
 
@@ -395,10 +397,10 @@ public:
 	)
 	{
 		T linf = z.real()*z.real() + z.imag()*z.imag();
-        if (linf < 0.2)
+		if (linf < 0.2)
 			return upsNSeries(N, z);
 
-        return upsNDirect(N, z);
+		return upsNDirect(N, z);
 	}
 
 
