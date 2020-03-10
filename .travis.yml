@@ -31,6 +31,21 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_plane_timestepper_convergence_ln2/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - texinfo
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/70_program_swe_plane_timestepper_convergence_l1/test.sh
 
 
@@ -91,37 +106,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_ln2_part1/test.sh
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - texinfo
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/10_compile/test.sh
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - texinfo
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_plane_timestepper_convergence_ln2_part2/test.sh
 
 
     # Test with G++-8
@@ -196,6 +181,21 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln2_part1/test.sh
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - texinfo
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/70_program_swe_plane_timestepper_convergence_l2/test.sh
 
 
@@ -226,7 +226,7 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln2/test.sh
+      script: ./tests/70_program_swe_sphere_timestepper_convergence_ln2_part2/test.sh
 
 
     # Test with G++-8
