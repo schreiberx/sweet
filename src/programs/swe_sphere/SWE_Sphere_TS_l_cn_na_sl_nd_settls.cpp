@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  *
  *  Changelog:
- *  	2019-10-24: Based on plane version
+ *  	2019-10-24: Partly based on plane version
  */
 
 #include "SWE_Sphere_TS_l_cn_na_sl_nd_settls.hpp"

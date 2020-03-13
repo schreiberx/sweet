@@ -351,14 +351,6 @@ if p.compiler == 'llvm':
 		# append gfortran library
 		env.Append(LIBS=['gfortran'])
 
-	if p.threading == 'omp':
-		reqversion = [9,0]
-		print("")
-		print('WARNING: OpenMP with LLVM not supported, deactivating')
-		print("")
-
-		p.threading = 'off'
-
 	env.Replace(CXX = 'clang++')
 
 	if p.fortran_source == 'enable':

@@ -173,6 +173,43 @@ public:
 	}
 
 
+	/**
+	 * Do 1st order accurate advection on the sphere for given
+	 *  - starting point,
+	 *  - velocity and
+	 *  - timestep size
+	 * in Cartesian space 
+	 */
+	inline static
+	void doAdvectionOnSphere(
+		const ScalarDataArray &i_pos_x,
+		const ScalarDataArray &i_pos_y,
+		const ScalarDataArray &i_pos_z,
+
+		const ScalarDataArray &i_vel_x,
+		const ScalarDataArray &i_vel_y,
+		const ScalarDataArray &i_vel_z,
+
+		double i_dt,
+		double i_inv_earth_radius,
+
+		ScalarDataArray &o_pos_x,
+		ScalarDataArray &o_pos_y,
+		ScalarDataArray &o_pos_z
+	)
+	{
+		o_pos_x = i_pos_x + i_dt*(i_vel_x)*i_inv_earth_radius;
+		o_pos_y = i_pos_y + i_dt*(i_vel_y)*i_inv_earth_radius;
+		o_pos_z = i_pos_z + i_dt*(i_vel_z)*i_inv_earth_radius;
+
+		ScalarDataArray norm = (o_pos_x*o_pos_x + o_pos_y*o_pos_y + o_pos_z*o_pos_z).inv_sqrt();
+
+		o_pos_x *= norm;
+		o_pos_y *= norm;
+		o_pos_y *= norm;
+	}
+
+
 
 	void semi_lag_departure_points_settls(
 			const SphereData_Physical &i_u_lon_prev,	// Velocities at time t-1
@@ -249,6 +286,13 @@ public:
 
 		if (i_timestepping_order == 2)
 		{
+			/**
+			 * See SETTLS paper
+			 * Hortal, M. (2002). The development and testing of a new two-time-level semi-Lagrangian scheme (SETTLS) in the ECMWF forecast model. Q. J. R. Meteorol. Soc., 2, 1671–1687.
+			 * 
+			 * Note, that the equations are rearranged, see 
+			 */
+
 			// Extrapolate velocities at departure points
 			SphereData_Physical u_extrapol = 2.0*i_u_lon - i_u_lon_prev;
 			SphereData_Physical v_extrapol = 2.0*i_v_lat - i_v_lat_prev;
@@ -308,15 +352,29 @@ public:
 						&vel_x_extrapol, &vel_y_extrapol, &vel_z_extrapol
 					);
 
-				pos_x_d = pos_x_a - i_dt*0.5*(vel_x_extrapol + vel_x)*inv_earth_radius;
-				pos_y_d = pos_y_a - i_dt*0.5*(vel_y_extrapol + vel_y)*inv_earth_radius;
-				pos_z_d = pos_z_a - i_dt*0.5*(vel_z_extrapol + vel_z)*inv_earth_radius;
+				// pos_x_d = pos_x_a - i_dt*0.5*(vel_x_extrapol + vel_x)*inv_earth_radius;
+				// pos_y_d = pos_y_a - i_dt*0.5*(vel_y_extrapol + vel_y)*inv_earth_radius;
+				// pos_z_d = pos_z_a - i_dt*0.5*(vel_z_extrapol + vel_z)*inv_earth_radius;
+				ScalarDataArray new_pos_x_d(num_elements);
+				ScalarDataArray new_pos_y_d(num_elements);
+				ScalarDataArray new_pos_z_d(num_elements);
+				
+				doAdvectionOnSphere(
+					pos_x_a,
+					pos_y_a,
+					pos_z_a,
 
-				ScalarDataArray norm = (pos_x_d*pos_x_d + pos_y_d*pos_y_d + pos_z_d*pos_z_d).inv_sqrt();
+					vel_x_extrapol + vel_x,
+					vel_y_extrapol + vel_y,
+					vel_z_extrapol + vel_z,
 
-				ScalarDataArray new_pos_x_d = pos_x_d*norm;
-				ScalarDataArray new_pos_y_d = pos_y_d*norm;
-				ScalarDataArray new_pos_z_d = pos_z_d*norm;
+					-i_dt*0.5,
+					inv_earth_radius,
+
+					new_pos_x_d,
+					new_pos_y_d,
+					new_pos_z_d
+				);
 
 				diff =  (pos_x_d-new_pos_x_d).reduce_maxAbs() +
 						(pos_y_d-new_pos_y_d).reduce_maxAbs() +
