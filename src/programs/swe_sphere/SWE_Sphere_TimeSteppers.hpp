@@ -511,10 +511,31 @@ public:
 
 			master = &(SWE_Sphere_TS_interface&)*lg_rexi;
 		}
-		else if (i_timestepping_method == "l_cn_na_sl_nd_settls")
+		else if (i_timestepping_method == "l_cn_na_sl_nd_settls" || i_timestepping_method == "l_cn_na_sl_nd_settls_ver1")
 		{
 			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(i_simVars.misc.use_nonlinear_only_visc);
+			l_cn_na_sl_nd_settls->setup(true, true);
+
+			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
+		}
+		else if (i_timestepping_method == "l_cn_na_sl_nd_settls_ver2")
+		{
+			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
+			l_cn_na_sl_nd_settls->setup(true, false);
+
+			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
+		}
+		else if (i_timestepping_method == "l_cn_na_sl_settls" || i_timestepping_method == "l_cn_na_sl_settls_ver1")
+		{
+			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
+			l_cn_na_sl_nd_settls->setup(false, true);
+
+			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
+		}
+		else if (i_timestepping_method == "l_cn_na_sl_settls_ver2")
+		{
+			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_l_cn_na_sl_nd_settls(i_simVars, i_op);
+			l_cn_na_sl_nd_settls->setup(false, false);
 
 			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
 		}

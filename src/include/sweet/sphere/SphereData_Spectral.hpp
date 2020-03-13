@@ -255,13 +255,17 @@ public:
 
 
 
+	/*
+	 * Setup spectral sphere data based on data in physical space
+	 */
 	void loadSphereDataPhysical(
 			const SphereData_Physical &i_sphereDataPhysical
 	)
 	{
 		/**
-		 * Warning: This is an in-situ operation.
+		 * Warning: The sphat_to_SH function is an in-situ operation.
 		 * Therefore, the data in the source array will be destroyed.
+		 * Hence, we create a copy
 		 */
 		SphereData_Physical tmp(i_sphereDataPhysical);
 		spat_to_SH(sphereDataConfig->shtns, tmp.physical_space_data, spectral_space_data);
@@ -270,6 +274,10 @@ public:
 	}
 
 
+
+	/*
+	 * Return the data converted to physical space
+	 */
 	SphereData_Physical getSphereDataPhysical()	const
 	{
 		/**

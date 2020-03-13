@@ -1,5 +1,9 @@
 #! /bin/bash
 
+#
+# Required for Travis CI
+#
+
 source ./install_helpers.sh ""
 
 PKG_NAME="make"

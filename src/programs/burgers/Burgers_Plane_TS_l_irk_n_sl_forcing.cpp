@@ -39,7 +39,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 			&staggering,
 			2,
 
-			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold
 			);
 

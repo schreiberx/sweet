@@ -167,6 +167,7 @@ export PATH="$MULE_SOFTWARE_ROOT/bin:$PATH"
 
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
+
 #
 # setup MULE_LD_LIBRARY_PATH which stored additional library paths
 # This is used
@@ -191,6 +192,7 @@ if [ -z "$PYTHONPATH" ]; then
 else
 	export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
 fi
+export PYTHONPATH="$SCRIPTDIR/local/lib/python3.8/site-packages/:$PYTHONPATH"
 
 
 # Add MULE python path

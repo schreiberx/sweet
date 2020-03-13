@@ -329,43 +329,42 @@ public:
 	//Update diagnostic variables related to normal modes
 	void update_normal_modes()
 	{
-		if (!compute_normal_modes )
+		if (!compute_normal_modes)
 			return;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		//std::cout<<std::endl;
-		//std::cout<<simVars.timecontrol.current_timestep_nr<<std::endl;
-
 		//Setup diagnostics for normal mode projection
 		SWE_bench_NormalModes::convert_allspectralmodes_to_normalmodes(
 			prog_h_pert, prog_u, prog_v, simVars, // Input fields
 			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
 		);
 		
-		if ( simVars.timecontrol.current_timestep_nr == 0){
+		if (simVars.timecontrol.current_timestep_nr == 0){
 			//save the reference normalization parameter
-			std::cout<<normalmodes.geo.reduce_rms_spec()<<std::endl;
-			std::cout<<normalmodes.igwest.reduce_rms_spec()<<std::endl;
-			std::cout<<normalmodes.igeast.reduce_rms_spec()<<std::endl;
-			normalmodes.norm_spec = normalmodes.geo.reduce_sum_sq_spec()+\
+			std::cout << normalmodes.geo.reduce_rms_spec() << std::endl;
+			std::cout << normalmodes.igwest.reduce_rms_spec() << std::endl;
+			std::cout << normalmodes.igeast.reduce_rms_spec() << std::endl;
+
+			normalmodes.norm_spec = normalmodes.geo.reduce_sum_sq_spec()+
 				normalmodes.igwest.reduce_sum_sq_spec()+
 				normalmodes.igeast.reduce_sum_sq_spec();
+
 			normalmodes.norm_spec=std::sqrt(normalmodes.norm_spec);
+
 			if(normalmodes.norm_spec < 10e-14 ){
 				normalmodes.norm_spec = 1.0;
 				return;
 			}
 				
 		}
-		normalmodes.geo=normalmodes.geo/normalmodes.norm_spec;
-		normalmodes.igwest=normalmodes.igwest/normalmodes.norm_spec;
-		normalmodes.igeast=normalmodes.igeast/normalmodes.norm_spec;
+		normalmodes.geo = normalmodes.geo / normalmodes.norm_spec;
+		normalmodes.igwest = normalmodes.igwest / normalmodes.norm_spec;
+		normalmodes.igeast = normalmodes.igeast / normalmodes.norm_spec;
 #endif
-		//normalmodes.geo.print_spectralIndex();
-		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
 	}
 
-//Update diagnostic variables related to normal modes
+
+	//Update diagnostic variables related to normal modes
 	void dump_normal_modes()
 	{
 		if (!compute_normal_modes )
@@ -681,9 +680,8 @@ public:
 			}
 #endif
 
-
 #if 1
-			//Normal mode stuff
+			// Normal mode stuff
 			if (compute_normal_modes)
 			{
 				// normal modes energy
@@ -696,14 +694,15 @@ public:
 				dump_normal_modes();
 			}
 #endif
-			//screen output
+
+			// screen output
 			if (simVars.timecontrol.current_timestep_nr == 0)
 				o_ostream << header.str() << std::endl;
 
 			o_ostream << rows.str() << std::endl;
 
 #if 1
-			//output to file
+			// output to file
 			if (simVars.timecontrol.current_timestep_nr == 0)
 				write_output_file(header);
 			write_output_file(rows);
@@ -715,7 +714,6 @@ public:
 				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 			}
 #endif
-
 
 		}
 

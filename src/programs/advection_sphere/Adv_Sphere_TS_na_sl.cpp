@@ -12,7 +12,7 @@
 
 void Adv_Sphere_TS_na_sl::run_timestep(
 		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_vort,		///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
@@ -43,6 +43,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	ScalarDataArray posx_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
 	ScalarDataArray posy_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
 
+
 	semiLagrangian.semi_lag_departure_points_settls(
 			diag_u_prev, diag_v_prev,
 			diag_u, diag_v,
@@ -50,7 +51,11 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 			dt,
 			simVars.sim.sphere_radius,
 			posx_d, posy_d,
-			timestepping_order
+
+			timestepping_order,
+			simVars.disc.semi_lagrangian_max_iterations,
+			simVars.disc.semi_lagrangian_convergence_threshold,
+			simVars.disc.semi_lagrangian_approximate_sphere_geometry
 	);
 
 	diag_u_prev = diag_u;
@@ -127,13 +132,6 @@ void Adv_Sphere_TS_na_sl::setup(
 			assert(io_data <= M_PI*0.5);
 		}
 	);
-
-#if 0
-	posx_a.print();
-	std::cout << std::endl;
-	posy_a.print();
-	exit(1);
-#endif
 
 	sampler2D.setup(sphereDataConfig);
 

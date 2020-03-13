@@ -159,7 +159,7 @@ public:
 				nullptr,
 				simVars.disc.timestepping_order,
 
-				simVars.disc.semi_lagrangian_iterations,
+				simVars.disc.semi_lagrangian_max_iterations,
 				simVars.disc.semi_lagrangian_convergence_threshold
 		);
 

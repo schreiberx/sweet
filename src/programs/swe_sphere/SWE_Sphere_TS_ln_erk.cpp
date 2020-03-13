@@ -29,7 +29,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	/*
 	 * NON-LINEAR
 	 *
-	 * Follows Hack & Jakob formulation
+	 * Follows formulation from Hack & Jakob paper
 	 */
 
 	SphereData_Physical ug(i_phi.sphereDataConfig);
@@ -68,6 +68,15 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
+
+#if 1
+// TODO: Why not using this one?
+	SphereData_Spectral test(i_phi.sphereDataConfig);
+	test.loadSphereDataPhysical(-i_div.getSphereDataPhysical()*i_phi.getSphereDataPhysical());
+	std::cout << (test - o_phi_t).getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
+	std::cout << i_phi.getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
+	std::cout << std::endl;
+#endif
 
 	/*
 	 * Add non-linearities

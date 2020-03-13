@@ -303,12 +303,14 @@ public:
 #endif
 
 
+
 #if 0
 		static void fun_no_forces(int, double, void*, void*)
 		{
 			FatalError("External forces not available");
 		};
 #endif
+
 
 		/// load external forces if available from benchmark scenario
 		void (*getExternalForcesCallback)(int, double, void*, void*) = nullptr;// = &fun_no_forces;		/// SET TO NULLPTR
@@ -587,6 +589,7 @@ public:
 	} sim;
 
 
+
 	/**
 	 * This class stored the discretization-related parameters
 	 *
@@ -630,10 +633,13 @@ public:
 		double timestepping_crank_nicolson_filter = 0.5;
 
 		/// Number of iterations for semi-Lagrangian methods
-		int semi_lagrangian_iterations = 999;
+		int semi_lagrangian_max_iterations = 999;
 
 		/// Convergence threshold for semi-Lagrangian methods (set to -1 to ignore error)
 		double semi_lagrangian_convergence_threshold = 1e-8;
+
+		/// Use accurate spherical geometry (???) or approximation (Ritchie 1995)
+		double semi_lagrangian_approximate_sphere_geometry = 0;
 
 
 		/// String of time stepping method
@@ -661,15 +667,16 @@ public:
 			std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
 			std::cout << " + timestepping_leapfrog_robert_asselin_filter: " << timestepping_leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + timestepping_crank_nicolson_filter: " << timestepping_crank_nicolson_filter << std::endl;
-			std::cout << " + semi_lagrangian_iterations: " << semi_lagrangian_iterations << std::endl;
+			std::cout << " + semi_lagrangian_max_iterations: " << semi_lagrangian_max_iterations << std::endl;
 			std::cout << " + semi_lagrangian_convergence_threshold: " << semi_lagrangian_convergence_threshold << std::endl;
+			std::cout << " + semi_lagrangian_approximate_sphere_geometry: " << semi_lagrangian_approximate_sphere_geometry << std::endl;
 			std::cout << " + plane_dealiasing (compile time): " <<
-		#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-					1
-		#else
-					0
-		#endif
-					<< std::endl;
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+			1
+#else
+			0
+#endif
+			<< std::endl;
 			std::cout << std::endl;
 		}
 
@@ -701,8 +708,9 @@ public:
 			std::cout << "							1: generate in physical space" << std::endl;
 			std::cout << "							2: generate in spectral space" << std::endl;
 			std::cout << "							3: generate in spectral space with complex matrix" << std::endl;
-			std::cout << "	--semi-lagrangian-iterations [int]		Number of iterations during semi-Lagrangian time integration" << std::endl;
+			std::cout << "	--semi-lagrangian-max-iterations [int]		Number of max. iterations during semi-Lagrangian time integration" << std::endl;
 			std::cout << "	--semi-lagrangian-convergence-threshold [float]	Threshold to stop iterating, Use -1 to disable" << std::endl;
+			std::cout << "	--semi-lagrangian-approximate-sphere-geometry [int]	0: no approximation, 1: Richies approximation, default: 0" << std::endl;
 
 		}
 
@@ -730,13 +738,14 @@ public:
 	        long_options[next_free_program_option] = {"crank-nicolson-filter", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
-
-	        long_options[next_free_program_option] = {"semi-lagrangian-iterations", required_argument, 0, 256+next_free_program_option};
+	        long_options[next_free_program_option] = {"semi-lagrangian-max-iterations", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"semi-lagrangian-convergence-threshold", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
+	        long_options[next_free_program_option] = {"semi-lagrangian-approximate-sphere-geometry", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"space-grid-use-c-staggering", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
@@ -771,7 +780,7 @@ public:
 				return 0;
 
 			case 5:
-				semi_lagrangian_iterations = atoi(i_value);
+				semi_lagrangian_max_iterations = atoi(i_value);
 				return 0;
 
 			case 6:
@@ -779,6 +788,10 @@ public:
 				return 0;
 
 			case 7:
+				semi_lagrangian_approximate_sphere_geometry = atof(i_value);
+				return 0;
+
+			case 8:
 				space_grid_use_c_staggering = atof(i_value);
 				return 0;
 			}
@@ -1137,6 +1150,54 @@ public:
 	}
 
 
+	void print_params()
+	{
+
+		sim.outputProgParams();
+		benchmark.outputProgParams();
+		disc.outputProgParams();
+
+		std::cout << "" << std::endl;
+		std::cout << "Control:" << std::endl;
+		std::cout << "	--dt [time]	timestep size, default=?" << std::endl;
+		std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
+		std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
+		std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
+		std::cout << "" << std::endl;
+		std::cout << "Misc options:" << std::endl;
+		std::cout << "	-v [int]			verbosity level" << std::endl;
+		std::cout << "	-V [double]			period of outputConfig" << std::endl;
+		std::cout << "	-G [0/1]			graphical user interface" << std::endl;
+		std::cout << "	-O [string]			string prefix for filename of output of simulation data (default output_%s_t%020.8f.csv)" << std::endl;
+		std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
+		std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
+		std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
+		std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
+		std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
+		std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
+		std::cout << "	--reuse-plans [0/1]	Save plans for fftw transformations and SH transformations" << std::endl;
+		std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;
+		std::cout << "					0: compute optimized plans (no wisdom)" << std::endl;
+		std::cout << "					1: compute optimized plans, use wisdom if available and store wisdom" << std::endl;
+		std::cout << "					2: use wisdom if available if not, trigger error if wisdom doesn't exist (not yet working for SHTNS)" << std::endl;
+		std::cout << "					default: -1 (quick mode)" << std::endl;
+		std::cout << "" << std::endl;
+		rexi.outputProgParams();
+		swe_polvani.outputProgParams();
+
+
+#if SWEET_PARAREAL
+		parareal.printOptions();
+#endif
+
+#if SWEET_LIBPFASST
+		libpfasst.printOptions();
+#endif
+
+		std::cout << std::endl;
+	}
+
+
 	/**
 	 * setup the variables based on program parameters
 	 */
@@ -1148,19 +1209,19 @@ public:
 	)
 	{
 		const int max_options = 200;
-        struct option long_options[max_options+1];
+		struct option long_options[max_options+1];
 
-        for (std::size_t i = 0; i < max_options+1; i++)
-        {
-        	long_options[i].flag = 0;
-        	long_options[i].has_arg = 0;
-        	long_options[i].name = 0;
-        	long_options[i].val = 0;
-        }
+		for (std::size_t i = 0; i < max_options+1; i++)
+		{
+			long_options[i].flag = 0;
+			long_options[i].has_arg = 0;
+			long_options[i].name = 0;
+			long_options[i].val = 0;
+		}
 
 		int next_free_program_option = 0;
 
-        int benchmark_start_option_index = next_free_program_option;
+        	int benchmark_start_option_index = next_free_program_option;
 		benchmark.setup_longOptionsList(long_options, next_free_program_option);
 
         int sim_start_option_index = next_free_program_option;
@@ -1178,7 +1239,6 @@ public:
         int timecontrol_start_option_index = next_free_program_option;
 		timecontrol.setup_longOptionsList(long_options, next_free_program_option);
 
-
 #if SWEET_PARAREAL
         int parareal_start_option_index = next_free_program_option;
         parareal.setup_longOptionList(
@@ -1188,7 +1248,6 @@ public:
 			);
 #endif
 
-
 #if SWEET_LIBPFASST
         int libpfasst_start_option_index = next_free_program_option;
         libpfasst.setup_longOptionList(
@@ -1197,8 +1256,6 @@ public:
 				       max_options
 				       );
 #endif
-
-
 
         int rexi_start_option_index = next_free_program_option;
         rexi.setup_longOptionList(
@@ -1245,14 +1302,24 @@ public:
 		while (1)
 		{
 			opt = getopt_long(
-							i_argc, i_argv,
-							"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:zh",
-							long_options, &option_index
-					);
+				i_argc, i_argv,
+				"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:zh",
+				long_options, &option_index
+			);
 
 			if (opt == -1)
 				break;
 
+			if (opt == '?')
+			{
+				//print_params();
+				std::cerr << std::endl;
+				std::cerr << "Error while processing program arguments (see above)" << std::endl;
+				std::cerr << std::endl;
+				std::cerr << "Please use -h option as first argument to see available parameters" << std::endl;
+				std::cerr << std::endl;
+				return false;
+			}
 
 			/*
 			 * LONG OPTIONS
@@ -1319,10 +1386,10 @@ public:
 
 #if SWEET_LIBPFASST
 					{
-					  int retval = libpfasst.setup_longOptionValue(i-libpfasst_start_option_index, optarg);
-					  if (retval == 0)
-					    continue;
-					  c += retval;
+						int retval = libpfasst.setup_longOptionValue(i-libpfasst_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
 					}
 #endif
 
@@ -1365,12 +1432,13 @@ public:
 						std::cout << std::endl;
 						exit(1);
 					}
+
 					bogus.var[i-next_free_program_option] = optarg;
 				}
 				continue;
 			}
 
-
+			// short options from hereon
 			if (optarg != nullptr)
 			{
 				if (optarg[0] == '=')
@@ -1507,56 +1575,17 @@ public:
 				iodata.setup_initial_condition_filenames(optarg);
 				break;
 
+			case 'h':
+				print_params();
+				return false;
 
 			default:
-				sim.outputProgParams();
-				benchmark.outputProgParams();
-				disc.outputProgParams();
+				print_params();
 
-				std::cout << "" << std::endl;
-				std::cout << "Control:" << std::endl;
-				std::cout << "	--dt [time]	timestep size, default=?" << std::endl;
-				std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
-				std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
-				std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
-				std::cout << "" << std::endl;
-				std::cout << "Misc options:" << std::endl;
-				std::cout << "	-v [int]			verbosity level" << std::endl;
-				std::cout << "	-V [double]			period of outputConfig" << std::endl;
-				std::cout << "	-G [0/1]			graphical user interface" << std::endl;
-				std::cout << "	-O [string]			string prefix for filename of output of simulation data (default output_%s_t%020.8f.csv)" << std::endl;
-				std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
-				std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
-				std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
-				std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
-				std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
-				std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
-				std::cout << "	--reuse-plans [0/1]	Save plans for fftw transformations and SH transformations" << std::endl;
-				std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;
-				std::cout << "					0: compute optimized plans (no wisdom)" << std::endl;
-				std::cout << "					1: compute optimized plans, use wisdom if available and store wisdom" << std::endl;
-				std::cout << "					2: use wisdom if available if not, trigger error if wisdom doesn't exist (not yet working for SHTNS)" << std::endl;
-				std::cout << "					default: -1 (quick mode)" << std::endl;
-				std::cout << "" << std::endl;
-				rexi.outputProgParams();
-				swe_polvani.outputProgParams();
+				std::cerr << "Some option was specified to be available, but it's parameter detection is not implemented." << std::endl;
+				std::cerr << "Please contact the SWEET developer" << std::endl;
 
-
-#if SWEET_PARAREAL
-				parareal.printOptions();
-#endif
-
-#if SWEET_LIBPFASST
-				libpfasst.printOptions();
-#endif
-
-				std::cout << std::endl;
-
-				if ((char)opt != 'h')
-				{
-					std::cerr << "Unknown option '" << (char)opt << "'" << std::endl;
-					FatalError("Exit");
-				}
+				FatalError("Exit");
 				return false;
 			}
 		}

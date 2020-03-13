@@ -785,7 +785,7 @@ public:
 			std::cout<< "[MULE] simulation_benchmark_normal_modes.nwaves: " << nwaves << std::endl;
 			
 			//loop over waves
-			for (int n = 0; n<nwaves; n++){
+			for (int n = 0; n < (int)nwaves; n++){
 				//get a single wave
 				iss >> k0[n];
 				iss >> k1[n];

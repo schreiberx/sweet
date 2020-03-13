@@ -311,7 +311,6 @@ if __name__ == "__main__":
 	savefile(divspec, "prog_div", t)
 
 	# time loop.
-	time1 = time.clock()
 	print("ITMAX: "+str(itmax));
 	for ncycle in range(itmax):
 		t = ncycle*dt

@@ -313,9 +313,21 @@ if p.compiler == 'intel':
 
 
 
-# WARNING: don't use 'elif' here wince llvm may be activated via the 'gnu' compiler option
+# WARNING: don't use 'elif' here since clang may be activated via the 'gnu' compiler option
 if p.compiler == 'llvm':
-	reqversion = [3,1]
+	reqversion = [5,1]
+	if p.threading == 'omp':
+		reqversion = [9,0]
+	version_line = exec_command('clang++ --version').splitlines()[0]
+
+	version_line = version_line.replace("clang version ", "")
+	version = version_line.split('.')
+	for i in range(0, 2):
+		if (int(version[i]) > int(reqversion[i])):
+			break
+		if (int(version[i]) < int(reqversion[i])):
+			print("LLVM version "+(".".join(reqversion))+" or higher required")
+			Exit(1)
 
 	if p.gxx_toolchain != '':
 		env.Append(CXXFLAGS=' --gcc-toolchain='+p.gxx_toolchain)
@@ -335,22 +347,19 @@ if p.compiler == 'llvm':
 	# speedup compilation - remove this when compiler slows down or segfaults by running out of memory
 	env.Append(CXXFLAGS=' -pipe')
 
-	# activate gnu C++ compiler
-
-
 	if p.sphere_spectral_space == 'enable':
 		# append gfortran library
 		env.Append(LIBS=['gfortran'])
 
 	if p.threading == 'omp':
+		reqversion = [9,0]
 		print("")
 		print('WARNING: OpenMP with LLVM not supported, deactivating')
 		print("")
 
 		p.threading = 'off'
 
-	# todo: fix me also for intel mpicxx compiler
-	#env.Replace(CXX = 'clang++')
+	env.Replace(CXX = 'clang++')
 
 	if p.fortran_source == 'enable':
 		env.Append(LIBS=['gfortran'])

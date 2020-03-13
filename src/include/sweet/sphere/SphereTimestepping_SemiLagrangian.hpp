@@ -192,9 +192,16 @@ public:
 
 			int i_timestepping_order,
 			int max_iters = 10,
-			double i_convergence_tolerance = 1e-8
+			double i_convergence_tolerance = 1e-8,
+
+			int i_approximate_sphere_geometry = 0
 	)
 	{
+		if (i_approximate_sphere_geometry == 0)
+		{
+			FatalError("TODO: Implement me: i_approximate_sphere_geometry==0 to avoid approximation of SL on sphere");
+		}
+
 		std::size_t num_elements = i_pos_lon_a.number_of_elements;
 		double inv_earth_radius = 1.0/i_earth_radius;
 
@@ -246,7 +253,7 @@ public:
 			SphereData_Physical u_extrapol = 2.0*i_u_lon - i_u_lon_prev;
 			SphereData_Physical v_extrapol = 2.0*i_v_lat - i_v_lat_prev;
 
-			// Compute cartesian arrival points
+			// Compute Cartesian arrival points
 			ScalarDataArray pos_x_a(num_elements);
 			ScalarDataArray pos_y_a(num_elements);
 			ScalarDataArray pos_z_a(num_elements);

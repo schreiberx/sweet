@@ -334,6 +334,8 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+	simVars.outputConfig();
+
 	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 
 	if (simVars.timecontrol.current_timestep_size < 0)

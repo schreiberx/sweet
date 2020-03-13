@@ -514,9 +514,9 @@ Hence, the quadrature points are given by
 \end_inset
 
 .
- Note, that here these weights are independent of the function to be approximate
-d (This is also what Terry stated at the very end of his paper with his
- method).
+ Note, that here these coefficients are independent of the function to be
+ approximated (This is also what Terry stated at the very end of his paper
+ with his method).
 \end_layout
 
 \begin_layout Standard
@@ -541,9 +541,9 @@ Numerical cancellation problems
 \end_layout
 
 \begin_layout Standard
-For a radius > 30, the Cauchy contour integration suffers from numerical
- cancellation effects because of very large and small coefficients with
- alternating signs:
+For a radius > 10, the Cauchy contour integration suffers increasingly from
+ numerical cancellation effects because of very large and small coefficients
+ with alternating signs:
 \end_layout
 
 \begin_layout Verbatim

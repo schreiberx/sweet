@@ -83,13 +83,18 @@ Direct exponential integration for linear SWE on sphere
 Martin Schreiber
 \end_layout
 
+\begin_layout Date
+February 27, 2019
+\end_layout
+
 \begin_layout Standard
 There was a certain interest in using rational approximations for resembling
  exponential integrators with the SWE on the rotating sphere.
  Here, it was assumed that rational approximations must be used for solving
  the linearized SWE.
- This work will investigate a form of the linearized SWE which doesn't incorpora
-te the Coriolis effect.
+ This work investigates a way with the spherical harmonics transformations
+ to directly exponentially integrate the linearized SWE without the Coriolis
+ effect.
 \end_layout
 
 \begin_layout Section
@@ -105,8 +110,8 @@ Using the vorticity-divergence formulation, the linear operator is then
 \partial_{t}\Phi'\\
 \partial_{t}\delta
 \end{array}\right]=\left[\begin{array}{cc}
- & -\overline{\Phi}\\
--\nabla^{2}
+ & c\overline{\Phi}\\
+c\nabla^{2}
 \end{array}\right]\left[\begin{array}{c}
 \Phi'\\
 \delta
@@ -120,8 +125,16 @@ Using spherical harmonics, the Laplace operator
 \end_inset
 
  is also diagonal.
- Therefore, we can rearrange this system in 2x2 blocked matrices along the
- diagonal.
+ Therefore, we can rearrange this system in 
+\begin_inset Formula $2\times2$
+\end_inset
+
+ blocked matrices along the diagonal with each block relating to one particular
+ associated Legendre polynomial 
+\begin_inset Formula $P_{n}^{m}$
+\end_inset
+
+ (ALP).
 \end_layout
 
 \begin_layout Section
@@ -142,8 +155,8 @@ with
 \begin_inset Formula 
 \[
 L=\left[\begin{array}{cc}
- & -\overline{\Phi}\\
--\nabla^{2}
+ & \overline{\Phi}\\
+\nabla^{2}
 \end{array}\right]
 \]
 
@@ -188,7 +201,29 @@ Eigen diagonalization
 \end_layout
 
 \begin_layout Standard
-We can work with an Eigen diagonalization of the matrix, giving
+Again, we can rewrite this to a 
+\begin_inset Formula $2\times2$
+\end_inset
+
+ matrix with all blocks independent to the other ones.
+ From hereon, we assume 
+\begin_inset Formula $L$
+\end_inset
+
+, 
+\begin_inset Formula $G$
+\end_inset
+
+ and 
+\begin_inset Formula $D$
+\end_inset
+
+ related to one particular ALP.
+ Finally, we can work with an Eigen diagonalization of the 
+\begin_inset Formula $2\times2$
+\end_inset
+
+ matrices, giving
 \end_layout
 
 \begin_layout Standard
@@ -255,6 +290,11 @@ Q^{-1}=\left[\begin{array}{cc}
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Using this, we can directly exponentially integrate the linearized SWE on
+ the non-rotating sphere.
 \end_layout
 
 \end_body

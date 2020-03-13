@@ -261,9 +261,13 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
 				i_simulation_timestamp
 			);
 	}
+	else if (timestepping_order == 0)
+	{
+		FatalError("Please specify the timestepping order via --timestepping-order=[int]");
+	}
 	else
 	{
-		FatalError("Not yet supported!");
+		FatalError("programs/swe_sphere/SWE_Sphere_TS_l_erk_n_erk.cpp: This order is not yet supported!");
 	}
 }
 

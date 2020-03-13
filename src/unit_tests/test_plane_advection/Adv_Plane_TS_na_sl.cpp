@@ -51,7 +51,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 			nullptr,
 			timestepping_order,
 
-			simVars.disc.semi_lagrangian_iterations,
+			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold
 	);
 

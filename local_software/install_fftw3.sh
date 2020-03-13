@@ -5,11 +5,12 @@ source ./env_vars.sh ""
 
 PKG_NAME="fftw"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libfftw3.a"
-PKG_URL_SRC="fftw-3.3.8.tar.gz"
+PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/fftw-3.3.8.tar.gz"
 
 config_setup
 
 config_package $@
+
 
 CONF_FLAGS=""
 
@@ -22,28 +23,15 @@ fi
 #	sse only works with single precision
 #	CONF_FLAGS+=" --enable-sse"
 
-#
-# The runtime autodetect feature in FFTW seems to be buggy
-#
-# Therefore we use our own autodetection
-#
-echo_info_hline
-echo_info "Autodetect CPU features"
-echo_info_hline
-CPUFLAGS=$(cat /proc/cpuinfo  | grep ^flags | head -n 1 | sed "s/.*: //")
-FEATURES="sse2 avx avx2 avx512"
-for FEATURE in $FEATURES; do
-	if [[ $CPUFLAGS =~ .*$FEATURE.* ]]; then
-		echo_info "Detected '${FEATURE}' in CPU flags"
-		CONF_FLAGS+=" --enable-$FEATURE"
-	else
-		echo_warning "Feature '${FEATURE}' not found in CPU flags"
-	fi
-done
-echo_info_hline
+CONF_FLAGS+=" --enable-sse2"
+CONF_FLAGS+=" --enable-avx"
+CONF_FLAGS+=" --enable-avx2"
+CONF_FLAGS+=" --enable-avx512"
+#CONF_FLAGS+=" --enable-avx-128-fma"
 
 # Never used directly in Fortran
-CONF_FLAGS+=" --disable-fortran"
+#CONF_FLAGS+=" --disable-fortran"
+CONF_FLAGS+=" --enable-fortran"
 
 # Enable generation of shared library
 CONF_FLAGS+=" --enable-shared"

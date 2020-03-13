@@ -377,7 +377,7 @@ public:
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
 			double *o_data,						///< output values
-			bool i_velocity_sampling
+			bool i_velocity_sampling = false
 	)
 	{
 		assert(res[0] > 0);
@@ -630,7 +630,7 @@ public:
 			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
 
 			ScalarDataArray &o_data,				///< output values
-			bool i_velocity_sampling
+			bool i_velocity_sampling				///< swap sign for velocities
 	)
 	{
 //		assert ((std::size_t)i_data.sphereDataConfig->physical_array_data_number_of_elements == (std::size_t)o_data.number_of_elements);
@@ -645,13 +645,13 @@ public:
 
 public:
 	void bilinear_scalar(
-			const SphereData_Physical &i_data,			///< sampling data
+			const SphereData_Physical &i_data,	///< sampling data
 
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
 			double *o_data,						///< output values
-			bool i_velocity_sampling	///< swap sign for velocities
+			bool i_velocity_sampling			///< swap sign for velocities
 	)
 	{
 		assert(res[0] > 0);
@@ -752,13 +752,13 @@ public:
 
 public:
 	void bilinear_scalar(
-			const SphereData_Physical &i_data,				///< sampling data
+			const SphereData_Physical &i_data,	///< sampling data
 
-			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			ScalarDataArray &o_data,				///< output values
-			bool i_velocity_sampling
+			ScalarDataArray &o_data,			///< output values
+			bool i_velocity_sampling			///< swap sign for velocities
 	)
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
@@ -769,13 +769,13 @@ public:
 
 public:
 	void bilinear_scalar(
-			const SphereData_Physical &i_data,				///< sampling data
+			const SphereData_Physical &i_data,	///< sampling data
 
-			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			SphereData_Physical &o_data,				///< output values
-			bool i_velocity_sampling
+			SphereData_Physical &o_data,		///< output values
+			bool i_velocity_sampling			///< swap sign for velocities
 	)
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
@@ -787,12 +787,12 @@ public:
 
 public:
 	const ScalarDataArray bilinear_scalar(
-			const SphereData_Physical &i_data,				///< sampling data
+			const SphereData_Physical &i_data,	///< sampling data
 
-			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			bool i_velocity_sampling
+			bool i_velocity_sampling			///< swap sign for velocities
 	)
 	{
 		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
@@ -804,12 +804,12 @@ public:
 
 public:
 	const ScalarDataArray bicubic_scalar(
-			const SphereData_Physical &i_data,				///< sampling data
+			const SphereData_Physical &i_data,		///< sampling data
 
-			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			const ScalarDataArray &i_pos_x,			///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
 
-			bool i_velocity_sampling
+			bool i_velocity_sampling				///< swap sign for velocities
 	)
 	{
 		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
