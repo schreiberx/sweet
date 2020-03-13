@@ -109,6 +109,10 @@ public:
 				v , // EV matrix
 				lambda // output eigen values */
 		);
+		//std::cout<<"Eigen-values"<<std::endl;
+		//std::cout<<lambda[0]<<std::endl;
+		//std::cout<<lambda[1]<<std::endl;
+		//std::cout<<lambda[2]<<std::endl;
 
 		complex U[3];
 		// Set normal mode acording to desired wave type
@@ -463,23 +467,25 @@ public:
 			{
 				/*
 					* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
+					* Order need to be changed
 					*/
-				v[0][0] = 0;
-				v[1][0] = -I;
-				v[2][0] = 1;
-
+				//west
 				v[0][1] = 0;
-				v[1][1] = I;
+				v[1][1] = -I;
 				v[2][1] = 1;
-
-				v[0][2] = 1;
-				v[1][2] = 0;
-				v[2][2] = 0;
+				//east
+				v[0][2] = 0;
+				v[1][2] = I;
+				v[2][2] = 1;
+				//geost
+				v[0][0] = 1;
+				v[1][0] = 0;
+				v[2][0] = 0;
 
 				if (i_evalues){
-					lambda[0] = I*f;
+					lambda[2] = I*f;
 					lambda[1] = -I*f;
-					lambda[2] = 0;
+					lambda[0] = 0;
 				}
 			}
 			else if (k0 == 0)
@@ -641,21 +647,6 @@ public:
 
 		std::stringstream buffer;
 		buffer << std::setprecision(8);
-
-		/*
-		if (i_simVars.timecontrol.current_timestep_nr == 0){
-			//header
-			buffer << "n\t time";
-			for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
-			{
-				for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
-				{
-					buffer << "\t("<< ik0 <<","<<ik1<<")";
-				}
-			}
-			buffer << std::endl;
-		}
-		*/
 
 		buffer << i_simVars.timecontrol.current_timestep_nr;
 		buffer << "\t" << i_simVars.timecontrol.current_simulation_time;
