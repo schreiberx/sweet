@@ -3,7 +3,7 @@
 source ./install_helpers.sh ""
 
 PKG_NAME="SHTNS_python"
-PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python3.6/site-packages/shtns.py"
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python3.8/site-packages/shtns.py"
 
 PKG_URL_SRC="shtns-3.3.1-r694.tar.gz"
 

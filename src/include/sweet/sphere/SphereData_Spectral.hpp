@@ -684,8 +684,6 @@ public:
 	}
 
 
-
-
 	void spectral_update_lambda(
 			std::function<void(int,int,cplx&)> i_lambda
 	)
@@ -728,6 +726,7 @@ public:
 		assert (i_m <= sphereDataConfig->spectral_modes_m_max);
 		return spectral_space_data[sphereDataConfig->getArrayIndexByModes(i_n, i_m)];
 	}
+
 
 	const void spectral_set(
 			int i_n,
