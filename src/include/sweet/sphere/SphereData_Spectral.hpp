@@ -964,11 +964,12 @@ public:
 
   		file << "SWEET" << std::endl;
   		file << "DATA_TYPE SH_DATA" << std::endl;
-  		file << "NUM_LON " << sphereDataConfig->spectral_modes_m_max << std::endl;
-  		file << "NUM_LAT " << sphereDataConfig->spectral_modes_n_max << std::endl;
-  		file << "SIZE " << sphereDataConfig->spectral_array_data_number_of_elements << std::endl;
+  		file << "MODES_M_MAX " << sphereDataConfig->spectral_modes_m_max << std::endl;
+  		file << "MODES_N_MAX " << sphereDataConfig->spectral_modes_n_max << std::endl;
+  		file << "GRID_TYPE GAUSSIAN" << std::endl;
+  		file << "NUM_ELEMENTS " << sphereDataConfig->spectral_array_data_number_of_elements << std::endl;
   		file << "FIN" << std::endl;
-  		std::cout << file.tellp() << std::endl;
+  		//std::cout << file.tellp() << std::endl;
 
   		file.write((const char*)spectral_space_data, sizeof(std::complex<double>)*sphereDataConfig->spectral_array_data_number_of_elements);
 
