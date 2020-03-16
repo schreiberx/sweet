@@ -9,12 +9,15 @@
 # 1) Compile with
 #
 #scons --program=swe_sphere --gui=enable --sphere-spectral-space=enable --compiler=gnu --threading=omp --mode=release
+P=`pwd`
+cd ../../
 scons --program=swe_sphere --sphere-spectral-space=enable --compiler=gnu --threading=omp --mode=release
 
 
 #
 # 2) Run with
 #
-./build/swe_sphere_COMP_plspec_pldeal_spspec_spdeal_numa2_fft_gnu_thomp_release -M 342 --benchmark-name=galewsky --dt=30 --timestepping-method=l_cn_n_erk --timestepping-order=2 --semi-lagrangian-approximate-sphere-geometry=1 -t $((8*24*60*60))  -o $((60*60*24)) --output-file-mode=bin
+cd "$P"
+../../build/swe_sphere_COMP_plspec_pldeal_spspec_spdeal_numa2_fft_gnu_thomp_release -M 342 --benchmark-name=galewsky --dt=30 --timestepping-method=l_cn_n_erk --timestepping-order=2 --semi-lagrangian-approximate-sphere-geometry=1 -t $((8*24*60*60))  -o $((60*60*6)) --output-file-mode=bin
 
 

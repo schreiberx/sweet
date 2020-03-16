@@ -154,8 +154,12 @@ data_spec = s.setup(file_info, data)
 data_phys = s.spec2phys(data_spec)
 
 import matplotlib.pyplot as plt
+import numpy as np
 
 plt.imshow(data_phys)
+e=2e-5
+plt.contour(data_phys, levels=np.arange(e, e*50, e), linestyles='solid', linewidths=0.2, colors='black')
+plt.contour(data_phys, levels=np.arange(-e*50, 0, e), linestyles='dashed', linewidths=0.2, colors='black')
 
 infile = sys.argv[1]
 outputfile = infile.replace('.sweet', '.pdf')
