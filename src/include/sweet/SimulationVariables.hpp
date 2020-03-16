@@ -146,7 +146,7 @@ public:
 
 
 		/// prefix of filename for outputConfig of data
-		std::string output_file_name = "";
+		std::string output_file_name = "X";
 
 		/// output mode of variables
 		std::string output_file_mode = "default";
@@ -1166,7 +1166,7 @@ public:
 		std::cout << "" << std::endl;
 		std::cout << "Misc options:" << std::endl;
 		std::cout << "	-v [int]			verbosity level" << std::endl;
-		std::cout << "	-V [double]			period of outputConfig" << std::endl;
+//		std::cout << "	-V [double]			period of outputConfig" << std::endl;
 		std::cout << "	-G [0/1]			graphical user interface" << std::endl;
 		std::cout << "	-O [string]			string prefix for filename of output of simulation data (default output_%s_t%020.8f.csv)" << std::endl;
 		std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
@@ -1604,12 +1604,12 @@ public:
 			{
 				iodata.output_file_mode = "csv";
 
-				if (iodata.output_file_name == "")
+				if (iodata.output_file_name == "X")
 					iodata.output_file_name = "output_%s_t%020.8f.csv";
 			}
 			else
 			{
-				if (iodata.output_file_name == "")
+				if (iodata.output_file_name == "X")
 				{
 					if (iodata.output_file_mode == "csv")
 						iodata.output_file_name = "output_%s_t%020.8f.csv";

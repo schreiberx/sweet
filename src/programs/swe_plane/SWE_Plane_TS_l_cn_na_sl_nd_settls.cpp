@@ -107,20 +107,30 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	// Calculate Divergence and vorticity spectrally
 	PlaneData div = op.diff_c_x(io_u) + op.diff_c_y(io_v);
 
-	// this could be pre-stored
+	// This could be pre-stored
 	PlaneData div_prev = op.diff_c_x(u_prev) + op.diff_c_y(v_prev);
 
-	// Calculate the RHS
+	/**
+	 * Calculate the RHS
+	 * 
+	 * The terms related to alpha include the current solution.
+	 * 
+	 * In this implementation, the original formulation is rearranged to
+	 * 
+	 *    U + 1/2 dt L U + dt N(U)
+	 * 
+	 *    = 1/2 * dt (2.0/dt U + L U + 2.0 * N(U))
+	 */
 	PlaneData rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
 	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
-	PlaneData rhs_h = alpha * io_h  - h_bar * div;
+	PlaneData rhs_h = alpha * io_h - h_bar * div;
 
-	// all the RHS are to be evaluated at the departure points
-	rhs_u=sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
-	rhs_v=sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
-	rhs_h=sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
+	// All the RHS are to be evaluated at the departure points
+	rhs_u = sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
+	rhs_v = sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
+	rhs_h = sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
 
-	//Get data in spectral space
+	// Get data in spectral space
 	rhs_u.request_data_spectral();
 	rhs_v.request_data_spectral();
 	rhs_h.request_data_spectral();
@@ -129,6 +139,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 	if (!use_only_linear_divergence) //full nonlinear case
 	{
+		// Extrapolation
 		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
 		PlaneData nonlin(io_h.planeDataConfig);
 		if(simVars.misc.use_nonlinear_only_visc != 0)
@@ -136,10 +147,14 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			FatalError("Implicit diffusion only supported with spectral space activated");
 #else
+			// Add diffusion (stabilisation)
 			hdiv = op.implicit_diffusion(hdiv, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
 #endif
 		}
-		nonlin = 0.5 * io_h * div + 0.5 * sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+		// Average
+		nonlin = 0.5*(io_h*div) + 0.5*sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+
+		// Add to RHS h (TODO (2020-03-16): No clue why there's a -2.0)
 		rhs_h = rhs_h - 2.0*nonlin;
 		rhs_h.request_data_spectral();
 	}

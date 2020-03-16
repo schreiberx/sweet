@@ -260,7 +260,10 @@ public:
 
 			master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_erk;
 		}
-		else if (i_timestepping_method == "l_irk_n_erk" || i_timestepping_method == "l_irk_n_erk_ver0")
+		else if (
+			i_timestepping_method == "l_irk_n_erk" || i_timestepping_method == "l_irk_n_erk_ver0" ||
+			i_timestepping_method == "l_cn_n_erk" || i_timestepping_method == "l_cn_n_erk_ver0"
+		)
 		{
 			l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op);
 			l_irk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2, 0);

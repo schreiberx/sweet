@@ -32,7 +32,6 @@ public:
 
 
 	void setup(
-//		double i_domain_size[2],
 		const SphereData_Config *i_sphereDataConfig
 	)
 	{
@@ -110,7 +109,6 @@ public:
 
 
 
-	//double alpha = 1.5708;
 	static
 	double& alpha()
 	{

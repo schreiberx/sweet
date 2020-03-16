@@ -111,6 +111,33 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 			simVars.disc.semi_lagrangian_approximate_sphere_geometry
 	);
 
+	#if 0
+		/**
+		 * Use this to debug for valid lat/lon coordinates
+		 */
+		pos_lon_d.update_lambda_array_indices(
+			[](int, double &v)
+			{
+				if (! ((v >= 0) && (v <= 2.0*M_PI)))
+				{
+					std::cout << "lon: " << v << std::endl;
+					FatalError("LON");
+				}
+			}
+		);
+
+
+		pos_lat_d.update_lambda_array_indices(
+			[](int, double &v)
+			{
+				if (! ((v >= -0.5*M_PI) && (v <= 0.5*M_PI)))
+				{
+					std::cout << "lat: " << v << std::endl;
+					FatalError("LAT");
+				}
+			}
+		);
+	#endif
 
 	/*
 	 * Step 2) Midpoint rule
@@ -182,7 +209,6 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 				i_simulation_timestamp
 		);
 
-
 		SphereData_Physical L_phi_D_phys(io_phi.sphereDataConfig);
 		SphereData_Physical L_vort_D_phys(io_phi.sphereDataConfig);
 		SphereData_Physical L_div_D_phys(io_phi.sphereDataConfig);
@@ -251,7 +277,6 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		io_vort_D.loadSphereDataPhysical(io_vort_D_phys);
 		io_div_D.loadSphereDataPhysical(io_div_D_phys);
 
-
 		swe_sphere_ts_l_erk.euler_timestep_update(
 				io_phi_D, io_vort_D, io_div_D,
 				L_phi_D, L_vort_D, L_div_D,
@@ -259,8 +284,23 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		);
 	}
 
-	SphereData_Spectral N_star;
 
+	/*
+	 * Compute R = X_D + 1/2 dt L_D + dt N*
+	 */
+
+	SphereData_Spectral R_phi(io_phi.sphereDataConfig);
+	SphereData_Spectral R_vort(io_phi.sphereDataConfig);
+	SphereData_Spectral R_div(io_phi.sphereDataConfig);
+
+	R_phi = phi_D + 0.5*i_dt*L_phi_D;
+	R_vort = vort_D + 0.5*i_dt*L_vort_D;
+	R_div = div_D + 0.5*i_dt*L_div_D;
+
+
+	/**
+	 * Now we care about dt*N*
+	 */
 	if (include_nonlinear_divergence)
 	{
 		/*
@@ -270,68 +310,30 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		 * N*(t+0.5dt) = 1/2 [ 2*N(t) - N(t-dt) ]_D + N^t
 		 *
 		 * Here we assume that
-		 * N = - Phi' * Div (U)
+		 * 		N = -Phi' * Div (U)
+		 * with non-constant U!
+		 * 
+		 * The divergence is already 
 		 */
 
 		double gh = simVars.sim.gravitation*simVars.sim.h0;
 
 
+		/**
+		 * Compute N = - Phi' * Div (U)
+		 */
+		
+		// Compute N(t)
 		SphereData_Spectral N_t(io_phi.sphereDataConfig);
+		N_t.loadSphereDataPhysical(
+			-(io_phi-gh).getSphereDataPhysical()*io_div.getSphereDataPhysical()
+		);
+
+		// Compute N(t-dt)
 		SphereData_Spectral N_t_sub_dt(io_phi.sphereDataConfig);
-
-#if 0
-		// Compute N(t)
-		N_t.loadSphereDataPhysical(-(io_phi-gh).getSphereDataPhysical()*io_div.getSphereDataPhysical());
-
-		// Compute N(t-dt)
-		N_t_sub_dt.loadSphereDataPhysical(-(phi_prev-gh).getSphereDataPhysical()*div_prev.getSphereDataPhysical());
-
-#else
-
-		// Compute N(t)
-
-		SphereData_Physical u_phys(io_phi.sphereDataConfig);
-		SphereData_Physical v_phys(io_phi.sphereDataConfig);
-		if (simVars.misc.sphere_use_robert_functions)
-			op.robert_vortdiv_to_uv(io_vort, io_div, u_phys, v_phys);
-		else
-			op.vortdiv_to_uv(io_vort, io_div, u_phys, v_phys);
-
-		SphereData_Physical phi_phys = io_phi.getSphereDataPhysical();
-
-		SphereData_Physical tmpg1 = u_phys*(phi_phys-gh);
-		SphereData_Physical tmpg2 = v_phys*(phi_phys-gh);
-
-		SphereData_Spectral tmpspec(io_phi.sphereDataConfig);
-		SphereData_Spectral o_phi_t(io_phi.sphereDataConfig);
-		if (simVars.misc.sphere_use_robert_functions)
-			op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
-		else
-			op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-
-		N_t = -o_phi_t;
-
-
-		// Compute N(t-dt)
-
-		if (simVars.misc.sphere_use_robert_functions)
-			op.robert_vortdiv_to_uv(vort_prev, div_prev, u_phys, v_phys);
-		else
-			op.vortdiv_to_uv(vort_prev, div_prev, u_phys, v_phys);
-
-		phi_phys = phi_prev.getSphereDataPhysical();
-
-		tmpg1 = u_phys*(phi_phys-gh);
-		tmpg2 = v_phys*(phi_phys-gh);
-
-		if (simVars.misc.sphere_use_robert_functions)
-			op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
-		else
-			op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-
-		N_t_sub_dt = -o_phi_t;
-
-#endif
+		N_t_sub_dt.loadSphereDataPhysical(
+			-(phi_prev-gh).getSphereDataPhysical()*div_prev.getSphereDataPhysical()
+		);
 
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical N_D_phys(io_phi.sphereDataConfig);
@@ -345,30 +347,12 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		SphereData_Spectral N_D(io_phi.sphereDataConfig);
 		N_D.loadSphereDataPhysical(N_D_phys);
 
-		// Compute N*(t+0.5dt) = 1/2 [ 2*N(t) - N(t-dt) ]_D + N^t
-		N_star.setup(io_phi.sphereDataConfig);
-		N_star = 0.5*(N_D + N_t);
-	}
+		// Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N^t)
+		SphereData_Spectral N_star = 0.5*(N_D + N_t);
 
-
-	/*
-	 * Compute R = X_D + 1/2 dt L_D + dt N*
-	 */
-
-	SphereData_Spectral R_phi(io_phi.sphereDataConfig);
-	SphereData_Spectral R_vort(io_phi.sphereDataConfig);
-	SphereData_Spectral R_div(io_phi.sphereDataConfig);
-
-	R_phi = phi_D + 0.5*i_dt*L_phi_D;
-
-	if (include_nonlinear_divergence)
-	{
 		// add nonlinear divergence
 		R_phi += i_dt*N_star;
 	}
-	R_vort = vort_D + 0.5*i_dt*L_vort_D;
-	R_div = div_D + 0.5*i_dt*L_div_D;
-
 
 
 	/*
