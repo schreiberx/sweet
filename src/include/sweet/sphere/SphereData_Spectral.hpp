@@ -708,9 +708,6 @@ public:
 	{
 		static const std::complex<double> zero = {0,0};
 
-//		if (i_n < 0)
-//			i_n = i_n-1;
-
 		if (i_n < 0 ||  i_m < 0)
 			return zero;
 

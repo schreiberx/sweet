@@ -54,9 +54,25 @@ public:
 
 	ScalarDataArray posx_a, posy_a;
 
-	double center_lon = 0;
-	double center_lat = 0;
-	double exp_fac = 10.0;
+	#define MAX_GAUSSIANS 9
+	double gaussian_center_array[MAX_GAUSSIANS][2] = {
+			{0.0, M_PI*0.5},	// top
+			{0.0, 0.0},		// equator
+			{0.0, -M_PI*0.5},	// bottom
+
+			{1.1, M_PI*0.5*0.8},	// a-kind top
+			{3.0, 0.1},		// a-kind equator
+			{2.0, -M_PI*0.5*0.75},	// a-kind bottom
+
+			{0.1, M_PI*0.3},	// misc
+			{1.0, M_PI*0.4},	// misc
+			{2.3, -M_PI*0.34},	// misc
+	};
+
+	int gaussian_id = 0;
+	//double center_lon = 0;
+	//double center_lat = 0;
+	double exp_fac = 20.0;
 
 	SphereOperators_Sampler_SphereDataPhysical sphereDataSampler;
 
@@ -77,9 +93,33 @@ public:
 	}
 
 
-
-	static
 	double gaussianValue(
+			double i_lon, double i_lat,
+			double i_exp_fac
+	)
+	{
+		if (gaussian_id >= 0)
+		{
+			return gaussianValue_(gaussian_center_array[gaussian_id][0], gaussian_center_array[gaussian_id][1], i_lon, i_lat, i_exp_fac);
+		}
+		else
+		{
+			double o_data = 0;
+
+			for (int i_gaussians = 0; i_gaussians < MAX_GAUSSIANS; i_gaussians++)
+			{
+				double scalar = std::cos(i_lat*2)*std::cos(i_lon*4);
+				scalar = 1.0;
+				o_data += scalar*gaussianValue_(gaussian_center_array[i_gaussians][0], gaussian_center_array[i_gaussians][1], i_lon, i_lat, i_exp_fac);
+				//o_data = scalar;
+			}
+
+			o_data /= MAX_GAUSSIANS;
+			return o_data;
+		}
+	}
+
+	double gaussianValue_(
 			double i_center_lon, double i_center_lat,
 			double i_lon, double i_lat,
 			double i_exp_fac
@@ -96,7 +136,11 @@ public:
 
 		double d = acos(sin(phi1)*sin(phi2) + cos(phi1)*cos(phi2)*cos(lambda1-lambda2));
 
-		return std::exp(-d*d*i_exp_fac)*0.1*simVars.sim.h0 + simVars.sim.h0;
+		double d1 = acos(sin(phi1)*sin(phi2));
+		double d2 = acos(cos(phi1)*cos(phi2)*cos(lambda1-lambda2));
+
+		//return std::exp(-d*d*i_exp_fac)*(1.0-(d1*d1)/(M_PI*M_PI));//*0.1*simVars.sim.h0;// + simVars.sim.h0;
+		return std::exp(-d*d*i_exp_fac);//*0.1*simVars.sim.h0;// + simVars.sim.h0;
 	}
 
 
@@ -112,7 +156,7 @@ public:
 		prog_h_phys.physical_update_lambda(
 			[&](double i_lon, double i_lat, double &o_data)
 			{
-				o_data = gaussianValue(center_lon, center_lat, i_lon, i_lat, exp_fac);
+				o_data = gaussianValue(i_lon, i_lat, exp_fac);
 			}
 		);
 		prog_h.loadSphereDataPhysical(prog_h_phys);
@@ -184,7 +228,7 @@ public:
 		max_error = 0;
 		for (std::size_t i = 0; i < posx_a.number_of_elements; i++)
 		{
-			double value = gaussianValue(center_lon, center_lat, posx_a.scalar_data[i], posy_a.scalar_data[i], exp_fac);
+			double value = gaussianValue(posx_a.scalar_data[i], posy_a.scalar_data[i], exp_fac);
 			max_error = std::max(max_error, std::abs(value - out_data.scalar_data[i]));
 		}
 	}
@@ -312,37 +356,26 @@ int main(int i_argc, char *i_argv[])
 
 	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 
-	double gaussian_center_array[6][2] = {
-			{0.0, M_PI*0.5},	// equator
-			{0.0, 0.0},			// equator
-			{0.0, -M_PI*0.5},	// bottom
-			{0.0, M_PI*0.5},	// top
-			{1.0, M_PI*0.4},	// misc
-			{2.3, -M_PI*0.34},	// misc
-	};
 
-	for (int i_gaussians = 0; i_gaussians < 6; i_gaussians++)
+	for (int i_gaussians = -1; i_gaussians < 9; i_gaussians++)
 	{
-		double center_lon = gaussian_center_array[i_gaussians][0];
-		double center_lat = gaussian_center_array[i_gaussians][1];
-
+		std::cout << std::endl;
 		std::cout << "*********************************************************" << std::endl;
-		std::cout << "* Running studies for Gaussian at " << center_lon << ", " << center_lat << std::endl;
+		std::cout << "* Running studies for Gaussian type " << i_gaussians << std::endl;
 		std::cout << "*********************************************************" << std::endl;
 
 		for (int interpolation_order = 2; interpolation_order <= 3; interpolation_order++)
 		{
-//interpolation_order = 3;
 			std::cout << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 			std::cout << "* Running studies for interpolation of order " << interpolation_order << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 
-			int oversampling = 13;
+			int oversampling = 5;
 			std::cout << "Using oversampling of " << oversampling << std::endl;
 
 			double prev_max_error = -1;
-			for (int i = initial_spectral_modes; i <= 256; i *= 2)
+			for (int i = initial_spectral_modes; i <= 256*2; i *= 2)
 			{
 				simVars.disc.space_res_physical[0] = 2*i;
 				simVars.disc.space_res_physical[1] = i;
@@ -374,8 +407,7 @@ int main(int i_argc, char *i_argv[])
 					simulation.interpolation_order = interpolation_order;
 
 					// center of Gaussian bump
-					simulation.center_lon = center_lon;
-					simulation.center_lat = center_lat;
+					simulation.gaussian_id = i_gaussians;
 
 					simulation.reset();
 
