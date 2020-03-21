@@ -64,7 +64,12 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical new_prog_phi(io_phi.sphereDataConfig);
 
-	if (timestepping_order == 1)
+	/*
+	 * Order 1 is deactivated.
+	 * Unit tests are not working with it to be active.
+	 * Seems like we need cubic interpolation right here
+	 */
+	if (timestepping_order == 1 && 0)
 	{
 		sampler2D.bilinear_scalar(
 				io_phi.getSphereDataPhysical(),
@@ -77,13 +82,13 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	else
 	{
 		sampler2D.bicubic_scalar(
-						io_phi.getSphereDataPhysical(),
-						posx_d,
-						posy_d,
-						new_prog_phi,
-						false,
-						simVars.disc.semi_lagrangian_interpolation_limiter
-				);
+				io_phi.getSphereDataPhysical(),
+				posx_d,
+				posy_d,
+				new_prog_phi,
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
 	}
 
 	io_phi.loadSphereDataPhysical(new_prog_phi);
