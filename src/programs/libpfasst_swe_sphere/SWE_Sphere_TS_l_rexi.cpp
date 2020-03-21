@@ -175,7 +175,7 @@ void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
 		int i_local_thread_id
 )
 {
-	std::size_t max_N = rexi_alpha.size();
+	std::size_t max_N = rexi_alphas.size();
 
 	#if SWEET_THREADING_TIME_REXI || SWEET_MPI
 
@@ -234,8 +234,8 @@ void SWE_Sphere_TS_l_rexi::setup(
 	REXI<>::load(
 			rexiSimVars,
 			function_name,
-			rexi_alpha,
-			rexi_beta,
+			rexi_alphas,
+			rexi_betas,
 			rexi_gamma,
 			simVars.misc.verbosity
 	);
@@ -261,7 +261,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 		sphereDataConfigSolver = &sphereDataConfigInstance;
 	}
 
-	std::size_t N = rexi_alpha.size();
+	std::size_t N = rexi_alphas.size();
 	block_size = N/num_global_threads;
 	if (block_size*num_global_threads != N)
 		block_size++;
@@ -331,8 +331,8 @@ void SWE_Sphere_TS_l_rexi::setup(
 			{
 				int thread_local_idx = n-start;
 
-				perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alpha[n];
-				perThreadVars[local_thread_id]->beta_re[thread_local_idx] = rexi_beta[n];
+				perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alphas[n];
+				perThreadVars[local_thread_id]->beta_re[thread_local_idx] = rexi_betas[n];
 			}
 		}
 	}
@@ -362,8 +362,8 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 		REXI<>::load(
 				rexiSimVars,
 				function_name,
-				rexi_alpha,
-				rexi_beta,
+				rexi_alphas,
+				rexi_betas,
 				rexi_gamma,
 				simVars.misc.verbosity
 		);

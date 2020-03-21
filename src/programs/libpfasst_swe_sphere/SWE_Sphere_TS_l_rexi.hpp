@@ -66,8 +66,8 @@ private:
 
 
 public:
-	std::vector<std::complex<double>> rexi_alpha;
-	std::vector<std::complex<double>> rexi_beta;
+	std::vector<std::complex<double>> rexi_alphas;
+	std::vector<std::complex<double>> rexi_betas;
 	std::complex<double> rexi_gamma;
 
 

@@ -22,12 +22,19 @@ public:
 
 	std::vector<TComplex> alphas;
 	std::vector<TComplex> betas;
-	TComplex gamma = 0;
+	TComplex gamma;
 
 	std::string filename;
 	std::string function_name;
 
 
+	/**
+	 * Constructor
+	 */
+	REXICoefficients()	:
+		gamma(0)
+	{
+	}
 
 	/**
 	 * Load binary double precision complex value
