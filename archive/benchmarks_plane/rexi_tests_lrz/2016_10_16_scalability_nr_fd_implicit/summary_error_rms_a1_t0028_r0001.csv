@@ -1,8 +1,0 @@
-#TI RMS Error vs. resolution, MPI ranks=1, threads=28
-#TX Simulation type
-#TY Resolution
-N\SimType	nr_fd_cart_cgrid
-32	0.919052009906
-64	0.565320672823
-128	0.485493760069
-256	0.0428054561257

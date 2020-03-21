@@ -1,8 +1,0 @@
-#TI MAX Error vs. resolution, MPI ranks=1, threads=4
-#TX Simulation type
-#TY Resolution
-N\SimType	nr_spec_spec_agrid
-32	0.00164857915504
-64	0.000123304150377
-128	8.33240676083e-06
-256	5.40129884648e-07

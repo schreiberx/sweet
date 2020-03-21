@@ -1,5 +1,0 @@
-#TI Threads vs. simulation time N^2=32^2, DT=50, A=1
-#TX Simulation type
-#TY number of threads (compact)
-threads\SimType	nr_fd_cart_cgrid	rexi_fd_par_m0008	rexi_fd_par_m0016	rexi_fd_par_m0032	rexi_fd_par_m0064	rexi_fd_par_m0128	rexi_fd_par_m0256	rexi_fd_par_m0512	rexi_fd_par_m1024	rexi_fd_par_m2048	rexi_fd_par_m4096	rexi_fd_par_m8192	rexi_fd_par_m16384	rexi_fd_par_m32768
-28 cores (1 ranks / 28 threads)	5.60978	0.02754	0.035098	0.034882	0.049338	0.072718	0.10117	0.166224	0.289738	0.534056	0.989629	2.006484	3.954921	7.817708
