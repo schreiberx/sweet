@@ -623,9 +623,6 @@ public:
 				);
 			}
 
-			SphereData_Spectral x(hbump);
-			(x.getSphereDataPhysical()*simVars->sim.gravitation).physical_file_write("phit0diff.csv");
-
 			o_phi += hbump*simVars->sim.gravitation;
 		}
 		else if (
