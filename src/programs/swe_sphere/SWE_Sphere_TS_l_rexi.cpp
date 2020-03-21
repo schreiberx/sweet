@@ -247,7 +247,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	rexi_betas = rexiCoefficients.betas;
 	rexi_gamma = rexiCoefficients.gamma;
 
-	if (rexi_gamma != 0)
+	if (rexi_gamma.real() != 0 || rexi_gamma.imag() != 0)
 		FatalError("'rexi_gamma != 0' is Not yet supported");
 
 	rexi_use_sphere_extended_modes = rexiSimVars->use_sphere_extended_modes;

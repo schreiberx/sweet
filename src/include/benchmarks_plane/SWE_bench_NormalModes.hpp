@@ -849,7 +849,7 @@ public:
 
 		if(bcasename=="waves")
 		{
-			for (int n = 0; n<nwaves; n++){
+			for (int n = 0; n<(int)nwaves; n++){
 				//Set a single wavenumber with appropriate modes
 				if(k0[n]<0 && k1[n] <0 ){
 					std::cout<<"Adding normal modes to all wavenumbers"<<std::endl;
