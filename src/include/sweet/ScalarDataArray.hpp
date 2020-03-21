@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <functional>
 #include <sweet/sweetmath.hpp>
