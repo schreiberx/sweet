@@ -52,6 +52,8 @@ public:
 
 	int interpolation_order = 3;
 
+	bool use_limiter = false;
+
 	ScalarDataArray posx_a, posy_a;
 
 	#define MAX_GAUSSIANS 9
@@ -217,7 +219,8 @@ public:
 					posx_a,
 					posy_a,
 					out_data,
-					false
+					false,
+					use_limiter
 			);
 		}
 		else

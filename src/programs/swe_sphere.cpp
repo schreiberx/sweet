@@ -167,7 +167,6 @@ public:
 			prog_div.load_nodealiasing(prog_div_nodealiasing);
 		}
 
-
 		/*
 		 * SETUP time steppers
 		 */
@@ -594,48 +593,48 @@ public:
 		*o_render_primitive_id = render_primitive_id;
 		*o_bogus_data = sphereDataConfig;
 
-		int id = simVars.misc.vis_id % 5;
+		int id = simVars.misc.vis_id % 6;
 		switch (id)
 		{
-		default:
-		case 0:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_phi), planeDataConfig);
-			break;
+			default:
+			case 0:
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_phi), planeDataConfig);
+				break;
 
-		case 1:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_vort), planeDataConfig);
-			break;
+			case 1:
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_vort), planeDataConfig);
+				break;
 
-		case 2:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_div), planeDataConfig);
-			break;
+			case 2:
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_div), planeDataConfig);
+				break;
 
-		case 3:
-			// USE COPY TO AVOID FORWARD/BACKWARD TRANSFORMATION
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_phi)/simVars.sim.gravitation, planeDataConfig);
-			break;
+			case 3:
+				// USE COPY TO AVOID FORWARD/BACKWARD TRANSFORMATION
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_phi)/simVars.sim.gravitation, planeDataConfig);
+				break;
 
-		case 4:
-		{
-			SphereData_Physical u(prog_vort.sphereDataConfig);
-			SphereData_Physical v(prog_vort.sphereDataConfig);
+			case 4:
+			{
+				SphereData_Physical u(prog_vort.sphereDataConfig);
+				SphereData_Physical v(prog_vort.sphereDataConfig);
 
-			// Don't use Robert, since we're not interested in the Robert formulation here
-			op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(u, planeDataConfig);
-			break;
-		}
+				// Don't use Robert, since we're not interested in the Robert formulation here
+				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(u, planeDataConfig);
+				break;
+			}
 
-		case 5:
-		{
-			SphereData_Physical u(prog_vort.sphereDataConfig);
-			SphereData_Physical v(prog_vort.sphereDataConfig);
+			case 5:
+			{
+				SphereData_Physical u(prog_vort.sphereDataConfig);
+				SphereData_Physical v(prog_vort.sphereDataConfig);
 
-			// Don't use Robert, since we're not interested in the Robert formulation here
-			op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(v, planeDataConfig);
-			break;
-		}
+				// Don't use Robert, since we're not interested in the Robert formulation here
+				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(v, planeDataConfig);
+				break;
+			}
 
 		}
 
@@ -652,7 +651,7 @@ public:
 	{
 		const char* description = "";
 
-		int id = simVars.misc.vis_id % 3;
+		int id = simVars.misc.vis_id % 6;
 
 		switch (id)
 		{

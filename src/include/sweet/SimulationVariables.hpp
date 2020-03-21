@@ -635,6 +635,9 @@ public:
 		/// Number of iterations for semi-Lagrangian methods
 		int semi_lagrangian_max_iterations = 999;
 
+		/// Use limiter for higher-order SL interpolation (cubic)
+		bool semi_lagrangian_interpolation_limiter = false;
+
 		/// Convergence threshold for semi-Lagrangian methods (set to -1 to ignore error)
 		double semi_lagrangian_convergence_threshold = 1e-8;
 
@@ -668,6 +671,7 @@ public:
 			std::cout << " + timestepping_leapfrog_robert_asselin_filter: " << timestepping_leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + timestepping_crank_nicolson_filter: " << timestepping_crank_nicolson_filter << std::endl;
 			std::cout << " + semi_lagrangian_max_iterations: " << semi_lagrangian_max_iterations << std::endl;
+			std::cout << " + semi_lagrangian_interpolation_limiter: " << semi_lagrangian_interpolation_limiter << std::endl;
 			std::cout << " + semi_lagrangian_convergence_threshold: " << semi_lagrangian_convergence_threshold << std::endl;
 			std::cout << " + semi_lagrangian_approximate_sphere_geometry: " << semi_lagrangian_approximate_sphere_geometry << std::endl;
 			std::cout << " + plane_dealiasing (compile time): " <<
@@ -741,6 +745,9 @@ public:
 	        long_options[next_free_program_option] = {"semi-lagrangian-max-iterations", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
+	        long_options[next_free_program_option] = {"semi-lagrangian-interpolation-limiter", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
 	        long_options[next_free_program_option] = {"semi-lagrangian-convergence-threshold", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
@@ -784,19 +791,23 @@ public:
 				return 0;
 
 			case 6:
-				semi_lagrangian_convergence_threshold = atof(i_value);
+				semi_lagrangian_interpolation_limiter = atoi(i_value);
 				return 0;
 
 			case 7:
-				semi_lagrangian_approximate_sphere_geometry = atof(i_value);
+				semi_lagrangian_convergence_threshold = atof(i_value);
 				return 0;
 
 			case 8:
+				semi_lagrangian_approximate_sphere_geometry = atof(i_value);
+				return 0;
+
+			case 9:
 				space_grid_use_c_staggering = atof(i_value);
 				return 0;
 			}
 
-			return 8;
+			return 9;
 		}
 	} disc;
 

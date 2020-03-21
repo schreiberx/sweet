@@ -69,7 +69,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 
 	o_phi_t *= -1.0;
 
-#if 1
+#if 0
 // TODO: Why not using this one?
 	SphereData_Spectral test(i_phi.sphereDataConfig);
 	test.loadSphereDataPhysical(-i_div.getSphereDataPhysical()*i_phi.getSphereDataPhysical());

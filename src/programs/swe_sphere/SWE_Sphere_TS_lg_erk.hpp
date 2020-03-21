@@ -29,7 +29,7 @@ class SWE_Sphere_TS_lg_erk	: public SWE_Sphere_TS_interface
 	// Sampler
 	SphereTimestepping_ExplicitRK timestepping_rk;
 
-private:
+public:
 	void euler_timestep_update(
 			const SphereData_Spectral &i_phi,	///< prognostic variables
 			const SphereData_Spectral &i_vort,	///< prognostic variables

@@ -1,5 +1,5 @@
 /*
- * SWE_Sphere_TS_l_cn_na_sl_nd_settls.hpp
+ * SWE_Sphere_TS_ln_settls.hpp
  *
  *  Created on: 24 Sep 2019
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
@@ -21,17 +21,20 @@
 
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
+#include "SWE_Sphere_TS_lg_irk.hpp"
 #include "SWE_Sphere_TS_l_erk.hpp"
+#include "SWE_Sphere_TS_lg_erk.hpp"
 
 
 
-class SWE_Sphere_TS_l_cn_na_sl_nd_settls	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_ln_settls	: public SWE_Sphere_TS_interface
 {
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
 	bool include_nonlinear_divergence;
 	bool original_linear_operator_sl_tretment;
+	int coriolis_treatment;
 
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
@@ -44,19 +47,32 @@ class SWE_Sphere_TS_l_cn_na_sl_nd_settls	: public SWE_Sphere_TS_interface
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
 
-	SWE_Sphere_TS_l_erk swe_sphere_ts_l_erk;
-	SWE_Sphere_TS_l_irk swe_sphere_ts_l_irk;
+	SWE_Sphere_TS_l_erk* swe_sphere_ts_l_erk;
+	SWE_Sphere_TS_lg_erk* swe_sphere_ts_lg_erk;
+	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk;
+	SWE_Sphere_TS_lg_irk* swe_sphere_ts_lg_irk;
+
+	// Coriolis effect
+	SphereData_Physical fg;
+
 
 public:
-	SWE_Sphere_TS_l_cn_na_sl_nd_settls(
+	SWE_Sphere_TS_ln_settls(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
 
 	void setup(
 			bool include_nonlinear_divergence = true,
-			bool original_linear_operator_sl_tretment = true
+			bool original_linear_operator_sl_tretment = true,
+			const std::string &i_coriolis_treatment = "nonlinear"	// "linear", "nonlinear", "semi-lagrangian"
 	);
+
+	enum{
+		CORIOLIS_LINEAR,
+		CORIOLIS_NONLINEAR,
+		CORIOLIS_SEMILAGRANGIAN,
+	};
 
 	void run_timestep(
 			SphereData_Spectral &io_phi,	///< prognostic variables
@@ -69,7 +85,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_l_cn_na_sl_nd_settls();
+	virtual ~SWE_Sphere_TS_ln_settls();
 };
 
 #endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */

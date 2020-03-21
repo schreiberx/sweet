@@ -55,7 +55,8 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold,
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry
+			simVars.disc.semi_lagrangian_approximate_sphere_geometry,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 	);
 
 	diag_u_prev = diag_u;
@@ -63,7 +64,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical new_prog_phi(io_phi.sphereDataConfig);
 
-	if (timestepping_order == 1 && 0)
+	if (timestepping_order == 1)
 	{
 		sampler2D.bilinear_scalar(
 				io_phi.getSphereDataPhysical(),
@@ -80,7 +81,8 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 						posx_d,
 						posy_d,
 						new_prog_phi,
-						false
+						false,
+						simVars.disc.semi_lagrangian_interpolation_limiter
 				);
 	}
 

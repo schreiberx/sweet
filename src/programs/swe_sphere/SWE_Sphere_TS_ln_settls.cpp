@@ -1,5 +1,5 @@
 /*
- * SWE_Sphere_TS_l_cn_na_sl_nd_settls.cpp
+ * SWE_Sphere_TS_ln_settls.cpp
  *
  *  Created on: 24 Sep 2019
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
@@ -8,7 +8,7 @@
  *  	2019-10-24: Partly based on plane version
  */
 
-#include "SWE_Sphere_TS_l_cn_na_sl_nd_settls.hpp"
+#include "SWE_Sphere_TS_ln_settls.hpp"
 
 
 /**
@@ -42,10 +42,9 @@
  *
  * Nonlinear term is added following Hortal (2002)
  * http://onlinelibrary.wiley.com/doi/10.1002/qj.200212858314/pdf
- *
  */
 
-void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
+void SWE_Sphere_TS_ln_settls::run_timestep(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -54,8 +53,9 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		double i_simulation_timestamp
 )
 {
+//	std::cout << "SL A" << std::endl;
 	if (i_dt <= 0)
-		FatalError("SWE_Sphere_TS_l_cn_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
+		FatalError("SWE_Sphere_TS_ln_settls: Only constant time step size allowed (Please set --dt)");
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -93,6 +93,8 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 	SphereData_Physical v_lat(io_phi.sphereDataConfig);
 	op.vortdiv_to_uv(io_vort, io_div, u_lon, v_lat);
 
+//	std::cout << "SL B" << std::endl;
+
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
 			u_lon_prev,	v_lat_prev,
@@ -108,7 +110,8 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold,
 
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry
+			simVars.disc.semi_lagrangian_approximate_sphere_geometry,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 	);
 
 	#if 0
@@ -160,21 +163,24 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 			io_phi.getSphereDataPhysical(),
 			pos_lon_d, pos_lat_d,
 			phi_D_phys,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	sphereSampler.bicubic_scalar(
 			io_vort.getSphereDataPhysical(),
 			pos_lon_d, pos_lat_d,
 			vort_D_phys,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	sphereSampler.bicubic_scalar(
 			io_div.getSphereDataPhysical(),
 			pos_lon_d, pos_lat_d,
 			div_D_phys,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	SphereData_Spectral phi_D(io_phi.sphereDataConfig);
@@ -203,11 +209,22 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		SphereData_Spectral L_vort(io_phi.sphereDataConfig);
 		SphereData_Spectral L_div(io_phi.sphereDataConfig);
 
-		swe_sphere_ts_l_erk.euler_timestep_update(
-				io_phi, io_vort, io_div,
-				L_phi, L_vort, L_div,
-				i_simulation_timestamp
-		);
+		if (coriolis_treatment == CORIOLIS_LINEAR)
+		{
+			swe_sphere_ts_l_erk->euler_timestep_update(
+					io_phi, io_vort, io_div,
+					L_phi, L_vort, L_div,
+					i_simulation_timestamp
+			);
+		}
+		else
+		{
+			swe_sphere_ts_lg_erk->euler_timestep_update(
+					io_phi, io_vort, io_div,
+					L_phi, L_vort, L_div,
+					i_simulation_timestamp
+			);
+		}
 
 		SphereData_Physical L_phi_D_phys(io_phi.sphereDataConfig);
 		SphereData_Physical L_vort_D_phys(io_phi.sphereDataConfig);
@@ -217,21 +234,24 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 				L_phi.getSphereDataPhysical(),
 				pos_lon_d, pos_lat_d,
 				L_phi_D_phys,
-				false
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
 		sphereSampler.bicubic_scalar(
 				L_vort.getSphereDataPhysical(),
 				pos_lon_d, pos_lat_d,
 				L_vort_D_phys,
-				false
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
 		sphereSampler.bicubic_scalar(
 				L_div.getSphereDataPhysical(),
 				pos_lon_d, pos_lat_d,
 				L_div_D_phys,
-				false
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
 		L_phi_D.loadSphereDataPhysical(L_phi_D_phys);
@@ -252,21 +272,24 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 				io_phi.getSphereDataPhysical(),
 				pos_lon_d, pos_lat_d,
 				io_phi_D_phys,
-				false
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
 		sphereSampler.bicubic_scalar(
 				io_vort.getSphereDataPhysical(),
 				pos_lon_d, pos_lat_d,
 				io_vort_D_phys,
-				false
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
 		sphereSampler.bicubic_scalar(
 				io_div.getSphereDataPhysical(),
 				pos_lon_d, pos_lat_d,
 				io_div_D_phys,
-				false
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
 		SphereData_Spectral io_phi_D(io_phi.sphereDataConfig);
@@ -277,11 +300,22 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		io_vort_D.loadSphereDataPhysical(io_vort_D_phys);
 		io_div_D.loadSphereDataPhysical(io_div_D_phys);
 
-		swe_sphere_ts_l_erk.euler_timestep_update(
-				io_phi_D, io_vort_D, io_div_D,
-				L_phi_D, L_vort_D, L_div_D,
-				i_simulation_timestamp
-		);
+		if (coriolis_treatment == CORIOLIS_LINEAR)
+		{
+			swe_sphere_ts_l_erk->euler_timestep_update(
+					io_phi_D, io_vort_D, io_div_D,
+					L_phi_D, L_vort_D, L_div_D,
+					i_simulation_timestamp
+			);
+		}
+		else
+		{
+			swe_sphere_ts_lg_erk->euler_timestep_update(
+					io_phi_D, io_vort_D, io_div_D,
+					L_phi_D, L_vort_D, L_div_D,
+					i_simulation_timestamp
+			);
+		}
 	}
 
 
@@ -319,55 +353,153 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 		double gh = simVars.sim.gravitation*simVars.sim.h0;
 
 
+		SphereData_Spectral N_phi_t(io_phi.sphereDataConfig);
+		SphereData_Spectral N_phi_prev(io_phi.sphereDataConfig);
+
 		/**
 		 * Compute N = - Phi' * Div (U)
 		 */
 		
 		// Compute N(t)
-		SphereData_Spectral N_t(io_phi.sphereDataConfig);
-		N_t.loadSphereDataPhysical(
+		N_phi_t.loadSphereDataPhysical(
 			-(io_phi-gh).getSphereDataPhysical()*io_div.getSphereDataPhysical()
 		);
 
 		// Compute N(t-dt)
-		SphereData_Spectral N_t_sub_dt(io_phi.sphereDataConfig);
-		N_t_sub_dt.loadSphereDataPhysical(
+		N_phi_prev.loadSphereDataPhysical(
 			-(phi_prev-gh).getSphereDataPhysical()*div_prev.getSphereDataPhysical()
 		);
 
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical N_D_phys(io_phi.sphereDataConfig);
 		sphereSampler.bicubic_scalar(
-				(N_t*2.0-N_t_sub_dt).getSphereDataPhysical(),	// field to sample
+				(N_phi_t*2.0-N_phi_prev).getSphereDataPhysical(),	// field to sample
 				pos_lon_d, pos_lat_d,
 				N_D_phys,
-				false	// no velocity sampling
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
+		// N_D physical
 		SphereData_Spectral N_D(io_phi.sphereDataConfig);
 		N_D.loadSphereDataPhysical(N_D_phys);
 
 		// Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N^t)
-		SphereData_Spectral N_star = 0.5*(N_D + N_t);
+		SphereData_Spectral N_star = 0.5*(N_D + N_phi_t);
 
 		// add nonlinear divergence
 		R_phi += i_dt*N_star;
 	}
 
+	if (coriolis_treatment == CORIOLIS_NONLINEAR)
+	{
+		/*
+		 * Apply Coriolis Effect in physical VELOCITY space
+		 * 
+		 * This is require to stay compatible to all other things
+		 */
+		SphereData_Spectral f_vort_t(io_phi.sphereDataConfig);
+		SphereData_Spectral f_vort_t_prev(io_phi.sphereDataConfig);
+
+		SphereData_Spectral f_div_t(io_phi.sphereDataConfig);
+		SphereData_Spectral f_div_t_prev(io_phi.sphereDataConfig);
+
+		/**
+		 * Calculate f_vort_t and f_div_t
+		 */
+		SphereData_Physical tmpg1 = u_lon*fg;
+		SphereData_Physical tmpg2 = v_lat*fg;
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_uv_to_vortdiv(tmpg1, tmpg2, f_vort_t, f_div_t);
+		else
+			op.uv_to_vortdiv(tmpg1, tmpg2, f_vort_t, f_div_t);
+		f_vort_t *= -1.0;
+
+
+		/**
+		 * Calculate f_vort_t_prev and f_div_t_prev
+		 */
+		tmpg1 = u_lon_prev*fg;
+		tmpg2 = v_lat_prev*fg;
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_uv_to_vortdiv(tmpg1, tmpg2, f_vort_t_prev, f_div_t_prev);
+		else
+			op.uv_to_vortdiv(tmpg1, tmpg2, f_vort_t_prev, f_div_t_prev);
+		f_vort_t_prev *= -1.0;
+
+
+		/**
+		 * Handle vorticity
+		 */
+		// [ 2*N(t) - N(t-dt) ]_D
+		SphereData_Physical f_vort_t_D_phys(io_phi.sphereDataConfig);
+		sphereSampler.bicubic_scalar(
+				(f_vort_t*2.0-f_vort_t_prev).getSphereDataPhysical(),	// field to sample
+				pos_lon_d, pos_lat_d,
+				f_vort_t_D_phys,
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+		// vort_D physical
+		SphereData_Spectral f_vort_t_D(io_phi.sphereDataConfig);
+		f_vort_t_D.loadSphereDataPhysical(f_vort_t_D_phys);
+
+		// Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N^t)
+		SphereData_Spectral f_vort_t_star = 0.5*(f_vort_t_D + f_vort_t);
+
+		// add nonlinear divergence
+		R_vort += i_dt*f_vort_t_star;
+
+
+		/**
+		 * Handle divergence
+		 */
+		// [ 2*N(t) - N(t-dt) ]_D
+		SphereData_Physical f_div_t_D_phys(io_phi.sphereDataConfig);
+		sphereSampler.bicubic_scalar(
+				(f_div_t*2.0-f_div_t_prev).getSphereDataPhysical(),	// field to sample
+				pos_lon_d, pos_lat_d,
+				f_div_t_D_phys,
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+		// div_D physical
+		SphereData_Spectral f_div_t_D(io_phi.sphereDataConfig);
+		f_div_t_D.loadSphereDataPhysical(f_div_t_D_phys);
+
+		// Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N^t)
+		SphereData_Spectral f_div_t_star = 0.5*(f_div_t_D + f_div_t);
+
+		// add nonlinear divergence
+		R_div += i_dt*f_div_t_star;
+	}
 
 	/*
 	 * Step 2b) Solve Helmholtz problem
 	 * X - 1/2 dt LX = R
 	 */
-
-	swe_sphere_ts_l_irk.run_timestep(
-			R_phi,
-			R_vort,
-			R_div,
-			0.5*i_dt,
-			i_simulation_timestamp
-	);
-
+	if (coriolis_treatment == CORIOLIS_LINEAR)
+	{
+		swe_sphere_ts_l_irk->run_timestep(
+				R_phi,
+				R_vort,
+				R_div,
+				0.5*i_dt,
+				i_simulation_timestamp
+		);
+	}
+	else
+	{
+		swe_sphere_ts_lg_irk->run_timestep(
+				R_phi,
+				R_vort,
+				R_div,
+				0.5*i_dt,
+				i_simulation_timestamp
+		);
+	}
 
 	/*
 	 * Backup previous variables for multi-step SL method
@@ -382,6 +514,9 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 	io_phi = R_phi;
 	io_vort = R_vort;
 	io_div = R_div;
+
+
+//	std::cout << "SL Z" << std::endl;
 }
 
 
@@ -389,16 +524,26 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::run_timestep(
 /*
  * Setup
  */
-void SWE_Sphere_TS_l_cn_na_sl_nd_settls::setup(
+void SWE_Sphere_TS_ln_settls::setup(
 		bool i_include_nonlinear_divergence,
-		bool i_original_linear_operator_sl_tretment
+		bool i_original_linear_operator_sl_tretment,
+		const std::string &i_coriolis_treatment		// "linear", "nonlinear", "semi-lagrangian"
 )
 {
 	include_nonlinear_divergence = i_include_nonlinear_divergence;
 	original_linear_operator_sl_tretment = i_original_linear_operator_sl_tretment;
+	
+	if (i_coriolis_treatment == "linear")
+		coriolis_treatment = CORIOLIS_LINEAR;
+	else if (i_coriolis_treatment == "nonlinear")
+		coriolis_treatment = CORIOLIS_NONLINEAR;
+	else if (i_coriolis_treatment == "semi-lagrangian")
+		coriolis_treatment = CORIOLIS_SEMILAGRANGIAN;
+	else
+		FatalError(std::string("Only coriolis methods 'linear', 'nonlinear', 'semi-lagrangian' supported, but not")+i_coriolis_treatment);
 
 	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("SWE_Sphere_TS_l_cn_na_sl_nd_settls: Staggering not supported for l_cn_na_sl_nd_settls");
+		FatalError("SWE_Sphere_TS_ln_settls: Staggering not supported for l_cn_na_sl_nd_settls");
 
 	// Setup sampler for future interpolations
 	sphereSampler.setup(op.sphereDataConfig);
@@ -424,6 +569,7 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::setup(
 			assert(io_data < 2.0*M_PI);
 		}
 	);
+
 	pos_lat_a.update_lambda_array_indices(
 			[&](int idx, double &io_data)
 		{
@@ -437,13 +583,57 @@ void SWE_Sphere_TS_l_cn_na_sl_nd_settls::setup(
 		}
 	);
 
-	swe_sphere_ts_l_erk.setup(1);
-	swe_sphere_ts_l_irk.setup(1, 0.5*simVars.timecontrol.current_timestep_size, 0);
+	if (coriolis_treatment == CORIOLIS_LINEAR)
+	{
+		// initialize with 1st order
+		swe_sphere_ts_l_erk = new SWE_Sphere_TS_l_erk(simVars, op);
+		swe_sphere_ts_l_erk->setup(1);
+
+		// initialize with 1st order and half time step size
+		swe_sphere_ts_l_irk = new SWE_Sphere_TS_l_irk(simVars, op);
+		swe_sphere_ts_l_irk->setup(1, 0.5*simVars.timecontrol.current_timestep_size, 0);
+
+		swe_sphere_ts_lg_erk = nullptr;
+		swe_sphere_ts_lg_irk = nullptr;
+	}
+	else
+	{
+		// initialize with 1st order
+		swe_sphere_ts_lg_erk = new SWE_Sphere_TS_lg_erk(simVars, op);
+		swe_sphere_ts_lg_erk->setup(1);
+
+		// initialize with 1st order and half time step size
+		swe_sphere_ts_lg_irk = new SWE_Sphere_TS_lg_irk(simVars, op);
+		swe_sphere_ts_lg_irk->setup(1, 0.5*simVars.timecontrol.current_timestep_size, 0);
+
+		swe_sphere_ts_l_erk = nullptr;
+		swe_sphere_ts_l_irk = nullptr;
+	}
+
+	fg.setup(op.sphereDataConfig);
+	if (simVars.sim.sphere_use_fsphere)
+	{
+		fg.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data = simVars.sim.sphere_fsphere_f0;
+			}
+		);
+	}
+	else
+	{
+		fg.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+			}
+		);
+	}
 }
 
 
 
-SWE_Sphere_TS_l_cn_na_sl_nd_settls::SWE_Sphere_TS_l_cn_na_sl_nd_settls(
+SWE_Sphere_TS_ln_settls::SWE_Sphere_TS_ln_settls(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
 )	:
@@ -458,16 +648,17 @@ SWE_Sphere_TS_l_cn_na_sl_nd_settls::SWE_Sphere_TS_l_cn_na_sl_nd_settls(
 		pos_lat_a(i_op.sphereDataConfig->physical_array_data_number_of_elements),
 
 		posx_d(i_op.sphereDataConfig->physical_array_data_number_of_elements),
-		posy_d(i_op.sphereDataConfig->physical_array_data_number_of_elements),
-
-		swe_sphere_ts_l_erk(i_simVars, i_op),
-		swe_sphere_ts_l_irk(i_simVars, i_op)
+		posy_d(i_op.sphereDataConfig->physical_array_data_number_of_elements)
 {
 }
 
 
 
-SWE_Sphere_TS_l_cn_na_sl_nd_settls::~SWE_Sphere_TS_l_cn_na_sl_nd_settls()
+SWE_Sphere_TS_ln_settls::~SWE_Sphere_TS_ln_settls()
 {
+	delete swe_sphere_ts_l_erk;
+	delete swe_sphere_ts_lg_erk;
+	delete swe_sphere_ts_l_irk;
+	delete swe_sphere_ts_lg_irk;
 }
 

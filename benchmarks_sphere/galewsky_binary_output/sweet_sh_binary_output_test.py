@@ -2,7 +2,8 @@
 
 import sys
 
-f = open(sys.argv[1], 'rb')
+input_file = sys.argv[1]
+f = open(input_file, 'rb')
 content = f.read()
 f.close()
 
@@ -160,6 +161,8 @@ plt.imshow(data_phys)
 e=2e-5
 plt.contour(data_phys, levels=np.arange(e, e*50, e), linestyles='solid', linewidths=0.2, colors='black')
 plt.contour(data_phys, levels=np.arange(-e*50, 0, e), linestyles='dashed', linewidths=0.2, colors='black')
+
+plt.title(input_file)
 
 infile = sys.argv[1]
 outputfile = infile.replace('.sweet', '.pdf')

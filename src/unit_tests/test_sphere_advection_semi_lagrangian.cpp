@@ -214,6 +214,14 @@ public:
 			break;
 
 		case 1:
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
+			break;
+
+		case 2:
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_div, planeDataConfig);
+			break;
+
+		case 3:
 			{
 				SphereData_Physical u(sphereDataConfig);
 				SphereData_Physical v(sphereDataConfig);
@@ -224,7 +232,7 @@ public:
 			}
 			break;
 
-		case 2:
+		case 4:
 			{
 				SphereData_Physical u(sphereDataConfig);
 				SphereData_Physical v(sphereDataConfig);
@@ -235,13 +243,6 @@ public:
 			}
 			break;
 
-		case 3:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
-			break;
-
-		case 4:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_div, planeDataConfig);
-			break;
 		}
 
 		*o_dataArray = &viz_plane_data;
@@ -253,7 +254,7 @@ public:
 	const char* vis_get_status_string()
 	{
 		const char* description = "";
-		int id = simVars.misc.vis_id % 3;
+		int id = simVars.misc.vis_id % 5;
 
 		switch (id)
 		{
@@ -268,6 +269,14 @@ public:
 
 		case 2:
 			description = "div";
+			break;
+
+		case 3:
+			description = "u";
+			break;
+
+		case 4:
+			description = "v";
 			break;
 		}
 
@@ -383,19 +392,18 @@ int main(int i_argc, char *i_argv[])
 		SimulationInstance simulation;
 
 
-	#if SWEET_GUI
+#if SWEET_GUI
 		if (simVars.misc.gui_enabled)
 		{
 			planeDataConfigInstance.setupAutoSpectralSpace(
 					simVars.disc.space_res_physical,
-					simVars.misc.reuse_spectral_transformation_plans,
 					simVars.misc.reuse_spectral_transformation_plans
 				);
 			VisSweet<SimulationInstance> visSweet(&simulation);
 			return 0;
 		}
 		else
-	#endif
+#endif
 		{
 //			simulation.reset();
 			while (!simulation.should_quit())

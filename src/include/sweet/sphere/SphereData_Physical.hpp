@@ -839,7 +839,7 @@ public:
 
 
 
-	bool physical_isAnyNaNorInf()
+	bool physical_isAnyNaNorInf()	const
 	{
 		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
@@ -1113,6 +1113,26 @@ public:
 	}
 
 
+
+	void file_write_raw(
+			const std::string &i_filename
+	)	const
+	{
+		std::fstream file(i_filename, std::ios::out | std::ios::binary);
+		file.write((const char*)physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+	}
+
+
+
+	void file_read_raw(
+			const std::string &i_filename
+	)	const
+	{
+		std::fstream file(i_filename, std::ios::in | std::ios::binary);
+		file.read((char*)physical_space_data, sizeof(double)*sphereDataConfig->physical_array_data_number_of_elements);
+	}
+
+
 	void print_debug(
 			const char *name
 	)	const
@@ -1122,6 +1142,14 @@ public:
 		std::cout << "                max: " << this->physical_reduce_max() << std::endl;
 		std::cout << "                sum: " << this->physical_reduce_sum() << std::endl;
 		std::cout << "                suminc: " << this->physical_reduce_sum_quad_increasing() << std::endl;
+		std::cout << std::endl;
+	}
+
+
+	void print()	const
+	{
+		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+			std::cout << physical_space_data[idx] << "\t";
 		std::cout << std::endl;
 	}
 

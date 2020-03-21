@@ -212,6 +212,21 @@ public:
 	}
 
 
+	bool reduce_isAnyNaNorInf()	const
+	{
+		for (std::size_t i = 0; i < number_of_elements; i++)
+		{
+			if (
+					(std::isnan(scalar_data[i]) != 0) ||
+					(std::abs(std::isinf(scalar_data[i])) == 1)
+			)
+				return true;
+		}
+
+		return false;
+	}
+
+
 
 	/**
 	 * return true, if any value is infinity
@@ -841,8 +856,6 @@ public:
 
 
 
-
-
 	/**
 	 * Print data
 	 *
@@ -858,9 +871,32 @@ public:
 		o_ostream << std::setprecision(i_precision);
 
 		for (std::size_t i = 0; i < number_of_elements; i++)
-			o_ostream << scalar_data[i] << std::endl;
+			o_ostream << scalar_data[i] << "\t";
+		std::cout << std::endl;
 
 		return true;
+	}
+
+
+
+	void file_write_raw(
+			const std::string &i_filename,
+			const char *i_title = "",
+			int i_precision = 20
+	)	const
+	{
+		std::fstream file(i_filename, std::ios::out | std::ios::binary);
+		file.write((const char*)scalar_data, sizeof(double)*number_of_elements);
+	}
+
+
+
+	void file_read_raw(
+			const std::string &i_filename		///< Name of file to load data from
+	)
+	{
+		std::fstream file(i_filename, std::ios::in | std::ios::binary);
+		file.read((char*)scalar_data, sizeof(double)*number_of_elements);
 	}
 
 

@@ -9,78 +9,131 @@ import sys
 
 first = True
 
+s = 2000
+h_contour_levels_ = [np.arange(80000, 100000, s), np.arange(100000, 120000, s)]
+
+s = 2000
+phi_contour_levels_ = [np.arange(80000, 100000, s), np.arange(100000, 120000, s)]
+
+s = 4.0 #*9.80616
+ht0diff_contour_levels_ = [np.arange(-s*30, -s+s/2, s), np.arange(s, s*30, s)]
+print(ht0diff_contour_levels_)
+
 s = 2e-5
-eta_contour_levels = np.append(np.arange(-1e-4, 0, s), np.arange(s, 1e-4, s))
-hs = 5
-h_contour_levels = np.append(np.arange(900, 1000-hs, hs), np.arange(1000+hs, 1100, hs))
+vort_contour_levels_ = [np.arange(-s*30, -s+s/2, s), np.arange(s, s*30, s)]
+s = 4e-7
+div_contour_levels_ = [np.arange(-s*30, -s+s/2, s), np.arange(s, s*30, s)]
+print(div_contour_levels_)
 
-zoom_lat = True
-zoom_lat = False
+print("h_contour_levels:")
+print(h_contour_levels_)
+print("")
 
-zoom_lat = 'eta' in sys.argv[1]
+print("phi_contour_levels:")
+print(phi_contour_levels_)
+print("")
 
-fontsize=8
+print("ht0diff_contour_levels:")
+print(ht0diff_contour_levels_)
+print("")
 
-figsize=(9, 3)
+print("vort_contour_levels:")
+print(vort_contour_levels_)
+print("")
+
+print("div_contour_levels:")
+print(vort_contour_levels_)
+print("")
+
+
+fontsize = 8
+figsize = (9, 3)
+
 
 for filename in sys.argv[1:]:
 
-	print(filename)
-	#data = np.loadtxt(filename, skiprows=3)
-	data = np.loadtxt(filename)
+    print("")
+    print("*"*80)
+    print("* "+filename)
+    print("*"*80)
+    #data = np.loadtxt(filename, skiprows=3)
+    data = np.loadtxt(filename)
 
-#	labelsx = data[0,1:]
-#	labelsy = data[1:,0]
+    with open(filename, 'r') as f:
+        line = f.readline()
+        if line[0:3] == "#TI":
+            # eliminate lat/lon coordinates
+            data = data[1:,1:]
 
-#	data = data[1:,1:]
-
-	if first:
-		cmin = np.amin(data)
-		cmax = np.amax(data)
-
-		if 'eta' in filename:
-			cmin = 1e-4
-			cmax = -1e-4
-			#cmin *= 1.2
-			#cmax *= 1.2
-
-	plt.figure(figsize=figsize)
+    # Detect SWEET Output file headers
+    #TI
+    #TX Longitude
+    #TY Latitude
 
 
-	plt.imshow(data, interpolation='nearest', origin='lower', aspect='auto')
+    data_ = np.zeros_like(data)
+    print(data.shape)
+    s = data.shape[1]//2
+    data_[:,s:] = data[:,:s]
+    data_[:,:s] = data[:,s:]
+    #data = data_
 
-	plt.clim(cmin, cmax)
-	cbar = plt.colorbar()
-	cbar.ax.tick_params(labelsize=fontsize) 
 
-	plt.title(filename, fontsize=fontsize)
+    print("+ min(data): "+str(np.min(data)))
+    print("+ max(data): "+str(np.max(data)))
+
+    if 'prog_vort_' in filename:
+        contour_levels = vort_contour_levels_
+
+    elif 'prog_phi_' in filename:
+        contour_levels = phi_contour_levels_
+
+    elif 'prog_h_' in filename:
+        contour_levels = h_contour_levels_
+
+    elif 'prog_ht0diff_' in filename:
+        contour_levels = ht0diff_contour_levels_
+
+    elif 'prog_div_' in filename:
+        contour_levels = div_contour_levels_
+
+    else:
+        contour_levels = None
+        cmin = np.min(data)
+        cmax = np.max(data)
+
+    # min/max from contour
+    if contour_levels != None:
+        cmin = np.min(contour_levels[0])
+        cmax = np.max(contour_levels[1])
 
 
-	if 'prog_eta' in filename:
-		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=eta_contour_levels, linewidths=0.5)
-	elif 'prog_h' in filename:
-		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
-#	elif '_u' in filename:
-#		hs = 0.001
-#		h_contour_levels = np.append(np.arange(-0.1, 0-hs, hs), np.arange(hs, 0.1, hs))
-#		plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, levels=h_contour_levels, linewidths=0.5)
-	else:
-		if cmin != cmax:
-			pass
-			#plt.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
+    plt.figure(figsize=figsize)
 
-	ax = plt.gca()
-	ax.xaxis.set_label_coords(0.5, -0.075)
+    plt.imshow(data, interpolation='nearest', origin='lower', aspect='auto')
 
-	plt.xlabel("Longitude", fontsize=fontsize)
+    plt.clim(cmin, cmax)
+    cbar = plt.colorbar()
+    cbar.ax.tick_params(labelsize=fontsize) 
 
-	plt.ylabel("Latitude", fontsize=fontsize)
+    plt.title(filename, fontsize=fontsize)
 
-	#plt.show()
-	outfilename = filename.replace('.csv', '.png')
-	print(outfilename)
+    if contour_levels != None:
+        plt.contour(data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=contour_levels[0], linewidths=0.5, linestyles='solid')
+        plt.contour(data, colors="black", origin='lower', vmin=cmin, vmax=cmax, levels=contour_levels[1], linewidths=0.5, linestyles='dashed')
 
-	plt.savefig(outfilename, dpi=200)
-	plt.close()
+    ax = plt.gca()
+    ax.xaxis.set_label_coords(0.5, -0.075)
 
-	first = False
+    plt.xlabel("Longitude", fontsize=fontsize)
+
+    plt.ylabel("Latitude", fontsize=fontsize)
+
+    outfilename = filename.replace('.csv', '.png')
+    print(outfilename)
+
+    plt.tight_layout()
+    plt.savefig(outfilename, dpi=200)
+    plt.close()
+
+    first = False

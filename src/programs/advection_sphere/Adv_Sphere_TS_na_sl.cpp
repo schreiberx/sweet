@@ -80,7 +80,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 						posx_d,
 						posy_d,
 						new_prog_phi,
-						false
+						simVars.disc.semi_lagrangian_interpolation_limiter
 				);
 	}
 

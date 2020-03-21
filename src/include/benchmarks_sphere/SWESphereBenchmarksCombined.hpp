@@ -9,7 +9,6 @@
 #define SRC_INCLUDE_BENCHMARKS_SPHERE_SWESPHEREBENCHMARKSCOMBINED_HPP_
 
 #include <sweet/SimulationVariables.hpp>
-//#include <benchmarks_sphere/BenchmarkGalewsky.hpp>
 #include <benchmarks_sphere/BenchmarkGaussianDam.hpp>
 #include <benchmarks_sphere/BenchmarkFlowOverMountain.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
@@ -619,10 +618,13 @@ public:
 				hbump.physical_update_lambda(
 					[&](double lon, double phi, double &o_data)
 					{
-						o_data = hamp*std::cos(phi)*std::exp(-(lon/alpha)*(lon/alpha))*std::exp(-(phi2-phi)*(phi2-phi)/beta);
+						o_data = hamp*std::cos(phi)*std::exp(-std::pow((lon-M_PI)/alpha, 2.0))*std::exp(-std::pow((phi2-phi)/beta, 2.0));
 					}
 				);
 			}
+
+			SphereData_Spectral x(hbump);
+			(x.getSphereDataPhysical()*simVars->sim.gravitation).physical_file_write("phit0diff.csv");
 
 			o_phi += hbump*simVars->sim.gravitation;
 		}

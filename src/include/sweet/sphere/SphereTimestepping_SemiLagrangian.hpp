@@ -39,6 +39,7 @@ public:
 		sample2D.setup(sphereDataConfig);
 	}
 
+
 	inline
 	static
 	void angleToCartCoord(
@@ -96,7 +97,36 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < i_x.number_of_elements; i++)
 		{
+			/*
+			 * Make sure that coordinates are in valid range
+			 */
+#if 0
+			i_x.scalar_data[i] = std::min(1., i_x.scalar_data[i]);
+			i_x.scalar_data[i] = std::max(-1., i_x.scalar_data[i]);
+
+			i_y.scalar_data[i] = std::min(1., i_y.scalar_data[i]);
+			i_y.scalar_data[i] = std::max(-1., i_y.scalar_data[i]);
+
+			i_z.scalar_data[i] = std::min(1., i_z.scalar_data[i]);
+			i_z.scalar_data[i] = std::max(-1., i_z.scalar_data[i]);
+#endif
+
+			/*
+			 * Now compute the angles
+			 */
 			o_lon.scalar_data[i] = std::atan(i_y.scalar_data[i]/i_x.scalar_data[i]);
+
+#if SWEET_DEBUG
+			if (	(std::isnan(o_lon.scalar_data[i]) != 0) ||
+					(std::abs(std::isinf(o_lon.scalar_data[i])) == 1)
+			)
+			{
+				std::cout << "Found nan/inf at position " << i << std::endl;
+				std::cout << "o_lon value: " << o_lon.scalar_data[i] << std::endl;
+				std::cout << "   atan(" << i_y.scalar_data[i] << ", " << i_x.scalar_data[i] << ")" << std::endl;
+				FatalError("EXIT");
+			}
+#endif
 
 			if (i_x.scalar_data[i] < 0)
 				o_lon.scalar_data[i] += M_PI;
@@ -104,6 +134,19 @@ public:
 				o_lon.scalar_data[i] += M_PI*2.0;
 
 			o_lat.scalar_data[i] = std::acos(-i_z.scalar_data[i]) - M_PI*0.5;
+
+#if SWEET_DEBUG
+			if (
+					(std::isnan(o_lat.scalar_data[i]) != 0) ||
+					(std::abs(std::isinf(o_lat.scalar_data[i])) == 1)
+			)
+			{
+				std::cout << "Found nan/inf at position " << i << std::endl;
+				std::cout << "o_lat value: " << o_lat.scalar_data[i] << std::endl;
+				std::cout << "   acos(" << i_z.scalar_data[i] << ")" << std::endl;
+				FatalError("EXIT");
+			}
+#endif
 		}
 	}
 
@@ -204,7 +247,7 @@ public:
 
 		o_pos_x *= norm;
 		o_pos_y *= norm;
-		o_pos_y *= norm;
+		o_pos_z *= norm;
 	}
 
 
@@ -216,7 +259,7 @@ public:
 			const SphereData_Physical &i_u_lon, 		// Velocities at time t
 			const SphereData_Physical &i_v_lat,
 
-			const ScalarDataArray &i_pos_lon_a,	// Position of arrival points lon/lat
+			const ScalarDataArray &i_pos_lon_a,		// Position of arrival points lon/lat
 			const ScalarDataArray &i_pos_lat_a,
 
 			double i_dt,				///< time step size
@@ -228,10 +271,47 @@ public:
 			int i_timestepping_order,
 			int max_iters = 10,
 			double i_convergence_tolerance = 1e-8,
-
-			int i_approximate_sphere_geometry = 0
+			int i_approximate_sphere_geometry = 0,
+			bool use_interpolation_limiters = false
 	)
 	{
+#if 0
+#if 1
+		i_u_lon_prev.file_read_raw("i_u_lon_prev.raw");
+		i_v_lat_prev.file_read_raw("i_v_lat_prev.raw");
+
+		i_u_lon.file_read_raw("i_u_lon.raw");
+		i_v_lat.file_read_raw("i_v_lat.raw");
+
+//		i_pos_lon_a.file_read_raw("i_pos_lon_a.raw");
+//		i_pos_lat_a.file_read_raw("i_pos_lat_a.raw");
+#else
+		i_u_lon_prev.file_write_raw("i_u_lon_prev.raw");
+		i_v_lat_prev.file_write_raw("i_v_lat_prev.raw");
+
+		i_u_lon.file_write_raw("i_u_lon.raw");
+		i_v_lat.file_write_raw("i_v_lat.raw");
+
+		i_pos_lon_a.file_write_raw("i_pos_lon_a.raw");
+		i_pos_lat_a.file_write_raw("i_pos_lat_a.raw");
+#endif
+#endif
+
+
+#if SWEET_DEBUG
+		if (i_u_lon_prev.physical_isAnyNaNorInf())
+			FatalError("start NaN/Inf in i_u_lon_prev");
+
+		if (i_v_lat_prev.physical_isAnyNaNorInf())
+			FatalError("start NaN/Inf in i_v_lat_prev");
+
+		if (i_u_lon.physical_isAnyNaNorInf())
+			FatalError("start NaN/Inf in i_u_lon");
+
+		if (i_v_lat.physical_isAnyNaNorInf())
+			FatalError("start NaN/Inf in i_v_lat");
+#endif
+
 		if (i_approximate_sphere_geometry == 0)
 		{
 			FatalError("TODO: Implement me: i_approximate_sphere_geometry==0 to avoid approximation of SL on sphere");
@@ -304,16 +384,16 @@ public:
 					pos_x_a, pos_y_a, pos_z_a
 				);
 
-			// convert velocities along lon/lat to scalardata array
+			// Convert velocities along lon/lat to scalardata array
 			ScalarDataArray u_lon = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
 			ScalarDataArray v_lat = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
 
-			// compute Cartesian velocities
+			// Compute Cartesian velocities
 			ScalarDataArray vel_x(num_elements);
 			ScalarDataArray vel_y(num_elements);
 			ScalarDataArray vel_z(num_elements);
 
-			// polar => Cartesian coordinates
+			// Polar => Cartesian coordinates
 			angleSpeedToCartVector(
 					i_pos_lon_a, i_pos_lat_a,
 					u_lon, v_lat,
@@ -335,8 +415,62 @@ public:
 			{
 				cartToAngleCoord(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
 
+#if SWEET_DEBUG
+				bool stop = false;
+				if (pos_x_d.reduce_isAnyNaNorInf())
+				{
+					std::cout << "iters: " << iters << std::endl;
+					std::cout << "NaN/Inf in pos_x_d" << std::endl;
+					stop = true;
+				}
+
+				if (pos_y_d.reduce_isAnyNaNorInf())
+				{
+					std::cout << "iters: " << iters << std::endl;
+					std::cout << "NaN/Inf in pos_y_d" << std::endl;
+					stop = true;
+				}
+
+				if (pos_z_d.reduce_isAnyNaNorInf())
+				{
+					std::cout << "iters: " << iters << std::endl;
+					std::cout << "NaN/Inf in pos_z_d" << std::endl;
+					stop = true;
+				}
+
+
+				if (o_pos_lon_d.reduce_isAnyNaNorInf())
+				{
+					std::cout << "iters: " << iters << std::endl;
+					std::cout << "NaN/Inf in o_pos_lon_d" << std::endl;
+					stop = true;
+				}
+
+				if (o_pos_lat_d.reduce_isAnyNaNorInf())
+				{
+					std::cout << "iters: " << iters << std::endl;
+					std::cout << "NaN/Inf in o_pos_lat_d" << std::endl;
+					stop = true;
+				}
+
+				if (stop)
+				{
+					FatalError("STOP");
+				}
+#endif
+
+
+#if 0
+				// TODO: This should be linear
+				// TODO: This should be linear
+				// TODO: This should be linear
+
+				ScalarDataArray u_lon_extrapol = sample2D.bicubic_scalar(u_extrapol, o_pos_lon_d, o_pos_lat_d, true, use_interpolation_limiters);
+				ScalarDataArray v_lat_extrapol = sample2D.bicubic_scalar(v_extrapol, o_pos_lon_d, o_pos_lat_d, true, use_interpolation_limiters);
+#else
 				ScalarDataArray u_lon_extrapol = sample2D.bilinear_scalar(u_extrapol, o_pos_lon_d, o_pos_lat_d, true);
 				ScalarDataArray v_lat_extrapol = sample2D.bilinear_scalar(v_extrapol, o_pos_lon_d, o_pos_lat_d, true);
+#endif
 
 				// convert extrapolated velocities to Cartesian velocities
 				ScalarDataArray vel_x_extrapol(num_elements);

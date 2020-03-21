@@ -41,6 +41,9 @@ elif [[ "$FILENAME" = "mule.benchmark.jobs_interactive" ]]; then
 elif [[ "$FILENAME" = "mule.benchmark.jobs_run_directly" ]]; then
 	platform_exec "${MULE_PLATFORM_DIR}/platform_jobs_run_directly" $@
 
+elif [[ "$FILENAME" = "mule.benchmark.jobs_run_directly_nonstop" ]]; then
+	platform_exec "${MULE_PLATFORM_DIR}/platform_jobs_run_directly_nonstop" $@
+
 elif [[ "$FILENAME" = "mule.benchmark.jobs_status" ]]; then
 	platform_exec "${MULE_PLATFORM_DIR}/platform_jobs_status" $@
 

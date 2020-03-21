@@ -9,8 +9,6 @@
 
 
 
-
-
 /*
  * Main routine for method to be used in case of finite differences
  */

@@ -26,11 +26,24 @@ data_ref = np.loadtxt(filename_ref)
 data_sweet = np.loadtxt(filename_sweet)
 # Skip first row and col since they contain the angles
 data_sweet = data_sweet[1:,1:]
+
+#print(data_ref[0]-data_sweet[0])
+#sys.exit(1)
+#print(data_ref-data_sweet)
+
 #print("Sweet data size:")
 #print(data_sweet.shape)
 
 diff = data_ref - data_sweet
-#print(diff)
+
+
+if 0:
+    import matplotlib.pyplot as plt
+    plt.imshow(diff)
+    plt.colorbar()
+    plt.show()
+    sys.exit(1)
+
 lmax_error = np.max(np.abs(data_ref-data_sweet))
 print(" + Error Lmax: "+str(lmax_error))
 
