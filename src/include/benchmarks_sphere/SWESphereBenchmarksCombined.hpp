@@ -1404,7 +1404,7 @@ public:
 
 			o_phi.loadSphereDataPhysical(phig);
 
-#if 0
+#if 1
 
 #if 1
 			computeGeostrophicBalance_linear(
