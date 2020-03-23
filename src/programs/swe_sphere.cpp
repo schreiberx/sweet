@@ -324,6 +324,8 @@ public:
 		if (simVars.misc.compute_errors)
 		{
 			if (
+					simVars.benchmark.benchmark_name != "williamson2"		&&
+					simVars.benchmark.benchmark_name != "nl_williamson2"		&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance"		&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance_1"		&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance_2"		&&
@@ -546,6 +548,7 @@ public:
 		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
 
+		std::cout << simVars.timecontrol.current_timestep_nr << ": " << prog_phi.getSphereDataPhysical().physical_reduce_max_abs() << "\t" << prog_vort.getSphereDataPhysical().physical_reduce_max_abs() << "\t" << prog_div.getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
 #if SWEET_GUI
 		timestep_check_output();
 #endif

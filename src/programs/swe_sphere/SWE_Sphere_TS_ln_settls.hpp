@@ -33,7 +33,7 @@ class SWE_Sphere_TS_ln_settls	: public SWE_Sphere_TS_interface
 	SphereOperators_SphereData &op;
 
 	bool include_nonlinear_divergence;
-	bool original_linear_operator_sl_tretment;
+	bool original_linear_operator_sl_treatment;
 	int coriolis_treatment;
 
 	SphereTimestepping_SemiLagrangian semiLagrangian;

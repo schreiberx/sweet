@@ -71,9 +71,45 @@ class Spharmt(object):
 
 
 
-
 if __name__ == "__main__":
     import time
+
+    setup_analytical = False
+    #setup_analytical = True
+
+    if len(sys.argv) > 1:
+        setup_analytical = bool(int(sys.argv[1]))
+    
+    print("setup_analytical: "+str(setup_analytical))
+
+
+    if setup_analytical:
+        file_ext = "_analytical_1"
+    else:
+        file_ext = "_analytical_0"
+
+    # Create dummy run.sh script in this folder for automized job processing
+    os.makedirs("job_benchref_solution"+file_ext, exist_ok=True)
+    with open("job_benchref_solution"+file_ext+"/run.sh", "w") as rfile:
+        rfile.write("#!/bin/bash\necho \"Dummy\"")
+        os.fchmod(rfile.fileno(), stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
+
+    output_file_name = "job_benchref_solution"+file_ext+"/output_{:s}_t{:020.8f}.csv"
+
+    def savefile(data, name, t):
+        d = x.spectogrd(data)
+        d = np.flip(d, 0)
+        os.makedirs("job_benchref_solution"+file_ext, exist_ok=True)
+        np.savetxt(output_file_name.format(name, t/(60*60)), d, delimiter="\t")
+
+
+
+    def savefileg(data, name, t):
+        d = np.flip(data, 0)
+        os.makedirs("job_benchref_solution"+file_ext, exist_ok=True)
+        np.savetxt(output_file_name.format(name, t/(60*60)), d, delimiter="\t")
+
+
 
     # non-linear barotropically unstable shallow water test case
     # of Galewsky et al (2004, Tellus, 56A, 429-440).
@@ -110,7 +146,8 @@ if __name__ == "__main__":
     rsphere = 6.37122e6 # earth radius
     omega = 7.292e-5 # rotation rate
     grav = 9.80616 # gravity
-    hbar = 10.e3 # resting depth
+    # See doc/galewsky_mean_layer_depth
+    h0 = 10158.186170454619 # resting depth
     umax = 80. # jet speed
     phi0 = np.pi/7.
     phi1 = 0.5*np.pi - phi0
@@ -182,60 +219,110 @@ if __name__ == "__main__":
     f = 2.*omega*np.sin(lats) # coriolis
     outputMinMaxSum(f, "f")
 
-    def setup(add_bump = True):
+    def u_init(phi):
+        if 0:
+            # Numerically not that stable method
+            u_ = (umax/en)*np.exp(1./((phi-phi0)*(phi-phi1)))
+            return np.where(np.logical_and(phi < phi1, phi > phi0), u_, np.zeros_like(phi))
+        else:
+            # Much better, don't get close to 1/0
+            e = 1e-8
+            cond = np.logical_and(phi < phi1-e, phi > phi0+e)
+            denom = np.where(cond, (phi-phi0)*(phi-phi1), np.ones_like(phi))
+            u_ = (umax/en)*np.exp(1./denom)
+            return np.where(cond, u_, np.zeros_like(phi))
 
-        # zonal jet.
-        vg = np.zeros((nlats,nlons),np.float)
-        u1 = (umax/en)*np.exp(1./((x.lats-phi0)*(x.lats-phi1)))
-        outputMinMaxSum(u1, "u1")
-        ug = np.zeros((nlats),np.float)
-        ug = np.where(np.logical_and(x.lats < phi1, x.lats > phi0), u1, ug)
-        ug.shape = (nlats,1)
-        ug = ug*np.ones((nlats,nlons),dtype=np.float) # broadcast to shape (nlats,nlonss)
 
-        # height perturbation.
-        hbump = hamp*np.cos(lats)*np.exp(-((lons-np.pi)/alpha)**2)*np.exp(-((phi2-lats)/beta)**2)
-        outputMinMaxSum(hbump, "hbump")
+    def gh_init(phi):
+        def int_f(phi):
+            f = 2.*omega*np.sin(phi)
+            a = rsphere
+            return a*u_init(phi)*(f+np.tan(phi)/a*u_init(phi))
 
-        # initial vorticity, divergence in spectral space
-        vrtspec, divspec =  x.getvrtdivspec(ug,vg)
+        import scipy.integrate as integrate
 
-        # Truncate velocities!
-        # This is different to the original Whitaker version
-        ug, vg = x.getuv(vrtspec, divspec)
 
-        # create hyperdiffusion factor
-    #    hyperdiff_fact = np.exp((-dt/efold)*(x.lap/x.lap[-1])**(ndiss/2))
+        quad = np.zeros_like(phi)
+        for i in range(len(phi)):
+            (quad[i], _) = integrate.quad(int_f, 0, phi[i], epsrel=1.e-16)
 
-        # solve nonlinear balance eqn to get initial zonal geopotential,
-        # add localized bump (not balanced).
-        vrtg = x.spectogrd(vrtspec)
+        quad = grav*h0-quad
+        return quad
 
-        outputMinMaxSum(ug, "ug")
-        outputMinMaxSum(vg, "vg")
-        outputMinMaxSum(vg, "f")
 
-        tmpg1 = ug*(vrtg+f)
-        tmpg2 = vg*(vrtg+f)
-        outputMinMaxSum(tmpg1, "tmpg1")
-        outputMinMaxSum(tmpg2, "tmpg2")
-        
-        tmpspec1, tmpspec2 = x.getvrtdivspec(tmpg1,tmpg2)
-        outputMinMaxSum(x.spectogrd(tmpspec1), "tmpspec1")
-        
-        tmpspec2 = x.grdtospec(0.5*(ug**2+vg**2))
-        outputMinMaxSum(x.spectogrd(tmpspec2), "tmpspec2")
+    def setup(add_bump, analytical):
 
-        phispec = x.invlap*tmpspec1 - tmpspec2
-        outputMinMaxSum(x.spectogrd(phispec), "phispec")
+        if analytical:
+            # zonal jet.
+            vg = np.zeros((nlats,nlons),np.float)
+            u1 = (umax/en)*np.exp(1./((x.lats-phi0)*(x.lats-phi1)))
+            outputMinMaxSum(u1, "u1")
 
-        phig = grav*hbar
-        phig += x.spectogrd(phispec)
-        
-        phispec = x.grdtospec(phig)
+            ug = np.zeros((nlats),np.float)
+            ug = np.where(np.logical_and(x.lats < phi1, x.lats > phi0), u1, ug)
+            ug.shape = (nlats,1)
+            ug = ug*np.ones((nlats,nlons),dtype=np.float) # broadcast to shape (nlats,nlonss)
+
+            # initial vorticity, divergence in spectral space
+            vrtspec, divspec =  x.getvrtdivspec(ug,vg)
+
+            # Truncate velocities!
+            # This is different to the original Whitaker version
+            ug, vg = x.getuv(vrtspec, divspec)
+
+            # solve nonlinear balance eqn to get initial zonal geopotential,
+            # add localized bump (not balanced).
+            vrtg = x.spectogrd(vrtspec)
+ 
+            outputMinMaxSum(ug, "ug")
+            outputMinMaxSum(vg, "vg")
+            outputMinMaxSum(vg, "f")
+
+            tmpg1 = ug*(vrtg+f);
+            tmpg2 = vg*(vrtg+f)
+            outputMinMaxSum(tmpg1, "tmpg1")
+            outputMinMaxSum(tmpg2, "tmpg2")
+            
+            tmpspec1, tmpspec2 = x.getvrtdivspec(tmpg1,tmpg2)
+            outputMinMaxSum(x.spectogrd(tmpspec1), "tmpspec1")
+            
+            tmpspec2 = x.grdtospec(0.5*(ug**2+vg**2))
+            outputMinMaxSum(x.spectogrd(tmpspec2), "tmpspec2")
+
+            phispec = x.invlap*tmpspec1 - tmpspec2
+            outputMinMaxSum(x.spectogrd(phispec), "phispec")
+
+            # Use 10e3 here, since this matches somehow the reference solution!
+            h0_ = 10e3
+            phig = grav*h0_ + x.spectogrd(phispec)
+
+            phispec = x.grdtospec(phig)
+
+        else:
+            # zero v velocity
+            vg = np.zeros((nlats,nlons),np.float)
+
+            # u_init
+            ug = u_init(x.lats)
+            ug = np.expand_dims(ug, 1)
+            ug = np.tile(ug, (1,nlons))
+
+            # phig
+            phig = gh_init(x.lats)
+            phig = np.expand_dims(phig, 1)
+            phig = np.tile(phig, (1,nlons))
+
+            vrtspec, divspec =  x.getvrtdivspec(ug,vg)
+            phispec = x.grdtospec(phig)
+
 
         if add_bump:
+            # height perturbation.
+            hbump = hamp*np.cos(lats)*np.exp(-((lons-np.pi)/alpha)**2)*np.exp(-((phi2-lats)/beta)**2)
+            outputMinMaxSum(hbump, "hbump")
+
             phispec += x.grdtospec(grav*hbump)
+
 
         return vrtspec, divspec, phispec
 
@@ -247,26 +334,76 @@ if __name__ == "__main__":
         phig = x.spectogrd(phispec)
         
         # compute tendencies.
-        tmpg1 = ug*(vrtg+f); tmpg2 = vg*(vrtg+f)
-        
+        tmpg1 = ug*(vrtg+f)
+        tmpg2 = vg*(vrtg+f)
+
         ddivdtspec, dvrtdtspec = x.getvrtdivspec(tmpg1,tmpg2)
         
         dvrtdtspec *= -1
         tmpg = x.spectogrd(ddivdtspec)
         
-        tmpg1 = ug*phig; tmpg2 = vg*phig
-        
+        tmpg1 = ug*phig
+        tmpg2 = vg*phig
+
         tmpspec, dphidtspec = x.getvrtdivspec(tmpg1,tmpg2)
                 
         dphidtspec *= -1
         tmpspec = x.grdtospec(phig+0.5*(ug**2+vg**2))
         ddivdtspec += -x.lap*tmpspec
-        
-        #print(np.max(np.abs(dphidtspec)))
+
         return(dvrtdtspec, ddivdtspec, dphidtspec)
 
+
+    vrtspec, divspec, phispec = setup(add_bump=False, analytical=setup_analytical)
+    vrtspec_, divspec_, phispec_ = setup(add_bump=False, analytical=not setup_analytical)
+
+    def diffspec(a, b):
+        y = x.spectogrd(a) - x.spectogrd(b)
+        print(np.max(np.abs(y)))
+
+    diffspec(phispec, phispec_)
+    diffspec(vrtspec, vrtspec_)
+    diffspec(divspec, divspec_)
+
+    if 1:
+        #
+        # Reproduce Fig. 1 in Galewsky paper
+        #
+
+        import matplotlib.pyplot as plt
+
+        ug, vg = x.getuv(vrtspec, divspec)
+        phig = x.spectogrd(phispec)
+
+        # start at this latitude
+        s_min = int(ug.shape[0]*(180-110)/180)
+        s_max = int(ug.shape[0]*(180-160)/180)
+
+
+        plt.close()
+        plt.figure(figsize=(5,10))
+        plot_x = ug[s_max:s_min,0]
+        plot_y = x.lats[s_max:s_min]/(np.pi*0.5)*90
+        plt.plot(plot_x, plot_y)
+        plt.yticks(np.arange(20, 70, step=5))
+        plt.xticks(np.arange(0, 100, step=20))
+        plt.xlim(0, None)
+        plt.title("Velocity profile")
+        plt.savefig("output_velocity_profile_analytical_"+str(setup_analytical)+".pdf")
+
+        plt.close()
+        plt.figure(figsize=(5,10))
+        plot_x = phig[s_max:s_min,0]/grav
+        plot_y = x.lats[s_max:s_min]/(np.pi*0.5)*90
+        plt.plot(plot_x, plot_y)
+        plt.yticks(np.arange(20, 70, step=5))
+        plt.xticks(np.arange(9000, 10500, step=500))
+        plt.title("height profile")
+        plt.savefig("output_height_profile_analytical_"+str(setup_analytical)+".pdf")
+
+
     # Test for optimal geostrophic balance
-    vrtspec, divspec, phispec = setup(False)
+    vrtspec, divspec, phispec = setup(add_bump=False, analytical=setup_analytical)
 
     vrtspec_init = np.copy(vrtspec)
     divspec_init = np.copy(divspec)
@@ -281,41 +418,34 @@ if __name__ == "__main__":
     print("l1 ddivdt = "+str(l1_ddivdt))
     print("l1 dphidt = "+str(l1_dphidt))
 
-    if l1_dphidt/hbar > 1e-12:
-        raise Exception("Error too high!")
+    if setup_analytical:
+        if l1_dvrtdt > 1e-16:
+            raise Exception("VRT Error too high!")
 
-    if l1_dvrtdt > 1e-16:
-        raise Exception("Error too high!")
+        if l1_ddivdt > 1e-8:
+            raise Exception("DIV Error too high!")
 
-    if l1_ddivdt > 1e-12:
-        raise Exception("Error too high!")
+        if l1_dphidt > 1e-12:
+            raise Exception("PHI Error too high!")
 
-    vrtspec, divspec, phispec = setup(True)
+    else:
+        if l1_dvrtdt > 1e-16:
+            raise Exception("VRT Error too high!")
 
-    # initialize spectral tendency arrays
-    ddivdtspec = np.zeros(vrtspec.shape+(3,), np.complex)
-    dvrtdtspec = np.zeros(vrtspec.shape+(3,), np.complex)
-    dphidtspec = np.zeros(vrtspec.shape+(3,), np.complex)
-    nnew = 0; nnow = 1; nold = 2
+        if l1_ddivdt > 1e-10:
+            raise Exception("DIV Error too high!")
+
+        if l1_dphidt > 1e-12:
+            raise Exception("PHI Error too high!")
+
+    vrtspec, divspec, phispec = setup(add_bump=True, analytical=setup_analytical)
 
 
 
     t = 0
-    os.makedirs("job_benchref_solution", exist_ok=True)
-    output_file_name = "job_benchref_solution/output_{:s}_t{:020.8f}.csv"
 
-    # Create dummy run.sh script in this folder for automized job processing
-    with open("job_benchref_solution/run.sh", "w") as rfile:
-        rfile.write("#!/bin/bash\necho \"Dummy\"")
-        os.fchmod(rfile.fileno(), stat.S_IRWXU | stat.S_IRWXG | stat.S_IROTH | stat.S_IXOTH)
-
-    def savefile(data, name, t):
-        d = x.spectogrd(data)
-        d = np.flip(d, 0)
-        np.savetxt(output_file_name.format(name, t/(60*60)), d, delimiter="\t")
-
-    savefile(phispec-phispec_init, "prog_phit0diff", t)
-    savefile(phispec, "prog_phi", t)
+    savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
+    savefile(phispec/grav, "prog_h", t)
     savefile(vrtspec, "prog_vort", t)
     savefile(divspec, "prog_div", t)
 
@@ -326,32 +456,77 @@ if __name__ == "__main__":
 
         maxval = x.spectogrd(phispec).max()
 
-        if True:
+        order = 1
+        if order == 1:
             # RK1 time stepping
             (vrtdt, divdt, phidt) = timestep(vrtspec, divspec, phispec)
-        else:
+
+            vrtspec += dt*vrtdt
+            divspec += dt*divdt
+            phispec += dt*phidt
+
+        elif order == 2:
             # RK2 time stepping
             (vrtdt, divdt, phidt) = timestep(vrtspec, divspec, phispec)
             (vrtdt, divdt, phidt) = timestep(vrtspec+0.5*dt*vrtdt, divspec+0.5*dt*divdt, phispec+0.5*dt*phidt)
 
-        vrtspec += dt*vrtdt
-        divspec += dt*divdt
-        phispec += dt*phidt
+            vrtspec += dt*vrtdt
+            divspec += dt*divdt
+            phispec += dt*phidt
+
+        elif order == 4:
+
+            a2 = [0.5]
+            a3 = [0.0, 0.5]
+            a4 = [0.0, 0.0, 1.0]
+            b = [1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0]
+            c = [0.5, 0.5, 1.0]
+
+            # RK2 time stepping
+            ic = (vrtspec, divspec, phispec)
+            k0 = timestep(
+                    ic[0],
+                    ic[1],
+                    ic[2]
+            )
+
+            k1 = timestep(
+                ic[0] + dt*a2[0]*k0[0],
+                ic[1] + dt*a2[0]*k0[1],
+                ic[2] + dt*a2[0]*k0[2],
+            )
+
+            k2 = timestep(
+                ic[0] + dt*a3[1]*k1[0],
+                ic[1] + dt*a3[1]*k1[1],
+                ic[2] + dt*a3[1]*k1[2],
+            )
+
+            k3 = timestep(
+                ic[0] + dt*a4[2]*k2[0],
+                ic[1] + dt*a4[2]*k2[1],
+                ic[2] + dt*a4[2]*k2[2],
+            )
+
+            vrtspec += dt*(b[0]*k0[0] + b[1]*k1[0] + b[2]*k2[0] + b[3]*k3[0])
+            divspec += dt*(b[0]*k0[1] + b[1]*k1[1] + b[2]*k2[1] + b[3]*k3[1])
+            phispec += dt*(b[0]*k0[2] + b[1]*k1[2] + b[2]*k2[2] + b[3]*k3[2])
 
         t += dt
 
-        if t % output_t == 0:
+        if t % output_t == 0 or output_t == -1:
             print("FILEOUTPUT TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
-            savefile(phispec-phispec_init, "prog_phit0diff", t)
-            savefile(phispec, "prog_phi", t)
+            savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
+            savefile(phispec/grav, "prog_h", t)
             savefile(vrtspec, "prog_vort", t)
             savefile(divspec, "prog_div", t)
         else:
             if debug > 0:
                 print("TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
 
-    savefile(phispec-phispec_init, "prog_phit0diff", t)
-    savefile(phispec, "prog_phi", t)
+
+    savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
+    savefile(phispec/grav, "prog_h", t)
     savefile(vrtspec, "prog_vort", t)
     savefile(divspec, "prog_div", t)
 

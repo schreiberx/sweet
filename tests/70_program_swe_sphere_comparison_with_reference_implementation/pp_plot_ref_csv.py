@@ -9,8 +9,8 @@ import sys
 
 first = True
 
-s = 2000
-h_contour_levels_ = [np.arange(80000, 100000, s), np.arange(100000, 120000, s)]
+s = 200
+h_contour_levels_ = [np.arange(8000, 10000, s), np.arange(10000, 12000, s)]
 
 s = 2000
 phi_contour_levels_ = [np.arange(80000, 100000, s), np.arange(100000, 120000, s)]

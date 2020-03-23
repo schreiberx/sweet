@@ -53,7 +53,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 		double i_simulation_timestamp
 )
 {
-//	std::cout << "SL A" << std::endl;
 	if (i_dt <= 0)
 		FatalError("SWE_Sphere_TS_ln_settls: Only constant time step size allowed (Please set --dt)");
 
@@ -93,8 +92,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 	SphereData_Physical v_lat(io_phi.sphereDataConfig);
 	op.vortdiv_to_uv(io_vort, io_div, u_lon, v_lat);
 
-//	std::cout << "SL B" << std::endl;
-
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
 			u_lon_prev,	v_lat_prev,
@@ -114,33 +111,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 			simVars.disc.semi_lagrangian_interpolation_limiter
 	);
 
-	#if 0
-		/**
-		 * Use this to debug for valid lat/lon coordinates
-		 */
-		pos_lon_d.update_lambda_array_indices(
-			[](int, double &v)
-			{
-				if (! ((v >= 0) && (v <= 2.0*M_PI)))
-				{
-					std::cout << "lon: " << v << std::endl;
-					FatalError("LON");
-				}
-			}
-		);
-
-
-		pos_lat_d.update_lambda_array_indices(
-			[](int, double &v)
-			{
-				if (! ((v >= -0.5*M_PI) && (v <= 0.5*M_PI)))
-				{
-					std::cout << "lat: " << v << std::endl;
-					FatalError("LAT");
-				}
-			}
-		);
-	#endif
 
 	/*
 	 * Step 2) Midpoint rule
@@ -200,7 +170,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 	SphereData_Spectral L_vort_D(io_phi.sphereDataConfig);
 	SphereData_Spectral L_div_D(io_phi.sphereDataConfig);
 
-	if (original_linear_operator_sl_tretment)
+	if (original_linear_operator_sl_treatment)
 	{
 		/*
 		 * Method 1) First evaluate L, then sample result at departure point
@@ -337,7 +307,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 	 */
 	if (include_nonlinear_divergence)
 	{
-		/*
+		/**
 		 * Compute non-linear term N*
 		 *
 		 * Extrapolate non-linear terms with the equation
@@ -353,6 +323,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 		double gh = simVars.sim.gravitation*simVars.sim.h0;
 
 
+
 		SphereData_Spectral N_phi_t(io_phi.sphereDataConfig);
 		SphereData_Spectral N_phi_prev(io_phi.sphereDataConfig);
 
@@ -362,27 +333,26 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 		
 		// Compute N(t)
 		N_phi_t.loadSphereDataPhysical(
-			-(io_phi-gh).getSphereDataPhysical()*io_div.getSphereDataPhysical()
+			(-(io_phi-gh)).getSphereDataPhysical()*io_div.getSphereDataPhysical()
 		);
 
 		// Compute N(t-dt)
 		N_phi_prev.loadSphereDataPhysical(
-			-(phi_prev-gh).getSphereDataPhysical()*div_prev.getSphereDataPhysical()
+			(-(phi_prev-gh)).getSphereDataPhysical()*div_prev.getSphereDataPhysical()
 		);
 
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical N_D_phys(io_phi.sphereDataConfig);
 		sphereSampler.bicubic_scalar(
-				(N_phi_t*2.0-N_phi_prev).getSphereDataPhysical(),	// field to sample
+				(2.0*N_phi_t-N_phi_prev).getSphereDataPhysical(),	// field to sample
 				pos_lon_d, pos_lat_d,
 				N_D_phys,
 				false,
 				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
-		// N_D physical
-		SphereData_Spectral N_D(io_phi.sphereDataConfig);
-		N_D.loadSphereDataPhysical(N_D_phys);
+		// N_D spectral
+		SphereData_Spectral N_D(N_D_phys);
 
 		// Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N^t)
 		SphereData_Spectral N_star = 0.5*(N_D + N_phi_t);
@@ -393,7 +363,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 
 	if (coriolis_treatment == CORIOLIS_NONLINEAR)
 	{
-		/*
+		/**
 		 * Apply Coriolis Effect in physical VELOCITY space
 		 * 
 		 * This is require to stay compatible to all other things
@@ -405,7 +375,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 		SphereData_Spectral f_div_t_prev(io_phi.sphereDataConfig);
 
 		/**
-		 * Calculate f_vort_t and f_div_t
+		 * Calculate f_vort_t and f_div_t caused by Coriolis effect
 		 */
 		SphereData_Physical tmpg1 = u_lon*fg;
 		SphereData_Physical tmpg2 = v_lat*fg;
@@ -417,7 +387,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 
 
 		/**
-		 * Calculate f_vort_t_prev and f_div_t_prev
+		 * Calculate f_vort_t_prev and f_div_t_prev caused by Coriolis effect
 		 */
 		tmpg1 = u_lon_prev*fg;
 		tmpg2 = v_lat_prev*fg;
@@ -434,7 +404,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical f_vort_t_D_phys(io_phi.sphereDataConfig);
 		sphereSampler.bicubic_scalar(
-				(f_vort_t*2.0-f_vort_t_prev).getSphereDataPhysical(),	// field to sample
+				(2.0*f_vort_t-f_vort_t_prev).getSphereDataPhysical(),	// field to sample
 				pos_lon_d, pos_lat_d,
 				f_vort_t_D_phys,
 				false,
@@ -442,13 +412,12 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 			);
 
 		// vort_D physical
-		SphereData_Spectral f_vort_t_D(io_phi.sphereDataConfig);
-		f_vort_t_D.loadSphereDataPhysical(f_vort_t_D_phys);
+		SphereData_Spectral f_vort_t_D(f_vort_t_D_phys);
 
 		// Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N^t)
 		SphereData_Spectral f_vort_t_star = 0.5*(f_vort_t_D + f_vort_t);
 
-		// add nonlinear divergence
+		// add nonlinear vorticity
 		R_vort += i_dt*f_vort_t_star;
 
 
@@ -458,7 +427,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical f_div_t_D_phys(io_phi.sphereDataConfig);
 		sphereSampler.bicubic_scalar(
-				(f_div_t*2.0-f_div_t_prev).getSphereDataPhysical(),	// field to sample
+				(2.0*f_div_t-f_div_t_prev).getSphereDataPhysical(),	// field to sample
 				pos_lon_d, pos_lat_d,
 				f_div_t_D_phys,
 				false,
@@ -466,8 +435,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 			);
 
 		// div_D physical
-		SphereData_Spectral f_div_t_D(io_phi.sphereDataConfig);
-		f_div_t_D.loadSphereDataPhysical(f_div_t_D_phys);
+		SphereData_Spectral f_div_t_D(f_div_t_D_phys);
 
 		// Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N^t)
 		SphereData_Spectral f_div_t_star = 0.5*(f_div_t_D + f_div_t);
@@ -514,9 +482,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 	io_phi = R_phi;
 	io_vort = R_vort;
 	io_div = R_div;
-
-
-//	std::cout << "SL Z" << std::endl;
 }
 
 
@@ -531,7 +496,7 @@ void SWE_Sphere_TS_ln_settls::setup(
 )
 {
 	include_nonlinear_divergence = i_include_nonlinear_divergence;
-	original_linear_operator_sl_tretment = i_original_linear_operator_sl_tretment;
+	original_linear_operator_sl_treatment = i_original_linear_operator_sl_tretment;
 	
 	if (i_coriolis_treatment == "linear")
 		coriolis_treatment = CORIOLIS_LINEAR;

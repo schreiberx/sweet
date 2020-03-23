@@ -668,8 +668,8 @@ public:
 			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
 		}
 		else if (
-			i_timestepping_method == "lg_irk_na_lc_sl_settls"	||
-			i_timestepping_method == "lg_irk_na_lc_sl_settls_ver1"
+			i_timestepping_method == "lg_irk_na_sl_lc_settls"	||
+			i_timestepping_method == "lg_irk_na_sl_lc_settls_ver1"
 		)
 		{
 			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
@@ -682,7 +682,7 @@ public:
 			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
 		}
 		else if (
-			i_timestepping_method == "lg_irk_na_lc_sl_settls_ver2"
+			i_timestepping_method == "lg_irk_na_sl_lc_settls_ver2"
 		)
 		{
 			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);

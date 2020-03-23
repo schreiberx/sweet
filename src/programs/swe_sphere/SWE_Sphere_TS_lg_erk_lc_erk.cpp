@@ -9,6 +9,83 @@
 
 
 
+
+/*
+ * Main routine for method to be used in case of finite differences
+ */
+void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update(
+		const SphereData_Spectral &i_phi,	///< prognostic variables
+		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_div,	///< prognostic variables
+
+		SphereData_Spectral &o_phi_t,	///< time updates
+		SphereData_Spectral &o_vort_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
+
+		double i_simulation_timestamp
+)
+{
+	if (simVars.sim.sphere_use_fsphere)
+	{
+		double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+		o_phi_t = -gh*i_div;
+		o_div_t = -op.laplace(i_phi);
+
+		o_vort_t = -simVars.sim.sphere_fsphere_f0*i_div;
+		o_div_t += simVars.sim.sphere_fsphere_f0*i_vort;
+	}
+	else
+	{
+#if 0
+		double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+		o_phi_t = -gh*i_div;
+		o_div_t = -op.laplace(i_phi);
+
+		/*
+		 * This doesn't converge to the reference solution
+		 */
+		SphereData_Spectral f(fg);
+		o_vort_t = -f*i_div;
+		o_div_t += f*i_vort;
+
+#else
+
+		double gh = simVars.sim.gravitation * simVars.sim.h0;
+
+		/*
+		 * Apply Coriolis Effect in physical VELOCITY space
+		 */
+		SphereData_Physical ug(i_phi.sphereDataConfig);
+		SphereData_Physical vg(i_phi.sphereDataConfig);
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+		else
+			op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+
+		SphereData_Physical tmpg1 = ug*fg;
+		SphereData_Physical tmpg2 = vg*fg;
+
+		if (simVars.misc.sphere_use_robert_functions)
+			op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+		else
+			op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+
+		o_vort_t *= -1.0;
+		o_div_t += -op.laplace(i_phi);
+
+		/*
+		 * DIV on velocity field
+		 */
+		o_phi_t = (-gh)*i_div;
+#endif
+	}
+}
+
+
+
+
 void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lg(
 		const SphereData_Spectral &i_phi,	///< prognostic variables
 		const SphereData_Spectral &i_vort,	///< prognostic variables
@@ -21,15 +98,15 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lg(
 		double i_simulation_timestamp
 )
 {
-	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
+	double gh = simVars.sim.gravitation*simVars.sim.h0;
 
-#if 1
+#if 0
 
-	o_phi_t = -avgphi*i_div;
+	o_phi_t = -gh*i_div;
 	o_div_t = -op.laplace(i_phi);
 	o_vort_t.spectral_set_zero();
 
-#else
+#elif 0
 
 	/*
 	 * NON-LINEAR
@@ -37,43 +114,17 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lg(
 	 * Follows Hack & Jakob formulation
 	 */
 
-	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
-
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
 
-	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
-	SphereData_Physical divg = i_div.getSphereDataPhysical();
 	if (simVars.misc.sphere_use_robert_functions)
 		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
 	else
 		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
-	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-	// No Coriolis here
-#if 1
-	SphereData_Physical tmpg1 = ug*(vrtg/*+fg*/);
-	SphereData_Physical tmpg2 = vg*(vrtg/*fg*/);
-
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-	else
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-
-	o_vort_t *= -1.0;
-
-	SphereData_Physical tmpg = o_div_t.getSphereDataPhysical();
-
-#else
-	o_vort_t.spectral_set_zero();
-#endif
-
-	/*
-	tmpg1 = ug*phig;
-	tmpg2 = vg*phig;
-	*/
-	//SphereDataPhysical tmpg1 = ug*avgphi;
-	//SphereDataPhysical tmpg2 = vg*avgphi;
+	// Nonlinearity
+	SphereData_Physical tmpg1 = ug*i_vort.getSphereDataPhysical();
+	SphereData_Physical tmpg2 = vg*i_div.getSphereDataPhysical();
 
 	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 	if (simVars.misc.sphere_use_robert_functions)
@@ -83,16 +134,42 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lg(
 
 	o_phi_t *= -1.0;
 
-/*
-	SphereDataPhysical tmpg = 0.5*(ug*ug+vg*vg);
+//	o_phi_t = -gh*i_div;
+	o_div_t = -op.laplace(i_phi);
+	o_vort_t.spectral_set_zero();
+
+
+#else
+
+	/*
+	 * Apply Coriolis Effect in physical VELOCITY space
+	 */
+	SphereData_Physical ug(i_phi.sphereDataConfig);
+	SphereData_Physical vg(i_phi.sphereDataConfig);
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	else
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+
+	SphereData_Physical tmpg1 = ug*fg;
+	SphereData_Physical tmpg2 = vg*fg;
 
 	if (simVars.misc.sphere_use_robert_functions)
-		tmpg = tmpg.robert_convertToNonRobertSquared();
-*/
-	tmpspec = (phig/*+tmpg*/);
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	else
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
-	o_div_t = -op.laplace(tmpspec);
-//	o_vort_t.spectral_set_zero();
+	o_vort_t *= -1.0;
+
+	o_vort_t.spectral_set_zero();
+	o_div_t.spectral_set_zero();
+
+	o_div_t += -op.laplace(i_phi);
+
+	/*
+	 * DIV on velocity field
+	 */
+	o_phi_t = (-gh)*i_div;
 #endif
 }
 
@@ -110,11 +187,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 		double i_simulation_timestamp
 )
 {
-//	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
-
 #if 1
-//	double gh = simVars.sim.gravitation*simVars.sim.h0;
-
 	/*
 	 * Apply Coriolis Effect in physical VELOCITY space
 	 */
@@ -199,6 +272,81 @@ void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep(
 {
 	if (timestepping_order == 1)
 	{
+
+#if 1
+		/*
+		 * This routine can be used to validate the correct splitting with the geostrophic balanced test case
+		 */
+		SphereData_Spectral t1_phi(io_phi.sphereDataConfig);
+		SphereData_Spectral t1_vort(io_phi.sphereDataConfig);
+		SphereData_Spectral t1_div(io_phi.sphereDataConfig);
+
+		SphereData_Spectral t2_phi(io_phi.sphereDataConfig);
+		SphereData_Spectral t2_vort(io_phi.sphereDataConfig);
+		SphereData_Spectral t2_div(io_phi.sphereDataConfig);
+
+#if 0
+		euler_timestep_update_lg(
+				io_phi,
+				io_vort,
+				io_div,
+
+				t1_phi,
+				t1_vort,
+				t1_div,
+
+				i_simulation_timestamp
+		);
+		euler_timestep_update_lc(
+				io_phi,
+				io_vort,
+				io_div,
+
+				t2_phi,
+				t2_vort,
+				t2_div,
+
+				i_simulation_timestamp
+		);
+
+#else
+		euler_timestep_update(
+				io_phi,
+				io_vort,
+				io_div,
+
+				t1_phi,
+				t1_vort,
+				t1_div,
+
+				i_simulation_timestamp
+		);
+
+		t2_phi.spectral_set_zero();
+		t2_vort.spectral_set_zero();
+		t2_div.spectral_set_zero();
+#endif
+
+
+		double diff_phi = (t1_phi + t2_phi).getSphereDataPhysical().physical_reduce_max_abs();
+		double diff_vort = (t1_vort + t2_vort).getSphereDataPhysical().physical_reduce_max_abs();
+		double diff_div = (t1_div + t2_div).getSphereDataPhysical().physical_reduce_max_abs();
+
+		std::cout << "DIFF PHI: " << diff_phi << std::endl;
+		std::cout << "DIFF VORT: " << diff_vort << std::endl;
+		std::cout << "DIFF DIV: " << diff_div << std::endl;
+
+		if (std::abs(diff_phi) > 1e-10)
+			FatalError("PHI error too high");
+
+		if (std::abs(diff_vort) > 1e-10)
+			FatalError("VORT error too high");
+
+		if (std::abs(diff_div) > 1e-10)
+			FatalError("DIV error too high");
+#endif
+
+
 		timestepping_rk_linear.run_timestep(
 				this,
 				&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lg,	///< pointer to function to compute euler time step updates

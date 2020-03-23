@@ -93,7 +93,6 @@ public:
 	}
 
 
-
 #if 0
 
 public:
@@ -222,6 +221,40 @@ public:
 	}
 
 
+	/**
+	 * Convert spectral scalar field to physical one
+	 */
+	void scalar_spectral_to_physical(
+			const SphereData_Spectral &i_spectral,
+			SphereData_Physical &o_physical
+
+	)	const
+	{
+		SH_to_spat(
+				sphereDataConfig->shtns,
+				i_spectral.spectral_space_data,
+				o_physical.physical_space_data
+		);
+	}
+
+
+
+	/**
+	 * Convert spectral scalar field to physical one
+	 */
+	void scalar_physical_to_spectral(
+			const SphereData_Physical &o_physical,
+			SphereData_Spectral &i_spectral
+	)	const
+	{
+		spat_to_SH(
+				sphereDataConfig->shtns,
+				o_physical.physical_space_data,
+				i_spectral.spectral_space_data
+		);
+	}
+
+
 
 	SphereData_Spectral robert_uv_to_vort(
 			const SphereData_Physical &i_u,
@@ -305,7 +338,6 @@ public:
 
 
 
-
 	void uv_to_vortdiv(
 			const SphereData_Physical &i_u,
 			const SphereData_Physical &i_v,
@@ -335,7 +367,6 @@ public:
 		o_stream = laplace(o_stream)*r;
 		o_potential = laplace(o_potential)*r;
 	}
-
 
 
 
@@ -419,9 +450,11 @@ public:
 		return out_sph_data;
 	}
 
+
+
 	/**
 	 * Compute
-	 * mu*F(\lambda,\mu)
+	 * mu*mu*F(\lambda,\mu)
 	 */
 	SphereData_Spectral mu2(
 			const SphereData_Spectral &i_sph_data
@@ -465,7 +498,7 @@ public:
 		out_sph_data.spectral_update_lambda(
 				[&](int n, int m, std::complex<double> &o_data)
 				{
-					o_data *= -(double)n*((double)n+1.0)*ir*ir;
+					o_data *= -(double)n*((double)n+1.0)*(ir*ir);
 				}
 			);
 

@@ -19,37 +19,46 @@ p.runtime.space_res_physical = "196,100"
 p.runtime.instability_checks = 0
 p.runtime.benchmark_name = 'galewsky'
 
-#p.compile.threading = 'omp'
-p.compile.threading = 'off'
+for analytical in [0, 1]:
 
-p.unique_id_filter = ['runtime', 'compile', 'parallelization']
+    #p.compile.threading = 'omp'
+    p.compile.threading = 'off'
 
-#p.runtime.gravitation= 1
-#p.runtime.sphere_rotating_coriolis_omega = 1
-#p.runtime.h0 = 1
-#p.runtime.plane_domain_size = 1
+    p.unique_id_filter = ['runtime', 'compile', 'parallelization']
 
-p.runtime.verbosity = 10
+    #p.runtime.gravitation= 1
+    #p.runtime.sphere_rotating_coriolis_omega = 1
+    #p.runtime.h0 = 1
+    #p.runtime.plane_domain_size = 1
 
-if False:
-	p.runtime.timestep_size = 60
-	p.runtime.max_simulation_time = 60*10
-	p.runtime.output_timestep_size = 60
-else:
-	p.runtime.timestep_size = 10
-	p.runtime.max_simulation_time = 60*60*24
-	p.runtime.output_timestep_size = 60*60
+    p.runtime.verbosity = 10
 
-p.runtime.output_filename = "output_%s_t%020.8f.csv"
+    if False:
+            p.runtime.timestep_size = 60
+            p.runtime.max_simulation_time = 60*10
+            p.runtime.output_timestep_size = 60
+    else:
+            p.runtime.timestep_size = 10
+            p.runtime.max_simulation_time = 60*60*24
+            p.runtime.output_timestep_size = 60*60
+
+    p.runtime.output_filename = "output_%s_t%020.8f.csv"
+
+    if analytical:
+        p.runtime.comma_separated_tags = "galewsky_analytical_geostrophic_setup"
+        file_ext = "_analytical_1"
+    else:
+        p.runtime.comma_separated_tags = "0"
+        file_ext = "_analytical_0"
+
+    p.runtime.timestepping_method = 'ln_erk'
+    p.runtime.timestepping_order = 1
+    p.runtime.timestepping_order2 = 1
+
+    p.runtime.use_robert_functions = 0
+    p.gen_jobscript_directory('job_bench_sweet_nonrobert'+file_ext)
 
 
-p.runtime.timestepping_method = 'ln_erk'
-p.runtime.timestepping_order = 1
-p.runtime.timestepping_order2 = 1
+    p.runtime.use_robert_functions = 1
+    p.gen_jobscript_directory('job_bench_sweet_robert'+file_ext)
 
-p.runtime.use_robert_functions = 0
-p.gen_jobscript_directory('job_bench_sweet_nonrobert')
-
-
-p.runtime.use_robert_functions = 1
-p.gen_jobscript_directory('job_bench_sweet_robert')

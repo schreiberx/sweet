@@ -37,9 +37,9 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 	else
 	{
 #if 0
-		double gh = simVars.sim.gravitation * simVars.sim.h0;
+		double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
-		o_phi_t = -gh*i_div;
+		o_phi_t = -gh0*i_div;
 		o_div_t = -op.laplace(i_phi);
 
 		/*
@@ -51,7 +51,7 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 
 #else
 
-		double gh = simVars.sim.gravitation * simVars.sim.h0;
+		double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
 		/*
 		 * Apply Coriolis Effect in physical VELOCITY space
@@ -77,7 +77,7 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 		/*
 		 * DIV on velocity field
 		 */
-		o_phi_t = (-gh)*i_div;
+		o_phi_t = (-gh0)*i_div;
 #endif
 	}
 }

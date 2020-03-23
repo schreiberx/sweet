@@ -562,6 +562,20 @@ public:
 	}
 
 
+	SphereData_Spectral operator_scalar_sub_this(
+			double i_value
+	)	const
+	{
+		SphereData_Spectral out(sphereDataConfig);
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			out.spectral_space_data[idx] = -spectral_space_data[idx];
+
+		out.spectral_space_data[0] = i_value*std::sqrt(4.0*M_PI) + out.spectral_space_data[0];
+		return out;
+	}
+
+
 
 	const SphereData_Spectral& operator+=(
 			double i_value
@@ -581,6 +595,16 @@ public:
 		SphereData_Spectral out(*this);
 		out.spectral_space_data[0] -= i_value*std::sqrt(4.0*M_PI);
 		return out;
+	}
+
+
+
+	SphereData_Spectral& operator-=(
+			double i_value
+	)
+	{
+		spectral_space_data[0] -= i_value*std::sqrt(4.0*M_PI);
+		return *this;
 	}
 
 
@@ -1054,6 +1078,45 @@ public:
 
   		file.close();
 	}
+
+
+
+
+	void normalize(
+			const std::string &normalization = ""
+	)
+	{
+		if (normalization == "avg_zero")
+		{
+			// move average value to 0
+			double phi_min = getSphereDataPhysical().physical_reduce_min();
+			double phi_max = getSphereDataPhysical().physical_reduce_max();
+
+			double avg = 0.5*(phi_max+phi_min);
+
+			operator-=(avg);
+		}
+		else if (normalization == "min_zero")
+		{
+			// move minimum value to zero
+			double phi_min = getSphereDataPhysical().physical_reduce_min();
+			operator-=(phi_min);
+		}
+		else if (normalization == "max_zero")
+		{
+			// move maximum value to zero
+			double phi_max = getSphereDataPhysical().physical_reduce_max();
+			operator-=(phi_max);
+		}
+		else if (normalization == "")
+		{
+		}
+		else
+		{
+			FatalError("Normalization not supported!");
+		}
+	}
+
 };
 
 
@@ -1075,6 +1138,46 @@ SphereData_Spectral operator*(
 )
 {
 	return ((SphereData_Spectral&)i_array_data)*i_value;
+}
+
+
+
+
+
+
+/**
+ * operator to support operations such as:
+ *
+ * 1.5 + arrayData
+ *
+ */
+inline
+static
+SphereData_Spectral operator+(
+		double i_value,
+		const SphereData_Spectral &i_array_data
+)
+{
+	return ((SphereData_Spectral&)i_array_data)+i_value;
+}
+
+
+
+
+/**
+ * operator to support operations such as:
+ *
+ * 1.5 - arrayData
+ *
+ */
+inline
+static
+SphereData_Spectral operator-(
+		double i_value,
+		const SphereData_Spectral &i_array_data
+)
+{
+	return i_array_data.operator_scalar_sub_this(i_value);
 }
 
 

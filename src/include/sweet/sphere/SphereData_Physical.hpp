@@ -353,6 +353,19 @@ public:
 	}
 
 
+	SphereData_Physical operator_scalar_sub_this(
+			double i_value
+	)	const
+	{
+		SphereData_Physical out(sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = i_value - physical_space_data[idx];
+
+		return out;
+	}
+
 
 
 public:
@@ -1173,8 +1186,43 @@ SphereData_Physical operator*(
 		const SphereData_Physical &i_array_data
 )
 {
-	return ((SphereData_Physical&)i_array_data)*i_value;
+	return i_array_data*i_value;
 }
+
+
+
+/**
+ * operator to support operations such as:
+ *
+ * 1.5 - arrayData;
+ */
+inline
+static
+SphereData_Physical operator-(
+		const double i_value,
+		const SphereData_Physical &i_array_data
+)
+{
+	return i_array_data.operator_scalar_sub_this(i_value);
+}
+
+
+
+/**
+ * operator to support operations such as:
+ *
+ * 1.5 + arrayData;
+ */
+inline
+static
+SphereData_Physical operator+(
+		const double i_value,
+		const SphereData_Physical &i_array_data
+)
+{
+	return i_array_data+i_value;
+}
+
 
 
 

@@ -861,6 +861,11 @@ public:
 		 */
 		int normal_mode_analysis_generation = 0;
 
+		/*
+		 * Some flexible variable where one can just add options like
+		 * --comma-separated-tags=galewsky_analytical_geostrophic_setup
+		 */
+		std::string comma_separated_tags = "";
 
 		void outputConfig()
 		{
@@ -875,6 +880,7 @@ public:
 			std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
 			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
 			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
+			std::cout << " + comma_separated_tags: " << comma_separated_tags << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -903,6 +909,9 @@ public:
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"normal-mode-analysis-generation", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"comma-separated-tags", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 		}
 
@@ -938,9 +947,13 @@ public:
 			case 5:
 				normal_mode_analysis_generation = atoi(i_value);
 				return 0;
+
+			case 6:
+				comma_separated_tags = i_value;
+				return 0;
 			}
 
-			return 6;
+			return 7;
 		}
 
 

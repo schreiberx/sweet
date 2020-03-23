@@ -26,11 +26,20 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 		double i_simulation_timestamp
 )
 {
+
 	/*
-	 * NON-LINEAR
+	 * NON-LINEAR SWE
 	 *
-	 * Follows formulation from Hack & Jakob paper
+	 * See
+	 * 	Williamson, David L., Drake, John B., Hack, James J., Jakob, Rudiger, & Swarztrauber, Paul N. (1992).
+	 * 	A standard test set for numerical approximations to the shallow water equations in spherical geometry.
+	 * 	Journal of Computational Physics, 102(1), 211–224. https://doi.org/10.1016/S0021-9991(05)80016-6
+	 *
+	 * "2.3 Vorticity/Divergence Form"
 	 */
+
+	// Convert Phi to physical space
+	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
@@ -38,49 +47,27 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
 	SphereData_Physical divg = i_div.getSphereDataPhysical();
 
+	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
+
 	if (simVars.misc.sphere_use_robert_functions)
 		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
 	else
 		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 
-	SphereData_Physical phig = i_phi.getSphereDataPhysical();
-
-	SphereData_Physical tmpg1 = ug*(vrtg+fg);
+	// left part of eq. (20)
 	SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
+	// left part of eq. (19)
+	SphereData_Physical tmpg1 = ug*(vrtg+fg);
+
+	// Eq. (21) & left part of Eq. (22)
 	if (simVars.misc.sphere_use_robert_functions)
 		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 	else
 		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-
 	o_vort_t *= -1.0;
 
-	/*
-	 * Compute divergence of velocity field for tendencies of \Phi
-	 */
-	tmpg1 = ug*phig;
-	tmpg2 = vg*phig;
-
-	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-	else
-		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-
-	o_phi_t *= -1.0;
-
-#if 0
-// TODO: Why not using this one?
-	SphereData_Spectral test(i_phi.sphereDataConfig);
-	test.loadSphereDataPhysical(-i_div.getSphereDataPhysical()*i_phi.getSphereDataPhysical());
-	std::cout << (test - o_phi_t).getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
-	std::cout << i_phi.getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
-	std::cout << std::endl;
-#endif
-
-	/*
-	 * Add non-linearities
-	 */
+	// Right part of Eq. (22)
 	SphereData_Physical tmpg = 0.5*(ug*ug+vg*vg);
 
 	if (simVars.misc.sphere_use_robert_functions)
@@ -89,6 +76,21 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	tmpspec = phig+tmpg;
 
 	o_div_t -= op.laplace(tmpspec);
+
+	/*
+	 * Compute Phi geopotential tendencies
+	 */
+
+	tmpg1 = ug*phig;
+	tmpg2 = vg*phig;
+
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	else
+		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	o_phi_t *= -1.0;
+
+
 }
 
 
