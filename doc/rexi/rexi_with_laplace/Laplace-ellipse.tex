@@ -234,6 +234,50 @@ Let $f(t)=e^{i\alpha t}$, $\alpha \in \mathbb{R}$,  so that $\widehat{f}(s)=\fra
 \caption{Absolute error in the numerical inversion of the function $\widehat{f}(s)=1/(s-i\alpha)$, which should result in $f(t)=e^{i\alpha t}$ for varying $t$ ($dt$) and number of quadrature points. }
 \end{figure}
 
+\section{Relation to REXI }
+
+The discussion above relies on the knowledge of the Laplace transform of the function one desires to invert. However, an analogous construction maybe done directly from the Cauchy Integration theorem:
+\begin{equation}
+f(x)=\frac{1}{2\pi i}\ointop_{C}\frac{f(z)}{z-x}dz,
+\end{equation}
+for $f$ holomorphic on $\mathbb{C}$, and the contour curve $C$ assumed to be closed and should be integrated in a counter-clockwise way, as before.
+
+We can again chose $C$ to be the ellipse contour
+\begin{equation}
+s_n=\frac{\gamma i}{d}\left(re^{i\theta_n}+\frac{e^{-i\theta_n}}{r}\right), \quad n=1,2,..,N,
+\end{equation}
+and respectively the metric terms as
+\begin{equation}
+s'_n=-\frac{\gamma}{d}\left(re^{i\theta_n}-\frac{e^{-i\theta_n}}{r}\right),  \quad n=1,2,..,N,
+\end{equation}
+where $\theta_n=2\pi n/N$.
+
+Therefore, the function $f$ can be approximated via,
+\begin{equation}
+f(x)=\frac{-1}{2\pi i} \int_{0}^{2\pi}\frac{f(s(\theta))}{s-x} s'(\theta) d\theta \approx 
+\frac{-1}{2\pi i} \sum_{n=1}^{N}\frac{f(s_n)}{s_n-x} s'_ n \frac{2\pi}{ N},
+\end{equation}
+Simplifying,
+\begin{equation}
+f(x)\approx 
+\frac{1}{ iN} \sum_{n=1}^{N}\frac{f(s_n)}{x-s_n} s'_ n =\frac{1}{N}\sum_{n=1}^{N}\frac{\beta_n}{x+\alpha_n},
+\end{equation}
+where
+\begin{equation}
+\beta_n=-if(s_n)s'_ n
+\end{equation}
+and 
+\begin{equation}
+\alpha_n=-s_n
+\end{equation}
+and also,
+\begin{equation}
+r=\sqrt{\frac{1-\delta/\gamma}{1+\delta/\gamma}},
+\end{equation}
+\begin{equation}
+d=r^{-1}+r,
+\end{equation}
+and $\gamma$ is the largest attainable imaginary value and $\delta$ is the largest attainable real value of the ellipse, as discussed before.
 
 \clearpage
 
