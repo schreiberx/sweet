@@ -331,6 +331,14 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 		 * Compute N = - Phi' * Div (U)
 		 */
 		
+
+		/*
+		 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
+		 */
+		/*
+		 * Step 2a, 2b
+		 */
+
 		// Compute N(t)
 		N_phi_t.loadSphereDataPhysical(
 			(-(io_phi-gh)).getSphereDataPhysical()*io_div.getSphereDataPhysical()

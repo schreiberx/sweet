@@ -1123,19 +1123,19 @@ public:
 
 		}
 		else if (
-				simVars->benchmark.benchmark_name == "nl_williamson2"			||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_1"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_2"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_4"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_8"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_16"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_32"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_64"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_128"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_256"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_512"	||
-				simVars->benchmark.benchmark_name == "nl_geostrophic_balance_nosetparam"
+				simVars->benchmark.benchmark_name == "williamson2"			||
+				simVars->benchmark.benchmark_name == "geostrophic_balance"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_1"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_2"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_4"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_8"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_16"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_32"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_64"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_128"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_256"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_512"	||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_nosetparam"
 		)
 		{
 			/*
@@ -1163,121 +1163,6 @@ public:
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 			}
 
-			SphereData_Spectral o_h(o_phi.sphereDataConfig);
-
-			// update operator because we changed the simulation parameters
-			op->setup(o_h.sphereDataConfig, simVars->sim.sphere_radius);
-
-			//double u0 = (2.0*M_PI*simVars->sim.earth_radius)/(12.0*24.0*60.0*60.0);
-			//double a = simVars->sim.earth_radius;
-
-			//double phi0 = simVars->sim.h0*simVars->sim.gravitation;
-
-			double freq_multiplier = 1.0;
-
-			if (simVars->benchmark.benchmark_name == "geostrophic_balance_2")
-				freq_multiplier = 2.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_4")
-				freq_multiplier = 4.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_8")
-				freq_multiplier = 8.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_16")
-				freq_multiplier = 16.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_32")
-				freq_multiplier = 32.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_64")
-				freq_multiplier = 64.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_128")
-				freq_multiplier = 128.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_256")
-				freq_multiplier = 256.0;
-			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_512")
-				freq_multiplier = 512.0;
-
-
-			/*
-			 * Setup V=0
-			 */
-			SphereData_Physical vg(o_h.sphereDataConfig);
-			vg.physical_set_zero();
-
-			/*
-			 * Setup U=...
-			 * initial velocity along longitude
-			 */
-			SphereData_Physical ug(o_h.sphereDataConfig);
-			ug.physical_update_lambda(
-				[&](double lon, double phi, double &o_data)
-				{
-					o_data = std::cos(phi*freq_multiplier);
-				}
-			);
-
-			if (simVars->misc.sphere_use_robert_functions)
-			{
-				ug.physical_update_lambda_cosphi_grid(
-					[&](double lon, double phi, double &o_data)
-					{
-						o_data *= phi;
-					}
-				);
-
-				vg.physical_update_lambda_cosphi_grid(
-					[&](double lon, double phi, double &o_data)
-					{
-						o_data *= phi;
-					}
-				);
-
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
-			}
-			else
-			{
-				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
-			}
-
-			computeGeostrophicBalance_nonlinear(
-					o_vort,
-					o_div,
-					o_phi
-			);
-		}
-		else if (
-				simVars->benchmark.benchmark_name == "williamson2"			||
-				simVars->benchmark.benchmark_name == "geostrophic_balance"	||
-				simVars->benchmark.benchmark_name == "geostrophic_balance_nosetparam"
-		)
-		{
-
-			/*
-			 * geostrophic_balance / geostrophic_balance_1:
-			 * Williamson test case 2 for geostrophic balance.
-			 *
-			 * See Williamson paper for accurate setup
-			 *
-			 * "geostrophic_balance_N" means that N is the multiplier for the frequency
-			 * in the direction of the Latitude
-			 */
-			if (simVars->benchmark.benchmark_name != "geostrophic_balance_nosetparam")
-			{
-				if (simVars->timecontrol.current_simulation_time == 0)
-				{
-					std::cout << "!!! WARNING !!!" << std::endl;
-					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-					std::cout << "!!! WARNING !!!" << std::endl;
-				}
-
-				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
-				simVars->sim.gravitation = 9.80616;
-				simVars->sim.sphere_radius = 6.37122e6;
-				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
-
-				// IMPORTANT: Update operator because we changed the simulation parameters
-				op->setup(sphereDataConfig, simVars->sim.sphere_radius);
-			}
-
-
-			double gh0 = simVars->sim.gravitation*simVars->sim.h0;
 			double a = simVars->sim.sphere_radius;
 			double omega = simVars->sim.sphere_rotating_coriolis_omega;
 			double u0 = 2.0*M_PI*a/(12.0*24.0*60.0*60.0);
@@ -1285,7 +1170,7 @@ public:
 
 
 			double freq_multiplier = 1.0;
-#if 0
+
 			if (simVars->benchmark.benchmark_name == "geostrophic_balance_2")
 				freq_multiplier = 2.0;
 			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_4")
@@ -1304,7 +1189,7 @@ public:
 				freq_multiplier = 256.0;
 			else if (simVars->benchmark.benchmark_name == "geostrophic_balance_512")
 				freq_multiplier = 512.0;
-#endif
+
 
 			/*
 			 * Setup U
@@ -1385,59 +1270,162 @@ public:
 #endif
 
 
-			//simVars->sim.gravitation = 0;
-			//simVars->sim.h0 = 0;
+			bool use_analytical_geostrophic_setup = simVars->misc.comma_separated_tags.find("geostrophic_balance_analytical_setup") != std::string::npos;
 
-			// Squared term in Eq. 95, Williamson TC paper
-			SphereData_Physical r2(sphereDataConfig);
-			r2.physical_update_lambda(
+
+			if (use_analytical_geostrophic_setup)
+			{
+				std::cout << "[MULE] geostrophic_balance_analytical_setup: 1" << std::endl;
+
+				computeGeostrophicBalance_nonlinear(
+						o_vort,
+						o_div,
+						o_phi
+				);
+
+			}
+			else
+			{
+				std::cout << "[MULE] geostrophic_balance_analytical_setup: 0" << std::endl;
+
+				// Squared term in Eq. 95, Williamson TC paper
+				SphereData_Physical r2(sphereDataConfig);
+				r2.physical_update_lambda(
+					[&](double lon, double phi, double &o_data)
+					{
+						o_data = -std::cos(lon)*std::cos(phi)*std::sin(alpha) + std::sin(phi)*std::cos(alpha);
+						//o_data = std::sin(phi)*std::cos(alpha);
+						o_data = o_data*o_data;
+					}
+				);
+
+				// Eq. 95, Williamson TC paper
+				SphereData_Physical phig = - (a*omega*u0 + u0*u0/2.0)*r2;
+
+				o_phi.loadSphereDataPhysical(phig);
+			}
+		}
+
+		else if (
+				simVars->benchmark.benchmark_name == "williamson2_linear"			||
+				simVars->benchmark.benchmark_name == "geostrophic_balance_linear"
+		)
+		{
+			/*
+			 * Linear-only!!!
+			 *
+			 * The original version is for the non-linear case
+			 */
+			if (simVars->benchmark.benchmark_name != "geostrophic_balance_nosetparam")
+			{
+				if (simVars->timecontrol.current_simulation_time == 0)
+				{
+					std::cout << "!!! WARNING !!!" << std::endl;
+					std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+					std::cout << "!!! WARNING !!!" << std::endl;
+				}
+
+				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
+				simVars->sim.gravitation = 9.80616;
+				simVars->sim.sphere_radius = 6.37122e6;
+				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+			}
+
+			double a = simVars->sim.sphere_radius;
+			double omega = simVars->sim.sphere_rotating_coriolis_omega;
+			double u0 = 2.0*M_PI*a/(12.0*24.0*60.0*60.0);
+			double alpha = 0;
+
+
+			double freq_multiplier = 1.0;
+
+
+			/*
+			 * Setup U
+			 */
+			SphereData_Physical ug(sphereDataConfig);
+			ug.physical_update_lambda(
 				[&](double lon, double phi, double &o_data)
 				{
-					o_data = -std::cos(lon)*std::cos(phi)*std::sin(alpha) + std::sin(phi)*std::cos(alpha);
-					//o_data = std::sin(phi)*std::cos(alpha);
-					o_data = o_data*o_data;
+					// Eq. 90, Williamson TC paper
+					o_data = u0*(std::cos(phi*freq_multiplier)*std::cos(alpha) + std::cos(lon)*std::sin(phi*freq_multiplier)*std::sin(alpha));
 				}
 			);
 
-			// Eq. 95, Williamson TC paper
-			SphereData_Physical phig = - (a*omega*u0 + u0*u0/2.0)*r2;
+			/*
+			 * Setup V
+			 */
+			SphereData_Physical vg(sphereDataConfig);
+			vg.physical_update_lambda(
+				[&](double lon, double phi, double &o_data)
+				{
+					// Eq. 91, Williamson TC paper
+					o_data = -u0*std::sin(lon*freq_multiplier)*std::sin(alpha);
+				}
+			);
 
-			o_phi.loadSphereDataPhysical(phig);
+			op->uv_to_vortdiv(ug, vg, o_vort, o_div);
 
-#if 1
 
-#if 1
+
+			/**
+			 * TEST for non-divergent test case
+			 */
+			double div_zero = o_div.getSphereDataPhysical().physical_reduce_max_abs();
+			if (div_zero > 1e-12)
+			{
+
+				std::cout << "Divergence: " << div_zero << std::endl;
+				FatalError("Divergence should be close to 0, maybe there are some numerical round-off errors?");
+			}
+
+			/**
+			 * TEST for correct vorticity
+			 */
+			/*
+			 * Setup relative vorticity
+			 */
+			SphereData_Physical vortg(sphereDataConfig);
+			vortg.physical_update_lambda(
+				[&](double lon, double phi, double &o_data)
+				{
+					// Eq. 94, Williamson TC paper
+
+					// absolute vorticity, but we like the relative one
+					//o_data = (2.0*u0/a + 2.0*omega)*(-std::cos(lon)*std::cos(phi)*std::sin(alpha) + std::sin(phi)*std::cos(alpha));
+
+					// relative vorticity
+					o_data = (2.0*u0/a)*(-std::cos(lon)*std::cos(phi)*std::sin(alpha) + std::sin(phi)*std::cos(alpha));
+				}
+			);
+
+			double vort_diff = (o_vort.getSphereDataPhysical() - vortg).physical_reduce_max_abs();
+			if (vort_diff > 1e-12)
+			{
+
+				std::cout << "Vorticity difference: " << vort_diff << std::endl;
+				FatalError("Vorticity fields differ (should be close to 0), maybe there are some numerical round-off errors?");
+			}
+
+#if 0
+			// Setup Coriolis effect
+			SphereData_Physical fg(o_phi.sphereDataConfig);
+			fg.physical_update_lambda_gaussian_grid(
+				[&](double lon, double mu, double &o_data)
+				{
+					o_data = mu*simVars->sim.sphere_rotating_coriolis_omega;
+				}
+			);
+#endif
+
+
+			std::cout << "[MULE] geostrophic_balance_analytical_setup: 1" << std::endl;
+
 			computeGeostrophicBalance_linear(
 					o_vort,
 					o_div,
 					o_phi
 			);
-#else
-			SphereData_Spectral tmp(sphereDataConfig);
-			computeGeostrophicBalance_linear(
-					o_vort,
-					o_div,
-					tmp,
-					//o_phi,
-			);
-
-
-			std::cout << "**********************************************************" << std::endl;
-			std::cout << "**********************************************************" << std::endl;
-			std::cout << "**********************************************************" << std::endl;
-
-			SphereData_Physical phigx = o_phi.getSphereDataPhysical() - gh0;
-			std::cout << "phi min: " << phigx.physical_reduce_min() << std::endl;
-			std::cout << "phi max: " << phigx.physical_reduce_max() << std::endl;
-
-			SphereData_Physical tmpg = tmp.getSphereDataPhysical() - gh0;
-			std::cout << "tmp min: " << tmpg.physical_reduce_min() << std::endl;
-			std::cout << "tmp max: " << tmpg.physical_reduce_max() << std::endl;
-
-#endif
-
-#endif
-
 		}
 		else
 		{

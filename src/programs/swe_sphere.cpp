@@ -325,8 +325,9 @@ public:
 		{
 			if (
 					simVars.benchmark.benchmark_name != "williamson2"		&&
-					simVars.benchmark.benchmark_name != "nl_williamson2"		&&
+					simVars.benchmark.benchmark_name != "williamson2_linear"		&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance"		&&
+					simVars.benchmark.benchmark_name != "geostrophic_balance_linear"		&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance_1"		&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance_2"		&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance_4"		&&

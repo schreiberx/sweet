@@ -98,79 +98,29 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lg(
 		double i_simulation_timestamp
 )
 {
-	double gh = simVars.sim.gravitation*simVars.sim.h0;
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 
-#if 1
 
-	o_phi_t = -gh*i_div;
+	/*
+	 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
+	 * Section "lg_erk"
+	 */
+
+
+	/*
+	 * step 1a
+	 */
+	o_vort_t.spectral_set_zero();
+
+	/*
+	 * step 1b
+	 */
 	o_div_t = -op.laplace(i_phi);
-	o_vort_t.spectral_set_zero();
-
-#elif 0
 
 	/*
-	 * NON-LINEAR
-	 *
-	 * Follows Hack & Jakob formulation
+	 * step 2a
 	 */
-
-	SphereData_Physical ug(i_phi.sphereDataConfig);
-	SphereData_Physical vg(i_phi.sphereDataConfig);
-
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	else
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
-
-	// Nonlinearity
-	SphereData_Physical tmpg1 = ug*i_vort.getSphereDataPhysical();
-	SphereData_Physical tmpg2 = vg*i_div.getSphereDataPhysical();
-
-	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
-	else
-		op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
-
-	o_phi_t *= -1.0;
-
-//	o_phi_t = -gh*i_div;
-	o_div_t = -op.laplace(i_phi);
-	o_vort_t.spectral_set_zero();
-
-
-#else
-
-	/*
-	 * Apply Coriolis Effect in physical VELOCITY space
-	 */
-	SphereData_Physical ug(i_phi.sphereDataConfig);
-	SphereData_Physical vg(i_phi.sphereDataConfig);
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	else
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
-
-	SphereData_Physical tmpg1 = ug*fg;
-	SphereData_Physical tmpg2 = vg*fg;
-
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-	else
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-
-	o_vort_t *= -1.0;
-
-	o_vort_t.spectral_set_zero();
-	o_div_t.spectral_set_zero();
-
-	o_div_t += -op.laplace(i_phi);
-
-	/*
-	 * DIV on velocity field
-	 */
-	o_phi_t = (-gh)*i_div;
-#endif
+	o_phi_t = -gh0*i_div;
 }
 
 
@@ -187,9 +137,13 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 		double i_simulation_timestamp
 )
 {
-#if 1
 	/*
-	 * Apply Coriolis Effect in physical VELOCITY space
+	 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
+	 * Section "lc_erk"
+	 */
+
+	/*
+	 * step 1a
 	 */
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
@@ -198,29 +152,38 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 	else
 		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 
-	SphereData_Physical tmpg1 = ug*fg;
-	SphereData_Physical tmpg2 = vg*fg;
-
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-	else
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-
-	o_vort_t *= -1.0;
-
-	o_phi_t.spectral_set_zero();
-
-
-#else
+	/*
+	 * step 1b
+	 */
+	SphereData_Physical tmp_u = ug*fg;
+	SphereData_Physical tmp_v = vg*fg;
 
 	/*
-	 * This doesn't converge to the reference implementation!
+	 * step 1c
 	 */
-	o_div_t = f*i_vort;
-	o_vort_t = -f*i_div;
+	if (simVars.misc.sphere_use_robert_functions)
+		op.robert_uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
+	else
+		op.uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
+
+	/*
+	 * step 1d
+	 */
+	o_vort_t *= -1.0;
+
+
+	/*
+	 * step 1e
+	 * Nothing to do
+	 */
+
+
+	/*
+	 * step 2a
+	 * Zero tendencies
+	 */
 	o_phi_t.spectral_set_zero();
 
-#endif
 }
 
 
