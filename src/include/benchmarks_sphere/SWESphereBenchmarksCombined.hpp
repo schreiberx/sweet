@@ -635,7 +635,7 @@ public:
 			double beta = 1./15.;
 			double hamp = 120.;
 
-			double gh0 = simVars->sim.gravitation * simVars->sim.h0;
+			double gh0 = g * simVars->sim.h0;
 
 
 			if (simVars->benchmark.benchmark_galewsky_umax >= 0)
@@ -1400,11 +1400,11 @@ public:
 			);
 
 			// Eq. 95, Williamson TC paper
-			SphereData_Physical phig = gh0 - (a*omega*u0 + u0*u0/2.0)*r2;
+			SphereData_Physical phig = - (a*omega*u0 + u0*u0/2.0)*r2;
 
 			o_phi.loadSphereDataPhysical(phig);
 
-#if 1
+#if 0
 
 #if 1
 			computeGeostrophicBalance_linear(

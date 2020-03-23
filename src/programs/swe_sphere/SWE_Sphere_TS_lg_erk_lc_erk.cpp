@@ -100,7 +100,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lg(
 {
 	double gh = simVars.sim.gravitation*simVars.sim.h0;
 
-#if 0
+#if 1
 
 	o_phi_t = -gh*i_div;
 	o_div_t = -op.laplace(i_phi);
@@ -273,7 +273,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep(
 	if (timestepping_order == 1)
 	{
 
-#if 1
+#if 0
 		/*
 		 * This routine can be used to validate the correct splitting with the geostrophic balanced test case
 		 */
@@ -285,7 +285,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep(
 		SphereData_Spectral t2_vort(io_phi.sphereDataConfig);
 		SphereData_Spectral t2_div(io_phi.sphereDataConfig);
 
-#if 0
+#if 1
 		euler_timestep_update_lg(
 				io_phi,
 				io_vort,
