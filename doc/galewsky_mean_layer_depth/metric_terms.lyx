@@ -1,0 +1,210 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Notes on metric terms
+\end_layout
+
+\begin_layout Author
+Martin Schreiber
+\end_layout
+
+\begin_layout Date
+2020-03-23
+\end_layout
+
+\begin_layout Standard
+The average of some quantity 
+\begin_inset Formula $q(\lambda,\theta)$
+\end_inset
+
+ on a regular longitude-latitude grid should be computed.
+ We work in an angular spherical coordinate system with 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ the longitude and 
+\begin_inset Formula $\theta$
+\end_inset
+
+ the latitude.
+ Let 
+\begin_inset Formula $\lambda_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $\theta_{j}$
+\end_inset
+
+ be the points related to the lat-lon discrete cells 
+\begin_inset Formula $(i,j)$
+\end_inset
+
+.
+ Then, we refer to the quantity stored in this cell as 
+\begin_inset Formula $q(\lambda_{i},\theta_{i})=q_{i,j}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In order to compute the sum of all quantities on the sphere on a lat-lon
+ grid, we consider the following issues:
+\end_layout
+
+\begin_layout Itemize
+For each point 
+\begin_inset Formula $(i,j)$
+\end_inset
+
+ on the lon-lat grid which is related to the cell given at 
+\begin_inset Formula $(\lambda_{i},\theta_{j})$
+\end_inset
+
+, there's
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+a cell of width 
+\begin_inset Formula $d\lambda_{i}=2\pi/N_{\lambda}$
+\end_inset
+
+ with 
+\begin_inset Formula $N_{\lambda}$
+\end_inset
+
+ the number of grid points along the latitude and
+\end_layout
+
+\begin_layout Itemize
+a cell of height 
+\begin_inset Formula $d\theta_{i}$
+\end_inset
+
+ related to the latitude.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+In order to approximate average, it is sufficient to scale the quantity
+ in each cell by
+\begin_inset Formula 
+\[
+d\lambda_{i}\cos(\theta_{i})2\pi
+\]
+
+\end_inset
+
+to include the shrinking size of the cell torwards the poles.
+ Finally, we can approximate the quantity on the unit sphere by
+\begin_inset Formula 
+\[
+Q^{*}=\sum_{i,j}q_{i,j}d\lambda_{i}d\theta_{i}\cos(\theta_{i})2\pi.
+\]
+
+\end_inset
+
+Note, that the metric term for the latitude is already included since the
+ coordinate system 
+\begin_inset Formula $[-\pi/2;\pi/2]$
+\end_inset
+
+ represents the half circumference of a circle.
+\end_layout
+
+\begin_layout Itemize
+The average is then given by
+\begin_inset Formula 
+\[
+Q_{avg}=\frac{Q^{*}}{4\pi}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $4\pi$
+\end_inset
+
+ related to the surface of a unit sphere.
+\end_layout
+
+\end_body
+\end_document
