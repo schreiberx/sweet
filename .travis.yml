@@ -346,6 +346,21 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_sphere_geostrophic_balance_linear/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - texinfo
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_sampler_interpolation_2/test.py
 
 
@@ -362,6 +377,21 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_fftw_wisdom_import_export/test.py
+
+
+    # Test with G++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - texinfo
+            - g++-8
+            - gfortran-8
+      env:
+        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
+      script: ./tests/70_program_swe_sphere_geostrophic_balance_nonlinear/test.py
 
 
     # Test with G++-8
@@ -617,21 +647,6 @@ jobs:
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_sampler_interpolation/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - texinfo
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/70_program_swe_sphere_geostrophic_balance/test.py
 
 
     # Test with G++-8
