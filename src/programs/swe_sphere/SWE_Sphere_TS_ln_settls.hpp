@@ -32,9 +32,25 @@ class SWE_Sphere_TS_ln_settls	: public SWE_Sphere_TS_interface
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
-	bool include_nonlinear_divergence;
+public:
+	enum CoriolisTreatment_enum {
+		CORIOLIS_IGNORE,
+		CORIOLIS_LINEAR,
+		CORIOLIS_NONLINEAR,
+		CORIOLIS_SEMILAGRANGIAN,
+	};
+
+
+	enum NLTreatment_enum{
+		NL_DIV_IGNORE,
+		NL_DIV_NONLINEAR,
+	};
+
+private:
+	CoriolisTreatment_enum coriolis_treatment;
+	NLTreatment_enum nonlinear_divergence_treatment;
+
 	bool original_linear_operator_sl_treatment;
-	int coriolis_treatment;
 
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
@@ -63,16 +79,11 @@ public:
 		);
 
 	void setup(
-			bool include_nonlinear_divergence = true,
-			bool original_linear_operator_sl_tretment = true,
-			const std::string &i_coriolis_treatment = "nonlinear"	// "linear", "nonlinear", "semi-lagrangian"
+			CoriolisTreatment_enum i_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"
+			NLTreatment_enum i_nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR,	// "ignore", "nonlinear"
+			bool original_linear_operator_sl_treatment = true
 	);
 
-	enum{
-		CORIOLIS_LINEAR,
-		CORIOLIS_NONLINEAR,
-		CORIOLIS_SEMILAGRANGIAN,
-	};
 
 	void run_timestep(
 			SphereData_Spectral &io_phi,	///< prognostic variables

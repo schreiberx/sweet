@@ -310,7 +310,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 	/**
 	 * Now we care about dt*N*
 	 */
-	if (include_nonlinear_divergence)
+	if (nonlinear_divergence_treatment == NL_DIV_NONLINEAR)
 	{
 		/**
 		 * Compute non-linear term N*
@@ -660,29 +660,16 @@ void SWE_Sphere_TS_ln_settls::run_timestep(
 
 
 
-/*
- * Setup
- */
 void SWE_Sphere_TS_ln_settls::setup(
-		bool i_include_nonlinear_divergence,
-		bool i_original_linear_operator_sl_tretment,
-		const std::string &i_coriolis_treatment		// "linear", "nonlinear", "semi-lagrangian"
+	CoriolisTreatment_enum i_coriolis_treatment,
+	NLTreatment_enum i_nonlinear_divergence_treatment,
+	bool i_original_linear_operator_sl_treatment
 )
 {
-	include_nonlinear_divergence = i_include_nonlinear_divergence;
-	original_linear_operator_sl_treatment = i_original_linear_operator_sl_tretment;
-	
-	if (i_coriolis_treatment == "linear")
-		coriolis_treatment = CORIOLIS_LINEAR;
-	else if (i_coriolis_treatment == "nonlinear")
-		coriolis_treatment = CORIOLIS_NONLINEAR;
-	else if (i_coriolis_treatment == "semi-lagrangian")
-		coriolis_treatment = CORIOLIS_SEMILAGRANGIAN;
-	else
-		FatalError(std::string("Only coriolis methods 'linear', 'nonlinear', 'semi-lagrangian' supported, but not")+i_coriolis_treatment);
+	coriolis_treatment = i_coriolis_treatment;
+	nonlinear_divergence_treatment = i_nonlinear_divergence_treatment;
+	original_linear_operator_sl_treatment = i_original_linear_operator_sl_treatment;
 
-	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("SWE_Sphere_TS_ln_settls: Staggering not supported for l_cn_na_sl_nd_settls");
 
 	// Setup sampler for future interpolations
 	sphereSampler.setup(op.sphereDataConfig);
@@ -769,6 +756,7 @@ void SWE_Sphere_TS_ln_settls::setup(
 		);
 	}
 }
+
 
 
 

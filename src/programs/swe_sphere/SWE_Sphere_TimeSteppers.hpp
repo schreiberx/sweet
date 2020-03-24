@@ -523,178 +523,84 @@ public:
 		/**
 		 * SL methods with Coriolis treated as part of linear terms
 		 */
-		else if (
-			i_timestepping_method == "l_irk_na_sl_nd_settls"		||
-			i_timestepping_method == "l_irk_na_sl_nd_settls_ver1"
-		)
+		else if (i_timestepping_method.find("_settls") != std::string::npos)
 		{
+			SWE_Sphere_TS_ln_settls::CoriolisTreatment_enum coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_IGNORE;
+			SWE_Sphere_TS_ln_settls::NLTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_IGNORE;
+			bool original_linear_operator_sl_treatment = true;
+
+			// Search for Coriolis
+			if (i_timestepping_method.find("l_irk") != std::string::npos)
+				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
+			else if (i_timestepping_method.find("lc_na_sl") != std::string::npos)
+				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN;
+			else if (i_timestepping_method.find("lc_") != std::string::npos)
+				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR;
+
+			// Search for Nonlinear divergence
+			if (i_timestepping_method.find("_nd_") != std::string::npos)
+				nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR;
+
+			if (i_timestepping_method.find("_ver2") != std::string::npos)
+				original_linear_operator_sl_treatment = false;
+
+#if 1
+			std::string id_string = "";
+
+			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR)
+				id_string += "l_irk";
+			else
+				id_string += "lg_irk";
+
+			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN)
+				id_string += "_lc";
+
+			id_string += "_na";
+
+			id_string += "_sl";
+
+			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR)
+				id_string += "_lc";
+
+			if (nonlinear_divergence_treatment == SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR)
+				id_string += "_nd";
+
+			id_string += "_settls";
+
+			if (!original_linear_operator_sl_treatment)
+				id_string += "_ver2";
+
+
+			if (i_timestepping_method != id_string)
+			{
+				if (!original_linear_operator_sl_treatment)
+				{
+					std::cerr << "Detected time stepping method: "+id_string << std::endl;
+					std::cerr << "Expected time stepping method: "+i_timestepping_method << std::endl;
+					FatalError("Autodetection of parts of time stepping methods failed!");
+				}
+
+				std::string id_string2 = id_string+"_ver1";
+				if (i_timestepping_method != id_string2)
+				{
+					std::cerr << "Detected time stepping method: "+id_string << std::endl;
+					std::cerr << "Detected alternative time stepping method: "+id_string << std::endl;
+					std::cerr << "Expected time stepping method: "+i_timestepping_method << std::endl;
+					FatalError("Autodetection of parts of time stepping methods failed!");
+				}
+			}
+
+#endif
+
 			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
 			l_cn_na_sl_nd_settls->setup(
-					true,	// with nonlinear divergence
-					true,	// original SL linear operator treatment
-					"linear"	// Coriolis treatment
+					coriolis_treatment,		// Coriolis treatment
+					nonlinear_divergence_treatment,	// Nonlinear divergence treatment
+					original_linear_operator_sl_treatment			// original SL linear operator treatment
 				);
 
 			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
 		}
-		else if (
-			i_timestepping_method == "l_irk_na_sl_nd_settls_ver2"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					true,	// with nonlinear divergence
-					false,	// original SL linear operator treatment
-					"linear"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "l_irk_na_sl_settls"	||
-			i_timestepping_method == "l_irk_na_sl_settls_ver1"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					false,	// with nonlinear divergence
-					true,	// original SL linear operator treatment
-					"linear"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "l_irk_na_sl_settls_ver2"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					false,		// with nonlinear divergence
-					false,		// original SL linear operator treatment
-					"linear"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		
-		/**
-		 * SL methods with Coriolis treated as part of lagrangian terms
-		 */
-		else if (
-			i_timestepping_method == "lg_irk_lc_na_sl_nd_settls"		||
-			i_timestepping_method == "lg_irk_lc_na_sl_nd_settls_ver1"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					true,	// with nonlinear divergence
-					true,	// original SL linear operator treatment
-					"semilagrangian"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "lg_irk_lc_na_sl_nd_settls_ver2"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					true,	// with nonlinear divergence
-					false,	// original SL linear operator treatment
-					"semilagrangian"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "lg_irk_lc_na_sl_settls"	||
-			i_timestepping_method == "lg_irk_lc_na_sl_settls_ver1"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					false,	// with nonlinear divergence
-					true,	// original SL linear operator treatment
-					"semilagrangian"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "lg_cn_lc_na_sl_settls_ver2"	||
-			i_timestepping_method == "lg_irk_lc_na_sl_settls_ver2"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					false,	// with nonlinear divergence
-					false,	// original SL linear operator treatment
-					"semilagrangian"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		
-		/**
-		 * SL methods with Coriolis treated as part of nonlinear terms
-		 */
-		else if (
-			i_timestepping_method == "lg_irk_na_sl_lc_nd_settls"		||
-			i_timestepping_method == "lg_irk_na_sl_lc_nd_settls_ver1"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					true,		// with nonlinear divergence
-					true,		// original SL linear operator treatment
-					"nonlinear"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "lg_irk_na_sl_lc_nd_settls_ver2"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					true,		// with nonlinear divergence
-					false,		// original SL linear operator treatment
-					"nonlinear"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "lg_irk_na_sl_lc_settls"	||
-			i_timestepping_method == "lg_irk_na_sl_lc_settls_ver1"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					false,		// with nonlinear divergence
-					true,		// original SL linear operator treatment
-					"nonlinear"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		else if (
-			i_timestepping_method == "lg_irk_na_sl_lc_settls_ver2"
-		)
-		{
-			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-			l_cn_na_sl_nd_settls->setup(
-					false,		// with nonlinear divergence
-					false,		// original SL linear operator treatment
-					"nonlinear"	// Coriolis treatment
-				);
-
-			master = &(SWE_Sphere_TS_interface&)*l_cn_na_sl_nd_settls;
-		}
-		
 		else
 		{
 			std::cout << i_timestepping_method << std::endl;
