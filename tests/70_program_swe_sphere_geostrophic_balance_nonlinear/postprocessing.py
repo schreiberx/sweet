@@ -60,7 +60,7 @@ import numpy
 max_error = numpy.amax(numpy.abs(errors))
 print("Maximum overall error: "+str(max_error))
 
-err_threshold = 1e-10
+err_threshold = 1e-9
 if max_error > err_threshold or not math.isfinite(max_error):
 	raise Exception("Relative overall error exceeeds threshold "+str(err_threshold))
 
