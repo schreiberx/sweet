@@ -449,7 +449,7 @@ if p.gui == 'enable':
 			Exit(1)
 
 	env.ParseConfig("sdl2-config --cflags --libs")
-	env.ParseConfig("freetype-config --cflags --libs")
+	env.ParseConfig("pkg-config --libs --cflags freetype2")
 else:
 	env.Append(CXXFLAGS=' -DSWEET_GUI=0')
 
