@@ -185,7 +185,7 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 	else
 	{
 		if (!simVars.misc.sphere_use_robert_functions)
-			FatalError("Robert functions not yet supported in this time integrator");
+			FatalError("Using no Robert formulation is not yet supported in this time integrator");
 
 		SphereData_Physical ug(sphereDataConfig);
 		SphereData_Physical vg(sphereDataConfig);

@@ -1332,7 +1332,7 @@ public:
 			}
 
 			double a = simVars->sim.sphere_radius;
-			double omega = simVars->sim.sphere_rotating_coriolis_omega;
+			//double omega = simVars->sim.sphere_rotating_coriolis_omega;
 			double u0 = 2.0*M_PI*a/(12.0*24.0*60.0*60.0);
 			double alpha = 0;
 
