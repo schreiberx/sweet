@@ -213,8 +213,8 @@ p.runtime.space_res_physical = -1
 #
 # Benchmark name
 #
-# galewsky_nosetparam: Galewsky without overriding simulation parameters (gravity, avg. height, etc.)
-p.runtime.benchmark_name = "galewsky_nosetparam"
+# galewsky_nosetparams: Galewsky without overriding simulation parameters (gravity, avg. height, etc.)
+p.runtime.benchmark_name = "galewsky_nosetparams"
 
 #
 # Compute error

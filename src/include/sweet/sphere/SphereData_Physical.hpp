@@ -73,10 +73,28 @@ public:
 	)	:
 		sphereDataConfig(i_sph_data.sphereDataConfig),
 		physical_space_data(nullptr)
+
 	{
-		setup(i_sph_data.sphereDataConfig);
+		if (i_sph_data.sphereDataConfig != nullptr)
+			setup(i_sph_data.sphereDataConfig);
 
 		operator=(i_sph_data);
+	}
+
+
+public:
+	SphereData_Physical(
+			SphereData_Physical &&i_sph_data
+	)	:
+		sphereDataConfig(i_sph_data.sphereDataConfig),
+		physical_space_data(nullptr)
+	{
+		if (i_sph_data.sphereDataConfig == nullptr)
+			return;
+
+		setup(i_sph_data.sphereDataConfig);
+
+		std::swap(physical_space_data, i_sph_data.physical_space_data);
 	}
 
 
@@ -100,6 +118,9 @@ public:
 			const SphereData_Physical &i_sph_data
 	)
 	{
+		if (i_sph_data.sphereDataConfig == nullptr)
+			return *this;
+
 		if (sphereDataConfig == nullptr)
 			setup(i_sph_data.sphereDataConfig);
 
@@ -198,6 +219,18 @@ public:
 	}
 
 
+	SphereData_Physical& operator+=(
+			double i_scalar
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] += i_scalar;
+
+		return *this;
+	}
+
+
 	SphereData_Physical& operator-=(
 			const SphereData_Physical &i_sph_data
 	)
@@ -207,6 +240,18 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] -= i_sph_data.physical_space_data[idx];
+
+		return *this;
+	}
+
+
+	SphereData_Physical& operator-=(
+			double i_scalar
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] -= i_scalar;
 
 		return *this;
 	}

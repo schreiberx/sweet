@@ -82,7 +82,6 @@ public:
 		sphereDataConfig(i_sph_data.sphereDataConfig),
 		spectral_space_data(nullptr)
 	{
-		// Dummy initialization
 		if (i_sph_data.sphereDataConfig == nullptr)
 			return;
 
@@ -100,6 +99,9 @@ public:
 		sphereDataConfig(i_sph_data.sphereDataConfig),
 		spectral_space_data(nullptr)
 	{
+		if (i_sph_data.sphereDataConfig == nullptr)
+			return;
+
 		setup(i_sph_data.sphereDataConfig);
 
 		std::swap(spectral_space_data, i_sph_data.spectral_space_data);
@@ -129,6 +131,9 @@ public:
 			const SphereData_Spectral &i_sph_data
 	)
 	{
+		if (i_sph_data.sphereDataConfig == nullptr)
+			return *this;
+
 		if (sphereDataConfig == nullptr)
 			setup(i_sph_data.sphereDataConfig);
 

@@ -593,10 +593,10 @@ public:
 		else if (
 				simVars->benchmark.benchmark_name == "galewsky" ||			///< Standard Galewsky benchmark
 				simVars->benchmark.benchmark_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
-				simVars->benchmark.benchmark_name == "galewsky_nosetparam"	///< Galewsky benchmark without overriding parameters
+				simVars->benchmark.benchmark_name == "galewsky_nosetparams"	///< Galewsky benchmark without overriding parameters
 		)
 		{
-			if (simVars->benchmark.benchmark_name != "galewsky_nosetparam")
+			if (simVars->benchmark.benchmark_name != "galewsky_nosetparams")
 			{
 				if (simVars->timecontrol.current_simulation_time == 0)
 				{
@@ -1135,7 +1135,7 @@ public:
 				simVars->benchmark.benchmark_name == "geostrophic_balance_128"	||
 				simVars->benchmark.benchmark_name == "geostrophic_balance_256"	||
 				simVars->benchmark.benchmark_name == "geostrophic_balance_512"	||
-				simVars->benchmark.benchmark_name == "geostrophic_balance_nosetparam"
+				simVars->benchmark.benchmark_name == "geostrophic_balance_nosetparams"
 		)
 		{
 			/*
@@ -1148,7 +1148,7 @@ public:
 			 * "geostrophic_balance_N" means that N is the multiplier for the frequency
 			 * in the direction of the Latitude
 			 */
-			if (simVars->benchmark.benchmark_name != "geostrophic_balance_nosetparam")
+			if (simVars->benchmark.benchmark_name != "geostrophic_balance_nosetparams")
 			{
 				if (simVars->timecontrol.current_simulation_time == 0)
 				{
@@ -1167,6 +1167,8 @@ public:
 			double omega = simVars->sim.sphere_rotating_coriolis_omega;
 			double u0 = 2.0*M_PI*a/(12.0*24.0*60.0*60.0);
 			double alpha = 0;
+
+			double gh0 = simVars->sim.gravitation * simVars->sim.h0;
 
 
 			double freq_multiplier = 1.0;
@@ -1258,17 +1260,6 @@ public:
 				FatalError("Vorticity fields differ (should be close to 0), maybe there are some numerical round-off errors?");
 			}
 
-#if 0
-			// Setup Coriolis effect
-			SphereData_Physical fg(o_phi.sphereDataConfig);
-			fg.physical_update_lambda_gaussian_grid(
-				[&](double lon, double mu, double &o_data)
-				{
-					o_data = mu*simVars->sim.sphere_rotating_coriolis_omega;
-				}
-			);
-#endif
-
 
 			bool use_analytical_geostrophic_setup = simVars->misc.comma_separated_tags.find("geostrophic_balance_analytical_setup") != std::string::npos;
 
@@ -1282,7 +1273,6 @@ public:
 						o_div,
 						o_phi
 				);
-
 			}
 			else
 			{
@@ -1294,16 +1284,17 @@ public:
 					[&](double lon, double phi, double &o_data)
 					{
 						o_data = -std::cos(lon)*std::cos(phi)*std::sin(alpha) + std::sin(phi)*std::cos(alpha);
-						//o_data = std::sin(phi)*std::cos(alpha);
 						o_data = o_data*o_data;
 					}
 				);
 
 				// Eq. 95, Williamson TC paper
-				SphereData_Physical phig = - (a*omega*u0 + u0*u0/2.0)*r2;
+				SphereData_Physical phig = -(a*omega*u0 + u0*u0/2.0)*r2;
 
 				o_phi.loadSphereDataPhysical(phig);
 			}
+
+			o_phi += gh0;
 		}
 
 		else if (
@@ -1336,6 +1327,7 @@ public:
 			double u0 = 2.0*M_PI*a/(12.0*24.0*60.0*60.0);
 			double alpha = 0;
 
+			double gh0 = simVars->sim.gravitation * simVars->sim.h0;
 
 			double freq_multiplier = 1.0;
 
@@ -1407,17 +1399,6 @@ public:
 				FatalError("Vorticity fields differ (should be close to 0), maybe there are some numerical round-off errors?");
 			}
 
-#if 0
-			// Setup Coriolis effect
-			SphereData_Physical fg(o_phi.sphereDataConfig);
-			fg.physical_update_lambda_gaussian_grid(
-				[&](double lon, double mu, double &o_data)
-				{
-					o_data = mu*simVars->sim.sphere_rotating_coriolis_omega;
-				}
-			);
-#endif
-
 
 			std::cout << "[MULE] geostrophic_balance_analytical_setup: 1" << std::endl;
 
@@ -1426,6 +1407,8 @@ public:
 					o_div,
 					o_phi
 			);
+
+			o_phi += gh0;
 		}
 		else
 		{

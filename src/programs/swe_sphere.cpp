@@ -10,6 +10,7 @@
 	#include <sweet/plane/PlaneDataConfig.hpp>
 	#include <sweet/plane/PlaneData.hpp>
 	#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
+	#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 #endif
 
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
@@ -17,11 +18,10 @@
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
 #include <sweet/sphere/SphereHelpers_Diagnostics.hpp>
-
-
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
+
 #include <sweet/Stopwatch.hpp>
 #include <sweet/FatalError.hpp>
 
@@ -29,7 +29,7 @@
 #include "swe_sphere/SWE_Sphere_NormalModeAnalysis.hpp"
 
 #include <sweet/SimulationBenchmarkTiming.hpp>
-
+#include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 
 SimulationVariables simVars;
@@ -584,6 +584,8 @@ public:
 	}
 
 
+	int max_viz_types = 9;
+
 
 	void vis_get_vis_data_array(
 			const PlaneData **o_dataArray,
@@ -596,10 +598,29 @@ public:
 		*o_render_primitive_id = render_primitive_id;
 		*o_bogus_data = sphereDataConfig;
 
-		int id = simVars.misc.vis_id % 6;
+		if (simVars.misc.vis_id < 0)
+		{
+			int n = -simVars.misc.vis_id-1;
+			if (n <  (int)SphereData_DebugContainer().size())
+			{
+				SphereData_DebugContainer::DataContainer &d = SphereData_DebugContainer().container_data()[n];
+				if (d.is_spectral)
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(d.data_spectral, planeDataConfig);
+				else
+					viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(d.data_physical, planeDataConfig);
+
+				*o_dataArray = &viz_plane_data;
+				*o_aspect_ratio = 0.5;
+				return;
+			}
+		}
+
+		int id = simVars.misc.vis_id % max_viz_types;
+
 		switch (id)
 		{
 			default:
+
 			case 0:
 				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_phi), planeDataConfig);
 				break;
@@ -639,6 +660,33 @@ public:
 				break;
 			}
 
+			case 6:
+			case 7:
+			case 8:
+			{
+				SphereData_Spectral anal_solution_phi(sphereDataConfig);
+				SphereData_Spectral anal_solution_vort(sphereDataConfig);
+				SphereData_Spectral anal_solution_div(sphereDataConfig);
+
+				sphereBenchmarks.setup(simVars, op);
+				sphereBenchmarks.setupInitialConditions(anal_solution_phi, anal_solution_vort, anal_solution_div);
+
+				switch (id)
+				{
+				case 6:
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_phi - anal_solution_phi, planeDataConfig);
+					break;
+
+				case 7:
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vort - anal_solution_vort, planeDataConfig);
+					break;
+
+				case 8:
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_div - anal_solution_div, planeDataConfig);
+					break;
+				}
+			}
+
 		}
 
 		*o_dataArray = &viz_plane_data;
@@ -652,36 +700,64 @@ public:
 	 */
 	const char* vis_get_status_string()
 	{
-		const char* description = "";
+		std::string description = "";
 
-		int id = simVars.misc.vis_id % 6;
 
-		switch (id)
+		bool found = false;
+		if (simVars.misc.vis_id < 0)
 		{
-		default:
-		case 0:
-			description = "phi";
-			break;
+			int n = -simVars.misc.vis_id-1;
 
-		case 1:
-			description = "vort";
-			break;
+			if (n <  (int)SphereData_DebugContainer().size())
+			{
+				description = std::string("DEBUG_")+SphereData_DebugContainer().container_data()[n].description;
+				found = true;
+			}
+		}
 
-		case 2:
-			description = "div";
-			break;
+		int id = simVars.misc.vis_id % max_viz_types;
 
-		case 3:
-			description = "h";
-			break;
+		if (!found)
+		{
+			switch (id)
+			{
+			default:
+			case 0:
+				description = "phi";
+				break;
 
-		case 4:
-			description = "u";
-			break;
+			case 1:
+				description = "vort";
+				break;
 
-		case 5:
-			description = "v";
-			break;
+			case 2:
+				description = "div";
+				break;
+
+			case 3:
+				description = "h";
+				break;
+
+			case 4:
+				description = "u";
+				break;
+
+			case 5:
+				description = "v";
+				break;
+
+			case 6:
+				description = "phi diff t0";
+				break;
+
+			case 7:
+				description = "vort diff t0";
+				break;
+
+			case 8:
+				description = "div diff t0";
+				break;
+			}
 		}
 
 
@@ -690,22 +766,43 @@ public:
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 		sprintf(title_string,
 #if SWEET_MPI
-				"Rank %i - "
+				"Rank %i,"
+				","
 #endif
-				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+				"Visualization %i: %s,"
+				"MaxVal: %.6e,"
+				"MinVal: %.6e,"
+				","
+				"Time: %f secs,"
+				"Time: %f hours,"
+				"Time: %f days,"
+				"timestep nr.: %i,"
+				"timestep size: %f,"
+				","
+				"TMass: %.6e,"
+				"TEnergy: %.6e,"
+				"PotEnstrophy: %.6e,"
+				","
+				"Colorscale: lowest [Blue... green ... red] highest"
+				,
 #if SWEET_MPI
 				mpi_rank,
 #endif
+				simVars.misc.vis_id,
+				description.c_str(),
+				viz_plane_data.reduce_max(),
+				viz_plane_data.reduce_min(),
+
 				simVars.timecontrol.current_simulation_time,
+				simVars.timecontrol.current_simulation_time/(60.0*60.0),
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,
 				simVars.timecontrol.current_timestep_size,
-				description,
+
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
-				simVars.diag.total_potential_enstrophy,
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min()
+				simVars.diag.total_potential_enstrophy
+
 		);
 
 		return title_string;

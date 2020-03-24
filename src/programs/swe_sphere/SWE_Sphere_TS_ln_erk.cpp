@@ -6,7 +6,7 @@
  */
 
 #include "SWE_Sphere_TS_ln_erk.hpp"
-
+#include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 
 
@@ -50,10 +50,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
 
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	else
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+	op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
 
 	/*
 	 * Step 1b
@@ -73,11 +70,9 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	 * Step 1d
 	 */
 	// Eq. (21) & left part of Eq. (22)
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
-	else
-		op.uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
-	
+	op.uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t, simVars.misc.sphere_use_robert_functions);
+
+
 	/*
 	 * Step 1e
 	 */
@@ -109,10 +104,8 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	tmp_u = ug*phig;
 	tmp_v = vg*phig;
 
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmp_u,tmp_v, e, o_phi_t);
-	else
-		op.uv_to_vortdiv(tmp_u,tmp_v, e, o_phi_t);
+	op.uv_to_vortdiv(tmp_u,tmp_v, e, o_phi_t, simVars.misc.sphere_use_robert_functions);
+
 	o_phi_t *= -1.0;
 
 
