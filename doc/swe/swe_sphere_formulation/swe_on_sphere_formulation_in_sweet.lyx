@@ -1,0 +1,582 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date true
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+SWE on sphere formulation in SWEET
+\end_layout
+
+\begin_layout Author
+Martin Schreiber
+\end_layout
+
+\begin_layout Date
+2020-03-23
+\end_layout
+
+\begin_layout Standard
+This documents describes the particular SWE on sphere implementation in
+ SWEET.
+\end_layout
+
+\begin_layout Section
+Vorticity-divergence formulation
+\end_layout
+
+\begin_layout Standard
+We use the vorticity-divergence formulation (See Williamson et al.
+ paper on SWE test cases) with the divergence given by
+\begin_inset Formula 
+\begin{eqnarray*}
+\delta & = & \nabla\cdot\vec{v}
+\end{eqnarray*}
+
+\end_inset
+
+and the relative vorticity by
+\begin_inset Formula 
+\begin{eqnarray*}
+\xi & = & \vec{k}\cdot\left(\nabla\times\vec{v}\right)
+\end{eqnarray*}
+
+\end_inset
+
+with 
+\begin_inset Formula $\vec{v}=(u,v)$
+\end_inset
+
+ the velocity vector.
+ The vorticity-divergence formulation is then given by
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{\partial}{\partial t}\Phi & = & -\nabla\cdot(\Phi\vec{v})\\
+\frac{\partial}{\partial t}\xi & = & -\nabla\cdot\left(\left(\xi+f\right)\vec{v}\right)\\
+\frac{\partial}{\partial t}\delta & = & \vec{k}\cdot\nabla\times\left(\left(\xi+f\right)\vec{v}\right)-\nabla^{2}\left(\Phi+\frac{\vec{v}\cdot\vec{v}}{2}\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Spherical harmonics
+\end_layout
+
+\begin_layout Standard
+We use state variables in physical space without a tilde, e.g.
+ 
+\begin_inset Formula $x$
+\end_inset
+
+, and variables in spectral space denoted with a tilde such as 
+\begin_inset Formula $\tilde{x}$
+\end_inset
+
+.
+ Let the function converting data from spectral to physical space be given
+ by
+\begin_inset Formula 
+\[
+x=s2p(\tilde{x})
+\]
+
+\end_inset
+
+and from physical to spectral space by
+\begin_inset Formula 
+\[
+\tilde{x}=p2s(x).
+\]
+
+\end_inset
+
+The Laplace operator is then provided by
+\begin_inset Formula 
+\[
+\nabla^{2}(u)=lap(u).
+\]
+
+\end_inset
+
+We also exploit the feature of the SHTNS library to compute the divergence
+ and vorticity in spectral space for given velocities in physical space
+ and denote this function by
+\begin_inset Formula 
+\[
+(\tilde{\xi},\tilde{\delta})=vel2vd(u,v)
+\]
+
+\end_inset
+
+and vice versa
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+(u,v)=vd2vel(\tilde{\xi},\tilde{\delta}).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Linear shallow-water equations
+\end_layout
+
+\begin_layout Subsection
+l_erk
+\end_layout
+
+\begin_layout Enumerate
+Vorticity/divergence:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Compute the velocity based on the vorticity and divergence: 
+\begin_inset Formula $(u,v)=vd2vel(\tilde{\xi},\tilde{\delta})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Evaluate temporary vector 
+\begin_inset Formula $(u^{*},v^{*})=f\vec{v}$
+\end_inset
+
+ in physical space
+\end_layout
+
+\begin_layout Enumerate
+Compute vorticity and divergence updates 
+\begin_inset Formula $(\tilde{\xi}',\tilde{\delta}')=vel2vd(u^{t},v^{t})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign vorticity update: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\xi}=-\tilde{\delta}'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign divergence tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\delta}=\tilde{\xi}'-lap(\tilde{\Phi})$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Geopotential:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Assign geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}=-\overline{\Phi}\tilde{\delta}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+lc_erk_lg_erk
+\end_layout
+
+\begin_layout Subsubsection
+lc_erk
+\end_layout
+
+\begin_layout Enumerate
+Vorticity/divergence:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Compute the velocity based on the vorticity and divergence: 
+\begin_inset Formula $(u,v)=vd2vel(\tilde{\xi},\tilde{\delta})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Evaluate temporary vector 
+\begin_inset Formula $(u^{*},v^{*})=f\vec{v}$
+\end_inset
+
+ in physical space
+\end_layout
+
+\begin_layout Enumerate
+Compute vorticity and divergence updates 
+\begin_inset Formula $(\tilde{\xi}',\tilde{\delta}')=vel2vd(u^{t},v^{t})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign vorticity update: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\xi}=-\tilde{\delta}'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign divergence tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\delta}=\tilde{\xi}'$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Geopotential:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Zero geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}=0$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Subsubsection
+lg_erk
+\end_layout
+
+\begin_layout Enumerate
+Vorticity/divergence:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Zero vorticity update: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\xi}=0$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign divergence tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\delta}=-lap(\tilde{\Phi})$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Geopotential:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Assign geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}=-\overline{\Phi}\tilde{\delta}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Nonlinear shallow-water equations
+\end_layout
+
+\begin_layout Subsection
+ln_erk
+\end_layout
+
+\begin_layout Standard
+Next, we discuss the full non-linear time tendency computation.
+ The different steps for the time integration are given as follows:
+\end_layout
+
+\begin_layout Enumerate
+Vorticity/divergence:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Compute the velocity based on the vorticity and divergence: 
+\begin_inset Formula $(u,v)=vd2vel(\tilde{\xi},\tilde{\delta})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Convert 
+\begin_inset Formula $\xi$
+\end_inset
+
+ from spectral to physical space: 
+\begin_inset Formula $\xi=s2p(\tilde{\xi})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Evaluate temporary vector 
+\begin_inset Formula $(u^{*},v^{*})=\left(\xi+f\right)\vec{v}$
+\end_inset
+
+ in physical space
+\end_layout
+
+\begin_layout Enumerate
+Compute vorticity and divergence updates 
+\begin_inset Formula $(\tilde{\xi}',\tilde{\delta}')=vel2vd(u^{t},v^{t})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign vorticity update: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\xi}=-\tilde{\delta}'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Convert geopotential 
+\begin_inset Formula $\Phi=s2p(\tilde{\Phi})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute 
+\begin_inset Formula $e=\Phi+\frac{\vec{v}\cdot\vec{v}}{2}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign divergence tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\delta}=\tilde{\xi}'-lap(p2s(e))$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Geopotential:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Prepare divergence 
+\begin_inset Formula $(u^{t},v^{t})=(u\Phi,v\Phi)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute divergence 
+\begin_inset Formula $(\tilde{\xi}^{*},\tilde{\delta}^{*})=vel2vd(u^{t},v^{t})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}=-\tilde{\delta}^{*}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Section
+Semi-Lagrangian shallow-water equations
+\end_layout
+
+\begin_layout Standard
+For the Lagrangian formulation we use the total derivative
+\begin_inset Formula 
+\[
+\frac{d}{dt}()=\frac{\partial}{\partial t}()+\vec{v}\cdot\nabla().
+\]
+
+\end_inset
+
+We write the geopotential as
+\begin_inset Formula 
+\[
+\frac{\partial}{\partial t}\Phi=-\nabla\cdot\left(\Phi\vec{v}\right).
+\]
+
+\end_inset
+
+As usual, this is split into the linearized form 
+\begin_inset Formula $\Phi=\overline{\Phi}+\Phi'$
+\end_inset
+
+, yielding
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial}{\partial t}\Phi' & =-\nabla\cdot\left(\left(\overline{\Phi}+\Phi'\right)\vec{v}\right)\\
+ & =-\overline{\Phi}\nabla\cdot\vec{v}-\nabla\cdot\left(\Phi'\vec{v}\right)\\
+ & =-\overline{\Phi}\nabla\cdot\vec{v}-\vec{v}\cdot\left(\nabla\Phi'\right)-\left(\nabla\cdot\vec{v}\right)\Phi'\\
+\frac{d}{dt}\Phi' & =\underbrace{-\overline{\Phi}\delta}_{\text{linear}}-\underbrace{\left(\nabla\cdot\vec{v}\right)\Phi'}_{\text{non-linear advection}}\\
+ & =-\delta\Phi'
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Advective terms
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Regarding the advective terms, since 
+\begin_inset Formula $\frac{d}{dt}u$
+\end_inset
+
+ and 
+\begin_inset Formula $\frac{d}{dt}v$
+\end_inset
+
+ would be entirely linear on the right-hand side, so are the vorticity and
+ divergence.
+ Therefore, the remaining terms are the ones which can be treated linearly
+ (see l_erk above).
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Geopotential
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Convert states to spectral space: 
+\begin_inset Formula $\delta=s2p(\tilde{\delta})$
+\end_inset
+
+ and 
+\begin_inset Formula $\Phi'=s2p(\tilde{\Phi}')$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}=-p2s\left(\delta\Phi'\right)$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\end_body
+\end_document

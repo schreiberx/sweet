@@ -15,7 +15,10 @@ echo_info "Generating benchmark job scripts..."
 ./benchmark_create_job_scripts || exit 1
 
 echo_info "Generating reference solution..."
-./benchmark_gen_swe_reference_solution.py || exit 1
+./benchmark_gen_swe_reference_solution.py 0 || exit 1
+
+echo_info "Generating reference solution..."
+./benchmark_gen_swe_reference_solution.py 1 || exit 1
 
 echo_info "Running various time steppers..."
 mule.benchmark.jobs_run_directly || exit 1

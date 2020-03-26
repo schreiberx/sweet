@@ -17,9 +17,25 @@ for JOBDIR in $DIRS; do
 
 	echo_info "Executing job in directory '$JOBDIR'"
 
-	./run.sh 2>"output.err" > "./output.out" &
+	function kill_job()
+	{
+		GRANDCHILD_PIDS=`pgrep -P $SCRIPT_PID`
+		echo "Sending TERM signal to grandchild jobs $GRANDCHILD_PIDS"
 
+		echo "$GRANDCHILD_PIDS" | xargs kill -TERM
+
+		exit -1
+	}
+
+	trap kill_job SIGINT
+
+	./run.sh 2>"output.err" > "./output.out" &
+	#./run.sh 2>"output.err" &
+	#./run.sh > "./output.out" &
 	SCRIPT_PID=$!
+
+	sleep 10
+
 
         # Wait for finish
         wait $SCRIPT_PID

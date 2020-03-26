@@ -20,6 +20,14 @@ data_ref = np.loadtxt(filename_ref)
 #print("Reference data size:")
 #print(data_ref.shape)
 
+if "bench_" in filename_ref:
+    data_ref = data_ref[1:,1:]
+
+print("")
+print("data ref")
+print(" + min: "+str(np.min(data_ref)))
+print(" + max: "+str(np.max(data_ref)))
+print("")
 
 
 #filename_sweet = 'job_bench_sweet/'+filename
@@ -33,6 +41,13 @@ data_sweet = data_sweet[1:,1:]
 
 #print("Sweet data size:")
 #print(data_sweet.shape)
+
+print("")
+print("data sweet")
+print(" + min: "+str(np.min(data_sweet)))
+print(" + max: "+str(np.max(data_sweet)))
+print("")
+
 
 diff = data_ref - data_sweet
 

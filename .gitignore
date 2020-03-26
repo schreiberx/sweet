@@ -5,6 +5,7 @@ FFTW_*
 **/*.out
 **/*~
 **/*.eps
+**/*.swo
 **/*.directory
 **/*.swp
 **/*.lyx#

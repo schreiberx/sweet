@@ -1,1 +1,1 @@
-../70_program_swe_sphere_geostrophic_balance/benchmark_create_job_scripts.py
+../70_program_swe_sphere_geostrophic_balance_linear/benchmark_create_job_scripts.py
