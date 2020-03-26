@@ -177,7 +177,7 @@ export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 #
 export MULE_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib"
 # Always include lib64 even if it doesn exist.
-# Thatś important to install software into this directory
+# Thats important to install software into this directory
 export MULE_LD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$MULE_LD_LIBRARY_PATH"
 export LD_LIBRARY_PATH="$MULE_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"
 
@@ -187,12 +187,8 @@ if [ -d "$SCRIPTDIR/local/lib64" ]; then
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 fi
 
-if [ -z "$PYTHONPATH" ]; then
-	export PYTHONPATH="$SCRIPTDIR/local/lib/python3.6/site-packages/"
-else
-	export PYTHONPATH="$PYTHONPATH:$SCRIPTDIR/local/lib/python3.6/site-packages/"
-fi
-export PYTHONPATH="$SCRIPTDIR/local/lib/python3.8/site-packages/:$PYTHONPATH"
+PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
+export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/:$PYTHONPATH"
 
 
 # Add MULE python path
