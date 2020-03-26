@@ -194,10 +194,10 @@ export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/:$PYT
 # Add MULE python path
 # DO NOT INCLUDE THIS, SINCE ONLY ONE 'mule' MODULE WILL BE AVAILABLE!
 # We link from the SWEET module path to the MULE module path
-export PYTHONPATH="$PYTHONPATH:$MULE_ROOT/site-packages"
+export PYTHONPATH="$PYTHONPATH:$MULE_ROOT/python"
 
 # Add MULE SWEET python path
-export PYTHONPATH="$PYTHONPATH:$MULE_LOCAL_ROOT/site-packages"
+export PYTHONPATH="$PYTHONPATH:$MULE_LOCAL_ROOT/python"
 
 
 # Back to local software
