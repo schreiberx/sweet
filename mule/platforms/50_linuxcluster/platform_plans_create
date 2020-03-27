@@ -15,6 +15,7 @@ if [[ -z "$GENERATOR_SCRIPTS" ]]; then
 fi
 
 
+
 JOBS=""
 PREV_JOBID=""
 for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
@@ -29,9 +30,6 @@ for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
 	echo_info "Updating ${JOB_SCRIPT} with job dependencies and copy instructions for existing plans"
 
 	if [[ -n "$PREV_JOBID" ]]; then 
-		#
-		# This is the first job script which create all the transformation plans
-		#
 		if true; then
 			if [[ -z "$MULE_JOB_SCHEDULER_DEPENDENCY" ]]; then
 				echo_info " + job dependency: No variable MULE_JOB_SCHEDULER_DEPENDENCY set, hence not using any job scheduler dependency"
@@ -48,8 +46,8 @@ for GENERATOR_SCRIPT in $GENERATOR_SCRIPTS; do
 		fi
 
 		# Copy SHTNS plan to current working directory
-		sed -i "s/# %SCRIPT_EXEC_PREFIX%/cp ..\/shtns_cfg .\/ || exit 1\n&/" "${JOB_SCRIPT}"
-		sed -i "s/# %SCRIPT_EXEC_PREFIX%/cp ..\/shtns_cfg_fftw .\/ || exit 1\n&/" "${JOB_SCRIPT}"
+		sed -i "s/# %SCRIPT_EXEC_PREFIX%/mv ..\/shtns_cfg .\/ || exit 1\n&/" "${JOB_SCRIPT}"
+		sed -i "s/# %SCRIPT_EXEC_PREFIX%/mv ..\/shtns_cfg_fftw .\/ || exit 1\n&/" "${JOB_SCRIPT}"
 	fi
 
 	# Copy (updated) SHTNS plans back to main benchmark directory

@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+import sys
+
 from mule_local.JobCompileOptions import *
 from mule.InfoError import *
 
