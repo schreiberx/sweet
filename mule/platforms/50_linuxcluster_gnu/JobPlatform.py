@@ -147,7 +147,7 @@ def jobscript_get_exec_prefix(jg : JobGeneration):
 	"""
 
 	content = ""
-	content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
+	content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
 
 	return content
 
