@@ -2,8 +2,13 @@
 
 source ./install_helpers.sh ""
 
+# Setup environment in case it has been missed
+#source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
+
 PKG_NAME="SHTNS_python"
-PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python3.8/site-packages/shtns.py"
+
+PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python$PYTHONVERSION/site-packages/shtns.py"
 
 PKG_URL_SRC="shtns-3.3.1-r694.tar.gz"
 

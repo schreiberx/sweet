@@ -6,9 +6,9 @@ import platform
 
 
 # SCons doesn't inherit the python environment variables
-sys.path.append("./mule_local/site-packages/mule_local")
+sys.path.append("./mule_local/python/mule_local")
 from JobCompileOptions import *
-sys.path.remove("./mule_local/site-packages/mule_local")
+sys.path.remove("./mule_local/python/mule_local")
 
 #
 # Setup parallel compilation

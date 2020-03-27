@@ -155,8 +155,10 @@ class JobPlatforms(InfoError):
 
             if platform_id in self.platforms:
                 msg = "Duplicate platform id '"+platform_id+"' detected\n"
-                msg += " + Please update string returned by 'get_platform_id()'\n"
-                msg += " + Error happened in in modules '"+self.platforms[platform_id].module.__name__+"' and '"+module.__name__+"'\n"
+                self.info(msg)
+                msg = " + Please update string returned by 'get_platform_id()! Maybe this string exists twice!'\n"
+                self.info(msg)
+                msg = " + Error happened in module '"+self.platforms[platform_id].module.__name__+"' and '"+module.__name__+"'\n"
                 self.info(msg)
                 self.error(msg)
 

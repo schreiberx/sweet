@@ -131,6 +131,13 @@ export MULE_ROOT="$MULE_SOFTWARE_ROOT/mule"
 export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
 
 
+# Use SWEET python environment in case that the system-wide installed python is used
+# Ignore errors in case that this folder doesn't exist
+python3 -m venv "$MULE_SOFTWARE_ROOT/local_software/local/python_env"
+
+# Setup environment
+source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
+
 #######################################################################
 # Setup platform specific parts
 #######################################################################
