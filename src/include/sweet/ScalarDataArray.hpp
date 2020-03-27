@@ -181,6 +181,15 @@ public:
 	}
 
 
+	inline
+	double get(
+			std::size_t i
+	)
+	{
+		return scalar_data[i];
+	}
+
+
 	void update_lambda_array_indices(
 			std::function<void(int,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)

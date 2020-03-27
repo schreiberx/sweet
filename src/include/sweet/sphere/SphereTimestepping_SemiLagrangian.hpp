@@ -10,8 +10,10 @@
 #define SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 
 #include <sweet/ScalarDataArray.hpp>
+#include <sweet/SWEETMath.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
 #include <sweet/sphere/Convert_ScalarDataArray_to_SphereDataPhysical.hpp>
+#include <sweet/SimulationVariables.hpp>
 
 #include <sweet/sphere/Convert_SphereDataPhysical_to_ScalarDataArray.hpp>
 #include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
@@ -31,140 +33,6 @@ public:
 	SphereTimestepping_SemiLagrangian()	:
 		sphereDataConfig(nullptr)
 	{
-	}
-
-
-	void crossProd3(double w[3], double v[3], double ret[3])
-	{
-		ret[0] = w[1]*v[2] - w[2]*v[1];
-		ret[1] = w[2]*v[0] - w[0]*v[2];
-		ret[2] = w[0]*v[1] - w[1]*v[0];
-	}
-
-
-	inline
-	static
-	void angleToCartCoord(
-			const ScalarDataArray &i_lon,
-			const ScalarDataArray &i_lat,
-			ScalarDataArray &o_x,
-			ScalarDataArray &o_y,
-			ScalarDataArray &o_z
-	)
-	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
-		{
-			o_x.scalar_data[i] = std::cos(i_lon.scalar_data[i])*std::cos(i_lat.scalar_data[i]);
-			o_y.scalar_data[i] = std::sin(i_lon.scalar_data[i])*std::cos(i_lat.scalar_data[i]);
-			o_z.scalar_data[i] = std::sin(i_lat.scalar_data[i]);
-		}
-	}
-
-
-
-	inline
-	static
-	void angleToCartCoord(
-			const double i_lon,
-			const double &i_lat,
-			double o_ret[3]
-	)
-	{
-		o_ret[0] = std::cos(i_lon)*std::cos(i_lat);
-		o_ret[1] = std::sin(i_lon)*std::cos(i_lat);
-		o_ret[2] = std::sin(i_lat);
-	}
-
-
-
-	inline
-	static
-	void angleSpeedToCartVector(
-			const ScalarDataArray &i_lon,
-			const ScalarDataArray &i_lat,
-			const ScalarDataArray &i_vel_lon,
-			const ScalarDataArray &i_vel_lat,
-			ScalarDataArray *o_v_x,
-			ScalarDataArray *o_v_y,
-			ScalarDataArray *o_v_z
-	)
-	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
-		{
-			o_v_x->scalar_data[i] = -i_vel_lon.scalar_data[i]*std::sin(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::cos(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
-			o_v_y->scalar_data[i] = i_vel_lon.scalar_data[i]*std::cos(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::sin(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
-			o_v_z->scalar_data[i] = i_vel_lat.scalar_data[i]*std::cos(i_lat.scalar_data[i]);
-		}
-	}
-
-
-
-	inline
-	static
-	void cartToAngleCoord(
-			const ScalarDataArray &i_x,
-			const ScalarDataArray &i_y,
-			const ScalarDataArray &i_z,
-			ScalarDataArray &o_lon,
-			ScalarDataArray &o_lat
-	)
-	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < i_x.number_of_elements; i++)
-		{
-			/*
-			 * Make sure that coordinates are in valid range
-			 */
-#if 0
-			i_x.scalar_data[i] = std::min(1., i_x.scalar_data[i]);
-			i_x.scalar_data[i] = std::max(-1., i_x.scalar_data[i]);
-
-			i_y.scalar_data[i] = std::min(1., i_y.scalar_data[i]);
-			i_y.scalar_data[i] = std::max(-1., i_y.scalar_data[i]);
-
-			i_z.scalar_data[i] = std::min(1., i_z.scalar_data[i]);
-			i_z.scalar_data[i] = std::max(-1., i_z.scalar_data[i]);
-#endif
-
-			/*
-			 * Now compute the angles
-			 */
-			o_lon.scalar_data[i] = std::atan(i_y.scalar_data[i]/i_x.scalar_data[i]);
-
-#if SWEET_DEBUG
-			if (	(std::isnan(o_lon.scalar_data[i]) != 0) ||
-					(std::abs(std::isinf(o_lon.scalar_data[i])) == 1)
-			)
-			{
-				std::cout << "Found nan/inf at position " << i << std::endl;
-				std::cout << "o_lon value: " << o_lon.scalar_data[i] << std::endl;
-				std::cout << "   atan(" << i_y.scalar_data[i] << ", " << i_x.scalar_data[i] << ")" << std::endl;
-				FatalError("EXIT");
-			}
-#endif
-
-			if (i_x.scalar_data[i] < 0)
-				o_lon.scalar_data[i] += M_PI;
-			else if (i_y.scalar_data[i] < 0)
-				o_lon.scalar_data[i] += M_PI*2.0;
-
-			o_lat.scalar_data[i] = std::acos(-i_z.scalar_data[i]) - M_PI*0.5;
-
-#if SWEET_DEBUG
-			if (
-					(std::isnan(o_lat.scalar_data[i]) != 0) ||
-					(std::abs(std::isinf(o_lat.scalar_data[i])) == 1)
-			)
-			{
-				std::cout << "Found nan/inf at position " << i << std::endl;
-				std::cout << "o_lat value: " << o_lat.scalar_data[i] << std::endl;
-				std::cout << "   acos(" << i_z.scalar_data[i] << ")" << std::endl;
-				FatalError("EXIT");
-			}
-#endif
-		}
 	}
 
 
@@ -202,6 +70,7 @@ public:
 		return alpha;
 	}
 
+#if 0
 	double u_analytical(double i_lambda, double i_theta)
 	{
 		double a = 6.37122e6;
@@ -255,6 +124,7 @@ public:
 
 		return ret;
 	}
+#endif
 
 
 	/**
@@ -270,27 +140,86 @@ public:
 		const ScalarDataArray &i_pos_y,
 		const ScalarDataArray &i_pos_z,
 
-		const ScalarDataArray &i_vel_x,
-		const ScalarDataArray &i_vel_y,
-		const ScalarDataArray &i_vel_z,
-
-		double i_dt,
-		double i_inv_earth_radius,
+		const ScalarDataArray &i_vector_x,
+		const ScalarDataArray &i_vector_y,
+		const ScalarDataArray &i_vector_z,
 
 		ScalarDataArray &o_pos_x,
 		ScalarDataArray &o_pos_y,
-		ScalarDataArray &o_pos_z
+		ScalarDataArray &o_pos_z,
+
+		double i_approximate_sphere_geometry
 	)
 	{
-		o_pos_x = i_pos_x + i_dt*(i_vel_x)*i_inv_earth_radius;
-		o_pos_y = i_pos_y + i_dt*(i_vel_y)*i_inv_earth_radius;
-		o_pos_z = i_pos_z + i_dt*(i_vel_z)*i_inv_earth_radius;
+		if (i_approximate_sphere_geometry)
+		{
+			/*
+			 * This juse uses an approximation of the sphere geometry.
+			 */
 
-		ScalarDataArray norm = (o_pos_x*o_pos_x + o_pos_y*o_pos_y + o_pos_z*o_pos_z).inv_sqrt();
+			/*
+			 * Step 1) Apply the velocity vector in Cartesian space, ignoring the sphere's curvature
+			 */
+			o_pos_x = i_pos_x + i_vector_x;
+			o_pos_y = i_pos_y + i_vector_y;
+			o_pos_z = i_pos_z + i_vector_z;
 
-		o_pos_x *= norm;
-		o_pos_y *= norm;
-		o_pos_z *= norm;
+			/*
+			 * Step 2) Normalize the resulting position
+			 */
+			SWEETMath::normalize(o_pos_x, o_pos_y, o_pos_z);
+			return;
+		}
+
+		/*
+		 * This version implements an accurate geometry.
+		 */
+		{
+			/*
+			 * Step 1) Compute rotation axis with cross product
+			 */
+			ScalarDataArray rotation_axis_x(i_pos_x.number_of_elements);
+			ScalarDataArray rotation_axis_y(i_pos_x.number_of_elements);
+			ScalarDataArray rotation_axis_z(i_pos_x.number_of_elements);
+
+			SWEETMath::cross_prod(
+					i_pos_x, i_pos_y, i_pos_z,
+					i_vector_x, i_vector_y, i_vector_z,
+					rotation_axis_x, rotation_axis_y, rotation_axis_z
+				);
+
+			/*
+			 * Normalize rotation axis since it's likely not normalized yet
+			 */
+			SWEETMath::normalize_threshold(
+					rotation_axis_x,
+					rotation_axis_y,
+					rotation_axis_z,
+					1e-22	// close-to-0 threshold
+				);
+
+			/*
+			 * Compute rotation angle
+			 * (Figure out why there's no rescaling by 1/(2pi)
+			 */
+			ScalarDataArray angle = SWEETMath::length(i_vector_x, i_vector_y, i_vector_z);
+
+			/*
+			 * Rotate
+			 */
+			SWEETMath::rotate_3d_normalized_rotation_axis(
+					i_pos_x,
+					i_pos_y,
+					i_pos_z,
+					angle,
+					rotation_axis_x,
+					rotation_axis_y,
+					rotation_axis_z,
+					o_pos_x,
+					o_pos_y,
+					o_pos_z
+				);
+		}
 	}
 
 
@@ -319,11 +248,6 @@ public:
 			bool i_include_coriolis_in_trajectoryxxx = false
 	)
 	{
-		if (i_approximate_sphere_geometry == 0)
-		{
-			FatalError("TODO: Implement me: i_approximate_sphere_geometry==0 to avoid approximation of SL on sphere");
-		}
-
 		std::size_t num_elements = i_pos_lon_a.number_of_elements;
 		double inv_earth_radius = 1.0/i_earth_radius;
 
@@ -337,7 +261,7 @@ public:
 			ScalarDataArray pos_z_a(num_elements);
 
 			// polar => Cartesian coordinates
-			angleToCartCoord(
+			SWEETMath::latlon_to_cartesian(
 					i_pos_lon_a, i_pos_lat_a,
 					pos_x_a, pos_y_a, pos_z_a
 				);
@@ -350,7 +274,7 @@ public:
 			ScalarDataArray vel_z(num_elements);
 
 			// polar => Cartesian coordinates
-			angleSpeedToCartVector(
+			SWEETMath::latlon_velocity_to_cartesian_velocity(
 					i_pos_lon_a, i_pos_lat_a,
 					u_lon_array, v_lat_array,
 					&vel_x, &vel_y, &vel_z
@@ -368,7 +292,7 @@ public:
 			pos_y_d *= norm;
 			pos_z_d *= norm;
 
-			cartToAngleCoord(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+			SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
 			return;
 		}
 
@@ -393,7 +317,7 @@ public:
 			ScalarDataArray pos_x_a(num_elements);
 			ScalarDataArray pos_y_a(num_elements);
 			ScalarDataArray pos_z_a(num_elements);
-			angleToCartCoord(
+			SWEETMath::latlon_to_cartesian(
 					i_pos_lon_a, i_pos_lat_a,
 					pos_x_a, pos_y_a, pos_z_a
 				);
@@ -411,7 +335,7 @@ public:
 			ScalarDataArray vel_z(num_elements);
 
 			// Polar => Cartesian coordinates
-			angleSpeedToCartVector(
+			SWEETMath::latlon_velocity_to_cartesian_velocity(
 					i_pos_lon_a, i_pos_lat_a,
 					u_lon_array, v_lat_array,
 					&vel_x, &vel_y, &vel_z
@@ -430,7 +354,7 @@ public:
 			int iters = 0;
 			for (; iters < max_iters; iters++)
 			{
-				cartToAngleCoord(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+				SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
 
 #if SWEET_DEBUG
 				bool stop = false;
@@ -487,7 +411,7 @@ public:
 				ScalarDataArray vel_z_extrapol(num_elements);
 
 				// polar => Cartesian coordinates
-				angleSpeedToCartVector(
+				SWEETMath::latlon_velocity_to_cartesian_velocity(
 						o_pos_lon_d, o_pos_lat_d,
 						u_lon_extrapol, v_lat_extrapol,
 						&vel_x_extrapol, &vel_y_extrapol, &vel_z_extrapol
@@ -503,16 +427,15 @@ public:
 					pos_y_a,
 					pos_z_a,
 
-					vel_x_extrapol + vel_x,
-					vel_y_extrapol + vel_y,
-					vel_z_extrapol + vel_z,
-
-					-i_dt*0.5,
-					inv_earth_radius,
+					(vel_x_extrapol + vel_x)*(-i_dt*0.5*inv_earth_radius),
+					(vel_y_extrapol + vel_y)*(-i_dt*0.5*inv_earth_radius),
+					(vel_z_extrapol + vel_z)*(-i_dt*0.5*inv_earth_radius),
 
 					new_pos_x_d,
 					new_pos_y_d,
-					new_pos_z_d
+					new_pos_z_d,
+
+					i_approximate_sphere_geometry
 				);
 
 				if (i_convergence_tolerance > 0)
@@ -542,7 +465,7 @@ public:
 			}
 
 			// convert final points from Cartesian space to angular space
-			cartToAngleCoord(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+			SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
 			return;
 		}
 

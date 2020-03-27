@@ -37,11 +37,11 @@ int main(int i_argc, char *i_argv[])
 		{
 			a_lat.scalar_data[0] = lat;
 
-			SphereTimestepping_SemiLagrangian::angleToCartCoord(a_lon, a_lat, a_x, a_y, a_z);
+			SphereTimestepping_SemiLagrangian::math_angleToCartCoord(a_lon, a_lat, a_x, a_y, a_z);
 
 			ScalarDataArray o_lon(1);
 			ScalarDataArray o_lat(1);
-			SphereTimestepping_SemiLagrangian::cartToAngleCoord(a_x, a_y, a_z, o_lon, o_lat);
+			SphereTimestepping_SemiLagrangian::math_cartToAngleCoord(a_x, a_y, a_z, o_lon, o_lat);
 
 			double error = std::max(std::abs(o_lon.scalar_data[0]-lon), std::abs(o_lat.scalar_data[0]-lat));
 

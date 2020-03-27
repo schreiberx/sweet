@@ -30,7 +30,6 @@ if [[ "#$1" != "#" && "#$1" != "#auto" ]]; then
 	PLATFORM_ENV_VARS=$(eval echo "${MULE_ROOT}/platforms/"??"_$1/env_vars.sh")
 
 	if [ ! -e "$PLATFORM_ENV_VARS" ]; then
-
 		PLATFORM_ENV_VARS=$(eval echo "${MULE_ROOT}/platforms/$1/env_vars.sh")
 
 		if [ ! -e "$PLATFORM_ENV_VARS" ]; then
@@ -44,7 +43,7 @@ if [[ "#$1" != "#" && "#$1" != "#auto" ]]; then
 		export MULE_PLATFORM_ID="${1}"
 	fi
 
-	source "$PLATFORM_ENV_VARS" || return 1
+	source "$PLATFORM_ENV_VARS"
 
 	export MULE_PLATFORM_DIR="$(eval echo "${MULE_ROOT}/platforms/"??"_${MULE_PLATFORM_ID}/")"
 
