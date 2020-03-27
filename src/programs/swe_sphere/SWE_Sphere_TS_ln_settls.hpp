@@ -24,6 +24,7 @@
 #include "SWE_Sphere_TS_lg_irk.hpp"
 #include "SWE_Sphere_TS_l_erk.hpp"
 #include "SWE_Sphere_TS_lg_erk.hpp"
+#include "SWE_Sphere_TS_l_rexi.hpp"
 
 
 
@@ -33,6 +34,13 @@ class SWE_Sphere_TS_ln_settls	: public SWE_Sphere_TS_interface
 	SphereOperators_SphereData &op;
 
 public:
+	enum LinearTreatment_enum {
+		LINEAR_IGNORE,
+		LINEAR_IMPLICIT,
+		LINEAR_EXPONENTIAL,
+	};
+
+
 	enum CoriolisTreatment_enum {
 		CORIOLIS_IGNORE,
 		CORIOLIS_LINEAR,
@@ -47,9 +55,10 @@ public:
 	};
 
 private:
+	LinearTreatment_enum linear_treatment;
 	CoriolisTreatment_enum coriolis_treatment;
 	NLTreatment_enum nonlinear_divergence_treatment;
-
+	int timestepping_order;
 	bool original_linear_operator_sl_treatment;
 
 	SphereTimestepping_SemiLagrangian semiLagrangian;
@@ -67,6 +76,7 @@ private:
 	SWE_Sphere_TS_lg_erk* swe_sphere_ts_lg_erk;
 	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk;
 	SWE_Sphere_TS_lg_irk* swe_sphere_ts_lg_irk;
+	SWE_Sphere_TS_l_rexi *swe_sphere_ts_l_rexi;
 
 	// Coriolis effect
 	SphereData_Physical fg;
@@ -79,13 +89,35 @@ public:
 		);
 
 	void setup(
-			CoriolisTreatment_enum i_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"
-			NLTreatment_enum i_nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR,	// "ignore", "nonlinear"
-			bool original_linear_operator_sl_treatment = true
+			int i_timestepping_order,
+			LinearTreatment_enum i_linear_treatment,
+			CoriolisTreatment_enum i_coriolis_treatment,// = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"
+			NLTreatment_enum i_nonlinear_divergence_treatment,// = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR,	// "ignore", "nonlinear"
+			bool original_linear_operator_sl_treatment// = true
 	);
 
 
 	void run_timestep(
+			SphereData_Spectral &io_phi,	///< prognostic variables
+			SphereData_Spectral &io_vort,	///< prognostic variables
+			SphereData_Spectral &io_div,	///< prognostic variables
+
+			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
+
+	void run_timestep_1st_order(
+			SphereData_Spectral &io_phi,	///< prognostic variables
+			SphereData_Spectral &io_vort,	///< prognostic variables
+			SphereData_Spectral &io_div,	///< prognostic variables
+
+			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
+
+	void run_timestep_2nd_order(
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

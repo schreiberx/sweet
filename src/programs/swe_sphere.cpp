@@ -985,7 +985,6 @@ int main(int i_argc, char *i_argv[])
 		{
 			SimulationInstance *simulationSWE = new SimulationInstance;
 
-
 			if (simVars.misc.normal_mode_analysis_generation > 0)
 			{
 				simulationSWE->normalmode_analysis();

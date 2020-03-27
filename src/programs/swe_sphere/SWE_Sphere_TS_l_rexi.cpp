@@ -228,7 +228,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	if (rexi_use_direct_solution)
 	{
 		if (!no_coriolis)
-			FatalError("Direct solution for linear operator not available");
+			FatalError("Direct solution for linear operator with Coriolis effect not available");
 	}
 
 	timestep_size = i_timestep_size;

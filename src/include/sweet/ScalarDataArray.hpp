@@ -8,6 +8,7 @@
 #define SRC_SCALAR_DATA_ARRAY_HPP_
 
 #include <stdlib.h>
+#include <algorithm>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -62,7 +63,8 @@ public:
 	 */
 public:
 	ScalarDataArray()	:
-		number_of_elements(0)
+		number_of_elements(0),
+		scalar_data(nullptr)
 	{
 	}
 
@@ -109,11 +111,10 @@ public:
 	 */
 	ScalarDataArray(
 			const PlaneDataConfig *i_planeDataConfig
-	)
+	)	:
+		scalar_data(nullptr)
 	{
-		number_of_elements = i_planeDataConfig->physical_array_data_number_of_elements;
-
-		p_allocate_buffers();
+		setup(i_planeDataConfig->physical_array_data_number_of_elements);
 	}
 
 
@@ -130,8 +131,7 @@ public:
 			std::size_t i_number_of_elements
 	)
 	{
-		if (number_of_elements != 0)
-			p_free_buffer();
+		p_free_buffer();
 
 		number_of_elements = i_number_of_elements;
 
@@ -159,10 +159,8 @@ public:
 
 	void p_free_buffer()
 	{
-		if (number_of_elements != 0)
-			MemBlockAlloc::free(scalar_data, number_of_elements*sizeof(double));
-
-		number_of_elements = 0;
+		MemBlockAlloc::free(scalar_data, number_of_elements*sizeof(double));
+		scalar_data = nullptr;
 	}
 
 
@@ -212,6 +210,14 @@ public:
 		);
 	}
 
+
+	inline
+	void physical_set_zero()
+	{
+		SCALAR_DATA_FOR_IDX(
+				scalar_data[idx] = 0;
+		);
+	}
 
 	bool reduce_isAnyNaNorInf()	const
 	{
@@ -508,11 +514,28 @@ public:
 			const ScalarDataArray &i_data
 	)
 	{
-		number_of_elements = i_data.number_of_elements;
+		if (number_of_elements != i_data.number_of_elements)
+			setup(i_data.number_of_elements);
 
 		SCALAR_DATA_FOR_IDX(
 				scalar_data[idx] = i_data.scalar_data[idx];
 		);
+
+		return *this;
+	}
+
+public:
+	/**
+	 * assignment reference operator
+	 */
+	ScalarDataArray &operator=(
+			ScalarDataArray &&i_data
+	)
+	{
+		if (number_of_elements != i_data.number_of_elements)
+			setup(i_data.number_of_elements);
+
+		std::swap(scalar_data, i_data.scalar_data);
 
 		return *this;
 	}

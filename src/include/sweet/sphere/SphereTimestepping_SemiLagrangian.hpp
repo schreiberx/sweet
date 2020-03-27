@@ -23,6 +23,9 @@ class SphereTimestepping_SemiLagrangian
 	SphereOperators_Sampler_SphereDataPhysical sample2D;
 	const SphereData_Config *sphereDataConfig;
 
+	const SimulationVariables *simVars;
+
+	SphereData_Physical sl_coriolis;
 
 public:
 	SphereTimestepping_SemiLagrangian()	:
@@ -31,12 +34,11 @@ public:
 	}
 
 
-	void setup(
-		const SphereData_Config *i_sphereDataConfig
-	)
+	void crossProd3(double w[3], double v[3], double ret[3])
 	{
-		sphereDataConfig = i_sphereDataConfig;
-		sample2D.setup(sphereDataConfig);
+		ret[0] = w[1]*v[2] - w[2]*v[1];
+		ret[1] = w[2]*v[0] - w[0]*v[2];
+		ret[2] = w[0]*v[1] - w[1]*v[0];
 	}
 
 
@@ -57,6 +59,21 @@ public:
 			o_y.scalar_data[i] = std::sin(i_lon.scalar_data[i])*std::cos(i_lat.scalar_data[i]);
 			o_z.scalar_data[i] = std::sin(i_lat.scalar_data[i]);
 		}
+	}
+
+
+
+	inline
+	static
+	void angleToCartCoord(
+			const double i_lon,
+			const double &i_lat,
+			double o_ret[3]
+	)
+	{
+		o_ret[0] = std::cos(i_lon)*std::cos(i_lat);
+		o_ret[1] = std::sin(i_lon)*std::cos(i_lat);
+		o_ret[2] = std::sin(i_lat);
 	}
 
 
@@ -150,6 +167,32 @@ public:
 		}
 	}
 
+
+	void setup(
+		const SphereData_Config *i_sphereDataConfig,
+		const SimulationVariables &i_simVars
+	)
+	{
+		sphereDataConfig = i_sphereDataConfig;
+		sample2D.setup(sphereDataConfig);
+
+		simVars = &i_simVars;
+
+		//SphereData_Physical u_lon_
+		if (simVars->sim.sphere_use_fsphere)
+		{
+			FatalError("Not supported");
+		}
+
+
+		sl_coriolis.setup(sphereDataConfig);
+		sl_coriolis.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data = mu*2.0*simVars->sim.sphere_rotating_coriolis_omega*simVars->sim.sphere_radius;
+			}
+		);
+	}
 
 
 	static
@@ -272,46 +315,10 @@ public:
 			int max_iters = 10,
 			double i_convergence_tolerance = 1e-8,
 			int i_approximate_sphere_geometry = 0,
-			bool use_interpolation_limiters = false
+			bool use_interpolation_limiters = false,
+			bool i_include_coriolis_in_trajectoryxxx = false
 	)
 	{
-#if 0
-#if 1
-		i_u_lon_prev.file_read_raw("i_u_lon_prev.raw");
-		i_v_lat_prev.file_read_raw("i_v_lat_prev.raw");
-
-		i_u_lon.file_read_raw("i_u_lon.raw");
-		i_v_lat.file_read_raw("i_v_lat.raw");
-
-//		i_pos_lon_a.file_read_raw("i_pos_lon_a.raw");
-//		i_pos_lat_a.file_read_raw("i_pos_lat_a.raw");
-#else
-		i_u_lon_prev.file_write_raw("i_u_lon_prev.raw");
-		i_v_lat_prev.file_write_raw("i_v_lat_prev.raw");
-
-		i_u_lon.file_write_raw("i_u_lon.raw");
-		i_v_lat.file_write_raw("i_v_lat.raw");
-
-		i_pos_lon_a.file_write_raw("i_pos_lon_a.raw");
-		i_pos_lat_a.file_write_raw("i_pos_lat_a.raw");
-#endif
-#endif
-
-
-#if SWEET_DEBUG
-		if (i_u_lon_prev.physical_isAnyNaNorInf())
-			FatalError("start NaN/Inf in i_u_lon_prev");
-
-		if (i_v_lat_prev.physical_isAnyNaNorInf())
-			FatalError("start NaN/Inf in i_v_lat_prev");
-
-		if (i_u_lon.physical_isAnyNaNorInf())
-			FatalError("start NaN/Inf in i_u_lon");
-
-		if (i_v_lat.physical_isAnyNaNorInf())
-			FatalError("start NaN/Inf in i_v_lat");
-#endif
-
 		if (i_approximate_sphere_geometry == 0)
 		{
 			FatalError("TODO: Implement me: i_approximate_sphere_geometry==0 to avoid approximation of SL on sphere");
@@ -322,6 +329,9 @@ public:
 
 		if (i_timestepping_order == 1)
 		{
+			/**
+			 * TODO: This could be done by the setup phase
+			 */
 			ScalarDataArray pos_x_a(num_elements);
 			ScalarDataArray pos_y_a(num_elements);
 			ScalarDataArray pos_z_a(num_elements);
@@ -332,8 +342,8 @@ public:
 					pos_x_a, pos_y_a, pos_z_a
 				);
 
-			ScalarDataArray u_lon = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
-			ScalarDataArray v_lat = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
+			ScalarDataArray u_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
+			ScalarDataArray v_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
 
 			ScalarDataArray vel_x(num_elements);
 			ScalarDataArray vel_y(num_elements);
@@ -342,7 +352,7 @@ public:
 			// polar => Cartesian coordinates
 			angleSpeedToCartVector(
 					i_pos_lon_a, i_pos_lat_a,
-					u_lon, v_lat,
+					u_lon_array, v_lat_array,
 					&vel_x, &vel_y, &vel_z
 				);
 
@@ -368,13 +378,17 @@ public:
 			 * See SETTLS paper
 			 * Hortal, M. (2002). The development and testing of a new two-time-level semi-Lagrangian scheme (SETTLS) in the ECMWF forecast model. Q. J. R. Meteorol. Soc., 2, 1671–1687.
 			 * 
-			 * Note, that the equations are rearranged, see 
+			 * We use the SETTLS formulation also to compute the departure points.
 			 */
 
 			// Extrapolate velocities at departure points
 			SphereData_Physical u_extrapol = 2.0*i_u_lon - i_u_lon_prev;
 			SphereData_Physical v_extrapol = 2.0*i_v_lat - i_v_lat_prev;
 
+
+			/**
+			 * TODO: This could be done by the setup phase
+			 */
 			// Compute Cartesian arrival points
 			ScalarDataArray pos_x_a(num_elements);
 			ScalarDataArray pos_y_a(num_elements);
@@ -385,8 +399,11 @@ public:
 				);
 
 			// Convert velocities along lon/lat to scalardata array
-			ScalarDataArray u_lon = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
-			ScalarDataArray v_lat = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
+			ScalarDataArray u_lon_array;
+			ScalarDataArray v_lat_array;
+
+			u_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
+			v_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
 
 			// Compute Cartesian velocities
 			ScalarDataArray vel_x(num_elements);
@@ -396,7 +413,7 @@ public:
 			// Polar => Cartesian coordinates
 			angleSpeedToCartVector(
 					i_pos_lon_a, i_pos_lat_a,
-					u_lon, v_lat,
+					u_lon_array, v_lat_array,
 					&vel_x, &vel_y, &vel_z
 				);
 
@@ -460,17 +477,9 @@ public:
 #endif
 
 
-#if 0
-				// TODO: This should be linear
-				// TODO: This should be linear
-				// TODO: This should be linear
-
-				ScalarDataArray u_lon_extrapol = sample2D.bicubic_scalar(u_extrapol, o_pos_lon_d, o_pos_lat_d, true, use_interpolation_limiters);
-				ScalarDataArray v_lat_extrapol = sample2D.bicubic_scalar(v_extrapol, o_pos_lon_d, o_pos_lat_d, true, use_interpolation_limiters);
-#else
 				ScalarDataArray u_lon_extrapol = sample2D.bilinear_scalar(u_extrapol, o_pos_lon_d, o_pos_lat_d, true);
 				ScalarDataArray v_lat_extrapol = sample2D.bilinear_scalar(v_extrapol, o_pos_lon_d, o_pos_lat_d, true);
-#endif
+
 
 				// convert extrapolated velocities to Cartesian velocities
 				ScalarDataArray vel_x_extrapol(num_elements);
@@ -484,13 +493,11 @@ public:
 						&vel_x_extrapol, &vel_y_extrapol, &vel_z_extrapol
 					);
 
-				// pos_x_d = pos_x_a - i_dt*0.5*(vel_x_extrapol + vel_x)*inv_earth_radius;
-				// pos_y_d = pos_y_a - i_dt*0.5*(vel_y_extrapol + vel_y)*inv_earth_radius;
-				// pos_z_d = pos_z_a - i_dt*0.5*(vel_z_extrapol + vel_z)*inv_earth_radius;
+
 				ScalarDataArray new_pos_x_d(num_elements);
 				ScalarDataArray new_pos_y_d(num_elements);
 				ScalarDataArray new_pos_z_d(num_elements);
-				
+
 				doAdvectionOnSphere(
 					pos_x_a,
 					pos_y_a,
@@ -508,24 +515,30 @@ public:
 					new_pos_z_d
 				);
 
-				diff =  (pos_x_d-new_pos_x_d).reduce_maxAbs() +
-						(pos_y_d-new_pos_y_d).reduce_maxAbs() +
-						(pos_z_d-new_pos_z_d).reduce_maxAbs();
+				if (i_convergence_tolerance > 0)
+				{
+					diff =  (pos_x_d-new_pos_x_d).reduce_maxAbs() +
+							(pos_y_d-new_pos_y_d).reduce_maxAbs() +
+							(pos_z_d-new_pos_z_d).reduce_maxAbs();
 
-				pos_x_d = new_pos_x_d;
-				pos_y_d = new_pos_y_d;
-				pos_z_d = new_pos_z_d;
+					pos_x_d = new_pos_x_d;
+					pos_y_d = new_pos_y_d;
+					pos_z_d = new_pos_z_d;
 
-				if (diff < i_convergence_tolerance)
-				   break;
+					if (diff < i_convergence_tolerance)
+					   break;
+				}
 			}
 
-			if (diff > i_convergence_tolerance)
+			if (i_convergence_tolerance > 0)
 			{
-				std::cout << "WARNING: Over convergence tolerance" << std::endl;
-				std::cout << "+ Iterations: " << iters << std::endl;
-				std::cout << "+ maxAbs: " << diff << std::endl;
-				std::cout << "+ Convergence tolerance: " << i_convergence_tolerance << std::endl;
+				if (diff > i_convergence_tolerance)
+				{
+					std::cout << "WARNING: Over convergence tolerance" << std::endl;
+					std::cout << "+ Iterations: " << iters << std::endl;
+					std::cout << "+ maxAbs: " << diff << std::endl;
+					std::cout << "+ Convergence tolerance: " << i_convergence_tolerance << std::endl;
+				}
 			}
 
 			// convert final points from Cartesian space to angular space

@@ -525,12 +525,19 @@ public:
 		 */
 		else if (i_timestepping_method.find("_settls") != std::string::npos)
 		{
+			SWE_Sphere_TS_ln_settls::LinearTreatment_enum linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IGNORE;
 			SWE_Sphere_TS_ln_settls::CoriolisTreatment_enum coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_IGNORE;
 			SWE_Sphere_TS_ln_settls::NLTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_IGNORE;
 			bool original_linear_operator_sl_treatment = true;
 
+			// Search for implicit or exp treatment of linear parts
+			if (i_timestepping_method.find("_irk_") != std::string::npos)
+				linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT;
+			else if (i_timestepping_method.find("_exp_") != std::string::npos)
+				linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL;
+
 			// Search for Coriolis
-			if (i_timestepping_method.find("l_irk") != std::string::npos)
+			if (i_timestepping_method.find("l_irk") != std::string::npos || i_timestepping_method.find("l_exp") != std::string::npos)
 				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
 			else if (i_timestepping_method.find("lc_na_sl") != std::string::npos)
 				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN;
@@ -548,9 +555,14 @@ public:
 			std::string id_string = "";
 
 			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR)
-				id_string += "l_irk";
+				id_string += "l";
 			else
-				id_string += "lg_irk";
+				id_string += "lg";
+
+			if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT)
+				id_string += "_irk";
+			else if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL)
+				id_string += "_exp";
 
 			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN)
 				id_string += "_lc";
@@ -594,8 +606,10 @@ public:
 
 			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
 			l_cn_na_sl_nd_settls->setup(
-					coriolis_treatment,		// Coriolis treatment
-					nonlinear_divergence_treatment,	// Nonlinear divergence treatment
+					i_simVars.disc.timestepping_order,
+					linear_treatment,
+					coriolis_treatment,					// Coriolis treatment
+					nonlinear_divergence_treatment,		// Nonlinear divergence treatment
 					original_linear_operator_sl_treatment			// original SL linear operator treatment
 				);
 

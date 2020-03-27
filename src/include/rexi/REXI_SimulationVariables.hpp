@@ -183,9 +183,8 @@ public:
 	{
 		std::cout << "" << std::endl;
 		std::cout << "REXI:" << std::endl;
-		std::cout << "	--rexi-method [str]	Choose REXI method ('terry', 'file'), default:0" << std::endl;
+		std::cout << "	--rexi-method [str]	Choose REXI method ('terry', 'file', 'direct'), default:0" << std::endl;
 		std::cout << std::endl;
-		std::cout << "	--rexi-use-direct-solution [bool]	Use direct solution (analytical) for REXI, default:0" << std::endl;
 		std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
 		std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
 		std::cout << std::endl;

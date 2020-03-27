@@ -366,8 +366,8 @@ public:
 	void uv_to_vortdiv(
 			const SphereData_Physical &i_u,
 			const SphereData_Physical &i_v,
-			SphereData_Spectral &o_stream,
-			SphereData_Spectral &o_potential,
+			SphereData_Spectral &o_vorticity,
+			SphereData_Spectral &o_divergence,
 			bool i_robert_formulation
 
 	)	const
@@ -376,14 +376,14 @@ public:
 		{
 			uv_to_vortdiv(
 					i_u, i_v,
-					o_stream, o_potential
+					o_vorticity, o_divergence
 			);
 		}
 		else
 		{
 			robert_uv_to_vortdiv(
 					i_u, i_v,
-					o_stream, o_potential
+					o_vorticity, o_divergence
 			);
 		}
 	}

@@ -226,7 +226,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
 
 	if (rexi_use_direct_solution)
-		FatalError("Direct solution for linear operator not available");
+		FatalError("Direct solution for exponentiation of this particular linear operator not available");
 
 	timestep_size = i_timestep_size;
 	function_name = i_function_name;
