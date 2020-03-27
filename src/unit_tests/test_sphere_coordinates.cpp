@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sweet/ScalarDataArray.hpp>
 #include <sweet/FatalError.hpp>
+#include <sweet/SWEETMath.hpp>
 #include <sweet/sphere/SphereTimestepping_SemiLagrangian.hpp>
 
 
@@ -33,15 +34,14 @@ int main(int i_argc, char *i_argv[])
 		a_lon.scalar_data[0] = lon;
 
 		for (double lat = -M_PI*0.5+dlat*0.5; lat <= M_PI*0.5; lat += dlat)
-//		double lat = 0;
 		{
 			a_lat.scalar_data[0] = lat;
 
-			SphereTimestepping_SemiLagrangian::math_angleToCartCoord(a_lon, a_lat, a_x, a_y, a_z);
+			SWEETMath::latlon_to_cartesian(a_lon, a_lat, a_x, a_y, a_z);
 
 			ScalarDataArray o_lon(1);
 			ScalarDataArray o_lat(1);
-			SphereTimestepping_SemiLagrangian::math_cartToAngleCoord(a_x, a_y, a_z, o_lon, o_lat);
+			SWEETMath::cartesian_to_latlon(a_x, a_y, a_z, o_lon, o_lat);
 
 			double error = std::max(std::abs(o_lon.scalar_data[0]-lon), std::abs(o_lat.scalar_data[0]-lat));
 
