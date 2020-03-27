@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd "$(basename $0)"
+cd "$(dirname $0)"
 
 source ../local_software/env_vars.sh
 
