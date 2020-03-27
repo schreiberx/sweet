@@ -258,6 +258,64 @@ if p.compiler == 'gnu':
 
 
 
+if p.libpfasst == 'enable':
+	env.Append(CXXFLAGS=['-Llibpfasst'])
+	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
+
+	env.Append(LIBS=['libpfasst'])
+
+	# enable MPI per default for libpfasst
+	p.sweet_mpi = 'enable'
+
+else:
+	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
+
+
+
+#
+# Autodetect compiler for MPI
+#
+if p.sweet_mpi == 'enable':
+	env.Append(CXXFLAGS = ' -DSWEET_MPI=1')
+	mpicc_version = exec_command(os.environ['MULE_MPICC']+' --version')
+
+	if mpicc_version[0:3] == 'icc' or mpicc_version[0:4] == 'icpc':
+		if p.compiler != 'intel':
+			print("Autodetected Intel compiler for MPI, switching to Intel compiler options")
+			p.compiler = 'intel'
+
+	elif mpicc_version[0:3] == 'gcc' or mpicc_version[0:3] == 'g++':
+		if p.compiler != 'gnu':
+			print("Autodetected GNU compiler for MPI, switching to GNUl compiler options")
+			p.compiler = 'gnu'
+
+else:
+	env.Append(CXXFLAGS = ' -DSWEET_MPI=0')
+
+
+if p.sweet_mpi == 'enable':
+	print("Enabling MPI for REXI")
+	print("Warning: Compiler checks not done")
+
+	if p.compiler == 'gnu':
+		# GNU compiler needs special treatment!
+		# Linking with Fortran MPI requires
+		# for OpenMPI: -lmpi_mpifh
+		# for MPICH: -lmpif90
+
+		output = exec_command(env['CC']+' -v')
+		if 'MPICH' in output:
+			if p.fortran_source == 'enabled':
+				env.Append(LINKFLAGS='-lmpif90')
+		else:
+			pass
+		
+	if p.threading != 'off' and p.compiler == 'intel':
+		env.Append(CXXFLAGS='-mt_mpi')
+		env.Append(LINKFLAGS='-mt_mpi')
+
+
+
 if p.compiler == 'intel':
 	reqversion = [12,1]
 	iccversion_line = exec_command('icpc -dumpversion -w').splitlines()[0]
@@ -484,47 +542,6 @@ else:
 	env.Append(CXXFLAGS=['-DSWEET_EIGEN=0'])
 
 
-if p.libpfasst == 'enable':
-	env.Append(CXXFLAGS=['-Llibpfasst'])
-	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
-
-	env.Append(LIBS=['libpfasst'])
-
-	# enable MPI per default for libpfasst
-	p.sweet_mpi = 'enable'
-
-else:
-	env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
-
-
-
-
-if p.sweet_mpi == 'enable':
-	env.Append(CXXFLAGS = ' -DSWEET_MPI=1')
-else:
-	env.Append(CXXFLAGS = ' -DSWEET_MPI=0')
-
-
-if p.sweet_mpi == 'enable':
-	print("Enabling MPI for REXI")
-	print("Warning: Compiler checks not done")
-
-	if p.compiler == 'gnu':
-		# GNU compiler needs special treatment!
-		# Linking with Fortran MPI requires
-		# for OpenMPI: -lmpi_mpifh
-		# for MPICH: -lmpif90
-
-		output = exec_command(env['CC']+' -v')
-		if 'MPICH' in output:
-			if p.fortran_source == 'enabled':
-				env.Append(LINKFLAGS='-lmpif90')
-		else:
-			pass
-		
-	if p.threading != 'off' and p.compiler == 'intel':
-		env.Append(CXXFLAGS='-mt_mpi')
-		env.Append(LINKFLAGS='-mt_mpi')
 
 
 

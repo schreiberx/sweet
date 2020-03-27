@@ -754,7 +754,7 @@ public:
 	}
 
 
-	const void spectral_set(
+	void spectral_set(
 			int i_n,
 			int i_m,
 			const std::complex<double> &i_data
