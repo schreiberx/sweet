@@ -5,7 +5,7 @@
 
 echo_warning_hline
 echo_warning "This is the environment file for Travis-CI service"
-echo_warning "We use Travis to test MULE"
+echo_warning "We use Travis to test MULE and this software development"
 echo_warning_hline
 
 #
