@@ -7,7 +7,7 @@ source ./install_helpers.sh ""
 
 PKG_NAME="pip packages"
 
-echo ln -sf "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/pip" "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/pip3"
+#echo ln -sf "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/pip" "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/pip3"
 
 echo_info "Upgrading pip..."
 pip3 install --upgrade --user pip -v

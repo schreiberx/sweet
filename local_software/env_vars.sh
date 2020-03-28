@@ -254,16 +254,20 @@ PYTHONVERSION=$($MULE_SOFTWARE_ROOT/local_software/local/bin/python3 -c "import 
 # Fallback to 
 test "#" = "#$PYTHONVERSION" && PYTHONVERSION="3.8"
 
-export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/:$PYTHONPATH"
+if [ "#" = "#$PYTHONPATH" ]; then
+	export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/"
+else
+	export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/:$PYTHONPATH"
+fi
 
 
 # Add MULE python path
 # DO NOT INCLUDE THIS, SINCE ONLY ONE 'mule' MODULE WILL BE AVAILABLE!
 # We link from the SWEET module path to the MULE module path
-export PYTHONPATH="$PYTHONPATH:$MULE_ROOT/python"
+export PYTHONPATH="$MULE_ROOT/python/:$PYTHONPATH"
 
 # Add MULE SWEET python path
-export PYTHONPATH="$PYTHONPATH:$MULE_LOCAL_ROOT/python"
+export PYTHONPATH="$MULE_LOCAL_ROOT/python/:$PYTHONPATH"
 
 
 # Back to local software
