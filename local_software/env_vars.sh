@@ -9,7 +9,7 @@
 # Backup current directory to go back to it at the end of this script
 #######################################################################
 
-BACKDIR="$PWD"
+MULE_BACKDIR="$PWD"
 
 
 #######################################################################
@@ -59,6 +59,46 @@ export -f echo_info echo_success echo_warning echo_error
 export -f echo_info_hline echo_success_hline echo_warning_hline echo_error_hline
 export -f echo_error_exit
 export -f echo_exec
+
+
+
+#######################################################################
+# Remove MULE environment if 'unload' parameter is specified
+#######################################################################
+if [ "#$1" = "#unload" ]; then
+	unset MULE_ECHO_PREFIX
+	unset MULE_LD_LIBRARY_PATH
+	unset MULE_LINK
+	unset MULE_LOCAL_PLATFORM_DIR
+	unset MULE_LOCAL_ROOT
+	unset MULE_MPICC
+	unset MULE_MPICXX
+	unset MULE_MPIF90
+	unset MULE_MPILIBS
+	unset MULE_MPILINK
+	unset MULE_PLATFORM_DIR
+	unset MULE_PLATFORM_ID
+	unset MULE_ROOT
+	unset MULE_SOFTWARE_ROOT
+
+	if [ "#$MULE_BACKUP_PATH" != "#" ]; then
+		export PATH="$MULE_BACKUP_PATH"
+		export PKG_CONFIG_PATH="$MULE_BACKUP_PKG_CONFIG_PATH"
+		export DYLD_LIBRARY_PATH="$MULE_BACKUP_DYLD_LIBRARY_PATH"
+		export LD_LIBRARY_PATH="$MULE_BACKUP_LD_LIBRARY_PATH"
+		export PYTHONPATH="$MULE_BACKUP_PYTHON_PATH"
+		export PS1="$MULE_BACKUP_PS1"
+
+		unset MULE_BACKUP_PATH
+		unset MULE_BACKUP_PKG_CONFIG_PATH
+		unset MULE_BACKUP_DYLD_LIBRARY_PATH
+		unset MULE_BACKUP_LD_LIBRARY_PATH
+		unset MULE_BACKUP_PYTHONPATH
+		unset MULE_BACKUP_PS1
+	fi
+
+	return
+fi
 
 
 #######################################################################
@@ -154,6 +194,19 @@ fi
 
 
 #######################################################################
+# Backup environment to restore it later on
+#######################################################################
+
+export MULE_BACKUP_PATH="$PATH"
+export MULE_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+export MULE_BACKUP_DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH"
+export MULE_BACKUP_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
+export MULE_BACKUP_PYTHONPATH="$PYTHONPATH"
+export MULE_BACKUP_PS1="$PS1"
+
+
+
+#######################################################################
 # Setup SOFTWARE specific parts
 #######################################################################
 # This must be done after the platform specific parts to ensure
@@ -175,6 +228,7 @@ export PATH="$MULE_SOFTWARE_ROOT/bin:$PATH"
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 
+
 #
 # setup MULE_LD_LIBRARY_PATH which stored additional library paths
 # This is used
@@ -194,7 +248,12 @@ if [ -d "$SCRIPTDIR/local/lib64" ]; then
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 fi
 
-PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
+# Determine installed SWEET-installed python version
+PYTHONVERSION=$($MULE_SOFTWARE_ROOT/local_software/local/bin/python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
+
+# Fallback to 
+test "#" = "#$PYTHONVERSION" && PYTHONVERSION="3.8"
+
 export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/:$PYTHONPATH"
 
 
@@ -227,7 +286,7 @@ fi
 #######################################################################
 #######################################################################
 
-cd "$BACKDIR"
+cd "$MULE_BACKDIR"
 
 echo_success_hline
 echo_success " MULE SOFTWARE environment setup successfully"

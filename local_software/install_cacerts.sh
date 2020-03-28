@@ -3,7 +3,7 @@
 source ./install_helpers.sh ""
 
 PKG_NAME="ca-certificates"
-PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/ssl/certs/76579174.0"
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/ssl/certs/02265526.0"
 #PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/ssl/certs/XRamp_Global_CA_Root.crt"
 PKG_URL_SRC="ca-certificates-mozilla_2018_10_05.tar.bz2"
 
