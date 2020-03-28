@@ -4,6 +4,11 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
+print("*"*80)
+for key, value in os.environ.items():
+    print(key+":"+value)
+print("*"*80)
+
 from mule_local.JobMule import *
 from mule.exec_program import *
 from mule.InfoError import *

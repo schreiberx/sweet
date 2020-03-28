@@ -4,11 +4,6 @@ cd "$(dirname $0)"
 
 export
 
-# START Travis debug helper information
-pwd
-source ../local_software/env_vars.sh
-# END
-
 if [[ -z "$1" ]]; then
 	TESTS=$(ls -1 ??_*/test.sh ??_*/test.py)
 else
