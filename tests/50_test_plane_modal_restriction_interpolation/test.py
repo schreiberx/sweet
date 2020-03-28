@@ -4,6 +4,26 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
+###############################
+###############################
+###############################
+print("*"*80)
+for k, v in os.environ.items():
+    print(k+": "+v)
+print("*"*80)
+import glob
+fs = glob.glob("../../mule/python/mule/*")
+for f in fs:
+    print(f)
+print("*"*80)
+fs = glob.glob("../../mule_local/python/mule_local/*")
+for f in fs:
+    print(f)
+print("*"*80)
+###############################
+###############################
+###############################
+
 from mule_local.JobMule import *
 from itertools import product
 from mule.exec_program import *
