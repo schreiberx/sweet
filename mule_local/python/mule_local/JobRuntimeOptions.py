@@ -510,7 +510,7 @@ class JobRuntimeOptions(InfoError):
                     coeffs.write_file(coeff_filepath)
                     file_params.append(coeffs.function_name+':'+coeff_filepath)
 
-                retval += ' --rexi-files='+(":".join(file_params))
+                retval += ' --rexi-files='+(",".join(file_params))
 
             elif self.rexi_method == 'terry':
 

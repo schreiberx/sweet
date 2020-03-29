@@ -254,7 +254,7 @@ public:
 			return;
 
 
-		std::cout << "Writing output files as simulation time: " << simVars.timecontrol.current_simulation_time << std::endl;
+		std::cout << "Writing output files at simulation time: " << simVars.timecontrol.current_simulation_time << " secs" << std::endl;
 
 		if (simVars.iodata.output_file_mode == "csv")
 		{

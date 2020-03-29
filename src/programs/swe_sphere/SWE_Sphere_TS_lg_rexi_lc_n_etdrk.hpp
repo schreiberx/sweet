@@ -23,7 +23,7 @@ class SWE_Sphere_TS_lg_rexi_lc_n_etdrk	: public SWE_Sphere_TS_interface
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
-	SWE_Sphere_TS_lg_erk_lc_n_erk ts_lg_erk_lf_n_erk;
+	SWE_Sphere_TS_lg_erk_lc_n_erk ts_lg_erk_lc_n_erk;
 
 	SWE_Sphere_TS_l_rexi ts_phi0_rexi;
 	SWE_Sphere_TS_l_rexi ts_phi1_rexi;

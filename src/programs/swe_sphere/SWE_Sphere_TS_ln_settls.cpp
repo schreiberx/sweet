@@ -373,7 +373,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_phi
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			u_lon_prev, v_lat_prev, u_lon, v_lat,
+			u_lon_prev, v_lat_prev,
+			u_lon, v_lat,
 			pos_lon_a, pos_lat_a,
 			i_dt, simVars.sim.sphere_radius,
 			pos_lon_d, pos_lat_d,		// OUTPUT
@@ -426,10 +427,10 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_phi
 
 		SphereData_Physical sl_coriolis(sphereDataConfig);
 		sl_coriolis.physical_update_lambda_gaussian_grid(
-				[&](double lon, double mu, double &o_data)
-				{
-					o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega*simVars.sim.sphere_radius;
-				}
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega*simVars.sim.sphere_radius;
+			}
 		);
 
 		// Calculate departure points
@@ -450,19 +451,47 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_phi
 				coriolis_treatment == CORIOLIS_SEMILAGRANGIAN
 		);
 
-		// Do interpolation in velocity space
 
-		SphereData_Physical u_D_phys(sphereDataConfig);
-		SphereData_Physical v_D_phys(sphereDataConfig);
+#if 0
+
+		op.uv_to_vortdiv(u_lon - sl_coriolis, v_lat, vort_D, div_D, false);
+
+		SphereData_Physical vort_D_phys(sphereDataConfig);
+		SphereData_Physical div_D_phys(sphereDataConfig);
 		sphereSampler.bicubic_scalar(
-				u_lon,
+				vort_D.getSphereDataPhysical(),
+				pos_lon_d_sl_vel, pos_lat_d_sl_vel,
+				vort_D_phys,
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+		sphereSampler.bicubic_scalar(
+				div_D.getSphereDataPhysical(),
+				pos_lon_d_sl_vel,
+				pos_lat_d_sl_vel,
+				div_D_phys,
+				false,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+		vort_D.loadSphereDataPhysical(vort_D_phys);
+		div_D.loadSphereDataPhysical(div_D_phys);
+
+#else
+
+		/*
+		 * Do interpolation in velocity space
+		 */
+		SphereData_Physical u_D_phys(sphereDataConfig);
+		sphereSampler.bicubic_scalar(
+				u_lon - sl_coriolis,
 				pos_lon_d_sl_vel, pos_lat_d_sl_vel,
 				u_D_phys,
 				true,
 				simVars.disc.semi_lagrangian_interpolation_limiter
 		);
-		u_D_phys -= sl_coriolis;
 
+		SphereData_Physical v_D_phys(sphereDataConfig);
 		sphereSampler.bicubic_scalar(
 				v_lat,
 				pos_lon_d_sl_vel, pos_lat_d_sl_vel,
@@ -473,7 +502,18 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_phi
 
 		op.uv_to_vortdiv(u_D_phys, v_D_phys, vort_D, div_D, false);
 
+#endif
+
+
 		phi_D.loadSphereDataPhysical(phi_D_phys);
+
+#if 0
+		sphereSampler.bicubic_scalar(io_vort.getSphereDataPhysical(), pos_lon_d, pos_lat_d, vort_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
+		sphereSampler.bicubic_scalar(io_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, div_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
+
+		vort_D.loadSphereDataPhysical(vort_D_phys);
+		div_D.loadSphereDataPhysical(div_D_phys);
+#endif
 	}
 
 	/*
