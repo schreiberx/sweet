@@ -231,7 +231,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 	timestep_size = i_timestep_size;
 	function_name = i_function_name;
 
-	REXI<>::load(
+	bool retval = REXI<>::load(
 			rexiSimVars,
 			function_name,
 			rexi_alphas,
@@ -239,6 +239,9 @@ void SWE_Sphere_TS_l_rexi::setup(
 			rexi_gamma,
 			simVars.misc.verbosity
 	);
+
+	if (!retval)
+		FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
 
 	rexi_use_sphere_extended_modes = rexiSimVars->use_sphere_extended_modes;
 	use_f_sphere = i_use_f_sphere;
@@ -359,7 +362,7 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 {
 	if (i_update_rexi)
 	{
-		REXI<>::load(
+		bool retval = REXI<>::load(
 				rexiSimVars,
 				function_name,
 				rexi_alphas,
@@ -367,6 +370,9 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 				rexi_gamma,
 				simVars.misc.verbosity
 		);
+
+		if (!retval)
+			FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
 	}
 
 	#if SWEET_THREADING_TIME_REXI

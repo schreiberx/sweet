@@ -45,7 +45,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral FUn_u(sphereDataConfig);
 		SphereData_Spectral FUn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
+		ts_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
@@ -87,7 +87,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral FUn_u(sphereDataConfig);
 		SphereData_Spectral FUn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
+		ts_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
@@ -117,7 +117,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral FAn_u(sphereDataConfig);
 		SphereData_Spectral FAn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
+		ts_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				A_h, A_u, A_v,
 				FAn_h, FAn_u, FAn_v,
 				i_simulation_timestamp
@@ -168,7 +168,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral FUn_u(sphereDataConfig);
 		SphereData_Spectral FUn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
+		ts_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				io_phi, io_u, io_v,
 				FUn_h, FUn_u, FUn_v,
 				i_simulation_timestamp
@@ -209,7 +209,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral FAn_u(sphereDataConfig);
 		SphereData_Spectral FAn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
+		ts_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				A_h, A_u, A_v,
 				FAn_h, FAn_u, FAn_v,
 				i_simulation_timestamp + dt_half
@@ -248,7 +248,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral FBn_u(sphereDataConfig);
 		SphereData_Spectral FBn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
+		ts_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				B_h, B_u, B_v,
 				FBn_h, FBn_u, FBn_v,
 				i_simulation_timestamp + dt_half
@@ -276,7 +276,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral FCn_u(sphereDataConfig);
 		SphereData_Spectral FCn_v(sphereDataConfig);
 
-		ts_lg_erk_lf_n_erk.euler_timestep_update_lc_n(
+		ts_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
 				C_h, C_u, C_v,
 				FCn_h, FCn_u, FCn_v,
 				i_simulation_timestamp + dt
@@ -354,24 +354,25 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
 	timestepping_order = i_timestepping_order;
 	timestepping_order2 = i_timestepping_order2;
 
-	ts_lg_erk_lf_n_erk.setup(i_timestepping_order, -1);
+	ts_lg_erk_lc_n_erk.setup(i_timestepping_order, -1);
 
 	if (timestepping_order != timestepping_order2)
 		FatalError("Mismatch of orders, should be equal");
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* set use_f_sphere to true */
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
 		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
 		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
 	}
 	else if  (timestepping_order == 4)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true);	/* set use_f_sphere to true */
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true);	/* NO Coriolis */
 		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true);
 		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, true);
 
@@ -395,7 +396,7 @@ SWE_Sphere_TS_lg_rexi_lc_n_etdrk::SWE_Sphere_TS_lg_rexi_lc_n_etdrk(
 		simVars(i_simVars),
 		op(i_op),
 
-		ts_lg_erk_lf_n_erk(simVars, op),
+		ts_lg_erk_lc_n_erk(simVars, op),
 
 		ts_phi0_rexi(simVars, op),
 		ts_phi1_rexi(simVars, op),

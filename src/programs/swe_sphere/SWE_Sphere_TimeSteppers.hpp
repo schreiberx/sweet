@@ -530,78 +530,87 @@ public:
 			SWE_Sphere_TS_ln_settls::NLTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_IGNORE;
 			bool original_linear_operator_sl_treatment = true;
 
-			// Search for implicit or exp treatment of linear parts
-			if (i_timestepping_method.find("_irk_") != std::string::npos)
+			if (i_timestepping_method == "ln_settls")
+			{
 				linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT;
-			else if (i_timestepping_method.find("_exp_") != std::string::npos)
-				linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL;
-
-			// Search for Coriolis
-			if (i_timestepping_method.find("l_irk") != std::string::npos || i_timestepping_method.find("l_exp") != std::string::npos)
 				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
-			else if (i_timestepping_method.find("lc_na_sl") != std::string::npos)
-				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN;
-			else if (i_timestepping_method.find("lc_") != std::string::npos)
-				coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR;
-
-			// Search for Nonlinear divergence
-			if (i_timestepping_method.find("_nd_") != std::string::npos)
 				nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR;
+				original_linear_operator_sl_treatment = true;
+			}
+			else
+			{
+				// Search for implicit or exp treatment of linear parts
+				if (i_timestepping_method.find("_irk_") != std::string::npos)
+					linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT;
+				else if (i_timestepping_method.find("_exp_") != std::string::npos)
+					linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL;
 
-			if (i_timestepping_method.find("_ver2") != std::string::npos)
-				original_linear_operator_sl_treatment = false;
+				// Search for Coriolis
+				if (i_timestepping_method.find("l_irk") != std::string::npos || i_timestepping_method.find("l_exp") != std::string::npos)
+					coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
+				else if (i_timestepping_method.find("lc_na_sl") != std::string::npos)
+					coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN;
+				else if (i_timestepping_method.find("lc_") != std::string::npos)
+					coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR;
+
+				// Search for Nonlinear divergence
+				if (i_timestepping_method.find("_nd_") != std::string::npos)
+					nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR;
+
+				if (i_timestepping_method.find("_ver2") != std::string::npos)
+					original_linear_operator_sl_treatment = false;
 
 #if 1
-			std::string id_string = "";
+				std::string id_string = "";
 
-			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR)
-				id_string += "l";
-			else
-				id_string += "lg";
+				if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR)
+					id_string += "l";
+				else
+					id_string += "lg";
 
-			if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT)
-				id_string += "_irk";
-			else if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL)
-				id_string += "_exp";
+				if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT)
+					id_string += "_irk";
+				else if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL)
+					id_string += "_exp";
 
-			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN)
-				id_string += "_lc";
+				if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN)
+					id_string += "_lc";
 
-			id_string += "_na";
+				id_string += "_na";
 
-			id_string += "_sl";
+				id_string += "_sl";
 
-			if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR)
-				id_string += "_lc";
+				if (coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR)
+					id_string += "_lc";
 
-			if (nonlinear_divergence_treatment == SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR)
-				id_string += "_nd";
+				if (nonlinear_divergence_treatment == SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR)
+					id_string += "_nd";
 
-			id_string += "_settls";
+				id_string += "_settls";
 
-			if (!original_linear_operator_sl_treatment)
-				id_string += "_ver2";
-
-
-			if (i_timestepping_method != id_string)
-			{
 				if (!original_linear_operator_sl_treatment)
-				{
-					std::cerr << "Detected time stepping method: "+id_string << std::endl;
-					std::cerr << "Expected time stepping method: "+i_timestepping_method << std::endl;
-					FatalError("Autodetection of parts of time stepping methods failed!");
-				}
+					id_string += "_ver2";
 
-				std::string id_string2 = id_string+"_ver1";
-				if (i_timestepping_method != id_string2)
+
+				if (i_timestepping_method != id_string)
 				{
-					std::cerr << "Detected time stepping method: "+id_string << std::endl;
-					std::cerr << "Detected alternative time stepping method: "+id_string << std::endl;
-					std::cerr << "Expected time stepping method: "+i_timestepping_method << std::endl;
-					FatalError("Autodetection of parts of time stepping methods failed!");
+					if (!original_linear_operator_sl_treatment)
+					{
+						std::cerr << "Detected time stepping method: "+id_string << std::endl;
+						std::cerr << "Expected time stepping method: "+i_timestepping_method << std::endl;
+						FatalError("Autodetection of parts of time stepping methods failed!");
+					}
+
+					std::string id_string2 = id_string+"_ver1";
+					if (i_timestepping_method != id_string2)
+					{
+						std::cerr << "Detected time stepping method: "+id_string << std::endl;
+						std::cerr << "Detected alternative time stepping method: "+id_string << std::endl;
+						std::cerr << "Expected time stepping method: "+i_timestepping_method << std::endl;
+						FatalError("Autodetection of parts of time stepping methods failed!");
+					}
 				}
 			}
-
 #endif
 
 			l_cn_na_sl_nd_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);

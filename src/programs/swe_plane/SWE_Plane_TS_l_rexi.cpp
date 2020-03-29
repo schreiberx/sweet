@@ -44,7 +44,7 @@ void SWE_Plane_TS_l_rexi::setup(
 		return;
 	}
 
-	REXI<>::load(
+	bool retval = REXI<>::load(
 			rexiSimVars,
 			i_function_name,
 
@@ -54,6 +54,10 @@ void SWE_Plane_TS_l_rexi::setup(
 
 			simVars.misc.verbosity
 	);
+
+	if (!retval)
+		FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
+
 
 	std::cout << "Number of total REXI coefficients N = " << rexi_alpha.size() << std::endl;
 
