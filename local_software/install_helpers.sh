@@ -350,7 +350,7 @@ function config_exec()
 	echo_info "Executing '${M}'"
 
 	config_alive_thread_start
-	$M >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
+	"${@}" >> "$PKG_CONFIG_STD_OUTPUT" 2>&1 || config_error_exit "FAILED '${M}'"
 	config_alive_thread_stop
 }
 
@@ -373,17 +373,17 @@ function config_package()
 # Combined functions
 function config_configure_make_default()	# ./configure...; make ...;
 {
-	config_configure $@
+	config_configure ${@}
 	config_make_default
 }
 function config_make_default_install()			# make; make install
 {
-	config_make_default $@
+	config_make_default ${@}
 	config_make_install
 }
 function config_configure_make_default_install()	# ./configure...; make ...; make install
 {
-	config_configure $@
+	config_configure ${@}
 	config_make_default
 	config_make_install
 }
