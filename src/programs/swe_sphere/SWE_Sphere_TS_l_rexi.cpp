@@ -236,12 +236,15 @@ void SWE_Sphere_TS_l_rexi::setup(
 
 	REXICoefficients<double> rexiCoefficients;
 
-	REXI<>::load(
+	bool retval = REXI<>::load(
 			rexiSimVars,
 			function_name,
 			rexiCoefficients,
 			simVars.misc.verbosity
 	);
+
+	if (!retval)
+		FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
 
 	rexi_alphas = rexiCoefficients.alphas;
 	rexi_betas = rexiCoefficients.betas;
