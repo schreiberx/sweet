@@ -5,5 +5,5 @@ IDS=$@
 if [[ -z "$IDS" ]]; then
 	echo "No jobs specified"
 else
-	scancel --clusters=mpp2 $IDS
+	scancel --clusters=cm2 $IDS
 fi
