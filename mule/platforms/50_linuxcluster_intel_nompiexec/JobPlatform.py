@@ -34,7 +34,7 @@ def get_platform_id():
 		unique ID of platform
 	"""
 
-	return "linuxcluster_gnu"
+	return "linuxcluster_intel_nompiexec"
 
 
 
@@ -171,8 +171,8 @@ def jobscript_get_exec_command(jg : JobGeneration):
 	# Only use MPI exec if we are allowed to do so
 	# We shouldn't use mpiexec for validation scripts
 	#
-	if not p.mpiexec_disabled:
-		mpiexec = "mpiexec -n "+str(p.num_ranks)+" --perhost "+str(p.num_ranks_per_node)
+	#if not p.mpiexec_disabled:
+	#	mpiexec = "mpiexec -n "+str(p.num_ranks)+" --perhost "+str(p.num_ranks_per_node)
 
 	content = """
 
