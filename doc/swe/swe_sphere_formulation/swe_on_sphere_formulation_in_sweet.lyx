@@ -504,7 +504,24 @@ For the Lagrangian formulation we use the total derivative
 
 \end_inset
 
-We write the geopotential as
+This leads to a formulation splitting the equation into linear parts, Lagrangian
+-treated parts and the remaining (typically) non-linear terms
+\begin_inset Formula 
+\[
+\thinspace\frac{\partial}{\partial t}U=LU+\vec{v}\cdot\nabla U+N^{*}(U).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Non-linear geopotential update
+\end_layout
+
+\begin_layout Standard
+For the geopotential, we can write it as
 \begin_inset Formula 
 \[
 \frac{\partial}{\partial t}\Phi=-\nabla\cdot\left(\Phi\vec{v}\right).
@@ -532,28 +549,7 @@ As usual, this is split into the linearized form
 \end_layout
 
 \begin_layout Enumerate
-Advective terms
-\end_layout
-
-\begin_deeper
-\begin_layout Enumerate
-Regarding the advective terms, since 
-\begin_inset Formula $\frac{d}{dt}u$
-\end_inset
-
- and 
-\begin_inset Formula $\frac{d}{dt}v$
-\end_inset
-
- would be entirely linear on the right-hand side, so are the vorticity and
- divergence.
- Therefore, the remaining terms are the ones which can be treated linearly
- (see l_erk above).
-\end_layout
-
-\end_deeper
-\begin_layout Enumerate
-Geopotential
+(Step SLPHI) geopotential
 \end_layout
 
 \begin_deeper
@@ -578,5 +574,27 @@ Assign geopotential tendency:
 \end_layout
 
 \end_deeper
+\begin_layout Subsection
+Coriolis effect in non-linear treatment
+\end_layout
+
+\begin_layout Standard
+We can also treat the Coriolis effect as part of the nonlinearities.
+ Hence, we add the lc_erk contributions to 
+\begin_inset Formula $N^{*}(U)$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsection
+Coriolis in trajectory
+\end_layout
+
+\begin_layout Standard
+An alternative approach is to treat the Coriolis effect as part of the trajector
+y.
+\end_layout
+
 \end_body
 \end_document
