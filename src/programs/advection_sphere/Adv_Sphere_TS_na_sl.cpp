@@ -44,12 +44,12 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	ScalarDataArray posy_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
 
 
+	double fac = dt*simVars.sim.sphere_radius;
 	semiLagrangian.semi_lag_departure_points_settls(
-			diag_u_prev, diag_v_prev,
-			diag_u, diag_v,
+			fac*diag_u_prev, fac*diag_v_prev,
+			fac*diag_u, fac*diag_v,
+
 			posx_a, posy_a,
-			dt,
-			simVars.sim.sphere_radius,
 			posx_d, posy_d,
 
 			timestepping_order,

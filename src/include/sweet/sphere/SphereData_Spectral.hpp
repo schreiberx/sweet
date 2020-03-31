@@ -274,8 +274,6 @@ public:
 		 */
 		SphereData_Physical tmp(i_sphereDataPhysical);
 		spat_to_SH(sphereDataConfig->shtns, tmp.physical_space_data, spectral_space_data);
-
-//		SphereDataSpectral *this_var = (SphereDataSpectral*)this;
 	}
 
 
@@ -467,7 +465,7 @@ public:
 		SphereData_Physical mul(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			mul.physical_space_data[i] = a.physical_space_data[i]*b.physical_space_data[i];
 
 		SphereData_Spectral out(mul);
@@ -489,7 +487,7 @@ public:
 		SphereData_Physical div(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			div.physical_space_data[i] = a.physical_space_data[i]/b.physical_space_data[i];
 
 		SphereData_Spectral out(div);

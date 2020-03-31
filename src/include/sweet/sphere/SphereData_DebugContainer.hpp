@@ -35,12 +35,14 @@ public:
 	}
 
 
-	std::size_t size()	const
+	static
+	std::size_t size()
 	{
 		return container_data().size();
 	}
 
 
+	static
 	void clear()
 	{
 		return container_data().clear();
@@ -48,11 +50,12 @@ public:
 	}
 
 
+	static
 	void set(
 			std::size_t i,
 			const SphereData_Spectral &i_data_spectral,
 			const std::string &i_description
-	)	const
+	)
 	{
 		if (i >= size())
 			container_data().resize(i+1);
@@ -63,11 +66,12 @@ public:
 	}
 
 
+	static
 	void set(
 			std::size_t i,
 			const SphereData_Physical &i_data_physical,
 			const std::string &i_description
-	)	const
+	)
 	{
 		if (i >= size())
 			container_data().resize(i+1);
@@ -78,19 +82,21 @@ public:
 	}
 
 
+	static
 	void append(
 			const SphereData_Spectral &i_data_spectral,
 			const std::string &i_description
-	)	const
+	)
 	{
 		set(container_data().size(), i_data_spectral, i_description);
 	}
 
 
+	static
 	void append(
 			const SphereData_Physical &i_data_physical,
 			const std::string &i_description
-	)	const
+	)
 	{
 		set(container_data().size(), i_data_physical, i_description);
 	}

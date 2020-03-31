@@ -197,7 +197,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx] + i_sph_data.physical_space_data[idx];
 
 		return out;
@@ -212,7 +212,7 @@ public:
 		check(i_sph_data.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] += i_sph_data.physical_space_data[idx];
 
 		return *this;
@@ -224,7 +224,7 @@ public:
 	)
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] += i_scalar;
 
 		return *this;
@@ -238,7 +238,7 @@ public:
 		check(i_sph_data.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] -= i_sph_data.physical_space_data[idx];
 
 		return *this;
@@ -250,7 +250,7 @@ public:
 	)
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] -= i_scalar;
 
 		return *this;
@@ -267,7 +267,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx] - i_sph_data.physical_space_data[idx];
 
 		return out;
@@ -280,7 +280,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = -physical_space_data[idx];
 
 		return out;
@@ -297,7 +297,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = physical_space_data[i]*i_sph_data.physical_space_data[i];
 
 		return out;
@@ -316,7 +316,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = physical_space_data[i]/i_sph_data.physical_space_data[i];
 
 		return out;
@@ -331,7 +331,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = physical_space_data[i]*i_value;
 
 		return out;
@@ -345,7 +345,7 @@ public:
 	)	const
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			physical_space_data[idx] *= i_value;
 
 		return *this;
@@ -361,7 +361,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx]/i_value;
 
 		return out;
@@ -376,7 +376,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx]+i_value;
 
 		return out;
@@ -391,7 +391,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx]-i_value;
 
 		return out;
@@ -405,7 +405,7 @@ public:
 		SphereData_Physical out(sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = i_value - physical_space_data[idx];
 
 		return out;
@@ -699,7 +699,7 @@ public:
 
 		double error = -1;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
 						std::abs(
@@ -716,7 +716,7 @@ public:
 	{
 		double error = 0;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			double &d = physical_space_data[j];
 			error += d*d;
@@ -730,7 +730,7 @@ public:
 	double physical_reduce_sum()	const
 	{
 		double sum = 0;
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 			sum += physical_space_data[j];
 
 		return sum;
@@ -747,7 +747,7 @@ public:
 #if SWEET_THREADING_SPACE
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
 			double value = physical_space_data[i];
 
@@ -774,7 +774,7 @@ public:
 #if SWEET_THREADING_SPACE
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
 			double value = physical_space_data[i]*(double)i;
 
@@ -795,7 +795,7 @@ public:
 	{
 		FatalError("TODO: Implement metric-scaled summation");
 		double sum = 0;
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			sum += physical_space_data[j];
 		}
@@ -817,7 +817,7 @@ public:
 
 		double error = -1;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
 						std::abs(
@@ -838,7 +838,7 @@ public:
 	{
 		double error = -1;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
 						std::abs(physical_space_data[j]),
@@ -856,7 +856,7 @@ public:
 	{
 		double error = std::numeric_limits<double>::infinity();
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 			error = std::min(physical_space_data[j], error);
 
 		return error;
@@ -870,7 +870,7 @@ public:
 	{
 		double error = -std::numeric_limits<double>::infinity();
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 			error = std::max(physical_space_data[j], error);
 
 		return error;
@@ -889,7 +889,7 @@ public:
 
 		SphereData_Physical out(sphereDataConfig);
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 			out.physical_space_data[j] = physical_space_data[j]*scale;
 
 		return out;
@@ -899,7 +899,7 @@ public:
 
 	bool physical_isAnyNaNorInf()	const
 	{
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
 			if (std::isnan(physical_space_data[i]) || std::isinf(physical_space_data[i]) != 0)
 				return true;
@@ -920,7 +920,7 @@ public:
 		if (i_precision >= 0)
 			std::cout << std::setprecision(i_precision);
 
-        for (int j = sphereDataConfig->physical_num_lat-1; j >= 0; j--)
+        for (int j = (int)(sphereDataConfig->physical_num_lat-1); j >= 0; j--)
         {
         		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
         		{
@@ -1206,7 +1206,7 @@ public:
 
 	void print()	const
 	{
-		for (int idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->physical_array_data_number_of_elements; idx++)
 			std::cout << physical_space_data[idx] << "\t";
 		std::cout << std::endl;
 	}

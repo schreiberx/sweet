@@ -80,7 +80,7 @@ public:
 				[&](int i, double &io_data)
 				{
 					if (io_data < threshold2)
-						io_data = 1.0;
+						io_data = threshold2;
 				}
 		);
 		ScalarDataArray norm = length2.inv_sqrt();

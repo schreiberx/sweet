@@ -263,7 +263,7 @@ public:
 
 			output_filename = write_file_csv(prog_phi, "prog_phi");
 			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << " (min: " << h.getSphereDataPhysical().physical_reduce_min() << ", max: " << h.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
+			std::cout << " + " << output_filename << " (min: " << prog_phi.getSphereDataPhysical().physical_reduce_min() << ", max: " << prog_phi.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
 
 			output_filename = write_file_csv(h, "prog_h");
 			output_reference_filenames += ";"+output_filename;
@@ -378,14 +378,17 @@ public:
 
 		write_file_output();
 
+		update_diagnostics();
+
 		if (simVars.misc.verbosity > 1)
 		{
-			update_diagnostics();
 
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
 			{
+				update_diagnostics();
+
 				// Print header
 				if (simVars.timecontrol.current_timestep_nr == 0)
 				{
@@ -437,6 +440,8 @@ public:
 		if (mpi_rank > 0)
 			return false;
 #endif
+		if (simVars.misc.gui_enabled)
+			update_diagnostics();
 
 		if (simVars.misc.verbosity > 0)
 			std::cout << "." << std::flush;

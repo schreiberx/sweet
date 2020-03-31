@@ -114,7 +114,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			physical_space_data[i] = i_sph_data.physical_space_data[i];
 
 		physical_space_data_valid = true;
@@ -304,7 +304,7 @@ public:
 		{
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+			for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 				out.physical_space_data[i] = physical_space_data[i];
 
 			return out;
@@ -320,7 +320,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = tmp.physical_space_data[i];
 
 		return out;
@@ -384,7 +384,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] + i_sph_data.spectral_space_data[idx];
 
 		out_sph_data.physical_space_data_valid = false;
@@ -406,7 +406,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] += i_sph_data.spectral_space_data[idx];
 
 		physical_space_data_valid = false;
@@ -427,7 +427,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] -= i_sph_data.spectral_space_data[idx];
 
 		physical_space_data_valid = false;
@@ -451,7 +451,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx] - i_sph_data.spectral_space_data[idx];
 
 		out_sph_data.physical_space_data_valid = false;
@@ -469,7 +469,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = -spectral_space_data[idx];
 
 		out_sph_data.physical_space_data_valid = false;
@@ -492,7 +492,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = i_sph_data.physical_space_data[i]*physical_space_data[i];
 
 		out_sph_data.spectral_space_data_valid = false;
@@ -515,7 +515,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out_sph_data.physical_space_data[i] = physical_space_data[i]/i_sph_data.physical_space_data[i];
 
 		out_sph_data.spectral_space_data_valid = false;
@@ -536,7 +536,7 @@ public:
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
 
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 
 		out_sph_data.physical_space_data_valid = false;
@@ -570,7 +570,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] *= i_value;
 
 		return *this;
@@ -587,7 +587,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]/i_value;
 
 		out_sph_data.physical_space_data_valid = false;
@@ -605,7 +605,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] /= i_value;
 
 		return *this;
@@ -690,7 +690,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_sph_data.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 
 		out_sph_data.physical_space_data_valid = false;
@@ -808,7 +808,7 @@ public:
 		assert(spectral_space_data_valid);
 
 
-	SWEET_THREADING_SPACE_PARALLEL_FOR
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
 		{
 			int idx = sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
@@ -1082,7 +1082,7 @@ public:
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 			out.physical_space_data[j] = a.physical_space_data[j] - b.physical_space_data[j];
 
 		out.physical_space_data_valid = true;
@@ -1107,7 +1107,7 @@ public:
 
 		double error = -1;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
 						error,
@@ -1137,7 +1137,7 @@ public:
 
 		double error = -1;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			error = std::max(
 						error,
@@ -1160,7 +1160,7 @@ public:
 
 		double error = 0;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			std::complex<double> &d = physical_space_data[j];
 
@@ -1498,7 +1498,7 @@ SphereData_SpectralComplex operator-(
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-	for (int idx = 0; idx < i_array_data.sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+	for (std::size_t idx = 0; idx < i_array_data.sphereDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 		out_sph_data.spectral_space_data[idx] = -i_array_data.spectral_space_data[idx];
 
 	out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
