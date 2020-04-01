@@ -201,7 +201,7 @@ public:
 		return sum;
 	}
 
-
+#if 0
 
 public:
 	void update_h_u_v_2_mass_energy_enstrophy_4_zylinder(
@@ -249,7 +249,7 @@ public:
 		io_simVars.diag.total_potential_enstrophy = 0.5*compute_zylinder_integral(eta*eta) * normalization;
 	}
 
-
+#endif
 
 
 public:

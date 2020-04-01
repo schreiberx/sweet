@@ -33,7 +33,7 @@ public:
 
 public:
 	static
-	void load(
+	bool load(
 			REXI_SimulationVariables *i_rexiSimVars,
 			const std::string &i_function_name,
 
@@ -104,6 +104,8 @@ public:
 			for (int i = 0; i < N; i++)
 				std::cout << "beta[" << i << "] = " << (double)o_beta[i].real() << ", " << (double)o_beta[i].imag() << std::endl;
 		}
+
+		return true;
 	}
 
 

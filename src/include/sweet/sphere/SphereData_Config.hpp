@@ -58,7 +58,7 @@ public:
 	 * Number of total longitudes and latitudes
 	 */
 public:
-	int physical_array_data_number_of_elements;
+	std::size_t physical_array_data_number_of_elements;
 
 
 	/**
@@ -80,7 +80,7 @@ public:
 	 * Number of elements for SPH which is based on
 	 * the *** complex-valued physical data ***
 	 */
-	int spectral_complex_array_data_number_of_elements;
+	std::size_t spectral_complex_array_data_number_of_elements;
 
 
 	/**
@@ -269,10 +269,10 @@ private:
 		 * Note: In SHTNS, the m-coefficients are compactly stored for individual n'l
 		 */
 		{
-			int idx = 0;
+			std::size_t idx = 0;
 			for (int n = 0; n <= spectral_modes_n_max; n++)
 			{
-				int test_idx = getArrayIndexByModes_Complex(n,-n);
+				std::size_t test_idx = getArrayIndexByModes_Complex(n,-n);
 
 				if (test_idx != idx)
 				{
@@ -287,7 +287,7 @@ private:
 //					std::cout << std::endl;
 //					std::cout << "TESTING inner loop n= " << n << ", m = " << m << std::endl;
 
-					int test_idx2 = getArrayIndexByModes_Complex(n,m);
+					std::size_t test_idx2 = getArrayIndexByModes_Complex(n,m);
 
 					if (test_idx2 != idx)
 					{

@@ -40,8 +40,8 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 
 	PlaneOperators &op;
 
-	std::vector<std::complex<double>> rexi_alpha;
-	std::vector<std::complex<double>> rexi_beta;
+	std::vector<std::complex<double>> rexi_alphas;
+	std::vector<std::complex<double>> rexi_betas;
 	std::complex<double> rexi_gamma;
 
 	/// simulation domain size

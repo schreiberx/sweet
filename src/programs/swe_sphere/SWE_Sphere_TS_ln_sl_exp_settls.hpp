@@ -3,12 +3,10 @@
  *
  *  Created on: 24 Sep 2019
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
- *
- *  Based on plane code
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -28,17 +26,18 @@
 
 
 
-class SWE_Sphere_TS_ln_settls	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_ln_sl_exp_settls	: public SWE_Sphere_TS_interface
 {
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
 public:
-	enum LinearTreatment_enum {
+	enum LinearGravityTreatment_enum {
 		LINEAR_IGNORE,
 		LINEAR_IMPLICIT,
 		LINEAR_EXPONENTIAL,
 	};
+
 
 	enum LinearCoriolisTreatment_enum {
 		CORIOLIS_IGNORE,
@@ -47,10 +46,12 @@ public:
 		CORIOLIS_SEMILAGRANGIAN,
 	};
 
+
 	enum NLAdvectionTreatment_enum {
 		NL_ADV_IGNORE,
 		NL_ADV_SEMILAGRANGIAN,
 	};
+
 
 	enum NLDivergenceTreatment_enum{
 		NL_DIV_IGNORE,
@@ -58,8 +59,8 @@ public:
 	};
 
 private:
-	LinearTreatment_enum linear_treatment;
-	LinearCoriolisTreatment_enum coriolis_treatment;
+	LinearGravityTreatment_enum linear_treatment;
+	LinearCoriolisTreatment_enum linear_coriolis_treatment;
 	NLAdvectionTreatment_enum nonlinear_advection_treatment;
 	NLDivergenceTreatment_enum nonlinear_divergence_treatment;
 	int timestepping_order;
@@ -76,8 +77,6 @@ private:
 	// Departure points for semi-lag
 	ScalarDataArray posx_d, posy_d;
 
-	SWE_Sphere_TS_l_erk* swe_sphere_ts_l_erk;
-	SWE_Sphere_TS_lg_erk* swe_sphere_ts_lg_erk;
 	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk;
 	SWE_Sphere_TS_lg_irk* swe_sphere_ts_lg_irk;
 	SWE_Sphere_TS_l_rexi *swe_sphere_ts_l_rexi;
@@ -88,7 +87,7 @@ private:
 
 
 public:
-	SWE_Sphere_TS_ln_settls(
+	SWE_Sphere_TS_ln_sl_exp_settls(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
@@ -96,7 +95,7 @@ public:
 
 	void setup(
 			int i_timestepping_order,
-			LinearTreatment_enum i_linear_treatment,
+			LinearGravityTreatment_enum i_linear_treatment,
 			LinearCoriolisTreatment_enum i_coriolis_treatment,// = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"
 			NLAdvectionTreatment_enum i_nonlinear_advection_treatment,
 			NLDivergenceTreatment_enum i_nonlinear_divergence_treatment,// = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR,	// "ignore", "nonlinear"
@@ -135,7 +134,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_ln_settls();
+	virtual ~SWE_Sphere_TS_ln_sl_exp_settls();
 };
 
 #endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */

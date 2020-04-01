@@ -43,25 +43,27 @@ void SWE_Plane_TS_l_rexi::setup(
 		ts_l_direct.setup(i_function_name);
 		return;
 	}
+	REXICoefficients<double> rexiCoefficients;
 
 	bool retval = REXI<>::load(
 			rexiSimVars,
 			i_function_name,
-
-			rexi_alpha,
-			rexi_beta,
-			rexi_gamma,
-
+			rexiCoefficients,
 			simVars.misc.verbosity
 	);
 
+	rexi_alphas = rexiCoefficients.alphas;
+	rexi_betas = rexiCoefficients.betas;
+	rexi_gamma = rexiCoefficients.gamma;
+
+
 	if (!retval)
-		FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
+		FatalError(std::string("Phi function '")+i_function_name+std::string("' not available"));
 
 
-	std::cout << "Number of total REXI coefficients N = " << rexi_alpha.size() << std::endl;
+	std::cout << "Number of total REXI coefficients N = " << rexi_alphas.size() << std::endl;
 
-	std::size_t N = rexi_alpha.size();
+	std::size_t N = rexi_alphas.size();
 	block_size = N/num_global_threads;
 	if (block_size*num_global_threads != N)
 		block_size++;
@@ -248,7 +250,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 	typedef std::complex<double> complex;
 
-	std::size_t max_N = rexi_alpha.size();
+	std::size_t max_N = rexi_alphas.size();
 
 
 	/*
@@ -418,8 +420,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		for (std::size_t n = start; n < end; n++)
 		{
 			// load alpha (a) and scale by inverse of tau
-			complex alpha = rexi_alpha[n]/i_dt;
-			complex beta = rexi_beta[n];
+			complex alpha = rexi_alphas[n]/i_dt;
+			complex beta = rexi_betas[n];
 
 			if (simVars.sim.plane_rotating_f0 == 0)
 			{

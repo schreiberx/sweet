@@ -23,6 +23,9 @@ public:
 	{
 		SphereData_Physical out(i_sphereDataConfig);
 
+		assert(out.sphereDataConfig->physical_array_data_number_of_elements == i_scalarDataArray.number_of_elements);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < (std::size_t)out.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_scalarDataArray.scalar_data[i];
 
