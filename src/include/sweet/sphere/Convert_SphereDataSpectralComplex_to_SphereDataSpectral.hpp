@@ -24,7 +24,7 @@ public:
 		SphereData_Physical tmp(i_sphereData.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int i = 0; i < tmp_cplx.sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < tmp_cplx.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			tmp.physical_space_data[i] = tmp_cplx.physical_space_data[i].real();
 
 		return SphereData_Spectral(tmp);
@@ -42,7 +42,7 @@ public:
 		SphereData_Physical tmp(i_sphereData.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int i = 0; i < tmp_cplx.sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < tmp_cplx.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			tmp.physical_space_data[i] = tmp_cplx.physical_space_data[i].imag();
 
 		return SphereData_Spectral(tmp);

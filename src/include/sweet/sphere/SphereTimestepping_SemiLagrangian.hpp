@@ -195,7 +195,7 @@ public:
 					rotation_axis_x,
 					rotation_axis_y,
 					rotation_axis_z,
-					1e-22	// close-to-0 threshold
+					1e-12				// close-to-0 threshold
 				);
 
 			/*
@@ -222,8 +222,7 @@ public:
 		}
 	}
 
-
-
+#if 0
 	void semi_lag_departure_points_settls(
 			const SphereData_Physical &i_u_lon_prev,	// Velocities at time t-1
 			const SphereData_Physical &i_v_lat_prev,
@@ -248,8 +247,53 @@ public:
 			bool i_include_coriolis_in_trajectoryxxx = false
 	)
 	{
+
+		semi_lag_departure_points_settls(
+				(i_dt/i_earth_radius)*i_u_lon_prev,	// Velocities at time t-1
+				(i_dt/i_earth_radius)*i_v_lat_prev,
+
+				(i_dt/i_earth_radius)*i_u_lon, 		// Velocities at time t
+				(i_dt/i_earth_radius)*i_v_lat,
+
+				i_pos_lon_a,		// Position of arrival points lon/lat
+				i_pos_lat_a,
+
+				o_pos_lon_d, 	///< Position of departure points x / y
+				o_pos_lat_d,
+
+				i_timestepping_order,
+				max_iters,
+				i_convergence_tolerance,
+				i_approximate_sphere_geometry,
+				use_interpolation_limiters,
+				i_include_coriolis_in_trajectoryxxx
+		);
+	}
+#endif
+
+
+	void semi_lag_departure_points_settls(
+			const SphereData_Physical &i_u_lon_prev,	// Velocities at time t-1
+			const SphereData_Physical &i_v_lat_prev,
+
+			const SphereData_Physical &i_u_lon, 		// Velocities at time t
+			const SphereData_Physical &i_v_lat,
+
+			const ScalarDataArray &i_pos_lon_a,		// Position of arrival points lon/lat
+			const ScalarDataArray &i_pos_lat_a,
+
+			ScalarDataArray &o_pos_lon_d, 	///< Position of departure points x / y
+			ScalarDataArray &o_pos_lat_d,
+
+			int i_timestepping_order,
+			int max_iters = 10,
+			double i_convergence_tolerance = 1e-8,
+			int i_approximate_sphere_geometry = 0,
+			bool use_interpolation_limiters = false,
+			bool i_include_coriolis_in_trajectoryxxx = false
+	)
+	{
 		std::size_t num_elements = i_pos_lon_a.number_of_elements;
-		double inv_earth_radius = 1.0/i_earth_radius;
 
 		if (i_timestepping_order == 1)
 		{
@@ -281,9 +325,9 @@ public:
 				);
 
 			// go to departure point
-			ScalarDataArray pos_x_d = pos_x_a - vel_x*i_dt*inv_earth_radius;
-			ScalarDataArray pos_y_d = pos_y_a - vel_y*i_dt*inv_earth_radius;
-			ScalarDataArray pos_z_d = pos_z_a - vel_z*i_dt*inv_earth_radius;
+			ScalarDataArray pos_x_d = pos_x_a - vel_x;
+			ScalarDataArray pos_y_d = pos_y_a - vel_y;
+			ScalarDataArray pos_z_d = pos_z_a - vel_z;
 
 			// normalize
 			ScalarDataArray norm = (pos_x_d*pos_x_d + pos_y_d*pos_y_d + pos_z_d*pos_z_d).inv_sqrt();
@@ -427,9 +471,9 @@ public:
 					pos_y_a,
 					pos_z_a,
 
-					(vel_x_extrapol + vel_x)*(-i_dt*0.5*inv_earth_radius),
-					(vel_y_extrapol + vel_y)*(-i_dt*0.5*inv_earth_radius),
-					(vel_z_extrapol + vel_z)*(-i_dt*0.5*inv_earth_radius),
+					-0.5*(vel_x_extrapol + vel_x),
+					-0.5*(vel_y_extrapol + vel_y),
+					-0.5*(vel_z_extrapol + vel_z),
 
 					new_pos_x_d,
 					new_pos_y_d,

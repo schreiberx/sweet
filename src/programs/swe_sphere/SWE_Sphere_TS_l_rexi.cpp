@@ -204,6 +204,26 @@ void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
 /**
  * setup the REXI
  */
+void SWE_Sphere_TS_l_rexi::setup_new(
+		REXI_SimulationVariables &i_rexi,
+		const std::string &i_function_name,
+		double i_timestep_size,
+		bool i_include_coriolis,
+		bool i_use_f_sphere
+)
+{
+	setup(
+			i_rexi,
+			i_function_name,
+			i_timestep_size,
+			i_use_f_sphere,
+			!i_include_coriolis
+		);
+}
+
+/**
+ * setup the REXI
+ */
 void SWE_Sphere_TS_l_rexi::setup(
 		REXI_SimulationVariables &i_rexi,
 		const std::string &i_function_name,

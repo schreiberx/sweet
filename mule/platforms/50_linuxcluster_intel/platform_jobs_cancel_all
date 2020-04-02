@@ -1,0 +1,10 @@
+#! /bin/bash
+
+IDS=$(squeue --cluster=cm2 | tail -n +3 | sed "s/ cm2.*//")
+echo ${IDS}
+
+if [[ -z "$IDS" ]]; then
+	echo "No jobs found"
+else
+	scancel --clusters=cm2 $IDS
+fi

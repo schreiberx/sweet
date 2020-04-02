@@ -67,7 +67,7 @@ public:
 	 */
 	void zeroAll()
 	{
-		for (int i = 0; i < sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->spectral_complex_array_data_number_of_elements*num_diagonals; i++)
 			data[i] = T(0);
 	}
 

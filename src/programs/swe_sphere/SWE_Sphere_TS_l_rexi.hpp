@@ -183,6 +183,14 @@ public:
 			bool i_no_coriolis
 	);
 
+	void setup_new(
+			REXI_SimulationVariables &i_rexi,
+			const std::string &i_function_name,
+			double i_timestep_size,
+			bool i_include_coriolis = true,
+			bool i_use_f_sphere = false
+	);
+
 	void run_timestep(
 			SphereData_Spectral &io_h,	///< prognostic variables
 			SphereData_Spectral &io_u,	///< prognostic variables

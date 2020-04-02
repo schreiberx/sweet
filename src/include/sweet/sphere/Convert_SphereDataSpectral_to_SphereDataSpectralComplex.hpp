@@ -26,7 +26,7 @@ public:
 #if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
-		for (int i = 0; i < tmp.sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < tmp.sphereDataConfig->physical_array_data_number_of_elements; i++)
 			tmpc.physical_space_data[i] = tmp.physical_space_data[i];
 
 

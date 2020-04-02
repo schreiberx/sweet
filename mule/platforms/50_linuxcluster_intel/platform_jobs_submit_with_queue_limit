@@ -2,20 +2,20 @@
 
 #
 # This script submits all jobs to a queue if there's a limit.
-# The default limit is 10, but can be overwritten by
+# The default limit is 50, but can be overwritten by
 # the environment variable
 #	MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION
 #
 
 
 # Limit of max. jobs in queue
-LIMIT=10
+LIMIT=50
 if [[ ! -z "$MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION" ]]; then
 	LIMIT=$MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION
 fi
 
 # Seconds to wait before trying to enqueue more jobs
-SLEEP_SECS=10
+SLEEP_SECS=50
 
 echo_info "Using job limitation of ${MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION}"
 
@@ -24,7 +24,7 @@ JOBS=""
 if [[ ! -z "$1" ]]; then
 	JOBS="$@"
 else
-	JOBS=$(ls -d */)
+	JOBS=$(ls -d job_*/)
 fi
 
 for JOB in $JOBS; do

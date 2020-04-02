@@ -455,7 +455,7 @@ if __name__ == "__main__":
                         ptime = JobParallelizationDimOptions('time')
                         ptime.num_cores_per_rank = 1
                         ptime.num_threads_per_rank = 1
-                        ptime.num_ranks = coeffs.len()
+                        ptime.num_ranks = coeffs_phi0.len()
                         ptime.setup()
 
                         if jg.platform_resources.num_nodes == 1:

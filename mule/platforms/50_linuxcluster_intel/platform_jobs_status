@@ -10,9 +10,9 @@
 
 # Avoid using $@ for this test since -z fails to compare arrays
 if [[ -z "$1" ]]; then
-	squeue --cluster=mpp2 -l | tail -n +4
+	squeue --cluster=cm2 -h --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" | tail -n +2
 else
 	for i in $@; do
-		squeue --cluster=mpp2 -l -j $i 2>/dev/null | tail -n +4
+		squeue --cluster=cm2 -h -j "$i" --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" 2>/dev/null | tail -n +2
 	done
 fi
