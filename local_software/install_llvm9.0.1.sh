@@ -19,6 +19,7 @@ mkdir -p build
 cd build
 config_exec cmake -DLLVM_ENABLE_PROJECTS=clang -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$SWEET_LOCAL_SOFTWARE_DST_DIR ../llvm
 config_exec make
+config_exec make install
 
 # test suits
 config_exec make check-clang
