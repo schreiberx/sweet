@@ -92,8 +92,8 @@ public:
 
 public:
 	SimulationInstance()	:
-		op(sphereDataConfig, simVars.sim.sphere_radius),
-		op_nodealiasing(sphereDataConfig_nodealiasing, simVars.sim.sphere_radius),
+		op(sphereDataConfig, &(simVars.sim)),
+		op_nodealiasing(sphereDataConfig_nodealiasing, &(simVars.sim)),
 		prog_phi(sphereDataConfig),
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),

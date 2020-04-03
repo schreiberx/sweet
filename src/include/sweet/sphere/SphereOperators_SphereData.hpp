@@ -12,6 +12,8 @@
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
+#include <sweet/SimulationVariables.hpp>
+
 
 
 class SphereOperators_SphereData	:
@@ -27,14 +29,17 @@ private:
 	double r;
 	double ir;
 
+	// Coriolis effect
+	SphereData_Physical fg;
+
 
 public:
 	SphereOperators_SphereData(
 		SphereData_Config *i_sphereDataConfig,
-		double i_earth_radius
+		const SimulationVariables::SimulationCoefficients *i_simCoeffs
 	)
 	{
-		setup(i_sphereDataConfig, i_earth_radius);
+		setup(i_sphereDataConfig, i_simCoeffs);
 	}
 
 
@@ -48,13 +53,33 @@ public:
 public:
 	void setup(
 		const SphereData_Config *i_sphereDataConfig,
-		double i_earth_radius
+		const SimulationVariables::SimulationCoefficients *i_simCoeffs
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
 
-		r = i_earth_radius;
+		r = i_simCoeffs->sphere_radius;
 		ir = 1.0/r;
+
+		fg.setup(i_sphereDataConfig);
+		if (i_simCoeffs->sphere_use_fsphere)
+		{
+			fg.physical_update_lambda_gaussian_grid(
+				[&](double lon, double mu, double &o_data)
+				{
+					o_data = i_simCoeffs->sphere_fsphere_f0;
+				}
+			);
+		}
+		else
+		{
+			fg.physical_update_lambda_gaussian_grid(
+				[&](double lon, double mu, double &o_data)
+				{
+					o_data = mu*2.0*i_simCoeffs->sphere_rotating_coriolis_omega;
+				}
+			);
+		}
 
 #if 1
 		double *mx = new double[2*sphereDataConfig->shtns->nlm];

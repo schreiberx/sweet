@@ -201,55 +201,6 @@ public:
 		return sum;
 	}
 
-#if 0
-
-public:
-	void update_h_u_v_2_mass_energy_enstrophy_4_zylinder(
-			const SphereOperators_SphereData &op,
-			const SphereData_Spectral &i_prog_h,
-			const SphereData_Spectral &i_prog_u,
-			const SphereData_Spectral &i_prog_v,
-
-			SimulationVariables &io_simVars
-	)
-	{
-		SphereData_Physical h = i_prog_h.getSphereDataPhysical();
-		SphereData_Physical u = i_prog_u.getSphereDataPhysical();
-		SphereData_Physical v = i_prog_v.getSphereDataPhysical();
-
-		// Convert to non-robert formulation
-		// no problem, since we do everything in physical space
-		u = u.robert_convertToNonRobert();
-		v = v.robert_convertToNonRobert();
-
-		double normalization = 4.0*M_PI*(io_simVars.sim.sphere_radius*io_simVars.sim.sphere_radius);
-
-		// mass
-		io_simVars.diag.total_mass = compute_zylinder_integral(h) * normalization;
-
-		// energy
-		SphereData_Physical pot_energy = h*(io_simVars.sim.gravitation*normalization);
-		SphereData_Physical kin_energy = h*(u*u+v*v)*(0.5*normalization);
-
-		io_simVars.diag.potential_energy = compute_zylinder_integral(pot_energy);
-		io_simVars.diag.kinetic_energy = compute_zylinder_integral(kin_energy);
-
-		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
-
-		// total vorticity
-		SphereData_Physical eta(i_prog_h.sphereDataConfig);
-//		if (io_simVars.misc.sphere_use_robert_functions)
-//			eta = op.robert_uv_to_vort(u, v).getSphereDataPhysical();
-//		else
-			eta = op.uv_to_vort(u, v).getSphereDataPhysical();
-
-		eta += fg;
-
-		// enstrophy
-		io_simVars.diag.total_potential_enstrophy = 0.5*compute_zylinder_integral(eta*eta) * normalization;
-	}
-
-#endif
 
 
 public:

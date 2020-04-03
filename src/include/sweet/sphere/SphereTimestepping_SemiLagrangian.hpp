@@ -200,7 +200,9 @@ public:
 
 			/*
 			 * Compute rotation angle
-			 * (Figure out why there's no rescaling by 1/(2pi)
+			 *
+			 * No rescaling by 1/(2pi) since the change of angle is directly
+			 * given by the magnitude of the angular velocity by its definition
 			 */
 			ScalarDataArray angle = SWEETMath::length(i_vector_x, i_vector_y, i_vector_z);
 
@@ -222,75 +224,27 @@ public:
 		}
 	}
 
-#if 0
-	void semi_lag_departure_points_settls(
-			const SphereData_Physical &i_u_lon_prev,	// Velocities at time t-1
-			const SphereData_Physical &i_v_lat_prev,
-
-			const SphereData_Physical &i_u_lon, 		// Velocities at time t
-			const SphereData_Physical &i_v_lat,
-
-			const ScalarDataArray &i_pos_lon_a,		// Position of arrival points lon/lat
-			const ScalarDataArray &i_pos_lat_a,
-
-			double i_dt,				///< time step size
-			double i_earth_radius,
-
-			ScalarDataArray &o_pos_lon_d, 	///< Position of departure points x / y
-			ScalarDataArray &o_pos_lat_d,
-
-			int i_timestepping_order,
-			int max_iters = 10,
-			double i_convergence_tolerance = 1e-8,
-			int i_approximate_sphere_geometry = 0,
-			bool use_interpolation_limiters = false,
-			bool i_include_coriolis_in_trajectoryxxx = false
-	)
-	{
-
-		semi_lag_departure_points_settls(
-				(i_dt/i_earth_radius)*i_u_lon_prev,	// Velocities at time t-1
-				(i_dt/i_earth_radius)*i_v_lat_prev,
-
-				(i_dt/i_earth_radius)*i_u_lon, 		// Velocities at time t
-				(i_dt/i_earth_radius)*i_v_lat,
-
-				i_pos_lon_a,		// Position of arrival points lon/lat
-				i_pos_lat_a,
-
-				o_pos_lon_d, 	///< Position of departure points x / y
-				o_pos_lat_d,
-
-				i_timestepping_order,
-				max_iters,
-				i_convergence_tolerance,
-				i_approximate_sphere_geometry,
-				use_interpolation_limiters,
-				i_include_coriolis_in_trajectoryxxx
-		);
-	}
-#endif
 
 
 	void semi_lag_departure_points_settls(
-			const SphereData_Physical &i_u_lon_prev,	// Velocities at time t-1
-			const SphereData_Physical &i_v_lat_prev,
+		const SphereData_Physical &i_u_lon_prev,	///< Velocities at time t-1
+		const SphereData_Physical &i_v_lat_prev,
 
-			const SphereData_Physical &i_u_lon, 		// Velocities at time t
-			const SphereData_Physical &i_v_lat,
+		const SphereData_Physical &i_u_lon, 		///< Velocities at time t
+		const SphereData_Physical &i_v_lat,
 
-			const ScalarDataArray &i_pos_lon_a,		// Position of arrival points lon/lat
-			const ScalarDataArray &i_pos_lat_a,
+		const ScalarDataArray &i_pos_lon_a,		///< Position of arrival points lon/lat
+		const ScalarDataArray &i_pos_lat_a,
 
-			ScalarDataArray &o_pos_lon_d, 	///< Position of departure points x / y
-			ScalarDataArray &o_pos_lat_d,
+		ScalarDataArray &o_pos_lon_d, 	///< OUTPUT: Position of departure points x / y
+		ScalarDataArray &o_pos_lat_d,
 
-			int i_timestepping_order,
-			int max_iters = 10,
-			double i_convergence_tolerance = 1e-8,
-			int i_approximate_sphere_geometry = 0,
-			bool use_interpolation_limiters = false,
-			bool i_include_coriolis_in_trajectoryxxx = false
+		int i_timestepping_order,
+
+		int max_iters = 10,
+		double i_convergence_tolerance = 1e-8,
+		int i_approximate_sphere_geometry = 0,
+		bool use_interpolation_limiters = false
 	)
 	{
 		std::size_t num_elements = i_pos_lon_a.number_of_elements;

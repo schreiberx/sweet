@@ -75,7 +75,7 @@ public:
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
 
-		op(sphereDataConfig, simVars.sim.sphere_radius)
+		op(sphereDataConfig, &(simVars.sim))
 
 #if SWEET_GUI
 		,

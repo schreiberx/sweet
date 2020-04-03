@@ -41,7 +41,8 @@ void run_tests()
 	std::cout << "Using max allowed error of " << eps << std::endl;
 
 	// Use earth radius of 1
-	SphereOperators_SphereDataComplex op(sphereDataConfig, 1);
+	simVars.sim.sphere_radius = 1.0;
+	SphereOperators_SphereDataComplex op(sphereDataConfig, &(simVars.sim));
 
 
 	if (true)

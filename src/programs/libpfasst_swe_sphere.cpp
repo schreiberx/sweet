@@ -152,11 +152,11 @@ int main(int i_argc, char *i_argv[])
 
 	levelSingletons[fineLevelId].op.setup(
 			&(levelSingletons[fineLevelId].dataConfig),
-			simVars.sim.sphere_radius
+			&(simVars.sim)
 	);
 	levelSingletons[fineLevelId].opNoDealiasing.setup(
 			&(levelSingletons[fineLevelId].dataConfigNoDealiasing),
-			simVars.sim.sphere_radius
+			&(simVars.sim)
 	);
 
 	// define the number of modes for the coarser levels
@@ -178,7 +178,7 @@ int main(int i_argc, char *i_argv[])
 
 		levelSingletons[thisLevelId].op.setup(
 				&(levelSingletons[thisLevelId].dataConfig),
-				simVars.sim.sphere_radius
+				&(simVars.sim)
 		);
 	}
 

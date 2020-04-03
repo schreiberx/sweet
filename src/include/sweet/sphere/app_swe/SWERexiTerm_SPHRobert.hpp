@@ -88,6 +88,7 @@ public:
 	 */
 	void setup_vectorinvariant_progphivortdiv(
 			const SphereData_Config *i_sphereDataConfigSolver,
+			const SimulationVariables *i_simVars,
 
 			const std::complex<double> &i_alpha,
 			const std::complex<double> &i_beta,
@@ -122,8 +123,8 @@ public:
 
 		gh = i_avg_geopotential;
 
-		op.setup(sphereDataConfigSolver, r);
-		opComplex.setup(sphereDataConfigSolver, r);
+		op.setup(sphereDataConfigSolver, &(i_simVars->sim));
+		opComplex.setup(sphereDataConfigSolver, &(i_simVars->sim));
 
 
 		if (!use_f_sphere)

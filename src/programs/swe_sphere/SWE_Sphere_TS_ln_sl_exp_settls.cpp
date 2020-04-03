@@ -88,9 +88,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_2nd_order(
 			pos_lon_d, pos_lat_d,		// OUTPUT
 
 			simVars.disc.timestepping_order, simVars.disc.semi_lagrangian_max_iterations, simVars.disc.semi_lagrangian_convergence_threshold,
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry, simVars.disc.semi_lagrangian_interpolation_limiter,
-			// Treat the Coriolis term as part of the Semi Lagrangian approach?
-			linear_coriolis_treatment == CORIOLIS_SEMILAGRANGIAN
+			simVars.disc.semi_lagrangian_approximate_sphere_geometry, simVars.disc.semi_lagrangian_interpolation_limiter
 	);
 
 	/*

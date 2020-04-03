@@ -29,6 +29,8 @@ tests/*/job_bench*
 .settings/
 .vscode/
 
+/output_*
+
 **/shtns_cfg
 **/shtns_cfg_fftw
 **/sweet_fftw

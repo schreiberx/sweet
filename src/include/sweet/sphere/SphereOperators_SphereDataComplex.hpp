@@ -14,6 +14,7 @@
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
+#include <sweet/SimulationVariables.hpp>
 
 
 
@@ -38,10 +39,10 @@ private:
 public:
 	SphereOperators_SphereDataComplex(
 			SphereData_Config *i_sphereDataConfig,
-			double i_earth_radius
+			const SimulationVariables::SimulationCoefficients *i_simCoeffs
 	)
 	{
-		setup(i_sphereDataConfig, i_earth_radius);
+		setup(i_sphereDataConfig, i_simCoeffs);
 	}
 
 
@@ -56,12 +57,12 @@ public:
 public:
 	void setup(
 			const SphereData_Config *i_sphereDataConfig,
-			double i_earth_radius
+			const SimulationVariables::SimulationCoefficients *i_simCoeffs
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
 
-		r = i_earth_radius;
+		r = i_simCoeffs->sphere_radius;
 		ir = 1.0/r;
 
 		sphSolver_inv_one_minus_mu2.setup(sphereDataConfig, 2);

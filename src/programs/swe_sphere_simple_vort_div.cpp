@@ -196,7 +196,7 @@ public:
 
 	void setup()
 	{
-		op.setup(sphereDataConfig, simVars.sim.sphere_radius);
+		op.setup(sphereDataConfig, &(simVars.sim));
 
 		f.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)

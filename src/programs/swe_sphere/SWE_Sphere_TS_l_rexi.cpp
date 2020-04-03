@@ -425,6 +425,8 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 
 				perThreadVars[local_thread_id]->rexiSPHRobert_vector[thread_local_idx].setup_vectorinvariant_progphivortdiv(
 						sphereDataConfigSolver,
+						&simVars,
+
 						perThreadVars[local_thread_id]->alpha[thread_local_idx],
 						perThreadVars[local_thread_id]->beta_re[thread_local_idx],
 						simCoeffs.sphere_radius,
@@ -674,6 +676,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 						rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
 								sphereDataConfigSolver,	///< sphere data for input data
+								&simVars,
+
 								alpha,
 								beta_re,
 
@@ -738,6 +742,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 						rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
 								sphereDataConfigSolver,	///< sphere data for input data
+								&simVars,
+
 								alpha,
 								beta_re,
 
@@ -823,6 +829,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 							rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
 									sphereDataConfigSolver,	///< sphere data for input data
+									&simVars,
+
 									alpha,
 									beta_re,
 
@@ -949,6 +957,8 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 
 							rexiSPHRobert.setup_vectorinvariant_progphivortdiv(
 									sphereDataConfigSolver,	///< sphere data for input data
+									&simVars,
+
 									alpha,
 									beta_re,
 

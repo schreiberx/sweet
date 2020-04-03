@@ -107,10 +107,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_1st_order(SphereData_Spectral &io_phi
 			simVars.disc.timestepping_order,
 			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold,
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry, simVars.disc.semi_lagrangian_interpolation_limiter,
-
-			// Treat the Coriolis term as part of the Semi Lagrangian approach?
-			coriolis_treatment == CORIOLIS_SEMILAGRANGIAN
+			simVars.disc.semi_lagrangian_approximate_sphere_geometry, simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	/*
@@ -414,9 +411,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold,
 			simVars.disc.semi_lagrangian_approximate_sphere_geometry,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			// Treat the Coriolis term as part of the Semi Lagrangian approach?
-			coriolis_treatment == CORIOLIS_SEMILAGRANGIAN
+			simVars.disc.semi_lagrangian_interpolation_limiter
 	);
 
 	/*

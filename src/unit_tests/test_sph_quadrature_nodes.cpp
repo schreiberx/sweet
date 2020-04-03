@@ -18,7 +18,7 @@
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
-#include <sweet/sphere/SphereOperators_SphereData.hpp>
+//#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
 
