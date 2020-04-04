@@ -10,8 +10,6 @@
 
 
 #include <sweet/SimulationVariables.hpp>
-#include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
-#include <benchmarks_sphere/SphereTestSolutions_SPH.hpp>
 #include <libmath/BandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>

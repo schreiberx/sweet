@@ -328,9 +328,6 @@ public:
 					else
 						r = i_simulation_timestamp/s->simVars->sim.advection_velocity[2]*2.0*M_PI;
 
-					// apply rotation
-					//alpha += r;
-
 					// change velocity
 					u0 = u0*(1.0 + std::cos(r));
 
@@ -602,12 +599,13 @@ public:
 				// see doc/galewsky_mean_layer_depth/ on how to get this constant.
 				// it is NOT 10e3 (see Galewsky paper)
 				simVars->sim.h0 = 10158.186170454619;
-			}
 
-			/*
-			 * Rerun setup to update the operators with the potentially new values
-			 */
-			op->setup(o_phi.sphereDataConfig, &(simVars->sim));
+
+				/*
+				 * Rerun setup to update the operators with the potentially new values
+				 */
+				op->setup(o_phi.sphereDataConfig, &(simVars->sim));
+			}
 
 			/*
 			 * Parameters from Galewsky paper setup
@@ -1079,6 +1077,8 @@ public:
 				// Scale geopotential to make NL influencing the stiffness stronger
 				simVars->sim.h0 *= 0.2;
 				simVars->sim.gravitation *= 0.2;
+
+				op->setup(sphereDataConfig, &(simVars->sim));
 			}
 
 			SphereData_Physical tmp(o_phi.sphereDataConfig);
@@ -1150,6 +1150,8 @@ public:
 				simVars->sim.gravitation = 9.80616;
 				simVars->sim.sphere_radius = 6.37122e6;
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+
+				op->setup(sphereDataConfig, &(simVars->sim));
 			}
 
 			double a = simVars->sim.sphere_radius;
@@ -1309,6 +1311,8 @@ public:
 				simVars->sim.gravitation = 9.80616;
 				simVars->sim.sphere_radius = 6.37122e6;
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+
+				op->setup(sphereDataConfig, &(simVars->sim));
 			}
 
 			double a = simVars->sim.sphere_radius;

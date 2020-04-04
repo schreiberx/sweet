@@ -8,7 +8,6 @@
 
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
-#include <benchmarks_sphere/SphereTestSolutions_SPH.hpp>
 #include <libmath/BandedMatrixPhysicalReal.hpp>
 
 
