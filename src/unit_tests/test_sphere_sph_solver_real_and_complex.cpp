@@ -58,11 +58,10 @@ public:
 	)
 	{
 		double eps = 1e-10;
-		//double eps = 1e-8;
 		eps *= std::sqrt(sphereDataConfig->spectral_modes_n_max)*std::sqrt(sphereDataConfig->spectral_modes_m_max);
 		std::cout << "Using max allowed error of eps=" << eps << std::endl;
 
-		sphere_operators_type op(sphereDataConfig, simVars.sim.sphere_radius);
+		sphere_operators_type op(sphereDataConfig, &(simVars.sim));
 
 		{
 			SphereTestSolutions_Gaussian testSolutions;

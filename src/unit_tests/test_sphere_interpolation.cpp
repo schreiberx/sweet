@@ -84,7 +84,7 @@ public:
 	SimulationInstance()	:
 		prog_h(sphereDataConfig),
 
-		op(sphereDataConfig, simVars.sim.sphere_radius)
+		op(sphereDataConfig, &(simVars.sim))
 
 #if SWEET_GUI
 		,
