@@ -27,8 +27,6 @@ class SWE_Sphere_TS_ln_erk	: public SWE_Sphere_TS_interface
 	// Sampler
 	SphereTimestepping_ExplicitRK timestepping_rk;
 
-	// Coriolis effect
-	SphereData_Physical fg;
 
 private:
 	void euler_timestep_update(

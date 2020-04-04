@@ -12,7 +12,6 @@
 #include "SWE_Sphere_TS_interface.hpp"
 
 #include "SWE_Sphere_TS_l_erk.hpp"
-#include "SWE_Sphere_TS_l_erk_pvd.hpp"
 #include "SWE_Sphere_TS_l_rexi.hpp"
 #include "SWE_Sphere_TS_l_lf.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
@@ -47,7 +46,6 @@ class SWE_Sphere_TimeSteppers
 public:
 	SWE_Sphere_TS_l_erk *l_erk = nullptr;
 
-	SWE_Sphere_TS_l_erk_pvd *l_erk_pvd = nullptr;
 	SWE_Sphere_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
 	SWE_Sphere_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
 

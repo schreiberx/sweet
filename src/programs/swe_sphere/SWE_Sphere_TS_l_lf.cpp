@@ -56,8 +56,8 @@ void SWE_Sphere_TS_l_lf::euler_timestep_update(
 			op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 		SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-		SphereData_Physical tmpg1 = ug*fg;
-		SphereData_Physical tmpg2 = vg*fg;
+		SphereData_Physical tmpg1 = ug*op.fg;
+		SphereData_Physical tmpg2 = vg*op.fg;
 
 
 		if (simVars.misc.sphere_use_robert_functions)
@@ -124,26 +124,6 @@ void SWE_Sphere_TS_l_lf::setup(
 	robert_asselin_filter = i_robert_asselin_filter;
 
 	timestepping_lf.setup(robert_asselin_filter);
-
-	if (simVars.sim.sphere_use_fsphere)
-	{
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = simVars.sim.sphere_fsphere_f0;
-			}
-		);
-	}
-	else
-	{
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
-			}
-		);
-	}
-
 }
 
 
@@ -153,8 +133,7 @@ SWE_Sphere_TS_l_lf::SWE_Sphere_TS_l_lf(
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		timestepping_lf(i_op.sphereDataConfig),
-		fg(i_op.sphereDataConfig)
+		timestepping_lf(i_op.sphereDataConfig)
 {
 }
 

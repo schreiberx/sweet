@@ -29,10 +29,6 @@ class SWE_Sphere_TS_lg_erk_lc_erk	: public SWE_Sphere_TS_interface
 	SphereTimestepping_ExplicitRK timestepping_rk_linear;
 	SphereTimestepping_ExplicitRK timestepping_rk_nonlinear;
 
-	// Coriolis effect
-	SphereData_Physical fg;
-	SphereData_Spectral f;
-
 
 public:
 	void euler_timestep_update_lg(

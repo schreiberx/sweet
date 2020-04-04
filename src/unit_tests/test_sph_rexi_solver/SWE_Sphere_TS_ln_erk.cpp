@@ -1,3 +1,7 @@
+#error "This file might be obsolete!"
+#error "This file might be obsolete!"
+#error "This file might be obsolete!"
+
 /*
  * SWE_Sphere_TS_ln_erk.cpp
  *

@@ -96,8 +96,6 @@ if group == "l1":
 	ref_ts_order = 4
 
 	ts_methods = [
-			#'l_erk_pvd',
-
 			'l_erk',
 			'lg_erk_lc_erk',
 

@@ -72,7 +72,6 @@ class SWE_Sphere_TS_l_cn	: public SWE_Sphere_TS_interface
 	/// Average geopotential
 	double gh;
 
-	SphereData_Physical fg;
 	SphereData_Physical mug;
 
 public:

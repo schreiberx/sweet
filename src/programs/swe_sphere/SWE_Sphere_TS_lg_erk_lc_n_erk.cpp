@@ -119,8 +119,8 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
-	SphereData_Physical tmpg1 = ug*(vrtg+fg);
-	SphereData_Physical tmpg2 = vg*(vrtg+fg);
+	SphereData_Physical tmpg1 = ug*(vrtg+op.fg);
+	SphereData_Physical tmpg2 = vg*(vrtg+op.fg);
 
 	if (simVars.misc.sphere_use_robert_functions)
 		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
@@ -314,26 +314,6 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::setup(
 	timestepping_order = i_order;
 
 	version_id = i_version_id;
-
-	if (simVars.sim.sphere_use_fsphere)
-	{
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = simVars.sim.sphere_fsphere_f0;
-			}
-		);
-	}
-	else
-	{
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
-			}
-		);
-	}
-
 }
 
 
@@ -343,8 +323,7 @@ SWE_Sphere_TS_lg_erk_lc_n_erk::SWE_Sphere_TS_lg_erk_lc_n_erk(
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		timestepping_order(-1),
-		fg(i_op.sphereDataConfig)
+		timestepping_order(-1)
 {
 }
 

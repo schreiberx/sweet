@@ -161,17 +161,6 @@ public:
 	)
 	{
 		/*
-		 * Setup Coriolis effect
-		 */
-		SphereData_Physical fg(o_phi.sphereDataConfig);
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = 2.0*simVars->sim.sphere_rotating_coriolis_omega*mu;
-			}
-		);
-
-		/*
 		 * Compute vorticity and divergence from velocities
 		 */
 		SphereData_Physical ug(o_phi.sphereDataConfig);
@@ -181,8 +170,8 @@ public:
 
 		SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
 
-		SphereData_Physical tmpg1 = ug*(vrtg+fg);
-		SphereData_Physical tmpg2 = vg*(vrtg+fg);
+		SphereData_Physical tmpg1 = ug*(vrtg+op->fg);
+		SphereData_Physical tmpg2 = vg*(vrtg+op->fg);
 
 		SphereData_Spectral tmpspec1(o_phi.sphereDataConfig);
 		SphereData_Spectral tmpspec2(o_phi.sphereDataConfig);

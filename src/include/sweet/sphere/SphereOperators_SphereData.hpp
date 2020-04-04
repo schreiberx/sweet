@@ -24,13 +24,13 @@ class SphereOperators_SphereData	:
 public:
 	const SphereData_Config *sphereDataConfig;
 
-private:
+	// Coriolis effect in physical space
+	SphereData_Physical fg;
 
+
+private:
 	double r;
 	double ir;
-
-	// Coriolis effect
-	SphereData_Physical fg;
 
 
 public:

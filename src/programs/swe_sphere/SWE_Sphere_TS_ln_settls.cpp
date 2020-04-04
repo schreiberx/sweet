@@ -296,8 +296,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_1st_order(SphereData_Spectral &io_phi
 		 * See /doc/swe/swe_sphere_formulation, lc_erk
 		 */
 
-		SphereData_Physical ufg = u_lon * fg;
-		SphereData_Physical vfg = v_lat * fg;
+		SphereData_Physical ufg = u_lon * op.fg;
+		SphereData_Physical vfg = v_lat * op.fg;
 
 		/*
 		 * Step 1c
@@ -708,8 +708,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 		/*
 		 * Step 1b
 		 */
-		SphereData_Physical ufg = U_u * fg;
-		SphereData_Physical vfg = U_v * fg;
+		SphereData_Physical ufg = U_u * op.fg;
+		SphereData_Physical vfg = U_v * op.fg;
 
 		/*
 		 * Step 1c
@@ -739,8 +739,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 		 */
 
 		// u_lon and u_lat already available in physical space
-		SphereData_Physical ufg_prev = u_lon_prev * fg;
-		SphereData_Physical vfg_prev = v_lat_prev * fg;
+		SphereData_Physical ufg_prev = u_lon_prev * op.fg;
+		SphereData_Physical vfg_prev = v_lat_prev * op.fg;
 
 		/*
 		 * Step 1c
@@ -1008,24 +1008,6 @@ void SWE_Sphere_TS_ln_settls::setup(
 		else
 			// initialize with 1st order and half time step size
 			swe_sphere_ts_lg_irk->setup(1, 0.5 * simVars.timecontrol.current_timestep_size, 0);
-	}
-
-	fg.setup(op.sphereDataConfig);
-	if (simVars.sim.sphere_use_fsphere)
-	{
-		fg.physical_update_lambda_gaussian_grid([&](double lon, double mu, double &o_data)
-				{
-					o_data = simVars.sim.sphere_fsphere_f0;
-				}
-			);
-	}
-	else
-	{
-		fg.physical_update_lambda_gaussian_grid([&](double lon, double mu, double &o_data)
-				{
-					o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
-				}
-			);
 	}
 }
 

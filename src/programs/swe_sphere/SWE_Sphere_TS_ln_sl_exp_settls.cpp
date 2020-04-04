@@ -167,15 +167,15 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_2nd_order(
 
 		if (linear_coriolis_treatment == CORIOLIS_NONLINEAR)
 		{
-			SphereData_Physical ufg = U_u * fg;
-			SphereData_Physical vfg = U_v * fg;
+			SphereData_Physical ufg = U_u * op.fg;
+			SphereData_Physical vfg = U_v * op.fg;
 
 			op.uv_to_vortdiv(ufg, vfg, N_div_n, N_vort_n, false);
 			N_vort_n *= -1.0;
 
 			// u_lon and u_lat already available in physical space
-			SphereData_Physical ufg_prev = U_u_prev * fg;
-			SphereData_Physical vfg_prev = U_v_prev * fg;
+			SphereData_Physical ufg_prev = U_u_prev * op.fg;
+			SphereData_Physical vfg_prev = U_v_prev * op.fg;
 
 			SphereData_Spectral f_vort_t_prev(sphereDataConfig);
 			SphereData_Spectral f_div_t_prev(sphereDataConfig);
@@ -398,26 +398,6 @@ void SWE_Sphere_TS_ln_sl_exp_settls::setup(
 			linear_coriolis_treatment == CORIOLIS_LINEAR,
 			simVars.sim.sphere_use_fsphere
 		);
-
-	fg.setup(op.sphereDataConfig);
-	if (simVars.sim.sphere_use_fsphere)
-	{
-		fg.physical_update_lambda_gaussian_grid(
-				[&](double lon, double mu, double &o_data)
-				{
-					o_data = simVars.sim.sphere_fsphere_f0;
-				}
-			);
-	}
-	else
-	{
-		fg.physical_update_lambda_gaussian_grid(
-				[&](double lon, double mu, double &o_data)
-				{
-					o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
-				}
-			);
-	}
 }
 
 SWE_Sphere_TS_ln_sl_exp_settls::SWE_Sphere_TS_ln_sl_exp_settls(SimulationVariables &i_simVars, SphereOperators_SphereData &i_op) :

@@ -26,9 +26,6 @@ class SWE_Sphere_TS_l_lf	: public SWE_Sphere_TS_interface
 	// Sampler
 	SphereTimestepping_ExplicitLeapfrog timestepping_lf;
 
-	// Coriolis effect
-	SphereData_Physical fg;
-
 	int timestepping_order;
 	double robert_asselin_filter;
 

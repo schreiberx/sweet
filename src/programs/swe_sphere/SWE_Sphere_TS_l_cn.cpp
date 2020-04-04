@@ -111,14 +111,6 @@ void SWE_Sphere_TS_l_cn::update_coefficients()
 		sphSolverPhi.solver_component_rexi_z7(	-gh*alpha*alpha, r);
 		sphSolverPhi.solver_component_rexi_z8(	-gh*two_coriolis*two_coriolis, r);
 
-		fg.setup(sphereDataConfig);
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = mu*two_coriolis;
-			}
-		);
-
 		mug.setup(sphereDataConfig);
 		mug.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
@@ -197,8 +189,8 @@ void SWE_Sphere_TS_l_cn::run_timestep(
 
 		SphereData_Physical phig = phi0.getSphereDataPhysical();
 
-		SphereData_Physical tmpg1 = ug*fg;
-		SphereData_Physical tmpg2 = vg*fg;
+		SphereData_Physical tmpg1 = ug*op.fg;
+		SphereData_Physical tmpg2 = vg*op.fg;
 
 		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 

@@ -18,8 +18,6 @@ class SphereHelpers_Diagnostics
 	SphereData_Config *sphereDataConfig;
 	SphereData_Spectral modeIntegralValues;
 
-	SphereData_Physical fg;
-
 	/*
 	 * Gaussian quadrature weights
 	 */
@@ -33,8 +31,7 @@ public:
 			int i_verbose = 1
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
-		modeIntegralValues(sphereDataConfig),
-		fg(sphereDataConfig)
+		modeIntegralValues(sphereDataConfig)
 	{
 		gauss_weights.resize(sphereDataConfig->physical_num_lat);
 
@@ -94,13 +91,6 @@ public:
 			}
 		}
 #endif
-
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = mu*2.0*i_simVars.sim.sphere_rotating_coriolis_omega;
-			}
-		);
 
 		/*
 		 * Test Gaussian quadrature
@@ -255,7 +245,7 @@ public:
 		else
 			eta = op.uv_to_vort(u, v).getSphereDataPhysical();
 
-		eta += fg;
+		eta += op.fg;
 
 		// enstrophy (Williamson paper, equation 138)
 		io_simVars.diag.total_potential_enstrophy = 0.5*compute_zylinder_integral(eta*eta/h) * normalization;

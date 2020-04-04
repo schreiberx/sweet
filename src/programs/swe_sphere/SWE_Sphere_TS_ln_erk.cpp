@@ -61,10 +61,10 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	 * Step 1c
 	 */
 	// left part of eq. (19)
-	SphereData_Physical tmp_u = ug*(vrtg+fg);
+	SphereData_Physical tmp_u = ug*(vrtg+op.fg);
 
 	// left part of eq. (20)
-	SphereData_Physical tmp_v = vg*(vrtg+fg);
+	SphereData_Physical tmp_v = vg*(vrtg+op.fg);
 
 	/*
 	 * Step 1d
@@ -146,26 +146,6 @@ void SWE_Sphere_TS_ln_erk::setup(
 )
 {
 	timestepping_order = i_order;
-
-	if (simVars.sim.sphere_use_fsphere)
-	{
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = simVars.sim.sphere_fsphere_f0;
-			}
-		);
-	}
-	else
-	{
-		fg.physical_update_lambda_gaussian_grid(
-			[&](double lon, double mu, double &o_data)
-			{
-				o_data = mu*2.0*simVars.sim.sphere_rotating_coriolis_omega;
-			}
-		);
-	}
-
 }
 
 
@@ -174,8 +154,7 @@ SWE_Sphere_TS_ln_erk::SWE_Sphere_TS_ln_erk(
 		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
-		op(i_op),
-		fg(i_op.sphereDataConfig)
+		op(i_op)
 {
 	setup(simVars.disc.timestepping_order);
 }

@@ -81,10 +81,6 @@ private:
 	SWE_Sphere_TS_lg_irk* swe_sphere_ts_lg_irk;
 	SWE_Sphere_TS_l_rexi *swe_sphere_ts_l_rexi;
 
-	// Coriolis effect
-	SphereData_Physical fg;
-
-
 
 public:
 	SWE_Sphere_TS_ln_sl_exp_settls(
