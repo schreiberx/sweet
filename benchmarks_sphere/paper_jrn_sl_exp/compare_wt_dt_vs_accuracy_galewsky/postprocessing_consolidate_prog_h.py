@@ -91,15 +91,18 @@ for tagname_y in tagnames_y:
 
 				if 'prog_h' in tagname_y:
 					if 'l1' in tagname_y:
-						if y > 1e1:
+						#if y > 1e1:
+						if y > 1e3:
 							print("Sorting out L1 data "+str(y))
 							return True
 					elif 'l2' in tagname_y:
-						if y > 1e1:
+						#if y > 1e1:
+						if y > 1e3:
 							print("Sorting out L2 data "+str(y))
 							return True
 					elif 'linf' in tagname_y:
-						if y > 1e2:
+						#if y > 1e2:
+						if y > 1e3:
 							print("Sorting out Linf data "+str(y))
 							return True
 					else:

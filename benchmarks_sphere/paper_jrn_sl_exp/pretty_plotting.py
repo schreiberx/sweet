@@ -17,6 +17,12 @@ latex_pretty_names = {
 	'l_rexi_n_etdrk'	: "$L(U)$: REXI, $N(U)$: ETD2RK",
 	'lg_rexi_lc_n_etdrk'	: "$L_g(U)$: REXI, $L_c(U)+N(U)$: ETD2RK",
 
+	'l_irk_na_sl_nd_settls'	: "$L(U)$: CN, $N_a$: SL, $N_d$: SETTLS",
+	'lg_irk_na_sl_lc_nd_settls'	: "$L_g(U)$: CN, $N_a$: SL, $L_C+N_d$: SETTLS",
+
+	'l_exp_na_sl_nd_settls'	: "$L(U)$: EXP, $N_a$: SL, $N_d$: SETTLS",
+	'lg_exp_na_sl_lc_nd_settls'	: "$L_g(U)$: EXP, $N_a$: SL, $L_C+N_d$: SETTLS",
+
 	'sphere_data_diff_prog_h.res_norm_l1'	: '$L_1$ norm surface height (res.\,normalized)',
 	'sphere_data_diff_prog_h.res_norm_l2'	: '$L_2$ norm surface height (res.\,normalized)',
 	'sphere_data_diff_prog_h.res_norm_linf'	: '$L_{\infty}$ norm surface height',
@@ -24,6 +30,10 @@ latex_pretty_names = {
 	'sphere_data_diff_prog_vort.res_norm_l1'	: '$L_1$ norm vorticity (res.\,normalized)',
 	'sphere_data_diff_prog_vort.res_norm_l2'	: '$L_2$ norm vorticity (res.\,normalized)',
 	'sphere_data_diff_prog_vort.res_norm_linf'	: '$L_{\infty}$ norm vorticity',
+
+	'sphere_data_diff_prog_div.res_norm_l1'	: '$L_1$ norm divergence (res.\,normalized)',
+	'sphere_data_diff_prog_div.res_norm_l2'	: '$L_2$ norm divergence (res.\,normalized)',
+	'sphere_data_diff_prog_div.res_norm_linf'	: '$L_{\infty}$ norm divergence',
 }
 
 
@@ -50,6 +60,12 @@ tms_order = [
 	'lg_rexi_lc_n_erk_ver1',
 	'l_rexi_n_etdrk',
 	'lg_rexi_lc_n_etdrk',
+
+	'l_irk_na_sl_nd_settls',
+	'lg_irk_na_sl_lc_nd_settls',
+
+	'l_exp_na_sl_nd_settls',
+	'lg_exp_na_sl_lc_nd_settls',
 ]
 
 
