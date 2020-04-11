@@ -70,7 +70,9 @@ tms_order = [
 
 
 def get_pretty_name_order(name):
-	pos = tms_order.index(name)
-	if pos >= 0:
-		return str(pos).zfill(3)
-	return 666
+	try:
+		pos = tms_order.index(name)
+	except:
+		pos = 666
+
+	return str(pos).zfill(3)
