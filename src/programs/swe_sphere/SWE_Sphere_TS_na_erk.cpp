@@ -15,7 +15,7 @@
  */
 void SWE_Sphere_TS_na_erk::euler_timestep_update(
 		const SphereData_Spectral &i_phi_pert,	///< prognostic variables
-		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
 
 		SphereData_Spectral &o_phi_pert_t,	///< time updates
@@ -37,12 +37,12 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 	SphereData_Physical ug(sphereDataConfig);
 	SphereData_Physical vg(sphereDataConfig);
 
-	op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
+	op.vortdiv_to_uv(i_vrt, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
 
 	/*
 	 * Step 1b
 	 */
-	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vrt.getSphereDataPhysical();
 
 	/*
 	 * Step 1c
@@ -128,6 +128,27 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 	 * Step 2g
 	 */
 	o_phi_pert_t += e;
+
+	/////////////////////////////
+
+
+	phig_pert = i_vrt.getSphereDataPhysical();
+	u_nl = ug*phig_pert;
+	v_nl = vg*phig_pert;
+	op.uv_to_vortdiv(u_nl, v_nl, e, o_vrt_t, simVars.misc.sphere_use_robert_functions);
+	o_vrt_t *= -1.0;
+	divg = i_div.getSphereDataPhysical();
+	e = op.scalar_physical_to_spectral(divg*phig_pert);
+	o_vrt_t += e;
+
+	phig_pert = i_div.getSphereDataPhysical();
+	u_nl = ug*phig_pert;
+	v_nl = vg*phig_pert;
+	op.uv_to_vortdiv(u_nl, v_nl, e, o_div_t, simVars.misc.sphere_use_robert_functions);
+	o_div_t *= -1.0;
+	divg = i_div.getSphereDataPhysical();
+	e = op.scalar_physical_to_spectral(divg*phig_pert);
+	o_div_t += e;
 }
 
 

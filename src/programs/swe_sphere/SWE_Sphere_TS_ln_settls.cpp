@@ -374,16 +374,18 @@ void SWE_Sphere_TS_ln_settls::run_timestep_1st_order(SphereData_Spectral &io_phi
 
 
 
-void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_phi,	///< prognostic variables
-		SphereData_Spectral &io_U_vort,	///< prognostic variables
-		SphereData_Spectral &io_U_div,	///< prognostic variables
+void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
+	SphereData_Spectral &io_U_phi,	///< prognostic variables
+	SphereData_Spectral &io_U_vort,	///< prognostic variables
+	SphereData_Spectral &io_U_div,	///< prognostic variables
 
-		double i_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp)
+	double i_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
+	double i_simulation_timestamp
+)
 {
 
 	const SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
-	double gh = simVars.sim.gravitation * simVars.sim.h0;
+	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 	double dt_radius = i_dt/simVars.sim.sphere_radius;
 
 	if (i_dt <= 0)
@@ -463,6 +465,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 			sphereSampler.bicubic_scalar(io_U_phi.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_phi_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 			U_phi_D = U_phi_D_phys;
 
+#if 0
 			SphereData_Physical U_vort_D_phys(sphereDataConfig);
 			sphereSampler.bicubic_scalar(io_U_vort.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_vort_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 			U_vort_D = U_vort_D_phys;
@@ -470,6 +473,15 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 			SphereData_Physical U_div_D_phys(sphereDataConfig);
 			sphereSampler.bicubic_scalar(io_U_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_div_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 			U_div_D = U_div_D_phys;
+#else
+			SphereData_Physical U_u_D_phys(sphereDataConfig);
+			sphereSampler.bicubic_scalar(io_U_vort.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_u_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
+
+			SphereData_Physical U_v_D_phys(sphereDataConfig);
+			sphereSampler.bicubic_scalar(io_U_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_v_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
+
+			op.uv_to_vortdiv(U_u_D_phys, U_v_D_phys, U_vort_D, U_div_D, false);
+#endif
 		}
 		else
 		{
@@ -691,10 +703,10 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 		 */
 
 		// Compute N(t)
-		N_phi_t.loadSphereDataPhysical((-(io_U_phi - gh)).getSphereDataPhysical() * io_U_div.getSphereDataPhysical());
+		N_phi_t.loadSphereDataPhysical((-(io_U_phi - gh0)).getSphereDataPhysical() * io_U_div.getSphereDataPhysical());
 
 		// Compute N(t-dt)
-		N_phi_prev.loadSphereDataPhysical((-(U_phi_prev - gh)).getSphereDataPhysical() * U_div_prev.getSphereDataPhysical());
+		N_phi_prev.loadSphereDataPhysical((-(U_phi_prev - gh0)).getSphereDataPhysical() * U_div_prev.getSphereDataPhysical());
 
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical N_D_phys(sphereDataConfig);

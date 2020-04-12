@@ -26,12 +26,14 @@
 #include "SWE_Sphere_TS_ln_erk.hpp"
 #include "SWE_Sphere_TS_l_na_erk.hpp"
 #include "SWE_Sphere_TS_na_erk.hpp"
-#include "SWE_Sphere_TS_na_sl.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_etdrk.hpp"
 #include "SWE_Sphere_TS_lg_rexi_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_lg_rexi_lc_n_etdrk.hpp"
 
+
+#include "SWE_Sphere_TS_na_sl.hpp"
+#include "SWE_Sphere_TS_na_sl_pvd.hpp"
 
 #include "SWE_Sphere_TS_lg_erk_lc_erk.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_erk_ver01.hpp"
@@ -66,7 +68,9 @@ public:
 	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
 
 	SWE_Sphere_TS_l_na_erk *l_na_erk = nullptr;
+
 	SWE_Sphere_TS_na_erk *na_erk = nullptr;
+	SWE_Sphere_TS_na_sl_pvd *na_sl_pvd = nullptr;
 	SWE_Sphere_TS_na_sl *na_sl = nullptr;
 
 	SWE_Sphere_TS_l_rexi_n_erk *l_rexi_n_erk = nullptr;

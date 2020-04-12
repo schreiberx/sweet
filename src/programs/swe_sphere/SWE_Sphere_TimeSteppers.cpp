@@ -95,17 +95,23 @@ void SWE_Sphere_TimeSteppers::reset()
 		delete l_na_erk;
 		l_na_erk = nullptr;
 	}
-	if (na_erk != nullptr)
-	{
-		delete na_erk;
-		na_erk = nullptr;
-	}
 
 	if (na_erk != nullptr)
 	{
 		delete na_erk;
 		na_erk = nullptr;
 	}
+	if (na_sl_pvd != nullptr)
+	{
+		delete na_sl_pvd;
+		na_sl_pvd = nullptr;
+	}
+	if (na_sl != nullptr)
+	{
+		delete na_sl;
+		na_sl = nullptr;
+	}
+
 	if (l_rexi_n_erk != nullptr)
 	{
 		delete l_rexi_n_erk;
@@ -352,12 +358,19 @@ void SWE_Sphere_TimeSteppers::setup(
 
 		master = &(SWE_Sphere_TS_interface&)*na_erk;
 	}
-	else if (i_timestepping_method == "na_sl")
+	else if (i_timestepping_method == "na_sl" || i_timestepping_method == "na_sl_puv")
 	{
 		na_sl = new SWE_Sphere_TS_na_sl(i_simVars, i_op);
 		na_sl->setup(i_simVars.disc.timestepping_order);
 
 		master = &(SWE_Sphere_TS_interface&)*na_sl;
+	}
+	else if (i_timestepping_method == "na_sl_pvd")
+	{
+		na_sl_pvd = new SWE_Sphere_TS_na_sl_pvd(i_simVars, i_op);
+		na_sl_pvd->setup(i_simVars.disc.timestepping_order);
+
+		master = &(SWE_Sphere_TS_interface&)*na_sl_pvd;
 	}
 	else if (i_timestepping_method == "l_rexi_n_etdrk")
 	{
