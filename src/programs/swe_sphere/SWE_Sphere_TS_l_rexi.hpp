@@ -191,7 +191,7 @@ public:
 			bool i_use_f_sphere = false
 	);
 
-	void run_timestep(
+	void run_timestep_nonpert(
 			SphereData_Spectral &io_h,	///< prognostic variables
 			SphereData_Spectral &io_u,	///< prognostic variables
 			SphereData_Spectral &io_v,	///< prognostic variables
@@ -200,8 +200,7 @@ public:
 			double i_simulation_timestamp
 	);
 
-
-	void run_timestep(
+	void run_timestep_nonpert(
 			const SphereData_Spectral &i_h,	///< prognostic variables
 			const SphereData_Spectral &i_u,	///< prognostic variables
 			const SphereData_Spectral &i_v,	///< prognostic variables
@@ -213,6 +212,16 @@ public:
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
 	);
+
+	void run_timestep_pert(
+			SphereData_Spectral &io_phi,	///< prognostic variables
+			SphereData_Spectral &io_vort,	///< prognostic variables
+			SphereData_Spectral &io_div,	///< prognostic variables
+
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
 
 
 	/**

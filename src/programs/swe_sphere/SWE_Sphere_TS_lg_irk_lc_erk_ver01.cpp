@@ -9,7 +9,24 @@
 
 
 
-void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
+void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
+
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
+
+void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
@@ -23,7 +40,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 		if (version_id == 0)
 		{
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -47,7 +64,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 				);
 
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -59,7 +76,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_lg_cn.run_timestep(
+			timestepping_lg_cn.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -76,7 +93,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 				);
 
 			// HALF time step for linear part
-			timestepping_lg_cn.run_timestep(
+			timestepping_lg_cn.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
@@ -95,7 +112,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 				);
 
 			// FULL time step for linear part
-			timestepping_lg_cn.run_timestep(
+			timestepping_lg_cn.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp

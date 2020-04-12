@@ -14,7 +14,7 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
-#include "../../programs/swe_sphere/SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
 
 
 class SWE_Sphere_TS_ln_erk	: public SWE_Sphere_TS_interface
@@ -53,7 +53,7 @@ public:
 			int i_order	///< order of RK time stepping method
 	);
 
-	void run_timestep(
+	void run_timestep_nonpert(
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

@@ -9,8 +9,25 @@
 
 
 
+void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
 
-void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
+
+
+void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_u,	///< prognostic variables
 		SphereData_Spectral &io_v,	///< prognostic variables
@@ -34,7 +51,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral phi0_Un_h(sphereDataConfig);
 		SphereData_Spectral phi0_Un_u(sphereDataConfig);
 		SphereData_Spectral phi0_Un_v(sphereDataConfig);
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.run_timestep_nonpert(
 				io_phi, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
@@ -55,7 +72,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral phi1_FUn_u(sphereDataConfig);
 		SphereData_Spectral phi1_FUn_v(sphereDataConfig);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.run_timestep_nonpert(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_dt,
@@ -76,7 +93,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral phi0_Un_u(sphereDataConfig);
 		SphereData_Spectral phi0_Un_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.run_timestep_nonpert(
 				io_phi, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
@@ -97,7 +114,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral phi1_FUn_u(sphereDataConfig);
 		SphereData_Spectral phi1_FUn_v(sphereDataConfig);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.run_timestep_nonpert(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_dt,
@@ -128,7 +145,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral phi2_X_u(sphereDataConfig);
 		SphereData_Spectral phi2_X_v(sphereDataConfig);
 
-		ts_phi2_rexi.run_timestep(
+		ts_phi2_rexi.run_timestep_nonpert(
 				FAn_h - FUn_h,
 				FAn_u - FUn_u,
 				FAn_v - FUn_v,
@@ -157,7 +174,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral phi0_Un_u(sphereDataConfig);
 		SphereData_Spectral phi0_Un_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.run_timestep_nonpert(
 				io_phi, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				dt_half,
@@ -188,7 +205,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		/*
 		 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + \Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
 		 */
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.run_timestep_nonpert(
 				FUn_h, FUn_u, FUn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -215,7 +232,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.run_timestep_nonpert(
 				FAn_h, FAn_u, FAn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -236,7 +253,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		SphereData_Spectral phi0_An_u(sphereDataConfig);
 		SphereData_Spectral phi0_An_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.run_timestep_nonpert(
 				A_h, A_u, A_v,
 				phi0_An_h, phi0_An_u, phi0_An_v,
 				dt_half,
@@ -254,7 +271,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.run_timestep_nonpert(
 				2.0*FBn_h - FUn_h,
 				2.0*FBn_u - FUn_u,
 				2.0*FBn_v - FUn_v,
@@ -309,22 +326,22 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep(
 		 * 				  \upsilon_{3}(\Delta tL) R_{3}
 		 * 			)
 		 */
-		ts_ups0_rexi.run_timestep(
+		ts_ups0_rexi.run_timestep_nonpert(
 				R0_h, R0_u, R0_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups1_rexi.run_timestep(
+		ts_ups1_rexi.run_timestep_nonpert(
 				R1_h, R1_u, R1_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups2_rexi.run_timestep(
+		ts_ups2_rexi.run_timestep_nonpert(
 				R2_h, R2_u, R2_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups3_rexi.run_timestep(
+		ts_ups3_rexi.run_timestep_nonpert(
 				R3_h, R3_u, R3_v,
 				dt,		i_simulation_timestamp
 			);

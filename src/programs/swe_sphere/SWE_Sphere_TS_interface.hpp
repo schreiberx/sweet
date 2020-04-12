@@ -17,7 +17,7 @@
 class SWE_Sphere_TS_interface
 {
 public:
-	virtual void run_timestep(
+	virtual void run_timestep_pert(
 			SphereData_Spectral &io_h,	///< prognostic variables
 			SphereData_Spectral &io_u,	///< prognostic variables
 			SphereData_Spectral &io_v,	///< prognostic variables

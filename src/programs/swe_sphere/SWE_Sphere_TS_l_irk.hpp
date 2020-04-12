@@ -99,7 +99,20 @@ public:
 	 * Solve a REXI time step for the given initial conditions
 	 */
 public:
-	void run_timestep(
+	void run_timestep_pert(
+			SphereData_Spectral &io_phi,		///< prognostic variables
+			SphereData_Spectral &io_vort,	///< prognostic variables
+			SphereData_Spectral &io_div,		///< prognostic variables
+
+			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
+	/**
+	 * Solve a REXI time step for the given initial conditions
+	 */
+public:
+	void run_timestep_nonpert(
 			SphereData_Spectral &io_phi,		///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,		///< prognostic variables

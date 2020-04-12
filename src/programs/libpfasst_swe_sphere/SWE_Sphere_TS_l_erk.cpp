@@ -74,7 +74,7 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 
 
 
-void SWE_Sphere_TS_l_erk::run_timestep(
+void SWE_Sphere_TS_l_erk::run_timestep_pert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

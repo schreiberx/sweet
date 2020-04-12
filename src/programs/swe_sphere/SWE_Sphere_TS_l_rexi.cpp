@@ -40,6 +40,23 @@
 
 
 
+void SWE_Sphere_TS_l_rexi::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
+
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
+
 SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
@@ -444,8 +461,7 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 
 
 
-
-void SWE_Sphere_TS_l_rexi::run_timestep(
+void SWE_Sphere_TS_l_rexi::run_timestep_nonpert(
 	const SphereData_Spectral &i_prog_phi0,
 	const SphereData_Spectral &i_prog_vort0,
 	const SphereData_Spectral &i_prog_div0,
@@ -467,14 +483,13 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	o_prog_vort0 = i_prog_vort0;
 	o_prog_div0 = i_prog_div0;
 
-	run_timestep(o_prog_phi0, o_prog_vort0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
+	run_timestep_nonpert(o_prog_phi0, o_prog_vort0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
 
 	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
 }
-
 
 
 
@@ -486,7 +501,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
  *
  * for further information
  */
-void SWE_Sphere_TS_l_rexi::run_timestep(
+void SWE_Sphere_TS_l_rexi::run_timestep_nonpert(
 	SphereData_Spectral &io_prog_phi0,
 	SphereData_Spectral &io_prog_vort0,
 	SphereData_Spectral &io_prog_div0,

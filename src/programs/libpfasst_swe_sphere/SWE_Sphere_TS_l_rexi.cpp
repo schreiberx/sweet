@@ -413,7 +413,7 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 
 
 
-void SWE_Sphere_TS_l_rexi::run_timestep(
+void SWE_Sphere_TS_l_rexi::run_timestep_pert(
 	const SphereData_Spectral &i_prog_phi0,
 	const SphereData_Spectral &i_prog_vort0,
 	const SphereData_Spectral &i_prog_div0,
@@ -435,7 +435,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
 	o_prog_vort0 = i_prog_vort0;
 	o_prog_div0 = i_prog_div0;
 
-	run_timestep(o_prog_phi0, o_prog_vort0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
+	run_timestep_nonpert(o_prog_phi0, o_prog_vort0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
 
 	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
@@ -454,7 +454,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep(
  *
  * for further information
  */
-void SWE_Sphere_TS_l_rexi::run_timestep(
+void SWE_Sphere_TS_l_rexi::run_timestep_nonpert(
 	SphereData_Spectral &io_prog_phi0,
 	SphereData_Spectral &io_prog_vort0,
 	SphereData_Spectral &io_prog_div0,

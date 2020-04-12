@@ -9,7 +9,7 @@
 
 
 
-void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
+void SWE_Sphere_TS_l_irk_n_erk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
@@ -25,7 +25,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		SphereData_Spectral tmp_div = io_div;
 
 		// first order IRK for linear
-		timestepping_l_irk.run_timestep(
+		timestepping_l_irk.run_timestep_nonpert(
 				io_phi, io_vort, io_div,
 				i_dt,
 				i_simulation_timestamp
@@ -51,7 +51,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_l_cn.run_timestep(
+			timestepping_l_cn.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -68,7 +68,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				);
 
 			// HALF time step for linear part
-			timestepping_l_cn.run_timestep(
+			timestepping_l_cn.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! However, we only have autonomous simulations so far */
@@ -87,7 +87,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep(
 				);
 
 			// FULL time step for linear part
-			timestepping_l_cn.run_timestep(
+			timestepping_l_cn.run_timestep_nonpert(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp

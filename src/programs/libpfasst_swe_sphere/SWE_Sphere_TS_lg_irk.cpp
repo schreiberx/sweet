@@ -52,7 +52,7 @@ void SWE_Sphere_TS_lg_irk::setup(
  * Solve a REXI time step for the given initial conditions
  */
 
-void SWE_Sphere_TS_lg_irk::run_timestep(
+void SWE_Sphere_TS_lg_irk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

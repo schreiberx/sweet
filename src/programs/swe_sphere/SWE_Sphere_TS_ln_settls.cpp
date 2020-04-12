@@ -11,6 +11,29 @@
 #include "SWE_Sphere_TS_ln_settls.hpp"
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
+
+
+
+void SWE_Sphere_TS_ln_settls::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
+
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
+
+
+
+
 /**
  * SETTLS implementation (see Hortal 2002)
  *
@@ -237,13 +260,13 @@ void SWE_Sphere_TS_ln_settls::run_timestep_1st_order(SphereData_Spectral &io_phi
 	if (linear_treatment == LINEAR_IMPLICIT)
 	{
 		if (coriolis_treatment == CORIOLIS_LINEAR)
-			swe_sphere_ts_l_irk->run_timestep(R_phi, R_vort, R_div, i_dt, i_simulation_timestamp);
+			swe_sphere_ts_l_irk->run_timestep_nonpert(R_phi, R_vort, R_div, i_dt, i_simulation_timestamp);
 		else
-			swe_sphere_ts_lg_irk->run_timestep(R_phi, R_vort, R_div, i_dt, i_simulation_timestamp);
+			swe_sphere_ts_lg_irk->run_timestep_nonpert(R_phi, R_vort, R_div, i_dt, i_simulation_timestamp);
 	}
 	else if (linear_treatment == LINEAR_EXPONENTIAL)
 	{
-		swe_sphere_ts_l_rexi->run_timestep(
+		swe_sphere_ts_l_rexi->run_timestep_nonpert(
 				R_phi, R_vort, R_div,
 				i_dt,
 				i_simulation_timestamp
@@ -817,7 +840,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 	{
 		if (coriolis_treatment == CORIOLIS_LINEAR)
 		{
-			swe_sphere_ts_l_irk->run_timestep(
+			swe_sphere_ts_l_irk->run_timestep_nonpert(
 					R_phi, R_vort, R_div,
 					0.5 * i_dt,
 					i_simulation_timestamp
@@ -825,7 +848,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 		}
 		else
 		{
-			swe_sphere_ts_lg_irk->run_timestep(
+			swe_sphere_ts_lg_irk->run_timestep_nonpert(
 					R_phi, R_vort, R_div,
 					0.5 * i_dt,
 					i_simulation_timestamp
@@ -834,7 +857,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 	}
 	else if (linear_treatment == LINEAR_EXPONENTIAL)
 	{
-		swe_sphere_ts_l_rexi->run_timestep(
+		swe_sphere_ts_l_rexi->run_timestep_nonpert(
 			R_phi, R_vort, R_div,
 			0.5 * i_dt,
 			i_simulation_timestamp
@@ -858,7 +881,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(SphereData_Spectral &io_U_p
 
 
 
-void SWE_Sphere_TS_ln_settls::run_timestep(
+void SWE_Sphere_TS_ln_settls::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables

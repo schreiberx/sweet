@@ -79,10 +79,20 @@ public:
 			double i_timestep_size
 	);
 
-	void run_timestep(
-			SphereData_Spectral &io_h,	///< prognostic variables
-			SphereData_Spectral &io_u,	///< prognostic variables
-			SphereData_Spectral &io_v,	///< prognostic variables
+	void run_timestep_pert(
+			SphereData_Spectral &io_phi_pert,	///< prognostic variables
+			SphereData_Spectral &io_vrt,	///< prognostic variables
+			SphereData_Spectral &io_div,	///< prognostic variables
+
+			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
+
+	void run_timestep_nonpert(
+			SphereData_Spectral &io_phi,	///< prognostic variables
+			SphereData_Spectral &io_vrt,	///< prognostic variables
+			SphereData_Spectral &io_div,	///< prognostic variables
 
 			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1

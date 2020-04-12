@@ -159,7 +159,7 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 
 
 
-void SWE_Sphere_TS_lg_erk_lc_n_erk::run_timestep(
+void SWE_Sphere_TS_lg_erk_lc_n_erk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_PFASST_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_PFASST_HPP_
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -17,12 +17,12 @@
 class SWE_Sphere_TS_interface
 {
 public:
-	virtual void run_timestep(
-			SphereData_Spectral &io_h,	///< prognostic variables
-			SphereData_Spectral &io_u,	///< prognostic variables
-			SphereData_Spectral &io_v,	///< prognostic variables
+	virtual void run_timestep_nonpert(
+			SphereData_Spectral &io_phi_pert,	///< prognostic variables
+			SphereData_Spectral &io_vrt,		///< prognostic variables
+			SphereData_Spectral &io_div,		///< prognostic variables
 
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp
 	) = 0;
 };

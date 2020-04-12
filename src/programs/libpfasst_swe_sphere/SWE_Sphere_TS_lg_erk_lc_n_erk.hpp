@@ -99,7 +99,7 @@ public:
 			int i_version_id
 	);
 
-	void run_timestep(
+	void run_timestep_nonpert(
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

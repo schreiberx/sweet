@@ -211,7 +211,7 @@ void cinitial(
 	// get the initial condition in phi, vort, and div
 	benchmarks->setup(*simVars,
 			*op_nodealiasing);
-	benchmarks->setupInitialConditions(phi_Y_nodealiasing,
+	benchmarks->setupInitialConditions_pert(phi_Y_nodealiasing,
 			vort_Y_nodealiasing,
 			div_Y_nodealiasing);
 
@@ -632,7 +632,7 @@ void ccomp_f2 (
 		SWE_Sphere_TS_l_rexi* timestepper = i_ctx->get_l_rexi_timestepper(io_Y->get_level());
 
 		// solve the implicit system using the Helmholtz solver
-		timestepper->run_timestep(
+		timestepper->run_timestep_nonpert(
 				phi_Y,
 				vort_Y,
 				div_Y,
@@ -650,7 +650,7 @@ void ccomp_f2 (
 			SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
 
 			// solve the implicit system using the Helmholtz solver
-			timestepper->run_timestep(
+			timestepper->run_timestep_nonpert(
 					phi_Y,
 					vort_Y,
 					div_Y,
@@ -666,7 +666,7 @@ void ccomp_f2 (
 			SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
 
 			// solve the implicit system using the Helmholtz solver
-			timestepper->run_timestep(
+			timestepper->run_timestep_nonpert(
 					phi_Y,
 					vort_Y,
 					div_Y,

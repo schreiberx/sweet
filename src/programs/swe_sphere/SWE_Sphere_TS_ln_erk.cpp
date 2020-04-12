@@ -10,6 +10,24 @@
 
 
 
+void SWE_Sphere_TS_ln_erk::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
+
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
+
+
 
 /*
  * Main routine for method to be used in case of finite differences
@@ -26,7 +44,6 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 		double i_simulation_timestamp
 )
 {
-
 	/*
 	 * NON-LINEAR SWE
 	 *
@@ -42,7 +59,6 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
 	 */
 	SphereData_Physical phig = i_phi.getSphereDataPhysical();
-
 
 	/*
 	 * Step 1a
@@ -61,16 +77,16 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	 * Step 1c
 	 */
 	// left part of eq. (19)
-	SphereData_Physical tmp_u = ug*(vrtg+op.fg);
+	SphereData_Physical u_nl = ug*(vrtg+op.fg);
 
 	// left part of eq. (20)
-	SphereData_Physical tmp_v = vg*(vrtg+op.fg);
+	SphereData_Physical v_nl = vg*(vrtg+op.fg);
 
 	/*
 	 * Step 1d
 	 */
 	// Eq. (21) & left part of Eq. (22)
-	op.uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t, simVars.misc.sphere_use_robert_functions);
+	op.uv_to_vortdiv(u_nl, v_nl, o_div_t, o_vort_t, simVars.misc.sphere_use_robert_functions);
 
 
 	/*
@@ -101,10 +117,10 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	/*
 	 * Step 2a
 	 */
-	tmp_u = ug*phig;
-	tmp_v = vg*phig;
+	u_nl = ug*phig;
+	v_nl = vg*phig;
 
-	op.uv_to_vortdiv(tmp_u,tmp_v, e, o_phi_t, simVars.misc.sphere_use_robert_functions);
+	op.uv_to_vortdiv(u_nl,v_nl, e, o_phi_t, simVars.misc.sphere_use_robert_functions);
 
 	o_phi_t *= -1.0;
 
@@ -113,7 +129,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 
 
 
-void SWE_Sphere_TS_ln_erk::run_timestep(
+void SWE_Sphere_TS_ln_erk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

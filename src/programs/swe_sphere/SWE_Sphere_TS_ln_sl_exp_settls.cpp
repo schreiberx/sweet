@@ -10,6 +10,25 @@
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 
+
+void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
+
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
+
+
 void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_1st_order(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
@@ -196,7 +215,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_2nd_order(
 		 * Compute
 		 * E = exp(dtL)N^{n-1}
 		 */
-		swe_sphere_ts_l_rexi->run_timestep(
+		swe_sphere_ts_l_rexi->run_timestep_nonpert(
 			N_phi_n_prev, N_vort_n_prev, N_div_n_prev,
 			i_dt,
 			i_simulation_timestamp
@@ -279,7 +298,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_2nd_order(
 	 * Compute
 	 * E = exp(dtL)(K)
 	 */
-	swe_sphere_ts_l_rexi->run_timestep(
+	swe_sphere_ts_l_rexi->run_timestep_nonpert(
 		U_phi_D, U_vort_D, U_div_D,
 		i_dt,
 		i_simulation_timestamp
@@ -303,7 +322,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_2nd_order(
 
 
 
-void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep(
+void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables

@@ -92,46 +92,317 @@ Martin Schreiber
 \begin_layout Standard
 This documents describes the particular SWE on sphere implementation in
  SWEET.
+ See also Williamson et al.
+ benchmark test cases for more details.
 \end_layout
 
 \begin_layout Section
-Vorticity-divergence formulation
+Velocity-based formulation (Advective form)
 \end_layout
 
 \begin_layout Standard
-We use the vorticity-divergence formulation (See Williamson et al.
- paper on SWE test cases) with the divergence given by
+We start with the velocity-based formulation although it's not used here.
+ That's important for the modifications later on to e.g.
+ derive a nonlinear advection equation only.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial h}{\partial t} & =-h\nabla\cdot\vec{V}-\vec{V}\cdot\nabla h=-\nabla\cdot\left(h\vec{V}\right)\\
+\frac{\partial\vec{V}}{\partial t} & =-f\vec{k}\times\vec{V}-g\nabla h-\vec{V}\cdot\nabla\vec{V}
+\end{align*}
+
+\end_inset
+
+which provides a more intuitive form.
+ Writing this in terms of a total material derivative we get
+\begin_inset Formula 
+\begin{align*}
+\frac{dh}{dt} & =-h\nabla\cdot\vec{V}\\
+\frac{d\vec{V}}{dt} & =-f\vec{k}\times\vec{V}-g\nabla h
+\end{align*}
+
+\end_inset
+
+with
+\begin_inset Formula 
+\[
+\frac{d\left(.\right)}{dt}=\frac{\partial\left(.\right)}{\partial t}+\vec{V}\cdot\nabla\left(.\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Vorticity-divergence (VD) formulation
+\end_layout
+
+\begin_layout Standard
+We use the vorticity-divergence formulation by applying divergence and curl
+ operator
 \begin_inset Formula 
 \begin{eqnarray*}
-\delta & = & \nabla\cdot\vec{v}
+div\left(\vec{.}\right) & = & \nabla\cdot\vec{.}
 \end{eqnarray*}
 
 \end_inset
 
-and the relative vorticity by
+
 \begin_inset Formula 
 \begin{eqnarray*}
-\xi & = & \vec{k}\cdot\left(\nabla\times\vec{v}\right)
+curl\left(\vec{.}\right) & = & \left(\nabla\times\left(\vec{.}\right)\right)
+\end{eqnarray*}
+
+\end_inset
+
+to the velocity equations, yielding the vorticity and divergence
+\begin_inset Formula 
+\begin{eqnarray*}
+\delta & = & div(\vec{V})=\nabla\cdot\vec{V}
+\end{eqnarray*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+\xi & =\vec{k}\cdot & curl(\vec{V})=\vec{k}\cdot\left(\nabla\times\vec{V}\right)
 \end{eqnarray*}
 
 \end_inset
 
 with 
-\begin_inset Formula $\vec{v}=(u,v)$
+\begin_inset Formula $\vec{V}=(u,v)$
 \end_inset
 
  the velocity vector.
- The vorticity-divergence formulation is then given by
+\end_layout
+
+\begin_layout Subsection
+Warmup
+\end_layout
+
+\begin_layout Standard
+In the following, we will use the identity
+\begin_inset Formula 
+\begin{align*}
+\vec{V}\cdot\nabla\vec{V} & =\nabla\left(\frac{\vec{V}\cdot\vec{V}}{2}\right)-\vec{V}\times\left(\nabla\times\vec{V}\right)
+\end{align*}
+
+\end_inset
+
+to reformulate the velocity equation
 \begin_inset Formula 
 \begin{eqnarray*}
-\frac{\partial}{\partial t}\Phi & = & -\nabla\cdot(\Phi\vec{v})\\
-\frac{\partial}{\partial t}\xi & = & -\nabla\cdot\left(\left(\xi+f\right)\vec{v}\right)\\
-\frac{\partial}{\partial t}\delta & = & \vec{k}\cdot\nabla\times\left(\left(\xi+f\right)\vec{v}\right)-\nabla^{2}\left(\Phi+\frac{\vec{v}\cdot\vec{v}}{2}\right)
+\frac{\partial\vec{V}}{\partial t} & = & -f\vec{k}\times\vec{V}-g\nabla h-\vec{V}\cdot\nabla\vec{V}\\
+ & = & -f\vec{k}\times\vec{V}-g\nabla h-\nabla\left(\frac{\vec{V}\cdot\vec{V}}{2}\right)+\vec{V}\times\left(\nabla\times\vec{V}\right)\\
+ & = & -g\nabla h-\nabla\left(\frac{\vec{V}\cdot\vec{V}}{2}\right)-f\vec{k}\times\vec{V}+\vec{V}\times\left(\nabla\times\vec{V}\right).
 \end{eqnarray*}
 
 \end_inset
 
+Next, we rewrite the term
+\begin_inset Formula 
+\begin{align*}
+-f\vec{k}\times\vec{V}-\vec{V}\times\left(\nabla\times\vec{V}\right) & =-f\vec{k}\times\vec{V}-\left(\nabla\times\vec{V}\right)\times\vec{V}\\
+ & =\left(-\left(\nabla\times\vec{V}\right)-f\vec{k}\right)\times\vec{V}.
+\end{align*}
 
+\end_inset
+
+We can utilize that 
+\begin_inset Formula $\nabla\times\vec{V}$
+\end_inset
+
+ is always parallel to 
+\begin_inset Formula $\vec{k}$
+\end_inset
+
+, hence we can write
+\begin_inset Formula 
+\begin{align*}
+\left(\nabla\times\vec{V}\right)\times V & =\left(\left(\left(\nabla\times\vec{V}\right)\cdot\vec{k}\right)\vec{k}\right)\times\vec{V}\\
+ & =\xi\left(\vec{k}\times\vec{V}\right)
+\end{align*}
+
+\end_inset
+
+to finally get
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\vec{V}}{\partial t} & =-\nabla\left(gh+\left(\frac{\vec{V}\cdot\vec{V}}{2}\right)\right)-\left(\xi+f\right)\vec{k}\times\vec{V}
+\end{align*}
+
+\end_inset
+
+or written with the total vorticity
+\begin_inset Formula 
+\[
+\eta=\xi+f
+\]
+
+\end_inset
+
+we get
+\begin_inset Formula 
+\[
+\frac{\partial\vec{V}}{\partial t}=-\nabla\left(gh+\left(\frac{\vec{V}\cdot\vec{V}}{2}\right)\right)-\eta\vec{k}\times\vec{V}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Divergence equation
+\end_layout
+
+\begin_layout Standard
+Using the divergence operator on the velocity equations we then get
+\begin_inset Formula 
+\begin{align*}
+\nabla\cdot\left(\frac{\partial\vec{V}}{\partial t}\right) & =-\nabla^{2}\left(gh+\frac{\vec{V}\cdot\vec{V}}{2}\right)-\nabla\cdot\left(\eta\vec{k}\times\vec{V}\right)\\
+\frac{\partial\delta}{\partial t} & =-\nabla^{2}\left(gh+\frac{\vec{V}\cdot\vec{V}}{2}\right)+\vec{k}\cdot\nabla\times\left(\eta\vec{V}\right)
+\end{align*}
+
+\end_inset
+
+here we used
+\begin_inset Formula 
+\[
+\nabla\cdot\left(A\times B\right)=\left(\nabla\times A\right)\cdot B-\left(\nabla\times B\right)\cdot A.
+\]
+
+\end_inset
+
+to rewrite
+\begin_inset Formula 
+\begin{align*}
+\nabla\cdot\left(\vec{k}\times\left(\eta\vec{V}\right)\right) & =\underbrace{\left(\nabla\times\vec{k}\right)\cdot\left(\eta\vec{V}\right)}_{=0}-\left(\nabla\times\eta\vec{V}\right)\cdot\vec{k}.
+\end{align*}
+
+\end_inset
+
+The zero identity is given by 
+\begin_inset Formula $\nabla\times\vec{k}=0$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+[TODO: Show that this one is really 0 (using cartesian coordinate system)]
+\end_layout
+
+\begin_layout Subsection
+Vorticity equation
+\end_layout
+
+\begin_layout Standard
+Using the divergence operator on the velocity equations we then get
+\begin_inset Formula 
+\begin{align*}
+\vec{k}\cdot\left(\nabla\times\frac{\partial\vec{V}}{\partial t}\right) & =\vec{k}\cdot\nabla\times\left[-\nabla\left(gh+\frac{\vec{V}\cdot\vec{V}}{2}\right)-\left(\eta\vec{k}\times\vec{V}\right)\right]\\
+\frac{\partial\xi}{\partial t} & =\vec{k}\cdot\nabla\times\nabla\left(gh+\frac{\vec{V}\cdot\vec{V}}{2}\right)-\vec{k}\cdot\nabla\times\left(\eta\vec{k}\times\vec{V}\right)
+\end{align*}
+
+\end_inset
+
+where we use 
+\begin_inset Formula $\nabla\times\nabla=0$
+\end_inset
+
+, yielding
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\xi}{\partial t} & =-\vec{k}\cdot\left[\nabla\times\left(\eta\left(\vec{k}\times\vec{V}\right)\right)\right].
+\end{align*}
+
+\end_inset
+
+
+\series bold
+[TODO]
+\end_layout
+
+\begin_layout Standard
+And finally we get
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\xi}{\partial t} & =-\nabla\cdot\left(\eta\vec{V}\right).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Summary
+\end_layout
+
+\begin_layout Standard
+The vorticity-divergence formulation is then given by
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{\partial}{\partial t}\Phi & = & -\nabla\cdot(\Phi\vec{V})\\
+\frac{\partial}{\partial t}\xi & = & -\nabla\cdot\left(\eta\vec{V}\right)\\
+\frac{\partial}{\partial t}\delta & = & \vec{k}\cdot\nabla\times\left(\eta\vec{V}\right)-\nabla^{2}\left(\Phi+\frac{\vec{V}\cdot\vec{V}}{2}\right)
+\end{eqnarray*}
+
+\end_inset
+
+with the total vorticity 
+\begin_inset Formula $\eta=\xi+f$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+VD formulation for nonlinear advection 
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:VD-formulation-for-nonlinear-advection"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Considering solely the nonlinear advection terms, we get for the geopotential
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial t} & =-\vec{V}\cdot\nabla\Phi=-\vec{V}\cdot\nabla\Phi'.
+\end{align*}
+
+\end_inset
+
+For the VD, we get
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{\partial}{\partial t}\xi & = & -\nabla\cdot\left(\xi\vec{V}\right)\\
+\frac{\partial}{\partial t}\delta & = & \vec{k}\cdot\nabla\times\left(\xi\vec{V}\right)-\nabla^{2}\left(\Phi'+\frac{\vec{V}\cdot\vec{V}}{2}\right)
+\end{eqnarray*}
+
+\end_inset
+
+where all Coriolis-related terms vanished and we also compute the Laplacian
+ on the perturbation 
+\begin_inset Formula $\Phi'$
+\end_inset
+
+ rather than the full formulation.
 \end_layout
 
 \begin_layout Section
@@ -199,7 +470,7 @@ and vice versa
 \end_layout
 
 \begin_layout Section
-Linear shallow-water equations
+Implementation: Linear shallow-water equations
 \end_layout
 
 \begin_layout Subsection
@@ -375,7 +646,7 @@ Assign geopotential tendency:
 
 \end_deeper
 \begin_layout Section
-Nonlinear shallow-water equations
+Implementation: Nonlinear shallow-water equations
 \end_layout
 
 \begin_layout Subsection
@@ -491,15 +762,339 @@ Assign geopotential tendency:
 \end_layout
 
 \end_deeper
+\begin_layout Subsection
+l_na_erk (without nonlinear divergence)
+\end_layout
+
+\begin_layout Standard
+Next, we discuss the full non-linear time tendency computation.
+ The different steps for the time integration are given as follows:
+\end_layout
+
+\begin_layout Enumerate
+Vorticity/divergence:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Compute the velocity based on the vorticity and divergence: 
+\begin_inset Formula $(u,v)=vd2vel(\tilde{\xi},\tilde{\delta})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Convert 
+\begin_inset Formula $\xi$
+\end_inset
+
+ from spectral to physical space: 
+\begin_inset Formula $\xi=s2p(\tilde{\xi})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Evaluate temporary vector 
+\begin_inset Formula $(u^{*},v^{*})=\left(\xi+f\right)\vec{v}$
+\end_inset
+
+ in physical space
+\end_layout
+
+\begin_layout Enumerate
+Compute vorticity and divergence updates 
+\begin_inset Formula $(\tilde{\xi}',\tilde{\delta}')=vel2vd(u^{t},v^{t})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign vorticity update: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\xi}=-\tilde{\delta}'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Convert geopotential 
+\begin_inset Formula $\Phi=s2p(\tilde{\Phi})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute 
+\begin_inset Formula $e=\Phi+\frac{\vec{V}\cdot\vec{V}}{2}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign divergence tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\delta}=\tilde{\xi}'-lap(p2s(e))$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Geopotential:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Prepare full nonlinear term 
+\begin_inset Formula $(u^{n},v^{n})=(u\Phi,v\Phi)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Compute divergence 
+\begin_inset Formula $(\tilde{\xi}^{*},\tilde{\delta}^{*})=vel2vd(u^{n},v^{n})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}=-\tilde{\delta}^{*}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Nonlinear advection terms in VD formulation
+\end_layout
+
+\begin_layout Standard
+Considering solely the nonlinear advection terms for the VD updates, we
+ get
+\begin_inset Formula 
+\begin{eqnarray*}
+\frac{\partial}{\partial t}\xi & = & -\nabla\cdot\left(\xi\vec{V}\right)\\
+\frac{\partial}{\partial t}\delta & = & \vec{k}\cdot\nabla\times\left(\xi\vec{V}\right)-\nabla^{2}\left(\Phi'+\frac{\vec{V}\cdot\vec{V}}{2}\right)
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Vorticity/divergence:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Compute the velocity based on the vorticity and divergence: 
+\begin_inset Formula $(u,v)=vd2vel(\tilde{\xi},\tilde{\delta})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Convert 
+\begin_inset Formula $\xi$
+\end_inset
+
+ from spectral to physical space: 
+\begin_inset Formula $\xi=s2p(\tilde{\xi})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Evaluate temporary vector 
+\begin_inset Formula $(u^{*},v^{*})=\xi\vec{V}$
+\end_inset
+
+ in physical space 
+\series bold
+(Coriolis 
+\begin_inset Formula $f$
+\end_inset
+
+ removed here)
+\end_layout
+
+\begin_layout Enumerate
+Compute vorticity and divergence updates 
+\begin_inset Formula $(\tilde{\xi}',\tilde{\delta}')=vel2vd(u^{t},v^{t})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign vorticity update: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\xi}=-\tilde{\delta}'$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Convert perturbed geopotential 
+\begin_inset Formula $\Phi'=s2p(\tilde{\Phi}-\overline{\Phi})$
+\end_inset
+
+
+\series bold
+(Perturbed geopotential)
+\end_layout
+
+\begin_layout Enumerate
+Compute 
+\begin_inset Formula $e=\Phi'+\frac{\vec{V}\cdot\vec{V}}{2}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign divergence tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\delta}=\tilde{\xi}'-lap(p2s(e))$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+For the geopotential, we get
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial t} & =-\nabla\cdot(\Phi\vec{V})\\
+ & =-\nabla\cdot\left(\left(\overline{\Phi}+\Phi'\right)\vec{V}\right)\\
+ & =-\overline{\Phi}\nabla\cdot\vec{V}-\nabla\cdot(\Phi'\vec{V})\\
+ & =\underbrace{-\overline{\Phi}\nabla\cdot\vec{V}}_{\text{linear}}\underbrace{-\Phi'\nabla\cdot\vec{V}}_{\text{nonlinear divergence}}\underbrace{-\nabla\Phi'\cdot\vec{V}}_{\text{nonlinear advection}}
+\end{align*}
+
+\end_inset
+
+evaluating the nonlinear advection term 
+\begin_inset Formula $\nabla\Phi'\cdot\vec{V}$
+\end_inset
+
+ (a gradient) might result into artificial modes due to spectral issues.
+\end_layout
+
+\begin_layout Standard
+Therefore, we search for an alternative given as follows: We can compute
+ the VD formulation simply by evaluating the full nonlinear term and then
+ by subtracting the nonlinear divergence
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\Phi}{\partial t} & =-\vec{V}\cdot\nabla\Phi'\\
+ & =\underbrace{-\nabla\cdot\left(\Phi'\vec{V}\right)}_{\text{full nonlinear term}}+\underbrace{\Phi'\nabla\cdot\vec{V}}_{\text{nonlinear divergence}}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+[2]
+\end_layout
+
+\end_inset
+
+Geopotential:
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Prepare perturbed geopotential nonlinear term 
+\begin_inset Formula $(u^{n},v^{n})=(u\Phi',v\Phi')$
+\end_inset
+
+ 
+\series bold
+(Use perturbation here)
+\end_layout
+
+\begin_layout Enumerate
+Compute divergence 
+\begin_inset Formula $(\tilde{\xi}^{*},\tilde{\delta}^{*})=vel2vd(u^{n},v^{n})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assign geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}'=-\tilde{\delta}^{*}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+(Start 2nd term)
+\series default
+ Convert divergence to physical space 
+\begin_inset Formula $\delta=s2p(\tilde{\delta})$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Evaluate 
+\begin_inset Formula $\Phi'\delta$
+\end_inset
+
+ and back to spectral space: 
+\begin_inset Formula $\tilde{e}=s2p\left(\Phi'\delta\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Enumerate
+Assemble final geopotential tendency: 
+\begin_inset Formula $\frac{\partial}{\partial t}\tilde{\Phi}=-\tilde{\delta}^{*}+\tilde{e}$
+\end_inset
+
+
+\end_layout
+
+\end_deeper
 \begin_layout Section
-Semi-Lagrangian shallow-water equations
+Implementation: Semi-Lagrangian shallow-water equations
 \end_layout
 
 \begin_layout Standard
 For the Lagrangian formulation we use the total derivative
 \begin_inset Formula 
 \[
-\frac{d}{dt}()=\frac{\partial}{\partial t}()+\vec{v}\cdot\nabla().
+\frac{d}{dt}()=\frac{\partial}{\partial t}()+\vec{V}\cdot\nabla().
 \]
 
 \end_inset
@@ -508,7 +1103,7 @@ This leads to a formulation splitting the equation into linear parts, Lagrangian
 -treated parts and the remaining (typically) non-linear terms
 \begin_inset Formula 
 \[
-\thinspace\frac{\partial}{\partial t}U=LU+\vec{v}\cdot\nabla U+N^{*}(U).
+\thinspace\frac{\partial}{\partial t}X=LX+\vec{V}\cdot\nabla X+N^{*}(X).
 \]
 
 \end_inset
@@ -524,7 +1119,7 @@ Non-linear geopotential update
 For the geopotential, we can write it as
 \begin_inset Formula 
 \[
-\frac{\partial}{\partial t}\Phi=-\nabla\cdot\left(\Phi\vec{v}\right).
+\frac{\partial}{\partial t}\Phi=-\nabla\cdot\left(\Phi\vec{V}\right).
 \]
 
 \end_inset
@@ -536,10 +1131,10 @@ As usual, this is split into the linearized form
 , yielding
 \begin_inset Formula 
 \begin{align*}
-\frac{\partial}{\partial t}\Phi' & =-\nabla\cdot\left(\left(\overline{\Phi}+\Phi'\right)\vec{v}\right)\\
- & =-\overline{\Phi}\nabla\cdot\vec{v}-\nabla\cdot\left(\Phi'\vec{v}\right)\\
- & =-\overline{\Phi}\nabla\cdot\vec{v}-\vec{v}\cdot\left(\nabla\Phi'\right)-\left(\nabla\cdot\vec{v}\right)\Phi'\\
-\frac{d}{dt}\Phi' & =\underbrace{-\overline{\Phi}\delta}_{\text{linear}}-\underbrace{\left(\nabla\cdot\vec{v}\right)\Phi'}_{\text{non-linear advection}}\\
+\frac{\partial}{\partial t}\Phi' & =-\nabla\cdot\left(\left(\overline{\Phi}+\Phi'\right)\vec{V}\right)\\
+ & =-\overline{\Phi}\nabla\cdot\vec{V}-\nabla\cdot\left(\Phi'\vec{V}\right)\\
+ & =-\overline{\Phi}\nabla\cdot\vec{V}-\vec{V}\cdot\left(\nabla\Phi'\right)-\left(\nabla\cdot\vec{V}\right)\Phi'\\
+\frac{d}{dt}\Phi' & =\underbrace{-\overline{\Phi}\delta}_{\text{linear}}-\underbrace{\left(\nabla\cdot\vec{V}\right)\Phi'}_{\text{non-linear divergence}}\\
  & =-\delta\Phi'
 \end{align*}
 

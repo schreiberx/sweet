@@ -110,7 +110,7 @@ void SWE_Sphere_TS_l_irk::update_coefficients()
 /**
  * Solve an implicit time step for the given initial conditions
  */
-void SWE_Sphere_TS_l_irk::run_timestep(
+void SWE_Sphere_TS_l_irk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

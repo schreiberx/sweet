@@ -183,7 +183,7 @@ public:
 			bool i_no_coriolis
 	);
 
-	void run_timestep(
+	void run_timestep_nonpert(
 			SphereData_Spectral &io_h,	///< prognostic variables
 			SphereData_Spectral &io_u,	///< prognostic variables
 			SphereData_Spectral &io_v,	///< prognostic variables
@@ -193,7 +193,7 @@ public:
 	);
 
 
-	void run_timestep(
+	void run_timestep_pert(
 			const SphereData_Spectral &i_h,	///< prognostic variables
 			const SphereData_Spectral &i_u,	///< prognostic variables
 			const SphereData_Spectral &i_v,	///< prognostic variables

@@ -14,6 +14,22 @@
 
 
 
+void SWE_Sphere_TS_l_cn::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
+
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
 SWE_Sphere_TS_l_cn::SWE_Sphere_TS_l_cn(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
@@ -126,7 +142,7 @@ void SWE_Sphere_TS_l_cn::update_coefficients()
  * Solve a REXI time step for the given initial conditions
  */
 
-void SWE_Sphere_TS_l_cn::run_timestep(
+void SWE_Sphere_TS_l_cn::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables

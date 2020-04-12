@@ -259,6 +259,27 @@ public:
 	/**
 	 * Convert spectral scalar field to physical one
 	 */
+	SphereData_Physical scalar_spectral_to_physical(
+			const SphereData_Spectral &i_spectral
+
+	)	const
+	{
+		SphereData_Physical retdata(i_spectral.sphereDataConfig);
+
+		SH_to_spat(
+				sphereDataConfig->shtns,
+				i_spectral.spectral_space_data,
+				retdata.physical_space_data
+		);
+
+		return retdata;
+	}
+
+
+
+	/**
+	 * Convert spectral scalar field to physical one
+	 */
 	void scalar_physical_to_spectral(
 			const SphereData_Physical &o_physical,
 			SphereData_Spectral &i_spectral
@@ -269,6 +290,26 @@ public:
 				o_physical.physical_space_data,
 				i_spectral.spectral_space_data
 		);
+	}
+
+
+
+	/**
+	 * Convert spectral scalar field to physical one
+	 */
+	SphereData_Spectral scalar_physical_to_spectral(
+			const SphereData_Physical &i_physical
+	)	const
+	{
+		SphereData_Spectral retdata(i_physical.sphereDataConfig);
+
+		spat_to_SH(
+				sphereDataConfig->shtns,
+				i_physical.physical_space_data,
+				retdata.spectral_space_data
+		);
+
+		return retdata;
 	}
 
 

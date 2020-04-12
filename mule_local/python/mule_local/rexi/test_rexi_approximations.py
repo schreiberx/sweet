@@ -72,7 +72,8 @@ for rexi_method in [
         num_test_samples = 12345
 
         # Testing: Range (start, end)
-        test_range = [None, None]
+        test_range_real = [None, None]
+        test_range_imag = [None, None]
 
         # Error to test for
         error_eps = 1e-8
@@ -104,7 +105,8 @@ for rexi_method in [
             coeffs = coeffs.toFloat()
             unique_id_string = trexi.getUniqueId()
 
-            test_range = [-N*h*0.95, N*h*0.95]
+            test_range_real = None
+            test_range_imag = [-N*h*0.95, N*h*0.95]
 
 
         elif rexi_method == "cirexi":
@@ -124,7 +126,8 @@ for rexi_method in [
             unique_id_string = cirexi.getUniqueId()
 
             #test_range = [-lambda_include_imag*0.5, lambda_include_imag*0.5]
-            test_range = [-1.0, 1.0]
+            test_range_real = [-1.0, 1.0]
+            test_range_imag = [-1.0, 1.0]
 
         elif rexi_method == "elrexi":
 
@@ -143,7 +146,8 @@ for rexi_method in [
             unique_id_string = elrexi.getUniqueId()
 
             #test_range = [-lambda_include_imag*0.5, lambda_include_imag*0.5]
-            test_range = [-1.0, 1.0]
+            test_range_real = [-1.0, 1.0]
+            test_range_imag = [-1.0, 1.0]
 
         elif rexi_method == "brexi_gauss":
 
@@ -156,7 +160,8 @@ for rexi_method in [
             # Convert to floating point
             coeffs = coeffs.toFloat()
             unique_id_string = brexi.getUniqueId()
-            test_range = [butcherOrder*0.5, butcherOrder*0.5]
+            test_range_real = [butcherOrder*0.25, butcherOrder*0.25]
+            test_range_imag = [butcherOrder*0.5, butcherOrder*0.5]
 
 
         elif rexi_method == "brexi_radau":
@@ -170,7 +175,8 @@ for rexi_method in [
             # Convert to floating point
             coeffs = coeffs.toFloat()
             unique_id_string = brexi.getUniqueId()
-            test_range = [butcherOrder*0.5, butcherOrder*0.5]
+            test_range_real = [butcherOrder*0.25, butcherOrder*0.25]
+            test_range_imag = [butcherOrder*0.5, butcherOrder*0.5]
 
         elif rexi_method == "brexi_chebyshev":
 
@@ -183,7 +189,8 @@ for rexi_method in [
             # Convert to floating point
             coeffs = coeffs.toFloat()
             unique_id_string = brexi.getUniqueId()
-            test_range = [butcherOrder*0.25, butcherOrder*0.25]
+            test_range_real = [butcherOrder*0.15, butcherOrder*0.15]
+            test_range_imag = [butcherOrder*0.25, butcherOrder*0.25]
 
 
         elif rexi_method == "brexi_tanhsinh":
@@ -197,7 +204,8 @@ for rexi_method in [
             # Convert to floating point
             coeffs = coeffs.toFloat()
             unique_id_string = brexi.getUniqueId()
-            test_range = [butcherOrder*0.25, butcherOrder*0.25]
+            test_range_real = [butcherOrder*0.25, butcherOrder*0.25]
+            test_range_imag = [butcherOrder*0.25, butcherOrder*0.25]
 
 
 
@@ -214,37 +222,72 @@ for rexi_method in [
         print(unique_id_string)
         print(" + function_name: "+function_name)
 
-        max_error = 0
-        for x in np.linspace(test_range[0], test_range[1], num_test_samples):
-            lam = 1j*x
+        if test_range_real != None:
+            max_error = 0
+            for x in np.linspace(test_range_real[0], test_range_real[1], num_test_samples):
+                lam = x
 
-            y = function.eval(lam)
-            yn = coeffs.eval(lam)
+                y = function.eval(lam)
+                yn = coeffs.eval(lam)
 
-            err = np.abs(y-yn)
+                err = np.abs(y-yn)
 
-            if verbosity > 0:
+                if verbosity > 0:
 
-                #if True:
-                if False:
-                    print("x="+str(lam)+"\t\terror="+str(err))
-                else:
-                    print("Lambda: "+str(lam))
-                    print(" +  exact: "+str(y))
-                    print(" + approx: "+str(yn))
-                    print(" + Error: "+str(err))
-                    print("")
+                    #if True:
+                    if False:
+                        print("x="+str(lam)+"\t\terror="+str(err))
+                    else:
+                        print("Lambda: "+str(lam))
+                        print(" +  exact: "+str(y))
+                        print(" + approx: "+str(yn))
+                        print(" + Error: "+str(err))
+                        print("")
 
-            max_error = max(max_error, err)
+                max_error = max(max_error, err)
 
 
-        if verbosity == 0:
-            print(" + test_range: ["+str(test_range[0])+", "+str(test_range[1])+"]")
-            print(" + Error: "+str(max_error))
+            if verbosity == 0:
+                print(" + test_range_real: ["+str(test_range_real[0])+", "+str(test_range_real[1])+"]")
+                print(" + Error: "+str(max_error))
 
-        if max_error > error_eps:
-            raise Exception("Error threshold "+str(error_eps)+" exceeded")
+            if max_error > error_eps:
+                raise Exception("Error threshold "+str(error_eps)+" exceeded")
 
-        coeffs.write_file("/tmp/REXI_"+rexi_method+"_"+unique_id_string+"_txt.txt", False)
-        coeffs.write_file("/tmp/REXI_"+rexi_method+"_"+unique_id_string+"_bin.txt", True)
+
+
+        if test_range_imag != None:
+            max_error = 0
+            for x in np.linspace(test_range_imag[0], test_range_imag[1], num_test_samples):
+                lam = 1j*x
+
+                y = function.eval(lam)
+                yn = coeffs.eval(lam)
+
+                err = np.abs(y-yn)
+
+                if verbosity > 0:
+
+                    #if True:
+                    if False:
+                        print("x="+str(lam)+"\t\terror="+str(err))
+                    else:
+                        print("Lambda: "+str(lam))
+                        print(" +  exact: "+str(y))
+                        print(" + approx: "+str(yn))
+                        print(" + Error: "+str(err))
+                        print("")
+
+                max_error = max(max_error, err)
+
+
+            if verbosity == 0:
+                print(" + test_range_imag: ["+str(test_range_imag[0])+", "+str(test_range_imag[1])+"]")
+                print(" + Error: "+str(max_error))
+
+            if max_error > error_eps:
+                raise Exception("Error threshold "+str(error_eps)+" exceeded")
+
+        #coeffs.write_file("/tmp/REXI_"+rexi_method+"_"+unique_id_string+"_txt.txt", False)
+        #coeffs.write_file("/tmp/REXI_"+rexi_method+"_"+unique_id_string+"_bin.txt", True)
 

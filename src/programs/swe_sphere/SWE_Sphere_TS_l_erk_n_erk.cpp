@@ -10,6 +10,22 @@
 
 
 
+void SWE_Sphere_TS_l_erk_n_erk::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
+		SphereData_Spectral &io_div,	///< prognostic variables
+
+		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+	io_phi_pert += gh0;
+	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	io_phi_pert -= gh0;
+}
+
+
 void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
 		const SphereData_Spectral &i_phi,	///< prognostic variables
 		const SphereData_Spectral &i_vort,	///< prognostic variables
@@ -201,7 +217,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 
 
 
-void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
+void SWE_Sphere_TS_l_erk_n_erk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
