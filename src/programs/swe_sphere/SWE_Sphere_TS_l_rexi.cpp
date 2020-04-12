@@ -474,21 +474,11 @@ void SWE_Sphere_TS_l_rexi::run_timestep_nonpert(
 	double i_simulation_timestamp
 )
 {
-	#if SWEET_BENCHMARK_TIMINGS
-		SimulationBenchmarkTimings::getInstance().rexi.start();
-		SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
-	#endif
-
 	o_prog_phi0 = i_prog_phi0;
 	o_prog_vort0 = i_prog_vort0;
 	o_prog_div0 = i_prog_div0;
 
 	run_timestep_nonpert(o_prog_phi0, o_prog_vort0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
-
-	#if SWEET_BENCHMARK_TIMINGS
-		SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
-		SimulationBenchmarkTimings::getInstance().rexi.stop();
-	#endif
 }
 
 

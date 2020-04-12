@@ -15,12 +15,13 @@ for ANALYTICAL in 0 1; do
             echo
 
             for TAG in $TAGS; do
-                    echo
+                    echo "***************************************"
                     echo "Processing $TAG"
                     FILES=$(ls -1 ${JOB_REF_DIR}/*_${TAG}_*.csv)
                     for F in $FILES; do
                             F=$(basename $F)
                             echo "$JOB_REF_DIR/$F"
+                            echo "$JOB_DIFF_DIR/$F"
                             echo -n "$F: "
                             if [[ ! -e "$JOB_REF_DIR/$F" ]]; then
                                     echo "ERROR"

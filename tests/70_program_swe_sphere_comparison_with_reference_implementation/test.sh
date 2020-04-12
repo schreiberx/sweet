@@ -24,7 +24,7 @@ echo_info "Running various time steppers..."
 mule.benchmark.jobs_run_directly || exit 1
 
 echo_info "Postprocessing..."
-./postprocessing.py || exit 1
+./postprocessing.sh || exit 1
 
 echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1

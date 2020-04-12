@@ -259,15 +259,17 @@ public:
 		if (simVars.iodata.output_file_mode == "csv")
 		{
 			std::string output_filename;
-			SphereData_Spectral h = prog_phi_pert*(1.0/simVars.sim.gravitation);
 
-			output_filename = write_file_csv(prog_phi_pert, "prog_phi");
-			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << " (min: " << prog_phi_pert.getSphereDataPhysical().physical_reduce_min() << ", max: " << prog_phi_pert.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
+			SphereData_Spectral h = prog_phi_pert*(1.0/simVars.sim.gravitation);
+			h += simVars.sim.h0;
 
 			output_filename = write_file_csv(h, "prog_h");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << " (min: " << h.getSphereDataPhysical().physical_reduce_min() << ", max: " << h.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
+
+			output_filename = write_file_csv(prog_phi_pert, "prog_phi_pert");
+			output_reference_filenames = output_filename;
+			std::cout << " + " << output_filename << " (min: " << prog_phi_pert.getSphereDataPhysical().physical_reduce_min() << ", max: " << prog_phi_pert.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
 
 			SphereData_Physical u(sphereDataConfig);
 			SphereData_Physical v(sphereDataConfig);
@@ -300,7 +302,7 @@ public:
 		{
 			std::string output_filename;
 
-			output_filename = write_file_bin(prog_phi_pert, "prog_phi");
+			output_filename = write_file_bin(prog_phi_pert, "prog_phi_pert");
 			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << std::endl;
 

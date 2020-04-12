@@ -705,8 +705,7 @@ public:
 
 				double h0_ = 10e3;
 				o_phi_pert = simVars->sim.gravitation * h0_ + o_phi_pert;
-
-
+				o_phi_pert -= simVars->sim.gravitation*simVars->sim.h0;
 			}
 			else
 			{
@@ -850,7 +849,7 @@ public:
 
 				o_phi_pert.loadSphereDataPhysical(phig);
 
-				o_phi_pert = gh0 - o_phi_pert;
+				o_phi_pert = -o_phi_pert;
 			}
 
 #if 1
@@ -868,9 +867,6 @@ public:
 				o_phi_pert += hbump*simVars->sim.gravitation;
 			}
 #endif
-
-			o_phi_pert -= gh0;
-
 
 			std::cout << gh0 << std::endl;
 			std::cout << "phi min: " << o_phi_pert.getSphereDataPhysical().physical_reduce_min() << std::endl;
@@ -897,9 +893,9 @@ public:
 
 			/// Setup Williamson's parameters
 			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
-			simVars->sim.gravitation	= 9.80616;
-			simVars->sim.sphere_radius   = 6.37122e6;
-			simVars->sim.h0			 = 5600;
+			simVars->sim.gravitation = 9.80616;
+			simVars->sim.sphere_radius = 6.37122e6;
+			simVars->sim.h0 = 5600;
 
 
 			// update operator because we changed the simulation parameters

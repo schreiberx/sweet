@@ -444,7 +444,7 @@ if __name__ == "__main__":
 
     t = 0
 
-    savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
+    #savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
     savefile(phispec/grav, "prog_h", t)
     savefile(vrtspec, "prog_vort", t)
     savefile(divspec, "prog_div", t)
@@ -516,7 +516,7 @@ if __name__ == "__main__":
 
         if t % output_t == 0 or output_t == -1:
             print("FILEOUTPUT TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
-            savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
+            #savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
             savefile(phispec/grav, "prog_h", t)
             savefile(vrtspec, "prog_vort", t)
             savefile(divspec, "prog_div", t)
@@ -525,7 +525,7 @@ if __name__ == "__main__":
                 print("TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
 
 
-    savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
+    #savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
     savefile(phispec/grav, "prog_h", t)
     savefile(vrtspec, "prog_vort", t)
     savefile(divspec, "prog_div", t)
