@@ -25,6 +25,8 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 		double i_simulation_timestamp
 )
 {
+	const SphereData_Config* sphereDataConfig = i_phi_pert.sphereDataConfig;
+
 	/*
 	 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
 	 */
@@ -32,8 +34,8 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 	/*
 	 * Step 1a
 	 */
-	SphereData_Physical ug(i_phi_pert.sphereDataConfig);
-	SphereData_Physical vg(i_phi_pert.sphereDataConfig);
+	SphereData_Physical ug(sphereDataConfig);
+	SphereData_Physical vg(sphereDataConfig);
 
 	op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
 
@@ -69,14 +71,9 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 	 */
 	o_vrt_t *= -1.0;
 
+
 	/*
 	 * Step 1f
-	 */
-	SphereData_Physical phig_pert = i_phi_pert.getSphereDataPhysical();
-
-
-	/*
-	 * Step 1g
 	 */
 	// Right part of Eq. (22)
 	SphereData_Physical tmpg = 0.5*(ug*ug+vg*vg);
@@ -84,14 +81,10 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 	if (simVars.misc.sphere_use_robert_functions)
 		tmpg = tmpg.robert_convertToNonRobertSquared();
 
-	// !!! na_erk change !!!
-	//SphereData_Spectral e = phig+tmpg;
-	SphereData_Spectral e = phig_pert + tmpg;
-
 	/*
 	 * Step 1h
 	 */
-	o_div_t -= op.laplace(e);
+	o_div_t -= op.laplace(tmpg);
 
 
 	/*
@@ -101,32 +94,38 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 	/*
 	 * Step 2a
 	 */
-	u_nl = ug*phig_pert;
-	v_nl = vg*phig_pert;
+	SphereData_Physical phig_pert = i_phi_pert.getSphereDataPhysical();
 
 	/*
 	 * Step 2b
 	 */
-	op.uv_to_vortdiv(u_nl, v_nl, e, o_phi_pert_t, simVars.misc.sphere_use_robert_functions);
+	u_nl = ug*phig_pert;
+	v_nl = vg*phig_pert;
 
 	/*
 	 * Step 2c
+	 */
+	SphereData_Spectral e(sphereDataConfig);
+	op.uv_to_vortdiv(u_nl, v_nl, e, o_phi_pert_t, simVars.misc.sphere_use_robert_functions);
+
+	/*
+	 * Step 2d
 	 */
 
 	o_phi_pert_t *= -1.0;
 
 	/*
-	 * Step 2d
+	 * Step 2e
 	 */
 	SphereData_Physical divg = i_div.getSphereDataPhysical();
 
 	/*
-	 * Step 2e
+	 * Step 2f
 	 */
 	e = op.scalar_physical_to_spectral(divg*phig_pert);
 
 	/*
-	 * Step 2h
+	 * Step 2g
 	 */
 	o_phi_pert_t += e;
 }

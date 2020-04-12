@@ -1098,7 +1098,6 @@ public:
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
 			o_phi_pert.loadSphereDataPhysical(tmp);
 			o_phi_pert *= 0.1;
-			o_phi_pert += simVars->sim.h0*simVars->sim.gravitation;
 
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
 			o_vort.loadSphereDataPhysical(tmp);
@@ -1121,8 +1120,6 @@ public:
 				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
 			else
 				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
-
-			o_phi_pert -= gh0;
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "williamson2"			||
