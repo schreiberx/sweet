@@ -347,17 +347,17 @@ public:
 				FatalError("Analytical solution not available for this benchmark");
 			}
 
-			SphereData_Spectral anal_solution_phi(sphereDataConfig);
+			SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);
 			SphereData_Spectral anal_solution_vort(sphereDataConfig);
 			SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 			sphereBenchmarks.setup(simVars, op);
-//			sphereBenchmarks.setupInitialConditions_pert(anal_solution_phi, anal_solution_vort, anal_solution_div);
+			sphereBenchmarks.setupInitialConditions_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
 
 			/*
 			 * Compute difference
 			 */
-			SphereData_Spectral diff_phi = prog_phi_pert - anal_solution_phi;
+			SphereData_Spectral diff_phi = prog_phi_pert - anal_solution_phi_pert;
 			SphereData_Spectral diff_vort = prog_vrt - anal_solution_vort;
 			SphereData_Spectral diff_div = prog_div - anal_solution_div;
 

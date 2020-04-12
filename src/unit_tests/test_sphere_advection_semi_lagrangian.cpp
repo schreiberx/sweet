@@ -39,8 +39,8 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereData_Spectral prog_h;
-	SphereData_Spectral prog_h0;	// at t0
+	SphereData_Spectral prog_phi_pert;
+	SphereData_Spectral prog_phi_pert_t0;	// at t0
 	SphereData_Spectral prog_vort, prog_div;
 
 	Adv_Sphere_TimeSteppers timeSteppers;
@@ -69,8 +69,8 @@ public:
 
 public:
 	SimulationInstance()	:
-		prog_h(sphereDataConfig),
-		prog_h0(sphereDataConfig),
+		prog_phi_pert(sphereDataConfig),
+		prog_phi_pert_t0(sphereDataConfig),
 
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
@@ -92,9 +92,9 @@ public:
 		simVars.reset();
 
 		sphereBenchmarksCombined.setup(simVars, op);
-		sphereBenchmarksCombined.setupInitialConditions(prog_h, prog_vort, prog_div);
+		sphereBenchmarksCombined.setupInitialConditions_pert(prog_phi_pert, prog_vort, prog_div);
 
-		prog_h0 = prog_h;
+		prog_phi_pert_t0 = prog_phi_pert;
 
 		// setup sphereDataconfig instance again
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
@@ -112,7 +112,7 @@ public:
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
 		timeSteppers.master->run_timestep(
-				prog_h, prog_vort, prog_div,
+				prog_phi_pert, prog_vort, prog_div,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time
 			);
@@ -126,8 +126,8 @@ public:
 		if (simVars.misc.verbosity >= 10)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
-		max_error_h0 = (prog_h0-prog_h).getSphereDataPhysical().physical_reduce_max_abs();
-		rms_error_h0 = (prog_h0-prog_h).getSphereDataPhysical().physical_reduce_rms();
+		max_error_h0 = (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_max_abs();
+		rms_error_h0 = (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_rms();
 	}
 
 
@@ -159,7 +159,7 @@ public:
 			}
 		);
 
-		std::cout << "Lmax Error: " << (prog_h-prog_testh).reduce_maxAbs() << std::endl;
+		std::cout << "Lmax Error: " << (prog_phi_pert-prog_testh).reduce_maxAbs() << std::endl;
 #endif
 	}
 
@@ -210,7 +210,7 @@ public:
 		switch (id)
 		{
 		case 0:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_h, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_phi_pert, planeDataConfig);
 			break;
 
 		case 1:
