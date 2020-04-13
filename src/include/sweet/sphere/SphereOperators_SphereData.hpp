@@ -131,6 +131,9 @@ public:
 
 	)	const
 	{
+		assert(o_u.physical_space_data != nullptr);
+		assert(o_v.physical_space_data != nullptr);
+
 		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
 		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 
@@ -155,6 +158,9 @@ public:
 
 	)	const
 	{
+		assert(o_u.physical_space_data != nullptr);
+		assert(o_v.physical_space_data != nullptr);
+
 		double ir = 1.0/i_radius;
 
 		SphereData_Spectral psi(sphereDataConfig);
@@ -188,6 +194,9 @@ public:
 
 	)	const
 	{
+		assert(o_u.physical_space_data != nullptr);
+		assert(o_v.physical_space_data != nullptr);
+
 		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
 		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 
@@ -212,25 +221,28 @@ public:
 
 
 	void vortdiv_to_uv(
-			const SphereData_Spectral &i_vorticity,
-			const SphereData_Spectral &i_divergence,
+			const SphereData_Spectral &i_vrt,
+			const SphereData_Spectral &i_div,
 			SphereData_Physical &o_u,
 			SphereData_Physical &o_v,
 			bool i_robert_formulation
 
 	)	const
 	{
+		assert(o_u.physical_space_data != nullptr);
+		assert(o_v.physical_space_data != nullptr);
+
 		if (!i_robert_formulation)
 		{
 			vortdiv_to_uv(
-					i_vorticity, i_divergence,
+					i_vrt, i_div,
 					o_u, o_v
 			);
 		}
 		else
 		{
 			robert_vortdiv_to_uv(
-					i_vorticity, i_divergence,
+					i_vrt, i_div,
 					o_u, o_v
 			);
 		}
@@ -247,6 +259,8 @@ public:
 
 	)	const
 	{
+		assert(o_physical.physical_space_data != nullptr);
+
 		SH_to_spat(
 				sphereDataConfig->shtns,
 				i_spectral.spectral_space_data,
@@ -281,14 +295,16 @@ public:
 	 * Convert spectral scalar field to physical one
 	 */
 	void scalar_physical_to_spectral(
-			const SphereData_Physical &o_physical,
-			SphereData_Spectral &i_spectral
+			const SphereData_Physical &i_physical,
+			SphereData_Spectral &o_spectral
 	)	const
 	{
+		assert(o_spectral.spectral_space_data != nullptr);
+
 		spat_to_SH(
 				sphereDataConfig->shtns,
-				o_physical.physical_space_data,
-				i_spectral.spectral_space_data
+				i_physical.physical_space_data,
+				o_spectral.spectral_space_data
 		);
 	}
 
@@ -374,11 +390,14 @@ public:
 	void robert_uv_to_vortdiv(
 			const SphereData_Physical &i_u,
 			const SphereData_Physical &i_v,
-			SphereData_Spectral &o_vorticity,
-			SphereData_Spectral &o_divergence
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
 
 	)	const
 	{
+		assert(o_vrt.spectral_space_data != nullptr);
+		assert(o_div.spectral_space_data != nullptr);
+
 		// create copy since the data is modified!
 		SphereData_Physical ug = i_u;
 		SphereData_Physical vg = i_v;
@@ -387,12 +406,12 @@ public:
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
 				vg.physical_space_data,
-				o_vorticity.spectral_space_data,
-				o_divergence.spectral_space_data
+				o_vrt.spectral_space_data,
+				o_div.spectral_space_data
 		);
 
-		o_vorticity = laplace(o_vorticity)*r;
-		o_divergence = laplace(o_divergence)*r;
+		o_vrt = laplace(o_vrt)*r;
+		o_div = laplace(o_div)*r;
 	}
 
 
@@ -400,11 +419,14 @@ public:
 	void uv_to_vortdiv(
 			const SphereData_Physical &i_u,
 			const SphereData_Physical &i_v,
-			SphereData_Spectral &o_vorticity,
-			SphereData_Spectral &o_divergence
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
 
 	)	const
 	{
+		assert(o_vrt.spectral_space_data != nullptr);
+		assert(o_div.spectral_space_data != nullptr);
+
 
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
@@ -418,13 +440,13 @@ public:
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
 				i_v.physical_space_data,
-				o_vorticity.spectral_space_data,
-				o_divergence.spectral_space_data
+				o_vrt.spectral_space_data,
+				o_div.spectral_space_data
 		);
 		shtns_robert_form(sphereDataConfig->shtns, 1);
 
-		o_vorticity = laplace(o_vorticity)*r;
-		o_divergence = laplace(o_divergence)*r;
+		o_vrt = laplace(o_vrt)*r;
+		o_div = laplace(o_div)*r;
 	}
 
 
@@ -432,24 +454,27 @@ public:
 	void uv_to_vortdiv(
 			const SphereData_Physical &i_u,
 			const SphereData_Physical &i_v,
-			SphereData_Spectral &o_vorticity,
-			SphereData_Spectral &o_divergence,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div,
 			bool i_robert_formulation
 
 	)	const
 	{
+		assert(o_vrt.spectral_space_data != nullptr);
+		assert(o_div.spectral_space_data != nullptr);
+
 		if (!i_robert_formulation)
 		{
 			uv_to_vortdiv(
 					i_u, i_v,
-					o_vorticity, o_divergence
+					o_vrt, o_div
 			);
 		}
 		else
 		{
 			robert_uv_to_vortdiv(
 					i_u, i_v,
-					o_vorticity, o_divergence
+					o_vrt, o_div
 			);
 		}
 	}

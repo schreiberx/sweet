@@ -480,6 +480,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 			SphereData_Physical U_v_D_phys(sphereDataConfig);
 			sphereSampler.bicubic_scalar(io_U_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_v_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
 
+			U_vort_D.setup(sphereDataConfig);
+			U_div_D.setup(sphereDataConfig);
 			op.uv_to_vortdiv(U_u_D_phys, U_v_D_phys, U_vort_D, U_div_D, false);
 #endif
 		}
