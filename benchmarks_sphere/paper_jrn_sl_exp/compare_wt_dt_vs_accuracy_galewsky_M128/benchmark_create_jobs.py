@@ -317,7 +317,7 @@ if __name__ == "__main__":
                 ###########
                 # ETDRK
                 ###########
-                ['lg_rexi_lc_n_etdrk',    2,    2,    0],
+                #['lg_rexi_lc_n_etdrk',    2,    2,    0],
                 #['l_rexi_n_etdrk',    2,    2,    0],
 
                 ###########
