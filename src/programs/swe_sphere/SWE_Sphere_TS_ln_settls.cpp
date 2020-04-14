@@ -452,7 +452,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 	/*
 	 * Compute X_D
 	 */
-
 	SphereData_Spectral U_phi_D;
 	SphereData_Spectral U_vort_D;
 	SphereData_Spectral U_div_D;
@@ -466,6 +465,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 			U_phi_D = U_phi_D_phys;
 
 #if 0
+
 			SphereData_Physical U_vort_D_phys(sphereDataConfig);
 			sphereSampler.bicubic_scalar(io_U_vort.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_vort_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 			U_vort_D = U_vort_D_phys;
@@ -473,12 +473,14 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 			SphereData_Physical U_div_D_phys(sphereDataConfig);
 			sphereSampler.bicubic_scalar(io_U_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_div_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 			U_div_D = U_div_D_phys;
+
 #else
+
 			SphereData_Physical U_u_D_phys(sphereDataConfig);
-			sphereSampler.bicubic_scalar(io_U_vort.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_u_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
+			sphereSampler.bicubic_scalar(U_u, pos_lon_d, pos_lat_d, U_u_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
 
 			SphereData_Physical U_v_D_phys(sphereDataConfig);
-			sphereSampler.bicubic_scalar(io_U_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_v_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
+			sphereSampler.bicubic_scalar(U_v, pos_lon_d, pos_lat_d, U_v_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
 
 			U_vort_D.setup(sphereDataConfig);
 			U_div_D.setup(sphereDataConfig);
@@ -540,6 +542,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 
 		if (coriolis_treatment != CORIOLIS_SEMILAGRANGIAN)
 		{
+			FatalError("TODO: Make sure this is correct!");
+
 			SphereData_Physical U_vort_D_phys(sphereDataConfig);
 			SphereData_Physical U_div_D_phys(sphereDataConfig);
 
@@ -623,6 +627,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 		sphereSampler.bicubic_scalar(L_phi.getSphereDataPhysical(), pos_lon_d, pos_lat_d, L_phi_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 		L_phi_D.loadSphereDataPhysical(L_phi_D_phys);
 
+#if 0
+
 		SphereData_Physical L_vort_D_phys(sphereDataConfig);
 		sphereSampler.bicubic_scalar(L_vort.getSphereDataPhysical(), pos_lon_d, pos_lat_d, L_vort_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 		L_vort_D.loadSphereDataPhysical(L_vort_D_phys);
@@ -630,6 +636,24 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 		SphereData_Physical L_div_D_phys(sphereDataConfig);
 		sphereSampler.bicubic_scalar(L_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, L_div_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 		L_div_D.loadSphereDataPhysical(L_div_D_phys);
+
+#else
+
+		SphereData_Physical U_L_u_phys(sphereDataConfig);
+		SphereData_Physical U_L_v_phys(sphereDataConfig);
+		op.vortdiv_to_uv(L_vort, L_div, U_L_u_phys, U_L_v_phys, false);
+
+		SphereData_Physical U_u_D_phys(sphereDataConfig);
+		sphereSampler.bicubic_scalar(U_L_u_phys, pos_lon_d, pos_lat_d, U_u_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
+
+		SphereData_Physical U_v_D_phys(sphereDataConfig);
+		sphereSampler.bicubic_scalar(U_L_v_phys, pos_lon_d, pos_lat_d, U_v_D_phys, true, simVars.disc.semi_lagrangian_interpolation_limiter);
+
+		U_vort_D.setup(sphereDataConfig);
+		U_div_D.setup(sphereDataConfig);
+		op.uv_to_vortdiv(U_u_D_phys, U_v_D_phys, U_vort_D, U_div_D, false);
+
+#endif
 	}
 	else
 	{
@@ -638,18 +662,21 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 		 */
 
 		SphereData_Physical U_phi_D_phys(sphereDataConfig);
+		sphereSampler.bicubic_scalar(io_U_phi.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_phi_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
+		SphereData_Spectral U_phi_D(sphereDataConfig);
+		U_phi_D.loadSphereDataPhysical(U_phi_D_phys);
+
 		SphereData_Physical U_vort_D_phys(sphereDataConfig);
 		SphereData_Physical U_div_D_phys(sphereDataConfig);
 
-		sphereSampler.bicubic_scalar(io_U_phi.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_phi_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
+		FatalError("Get this running with U/V");
+
 		sphereSampler.bicubic_scalar(io_U_vort.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_vort_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 		sphereSampler.bicubic_scalar(io_U_div.getSphereDataPhysical(), pos_lon_d, pos_lat_d, U_div_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 
-		SphereData_Spectral U_phi_D(sphereDataConfig);
 		SphereData_Spectral U_vort_D(sphereDataConfig);
 		SphereData_Spectral U_div_D(sphereDataConfig);
 
-		U_phi_D.loadSphereDataPhysical(U_phi_D_phys);
 		U_vort_D.loadSphereDataPhysical(U_vort_D_phys);
 		U_div_D.loadSphereDataPhysical(U_div_D_phys);
 
@@ -712,7 +739,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical N_D_phys(sphereDataConfig);
-		sphereSampler.bicubic_scalar((2.0 * N_phi_t - N_phi_prev).getSphereDataPhysical(),	// field to sample
+		sphereSampler.bicubic_scalar(
+				(2.0 * N_phi_t - N_phi_prev).getSphereDataPhysical(),	// field to sample
 				pos_lon_d, pos_lat_d, N_D_phys, false, simVars.disc.semi_lagrangian_interpolation_limiter);
 
 		// N_D spectral
@@ -806,6 +834,9 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 		 */
 		// [ 2*N(t) - N(t-dt) ]_D
 		SphereData_Physical f_vort_t_D_phys(sphereDataConfig);
+
+		FatalError("TODO: change this to U/V, since vort/div requires additional nonlinear terms!");
+
 		sphereSampler.bicubic_scalar(
 				(2.0 * f_vort_t - f_vort_t_prev).getSphereDataPhysical(),	// field to sample
 				pos_lon_d, pos_lat_d,
