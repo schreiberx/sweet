@@ -52,7 +52,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order_pert(
 {
 	const SphereData_Config *sphereDataConfig = io_U_phi_pert.sphereDataConfig;
 	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
-	double dt_radius = i_dt/simVars.sim.sphere_radius;
+	double dt_div_radius = i_dt/simVars.sim.sphere_radius;
 
 	if (i_dt <= 0)
 		FatalError("SWE_Sphere_TS_ln_settls: Only constant time step size allowed (Please set --dt)");
@@ -94,8 +94,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order_pert(
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			dt_radius*u_lon_prev, dt_radius*v_lat_prev,
-			dt_radius*U_u, dt_radius*U_v,
+			dt_div_radius*u_lon_prev, dt_div_radius*v_lat_prev,
+			dt_div_radius*U_u, dt_div_radius*U_v,
 			pos_lon_a, pos_lat_a,
 
 			pos_lon_d, pos_lat_d,		// OUTPUT

@@ -110,8 +110,9 @@ public:
 		}
 		else if (io_simVars.benchmark.benchmark_name == "unstablejet")
 		{
-			io_simVars.sim.plane_domain_size[0] = 2.0*M_PI*io_simVars.sim.sphere_radius;
-			io_simVars.sim.plane_domain_size[1] = 2.0*M_PI*io_simVars.sim.sphere_radius;
+			double r = 6.37122e6;
+			io_simVars.sim.plane_domain_size[0] = 2.0*M_PI*r;
+			io_simVars.sim.plane_domain_size[1] = 2.0*M_PI*r;
 			io_simVars.sim.plane_rotating_f0 = 0.00014584;
 			io_simVars.sim.gravitation = 9.80616;
 			io_simVars.sim.h0 = 10000;
@@ -131,8 +132,9 @@ public:
 		}
 		else if (io_simVars.benchmark.benchmark_name == "unstablejet_nobump")
 		{
-			io_simVars.sim.plane_domain_size[0] = 2.0*M_PI*io_simVars.sim.sphere_radius;
-			io_simVars.sim.plane_domain_size[1] = 2.0*M_PI*io_simVars.sim.sphere_radius;
+			double r = 6.37122e6;
+			io_simVars.sim.plane_domain_size[0] = 2.0*M_PI*r;
+			io_simVars.sim.plane_domain_size[1] = 2.0*M_PI*r;
 			io_simVars.sim.plane_rotating_f0 = 0.00014584;
 			io_simVars.sim.gravitation = 9.80616;
 			io_simVars.sim.h0 = 10000;
