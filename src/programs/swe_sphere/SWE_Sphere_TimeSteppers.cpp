@@ -494,6 +494,10 @@ void SWE_Sphere_TimeSteppers::setup(
 
 		master = &(SWE_Sphere_TS_interface&)*lg_rexi;
 	}
+
+	/*
+	 * EXP SETTLS VERSION
+	 */
 	else if (
 			(i_timestepping_method.find("_settls") != std::string::npos)
 			&&
@@ -507,15 +511,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		SWE_Sphere_TS_ln_sl_exp_settls::NLDivergenceTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_sl_exp_settls::NL_DIV_IGNORE;
 		bool original_linear_operator_sl_treatment = true;
 
-		if (i_timestepping_method == "ln_settls")
-		{
-			linear_gravity_treatment = SWE_Sphere_TS_ln_sl_exp_settls::LINEAR_IMPLICIT;
-			linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_LINEAR;
-			nonlinear_advection_treatment = SWE_Sphere_TS_ln_sl_exp_settls::NL_ADV_SEMILAGRANGIAN;
-			nonlinear_divergence_treatment = SWE_Sphere_TS_ln_sl_exp_settls::NL_DIV_NONLINEAR;
-			original_linear_operator_sl_treatment = true;
-		}
-		else
 		{
 			// Search for implicit or exp treatment of linear parts
 			if (i_timestepping_method.find("_irk_") != std::string::npos)
@@ -616,6 +611,9 @@ void SWE_Sphere_TimeSteppers::setup(
 		master = &(SWE_Sphere_TS_interface&)*ln_sl_exp_settls;
 	}
 
+	/*
+	 * IRK SETTLS VERSION
+	 */
 	/**
 	 * SL methods with Coriolis treated as part of linear terms
 	 */

@@ -18,10 +18,15 @@ void SWE_Sphere_TS_l_erk::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-	io_phi_pert += gh0;
-	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
-	io_phi_pert -= gh0;
+	// standard time stepping
+	timestepping_rk.run_timestep(
+			this,
+			&SWE_Sphere_TS_l_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
+			io_phi_pert, io_vrt, io_div,
+			i_fixed_dt,
+			timestepping_order,
+			i_simulation_timestamp
+		);
 }
 
 
@@ -29,11 +34,11 @@ void SWE_Sphere_TS_l_erk::run_timestep_pert(
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_l_erk::euler_timestep_update(
-		const SphereData_Spectral &i_phi,	///< prognostic variables
+		const SphereData_Spectral &i_phi_pert,	///< prognostic variables
 		const SphereData_Spectral &i_vort,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereData_Spectral &o_phi_t,	///< time updates
+		SphereData_Spectral &o_phi_pert_t,	///< time updates
 		SphereData_Spectral &o_vort_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
@@ -51,8 +56,8 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 		/*
 		 * Step 1a
 		 */
-		SphereData_Physical ug(i_phi.sphereDataConfig);
-		SphereData_Physical vg(i_phi.sphereDataConfig);
+		SphereData_Physical ug(i_phi_pert.sphereDataConfig);
+		SphereData_Physical vg(i_phi_pert.sphereDataConfig);
 		op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
 
 		/*
@@ -74,49 +79,28 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 		/*
 		 * Step 1e
 		 */
-		o_div_t += -op.laplace(i_phi);
+		o_div_t += -op.laplace(i_phi_pert);
 
 		/*
 		 * DIV on velocity field
 		 */
-		o_phi_t = (-gh0)*i_div;
+		o_phi_pert_t = (-gh0)*i_div;
 	}
 	else
 	{
 		double gh = simVars.sim.gravitation * simVars.sim.h0;
 
-		o_div_t = -op.laplace(i_phi);
+		o_div_t = -op.laplace(i_phi_pert);
 
 		o_vort_t = -simVars.sim.sphere_fsphere_f0*i_div;
 		o_div_t += simVars.sim.sphere_fsphere_f0*i_vort;
 
-		o_phi_t = -gh*i_div;
+		o_phi_pert_t = -gh*i_div;
 	}
 }
 
 
 
-
-
-void SWE_Sphere_TS_l_erk::run_timestep_nonpert(
-		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,	///< prognostic variables
-		SphereData_Spectral &io_div,		///< prognostic variables
-
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp
-)
-{
-	// standard time stepping
-	timestepping_rk.run_timestep(
-			this,
-			&SWE_Sphere_TS_l_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
-			io_phi, io_vort, io_div,
-			i_dt,
-			timestepping_order,
-			i_simulation_timestamp
-		);
-}
 
 
 

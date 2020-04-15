@@ -154,7 +154,7 @@ public:
 		if (i_approximate_sphere_geometry)
 		{
 			/*
-			 * This juse uses an approximation of the sphere geometry.
+			 * This just uses an approximation of the sphere geometry.
 			 */
 
 			/*
@@ -170,6 +170,7 @@ public:
 			SWEETMath::normalize(o_pos_x, o_pos_y, o_pos_z);
 			return;
 		}
+
 
 		/*
 		 * This version implements an accurate geometry.
@@ -233,11 +234,11 @@ public:
 		const SphereData_Physical &i_u_lon, 		///< Velocities at time t
 		const SphereData_Physical &i_v_lat,
 
-		const ScalarDataArray &i_pos_lon_a,		///< Position of arrival points lon/lat
-		const ScalarDataArray &i_pos_lat_a,
+		const ScalarDataArray &i_pos_lon_A,		///< Position of arrival points lon/lat
+		const ScalarDataArray &i_pos_lat_A,
 
-		ScalarDataArray &o_pos_lon_d, 	///< OUTPUT: Position of departure points x / y
-		ScalarDataArray &o_pos_lat_d,
+		ScalarDataArray &o_pos_lon_D, 	///< OUTPUT: Position of departure points x / y
+		ScalarDataArray &o_pos_lat_D,
 
 		int i_timestepping_order,
 
@@ -247,21 +248,21 @@ public:
 		bool use_interpolation_limiters = false
 	)
 	{
-		std::size_t num_elements = i_pos_lon_a.number_of_elements;
+		std::size_t num_elements = i_pos_lon_A.number_of_elements;
 
 		if (i_timestepping_order == 1)
 		{
 			/**
 			 * TODO: This could be done by the setup phase
 			 */
-			ScalarDataArray pos_x_a(num_elements);
-			ScalarDataArray pos_y_a(num_elements);
-			ScalarDataArray pos_z_a(num_elements);
+			ScalarDataArray pos_x_A(num_elements);
+			ScalarDataArray pos_y_A(num_elements);
+			ScalarDataArray pos_z_A(num_elements);
 
 			// polar => Cartesian coordinates
 			SWEETMath::latlon_to_cartesian(
-					i_pos_lon_a, i_pos_lat_a,
-					pos_x_a, pos_y_a, pos_z_a
+					i_pos_lon_A, i_pos_lat_A,
+					pos_x_A, pos_y_A, pos_z_A
 				);
 
 			ScalarDataArray u_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
@@ -273,15 +274,15 @@ public:
 
 			// polar => Cartesian coordinates
 			SWEETMath::latlon_velocity_to_cartesian_velocity(
-					i_pos_lon_a, i_pos_lat_a,
+					i_pos_lon_A, i_pos_lat_A,
 					u_lon_array, v_lat_array,
 					&vel_x, &vel_y, &vel_z
 				);
 
 			// go to departure point
-			ScalarDataArray pos_x_d = pos_x_a - vel_x;
-			ScalarDataArray pos_y_d = pos_y_a - vel_y;
-			ScalarDataArray pos_z_d = pos_z_a - vel_z;
+			ScalarDataArray pos_x_d = pos_x_A - vel_x;
+			ScalarDataArray pos_y_d = pos_y_A - vel_y;
+			ScalarDataArray pos_z_d = pos_z_A - vel_z;
 
 			// normalize
 			ScalarDataArray norm = (pos_x_d*pos_x_d + pos_y_d*pos_y_d + pos_z_d*pos_z_d).inv_sqrt();
@@ -290,7 +291,7 @@ public:
 			pos_y_d *= norm;
 			pos_z_d *= norm;
 
-			SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+			SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_D, o_pos_lat_D);
 			return;
 		}
 
@@ -316,7 +317,7 @@ public:
 			ScalarDataArray pos_y_a(num_elements);
 			ScalarDataArray pos_z_a(num_elements);
 			SWEETMath::latlon_to_cartesian(
-					i_pos_lon_a, i_pos_lat_a,
+					i_pos_lon_A, i_pos_lat_A,
 					pos_x_a, pos_y_a, pos_z_a
 				);
 
@@ -334,7 +335,7 @@ public:
 
 			// Polar => Cartesian coordinates
 			SWEETMath::latlon_velocity_to_cartesian_velocity(
-					i_pos_lon_a, i_pos_lat_a,
+					i_pos_lon_A, i_pos_lat_A,
 					u_lon_array, v_lat_array,
 					&vel_x, &vel_y, &vel_z
 				);
@@ -352,7 +353,7 @@ public:
 			int iters = 0;
 			for (; iters < max_iters; iters++)
 			{
-				SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+				SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_D, o_pos_lat_D);
 
 #if SWEET_DEBUG
 				bool stop = false;
@@ -378,14 +379,14 @@ public:
 				}
 
 
-				if (o_pos_lon_d.reduce_isAnyNaNorInf())
+				if (o_pos_lon_D.reduce_isAnyNaNorInf())
 				{
 					std::cout << "iters: " << iters << std::endl;
 					std::cout << "NaN/Inf in o_pos_lon_d" << std::endl;
 					stop = true;
 				}
 
-				if (o_pos_lat_d.reduce_isAnyNaNorInf())
+				if (o_pos_lat_D.reduce_isAnyNaNorInf())
 				{
 					std::cout << "iters: " << iters << std::endl;
 					std::cout << "NaN/Inf in o_pos_lat_d" << std::endl;
@@ -399,8 +400,8 @@ public:
 #endif
 
 
-				ScalarDataArray u_lon_extrapol = sample2D.bilinear_scalar(u_extrapol, o_pos_lon_d, o_pos_lat_d, true);
-				ScalarDataArray v_lat_extrapol = sample2D.bilinear_scalar(v_extrapol, o_pos_lon_d, o_pos_lat_d, true);
+				ScalarDataArray u_lon_extrapol = sample2D.bilinear_scalar(u_extrapol, o_pos_lon_D, o_pos_lat_D, true);
+				ScalarDataArray v_lat_extrapol = sample2D.bilinear_scalar(v_extrapol, o_pos_lon_D, o_pos_lat_D, true);
 
 
 				// convert extrapolated velocities to Cartesian velocities
@@ -410,11 +411,10 @@ public:
 
 				// polar => Cartesian coordinates
 				SWEETMath::latlon_velocity_to_cartesian_velocity(
-						o_pos_lon_d, o_pos_lat_d,
+						o_pos_lon_D, o_pos_lat_D,
 						u_lon_extrapol, v_lat_extrapol,
 						&vel_x_extrapol, &vel_y_extrapol, &vel_z_extrapol
 					);
-
 
 				ScalarDataArray new_pos_x_d(num_elements);
 				ScalarDataArray new_pos_y_d(num_elements);
@@ -463,7 +463,7 @@ public:
 			}
 
 			// convert final points from Cartesian space to angular space
-			SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_d, o_pos_lat_d);
+			SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_D, o_pos_lat_D);
 			return;
 		}
 

@@ -326,9 +326,13 @@ public:
 	{
 		if (simVars.misc.compute_errors)
 		{
+			/*
+			 * Check for stationary solutions
+			 */
 			if (
 					simVars.benchmark.benchmark_name != "williamson2"					&&
 					simVars.benchmark.benchmark_name != "williamson2_linear"			&&
+					simVars.benchmark.benchmark_name != "galewsky_nobump"			&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance"			&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance_linear"	&&
 					simVars.benchmark.benchmark_name != "geostrophic_balance_1"			&&
@@ -524,6 +528,20 @@ public:
 			);
 
 #if 0
+		SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);
+		SphereData_Spectral anal_solution_vort(sphereDataConfig);
+		SphereData_Spectral anal_solution_div(sphereDataConfig);
+
+		sphereBenchmarks.setup(simVars, op);
+		sphereBenchmarks.setupInitialConditions_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
+
+		SphereData_DebugContainer::clear();
+		SphereData_DebugContainer::append(prog_phi_pert - anal_solution_phi_pert, "phi_pert_diff");
+		SphereData_DebugContainer::append(prog_vrt - anal_solution_vort, "vrt_diff");
+		SphereData_DebugContainer::append(prog_div - anal_solution_div, "div_diff");
+#endif
+
+#if 0
 		/*
 		 * Add implicit viscosity
 		 */
@@ -588,7 +606,9 @@ public:
 			const PlaneData **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
-			void **o_bogus_data
+			void **o_bogus_data,
+			double *o_viz_min,
+			double *o_viz_max
 	)
 	{
 		// request rendering of sphere
@@ -683,8 +703,18 @@ public:
 					break;
 				}
 			}
-
 		}
+
+
+		double viz_min = viz_plane_data.reduce_min();
+		double viz_max = viz_plane_data.reduce_max();
+
+		viz_max = std::max(std::abs(viz_max), std::abs(viz_min));
+		viz_min = -viz_max;
+
+		*o_viz_min = viz_min;
+		*o_viz_max = viz_max;
+
 
 		*o_dataArray = &viz_plane_data;
 		*o_aspect_ratio = 0.5;
@@ -720,7 +750,7 @@ public:
 			{
 			default:
 			case 0:
-				description = "phi";
+				description = "phi_pert";
 				break;
 
 			case 1:

@@ -110,12 +110,43 @@ public:
 		}
 		else if (io_simVars.benchmark.benchmark_name == "unstablejet")
 		{
+			io_simVars.sim.plane_domain_size[0] = 2.0*M_PI*io_simVars.sim.sphere_radius;
+			io_simVars.sim.plane_domain_size[1] = 2.0*M_PI*io_simVars.sim.sphere_radius;
+			io_simVars.sim.plane_rotating_f0 = 0.00014584;
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.h0 = 10000;
+			io_op.setup(io_simVars.sim.plane_domain_size, io_simVars.disc.space_use_spectral_basis_diffs);
+			std::cout << "WARNING: OVERWRITING SIMULATION PARAMETERS FOR THIS BENCHMARK!" << std::endl;
+
+
 			SWE_bench_UnstableJet swe_unstablejet(io_simVars, io_op);
 
 			swe_unstablejet.setup(
 					o_h_pert,
 					o_u,
 					o_v
+			);
+
+			return true;
+		}
+		else if (io_simVars.benchmark.benchmark_name == "unstablejet_nobump")
+		{
+			io_simVars.sim.plane_domain_size[0] = 2.0*M_PI*io_simVars.sim.sphere_radius;
+			io_simVars.sim.plane_domain_size[1] = 2.0*M_PI*io_simVars.sim.sphere_radius;
+			io_simVars.sim.plane_rotating_f0 = 0.00014584;
+			io_simVars.sim.gravitation = 9.80616;
+			io_simVars.sim.h0 = 10000;
+			io_op.setup(io_simVars.sim.plane_domain_size, io_simVars.disc.space_use_spectral_basis_diffs);
+			std::cout << "WARNING: OVERWRITING SIMULATION PARAMETERS FOR THIS BENCHMARK!" << std::endl;
+
+
+			SWE_bench_UnstableJet swe_unstablejet(io_simVars, io_op);
+
+			swe_unstablejet.setup(
+					o_h_pert,
+					o_u,
+					o_v,
+					false
 			);
 
 			return true;

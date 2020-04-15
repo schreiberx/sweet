@@ -68,7 +68,7 @@ private:
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
 
-	SphereData_Spectral U_phi_prev, U_vort_prev, U_div_prev;
+	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
 	// Arrival points for semi-lag
 	ScalarDataArray pos_lon_a, pos_lat_a;
@@ -111,8 +111,6 @@ public:
 	);
 
 
-
-
 	void run_timestep_nonpert(
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
@@ -137,6 +135,27 @@ public:
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
+
+			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
+
+
+	void run_timestep_2nd_order_pert(
+			SphereData_Spectral &io_phi_pert,	///< prognostic variables
+			SphereData_Spectral &io_vort,		///< prognostic variables
+			SphereData_Spectral &io_div,		///< prognostic variables
+
+			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
+
+	void run_timestep_2nd_order_pert_REAL(
+			SphereData_Spectral &io_phi_pert,	///< prognostic variables
+			SphereData_Spectral &io_vort,		///< prognostic variables
+			SphereData_Spectral &io_div,		///< prognostic variables
 
 			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1

@@ -15,11 +15,11 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_l_erk::euler_timestep_update(
-		const SphereData_Spectral &i_phi,	///< prognostic variables
+		const SphereData_Spectral &i_phi_pert,	///< prognostic variables
 		const SphereData_Spectral &i_vort,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereData_Spectral &o_phi_t,	///< time updates
+		SphereData_Spectral &o_phi_pert_t,	///< time updates
 		SphereData_Spectral &o_vort_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
@@ -30,8 +30,8 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 	{
 		double gh = simVars.sim.gravitation * simVars.sim.h0;
 
-		o_phi_t = -gh*i_div;
-		o_div_t = -op.laplace(i_phi);
+		o_phi_pert_t = -gh*i_div;
+		o_div_t = -op.laplace(i_phi_pert);
 
 		o_vort_t = -simVars.sim.plane_rotating_f0*i_div;
 		o_div_t += simVars.sim.plane_rotating_f0*i_vort;
@@ -40,10 +40,9 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 	{
 		double gh = simVars.sim.gravitation * simVars.sim.h0;
 
-		SphereData_Physical ug(i_phi.sphereDataConfig);
-		SphereData_Physical vg(i_phi.sphereDataConfig);
+		SphereData_Physical ug(i_phi_pert.sphereDataConfig);
+		SphereData_Physical vg(i_phi_pert.sphereDataConfig);
 		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-		SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
 		SphereData_Physical tmpg1 = ug*fg;
 		SphereData_Physical tmpg2 = vg*fg;
@@ -62,11 +61,12 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update(
 		tmpg2 = vg*gh;
 #endif
 
-		SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+		SphereData_Spectral tmpspec(i_phi_pert.sphereDataConfig);
+		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_pert_t);
 
-		o_phi_t *= -1.0;
+		o_phi_pert_t *= -1.0;
 
+		SphereData_Physical phig = i_phi_pert.getSphereDataPhysical();
 		tmpspec.loadSphereDataPhysical(phig);
 		o_div_t += -op.laplace(tmpspec);
 	}

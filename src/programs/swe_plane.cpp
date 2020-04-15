@@ -830,7 +830,9 @@ public:
 			const PlaneData **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
-			void **o_bogus_data
+			void **o_bogus_data,
+			double *o_viz_min,
+			double *o_viz_max
 	)
 	{
 		if (simVars.misc.vis_id < 0)
@@ -1561,8 +1563,6 @@ int main(int i_argc, char *i_argv[])
 					std::cout << "[MULE] error_end_linf_v: " << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
 					std::cout << std::endl;
 				}
-
-
 
 				if (simulationSWE->compute_error_to_analytical_solution)
 				{

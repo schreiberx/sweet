@@ -7,6 +7,7 @@
 #ifndef SRC_EXAMPLES_VISSWEET_HPP_
 #define SRC_EXAMPLES_VISSWEET_HPP_
 
+#include <limits>
 #include <sweet/VisSweetHUD.hpp>
 #include "../libgl/draw/GlDrawCube.hpp"
 #include "../libgl/shaders/shader_blinn/CShaderBlinn.hpp"
@@ -56,8 +57,8 @@ class VisSweet	:
 
 	VisualizationEngine *visualizationEngine;
 
-	double vis_min = 0;
-	double vis_max = 0;
+	double viz_min = 0;
+	double viz_max = 0;
 
 
 	void vis_setup(VisualizationEngine *i_visualizationEngine)
@@ -103,14 +104,29 @@ class VisSweet	:
 		int render_primitive = 0;
 		void *bogus_data;
 
+		viz_min = std::numeric_limits<double>::infinity();
+		viz_max = std::numeric_limits<double>::infinity();
+
 		simulation->vis_get_vis_data_array(
 				&ro_visPlaneData,
 				&aspect_ratio,
 				&render_primitive,
-				&bogus_data
+				&bogus_data,
+				&viz_min,
+				&viz_max
 		);
 
 		PlaneData &visData = (PlaneData&)*ro_visPlaneData;
+
+		visData.request_data_physical();
+
+		if (std::isinf(viz_min))
+		{
+			viz_min = visData.reduce_min();
+			viz_max = visData.reduce_max();
+
+			viz_max = std::max(viz_max, viz_min+1e-20);	//< avoid numerical issues if min == max
+		}
 
 
 		if (glTexture == nullptr)
@@ -123,16 +139,8 @@ class VisSweet	:
 			texture_data = new unsigned char[visData.planeDataConfig->physical_array_data_number_of_elements];
 		}
 
-		visData.request_data_physical();
 
-		vis_min = visData.reduce_min();
-		vis_max = visData.reduce_max();
-
-		vis_max = std::max(vis_max, vis_min+1e-20);	//< avoid numerical issues if min == max
-
-		double real_delta = vis_max-vis_min;
-//		vis_min -= real_delta*0.03;
-//		vis_max += real_delta*0.03;
+		double real_delta = viz_max-viz_min;
 
 		double inv_delta = 1.0/real_delta;
 
@@ -142,7 +150,7 @@ class VisSweet	:
 				i++
 		)
 		{
-			double value = (visData.physical_space_data[i]-vis_min)*inv_delta;
+			double value = (visData.physical_space_data[i]-viz_min)*inv_delta;
 			value *= 255.0;
 
 			texture_data[i] = (unsigned char)std::min(255.0, std::max(0.0, value));//			texture_data[i] = 128;
@@ -227,7 +235,7 @@ class VisSweet	:
 	const char* vis_getStatusString()
 	{
 		static char title_string[4096];
-		sprintf(title_string, "%s, viz min/max: %.12e/%.12e", simulation->vis_get_status_string(), vis_min, vis_max);
+		sprintf(title_string, "%s, viz min/max: %.12e/%.12e", simulation->vis_get_status_string(), viz_min, viz_max);
 		return title_string;
 	}
 

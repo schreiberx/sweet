@@ -460,7 +460,9 @@ public:
 			const PlaneData **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
-			void **o_bogus_data
+			void **o_bogus_data,
+			double *o_viz_min,
+			double *o_viz_max
 	)
 	{
 		int vis_id = simVars.misc.vis_id % 6;

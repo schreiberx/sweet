@@ -45,7 +45,6 @@ class SWE_bench_UnstableJet
 			double y
 	)
 	{
-
 		return -(f/g)*sy*GaussQuadrature::integrate5_intervals_adaptive_linear<double>(0, y, u_fun, 10e-13);
 		//return -(f/g)*GaussQuadrature::integrate5_intervals<double>(0, y, u_fun, 200);
 	}
@@ -106,14 +105,14 @@ class SWE_bench_UnstableJet
 		double exp2 = std::exp(-factor*(dx*dx + dy*dy));
 
 		double pert = 0.01*simVars.sim.h0;
-		//double pert = 0.000;
 
-		return (pert)*(exp1+exp2);
+		return pert*(exp1+exp2);
 
 	}
 
 	void setup_depth(
-			PlaneData &o_depth
+			PlaneData &o_depth,
+			bool i_with_bump = true
 	)
 	{
 		// First set for the first column (one vertical slice)
@@ -138,8 +137,10 @@ class SWE_bench_UnstableJet
 				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 
-				o_depth.p_physical_set(j, i, o_depth.p_physical_get(j, 0) + bump(x,y));
-
+				if (i_with_bump)
+					o_depth.p_physical_set(j, i, o_depth.p_physical_get(j, 0) + bump(x,y));
+				else
+					o_depth.p_physical_set(j, i, o_depth.p_physical_get(j, 0));
 			}
 		}
 
@@ -180,7 +181,8 @@ public:
 	void setup(
 			PlaneData &o_h,
 			PlaneData &o_u,
-			PlaneData &o_v
+			PlaneData &o_v,
+			bool i_with_bump = true
 	)
 	{
 		std::cout<< "Generating Unstable Jet initial conditions.";
@@ -194,7 +196,7 @@ public:
 		 * Setup depth function
 		 * based on velocities
 		 */
-		setup_depth(o_h);
+		setup_depth(o_h, i_with_bump);
 		//o_h.file_physical_saveData_ascii("ouput_depth");
 
 		/*
