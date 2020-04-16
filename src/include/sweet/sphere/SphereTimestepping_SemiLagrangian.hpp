@@ -63,69 +63,6 @@ public:
 	}
 
 
-	static
-	double& alpha()
-	{
-		static double alpha = 0;
-		return alpha;
-	}
-
-#if 0
-	double u_analytical(double i_lambda, double i_theta)
-	{
-		double a = 6.37122e6;
-		double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
-
-		assert(i_lambda >= 0);
-		assert(i_lambda <= 2.0*M_PI);
-		assert(i_theta >= -0.5*M_PI);
-		assert(i_theta <= 0.5*M_PI);
-
-		return u0*(std::cos(i_theta)*std::cos(alpha()) + std::sin(i_theta)*std::cos(i_lambda)*std::sin(alpha()));
-	}
-
-
-	ScalarDataArray u_analytical(
-			const ScalarDataArray &i_lambda,
-			const ScalarDataArray &i_theta
-	)
-	{
-		ScalarDataArray ret;
-		ret.setup(i_lambda.number_of_elements);
-		for (int i = 0; i < (int)i_lambda.number_of_elements; i++)
-			ret.scalar_data[i] = u_analytical(i_lambda.scalar_data[i], i_theta.scalar_data[i]);
-
-		return ret;
-	}
-
-	double v_analytical(double i_lambda, double i_theta)
-	{
-		double a = 6.37122e6;
-		double u0 = (2.0*M_PI*a)/(12.0*24.0*60.0*60.0);
-
-		assert(i_lambda >= 0);
-		assert(i_lambda <= 2.0*M_PI);
-		assert(i_theta >= -0.5*M_PI);
-		assert(i_theta <= 0.5*M_PI);
-
-		return -u0*std::sin(i_lambda)*std::sin(alpha());
-	}
-
-
-	ScalarDataArray v_analytical(
-			const ScalarDataArray &i_lambda,
-			const ScalarDataArray &i_theta
-	)
-	{
-		ScalarDataArray ret;
-		ret.setup(i_lambda.number_of_elements);
-		for (int i = 0; i < (int)i_lambda.number_of_elements; i++)
-			ret.scalar_data[i] = v_analytical(i_lambda.scalar_data[i], i_theta.scalar_data[i]);
-
-		return ret;
-	}
-#endif
-
 
 	/**
 	 * Do 1st order accurate advection on the sphere for given
@@ -242,8 +179,8 @@ public:
 
 		int i_timestepping_order,
 
-		int max_iters = 10,
-		double i_convergence_tolerance = 1e-8,
+		int max_iterations = 2,
+		double i_convergence_tolerance = -1,
 		int i_approximate_sphere_geometry = 0,
 		bool use_interpolation_limiters = false
 	)
@@ -252,8 +189,8 @@ public:
 
 		if (i_timestepping_order == 1)
 		{
-			/**
-			 * TODO: This could be done by the setup phase
+			/*
+			 * Compute cartesian arrival point
 			 */
 			ScalarDataArray pos_x_A(num_elements);
 			ScalarDataArray pos_y_A(num_elements);
@@ -265,33 +202,49 @@ public:
 					pos_x_A, pos_y_A, pos_z_A
 				);
 
+			/*
+			 * Compute cartesian velocity
+			 */
 			ScalarDataArray u_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_u_lon);
 			ScalarDataArray v_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_v_lat);
-
-			ScalarDataArray vel_x(num_elements);
-			ScalarDataArray vel_y(num_elements);
-			ScalarDataArray vel_z(num_elements);
-
-			// polar => Cartesian coordinates
+			ScalarDataArray vel_x_A(num_elements);
+			ScalarDataArray vel_y_A(num_elements);
+			ScalarDataArray vel_z_A(num_elements);
 			SWEETMath::latlon_velocity_to_cartesian_velocity(
 					i_pos_lon_A, i_pos_lat_A,
 					u_lon_array, v_lat_array,
-					&vel_x, &vel_y, &vel_z
+					&vel_x_A, &vel_y_A, &vel_z_A
 				);
 
-			// go to departure point
-			ScalarDataArray pos_x_d = pos_x_A - vel_x;
-			ScalarDataArray pos_y_d = pos_y_A - vel_y;
-			ScalarDataArray pos_z_d = pos_z_A - vel_z;
+			/*
+			 * Do advection in Cartesian space
+			 */
+			ScalarDataArray new_pos_x_d(num_elements);
+			ScalarDataArray new_pos_y_d(num_elements);
+			ScalarDataArray new_pos_z_d(num_elements);
+			doAdvectionOnSphere(
+				pos_x_A,
+				pos_y_A,
+				pos_z_A,
 
-			// normalize
-			ScalarDataArray norm = (pos_x_d*pos_x_d + pos_y_d*pos_y_d + pos_z_d*pos_z_d).inv_sqrt();
+				-vel_x_A,
+				-vel_y_A,
+				-vel_z_A,
 
-			pos_x_d *= norm;
-			pos_y_d *= norm;
-			pos_z_d *= norm;
+				new_pos_x_d,
+				new_pos_y_d,
+				new_pos_z_d,
 
-			SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_D, o_pos_lat_D);
+				i_approximate_sphere_geometry
+			);
+
+			/*
+			 * Departure point to lat/lon coordinate
+			 */
+			SWEETMath::cartesian_to_latlon(
+					new_pos_x_d, new_pos_y_d, new_pos_z_d,
+					o_pos_lon_D, o_pos_lat_D
+				);
 			return;
 		}
 
@@ -313,12 +266,12 @@ public:
 			 * TODO: This could be done by the setup phase
 			 */
 			// Compute Cartesian arrival points
-			ScalarDataArray pos_x_a(num_elements);
-			ScalarDataArray pos_y_a(num_elements);
-			ScalarDataArray pos_z_a(num_elements);
+			ScalarDataArray pos_x_A(num_elements);
+			ScalarDataArray pos_y_A(num_elements);
+			ScalarDataArray pos_z_A(num_elements);
 			SWEETMath::latlon_to_cartesian(
 					i_pos_lon_A, i_pos_lat_A,
-					pos_x_a, pos_y_a, pos_z_a
+					pos_x_A, pos_y_A, pos_z_A
 				);
 
 			// Convert velocities along lon/lat to scalardata array
@@ -344,14 +297,14 @@ public:
 			 * Setup iterations
 			 */
 			// Departure points for iterations
-			ScalarDataArray pos_x_d = pos_x_a;
-			ScalarDataArray pos_y_d = pos_y_a;
-			ScalarDataArray pos_z_d = pos_z_a;
+			ScalarDataArray pos_x_d = pos_x_A;
+			ScalarDataArray pos_y_d = pos_y_A;
+			ScalarDataArray pos_z_d = pos_z_A;
 
 
 			double diff = 999;
 			int iters = 0;
-			for (; iters < max_iters; iters++)
+			for (; iters < max_iterations; iters++)
 			{
 				SWEETMath::cartesian_to_latlon(pos_x_d, pos_y_d, pos_z_d, o_pos_lon_D, o_pos_lat_D);
 
@@ -421,9 +374,9 @@ public:
 				ScalarDataArray new_pos_z_d(num_elements);
 
 				doAdvectionOnSphere(
-					pos_x_a,
-					pos_y_a,
-					pos_z_a,
+					pos_x_A,
+					pos_y_A,
+					pos_z_A,
 
 					-0.5*(vel_x_extrapol + vel_x),
 					-0.5*(vel_y_extrapol + vel_y),

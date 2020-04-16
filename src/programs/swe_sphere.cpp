@@ -150,7 +150,7 @@ public:
 		{
 			// use dealiased physical space for setup
 			sphereBenchmarks.setup(simVars, op);
-			sphereBenchmarks.setupInitialConditions_pert(prog_phi_pert, prog_vrt, prog_div);
+			sphereBenchmarks.compute_initial_condition_pert(prog_phi_pert, prog_vrt, prog_div);
 		}
 		else
 		{
@@ -161,7 +161,7 @@ public:
 			SphereData_Spectral prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
 			sphereBenchmarks.setup(simVars, op_nodealiasing);
-			sphereBenchmarks.setupInitialConditions_pert(prog_phi_pert_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing);
+			sphereBenchmarks.compute_initial_condition_pert(prog_phi_pert_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing);
 
 			prog_phi_pert.load_nodealiasing(prog_phi_pert_nodealiasing);
 			prog_vrt.load_nodealiasing(prog_vort_nodealiasing);
@@ -356,7 +356,7 @@ public:
 			SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 			sphereBenchmarks.setup(simVars, op);
-			sphereBenchmarks.setupInitialConditions_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
+			sphereBenchmarks.compute_initial_condition_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
 
 			/*
 			 * Compute difference
@@ -527,37 +527,6 @@ public:
 				simVars.timecontrol.current_simulation_time
 			);
 
-#if 0
-		SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);
-		SphereData_Spectral anal_solution_vort(sphereDataConfig);
-		SphereData_Spectral anal_solution_div(sphereDataConfig);
-
-		sphereBenchmarks.setup(simVars, op);
-		sphereBenchmarks.setupInitialConditions_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
-
-		SphereData_DebugContainer::clear();
-		SphereData_DebugContainer::append(prog_phi_pert - anal_solution_phi_pert, "phi_pert_diff");
-		SphereData_DebugContainer::append(prog_vrt - anal_solution_vort, "vrt_diff");
-		SphereData_DebugContainer::append(prog_div - anal_solution_div, "div_diff");
-#endif
-
-#if 0
-		/*
-		 * Add implicit viscosity
-		 */
-		if (simVars.sim.viscosity != 0)
-		{
-			double scalar = simVars.sim.viscosity*simVars.timecontrol.current_timestep_size;
-			double r = simVars.sim.sphere_radius;
-
-			/*
-			 * (1-dt*visc*D2)p(t+dt) = p(t)
-			 */
-			prog_phi_pert = prog_phi_pert.spectral_solve_helmholtz(1.0, -scalar, r);
-			prog_vrt = prog_vrt.spectral_solve_helmholtz(1.0, -scalar, r);
-			prog_div = prog_div.spectral_solve_helmholtz(1.0, -scalar, r);
-		}
-#endif
 
 		// advance time step and provide information to parameters
 		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
@@ -686,7 +655,7 @@ public:
 				SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 				sphereBenchmarks.setup(simVars, op);
-				sphereBenchmarks.setupInitialConditions_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
+				sphereBenchmarks.compute_initial_condition_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
 
 				switch (id)
 				{

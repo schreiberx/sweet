@@ -45,6 +45,8 @@ public:
 
 	Adv_Sphere_TimeSteppers timeSteppers;
 
+	bool time_varying_fields;
+
 	SphereOperators_SphereData op;
 
 	/*
@@ -63,7 +65,7 @@ public:
 	int render_primitive_id = 1;
 #endif
 
-	SWESphereBenchmarksCombined sphereBenchmarksCombined;
+	SWESphereBenchmarksCombined sphereBenchmarks;
 
 
 
@@ -75,7 +77,8 @@ public:
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
 
-		op(sphereDataConfig, &(simVars.sim))
+		op(sphereDataConfig, &(simVars.sim)),
+		time_varying_fields(false)
 
 #if SWEET_GUI
 		,
@@ -91,8 +94,8 @@ public:
 	{
 		simVars.reset();
 
-		sphereBenchmarksCombined.setup(simVars, op);
-		sphereBenchmarksCombined.setupInitialConditions_pert(prog_phi_pert, prog_vort, prog_div);
+		sphereBenchmarks.setup(simVars, op);
+		sphereBenchmarks.compute_initial_condition_pert(prog_phi_pert, prog_vort, prog_div, &time_varying_fields);
 
 		prog_phi_pert_t0 = prog_phi_pert;
 
@@ -100,8 +103,6 @@ public:
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
-
-		//simVars.outputConfig();
 	}
 
 
@@ -110,6 +111,12 @@ public:
 	{
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
+
+		/*
+		 * Update time varying fields
+		 */
+		if (time_varying_fields)
+			sphereBenchmarks.update_time_varying_fields_pert(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
 
 		timeSteppers.master->run_timestep(
 				prog_phi_pert, prog_vort, prog_div,
@@ -131,39 +138,6 @@ public:
 	}
 
 
-	void compute_error()
-	{
-#if 0
-		double t = simVars.timecontrol.current_simulation_time;
-
-		SphereData_Spectral prog_testh(sphereDataConfig);
-		prog_testh.physical_update_lambda_array_indices(
-			[&](int i, int j, double &io_data)
-			{
-				double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.domain_size[0];
-				double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.domain_size[1];
-
-				x -= param_velocity_u*t;
-				y -= param_velocity_v*t;
-
-				while (x < 0)
-					x += simVars.sim.domain_size[0];
-
-				while (y < 0)
-					y += simVars.sim.domain_size[1];
-
-				x = std::fmod(x, simVars.sim.domain_size[0]);
-				y = std::fmod(y, simVars.sim.domain_size[1]);
-
-				io_data = SWESphereBenchmarks::return_h(simVars, x, y);
-			}
-		);
-
-		std::cout << "Lmax Error: " << (prog_phi_pert-prog_testh).reduce_maxAbs() << std::endl;
-#endif
-	}
-
-
 	bool should_quit()
 	{
 		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
@@ -182,6 +156,7 @@ public:
 		return false;
 	}
 
+
 #if SWEET_GUI
 	/**
 	 * postprocessing of frame: do time stepping
@@ -191,8 +166,6 @@ public:
 		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				run_timestep();
-
-		compute_error();
 	}
 
 
@@ -351,9 +324,6 @@ int main(int i_argc, char *i_argv[])
 
 	if (simVars.timecontrol.current_timestep_size < 0)
 		FatalError("Timestep size not set");
-
-
-	SphereTimestepping_SemiLagrangian::alpha() = simVars.benchmark.sphere_advection_rotation_angle;
 
 	int max_modes = 256;
 

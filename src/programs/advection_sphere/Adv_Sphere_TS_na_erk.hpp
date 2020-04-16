@@ -11,6 +11,7 @@
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
@@ -24,6 +25,8 @@ class Adv_Sphere_TS_na_erk	: public Adv_Sphere_TS_interface
 	SphereOperators_SphereData &op;
 
 	int timestepping_order;
+
+	const SWESphereBenchmarksCombined *sphereBenchmarks;
 
 	// Sampler
 	SphereTimestepping_ExplicitRK timestepping_rk;
@@ -57,8 +60,11 @@ public:
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+
+			// for varying velocity fields
+			const SWESphereBenchmarksCombined *i_sphereBenchmarks
 	);
 
 

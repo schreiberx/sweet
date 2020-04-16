@@ -13,7 +13,6 @@
 
 
 
-
 void SWE_Sphere_TS_ln_settls::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
@@ -79,9 +78,9 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order_pert(
 	 * See Hortal's paper for equation.
 	 */
 
-	SphereData_Physical u_lon_prev(sphereDataConfig);
-	SphereData_Physical v_lat_prev(sphereDataConfig);
-	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, u_lon_prev, v_lat_prev, false);
+	SphereData_Physical U_u_lon_prev(sphereDataConfig);
+	SphereData_Physical U_v_lat_prev(sphereDataConfig);
+	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev, false);
 
 	SphereData_Physical U_u(sphereDataConfig);
 	SphereData_Physical U_v(sphereDataConfig);
@@ -94,7 +93,7 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order_pert(
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			dt_div_radius*u_lon_prev, dt_div_radius*v_lat_prev,
+			dt_div_radius*U_u_lon_prev, dt_div_radius*U_v_lat_prev,
 			dt_div_radius*U_u, dt_div_radius*U_v,
 			pos_lon_a, pos_lat_a,
 
@@ -472,8 +471,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order_pert(
 		 */
 
 		// u_lon and u_lat already available in physical space
-		SphereData_Physical ufg_prev = u_lon_prev * op.fg;
-		SphereData_Physical vfg_prev = v_lat_prev * op.fg;
+		SphereData_Physical ufg_prev = U_u_lon_prev * op.fg;
+		SphereData_Physical vfg_prev = U_v_lat_prev * op.fg;
 
 		/*
 		 * Step 1c

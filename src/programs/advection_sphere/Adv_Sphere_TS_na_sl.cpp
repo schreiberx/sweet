@@ -11,43 +11,64 @@
 
 
 void Adv_Sphere_TS_na_sl::run_timestep(
-		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,		///< prognostic variables
-		SphereData_Spectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_U_phi,		///< prognostic variables
+		SphereData_Spectral &io_U_vrt,		///< prognostic variables
+		SphereData_Spectral &io_U_div,		///< prognostic variables
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp
+		double i_simulation_timestamp,
+
+		// for varying velocity fields
+		const SWESphereBenchmarksCombined *i_sphereBenchmarks
 )
 {
+	const SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
+
+	SphereData_Spectral &U_phi = io_U_phi;
+	SphereData_Spectral &U_vrt = io_U_vrt;
+	SphereData_Spectral &U_div = io_U_div;
+
 	if (i_fixed_dt <= 0)
 		FatalError("Only constant time step size allowed");
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
-	if (simVars.benchmark.getExternalForcesCallback != nullptr)
+	if (i_simulation_timestamp == 0)
 	{
-		simVars.benchmark.getExternalForcesCallback(1, i_simulation_timestamp, &io_vort, simVars.benchmark.getExternalForcesUserData);
-		simVars.benchmark.getExternalForcesCallback(2, i_simulation_timestamp, &io_div, simVars.benchmark.getExternalForcesUserData);
+		U_phi_prev = U_phi;
+		U_vrt_prev = U_vrt;
+		U_div_prev = U_div;
+	}
+	else
+	{
+#if 0
+		// shouldn't be necessary
+		if (i_sphereBenchmarks != nullptr)
+		{
+			i_sphereBenchmarks->update_time_varying_fields_pert(U_phi_prev, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_fixed_dt);
+		}
+#endif
 	}
 
 	// IMPORTANT!!! WE DO NOT USE THE ROBERT TRANSFORMATION HERE!!!
-	op.vortdiv_to_uv(io_vort, io_div, diag_u, diag_v);
 
-	if (i_simulation_timestamp == 0)
-	{
-		diag_u_prev = diag_u;
-		diag_v_prev = diag_v;
-	}
+	SphereData_Physical U_u(sphereDataConfig);
+	SphereData_Physical U_v(sphereDataConfig);
+	op.vortdiv_to_uv(U_vrt, U_div, U_u, U_v, false);
+
+	SphereData_Physical U_u_prev(sphereDataConfig);
+	SphereData_Physical U_v_prev(sphereDataConfig);
+	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_prev, U_v_prev, false);
 
 	// OUTPUT: position of departure points at t
-	ScalarDataArray posx_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
-	ScalarDataArray posy_d(io_phi.sphereDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray posx_d(io_U_phi.sphereDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray posy_d(io_U_phi.sphereDataConfig->physical_array_data_number_of_elements);
 
+	double dt_div_radius = simVars.timecontrol.current_timestep_size / simVars.sim.sphere_radius;
 
-	double fac = dt*simVars.sim.sphere_radius;
 	semiLagrangian.semi_lag_departure_points_settls(
-			fac*diag_u_prev, fac*diag_v_prev,
-			fac*diag_u, fac*diag_v,
+			dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
+			dt_div_radius*U_u, dt_div_radius*U_v,
 
 			posx_a, posy_a,
 			posx_d, posy_d,
@@ -58,33 +79,22 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 			simVars.disc.semi_lagrangian_approximate_sphere_geometry
 	);
 
-	diag_u_prev = diag_u;
-	diag_v_prev = diag_v;
+	U_phi_prev = U_phi;
+	U_vrt_prev = U_vrt;
+	U_div_prev = U_div;
 
-	SphereData_Spectral new_prog_phi(io_phi.sphereDataConfig);
+	SphereData_Physical new_prog_phi_phys(sphereDataConfig);
 
-	if (timestepping_order == 1 && 0)
-	{
-		sampler2D.bilinear_scalar(
-				io_phi,
-				posx_d,
-				posy_d,
-				new_prog_phi,
-				false
-		);
-	}
-	else
-	{
-		sampler2D.bicubic_scalar(
-						io_phi,
-						posx_d,
-						posy_d,
-						new_prog_phi,
-						simVars.disc.semi_lagrangian_interpolation_limiter
-				);
-	}
+	sampler2D.bicubic_scalar(
+			io_U_phi.getSphereDataPhysical(),
+			posx_d,
+			posy_d,
+			new_prog_phi_phys,
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
+	);
 
-	io_phi = new_prog_phi;
+	io_U_phi = new_prog_phi_phys;
 }
 
 
@@ -136,7 +146,7 @@ void Adv_Sphere_TS_na_sl::setup(
 	sampler2D.setup(sphereDataConfig);
 
 	//PXT- This just calls sampler2D.setup, so any reason for having it?
-	semiLagrangian.setup(simVars.sim.plane_domain_size, sphereDataConfig);
+	semiLagrangian.setup(sphereDataConfig, simVars);
 }
 
 
@@ -145,13 +155,7 @@ Adv_Sphere_TS_na_sl::Adv_Sphere_TS_na_sl(
 		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
-		op(i_op),
-
-		diag_u(op.sphereDataConfig),
-		diag_v(op.sphereDataConfig),
-
-		diag_u_prev(op.sphereDataConfig),
-		diag_v_prev(op.sphereDataConfig)
+		op(i_op)
 {
 	setup(simVars.disc.timestepping_order);
 }

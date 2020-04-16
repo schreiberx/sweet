@@ -14,7 +14,9 @@
 #include <benchmarks_sphere/BenchmarkFlowOverMountain.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/SWEETMath.hpp>
 #include <libmath/GaussQuadrature.hpp>
+#include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 #if SWEET_MPI
 	#include <mpi.h>
@@ -23,6 +25,8 @@
 #if !SWEET_USE_SPHERE_SPECTRAL_SPACE
 	#error "SWEET_USE_SPHERE_SPECTRAL_SPACE not enabled"
 #endif
+
+
 
 class SWESphereBenchmarksCombined
 {
@@ -286,12 +290,267 @@ public:
 		op = &io_op;
 	}
 
-	void setupInitialConditions_pert(
+
+	/*
+	 * Update fields for time-varying benchmarks
+	 */
+	void update_time_varying_fields_pert(
 			SphereData_Spectral &o_phi_pert,
-			SphereData_Spectral &o_vort,
-			SphereData_Spectral &o_div
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div,
+			double i_timestamp = 0
+	)	const
+	{
+		const SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
+
+		double gh0 = simVars->sim.gravitation*simVars->sim.h0;
+
+		/*********************************************************************
+		 * Time-varying benchmark cases
+		 *
+		 * R. Nair, P. Lauritzen "A class of deformational flow
+		 * test cases for linear transport problems on the sphere"
+		 */
+		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_1")
+		{
+			// time for total deformation: 12 days
+			double T = 12*24*60*60;
+
+			// velocity
+			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+
+			// we set k to 2.4 (p. 5)
+			double k = 2.4;
+
+			SphereData_Physical u_phys(sphereDataConfig);
+			u_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k * std::pow(std::sin(i_lambda/2), 2.0) * std::sin(2.0*i_theta) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			SphereData_Physical v_phys(sphereDataConfig);
+			v_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k/2.0 * std::sin(i_lambda) * std::cos(i_theta) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			u_phys *= u0;
+			v_phys *= u0;
+
+			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
+			return;
+		}
+
+		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_2" || simVars->benchmark.benchmark_name == "nair_lauritzen_case_2_k0.5")
+		{
+			// time for total deformation: 12 days
+			double T = 12*24*60*60;
+
+			// velocity
+			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+
+			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
+			double k = 2;
+
+			if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_2_k0.5")
+				k = 0.5;
+
+
+			SphereData_Physical u_phys(sphereDataConfig);
+			u_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k * std::pow(std::sin(i_lambda), 2.0) * std::sin(2.0*i_theta) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			SphereData_Physical v_phys(sphereDataConfig);
+			v_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k * std::sin(2.0*i_lambda) * std::cos(i_theta) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			u_phys *= u0;
+			v_phys *= u0;
+
+			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
+			return;
+		}
+
+		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_3")
+		{
+			/*
+			 * This is a divergent flow!!!
+			 */
+
+			// time for total deformation: 12 days
+			double T = 12*24*60*60;
+
+			// velocity
+			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+
+			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
+			double k = 2;
+
+
+			SphereData_Physical u_phys(sphereDataConfig);
+			u_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = -k * std::pow(std::sin(i_lambda/2.0), 2.0) * std::sin(2.0*i_theta) * std::pow(std::cos(i_theta), 2.0) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			SphereData_Physical v_phys(sphereDataConfig);
+			v_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k/2.0 * std::sin(i_lambda) * std::pow(std::cos(i_theta), 3.0) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			u_phys *= u0;
+			v_phys *= u0;
+
+			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
+			return;
+		}
+
+		if (	simVars->benchmark.benchmark_name == "nair_lauritzen_case_4"	||
+				simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_2"
+		)
+		{
+			// time for total deformation: 12 days
+			double T = 12.0*24.0*60.0*60.0;
+
+			// velocity
+			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+
+			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
+			double k = 2;
+
+
+			SphereData_Physical u_phys(sphereDataConfig);
+			u_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					io_data = 0;
+
+					// washing machine
+					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
+					io_data += k * std::pow(std::sin(lambda_prime), 2.0) * std::sin(2.0*i_theta) * std::cos(M_PI*i_timestamp/T);
+
+					// add a constant zonal flow
+					// non-dimensional version
+					//io_data += 2.0*M_PI*std::cos(i_theta)/T;
+					io_data += std::cos(i_theta);
+				}
+			);
+
+			SphereData_Physical v_phys(sphereDataConfig);
+			v_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					io_data = 0;
+
+					// washing machine
+					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
+					io_data += k * std::sin(2.0*lambda_prime) * std::cos(i_theta) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			u_phys *= u0;
+			v_phys *= u0;
+
+			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
+			return;
+		}
+
+		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_3")
+		{
+			/*
+			 * This is a modified case4 version to include the nonlinear divergence
+			 */
+
+			// time for total deformation: 12 days
+			double T = 12.0*24.0*60.0*60.0;
+
+			// velocity
+			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+
+			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
+			double k = 2;
+
+
+			SphereData_Physical u_phys(sphereDataConfig);
+			u_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					io_data = 0;
+
+					// washing machine
+					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
+					io_data += -k * std::pow(std::sin(lambda_prime/2.0), 2.0) * std::sin(2.0*i_theta) * std::pow(std::cos(i_theta), 2.0) * std::cos(M_PI*i_timestamp/T);
+
+					// add a constant zonal flow
+					// non-dimensional version
+					//io_data += 2.0*M_PI*std::cos(i_theta)/T;
+					io_data += std::cos(i_theta);
+				}
+			);
+
+			SphereData_Physical v_phys(sphereDataConfig);
+			v_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					io_data = 0;
+
+					// washing machine
+					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
+					io_data += k/2.0 * std::sin(lambda_prime) * std::pow(std::cos(i_theta), 3.0) * std::cos(M_PI*i_timestamp/T);
+				}
+			);
+
+			u_phys *= u0;
+			v_phys *= u0;
+
+			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
+			return;
+		}
+	}
+
+
+	/*
+	 * Compute the initial condition at t=0
+	 *
+	 * If there's a time-varying field change of fields available via
+	 * 	compute_analytical_solution_pert(...)
+	 * throughout all time steps, return true
+	 */
+	void compute_initial_condition_pert(
+			SphereData_Spectral &o_phi_pert,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div,
+			bool *o_time_varying_fields = nullptr
 	)
 	{
+		const SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
+
+		if (o_time_varying_fields != nullptr)
+			*o_time_varying_fields = false;
+
 		double gh0 = simVars->sim.gravitation*simVars->sim.h0;
 
 		if (simVars == nullptr)
@@ -302,7 +561,129 @@ public:
 		if (simVars->benchmark.benchmark_name == "")
 			FatalError("Benchmark name not specified!");
 
-		const SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
+		if (
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_1"	||
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_2"	||
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_2_k0.5"	||
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_3"	||
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_4"	||
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_2"	||
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_3"
+		)
+		{
+			/*
+			 * Time-varying benchmark case 4 from
+			 *
+			 * R. Nair, P. Lauritzen "A class of deformational flow
+			 * test cases for linear transport problems on the sphere"
+			 */
+
+			/*
+			 * Setup parameters
+			 */
+			simVars->sim.sphere_radius = 6.37122e6;
+			simVars->sim.h0 = 1000.0;
+			gh0 = simVars->sim.gravitation*simVars->sim.h0;
+
+			// update operators
+			op->setup(sphereDataConfig, &(simVars->sim));
+
+			//double i_exp_fac = 10.0;
+			double b0 = 5.0;
+
+			double i_lambda0 = M_PI/3;
+			double i_theta0 = M_PI;
+			double i_lambda1 = -M_PI/3;
+			double i_theta1 = M_PI;
+
+			if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_1")
+			{
+				i_lambda0 = M_PI;
+				i_theta0 = M_PI/3;
+				i_lambda1 = M_PI;
+				i_theta1 = -M_PI/3;
+			}
+			else if (
+					simVars->benchmark.benchmark_name == "nair_lauritzen_case_2" ||
+					simVars->benchmark.benchmark_name == "nair_lauritzen_case_4" ||
+					simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_2"
+			)
+			{
+				i_lambda0 = 5*M_PI/6.0;
+				i_theta0 = 0;
+				i_lambda1 = 7*M_PI/6.0;
+				i_theta1 = 0;
+			}
+			else if (
+					simVars->benchmark.benchmark_name == "nair_lauritzen_case_3" ||
+					simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_3"
+			)
+			{
+				i_lambda0 = 3*M_PI/4.0;
+				i_theta0 = 0;
+				i_lambda1 = 5*M_PI/4.0;
+				i_theta1 = 0;
+			}
+
+			SphereData_Physical phi_pert_phys_1(sphereDataConfig);
+			{
+				// Bump 1
+
+				// Caption Figure 1
+				double x0[3];
+				SWEETMath::latlon_to_cartesian(i_lambda0, i_theta0, x0);
+
+				phi_pert_phys_1.physical_update_lambda(
+					[&](double i_lambda, double i_theta, double &io_data)
+					{
+						double x[3];
+						SWEETMath::latlon_to_cartesian(i_lambda, i_theta, x);
+
+						double d =	(x[0] - x0[0])*(x[0] - x0[0]) +
+									(x[1] - x0[1])*(x[1] - x0[1]) +
+									(x[2] - x0[2])*(x[2] - x0[2]);
+
+						io_data = std::exp(-b0*d);
+					}
+				);
+			}
+
+			SphereData_Physical phi_pert_phys_2(sphereDataConfig);
+			{
+				// Bump 2
+
+				// Caption Figure 1
+				double x0[3];
+				SWEETMath::latlon_to_cartesian(i_lambda1, i_theta1, x0);
+
+				phi_pert_phys_2.physical_update_lambda(
+					[&](double i_lambda, double i_theta, double &io_data)
+					{
+					double x[3];
+					SWEETMath::latlon_to_cartesian(i_lambda, i_theta, x);
+
+					double d =	(x[0] - x0[0])*(x[0] - x0[0]) +
+								(x[1] - x0[1])*(x[1] - x0[1]) +
+								(x[2] - x0[2])*(x[2] - x0[2]);
+
+					io_data = std::exp(-b0*d);
+					}
+				);
+			}
+
+			o_phi_pert.loadSphereDataPhysical(phi_pert_phys_1 + phi_pert_phys_2);
+
+			// NO GRAVITATION!!!
+			o_phi_pert *= simVars->sim.h0;//*simVars->sim.gravitation;
+
+			update_time_varying_fields_pert(o_phi_pert, o_vrt, o_div, 0);
+
+			if (o_time_varying_fields != nullptr)
+				*o_time_varying_fields = true;
+
+			return;
+		}
+
 
 		if (simVars->benchmark.benchmark_name == "gaussian_bump_advection")
 		{
@@ -358,7 +739,6 @@ public:
 				{
 					FatalError("Non-existing external field requested!");
 				}
-				return;
 			};
 
 
@@ -422,8 +802,9 @@ public:
 			}
 
 			// setup velocities with initial time stamp
-			callback_external_forces_advection_field(1, simVars->timecontrol.current_simulation_time, &o_vort, this);
+			callback_external_forces_advection_field(1, simVars->timecontrol.current_simulation_time, &o_vrt, this);
 			callback_external_forces_advection_field(2, simVars->timecontrol.current_simulation_time, &o_div, this);
+
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "williamson1"		||
@@ -491,10 +872,11 @@ public:
 				}
 			);
 
-			o_vort = op->laplace(stream_function);
+			o_vrt = op->laplace(stream_function);
 			o_div.spectral_set_zero();
 
 			o_phi_pert -= gh0;
+
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "williamson1b"		||
@@ -564,11 +946,11 @@ public:
 				}
 			);
 
-			o_vort = op->laplace(stream_function);
+			o_vrt = op->laplace(stream_function);
 
 #else
 
-			o_vort.physical_update_lambda(
+			o_vrt.physical_update_lambda(
 				[&](double i_lon, double i_lat, double &io_data)
 				{
 					double i_theta = i_lat;
@@ -582,6 +964,7 @@ public:
 			o_div.spectral_set_zero();
 
 			o_phi_pert -= gh0;
+
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "galewsky" ||			///< Standard Galewsky benchmark
@@ -685,11 +1068,11 @@ public:
 					}
 				);
 
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->robert_uv_to_vortdiv(ug, vg, o_vrt, o_div);
 			}
 			else
 			{
-				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->uv_to_vortdiv(ug, vg, o_vrt, o_div);
 			}
 
 			bool use_analytical_geostrophic_setup = simVars->misc.comma_separated_tags.find("galewsky_analytical_geostrophic_setup") != std::string::npos;
@@ -698,7 +1081,7 @@ public:
 			{
 				std::cout << "[MULE] use_analytical_geostrophic_setup: 1" << std::endl;
 				computeGeostrophicBalance_nonlinear(
-						o_vort,
+						o_vrt,
 						o_div,
 						o_phi_pert
 				);
@@ -871,6 +1254,7 @@ public:
 			std::cout << gh0 << std::endl;
 			std::cout << "phi min: " << o_phi_pert.getSphereDataPhysical().physical_reduce_min() << std::endl;
 			std::cout << "phi max: " << o_phi_pert.getSphereDataPhysical().physical_reduce_max() << std::endl;
+
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "williamson4"		||
@@ -937,16 +1321,16 @@ public:
 					}
 				);
 
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->robert_uv_to_vortdiv(ug, vg, o_vrt, o_div);
 			}
 			else
 			{
-				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->uv_to_vortdiv(ug, vg, o_vrt, o_div);
 			}
 
 			SphereData_Physical hg(o_phi_pert.sphereDataConfig);
 			computeGeostrophicBalance_nonlinear(
-					o_vort,
+					o_vrt,
 					o_div,
 					o_phi_pert
 			);
@@ -1019,21 +1403,22 @@ public:
 					}
 				);
 
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->robert_uv_to_vortdiv(ug, vg, o_vrt, o_div);
 			}
 			else
 			{
-				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->uv_to_vortdiv(ug, vg, o_vrt, o_div);
 			}
 
 			SphereData_Physical hg(o_phi_pert.sphereDataConfig);
 			computeGeostrophicBalance_nonlinear(
-					o_vort,
+					o_vrt,
 					o_div,
 					o_phi_pert
 			);
 
 			o_phi_pert -= gh0;
+
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "williamson7"	||
@@ -1046,10 +1431,11 @@ public:
 		{
 			o_phi_pert.spectral_set_zero();
 			o_phi_pert += simVars->sim.h0*simVars->sim.gravitation;
-			o_vort.spectral_set_zero();
+			o_vrt.spectral_set_zero();
 			o_div.spectral_set_zero();
 
 			o_phi_pert -= gh0;
+
 		}
 		else if (simVars->benchmark.benchmark_name == "gaussian_bumps2" || simVars->benchmark.benchmark_name == "three_gaussian_bumps")
 		{
@@ -1100,8 +1486,8 @@ public:
 			o_phi_pert *= 0.1;
 
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
-			o_vort.loadSphereDataPhysical(tmp);
-			o_vort *= -1e-8;
+			o_vrt.loadSphereDataPhysical(tmp);
+			o_vrt *= -1e-8;
 			//o_vort *= 0;
 			BenchmarkGaussianDam::setup_initial_conditions_gaussian_normalized(tmp, *simVars, 2.0*M_PI*0.1, M_PI/3, 1.0);
 			o_div.loadSphereDataPhysical(tmp);
@@ -1113,13 +1499,14 @@ public:
 			SphereData_Physical ug(o_phi_pert.sphereDataConfig);
 			SphereData_Physical vg(o_phi_pert.sphereDataConfig);
 			if (simVars->misc.sphere_use_robert_functions)
-				op->robert_vortdiv_to_uv(o_vort, o_div, ug, vg);
+				op->robert_vortdiv_to_uv(o_vrt, o_div, ug, vg);
 			else
-				op->vortdiv_to_uv(o_vort, o_div, ug, vg);
+				op->vortdiv_to_uv(o_vrt, o_div, ug, vg);
 			if (simVars->misc.sphere_use_robert_functions)
-				op->robert_uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->robert_uv_to_vortdiv(ug, vg, o_vrt, o_div);
 			else
-				op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+				op->uv_to_vortdiv(ug, vg, o_vrt, o_div);
+
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "williamson2"			||
@@ -1216,7 +1603,7 @@ public:
 				}
 			);
 
-			op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+			op->uv_to_vortdiv(ug, vg, o_vrt, o_div);
 
 
 
@@ -1251,7 +1638,7 @@ public:
 				}
 			);
 
-			double vort_diff = (o_vort.getSphereDataPhysical() - vortg).physical_reduce_max_abs();
+			double vort_diff = (o_vrt.getSphereDataPhysical() - vortg).physical_reduce_max_abs();
 			if (vort_diff > 1e-12)
 			{
 
@@ -1268,7 +1655,7 @@ public:
 				std::cout << "[MULE] geostrophic_balance_analytical_setup: 1" << std::endl;
 
 				computeGeostrophicBalance_nonlinear(
-						o_vort,
+						o_vrt,
 						o_div,
 						o_phi_pert
 				);
@@ -1292,6 +1679,7 @@ public:
 
 				o_phi_pert.loadSphereDataPhysical(phig);
 			}
+
 		}
 
 		else if (
@@ -1353,7 +1741,7 @@ public:
 				}
 			);
 
-			op->uv_to_vortdiv(ug, vg, o_vort, o_div);
+			op->uv_to_vortdiv(ug, vg, o_vrt, o_div);
 
 
 
@@ -1388,7 +1776,7 @@ public:
 				}
 			);
 
-			double vort_diff = (o_vort.getSphereDataPhysical() - vortg).physical_reduce_max_abs();
+			double vort_diff = (o_vrt.getSphereDataPhysical() - vortg).physical_reduce_max_abs();
 			if (vort_diff > 1e-12)
 			{
 
@@ -1400,7 +1788,7 @@ public:
 			std::cout << "[MULE] geostrophic_balance_analytical_setup: 1" << std::endl;
 
 			computeGeostrophicBalance_linear(
-					o_vort,
+					o_vrt,
 					o_div,
 					o_phi_pert
 			);

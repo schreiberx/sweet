@@ -211,7 +211,7 @@ void cinitial(
 	// get the initial condition in phi, vort, and div
 	benchmarks->setup(*simVars,
 			*op_nodealiasing);
-	benchmarks->setupInitialConditions_pert(phi_Y_nodealiasing,
+	benchmarks->compute_initial_condition_pert(phi_Y_nodealiasing,
 			vort_Y_nodealiasing,
 			div_Y_nodealiasing);
 

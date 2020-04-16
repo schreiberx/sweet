@@ -15,6 +15,7 @@
 #include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereTimestepping_SemiLagrangian.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 
 #include "Adv_Sphere_TS_interface.hpp"
 
@@ -29,9 +30,7 @@ class Adv_Sphere_TS_na_sl	: public Adv_Sphere_TS_interface
 	SphereOperators_Sampler_SphereDataPhysical sampler2D;
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 
-
-	SphereData_Physical diag_u, diag_v;
-	SphereData_Physical diag_u_prev, diag_v_prev;
+	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
 
 	/**
@@ -54,8 +53,11 @@ public:
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
+			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+
+			// for varying velocity fields
+			const SWESphereBenchmarksCombined *i_sphereBenchmarks
 	);
 
 
