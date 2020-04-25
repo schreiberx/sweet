@@ -29,7 +29,7 @@ class SWE_Sphere_TS_ln_erk	: public SWE_Sphere_TS_interface
 
 
 private:
-	void euler_timestep_update(
+	void euler_timestep_update_nonpert(
 			const SphereData_Spectral &i_phi,	///< prognostic variables
 			const SphereData_Spectral &i_vort,	///< prognostic variables
 			const SphereData_Spectral &i_div,	///< prognostic variables

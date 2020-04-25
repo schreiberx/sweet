@@ -52,10 +52,11 @@ public:
 	SphereData_Physical(
 			const SphereData_Config *i_sphereDataConfig
 	)	:
+		/// important: set this to nullptr, since a check for this will be performed by setup(...)
 		sphereDataConfig(i_sphereDataConfig),
 		physical_space_data(nullptr)
 	{
-		setup(i_sphereDataConfig);
+		alloc_data();
 	}
 
 
@@ -76,7 +77,7 @@ public:
 
 	{
 		if (i_sph_data.sphereDataConfig != nullptr)
-			setup(i_sph_data.sphereDataConfig);
+			alloc_data();
 
 		operator=(i_sph_data);
 	}
@@ -92,9 +93,8 @@ public:
 		if (i_sph_data.sphereDataConfig == nullptr)
 			return;
 
-		setup(i_sph_data.sphereDataConfig);
-
-		std::swap(physical_space_data, i_sph_data.physical_space_data);
+		physical_space_data = i_sph_data.physical_space_data;
+		i_sph_data.physical_space_data = nullptr;
 	}
 
 
@@ -418,9 +418,34 @@ public:
 			const SphereData_Config *i_sphereDataConfig
 	)
 	{
-		sphereDataConfig = i_sphereDataConfig;
+		if (sphereDataConfig != nullptr)
+			FatalError("Setup called twice!");
 
+		sphereDataConfig = i_sphereDataConfig;
+		alloc_data();
+	}
+
+
+
+private:
+	void alloc_data()
+	{
+		assert(physical_space_data == nullptr);
 		physical_space_data = MemBlockAlloc::alloc<double>(sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
+	}
+
+
+
+
+public:
+	void setup_if_required(
+			const SphereData_Config *i_sphereDataConfig
+	)
+	{
+		if (sphereDataConfig != nullptr)
+			return;
+
+		setup(i_sphereDataConfig);
 	}
 
 

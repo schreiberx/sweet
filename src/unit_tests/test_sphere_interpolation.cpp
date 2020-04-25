@@ -18,6 +18,7 @@
 #include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+#include <sweet/SWEETMath.hpp>
 
 
 
@@ -127,6 +128,28 @@ public:
 			double i_exp_fac
 	)
 	{
+#if 1
+
+		double x0[3];
+		SWEETMath::latlon_to_cartesian(i_center_lon, i_center_lat, x0);
+
+		double x[3];
+		SWEETMath::latlon_to_cartesian(i_lon, i_lat, x);
+
+#if 0
+		double d =	(x[0] - x0[0])*(x[0] - x0[0])*(2.0+i_lon*0.1) +
+					(x[1] - x0[1])*(x[1] - x0[1])*(2.0+i_lat*0.1) +
+					(x[2] - x0[2])*(x[2] - x0[2])*(2.0+i_lon*i_lat*0.1);
+#else
+
+		double d =	(x[0] - x0[0])*(x[0] - x0[0])*(2.0) +
+					(x[1] - x0[1])*(x[1] - x0[1])*(3.0) +
+					(x[2] - x0[2])*(x[2] - x0[2])*(4.0);
+#endif
+
+		return std::exp(-20*d);
+
+#else
 		double center_lon = i_center_lon;
 		double center_lat = i_center_lat;
 
@@ -143,6 +166,7 @@ public:
 
 		//return std::exp(-d*d*i_exp_fac)*(1.0-(d1*d1)/(M_PI*M_PI));//*0.1*simVars.sim.h0;// + simVars.sim.h0;
 		return std::exp(-d*d*i_exp_fac);//*0.1*simVars.sim.h0;// + simVars.sim.h0;
+#endif
 	}
 
 
@@ -155,6 +179,7 @@ public:
 		SphereData_Spectral tmp_div(sphereDataConfig);
 
 		SphereData_Physical prog_h_phys(sphereDataConfig);
+
 		prog_h_phys.physical_update_lambda(
 			[&](double i_lon, double i_lat, double &o_data)
 			{
@@ -359,10 +384,11 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
+
 	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 
-
 	for (int i_gaussians = -1; i_gaussians < 9; i_gaussians++)
+	//for (int i_gaussians = 8; i_gaussians >= -1; i_gaussians--)
 	{
 		std::cout << std::endl;
 		std::cout << "*********************************************************" << std::endl;

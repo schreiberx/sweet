@@ -27,6 +27,11 @@ void SWE_Sphere_TimeSteppers::reset()
 		delete l_erk_n_erk;
 		l_erk_n_erk = nullptr;
 	}
+	if (l_erk_na_sl != nullptr)
+	{
+		delete l_erk_na_sl;
+		l_erk_na_sl = nullptr;
+	}
 	if (l_irk_n_erk != nullptr)
 	{
 		delete l_irk_n_erk;
@@ -89,6 +94,12 @@ void SWE_Sphere_TimeSteppers::reset()
 		delete ln_erk;
 		ln_erk = nullptr;
 	}
+	if (ln_erk_split_uv != nullptr)
+	{
+		delete ln_erk_split_uv;
+		ln_erk_split_uv = nullptr;
+	}
+
 
 	if (l_na_erk != nullptr)
 	{
@@ -156,6 +167,12 @@ void SWE_Sphere_TimeSteppers::reset()
 		ln_sl_settls = nullptr;
 	}
 
+	if (l_irk_na_sl_settls != nullptr)
+	{
+		delete l_irk_na_sl_settls;
+		l_irk_na_sl_settls = nullptr;
+	}
+
 	if (ln_sl_exp_settls != nullptr)
 	{
 		delete ln_sl_exp_settls;
@@ -184,6 +201,13 @@ void SWE_Sphere_TimeSteppers::setup(
 		l_erk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2);
 
 		master = &(SWE_Sphere_TS_interface&)*l_erk_n_erk;
+	}
+	else if (i_timestepping_method == "l_erk_na_sl")
+	{
+		l_erk_na_sl = new SWE_Sphere_TS_l_erk_na_sl(i_simVars, i_op);
+		l_erk_na_sl->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2);
+
+		master = &(SWE_Sphere_TS_interface&)*l_erk_na_sl;
 	}
 	else if (i_timestepping_method == "lg_erk_lc_erk")
 	{
@@ -336,6 +360,13 @@ void SWE_Sphere_TimeSteppers::setup(
 		ln_erk->setup(i_simVars.disc.timestepping_order);
 
 		master = &(SWE_Sphere_TS_interface&)*ln_erk;
+	}
+	else if (i_timestepping_method == "ln_erk_split_uv")
+	{
+		ln_erk_split_uv = new SWE_Sphere_TS_ln_erk_split_uv(i_simVars, i_op);
+		ln_erk_split_uv->setup(i_simVars.disc.timestepping_order, true, true, true, true);
+
+		master = &(SWE_Sphere_TS_interface&)*ln_erk_split_uv;
 	}
 	else if (i_timestepping_method == "l_na_erk")
 	{
@@ -493,6 +524,13 @@ void SWE_Sphere_TimeSteppers::setup(
 		}
 
 		master = &(SWE_Sphere_TS_interface&)*lg_rexi;
+	}
+	else if (i_timestepping_method == "l_irk_na_sl_settls_only")
+	{
+		l_irk_na_sl_settls= new SWE_Sphere_TS_l_irk_na_sl_settls_only(i_simVars, i_op);
+		l_irk_na_sl_settls->setup(i_simVars.disc.timestepping_order);
+
+		master = &(SWE_Sphere_TS_interface&)*l_irk_na_sl_settls;
 	}
 
 	/*

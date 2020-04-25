@@ -85,7 +85,7 @@ public:
 		if (i_sph_data.sphereDataConfig == nullptr)
 			return;
 
-		setup(i_sph_data.sphereDataConfig);
+		alloc_data();
 
 		operator=(i_sph_data);
 	}
@@ -102,9 +102,9 @@ public:
 		if (i_sph_data.sphereDataConfig == nullptr)
 			return;
 
-		setup(i_sph_data.sphereDataConfig);
+		alloc_data();
 
-		std::swap(spectral_space_data, i_sph_data.spectral_space_data);
+		spectral_space_data = i_sph_data.spectral_space_data;
 	}
 
 
@@ -440,7 +440,7 @@ public:
 
 
 
-	SphereData_Spectral operator-()
+	SphereData_Spectral operator-()	const
 	{
 		SphereData_Spectral out(sphereDataConfig);
 
@@ -619,7 +619,28 @@ public:
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
+		alloc_data();
+	}
+
+
+private:
+	void alloc_data()
+	{
+		assert(spectral_space_data == nullptr);
 		spectral_space_data = MemBlockAlloc::alloc<cplx>(sphereDataConfig->spectral_array_data_number_of_elements * sizeof(cplx));
+	}
+
+
+
+public:
+	void setup_if_required(
+		const SphereData_Config *i_sphereDataConfig
+	)
+	{
+		if (sphereDataConfig != nullptr)
+			return;
+
+		setup(i_sphereDataConfig);
 	}
 
 

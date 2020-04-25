@@ -96,7 +96,6 @@ public:
 			ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u, false);
 			ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v, false);
 
-			//local dt
 			double dt = i_dt;
 
 			//Velocity for iterations

@@ -65,12 +65,6 @@ private:
 
 	SphereData_Spectral U_phi_pert_prev, U_vort_prev, U_div_prev;
 
-	// Arrival points for semi-lag
-	ScalarDataArray pos_lon_a, pos_lat_a;
-
-	// Departure points for semi-lag
-	ScalarDataArray posx_d, posy_d;
-
 
 
 public:

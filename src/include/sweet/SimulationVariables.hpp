@@ -633,13 +633,19 @@ public:
 		double timestepping_crank_nicolson_filter = 0.5;
 
 		/// Number of iterations for semi-Lagrangian methods
-		int semi_lagrangian_max_iterations = 999;
+		int semi_lagrangian_max_iterations = 2;
+
+		/// Method to use for computing depature points
+		std::string semi_lagrangian_departure_point_method = "settls";
 
 		/// Use limiter for higher-order SL interpolation (cubic)
 		bool semi_lagrangian_interpolation_limiter = false;
 
+		/// Create pseudo points at poles for interpolation
+		bool semi_lagrangian_sampler_use_pole_pseudo_points = false;
+
 		/// Convergence threshold for semi-Lagrangian methods (set to -1 to ignore error)
-		double semi_lagrangian_convergence_threshold = 1e-8;
+		double semi_lagrangian_convergence_threshold = -1;
 
 		/// Use accurate spherical geometry (???) or approximation (Ritchie 1995)
 		double semi_lagrangian_approximate_sphere_geometry = 0;
@@ -671,7 +677,9 @@ public:
 			std::cout << " + timestepping_leapfrog_robert_asselin_filter: " << timestepping_leapfrog_robert_asselin_filter << std::endl;
 			std::cout << " + timestepping_crank_nicolson_filter: " << timestepping_crank_nicolson_filter << std::endl;
 			std::cout << " + semi_lagrangian_max_iterations: " << semi_lagrangian_max_iterations << std::endl;
+			std::cout << " + semi_lagrangian_departure_point_method: " << semi_lagrangian_departure_point_method << std::endl;
 			std::cout << " + semi_lagrangian_interpolation_limiter: " << semi_lagrangian_interpolation_limiter << std::endl;
+			std::cout << " + semi_lagrangian_sampler_use_pole_pseudo_points: " << semi_lagrangian_sampler_use_pole_pseudo_points << std::endl;
 			std::cout << " + semi_lagrangian_convergence_threshold: " << semi_lagrangian_convergence_threshold << std::endl;
 			std::cout << " + semi_lagrangian_approximate_sphere_geometry: " << semi_lagrangian_approximate_sphere_geometry << std::endl;
 			std::cout << " + plane_dealiasing (compile time): " <<
@@ -713,6 +721,11 @@ public:
 			std::cout << "							2: generate in spectral space" << std::endl;
 			std::cout << "							3: generate in spectral space with complex matrix" << std::endl;
 			std::cout << "	--semi-lagrangian-max-iterations [int]		Number of max. iterations during semi-Lagrangian time integration" << std::endl;
+			std::cout << "	--semi-lagrangian-departure-point-method [str]		'settls' (default), 'midpoint', 'std'" << std::endl;
+			std::cout << "	--semi-lagrangian-sampler-use-pole-pseudo-points [bool]" << std::endl;
+			std::cout << "								Use pseudo poles for sampling" << std::endl;
+			std::cout << "									false (default)" << std::endl;
+			std::cout << "	--semi-lagrangian-interpolation-limiter [bool]	Use limiter for cubic interpolation" << std::endl;
 			std::cout << "	--semi-lagrangian-convergence-threshold [float]	Threshold to stop iterating, Use -1 to disable" << std::endl;
 			std::cout << "	--semi-lagrangian-approximate-sphere-geometry [int]	0: no approximation, 1: Richies approximation, default: 0" << std::endl;
 
@@ -743,6 +756,12 @@ public:
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"semi-lagrangian-max-iterations", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"semi-lagrangian-departure-point-method", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"semi-lagrangian-sampler-use-pole-pseudo-points", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"semi-lagrangian-interpolation-limiter", required_argument, 0, 256+next_free_program_option};
@@ -791,23 +810,31 @@ public:
 				return 0;
 
 			case 6:
-				semi_lagrangian_interpolation_limiter = atoi(i_value);
+				semi_lagrangian_departure_point_method = i_value;
 				return 0;
 
 			case 7:
-				semi_lagrangian_convergence_threshold = atof(i_value);
+				semi_lagrangian_sampler_use_pole_pseudo_points = atoi(i_value);
 				return 0;
 
 			case 8:
-				semi_lagrangian_approximate_sphere_geometry = atof(i_value);
+				semi_lagrangian_interpolation_limiter = atoi(i_value);
 				return 0;
 
 			case 9:
+				semi_lagrangian_convergence_threshold = atof(i_value);
+				return 0;
+
+			case 10:
+				semi_lagrangian_approximate_sphere_geometry = atof(i_value);
+				return 0;
+
+			case 11:
 				space_grid_use_c_staggering = atof(i_value);
 				return 0;
 			}
 
-			return 9;
+			return 12;
 		}
 	} disc;
 
@@ -972,6 +999,9 @@ public:
 		/// number of simulated time steps
 		int current_timestep_nr = 0;
 
+		/// time step size used during setup
+		double setup_timestep_size = -1;
+
 		/// current time step size
 		double current_timestep_size = -1;
 
@@ -991,6 +1021,7 @@ public:
 			std::cout << "TIMECONTROL:" << std::endl;
 			std::cout << " + run_simulation_timesteps: " << run_simulation_timesteps << std::endl;
 			std::cout << " + current_timestep_nr: " << current_timestep_nr << std::endl;
+			std::cout << " + setup_timestep_size: " << setup_timestep_size << std::endl;
 			std::cout << " + current_timestep_size: " << current_timestep_size << std::endl;
 			std::cout << " + current_simulation_time: " << current_simulation_time << std::endl;
 			std::cout << " + max_timesteps_nr: " << max_timesteps_nr << std::endl;
@@ -1018,6 +1049,7 @@ public:
 			{
 			case 0:
 				current_timestep_size = atof(i_value);
+				setup_timestep_size = current_timestep_size;
 				return 0;
 			}
 
@@ -1064,6 +1096,7 @@ public:
 
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
+		timecontrol.current_timestep_size = timecontrol.setup_timestep_size;
 
 		if ((disc.space_res_physical[0] != -1) && (disc.space_res_physical[1] != -1))
 			if ((disc.space_res_physical[0] & 1) || (disc.space_res_physical[1] & 1))

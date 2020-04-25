@@ -18,7 +18,7 @@
  * Here we need to provide the nonequidistantly coordinates of the interpolation points.
  */
 template <int N>
-double interpolation_hermite_nonequidistant(
+double interpolation_lagrange_nonequidistant(
     double *x,    /// interpolation points
     double *y,    /// interpolation values
     double x_sample /// sample position
@@ -56,7 +56,7 @@ double interpolation_hermite_nonequidistant(
  * Here we assume the equidistantly spaced points starting at 0
  */
 template <int N>
-double interpolation_hermite_equidistant(
+double interpolation_lagrange_equidistant(
     double *y,    /// interpolation values
     double x_sample /// sample position
 )

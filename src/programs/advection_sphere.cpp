@@ -43,6 +43,9 @@ public:
 	SphereData_Spectral prog_phi_pert_t0;	// at t0
 	SphereData_Spectral prog_vort, prog_div;
 
+	SphereData_Physical prog_phi_pert_phys;
+	SphereData_Physical prog_phi_pert_phys_t0;	// at t0
+
 	Adv_Sphere_TimeSteppers timeSteppers;
 
 
@@ -64,6 +67,9 @@ public:
 		prog_phi_pert(sphereDataConfig),
 		prog_phi_pert_t0(sphereDataConfig),
 
+		prog_phi_pert_phys(sphereDataConfig),
+		prog_phi_pert_phys_t0(sphereDataConfig),
+
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
 
@@ -82,8 +88,9 @@ public:
 	~SimulationInstance()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_rms() << std::endl;
+		std::cout << "Lmax error spec: " << (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
+		std::cout << "Lmax error phys: " << (prog_phi_pert_phys_t0-prog_phi_pert_phys).physical_reduce_max_abs() << std::endl;
+		//std::cout << "RMS error: " << (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_rms() << std::endl;
 	}
 
 
@@ -96,19 +103,19 @@ public:
 		SphereData_Spectral tmp_div(sphereDataConfig);
 
 		sphereBenchmarks.setup(simVars, op);
-		sphereBenchmarks.compute_initial_condition_pert(prog_phi_pert, prog_vort, prog_div, &time_varying_fields);
+		sphereBenchmarks.compute_initial_condition_pert(
+				prog_phi_pert, prog_vort, prog_div,
+				&prog_phi_pert_phys,
+				&time_varying_fields
+			);
 
 		prog_phi_pert_t0 = prog_phi_pert;
+		prog_phi_pert_phys_t0 = prog_phi_pert_phys;
 
 		// setup sphereDataconfig instance again
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
-
-		if (time_varying_fields)
-		{
-
-		}
 
 		simVars.outputConfig();
 	}
@@ -117,6 +124,9 @@ public:
 
 	void run_timestep()
 	{
+		SphereData_DebugContainer::clear();
+
+
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
@@ -130,7 +140,8 @@ public:
 				prog_phi_pert, prog_vort, prog_div,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time,
-				(time_varying_fields ? &sphereBenchmarks : nullptr)
+				(time_varying_fields ? &sphereBenchmarks : nullptr),
+				prog_phi_pert_phys
 			);
 
 		double dt = simVars.timecontrol.current_timestep_size;
@@ -141,12 +152,18 @@ public:
 
 		if (simVars.misc.verbosity > 2)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
+
+		SphereData_DebugContainer::append(prog_phi_pert_t0-prog_phi_pert, "diff phi0");
+		SphereData_DebugContainer::append(prog_phi_pert_phys_t0-prog_phi_pert_phys, "diff phi0_phys");
 	}
 
 
 
 	bool should_quit()
 	{
+		if (simVars.misc.gui_enabled)
+			return false;
+
 		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
 			return true;
 
@@ -267,28 +284,31 @@ public:
 			}
 		}
 
-		switch (id)
+		if (!found)
 		{
-		default:
-		case 0:
-			description = "H";
-			break;
+			switch (id)
+			{
+			default:
+			case 0:
+				description = "H";
+				break;
 
-		case 1:
-			description = "vort";
-			break;
+			case 1:
+				description = "vort";
+				break;
 
-		case 2:
-			description = "div";
-			break;
+			case 2:
+				description = "div";
+				break;
 
-		case 3:
-			description = "u";
-			break;
+			case 3:
+				description = "u";
+				break;
 
-		case 4:
-			description = "v";
-			break;
+			case 4:
+				description = "v";
+				break;
+			}
 		}
 
 
@@ -296,7 +316,9 @@ public:
 
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 		sprintf(title_string,
-				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e "
+				","
+				"Colorscale: lowest [Blue... green ... red] highest",
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
 				simVars.timecontrol.current_timestep_nr,

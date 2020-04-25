@@ -36,6 +36,9 @@ private:
 	// lookup table with latitudinal angles extended by 2 at front and back
 	std::vector<double> phi_lookup;
 
+	// lookup table using pseudo points at poles
+	std::vector<double> phi_lookup_pseudo_points;
+
 #if 0
 	// distance between phi angles
 	std::vector<double> phi_dist;
@@ -65,6 +68,22 @@ public:
 	}
 
 
+	/*
+	 * Handler to sampling data, but with assertions
+	 */
+	inline
+	double sampling_data_(
+			int j,		// row
+			int i		// col
+	)
+	{
+		int num_lon = sphereDataConfig->physical_num_lon;
+		int num_lat = sphereDataConfig->physical_num_lat;
+		assert((i >= 0 && i < num_lon));
+		assert((j >= 0 && j < (num_lat+4)));
+
+		return sampling_data[j*num_lon + i];
+	}
 
 public:
 	void setup(
@@ -82,6 +101,10 @@ public:
 		 * Use extended lat/lon lookup table to avoid if brances
 		 */
 		ext_lat_M = sphereDataConfig->physical_num_lat+4;
+
+		/*
+		 * Regular phi lookup
+		 */
 		phi_lookup.resize(ext_lat_M);
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lat; i++)
@@ -92,10 +115,29 @@ public:
 		phi_lookup[ext_lat_M-1] = -M_PI - phi_lookup[ext_lat_M-4];
 		phi_lookup[ext_lat_M-2] = -M_PI - phi_lookup[ext_lat_M-3];
 
+
+		/*
+		 * Phi lookup with pseudo points at the poles
+		 */
+		phi_lookup_pseudo_points.resize(ext_lat_M);
+
+		for (int i = 0; i < sphereDataConfig->physical_num_lat; i++)
+			phi_lookup_pseudo_points[i+2] = sphereDataConfig->lat[i];
+
+		phi_lookup_pseudo_points[0] = M_PI - phi_lookup_pseudo_points[2];
+		phi_lookup_pseudo_points[1] = M_PI*0.5;	// northpole
+		phi_lookup_pseudo_points[ext_lat_M-1] = -M_PI - phi_lookup_pseudo_points[ext_lat_M-3];
+		phi_lookup_pseudo_points[ext_lat_M-2] = -M_PI*0.5;	// southpole
+
 #if 0
 		for (int i = 0; i < sphereDataConfig->physical_num_lat+4; i++)
 			std::cout << phi_lookup[i] << std::endl;
-		exit(-1);
+		std::cout << std::endl;
+
+		for (int i = 0; i < sphereDataConfig->physical_num_lat+4; i++)
+			std::cout << phi_lookup_pseudo_points[i] << std::endl;
+		std::cout << std::endl;
+exit(-1);
 #endif
 
 
@@ -103,9 +145,7 @@ public:
 		 * Test for proper cubic interpolation
 		 */
 		double a[4] = {1.0, 2.0, 3.0, 4.0};
-
 		double x0 = 1.3;
-
 		auto f = [&](double x) -> double
 		{
 			return a[0] + x*a[1] + x*x*a[2] + x*x*x*a[3];
@@ -114,7 +154,7 @@ public:
 		double x[4] = {0.1, 0.2, 0.4, 0.8};
 		double y[4] = {f(x[0]), f(x[1]), f(x[2]), f(x[3])};
 
-		double retval = interpolation_hermite_nonequidistant<4>(x, y, x0);
+		double retval = interpolation_lagrange_nonequidistant<4>(x, y, x0);
 
 		if (std::abs(retval - f(x0)) > 1e-10)
 			FatalError("Cubic interpolation Buggy!!!");
@@ -124,9 +164,16 @@ public:
 
 	void updateSamplingData(
 			const SphereData_Physical &i_data,
-			bool i_velocity_sampling = false
+			bool i_velocity_sampling = false,
+			bool i_pole_pseudo_points = false
 	)
 	{
+#if SWEET_DEBUG
+		if (i_pole_pseudo_points && i_velocity_sampling)
+			FatalError("Not supported yet (or it doesn't make sense)!");
+#endif
+
+		// resize to store 4 additional rows (2 for north and 2 for south pole)
 		sampling_data.resize(sphereDataConfig->physical_num_lon*(sphereDataConfig->physical_num_lat+4));
 
 		int num_lon = sphereDataConfig->physical_num_lon;
@@ -140,14 +187,47 @@ public:
 		{
 			// first block
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[i] = i_data.physical_space_data[num_lon + num_lon_d2 + i];
+				sampling_data[0*num_lon + i] = i_data.physical_space_data[1*num_lon + num_lon_d2 + i];
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[num_lon_d2 + i] = i_data.physical_space_data[num_lon + i];
+				sampling_data[0*num_lon + num_lon_d2 + i] = i_data.physical_space_data[1*num_lon + i];
 
+			// second block
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[num_lon + i] = i_data.physical_space_data[num_lon_d2 + i];
+				sampling_data[1*num_lon + i] = i_data.physical_space_data[0*num_lon + num_lon_d2 + i];
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[num_lon + num_lon_d2 + i] = i_data.physical_space_data[i];
+				sampling_data[1*num_lon + num_lon_d2 + i] = i_data.physical_space_data[0*num_lon + i];
+
+			if (i_pole_pseudo_points)
+			{
+				// compute average
+				double a = 0;
+				for (int i = 0; i < num_lon; i++)
+				{
+#if 0
+					a += 0.5*(sampling_data[1*num_lon + i] + sampling_data[2*num_lon + i]);
+#else
+					double q[4];
+					for (int j = 0; j < 4; j++)
+						q[j] = sampling_data[j*num_lon + i];
+
+					a += interpolation_lagrange_nonequidistant<4>(&phi_lookup[0], q, phi_lookup_pseudo_points[1]);
+#endif
+				}
+
+				// average all points
+				a /= num_lon;
+
+				// store
+				for (int i = 0; i < num_lon; i++)
+				{
+					// copy 2nd last row to last row
+					sampling_data[0*num_lon + i] = sampling_data[1*num_lon + i];
+
+					// fill in avg values at pole
+					sampling_data[1*num_lon + i] = a;
+				}
+
+			}
 		}
 		else
 		{
@@ -157,6 +237,7 @@ public:
 			for (int i = 0; i < num_lon_d2; i++)
 				sampling_data[num_lon_d2 + i] = -i_data.physical_space_data[num_lon + i];
 
+			// second block
 			for (int i = 0; i < num_lon_d2; i++)
 				sampling_data[num_lon + i] = -i_data.physical_space_data[num_lon_d2 + i];
 			for (int i = 0; i < num_lon_d2; i++)
@@ -164,21 +245,42 @@ public:
 		}
 
 		for (int i = 0; i < num_lon*num_lat; i++)
-			sampling_data[i + num_lon*2] = i_data.physical_space_data[i];
+			sampling_data[2*num_lon + i] = i_data.physical_space_data[i];
 
 
 		if (!i_velocity_sampling)
 		{
 			// last block
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[num_lon*(num_lat+2) + i] = i_data.physical_space_data[num_lon*(num_lat-1) + num_lon_d2 + i];
+				sampling_data[(num_lat+2)*num_lon + i] = i_data.physical_space_data[(num_lat-1)*num_lon + num_lon_d2 + i];
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[num_lon*(num_lat+2) + num_lon_d2 + i] = i_data.physical_space_data[num_lon*(num_lat-1) + i];
+				sampling_data[(num_lat+2)*num_lon + num_lon_d2 + i] = i_data.physical_space_data[(num_lat-1)*num_lon + i];
 
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[num_lon*(num_lat+3) + i] = i_data.physical_space_data[num_lon*(num_lat-2) + num_lon_d2 + i];
+				sampling_data[(num_lat+3)*num_lon + i] = i_data.physical_space_data[(num_lat-2)*num_lon + num_lon_d2 + i];
 			for (int i = 0; i < num_lon_d2; i++)
-				sampling_data[num_lon*(num_lat+3) + num_lon_d2 + i] = i_data.physical_space_data[num_lon*(num_lat-2) + i];
+				sampling_data[(num_lat+3)*num_lon + num_lon_d2 + i] = i_data.physical_space_data[(num_lat-2)*num_lon + i];
+
+			if (i_pole_pseudo_points)
+			{
+				// compute average
+				double a = 0;
+				for (int i = 0; i < num_lon; i++)
+					a += 0.5*(sampling_data[(num_lat+1)*num_lon + i] + sampling_data[(num_lat+2)*num_lon + i]);
+
+				// average all points
+				a /= num_lon;
+
+				// store
+				for (int i = 0; i < num_lon; i++)
+				{
+					// copy 2nd last row to last row
+					sampling_data[(num_lat+3)*num_lon + i] = sampling_data[(num_lat+2)*num_lon + i];
+
+					// fill in avg values at pole
+					sampling_data[(num_lat+2)*num_lon + i] = a;
+				}
+			}
 		}
 		else
 		{
@@ -209,8 +311,13 @@ public:
 #if 1
 
 		i = fmod(i, i_res);
+
 		if (i < 0)
 			i += i_res;
+
+		// if i = -1e-14, then there's the special case if i==i_res
+		if (i >= i_res)
+			i = 0;
 
 #else
 
@@ -227,29 +334,33 @@ public:
 	}
 
 
+
 public:
 	void bicubic_scalar(
 			const SphereData_Physical &i_data,			///< sampling data
 
-			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
+			const ScalarDataArray &i_pos_lon,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_lat,		///< y positions of interpolation points
 
 			double *o_data,						///< output values
 			bool i_velocity_sampling,
-			bool i_limiter			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_limiter,				///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_pole_pseudo_points
 	)
 	{
 		assert(res[0] > 0);
-		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
+		assert(i_pos_lon.number_of_elements == i_pos_lat.number_of_elements);
+		assert((sphereDataConfig->physical_num_lon & 1) == 0);
 
-		updateSamplingData(i_data, i_velocity_sampling);
+		updateSamplingData(i_data, i_velocity_sampling, i_pole_pseudo_points);
 
-		int num_lon = sphereDataConfig->physical_num_lon;
-		int num_lat = sphereDataConfig->physical_num_lat;
+		std::vector<double> &phi_lookup_ = (i_pole_pseudo_points ? phi_lookup_pseudo_points : phi_lookup);
 
-		double s_lon = (double)i_data.sphereDataConfig->physical_num_lon / (2.0*M_PI);
+		// longitude angle delta
+		double dlon = (double)i_data.sphereDataConfig->physical_num_lon / (2.0*M_PI);
 
 		double L = -(-M_PI*0.5 - M_PI/ext_lat_M*1.5);
+
 		// total size of lat field (M_PI + extension)
 		// divided by number of cells
 		//double s = (M_PI+M_PI/ext_lat_M*3)/(double)(ext_lat_M-1);
@@ -259,36 +370,62 @@ public:
 #if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
-		for (std::size_t pos_idx = 0; pos_idx < i_pos_x.number_of_elements; pos_idx++)
+		for (std::size_t pos_idx = 0; pos_idx < i_pos_lon.number_of_elements; pos_idx++)
 		{
-			/*
-			 * Compute X array position
-			 */
+			// load scalars
+			double pos_lat = i_pos_lat.scalar_data[pos_idx];
+			double pos_lon = i_pos_lon.scalar_data[pos_idx];
 
-			double array_x = wrapPeriodic(i_pos_x.scalar_data[pos_idx]*s_lon, (double)res[0]);
+			/*
+			 * We first ensure that the lon position is within [-0.5*pi; 0.5*pi]
+			 * Otherwise, we correct it
+			 */
+#if 1
+			if (pos_lat > M_PI*0.5)
+			{
+				std::cout << "TODO: Validate this since this special case is not yet tested" << std::endl;
+				pos_lat = M_PI-pos_lat;
+				pos_lon += M_PI;
+			}
+
+			if (pos_lat < -M_PI*0.5)
+			{
+				std::cout << "TODO: Validate this since this special case is not yet tested" << std::endl;
+				pos_lat = -M_PI-pos_lat;
+				pos_lon += M_PI;
+			}
+#endif
+
+			/*
+			 * Compute position in array
+			 */
+			double pos_array_x = wrapPeriodic(pos_lon*dlon, (double)res[0]);
+
 			// compute position relative in cell \in [0;1]
-			double cell_rel_x = array_x - std::floor(array_x);
+			double cell_rel_x = pos_array_x - std::floor(pos_array_x);
 			assert(cell_rel_x >= 0);
 			assert(cell_rel_x <= 1);
 
 			// compute array index
-			int array_idx_x = std::floor(array_x);
+			int array_idx_x = std::floor(pos_array_x);
 			assert(array_idx_x >= 0);
 			assert(array_idx_x < sphereDataConfig->physical_num_lon);
 
 			/*
 			 * Compute Y array position
 			 */
-			// estimate array index for latitude
-			double phi = i_pos_y.scalar_data[pos_idx];
-			int est_lat_idx = (L - phi)*inv_s;
+			/*
+			 * Estimate array index for latitude.
+			 * This should be off by only one cell.
+			 */
+			int est_lat_idx = (L - pos_lat)*inv_s;
 
 #if SWEET_DEBUG
 			if (!(est_lat_idx >= 0))
 			{
 				std::cout << "est_lat_idx: " << est_lat_idx << std::endl;
 				std::cout << "L: " << L << std::endl;
-				std::cout << "phi: " << phi << std::endl;
+				std::cout << "phi: " << pos_lat << std::endl;
 				std::cout << "inv_s: " << inv_s << std::endl;
 				FatalError("est_lat_idx");
 			}
@@ -296,14 +433,14 @@ public:
 			assert(est_lat_idx >= 1);
 			assert(est_lat_idx < ext_lat_M-1);
 
-			if (phi_lookup[est_lat_idx] < phi)
+			if (phi_lookup_[est_lat_idx] < pos_lat)
 				est_lat_idx--;
-			else if (phi_lookup[est_lat_idx+1] > phi)
+			else if (phi_lookup_[est_lat_idx+1] > pos_lat)
 				est_lat_idx++;
 
 			int array_idx_y = est_lat_idx;
-			assert(array_idx_y >= 0);
-			assert(array_idx_y < ext_lat_M);
+			assert(array_idx_y >= 1);
+			assert(array_idx_y < ext_lat_M-1);
 
 
 			/**
@@ -328,16 +465,18 @@ public:
 			double q[4];
 			for (int kj = 0; kj < 4; kj++)
 			{
-				assert(idx_j >= 0);
-				assert(idx_j < num_lat+4);
 				double p[4];
 
-				p[0] = sampling_data[idx_j*num_lon + idx_i[0]];
-				p[1] = sampling_data[idx_j*num_lon + idx_i[1]];
-				p[2] = sampling_data[idx_j*num_lon + idx_i[2]];
-				p[3] = sampling_data[idx_j*num_lon + idx_i[3]];
+				p[0] = sampling_data_(idx_j, idx_i[0]);
+				p[1] = sampling_data_(idx_j, idx_i[1]);
+				p[2] = sampling_data_(idx_j, idx_i[2]);
+				p[3] = sampling_data_(idx_j, idx_i[3]);
 
-				q[kj] = interpolation_hermite_equidistant<4>(p, cell_rel_x+1.0);
+				//
+				// 0....1..x..2....3
+				//
+				assert(cell_rel_x+1.0 >= 1.0 && cell_rel_x+1.0 <= 2.0);
+				q[kj] = interpolation_lagrange_equidistant<4>(p, cell_rel_x+1.0);
 
 				if (i_limiter)
 				{
@@ -351,7 +490,8 @@ public:
 				idx_j++;
 			}
 
-			double value = interpolation_hermite_nonequidistant<4>(&phi_lookup[array_idx_y-1], q, phi);
+			assert((phi_lookup_[array_idx_y] >= pos_lat) && (phi_lookup_[array_idx_y+1] <= pos_lat));
+			double value = interpolation_lagrange_nonequidistant<4>(&phi_lookup_[array_idx_y-1], q, pos_lat);
 
 			if (i_limiter)
 			{
@@ -374,9 +514,10 @@ public:
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			SphereData_Physical &o_data,					///< output values
+			SphereData_Physical &o_data,		///< output values
 			bool i_velocity_sampling,
-			bool i_limiter			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_limiter,
+			bool i_pole_pseudo_points			///< Use limiter for interpolation to avoid unphysical local extrema
 	)
 	{
 		assert(i_data.sphereDataConfig->physical_array_data_number_of_elements == o_data.sphereDataConfig->physical_array_data_number_of_elements);
@@ -384,7 +525,7 @@ public:
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling, i_limiter);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling, i_limiter, i_pole_pseudo_points);
 	}
 
 
@@ -397,7 +538,8 @@ public:
 
 			ScalarDataArray &o_data,				///< output values
 			bool i_velocity_sampling,				///< swap sign for velocities,
-			bool i_limiter			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_limiter,			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_pole_pseudo_points
 	)
 	{
 //		assert ((std::size_t)i_data.sphereDataConfig->physical_array_data_number_of_elements == (std::size_t)o_data.number_of_elements);
@@ -405,7 +547,7 @@ public:
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == o_data.number_of_elements);
 
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling, i_limiter);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling, i_limiter, i_pole_pseudo_points);
 	}
 
 
@@ -418,11 +560,12 @@ public:
 			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
 
 			bool i_velocity_sampling,				///< swap sign for velocities
-			bool i_limiter			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_limiter,			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_pole_pseudo_points
 	)
 	{
 		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling, i_limiter);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling, i_limiter, i_pole_pseudo_points);
 		return out;
 	}
 
@@ -439,11 +582,12 @@ public:
 	{
 		assert(res[0] > 0);
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
+		assert((sphereDataConfig->physical_num_lon & 1) == 0);
 
 		// copy the data to an internal buffer including halo layers
 		updateSamplingData(i_data, i_velocity_sampling);
 
-		int num_lon = sphereDataConfig->physical_num_lon;
+		//int num_lon = sphereDataConfig->physical_num_lon;
 		int num_lat = sphereDataConfig->physical_num_lat;
 
 		// longitude spacing
@@ -505,14 +649,7 @@ public:
 			int array_idx_y = est_lat_idx;
 			assert(array_idx_y >= 0);
 			assert(array_idx_y < ext_lat_M);
-/*
-			// compute relative position in cell
-			double cell_rel_y = (phi - phi_lookup[array_idx_y+1]) / phi_dist[array_idx_y];
-			// flip since the coordinate system is also flipped!
-			cell_rel_y = 1.0-cell_rel_y;
-			assert(cell_rel_y >= 0);
-			assert(cell_rel_y <= 1);
-*/
+
 			assert(phi_lookup[array_idx_y] >= phi);
 			assert(phi_lookup[array_idx_y+1] <= phi);
 
@@ -541,16 +678,17 @@ public:
 				assert(idx_j < num_lat+4);
 				double p[2];
 
-				p[0] = sampling_data[idx_j*num_lon + idx_i[0]];
-				p[1] = sampling_data[idx_j*num_lon + idx_i[1]];
+				p[0] = sampling_data_(idx_j, idx_i[0]);
+				p[1] = sampling_data_(idx_j, idx_i[1]);
 
-				q[kj] = interpolation_hermite_equidistant<2>(p, cell_rel_x);
+				assert(0.0 <= cell_rel_x && cell_rel_x <= 1.0);
+				q[kj] = interpolation_lagrange_equidistant<2>(p, cell_rel_x);
 
 				idx_j++;
 			}
 
 			// interpolation in y direction
-			double value = interpolation_hermite_nonequidistant<2>(&phi_lookup[array_idx_y], q, phi);
+			double value = interpolation_lagrange_nonequidistant<2>(&phi_lookup[array_idx_y], q, phi);
 
 			o_data[pos_idx] = value;
 		}
@@ -586,6 +724,7 @@ public:
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
+		assert(o_data.physical_space_data != nullptr);
 
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_velocity_sampling);
 	}
@@ -598,7 +737,7 @@ public:
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			bool i_velocity_sampling			///< swap sign for velocities
+			bool i_velocity_sampling			///< swap sign for velocities in halo regions
 	)
 	{
 		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);

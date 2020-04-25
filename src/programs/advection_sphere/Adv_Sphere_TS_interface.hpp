@@ -26,7 +26,8 @@ public:
 			double i_simulation_timestamp,
 
 			// for varying velocity fields, set to nullptr if velocity fields shouldn't be updated
-			const SWESphereBenchmarksCombined *i_sphereBenchmarks
+			const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+			SphereData_Physical &io_U_phi_phys
 	) = 0;
 };
 

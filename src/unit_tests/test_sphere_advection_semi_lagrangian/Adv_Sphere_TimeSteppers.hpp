@@ -5,22 +5,25 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TIMESTEPPERS_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TIMESTEPPERS_HPP_
+#ifndef SRC_PROGRAMS_ADV_SPHERE_TIMESTEPPERS_HPP_
+#define SRC_PROGRAMS_ADV_SPHERE_TIMESTEPPERS_HPP_
 
-#include "../advection_sphere/Adv_Sphere_TS_interface.hpp"
+#include "Adv_Sphere_TS_interface.hpp"
 #include "Adv_Sphere_TS_na_erk.hpp"
 #include "Adv_Sphere_TS_na_sl.hpp"
+#include "Adv_Sphere_TS_na_trajectories.hpp"
+
 
 
 /**
- * SWE Plane time steppers
+ * SWE Sphere time steppers
  */
 class Adv_Sphere_TimeSteppers
 {
 public:
 	Adv_Sphere_TS_na_erk *na_erk = nullptr;
 	Adv_Sphere_TS_na_sl *na_sl = nullptr;
+	Adv_Sphere_TS_na_trajectories *na_trajectories = nullptr;
 	Adv_Sphere_TS_interface *master = nullptr;
 
 
@@ -42,7 +45,13 @@ public:
 			delete na_sl;
 			na_sl = nullptr;
 		}
-}
+
+		if (na_trajectories != nullptr)
+		{
+			delete na_trajectories;
+			na_trajectories = nullptr;
+		}
+	}
 
 
 	void setup(
@@ -65,10 +74,16 @@ public:
 
 			master = &(Adv_Sphere_TS_interface&)*na_sl;
 		}
+		else if (i_timestepping_method == "na_trajectories")
+		{
+			na_trajectories = new Adv_Sphere_TS_na_trajectories(i_simVars, i_op);
+			na_trajectories->setup(i_simVars.disc.timestepping_order);
+
+			master = &(Adv_Sphere_TS_interface&)*na_trajectories;
+		}
 		else
 		{
-			std::cout << i_timestepping_method << std::endl;
-			FatalError("No valid --timestepping-method provided");
+			FatalError(std::string("No valid --timestepping-method provided: ")+i_timestepping_method);
 		}
 	}
 

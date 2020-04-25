@@ -350,9 +350,9 @@ private:
 		/*
 		 * Colatitude is 0 at the north pole and 180 at the south pole
 		 *
-		 * WARNING: The latitude degrees are not aequidistnat spaced in the angles!!!!
+		 * WARNING: The latitude degrees are not spaced equidistantly in the angles!!!!
 		 * Those points are computed for optimal Gauss quadrature.
-		 * They are close to aequidistnat spacing, but not fully aequidistant.
+		 * They are close to equidistant spacing, but not fully equidistant.
 		 *
 		 * We have to use the shtns->ct lookup table
 		 */

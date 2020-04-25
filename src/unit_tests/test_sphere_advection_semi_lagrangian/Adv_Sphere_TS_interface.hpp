@@ -23,7 +23,11 @@ public:
 			SphereData_Spectral &io_v,	///< prognostic variables
 
 			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp
+			double i_simulation_timestamp,
+
+			// for varying velocity fields, set to nullptr if velocity fields shouldn't be updated
+			const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+			SphereData_Physical &io_U_phi_phys
 	) = 0;
 };
 

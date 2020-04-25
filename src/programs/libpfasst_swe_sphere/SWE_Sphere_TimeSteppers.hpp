@@ -8,6 +8,7 @@
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TIMESTEPPERS_HPP_
 #define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TIMESTEPPERS_HPP_
 
+#include "../swe_sphere/SWE_Sphere_TS_l_na_erk.hpp"
 #include "../swe_sphere/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 #include "SWE_Sphere_TS_interface.hpp"
 
@@ -24,7 +25,6 @@
 #include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_ln_erk.hpp"
-#include "SWE_Sphere_TS_l_na_erk.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_etdrk.hpp"
 #include "SWE_Sphere_TS_lg_rexi_lc_n_erk_ver01.hpp"

@@ -221,41 +221,11 @@ public:
 #endif
 
 			/*
-			 * Now compute the angles
+			 * Now compute the angles using atan2 (and not atan!) and acos
 			 */
-			o_lon.scalar_data[i] = std::atan(i_y.scalar_data[i]/i_x.scalar_data[i]);
-
-#if SWEET_DEBUG
-			if (	(std::isnan(o_lon.scalar_data[i]) != 0) ||
-					(std::abs(std::isinf(o_lon.scalar_data[i])) == 1)
-			)
-			{
-				std::cout << "Found nan/inf at position " << i << std::endl;
-				std::cout << "o_lon value: " << o_lon.scalar_data[i] << std::endl;
-				std::cout << "   atan(" << i_y.scalar_data[i] << ", " << i_x.scalar_data[i] << ")" << std::endl;
-				FatalError("EXIT");
-			}
-#endif
-
-			if (i_x.scalar_data[i] < 0)
-				o_lon.scalar_data[i] += M_PI;
-			else if (i_y.scalar_data[i] < 0)
-				o_lon.scalar_data[i] += M_PI*2.0;
-
+			o_lon.scalar_data[i] = std::atan2(i_y.scalar_data[i], i_x.scalar_data[i]);
 			o_lat.scalar_data[i] = std::acos(-i_z.scalar_data[i]) - M_PI*0.5;
 
-#if SWEET_DEBUG
-			if (
-					(std::isnan(o_lat.scalar_data[i]) != 0) ||
-					(std::abs(std::isinf(o_lat.scalar_data[i])) == 1)
-			)
-			{
-				std::cout << "Found nan/inf at position " << i << std::endl;
-				std::cout << "o_lat value: " << o_lat.scalar_data[i] << std::endl;
-				std::cout << "   acos(" << i_z.scalar_data[i] << ")" << std::endl;
-				FatalError("EXIT");
-			}
-#endif
 		}
 	}
 
@@ -294,6 +264,7 @@ public:
 	   i_pos_new[2] += ((1 - costheta) * i_rotation_axis[1] * i_rotation_axis[2] + i_rotation_axis[0] * sintheta) * i_pos_start[1];
 	   i_pos_new[2] += (costheta + (1 - costheta) * i_rotation_axis[2] * i_rotation_axis[2]) * i_pos_start[2];
 	}
+
 
 
 	static

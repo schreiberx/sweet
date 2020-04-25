@@ -28,7 +28,7 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_1st_order(
 
 	const SphereData_Config *sphereDataConfig = io_phi_pert.sphereDataConfig;
 
-	double dt_radius = i_dt/simVars.sim.sphere_radius;
+	//double dt_radius = i_dt/simVars.sim.sphere_radius;
 
 	if (i_dt <= 0)
 		FatalError("SWE_Sphere_TS_na_sl: Only constant time step size allowed (Please set --dt)");
@@ -67,21 +67,28 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_1st_order(
 	op.vortdiv_to_uv(io_vort, io_div, u_lon, v_lat, false);
 
 	// Departure points and arrival points
-	ScalarDataArray pos_lon_d = pos_lon_a;
-	ScalarDataArray pos_lat_d = pos_lat_a;
+	ScalarDataArray pos_lon_d(sphereDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray pos_lat_d(sphereDataConfig->physical_array_data_number_of_elements);
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			dt_radius*u_lon_prev, dt_radius*v_lat_prev,
-			dt_radius*u_lon, dt_radius*v_lat,
+			u_lon_prev, v_lat_prev,
+			u_lon, v_lat,
 
-			pos_lon_a, pos_lat_a,
+			i_dt,
+			i_simulation_timestamp,
+			simVars.sim.sphere_radius,
+			nullptr,
+
 			pos_lon_d, pos_lat_d,		// OUTPUT
+
+			op,
 
 			simVars.disc.timestepping_order,
 			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold,
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry, simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_approximate_sphere_geometry,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 
@@ -103,7 +110,8 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_1st_order(
 			pos_lat_d,
 			phi_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_interpolation_limiter,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
 		);
 
 	io_phi_pert = SphereData_Spectral(phi_D_phys);
@@ -156,7 +164,8 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_1st_order(
 			pos_lat_d,
 			u_D_phys,
 			true,
-			simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_interpolation_limiter,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
 		);
 
 	sphereSampler.bicubic_scalar(
@@ -165,7 +174,8 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_1st_order(
 			pos_lat_d,
 			v_D_phys,
 			true,
-			simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_interpolation_limiter,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
 		);
 
 
@@ -189,7 +199,7 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_2nd_order(
 
 	const SphereData_Config *sphereDataConfig = io_U_phi_pert.sphereDataConfig;
 
-	double dt_radius = i_dt/simVars.sim.sphere_radius;
+//	double dt_radius = i_dt/simVars.sim.sphere_radius;
 
 	if (i_dt <= 0)
 		FatalError("SWE_Sphere_TS_na_sl: Only constant time step size allowed (Please set --dt)");
@@ -228,21 +238,28 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_2nd_order(
 	op.vortdiv_to_uv(io_U_vort, io_U_div, u_lon, v_lat, false);
 
 	// Departure points and arrival points
-	ScalarDataArray pos_lon_d = pos_lon_a;
-	ScalarDataArray pos_lat_d = pos_lat_a;
+	ScalarDataArray pos_lon_d(sphereDataConfig->physical_array_data_number_of_elements);
+	ScalarDataArray pos_lat_d(sphereDataConfig->physical_array_data_number_of_elements);
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			dt_radius*u_lon_prev, dt_radius*v_lat_prev,
-			dt_radius*u_lon, dt_radius*v_lat,
+			u_lon_prev, v_lat_prev,
+			u_lon, v_lat,
 
-			pos_lon_a, pos_lat_a,
+			i_dt,
+			i_simulation_timestamp,
+			simVars.sim.sphere_radius,
+			nullptr,
+
 			pos_lon_d, pos_lat_d,		// OUTPUT
+
+			op,
 
 			simVars.disc.timestepping_order,
 			simVars.disc.semi_lagrangian_max_iterations,
 			simVars.disc.semi_lagrangian_convergence_threshold,
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry, simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_approximate_sphere_geometry,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	SphereData_Physical phi_pert_D_phys(sphereDataConfig);
@@ -255,7 +272,8 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_2nd_order(
 			pos_lat_d,
 			phi_pert_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_interpolation_limiter,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
 		);
 
 	sphereSampler.bicubic_scalar(
@@ -264,7 +282,8 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_2nd_order(
 			pos_lat_d,
 			vort_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_interpolation_limiter,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
 		);
 
 	sphereSampler.bicubic_scalar(
@@ -273,7 +292,8 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_2nd_order(
 			pos_lat_d,
 			div_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter
+			simVars.disc.semi_lagrangian_interpolation_limiter,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
 		);
 
 	U_phi_pert_prev = io_U_phi_pert;
@@ -327,36 +347,6 @@ void SWE_Sphere_TS_na_sl::setup(
 
 	// Setup semi-lag
 	semiLagrangian.setup(op.sphereDataConfig, simVars);
-
-	pos_lon_a.setup(op.sphereDataConfig->physical_array_data_number_of_elements);
-	pos_lat_a.setup(op.sphereDataConfig->physical_array_data_number_of_elements);
-
-	// setup some test sampling points
-	// we use 2 arrays - one for each sampling position
-
-	pos_lon_a.update_lambda_array_indices([&](int idx, double &io_data)
-	{
-		int i = idx % op.sphereDataConfig->physical_num_lon;
-		//int j = idx / sphereDataConfig->physical_data_size[0];
-
-			io_data = 2.0*M_PI*(double)i/(double)op.sphereDataConfig->physical_num_lon;
-			assert(io_data >= 0);
-			assert(io_data < 2.0*M_PI);
-		}
-		);
-
-	pos_lat_a.update_lambda_array_indices([&](int idx, double &io_data)
-	{
-		//int i = idx % sphereDataConfig->physical_data_size[0];
-			int j = idx / op.sphereDataConfig->physical_num_lon;
-
-			io_data = op.sphereDataConfig->lat[j];
-
-			assert(io_data >= -M_PI*0.5);
-			assert(io_data <= M_PI*0.5);
-		}
-	);
-
 }
 
 SWE_Sphere_TS_na_sl::SWE_Sphere_TS_na_sl(SimulationVariables &i_simVars, SphereOperators_SphereData &i_op) :
@@ -364,11 +354,7 @@ SWE_Sphere_TS_na_sl::SWE_Sphere_TS_na_sl(SimulationVariables &i_simVars, SphereO
 
 		U_phi_pert_prev(i_op.sphereDataConfig),
 		U_vort_prev(i_op.sphereDataConfig),
-		U_div_prev(i_op.sphereDataConfig),
-		pos_lon_a(i_op.sphereDataConfig->physical_array_data_number_of_elements),
-		pos_lat_a(i_op.sphereDataConfig->physical_array_data_number_of_elements),
-		posx_d(i_op.sphereDataConfig->physical_array_data_number_of_elements),
-		posy_d(i_op.sphereDataConfig->physical_array_data_number_of_elements)
+		U_div_prev(i_op.sphereDataConfig)
 {
 }
 

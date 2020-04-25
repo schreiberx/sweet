@@ -7,6 +7,7 @@
 #ifndef SRC_SCALAR_DATA_ARRAY_HPP_
 #define SRC_SCALAR_DATA_ARRAY_HPP_
 
+#include <math.h>
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
@@ -101,6 +102,25 @@ public:
 	}
 
 
+
+	/**
+	 * default constructor
+	 */
+public:
+	ScalarDataArray(
+			std::size_t i_number_of_elements
+	)	: number_of_elements(i_number_of_elements)
+	{
+		number_of_elements = i_number_of_elements;
+
+		if (number_of_elements == 0)
+			return;
+
+		p_allocate_buffers();
+	}
+
+
+
 public:
 	/**
 	 * copy constructor, used e.g. in
@@ -138,23 +158,6 @@ public:
 		p_allocate_buffers();
 	}
 
-
-
-	/**
-	 * default constructor
-	 */
-public:
-	ScalarDataArray(
-			std::size_t i_number_of_elements
-	)	: number_of_elements(i_number_of_elements)
-	{
-		number_of_elements = i_number_of_elements;
-
-		if (number_of_elements == 0)
-			return;
-
-		p_allocate_buffers();
-	}
 
 
 	void p_free_buffer()
@@ -783,6 +786,82 @@ public:
 
 
 	/**
+	 * Compute sine
+	 */
+	inline
+	ScalarDataArray sin()	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+			out.scalar_data[idx] = std::sin(scalar_data[idx]);
+		);
+		return out;
+	}
+
+
+
+	/**
+	 * Compute cosine
+	 */
+	inline
+	ScalarDataArray cos()	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+			out.scalar_data[idx] = std::cos(scalar_data[idx]);
+		);
+		return out;
+	}
+
+
+	/**
+	 * Compute power of two
+	 */
+	inline
+	ScalarDataArray pow(double i_pow)		const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+			out.scalar_data[idx] = std::pow(scalar_data[idx], i_pow);
+		);
+		return out;
+	}
+
+
+	/**
+	 * Compute power of two
+	 */
+	inline
+	ScalarDataArray pow2()	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+			out.scalar_data[idx] = scalar_data[idx]*scalar_data[idx];
+		);
+		return out;
+	}
+
+	/**
+	 * Compute power of three
+	 */
+	inline
+	ScalarDataArray pow3()	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+			out.scalar_data[idx] = scalar_data[idx]*scalar_data[idx]*scalar_data[idx];
+		);
+		return out;
+	}
+
+
+
+	/**
 	 * Invert sign
 	 */
 	inline
@@ -1016,6 +1095,102 @@ ScalarDataArray operator/(
 }
 
 
+/*
+ * Namespace to use for convenient sin/cos/pow/... calls
+ */
+namespace ScalarDataArray_ops
+{
+#if 0
+	inline
+	static
+	double sin(
+			double i_value
+	)
+	{
+		return std::sin(i_value);
+	}
+
+
+	inline
+	static
+	double cos(
+			double i_value
+	)
+	{
+		return std::cos(i_value);
+	}
+#endif
+
+	inline
+	static
+	double pow2(double i_value)
+	{
+		return i_value*i_value;
+	}
+
+	inline
+	static
+	double pow3(double i_value)
+	{
+		return i_value*i_value*i_value;
+	}
+
+#if 0
+	inline
+	static
+	double pow(double i_value, double i_exp)
+	{
+		return std::pow(i_value, i_exp);
+	}
+#endif
+
+	inline
+	static
+	ScalarDataArray sin(
+			const ScalarDataArray &i_array_data
+	)
+	{
+		return i_array_data.sin();
+	}
+
+	inline
+	static
+	ScalarDataArray cos(
+			const ScalarDataArray &i_array_data
+	)
+	{
+		return i_array_data.cos();
+	}
+
+	inline
+	static
+	ScalarDataArray pow2(
+			const ScalarDataArray &i_array_data
+	)
+	{
+		return i_array_data.pow2();
+	}
+
+	inline
+	static
+	ScalarDataArray pow3(
+			const ScalarDataArray &i_array_data
+	)
+	{
+		return i_array_data.pow3();
+	}
+
+	inline
+	static
+	ScalarDataArray pow(
+			const ScalarDataArray &i_array_data,
+			double i_value
+	)
+	{
+		return i_array_data.pow(i_value);
+	}
+
+};
 
 
 #endif /* SRC_DATAARRAY_HPP_ */

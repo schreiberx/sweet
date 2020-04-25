@@ -128,27 +128,6 @@ void SWE_Sphere_TS_na_erk::euler_timestep_update(
 	 * Step 2g
 	 */
 	o_phi_pert_t += e;
-
-	/////////////////////////////
-
-
-	phig_pert = i_vrt.getSphereDataPhysical();
-	u_nl = ug*phig_pert;
-	v_nl = vg*phig_pert;
-	op.uv_to_vortdiv(u_nl, v_nl, e, o_vrt_t, simVars.misc.sphere_use_robert_functions);
-	o_vrt_t *= -1.0;
-	divg = i_div.getSphereDataPhysical();
-	e = op.scalar_physical_to_spectral(divg*phig_pert);
-	o_vrt_t += e;
-
-	phig_pert = i_div.getSphereDataPhysical();
-	u_nl = ug*phig_pert;
-	v_nl = vg*phig_pert;
-	op.uv_to_vortdiv(u_nl, v_nl, e, o_div_t, simVars.misc.sphere_use_robert_functions);
-	o_div_t *= -1.0;
-	divg = i_div.getSphereDataPhysical();
-	e = op.scalar_physical_to_spectral(divg*phig_pert);
-	o_div_t += e;
 }
 
 

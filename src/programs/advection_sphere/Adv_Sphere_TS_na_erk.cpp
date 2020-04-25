@@ -77,12 +77,10 @@ void Adv_Sphere_TS_na_erk::run_timestep(
 		double i_simulation_timestamp,
 
 		// for varying velocity fields
-		const SWESphereBenchmarksCombined *i_sphereBenchmarks
+		const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+		SphereData_Physical &io_U_phi_phys
 )
 {
-	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
-
 	sphereBenchmarks = i_sphereBenchmarks;
 
 	// standard time stepping
@@ -101,6 +99,8 @@ void Adv_Sphere_TS_na_erk::run_timestep(
 		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_vort, simVars.benchmark.getExternalForcesUserData);
 		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_div, simVars.benchmark.getExternalForcesUserData);
 	}
+
+	io_U_phi_phys = io_phi.getSphereDataPhysical();
 }
 
 

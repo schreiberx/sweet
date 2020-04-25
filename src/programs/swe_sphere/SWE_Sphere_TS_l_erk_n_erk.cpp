@@ -119,7 +119,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 	 * Follows Hack & Jakob formulation
 	 */
 
-	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
@@ -143,8 +143,8 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 
 	o_vort_dt *= -1.0;
 
-	tmpg1 = ug*(phig-avgphi);
-	tmpg2 = vg*(phig-avgphi);
+	tmpg1 = ug*(phig-gh0);
+	tmpg2 = vg*(phig-gh0);
 
 	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 	if (simVars.misc.sphere_use_robert_functions)

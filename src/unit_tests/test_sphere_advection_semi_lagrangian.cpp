@@ -20,7 +20,7 @@
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
-#include "../programs/advection_sphere/Adv_Sphere_TimeSteppers.hpp"
+#include "test_sphere_advection_semi_lagrangian/Adv_Sphere_TimeSteppers.hpp"
 
 
 
@@ -95,7 +95,12 @@ public:
 		simVars.reset();
 
 		sphereBenchmarks.setup(simVars, op);
-		sphereBenchmarks.compute_initial_condition_pert(prog_phi_pert, prog_vort, prog_div, &time_varying_fields);
+		SphereData_Physical o_phi_pert_phys(sphereDataConfig);
+		sphereBenchmarks.compute_initial_condition_pert(
+				prog_phi_pert, prog_vort, prog_div,
+				o_phi_pert_phys,
+				&time_varying_fields
+			);
 
 		prog_phi_pert_t0 = prog_phi_pert;
 
@@ -118,10 +123,13 @@ public:
 		if (time_varying_fields)
 			sphereBenchmarks.update_time_varying_fields_pert(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
 
+		SphereData_Physical asdf(sphereDataConfig);
 		timeSteppers.master->run_timestep(
 				prog_phi_pert, prog_vort, prog_div,
 				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time
+				simVars.timecontrol.current_simulation_time,
+				&sphereBenchmarks,
+				asdf
 			);
 
 		double dt = simVars.timecontrol.current_timestep_size;
@@ -336,6 +344,7 @@ int main(int i_argc, char *i_argv[])
 	for (int i = initial_spectral_modes; i <= max_modes; i *= 2)
 	{
 		simVars.timecontrol.current_timestep_size *= 0.5;
+		simVars.timecontrol.setup_timestep_size = simVars.timecontrol.current_timestep_size;
 
 		if (simVars.disc.timestepping_method == "na_sl")
 		{

@@ -7,8 +7,8 @@
  *  Based on plane code
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_SETTLS_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_SETTLS_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -68,13 +68,7 @@ private:
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
 
-	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
-
-	// Arrival points for semi-lag
-	ScalarDataArray pos_lon_a, pos_lat_a;
-
-	// Departure points for semi-lag
-	ScalarDataArray posx_d, posy_d;
+	SphereData_Spectral U_phi_pert_prev, U_vrt_prev, U_div_prev;
 
 	SWE_Sphere_TS_l_erk* swe_sphere_ts_l_erk;
 	SWE_Sphere_TS_lg_erk* swe_sphere_ts_lg_erk;

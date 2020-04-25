@@ -120,8 +120,8 @@ public:
 
 
 	void normalization(
-			SphereData_Spectral &io_phi,
-			const std::string &normalization = ""
+		SphereData_Spectral &io_phi,
+		const std::string &normalization = ""
 	)
 	{
 		if (normalization == "avg_zero")
@@ -283,12 +283,106 @@ public:
 
 	void setup(
 			SimulationVariables &io_simVars,
-			SphereOperators_SphereData &io_op
+			SphereOperators_SphereData &io_op,
+			double i_timestamp = 0
 	)
 	{
 		simVars = &io_simVars;
 		op = &io_op;
 	}
+
+
+
+	/*
+	 * Compute the departure points
+	 */
+	void compute_departure_3rd_order(
+			const ScalarDataArray &i_pos_lon_A,	///< longitude coordinate to compute the velocity for
+			const ScalarDataArray &i_pos_lat_A,	///< latitude coordinate to compute the velocity for
+			ScalarDataArray &o_pos_lon_D,		///< velocity along longitude
+			ScalarDataArray &o_pos_lat_D,		///< velocity along latitude
+			double i_dt,
+			double i_timestamp_arrival			///< timestamp at arrival point
+	) const
+	{
+		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_1")
+		{
+			/*********************************************************************
+			 * R. Nair, P. Lauritzen "A class of deformational flow
+			 * test cases for linear transport problems on the sphere"
+			 *
+			 * Page 8
+			 */
+
+			// time for total deformation
+			double pi = M_PI;
+
+			// we set k to 2.4 (p. 5)
+			double k = 2.4;
+
+
+			/*
+			 * Get non-dimensionalize variables to stick to the benchmark
+			 * whatever resolution we're using
+			 *
+			 * We rescale everything as if we would execute it with SWEET runtime parameters
+			 *   -a 1
+			 *   -t 5
+			 */
+
+			// Set full time interval to 5 (used in paper)
+			double T = 5.0;
+
+			// rescale time interval to [0;5] range
+			double t = i_timestamp_arrival*5.0/simVars->timecontrol.max_simulation_time;
+
+			// rescale time step size
+			double dt = i_dt*5.0/simVars->timecontrol.max_simulation_time;
+
+
+			double omega = pi/T;
+
+
+			// To directly use notation from paper
+			const ScalarDataArray &lambda = i_pos_lon_A;
+			const ScalarDataArray &theta = i_pos_lat_A;
+
+
+			// use convenient cos/sin/etc functions
+			using namespace ScalarDataArray_ops;
+
+			// eq. (37)
+			ScalarDataArray u_tilde = 2.0*k*pow2(sin(lambda/2))*sin(theta)*cos(pi*t/T);
+
+			// between eq. (34) and (35)
+			ScalarDataArray v = k/2.0*sin(lambda)*cos(theta)*cos(omega*t);
+
+			// eq. (35)
+			o_pos_lon_D =
+					lambda
+					- dt*u_tilde
+					- dt*dt*k*sin(lambda/2.0)*(
+							sin(lambda/2)*sin(theta)*sin(omega*t)*omega
+							- u_tilde*sin(theta)*cos(omega*t)*cos(lambda/2)
+							- v*sin(lambda/2)*cos(theta)*cos(omega*t)
+							);
+
+			// eq. (36)
+			o_pos_lat_D =
+					theta
+					- dt*v
+					- dt*dt/4.0*k*(
+							sin(lambda)*cos(theta)*sin(omega*t)*omega
+							- u_tilde*cos(lambda)*cos(theta)*cos(omega*t)
+							+ v*sin(lambda)*sin(theta)*cos(omega*t)
+						);
+
+			return;
+		}
+
+		FatalError("TODO: Implement it for this test case");
+	}
+
 
 
 	/*
@@ -303,24 +397,22 @@ public:
 	{
 		const SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
 
-		double gh0 = simVars->sim.gravitation*simVars->sim.h0;
-
 		/*********************************************************************
 		 * Time-varying benchmark cases
 		 *
 		 * R. Nair, P. Lauritzen "A class of deformational flow
 		 * test cases for linear transport problems on the sphere"
 		 */
-		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_1")
+		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_test")
 		{
-			// time for total deformation: 12 days
-			double T = 12*24*60*60;
+			// time for total deformation
+			double T = simVars->timecontrol.max_simulation_time;
 
 			// velocity
 			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
 
 			// we set k to 2.4 (p. 5)
-			double k = 2.4;
+			double k = 0.5;
 
 			SphereData_Physical u_phys(sphereDataConfig);
 			u_phys.physical_update_lambda(
@@ -347,16 +439,96 @@ public:
 			return;
 		}
 
+		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_1")
+		{
+			// time for total deformation
+			double T = 1;
+			double t = i_timestamp;
+			double pi = M_PI;
+
+			// we set k to 2.4 (p. 5)
+			double k = 2.4;
+
+			/*
+			 * Non-dimensionalize
+			 */
+			// t \in [0;1]
+			t /= simVars->timecontrol.max_simulation_time;
+
+			// velocity scalar for effects across entire simulation time (e.g. full revelation around sphere)
+			// reference solution is computed with T = 5.0 and we resemble it here
+			// using radius 1, T=5 would result in u0=1
+			double u0 = simVars->sim.sphere_radius*5.0/simVars->timecontrol.max_simulation_time;
+
+			using namespace ScalarDataArray_ops;
+
+			SphereData_Physical u_phys(sphereDataConfig);
+			u_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k * pow2(sin(i_lambda/2.0)) * sin(2.0*i_theta) * cos(pi*t/T);
+					io_data *= u0;
+				}
+			);
+
+			SphereData_Physical v_phys(sphereDataConfig);
+			v_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k/2.0 * sin(i_lambda) * cos(i_theta) * cos(pi*t/T);
+					io_data *= u0;
+				}
+			);
+
+			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
+
+#if 0
+			SphereData_Physical stream_phys(sphereDataConfig);
+			stream_phys.physical_update_lambda(
+				[&](double i_lambda, double i_theta, double &io_data)
+				{
+					// time varying flow
+					io_data = k * pow2(sin(i_lambda/2.0)) * pow2(cos(i_theta)) * cos(pi*t/T);
+					io_data *= u0;
+				}
+			);
+
+			SphereData_Spectral stream = op->scalar_physical_to_spectral(stream_phys);
+			stream *= u0;
+
+			SphereData_DebugContainer::append(op->laplace(stream), "vort_from_stream");
+			SphereData_DebugContainer::append(o_vrt, "vort");
+
+			o_vrt = op->laplace(stream);
+			o_div.spectral_set_zero();
+#endif
+
+			return;
+		}
+
 		if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_2" || simVars->benchmark.benchmark_name == "nair_lauritzen_case_2_k0.5")
 		{
-			// time for total deformation: 12 days
-			double T = 12*24*60*60;
+			// time for total deformation
+			double T = 1;
+			double t = i_timestamp;
+			double pi = M_PI;
 
-			// velocity
-			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
-
-			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
+			// we set k to 2 (p. 5)
 			double k = 2;
+
+			/*
+			 * Non-dimensionalize
+			 */
+			// t \in [0;1]
+			t /= simVars->timecontrol.max_simulation_time;
+
+			// velocity scalar for effects across entire simulation time (e.g. full revelation around sphere)
+			// reference solution is computed with T = 5.0 and we resemble it here
+			double u0 = simVars->sim.sphere_radius*5.0/simVars->timecontrol.max_simulation_time;
+
+			using namespace ScalarDataArray_ops;
 
 			if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_2_k0.5")
 				k = 0.5;
@@ -367,7 +539,8 @@ public:
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
-					io_data = k * std::pow(std::sin(i_lambda), 2.0) * std::sin(2.0*i_theta) * std::cos(M_PI*i_timestamp/T);
+					io_data = k * pow2(sin(i_lambda)) * sin(2.0*i_theta) * cos(pi*t/T);
+					io_data *= u0;
 				}
 			);
 
@@ -376,12 +549,10 @@ public:
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
-					io_data = k * std::sin(2.0*i_lambda) * std::cos(i_theta) * std::cos(M_PI*i_timestamp/T);
+					io_data = k * sin(2.0*i_lambda) * cos(i_theta) * cos(pi*t/T);
+					io_data *= u0;
 				}
 			);
-
-			u_phys *= u0;
-			v_phys *= u0;
 
 			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
 			return;
@@ -393,22 +564,33 @@ public:
 			 * This is a divergent flow!!!
 			 */
 
-			// time for total deformation: 12 days
-			double T = 12*24*60*60;
-
-			// velocity
-			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+			// time for total deformation
+			double T = 1;
+			double t = i_timestamp;
+			double pi = M_PI;
 
 			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
 			double k = 2;
 
+			/*
+			 * Non-dimensionalize
+			 */
+			// t \in [0;1]
+			t /= simVars->timecontrol.max_simulation_time;
+
+			// velocity scalar for effects across entire simulation time (e.g. full revelation around sphere)
+			// reference solution is computed with T = 5.0 and we resemble it here
+			double u0 = simVars->sim.sphere_radius*5.0/simVars->timecontrol.max_simulation_time;
+
+			using namespace ScalarDataArray_ops;
 
 			SphereData_Physical u_phys(sphereDataConfig);
 			u_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
-					io_data = -k * std::pow(std::sin(i_lambda/2.0), 2.0) * std::sin(2.0*i_theta) * std::pow(std::cos(i_theta), 2.0) * std::cos(M_PI*i_timestamp/T);
+					io_data = -k * pow2(sin(i_lambda/2.0)) * sin(2.0*i_theta) * pow2(cos(i_theta)) * std::cos(pi*t/T);
+					io_data *= u0;
 				}
 			);
 
@@ -417,29 +599,45 @@ public:
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
-					io_data = k/2.0 * std::sin(i_lambda) * std::pow(std::cos(i_theta), 3.0) * std::cos(M_PI*i_timestamp/T);
+					io_data = k/2.0 * sin(i_lambda) * pow3(cos(i_theta)) * cos(pi*t/T);
+					io_data *= u0;
 				}
 			);
-
-			u_phys *= u0;
-			v_phys *= u0;
 
 			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
 			return;
 		}
 
-		if (	simVars->benchmark.benchmark_name == "nair_lauritzen_case_4"	||
-				simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_2"
+		if (
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_4"	||
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_4_ext_2"
 		)
 		{
-			// time for total deformation: 12 days
-			double T = 12.0*24.0*60.0*60.0;
 
-			// velocity
-			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+			// time for total deformation
+			double T = 1;
+			double t = i_timestamp;
+			double pi = M_PI;
 
-			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
+			// we set k to 2 (p. 5)
 			double k = 2;
+
+			/*
+			 * Non-dimensionalize
+			 */
+			// t \in [0;1]
+			t /= simVars->timecontrol.max_simulation_time;
+
+			// velocity scalar for effects across entire simulation time (e.g. full revelation around sphere)
+			// reference solution is computed with T = 5.0 and we resemble it here
+			double u0 = simVars->sim.sphere_radius*5.0/simVars->timecontrol.max_simulation_time;
+
+			double u0_rot = simVars->sim.sphere_radius/simVars->timecontrol.max_simulation_time;
+
+			using namespace ScalarDataArray_ops;
+
+			if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_2_k0.5")
+				k = 0.5;
 
 
 			SphereData_Physical u_phys(sphereDataConfig);
@@ -449,13 +647,13 @@ public:
 					io_data = 0;
 
 					// washing machine
-					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
-					io_data += k * std::pow(std::sin(lambda_prime), 2.0) * std::sin(2.0*i_theta) * std::cos(M_PI*i_timestamp/T);
+					double lambda_prime = i_lambda - 2.0*pi*t / T;
+					io_data += u0 * k * pow2(sin(lambda_prime)) * sin(2.0*i_theta) * cos(pi*t/T);
 
 					// add a constant zonal flow
 					// non-dimensional version
-					//io_data += 2.0*M_PI*std::cos(i_theta)/T;
-					io_data += std::cos(i_theta);
+					io_data += u0_rot*2.0*pi*cos(i_theta)/T;
+
 				}
 			);
 
@@ -466,13 +664,11 @@ public:
 					io_data = 0;
 
 					// washing machine
-					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
-					io_data += k * std::sin(2.0*lambda_prime) * std::cos(i_theta) * std::cos(M_PI*i_timestamp/T);
+					double lambda_prime = i_lambda - 2.0*pi*t / T;
+					io_data += k * sin(2.0*lambda_prime) * cos(i_theta) * cos(pi*t/T);
+					io_data *= u0;
 				}
 			);
-
-			u_phys *= u0;
-			v_phys *= u0;
 
 			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
 			return;
@@ -484,15 +680,29 @@ public:
 			 * This is a modified case4 version to include the nonlinear divergence
 			 */
 
-			// time for total deformation: 12 days
-			double T = 12.0*24.0*60.0*60.0;
+			/*
+			 * This is a divergent flow!!!
+			 */
 
-			// velocity
-			double u0 = 2.0*M_PI*simVars->sim.sphere_radius/T;
+			// time for total deformation
+			double T = 1;
+			double t = i_timestamp;
+			double pi = M_PI;
 
 			// we set k to 2 (p. 7, "other parameters exactly as given in Case-2")
 			double k = 2;
 
+			/*
+			 * Scale things up for the sphere
+			 */
+			// total simulation time
+			T *= simVars->timecontrol.max_simulation_time;
+
+			// velocity scalar for effects across entire simulation time (e.g. full revelation around sphere)
+			// reference solution is computed with T = 5.0 and we resemble it here
+			double u0 = simVars->sim.sphere_radius*5.0/T;
+
+			using namespace ScalarDataArray_ops;
 
 			SphereData_Physical u_phys(sphereDataConfig);
 			u_phys.physical_update_lambda(
@@ -501,13 +711,14 @@ public:
 					io_data = 0;
 
 					// washing machine
-					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
-					io_data += -k * std::pow(std::sin(lambda_prime/2.0), 2.0) * std::sin(2.0*i_theta) * std::pow(std::cos(i_theta), 2.0) * std::cos(M_PI*i_timestamp/T);
+					double lambda_prime = i_lambda - 2.0*pi*t/T;
+					io_data += -k * pow2(sin(lambda_prime/2.0)) * sin(2.0*i_theta) * pow2(cos(i_theta)) * std::cos(pi*t/T);
+					io_data *= u0;
 
 					// add a constant zonal flow
 					// non-dimensional version
-					//io_data += 2.0*M_PI*std::cos(i_theta)/T;
-					io_data += std::cos(i_theta);
+					//io_data += 2.0*pi*cos(i_theta)/T;
+					io_data += 2.0*pi*cos(i_theta)*simVars->sim.sphere_radius/T;
 				}
 			);
 
@@ -518,18 +729,17 @@ public:
 					io_data = 0;
 
 					// washing machine
-					double lambda_prime = i_lambda - 2.0*M_PI*i_timestamp / T;
-					io_data += k/2.0 * std::sin(lambda_prime) * std::pow(std::cos(i_theta), 3.0) * std::cos(M_PI*i_timestamp/T);
+					double lambda_prime = i_lambda - 2.0*pi*t / T;
+					io_data += k/2.0 * sin(lambda_prime) * pow3(cos(i_theta)) * cos(pi*t/T);
+					io_data *= u0;
 				}
 			);
-
-			u_phys *= u0;
-			v_phys *= u0;
 
 			op->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div, false);
 			return;
 		}
 	}
+
 
 
 	/*
@@ -543,6 +753,7 @@ public:
 			SphereData_Spectral &o_phi_pert,
 			SphereData_Spectral &o_vrt,
 			SphereData_Spectral &o_div,
+			SphereData_Physical *o_phi_pert_phys = nullptr,
 			bool *o_time_varying_fields = nullptr
 	)
 	{
@@ -562,6 +773,7 @@ public:
 			FatalError("Benchmark name not specified!");
 
 		if (
+			simVars->benchmark.benchmark_name == "nair_lauritzen_case_test"	||
 			simVars->benchmark.benchmark_name == "nair_lauritzen_case_1"	||
 			simVars->benchmark.benchmark_name == "nair_lauritzen_case_2"	||
 			simVars->benchmark.benchmark_name == "nair_lauritzen_case_2_k0.5"	||
@@ -581,22 +793,29 @@ public:
 			/*
 			 * Setup parameters
 			 */
-			simVars->sim.sphere_radius = 6.37122e6;
-			simVars->sim.h0 = 1000.0;
+
+			// use the radius from the command line parameter since this is should work flawless
+			//simVars->sim.sphere_radius = 6.37122e6;
+			simVars->sim.h0 = 1.0;				// h_max
+			simVars->sim.gravitation = 0.0;		// DON'T USE G
 			gh0 = simVars->sim.gravitation*simVars->sim.h0;
 
 			// update operators
 			op->setup(sphereDataConfig, &(simVars->sim));
-
-			//double i_exp_fac = 10.0;
-			double b0 = 5.0;
 
 			double i_lambda0 = M_PI/3;
 			double i_theta0 = M_PI;
 			double i_lambda1 = -M_PI/3;
 			double i_theta1 = M_PI;
 
-			if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_1")
+			if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_test")
+			{
+				i_lambda0 = M_PI;
+				i_theta0 = M_PI/3;
+				i_lambda1 = M_PI;
+				i_theta1 = -M_PI/3;
+			}
+			else if (simVars->benchmark.benchmark_name == "nair_lauritzen_case_1")
 			{
 				i_lambda0 = M_PI;
 				i_theta0 = M_PI/3;
@@ -625,6 +844,58 @@ public:
 				i_theta1 = 0;
 			}
 
+
+#if 0
+
+			/**
+			 * Initial condition for Cosine bell
+			 *
+			 * DO NOT USE THIS, SINCE IT'S NOT SUFFICIENTLY SMOOTH FOR THE CONVERGENCE BENCHMARKS!!!
+			 *
+			 * (Section 3.1.1)
+			 */
+			SphereData_Physical phi_pert_phys_1(sphereDataConfig);
+			{
+				// Cosine bells
+
+				SphereData_Physical phi_pert_phys(sphereDataConfig);
+				phi_pert_phys.physical_update_lambda(
+					[&](double i_lambda, double i_theta, double &io_data)
+					{
+						// Constants
+						double r = 0.5;
+						double b = 0.1;
+						double c = 0.9;
+						double pi = M_PI;
+
+						// eq between 12 and 13
+						double r0 = std::acos(std::sin(i_theta0)*std::sin(i_theta) + std::cos(i_theta0)*(std::cos(i_theta)*std::cos(i_lambda-i_lambda0)));
+						double r1 = std::acos(std::sin(i_theta1)*std::sin(i_theta) + std::cos(i_theta1)*(std::cos(i_theta)*std::cos(i_lambda-i_lambda1)));
+
+						io_data = 0;
+						// eq. 13
+						if (r0 < r)
+							io_data = b + c*simVars->sim.h0/2.0*(1.0 + std::cos(pi*r0/r));
+						else if (r1 < r)
+							io_data = b + c*simVars->sim.h0/2.0*(1.0 + std::cos(pi*r1/r));
+						else
+							io_data = b;
+					}
+				);
+
+				o_phi_pert = phi_pert_phys;
+			}
+
+#else
+
+			double b0 = 5;
+			//double b0 = 20;
+
+			/**
+			 * Initial condition for smooth scalar field (Gaussian bump)
+			 *
+			 * (Section 3.1.2)
+			 */
 			SphereData_Physical phi_pert_phys_1(sphereDataConfig);
 			{
 				// Bump 1
@@ -644,6 +915,8 @@ public:
 									(x[2] - x0[2])*(x[2] - x0[2]);
 
 						io_data = std::exp(-b0*d);
+
+						io_data *= simVars->sim.h0;
 					}
 				);
 			}
@@ -667,14 +940,18 @@ public:
 								(x[2] - x0[2])*(x[2] - x0[2]);
 
 					io_data = std::exp(-b0*d);
+
+					io_data *= simVars->sim.h0;
 					}
 				);
 			}
 
-			o_phi_pert.loadSphereDataPhysical(phi_pert_phys_1 + phi_pert_phys_2);
+			if (o_phi_pert_phys != nullptr)
+				*o_phi_pert_phys = phi_pert_phys_1 + phi_pert_phys_2;
 
-			// NO GRAVITATION!!!
-			o_phi_pert *= simVars->sim.h0;//*simVars->sim.gravitation;
+			o_phi_pert.loadSphereDataPhysical(phi_pert_phys_1 + phi_pert_phys_2);
+#endif
+
 
 			update_time_varying_fields_pert(o_phi_pert, o_vrt, o_div, 0);
 
@@ -904,6 +1181,7 @@ public:
 
 			double lambda_c = 3.0*M_PI/2.0;
 			double theta_c = 0.0;
+			theta_c = M_PI*0.5*0.8;
 			double a = simVars->sim.sphere_radius;
 
 			//double R = a/3.0;
@@ -1191,11 +1469,19 @@ public:
 
 				assert(h_metric_area > 0);
 
+
+#if 0
 				double h_sum = hg_sum / simVars->sim.gravitation;
 				double h_comp_avg = h_sum / h_metric_area;
+				// done later on
 
+				/*
+				 * From Galewsky et al. paper:
+				 * "and the constant h 0 is chosen so that the global mean layer depth is equal to 10 km"
+				 */
 				double h0 = 10000.0 + h_comp_avg;
 				std::cout << "Galewsky benchmark H0 (computed, not used!): " << h0 << std::endl;
+#endif
 
 #else
 
@@ -1235,8 +1521,14 @@ public:
 				o_phi_pert = -o_phi_pert;
 			}
 
-#if 1
-
+			/*
+			 * Now change global mean layer depth to 10km
+			 *
+			 * From Galewsky et al. paper:
+			 * "and the constant h 0 is chosen so that the global mean layer depth is equal to 10 km"
+			 */
+			o_phi_pert += (simVars->sim.h0 - 10000)*simVars->sim.gravitation;
+			simVars->sim.h0 = 10000;
 
 			SphereData_Physical hbump(o_phi_pert.sphereDataConfig);
 			if (simVars->benchmark.benchmark_name == "galewsky")
@@ -1249,9 +1541,8 @@ public:
 				);
 				o_phi_pert += hbump*simVars->sim.gravitation;
 			}
-#endif
 
-			std::cout << gh0 << std::endl;
+
 			std::cout << "phi min: " << o_phi_pert.getSphereDataPhysical().physical_reduce_min() << std::endl;
 			std::cout << "phi max: " << o_phi_pert.getSphereDataPhysical().physical_reduce_max() << std::endl;
 

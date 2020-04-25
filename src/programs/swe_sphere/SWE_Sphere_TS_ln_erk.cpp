@@ -10,40 +10,25 @@
 
 
 
-void SWE_Sphere_TS_ln_erk::run_timestep_pert(
-		SphereData_Spectral &io_phi_pert,	///< prognostic variables
-		SphereData_Spectral &io_vrt,	///< prognostic variables
-		SphereData_Spectral &io_div,	///< prognostic variables
-
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp
-)
-{
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-	io_phi_pert += gh0;
-	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
-	io_phi_pert -= gh0;
-}
-
-
-
 
 
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Sphere_TS_ln_erk::euler_timestep_update(
-		const SphereData_Spectral &i_phi,	///< prognostic variables
-		const SphereData_Spectral &i_vort,	///< prognostic variables
+void SWE_Sphere_TS_ln_erk::euler_timestep_update_nonpert(
+		const SphereData_Spectral &i_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereData_Spectral &o_phi_t,	///< time updates
-		SphereData_Spectral &o_vort_t,	///< time updates
+		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_vrt_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
 {
+	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+
 	/*
 	 * NON-LINEAR SWE
 	 *
@@ -58,20 +43,18 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	/*
 	 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
 	 */
-	SphereData_Physical phig = i_phi.getSphereDataPhysical();
+	SphereData_Physical phi_pert_phys = i_phi_pert.getSphereDataPhysical();
 
 	/*
 	 * Step 1a
 	 */
-	SphereData_Physical ug(i_phi.sphereDataConfig);
-	SphereData_Physical vg(i_phi.sphereDataConfig);
-
-	op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
+	SphereData_Physical ug, vg;
+	op.vortdiv_to_uv(i_vrt, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
 
 	/*
 	 * Step 1b
 	 */
-	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vrt.getSphereDataPhysical();
 
 	/*
 	 * Step 1c
@@ -86,13 +69,13 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	 * Step 1d
 	 */
 	// Eq. (21) & left part of Eq. (22)
-	op.uv_to_vortdiv(u_nl, v_nl, o_div_t, o_vort_t, simVars.misc.sphere_use_robert_functions);
+	op.uv_to_vortdiv(u_nl, v_nl, o_div_t, o_vrt_t, simVars.misc.sphere_use_robert_functions);
 
 
 	/*
 	 * Step 1e
 	 */
-	o_vort_t *= -1.0;
+	o_vrt_t *= -1.0;
 
 	/*
 	 * Step 1f
@@ -103,7 +86,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	if (simVars.misc.sphere_use_robert_functions)
 		tmpg = tmpg.robert_convertToNonRobertSquared();
 
-	SphereData_Spectral e = phig+tmpg;
+	SphereData_Spectral e = phi_pert_phys+tmpg;
 
 	/*
 	 * Step 1g
@@ -117,19 +100,19 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update(
 	/*
 	 * Step 2a
 	 */
-	u_nl = ug*phig;
-	v_nl = vg*phig;
+	u_nl = ug*(phi_pert_phys + gh0);
+	v_nl = vg*(phi_pert_phys + gh0);
 
-	op.uv_to_vortdiv(u_nl,v_nl, e, o_phi_t, simVars.misc.sphere_use_robert_functions);
+	op.uv_to_vortdiv(u_nl,v_nl, e, o_phi_pert_t, simVars.misc.sphere_use_robert_functions);
 
-	o_phi_t *= -1.0;
+	o_phi_pert_t *= -1.0;
 
 
 }
 
 
 
-void SWE_Sphere_TS_ln_erk::run_timestep_nonpert(
+void SWE_Sphere_TS_ln_erk::run_timestep_pert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
@@ -144,7 +127,7 @@ void SWE_Sphere_TS_ln_erk::run_timestep_nonpert(
 	// standard time stepping
 	timestepping_rk.run_timestep(
 			this,
-			&SWE_Sphere_TS_ln_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
+			&SWE_Sphere_TS_ln_erk::euler_timestep_update_nonpert,	///< pointer to function to compute euler time step updates
 			io_phi, io_vort, io_div,
 			i_fixed_dt,
 			timestepping_order,

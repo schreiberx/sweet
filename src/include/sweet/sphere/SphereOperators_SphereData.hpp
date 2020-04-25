@@ -61,7 +61,7 @@ public:
 		r = i_simCoeffs->sphere_radius;
 		ir = 1.0/r;
 
-		fg.setup(i_sphereDataConfig);
+		fg.setup_if_required(i_sphereDataConfig);
 		if (i_simCoeffs->sphere_use_fsphere)
 		{
 			fg.physical_update_lambda_gaussian_grid(
@@ -137,6 +137,8 @@ public:
 		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
 		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 
+		o_u.setup_if_required(i_vrt.sphereDataConfig);
+		o_v.setup_if_required(i_vrt.sphereDataConfig);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -166,9 +168,9 @@ public:
 		SphereData_Spectral psi(sphereDataConfig);
 		psi.spectral_set_zero();
 
-		SphereData_Physical u(sphereDataConfig);
-		SphereData_Physical v(sphereDataConfig);
 
+		o_u.setup_if_required(i_phi.sphereDataConfig);
+		o_v.setup_if_required(i_phi.sphereDataConfig);
 		SHsphtor_to_spat(
 						sphereDataConfig->shtns,
 						psi.spectral_space_data,
@@ -207,6 +209,10 @@ public:
 			#endif
 		#endif
 
+
+		o_u.setup_if_required(i_vrt.sphereDataConfig);
+		o_v.setup_if_required(i_vrt.sphereDataConfig);
+
 		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
@@ -231,6 +237,9 @@ public:
 	{
 		assert(o_u.physical_space_data != nullptr);
 		assert(o_v.physical_space_data != nullptr);
+
+		o_u.setup_if_required(i_vrt.sphereDataConfig);
+		o_v.setup_if_required(i_vrt.sphereDataConfig);
 
 		if (!i_robert_formulation)
 		{
@@ -260,6 +269,8 @@ public:
 	)	const
 	{
 		assert(o_physical.physical_space_data != nullptr);
+
+		o_physical.setup_if_required(i_spectral.sphereDataConfig);
 
 		SH_to_spat(
 				sphereDataConfig->shtns,
@@ -300,6 +311,8 @@ public:
 	)	const
 	{
 		assert(o_spectral.spectral_space_data != nullptr);
+
+		o_spectral.setup_if_required(i_physical.sphereDataConfig);
 
 		spat_to_SH(
 				sphereDataConfig->shtns,
@@ -402,6 +415,9 @@ public:
 		SphereData_Physical ug = i_u;
 		SphereData_Physical vg = i_v;
 
+		o_vrt.setup_if_required(i_u.sphereDataConfig);
+		o_div.setup_if_required(i_u.sphereDataConfig);
+
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
@@ -427,6 +443,9 @@ public:
 		assert(o_vrt.spectral_space_data != nullptr);
 		assert(o_div.spectral_space_data != nullptr);
 
+
+		o_vrt.setup_if_required(i_u.sphereDataConfig);
+		o_div.setup_if_required(i_u.sphereDataConfig);
 
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
@@ -462,6 +481,9 @@ public:
 	{
 		assert(o_vrt.spectral_space_data != nullptr);
 		assert(o_div.spectral_space_data != nullptr);
+
+		o_vrt.setup_if_required(i_u.sphereDataConfig);
+		o_div.setup_if_required(i_u.sphereDataConfig);
 
 		if (!i_robert_formulation)
 		{

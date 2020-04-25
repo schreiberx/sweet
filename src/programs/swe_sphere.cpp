@@ -620,8 +620,7 @@ public:
 				break;
 
 			case 3:
-				// USE COPY TO AVOID FORWARD/BACKWARD TRANSFORMATION
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_phi_pert)/simVars.sim.gravitation, planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(simVars.sim.h0 + SphereData_Spectral(prog_phi_pert)/simVars.sim.gravitation, planeDataConfig);
 				break;
 
 			case 4:

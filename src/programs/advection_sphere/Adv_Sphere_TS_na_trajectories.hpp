@@ -1,12 +1,12 @@
 /*
- * Adv_Sphere_TS_na_sl.hpp
+ * Adv_Sphere_TS_na_trajectories.hpp
  *
- *  Created on: 30 May 2017
+ *  Created on: 17 April 2020
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_SL_HPP_
-#define SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_SL_HPP_
+#ifndef SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_TRAJECTORIES_HPP_
+#define SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_TRAJECTORIES_HPP_
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <limits>
@@ -20,21 +20,27 @@
 #include "Adv_Sphere_TS_interface.hpp"
 
 
-class Adv_Sphere_TS_na_sl	: public Adv_Sphere_TS_interface
+/*
+ * This time integration method is based on given benchmark solutions
+ *
+ * See e.g. R. Nair, P. Lauritzen
+ * "A class of deformational flow test cases for linear transport problems on the sphere"
+ */
+class Adv_Sphere_TS_na_trajectories	: public Adv_Sphere_TS_interface
 {
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
 	int timestepping_order;
 
-	SphereOperators_Sampler_SphereDataPhysical sampler2D;
 	SphereTimestepping_SemiLagrangian semiLagrangian;
+	SphereOperators_Sampler_SphereDataPhysical &sampler2D;
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
 
 public:
-	Adv_Sphere_TS_na_sl(
+	Adv_Sphere_TS_na_trajectories(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
@@ -58,7 +64,7 @@ public:
 
 
 
-	virtual ~Adv_Sphere_TS_na_sl();
+	virtual ~Adv_Sphere_TS_na_trajectories();
 };
 
 #endif
