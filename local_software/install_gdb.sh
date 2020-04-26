@@ -11,9 +11,9 @@ config_setup
 
 config_package $@
 
-config_exec "mkdir -p build"
-config_exec "cd build"
-config_exec "../configure --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR"
+config_exec mkdir -p build
+config_exec cd build
+config_exec ../configure --prefix=$SWEET_LOCAL_SOFTWARE_DST_DIR
 config_make_default
 config_make_install
 #config_configure_make_default_install

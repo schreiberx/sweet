@@ -33,7 +33,7 @@ config_make_default
 
 if [ "${HOSTNAME:0:10}" != "mpp2-login" ]; then
 	# Just save some time :-)
-	config_exec "make test"
+	config_exec make test
 fi
 config_make_install
 

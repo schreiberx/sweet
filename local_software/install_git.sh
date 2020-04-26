@@ -19,7 +19,7 @@ config_setup
 config_package $@
 config_configure_make_default
 
-config_exec "make test"
+config_exec make test
 
 config_make_install
 
