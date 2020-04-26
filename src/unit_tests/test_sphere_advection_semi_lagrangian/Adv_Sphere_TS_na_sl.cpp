@@ -143,14 +143,14 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical new_prog_phi_physx(sphereDataConfig);
 
-	sampler2D.bicubic_scalar(
+	sampler2D.bicubic_scalar_new(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
 			new_prog_phi_physx,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 	);
 
 	io_U_phi = new_prog_phi_physx;

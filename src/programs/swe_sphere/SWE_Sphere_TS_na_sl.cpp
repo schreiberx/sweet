@@ -104,14 +104,14 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_1st_order(
 	 */
 	SphereData_Physical phi_D_phys(sphereDataConfig);
 
-	sphereSampler.bicubic_scalar(
+	sphereSampler.bicubic_scalar_new(
 			io_phi_pert.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
 			phi_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	io_phi_pert = SphereData_Spectral(phi_D_phys);
@@ -158,24 +158,24 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_1st_order(
 	SphereData_Physical u_D_phys(sphereDataConfig);
 	SphereData_Physical v_D_phys(sphereDataConfig);
 
-	sphereSampler.bicubic_scalar(
+	sphereSampler.bicubic_scalar_new(
 			u_lon,
 			pos_lon_d,
 			pos_lat_d,
 			u_D_phys,
 			true,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
-	sphereSampler.bicubic_scalar(
+	sphereSampler.bicubic_scalar_new(
 			v_lat,
 			pos_lon_d,
 			pos_lat_d,
 			v_D_phys,
 			true,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 
@@ -266,34 +266,34 @@ void SWE_Sphere_TS_na_sl::run_timestep_pert_2nd_order(
 	SphereData_Physical vort_D_phys(sphereDataConfig);
 	SphereData_Physical div_D_phys(sphereDataConfig);
 
-	sphereSampler.bicubic_scalar(
+	sphereSampler.bicubic_scalar_new(
 			io_U_phi_pert.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
 			phi_pert_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
-	sphereSampler.bicubic_scalar(
+	sphereSampler.bicubic_scalar_new(
 			io_U_vort.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
 			vort_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
-	sphereSampler.bicubic_scalar(
+	sphereSampler.bicubic_scalar_new(
 			io_U_div.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
 			div_D_phys,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	U_phi_pert_prev = io_U_phi_pert;

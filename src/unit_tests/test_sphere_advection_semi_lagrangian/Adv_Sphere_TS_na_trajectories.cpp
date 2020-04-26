@@ -116,26 +116,26 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 
 	// sample phi at departure points
 	SphereData_Physical U_phi_phys_D(sphereDataConfig);
-	sampler2D.bicubic_scalar(
+	sampler2D.bicubic_scalar_new(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_D, pos_lat_D,
 			U_phi_phys_D,
 			false,	// velocity sampling
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	io_U_phi = U_phi_phys_D;
 
 
 	// sample phi at departure points
-	sampler2D.bicubic_scalar(
+	sampler2D.bicubic_scalar_new(
 			io_U_phi_phys,
 			pos_lon_D, pos_lat_D,
 			U_phi_phys_D,
 			false,	// velocity sampling
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	io_U_phi_phys = U_phi_phys_D;

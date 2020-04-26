@@ -98,7 +98,7 @@ public:
 		SphereData_Physical o_phi_pert_phys(sphereDataConfig);
 		sphereBenchmarks.compute_initial_condition_pert(
 				prog_phi_pert, prog_vort, prog_div,
-				o_phi_pert_phys,
+				&o_phi_pert_phys,
 				&time_varying_fields
 			);
 

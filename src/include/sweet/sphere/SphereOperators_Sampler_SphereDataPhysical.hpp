@@ -164,8 +164,9 @@ exit(-1);
 
 	void updateSamplingData(
 			const SphereData_Physical &i_data,
-			bool i_velocity_sampling = false,
-			bool i_pole_pseudo_points = false
+			int i_order,
+			bool i_velocity_sampling,// = false,
+			bool i_pole_pseudo_points// = false
 	)
 	{
 #if SWEET_DEBUG
@@ -173,15 +174,23 @@ exit(-1);
 			FatalError("Not supported yet (or it doesn't make sense)!");
 #endif
 
-		// resize to store 4 additional rows (2 for north and 2 for south pole)
-		sampling_data.resize(sphereDataConfig->physical_num_lon*(sphereDataConfig->physical_num_lat+4));
-
 		int num_lon = sphereDataConfig->physical_num_lon;
 		int num_lat = sphereDataConfig->physical_num_lat;
+		int num_lat_ext = num_lat+4;
+
+		// resize to store 4 additional rows (2 for north and 2 for south pole)
+		sampling_data.resize(num_lon*num_lat_ext);
+
 
 		int num_lon_d2 = sphereDataConfig->physical_num_lon/2;
 
 		assert((num_lon & 1) == 0);
+
+		/*
+		 * Copy data at the center first!
+		 */
+		for (int i = 0; i < num_lon*num_lat; i++)
+			sampling_data[2*num_lon + i] = i_data.physical_space_data[i];
 
 		if (!i_velocity_sampling)
 		{
@@ -201,32 +210,43 @@ exit(-1);
 			{
 				// compute average
 				double a = 0;
-				for (int i = 0; i < num_lon; i++)
-				{
 #if 0
-					a += 0.5*(sampling_data[1*num_lon + i] + sampling_data[2*num_lon + i]);
+				if (i_order == 1)
+				{
+					for (int i = 0; i < num_lon; i++)
+						a += 0.5*(sampling_data[1*num_lon + i] + sampling_data[2*num_lon + i]);
+				}
+				else if (i_order == 3)
 #else
-					double q[4];
-					for (int j = 0; j < 4; j++)
-						q[j] = sampling_data[j*num_lon + i];
-
-					a += interpolation_lagrange_nonequidistant<4>(&phi_lookup[0], q, phi_lookup_pseudo_points[1]);
+				if (1)
 #endif
+				{
+					for (int i = 0; i < num_lon; i++)
+					{
+						double q[4];
+						for (int j = 0; j < 4; j++)
+							q[j] = sampling_data[j*num_lon + i];
+
+						assert(phi_lookup_pseudo_points[1] == M_PI/2);
+						a += interpolation_lagrange_nonequidistant<4>(&phi_lookup[0], q, phi_lookup_pseudo_points[1]);
+					}
+				}
+				else
+				{
+					FatalError("This order is not supported");
 				}
 
 				// average all points
+				// TODO: Avg over half of points should be enough
 				a /= num_lon;
 
-				// store
+				// copy 2nd last row to last row
 				for (int i = 0; i < num_lon; i++)
-				{
-					// copy 2nd last row to last row
 					sampling_data[0*num_lon + i] = sampling_data[1*num_lon + i];
 
-					// fill in avg values at pole
+				// fill in avg values at pole
+				for (int i = 0; i < num_lon; i++)
 					sampling_data[1*num_lon + i] = a;
-				}
-
 			}
 		}
 		else
@@ -243,9 +263,6 @@ exit(-1);
 			for (int i = 0; i < num_lon_d2; i++)
 				sampling_data[num_lon + num_lon_d2 + i] = -i_data.physical_space_data[i];
 		}
-
-		for (int i = 0; i < num_lon*num_lat; i++)
-			sampling_data[2*num_lon + i] = i_data.physical_space_data[i];
 
 
 		if (!i_velocity_sampling)
@@ -265,21 +282,41 @@ exit(-1);
 			{
 				// compute average
 				double a = 0;
-				for (int i = 0; i < num_lon; i++)
-					a += 0.5*(sampling_data[(num_lat+1)*num_lon + i] + sampling_data[(num_lat+2)*num_lon + i]);
+#if 0
+				if (i_order == 1)
+				{
+					for (int i = 0; i < num_lon; i++)
+						a += 0.5*(sampling_data[(num_lat_ext-3)*num_lon + i] + sampling_data[(num_lat_ext-2)*num_lon + i]);
+				}
+				else if (i_order == 3)
+#else
+				if (1)
+#endif
+				{
+					for (int i = 0; i < num_lon; i++)
+					{
+						double q[4];
+						for (int j = 0; j < 4; j++)
+							q[j] = sampling_data[(num_lat_ext-4+j)*num_lon + i];
+
+						assert(phi_lookup_pseudo_points[num_lat_ext-2] == -M_PI/2);
+						a += interpolation_lagrange_nonequidistant<4>(&phi_lookup[num_lat_ext-4], q, -M_PI/2);
+					}
+				}
+				else
+				{
+					FatalError("This order is not supported");
+				}
 
 				// average all points
 				a /= num_lon;
 
-				// store
+				// copy 2nd last row to last row
 				for (int i = 0; i < num_lon; i++)
-				{
-					// copy 2nd last row to last row
-					sampling_data[(num_lat+3)*num_lon + i] = sampling_data[(num_lat+2)*num_lon + i];
+					sampling_data[(num_lat_ext-1)*num_lon + i] = sampling_data[(num_lat_ext-2)*num_lon + i];
 
-					// fill in avg values at pole
-					sampling_data[(num_lat+2)*num_lon + i] = a;
-				}
+				for (int i = 0; i < num_lon; i++)
+					sampling_data[(num_lat_ext-2)*num_lon + i] = a;
 			}
 		}
 		else
@@ -334,7 +371,6 @@ public:
 	}
 
 
-
 public:
 	void bicubic_scalar(
 			const SphereData_Physical &i_data,			///< sampling data
@@ -344,15 +380,15 @@ public:
 
 			double *o_data,						///< output values
 			bool i_velocity_sampling,
-			bool i_limiter,				///< Use limiter for interpolation to avoid unphysical local extrema
-			bool i_pole_pseudo_points
+			bool i_pole_pseudo_points,			///< reconstruct pole points
+			bool i_limiter						///< Use limiter for interpolation to avoid unphysical local extrema
 	)
 	{
 		assert(res[0] > 0);
 		assert(i_pos_lon.number_of_elements == i_pos_lat.number_of_elements);
 		assert((sphereDataConfig->physical_num_lon & 1) == 0);
 
-		updateSamplingData(i_data, i_velocity_sampling, i_pole_pseudo_points);
+		updateSamplingData(i_data, 3, i_velocity_sampling, i_pole_pseudo_points);
 
 		std::vector<double> &phi_lookup_ = (i_pole_pseudo_points ? phi_lookup_pseudo_points : phi_lookup);
 
@@ -507,8 +543,9 @@ public:
 	}
 
 
+
 public:
-	void bicubic_scalar(
+	void bicubic_scalar_new(
 			const SphereData_Physical &i_data,			///< sampling data
 
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
@@ -525,49 +562,10 @@ public:
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling, i_limiter, i_pole_pseudo_points);
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling, i_pole_pseudo_points, i_limiter);
 	}
 
 
-public:
-	void bicubic_scalar(
-			const SphereData_Physical &i_data,				///< sampling data
-
-			const ScalarDataArray &i_pos_x,			///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
-
-			ScalarDataArray &o_data,				///< output values
-			bool i_velocity_sampling,				///< swap sign for velocities,
-			bool i_limiter,			///< Use limiter for interpolation to avoid unphysical local extrema
-			bool i_pole_pseudo_points
-	)
-	{
-//		assert ((std::size_t)i_data.sphereDataConfig->physical_array_data_number_of_elements == (std::size_t)o_data.number_of_elements);
-		assert(res[0] > 0);
-		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
-		assert(i_pos_x.number_of_elements == o_data.number_of_elements);
-
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling, i_limiter, i_pole_pseudo_points);
-	}
-
-
-
-public:
-	const ScalarDataArray bicubic_scalar(
-			const SphereData_Physical &i_data,		///< sampling data
-
-			const ScalarDataArray &i_pos_x,			///< x positions of interpolation points
-			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
-
-			bool i_velocity_sampling,				///< swap sign for velocities
-			bool i_limiter,			///< Use limiter for interpolation to avoid unphysical local extrema
-			bool i_pole_pseudo_points
-	)
-	{
-		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
-		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling, i_limiter, i_pole_pseudo_points);
-		return out;
-	}
 
 public:
 	void bilinear_scalar(
@@ -577,7 +575,8 @@ public:
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
 			double *o_data,						///< output values
-			bool i_velocity_sampling			///< swap sign for velocities,
+			bool i_velocity_sampling,			///< swap sign for velocities,
+			bool i_pole_pseudo_points
 	)
 	{
 		assert(res[0] > 0);
@@ -585,7 +584,7 @@ public:
 		assert((sphereDataConfig->physical_num_lon & 1) == 0);
 
 		// copy the data to an internal buffer including halo layers
-		updateSamplingData(i_data, i_velocity_sampling);
+		updateSamplingData(i_data, 1, i_velocity_sampling, i_pole_pseudo_points);
 
 		//int num_lon = sphereDataConfig->physical_num_lon;
 		int num_lat = sphereDataConfig->physical_num_lat;
@@ -702,12 +701,13 @@ public:
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
 			ScalarDataArray &o_data,			///< output values
-			bool i_velocity_sampling			///< swap sign for velocities
+			bool i_velocity_sampling,			///< swap sign for velocities
+			bool i_pole_pseudo_points
 	)
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.number_of_elements);
-		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling, i_pole_pseudo_points);
 	}
 
 
@@ -719,14 +719,15 @@ public:
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
 			SphereData_Physical &o_data,		///< output values
-			bool i_velocity_sampling			///< swap sign for velocities
+			bool i_velocity_sampling,			///< swap sign for velocities
+			bool i_pole_pseudo_points
 	)
 	{
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 		assert(o_data.physical_space_data != nullptr);
 
-		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_velocity_sampling);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_velocity_sampling, i_pole_pseudo_points);
 	}
 
 
@@ -737,11 +738,12 @@ public:
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			bool i_velocity_sampling			///< swap sign for velocities in halo regions
+			bool i_velocity_sampling,			///< swap sign for velocities in halo regions
+			bool i_pole_pseudo_points
 	)
 	{
 		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
-		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling);
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling, i_pole_pseudo_points);
 		return out;
 	}
 

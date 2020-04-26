@@ -386,8 +386,8 @@ public:
 							pos_lon_mid, pos_lat_mid
 						);
 
-					ScalarDataArray vel_u_mid = sampler2D.bilinear_scalar(vel_lon, pos_lon_mid, pos_lat_mid, true);
-					ScalarDataArray vel_v_mid = sampler2D.bilinear_scalar(vel_lat, pos_lon_mid, pos_lat_mid, true);
+					ScalarDataArray vel_u_mid = sampler2D.bilinear_scalar(vel_lon, pos_lon_mid, pos_lat_mid, true, simVars->disc.semi_lagrangian_sampler_use_pole_pseudo_points);
+					ScalarDataArray vel_v_mid = sampler2D.bilinear_scalar(vel_lat, pos_lon_mid, pos_lat_mid, true, simVars->disc.semi_lagrangian_sampler_use_pole_pseudo_points);
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_mid(num_elements), vel_y_mid(num_elements), vel_z_mid(num_elements);
@@ -474,8 +474,8 @@ public:
 							o_pos_lon_D, o_pos_lat_D
 						);
 
-					ScalarDataArray u_D = sampler2D.bilinear_scalar(i_dt_u_lon, o_pos_lon_D, o_pos_lat_D, true);
-					ScalarDataArray v_D = sampler2D.bilinear_scalar(i_dt_v_lat, o_pos_lon_D, o_pos_lat_D, true);
+					ScalarDataArray u_D = sampler2D.bilinear_scalar(i_dt_u_lon, o_pos_lon_D, o_pos_lat_D, true, simVars->disc.semi_lagrangian_sampler_use_pole_pseudo_points);
+					ScalarDataArray v_D = sampler2D.bilinear_scalar(i_dt_v_lat, o_pos_lon_D, o_pos_lat_D, true, simVars->disc.semi_lagrangian_sampler_use_pole_pseudo_points);
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_D(num_elements), vel_y_D(num_elements), vel_z_D(num_elements);
@@ -577,8 +577,8 @@ public:
 					 * WARNING: Never convert this to vort/div space!!!
 					 * This creates some artificial waves
 					 */
-					ScalarDataArray vel_lon_extrapol_D = sampler2D.bilinear_scalar(u_extrapol, o_pos_lon_D, o_pos_lat_D, true);
-					ScalarDataArray vel_lat_extrapol_D = sampler2D.bilinear_scalar(v_extrapol, o_pos_lon_D, o_pos_lat_D, true);
+					ScalarDataArray vel_lon_extrapol_D = sampler2D.bilinear_scalar(u_extrapol, o_pos_lon_D, o_pos_lat_D, true, simVars->disc.semi_lagrangian_sampler_use_pole_pseudo_points);
+					ScalarDataArray vel_lat_extrapol_D = sampler2D.bilinear_scalar(v_extrapol, o_pos_lon_D, o_pos_lat_D, true, simVars->disc.semi_lagrangian_sampler_use_pole_pseudo_points);
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_extrapol_D(num_elements), vel_y_extrapol_D(num_elements), vel_z_extrapol_D(num_elements);

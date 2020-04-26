@@ -225,8 +225,7 @@ public:
 
 	void run_timestep()
 	{
-		ScalarDataArray out_data;
-		out_data.setup(posx_a.number_of_elements);
+		ScalarDataArray out_data(posx_a.number_of_elements);
 
 		if (interpolation_order == 2)
 		{
@@ -234,8 +233,9 @@ public:
 					prog_h.getSphereDataPhysical(),
 					posx_a,
 					posy_a,
-					out_data,
-					false
+					out_data.scalar_data,
+					false,
+					use_poles_pseudo_points
 			);
 		}
 		else if (interpolation_order == 3)
@@ -244,10 +244,10 @@ public:
 					prog_h.getSphereDataPhysical(),
 					posx_a,
 					posy_a,
-					out_data,
+					out_data.scalar_data,
 					false,
-					use_limiter,
-					use_poles_pseudo_points
+					use_poles_pseudo_points,
+					use_limiter
 			);
 		}
 		else
@@ -395,12 +395,19 @@ int main(int i_argc, char *i_argv[])
 			use_poles_pseudo_points++
 	)
 	{
-		for (int i_gaussians = -1; i_gaussians < 9; i_gaussians++)
+		std::cout << std::endl;
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "* Running studies with or without pseudo pole points " << use_poles_pseudo_points << std::endl;
+		std::cout << "*********************************************************" << std::endl;
+
+		int i_gaussians_start = -1;
+
+		for (int gaussian_id = -1; gaussian_id < 9; gaussian_id++)
 		//for (int i_gaussians = 8; i_gaussians >= -1; i_gaussians--)
 		{
 			std::cout << std::endl;
 			std::cout << "*********************************************************" << std::endl;
-			std::cout << "* Running studies for Gaussian type " << i_gaussians << std::endl;
+			std::cout << "* Running studies for Gaussian type " << gaussian_id << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 
 			for (int interpolation_order = 2; interpolation_order <= 3; interpolation_order++)
@@ -446,7 +453,7 @@ int main(int i_argc, char *i_argv[])
 						simulation.interpolation_order = interpolation_order;
 
 						// center of Gaussian bump
-						simulation.gaussian_id = i_gaussians;
+						simulation.gaussian_id = gaussian_id;
 
 						simulation.use_poles_pseudo_points = use_poles_pseudo_points;
 
@@ -473,8 +480,16 @@ int main(int i_argc, char *i_argv[])
 								double conv = prev_max_error / simulation.max_error;
 								std::cout << "Convergence: " << conv << std::endl;
 
-								if (conv*1.1 < std::pow(2.0, interpolation_order))
-									FatalError("Convergence not given!");
+								if (use_poles_pseudo_points == 1 && gaussian_id == -1)
+								{
+									if (conv*1.2 < std::pow(2.0, interpolation_order))
+										FatalError("Convergence not given!");
+								}
+								else
+								{
+									if (conv*1.1 < std::pow(2.0, interpolation_order))
+										FatalError("Convergence not given!");
+								}
 							}
 							prev_max_error = simulation.max_error;
 						}
