@@ -54,6 +54,7 @@ public:
 	int interpolation_order = 3;
 
 	bool use_limiter = false;
+	bool use_poles_pseudo_points = false;
 
 	ScalarDataArray posx_a, posy_a;
 
@@ -193,8 +194,8 @@ public:
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
-
 		posx_a.update_lambda_array_indices(
+
 			[&](int idx, double &io_data)
 			{
 				int i = idx % sphereDataConfigOversampling->physical_num_lon;
@@ -245,7 +246,8 @@ public:
 					posy_a,
 					out_data,
 					false,
-					use_limiter
+					use_limiter,
+					use_poles_pseudo_points
 			);
 		}
 		else
@@ -387,87 +389,95 @@ int main(int i_argc, char *i_argv[])
 
 	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 
-	for (int i_gaussians = -1; i_gaussians < 9; i_gaussians++)
-	//for (int i_gaussians = 8; i_gaussians >= -1; i_gaussians--)
+	for (
+			int use_poles_pseudo_points = 0;
+			use_poles_pseudo_points < 2;
+			use_poles_pseudo_points++
+	)
 	{
-		std::cout << std::endl;
-		std::cout << "*********************************************************" << std::endl;
-		std::cout << "* Running studies for Gaussian type " << i_gaussians << std::endl;
-		std::cout << "*********************************************************" << std::endl;
-
-		for (int interpolation_order = 2; interpolation_order <= 3; interpolation_order++)
+		for (int i_gaussians = -1; i_gaussians < 9; i_gaussians++)
+		//for (int i_gaussians = 8; i_gaussians >= -1; i_gaussians--)
 		{
 			std::cout << std::endl;
 			std::cout << "*********************************************************" << std::endl;
-			std::cout << "* Running studies for interpolation of order " << interpolation_order << std::endl;
+			std::cout << "* Running studies for Gaussian type " << i_gaussians << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 
-			int oversampling = 5;
-			std::cout << "Using oversampling of " << oversampling << std::endl;
-
-			double prev_max_error = -1;
-			for (int i = initial_spectral_modes; i <= 256*2; i *= 2)
+			for (int interpolation_order = 2; interpolation_order <= 3; interpolation_order++)
 			{
-				simVars.disc.space_res_physical[0] = 2*i;
-				simVars.disc.space_res_physical[1] = i;
+				std::cout << std::endl;
+				std::cout << "*********************************************************" << std::endl;
+				std::cout << "* Running studies for interpolation of order " << interpolation_order << std::endl;
+				std::cout << "*********************************************************" << std::endl;
 
-				simVars.disc.space_res_spectral[0] = i;
-				simVars.disc.space_res_spectral[1] = i;
+				int oversampling = 5;
+				std::cout << "Using oversampling of " << oversampling << std::endl;
 
-				sphereDataConfigInstance.setupAuto(
-						simVars.disc.space_res_physical,
-						simVars.disc.space_res_spectral,
-						simVars.misc.reuse_spectral_transformation_plans
-					);
-
-				std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
-
-				int res_physical_overs[2] = {simVars.disc.space_res_physical[0]*oversampling, simVars.disc.space_res_physical[1]*oversampling};
-				int res_spectral_overs[2] = {simVars.disc.space_res_spectral[0]*oversampling, simVars.disc.space_res_spectral[1]*oversampling};
-
-				sphereDataConfigOversamplingInstance.setupAuto(
-						res_physical_overs,
-						res_spectral_overs,
-						simVars.misc.reuse_spectral_transformation_plans
-					);
-
+				double prev_max_error = -1;
+				for (int i = initial_spectral_modes; i <= 256*2; i *= 2)
 				{
-					SimulationInstance simulation;
+					simVars.disc.space_res_physical[0] = 2*i;
+					simVars.disc.space_res_physical[1] = i;
 
-					// Update interpolation order
-					simulation.interpolation_order = interpolation_order;
+					simVars.disc.space_res_spectral[0] = i;
+					simVars.disc.space_res_spectral[1] = i;
 
-					// center of Gaussian bump
-					simulation.gaussian_id = i_gaussians;
+					sphereDataConfigInstance.setupAuto(
+							simVars.disc.space_res_physical,
+							simVars.disc.space_res_spectral,
+							simVars.misc.reuse_spectral_transformation_plans
+						);
 
-					simulation.reset();
+					std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
 
-		#if SWEET_GUI
+					int res_physical_overs[2] = {simVars.disc.space_res_physical[0]*oversampling, simVars.disc.space_res_physical[1]*oversampling};
+					int res_spectral_overs[2] = {simVars.disc.space_res_spectral[0]*oversampling, simVars.disc.space_res_spectral[1]*oversampling};
 
-					if (simVars.misc.gui_enabled)
+					sphereDataConfigOversamplingInstance.setupAuto(
+							res_physical_overs,
+							res_spectral_overs,
+							simVars.misc.reuse_spectral_transformation_plans
+						);
+
 					{
-						planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+						SimulationInstance simulation;
 
-						VisSweet<SimulationInstance> visSweet(&simulation);
-						return 0;
-					}
-					else
-		#endif
-					{
+						// Update interpolation order
+						simulation.interpolation_order = interpolation_order;
+
+						// center of Gaussian bump
+						simulation.gaussian_id = i_gaussians;
+
+						simulation.use_poles_pseudo_points = use_poles_pseudo_points;
+
 						simulation.reset();
-						simulation.run_timestep();
-						std::cout << "Lmax error: " << simulation.max_error << std::endl;
 
-						if (prev_max_error >= 0)
+			#if SWEET_GUI
+
+						if (simVars.misc.gui_enabled)
 						{
-							//double conv = (prev_max_error - simulation.max_error) / simulation.max_error;
-							double conv = prev_max_error / simulation.max_error;
-							std::cout << "Convergence: " << conv << std::endl;
+							planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
-							if (conv*1.1 < std::pow(2.0, interpolation_order))
-								FatalError("Convergence not given!");
+							VisSweet<SimulationInstance> visSweet(&simulation);
+							return 0;
 						}
-						prev_max_error = simulation.max_error;
+						else
+			#endif
+						{
+							simulation.run_timestep();
+							std::cout << "Lmax error: " << simulation.max_error << std::endl;
+
+							if (prev_max_error >= 0)
+							{
+								//double conv = (prev_max_error - simulation.max_error) / simulation.max_error;
+								double conv = prev_max_error / simulation.max_error;
+								std::cout << "Convergence: " << conv << std::endl;
+
+								if (conv*1.1 < std::pow(2.0, interpolation_order))
+									FatalError("Convergence not given!");
+							}
+							prev_max_error = simulation.max_error;
+						}
 					}
 				}
 			}

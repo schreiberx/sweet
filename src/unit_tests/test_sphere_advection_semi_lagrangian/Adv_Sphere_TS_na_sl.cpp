@@ -73,7 +73,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	SWEETMath::latlon_velocity_to_cartesian_velocity(
 		semiLagrangian.pos_lon_A, semiLagrangian.pos_lat_A,
 		u_lon_array, v_lat_array,
-		&vel_x_A, &vel_y_A, &vel_z_A
+		vel_x_A, vel_y_A, vel_z_A
 	);
 
 	/*

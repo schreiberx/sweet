@@ -159,6 +159,44 @@ public:
 	}
 
 
+public:
+	/**
+	 * setup the ScalarDataArray in case that the special
+	 * empty constructor with int as a parameter was used.
+	 *
+	 * Calling this setup function should be in general avoided.
+	 */
+public:
+	void setup_if_required(std::size_t i_number_of_elements)
+	{
+		if (scalar_data != nullptr)
+			return;
+
+		number_of_elements = i_number_of_elements;
+
+		p_allocate_buffers();
+	}
+
+
+public:
+	/**
+	 * setup the ScalarDataArray in case that the special
+	 * empty constructor with int as a parameter was used.
+	 *
+	 * Calling this setup function should be in general avoided.
+	 */
+public:
+	void setup_if_required(const ScalarDataArray &i_scalar_data)
+	{
+		if (scalar_data != nullptr)
+			return;
+
+		number_of_elements = i_scalar_data.number_of_elements;
+
+		p_allocate_buffers();
+	}
+
+
 
 	void p_free_buffer()
 	{

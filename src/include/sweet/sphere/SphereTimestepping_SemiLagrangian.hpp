@@ -283,7 +283,7 @@ public:
 			SWEETMath::latlon_velocity_to_cartesian_velocity(
 					pos_lon_A, pos_lat_A,
 					u_lon_array, v_lat_array,
-					&vel_x_A, &vel_y_A, &vel_z_A
+					vel_x_A, vel_y_A, vel_z_A
 				);
 
 			/*
@@ -337,7 +337,7 @@ public:
 				SWEETMath::latlon_velocity_to_cartesian_velocity(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
-						&vel_x_A, &vel_y_A, &vel_z_A
+						vel_x_A, vel_y_A, vel_z_A
 					);
 
 				/*
@@ -394,7 +394,7 @@ public:
 					SWEETMath::latlon_velocity_to_cartesian_velocity(
 							pos_lon_mid, pos_lat_mid,
 							vel_u_mid, vel_v_mid,
-							&vel_x_mid, &vel_y_mid, &vel_z_mid
+							vel_x_mid, vel_y_mid, vel_z_mid
 						);
 
 					/*
@@ -435,7 +435,7 @@ public:
 				SWEETMath::latlon_velocity_to_cartesian_velocity(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
-						&vel_x_A, &vel_y_A, &vel_z_A
+						vel_x_A, vel_y_A, vel_z_A
 					);
 
 				/*
@@ -482,7 +482,7 @@ public:
 					SWEETMath::latlon_velocity_to_cartesian_velocity(
 							o_pos_lon_D, o_pos_lat_D,
 							u_D, v_D,
-							&vel_x_D, &vel_y_D, &vel_z_D
+							vel_x_D, vel_y_D, vel_z_D
 						);
 
 					doAdvectionOnSphere(
@@ -537,7 +537,7 @@ public:
 				SWEETMath::latlon_velocity_to_cartesian_velocity(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
-						&vel_x_A, &vel_y_A, &vel_z_A
+						vel_x_A, vel_y_A, vel_z_A
 					);
 
 				/*
@@ -587,7 +587,7 @@ public:
 					SWEETMath::latlon_velocity_to_cartesian_velocity(
 							o_pos_lon_D, o_pos_lat_D,
 							vel_lon_extrapol_D, vel_lat_extrapol_D,
-							&vel_x_extrapol_D, &vel_y_extrapol_D, &vel_z_extrapol_D
+							vel_x_extrapol_D, vel_y_extrapol_D, vel_z_extrapol_D
 						);
 
 					ScalarDataArray new_pos_x_D(num_elements), new_pos_y_D(num_elements), new_pos_z_D(num_elements);

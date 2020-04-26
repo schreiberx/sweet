@@ -333,7 +333,7 @@ int main(
 
 #if 1
 			if (error > max_error_threshold)
-				FatalError("Error too large");
+				FatalError("Error too high");
 #endif
 		}
 	}

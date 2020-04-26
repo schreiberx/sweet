@@ -711,6 +711,7 @@ int main(
 			simVars.timecontrol.current_simulation_time = 0;
 			simVars.timecontrol.current_timestep_nr = 0;
 			simVars.timecontrol.current_timestep_size *= 0.5;
+			simVars.timecontrol.setup_timestep_size  = simVars.timecontrol.current_timestep_size;
 
 			std::cout << " + current_timestep_size: " << simVars.timecontrol.current_timestep_size << std::endl;
 

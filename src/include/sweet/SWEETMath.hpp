@@ -129,6 +129,11 @@ public:
 			ScalarDataArray &o_ret2
 	)
 	{
+		o_ret0.setup_if_required(w0);
+		o_ret1.setup_if_required(w0);
+		o_ret2.setup_if_required(w0);
+
+
 		o_ret0 = w1*v2 - w2*v1;
 		o_ret1 = w2*v0 - w0*v2;
 		o_ret2 = w0*v1 - w1*v0;
@@ -145,6 +150,10 @@ public:
 			ScalarDataArray &o_z
 	)
 	{
+		o_x.setup_if_required(i_lon);
+		o_y.setup_if_required(i_lon);
+		o_z.setup_if_required(i_lon);
+
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
 		{
@@ -178,17 +187,21 @@ public:
 			const ScalarDataArray &i_lat,
 			const ScalarDataArray &i_vel_lon,
 			const ScalarDataArray &i_vel_lat,
-			ScalarDataArray *o_v_x,
-			ScalarDataArray *o_v_y,
-			ScalarDataArray *o_v_z
+			ScalarDataArray &o_v_x,
+			ScalarDataArray &o_v_y,
+			ScalarDataArray &o_v_z
 	)
 	{
+		o_v_x.setup_if_required(i_lon);
+		o_v_y.setup_if_required(i_lon);
+		o_v_z.setup_if_required(i_lon);
+
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
 		{
-			o_v_x->scalar_data[i] = -i_vel_lon.scalar_data[i]*std::sin(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::cos(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
-			o_v_y->scalar_data[i] = i_vel_lon.scalar_data[i]*std::cos(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::sin(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
-			o_v_z->scalar_data[i] = i_vel_lat.scalar_data[i]*std::cos(i_lat.scalar_data[i]);
+			o_v_x.scalar_data[i] = -i_vel_lon.scalar_data[i]*std::sin(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::cos(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
+			o_v_y.scalar_data[i] = i_vel_lon.scalar_data[i]*std::cos(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::sin(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
+			o_v_z.scalar_data[i] = i_vel_lat.scalar_data[i]*std::cos(i_lat.scalar_data[i]);
 		}
 	}
 
@@ -203,6 +216,9 @@ public:
 			ScalarDataArray &o_lat
 	)
 	{
+		o_lon.setup_if_required(i_x);
+		o_lat.setup_if_required(i_x);
+
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < i_x.number_of_elements; i++)
 		{
@@ -223,7 +239,17 @@ public:
 			/*
 			 * Now compute the angles using atan2 (and not atan!) and acos
 			 */
+#if 1
+			o_lon.scalar_data[i] = std::atan(i_y.scalar_data[i]/i_x.scalar_data[i]);
+
+			if (i_x.scalar_data[i] < 0)
+				o_lon.scalar_data[i] += M_PI;
+			else if (i_y.scalar_data[i] < 0)
+				o_lon.scalar_data[i] += M_PI*2.0;
+#else
 			o_lon.scalar_data[i] = std::atan2(i_y.scalar_data[i], i_x.scalar_data[i]);
+#endif
+
 			o_lat.scalar_data[i] = std::acos(-i_z.scalar_data[i]) - M_PI*0.5;
 
 		}
@@ -315,6 +341,10 @@ public:
 			ScalarDataArray &o_pos_new_2
 	)
 	{
+		o_pos_new_0.setup_if_required(i_pos_start_0);
+		o_pos_new_1.setup_if_required(i_pos_start_0);
+		o_pos_new_2.setup_if_required(i_pos_start_0);
+
 		/*
 		 * Based on source code from website:
 		 * http://paulbourke.net/geometry/rotate/

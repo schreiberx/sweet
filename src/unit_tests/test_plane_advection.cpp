@@ -345,6 +345,8 @@ int main(int i_argc, char *i_argv[])
 	for (int i = initial_spectral_modes; i <= max_modes; i *= 2)
 	{
 		simVars.timecontrol.current_timestep_size = dt/std::pow(2.0, c);
+		simVars.timecontrol.setup_timestep_size = simVars.timecontrol.current_timestep_size;
+
 		c++;
 
 		if (simVars.disc.timestepping_method == "na_sl")
