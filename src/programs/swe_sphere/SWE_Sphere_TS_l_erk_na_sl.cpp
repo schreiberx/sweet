@@ -399,12 +399,8 @@ void SWE_Sphere_TS_l_erk_na_sl::setup(
 	timestepping_order = i_order;
 	timestepping_order2 = i_order2;
 
-	// Setup sampler for future interpolations
-	sphereSampler.setup(op.sphereDataConfig);
-
 	// Setup semi-lag
 	semiLagrangian.setup(op.sphereDataConfig, simVars);
-
 }
 
 
@@ -415,11 +411,12 @@ SWE_Sphere_TS_l_erk_na_sl::SWE_Sphere_TS_l_erk_na_sl(
 		simVars(i_simVars),
 		op(i_op),
 
+		sphereSampler(semiLagrangian.sampler2D),
+
 		U_phi_pert_prev(i_op.sphereDataConfig),
 		U_vrt_prev(i_op.sphereDataConfig),
 		U_div_prev(i_op.sphereDataConfig)
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
 }
 
 

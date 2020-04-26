@@ -260,7 +260,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_2nd_order(
 		/*
 		 * Compute nonlinearities at N^n and N^{n-1}
 		 */
-		SphereData_Spectral N_phi_D;
+		SphereData_Spectral N_phi_D(sphereDataConfig);
 		if (nonlinear_divergence_treatment == NL_DIV_NONLINEAR)
 		{
 			SphereData_Physical N_phi_D_phys(sphereDataConfig);
@@ -277,7 +277,6 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_2nd_order(
 		}
 		else
 		{
-			N_phi_D.setup(sphereDataConfig);
 			N_phi_D.spectral_set_zero();
 		}
 

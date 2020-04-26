@@ -143,9 +143,9 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_only::run_timestep_2nd_order_pert(
 	/*
 	 * Compute X_D
 	 */
-	SphereData_Spectral U_phi_pert_D;
-	SphereData_Spectral U_vrt_D;
-	SphereData_Spectral U_div_D;
+	SphereData_Spectral U_phi_pert_D(sphereDataConfig);
+	SphereData_Spectral U_vrt_D(sphereDataConfig);
+	SphereData_Spectral U_div_D(sphereDataConfig);
 
 	SphereData_Physical U_phi_pert_D_phys(sphereDataConfig);
 	sphereSampler.bicubic_scalar(
@@ -195,8 +195,6 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_only::run_timestep_2nd_order_pert(
 		);
 
 
-	U_vrt_D.setup(sphereDataConfig);
-	U_div_D.setup(sphereDataConfig);
 	op.uv_to_vortdiv(U_u_D_phys, U_v_D_phys, U_vrt_D, U_div_D, false);
 
 #endif

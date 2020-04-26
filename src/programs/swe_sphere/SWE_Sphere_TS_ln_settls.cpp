@@ -124,9 +124,9 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order_pert(
 	/*
 	 * Compute X_D
 	 */
-	SphereData_Spectral U_phi_pert_D;
-	SphereData_Spectral U_vrt_D;
-	SphereData_Spectral U_div_D;
+	SphereData_Spectral U_phi_pert_D(sphereDataConfig);
+	SphereData_Spectral U_vrt_D(sphereDataConfig);
+	SphereData_Spectral U_div_D(sphereDataConfig);
 
 	if (coriolis_treatment != CORIOLIS_SEMILAGRANGIAN)
 	{
@@ -179,8 +179,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order_pert(
 					simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points
 				);
 
-			U_vrt_D.setup(sphereDataConfig);
-			U_div_D.setup(sphereDataConfig);
 			op.uv_to_vortdiv(U_u_D_phys, U_v_D_phys, U_vrt_D, U_div_D, false);
 
 #endif
@@ -815,8 +813,8 @@ void SWE_Sphere_TS_ln_settls::run_timestep_1st_order(
 
 	SphereData_Spectral R_phi = phi_D_phys;
 
-	SphereData_Spectral R_vrt;
-	SphereData_Spectral R_div;
+	SphereData_Spectral R_vrt(sphereDataConfig);
+	SphereData_Spectral R_div(sphereDataConfig);
 
 	/*
 	 * Prepare SL Coriolis treatment
@@ -919,8 +917,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep_1st_order(
 		u_D_phys += sl_coriolis_departure;
 		u_D_phys -= sl_coriolis_arrival;
 
-		R_vrt.setup(sphereDataConfig);
-		R_div.setup(sphereDataConfig);
 		op.uv_to_vortdiv(
 				u_D_phys, v_D_phys,
 				R_vrt, R_div,
