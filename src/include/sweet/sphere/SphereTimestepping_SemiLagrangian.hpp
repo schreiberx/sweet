@@ -127,7 +127,7 @@ public:
 		}
 
 
-		sl_coriolis.setup(sphereDataConfig);
+		sl_coriolis.setup_if_required(sphereDataConfig);
 		sl_coriolis.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{
