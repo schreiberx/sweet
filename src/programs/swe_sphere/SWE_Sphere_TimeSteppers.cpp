@@ -260,7 +260,7 @@ void SWE_Sphere_TimeSteppers::setup(
 
 
 
-	if (SWE_Sphere_TS_lg_rexi_lc_n_erk::implements_timestepping_method(i_timestepping_method))
+	if (SWE_Sphere_TS_lg_erk_lc_n_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(i_simVars, i_op);
 		lg_erk_lc_n_erk->setup_auto();
@@ -307,15 +307,6 @@ void SWE_Sphere_TimeSteppers::setup(
 	}
 
 
-	if (SWE_Sphere_TS_na_sl_uv::implements_timestepping_method(i_timestepping_method))
-	{
-		na_sl_uv = new SWE_Sphere_TS_na_sl_uv(i_simVars, i_op);
-		na_sl_uv->setup_auto();
-		master = &(SWE_Sphere_TS_interface&)*na_sl_uv;
-		return;
-	}
-
-
 	if (SWE_Sphere_TS_na_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		na_erk = new SWE_Sphere_TS_na_erk(i_simVars, i_op);
@@ -335,7 +326,7 @@ void SWE_Sphere_TimeSteppers::setup(
 	}
 
 
-	if (SWE_Sphere_TS_na_sl_uv::implements_timestepping_method(i_timestepping_method))
+	if (SWE_Sphere_TS_na_sl_vd::implements_timestepping_method(i_timestepping_method))
 	{
 		na_sl_vd = new SWE_Sphere_TS_na_sl_vd(i_simVars, i_op);
 		na_sl_vd->setup_auto();
@@ -390,7 +381,7 @@ void SWE_Sphere_TimeSteppers::setup(
 	}
 
 
-	if (SWE_Sphere_TS_l_cn::implements_timestepping_method(i_timestepping_method))
+	if (SWE_Sphere_TS_lg_cn::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_cn = new SWE_Sphere_TS_lg_cn(i_simVars, i_op);
 		lg_cn->setup_auto();

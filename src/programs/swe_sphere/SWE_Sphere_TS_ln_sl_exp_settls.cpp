@@ -28,7 +28,6 @@ void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_pert(
 
 
 
-
 void SWE_Sphere_TS_ln_sl_exp_settls::run_timestep_1st_order(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables

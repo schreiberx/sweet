@@ -135,7 +135,7 @@ elif group == "l2":
 			'l_cn',
 			'lg_irk_lc_erk',
 
-			'l_lf',
+			#'l_lf',
 			'l_rexi',
 		]
 
@@ -256,6 +256,21 @@ elif group == "ln2_part2":
 			'l_rexi_n_etdrk',
 			'lg_rexi_lc_n_etdrk',
 
+		]
+
+
+elif group == "ln2_split":
+
+	ts_order = 2
+
+	ref_ts_method = 'ln_erk'
+	ref_ts_order = 4
+
+	ts_methods = [
+#			'ln_erk',
+
+			'ln_erk_split_uv',
+			'ln_erk_split_vd',
 		]
 
 else:
