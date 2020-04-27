@@ -348,7 +348,7 @@ void SWE_Sphere_TimeSteppers::setup(
 	if (i_timestepping_method == "lg_rexi_lc_n_etdrk")
 	{
 		lg_rexi_lc_n_etdrk = new SWE_Sphere_TS_lg_rexi_lc_n_etdrk(i_simVars, i_op);
-		l_rexi_n_etdrk->setup_auto();
+		lg_rexi_lc_n_etdrk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_etdrk;
 		return;
 	}
