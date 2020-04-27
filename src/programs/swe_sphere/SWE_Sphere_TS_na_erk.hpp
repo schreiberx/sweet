@@ -22,7 +22,7 @@ class SWE_Sphere_TS_na_erk	: public SWE_Sphere_TS_interface
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
-		if (i_timestepping_method == "na_sl")
+		if (i_timestepping_method == "na_erk")
 			return true;
 
 		return false;
@@ -30,7 +30,7 @@ public:
 
 	std::string string_id()
 	{
-		return "na_sl";
+		return "na_erk";
 	}
 
 	void setup_auto()

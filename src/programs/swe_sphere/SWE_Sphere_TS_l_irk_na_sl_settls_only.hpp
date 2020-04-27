@@ -41,7 +41,7 @@ public:
 
 	std::string string_id()
 	{
-		return "l_rexi";
+		return "l_irk_na_sl_settls_only";
 	}
 
 

@@ -28,7 +28,7 @@ class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
-		if (i_timestepping_method == "lg_rexi_lc_n_etdrk")
+		if (i_timestepping_method == "lg_irk")
 			return true;
 
 		return false;
@@ -36,7 +36,7 @@ public:
 
 	std::string string_id()
 	{
-		return "lg_rexi_lc_n_etdrk";
+		return "lg_irk";
 	}
 
 	void setup_auto()
