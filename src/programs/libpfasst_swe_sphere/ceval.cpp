@@ -3,15 +3,15 @@
 #include <string>
 
 #include <sweet/SimulationVariables.hpp>
-#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
-#include "SWE_Sphere_TS_lg_erk_lc_n_t_erk.hpp"
-#include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
-#include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
-#include "SWE_Sphere_TS_l_irk.hpp"
-#include "SWE_Sphere_TS_ln_erk.hpp"
-#include "SWE_Sphere_TS_lg_irk.hpp"
-#include "SWE_Sphere_TS_l_rexi.hpp"
+#include "SWE_Sphere_TS_PFASST_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_PFASST_l_irk_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_PFASST_l_irk.hpp"
+#include "SWE_Sphere_TS_PFASST_ln_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_irk.hpp"
+#include "SWE_Sphere_TS_PFASST_l_rexi.hpp"
 
 #include "ceval.hpp"
 #include "cencap.hpp"
@@ -255,8 +255,8 @@ void cinitial(
 	//std::cout << "Vorticity error during conversion (infty norm) = " << vort_Y_init.physical_reduce_max_abs() << std::endl;
 
 	// // get the timestepper
-	// SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
-	// //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
+	// SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
+	// //SWE_Sphere_TS_PFASST_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
 
 	// double current_simulation_time = 0;
 	// int nsteps                     = 0;
@@ -461,7 +461,7 @@ void ceval_f1(SphereDataVars *i_Y,
 	if (simVars->libpfasst.implicit_coriolis_force)
 	{
 
-		SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
+		SWE_Sphere_TS_PFASST_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 
 		// compute the explicit nonlinear right-hand side
 		timestepper->euler_timestep_update_n(
@@ -480,7 +480,7 @@ void ceval_f1(SphereDataVars *i_Y,
 		if (!simVars->benchmark.use_topography)
 		{
 
-			SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
 
 			// compute the explicit nonlinear right-hand side
 			timestepper->euler_timestep_update_lc_n(
@@ -496,7 +496,7 @@ void ceval_f1(SphereDataVars *i_Y,
 		else
 		{
 
-			SWE_Sphere_TS_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
 
 			// compute the explicit nonlinear right-hand side
 			timestepper->euler_timestep_update_coriolis_and_nonlinear(
@@ -541,7 +541,7 @@ void ceval_f2 (
 	{
 
 		// get the explicit timestepper
-		SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
+		SWE_Sphere_TS_PFASST_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 
 		// compute the linear right-hand side
 		timestepper->euler_timestep_update_linear(
@@ -561,7 +561,7 @@ void ceval_f2 (
 		{
 
 			// get the explicit timestepper
-			SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
 
 			// compute the linear right-hand side
 			timestepper->euler_timestep_update_linear(
@@ -579,7 +579,7 @@ void ceval_f2 (
 		{
 
 			// get the explicit timestepper
-			SWE_Sphere_TS_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
 
 			// compute the linear right-hand side
 			timestepper->euler_timestep_update_linear(
@@ -620,7 +620,7 @@ void ccomp_f2 (
 	SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
 	// first copy the rhs into the solution vector
-	// this is needed to call the SWEET function run_ts_timestep
+	// this is needed to call the SWEET function run_TS_PFASST_timestep
 	phi_Y  = phi_Rhs;
 	vort_Y = vort_Rhs;
 	div_Y  = div_Rhs;
@@ -629,7 +629,7 @@ void ccomp_f2 (
 	if (simVars->libpfasst.use_rexi)
 	{
 		// get the rexi time stepper
-		SWE_Sphere_TS_l_rexi* timestepper = i_ctx->get_l_rexi_timestepper(io_Y->get_level());
+		SWE_Sphere_TS_PFASST_l_rexi* timestepper = i_ctx->get_l_rexi_timestepper(io_Y->get_level());
 
 		// solve the implicit system using the Helmholtz solver
 		timestepper->run_timestep_nonpert(
@@ -647,7 +647,7 @@ void ccomp_f2 (
 		{
 
 			// get the irk timestepper
-			SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
+			SWE_Sphere_TS_PFASST_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
 
 			// solve the implicit system using the Helmholtz solver
 			timestepper->run_timestep_nonpert(
@@ -663,7 +663,7 @@ void ccomp_f2 (
 		{
 
 			// get the irk timestepper
-			SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
+			SWE_Sphere_TS_PFASST_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
 
 			// solve the implicit system using the Helmholtz solver
 			timestepper->run_timestep_nonpert(

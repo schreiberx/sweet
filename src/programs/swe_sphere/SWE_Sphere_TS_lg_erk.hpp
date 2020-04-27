@@ -21,6 +21,24 @@
 
 class SWE_Sphere_TS_lg_erk	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		return i_timestepping_method == "lg_erk";
+	}
+
+	std::string string_id()
+	{
+		return "lg_erk";
+	}
+
+	void setup_auto()
+	{
+		setup(simVars.disc.timestepping_order);
+	}
+
+
+private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 

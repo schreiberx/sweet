@@ -16,6 +16,18 @@
 
 class SWE_Sphere_TS_l_erk_na_sl	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		return i_timestepping_method == "l_erk_na_sl";
+	}
+
+public:
+	std::string string_id()
+	{
+		return "l_erk_na_sl";
+	}
+
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
@@ -109,6 +121,8 @@ public:
 			int i_order2
 	);
 
+
+	void setup_auto();
 
 	void run_timestep_pert(
 			SphereData_Spectral &io_phi_pert,	///< prognostic variables

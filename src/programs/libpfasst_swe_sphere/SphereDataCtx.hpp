@@ -8,15 +8,15 @@
 #include <sweet/SimulationVariables.hpp>
 #include "LevelSingleton.hpp"
 
-#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
-#include "SWE_Sphere_TS_lg_erk_lc_n_t_erk.hpp"
-#include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
-#include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
-#include "SWE_Sphere_TS_l_irk.hpp"
-#include "SWE_Sphere_TS_ln_erk.hpp"
-#include "SWE_Sphere_TS_lg_irk.hpp"
-#include "SWE_Sphere_TS_l_rexi.hpp"
+#include "SWE_Sphere_TS_PFASST_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_PFASST_l_irk_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_PFASST_l_irk.hpp"
+#include "SWE_Sphere_TS_PFASST_ln_erk.hpp"
+#include "SWE_Sphere_TS_PFASST_lg_irk.hpp"
+#include "SWE_Sphere_TS_PFASST_l_rexi.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
 // Currently only contains a pointer to the level singletons and the SimulationVariables object
@@ -48,18 +48,18 @@ public:
 
     // initialize the time steppers from SWEET
 
-    timestepper_lg_irk_lc_n_erk = new SWE_Sphere_TS_lg_irk_lc_n_erk(
+    timestepper_lg_irk_lc_n_erk = new SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk(
 								    *simVars,
 								    ((*levelSingletons)[levelSingletons->size()-1].op)
 								    );
     timestepper_lg_irk_lc_n_erk->setup(2,2,1);
-    timestepper_l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(
+    timestepper_l_irk_n_erk = new SWE_Sphere_TS_PFASST_l_irk_n_erk(
 							    *simVars,
 							    ((*levelSingletons)[levelSingletons->size()-1].op)
 							    );
     timestepper_l_irk_n_erk->setup(2,2,1);
 
-    timestepper_ln_erk = new SWE_Sphere_TS_ln_erk(
+    timestepper_ln_erk = new SWE_Sphere_TS_PFASST_ln_erk(
 						  *simVars,
 						  ((*levelSingletons)[levelSingletons->size()-1].op)
 						  );
@@ -105,7 +105,7 @@ public:
 	if (simVars->libpfasst.implicit_coriolis_force) 
 	  {
 	    timestepper_l_erk_n_erk[level] = 
-	      new SWE_Sphere_TS_l_erk_n_erk(
+	      new SWE_Sphere_TS_PFASST_l_erk_n_erk(
 					    *simVars,
 					    ((*levelSingletons)[level].op)
 					    );
@@ -117,7 +117,7 @@ public:
   	      if (simVars->benchmark.use_topography)
 	        {
   	          timestepper_lg_erk_lc_n_t_erk[level] = 
-	          new SWE_Sphere_TS_lg_erk_lc_n_t_erk(
+	          new SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk(
 						*simVars,
 						((*levelSingletons)[level].op)
 						);
@@ -126,7 +126,7 @@ public:
 	      else
 		{
   	          timestepper_lg_erk_lc_n_erk[level] = 
-	          new SWE_Sphere_TS_lg_erk_lc_n_erk(
+	          new SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk(
 						*simVars,
 						((*levelSingletons)[level].op)
 						);
@@ -137,7 +137,7 @@ public:
         if (simVars->libpfasst.use_rexi) 
 	  {
             timestepper_l_rexi[level] = 
-	      new SWE_Sphere_TS_l_rexi(
+	      new SWE_Sphere_TS_PFASST_l_rexi(
 	                               *simVars,
 				       ((*levelSingletons)[level].op)
 				       );
@@ -160,7 +160,7 @@ public:
 	    if (simVars->libpfasst.implicit_coriolis_force)
 	      {
 		timestepper_l_irk[level] = 
-		  new SWE_Sphere_TS_l_irk(
+		  new SWE_Sphere_TS_PFASST_l_irk(
 					  *simVars,
 					  ((*levelSingletons)[level].op)
 					  );
@@ -172,7 +172,7 @@ public:
 	    else
 	      {
 		timestepper_lg_irk[level] = 
-		  new SWE_Sphere_TS_lg_irk(
+		  new SWE_Sphere_TS_PFASST_lg_irk(
 					  *simVars,
 					  ((*levelSingletons)[level].op)
 					  );
@@ -282,7 +282,7 @@ public:
   }
 
   // Getter for the linear implicit nonlinear explicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_l_erk_n_erk* get_l_erk_n_erk_timestepper(
+  SWE_Sphere_TS_PFASST_l_erk_n_erk* get_l_erk_n_erk_timestepper(
 							 int i_level
 							 ) const
   {
@@ -293,7 +293,7 @@ public:
   }
 
 // Getter for the linear (gravitational) implicit linear (coriolis) and nonlinear explicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_lg_erk_lc_n_erk* get_lg_erk_lc_n_erk_timestepper(
+  SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk* get_lg_erk_lc_n_erk_timestepper(
 								 int i_level
 								 ) const
   {
@@ -304,7 +304,7 @@ public:
   }
 
 // Getter for the linear (gravitational) implicit linear (coriolis) and nonlinear explicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_lg_erk_lc_n_t_erk* get_lg_erk_lc_n_t_erk_timestepper(
+  SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk* get_lg_erk_lc_n_t_erk_timestepper(
 								     int i_level
 								     ) const
   {
@@ -316,7 +316,7 @@ public:
 
 
   // Getter for the linear implicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_l_irk* get_l_irk_timestepper(
+  SWE_Sphere_TS_PFASST_l_irk* get_l_irk_timestepper(
 					     int i_level
 					     ) const
   {
@@ -327,7 +327,7 @@ public:
   }
 
   // Getter for the linear implicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_lg_irk* get_lg_irk_timestepper(
+  SWE_Sphere_TS_PFASST_lg_irk* get_lg_irk_timestepper(
 					       int i_level
 					       ) const
   {
@@ -338,7 +338,7 @@ public:
   }
 
   // Getter for the REXI linear implicit SWEET time stepper at level i_level
-  SWE_Sphere_TS_l_rexi* get_l_rexi_timestepper( 
+  SWE_Sphere_TS_PFASST_l_rexi* get_l_rexi_timestepper( 
 					       int i_level
 					       ) const
   {
@@ -349,20 +349,20 @@ public:
   }
  
   // Getter for linear gravitational implicit linear Coriolis nonlinear explicit SWEET time stepper at the fine level
-  SWE_Sphere_TS_lg_irk_lc_n_erk* get_lg_irk_lc_n_erk_timestepper() const 
+  SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk* get_lg_irk_lc_n_erk_timestepper() const 
   {
     return timestepper_lg_irk_lc_n_erk;
   }
 
   // Getter for linear implicit nonlinear explicit SWEET time stepper at the fine level
-  SWE_Sphere_TS_l_irk_n_erk* get_l_irk_n_erk_timestepper() const 
+  SWE_Sphere_TS_PFASST_l_irk_n_erk* get_l_irk_n_erk_timestepper() const 
   {
     return timestepper_l_irk_n_erk;
   }
 
 
   // Getter for the explicit timestepper
-  SWE_Sphere_TS_ln_erk* get_ln_erk_timestepper() const 
+  SWE_Sphere_TS_PFASST_ln_erk* get_ln_erk_timestepper() const 
   {
     return timestepper_ln_erk;
   }
@@ -420,16 +420,16 @@ protected:
   std::vector<LevelSingleton> *levelSingletons;
 
   // Pointer to the SWE_Sphere time integrator (implicit linear part, explicit nonlinear part)
-  std::vector<SWE_Sphere_TS_l_erk_n_erk*>       timestepper_l_erk_n_erk;
-  std::vector<SWE_Sphere_TS_lg_erk_lc_n_erk*>   timestepper_lg_erk_lc_n_erk;
-  std::vector<SWE_Sphere_TS_lg_erk_lc_n_t_erk*> timestepper_lg_erk_lc_n_t_erk;
-  std::vector<SWE_Sphere_TS_l_irk*>             timestepper_l_irk;
-  std::vector<SWE_Sphere_TS_lg_irk*>            timestepper_lg_irk;
-  std::vector<SWE_Sphere_TS_l_rexi*>            timestepper_l_rexi; 
+  std::vector<SWE_Sphere_TS_PFASST_l_erk_n_erk*>       timestepper_l_erk_n_erk;
+  std::vector<SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk*>   timestepper_lg_erk_lc_n_erk;
+  std::vector<SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk*> timestepper_lg_erk_lc_n_t_erk;
+  std::vector<SWE_Sphere_TS_PFASST_l_irk*>             timestepper_l_irk;
+  std::vector<SWE_Sphere_TS_PFASST_lg_irk*>            timestepper_lg_irk;
+  std::vector<SWE_Sphere_TS_PFASST_l_rexi*>            timestepper_l_rexi; 
 
-  SWE_Sphere_TS_l_irk_n_erk*     timestepper_l_irk_n_erk;
-  SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper_lg_irk_lc_n_erk;
-  SWE_Sphere_TS_ln_erk*          timestepper_ln_erk;
+  SWE_Sphere_TS_PFASST_l_irk_n_erk*     timestepper_l_irk_n_erk;
+  SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk* timestepper_lg_irk_lc_n_erk;
+  SWE_Sphere_TS_PFASST_ln_erk*          timestepper_ln_erk;
 
   // Saved Residuals for each processor
   std::vector<std::vector<double> > residuals;

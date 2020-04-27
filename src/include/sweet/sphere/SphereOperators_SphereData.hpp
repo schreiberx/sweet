@@ -400,6 +400,36 @@ public:
 
 
 
+	SphereData_Spectral uv_to_div(
+			const SphereData_Physical &i_u,
+			const SphereData_Physical &i_v
+	)	const
+	{
+		SphereData_Spectral tmp(sphereDataConfig);
+		SphereData_Spectral div(sphereDataConfig);
+
+		#if SWEET_DEBUG
+			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+				if (omp_in_parallel())
+					FatalError("IN PARALLEL REGION!!!");
+			#endif
+		#endif
+
+		shtns_robert_form(sphereDataConfig->shtns, 0);
+		spat_to_SHsphtor(
+				sphereDataConfig->shtns,
+				i_u.physical_space_data,
+				i_v.physical_space_data,
+				tmp.spectral_space_data,
+				div.spectral_space_data
+		);
+		shtns_robert_form(sphereDataConfig->shtns, 1);
+
+		return laplace(div)*r;
+	}
+
+
+
 	void robert_uv_to_vortdiv(
 			const SphereData_Physical &i_u,
 			const SphereData_Physical &i_v,

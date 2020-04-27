@@ -403,6 +403,11 @@ void SWE_Sphere_TS_l_erk_na_sl::setup(
 	semiLagrangian.setup(op.sphereDataConfig, simVars);
 }
 
+void SWE_Sphere_TS_l_erk_na_sl::setup_auto()
+{
+	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
+}
+
 
 SWE_Sphere_TS_l_erk_na_sl::SWE_Sphere_TS_l_erk_na_sl(
 		SimulationVariables &i_simVars,

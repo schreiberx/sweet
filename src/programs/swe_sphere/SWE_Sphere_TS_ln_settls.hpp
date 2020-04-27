@@ -11,6 +11,7 @@
 #define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_SETTLS_HPP_
 
 #include <limits>
+#include <string>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
@@ -30,6 +31,33 @@
 
 class SWE_Sphere_TS_ln_settls	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		/*
+		 * Should contain _exp and _settls
+		 */
+		return (
+			(i_timestepping_method.find("_settls") != std::string::npos)
+			&&
+			!(i_timestepping_method.find("_exp") != std::string::npos)
+		);
+
+		return false;
+	}
+
+	std::string string_id_storage;
+
+	std::string string_id()
+	{
+		return string_id_storage;
+	}
+
+
+	void setup_auto();
+
+
+private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 

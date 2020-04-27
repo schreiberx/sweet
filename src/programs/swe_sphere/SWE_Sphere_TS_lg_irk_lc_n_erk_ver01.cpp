@@ -215,6 +215,21 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::setup(
 
 
 
+void SWE_Sphere_TS_lg_irk_lc_n_erk::setup_auto()
+{
+	int version = 0;
+	if (simVars.disc.timestepping_method == "lg_irk_lc_n_erk_ver1")
+		version = 1;
+
+	setup(
+			simVars.disc.timestepping_order,
+			simVars.disc.timestepping_order2,
+			version
+		);
+}
+
+
+
 SWE_Sphere_TS_lg_irk_lc_n_erk::SWE_Sphere_TS_lg_irk_lc_n_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op

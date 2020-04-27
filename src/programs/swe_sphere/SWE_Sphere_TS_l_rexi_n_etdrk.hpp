@@ -20,6 +20,35 @@
 
 class SWE_Sphere_TS_l_rexi_n_etdrk	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		if (i_timestepping_method == "l_rexi_n_etdrk")
+			return true;
+
+		return false;
+	}
+
+	std::string string_id()
+	{
+		return "l_rexi_n_etdrk";
+	}
+
+	void setup_auto()
+	{
+		if (simVars.sim.sphere_use_fsphere)
+			FatalError("TODO: Not yet supported");
+
+		setup(
+				simVars.rexi,
+				simVars.disc.timestepping_order,
+				simVars.disc.timestepping_order2,
+				simVars.timecontrol.current_timestep_size
+			);
+	}
+
+
+private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 

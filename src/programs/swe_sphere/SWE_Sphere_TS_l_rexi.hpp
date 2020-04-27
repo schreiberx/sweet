@@ -50,6 +50,55 @@
 
 class SWE_Sphere_TS_l_rexi	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		if (i_timestepping_method == "l_rexi" || i_timestepping_method == "lg_rexi")
+			return true;
+
+		return false;
+	}
+
+	std::string string_id()
+	{
+		return "l_rexi";
+	}
+
+
+	void setup_auto()
+	{
+		bool no_coriolis = false;
+
+		if (simVars.disc.timestepping_method == "lg_rexi")
+			no_coriolis = true;
+
+		setup(
+			simVars.rexi,
+			"phi0",
+			simVars.timecontrol.current_timestep_size,
+			simVars.sim.sphere_use_fsphere,
+			no_coriolis
+		);
+
+
+		if (simVars.misc.verbosity > 2)
+		{
+			if (simVars.rexi.rexi_method != "direct")
+			{
+				std::cout << "ALPHA:" << std::endl;
+				for (std::size_t n = 0; n < rexi_alphas.size(); n++)
+					std::cout << rexi_alphas[n] << std::endl;
+
+				std::cout << "BETA:" << std::endl;
+				for (std::size_t n = 0; n < rexi_betas.size(); n++)
+					std::cout << rexi_betas[n] << std::endl;
+			}
+		}
+
+	}
+
+
+private:
 	typedef std::complex<double> complex;
 
 

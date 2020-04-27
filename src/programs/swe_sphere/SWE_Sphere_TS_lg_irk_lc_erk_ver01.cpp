@@ -196,6 +196,18 @@ void SWE_Sphere_TS_lg_irk_lc_erk::setup(
 }
 
 
+/*
+ * Setup
+ */
+void SWE_Sphere_TS_lg_irk_lc_erk::setup_auto()
+{
+	if (simVars.disc.timestepping_method == "lg_irk_lc_erk_ver1")
+		setup(simVars.disc.timestepping_order, 1);
+	else
+		setup(simVars.disc.timestepping_order, 0);
+}
+
+
 
 SWE_Sphere_TS_lg_irk_lc_erk::SWE_Sphere_TS_lg_irk_lc_erk(
 		SimulationVariables &i_simVars,

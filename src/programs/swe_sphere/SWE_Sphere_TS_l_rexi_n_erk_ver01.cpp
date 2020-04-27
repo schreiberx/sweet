@@ -221,6 +221,25 @@ void SWE_Sphere_TS_l_rexi_n_erk::setup(
 
 
 
+void SWE_Sphere_TS_l_rexi_n_erk::setup_auto()
+{
+	int version_id = 0;
+
+	if (simVars.disc.timestepping_method == "l_rexi_n_erk_ver1")
+		version_id = 1;
+
+	setup(
+			simVars.rexi,
+			simVars.disc.timestepping_order,
+			simVars.disc.timestepping_order2,
+			simVars.timecontrol.current_timestep_size,
+			simVars.sim.sphere_use_fsphere,
+			version_id
+		);
+}
+
+
+
 SWE_Sphere_TS_l_rexi_n_erk::SWE_Sphere_TS_l_rexi_n_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
@@ -232,7 +251,6 @@ SWE_Sphere_TS_l_rexi_n_erk::SWE_Sphere_TS_l_rexi_n_erk(
 		version_id(0),
 		timestepping_order(-1)
 {
-//	setup(simVars.disc.timestepping_order);
 }
 
 

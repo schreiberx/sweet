@@ -30,6 +30,7 @@ void SWE_Sphere_TS_l_cn::run_timestep_pert(
 }
 
 
+
 SWE_Sphere_TS_l_cn::SWE_Sphere_TS_l_cn(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
@@ -138,10 +139,10 @@ void SWE_Sphere_TS_l_cn::update_coefficients()
 }
 
 
+
 /**
  * Solve a REXI time step for the given initial conditions
  */
-
 void SWE_Sphere_TS_l_cn::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables

@@ -295,6 +295,25 @@ public:
 	}
 
 
+	/*
+	 * Return the data converted to physical space
+	 *
+	 * alias for "getSphereDataPhysical"
+	 */
+	SphereData_Physical toPhys()	const
+	{
+		/**
+		 * Warning: This is an in-situ operation.
+		 * Therefore, the data in the source array will be destroyed.
+		 */
+		SphereData_Spectral tmp(*this);
+		SphereData_Physical retval(sphereDataConfig);
+		SH_to_spat(sphereDataConfig->shtns, tmp.spectral_space_data, retval.physical_space_data);
+
+		return retval;
+	}
+
+
 	SphereData_PhysicalComplex getSphereDataPhysicalComplex()	const
 	{
 		SphereData_PhysicalComplex out(sphereDataConfig);

@@ -30,6 +30,30 @@
 
 class SWE_Sphere_TS_l_irk_na_sl_settls_only	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		if (i_timestepping_method == "l_irk_na_sl_settls_only")
+			return true;
+
+		return false;
+	}
+
+	std::string string_id()
+	{
+		return "l_rexi";
+	}
+
+
+	void setup_auto()
+	{
+		setup(
+			simVars.disc.timestepping_order
+		);
+	}
+
+
+private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 

@@ -115,6 +115,15 @@ void SWE_Sphere_TS_l_erk::setup(
 }
 
 
+/*
+ * Setup
+ */
+void SWE_Sphere_TS_l_erk::setup_auto()
+{
+	setup(simVars.disc.timestepping_order);
+}
+
+
 SWE_Sphere_TS_l_erk::SWE_Sphere_TS_l_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
@@ -122,7 +131,6 @@ SWE_Sphere_TS_l_erk::SWE_Sphere_TS_l_erk(
 		simVars(i_simVars),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
 }
 
 

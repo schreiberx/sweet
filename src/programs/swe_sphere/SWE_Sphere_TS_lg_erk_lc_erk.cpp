@@ -398,6 +398,12 @@ void SWE_Sphere_TS_lg_erk_lc_erk::setup(
 }
 
 
+void SWE_Sphere_TS_lg_erk_lc_erk::setup_auto()
+{
+	setup(simVars.disc.timestepping_order);
+}
+
+
 SWE_Sphere_TS_lg_erk_lc_erk::SWE_Sphere_TS_lg_erk_lc_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
@@ -405,7 +411,6 @@ SWE_Sphere_TS_lg_erk_lc_erk::SWE_Sphere_TS_lg_erk_lc_erk(
 		simVars(i_simVars),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
 }
 
 

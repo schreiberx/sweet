@@ -13,7 +13,6 @@
 
 #include "SWE_Sphere_TS_l_erk.hpp"
 #include "SWE_Sphere_TS_l_rexi.hpp"
-#include "SWE_Sphere_TS_l_lf.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_lg_irk.hpp"
 #include "SWE_Sphere_TS_l_cn.hpp"
@@ -22,11 +21,11 @@
 
 #include "SWE_Sphere_TS_ln_erk.hpp"
 #include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_erk_na_sl.hpp"
 #include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_l_irk_na_sl_settls_only.hpp"
-#include "SWE_Sphere_TS_l_na_erk.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_na_erk.hpp"
 #include "SWE_Sphere_TS_l_rexi_n_erk_ver01.hpp"
@@ -35,14 +34,13 @@
 #include "SWE_Sphere_TS_lg_rexi_lc_n_etdrk.hpp"
 
 
-#include "SWE_Sphere_TS_na_sl.hpp"
-#include "SWE_Sphere_TS_na_sl_pvd.hpp"
-
 #include "SWE_Sphere_TS_lg_erk_lc_erk.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_erk_ver01.hpp"
 
 #include "SWE_Sphere_TS_ln_settls.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls.hpp"
+#include "SWE_Sphere_TS_na_sl_uv.hpp"
+#include "SWE_Sphere_TS_na_sl_vd.hpp"
 
 
 /**
@@ -64,19 +62,17 @@ public:
 	SWE_Sphere_TS_lg_irk_lc_n_erk *lg_irk_lc_n_erk = nullptr;
 
 	SWE_Sphere_TS_l_irk *l_irk = nullptr;
-	SWE_Sphere_TS_l_lf *l_leapfrog = nullptr;
 	SWE_Sphere_TS_l_rexi *l_rexi = nullptr;
 	SWE_Sphere_TS_l_rexi *lg_rexi = nullptr;
 
 	SWE_Sphere_TS_l_cn *l_cn = nullptr;
 	SWE_Sphere_TS_ln_erk *ln_erk = nullptr;
 	SWE_Sphere_TS_ln_erk_split_uv *ln_erk_split_uv = nullptr;
-
-	SWE_Sphere_TS_l_na_erk *l_na_erk = nullptr;
+	SWE_Sphere_TS_ln_erk_split_vd *ln_erk_split_vd = nullptr;
 
 	SWE_Sphere_TS_na_erk *na_erk = nullptr;
-	SWE_Sphere_TS_na_sl_pvd *na_sl_pvd = nullptr;
-	SWE_Sphere_TS_na_sl *na_sl = nullptr;
+	SWE_Sphere_TS_na_sl_vd *na_sl_vd = nullptr;
+	SWE_Sphere_TS_na_sl_uv *na_sl_uv = nullptr;
 
 	SWE_Sphere_TS_l_rexi_n_erk *l_rexi_n_erk = nullptr;
 	SWE_Sphere_TS_l_rexi_n_etdrk *l_rexi_n_etdrk = nullptr;

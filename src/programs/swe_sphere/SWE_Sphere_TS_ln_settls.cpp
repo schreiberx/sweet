@@ -1755,8 +1755,6 @@ void SWE_Sphere_TS_ln_settls::run_timestep_2nd_order(
 	io_U_div = R_div;
 }
 
-
-
 void SWE_Sphere_TS_ln_settls::setup(
 		int i_timestepping_order,
 		LinearTreatment_enum i_linear_treatment,
@@ -1860,6 +1858,119 @@ void SWE_Sphere_TS_ln_settls::setup(
 			swe_sphere_ts_lg_irk->setup(1, 0.5 * simVars.timecontrol.current_timestep_size, 0);
 	}
 }
+
+
+
+void SWE_Sphere_TS_ln_settls::setup_auto()
+{
+	SWE_Sphere_TS_ln_settls::LinearTreatment_enum linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IGNORE;
+	SWE_Sphere_TS_ln_settls::LinearCoriolisTreatment_enum linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_IGNORE;
+	SWE_Sphere_TS_ln_settls::NLAdvectionTreatment_enum nonlinear_advection_treatment = SWE_Sphere_TS_ln_settls::NL_ADV_IGNORE;
+	SWE_Sphere_TS_ln_settls::NLDivergenceTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_IGNORE;
+	bool original_linear_operator_sl_treatment = true;
+
+	if (simVars.disc.timestepping_method == "ln_settls")
+	{
+		linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT;
+		linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
+		nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR;
+		original_linear_operator_sl_treatment = true;
+	}
+	else
+	{
+		// Search for implicit or exp treatment of linear parts
+		if (simVars.disc.timestepping_method.find("_irk_") != std::string::npos)
+			linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT;
+		else if (simVars.disc.timestepping_method.find("_exp_") != std::string::npos)
+			linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL;
+
+		// Search for Coriolis
+		if (simVars.disc.timestepping_method.find("l_irk") != std::string::npos || simVars.disc.timestepping_method.find("l_exp") != std::string::npos)
+			linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
+		else if (simVars.disc.timestepping_method.find("lc_na_sl") != std::string::npos)
+			linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN;
+		else if (simVars.disc.timestepping_method.find("lc_") != std::string::npos)
+			linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR;
+
+		if (simVars.disc.timestepping_method.find("_na_sl") != std::string::npos)
+			nonlinear_advection_treatment = SWE_Sphere_TS_ln_settls::NL_ADV_SEMILAGRANGIAN;
+
+		// Search for Nonlinear divergence
+		if (simVars.disc.timestepping_method.find("_nd_") != std::string::npos)
+			nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR;
+
+		if (simVars.disc.timestepping_method.find("_ver2") != std::string::npos)
+			original_linear_operator_sl_treatment = false;
+
+#if 1
+		string_id_storage = "";
+
+		if (linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR)
+			string_id_storage += "l";
+		else
+			string_id_storage += "lg";
+
+		if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT)
+			string_id_storage += "_irk";
+		else if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL)
+			string_id_storage += "_exp";
+
+		if (linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN)
+			string_id_storage += "_lc";
+
+		if (nonlinear_advection_treatment == SWE_Sphere_TS_ln_settls::NL_ADV_SEMILAGRANGIAN)
+			string_id_storage += "_na";
+
+		if (
+			linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN ||
+			nonlinear_advection_treatment == SWE_Sphere_TS_ln_settls::NL_ADV_SEMILAGRANGIAN
+		)
+		string_id_storage += "_sl";
+
+		if (linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR)
+			string_id_storage += "_lc";
+
+		if (nonlinear_divergence_treatment == SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR)
+			string_id_storage += "_nd";
+
+		string_id_storage += "_settls";
+
+		if (!original_linear_operator_sl_treatment)
+			string_id_storage += "_ver2";
+
+
+		if (simVars.disc.timestepping_method != string_id_storage)
+		{
+			if (!original_linear_operator_sl_treatment)
+			{
+				std::cerr << "Detected time stepping method: "+string_id_storage << std::endl;
+				std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
+				FatalError("Autodetection of parts of time stepping methods failed!");
+			}
+
+			std::string string_id_storage2 = string_id_storage+"_ver1";
+			if (simVars.disc.timestepping_method != string_id_storage2)
+			{
+				std::cerr << "Detected time stepping method: "+string_id_storage << std::endl;
+				std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
+				std::cerr << "Detected alternative time stepping method: "+string_id_storage << std::endl;
+				FatalError("Autodetection of parts of time stepping methods failed!");
+			}
+		}
+	}
+#endif
+
+	setup(
+			simVars.disc.timestepping_order,
+			linear_treatment,
+			linear_coriolis_treatment,				// Coriolis treatment
+			nonlinear_advection_treatment,			// Nonlinear advection treatment
+			nonlinear_divergence_treatment,			// Nonlinear divergence treatment
+			original_linear_operator_sl_treatment	// original SL linear operator treatment
+		);
+}
+
+
 
 SWE_Sphere_TS_ln_settls::SWE_Sphere_TS_ln_settls(
 			SimulationVariables &i_simVars,

@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_REXI_LF_N_ERK_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_REXI_LF_N_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_REXI_LC_N_ERK_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_REXI_LC_N_ERK_HPP_
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -22,6 +22,49 @@
 
 class SWE_Sphere_TS_lg_rexi_lc_n_erk	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		if (
+			i_timestepping_method == "lg_rexi_lc_n_erk" || i_timestepping_method == "lg_rexi_lc_n_erk_ver0" ||
+			i_timestepping_method == "lg_rexi_lc_n_erk_ver1"
+		)
+			return true;
+
+		return false;
+	}
+
+	std::string string_id()
+	{
+		std::string s = "lg_rexi_lc_n_erk_ver";
+
+		if (version_id == 0)
+			s += "0";
+		else if (version_id == 1)
+			s += "1";
+		else
+			FatalError("Version ID");
+
+		return s;
+	}
+
+	void setup_auto()
+	{
+		int version = 0;
+		if (simVars.disc.timestepping_method == "lg_rexi_lc_n_erk_ver1")
+			version = 1;
+
+		setup(
+				simVars.rexi,
+				simVars.disc.timestepping_order,
+				simVars.disc.timestepping_order2,
+				simVars.timecontrol.current_timestep_size,
+				version
+			);
+	}
+
+
+private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 

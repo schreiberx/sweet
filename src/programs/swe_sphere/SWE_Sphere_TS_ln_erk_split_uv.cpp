@@ -1,12 +1,12 @@
 /*
  * SWE_Sphere_TS_split_lg_lc_na_nr_erk.cpp
  *
- *  Created on: 30 May 2017
+ *  Created on: 24 Apr 2020
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
 
+#include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 
@@ -23,17 +23,14 @@ SphereData_Spectral SWE_Sphere_TS_ln_erk_split_uv::V_dot_grad_scalar(
 		const SphereData_Physical &i_scalar_phys	///< scalar
 )
 {
-	const SphereData_Config *sphereDataConfig = i_u_phys.sphereDataConfig;
-
-	SphereData_Physical uphi_nl = i_u_phys*i_scalar_phys;
-	SphereData_Physical vphi_nl = i_v_phys*i_scalar_phys;
-
-	SphereData_Spectral div(sphereDataConfig);
-	SphereData_Spectral vrt(sphereDataConfig);
-	op.uv_to_vortdiv(uphi_nl, vphi_nl, vrt, div, simVars.misc.sphere_use_robert_functions);
-
-	return div - i_div_phys*i_scalar_phys;
+	return op.uv_to_div(
+			i_u_phys*i_scalar_phys,
+			i_v_phys*i_scalar_phys
+		)
+			- i_div_phys*i_scalar_phys;
 }
+
+
 
 /*
  * Main routine for method to be used in case of finite differences
@@ -59,10 +56,8 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert(
 	const SphereData_Spectral &U_div = i_U_div;
 
 
-	SphereData_Physical U_u_phys(sphereDataConfig);
-	SphereData_Physical U_v_phys(sphereDataConfig);
-	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys, simVars.misc.sphere_use_robert_functions);
-
+	SphereData_Physical U_u_phys, U_v_phys;
+	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 	o_phi_pert_t.spectral_set_zero();
 	o_vrt_t.spectral_set_zero();
@@ -72,21 +67,21 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert(
 	/*
 	 * See [SWEET]/doc/swe/swe_sphere_formulation/swe_on_sphere_formulation_in_sweet.pdf/lyx
 	 */
+
 	if (use_lg)
 	{
 		o_phi_pert_t -= gh0*U_div;
 		o_div_t -= op.laplace(U_phi_pert);
 	}
 
+
 	if (use_lc)
 	{
 		SphereData_Physical fu_nl = op.fg*U_u_phys;
 		SphereData_Physical fv_nl = op.fg*U_v_phys;
 
-		SphereData_Spectral div(sphereDataConfig);
-		SphereData_Spectral vrt(sphereDataConfig);
-
-		op.uv_to_vortdiv(fu_nl, fv_nl, vrt, div, simVars.misc.sphere_use_robert_functions);
+		SphereData_Spectral div, vrt;
+		op.uv_to_vortdiv(fu_nl, fv_nl, vrt, div);
 
 		o_vrt_t -= div;
 		o_div_t += vrt;
@@ -95,35 +90,83 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert(
 
 	if (use_na)
 	{
-		SphereData_Physical U_div_phys = U_div.getSphereDataPhysical();
+		SphereData_Physical U_div_phys = U_div.toPhys();
+		o_phi_pert_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
 
-		SphereData_Spectral u_t(sphereDataConfig);
-		SphereData_Spectral v_t(sphereDataConfig);
+		/*
+		 * Velocity
+		 */
+		SphereData_Physical vrtg = i_U_vrt.toPhys();
 
-		o_phi_pert_t -= V_dot_grad_scalar(U_v_phys, U_u_phys, U_div_phys, U_phi_pert.getSphereDataPhysical());
-		u_t -= V_dot_grad_scalar(U_v_phys, U_u_phys, U_div_phys, U_u_phys);
-		v_t -= V_dot_grad_scalar(U_v_phys, U_u_phys, U_div_phys, U_v_phys);
+		SphereData_Physical u_nl = U_u_phys*vrtg;
+		SphereData_Physical v_nl = U_v_phys*vrtg;
 
-		SphereData_Spectral div(sphereDataConfig);
-		SphereData_Spectral vrt(sphereDataConfig);
-		op.uv_to_vortdiv(u_t.getSphereDataPhysical(), v_t.getSphereDataPhysical(), vrt, div, simVars.misc.sphere_use_robert_functions);
+		SphereData_Spectral vrt, div;
+		op.uv_to_vortdiv(u_nl, v_nl, vrt, div);
+		o_vrt_t -= div;
+		o_div_t += vrt;
 
-		o_vrt_t += vrt;
-		o_div_t += div;
+		o_div_t -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
 	}
+
 
 	if (use_nr)
 	{
-		SphereData_Physical fu_nl = op.fg*U_u_phys;
-		SphereData_Physical fv_nl = op.fg*U_v_phys;
-
-		SphereData_Spectral div(sphereDataConfig);
-		SphereData_Spectral vrt(sphereDataConfig);
-
-		op.uv_to_vortdiv(fu_nl, fv_nl, vrt, div, simVars.misc.sphere_use_robert_functions);
-
-		o_phi_pert_t -= U_phi_pert.getSphereDataPhysical()*U_div.getSphereDataPhysical();
+		o_phi_pert_t -= SphereData_Spectral(U_phi_pert.toPhys()*U_div.toPhys());
 	}
+
+#if 0
+	{
+		/*
+		 * Regular way how to compute it (the vort/div formulation of nonlinear advection part)
+		 *
+		 * However, there seems to go something wrong
+		 */
+
+		SphereData_Spectral reg_vrt, reg_div;
+		/*
+		 * Nonlinear parts of U/V
+		 */
+		SphereData_Physical vrtg = i_U_vrt.toPhys();
+
+		SphereData_Spectral vrt, div;
+		op.uv_to_vortdiv(U_u_phys*vrtg, U_v_phys*vrtg, vrt, div);
+		reg_vrt = -div;
+		reg_div = vrt;
+		reg_div -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
+
+
+		//////////////////////////////////////////////////////////////////////////////////////////
+
+		/*
+		 * Computation based on first
+		 * V \cdot grad(u)
+		 * and
+		 * V \cdot grad(v)
+		 *
+		 * then compute vort/div
+		 */
+		SphereData_Spectral new_vrt, new_div;
+
+		SphereData_Physical U_div_phys = U_div.toPhys();
+
+		SphereData_Spectral u_t = -V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_u_phys);
+		SphereData_Spectral v_t = -V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_v_phys);
+
+		op.uv_to_vortdiv(u_t.toPhys(), v_t.toPhys(), vrt, div);
+
+		new_vrt = vrt;
+		new_div = div;
+
+		SphereData_DebugContainer::clear();
+		SphereData_DebugContainer::append(reg_vrt - new_vrt, "tmp_vrt");
+		SphereData_DebugContainer::append(reg_div - new_div, "tmp_div");
+		SphereData_DebugContainer::append(reg_vrt, "reg_vrt");
+		SphereData_DebugContainer::append(new_vrt, "new_vrt");
+		SphereData_DebugContainer::append(reg_div, "reg_div");
+		SphereData_DebugContainer::append(new_div, "new_div");
+	}
+#endif
 }
 
 

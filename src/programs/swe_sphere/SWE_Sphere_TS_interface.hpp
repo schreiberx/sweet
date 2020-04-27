@@ -17,6 +17,15 @@
 class SWE_Sphere_TS_interface
 {
 public:
+
+	/*
+	 * Automatic setup based on simVars and operator
+	 */
+	virtual void setup_auto() = 0;
+
+	/*
+	 * Timestepping interface used by main timestepping loop
+	 */
 	virtual void run_timestep_pert(
 			SphereData_Spectral &io_h,	///< prognostic variables
 			SphereData_Spectral &io_u,	///< prognostic variables

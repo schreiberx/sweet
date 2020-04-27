@@ -23,6 +23,35 @@
 
 class SWE_Sphere_TS_lg_irk_lc_n_erk	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		if (
+			i_timestepping_method == "lg_irk_lc_n_erk" || i_timestepping_method == "lg_irk_lc_n_erk_ver0" ||
+			i_timestepping_method == "lg_irk_lc_n_erk_ver1"
+		)
+			return true;
+
+		return false;
+	}
+
+	std::string string_id()
+	{
+		std::string s = "l_rexi_n_erk_ver";
+
+		if (version_id == 0)
+			s += "0";
+		else if (version_id == 1)
+			s += "1";
+		else
+			FatalError("Version ID");
+
+		return s;
+	}
+
+	void setup_auto();
+
+private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 

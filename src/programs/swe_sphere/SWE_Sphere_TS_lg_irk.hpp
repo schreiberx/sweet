@@ -25,6 +25,33 @@
  */
 class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		if (i_timestepping_method == "lg_rexi_lc_n_etdrk")
+			return true;
+
+		return false;
+	}
+
+	std::string string_id()
+	{
+		return "lg_rexi_lc_n_etdrk";
+	}
+
+	void setup_auto()
+	{
+		if (simVars.sim.sphere_use_fsphere)
+			FatalError("TODO: Not yet supported");
+
+		setup(
+				simVars.disc.timestepping_order,
+				simVars.timecontrol.current_timestep_size
+			);
+	}
+
+
+private:
 	/// Simulation variables
 	SimulationVariables &simVars;
 

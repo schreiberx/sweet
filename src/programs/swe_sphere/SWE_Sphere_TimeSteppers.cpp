@@ -68,11 +68,6 @@ void SWE_Sphere_TimeSteppers::reset()
 		delete l_irk;
 		l_irk = nullptr;
 	}
-	if (l_leapfrog != nullptr)
-	{
-		delete l_erk;
-		l_erk = nullptr;
-	}
 	if (l_rexi != nullptr)
 	{
 		delete l_rexi;
@@ -99,28 +94,27 @@ void SWE_Sphere_TimeSteppers::reset()
 		delete ln_erk_split_uv;
 		ln_erk_split_uv = nullptr;
 	}
-
-
-	if (l_na_erk != nullptr)
+	if (ln_erk_split_vd != nullptr)
 	{
-		delete l_na_erk;
-		l_na_erk = nullptr;
+		delete ln_erk_split_vd;
+		ln_erk_split_vd = nullptr;
 	}
+
 
 	if (na_erk != nullptr)
 	{
 		delete na_erk;
 		na_erk = nullptr;
 	}
-	if (na_sl_pvd != nullptr)
+	if (na_sl_vd != nullptr)
 	{
-		delete na_sl_pvd;
-		na_sl_pvd = nullptr;
+		delete na_sl_vd;
+		na_sl_vd = nullptr;
 	}
-	if (na_sl != nullptr)
+	if (na_sl_uv != nullptr)
 	{
-		delete na_sl;
-		na_sl = nullptr;
+		delete na_sl_uv;
+		na_sl_uv = nullptr;
 	}
 
 	if (l_rexi_n_erk != nullptr)
@@ -188,593 +182,266 @@ void SWE_Sphere_TimeSteppers::setup(
 		SimulationVariables &i_simVars
 )
 {
-	if (i_timestepping_method == "l_erk")
+	if (SWE_Sphere_TS_l_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		l_erk = new SWE_Sphere_TS_l_erk(i_simVars, i_op);
-		l_erk->setup(i_simVars.disc.timestepping_order);
-
+		l_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_erk;
+		return;
 	}
-	else if (i_timestepping_method == "l_erk_n_erk")
+
+	if (SWE_Sphere_TS_l_erk_n_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		l_erk_n_erk = new SWE_Sphere_TS_l_erk_n_erk(i_simVars, i_op);
-		l_erk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2);
-
+		l_erk_n_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_erk_n_erk;
+		return;
 	}
-	else if (i_timestepping_method == "l_erk_na_sl")
+
+	if (SWE_Sphere_TS_l_erk_na_sl::implements_timestepping_method(i_timestepping_method))
 	{
 		l_erk_na_sl = new SWE_Sphere_TS_l_erk_na_sl(i_simVars, i_op);
-		l_erk_na_sl->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2);
-
+		l_erk_na_sl->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_erk_na_sl;
+		return;
 	}
-	else if (i_timestepping_method == "lg_erk_lc_erk")
+
+	if (SWE_Sphere_TS_lg_erk_lc_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_erk_lc_erk = new SWE_Sphere_TS_lg_erk_lc_erk(i_simVars, i_op);
-		lg_erk_lc_erk->setup(i_simVars.disc.timestepping_order);
-
+		lg_erk_lc_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_erk_lc_erk;
+		return;
 	}
-	else if (i_timestepping_method == "lg_irk_lc_erk" || i_timestepping_method == "lg_irk_lc_erk_ver0")
+
+	if (SWE_Sphere_TS_lg_irk_lc_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_irk_lc_erk = new SWE_Sphere_TS_lg_irk_lc_erk(i_simVars, i_op);
-		lg_irk_lc_erk->setup(i_simVars.disc.timestepping_order, 0);
-
+		lg_irk_lc_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_erk;
+		return;
 	}
-	else if (i_timestepping_method == "lg_irk_lc_erk_ver1")
-	{
-		lg_irk_lc_erk = new SWE_Sphere_TS_lg_irk_lc_erk(i_simVars, i_op);
-		lg_irk_lc_erk->setup(i_simVars.disc.timestepping_order, 1);
 
-		master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_erk;
-	}
-	else if (
-		i_timestepping_method == "l_irk_n_erk" || i_timestepping_method == "l_irk_n_erk_ver0" ||
-		i_timestepping_method == "l_cn_n_erk" || i_timestepping_method == "l_cn_n_erk_ver0"
-	)
+	if (SWE_Sphere_TS_l_irk_n_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op);
-		l_irk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2, 0);
-
+		l_irk_n_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_irk_n_erk;
+		return;
 	}
-	else if (i_timestepping_method == "l_irk_n_erk_ver1")
-	{
-		l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op);
-		l_irk_n_erk->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_order2, 1);
 
-		master = &(SWE_Sphere_TS_interface&)*l_irk_n_erk;
-	}
-	else if (i_timestepping_method == "l_rexi_n_erk" || i_timestepping_method == "l_rexi_n_erk_ver0")
+	if (SWE_Sphere_TS_l_rexi_n_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		l_rexi_n_erk = new SWE_Sphere_TS_l_rexi_n_erk(i_simVars, i_op);
-
-		l_rexi_n_erk->setup(
-				i_simVars.rexi,
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				i_simVars.timecontrol.current_timestep_size,
-				i_simVars.sim.sphere_use_fsphere,
-				0	// VERSION 0
-			);
-
+		l_rexi_n_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_rexi_n_erk;
+		return;
 	}
-	else if (i_timestepping_method == "l_rexi_n_erk_ver1")
-	{
-		l_rexi_n_erk = new SWE_Sphere_TS_l_rexi_n_erk(i_simVars, i_op);
 
-		l_rexi_n_erk->setup(
-				i_simVars.rexi,
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				i_simVars.timecontrol.current_timestep_size,
-				i_simVars.sim.sphere_use_fsphere,
-				1	// VERSION 1
-			);
 
-		master = &(SWE_Sphere_TS_interface&)*l_rexi_n_erk;
-	}
-	else if (i_timestepping_method == "lg_irk_lc_n_erk" || i_timestepping_method == "lg_irk_lc_n_erk_ver0")
+	if (SWE_Sphere_TS_lg_irk_lc_n_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_irk_lc_n_erk = new SWE_Sphere_TS_lg_irk_lc_n_erk(i_simVars, i_op);
-		lg_irk_lc_n_erk->setup(
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				0
-			);
+		lg_irk_lc_n_erk->setup_auto();
 
 		master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_n_erk;
+		return;
 	}
-	else if (i_timestepping_method == "lg_irk_lc_n_erk_ver1")
-	{
-		lg_irk_lc_n_erk = new SWE_Sphere_TS_lg_irk_lc_n_erk(i_simVars, i_op);
-		lg_irk_lc_n_erk->setup(
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				1
-			);
 
-		master = &(SWE_Sphere_TS_interface&)*lg_irk_lc_n_erk;
-	}
-	else if (i_timestepping_method == "lg_rexi_lc_n_erk" || i_timestepping_method == "lg_rexi_lc_n_erk_ver0")
+
+	if (SWE_Sphere_TS_lg_rexi_lc_n_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_rexi_lc_n_erk = new SWE_Sphere_TS_lg_rexi_lc_n_erk(i_simVars, i_op);
-		lg_rexi_lc_n_erk->setup(
-				i_simVars.rexi,
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				i_simVars.timecontrol.current_timestep_size,
-				0
-			);
+		lg_rexi_lc_n_erk->setup_auto();
 
 		master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_erk;
+		return;
 	}
-	else if (i_timestepping_method == "lg_rexi_lc_n_erk_ver1")
-	{
-		lg_rexi_lc_n_erk = new SWE_Sphere_TS_lg_rexi_lc_n_erk(i_simVars, i_op);
-		lg_rexi_lc_n_erk->setup(
-				i_simVars.rexi,
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				i_simVars.timecontrol.current_timestep_size,
-				1
-			);
 
-		master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_erk;
-	}
-	else if (i_timestepping_method == "lg_erk_lc_n_erk" || i_timestepping_method == "lg_erk_lc_n_erk_ver0")
+
+
+	if (SWE_Sphere_TS_lg_rexi_lc_n_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(i_simVars, i_op);
-		lg_erk_lc_n_erk->setup(
-				i_simVars.disc.timestepping_order,
-				0
-			);
-
+		lg_erk_lc_n_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_erk_lc_n_erk;
+		return;
 	}
-	else if (i_timestepping_method == "lg_erk_lc_n_erk_ver1")
-	{
-		lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(i_simVars, i_op);
-		lg_erk_lc_n_erk->setup(
-				i_simVars.disc.timestepping_order,
-				1
-			);
 
-		master = &(SWE_Sphere_TS_interface&)*lg_erk_lc_n_erk;
-	}
-	else if (i_timestepping_method == "lg_erk")
+	if (SWE_Sphere_TS_lg_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_erk = new SWE_Sphere_TS_lg_erk(i_simVars, i_op);
-		lg_erk->setup(
-				i_simVars.disc.timestepping_order
-			);
-
+		lg_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_erk;
+		return;
 	}
-	else if (i_timestepping_method == "ln_erk")
+
+
+	if (SWE_Sphere_TS_ln_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		ln_erk = new SWE_Sphere_TS_ln_erk(i_simVars, i_op);
-		ln_erk->setup(i_simVars.disc.timestepping_order);
-
+		ln_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*ln_erk;
+		return;
 	}
-	else if (i_timestepping_method == "ln_erk_split_uv")
+
+
+
+	if (SWE_Sphere_TS_ln_erk_split_uv::implements_timestepping_method(i_timestepping_method))
 	{
 		ln_erk_split_uv = new SWE_Sphere_TS_ln_erk_split_uv(i_simVars, i_op);
-		ln_erk_split_uv->setup(i_simVars.disc.timestepping_order, true, true, true, true);
-
+		ln_erk_split_uv->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*ln_erk_split_uv;
+		return;
 	}
-	else if (i_timestepping_method == "l_na_erk")
-	{
-		l_na_erk = new SWE_Sphere_TS_l_na_erk(i_simVars, i_op);
-		l_na_erk->setup(i_simVars.disc.timestepping_order);
 
-		master = &(SWE_Sphere_TS_interface&)*l_na_erk;
-	}
-	else if (i_timestepping_method == "na_sl")
-	{
-		na_sl = new SWE_Sphere_TS_na_sl(i_simVars, i_op);
-		na_sl->setup(i_simVars.disc.timestepping_order);
 
-		master = &(SWE_Sphere_TS_interface&)*na_sl;
+
+	if (SWE_Sphere_TS_ln_erk_split_vd::implements_timestepping_method(i_timestepping_method))
+	{
+		ln_erk_split_vd = new SWE_Sphere_TS_ln_erk_split_vd(i_simVars, i_op);
+		ln_erk_split_vd->setup_auto();
+
+		master = &(SWE_Sphere_TS_interface&)*ln_erk_split_vd;
+		return;
 	}
-	else if (i_timestepping_method == "na_erk")
+
+
+	if (SWE_Sphere_TS_na_sl_uv::implements_timestepping_method(i_timestepping_method))
+	{
+		na_sl_uv = new SWE_Sphere_TS_na_sl_uv(i_simVars, i_op);
+		na_sl_uv->setup_auto();
+		master = &(SWE_Sphere_TS_interface&)*na_sl_uv;
+		return;
+	}
+
+
+	if (SWE_Sphere_TS_na_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		na_erk = new SWE_Sphere_TS_na_erk(i_simVars, i_op);
-		na_erk->setup(i_simVars.disc.timestepping_order);
-
+		na_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*na_erk;
+		return;
 	}
-	else if (i_timestepping_method == "na_sl" || i_timestepping_method == "na_sl_puv")
-	{
-		na_sl = new SWE_Sphere_TS_na_sl(i_simVars, i_op);
-		na_sl->setup(i_simVars.disc.timestepping_order);
 
-		master = &(SWE_Sphere_TS_interface&)*na_sl;
-	}
-	else if (i_timestepping_method == "na_sl_pvd")
-	{
-		na_sl_pvd = new SWE_Sphere_TS_na_sl_pvd(i_simVars, i_op);
-		na_sl_pvd->setup(i_simVars.disc.timestepping_order);
 
-		master = &(SWE_Sphere_TS_interface&)*na_sl_pvd;
+
+	if (SWE_Sphere_TS_na_sl_uv::implements_timestepping_method(i_timestepping_method))
+	{
+		na_sl_uv = new SWE_Sphere_TS_na_sl_uv(i_simVars, i_op);
+		na_sl_uv->setup_auto();
+		master = &(SWE_Sphere_TS_interface&)*na_sl_uv;
+		return;
 	}
-	else if (i_timestepping_method == "l_rexi_n_etdrk")
+
+
+	if (SWE_Sphere_TS_na_sl_uv::implements_timestepping_method(i_timestepping_method))
+	{
+		na_sl_vd = new SWE_Sphere_TS_na_sl_vd(i_simVars, i_op);
+		na_sl_vd->setup_auto();
+		master = &(SWE_Sphere_TS_interface&)*na_sl_vd;
+		return;
+	}
+
+
+	if (SWE_Sphere_TS_l_rexi_n_etdrk::implements_timestepping_method(i_timestepping_method))
 	{
 		l_rexi_n_etdrk = new SWE_Sphere_TS_l_rexi_n_etdrk(i_simVars, i_op);
-		l_rexi_n_etdrk->setup(
-				i_simVars.rexi,
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				i_simVars.timecontrol.current_timestep_size
-			);
-
-		if (i_simVars.sim.sphere_use_fsphere)
-			FatalError("TODO: Not yet supported");
-
+		l_rexi_n_etdrk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_rexi_n_etdrk;
+		return;
 	}
-	else if (i_timestepping_method == "lg_rexi_lc_n_etdrk")
+
+
+	if (SWE_Sphere_TS_lg_rexi_lc_n_etdrk::implements_timestepping_method(i_timestepping_method))
+	if (i_timestepping_method == "lg_rexi_lc_n_etdrk")
 	{
 		lg_rexi_lc_n_etdrk = new SWE_Sphere_TS_lg_rexi_lc_n_etdrk(i_simVars, i_op);
-		lg_rexi_lc_n_etdrk->setup(
-				i_simVars.rexi,
-				i_simVars.disc.timestepping_order,
-				i_simVars.disc.timestepping_order2,
-				i_simVars.timecontrol.current_timestep_size
-			);
-
-		if (i_simVars.sim.sphere_use_fsphere)
-			FatalError("TODO: Not yet supported");
-
+		l_rexi_n_etdrk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_rexi_lc_n_etdrk;
+		return;
 	}
-	else if (i_timestepping_method == "l_irk")
+
+
+	if (SWE_Sphere_TS_l_irk::implements_timestepping_method(i_timestepping_method))
+	if (i_timestepping_method == "l_irk")
 	{
 		l_irk = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
-		l_irk->setup(i_simVars.disc.timestepping_order, i_simVars.timecontrol.current_timestep_size, i_simVars.rexi.use_sphere_extended_modes);
-
+		l_irk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_irk;
+		return;
 	}
-	else if (i_timestepping_method == "lg_irk")
+
+
+	if (SWE_Sphere_TS_lg_irk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_irk = new SWE_Sphere_TS_lg_irk(i_simVars, i_op);
-		lg_irk->setup(i_simVars.disc.timestepping_order, i_simVars.timecontrol.current_timestep_size);
-
+		lg_irk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_irk;
+		return;
 	}
-	else if (i_timestepping_method == "l_lf")
-	{
-		l_leapfrog = new SWE_Sphere_TS_l_lf(i_simVars, i_op);
-		l_leapfrog->setup(i_simVars.disc.timestepping_order, i_simVars.disc.timestepping_leapfrog_robert_asselin_filter);
 
-		master = &(SWE_Sphere_TS_interface&)*l_leapfrog;
-	}
-	else if (
-		i_timestepping_method == "l_cn"	||
-		i_timestepping_method == "l_irk"
-	)
+	if (SWE_Sphere_TS_l_cn::implements_timestepping_method(i_timestepping_method))
 	{
 		l_cn = new SWE_Sphere_TS_l_cn(i_simVars, i_op);
-		l_cn->setup(i_simVars.disc.timestepping_crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size, i_simVars.rexi.use_sphere_extended_modes);
-
+		l_cn->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_cn;
+		return;
 	}
-	else if (
-		i_timestepping_method == "lg_cn"	||
-		i_timestepping_method == "lg_irk"
-	)
+
+
+	if (SWE_Sphere_TS_l_cn::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_cn = new SWE_Sphere_TS_lg_cn(i_simVars, i_op);
-		lg_cn->setup(i_simVars.disc.timestepping_crank_nicolson_filter, i_simVars.timecontrol.current_timestep_size);
-
+		lg_cn->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*lg_cn;
+		return;
 	}
-	else if (i_timestepping_method == "l_rexi")
+
+
+	if (SWE_Sphere_TS_l_rexi::implements_timestepping_method(i_timestepping_method))
 	{
 		l_rexi = new SWE_Sphere_TS_l_rexi(i_simVars, i_op);
-		l_rexi->setup(
-				i_simVars.rexi,
-				"phi0",
-				i_simVars.timecontrol.current_timestep_size,
-				i_simVars.sim.sphere_use_fsphere,
-				false
-			);
-#if 0
-		if (i_simVars.misc.verbosity > 2)
-		{
-			std::cout << "ALPHA:" << std::endl;
-			for (std::size_t n = 0; n < l_rexi->rexi_alphas.size(); n++)
-				std::cout << l_rexi->rexi_alphas[n] << std::endl;
-
-			std::cout << "BETA:" << std::endl;
-			for (std::size_t n = 0; n < l_rexi->rexi_betas.size(); n++)
-				std::cout << l_rexi->rexi_betas[n] << std::endl;
-		}
-#endif
+		l_rexi->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_rexi;
+		return;
 	}
-	else if (i_timestepping_method == "lg_rexi")
+
+
+	if (SWE_Sphere_TS_l_irk_na_sl_settls_only::implements_timestepping_method(i_timestepping_method))
 	{
-		lg_rexi = new SWE_Sphere_TS_l_rexi(i_simVars, i_op);
-		lg_rexi->setup(
-				i_simVars.rexi,
-				"phi0",
-				i_simVars.timecontrol.current_timestep_size,
-				i_simVars.sim.sphere_use_fsphere,
-				true
-			);
-
-		if (i_simVars.misc.verbosity > 2)
-		{
-			if (i_simVars.rexi.rexi_method != "direct")
-			{
-				std::cout << "ALPHA:" << std::endl;
-				for (std::size_t n = 0; n < lg_rexi->rexi_alphas.size(); n++)
-					std::cout << lg_rexi->rexi_alphas[n] << std::endl;
-
-				std::cout << "BETA:" << std::endl;
-				for (std::size_t n = 0; n < lg_rexi->rexi_betas.size(); n++)
-					std::cout << lg_rexi->rexi_betas[n] << std::endl;
-			}
-		}
-
-		master = &(SWE_Sphere_TS_interface&)*lg_rexi;
-	}
-	else if (i_timestepping_method == "l_irk_na_sl_settls_only")
-	{
-		l_irk_na_sl_settls= new SWE_Sphere_TS_l_irk_na_sl_settls_only(i_simVars, i_op);
-		l_irk_na_sl_settls->setup(i_simVars.disc.timestepping_order);
-
+		l_irk_na_sl_settls = new SWE_Sphere_TS_l_irk_na_sl_settls_only(i_simVars, i_op);
+		l_irk_na_sl_settls->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_irk_na_sl_settls;
+		return;
 	}
+
 
 	/*
 	 * EXP SETTLS VERSION
 	 */
-	else if (
-			(i_timestepping_method.find("_settls") != std::string::npos)
-			&&
-			(i_timestepping_method.find("_exp") != std::string::npos)
-	)
+	if (SWE_Sphere_TS_ln_sl_exp_settls::implements_timestepping_method(i_timestepping_method))
 	{
-
-		SWE_Sphere_TS_ln_sl_exp_settls::LinearGravityTreatment_enum linear_gravity_treatment = SWE_Sphere_TS_ln_sl_exp_settls::LINEAR_IGNORE;
-		SWE_Sphere_TS_ln_sl_exp_settls::LinearCoriolisTreatment_enum linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_IGNORE;
-		SWE_Sphere_TS_ln_sl_exp_settls::NLAdvectionTreatment_enum nonlinear_advection_treatment = SWE_Sphere_TS_ln_sl_exp_settls::NL_ADV_IGNORE;
-		SWE_Sphere_TS_ln_sl_exp_settls::NLDivergenceTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_sl_exp_settls::NL_DIV_IGNORE;
-		bool original_linear_operator_sl_treatment = true;
-
-		{
-			// Search for implicit or exp treatment of linear parts
-			if (i_timestepping_method.find("_irk_") != std::string::npos)
-				linear_gravity_treatment = SWE_Sphere_TS_ln_sl_exp_settls::LINEAR_IMPLICIT;
-			else if (i_timestepping_method.find("_exp_") != std::string::npos)
-				linear_gravity_treatment = SWE_Sphere_TS_ln_sl_exp_settls::LINEAR_EXPONENTIAL;
-
-			// Search for Coriolis
-			if (i_timestepping_method.find("l_irk") != std::string::npos || i_timestepping_method.find("l_exp") != std::string::npos)
-				linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_LINEAR;
-			else if (i_timestepping_method.find("lc_na_sl") != std::string::npos)
-				linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_SEMILAGRANGIAN;
-			else if (i_timestepping_method.find("lc_") != std::string::npos)
-				linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_NONLINEAR;
-
-			if (i_timestepping_method.find("_na_sl") != std::string::npos)
-				nonlinear_advection_treatment = SWE_Sphere_TS_ln_sl_exp_settls::NL_ADV_SEMILAGRANGIAN;
-
-			// Search for Nonlinear divergence
-			if (i_timestepping_method.find("_nd_") != std::string::npos)
-				nonlinear_divergence_treatment = SWE_Sphere_TS_ln_sl_exp_settls::NL_DIV_NONLINEAR;
-
-			if (i_timestepping_method.find("_ver2") != std::string::npos)
-				original_linear_operator_sl_treatment = false;
-
-#if 1
-			std::string id_string = "";
-
-			if (linear_coriolis_treatment == SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_LINEAR)
-				id_string += "l";
-			else
-				id_string += "lg";
-
-#if 0
-			if (linear_gravity_treatment == SWE_Sphere_TS_ln_sl_exp_settls::LINEAR_IMPLICIT)
-				id_string += "_irk";
-			else if (linear_gravity_treatment == SWE_Sphere_TS_ln_sl_exp_settls::LINEAR_EXPONENTIAL)
-				id_string += "_exp";
-#else
-			if (linear_gravity_treatment == SWE_Sphere_TS_ln_sl_exp_settls::LINEAR_EXPONENTIAL)
-				id_string += "_exp";
-#endif
-			if (linear_coriolis_treatment == SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_SEMILAGRANGIAN)
-				id_string += "_lc";
-
-			if (nonlinear_advection_treatment == SWE_Sphere_TS_ln_sl_exp_settls::NL_ADV_SEMILAGRANGIAN)
-				id_string += "_na";
-
-			if (
-				linear_coriolis_treatment == SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_SEMILAGRANGIAN ||
-				nonlinear_advection_treatment == SWE_Sphere_TS_ln_sl_exp_settls::NL_ADV_SEMILAGRANGIAN
-			)
-				id_string += "_sl";
-
-			if (linear_coriolis_treatment == SWE_Sphere_TS_ln_sl_exp_settls::CORIOLIS_NONLINEAR)
-				id_string += "_lc";
-
-			if (nonlinear_divergence_treatment == SWE_Sphere_TS_ln_sl_exp_settls::NL_DIV_NONLINEAR)
-				id_string += "_nd";
-
-			id_string += "_settls";
-
-			if (!original_linear_operator_sl_treatment)
-				id_string += "_ver2";
-
-
-			if (i_timestepping_method != id_string)
-			{
-				if (!original_linear_operator_sl_treatment)
-				{
-					std::cerr << "Detected time stepping method: "+id_string << std::endl;
-					std::cerr << "Provided time stepping method: "+i_timestepping_method << std::endl;
-					FatalError("Autodetection of parts of time stepping methods failed!");
-				}
-
-				std::string id_string2 = id_string+"_ver1";
-				if (i_timestepping_method != id_string2)
-				{
-					std::cerr << "Detected time stepping method: "+id_string << std::endl;
-					std::cerr << "Provided time stepping method: "+i_timestepping_method << std::endl;
-					std::cerr << "Detected alternative time stepping method: "+id_string << std::endl;
-					FatalError("Autodetection of parts of time stepping methods failed!");
-				}
-			}
-		}
-#endif
-
 		ln_sl_exp_settls = new SWE_Sphere_TS_ln_sl_exp_settls(i_simVars, i_op);
-		ln_sl_exp_settls->setup(
-				i_simVars.disc.timestepping_order,
-				linear_gravity_treatment,
-				linear_coriolis_treatment,					// Coriolis treatment
-				nonlinear_advection_treatment,		// Nonlinear advection treatment
-				nonlinear_divergence_treatment,		// Nonlinear divergence treatment
-				original_linear_operator_sl_treatment			// original SL linear operator treatment
-			);
-
+		ln_sl_exp_settls->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*ln_sl_exp_settls;
+		return;
 	}
+
 
 	/*
 	 * IRK SETTLS VERSION
 	 */
-	/**
-	 * SL methods with Coriolis treated as part of linear terms
-	 */
-	else if (
-			(i_timestepping_method.find("_settls") != std::string::npos)
-			&&
-			!(i_timestepping_method.find("_exp") != std::string::npos)
-	)
+	if (SWE_Sphere_TS_ln_settls::implements_timestepping_method(i_timestepping_method))
 	{
-		SWE_Sphere_TS_ln_settls::LinearTreatment_enum linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IGNORE;
-		SWE_Sphere_TS_ln_settls::LinearCoriolisTreatment_enum linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_IGNORE;
-		SWE_Sphere_TS_ln_settls::NLAdvectionTreatment_enum nonlinear_advection_treatment = SWE_Sphere_TS_ln_settls::NL_ADV_IGNORE;
-		SWE_Sphere_TS_ln_settls::NLDivergenceTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_IGNORE;
-		bool original_linear_operator_sl_treatment = true;
-
-		if (i_timestepping_method == "ln_settls")
-		{
-			linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT;
-			linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
-			nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR;
-			original_linear_operator_sl_treatment = true;
-		}
-		else
-		{
-			// Search for implicit or exp treatment of linear parts
-			if (i_timestepping_method.find("_irk_") != std::string::npos)
-				linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT;
-			else if (i_timestepping_method.find("_exp_") != std::string::npos)
-				linear_treatment = SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL;
-
-			// Search for Coriolis
-			if (i_timestepping_method.find("l_irk") != std::string::npos || i_timestepping_method.find("l_exp") != std::string::npos)
-				linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR;
-			else if (i_timestepping_method.find("lc_na_sl") != std::string::npos)
-				linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN;
-			else if (i_timestepping_method.find("lc_") != std::string::npos)
-				linear_coriolis_treatment = SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR;
-
-			if (i_timestepping_method.find("_na_sl") != std::string::npos)
-				nonlinear_advection_treatment = SWE_Sphere_TS_ln_settls::NL_ADV_SEMILAGRANGIAN;
-
-			// Search for Nonlinear divergence
-			if (i_timestepping_method.find("_nd_") != std::string::npos)
-				nonlinear_divergence_treatment = SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR;
-
-			if (i_timestepping_method.find("_ver2") != std::string::npos)
-				original_linear_operator_sl_treatment = false;
-
-#if 1
-			std::string id_string = "";
-
-			if (linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_LINEAR)
-				id_string += "l";
-			else
-				id_string += "lg";
-
-			if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_IMPLICIT)
-				id_string += "_irk";
-			else if (linear_treatment == SWE_Sphere_TS_ln_settls::LINEAR_EXPONENTIAL)
-				id_string += "_exp";
-
-			if (linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN)
-				id_string += "_lc";
-
-			if (nonlinear_advection_treatment == SWE_Sphere_TS_ln_settls::NL_ADV_SEMILAGRANGIAN)
-				id_string += "_na";
-
-			if (
-				linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_SEMILAGRANGIAN ||
-				nonlinear_advection_treatment == SWE_Sphere_TS_ln_settls::NL_ADV_SEMILAGRANGIAN
-			)
-			id_string += "_sl";
-
-			if (linear_coriolis_treatment == SWE_Sphere_TS_ln_settls::CORIOLIS_NONLINEAR)
-				id_string += "_lc";
-
-			if (nonlinear_divergence_treatment == SWE_Sphere_TS_ln_settls::NL_DIV_NONLINEAR)
-				id_string += "_nd";
-
-			id_string += "_settls";
-
-			if (!original_linear_operator_sl_treatment)
-				id_string += "_ver2";
-
-
-			if (i_timestepping_method != id_string)
-			{
-				if (!original_linear_operator_sl_treatment)
-				{
-					std::cerr << "Detected time stepping method: "+id_string << std::endl;
-					std::cerr << "Provided time stepping method: "+i_timestepping_method << std::endl;
-					FatalError("Autodetection of parts of time stepping methods failed!");
-				}
-
-				std::string id_string2 = id_string+"_ver1";
-				if (i_timestepping_method != id_string2)
-				{
-					std::cerr << "Detected time stepping method: "+id_string << std::endl;
-					std::cerr << "Provided time stepping method: "+i_timestepping_method << std::endl;
-					std::cerr << "Detected alternative time stepping method: "+id_string << std::endl;
-					FatalError("Autodetection of parts of time stepping methods failed!");
-				}
-			}
-		}
-#endif
-
 		ln_sl_settls = new SWE_Sphere_TS_ln_settls(i_simVars, i_op);
-		ln_sl_settls->setup(
-				i_simVars.disc.timestepping_order,
-				linear_treatment,
-				linear_coriolis_treatment,				// Coriolis treatment
-				nonlinear_advection_treatment,			// Nonlinear advection treatment
-				nonlinear_divergence_treatment,			// Nonlinear divergence treatment
-				original_linear_operator_sl_treatment	// original SL linear operator treatment
-			);
-
+		ln_sl_settls->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*ln_sl_settls;
+		return;
 	}
-	else
-	{
-		std::cout << i_timestepping_method << std::endl;
-		FatalError("No valid --timestepping-method provided");
-	}
+
+	std::cout << i_timestepping_method << std::endl;
+	FatalError("No valid --timestepping-method provided");
 }
 
 

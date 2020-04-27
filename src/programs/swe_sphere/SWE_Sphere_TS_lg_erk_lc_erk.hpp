@@ -20,6 +20,19 @@
 
 class SWE_Sphere_TS_lg_erk_lc_erk	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		return i_timestepping_method == "lg_erk_lc_erk";
+	}
+
+public:
+	std::string string_id()
+	{
+		return "lg_erk_lc_erk";
+	}
+
+
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
@@ -92,6 +105,9 @@ public:
 			int i_order	///< order of RK time stepping method
 //			int i_order2
 	);
+
+
+	void setup_auto();
 
 	void run_timestep_pert(
 			SphereData_Spectral &io_phi,	///< prognostic variables

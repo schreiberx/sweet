@@ -19,7 +19,28 @@
 
 class SWE_Sphere_TS_ln_erk_split_uv	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		if (i_timestepping_method == "ln_erk_split_uv")
+			return true;
+
+		return false;
+	}
+
+	std::string string_id()
+	{
+		return "ln_erk_split_uv";
+	}
+
+	void setup_auto()
+	{
+		setup(simVars.disc.timestepping_order, true, true, true, true);
+	}
+
+private:
 	SimulationVariables &simVars;
+
 	SphereOperators_SphereData &op;
 
 	int timestepping_order;

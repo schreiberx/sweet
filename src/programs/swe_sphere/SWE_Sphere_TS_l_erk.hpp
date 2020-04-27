@@ -20,6 +20,19 @@
 
 class SWE_Sphere_TS_l_erk	: public SWE_Sphere_TS_interface
 {
+public:
+	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	{
+		return i_timestepping_method == "l_erk";
+	}
+
+public:
+	std::string string_id()
+	{
+		return "l_erk";
+	}
+
+private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
@@ -47,6 +60,8 @@ public:
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
+
+	void setup_auto();
 
 	void setup(
 			int i_order	///< order of RK time stepping method

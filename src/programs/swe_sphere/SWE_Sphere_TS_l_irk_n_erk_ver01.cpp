@@ -201,6 +201,20 @@ void SWE_Sphere_TS_l_irk_n_erk::setup(
 
 
 
+void SWE_Sphere_TS_l_irk_n_erk::setup_auto()
+{
+	if (
+		simVars.disc.timestepping_method == "l_irk_n_erk" ||
+		simVars.disc.timestepping_method == "l_irk_n_erk_ver0" ||
+		simVars.disc.timestepping_method == "l_cn_n_erk" ||
+		simVars.disc.timestepping_method == "l_cn_n_erk_ver0"
+	)
+		setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, 0);
+	else
+		setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, 1);
+}
+
+
 SWE_Sphere_TS_l_irk_n_erk::SWE_Sphere_TS_l_irk_n_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
@@ -213,7 +227,7 @@ SWE_Sphere_TS_l_irk_n_erk::SWE_Sphere_TS_l_irk_n_erk(
 		version_id(0),
 		timestepping_order(-1)
 {
-//	setup(simVars.disc.timestepping_order, 0);
+
 }
 
 
