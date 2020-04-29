@@ -104,8 +104,8 @@ ts_methods = [
 	['l_cn',		2,	2,	0],
 	['lg_irk_lc_erk',		2,	2,	0],
 
-	['l_rexi',        	2,	2,	0],
-	#['lg_rexi_lc_erk',	2,	2,	0],
+	['l_exp',        	2,	2,	0],
+	#['lg_exp_lc_erk',	2,	2,	0],
 ]
 
 
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 					if 'rexi' in jg.runtime.timestepping_method:
 
 						# Not implemented?
-						if jg.runtime.use_robert_functions == 0 and 'l_rexi' in jg.runtime.timestepping_method:
+						if jg.runtime.use_robert_functions == 0 and 'l_exp' in jg.runtime.timestepping_method:
 							continue
 
 						jg.runtime.rexi_method = 'ci'

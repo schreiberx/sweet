@@ -15,19 +15,19 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_rexi.hpp"
+#include "SWE_Sphere_TS_l_exp.hpp"
 #include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 
 
 
-class SWE_Sphere_TS_lg_rexi_lc_n_erk	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_lg_exp_lc_n_erk	: public SWE_Sphere_TS_interface
 {
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (
-			i_timestepping_method == "lg_rexi_lc_n_erk" || i_timestepping_method == "lg_rexi_lc_n_erk_ver0" ||
-			i_timestepping_method == "lg_rexi_lc_n_erk_ver1"
+			i_timestepping_method == "lg_exp_lc_n_erk" || i_timestepping_method == "lg_exp_lc_n_erk_ver0" ||
+			i_timestepping_method == "lg_exp_lc_n_erk_ver1"
 		)
 			return true;
 
@@ -36,7 +36,7 @@ public:
 
 	std::string string_id()
 	{
-		std::string s = "lg_rexi_lc_n_erk_ver";
+		std::string s = "lg_exp_lc_n_erk_ver";
 
 		if (version_id == 0)
 			s += "0";
@@ -51,7 +51,7 @@ public:
 	void setup_auto()
 	{
 		int version = 0;
-		if (simVars.disc.timestepping_method == "lg_rexi_lc_n_erk_ver1")
+		if (simVars.disc.timestepping_method == "lg_exp_lc_n_erk_ver1")
 			version = 1;
 
 		setup(
@@ -78,7 +78,7 @@ private:
 	/*
 	 * Linear time steppers
 	 */
-	SWE_Sphere_TS_l_rexi timestepping_lg_rexi;
+	SWE_Sphere_TS_l_exp timestepping_lg_rexi;
 
 	/*
 	 * Non-linear time steppers
@@ -89,7 +89,7 @@ private:
 
 
 public:
-	SWE_Sphere_TS_lg_rexi_lc_n_erk(
+	SWE_Sphere_TS_lg_exp_lc_n_erk(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
@@ -123,7 +123,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_lg_rexi_lc_n_erk();
+	virtual ~SWE_Sphere_TS_lg_exp_lc_n_erk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

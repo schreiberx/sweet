@@ -15,19 +15,19 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_rexi.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_l_exp.hpp"
 
 
 
-class SWE_Sphere_TS_l_rexi_n_erk	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_l_exp_n_erk	: public SWE_Sphere_TS_interface
 {
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (
-			i_timestepping_method == "l_rexi_n_erk" || i_timestepping_method == "l_rexi_n_erk_ver0" ||
-			i_timestepping_method == "l_rexi_n_erk_ver1"
+			i_timestepping_method == "l_exp_n_erk" || i_timestepping_method == "l_exp_n_erk_ver0" ||
+			i_timestepping_method == "l_exp_n_erk_ver1"
 		)
 			return true;
 
@@ -37,7 +37,7 @@ public:
 public:
 	std::string string_id()
 	{
-		std::string s = "l_rexi_n_erk_ver";
+		std::string s = "l_exp_n_erk_ver";
 
 		if (version_id == 0)
 			s += "0";
@@ -58,7 +58,7 @@ public:
 	/*
 	 * Linear time steppers
 	 */
-	SWE_Sphere_TS_l_rexi timestepping_l_rexi;
+	SWE_Sphere_TS_l_exp timestepping_l_rexi;
 
 	/*
 	 * Non-linear time steppers
@@ -74,7 +74,7 @@ public:
 
 
 public:
-	SWE_Sphere_TS_l_rexi_n_erk(
+	SWE_Sphere_TS_l_exp_n_erk(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
@@ -112,7 +112,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_l_rexi_n_erk();
+	virtual ~SWE_Sphere_TS_l_exp_n_erk();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

@@ -90,7 +90,9 @@ public:
 		const SphereData_Config *i_sphereDataConfig
 	)
 	{
-		assert(i_sphereDataConfig != nullptr);
+		if (i_sphereDataConfig == nullptr)
+			FatalError("Setup called twice for SphereOperators_Sampler_SphereDataPhysical");
+
 		sphereDataConfig = i_sphereDataConfig;
 
 		res[0] = i_sphereDataConfig->physical_num_lon;
@@ -553,16 +555,42 @@ public:
 
 			SphereData_Physical &o_data,		///< output values
 			bool i_velocity_sampling,
-			bool i_limiter,
-			bool i_pole_pseudo_points			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_pole_pseudo_points,			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_limiter
 	)
 	{
+		o_data.setup_if_required(i_data.sphereDataConfig);
+
 		assert(i_data.sphereDataConfig->physical_array_data_number_of_elements == o_data.sphereDataConfig->physical_array_data_number_of_elements);
 		assert(res[0] > 0);
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 
 		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling, i_pole_pseudo_points, i_limiter);
+	}
+
+
+public:
+	SphereData_Physical bicubic_scalar_ret_phys(
+			const SphereData_Physical &i_data,			///< sampling data
+
+			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
+
+			bool i_velocity_sampling,
+			bool i_pole_pseudo_points,			///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_limiter
+	)
+	{
+		SphereData_Physical o_data(i_data.sphereDataConfig);
+
+		assert(i_data.sphereDataConfig->physical_array_data_number_of_elements == o_data.sphereDataConfig->physical_array_data_number_of_elements);
+		assert(res[0] > 0);
+		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
+		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
+
+		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data,  i_velocity_sampling, i_pole_pseudo_points, i_limiter);
+		return o_data;
 	}
 
 
@@ -705,6 +733,8 @@ public:
 			bool i_pole_pseudo_points
 	)
 	{
+		o_data.setup_if_required(i_pos_x.number_of_elements);
+
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.number_of_elements);
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.scalar_data, i_velocity_sampling, i_pole_pseudo_points);
@@ -723,6 +753,8 @@ public:
 			bool i_pole_pseudo_points
 	)
 	{
+		o_data.setup_if_required(i_data.sphereDataConfig);
+
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 		assert(i_pos_x.number_of_elements == (std::size_t)o_data.sphereDataConfig->physical_array_data_number_of_elements);
 		assert(o_data.physical_space_data != nullptr);
@@ -742,7 +774,8 @@ public:
 			bool i_pole_pseudo_points
 	)
 	{
-		ScalarDataArray out(i_data.sphereDataConfig->physical_array_data_number_of_elements);
+		ScalarDataArray out(i_pos_x.number_of_elements);
+
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling, i_pole_pseudo_points);
 		return out;
 	}

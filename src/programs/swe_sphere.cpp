@@ -172,6 +172,7 @@ public:
 		 * SETUP time steppers
 		 */
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
+		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;
 
 		update_diagnostics();
 

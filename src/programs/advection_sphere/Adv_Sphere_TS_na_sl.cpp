@@ -99,7 +99,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 		);
 
 	SphereData_Physical new_prog_phi_phys(sphereDataConfig);
-	sampler2D.bicubic_scalar(
+	sphereSampler.bicubic_scalar(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_d, pos_lat_d,
 			new_prog_phi_phys,
@@ -143,7 +143,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical new_prog_phi_physx(sphereDataConfig);
 
-	sampler2D.bicubic_scalar(
+	sphereSampler.bicubic_scalar(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
@@ -172,7 +172,7 @@ void Adv_Sphere_TS_na_sl::setup(
 
 	const SphereData_Config *sphereDataConfig = op.sphereDataConfig;
 
-	sampler2D.setup(sphereDataConfig);
+	sphereSampler.setup(sphereDataConfig);
 
 	//PXT- This just calls sampler2D.setup, so any reason for having it?
 	semiLagrangian.setup(sphereDataConfig, simVars);
@@ -184,7 +184,8 @@ Adv_Sphere_TS_na_sl::Adv_Sphere_TS_na_sl(
 		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
-		op(i_op)
+		op(i_op),
+		sphereSampler(semiLagrangian.sphereSampler)
 {
 	setup(simVars.disc.timestepping_order);
 }

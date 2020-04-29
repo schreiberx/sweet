@@ -34,23 +34,14 @@ public:
 
 	void reset()
 	{
-		if (na_erk != nullptr)
-		{
-			delete na_erk;
-			na_erk = nullptr;
-		}
+		delete na_erk;
+		na_erk = nullptr;
 
-		if (na_sl != nullptr)
-		{
-			delete na_sl;
-			na_sl = nullptr;
-		}
+		delete na_sl;
+		na_sl = nullptr;
 
-		if (na_trajectories != nullptr)
-		{
-			delete na_trajectories;
-			na_trajectories = nullptr;
-		}
+		delete na_trajectories;
+		na_trajectories = nullptr;
 	}
 
 

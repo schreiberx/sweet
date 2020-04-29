@@ -65,6 +65,21 @@ public:
 	}
 
 
+public:
+	SphereData_Spectral(
+			const SphereData_Config *i_sphereDataConfig,
+			double i_value
+	)	:
+		sphereDataConfig(i_sphereDataConfig),
+		spectral_space_data(nullptr)
+	{
+		assert(i_sphereDataConfig != 0);
+
+		setup(i_sphereDataConfig);
+		spectral_set_value(i_value);
+	}
+
+
 
 public:
 	SphereData_Spectral()	:
@@ -630,8 +645,6 @@ public:
 	}
 
 
-
-
 public:
 	void setup(
 		const SphereData_Config *i_sphereDataConfig
@@ -642,13 +655,24 @@ public:
 	}
 
 
+public:
+	void setup(
+		const SphereData_Config *i_sphereDataConfig,
+		double i_value
+	)
+	{
+		sphereDataConfig = i_sphereDataConfig;
+		alloc_data();
+		spectral_set_value(i_value);
+	}
+
+
 private:
 	void alloc_data()
 	{
 		assert(spectral_space_data == nullptr);
 		spectral_space_data = MemBlockAlloc::alloc<cplx>(sphereDataConfig->spectral_array_data_number_of_elements * sizeof(cplx));
 	}
-
 
 
 public:

@@ -1,16 +1,16 @@
 /*
- * SWE_Sphere_TS_l_na_settls_only.hpp
+ * SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only.hpp
  *
- *  Created on: 24 Sep 2019
+ *  Created on: 01 Apr 2020
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  *
  *  Based on plane code
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_SL_SETTLS_ONLY_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_SL_SETTLS_ONLY_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_SL_SETTLS_UV_ONLY_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_SL_SETTLS_UV_ONLY_HPP_
 
-#include <limits>
+
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
@@ -21,19 +21,16 @@
 
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
-#include "SWE_Sphere_TS_lg_irk.hpp"
-#include "SWE_Sphere_TS_l_erk.hpp"
-#include "SWE_Sphere_TS_lg_erk.hpp"
-#include "SWE_Sphere_TS_l_rexi.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
 
 
 
-class SWE_Sphere_TS_l_irk_na_sl_settls_only	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only	: public SWE_Sphere_TS_interface
 {
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
-		if (i_timestepping_method == "l_irk_na_sl_settls_only")
+		if (i_timestepping_method == "l_irk_na_sl_nr_settls_uv_only")
 			return true;
 
 		return false;
@@ -41,7 +38,7 @@ public:
 
 	std::string string_id()
 	{
-		return "l_irk_na_sl_settls_only";
+		return "l_irk_na_sl_nr_settls_uv_only";
 	}
 
 
@@ -56,29 +53,41 @@ public:
 private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
+	SphereTimestepping_SemiLagrangian semiLagrangian;
+	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
-private:
 	int timestepping_order;
 
-	SphereTimestepping_SemiLagrangian semiLagrangian;
-	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
+	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	SphereData_Spectral U_phi_pert_prev, U_vrt_prev, U_div_prev;
-
-	SWE_Sphere_TS_l_erk* swe_sphere_ts_l_erk;
+	SWE_Sphere_TS_ln_erk_split_uv* swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order;
 	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk;
 
 
-
 public:
-	SWE_Sphere_TS_l_irk_na_sl_settls_only(
+	SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only(
 			SimulationVariables &i_simVars,
-			SphereOperators_SphereData &i_op
+			SphereOperators_SphereData &i_op,
+			bool i_setup_auto = false
 		);
 
 
 	void setup(
 			int i_timestepping_order
+	);
+
+
+	void interpolate_departure_point(
+			const SphereData_Spectral &i_phi,
+			const SphereData_Spectral &i_vrt,
+			const SphereData_Spectral &i_div,
+
+			const ScalarDataArray &i_pos_lon_d,
+			const ScalarDataArray &i_pos_lat_d,
+
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
 	);
 
 
@@ -100,7 +109,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-	virtual ~SWE_Sphere_TS_l_irk_na_sl_settls_only();
+	virtual ~SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only();
 };
 
 #endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */

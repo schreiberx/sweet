@@ -308,8 +308,8 @@ if __name__ == "__main__":
                 ###########
                 # REXI
                 ###########
-                #['lg_rexi_lc_n_erk_ver0',    2,    2,    0],
-                ['lg_rexi_lc_n_erk_ver1',    2,    2,    0],
+                ['lg_exp_lc_n_erk_ver0',    2,    2,    0],
+                ['lg_exp_lc_n_erk_ver1',    2,    2,    0],
 
                 #['l_rexi_n_erk_ver0',    2,    2,    0],
                 #['l_rexi_n_erk_ver1',    2,    2,    0],
@@ -323,10 +323,11 @@ if __name__ == "__main__":
                 ###########
                 # SETTLS variants
                 ###########
-                #['l_rexi_n_erk_ver0',    2,    2,    0],
-                ['l_irk_na_sl_nd_settls',    2,    2,    0],
-                ['lg_irk_na_sl_lc_nd_settls',    2,    2,    0],
-                ['lg_exp_na_sl_lc_nd_settls',    2,    2,    0],
+                ['l_irk_na_sl_nr_settls_ver0_vd',    2,    2,    0],
+                ['l_irk_na_sl_nr_settls_ver1_vd',    2,    2,    0],
+                ['lg_irk_na_sl_lc_nr_settls_ver0_vd',    2,    2,    0],
+                ['lg_irk_na_sl_lc_nr_settls_ver1_vd',    2,    2,    0],
+                ['lg_exp_na_sl_lc_nr_settls_vd',    2,    2,    0],
 
             ]
 

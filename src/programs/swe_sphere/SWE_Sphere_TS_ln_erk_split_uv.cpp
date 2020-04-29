@@ -31,6 +31,143 @@ SphereData_Spectral SWE_Sphere_TS_ln_erk_split_uv::V_dot_grad_scalar(
 }
 
 
+/*
+ * Main routine for method to be used in case of finite differences
+ */
+void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lg(
+		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+		const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_vrt_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
+
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+
+
+	const SphereData_Spectral &U_phi_pert = i_U_phi_pert;
+	//const SphereData_Spectral &U_vrt = i_U_vrt;
+	const SphereData_Spectral &U_div = i_U_div;
+
+
+	SphereData_Physical U_u_phys, U_v_phys;
+	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+
+	o_phi_pert_t -= gh0*U_div;
+	o_div_t -= op.laplace(U_phi_pert);
+}
+
+
+/*
+ * Main routine for method to be used in case of finite differences
+ */
+void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lc(
+		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+		const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_vrt_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
+
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+
+
+	const SphereData_Spectral &U_phi_pert = i_U_phi_pert;
+	//const SphereData_Spectral &U_vrt = i_U_vrt;
+	const SphereData_Spectral &U_div = i_U_div;
+
+
+	SphereData_Physical U_u_phys, U_v_phys;
+	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+
+
+	SphereData_Physical fu_nl = op.fg*U_u_phys;
+	SphereData_Physical fv_nl = op.fg*U_v_phys;
+
+	SphereData_Spectral div, vrt;
+	op.uv_to_vortdiv(fu_nl, fv_nl, vrt, div);
+
+	o_vrt_t -= div;
+	o_div_t += vrt;
+}
+
+
+/*
+ * Main routine for method to be used in case of finite differences
+ */
+void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_na(
+		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+		const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_vrt_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
+
+		double i_simulation_timestamp
+)
+{
+	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+
+
+	const SphereData_Spectral &U_phi_pert = i_U_phi_pert;
+	//const SphereData_Spectral &U_vrt = i_U_vrt;
+	const SphereData_Spectral &U_div = i_U_div;
+
+
+	SphereData_Physical U_u_phys, U_v_phys;
+	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+
+
+
+	SphereData_Physical U_div_phys = U_div.toPhys();
+	o_phi_pert_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
+
+	/*
+	 * Velocity
+	 */
+	SphereData_Physical vrtg = i_U_vrt.toPhys();
+
+	SphereData_Physical u_nl = U_u_phys*vrtg;
+	SphereData_Physical v_nl = U_v_phys*vrtg;
+
+	SphereData_Spectral vrt, div;
+	op.uv_to_vortdiv(u_nl, v_nl, vrt, div);
+	o_vrt_t -= div;
+	o_div_t += vrt;
+
+	o_div_t -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
+}
+
+
+
+/*
+ * Main routine for method to be used in case of finite differences
+ */
+void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_nr(
+		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+		const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_vrt_t,	///< time updates
+		SphereData_Spectral &o_div_t,	///< time updates
+
+		double i_simulation_timestamp
+)
+{
+	o_phi_pert_t -= SphereData_Spectral(i_U_phi_pert.toPhys()*i_U_div.toPhys());
+}
+
+
 
 /*
  * Main routine for method to be used in case of finite differences
@@ -48,7 +185,6 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert(
 )
 {
 	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
-	const SphereData_Config *sphereDataConfig = i_U_phi_pert.sphereDataConfig;
 
 
 	const SphereData_Spectral &U_phi_pert = i_U_phi_pert;
@@ -70,49 +206,37 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert(
 
 	if (use_lg)
 	{
-		o_phi_pert_t -= gh0*U_div;
-		o_div_t -= op.laplace(U_phi_pert);
+		euler_timestep_update_pert_lg(
+				i_U_phi_pert, i_U_vrt, i_U_div,
+				o_phi_pert_t, o_vrt_t, o_div_t,
+				i_simulation_timestamp);
 	}
 
 
 	if (use_lc)
 	{
-		SphereData_Physical fu_nl = op.fg*U_u_phys;
-		SphereData_Physical fv_nl = op.fg*U_v_phys;
-
-		SphereData_Spectral div, vrt;
-		op.uv_to_vortdiv(fu_nl, fv_nl, vrt, div);
-
-		o_vrt_t -= div;
-		o_div_t += vrt;
+		euler_timestep_update_pert_lc(
+				i_U_phi_pert, i_U_vrt, i_U_div,
+				o_phi_pert_t, o_vrt_t, o_div_t,
+				i_simulation_timestamp);
 	}
 
 
 	if (use_na)
 	{
-		SphereData_Physical U_div_phys = U_div.toPhys();
-		o_phi_pert_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
-
-		/*
-		 * Velocity
-		 */
-		SphereData_Physical vrtg = i_U_vrt.toPhys();
-
-		SphereData_Physical u_nl = U_u_phys*vrtg;
-		SphereData_Physical v_nl = U_v_phys*vrtg;
-
-		SphereData_Spectral vrt, div;
-		op.uv_to_vortdiv(u_nl, v_nl, vrt, div);
-		o_vrt_t -= div;
-		o_div_t += vrt;
-
-		o_div_t -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
+		euler_timestep_update_pert_na(
+				i_U_phi_pert, i_U_vrt, i_U_div,
+				o_phi_pert_t, o_vrt_t, o_div_t,
+				i_simulation_timestamp);
 	}
 
 
 	if (use_nr)
 	{
-		o_phi_pert_t -= SphereData_Spectral(U_phi_pert.toPhys()*U_div.toPhys());
+		euler_timestep_update_pert_nr(
+				i_U_phi_pert, i_U_vrt, i_U_div,
+				o_phi_pert_t, o_vrt_t, o_div_t,
+				i_simulation_timestamp);
 	}
 
 #if 0

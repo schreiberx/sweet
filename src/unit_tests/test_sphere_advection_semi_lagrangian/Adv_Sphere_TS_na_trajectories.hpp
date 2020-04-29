@@ -34,7 +34,7 @@ class Adv_Sphere_TS_na_trajectories	: public Adv_Sphere_TS_interface
 	int timestepping_order;
 
 	SphereTimestepping_SemiLagrangian semiLagrangian;
-	SphereOperators_Sampler_SphereDataPhysical &sampler2D;
+	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 

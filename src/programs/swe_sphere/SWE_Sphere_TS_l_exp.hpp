@@ -48,12 +48,12 @@
 
 
 
-class SWE_Sphere_TS_l_rexi	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_l_exp	: public SWE_Sphere_TS_interface
 {
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
-		if (i_timestepping_method == "l_rexi" || i_timestepping_method == "lg_rexi")
+		if (i_timestepping_method == "l_exp" || i_timestepping_method == "lg_exp")
 			return true;
 
 		return false;
@@ -61,7 +61,7 @@ public:
 
 	std::string string_id()
 	{
-		return "l_rexi";
+		return "l_exp";
 	}
 
 
@@ -69,7 +69,7 @@ public:
 	{
 		bool no_coriolis = false;
 
-		if (simVars.disc.timestepping_method == "lg_rexi")
+		if (simVars.disc.timestepping_method == "lg_exp")
 			no_coriolis = true;
 
 		setup(
@@ -205,7 +205,7 @@ private:
 
 
 public:
-	SWE_Sphere_TS_l_rexi(
+	SWE_Sphere_TS_l_exp(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
@@ -292,7 +292,7 @@ public:
 	);
 
 
-	virtual ~SWE_Sphere_TS_l_rexi();
+	virtual ~SWE_Sphere_TS_l_exp();
 };
 
 

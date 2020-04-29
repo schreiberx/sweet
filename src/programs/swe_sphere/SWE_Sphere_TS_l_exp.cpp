@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "SWE_Sphere_TS_l_rexi.hpp"
+#include "SWE_Sphere_TS_l_exp.hpp"
 
 #include <iostream>
 #include <cassert>
@@ -40,7 +40,7 @@
 
 
 
-void SWE_Sphere_TS_l_rexi::run_timestep_pert(
+void SWE_Sphere_TS_l_exp::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -57,7 +57,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep_pert(
 
 
 
-SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
+SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
 )	:
@@ -112,7 +112,7 @@ SWE_Sphere_TS_l_rexi::SWE_Sphere_TS_l_rexi(
 
 
 
-void SWE_Sphere_TS_l_rexi::reset()
+void SWE_Sphere_TS_l_exp::reset()
 {
 	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
@@ -137,7 +137,7 @@ void SWE_Sphere_TS_l_rexi::reset()
 
 
 
-SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
+SWE_Sphere_TS_l_exp::~SWE_Sphere_TS_l_exp()
 {
 	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
@@ -186,7 +186,7 @@ SWE_Sphere_TS_l_rexi::~SWE_Sphere_TS_l_rexi()
 
 
 
-void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
+void SWE_Sphere_TS_l_exp::p_get_workload_start_end(
 		std::size_t &o_start,
 		std::size_t &o_end,
 		int i_local_thread_id
@@ -221,7 +221,7 @@ void SWE_Sphere_TS_l_rexi::p_get_workload_start_end(
 /**
  * setup the REXI
  */
-void SWE_Sphere_TS_l_rexi::setup_new(
+void SWE_Sphere_TS_l_exp::setup_new(
 		REXI_SimulationVariables &i_rexi,
 		const std::string &i_function_name,
 		double i_timestep_size,
@@ -241,7 +241,7 @@ void SWE_Sphere_TS_l_rexi::setup_new(
 /**
  * setup the REXI
  */
-void SWE_Sphere_TS_l_rexi::setup(
+void SWE_Sphere_TS_l_exp::setup(
 		REXI_SimulationVariables &i_rexi,
 		const std::string &i_function_name,
 		double i_timestep_size,
@@ -407,7 +407,7 @@ void SWE_Sphere_TS_l_rexi::setup(
 
 
 
-void SWE_Sphere_TS_l_rexi::p_update_coefficients(
+void SWE_Sphere_TS_l_exp::p_update_coefficients(
 		bool i_update_rexi
 )
 {
@@ -461,7 +461,7 @@ void SWE_Sphere_TS_l_rexi::p_update_coefficients(
 
 
 
-void SWE_Sphere_TS_l_rexi::run_timestep_nonpert(
+void SWE_Sphere_TS_l_exp::run_timestep_nonpert(
 	const SphereData_Spectral &i_prog_phi0,
 	const SphereData_Spectral &i_prog_vort0,
 	const SphereData_Spectral &i_prog_div0,
@@ -491,7 +491,7 @@ void SWE_Sphere_TS_l_rexi::run_timestep_nonpert(
  *
  * for further information
  */
-void SWE_Sphere_TS_l_rexi::run_timestep_nonpert(
+void SWE_Sphere_TS_l_exp::run_timestep_nonpert(
 	SphereData_Spectral &io_prog_phi0,
 	SphereData_Spectral &io_prog_vort0,
 	SphereData_Spectral &io_prog_div0,

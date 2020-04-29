@@ -97,7 +97,7 @@ for tagname_y in tagnames_y:
 						# This is already insanely accurate since it's primarily driven by linear parts
 
 						# Test only last 2 values for REXI
-						if group_name.startswith('lg_rexi'):
+						if group_name.startswith('lg_exp'):
 							error_tolerance_convergence = 0.2
 							conv_test_range_start = 1
 							# Exclude results which seems to be unstable
@@ -128,7 +128,7 @@ for tagname_y in tagnames_y:
 					conv_test_range_end = 5
 
 
-			if group_name in ['l_rexi', 'lg_rexi']:
+			if group_name in ['l_exp', 'lg_exp']:
 				test_type = 'error'
 				error_tolerance_error = 1e-7
 
@@ -184,7 +184,7 @@ for tagname_y in tagnames_y:
 				elif test_type == 'error':
 					# Alternate tests instead of convergence check
 					# Convergence doesn't really make sense for REXI in the way how it's applied
-					# This should be only used for l_rexi and lg_rexi
+					# This should be only used for l_exp and lg_exp
 					# Just ensure that the errors are below a certain level
 					if y > error_tolerance_error:
 						print("Error: "+str(y))

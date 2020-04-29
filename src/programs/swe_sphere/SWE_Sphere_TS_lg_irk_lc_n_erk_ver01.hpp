@@ -37,7 +37,7 @@ public:
 
 	std::string string_id()
 	{
-		std::string s = "l_rexi_n_erk_ver";
+		std::string s = "l_exp_n_erk_ver";
 
 		if (version_id == 0)
 			s += "0";

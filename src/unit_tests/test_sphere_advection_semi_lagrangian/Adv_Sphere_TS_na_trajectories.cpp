@@ -116,7 +116,7 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 
 	// sample phi at departure points
 	SphereData_Physical U_phi_phys_D(sphereDataConfig);
-	sampler2D.bicubic_scalar_new(
+	sphereSampler.bicubic_scalar_new(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_D, pos_lat_D,
 			U_phi_phys_D,
@@ -129,7 +129,7 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 
 
 	// sample phi at departure points
-	sampler2D.bicubic_scalar_new(
+	sphereSampler.bicubic_scalar_new(
 			io_U_phi_phys,
 			pos_lon_D, pos_lat_D,
 			U_phi_phys_D,
@@ -183,11 +183,10 @@ Adv_Sphere_TS_na_trajectories::Adv_Sphere_TS_na_trajectories(
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		sampler2D(semiLagrangian.sampler2D)
+		semiLagrangian(simVars),
+		sphereSampler(semiLagrangian.sphereSampler)
 {
 	setup(simVars.disc.timestepping_order);
-
-	semiLagrangian.setup(op.sphereDataConfig, simVars);
 }
 
 

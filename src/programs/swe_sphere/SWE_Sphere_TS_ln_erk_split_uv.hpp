@@ -62,6 +62,62 @@ private:
 			const SphereData_Physical &i_scalar_phys	///< scalar
 	);
 
+public:
+	void euler_timestep_update_pert_lg(
+			const SphereData_Spectral &i_U_phi,	///< prognostic variables
+			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+			const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+			SphereData_Spectral &o_U_phi_t,	///< time updates
+			SphereData_Spectral &o_U_vrt_t,	///< time updates
+			SphereData_Spectral &o_U_div_t,	///< time updates
+
+			double i_simulation_timestamp = -1
+	);
+
+
+public:
+	void euler_timestep_update_pert_lc(
+			const SphereData_Spectral &i_U_phi,	///< prognostic variables
+			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+			const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+			SphereData_Spectral &o_U_phi_t,	///< time updates
+			SphereData_Spectral &o_U_vrt_t,	///< time updates
+			SphereData_Spectral &o_U_div_t,	///< time updates
+
+			double i_simulation_timestamp = -1
+	);
+
+
+public:
+	void euler_timestep_update_pert_na(
+			const SphereData_Spectral &i_U_phi,	///< prognostic variables
+			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+			const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+			SphereData_Spectral &o_U_phi_t,	///< time updates
+			SphereData_Spectral &o_U_vrt_t,	///< time updates
+			SphereData_Spectral &o_U_div_t,	///< time updates
+
+			double i_simulation_timestamp = -1
+	);
+
+
+public:
+	void euler_timestep_update_pert_nr(
+			const SphereData_Spectral &i_U_phi,	///< prognostic variables
+			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+			const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+			SphereData_Spectral &o_U_phi_t,	///< time updates
+			SphereData_Spectral &o_U_vrt_t,	///< time updates
+			SphereData_Spectral &o_U_div_t,	///< time updates
+
+			double i_simulation_timestamp = -1
+	);
+
+
 private:
 	void euler_timestep_update_pert(
 			const SphereData_Spectral &i_U_phi,	///< prognostic variables

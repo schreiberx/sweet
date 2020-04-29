@@ -131,9 +131,6 @@ public:
 
 	)	const
 	{
-		assert(o_u.physical_space_data != nullptr);
-		assert(o_v.physical_space_data != nullptr);
-
 		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
 		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 
@@ -160,9 +157,6 @@ public:
 
 	)	const
 	{
-		assert(o_u.physical_space_data != nullptr);
-		assert(o_v.physical_space_data != nullptr);
-
 		double ir = 1.0/i_radius;
 
 		SphereData_Spectral psi(sphereDataConfig);
@@ -196,9 +190,6 @@ public:
 
 	)	const
 	{
-		assert(o_u.physical_space_data != nullptr);
-		assert(o_v.physical_space_data != nullptr);
-
 		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
 		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 
@@ -235,9 +226,6 @@ public:
 
 	)	const
 	{
-		assert(o_u.physical_space_data != nullptr);
-		assert(o_v.physical_space_data != nullptr);
-
 		o_u.setup_if_required(i_vrt.sphereDataConfig);
 		o_v.setup_if_required(i_vrt.sphereDataConfig);
 
@@ -268,8 +256,6 @@ public:
 
 	)	const
 	{
-		assert(o_physical.physical_space_data != nullptr);
-
 		o_physical.setup_if_required(i_spectral.sphereDataConfig);
 
 		SH_to_spat(
@@ -310,8 +296,6 @@ public:
 			SphereData_Spectral &o_spectral
 	)	const
 	{
-		assert(o_spectral.spectral_space_data != nullptr);
-
 		o_spectral.setup_if_required(i_physical.sphereDataConfig);
 
 		spat_to_SH(
@@ -438,9 +422,6 @@ public:
 
 	)	const
 	{
-		assert(o_vrt.spectral_space_data != nullptr);
-		assert(o_div.spectral_space_data != nullptr);
-
 		// create copy since the data is modified!
 		SphereData_Physical ug = i_u;
 		SphereData_Physical vg = i_v;
@@ -470,10 +451,6 @@ public:
 
 	)	const
 	{
-		assert(o_vrt.spectral_space_data != nullptr);
-		assert(o_div.spectral_space_data != nullptr);
-
-
 		o_vrt.setup_if_required(i_u.sphereDataConfig);
 		o_div.setup_if_required(i_u.sphereDataConfig);
 
@@ -509,9 +486,6 @@ public:
 
 	)	const
 	{
-		assert(o_vrt.spectral_space_data != nullptr);
-		assert(o_div.spectral_space_data != nullptr);
-
 		o_vrt.setup_if_required(i_u.sphereDataConfig);
 		o_div.setup_if_required(i_u.sphereDataConfig);
 

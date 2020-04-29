@@ -27,8 +27,8 @@ class Adv_Sphere_TS_na_sl	: public Adv_Sphere_TS_interface
 
 	int timestepping_order;
 
-	SphereOperators_Sampler_SphereDataPhysical sampler2D;
 	SphereTimestepping_SemiLagrangian semiLagrangian;
+	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 

@@ -5,11 +5,11 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "SWE_Sphere_TS_lg_rexi_lc_n_etdrk.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
 
 
 
-void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep_pert(
+void SWE_Sphere_TS_lg_exp_lc_n_etdrk::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -27,7 +27,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep_pert(
 
 
 
-void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep_nonpert(
+void SWE_Sphere_TS_lg_exp_lc_n_etdrk::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_u,	///< prognostic variables
 		SphereData_Spectral &io_v,	///< prognostic variables
@@ -361,7 +361,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::run_timestep_nonpert(
 /*
  * Setup
  */
-void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
+void SWE_Sphere_TS_lg_exp_lc_n_etdrk::setup(
 		REXI_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
 		int i_timestepping_order2,
@@ -406,7 +406,7 @@ void SWE_Sphere_TS_lg_rexi_lc_n_etdrk::setup(
 }
 
 
-SWE_Sphere_TS_lg_rexi_lc_n_etdrk::SWE_Sphere_TS_lg_rexi_lc_n_etdrk(
+SWE_Sphere_TS_lg_exp_lc_n_etdrk::SWE_Sphere_TS_lg_exp_lc_n_etdrk(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
 )	:
@@ -428,7 +428,7 @@ SWE_Sphere_TS_lg_rexi_lc_n_etdrk::SWE_Sphere_TS_lg_rexi_lc_n_etdrk(
 
 
 
-SWE_Sphere_TS_lg_rexi_lc_n_etdrk::~SWE_Sphere_TS_lg_rexi_lc_n_etdrk()
+SWE_Sphere_TS_lg_exp_lc_n_etdrk::~SWE_Sphere_TS_lg_exp_lc_n_etdrk()
 {
 }
 

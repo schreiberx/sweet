@@ -59,82 +59,13 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	ScalarDataArray pos_lon_d(sphereDataConfig->physical_array_data_number_of_elements);
 	ScalarDataArray pos_lat_d(sphereDataConfig->physical_array_data_number_of_elements);
 
-#if 0
-
-	int num_elements = sphereDataConfig->physical_array_data_number_of_elements;
-
-	/*
-	 * Compute Cartesian velocity
-	 */
-	ScalarDataArray u_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(U_u);
-	ScalarDataArray v_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(U_v);
-
-	ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-	SWEETMath::latlon_velocity_to_cartesian_velocity(
-		semiLagrangian.pos_lon_A, semiLagrangian.pos_lat_A,
-		u_lon_array, v_lat_array,
-		vel_x_A, vel_y_A, vel_z_A
-	);
-
-	/*
-	 * Do advection in Cartesian space
-	 */
+	//double dt_div_radius = simVars.timecontrol.current_timestep_size / simVars.sim.sphere_radius;
 	double dt_div_radius = i_dt / simVars.sim.sphere_radius;
 
-	ScalarDataArray new_pos_x_d(num_elements), new_pos_y_d(num_elements), new_pos_z_d(num_elements);
-	semiLagrangian.doAdvectionOnSphere(
-		semiLagrangian.pos_x_A, semiLagrangian.pos_y_A, semiLagrangian.pos_z_A,
-		-dt_div_radius*vel_x_A, -dt_div_radius*vel_y_A, -dt_div_radius*vel_z_A,
-		new_pos_x_d, new_pos_y_d, new_pos_z_d,
-
-		false
-	);
-
-	/*
-	 * Departure point to lat/lon coordinate
-	 */
-	SWEETMath::cartesian_to_latlon(
-			new_pos_x_d, new_pos_y_d, new_pos_z_d,
+	semiLagrangian.semi_lag_departure_points_settls_specialized(
+			dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
+			dt_div_radius*U_u, dt_div_radius*U_v,
 			pos_lon_d, pos_lat_d
-		);
-
-	SphereData_Physical new_prog_phi_phys(sphereDataConfig);
-	sampler2D.bicubic_scalar(
-			io_U_phi.getSphereDataPhysical(),
-			pos_lon_d, pos_lat_d,
-			new_prog_phi_phys,
-			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			false
-	);
-
-	io_U_phi = new_prog_phi_phys;
-	return;
-
-#endif
-
-	//double dt_div_radius = simVars.timecontrol.current_timestep_size / simVars.sim.sphere_radius;
-	double one_div_radius = 1.0 / simVars.sim.sphere_radius;
-
-	semiLagrangian.semi_lag_departure_points_settls(
-			//dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
-			//dt_div_radius*U_u, dt_div_radius*U_v,
-			U_u_prev, U_v_prev,
-			U_u, U_v,
-
-			simVars.timecontrol.current_timestep_size,
-			simVars.timecontrol.current_simulation_time,
-			simVars.sim.sphere_radius,
-			i_sphereBenchmarks,
-
-			pos_lon_d, pos_lat_d,
-
-			op,
-
-			timestepping_order,
-			simVars.disc.semi_lagrangian_max_iterations,
-			simVars.disc.semi_lagrangian_convergence_threshold,
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry
 	);
 
 	U_phi_prev = U_phi;
@@ -143,7 +74,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical new_prog_phi_physx(sphereDataConfig);
 
-	sampler2D.bicubic_scalar_new(
+	sphereSampler.bicubic_scalar_new(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
@@ -169,13 +100,6 @@ void Adv_Sphere_TS_na_sl::setup(
 
 	if (timestepping_order > 2 || timestepping_order <= 0)
 		FatalError("Only 1st and 2nd order for SL integration supported");
-
-	const SphereData_Config *sphereDataConfig = op.sphereDataConfig;
-
-	sampler2D.setup(sphereDataConfig);
-
-	//PXT- This just calls sampler2D.setup, so any reason for having it?
-	semiLagrangian.setup(sphereDataConfig, simVars);
 }
 
 
@@ -184,9 +108,12 @@ Adv_Sphere_TS_na_sl::Adv_Sphere_TS_na_sl(
 		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
-		op(i_op)
+		op(i_op),
+		semiLagrangian(i_simVars),
+		sphereSampler(semiLagrangian.sphereSampler)
 {
 	setup(simVars.disc.timestepping_order);
+	semiLagrangian.setup(op.sphereDataConfig);
 }
 
 

@@ -49,7 +49,7 @@ public:
 	void setup_auto()
 	{
 		int version_id = 0;
-		if (simVars.disc.timestepping_method == "lg_rexi_lc_n_erk_ver1")
+		if (simVars.disc.timestepping_method == "lg_exp_lc_n_erk_ver1")
 			version_id = 1;
 
 		setup(

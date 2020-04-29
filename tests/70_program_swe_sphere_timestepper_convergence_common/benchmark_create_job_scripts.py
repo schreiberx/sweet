@@ -102,7 +102,7 @@ if group == "l1":
 			'l_irk',
 			'lg_irk_lc_erk',
 
-			'l_rexi',
+			'l_exp',
 		]
 
 
@@ -117,7 +117,7 @@ elif group == "lg1":
 			'lg_erk',
 			'lg_irk',
 
-			'lg_rexi',
+			'lg_exp',
 		]
 
 elif group == "l2":
@@ -136,7 +136,7 @@ elif group == "l2":
 			'lg_irk_lc_erk',
 
 			#'l_lf',
-			'l_rexi',
+			'l_exp',
 		]
 
 elif group == "lg2":
@@ -150,7 +150,7 @@ elif group == "lg2":
 			'lg_erk',
 			'lg_cn',
 
-			'lg_rexi',
+			'lg_exp',
 		]
 
 elif group == "ln1":
@@ -174,13 +174,13 @@ elif group == "ln1":
 			'lg_irk_lc_n_erk_ver0',
 			'lg_irk_lc_n_erk_ver1',
 
-			'l_rexi_n_erk_ver0',
-			'l_rexi_n_erk_ver1',
+			'l_exp_n_erk_ver0',
+			'l_exp_n_erk_ver1',
 
-			'lg_rexi_lc_n_erk_ver0',
-			'lg_rexi_lc_n_erk_ver1',
+			'lg_exp_lc_n_erk_ver0',
+			'lg_exp_lc_n_erk_ver1',
 
-			'l_rexi_n_etdrk',
+			'l_exp_n_etdrk',
 		]
 
 
@@ -205,14 +205,14 @@ elif group == "ln2":
 			'lg_irk_lc_n_erk_ver0',
 			'lg_irk_lc_n_erk_ver1',
 
-			'l_rexi_n_erk_ver0',
-			'l_rexi_n_erk_ver1',
+			'l_exp_n_erk_ver0',
+			'l_exp_n_erk_ver1',
 
-			'lg_rexi_lc_n_erk_ver0',
-			'lg_rexi_lc_n_erk_ver1',
+			'lg_exp_lc_n_erk_ver0',
+			'lg_exp_lc_n_erk_ver1',
 
-			'l_rexi_n_etdrk',
-			'lg_rexi_lc_n_etdrk',
+			'l_exp_n_etdrk',
+			'lg_exp_lc_n_etdrk',
 
 		]
 elif group == "ln2_part1":
@@ -236,8 +236,8 @@ elif group == "ln2_part1":
 			'lg_irk_lc_n_erk_ver0',
 			'lg_irk_lc_n_erk_ver1',
 
-			'l_rexi_n_erk_ver0',
-			'l_rexi_n_erk_ver1',
+			'l_exp_n_erk_ver0',
+			'l_exp_n_erk_ver1',
 		]
 
 elif group == "ln2_part2":
@@ -250,11 +250,11 @@ elif group == "ln2_part2":
 	ts_methods = [
 			'ln_erk',
 
-			'lg_rexi_lc_n_erk_ver0',
-			'lg_rexi_lc_n_erk_ver1',
+			'lg_exp_lc_n_erk_ver0',
+			'lg_exp_lc_n_erk_ver1',
 
-			'l_rexi_n_etdrk',
-			'lg_rexi_lc_n_etdrk',
+			'l_exp_n_etdrk',
+			'lg_exp_lc_n_etdrk',
 
 		]
 

@@ -45,9 +45,9 @@ public:
 
 	Adv_Sphere_TimeSteppers timeSteppers;
 
-	bool time_varying_fields;
-
 	SphereOperators_SphereData op;
+
+	bool time_varying_fields;
 
 	/*
 	 * LMax error to h0
