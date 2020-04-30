@@ -23,11 +23,13 @@ fi
 #	sse only works with single precision
 #	CONF_FLAGS+=" --enable-sse"
 
-CONF_FLAGS+=" --enable-sse2"
-CONF_FLAGS+=" --enable-avx"
-CONF_FLAGS+=" --enable-avx2"
-CONF_FLAGS+=" --enable-avx512"
-#CONF_FLAGS+=" --enable-avx-128-fma"
+if [ "`uname -s`" == "x86_64" ]; then
+	CONF_FLAGS+=" --enable-sse2"
+	CONF_FLAGS+=" --enable-avx"
+	CONF_FLAGS+=" --enable-avx2"
+	CONF_FLAGS+=" --enable-avx512"
+	#CONF_FLAGS+=" --enable-avx-128-fma"
+fi
 
 # Never used directly in Fortran
 #CONF_FLAGS+=" --disable-fortran"
