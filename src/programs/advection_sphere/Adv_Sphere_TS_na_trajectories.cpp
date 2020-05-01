@@ -115,27 +115,27 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 #endif
 
 	// sample phi at departure points
-	SphereData_Physical U_phi_phys_D(sphereDataConfig);
-	sphereSampler.bicubic_scalar(
+	SphereData_Physical U_phi_phys_D =
+		sphereSampler.bicubic_scalar_ret_phys(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_D, pos_lat_D,
-			U_phi_phys_D,
 			false,	// velocity sampling
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	io_U_phi = U_phi_phys_D;
 
 
 	// sample phi at departure points
-	sphereSampler.bicubic_scalar(
+
+	U_phi_phys_D =
+	sphereSampler.bicubic_scalar_ret_phys(
 			io_U_phi_phys,
 			pos_lon_D, pos_lat_D,
-			U_phi_phys_D,
 			false,	// velocity sampling
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
 	io_U_phi_phys = U_phi_phys_D;
@@ -183,11 +183,12 @@ Adv_Sphere_TS_na_trajectories::Adv_Sphere_TS_na_trajectories(
 )	:
 		simVars(i_simVars),
 		op(i_op),
+		semiLagrangian(simVars),
 		sphereSampler(semiLagrangian.sphereSampler)
 {
 	setup(simVars.disc.timestepping_order);
 
-	semiLagrangian.setup(op.sphereDataConfig, simVars);
+	semiLagrangian.setup(op.sphereDataConfig);
 }
 
 

@@ -5,6 +5,9 @@ import sys
 import platform
 
 
+print(" ".join(sys.argv))
+
+
 # SCons doesn't inherit the python environment variables
 sys.path.append("./mule_local/python/mule_local")
 from JobCompileOptions import *

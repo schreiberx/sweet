@@ -264,11 +264,11 @@ public:
 		}
 	}
 
-#if 0
+#if 1
 	/*
 	 * Compute SL departure points on unit sphere for given dt*(u,v) velocities
 	 */
-	void semi_lag_departure_points_settls(
+	void semi_lag_departure_points_settls_old(
 		const SphereData_Physical &i_u_lon_prev,	///< Velocities at time t-1
 		const SphereData_Physical &i_v_lat_prev,
 

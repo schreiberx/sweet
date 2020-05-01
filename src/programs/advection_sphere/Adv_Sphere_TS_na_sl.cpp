@@ -116,7 +116,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	//double dt_div_radius = simVars.timecontrol.current_timestep_size / simVars.sim.sphere_radius;
 	double one_div_radius = 1.0 / simVars.sim.sphere_radius;
 
-	semiLagrangian.semi_lag_departure_points_settls(
+	semiLagrangian.semi_lag_departure_points_settls_old(
 			//dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
 			//dt_div_radius*U_u, dt_div_radius*U_v,
 			U_u_prev, U_v_prev,
@@ -141,16 +141,14 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	U_vrt_prev = U_vrt;
 	U_div_prev = U_div;
 
-	SphereData_Physical new_prog_phi_physx(sphereDataConfig);
-
-	sphereSampler.bicubic_scalar(
+	SphereData_Physical new_prog_phi_physx =
+		sphereSampler.bicubic_scalar_ret_phys(
 			io_U_phi.getSphereDataPhysical(),
 			pos_lon_d,
 			pos_lat_d,
-			new_prog_phi_physx,
 			false,
-			simVars.disc.semi_lagrangian_interpolation_limiter,
-			false
+			false,
+			simVars.disc.semi_lagrangian_interpolation_limiter
 	);
 
 	io_U_phi = new_prog_phi_physx;
@@ -169,13 +167,6 @@ void Adv_Sphere_TS_na_sl::setup(
 
 	if (timestepping_order > 2 || timestepping_order <= 0)
 		FatalError("Only 1st and 2nd order for SL integration supported");
-
-	const SphereData_Config *sphereDataConfig = op.sphereDataConfig;
-
-	sphereSampler.setup(sphereDataConfig);
-
-	//PXT- This just calls sampler2D.setup, so any reason for having it?
-	semiLagrangian.setup(sphereDataConfig, simVars);
 }
 
 
@@ -185,9 +176,12 @@ Adv_Sphere_TS_na_sl::Adv_Sphere_TS_na_sl(
 )	:
 		simVars(i_simVars),
 		op(i_op),
+		semiLagrangian(simVars),
 		sphereSampler(semiLagrangian.sphereSampler)
 {
 	setup(simVars.disc.timestepping_order);
+
+	semiLagrangian.setup(op.sphereDataConfig);
 }
 
 
