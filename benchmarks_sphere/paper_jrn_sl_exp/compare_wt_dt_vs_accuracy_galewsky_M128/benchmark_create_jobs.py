@@ -48,6 +48,8 @@ gen_reference_solution = True
 
 jg.runtime.max_simulation_time = 60*60*24*5    # 5 days
 
+jg.runtime.max_wallclock_time = 30*60
+
 #params_timestep_sizes_explicit = [30]
 params_timestep_sizes_explicit = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360]
 
@@ -211,7 +213,7 @@ jg.compile.sphere_spectral_dealiasing = 'enable'
 
 jg.compile.benchmark_timings = 'enable'
 
-jg.compile.quadmath = 'enable'
+jg.compile.quadmath = 'disable'
 
 
 #

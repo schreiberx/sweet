@@ -17,12 +17,13 @@ for i in $DIRS; do
 
 	echo_info "Executing '$i'"
 
-	./run.sh 2>"output.err" > "./output.out" &
+	./run.sh 2>"output.err" > "./output.out"
+	#./run.sh 2>"output.err" > "./output.out" &
 
-	SCRIPT_PID=$!
+	#SCRIPT_PID=$!
 
         # Wait for finish
-        wait $SCRIPT_PID
+        #wait $SCRIPT_PID
 
 	EXIT_CODE=$?
 

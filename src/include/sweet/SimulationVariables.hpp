@@ -1014,6 +1014,9 @@ public:
 		/// maximum simulation time to execute the simulation for
 		double max_simulation_time = std::numeric_limits<double>::infinity();
 
+		/// maximum wallclock time to execute the simulation for
+		double max_wallclock_time = -1;
+
 
 		void outputConfig()
 		{
@@ -1026,6 +1029,7 @@ public:
 			std::cout << " + current_simulation_time: " << current_simulation_time << std::endl;
 			std::cout << " + max_timesteps_nr: " << max_timesteps_nr << std::endl;
 			std::cout << " + max_simulation_time: " << max_simulation_time << std::endl;
+			std::cout << " + max_wallclock_time: " << max_wallclock_time << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -1036,6 +1040,9 @@ public:
 		)
 		{
 			long_options[next_free_program_option] = {"dt", required_argument, 0, 256+next_free_program_option};
+			next_free_program_option++;
+
+			long_options[next_free_program_option] = {"max-wallclock-time", required_argument, 0, 256+next_free_program_option};
 			next_free_program_option++;
 		}
 
@@ -1051,9 +1058,13 @@ public:
 				current_timestep_size = atof(i_value);
 				setup_timestep_size = current_timestep_size;
 				return 0;
+
+			case 1:
+				max_wallclock_time = atof(i_value);
+				return 0;
 			}
 
-			return 1;
+			return 2;
 		}
 
 	} timecontrol;
@@ -1217,6 +1228,7 @@ public:
 		std::cout << "" << std::endl;
 		std::cout << "Control:" << std::endl;
 		std::cout << "	--dt [time]	timestep size, default=?" << std::endl;
+		std::cout << "	--max-wallclock-time [time]	wallclock time limitation, default=-1" << std::endl;
 		std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
 		std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
 		std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;

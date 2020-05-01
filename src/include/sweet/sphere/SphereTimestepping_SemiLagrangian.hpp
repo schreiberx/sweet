@@ -9,6 +9,7 @@
 #ifndef SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 #define SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 
+#include <limits>
 #include <sweet/ScalarDataArray.hpp>
 #include <sweet/SWEETMath.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
@@ -50,7 +51,7 @@ public:
 
 	enum EnumTrajectories
 	{
-		E_TRAJECTORY_METHOD_STD,
+		E_TRAJECTORY_METHOD_CANONICAL,
 		E_TRAJECTORY_METHOD_MIDPOINT_RITCHIE,
 		E_TRAJECTORY_METHOD_SETTLS_HORTAL
 	};
@@ -85,9 +86,9 @@ public:
 		sphereDataConfig = i_sphereDataConfig;
 		sphereSampler.setup(sphereDataConfig);
 
-		if (simVars.disc.semi_lagrangian_departure_point_method == "std")
+		if (simVars.disc.semi_lagrangian_departure_point_method == "canonical")
 		{
-			trajectory_method = E_TRAJECTORY_METHOD_STD;
+			trajectory_method = E_TRAJECTORY_METHOD_CANONICAL;
 		}
 		else if (simVars.disc.semi_lagrangian_departure_point_method == "midpoint")
 		{
@@ -341,7 +342,7 @@ public:
 
 		if (i_timestepping_order == 2)
 		{
-			if (trajectory_method == E_TRAJECTORY_METHOD_STD)
+			if (trajectory_method == E_TRAJECTORY_METHOD_CANONICAL)
 			{
 				/*
 				 * Standard iterative method
@@ -744,7 +745,7 @@ public:
 
 		if (timestepping_order == 2)
 		{
-			if (trajectory_method == E_TRAJECTORY_METHOD_STD)
+			if (trajectory_method == E_TRAJECTORY_METHOD_CANONICAL)
 			{
 				/*
 				 * Standard iterative method
@@ -799,7 +800,8 @@ public:
 				/*
 				 * 2 iterations to get midpoint
 				 */
-				for (int i = 0; i < 2; i++)
+				double diff = -1;
+				for (int i = 0; i < semi_lagrangian_max_iterations; i++)
 				{
 					/*
 					 * Step 2a
@@ -827,6 +829,9 @@ public:
 							vel_x_mid, vel_y_mid, vel_z_mid
 						);
 
+					// convert final points from Cartesian space to angular space
+					ScalarDataArray new_pos_x_D(num_elements), new_pos_y_D(num_elements), new_pos_z_D(num_elements);
+
 					/*
 					 * Step 2b
 					 */
@@ -839,12 +844,43 @@ public:
 						-vel_y_mid,
 						-vel_z_mid,
 
-						pos_x_D,
-						pos_y_D,
-						pos_z_D,
+						new_pos_x_D,
+						new_pos_y_D,
+						new_pos_z_D,
 
 						semi_lagrangian_approximate_sphere_geometry
 					);
+
+
+					if (semi_lagrangian_convergence_threshold > 0)
+					{
+						diff =  (pos_x_D-new_pos_x_D).reduce_maxAbs() +
+										(pos_y_D-new_pos_y_D).reduce_maxAbs() +
+										(pos_z_D-new_pos_z_D).reduce_maxAbs();
+
+						if (diff < semi_lagrangian_convergence_threshold)
+						{
+							pos_x_D = new_pos_x_D;
+							pos_y_D = new_pos_y_D;
+							pos_z_D = new_pos_z_D;
+
+							break;
+						}
+					}
+
+					pos_x_D = new_pos_x_D;
+					pos_y_D = new_pos_y_D;
+					pos_z_D = new_pos_z_D;
+				}
+
+				if (semi_lagrangian_convergence_threshold > 0)
+				{
+					if (diff > semi_lagrangian_convergence_threshold)
+					{
+						std::cout << "WARNING: Over convergence tolerance" << std::endl;
+						std::cout << "+ maxAbs: " << diff << std::endl;
+						std::cout << "+ Convergence tolerance: " << semi_lagrangian_convergence_threshold << std::endl;
+					}
 				}
 
 				// convert final points from Cartesian space to angular space
@@ -895,7 +931,8 @@ public:
 				/*
 				 * 2 iterations to get midpoint
 				 */
-				for (int i = 0; i < 2; i++)
+				double diff = -1;
+				for (int i = 0; i < semi_lagrangian_max_iterations; i++)
 				{
 					SWEETMath::cartesian_to_latlon(
 							pos_x_D, pos_y_D, pos_z_D,
@@ -913,6 +950,9 @@ public:
 							vel_x_D, vel_y_D, vel_z_D
 						);
 
+					// convert final points from Cartesian space to angular space
+					ScalarDataArray new_pos_x_D(num_elements), new_pos_y_D(num_elements), new_pos_z_D(num_elements);
+
 					doAdvectionOnSphere(
 						pos_x_A,
 						pos_y_A,
@@ -922,12 +962,43 @@ public:
 						-0.5*vel_y_D,
 						-0.5*vel_z_D,
 
-						pos_x_D,
-						pos_y_D,
-						pos_z_D,
+						new_pos_x_D,
+						new_pos_y_D,
+						new_pos_z_D,
 
 						semi_lagrangian_approximate_sphere_geometry
 					);
+
+
+					if (semi_lagrangian_convergence_threshold > 0)
+					{
+						diff =  (pos_x_D-new_pos_x_D).reduce_maxAbs() +
+										(pos_y_D-new_pos_y_D).reduce_maxAbs() +
+										(pos_z_D-new_pos_z_D).reduce_maxAbs();
+
+						if (diff < semi_lagrangian_convergence_threshold)
+						{
+							pos_x_D = new_pos_x_D;
+							pos_y_D = new_pos_y_D;
+							pos_z_D = new_pos_z_D;
+
+							break;
+						}
+					}
+
+					pos_x_D = new_pos_x_D;
+					pos_y_D = new_pos_y_D;
+					pos_z_D = new_pos_z_D;
+				}
+
+				if (semi_lagrangian_convergence_threshold > 0)
+				{
+					if (diff > semi_lagrangian_convergence_threshold)
+					{
+						std::cout << "WARNING: Over convergence tolerance" << std::endl;
+						std::cout << "+ maxAbs: " << diff << std::endl;
+						std::cout << "+ Convergence tolerance: " << semi_lagrangian_convergence_threshold << std::endl;
+					}
 				}
 
 				/*
@@ -940,8 +1011,9 @@ public:
 				pos_y_D = dot2*pos_y_D - pos_y_A;
 				pos_z_D = dot2*pos_z_D - pos_z_A;
 
-				// convert final points from Cartesian space to angular space
+
 				SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+
 			}
 			else if (trajectory_method == E_TRAJECTORY_METHOD_SETTLS_HORTAL)
 			{
@@ -956,7 +1028,7 @@ public:
 				SphereData_Physical u_extrapol = 2.0*i_dt_u_lon - i_u_lon_prev;
 				SphereData_Physical v_extrapol = 2.0*i_dt_v_lat - i_v_lat_prev;
 
-				// Convert velocities along lon/lat to scalardata array
+				// Convert velocities along lon/lat to scalar data array
 				ScalarDataArray vel_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_u_lon);
 				ScalarDataArray vel_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_v_lat);
 
@@ -993,8 +1065,7 @@ public:
 					semi_lagrangian_approximate_sphere_geometry
 				);
 
-				double diff = 999999;
-
+				double diff = -1;
 				for (int iters = 0; iters < semi_lagrangian_max_iterations; iters++)
 				{
 					SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);

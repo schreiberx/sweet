@@ -70,6 +70,7 @@ public:
 	SphereData_Spectral prog_vrt;
 	SphereData_Spectral prog_div;
 
+	Stopwatch stopwatch;
 
 	REXI_Terry<> rexi;
 
@@ -192,6 +193,8 @@ public:
 		{
 			simVars.outputConfig();
 		}
+
+		stopwatch.start();
 	}
 
 
@@ -483,6 +486,16 @@ public:
 	{
 		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
 			return true;
+
+		if (simVars.timecontrol.max_wallclock_time >= 0)
+		{
+			double t = stopwatch.getTimeSinceStart();
+			if (simVars.timecontrol.max_wallclock_time <= t)
+			{
+				std::cout << "[MULE] max_wallclock_time: exceeded (" << t << ")" << std::endl;
+				return true;
+			}
+		}
 
 		double diff = std::abs(simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time);
 

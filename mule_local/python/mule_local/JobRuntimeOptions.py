@@ -115,6 +115,7 @@ class JobRuntimeOptions(InfoError):
         self.advection_rotation_angle = None
         self.advection_velocity = None
         self.max_simulation_time = 0.001
+        self.max_wallclock_time = -1
 
         self.compute_error = 0
 
@@ -281,8 +282,8 @@ class JobRuntimeOptions(InfoError):
                 if self.max_timesteps_nr != -1:
                     idstr += '_T'+str(self.max_timesteps_nr).zfill(3)
 
-            if not 'runtime.max_simulation_time' in filter_list:
-                idstr += '_S'+str(self.max_simulation_time).zfill(6)
+            if not 'runtime.max_wallclock_time' in filter_list:
+                idstr += '_W'+str(self.max_wallclock_time).zfill(6)
 
 
         if not 'runtime.rexi' in filter_list:
@@ -460,6 +461,8 @@ class JobRuntimeOptions(InfoError):
             retval += ' -U '+str(self.viscosity_order)
 
         retval += ' -t '+str(self.max_simulation_time)
+
+        retval += ' --max-wallclock-time '+str(self.max_wallclock_time)
 
         retval += ' --instability-checks='+str(self.instability_checks)
 

@@ -554,9 +554,9 @@ SWE_Sphere_TS_ln_settls_vd::SWE_Sphere_TS_ln_settls_vd(
 		op(i_op),
 		semiLagrangian(simVars),
 
-		original_linear_operator_sl_treatment(true),
 		coriolis_treatment(CORIOLIS_LINEAR),
-		nonlinear_remainder_treatment(NL_REMAINDER_NONLINEAR)
+		nonlinear_remainder_treatment(NL_REMAINDER_NONLINEAR),
+		original_linear_operator_sl_treatment(true)
 {
 	if (i_setup_auto)
 		setup_auto();

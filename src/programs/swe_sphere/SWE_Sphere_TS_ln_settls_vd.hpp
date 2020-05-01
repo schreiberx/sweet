@@ -61,6 +61,9 @@ private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
+	SphereTimestepping_SemiLagrangian semiLagrangian;
+	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
+
 public:
 	enum LinearCoriolisTreatment_enum {
 		CORIOLIS_IGNORE,
@@ -75,14 +78,12 @@ public:
 	};
 
 private:
+
 	LinearCoriolisTreatment_enum coriolis_treatment;
 	NLRemainderTreatment_enum nonlinear_remainder_treatment;
 
 	int timestepping_order;
 	bool original_linear_operator_sl_treatment;
-
-	SphereTimestepping_SemiLagrangian semiLagrangian;
-	SphereOperators_Sampler_SphereDataPhysical sphereSampler;
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 

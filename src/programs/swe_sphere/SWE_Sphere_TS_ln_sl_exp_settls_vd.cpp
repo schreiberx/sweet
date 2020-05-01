@@ -43,10 +43,6 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::interpolate_departure_point(
 		SphereData_Spectral &o_div
 )
 {
-	o_phi.setup_if_required(i_phi.sphereDataConfig);
-	o_vrt.setup_if_required(i_phi.sphereDataConfig);
-	o_div.setup_if_required(i_phi.sphereDataConfig);
-
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
 			i_phi.getSphereDataPhysical(),
 			i_pos_lon_d, i_pos_lat_d,
