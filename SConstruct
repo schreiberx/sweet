@@ -299,7 +299,7 @@ else:
 
 
 
-env.Append(LIBS='m')
+env.Append(LIBS=['m'])
 
 if p.sweet_mpi == 'enable':
     print("Enabling MPI for REXI")
