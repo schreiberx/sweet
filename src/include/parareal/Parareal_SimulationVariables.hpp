@@ -160,35 +160,35 @@ public:
 		{
 		case 0:
 			coarse_slices = atoi(i_value);
-			return 0;
+			return -1;
 
 		case 1:
 			convergence_error_threshold = atof(i_value);
-			return 0;
+			return -1;
 
 		case 2:
 			verbosity = atoi(i_value);
-			return 0;
+			return -1;
 
 		case 3:
 			enabled = atoi(i_value);
-			return 0;
+			return -1;
 
 		case 4:
 			max_simulation_time = atof(i_value);
-			return 0;
+			return -1;
 
 		case 5:
 			coarse_timestepping_method = i_value;
-			return 0;
+			return -1;
 
 		case 6:
 			coarse_timestepping_order = atoi(i_value);
-			return 0;
+			return -1;
 
 		case 7:
 			coarse_timestepping_order2 = atoi(i_value);
-			return 0;
+			return -1;
 		}
 
 		return 8;

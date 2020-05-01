@@ -314,26 +314,27 @@ public:
 		bool rexi_files_given = false;
 		switch(i_option_index)
 		{
-			case 0:		rexi_method = optarg;	return 0;
+			case 0:		rexi_method = optarg;	return -1;
 
-			case 1:		sphere_solver_preallocation = atoi(optarg);	return 0;
-			case 2:		use_sphere_extended_modes = atoi(optarg);	return 0;
+			case 1:		sphere_solver_preallocation = atoi(optarg);	return -1;
+			case 2:		use_sphere_extended_modes = atoi(optarg);	return -1;
 
+			// Use a break here to process the rexi files below
 			case 3:		rexi_files = optarg;	rexi_files_given = true; break;
 
-			case 4:		terry_h = atof(optarg);	return 0;
-			case 5:		terry_M = atoi(optarg);	return 0;
-			case 6:		terry_L = atoi(optarg);	return 0;
-			case 7:		terry_reduce_to_half = atoi(optarg);	return 0;
-			case 8:		terry_normalization = atoi(optarg);	return 0;
+			case 4:		terry_h = atof(optarg);	return -1;
+			case 5:		terry_M = atoi(optarg);	return -1;
+			case 6:		terry_L = atoi(optarg);	return -1;
+			case 7:		terry_reduce_to_half = atoi(optarg);	return -1;
+			case 8:		terry_normalization = atoi(optarg);	return -1;
 
-			case 9:	ci_n = atoi(optarg);	return 0;
-			case 10:	ci_primitive = optarg;	return 0;
-			case 11:	ci_max_real = atof(optarg);	return 0;
-			case 12:	ci_max_imag = atof(optarg);	return 0;
-			case 13:	ci_s_real = atof(optarg);	return 0;
-			case 14:	ci_s_imag = atof(optarg);	return 0;
-			case 15:	ci_mu = atof(optarg);	return 0;
+			case 9:	ci_n = atoi(optarg);	return -1;
+			case 10:	ci_primitive = optarg;	return -1;
+			case 11:	ci_max_real = atof(optarg);	return -1;
+			case 12:	ci_max_imag = atof(optarg);	return -1;
+			case 13:	ci_s_real = atof(optarg);	return -1;
+			case 14:	ci_s_imag = atof(optarg);	return -1;
+			case 15:	ci_mu = atof(optarg);	return -1;
 		}
 
 		if (rexi_files_given)
@@ -373,7 +374,7 @@ public:
 				}
 			}
 
-			return 0;
+			return -1;
 		}
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")

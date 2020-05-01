@@ -72,8 +72,8 @@ struct SWEPolvani_SimulationVariables
 	{
 		switch(i_option_index)
 		{
-			case 0:	r = atof(optarg);	return 0;
-			case 1:	f = atof(optarg);	return 0;
+			case 0:	r = atof(optarg);	return -1;
+			case 1:	f = atof(optarg);	return -1;
 		}
 
 		return 2;

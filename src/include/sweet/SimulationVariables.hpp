@@ -238,11 +238,11 @@ public:
 			{
 			case 0:
 				output_file_name = i_value;
-				return 0;
+				return -1;
 
 			case 1:
 				output_file_mode = i_value;
-				return 0;
+				return -1;
 			}
 
 			return 2;
@@ -410,43 +410,43 @@ public:
 			{
 			case 0:
 				random_seed = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 1:
 				object_coord_x = atof(i_value);
-				return 0;
+				return -1;
 
 			case 2:
 				object_coord_y = atof(i_value);
-				return 0;
+				return -1;
 
 			case 3:
 				sphere_advection_rotation_angle = atof(i_value);
-				return 0;
+				return -1;
 
 			case 4:
 				benchmark_name = i_value;
-				return 0;
+				return -1;
 
 			case 5:
 				setup_dealiased = atof(i_value);
-				return 0;
+				return -1;
 
 			case 6:
 				benchmark_galewsky_umax = atof(i_value);
-				return 0;
+				return -1;
 
 			case 7:
 				benchmark_galewsky_hamp = atof(i_value);
-				return 0;
+				return -1;
 
 			case 8:
 				benchmark_galewsky_phi2 = atof(i_value);
-				return 0;
+				return -1;
 
 			case 9:
 				benchmark_normal_modes_case = i_value;
-				return 0;
+				return -1;
 			}
 
 			return 10;
@@ -791,51 +791,51 @@ public:
 			{
 			case 0:
 				timestepping_method = i_value;
-				return 0;
+				return -1;
 
 			case 1:
 				timestepping_order = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 2:
 				timestepping_order2 = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 3:
 				timestepping_leapfrog_robert_asselin_filter = atof(i_value);
-				return 0;
+				return -1;
 
 			case 4:
 				timestepping_crank_nicolson_filter = atof(i_value);
-				return 0;
+				return -1;
 
 			case 5:
 				semi_lagrangian_max_iterations = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 6:
 				semi_lagrangian_departure_point_method = i_value;
-				return 0;
+				return -1;
 
 			case 7:
 				semi_lagrangian_sampler_use_pole_pseudo_points = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 8:
 				semi_lagrangian_interpolation_limiter = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 9:
 				semi_lagrangian_convergence_threshold = atof(i_value);
-				return 0;
+				return -1;
 
 			case 10:
 				semi_lagrangian_approximate_sphere_geometry = atof(i_value);
-				return 0;
+				return -1;
 
 			case 11:
 				space_grid_use_c_staggering = atof(i_value);
-				return 0;
+				return -1;
 			}
 
 			return 12;
@@ -957,31 +957,31 @@ public:
 			{
 			case 0:
 				compute_errors = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 1:
 				instability_checks = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 2:
 				sphere_use_robert_functions = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 3:
 				use_nonlinear_only_visc = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 4:
 				reuse_spectral_transformation_plans = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 5:
 				normal_mode_analysis_generation = atoi(i_value);
-				return 0;
+				return -1;
 
 			case 6:
 				comma_separated_tags = i_value;
-				return 0;
+				return -1;
 			}
 
 			return 7;
@@ -1014,9 +1014,10 @@ public:
 				int &next_free_program_option
 		)
 		{
-
 #if SWEET_THREADING
-			num_threads = omp_get_num_threads();
+//#pragma omp parallel master
+//			num_threads = omp_get_num_threads();
+			num_threads = omp_get_max_threads();
 #endif
 	        //long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
 	        //next_free_program_option++;
@@ -1032,12 +1033,11 @@ public:
 			switch(i_option_index)
 			{
 			case 0:
-				compute_errors = atoi(i_value);
-				return 0;
+				num_threads = atoi(i_value);
+				return -1;
 
 			}
 */
-
 			return 0;
 		}
 
@@ -1115,11 +1115,11 @@ public:
 			case 0:
 				current_timestep_size = atof(i_value);
 				setup_timestep_size = current_timestep_size;
-				return 0;
+				return -1;
 
 			case 1:
 				max_wallclock_time = atof(i_value);
-				return 0;
+				return -1;
 			}
 
 			return 2;
@@ -1465,21 +1465,21 @@ public:
 
 					{
 						int retval = benchmark.setup_longOptionValue(i-benchmark_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
 
 					{
 						int retval = sim.setup_longOptionValue(i-sim_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
 
 					{
 						int retval = iodata.setup_longOptionValue(i-iodata_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
@@ -1487,28 +1487,28 @@ public:
 
 					{
 						int retval = misc.setup_longOptionValue(i-misc_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
 
 					{
 						int retval = parallelization.setup_longOptionValue(i-parallelization_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
 
 					{
 						int retval = disc.setup_longOptionValue(i-disc_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
 
 					{
 						int retval = timecontrol.setup_longOptionValue(i-timecontrol_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
@@ -1516,7 +1516,7 @@ public:
 #if SWEET_PARAREAL
 					{
 						int retval = parareal.setup_longOptionValue(i-parareal_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
@@ -1525,7 +1525,7 @@ public:
 #if SWEET_LIBPFASST
 					{
 						int retval = libpfasst.setup_longOptionValue(i-libpfasst_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
@@ -1533,14 +1533,14 @@ public:
 
 					{
 						int retval = rexi.setup_longOptionValue(i-rexi_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}
 
 					{
 						int retval = swe_polvani.setup_longOptionValue(i-swe_polvani_start_option_index, optarg);
-						if (retval == 0)
+						if (retval == -1)
 							continue;
 						c += retval;
 					}

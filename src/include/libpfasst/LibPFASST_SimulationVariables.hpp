@@ -132,15 +132,15 @@ struct LibPFASST_SimulationVariables
   {
     switch(i_option_index)
       {
-      case 0:	nlevels                 = atoi(optarg);	return 0;
-      case 1:	niters                  = atoi(optarg);	return 0;
-      case 2:   nsweeps_coarse          = atoi(optarg); return 0;
-      case 3:	nnodes                  = atoi(optarg);	return 0;
-      case 4:	nodes_type              = optarg; 	return 0;
-      case 5:	coarsening_multiplier   = atof(optarg);	return 0;
-      case 6:   use_rexi                = atoi(optarg); return 0;
-      case 7:   implicit_coriolis_force = atoi(optarg); return 0;
-      case 8:   use_rk_stepper          = atoi(optarg); return 0;
+      case 0:	nlevels                 = atoi(optarg);	return -1;
+      case 1:	niters                  = atoi(optarg);	return -1;
+      case 2:   nsweeps_coarse          = atoi(optarg); return -1;
+      case 3:	nnodes                  = atoi(optarg);	return -1;
+      case 4:	nodes_type              = optarg; 	return -1;
+      case 5:	coarsening_multiplier   = atof(optarg);	return -1;
+      case 6:   use_rexi                = atoi(optarg); return -1;
+      case 7:   implicit_coriolis_force = atoi(optarg); return -1;
+      case 8:   use_rk_stepper          = atoi(optarg); return -1;
       }
     
     return 9;
