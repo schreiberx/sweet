@@ -18,6 +18,10 @@
 #include <sweet/FatalError.hpp>
 #include <sweet/StringSplit.hpp>
 
+#if SWEET_THREADING
+#include <omp.h>
+#endif
+
 #ifndef SWEET_USE_SPHERE_SPECTRAL_SPACE
 #	define SWEET_USE_SPHERE_SPECTRAL_SPACE 1
 #endif
@@ -988,6 +992,60 @@ public:
 
 
 	/**
+	 * Miscellaneous variables
+	 */
+	struct Parallelization
+	{
+		/// number of threads
+		int num_threads = -1;
+
+		void outputConfig()
+		{
+			std::cout << std::endl;
+			std::cout << "PARALLELIZATION:" << std::endl;
+			std::cout << " + num_threads: " << num_threads << std::endl;
+			std::cout << std::endl;
+		}
+
+
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+
+#if SWEET_THREADING
+			num_threads = omp_get_num_threads();
+#endif
+	        //long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
+	        //next_free_program_option++;
+		}
+
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+/*
+			switch(i_option_index)
+			{
+			case 0:
+				compute_errors = atoi(i_value);
+				return 0;
+
+			}
+*/
+
+			return 0;
+		}
+
+
+	} parallelization;
+
+
+	/**
 	 * Timestepping
 	 */
 	struct TimestepControl
@@ -1082,6 +1140,7 @@ public:
 		rexi.outputConfig();
 		swe_polvani.outputConfig();
 		misc.outputConfig();
+		parallelization.outputConfig();
 		diag.outputConfig();
 
 #if SWEET_PARAREAL
@@ -1302,6 +1361,9 @@ public:
         int misc_start_option_index = next_free_program_option;
 		misc.setup_longOptionsList(long_options, next_free_program_option);
 
+        int parallelization_start_option_index = next_free_program_option;
+        parallelization.setup_longOptionsList(long_options, next_free_program_option);
+
         int disc_start_option_index = next_free_program_option;
 		disc.setup_longOptionsList(long_options, next_free_program_option);
 
@@ -1425,6 +1487,13 @@ public:
 
 					{
 						int retval = misc.setup_longOptionValue(i-misc_start_option_index, optarg);
+						if (retval == 0)
+							continue;
+						c += retval;
+					}
+
+					{
+						int retval = parallelization.setup_longOptionValue(i-parallelization_start_option_index, optarg);
 						if (retval == 0)
 							continue;
 						c += retval;
