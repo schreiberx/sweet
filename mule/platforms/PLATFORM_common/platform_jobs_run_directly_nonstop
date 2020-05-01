@@ -17,12 +17,7 @@ for JOBDIR in $DIRS; do
 
 	echo_info "Executing job in directory '$JOBDIR'"
 
-	./run.sh 2>"output.err" > "./output.out" &
 	./run.sh 2>"output.err" > "./output.out"
-
-	#SCRIPT_PID=$!
-        ## Wait for finish
-        #wait $SCRIPT_PID
 
 	cd "$P"
 done

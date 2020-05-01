@@ -1,0 +1,10 @@
+#! /bin/bash
+
+IDS=$(squeue | tail -n +1 | sed "s/ odr.*//")
+echo ${IDS}
+
+if [[ -z "$IDS" ]]; then
+	echo "No jobs found"
+else
+	scancel  $IDS
+fi
