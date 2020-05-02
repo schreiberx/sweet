@@ -364,7 +364,7 @@ for tsm in ts_methods:
 			print("timestep_size: "+str(jg.runtime.timestep_size))
 			raise Exception("Invalid time step size (not remainder-less dividable)")
 
-		if 'rexi' in jg.runtime.timestepping_method:
+		if 'exp' in jg.runtime.timestepping_method:
 			jg.runtime.rexi_method = 'ci'
 		else:
 			jg.runtime.rexi_method = None

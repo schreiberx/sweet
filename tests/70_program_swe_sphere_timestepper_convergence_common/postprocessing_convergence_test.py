@@ -84,7 +84,7 @@ for tagname_y in tagnames_y:
 			error_tolerance_error = -1
 			if 'vort' in tagname_y:
 
-				if 'rexi' in group_name:
+				if 'exp' in group_name:
 					# Convergence for rexi fracking fast
 					# Be a little bit more tolerant for convergence due to high accuracy
 					if convergence_order == 1:
@@ -120,7 +120,7 @@ for tagname_y in tagnames_y:
 				conv_test_range_end = 4
 				error_tolerance_convergence = 0.05
 
-				if 'rexi' in group_name:
+				if 'exp' in group_name:
 					# Convergence for rexi fracking fast
 					# Be a little bit more tolerant for convergence due to high accuracy
 					error_tolerance_convergence = 0.2
