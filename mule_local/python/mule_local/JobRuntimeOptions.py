@@ -275,7 +275,10 @@ class JobRuntimeOptions(InfoError):
             if not 'runtime.timestepping_size' in filter_list:
                 if self.timestep_size != None:
                     # Leading number is the total number of digits!
-                    idstr += '_dt'+str("{:08.3f}".format(self.timestep_size))
+                    if self.timestep_size < 0:
+                        idstr += '_dt'+str("{:0.5e}".format(self.timestep_size))
+                    else:
+                        idstr += '_dt'+str("{:08.2f}".format(self.timestep_size))
 
             if not 'runtime.max_timesteps_nr' in filter_list:
                 if self.max_timesteps_nr != -1:
