@@ -286,7 +286,7 @@ class JobRuntimeOptions(InfoError):
 
 
         if not 'runtime.rexi' in filter_list:
-            if self.rexi_method != '':
+            if self.rexi_method != '' and self.rexi_method != None:
                 if self.rexi_method == 'direct':
                     idstr += '_REXIDIR'
                 else:
@@ -494,49 +494,50 @@ class JobRuntimeOptions(InfoError):
         if self.normal_mode_analysis != None:
             retval += ' --normal-mode-analysis-generation='+str(self.normal_mode_analysis)
 
-        retval += ' --rexi-method='+str(self.rexi_method)
+        if self.rexi_method != '' and self.rexi_method != None:
+            retval += ' --rexi-method='+str(self.rexi_method)
 
-        if self.rexi_method != '' and self.rexi_method != 'direct':
-            retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
-            retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+            if self.rexi_method != 'direct':
+                retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
+                retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
 
-            if self.rexi_method == 'file':
+                if self.rexi_method == 'file':
 
-                if self.p_job_dirpath == None:
-                    raise Exception("self.p_job_dirpath not set!")
+                    if self.p_job_dirpath == None:
+                        raise Exception("self.p_job_dirpath not set!")
 
-                # REXI Files
-                file_params = []
-                for coeffs in self.rexi_files_coefficients:
-                    coeff_filepath = self.p_job_dirpath+'/'+coeffs.unique_id_string
-                    coeffs.write_file(coeff_filepath)
-                    file_params.append(coeffs.function_name+':'+coeff_filepath)
+                    # REXI Files
+                    file_params = []
+                    for coeffs in self.rexi_files_coefficients:
+                        coeff_filepath = self.p_job_dirpath+'/'+coeffs.unique_id_string
+                        coeffs.write_file(coeff_filepath)
+                        file_params.append(coeffs.function_name+':'+coeff_filepath)
 
-                retval += ' --rexi-files='+(",".join(file_params))
+                    retval += ' --rexi-files='+(",".join(file_params))
 
-            elif self.rexi_method == 'terry':
+                elif self.rexi_method == 'terry':
 
-                # REXI Terry
-                retval += ' --rexi-terry-m='+str(self.rexi_terry_m)
-                retval += ' --rexi-terry-h='+str(self.rexi_terry_h)
-                retval += ' --rexi-terry-reduce-to-half='+str(self.rexi_terry_reduce_to_half)
+                    # REXI Terry
+                    retval += ' --rexi-terry-m='+str(self.rexi_terry_m)
+                    retval += ' --rexi-terry-h='+str(self.rexi_terry_h)
+                    retval += ' --rexi-terry-reduce-to-half='+str(self.rexi_terry_reduce_to_half)
 
-            elif self.rexi_method == 'ci':
+                elif self.rexi_method == 'ci':
 
-                retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
-                retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
+                    retval += ' --rexi-ci-primitive='+str(self.rexi_ci_primitive)
+                    retval += ' --rexi-ci-n='+str(self.rexi_ci_n)
 
-                if self.rexi_ci_max_real != None:
-                    retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
-                    if self.rexi_ci_max_imag != None:
-                        retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
-                else:
-                    if self.rexi_ci_sx != None:
-                        retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
-                    if self.rexi_ci_sy != None:
-                        retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
-                    if self.rexi_ci_mu != None:
-                        retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
+                    if self.rexi_ci_max_real != None:
+                        retval += ' --rexi-ci-max-real='+str(self.rexi_ci_max_real)
+                        if self.rexi_ci_max_imag != None:
+                            retval += ' --rexi-ci-max-imag='+str(self.rexi_ci_max_imag)
+                    else:
+                        if self.rexi_ci_sx != None:
+                            retval += ' --rexi-ci-sx='+str(self.rexi_ci_sx)
+                        if self.rexi_ci_sy != None:
+                            retval += ' --rexi-ci-sy='+str(self.rexi_ci_sy)
+                        if self.rexi_ci_mu != None:
+                            retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
 
 
         if self.polvani_rossby != None:
