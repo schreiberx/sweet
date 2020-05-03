@@ -26,6 +26,9 @@ void SWE_Sphere_TimeSteppers::reset()
 	delete l_irk_n_erk;
 	l_irk_n_erk = nullptr;
 
+	delete l_irk_na_erk_vd;
+	l_irk_na_erk_vd = nullptr;
+
 	delete lg_erk_lc_erk;
 	lg_erk_lc_erk = nullptr;
 
@@ -117,6 +120,7 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
+
 	if (SWE_Sphere_TS_lg_erk_lc_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_erk_lc_erk = new SWE_Sphere_TS_lg_erk_lc_erk(i_simVars, i_op);
@@ -138,6 +142,14 @@ void SWE_Sphere_TimeSteppers::setup(
 		l_irk_n_erk = new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op);
 		l_irk_n_erk->setup_auto();
 		master = &(SWE_Sphere_TS_interface&)*l_irk_n_erk;
+		return;
+	}
+
+	if (SWE_Sphere_TS_l_irk_na_erk_vd::implements_timestepping_method(i_timestepping_method))
+	{
+		l_irk_na_erk_vd = new SWE_Sphere_TS_l_irk_na_erk_vd(i_simVars, i_op);
+		l_irk_na_erk_vd->setup_auto();
+		master = &(SWE_Sphere_TS_interface&)*l_irk_na_erk_vd;
 		return;
 	}
 

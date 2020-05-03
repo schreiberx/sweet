@@ -37,6 +37,13 @@
 #include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 
 /*
+ * Almost full nonlinear
+ */
+
+#include "SWE_Sphere_TS_l_irk_na_erk_vd_ver01.hpp"
+
+
+/*
  * Exponential
  */
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"
@@ -83,6 +90,12 @@ public:
 
 	SWE_Sphere_TS_l_erk_n_erk *l_erk_n_erk = nullptr;
 	SWE_Sphere_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
+
+	/*
+	 * A little bit nonlinear
+	 */
+
+	SWE_Sphere_TS_l_irk_na_erk_vd *l_irk_na_erk_vd = nullptr;
 
 	/*
 	 * EXP
