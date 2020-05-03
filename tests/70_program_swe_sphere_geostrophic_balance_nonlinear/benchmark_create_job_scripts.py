@@ -153,7 +153,7 @@ if __name__ == "__main__":
 				params_compile_sweet_mpi
 			):
 				for jg.runtime.use_robert_functions in params_runtime_use_robert_functions:
-					if 'rexi_' in jg.runtime.timestepping_method:
+					if 'exp_' in jg.runtime.timestepping_method:
 
 						# Not implemented?
 						if jg.runtime.use_robert_functions == 0 and 'l_exp_' in jg.runtime.timestepping_method:
