@@ -9,7 +9,7 @@ COMMON="../70_program_swe_sphere_timestepper_convergence_common/"
 
 mule.benchmark.cleanup_all || exit 1
 
-$COMMON/benchmark_create_job_scripts.py $TIMESTEPPING_GROUP || exit 1
+$COMMON/benchmark_create_job_scripts.py $TIMESTEPPING_GROUP 256 || exit 1
 
 mule.benchmark.jobs_run_directly || exit 1
 

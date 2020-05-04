@@ -30,7 +30,11 @@ jg.runtime.verbosity = 2
 #
 # Mode and Physical resolution
 #
-jg.runtime.space_res_spectral = 64
+
+if len(sys.argv) > 2:
+    jg.runtime.space_res_spectral = int(sys.argv[2])
+else:
+    jg.runtime.space_res_spectral = 64
 jg.runtime.space_res_physical = None
 
 jg.runtime.benchmark_name = "gaussian_bumps_phi_vort_div"
@@ -268,9 +272,10 @@ elif group == "ln2_split":
 
 	ts_methods = [
 #			'ln_erk',
-
 			'ln_erk_split_uv',
+			'ln_erk_split_aa_uv',
 			'ln_erk_split_vd',
+			'ln_erk_split_aa_vd',
 		]
 
 else:
@@ -307,6 +312,12 @@ elif ts_order == 2:
 	
 else:
 	raise Exception("Unsupported time integration order")
+
+s = 64/jg.runtime.space_res_spectral
+
+if s != 1.0:
+    timestep_sizes = [i*s for i in timestep_sizes]
+
 
 #
 # CI REXI method

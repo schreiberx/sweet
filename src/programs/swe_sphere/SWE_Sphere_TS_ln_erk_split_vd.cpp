@@ -149,7 +149,7 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert(
 		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_U_div,	///< prognostic variables
 
-		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_phi_t,	///< time updates
 		SphereData_Spectral &o_vrt_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
@@ -159,47 +159,127 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert(
 	SphereData_Physical U_u_phys, U_v_phys;
 	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
-	o_phi_pert_t.spectral_set_zero();
+	o_phi_t.spectral_set_zero();
 	o_vrt_t.spectral_set_zero();
 	o_div_t.spectral_set_zero();
 
-
-	/*
-	 * See [SWEET]/doc/swe/swe_sphere_formulation/swe_on_sphere_formulation_in_sweet.pdf/lyx
-	 */
-	if (use_lg)
+	if (anti_aliasing_for_each_term)
 	{
-		euler_timestep_update_pert_lg(
-				i_U_phi_pert, i_U_vrt, i_U_div,
-				o_phi_pert_t, o_vrt_t, o_div_t,
-				i_simulation_timestamp);
+		SphereData_Spectral phi_tmp(i_U_phi_pert.sphereDataConfig);
+		SphereData_Spectral vrt_tmp(i_U_vrt.sphereDataConfig);
+		SphereData_Spectral div_tmp(i_U_div.sphereDataConfig);
+
+
+		/*
+		 * See [SWEET]/doc/swe/swe_sphere_formulation/swe_on_sphere_formulation_in_sweet.pdf/lyx
+		 */
+		if (use_lg)
+		{
+			phi_tmp.spectral_set_zero();
+			vrt_tmp.spectral_set_zero();
+			div_tmp.spectral_set_zero();
+
+			euler_timestep_update_pert_lg(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					phi_tmp, vrt_tmp, div_tmp,
+					i_simulation_timestamp);
+
+			o_phi_t += phi_tmp.getSphereDataPhysical();
+			o_vrt_t += vrt_tmp.getSphereDataPhysical();
+			o_div_t += div_tmp.getSphereDataPhysical();
+		}
+
+
+		if (use_lc)
+		{
+			phi_tmp.spectral_set_zero();
+			vrt_tmp.spectral_set_zero();
+			div_tmp.spectral_set_zero();
+
+			euler_timestep_update_pert_lc(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					phi_tmp, vrt_tmp, div_tmp,
+					i_simulation_timestamp);
+
+			o_phi_t += phi_tmp.getSphereDataPhysical();
+			o_vrt_t += vrt_tmp.getSphereDataPhysical();
+			o_div_t += div_tmp.getSphereDataPhysical();
+		}
+
+
+		if (use_na)
+		{
+			phi_tmp.spectral_set_zero();
+			vrt_tmp.spectral_set_zero();
+			div_tmp.spectral_set_zero();
+
+			euler_timestep_update_pert_na(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					phi_tmp, vrt_tmp, div_tmp,
+					i_simulation_timestamp);
+
+			o_phi_t += phi_tmp.getSphereDataPhysical();
+			o_vrt_t += vrt_tmp.getSphereDataPhysical();
+			o_div_t += div_tmp.getSphereDataPhysical();
+		}
+
+
+		if (use_nr)
+		{
+			phi_tmp.spectral_set_zero();
+			vrt_tmp.spectral_set_zero();
+			div_tmp.spectral_set_zero();
+
+			euler_timestep_update_pert_nr(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					phi_tmp, vrt_tmp, div_tmp,
+					i_simulation_timestamp);
+
+			o_phi_t += phi_tmp.getSphereDataPhysical();
+			o_vrt_t += vrt_tmp.getSphereDataPhysical();
+			o_div_t += div_tmp.getSphereDataPhysical();
+		}
 	}
-
-
-	if (use_lc)
+	else
 	{
-		euler_timestep_update_pert_lc(
-				i_U_phi_pert, i_U_vrt, i_U_div,
-				o_phi_pert_t, o_vrt_t, o_div_t,
-				i_simulation_timestamp);
-	}
+
+		/*
+		 * See [SWEET]/doc/swe/swe_sphere_formulation/swe_on_sphere_formulation_in_sweet.pdf/lyx
+		 */
+		if (use_lg)
+		{
+			euler_timestep_update_pert_lg(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					o_phi_t, o_vrt_t, o_div_t,
+					i_simulation_timestamp);
+		}
 
 
-	if (use_na)
-	{
-		euler_timestep_update_pert_na(
-				i_U_phi_pert, i_U_vrt, i_U_div,
-				o_phi_pert_t, o_vrt_t, o_div_t,
-				i_simulation_timestamp);
-	}
+		if (use_lc)
+		{
+			euler_timestep_update_pert_lc(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					o_phi_t, o_vrt_t, o_div_t,
+					i_simulation_timestamp);
+		}
 
 
-	if (use_nr)
-	{
-		euler_timestep_update_pert_nr(
-				i_U_phi_pert, i_U_vrt, i_U_div,
-				o_phi_pert_t, o_vrt_t, o_div_t,
-				i_simulation_timestamp);
+		if (use_na)
+		{
+			euler_timestep_update_pert_na(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					o_phi_t, o_vrt_t, o_div_t,
+					i_simulation_timestamp);
+		}
+
+
+		if (use_nr)
+		{
+			euler_timestep_update_pert_nr(
+					i_U_phi_pert, i_U_vrt, i_U_div,
+					o_phi_t, o_vrt_t, o_div_t,
+					i_simulation_timestamp);
+		}
 	}
 }
 
@@ -235,16 +315,21 @@ void SWE_Sphere_TS_ln_erk_split_vd::run_timestep_pert(
  */
 void SWE_Sphere_TS_ln_erk_split_vd::setup(
 		int i_order,		///< order of RK time stepping method
+
 		bool i_use_lg,
 		bool i_use_lc,
 		bool i_use_na,
-		bool i_use_nr
+		bool i_use_nr,
+
+		bool i_antialiasing_for_each_term
 )
 {
 	use_lg = i_use_lg;
 	use_lc = i_use_lc;
 	use_na = i_use_na;
 	use_nr = i_use_nr;
+
+	anti_aliasing_for_each_term = i_antialiasing_for_each_term;
 
 	timestepping_order = i_order;
 }

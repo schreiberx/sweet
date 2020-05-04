@@ -22,7 +22,11 @@ class SWE_Sphere_TS_ln_erk_split_uv	: public SWE_Sphere_TS_interface
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
-		if (i_timestepping_method == "ln_erk_split_uv")
+		if (
+				i_timestepping_method == "ln_erk_split_uv"		||
+				i_timestepping_method == "l_na_erk_split_uv"	||
+				i_timestepping_method == "ln_erk_split_aa_uv"
+		)
 			return true;
 
 		return false;
@@ -35,7 +39,37 @@ public:
 
 	void setup_auto()
 	{
-		setup(simVars.disc.timestepping_order, true, true, true, true);
+		/*
+		 * l_na
+		 */
+		if (simVars.disc.timestepping_method == "l_na_erk_split_uv")
+		{
+			setup(simVars.disc.timestepping_order, true, true, true, false);
+			return;
+		}
+
+		if (simVars.disc.timestepping_method == "l_na_erk_split_aa_uv")
+		{
+			setup(simVars.disc.timestepping_order, true, true, true, false, true);
+			return;
+		}
+
+		/*
+		 * ln
+		 */
+		if (simVars.disc.timestepping_method == "ln_erk_split_uv")
+		{
+			setup(simVars.disc.timestepping_order, true, true, true, true);
+			return;
+		}
+
+		if (simVars.disc.timestepping_method == "ln_erk_split_aa_uv")
+		{
+			setup(simVars.disc.timestepping_order, true, true, true, true, true);
+			return;
+		}
+
+		FatalError("Should never happen");
 	}
 
 private:
@@ -49,6 +83,8 @@ private:
 	bool use_lc = false;
 	bool use_na = false;
 	bool use_nr = false;
+
+	bool anti_aliasing_for_each_term = false;
 
 
 	// Sampler
@@ -142,7 +178,8 @@ public:
 			bool i_lg,
 			bool i_lc,
 			bool i_na,
-			bool i_nr
+			bool i_nr,
+			bool i_antialiasing_for_each_term = false
 	);
 
 	void run_timestep_pert(
