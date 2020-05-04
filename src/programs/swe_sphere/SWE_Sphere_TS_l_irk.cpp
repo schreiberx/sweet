@@ -113,7 +113,7 @@ void SWE_Sphere_TS_l_irk::update_coefficients()
 		sphSolverPhi.solver_component_rexi_z7(	-gh*alpha*alpha, r);
 		sphSolverPhi.solver_component_rexi_z8(	-gh*two_coriolis*two_coriolis, r);
 
-		mug.setup(sphereDataConfig);
+		mug.setup_if_required(sphereDataConfig);
 		mug.physical_update_lambda_gaussian_grid(
 			[&](double lon, double mu, double &o_data)
 			{

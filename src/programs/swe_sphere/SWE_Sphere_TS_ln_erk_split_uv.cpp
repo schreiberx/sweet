@@ -31,6 +31,7 @@ SphereData_Spectral SWE_Sphere_TS_ln_erk_split_uv::V_dot_grad_scalar(
 }
 
 
+
 /*
  * Main routine for method to be used in case of finite differences
  */
@@ -62,11 +63,12 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lg(
 }
 
 
+
 /*
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lc(
-		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_U_phi,	///< prognostic variables
 		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_U_div,	///< prognostic variables
 
@@ -80,7 +82,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lc(
 	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
 
-	const SphereData_Spectral &U_phi_pert = i_U_phi_pert;
+	const SphereData_Spectral &U_phi_pert = i_U_phi;
 	//const SphereData_Spectral &U_vrt = i_U_vrt;
 	const SphereData_Spectral &U_div = i_U_div;
 
@@ -104,11 +106,11 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lc(
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_na(
-		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_U_phi,	///< prognostic variables
 		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_U_div,	///< prognostic variables
 
-		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_phi_t,	///< time updates
 		SphereData_Spectral &o_vrt_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
@@ -118,7 +120,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_na(
 	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
 
-	const SphereData_Spectral &U_phi_pert = i_U_phi_pert;
+	const SphereData_Spectral &U_phi_pert = i_U_phi;
 	//const SphereData_Spectral &U_vrt = i_U_vrt;
 	const SphereData_Spectral &U_div = i_U_div;
 
@@ -129,7 +131,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_na(
 
 
 	SphereData_Physical U_div_phys = U_div.toPhys();
-	o_phi_pert_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
+	o_phi_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
 
 	/*
 	 * Velocity
@@ -153,18 +155,18 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_na(
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_nr(
-		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+		const SphereData_Spectral &i_U_phi,	///< prognostic variables
 		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_U_div,	///< prognostic variables
 
-		SphereData_Spectral &o_phi_pert_t,	///< time updates
+		SphereData_Spectral &o_phi_t,	///< time updates
 		SphereData_Spectral &o_vrt_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
 )
 {
-	o_phi_pert_t -= SphereData_Spectral(i_U_phi_pert.toPhys()*i_U_div.toPhys());
+	o_phi_t -= SphereData_Spectral(i_U_phi.toPhys()*i_U_div.toPhys());
 }
 
 

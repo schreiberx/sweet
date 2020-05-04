@@ -103,7 +103,7 @@ private:
 
 public:
 	void euler_timestep_update_pert_lg(
-			const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
+			const SphereData_Spectral &i_U_phi,	///< prognostic variables
 			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 			const SphereData_Spectral &i_U_div,	///< prognostic variables
 
