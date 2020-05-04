@@ -45,12 +45,12 @@ jg.runtime.rexi_sphere_preallocation = 0
 #
 #rexi_thread_par = True
 #if rexi_thread_par:
-#	# OMP parallel for over REXI terms
-#	jg.compile.threading = 'off'
-#	jg.compile.rexi_thread_parallel_sum = 'enable'
+#    # OMP parallel for over REXI terms
+#    jg.compile.threading = 'off'
+#    jg.compile.rexi_thread_parallel_sum = 'enable'
 #else:
-#	jg.compile.threading = 'omp'
-#	jg.compile.rexi_thread_parallel_sum = 'disable'
+#    jg.compile.threading = 'omp'
+#    jg.compile.rexi_thread_parallel_sum = 'disable'
 
 jg.compile.threading = 'omp'
 jg.compile.rexi_thread_parallel_sum = 'disable'
@@ -101,11 +101,11 @@ jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 jg.unique_id_filter = ['compile', 'parallelization']
 
 if len(sys.argv) <= 1:
-	print("")
-	print("Usage:")
-	print("	"+sys.argv[0]+" [timestepping method]")
-	print("")
-	
+    print("")
+    print("Usage:")
+    print("	"+sys.argv[0]+" [timestepping method]")
+    print("")
+    
 
 group = sys.argv[1]
 
@@ -116,72 +116,72 @@ group = sys.argv[1]
 
 if group == "l1":
 
-	ts_order = 1
+    ts_order = 1
 
-	ref_ts_method = 'l_erk'
-	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
+    ref_ts_method = 'l_erk'
+    ref_ts_order = 4
+    ref_ts_size = timestep_size_min*0.5
 
-	ts_methods = [
-			'l_erk',
-			'l_irk',
-			'l_rexi'
-		]
+    ts_methods = [
+    		'l_erk',
+    		'l_irk',
+    		'l_rexi'
+    	]
 
 elif group == "l2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'l_erk'
-	ref_ts_order = 4
-	ref_ts_size = 0.0002
+    ref_ts_method = 'l_erk'
+    ref_ts_order = 4
+    ref_ts_size = 0.0002
 
-	ts_methods = [
-			'l_erk',
-			'l_cn',
-			'l_rexi',
-		]
+    ts_methods = [
+    		'l_erk',
+    		'l_cn',
+    		'l_rexi',
+    	]
 
 
 elif group == "ln1":
 
-	ts_order = 1
+    ts_order = 1
 
-	ref_ts_method = 'ln_erk'
-	ref_ts_order = 4
-	ref_ts_size = timestep_size_min*0.5
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
+    ref_ts_size = timestep_size_min*0.5
 
-	ts_methods = [
-			'ln_erk',
-			'l_erk_n_erk',
+    ts_methods = [
+    		'ln_erk',
+    		'l_erk_n_erk',
 
-			'l_irk_n_erk',
+    		'l_irk_n_erk',
 
-			'l_rexi_n_erk',
-			'l_rexi_n_etdrk',
-		]
+    		'l_rexi_n_erk',
+    		'l_rexi_n_etdrk',
+    	]
 
 
 elif group == "ln2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'ln_erk'
-	ref_ts_order = 4
-	ref_ts_size = 0.0002
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
+    ref_ts_size = 0.0002
 
-	ts_methods = [
-			'ln_erk',
+    ts_methods = [
+    		'ln_erk',
 
-			'l_cn_n_erk',
-			'l_erk_n_erk',
+    		'l_cn_n_erk',
+    		'l_erk_n_erk',
 
-			'l_rexi_n_erk',
-			'l_rexi_n_etdrk',
-		]
+    		'l_rexi_n_erk',
+    		'l_rexi_n_etdrk',
+    	]
 
 else:
-	raise Exception("Unknown group")
+    raise Exception("Unknown group")
 
 
 #
@@ -195,8 +195,8 @@ jg.runtime.timestepping_order2 = ref_ts_order
 jg.runtime.timestep_size = ref_ts_size
 
 if len(tsm) > 4:
-	s = tsm[4]
-	jg.runtime.load_from_dict(tsm[4])
+    s = tsm[4]
+    jg.runtime.load_from_dict(tsm[4])
 
 jg.reference_job = True
 jg.gen_jobscript_directory()
@@ -215,7 +215,7 @@ jg.runtime.timestepping_order = ts_order
 jg.runtime.timestepping_order2 = ts_order
 
 for tsm in ts_methods:
-	for jg.runtime.timestep_size in timestep_sizes:
-		jg.runtime.timestepping_method = tsm
+    for jg.runtime.timestep_size in timestep_sizes:
+    	jg.runtime.timestepping_method = tsm
 
-		jg.gen_jobscript_directory()
+    	jg.gen_jobscript_directory()

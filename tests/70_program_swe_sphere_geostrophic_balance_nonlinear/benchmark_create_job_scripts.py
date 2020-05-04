@@ -87,7 +87,7 @@ pspace.num_threads_per_rank = jg.platform_resources.num_cores_per_socket//ptime.
 pspace.num_ranks = 1
 
 if pspace.num_threads_per_rank == 0:
-	pspace.num_threads_per_rank = 1
+    pspace.num_threads_per_rank = 1
 
 # Setup parallelization
 jg.setup_parallelization([pspace, ptime])
@@ -96,26 +96,26 @@ jg.setup_parallelization([pspace, ptime])
 
 
 ts_methods = [
-	['ln_erk',		4,	4,	0],	# reference solution
+    ['ln_erk',		4,	4,	0],	# reference solution
 
-	['ln_erk',		2,	2,	0],
+    ['ln_erk',		2,	2,	0],
 
-	['l_erk_n_erk',		2,	2,	0],
+    ['l_erk_n_erk',		2,	2,	0],
 
-	['l_irk_n_erk_ver0',		2,	2,	0],
-	['l_irk_n_erk_ver1',		2,	2,	0],
+    ['l_irk_n_erk_ver0',		2,	2,	0],
+    ['l_irk_n_erk_ver1',		2,	2,	0],
 
-	['lg_irk_lc_n_erk_ver0',		2,	2,	0],
-	['lg_irk_lc_n_erk_ver1',		2,	2,	0],
+    ['lg_irk_lc_n_erk_ver0',		2,	2,	0],
+    ['lg_irk_lc_n_erk_ver1',		2,	2,	0],
 
-	['l_exp_n_erk_ver0',	2,	2,	0],
-	['l_exp_n_erk_ver1',	2,	2,	0],
+    ['l_exp_n_erk_ver0',	2,	2,	0],
+    ['l_exp_n_erk_ver1',	2,	2,	0],
 
-	['lg_exp_lc_n_erk_ver0',	2,	2,	0],
-	['lg_exp_lc_n_erk_ver1',	2,	2,	0],
+    ['lg_exp_lc_n_erk_ver0',	2,	2,	0],
+    ['lg_exp_lc_n_erk_ver1',	2,	2,	0],
 
-	['l_exp_n_etdrk',	2,	2,	0],
-	['lg_exp_lc_n_etdrk',	2,	2,	0],
+    ['l_exp_n_etdrk',	2,	2,	0],
+    ['lg_exp_lc_n_etdrk',	2,	2,	0],
 ]
 
 
@@ -126,58 +126,58 @@ ts_methods = [
 #
 if __name__ == "__main__":
 
-	#
-	# Create job scripts
-	#
-	for tsm in ts_methods[1:]:
+    #
+    # Create job scripts
+    #
+    for tsm in ts_methods[1:]:
 
-		jg.runtime.timestepping_method = tsm[0]
-		jg.runtime.timestepping_order = tsm[1]
-		jg.runtime.timestepping_order2 = tsm[2]
+    	jg.runtime.timestepping_method = tsm[0]
+    	jg.runtime.timestepping_order = tsm[1]
+    	jg.runtime.timestepping_order2 = tsm[2]
 
-		if len(tsm) > 4:
-			s = tsm[4]
-			jg.runtime.load_from_dict(tsm[4])
+    	if len(tsm) > 4:
+    		s = tsm[4]
+    		jg.runtime.load_from_dict(tsm[4])
 
-		for jg.runtime.timestep_size in params_runtime_timestep_sizes:
+    	for jg.runtime.timestep_size in params_runtime_timestep_sizes:
 
-			for (
-				jg.compile.threading,
-				jg.compile.rexi_thread_parallel_sum,
-				jg.runtime.rexi_extended_modes,
-				jg.compile.sweet_mpi
-			) in product(
-				params_compile_threading,
-				params_compile_thread_parallel_sum,
-				params_runtime_ext_modes,
-				params_compile_sweet_mpi
-			):
-				for jg.runtime.use_robert_functions in params_runtime_use_robert_functions:
-					if 'exp_' in jg.runtime.timestepping_method:
+    		for (
+    			jg.compile.threading,
+    			jg.compile.rexi_thread_parallel_sum,
+    			jg.runtime.rexi_extended_modes,
+    			jg.compile.sweet_mpi
+    		) in product(
+    			params_compile_threading,
+    			params_compile_thread_parallel_sum,
+    			params_runtime_ext_modes,
+    			params_compile_sweet_mpi
+    		):
+    			for jg.runtime.use_robert_functions in params_runtime_use_robert_functions:
+    				if 'exp_' in jg.runtime.timestepping_method:
 
-						# Not implemented?
-						if jg.runtime.use_robert_functions == 0 and 'l_exp_' in jg.runtime.timestepping_method:
-							continue
+    					# Not implemented?
+    					if jg.runtime.use_robert_functions == 0 and 'l_exp_' in jg.runtime.timestepping_method:
+    						continue
 
-						jg.runtime.rexi_method = 'ci'
-						jg.gen_jobscript_directory()
-						jg.runtime.rexi_method = ''
+    					jg.runtime.rexi_method = 'ci'
+    					jg.gen_jobscript_directory()
+    					jg.runtime.rexi_method = ''
 
-					else:
-						# Not implemented?
-						if jg.runtime.use_robert_functions == 0 and 'l_irk_' in jg.runtime.timestepping_method:
-							continue
+    				else:
+    					# Not implemented?
+    					if jg.runtime.use_robert_functions == 0 and 'l_irk_' in jg.runtime.timestepping_method:
+    						continue
 
-						if jg.compile.sweet_mpi == 'enable':
-							continue
+    					if jg.compile.sweet_mpi == 'enable':
+    						continue
 
-						if jg.compile.rexi_thread_parallel_sum == 'enable':
-							continue
+    					if jg.compile.rexi_thread_parallel_sum == 'enable':
+    						continue
 
-						if jg.runtime.rexi_extended_modes != 0:
-							continue
+    					if jg.runtime.rexi_extended_modes != 0:
+    						continue
 
-						jg.gen_jobscript_directory()
+    					jg.gen_jobscript_directory()
 
 
 

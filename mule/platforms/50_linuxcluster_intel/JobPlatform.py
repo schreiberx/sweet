@@ -13,77 +13,77 @@ _job_id = None
 
 
 def get_platform_autodetect():
-	"""
-	Returns
-	-------
-	bool
-		True if current platform matches, otherwise False
-	"""
+    """
+    Returns
+    -------
+    bool
+    	True if current platform matches, otherwise False
+    """
 
-	return JobPlatformAutodetect.autodetect()
+    return JobPlatformAutodetect.autodetect()
 
 
 
 def get_platform_id():
-	"""
-	Return platform ID
+    """
+    Return platform ID
 
-	Returns
-	-------
-	string
-		unique ID of platform
-	"""
+    Returns
+    -------
+    string
+    	unique ID of platform
+    """
 
-	return "linuxcluster_intel"
+    return "linuxcluster_intel"
 
 
 
 def get_platform_resources():
-	"""
-	Return information about hardware
-	"""
+    """
+    Return information about hardware
+    """
 
-	h = JobPlatformResources()
+    h = JobPlatformResources()
 
-	h.num_cores_per_node = 28
-	# Number of nodes per job are limited
-	h.num_nodes = 384
-	#h.num_nodes = 60
-	h.num_cores_per_socket = 14
-	h.max_wallclock_seconds = 48*60*60
-	return h
+    h.num_cores_per_node = 28
+    # Number of nodes per job are limited
+    h.num_nodes = 384
+    #h.num_nodes = 60
+    h.num_cores_per_socket = 14
+    h.max_wallclock_seconds = 48*60*60
+    return h
 
 
 
 def jobscript_setup(jg : JobGeneration):
-	"""
-	Setup data to generate job script
-	"""
+    """
+    Setup data to generate job script
+    """
 
-	global _job_id
-	_job_id = jg.runtime.getUniqueID(jg.compile, jg.unique_id_filter)
-	return
+    global _job_id
+    _job_id = jg.runtime.getUniqueID(jg.compile, jg.unique_id_filter)
+    return
 
 
 
 def jobscript_get_header(jg : JobGeneration):
-	"""
-	These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
+    """
+    These headers typically contain the information on e.g. Job exection, number of compute nodes, etc.
 
-	Returns
-	-------
-	string
-		multiline text for scripts
-	"""
-	global _job_id
+    Returns
+    -------
+    string
+    	multiline text for scripts
+    """
+    global _job_id
 
-	p = jg.parallelization
-	time_str = p.get_max_wallclock_seconds_hh_mm_ss()
+    p = jg.parallelization
+    time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 
-	#
-	# See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
-	#
-	content = """#! /bin/bash
+    #
+    # See https://www.lrz.de/services/compute/linux-cluster/batch_parallel/example_jobs/
+    #
+    content = """#! /bin/bash
 #SBATCH -o """+jg.p_job_stdout_filepath+"""
 #SBATCH -e """+jg.p_job_stderr_filepath+"""
 #SBATCH -D """+jg.p_job_dirpath+"""
@@ -100,53 +100,53 @@ def jobscript_get_header(jg : JobGeneration):
 #SBATCH --time="""+time_str+"""
 """
 
-	if p.num_nodes <= 2:
-		content += "#SBATCH --partition=cm2_tiny\n"
-		content += "#SBATCH --qos=cm2_tiny\n"
+    if p.num_nodes <= 2:
+    	content += "#SBATCH --partition=cm2_tiny\n"
+    	content += "#SBATCH --qos=cm2_tiny\n"
 
-	elif p.num_nodes <= 24:
-		content += "#SBATCH --partition=cm2_std\n"
+    elif p.num_nodes <= 24:
+    	content += "#SBATCH --partition=cm2_std\n"
 
-	else:
-		content += "#SBATCH --partition=cm2_large\n"
-		content += "#SBATCH --qos=cm2_large\n"
+    else:
+    	content += "#SBATCH --partition=cm2_large\n"
+    	content += "#SBATCH --qos=cm2_large\n"
 
 
 
-	content += "\n"
-	content += "module load slurm_setup\n"
+    content += "\n"
+    content += "module load slurm_setup\n"
  
 
-	if False:
-		if p.force_turbo_off:
-			content += """# Try to avoid slowing down CPUs
+    if False:
+    	if p.force_turbo_off:
+    		content += """# Try to avoid slowing down CPUs
 #SBATCH --cpu-freq=Performance
 """
 
-	content += """
+    content += """
 source /etc/profile.d/modules.sh
 
 """
 
-	if jg.compile.threading != 'off':
-		content += """
+    if jg.compile.threading != 'off':
+    	content += """
 export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 """
 
-	if p.core_oversubscription:
-		raise Exception("Not supported with this script!")
+    if p.core_oversubscription:
+    	raise Exception("Not supported with this script!")
 
-	if p.core_affinity != None:
-		
-		content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
-		if p.core_affinity == 'compact':
-			content += "\nexport OMP_PROC_BIND=close\n"
-		elif p.core_affinity == 'scatter':
-			content += "\nexport OMP_PROC_BIND=spread\n"
-		else:
-			raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+    if p.core_affinity != None:
+    	
+    	content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+    	if p.core_affinity == 'compact':
+    		content += "\nexport OMP_PROC_BIND=close\n"
+    	elif p.core_affinity == 'scatter':
+    		content += "\nexport OMP_PROC_BIND=spread\n"
+    	else:
+    		raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
 
-	return content
+    return content
 
 
 
@@ -154,44 +154,44 @@ export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
 
 
 def jobscript_get_exec_prefix(jg : JobGeneration):
-	"""
-	Prefix before executable
+    """
+    Prefix before executable
 
-	Returns
-	-------
-	string
-		multiline text for scripts
-	"""
+    Returns
+    -------
+    string
+    	multiline text for scripts
+    """
 
-	content = ""
-	content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
+    content = ""
+    content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
 
-	return content
+    return content
 
 
 
 def jobscript_get_exec_command(jg : JobGeneration):
-	"""
-	Prefix to executable command
+    """
+    Prefix to executable command
 
-	Returns
-	-------
-	string
-		multiline text for scripts
-	"""
+    Returns
+    -------
+    string
+    	multiline text for scripts
+    """
 
-	p = jg.parallelization
+    p = jg.parallelization
 
-	mpiexec = ''
+    mpiexec = ''
 
-	#
-	# Only use MPI exec if we are allowed to do so
-	# We shouldn't use mpiexec for validation scripts
-	#
-	if not p.mpiexec_disabled:
-		mpiexec = "mpiexec -n "+str(p.num_ranks)+" --perhost "+str(p.num_ranks_per_node)
+    #
+    # Only use MPI exec if we are allowed to do so
+    # We shouldn't use mpiexec for validation scripts
+    #
+    if not p.mpiexec_disabled:
+    	mpiexec = "mpiexec -n "+str(p.num_ranks)+" --perhost "+str(p.num_ranks_per_node)
 
-	content = """
+    content = """
 
 # mpiexec ... would be here without a line break
 EXEC=\""""+jg.compile.getProgramPath()+"""\"
@@ -202,62 +202,62 @@ echo \"${EXEC} ${PARAMS}\"
 
 """
 
-	return content
+    return content
 
 
 
 def jobscript_get_exec_suffix(jg : JobGeneration):
-	"""
-	Suffix before executable
+    """
+    Suffix before executable
 
-	Returns
-	-------
-	string
-		multiline text for scripts
-	"""
+    Returns
+    -------
+    string
+    	multiline text for scripts
+    """
 
-	content = ""
-	content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
-	return content
+    content = ""
+    content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
+    return content
 
 
 
 def jobscript_get_footer(jg : JobGeneration):
-	"""
-	Footer at very end of job script
+    """
+    Footer at very end of job script
 
-	Returns
-	-------
-	string
-		multiline text for scripts
-	"""
+    Returns
+    -------
+    string
+    	multiline text for scripts
+    """
 
-	content = ""
-	return content
+    content = ""
+    return content
 
 
 
 def jobscript_get_compile_command(jg : JobGeneration):
-	"""
-	Compile command(s)
+    """
+    Compile command(s)
 
-	This is separated here to put it either
-	* into the job script (handy for workstations)
-	or
-	* into a separate compile file (handy for clusters)
+    This is separated here to put it either
+    * into the job script (handy for workstations)
+    or
+    * into a separate compile file (handy for clusters)
 
-	Returns
-	-------
-	string
-		multiline text with compile command to generate executable
-	"""
+    Returns
+    -------
+    string
+    	multiline text with compile command to generate executable
+    """
 
-	content = """
+    content = """
 
 SCONS="scons """+jg.compile.getSConsParams()+' -j 4"'+"""
 echo "$SCONS"
 $SCONS || exit 1
 """
 
-	return content
+    return content
 

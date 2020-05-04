@@ -25,9 +25,9 @@ jg.gen_jobscript_directory()
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode == 0:
-	ie.error("The job should return with exit code != 0")
-	ie.error("Benchmark's return value != 0")
-	sys.exit(1)
+    ie.error("The job should return with exit code != 0")
+    ie.error("Benchmark's return value != 0")
+    sys.exit(1)
 
 ie.success_hline()
 ie.success_hline()

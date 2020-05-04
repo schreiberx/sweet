@@ -54,12 +54,12 @@ jg.runtime.rexi_sphere_preallocation = 1
 #
 rexi_thread_par = True
 if rexi_thread_par:
-	# OMP parallel for over REXI terms
-	jg.compile.threading = 'off'
-	jg.compile.rexi_thread_parallel_sum = 'enable'
+    # OMP parallel for over REXI terms
+    jg.compile.threading = 'off'
+    jg.compile.rexi_thread_parallel_sum = 'enable'
 else:
-	jg.compile.threading = 'omp'
-	jg.compile.rexi_thread_parallel_sum = 'disable'
+    jg.compile.threading = 'omp'
+    jg.compile.rexi_thread_parallel_sum = 'disable'
 
 
 
@@ -76,12 +76,12 @@ jg.runtime.viscosity = 0.0
 jg.unique_id_filter = ['compile', 'parallelization']
 
 if len(sys.argv) <= 1:
-	print("")
-	print("Usage:")
-	print("	"+sys.argv[0]+" [timestepping method]")
-	print("")
-	sys.exit(1)
-	
+    print("")
+    print("Usage:")
+    print("	"+sys.argv[0]+" [timestepping method]")
+    print("")
+    sys.exit(1)
+    
 group = sys.argv[1]
 
 
@@ -94,224 +94,224 @@ group = sys.argv[1]
 
 if group == "l1":
 
-	ts_order = 1
+    ts_order = 1
 
-	ref_ts_method = 'l_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'l_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-			'l_erk',
-			'lg_erk_lc_erk',
+    ts_methods = [
+    		'l_erk',
+    		'lg_erk_lc_erk',
 
-			'l_irk',
-			'lg_irk_lc_erk',
+    		'l_irk',
+    		'lg_irk_lc_erk',
 
-			'l_exp',
-		]
+    		'l_exp',
+    	]
 
 
 elif group == "lg1":
 
-	ts_order = 1
+    ts_order = 1
 
-	ref_ts_method = 'lg_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'lg_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-			'lg_erk',
-			'lg_irk',
+    ts_methods = [
+    		'lg_erk',
+    		'lg_irk',
 
-			'lg_exp',
-		]
+    		'lg_exp',
+    	]
 
 elif group == "l2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'l_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'l_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
+    ts_methods = [
 
-			'l_erk',
-			'lg_erk_lc_erk',
+    		'l_erk',
+    		'lg_erk_lc_erk',
 
-			'l_cn',
-			'lg_irk_lc_erk',
+    		'l_cn',
+    		'lg_irk_lc_erk',
 
-			#'l_lf',
-			'l_exp',
-		]
+    		#'l_lf',
+    		'l_exp',
+    	]
 
 elif group == "lg2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'lg_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'lg_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-			'lg_erk',
-			'lg_cn',
+    ts_methods = [
+    		'lg_erk',
+    		'lg_cn',
 
-			'lg_exp',
-		]
+    		'lg_exp',
+    	]
 
 elif group == "ln1":
 
-	ts_order = 1
+    ts_order = 1
 
-	ref_ts_method = 'ln_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-			'ln_erk',
+    ts_methods = [
+    		'ln_erk',
 
-			'l_erk_n_erk',
+    		'l_erk_n_erk',
 
-			'lg_erk_lc_n_erk_ver0',
-			'lg_erk_lc_n_erk_ver1',
+    		'lg_erk_lc_n_erk_ver0',
+    		'lg_erk_lc_n_erk_ver1',
 
-			'l_irk_n_erk_ver0',
-			'l_irk_n_erk_ver1',
+    		'l_irk_n_erk_ver0',
+    		'l_irk_n_erk_ver1',
 
-			'lg_irk_lc_n_erk_ver0',
-			'lg_irk_lc_n_erk_ver1',
+    		'lg_irk_lc_n_erk_ver0',
+    		'lg_irk_lc_n_erk_ver1',
 
-			'l_exp_n_erk_ver0',
-			'l_exp_n_erk_ver1',
+    		'l_exp_n_erk_ver0',
+    		'l_exp_n_erk_ver1',
 
-			'lg_exp_lc_n_erk_ver0',
-			'lg_exp_lc_n_erk_ver1',
+    		'lg_exp_lc_n_erk_ver0',
+    		'lg_exp_lc_n_erk_ver1',
 
-			'l_exp_n_etdrk',
-		]
+    		'l_exp_n_etdrk',
+    	]
 
 
 elif group == "ln2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'ln_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-			'ln_erk',
+    ts_methods = [
+    		'ln_erk',
 
-			'l_erk_n_erk',
+    		'l_erk_n_erk',
 
-			'lg_erk_lc_n_erk_ver0',
-			'lg_erk_lc_n_erk_ver1',
+    		'lg_erk_lc_n_erk_ver0',
+    		'lg_erk_lc_n_erk_ver1',
 
-			'l_irk_n_erk_ver0',
-			'l_irk_n_erk_ver1',
+    		'l_irk_n_erk_ver0',
+    		'l_irk_n_erk_ver1',
 
-			'lg_irk_lc_n_erk_ver0',
-			'lg_irk_lc_n_erk_ver1',
+    		'lg_irk_lc_n_erk_ver0',
+    		'lg_irk_lc_n_erk_ver1',
 
-			'l_exp_n_erk_ver0',
-			'l_exp_n_erk_ver1',
+    		'l_exp_n_erk_ver0',
+    		'l_exp_n_erk_ver1',
 
-			'lg_exp_lc_n_erk_ver0',
-			'lg_exp_lc_n_erk_ver1',
+    		'lg_exp_lc_n_erk_ver0',
+    		'lg_exp_lc_n_erk_ver1',
 
-			'l_exp_n_etdrk',
-			'lg_exp_lc_n_etdrk',
+    		'l_exp_n_etdrk',
+    		'lg_exp_lc_n_etdrk',
 
-		]
+    	]
 elif group == "ln2_part1":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'ln_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-			'ln_erk',
+    ts_methods = [
+    		'ln_erk',
 
-			'l_erk_n_erk',
+    		'l_erk_n_erk',
 
-			'lg_erk_lc_n_erk_ver0',
-			'lg_erk_lc_n_erk_ver1',
+    		'lg_erk_lc_n_erk_ver0',
+    		'lg_erk_lc_n_erk_ver1',
 
-			'l_irk_n_erk_ver0',
-			'l_irk_n_erk_ver1',
+    		'l_irk_n_erk_ver0',
+    		'l_irk_n_erk_ver1',
 
-			'lg_irk_lc_n_erk_ver0',
-			'lg_irk_lc_n_erk_ver1',
+    		'lg_irk_lc_n_erk_ver0',
+    		'lg_irk_lc_n_erk_ver1',
 
-			'l_exp_n_erk_ver0',
-			'l_exp_n_erk_ver1',
-		]
+    		'l_exp_n_erk_ver0',
+    		'l_exp_n_erk_ver1',
+    	]
 
 elif group == "ln2_part2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'ln_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-			'ln_erk',
+    ts_methods = [
+    		'ln_erk',
 
-			'lg_exp_lc_n_erk_ver0',
-			'lg_exp_lc_n_erk_ver1',
+    		'lg_exp_lc_n_erk_ver0',
+    		'lg_exp_lc_n_erk_ver1',
 
-			'l_exp_n_etdrk',
-			'lg_exp_lc_n_etdrk',
+    		'l_exp_n_etdrk',
+    		'lg_exp_lc_n_etdrk',
 
-		]
+    	]
 
 
 elif group == "ln2_split":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'ln_erk'
-	ref_ts_order = 4
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
 
-	ts_methods = [
-#			'ln_erk',
-			'ln_erk_split_uv',
-			'ln_erk_split_aa_uv',
-			'ln_erk_split_vd',
-			'ln_erk_split_aa_vd',
-		]
+    ts_methods = [
+#    		'ln_erk',
+    		'ln_erk_split_uv',
+    		'ln_erk_split_aa_uv',
+    		'ln_erk_split_vd',
+    		'ln_erk_split_aa_vd',
+    	]
 
 else:
-	raise Exception("Unknown group")
+    raise Exception("Unknown group")
 
 
 if ts_order == 1:
-	ref_ts_size = 8
-	timestep_size_min = 64
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+    ref_ts_size = 8
+    timestep_size_min = 64
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
-	jg.runtime.max_simulation_time = timestep_size_min*512
-	jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 
 elif ts_order == 2:
-	#
-	# A 2nd order accurate method already considerably reduces the errors
-	# Therefore, we use larger time step sizes to increase the errors
-	# to get errors larger than numerical precision
-	#
-	# We still want to have a very small time step size for the reference solution
-	# This is in particular important for REXI comparisons with ln2-type tests
-	#
-	ref_ts_size = 8*2
+    #
+    # A 2nd order accurate method already considerably reduces the errors
+    # Therefore, we use larger time step sizes to increase the errors
+    # to get errors larger than numerical precision
+    #
+    # We still want to have a very small time step size for the reference solution
+    # This is in particular important for REXI comparisons with ln2-type tests
+    #
+    ref_ts_size = 8*2
 
-	# Larger minimal time step size
-	timestep_size_min = 64*4
+    # Larger minimal time step size
+    timestep_size_min = 64*4
 
-	timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
-	jg.runtime.max_simulation_time = timestep_size_min*512
-	jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
-	
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+    
 else:
-	raise Exception("Unsupported time integration order")
+    raise Exception("Unsupported time integration order")
 
 s = 64/jg.runtime.space_res_spectral
 
@@ -326,14 +326,14 @@ jg.runtime.rexi_method = 'ci'
 
 # Use reduced number of REXI coefficients for convergence studies
 if ts_order == 1:
-	jg.runtime.rexi_ci_n = 16
-	jg.runtime.rexi_ci_max_real = 1
-	jg.runtime.rexi_ci_max_imag = 1
+    jg.runtime.rexi_ci_n = 16
+    jg.runtime.rexi_ci_max_real = 1
+    jg.runtime.rexi_ci_max_imag = 1
 
 else:
-	jg.runtime.rexi_ci_n = 32
-	jg.runtime.rexi_ci_max_real = 2
-	jg.runtime.rexi_ci_max_imag = 2
+    jg.runtime.rexi_ci_n = 32
+    jg.runtime.rexi_ci_max_real = 2
+    jg.runtime.rexi_ci_max_imag = 2
 
 
 jg.runtime.rexi_ci_mu = 0
@@ -367,17 +367,17 @@ jg.runtime.timestepping_order = ts_order
 jg.runtime.timestepping_order2 = ts_order
 
 for tsm in ts_methods:
-	for jg.runtime.timestep_size in timestep_sizes:
-		jg.runtime.timestepping_method = tsm
+    for jg.runtime.timestep_size in timestep_sizes:
+    	jg.runtime.timestepping_method = tsm
 
-		if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
-			print("simtime: "+str(jg.runtime.max_simulation_time))
-			print("timestep_size: "+str(jg.runtime.timestep_size))
-			raise Exception("Invalid time step size (not remainder-less dividable)")
+    	if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+    		print("simtime: "+str(jg.runtime.max_simulation_time))
+    		print("timestep_size: "+str(jg.runtime.timestep_size))
+    		raise Exception("Invalid time step size (not remainder-less dividable)")
 
-		if 'exp' in jg.runtime.timestepping_method:
-			jg.runtime.rexi_method = 'ci'
-		else:
-			jg.runtime.rexi_method = None
+    	if 'exp' in jg.runtime.timestepping_method:
+    		jg.runtime.rexi_method = 'ci'
+    	else:
+    		jg.runtime.rexi_method = None
 
-		jg.gen_jobscript_directory()
+    	jg.gen_jobscript_directory()

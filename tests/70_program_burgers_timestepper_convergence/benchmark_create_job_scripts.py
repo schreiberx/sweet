@@ -60,12 +60,12 @@ jg.compile.threading = 'omp'
 jg.unique_id_filter = ['compile', 'parallelization']
 
 if len(sys.argv) <= 1:
-	print("")
-	print("Usage:")
-	print("	"+sys.argv[0]+" [timestepping method]")
-	print("")
-	sys.exit(1)
-	
+    print("")
+    print("Usage:")
+    print("	"+sys.argv[0]+" [timestepping method]")
+    print("")
+    sys.exit(1)
+    
 group = sys.argv[1]
 
 
@@ -75,73 +75,73 @@ group = sys.argv[1]
 
 if group == "l1":
 
-	ts_order = 1
+    ts_order = 1
 
-	ref_ts_method = 'l_direct'
-	ref_ts_size = 0.0001
-	ref_ts_order = 1
+    ref_ts_method = 'l_direct'
+    ref_ts_size = 0.0001
+    ref_ts_order = 1
 
-	ts_methods = [
-			'l_irk',
-			'l_erk',
-		]
+    ts_methods = [
+    		'l_irk',
+    		'l_erk',
+    	]
 
 
 elif group == "l2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'l_direct'
-	ref_ts_size = 0.0001
-	ref_ts_order = 2
+    ref_ts_method = 'l_direct'
+    ref_ts_size = 0.0001
+    ref_ts_order = 2
 
-	ts_methods = [
-			'l_irk',
-			'l_erk',
-		]
+    ts_methods = [
+    		'l_irk',
+    		'l_erk',
+    	]
 
 
 elif group == "ln1":
 
-	ts_order = 1
+    ts_order = 1
 
-	ref_ts_method = 'ln_cole_hopf'
-	ref_ts_size = 0.0001
-	ref_ts_order = 1
+    ref_ts_method = 'ln_cole_hopf'
+    ref_ts_size = 0.0001
+    ref_ts_order = 1
 
-	ts_methods = [
-			'ln_erk',
-			'ln_imex',
-		]
+    ts_methods = [
+    		'ln_erk',
+    		'ln_imex',
+    	]
 
 
 elif group == "ln2":
 
-	ts_order = 2
+    ts_order = 2
 
-	ref_ts_method = 'ln_cole_hopf'
-	ref_ts_size = 0.0001
-	ref_ts_order = 2
+    ref_ts_method = 'ln_cole_hopf'
+    ref_ts_size = 0.0001
+    ref_ts_order = 2
 
-	ts_methods = [
-			'ln_erk',
-			'ln_imex',
-		]
+    ts_methods = [
+    		'ln_erk',
+    		'ln_imex',
+    	]
 
 else:
-	raise Exception("Group "+group+" not supported")
+    raise Exception("Group "+group+" not supported")
 
 
 #elif group == "ln4":
 #
-#	ts_order = 4
+#    ts_order = 4
 #
-#	ref_ts_method = 'ln_cole_hopf'
-#	ref_ts_order = 0
+#    ref_ts_method = 'ln_cole_hopf'
+#    ref_ts_order = 0
 #
-#	ts_methods = [
-#			'ln_erk',
-#		]
+#    ts_methods = [
+#    		'ln_erk',
+#    	]
 
 jg.runtime.plane_domain_size = 1
 
@@ -172,17 +172,17 @@ jg.runtime.timestepping_order = ts_order
 jg.runtime.timestepping_order2 = ts_order
 
 for tsm in ts_methods:
-	for jg.runtime.timestep_size in timestep_sizes:
-		jg.runtime.timestepping_method = tsm
+    for jg.runtime.timestep_size in timestep_sizes:
+    	jg.runtime.timestepping_method = tsm
 
-		#if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
-		#	print("simtime: "+str(jg.runtime.max_simulation_time))
-		#	print("timestep_size: "+str(jg.runtime.timestep_size))
-		#	raise Exception("Invalid time step size (not remainder-less dividable)")
+    	#if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+    	#	print("simtime: "+str(jg.runtime.max_simulation_time))
+    	#	print("timestep_size: "+str(jg.runtime.timestep_size))
+    	#	raise Exception("Invalid time step size (not remainder-less dividable)")
 
-		if 'rexi' in jg.runtime.timestepping_method:
-			jg.runtime.rexi_method = 'ci'
-		else:
-			jg.runtime.rexi_method = None
+    	if 'rexi' in jg.runtime.timestepping_method:
+    		jg.runtime.rexi_method = 'ci'
+    	else:
+    		jg.runtime.rexi_method = None
 
-		jg.gen_jobscript_directory()
+    	jg.gen_jobscript_directory()

@@ -3,20 +3,20 @@ import platform
 
 def autodetect():
 
-	"""
-	Returns
-	-------
-	bool
-		True if current platform matches, otherwise False
-	"""
+    """
+    Returns
+    -------
+    bool
+    	True if current platform matches, otherwise False
+    """
 
-	prefix = "guepardo"
-	if platform.node()[:len(prefix)] == prefix:
-		return True
+    prefix = "guepardo"
+    if platform.node()[:len(prefix)] == prefix:
+    	return True
 
-	return False
+    return False
 
 
 if __name__ == "__main__":
-	print("Autodetect: "+str(autodetect()))
+    print("Autodetect: "+str(autodetect()))
 

@@ -24,13 +24,13 @@ jg.runtime.timestepping_method="ln_erk"
 jg.runtime.timestepping_order=2
 jg.runtime.timestep_size = 0.0001
 jg.runtime.max_timesteps_nr = 10
-jg.runtime.benchmark_name="I_DONT_EXIST"	# Use benchmark which doesn't exist
+jg.runtime.benchmark_name="I_DONT_EXIST"    # Use benchmark which doesn't exist
 jg.gen_jobscript_directory()
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode == 0:
-	ie.error("Benchmark's return value != 0")
-	sys.exit(1)
+    ie.error("Benchmark's return value != 0")
+    sys.exit(1)
 
 ie.success_hline()
 ie.success("The benchmark job script was intended to fail!")

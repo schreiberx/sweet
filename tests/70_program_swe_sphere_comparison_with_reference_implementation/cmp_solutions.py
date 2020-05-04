@@ -4,10 +4,10 @@ import numpy as np
 import sys
 
 if len(sys.argv) < 3:
-	print("")
-	print("Usage:")
-	print("	"+argv[0]+" [file1.csv] [file2.csv]")
-	print("")
+    print("")
+    print("Usage:")
+    print("	"+argv[0]+" [file1.csv] [file2.csv]")
+    print("")
 
 filename_ref = sys.argv[1]
 filename_sweet = sys.argv[2]
@@ -64,9 +64,9 @@ print(" + Error Lmax: "+str(lmax_error))
 
 
 if 'prog_phi' in filename_ref:
-	if lmax_error > 1e-5:
-		raise Exception("ERROR threshold too large!")
+    if lmax_error > 1e-5:
+    	raise Exception("ERROR threshold too large!")
 else:
-	if lmax_error > 1e-8:
-		raise Exception("ERROR threshold too large!")
+    if lmax_error > 1e-8:
+    	raise Exception("ERROR threshold too large!")
 

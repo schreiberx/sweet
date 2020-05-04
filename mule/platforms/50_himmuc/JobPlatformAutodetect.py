@@ -8,7 +8,7 @@ def autodetect():
     Returns
     -------
     bool
-    	True if current platform matches, otherwise False
+        True if current platform matches, otherwise False
     """
 
     n = platform.node()

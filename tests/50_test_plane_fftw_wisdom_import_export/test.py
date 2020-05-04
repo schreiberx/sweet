@@ -22,47 +22,47 @@ jg.runtime.space_res_physical = (128, 128)
 
 
 if True:
-	# No parallelization
-	jg.compile.threading = 'off'
+    # No parallelization
+    jg.compile.threading = 'off'
 
-	pspace = JobParallelizationDimOptions('space')
-	pspace.num_cores_per_rank = 1
-	pspace.num_threads_per_rank = 1
-	pspace.num_ranks = 1
-	jg.setup_parallelization(pspace)
+    pspace = JobParallelizationDimOptions('space')
+    pspace.num_cores_per_rank = 1
+    pspace.num_threads_per_rank = 1
+    pspace.num_ranks = 1
+    jg.setup_parallelization(pspace)
 
-	# Create plans
-	jg.runtime.reuse_plans = 1
-	jg.gen_jobscript_directory()
+    # Create plans
+    jg.runtime.reuse_plans = 1
+    jg.gen_jobscript_directory()
 
-	# Reuse plans
-	jg.runtime.reuse_plans = 2
-	jg.gen_jobscript_directory()
+    # Reuse plans
+    jg.runtime.reuse_plans = 2
+    jg.gen_jobscript_directory()
 
 
 
 
 if True:
-	# Parallelization
-	jg.compile.threading = 'omp'
-	for i in range(1, jg.platform_resources.num_cores_per_socket+1):
-		pspace = JobParallelizationDimOptions('space')
-		pspace.num_cores_per_rank = i
-		pspace.num_ranks = 1
-		jg.setup_parallelization(pspace)
+    # Parallelization
+    jg.compile.threading = 'omp'
+    for i in range(1, jg.platform_resources.num_cores_per_socket+1):
+    	pspace = JobParallelizationDimOptions('space')
+    	pspace.num_cores_per_rank = i
+    	pspace.num_ranks = 1
+    	jg.setup_parallelization(pspace)
 
-		# Create plans
-		jg.runtime.reuse_plans = 1
-		jg.gen_jobscript_directory()
+    	# Create plans
+    	jg.runtime.reuse_plans = 1
+    	jg.gen_jobscript_directory()
 
-		# Reuse plans
-		jg.runtime.reuse_plans = 2
-		jg.gen_jobscript_directory()
+    	# Reuse plans
+    	jg.runtime.reuse_plans = 2
+    	jg.gen_jobscript_directory()
 
 
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode != 0:
-	sys.exit(exitcode)
+    sys.exit(exitcode)
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)

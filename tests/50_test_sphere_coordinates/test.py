@@ -19,7 +19,7 @@ jg.gen_jobscript_directory()
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode != 0:
-	sys.exit(exitcode)
+    sys.exit(exitcode)
 
 print("Benchmarks successfully finished")
 
