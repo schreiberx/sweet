@@ -45,6 +45,8 @@ class Plotting(InfoError):
                 pass
 
         self.linestyles = ['-', '--', ':', '-.']
+        self.fillstyle = 'full'
+        self.fillstyle = 'none'
 
         plt.clf()
         plt.cla()
@@ -225,7 +227,8 @@ class Plotting_ScatteredData(Plotting):
                     y_values,
                     marker=marker,
                     linestyle=linestyle,
-                    label=label
+                    label=label,
+                    fillstyle=self.fillstyle,
                 )
 
             if self.annotate:
