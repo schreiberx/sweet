@@ -1728,6 +1728,15 @@ public:
 			o_phi_pert -= gh0;
 
 		}
+		else if (simVars->benchmark.benchmark_name == "one_gaussian")
+		{
+			SphereData_Physical h_phys(o_phi_pert.sphereDataConfig, 0);
+			BenchmarkGaussianDam::setup_initial_conditions_one_gaussian(h_phys, 2.0*M_PI*0.1, M_PI/3, 20.0, 500.0);
+
+			o_phi_pert = h_phys*simVars->sim.gravitation;
+			o_vrt.spectral_set_zero();
+			o_div.spectral_set_zero();
+		}
 		else if (simVars->benchmark.benchmark_name == "gaussian_bumps2" || simVars->benchmark.benchmark_name == "three_gaussian_bumps")
 		{
 			SphereData_Physical tmp(o_phi_pert.sphereDataConfig);

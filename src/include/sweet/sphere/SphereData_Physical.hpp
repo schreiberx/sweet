@@ -61,6 +61,20 @@ public:
 
 
 public:
+	SphereData_Physical(
+			const SphereData_Config *i_sphereDataConfig,
+			double i_value
+	)	:
+		/// important: set this to nullptr, since a check for this will be performed by setup(...)
+		sphereDataConfig(i_sphereDataConfig),
+		physical_space_data(nullptr)
+	{
+		alloc_data();
+		physical_set_all_value(i_value);
+	}
+
+
+public:
 	SphereData_Physical()	:
 		sphereDataConfig(nullptr),
 		physical_space_data(nullptr)
