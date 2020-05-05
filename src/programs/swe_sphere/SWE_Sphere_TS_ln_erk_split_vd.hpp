@@ -92,16 +92,6 @@ private:
 	SphereTimestepping_ExplicitRK timestepping_rk;
 
 
-private:
-	SphereData_Spectral V_dot_grad_scalar(
-			const SphereData_Physical &i_u_phys,		///< u velocity
-			const SphereData_Physical &i_v_phys,		///< v velocity
-			const SphereData_Physical &i_div_phys,		///< divergence in physical space to avoid transformation
-			const SphereData_Physical &i_scalar_phys	///< scalar
-	);
-
-
-
 public:
 	void euler_timestep_update_pert_lg(
 			const SphereData_Spectral &i_U_phi,	///< prognostic variables

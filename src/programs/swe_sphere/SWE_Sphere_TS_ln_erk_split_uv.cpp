@@ -12,27 +12,6 @@
 
 
 /*
- * Compute Nonlinear advection terms
- *
- * U \cdot \grad phi = \div \cdot (V*phi) - \nabla
- */
-SphereData_Spectral SWE_Sphere_TS_ln_erk_split_uv::V_dot_grad_scalar(
-		const SphereData_Physical &i_u_phys,		///< u velocity
-		const SphereData_Physical &i_v_phys,		///< v velocity
-		const SphereData_Physical &i_div_phys,		///< divergence in physical space to avoid transformation
-		const SphereData_Physical &i_scalar_phys	///< scalar
-)
-{
-	return op.uv_to_div(
-			i_u_phys*i_scalar_phys,
-			i_v_phys*i_scalar_phys
-		)
-			- i_div_phys*i_scalar_phys;
-}
-
-
-
-/*
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lg(
@@ -102,6 +81,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lc(
 }
 
 
+
 /*
  * Main routine for method to be used in case of finite differences
  */
@@ -131,7 +111,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_na(
 
 
 	SphereData_Physical U_div_phys = U_div.toPhys();
-	o_phi_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
+	o_phi_t -= op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
 
 	/*
 	 * Velocity
@@ -356,8 +336,8 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert(
 
 		SphereData_Physical U_div_phys = U_div.toPhys();
 
-		SphereData_Spectral u_t = -V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_u_phys);
-		SphereData_Spectral v_t = -V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_v_phys);
+		SphereData_Spectral u_t = -op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_u_phys);
+		SphereData_Spectral v_t = -op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_v_phys);
 
 		op.uv_to_vortdiv(u_t.toPhys(), v_t.toPhys(), vrt, div);
 

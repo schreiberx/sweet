@@ -384,6 +384,27 @@ public:
 
 
 
+	/*
+	 * Compute Nonlinear advection terms
+	 *
+	 * U \cdot \grad phi = \div \cdot (V*phi) - \nabla
+	 */
+	SphereData_Spectral V_dot_grad_scalar(
+			const SphereData_Physical &i_u_phys,		///< u velocity
+			const SphereData_Physical &i_v_phys,		///< v velocity
+			const SphereData_Physical &i_div_phys,		///< divergence in physical space to avoid transformation
+			const SphereData_Physical &i_scalar_phys	///< scalar
+	)	const
+	{
+		return uv_to_div(
+				i_u_phys*i_scalar_phys,
+				i_v_phys*i_scalar_phys
+			)
+				- i_div_phys*i_scalar_phys;
+	}
+
+
+
 	SphereData_Spectral uv_to_div(
 			const SphereData_Physical &i_u,
 			const SphereData_Physical &i_v

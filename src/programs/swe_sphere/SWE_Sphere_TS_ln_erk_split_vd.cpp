@@ -11,27 +11,6 @@
 
 
 
-/*
- * Compute Nonlinear advection terms
- *
- * U \cdot \grad phi = \div \cdot (V*phi) - \nabla
- */
-SphereData_Spectral SWE_Sphere_TS_ln_erk_split_vd::V_dot_grad_scalar(
-		const SphereData_Physical &i_u_phys,		///< u velocity
-		const SphereData_Physical &i_v_phys,		///< v velocity
-		const SphereData_Physical &i_div_phys,		///< divergence in physical space to avoid transformation
-		const SphereData_Physical &i_scalar_phys	///< scalar
-)
-{
-	return op.uv_to_div(
-			i_u_phys*i_scalar_phys,
-			i_v_phys*i_scalar_phys
-		)
-			- i_div_phys*i_scalar_phys;
-}
-
-
-
 void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert_lg(
 		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
 		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
@@ -83,7 +62,6 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert_lc(
 
 
 
-
 void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert_na(
 		const SphereData_Spectral &i_U_phi_pert,	///< prognostic variables
 		const SphereData_Spectral &i_U_vrt,	///< prognostic variables
@@ -102,9 +80,9 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert_na(
 	// dt calculation starts here
 
 	SphereData_Physical U_div_phys = i_U_div.toPhys();
-	o_phi_pert_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_phi_pert.toPhys());
-	o_vrt_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_vrt.toPhys());
-	o_div_t -= V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_div.toPhys());
+	o_phi_pert_t -= op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_phi_pert.toPhys());
+	o_vrt_t -= op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_vrt.toPhys());
+	o_div_t -= op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, i_U_div.toPhys());
 }
 
 
@@ -130,9 +108,65 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert_nr(
 
 	o_phi_pert_t -= SphereData_Spectral(i_U_phi_pert.toPhys()*i_U_div.toPhys());
 
-	o_vrt_t -= o_vrt_t.toPhys()*U_div_phys;
+	if (0)
+	{
+		o_vrt_t -= o_vrt_t.toPhys()*U_div_phys;
+	}
+	else
+	{
 
-	const SphereData_Physical U_vrt_phys = i_U_vrt.toPhys();;
+		/*
+		 * N from UV formulation
+		 */
+		double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+
+
+		const SphereData_Spectral &U_phi_pert = i_U_phi_pert;
+		//const SphereData_Spectral &U_vrt = i_U_vrt;
+		const SphereData_Spectral &U_div = i_U_div;
+
+
+		SphereData_Physical U_u_phys, U_v_phys;
+		op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+
+		SphereData_Physical U_div_phys = U_div.toPhys();
+
+		/*
+		 * Velocity
+		 */
+		SphereData_Physical vrtg = i_U_vrt.toPhys();
+
+		SphereData_Physical u_nl = U_u_phys*vrtg;
+		SphereData_Physical v_nl = U_v_phys*vrtg;
+
+		SphereData_Spectral vrt, div;
+		op.uv_to_vortdiv(u_nl, v_nl, vrt, div);
+		//o_vrt_t -= div;
+
+
+		/*
+		 * NA part to be subtracted
+		 */
+		SphereData_Spectral phi_tmp(i_U_phi_pert.sphereDataConfig);
+		SphereData_Spectral vrt_tmp(i_U_vrt.sphereDataConfig);
+		SphereData_Spectral div_tmp(i_U_div.sphereDataConfig);
+
+		phi_tmp.spectral_set_zero();
+		vrt_tmp.spectral_set_zero();
+		div_tmp.spectral_set_zero();
+
+		euler_timestep_update_pert_na(
+				i_U_phi_pert, i_U_vrt, i_U_div,
+				phi_tmp, vrt_tmp, div_tmp,
+				i_simulation_timestamp
+			);
+
+		vrt_tmp = vrt_tmp.getSphereDataPhysical();
+
+		o_vrt_t += -div - vrt_tmp;
+	}
+
+	const SphereData_Physical U_vrt_phys = i_U_vrt.toPhys();
 	o_div_t += op.uv_to_vort(U_vrt_phys*U_u_phys, U_vrt_phys*U_v_phys);
 	o_div_t += op.uv_to_div(U_div_phys*U_u_phys, U_div_phys*U_v_phys);
 	o_div_t -= 0.5*op.laplace(U_u_phys*U_u_phys + U_v_phys*U_v_phys);
@@ -207,6 +241,9 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert(
 		}
 
 
+		SphereData_Spectral vrt_backup = o_vrt_t;
+		SphereData_Spectral div_backup = o_div_t;
+
 		if (use_na)
 		{
 			phi_tmp.spectral_set_zero();
@@ -216,7 +253,8 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert(
 			euler_timestep_update_pert_na(
 					i_U_phi_pert, i_U_vrt, i_U_div,
 					phi_tmp, vrt_tmp, div_tmp,
-					i_simulation_timestamp);
+					i_simulation_timestamp
+				);
 
 			o_phi_t += phi_tmp.getSphereDataPhysical();
 			o_vrt_t += vrt_tmp.getSphereDataPhysical();
@@ -238,6 +276,36 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_pert(
 			o_phi_t += phi_tmp.getSphereDataPhysical();
 			o_vrt_t += vrt_tmp.getSphereDataPhysical();
 			o_div_t += div_tmp.getSphereDataPhysical();
+		}
+
+		if (0)
+		{
+			SphereData_Spectral vrt_n(i_U_vrt.sphereDataConfig, 0);
+			SphereData_Spectral div_n(i_U_div.sphereDataConfig, 0);
+
+			double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+
+
+			SphereData_Physical U_u_phys, U_v_phys;
+			op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+
+			/*
+			 * Velocity
+			 */
+			SphereData_Physical vrtg = i_U_vrt.toPhys();
+
+			SphereData_Physical u_nl = U_u_phys*vrtg;
+			SphereData_Physical v_nl = U_v_phys*vrtg;
+
+			SphereData_Spectral vrt, div;
+			op.uv_to_vortdiv(u_nl, v_nl, vrt, div);
+			vrt_n -= div;
+
+			div_n += vrt;
+			div_n -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
+
+			o_vrt_t = vrt_backup + vrt_n;
+			//o_div_t = div_backup + div_n;
 		}
 	}
 	else
