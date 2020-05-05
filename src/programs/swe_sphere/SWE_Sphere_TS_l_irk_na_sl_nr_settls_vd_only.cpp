@@ -237,9 +237,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
 		/*
 		 * N(t-dt)
 		 */
-		SphereData_Spectral N_U_phi_prev_nr(sphereDataConfig, 0);
-		SphereData_Spectral N_U_vrt_prev_nr(sphereDataConfig, 0);
-		SphereData_Spectral N_U_div_prev_nr(sphereDataConfig, 0);
+		SphereData_Spectral N_U_phi_prev_nr(sphereDataConfig, 0), N_U_vrt_prev_nr(sphereDataConfig, 0), N_U_div_prev_nr(sphereDataConfig, 0);
 
 		swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order->euler_timestep_update_pert_nr(
 				U_phi_prev, U_vrt_prev, U_div_prev,
@@ -250,13 +248,11 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
 		/*
 		 * N(t)
 		 */
-		SphereData_Spectral N_U_phi_nr(sphereDataConfig, 0);
-		SphereData_Spectral N_U_vrt_nr(sphereDataConfig, 0);
-		SphereData_Spectral N_U_div_nr(sphereDataConfig, 0);
+		SphereData_Spectral N_U_phi(sphereDataConfig, 0), N_U_vrt(sphereDataConfig, 0), N_U_div(sphereDataConfig, 0);
 
 		swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order->euler_timestep_update_pert_nr(
 				U_phi, U_vrt, U_div,
-				N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
+				N_U_phi, N_U_vrt, N_U_div,
 				i_simulation_timestamp
 		);
 
@@ -265,20 +261,21 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
 		 */
 		SphereData_Spectral N_U_phi_next_D, N_U_vrt_next_D, N_U_div_next_D;
 		interpolate_departure_point(
-				2.0 * N_U_phi_nr - N_U_phi_prev_nr,
-				2.0 * N_U_vrt_nr - N_U_vrt_prev_nr,
-				2.0 * N_U_div_nr - N_U_div_prev_nr,
+				2.0 * N_U_phi - N_U_phi_prev_nr,
+				2.0 * N_U_vrt - N_U_vrt_prev_nr,
+				2.0 * N_U_div - N_U_div_prev_nr,
 
 				pos_lon_d, pos_lat_d,
 				N_U_phi_next_D, N_U_vrt_next_D, N_U_div_next_D
 			);
 
 		/*
-		 * Compute N(t+dt/2)_m = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N(t)_A)
+		 * Compute midpoint
+		 * N(t+dt/2)_m = dt * 1/2 ([ 2*N(t) - N(t-dt) ]_D + N(t)_A)
 		 */
-		R_phi += (i_dt * 0.5) * (N_U_phi_next_D + N_U_phi_nr);
-		R_vrt += (i_dt * 0.5) * (N_U_vrt_next_D + N_U_vrt_nr);
-		R_div += (i_dt * 0.5) * (N_U_div_next_D + N_U_div_nr);
+		R_phi += (i_dt * 0.5) * (N_U_phi_next_D + N_U_phi);
+		R_vrt += (i_dt * 0.5) * (N_U_vrt_next_D + N_U_vrt);
+		R_div += (i_dt * 0.5) * (N_U_div_next_D + N_U_div);
 	}
 
 	/*

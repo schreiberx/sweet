@@ -506,14 +506,14 @@ public:
 
 			SphereData_Spectral &io_h,
 
-			double i_dt,		///< If this value is not equal to 0,
-											///< Use this time step size instead of computing one
-											///< This also sets o_dt = i_dt
+			double i_dt,				///< If this value is not equal to 0,
+										///< Use this time step size instead of computing one
+										///< This also sets o_dt = i_dt
 
 			int i_runge_kutta_order,	///< Order of RK time stepping
 
 			double i_simulation_time	///< Current simulation time.
-											///< This gets e.g. important for tidal waves
+										///< This gets e.g. important for tidal waves
 	)
 	{
 //		resetAndSetup(io_h, i_runge_kutta_order);

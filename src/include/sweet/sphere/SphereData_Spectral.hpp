@@ -68,7 +68,23 @@ public:
 public:
 	SphereData_Spectral(
 			const SphereData_Config *i_sphereDataConfig,
-			double i_value
+			const std::complex<double> &i_value
+	)	:
+		sphereDataConfig(i_sphereDataConfig),
+		spectral_space_data(nullptr)
+	{
+		assert(i_sphereDataConfig != 0);
+
+		setup(i_sphereDataConfig);
+		spectral_set_value(i_value);
+	}
+
+
+
+public:
+	SphereData_Spectral(
+			const SphereData_Config *i_sphereDataConfig,
+			double &i_value
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
 		spectral_space_data(nullptr)

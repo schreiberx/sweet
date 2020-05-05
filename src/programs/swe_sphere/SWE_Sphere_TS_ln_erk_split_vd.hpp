@@ -23,8 +23,9 @@ public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (
-				i_timestepping_method == "ln_erk_split_vd"		||
 				i_timestepping_method == "l_na_erk_split_vd"	||
+				i_timestepping_method == "l_na_erk_split_aa_vd"	||
+				i_timestepping_method == "ln_erk_split_vd"		||
 				i_timestepping_method == "ln_erk_split_aa_vd"
 		)
 			return true;
