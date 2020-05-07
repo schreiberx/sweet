@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_VD_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_VD_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_UV_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_UV_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -19,22 +19,22 @@
 
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_exp.hpp"
-#include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
 
 
 
-class SWE_Sphere_TS_ln_sl_exp_settls_vd	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_ln_sl_exp_settls_uv	: public SWE_Sphere_TS_interface
 {
 public:
 	static bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		/*
-		 * Should contain _exp and _settls as well as _vd to indicate vorticity-divergence formulation
+		 * Should contain _exp and _settls as well as _uv to indicate vorticity-divergence formulation
 		 */
 		return (
 			(i_timestepping_method.find("_settls") != std::string::npos)
 			&&
-			(i_timestepping_method.find("_vd") != std::string::npos)
+			(i_timestepping_method.find("_uv") != std::string::npos)
 			&&
 			(i_timestepping_method.find("_exp") != std::string::npos)
 		);
@@ -81,12 +81,12 @@ private:
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd;
+	SWE_Sphere_TS_ln_erk_split_uv* swe_sphere_ts_ln_erk_split_uv;
 	SWE_Sphere_TS_l_exp *swe_sphere_ts_l_rexi;
 
 
 public:
-	SWE_Sphere_TS_ln_sl_exp_settls_vd(
+	SWE_Sphere_TS_ln_sl_exp_settls_uv(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op,
 			bool i_setup_auto = false
@@ -135,7 +135,7 @@ public:
 
 
 
-	virtual ~SWE_Sphere_TS_ln_sl_exp_settls_vd();
+	virtual ~SWE_Sphere_TS_ln_sl_exp_settls_uv();
 };
 
 #endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */

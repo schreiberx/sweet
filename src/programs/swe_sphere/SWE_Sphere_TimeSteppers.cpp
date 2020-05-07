@@ -83,8 +83,11 @@ void SWE_Sphere_TimeSteppers::reset()
 	delete lg_cn;
 	lg_cn = nullptr;
 
-	delete ln_sl_settls;
-	ln_sl_settls = nullptr;
+	delete ln_sl_settls_vd;
+	ln_sl_settls_vd = nullptr;
+
+	delete ln_sl_settls_uv;
+	ln_sl_settls_uv = nullptr;
 
 	delete l_irk_na_sl_nr_settls_vd_only;
 	l_irk_na_sl_nr_settls_vd_only = nullptr;
@@ -92,8 +95,8 @@ void SWE_Sphere_TimeSteppers::reset()
 	delete l_irk_na_sl_nr_settls_uv_only;
 	l_irk_na_sl_nr_settls_uv_only = nullptr;
 
-	delete ln_sl_exp_settls;
-	ln_sl_exp_settls = nullptr;
+	delete ln_sl_exp_settls_vd;
+	ln_sl_exp_settls_vd = nullptr;
 }
 
 
@@ -296,8 +299,14 @@ void SWE_Sphere_TimeSteppers::setup(
 	 */
 	if (SWE_Sphere_TS_ln_sl_exp_settls_vd::implements_timestepping_method(i_timestepping_method))
 	{
-		ln_sl_exp_settls = new SWE_Sphere_TS_ln_sl_exp_settls_vd(i_simVars, i_op, true);
-		master = &(SWE_Sphere_TS_interface&)*ln_sl_exp_settls;
+		ln_sl_exp_settls_vd = new SWE_Sphere_TS_ln_sl_exp_settls_vd(i_simVars, i_op, true);
+		master = &(SWE_Sphere_TS_interface&)*ln_sl_exp_settls_vd;
+		return;
+	}
+	if (SWE_Sphere_TS_ln_sl_exp_settls_uv::implements_timestepping_method(i_timestepping_method))
+	{
+		ln_sl_exp_settls_uv = new SWE_Sphere_TS_ln_sl_exp_settls_uv(i_simVars, i_op, true);
+		master = &(SWE_Sphere_TS_interface&)*ln_sl_exp_settls_uv;
 		return;
 	}
 
@@ -326,8 +335,15 @@ void SWE_Sphere_TimeSteppers::setup(
 	 */
 	if (SWE_Sphere_TS_ln_settls_vd::implements_timestepping_method(i_timestepping_method))
 	{
-		ln_sl_settls = new SWE_Sphere_TS_ln_settls_vd(i_simVars, i_op, true);
-		master = &(SWE_Sphere_TS_interface&)*ln_sl_settls;
+		ln_sl_settls_vd = new SWE_Sphere_TS_ln_settls_vd(i_simVars, i_op, true);
+		master = &(SWE_Sphere_TS_interface&)*ln_sl_settls_vd;
+		return;
+	}
+
+	if (SWE_Sphere_TS_ln_settls_uv::implements_timestepping_method(i_timestepping_method))
+	{
+		ln_sl_settls_uv = new SWE_Sphere_TS_ln_settls_uv(i_simVars, i_op, true);
+		master = &(SWE_Sphere_TS_interface&)*ln_sl_settls_uv;
 		return;
 	}
 

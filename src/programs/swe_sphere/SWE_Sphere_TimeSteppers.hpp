@@ -51,7 +51,9 @@
 #include "SWE_Sphere_TS_lg_exp_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
 #include "SWE_Sphere_TS_ln_settls_vd.hpp"
+#include "SWE_Sphere_TS_ln_settls_uv.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
+#include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
 
 
 /**
@@ -111,13 +113,15 @@ public:
 	 */
 	SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only *l_irk_na_sl_nr_settls_vd_only = nullptr;
 	SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only *l_irk_na_sl_nr_settls_uv_only = nullptr;
-	SWE_Sphere_TS_ln_settls_vd *ln_sl_settls = nullptr;
+	SWE_Sphere_TS_ln_settls_vd *ln_sl_settls_vd = nullptr;
+	SWE_Sphere_TS_ln_settls_uv *ln_sl_settls_uv = nullptr;
 
 
 	/*
 	 * EXP SL
 	 */
-	SWE_Sphere_TS_ln_sl_exp_settls_vd *ln_sl_exp_settls = nullptr;
+	SWE_Sphere_TS_ln_sl_exp_settls_vd *ln_sl_exp_settls_vd = nullptr;
+	SWE_Sphere_TS_ln_sl_exp_settls_uv *ln_sl_exp_settls_uv = nullptr;
 
 	SWE_Sphere_TS_interface *master = nullptr;
 
