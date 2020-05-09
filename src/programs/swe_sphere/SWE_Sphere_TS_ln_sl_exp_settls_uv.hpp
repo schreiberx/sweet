@@ -101,7 +101,20 @@ public:
 	);
 
 
-	void interpolate_departure_point(
+	void interpolate_departure_point_uv(
+			const SphereData_Spectral &i_phi,
+			const SphereData_Spectral &i_vrt,
+			const SphereData_Spectral &i_div,
+
+			const ScalarDataArray &i_pos_lon_d,
+			const ScalarDataArray &i_pos_lat_d,
+
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
+	);
+
+	void interpolate_departure_point_vd(
 			const SphereData_Spectral &i_phi,
 			const SphereData_Spectral &i_vrt,
 			const SphereData_Spectral &i_div,

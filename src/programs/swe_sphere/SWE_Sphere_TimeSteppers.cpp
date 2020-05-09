@@ -202,7 +202,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
-
 	if (SWE_Sphere_TS_ln_erk::implements_timestepping_method(i_timestepping_method))
 	{
 		ln_erk = new SWE_Sphere_TS_ln_erk(i_simVars, i_op);
@@ -211,8 +210,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
-
-
 	if (SWE_Sphere_TS_ln_erk_split_uv::implements_timestepping_method(i_timestepping_method))
 	{
 		ln_erk_split_uv = new SWE_Sphere_TS_ln_erk_split_uv(i_simVars, i_op);
@@ -220,8 +217,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		master = &(SWE_Sphere_TS_interface&)*ln_erk_split_uv;
 		return;
 	}
-
-
 
 	if (SWE_Sphere_TS_ln_erk_split_vd::implements_timestepping_method(i_timestepping_method))
 	{
@@ -240,7 +235,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
-
 	if (SWE_Sphere_TS_lg_exp_lc_n_etdrk::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_rexi_lc_n_etdrk = new SWE_Sphere_TS_lg_exp_lc_n_etdrk(i_simVars, i_op);
@@ -249,7 +243,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
-
 	if (SWE_Sphere_TS_l_irk::implements_timestepping_method(i_timestepping_method))
 	{
 		l_irk = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
@@ -257,7 +250,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		master = &(SWE_Sphere_TS_interface&)*l_irk;
 		return;
 	}
-
 
 	if (SWE_Sphere_TS_lg_irk::implements_timestepping_method(i_timestepping_method))
 	{
@@ -275,7 +267,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
-
 	if (SWE_Sphere_TS_lg_cn::implements_timestepping_method(i_timestepping_method))
 	{
 		lg_cn = new SWE_Sphere_TS_lg_cn(i_simVars, i_op);
@@ -284,7 +275,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
-
 	if (SWE_Sphere_TS_l_exp::implements_timestepping_method(i_timestepping_method))
 	{
 		l_rexi = new SWE_Sphere_TS_l_exp(i_simVars, i_op);
@@ -292,6 +282,7 @@ void SWE_Sphere_TimeSteppers::setup(
 		master = &(SWE_Sphere_TS_interface&)*l_rexi;
 		return;
 	}
+
 
 
 	/*
@@ -303,6 +294,7 @@ void SWE_Sphere_TimeSteppers::setup(
 		master = &(SWE_Sphere_TS_interface&)*ln_sl_exp_settls_vd;
 		return;
 	}
+
 	if (SWE_Sphere_TS_ln_sl_exp_settls_uv::implements_timestepping_method(i_timestepping_method))
 	{
 		ln_sl_exp_settls_uv = new SWE_Sphere_TS_ln_sl_exp_settls_uv(i_simVars, i_op, true);
