@@ -302,7 +302,6 @@ void SWE_Sphere_TimeSteppers::setup(
 		return;
 	}
 
-
 	/*
 	 * ONLY SETTLS VERSION without any special variants
 	 */

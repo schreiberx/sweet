@@ -367,17 +367,17 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 	{
 		if (!original_linear_operator_sl_treatment)
 		{
-			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
 			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
+			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
 			FatalError("Autodetection of parts of time stepping methods failed!");
 		}
 
 		std::string string_id_storage2 = string_id_storage+"_ver0"+"_uv";
 		if (simVars.disc.timestepping_method != string_id_storage2)
 		{
-			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
 			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
-			std::cerr << "Detected alternative time stepping method: "+string_id_storage2 << std::endl;
+			std::cerr << "Detected time stepping method (failed): "+string_id_storage_ << std::endl;
+			std::cerr << "Detected alternative time stepping method (failed): "+string_id_storage2 << std::endl;
 			FatalError("Autodetection of parts of time stepping methods failed!");
 		}
 	}

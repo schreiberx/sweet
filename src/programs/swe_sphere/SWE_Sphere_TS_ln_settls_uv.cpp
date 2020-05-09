@@ -503,7 +503,7 @@ void SWE_Sphere_TS_ln_settls_uv::setup_auto()
 		if (!original_linear_operator_sl_treatment)
 			string_id_storage += "_ver1";
 
-		std::string string_id_storage_ = string_id_storage + "_vd";
+		std::string string_id_storage_ = string_id_storage + "_uv";
 
 		if (simVars.disc.timestepping_method == string_id_storage_)
 		{
@@ -519,7 +519,7 @@ void SWE_Sphere_TS_ln_settls_uv::setup_auto()
 				FatalError("Autodetection of parts of time stepping methods failed!");
 			}
 
-			std::string string_id_storage2 = string_id_storage+"_ver0"+"_vd";
+			std::string string_id_storage2 = string_id_storage+"_ver0"+"_uv";
 			if (simVars.disc.timestepping_method == string_id_storage2)
 			{
 				string_id_storage = string_id_storage2;

@@ -42,8 +42,6 @@ public:
 			&&
 			!(i_timestepping_method.find("_exp") != std::string::npos)
 		);
-
-		return false;
 	}
 
 	std::string string_id_storage;
