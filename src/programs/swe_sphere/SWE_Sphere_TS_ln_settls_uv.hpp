@@ -38,7 +38,7 @@ public:
 		return (
 			(i_timestepping_method.find("_settls") != std::string::npos)
 			&&
-			(i_timestepping_method.find("_vd") != std::string::npos)
+			(i_timestepping_method.find("_uv") != std::string::npos)
 			&&
 			!(i_timestepping_method.find("_exp") != std::string::npos)
 		);

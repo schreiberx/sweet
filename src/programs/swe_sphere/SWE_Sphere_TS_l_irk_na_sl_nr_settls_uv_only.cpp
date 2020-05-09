@@ -36,7 +36,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_pert(
 
 
 
-void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::interpolate_departure_point(
+void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::interpolate_departure_point_uv(
 		const SphereData_Spectral &i_phi,
 		const SphereData_Spectral &i_vrt,
 		const SphereData_Spectral &i_div,
@@ -62,46 +62,26 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::interpolate_departure_point(
 		);
 
 
-#if 0
-	o_vrt = sphereSampler.bicubic_scalar_ret_phys(
-			i_vrt.getSphereDataPhysical(),
+	SphereData_Physical u_tmp, v_tmp;
+	op.vortdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
+
+	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+			u_tmp,
 			i_pos_lon_d, i_pos_lat_d,
-			false,
+			true,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
 			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
-	o_div = sphereSampler.bicubic_scalar_ret_phys(
-			i_div.getSphereDataPhysical(),
+	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+			v_tmp,
 			i_pos_lon_d, i_pos_lat_d,
-			false,
+			true,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
 			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
-#else
-	{
-		SphereData_Physical u_tmp, v_tmp;
-		op.vortdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
 
-		SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-				u_tmp,
-				i_pos_lon_d, i_pos_lat_d,
-				true,
-				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-				simVars.disc.semi_lagrangian_interpolation_limiter
-			);
-
-		SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-				v_tmp,
-				i_pos_lon_d, i_pos_lat_d,
-				true,
-				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-				simVars.disc.semi_lagrangian_interpolation_limiter
-			);
-
-		op.uv_to_vortdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
-	}
-#endif
+	op.uv_to_vortdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
 }
 
 
@@ -172,7 +152,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	 * Compute X_D
 	 */
 	SphereData_Spectral U_phi_D, U_vrt_D, U_div_D;
-	interpolate_departure_point(
+	interpolate_departure_point_uv(
 			U_phi, U_vrt, U_div,
 			pos_lon_d, pos_lat_d,
 			U_phi_D, U_vrt_D, U_div_D
@@ -208,7 +188,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 
 
 	SphereData_Spectral L_U_phi_D, L_U_vrt_D, L_U_div_D;
-	interpolate_departure_point(
+	interpolate_departure_point_uv(
 			L_U_phi, L_U_vrt, L_U_div,
 			pos_lon_d, pos_lat_d,
 			L_U_phi_D, L_U_vrt_D, L_U_div_D
@@ -268,7 +248,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 		 * N(t+dt)_D = [ 2*N(t) - N(t-dt) ]_D
 		 */
 		SphereData_Spectral N_U_phi_next_D, N_U_vrt_next_D, N_U_div_next_D;
-		interpolate_departure_point(
+		interpolate_departure_point_uv(
 				2.0 * N_U_phi_nr - N_U_phi_prev_nr,
 				2.0 * N_U_vrt_nr - N_U_vrt_prev_nr,
 				2.0 * N_U_div_nr - N_U_div_prev_nr,
