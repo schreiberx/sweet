@@ -307,8 +307,8 @@ class JobParallelization(InfoError):
             for i in self.pardims:
                 retval += '_'+i.dim_name+str(i.num_cores).zfill(3)
 
-        if retval != '':
-            retval = 'PAR'+retval
+            if retval != '':
+                retval = 'PAR'+retval
 
         return retval
 
