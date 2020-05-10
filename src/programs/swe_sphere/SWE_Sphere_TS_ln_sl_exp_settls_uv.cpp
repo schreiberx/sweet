@@ -5,7 +5,6 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-
 #include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
 
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
@@ -43,6 +42,10 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 		SphereData_Spectral &o_div
 )
 {
+	o_phi.setup_if_required(i_phi.sphereDataConfig);
+	o_vrt.setup_if_required(i_phi.sphereDataConfig);
+	o_div.setup_if_required(i_phi.sphereDataConfig);
+
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
 			i_phi.getSphereDataPhysical(),
 			i_pos_lon_d, i_pos_lat_d,
@@ -71,46 +74,6 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 		);
 
 	op.uv_to_vortdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
-}
-
-
-
-void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_vd(
-		const SphereData_Spectral &i_phi,
-		const SphereData_Spectral &i_vrt,
-		const SphereData_Spectral &i_div,
-
-		const ScalarDataArray &i_pos_lon_d,
-		const ScalarDataArray &i_pos_lat_d,
-
-		SphereData_Spectral &o_phi,
-		SphereData_Spectral &o_vrt,
-		SphereData_Spectral &o_div
-)
-{
-	o_phi = sphereSampler.bicubic_scalar_ret_phys(
-			i_phi.getSphereDataPhysical(),
-			i_pos_lon_d, i_pos_lat_d,
-			false,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
-	o_vrt = sphereSampler.bicubic_scalar_ret_phys(
-			i_vrt.getSphereDataPhysical(),
-			i_pos_lon_d, i_pos_lat_d,
-			false,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
-	o_div = sphereSampler.bicubic_scalar_ret_phys(
-			i_div.getSphereDataPhysical(),
-			i_pos_lon_d, i_pos_lat_d,
-			false,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
 }
 
 
