@@ -534,6 +534,28 @@ public:
 
 public:
 	/**
+	 * array operator
+	 */
+	double operator[](std::size_t i_index)	const
+	{
+		return scalar_data[i_index];
+	}
+
+
+
+public:
+	/**
+	 * array operator
+	 */
+	double& operator[](std::size_t i_index)
+	{
+		return scalar_data[i_index];
+	}
+
+
+
+public:
+	/**
 	 * assignment operator
 	 */
 	ScalarDataArray &operator=(double i_value)

@@ -1,0 +1,193 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section
+Original vector formulation
+\begin_inset Formula 
+\[
+U=\left(\Phi,u,v\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial}{\partial t}\Phi & =V\cdot\nabla\Phi\\
+\frac{\partial}{\partial t}u & =V\cdot\nabla u\\
+\frac{\partial}{\partial t}v & =V\cdot\nabla v
+\end{align*}
+
+\end_inset
+
+and in compact notation
+\begin_inset Formula 
+\[
+\frac{\partial}{\partial t}V=V\cdot\nabla V
+\]
+
+\end_inset
+
+with total derivative
+\begin_inset Formula 
+\begin{align*}
+\frac{d}{dt}\Phi & =0\\
+\frac{d}{dt}u & =0\\
+\frac{d}{dt}v & =0
+\end{align*}
+
+\end_inset
+
+and
+\begin_inset Formula 
+\[
+\frac{d}{dt}V=0.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Vorcitity formulation
+\end_layout
+
+\begin_layout Standard
+DIV and CURL operator
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+div\left(\vec{.}\right) & = & \nabla\cdot\vec{.}
+\end{eqnarray*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+curl\left(\vec{.}\right) & = & \left(\nabla\times\left(\vec{.}\right)\right)
+\end{eqnarray*}
+
+\end_inset
+
+lead to divergence and vorticity
+\begin_inset Formula 
+\begin{eqnarray*}
+\delta & = & div(A)=\nabla\cdot A
+\end{eqnarray*}
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{eqnarray*}
+\xi & =k\cdot & curl(A)=k\cdot\left(\nabla\times A\right).
+\end{eqnarray*}
+
+\end_inset
+
+Applying the divergence to the velcocity equations leads to
+\begin_inset Formula 
+\begin{align*}
+\nabla\cdot\frac{\partial}{\partial t}V & =\nabla\cdot\left(V\cdot\nabla V\right)\\
+\frac{\partial}{\partial t}\delta & =\nabla\cdot\left(\frac{1}{2}\nabla V^{2}-\vec{V}\times\left(\nabla\times\vec{V}\right)\right)\\
+ & =\nabla^{2}\left(\frac{1}{2}V^{2}\right)-\nabla\cdot\left(\vec{V}\times\left(\nabla\times\vec{V}\right)\right)
+\end{align*}
+
+\end_inset
+
+and for the vorticity we get
+\begin_inset Formula 
+\begin{align*}
+k\cdot\left(\nabla\times\frac{\partial}{\partial t}V\right) & =k\cdot\left(\nabla\times\left(V\cdot\nabla V\right)\right)\\
+\frac{\partial}{\partial t}\xi & =k\cdot\left(\nabla\times\left(\frac{1}{2}\nabla V^{2}\right)\right)\\
+\\
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

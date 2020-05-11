@@ -17,6 +17,8 @@ FFTW_*
 
 # Exclude test job scripts
 tests/*/job_bench*
+*/*/*/job_bench*
+*/*/job_bench*
 
 # exclude platform compile scripts
 **/compile_platform_*sh

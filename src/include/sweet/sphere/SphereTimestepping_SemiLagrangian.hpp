@@ -264,7 +264,7 @@ public:
 		}
 	}
 
-#if 1
+#if 0
 	/*
 	 * Compute SL departure points on unit sphere for given dt*(u,v) velocities
 	 */

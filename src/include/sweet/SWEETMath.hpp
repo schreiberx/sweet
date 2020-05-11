@@ -180,33 +180,6 @@ public:
 
 
 
-	inline
-	static
-	void latlon_velocity_to_cartesian_velocity(
-			const ScalarDataArray &i_lon,
-			const ScalarDataArray &i_lat,
-			const ScalarDataArray &i_vel_lon,
-			const ScalarDataArray &i_vel_lat,
-			ScalarDataArray &o_v_x,
-			ScalarDataArray &o_v_y,
-			ScalarDataArray &o_v_z
-	)
-	{
-		o_v_x.setup_if_required(i_lon);
-		o_v_y.setup_if_required(i_lon);
-		o_v_z.setup_if_required(i_lon);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
-		{
-			o_v_x.scalar_data[i] = -i_vel_lon.scalar_data[i]*std::sin(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::cos(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
-			o_v_y.scalar_data[i] = i_vel_lon.scalar_data[i]*std::cos(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::sin(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
-			o_v_z.scalar_data[i] = i_vel_lat.scalar_data[i]*std::cos(i_lat.scalar_data[i]);
-		}
-	}
-
-
-
 	static
 	void cartesian_to_latlon(
 			const ScalarDataArray &i_x,
@@ -236,9 +209,6 @@ public:
 			i_z.scalar_data[i] = std::max(-1., i_z.scalar_data[i]);
 #endif
 
-			/*
-			 * Now compute the angles using atan2 (and not atan!) and acos
-			 */
 #if 1
 			o_lon.scalar_data[i] = std::atan(i_y.scalar_data[i]/i_x.scalar_data[i]);
 
@@ -247,6 +217,10 @@ public:
 			else if (i_y.scalar_data[i] < 0)
 				o_lon.scalar_data[i] += M_PI*2.0;
 #else
+			/*
+			 * Now compute the angles using atan2 (and not atan!) and acos
+			 * WARNING: DOESN'T WORK PROPERLY!!!
+			 */
 			o_lon.scalar_data[i] = std::atan2(i_y.scalar_data[i], i_x.scalar_data[i]);
 #endif
 
@@ -257,15 +231,74 @@ public:
 
 
 
+
+	inline
+	static
+	void cartesian_velocity_to_latlon_velocity(
+			const ScalarDataArray &i_lon,
+			const ScalarDataArray &i_lat,
+
+			const ScalarDataArray &i_v_x,
+			const ScalarDataArray &i_v_y,
+			const ScalarDataArray &i_v_z,
+			ScalarDataArray &o_vel_lon,
+			ScalarDataArray &o_vel_lat
+	)
+	{
+		o_vel_lon.setup_if_required(i_lon);
+		o_vel_lat.setup_if_required(i_lon);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
+		{
+			o_vel_lon.scalar_data[i] =	- std::sin(i_lon[i])*i_v_x[i]
+										+ std::cos(i_lon[i])*i_v_y[i];
+			o_vel_lon.scalar_data[i] =	- std::cos(i_lon[i])*std::sin(i_lat[i])*i_v_x[i]
+										- std::sin(i_lon[i])*std::sin(i_lat[i])*i_v_y[i]
+										+ std::cos(i_lat[i])*i_v_z[i];
+		}
+	}
+
+
+
+
+	inline
+	static
+	void latlon_velocity_to_cartesian_velocity(
+			const ScalarDataArray &i_lon,
+			const ScalarDataArray &i_lat,
+			const ScalarDataArray &i_vel_lon,
+			const ScalarDataArray &i_vel_lat,
+			ScalarDataArray &o_v_x,
+			ScalarDataArray &o_v_y,
+			ScalarDataArray &o_v_z
+	)
+	{
+		o_v_x.setup_if_required(i_lon);
+		o_v_y.setup_if_required(i_lon);
+		o_v_z.setup_if_required(i_lon);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t i = 0; i < i_lon.number_of_elements; i++)
+		{
+			o_v_x.scalar_data[i] = -i_vel_lon.scalar_data[i]*std::sin(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::cos(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
+			o_v_y.scalar_data[i] = i_vel_lon.scalar_data[i]*std::cos(i_lon.scalar_data[i]) - i_vel_lat.scalar_data[i]*std::sin(i_lon.scalar_data[i])*std::sin(i_lat.scalar_data[i]);
+			o_v_z.scalar_data[i] = i_vel_lat.scalar_data[i]*std::cos(i_lat.scalar_data[i]);
+		}
+	}
+
+
+
+
 	/**
 	 * Rotate a point around an axis for the given rotation angle.
 	 */
 	static
-	void rotate_3d(
+	void rotate_3d_point(
 		double i_pos_start[3],
 		double i_rotation_angle,
 		double i_rotation_axis[3],
-		double i_pos_new[3]
+		double o_pos_new[3]
 	)
 	{
 		/*
@@ -278,17 +311,17 @@ public:
 	   double costheta = std::cos(i_rotation_angle);
 	   double sintheta = std::sin(i_rotation_angle);
 
-	   i_pos_new[0] = (costheta + (1 - costheta) * i_rotation_axis[0] * i_rotation_axis[0]) * i_pos_start[0];
-	   i_pos_new[0] += ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[1] - i_rotation_axis[2] * sintheta) * i_pos_start[1];
-	   i_pos_new[0] += ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[2] + i_rotation_axis[1] * sintheta) * i_pos_start[2];
+	   o_pos_new[0] = (costheta + (1 - costheta) * i_rotation_axis[0] * i_rotation_axis[0]) * i_pos_start[0];
+	   o_pos_new[0] += ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[1] - i_rotation_axis[2] * sintheta) * i_pos_start[1];
+	   o_pos_new[0] += ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[2] + i_rotation_axis[1] * sintheta) * i_pos_start[2];
 
-	   i_pos_new[1] = ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[1] + i_rotation_axis[2] * sintheta) * i_pos_start[0];
-	   i_pos_new[1] += (costheta + (1 - costheta) * i_rotation_axis[1] * i_rotation_axis[1]) * i_pos_start[1];
-	   i_pos_new[1] += ((1 - costheta) * i_rotation_axis[1] * i_rotation_axis[2] - i_rotation_axis[0] * sintheta) * i_pos_start[2];
+	   o_pos_new[1] = ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[1] + i_rotation_axis[2] * sintheta) * i_pos_start[0];
+	   o_pos_new[1] += (costheta + (1 - costheta) * i_rotation_axis[1] * i_rotation_axis[1]) * i_pos_start[1];
+	   o_pos_new[1] += ((1 - costheta) * i_rotation_axis[1] * i_rotation_axis[2] - i_rotation_axis[0] * sintheta) * i_pos_start[2];
 
-	   i_pos_new[2] = ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[2] - i_rotation_axis[1] * sintheta) * i_pos_start[0];
-	   i_pos_new[2] += ((1 - costheta) * i_rotation_axis[1] * i_rotation_axis[2] + i_rotation_axis[0] * sintheta) * i_pos_start[1];
-	   i_pos_new[2] += (costheta + (1 - costheta) * i_rotation_axis[2] * i_rotation_axis[2]) * i_pos_start[2];
+	   o_pos_new[2] = ((1 - costheta) * i_rotation_axis[0] * i_rotation_axis[2] - i_rotation_axis[1] * sintheta) * i_pos_start[0];
+	   o_pos_new[2] += ((1 - costheta) * i_rotation_axis[1] * i_rotation_axis[2] + i_rotation_axis[0] * sintheta) * i_pos_start[1];
+	   o_pos_new[2] += (costheta + (1 - costheta) * i_rotation_axis[2] * i_rotation_axis[2]) * i_pos_start[2];
 	}
 
 
@@ -328,7 +361,7 @@ public:
 	 * Rotate a point around an axis for the given rotation angle.
 	 */
 	static
-	void rotate_3d(
+	void rotate_3d_point(
 			const ScalarDataArray &i_pos_start_0,
 			const ScalarDataArray &i_pos_start_1,
 			const ScalarDataArray &i_pos_start_2,
@@ -364,6 +397,7 @@ public:
 		ScalarDataArray cos_theta = cos(i_rotation_angle);
 		ScalarDataArray sin_theta = sin(i_rotation_angle);
 
+#if 0
 		o_pos_new_0 = (cos_theta + (1 - cos_theta) * rotation_axis_0 * rotation_axis_0) * i_pos_start_0;
 		o_pos_new_0 += ((1 - cos_theta) * rotation_axis_0 * rotation_axis_1 - rotation_axis_2 * sin_theta) * i_pos_start_1;
 		o_pos_new_0 += ((1 - cos_theta) * rotation_axis_0 * rotation_axis_2 + rotation_axis_1 * sin_theta) * i_pos_start_2;
@@ -375,6 +409,78 @@ public:
 		o_pos_new_2 = ((1 - cos_theta) * rotation_axis_0 * rotation_axis_2 - rotation_axis_1 * sin_theta) * i_pos_start_0;
 		o_pos_new_2 += ((1 - cos_theta) * rotation_axis_1 * rotation_axis_2 + rotation_axis_0 * sin_theta) * i_pos_start_1;
 		o_pos_new_2 += (cos_theta + (1 - cos_theta) * rotation_axis_2 * rotation_axis_2) * i_pos_start_2;
+#else
+		o_pos_new_0 = 	  i_pos_start_0 * (cos_theta + (1 - cos_theta) * rotation_axis_0 * rotation_axis_0)
+						+ i_pos_start_1 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_1 - rotation_axis_2 * sin_theta)
+						+ i_pos_start_2 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_2 + rotation_axis_1 * sin_theta);
+
+		o_pos_new_1 =	  i_pos_start_0 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_1 + rotation_axis_2 * sin_theta)
+						+ i_pos_start_1 * (cos_theta + (1 - cos_theta) * rotation_axis_1 * rotation_axis_1)
+						+ i_pos_start_2 * ((1 - cos_theta) * rotation_axis_1 * rotation_axis_2 - rotation_axis_0 * sin_theta);
+
+		o_pos_new_2 =	  i_pos_start_0 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_2 - rotation_axis_1 * sin_theta)
+						+ i_pos_start_1 * ((1 - cos_theta) * rotation_axis_1 * rotation_axis_2 + rotation_axis_0 * sin_theta)
+						+ i_pos_start_2 * (cos_theta + (1 - cos_theta) * rotation_axis_2 * rotation_axis_2);
+#endif
+	}
+
+	/**
+	 * Rotate a point around an axis for the given rotation angle.
+	 */
+	static
+	void rotate_3d_vector(
+			const ScalarDataArray &i_vec_start_0,
+			const ScalarDataArray &i_vec_start_1,
+			const ScalarDataArray &i_vec_start_2,
+			const ScalarDataArray &i_rotation_angle,
+			const ScalarDataArray &i_rotation_axis_0,
+			const ScalarDataArray &i_rotation_axis_1,
+			const ScalarDataArray &i_rotation_axis_2,
+			ScalarDataArray &o_vec_new_0,
+			ScalarDataArray &o_vec_new_1,
+			ScalarDataArray &o_vec_new_2
+	)
+	{
+		o_vec_new_0.setup_if_required(i_vec_start_0);
+		o_vec_new_1.setup_if_required(i_vec_start_1);
+		o_vec_new_2.setup_if_required(i_vec_start_2);
+
+		/*
+		 * Based on source code from website:
+		 *
+		 * http://paulbourke.net/geometry/rotate/
+		 * http://paulbourke.net/geometry/rotate/source.c (by Ronald Goldman)
+		 *
+		 * Main modification: Transpose version added
+		 */
+
+		ScalarDataArray rotation_axis_0 = i_rotation_axis_0;
+		ScalarDataArray rotation_axis_1 = i_rotation_axis_1;
+		ScalarDataArray rotation_axis_2 = i_rotation_axis_2;
+
+		normalize(
+				rotation_axis_0,
+				rotation_axis_1,
+				rotation_axis_2
+			);
+
+		ScalarDataArray cos_theta = cos(i_rotation_angle);
+		ScalarDataArray sin_theta = sin(i_rotation_angle);
+
+		/*
+		 * Transpose version
+		 */
+		o_vec_new_0 = 	i_vec_start_0 * (cos_theta + (1 - cos_theta) * rotation_axis_0 * rotation_axis_0)
+						+ i_vec_start_1 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_1 + rotation_axis_2 * sin_theta)
+						+ i_vec_start_2 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_2 - rotation_axis_1 * sin_theta);
+
+		o_vec_new_1 =	i_vec_start_0 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_1 - rotation_axis_2 * sin_theta)
+						+ i_vec_start_1 * (cos_theta + (1 - cos_theta) * rotation_axis_1 * rotation_axis_1)
+						+ i_vec_start_2 * ((1 - cos_theta) * rotation_axis_1 * rotation_axis_2 + rotation_axis_0 * sin_theta);
+
+		o_vec_new_2 =	i_vec_start_0 * ((1 - cos_theta) * rotation_axis_0 * rotation_axis_2 + rotation_axis_1 * sin_theta)
+						+ i_vec_start_1 * ((1 - cos_theta) * rotation_axis_1 * rotation_axis_2 - rotation_axis_0 * sin_theta)
+						+ i_vec_start_2 * (cos_theta + (1 - cos_theta) * rotation_axis_2 * rotation_axis_2);
 	}
 
 

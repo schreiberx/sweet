@@ -12,7 +12,7 @@ PKG_NAME="pip packages"
 echo_info "Upgrading pip..."
 pip3 install --upgrade --user pip -v
 
-PIP_PACKAGES="numpy matplotlib scipy"
+PIP_PACKAGES="numpy matplotlib scipy tqdm"
 echo_info "Installing $PIP_PACKAGES..."
 pip3 install --user $PIP_PACKAGES -v || echo_error_exit "Failed to install $PIP_PACKAGES"
 

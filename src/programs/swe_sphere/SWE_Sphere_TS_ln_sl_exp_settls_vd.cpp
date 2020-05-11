@@ -5,7 +5,6 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-
 #include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
 
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
