@@ -222,6 +222,17 @@ public:
 	}
 
 
+
+	inline
+	void set_all(
+			double i_value
+	)
+	{
+		for (std::size_t i = 0; i < number_of_elements; i++)
+			scalar_data[i] = i_value;
+	}
+
+
 	inline
 	double get(
 			std::size_t i

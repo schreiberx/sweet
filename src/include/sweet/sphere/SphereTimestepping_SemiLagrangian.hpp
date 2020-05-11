@@ -249,7 +249,7 @@ public:
 			/*
 			 * Rotate
 			 */
-			SWEETMath::rotate_3d_normalized_rotation_axis(
+			SWEETMath::rotate_3d_point_normalized_rotation_axis(
 					i_pos_x,
 					i_pos_y,
 					i_pos_z,

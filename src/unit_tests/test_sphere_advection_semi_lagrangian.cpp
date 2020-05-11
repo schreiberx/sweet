@@ -367,6 +367,57 @@ int main(int i_argc, char *i_argv[])
 
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
+		if (1)
+		{
+			std::cout << "Checking for right velocity" << std::endl;
+			SphereTimestepping_SemiLagrangian sl(simVars, sphereDataConfig);
+
+
+			/*
+			 * Convert to Cartesian velocity space
+			 */
+			ScalarDataArray V_lon_D(sphereDataConfig->physical_array_data_number_of_elements);
+			ScalarDataArray V_lat_D(sphereDataConfig->physical_array_data_number_of_elements);
+			V_lon_D.set_all(1.0);
+			V_lat_D.set_all(2.0);
+
+			ScalarDataArray V_x_D, V_y_D, V_z_D;
+			SWEETMath::latlon_velocity_to_cartesian_velocity(
+					sl.pos_lon_A,
+					sl.pos_lat_A,
+					V_lon_D,
+					V_lat_D,
+					V_x_D,
+					V_y_D,
+					V_z_D
+				);
+
+			ScalarDataArray V_lon_tmp, V_lat_tmp;
+			SWEETMath::cartesian_velocity_to_latlon_velocity(
+					sl.pos_lon_A,
+					sl.pos_lat_A,
+					V_x_D,
+					V_y_D,
+					V_z_D,
+					V_lon_tmp, V_lat_tmp
+			);
+
+			double err_lon = (V_lon_D - V_lon_tmp).reduce_maxAbs();
+			double err_lat = (V_lat_D - V_lat_tmp).reduce_maxAbs();
+
+			if (err_lon > 1e-10)
+			{
+				std::cerr << "Error: " << err_lon << std::endl;
+				FatalError("Error lon too high!");
+			}
+
+			if (err_lat > 1e-10)
+			{
+				std::cerr << "Error: " << err_lat << std::endl;
+				FatalError("Error lat too high!");
+			}
+		}
+
 		std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
 		std::cout << "Testing with dt=" << simVars.timecontrol.current_timestep_size << std::endl;
 

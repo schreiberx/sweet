@@ -34,8 +34,8 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 		const SphereData_Spectral &i_vrt,
 		const SphereData_Spectral &i_div,
 
-		const ScalarDataArray &i_pos_lon_d,
-		const ScalarDataArray &i_pos_lat_d,
+		const ScalarDataArray &i_pos_lon_D,
+		const ScalarDataArray &i_pos_lat_D,
 
 		SphereData_Spectral &o_phi,
 		SphereData_Spectral &o_vrt,
@@ -48,33 +48,134 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
 			i_phi.getSphereDataPhysical(),
-			i_pos_lon_d, i_pos_lat_d,
+			i_pos_lon_D, i_pos_lat_D,
 			false,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
 			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
+
 	SphereData_Physical u_tmp, v_tmp;
 	op.vortdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
 
-	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
 			u_tmp,
-			i_pos_lon_d, i_pos_lat_d,
+			i_pos_lon_D, i_pos_lat_D,
 			true,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
 			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
-	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
 			v_tmp,
-			i_pos_lon_d, i_pos_lat_d,
+			i_pos_lon_D, i_pos_lat_D,
 			true,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
 			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
+
+#if 1
+
+	ScalarDataArray P_x_D, P_y_D, P_z_D;
+	SWEETMath::latlon_to_cartesian(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
+
+	ScalarDataArray	&P_x_A = semiLagrangian.pos_x_A,
+					&P_y_A = semiLagrangian.pos_y_A,
+					&P_z_A = semiLagrangian.pos_z_A;
+
+	/*
+	 * Compute rotation angle
+	 */
+
+	ScalarDataArray rotation_angle_ =
+			SWEETMath::dot_prod(
+				P_x_D, P_y_D, P_z_D,
+				P_x_A, P_y_A, P_z_A
+			);
+
+	// Can be slightly larger than 1, leading to NaN, hence this hack
+	rotation_angle_ = SWEETMath::min(rotation_angle_, 1.0);
+
+	ScalarDataArray rotation_angle = SWEETMath::arccos(rotation_angle_);
+
+
+	/*
+	 * Compute Rotation axis
+	 */
+	ScalarDataArray rot_x, rot_y, rot_z;
+	SWEETMath::cross_prod(
+			P_x_D, P_y_D, P_z_D,
+			P_x_A, P_y_A, P_z_A,
+			rot_x, rot_y, rot_z
+		);
+
+	SWEETMath::normalize_threshold(rot_x, rot_y, rot_z);
+
+	/*
+	 * Convert to Cartesian velocity space
+	 */
+	ScalarDataArray V_lon_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(u_tmp_D);
+	ScalarDataArray V_lat_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(v_tmp_D);
+
+	ScalarDataArray V_x_D, V_y_D, V_z_D;
+	SWEETMath::latlon_velocity_to_cartesian_velocity(
+			i_pos_lon_D,
+			i_pos_lat_D,
+			V_lon_D,
+			V_lat_D,
+			V_x_D,
+			V_y_D,
+			V_z_D
+		);
+
+	/*
+	 * Rotate to velocity vector
+	 */
+	ScalarDataArray V_x_A, V_y_A, V_z_A;
+	SWEETMath::rotate_3d_vector_normalized_rotation_axis(
+			V_x_D, V_y_D, V_z_D,
+			rotation_angle,
+			rot_x, rot_y, rot_z,
+			V_x_A, V_y_A, V_z_A
+		);
+
+#if 0
+	if (V_x_A.reduce_isAnyNaNorInf())
+		std::cout << "V_x_A" << std::endl;
+
+	if (V_y_A.reduce_isAnyNaNorInf())
+		std::cout << "V_y_A" << std::endl;
+
+	if (V_z_A.reduce_isAnyNaNorInf())
+		std::cout << "V_z_A" << std::endl;
+#endif
+
+	/*
+	 * Return velocity in lat/lon space
+	 */
+	ScalarDataArray V_lon_A, V_lat_A;
+	SWEETMath::cartesian_velocity_to_latlon_velocity(
+			semiLagrangian.pos_lon_A,
+			semiLagrangian.pos_lat_A,
+			V_x_A,
+			V_y_A,
+			V_z_A,
+			V_lon_A, V_lat_A
+	);
+
+	op.uv_to_vortdiv(
+			Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lon_A, i_vrt.sphereDataConfig),
+			Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lat_A, i_vrt.sphereDataConfig),
+			o_vrt, o_div
+		);
+
+#else
 
 	op.uv_to_vortdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
+
+#endif
 }
+
 
 
 

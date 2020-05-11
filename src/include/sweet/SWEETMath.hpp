@@ -69,7 +69,7 @@ public:
 			ScalarDataArray &io_v0,
 			ScalarDataArray &io_v1,
 			ScalarDataArray &io_v2,
-			double i_threshold
+			double i_threshold = 1e-12
 	)
 	{
 		double threshold2 = i_threshold*i_threshold;
@@ -137,6 +137,21 @@ public:
 		o_ret0 = w1*v2 - w2*v1;
 		o_ret1 = w2*v0 - w0*v2;
 		o_ret2 = w0*v1 - w1*v0;
+	}
+
+
+	static
+	ScalarDataArray dot_prod(
+			const ScalarDataArray &w0,
+			const ScalarDataArray &w1,
+			const ScalarDataArray &w2,
+
+			const ScalarDataArray &v0,
+			const ScalarDataArray &v1,
+			const ScalarDataArray &v2
+	)
+	{
+		return w0*v0 + w1*v1 + w2*v2;
 	}
 
 
@@ -237,7 +252,6 @@ public:
 	void cartesian_velocity_to_latlon_velocity(
 			const ScalarDataArray &i_lon,
 			const ScalarDataArray &i_lat,
-
 			const ScalarDataArray &i_v_x,
 			const ScalarDataArray &i_v_y,
 			const ScalarDataArray &i_v_z,
@@ -253,7 +267,7 @@ public:
 		{
 			o_vel_lon.scalar_data[i] =	- std::sin(i_lon[i])*i_v_x[i]
 										+ std::cos(i_lon[i])*i_v_y[i];
-			o_vel_lon.scalar_data[i] =	- std::cos(i_lon[i])*std::sin(i_lat[i])*i_v_x[i]
+			o_vel_lat.scalar_data[i] =	- std::cos(i_lon[i])*std::sin(i_lat[i])*i_v_x[i]
 										- std::sin(i_lon[i])*std::sin(i_lat[i])*i_v_y[i]
 										+ std::cos(i_lat[i])*i_v_z[i];
 		}
@@ -334,6 +348,53 @@ public:
 			[](int, double &io_data)
 			{
 				io_data = std::cos(io_data);
+			}
+		);
+
+		return retval;
+	}
+
+
+	static
+	ScalarDataArray min(const ScalarDataArray &i_values, double i_scalar)
+	{
+		ScalarDataArray retval = i_values;
+		retval.update_lambda_array_indices(
+			[&](int, double &io_data)
+			{
+				io_data = std::min(io_data, i_scalar);
+			}
+		);
+
+		return retval;
+	}
+
+
+
+	static
+	ScalarDataArray max(const ScalarDataArray &i_values, double i_scalar)
+	{
+		ScalarDataArray retval = i_values;
+		retval.update_lambda_array_indices(
+			[&](int, double &io_data)
+			{
+				io_data = std::max(io_data, i_scalar);
+			}
+		);
+
+		return retval;
+	}
+
+
+
+	static
+	ScalarDataArray arccos(const ScalarDataArray &i_values)
+	{
+		ScalarDataArray retval = i_values;
+		retval.update_lambda_array_indices(
+			[](int, double &io_data)
+			{
+				io_data = std::acos(io_data);
 			}
 		);
 
@@ -424,6 +485,7 @@ public:
 #endif
 	}
 
+
 	/**
 	 * Rotate a point around an axis for the given rotation angle.
 	 */
@@ -484,6 +546,56 @@ public:
 	}
 
 
+	/**
+	 * Rotate a point around an axis for the given rotation angle.
+	 */
+	static
+	void rotate_3d_vector_normalized_rotation_axis(
+			const ScalarDataArray &i_vec_start_0,
+			const ScalarDataArray &i_vec_start_1,
+			const ScalarDataArray &i_vec_start_2,
+			const ScalarDataArray &i_rotation_angle,
+			const ScalarDataArray &i_rotation_axis_0,
+			const ScalarDataArray &i_rotation_axis_1,
+			const ScalarDataArray &i_rotation_axis_2,
+			ScalarDataArray &o_vec_new_0,
+			ScalarDataArray &o_vec_new_1,
+			ScalarDataArray &o_vec_new_2
+	)
+	{
+		o_vec_new_0.setup_if_required(i_vec_start_0);
+		o_vec_new_1.setup_if_required(i_vec_start_1);
+		o_vec_new_2.setup_if_required(i_vec_start_2);
+
+		/*
+		 * Based on source code from website:
+		 *
+		 * http://paulbourke.net/geometry/rotate/
+		 * http://paulbourke.net/geometry/rotate/source.c (by Ronald Goldman)
+		 *
+		 * Main modification: Transpose version added
+		 */
+
+		ScalarDataArray cos_theta = cos(i_rotation_angle);
+		ScalarDataArray sin_theta = sin(i_rotation_angle);
+
+		/*
+		 * Transpose version
+		 */
+		o_vec_new_0 = 	i_vec_start_0 * (cos_theta + (1 - cos_theta) * i_rotation_axis_0 * i_rotation_axis_0)
+						+ i_vec_start_1 * ((1 - cos_theta) * i_rotation_axis_0 * i_rotation_axis_1 + i_rotation_axis_2 * sin_theta)
+						+ i_vec_start_2 * ((1 - cos_theta) * i_rotation_axis_0 * i_rotation_axis_2 - i_rotation_axis_1 * sin_theta);
+
+		o_vec_new_1 =	i_vec_start_0 * ((1 - cos_theta) * i_rotation_axis_0 * i_rotation_axis_1 - i_rotation_axis_2 * sin_theta)
+						+ i_vec_start_1 * (cos_theta + (1 - cos_theta) * i_rotation_axis_1 * i_rotation_axis_1)
+						+ i_vec_start_2 * ((1 - cos_theta) * i_rotation_axis_1 * i_rotation_axis_2 + i_rotation_axis_0 * sin_theta);
+
+		o_vec_new_2 =	i_vec_start_0 * ((1 - cos_theta) * i_rotation_axis_0 * i_rotation_axis_2 + i_rotation_axis_1 * sin_theta)
+						+ i_vec_start_1 * ((1 - cos_theta) * i_rotation_axis_1 * i_rotation_axis_2 - i_rotation_axis_0 * sin_theta)
+						+ i_vec_start_2 * (cos_theta + (1 - cos_theta) * i_rotation_axis_2 * i_rotation_axis_2);
+	}
+
+
 
 
 	/**
@@ -492,7 +604,7 @@ public:
 	 * The rotation axis is assumed to be already normalized
 	 */
 	static
-	void rotate_3d_normalized_rotation_axis(
+	void rotate_3d_point_normalized_rotation_axis(
 		double i_pos_start[3],
 		double i_rotation_angle,
 		double i_rotation_axis_normalized[3],
@@ -526,7 +638,7 @@ public:
 	 * Rotate a point around an axis for the given rotation angle.
 	 */
 	static
-	void rotate_3d_normalized_rotation_axis(
+	void rotate_3d_point_normalized_rotation_axis(
 			const ScalarDataArray &i_pos_start_0,
 			const ScalarDataArray &i_pos_start_1,
 			const ScalarDataArray &i_pos_start_2,
