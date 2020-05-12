@@ -69,7 +69,7 @@ public:
 			ScalarDataArray &io_v0,
 			ScalarDataArray &io_v1,
 			ScalarDataArray &io_v2,
-			double i_threshold = 1e-12
+			double i_threshold = 1e-20
 	)
 	{
 		double threshold2 = i_threshold*i_threshold;
