@@ -61,7 +61,7 @@ void SWE_Sphere_TS_l_exp::run_timestep_pert(
 }
 
 
-
+#if 0
 void SWE_Sphere_TS_l_exp::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
@@ -76,7 +76,7 @@ void SWE_Sphere_TS_l_exp::run_timestep_pert(
 	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
 	io_phi_pert -= gh0;
 }
-
+#endif
 
 
 SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
@@ -485,7 +485,7 @@ void SWE_Sphere_TS_l_exp::p_update_coefficients(
 }
 
 
-#if 1
+#if 0
 void SWE_Sphere_TS_l_exp::run_timestep_nonpert(
 	const SphereData_Spectral &i_prog_phi0,
 	const SphereData_Spectral &i_prog_vrt0,
@@ -517,7 +517,7 @@ void SWE_Sphere_TS_l_exp::run_timestep_nonpert(
  *
  * for further information
  */
-void SWE_Sphere_TS_l_exp::run_timestep_nonpert(
+void SWE_Sphere_TS_l_exp::run_timestep_pert(
 	SphereData_Spectral &io_prog_phi0,
 	SphereData_Spectral &io_prog_vrt0,
 	SphereData_Spectral &io_prog_div0,

@@ -56,7 +56,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 		 */
 
 		SphereData_Spectral phi0_Un_phi(sphereDataConfig), phi0_Un_vrt(sphereDataConfig), phi0_Un_div(sphereDataConfig);
-		ts_phi0_rexi.run_timestep_nonpert(
+		ts_phi0_rexi.run_timestep_pert(
 				io_phi, io_vrt, io_div,
 				phi0_Un_phi, phi0_Un_vrt, phi0_Un_div,
 				i_fixed_dt,
@@ -71,7 +71,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 			);
 
 		SphereData_Spectral phi1_FUn_phi(sphereDataConfig), phi1_FUn_vrt(sphereDataConfig), phi1_FUn_div(sphereDataConfig);
-		ts_phi1_rexi.run_timestep_nonpert(
+		ts_phi1_rexi.run_timestep_pert(
 				FUn_phi, FUn_vrt, FUn_div,
 				phi1_FUn_phi, phi1_FUn_vrt, phi1_FUn_div,
 				i_fixed_dt,
