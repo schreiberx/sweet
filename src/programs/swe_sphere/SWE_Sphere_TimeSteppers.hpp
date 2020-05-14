@@ -24,6 +24,12 @@ public:
 
 	void reset();
 
+	std::vector<SWE_Sphere_TS_interface*> registered_integrators;
+
+	void integrators_register_all(SphereOperators_SphereData &i_op, SimulationVariables &i_simVars);
+
+	void integrators_free_all(SWE_Sphere_TS_interface *skip_this = nullptr);
+
 	void setup(
 			const std::string &i_timestepping_method,
 			SphereOperators_SphereData &i_op,

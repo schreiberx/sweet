@@ -66,9 +66,9 @@ void SWE_Sphere_TimeSteppers::reset()
 	master = nullptr;
 }
 
-void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, SphereOperators_SphereData &i_op, SimulationVariables &i_simVars)
+
+void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereData &i_op, SimulationVariables &i_simVars)
 {
-	std::vector<SWE_Sphere_TS_interface*> registered_integrators;
 
 	/*
 	 * Register time integrators
@@ -116,6 +116,29 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, Sp
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_settls_vd(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_settls_uv(i_simVars, i_op)));
 
+}
+
+
+
+void SWE_Sphere_TimeSteppers::integrators_free_all(SWE_Sphere_TS_interface *skip_this)
+{
+
+	for (std::size_t i = 0; i < registered_integrators.size(); i++)
+	{
+		SWE_Sphere_TS_interface *ts = registered_integrators[i];
+
+		if (ts == skip_this)
+			continue;
+
+		delete ts;
+	}
+}
+
+
+void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, SphereOperators_SphereData &i_op, SimulationVariables &i_simVars)
+{
+	integrators_register_all(i_op, i_simVars);
+
 	/*
 	 * Find right one
 	 */
@@ -135,25 +158,13 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, Sp
 		}
 	}
 
+	if (master == nullptr)
+		SWEETError(std::string("No valid --timestepping-method '") + i_timestepping_method + std::string("' provided"));
+
 	// Found integrator, freeing others
-	if (master != nullptr)
-	{
-		for (std::size_t i = 0; i < registered_integrators.size(); i++)
-		{
-			SWE_Sphere_TS_interface *ts = registered_integrators[i];
-
-			if (ts == master)
-				continue;
-
-			delete ts;
-		}
-	}
-
-	if (master != nullptr)
-		return;
-
-	SWEETError(std::string("No valid --timestepping-method '") + i_timestepping_method + std::string("' provided"));
+	integrators_free_all(master);
 }
+
 
 SWE_Sphere_TimeSteppers::~SWE_Sphere_TimeSteppers()
 {

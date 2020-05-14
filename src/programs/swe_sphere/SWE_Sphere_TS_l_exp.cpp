@@ -369,7 +369,10 @@ void SWE_Sphere_TS_l_exp::setup(
 
 				#if SWEET_DEBUG
 					if (local_size < 0)
-						SWEETError("local_size < 0");
+					{
+						std::cerr << "local_size < 0" << std::endl;
+						exit(-1);
+					}
 				#endif
 
 				perThreadVars[local_thread_id]->alpha.resize(local_size);
