@@ -12,6 +12,27 @@
 
 
 
+bool SWE_Sphere_TS_ln_settls_vd::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	/*
+	 * Should contain _exp and _settls
+	 */
+	return (
+		!(i_timestepping_method.find("_exp") != std::string::npos)		&&
+		(i_timestepping_method.find("_settls") != std::string::npos)	&&
+		(i_timestepping_method.find("_vd") != std::string::npos)		&&
+		!(i_timestepping_method.find("_only") != std::string::npos)		&&
+		true
+	);
+}
+
+
+std::string SWE_Sphere_TS_ln_settls_vd::string_id()
+{
+	return string_id_storage;
+}
+
+
 void SWE_Sphere_TS_ln_settls_vd::run_timestep_pert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables

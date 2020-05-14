@@ -162,6 +162,8 @@ void SWE_Sphere_TS_lg_irk::setup(
 	if (i_extended_modes != 0)
 		SWEETError("Not supported");
 #endif
+	timestepping_order = i_timestep_order;
+	timestep_size = i_timestep_size;
 
 	if (i_timestep_order == 1)
 	{
@@ -175,9 +177,10 @@ void SWE_Sphere_TS_lg_irk::setup(
 		lg_erk->setup(1);
 	}
 	else
+	{
 		SWEETError("Only 1st and 2nd order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
+	}
 
-	timestep_size = i_timestep_size;
 
 	update_coefficients();
 
