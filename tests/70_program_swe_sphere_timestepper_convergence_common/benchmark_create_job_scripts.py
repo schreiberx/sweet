@@ -152,7 +152,7 @@ elif group == "lg2":
 
     ts_methods = [
     		'lg_erk',
-    		'lg_cn',
+    		'lg_irk',
 
     		'lg_exp',
     	]
