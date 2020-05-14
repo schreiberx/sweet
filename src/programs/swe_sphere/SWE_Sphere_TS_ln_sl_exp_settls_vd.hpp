@@ -32,11 +32,11 @@ public:
 		 * Should contain _exp and _settls as well as _vd to indicate vorticity-divergence formulation
 		 */
 		return (
-			(i_timestepping_method.find("_settls") != std::string::npos)
-			&&
-			(i_timestepping_method.find("_vd") != std::string::npos)
-			&&
-			(i_timestepping_method.find("_exp") != std::string::npos)
+			(i_timestepping_method.find("_exp") != std::string::npos)		&&
+			(i_timestepping_method.find("_settls") != std::string::npos)	&&
+			(i_timestepping_method.find("_vd") != std::string::npos)		&&
+			!(i_timestepping_method.find("_only") != std::string::npos)		&&
+			true
 		);
 
 		return false;
