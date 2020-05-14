@@ -76,7 +76,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_nonpert(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_lg_cn.run_timestep_nonpert(
+			timestepping_lg_irk.run_timestep_pert(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -93,7 +93,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_nonpert(
 				);
 
 			// HALF time step for linear part
-			timestepping_lg_cn.run_timestep_nonpert(
+			timestepping_lg_irk.run_timestep_pert(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
@@ -112,7 +112,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_nonpert(
 				);
 
 			// FULL time step for linear part
-			timestepping_lg_cn.run_timestep_nonpert(
+			timestepping_lg_irk.run_timestep_pert(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -158,23 +158,28 @@ void SWE_Sphere_TS_lg_irk_lc_erk::setup(
 	{
 		timestepping_lg_irk.setup(
 				1,
-				timestep_size*0.5
+				timestep_size*0.5,
+				0
 		);
 	}
 	else if (timestepping_order == 2)
 	{
 		if (version_id == 0)
 		{
-			timestepping_lg_cn.setup(
-					simVars.disc.timestepping_crank_nicolson_filter,
-					timestep_size*0.5
+			timestepping_lg_irk.setup(
+					2,
+					timestep_size*0.5,
+					0,
+					simVars.disc.timestepping_crank_nicolson_filter
 			);
 		}
 		else if (version_id == 1)
 		{
-			timestepping_lg_cn.setup(
-					simVars.disc.timestepping_crank_nicolson_filter,
-					timestep_size
+			timestepping_lg_irk.setup(
+					2,
+					timestep_size,
+					0,
+					simVars.disc.timestepping_crank_nicolson_filter
 			);
 		}
 		else
@@ -217,7 +222,6 @@ SWE_Sphere_TS_lg_irk_lc_erk::SWE_Sphere_TS_lg_irk_lc_erk(
 		op(i_op),
 		timestepping_order(-1),
 		timestepping_lg_irk(simVars, op),
-		timestepping_lg_cn(simVars, op),
 		timestepping_lg_erk_lc_erk(simVars, op)
 {
 }

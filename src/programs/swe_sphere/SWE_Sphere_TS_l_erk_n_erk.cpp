@@ -19,10 +19,66 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-	io_phi_pert += gh0;
-	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
-	io_phi_pert -= gh0;
+	if (timestepping_order == 1)
+	{
+		timestepping_rk_linear.run_timestep(
+				this,
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				io_phi_pert, io_vrt, io_div,
+				i_fixed_dt,
+				timestepping_order,
+				i_simulation_timestamp
+			);
+
+		timestepping_rk_nonlinear.run_timestep(
+				this,
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
+				io_phi_pert, io_vrt, io_div,
+				i_fixed_dt,
+				timestepping_order2,
+				i_simulation_timestamp
+			);
+	}
+	else if (timestepping_order == 2)
+	{
+		// HALF time step for linear part
+		timestepping_rk_linear.run_timestep(
+				this,
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				io_phi_pert, io_vrt, io_div,
+				i_fixed_dt*0.5,
+				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				i_simulation_timestamp
+			);
+
+		// FULL time step for non-linear part
+		timestepping_rk_nonlinear.run_timestep(
+				this,
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
+				io_phi_pert, io_vrt, io_div,
+				i_fixed_dt,
+				timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				i_simulation_timestamp
+			);
+
+		// HALF time step for linear part
+		timestepping_rk_linear.run_timestep(
+				this,
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
+				io_phi_pert, io_vrt, io_div,
+				i_fixed_dt*0.5,
+				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
+				i_simulation_timestamp
+			);
+	}
+	else if (timestepping_order == 0)
+	{
+		SWEETError("Please specify the timestepping order via --timestepping-order=[int]");
+	}
+	else
+	{
+		SWEETError("programs/swe_sphere/SWE_Sphere_TS_l_erk_n_erk.cpp: This order is not yet supported!");
+	}
 }
 
 
@@ -38,62 +94,56 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
 		double i_simulation_timestamp
 )
 {
-	/*
-	 * NON-LINEAR
-	 *
-	 * Follows Hack & Jakob formulation
-	 */
+	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
-	double avgphi = simVars.sim.gravitation*simVars.sim.h0;
+	if (!simVars.sim.sphere_use_fsphere)
+	{
 
-	SphereData_Physical ug(i_phi.sphereDataConfig);
-	SphereData_Physical vg(i_phi.sphereDataConfig);
+		/*
+		 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
+		 */
+		/*
+		 * Step 1a
+		 */
+		SphereData_Physical ug(i_phi.sphereDataConfig);
+		SphereData_Physical vg(i_phi.sphereDataConfig);
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
 
-	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
-	SphereData_Physical divg = i_div.getSphereDataPhysical();
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+		/*
+		 * Step 1b
+		 */
+		SphereData_Physical tmpg1 = ug*op.fg;
+		SphereData_Physical tmpg2 = vg*op.fg;
+
+		/*
+		 * Step 1c
+		 */
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t, simVars.misc.sphere_use_robert_functions);
+
+		/*
+		 * Step 1d
+		 */
+		o_vort_t *= -1.0;
+
+		/*
+		 * Step 1e
+		 */
+		o_div_t += -op.laplace(i_phi);
+
+		/*
+		 * DIV on velocity field
+		 */
+		o_phi_t = (-gh0)*i_div;
+	}
 	else
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+	{
+		o_div_t = -op.laplace(i_phi);
 
-	SphereData_Physical phig = i_phi.getSphereDataPhysical();
+		o_vort_t = -simVars.sim.sphere_fsphere_f0*i_div;
+		o_div_t += simVars.sim.sphere_fsphere_f0*i_vort;
 
-	SphereData_Physical tmpg1 = ug*(/*vrtg+*/op.fg);
-	SphereData_Physical tmpg2 = vg*(/*vrtg+*/op.fg);
-
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-	else
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-
-	o_vort_t *= -1.0;
-
-	SphereData_Physical tmpg = o_div_t.getSphereDataPhysical();
-
-	/*
-	tmpg1 = ug*phig;
-	tmpg2 = vg*phig;
-	*/
-	tmpg1 = ug*avgphi;
-	tmpg2 = vg*avgphi;
-
-	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-	else
-		op.uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
-
-	o_phi_t *= -1.0;
-
-/*
-	SphereDataPhysical tmpg = 0.5*(ug*ug+vg*vg);
-
-	if (simVars.misc.sphere_use_robert_functions)
-		tmpg = tmpg.robert_convertToNonRobertSquared();
-*/
-	tmpspec = (phig/*+tmpg*/);
-
-	o_div_t += -op.laplace(tmpspec);
+		o_phi_t = -gh0*i_div;
+	}
 }
 
 
@@ -119,8 +169,6 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 	 * Follows Hack & Jakob formulation
 	 */
 
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
 
@@ -143,8 +191,8 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 
 	o_vort_dt *= -1.0;
 
-	tmpg1 = ug*(phig-gh0);
-	tmpg2 = vg*(phig-gh0);
+	tmpg1 = ug*phig;
+	tmpg2 = vg*phig;
 
 	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
 	if (simVars.misc.sphere_use_robert_functions)
@@ -214,79 +262,6 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 
 
 
-
-
-
-void SWE_Sphere_TS_l_erk_n_erk::run_timestep_nonpert(
-		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,	///< prognostic variables
-		SphereData_Spectral &io_div,		///< prognostic variables
-
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp
-)
-{
-	if (timestepping_order == 1)
-	{
-		timestepping_rk_linear.run_timestep(
-				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
-				io_phi, io_vort, io_div,
-				i_dt,
-				timestepping_order,
-				i_simulation_timestamp
-			);
-
-		timestepping_rk_nonlinear.run_timestep(
-				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
-				io_phi, io_vort, io_div,
-				i_dt,
-				timestepping_order2,
-				i_simulation_timestamp
-			);
-	}
-	else if (timestepping_order == 2)
-	{
-		// HALF time step for linear part
-		timestepping_rk_linear.run_timestep(
-				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
-				io_phi, io_vort, io_div,
-				i_dt*0.5,
-				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
-				i_simulation_timestamp
-			);
-
-		// FULL time step for non-linear part
-		timestepping_rk_nonlinear.run_timestep(
-				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
-				io_phi, io_vort, io_div,
-				i_dt,
-				timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
-				i_simulation_timestamp
-			);
-
-		// HALF time step for linear part
-		timestepping_rk_linear.run_timestep(
-				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
-				io_phi, io_vort, io_div,
-				i_dt*0.5,
-				timestepping_order,		/// This must be 2nd order accurate to get overall 2nd order accurate method
-				i_simulation_timestamp
-			);
-	}
-	else if (timestepping_order == 0)
-	{
-		SWEETError("Please specify the timestepping order via --timestepping-order=[int]");
-	}
-	else
-	{
-		SWEETError("programs/swe_sphere/SWE_Sphere_TS_l_erk_n_erk.cpp: This order is not yet supported!");
-	}
-}
 
 
 

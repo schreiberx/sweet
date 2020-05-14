@@ -38,7 +38,9 @@ void SWE_Sphere_TS_lg_irk::setup_auto()
 
 	setup(
 			simVars.disc.timestepping_order,
-			simVars.timecontrol.current_timestep_size
+			simVars.timecontrol.current_timestep_size,
+			0,
+			simVars.disc.timestepping_crank_nicolson_filter
 		);
 }
 
@@ -53,7 +55,8 @@ void SWE_Sphere_TS_lg_irk::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	lg_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*0.5, i_simulation_timestamp);
+	if (timestepping_order == 2)
+		lg_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*0.5, i_simulation_timestamp);
 
 	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 	io_phi_pert += gh0;
@@ -151,7 +154,8 @@ void SWE_Sphere_TS_lg_irk::update_coefficients()
 void SWE_Sphere_TS_lg_irk::setup(
 		int i_timestep_order,
 		double i_timestep_size,
-		int i_extended_modes
+		int i_extended_modes,
+		double i_crank_nicolson_damping_factor
 )
 {
 #if SWEET_DEBUG
@@ -166,7 +170,7 @@ void SWE_Sphere_TS_lg_irk::setup(
 	}
 	else if (i_timestep_order == 2)
 	{
-		crank_nicolson_damping_factor = 0.5;
+		crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 		lg_erk = new SWE_Sphere_TS_lg_erk(simVars, op);
 		lg_erk->setup(1);
 	}

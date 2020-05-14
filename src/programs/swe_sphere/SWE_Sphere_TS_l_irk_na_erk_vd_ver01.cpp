@@ -60,7 +60,7 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::run_timestep_pert(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_l_cn.run_timestep_nonpert(
+			timestepping_l_irk.run_timestep_pert(
 					io_phi_pert, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -74,7 +74,7 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::run_timestep_pert(
 				);
 
 			// HALF time step for linear part
-			timestepping_l_cn.run_timestep_pert(
+			timestepping_l_irk.run_timestep_pert(
 					io_phi_pert, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5
@@ -90,7 +90,7 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::run_timestep_pert(
 				);
 
 			// FULL time step for linear part
-			timestepping_l_cn.run_timestep_nonpert(
+			timestepping_l_irk.run_timestep_pert(
 					io_phi_pert, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -147,7 +147,7 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::setup(
 	{
 		if (version_id == 0)
 		{
-			timestepping_l_cn.setup(
+			timestepping_l_irk.setup(
 					simVars.disc.timestepping_crank_nicolson_filter,
 					timestep_size*0.5,	// Half time step size for linear implicit part (applied 2x at start/end of TS)
 					simVars.rexi.use_sphere_extended_modes
@@ -155,7 +155,7 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::setup(
 		}
 		else if (version_id == 1)
 		{
-			timestepping_l_cn.setup(
+			timestepping_l_irk.setup(
 					simVars.disc.timestepping_crank_nicolson_filter,
 					timestep_size,	// Full time step size for linear implicit part (applied once at center)
 					simVars.rexi.use_sphere_extended_modes
@@ -202,7 +202,6 @@ SWE_Sphere_TS_l_irk_na_erk_vd::SWE_Sphere_TS_l_irk_na_erk_vd(
 		simVars(i_simVars),
 		op(i_op),
 		timestepping_l_irk(simVars, op),
-		timestepping_l_cn(simVars, op),
 		timestepping_ln_erk_split_vd(simVars, op),
 		version_id(0),
 		timestepping_order(-1)

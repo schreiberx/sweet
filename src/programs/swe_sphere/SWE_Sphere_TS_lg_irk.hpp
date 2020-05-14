@@ -83,7 +83,8 @@ public:
 	void setup(
 		int i_timestep_order,
 		double i_timestep_size,
-		int i_extended_modes = 0
+		int i_extended_modes,
+		double i_crank_nicolson_damping_factor = 0.5
 	);
 
 

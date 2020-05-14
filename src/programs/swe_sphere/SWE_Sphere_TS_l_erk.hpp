@@ -42,7 +42,7 @@ private:
 	SphereTimestepping_ExplicitRK timestepping_rk;
 
 public:
-	void euler_timestep_update(
+	void euler_timestep_update_pert(
 			const SphereData_Spectral &i_phi,	///< prognostic variables
 			const SphereData_Spectral &i_vort,	///< prognostic variables
 			const SphereData_Spectral &i_div,	///< prognostic variables

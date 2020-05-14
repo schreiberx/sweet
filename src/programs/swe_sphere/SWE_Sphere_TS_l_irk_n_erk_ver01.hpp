@@ -15,7 +15,6 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_cn_DEPRECATED.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 
@@ -61,7 +60,6 @@ public:
 	 * Linear time steppers
 	 */
 	SWE_Sphere_TS_l_irk timestepping_l_irk;
-	SWE_Sphere_TS_l_cn_DEPRECATED timestepping_l_cn;
 
 	/*
 	 * Non-linear time steppers
@@ -98,16 +96,6 @@ public:
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	);
-
-	void run_timestep_nonpert(
-			SphereData_Spectral &io_phi,	///< prognostic variables
-			SphereData_Spectral &io_vort,	///< prognostic variables
-			SphereData_Spectral &io_div,	///< prognostic variables
-
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
-	);
-
 
 
 	virtual ~SWE_Sphere_TS_l_irk_n_erk();

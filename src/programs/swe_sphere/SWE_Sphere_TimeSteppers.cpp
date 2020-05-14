@@ -7,7 +7,6 @@
 
 #include "SWE_Sphere_TimeSteppers.hpp"
 
-//#include "SWE_Sphere_TS_l_cn_DEPRECATED.hpp"
 #include "SWE_Sphere_TS_l_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_lg_irk.hpp"
@@ -46,7 +45,6 @@
  */
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only.hpp"
-//#include "SWE_Sphere_TS_lg_cn_DEPRECATED.hpp"
 #include "SWE_Sphere_TS_ln_settls_vd.hpp"
 #include "SWE_Sphere_TS_ln_settls_uv.hpp"
 
@@ -96,8 +94,6 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, Sp
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_irk(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_irk(i_simVars, i_op)));
 
-//	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_cn_DEPRECATED(i_simVars, i_op)));
-//	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_cn_DEPRECATED(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp(i_simVars, i_op)));
 
 	/*

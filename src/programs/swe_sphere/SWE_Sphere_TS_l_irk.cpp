@@ -14,7 +14,6 @@
 
 
 
-
 void SWE_Sphere_TS_l_irk::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
@@ -30,9 +29,10 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 		l_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*0.5, i_simulation_timestamp);
 	}
 
+
 	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 	io_phi_pert += gh0;
-	run_timestep_nonpert_backward_euler(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	run_timestep_nonpert_backward_euler_private(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
 	io_phi_pert -= gh0;
 }
 
@@ -41,18 +41,15 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 /**
  * Solve an implicit time step for the given initial conditions
  */
-void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler(
+void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler_private(
 		SphereData_Spectral &io_phi,
 		SphereData_Spectral &io_vrt,
 		SphereData_Spectral &io_div,
 
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
-		SWEETError("Only constant time step size allowed");
-
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
 	        std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
@@ -60,7 +57,6 @@ void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler(
 	        timestep_size = i_fixed_dt;
 	        update_coefficients();
 	}
-
 
 	SphereData_Spectral phi0 = io_phi;
 	SphereData_Spectral vort0 = io_vrt;
@@ -70,12 +66,14 @@ void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler(
 	SphereData_Spectral vort(sphereDataConfig);
 	SphereData_Spectral div(sphereDataConfig);
 
+
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 	if (use_f_sphere)
 	{
-		SphereData_Spectral rhs = gh*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
-		phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh, r);
+		SphereData_Spectral rhs = gh0*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
+		phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh0, r);
 
-		div = -1.0/gh*(phi0 - alpha*phi);
+		div = -1.0/gh0*(phi0 - alpha*phi);
 		vort = (1.0/alpha)*(vort0 + f0*(div));
 	}
 	else
@@ -98,18 +96,17 @@ void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler(
 				);
 
 		SphereData_Physical foo =
-				(gh*(div0.getSphereDataPhysical() - (1.0/alpha)*two_coriolis*mug*vort0.getSphereDataPhysical())) +
+				(gh0*(div0.getSphereDataPhysical() - (1.0/alpha)*two_coriolis*mug*vort0.getSphereDataPhysical())) +
 				(alpha*phi0g + (1.0/alpha)*two_coriolis*two_coriolis*mug*mug*phi0g);
 
 		SphereData_Physical rhsg =
 				alpha*alpha*foo +
 				two_coriolis*two_coriolis*mug*mug*foo
-				- (gh/alpha)*Fc_k;
+				- (gh0/alpha)*Fc_k;
 
 		rhs = rhsg;
 
 		phi = sphSolverPhi.solve(rhs.spectral_returnWithDifferentModes(sphereDataConfigSolver)).spectral_returnWithDifferentModes(sphereDataConfig);
-
 
 		SphereData_Physical u0(sphereDataConfig);
 		SphereData_Physical v0(sphereDataConfig);
@@ -147,15 +144,16 @@ void SWE_Sphere_TS_l_irk::update_coefficients()
 
 	if (!use_f_sphere)
 	{
+		double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 		sphSolverPhi.setup(sphereDataConfigSolver, 4);
 		sphSolverPhi.solver_component_rexi_z1(	(alpha*alpha)*(alpha*alpha), r);
 		sphSolverPhi.solver_component_rexi_z2(	2.0*two_coriolis*two_coriolis*alpha*alpha, r);
 		sphSolverPhi.solver_component_rexi_z3(	(two_coriolis*two_coriolis)*(two_coriolis*two_coriolis), r);
-		sphSolverPhi.solver_component_rexi_z4robert(	-gh*alpha*two_coriolis, r);
-		sphSolverPhi.solver_component_rexi_z5robert(	gh/alpha*two_coriolis*two_coriolis*two_coriolis, r);
-		sphSolverPhi.solver_component_rexi_z6robert(	gh*2.0*two_coriolis*two_coriolis, r);
-		sphSolverPhi.solver_component_rexi_z7(	-gh*alpha*alpha, r);
-		sphSolverPhi.solver_component_rexi_z8(	-gh*two_coriolis*two_coriolis, r);
+		sphSolverPhi.solver_component_rexi_z4robert(	-gh0*alpha*two_coriolis, r);
+		sphSolverPhi.solver_component_rexi_z5robert(	gh0/alpha*two_coriolis*two_coriolis*two_coriolis, r);
+		sphSolverPhi.solver_component_rexi_z6robert(	gh0*2.0*two_coriolis*two_coriolis, r);
+		sphSolverPhi.solver_component_rexi_z7(	-gh0*alpha*alpha, r);
+		sphSolverPhi.solver_component_rexi_z8(	-gh0*two_coriolis*two_coriolis, r);
 
 		mug.setup_if_required(sphereDataConfig);
 		mug.physical_update_lambda_gaussian_grid(
@@ -186,25 +184,33 @@ SWE_Sphere_TS_l_irk::SWE_Sphere_TS_l_irk(
 void SWE_Sphere_TS_l_irk::setup(
 		int i_timestep_order,
 		double i_timestep_size,
-		int i_use_extended_modes = 0
+		int i_use_extended_modes,
+		double i_crank_nicolson_damping_factor
 )
 {
+	timestepping_order = i_timestep_order;
 	timestep_size = i_timestep_size;
 	use_f_sphere = simVars.sim.sphere_use_fsphere;
 
-	if (i_timestep_order == 1)
+	if (timestepping_order == 1)
 	{
 		// set this to 1 to ignore it
 		crank_nicolson_damping_factor = 1.0;
 	}
-	else if (i_timestep_order == 2)
+	else if (timestepping_order == 2)
 	{
-		crank_nicolson_damping_factor = 0.5;
+		// set this to 0.5 to take 1/2 TS with forward Euler and another 1/2 one with backward Euler
+		crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
+
 		l_erk = new SWE_Sphere_TS_l_erk(simVars, ops);
 		l_erk->setup(1);
 	}
 	else
+	{
 		SWEETError("Only 1st and 2nd order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
+	}
+
+
 
 	use_extended_modes = i_use_extended_modes;
 
@@ -236,28 +242,8 @@ void SWE_Sphere_TS_l_irk::setup(
 		f0 = 0;
 	}
 
-	alpha = -1.0/timestep_size;
-	beta = -1.0/timestep_size;
-
-	{
-		/*
-		 * Crank-Nicolson method:
-		 *
-		 * (U(t+1) - q dt F(U(t+1))) = (U(t) + q dt F(U(t)))
-		 *
-		 * with q the CN damping facor with no damping for q=0.5
-		 */
-
-		// scale dt by the damping factor to reuse solver structure
-
-		alpha /= crank_nicolson_damping_factor;
-		beta /= crank_nicolson_damping_factor;
-	}
-
 	r = simVars.sim.sphere_radius;
 	inv_r = 1.0/r;
-
-	gh = simVars.sim.gravitation*simVars.sim.h0;
 
 	update_coefficients();
 }

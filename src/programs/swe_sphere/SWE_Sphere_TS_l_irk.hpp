@@ -101,9 +101,6 @@ private:
 	/// Coriolis effect
 	double two_coriolis;
 
-	/// Average geopotential
-	double gh;
-
 	SphereData_Physical mug;
 
 public:
@@ -123,7 +120,8 @@ public:
 	void setup(
 			int i_timestep_order,
 			double i_timestep_size,
-			int i_use_extended_modes
+			int i_use_extended_modes = 0,
+			double i_crank_nicolson_damping_factor = 0.5
 	);
 
 
@@ -145,7 +143,7 @@ public:
 	 * Solve a REXI time step for the given initial conditions
 	 */
 public:
-	void run_timestep_nonpert_backward_euler(
+	void run_timestep_nonpert_backward_euler_private(
 			SphereData_Spectral &io_phi,		///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,		///< prognostic variables
