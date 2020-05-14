@@ -485,7 +485,7 @@ void SWE_Sphere_TS_l_exp::p_update_coefficients(
 }
 
 
-#if 0
+#if 1
 void SWE_Sphere_TS_l_exp::run_timestep_nonpert(
 	const SphereData_Spectral &i_prog_phi0,
 	const SphereData_Spectral &i_prog_vrt0,

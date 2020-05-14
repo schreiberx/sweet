@@ -21,32 +21,9 @@
 class SWE_Sphere_TS_l_exp_n_etdrk	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (i_timestepping_method == "l_exp_n_etdrk")
-			return true;
-
-		return false;
-	}
-
-	std::string string_id()
-	{
-		return "l_exp_n_etdrk";
-	}
-
-	void setup_auto()
-	{
-		if (simVars.sim.sphere_use_fsphere)
-			SWEETError("TODO: Not yet supported");
-
-		setup(
-				simVars.rexi,
-				simVars.disc.timestepping_order,
-				simVars.disc.timestepping_order2,
-				simVars.timecontrol.current_timestep_size
-			);
-	}
-
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
 private:
 	SimulationVariables &simVars;
