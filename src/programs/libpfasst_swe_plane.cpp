@@ -90,7 +90,7 @@ int main(int i_argc, char *i_argv[])
 		 simVars.libpfasst.nnodes == 9)
 	  nnodes[0] = 3; 
 	else 
-	  Error("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
+	  SWEETError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 	break;
       }
       // Three levels
@@ -111,7 +111,7 @@ int main(int i_argc, char *i_argv[])
 	    nnodes[1] = 3;
 	  }
 	else 
-	  Error("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
+		SWEETError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
 	break;
       }
       // All other cases not supported yet

@@ -101,7 +101,7 @@ ts_methods = [
     ['l_erk',		2,	2,	0],
     ['lg_erk_lc_erk',		2,	2,	0],
 
-    ['l_cn',		2,	2,	0],
+    ['l_irk',		2,	2,	0],
     ['lg_irk_lc_erk',		2,	2,	0],
 
     ['l_exp',        	2,	2,	0],
@@ -155,7 +155,7 @@ if __name__ == "__main__":
 
     				else:
     					# Not implemented?
-    					if jg.runtime.use_robert_functions == 0 and 'l_cn' in jg.runtime.timestepping_method:
+    					if jg.runtime.use_robert_functions == 0 and 'l_irk' in jg.runtime.timestepping_method:
     						continue
 
     					if jg.runtime.use_robert_functions == 0 and 'l_irk' in jg.runtime.timestepping_method:

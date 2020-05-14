@@ -41,7 +41,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep_nonpert(
 		if (version_id == 0)
 		{
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep_nonpert(
+			timestepping_lg_irk.run_timestep_nonpert_private(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -79,7 +79,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep_nonpert(
 			io_div += i_dt*div_dt;
 
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep_nonpert(
+			timestepping_lg_irk.run_timestep_nonpert_private(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp

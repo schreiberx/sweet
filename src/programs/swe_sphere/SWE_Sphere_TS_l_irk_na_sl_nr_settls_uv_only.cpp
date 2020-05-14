@@ -369,7 +369,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	 * Step 2b) Solve Helmholtz problem
 	 * X - 1/2 dt LX = R
 	 */
-	swe_sphere_ts_l_irk->run_timestep_nonpert(
+	swe_sphere_ts_l_irk->run_timestep_pert(
 			R_phi, R_vrt, R_div,
 			0.5 * i_dt,
 			i_simulation_timestamp

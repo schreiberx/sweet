@@ -1,5 +1,5 @@
 /*
- * SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only.hpp
+ * SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.hpp
  *
  *  Created on: 01 Apr 2020
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
@@ -7,8 +7,8 @@
  *  Based on plane code
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_NA_SL_NR_SETTLS_UV_ONLY_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_NA_SL_NR_SETTLS_UV_ONLY_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_NA_SL_SETTLS_UV_ONLY_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_NA_SL_SETTLS_UV_ONLY_HPP_
 
 
 #include <sweet/SimulationVariables.hpp>
@@ -25,29 +25,12 @@
 
 
 
-class SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_l_irk_na_sl_settls_uv_only	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (i_timestepping_method == "l_irk_na_sl_nr_settls_uv_only")
-			return true;
-
-		return false;
-	}
-
-	std::string string_id()
-	{
-		return "l_irk_na_sl_nr_settls_uv_only";
-	}
-
-
-	void setup_auto()
-	{
-		setup(
-			simVars.disc.timestepping_order
-		);
-	}
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
 
 private:
@@ -65,7 +48,7 @@ private:
 
 
 public:
-	SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only(
+	SWE_Sphere_TS_l_irk_na_sl_settls_uv_only(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op,
 			bool i_setup_auto = false
@@ -109,7 +92,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-	virtual ~SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only();
+	virtual ~SWE_Sphere_TS_l_irk_na_sl_settls_uv_only();
 };
 
 #endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */

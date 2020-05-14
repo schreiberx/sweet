@@ -72,8 +72,6 @@ public:
 
 	Stopwatch stopwatch;
 
-	REXI_Terry<> rexi;
-
 #if SWEET_GUI
 	PlaneData viz_plane_data;
 #endif

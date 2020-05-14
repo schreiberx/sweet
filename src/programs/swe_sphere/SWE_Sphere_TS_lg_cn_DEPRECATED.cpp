@@ -6,14 +6,15 @@
  */
 
 
-#include "SWE_Sphere_TS_lg_cn.hpp"
+#include "SWE_Sphere_TS_lg_cn_DEPRECATED.hpp"
+
 #include <complex>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 
-SWE_Sphere_TS_lg_cn::SWE_Sphere_TS_lg_cn(
+SWE_Sphere_TS_lg_cn_DEPRECATED::SWE_Sphere_TS_lg_cn_DEPRECATED(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
 )	:
@@ -25,7 +26,7 @@ SWE_Sphere_TS_lg_cn::SWE_Sphere_TS_lg_cn(
 
 
 
-void SWE_Sphere_TS_lg_cn::run_timestep_pert(
+void SWE_Sphere_TS_lg_cn_DEPRECATED::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -45,7 +46,7 @@ void SWE_Sphere_TS_lg_cn::run_timestep_pert(
 /**
  * Setup the SWE REXI solver with SPH
  */
-void SWE_Sphere_TS_lg_cn::setup(
+void SWE_Sphere_TS_lg_cn_DEPRECATED::setup(
 		double i_crank_nicolson_damping_factor,
 		double i_timestep_size
 )
@@ -84,7 +85,7 @@ void SWE_Sphere_TS_lg_cn::setup(
  * Solve a REXI time step for the given initial conditions
  */
 
-void SWE_Sphere_TS_lg_cn::run_timestep_nonpert(
+void SWE_Sphere_TS_lg_cn_DEPRECATED::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
@@ -147,6 +148,6 @@ void SWE_Sphere_TS_lg_cn::run_timestep_nonpert(
 }
 
 
-SWE_Sphere_TS_lg_cn::~SWE_Sphere_TS_lg_cn()
+SWE_Sphere_TS_lg_cn_DEPRECATED::~SWE_Sphere_TS_lg_cn_DEPRECATED()
 {
 }

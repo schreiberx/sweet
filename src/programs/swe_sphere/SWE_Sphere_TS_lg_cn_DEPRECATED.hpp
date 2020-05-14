@@ -1,12 +1,12 @@
 /*
- * SWE_Sphere_TS_l_cn.hpp
+ * SWE_Sphere_TS_lg_cn.hpp
  *
  *  Created on: 30 Aug 2016
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_CN_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_CN_HPP_
 
 
 #include <complex>
@@ -19,15 +19,12 @@
 
 
 
-/**
- * REXI solver for SWE based on Robert function formulation
- */
-class SWE_Sphere_TS_l_cn	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_lg_cn_DEPRECATED	: public SWE_Sphere_TS_interface
 {
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
-		if (i_timestepping_method == "l_cn" || i_timestepping_method == "l_irk")
+		if (i_timestepping_method == "lg_cn_DEPRECATED")
 			return true;
 
 		return false;
@@ -35,15 +32,14 @@ public:
 
 	std::string string_id()
 	{
-		return "l_irk";
+		return "lg_cn_DEPRECATED";
 	}
 
 	void setup_auto()
 	{
 		setup(
 				simVars.disc.timestepping_crank_nicolson_filter,
-				simVars.timecontrol.current_timestep_size,
-				simVars.rexi.use_sphere_extended_modes
+				simVars.timecontrol.current_timestep_size
 			);
 	}
 
@@ -58,26 +54,12 @@ private:
 	/// SPH configuration
 	const SphereData_Config *sphereDataConfig;
 
-	/// SPH configuration used for solver (maybe extended modes)
-	const SphereData_Config *sphereDataConfigSolver;
-	SphereData_Config sphereDataConfigSolverAddedModes;
-
-	/// Solvers for alpha=Identity
-	/// Template parameter is still complex-valued!!!
-	/// This is because the spectral space is complex valued
-	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverPhi;
-	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverVel;
-
-	bool use_extended_modes;
-
 	/// alpha/beta (time step related component for implicit solver)
 	double alpha;
 	double beta;
 
 	/// Crank-Nicolson damping factor
 	double crank_nicolson_damping_factor = 0.5;
-
-	bool use_f_sphere;
 
 	/// timestep size
 	double timestep_size;
@@ -88,19 +70,15 @@ private:
 	/// inverse of earth radius
 	double inv_r;
 
-	/// coriolis
-	double two_coriolis;
-
-	/// f0
-	double f0;
 
 	/// Average geopotential
 	double gh;
 
+	SphereData_Physical fg;
 	SphereData_Physical mug;
 
 public:
-	SWE_Sphere_TS_l_cn(
+	SWE_Sphere_TS_lg_cn_DEPRECATED(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 	);
@@ -108,14 +86,14 @@ public:
 private:
 	void update_coefficients();
 
+
 	/**
 	 * Setup the SWE REXI solver with SPH
 	 */
 public:
 	void setup(
 			double i_crank_nicolson_damping_factor,
-			double i_timestep_size,
-			int i_use_extended_modes
+			double i_timestep_size
 	);
 
 
@@ -132,6 +110,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+
 	/**
 	 * Solve a REXI time step for the given initial conditions
 	 */
@@ -145,7 +124,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-	virtual ~SWE_Sphere_TS_l_cn();
+	virtual ~SWE_Sphere_TS_lg_cn_DEPRECATED();
 };
 
 

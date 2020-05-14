@@ -1,15 +1,41 @@
 /*
- * SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.cpp
+ * SWE_Sphere_TS_l_irk_na_sl_settls_vd_only.cpp
  *
  *  Created on: 2020-04-29
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"
+#include "SWE_Sphere_TS_l_irk_na_sl_settls_vd_only.hpp"
 
 
 
-void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_pert(
+bool SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	if (i_timestepping_method == "l_irk_na_sl_settls_vd_only")
+		return true;
+
+	return false;
+}
+
+
+
+std::string SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::string_id()
+{
+	return "l_irk_na_sl_settls_vd_only";
+}
+
+
+
+void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::setup_auto()
+{
+	setup(
+		simVars.disc.timestepping_order
+	);
+}
+
+
+
+void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -34,7 +60,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_pert(
 
 
 
-void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::interpolate_departure_point(
+void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::interpolate_departure_point(
 		const SphereData_Spectral &i_phi,
 		const SphereData_Spectral &i_vrt,
 		const SphereData_Spectral &i_div,
@@ -104,7 +130,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::interpolate_departure_point(
 
 
 
-void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
+void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 	SphereData_Spectral &io_U_phi,		///< prognostic variables
 	SphereData_Spectral &io_U_vrt,		///< prognostic variables
 	SphereData_Spectral &io_U_div,		///< prognostic variables
@@ -219,7 +245,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
 	/*
 	 * Nonlinear remainder term starts here
 	 */
-	if (1)
+#if 0
 	{
 		/*
 		 * N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N(t))
@@ -275,6 +301,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
 		R_vrt += (i_dt * 0.5) * (N_U_vrt_next_D + N_U_vrt);
 		R_div += (i_dt * 0.5) * (N_U_div_next_D + N_U_div);
 	}
+#endif
 
 	/*
 	 * Step 2b) Solve Helmholtz problem
@@ -303,7 +330,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
 
 
 
-void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::setup(
+void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::setup(
 		int i_timestepping_order
 )
 {
@@ -326,7 +353,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::setup(
 
 
 
-SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only(
+SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::SWE_Sphere_TS_l_irk_na_sl_settls_vd_only(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op,
 			bool i_setup_auto
@@ -342,7 +369,7 @@ SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::SWE_Sphere_TS_l_irk_na_sl_nr_settls
 
 
 
-SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::~SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only()
+SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::~SWE_Sphere_TS_l_irk_na_sl_settls_vd_only()
 {
 	delete swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order;
 	delete swe_sphere_ts_l_irk;

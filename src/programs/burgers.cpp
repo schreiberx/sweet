@@ -293,7 +293,7 @@ public:
          else if (foundl)
             analytic_solution = 2;
          else
-            Error("Computing errors for this timestepping-method is not possible");
+            SWEETError("Computing errors for this timestepping-method is not possible");
       }
 	}
 

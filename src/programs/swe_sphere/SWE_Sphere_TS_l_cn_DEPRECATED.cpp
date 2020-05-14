@@ -6,7 +6,8 @@
  */
 
 
-#include "SWE_Sphere_TS_l_cn.hpp"
+#include "SWE_Sphere_TS_l_cn_DEPRECATED.hpp"
+
 #include <complex>
 #include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
@@ -14,7 +15,7 @@
 
 
 
-void SWE_Sphere_TS_l_cn::run_timestep_pert(
+void SWE_Sphere_TS_l_cn_DEPRECATED::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -31,7 +32,7 @@ void SWE_Sphere_TS_l_cn::run_timestep_pert(
 
 
 
-SWE_Sphere_TS_l_cn::SWE_Sphere_TS_l_cn(
+SWE_Sphere_TS_l_cn_DEPRECATED::SWE_Sphere_TS_l_cn_DEPRECATED(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
 )	:
@@ -44,9 +45,9 @@ SWE_Sphere_TS_l_cn::SWE_Sphere_TS_l_cn(
 
 
 /**
- * Setup the SWE REXI solver with SPH
+ * Setup the SWE implicit solver with SPH
  */
-void SWE_Sphere_TS_l_cn::setup(
+void SWE_Sphere_TS_l_cn_DEPRECATED::setup(
 		double i_crank_nicolson_damping_factor,	// = 0.5,
 		double i_timestep_size,
 		int i_use_extended_modes
@@ -114,7 +115,7 @@ void SWE_Sphere_TS_l_cn::setup(
 }
 
 
-void SWE_Sphere_TS_l_cn::update_coefficients()
+void SWE_Sphere_TS_l_cn_DEPRECATED::update_coefficients()
 {
 	if (!use_f_sphere)
 	{
@@ -140,10 +141,7 @@ void SWE_Sphere_TS_l_cn::update_coefficients()
 
 
 
-/**
- * Solve a REXI time step for the given initial conditions
- */
-void SWE_Sphere_TS_l_cn::run_timestep_nonpert(
+void SWE_Sphere_TS_l_cn_DEPRECATED::run_timestep_nonpert(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -183,7 +181,7 @@ void SWE_Sphere_TS_l_cn::run_timestep_nonpert(
 	SphereData_Spectral o_div_t(sphereDataConfig);
 
 	/*
-	 * LINEAR
+	 * Explicit forward time step
 	 */
 	if (use_f_sphere)
 	{
@@ -234,6 +232,9 @@ void SWE_Sphere_TS_l_cn::run_timestep_nonpert(
 	div0 += fac*o_div_t;
 
 
+	/*
+	 * Explicit backward time step
+	 */
 	SphereData_Spectral phi(sphereDataConfig);
 	SphereData_Spectral vort(sphereDataConfig);
 	SphereData_Spectral div(sphereDataConfig);
@@ -303,6 +304,6 @@ void SWE_Sphere_TS_l_cn::run_timestep_nonpert(
 }
 
 
-SWE_Sphere_TS_l_cn::~SWE_Sphere_TS_l_cn()
+SWE_Sphere_TS_l_cn_DEPRECATED::~SWE_Sphere_TS_l_cn_DEPRECATED()
 {
 }

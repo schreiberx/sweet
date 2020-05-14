@@ -15,8 +15,8 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_l_cn_DEPRECATED.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
-#include "SWE_Sphere_TS_l_cn.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 
 
@@ -61,7 +61,7 @@ public:
 	 * Linear time steppers
 	 */
 	SWE_Sphere_TS_l_irk timestepping_l_irk;
-	SWE_Sphere_TS_l_cn timestepping_l_cn;
+	SWE_Sphere_TS_l_cn_DEPRECATED timestepping_l_cn;
 
 	/*
 	 * Non-linear time steppers

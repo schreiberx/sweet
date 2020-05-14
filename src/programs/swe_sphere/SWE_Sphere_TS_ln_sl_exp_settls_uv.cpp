@@ -7,8 +7,6 @@
 
 #include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
 
-#include <sweet/sphere/SphereData_DebugContainer.hpp>
-
 
 
 void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_pert(
@@ -294,7 +292,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 		/*
 		 * exp(dtL) N(t-dt)
 		 */
-		swe_sphere_ts_l_rexi->run_timestep_nonpert(
+		swe_sphere_ts_l_rexi->run_timestep_pert(
 			N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 			i_dt,
 			i_simulation_timestamp

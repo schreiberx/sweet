@@ -16,6 +16,7 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_l_erk.hpp"
 
 
 
@@ -55,7 +56,7 @@ private:
 	SimulationVariables &simVars;
 
 	/// Operators for sphere
-	SphereOperators_SphereData &op;
+	SphereOperators_SphereData &ops;
 
 	/// SPH configuration
 	const SphereData_Config *sphereDataConfig;
@@ -63,6 +64,8 @@ private:
 	/// SPH configuration used for solver (maybe extended modes)
 	const SphereData_Config *sphereDataConfigSolver;
 	SphereData_Config sphereDataConfigSolverAddedModes;
+
+	SWE_Sphere_TS_l_erk *l_erk = nullptr;
 
 	/// Solvers for alpha=Identity
 	/// Template parameter is still complex-valued!!!
@@ -80,6 +83,8 @@ private:
 
 	// Order of time stepping.
 	int timestepping_order;
+
+	double crank_nicolson_damping_factor;
 
 	/// timestep size
 	double timestep_size;
@@ -135,11 +140,12 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+
 	/**
 	 * Solve a REXI time step for the given initial conditions
 	 */
 public:
-	void run_timestep_nonpert(
+	void run_timestep_nonpert_backward_euler(
 			SphereData_Spectral &io_phi,		///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,		///< prognostic variables

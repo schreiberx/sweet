@@ -10,8 +10,6 @@
 
 #include "SWE_Sphere_TS_ln_settls_vd.hpp"
 
-#include <sweet/sphere/SphereData_DebugContainer.hpp>
-
 
 
 void SWE_Sphere_TS_ln_settls_vd::run_timestep_pert(
@@ -349,7 +347,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 
 	if (coriolis_treatment == CORIOLIS_LINEAR)
 	{
-		swe_sphere_ts_l_irk->run_timestep_nonpert(
+		swe_sphere_ts_l_irk->run_timestep_pert(
 				R_phi, R_vrt, R_div,
 				0.5 * i_dt,
 				i_simulation_timestamp
@@ -357,7 +355,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 	}
 	else
 	{
-		swe_sphere_ts_lg_irk->run_timestep_nonpert(
+		swe_sphere_ts_lg_irk->run_timestep_pert(
 				R_phi, R_vrt, R_div,
 				0.5 * i_dt,
 				i_simulation_timestamp

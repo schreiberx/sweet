@@ -7,7 +7,6 @@
 
 
 #include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
-#include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 
 

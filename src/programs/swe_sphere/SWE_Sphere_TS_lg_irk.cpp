@@ -14,60 +14,51 @@
 
 
 
-void SWE_Sphere_TS_lg_irk::run_timestep_pert(
-		SphereData_Spectral &io_phi_pert,	///< prognostic variables
-		SphereData_Spectral &io_vrt,	///< prognostic variables
-		SphereData_Spectral &io_div,	///< prognostic variables
+bool SWE_Sphere_TS_lg_irk::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	if (i_timestepping_method == "lg_irk")
+		return true;
 
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+	return false;
+}
+
+
+
+std::string SWE_Sphere_TS_lg_irk::string_id()
+{
+	return "lg_irk";
+}
+
+
+
+void SWE_Sphere_TS_lg_irk::setup_auto()
+{
+	if (simVars.sim.sphere_use_fsphere)
+		SWEETError("TODO: Not yet supported");
+
+	setup(
+			simVars.disc.timestepping_order,
+			simVars.timecontrol.current_timestep_size
+		);
+}
+
+
+
+void SWE_Sphere_TS_lg_irk::run_timestep_pert(
+		SphereData_Spectral &io_phi_pert,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div,
+
+		double i_fixed_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
+	lg_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*0.5, i_simulation_timestamp);
+
 	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 	io_phi_pert += gh0;
-	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+	run_timestep_nonpert_private(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
 	io_phi_pert -= gh0;
-}
-
-
-
-SWE_Sphere_TS_lg_irk::SWE_Sphere_TS_lg_irk(
-		SimulationVariables &i_simVars,
-		SphereOperators_SphereData &i_op
-)	:
-	simVars(i_simVars),
-	op(i_op),
-	sphereDataConfig(op.sphereDataConfig)
-{
-}
-
-
-/**
- * Setup the SWE REXI solver with SPH
- */
-void SWE_Sphere_TS_lg_irk::setup(
-		int i_timestep_order,
-		double i_timestep_size,
-		int i_extended_modes
-)
-{
-#if SWEET_DEBUG
-	if (i_extended_modes != 0)
-		SWEETError("Not supported");
-#endif
-
-	if (i_timestep_order != 1)
-		SWEETError("Only 1st order IRK supported so far!");
-
-	timestep_size = i_timestep_size;
-
-	alpha = -1.0/timestep_size;
-	beta = -1.0/timestep_size;
-
-	r = simVars.sim.sphere_radius;
-	inv_r = 1.0/r;
-
-	gh = simVars.sim.gravitation*simVars.sim.h0;
 }
 
 
@@ -76,7 +67,7 @@ void SWE_Sphere_TS_lg_irk::setup(
  * Solve a REXI time step for the given initial conditions
  */
 
-void SWE_Sphere_TS_lg_irk::run_timestep_nonpert(
+void SWE_Sphere_TS_lg_irk::run_timestep_nonpert_private(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
@@ -94,8 +85,7 @@ void SWE_Sphere_TS_lg_irk::run_timestep_nonpert(
 
 		timestep_size = i_fixed_dt;
 
-		alpha = -1.0/timestep_size;
-		beta = -1.0/timestep_size;
+		update_coefficients();
 	}
 
 	SphereData_Spectral phi0 = io_phi;
@@ -120,6 +110,85 @@ void SWE_Sphere_TS_lg_irk::run_timestep_nonpert(
 }
 
 
+
+SWE_Sphere_TS_lg_irk::SWE_Sphere_TS_lg_irk(
+		SimulationVariables &i_simVars,
+		SphereOperators_SphereData &i_op
+)	:
+	simVars(i_simVars),
+	op(i_op),
+	sphereDataConfig(op.sphereDataConfig)
+{
+}
+
+
+void SWE_Sphere_TS_lg_irk::update_coefficients()
+{
+	alpha = -1.0/timestep_size;
+	beta = -1.0/timestep_size;
+
+	{
+		/*
+		 * Crank-Nicolson method:
+		 *
+		 * (U(t+1) - q dt F(U(t+1))) = (U(t) + q dt F(U(t)))
+		 *
+		 * with q the CN damping facor with no damping for q=0.5
+		 */
+
+		// scale dt by the damping factor to reuse solver structure
+
+		alpha /= crank_nicolson_damping_factor;
+		beta /= crank_nicolson_damping_factor;
+	}
+}
+
+
+
+/**
+ * Setup the SWE REXI solver with SPH
+ */
+void SWE_Sphere_TS_lg_irk::setup(
+		int i_timestep_order,
+		double i_timestep_size,
+		int i_extended_modes
+)
+{
+#if SWEET_DEBUG
+	if (i_extended_modes != 0)
+		SWEETError("Not supported");
+#endif
+
+	if (i_timestep_order == 1)
+	{
+		// set this to 1 to ignore it
+		crank_nicolson_damping_factor = 1.0;
+	}
+	else if (i_timestep_order == 2)
+	{
+		crank_nicolson_damping_factor = 0.5;
+		lg_erk = new SWE_Sphere_TS_lg_erk(simVars, op);
+		lg_erk->setup(1);
+	}
+	else
+		SWEETError("Only 1st and 2nd order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
+
+	timestep_size = i_timestep_size;
+
+	update_coefficients();
+
+	r = simVars.sim.sphere_radius;
+	inv_r = 1.0/r;
+
+	gh = simVars.sim.gravitation*simVars.sim.h0;
+
+
+}
+
+
+
 SWE_Sphere_TS_lg_irk::~SWE_Sphere_TS_lg_irk()
 {
+	delete lg_erk;
+	lg_erk = nullptr;
 }

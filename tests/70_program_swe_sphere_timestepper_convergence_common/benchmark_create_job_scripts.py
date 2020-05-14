@@ -136,7 +136,7 @@ elif group == "l2":
     		'l_erk',
     		'lg_erk_lc_erk',
 
-    		'l_cn',
+    		'l_irk',
     		'lg_irk_lc_erk',
 
     		#'l_lf',

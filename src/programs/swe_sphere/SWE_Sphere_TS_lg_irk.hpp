@@ -17,7 +17,7 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-
+#include "SWE_Sphere_TS_lg_erk.hpp"
 
 
 /**
@@ -26,29 +26,9 @@
 class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (i_timestepping_method == "lg_irk")
-			return true;
-
-		return false;
-	}
-
-	std::string string_id()
-	{
-		return "lg_irk";
-	}
-
-	void setup_auto()
-	{
-		if (simVars.sim.sphere_use_fsphere)
-			SWEETError("TODO: Not yet supported");
-
-		setup(
-				simVars.disc.timestepping_order,
-				simVars.timecontrol.current_timestep_size
-			);
-	}
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
 
 private:
@@ -61,9 +41,14 @@ private:
 	/// SPH configuration
 	const SphereData_Config *sphereDataConfig;
 
+	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
+
 	/// alpha/beta (time step related component for implicit solver)
 	double alpha;
 	double beta;
+
+	/// Crank-Nicolson damping factor
+	double crank_nicolson_damping_factor = 0.5;
 
 	// Order of time stepping.
 	int timestepping_order;
@@ -85,6 +70,10 @@ public:
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 	);
+
+
+public:
+	void update_coefficients();
 
 
 	/**
@@ -116,7 +105,7 @@ public:
 	 * Solve a REXI time step for the given initial conditions
 	 */
 public:
-	void run_timestep_nonpert(
+	void run_timestep_nonpert_private(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

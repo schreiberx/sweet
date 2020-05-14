@@ -6,9 +6,6 @@
  */
 
 #include "SWE_Sphere_TS_ln_erk.hpp"
-#include <sweet/sphere/SphereData_DebugContainer.hpp>
-
-
 
 
 
