@@ -57,7 +57,7 @@ public:
 
 
 public:
-	void euler_timestep_update_n(
+	void euler_timestep_update_nonlinear(
 			const SphereData_Spectral &i_h,	///< prognostic variables
 			const SphereData_Spectral &i_u,	///< prognostic variables
 			const SphereData_Spectral &i_v,	///< prognostic variables
@@ -71,7 +71,7 @@ public:
 
 
 public:
-	void euler_timestep_update_n(
+	void euler_timestep_update_nonlinear(
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

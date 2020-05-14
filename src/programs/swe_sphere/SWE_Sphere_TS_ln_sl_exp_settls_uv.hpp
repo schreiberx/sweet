@@ -26,31 +26,11 @@
 class SWE_Sphere_TS_ln_sl_exp_settls_uv	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		/*
-		 * Should contain _exp and _settls as well as _uv to indicate vorticity-divergence formulation
-		 */
-		return (
-			(i_timestepping_method.find("_exp") != std::string::npos)		&&
-			(i_timestepping_method.find("_settls") != std::string::npos)	&&
-			(i_timestepping_method.find("_uv") != std::string::npos)		&&
-			!(i_timestepping_method.find("_only") != std::string::npos)		&&
-			true
-		);
-
-		return false;
-	}
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
 	std::string string_id_storage;
-
-	std::string string_id()
-	{
-		return string_id_storage;
-	}
-
-
-	void setup_auto();
 
 private:
 	SimulationVariables &simVars;

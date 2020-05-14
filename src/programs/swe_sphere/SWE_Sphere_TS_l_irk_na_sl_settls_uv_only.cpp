@@ -7,12 +7,11 @@
 
 #include "SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.hpp"
 
-#include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 
 bool SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::implements_timestepping_method(const std::string &i_timestepping_method)
 {
-	if (i_timestepping_method == "l_irk_na_sl_nr_settls_uv_only")
+	if (i_timestepping_method == "l_irk_na_sl_settls_uv_only")
 		return true;
 
 	return false;
@@ -21,7 +20,7 @@ bool SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::implements_timestepping_method(co
 
 std::string SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::string_id()
 {
-	return "l_irk_na_sl_nr_settls_uv_only";
+	return "l_irk_na_sl_settls_uv_only";
 }
 
 

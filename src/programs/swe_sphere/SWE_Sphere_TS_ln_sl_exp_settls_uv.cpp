@@ -8,6 +8,28 @@
 #include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
 
 
+bool SWE_Sphere_TS_ln_sl_exp_settls_uv::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	/*
+	 * Should contain _exp and _settls as well as _uv to indicate vorticity-divergence formulation
+	 */
+	return (
+		(i_timestepping_method.find("_exp") != std::string::npos)		&&
+		(i_timestepping_method.find("_settls") != std::string::npos)	&&
+		(i_timestepping_method.find("_uv") != std::string::npos)		&&
+		!(i_timestepping_method.find("_only") != std::string::npos)		&&
+		true
+	);
+
+	return false;
+}
+
+
+std::string SWE_Sphere_TS_ln_sl_exp_settls_uv::string_id()
+{
+	return string_id_storage;
+}
+
 
 void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_pert(
 		SphereData_Spectral &io_phi,	///< prognostic variables

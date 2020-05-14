@@ -32,7 +32,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep_pert(
 				);
 
 			// first order explicit for non-linear
-			timestepping_l_erk_n_erk.euler_timestep_update_n(
+			timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
@@ -41,7 +41,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep_pert(
 		else
 		{
 			// first order explicit for non-linear
-			timestepping_l_erk_n_erk.euler_timestep_update_n(
+			timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
@@ -69,7 +69,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep_pert(
 			// FULL time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_l_erk_n_erk,
-					&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -88,7 +88,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep_pert(
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_l_erk_n_erk,
-					&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt*0.5,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -105,7 +105,7 @@ void SWE_Sphere_TS_l_irk_n_erk::run_timestep_pert(
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
 					&timestepping_l_erk_n_erk,
-					&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
+					&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt*0.5,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method

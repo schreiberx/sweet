@@ -28,20 +28,20 @@
 #include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 
+
 /*
  * Almost full nonlinear
  */
-
 #include "SWE_Sphere_TS_l_irk_na_erk_vd_ver01.hpp"
 
 /*
- * SL L, NA
+ * SL L,NA
  */
 #include "SWE_Sphere_TS_l_irk_na_sl_settls_vd_only.hpp"
 #include "SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.hpp"
 
 /*
- * SL L, N
+ * SL L,N
  */
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only.hpp"
@@ -55,6 +55,8 @@
 #include "SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
+
+
 
 SWE_Sphere_TimeSteppers::SWE_Sphere_TimeSteppers()
 {
@@ -151,8 +153,12 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, Sp
 		if (ts->implements_timestepping_method(i_timestepping_method))
 		{
 			if (master != nullptr)
+			{
+				std::cout << "Processing " << i+1 << "th element" << std::endl;
 				SWEETError(std::string("Duplicate implementation for method ") + i_timestepping_method);
+			}
 
+			std::cout << "Found match at " << i+1 << "th element" << std::endl;
 			ts->setup_auto();
 			master = ts;
 		}

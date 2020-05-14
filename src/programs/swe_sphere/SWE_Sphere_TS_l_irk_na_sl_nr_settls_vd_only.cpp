@@ -9,6 +9,28 @@
 
 
 
+bool SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	if (i_timestepping_method == "l_irk_na_sl_nr_settls_vd_only")
+		return true;
+
+	return false;
+}
+
+std::string SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::string_id()
+{
+	return "l_irk_na_sl_nr_settls_vd_only";
+}
+
+
+void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::setup_auto()
+{
+	setup(
+		simVars.disc.timestepping_order
+	);
+}
+
+
 void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_pert(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables

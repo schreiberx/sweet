@@ -32,7 +32,7 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep_pert(
 
 		timestepping_rk_nonlinear.run_timestep(
 				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt,
 				timestepping_order2,
@@ -54,7 +54,7 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep_pert(
 		// FULL time step for non-linear part
 		timestepping_rk_nonlinear.run_timestep(
 				this,
-				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n,	///< pointer to function to compute euler time step updates
+				&SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt,
 				timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -82,13 +82,14 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep_pert(
 }
 
 
+
 void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
 		const SphereData_Spectral &i_phi,	///< prognostic variables
-		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
 
 		SphereData_Spectral &o_phi_t,	///< time updates
-		SphereData_Spectral &o_vort_t,	///< time updates
+		SphereData_Spectral &o_vrt_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
 		double i_simulation_timestamp
@@ -107,7 +108,7 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
 		 */
 		SphereData_Physical ug(i_phi.sphereDataConfig);
 		SphereData_Physical vg(i_phi.sphereDataConfig);
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
+		op.vortdiv_to_uv(i_vrt, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
 
 		/*
 		 * Step 1b
@@ -118,12 +119,12 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
 		/*
 		 * Step 1c
 		 */
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t, simVars.misc.sphere_use_robert_functions);
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vrt_t, simVars.misc.sphere_use_robert_functions);
 
 		/*
 		 * Step 1d
 		 */
-		o_vort_t *= -1.0;
+		o_vrt_t *= -1.0;
 
 		/*
 		 * Step 1e
@@ -139,21 +140,22 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
 	{
 		o_div_t = -op.laplace(i_phi);
 
-		o_vort_t = -simVars.sim.sphere_fsphere_f0*i_div;
-		o_div_t += simVars.sim.sphere_fsphere_f0*i_vort;
+		o_vrt_t = -simVars.sim.sphere_fsphere_f0*i_div;
+		o_div_t += simVars.sim.sphere_fsphere_f0*i_vrt;
 
-		o_phi_t = -gh0*i_div;
+		o_phi_t = (-gh0)*i_div;
 	}
 }
 
 
-void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
+
+void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 		const SphereData_Spectral &i_phi,	///< prognostic variables
-		const SphereData_Spectral &i_vort,	///< prognostic variables
+		const SphereData_Spectral &i_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
 
 		SphereData_Spectral &o_phi_dt,	///< time updates
-		SphereData_Spectral &o_vort_dt,	///< time updates
+		SphereData_Spectral &o_vrt_dt,	///< time updates
 		SphereData_Spectral &o_div_dt,	///< time updates
 
 		double i_simulation_timestamp
@@ -172,12 +174,12 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
 
-	SphereData_Physical vrtg = i_vort.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vrt.getSphereDataPhysical();
 	SphereData_Physical divg = i_div.getSphereDataPhysical();
 	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+		op.robert_vortdiv_to_uv(i_vrt, i_div, ug, vg);
 	else
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+		op.vortdiv_to_uv(i_vrt, i_div, ug, vg);
 
 	SphereData_Physical phig = i_phi.getSphereDataPhysical();
 
@@ -185,11 +187,11 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 	SphereData_Physical tmpg2 = vg*(vrtg/*+fg*/);
 
 	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_dt, o_vort_dt);
+		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_dt, o_vrt_dt);
 	else
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_dt, o_vort_dt);
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_dt, o_vrt_dt);
 
-	o_vort_dt *= -1.0;
+	o_vrt_dt *= -1.0;
 
 	tmpg1 = ug*phig;
 	tmpg2 = vg*phig;
@@ -222,9 +224,9 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 /**
  * This routine is used by other time step implementations
  */
-void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
+void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,	///< prognostic variables
+		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
 
 		double i_dt,
@@ -236,23 +238,23 @@ void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_n(
 #endif
 
 	SphereData_Spectral tmp_phi(io_phi.sphereDataConfig);
-	SphereData_Spectral tmp_vort(io_vort.sphereDataConfig);
+	SphereData_Spectral tmp_vrt(io_vrt.sphereDataConfig);
 	SphereData_Spectral tmp_div(io_div.sphereDataConfig);
 
-	euler_timestep_update_n(
+	euler_timestep_update_nonlinear(
 			io_phi,
-			io_vort,
+			io_vrt,
 			io_div,
 
 			tmp_phi,
-			tmp_vort,
+			tmp_vrt,
 			tmp_div,
 
 			i_simulation_timestamp
 		);
 
 	io_phi += i_dt*tmp_phi;
-	io_vort += i_dt*tmp_vort;
+	io_vrt += i_dt*tmp_vrt;
 	io_div += i_dt*tmp_div;
 
 #if SWEET_BENCHMARK_TIMINGS
@@ -278,10 +280,12 @@ void SWE_Sphere_TS_l_erk_n_erk::setup(
 }
 
 
+
 void SWE_Sphere_TS_l_erk_n_erk::setup_auto()
 {
 	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
 }
+
 
 
 SWE_Sphere_TS_l_erk_n_erk::SWE_Sphere_TS_l_erk_n_erk(

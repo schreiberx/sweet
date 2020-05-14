@@ -28,27 +28,9 @@
 class SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (i_timestepping_method == "l_irk_na_sl_nr_settls_uv_only")
-			return true;
-
-		return false;
-	}
-
-	std::string string_id()
-	{
-		return "l_irk_na_sl_nr_settls_uv_only";
-	}
-
-
-	void setup_auto()
-	{
-		setup(
-			simVars.disc.timestepping_order
-		);
-	}
-
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
 private:
 	SimulationVariables &simVars;
