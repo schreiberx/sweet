@@ -252,7 +252,7 @@ public:
 		}
 		else
 		{
-			FatalError("Interpolation order not available");
+			SWEETError("Interpolation order not available");
 		}
 
 		max_error = 0;
@@ -483,12 +483,12 @@ int main(int i_argc, char *i_argv[])
 								if (use_poles_pseudo_points == 1 && gaussian_id == -1)
 								{
 									if (conv*1.2 < std::pow(2.0, interpolation_order))
-										FatalError("Convergence not given!");
+										SWEETError("Convergence not given!");
 								}
 								else
 								{
 									if (conv*1.1 < std::pow(2.0, interpolation_order))
-										FatalError("Convergence not given!");
+										SWEETError("Convergence not given!");
 								}
 							}
 							prev_max_error = simulation.max_error;

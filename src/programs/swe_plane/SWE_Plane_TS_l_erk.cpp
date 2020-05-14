@@ -127,7 +127,7 @@ void SWE_Plane_TS_l_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_erk: Only constant time step size allowed (please set --dt)");
+		SWEETError("SWE_Plane_TS_l_erk: Only constant time step size allowed (please set --dt)");
 
 	// standard time stepping
 	timestepping_rk.run_timestep(
@@ -153,7 +153,7 @@ void SWE_Plane_TS_l_erk::setup(
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order);
 
 	//if (simVars.disc.use_staggering)
-	//	FatalError("Staggering not supported for l_erk");
+	//	SWEETError("Staggering not supported for l_erk");
 }
 
 

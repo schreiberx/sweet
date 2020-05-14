@@ -124,7 +124,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 			std::cerr << "Min h_pv   : " << total_h_pv.reduce_min() << std::endl;
 			std::cerr << "Min h_total: " << total_h.reduce_min() << std::endl;
 			std::cerr << "Min h_pert : " << i_h.reduce_min() << std::endl;
-			FatalError("SWE_Plane_TS_ln_erk: Methods unstable or inadequate for vector invariant swe");;
+			SWEETError("SWE_Plane_TS_ln_erk: Methods unstable or inadequate for vector invariant swe");;
 		}
 #endif
 
@@ -164,7 +164,7 @@ void SWE_Plane_TS_ln_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_ln_erk: Only constant time step size allowed");
+		SWEETError("SWE_Plane_TS_ln_erk: Only constant time step size allowed");
 
 	// standard time stepping
 	timestepping_rk.run_timestep(

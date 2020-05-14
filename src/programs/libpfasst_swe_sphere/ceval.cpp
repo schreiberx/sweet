@@ -318,7 +318,7 @@ void cinitial(
 	//  write_file(*i_ctx, vort_Y, "prog_vort_ref");
 	//  write_file(*i_ctx, div_Y,  "prog_div_ref");
 
-	//  FatalError("stop the simulation");
+	//  SWEETError("stop the simulation");
 
 }
 

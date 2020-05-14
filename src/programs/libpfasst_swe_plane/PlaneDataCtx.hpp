@@ -38,10 +38,10 @@ public:
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
     if (!simVars) 
-      FatalError("PlaneDataCtx: simVars pointer is NULL!");
+      SWEETError("PlaneDataCtx: simVars pointer is NULL!");
 
     if (!levelSingletons) 
-      FatalError("PlaneDataCtx: levelSingletons pointer is NULL!");
+      SWEETError("PlaneDataCtx: levelSingletons pointer is NULL!");
 
     // initialize the time steppers from SWEET
 

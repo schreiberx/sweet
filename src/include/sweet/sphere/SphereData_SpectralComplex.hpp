@@ -1053,10 +1053,10 @@ public:
 	 */
 	void physical_set_zero()
 	{
-		AssertFatalError(sphereDataConfig != nullptr, "sphereDataConfig not initialized!");
+		DebugAssertSWEETError(sphereDataConfig != nullptr, "sphereDataConfig not initialized!");
 
 
-	SWEET_THREADING_SPACE_PARALLEL_FOR
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			for (int j = 0; j < sphereDataConfig->physical_num_lat; j++)
 				physical_space_data[i*sphereDataConfig->physical_num_lat + j] = 0;

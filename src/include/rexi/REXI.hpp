@@ -89,7 +89,7 @@ public:
 		}
 		else
 		{
-			FatalError("REXI Mode not supported");
+			SWEETError("REXI Mode not supported");
 		}
 
 

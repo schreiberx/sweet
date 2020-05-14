@@ -20,7 +20,7 @@ void Burgers_Plane_TS_l_cn::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_l_cn: Only constant time step size allowed");
+		SWEETError("Burgers_Plane_TS_l_cn: Only constant time step size allowed");
 
 	double dt = i_fixed_dt;
 

@@ -56,7 +56,7 @@ SWE_Sphere_TS_PFASST_l_rexi::SWE_Sphere_TS_PFASST_l_rexi(
 	#endif
 
 	#if !SWEET_USE_LIBFFT
-		FatalError("Spectral space required for solvers, use compile option --libfft=enable");
+		SWEETError("Spectral space required for solvers, use compile option --libfft=enable");
 	#endif
 
 
@@ -226,7 +226,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::setup(
 	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
 
 	if (rexi_use_direct_solution)
-		FatalError("Direct solution for exponentiation of this particular linear operator not available");
+		SWEETError("Direct solution for exponentiation of this particular linear operator not available");
 
 	timestep_size = i_timestep_size;
 	function_name = i_function_name;
@@ -241,7 +241,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::setup(
 	);
 
 	if (!retval)
-		FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
+		SWEETError(std::string("Phi function '")+function_name+std::string("' not provided"));
 
 	rexi_use_sphere_extended_modes = rexiSimVars->use_sphere_extended_modes;
 	use_f_sphere = i_use_f_sphere;
@@ -320,7 +320,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::setup(
 
 			#if SWEET_DEBUG
 				if (local_size < 0)
-					FatalError("local_size < 0");
+					SWEETError("local_size < 0");
 			#endif
 
 			perThreadVars[local_thread_id]->alpha.resize(local_size);
@@ -372,7 +372,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::p_update_coefficients(
 		);
 
 		if (!retval)
-			FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
+			SWEETError(std::string("Phi function '")+function_name+std::string("' not provided"));
 	}
 
 	#if SWEET_THREADING_TIME_REXI
@@ -476,7 +476,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::run_timestep_nonpert(
 	#endif
 
 		if (i_fixed_dt <= 0)
-			FatalError("Only constant time step size allowed");
+			SWEETError("Only constant time step size allowed");
 
 		double update_dt_delta = std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt);
 		if (update_dt_delta > 1e-9)
@@ -757,7 +757,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::run_timestep_nonpert(
 								!io_prog_div0.spectral_space_data_valid
 						)
 						{
-							FatalError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
+							SWEETError("SPECTRAL DATA NOT AVAILABLE, BUT REQUIRED!");
 						}
 					#endif
 				}

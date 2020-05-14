@@ -65,7 +65,7 @@ void Burgers_Plane_TS_ln_imex_forcing::run_timestep(
         //io_u.print_physicalArrayData();
 
 	} else { //Jacobi
-		FatalError("NOT available");
+		SWEETError("NOT available");
 	}
 }
 

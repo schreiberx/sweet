@@ -262,7 +262,7 @@ public:
 			std::cout << "      l_irk_n_sl_forcing : Non-linear: implicit RK on semi-Lagrangian formulation with forcing"  << std::endl;
 			std::cout << "      l_cn_n_sl          : Non-linear: Crank-Nicolson on semi-Lagrangian formulation"  << std::endl;
 			std::cout << "      ln_adomian         : Non-linear: Adomian decomposition method"  << std::endl;
-			FatalError("No valid --timestepping-method provided");
+			SWEETError("No valid --timestepping-method provided");
 		}
 	}
 

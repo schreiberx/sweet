@@ -74,7 +74,7 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 	#endif
 
 	#if !SWEET_USE_LIBFFT
-		FatalError("Spectral space required for solvers, use compile option --libfft=enable");
+		SWEETError("Spectral space required for solvers, use compile option --libfft=enable");
 	#endif
 
 	#if SWEET_THREADING_TIME_REXI
@@ -265,7 +265,7 @@ void SWE_Sphere_TS_l_exp::setup(
 	if (rexi_use_direct_solution)
 	{
 		if (!no_coriolis)
-			FatalError("Direct solution for linear operator with Coriolis effect not available");
+			SWEETError("Direct solution for linear operator with Coriolis effect not available");
 	}
 
 	timestep_size = i_timestep_size;
@@ -281,14 +281,14 @@ void SWE_Sphere_TS_l_exp::setup(
 	);
 
 	if (!retval)
-		FatalError(std::string("Phi function '")+function_name+std::string("' not provided"));
+		SWEETError(std::string("Phi function '")+function_name+std::string("' not provided"));
 
 	rexi_alphas = rexiCoefficients.alphas;
 	rexi_betas = rexiCoefficients.betas;
 	rexi_gamma = rexiCoefficients.gamma;
 
 	if (rexi_gamma.real() != 0 || rexi_gamma.imag() != 0)
-		FatalError("'rexi_gamma != 0' is Not yet supported");
+		SWEETError("'rexi_gamma != 0' is Not yet supported");
 
 	rexi_use_sphere_extended_modes = rexiSimVars->use_sphere_extended_modes;
 	use_f_sphere = i_use_f_sphere;
@@ -369,7 +369,7 @@ void SWE_Sphere_TS_l_exp::setup(
 
 				#if SWEET_DEBUG
 					if (local_size < 0)
-						FatalError("local_size < 0");
+						SWEETError("local_size < 0");
 				#endif
 
 				perThreadVars[local_thread_id]->alpha.resize(local_size);
@@ -581,7 +581,7 @@ void SWE_Sphere_TS_l_exp::run_timestep_nonpert(
 	#endif
 
 		if (i_fixed_dt <= 0)
-			FatalError("Only constant time step size allowed");
+			SWEETError("Only constant time step size allowed");
 
 		double update_dt_delta = std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt);
 		if (update_dt_delta > 1e-9)

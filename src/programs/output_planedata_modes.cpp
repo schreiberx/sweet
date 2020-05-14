@@ -57,7 +57,7 @@ public:
 					std::cout << "Original converted" << std::endl;
 					tmp.print_spectralData_zeroNumZero();
 
-					FatalError("Inconsistency detected");
+					SWEETError("Inconsistency detected");
 				}
 			}
 		}
@@ -93,7 +93,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 
@@ -123,7 +123,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 
@@ -153,7 +153,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 			}
@@ -195,7 +195,7 @@ public:
 					std::cout << "Original converted" << std::endl;
 					tmp.print_spectralData_zeroNumZero();
 
-					FatalError("Inconsistency detected");
+					SWEETError("Inconsistency detected");
 				}
 			}
 		}
@@ -231,7 +231,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 
@@ -261,7 +261,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 
@@ -291,7 +291,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 			}
@@ -332,7 +332,7 @@ public:
 					std::cout << "Original converted" << std::endl;
 					tmp.print_spectralData_zeroNumZero();
 
-					FatalError("Inconsistency detected");
+					SWEETError("Inconsistency detected");
 				}
 			}
 		}
@@ -368,7 +368,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 
@@ -398,7 +398,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 
@@ -428,7 +428,7 @@ public:
 						std::cout << "Original converted" << std::endl;
 						tmp.print_spectralData_zeroNumZero();
 
-						FatalError("Inconsistency detected");
+						SWEETError("Inconsistency detected");
 					}
 				}
 			}

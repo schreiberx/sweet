@@ -65,7 +65,7 @@ void Adv_Plane_TS_na_erk::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	// standard time stepping
 	timestepping_rk.run_timestep(

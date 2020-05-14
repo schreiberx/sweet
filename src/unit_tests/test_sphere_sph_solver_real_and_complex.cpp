@@ -128,7 +128,7 @@ public:
 				std::cout << " + max_error: " << max_error << std::endl;
 
 				if (max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold "+std::to_string(eps));
+					SWEETError(" + ERROR! max error exceeds threshold "+std::to_string(eps));
 			}
 
 
@@ -163,7 +163,7 @@ public:
 				std::cout << " + max_error: " << max_error << std::endl;
 
 				if (max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 
 
@@ -201,7 +201,7 @@ public:
 				std::cout << " + max_error: " << max_error << std::endl;
 
 				if (max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 
 			std::cout << "************************************************************" << std::endl;
@@ -242,7 +242,7 @@ public:
 				std::cout << " + max_error: " << max_error << std::endl;
 
 				if (max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 
 
@@ -285,7 +285,7 @@ public:
 					std::cout << "**************************************" << std::endl;
 
 					if (max_error > eps_new)
-						FatalError(" + ERROR! max_error exceeds threshold");
+						SWEETError(" + ERROR! max_error exceeds threshold");
 				}
 			}
 
@@ -330,9 +330,9 @@ public:
 					if (max_error > eps)
 						std::cout << " + ERROR! max error exceeds threshold" << std::endl;;
 						// TODO: FIXME
-						//FatalError(" + ERROR! max error exceeds threshold");
+						//SWEETError(" + ERROR! max error exceeds threshold");
 	#else
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 	#endif
 				}
 			}
@@ -390,7 +390,7 @@ public:
 					std::cout << "* WARNING: ERROR IGNORED" << std::endl;
 					std::cout << "**************************************" << std::endl;
 	#else
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 	#endif
 			}
 	#endif
@@ -435,7 +435,7 @@ public:
 				std::cout << " + max_error: " << max_error << std::endl;
 
 				if (max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 
 
@@ -488,7 +488,7 @@ public:
 					std::cout << "**************************************" << std::endl;
 
 					if (max_error > eps_new)
-						FatalError(" + ERROR! max_error exceeds threshold");
+						SWEETError(" + ERROR! max_error exceeds threshold");
 				}
 			}
 
@@ -542,7 +542,7 @@ public:
 					std::cout << "**************************************" << std::endl;
 
 					if (max_error > eps_new)
-						FatalError(" + ERROR! max_error exceeds threshold");
+						SWEETError(" + ERROR! max_error exceeds threshold");
 				}
 			}
 
@@ -585,7 +585,7 @@ public:
 				std::cout << " + max_error: " << max_error << std::endl;
 
 				if (max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 
 
@@ -628,7 +628,7 @@ public:
 				std::cout << " + max_error: " << max_error << std::endl;
 
 				if (max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 		}
 
@@ -670,7 +670,7 @@ int main(
 		return -1;
 
 	if (simVars.disc.space_res_spectral[0] == 0)
-		FatalError("Set number of spectral modes to use SPH!");
+		SWEETError("Set number of spectral modes to use SPH!");
 
 	SphereData_Config sphereDataConfig;
 	sphereDataConfig.setupAutoPhysicalSpace(

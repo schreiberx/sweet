@@ -30,7 +30,7 @@
 class SWE_Sphere_TS_ln_settls_vd	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		/*
 		 * Should contain _exp and _settls
@@ -85,9 +85,9 @@ private:
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd;
-	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk;
-	SWE_Sphere_TS_lg_irk* swe_sphere_ts_lg_irk;
+	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd = nullptr;
+	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk = nullptr;
+	SWE_Sphere_TS_lg_irk* swe_sphere_ts_lg_irk = nullptr;
 
 
 

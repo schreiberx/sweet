@@ -144,7 +144,7 @@ void SWE_Sphere_TS_PFASST_l_cn::run_timestep_nonpert(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("SWE_Sphere_TS_PFASST_l_cn: Only constant time step size allowed");
+		SWEETError("SWE_Sphere_TS_PFASST_l_cn: Only constant time step size allowed");
 
 
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)

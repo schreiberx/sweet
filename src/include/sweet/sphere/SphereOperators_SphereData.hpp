@@ -106,7 +106,7 @@ public:
 				if (errora > 1e-12 || errorb > 1e-12)
 				{
 					std::cout << idx << ": n=" << n << ", m=" << m << " | "<< errora << "\t" << errorb << std::endl;
-					FatalError("SAFETY CHECK NOT SUCCESSFUL");
+					SWEETError("SAFETY CHECK NOT SUCCESSFUL");
 				}
 
 				idx++;
@@ -196,7 +196,7 @@ public:
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 				if (omp_in_parallel())
-					FatalError("IN PARALLEL REGION!!!");
+					SWEETError("IN PARALLEL REGION!!!");
 			#endif
 		#endif
 
@@ -365,7 +365,7 @@ public:
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 				if (omp_in_parallel())
-					FatalError("IN PARALLEL REGION!!!");
+					SWEETError("IN PARALLEL REGION!!!");
 			#endif
 		#endif
 
@@ -416,7 +416,7 @@ public:
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 				if (omp_in_parallel())
-					FatalError("IN PARALLEL REGION!!!");
+					SWEETError("IN PARALLEL REGION!!!");
 			#endif
 		#endif
 
@@ -478,7 +478,7 @@ public:
 		#if SWEET_DEBUG
 			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 				if (omp_in_parallel())
-					FatalError("IN PARALLEL REGION!!!");
+					SWEETError("IN PARALLEL REGION!!!");
 			#endif
 		#endif
 

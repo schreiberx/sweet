@@ -37,7 +37,7 @@ void SWE_Sphere_TS_PFASST_l_irk::setup(
 	use_f_sphere = simVars.sim.sphere_use_fsphere;
 
 	if (i_timestep_order != 1)
-		FatalError("Only 1st order IRK supported so far!");
+		SWEETError("Only 1st order IRK supported so far!");
 
 	use_extended_modes = i_use_extended_modes;
 
@@ -120,7 +120,7 @@ void SWE_Sphere_TS_PFASST_l_irk::run_timestep_nonpert(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{

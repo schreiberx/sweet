@@ -7,9 +7,9 @@
 
 #include <iostream>
 #include <sweet/ScalarDataArray.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/SWEETMath.hpp>
 #include <sweet/sphere/SphereTimestepping_SemiLagrangian.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 
@@ -51,7 +51,7 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "input: " << lon << "\t" << lat << std::endl;
 				std::cout << "cart: " << a_x.scalar_data[0] << "\t" << a_y.scalar_data[1] << "\t" << a_z.scalar_data[2] << std::endl;
 				std::cout << "output: " << o_lon.scalar_data[0] << "\t" << o_lat.scalar_data[0] << std::endl;
-				FatalError("Error too large!");
+				SWEETError("Error too large!");
 			}
 		}
 	}

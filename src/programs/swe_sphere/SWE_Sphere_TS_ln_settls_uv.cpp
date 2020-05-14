@@ -111,7 +111,7 @@ void SWE_Sphere_TS_ln_settls_uv::interpolate_departure_point_uv(
 			rot_x, rot_y, rot_z
 		);
 
-	SWEETMath::normalize_threshold(rot_x, rot_y, rot_z);
+	SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
 
 	/*
 	 * Convert to Cartesian velocity space
@@ -478,7 +478,7 @@ void SWE_Sphere_TS_ln_settls_uv::setup(
 
 
 	if (timestepping_order != 1 && timestepping_order != 2)
-		FatalError("Invalid time stepping order, must be 1 or 2");
+		SWEETError("Invalid time stepping order, must be 1 or 2");
 
 	// Setup sampler for future interpolations
 	sphereSampler.setup(op.sphereDataConfig);
@@ -596,7 +596,7 @@ void SWE_Sphere_TS_ln_settls_uv::setup_auto()
 				// there must be a ver1 which is likely missing
 				std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
 				std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
-				FatalError("Autodetection of parts of time stepping methods failed!");
+				SWEETError("Autodetection of parts of time stepping methods failed!");
 			}
 
 			std::string string_id_storage2 = string_id_storage+"_ver0"+"_uv";
@@ -609,7 +609,7 @@ void SWE_Sphere_TS_ln_settls_uv::setup_auto()
 				std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
 				std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
 				std::cerr << "Detected alternative time stepping method: "+string_id_storage2 << std::endl;
-				FatalError("Autodetection of parts of time stepping methods failed!");
+				SWEETError("Autodetection of parts of time stepping methods failed!");
 			}
 		}
 	}

@@ -54,7 +54,7 @@ public:
 		const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
-			FatalError("Staggering not supported");
+			SWEETError("Staggering not supported");
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
 
@@ -65,10 +65,10 @@ public:
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
 		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 
 		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 	
 		//Check for mirror effects
 		T k0 = (T)ik0;
@@ -216,7 +216,7 @@ public:
 		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
-			FatalError("Staggering not supported");
+			SWEETError("Staggering not supported");
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
 
@@ -227,10 +227,10 @@ public:
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
 		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 
 		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 	
 		//Check for mirror effects
 		T k0 = (T)ik0;
@@ -301,7 +301,7 @@ public:
 		//std::cout<<i_inverse<<std::endl;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
-			FatalError("Staggering not supported");
+			SWEETError("Staggering not supported");
 		
 		complex I(0.0, 1.0);
 		//std::cout<<"Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
@@ -590,7 +590,7 @@ public:
 
 		// dummy time step to get time step size
 		if (i_simVars.timecontrol.current_timestep_size <= 0)
-			FatalError("Normal mode analysis requires setting fixed time step size");
+			SWEETError("Normal mode analysis requires setting fixed time step size");
 
 		/*
 		 *
@@ -603,7 +603,7 @@ public:
 		{
 #if SWEET_EIGEN
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-			FatalError("SWE_Plane_Normal_Modes: This test was build for linear or linearized models, so please compile without dealising --plane-spectral-dealiasing=disable.");
+			SWEETError("SWE_Plane_Normal_Modes: This test was build for linear or linearized models, so please compile without dealising --plane-spectral-dealiasing=disable.");
 #endif
 
 
@@ -800,7 +800,7 @@ public:
 					}
 					else
 					{
-						FatalError("SWE_Plane_Normal_Modes: Could not separate modes!!");
+						SWEETError("SWE_Plane_Normal_Modes: Could not separate modes!!");
 					}
 
 					//std::cout<<"-------------------------" << std::endl;
@@ -812,9 +812,9 @@ public:
 
 			//}
 			//std::cout<<"-------------------------" << std::endl;
-			//FatalError("still needs work...");
+			//SWEETError("still needs work...");
 #else
-			FatalError("SWE_Plane_Normal_Modes: Cannot test this without Eigen library. Please compile with --eigen=enable");
+			SWEETError("SWE_Plane_Normal_Modes: Cannot test this without Eigen library. Please compile with --eigen=enable");
 #endif
 		}
 		/*
@@ -852,7 +852,7 @@ public:
 			 * Advection e.g. has only one
 			 */
 			if (number_of_prognostic_variables <= 0)
-				FatalError("simVars.pde.number_of_prognostic_variables must be set!");
+				SWEETError("simVars.pde.number_of_prognostic_variables must be set!");
 
 			if (number_of_prognostic_variables == 3)
 			{
@@ -866,13 +866,13 @@ public:
 			}
 			else
 			{
-				FatalError("Not yet supported");
+				SWEETError("Not yet supported");
 			}
 
 #if 0
 			if (i_simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 			{
-				FatalError("Not yet tested and supported");
+				SWEETError("Not yet tested and supported");
 				std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 				std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 				std::cout << "Therefore, we also halve the time step size here" << std::endl;
@@ -978,7 +978,7 @@ public:
 				else if (i_simVars.misc.normal_mode_analysis_generation == 3 || i_simVars.misc.normal_mode_analysis_generation == 13)
 				{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-					FatalError("Only available with if plane spectral space is activated during compile time!");
+					SWEETError("Only available with if plane spectral space is activated during compile time!");
 #else
 
 					// iterate over spectral space

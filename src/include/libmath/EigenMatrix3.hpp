@@ -17,8 +17,8 @@
 #include <limits>
 #include <iostream>
 #include <functional>
-#include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
+#include <sweet/SWEETError.hpp>
 #include <complex>
 
 //using namespace std;
@@ -37,7 +37,7 @@ public:
 	 */
 	inline EigenMatrix3()
 	{
-		FatalError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
+		SWEETError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
 		loadIdentity();
 	}
 
@@ -57,7 +57,7 @@ public:
 			double v22
 	)
 	{
-		FatalError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
+		SWEETError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
 		matrix[0][0] = v00;
 		matrix[0][1] = v01;
 		matrix[0][2] = v02;
@@ -79,7 +79,7 @@ public:
 	 */
 	inline EigenMatrix3& loadIdentity()
 	{
-		FatalError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
+		SWEETError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
 
 		matrix[0][0] = (double)1;
 		matrix[0][1] = (double)0;
@@ -111,7 +111,7 @@ public:
 			std::complex<double> o_eval[3]
 	)
 	{
-		FatalError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
+		SWEETError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
 
 		double a00 = matrix[0][0];
 		double a01 = matrix[0][1];

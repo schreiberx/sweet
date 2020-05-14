@@ -24,11 +24,11 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/parmemcpy.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
 #include <sweet/sphere/SphereData_PhysicalComplex.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 
@@ -187,7 +187,7 @@ public:
 	)
 	{
 		if (sphereDataConfig == nullptr)
-			FatalError("sphereDataConfig not initialized");
+			SWEETError("sphereDataConfig not initialized");
 
 		parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
 
@@ -840,16 +840,16 @@ public:
 	{
 #if SWEET_DEBUG
 		if (i_n < 0 ||  i_m < 0)
-			FatalError("Out of boundary a");
+			SWEETError("Out of boundary a");
 
 		if (i_n > sphereDataConfig->spectral_modes_n_max)
-			FatalError("Out of boundary b");
+			SWEETError("Out of boundary b");
 
 		if (i_m > sphereDataConfig->spectral_modes_m_max)
-			FatalError("Out of boundary c");
+			SWEETError("Out of boundary c");
 
 		if (i_m > i_n)
-			FatalError("Out of boundary d");
+			SWEETError("Out of boundary d");
 
 		assert (i_m <= sphereDataConfig->spectral_modes_m_max);
 #endif
@@ -1063,7 +1063,7 @@ public:
   		std::ofstream file(i_filename, std::ios_base::trunc | std::ios_base::binary);
 
 		if (!file.is_open())
-			FatalError("Error while opening file");
+			SWEETError("Error while opening file");
 
   		file << "SWEET" << std::endl;
   		file << "DATA_TYPE SH_DATA" << std::endl;
@@ -1087,13 +1087,13 @@ public:
   		std::ifstream file(i_filename, std::ios_base::binary);
 
 		if (!file.is_open())
-			FatalError("Error while opening file");
+			SWEETError("Error while opening file");
 
   		std::string magic;
   		std::getline(file, magic);
 
   		if (magic != "SWEET")
-  			FatalError("Magic code 'SWEET' not found");
+  			SWEETError("Magic code 'SWEET' not found");
 
   		std::string data_type;
   		int num_lon = -1;
@@ -1140,7 +1140,7 @@ public:
   				continue;
   			}
 
-  			FatalError("Unknown Tag '"+buf+"'");
+  			SWEETError("Unknown Tag '"+buf+"'");
   		}
 
   		// read last newline
@@ -1149,13 +1149,13 @@ public:
   		std::cout << file.tellg() << std::endl;
 
   		if (data_type != "SH_DATA")
-  			FatalError("Unknown data type '"+data_type+"'");
+  			SWEETError("Unknown data type '"+data_type+"'");
 
   		if (num_lon != sphereDataConfig->spectral_modes_m_max)
-  			FatalError("NUM_LON "+std::to_string(num_lon)+" doesn't match SphereDataConfig");
+  			SWEETError("NUM_LON "+std::to_string(num_lon)+" doesn't match SphereDataConfig");
 
   		if (num_lat != sphereDataConfig->spectral_modes_n_max)
-  			FatalError("NUM_LAT "+std::to_string(num_lat)+" doesn't match SphereDataConfig");
+  			SWEETError("NUM_LAT "+std::to_string(num_lat)+" doesn't match SphereDataConfig");
 
   		file.read((char*)spectral_space_data, sizeof(std::complex<double>)*sphereDataConfig->spectral_array_data_number_of_elements);
 
@@ -1196,7 +1196,7 @@ public:
 		}
 		else
 		{
-			FatalError("Normalization not supported!");
+			SWEETError("Normalization not supported!");
 		}
 	}
 

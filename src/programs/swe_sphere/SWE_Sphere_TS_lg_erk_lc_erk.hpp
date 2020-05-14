@@ -21,7 +21,7 @@
 class SWE_Sphere_TS_lg_erk_lc_erk	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		return i_timestepping_method == "lg_erk_lc_erk";
 	}

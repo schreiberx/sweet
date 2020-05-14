@@ -20,7 +20,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_l_irk_n_sl_forcing: Only constant time step size allowed");
+		SWEETError("Burgers_Plane_TS_l_irk_n_sl_forcing: Only constant time step size allowed");
 
 	//Departure points and arrival points
 	ScalarDataArray posx_d(io_u.planeDataConfig->physical_array_data_number_of_elements);
@@ -95,7 +95,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 		io_v = rhs_v.spectral_div_element_wise(lhs);
 
 	} else { //Jacobi
-		FatalError("NOT available");
+		SWEETError("NOT available");
 	}
 
 }

@@ -72,7 +72,7 @@ void SWE_Sphere_TS_l_exp_n_erk::run_timestep_nonpert(
 		}
 		else
 		{
-			FatalError("Invalid version id");
+			SWEETError("Invalid version id");
 		}
 	}
 	else if (timestepping_order2 == 2 || timestepping_order2 == 4)
@@ -136,12 +136,12 @@ void SWE_Sphere_TS_l_exp_n_erk::run_timestep_nonpert(
 		}
 		else
 		{
-			FatalError("Invalid version id");
+			SWEETError("Invalid version id");
 		}
 	}
 	else
 	{
-		FatalError("Not yet supported!");
+		SWEETError("Not yet supported!");
 	}
 }
 
@@ -165,7 +165,7 @@ void SWE_Sphere_TS_l_exp_n_erk::setup(
 	timestepping_order2 = i_order2;
 
 	if (timestepping_order != timestepping_order2)
-		FatalError("Mismatch of orders, should be equal");
+		SWEETError("Mismatch of orders, should be equal");
 
 	timestep_size = i_timestep_size;
 
@@ -203,12 +203,12 @@ void SWE_Sphere_TS_l_exp_n_erk::setup(
 		}
 		else
 		{
-			FatalError("Invalid version");
+			SWEETError("Invalid version");
 		}
 	}
 	else
 	{
-		FatalError("Invalid timestepping order");
+		SWEETError("Invalid timestepping order");
 	}
 
 

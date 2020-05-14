@@ -318,13 +318,13 @@ void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep_nonpert(
 		std::cout << "DIFF DIV: " << diff_div << std::endl;
 
 		if (std::abs(diff_phi) > 1e-10)
-			FatalError("PHI error too high");
+			SWEETError("PHI error too high");
 
 		if (std::abs(diff_vort) > 1e-10)
-			FatalError("VORT error too high");
+			SWEETError("VORT error too high");
 
 		if (std::abs(diff_div) > 1e-10)
-			FatalError("DIV error too high");
+			SWEETError("DIV error too high");
 #endif
 
 
@@ -380,7 +380,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep_nonpert(
 	}
 	else
 	{
-		FatalError("Not yet supported!");
+		SWEETError("Not yet supported!");
 	}
 }
 

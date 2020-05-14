@@ -91,7 +91,7 @@ public:
 	)
 	{
 		if (i_sphereDataConfig == nullptr)
-			FatalError("Setup called twice for SphereOperators_Sampler_SphereDataPhysical");
+			SWEETError("Setup called twice for SphereOperators_Sampler_SphereDataPhysical");
 
 		sphereDataConfig = i_sphereDataConfig;
 
@@ -159,7 +159,7 @@ exit(-1);
 		double retval = interpolation_lagrange_nonequidistant<4>(x, y, x0);
 
 		if (std::abs(retval - f(x0)) > 1e-10)
-			FatalError("Cubic interpolation Buggy!!!");
+			SWEETError("Cubic interpolation Buggy!!!");
 	}
 
 
@@ -173,7 +173,7 @@ exit(-1);
 	{
 #if SWEET_DEBUG
 		if (i_pole_pseudo_points && i_velocity_sampling)
-			FatalError("Not supported yet (or it doesn't make sense)!");
+			SWEETError("Not supported yet (or it doesn't make sense)!");
 #endif
 
 		int num_lon = sphereDataConfig->physical_num_lon;
@@ -235,7 +235,7 @@ exit(-1);
 				}
 				else
 				{
-					FatalError("This order is not supported");
+					SWEETError("This order is not supported");
 				}
 
 				// average all points
@@ -307,7 +307,7 @@ exit(-1);
 				}
 				else
 				{
-					FatalError("This order is not supported");
+					SWEETError("This order is not supported");
 				}
 
 				// average all points
@@ -465,7 +465,7 @@ public:
 				std::cout << "L: " << L << std::endl;
 				std::cout << "phi: " << pos_lat << std::endl;
 				std::cout << "inv_s: " << inv_s << std::endl;
-				FatalError("est_lat_idx");
+				SWEETError("est_lat_idx");
 			}
 #endif
 			assert(est_lat_idx >= 1);
@@ -662,7 +662,7 @@ public:
 				std::cout << "L: " << L << std::endl;
 				std::cout << "phi: " << phi << std::endl;
 				std::cout << "inv_s: " << inv_s << std::endl;
-				FatalError("est_lat_idx");
+				SWEETError("est_lat_idx");
 			}
 #endif
 			assert(est_lat_idx >= 0);

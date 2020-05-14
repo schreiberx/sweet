@@ -38,7 +38,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_nonpert(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
+		SWEETError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
 
 	const SphereData_Config *sphereDataConfig = io_phi.sphereDataConfig;
 
@@ -353,7 +353,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_nonpert(
 	}
 	else
 	{
-		FatalError("TODO: This order is not implemented, yet!");
+		SWEETError("TODO: This order is not implemented, yet!");
 	}
 }
 
@@ -375,7 +375,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::setup(
 	ts_l_erk_n_erk.setup(timestepping_order, timestepping_order2);
 
 	if (timestepping_order != timestepping_order2)
-		FatalError("Mismatch of orders, should be equal");
+		SWEETError("Mismatch of orders, should be equal");
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
@@ -402,7 +402,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::setup(
 	}
 	else
 	{
-		FatalError("TODO: This order is not implemented, yet!");
+		SWEETError("TODO: This order is not implemented, yet!");
 	}
 }
 

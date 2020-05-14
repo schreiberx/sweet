@@ -71,7 +71,7 @@ public:
 					+2.0;
 		}
 
-		FatalError("Not supported (i_order)");
+		SWEETError("Not supported (i_order)");
 	}
 
 
@@ -102,7 +102,7 @@ public:
 					+(10./12.)*z
 					+1.0;
 		}
-		FatalError("Not supported test_function_diff (i_order)");
+		SWEETError("Not supported test_function_diff (i_order)");
 	}
 
 
@@ -263,7 +263,7 @@ int main(
 		return -1;
 
 	if (simVars.timecontrol.current_timestep_size <= 0)
-		FatalError("Timestep size <= 0!");
+		SWEETError("Timestep size <= 0!");
 
 	if (simVars.disc.space_res_physical[0] <= 0)
 		simVars.disc.space_res_physical[0] = 16;

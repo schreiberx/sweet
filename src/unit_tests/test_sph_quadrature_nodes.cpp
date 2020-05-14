@@ -74,7 +74,7 @@ public:
 				(lhs-rhs).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
 				diff.physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
-				FatalError("Error too high");
+				SWEETError("Error too high");
 			}
 
 			return true;
@@ -132,7 +132,7 @@ public:
 				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs-i_rhs).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
 				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
-				FatalError("Error too high");
+				SWEETError("Error too high");
 			}
 
 			return true;
@@ -189,7 +189,7 @@ public:
 			(lhsr-rhsr).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
 			diff.physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
-			FatalError("Error too high");
+			SWEETError("Error too high");
 			return true;
 		}
 		return false;
@@ -257,7 +257,7 @@ public:
 			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
 			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
-			FatalError("Error too high");
+			SWEETError("Error too high");
 			return true;
 		}
 		return false;
@@ -322,7 +322,7 @@ public:
 			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
 			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
-			FatalError("Error too high");
+			SWEETError("Error too high");
 			return true;
 		}
 		return false;
@@ -455,7 +455,7 @@ int main(
 		return -1;
 
 	if (simVars.disc.space_res_spectral[0] == 0)
-		FatalError("Set number of spectral modes to use SPH!");
+		SWEETError("Set number of spectral modes to use SPH!");
 
 	SphereData_Config sphereDataConfig;
 	sphereDataConfig.setupAutoPhysicalSpace(

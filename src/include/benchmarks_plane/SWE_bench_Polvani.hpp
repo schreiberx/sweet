@@ -91,7 +91,7 @@ class SWE_bench_Polvani
 #pragma omp master
 				{
 					if (omp_get_num_threads() > 1)
-						FatalError("THREADING MUST BE DEACTIVATED HERE BECAUSE OF RACE CONDITIONS!");
+						SWEETError("THREADING MUST BE DEACTIVATED HERE BECAUSE OF RACE CONDITIONS!");
 				}
 
 #endif
@@ -385,7 +385,7 @@ public:
 
 		if (diff >= 1e-10)
 		{
-			FatalError("No convergence for Polvani initial conditions reached");
+			SWEETError("No convergence for Polvani initial conditions reached");
 		}
 
 

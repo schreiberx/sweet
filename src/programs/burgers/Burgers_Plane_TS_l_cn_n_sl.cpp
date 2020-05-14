@@ -20,7 +20,7 @@ void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_l_cn_n_sl: Only constant time step size allowed");
+		SWEETError("Burgers_Plane_TS_l_cn_n_sl: Only constant time step size allowed");
 
 	//Departure points and arrival points
 	ScalarDataArray posx_d = posx_a;

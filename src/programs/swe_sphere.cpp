@@ -24,7 +24,7 @@
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
 
 #include <sweet/Stopwatch.hpp>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 
 #include "swe_sphere/SWE_Sphere_TimeSteppers.hpp"
 #include "swe_sphere/SWE_Sphere_NormalModeAnalysis.hpp"
@@ -145,7 +145,7 @@ public:
 		simVars.iodata.output_next_sim_seconds = 0;
 
 		if (simVars.timecontrol.current_timestep_size <= 0)
-			FatalError("Only fixed time step size supported");
+			SWEETError("Only fixed time step size supported");
 
 		if (simVars.benchmark.setup_dealiased)
 		{
@@ -173,6 +173,7 @@ public:
 		 * SETUP time steppers
 		 */
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
+
 		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;
 
 		update_diagnostics();
@@ -320,7 +321,7 @@ public:
 		}
 		else
 		{
-			FatalError("Unknown output file mode '"+simVars.iodata.output_file_mode+"'");
+			SWEETError("Unknown output file mode '"+simVars.iodata.output_file_mode+"'");
 		}
 	}
 
@@ -352,7 +353,7 @@ public:
 			)
 			{
 				std::cout << "Benchmark name: " << simVars.benchmark.benchmark_name << std::endl;
-				FatalError("Analytical solution not available for this benchmark");
+				SWEETError("Analytical solution not available for this benchmark");
 			}
 
 			SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);

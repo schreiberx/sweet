@@ -9,13 +9,13 @@
 #define TEST_SPH_OPERATORS_DIV_FREENESS_HPP_
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 
@@ -185,7 +185,7 @@ int main(
 		return -1;
 
 	if (simVars.disc.space_res_spectral[0] == 0)
-		FatalError("Set number of spectral modes to use SPH!");
+		SWEETError("Set number of spectral modes to use SPH!");
 
 	if (simVars.disc.space_res_physical[0] <= 0)
 	{

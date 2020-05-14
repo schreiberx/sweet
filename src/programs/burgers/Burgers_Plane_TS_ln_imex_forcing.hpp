@@ -26,10 +26,10 @@
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 
 #include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
 #include <sweet/plane/PlaneStaggering.hpp>
+#include <sweet/SWEETError.hpp>
 
 class Burgers_Plane_TS_ln_imex_forcing	: public Burgers_Plane_TS_interface
 {

@@ -58,7 +58,7 @@ void SWE_Plane_TS_l_rexi::setup(
 
 
 	if (!retval)
-		FatalError(std::string("Phi function '")+i_function_name+std::string("' not available"));
+		SWEETError(std::string("Phi function '")+i_function_name+std::string("' not available"));
 
 
 	std::cout << "Number of total REXI coefficients N = " << rexi_alphas.size() << std::endl;
@@ -245,7 +245,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	}
 
 	if (i_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 
 	typedef std::complex<double> complex;

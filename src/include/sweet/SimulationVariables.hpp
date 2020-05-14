@@ -15,8 +15,8 @@
 #include <vector>
 #include <limits>
 #include <sweet/sweetmath.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/StringSplit.hpp>
+#include <sweet/SWEETError.hpp>
 
 #if SWEET_THREADING
 #include <omp.h>
@@ -311,7 +311,7 @@ public:
 #if 0
 		static void fun_no_forces(int, double, void*, void*)
 		{
-			FatalError("External forces not available");
+			SWEETError("External forces not available");
 		};
 #endif
 
@@ -1159,10 +1159,10 @@ public:
 	void reset()
 	{
 		if (timecontrol.max_simulation_time < 0)
-			FatalError("timecontrol.max_simulation_time < 0");
+			SWEETError("timecontrol.max_simulation_time < 0");
 
 		if (timecontrol.max_timesteps_nr < 0)
-			FatalError("timecontrol.max_timesteps_nr < 0");
+			SWEETError("timecontrol.max_timesteps_nr < 0");
 
 		timecontrol.current_timestep_nr = 0;
 		timecontrol.current_simulation_time = 0;
@@ -1188,7 +1188,7 @@ public:
 		int c = res.size();
 
 		if (c == 0)
-			FatalError("Invalid format for modes");
+			SWEETError("Invalid format for modes");
 
 		if (c == 1)
 		{
@@ -1202,7 +1202,7 @@ public:
 			return 2;
 		}
 
-		FatalError("More than 2 values given");
+		SWEETError("More than 2 values given");
 		return -1;
 	}
 
@@ -1219,7 +1219,7 @@ public:
 		int c = res.size();
 
 		if (c == 0)
-			FatalError("Invalid format for modes");
+			SWEETError("Invalid format for modes");
 
 		if (c == 1)
 		{
@@ -1233,7 +1233,7 @@ public:
 			return 2;
 		}
 
-		FatalError("More than 2 values given");
+		SWEETError("More than 2 values given");
 		return -1;
 	}
 
@@ -1251,7 +1251,7 @@ public:
 		int c = res.size();
 
 		if (c == 0)
-			FatalError("Invalid format for modes");
+			SWEETError("Invalid format for modes");
 
 		if (c == 1)
 		{
@@ -1272,7 +1272,7 @@ public:
 			return 3;
 		}
 
-		FatalError("More than 2 values given");
+		SWEETError("More than 2 values given");
 		return -1;
 	}
 
@@ -1422,7 +1422,7 @@ public:
 
 			if (opt_nr == max_options)
 			{
-				FatalError("Max number of arguments reached. Reduce number of program arguments");
+				SWEETError("Max number of arguments reached. Reduce number of program arguments");
 			}
         }
 
@@ -1553,7 +1553,7 @@ public:
 					if (c != next_free_program_option-1)
 					{
 						outputConfig();
-						FatalError("Inconsistent processing of arguments");
+						SWEETError("Inconsistent processing of arguments");
 					}
 
 				}
@@ -1582,7 +1582,7 @@ public:
 				if (optarg[0] == '=')
 				{
 					std::cerr << "Short option parameters may not be specified with an equal '=' sign!" << std::endl;
-					FatalError("Exit");
+					SWEETError("Exit");
 				}
 			}
 
@@ -1723,7 +1723,7 @@ public:
 				std::cerr << "Some option was specified to be available, but it's parameter detection is not implemented." << std::endl;
 				std::cerr << "Please contact the SWEET developer" << std::endl;
 
-				FatalError("Exit");
+				SWEETError("Exit");
 				return false;
 			}
 		}
@@ -1735,7 +1735,7 @@ public:
 					(disc.space_res_spectral[0] == 0 || disc.space_res_spectral[1] == 0)
 			)
 			{
-				FatalError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");
+				SWEETError("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral) ");
 			}
 
 			if (iodata.output_file_mode == "default")
@@ -1754,7 +1754,7 @@ public:
 					else if (iodata.output_file_mode == "bin")
 						iodata.output_file_name = "output_%s_t%020.8f.sweet";
 					else
-						FatalError("Unknown filemode '"+iodata.output_file_mode+"'");
+						SWEETError("Unknown filemode '"+iodata.output_file_mode+"'");
 				}
 			}
 		}

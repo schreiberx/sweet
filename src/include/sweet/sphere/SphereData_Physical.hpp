@@ -22,9 +22,9 @@
 
 #include <sweet/sweetmath.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 
@@ -433,7 +433,7 @@ public:
 	)
 	{
 		if (sphereDataConfig != nullptr)
-			FatalError("Setup called twice!");
+			SWEETError("Setup called twice!");
 
 		sphereDataConfig = i_sphereDataConfig;
 		alloc_data();
@@ -832,7 +832,7 @@ public:
 
 	double physical_reduce_sum_metric()
 	{
-		FatalError("TODO: Implement metric-scaled summation");
+		SWEETError("TODO: Implement metric-scaled summation");
 		double sum = 0;
 		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
@@ -1100,7 +1100,7 @@ public:
 			std::ifstream file(i_filename, std::ios::binary);
 
 			if (!file)
-				FatalError(std::string("Failed to open file ")+i_filename);
+				SWEETError(std::string("Failed to open file ")+i_filename);
 
 			file.seekg(0, std::ios::end);
 			std::size_t size = file.tellg();
@@ -1113,13 +1113,13 @@ public:
 			{
 				std::cerr << "Error while loading data from file " << i_filename << ":" << std::endl;
 				std::cerr << "Size of file " << size << " does not match expected size of " << expected_size << std::endl;
-				FatalError("EXIT");
+				SWEETError("EXIT");
 			}
 
 			if (!file.read((char*)physical_space_data, expected_size))
 			{
 				std::cerr << "Error while loading data from file " << i_filename << std::endl;
-				FatalError("EXIT");
+				SWEETError("EXIT");
 			}
 
 			return true;

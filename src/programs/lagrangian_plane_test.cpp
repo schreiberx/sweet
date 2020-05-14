@@ -324,7 +324,7 @@ int main(int i_argc, char *i_argv[])
 	}
 
 	if (simVars.timecontrol.current_timestep_size < 0)
-		FatalError("Timestep size not set");
+		SWEETError("Timestep size not set");
 
 	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 

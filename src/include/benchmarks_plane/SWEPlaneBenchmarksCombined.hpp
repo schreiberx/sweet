@@ -79,7 +79,7 @@ public:
 
 		if (io_simVars.benchmark.benchmark_name == "")
 		{
-			FatalError("SWEPlaneBenchmarksCombined: Benchmark name not given");
+			SWEETError("SWEPlaneBenchmarksCombined: Benchmark name not given");
 		}
 
 
@@ -247,7 +247,7 @@ public:
 					return;
 				}
 
-				FatalError("Non-existing external field requested!");
+				SWEETError("Non-existing external field requested!");
 				return;
 			};
 
@@ -363,7 +363,7 @@ public:
 			//double sy = simVars->sim.domain_size[1];
 
 			if (io_simVars.sim.plane_rotating_f0 == 0)
-				FatalError("Coriolis = 0!");
+				SWEETError("Coriolis = 0!");
 
 			o_h_pert.physical_set_zero();
 			o_h_pert.physical_update_lambda_array_indices(
@@ -401,7 +401,7 @@ public:
 			double sy = simVars->sim.plane_domain_size[1];
 
 			if (io_simVars.sim.plane_rotating_f0 == 0)
-				FatalError("Coriolis = 0!");
+				SWEETError("Coriolis = 0!");
 
 			o_h_pert.physical_set_zero();
 			o_h_pert.physical_update_lambda_array_indices(
@@ -438,7 +438,7 @@ public:
 			double sy = simVars->sim.plane_domain_size[1];
 
 			if (io_simVars.sim.plane_rotating_f0 == 0)
-				FatalError("Coriolis = 0!");
+				SWEETError("Coriolis = 0!");
 
 			o_h_pert.physical_set_zero();
 			o_h_pert.physical_update_lambda_array_indices(
@@ -508,7 +508,7 @@ public:
 		}
 
 		printBenchmarkInformation();
-		FatalError(std::string("Benchmark ")+io_simVars.benchmark.benchmark_name+ " not found (or not available)");
+		SWEETError(std::string("Benchmark ")+io_simVars.benchmark.benchmark_name+ " not found (or not available)");
 
 
 		return false;

@@ -60,7 +60,7 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 	PlaneData t_v(io_h_pert.planeDataConfig);
 
 	if (!simVars.disc.space_grid_use_c_staggering)
-		FatalError("Expected staggering");
+		SWEETError("Expected staggering");
 
 	planeDataGridMapping.mapCtoA_u(io_u, t_u);
 	planeDataGridMapping.mapCtoA_v(io_v, t_v);
@@ -118,7 +118,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 )
 {
 	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("Staggering not supported");
+		SWEETError("Staggering not supported");
 
 
 	typedef std::complex<T> complex;
@@ -438,7 +438,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 )
 {
 	if (i_dt < 0)
-		FatalError("SWE_Plane_TS_l_direct: Only constant time step size allowed");
+		SWEETError("SWE_Plane_TS_l_direct: Only constant time step size allowed");
 
 	typedef std::complex<T> complex;
 

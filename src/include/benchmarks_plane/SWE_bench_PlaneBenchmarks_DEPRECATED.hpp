@@ -118,13 +118,13 @@ class SWEPlaneBenchmarks_DEPRECATED
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
-					FatalError("f-value is equal to zero!");
+					SWEETError("f-value is equal to zero!");
 				return 0;
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
 				if (f == 0)
-					FatalError("f-value is equal to zero!");
+					SWEETError("f-value is equal to zero!");
 				return i_simVars.sim.gravitation/f*2.0*M_PIl*std::cos(2.0*M_PIl*x/sx)/sx;
 			}
 			else if (i_variable_id == 6) // f-term
@@ -148,16 +148,16 @@ class SWEPlaneBenchmarks_DEPRECATED
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
-					FatalError("f-value is equal to zero! Cannot run this case scenario.");
+					SWEETError("f-value is equal to zero! Cannot run this case scenario.");
 				return -i_simVars.sim.gravitation*2.0*M_PI*std::cos(2.0*M_PI*y/sy)/(f*sy);
 			}
 			else if (i_variable_id == 2) // velocity v
 			{
 				if (f == 0)
-					FatalError("f-value is equal to zero!");
+					SWEETError("f-value is equal to zero!");
 				return 0;
 
-				FatalError("Variable v not available");
+				SWEETError("Variable v not available");
 			}
 			else if (i_variable_id == 6) // f-term
 			{
@@ -379,7 +379,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			else if (i_variable_id == 1) // velocity u
 			{
 				if (f == 0)
-					FatalError("f-value is equal to zero! Cannot run this case scenario.");
+					SWEETError("f-value is equal to zero! Cannot run this case scenario.");
 
 				double factor = -i_simVars.sim.gravitation*2.0*M_PI/(f*sy);
 
@@ -423,7 +423,7 @@ class SWEPlaneBenchmarks_DEPRECATED
 			double freq = 10.0;
 
 			if ( std::abs(f*sy)+abs(f*sx) < 0.001 )
-				FatalError("SWEPlaneBenchmark: f-value*domain is equal to zero or very small! Problem may be ill posed. Please set appropriate -f and -X and -Y");
+				SWEETError("SWEPlaneBenchmark: f-value*domain is equal to zero or very small! Problem may be ill posed. Please set appropriate -f and -X and -Y");
 
 			if (i_variable_id == 0)
 			{

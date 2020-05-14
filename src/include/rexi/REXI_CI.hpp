@@ -8,9 +8,9 @@
 #ifndef SRC_INCLUDE_REXI_CI_HPP_
 #define SRC_INCLUDE_REXI_CI_HPP_
 
-#include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
 #include <rexi/REXIFunctions.hpp>
+#include <sweet/SWEETError.hpp>
 #include <vector>
 
 
@@ -59,7 +59,7 @@ public:
 		}
 		else
 		{
-			FatalError("Type T not supported");
+			SWEETError("Type T not supported");
 		}
 	}
 
@@ -113,7 +113,7 @@ public:
 		if (i_primitive_name == "circle")
 		{
 			if (i_size_real != i_size_imag)
-				FatalError("size along real and imaginary axis must be the same");
+				SWEETError("size along real and imaginary axis must be the same");
 
 			T r = i_size_real*0.5;
 
@@ -158,7 +158,7 @@ public:
 		}
 		else if (i_primitive_name == "rectangle")
 		{
-//			FatalError("Not yet working :-(");
+//			SWEETError("Not yet working :-(");
 
 			T SRe = i_size_real;
 			T SIm = i_size_imag;
@@ -183,7 +183,7 @@ public:
 			std::cout << "Points (total): " << total_N << std::endl;
 
 			if (total_N > N)
-				FatalError("Total number of points exceeds the total number of requested points");
+				SWEETError("Total number of points exceeds the total number of requested points");
 
 			// Sampling distances
 			T DRe = SRe/NRe;
@@ -255,7 +255,7 @@ public:
 		}
 		else
 		{
-			FatalError("This primitive is not known");
+			SWEETError("This primitive is not known");
 		}
 
 

@@ -151,7 +151,7 @@ public:
 		}
 		else
 		{
-			FatalError("Normalization not supported!");
+			SWEETError("Normalization not supported!");
 		}
 	}
 
@@ -246,7 +246,7 @@ public:
 	void setupTopography()
 	{
 		if (simVars == nullptr)
-			FatalError("Benchmarks are not yet initialized");
+			SWEETError("Benchmarks are not yet initialized");
 
 		if (simVars->benchmark.benchmark_name == "flow_over_mountain")
 		{
@@ -380,7 +380,7 @@ public:
 			return;
 		}
 
-		FatalError("TODO: Implement it for this test case");
+		SWEETError("TODO: Implement it for this test case");
 	}
 
 
@@ -765,12 +765,12 @@ public:
 		double gh0 = simVars->sim.gravitation*simVars->sim.h0;
 
 		if (simVars == nullptr)
-			FatalError("Benchmarks are not yet initialized");
+			SWEETError("Benchmarks are not yet initialized");
 
 		simVars->iodata.output_time_scale = 1.0/(60.0*60.0);
 
 		if (simVars->benchmark.benchmark_name == "")
-			FatalError("Benchmark name not specified!");
+			SWEETError("Benchmark name not specified!");
 
 		if (
 			simVars->benchmark.benchmark_name == "nair_lauritzen_case_test"	||
@@ -1014,7 +1014,7 @@ public:
 				}
 				else
 				{
-					FatalError("Non-existing external field requested!");
+					SWEETError("Non-existing external field requested!");
 				}
 			};
 
@@ -1552,7 +1552,7 @@ public:
 				simVars->benchmark.benchmark_name == "forced_nonlinear"
 		)
 		{
-			FatalError("TODO: Implement this");
+			SWEETError("TODO: Implement this");
 		}
 		else if (
 				simVars->benchmark.benchmark_name == "williamson5"	||
@@ -1716,7 +1716,7 @@ public:
 				simVars->benchmark.benchmark_name == "real_initial_conditions"
 		)
 		{
-			FatalError("Williamson#7 not yet implemented!");
+			SWEETError("Williamson#7 not yet implemented!");
 		}
 		else if (simVars->benchmark.benchmark_name == "flat")
 		{
@@ -1915,7 +1915,7 @@ public:
 			{
 
 				std::cout << "Divergence: " << div_zero << std::endl;
-				FatalError("Divergence should be close to 0, maybe there are some numerical round-off errors?");
+				SWEETError("Divergence should be close to 0, maybe there are some numerical round-off errors?");
 			}
 
 			/**
@@ -1943,7 +1943,7 @@ public:
 			{
 
 				std::cout << "Vorticity difference: " << vort_diff << std::endl;
-				FatalError("Vorticity fields differ (should be close to 0), maybe there are some numerical round-off errors?");
+				SWEETError("Vorticity fields differ (should be close to 0), maybe there are some numerical round-off errors?");
 			}
 
 
@@ -2053,7 +2053,7 @@ public:
 			{
 
 				std::cout << "Divergence: " << div_zero << std::endl;
-				FatalError("Divergence should be close to 0, maybe there are some numerical round-off errors?");
+				SWEETError("Divergence should be close to 0, maybe there are some numerical round-off errors?");
 			}
 
 			/**
@@ -2081,7 +2081,7 @@ public:
 			{
 
 				std::cout << "Vorticity difference: " << vort_diff << std::endl;
-				FatalError("Vorticity fields differ (should be close to 0), maybe there are some numerical round-off errors?");
+				SWEETError("Vorticity fields differ (should be close to 0), maybe there are some numerical round-off errors?");
 			}
 
 
@@ -2095,7 +2095,7 @@ public:
 		}
 		else
 		{
-			FatalError("Benchmark not implemented");
+			SWEETError("Benchmark not implemented");
 		}
 	}
 };

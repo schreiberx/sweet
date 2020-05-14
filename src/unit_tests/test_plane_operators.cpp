@@ -246,7 +246,7 @@ int main(int i_argc, char *i_argv[])
 						std::cout << " + error bilaplace = " << err_bilaplace << std::endl;
 
 						if (std::max({ err_x, err_y, err2_x, err2_y, err_laplace, err_bilaplace }) > eps)
-							FatalError("SPEC: Error threshold for diff operators too high for spectral differentiation!");
+							SWEETError("SPEC: Error threshold for diff operators too high for spectral differentiation!");
 					}
 					else
 					{
@@ -338,7 +338,7 @@ int main(int i_argc, char *i_argv[])
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 				if (spectral_nyq_trunc_freq != simVars.disc.space_res_spectral[0]/2)
-					FatalError("Inconsistent effective Nyquist frequency!");
+					SWEETError("Inconsistent effective Nyquist frequency!");
 #endif
 
 				std::cout << std::endl;
@@ -485,7 +485,7 @@ int main(int i_argc, char *i_argv[])
 							std::cout << "ERROR" << std::endl;
 							std::cout << " + err_mult: " << err_mult << std::endl;
 							std::cout << " + eps: " << eps << std::endl;
-							FatalError("No aliasing present, but error significantly high");
+							SWEETError("No aliasing present, but error significantly high");
 						}
 					}
 
@@ -506,13 +506,13 @@ int main(int i_argc, char *i_argv[])
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
 						(h1 * h2).print_spectralNonZero();
-						FatalError("EXIT");
+						SWEETError("EXIT");
 					}
 
 					if (err_mult_dealias2 > eps)
 					{
 						std::cerr << " WARNING: error for multiplication function 'mult' too high !" << std::endl;
-						FatalError("EXIT");
+						SWEETError("EXIT");
 					}
 
 #else
@@ -522,7 +522,7 @@ int main(int i_argc, char *i_argv[])
 					if (err_mult > eps)
 					{
 						std::cerr << " Error threshold for multiplication operator too high !" << std::endl;
-						FatalError("EXIT");
+						SWEETError("EXIT");
 					}
 #endif
 

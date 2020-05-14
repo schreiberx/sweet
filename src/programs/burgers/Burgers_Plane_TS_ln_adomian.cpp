@@ -20,7 +20,7 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_ln_adomian: Only constant time step size allowed");
+		SWEETError("Burgers_Plane_TS_ln_adomian: Only constant time step size allowed");
 
 	// setup dummy data
 	PlaneData tmp(io_u.planeDataConfig);
@@ -34,7 +34,7 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 
 	//TODO: implement this correctly
 	if (op.diff_c_y(io_u).reduce_maxAbs()>1e-11)
-		FatalError("The Adomian decomposition method is implemented in 1D only!");
+		SWEETError("The Adomian decomposition method is implemented in 1D only!");
 
 	std::vector<PlaneData> u;
 	u.resize(timestepping_order+1,PlaneData(io_u.planeDataConfig));

@@ -9,7 +9,6 @@
  */
 
 #include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereHelpers_Diagnostics.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -17,6 +16,7 @@
 #include "libpfasst_swe_sphere/LevelSingleton.hpp"
 #include "libpfasst_swe_sphere/SphereDataCtx.hpp"
 #include <mpi.h>
+#include <sweet/SWEETError.hpp>
 
 #define WITH_MPI
 
@@ -89,7 +89,7 @@ int main(int i_argc, char *i_argv[])
 		else if (simVars.libpfasst.nnodes == 7)
 			nnodes[0] = 4; // for rk_stepper
 		else
-			FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
+			SWEETError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 		break;
 	}
 	// Three levels
@@ -110,12 +110,12 @@ int main(int i_argc, char *i_argv[])
 			nnodes[1] = 3;
 		}
 		else
-			FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
+			SWEETError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
 		break;
 	}
 	// All other cases not supported yet
 	default:
-		FatalError("Only 1, 2, or 3 levels are currently supported");
+		SWEETError("Only 1, 2, or 3 levels are currently supported");
 	}
 
 	// setup the LevelSingletons for all levels

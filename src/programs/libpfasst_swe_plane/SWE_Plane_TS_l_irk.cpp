@@ -39,7 +39,7 @@ void SWE_Plane_TS_l_irk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_irk: only constant time step size allowed (Please set --dt)");
+		SWEETError("SWE_Plane_TS_l_irk: only constant time step size allowed (Please set --dt)");
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
@@ -125,10 +125,10 @@ void SWE_Plane_TS_l_irk::setup(
 	timestepping_order = i_order;
 
 	if (timestepping_order != 1)
-		FatalError("SWE_Plane_TS_l_irk: Only 1st order IRK is supported. Please set --timestepping-order 1.");
+		SWEETError("SWE_Plane_TS_l_irk: Only 1st order IRK is supported. Please set --timestepping-order 1.");
 
 	if (simVars.disc.use_staggering)
-		FatalError("Staggering not supported for l_irk");
+		SWEETError("Staggering not supported for l_irk");
 
 }
 

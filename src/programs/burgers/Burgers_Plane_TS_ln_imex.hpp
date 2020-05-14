@@ -15,9 +15,9 @@
 #include "Burgers_Plane_TS_interface.hpp"
 
 #include <sweet/sweetmath.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
+#include <sweet/SWEETError.hpp>
 
 class Burgers_Plane_TS_ln_imex	: public Burgers_Plane_TS_interface
 {

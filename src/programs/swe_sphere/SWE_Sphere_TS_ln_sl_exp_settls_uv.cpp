@@ -16,7 +16,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_pert(
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
 
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
 )
 {
@@ -25,6 +25,8 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_pert(
 		run_timestep_2nd_order(io_phi, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
 		return;
 	}
+
+	SWEETError("Only 2nd order TS method supported!");
 }
 
 
@@ -43,8 +45,8 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 )
 {
 	o_phi.setup_if_required(i_phi.sphereDataConfig);
-	o_vrt.setup_if_required(i_phi.sphereDataConfig);
-	o_div.setup_if_required(i_phi.sphereDataConfig);
+	o_vrt.setup_if_required(i_vrt.sphereDataConfig);
+	o_div.setup_if_required(i_div.sphereDataConfig);
 
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
 			i_phi.getSphereDataPhysical(),
@@ -55,19 +57,19 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 		);
 
 
-	SphereData_Physical u_tmp, v_tmp;
-	op.vortdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
+	SphereData_Physical U_u_A, U_v_A;
+	op.vortdiv_to_uv(i_vrt, i_div, U_u_A, U_v_A);
 
-	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			u_tmp,
+	SphereData_Physical U_u_D = sphereSampler.bicubic_scalar_ret_phys(
+			U_u_A,
 			i_pos_lon_D, i_pos_lat_D,
 			true,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
 			simVars.disc.semi_lagrangian_interpolation_limiter
 		);
 
-	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			v_tmp,
+	SphereData_Physical U_v_D = sphereSampler.bicubic_scalar_ret_phys(
+			U_v_A,
 			i_pos_lon_D, i_pos_lat_D,
 			true,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
@@ -76,6 +78,9 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 
 #if 1
 
+	/*
+	 * Compute vectors to arrival and departure points
+	 */
 	ScalarDataArray P_x_D, P_y_D, P_z_D;
 	SWEETMath::latlon_to_cartesian(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
 
@@ -83,10 +88,10 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 					&P_y_A = semiLagrangian.pos_y_A,
 					&P_z_A = semiLagrangian.pos_z_A;
 
+
 	/*
 	 * Compute rotation angle
 	 */
-
 	ScalarDataArray rotation_angle_ =
 			SWEETMath::dot_prod(
 				P_x_D, P_y_D, P_z_D,
@@ -109,20 +114,21 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 			rot_x, rot_y, rot_z
 		);
 
-	SWEETMath::normalize_threshold(rot_x, rot_y, rot_z);
+	SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
+
 
 	/*
 	 * Convert to Cartesian velocity space
 	 */
-	ScalarDataArray V_lon_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(u_tmp_D);
-	ScalarDataArray V_lat_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(v_tmp_D);
+	ScalarDataArray U_u_D_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(U_u_D);
+	ScalarDataArray V_v_D_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(U_v_D);
 
 	ScalarDataArray V_x_D, V_y_D, V_z_D;
 	SWEETMath::latlon_velocity_to_cartesian_velocity(
 			i_pos_lon_D,
 			i_pos_lat_D,
-			V_lon_D,
-			V_lat_D,
+			U_u_D_array,
+			V_v_D_array,
 			V_x_D,
 			V_y_D,
 			V_z_D
@@ -171,7 +177,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 
 #else
 
-	op.uv_to_vortdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
+	op.uv_to_vortdiv(U_u_D, U_v_D, o_vrt, o_div);
 
 #endif
 }
@@ -180,9 +186,9 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 
 
 void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
-		SphereData_Spectral &io_U_phi,	///< prognostic variables
-		SphereData_Spectral &io_U_vrt,	///< prognostic variables
-		SphereData_Spectral &io_U_div,	///< prognostic variables
+		SphereData_Spectral &io_U_phi,
+		SphereData_Spectral &io_U_vrt,
+		SphereData_Spectral &io_U_div,
 
 		double i_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp)
@@ -203,11 +209,15 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 	}
 
 	/*
-	 * Step 1) Compute depature points
+	 * Step 1) Compute departure points
+	 *
 	 * Step 2) Compute U_D at departure points
+	 *
 	 * Step 3) Compute N*(t+0.5dt) = 1/2 ([ 2*N(t) - exp(dtL) N(t-dt) ]_D + N(t))
+	 *
 	 * Step 4) Compute update U(t+dt) = exp(dt L)(U_D + dt * N*(t+0.5dt))
 	 */
+
 	/*
 	 *************************************************************************************************
 	 * Step 1) Compute depature points
@@ -227,7 +237,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 			dt_div_radius*U_u_lon_prev, dt_div_radius*U_v_lat_prev,
 			dt_div_radius*U_u_lon, dt_div_radius*U_v_lat,
 			pos_lon_d, pos_lat_d		// OUTPUT
-	);
+		);
 
 
 	/*
@@ -304,7 +314,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 					i_simulation_timestamp
-			);
+				);
 		}
 
 		if (coriolis_treatment == CORIOLIS_NONLINEAR)
@@ -312,7 +322,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_pert_lc(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
-					i_simulation_timestamp-i_dt
+					i_simulation_timestamp
 				);
 		}
 
@@ -372,13 +382,13 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 
 {
 	SWE_Sphere_TS_ln_sl_exp_settls_uv::LinearCoriolisTreatment_enum linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::CORIOLIS_IGNORE;
-	SWE_Sphere_TS_ln_sl_exp_settls_uv::NLRemainderTreatment_enum nonlinear_divergence_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::NL_REMAINDER_IGNORE;
+	SWE_Sphere_TS_ln_sl_exp_settls_uv::NLRemainderTreatment_enum nonlinear_remainder_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::NL_REMAINDER_IGNORE;
 
 	bool original_linear_operator_sl_treatment = true;
 
 
 	// Search for Coriolis
-	if (simVars.disc.timestepping_method.find("l_irk") != std::string::npos || simVars.disc.timestepping_method.find("l_exp") != std::string::npos)
+	if (simVars.disc.timestepping_method.find("l_exp") != std::string::npos)
 		linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::CORIOLIS_LINEAR;
 	else if (simVars.disc.timestepping_method.find("lc_na_sl") != std::string::npos)
 		linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::CORIOLIS_SEMILAGRANGIAN;
@@ -386,9 +396,9 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 		linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::CORIOLIS_NONLINEAR;
 
 
-	// Search for Nonlinear divergence
+	// Search for nonlinear remainder term
 	if (simVars.disc.timestepping_method.find("_nr_") != std::string::npos)
-		nonlinear_divergence_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::NL_REMAINDER_NONLINEAR;
+		nonlinear_remainder_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::NL_REMAINDER_NONLINEAR;
 
 	if (simVars.disc.timestepping_method.find("_ver1") != std::string::npos)
 		original_linear_operator_sl_treatment = false;
@@ -417,7 +427,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 	if (linear_coriolis_treatment == SWE_Sphere_TS_ln_sl_exp_settls_uv::CORIOLIS_NONLINEAR)
 		string_id_storage += "_lc";
 
-	if (nonlinear_divergence_treatment == SWE_Sphere_TS_ln_sl_exp_settls_uv::NL_REMAINDER_NONLINEAR)
+	if (nonlinear_remainder_treatment == SWE_Sphere_TS_ln_sl_exp_settls_uv::NL_REMAINDER_NONLINEAR)
 		string_id_storage += "_nr";
 
 	string_id_storage += "_settls";
@@ -433,7 +443,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 		{
 			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
 			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
-			FatalError("Autodetection of parts of time stepping methods failed!");
+			SWEETError("Autodetection of parts of time stepping methods failed!");
 		}
 
 		std::string string_id_storage2 = string_id_storage+"_ver0"+"_uv";
@@ -442,7 +452,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
 			std::cerr << "Detected time stepping method (failed): "+string_id_storage_ << std::endl;
 			std::cerr << "Detected alternative time stepping method (failed): "+string_id_storage2 << std::endl;
-			FatalError("Autodetection of parts of time stepping methods failed!");
+			SWEETError("Autodetection of parts of time stepping methods failed!");
 		}
 	}
 #endif
@@ -450,7 +460,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 	setup(
 			simVars.disc.timestepping_order,
 			linear_coriolis_treatment,					// Coriolis treatment
-			nonlinear_divergence_treatment,		// Nonlinear divergence treatment
+			nonlinear_remainder_treatment,		// Nonlinear divergence treatment
 			original_linear_operator_sl_treatment			// original SL linear operator treatment
 		);
 }
@@ -473,7 +483,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup(
 
 
 	if (timestepping_order != 2)
-		FatalError("Invalid time stepping order, only 2nd order supported");
+		SWEETError("Invalid time stepping order, only 2nd order supported");
 
 	// Setup semi-lag
 	semiLagrangian.setup(op.sphereDataConfig);
@@ -507,6 +517,7 @@ SWE_Sphere_TS_ln_sl_exp_settls_uv::SWE_Sphere_TS_ln_sl_exp_settls_uv(
 
 SWE_Sphere_TS_ln_sl_exp_settls_uv::~SWE_Sphere_TS_ln_sl_exp_settls_uv()
 {
+	delete swe_sphere_ts_ln_erk_split_uv;
 	delete swe_sphere_ts_l_rexi;
 }
 

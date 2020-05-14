@@ -46,7 +46,7 @@ public:
 
 			if (split2.size() == 0)
 			{
-				FatalError("Strange things....");
+				SWEETError("Strange things....");
 			}
 			else if (split2.size() == 1)
 			{
@@ -60,13 +60,13 @@ public:
 
 				if (rexiCoefficients.filename != "")
 					if (rexiCoefficients.function_name != split2[0])
-						FatalError("Function name mismatch!");
+						SWEETError("Function name mismatch!");
 
 				this->rexiCoefficientVector.push_back(rexiCoefficients);
 			}
 			else
 			{
-				FatalError("Too many split variable names");
+				SWEETError("Too many split variable names");
 			}
 		}
 	}
@@ -82,7 +82,7 @@ public:
 				return *iter;
 		}
 
-		FatalError("Not found");
+		SWEETError("Not found");
 	}
 };
 

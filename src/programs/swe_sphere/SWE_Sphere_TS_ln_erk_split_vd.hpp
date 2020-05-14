@@ -20,7 +20,7 @@
 class SWE_Sphere_TS_ln_erk_split_vd	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (
 				i_timestepping_method == "l_na_erk_split_vd"	||
@@ -70,7 +70,7 @@ public:
 			return;
 		}
 
-		FatalError("Should never happen");
+		SWEETError("Should never happen");
 	}
 
 private:

@@ -319,17 +319,17 @@ int main(int i_argc, char *i_argv[])
 	}
 
 	if (simVars.timecontrol.current_timestep_size < 0)
-		FatalError("Timestep size not set");
+		SWEETError("Timestep size not set");
 
 
 	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 	if (initial_spectral_modes <= 0)
 	{
-		FatalError("Please specify the number of MODES");
+		SWEETError("Please specify the number of MODES");
 	}
 
 	if (simVars.timecontrol.current_timestep_size < 0)
-		FatalError("Timestep size not set");
+		SWEETError("Timestep size not set");
 
 	int max_modes = 256;
 

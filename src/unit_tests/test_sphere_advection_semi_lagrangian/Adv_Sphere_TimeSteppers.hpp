@@ -74,7 +74,7 @@ public:
 		}
 		else
 		{
-			FatalError(std::string("No valid --timestepping-method provided: ")+i_timestepping_method);
+			SWEETError(std::string("No valid --timestepping-method provided: ")+i_timestepping_method);
 		}
 	}
 

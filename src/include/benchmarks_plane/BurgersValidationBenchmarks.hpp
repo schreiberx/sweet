@@ -40,7 +40,7 @@ public:
 
 		if (benchmark_id <= 0)
 		{
-			FatalError("Invalid benchmark-name (number) selected");
+			SWEETError("Invalid benchmark-name (number) selected");
 		}
 
 

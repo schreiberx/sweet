@@ -67,7 +67,7 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed (set --dt)");
+		SWEETError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed (set --dt)");
 
 	// Half one for linear parts
 	ts_l_cn.run_timestep(
@@ -112,13 +112,13 @@ void SWE_Plane_TS_l_cn_n_erk::setup(
 	use_only_linear_divergence = i_use_only_linear_divergence;
 
 	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("SWE_Plane_TS_l_cn_n_erk: Staggering not supported for l_cn_n_erk");
+		SWEETError("SWE_Plane_TS_l_cn_n_erk: Staggering not supported for l_cn_n_erk");
 
 	if (timestepping_order_linear > 0 && timestepping_order_linear != 2)
 		std::cout<<"SWE_Plane_TS_l_cn_n_erk Warning: Ignoring timestepping_order for linear time integration because this is always given by the Crank-Nicolson scheme"<<std::endl;
 
 	if (timestepping_order_nonlinear <= 0)
-		FatalError("SWE_Plane_TS_l_cn_n_erk: Please set --timestepping-order2 to define the order of the nonlinear time integration");
+		SWEETError("SWE_Plane_TS_l_cn_n_erk: Please set --timestepping-order2 to define the order of the nonlinear time integration");
 
 	//ts_l_cn.setup(2, i_crank_nicolson_damping_factor);
 	ts_l_cn.setup(i_crank_nicolson_damping_factor);

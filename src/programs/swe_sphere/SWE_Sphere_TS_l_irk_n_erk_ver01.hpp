@@ -25,7 +25,7 @@ class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
 
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (
 			i_timestepping_method == "l_irk_n_erk" || i_timestepping_method == "l_irk_n_erk_ver0" ||
@@ -47,7 +47,7 @@ public:
 		else if (version_id == 1)
 			s += "1";
 		else
-			FatalError("Version ID");
+			SWEETError("Version ID");
 
 		return s;
 	}

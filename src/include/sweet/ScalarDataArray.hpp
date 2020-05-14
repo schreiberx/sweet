@@ -18,8 +18,8 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/SWEETError.hpp>
 
 /*
  * Precompiler helper functions to handle loops in spectral and physical space
@@ -242,6 +242,7 @@ public:
 	}
 
 
+	inline
 	void update_lambda_array_indices(
 			std::function<void(int,double&)> i_lambda	///< lambda function to return value for lat/mu
 	)

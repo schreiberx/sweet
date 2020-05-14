@@ -20,7 +20,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
@@ -77,7 +77,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 	}
 	else
 	{
-		FatalError("Timestepping order not available");
+		SWEETError("Timestepping order not available");
 	}
 
 	io_phi = new_prog_phi;

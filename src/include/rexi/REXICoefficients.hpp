@@ -100,7 +100,7 @@ public:
 		std::ifstream infile(i_filename, std::ios::in | std::ios::binary);
 
 		if (!infile.is_open())
-			FatalError(std::string("Unable to open file ")+i_filename);
+			SWEETError(std::string("Unable to open file ")+i_filename);
 
 		bool binary = false;
 
@@ -230,7 +230,7 @@ public:
 			if (abg_mode == 2)
 			{
 				if (val_imag != 0)
-					FatalError("Gamma must be real-only!");
+					SWEETError("Gamma must be real-only!");
 
 				gamma = val_real;
 				//std::cout << "gamma: " << val << std::endl;
@@ -239,7 +239,7 @@ public:
 
 			std::cout << "Error in line " << line_nr << std::endl;
 			std::cout << "Line content: " << line << std::endl;
-			FatalError("Line contains bogus data");
+			SWEETError("Line contains bogus data");
 		}
 
 		if ((int)alphas.size() != N || (int)betas.size() != N)
@@ -247,7 +247,7 @@ public:
 			std::cout << "alphas.size: " << alphas.size() << std::endl;
 			std::cout << "betas.size: " << betas.size() << std::endl;
 			std::cout << "N: " << N << std::endl;
-			FatalError("Size doesn't match!");
+			SWEETError("Size doesn't match!");
 		}
 
 		return true;

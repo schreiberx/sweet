@@ -12,7 +12,7 @@
 	#include <quadmath.h>
 #endif
 
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 #include <ccomplex>
 #include <cmath>
 
@@ -405,7 +405,7 @@ public:
 #if SWEET_QUADMATH
 		return (T)::strtoflt128(i_value, nullptr);
 #else
-		FatalError("Don't use this function! It generates wrong results in the last digits!");
+		SWEETError("Don't use this function! It generates wrong results in the last digits!");
 		return strtof(i_value, nullptr);
 #endif
 	}
@@ -420,7 +420,7 @@ public:
 #if SWEET_QUADMATH
 		return (T)::strtoflt128(i_value.c_str(), nullptr);
 #else
-		FatalError("Don't use this function! It generates wrong results in the last digits!");
+		SWEETError("Don't use this function! It generates wrong results in the last digits!");
 		return strtof(i_value.c_str(), nullptr);
 #endif
 	}

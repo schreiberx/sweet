@@ -29,10 +29,9 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/FatalError.hpp>
-
 #include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/plane/PlaneData_Kernels.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 /*
@@ -467,7 +466,7 @@ public:
 	{
 #if SWEET_DEBUG
 		if (!spectral_space_data_valid)
-			FatalError("Spectral data not valid, but trying to apply anti-aliasing rule!\nDid you call spectral_zeroAliasingModes() after initializing data in physical space?");
+			SWEETError("Spectral data not valid, but trying to apply anti-aliasing rule!\nDid you call spectral_zeroAliasingModes() after initializing data in physical space?");
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int k = 0; k < 2; k++)
@@ -488,7 +487,7 @@ public:
 						{
 							print_spectralData_zeroNumZero();
 							std::cout << "Value at spectral coordinate " << jj << ", " << ii << " should be zero, but is " << data << std::endl;
-							FatalError("EXIT");
+							SWEETError("EXIT");
 						}
 					}
 			}
@@ -508,7 +507,7 @@ public:
 						{
 							print_spectralData_zeroNumZero();
 							std::cout << "Value at spectral coordinate " << jj << ", " << ii << " should be zero, but is " << data << std::endl;
-							FatalError("EXIT");
+							SWEETError("EXIT");
 						}
 					}
 			}
@@ -601,10 +600,10 @@ public:
 
 #if SWEET_DEBUG
 		if (i >= planeDataConfig->spectral_data_size[0])
-			FatalError("Out of boundary, PlaneData, p_spectral_set, i");
+			SWEETError("Out of boundary, PlaneData, p_spectral_set, i");
 
 		if (j >= planeDataConfig->spectral_data_size[1])
-			FatalError("Out of boundary, PlaneData, p_spectral_set, j");
+			SWEETError("Out of boundary, PlaneData, p_spectral_set, j");
 #endif
 
 
@@ -625,10 +624,10 @@ public:
 
 #if SWEET_DEBUG
 		if (i >= planeDataConfig->spectral_data_size[0])
-			FatalError("Out of boundary, PlaneData, p_spectral_get, i");
+			SWEETError("Out of boundary, PlaneData, p_spectral_get, i");
 
 		if (j >= planeDataConfig->spectral_data_size[1])
-			FatalError("Out of boundary, PlaneData, p_spectral_get, j");
+			SWEETError("Out of boundary, PlaneData, p_spectral_get, j");
 #endif
 
 		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
@@ -645,10 +644,10 @@ public:
 
 #if SWEET_DEBUG
 		if (i >= planeDataConfig->spectral_data_size[0])
-			FatalError("Out of boundary, PlaneData, p_spectral_get, i");
+			SWEETError("Out of boundary, PlaneData, p_spectral_get, i");
 
 		if (j >= planeDataConfig->spectral_data_size[1])
-			FatalError("Out of boundary, PlaneData, p_spectral_get, j");
+			SWEETError("Out of boundary, PlaneData, p_spectral_get, j");
 #endif
 
 		std::size_t idx = (j*planeDataConfig->spectral_data_size[0])+i;
@@ -759,14 +758,14 @@ public:
 	{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		FatalError("request_data_spectral: spectral space is disabled");
+		SWEETError("request_data_spectral: spectral space is disabled");
 
 #else
 
 #if SWEET_DEBUG
 #if SWEET_THREADING_SPACE
 		if (omp_get_num_threads() > 1)
-			FatalError("Are we already in parallel region? Threading race conditions likely!");
+			SWEETError("Are we already in parallel region? Threading race conditions likely!");
 #endif
 #endif
 
@@ -778,7 +777,7 @@ public:
 
 #if SWEET_DEBUG
 		if (!physical_space_data_valid)
-			FatalError("Spectral data not available! Did you set the data to something or is this maybe a non-initialized operator?");
+			SWEETError("Spectral data not available! Did you set the data to something or is this maybe a non-initialized operator?");
 
 		// zero out spectral data field to last column since this data might contain non-sense data to avoid valgrind errors
 		//		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
@@ -810,7 +809,7 @@ public:
 #if SWEET_DEBUG
 
 		if (!spectral_space_data_valid)
-			FatalError("Physical data not available and no spectral data!");
+			SWEETError("Physical data not available and no spectral data!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		/**
@@ -989,7 +988,7 @@ public:
 		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
 
 		if(sum.imag()>DBL_EPSILON)
-			FatalError("Reduce operation of complex values (rms) error");
+			SWEETError("Reduce operation of complex values (rms) error");
 
 		rms = std::sqrt(sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements)); 
 #endif
@@ -1023,7 +1022,7 @@ public:
 		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
 
 		if(sum.imag()>DBL_EPSILON)
-			FatalError("Reduce operation of complex values (rms) error");
+			SWEETError("Reduce operation of complex values (rms) error");
 
 		rms = sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements); 
 		//rms = (sum.real()*sum.real()+sum.imag()*sum.imag()); 
@@ -2825,7 +2824,7 @@ public:
 			std::ifstream file(i_filename, std::ios::binary);
 
 			if (!file)
-				FatalError(std::string("Failed to open file ")+i_filename);
+				SWEETError(std::string("Failed to open file ")+i_filename);
 
 			file.seekg(0, std::ios::end);
 			std::size_t size = file.tellg();
@@ -2838,13 +2837,13 @@ public:
 			{
 				std::cerr << "Error while loading data from file " << i_filename << ":" << std::endl;
 				std::cerr << "Size of file " << size << " does not match expected size of " << expected_size << std::endl;
-				FatalError("EXIT");
+				SWEETError("EXIT");
 			}
 
 			if (!file.read((char*)physical_space_data, expected_size))
 			{
 				std::cerr << "Error while loading data from file " << i_filename << std::endl;
-				FatalError("EXIT");
+				SWEETError("EXIT");
 			}
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE

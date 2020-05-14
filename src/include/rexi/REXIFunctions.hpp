@@ -72,7 +72,7 @@ public:
 		}
 		else
 		{
-			FatalError("Type not supported");
+			SWEETError("Type not supported");
 		}
 	}
 
@@ -128,7 +128,7 @@ public:
 			function_id = PSI3;
 
 		else
-			FatalError("This phi function is not supported! : ");
+			SWEETError("This phi function is not supported! : ");
 
 
 		
@@ -140,7 +140,7 @@ public:
 				std::cout << "**************************************************************" << std::endl;
 				std::cout << "* WARNING: " << i_function_name << " typically requires __float128 precision!" << std::endl;
 				std::cout << "**************************************************************" << std::endl;
-//				FatalError("Seriously, you shouldn't use me with only double precision!");
+//				SWEETError("Seriously, you shouldn't use me with only double precision!");
 			}
 		}
 */
@@ -318,7 +318,7 @@ public:
 			return (-4.0-3.0*z-z*z+l_expcplx(z)*(4.0-z)) / (z*z*z);
 		}
 
-		FatalError("ups number not supported!");
+		SWEETError("ups number not supported!");
 		return 0;
 	}
 
@@ -383,7 +383,7 @@ public:
 		    return retval;
 		}
 
-		FatalError("This Upsilon function is not supported!");
+		SWEETError("This Upsilon function is not supported!");
 		return 0;
 	}
 
@@ -460,7 +460,7 @@ public:
 
 		case 3:	// psi3
 #if 1
-			FatalError("TODO: Redo this with e.g. series treatment");
+			SWEETError("TODO: Redo this with e.g. series treatment");
 #else
 			if (lamdt < eps_phi)
 				//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
@@ -478,7 +478,7 @@ public:
 
 
 		default:
-			FatalError("This psi number is not yet supported");
+			SWEETError("This psi number is not yet supported");
 		}
 
 		return -1;
@@ -537,7 +537,7 @@ public:
 			return psiN(3, i_K);
 
 		default:
-			FatalError("This phi is not yet supported");
+			SWEETError("This phi is not yet supported");
 		}
 
 		return K;

@@ -9,7 +9,7 @@
 
 
 #include <getopt.h>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 
 struct SWEPolvani_SimulationVariables
 {

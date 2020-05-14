@@ -41,10 +41,10 @@ public:
     MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
     if (!simVars) 
-      FatalError("SphereDataCtx: simVars pointer is NULL!");
+      SWEETError("SphereDataCtx: simVars pointer is NULL!");
 
     if (!levelSingletons) 
-      FatalError("SphereDataCtx: levelSingletons pointer is NULL!");
+      SWEETError("SphereDataCtx: levelSingletons pointer is NULL!");
 
     // initialize the time steppers from SWEET
 
@@ -75,7 +75,7 @@ public:
 	    timestepper_l_erk_n_erk.resize(levelSingletons->size());
 	  }
 	else 
-	  FatalError("REXI-based libPFASST with explicit coriolis force not implemented yet");
+	  SWEETError("REXI-based libPFASST with explicit coriolis force not implemented yet");
       }
     else
       {

@@ -24,7 +24,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		if (i_planeData.spectral_space_data_valid && i_raise_error_if_spectral)
-			FatalError("This data should be typically never converted to spectral space");
+			SWEETError("This data should be typically never converted to spectral space");
 #endif
 
 		i_planeData.request_data_physical();

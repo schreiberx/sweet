@@ -64,7 +64,7 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_ln_erk: Only constant time step size allowed");
+		SWEETError("Burgers_Plane_TS_ln_erk: Only constant time step size allowed");
 
 
 	// setup dummy data
@@ -121,7 +121,7 @@ void Burgers_Plane_TS_ln_erk::run_timestep(
 				  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
 
 		} else { //Jacobi
-			FatalError("NOT available");
+			SWEETError("NOT available");
 		}
 	}
 }

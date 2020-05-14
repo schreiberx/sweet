@@ -166,7 +166,7 @@ void Adv_Sphere_TS_na_sl::setup(
 	timestepping_order = i_order;
 
 	if (timestepping_order > 2 || timestepping_order <= 0)
-		FatalError("Only 1st and 2nd order for SL integration supported");
+		SWEETError("Only 1st and 2nd order for SL integration supported");
 }
 
 

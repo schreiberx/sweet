@@ -46,7 +46,7 @@ void SWE_Plane_TS_l_cn::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_cn: Only constant time step size allowed (Please set --dt)");
+		SWEETError("SWE_Plane_TS_l_cn: Only constant time step size allowed (Please set --dt)");
 
 
 	PlaneData h_linear_t1 = io_h;
@@ -85,11 +85,11 @@ void SWE_Plane_TS_l_cn::setup(
 	//{
 	//	std::cout << "SWE_Plane_TS_l_cn Warning: Using half explicit/implicit euler to achieve Crank-Nicolson" << std::endl;
 	//   std::cout << "                             even though you wanted to have a " << timestepping_order_linear << " order explicit scheme." << std::endl;
-	//	//FatalError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
+	//	//SWEETError("SWE_Plane_TS_l_cn: Only 2nd order TS (Because of Crank Nicolson) supported with this implementation");
 	//}
 
 	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("Staggering not supported for l_cn");
+		SWEETError("Staggering not supported for l_cn");
 
 	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
 }

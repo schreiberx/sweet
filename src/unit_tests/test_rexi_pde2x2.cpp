@@ -218,7 +218,7 @@ int main(
 		}
 		else
 		{
-			FatalError("rexi_method not supported");
+			SWEETError("rexi_method not supported");
 		}
 	}
 
@@ -333,7 +333,7 @@ int main(
 
 #if 1
 			if (error > max_error_threshold)
-				FatalError("Error too high");
+				SWEETError("Error too high");
 #endif
 		}
 	}

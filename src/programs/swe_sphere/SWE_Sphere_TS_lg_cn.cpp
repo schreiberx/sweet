@@ -94,7 +94,7 @@ void SWE_Sphere_TS_lg_cn::run_timestep_nonpert(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	SphereData_Spectral phi0 = io_phi;
 	SphereData_Spectral vort0 = io_vort;

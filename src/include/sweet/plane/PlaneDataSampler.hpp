@@ -125,7 +125,7 @@ public:
 #endif
 
 		if (i < 0 || i >= i_res)
-			FatalError("Stopping here: Probably an unstable velocity field since more than one periodic movement exists.");
+			SWEETError("Stopping here: Probably an unstable velocity field since more than one periodic movement exists.");
 
 		assert(i >= 0 && i < i_res);
 
@@ -159,7 +159,7 @@ public:
 #if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 
 		if (omp_get_num_threads() > 1)
-			FatalError("Are we already in parallel region? Threading race conditions likely!");
+			SWEETError("Are we already in parallel region? Threading race conditions likely!");
 #endif
 #endif
 

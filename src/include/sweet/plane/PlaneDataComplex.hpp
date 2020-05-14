@@ -24,9 +24,8 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
-#include <sweet/FatalError.hpp>
-
 #include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 #if !SWEET_USE_LIBFFT
@@ -495,10 +494,10 @@ public:
 
 #if SWEET_DEBUG
 		if (i >= planeDataConfig->spectral_complex_data_size[0])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, i");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_get, i");
 
 		if (j >= planeDataConfig->spectral_complex_data_size[1])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, j");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_get, j");
 #endif
 
 		return spectral_space_data[j*planeDataConfig->spectral_complex_data_size[0]+i];
@@ -513,10 +512,10 @@ public:
 
 #if SWEET_DEBUG
 		if (i >= planeDataConfig->spectral_complex_data_size[0])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, i");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_get, i");
 
 		if (j >= planeDataConfig->spectral_complex_data_size[1])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_get, j");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_get, j");
 #endif
 
 		return spectral_space_data[j*planeDataConfig->spectral_complex_data_size[0]+i];
@@ -560,10 +559,10 @@ public:
 	{
 #if SWEET_DEBUG
 		if (i >= planeDataConfig->spectral_complex_data_size[0])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, i");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_set, i");
 
 		if (j >= planeDataConfig->spectral_complex_data_size[1])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, j");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_set, j");
 #endif
 
 		physical_space_data_valid = false;
@@ -584,10 +583,10 @@ public:
 	{
 #if SWEET_DEBUG
 		if (i >= planeDataConfig->spectral_complex_data_size[0])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, i");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_set, i");
 
 		if (j >= planeDataConfig->spectral_complex_data_size[1])
-			FatalError("Out of boundary, PlaneDataComplex, p_spectral_set, j");
+			SWEETError("Out of boundary, PlaneDataComplex, p_spectral_set, j");
 #endif
 
 		physical_space_data_valid = false;
@@ -640,14 +639,14 @@ public:
 	{
 #if !SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
 
-		FatalError("request_data_spectral: spectral space is disabled");
+		SWEETError("request_data_spectral: spectral space is disabled");
 
 #else
 
 #if SWEET_DEBUG
 	#if SWEET_THREADING_SPACE
 		if (omp_get_num_threads() > 1)
-			FatalError("Are we already in parallel region? Threading race conditions likely!");
+			SWEETError("Are we already in parallel region? Threading race conditions likely!");
 	#endif
 #endif
 
@@ -659,7 +658,7 @@ public:
 
 #if SWEET_DEBUG
 		if (!physical_space_data_valid)
-			FatalError("Spectral data not available! Is this maybe a non-initialized operator?");
+			SWEETError("Spectral data not available! Is this maybe a non-initialized operator?");
 #endif
 
 		planeDataConfig->fft_complex_physical_to_spectral(rw_array_data->physical_space_data, rw_array_data->spectral_space_data);
@@ -687,7 +686,7 @@ public:
 
 #if SWEET_DEBUG
 		if (!spectral_space_data_valid)
-			FatalError("Physical data not available and no spectral data!");
+			SWEETError("Physical data not available and no spectral data!");
 #endif
 
 		planeDataConfig->fft_spectral_to_complex_physical(rw_array_data->spectral_space_data, rw_array_data->physical_space_data);
@@ -2473,7 +2472,7 @@ public:
 			std::ifstream file(i_filename, std::ios::binary);
 
 			if (!file)
-				FatalError(std::string("Failed to open file ")+i_filename);
+				SWEETError(std::string("Failed to open file ")+i_filename);
 
 			file.seekg(0, std::ios::end);
 			std::size_t size = file.tellg();
@@ -2485,13 +2484,13 @@ public:
 			{
 				std::cerr << "Error while loading data from file " << i_filename << ":" << std::endl;
 				std::cerr << "Size of file " << size << " does not match expected size of " << expected_size << std::endl;
-				FatalError("EXIT");
+				SWEETError("EXIT");
 			}
 
 			if (!file.read((char*)physical_space_data, expected_size))
 			{
 				std::cerr << "Error while loading data from file " << i_filename << std::endl;
-				FatalError("EXIT");
+				SWEETError("EXIT");
 			}
 
 #if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
@@ -2576,7 +2575,7 @@ public:
 						std::cout << std::setprecision(5);
 						print_spectralData_zeroNumZero();
 						std::cout << "Mode " << j << ", " << i << std::endl;
-						FatalError("Invalid symmetry detected");
+						SWEETError("Invalid symmetry detected");
 					}
 				}
 			}

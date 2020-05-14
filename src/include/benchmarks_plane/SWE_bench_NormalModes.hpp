@@ -74,7 +74,7 @@ public:
 		const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
-			FatalError("Staggering not supported");
+			SWEETError("Staggering not supported");
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
 
@@ -85,10 +85,10 @@ public:
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
 		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 
 		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 
 		//Check for mirror effects
 		T k0 = (T)ik0;
@@ -251,7 +251,7 @@ public:
 		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
-			FatalError("Staggering not supported");
+			SWEETError("Staggering not supported");
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
 
@@ -262,10 +262,10 @@ public:
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
 		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 
 		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
-			FatalError("Normal_mode: mode not within reach");
+			SWEETError("Normal_mode: mode not within reach");
 
 		//Check for mirror effects
 		T k0 = (T)ik0;
@@ -338,7 +338,7 @@ public:
 		//std::cout<<i_inverse<<std::endl;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
-			FatalError("Staggering not supported");
+			SWEETError("Staggering not supported");
 		
 		complex I(0.0, 1.0);
 		//std::cout<<"Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
@@ -763,7 +763,7 @@ public:
 	{
 		
 		if(bcase==""){
-			FatalError("SWE_bench_NormalModes: please choose the normal mode case with --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");
+			SWEETError("SWE_bench_NormalModes: please choose the normal mode case with --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");
 		};
 		std::cout<< bcase <<std::endl;
 
@@ -779,7 +779,7 @@ public:
 			iss >> nwaves;
 			if(nwaves>maxwaves){
 				std::cout<< "Waves:"<<nwaves<<" , maxwaves hardcoded:"<<maxwaves<<std::endl;
-				FatalError("SWE_bench_NormalModes: Adjust maximun number of waves");	
+				SWEETError("SWE_bench_NormalModes: Adjust maximun number of waves");	
 			}
 			std::cout<< "[MULE] simulation_benchmark_normal_modes.case: "<<bcasename<< std::endl;
 			std::cout<< "[MULE] simulation_benchmark_normal_modes.nwaves: " << nwaves << std::endl;
@@ -797,11 +797,11 @@ public:
 				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".d0: "<< d0[n] << std::endl;
 				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".dwest: "<< dwest[n] << std::endl;
 				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".deast: "<< deast[n] << std::endl;
-				//FatalError("SWE_bench_NormalModes: Adjust maximun number of waves");	
+				//SWEETError("SWE_bench_NormalModes: Adjust maximun number of waves");	
 			}
 		}
 		else{
-			FatalError("SWE_bench_NormalModes: Please follow naming convention for nomal mode initialization: waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest");
+			SWEETError("SWE_bench_NormalModes: Please follow naming convention for nomal mode initialization: waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest");
 		}
 		return;
 
@@ -876,7 +876,7 @@ public:
 				}
 				else
 				{
-					FatalError("SWE_bench_NormalModes: invalid wavenumber selection in --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");		
+					SWEETError("SWE_bench_NormalModes: invalid wavenumber selection in --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");		
 				
 				}
 			}

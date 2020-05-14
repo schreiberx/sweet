@@ -68,7 +68,7 @@ public:
 		else
 		{
 			std::cout << i_timestepping_method << std::endl;
-			FatalError("No valid --timestepping-method provided");
+			SWEETError("No valid --timestepping-method provided");
 		}
 	}
 

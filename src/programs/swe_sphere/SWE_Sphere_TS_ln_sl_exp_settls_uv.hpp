@@ -26,7 +26,7 @@
 class SWE_Sphere_TS_ln_sl_exp_settls_uv	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		/*
 		 * Should contain _exp and _settls as well as _uv to indicate vorticity-divergence formulation
@@ -81,8 +81,8 @@ private:
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	SWE_Sphere_TS_ln_erk_split_uv* swe_sphere_ts_ln_erk_split_uv;
-	SWE_Sphere_TS_l_exp *swe_sphere_ts_l_rexi;
+	SWE_Sphere_TS_ln_erk_split_uv* swe_sphere_ts_ln_erk_split_uv = nullptr;
+	SWE_Sphere_TS_l_exp *swe_sphere_ts_l_rexi = nullptr;
 
 
 public:

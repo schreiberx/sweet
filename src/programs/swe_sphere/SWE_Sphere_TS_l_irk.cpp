@@ -55,7 +55,7 @@ void SWE_Sphere_TS_l_irk::setup(
 	use_f_sphere = simVars.sim.sphere_use_fsphere;
 
 	if (i_timestep_order != 1)
-		FatalError("Only 1st order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
+		SWEETError("Only 1st order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
 
 	use_extended_modes = i_use_extended_modes;
 
@@ -138,7 +138,7 @@ void SWE_Sphere_TS_l_irk::run_timestep_nonpert(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
@@ -171,7 +171,7 @@ void SWE_Sphere_TS_l_irk::run_timestep_nonpert(
 	else
 	{
 		if (!simVars.misc.sphere_use_robert_functions)
-			FatalError("Using no Robert formulation is not yet supported in this time integrator");
+			SWEETError("Using no Robert formulation is not yet supported in this time integrator");
 
 		SphereData_Spectral rhs(sphereDataConfig);
 

@@ -23,7 +23,7 @@
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/Stopwatch.hpp>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 #include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include <ostream>
 #include <algorithm>
@@ -221,7 +221,7 @@ public:
 		{
 			std::cout << "Benchmark scenario not selected (option --benchmark-name [string])" << std::endl;
 			swePlaneBenchmarks.printBenchmarkInformation();
-			FatalError("Benchmark name not given");
+			SWEETError("Benchmark name not given");
 		}
 
 
@@ -257,11 +257,11 @@ public:
 
 		// Check if input parameters are adequate for this simulation
 		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
-			FatalError("Staggering and spectral basis not supported!");
+			SWEETError("Staggering and spectral basis not supported!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (simVars.disc.space_grid_use_c_staggering ||  !simVars.disc.space_use_spectral_basis_diffs)
-			FatalError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
+			SWEETError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
 
@@ -490,7 +490,7 @@ public:
 		simVars.timecontrol.current_timestep_nr++;
 
 		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
-			FatalError("Max simulation time exceeded!");
+			SWEETError("Max simulation time exceeded!");
 
 		timestep_do_output();
 	}
@@ -1383,7 +1383,7 @@ int main(int i_argc, char *i_argv[])
 		MPI_Init_thread(&i_argc, &i_argv, MPI_THREAD_MULTIPLE, &provided);
 
 		if (provided != MPI_THREAD_MULTIPLE)
-			FatalError("MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye...");
+			SWEETError("MPI_THREAD_MULTIPLE not available! Try to get an MPI version with multi-threading support or compile without OMP/TBB support. Good bye...");
 	#else
 		MPI_Init(&i_argc, &i_argv);
 	#endif
@@ -1521,7 +1521,7 @@ int main(int i_argc, char *i_argv[])
 					if (simVars.misc.instability_checks)
 					{
 						if (simulationSWE->instability_detected())
-							FatalError("INSTABILITY DETECTED");
+							SWEETError("INSTABILITY DETECTED");
 					}
 				}
 

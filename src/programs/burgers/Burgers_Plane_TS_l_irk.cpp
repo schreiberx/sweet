@@ -20,7 +20,7 @@ void Burgers_Plane_TS_l_irk::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_l_irk: Only constant time step size allowed");
+		SWEETError("Burgers_Plane_TS_l_irk: Only constant time step size allowed");
 
 
 	// setup dummy data
@@ -59,10 +59,10 @@ void Burgers_Plane_TS_l_irk::run_timestep(
 			io_v = io_v + i_fixed_dt*k1_v;
 		}
 		else
-			FatalError("This timestepping order is not available with l_irk");
+			SWEETError("This timestepping order is not available with l_irk");
 
 	} else { //Jacobi
-		FatalError("NOT available");
+		SWEETError("NOT available");
 	}
 
 }

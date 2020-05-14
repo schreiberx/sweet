@@ -42,7 +42,7 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 		rhs_v += - 0.5*t*(u*op.diff_c_x(v)+v*op.diff_c_y(v));
 	}
 	else
-		FatalError("The chosen timestepping-order is not possible with IMEX");
+		SWEETError("The chosen timestepping-order is not possible with IMEX");
 
 	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 	{
@@ -65,7 +65,7 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 			  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
 
 	} else { //Jacobi
-		FatalError("NOT available");
+		SWEETError("NOT available");
 	}
 }
 

@@ -28,7 +28,7 @@
 class SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (i_timestepping_method == "l_irk_na_sl_nr_settls_vd_only")
 			return true;
@@ -60,8 +60,8 @@ private:
 
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order;
-	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk;
+	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order = nullptr;
+	SWE_Sphere_TS_l_irk* swe_sphere_ts_l_irk = nullptr;
 
 
 

@@ -5,10 +5,10 @@
  *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
 
-#include <sweet/FatalError.hpp>
 #include <iostream>
 #include <iomanip>
 #include <libmath/EigenMatrix3.hpp>
+#include <sweet/SWEETError.hpp>
 
 #if SWEET_EIGEN
 #include <Eigen/Eigenvalues>
@@ -21,7 +21,7 @@ int main(
 {
 
 #if !SWEET_EIGEN
-	FatalError("Cannot test this without Eigen library. Please compile with --eigen=enable");
+	SWEETError("Cannot test this without Eigen library. Please compile with --eigen=enable");
 #endif
 
 	Eigen::MatrixXcf A(3,3) ;

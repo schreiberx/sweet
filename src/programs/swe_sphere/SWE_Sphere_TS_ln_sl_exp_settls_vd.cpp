@@ -328,7 +328,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup_auto()
 		{
 			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
 			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
-			FatalError("Autodetection of parts of time stepping methods failed!");
+			SWEETError("Autodetection of parts of time stepping methods failed!");
 		}
 
 		std::string string_id_storage2 = string_id_storage+"_ver0"+"_vd";
@@ -337,7 +337,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup_auto()
 			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
 			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
 			std::cerr << "Detected alternative time stepping method: "+string_id_storage2 << std::endl;
-			FatalError("Autodetection of parts of time stepping methods failed!");
+			SWEETError("Autodetection of parts of time stepping methods failed!");
 		}
 	}
 #endif
@@ -368,7 +368,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup(
 
 
 	if (timestepping_order != 2)
-		FatalError("Invalid time stepping order, only 2nd order supported");
+		SWEETError("Invalid time stepping order, only 2nd order supported");
 
 	// Setup semi-lag
 	semiLagrangian.setup(op.sphereDataConfig);
@@ -402,6 +402,7 @@ SWE_Sphere_TS_ln_sl_exp_settls_vd::SWE_Sphere_TS_ln_sl_exp_settls_vd(
 
 SWE_Sphere_TS_ln_sl_exp_settls_vd::~SWE_Sphere_TS_ln_sl_exp_settls_vd()
 {
+	delete swe_sphere_ts_ln_erk_split_vd;
 	delete swe_sphere_ts_l_rexi;
 }
 

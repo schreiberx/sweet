@@ -22,7 +22,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_pert(
 {
 	if (timestepping_order == 1)
 	{
-		FatalError("TODO run_timestep_1st_order_pert");
+		SWEETError("TODO run_timestep_1st_order_pert");
 	}
 	else if (timestepping_order == 2)
 	{
@@ -30,7 +30,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_pert(
 	}
 	else
 	{
-		FatalError("Only orders 1/2 supported (ERRID 098nd89eje)");
+		SWEETError("Only orders 1/2 supported (ERRID 098nd89eje)");
 	}
 }
 
@@ -116,7 +116,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::interpolate_departure_point_uv
 			rot_x, rot_y, rot_z
 		);
 
-	SWEETMath::normalize_threshold(rot_x, rot_y, rot_z);
+	SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
 
 	/*
 	 * Convert to Cartesian velocity space
@@ -195,7 +195,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Sphere_TS_l_na_settls_only: Only constant time step size allowed (Please set --dt)");
+		SWEETError("SWE_Sphere_TS_l_na_settls_only: Only constant time step size allowed (Please set --dt)");
 
 	const SphereData_Spectral &U_phi = io_U_phi;
 	const SphereData_Spectral &U_vrt = io_U_vrt;
@@ -400,7 +400,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only::setup(
 	timestepping_order = i_timestepping_order;
 
 	if (timestepping_order != 1 && timestepping_order != 2)
-		FatalError("Invalid time stepping order, must be 1 or 2");
+		SWEETError("Invalid time stepping order, must be 1 or 2");
 
 	// Setup semi-lag
 	semiLagrangian.setup(op.sphereDataConfig);

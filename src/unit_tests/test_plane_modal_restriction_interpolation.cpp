@@ -114,7 +114,7 @@ int main(int i_argc, char *i_argv[])
 		std::cout << std::endl;
 
 		if ((res & 1) == 1)
-			FatalError("Only even resolutions supported");
+			SWEETError("Only even resolutions supported");
 
 		PlaneData a(planeDataConfig);
 
@@ -193,7 +193,7 @@ int main(int i_argc, char *i_argv[])
 							if (error > epsilon)
 							{
 								std::cout << "Error: " << error << std::endl;
-								FatalError("Test for conserving high frequencies failed! Results should be identical!");
+								SWEETError("Test for conserving high frequencies failed! Results should be identical!");
 							}
 						}
 
@@ -250,7 +250,7 @@ int main(int i_argc, char *i_argv[])
 								std::cout << std::endl;
 
 								std::cout << "Error: " << error << std::endl;
-								FatalError("No modes changed! Results should be identical!");
+								SWEETError("No modes changed! Results should be identical!");
 							}
 
 							std::cout << "PASSED (freq test) with error of " << error << std::endl;
@@ -282,7 +282,7 @@ int main(int i_argc, char *i_argv[])
 							test.print_spectralData_zeroNumZero();
 
 							std::cout << "Error: " << error << std::endl;
-							FatalError("Mode extension requested, but interpolation followed by restriction does not return identical results!");
+							SWEETError("Mode extension requested, but interpolation followed by restriction does not return identical results!");
 						}
 
 						std::cout << "PASSED (setup 123) with error of " << error << std::endl;

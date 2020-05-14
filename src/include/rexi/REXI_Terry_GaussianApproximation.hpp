@@ -8,8 +8,8 @@
 #define SRC_INCLUDE_REXI_REXI_TERRY_GAUSSIANAPPROXIMATION_HPP_
 
 #include <sweet/sweetmath.hpp>
-#include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
+#include <sweet/SWEETError.hpp>
 #include <iostream>
 #include <complex>
 #include <vector>
@@ -67,7 +67,7 @@ public:
 		}
 		else
 		{
-			FatalError("Type T not supported");
+			SWEETError("Type T not supported");
 		}
 
 

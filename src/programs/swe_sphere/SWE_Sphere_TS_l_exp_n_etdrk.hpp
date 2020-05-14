@@ -12,8 +12,8 @@
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include "SWE_Sphere_TS_interface.hpp"
 
+#include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_exp.hpp"
 
@@ -21,7 +21,7 @@
 class SWE_Sphere_TS_l_exp_n_etdrk	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (i_timestepping_method == "l_exp_n_etdrk")
 			return true;
@@ -37,7 +37,7 @@ public:
 	void setup_auto()
 	{
 		if (simVars.sim.sphere_use_fsphere)
-			FatalError("TODO: Not yet supported");
+			SWEETError("TODO: Not yet supported");
 
 		setup(
 				simVars.rexi,

@@ -939,7 +939,7 @@ int main(
 #endif
 	else
 	{
-		FatalError("Not supported!");
+		SWEETError("Not supported!");
 //		std::cout << "Use -e [0/1] to specify convergence test: 0 = spatial refinement, 1 = time refinement" << std::endl;
 	}
 

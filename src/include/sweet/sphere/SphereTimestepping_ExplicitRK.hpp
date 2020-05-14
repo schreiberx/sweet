@@ -34,7 +34,7 @@ public:
 		int N = runge_kutta_order;
 
 		if (N <= 0 || N > 4)
-			FatalError("Invalid order for RK time stepping");
+			SWEETError("Invalid order for RK time stepping");
 
 		RK_h_t.resize(N);
 		RK_u_t.resize(N);
@@ -484,7 +484,7 @@ public:
 		}
 		else
 		{
-			FatalError("This order of the Runge-Kutta time stepping is not supported!");
+			SWEETError("This order of the Runge-Kutta time stepping is not supported!");
 		}
 	}
 

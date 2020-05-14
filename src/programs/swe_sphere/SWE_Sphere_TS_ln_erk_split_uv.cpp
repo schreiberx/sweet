@@ -58,12 +58,12 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_lc(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+//	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
 
-	const SphereData_Spectral &U_phi_pert = i_U_phi;
+//	const SphereData_Spectral &U_phi_pert = i_U_phi;
 	//const SphereData_Spectral &U_vrt = i_U_vrt;
-	const SphereData_Spectral &U_div = i_U_div;
+//	const SphereData_Spectral &U_div = i_U_div;
 
 
 	SphereData_Physical U_u_phys, U_v_phys;
@@ -97,7 +97,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert_na(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+//	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
 
 	const SphereData_Spectral &U_phi_pert = i_U_phi;
@@ -166,12 +166,12 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_pert(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
+//	double gh0 = simVars.sim.gravitation * simVars.sim.h0;
 
 
-	const SphereData_Spectral &U_phi = i_U_phi;
+//	const SphereData_Spectral &U_phi = i_U_phi;
 	//const SphereData_Spectral &U_vrt = i_U_vrt;
-	const SphereData_Spectral &U_div = i_U_div;
+//	const SphereData_Spectral &U_div = i_U_div;
 
 
 	SphereData_Physical U_u_phys, U_v_phys;
@@ -367,7 +367,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::run_timestep_pert(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	// standard time stepping
 	timestepping_rk.run_timestep(

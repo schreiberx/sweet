@@ -6,7 +6,7 @@
  */
 
 #include <libmath/GaussQuadrature.hpp>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 #include <iostream>
 #include <iomanip>
 
@@ -41,7 +41,7 @@ int main(
 		std::cout << "integrate5_intervals_adaptive_linear - QuadVal: " << quad_val << ", IntValue: " << int_value << std::endl;
 
 		if (std::abs(quad_val - int_value) > error_threshold)
-			FatalError("ERROR threshold exceeded");
+			SWEETError("ERROR threshold exceeded");
 	}
 
 
@@ -50,7 +50,7 @@ int main(
 		std::cout << "integrate5_intervals_adaptive_recursive - QuadVal: " << quad_val << ", IntValue: " << int_value << std::endl;
 
 		if (std::abs(quad_val - int_value) > error_threshold)
-			FatalError("ERROR threshold exceeded");
+			SWEETError("ERROR threshold exceeded");
 	}
 
 	{
@@ -58,6 +58,6 @@ int main(
 		std::cout << "integrate5_intervals - QuadVal: " << quad_val << ", IntValue: " << int_value << std::endl;
 
 		if (std::abs(quad_val - int_value) > error_threshold)
-			FatalError("ERROR threshold exceeded");
+			SWEETError("ERROR threshold exceeded");
 	}
 }

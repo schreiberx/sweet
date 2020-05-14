@@ -163,10 +163,10 @@ int main(
 				rate_max = prev_linear_error_max/error_max;
 
 				if (std::isnan(rate_rms))
-					FatalError("NaN detected: error_rms");
+					SWEETError("NaN detected: error_rms");
 
 				if (std::isnan(rate_max))
-					FatalError("NaN detected: error_max");
+					SWEETError("NaN detected: error_max");
 
 				if (
 						rate_rms < 3.9 || rate_rms > 4 ||
@@ -210,10 +210,10 @@ int main(
 				rate_max = prev_cubic_error_max/error_max;
 
 				if (std::isnan(error_rms))
-					FatalError("NaN detected: error_rms");
+					SWEETError("NaN detected: error_rms");
 
 				if (std::isnan(error_max))
-					FatalError("NaN detected: error_max");
+					SWEETError("NaN detected: error_max");
 
 				if (
 						//rate_rms < 7.9 || rate_rms > 9 ||

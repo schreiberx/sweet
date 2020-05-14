@@ -36,7 +36,7 @@ public:
 		int N = i_rk_order;
 
 		if (N <= 0 || N > 4)
-			FatalError("Invalid order for RK time stepping (Please set --timestepping-order and/or --timestepping-order2)");
+			SWEETError("Invalid order for RK time stepping (Please set --timestepping-order and/or --timestepping-order2)");
 
 		RK_h_t = new PlaneData*[N];
 		RK_u_t = new PlaneData*[N];

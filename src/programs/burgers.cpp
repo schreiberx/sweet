@@ -15,7 +15,7 @@
 #include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
 
 #include <sweet/Stopwatch.hpp>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -167,7 +167,7 @@ public:
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
 			BurgersValidationBenchmarks::printScenarioInformation();
-			FatalError("Benchmark scenario not selected");
+			SWEETError("Benchmark scenario not selected");
 		}
 #endif
 		// Initialize diagnostics
@@ -197,11 +197,11 @@ public:
 
 		//Check if input parameters are adequate for this simulation
 		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
-			FatalError("Staggering and spectral basis not supported!");
+			SWEETError("Staggering and spectral basis not supported!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		if (simVars.disc.space_grid_use_c_staggering ||  !simVars.disc.space_use_spectral_basis_diffs)
-			FatalError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
+			SWEETError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
 		// Set initial conditions given from BurgersValidationBenchmarks
@@ -293,7 +293,7 @@ public:
          else if (foundl)
             analytic_solution = 2;
          else
-            FatalError("Computing errors for this timestepping-method is not possible");
+            Error("Computing errors for this timestepping-method is not possible");
       }
 	}
 
@@ -357,7 +357,7 @@ public:
 		simVars.timecontrol.current_timestep_nr++;
 
 		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
-			FatalError("Max simulation time exceeded!");
+			SWEETError("Max simulation time exceeded!");
 
 #if SWEET_PARAREAL
 		if (!simVars.parareal.enabled)

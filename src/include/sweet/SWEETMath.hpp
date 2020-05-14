@@ -59,17 +59,18 @@ public:
 	}
 
 
+
 	/*
 	 * Normalize by using threshold
 	 *
 	 * If the L2^2 value is smaller than the threshold, the norm is set to 1 instead of infinity
 	 */
 	static
-	void normalize_threshold(
+	void normalize_with_threshold(
 			ScalarDataArray &io_v0,
 			ScalarDataArray &io_v1,
 			ScalarDataArray &io_v2,
-			double i_threshold = 1e-20
+			double i_threshold = 1e-20	// Default threshold for unit sphere and assuming this to be for the rotation axis
 	)
 	{
 		double threshold2 = i_threshold*i_threshold;

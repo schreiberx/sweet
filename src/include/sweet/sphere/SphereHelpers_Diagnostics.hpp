@@ -46,7 +46,7 @@ public:
 		if (n*2 != sphereDataConfig->physical_num_lat)
 		{
 			std::cerr << "Returned " << n << " number of Gaussian quadrature point (halved)" << std::endl;
-			FatalError("Wrong number of Gaussian quadrature points given!");
+			SWEETError("Wrong number of Gaussian quadrature points given!");
 		}
 
 		for (int i = 0; i < sphereDataConfig->physical_num_lat/2; i++)
@@ -82,7 +82,7 @@ public:
 					if (m != 0 && integral > 10e-12)
 					{
 						std::cout << n << ", " << m << ": Integral value expected to be close to zero, but is " << integral << std::endl;
-						FatalError("Integral value not close to zero for m != 0");
+						SWEETError("Integral value not close to zero for m != 0");
 					}
 				}
 
@@ -115,7 +115,7 @@ public:
 			accurate += 1.0/(2.0*n-1.0)*(std::pow(1.0, 2.0*n-1.0)-std::pow(-1.0, 2.0*n-1.0));
 
 			if (std::abs(accurate-sum) > 1e-10)
-				FatalError("Error in quadrature");
+				SWEETError("Error in quadrature");
 		}
 	}
 

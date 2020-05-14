@@ -11,7 +11,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <getopt.h>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 
@@ -370,7 +370,7 @@ public:
 					std::cerr << "Unable to process REXI file parameters" << std::endl;
 					std::cerr << "Current parameter: " << rexi_files << std::endl;
 					std::cerr << "Current REXI coefficient file: " << split_rexi_files[i] << std::endl;
-					FatalError("Invalid format");
+					SWEETError("Invalid format");
 				}
 			}
 
@@ -378,7 +378,7 @@ public:
 		}
 
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
-			FatalError("Invalid argument for '--rexi-method='");
+			SWEETError("Invalid argument for '--rexi-method='");
 
 		return 16;
 	}

@@ -97,7 +97,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-			FatalError("Only fixed time step size allowed (set --dt)");
+			SWEETError("Only fixed time step size allowed (set --dt)");
 
 	if (timestepping_order == 1)
 	{
@@ -153,7 +153,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 	}
 	else
 	{
-		FatalError("SWE_Plane_TS_l_erk_n_erk: Order not yet supported!");
+		SWEETError("SWE_Plane_TS_l_erk_n_erk: Order not yet supported!");
 	}
 }
 
@@ -175,13 +175,13 @@ void SWE_Plane_TS_l_erk_n_erk::setup(
 	use_only_linear_divergence = i_use_only_linear_divergence;
 
 	if (timestepping_order != timestepping_order2)
-		FatalError("TODO: Currently, both time stepping orders (1 and 2) have to match!");
+		SWEETError("TODO: Currently, both time stepping orders (1 and 2) have to match!");
 
 	timestepping_rk_linear.setupBuffers(op.planeDataConfig, timestepping_order);
 	timestepping_rk_nonlinear.setupBuffers(op.planeDataConfig, timestepping_order2);
 
 	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("SWE_Plane_TS_l_erk_n_erk: Staggering not supported");
+		SWEETError("SWE_Plane_TS_l_erk_n_erk: Staggering not supported");
 }
 
 

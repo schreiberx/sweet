@@ -99,14 +99,14 @@ int main(
 
 	if (simVars.rexi.rexi_method == "direct")
 	{
-		FatalError("Direct REXI mode not supported");
+		SWEETError("Direct REXI mode not supported");
 	}
 	else if (simVars.rexi.rexi_method == "file")
 	{
 		rexiCoefficientsSet.setup_from_files(simVars.rexi.rexi_files);
 
 		if (rexiCoefficientsSet.rexiCoefficientVector.size() == 0)
-			FatalError("No REXI coefficient loaded");
+			SWEETError("No REXI coefficient loaded");
 	}
 	else if (simVars.rexi.rexi_method == "terry" || simVars.rexi.rexi_method == "ci")
 	{
@@ -119,7 +119,7 @@ int main(
 	}
 	else
 	{
-		FatalError("This REXI method is not supported");
+		SWEETError("This REXI method is not supported");
 	}
 
 	std::cout << "+ test_mode: " << test_mode << std::endl;
@@ -182,7 +182,7 @@ int main(
 
 	if (simVars.rexi.rexi_method == "ci")
 		if (simVars.timecontrol.current_timestep_size <= 0)
-			FatalError("Please specify time step size with --dt=...");
+			SWEETError("Please specify time step size with --dt=...");
 */
 /*
 	std::cout << "Loading REXI coefficients..." << std::flush;

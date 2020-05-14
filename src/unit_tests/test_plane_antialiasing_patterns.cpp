@@ -150,7 +150,7 @@ int main(int i_argc, char *i_argv[])
 		{
 			if (h.spectral_space_data[i] != 2.0 && h.spectral_space_data[i] != 0.0)
 			{
-				FatalError("INCONSISTENT ALIASING !!!");
+				SWEETError("INCONSISTENT ALIASING !!!");
 			}
 		}
 	}

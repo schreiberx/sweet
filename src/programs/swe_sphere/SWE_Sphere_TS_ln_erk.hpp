@@ -14,13 +14,13 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
-#include "../../programs/swe_sphere/SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
 
 
 class SWE_Sphere_TS_ln_erk	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (i_timestepping_method == "ln_erk")
 			return true;

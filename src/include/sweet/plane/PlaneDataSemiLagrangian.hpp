@@ -165,7 +165,7 @@ public:
 		}
 		else
 		{
-			FatalError("This time integration order is not implemented");
+			SWEETError("This time integration order is not implemented");
 		}
 
 

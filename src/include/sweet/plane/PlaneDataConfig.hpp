@@ -22,7 +22,7 @@
 #include <complex>
 #include <iomanip>
 #include <sweet/sweetmath.hpp>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 
@@ -287,7 +287,7 @@ public:
 	{
 #if SWEET_THREADING_SPACE && SWEET_DEBUG
 		if (omp_get_level() != 0)
-			FatalError("PlaneDataConfig is not threadsafe, but called inside parallel region with more than one thread!!!");
+			SWEETError("PlaneDataConfig is not threadsafe, but called inside parallel region with more than one thread!!!");
 #endif
 
 		static int ref_counter = 0;
@@ -345,7 +345,7 @@ private:
 				physical_res[1] < spectral_modes[1]
 		)
 		{
-			FatalError("Lower physical resolution than spectral resolution not supported!");
+			SWEETError("Lower physical resolution than spectral resolution not supported!");
 		}
 
 		assert(physical_res[0] > 0);
@@ -451,10 +451,10 @@ private:
 			spectral_data_size[1] = physical_data_size[1];
 
 			if ((physical_data_size[0] & 1) == 1)
-				FatalError("Unsupported odd resolution in x-direction");
+				SWEETError("Unsupported odd resolution in x-direction");
 
 			if ((physical_data_size[1] & 1) == 1)
-				FatalError("Unsupported odd resolution in y-direction");
+				SWEETError("Unsupported odd resolution in y-direction");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
@@ -466,7 +466,7 @@ private:
 			if (	spectral_modes[0] == physical_res[0] ||
 					spectral_modes[1] == physical_res[1]
 			)
-				FatalError("Aliasing doesn't make sense since physical resolution is identical to spectral");
+				SWEETError("Aliasing doesn't make sense since physical resolution is identical to spectral");
 
 			spectral_data_iteration_ranges[0][0][0] = 0;
 			spectral_data_iteration_ranges[0][0][1] = (physical_data_size[0]-1)/3;
@@ -584,10 +584,10 @@ private:
 			spectral_complex_data_size[1] = physical_data_size[1];
 
 			if ((spectral_complex_data_size[0] & 1) == 1)
-				FatalError("Not supported c");
+				SWEETError("Not supported c");
 
 			if ((spectral_complex_data_size[1] & 1) == 1)
-				FatalError("Not supported d");
+				SWEETError("Not supported d");
 
 			spectral_complex_ranges[0][0][0] = spectral_data_iteration_ranges[0][0][0];
 			spectral_complex_ranges[0][0][1] = spectral_data_iteration_ranges[0][0][1];
@@ -844,12 +844,12 @@ public:
 			io_physical_res[0] = physical_res[0];
 			io_physical_res[1] = physical_res[1];
 #else
-			FatalError("Setup with spectral modes not enabled");
+			SWEETError("Setup with spectral modes not enabled");
 #endif
 			return;
 		}
 
-		FatalError("No resolution/modes selected");
+		SWEETError("No resolution/modes selected");
 	}
 
 

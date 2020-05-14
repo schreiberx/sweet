@@ -59,7 +59,7 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_rexi_n_erk: Only constant time step size allowed");
+		SWEETError("SWE_Plane_TS_l_rexi_n_erk: Only constant time step size allowed");
 
 	if (timestepping_order_nonlinear == 1)
 	{
@@ -105,7 +105,7 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 	}
 	else
 	{
-		FatalError("SWE_Plane_TS_l_rexi_n_erk: Explicit erk order not implemented for this scheme, please set --timestepping-order2 to 1 or 2.");
+		SWEETError("SWE_Plane_TS_l_rexi_n_erk: Explicit erk order not implemented for this scheme, please set --timestepping-order2 to 1 or 2.");
 	}
 }
 
@@ -130,7 +130,7 @@ void SWE_Plane_TS_l_rexi_n_erk::setup(
 	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
 
 	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("Staggering not supported for l_rexi_n_erk");
+		SWEETError("Staggering not supported for l_rexi_n_erk");
 
 }
 

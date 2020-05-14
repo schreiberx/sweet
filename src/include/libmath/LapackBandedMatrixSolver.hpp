@@ -435,7 +435,7 @@ public:
 			exit(1);
 		}
 #else
-		FatalError("SWEET compiled without LAPACK!!!");
+		SWEETError("SWEET compiled without LAPACK!!!");
 #endif
 	}
 

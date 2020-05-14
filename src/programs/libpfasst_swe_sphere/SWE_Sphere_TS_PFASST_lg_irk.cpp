@@ -33,7 +33,7 @@ void SWE_Sphere_TS_PFASST_lg_irk::setup(
 )
 {
 	if (i_timestep_order != 1)
-		FatalError("Only 1st order IRK supported so far!");
+		SWEETError("Only 1st order IRK supported so far!");
 
 	timestep_size = i_timestep_size;
 
@@ -62,7 +62,7 @@ void SWE_Sphere_TS_PFASST_lg_irk::run_timestep_nonpert(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{

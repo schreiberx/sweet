@@ -122,7 +122,7 @@ void SWE_Sphere_TS_ln_erk::run_timestep_pert(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Only constant time step size allowed");
+		SWEETError("Only constant time step size allowed");
 
 	// standard time stepping
 	timestepping_rk.run_timestep(

@@ -175,7 +175,7 @@ void SWE_Sphere_TS_PFASST_l_erk_n_erk::euler_timestep_update(
 	 * TIME STEP SIZE
 	 */
         //if (i_fixed_dt <= 0)
-	//	FatalError("Only fixed time step size allowed");
+	//	SWEETError("Only fixed time step size allowed");
 
 	/*
 	 * NON-LINEAR
@@ -278,7 +278,7 @@ void SWE_Sphere_TS_PFASST_l_erk_n_erk::run_timestep_nonpert(
 	}
 	else
 	{
-		FatalError("Not yet supported!");
+		SWEETError("Not yet supported!");
 	}
 }
 

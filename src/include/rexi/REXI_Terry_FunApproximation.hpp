@@ -116,7 +116,7 @@ public:
 		}
 		else
 		{
-			FatalError("Type T not supported");
+			SWEETError("Type T not supported");
 		}
 	}
 
@@ -134,7 +134,7 @@ public:
 		if (i_x > 0)
 			return 1;
 
-		FatalError("Heaviside not defined at 0");
+		SWEETError("Heaviside not defined at 0");
 		return 0;
 	}
 
@@ -273,7 +273,7 @@ public:
 #endif
 		else
 		{
-			FatalError("Type not supported!");
+			SWEETError("Type not supported!");
 		}
 
 		h = i_h;
@@ -342,7 +342,7 @@ public:
 		}
 		else
 		{
-			FatalError(std::string("Function ")+i_function_name+std::string(" is not supported"));
+			SWEETError(std::string("Function ")+i_function_name+std::string(" is not supported"));
 		}
 	}
 

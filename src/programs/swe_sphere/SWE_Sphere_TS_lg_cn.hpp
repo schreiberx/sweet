@@ -25,7 +25,7 @@
 class SWE_Sphere_TS_lg_cn	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (i_timestepping_method == "lg_cn")
 			return true;

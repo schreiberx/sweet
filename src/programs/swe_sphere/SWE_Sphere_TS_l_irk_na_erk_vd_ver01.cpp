@@ -19,7 +19,7 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+//	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 	if (timestepping_order == 1 && timestepping_order2 == 1)
 	{
 		if (version_id == 0)
@@ -105,12 +105,12 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::run_timestep_pert(
 		}
 		else
 		{
-			FatalError("Invalid version id");
+			SWEETError("Invalid version id");
 		}
 	}
 	else
 	{
-		FatalError("Not yet supported!");
+		SWEETError("Not yet supported!");
 	}
 }
 
@@ -127,7 +127,7 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::setup(
 {
 	i_order = i_order2;
 	//if (i_order != i_order2)
-	//	FatalError("Orders of 1st and 2nd one must match");
+	//	SWEETError("Orders of 1st and 2nd one must match");
 
 	version_id = i_version_id;
 
@@ -163,12 +163,12 @@ void SWE_Sphere_TS_l_irk_na_erk_vd::setup(
 		}
 		else
 		{
-			FatalError("Invalid version");
+			SWEETError("Invalid version");
 		}
 	}
 	else
 	{
-		FatalError("Invalid timestepping order");
+		SWEETError("Invalid timestepping order");
 	}
 
 

@@ -280,11 +280,11 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep_nonpert(
 	}
 	else if (timestepping_order == 0)
 	{
-		FatalError("Please specify the timestepping order via --timestepping-order=[int]");
+		SWEETError("Please specify the timestepping order via --timestepping-order=[int]");
 	}
 	else
 	{
-		FatalError("programs/swe_sphere/SWE_Sphere_TS_l_erk_n_erk.cpp: This order is not yet supported!");
+		SWEETError("programs/swe_sphere/SWE_Sphere_TS_l_erk_n_erk.cpp: This order is not yet supported!");
 	}
 }
 

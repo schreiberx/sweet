@@ -100,7 +100,7 @@ public:
 		}
 		else
 		{
-			FatalError(std::string("Trajectory method '")+simVars.disc.semi_lagrangian_departure_point_method+"' not supported");
+			SWEETError(std::string("Trajectory method '")+simVars.disc.semi_lagrangian_departure_point_method+"' not supported");
 		}
 
 
@@ -150,7 +150,7 @@ public:
 		//SphereData_Physical u_lon_
 		if (simVars.sim.sphere_use_fsphere)
 		{
-			FatalError("Not supported");
+			SWEETError("Not supported");
 		}
 
 
@@ -231,11 +231,10 @@ public:
 			/*
 			 * Normalize rotation axis since it's likely not normalized yet
 			 */
-			SWEETMath::normalize_threshold(
+			SWEETMath::normalize_with_threshold(
 					rotation_axis_x,
 					rotation_axis_y,
-					rotation_axis_z,
-					1e-12				// close-to-0 threshold
+					rotation_axis_z
 				);
 
 			/*
@@ -674,19 +673,23 @@ public:
 			}
 			else
 			{
-				FatalError("Unknown departure point calculation method");
+				SWEETError("Unknown departure point calculation method");
 			}
 
 			return;
 		}
 
-		FatalError("Only 1st and 2nd order time integration supported");
+		SWEETError("Only 1st and 2nd order time integration supported");
 	}
 #endif
 
 
 	/*
 	 * Compute SL departure points on unit sphere for given dt*(u,v) velocities
+	 *
+	 * All this is for the unit sphere and unit time!
+	 *
+	 * Hence, the velocities need to be rescaled by "dt/radius"
 	 */
 	void semi_lag_departure_points_settls_specialized(
 		const SphereData_Physical &i_u_lon_prev,	///< Velocities at time t-1
@@ -1151,13 +1154,13 @@ public:
 			}
 			else
 			{
-				FatalError("Unknown departure point calculation method");
+				SWEETError("Unknown departure point calculation method");
 			}
 
 			return;
 		}
 
-		FatalError("Only 1st and 2nd order time integration supported");
+		SWEETError("Only 1st and 2nd order time integration supported");
 	}
 
 };

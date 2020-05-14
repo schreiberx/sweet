@@ -13,7 +13,7 @@
 #include <fftw3.h>
 #include <iostream>
 #include <sweet/sweetmath.hpp>
-#include <sweet/FatalError.hpp>
+#include <sweet/SWEETError.hpp>
 
 #if SWEET_MPI
 #	include <mpi.h>
@@ -629,7 +629,7 @@ public:
 
 		if (io_physical_res[0] > 0)
 		{
-			FatalError("TODO: Automatic spectral space mode computation");
+			SWEETError("TODO: Automatic spectral space mode computation");
 #if 0
 			setupAutoSpectralSpace(
 					io_physical_res[0],
@@ -658,13 +658,13 @@ public:
 			io_physical_res[0] = physical_num_lon;
 			io_physical_res[1] = physical_num_lat;
 #else
-			FatalError("Setup with spectral modes not enabled");
+			SWEETError("Setup with spectral modes not enabled");
 #endif
 
 			return;
 		}
 
-		FatalError("No resolution/modes selected");
+		SWEETError("No resolution/modes selected");
 	}
 
 

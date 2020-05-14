@@ -10,7 +10,6 @@
 
 
 #include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -19,6 +18,7 @@
 #include "libpfasst_swe_plane/LevelSingleton.hpp"
 #include "libpfasst_swe_plane/PlaneDataCtx.hpp"
 #include <mpi.h>
+#include <sweet/SWEETError.hpp>
 
 #define WITH_MPI
 
@@ -90,7 +90,7 @@ int main(int i_argc, char *i_argv[])
 		 simVars.libpfasst.nnodes == 9)
 	  nnodes[0] = 3; 
 	else 
-	  FatalError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
+	  Error("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
 	break;
       }
       // Three levels
@@ -111,12 +111,12 @@ int main(int i_argc, char *i_argv[])
 	    nnodes[1] = 3;
 	  }
 	else 
-	  FatalError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
+	  Error("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
 	break;
       }
       // All other cases not supported yet
       default:
-	FatalError("Only 1, 2, or 3 levels are currently supported");
+	SWEETError("Only 1, 2, or 3 levels are currently supported");
     }
   
   // setup the LevelSingletons for all levels

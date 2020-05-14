@@ -23,7 +23,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
+		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
 
 	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
@@ -99,7 +99,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		if (simVars.misc.use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-			FatalError("Implicit diffusion only supported with spectral space activated");
+			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
 			N_h = op.implicit_diffusion(N_h, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
 #endif
@@ -116,7 +116,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		if (simVars.misc.use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-			FatalError("Implicit diffusion only supported with spectral space activated");
+			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
 			hdiv = op.implicit_diffusion(hdiv, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
 #endif
@@ -189,7 +189,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 	ts_l_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
 
 	if (simVars.disc.space_grid_use_c_staggering)
-		FatalError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Staggering not supported for l_rexi_na_sl_nd_settls");
+		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Staggering not supported for l_rexi_na_sl_nd_settls");
 
 	//with_linear_div_only = i_use_linear_div;
 

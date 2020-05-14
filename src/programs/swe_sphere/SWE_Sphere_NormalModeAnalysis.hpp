@@ -66,7 +66,7 @@ public:
 
 		if (i_simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 		{
-			FatalError("TODO: Get this Leapfrog running");
+			SWEETError("TODO: Get this Leapfrog running");
 
 			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
@@ -104,7 +104,7 @@ public:
 
 			if (i_simVars.misc.normal_mode_analysis_generation == 1 || i_simVars.misc.normal_mode_analysis_generation == 11)
 			{
-				FatalError("Not supported anymore");
+				SWEETError("Not supported anymore");
 #if 0
 				// iterate over physical space
 				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
@@ -127,7 +127,7 @@ public:
 					// In case of a multi-step scheme, reset it!
 					if (i_simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 					{
-						FatalError("TODO 01943934");
+						SWEETError("TODO 01943934");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
 
 						i_simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
@@ -204,7 +204,7 @@ public:
 						// In case of a multi-step scheme, reset it!
 						if (i_simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 						{
-							FatalError("TODO 01943934");
+							SWEETError("TODO 01943934");
 							//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
 
 							i_simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
@@ -284,7 +284,7 @@ public:
 					// In case of a multi-step scheme, reset it!
 					if (i_simVars.disc.timestepping_method.find("_lf") != std::string::npos)
 					{
-						FatalError("TODO 01839471");
+						SWEETError("TODO 01839471");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_simVars.disc.timestepping_order, i_simVars.disc.leapfrog_robert_asselin_filter);
 
 						i_simVars.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
@@ -299,7 +299,7 @@ public:
 						i_simVars.timecontrol.current_timestep_size = leapfrog_original_timestep_size;
 
 						if (num_timesteps > 1)
-							FatalError("Doesn't make sense because the previous time step is half the time step size in advance");
+							SWEETError("Doesn't make sense because the previous time step is half the time step size in advance");
 					}
 					else
 					{

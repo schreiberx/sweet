@@ -293,7 +293,7 @@ public:
 		else if (i_timestepping_method == "l_irk")
 		{
 			if (i_simVars.disc.space_grid_use_c_staggering)
-				FatalError("Staggering not supported for l_irk");
+				SWEETError("Staggering not supported for l_irk");
 
 			l_irk = new SWE_Plane_TS_l_irk(i_simVars, i_op);
 			l_irk->setup(i_timestepping_order);
@@ -305,7 +305,7 @@ public:
 		else if (i_timestepping_method == "l_rexi")
 		{
 			if (i_simVars.disc.space_grid_use_c_staggering)
-				FatalError("Staggering not supported for l_rexi");
+				SWEETError("Staggering not supported for l_rexi");
 
 			l_rexi = new SWE_Plane_TS_l_rexi(i_simVars, i_op);
 			l_rexi->setup(
@@ -443,7 +443,7 @@ public:
 			std::cout << "      l_rexi_n_etdrk           : Non-linear: Linear REXI, Non-linear: ETDRK"  << std::endl;
 			std::cout << "      l_rexi_na_sl_nd_etdrk    : Non-linear: Linear REXI, Advection: Semi-Lag, Nonlinear-diverg: ETDRK"  << std::endl;
 
-			FatalError("No valid --timestepping-method provided");
+			SWEETError("No valid --timestepping-method provided");
 		}
 	}
 

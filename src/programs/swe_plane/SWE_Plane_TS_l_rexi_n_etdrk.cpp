@@ -54,7 +54,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 			o_h_t = - (i_h*op.diff_c_x(i_u) + i_h*op.diff_c_y(i_v));
 			//filter
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-			FatalError("Implicit diffusion only supported with spectral space activated");
+			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
 			o_h_t = op.implicit_diffusion(o_h_t, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
 #endif
@@ -81,7 +81,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 )
 {
 	if (i_dt <= 0)
-		FatalError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
+		SWEETError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
 
 
 	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
@@ -399,7 +399,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 	}
 	else
 	{
-		FatalError("TODO: This order is not implemented, yet!");
+		SWEETError("TODO: This order is not implemented, yet!");
 	}
 }
 

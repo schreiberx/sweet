@@ -12,8 +12,8 @@
 #include <limits>
 #include <iostream>
 #include <functional>
-#include <sweet/FatalError.hpp>
 #include <libmath/DQStuff.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 class GaussQuadrature
@@ -92,7 +92,7 @@ public:
 			prev_value = value;
 		}
 
-		FatalError("No convergence reached for integrate5_intervals_adaptive");
+		SWEETError("No convergence reached for integrate5_intervals_adaptive");
 		return -1;
 	}
 
@@ -209,7 +209,7 @@ public:
 			);
 
 		if (std::isinf((double)approx_integral))
-			FatalError("No convergence reached for integrate5_intervals_adaptive");
+			SWEETError("No convergence reached for integrate5_intervals_adaptive");
 
 		return approx_integral;
 	}

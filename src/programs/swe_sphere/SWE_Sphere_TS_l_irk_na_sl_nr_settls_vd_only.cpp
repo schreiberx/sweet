@@ -22,7 +22,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_pert(
 {
 	if (timestepping_order == 1)
 	{
-		FatalError("TODO run_timestep_1st_order_pert");
+		SWEETError("TODO run_timestep_1st_order_pert");
 	}
 	else if (timestepping_order == 2)
 	{
@@ -30,7 +30,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::run_timestep_pert(
 	}
 	else
 	{
-		FatalError("Only orders 1/2 supported (ERRID 098nd89eje)");
+		SWEETError("Only orders 1/2 supported (ERRID 098nd89eje)");
 	}
 }
 
@@ -312,7 +312,7 @@ void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::setup(
 	timestepping_order = i_timestepping_order;
 
 	if (timestepping_order != 1 && timestepping_order != 2)
-		FatalError("Invalid time stepping order, must be 1 or 2");
+		SWEETError("Invalid time stepping order, must be 1 or 2");
 
 	// Setup semi-lag
 	semiLagrangian.setup(op.sphereDataConfig);

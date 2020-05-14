@@ -331,7 +331,7 @@ int main(int i_argc, char *i_argv[])
 	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 
 	if (simVars.timecontrol.current_timestep_size < 0)
-		FatalError("Timestep size not set");
+		SWEETError("Timestep size not set");
 
 	int max_modes = 256;
 
@@ -408,13 +408,13 @@ int main(int i_argc, char *i_argv[])
 			if (err_lon > 1e-10)
 			{
 				std::cerr << "Error: " << err_lon << std::endl;
-				FatalError("Error lon too high!");
+				SWEETError("Error lon too high!");
 			}
 
 			if (err_lat > 1e-10)
 			{
 				std::cerr << "Error: " << err_lat << std::endl;
-				FatalError("Error lat too high!");
+				SWEETError("Error lat too high!");
 			}
 		}
 
@@ -452,11 +452,11 @@ int main(int i_argc, char *i_argv[])
 				std::cout << "Convergence: " << conv << std::endl;
 
 				if (conv*1.1 < std::pow(2.0, (double)simVars.disc.timestepping_order))
-					FatalError("Convergence not given!");
+					SWEETError("Convergence not given!");
 			}
 
 			if (simulation.max_error_h0  > 1e10)
-				FatalError("Lmax error exceeded threshold!");
+				SWEETError("Lmax error exceeded threshold!");
 
 			prev_max_error = simulation.max_error_h0;
 

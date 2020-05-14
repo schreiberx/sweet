@@ -77,7 +77,7 @@ public:
 
 		io_x = i_rhs.spectral_div_element_wise(lhs);
 #else
-		FatalError("Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time");
+		SWEETError("Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time");
 #endif
 	}
 

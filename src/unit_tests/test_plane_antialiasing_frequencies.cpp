@@ -315,7 +315,7 @@ int main(
 								std::cout << std::endl;
 
 								if (max_error > epsilon)
-									FatalError("Error too high!");
+									SWEETError("Error too high!");
 							}
 						}
 					}

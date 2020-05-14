@@ -7,11 +7,11 @@
 
 #include <sweet/SimulationVariables.hpp>
 #include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
-#include <sweet/FatalError.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 
@@ -100,7 +100,7 @@ void run_tests()
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 		}
 		{
@@ -151,7 +151,7 @@ void run_tests()
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 		}
 	}
@@ -193,7 +193,7 @@ void run_tests()
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
-				FatalError(" + ERROR! max error exceeds threshold");
+				SWEETError(" + ERROR! max error exceeds threshold");
 		}
 
 
@@ -231,7 +231,7 @@ void run_tests()
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
-					FatalError(" + ERROR! max error exceeds threshold");
+					SWEETError(" + ERROR! max error exceeds threshold");
 			}
 		}
 
@@ -265,7 +265,7 @@ void run_tests()
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
-				FatalError(" + ERROR! max error exceeds threshold");
+				SWEETError(" + ERROR! max error exceeds threshold");
 		}
 
 
@@ -299,7 +299,7 @@ void run_tests()
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
-				FatalError(" + ERROR! max error exceeds threshold");
+				SWEETError(" + ERROR! max error exceeds threshold");
 		}
 
 		if (true)
@@ -324,7 +324,7 @@ void run_tests()
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
-				FatalError(" + ERROR! max error exceeds threshold");
+				SWEETError(" + ERROR! max error exceeds threshold");
 		}
 
 
@@ -352,7 +352,7 @@ void run_tests()
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
-				FatalError(" + ERROR! max error exceeds threshold");
+				SWEETError(" + ERROR! max error exceeds threshold");
 		}
 
 		if (true)
@@ -383,7 +383,7 @@ void run_tests()
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
-				FatalError(" + ERROR! max error exceeds threshold");
+				SWEETError(" + ERROR! max error exceeds threshold");
 		}
 	}
 };
@@ -404,7 +404,7 @@ int main(
 		return -1;
 
 	if (simVars.disc.space_res_spectral[0] == 0)
-		FatalError("Set number of spectral modes to use SPH!");
+		SWEETError("Set number of spectral modes to use SPH!");
 
 	if (simVars.disc.space_res_physical[0] <= 0)
 	{

@@ -26,7 +26,7 @@
 class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
 {
 public:
-	static bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method)
 	{
 		if (i_timestepping_method == "lg_irk")
 			return true;
@@ -42,7 +42,7 @@ public:
 	void setup_auto()
 	{
 		if (simVars.sim.sphere_use_fsphere)
-			FatalError("TODO: Not yet supported");
+			SWEETError("TODO: Not yet supported");
 
 		setup(
 				simVars.disc.timestepping_order,

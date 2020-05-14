@@ -309,12 +309,12 @@ void SWE_Sphere_TS_lg_erk_lc_n_erk::run_timestep_nonpert(
 		}
 		else
 		{
-			FatalError("Invalid verison id");
+			SWEETError("Invalid verison id");
 		}
 	}
 	else
 	{
-		FatalError("Not yet supported!");
+		SWEETError("Not yet supported!");
 	}
 }
 

@@ -59,7 +59,7 @@ void Burgers_Plane_TS_l_erk::run_timestep(
 )
 {
 	if (i_fixed_dt <= 0)
-		FatalError("Burgers_Plane_TS_l_erk: Only constant time step size allowed");
+		SWEETError("Burgers_Plane_TS_l_erk: Only constant time step size allowed");
 
 
 	// setup dummy data
