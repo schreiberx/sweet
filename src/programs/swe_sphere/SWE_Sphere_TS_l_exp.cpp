@@ -356,18 +356,18 @@ void SWE_Sphere_TS_l_exp::setup(
 		}
 
 		#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-			if (omp_in_parallel())
-			{
-				std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
-				exit(-1);
-			}
+		if (omp_in_parallel())
+		{
+			std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
+			exit(-1);
+		}
 		#endif
 
 		// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 		for (int j = 0; j < num_local_rexi_par_threads; j++)
 		{
 			#if SWEET_THREADING_TIME_REXI
-			#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,j)
+			#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,std::cerr,j)
 			#endif
 			for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
 			{

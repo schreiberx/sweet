@@ -98,6 +98,13 @@ if group == "l1":
 
     ref_ts_method = 'l_erk'
     ref_ts_order = 4
+    ref_ts_size = 8*4
+
+    timestep_size_min = 64
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
     ts_methods = [
     		'l_erk',
@@ -116,6 +123,13 @@ elif group == "lg1":
 
     ref_ts_method = 'lg_erk'
     ref_ts_order = 4
+    ref_ts_size = 8*4
+
+    timestep_size_min = 64
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
     ts_methods = [
     		'lg_erk',
@@ -124,12 +138,68 @@ elif group == "lg1":
     		'lg_exp',
     	]
 
+
+elif group == "ln1":
+
+    ts_order = 1
+
+    ref_ts_method = 'ln_erk'
+    ref_ts_order = 4
+    ref_ts_size = 8*4
+
+    timestep_size_min = 64
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+
+    ts_methods = [
+    		'lg_erk',
+    		'lg_irk',
+
+    		'lg_exp',
+    	]
+
+
+    ts_methods = [
+    		'ln_erk',
+
+    		'l_erk_n_erk',
+
+    		'lg_erk_lc_n_erk_ver0',
+    		'lg_erk_lc_n_erk_ver1',
+
+    		'l_irk_n_erk_ver0',
+    		'l_irk_n_erk_ver1',
+
+    		'lg_irk_lc_n_erk_ver0',
+    		'lg_irk_lc_n_erk_ver1',
+
+    		'l_exp_n_erk_ver0',
+    		'l_exp_n_erk_ver1',
+
+    		'lg_exp_lc_n_erk_ver0',
+    		'lg_exp_lc_n_erk_ver1',
+
+    		'l_exp_n_etdrk',
+    	]
+
+
 elif group == "l2":
 
     ts_order = 2
 
     ref_ts_method = 'l_erk'
     ref_ts_order = 4
+    ref_ts_size = 8*8
+
+    # Larger minimal time step size
+    timestep_size_min = 64*4
+
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
     ts_methods = [
 
@@ -149,6 +219,16 @@ elif group == "lg2":
 
     ref_ts_method = 'lg_erk'
     ref_ts_order = 4
+    ref_ts_size = 8*8
+
+
+    # Larger minimal time step size
+    timestep_size_min = 64*4
+
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
     ts_methods = [
     		'lg_erk',
@@ -157,74 +237,31 @@ elif group == "lg2":
     		'lg_exp',
     	]
 
-elif group == "ln1":
 
-    ts_order = 1
-
-    ref_ts_method = 'ln_erk'
-    ref_ts_order = 4
-
-    ts_methods = [
-    		'ln_erk',
-
-    		'l_erk_n_erk',
-
-    		'lg_erk_lc_n_erk_ver0',
-    		'lg_erk_lc_n_erk_ver1',
-
-    		'l_irk_n_erk_ver0',
-    		'l_irk_n_erk_ver1',
-
-    		'lg_irk_lc_n_erk_ver0',
-    		'lg_irk_lc_n_erk_ver1',
-
-    		'l_exp_n_erk_ver0',
-    		'l_exp_n_erk_ver1',
-
-    		'lg_exp_lc_n_erk_ver0',
-    		'lg_exp_lc_n_erk_ver1',
-
-    		'l_exp_n_etdrk',
-    	]
-
-
-elif group == "ln2":
-
-    ts_order = 2
-
-    ref_ts_method = 'ln_erk'
-    ref_ts_order = 4
-
-    ts_methods = [
-    		'ln_erk',
-
-    		'l_erk_n_erk',
-
-    		'lg_erk_lc_n_erk_ver0',
-    		'lg_erk_lc_n_erk_ver1',
-
-    		'l_irk_n_erk_ver0',
-    		'l_irk_n_erk_ver1',
-
-    		'lg_irk_lc_n_erk_ver0',
-    		'lg_irk_lc_n_erk_ver1',
-
-    		'l_exp_n_erk_ver0',
-    		'l_exp_n_erk_ver1',
-
-    		'lg_exp_lc_n_erk_ver0',
-    		'lg_exp_lc_n_erk_ver1',
-
-    		'l_exp_n_etdrk',
-    		'lg_exp_lc_n_etdrk',
-
-    	]
 elif group == "ln2_part1":
 
     ts_order = 2
 
     ref_ts_method = 'ln_erk'
     ref_ts_order = 4
+    ref_ts_size = 8*8
+
+    #
+    # A 2nd order accurate method already considerably reduces the errors
+    # Therefore, we use larger time step sizes to increase the errors
+    # to get errors larger than numerical precision
+    #
+    # We still want to have a very small time step size for the reference solution
+    # This is in particular important for REXI comparisons with ln2-type tests
+    #
+
+    # Larger minimal time step size
+    timestep_size_min = 64*4
+
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
     ts_methods = [
     		'ln_erk',
@@ -250,6 +287,24 @@ elif group == "ln2_part2":
 
     ref_ts_method = 'ln_erk'
     ref_ts_order = 4
+    ref_ts_size = 8*8
+
+    #
+    # A 2nd order accurate method already considerably reduces the errors
+    # Therefore, we use larger time step sizes to increase the errors
+    # to get errors larger than numerical precision
+    #
+    # We still want to have a very small time step size for the reference solution
+    # This is in particular important for REXI comparisons with ln2-type tests
+    #
+
+    # Larger minimal time step size
+    timestep_size_min = 64*4
+
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
     ts_methods = [
     		'ln_erk',
@@ -269,6 +324,24 @@ elif group == "ln2_split":
 
     ref_ts_method = 'ln_erk'
     ref_ts_order = 4
+    ref_ts_size = 8*8
+
+    #
+    # A 2nd order accurate method already considerably reduces the errors
+    # Therefore, we use larger time step sizes to increase the errors
+    # to get errors larger than numerical precision
+    #
+    # We still want to have a very small time step size for the reference solution
+    # This is in particular important for REXI comparisons with ln2-type tests
+    #
+
+    # Larger minimal time step size
+    timestep_size_min = 64*4
+
+    timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+
+    jg.runtime.max_simulation_time = timestep_size_min*512
+    jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
     ts_methods = [
 #    		'ln_erk',
@@ -283,7 +356,6 @@ else:
 
 
 if ts_order == 1:
-    ref_ts_size = 8
     timestep_size_min = 64
     timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 
@@ -300,7 +372,6 @@ elif ts_order == 2:
     # We still want to have a very small time step size for the reference solution
     # This is in particular important for REXI comparisons with ln2-type tests
     #
-    ref_ts_size = 8*2
 
     # Larger minimal time step size
     timestep_size_min = 64*4
