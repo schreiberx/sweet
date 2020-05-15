@@ -23,7 +23,7 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::run_timestep_pert(
 		if (version_id == 0)
 		{
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep_nonpert_private(
+			timestepping_lg_irk.run_timestep_pert(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp

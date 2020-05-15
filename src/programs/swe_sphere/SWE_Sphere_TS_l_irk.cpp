@@ -23,33 +23,6 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	if (timestepping_order == 2)
-	{
-		// First run a half explicit time step for 2nd order accurate IRK (Crank-Nicolson)
-		l_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*0.5, i_simulation_timestamp);
-	}
-
-
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-	io_phi_pert += gh0;
-	run_timestep_nonpert_backward_euler_private(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
-	io_phi_pert -= gh0;
-}
-
-
-
-/**
- * Solve an implicit time step for the given initial conditions
- */
-void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler_private(
-		SphereData_Spectral &io_phi,
-		SphereData_Spectral &io_vrt,
-		SphereData_Spectral &io_div,
-
-		double i_fixed_dt,
-		double i_simulation_timestamp
-)
-{
 	if (std::abs(timestep_size - i_fixed_dt)/std::max(timestep_size, i_fixed_dt) > 1e-10)
 	{
 	        std::cout << "Warning: Reducing time step size from " << i_fixed_dt << " to " << timestep_size << std::endl;
@@ -58,7 +31,7 @@ void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler_private(
 	        update_coefficients();
 	}
 
-	SphereData_Spectral phi0 = io_phi;
+	SphereData_Spectral phi0 = io_phi_pert;
 	SphereData_Spectral vort0 = io_vrt;
 	SphereData_Spectral div0 = io_div;
 
@@ -127,7 +100,7 @@ void SWE_Sphere_TS_l_irk::run_timestep_nonpert_backward_euler_private(
 		ops.robert_uv_to_vortdiv(u, v, vort, div);
 	}
 
-	io_phi = phi * beta;
+	io_phi_pert = phi * beta;
 	io_vrt = vort * beta;
 	io_div = div * beta;
 }

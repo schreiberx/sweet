@@ -55,30 +55,6 @@ void SWE_Sphere_TS_lg_irk::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	if (timestepping_order == 2)
-		lg_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*0.5, i_simulation_timestamp);
-
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-	io_phi_pert += gh0;
-	run_timestep_nonpert_private(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
-	io_phi_pert -= gh0;
-}
-
-
-
-/**
- * Solve a REXI time step for the given initial conditions
- */
-
-void SWE_Sphere_TS_lg_irk::run_timestep_nonpert_private(
-		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,	///< prognostic variables
-		SphereData_Spectral &io_div,		///< prognostic variables
-
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp
-)
-{
 	if (i_fixed_dt <= 0)
 		SWEETError("Only constant time step size allowed");
 
@@ -91,8 +67,8 @@ void SWE_Sphere_TS_lg_irk::run_timestep_nonpert_private(
 		update_coefficients();
 	}
 
-	SphereData_Spectral phi0 = io_phi;
-	SphereData_Spectral vort0 = io_vort;
+	SphereData_Spectral phi0 = io_phi_pert;
+	SphereData_Spectral vrt0 = io_vrt;
 	SphereData_Spectral div0 = io_div;
 
 	SphereData_Spectral phi(sphereDataConfig);
@@ -102,13 +78,13 @@ void SWE_Sphere_TS_lg_irk::run_timestep_nonpert_private(
 	{
 		SphereData_Spectral rhs = gh*div0 + alpha*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
-		io_phi = phi*beta;
+		io_phi_pert = phi*beta;
 
 		rhs = alpha*div0 + op.laplace(phi0);
 		div = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 		io_div = div*beta;
 
-		io_vort = vort0;
+		io_vrt = vrt0;
 	}
 }
 

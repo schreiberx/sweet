@@ -19,13 +19,19 @@ void SWE_Sphere_TS_lg_erk::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-	io_phi_pert += gh0;
-	run_timestep_nonpert(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
-	io_phi_pert -= gh0;
+	if (i_fixed_dt <= 0)
+		SWEETError("Only constant time step size allowed");
+
+	// standard time stepping
+	timestepping_rk.run_timestep(
+			this,
+			&SWE_Sphere_TS_lg_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
+			io_phi_pert, io_vrt, io_div,
+			i_fixed_dt,
+			timestepping_order,
+			i_simulation_timestamp
+		);
 }
-
-
 
 /*
  * Main routine for method to be used in case of finite differences
@@ -53,29 +59,6 @@ void SWE_Sphere_TS_lg_erk::euler_timestep_update(
 }
 
 
-
-void SWE_Sphere_TS_lg_erk::run_timestep_nonpert(
-		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vort,	///< prognostic variables
-		SphereData_Spectral &io_div,		///< prognostic variables
-
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp
-)
-{
-	if (i_fixed_dt <= 0)
-		SWEETError("Only constant time step size allowed");
-
-	// standard time stepping
-	timestepping_rk.run_timestep(
-			this,
-			&SWE_Sphere_TS_lg_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
-			io_phi, io_vort, io_div,
-			i_fixed_dt,
-			timestepping_order,
-			i_simulation_timestamp
-		);
-}
 
 
 

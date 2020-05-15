@@ -239,29 +239,7 @@ public:
 			bool i_include_coriolis = true,
 			bool i_use_f_sphere = false
 	);
-#if 0
-	void run_timestep_nonpert(
-			SphereData_Spectral &io_h,	///< prognostic variables
-			SphereData_Spectral &io_u,	///< prognostic variables
-			SphereData_Spectral &io_v,	///< prognostic variables
 
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp
-	);
-
-	void run_timestep_nonpert(
-			const SphereData_Spectral &i_h,	///< prognostic variables
-			const SphereData_Spectral &i_u,	///< prognostic variables
-			const SphereData_Spectral &i_v,	///< prognostic variables
-
-			SphereData_Spectral &o_h,	///< prognostic variables
-			SphereData_Spectral &o_u,	///< prognostic variables
-			SphereData_Spectral &o_v,	///< prognostic variables
-
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp
-	);
-#endif
 
 	void run_timestep_pert(
 			SphereData_Spectral &io_phi,	///< prognostic variables

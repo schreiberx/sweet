@@ -139,19 +139,6 @@ public:
 	);
 
 
-	/**
-	 * Solve a REXI time step for the given initial conditions
-	 */
-public:
-	void run_timestep_nonpert_backward_euler_private(
-			SphereData_Spectral &io_phi,		///< prognostic variables
-			SphereData_Spectral &io_vort,	///< prognostic variables
-			SphereData_Spectral &io_div,		///< prognostic variables
-
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
-			double i_simulation_timestamp = -1
-	);
-
 	virtual ~SWE_Sphere_TS_l_irk();
 };
 

@@ -12,7 +12,7 @@
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Sphere_TS_ln_erk::euler_timestep_update_nonpert(
+void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 		const SphereData_Spectral &i_phi_pert,	///< prognostic variables
 		const SphereData_Spectral &i_vrt,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
@@ -124,7 +124,7 @@ void SWE_Sphere_TS_ln_erk::run_timestep_pert(
 	// standard time stepping
 	timestepping_rk.run_timestep(
 			this,
-			&SWE_Sphere_TS_ln_erk::euler_timestep_update_nonpert,	///< pointer to function to compute euler time step updates
+			&SWE_Sphere_TS_ln_erk::euler_timestep_update_pert,	///< pointer to function to compute euler time step updates
 			io_phi, io_vort, io_div,
 			i_fixed_dt,
 			timestepping_order,
