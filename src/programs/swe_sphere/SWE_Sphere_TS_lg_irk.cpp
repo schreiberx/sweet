@@ -67,6 +67,14 @@ void SWE_Sphere_TS_lg_irk::run_timestep_pert(
 		update_coefficients();
 	}
 
+	if (timestepping_order == 2)
+	{
+		/*
+		 * Execute a half ERK time step first for 2nd order
+		 */
+		lg_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
+	}
+
 	SphereData_Spectral phi0 = io_phi_pert;
 	SphereData_Spectral vrt0 = io_vrt;
 	SphereData_Spectral div0 = io_div;

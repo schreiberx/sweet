@@ -31,8 +31,16 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 	        update_coefficients();
 	}
 
+	if (timestepping_order == 2)
+	{
+		/*
+		 * Execute a half ERK time step first for 2nd order
+		 */
+		l_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
+	}
+
 	SphereData_Spectral phi0 = io_phi_pert;
-	SphereData_Spectral vort0 = io_vrt;
+	SphereData_Spectral vrt0 = io_vrt;
 	SphereData_Spectral div0 = io_div;
 
 	SphereData_Spectral phi(sphereDataConfig);
@@ -43,11 +51,11 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 	if (use_f_sphere)
 	{
-		SphereData_Spectral rhs = gh0*(div0 - f0/alpha*vort0) + (alpha+f0*f0/alpha)*phi0;
+		SphereData_Spectral rhs = gh0*(div0 - f0/alpha*vrt0) + (alpha+f0*f0/alpha)*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha + f0*f0, -gh0, r);
 
 		div = -1.0/gh0*(phi0 - alpha*phi);
-		vort = (1.0/alpha)*(vort0 + f0*(div));
+		vort = (1.0/alpha)*(vrt0 + f0*(div));
 	}
 	else
 	{
@@ -58,7 +66,7 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 
 		SphereData_Physical u0g(sphereDataConfig);
 		SphereData_Physical v0g(sphereDataConfig);
-		ops.robert_vortdiv_to_uv(vort0, div0, u0g, v0g);
+		ops.robert_vortdiv_to_uv(vrt0, div0, u0g, v0g);
 
 		SphereData_Physical phi0g = phi0.getSphereDataPhysical();
 
@@ -69,7 +77,7 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 				);
 
 		SphereData_Physical foo =
-				(gh0*(div0.getSphereDataPhysical() - (1.0/alpha)*two_coriolis*mug*vort0.getSphereDataPhysical())) +
+				(gh0*(div0.getSphereDataPhysical() - (1.0/alpha)*two_coriolis*mug*vrt0.getSphereDataPhysical())) +
 				(alpha*phi0g + (1.0/alpha)*two_coriolis*two_coriolis*mug*mug*phi0g);
 
 		SphereData_Physical rhsg =
@@ -84,7 +92,7 @@ void SWE_Sphere_TS_l_irk::run_timestep_pert(
 		SphereData_Physical u0(sphereDataConfig);
 		SphereData_Physical v0(sphereDataConfig);
 
-		ops.robert_vortdiv_to_uv(vort0, div0, u0, v0);
+		ops.robert_vortdiv_to_uv(vrt0, div0, u0, v0);
 
 		SphereData_Physical gradu(sphereDataConfig);
 		SphereData_Physical gradv(sphereDataConfig);
