@@ -88,7 +88,7 @@ void SWE_Sphere_TS_lg_irk::run_timestep_pert(
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 		io_phi_pert = phi*beta;
 
-		rhs = alpha*div0 + op.laplace(phi0);
+		rhs = alpha*div0 + o's ap.laplace(phi0);
 		div = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 		io_div = div*beta;
 

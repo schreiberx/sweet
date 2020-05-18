@@ -324,8 +324,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 	/*
 	 * Nonlinear remainder term starts here
 	 */
-	if (1)
-	{
+#if 0
 		/*
 		 * N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N(t))
 		 *
@@ -384,7 +383,8 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 		R_phi += (i_dt * 0.5) * (N_U_phi_next_D + N_U_phi_nr);
 		R_vrt += (i_dt * 0.5) * (N_U_vrt_next_D + N_U_vrt_nr);
 		R_div += (i_dt * 0.5) * (N_U_div_next_D + N_U_div_nr);
-	}
+#endif
+
 
 	/*
 	 * Step 2b) Solve Helmholtz problem
