@@ -17,20 +17,17 @@ for rexi_method in [
     for function_name in ["phi0"]: #, "ups1", "ups2", "ups3"]:
 
         # CI-REXI: Number of quadrature poles
-        #N = 256
+        N = 256
+        N = 128
         N = 32
 
         # CI-REXI: Value on imaginary axis to be included
         #same used for ELREXI as max imag of ellipse
-        lambda_include_imag = 20
+        lambda_include_imag = 1
 
         # CI-REXI: Maximum value of quadrature pole
         #same used for ELREXI as max real for ellipse
-        lambda_max_real = 10
-
-
-        # Butcher-REXI
-        butcherOrder = 10
+        lambda_max_real = 1
 
 
         # Testing: number of samples
@@ -46,14 +43,14 @@ for rexi_method in [
         efloat_mode = "float"
         #efloat_mode = "mpfloat"
 
-
         cirexi = CIREXI(efloat_mode=efloat_mode)
 
         coeffs = cirexi.setup(
             function_name = function_name,
             N = N,
             lambda_max_real = lambda_max_real,
-            lambda_include_imag = lambda_include_imag
+            lambda_include_imag = lambda_include_imag,
+            half_shifted = False
         )
 
         # Convert to floating point
@@ -61,8 +58,7 @@ for rexi_method in [
 
         unique_id_string = cirexi.getUniqueId()
 
-        #test_range = [-lambda_include_imag*0.5, lambda_include_imag*0.5]
-        test_range = [-1.0, 1.0]
+        test_range = [-lambda_include_imag*0.5, lambda_include_imag*0.5]
 
 
         function = Functions(
@@ -84,7 +80,10 @@ for rexi_method in [
             y = function.eval(lam)
             yn = coeffs.eval(lam)
 
+
             err = np.abs(y-yn)
+
+            print(x, err)
 
             if verbosity > 0:
                 #if True:
