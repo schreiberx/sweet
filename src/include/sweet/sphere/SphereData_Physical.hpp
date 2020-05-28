@@ -158,50 +158,6 @@ public:
 	}
 
 
-	SphereData_Physical robert_convertToRobert()
-	{
-		SphereData_Physical out = *this;
-
-		out.physical_update_lambda(
-				[](double i_lon, double i_lat, double &io_data)
-				{
-					io_data *= std::cos(i_lat);
-				}
-		);
-
-		return out;
-	}
-
-
-
-	SphereData_Physical robert_convertToNonRobert()
-	{
-		SphereData_Physical out = *this;
-
-		out.physical_update_lambda(
-				[](double i_lon, double i_lat, double &io_data)
-				{
-					io_data /= std::cos(i_lat);
-				}
-		);
-
-		return out;
-	}
-
-	SphereData_Physical robert_convertToNonRobertSquared()
-	{
-		SphereData_Physical out = *this;
-
-		out.physical_update_lambda_cosphi_grid(
-				[](double i_lon, double i_cosphi, double &io_data)
-				{
-					io_data /= i_cosphi*i_cosphi;
-				}
-		);
-
-		return out;
-	}
-
 	SphereData_Physical operator+(
 			const SphereData_Physical &i_sph_data
 	)	const
@@ -467,8 +423,20 @@ public:
 public:
 	~SphereData_Physical()
 	{
+		free();
+	}
+
+
+public:
+	void free()
+	{
 		if (physical_space_data != nullptr)
+		{
 			MemBlockAlloc::free(physical_space_data, sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
+			physical_space_data = nullptr;
+		}
+
+		sphereDataConfig = nullptr;
 	}
 
 

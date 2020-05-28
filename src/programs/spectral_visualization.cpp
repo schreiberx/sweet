@@ -1,12 +1,17 @@
+/*
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ */
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	#error "Spectral space not activated"
 #endif
 
 
-#if SWEET_GUI != 1
-	#error "Activate GUI to run this program"
+#ifndef SWEET_GUI
+#define SWEET_GUI 1
 #endif
+
+#if SWEET_GUI
 
 
 #include <sweet/plane/PlaneData.hpp>
@@ -136,7 +141,8 @@ public:
 			int *o_render_primitive,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		*o_dataArray = &tmp;
@@ -273,3 +279,12 @@ int main(int i_argc, char *i_argv[])
 
 	return 0;
 }
+
+#else
+
+int main(int i_argc, char *i_argv[])
+{
+	return 0;
+}
+
+#endif

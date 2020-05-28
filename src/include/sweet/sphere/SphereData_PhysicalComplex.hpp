@@ -1,12 +1,9 @@
 /*
- * SphereDataPhysicalComplex.hpp
- *
- *  Created on: 3 Mar 2017
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ * Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#ifndef SPHERE_DATA_PHYSICAL_COMPLEX_HPP_
-#define SPHERE_DATA_PHYSICAL_COMPLEX_HPP_
+#ifndef SRC_SPHERE_DATA_PHYSICAL_COMPLEX_HPP_
+#define SRC_SPHERE_DATA_PHYSICAL_COMPLEX_HPP_
 
 #include <complex>
 #include <functional>
@@ -173,37 +170,6 @@ public:
 		return *this;
 	}
 
-#if 0
-	SphereData_PhysicalComplex robert_convertToRobert()
-	{
-		SphereData_PhysicalComplex out = *this;
-
-		out.physical_update_lambda(
-				[](double i_lon, double i_lat, double &io_data)
-				{
-					io_data *= std::cos(i_lat);
-				}
-		);
-
-		return out;
-	}
-
-
-
-	SphereData_PhysicalComplex robert_convertToNonRobert()
-	{
-		SphereData_PhysicalComplex out = *this;
-
-		out.physical_update_lambda(
-				[](double i_lon, double i_lat, double &io_data)
-				{
-					io_data /= std::cos(i_lat);
-				}
-		);
-
-		return out;
-	}
-#endif
 
 	SphereData_PhysicalComplex operator+(
 			const SphereData_PhysicalComplex &i_sph_data
@@ -412,6 +378,23 @@ public:
 	{
 		sphereDataConfig = i_sphereDataConfig;
 
+		physical_space_data = MemBlockAlloc::alloc<std::complex<double>>(sphereDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+	}
+
+
+
+public:
+	void setup_if_required(
+			const SphereData_Config *i_sphereDataConfig
+	)
+	{
+		if (sphereDataConfig != nullptr)
+		{
+			assert(physical_space_data != nullptr);
+			return;
+		}
+
+		sphereDataConfig = i_sphereDataConfig;
 		physical_space_data = MemBlockAlloc::alloc<std::complex<double>>(sphereDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
 	}
 
@@ -703,21 +686,21 @@ public:
 		return error;
 	}
 
-#if 0
 	double physical_reduce_rms()
 	{
 		double error = 0;
 
-		for (int j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
 		{
 			std::complex<double> &d = physical_space_data[j];
-			error += d*d;
+			error += d.real()*d.real() + d.imag()*d.imag();
 		}
 
 		return std::sqrt(error / (double)sphereDataConfig->physical_array_data_number_of_elements);
 	}
 
 
+#if 0
 
 	double physical_reduce_sum()
 	{

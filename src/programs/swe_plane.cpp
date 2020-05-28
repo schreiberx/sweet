@@ -1,7 +1,9 @@
 /*
- * SWE with nonlinear part using REXI test
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  *
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane
  */
+
 
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
@@ -832,7 +834,8 @@ public:
 			int *o_render_primitive,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		if (simVars.misc.vis_id < 0)
@@ -1103,6 +1106,36 @@ public:
 	}
 
 
+	/**
+	 * return the data after running computations with the fine timestepping:
+	 * return Y^F
+	 */
+	Parareal_Data& get_reference_to_data_timestep_fine()
+	{
+		SWEETError("TODO");
+		return parareal_data_start;
+	}
+
+	/**
+	 * return the solution after the coarse timestepping:
+	 * return Y^C
+	 */
+	Parareal_Data& get_reference_to_data_timestep_coarse()
+	{
+		SWEETError("TODO");
+		return parareal_data_start;
+	}
+
+	/**
+	 * Return the data to be forwarded to the next coarse time step interval:
+	 * return Y^O
+	 */
+	Parareal_Data& get_reference_to_output_data()
+	{
+		SWEETError("TODO");
+		return parareal_data_start;
+	}
+
 
 	/**
 	 * Set the start and end of the coarse time step
@@ -1226,11 +1259,10 @@ public:
 		prog_u = *parareal_data_start.data_arrays[1];
 		prog_v = *parareal_data_start.data_arrays[2];
 
-		timestepping_swe_plane.run_timestep_implicit_ts(
+		timeSteppers.master->run_timestep(
 				prog_h_pert, prog_u, prog_v,
 				timeframe_end - timeframe_start,
-				op,
-				simVars
+				-1
 		);
 
 
@@ -1414,7 +1446,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_PARAREAL
-		simVars.parareal.setup_printOptions();
+		simVars.parareal.printOptions();
 #endif
 		return -1;
 	}

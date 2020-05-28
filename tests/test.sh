@@ -17,7 +17,7 @@ for i in $TESTS; do
 	echo_info "Executing script $i"
 	echo_info_hline
 
-	./$i || exit 1
+	./$i || { echo "FAILED TO EXECUTE TEST $i"; exit 1; }
 
 	echo_success_hline
 	echo_success "Script $i successful"

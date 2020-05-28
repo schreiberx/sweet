@@ -298,15 +298,22 @@ spectral_space_data_valid(false)
 }
 
 
+public:
+	void free()
+	{
+		MemBlockAlloc::free(physical_space_data, planeDataConfig->physical_array_data_number_of_elements*sizeof(double));
+		physical_space_data = nullptr;
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements*sizeof(std::complex<double>));
+		spectral_space_data = nullptr;
+#endif
+	}
 
 public:
 	~PlaneData()
 	{
-		MemBlockAlloc::free(physical_space_data, planeDataConfig->physical_array_data_number_of_elements*sizeof(double));
-
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements*sizeof(std::complex<double>));
-#endif
+		free();
 	}
 
 

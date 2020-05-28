@@ -1,14 +1,11 @@
 /*
- * SWE_Sphere_TS_lg_irk.hpp
- *
- *  Created on: 30 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 
 #include "SWE_Sphere_TS_lg_irk.hpp"
 #include <complex>
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 
@@ -16,7 +13,7 @@
 
 bool SWE_Sphere_TS_lg_irk::implements_timestepping_method(const std::string &i_timestepping_method)
 {
-	if (i_timestepping_method == "lg_irk")
+	if (i_timestepping_method == "lg_irk_DEPRECATED")
 		return true;
 
 	return false;
@@ -26,7 +23,7 @@ bool SWE_Sphere_TS_lg_irk::implements_timestepping_method(const std::string &i_t
 
 std::string SWE_Sphere_TS_lg_irk::string_id()
 {
-	return "lg_irk";
+	return "lg_irk_DEPRECATED";
 }
 
 
@@ -39,14 +36,13 @@ void SWE_Sphere_TS_lg_irk::setup_auto()
 	setup(
 			simVars.disc.timestepping_order,
 			simVars.timecontrol.current_timestep_size,
-			0,
 			simVars.disc.timestepping_crank_nicolson_filter
 		);
 }
 
 
 
-void SWE_Sphere_TS_lg_irk::run_timestep_pert(
+void SWE_Sphere_TS_lg_irk::run_timestep(
 		SphereData_Spectral &io_phi_pert,
 		SphereData_Spectral &io_vrt,
 		SphereData_Spectral &io_div,
@@ -72,7 +68,7 @@ void SWE_Sphere_TS_lg_irk::run_timestep_pert(
 		/*
 		 * Execute a half ERK time step first for 2nd order
 		 */
-		lg_erk->run_timestep_pert(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
+		lg_erk->run_timestep(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
 	}
 
 	SphereData_Spectral phi0 = io_phi_pert;
@@ -132,20 +128,22 @@ void SWE_Sphere_TS_lg_irk::update_coefficients()
 
 
 
-/**
- * Setup the SWE REXI solver with SPH
- */
+void SWE_Sphere_TS_lg_irk::setup(
+		int i_timestep_order,
+		double i_timestep_size
+)
+{
+	setup(i_timestep_order, i_timestep_size, simVars.disc.timestepping_crank_nicolson_filter);
+}
+
+
+
 void SWE_Sphere_TS_lg_irk::setup(
 		int i_timestep_order,
 		double i_timestep_size,
-		int i_extended_modes,
 		double i_crank_nicolson_damping_factor
 )
 {
-#if SWEET_DEBUG
-	if (i_extended_modes != 0)
-		SWEETError("Not supported");
-#endif
 	timestepping_order = i_timestep_order;
 	timestep_size = i_timestep_size;
 

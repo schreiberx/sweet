@@ -136,9 +136,8 @@ elif p.parareal == 'serial':
 elif p.parareal == 'mpi':
     env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=2')
 else:
-    print("Invalid option '"+str(p.parareal)+"' for parareal method")
-    sys.exit(1)
-    
+    raise Exception("Invalid option '"+str(p.parareal)+"' for parareal method")
+
 
 
 

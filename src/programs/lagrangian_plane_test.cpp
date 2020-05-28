@@ -1,8 +1,5 @@
 /*
- * lagrangian_plane_test.cpp
- *
- *  Created on: 3 Dec 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SWEET_GUI
@@ -242,7 +239,8 @@ public:
 			int *o_render_primitive,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		switch (simVars.misc.vis_id)

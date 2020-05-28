@@ -106,6 +106,7 @@ class VisSweet	:
 
 		viz_min = std::numeric_limits<double>::infinity();
 		viz_max = std::numeric_limits<double>::infinity();
+		bool reset = false;
 
 		simulation->vis_get_vis_data_array(
 				&ro_visPlaneData,
@@ -113,7 +114,8 @@ class VisSweet	:
 				&render_primitive,
 				&bogus_data,
 				&viz_min,
-				&viz_max
+				&viz_max,
+				&reset
 		);
 
 		PlaneData &visData = (PlaneData&)*ro_visPlaneData;
@@ -129,8 +131,9 @@ class VisSweet	:
 		}
 
 
-		if (glTexture == nullptr)
+		if (glTexture == nullptr || reset)
 		{
+			delete glTexture;
 			glTexture = new GlTexture(GL_TEXTURE_2D, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
 			glTexture->bind();
 			glTexture->resize(visData.planeDataConfig->physical_data_size[0], visData.planeDataConfig->physical_data_size[1]);

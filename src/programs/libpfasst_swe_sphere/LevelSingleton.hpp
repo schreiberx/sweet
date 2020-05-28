@@ -1,7 +1,7 @@
 #ifndef _LEVEL_SINGLETON_CTX_HPP_
 #define _LEVEL_SINGLETON_CTX_HPP_
 
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 
@@ -18,7 +18,7 @@ public:
   SphereOperators_SphereData  op;
   SphereOperators_SphereData  opNoDealiasing;
 
-  SWESphereBenchmarksCombined benchmarks;
+  SWESphereBenchmarks benchmarks;
 };
 
 #endif

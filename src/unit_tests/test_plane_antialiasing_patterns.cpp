@@ -1,8 +1,4 @@
 
-//#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-//	#error "Spectral space not activated"
-//#endif
-
 #if SWEET_GUI
 #	error	"GUI not supported"
 #endif

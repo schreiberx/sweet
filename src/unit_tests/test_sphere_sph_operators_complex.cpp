@@ -18,10 +18,7 @@
 SimulationVariables simVars;
 
 SphereData_Config sphereDataConfigInstance;
-SphereData_Config sphereDataConfigExtInstance;
-
 SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
-SphereData_Config *sphereDataConfigExt = &sphereDataConfigExtInstance;
 
 
 void test_header(const std::string &i_str)
@@ -96,58 +93,7 @@ void run_tests()
 				SphereData_SpectralComplex div(sphereDataConfig);
 				op.uv_to_vortdiv(u, v, vort, div);
 
-				double div_max_error = div.physical_reduce_max_abs();
-				std::cout << " + div_max_error: " << div_max_error << std::endl;
-
-				if (div_max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
-		}
-		{
-			test_header("Testing divergence freeness (Robert)");
-
-			for (int i = 0; i < 3; i++)
-			{
-				double advection_rotation_angle = alpha[i];
-
-				std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
-
-				SphereData_PhysicalComplex u(sphereDataConfig);
-				u.physical_update_lambda(
-					[&](double i_lon, double i_lat, std::complex<double> &io_data)
-					{
-						double i_theta = i_lat;
-						double i_lambda = i_lon;
-						io_data =
-								u0*(
-									std::cos(i_theta)*std::cos(advection_rotation_angle) +
-									std::sin(i_theta)*std::cos(i_lambda)*std::sin(advection_rotation_angle)
-							);
-
-						io_data *= std::cos(i_lat);
-					}
-				);
-
-				SphereData_PhysicalComplex v(sphereDataConfig);
-				v.physical_update_lambda(
-					[&](double i_lon, double i_lat, std::complex<double> &io_data)
-					{
-						//double i_phi = i_lat;
-						double i_lambda = i_lon;
-						io_data =
-							-u0*(
-									std::sin(i_lambda)*std::sin(advection_rotation_angle)
-							);
-
-						io_data *= std::cos(i_lat);
-					}
-				);
-
-				SphereData_SpectralComplex vort(sphereDataConfig);
-				SphereData_SpectralComplex div(sphereDataConfig);
-				op.robert_uv_to_vortdiv(u, v, vort, div);
-
-				double div_max_error = div.physical_reduce_max_abs();
+				double div_max_error = div.toPhys().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
@@ -167,24 +113,29 @@ void run_tests()
 			test_header("Testing Multiplication (a*b) with b=123.0");
 
 			SphereData_SpectralComplex data(sphereDataConfig);
-			data.physical_update_lambda(
-					[&](double x, double y, std::complex<double> &io_data)
-					{
-						io_data = y;
-					}
+			SphereData_PhysicalComplex data_phys(sphereDataConfig);
+
+			data_phys.physical_update_lambda(
+				[&](double x, double y, std::complex<double> &io_data)
+				{
+					io_data = y;
+				}
 			);
 
+			data.loadSphereDataPhysical(data_phys);
 			data = data*123.0;
 
 			SphereData_SpectralComplex data2(sphereDataConfig);
-			data2.physical_update_lambda(
+			SphereData_PhysicalComplex data2_phys(sphereDataConfig);
+			data2_phys.physical_update_lambda(
 				[&](double x, double y, std::complex<double> &io_data)
 				{
 					io_data = y*123.0;
 				}
 			);
+			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).physical_reduce_max_abs();
+			double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -201,24 +152,28 @@ void run_tests()
 				test_header("Testing Multiplication (a *= b) with b=123.0");
 
 				SphereData_SpectralComplex data(sphereDataConfig);
-				data.physical_update_lambda(
+				SphereData_PhysicalComplex data_phys(sphereDataConfig);
+				data_phys.physical_update_lambda(
 						[&](double x, double y, std::complex<double> &io_data)
 						{
 							io_data = y;
 						}
 				);
+				data.loadSphereDataPhysical(data_phys);
 
 				data *= 123.0;
 
 				SphereData_SpectralComplex data2(sphereDataConfig);
-				data2.physical_update_lambda(
+				SphereData_PhysicalComplex data2_phys(sphereDataConfig);
+				data2_phys.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
 						io_data = y*123.0;
 					}
 				);
+				data2.loadSphereDataPhysical(data2_phys);
 
-				double div_max_error = (data-data2).physical_reduce_max_abs();
+				double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
@@ -231,24 +186,28 @@ void run_tests()
 			test_header("Testing add (a+b) operation with 123.0");
 
 			SphereData_SpectralComplex data(sphereDataConfig);
-			data.physical_update_lambda(
+			SphereData_PhysicalComplex data_phys(sphereDataConfig);
+			data_phys.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
 						io_data = y;
 					}
 			);
 
+			data.loadSphereDataPhysical(data_phys);
 			data = data + 123.0;
 
 			SphereData_SpectralComplex data2(sphereDataConfig);
-			data2.physical_update_lambda(
+			SphereData_PhysicalComplex data2_phys(sphereDataConfig);
+			data2_phys.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
 						io_data = y+123.0;
 					}
 			);
+			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).physical_reduce_max_abs();
+			double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -261,24 +220,28 @@ void run_tests()
 			test_header("Testing add (a+=b) operation with 123.0");
 
 			SphereData_SpectralComplex data(sphereDataConfig);
-			data.physical_update_lambda(
+			SphereData_PhysicalComplex data_phys(sphereDataConfig);
+			data_phys.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
 						io_data = y;
 					}
 			);
+			data.loadSphereDataPhysical(data_phys);
 
 			data += 123.0;
 
 			SphereData_SpectralComplex data2(sphereDataConfig);
-			data2.physical_update_lambda(
+			SphereData_PhysicalComplex data2_phys(sphereDataConfig);
+			data2_phys.physical_update_lambda(
 					[&](double x, double y, std::complex<double> &io_data)
 					{
 						io_data = y+123.0;
 					}
 			);
+			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).physical_reduce_max_abs();
+			double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -290,7 +253,8 @@ void run_tests()
 			test_header("Testing Gaussian latitude coordinates");
 
 			SphereData_SpectralComplex h(sphereDataConfig);
-			h.physical_update_lambda_gaussian_grid(
+			SphereData_PhysicalComplex h_phys(sphereDataConfig);
+			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
 						double val;
@@ -298,9 +262,11 @@ void run_tests()
 						c = val;
 					}
 			);
+			h.loadSphereDataPhysical(h_phys);
 
 			SphereData_SpectralComplex hphi(sphereDataConfig);
-			hphi.physical_update_lambda(
+			SphereData_PhysicalComplex hphi_phys(sphereDataConfig);
+			hphi_phys.physical_update_lambda(
 					[&](double a, double b, std::complex<double> &c)
 					{
 						double val;
@@ -308,8 +274,9 @@ void run_tests()
 						c = val;
 					}
 			);
+			hphi.loadSphereDataPhysical(hphi_phys);
 
-			double div_max_error = (h-hphi).physical_reduce_max_abs();
+			double div_max_error = (h-hphi).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -323,7 +290,8 @@ void run_tests()
 
 			// mu*F(\lambda,\mu)
 			SphereData_SpectralComplex h(sphereDataConfig);
-			h.physical_update_lambda_gaussian_grid(
+			SphereData_PhysicalComplex h_phys(sphereDataConfig);
+			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
 						double val;
@@ -331,10 +299,12 @@ void run_tests()
 						c = val;
 					}
 			);
+			h.loadSphereDataPhysical(h_phys);
 			h = op.mu(h);
 
 			SphereData_SpectralComplex result(sphereDataConfig);
-			result.physical_update_lambda_gaussian_grid(
+			SphereData_PhysicalComplex result_phys(sphereDataConfig);
+			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
 						double val;
@@ -342,8 +312,9 @@ void run_tests()
 						c = val;
 					}
 			);
+			result.loadSphereDataPhysical(result_phys);
 
-			double div_max_error = (h-result).physical_reduce_max_abs();
+			double div_max_error = (h-result).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -356,7 +327,8 @@ void run_tests()
 
 			// mu*mu*F(\lambda,\mu)
 			SphereData_SpectralComplex h(sphereDataConfig);
-			h.physical_update_lambda_gaussian_grid(
+			SphereData_PhysicalComplex h_phys(sphereDataConfig);
+			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, std::complex<double> &c)
 					{
 						double val;
@@ -364,10 +336,12 @@ void run_tests()
 						c = val;
 					}
 			);
+			h.loadSphereDataPhysical(h_phys);
 			h = op.mu2(h);
 
 			SphereData_SpectralComplex result(sphereDataConfig);
-			result.physical_update_lambda_gaussian_grid(
+			SphereData_PhysicalComplex result_phys(sphereDataConfig);
+			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, std::complex<double> &i_data)
 					{
 						double val;
@@ -376,9 +350,10 @@ void run_tests()
 						i_data *= mu*mu;
 					}
 			);
+			result.loadSphereDataPhysical(result_phys);
 
 
-			double div_max_error = (h-result).physical_reduce_max_abs();
+			double div_max_error = (h-result).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -425,13 +400,6 @@ int main(
 						simVars.misc.reuse_spectral_transformation_plans
 				);
 	}
-
-	sphereDataConfigExtInstance.setupAdditionalModes(
-			&sphereDataConfigInstance,
-			simVars.rexi.use_sphere_extended_modes,
-			simVars.rexi.use_sphere_extended_modes,
-			simVars.misc.reuse_spectral_transformation_plans
-		);
 
 	run_tests();
 

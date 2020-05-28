@@ -33,7 +33,7 @@ std::string SWE_Sphere_TS_ln_settls_vd::string_id()
 }
 
 
-void SWE_Sphere_TS_ln_settls_vd::run_timestep_pert(
+void SWE_Sphere_TS_ln_settls_vd::run_timestep(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -68,7 +68,7 @@ void SWE_Sphere_TS_ln_settls_vd::interpolate_departure_point(
 	o_div.setup_if_required(i_phi.sphereDataConfig);
 
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
-			i_phi.getSphereDataPhysical(),
+			i_phi.toPhys(),
 			i_pos_lon_d, i_pos_lat_d,
 			false,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
@@ -78,7 +78,7 @@ void SWE_Sphere_TS_ln_settls_vd::interpolate_departure_point(
 
 #if 1
 	o_vrt = sphereSampler.bicubic_scalar_ret_phys(
-			i_vrt.getSphereDataPhysical(),
+			i_vrt.toPhys(),
 			i_pos_lon_d, i_pos_lat_d,
 			false,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
@@ -86,7 +86,7 @@ void SWE_Sphere_TS_ln_settls_vd::interpolate_departure_point(
 		);
 
 	o_div = sphereSampler.bicubic_scalar_ret_phys(
-			i_div.getSphereDataPhysical(),
+			i_div.toPhys(),
 			i_pos_lon_d, i_pos_lat_d,
 			false,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
@@ -203,7 +203,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		/*
 		 * L_g(U): Linear gravity modes
 		 */
-		swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_lg(
+		swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lg(
 				U_phi, U_vrt, U_div,
 				L_U_phi, L_U_vrt, L_U_div,
 				i_simulation_timestamp
@@ -214,7 +214,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 			/*
 			 * L_c(U): Linear Coriolis effect
 			 */
-			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_lc(
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lc(
 					U_phi, U_vrt, U_div,
 					L_U_phi, L_U_vrt, L_U_div,
 					i_simulation_timestamp
@@ -248,7 +248,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		/*
 		 * L_g(U): Linear gravity modes
 		 */
-		swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_lg(
+		swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lg(
 				U_phi_D, U_vrt_D, U_div_D,
 				L_U_phi_D, L_U_vrt_D, L_U_div_D,
 				i_simulation_timestamp
@@ -259,7 +259,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 			/*
 			 * L_c(U): Linear Coriolis effect
 			 */
-			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_lc(
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lc(
 					U_phi_D, U_vrt_D, U_div_D,
 					L_U_phi_D, L_U_vrt_D, L_U_div_D,
 					i_simulation_timestamp
@@ -298,7 +298,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_nr(
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_nr(
 					U_phi_prev, U_vrt_prev, U_div_prev,
 					N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 					i_simulation_timestamp-i_dt
@@ -307,7 +307,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 
 		if (coriolis_treatment == CORIOLIS_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_lc(
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lc(
 					U_phi_prev, U_vrt_prev, U_div_prev,
 					N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 					i_simulation_timestamp-i_dt
@@ -323,7 +323,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_nr(
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_nr(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 					i_simulation_timestamp
@@ -332,7 +332,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 
 		if (coriolis_treatment == CORIOLIS_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_pert_lc(
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lc(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 					i_simulation_timestamp-i_dt
@@ -368,7 +368,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 
 	if (coriolis_treatment == CORIOLIS_LINEAR)
 	{
-		swe_sphere_ts_l_irk->run_timestep_pert(
+		swe_sphere_ts_l_irk->run_timestep(
 				R_phi, R_vrt, R_div,
 				0.5 * i_dt,
 				i_simulation_timestamp
@@ -376,7 +376,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 	}
 	else
 	{
-		swe_sphere_ts_lg_irk->run_timestep_pert(
+		swe_sphere_ts_lg_irk->run_timestep(
 				R_phi, R_vrt, R_div,
 				0.5 * i_dt,
 				i_simulation_timestamp
@@ -432,30 +432,41 @@ void SWE_Sphere_TS_ln_settls_vd::setup(
 
 
 	swe_sphere_ts_ln_erk_split_vd = new SWE_Sphere_TS_ln_erk_split_vd(simVars, op);
-	swe_sphere_ts_ln_erk_split_vd->setup(1, true, true, true, true);
+	swe_sphere_ts_ln_erk_split_vd->setup(1, true, true, true, true, false);
 
 	if (coriolis_treatment == CORIOLIS_LINEAR)
 	{
+		swe_sphere_ts_l_irk = new SWE_Sphere_TS_l_irk(simVars, op);
 		if (timestepping_order == 1)
 		{
-			swe_sphere_ts_l_irk = new SWE_Sphere_TS_l_irk(simVars, op);
-			swe_sphere_ts_l_irk->setup(1, simVars.timecontrol.current_timestep_size, 0);
+			swe_sphere_ts_l_irk->setup(
+					1,
+					simVars.timecontrol.current_timestep_size
+				);
 		}
 		else
 		{
 			// initialize with 1st order and half time step size
-			swe_sphere_ts_l_irk = new SWE_Sphere_TS_l_irk(simVars, op);
-			swe_sphere_ts_l_irk->setup(1, 0.5 * simVars.timecontrol.current_timestep_size, 0);
+			swe_sphere_ts_l_irk->setup(
+					1,
+					0.5 * simVars.timecontrol.current_timestep_size
+				);
 		}
 	}
 	else
 	{
 		swe_sphere_ts_lg_irk = new SWE_Sphere_TS_lg_irk(simVars, op);
 		if (timestepping_order == 1)
-			swe_sphere_ts_lg_irk->setup(1, simVars.timecontrol.current_timestep_size, 0);
+			swe_sphere_ts_lg_irk->setup(
+					1,
+					simVars.timecontrol.current_timestep_size
+				);
 		else
 			// initialize with 1st order and half time step size
-			swe_sphere_ts_lg_irk->setup(1, 0.5 * simVars.timecontrol.current_timestep_size, 0);
+			swe_sphere_ts_lg_irk->setup(
+					1,
+					0.5 * simVars.timecontrol.current_timestep_size
+				);
 	}
 }
 

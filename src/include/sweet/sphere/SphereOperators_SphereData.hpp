@@ -10,7 +10,6 @@
 
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
 #include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
 #include <sweet/SimulationVariables.hpp>
 
@@ -20,6 +19,8 @@ class SphereOperators_SphereData	:
 	public SphereHelpers_SPHIdentities
 {
 	friend SphereData_Config;
+	typedef std::complex<double> Tcomplex;
+	typedef double Treal;
 
 public:
 	const SphereData_Config *sphereDataConfig;
@@ -27,10 +28,16 @@ public:
 	// Coriolis effect in physical space
 	SphereData_Physical fg;
 
+	// Solely the rotational effect without anything else
+	SphereData_Physical mug;
+
 
 private:
-	double r;
-	double ir;
+	double r;		// radius
+	double r2;		// radius^2
+
+	double ir;		// 1/radius
+	double ir2;		// 1/radius^2
 
 
 public:
@@ -59,9 +66,13 @@ public:
 		sphereDataConfig = i_sphereDataConfig;
 
 		r = i_simCoeffs->sphere_radius;
-		ir = 1.0/r;
+		r2 = r*r;
 
-		fg.setup_if_required(i_sphereDataConfig);
+		ir = 1.0/r;
+		ir2 = ir*ir;
+
+		fg.free();
+		fg.setup(i_sphereDataConfig);
 		if (i_simCoeffs->sphere_use_fsphere)
 		{
 			fg.physical_update_lambda_gaussian_grid(
@@ -77,6 +88,27 @@ public:
 				[&](double lon, double mu, double &o_data)
 				{
 					o_data = mu*2.0*i_simCoeffs->sphere_rotating_coriolis_omega;
+				}
+			);
+		}
+
+		mug.free();
+		mug.setup(i_sphereDataConfig);
+		if (i_simCoeffs->sphere_use_fsphere)
+		{
+			mug.physical_update_lambda_gaussian_grid(
+				[&](double lon, double mu, double &o_data)
+				{
+					o_data = i_simCoeffs->sphere_fsphere_f0;
+				}
+			);
+		}
+		else
+		{
+			mug.physical_update_lambda_gaussian_grid(
+				[&](double lon, double mu, double &o_data)
+				{
+					o_data = mu;
 				}
 			);
 		}
@@ -120,36 +152,11 @@ public:
 
 
 
-	/**
-	 * Convert vorticity/divergence field to u,v velocity field
-	 */
-	void robert_vortdiv_to_uv(
-			const SphereData_Spectral &i_vrt,
-			const SphereData_Spectral &i_div,
-			SphereData_Physical &o_u,
-			SphereData_Physical &o_v
-
-	)	const
-	{
-		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
-		SphereData_Spectral chi = inv_laplace(i_div)*ir;
-
-		o_u.setup_if_required(i_vrt.sphereDataConfig);
-		o_v.setup_if_required(i_vrt.sphereDataConfig);
-		SHsphtor_to_spat(
-				sphereDataConfig->shtns,
-				psi.spectral_space_data,
-				chi.spectral_space_data,
-				o_u.physical_space_data,
-				o_v.physical_space_data
-		);
-	}
-
 
 	/**
-	 * Convert vorticity/divergence field to u,v velocity field
+	 * Compute gradient
 	 */
-	void robert_grad_to_vec(
+	void grad_to_vec(
 			const SphereData_Spectral &i_phi,
 			SphereData_Physical &o_u,
 			SphereData_Physical &o_v,
@@ -161,7 +168,6 @@ public:
 
 		SphereData_Spectral psi(sphereDataConfig);
 		psi.spectral_set_zero();
-
 
 		o_u.setup_if_required(i_phi.sphereDataConfig);
 		o_v.setup_if_required(i_phi.sphereDataConfig);
@@ -204,7 +210,6 @@ public:
 		o_u.setup_if_required(i_vrt.sphereDataConfig);
 		o_v.setup_if_required(i_vrt.sphereDataConfig);
 
-		shtns_robert_form(sphereDataConfig->shtns, 0);
 		SHsphtor_to_spat(
 				sphereDataConfig->shtns,
 				psi.spectral_space_data,
@@ -212,37 +217,6 @@ public:
 				o_u.physical_space_data,
 				o_v.physical_space_data
 		);
-		shtns_robert_form(sphereDataConfig->shtns, 1);
-	}
-
-
-
-	void vortdiv_to_uv(
-			const SphereData_Spectral &i_vrt,
-			const SphereData_Spectral &i_div,
-			SphereData_Physical &o_u,
-			SphereData_Physical &o_v,
-			bool i_robert_formulation
-
-	)	const
-	{
-		o_u.setup_if_required(i_vrt.sphereDataConfig);
-		o_v.setup_if_required(i_vrt.sphereDataConfig);
-
-		if (!i_robert_formulation)
-		{
-			vortdiv_to_uv(
-					i_vrt, i_div,
-					o_u, o_v
-			);
-		}
-		else
-		{
-			robert_vortdiv_to_uv(
-					i_vrt, i_div,
-					o_u, o_v
-			);
-		}
 	}
 
 
@@ -327,30 +301,6 @@ public:
 
 
 
-	SphereData_Spectral robert_uv_to_vort(
-			const SphereData_Physical &i_u,
-			const SphereData_Physical &i_v
-
-	)	const
-	{
-		SphereData_Spectral tmp(sphereDataConfig);
-		SphereData_Spectral vort(sphereDataConfig);
-
-		SphereData_Physical ug = i_u;
-		SphereData_Physical vg = i_v;
-
-		shtns_robert_form(sphereDataConfig->shtns, 1);
-		spat_to_SHsphtor(
-				sphereDataConfig->shtns,
-				ug.physical_space_data,
-				vg.physical_space_data,
-				vort.spectral_space_data,
-				tmp.spectral_space_data
-		);
-
-		return laplace(vort)*r;
-	}
-
 
 
 	SphereData_Spectral uv_to_vort(
@@ -369,7 +319,6 @@ public:
 			#endif
 		#endif
 
-		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
@@ -377,7 +326,6 @@ public:
 				vort.spectral_space_data,
 				tmp.spectral_space_data
 		);
-		shtns_robert_form(sphereDataConfig->shtns, 1);
 
 		return laplace(vort)*r;
 	}
@@ -420,7 +368,6 @@ public:
 			#endif
 		#endif
 
-		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
@@ -428,38 +375,8 @@ public:
 				tmp.spectral_space_data,
 				div.spectral_space_data
 		);
-		shtns_robert_form(sphereDataConfig->shtns, 1);
 
 		return laplace(div)*r;
-	}
-
-
-
-	void robert_uv_to_vortdiv(
-			const SphereData_Physical &i_u,
-			const SphereData_Physical &i_v,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div
-
-	)	const
-	{
-		// create copy since the data is modified!
-		SphereData_Physical ug = i_u;
-		SphereData_Physical vg = i_v;
-
-		o_vrt.setup_if_required(i_u.sphereDataConfig);
-		o_div.setup_if_required(i_u.sphereDataConfig);
-
-		spat_to_SHsphtor(
-				sphereDataConfig->shtns,
-				ug.physical_space_data,
-				vg.physical_space_data,
-				o_vrt.spectral_space_data,
-				o_div.spectral_space_data
-		);
-
-		o_vrt = laplace(o_vrt)*r;
-		o_div = laplace(o_div)*r;
 	}
 
 
@@ -482,7 +399,6 @@ public:
 			#endif
 		#endif
 
-		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_to_SHsphtor(
 				sphereDataConfig->shtns,
 				i_u.physical_space_data,
@@ -490,40 +406,9 @@ public:
 				o_vrt.spectral_space_data,
 				o_div.spectral_space_data
 		);
-		shtns_robert_form(sphereDataConfig->shtns, 1);
 
 		o_vrt = laplace(o_vrt)*r;
 		o_div = laplace(o_div)*r;
-	}
-
-
-
-	void uv_to_vortdiv(
-			const SphereData_Physical &i_u,
-			const SphereData_Physical &i_v,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div,
-			bool i_robert_formulation
-
-	)	const
-	{
-		o_vrt.setup_if_required(i_u.sphereDataConfig);
-		o_div.setup_if_required(i_u.sphereDataConfig);
-
-		if (!i_robert_formulation)
-		{
-			uv_to_vortdiv(
-					i_u, i_v,
-					o_vrt, o_div
-			);
-		}
-		else
-		{
-			robert_uv_to_vortdiv(
-					i_u, i_v,
-					o_vrt, o_div
-			);
-		}
 	}
 
 
@@ -565,8 +450,8 @@ public:
 			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				out_sph_data.spectral_space_data[idx] =
-						((double)(-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
-						((double)(n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
+						((double)(-n+1.0)*R(n-1,m))*i_sph_data.spectral_get_DEPRECATED(n-1, m) +
+						((double)(n+2.0)*S(n+1,m))*i_sph_data.spectral_get_DEPRECATED(n+1, m);
 
 				idx++;
 			}
@@ -585,9 +470,7 @@ public:
 			const SphereData_Spectral &i_sphere_data
 	)	const
 	{
-		const SphereData_Config *sphereDataConfig = i_sphere_data.sphereDataConfig;
-
-		SphereData_Spectral out_sph_data = SphereData_Spectral(sphereDataConfig);
+		SphereData_Spectral out_sph_data(i_sphere_data.sphereDataConfig);
 
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -597,9 +480,269 @@ public:
 
 			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				out_sph_data.spectral_space_data[idx] =
-							R(n-1,m)*i_sphere_data.spectral_get(n-1, m)
-							+ S(n+1,m)*i_sphere_data.spectral_get(n+1, m);
+				out_sph_data.spectral_space_data[idx] = 0;
+
+				if (n-1 >= m)
+					out_sph_data.spectral_space_data[idx] +=
+							R_real(n-1,m)*i_sphere_data.spectral_get_(n-1, m);
+
+				if (n+1 <= i_sphere_data.sphereDataConfig->spectral_modes_n_max)
+					out_sph_data.spectral_space_data[idx] +=
+							S_real(n+1,m)*i_sphere_data.spectral_get_(n+1, m);
+
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Solve a Helmholtz problem given by
+	 *
+	 * (1 + b D^2) x = rhs
+	 */
+	inline
+	SphereData_Spectral implicit_helmholtz(
+			const SphereData_Spectral &i_sphere_data,
+			const double &i_b,
+			double i_sphere_radius
+	)
+	{
+		SphereData_Spectral out(i_sphere_data);
+
+		const double b = i_b/(i_sphere_radius*i_sphere_radius);
+
+		out.spectral_update_lambda(
+			[&](
+				int n, int m,
+				std::complex<double> &io_data
+			)
+			{
+				io_data /= (1 + (-b*(double)n*((double)n+1.0)));
+			}
+		);
+
+		return out;
+	}
+
+
+
+
+	/**
+	 * Compute multiplication with "J" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_Spectral implicit_J(
+			const SphereData_Spectral &i_sphere_data,
+			double i_dt_two_omega
+	)	const
+	{
+		SphereData_Spectral out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes(m, m);
+
+			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				out_sph_data[idx] = i_sphere_data[idx] * implicit_J_scalar(n, m, i_dt_two_omega);
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+	/**
+	 * Compute multiplication with "J^-1" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_Spectral implicit_Jinv(
+			const SphereData_Spectral &i_sphere_data,
+			double i_dt_two_omega
+	)	const
+	{
+		SphereData_Spectral out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				out_sph_data[idx] =	i_sphere_data.spectral_space_data[idx] / implicit_J_scalar(n, m, i_dt_two_omega);
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+	/**
+	 * Compute multiplication with "F" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_Spectral implicit_F(
+			const SphereData_Spectral &i_sphere_data,
+			double i_dt_two_omega
+	)	const
+	{
+		SphereData_Spectral out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes(m, m);
+
+			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				//std::cout << "* START *******************************************" << std::endl;
+				//std::cout << "implicit_F " << n << ", " << m << std::endl;
+
+				out_sph_data.spectral_space_data[idx] = 0;
+
+				// out of boundary check for P(n-1, m)
+				if (n-1 >= m)
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_minus(n, m)
+							* i_sphere_data.spectral_get_(n-1, m);
+					//std::cout << "a: x" << std::endl;
+				}
+
+				// out of boundary check for P(n+1, m)
+				if (n+1 <= i_sphere_data.sphereDataConfig->spectral_modes_n_max)
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_plus(n, m)
+							* i_sphere_data.spectral_get_(n+1, m);
+
+					//std::cout << "b: x" << std::endl;
+				}
+
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Compute multiplication with "F" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_Spectral implicit_FJinv(
+			const SphereData_Spectral &i_sphere_data,
+			double i_dt_two_omega
+	)	const
+	{
+		SphereData_Spectral out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes(m, m);
+
+			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				//std::cout << "* START *******************************************" << std::endl;
+				//std::cout << "implicit_FJinv " << n << ", " << m << std::endl;
+
+				out_sph_data.spectral_space_data[idx] = 0;
+
+				// Out of boundary check for P(n-1, m)
+				if (n-1 >= m)
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_minus(n, m)
+							/ implicit_J_scalar(n-1, m, i_dt_two_omega)
+							* i_sphere_data.spectral_get_(n-1, m);
+
+					//std::cout << "a: x" << std::endl;
+				}
+
+				// Out of boundary check for P(n+1, m)
+				if (n+1 <= i_sphere_data.sphereDataConfig->spectral_modes_n_max)
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_plus(n, m)
+							/ implicit_J_scalar(n+1, m, i_dt_two_omega)
+							* i_sphere_data.spectral_get_(n+1, m);
+
+					//std::cout << "b: x" << std::endl;
+				}
+
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Compute multiplication with "L" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_Spectral implicit_L(
+			const SphereData_Spectral &i_sphere_data,
+			double i_dt
+	)	const
+	{
+		SphereData_Spectral out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes(m, m);
+
+			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				out_sph_data[idx] = i_dt*ir2*(n*(n+1)) * i_sphere_data[idx];
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Compute multiplication with "Linv" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_Spectral implicit_Linv(
+			const SphereData_Spectral &i_sphere_data,
+			double i_dt
+	)	const
+	{
+		SphereData_Spectral out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= i_sphere_data.sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes(m, m);
+
+			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				if (n == 0)
+					out_sph_data[idx] = 0.0;
+				else
+					out_sph_data[idx] = 1.0/(i_dt*ir2*(n*(n+1))) * i_sphere_data[idx];
 
 				idx++;
 			}
@@ -631,9 +774,9 @@ public:
 			for (int n = m; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				out_sph_data.spectral_space_data[idx] =
-						+A(n-2,m)*i_sph_data.spectral_get(n-2, m)
-						+B(n+0,m)*i_sph_data.spectral_get(n+0, m)
-						+C(n+2,m)*i_sph_data.spectral_get(n+2, m)
+						+A(n-2,m)*i_sph_data.spectral_get_DEPRECATED(n-2, m)
+						+B(n+0,m)*i_sph_data.spectral_get_DEPRECATED(n+0, m)
+						+C(n+2,m)*i_sph_data.spectral_get_DEPRECATED(n+2, m)
 						;
 				idx++;
 			}

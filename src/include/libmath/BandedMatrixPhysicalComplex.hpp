@@ -81,6 +81,7 @@ public:
 			int i_halosize_off_diagonal = 0		///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
+		shutdown();
 		assert(data == nullptr);
 
 		sphereDataConfig = i_sphereDataConfig;
@@ -200,6 +201,34 @@ public:
 
 		int idx = rel_n + halosize_off_diagonal;
 
+		assert(idx >= 0 && idx < num_diagonals);
+
+		io_row[idx] += i_value;
+	}
+
+
+	/**
+	 * Return reference to an element in the row to the specified value
+	 */
+	void rowElement_add_NEW(
+			T *io_row,		///< pointer to current row
+			int i_row_n,	///< row related to P Legendre mode n
+			int i_row_m,	///< row related to P Fourier mode n
+			int rel_n,		///< Relative Legendre mode n (e.g. -1 or +2)
+			const T &i_value
+	)
+	{
+		if (i_row_n < i_row_m)
+			return;
+
+		int n = i_row_n+rel_n;
+
+		int idx = rel_n + halosize_off_diagonal;
+
+		assert(i_row_m <= sphereDataConfig->spectral_modes_m_max);
+		assert(n >= 0);
+		assert(n >= i_row_m);
+		assert(n <= sphereDataConfig->spectral_modes_n_max);
 		assert(idx >= 0 && idx < num_diagonals);
 
 		io_row[idx] += i_value;

@@ -32,7 +32,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::setup_auto()
 }
 
 
-void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_pert(
+void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -75,7 +75,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::interpolate_departure_point_uv(
 	o_div.setup_if_required(i_phi.sphereDataConfig);
 
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
-			i_phi.getSphereDataPhysical(),
+			i_phi.toPhys(),
 			i_pos_lon_D, i_pos_lat_D,
 			false,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
@@ -291,7 +291,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 	/*
 	 * L_g(U): Linear gravity modes
 	 */
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_pert_lg(
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_lg(
 			U_phi, U_vrt, U_div,
 			L_U_phi, L_U_vrt, L_U_div,
 			i_simulation_timestamp
@@ -300,7 +300,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 	/*
 	 * L_c(U): Linear Coriolis effect
 	 */
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_pert_lc(
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_lc(
 			U_phi, U_vrt, U_div,
 			L_U_phi, L_U_vrt, L_U_div,
 			i_simulation_timestamp
@@ -390,7 +390,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 	 * Step 2b) Solve Helmholtz problem
 	 * X - 1/2 dt LX = R
 	 */
-	swe_sphere_ts_l_irk->run_timestep_pert(
+	swe_sphere_ts_l_irk->run_timestep(
 			R_phi, R_vrt, R_div,
 			0.5 * i_dt,
 			i_simulation_timestamp
@@ -428,11 +428,11 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::setup(
 
 	// Initialize with 1st order
 	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order = new SWE_Sphere_TS_ln_erk_split_uv(simVars, op);
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->setup(1, true, true, false, false);
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->setup(1, true, true, false, false, false);
 
 	// Initialize with 1st order and half time step size
 	swe_sphere_ts_l_irk = new SWE_Sphere_TS_l_irk(simVars, op);
-	swe_sphere_ts_l_irk->setup(1, 0.5 * simVars.timecontrol.current_timestep_size, 0);
+	swe_sphere_ts_l_irk->setup(1, 0.5 * simVars.timecontrol.current_timestep_size);
 }
 
 

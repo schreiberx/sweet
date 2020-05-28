@@ -3,20 +3,22 @@
 #include <string>
 
 #include <sweet/SimulationVariables.hpp>
-#include "SWE_Sphere_TS_PFASST_l_erk_n_erk.hpp"
-#include "SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk.hpp"
-#include "SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk.hpp"
-#include "SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk_ver01.hpp"
-#include "SWE_Sphere_TS_PFASST_l_irk_n_erk_ver01.hpp"
-#include "SWE_Sphere_TS_PFASST_l_irk.hpp"
-#include "SWE_Sphere_TS_PFASST_ln_erk.hpp"
-#include "SWE_Sphere_TS_PFASST_lg_irk.hpp"
-#include "SWE_Sphere_TS_PFASST_l_rexi.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_lg_erk_lc_erk.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_l_irk_n_erk.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_l_irk.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_ln_erk.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_lg_irk.hpp"
+#include "../swe_sphere/SWE_Sphere_TS_l_exp.hpp"
 
 #include "ceval.hpp"
+
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
+
 #include "cencap.hpp"
 
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 
@@ -44,7 +46,7 @@ std::string write_file(
 			filename_template,
 			i_name,
 			simVars->timecontrol.current_timestep_size);
-	sphereData.getSphereDataPhysical().physical_file_write(buffer);
+	sphereData.toPhys().physical_file_write(buffer);
 
 	return buffer;
 }
@@ -197,7 +199,7 @@ void cinitial(
 	// get the operator for this level
 	SphereOperators_SphereData* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
-	SWESphereBenchmarksCombined *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
+	SWESphereBenchmarks *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
 	// // instantiate phi, vort, and div without dealiasing to get the initial condition
 	SphereData_Spectral phi_Y_nodealiasing(data_config_nodealiasing);
@@ -211,7 +213,8 @@ void cinitial(
 	// get the initial condition in phi, vort, and div
 	benchmarks->setup(*simVars,
 			*op_nodealiasing);
-	benchmarks->compute_initial_condition_pert(phi_Y_nodealiasing,
+	benchmarks->master->get_initial_state(
+			phi_Y_nodealiasing,
 			vort_Y_nodealiasing,
 			div_Y_nodealiasing);
 
@@ -255,8 +258,8 @@ void cinitial(
 	//std::cout << "Vorticity error during conversion (infty norm) = " << vort_Y_init.physical_reduce_max_abs() << std::endl;
 
 	// // get the timestepper
-	// SWE_Sphere_TS_PFASST_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
-	// //SWE_Sphere_TS_PFASST_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
+	// SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
+	// //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
 
 	// double current_simulation_time = 0;
 	// int nsteps                     = 0;
@@ -461,10 +464,10 @@ void ceval_f1(SphereDataVars *i_Y,
 	if (simVars->libpfasst.implicit_coriolis_force)
 	{
 
-		SWE_Sphere_TS_PFASST_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
+		SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 
 		// compute the explicit nonlinear right-hand side
-		timestepper->euler_timestep_update_n(
+		timestepper->euler_timestep_update_nonlinear(
 				phi_Y,
 				vort_Y,
 				div_Y,
@@ -480,7 +483,7 @@ void ceval_f1(SphereDataVars *i_Y,
 		if (!simVars->benchmark.use_topography)
 		{
 
-			SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
 
 			// compute the explicit nonlinear right-hand side
 			timestepper->euler_timestep_update_lc_n(
@@ -496,10 +499,10 @@ void ceval_f1(SphereDataVars *i_Y,
 		else
 		{
 
-			SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
 
 			// compute the explicit nonlinear right-hand side
-			timestepper->euler_timestep_update_coriolis_and_nonlinear(
+			timestepper->euler_timestep_update_lc_n(
 					phi_Y,
 					vort_Y,
 					div_Y,
@@ -541,7 +544,7 @@ void ceval_f2 (
 	{
 
 		// get the explicit timestepper
-		SWE_Sphere_TS_PFASST_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
+		SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
 
 		// compute the linear right-hand side
 		timestepper->euler_timestep_update_linear(
@@ -561,7 +564,7 @@ void ceval_f2 (
 		{
 
 			// get the explicit timestepper
-			SWE_Sphere_TS_PFASST_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
 
 			// compute the linear right-hand side
 			timestepper->euler_timestep_update_linear(
@@ -579,7 +582,7 @@ void ceval_f2 (
 		{
 
 			// get the explicit timestepper
-			SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk* timestepper = i_ctx->get_lg_erk_lc_n_t_erk_timestepper(i_Y->get_level());
+			SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(i_Y->get_level());
 
 			// compute the linear right-hand side
 			timestepper->euler_timestep_update_linear(
@@ -626,13 +629,13 @@ void ccomp_f2 (
 	div_Y  = div_Rhs;
 
 
-	if (simVars->libpfasst.use_rexi)
+	if (simVars->libpfasst.use_exp)
 	{
-		// get the rexi time stepper
-		SWE_Sphere_TS_PFASST_l_rexi* timestepper = i_ctx->get_l_rexi_timestepper(io_Y->get_level());
+		// get the exp time stepper
+		SWE_Sphere_TS_l_exp* timestepper = i_ctx->get_l_exp_timestepper(io_Y->get_level());
 
 		// solve the implicit system using the Helmholtz solver
-		timestepper->run_timestep_nonpert(
+		timestepper->run_timestep(
 				phi_Y,
 				vort_Y,
 				div_Y,
@@ -647,10 +650,10 @@ void ccomp_f2 (
 		{
 
 			// get the irk timestepper
-			SWE_Sphere_TS_PFASST_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
+			SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
 
 			// solve the implicit system using the Helmholtz solver
-			timestepper->run_timestep_nonpert(
+			timestepper->run_timestep(
 					phi_Y,
 					vort_Y,
 					div_Y,
@@ -663,10 +666,10 @@ void ccomp_f2 (
 		{
 
 			// get the irk timestepper
-			SWE_Sphere_TS_PFASST_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
+			SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
 
 			// solve the implicit system using the Helmholtz solver
-			timestepper->run_timestep_nonpert(
+			timestepper->run_timestep(
 					phi_Y,
 					vort_Y,
 					div_Y,

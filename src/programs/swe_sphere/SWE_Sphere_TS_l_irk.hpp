@@ -1,55 +1,34 @@
 /*
- * SWEImplicit_SPHRobert.hpp
- *
- *  Created on: 30 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_HPP_
 
 
 #include <complex>
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_lg_erk.hpp"
 #include "SWE_Sphere_TS_l_erk.hpp"
 
 
 
 /**
- * REXI solver for SWE based on Robert function formulation
+ * Implicit solver
  */
 class SWE_Sphere_TS_l_irk	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (i_timestepping_method == "l_irk")
-			return true;
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
-		return false;
-	}
-
-	std::string string_id()
-	{
-		return "l_irk";
-	}
-
-	void setup_auto()
-	{
-		if (simVars.sim.sphere_use_fsphere)
-			SWEETError("TODO: Not yet supported");
-
-		setup(	simVars.disc.timestepping_order,
-				simVars.timecontrol.current_timestep_size,
-				simVars.rexi.use_sphere_extended_modes
-			);
-	}
-
+	std::string timestepping_method;
 
 private:
 	/// Simulation variables
@@ -61,25 +40,10 @@ private:
 	/// SPH configuration
 	const SphereData_Config *sphereDataConfig;
 
-	/// SPH configuration used for solver (maybe extended modes)
-	const SphereData_Config *sphereDataConfigSolver;
-	SphereData_Config sphereDataConfigSolverAddedModes;
-
+	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
 	SWE_Sphere_TS_l_erk *l_erk = nullptr;
 
-	/// Solvers for alpha=Identity
-	/// Template parameter is still complex-valued!!!
-	/// This is because the spectral space is complex valued
-	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverPhi;
-	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverVel;
-
-	bool use_extended_modes;
-
-	/// alpha/beta (time step related component for implicit solver)
-	double alpha;
-	double beta;
-
-	bool use_f_sphere;
+	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverDiv;
 
 	// Order of time stepping.
 	int timestepping_order;
@@ -89,11 +53,16 @@ private:
 	/// timestep size
 	double timestep_size;
 
-	/// earth radius
-	double r;
+	/// individual time step size
+	double dt_explicit = -1;
+	double dt_implicit = -1;
 
-	/// inverse of earth radius
-	double inv_r;
+	/// earth radius
+	double sphere_radius;
+
+	bool use_f_sphere;
+
+	bool no_coriolis;
 
 	/// f0
 	double f0;
@@ -110,29 +79,31 @@ public:
 	);
 
 private:
-	void update_coefficients();
+	void update_coefficients(double i_timestep_size);
 
 
-	/**
-	 * Setup the SWE REXI solver with SPH
-	 */
 public:
 	void setup(
 			int i_timestep_order,
 			double i_timestep_size,
-			int i_use_extended_modes = 0,
-			double i_crank_nicolson_damping_factor = 0.5
+			double i_crank_nicolson_damping_factor,
+			bool i_no_coriolis
 	);
 
-
-	/**
-	 * Solve a REXI time step for the given initial conditions
-	 */
 public:
-	void run_timestep_pert(
-			SphereData_Spectral &io_phi,		///< prognostic variables
-			SphereData_Spectral &io_vort,	///< prognostic variables
-			SphereData_Spectral &io_div,		///< prognostic variables
+	void setup(
+			int i_timestep_order,
+			double i_timestep_size
+	);
+
+public:
+	void free();
+
+public:
+	void run_timestep(
+			SphereData_Spectral &io_phi,
+			SphereData_Spectral &io_vrt,
+			SphereData_Spectral &io_div,
 
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
@@ -143,4 +114,4 @@ public:
 };
 
 
-#endif /* SRC_SWEREXI_SPHROBERT_HPP_ */
+#endif

@@ -12,9 +12,10 @@ exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
 jg.compile.unit_test="test_sphere_sph_solver_real_and_complex"
+
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
-#jg.compile.mode = "debug"
+jg.compile.mode = "debug"
 
 jg.runtime.sphere_radius = 1
 jg.runtime.sphere_rotating_coriolis_omega = 1

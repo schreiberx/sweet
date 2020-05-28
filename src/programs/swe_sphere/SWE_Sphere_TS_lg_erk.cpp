@@ -9,8 +9,7 @@
 
 
 
-
-void SWE_Sphere_TS_lg_erk::run_timestep_pert(
+void SWE_Sphere_TS_lg_erk::run_timestep(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -19,9 +18,6 @@ void SWE_Sphere_TS_lg_erk::run_timestep_pert(
 		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
-		SWEETError("Only constant time step size allowed");
-
 	// standard time stepping
 	timestepping_rk.run_timestep(
 			this,

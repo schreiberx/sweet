@@ -1,12 +1,9 @@
 /*
- * SWE_Sphere_TS_ln_erk.hpp
- *
- *  Created on: 30 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_ERK_N_ERK_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_ERK_N_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_ERK_N_ERK_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_L_ERK_N_ERK_HPP_
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -107,7 +104,7 @@ public:
 
 	void setup_auto();
 
-	void run_timestep_pert(
+	void run_timestep(
 			SphereData_Spectral &io_phi_pert,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

@@ -159,13 +159,13 @@ int main(int i_argc, char *i_argv[])
 			rhs_u += f;
 			rhs_v = op.diff_c_x(rhs_v)+op.diff_c_y(rhs_v);
 			rhs_v += g;
-			PlaneData lhs = (-(op.diff2_c_x + op.diff2_c_y)).addScalar_Cart(1.0);
+			PlaneData lhs = (-(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 
 			Stopwatch watch;
 			watch.start();
 
-			u = rhs_u.spec_div_element_wise(lhs);
-			v = rhs_v.spec_div_element_wise(lhs);
+			u = rhs_u.spectral_div_element_wise(lhs);
+			v = rhs_v.spectral_div_element_wise(lhs);
 
 			watch.stop();
 

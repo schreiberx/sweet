@@ -14,6 +14,7 @@ jg = JobGeneration()
 jg.compile.unit_test="test_sphere_sph_operators_complex"
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
+jg.compile.mode = 'debug'
 
 params_runtime_mode_res = [64, 128, 256, 512, 1024, 2048]
 jg.runtime.verbosity = 5

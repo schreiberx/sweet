@@ -11,7 +11,7 @@
 
 #include <sweet/SimulationVariables.hpp>
 #include <libmath/BandedMatrixPhysicalReal.hpp>
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include "../programs/swe_sphere/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
@@ -38,10 +38,10 @@ public:
 		const SphereData_Spectral lhs = i_lhs;
 		const SphereData_Spectral rhs = i_rhs;
 
-		SphereData_Physical diff = i_lhs.getSphereDataPhysical()-rhs.getSphereDataPhysical();
+		SphereData_Physical diff = i_lhs.toPhys()-rhs.toPhys();
 
-		double lhs_maxabs = lhs.getSphereDataPhysical().physical_reduce_max_abs();
-		double rhs_maxabs = rhs.getSphereDataPhysical().physical_reduce_max_abs();
+		double lhs_maxabs = lhs.toPhys().physical_reduce_max_abs();
+		double rhs_maxabs = rhs.toPhys().physical_reduce_max_abs();
 
 		double normalize_fac = 1.0;
 
@@ -69,9 +69,9 @@ public:
 			}
 			else
 			{
-				lhs.getSphereDataPhysical().physical_file_write("o_error_lhs_values.csv");
-				rhs.getSphereDataPhysical().physical_file_write("o_error_rhs_values.csv");
-				(lhs-rhs).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+				lhs.toPhys().physical_file_write("o_error_lhs_values.csv");
+				rhs.toPhys().physical_file_write("o_error_rhs_values.csv");
+				(lhs-rhs).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
 				diff.physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 				SWEETError("Error too high");
@@ -94,12 +94,14 @@ public:
 			bool i_ignore_error = false,
 			bool i_normalization = true
 	)
-	{
 //		SphereDataSpectral diff = i_lhs - i_rhs;
-		SphereData_SpectralComplex diff = i_lhs.physical_diff_realconst(i_rhs);
+	{
+		SphereData_SpectralComplex diff = i_lhs - i_rhs;
+//				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs)
+//				- Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_rhs);
 
-		double lhs_maxabs = SphereData_SpectralComplex(i_lhs).physical_reduce_max_abs();
-		double rhs_maxabs = SphereData_SpectralComplex(i_rhs).physical_reduce_max_abs();
+		double lhs_maxabs = SphereData_SpectralComplex(i_lhs).toPhys().physical_reduce_max_abs();
+		double rhs_maxabs = SphereData_SpectralComplex(i_rhs).toPhys().physical_reduce_max_abs();
 
 		double normalize_fac = 1.0;
 
@@ -114,8 +116,8 @@ public:
 			}
 		}
 
-		double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
-		double rel_rms = diff.physical_reduce_rms() / normalize_fac;
+		double rel_max_abs = diff.toPhys().physical_reduce_max_abs() / normalize_fac;
+		double rel_rms = diff.toPhys().physical_reduce_rms() / normalize_fac;
 
 		std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\terror threshold: " << i_error_threshold << " with normalization factor " << normalize_fac << std::endl;
 
@@ -127,10 +129,10 @@ public:
 			}
 			else
 			{
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs).getSphereDataPhysical().physical_file_write("o_error_lhs_values.csv");
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_rhs).getSphereDataPhysical().physical_file_write("o_error_rhs_values.csv");
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs-i_rhs).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs).toPhys().physical_file_write("o_error_lhs_values.csv");
+				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_rhs).toPhys().physical_file_write("o_error_rhs_values.csv");
+				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs-i_rhs).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 				SWEETError("Error too high");
 			}
@@ -157,10 +159,10 @@ public:
 		SphereData_Spectral lhsr = SphereData_Spectral(i_lhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
 		SphereData_Spectral rhsr = SphereData_Spectral(i_rhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
 
-		SphereData_Physical diff = lhsr.getSphereDataPhysical()-rhsr.getSphereDataPhysical();
+		SphereData_Physical diff = lhsr.toPhys()-rhsr.toPhys();
 
-		double lhs_maxabs = SphereData_Spectral(lhsr).getSphereDataPhysical().physical_reduce_max_abs();
-		double rhs_maxabs = SphereData_Spectral(rhsr).getSphereDataPhysical().physical_reduce_max_abs();
+		double lhs_maxabs = SphereData_Spectral(lhsr).toPhys().physical_reduce_max_abs();
+		double rhs_maxabs = SphereData_Spectral(rhsr).toPhys().physical_reduce_max_abs();
 
 		double normalize_fac = std::min(lhs_maxabs, rhs_maxabs);
 
@@ -184,9 +186,9 @@ public:
 				return true;
 			}
 
-			lhsr.getSphereDataPhysical().physical_file_write("o_error_lhs.csv");
-			rhsr.getSphereDataPhysical().physical_file_write("o_error_rhs.csv");
-			(lhsr-rhsr).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			lhsr.toPhys().physical_file_write("o_error_lhs.csv");
+			rhsr.toPhys().physical_file_write("o_error_rhs.csv");
+			(lhsr-rhsr).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
 			diff.physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			SWEETError("Error too high");
@@ -211,14 +213,16 @@ public:
 		SphereData_SpectralComplex lhsr = i_lhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
 		SphereData_SpectralComplex rhsr = i_rhs.spectral_returnWithDifferentModes(i_sphereDataConfig);
 
-		SphereData_SpectralComplex diff = lhsr.physical_diff_realconst(rhsr);
+		SphereData_SpectralComplex diff = lhsr - rhsr;
+//				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr)
+//				- Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr);
 
 		double normalize_fac;
 
 		if (i_normalization)
 		{
-			double lhs_maxabs = lhsr.physical_reduce_max_abs();
-			double rhs_maxabs = rhsr.physical_reduce_max_abs();
+			double lhs_maxabs = lhsr.toPhys().physical_reduce_max_abs();
+			double rhs_maxabs = rhsr.toPhys().physical_reduce_max_abs();
 
 			if (std::max(lhs_maxabs, rhs_maxabs) < i_error_threshold)
 			{
@@ -226,7 +230,7 @@ public:
 				return false;
 			}
 
-			normalize_fac = std::min(lhsr.physical_reduce_max_abs(), rhsr.physical_reduce_max_abs());
+			normalize_fac = std::min(lhsr.toPhys().physical_reduce_max_abs(), rhsr.toPhys().physical_reduce_max_abs());
 
 			if (normalize_fac == 0)
 			{
@@ -239,8 +243,8 @@ public:
 			normalize_fac = 1.0;
 		}
 
-		double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
-		double rel_rms = diff.physical_reduce_rms() / normalize_fac;
+		double rel_max_abs = diff.toPhys().physical_reduce_max_abs() / normalize_fac;
+		double rel_rms = diff.toPhys().physical_reduce_rms() / normalize_fac;
 
 		std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tError threshold: " << i_error_threshold << " with normalization factor " << normalize_fac << std::endl;
 
@@ -252,10 +256,10 @@ public:
 				return false;
 			}
 
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).getSphereDataPhysical().physical_file_write("o_error_lhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).getSphereDataPhysical().physical_file_write("o_error_rhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).toPhys().physical_file_write("o_error_lhs.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).toPhys().physical_file_write("o_error_rhs.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			SWEETError("Error too high");
 			return true;
@@ -286,8 +290,8 @@ public:
 
 		if (i_normalization)
 		{
-			double lhs_maxabs = lhsr.physical_reduce_max_abs();
-			double rhs_maxabs = rhsr.physical_reduce_max_abs();
+			double lhs_maxabs = lhsr.toPhys().physical_reduce_max_abs();
+			double rhs_maxabs = rhsr.toPhys().physical_reduce_max_abs();
 
 			if (std::max(lhs_maxabs, rhs_maxabs) < i_error_threshold)
 			{
@@ -295,7 +299,7 @@ public:
 				return false;
 			}
 
-			normalize_fac = std::min(lhsr.physical_reduce_max_abs(), rhsr.physical_reduce_max_abs());
+			normalize_fac = std::min(lhsr.toPhys().physical_reduce_max_abs(), rhsr.toPhys().physical_reduce_max_abs());
 
 			if (normalize_fac == 0)
 			{
@@ -304,8 +308,8 @@ public:
 			}
 		}
 
-		double rel_max_abs = diff.physical_reduce_max_abs() / normalize_fac;
-		double rel_rms = diff.physical_reduce_rms() / normalize_fac;
+		double rel_max_abs = diff.toPhys().physical_reduce_max_abs() / normalize_fac;
+		double rel_rms = diff.toPhys().physical_reduce_rms() / normalize_fac;
 
 		std::cout << "Error for " << i_id << ": \t" << rel_max_abs << "\t" << rel_rms << "\t\tError threshold: " << i_error_threshold << " with normalization factor " << normalize_fac << std::endl;
 
@@ -317,10 +321,10 @@ public:
 				return false;
 			}
 
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).getSphereDataPhysical().physical_file_write("o_error_lhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).getSphereDataPhysical().physical_file_write("o_error_rhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).getSphereDataPhysical().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).toPhys().physical_file_write("o_error_lhs.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).toPhys().physical_file_write("o_error_rhs.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			SWEETError("Error too high");
 			return true;

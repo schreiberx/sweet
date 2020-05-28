@@ -40,18 +40,18 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 	/*
 	 * See documentation in [sweet]/doc/swe/swe_sphere_formulation/
 	 */
-	SphereData_Physical phi_pert_phys = i_phi_pert.getSphereDataPhysical();
+	SphereData_Physical phi_pert_phys = i_phi_pert.toPhys();
 
 	/*
 	 * Step 1a
 	 */
 	SphereData_Physical ug, vg;
-	op.vortdiv_to_uv(i_vrt, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
+	op.vortdiv_to_uv(i_vrt, i_div, ug, vg);
 
 	/*
 	 * Step 1b
 	 */
-	SphereData_Physical vrtg = i_vrt.getSphereDataPhysical();
+	SphereData_Physical vrtg = i_vrt.toPhys();
 
 	/*
 	 * Step 1c
@@ -66,7 +66,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 	 * Step 1d
 	 */
 	// Eq. (21) & left part of Eq. (22)
-	op.uv_to_vortdiv(u_nl, v_nl, o_div_t, o_vrt_t, simVars.misc.sphere_use_robert_functions);
+	op.uv_to_vortdiv(u_nl, v_nl, o_div_t, o_vrt_t);
 
 
 	/*
@@ -79,9 +79,6 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 	 */
 	// Right part of Eq. (22)
 	SphereData_Physical tmpg = 0.5*(ug*ug+vg*vg);
-
-	if (simVars.misc.sphere_use_robert_functions)
-		tmpg = tmpg.robert_convertToNonRobertSquared();
 
 	SphereData_Spectral e = phi_pert_phys+tmpg;
 
@@ -100,7 +97,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 	u_nl = ug*(phi_pert_phys + gh0);
 	v_nl = vg*(phi_pert_phys + gh0);
 
-	op.uv_to_vortdiv(u_nl,v_nl, e, o_phi_pert_t, simVars.misc.sphere_use_robert_functions);
+	op.uv_to_vortdiv(u_nl,v_nl, e, o_phi_pert_t);
 
 	o_phi_pert_t *= -1.0;
 
@@ -109,7 +106,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 
 
 
-void SWE_Sphere_TS_ln_erk::run_timestep_pert(
+void SWE_Sphere_TS_ln_erk::run_timestep(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

@@ -324,6 +324,7 @@ private:
 			// refCounter()--;
 			// is inside cleanup!
 			cleanup();
+			std::cout << "CLEANUP" << std::endl;
 		}
 		else
 		{
@@ -1017,6 +1018,16 @@ public:
 				fftw_cleanup();
 			}
 #endif
+
+			physical_res[0] = 0;
+			physical_res[1] = 0;
+
+	#if SWEET_USE_LIBFFT
+			spectral_modes[0] = 0;
+			spectral_modes[1] = 0;
+	#endif
+
+			initialized = false;
 		}
 	}
 
@@ -1024,7 +1035,6 @@ public:
 
 	~PlaneDataConfig()
 	{
-
 		cleanup();
 	}
 };

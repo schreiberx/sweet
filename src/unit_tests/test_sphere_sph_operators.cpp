@@ -18,10 +18,7 @@
 SimulationVariables simVars;
 
 SphereData_Config sphereDataConfigInstance;
-SphereData_Config sphereDataConfigExtInstance;
-
 SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
-SphereData_Config *sphereDataConfigExt = &sphereDataConfigExtInstance;
 
 
 void test_header(const std::string &i_str)
@@ -96,58 +93,7 @@ void run_tests()
 				SphereData_Spectral div(sphereDataConfig);
 				op.uv_to_vortdiv(u, v, vort, div);
 
-				double div_max_error = div.getSphereDataPhysical().physical_reduce_max_abs();
-				std::cout << " + div_max_error: " << div_max_error << std::endl;
-
-				if (div_max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
-		}
-		{
-			test_header("Testing divergence freeness (Robert)");
-
-			for (int i = 0; i < 3; i++)
-			{
-				double advection_rotation_angle = alpha[i];
-
-				std::cout << "Using rotation angle " << advection_rotation_angle << std::endl;
-
-				SphereData_Physical u(sphereDataConfig);
-				u.physical_update_lambda(
-					[&](double i_lon, double i_lat, double &io_data)
-					{
-						double i_theta = i_lat;
-						double i_lambda = i_lon;
-						io_data =
-								u0*(
-									std::cos(i_theta)*std::cos(advection_rotation_angle) +
-									std::sin(i_theta)*std::cos(i_lambda)*std::sin(advection_rotation_angle)
-							);
-
-						io_data *= std::cos(i_lat);
-					}
-				);
-
-				SphereData_Physical v(sphereDataConfig);
-				v.physical_update_lambda(
-					[&](double i_lon, double i_lat, double &io_data)
-					{
-						//double i_phi = i_lat;
-						double i_lambda = i_lon;
-						io_data =
-							-u0*(
-									std::sin(i_lambda)*std::sin(advection_rotation_angle)
-							);
-
-						io_data *= std::cos(i_lat);
-					}
-				);
-
-				SphereData_Spectral vort(sphereDataConfig);
-				SphereData_Spectral div(sphereDataConfig);
-				op.robert_uv_to_vortdiv(u, v, vort, div);
-
-				double div_max_error = div.getSphereDataPhysical().physical_reduce_max_abs();
+				double div_max_error = div.toPhys().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
@@ -189,7 +135,7 @@ void run_tests()
 			);
 			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
+			double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -227,7 +173,7 @@ void run_tests()
 				);
 				data2.loadSphereDataPhysical(data2_phys);
 
-				double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
+				double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 				if (div_max_error > eps)
@@ -261,7 +207,7 @@ void run_tests()
 			);
 			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
+			double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -295,7 +241,7 @@ void run_tests()
 			);
 			data2.loadSphereDataPhysical(data2_phys);
 
-			double div_max_error = (data-data2).getSphereDataPhysical().physical_reduce_max_abs();
+			double div_max_error = (data-data2).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -309,7 +255,10 @@ void run_tests()
 			SphereData_Spectral h(sphereDataConfig);
 			SphereData_Physical h_phys(sphereDataConfig);
 			h_phys.physical_update_lambda_gaussian_grid(
-					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
+					[&](double a, double b, double &c)
+					{
+						testSolutions.test_function__grid_gaussian(a,b,c);
+					}
 			);
 			h.loadSphereDataPhysical(h_phys);
 
@@ -320,7 +269,7 @@ void run_tests()
 			);
 			hphi.loadSphereDataPhysical(hphi_phys);
 
-			double div_max_error = (h-hphi).getSphereDataPhysical().physical_reduce_max_abs();
+			double div_max_error = (h-hphi).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -348,7 +297,7 @@ void run_tests()
 			);
 			result.loadSphereDataPhysical(result_phys);
 
-			double div_max_error = (h-result).getSphereDataPhysical().physical_reduce_max_abs();
+			double div_max_error = (h-result).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -379,7 +328,7 @@ void run_tests()
 			result.loadSphereDataPhysical(result_phys);
 
 
-			double div_max_error = (h-result).getSphereDataPhysical().physical_reduce_max_abs();
+			double div_max_error = (h-result).toPhys().physical_reduce_max_abs();
 			std::cout << " + div_max_error: " << div_max_error << std::endl;
 
 			if (div_max_error > eps)
@@ -426,13 +375,6 @@ int main(
 						simVars.misc.reuse_spectral_transformation_plans
 				);
 	}
-
-	sphereDataConfigExtInstance.setupAdditionalModes(
-			&sphereDataConfigInstance,
-			simVars.rexi.use_sphere_extended_modes,
-			simVars.rexi.use_sphere_extended_modes,
-			simVars.misc.reuse_spectral_transformation_plans
-		);
 
 	run_tests();
 

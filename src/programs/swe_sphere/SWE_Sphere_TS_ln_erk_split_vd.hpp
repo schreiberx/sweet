@@ -25,6 +25,8 @@ public:
 		if (
 				i_timestepping_method == "l_na_erk_split_vd"	||
 				i_timestepping_method == "l_na_erk_split_aa_vd"	||
+				i_timestepping_method == "l_erk_split_vd"	||
+				i_timestepping_method == "l_erk_split_aa_vd"	||
 				i_timestepping_method == "ln_erk_split_vd"		||
 				i_timestepping_method == "ln_erk_split_aa_vd"
 		)
@@ -45,7 +47,7 @@ public:
 		 */
 		if (simVars.disc.timestepping_method == "l_na_erk_split_vd")
 		{
-			setup(simVars.disc.timestepping_order, true, true, true, false);
+			setup(simVars.disc.timestepping_order, true, true, true, false, false);
 			return;
 		}
 
@@ -56,11 +58,26 @@ public:
 		}
 
 		/*
+		 * l
+		 */
+		if (simVars.disc.timestepping_method == "l_erk_split_vd")
+		{
+			setup(simVars.disc.timestepping_order, true, true, false, false, false);
+			return;
+		}
+
+		if (simVars.disc.timestepping_method == "l_erk_split_aa_vd")
+		{
+			setup(simVars.disc.timestepping_order, true, true, false, false, true);
+			return;
+		}
+
+		/*
 		 * ln
 		 */
 		if (simVars.disc.timestepping_method == "ln_erk_split_vd")
 		{
-			setup(simVars.disc.timestepping_order, true, true, true, true);
+			setup(simVars.disc.timestepping_order, true, true, true, true, false);
 			return;
 		}
 
@@ -93,7 +110,7 @@ private:
 
 
 public:
-	void euler_timestep_update_pert_lg(
+	void euler_timestep_update_lg(
 			const SphereData_Spectral &i_U_phi,	///< prognostic variables
 			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 			const SphereData_Spectral &i_U_div,	///< prognostic variables
@@ -108,7 +125,7 @@ public:
 
 
 public:
-	void euler_timestep_update_pert_lc(
+	void euler_timestep_update_lc(
 			const SphereData_Spectral &i_U_phi,	///< prognostic variables
 			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 			const SphereData_Spectral &i_U_div,	///< prognostic variables
@@ -123,7 +140,7 @@ public:
 
 
 public:
-	void euler_timestep_update_pert_na(
+	void euler_timestep_update_na(
 			const SphereData_Spectral &i_U_phi,	///< prognostic variables
 			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 			const SphereData_Spectral &i_U_div,	///< prognostic variables
@@ -138,7 +155,7 @@ public:
 
 
 public:
-	void euler_timestep_update_pert_nr(
+	void euler_timestep_update_nr(
 			const SphereData_Spectral &i_U_phi,	///< prognostic variables
 			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 			const SphereData_Spectral &i_U_div,	///< prognostic variables
@@ -153,7 +170,21 @@ public:
 
 
 public:
-	void euler_timestep_update_pert(
+	void euler_timestep_set_tendencies(
+			const SphereData_Spectral &i_U_phi,	///< prognostic variables
+			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
+			const SphereData_Spectral &i_U_div,	///< prognostic variables
+
+			SphereData_Spectral &o_U_phi_t,	///< time updates
+			SphereData_Spectral &o_U_vrt_t,	///< time updates
+			SphereData_Spectral &o_U_div_t,	///< time updates
+
+			double i_simulation_timestamp = -1
+	);
+
+
+public:
+	void euler_timestep_set_tendencies_na_only(
 			const SphereData_Spectral &i_U_phi,	///< prognostic variables
 			const SphereData_Spectral &i_U_vrt,	///< prognostic variables
 			const SphereData_Spectral &i_U_div,	///< prognostic variables
@@ -177,15 +208,25 @@ public:
 			bool i_lc,
 			bool i_na,
 			bool i_nr,
-			bool i_antialiasing_for_each_term = false
+			bool i_antialiasing_for_each_term
 	);
 
-	void run_timestep_pert(
-			SphereData_Spectral &io_U_phi,	///< prognostic variables
-			SphereData_Spectral &io_U_vrt,	///< prognostic variables
-			SphereData_Spectral &io_U_div,	///< prognostic variables
+	void run_timestep(
+			SphereData_Spectral &io_U_phi,
+			SphereData_Spectral &io_U_vrt,
+			SphereData_Spectral &io_U_div,
 
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt = 0,			///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp = -1
+	);
+
+
+	void run_timestep_na(
+			SphereData_Spectral &io_U_phi,
+			SphereData_Spectral &io_U_vrt,
+			SphereData_Spectral &io_U_div,
+
+			double i_fixed_dt = 0,			///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp = -1
 	);
 

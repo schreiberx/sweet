@@ -1,18 +1,27 @@
 /*
- * SWE_Sphere_TimeSteppers.hpp
- *
- *  Created on: 29 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #include "SWE_Sphere_TimeSteppers.hpp"
 
+/*
+ * Linear only
+ */
 #include "SWE_Sphere_TS_l_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 #include "SWE_Sphere_TS_lg_irk.hpp"
 #include "SWE_Sphere_TS_lg_erk.hpp"
 #include "SWE_Sphere_TS_lg_erk_lc_erk.hpp"
-#include "SWE_Sphere_TS_lg_irk_lc_erk_ver01.hpp"
+
+/*
+ * Linear + NA
+ */
+#include "SWE_Sphere_TS_l_irk_na_erk_uv.hpp"
+#include "SWE_Sphere_TS_l_irk_na_erk_vd.hpp"
+#include "SWE_Sphere_TS_lg_irk_lc_na_erk_vd.hpp"
+
+#include "SWE_Sphere_TS_l_erk_na_erk_vd.hpp"
+#include "SWE_Sphere_TS_l_erk_na_erk_uv.hpp"
 
 /*
  * Full nonlinear
@@ -22,39 +31,37 @@
 #include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
 #include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "SWE_Sphere_TS_l_exp.hpp"
-#include "SWE_Sphere_TS_l_exp_n_erk_ver01.hpp"
-#include "SWE_Sphere_TS_l_exp_n_etdrk.hpp"
-#include "SWE_Sphere_TS_l_irk_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_l_irk_n_erk.hpp"
 #include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 
 
-/*
- * Almost full nonlinear
- */
-#include "SWE_Sphere_TS_l_irk_na_erk_vd_ver01.hpp"
 
 /*
- * SL L,NA
+ * Lagrangian formulations
  */
+
 #include "SWE_Sphere_TS_l_irk_na_sl_settls_vd_only.hpp"
 #include "SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.hpp"
 
-/*
- * SL L,N
- */
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_erk.hpp"
 #include "SWE_Sphere_TS_ln_settls_vd.hpp"
 #include "SWE_Sphere_TS_ln_settls_uv.hpp"
 
 /*
  * Exponential
  */
-#include "SWE_Sphere_TS_lg_exp_lc_n_erk_ver01.hpp"
 #include "SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
+#include "SWE_Sphere_TS_lg_irk_lc_erk.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
+
+#include "SWE_Sphere_TS_l_exp.hpp"
+//#include "SWE_Sphere_TS_l_exp_old.hpp"
+#include "SWE_Sphere_TS_l_exp_n_erk.hpp"
+#include "SWE_Sphere_TS_l_exp_n_etdrk.hpp"
+
 
 
 
@@ -66,7 +73,10 @@ void SWE_Sphere_TimeSteppers::reset()
 {
 	delete master;
 	master = nullptr;
+
+	integrators_free_all();
 }
+
 
 
 void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereData &i_op, SimulationVariables &i_simVars)
@@ -76,11 +86,19 @@ void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereDat
 	 * Register time integrators
 	 */
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_erk(i_simVars, i_op)));
-	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_erk_n_erk(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_erk_lc_erk(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_irk_lc_erk(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_irk_n_erk(i_simVars, i_op)));
+
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_erk_n_erk(i_simVars, i_op)));
+
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_erk_na_erk_vd(i_simVars, i_op)));
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_erk_na_erk_uv(i_simVars, i_op)));
+
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_irk_na_erk_vd(i_simVars, i_op)));
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_irk_na_erk_uv(i_simVars, i_op)));
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_irk_lc_na_erk_vd(i_simVars, i_op)));
+
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp_n_erk(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_irk_lc_n_erk(i_simVars, i_op)));
 
@@ -97,6 +115,7 @@ void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereDat
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_irk(i_simVars, i_op)));
 
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp(i_simVars, i_op)));
+//	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp_old(i_simVars, i_op)));
 
 	/*
 	 * EXP SETTLS VERSION
@@ -117,7 +136,6 @@ void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereDat
 	 */
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_settls_vd(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_settls_uv(i_simVars, i_op)));
-
 }
 
 
@@ -134,11 +152,16 @@ void SWE_Sphere_TimeSteppers::integrators_free_all(SWE_Sphere_TS_interface *skip
 
 		delete ts;
 	}
+
+	registered_integrators.clear();
 }
+
 
 
 void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, SphereOperators_SphereData &i_op, SimulationVariables &i_simVars)
 {
+	reset();
+
 	integrators_register_all(i_op, i_simVars);
 
 	/*

@@ -8,7 +8,6 @@
 #ifndef SPHEREOPERATORS_COMPLEX_HPP_
 #define SPHEREOPERATORS_COMPLEX_HPP_
 
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/Convert_SphereDataPhysicalComplex_to_SphereDataPhysical.hpp>
 #include <libmath/shtns_inc.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
@@ -24,9 +23,6 @@ class SphereOperators_SphereDataComplex	:
 	friend SphereData_Config;
 
 	const SphereData_Config *sphereDataConfig;
-
-public:
-	SphBandedMatrixPhysicalComplex< std::complex<double> > sphSolver_inv_one_minus_mu2;
 
 private:
 	double r;
@@ -64,14 +60,257 @@ public:
 
 		r = i_simCoeffs->sphere_radius;
 		ir = 1.0/r;
-
-		sphSolver_inv_one_minus_mu2.setup(sphereDataConfig, 2);
-		sphSolver_inv_one_minus_mu2.solver_component_rexi_z1(1.0, 1.0);	// (1.0
-		sphSolver_inv_one_minus_mu2.solver_component_rexi_z2(-1.0, 1.0);	//      - mu^2)
 	}
 
 
 public:
+
+
+	/**
+	 * Solve a Helmholtz problem given by
+	 *
+	 * (I + b D^2) x = rhs
+	 */
+	inline
+	SphereData_SpectralComplex implicit_helmholtz(
+			const SphereData_SpectralComplex &i_sphere_data,
+			const std::complex<double> &i_b,
+			double i_radius
+	)	const
+	{
+		SphereData_SpectralComplex out(i_sphere_data);
+
+		const std::complex<double> b = i_b/(i_radius*i_radius);
+
+		out.spectral_update_lambda(
+			[&](
+				int n, int m,
+				std::complex<double> &io_data
+			)
+			{
+				io_data /= (1.0 + (-b*(double)n*((double)n+1.0)));
+			}
+		);
+
+		return out;
+	}
+
+
+	/**
+	 * Compute multiplication with "J" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_SpectralComplex implicit_J(
+			const SphereData_SpectralComplex &i_sphere_data,
+			const std::complex<double>& i_dt_two_omega
+	)	const
+	{
+		SphereData_SpectralComplex out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				out_sph_data[idx] = i_sphere_data[idx] * implicit_J_scalar(n, m, i_dt_two_omega);
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+	/**
+	 * Compute multiplication with "J^-1" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_SpectralComplex implicit_Jinv(
+			const SphereData_SpectralComplex &i_sphere_data,
+			const std::complex<double>& i_dt_two_omega
+	)	const
+	{
+		SphereData_SpectralComplex out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				out_sph_data[idx] =	i_sphere_data.spectral_space_data[idx] / implicit_J_scalar(n, m, i_dt_two_omega);
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+	/**
+	 * Compute multiplication with "F" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_SpectralComplex implicit_F(
+			const SphereData_SpectralComplex &i_sphere_data,
+			const std::complex<double>& i_dt_two_omega
+	)	const
+	{
+		SphereData_SpectralComplex out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				//std::cout << "* START *******************************************" << std::endl;
+				//std::cout << "implicit_F " << n << ", " << m << std::endl;
+
+				out_sph_data.spectral_space_data[idx] = 0;
+
+				// out of boundary check for P(n-1, m)
+				if (n-1 >= std::abs(m))
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_minus(n, m)
+							* i_sphere_data.spectral_get_(n-1, m);
+					//std::cout << "a: x" << std::endl;
+				}
+
+				// out of boundary check for P(n+1, m)
+				if (n+1 <= i_sphere_data.sphereDataConfig->spectral_modes_n_max)
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_plus(n, m)
+							* i_sphere_data.spectral_get_(n+1, m);
+
+					//std::cout << "b: x" << std::endl;
+				}
+
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Compute multiplication with "F" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_SpectralComplex implicit_FJinv(
+			const SphereData_SpectralComplex &i_sphere_data,
+			const std::complex<double>& i_dt_two_omega
+	)	const
+	{
+		SphereData_SpectralComplex out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				//std::cout << "* START *******************************************" << std::endl;
+				//std::cout << "implicit_FJinv " << n << ", " << m << std::endl;
+
+				out_sph_data.spectral_space_data[idx] = 0;
+
+				// Out of boundary check for P(n-1, m)
+				if (n-1 >= std::abs(m))
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_minus(n, m)
+							/ implicit_J_scalar(n-1, m, i_dt_two_omega)
+							* i_sphere_data.spectral_get_(n-1, m);
+
+					//std::cout << "a: x" << std::endl;
+				}
+
+				// Out of boundary check for P(n+1, m)
+				if (n+1 <= i_sphere_data.sphereDataConfig->spectral_modes_n_max)
+				{
+					out_sph_data.spectral_space_data[idx] +=
+							i_dt_two_omega
+							* implicit_f_plus(n, m)
+							/ implicit_J_scalar(n+1, m, i_dt_two_omega)
+							* i_sphere_data.spectral_get_(n+1, m);
+
+					//std::cout << "b: x" << std::endl;
+				}
+
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Compute multiplication with "L" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_SpectralComplex implicit_L(
+			const SphereData_SpectralComplex &i_sphere_data,
+			const std::complex<double>& i_dt
+	)	const
+	{
+		SphereData_SpectralComplex out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				out_sph_data[idx] = i_dt*ir*ir*Tcomplex(n*(n+1)) * i_sphere_data[idx];
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
+
+
+	/**
+	 * Compute multiplication with "Linv" linear operator used for implicit time integration
+	 * see Temperton "Coriolis Terms in SL spectral models"
+	 */
+	SphereData_SpectralComplex implicit_Linv(
+			const SphereData_SpectralComplex &i_sphere_data,
+			const std::complex<double>& i_dt
+	)	const
+	{
+		SphereData_SpectralComplex out_sph_data(i_sphere_data.sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				if (n == 0)
+					out_sph_data[idx] = 0.0;
+				else
+					out_sph_data[idx] = 1.0/(i_dt*ir*ir*Treal(n*(n+1))) * i_sphere_data[idx];
+
+				idx++;
+			}
+		}
+
+		return out_sph_data;
+	}
+
 	/**
 	 * Compute differential along longitude
 	 *
@@ -81,8 +320,6 @@ public:
 			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
-		i_sph_data.request_data_spectral();
-
 		SphereData_SpectralComplex out(i_sph_data.sphereDataConfig);
 
 		// compute d/dlambda in spectral space
@@ -96,14 +333,81 @@ public:
 				idx++;
 			}
 		}
-		out.spectral_space_data_valid = true;
-		out.physical_space_data_valid = false;
 
 		return out;
 	}
 
 
+	/**
+	 * Compute
+	 * mu*F(\lambda,\mu)
+	 */
+	SphereData_SpectralComplex mu(
+			const SphereData_SpectralComplex &i_sph_data
+	)
+	{
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
+		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				out.spectral_space_data[idx] = 0;
+
+				if (n-1 >= std::abs(m))
+					out.spectral_space_data[idx] += R(n-1,m)*i_sph_data.spectral_get_(n-1, m);
+
+				if (n+1 <= i_sph_data.sphereDataConfig->spectral_modes_n_max)
+					out.spectral_space_data[idx] += S(n+1,m)*i_sph_data.spectral_get_(n+1, m);
+
+				idx++;
+			}
+		}
+
+		return out;
+	}
+
+	/**
+	 * Compute
+	 * mu*F(\lambda,\mu)
+	 */
+	SphereData_SpectralComplex mu2(
+			const SphereData_SpectralComplex &i_sph_data
+	)	const
+	{
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
+
+		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
+			for (int m = -n; m <= n; m++)
+			{
+				out.spectral_space_data[idx] = 0;
+
+				if (n-2 >= std::abs(m))
+					out.spectral_space_data[idx] += A(n-2,m)*i_sph_data.spectral_get_(n-2, m);
+
+				out.spectral_space_data[idx] += B(n+0,m)*i_sph_data.spectral_get_(n+0, m);
+
+				if (n+2 <= i_sph_data.sphereDataConfig->spectral_modes_n_max)
+					out.spectral_space_data[idx] += C(n+2,m)*i_sph_data.spectral_get_(n+2, m);
+
+				idx++;
+			}
+		}
+
+		return out;
+	}
+
+
+#if 0
 	/**
 	 * Compute differential along latitude
 	 *
@@ -132,9 +436,9 @@ public:
 	{
 		return grad_lat(i_sph_data);
 	}
+#endif
 
-
-
+#if 0
 	/**
 	 * Compute gradient component along longitude (lambda)
 	 */
@@ -199,77 +503,9 @@ public:
 				 * TODO: Optimize me!
 				 */
 				out.spectral_space_data[idx] =
-						((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get(n-1, m) +
-						((n+2.0)*S(n+1,m))*i_sph_data.spectral_get(n+1, m);
+						((-n+1.0)*R(n-1,m))*i_sph_data.spectral_get_DEPRECATED(n-1, m) +
+						((n+2.0)*S(n+1,m))*i_sph_data.spectral_get_DEPRECATED(n+1, m);
 
-				idx++;
-			}
-		}
-
-		out.physical_space_data_valid = false;
-		out.spectral_space_data_valid = true;
-
-		return out;
-	}
-
-
-	/**
-	 * Compute
-	 * mu*F(\lambda,\mu)
-	 */
-	SphereData_SpectralComplex mu(
-			const SphereData_SpectralComplex &i_sph_data
-	)
-	{
-		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
-		i_sph_data.request_data_spectral();
-
-		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
-		{
-			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
-			for (int m = -n; m <= n; m++)
-			{
-				out.spectral_space_data[idx] =
-					R(n-1,m)*i_sph_data.spectral_get(n-1, m)
-					+ S(n+1,m)*i_sph_data.spectral_get(n+1, m);
-
-				idx++;
-			}
-		}
-
-		out.physical_space_data_valid = false;
-		out.spectral_space_data_valid = true;
-
-		return out;
-	}
-
-	/**
-	 * Compute
-	 * mu*F(\lambda,\mu)
-	 */
-	SphereData_SpectralComplex mu2(
-			const SphereData_SpectralComplex &i_sph_data
-	)	const
-	{
-		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
-		i_sph_data.request_data_spectral();
-
-		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int n = 0; n <= i_sph_data.sphereDataConfig->spectral_modes_n_max; n++)
-		{
-			int idx = i_sph_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
-			for (int m = -n; m <= n; m++)
-			{
-				out.spectral_space_data[idx] =
-						+A(n-2,m)*i_sph_data.spectral_get(n-2, m)
-						+B(n+0,m)*i_sph_data.spectral_get(n+0, m)
-						+C(n+2,m)*i_sph_data.spectral_get(n+2, m)
-						;
 				idx++;
 			}
 		}
@@ -410,103 +646,6 @@ public:
 	}
 
 
-
-	/**
-	 * Divergence Operator along longitude for robert function formlation
-	 *
-	 * This computes
-	 * 	1/cos^2(phi)  d/dlambda U
-	 */
-	SphereData_SpectralComplex robert_div_lon(
-			const SphereData_SpectralComplex &i_sph_data
-	)
-	{
-		return inv_one_minus_mu2(diff_lon(i_sph_data));
-	}
-
-
-
-	/**
-	 * Compute divergence along latitude for robert function formulation
-	 *
-	 * This computes
-	 * 		d/dmu V
-	 *
-	 * There's no other metric term involved!
-	 */
-	SphereData_SpectralComplex robert_div_lat(
-			const SphereData_SpectralComplex &i_sph_data
-	)
-	{
-		/*
-		 * Compute
-		 *   cos^2(phi) * d/d mu  f(lambda,mu)
-		 */
-		return inv_one_minus_mu2(spectral_cosphi2_diff_lat_mu(i_sph_data));
-	}
-
-
-
-	SphereData_SpectralComplex robert_cos2phi_div_lat(
-			const SphereData_SpectralComplex &i_sph_data
-	)
-	{
-		/*
-		 * Compute
-		 *   d/d mu  f(lambda,mu)
-		 */
-		return spectral_cosphi2_diff_lat_mu(i_sph_data);
-	}
-
-
-
-	/**
-	 * Compute gradient component along longitude (lambda) for Robert function formulation
-	 *
-	 * This computes
-	 * 		d/dlambda Phi
-	 */
-	SphereData_SpectralComplex robert_grad_lon(
-			const SphereData_SpectralComplex &i_sph_data
-	)
-	{
-		return diff_lon(i_sph_data);
-	}
-
-
-	/**
-	 * Compute gradient component along latitude for Robert function formulation
-	 *
-	 * This computes
-	 * 		cos^2(phi) * d/dmu Phi
-	 *
-	 * with Phi the geopotential
-	 */
-	SphereData_SpectralComplex robert_grad_lat(
-			const SphereData_SpectralComplex &i_sph_data
-	)
-	{
-		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
-	}
-
-
-	/**
-	 * Special formulation for Robert gradient,
-	 * see REXI with spherical harmonics
-	 */
-	SphereData_SpectralComplex robert_grad_M(
-			const SphereData_SpectralComplex &i_phi,
-			const SphereData_SpectralComplex &i_u,
-			const SphereData_SpectralComplex &i_v
-	)
-	{
-		return inv_one_minus_mu2(
-				diff_lon(i_phi)*i_u +
-				spectral_one_minus_mu_squared_diff_lat_mu(i_phi)*i_v
-			);
-	}
-
-
 	inline
 	SphereData_SpectralComplex spectral_one_minus_sinphi_squared_diff_lat_mu(
 			const SphereData_SpectralComplex &i_sph_data
@@ -524,7 +663,7 @@ public:
 	{
 		return spectral_one_minus_mu_squared_diff_lat_mu(i_sph_data);
 	}
-
+#endif
 
 
 	/**
@@ -540,8 +679,6 @@ public:
 
 		double ir = 1.0/r;
 
-		i_sph_data.request_data_spectral();
-
 		SphereData_SpectralComplex out(i_sph_data);
 
 		out.spectral_update_lambda(
@@ -555,6 +692,73 @@ public:
 	}
 
 
+	/**
+	 * Convert vorticity/divergence field to u,v velocity field
+	 */
+	void vortdiv_to_uv(
+			const SphereData_SpectralComplex &i_vrt,
+			const SphereData_SpectralComplex &i_div,
+			SphereData_PhysicalComplex &o_u,
+			SphereData_PhysicalComplex &o_v
+
+	)	const
+	{
+		SphereData_SpectralComplex psi = inv_laplace(i_vrt)*ir;
+		SphereData_SpectralComplex chi = inv_laplace(i_div)*ir;
+
+		#if SWEET_DEBUG
+			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+				if (omp_in_parallel())
+					SWEETError("IN PARALLEL REGION!!!");
+			#endif
+		#endif
+
+
+		o_u.setup_if_required(i_vrt.sphereDataConfig);
+		o_v.setup_if_required(i_vrt.sphereDataConfig);
+
+		SHsphtor_to_spat_cplx(
+				sphereDataConfig->shtns,
+				psi.spectral_space_data,
+				chi.spectral_space_data,
+				o_u.physical_space_data,
+				o_v.physical_space_data
+		);
+	}
+
+
+	void uv_to_vortdiv(
+			const SphereData_PhysicalComplex &i_u,
+			const SphereData_PhysicalComplex &i_v,
+			SphereData_SpectralComplex &o_vrt,
+			SphereData_SpectralComplex &o_div
+
+	)	const
+	{
+		o_vrt.setup_if_required(i_u.sphereDataConfig);
+		o_div.setup_if_required(i_u.sphereDataConfig);
+
+		#if SWEET_DEBUG
+			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+				if (omp_in_parallel())
+					SWEETError("IN PARALLEL REGION!!!");
+			#endif
+		#endif
+
+		spat_cplx_to_SHsphtor(
+				sphereDataConfig->shtns,
+				i_u.physical_space_data,
+				i_v.physical_space_data,
+				o_vrt.spectral_space_data,
+				o_div.spectral_space_data
+		);
+
+		o_vrt = laplace(o_vrt)*r;
+		o_div = laplace(o_div)*r;
+	}
+
+
+#if 0
 public:
 	/**
 	 * Compute vorticity
@@ -570,20 +774,7 @@ public:
 	}
 
 
-public:
-	/**
-	 * Compute vorticity
-	 *
-	 * \eta = grad_lat(V_lon) - grad_lon(V_lat)
-	 */
-	SphereData_SpectralComplex robert_vort(
-			const SphereData_SpectralComplex &i_lon,
-			const SphereData_SpectralComplex &i_lat
-	)
-	{
-		return robert_div_lon(i_lat) - robert_div_lat(i_lon);
-	}
-
+#endif
 
 	/**
 	 * Laplace operator
@@ -599,7 +790,6 @@ public:
 		double ir = 1.0/i_radius;
 
 		SphereData_SpectralComplex out(i_sph_data);
-		out.request_data_spectral();
 
 		out.spectral_update_lambda(
 				[&](int n, int m, std::complex<double> &o_data)
@@ -615,42 +805,7 @@ public:
 	}
 
 
-
-	void robert_uv_to_vortdiv(
-			const SphereData_PhysicalComplex &i_u,
-			const SphereData_PhysicalComplex &i_v,
-			SphereData_SpectralComplex &o_vort,
-			SphereData_SpectralComplex &o_div,
-
-			double r = -1
-	)	const
-	{
-		if (r == -1)
-			r = this->r;
-
-		/*
-		 * Generate a copy because of destructive SHT operations
-		 */
-		SphereData_PhysicalComplex ug = i_u;
-		SphereData_PhysicalComplex vg = i_v;
-
-		spat_cplx_to_SHsphtor(
-				sphereDataConfig->shtns,
-				ug.physical_space_data,
-				vg.physical_space_data,
-				o_vort.spectral_space_data,
-				o_div.spectral_space_data
-		);
-		o_vort.spectral_space_data_valid = true;
-		o_vort.physical_space_data_valid = false;
-		o_div.spectral_space_data_valid = true;
-		o_div.physical_space_data_valid = false;
-
-		o_vort = laplace(o_vort)*r;
-		o_div = laplace(o_div, r)*r;
-	}
-
-
+#if 0
 
 	void uv_to_vortdiv(
 			const SphereData_PhysicalComplex &i_u,
@@ -670,7 +825,6 @@ public:
 		SphereData_PhysicalComplex ug = i_u;
 		SphereData_PhysicalComplex vg = i_v;
 
-		shtns_robert_form(sphereDataConfig->shtns, 0);
 		spat_cplx_to_SHsphtor(
 				sphereDataConfig->shtns,
 				ug.physical_space_data,
@@ -678,92 +832,9 @@ public:
 				o_vort.spectral_space_data,
 				o_div.spectral_space_data
 		);
-		shtns_robert_form(sphereDataConfig->shtns, 1);
-		o_vort.spectral_space_data_valid = true;
-		o_vort.physical_space_data_valid = false;
-		o_div.spectral_space_data_valid = true;
-		o_div.physical_space_data_valid = false;
-
 
 		o_vort = laplace(o_vort, r)*r;
 		o_div = laplace(o_div, r)*r;
-	}
-
-
-	/**
-	 * Convert vorticity/divergence field to u,v velocity field
-	 */
-	void robert_vortdiv_to_uv(
-			const SphereData_SpectralComplex &i_vrt,
-			const SphereData_SpectralComplex &i_div,
-			SphereData_PhysicalComplex &o_u,
-			SphereData_PhysicalComplex &o_v,
-
-			double i_radius = -1
-
-	)	const
-	{
-		double ir;
-
-		if (i_radius == -1)
-			ir = this->ir;
-		else
-			ir = 1.0/i_radius;
-
-		i_vrt.request_data_spectral();
-		i_div.request_data_spectral();
-
-		SphereData_SpectralComplex psi = inv_laplace(i_vrt, i_radius)*ir;
-		SphereData_SpectralComplex chi = inv_laplace(i_div, i_radius)*ir;
-
-		psi.request_data_spectral();
-		chi.request_data_spectral();
-
-		SHsphtor_to_spat_cplx(
-				sphereDataConfig->shtns,
-				psi.spectral_space_data,
-				chi.spectral_space_data,
-				o_u.physical_space_data,
-				o_v.physical_space_data
-		);
-	}
-
-
-	/**
-	 * Convert vorticity/divergence field to u,v velocity field
-	 */
-	void robert_grad_to_vec(
-			const SphereData_SpectralComplex &i_phi,
-			SphereData_PhysicalComplex &o_u,
-			SphereData_PhysicalComplex &o_v,
-
-			double i_radius = -1
-
-	)	const
-	{
-		double ir;
-
-		if (i_radius == -1)
-			ir = this->ir;
-		else
-			ir = 1.0/i_radius;
-
-		SphereData_SpectralComplex psi(sphereDataConfig);
-		psi.spectral_set_zero();
-
-		SphereData_SpectralComplex chi = i_phi;
-		chi.request_data_spectral();
-
-		SHsphtor_to_spat_cplx(
-						sphereDataConfig->shtns,
-						psi.spectral_space_data,
-						chi.spectral_space_data,
-						o_u.physical_space_data,
-						o_v.physical_space_data
-				);
-
-		o_u *= ir;
-		o_v *= ir;
 	}
 
 
@@ -781,6 +852,7 @@ public:
 	{
 		return div_lon(i_lon) + div_lat(i_lat);
 	}
+#endif
 
 };
 

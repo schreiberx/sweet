@@ -20,6 +20,11 @@
 #include <execinfo.h>
 
 
+
+/************************************************************
+ * SWEETError
+ ************************************************************/
+
 class SWEETError_
 {
 	// From https://stackoverflow.com/questions/3899870/print-call-stack-in-c-or-c/26529030
@@ -81,16 +86,21 @@ public:
 
 
 
+
+/************************************************************
+ * SWEET Debug assertions
+ ************************************************************/
+
 #ifdef NDEBUG
 
-	#define DebugAssertSWEETError(assertion, msg)
+	#define SWEETDebugAssert(assertion, msg)
 
 #else
 
-	class DebugAssertSWEETError_
+	class SWEETDebugAssert_
 	{
 	public:
-		DebugAssertSWEETError_(
+		SWEETDebugAssert_(
 				bool i_assertion,
 				const std::string &i_error_message,
 				const char* i_filename,
@@ -105,7 +115,7 @@ public:
 		}
 	};
 
-	#define DebugAssertSWEETError(assertion, msg)	DebugAssertSWEETError_(assertion, msg, __FILE__, __LINE__, __func__)
+	#define SWEETDebugAssert(assertion, msg)	SWEETDebugAssert_(assertion, msg, __FILE__, __LINE__, __func__)
 
 #endif
 

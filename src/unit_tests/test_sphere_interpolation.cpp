@@ -230,7 +230,7 @@ public:
 		if (interpolation_order == 2)
 		{
 			sphereDataSampler.bilinear_scalar(
-					prog_h.getSphereDataPhysical(),
+					prog_h.toPhys(),
 					posx_a,
 					posy_a,
 					out_data.scalar_data,
@@ -241,7 +241,7 @@ public:
 		else if (interpolation_order == 3)
 		{
 			sphereDataSampler.bicubic_scalar(
-					prog_h.getSphereDataPhysical(),
+					prog_h.toPhys(),
 					posx_a,
 					posy_a,
 					out_data.scalar_data,
@@ -291,7 +291,8 @@ public:
 			int *o_render_primitive_id,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;

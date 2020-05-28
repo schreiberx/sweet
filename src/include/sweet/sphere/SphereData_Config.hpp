@@ -39,9 +39,6 @@ class SphereData_Config
 public:
 	shtns_cfg shtns;
 
-public:
-	shtns_cfg shtns_robert;
-
 	/**
 	 * Number of longitudes
 	 */
@@ -142,6 +139,7 @@ public:
 	}
 
 
+	inline
 	std::size_t getArrayIndexByModes(
 			int n,
 			int m
@@ -150,12 +148,12 @@ public:
 		assert(n >= 0);
 		assert(n >= m);
 
-//		return (spectral_modes_n_max-m)*m + ((m+1)*m)/2+n;
 		return (m*(2*spectral_modes_n_max-m+1)>>1)+n;
 	}
 
 
 
+	inline
 	std::size_t getArrayIndexByModes_Complex(
 			int n,
 			int m
@@ -172,6 +170,7 @@ public:
 	/**
 	 * Return indices with N-variables compactly stored
 	 */
+	inline
 	std::size_t getArrayIndexByModes_Complex_NCompact(
 			int n,
 			int m
@@ -464,11 +463,6 @@ public:
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-		/*
-		 * Use Robert form per default
-		 */
-		shtns_robert_form(shtns, 1);
-
 		setup_data();
 	}
 
@@ -535,8 +529,6 @@ public:
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-		shtns_robert_form(shtns, 1);
-
 		setup_data();
 	}
 
@@ -600,8 +592,6 @@ public:
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-		shtns_robert_form(shtns, 1);
-
 		setup_data();
 	}
 
@@ -624,24 +614,6 @@ public:
 					io_spectral_modes[1],
 					i_reuse_transformation_plans
 				);
-			return;
-		}
-
-		if (io_physical_res[0] > 0)
-		{
-			SWEETError("TODO: Automatic spectral space mode computation");
-#if 0
-			setupAutoSpectralSpace(
-					io_physical_res[0],
-					io_physical_res[1],
-					i_load_save_plan
-				);
-
-	#if SWEET_USE_LIBFFT
-			io_spectral_modes[0] = spectral_modes[0];
-			io_spectral_modes[1] = spectral_modes[1];
-	#endif
-#endif
 			return;
 		}
 

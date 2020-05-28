@@ -1,8 +1,5 @@
 /*
- * test_antialiasing_frequencies.cpp
- *
- *  Created on: 20 June 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 

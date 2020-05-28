@@ -200,7 +200,8 @@ public:
 			int *o_render_primitive,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		*o_dataArray = &prog_h;

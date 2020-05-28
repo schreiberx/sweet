@@ -85,7 +85,7 @@ public:
 			double i_timestep_size
 	);
 
-	void run_timestep_pert(
+	void run_timestep(
 			SphereData_Spectral &io_phi_pert,	///< prognostic variables
 			SphereData_Spectral &io_vrt,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

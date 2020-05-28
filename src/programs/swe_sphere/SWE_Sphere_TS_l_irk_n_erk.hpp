@@ -21,35 +21,10 @@
 
 
 class SWE_Sphere_TS_l_irk_n_erk	: public SWE_Sphere_TS_interface
-
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (
-			i_timestepping_method == "l_irk_n_erk" || i_timestepping_method == "l_irk_n_erk_ver0" ||
-			i_timestepping_method == "l_cn_n_erk" || i_timestepping_method == "l_cn_n_erk_ver0"		||
-			i_timestepping_method == "l_irk_n_erk_ver1"
-		)
-			return true;
-
-		return false;
-	}
-
-public:
-	std::string string_id()
-	{
-		std::string s = "l_irk_n_erk_ver";
-
-		if (version_id == 0)
-			s += "0";
-		else if (version_id == 1)
-			s += "1";
-		else
-			SWEETError("Version ID");
-
-		return s;
-	}
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
 
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
@@ -88,7 +63,7 @@ public:
 
 	void setup_auto();
 
-	void run_timestep_pert(
+	void run_timestep(
 			SphereData_Spectral &io_phi_pert,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

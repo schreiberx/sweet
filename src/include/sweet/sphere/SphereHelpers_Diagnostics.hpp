@@ -165,7 +165,7 @@ public:
 			const SphereData_Spectral &i_data
 	)	const
 	{
-		SphereData_Physical data = i_data.getSphereDataPhysical();
+		SphereData_Physical data = i_data.toPhys();
 
 		double sum = 0;
 
@@ -207,11 +207,8 @@ public:
 		SphereData_Physical u(sphereDataConfig);
 		SphereData_Physical v(sphereDataConfig);
 
-		h = i_prog_phi.getSphereDataPhysical()*(1.0/io_simVars.sim.gravitation);
-		if (io_simVars.misc.sphere_use_robert_functions)
-			op.robert_vortdiv_to_uv(i_prog_vort, i_prog_div, u, v);
-		else
-			op.vortdiv_to_uv(i_prog_vort, i_prog_div, u, v);
+		h = i_prog_phi.toPhys()*(1.0/io_simVars.sim.gravitation);
+		op.vortdiv_to_uv(i_prog_vort, i_prog_div, u, v);
 
 		double normalization = (io_simVars.sim.sphere_radius*io_simVars.sim.sphere_radius);
 
@@ -240,10 +237,7 @@ public:
 		// total vorticity
 		// TODO: maybe replace this with the i_vort parameter
 		SphereData_Physical eta(h.sphereDataConfig);
-		if (io_simVars.misc.sphere_use_robert_functions)
-			eta = op.robert_uv_to_vort(u, v).getSphereDataPhysical();
-		else
-			eta = op.uv_to_vort(u, v).getSphereDataPhysical();
+		eta = op.uv_to_vort(u, v).toPhys();
 
 		eta += op.fg;
 

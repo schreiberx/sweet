@@ -20,7 +20,7 @@ public:
 			const SphereData_SpectralComplex &i_sphereData
 	)
 	{
-		SphereData_PhysicalComplex tmp_cplx = i_sphereData.getSphereDataPhysicalComplex();
+		SphereData_PhysicalComplex tmp_cplx = i_sphereData.toPhys();
 		SphereData_Physical tmp(i_sphereData.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
@@ -38,7 +38,7 @@ public:
 			const SphereData_SpectralComplex &i_sphereData
 	)
 	{
-		SphereData_PhysicalComplex tmp_cplx = i_sphereData.getSphereDataPhysicalComplex();
+		SphereData_PhysicalComplex tmp_cplx = i_sphereData.toPhys();
 		SphereData_Physical tmp(i_sphereData.sphereDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD

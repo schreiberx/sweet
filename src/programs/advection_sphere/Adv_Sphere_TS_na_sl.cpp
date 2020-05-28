@@ -19,7 +19,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 		double i_simulation_timestamp,
 
 		// for varying velocity fields
-		const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+		const SWESphereBenchmarks *i_sphereBenchmarks,
 		SphereData_Physical &io_U_phi_phys
 )
 {
@@ -40,8 +40,8 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	// shouldn't be necessary
 	if (i_sphereBenchmarks != nullptr)
 	{
-		i_sphereBenchmarks->update_time_varying_fields_pert(U_phi, U_vrt, U_div, i_simulation_timestamp);
-		i_sphereBenchmarks->update_time_varying_fields_pert(U_phi_prev, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_dt);
+		i_sphereBenchmarks->master->get_time_varying_state(U_phi, U_vrt, U_div, i_simulation_timestamp);
+		i_sphereBenchmarks->master->get_time_varying_state(U_phi_prev, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_dt);
 	}
 #endif
 
@@ -49,11 +49,11 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical U_u(sphereDataConfig);
 	SphereData_Physical U_v(sphereDataConfig);
-	op.vortdiv_to_uv(U_vrt, U_div, U_u, U_v, false);
+	op.vortdiv_to_uv(U_vrt, U_div, U_u, U_v);
 
 	SphereData_Physical U_u_prev(sphereDataConfig);
 	SphereData_Physical U_v_prev(sphereDataConfig);
-	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_prev, U_v_prev, false);
+	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_prev, U_v_prev);
 
 	// OUTPUT: position of departure points at t
 	ScalarDataArray pos_lon_d(sphereDataConfig->physical_array_data_number_of_elements);
@@ -100,7 +100,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical new_prog_phi_phys(sphereDataConfig);
 	sphereSampler.bicubic_scalar(
-			io_U_phi.getSphereDataPhysical(),
+			io_U_phi.toPhys(),
 			pos_lon_d, pos_lat_d,
 			new_prog_phi_phys,
 			false,
@@ -113,28 +113,13 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 #endif
 
-	//double dt_div_radius = simVars.timecontrol.current_timestep_size / simVars.sim.sphere_radius;
-	double one_div_radius = 1.0 / simVars.sim.sphere_radius;
+	double dt_div_radius = simVars.timecontrol.current_timestep_size / simVars.sim.sphere_radius;
 
-	semiLagrangian.semi_lag_departure_points_settls_old(
-			//dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
-			//dt_div_radius*U_u, dt_div_radius*U_v,
-			U_u_prev, U_v_prev,
-			U_u, U_v,
+	semiLagrangian.semi_lag_departure_points_settls_specialized(
+			dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
+			dt_div_radius*U_u, dt_div_radius*U_v,
 
-			simVars.timecontrol.current_timestep_size,
-			simVars.timecontrol.current_simulation_time,
-			simVars.sim.sphere_radius,
-			i_sphereBenchmarks,
-
-			pos_lon_d, pos_lat_d,
-
-			op,
-
-			timestepping_order,
-			simVars.disc.semi_lagrangian_max_iterations,
-			simVars.disc.semi_lagrangian_convergence_threshold,
-			simVars.disc.semi_lagrangian_approximate_sphere_geometry
+			pos_lon_d, pos_lat_d
 	);
 
 	U_phi_prev = U_phi;
@@ -143,7 +128,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 
 	SphereData_Physical new_prog_phi_physx =
 		sphereSampler.bicubic_scalar_ret_phys(
-			io_U_phi.getSphereDataPhysical(),
+			io_U_phi.toPhys(),
 			pos_lon_d,
 			pos_lat_d,
 			false,

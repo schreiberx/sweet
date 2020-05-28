@@ -1,8 +1,5 @@
 /*
- * SWE_Plane_TS_ln_erk.hpp
- *
- *  Created on: 29 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_NEW_HPP_
@@ -26,7 +23,7 @@ public:
 	/*
 	 * Timestepping interface used by main timestepping loop
 	 */
-	virtual void run_timestep_pert(
+	virtual void run_timestep(
 			SphereData_Spectral &io_h,	///< prognostic variables
 			SphereData_Spectral &io_u,	///< prognostic variables
 			SphereData_Spectral &io_v,	///< prognostic variables

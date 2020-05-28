@@ -1,17 +1,14 @@
 /*
- * SWEImplicit_SPHRobert.hpp
- *
- *  Created on: 30 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_IRK_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_IRK_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LG_IRK_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_LG_IRK_HPP_
 
 
 
 #include <complex>
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
+#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -20,9 +17,6 @@
 #include "SWE_Sphere_TS_lg_erk.hpp"
 
 
-/**
- * REXI solver for SWE based on Robert function formulation
- */
 class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
 {
 public:
@@ -76,23 +70,23 @@ public:
 	void update_coefficients();
 
 
-	/**
-	 * Setup the SWE REXI solver with SPH
-	 */
+public:
+	void setup(
+		int i_timestep_order,
+		double i_timestep_size
+	);
+
+
 public:
 	void setup(
 		int i_timestep_order,
 		double i_timestep_size,
-		int i_extended_modes,
-		double i_crank_nicolson_damping_factor = 0.5
+		double i_crank_nicolson_damping_factor
 	);
 
 
-	/**
-	 * Solve a REXI time step for the given initial conditions
-	 */
 public:
-	void run_timestep_pert(
+	void run_timestep(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables

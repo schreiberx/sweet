@@ -60,7 +60,6 @@ class JobRuntimeOptions(InfoError):
         self.rexi_method = 'file'
 
         # Generic REXI parameters
-        self.rexi_extended_modes = 0
         self.rexi_sphere_preallocation = 0
 
         # List of REXI Coefficients
@@ -102,7 +101,6 @@ class JobRuntimeOptions(InfoError):
 
         self.benchmark_normal_modes_case = None
 
-        self.use_robert_functions = 1
         self.semi_lagrangian_approximate_sphere_geometry = 0
 
         self.space_grid_use_c_staggering = 0
@@ -152,10 +150,6 @@ class JobRuntimeOptions(InfoError):
     def load_from_dict(self, d):
         if 'rexi_method' in d:
             self.rexi_method = d['rexi_method']
-
-
-        if 'extended_modes' in d:
-            self.rexi_extended_modes = d['extended_modes']
 
         if 'sphere_preallocation' in d:
             self.rexi_sphere_preallocation = d['sphere_preallocation']
@@ -328,11 +322,6 @@ class JobRuntimeOptions(InfoError):
                             idstr += '_pr'+str(self.rexi_ci_primitive)
 
 
-
-                    #if self.plane_or_sphere == 'sphere':
-                    #idstr += '_pre'+str(self.rexi_sphere_preallocation)
-                    idstr += '_ext'+str(self.rexi_extended_modes).zfill(2)
-
                     #idstr += '_rexithreadpar'+str(1 if self.rexi_thread_par else 0)
 
 
@@ -362,9 +351,6 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_X'+str("x".join([str(x).zfill(4) for x in self.plane_domain_size]))
                 else:
                     idstr += '_X'+str(self.plane_domain_size)
-
-            if self.plane_domain_size == None:
-                idstr += '_rob'+str(self.use_robert_functions)
 
             if self.plane_domain_size == None:
                 idstr += '_spap'+str(self.semi_lagrangian_approximate_sphere_geometry)
@@ -488,6 +474,7 @@ class JobRuntimeOptions(InfoError):
             retval += ' --timestepping-order='+str(self.timestepping_order)
             retval += ' --timestepping-order2='+str(self.timestepping_order2)
 
+
         if self.semi_lagrangian_max_iterations != None:
             retval += ' --semi-lagrangian-max-iterations='+str(self.semi_lagrangian_max_iterations)
 
@@ -502,7 +489,6 @@ class JobRuntimeOptions(InfoError):
 
             if self.rexi_method != 'direct':
                 retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
-                retval += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
 
                 if self.rexi_method == 'file':
 
@@ -548,8 +534,6 @@ class JobRuntimeOptions(InfoError):
 
         if self.polvani_froude != None:
             retval += ' --polvani-froude='+str(self.polvani_froude)
-
-        retval += ' --use-robert-functions='+str(self.use_robert_functions)
 
         retval += ' --semi-lagrangian-approximate-sphere-geometry='+str(self.semi_lagrangian_approximate_sphere_geometry)
 

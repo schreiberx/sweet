@@ -19,7 +19,7 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 		double i_simulation_timestamp,
 
 		// for varying velocity fields
-		const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+		const SWESphereBenchmarks *i_sphereBenchmarks,
 		SphereData_Physical &io_U_phi_phys
 )
 {
@@ -117,7 +117,7 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 	// sample phi at departure points
 	SphereData_Physical U_phi_phys_D(sphereDataConfig);
 	sphereSampler.bicubic_scalar_new(
-			io_U_phi.getSphereDataPhysical(),
+			io_U_phi.toPhys(),
 			pos_lon_D, pos_lat_D,
 			U_phi_phys_D,
 			false,	// velocity sampling

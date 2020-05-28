@@ -49,8 +49,13 @@ void Adv_Plane_TS_na_erk::euler_timestep_update(
 		o_phi_t = -op.diff_c_x(i_phi*i_u) - op.diff_c_y(i_phi*i_v);
 	}
 
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	o_u_t.spectral_set_zero();
 	o_v_t.spectral_set_zero();
+#else
+	o_u_t.physical_set_zero();
+	o_v_t.physical_set_zero();
+#endif
 }
 
 

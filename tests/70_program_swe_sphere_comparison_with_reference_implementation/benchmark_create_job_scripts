@@ -55,10 +55,5 @@ for analytical in [0, 1]:
     p.runtime.timestepping_order = 1
     p.runtime.timestepping_order2 = 1
 
-    p.runtime.use_robert_functions = 0
-    p.gen_jobscript_directory('job_bench_sweet_nonrobert'+file_ext)
-
-
-    p.runtime.use_robert_functions = 1
-    p.gen_jobscript_directory('job_bench_sweet_robert'+file_ext)
+    p.gen_jobscript_directory('job_bench_sweet'+file_ext)
 

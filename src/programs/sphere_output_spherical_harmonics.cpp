@@ -1,8 +1,5 @@
 /*
- * OutputSphericalHarmonics.hpp
- *
- *  Created on: 15 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_OUTPUTSPHERICALHARMONICS_HPP_
@@ -45,7 +42,7 @@ public:
 				char buffer[1024];
 				sprintf(buffer, "SPH_n%i_m%i.csv", n, m);
 
-				h.getSphereDataPhysical().physical_file_write(buffer);
+				h.toPhys().physical_file_write(buffer);
 
 				counter++;
 			}

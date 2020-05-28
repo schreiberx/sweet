@@ -1,6 +1,6 @@
 /*
- * Burgers equation
- *
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/burgers
  */
 
 #if SWEET_GUI
@@ -756,7 +756,8 @@ public:
 			int *o_render_primitive,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		PlaneData ts_u = t0_prog_u;

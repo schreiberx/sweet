@@ -85,11 +85,14 @@ public:
 		}
 		else if (i_rexiSimVars->rexi_method == "direct")
 		{
-			// no REXI
+			// no REXI, but direct exponential time integration
 		}
 		else
 		{
-			SWEETError("REXI Mode not supported");
+			if (i_rexiSimVars->rexi_method == "")
+				SWEETError("Please specify rexi method via --rexi-method=[str]");
+			else
+				SWEETError(std::string("REXI method '")+ i_rexiSimVars->rexi_method+"' is not supported!");
 		}
 
 

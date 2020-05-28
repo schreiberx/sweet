@@ -36,11 +36,24 @@ class SphereData_Spectral
 {
 	friend class SphereData_SpectralComplex;
 
+	typedef std::complex<double> Tcomplex;
+
+
 public:
 	const SphereData_Config *sphereDataConfig = nullptr;
 
 public:
 	std::complex<double> *spectral_space_data = nullptr;
+
+	std::complex<double>& operator[](std::size_t i)
+	{
+		return spectral_space_data[i];
+	}
+
+	const std::complex<double>& operator[](std::size_t i)	const
+	{
+		return spectral_space_data[i];
+	}
 
 	void swap(
 			SphereData_Spectral &i_sphereData
@@ -168,7 +181,7 @@ public:
 		if (sphereDataConfig == nullptr)
 			setup(i_sph_data.sphereDataConfig);
 
-		parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
+		parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(Tcomplex)*sphereDataConfig->spectral_array_data_number_of_elements);
 
 		return *this;
 	}
@@ -189,7 +202,7 @@ public:
 		if (sphereDataConfig == nullptr)
 			SWEETError("sphereDataConfig not initialized");
 
-		parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(cplx)*sphereDataConfig->spectral_array_data_number_of_elements);
+		parmemcpy(spectral_space_data, i_sph_data.spectral_space_data, sizeof(Tcomplex)*sphereDataConfig->spectral_array_data_number_of_elements);
 
 		return *this;
 	}
@@ -259,10 +272,10 @@ public:
 			SWEET_THREADING_SPACE_PARALLEL_FOR
 			for (int m = 0; m <= out.sphereDataConfig->spectral_modes_m_max; m++)
 			{
-				cplx *dst = &out.spectral_space_data[out.sphereDataConfig->getArrayIndexByModes(m, m)];
-				cplx *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
+				Tcomplex *dst = &out.spectral_space_data[out.sphereDataConfig->getArrayIndexByModes(m, m)];
+				Tcomplex *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
 
-				std::size_t size = sizeof(cplx)*(out.sphereDataConfig->spectral_modes_n_max-m+1);
+				std::size_t size = sizeof(Tcomplex)*(out.sphereDataConfig->spectral_modes_n_max-m+1);
 				memcpy(dst, src, size);
 			}
 		}
@@ -278,10 +291,10 @@ public:
 			SWEET_THREADING_SPACE_PARALLEL_FOR
 			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 			{
-				cplx *dst = &out.spectral_space_data[out.sphereDataConfig->getArrayIndexByModes(m, m)];
-				cplx *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
+				Tcomplex *dst = &out.spectral_space_data[out.sphereDataConfig->getArrayIndexByModes(m, m)];
+				Tcomplex *src = &spectral_space_data[sphereDataConfig->getArrayIndexByModes(m, m)];
 
-				std::size_t size = sizeof(cplx)*(sphereDataConfig->spectral_modes_n_max-m+1);
+				std::size_t size = sizeof(Tcomplex)*(sphereDataConfig->spectral_modes_n_max-m+1);
 				memcpy(dst, src, size);
 			}
 		}
@@ -374,57 +387,6 @@ public:
 	}
 
 
-	SphereData_Spectral robert_convertToRobert()
-	{
-		SphereData_Physical tmp = getSphereDataPhysical();
-
-		tmp.physical_update_lambda(
-			[](double i_lon, double i_lat, double &io_data)
-			{
-				io_data *= std::cos(i_lat);
-			}
-		);
-
-
-		SphereData_Spectral out(tmp);
-
-		return out;
-	}
-
-
-
-	SphereData_Spectral robert_convertToNonRobert()
-	{
-		SphereData_Physical tmp = getSphereDataPhysical();
-
-		tmp.physical_update_lambda(
-				[](double i_lon, double i_lat, double &io_data)
-				{
-					io_data /= std::cos(i_lat);
-				}
-		);
-
-		SphereData_Spectral out(tmp);
-
-		return out;
-	}
-
-	SphereData_Spectral robert_convertToNonRobertSquared()
-	{
-		SphereData_Physical tmp = getSphereDataPhysical();
-
-		tmp.physical_update_lambda_cosphi_grid(
-				[](double i_lon, double i_cosphi, double &io_data)
-				{
-					io_data /= i_cosphi*i_cosphi;
-				}
-		);
-
-		SphereData_Spectral out(tmp);
-
-		return out;
-	}
-
 
 	SphereData_Spectral operator+(
 			const SphereData_Spectral &i_sph_data
@@ -510,7 +472,7 @@ public:
 		check(i_sph_data.sphereDataConfig);
 
 		SphereData_Physical a = getSphereDataPhysical();
-		SphereData_Physical b = i_sph_data.getSphereDataPhysical();
+		SphereData_Physical b = i_sph_data.toPhys();
 
 		SphereData_Physical mul(sphereDataConfig);
 
@@ -532,7 +494,7 @@ public:
 		check(i_sph_data.sphereDataConfig);
 
 		SphereData_Physical a = getSphereDataPhysical();
-		SphereData_Physical b = i_sph_data.getSphereDataPhysical();
+		SphereData_Physical b = i_sph_data.toPhys();
 
 		SphereData_Physical div(sphereDataConfig);
 
@@ -570,6 +532,20 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] *= i_value;
+
+		return *this;
+	}
+
+
+
+
+	const SphereData_Spectral& operator/=(
+			double i_value
+	)	const
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (int idx = 0; idx < sphereDataConfig->spectral_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] /= i_value;
 
 		return *this;
 	}
@@ -687,7 +663,7 @@ private:
 	void alloc_data()
 	{
 		assert(spectral_space_data == nullptr);
-		spectral_space_data = MemBlockAlloc::alloc<cplx>(sphereDataConfig->spectral_array_data_number_of_elements * sizeof(cplx));
+		spectral_space_data = MemBlockAlloc::alloc<Tcomplex>(sphereDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
 	}
 
 
@@ -705,10 +681,21 @@ public:
 
 
 public:
-	~SphereData_Spectral()
+	void free()
 	{
 		if (spectral_space_data != nullptr)
-			MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_array_data_number_of_elements * sizeof(cplx));
+		{
+			MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
+			spectral_space_data = nullptr;
+		}
+	}
+
+
+
+public:
+	~SphereData_Spectral()
+	{
+		free();
 	}
 
 
@@ -792,7 +779,7 @@ public:
 
 
 	void spectral_update_lambda(
-			std::function<void(int,int,cplx&)> i_lambda
+			std::function<void(int,int,Tcomplex&)> i_lambda
 	)
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -807,8 +794,7 @@ public:
 		}
 	}
 
-
-	const std::complex<double>& spectral_get(
+	const std::complex<double>& spectral_get_DEPRECATED(
 			int i_n,
 			int i_m
 	)	const
@@ -830,6 +816,21 @@ public:
 		assert (i_m <= sphereDataConfig->spectral_modes_m_max);
 		return spectral_space_data[sphereDataConfig->getArrayIndexByModes(i_n, i_m)];
 	}
+
+
+	const std::complex<double>& spectral_get_(
+			int i_n,
+			int i_m
+	)	const
+	{
+		assert(i_n >= 0 && i_m >= 0);
+		assert(i_n <= sphereDataConfig->spectral_modes_n_max);
+		assert(i_m <= sphereDataConfig->spectral_modes_m_max);
+		assert(i_m <= i_n);
+
+		return spectral_space_data[sphereDataConfig->getArrayIndexByModes(i_n, i_m)];
+	}
+
 
 
 	void spectral_set(
@@ -985,9 +986,9 @@ public:
 	}
 
 
-
 	void spectral_print(
-			int i_precision = 16
+			int i_precision = 16,
+			double i_abs_threshold = -1
 	)	const
 	{
 		std::cout << std::setprecision(i_precision);
@@ -998,7 +999,10 @@ public:
 			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				std::cout << spectral_space_data[idx] << "\t";
+				if (std::abs(spectral_space_data[idx]) < i_abs_threshold)
+					std::cout << 0 << "\t";
+				else
+					std::cout << spectral_space_data[idx] << "\t";
 				idx++;
 			}
 			std::cout << std::endl;

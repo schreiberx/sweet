@@ -43,22 +43,22 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 	 * For time-varying fields, update the vrt/div field based on the given simulation timestamp
 	 */
 	if (sphereBenchmarks)
-		sphereBenchmarks->update_time_varying_fields_pert(phi, vrt, div, i_simulation_timestamp);
+		sphereBenchmarks->master->get_time_varying_state(phi, vrt, div, i_simulation_timestamp);
 
 	SphereData_Physical ug(phi.sphereDataConfig);
 	SphereData_Physical vg(phi.sphereDataConfig);
-	op.robert_vortdiv_to_uv(vrt, div, ug, vg);
+	op.vortdiv_to_uv(vrt, div, ug, vg);
 
-	SphereData_Physical vrtg = vrt.getSphereDataPhysical();
-	SphereData_Physical divg = div.getSphereDataPhysical();
+	SphereData_Physical vrtg = vrt.toPhys();
+	SphereData_Physical divg = div.toPhys();
 
-	SphereData_Physical phig = phi.getSphereDataPhysical();
+	SphereData_Physical phig = phi.toPhys();
 
 	SphereData_Physical tmpg1 = ug*phig;
 	SphereData_Physical tmpg2 = vg*phig;
 
 	SphereData_Spectral tmpspec(phi.sphereDataConfig);
-	op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t, simVars.misc.sphere_use_robert_functions);
+	op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
@@ -77,7 +77,7 @@ void Adv_Sphere_TS_na_erk::run_timestep(
 		double i_simulation_timestamp,
 
 		// for varying velocity fields
-		const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+		const SWESphereBenchmarks *i_sphereBenchmarks,
 		SphereData_Physical &io_U_phi_phys
 )
 {
@@ -100,7 +100,7 @@ void Adv_Sphere_TS_na_erk::run_timestep(
 		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_div, simVars.benchmark.getExternalForcesUserData);
 	}
 
-	io_U_phi_phys = io_phi.getSphereDataPhysical();
+	io_U_phi_phys = io_phi.toPhys();
 }
 
 

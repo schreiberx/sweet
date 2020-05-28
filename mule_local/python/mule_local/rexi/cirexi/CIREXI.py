@@ -59,6 +59,9 @@ class CIREXI:
         elif lambda_include_imag != None:
             self.setup_circle(function_name, N=N, R=lambda_include_imag, half_shifted=half_shifted)
 
+        elif R != None:
+            self.setup_shifted_circle(function_name, N=N, R=R, lambda_shift=0)
+
         else:
             raise Exception("Can't calculate circle radius, please provide imag/real limits.")
 
@@ -117,7 +120,6 @@ class CIREXI:
 
             self.betas.append(-self.fun.eval(gamma_j)*pos / N)
             self.alphas.append(-gamma_j)
-            print(gamma_j)
 
 
         self.unique_id_string = "shic"

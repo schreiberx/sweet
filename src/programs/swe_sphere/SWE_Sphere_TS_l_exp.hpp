@@ -1,12 +1,9 @@
 /*
- * SWE_Sphere_REXI.hpp
- *
- *  Created on: 25 Oct 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_REXI_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_REXI_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_EXP_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_L_EXP_HPP_
 
 
 #ifndef SWEET_MPI
@@ -23,7 +20,7 @@
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
-#include <sweet/sphere/app_swe/SWERexiTerm_SPHRobert.hpp>
+#include "helpers/SWERexiTerm_SPH.hpp"
 
 #include "SWE_Sphere_TS_interface.hpp"
 
@@ -51,51 +48,9 @@
 class SWE_Sphere_TS_l_exp	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (i_timestepping_method == "l_exp" || i_timestepping_method == "lg_exp")
-			return true;
-
-		return false;
-	}
-
-	std::string string_id()
-	{
-		return "l_exp";
-	}
-
-
-	void setup_auto()
-	{
-		bool no_coriolis = false;
-
-		if (simVars.disc.timestepping_method == "lg_exp")
-			no_coriolis = true;
-
-		setup(
-			simVars.rexi,
-			"phi0",
-			simVars.timecontrol.current_timestep_size,
-			simVars.sim.sphere_use_fsphere,
-			no_coriolis
-		);
-
-
-		if (simVars.misc.verbosity > 2)
-		{
-			if (simVars.rexi.rexi_method != "direct")
-			{
-				std::cout << "ALPHA:" << std::endl;
-				for (std::size_t n = 0; n < rexi_alphas.size(); n++)
-					std::cout << rexi_alphas[n] << std::endl;
-
-				std::cout << "BETA:" << std::endl;
-				for (std::size_t n = 0; n < rexi_betas.size(); n++)
-					std::cout << rexi_betas[n] << std::endl;
-			}
-		}
-
-	}
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
 
 private:
@@ -121,13 +76,9 @@ public:
 
 
 	const SphereData_Config *sphereDataConfig;
-	const SphereData_Config *sphereDataConfigSolver;
 
 	/// This class is only setp and used in case of added modes
 	SphereData_Config sphereDataConfigInstance;
-
-	/// Extend modes for REXI time stepping?
-	int rexi_use_sphere_extended_modes;
 
 #if SWEET_MPI
 public:
@@ -171,13 +122,13 @@ private:
 	class PerThreadVars
 	{
 	public:
-		std::vector<SWERexiTerm_SPHRobert> rexiSPHRobert_vector;
+		std::vector<SWERexiTerm_SPH> rexiTermSolvers;
 
 		std::vector< std::complex<double> > alpha;
-		std::vector< std::complex<double> > beta_re;
+		std::vector< std::complex<double> > beta;
 
 		SphereData_Spectral accum_phi;
-		SphereData_Spectral accum_vort;
+		SphereData_Spectral accum_vrt;
 		SphereData_Spectral accum_div;
 	};
 
@@ -232,16 +183,8 @@ public:
 			bool i_no_coriolis
 	);
 
-	void setup_new(
-			REXI_SimulationVariables &i_rexi,
-			const std::string &i_function_name,
-			double i_timestep_size,
-			bool i_include_coriolis = true,
-			bool i_use_f_sphere = false
-	);
 
-
-	void run_timestep_pert(
+	void run_timestep(
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
@@ -251,7 +194,7 @@ public:
 	);
 
 
-	void run_timestep_pert(
+	void run_timestep(
 			const SphereData_Spectral &i_h,	///< prognostic variables
 			const SphereData_Spectral &i_u,	///< prognostic variables
 			const SphereData_Spectral &i_v,	///< prognostic variables

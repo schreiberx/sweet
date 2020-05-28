@@ -50,25 +50,25 @@ std::complex<T> fromComplexDoubleToT(
 
 
 
-typedef std::complex<T> cplx;
+typedef std::complex<T> Tcomplex;
 
 
 void solveLalpha(
-		const cplx i_lambda,	///< stiffness
+		const Tcomplex i_lambda,	///< stiffness
 		const T i_dt,		///< timestep size
-		const cplx &i_alpha,	///< REXI shift
-		const cplx &i_beta,		///< REXI shift
-		const cplx i_u[2],		///< state variable
-		cplx o_u[2]		///< output after REXI computation
+		const Tcomplex &i_alpha,	///< REXI shift
+		const Tcomplex &i_beta,		///< REXI shift
+		const Tcomplex i_u[2],		///< state variable
+		Tcomplex o_u[2]		///< output after REXI computation
 )
 {
-	cplx i(0, 1);
+	Tcomplex i(0, 1);
 
-	const cplx alpha = i_alpha/i_dt;
-	const cplx beta = i_beta/i_dt;
+	const Tcomplex alpha = i_alpha/i_dt;
+	const Tcomplex beta = i_beta/i_dt;
 
-	cplx val = cplx(1.0)/(i_lambda*i_lambda - alpha*alpha);
-	cplx ia = i*i_lambda;
+	Tcomplex val = Tcomplex(1.0)/(i_lambda*i_lambda - alpha*alpha);
+	Tcomplex ia = i*i_lambda;
 
 	o_u[0] = beta*(val*(-alpha*i_u[0] + ia*i_u[1]));
 	o_u[1] = beta*(val*(-ia*i_u[0] - alpha*i_u[1]));
@@ -77,9 +77,9 @@ void solveLalpha(
 
 
 void computeLU(
-		const cplx &i_lambda,
-		const cplx i_u[2],		///< state variable
-		cplx o_LU[2]		///< output after REXI computation
+		const Tcomplex &i_lambda,
+		const Tcomplex i_u[2],		///< state variable
+		Tcomplex o_LU[2]		///< output after REXI computation
 )
 {
 	o_LU[0] = (i_u[1]*i_lambda);
@@ -89,19 +89,19 @@ void computeLU(
 
 
 void analyticalIntegration(
-		const cplx &i_lambda,	///< stiffness
+		const Tcomplex &i_lambda,	///< stiffness
 		T i_dt,		///< timestep size
-		const cplx i_u[2],		///< state variable
-		cplx o_u[2]		///< output after REXI computation
+		const Tcomplex i_u[2],		///< state variable
+		Tcomplex o_u[2]		///< output after REXI computation
 )
 {
-	cplx I(0, 1);
+	Tcomplex I(0, 1);
 
-	cplx tmp[2];
-	tmp[0] = cplx(0.5)*(-I*i_u[0] + i_u[1]);
-	tmp[1] = cplx(0.5)*(I*i_u[0] + i_u[1]);
+	Tcomplex tmp[2];
+	tmp[0] = Tcomplex(0.5)*(-I*i_u[0] + i_u[1]);
+	tmp[1] = Tcomplex(0.5)*(I*i_u[0] + i_u[1]);
 
-	cplx K = i_dt*i_lambda;
+	Tcomplex K = i_dt*i_lambda;
 	tmp[0] = rexiFunctions.eval(K)*tmp[0];
 	tmp[1] = rexiFunctions.eval(-K)*tmp[1];
 
@@ -112,17 +112,17 @@ void analyticalIntegration(
 
 
 void rexiIntegrationBasedOnPDE(
-		const cplx &i_lambda,	///< stiffness
+		const Tcomplex &i_lambda,	///< stiffness
 		T i_dt,					///< timestep size
 		const REXICoefficients<T> &i_rexiCoefficients,
-		cplx io_u[2]			///< state variable
+		Tcomplex io_u[2]			///< state variable
 )
 {
-	cplx o_u[2] = {0.0, 0.0};
+	Tcomplex o_u[2] = {0.0, 0.0};
 
 	for (std::size_t i = 0; i < i_rexiCoefficients.alphas.size(); i++)
 	{
-		cplx ru[2];
+		Tcomplex ru[2];
 
 		solveLalpha(
 				i_lambda,	///< stiffness
@@ -168,8 +168,8 @@ std::complex<T> approx_returnComplex(
 
 
 double lmax(
-		const cplx Uanal[2],
-		const cplx U[2]
+		const Tcomplex Uanal[2],
+		const Tcomplex U[2]
 )
 {
 	return std::max(
@@ -248,14 +248,14 @@ int main(
 		 *
 		 * Note, that this is a real-valued initial condition
 		 */
-		cplx U0[2];
+		Tcomplex U0[2];
 		U0[0] = 1.0;
 		U0[1] = 0.0;
 
 		/*
 		 * Current state: U(t)
 		 */
-		cplx U[2];
+		Tcomplex U[2];
 		U[0] = U0[0];
 		U[1] = U0[1];
 
@@ -265,12 +265,12 @@ int main(
 		 *
 		 * Oscillatory stiffness: imaginary-only
 		 */
-		cplx lambda = {0.0, 1.0/M_PI};
+		Tcomplex lambda = {0.0, 1.0/M_PI};
 
 		/*
 		 * Analytic solution
 		 */
-		cplx Uanal[2];
+		Tcomplex Uanal[2];
 
 		double timestep_size = 0.3;
 		double simtime = 0;

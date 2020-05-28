@@ -5,6 +5,7 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
+#include <benchmarks_sphere/SWESphereBenchmark_nair_lauritzen_sl.hpp>
 #include "Adv_Sphere_TS_na_trajectories.hpp"
 #include "Adv_Sphere_TS_na_erk.hpp"
 
@@ -19,7 +20,7 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 		double i_simulation_timestamp,
 
 		// for varying velocity fields
-		const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+		const SWESphereBenchmarks *i_sphereBenchmarks,
 		SphereData_Physical &io_U_phi_phys
 )
 {
@@ -103,7 +104,7 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 	ScalarDataArray pos_lon_D(N), pos_lat_D(N);
 
 	// compute 2nd order accurate departure points
-	i_sphereBenchmarks->compute_departure_3rd_order(
+	i_sphereBenchmarks->master->sl_compute_departure_3rd_order(
 			semiLagrangian.pos_lon_A,
 			semiLagrangian.pos_lat_A,
 			pos_lon_D,
@@ -117,7 +118,7 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 	// sample phi at departure points
 	SphereData_Physical U_phi_phys_D =
 		sphereSampler.bicubic_scalar_ret_phys(
-			io_U_phi.getSphereDataPhysical(),
+			io_U_phi.toPhys(),
 			pos_lon_D, pos_lat_D,
 			false,	// velocity sampling
 			false,

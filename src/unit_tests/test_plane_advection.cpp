@@ -1,10 +1,7 @@
 /*
- * test_plane_advection.cpp
- *
- *  Created on: 4th April 2018
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_plane/
  */
-
 
 #ifndef SWEET_GUI
 	#define SWEET_GUI 1
@@ -202,7 +199,8 @@ public:
 			int *o_render_primitive_id,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;

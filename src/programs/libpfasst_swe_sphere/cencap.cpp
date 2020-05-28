@@ -100,12 +100,12 @@ void c_sweet_data_norm(
 )
 {
 	const SphereData_Spectral& phi  = i_Y->get_phi();
-	const SphereData_Spectral& vort = i_Y->get_vort();
-	const SphereData_Spectral& div  = i_Y->get_div();
+//	const SphereData_Spectral& vort = i_Y->get_vort();
+//	const SphereData_Spectral& div  = i_Y->get_div();
 
-	*o_val = phi.getSphereDataPhysical().physical_reduce_max_abs();
-	const double vort_max = vort.getSphereDataPhysical().physical_reduce_max_abs();
-	const double div_max  = div.getSphereDataPhysical().physical_reduce_max_abs();
+	*o_val = phi.toPhys().physical_reduce_max_abs();
+//	const double vort_max = vort.toPhys().physical_reduce_max_abs();
+//	const double div_max  = div.toPhys().physical_reduce_max_abs();
 
 	// L-infinity norm
 	// if (vort_max > *o_val)
@@ -318,9 +318,9 @@ void c_sweet_data_eprint(
 	const SphereData_Spectral& vort = i_Y->get_vort();
 	const SphereData_Spectral& div  = i_Y->get_div();
 
-	phi.getSphereDataPhysical().physical_print();
-	vort.getSphereDataPhysical().physical_print();
-	div.getSphereDataPhysical().physical_print();
+	phi.toPhys().physical_print();
+	vort.toPhys().physical_print();
+	div.toPhys().physical_print();
 
 }
 }

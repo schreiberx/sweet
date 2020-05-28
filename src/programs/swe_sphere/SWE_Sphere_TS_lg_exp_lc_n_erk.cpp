@@ -5,11 +5,11 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "SWE_Sphere_TS_lg_exp_lc_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_erk.hpp"
 
 
 
-void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep_pert(
+void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
@@ -25,7 +25,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep_pert(
 		SphereData_Spectral tmp_div = io_div;
 
 		// first order IRK for linear
-		timestepping_lg_rexi.run_timestep_pert(
+		timestepping_lg_rexi.run_timestep(
 				io_phi, io_vort, io_div,
 				i_dt,
 				i_simulation_timestamp
@@ -52,7 +52,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep_pert(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_lg_rexi.run_timestep_pert(
+			timestepping_lg_rexi.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -69,7 +69,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep_pert(
 				);
 
 			// HALF time step for linear part
-			timestepping_lg_rexi.run_timestep_pert(
+			timestepping_lg_rexi.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
@@ -88,7 +88,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep_pert(
 				);
 
 			// FULL time step for linear part
-			timestepping_lg_rexi.run_timestep_pert(
+			timestepping_lg_rexi.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp

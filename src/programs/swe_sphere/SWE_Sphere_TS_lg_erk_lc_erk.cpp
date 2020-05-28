@@ -9,7 +9,7 @@
 
 
 
-void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep_pert(
+void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -129,18 +129,12 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update(
 		 */
 		SphereData_Physical ug(i_phi.sphereDataConfig);
 		SphereData_Physical vg(i_phi.sphereDataConfig);
-		if (simVars.misc.sphere_use_robert_functions)
-			op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-		else
-			op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 
 		SphereData_Physical tmpg1 = ug*op.fg;
 		SphereData_Physical tmpg2 = vg*op.fg;
 
-		if (simVars.misc.sphere_use_robert_functions)
-			op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
-		else
-			op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 		o_vort_t *= -1.0;
 		o_div_t += -op.laplace(i_phi);
@@ -217,10 +211,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 	 */
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
-	else
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+	op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 
 	/*
 	 * step 1b
@@ -231,10 +222,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 	/*
 	 * step 1c
 	 */
-	if (simVars.misc.sphere_use_robert_functions)
-		op.robert_uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
-	else
-		op.uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
+	op.uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
 
 	/*
 	 * step 1d

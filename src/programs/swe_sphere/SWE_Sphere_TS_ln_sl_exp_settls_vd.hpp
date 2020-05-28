@@ -62,7 +62,7 @@ private:
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
 	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd = nullptr;
-	SWE_Sphere_TS_l_exp *swe_sphere_ts_l_rexi = nullptr;
+	SWE_Sphere_TS_l_exp *swe_sphere_ts_l_exp = nullptr;
 
 
 public:
@@ -94,7 +94,7 @@ public:
 			SphereData_Spectral &o_div
 	);
 
-	void run_timestep_pert(
+	void run_timestep(
 			SphereData_Spectral &io_phi,	///< prognostic variables
 			SphereData_Spectral &io_vrt,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

@@ -19,7 +19,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 		double i_simulation_timestamp,
 
 		// for varying velocity fields
-		const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+		const SWESphereBenchmarks *i_sphereBenchmarks,
 		SphereData_Physical &io_U_phi_phys
 )
 {
@@ -40,12 +40,11 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	// shouldn't be necessary
 	if (i_sphereBenchmarks != nullptr)
 	{
-		i_sphereBenchmarks->update_time_varying_fields_pert(U_phi, U_vrt, U_div, i_simulation_timestamp);
-		i_sphereBenchmarks->update_time_varying_fields_pert(U_phi_prev, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_dt);
+		i_sphereBenchmarks->get_time_varying_fields(U_phi, U_vrt, U_div, i_simulation_timestamp);
+		i_sphereBenchmarks->get_time_varying_fields(U_phi_prev, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_dt);
 	}
 #endif
 
-	// IMPORTANT!!! WE DO NOT USE THE ROBERT TRANSFORMATION HERE!!!
 
 	SphereData_Physical U_u(sphereDataConfig);
 	SphereData_Physical U_v(sphereDataConfig);
@@ -75,7 +74,7 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 	SphereData_Physical new_prog_phi_physx(sphereDataConfig);
 
 	sphereSampler.bicubic_scalar_new(
-			io_U_phi.getSphereDataPhysical(),
+			io_U_phi.toPhys(),
 			pos_lon_d,
 			pos_lat_d,
 			new_prog_phi_physx,

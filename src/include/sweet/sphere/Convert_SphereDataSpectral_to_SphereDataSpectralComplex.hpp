@@ -20,7 +20,7 @@ public:
 			const SphereData_Spectral &i_sphereData
 	)
 	{
-		SphereData_Physical tmp = i_sphereData.getSphereDataPhysical();
+		SphereData_Physical tmp = i_sphereData.toPhys();
 		SphereData_PhysicalComplex tmpc(i_sphereData.sphereDataConfig);
 
 #if SWEET_THREADING_SPACE

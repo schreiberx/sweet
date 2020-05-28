@@ -1,54 +1,143 @@
 /*
- * test_sphere_sph_solver.cpp
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  *
- *  Created on: 15 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Include these files and directory for compilation
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_l_erk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_lg_erk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_l_irk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
  */
 
+#include <cmath>
 
 #include <sweet/SimulationVariables.hpp>
-#include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
-#include <libmath/BandedMatrixPhysicalReal.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 
+#include "../programs/swe_sphere/helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "../programs/swe_sphere/helpers/SWESphBandedMatrixPhysicalComplex.hpp"
 
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalReal.hpp>
-
-#include <sweet/sphere/app_swe/SWESphBandedMatrixPhysicalComplex.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
+
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
+
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
 
+#include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
+#include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
+
+
+#include "../programs/swe_sphere/SWE_Sphere_TS_l_erk.hpp"
+#include "../programs/swe_sphere/SWE_Sphere_TS_l_irk.hpp"
 
 
 SimulationVariables simVars;
 
 
-
-
 template<
-	typename phys_value_type,
-	typename sphere_data_spec_type,
-	typename sphere_data_phys_type,
-	typename sphere_operators_type,
-	typename sph_banded_solver_type
+	typename phys_value_type = double,
+	typename sphere_data_spec_type = SphereData_Spectral,
+	typename sphere_data_phys_type = SphereData_Physical,
+	typename sphere_operators_type = SphereOperators_SphereData,
+	typename sph_banded_solver_type = SphBandedMatrixPhysicalReal<std::complex<double>>
 >
 class Test
 {
-	void test_header(const std::string &i_str)
-	{
-		std::string prefix;
-		if (typeid(phys_value_type) == typeid(double))
-			prefix = "(physdata: double) ";
-		else if (typeid(phys_value_type) == typeid(std::complex<double>))
-			prefix = "(physdata: complex) ";
+	double double_precision_digits = -1.0;
 
-		std::cout << "**********************************************" << std::endl;
-		std::cout << prefix << i_str << std::endl;
-		//std::cout << "**********************************************" << std::endl;
+	void check_error(double err, double rel_value)
+	{
+		if (err > double_precision_digits*rel_value || std::isnan(err))
+		{
+			std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+			std::cout << "+ err: " << err << std::endl;
+			std::cout << "+ max_err_threshold: " << double_precision_digits*rel_value << std::endl;
+			std::cout << "+ rel_value: " << rel_value << std::endl;
+			SWEETError("Error too high");
+		}
+	};
+
+
+	static
+	void benchmark_setup_geostrophic_balance_nosetparams(
+			SphereOperators_SphereData &ops,
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
+	)
+	{
+		SWESphereBenchmarks benchmarks;
+		benchmarks.setup(simVars, ops, "geostrophic_balance_linear_16_nosetparams");
+
+		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
+	}
+
+
+	static
+	void benchmark_setup_geostrophic_balance_nosetparams(
+			SphereOperators_SphereData &ops,
+			SphereData_SpectralComplex &o_phi,
+			SphereData_SpectralComplex &o_vrt,
+			SphereData_SpectralComplex &o_div
+	)
+	{
+
+		SphereData_Spectral phi(ops.sphereDataConfig);
+		SphereData_Spectral vrt(ops.sphereDataConfig);
+		SphereData_Spectral div(ops.sphereDataConfig);
+
+		benchmark_setup_geostrophic_balance_nosetparams(ops, phi, vrt, div);
+
+		{
+			// complex
+			o_phi = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(phi);
+			o_vrt = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(vrt);
+			o_div = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(div);
+		}
 
 	}
+
+
+	static
+	void benchmark_setup_pvd_nosetparams(
+			SphereOperators_SphereData &opsReal,
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
+	)
+	{
+		SWESphereBenchmarks benchmarks;
+		benchmarks.setup(simVars, opsReal, "gaussian_bumps_pvd_nosetparams");
+
+		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
+	}
+
+
+	static
+	void benchmark_setup_pvd_nosetparams(
+			SphereOperators_SphereData &opsReal,
+			SphereData_SpectralComplex &o_phi,
+			SphereData_SpectralComplex &o_vrt,
+			SphereData_SpectralComplex &o_div
+	)
+	{
+
+		SphereData_Spectral phi(opsReal.sphereDataConfig);
+		SphereData_Spectral vrt(opsReal.sphereDataConfig);
+		SphereData_Spectral div(opsReal.sphereDataConfig);
+
+		benchmark_setup_pvd_nosetparams(opsReal, phi, vrt, div);
+
+		{
+			// complex
+			o_phi = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(phi);
+			o_vrt = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(vrt);
+			o_div = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(div);
+		}
+	}
+
+
 
 public:
 	void run_tests(
@@ -56,600 +145,591 @@ public:
 			phys_value_type &alpha
 	)
 	{
-		double eps = 1e-10;
-		eps *= std::sqrt(sphereDataConfig->spectral_modes_n_max)*std::sqrt(sphereDataConfig->spectral_modes_m_max);
-		std::cout << "Using max allowed error of eps=" << eps << std::endl;
+		simVars.outputConfig();
 
-		sphere_operators_type op(sphereDataConfig, &(simVars.sim));
-
+		if (sizeof(phys_value_type) == sizeof(double))
 		{
-			SphereTestSolutions_Gaussian testSolutions;
-
-			/*
-			 * Use test function as expected result
-			 */
-			sphere_data_phys_type x_result_phys(sphereDataConfig);
-			x_result_phys.physical_update_lambda_gaussian_grid(
-					[&](double lat, double mu, phys_value_type &io_data){
-						double tmp;
-						testSolutions.test_function__grid_gaussian(lat,mu,tmp);
-						io_data = tmp;
-					}
-			);
-			sphere_data_spec_type x_result(x_result_phys);
-
-			// we make a copy of x_result to setup other data
-			// Otherwise, x_result might be converted to/from spectral/physical space all the time
-			sphere_data_spec_type x_result_setup = x_result;
-
-			double x_result_Lmax = x_result.getSphereDataPhysical().physical_reduce_max_abs();
-
-			double r = simVars.sim.sphere_radius;
-			double two_omega = 2.0*simVars.sim.sphere_rotating_coriolis_omega;
-
-			std::cout << " + alpha: " << alpha << std::endl;
-			std::cout << " + earth_radius: " << simVars.sim.sphere_radius << std::endl;
-			std::cout << " + 2*coriolis_omega: " << two_omega << std::endl;
-			std::cout << " + Lmax(reference_solution): " << x_result_Lmax << std::endl;
-
-
-			/*
-			 * Test Zx = c*Phi(mu)
-			 */
-			if (true)
-			{
-				test_header("Test Zx = c*Phi(mu)");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				sphSolver.solver_component_scalar_phi(alpha);
-
-				/*
-				 * Setup RHS = scalar_a * phi(lambda,mu)
-				 */
-				sphere_data_phys_type b_phys(x_result_setup.sphereDataConfig);
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							double tmp;
-							testSolutions.test_function__grid_gaussian(lat,mu,tmp);
-							io_data = tmp*alpha;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(alpha));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold "+std::to_string(eps));
-			}
-
-
-			/*
-			 * Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)
-			 */
-			if (true)
-			{
-				test_header("Test Zx = mu*Phi(lam,mu) + a*Phi(lam,mu)");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				sphSolver.solver_component_scalar_phi(alpha);
-				sphSolver.solver_component_mu_phi();
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							io_data *= mu+alpha;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(alpha+1.0));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
-
-
-			/*
-			 * Test Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)
-			 */
-			if (true)
-			{
-				test_header("Test Zx = (1-mu*mu)*d/dmu Phi(lam,mu) + a*Phi(lam,mu)");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				sphSolver.solver_component_scalar_phi(alpha);
-				sphSolver.solver_component_one_minus_mu_mu_diff_mu_phi();
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							double one_minus_m2_dfun;
-							testSolutions.correct_result_one_minus_mu_squared_diff_lat_mu__grid_gaussian(lat, mu, one_minus_m2_dfun);
-
-							io_data = one_minus_m2_dfun + alpha*io_data;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(alpha+1.0));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
-
-			std::cout << "************************************************************" << std::endl;
-			std::cout << "*** BASIC TESTS FINISHED ***********************************" << std::endl;
-			std::cout << "*** TESTING REXI COMPONENTS ********************************" << std::endl;
-			std::cout << "************************************************************" << std::endl;
-
-
-			/*
-			 * Test F1 = alpha^4 * Phi(mu)
-			 */
-			if (true)
-			{
-				test_header("Test F1 = alpha^4 * Phi(mu)");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				phys_value_type scalar = (alpha*alpha)*(alpha*alpha);
-				sphSolver.solver_component_rexi_z1(scalar, r);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-					{
-						io_data *= scalar;
-					}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
-
-
-			/*
-			 * Test Z2 = mu^2 * Phi(mu)
-			 */
-			if (true)
-			{
-				test_header("Test Z2 = mu^2*Phi(lam,mu)");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				phys_value_type scalar = alpha*alpha*two_omega*two_omega;
-				sphSolver.solver_component_rexi_z2(scalar, r);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-					[&](double lat, double mu, phys_value_type &io_data){
-						io_data *= scalar*(mu*mu);
-					}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-				{
-					double eps_new = eps*1e8;
-
-					std::cout << "**************************************" << std::endl;
-					std::cout << "* WARNING: ERROR TOO HIGH" << std::endl;
-					std::cout << "* Using eps_new: " << eps_new << std::endl;
-					std::cout << "**************************************" << std::endl;
-
-					if (max_error > eps_new)
-						SWEETError(" + ERROR! max_error exceeds threshold");
-				}
-			}
-
-
-			/*
-			 * Test Z3 = mu^4 * Phi(mu)
-			 */
-			if (true)
-			{
-				test_header("Test Z3 = mu^4*Phi(lam,mu)");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 4);
-
-				phys_value_type scalar = two_omega*two_omega*two_omega*two_omega;
-
-				sphSolver.solver_component_rexi_z3(scalar, r);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data){
-							io_data *= scalar*(mu*mu)*(mu*mu);
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-				{
-	#if 1
-					std::cout << "**************************************" << std::endl;
-					std::cout << "* WARNING: ERROR TOO HIGH" << std::endl;
-//					std::cout << "* REDUCING ERROR THRESHOLD for previous test case by 1e3" << std::endl;
-					std::cout << "**************************************" << std::endl;
-
-					if (max_error > eps)
-						std::cout << " + ERROR! max error exceeds threshold" << std::endl;;
-						// TODO: FIXME
-						//SWEETError(" + ERROR! max error exceeds threshold");
-	#else
-					SWEETError(" + ERROR! max error exceeds threshold");
-	#endif
-				}
-			}
-
-
-	#if 0
-			/*
-			 * Test Z3 = mu^4 * Phi(mu) (extended modes)
-			 */
-			if (true)
-			{
-
-				test_header("Test Z3 = mu^4*Phi(lam,mu) (extended modes)");
-
-				SphereData_Config sphereDataConfigDouble;
-				sphereDataConfigDouble.setupAdditionalModes(sphereDataConfig, 4, 4, simVars.misc.reuse_spectral_transformation_plans);
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(&sphereDataConfigDouble, 4);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				std::complex<double> scalar = two_omega*two_omega*two_omega*two_omega;
-				sphSolver.solver_component_rexi_z3c(scalar, r);
-
-				sphere_data_spec_type b(&sphereDataConfigDouble);
-				b.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data){
-							double value;
-							testSolutions.test_function__grid_gaussian(lat,mu,value);
-
-							io_data = value;
-							io_data *= scalar.real()*(mu*mu)*(mu*mu);
-						}
-				);
-				sphere_data_spec_type x_numerical_double = sphSolver.solve(b);
-
-				sphere_data_spec_type x_numerical(sphereDataConfig);
-
-				x_numerical.spectral_set_zero();
-				x_numerical.spectral_update_lambda(
-						[&](int n, int m, std::complex<double> &io_data)
-						{
-							io_data = x_numerical_double.spectral_get(n, m);
-						}
-				);
-
-				double max_error = (x_numerical-x_result).physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-	#if 0
-					std::cout << "**************************************" << std::endl;
-					std::cout << "* WARNING: ERROR IGNORED" << std::endl;
-					std::cout << "**************************************" << std::endl;
-	#else
-					SWEETError(" + ERROR! max error exceeds threshold");
-	#endif
-			}
-	#endif
-
-			/*
-			 * Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)
-			 */
-			if (true)
-			{
-				test_header("Test Z4 = grad_j(mu) grad_i(Phi(lam,mu)) = d/dlambda Phi(lam,mu)");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				phys_value_type scalar = -alpha*alpha*two_omega;
-				sphSolver.solver_component_rexi_z4(scalar, r);
-
-				// ADD OFFSET FOR NON-SINGULAR SOLUTION
-				sphSolver.solver_component_scalar_phi(alpha);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							double fun;
-							testSolutions.test_function__grid_gaussian(lat, mu, fun);
-
-							double dlambda_fun;
-							testSolutions.correct_result_diff_lambda__grid_gaussian(lat, mu, dlambda_fun);
-
-							io_data = scalar/(r*r)*dlambda_fun + fun*alpha;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
-
-
-			/*
-			 * Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))
-			 */
-			if (true)
-			{
-				test_header("Test Z5 = grad_j(mu) mu^2 grad_i(Phi(lam,mu))");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				phys_value_type scalar = two_omega*two_omega*two_omega;
-				sphSolver.solver_component_rexi_z5(scalar, r);
-
-				// ADD OFFSET FOR NON-SINGULAR SOLUTION
-				sphSolver.solver_component_scalar_phi(alpha);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							double fun;
-							testSolutions.test_function__grid_gaussian(lat, mu, fun);
-
-							double dgrad_lambda_fun;
-							testSolutions.correct_result_grad_lambda__grid_gaussian(lat, mu, dgrad_lambda_fun);
-
-							io_data = scalar/(r*r)*std::sqrt(1.0-mu*mu)*mu*mu*dgrad_lambda_fun + fun*alpha;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-				{
-					double eps_new = eps*1e20;
-
-					std::cout << "**************************************" << std::endl;
-					std::cout << "* WARNING: ERROR TOO HIGH" << std::endl;
-					std::cout << "* Using eps_new: " << eps_new << std::endl;
-					std::cout << "**************************************" << std::endl;
-
-					if (max_error > eps_new)
-						SWEETError(" + ERROR! max_error exceeds threshold");
-				}
-			}
-
-
-			/*
-			 * Test Z6 = grad_j(mu) mu grad_j(Phi(lam,mu))
-			 */
-			if (true)
-			{
-				test_header("Test Z6 = grad_j(mu) mu grad_j(Phi(lam,mu))");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				phys_value_type scalar = 2.0*alpha*two_omega*two_omega;
-				sphSolver.solver_component_rexi_z6(scalar, r);
-
-				// ADD OFFSET FOR NON-SINGULAR SOLUTION
-				sphSolver.solver_component_scalar_phi(alpha);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							double fun;
-							testSolutions.test_function__grid_gaussian(lat, mu, fun);
-
-							double dgrad_mu_fun;
-							testSolutions.correct_result_grad_phi__grid_gaussian(lat, mu, dgrad_mu_fun);
-
-							io_data = scalar/(r*r)*std::sqrt(1.0-mu*mu)*mu*dgrad_mu_fun + fun*alpha;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-				{
-					double eps_new = eps*1e10;
-
-					std::cout << "**************************************" << std::endl;
-					std::cout << "* WARNING: ERROR TOO HIGH" << std::endl;
-					std::cout << "* Using eps_new: " << eps_new << std::endl;
-					std::cout << "**************************************" << std::endl;
-
-					if (max_error > eps_new)
-						SWEETError(" + ERROR! max_error exceeds threshold");
-				}
-			}
-
-
-			/*
-			 * Test Z7 = laplace(Phi(lam,mu))
-			 */
-			if (true)
-			{
-				test_header("Test Z7 = laplace(Phi(lam,mu))");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				phys_value_type scalar = 1.0;
-				sphSolver.solver_component_rexi_z7(scalar, r);
-
-				// ADD OFFSET FOR NON-SINGULAR SOLUTION
-				sphSolver.solver_component_scalar_phi(alpha);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							double tmp;
-							testSolutions.test_function__grid_gaussian(lat, mu, tmp);
-							io_data = tmp;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				b = op.laplace(b)*scalar + b*alpha;
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
-
-
-
-			/*
-			 * Test Z8 = mu*mu*laplace(Phi(lam,mu))
-			 */
-			if (true)
-			{
-				test_header("Test Z8 = mu*mu*laplace(Phi(lam,mu))");
-
-				sph_banded_solver_type sphSolver;
-				sphSolver.setup(sphereDataConfig, 2);
-				std::cout << " + bandwidth: " << sphSolver.lhs.halosize_off_diagonal << std::endl;
-
-				phys_value_type scalar = 1.0;
-				sphSolver.solver_component_rexi_z8(scalar, r);
-
-				// ADD OFFSET FOR NON-SINGULAR SOLUTION
-				sphSolver.solver_component_scalar_phi(alpha);
-
-				sphere_data_phys_type b_phys = x_result_setup.getSphereDataPhysical();
-				b_phys.physical_update_lambda_gaussian_grid(
-						[&](double lat, double mu, phys_value_type &io_data)
-						{
-							double tmp;
-							testSolutions.test_function__grid_gaussian(lat, mu, tmp);
-							io_data = tmp;
-						}
-				);
-				sphere_data_spec_type b(b_phys);
-
-				b = op.mu2(op.laplace(b))*scalar + b*alpha;
-
-				sphere_data_spec_type x_numerical = sphSolver.solve(b);
-
-				double max_error = (x_numerical-x_result).getSphereDataPhysical().physical_reduce_max_abs();
-				max_error = max_error/(x_result_Lmax*Lmax(scalar));
-
-				std::cout << " + max_error: " << max_error << std::endl;
-
-				if (max_error > eps)
-					SWEETError(" + ERROR! max error exceeds threshold");
-			}
+			double_precision_digits = 1e-10*2.0*sphereDataConfig->spectral_modes_m_max;
+		}
+		else
+		{
+			double_precision_digits = 1e-7*2.0*sphereDataConfig->spectral_modes_m_max;
 		}
 
-		test_header("All tests successful");
+		/*
+		 * Operators
+		 */
+		SphereOperators_SphereData opsReal(sphereDataConfig, &(simVars.sim));
+		sphere_operators_type ops(sphereDataConfig, &(simVars.sim));
+
+		/*
+		 * Setup local simulation variables
+		 */
+		double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+		double sphere_radius = simVars.sim.sphere_radius;
+
+		double dt_implicit;
+
+		if (gh0 == 0)
+			dt_implicit = 1.0/sphere_radius;
+		else
+			dt_implicit = 1.0/std::sqrt(gh0)*sphere_radius;
+
+		dt_implicit /= 4.0*2.0*sphereDataConfig->spectral_modes_n_max;
+
+		double dt_two_omega = dt_implicit*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "* COMMON PARAMTERS" << std::endl;
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "dt_implicit: " << dt_implicit << std::endl;
+		std::cout << "h0: " << simVars.sim.h0 << std::endl;
+		std::cout << "gh0: " << gh0 << std::endl;
+		std::cout << "gravitation: " << simVars.sim.gravitation << std::endl;
+		std::cout << "sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
+		std::cout << "sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+
+
+		/*
+		 * Tests for stationary solution
+		 */
+		if (simVars.sim.sphere_rotating_coriolis_omega == 0.0)
+		{
+			std::cout << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+			std::cout << "* SKIPPING 'STATIONARY SOLUTION TESTS' (coriolis = 0 => only trivial stationary case exists)" << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+		}
+		else
+		{
+			std::cout << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+			std::cout << "* STATIONARY SOLUTION TESTS" << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+
+
+			sphere_data_spec_type phi(sphereDataConfig);
+			sphere_data_spec_type vrt(sphereDataConfig);
+			sphere_data_spec_type div(sphereDataConfig);
+
+			benchmark_setup_geostrophic_balance_nosetparams(opsReal, phi, vrt, div);
+
+			sphere_data_spec_type foo, rhs;
+			sph_banded_solver_type sphSolverTest;
+			double dt = dt_implicit;
+			double scalar = 1.234;
+			double err = -1;
+
+			double phi_max = phi.toPhys().physical_reduce_max_abs();
+			double vrt_max = vrt.toPhys().physical_reduce_max_abs();
+			double div_max = div.toPhys().physical_reduce_max_abs();
+
+			if (phi_max == 0)
+				phi_max = 1;
+
+			if (vrt_max == 0)
+				vrt_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+
+			if (div_max == 0)
+				div_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+
+			std::cout << std::endl;
+			std::cout << "phi_max: " << phi_max << std::endl;
+			std::cout << "vrt_max: " << vrt_max << std::endl;
+			std::cout << "div_max: " << div_max << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " J(x)-x" << std::endl;
+			{
+				foo = ops.implicit_J(vrt, dt_two_omega) - vrt;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + vrt: 0 = " << err << std::endl;
+				check_error(err, vrt_max);
+
+				foo = ops.implicit_J(phi, dt_two_omega) -phi;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + phi: 0 = " << err << std::endl;
+				check_error(err, phi_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " x-Jinv(x)" << std::endl;
+			{
+				foo =vrt - ops.implicit_Jinv(vrt, dt_two_omega);
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << "vrt - Jinv(vrt) = 0 = " << err << std::endl;
+				check_error(err, vrt_max);
+
+				foo =phi - ops.implicit_Jinv(phi, dt_two_omega);
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << "phi - Jinv(phi) = 0 = " << err << std::endl;
+				check_error(err, phi_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " FJinv(x)-F(Jinv(x))" << std::endl;
+			{
+				foo = ops.implicit_FJinv(vrt, dt_two_omega) - ops.implicit_F(ops.implicit_Jinv(vrt, dt_two_omega), dt_two_omega);
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << "FJinv(vrt) - F(Jinv(vrt)) = 0 = " << err << std::endl;
+				check_error(err, vrt_max);
+
+				foo = ops.implicit_FJinv(phi, dt_two_omega) - ops.implicit_F(ops.implicit_Jinv(phi, dt_two_omega), dt_two_omega);
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << "FJinv(phi) - F(Jinv(phi)) = 0 = " << err << std::endl;
+				check_error(err, phi_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " -Linv(F(vrt)) - phi = 0" << std::endl;
+			{
+				foo = -ops.implicit_Linv(ops.implicit_F(vrt, dt_two_omega), dt) - phi;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << "-Linv(F*vrt) - phi = 0 = " << err << std::endl;
+				check_error(err, phi_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " -F(vrt) - L(phi) = 0" << std::endl;
+			{
+				foo = -ops.implicit_F(vrt, dt_two_omega) - ops.implicit_L(phi, dt);
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << "-F*vrt - L*phi = 0 = " << err << std::endl;
+				check_error(err, div_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " invert(Jinv)" << std::endl;
+			{
+				sphSolverTest.setup(sphereDataConfig, 1);
+				sphSolverTest.solver_component_implicit_J(dt_two_omega);
+
+				rhs = ops.implicit_J(vrt, dt_two_omega);
+				foo = sphSolverTest.solve(rhs) -vrt;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + vrt: 0 = " << err << std::endl;
+				check_error(err, vrt_max);
+
+				rhs = ops.implicit_J(phi, dt_two_omega);
+				foo = sphSolverTest.solve(rhs) -phi;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + phi: 0 = " << err << std::endl;
+				check_error(err, phi_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " invert(F+I)" << std::endl;
+			{
+				sphSolverTest.setup(sphereDataConfig, 2);
+				sphSolverTest.solver_component_implicit_F(dt_two_omega);
+				sphSolverTest.solver_component_implicit_I(scalar);
+
+				rhs = ops.implicit_F(vrt, dt_two_omega) + scalar*vrt;
+				foo = sphSolverTest.solve(rhs) -vrt;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + vrt: 0 = " << err << std::endl;
+				check_error(err, vrt_max);
+
+				rhs = ops.implicit_F(phi, dt_two_omega) + scalar*phi;
+				foo = sphSolverTest.solve(rhs) -phi;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + phi: 0 = " << err << std::endl;
+				check_error(err, phi_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " b = F(a)+J(a)" << std::endl;
+			std::cout << " c = FJinv(b)+J(b)" << std::endl;
+			std::cout << " b' = invert(FJinv+J)*c" << std::endl;
+			std::cout << " a' = invert(F+J)*b'" << std::endl;
+			{
+				sph_banded_solver_type sphSolverTestF_J;
+				sphSolverTestF_J.setup(sphereDataConfig, 4);
+				sphSolverTestF_J.solver_component_implicit_F(dt_two_omega);
+				sphSolverTestF_J.solver_component_implicit_J(dt_two_omega);
+
+				sph_banded_solver_type sphSolverTestFJinv_J;
+				sphSolverTestFJinv_J.setup(sphereDataConfig, 4);
+				sphSolverTestFJinv_J.solver_component_implicit_FJinv(dt_two_omega);
+				sphSolverTestFJinv_J.solver_component_implicit_J(dt_two_omega);
+
+				sphere_data_spec_type a = vrt;
+				sphere_data_spec_type b = ops.implicit_F(a, dt_two_omega) + ops.implicit_J(a, dt_two_omega);
+				sphere_data_spec_type c = ops.implicit_FJinv(b, dt_two_omega) + ops.implicit_J(b, dt_two_omega);
+				sphere_data_spec_type b_ = sphSolverTestFJinv_J.solve(c);
+				sphere_data_spec_type a_ = sphSolverTestF_J.solve(b_);
+
+				err = (b-b_).toPhys().physical_reduce_max_abs();
+				std::cout << " + b_: 0 = " << err << std::endl;
+
+				err = (b-b_).toPhys().physical_reduce_max_abs();
+				std::cout << " + a_: 0 = " << err << std::endl;
+				check_error(err, a.toPhys().physical_reduce_max_abs());
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " invert(FJinvF+J)" << std::endl;
+			{
+				sphSolverTest.setup(sphereDataConfig, 4);
+				sphSolverTest.solver_component_implicit_FJinvF(dt_two_omega);
+				sphSolverTest.solver_component_implicit_J(dt_two_omega);
+
+				rhs = ops.implicit_FJinv(ops.implicit_F(vrt, dt_two_omega), dt_two_omega) + ops.implicit_J(vrt, dt_two_omega);
+				foo = sphSolverTest.solve(rhs) - vrt;
+
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + vrt: 0 = " << err << std::endl;
+				check_error(err, vrt_max);
+
+				rhs = ops.implicit_FJinv(ops.implicit_F(phi, dt_two_omega), dt_two_omega) + ops.implicit_J(phi, dt_two_omega);
+				foo = sphSolverTest.solve(rhs) - phi;
+				err = foo.toPhys().physical_reduce_max_abs();
+				std::cout << " + phi: 0 = " << err << std::endl;
+				check_error(err, phi_max);
+			}
+			std::cout << std::endl;
+
+			std::cout << "============================================" << std::endl;
+			std::cout << " FIN" << std::endl;
+			std::cout << "============================================" << std::endl;
+		}
+
+
+
+		/*
+		 * Tests with time-varying solution
+		 */
+		for (int i = 0; i < 8; i++)
+		{
+			std::cout << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+			std::cout << "* TIME VARYING SOLUTION TESTS " << i << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+
+
+			sphere_data_spec_type phi(sphereDataConfig);
+			sphere_data_spec_type vrt(sphereDataConfig);
+			sphere_data_spec_type div(sphereDataConfig);
+
+			benchmark_setup_pvd_nosetparams(opsReal, phi, vrt, div);
+
+			double phi_order = phi.toPhys().physical_reduce_max_abs();
+			double vrt_order = vrt.toPhys().physical_reduce_max_abs();
+			double div_order = div.toPhys().physical_reduce_max_abs();
+
+			if ((i & 1) == 0)
+			{
+				phi.spectral_set_zero();
+				phi_order = 1.0;
+				std::cout << " + phi: set to zero" << std::endl;
+			}
+			else
+			{
+				std::cout << " + phi: " << phi_order << std::endl;
+			}
+
+			if ((i & 2) == 0)
+			{
+				vrt.spectral_set_zero();
+				vrt_order = phi_order/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				std::cout << " + vrt: set to zero" << std::endl;
+			}
+			else
+			{
+				std::cout << " + vrt: " << vrt_order << std::endl;
+			}
+
+			if ((i & 4) == 0)
+			{
+				div.spectral_set_zero();
+				div_order = phi_order/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				std::cout << " + div: set to zero" << std::endl;
+			}
+			else
+			{
+				std::cout << " + div: " << div_order << std::endl;
+			}
+
+
+			std::cout << std::endl;
+			std::cout << "phi_order: " << phi_order << std::endl;
+			std::cout << "vrt_order: " << vrt_order << std::endl;
+			std::cout << "div_order: " << div_order << std::endl;
+
+
+#if 0
+			{
+				// Run one forward Euler timestep just to get some valid div field
+				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
+				l_erk.setup(1);
+				l_erk.run_timestep(phi, vrt, div, dt_implicit);
+			}
+#endif
+
+
+			double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+			double sphere_radius = simVars.sim.sphere_radius;
+
+			double dt_two_omega = dt_implicit*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+
+			sph_banded_solver_type sphSolverTest;
+
+			sphere_data_spec_type& S1 = vrt;
+			sphere_data_spec_type& S2 = div;
+			sphere_data_spec_type& S3 = phi;
+
+			sph_banded_solver_type sphSolverDiv;
+			sphSolverDiv.setup(sphereDataConfig, 4);
+			sphSolverDiv.solver_component_implicit_J(dt_two_omega);
+			sphSolverDiv.solver_component_implicit_FJinvF(dt_two_omega);
+			sphSolverDiv.solver_component_implicit_L(gh0*dt_implicit, dt_implicit, sphere_radius);
+
+			sphere_data_spec_type rhs = S2 + ops.implicit_FJinv(S1, dt_two_omega) + ops.implicit_L(S3, dt_implicit);
+			sphere_data_spec_type div1 = sphSolverDiv.solve(rhs);
+
+			sphere_data_spec_type phi1 = S3 - dt_implicit*gh0*div1;
+			sphere_data_spec_type vrt1 = ops.implicit_Jinv(S1 - ops.implicit_F(div1, dt_two_omega), dt_two_omega);
+
+			/*
+			 * Testcase for correct solver
+			 */
+			{
+				double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+				double dt_two_omega = dt_implicit*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+
+				sphere_data_spec_type foo, rhs;
+				sph_banded_solver_type sphSolverTest;
+				double err = -1;
+
+				std::cout << "============================================" << std::endl;
+				std::cout << " CURL equation" << std::endl;
+				{
+					foo = ops.implicit_J(vrt1, dt_two_omega) + ops.implicit_F(div1, dt_two_omega) - S1;
+					err = foo.toPhys().physical_reduce_max_abs();
+					std::cout << " + err: 0 = " << err << std::endl;
+					check_error(err, vrt_order);
+				}
+
+				std::cout << "============================================" << std::endl;
+				std::cout << " DIV equation" << std::endl;
+				{
+					foo = ops.implicit_J(div1, dt_two_omega) - ops.implicit_F(vrt1, dt_two_omega) - ops.implicit_L(phi1, dt_implicit) - S2;
+					err = foo.toPhys().physical_reduce_max_abs();
+					std::cout << " + err: 0 = " << err << std::endl;
+					check_error(err, div_order);
+				}
+
+				std::cout << "============================================" << std::endl;
+				std::cout << " GEOPOT equation" << std::endl;
+				{
+					foo = phi1 + dt_implicit*gh0*div1 - S3;
+					err = foo.toPhys().physical_reduce_max_abs();
+					std::cout << " + err: 0 = " << err << std::endl;
+					check_error(err, phi_order);
+				}
+				std::cout << std::endl;
+			}
+			std::cout << "Tests successful" << std::endl;
+
+		}
+
+
+
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "* COMMON PARAMTERS" << std::endl;
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << " + dt_implicit: " << dt_implicit << std::endl;
+		std::cout << " + h0: " << simVars.sim.h0 << std::endl;
+		std::cout << " + gh0: " << gh0 << std::endl;
+		std::cout << " + gravitation: " << simVars.sim.gravitation << std::endl;
+		std::cout << " + sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
+		std::cout << " + sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+		std::cout << std::endl;
+
+
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "All tests successful" << std::endl;
+		std::cout << "*********************************************************" << std::endl;
 	}
+};
 
 
-	double Lmax(phys_value_type i_value)
+
+
+template<
+	typename phys_value_type = double,
+	typename sphere_data_spec_type = SphereData_Spectral,
+	typename sphere_data_phys_type = SphereData_Physical,
+	typename sphere_operators_type = SphereOperators_SphereData,
+	typename sph_banded_solver_type = double
+>
+class TestFB
+{
+	double double_precision_digits = -1.0;
+
+	void check_error(double err, double rel_value)
 	{
-		if (typeid(phys_value_type) == typeid(double))
+		if (err > double_precision_digits*rel_value || std::isnan(err))
 		{
-			return std::abs(i_value);
+			std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+			std::cout << "+ err: " << err << std::endl;
+			std::cout << "+ max_err_threshold: " << double_precision_digits*rel_value << std::endl;
+			std::cout << "+ rel_value: " << rel_value << std::endl;
+			SWEETError("Error too high");
+		}
+	};
+
+public:
+	void run_tests(
+			SphereData_Config *sphereDataConfig,
+			phys_value_type &alpha
+	)
+	{
+		simVars.outputConfig();
+
+		double_precision_digits = 1e-10*2.0*sphereDataConfig->spectral_modes_m_max;
+
+		/*
+		 * Operators
+		 */
+		SphereOperators_SphereData ops(sphereDataConfig, &(simVars.sim));
+
+		/*
+		 * Setup local simulation variables
+		 */
+		double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+		double sphere_radius = simVars.sim.sphere_radius;
+
+		double dt_implicit;
+
+		if (gh0 == 0)
+			dt_implicit = 1.0/sphere_radius;
+		else
+			dt_implicit = 1.0/std::sqrt(gh0)*sphere_radius;
+
+		dt_implicit /= 4.0*2.0*sphereDataConfig->spectral_modes_n_max;
+
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "* COMMON PARAMTERS" << std::endl;
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "dt_implicit: " << dt_implicit << std::endl;
+		std::cout << "h0: " << simVars.sim.h0 << std::endl;
+		std::cout << "gh0: " << gh0 << std::endl;
+		std::cout << "gravitation: " << simVars.sim.gravitation << std::endl;
+		std::cout << "sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
+		std::cout << "sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+
+		/*
+		 * Test forward/backward time stepping
+		 *
+		 * (I - dtexpl*L)^-1 (I + dtimpl*L) = I
+		 */
+		{
+			std::cout << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+			std::cout << "* FORWARD / BACKWARD TIME INTEGRATION" << std::endl;
+			std::cout << "*********************************************************" << std::endl;
+
+			SWESphereBenchmarks benchmarks;
+			benchmarks.setup(simVars, ops, "gaussian_bumps_pvd_nosetparams");
+			//benchmarks.setup(simVars, ops, "gaussian_bumps_pv_nosetparams");
+
+			SphereData_Spectral phi(sphereDataConfig);
+			SphereData_Spectral vrt(sphereDataConfig);
+			SphereData_Spectral div(sphereDataConfig);
+
+			benchmarks.master->get_initial_state(phi, vrt, div);
+
+			//phi.spectral_set_zero();
+			vrt.spectral_set_zero();
+			div.spectral_set_zero();
+
+			double dt_implicit = 1.0/std::sqrt(gh0)*sphere_radius;
+			dt_implicit = 0.5*sphereDataConfig->spectral_modes_n_max;
+			std::cout << "dt_implicit: " << dt_implicit << std::endl;
+
+			if (0)
+			{
+				// Run one forward Euler timestep just to get some valid div field
+				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
+				l_erk.setup(1);
+				l_erk.run_timestep(phi, vrt, div, dt_implicit);
+			}
+
+			double phi_max = phi.toPhys().physical_reduce_max_abs();
+			double vrt_max = vrt.toPhys().physical_reduce_max_abs();
+			double div_max = div.toPhys().physical_reduce_max_abs();
+
+			if (phi_max == 0)
+				phi_max = 1;
+
+			if (vrt_max == 0)
+				vrt_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+
+			if (div_max == 0)
+				div_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+
+			std::cout << std::endl;
+			std::cout << "phi_max: " << phi_max << std::endl;
+			std::cout << "vrt_max: " << vrt_max << std::endl;
+			std::cout << "div_max: " << div_max << std::endl;
+			std::cout << std::endl;
+
+			{
+				SphereData_Spectral test_phi = phi;
+				SphereData_Spectral test_vrt = vrt;
+				SphereData_Spectral test_div = div;
+
+				double dt_explicit = dt_implicit;
+				double dt_implicit = -dt_explicit;		// Backward with flipped minus sigh
+
+				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
+				l_erk.setup(1);
+				l_erk.run_timestep(test_phi, test_vrt, test_div, dt_explicit);
+
+				SWE_Sphere_TS_l_irk l_irk(simVars, ops);
+				l_irk.setup(1, dt_implicit);
+				l_irk.run_timestep(test_phi, test_vrt, test_div, dt_implicit);
+
+				double err_phi = (test_phi-phi).toPhys().physical_reduce_max_abs();
+				double err_vrt = (test_vrt-vrt).toPhys().physical_reduce_max_abs();
+				double err_div = (test_div-div).toPhys().physical_reduce_max_abs();
+
+				std::cout << "err_phi: " << err_phi << std::endl;
+				check_error(err_phi, phi_max);
+
+				std::cout << "err_vrt: " << err_vrt << std::endl;
+				check_error(err_vrt, vrt_max);
+
+				std::cout << "err_div: " << err_div << std::endl;
+				check_error(err_div, div_max);
+
+			}
 		}
 
-		if (typeid(phys_value_type) == typeid(std::complex<double>))
-		{
-			std::complex<double> dummy = i_value;
-			return std::sqrt(dummy.real()*dummy.real() + dummy.imag()*dummy.imag());
-		}
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "* COMMON PARAMTERS" << std::endl;
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << " + dt_implicit: " << dt_implicit << std::endl;
+		std::cout << " + h0: " << simVars.sim.h0 << std::endl;
+		std::cout << " + gh0: " << gh0 << std::endl;
+		std::cout << " + gravitation: " << simVars.sim.gravitation << std::endl;
+		std::cout << " + sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
+		std::cout << " + sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+		std::cout << std::endl;
 
-		return -1;
+
+		std::cout << "*********************************************************" << std::endl;
+		std::cout << "All tests successful" << std::endl;
+		std::cout << "*********************************************************" << std::endl;
 	}
 };
 
@@ -690,6 +770,13 @@ int main(
 		 */
 		double alpha_real = 3.0;
 
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "* REAL" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
 		Test<
 			double,
 			SphereData_Spectral,
@@ -699,6 +786,23 @@ int main(
 		>t_real;
 
 		t_real.run_tests(&sphereDataConfig, alpha_real);
+
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "* REAL FB" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		TestFB<
+			double,
+			SphereData_Spectral,
+			SphereData_Physical,
+			SphereOperators_SphereData,
+			SphBandedMatrixPhysicalReal<std::complex<double>>
+		>t_real_fb;
+
+		t_real_fb.run_tests(&sphereDataConfig, alpha_real);
 	}
 #endif
 
@@ -709,6 +813,14 @@ int main(
 		 *
 		 * E.g. used for REXI
 		 */
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "* COMPLEX" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+		std::cout << "***********************************************************" << std::endl;
+
 		std::complex<double> alpha_complex(1.0, 3.0);
 
 		Test<

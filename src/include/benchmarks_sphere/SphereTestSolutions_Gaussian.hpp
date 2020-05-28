@@ -1,8 +1,7 @@
 /*
- * SPHTestSolutions.hpp
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  *
- *  Created on: 24 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * This is required by plenty of validation checks!
  */
 
 #ifndef SRC_INCLUDE_SPHTESTSOLUTIONSGAUSSIAN_HPP_

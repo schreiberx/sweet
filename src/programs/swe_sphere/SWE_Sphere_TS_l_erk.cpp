@@ -9,7 +9,7 @@
 
 
 
-void SWE_Sphere_TS_l_erk::run_timestep_pert(
+void SWE_Sphere_TS_l_erk::run_timestep(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -21,7 +21,7 @@ void SWE_Sphere_TS_l_erk::run_timestep_pert(
 	// standard time stepping
 	timestepping_rk.run_timestep(
 			this,
-			&SWE_Sphere_TS_l_erk::euler_timestep_update_pert,	///< pointer to function to compute euler time step updates
+			&SWE_Sphere_TS_l_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_phi_pert, io_vrt, io_div,
 			i_fixed_dt,
 			timestepping_order,
@@ -33,7 +33,7 @@ void SWE_Sphere_TS_l_erk::run_timestep_pert(
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Sphere_TS_l_erk::euler_timestep_update_pert(
+void SWE_Sphere_TS_l_erk::euler_timestep_update(
 		const SphereData_Spectral &i_phi_pert,	///< prognostic variables
 		const SphereData_Spectral &i_vort,	///< prognostic variables
 		const SphereData_Spectral &i_div,	///< prognostic variables
@@ -58,7 +58,7 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update_pert(
 		 */
 		SphereData_Physical ug(i_phi_pert.sphereDataConfig);
 		SphereData_Physical vg(i_phi_pert.sphereDataConfig);
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg, simVars.misc.sphere_use_robert_functions);
+		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
 
 		/*
 		 * Step 1b
@@ -69,7 +69,7 @@ void SWE_Sphere_TS_l_erk::euler_timestep_update_pert(
 		/*
 		 * Step 1c
 		 */
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t, simVars.misc.sphere_use_robert_functions);
+		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 		/*
 		 * Step 1d

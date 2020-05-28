@@ -8,10 +8,10 @@
 #ifndef SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_ERK_HPP_
 #define SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_ERK_HPP_
 
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
@@ -26,7 +26,7 @@ class Adv_Sphere_TS_na_erk	: public Adv_Sphere_TS_interface
 
 	int timestepping_order;
 
-	const SWESphereBenchmarksCombined *sphereBenchmarks;
+	const SWESphereBenchmarks *sphereBenchmarks;
 
 	// Sampler
 	SphereTimestepping_ExplicitRK timestepping_rk;
@@ -64,7 +64,7 @@ public:
 			double i_simulation_timestamp,
 
 			// for varying velocity fields
-			const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+			const SWESphereBenchmarks *i_sphereBenchmarks,
 			SphereData_Physical &io_U_phi_phys
 	);
 

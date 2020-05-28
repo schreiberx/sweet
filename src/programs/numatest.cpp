@@ -1,6 +1,5 @@
 /*
- * Author: Martin Schreiber <schreiberx@gmail.com>
- * Date: 08 Oct 2018
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 

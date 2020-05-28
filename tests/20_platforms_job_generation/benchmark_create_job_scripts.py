@@ -32,7 +32,6 @@ jg.unique_id_filter = ['runtime.simparams', 'parallelization', 'benchmark', 'run
 Runtime parameters
 """
 params_runtime_use_robert_functions = [0, 1]
-params_runtime_ext_modes = [0, 4]
 params_runtime_timestep_sizes = [30]
 
 jg.runtime.benchmark_name = 'geostrophic_balance_linear'
@@ -134,12 +133,10 @@ if __name__ == "__main__":
     		for (
     			jg.compile.threading,
     			jg.compile.rexi_thread_parallel_sum,
-    			jg.runtime.rexi_extended_modes,
     			jg.compile.sweet_mpi
     		) in product(
     			params_compile_threading,
     			params_compile_thread_parallel_sum,
-    			params_runtime_ext_modes,
     			params_compile_sweet_mpi
     		):
     			for jg.runtime.use_robert_functions in params_runtime_use_robert_functions:
@@ -165,9 +162,6 @@ if __name__ == "__main__":
     						continue
 
     					if jg.compile.rexi_thread_parallel_sum == 'enable':
-    						continue
-
-    					if jg.runtime.rexi_extended_modes != 0:
     						continue
 
     					jg.gen_jobscript_directory()

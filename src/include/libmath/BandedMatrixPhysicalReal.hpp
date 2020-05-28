@@ -206,6 +206,38 @@ public:
 	}
 
 
+
+	/**
+	 * Return reference to an element in the row to the specified value
+	 */
+	void rowElement_add_NEW(
+			T *io_row,		///< pointer to current row
+			int i_row_n,	///< row related to P Legendre mode n
+			int i_row_m,	///< row related to P Fourier mode n
+			int rel_n,		///< Relative Legendre mode n (e.g. -1 or +2)
+			const T &i_value
+	)
+	{
+		if (i_row_n < i_row_m)
+			return;
+
+		assert(i_row_m >= 0);
+		assert(i_row_m <= sphereDataConfig->spectral_modes_m_max);
+
+		int n = i_row_n+rel_n;
+
+		assert(n >= 0);
+		assert(n >= i_row_m);
+		assert(n <= sphereDataConfig->spectral_modes_n_max);
+
+		int idx = rel_n + halosize_off_diagonal;
+
+		assert(idx >= 0 && idx < num_diagonals);
+
+		io_row[idx] += i_value;
+	}
+
+
 	void shutdown()
 	{
 		if (data != nullptr)

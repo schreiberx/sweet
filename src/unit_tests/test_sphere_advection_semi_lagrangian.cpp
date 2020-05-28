@@ -1,8 +1,7 @@
 /*
- * test_sphere_advection.cpp
- *
- *  Created on: 3 Apr 2018
- *      Author: martin
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
  */
 
 
@@ -14,7 +13,7 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
@@ -65,7 +64,7 @@ public:
 	int render_primitive_id = 1;
 #endif
 
-	SWESphereBenchmarksCombined sphereBenchmarks;
+	SWESphereBenchmarks sphereBenchmarks;
 
 
 
@@ -95,12 +94,11 @@ public:
 		simVars.reset();
 
 		sphereBenchmarks.setup(simVars, op);
-		SphereData_Physical o_phi_pert_phys(sphereDataConfig);
-		sphereBenchmarks.compute_initial_condition_pert(
-				prog_phi_pert, prog_vort, prog_div,
-				&o_phi_pert_phys,
-				&time_varying_fields
+		sphereBenchmarks.master->get_initial_state(
+				prog_phi_pert, prog_vort, prog_div
 			);
+
+		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
 
 		prog_phi_pert_t0 = prog_phi_pert;
 
@@ -121,7 +119,7 @@ public:
 		 * Update time varying fields
 		 */
 		if (time_varying_fields)
-			sphereBenchmarks.update_time_varying_fields_pert(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
+			sphereBenchmarks.master->get_time_varying_state(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
 
 		SphereData_Physical asdf(sphereDataConfig);
 		timeSteppers.master->run_timestep(
@@ -141,8 +139,8 @@ public:
 		if (simVars.misc.verbosity >= 10)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
-		max_error_h0 = (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_max_abs();
-		rms_error_h0 = (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_rms();
+		max_error_h0 = (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_max_abs();
+		rms_error_h0 = (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_rms();
 	}
 
 
@@ -183,7 +181,8 @@ public:
 			int *o_render_primitive_id,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;
@@ -209,7 +208,6 @@ public:
 				SphereData_Physical u(sphereDataConfig);
 				SphereData_Physical v(sphereDataConfig);
 
-//				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
 			}
@@ -220,7 +218,6 @@ public:
 				SphereData_Physical u(sphereDataConfig);
 				SphereData_Physical v(sphereDataConfig);
 
-//				op.robert_vortdiv_to_uv(prog_vort, prog_div, u, v);
 				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
 			}

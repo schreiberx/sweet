@@ -1,8 +1,7 @@
 /*
- * advection_sphere.cpp
- *
- *  Created on: 3 Dec 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere
+ * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
  */
 
 
@@ -14,11 +13,13 @@
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+
+#include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 #include "advection_sphere/Adv_Sphere_TimeSteppers.hpp"
 
@@ -44,7 +45,7 @@ public:
 	SphereData_Spectral prog_vort, prog_div;
 
 	SphereData_Physical prog_phi_pert_phys;
-	SphereData_Physical prog_phi_pert_phys_t0;	// at t0
+//	SphereData_Physical prog_phi_pert_phys_t0;	// at t0
 
 	Adv_Sphere_TimeSteppers timeSteppers;
 
@@ -59,7 +60,7 @@ public:
 	int render_primitive_id = 1;
 #endif
 
-	SWESphereBenchmarksCombined sphereBenchmarks;
+	SWESphereBenchmarks sphereBenchmarks;
 
 
 public:
@@ -68,7 +69,7 @@ public:
 		prog_phi_pert_t0(sphereDataConfig),
 
 		prog_phi_pert_phys(sphereDataConfig),
-		prog_phi_pert_phys_t0(sphereDataConfig),
+//		prog_phi_pert_phys_t0(sphereDataConfig),
 
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
@@ -88,9 +89,9 @@ public:
 	~SimulationInstance()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error spec: " << (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_max_abs() << std::endl;
-		std::cout << "Lmax error phys: " << (prog_phi_pert_phys_t0-prog_phi_pert_phys).physical_reduce_max_abs() << std::endl;
-		//std::cout << "RMS error: " << (prog_phi_pert_t0-prog_phi_pert).getSphereDataPhysical().physical_reduce_rms() << std::endl;
+		std::cout << "Lmax error spec: " << (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_max_abs() << std::endl;
+//		std::cout << "Lmax error phys: " << (prog_phi_pert_phys_t0-prog_phi_pert_phys).physical_reduce_max_abs() << std::endl;
+		//std::cout << "RMS error: " << (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_rms() << std::endl;
 	}
 
 
@@ -103,14 +104,15 @@ public:
 		SphereData_Spectral tmp_div(sphereDataConfig);
 
 		sphereBenchmarks.setup(simVars, op);
-		sphereBenchmarks.compute_initial_condition_pert(
-				prog_phi_pert, prog_vort, prog_div,
-				&prog_phi_pert_phys,
-				&time_varying_fields
+		sphereBenchmarks.master->get_initial_state(
+				prog_phi_pert, prog_vort, prog_div//,
+				//&prog_phi_pert_phys
 			);
 
+		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
+
 		prog_phi_pert_t0 = prog_phi_pert;
-		prog_phi_pert_phys_t0 = prog_phi_pert_phys;
+//		prog_phi_pert_phys_t0 = prog_phi_pert_phys;
 
 		// setup sphereDataconfig instance again
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
@@ -134,7 +136,7 @@ public:
 		 * Update time varying fields
 		 */
 		if (time_varying_fields)
-			sphereBenchmarks.update_time_varying_fields_pert(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
+			sphereBenchmarks.master->get_time_varying_state(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
 
 		timeSteppers.master->run_timestep(
 				prog_phi_pert, prog_vort, prog_div,
@@ -154,7 +156,7 @@ public:
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
 		SphereData_DebugContainer::append(prog_phi_pert_t0-prog_phi_pert, "diff phi0");
-		SphereData_DebugContainer::append(prog_phi_pert_phys_t0-prog_phi_pert_phys, "diff phi0_phys");
+//		SphereData_DebugContainer::append(prog_phi_pert_phys_t0-prog_phi_pert_phys, "diff phi0_phys");
 	}
 
 
@@ -200,7 +202,8 @@ public:
 			int *o_render_primitive_id,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;

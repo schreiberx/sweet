@@ -14,6 +14,7 @@ class pickle_SphereDataPhysicalDiff:
 
     def __init__(
             self,
+            job_directories = None,
             ref_file_ending = None,
             jobdir_pattern = None,
         ):
@@ -24,8 +25,11 @@ class pickle_SphereDataPhysicalDiff:
         ----------
         ref_file_ending: str
             string with ending of reference files
+        jobdir_pattern: str
+            pattern to detect job directories
+            Default: './job_bench*'
         """
-        self._setup(ref_file_ending, jobdir_pattern)
+        self._setup(job_directories, ref_file_ending, jobdir_pattern)
         pass
 
 
@@ -34,14 +38,21 @@ class pickle_SphereDataPhysicalDiff:
 
     def _setup(
             self,
+            job_directories = None,
             ref_file_ending = None,
             jobdir_pattern = None,
         ):
 
-        if jobdir_pattern == None:
-            jobdir_pattern = './job_bench*'
+        if job_directories != None:
+            j = JobsData(job_dirs = job_directories, verbosity=0)
 
-        j = JobsData(jobdir_pattern, verbosity=0)
+        else:
+            if jobdir_pattern == None:
+                jobdir_pattern = './job_bench*'
+
+            j = JobsData(jobdir_pattern, verbosity=0)
+
+
         jobs = j.get_flattened_data()
 
         no_reference_job_unique_id_found = True
@@ -151,5 +162,8 @@ class pickle_SphereDataPhysicalDiff:
 
 if __name__ == '__main__':
 
-    p = pickle_SphereDataPhysicalDiff()
+    if len(sys.argv) > 1:
+        p = pickle_SphereDataPhysicalDiff(sys.argv[1:])
+    else:
+        p = pickle_SphereDataPhysicalDiff()
 

@@ -1,8 +1,5 @@
 /*
- * rexi_approximation.cpp
- *
- *  Created on: 2 Aug 2015
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #include <iostream>

@@ -1,17 +1,70 @@
 /*
- * Sphere_SPHIdentities.hpp
- *
- *  Created on: 26 Aug 2016
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ * Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SPHERE_SPHERESPHIDENTITIES_HPP_
-#define SRC_INCLUDE_SPHERE_SPHERESPHIDENTITIES_HPP_
+#ifndef SRC_SPHERE_HELPERS_SPH_IDENTITIES_HPP_
+#define SRC_SPHERE_HELPERS_SPH_IDENTITIES_HPP_
 
 #include <cassert>
 
 class SphereHelpers_SPHIdentities
 {
+public:
+	typedef std::complex<double> Tcomplex;
+	typedef double Treal;
+
+
+	/*
+	 * Normalization factor
+	 */
+	static inline
+	double implicit_eps(double n, double m)
+	{
+		assert(n > 0);
+		/*
+		 * If you read this, check for n=0 and set the result to 0 since the nominator equals zero for n=0
+		 */
+		return std::sqrt(Treal(n*n-m*m)/Treal(4.0*n*n-1.0));
+	}
+
+
+	static inline
+	Tcomplex implicit_J_scalar(Treal nr, Treal mr, Treal i_dt_two_omega)
+	{
+		assert(nr >= 0);
+
+		if (nr == 0)
+			return 1.0;		// Set integration constant (the imaginary part of equation below) to 0, hence return 1.0
+
+		return Tcomplex(1.0, -i_dt_two_omega*mr/(nr*(nr+1.0)));
+	}
+
+	static inline
+	Tcomplex implicit_J_scalar(Treal nr, Treal mr, Tcomplex i_dt_two_omega)
+	{
+		assert(nr >= 0);
+
+		if (nr == 0)
+			return 1.0;		// Set integration constant (the imaginary part of equation below) to 0, hence return 1.0
+
+		return Tcomplex(1.0, 0) - Tcomplex(0, 1)*i_dt_two_omega*mr/(nr*(nr+1.0));
+	}
+
+	static inline
+	Treal implicit_f_plus(Treal nr, Treal mr)
+	{
+		return nr/(nr+1.0) * implicit_eps(nr+1, mr);
+	}
+
+
+	static inline
+	Treal implicit_f_minus(Treal nr, Treal mr)
+	{
+		return (nr+1.0)/nr * implicit_eps(nr, mr);
+	}
+
+
+
 public:
 
 	inline
@@ -53,7 +106,7 @@ public:
 		double n=k+1;
 
 		if (n < 0)
-			n = -n-1;
+			n = -n-1;	// if you remove me, the results will be really sad!
 
 		if (std::abs(m) > n)
 			return 0;
@@ -61,6 +114,19 @@ public:
 		assert (n*n-m*m >= 0);
 
 		assert(n >= 0);
+		return std::sqrt((n*n-m*m)/(4.0*n*n-1.0));
+	}
+
+
+	inline
+	static double R_real(double k, double m)
+	{
+		double n=k+1;
+
+		assert(std::abs(m) <= n);
+		assert(n*n-m*m >= 0);
+		assert(n >= 0);
+
 		return std::sqrt((n*n-m*m)/(4.0*n*n-1.0));
 	}
 
@@ -81,6 +147,20 @@ public:
 		assert(n >= 0);
 		return std::sqrt(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0)));
 	}
+
+
+	inline
+	static double S_real(double k, double m)
+	{
+		double n=k-1;
+
+		assert(n >= 0);
+		assert(std::abs(m) <= n);
+		assert (n*n-m*m >= 0);
+
+		return std::sqrt(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0)));
+	}
+
 	inline
 	static double A(double k, double m)
 	{
@@ -100,76 +180,7 @@ public:
 		double n = k-2.0;
 		return S(n+1,m)*S(n+2,m);
 	}
-
-
-#if 0
-	inline
-	std::complex<double>
-	static csqrt(const double &i_value)
-	{
-		if (i_value >= 0)
-			return std::complex<double>(std::sqrt(i_value), 0);
-		else
-			return std::complex<double>(0, std::sqrt(-i_value));
-	}
-
-
-	inline
-	static std::complex<double> Rc(double k, double m)
-	{
-		if (k < 0)
-			k = -k-1;
-
-		if (std::abs(m) > k)
-			return 0;
-
-		double n = k+1;
-
-		return csqrt((n*n-m*m)/(4.0*n*n-1.0));
-	}
-
-
-	inline
-	static std::complex<double> Sc(double k, double m)
-	{
-		if (k < 0)
-			k = -k-1;
-
-		if (std::abs(m) > k)
-			return 0;
-
-
-		double n = k-1;
-
-//		if (n < 0)
-//			n = -n-1;
-
-		return csqrt(((n+1.0)*(n+1.0)-m*m)/((2.0*n+1.0)*(2.0*n+3.0)));
-	}
-
-
-	inline
-	static std::complex<double> Ac(double k, double m)
-	{
-		double n = k+2.0;
-		return Rc(n-1,m)*Rc(n-2,m);
-	}
-
-	inline
-	static std::complex<double> Bc(double n, double m)
-	{
-		return Rc(n-1,m)*Sc(n,m) + Sc(n+1,m)*Rc(n,m);
-	}
-
-	inline
-	static std::complex<double> Cc(double k, double m)
-	{
-		double n = k-2.0;
-		return Sc(n+1,m)*Sc(n+2,m);
-	}
-#endif
-
 };
 
 
-#endif /* SRC_INCLUDE_SPHERE_SPHERESPHIDENTITIES_HPP_ */
+#endif

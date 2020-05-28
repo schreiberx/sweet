@@ -1,8 +1,6 @@
 /*
- * advection_plane.cpp
- *
- *  Created on: 3 Dec 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_plane
  */
 
 
@@ -202,7 +200,8 @@ public:
 			int *o_render_primitive_id,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;

@@ -102,9 +102,9 @@ public:
 			int i_version_id
 	);
 
-	void run_timestep_pert(
+	void run_timestep(
 			SphereData_Spectral &io_phi,		///< prognostic variables
-			SphereData_Spectral &io_vort,	///< prognostic variables
+			SphereData_Spectral &io_vrt,	///< prognostic variables
 			SphereData_Spectral &io_div,		///< prognostic variables
 
 			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one

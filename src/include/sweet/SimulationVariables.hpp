@@ -628,8 +628,6 @@ public:
 		 */
 		bool space_grid_use_c_staggering = false;
 
-
-
 		/// Leapfrog: Robert Asselin filter
 		double timestepping_leapfrog_robert_asselin_filter = 0;
 
@@ -875,10 +873,6 @@ public:
 		/// id for visualization
 		int vis_id = 0;
 
-
-		/// Use robert function formulation on the sphere
-		bool sphere_use_robert_functions = true;
-
 		/// Diffusion applied only on nonlinear divergence
 		int use_nonlinear_only_visc = 0;
 
@@ -907,7 +901,6 @@ public:
 			std::cout << " + instability_checks: " << instability_checks << std::endl;
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 			std::cout << " + vis_id: " << vis_id << std::endl;
-			std::cout << " + sphere_use_robert_functions: " << sphere_use_robert_functions << std::endl;
 			std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
 			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
 			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
@@ -922,15 +915,11 @@ public:
 				int &next_free_program_option
 		)
 		{
-
 	        // MISC
 	        long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"instability-checks", required_argument, 0, 256+next_free_program_option};
-	        next_free_program_option++;
-
-	        long_options[next_free_program_option] = {"use-robert-functions", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"use-nonlinear-only-visc", required_argument, 0, 256+next_free_program_option};
@@ -964,27 +953,23 @@ public:
 				return -1;
 
 			case 2:
-				sphere_use_robert_functions = atoi(i_value);
-				return -1;
-
-			case 3:
 				use_nonlinear_only_visc = atoi(i_value);
 				return -1;
 
-			case 4:
+			case 3:
 				reuse_spectral_transformation_plans = atoi(i_value);
 				return -1;
 
-			case 5:
+			case 4:
 				normal_mode_analysis_generation = atoi(i_value);
 				return -1;
 
-			case 6:
+			case 5:
 				comma_separated_tags = i_value;
 				return -1;
 			}
 
-			return 7;
+			return 6;
 		}
 
 
@@ -1301,7 +1286,6 @@ public:
 		std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
 		std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
 		std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
-		std::cout << "	--use-robert-functions [bool]	Use Robert function formulation for velocities on the sphere" << std::endl;
 		std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
 		std::cout << "	--reuse-plans [0/1]	Save plans for fftw transformations and SH transformations" << std::endl;
 		std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;

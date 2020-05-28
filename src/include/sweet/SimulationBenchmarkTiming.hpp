@@ -9,6 +9,9 @@
 #ifndef SIMULATION_BENCHMARK_TIMINGS_HPP
 #define SIMULATION_BENCHMARK_TIMINGS_HPP
 
+#ifndef SWEET_BENCHMARK_TIMINGS
+#define SWEET_BENCHMARK_TIMINGS 1
+#endif
 
 #include <sweet/Stopwatch.hpp>
 

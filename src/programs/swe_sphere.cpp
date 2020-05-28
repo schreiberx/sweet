@@ -1,9 +1,8 @@
 /*
- * swe_sphere.cpp
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  *
- *  Created on: 15 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
- *
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
  */
 
 #if SWEET_GUI
@@ -14,7 +13,7 @@
 	#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 #endif
 
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
@@ -87,7 +86,7 @@ public:
 	// was the output of the time step already done for this simulation state?
 	double timestep_last_output_simtime;
 
-	SWESphereBenchmarksCombined sphereBenchmarks;
+	SWESphereBenchmarks sphereBenchmarks;
 
 public:
 	SimulationInstance()	:
@@ -136,6 +135,7 @@ public:
 		SimulationBenchmarkTimings::getInstance().main_setup.start();
 
 		simVars.reset();
+		simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
 
 		// Diagnostics measures
 		last_timestep_nr_update_diagnostics = -1;
@@ -149,7 +149,7 @@ public:
 		{
 			// use dealiased physical space for setup
 			sphereBenchmarks.setup(simVars, op);
-			sphereBenchmarks.compute_initial_condition_pert(prog_phi_pert, prog_vrt, prog_div);
+			sphereBenchmarks.master->get_initial_state(prog_phi_pert, prog_vrt, prog_div);
 		}
 		else
 		{
@@ -160,7 +160,7 @@ public:
 			SphereData_Spectral prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
 			sphereBenchmarks.setup(simVars, op_nodealiasing);
-			sphereBenchmarks.compute_initial_condition_pert(prog_phi_pert_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing);
+			sphereBenchmarks.master->get_initial_state(prog_phi_pert_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing);
 
 			prog_phi_pert.load_nodealiasing(prog_phi_pert_nodealiasing);
 			prog_vrt.load_nodealiasing(prog_vort_nodealiasing);
@@ -210,7 +210,7 @@ public:
 		char buffer[1024];
 
 		// create copy
-		SphereData_Physical sphereData = i_sphereData.getSphereDataPhysical();
+		SphereData_Physical sphereData = i_sphereData.toPhys();
 
 		const char* filename_template = simVars.iodata.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
@@ -268,16 +268,16 @@ public:
 
 			output_filename = write_file_csv(h, "prog_h");
 			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << " (min: " << h.getSphereDataPhysical().physical_reduce_min() << ", max: " << h.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
+			std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
 
 			output_filename = write_file_csv(prog_phi_pert, "prog_phi_pert");
 			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << " (min: " << prog_phi_pert.getSphereDataPhysical().physical_reduce_min() << ", max: " << prog_phi_pert.getSphereDataPhysical().physical_reduce_max() << ")" << std::endl;
+			std::cout << " + " << output_filename << " (min: " << prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
 
 			SphereData_Physical u(sphereDataConfig);
 			SphereData_Physical v(sphereDataConfig);
 
-			op.robert_vortdiv_to_uv(prog_vrt, prog_div, u, v);
+			op.vortdiv_to_uv(prog_vrt, prog_div, u, v);
 
 			output_filename = write_file_csv(u, "prog_u");
 			output_reference_filenames += ";"+output_filename;
@@ -359,7 +359,7 @@ public:
 			SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 			sphereBenchmarks.setup(simVars, op);
-			sphereBenchmarks.compute_initial_condition_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
+			sphereBenchmarks.master->get_initial_state(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
 
 			/*
 			 * Compute difference
@@ -372,9 +372,9 @@ public:
 			if (mpi_rank == 0)
 #endif
 			{
-				double error_phi = diff_phi.getSphereDataPhysical().physical_reduce_max_abs();
-				double error_vort = diff_vort.getSphereDataPhysical().physical_reduce_max_abs();
-				double error_div = diff_div.getSphereDataPhysical().physical_reduce_max_abs();
+				double error_phi = diff_phi.toPhys().physical_reduce_max_abs();
+				double error_vort = diff_vort.toPhys().physical_reduce_max_abs();
+				double error_div = diff_div.toPhys().physical_reduce_max_abs();
 
 				std::cout << "[MULE] errors: ";
 				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
@@ -431,7 +431,7 @@ public:
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
-				std::cout << "prog_phi min/max:\t" << prog_phi_pert.getSphereDataPhysical().physical_reduce_min() << ", " << prog_phi_pert.getSphereDataPhysical().physical_reduce_max() << std::endl;
+				std::cout << "prog_phi min/max:\t" << prog_phi_pert.toPhys().physical_reduce_min() << ", " << prog_phi_pert.toPhys().physical_reduce_max() << std::endl;
 		}
 
 		if (simVars.iodata.output_each_sim_seconds > 0)
@@ -513,7 +513,7 @@ public:
 
 	bool detect_instability()
 	{
-		if (prog_phi_pert.getSphereDataPhysical().physical_isAnyNaNorInf())
+		if (prog_phi_pert.toPhys().physical_isAnyNaNorInf())
 		{
 			std::cerr << "Inf value detected" << std::endl;
 			return true;
@@ -534,7 +534,7 @@ public:
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
-		timeSteppers.master->run_timestep_pert(
+		timeSteppers.master->run_timestep(
 				prog_phi_pert, prog_vrt, prog_div,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time
@@ -590,7 +590,8 @@ public:
 			int *o_render_primitive_id,
 			void **o_bogus_data,
 			double *o_viz_min,
-			double *o_viz_max
+			double *o_viz_max,
+			bool *viz_reset
 	)
 	{
 		// request rendering of sphere
@@ -667,7 +668,7 @@ public:
 				SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 				sphereBenchmarks.setup(simVars, op);
-				sphereBenchmarks.compute_initial_condition_pert(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
+				sphereBenchmarks.master->get_initial_state(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
 
 				switch (id)
 				{
@@ -778,8 +779,8 @@ public:
 				","
 #endif
 				"Visualization %i: %s,"
-				"MaxVal: %.6e,"
-				"MinVal: %.6e,"
+				"MaxVal: %.12e,"
+				"MinVal: %.12e,"
 				","
 				"Time: %f secs,"
 				"Time: %f hours,"
@@ -787,9 +788,9 @@ public:
 				"timestep nr.: %i,"
 				"timestep size: %f,"
 				","
-				"TMass: %.6e,"
-				"TEnergy: %.6e,"
-				"PotEnstrophy: %.6e,"
+				"TMass: %.12e,"
+				"TEnergy: %.12e,"
+				"PotEnstrophy: %.12e,"
 				","
 				"Colorscale: lowest [Blue... green ... red] highest"
 				,
@@ -844,22 +845,6 @@ public:
 		case 'c':
 			write_file_output();
 			break;
-
-#if 0
-case 'C':
-			// dump data arrays to VTK
-			prog_h.file_physical_saveData_vtk("swe_rexi_dump_h.vtk", "Height");
-			prog_u.file_physical_saveData_vtk("swe_rexi_dump_u.vtk", "U-Velocity");
-			prog_v.file_physical_saveData_vtk("swe_rexi_dump_v.vtk", "V-Velocity");
-			break;
-
-		case 'l':
-			// load data arrays
-			prog_h.file_physical_loadData("swe_rexi_dump_h.csv", simVars.setup_velocityformulation_progphiuv.input_data_binary);
-			prog_u.file_physical_loadData("swe_rexi_dump_u.csv", simVars.setup_velocityformulation_progphiuv.input_data_binary);
-			prog_v.file_physical_loadData("swe_rexi_dump_v.csv", simVars.setup_velocityformulation_progphiuv.input_data_binary);
-			break;
-#endif
 		}
 	}
 #endif
@@ -906,9 +891,6 @@ int main(int i_argc, char *i_argv[])
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
-#if SWEET_PARAREAL
-		simVars.parareal.printOptions();
-#endif
 		return -1;
 	}
 
@@ -962,24 +944,6 @@ int main(int i_argc, char *i_argv[])
 		{
 			std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
 		}
-
-#if SWEET_PARAREAL
-		if (simVars.parareal.enabled)
-		{
-			/*
-			 * Allocate parareal controller and provide class
-			 * which implement the parareal features
-			 */
-			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
-
-			// setup controller. This initializes several simulation instances
-			parareal_Controller_Serial.benchmark(&simVars.parareal);
-
-			// execute the simulation
-			parareal_Controller_Serial.run();
-		}
-		else
-#endif
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)

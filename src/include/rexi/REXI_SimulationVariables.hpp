@@ -23,12 +23,7 @@ struct REXI_SimulationVariables
 	/**
 	 * Choose REXI solver method
 	 */
-	std::string rexi_method = "ci";
-
-	/**
-	 * Extend modes for certain operations
-	 */
-	int use_sphere_extended_modes = 0;
+	std::string rexi_method = "";
 
 	/**
 	 * Use REXI preallocation
@@ -153,7 +148,6 @@ public:
 		std::cout << "REXI:" << std::endl;
 		std::cout << " + rexi_method: " << rexi_method << std::endl;
 		std::cout << "REXI generic parameters:" << std::endl;
-		std::cout << " + use_extended_modes: " << use_sphere_extended_modes << std::endl;
 		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
 
 		std::cout << " [REXI Files]" << std::endl;
@@ -186,7 +180,6 @@ public:
 		std::cout << "	--rexi-method [str]	Choose REXI method ('terry', 'file', 'direct'), default:0" << std::endl;
 		std::cout << std::endl;
 		std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
-		std::cout << "	--rexi-ext-modes [int]	Use this number of extended modes in spherical harmonics" << std::endl;
 		std::cout << std::endl;
 		std::cout << "  REXI file interface:" << std::endl;
 		std::cout << "	--rexi-files [str]	REXI files: [function_name0:]filepath0,[function_name1:]filepath1,..." << std::endl;
@@ -228,8 +221,8 @@ public:
 		io_long_options[io_next_free_program_option] = {"rexi-sphere-preallocation", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
-		io_long_options[io_next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
+//		io_long_options[io_next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+io_next_free_program_option};
+//		io_next_free_program_option++;
 
 
 		// Files
@@ -317,24 +310,23 @@ public:
 			case 0:		rexi_method = optarg;	return -1;
 
 			case 1:		sphere_solver_preallocation = atoi(optarg);	return -1;
-			case 2:		use_sphere_extended_modes = atoi(optarg);	return -1;
 
 			// Use a break here to process the rexi files below
-			case 3:		rexi_files = optarg;	rexi_files_given = true; break;
+			case 2:		rexi_files = optarg;	rexi_files_given = true; break;
 
-			case 4:		terry_h = atof(optarg);	return -1;
-			case 5:		terry_M = atoi(optarg);	return -1;
-			case 6:		terry_L = atoi(optarg);	return -1;
-			case 7:		terry_reduce_to_half = atoi(optarg);	return -1;
-			case 8:		terry_normalization = atoi(optarg);	return -1;
+			case 3:		terry_h = atof(optarg);	return -1;
+			case 4:		terry_M = atoi(optarg);	return -1;
+			case 5:		terry_L = atoi(optarg);	return -1;
+			case 6:		terry_reduce_to_half = atoi(optarg);	return -1;
+			case 7:		terry_normalization = atoi(optarg);	return -1;
 
-			case 9:	ci_n = atoi(optarg);	return -1;
-			case 10:	ci_primitive = optarg;	return -1;
-			case 11:	ci_max_real = atof(optarg);	return -1;
-			case 12:	ci_max_imag = atof(optarg);	return -1;
-			case 13:	ci_s_real = atof(optarg);	return -1;
-			case 14:	ci_s_imag = atof(optarg);	return -1;
-			case 15:	ci_mu = atof(optarg);	return -1;
+			case 8:	ci_n = atoi(optarg);	return -1;
+			case 9:	ci_primitive = optarg;	return -1;
+			case 10:	ci_max_real = atof(optarg);	return -1;
+			case 11:	ci_max_imag = atof(optarg);	return -1;
+			case 12:	ci_s_real = atof(optarg);	return -1;
+			case 13:	ci_s_imag = atof(optarg);	return -1;
+			case 14:	ci_mu = atof(optarg);	return -1;
 		}
 
 		if (rexi_files_given)
@@ -380,7 +372,7 @@ public:
 		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
 			SWEETError("Invalid argument for '--rexi-method='");
 
-		return 16;
+		return 15;
 	}
 };
 

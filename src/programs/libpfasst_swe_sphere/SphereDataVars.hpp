@@ -4,7 +4,7 @@
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 
-// Class containing the prognotic SphereDataSpectral variables phi, vort, and div
+// Class containing the prognostic SphereDataSpectral variables phi, vort, and div
 
 class SphereDataVars {
 

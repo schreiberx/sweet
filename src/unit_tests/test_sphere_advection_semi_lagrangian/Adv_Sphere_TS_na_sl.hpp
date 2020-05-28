@@ -8,6 +8,7 @@
 #ifndef SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_SL_HPP_
 #define SRC_PROGRAMS_ADV_SPHERE_REXI_ADV_SPHERE_TS_NA_SL_HPP_
 
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -15,8 +16,6 @@
 #include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereTimestepping_SemiLagrangian.hpp>
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
-
 #include "Adv_Sphere_TS_interface.hpp"
 
 
@@ -52,7 +51,7 @@ public:
 			double i_simulation_timestamp,
 
 			// for varying velocity fields
-			const SWESphereBenchmarksCombined *i_sphereBenchmarks,
+			const SWESphereBenchmarks *i_sphereBenchmarks,
 			SphereData_Physical &io_U_phi_phys
 	);
 

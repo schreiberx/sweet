@@ -1,8 +1,5 @@
 /*
- * test_eigen_matrix.cpp
- *
- *  Created on: 21 Nov 2017
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
 
 #include <iostream>

@@ -1,14 +1,12 @@
-
 /*
- * main.cpp
- *
- * PFASST SWE on the sphere implementation
- *
- *  Created on: 30 Nov 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Francois Hamon & Martin Schreiber <SchreiberX@gmail.com>
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/libpfasst_swe_sphere
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere
+ * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
  */
 
-#include <benchmarks_sphere/SWESphereBenchmarksCombined.hpp>
+
+#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereHelpers_Diagnostics.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -197,7 +195,7 @@ int main(int i_argc, char *i_argv[])
 		simVars.benchmark.h_topo = SphereData_Physical(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
 
 		// initialize the topography
-		(levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).setupTopography();
+		(levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).master->setup_topography();
 	}
 
 	// instantiate the SphereDataCtx object

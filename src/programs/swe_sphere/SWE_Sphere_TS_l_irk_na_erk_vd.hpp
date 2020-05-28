@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_ERK_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_ERK_VD_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_NA_ERK_VD_HPP_
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -24,32 +24,8 @@ class SWE_Sphere_TS_l_irk_na_erk_vd	: public SWE_Sphere_TS_interface
 
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (
-			i_timestepping_method == "l_irk_na_erk_vd" || i_timestepping_method == "l_irk_na_erk_vd_ver0" ||
-			i_timestepping_method == "l_cn_na_erk_vd" || i_timestepping_method == "l_cn_na_erk_vd_ver0"		||
-			i_timestepping_method == "l_irk_na_erk_vd_ver1"
-		)
-			return true;
-
-		return false;
-	}
-
-public:
-	std::string string_id()
-	{
-		std::string s = "l_irk_n_erk_ver";
-
-		if (version_id == 0)
-			s += "0";
-		else if (version_id == 1)
-			s += "1";
-		else
-			SWEETError("Version ID");
-
-		return s;
-	}
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
 
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
@@ -64,9 +40,7 @@ public:
 	/*
 	 * Non-linear time steppers
 	 */
-	SWE_Sphere_TS_ln_erk_split_vd timestepping_ln_erk_split_vd;
-
-	SphereTimestepping_ExplicitRK timestepping_rk_nonlinear;
+	SWE_Sphere_TS_ln_erk_split_vd timestepping_na_erk_split_vd;
 
 	int version_id;
 
@@ -88,7 +62,7 @@ public:
 
 	void setup_auto();
 
-	void run_timestep_pert(
+	void run_timestep(
 			SphereData_Spectral &io_phi_pert,	///< prognostic variables
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables

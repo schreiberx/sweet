@@ -239,7 +239,8 @@ public:
 		const std::complex<double>* i_A,
 		const std::complex<double>* i_b,
 		std::complex<double>* o_x,
-		int i_size
+		int i_size,
+		int i_debug_block
 	)	const
 	{
 		assert(max_N >= i_size);
@@ -369,7 +370,7 @@ public:
 		}
 #endif
 
-		solve_diagBandedInverse_FortranArray(AB, i_b, o_x, i_size);
+		solve_diagBandedInverse_FortranArray(AB, i_b, o_x, i_size, i_debug_block);
 	}
 
 
@@ -379,7 +380,8 @@ public:
 		const std::complex<double>* i_A,	///< A of max size
 		const std::complex<double>* i_b,
 		std::complex<double>* o_x,
-		int i_size
+		int i_size,
+		int i_debug_block
 	)	const
 	{
 		/*
@@ -390,7 +392,7 @@ public:
 
 		memcpy((void*)o_x, (const void*)i_b, sizeof(std::complex<double>)*i_size);
 
-		solve_diagBandedInverse_FortranArray_inplace(AB, o_x, i_size);
+		solve_diagBandedInverse_FortranArray_inplace(AB, o_x, i_size, i_debug_block);
 	}
 
 
@@ -399,7 +401,8 @@ public:
 	void solve_diagBandedInverse_FortranArray_inplace(
 		std::complex<double>* io_A,		///< A of max size
 		std::complex<double>* io_b_x,	///< rhs and solution x
-		int i_size
+		int i_size,
+		int i_debug_block
 	)	const
 	{
 		assert((num_diagonals & 1) == 1);
@@ -430,6 +433,7 @@ public:
 
 		if (info != 0)
 		{
+			std::cerr << "Block ID: " << i_debug_block << std::endl;
 			std::cerr << "zgbsv returned INFO != 0: " << info << std::endl;
 			assert(false);
 			exit(1);

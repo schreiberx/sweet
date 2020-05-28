@@ -41,7 +41,7 @@ struct LibPFASST_SimulationVariables
   /**
    * Use rexi as a linear solve in f2comp
    */ 
-  bool use_rexi = false;
+  bool use_exp = false;
 
   /**
    * Treat the Coriolis force implicitly
@@ -63,7 +63,7 @@ struct LibPFASST_SimulationVariables
     std::cout << " + nnodes: "                  << nnodes                  << std::endl;
     std::cout << " + nodes_type: "              << nodes_type              << std::endl;
     std::cout << " + coarsening_multiplier: "   << coarsening_multiplier   << std::endl;
-    std::cout << " + use_rexi: "                << use_rexi                << std::endl;
+    std::cout << " + use_rexi: "                << use_exp                << std::endl;
     std::cout << " + implicit_coriolis_force: " << implicit_coriolis_force << std::endl;
     std::cout << " + use_rk_stepper: "          << use_rk_stepper          << std::endl;
     std::cout                                                              << std::endl;
@@ -138,7 +138,7 @@ struct LibPFASST_SimulationVariables
       case 3:	nnodes                  = atoi(optarg);	return -1;
       case 4:	nodes_type              = optarg; 	return -1;
       case 5:	coarsening_multiplier   = atof(optarg);	return -1;
-      case 6:   use_rexi                = atoi(optarg); return -1;
+      case 6:   use_exp                = atoi(optarg); return -1;
       case 7:   implicit_coriolis_force = atoi(optarg); return -1;
       case 8:   use_rk_stepper          = atoi(optarg); return -1;
       }

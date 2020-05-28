@@ -1,8 +1,5 @@
 /*
- * SWE_Sphere_TimeSteppers.hpp
- *
- *  Created on: 29 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_HPP_
@@ -19,12 +16,12 @@ class SWE_Sphere_TimeSteppers
 public:
 	SWE_Sphere_TS_interface *master = nullptr;
 
+	std::vector<SWE_Sphere_TS_interface*> registered_integrators;
+
 
 	SWE_Sphere_TimeSteppers();
 
 	void reset();
-
-	std::vector<SWE_Sphere_TS_interface*> registered_integrators;
 
 	void integrators_register_all(SphereOperators_SphereData &i_op, SimulationVariables &i_simVars);
 

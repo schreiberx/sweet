@@ -5,11 +5,11 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "SWE_Sphere_TS_lg_irk_lc_erk_ver01.hpp"
+#include "SWE_Sphere_TS_lg_irk_lc_erk.hpp"
 
 
 
-void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_pert(
+void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -23,7 +23,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_pert(
 		if (version_id == 0)
 		{
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep_pert(
+			timestepping_lg_irk.run_timestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
@@ -47,7 +47,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_pert(
 				);
 
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep_pert(
+			timestepping_lg_irk.run_timestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
@@ -59,7 +59,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_pert(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep_pert(
+			timestepping_lg_irk.run_timestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt*0.5,
 					i_simulation_timestamp
@@ -76,7 +76,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_pert(
 				);
 
 			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep_pert(
+			timestepping_lg_irk.run_timestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt*0.5,
 					i_simulation_timestamp+i_fixed_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
@@ -95,7 +95,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::run_timestep_pert(
 				);
 
 			// FULL time step for linear part
-			timestepping_lg_irk.run_timestep_pert(
+			timestepping_lg_irk.run_timestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
@@ -141,8 +141,7 @@ void SWE_Sphere_TS_lg_irk_lc_erk::setup(
 	{
 		timestepping_lg_irk.setup(
 				1,
-				timestep_size*0.5,
-				0
+				timestep_size*0.5
 		);
 	}
 	else if (timestepping_order == 2)
@@ -151,18 +150,14 @@ void SWE_Sphere_TS_lg_irk_lc_erk::setup(
 		{
 			timestepping_lg_irk.setup(
 					2,
-					timestep_size*0.5,
-					0,
-					simVars.disc.timestepping_crank_nicolson_filter
+					timestep_size*0.5
 			);
 		}
 		else if (version_id == 1)
 		{
 			timestepping_lg_irk.setup(
 					2,
-					timestep_size,
-					0,
-					simVars.disc.timestepping_crank_nicolson_filter
+					timestep_size
 			);
 		}
 		else

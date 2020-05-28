@@ -37,7 +37,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::setup_auto()
 
 
 
-void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
+void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -56,7 +56,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 		 */
 
 		SphereData_Spectral phi0_Un_phi(sphereDataConfig), phi0_Un_vrt(sphereDataConfig), phi0_Un_div(sphereDataConfig);
-		ts_phi0_rexi.run_timestep_pert(
+		ts_phi0_rexi.run_timestep(
 				io_phi, io_vrt, io_div,
 				phi0_Un_phi, phi0_Un_vrt, phi0_Un_div,
 				i_fixed_dt,
@@ -71,7 +71,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 			);
 
 		SphereData_Spectral phi1_FUn_phi(sphereDataConfig), phi1_FUn_vrt(sphereDataConfig), phi1_FUn_div(sphereDataConfig);
-		ts_phi1_rexi.run_timestep_pert(
+		ts_phi1_rexi.run_timestep(
 				FUn_phi, FUn_vrt, FUn_div,
 				phi1_FUn_phi, phi1_FUn_vrt, phi1_FUn_div,
 				i_fixed_dt,
@@ -92,7 +92,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 
 		SphereData_Spectral phi0_Un_h(sphereDataConfig), phi0_Un_u(sphereDataConfig), phi0_Un_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep_pert(
+		ts_phi0_rexi.run_timestep(
 				io_phi, io_vrt, io_div,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_fixed_dt,
@@ -109,7 +109,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 
 		SphereData_Spectral phi1_FUn_h(sphereDataConfig), phi1_FUn_u(sphereDataConfig), phi1_FUn_v(sphereDataConfig);
 
-		ts_phi1_rexi.run_timestep_pert(
+		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_fixed_dt,
@@ -136,7 +136,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 
 		SphereData_Spectral phi2_X_h(sphereDataConfig), phi2_X_u(sphereDataConfig), phi2_X_v(sphereDataConfig);
 
-		ts_phi2_rexi.run_timestep_pert(
+		ts_phi2_rexi.run_timestep(
 				FAn_h - FUn_h,
 				FAn_u - FUn_u,
 				FAn_v - FUn_v,
@@ -165,7 +165,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 		 */
 		SphereData_Spectral phi0_Un_h(sphereDataConfig), phi0_Un_u(sphereDataConfig), phi0_Un_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep_pert(
+		ts_phi0_rexi.run_timestep(
 				io_phi, io_vrt, io_div,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				dt_half,
@@ -192,7 +192,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 		/*
 		 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + \Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
 		 */
-		ts_phi1_rexi.run_timestep_pert(
+		ts_phi1_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -217,7 +217,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep_pert(
+		ts_phi1_rexi.run_timestep(
 				FAn_h, FAn_u, FAn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -236,7 +236,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 
 		SphereData_Spectral phi0_An_h(sphereDataConfig), phi0_An_u(sphereDataConfig), phi0_An_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep_pert(
+		ts_phi0_rexi.run_timestep(
 				A_h, A_u, A_v,
 				phi0_An_h, phi0_An_u, phi0_An_v,
 				dt_half,
@@ -252,7 +252,7 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep_pert(
+		ts_phi1_rexi.run_timestep(
 				2.0*FBn_h - FUn_h,
 				2.0*FBn_u - FUn_u,
 				2.0*FBn_v - FUn_v,
@@ -305,22 +305,22 @@ void SWE_Sphere_TS_l_exp_n_etdrk::run_timestep_pert(
 		 * 				  \upsilon_{3}(\Delta tL) R_{3}
 		 * 			)
 		 */
-		ts_ups0_rexi.run_timestep_pert(
+		ts_ups0_rexi.run_timestep(
 				R0_h, R0_u, R0_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups1_rexi.run_timestep_pert(
+		ts_ups1_rexi.run_timestep(
 				R1_h, R1_u, R1_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups2_rexi.run_timestep_pert(
+		ts_ups2_rexi.run_timestep(
 				R2_h, R2_u, R2_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups3_rexi.run_timestep_pert(
+		ts_ups3_rexi.run_timestep(
 				R3_h, R3_u, R3_v,
 				dt,		i_simulation_timestamp
 			);

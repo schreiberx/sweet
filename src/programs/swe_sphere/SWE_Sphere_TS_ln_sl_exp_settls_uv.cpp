@@ -31,7 +31,7 @@ std::string SWE_Sphere_TS_ln_sl_exp_settls_uv::string_id()
 }
 
 
-void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_pert(
+void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -69,7 +69,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::interpolate_departure_point_uv(
 	o_div.setup_if_required(i_div.sphereDataConfig);
 
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
-			i_phi.getSphereDataPhysical(),
+			i_phi.toPhys(),
 			i_pos_lon_D, i_pos_lat_D,
 			false,
 			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
@@ -295,7 +295,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_pert_nr(
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_nr(
 					U_phi_prev, U_vrt_prev, U_div_prev,
 					N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 					i_simulation_timestamp-i_dt
@@ -304,7 +304,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (coriolis_treatment == CORIOLIS_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_pert_lc(
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
 					U_phi_prev, U_vrt_prev, U_div_prev,
 					N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 					i_simulation_timestamp-i_dt
@@ -314,7 +314,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 		/*
 		 * exp(dtL) N(t-dt)
 		 */
-		swe_sphere_ts_l_rexi->run_timestep_pert(
+		swe_sphere_ts_l_rexi->run_timestep(
 			N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 			i_dt,
 			i_simulation_timestamp
@@ -330,7 +330,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_pert_nr(
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_nr(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 					i_simulation_timestamp
@@ -339,7 +339,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (coriolis_treatment == CORIOLIS_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_pert_lc(
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 					i_simulation_timestamp
@@ -376,7 +376,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 	 * Step 4) Compute update U(t+dt) = exp(dt L)(U_D + dt * N*(t+0.5dt))
 	 *************************************************************************************************
 	 */
-	swe_sphere_ts_l_rexi->run_timestep_pert(
+	swe_sphere_ts_l_rexi->run_timestep(
 		U_phi_D, U_vrt_D, U_div_D,
 		i_dt,
 		i_simulation_timestamp
@@ -509,15 +509,15 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup(
 	semiLagrangian.setup(op.sphereDataConfig);
 
 	swe_sphere_ts_ln_erk_split_uv = new SWE_Sphere_TS_ln_erk_split_uv(simVars, op);
-	swe_sphere_ts_ln_erk_split_uv->setup(1, true, true, true, true);
+	swe_sphere_ts_ln_erk_split_uv->setup(1, true, true, true, true, false);
 
 	swe_sphere_ts_l_rexi = new SWE_Sphere_TS_l_exp(simVars, op);
-	swe_sphere_ts_l_rexi->setup_new(
+	swe_sphere_ts_l_rexi->setup(
 			simVars.rexi,
 			"phi0",
 			simVars.timecontrol.current_timestep_size,
-			coriolis_treatment == CORIOLIS_LINEAR,
-			simVars.sim.sphere_use_fsphere
+			simVars.sim.sphere_use_fsphere,
+			!(coriolis_treatment == CORIOLIS_LINEAR)
 		);
 }
 
