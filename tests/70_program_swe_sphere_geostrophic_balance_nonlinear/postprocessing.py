@@ -13,7 +13,6 @@ import sys
 
 groups = [
     	'runtime.timestepping_method',
-    	'runtime.use_robert_functions',
     ]
 
 tagname_x = 'runtime.timestep_size'

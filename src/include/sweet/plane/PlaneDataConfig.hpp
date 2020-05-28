@@ -147,7 +147,7 @@ public:
 
 #endif
 
-	bool initialized;
+	bool fftw_initialized;
 
 
 	std::string getUniqueIDString()	const
@@ -306,7 +306,7 @@ public:
 		spectral_modes[1] = 0;
 #endif
 
-		initialized = false;
+		fftw_initialized = false;
 	}
 
 
@@ -318,19 +318,18 @@ private:
 	{
 		reuse_spectral_transformation_plans = i_reuse_spectral_transformation_plans;
 
-		if (initialized)
+		if (fftw_initialized)
 		{
 			//
 			// refCounter()--;
 			// is inside cleanup!
-			cleanup();
-			std::cout << "CLEANUP" << std::endl;
+			cleanup_data();
 		}
 		else
 		{
 			// use REF counter in case of multiple plans
 			// this allows a clean cleanup of fftw library
-			initialized = true;
+			fftw_initialized = true;
 		}
 
 		// FFTW PLANS are allocated below
@@ -405,12 +404,7 @@ private:
 			// load wisdom the first time
 			// this must be done after initializing the threading!
 			if (reuse_spectral_transformation_plans >= 1)
-			{
-//				std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
-//				std::cout << "LOADING WISDOM "<< std::endl;
 				loadWisdom(reuse_spectral_transformation_plans);
-//				std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
-			}
 		}
 
 
@@ -527,7 +521,6 @@ private:
 						(fftw_complex*)data_spectral,
 						flags | FFTW_PRESERVE_INPUT
 					);
-//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_forward == nullptr)
 			{
@@ -552,7 +545,6 @@ private:
 						data_physical,
 						flags
 					);
-//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_backward == nullptr)
 			{
@@ -640,7 +632,6 @@ private:
 						FFTW_FORWARD,
 						flags
 					);
-//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_complex_forward == nullptr)
 			{
@@ -666,7 +657,6 @@ private:
 						FFTW_BACKWARD,
 						flags
 					);
-//			std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 
 			if (fftw_plan_complex_backward == nullptr)
 			{
@@ -688,10 +678,6 @@ private:
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 		}
 #endif
-
-//		std::cout << "STORING WISDOM "<< std::endl;
-//		storeWisdom();
-//		std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
 	}
 
 
@@ -804,8 +790,6 @@ public:
 			int i_reuse_spectral_transformation_plans
 	)
 	{
-//		std::cout << io_physical_res[0] << ", " << io_physical_res[1] << std::endl;
-//		std::cout << io_spectral_modes[0] << ", " << io_spectral_modes[1] << std::endl;
 
 		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{
@@ -934,15 +918,12 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
 		// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
-		// TODO: check for correct anti-aliasing rule
 		physical_res[0] = (spectral_modes[0]*3+1)/2;
 		physical_res[1] = (spectral_modes[1]*3+1)/2;
 #else
 
-	#if SWEET_USE_LIBFFT
 		physical_res[0] = spectral_modes[0];
 		physical_res[1] = spectral_modes[1];
-	#endif
 
 #endif
 
@@ -988,9 +969,9 @@ public:
 
 
 
-	void cleanup()
+	void cleanup_data()
 	{
-		if (initialized)
+		if (fftw_initialized)
 		{
 #if SWEET_USE_LIBFFT
 			fftw_destroy_plan(fftw_plan_forward);
@@ -1006,11 +987,7 @@ public:
 			{
 				// backup wisdom
 				if (reuse_spectral_transformation_plans == 1)
-				{
-					//std::cout << "STORING WISDOM "<< std::endl;
 					storeWisdom();
-//					std::cout << "Wisdom: " << fftw_export_wisdom_to_string() << std::endl;
-				}
 
 #if SWEET_THREADING_SPACE
 				fftw_cleanup_threads();
@@ -1018,6 +995,16 @@ public:
 				fftw_cleanup();
 			}
 #endif
+			fftw_initialized = false;
+		}
+	}
+
+
+	void cleanup()
+	{
+		if (fftw_initialized)
+		{
+			cleanup_data();
 
 			physical_res[0] = 0;
 			physical_res[1] = 0;
@@ -1026,8 +1013,6 @@ public:
 			spectral_modes[0] = 0;
 			spectral_modes[1] = 0;
 	#endif
-
-			initialized = false;
 		}
 	}
 

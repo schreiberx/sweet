@@ -352,7 +352,11 @@ int main(int i_argc, char *i_argv[])
 				simVars.disc.space_res_spectral[0] = i;
 				simVars.disc.space_res_spectral[1] = i;
 
-				planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+				planeDataConfigInstance.setupAuto(
+						simVars.disc.space_res_physical,
+						simVars.disc.space_res_spectral,
+						simVars.misc.reuse_spectral_transformation_plans
+					);
 
 				std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
 
