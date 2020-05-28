@@ -136,7 +136,7 @@ public:
 		 * Update time varying fields
 		 */
 		if (time_varying_fields)
-			sphereBenchmarks.master->get_time_varying_state(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
+			sphereBenchmarks.master->get_reference_state(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
 
 		timeSteppers.master->run_timestep(
 				prog_phi_pert, prog_vort, prog_div,

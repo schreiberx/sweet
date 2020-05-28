@@ -36,14 +36,17 @@ void Adv_Sphere_TS_na_sl::run_timestep(
 		U_div_prev = U_div;
 	}
 
-#if 1
-	// shouldn't be necessary
-	if (i_sphereBenchmarks != nullptr)
+	/*
+	 * For time-varying fields, update the vrt/div field based on the given simulation timestamp
+	 */
+	if (i_sphereBenchmarks)
 	{
-		i_sphereBenchmarks->master->get_time_varying_state(U_phi, U_vrt, U_div, i_simulation_timestamp);
-		i_sphereBenchmarks->master->get_time_varying_state(U_phi_prev, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_dt);
+		SphereData_Spectral tmp(U_phi.sphereDataConfig);
+		i_sphereBenchmarks->master->get_reference_state(tmp, U_vrt, U_div, i_simulation_timestamp);
+		tmp.setup_if_required(U_phi.sphereDataConfig);
+		i_sphereBenchmarks->master->get_reference_state(tmp, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_dt);
 	}
-#endif
+
 
 	// IMPORTANT!!! WE DO NOT USE THE ROBERT TRANSFORMATION HERE!!!
 

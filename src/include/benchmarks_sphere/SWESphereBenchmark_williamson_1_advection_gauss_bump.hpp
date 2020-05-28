@@ -64,6 +64,23 @@ public:
 	}
 
 
+	void get_reference_state(
+		SphereData_Spectral &o_phi_pert,
+		SphereData_Spectral &o_vrt,
+		SphereData_Spectral &o_div,
+		double i_timestamp
+	)
+	{
+		get_initial_state(o_phi_pert, o_vrt, o_div);
+
+		/*
+		 * Make sure that noone is using wrong data
+		 */
+		if (i_timestamp != 0 && std::abs(i_timestamp - 12.0*24.0*60.0*60.0))
+			o_phi_pert.free();
+	}
+
+
 	void get_initial_state(
 		SphereData_Spectral &o_phi_pert,
 		SphereData_Spectral &o_vrt,

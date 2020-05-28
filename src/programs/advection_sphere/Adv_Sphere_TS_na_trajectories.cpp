@@ -39,6 +39,16 @@ void Adv_Sphere_TS_na_trajectories::run_timestep(
 		test_phys = io_U_phi_phys;
 	}
 
+	/*
+	 * For time-varying fields, update the vrt/div field based on the given simulation timestamp
+	 */
+	if (i_sphereBenchmarks)
+	{
+		SphereData_Spectral tmp(io_U_phi.sphereDataConfig);
+		i_sphereBenchmarks->master->get_reference_state(tmp, io_U_vrt, io_U_div, i_simulation_timestamp);
+		i_sphereBenchmarks->master->get_reference_state(tmp, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_fixed_dt);
+	}
+
 
 #if 0
 	double K = 64;

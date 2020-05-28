@@ -557,7 +557,10 @@ public:
 public:
 	~SphereData_SpectralComplex()
 	{
-		MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_complex_array_data_number_of_elements * sizeof(Tcomplex));
+		if (spectral_space_data != nullptr)
+		{
+			MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_complex_array_data_number_of_elements * sizeof(Tcomplex));
+		}
 	}
 
 

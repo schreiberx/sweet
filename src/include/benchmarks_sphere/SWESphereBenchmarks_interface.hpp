@@ -39,7 +39,7 @@ public:
 		SWEETError("Not implemented for this benchmark");
 	}
 
-	virtual void get_time_varying_state(
+	virtual void get_reference_state(
 		SphereData_Spectral &o_phi_pert,
 		SphereData_Spectral &o_vrt,
 		SphereData_Spectral &o_div,

@@ -140,22 +140,11 @@ if __name__ == "__main__":
             ):
                 if 'exp' in jg.runtime.timestepping_method:
 
-                    # Not implemented?
-                    if jg.runtime.use_robert_functions == 0 and 'l_exp' in jg.runtime.timestepping_method:
-                            continue
-
                     jg.runtime.rexi_method = 'ci'
                     jg.gen_jobscript_directory()
                     jg.runtime.rexi_method = ''
 
                 else:
-                    # Not implemented?
-                    if jg.runtime.use_robert_functions == 0 and 'l_irk' in jg.runtime.timestepping_method:
-                            continue
-
-                    if jg.runtime.use_robert_functions == 0 and 'l_irk' in jg.runtime.timestepping_method:
-                            continue
-
                     if jg.compile.sweet_mpi == 'enable':
                             continue
 

@@ -687,6 +687,8 @@ public:
 		{
 			MemBlockAlloc::free(spectral_space_data, sphereDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
 			spectral_space_data = nullptr;
+
+			sphereDataConfig = nullptr;
 		}
 	}
 

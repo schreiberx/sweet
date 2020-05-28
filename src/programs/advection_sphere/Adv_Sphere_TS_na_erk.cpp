@@ -43,7 +43,10 @@ void Adv_Sphere_TS_na_erk::euler_timestep_update(
 	 * For time-varying fields, update the vrt/div field based on the given simulation timestamp
 	 */
 	if (sphereBenchmarks)
-		sphereBenchmarks->master->get_time_varying_state(phi, vrt, div, i_simulation_timestamp);
+	{
+		SphereData_Spectral tmp(phi.sphereDataConfig);
+		sphereBenchmarks->master->get_reference_state(tmp, vrt, div, i_simulation_timestamp);
+	}
 
 	SphereData_Physical ug(phi.sphereDataConfig);
 	SphereData_Physical vg(phi.sphereDataConfig);
