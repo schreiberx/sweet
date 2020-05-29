@@ -35,7 +35,7 @@ params_rotation_velocity = [0, 60*60*24*12]
 
 params_runtime_ts_methods = [
         # [ method_id, order ]
-        ["na_sl", 1],
+        #["na_sl", 1],
         ["na_sl", 2],
         ["na_erk", 2],
 #        ["na_erk", 4],
@@ -61,11 +61,11 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
 
             if jg.runtime.timestepping_method == "na_sl":
                 if jg.runtime.timestepping_order == 1:
-                    params_runtime_timestep_sizes = [60*60*6]
-                elif jg.runtime.timestepping_order == 2:
                     params_runtime_timestep_sizes = [60*60*12]
+                elif jg.runtime.timestepping_order == 2:
+                    params_runtime_timestep_sizes = [60*60*24]
                 else:
-                                        raise Exception("Unsupported order "+str(jg.runtime.timestepping_order))
+                    raise Exception("Unsupported order "+str(jg.runtime.timestepping_order))
 
             elif jg.runtime.timestepping_method == "na_erk":
                 params_runtime_timestep_sizes = [60*60]
