@@ -173,8 +173,6 @@ jg.runtime.rexi_method = ''
 
 jg.runtime.viscosity = 0.0
 
-jg.runtime.rexi_extended_modes = 0
-
 jg.runtime.rexi_method = 'direct'
 
 
