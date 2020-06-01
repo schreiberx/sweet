@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include <benchmarks_sphere_swe/SphereTestSolutions_Gaussian.hpp>
+#include "test_sphere_sph_operators/SphereTestSolutions_Gaussian.hpp"
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
@@ -101,8 +101,6 @@ void run_tests()
 			}
 		}
 	}
-
-
 
 
 	{
