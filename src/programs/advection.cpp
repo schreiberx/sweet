@@ -2,10 +2,15 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include <sweet/plane/PlaneData.hpp>
+#ifndef SWEET_GUI
+	#define SWEET_GUI 1
+#endif
+
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
+
+#include <sweet/plane/PlaneData.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <unistd.h>

@@ -23,7 +23,7 @@
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
-//#include "../swe_sphere/helpers/SWERexiTerm_SPHRobert.hpp"
+//#include "../swe_sphere_timeintegrators/helpers/SWERexiTerm_SPHRobert.hpp"
 
 #include "SWE_Sphere_TS_PFASST_interface.hpp"
 

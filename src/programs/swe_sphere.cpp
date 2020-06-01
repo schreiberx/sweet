@@ -1,9 +1,14 @@
 /*
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  *
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/
- * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
+ * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
+
+#ifndef SWEET_GUI
+	#define SWEET_GUI 1
+#endif
 
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
@@ -13,7 +18,7 @@
 	#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 #endif
 
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
+#include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
@@ -25,8 +30,8 @@
 #include <sweet/Stopwatch.hpp>
 #include <sweet/SWEETError.hpp>
 
-#include "swe_sphere/SWE_Sphere_TimeSteppers.hpp"
-#include "swe_sphere/SWE_Sphere_NormalModeAnalysis.hpp"
+#include "swe_sphere_timeintegrators/SWE_Sphere_TimeSteppers.hpp"
+#include "swe_sphere_timeintegrators/SWE_Sphere_NormalModeAnalysis.hpp"
 
 #include <sweet/SimulationBenchmarkTiming.hpp>
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
@@ -86,7 +91,7 @@ public:
 	// was the output of the time step already done for this simulation state?
 	double timestep_last_output_simtime;
 
-	SWESphereBenchmarks sphereBenchmarks;
+	BenchmarksSphereSWE sphereBenchmarks;
 
 public:
 	SimulationInstance()	:

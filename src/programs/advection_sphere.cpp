@@ -1,19 +1,20 @@
 /*
  * Author: Martin Schreiber <SchreiberX@gmail.com>
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere
- * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere_timeintegrators
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere_benchmarks
+ * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
-
 
 #ifndef SWEET_GUI
 	#define SWEET_GUI 1
 #endif
 
-#include <sweet/sphere/SphereData_Spectral.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
+
+#include <sweet/sphere/SphereData_Spectral.hpp>
+#include "advection_sphere_benchmarks/BenchmarksSphereAdvection.hpp"
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
@@ -21,7 +22,7 @@
 
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
-#include "advection_sphere/Adv_Sphere_TimeSteppers.hpp"
+#include <programs/advection_sphere_timeintegrators/SphereAdvectionTimeSteppers.hpp>
 
 
 
@@ -40,14 +41,12 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereData_Spectral prog_phi_pert;
-	SphereData_Spectral prog_phi_pert_t0;	// at t0
+	std::vector<SphereData_Spectral*> prognostic_variables;
+	//SphereData_Spectral prog_phi_pert;
+
 	SphereData_Spectral prog_vort, prog_div;
 
-	SphereData_Physical prog_phi_pert_phys;
-//	SphereData_Physical prog_phi_pert_phys_t0;	// at t0
-
-	Adv_Sphere_TimeSteppers timeSteppers;
+	SphereAdvectionTimeSteppers timeSteppers;
 
 
 	SphereOperators_SphereData op;
@@ -60,17 +59,11 @@ public:
 	int render_primitive_id = 1;
 #endif
 
-	SWESphereBenchmarks sphereBenchmarks;
+	BenchmarksSphereAdvection sphereBenchmarks;
 
 
 public:
 	SimulationInstance()	:
-		prog_phi_pert(sphereDataConfig),
-		prog_phi_pert_t0(sphereDataConfig),
-
-		prog_phi_pert_phys(sphereDataConfig),
-//		prog_phi_pert_phys_t0(sphereDataConfig),
-
 		prog_vort(sphereDataConfig),
 		prog_div(sphereDataConfig),
 
@@ -88,12 +81,26 @@ public:
 
 	~SimulationInstance()
 	{
-		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error spec: " << (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_max_abs() << std::endl;
-//		std::cout << "Lmax error phys: " << (prog_phi_pert_phys_t0-prog_phi_pert_phys).physical_reduce_max_abs() << std::endl;
-		//std::cout << "RMS error: " << (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_rms() << std::endl;
+		free_prognostic_variables();
 	}
 
+
+	void alloc_prognostic_variables(std::size_t i_size)
+	{
+		prognostic_variables.resize(i_size);
+
+		for (int i = 0; i < prognostic_variables.size(); i++)
+			prognostic_variables[i] = new SphereData_Spectral(sphereDataConfig);
+	}
+
+
+	void free_prognostic_variables()
+	{
+		for (int i = 0; i < prognostic_variables.size(); i++)
+			delete prognostic_variables[i];
+
+		prognostic_variables.clear();
+	}
 
 
 	void reset()
@@ -104,15 +111,17 @@ public:
 		SphereData_Spectral tmp_div(sphereDataConfig);
 
 		sphereBenchmarks.setup(simVars, op);
+
+		int num_field_variables = sphereBenchmarks.master->get_num_prognostic_fields();
+
+		free_prognostic_variables();
+		alloc_prognostic_variables(num_field_variables);
+
 		sphereBenchmarks.master->get_initial_state(
-				prog_phi_pert, prog_vort, prog_div//,
-				//&prog_phi_pert_phys
+				prognostic_variables, prog_vort, prog_div
 			);
 
 		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
-
-		prog_phi_pert_t0 = prog_phi_pert;
-//		prog_phi_pert_phys_t0 = prog_phi_pert_phys;
 
 		// setup sphereDataconfig instance again
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
@@ -132,19 +141,20 @@ public:
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
-		/*
-		 * Update time varying fields
-		 */
-		if (time_varying_fields)
-			sphereBenchmarks.master->get_reference_state(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
 
-		timeSteppers.master->run_timestep(
-				prog_phi_pert, prog_vort, prog_div,
-				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time,
-				(time_varying_fields ? &sphereBenchmarks : nullptr),
-				prog_phi_pert_phys
-			);
+		if (prognostic_variables.size() == 1)
+		{
+			timeSteppers.master->run_timestep(
+					*prognostic_variables[0], prog_vort, prog_div,
+					simVars.timecontrol.current_timestep_size,
+					simVars.timecontrol.current_simulation_time,
+					(time_varying_fields ? &sphereBenchmarks : nullptr)
+				);
+		}
+		else
+		{
+			SWEETError("TODO");
+		}
 
 		double dt = simVars.timecontrol.current_timestep_size;
 
@@ -154,9 +164,6 @@ public:
 
 		if (simVars.misc.verbosity > 2)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
-
-		SphereData_DebugContainer::append(prog_phi_pert_t0-prog_phi_pert, "diff phi0");
-//		SphereData_DebugContainer::append(prog_phi_pert_phys_t0-prog_phi_pert_phys, "diff phi0_phys");
 	}
 
 
@@ -231,7 +238,7 @@ public:
 		switch (id)
 		{
 		case 0:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_phi_pert, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prognostic_variables[0], planeDataConfig);
 			break;
 
 		case 1:

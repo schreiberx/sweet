@@ -1,21 +1,13 @@
 /*
  * Author: Martin Schreiber <SchreiberX@gmail.com>
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/burgers
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/burgers_timeintegrators
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/burgers_benchmarks
  */
 
-#if SWEET_GUI
-	#include "sweet/VisSweet.hpp"
+#ifndef SWEET_GUI
+	#define SWEET_GUI 1
 #endif
-#include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
 
-#include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
-
-#include <benchmarks_plane/BurgersValidationBenchmarks.hpp>
-
-#include <sweet/Stopwatch.hpp>
-#include <sweet/SWEETError.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -23,8 +15,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "burgers/Burgers_Plane_TimeSteppers.hpp"
 
+#if SWEET_GUI
+	#include "sweet/VisSweet.hpp"
+#endif
+
+#include <sweet/Stopwatch.hpp>
+#include <sweet/SWEETError.hpp>
+
+
+#include <sweet/SimulationVariables.hpp>
+#include <sweet/plane/PlaneData.hpp>
+
+#include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
+
+#include "burgers_timeintegrators/Burgers_Plane_TimeSteppers.hpp"
+
+#include "burgers_benchmarks/BurgersValidationBenchmarks.hpp"
 
 
 // Plane data config
@@ -866,10 +874,13 @@ public:
 			prog_v.file_physical_saveData_vtk("burgers_dump_v.vtk", "V-Velocity");
 			break;
 
+#if 0
 		case 'l':
 			// load data arrays
 			prog_u.file_physical_loadData("burgers_dump_u.csv", simVars.benchmark.initial_condition_input_data_binary);
 			prog_v.file_physical_loadData("burgers_dump_v.csv", simVars.benchmark.initial_condition_input_data_binary);
+#endif
+
 			break;
 		}
 	}

@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
+#include <benchmarks_sphere_swe/SphereTestSolutions_Gaussian.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <benchmarks_sphere/SphereTestSolutions_Gaussian.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>

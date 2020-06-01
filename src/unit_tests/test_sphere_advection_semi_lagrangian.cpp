@@ -1,7 +1,8 @@
 /*
  * Author: Martin Schreiber <SchreiberX@gmail.com>
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere/
- * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere_timeintegrators/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_sphere_benchmarks/
+ * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
 
@@ -9,17 +10,18 @@
 	#define SWEET_GUI 1
 #endif
 
-#include <sweet/sphere/SphereData_Spectral.hpp>
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <sweet/SimulationVariables.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
 #include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 
-#include "test_sphere_advection_semi_lagrangian/Adv_Sphere_TimeSteppers.hpp"
+#include "../programs/advection_sphere_benchmarks/BenchmarksSphereAdvection.hpp"
+#include "../programs/advection_sphere_timeintegrators/SphereAdvectionTimeSteppers.hpp"
+#include <sweet/sphere/SphereTimestepping_SemiLagrangian.hpp>
 
 
 
@@ -39,10 +41,10 @@ class SimulationInstance
 {
 public:
 	SphereData_Spectral prog_phi_pert;
-	SphereData_Spectral prog_phi_pert_t0;	// at t0
+	SphereData_Spectral prog_phi_pert_t0;	// at t=0
 	SphereData_Spectral prog_vort, prog_div;
 
-	Adv_Sphere_TimeSteppers timeSteppers;
+	SphereAdvectionTimeSteppers timeSteppers;
 
 	SphereOperators_SphereData op;
 
@@ -64,7 +66,7 @@ public:
 	int render_primitive_id = 1;
 #endif
 
-	SWESphereBenchmarks sphereBenchmarks;
+	BenchmarksSphereAdvection sphereBenchmarks;
 
 
 
@@ -126,8 +128,7 @@ public:
 				prog_phi_pert, prog_vort, prog_div,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time,
-				&sphereBenchmarks,
-				asdf
+				&sphereBenchmarks
 			);
 
 		double dt = simVars.timecontrol.current_timestep_size;
@@ -152,12 +153,12 @@ public:
 		double diff = std::abs(simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time);
 
 		if (	simVars.timecontrol.max_simulation_time != -1 &&
-				(
-						simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time	||
-						diff/simVars.timecontrol.max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
-				)
+			(
+					simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time	||
+					diff/simVars.timecontrol.max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
 			)
-			return true;
+		)
+		return true;
 
 		return false;
 	}
@@ -240,23 +241,23 @@ public:
 		{
 		default:
 		case 0:
-			description = "H";
+			description = "geopotential";
 			break;
 
 		case 1:
-			description = "vort";
+			description = "vorticity";
 			break;
 
 		case 2:
-			description = "div";
+			description = "divergence";
 			break;
 
 		case 3:
-			description = "u";
+			description = "u velocity (longitudinal)";
 			break;
 
 		case 4:
-			description = "v";
+			description = "v velocity (latitiudinal)";
 			break;
 		}
 
@@ -286,6 +287,7 @@ public:
 
 		return title_string;
 	}
+
 
 	void vis_pause()
 	{
@@ -361,7 +363,6 @@ int main(int i_argc, char *i_argv[])
 		}
 
 
-
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
 
 		if (1)
@@ -434,7 +435,6 @@ int main(int i_argc, char *i_argv[])
 		else
 #endif
 		{
-//			simulation.reset();
 			while (!simulation.should_quit())
 				simulation.run_timestep();
 

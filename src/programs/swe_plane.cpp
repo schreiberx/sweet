@@ -1,9 +1,14 @@
 /*
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  *
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_benchmarks
  */
 
+
+#ifndef SWEET_GUI
+	#define SWEET_GUI 1
+#endif
 
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
@@ -26,7 +31,6 @@
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/SWEETError.hpp>
-#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
 #include <ostream>
 #include <algorithm>
 #include <sstream>
@@ -36,9 +40,9 @@
 
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
-#include "swe_plane/SWE_Plane_TimeSteppers.hpp"
-
-#include "swe_plane/SWE_Plane_Normal_Modes.hpp"
+#include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
+#include "swe_plane_timeintegrators/SWE_Plane_TimeSteppers.hpp"
+#include "swe_plane_timeintegrators/SWE_Plane_Normal_Modes.hpp"
 
 
 // Plane data config
@@ -1638,8 +1642,6 @@ int main(int i_argc, char *i_argv[])
 			 * Setup our little dog REXI
 			 */
 			rexiSWE.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
-
-			bool run = true;
 
 			PlaneData prog_h_pert(planeDataConfig);
 			PlaneData prog_u(planeDataConfig);

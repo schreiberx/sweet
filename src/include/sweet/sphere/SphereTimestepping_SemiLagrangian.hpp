@@ -9,7 +9,6 @@
 #ifndef SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 #define SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_
 
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
 #include <limits>
 #include <sweet/ScalarDataArray.hpp>
 #include <sweet/SWEETMath.hpp>

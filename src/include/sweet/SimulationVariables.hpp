@@ -62,7 +62,7 @@
 /*
  * Polvani program parameters
  */
-#include <benchmarks_plane/SWE_bench_Polvani_SimulationVariables.hpp>
+#include <../programs/swe_plane_benchmarks/SWE_bench_Polvani_SimulationVariables.hpp>
 
 
 /**

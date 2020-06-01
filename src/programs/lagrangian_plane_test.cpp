@@ -3,15 +3,14 @@
  */
 
 #ifndef SWEET_GUI
-#define SWEET_GUI 1
+	#define SWEET_GUI 1
 #endif
 
 #include "../include/sweet/plane/PlaneData.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
-//#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
-#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
+#include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>

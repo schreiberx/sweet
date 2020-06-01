@@ -10,11 +10,11 @@
 
 
 #include <complex>
-#include "../swe_sphere/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/SimulationVariables.hpp>
 
+#include "../../swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include "SWE_Sphere_TS_PFASST_interface.hpp"
 
 

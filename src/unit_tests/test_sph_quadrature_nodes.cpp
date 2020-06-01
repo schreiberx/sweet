@@ -11,11 +11,12 @@
 
 #include <sweet/SimulationVariables.hpp>
 #include <libmath/BandedMatrixPhysicalReal.hpp>
-#include "../programs/swe_sphere/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
+
+#include "../programs/swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 //#include <sweet/sphere/SphereOperators_SphereData.hpp>
 
 

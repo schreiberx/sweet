@@ -5,8 +5,7 @@
 #endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
-//#include <benchmarks_plane/SWE_bench_PlaneBenchmarks_DEPRECATED.hpp>
-#include <benchmarks_plane/SWEPlaneBenchmarksCombined.hpp>
+#include "../programs/swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include "../include/sweet/plane/PlaneOperators.hpp"
 #include <sweet/Stopwatch.hpp>
 

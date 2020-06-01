@@ -56,7 +56,6 @@ env['MULE_SOFTWARE_ROOT'] = os.environ['MULE_SOFTWARE_ROOT']
 p = JobCompileOptions()
 
 
-
 ###################################################################
 # fix LD LIB PATH
 ###################################################################
@@ -72,6 +71,19 @@ if 'LD_LIBRARY_PATH' in os.environ:
 
 p.sconsProcessOptions()
 
+#
+# Process scons options provided within source file
+# e.g. 
+# * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/
+# * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere_swe/
+# * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
+#
+pso_ = p.get_program_specific_options()
+p.process_scons_options(pso_['scons_options'])
+
+#
+# Cleanup options
+#
 p.makeOptionsConsistent()
 
 
@@ -518,6 +530,7 @@ if p.gui == 'enable':
 
     env.ParseConfig("sdl2-config --cflags --libs")
     env.ParseConfig("pkg-config --libs --cflags freetype2")
+
 else:
     env.Append(CXXFLAGS=' -DSWEET_GUI=0')
 
@@ -630,7 +643,9 @@ if p.rexi_thread_parallel_sum == 'enable':
     #
     env.Append(CXXFLAGS=['-fopenmp'])
 
+    #
     # Compile flag is set in sconscript
+    #
 
     # Activate precompiler flag
     env.Append(CXXFLAGS=' -DSWEET_THREADING_TIME_REXI=1')
@@ -719,7 +734,7 @@ env.Append(CPPPATH=['./local_software/local/include'])
 
 if p.program_name != 'DUMMY':
 
-    env.SConscript('sconscript', variant_dir=build_dir, duplicate=0, exports=['env', 'p'])
+    env.SConscript('sconscript.py', variant_dir=build_dir, duplicate=0, exports=['env', 'p'])
 
     print('')
     print('            Program: '+p.program_name)

@@ -1,8 +1,12 @@
 /*
  * Author: Martin Schreiber <schreiberx@gmail.com>
  *
- * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
  */
+
+#ifndef SWEET_GUI
+	#define SWEET_GUI 1
+#endif
 
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
@@ -12,7 +16,7 @@
 	#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
 #endif
 
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
+#include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
@@ -291,7 +295,7 @@ public:
 		}
 		else
 		{
-			SWESphereBenchmarks sphereBenchmarks;
+			BenchmarksSphereSWE sphereBenchmarks;
 			sphereBenchmarks.setup(simVars, *ops);
 			sphereBenchmarks.master->get_initial_state(*prog_phi_pert, *prog_vrt, *prog_div);
 
@@ -436,7 +440,7 @@ public:
 				SphereData_Spectral anal_solution_vort(sphereDataConfig);
 				SphereData_Spectral anal_solution_div(sphereDataConfig);
 
-				SWESphereBenchmarks sphereBenchmarks;
+				BenchmarksSphereSWE sphereBenchmarks;
 				sphereBenchmarks.setup(simVars, *ops);
 				sphereBenchmarks.master->get_initial_state(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
 
@@ -658,29 +662,22 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
 
-	//	sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
-
 
 #if SWEET_GUI
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup FFT plane transformations..." << std::endl;
 
-//	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 #endif
 
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup finished" << std::endl;
 
 	{
-//		std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
-
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
 		{
 			SimulationInstance *sim = new SimulationInstance;
-//			sim->sphereDataConfig = sphereDataConfigInstance;
-//			sim->planeDataConfig = planeDataConfigInstance;
 			VisSweet<SimulationInstance> visSweet(sim);
 			delete sim;
 		}
@@ -688,8 +685,6 @@ int main(int i_argc, char *i_argv[])
 #endif
 		{
 			SimulationInstance *sim = new SimulationInstance;
-//			sim->sphereDataConfig = sphereDataConfigInstance;
-//			sim->planeDataConfig = planeDataConfigInstance;
 
 			{
 				// Main time loop

@@ -5,17 +5,13 @@
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_l_erk.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_lg_erk.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_l_irk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere_swe/
  */
 
+#include <swe_sphere_benchmarks/BenchmarksSphereSWE.hpp>
 #include <cmath>
 
 #include <sweet/SimulationVariables.hpp>
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
-
-#include "../programs/swe_sphere/helpers/SWESphBandedMatrixPhysicalReal.hpp"
-#include "../programs/swe_sphere/helpers/SWESphBandedMatrixPhysicalComplex.hpp"
-
 #include <sweet/sphere/SphereData_Config.hpp>
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
@@ -28,8 +24,10 @@
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 
 
-#include "../programs/swe_sphere/SWE_Sphere_TS_l_erk.hpp"
-#include "../programs/swe_sphere/SWE_Sphere_TS_l_irk.hpp"
+#include "../programs/swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalComplex.hpp"
+#include "../programs/swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "../programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk.hpp"
+#include "../programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.hpp"
 
 
 SimulationVariables simVars;
@@ -67,7 +65,7 @@ class Test
 			SphereData_Spectral &o_div
 	)
 	{
-		SWESphereBenchmarks benchmarks;
+		BenchmarksSphereSWE benchmarks;
 		benchmarks.setup(simVars, ops, "geostrophic_balance_linear_16_nosetparams");
 
 		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
@@ -107,7 +105,7 @@ class Test
 			SphereData_Spectral &o_div
 	)
 	{
-		SWESphereBenchmarks benchmarks;
+		BenchmarksSphereSWE benchmarks;
 		benchmarks.setup(simVars, opsReal, "gaussian_bumps_pvd_nosetparams");
 
 		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
@@ -638,7 +636,7 @@ public:
 			std::cout << "* FORWARD / BACKWARD TIME INTEGRATION" << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 
-			SWESphereBenchmarks benchmarks;
+			BenchmarksSphereSWE benchmarks;
 			benchmarks.setup(simVars, ops, "gaussian_bumps_pvd_nosetparams");
 			//benchmarks.setup(simVars, ops, "gaussian_bumps_pv_nosetparams");
 

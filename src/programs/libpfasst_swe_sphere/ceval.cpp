@@ -3,24 +3,23 @@
 #include <string>
 
 #include <sweet/SimulationVariables.hpp>
-#include "../swe_sphere/SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_lg_erk_lc_erk.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_l_irk_n_erk.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_l_irk.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_ln_erk.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_lg_irk.hpp"
-#include "../swe_sphere/SWE_Sphere_TS_l_exp.hpp"
-
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
 #include "ceval.hpp"
 
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
+#include "../swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 
 #include "cencap.hpp"
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_n_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
 
 
 /**
@@ -199,7 +198,7 @@ void cinitial(
 	// get the operator for this level
 	SphereOperators_SphereData* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
-	SWESphereBenchmarks *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
+	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
 	// // instantiate phi, vort, and div without dealiasing to get the initial condition
 	SphereData_Spectral phi_Y_nodealiasing(data_config_nodealiasing);

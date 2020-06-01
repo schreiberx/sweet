@@ -8,16 +8,19 @@
 
 
 #ifndef SWEET_GUI
-#define SWEET_GUI 1
+	#define SWEET_GUI 1
 #endif
 
-#if SWEET_GUI
 
 
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/VisSweet.hpp>
+
+#if SWEET_GUI
+	#include <sweet/VisSweet.hpp>
+#endif
+
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/Stopwatch.hpp>
 
@@ -260,6 +263,7 @@ public:
 
 };
 
+#if SWEET_GUI
 
 
 int main(int i_argc, char *i_argv[])

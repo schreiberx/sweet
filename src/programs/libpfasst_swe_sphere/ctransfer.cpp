@@ -1,6 +1,6 @@
 #include "ctransfer.hpp"
 
-#include <benchmarks_sphere/SWESphereBenchmarks.hpp>
+#include "../swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 
 #include "cencap.hpp"
 

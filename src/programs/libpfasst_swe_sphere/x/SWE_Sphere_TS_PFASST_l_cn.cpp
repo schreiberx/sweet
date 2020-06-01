@@ -8,9 +8,9 @@
 
 #include "SWE_Sphere_TS_PFASST_l_cn.hpp"
 #include <complex>
-#include "../swe_sphere/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
+#include "../../swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
 
