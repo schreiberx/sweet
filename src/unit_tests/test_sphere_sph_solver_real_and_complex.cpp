@@ -2,13 +2,13 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  *
  * Include these files and directory for compilation
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_l_erk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_lg_erk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/SWE_Sphere_TS_l_irk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere_swe/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
  */
 
-#include <swe_sphere_benchmarks/BenchmarksSphereSWE.hpp>
+#include "../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 #include <cmath>
 
 #include <sweet/SimulationVariables.hpp>

@@ -1,8 +1,5 @@
 /*
- * test_sphere_sph_operators_complex.cpp
- *
- *  Created on: 15 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #include "test_sphere_sph_operators/SphereTestSolutions_Gaussian.hpp"
