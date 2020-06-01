@@ -615,6 +615,88 @@ class JobCompileOptions(InfoError):
         return retval
 
 
+    #
+    # Return a dictionary with further compile options specified in the
+    # headers of the main program file
+    #
+    def get_program_specific_options(self):
+
+        mainsrcadddir = ''
+
+        if self.program != '':
+            mainsrcadddir = 'src/programs/'+self.program
+        elif self.unit_test != '':
+            mainsrcadddir = 'src/unit_tests/'+self.unit_test
+        else:
+            return None
+
+
+        #
+        # Add main source file
+        #
+        main_src = mainsrcadddir+'.cpp'
+
+        #
+        # Check for additional source files and directories which should be added
+        # This can be specified in the main program/test source file via e.g.
+        #
+        # MULE_COMPILE_DIRS: [file1] [dir2] [file2] [file3]
+        #
+        # The files and directories need to be specified to the software's root directory
+        #
+
+        sw_root = os.environ['MULE_SOFTWARE_ROOT']+'/'
+        f = open(sw_root+'/'+main_src, 'r')
+        lines = f.readlines()
+
+        fad_dict = {
+            'compile_files_and_dirs': [],
+            'scons_options': [],
+        }
+
+        tags_ = [
+                    ['compile_files_and_dirs', 'MULE_COMPILE_FILES_AND_DIRS: '],
+                    ['scons_options', 'MULE_SCONS_OPTIONS: '],
+                ]
+
+        # Add main program file to compile files
+        fad_dict['compile_files_and_dirs'] += [main_src]
+
+        for l in lines:
+            for tags in tags_:
+                tag_id = tags[0]
+                tag = tags[1]
+                if tag in l:
+                    fad = l[l.find(tag)+len(tag):]
+                    fad = fad.replace('\r', '')
+                    fad = fad.replace('\n', '')
+
+                    fad_dict[tag_id] += fad.split(' ')
+
+        return fad_dict
+        
+
+
+    def process_scons_options(self, options_):
+        for option in options_:
+            name, value = option.split('=', 1)
+
+            if name[0:2] != '--':
+                raise Exception("Option doesn't start with '--': "+name)
+
+            name = name[2:]
+
+            if name == 'sphere-spectral-space':
+                self.sphere_spectral_space = value
+                continue
+
+            if name == 'plane-spectral-space':
+                self.plane_spectral_space = value
+                continue
+
+            raise Exception("TODO: Process option "+name)
+
+
     def getProgramPath(self, ignore_errors = False):
         return os.environ['MULE_SOFTWARE_ROOT']+'/build/'+self.getProgramName(ignore_errors)
 
