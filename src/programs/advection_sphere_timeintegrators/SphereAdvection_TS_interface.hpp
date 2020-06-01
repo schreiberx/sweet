@@ -11,12 +11,12 @@
 #include <limits>
 #include <ostream>
 #include <sweet/SimulationVariables.hpp>
+#include <sweet/SWEETError.hpp>
 
 
 class SphereAdvection_TS_interface
 {
 public:
-
 	/*
 	 * Automatic setup based on simVars and operator
 	 */
@@ -26,9 +26,29 @@ public:
 	 * Timestepping interface used by main timestepping loop
 	 */
 	virtual void run_timestep(
-			SphereData_Spectral &io_h,	///< prognostic variables
-			SphereData_Spectral &io_u,	///< prognostic variables
-			SphereData_Spectral &io_v,	///< prognostic variables
+			std::vector<SphereData_Spectral*> &io_prognostic_fields,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
+
+			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+
+			// for varying velocity fields
+			const BenchmarksSphereAdvection *i_sphereBenchmarks
+	)
+	{
+		SWEETAssert(io_prognostic_fields.size() != 1, "TODO: Implement run_timestep with multiple prognostic fields");
+
+		run_timestep(*io_prognostic_fields[0], io_u, io_v, i_fixed_dt, i_simulation_timestamp, i_sphereBenchmarks);
+	}
+
+	/*
+	 * Timestepping interface used by main timestepping loop
+	 */
+	virtual void run_timestep(
+			SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
 
 			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp,

@@ -21,7 +21,6 @@ class BenchmarksSphereAdvection_zero	: public BenchmarksSphereAdvection_interfac
 public:
 	BenchmarksSphereAdvection_zero()
 	{
-
 	}
 
 	std::string benchmark_name;
@@ -58,25 +57,25 @@ public:
 
 	void get_initial_state(
 		std::vector<SphereData_Spectral*> &o_prognostic_fields,
-		SphereData_Spectral &o_vrt,
-		SphereData_Spectral &o_div
+		SphereData_Physical &o_u,
+		SphereData_Physical &o_v
 	)
 	{
-		SWEETDebugAssert(o_prognostic_fields.size() == 1, "Only scalar field supported for this benchmark!");
+		SWEETAssert(o_prognostic_fields.size() == 1, "Only scalar field supported for this benchmark!");
 
-		get_initial_state(*o_prognostic_fields[0], o_vrt, o_div);
+		get_initial_state(*o_prognostic_fields[0], o_u, o_v);
 	}
 
 
 	void get_initial_state(
 		SphereData_Spectral &o_phi_pert,
-		SphereData_Spectral &o_vrt,
-		SphereData_Spectral &o_div
+		SphereData_Physical &o_u,
+		SphereData_Physical &o_v
 	)
 	{
 		o_phi_pert.spectral_set_zero();
-		o_vrt.spectral_set_zero();
-		o_div.spectral_set_zero();
+		o_u.physical_set_zero();
+		o_v.physical_set_zero();
 	}
 };
 

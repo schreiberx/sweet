@@ -34,9 +34,24 @@ std::string SphereAdvection_TS_na_sl::get_help()
 
 
 void SphereAdvection_TS_na_sl::run_timestep(
+		std::vector<SphereData_Spectral*> &io_prog_fields,		///< prognostic variables
+		SphereData_Physical &io_U_u,
+		SphereData_Physical &io_U_v,
+
+		double i_dt,						///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_simulation_timestamp,
+
+		// for varying velocity fields
+		const BenchmarksSphereAdvection *i_sphereBenchmarks
+)
+{
+
+}
+
+void SphereAdvection_TS_na_sl::run_timestep(
 		SphereData_Spectral &io_U_phi,		///< prognostic variables
-		SphereData_Spectral &io_U_vrt,		///< prognostic variables
-		SphereData_Spectral &io_U_div,		///< prognostic variables
+		SphereData_Physical &io_U_u,
+		SphereData_Physical &io_U_v,
 
 		double i_dt,						///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp,
@@ -48,14 +63,12 @@ void SphereAdvection_TS_na_sl::run_timestep(
 	const SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
 
 	SphereData_Spectral &U_phi = io_U_phi;
-	SphereData_Spectral &U_vrt = io_U_vrt;
-	SphereData_Spectral &U_div = io_U_div;
 
 	if (i_simulation_timestamp == 0)
 	{
 		U_phi_prev = U_phi;
-		U_vrt_prev = U_vrt;
-		U_div_prev = U_div;
+		U_u_prev = io_U_u;
+		U_v_prev = io_U_v;
 	}
 
 	/*
@@ -63,22 +76,12 @@ void SphereAdvection_TS_na_sl::run_timestep(
 	 */
 	if (i_sphereBenchmarks)
 	{
-		SphereData_Spectral tmp(U_phi.sphereDataConfig);
-		i_sphereBenchmarks->master->get_reference_state(tmp, U_vrt, U_div, i_simulation_timestamp);
-		tmp.setup_if_required(U_phi.sphereDataConfig);
-		i_sphereBenchmarks->master->get_reference_state(tmp, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_dt);
+		i_sphereBenchmarks->master->get_varying_velocities(io_U_u, io_U_v, i_simulation_timestamp);
+		i_sphereBenchmarks->master->get_varying_velocities(U_u_prev, U_v_prev, i_simulation_timestamp - i_dt);
 	}
 
 
 	// IMPORTANT!!! WE DO NOT USE THE ROBERT TRANSFORMATION HERE!!!
-
-	SphereData_Physical U_u(sphereDataConfig);
-	SphereData_Physical U_v(sphereDataConfig);
-	op.vortdiv_to_uv(U_vrt, U_div, U_u, U_v);
-
-	SphereData_Physical U_u_prev(sphereDataConfig);
-	SphereData_Physical U_v_prev(sphereDataConfig);
-	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_prev, U_v_prev);
 
 	// OUTPUT: position of departure points at t
 	ScalarDataArray pos_lon_d(sphereDataConfig->physical_array_data_number_of_elements);
@@ -142,14 +145,14 @@ void SphereAdvection_TS_na_sl::run_timestep(
 
 	semiLagrangian.semi_lag_departure_points_settls_specialized(
 			dt_div_radius*U_u_prev, dt_div_radius*U_v_prev,
-			dt_div_radius*U_u, dt_div_radius*U_v,
+			dt_div_radius*io_U_u, dt_div_radius*io_U_v,
 
 			pos_lon_d, pos_lat_d
 	);
 
 	U_phi_prev = U_phi;
-	U_vrt_prev = U_vrt;
-	U_div_prev = U_div;
+	U_u_prev = io_U_u;
+	U_v_prev = io_U_v;
 
 	SphereData_Physical new_prog_phi_physx =
 		sphereSampler.bicubic_scalar_ret_phys(

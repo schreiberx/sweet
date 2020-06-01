@@ -28,13 +28,11 @@ void SphereAdvection_TS_na_erk::setup_auto()
  * Main routine for method to be used in case of finite differences
  */
 void SphereAdvection_TS_na_erk::euler_timestep_update(
-		const SphereData_Spectral &i_phi,	///< prognostic variables
-		const SphereData_Spectral &i_vrt,	///< prognostic variables
-		const SphereData_Spectral &i_div,	///< prognostic variables
+		const SphereData_Spectral &i_prognostic_field,	///< prognostic variables
+		SphereData_Physical &io_u,
+		SphereData_Physical &io_v,
 
-		SphereData_Spectral &o_phi_t,	///< time updates
-		SphereData_Spectral &o_vort_t,	///< time updates
-		SphereData_Spectral &o_div_t,	///< time updates
+		SphereData_Spectral &o_prognostic_field,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -47,47 +45,32 @@ void SphereAdvection_TS_na_erk::euler_timestep_update(
 	 *
 	 * This is the case because the velocity field is divergence free!!!
 	 */
-
-	SphereData_Spectral phi = i_phi;
-	SphereData_Spectral vrt = i_vrt;
-	SphereData_Spectral div = i_div;
+	SphereData_Spectral phi = i_prognostic_field;
 
 	/*
 	 * For time-varying fields, update the vrt/div field based on the given simulation timestamp
 	 */
 	if (sphereBenchmarks)
-	{
-		SphereData_Spectral tmp(phi.sphereDataConfig);
-		sphereBenchmarks->master->get_reference_state(tmp, vrt, div, i_simulation_timestamp);
-	}
+		sphereBenchmarks->master->get_varying_velocities(io_u, io_v, i_simulation_timestamp);
 
-	SphereData_Physical ug(phi.sphereDataConfig);
-	SphereData_Physical vg(phi.sphereDataConfig);
-	op.vortdiv_to_uv(vrt, div, ug, vg);
-
-	SphereData_Physical vrtg = vrt.toPhys();
-	SphereData_Physical divg = div.toPhys();
+	SphereData_Spectral vrt(phi.sphereDataConfig);
+	SphereData_Spectral div(phi.sphereDataConfig);
+	op.uv_to_vortdiv(io_u, io_v, vrt, div);
 
 	SphereData_Physical phig = phi.toPhys();
 
-	SphereData_Physical tmpg1 = ug*phig;
-	SphereData_Physical tmpg2 = vg*phig;
+	SphereData_Physical tmpg1 = io_u*phig;
+	SphereData_Physical tmpg2 = io_v*phig;
 
-	SphereData_Spectral tmpspec(phi.sphereDataConfig);
-	op.uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
-
-	o_phi_t *= -1.0;
-
-	o_vort_t.spectral_set_zero();
-	o_div_t.spectral_set_zero();
+	o_prognostic_field = -op.uv_to_div(tmpg1, tmpg2);
 }
 
 
 
 void SphereAdvection_TS_na_erk::run_timestep(
-		SphereData_Spectral &io_phi,		///< prognostic variables
-		SphereData_Spectral &io_vrt,	///< prognostic variables
-		SphereData_Spectral &io_div,		///< prognostic variables
+		SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+		SphereData_Physical &io_u,
+		SphereData_Physical &io_v,
 
 		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp,
@@ -99,21 +82,32 @@ void SphereAdvection_TS_na_erk::run_timestep(
 	sphereBenchmarks = i_sphereBenchmarks;
 
 	// standard time stepping
-	timestepping_rk.run_timestep(
+	timestepping_rk.run_timestep_na(
 			this,
 			&SphereAdvection_TS_na_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
-			io_phi, io_vrt, io_div,
+			io_prognostic_field, io_u, io_v,
 			i_fixed_dt,
 			timestepping_order,
 			i_simulation_timestamp
 		);
 
+	if (i_sphereBenchmarks != nullptr)
+	{
+		i_sphereBenchmarks->master->get_varying_velocities(
+				io_u,
+				io_v,
+				i_simulation_timestamp+i_fixed_dt
+			);
+	}
+
+/*
 	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
 		// this is just called for cosmetic reasons to update the velocity field
 		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_vrt, simVars.benchmark.getExternalForcesUserData);
 		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_div, simVars.benchmark.getExternalForcesUserData);
 	}
+*/
 }
 
 

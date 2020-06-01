@@ -42,9 +42,10 @@ class SimulationInstance
 {
 public:
 	std::vector<SphereData_Spectral*> prognostic_variables;
-	//SphereData_Spectral prog_phi_pert;
+	std::vector<SphereData_Spectral*> prognostic_variables_t0;
 
-	SphereData_Spectral prog_vort, prog_div;
+	//SphereData_Spectral prog_vort, prog_div;
+	SphereData_Physical prog_u, prog_v;
 
 	SphereAdvectionTimeSteppers timeSteppers;
 
@@ -64,8 +65,10 @@ public:
 
 public:
 	SimulationInstance()	:
-		prog_vort(sphereDataConfig),
-		prog_div(sphereDataConfig),
+		//prog_vort(sphereDataConfig),
+		//prog_div(sphereDataConfig),
+		prog_u(sphereDataConfig),
+		prog_v(sphereDataConfig),
 
 		op(sphereDataConfig, &(simVars.sim)),
 		time_varying_fields(false)
@@ -88,19 +91,25 @@ public:
 	void alloc_prognostic_variables(std::size_t i_size)
 	{
 		prognostic_variables.resize(i_size);
-
-		for (int i = 0; i < prognostic_variables.size(); i++)
+		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
 			prognostic_variables[i] = new SphereData_Spectral(sphereDataConfig);
+
+		prognostic_variables_t0.resize(i_size);
+		for (std::size_t i = 0; i < prognostic_variables_t0.size(); i++)
+			prognostic_variables_t0[i] = new SphereData_Spectral(sphereDataConfig);
 	}
 
 
 	void free_prognostic_variables()
 	{
-		for (int i = 0; i < prognostic_variables.size(); i++)
+		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
 			delete prognostic_variables[i];
-
 		prognostic_variables.clear();
-	}
+
+		for (std::size_t i = 0; i < prognostic_variables_t0.size(); i++)
+			delete prognostic_variables_t0[i];
+		prognostic_variables_t0.clear();
+}
 
 
 	void reset()
@@ -118,13 +127,21 @@ public:
 		alloc_prognostic_variables(num_field_variables);
 
 		sphereBenchmarks.master->get_initial_state(
-				prognostic_variables, prog_vort, prog_div
+				prognostic_variables, prog_u, prog_v
 			);
 
+		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
+			prognostic_variables_t0[i] = prognostic_variables[i];
+
+		// has this benchmark time-varying fields?
 		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
 
 		// setup sphereDataconfig instance again
-		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		sphereDataConfigInstance.setupAuto(
+				simVars.disc.space_res_physical,
+				simVars.disc.space_res_spectral,
+				simVars.misc.reuse_spectral_transformation_plans
+			);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 
@@ -142,19 +159,12 @@ public:
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
 
-		if (prognostic_variables.size() == 1)
-		{
-			timeSteppers.master->run_timestep(
-					*prognostic_variables[0], prog_vort, prog_div,
-					simVars.timecontrol.current_timestep_size,
-					simVars.timecontrol.current_simulation_time,
-					(time_varying_fields ? &sphereBenchmarks : nullptr)
-				);
-		}
-		else
-		{
-			SWEETError("TODO");
-		}
+		timeSteppers.master->run_timestep(
+				prognostic_variables, prog_u, prog_v,
+				simVars.timecontrol.current_timestep_size,
+				simVars.timecontrol.current_simulation_time,
+				(time_varying_fields ? &sphereBenchmarks : nullptr)
+			);
 
 		double dt = simVars.timecontrol.current_timestep_size;
 
@@ -233,42 +243,26 @@ public:
 			}
 		}
 
+		int total_fields = 2+prognostic_variables.size();
+		std::size_t id = simVars.misc.vis_id % total_fields;
 
-		int id = simVars.misc.vis_id % 5;
-		switch (id)
+		if (id >= 0 && id < prognostic_variables.size())
 		{
-		case 0:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prognostic_variables[0], planeDataConfig);
-			break;
-
-		case 1:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
-			break;
-
-		case 2:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_div, planeDataConfig);
-			break;
-
-		case 3:
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prognostic_variables[id], planeDataConfig);
+		}
+		else
+		{
+			switch (id-prognostic_variables.size())
 			{
-				SphereData_Physical u(sphereDataConfig);
-				SphereData_Physical v(sphereDataConfig);
+			case 0:
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(prog_u, planeDataConfig);
+				break;
 
-				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
+			case 1:
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(prog_v, planeDataConfig);
+				break;
+
 			}
-			break;
-
-		case 4:
-			{
-				SphereData_Physical u(sphereDataConfig);
-				SphereData_Physical v(sphereDataConfig);
-
-				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
-			}
-			break;
-
 		}
 
 		*o_dataArray = &viz_plane_data;
@@ -280,7 +274,6 @@ public:
 	const char* vis_get_status_string()
 	{
 		std::string description = "";
-		int id = simVars.misc.vis_id % 5;
 
 		bool found = false;
 		if (simVars.misc.vis_id < 0)
@@ -296,28 +289,28 @@ public:
 
 		if (!found)
 		{
-			switch (id)
+
+			int total_fields = 2+prognostic_variables.size();
+			std::size_t id = simVars.misc.vis_id % total_fields;
+
+			if (id >= 0 && id < prognostic_variables.size())
 			{
-			default:
-			case 0:
-				description = "H";
-				break;
+				std::ostringstream msg;
+				msg << "Prog. field " << id;
+				description = msg.str();
+			}
+			else
+			{
+				switch (id-prognostic_variables.size())
+				{
+				case 0:
+					description = "u velocity";
+					break;
 
-			case 1:
-				description = "vort";
-				break;
-
-			case 2:
-				description = "div";
-				break;
-
-			case 3:
-				description = "u";
-				break;
-
-			case 4:
-				description = "v";
-				break;
+				case 1:
+					description = "u velocity";
+					break;
+				}
 			}
 		}
 

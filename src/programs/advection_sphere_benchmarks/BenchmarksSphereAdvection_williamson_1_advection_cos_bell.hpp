@@ -16,6 +16,10 @@
 
 class BenchmarksSphereAdvection_williamson_1_advection_cos_bell	: public BenchmarksSphereAdvection_interface
 {
+	SimulationVariables *simVars = nullptr;
+	SphereOperators_SphereData *ops = nullptr;
+
+
 	SWESphereBenchmark_williamson_1_advection_cos_bell benchmark;
 
 public:
@@ -36,6 +40,9 @@ public:
 			SphereOperators_SphereData *i_ops
 	)
 	{
+		simVars = i_simVars;
+		ops = i_ops;
+
 		benchmark.setup(i_simVars, i_ops);
 	}
 
@@ -48,24 +55,29 @@ public:
 
 	void get_initial_state(
 		std::vector<SphereData_Spectral*> &o_prognostic_fields,
-		SphereData_Spectral &o_vrt,
-		SphereData_Spectral &o_div
+		SphereData_Physical &o_u,
+		SphereData_Physical &o_v
 	)
 	{
-		SWEETDebugAssert(o_prognostic_fields.size() == 1, "Only scalar field supported for this benchmark!");
+		SWEETAssert(o_prognostic_fields.size() == 1, "Only scalar field supported for this benchmark!");
 
-		get_initial_state(*o_prognostic_fields[0], o_vrt, o_div);
+		get_initial_state(*o_prognostic_fields[0], o_u, o_v);
 	}
 
 
 
 	virtual void get_initial_state(
 			SphereData_Spectral &o_phi_pert,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div
+			SphereData_Physical &o_u,
+			SphereData_Physical &o_v
 	)
 	{
-		benchmark.get_initial_state(o_phi_pert, o_vrt, o_div);
+		SphereData_Spectral vrt(o_phi_pert.sphereDataConfig);
+		SphereData_Spectral div(o_phi_pert.sphereDataConfig);
+
+		benchmark.get_initial_state(o_phi_pert, vrt, div);
+
+		ops->vortdiv_to_uv(vrt, div, o_u, o_v);
 	}
 };
 

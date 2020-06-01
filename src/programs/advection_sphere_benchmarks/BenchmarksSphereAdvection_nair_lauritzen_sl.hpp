@@ -83,20 +83,19 @@ public:
 
 	void get_initial_state(
 		std::vector<SphereData_Spectral*> &o_prognostic_fields,
-		SphereData_Spectral &o_vrt,
-		SphereData_Spectral &o_div
+		SphereData_Physical &o_u,
+		SphereData_Physical &o_v
 	)
 	{
-		SWEETDebugAssert(o_prognostic_fields.size() == 1, "Only scalar field supported for this benchmark!");
+		SWEETAssert(o_prognostic_fields.size() == 1, "Only scalar field supported for this benchmark!");
 
-		get_initial_state(*o_prognostic_fields[0], o_vrt, o_div);
+		get_initial_state(*o_prognostic_fields[0], o_u, o_v);
 	}
-
 
 	void get_initial_state(
 		SphereData_Spectral &o_phi_pert,
-		SphereData_Spectral &o_vrt,
-		SphereData_Spectral &o_div
+		SphereData_Physical &o_u,
+		SphereData_Physical &o_v
 	)
 	{
 		/*
@@ -113,7 +112,9 @@ public:
 		// use the radius from the command line parameter since this is should work flawless
 		//simVars->sim.sphere_radius = 6.37122e6;
 		simVars->sim.h0 = 1.0;				// h_max
-		simVars->sim.gravitation = 0.0;		// DON'T USE G
+
+		if (std::isinf(simVars->timecontrol.max_simulation_time))
+			simVars->timecontrol.max_simulation_time = 12*24*60*60;		// default: 12 days
 
 		// update operators
 		ops->setup(ops->sphereDataConfig, &(simVars->sim));
@@ -269,7 +270,7 @@ public:
 		o_phi_pert.loadSphereDataPhysical(phi_pert_phys_1 + phi_pert_phys_2);
 #endif
 
-		get_time_varying_state(o_phi_pert, o_vrt, o_div, 0);
+		get_varying_velocities(o_u, o_v, 0);
 
 		return;
 	}
@@ -278,15 +279,12 @@ public:
 	/*
 	 * Update fields for time-varying benchmarks
 	 */
-	void get_time_varying_state(
-			SphereData_Spectral &o_phi_pert,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div,
+	void get_varying_velocities(
+			SphereData_Physical &o_u_phys,
+			SphereData_Physical &o_v_phys,
 			double i_timestamp = 0
-	)	const
+	)
 	{
-		const SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
-
 		/*********************************************************************
 		 * Time-varying benchmark cases
 		 *
@@ -304,8 +302,7 @@ public:
 			// we set k to 2.4 (p. 5)
 			double k = 0.5;
 
-			SphereData_Physical u_phys(sphereDataConfig);
-			u_phys.physical_update_lambda(
+			o_u_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -313,8 +310,7 @@ public:
 				}
 			);
 
-			SphereData_Physical v_phys(sphereDataConfig);
-			v_phys.physical_update_lambda(
+			o_v_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -322,10 +318,8 @@ public:
 				}
 			);
 
-			u_phys *= u0;
-			v_phys *= u0;
-
-			ops->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div);
+			o_u_phys *= u0;
+			o_v_phys *= u0;
 			return;
 		}
 
@@ -352,8 +346,7 @@ public:
 
 			using namespace ScalarDataArray_ops;
 
-			SphereData_Physical u_phys(sphereDataConfig);
-			u_phys.physical_update_lambda(
+			o_u_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -362,8 +355,7 @@ public:
 				}
 			);
 
-			SphereData_Physical v_phys(sphereDataConfig);
-			v_phys.physical_update_lambda(
+			o_v_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -371,8 +363,6 @@ public:
 					io_data *= u0;
 				}
 			);
-
-			ops->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div);
 
 			return;
 		}
@@ -402,9 +392,7 @@ public:
 			if (benchmark_name == "nair_lauritzen_case_2_k0.5")
 				k = 0.5;
 
-
-			SphereData_Physical u_phys(sphereDataConfig);
-			u_phys.physical_update_lambda(
+			o_u_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -413,8 +401,7 @@ public:
 				}
 			);
 
-			SphereData_Physical v_phys(sphereDataConfig);
-			v_phys.physical_update_lambda(
+			o_v_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -423,7 +410,6 @@ public:
 				}
 			);
 
-			ops->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div);
 			return;
 		}
 
@@ -453,8 +439,7 @@ public:
 
 			using namespace ScalarDataArray_ops;
 
-			SphereData_Physical u_phys(sphereDataConfig);
-			u_phys.physical_update_lambda(
+			o_u_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -463,8 +448,7 @@ public:
 				}
 			);
 
-			SphereData_Physical v_phys(sphereDataConfig);
-			v_phys.physical_update_lambda(
+			o_v_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					// time varying flow
@@ -472,8 +456,6 @@ public:
 					io_data *= u0;
 				}
 			);
-
-			ops->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div);
 			return;
 		}
 
@@ -508,9 +490,7 @@ public:
 			if (benchmark_name == "nair_lauritzen_case_2_k0.5")
 				k = 0.5;
 
-
-			SphereData_Physical u_phys(sphereDataConfig);
-			u_phys.physical_update_lambda(
+			o_u_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					io_data = 0;
@@ -526,8 +506,7 @@ public:
 				}
 			);
 
-			SphereData_Physical v_phys(sphereDataConfig);
-			v_phys.physical_update_lambda(
+			o_v_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					io_data = 0;
@@ -539,7 +518,6 @@ public:
 				}
 			);
 
-			ops->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div);
 			return;
 		}
 
@@ -573,8 +551,7 @@ public:
 
 			using namespace ScalarDataArray_ops;
 
-			SphereData_Physical u_phys(sphereDataConfig);
-			u_phys.physical_update_lambda(
+			o_u_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					io_data = 0;
@@ -591,8 +568,7 @@ public:
 				}
 			);
 
-			SphereData_Physical v_phys(sphereDataConfig);
-			v_phys.physical_update_lambda(
+			o_v_phys.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					io_data = 0;
@@ -604,7 +580,6 @@ public:
 				}
 			);
 
-			ops->uv_to_vortdiv(u_phys, v_phys, o_vrt, o_div);
 			return;
 		}
 	}
@@ -621,7 +596,7 @@ public:
 			ScalarDataArray &o_pos_lat_D,		///< velocity along latitude
 			double i_dt,
 			double i_timestamp_arrival			///< timestamp at arrival point
-	) const
+	)
 	{
 		if (benchmark_name == "nair_lauritzen_case_1")
 		{

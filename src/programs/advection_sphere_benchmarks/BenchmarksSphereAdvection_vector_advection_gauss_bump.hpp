@@ -14,6 +14,7 @@
 #include "../swe_sphere_benchmarks/SWESphereBenchmark_williamson_1_advection_gauss_bump.hpp"
 
 
+
 class BenchmarksSphereAdvection_vector_advection_gauss_bump	: public BenchmarksSphereAdvection_interface
 {
 	SimulationVariables *simVars = nullptr;
@@ -73,26 +74,30 @@ public:
 
 	void get_initial_state(
 		std::vector<SphereData_Spectral*> &o_prognostic_fields,
-		SphereData_Spectral &o_vrt,
-		SphereData_Spectral &o_div
+		SphereData_Physical &o_u,
+		SphereData_Physical &o_v
 	)
 	{
-		SWEETDebugAssert(o_prognostic_fields.size() == 3, "Only a vectorial field (3 elements) supported for this benchmark!");
+		SWEETAssert(o_prognostic_fields.size() == 3, "Only a vectorial field (3 elements) supported for this benchmark!");
 
 		const SphereData_Config *sphereDataConfig = o_prognostic_fields[0]->sphereDataConfig;
 
 		SphereData_Spectral tmp(sphereDataConfig);
-		benchmark.get_initial_state(tmp, o_vrt, o_div);
+		SphereData_Spectral vrt(sphereDataConfig);
+		SphereData_Spectral div(sphereDataConfig);
+		benchmark.get_initial_state(tmp, vrt, div);
+
+		ops->vortdiv_to_uv(vrt, div, o_u, o_v);
 
 		/*
 		 * Setup prognostic fields to k vector (perpendicular to point on sphere)
 		 */
 
-		SphereData_Physical x(sphereDataConfig);
-		SphereData_Physical y(sphereDataConfig);
-		SphereData_Physical z(sphereDataConfig);
+		SphereData_Physical x_phys(sphereDataConfig);
+		SphereData_Physical y_phys(sphereDataConfig);
+		SphereData_Physical z_phys(sphereDataConfig);
 
-		x.physical_update_lambda(
+		x_phys.physical_update_lambda(
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
@@ -101,7 +106,7 @@ public:
 				}
 		);
 
-		y.physical_update_lambda(
+		y_phys.physical_update_lambda(
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
@@ -110,7 +115,7 @@ public:
 				}
 		);
 
-		z.physical_update_lambda(
+		z_phys.physical_update_lambda(
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
@@ -120,10 +125,9 @@ public:
 		);
 
 
-
-		*o_prognostic_fields[0] = x;
-		*o_prognostic_fields[1] = y;
-		*o_prognostic_fields[2] = z;
+		*o_prognostic_fields[0] = x_phys;
+		*o_prognostic_fields[1] = y_phys;
+		*o_prognostic_fields[2] = z_phys;
 	}
 };
 

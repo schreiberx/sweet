@@ -40,8 +40,8 @@ std::string SphereAdvection_TS_na_trajectories::get_help()
 
 void SphereAdvection_TS_na_trajectories::run_timestep(
 		SphereData_Spectral &io_U_phi,		///< prognostic variables
-		SphereData_Spectral &io_U_vrt,		///< prognostic variables
-		SphereData_Spectral &io_U_div,		///< prognostic variables
+		SphereData_Physical &io_U_u,
+		SphereData_Physical &io_U_v,
 
 		double i_fixed_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp,
@@ -60,71 +60,9 @@ void SphereAdvection_TS_na_trajectories::run_timestep(
 	if (i_sphereBenchmarks)
 	{
 		SphereData_Spectral tmp(sphereDataConfig);
-		i_sphereBenchmarks->master->get_reference_state(tmp, io_U_vrt, io_U_div, i_simulation_timestamp);
-		i_sphereBenchmarks->master->get_reference_state(tmp, U_vrt_prev, U_div_prev, i_simulation_timestamp - i_fixed_dt);
+		i_sphereBenchmarks->master->get_varying_velocities(io_U_u, io_U_v, i_simulation_timestamp);
 	}
 
-
-#if 0
-	double K = 64;
-	double t = i_simulation_timestamp;
-	double dt = i_fixed_dt/K;
-
-	ScalarDataArray pos_lon_D_1(N), pos_lat_D_1(N);
-	// compute 2nd order accurate departure points
-	i_sphereBenchmarks->compute_departure_3rd_order(
-			semiLagrangian.pos_lon_A,
-			semiLagrangian.pos_lat_A,
-			pos_lon_D_1,
-			pos_lat_D_1,
-			dt,
-			t+dt	// arrival time: current time + dt
-		);
-
-
-	ScalarDataArray pos_lon_D_2(N), pos_lat_D_2(N);
-	// compute 2nd order accurate departure points
-	i_sphereBenchmarks->compute_departure_3rd_order(
-			semiLagrangian.pos_lon_A,
-			semiLagrangian.pos_lat_A,
-			pos_lon_D_2,
-			pos_lat_D_2,
-			dt,
-			t+dt	// arrival time: current time + dt
-		);
-
-	pos_lon_D = pos_lon_D_tmp;
-	pos_lat_D = pos_lat_D_tmp;
-	t += dt;
-
-#elif 0
-
-	ScalarDataArray pos_lon_D = semiLagrangian.pos_lon_A;
-	ScalarDataArray pos_lat_D = semiLagrangian.pos_lat_A;
-
-	double K = 64;
-	double t = i_simulation_timestamp;
-	double dt = i_fixed_dt/K;
-
-	ScalarDataArray pos_lon_D_tmp(N), pos_lat_D_tmp(N);
-	for (int i = 0; i < (int)K; i++)
-	{
-		// compute 2nd order accurate departure points
-		i_sphereBenchmarks->compute_departure_3rd_order(
-				pos_lon_D,
-				pos_lat_D,
-				pos_lon_D_tmp,
-				pos_lat_D_tmp,
-				dt,
-				t+dt	// arrival time: current time + dt
-			);
-
-		pos_lon_D = pos_lon_D_tmp;
-		pos_lat_D = pos_lat_D_tmp;
-		t += dt;
-	}
-
-#else
 
 	ScalarDataArray pos_lon_D(N), pos_lat_D(N);
 
@@ -138,7 +76,6 @@ void SphereAdvection_TS_na_trajectories::run_timestep(
 			i_simulation_timestamp+i_fixed_dt	// arrival time: current time + dt
 		);
 
-#endif
 
 	// sample phi at departure points
 	SphereData_Physical U_phi_phys_D =

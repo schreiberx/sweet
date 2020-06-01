@@ -39,15 +39,13 @@ public:
 
 private:
 	void euler_timestep_update(
-			const SphereData_Spectral &i_phi,	///< prognostic variables
-			const SphereData_Spectral &i_vrt,	///< prognostic variables
-			const SphereData_Spectral &i_div,	///< prognostic variables
+			const SphereData_Spectral &i_prognostic_field,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
 
-			SphereData_Spectral &o_phi_t,	///< time updates
-			SphereData_Spectral &o_vort_t,	///< time updates
-			SphereData_Spectral &o_div_t,	///< time updates
+			SphereData_Spectral &o_prognostic_field,	///< time updates
 
-			double i_simulation_timestamp = -1
+			double i_simulation_timestamp
 	);
 
 public:
@@ -61,9 +59,9 @@ public:
 	);
 
 	void run_timestep(
-			SphereData_Spectral &io_phi,	///< prognostic variables
-			SphereData_Spectral &io_vrt,	///< prognostic variables
-			SphereData_Spectral &io_div,	///< prognostic variables
+			SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
 
 			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp,

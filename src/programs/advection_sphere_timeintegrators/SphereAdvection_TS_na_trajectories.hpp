@@ -32,7 +32,8 @@ class SphereAdvection_TS_na_trajectories	: public SphereAdvection_TS_interface
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
-	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
+	SphereData_Spectral U_phi_prev;
+	SphereData_Physical U_u_prev, U_v_prev;
 
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method);
@@ -54,9 +55,9 @@ public:
 	);
 
 	void run_timestep(
-			SphereData_Spectral &io_U_phi,		///< prognostic variables
-			SphereData_Spectral &io_U_vrt,		///< prognostic variables
-			SphereData_Spectral &io_U_div,		///< prognostic variables
+			SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
 
 			double i_fixed_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp,

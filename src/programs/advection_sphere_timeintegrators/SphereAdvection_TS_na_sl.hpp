@@ -24,10 +24,11 @@ class SphereAdvection_TS_na_sl	: public SphereAdvection_TS_interface
 
 	int timestepping_order;
 
-	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 	SphereTimestepping_SemiLagrangian semiLagrangian;
+	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
-	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
+	SphereData_Spectral U_phi_prev;
+	SphereData_Physical U_u_prev, U_v_prev;
 
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method);
@@ -48,10 +49,24 @@ public:
 			int i_order	///< order of RK time stepping method
 	);
 
+
 	void run_timestep(
-			SphereData_Spectral &io_U_phi,		///< prognostic variables
-			SphereData_Spectral &io_U_vrt,		///< prognostic variables
-			SphereData_Spectral &io_U_div,		///< prognostic variables
+			std::vector<SphereData_Spectral*> &io_prog_fields,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
+
+			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+
+			// for varying velocity fields
+			const BenchmarksSphereAdvection *i_sphereBenchmarks
+	);
+
+
+	void run_timestep(
+			SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
 
 			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
 			double i_simulation_timestamp,

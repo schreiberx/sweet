@@ -22,7 +22,7 @@
 
 
 /************************************************************
- * SWEETError
+ * SWEETError in release and debug mode
  ************************************************************/
 
 class SWEETError_
@@ -88,7 +88,7 @@ public:
 
 
 /************************************************************
- * SWEET Debug assertions
+ * SWEET Debug assertions active during debug mode
  ************************************************************/
 
 #ifdef NDEBUG
@@ -118,5 +118,32 @@ public:
 	#define SWEETDebugAssert(assertion, msg)	SWEETDebugAssert_(assertion, msg, __FILE__, __LINE__, __func__)
 
 #endif
+
+
+
+/************************************************************
+ * SWEET assertions which also work in release mode
+ ************************************************************/
+
+class SWEETAssert_
+{
+public:
+	SWEETAssert_(
+			bool i_assertion,
+			const std::string &i_error_message,
+			const char* i_filename,
+			int i_line_no,
+			const char* i_func
+	)
+	{
+		if (i_assertion)
+			return;
+
+		SWEETError_("ASSERTION ERROR", i_error_message, i_filename, i_line_no, i_func);
+	}
+};
+
+#define SWEETAssert(assertion, msg)	SWEETAssert_(assertion, msg, __FILE__, __LINE__, __func__)
+
 
 #endif /* SRC_INCLUDE_SWEET_SWEETERROR_HPP_ */
