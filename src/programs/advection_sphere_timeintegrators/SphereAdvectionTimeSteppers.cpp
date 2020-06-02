@@ -26,7 +26,6 @@ void SphereAdvectionTimeSteppers::reset()
 
 void SphereAdvectionTimeSteppers::integrators_register_all(SphereOperators_SphereData &i_op, SimulationVariables &i_simVars)
 {
-
 	/*
 	 * Register time integrators
 	 */

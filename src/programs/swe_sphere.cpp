@@ -282,7 +282,7 @@ public:
 			SphereData_Physical u(sphereDataConfig);
 			SphereData_Physical v(sphereDataConfig);
 
-			op.vortdiv_to_uv(prog_vrt, prog_div, u, v);
+			op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
 
 			output_filename = write_file_csv(u, "prog_u");
 			output_reference_filenames += ";"+output_filename;
@@ -648,7 +648,7 @@ public:
 				SphereData_Physical v(prog_vrt.sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				op.vortdiv_to_uv(prog_vrt, prog_div, u, v);
+				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(u, planeDataConfig);
 				break;
 			}
@@ -659,7 +659,7 @@ public:
 				SphereData_Physical v(prog_vrt.sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				op.vortdiv_to_uv(prog_vrt, prog_div, u, v);
+				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
 				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(v, planeDataConfig);
 				break;
 			}

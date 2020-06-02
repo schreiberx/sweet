@@ -147,7 +147,7 @@ public:
 			}
 		);
 
-		ops->uv_to_vortdiv(ug, vg, o_vrt, o_div);
+		ops->uv_to_vrtdiv(ug, vg, o_vrt, o_div);
 
 		bool use_analytical_geostrophic_setup = simVars->misc.comma_separated_tags.find("galewsky_analytical_geostrophic_setup") != std::string::npos;
 

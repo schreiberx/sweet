@@ -55,7 +55,7 @@ void SphereAdvection_TS_na_erk::euler_timestep_update(
 
 	SphereData_Spectral vrt(phi.sphereDataConfig);
 	SphereData_Spectral div(phi.sphereDataConfig);
-	op.uv_to_vortdiv(io_u, io_v, vrt, div);
+	op.uv_to_vrtdiv(io_u, io_v, vrt, div);
 
 	SphereData_Physical phig = phi.toPhys();
 

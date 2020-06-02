@@ -42,12 +42,12 @@ void SWE_Sphere_TS_PFASST_l_erk::euler_timestep_update(
 
 		SphereData_Physical ug(i_phi_pert.sphereDataConfig);
 		SphereData_Physical vg(i_phi_pert.sphereDataConfig);
-		op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+		op.robert_vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
 		SphereData_Physical tmpg1 = ug*fg;
 		SphereData_Physical tmpg2 = vg*fg;
 
-		op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+		op.robert_uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 		o_vort_t *= -1.0;
 
@@ -62,7 +62,7 @@ void SWE_Sphere_TS_PFASST_l_erk::euler_timestep_update(
 #endif
 
 		SphereData_Spectral tmpspec(i_phi_pert.sphereDataConfig);
-		op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_pert_t);
+		op.robert_uv_to_vrtdiv(tmpg1,tmpg2, tmpspec, o_phi_pert_t);
 
 		o_phi_pert_t *= -1.0;
 

@@ -6,13 +6,6 @@
  */
 
 
-#ifndef SWEET_GUI
-	#define SWEET_GUI 1
-#endif
-
-#if SWEET_GUI
-	#include "sweet/VisSweet.hpp"
-#endif
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -29,10 +22,6 @@
 SphereData_Config sphereDataConfigInstance;
 SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
-#if SWEET_GUI
-	PlaneDataConfig planeDataConfigInstance;
-	PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-#endif
 
 SimulationVariables simVars;
 
@@ -40,9 +29,11 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereData_Spectral prog_phi_pert;
-	SphereData_Spectral prog_phi_pert_t0;	// at t=0
-	SphereData_Spectral prog_vort, prog_div;
+	std::vector<SphereData_Spectral*> prognostic_variables;
+	std::vector<SphereData_Spectral*> prognostic_variables_t0;
+
+	//SphereData_Spectral prog_vort, prog_div;
+	SphereData_Physical velocity_field_u, velocity_field_v;
 
 	SphereAdvectionTimeSteppers timeSteppers;
 
@@ -60,11 +51,6 @@ public:
 	double rms_error_h0;
 
 
-#if SWEET_GUI
-	PlaneData viz_plane_data;
-
-	int render_primitive_id = 1;
-#endif
 
 	BenchmarksSphereAdvection sphereBenchmarks;
 
@@ -72,23 +58,38 @@ public:
 
 public:
 	SimulationInstance()	:
-		prog_phi_pert(sphereDataConfig),
-		prog_phi_pert_t0(sphereDataConfig),
-
-		prog_vort(sphereDataConfig),
-		prog_div(sphereDataConfig),
+		velocity_field_u(sphereDataConfig),
+		velocity_field_v(sphereDataConfig),
 
 		op(sphereDataConfig, &(simVars.sim)),
 		time_varying_fields(false)
-
-#if SWEET_GUI
-		,
-		viz_plane_data(planeDataConfig)
-#endif
 	{
 		reset();
 	}
 
+
+	void alloc_prognostic_variables(std::size_t i_size)
+	{
+		prognostic_variables.resize(i_size);
+		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
+			prognostic_variables[i] = new SphereData_Spectral(sphereDataConfig);
+
+		prognostic_variables_t0.resize(i_size);
+		for (std::size_t i = 0; i < prognostic_variables_t0.size(); i++)
+			prognostic_variables_t0[i] = new SphereData_Spectral(sphereDataConfig);
+	}
+
+
+	void free_prognostic_variables()
+	{
+		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
+			delete prognostic_variables[i];
+		prognostic_variables.clear();
+
+		for (std::size_t i = 0; i < prognostic_variables_t0.size(); i++)
+			delete prognostic_variables_t0[i];
+		prognostic_variables_t0.clear();
+	}
 
 
 	void reset()
@@ -96,13 +97,20 @@ public:
 		simVars.reset();
 
 		sphereBenchmarks.setup(simVars, op);
+
+		int num_field_variables = sphereBenchmarks.master->get_num_prognostic_fields();
+
+		free_prognostic_variables();
+		alloc_prognostic_variables(num_field_variables);
+
 		sphereBenchmarks.master->get_initial_state(
-				prog_phi_pert, prog_vort, prog_div
+				prognostic_variables, velocity_field_u, velocity_field_v
 			);
 
-		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
+		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
+			*prognostic_variables_t0[i] = *prognostic_variables[i];
 
-		prog_phi_pert_t0 = prog_phi_pert;
+		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
 
 		// setup sphereDataconfig instance again
 		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
@@ -117,18 +125,12 @@ public:
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
-		/*
-		 * Update time varying fields
-		 */
-		if (time_varying_fields)
-			sphereBenchmarks.master->get_reference_state(prog_phi_pert, prog_vort, prog_div, simVars.timecontrol.current_simulation_time);
 
-		SphereData_Physical asdf(sphereDataConfig);
 		timeSteppers.master->run_timestep(
-				prog_phi_pert, prog_vort, prog_div,
+				prognostic_variables, velocity_field_u, velocity_field_v,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time,
-				&sphereBenchmarks
+				(time_varying_fields ? &sphereBenchmarks : nullptr)
 			);
 
 		double dt = simVars.timecontrol.current_timestep_size;
@@ -140,8 +142,13 @@ public:
 		if (simVars.misc.verbosity >= 10)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
+#if 0
 		max_error_h0 = (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_max_abs();
 		rms_error_h0 = (prog_phi_pert_t0-prog_phi_pert).toPhys().physical_reduce_rms();
+#else
+		max_error_h0 = -1;
+		rms_error_h0 = -1;
+#endif
 	}
 
 
@@ -158,161 +165,12 @@ public:
 					diff/simVars.timecontrol.max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
 			)
 		)
-		return true;
+			return true;
 
 		return false;
 	}
 
 
-#if SWEET_GUI
-	/**
-	 * postprocessing of frame: do time stepping
-	 */
-	void vis_post_frame_processing(int i_num_iterations)
-	{
-		if (simVars.timecontrol.run_simulation_timesteps)
-			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
-				run_timestep();
-	}
-
-
-	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
-			double *o_aspect_ratio,
-			int *o_render_primitive_id,
-			void **o_bogus_data,
-			double *o_viz_min,
-			double *o_viz_max,
-			bool *viz_reset
-	)
-	{
-		*o_render_primitive_id = render_primitive_id;
-		*o_bogus_data = sphereDataConfig;
-
-		int id = simVars.misc.vis_id % 5;
-		switch (id)
-		{
-		case 0:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_phi_pert, planeDataConfig);
-			break;
-
-		case 1:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vort, planeDataConfig);
-			break;
-
-		case 2:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_div, planeDataConfig);
-			break;
-
-		case 3:
-			{
-				SphereData_Physical u(sphereDataConfig);
-				SphereData_Physical v(sphereDataConfig);
-
-				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
-			}
-			break;
-
-		case 4:
-			{
-				SphereData_Physical u(sphereDataConfig);
-				SphereData_Physical v(sphereDataConfig);
-
-				op.vortdiv_to_uv(prog_vort, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
-			}
-			break;
-
-		}
-
-		*o_dataArray = &viz_plane_data;
-		*o_aspect_ratio = 0.5;
-	}
-
-
-
-	const char* vis_get_status_string()
-	{
-		const char* description = "";
-		int id = simVars.misc.vis_id % 5;
-
-		switch (id)
-		{
-		default:
-		case 0:
-			description = "geopotential";
-			break;
-
-		case 1:
-			description = "vorticity";
-			break;
-
-		case 2:
-			description = "divergence";
-			break;
-
-		case 3:
-			description = "u velocity (longitudinal)";
-			break;
-
-		case 4:
-			description = "v velocity (latitiudinal)";
-			break;
-		}
-
-
-		static char title_string[2048];
-
-		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
-		sprintf(title_string,
-#if SWEET_MPI
-				"Rank %i - "
-#endif
-				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
-#if SWEET_MPI
-				mpi_rank,
-#endif
-				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
-				simVars.timecontrol.current_timestep_nr,
-				simVars.timecontrol.current_timestep_size,
-				description,
-				simVars.diag.total_mass,
-				simVars.diag.total_energy,
-				simVars.diag.total_potential_enstrophy,
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min()
-		);
-
-		return title_string;
-	}
-
-
-	void vis_pause()
-	{
-		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
-	}
-
-
-	void vis_keypress(int i_key)
-	{
-		switch(i_key)
-		{
-		case 'v':
-			simVars.misc.vis_id++;
-			break;
-
-		case 'V':
-			simVars.misc.vis_id--;
-			break;
-
-		case 'b':
-			render_primitive_id = (render_primitive_id + 1) % 2;
-			break;
-		}
-	}
-#endif
 };
 
 
@@ -422,18 +280,6 @@ int main(int i_argc, char *i_argv[])
 		SimulationInstance simulation;
 
 
-#if SWEET_GUI
-		if (simVars.misc.gui_enabled)
-		{
-			planeDataConfigInstance.setupAutoSpectralSpace(
-					simVars.disc.space_res_physical,
-					simVars.misc.reuse_spectral_transformation_plans
-				);
-			VisSweet<SimulationInstance> visSweet(&simulation);
-			return 0;
-		}
-		else
-#endif
 		{
 			while (!simulation.should_quit())
 				simulation.run_timestep();

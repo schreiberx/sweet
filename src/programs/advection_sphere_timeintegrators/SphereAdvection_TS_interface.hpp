@@ -65,7 +65,11 @@ public:
 
 			// for varying velocity fields
 			const BenchmarksSphereAdvection *i_sphereBenchmarks
-	) = 0;
+	)
+	{
+		SWEETError("TODO: Implement single prognostic time integration for this time integrator");
+	}
+
 
 	virtual bool implements_timestepping_method(
 			const std::string &i_timestepping_method

@@ -416,7 +416,7 @@ public:
 				SphereData_Physical v(prog_vrt->sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				ops->vortdiv_to_uv(*prog_vrt, *prog_div, u, v);
+				ops->vrtdiv_to_uv(*prog_vrt, *prog_div, u, v);
 				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(u, planeDataConfig);
 				break;
 			}
@@ -427,7 +427,7 @@ public:
 				SphereData_Physical v(prog_vrt->sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				ops->vortdiv_to_uv(*prog_vrt, *prog_div, u, v);
+				ops->vrtdiv_to_uv(*prog_vrt, *prog_div, u, v);
 				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(v, planeDataConfig);
 				break;
 			}

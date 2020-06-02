@@ -132,8 +132,8 @@ public:
 		 */
 		SphereData_Physical ug(o_phi_pert.sphereDataConfig);
 		SphereData_Physical vg(o_phi_pert.sphereDataConfig);
-		ops->vortdiv_to_uv(o_vrt, o_div, ug, vg);
-		ops->uv_to_vortdiv(ug, vg, o_vrt, o_div);
+		ops->vrtdiv_to_uv(o_vrt, o_div, ug, vg);
+		ops->uv_to_vrtdiv(ug, vg, o_vrt, o_div);
 	}
 };
 

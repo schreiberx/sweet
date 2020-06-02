@@ -74,6 +74,11 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::interpolate_departure_point_uv(
 	o_vrt.setup_if_required(i_phi.sphereDataConfig);
 	o_div.setup_if_required(i_phi.sphereDataConfig);
 
+
+	/*************************************************************************
+	 * Phi
+	 *************************************************************************
+	 */
 	o_phi = sphereSampler.bicubic_scalar_ret_phys(
 			i_phi.toPhys(),
 			i_pos_lon_D, i_pos_lat_D,
@@ -83,26 +88,12 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::interpolate_departure_point_uv(
 		);
 
 
-	SphereData_Physical u_tmp, v_tmp;
-	op.vortdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
-
-	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			u_tmp,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
-	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			v_tmp,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
 #if 1
+
+	/*************************************************************************
+	 * Prepare rotation system for handling velocities
+	 *************************************************************************
+	 */
 
 	ScalarDataArray P_x_D, P_y_D, P_z_D;
 	SWEETMath::latlon_to_cartesian(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
@@ -139,9 +130,36 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::interpolate_departure_point_uv(
 
 	SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
 
-	/*
-	 * Convert to Cartesian velocity space
+
+
+	/*************************************************************************
+	 * Velocity
+	 *************************************************************************
 	 */
+
+	SphereData_Physical u_tmp, v_tmp;
+	op.vrtdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
+
+	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+			u_tmp,
+			i_pos_lon_D, i_pos_lat_D,
+			true,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
+		);
+
+	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+			v_tmp,
+			i_pos_lon_D, i_pos_lat_D,
+			true,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
+		);
+
+	/*
+	 * Convert to Cartesian space
+	 */
+
 	ScalarDataArray V_lon_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(u_tmp_D);
 	ScalarDataArray V_lat_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(v_tmp_D);
 
@@ -191,7 +209,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::interpolate_departure_point_uv(
 			V_lon_A, V_lat_A
 	);
 
-	op.uv_to_vortdiv(
+	op.uv_to_vrtdiv(
 			Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lon_A, i_vrt.sphereDataConfig),
 			Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lat_A, i_vrt.sphereDataConfig),
 			o_vrt, o_div
@@ -199,7 +217,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::interpolate_departure_point_uv(
 
 #else
 
-	op.uv_to_vortdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
+	op.uv_to_vrtdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
 
 #endif
 }
@@ -242,10 +260,10 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 	 * See Hortal's paper for equation.
 	 */
 	SphereData_Physical U_u_lon_prev, U_v_lat_prev;
-	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
+	op.vrtdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
 
 	SphereData_Physical U_u_lon, U_v_lat;
-	op.vortdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
+	op.vrtdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
 
 	double dt_div_radius = i_dt / simVars.sim.sphere_radius;
 

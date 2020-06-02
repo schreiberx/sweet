@@ -49,7 +49,7 @@ public:
 	);
 
 
-	void interpolate_departure_point_uvw(
+	void interpolate_departure_point_vec_3d(
 			const SphereData_Spectral &i_u,
 			const SphereData_Spectral &i_v,
 			const SphereData_Spectral &i_w,
@@ -62,6 +62,16 @@ public:
 			SphereData_Spectral &o_w
 	);
 
+	void interpolate_departure_point_vec_uv(
+			const SphereData_Physical &i_u,
+			const SphereData_Physical &i_v,
+
+			const ScalarDataArray &i_pos_lon_D,
+			const ScalarDataArray &i_pos_lat_D,
+
+			SphereData_Physical &o_u,
+			SphereData_Physical &o_v
+	);
 
 	void run_timestep(
 			std::vector<SphereData_Spectral*> &io_prog_fields,	///< prognostic variables
@@ -76,8 +86,35 @@ public:
 	);
 
 
-	void run_timestep(
+	void run_timestep_1(
 			SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
+
+			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+
+			// for varying velocity fields
+			const BenchmarksSphereAdvection *i_sphereBenchmarks
+	);
+
+
+	void run_timestep_2(
+			std::vector<SphereData_Spectral*> &io_prog_fields,	///< prognostic variables
+			SphereData_Physical &io_u,
+			SphereData_Physical &io_v,
+
+			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_simulation_timestamp,
+
+			// for varying velocity fields
+			const BenchmarksSphereAdvection *i_sphereBenchmarks
+	);
+
+
+
+	void run_timestep_3(
+			std::vector<SphereData_Spectral*> &io_prog_fields,	///< prognostic variables
 			SphereData_Physical &io_u,
 			SphereData_Physical &io_v,
 

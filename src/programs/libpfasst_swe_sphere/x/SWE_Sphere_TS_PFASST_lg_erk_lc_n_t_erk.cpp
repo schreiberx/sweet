@@ -34,7 +34,7 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update_linear(
 
 	SphereData_Physical vrtg = i_vort.toPhys();
 	SphereData_Physical divg = i_div.toPhys();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	op.robert_vrtdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereData_Physical phig = i_phi.toPhys();
 
 	// No Coriolis here
@@ -42,7 +42,7 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update_linear(
 	SphereData_Physical tmpg1 = ug*(/*vrtg+*/fg);
 	SphereData_Physical tmpg2 = vg*(/*vrtg+*/fg);
 
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	op.robert_uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
@@ -59,7 +59,7 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update_linear(
 	SphereData_Physical tmpg2 = vg*avgphi;
 
 	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
+	op.robert_uv_to_vrtdiv(tmpg1, tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
@@ -96,13 +96,13 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update_coriolis_and_
 
 	SphereData_Physical vrtg = i_vort.toPhys();
 	SphereData_Physical divg = i_div.toPhys();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	op.robert_vrtdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereData_Physical phig = i_phi.toPhys();
 
 	SphereData_Physical tmpg1 = ug*(vrtg+fg);
 	SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	op.robert_uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
@@ -112,7 +112,7 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update_coriolis_and_
 	tmpg2 = vg*(phig-avgphi);
 
 	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	op.robert_uv_to_vrtdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
@@ -197,13 +197,13 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update(
 
 	SphereData_Physical vrtg = i_vort.toPhys();
 	SphereData_Physical divg = i_div.toPhys();
-	op.robert_vortdiv_to_uv(i_vort, i_div, ug, vg);
+	op.robert_vrtdiv_to_uv(i_vort, i_div, ug, vg);
 	SphereData_Physical phig = i_phi.toPhys();
 
 	SphereData_Physical tmpg1 = ug*(vrtg+fg);
 	SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
-	op.robert_uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	op.robert_uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
@@ -213,7 +213,7 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update(
 	tmpg2 = vg*phig;
 
 	SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-	op.robert_uv_to_vortdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	op.robert_uv_to_vrtdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 

@@ -95,7 +95,7 @@ void SWE_Sphere_TS_ln_settls_vd::interpolate_departure_point(
 #else
 	{
 		SphereData_Physical u_tmp, v_tmp;
-		op.vortdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
+		op.vrtdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
 
 		SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
 				u_tmp,
@@ -113,7 +113,7 @@ void SWE_Sphere_TS_ln_settls_vd::interpolate_departure_point(
 				simVars.disc.semi_lagrangian_interpolation_limiter
 			);
 
-		op.uv_to_vortdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
+		op.uv_to_vrtdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
 	}
 #endif
 }
@@ -152,10 +152,10 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 	 * See Hortal's paper for equation.
 	 */
 	SphereData_Physical U_u_lon_prev, U_v_lat_prev;
-	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
+	op.vrtdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
 
 	SphereData_Physical U_u_lon, U_v_lat;
-	op.vortdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
+	op.vrtdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
 
 	double dt_div_radius = i_dt / simVars.sim.sphere_radius;
 

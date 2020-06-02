@@ -128,10 +128,10 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::run_timestep_2nd_order(
 	 *************************************************************************************************
 	 */
 	SphereData_Physical U_u_lon_prev, U_v_lat_prev;
-	op.vortdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
+	op.vrtdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
 
 	SphereData_Physical U_u_lon, U_v_lat;
-	op.vortdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
+	op.vrtdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
 
 	double dt_div_radius = i_dt / simVars.sim.sphere_radius;
 

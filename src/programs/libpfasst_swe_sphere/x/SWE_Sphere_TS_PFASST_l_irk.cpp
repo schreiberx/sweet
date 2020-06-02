@@ -156,7 +156,7 @@ void SWE_Sphere_TS_PFASST_l_irk::run_timestep_nonpert(
 
 		SphereData_Physical u0g(sphereDataConfig);
 		SphereData_Physical v0g(sphereDataConfig);
-		op.robert_vortdiv_to_uv(vort0, div0, u0g, v0g);
+		op.robert_vrtdiv_to_uv(vort0, div0, u0g, v0g);
 
 		SphereData_Physical phi0g = phi0.toPhys();
 
@@ -183,7 +183,7 @@ void SWE_Sphere_TS_PFASST_l_irk::run_timestep_nonpert(
 		SphereData_Physical u0(sphereDataConfig);
 		SphereData_Physical v0(sphereDataConfig);
 
-		op.robert_vortdiv_to_uv(vort0, div0, u0, v0);
+		op.robert_vrtdiv_to_uv(vort0, div0, u0, v0);
 
 		SphereData_Physical gradu(sphereDataConfig);
 		SphereData_Physical gradv(sphereDataConfig);
@@ -196,7 +196,7 @@ void SWE_Sphere_TS_PFASST_l_irk::run_timestep_nonpert(
 		SphereData_Physical u = (alpha*a - two_coriolis*mug*(b))/k;
 		SphereData_Physical v = (two_coriolis*mug*(a) + alpha*b)/k;
 
-		op.robert_uv_to_vortdiv(u, v, vort, div);
+		op.robert_uv_to_vrtdiv(u, v, vort, div);
 	}
 
 	io_phi = phi * beta;

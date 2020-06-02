@@ -88,7 +88,7 @@ void run_tests()
 
 				SphereData_Spectral vort(sphereDataConfig);
 				SphereData_Spectral div(sphereDataConfig);
-				op.uv_to_vortdiv(u, v, vort, div);
+				op.uv_to_vrtdiv(u, v, vort, div);
 
 				double div_max_error = div.toPhys().physical_reduce_max_abs();
 				std::cout << " + div_max_error: " << div_max_error << std::endl;

@@ -46,7 +46,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 	 * Step 1a
 	 */
 	SphereData_Physical ug, vg;
-	op.vortdiv_to_uv(i_vrt, i_div, ug, vg);
+	op.vrtdiv_to_uv(i_vrt, i_div, ug, vg);
 
 	/*
 	 * Step 1b
@@ -66,7 +66,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 	 * Step 1d
 	 */
 	// Eq. (21) & left part of Eq. (22)
-	op.uv_to_vortdiv(u_nl, v_nl, o_div_t, o_vrt_t);
+	op.uv_to_vrtdiv(u_nl, v_nl, o_div_t, o_vrt_t);
 
 
 	/*
@@ -97,7 +97,7 @@ void SWE_Sphere_TS_ln_erk::euler_timestep_update_pert(
 	u_nl = ug*(phi_pert_phys + gh0);
 	v_nl = vg*(phi_pert_phys + gh0);
 
-	op.uv_to_vortdiv(u_nl,v_nl, e, o_phi_pert_t);
+	op.uv_to_vrtdiv(u_nl,v_nl, e, o_phi_pert_t);
 
 	o_phi_pert_t *= -1.0;
 

@@ -2,8 +2,8 @@
  * Author: Martin Schreiber <SchreiberX@Gmail.com>
  */
 
-#ifndef SRC_BENCHMARKS_SPHERE_VECTOR_ADVECTION_GAUSS_BUMP_HPP_
-#define SRC_BENCHMARKS_SPHERE_VECTOR_ADVECTION_GAUSS_BUMP_HPP_
+#ifndef SRC_BENCHMARKS_SPHERE_VECTOR_3D_ADVECTION_GAUSS_BUMP_HPP_
+#define SRC_BENCHMARKS_SPHERE_VECTOR_3D_ADVECTION_GAUSS_BUMP_HPP_
 
 #include "BenchmarksSphereAdvection_interface.hpp"
 #include <ostream>
@@ -15,7 +15,7 @@
 
 
 
-class BenchmarksSphereAdvection_vector_advection_gauss_bump	: public BenchmarksSphereAdvection_interface
+class BenchmarksSphereAdvection_vector_3d_advection_gauss_bump	: public BenchmarksSphereAdvection_interface
 {
 	SimulationVariables *simVars = nullptr;
 	SphereOperators_SphereData *ops = nullptr;
@@ -23,7 +23,7 @@ class BenchmarksSphereAdvection_vector_advection_gauss_bump	: public BenchmarksS
 	SWESphereBenchmark_williamson_1_advection_gauss_bump benchmark;
 
 public:
-	BenchmarksSphereAdvection_vector_advection_gauss_bump()
+	BenchmarksSphereAdvection_vector_3d_advection_gauss_bump()
 	{
 	}
 
@@ -32,7 +32,7 @@ public:
 		)
 	{
 		return (
-				i_benchmark_name == "vector_advection_gauss_bump"	||
+				i_benchmark_name == "vector_3d_advection_gauss_bump"	||
 				false
 			);
 	}
@@ -55,8 +55,8 @@ public:
 	{
 		std::ostringstream stream;
 
-		stream << " * VECTORIAL ADVECTION TEST CASES:" << std::endl;
-		stream << "    + 'vector_advection_gauss_bump'" << std::endl;
+		stream << " * Advection test case with 3d vector:" << std::endl;
+		stream << "    + 'vector_3d_advection_gauss_bump'" << std::endl;
 
 		return stream.str();
 	}
@@ -87,7 +87,7 @@ public:
 		SphereData_Spectral div(sphereDataConfig);
 		benchmark.get_initial_state(tmp, vrt, div);
 
-		ops->vortdiv_to_uv(vrt, div, o_u, o_v);
+		ops->vrtdiv_to_uv(vrt, div, o_u, o_v);
 
 		/*
 		 * Setup prognostic fields to k vector (perpendicular to point on sphere)

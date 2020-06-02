@@ -108,7 +108,7 @@ public:
 			}
 		);
 
-		ops->uv_to_vortdiv(ug, vg, o_vrt, o_div);
+		ops->uv_to_vrtdiv(ug, vg, o_vrt, o_div);
 
 		SphereData_Physical hg(o_phi_pert.sphereDataConfig);
 		SWESphereBenchmark_williamson_2_geostrophic_balance::computeGeostrophicBalance_nonlinear(

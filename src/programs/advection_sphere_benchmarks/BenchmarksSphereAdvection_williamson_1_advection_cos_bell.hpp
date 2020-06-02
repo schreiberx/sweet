@@ -77,7 +77,7 @@ public:
 
 		benchmark.get_initial_state(o_phi_pert, vrt, div);
 
-		ops->vortdiv_to_uv(vrt, div, o_u, o_v);
+		ops->vrtdiv_to_uv(vrt, div, o_u, o_v);
 	}
 };
 

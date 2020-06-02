@@ -129,12 +129,12 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update(
 		 */
 		SphereData_Physical ug(i_phi.sphereDataConfig);
 		SphereData_Physical vg(i_phi.sphereDataConfig);
-		op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+		op.vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
 		SphereData_Physical tmpg1 = ug*op.fg;
 		SphereData_Physical tmpg2 = vg*op.fg;
 
-		op.uv_to_vortdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+		op.uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 		o_vort_t *= -1.0;
 		o_div_t += -op.laplace(i_phi);
@@ -211,7 +211,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 	 */
 	SphereData_Physical ug(i_phi.sphereDataConfig);
 	SphereData_Physical vg(i_phi.sphereDataConfig);
-	op.vortdiv_to_uv(i_vort, i_div, ug, vg);
+	op.vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
 	/*
 	 * step 1b
@@ -222,7 +222,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc(
 	/*
 	 * step 1c
 	 */
-	op.uv_to_vortdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
+	op.uv_to_vrtdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
 
 	/*
 	 * step 1d

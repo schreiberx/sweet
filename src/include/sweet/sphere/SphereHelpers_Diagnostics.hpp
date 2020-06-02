@@ -208,7 +208,7 @@ public:
 		SphereData_Physical v(sphereDataConfig);
 
 		h = i_prog_phi.toPhys()*(1.0/io_simVars.sim.gravitation);
-		op.vortdiv_to_uv(i_prog_vort, i_prog_div, u, v);
+		op.vrtdiv_to_uv(i_prog_vort, i_prog_div, u, v);
 
 		double normalization = (io_simVars.sim.sphere_radius*io_simVars.sim.sphere_radius);
 

@@ -103,7 +103,7 @@ public:
 		SphereData_Physical u(sphereDataConfig);
 		SphereData_Physical v(sphereDataConfig);
 
-		i_ops->vortdiv_to_uv(i_vort, i_div, u, v);
+		i_ops->vrtdiv_to_uv(i_vort, i_div, u, v);
 
 		SphereData_Physical vrtg = i_vort.toPhys();
 
@@ -113,7 +113,7 @@ public:
 		SphereData_Spectral tmpspec1(sphereDataConfig);
 		SphereData_Spectral tmpspec2(sphereDataConfig);
 
-		i_ops->uv_to_vortdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
+		i_ops->uv_to_vrtdiv(tmpg1, tmpg2, tmpspec1, tmpspec2);
 
 		o_phi = i_ops->inv_laplace(tmpspec1);
 	}
@@ -220,7 +220,7 @@ public:
 			}
 		);
 
-		ops->uv_to_vortdiv(ug, vg, o_vrt, o_div);
+		ops->uv_to_vrtdiv(ug, vg, o_vrt, o_div);
 
 
 

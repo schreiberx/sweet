@@ -695,7 +695,7 @@ public:
 	/**
 	 * Convert vorticity/divergence field to u,v velocity field
 	 */
-	void vortdiv_to_uv(
+	void vrtdiv_to_uv(
 			const SphereData_SpectralComplex &i_vrt,
 			const SphereData_SpectralComplex &i_div,
 			SphereData_PhysicalComplex &o_u,
@@ -727,7 +727,7 @@ public:
 	}
 
 
-	void uv_to_vortdiv(
+	void uv_to_vrtdiv(
 			const SphereData_PhysicalComplex &i_u,
 			const SphereData_PhysicalComplex &i_v,
 			SphereData_SpectralComplex &o_vrt,
@@ -807,7 +807,7 @@ public:
 
 #if 0
 
-	void uv_to_vortdiv(
+	void uv_to_vrtdiv(
 			const SphereData_PhysicalComplex &i_u,
 			const SphereData_PhysicalComplex &i_v,
 			SphereData_SpectralComplex &o_vort,

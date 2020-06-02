@@ -36,7 +36,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_lg(
 
 
 	SphereData_Physical U_u_phys, U_v_phys;
-	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 	o_phi_pert_t -= gh0*U_div;
 	o_div_t -= op.laplace(U_phi_pert);
@@ -68,14 +68,14 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_lc(
 
 
 	SphereData_Physical U_u_phys, U_v_phys;
-	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 
 	SphereData_Physical fu_nl = op.fg*U_u_phys;
 	SphereData_Physical fv_nl = op.fg*U_v_phys;
 
 	SphereData_Spectral div, vrt;
-	op.uv_to_vortdiv(fu_nl, fv_nl, vrt, div);
+	op.uv_to_vrtdiv(fu_nl, fv_nl, vrt, div);
 
 	o_vrt_t -= div;
 	o_div_t += vrt;
@@ -107,7 +107,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_na(
 
 
 	SphereData_Physical U_u_phys, U_v_phys;
-	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 
 
@@ -123,7 +123,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_update_na(
 	SphereData_Physical v_nl = U_v_phys*vrtg;
 
 	SphereData_Spectral vrt, div;
-	op.uv_to_vortdiv(u_nl, v_nl, vrt, div);
+	op.uv_to_vrtdiv(u_nl, v_nl, vrt, div);
 	o_vrt_t -= div;
 	o_div_t += vrt;
 
@@ -168,7 +168,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_set_tendencies(
 )
 {
 	SphereData_Physical U_u_phys, U_v_phys;
-	op.vortdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 	o_phi_t.spectral_set_zero();
 	o_vrt_t.spectral_set_zero();
@@ -309,7 +309,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_set_tendencies(
 		SphereData_Physical vrtg = i_U_vrt.toPhys();
 
 		SphereData_Spectral vrt, div;
-		op.uv_to_vortdiv(U_u_phys*vrtg, U_v_phys*vrtg, vrt, div);
+		op.uv_to_vrtdiv(U_u_phys*vrtg, U_v_phys*vrtg, vrt, div);
 		reg_vrt = -div;
 		reg_div = vrt;
 		reg_div -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
@@ -332,7 +332,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::euler_timestep_set_tendencies(
 		SphereData_Spectral u_t = -op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_u_phys);
 		SphereData_Spectral v_t = -op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_v_phys);
 
-		op.uv_to_vortdiv(u_t.toPhys(), v_t.toPhys(), vrt, div);
+		op.uv_to_vrtdiv(u_t.toPhys(), v_t.toPhys(), vrt, div);
 
 		new_vrt = vrt;
 		new_div = div;

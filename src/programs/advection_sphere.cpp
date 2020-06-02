@@ -45,7 +45,7 @@ public:
 	std::vector<SphereData_Spectral*> prognostic_variables_t0;
 
 	//SphereData_Spectral prog_vort, prog_div;
-	SphereData_Physical prog_u, prog_v;
+	SphereData_Physical velocity_field_u, velocity_field_v;
 
 	SphereAdvectionTimeSteppers timeSteppers;
 
@@ -65,10 +65,8 @@ public:
 
 public:
 	SimulationInstance()	:
-		//prog_vort(sphereDataConfig),
-		//prog_div(sphereDataConfig),
-		prog_u(sphereDataConfig),
-		prog_v(sphereDataConfig),
+		velocity_field_u(sphereDataConfig),
+		velocity_field_v(sphereDataConfig),
 
 		op(sphereDataConfig, &(simVars.sim)),
 		time_varying_fields(false)
@@ -109,7 +107,7 @@ public:
 		for (std::size_t i = 0; i < prognostic_variables_t0.size(); i++)
 			delete prognostic_variables_t0[i];
 		prognostic_variables_t0.clear();
-}
+	}
 
 
 	void reset()
@@ -127,7 +125,7 @@ public:
 		alloc_prognostic_variables(num_field_variables);
 
 		sphereBenchmarks.master->get_initial_state(
-				prognostic_variables, prog_u, prog_v
+				prognostic_variables, velocity_field_u, velocity_field_v
 			);
 
 		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
@@ -154,13 +152,12 @@ public:
 	{
 		SphereData_DebugContainer::clear();
 
-
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
 
 		timeSteppers.master->run_timestep(
-				prognostic_variables, prog_u, prog_v,
+				prognostic_variables, velocity_field_u, velocity_field_v,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time,
 				(time_varying_fields ? &sphereBenchmarks : nullptr)
@@ -172,8 +169,8 @@ public:
 			 * Update velocities just for sake of the correction visualization
 			 */
 			sphereBenchmarks.master->get_varying_velocities(
-					prog_u,
-					prog_v,
+					velocity_field_u,
+					velocity_field_v,
 					simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size
 				);
 		}
@@ -270,26 +267,44 @@ public:
 #endif
 		}
 
-		int total_fields = 2+prognostic_variables.size();
-		std::size_t id = simVars.misc.vis_id % total_fields;
+		std::size_t id = simVars.misc.vis_id;
 
 		if (id >= 0 && id < prognostic_variables.size())
 		{
 			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prognostic_variables[id], planeDataConfig);
 		}
-		else
+		else if (id >= prognostic_variables.size() && id < prognostic_variables.size() + 2)
 		{
-			switch (id-prognostic_variables.size())
+			switch (id - prognostic_variables.size())
 			{
 			case 0:
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(prog_u, planeDataConfig);
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(velocity_field_u, planeDataConfig);
 				break;
 
 			case 1:
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(prog_v, planeDataConfig);
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(velocity_field_v, planeDataConfig);
+				break;
+			}
+		}
+		else if (id >= prognostic_variables.size() + 2 && id < prognostic_variables.size() + 4)
+		{
+			SphereData_Physical u, v;
+			op.vrtdiv_to_uv(*prognostic_variables[0], *prognostic_variables[1], u, v);
+
+			switch (id - prognostic_variables.size() - 2)
+			{
+			case 0:
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
 				break;
 
+			case 1:
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
+				break;
 			}
+		}
+		else
+		{
+			viz_plane_data.physical_set_zero();
 		}
 
 		*o_dataArray = &viz_plane_data;
@@ -325,9 +340,7 @@ public:
 
 		if (!found)
 		{
-
-			int total_fields = 2+prognostic_variables.size();
-			std::size_t id = simVars.misc.vis_id % total_fields;
+			std::size_t id = simVars.misc.vis_id;
 
 			if (id >= 0 && id < prognostic_variables.size())
 			{
@@ -335,18 +348,35 @@ public:
 				msg << "Prog. field " << id;
 				description = msg.str();
 			}
-			else
+			else if (id >= prognostic_variables.size() && id < prognostic_variables.size() + 2)
 			{
-				switch (id-prognostic_variables.size())
+				switch (id - prognostic_variables.size())
 				{
 				case 0:
 					description = "u velocity";
 					break;
 
 				case 1:
-					description = "u velocity";
+					description = "v velocity";
 					break;
 				}
+			}
+			else if (id >= prognostic_variables.size() + 2 && id < prognostic_variables.size() + 4)
+			{
+				switch (id - prognostic_variables.size() - 2)
+				{
+				case 0:
+					description = "prognostic field: u velocity";
+					break;
+
+				case 1:
+					description = "prognostic field: v velocity";
+					break;
+				}
+			}
+			else
+			{
+				description = "field doesn't exist";
 			}
 		}
 
