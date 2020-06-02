@@ -88,15 +88,37 @@ public:
 		if (RK_prog0_stage_t.size() != 0)
 		{
 			for (int i = 0; i < N; i++)
-			{
 				delete RK_prog0_stage_t[i];
-				delete RK_prog1_stage_t[i];
-				delete RK_prog2_stage_t[i];
-			}
-
 			RK_prog0_stage_t.resize(0);
+		}
+
+		if (RK_prog1_stage_t.size() != 0)
+		{
+			for (int i = 0; i < N; i++)
+				delete RK_prog1_stage_t[i];
 			RK_prog1_stage_t.resize(0);
+		}
+
+		if (RK_prog2_stage_t.size() != 0)
+		{
+			for (int i = 0; i < N; i++)
+				delete RK_prog2_stage_t[i];
 			RK_prog2_stage_t.resize(0);
+		}
+
+
+		if (RK_vel_u.size() != 0)
+		{
+			for (int i = 0; i < N; i++)
+				delete RK_vel_u[i];
+			RK_vel_u.resize(0);
+		}
+
+		if (RK_vel_v.size() != 0)
+		{
+			for (int i = 0; i < N; i++)
+				delete RK_vel_v[i];
+			RK_vel_v.resize(0);
 		}
 	}
 

@@ -373,17 +373,18 @@ public:
 	}
 
 
+
 public:
 	void bicubic_scalar(
-			const SphereData_Physical &i_data,			///< sampling data
+			const SphereData_Physical &i_data,		///< sampling data
 
 			const ScalarDataArray &i_pos_lon,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_lat,		///< y positions of interpolation points
 
-			double *o_data,						///< output values
+			double *o_data,							///< output values
 			bool i_velocity_sampling,
-			bool i_pole_pseudo_points,			///< reconstruct pole points
-			bool i_limiter						///< Use limiter for interpolation to avoid unphysical local extrema
+			bool i_pole_pseudo_points,				///< reconstruct pole points
+			bool i_limiter							///< Use limiter for interpolation to avoid unphysical local extrema
 	)
 	{
 		assert(res[0] > 0);
@@ -778,6 +779,24 @@ public:
 
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, out, i_velocity_sampling, i_pole_pseudo_points);
 		return out;
+	}
+
+public:
+	const SphereData_Physical bilinear_scalar_ret_phys(
+			const SphereData_Physical &i_data,	///< sampling data
+
+			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
+
+			bool i_velocity_sampling,			///< swap sign for velocities in halo regions
+			bool i_pole_pseudo_points
+	)
+	{
+		SphereData_Physical o_data(i_data.sphereDataConfig);
+
+		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_velocity_sampling, i_pole_pseudo_points);
+
+		return o_data;
 	}
 
 

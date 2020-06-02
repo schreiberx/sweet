@@ -60,6 +60,9 @@ class VisSweet	:
 	double viz_min = 0;
 	double viz_max = 0;
 
+	int viewport_width = -1, viewport_height = -1;
+
+	double font_size = -1;
 
 	void vis_setup(VisualizationEngine *i_visualizationEngine)
 	{
@@ -71,13 +74,8 @@ class VisSweet	:
 #endif
 
 		glFreeType = new GlFreeType;
-		glFreeType->loadFont(14, false);
-		if (!glFreeType->valid)
-		{
-//			std::cerr << cGlFreeType.error << std::endl;
-			exit(-1);
-		}
-		//CError_AppendReturn(cGlFreeType);
+
+		update_font();
 
 		glRenderOStream = new GlRenderOStream(*glFreeType);
 
@@ -223,8 +221,9 @@ class VisSweet	:
 			std::string status_string = simulation->vis_get_status_string();
 			std::replace(status_string.begin(), status_string.end(), ',', '\n');
 
-			glFreeType->setPosition(10, visualizationEngine->renderWindow->window_height-16);
+			glFreeType->setPosition(10, visualizationEngine->renderWindow->window_height-font_size-10);
 			glFreeType->renderString(status_string.c_str());
+
 			visSweetHUD->render();
 		}
 
@@ -242,11 +241,30 @@ class VisSweet	:
 		return title_string;
 	}
 
+	void update_font()
+	{
+		// reload font
+		font_size = std::max(viewport_width, viewport_height);
+		font_size /= 40.0;
+
+		font_size = std::min(50.0, font_size);
+		font_size = std::max(10.0, font_size);
+
+		glFreeType->loadFont(font_size, false);
+		if (!glFreeType->valid)
+		{
+			SWEETError("Loading font failed");
+			exit(-1);
+		}
+	}
 
 
 	void vis_viewportChanged(int i_width, int i_height)
 	{
+		viewport_width = i_width;
+		viewport_height = i_height;
 
+		update_font();
 	}
 
 

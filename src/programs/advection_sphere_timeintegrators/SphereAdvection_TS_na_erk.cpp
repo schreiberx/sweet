@@ -90,24 +90,6 @@ void SphereAdvection_TS_na_erk::run_timestep(
 			timestepping_order,
 			i_simulation_timestamp
 		);
-
-	if (i_sphereBenchmarks != nullptr)
-	{
-		i_sphereBenchmarks->master->get_varying_velocities(
-				io_u,
-				io_v,
-				i_simulation_timestamp+i_fixed_dt
-			);
-	}
-
-/*
-	if (simVars.benchmark.getExternalForcesCallback != nullptr)
-	{
-		// this is just called for cosmetic reasons to update the velocity field
-		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_vrt, simVars.benchmark.getExternalForcesUserData);
-		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_div, simVars.benchmark.getExternalForcesUserData);
-	}
-*/
 }
 
 

@@ -27,7 +27,6 @@ class SphereAdvection_TS_na_sl	: public SphereAdvection_TS_interface
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
-	SphereData_Spectral U_phi_prev;
 	SphereData_Physical U_u_prev, U_v_prev;
 
 public:
@@ -47,6 +46,20 @@ public:
 
 	void setup(
 			int i_order	///< order of RK time stepping method
+	);
+
+
+	void interpolate_departure_point_uvw(
+			const SphereData_Spectral &i_u,
+			const SphereData_Spectral &i_v,
+			const SphereData_Spectral &i_w,
+
+			const ScalarDataArray &i_pos_lon_D,
+			const ScalarDataArray &i_pos_lat_D,
+
+			SphereData_Spectral &o_u,
+			SphereData_Spectral &o_v,
+			SphereData_Spectral &o_w
 	);
 
 

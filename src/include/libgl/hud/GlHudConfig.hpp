@@ -830,7 +830,6 @@ public:
 			else if (o.in_area)
 				cGlFreeType->setColor(GLSL::vec3(1,0.5,0.5));
 
-
 			std::array<float,2> tmp;
 			tmp = {(float)o.description_render_left, (float)o.description_render_top};
 			cGlFreeType->setPosition(tmp);

@@ -37,9 +37,19 @@ public:
 			const BenchmarksSphereAdvection *i_sphereBenchmarks
 	)
 	{
-		SWEETAssert(io_prognostic_fields.size() != 1, "TODO: Implement run_timestep with multiple prognostic fields");
+		if (io_prognostic_fields.size() == 1)
+		{
+			run_timestep(
+					*io_prognostic_fields[0],
+					io_u,
+					io_v,
+					i_fixed_dt,
+					i_simulation_timestamp,
+					i_sphereBenchmarks
+				);
+		}
 
-		run_timestep(*io_prognostic_fields[0], io_u, io_v, i_fixed_dt, i_simulation_timestamp, i_sphereBenchmarks);
+		SWEETError("TODO: Implement single prognostic time integration for this time integrator");
 	}
 
 	/*

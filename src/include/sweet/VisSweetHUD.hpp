@@ -161,7 +161,9 @@ private:
 	int mouse_x;
 	int mouse_y;
 
-	GlFreeType *cGlFreeType;
+	GlFreeType *cGlFreeType = nullptr;
+
+	GlRenderOStream *glRenderOStream = nullptr;
 
 
 public:
@@ -172,6 +174,22 @@ public:
 		run_simulation_timesteps(true)
 	{
 		setHudVisibility(false);
+	}
+
+
+	void free()
+	{
+		if (cGlFreeType != nullptr)
+		{
+			delete cGlFreeType;
+			cGlFreeType = nullptr;
+		}
+
+		if (glRenderOStream != nullptr)
+		{
+			delete glRenderOStream;
+			glRenderOStream = nullptr;
+		}
 	}
 
 
@@ -351,27 +369,9 @@ public:
 		cGlHudConfigInfo.insert(o.setupText(" e: reset simulation & view"));
 		cGlHudConfigInfo.insert(o.setupText(" v/V: increase/decrease visualization id"));
 		cGlHudConfigInfo.insert(o.setupText(" a, s, d, w: movement"));
-//		cGlHudConfigInfo.insert(o.setupText(" o/O: switch between surface visualization modes"));
-//		cGlHudConfigInfo.insert(o.setupText(" b/B: switch between bathymetry visualization modes"));
-//		cGlHudConfigInfo.insert(o.setupText(" u: toggle rendering wireframe (dark blue)"));
-//		cGlHudConfigInfo.insert(o.setupText(" p: toggle rendering cluster borders (red)"));
-//		cGlHudConfigInfo.insert(o.setupText(" l: pause/continue simulation"));
-//		cGlHudConfigInfo.insert(o.setupText(" k: setup terrain"));
-//		cGlHudConfigInfo.insert(o.setupText(" f: toggle fullscreen"));
-//		cGlHudConfigInfo.insert(o.setupText(""));
-//		cGlHudConfigInfo.insert(o.setupText("|--- DEBUG ---|"));
-//		cGlHudConfigInfo.insert(o.setupText(" M: output edge communication information"));
-//		cGlHudConfigInfo.insert(o.setupText(" m: output information about element data"));
-//		cGlHudConfigInfo.insert(o.setupText(" n: output information about cluster"));
-//		cGlHudConfigInfo.insert(o.setupText(" R: start recording bitmaps"));
-//		cGlHudConfigInfo.insert(o.setupText(""));
-//		cGlHudConfigInfo.insert(o.setupText("|--- EXPERIMENTAL EXTRAS ---|"));
-//		cGlHudConfigInfo.insert(o.setupText(" i: start emitting random raindrops"));
-//		cGlHudConfigInfo.insert(o.setupText(" V: output some usage memory information"));
 
 		windowInfo.setPosition(GLSL::ivec2(10, 10));
 		windowInfo.setBackgroundColor(GLSL::vec4(256.0/256.0, 256.0/256.0, 128.0/256.0, 0.7));
-//		windowInfo.setSize(GLSL::ivec2(460, 320));
 		windowInfo.setSize(GLSL::ivec2(360, 320));
 #endif
 	}
@@ -385,7 +385,24 @@ public:
 			GlRenderOStream &i_cGlRenderOStream
 	)
 	{
+#if 0
+
 		cGlFreeType = &i_cGlFreeType;
+
+#else
+
+		free();
+
+		cGlFreeType = new GlFreeType();
+		cGlFreeType->loadFont(18, false);
+		if (!cGlFreeType->valid)
+		{
+			std::cerr << "Loading font failed" << std::endl;
+			exit(-1);
+		}
+
+		glRenderOStream = new GlRenderOStream(*cGlFreeType);
+#endif
 
 		int sx, sy;
 #if 0
@@ -398,9 +415,10 @@ public:
 		sy = windowLights.size[1]-10;
 		cGlHudConfigVisualization.setup(*cGlFreeType, i_cGlRenderOStream, sx, sy);
 #endif
+
 		sx = 10;
 		sy = windowInfo.size[1]-10;
-		cGlHudConfigInfo.setup(*cGlFreeType, i_cGlRenderOStream, sx, sy);
+		cGlHudConfigInfo.setup(*cGlFreeType, *glRenderOStream, sx, sy);
 	}
 
 
@@ -441,6 +459,7 @@ public:
 			cGlHudConfigMainRight.renderConfigContent();
 			windowMain.finishRendering();
 #endif
+
 			cGlFreeType->viewportChanged(windowInfo.size.data);
 			windowInfo.startRendering();
 			cGlHudConfigInfo.renderConfigContent();

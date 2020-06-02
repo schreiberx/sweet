@@ -131,7 +131,7 @@ public:
 			);
 
 		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
-			prognostic_variables_t0[i] = prognostic_variables[i];
+			*prognostic_variables_t0[i] = *prognostic_variables[i];
 
 		// has this benchmark time-varying fields?
 		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
@@ -165,6 +165,18 @@ public:
 				simVars.timecontrol.current_simulation_time,
 				(time_varying_fields ? &sphereBenchmarks : nullptr)
 			);
+
+		if (time_varying_fields)
+		{
+			/*
+			 * Update velocities just for sake of the correction visualization
+			 */
+			sphereBenchmarks.master->get_varying_velocities(
+					prog_u,
+					prog_v,
+					simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size
+				);
+		}
 
 		double dt = simVars.timecontrol.current_timestep_size;
 
@@ -228,10 +240,12 @@ public:
 
 		if (simVars.misc.vis_id < 0)
 		{
-			int n = -simVars.misc.vis_id-1;
-			if (n <  (int)SphereData_DebugContainer().size())
+			int id = -simVars.misc.vis_id-1;
+
+#if 0
+			if (id <  (int)SphereData_DebugContainer().size())
 			{
-				SphereData_DebugContainer::DataContainer &d = SphereData_DebugContainer().container_data()[n];
+				SphereData_DebugContainer::DataContainer &d = SphereData_DebugContainer().container_data()[id];
 				if (d.is_spectral)
 					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(d.data_spectral, planeDataConfig);
 				else
@@ -241,6 +255,19 @@ public:
 				*o_aspect_ratio = 0.5;
 				return;
 			}
+#else
+			if (id <  (int)prognostic_variables.size())
+			{
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(
+							*prognostic_variables[id] - *prognostic_variables_t0[id],
+							planeDataConfig
+						);
+
+				*o_dataArray = &viz_plane_data;
+				*o_aspect_ratio = 0.5;
+				return;
+			}
+#endif
 		}
 
 		int total_fields = 2+prognostic_variables.size();
@@ -278,13 +305,22 @@ public:
 		bool found = false;
 		if (simVars.misc.vis_id < 0)
 		{
-			int n = -simVars.misc.vis_id-1;
+			int id = -simVars.misc.vis_id-1;
 
-			if (n <  (int)SphereData_DebugContainer().size())
+#if 0
+			if (id < (int)SphereData_DebugContainer().size())
 			{
-				description = std::string("DEBUG_")+SphereData_DebugContainer().container_data()[n].description;
+				description = std::string("DEBUG_")+SphereData_DebugContainer().container_data()[id].description;
 				found = true;
 			}
+#else
+			if (id <  (int)prognostic_variables.size())
+			{
+				std::ostringstream msg;
+				msg << "DIFF prog. field " << id;
+				description = msg.str();
+			}
+#endif
 		}
 
 		if (!found)

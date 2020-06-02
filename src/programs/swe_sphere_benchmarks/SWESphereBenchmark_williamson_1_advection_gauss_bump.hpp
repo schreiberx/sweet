@@ -36,7 +36,8 @@ public:
 
 		return
 				benchmark_name == "williamson1b"		||
-				benchmark_name == "adv_gauss_bump"	||
+				benchmark_name == "adv_gauss_bump"		||
+				benchmark_name == "advection_gauss_bump"	||
 				false
 		;
 	}
@@ -56,7 +57,8 @@ public:
 	{
 		std::ostringstream stream;
 		stream << "  WILLIAMSON #1 (variant):" << std::endl;
-		stream << "     'williamson1b'" << std::endl;
+		stream << "     'williamson1b'/" << std::endl;
+		stream << "     'adv_gauss_bump'/" << std::endl;
 		stream << "     'adv_gauss_bump': Advection test case of gaussian bump" << std::endl;
 		stream << "         OPTION:" << std::endl;
 		stream << "         --advection-rotation-angle=[angle]" << std::endl;

@@ -224,12 +224,12 @@ public:
 		{
 			switch (key)
 			{
-			case 'a':	engineState->player_velocity[0] += 1;	break;
-			case 'd':	engineState->player_velocity[0] -= 1;	break;
-			case 'w':	engineState->player_velocity[2] += 1;	break;
-			case 's':	engineState->player_velocity[2] -= 1;	break;
-			default:
-				break;
+				case 'a':	engineState->player_velocity[0] += 1;	break;
+				case 'd':	engineState->player_velocity[0] -= 1;	break;
+				case 'w':	engineState->player_velocity[2] += 1;	break;
+				case 's':	engineState->player_velocity[2] -= 1;	break;
+				default:
+					break;
 			}
 		}
 
@@ -353,13 +353,13 @@ public:
 
 
 		/*
-		 * allocate callbacks
+		 * Allocate callbacks
 		 */
 		windowEventCallbacks = new WindowEventCallbacks(programCallbacks, engineState, renderWindow);
 
 
 		/*
-		 * attach callbacks to rendering window
+		 * Attach callbacks to rendering window
 		 * NOW WE ARE ABLE TO PROCESS EVENTS!
 		 */
 		renderWindow->setWindowEventCallback(windowEventCallbacks);

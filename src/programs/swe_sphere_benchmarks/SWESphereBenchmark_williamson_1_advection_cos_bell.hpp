@@ -36,6 +36,7 @@ public:
 		return
 				benchmark_name == "williamson1"		||
 				benchmark_name == "adv_cosine_bell"	||
+				benchmark_name == "advection_cosine_bell"	||
 				false
 		;
 	}
@@ -56,6 +57,7 @@ public:
 		std::ostringstream stream;
 		stream << "  WILLIAMSON #1:" << std::endl;
 		stream << "     'williamson1'" << std::endl;
+		stream << "     'advection_cosine_bell'" << std::endl;
 		stream << "     'adv_cosine_bell': Advection test case of cosine bell" << std::endl;
 		stream << "         OPTION:" << std::endl;
 		stream << "         --advection-rotation-angle=[angle]" << std::endl;

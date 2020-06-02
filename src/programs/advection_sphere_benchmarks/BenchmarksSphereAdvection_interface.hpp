@@ -23,6 +23,7 @@ public:
 			const std::string &i_benchmark_name
 		) = 0;
 
+#if 0
 	virtual void get_initial_state(
 		SphereData_Spectral &o_phi_pert,
 		SphereData_Physical &o_u,
@@ -31,6 +32,7 @@ public:
 	{
 		SWEETError("'get_initial_state' with single prognostic variables not implemented for this benchmark");
 	}
+#endif
 
 	virtual void get_initial_state(
 		std::vector<SphereData_Spectral*> &o_phi_pert,
@@ -43,7 +45,7 @@ public:
 
 	virtual std::string get_help() = 0;
 
-
+#if 0
 	virtual void get_reference_state(
 		SphereData_Spectral &o_phi_pert,
 		double i_timestamp
@@ -51,6 +53,7 @@ public:
 	{
 		SWEETError("'get_reference_state' for single prognostic variables not implemented for this benchmark");
 	}
+#endif
 
 
 	virtual void get_reference_state(
