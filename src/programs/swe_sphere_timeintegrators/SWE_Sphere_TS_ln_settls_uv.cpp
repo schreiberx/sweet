@@ -77,7 +77,7 @@ void SWE_Sphere_TS_ln_settls_uv::interpolate_departure_point_uv(
 #if 1
 
 	ScalarDataArray P_x_D, P_y_D, P_z_D;
-	SWEETMath::latlon_to_cartesian(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
+	SWEETMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
 
 	ScalarDataArray	&P_x_A = semiLagrangian.pos_x_A,
 					&P_y_A = semiLagrangian.pos_y_A,
@@ -118,7 +118,7 @@ void SWE_Sphere_TS_ln_settls_uv::interpolate_departure_point_uv(
 	ScalarDataArray V_lat_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(v_tmp_D);
 
 	ScalarDataArray V_x_D, V_y_D, V_z_D;
-	SWEETMath::latlon_velocity_to_cartesian_velocity(
+	SWEETMath::velocity_latlon_to_cartesian__array(
 			i_pos_lon_D,
 			i_pos_lat_D,
 			V_lon_D,
@@ -132,7 +132,7 @@ void SWE_Sphere_TS_ln_settls_uv::interpolate_departure_point_uv(
 	 * Rotate to velocity vector
 	 */
 	ScalarDataArray V_x_A, V_y_A, V_z_A;
-	SWEETMath::rotate_3d_vector_normalized_rotation_axis(
+	SWEETMath::vector_rotate_3d_normalized_rotation_axis__array(
 			V_x_D, V_y_D, V_z_D,
 			rotation_angle,
 			rot_x, rot_y, rot_z,
@@ -154,7 +154,7 @@ void SWE_Sphere_TS_ln_settls_uv::interpolate_departure_point_uv(
 	 * Return velocity in lat/lon space
 	 */
 	ScalarDataArray V_lon_A, V_lat_A;
-	SWEETMath::cartesian_velocity_to_latlon_velocity(
+	SWEETMath::velocity_cartesian_to_latlon__array(
 			semiLagrangian.pos_lon_A,
 			semiLagrangian.pos_lat_A,
 			V_x_A,

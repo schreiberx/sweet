@@ -240,6 +240,18 @@ public:
 
 //		std::cout << "Get current video driver: " << (char*)SDL_GetCurrentVideoDriver() << std::endl;
 
+		if (i_initial_window_width < 0)
+		{
+			float ddpi;
+			SDL_GetDisplayDPI(0, &ddpi, nullptr, nullptr);
+
+			i_initial_window_width = 2.0*800.0*ddpi/150.0;
+			i_initial_window_height = 2.0*600.0*ddpi/150.0;
+
+			std::cout << ddpi << std::endl;
+			std::cout << i_initial_window_width << ", " << i_initial_window_height << std::endl;
+		}
+
 		window = SDL_CreateWindow(
 						i_initial_window_title,
 						SDL_WINDOWPOS_CENTERED,

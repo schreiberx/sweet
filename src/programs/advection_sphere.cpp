@@ -286,7 +286,11 @@ public:
 				break;
 			}
 		}
-		else if (id >= prognostic_variables.size() + 2 && id < prognostic_variables.size() + 4)
+		else if (
+			prognostic_variables.size() == 2		&&
+			id >= prognostic_variables.size() + 2	&&
+			id < prognostic_variables.size() + 4
+		)
 		{
 			SphereData_Physical u, v;
 			op.vrtdiv_to_uv(*prognostic_variables[0], *prognostic_variables[1], u, v);
@@ -304,6 +308,8 @@ public:
 		}
 		else
 		{
+			SWEETDebugAssert(viz_plane_data.physical_space_data != nullptr);
+			SWEETDebugAssert(viz_plane_data.planeDataConfig != nullptr);
 			viz_plane_data.physical_set_zero();
 		}
 
@@ -361,7 +367,11 @@ public:
 					break;
 				}
 			}
-			else if (id >= prognostic_variables.size() + 2 && id < prognostic_variables.size() + 4)
+			else if (
+					prognostic_variables.size() == 2		&&
+					id >= prognostic_variables.size() + 2	&&
+					id < prognostic_variables.size() + 4
+			)
 			{
 				switch (id - prognostic_variables.size() - 2)
 				{

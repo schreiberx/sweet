@@ -3,9 +3,11 @@
  */
 
 #include "BenchmarksSphereAdvection.hpp"
+
+#include "BenchmarksSphereAdvection_advection_vector_uv_velocities.hpp"
+#include "BenchmarksSphereAdvection_advection_vector_uv_gauss_bumps.hpp"
+#include "BenchmarksSphereAdvection_advection_vector_3d_normal_vectors.hpp"
 #include "BenchmarksSphereAdvection_nair_lauritzen_sl.hpp"
-#include "BenchmarksSphereAdvection_vector_3d_advection_gauss_bump.hpp"
-#include "BenchmarksSphereAdvection_vector_uv_advection_gauss_bump.hpp"
 #include "BenchmarksSphereAdvection_williamson_1_advection_cos_bell.hpp"
 #include "BenchmarksSphereAdvection_williamson_1_advection_gauss_bump.hpp"
 #include "BenchmarksSphereAdvection_zero.hpp"
@@ -90,8 +92,9 @@ void BenchmarksSphereAdvection::benchmarks_register_all()
 {
 	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_zero));
 	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_nair_lauritzen_sl));
-	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_vector_3d_advection_gauss_bump));
-	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_vector_uv_advection_gauss_bump));
+	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_advection_vector_uv_velocities));
+	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_advection_vector_uv_gauss_bumps));
+	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_advection_vector_3d_normal_vectors));
 	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_williamson_1_advection_cos_bell));
 	registered_benchmarks.push_back(static_cast<BenchmarksSphereAdvection_interface*>(new BenchmarksSphereAdvection_williamson_1_advection_gauss_bump));
 }

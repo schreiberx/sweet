@@ -118,8 +118,6 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_3d(
 	ScalarDataArray V_w_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(w_tmp_D);
 
 #if 1
-
-
 	/*
 	 * Here we have the velocity at the departure points.
 	 *
@@ -130,7 +128,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_3d(
 	 * Compute departure position
 	 */
 	ScalarDataArray P_x_D, P_y_D, P_z_D;
-	SWEETMath::latlon_to_cartesian(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
+	SWEETMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
 
 	ScalarDataArray	&P_x_A = semiLagrangian.pos_x_A;
 	ScalarDataArray	&P_y_A = semiLagrangian.pos_y_A;
@@ -168,7 +166,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_3d(
 	 * Rotate vector (using transpose of rotation matrix without translation!)
 	 */
 	ScalarDataArray V_u_A, V_v_A, V_w_A;
-	SWEETMath::rotate_3d_vector_normalized_rotation_axis(
+	SWEETMath::point_rotate_3d_normalized_rotation_axis__array(
 			V_u_D, V_v_D, V_w_D,
 			rotation_angle,
 			rot_x, rot_y, rot_z,
@@ -210,8 +208,55 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 	o_u.setup_if_required(i_u.sphereDataConfig);
 	o_v.setup_if_required(i_v.sphereDataConfig);
 
-#if 0
+
 	/*********************************************************************
+	 * Step 1)
+	 * Sample velocity at departure points and convert to Cartesian space
+	 *********************************************************************/
+
+	/*
+	 * First we sample the field at the departure point
+	 */
+	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+			i_u,
+			i_pos_lon_D, i_pos_lat_D,
+			true,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
+		);
+
+	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+			i_v,
+			i_pos_lon_D, i_pos_lat_D,
+			true,
+			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+			simVars.disc.semi_lagrangian_interpolation_limiter
+		);
+
+	/*
+	 * Convert to Cartesian space
+	 */
+	ScalarDataArray V_lon_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(u_tmp_D);
+	ScalarDataArray V_lat_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(v_tmp_D);
+
+	/*
+	 * Convert from UV Velocity space to 3D Cartesian space
+	 */
+	ScalarDataArray V_x_D, V_y_D, V_z_D;
+	SWEETMath::velocity_latlon_to_cartesian__array(
+			i_pos_lon_D,
+			i_pos_lat_D,
+			V_lon_D,
+			V_lat_D,
+			V_x_D,
+			V_y_D,
+			V_z_D
+		);
+
+#if 0
+
+	/*********************************************************************
+	 * Step2)
 	 * Prepare rotation
 	 *********************************************************************
 	 * Here we have the velocity at the departure points.
@@ -223,7 +268,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 	 * Compute departure position
 	 */
 	ScalarDataArray P_x_D, P_y_D, P_z_D;
-	SWEETMath::latlon_to_cartesian(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
+	SWEETMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
 
 	ScalarDataArray	&P_x_A = semiLagrangian.pos_x_A;
 	ScalarDataArray	&P_y_A = semiLagrangian.pos_y_A;
@@ -258,69 +303,35 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 	SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
 
 
-	/*********************************************************************
-	 * VELOCITY
-	 *********************************************************************
-	 */
-
-	/*
-	 * First we sample the field at the departure point
-	 */
-	SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			i_u,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
-	SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			i_v,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
-	/*
-	 * Convert to Cartesian space
-	 */
-
-	ScalarDataArray V_lon_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(u_tmp_D);
-	ScalarDataArray V_lat_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(v_tmp_D);
-
-	/*
-	 * Convert from UV Velocity space to 3D Cartesian space
-	 */
-	ScalarDataArray V_x_D, V_y_D, V_z_D;
-	SWEETMath::latlon_velocity_to_cartesian_velocity(
-			i_pos_lon_D,
-			i_pos_lat_D,
-			V_lon_D,
-			V_lat_D,
-			V_x_D,
-			V_y_D,
-			V_z_D
-		);
-
-
 	/*
 	 * Rotate vector (using transpose of rotation matrix without translation!)
 	 */
 	ScalarDataArray V_x_A, V_y_A, V_z_A;
-	SWEETMath::rotate_3d_vector_normalized_rotation_axis(
+	SWEETMath::point_rotate_3d_normalized_rotation_axis__array(
 			V_x_D, V_y_D, V_z_D,
 			rotation_angle,
 			rot_x, rot_y, rot_z,
 			V_x_A, V_y_A, V_z_A
 		);
 
+#else
+
+	ScalarDataArray V_x_A = V_x_D;
+	ScalarDataArray V_y_A = V_y_D;
+	ScalarDataArray V_z_A = V_z_D;
+
+#endif
+
+	/*********************************************************************
+	 * Step 3)
+	 * Convert Velocity from Cartesian to u/v space
+	 *********************************************************************/
 
 	/*
 	 * Return velocity in lat/lon space
 	 */
 	ScalarDataArray V_lon_A, V_lat_A;
-	SWEETMath::cartesian_velocity_to_latlon_velocity(
+	SWEETMath::velocity_cartesian_to_latlon__array(
 			semiLagrangian.pos_lon_A,
 			semiLagrangian.pos_lat_A,
 			V_x_A,
@@ -331,27 +342,6 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 
 	o_u = Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lon_A, sphereDataConfig);
 	o_v = Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lat_A, sphereDataConfig);
-
-#else
-
-	o_u = sphereSampler.bicubic_scalar_ret_phys(
-			i_u,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
-	o_v = sphereSampler.bicubic_scalar_ret_phys(
-			i_v,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
-			simVars.disc.semi_lagrangian_interpolation_limiter
-		);
-
-#endif
-
 }
 
 

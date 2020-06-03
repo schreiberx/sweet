@@ -321,7 +321,11 @@ public:
 		)	:
 			programCallbacks(&(ProgramCallbacks&)*i_simulationClassWithProgramCallbacks)
 	{
-		renderWindow = new RenderWindow("SWEET");
+		renderWindow = new RenderWindow(
+				"SWEET",
+				-1,
+				-1
+				);
 
 
 		if (!renderWindow->initialized)

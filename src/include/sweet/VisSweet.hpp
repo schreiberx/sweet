@@ -243,12 +243,20 @@ class VisSweet	:
 
 	void update_font()
 	{
-		// reload font
-		font_size = std::max(viewport_width, viewport_height);
-		font_size /= 40.0;
+		// Approx. desired font size on standard display and standard viewport height
+		font_size = 14.0;
 
+		// rescale with viewport size
+		font_size *= std::max(viewport_width, viewport_height)/(2.0*800.0);
+
+		// Limit font size
 		font_size = std::min(50.0, font_size);
-		font_size = std::max(10.0, font_size);
+		font_size = std::max(14.0, font_size);
+
+		// Incorporate HiDPI information
+		float ddpi;
+		SDL_GetDisplayDPI(0, &ddpi, nullptr, nullptr);
+		font_size *= ddpi/100.0;
 
 		glFreeType->loadFont(font_size, false);
 		if (!glFreeType->valid)

@@ -85,17 +85,17 @@ public:
 		sphereDataConfig = i_sphereDataConfig;
 		sphereSampler.setup(sphereDataConfig);
 
-		if (simVars.disc.semi_lagrangian_departure_point_method == "canonical")
+		if (simVars.disc.semi_lagrangian_departure_point_method == "settls")
+		{
+			trajectory_method = E_TRAJECTORY_METHOD_SETTLS_HORTAL;
+		}
+		else if (simVars.disc.semi_lagrangian_departure_point_method == "canonical")
 		{
 			trajectory_method = E_TRAJECTORY_METHOD_CANONICAL;
 		}
 		else if (simVars.disc.semi_lagrangian_departure_point_method == "midpoint")
 		{
 			trajectory_method = E_TRAJECTORY_METHOD_MIDPOINT_RITCHIE;
-		}
-		else if (simVars.disc.semi_lagrangian_departure_point_method == "settls")
-		{
-			trajectory_method = E_TRAJECTORY_METHOD_SETTLS_HORTAL;
 		}
 		else
 		{
@@ -140,7 +140,7 @@ public:
 		pos_y_A.setup(i_sphereDataConfig->physical_array_data_number_of_elements);
 		pos_z_A.setup(i_sphereDataConfig->physical_array_data_number_of_elements);
 
-		SWEETMath::latlon_to_cartesian(
+		SWEETMath::point_latlon_to_cartesian__array(
 				pos_lon_A, pos_lat_A,
 				pos_x_A, pos_y_A, pos_z_A
 			);
@@ -247,7 +247,7 @@ public:
 			/*
 			 * Rotate
 			 */
-			SWEETMath::rotate_3d_point_normalized_rotation_axis(
+			SWEETMath::point_rotate_3d_normalized_rotation_axis__array(
 					i_pos_x,
 					i_pos_y,
 					i_pos_z,
@@ -307,7 +307,7 @@ public:
 			ScalarDataArray v_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_v_lat);
 
 			ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-			SWEETMath::latlon_velocity_to_cartesian_velocity(
+			SWEETMath::velocity_latlon_to_cartesian__array(
 					pos_lon_A, pos_lat_A,
 					u_lon_array, v_lat_array,
 					vel_x_A, vel_y_A, vel_z_A
@@ -330,7 +330,7 @@ public:
 			/*
 			 * Departure point to lat/lon coordinate
 			 */
-			SWEETMath::cartesian_to_latlon(
+			SWEETMath::point_cartesian_to_latlon__array(
 					new_pos_x_d, new_pos_y_d, new_pos_z_d,
 					o_pos_lon_D, o_pos_lat_D
 				);
@@ -361,7 +361,7 @@ public:
 				 * Polar => Cartesian velocities
 				 */
 				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::latlon_velocity_to_cartesian_velocity(
+				SWEETMath::velocity_latlon_to_cartesian__array(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
 						vel_x_A, vel_y_A, vel_z_A
@@ -408,7 +408,7 @@ public:
 					ScalarDataArray pos_lon_mid(sphereDataConfig->physical_array_data_number_of_elements);
 					ScalarDataArray pos_lat_mid(sphereDataConfig->physical_array_data_number_of_elements);
 
-					SWEETMath::cartesian_to_latlon(
+					SWEETMath::point_cartesian_to_latlon__array(
 							pos_x_mid, pos_y_mid, pos_z_mid,
 							pos_lon_mid, pos_lat_mid
 						);
@@ -418,7 +418,7 @@ public:
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_mid(num_elements), vel_y_mid(num_elements), vel_z_mid(num_elements);
-					SWEETMath::latlon_velocity_to_cartesian_velocity(
+					SWEETMath::velocity_latlon_to_cartesian__array(
 							pos_lon_mid, pos_lat_mid,
 							vel_u_mid, vel_v_mid,
 							vel_x_mid, vel_y_mid, vel_z_mid
@@ -446,7 +446,7 @@ public:
 				}
 
 				// convert final points from Cartesian space to angular space
-				SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 			}
 			else if (trajectory_method == E_TRAJECTORY_METHOD_MIDPOINT_RITCHIE)
 			{
@@ -459,7 +459,7 @@ public:
 
 				// Polar => Cartesian velocities
 				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::latlon_velocity_to_cartesian_velocity(
+				SWEETMath::velocity_latlon_to_cartesian__array(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
 						vel_x_A, vel_y_A, vel_z_A
@@ -496,7 +496,7 @@ public:
 				 */
 				for (int i = 0; i < 2; i++)
 				{
-					SWEETMath::cartesian_to_latlon(
+					SWEETMath::point_cartesian_to_latlon__array(
 							pos_x_D, pos_y_D, pos_z_D,
 							o_pos_lon_D, o_pos_lat_D
 						);
@@ -506,7 +506,7 @@ public:
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_D(num_elements), vel_y_D(num_elements), vel_z_D(num_elements);
-					SWEETMath::latlon_velocity_to_cartesian_velocity(
+					SWEETMath::velocity_latlon_to_cartesian__array(
 							o_pos_lon_D, o_pos_lat_D,
 							u_D, v_D,
 							vel_x_D, vel_y_D, vel_z_D
@@ -540,7 +540,7 @@ public:
 				pos_z_D = dot2*pos_z_D - pos_z_A;
 
 				// convert final points from Cartesian space to angular space
-				SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 			}
 			else if (trajectory_method == E_TRAJECTORY_METHOD_SETTLS_HORTAL)
 			{
@@ -561,7 +561,7 @@ public:
 
 				// Polar => Cartesian velocities
 				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::latlon_velocity_to_cartesian_velocity(
+				SWEETMath::velocity_latlon_to_cartesian__array(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
 						vel_x_A, vel_y_A, vel_z_A
@@ -597,7 +597,7 @@ public:
 
 				for (int iters = 0; iters < max_iterations; iters++)
 				{
-					SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+					SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 
 
 					/*
@@ -611,7 +611,7 @@ public:
 					ScalarDataArray vel_x_extrapol_D(num_elements), vel_y_extrapol_D(num_elements), vel_z_extrapol_D(num_elements);
 
 					// polar => Cartesian coordinates
-					SWEETMath::latlon_velocity_to_cartesian_velocity(
+					SWEETMath::velocity_latlon_to_cartesian__array(
 							o_pos_lon_D, o_pos_lat_D,
 							vel_lon_extrapol_D, vel_lat_extrapol_D,
 							vel_x_extrapol_D, vel_y_extrapol_D, vel_z_extrapol_D
@@ -668,7 +668,7 @@ public:
 				}
 
 				// convert final points from Cartesian space to angular space
-				SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 			}
 			else
 			{
@@ -715,7 +715,7 @@ public:
 			ScalarDataArray v_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_v_lat);
 
 			ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-			SWEETMath::latlon_velocity_to_cartesian_velocity(
+			SWEETMath::velocity_latlon_to_cartesian__array(
 					pos_lon_A, pos_lat_A,
 					u_lon_array, v_lat_array,
 					vel_x_A, vel_y_A, vel_z_A
@@ -737,7 +737,7 @@ public:
 			/*
 			 * Departure point to lat/lon coordinate
 			 */
-			SWEETMath::cartesian_to_latlon(
+			SWEETMath::point_cartesian_to_latlon__array(
 					new_pos_x_d, new_pos_y_d, new_pos_z_d,
 					o_pos_lon_D, o_pos_lat_D
 				);
@@ -768,7 +768,7 @@ public:
 				 * Polar => Cartesian velocities
 				 */
 				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::latlon_velocity_to_cartesian_velocity(
+				SWEETMath::velocity_latlon_to_cartesian__array(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
 						vel_x_A, vel_y_A, vel_z_A
@@ -815,7 +815,7 @@ public:
 					ScalarDataArray pos_lon_mid(sphereDataConfig->physical_array_data_number_of_elements);
 					ScalarDataArray pos_lat_mid(sphereDataConfig->physical_array_data_number_of_elements);
 
-					SWEETMath::cartesian_to_latlon(
+					SWEETMath::point_cartesian_to_latlon__array(
 							pos_x_mid, pos_y_mid, pos_z_mid,
 							pos_lon_mid, pos_lat_mid
 						);
@@ -825,7 +825,7 @@ public:
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_mid(num_elements), vel_y_mid(num_elements), vel_z_mid(num_elements);
-					SWEETMath::latlon_velocity_to_cartesian_velocity(
+					SWEETMath::velocity_latlon_to_cartesian__array(
 							pos_lon_mid, pos_lat_mid,
 							vel_u_mid, vel_v_mid,
 							vel_x_mid, vel_y_mid, vel_z_mid
@@ -886,7 +886,7 @@ public:
 				}
 
 				// convert final points from Cartesian space to angular space
-				SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 			}
 			else if (trajectory_method == E_TRAJECTORY_METHOD_MIDPOINT_RITCHIE)
 			{
@@ -899,7 +899,7 @@ public:
 
 				// Polar => Cartesian velocities
 				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::latlon_velocity_to_cartesian_velocity(
+				SWEETMath::velocity_latlon_to_cartesian__array(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
 						vel_x_A, vel_y_A, vel_z_A
@@ -936,7 +936,7 @@ public:
 				double diff = -1;
 				for (int i = 0; i < semi_lagrangian_max_iterations; i++)
 				{
-					SWEETMath::cartesian_to_latlon(
+					SWEETMath::point_cartesian_to_latlon__array(
 							pos_x_D, pos_y_D, pos_z_D,
 							o_pos_lon_D, o_pos_lat_D
 						);
@@ -946,7 +946,7 @@ public:
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_D(num_elements), vel_y_D(num_elements), vel_z_D(num_elements);
-					SWEETMath::latlon_velocity_to_cartesian_velocity(
+					SWEETMath::velocity_latlon_to_cartesian__array(
 							o_pos_lon_D, o_pos_lat_D,
 							u_D, v_D,
 							vel_x_D, vel_y_D, vel_z_D
@@ -1014,7 +1014,7 @@ public:
 				pos_z_D = dot2*pos_z_D - pos_z_A;
 
 
-				SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 
 			}
 			else if (trajectory_method == E_TRAJECTORY_METHOD_SETTLS_HORTAL)
@@ -1036,7 +1036,7 @@ public:
 
 				// Polar => Cartesian velocities
 				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::latlon_velocity_to_cartesian_velocity(
+				SWEETMath::velocity_latlon_to_cartesian__array(
 						pos_lon_A, pos_lat_A,
 						vel_lon_array, vel_lat_array,
 						vel_x_A, vel_y_A, vel_z_A
@@ -1070,7 +1070,7 @@ public:
 				double diff = -1;
 				for (int iters = 0; iters < semi_lagrangian_max_iterations; iters++)
 				{
-					SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+					SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 
 					/*
 					 * WARNING: Never convert this to vort/div space!!!
@@ -1093,7 +1093,7 @@ public:
 					ScalarDataArray vel_x_extrapol_D(num_elements), vel_y_extrapol_D(num_elements), vel_z_extrapol_D(num_elements);
 
 					// polar => Cartesian coordinates
-					SWEETMath::latlon_velocity_to_cartesian_velocity(
+					SWEETMath::velocity_latlon_to_cartesian__array(
 							o_pos_lon_D, o_pos_lat_D,
 							vel_lon_extrapol_D, vel_lat_extrapol_D,
 							vel_x_extrapol_D, vel_y_extrapol_D, vel_z_extrapol_D
@@ -1149,7 +1149,7 @@ public:
 				}
 
 				// convert final points from Cartesian space to angular space
-				SWEETMath::cartesian_to_latlon(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
+				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
 			}
 			else
 			{

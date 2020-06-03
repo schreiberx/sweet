@@ -93,7 +93,8 @@ public:
 
 #ifdef NDEBUG
 
-	#define SWEETDebugAssert(assertion, msg)
+	#define SWEETDebugAssert_msg(assertion, msg)
+	#define SWEETDebugAssert(assertion)
 
 #else
 
@@ -115,7 +116,9 @@ public:
 		}
 	};
 
-	#define SWEETDebugAssert(assertion, msg)	SWEETDebugAssert_(assertion, msg, __FILE__, __LINE__, __func__)
+	#define SWEETDebugAssert_msg(assertion, msg)	SWEETDebugAssert_(assertion, msg, __FILE__, __LINE__, __func__)
+
+	#define SWEETDebugAssert(assertion)			SWEETDebugAssert_(assertion, "", __FILE__, __LINE__, __func__)
 
 #endif
 

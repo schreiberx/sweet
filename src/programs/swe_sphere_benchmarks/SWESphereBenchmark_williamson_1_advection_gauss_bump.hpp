@@ -89,7 +89,6 @@ public:
 		SphereData_Spectral &o_div
 	)
 	{
-		double gh0 = simVars->sim.gravitation * simVars->sim.h0;
 		/*
 		 * Alternative to original Williamson #1 advection test case which is based on a Gaussian bell instead of a cosine bell.
 		 * This allows to test for L_inf convergence.
@@ -170,8 +169,6 @@ public:
 		);
 #endif
 		o_div.spectral_set_zero();
-
-		o_phi_pert -= gh0;
 	}
 };
 

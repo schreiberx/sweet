@@ -2,8 +2,8 @@
  * Author: Martin Schreiber <SchreiberX@Gmail.com>
  */
 
-#ifndef SRC_BENCHMARKS_SPHERE_VECTOR_3D_ADVECTION_GAUSS_BUMP_HPP_
-#define SRC_BENCHMARKS_SPHERE_VECTOR_3D_ADVECTION_GAUSS_BUMP_HPP_
+#ifndef SRC_BENCHMARKS_SPHERE_VECTOR_3D_ADVECTION_VECTOR_3D_NORMAL_VECTORS_
+#define SRC_BENCHMARKS_SPHERE_VECTOR_3D_ADVECTION_VECTOR_3D_NORMAL_VECTORS_
 
 #include "BenchmarksSphereAdvection_interface.hpp"
 #include <ostream>
@@ -15,7 +15,7 @@
 
 
 
-class BenchmarksSphereAdvection_vector_3d_advection_gauss_bump	: public BenchmarksSphereAdvection_interface
+class BenchmarksSphereAdvection_advection_vector_3d_normal_vectors	: public BenchmarksSphereAdvection_interface
 {
 	SimulationVariables *simVars = nullptr;
 	SphereOperators_SphereData *ops = nullptr;
@@ -23,7 +23,7 @@ class BenchmarksSphereAdvection_vector_3d_advection_gauss_bump	: public Benchmar
 	SWESphereBenchmark_williamson_1_advection_gauss_bump benchmark;
 
 public:
-	BenchmarksSphereAdvection_vector_3d_advection_gauss_bump()
+	BenchmarksSphereAdvection_advection_vector_3d_normal_vectors()
 	{
 	}
 
@@ -32,7 +32,7 @@ public:
 		)
 	{
 		return (
-				i_benchmark_name == "vector_3d_advection_gauss_bump"	||
+				i_benchmark_name == "vector_3d_normal_vector"	||
 				false
 			);
 	}
@@ -56,7 +56,7 @@ public:
 		std::ostringstream stream;
 
 		stream << " * Advection test case with 3d vector:" << std::endl;
-		stream << "    + 'vector_3d_advection_gauss_bump'" << std::endl;
+		stream << "    + 'vector_3d_normal_vector'" << std::endl;
 
 		return stream.str();
 	}
@@ -101,7 +101,7 @@ public:
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
-					SWEETMath::latlon_to_cartesian(lon, lat, ret);
+					SWEETMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
 					o_data = ret[0];
 				}
 		);
@@ -110,7 +110,7 @@ public:
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
-					SWEETMath::latlon_to_cartesian(lon, lat, ret);
+					SWEETMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
 					o_data = ret[1];
 				}
 		);
@@ -119,7 +119,7 @@ public:
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
-					SWEETMath::latlon_to_cartesian(lon, lat, ret);
+					SWEETMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
 					o_data = ret[2];
 				}
 		);
