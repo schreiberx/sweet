@@ -47,9 +47,11 @@ public:
 					i_simulation_timestamp,
 					i_sphereBenchmarks
 				);
+
+			return;
 		}
 
-		SWEETError("TODO: Implement single prognostic time integration for this time integrator");
+		SWEETError("TODO: Implement time integration for multiple prognostic variables");
 	}
 
 	/*
@@ -67,7 +69,7 @@ public:
 			const BenchmarksSphereAdvection *i_sphereBenchmarks
 	)
 	{
-		SWEETError("TODO: Implement single prognostic time integration for this time integrator");
+		SWEETError("TODO: Implement single prognostic variable time integration for this time integrator");
 	}
 
 
