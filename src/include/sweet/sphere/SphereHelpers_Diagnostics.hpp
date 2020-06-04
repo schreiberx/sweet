@@ -194,7 +194,7 @@ public:
 
 
 public:
-	void update_phi_vort_div_2_mass_energy_enstrophy(
+	void update_phi_vrt_div_2_mass_energy_enstrophy(
 			const SphereOperators_SphereData &op,
 			const SphereData_Spectral &i_prog_phi,
 			const SphereData_Spectral &i_prog_vort,

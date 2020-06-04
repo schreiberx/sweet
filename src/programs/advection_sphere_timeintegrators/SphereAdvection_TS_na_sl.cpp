@@ -254,9 +254,12 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 		);
 
 #if 0
+	/*
+	 * This seems to be not necessary. It's still converging with 2nd order without it!
+	 */
 
 	/*********************************************************************
-	 * Step2)
+	 * Step 2)
 	 * Prepare rotation
 	 *********************************************************************
 	 * Here we have the velocity at the departure points.
