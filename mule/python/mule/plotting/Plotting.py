@@ -26,7 +26,11 @@ class Plotting(InfoError):
     def __init__(self):
         InfoError.__init__(self, 'Plotting')
 
+        self.convergence_order = None
+        self.convergence_start_pos = None
+
         self.reset()
+
 
 
     def reset(self):
@@ -51,6 +55,51 @@ class Plotting(InfoError):
         plt.clf()
         plt.cla()
         plt.close()
+
+
+
+    def add_convergence(
+            self,
+            convergence_order = 2,
+            convergence_start_pos = [1, 2],
+            convergence_rel_delta_x = 0.5,
+        ):
+        """
+        Plot convergence
+        """
+        self.convergence_order = convergence_order
+        self.convergence_start_pos = convergence_start_pos
+        self.convergence_rel_delta_x = convergence_rel_delta_x
+
+
+
+    def _plot_convergence(self):
+
+        convergence_rel_delta_x = (1.0-self.convergence_rel_delta_x)
+        convergence_rel_delta_y = (1.0-self.convergence_rel_delta_x)**self.convergence_order
+
+        convergence_end_pos = [
+                convergence_rel_delta_x*self.convergence_start_pos[0],
+                convergence_rel_delta_y*self.convergence_start_pos[1],
+            ]
+
+        line_x = [self.convergence_start_pos[0], convergence_end_pos[0]]
+        line_y = [self.convergence_start_pos[1], convergence_end_pos[1]]
+
+        line = plt.plot(line_x, line_y, linestyle="--", color="gray")
+        x = line[0].get_xdata()[0]
+        y = line[0].get_ydata()[0]
+
+        self.ax.annotate(
+                "Order "+str(self.convergence_order),
+                xy=(x*1.05, y*1.05),
+                #xytext=(6,0),
+                color=line[0].get_color(), 
+                #xycoords = self.ax.get_yaxis_transform(),
+                #textcoords="offset points",
+                size=10,
+                #va="center"
+           )
 
 
     def _get_color(self, i):
@@ -174,6 +223,9 @@ class Plotting(InfoError):
 
 
     def plot_finish(self):
+        if self.convergence_order != None:
+            self._plot_convergence()
+
         if self.legend:
             plt.legend(fontsize=self.legend_fontsize)
 
