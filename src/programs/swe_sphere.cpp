@@ -124,7 +124,7 @@ public:
 		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
 			return;
 
-		sphereDiagnostics.update_phi_vort_div_2_mass_energy_enstrophy(
+		sphereDiagnostics.update_phi_vrt_div_2_mass_energy_enstrophy(
 				op,
 				prog_phi_pert,
 				prog_vrt,
@@ -161,14 +161,14 @@ public:
 			// this is not the default since noone uses it
 			// use reduced physical space for setup to avoid spurious modes
 			SphereData_Spectral prog_phi_pert_nodealiasing(sphereDataConfig_nodealiasing);
-			SphereData_Spectral prog_vort_nodealiasing(sphereDataConfig_nodealiasing);
+			SphereData_Spectral prog_vrt_nodealiasing(sphereDataConfig_nodealiasing);
 			SphereData_Spectral prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
 			sphereBenchmarks.setup(simVars, op_nodealiasing);
-			sphereBenchmarks.master->get_initial_state(prog_phi_pert_nodealiasing, prog_vort_nodealiasing, prog_div_nodealiasing);
+			sphereBenchmarks.master->get_initial_state(prog_phi_pert_nodealiasing, prog_vrt_nodealiasing, prog_div_nodealiasing);
 
 			prog_phi_pert.load_nodealiasing(prog_phi_pert_nodealiasing);
-			prog_vrt.load_nodealiasing(prog_vort_nodealiasing);
+			prog_vrt.load_nodealiasing(prog_vrt_nodealiasing);
 			prog_div.load_nodealiasing(prog_div_nodealiasing);
 		}
 
@@ -292,7 +292,7 @@ public:
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_csv(prog_vrt, "prog_vort");
+			output_filename = write_file_csv(prog_vrt, "prog_vrt");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
@@ -300,9 +300,9 @@ public:
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			SphereData_Spectral potvort = (prog_phi_pert/simVars.sim.gravitation)*prog_vrt;
+			SphereData_Spectral potvrt = (prog_phi_pert/simVars.sim.gravitation)*prog_vrt;
 
-			output_filename = write_file_csv(potvort, "prog_potvort");
+			output_filename = write_file_csv(potvrt, "prog_potvrt");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 		}
@@ -314,7 +314,7 @@ public:
 			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_bin(prog_vrt, "prog_vort");
+			output_filename = write_file_bin(prog_vrt, "prog_vrt");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
@@ -360,17 +360,17 @@ public:
 			}
 
 			SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);
-			SphereData_Spectral anal_solution_vort(sphereDataConfig);
+			SphereData_Spectral anal_solution_vrt(sphereDataConfig);
 			SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 			sphereBenchmarks.setup(simVars, op);
-			sphereBenchmarks.master->get_initial_state(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
+			sphereBenchmarks.master->get_initial_state(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
 
 			/*
 			 * Compute difference
 			 */
 			SphereData_Spectral diff_phi = prog_phi_pert - anal_solution_phi_pert;
-			SphereData_Spectral diff_vort = prog_vrt - anal_solution_vort;
+			SphereData_Spectral diff_vrt = prog_vrt - anal_solution_vrt;
 			SphereData_Spectral diff_div = prog_div - anal_solution_div;
 
 #if SWEET_MPI
@@ -378,13 +378,13 @@ public:
 #endif
 			{
 				double error_phi = diff_phi.toPhys().physical_reduce_max_abs();
-				double error_vort = diff_vort.toPhys().physical_reduce_max_abs();
+				double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
 				double error_div = diff_div.toPhys().physical_reduce_max_abs();
 
 				std::cout << "[MULE] errors: ";
 				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
 				std::cout << "\terror_linf_phi=" << error_phi;
-				std::cout << "\terror_linf_vort=" << error_vort;
+				std::cout << "\terror_linf_vrt=" << error_vrt;
 				std::cout << "\terror_linf_div=" << error_div;
 				std::cout << std::endl;
 			}
@@ -669,11 +669,11 @@ public:
 			case 8:
 			{
 				SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);
-				SphereData_Spectral anal_solution_vort(sphereDataConfig);
+				SphereData_Spectral anal_solution_vrt(sphereDataConfig);
 				SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 				sphereBenchmarks.setup(simVars, op);
-				sphereBenchmarks.master->get_initial_state(anal_solution_phi_pert, anal_solution_vort, anal_solution_div);
+				sphereBenchmarks.master->get_initial_state(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
 
 				switch (id)
 				{
@@ -682,7 +682,7 @@ public:
 					break;
 
 				case 7:
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vrt - anal_solution_vort, planeDataConfig);
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vrt - anal_solution_vrt, planeDataConfig);
 					break;
 
 				case 8:
@@ -741,7 +741,7 @@ public:
 				break;
 
 			case 1:
-				description = "vort";
+				description = "vrt";
 				break;
 
 			case 2:
@@ -765,7 +765,7 @@ public:
 				break;
 
 			case 7:
-				description = "vort diff t0";
+				description = "vrt diff t0";
 				break;
 
 			case 8:

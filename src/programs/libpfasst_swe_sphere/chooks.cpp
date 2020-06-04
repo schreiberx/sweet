@@ -52,7 +52,7 @@ extern "C"
     SphereOperators_SphereData* sphereOperators     = i_ctx->get_sphere_operators(level);
 
     // compute the invariants
-    sphereDiagnostics->update_phi_vort_div_2_mass_energy_enstrophy(
+    sphereDiagnostics->update_phi_vrt_div_2_mass_energy_enstrophy(
 								   *sphereOperators,
 								   phi_Y,
 								   vort_Y,
