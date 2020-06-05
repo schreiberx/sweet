@@ -136,7 +136,7 @@ jg.runtime.benchmark_name = "galewsky"
 #
 # Binary output
 #
-#jg.runtime.output_file_mode = "bin"
+jg.runtime.output_file_mode = "bin"
 
 
 #

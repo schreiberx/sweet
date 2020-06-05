@@ -1,5 +1,9 @@
 #! /usr/bin/env python3
 
-from mule_local.postprocessing.pickle_SphereDataPhysicalDiff import *
+if 1:
+    from mule_local.postprocessing.pickle_SphereDataSpectralDiff import *
+    p = pickle_SphereDataSpectralDiff()
 
-p = pickle_SphereDataPhysicalDiff()
+else:
+    from mule_local.postprocessing.pickle_SphereDataPhysicalDiff import *
+    p = pickle_SphereDataPhysicalDiff()

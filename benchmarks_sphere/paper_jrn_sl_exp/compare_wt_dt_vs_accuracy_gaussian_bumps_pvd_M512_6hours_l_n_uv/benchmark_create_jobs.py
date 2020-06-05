@@ -136,7 +136,7 @@ jg.runtime.benchmark_name = "gaussian_bumps_pvd"
 #
 # Binary output
 #
-#jg.runtime.output_file_mode = "bin"
+jg.runtime.output_file_mode = "bin"
 
 #
 # Compute error
