@@ -249,9 +249,15 @@ if [ -d "$SCRIPTDIR/local/lib64" ]; then
 fi
 
 # Determine installed SWEET-installed python version
-PYTHONVERSION=$($MULE_SOFTWARE_ROOT/local_software/local/bin/python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
+PYTHON_EXEC=$MULE_SOFTWARE_ROOT/local_software/local/bin/python3
 
-# Fallback to 
+if [ -x "$PYTHON_EXEC" ]; then
+	PYTHONVERSION=$($MULE_SOFTWARE_ROOT/local_software/local/bin/python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
+else
+	PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
+fi
+
+# Fallback to 3.8 version
 test "#" = "#$PYTHONVERSION" && PYTHONVERSION="3.8"
 
 if [ "#" = "#$PYTHONPATH" ]; then
