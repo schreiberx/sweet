@@ -50,7 +50,7 @@ jg.runtime.max_simulation_time = 60*60*6
 jg.runtime.max_wallclock_time = 30*60       # 30 minutes max
 
 #space_res_spectral_ = [64, 128, 256]
-space_res_spectral_ = [256]
+space_res_spectral_ = [512]
 
 
 # Reference time step size
@@ -131,13 +131,12 @@ jg.runtime.verbosity = 0
 #
 # Benchmark
 #
-jg.runtime.benchmark_name = "galewsky"
+jg.runtime.benchmark_name = "gaussian_bumps_pvd"
 
 #
 # Binary output
 #
 jg.runtime.output_file_mode = "bin"
-
 
 #
 # Compute error
@@ -182,25 +181,25 @@ def estimateWallclockTime(jg):
 if __name__ == "__main__":
 
     ts_methods = [
-        ['l_na_erk_split_uv',        4,    4,    0],
+        ['ln_erk_split_uv',        4,    4,    0],
 
         ###########
         # Runge-Kutta
         ###########
-        ['l_na_erk_split_aa_uv',     2,    2,    0],
-        ['l_na_erk_split_uv',        2,    2,    0],
+        ['ln_erk_split_aa_uv',     2,    2,    0],
+        ['ln_erk_split_uv',        2,    2,    0],
 
 
         ###########
         # SETTLS variants
         ###########
-        ['l_irk_na_sl_settls_uv_only',    2,    2,    0],
+        ['l_irk_na_sl_nr_settls_uv_only',    2,    2,    0],
 
-        ['l_irk_na_sl_settls_ver0_uv',    2,    2,    0],
-#        ['l_irk_na_sl_settls_ver1_uv',    2,    2,    0],
+        ['l_irk_na_sl_nr_settls_ver0_uv',    2,    2,    0],
+        ['l_irk_na_sl_nr_settls_ver1_uv',    2,    2,    0],
 
-        ['lg_irk_na_sl_lc_settls_ver0_uv',    2,    2,    0],
-#        ['lg_irk_na_sl_lc_settls_ver1_uv',    2,    2,    0],
+        ['lg_irk_na_sl_lc_nr_settls_ver0_uv',    2,    2,    0],
+        ['lg_irk_na_sl_lc_nr_settls_ver1_uv',    2,    2,    0],
     ]
 
     for space_res_spectral in space_res_spectral_:

@@ -50,16 +50,30 @@ jg.runtime.max_simulation_time = 60*60*6
 jg.runtime.max_wallclock_time = 30*60       # 30 minutes max
 
 #space_res_spectral_ = [64, 128, 256]
-space_res_spectral_ = [512]
+space_res_spectral_ = [256]
 
 
 # Reference time step size
 timestep_size_reference = 5
 
+if 1:
+    params_timestep_sizes_explicit = [15*(2**i) for i in range(9)]
+    params_timestep_sizes_implicit = [15*(2**i) for i in range(9)]
+    params_timestep_sizes_exp = [15*(2**i) for i in range(9)]
 
-params_timestep_sizes_explicit = [15/2*(2**i) for i in range(10)]
-params_timestep_sizes_implicit = [15/2*(2**i) for i in range(10)]
-params_timestep_sizes_exp = [15/2*(2**i) for i in range(9)]
+    #params_timestep_sizes_explicit = [2*(2**i) for i in range(9)]
+    #params_timestep_sizes_implicit = [2*(2**i) for i in range(9)]
+    #params_timestep_sizes_exp = [2*(2**i) for i in range(9)]
+
+else:
+    #params_timestep_sizes_explicit = [15/4, 15/2, 15, 30, 60, 120, 180, 360]
+    #params_timestep_sizes_explicit = [30*(2**i) for i in range(5)]
+
+    params_timestep_sizes_implicit = [30, 60, 120, 180, 270, 360, 480, 600]
+    params_timestep_sizes_implicit += [240*i for i in range(3, 13)]
+    params_timestep_sizes_implicit = [30*(2**i) for i in range(5)]
+
+    params_timestep_sizes_exp = params_timestep_sizes_implicit[:]
 
 
 # Parallelization
@@ -86,6 +100,13 @@ jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 # No output
 #jg.runtime.output_filename = "-"
+
+# REXI stuff
+def fun_params_ci_N(ci_max_real, ci_max_imag):
+    if ci_max_imag >= 7:
+        return 128
+    else:
+        return 32
 
 
 #
@@ -131,12 +152,7 @@ jg.runtime.verbosity = 0
 #
 # Benchmark
 #
-jg.runtime.benchmark_name = "gaussian_bumps_pvd"
-
-#
-# Binary output
-#
-jg.runtime.output_file_mode = "bin"
+jg.runtime.benchmark_name = "galewsky"
 
 #
 # Compute error
@@ -181,25 +197,32 @@ def estimateWallclockTime(jg):
 if __name__ == "__main__":
 
     ts_methods = [
-        ['l_na_erk_split_uv',        4,    4,    0],
+        ['l_erk',        4,    4,    0],
 
         ###########
         # Runge-Kutta
         ###########
-        ['l_na_erk_split_aa_uv',     2,    2,    0],
-        ['l_na_erk_split_uv',        2,    2,    0],
+        ['l_erk_split_aa_vd',     2,    2,    0],
+        ['l_erk_split_vd',        2,    2,    0],
+
+
+        ###########
+        # Implicit
+        ###########
+        ['l_irk',    2,    2,    0],
+        ['lg_irk_lc_erk',    2,    2,    0],
 
 
         ###########
         # SETTLS variants
         ###########
-        ['l_irk_na_sl_settls_uv_only',    2,    2,    0],
+        #['l_irk_na_sl_settls_vd_only',    2,    2,    0],
 
-        ['l_irk_na_sl_settls_ver0_uv',    2,    2,    0],
-        ['l_irk_na_sl_settls_ver1_uv',    2,    2,    0],
+        #['l_irk_na_sl_settls_ver0_vd',    2,    2,    0],
+        #['l_irk_na_sl_settls_ver1_vd',    2,    2,    0],
 
-        ['lg_irk_na_sl_lc_settls_ver0_uv',    2,    2,    0],
-        ['lg_irk_na_sl_lc_settls_ver1_uv',    2,    2,    0],
+        #['lg_irk_na_sl_lc_settls_ver0_vd',    2,    2,    0],
+        #['lg_irk_na_sl_lc_settls_ver1_vd',    2,    2,    0],
     ]
 
     for space_res_spectral in space_res_spectral_:

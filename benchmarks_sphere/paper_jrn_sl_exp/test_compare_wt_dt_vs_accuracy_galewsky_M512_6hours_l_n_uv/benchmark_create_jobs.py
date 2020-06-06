@@ -182,25 +182,25 @@ def estimateWallclockTime(jg):
 if __name__ == "__main__":
 
     ts_methods = [
-        ['l_na_erk_split_uv',        4,    4,    0],
+        ['ln_erk_split_uv',        4,    4,    0],
 
         ###########
         # Runge-Kutta
         ###########
-        ['l_na_erk_split_aa_uv',     2,    2,    0],
-        ['l_na_erk_split_uv',        2,    2,    0],
+        ['ln_erk_split_aa_uv',     2,    2,    0],
+        ['ln_erk_split_uv',        2,    2,    0],
 
 
         ###########
         # SETTLS variants
         ###########
-        ['l_irk_na_sl_settls_uv_only',    2,    2,    0],
+        ['l_irk_na_sl_nr_settls_uv_only',    2,    2,    0],
 
-        ['l_irk_na_sl_settls_ver0_uv',    2,    2,    0],
-        ['l_irk_na_sl_settls_ver1_uv',    2,    2,    0],
+        ['l_irk_na_sl_nr_settls_ver0_uv',    2,    2,    0],
+        ['l_irk_na_sl_nr_settls_ver1_uv',    2,    2,    0],
 
-        ['lg_irk_na_sl_lc_settls_ver0_uv',    2,    2,    0],
-        ['lg_irk_na_sl_lc_settls_ver1_uv',    2,    2,    0],
+        ['lg_irk_na_sl_lc_nr_settls_ver0_uv',    2,    2,    0],
+        ['lg_irk_na_sl_lc_nr_settls_ver1_uv',    2,    2,    0],
     ]
 
     for space_res_spectral in space_res_spectral_:

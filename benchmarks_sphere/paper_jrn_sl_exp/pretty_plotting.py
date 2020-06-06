@@ -27,6 +27,10 @@ latex_pretty_names = {
 	'sphere_data_diff_prog_h.res_norm_l2'	: '$L_2$ norm surface height (res.\,normalized)',
 	'sphere_data_diff_prog_h.res_norm_linf'	: '$L_{\infty}$ norm surface height',
 
+	'sphere_data_diff_prog_phi_pert.res_norm_l1'	: '$L_1$ norm geopotential (res.\,normalized)',
+	'sphere_data_diff_prog_phi_pert.res_norm_l2'	: '$L_2$ norm geopotential (res.\,normalized)',
+	'sphere_data_diff_prog_phi_pert.res_norm_linf'	: '$L_{\infty}$ norm surface height',
+
 	'sphere_data_diff_prog_vrt.res_norm_l1'	: '$L_1$ norm vorticity (res.\,normalized)',
 	'sphere_data_diff_prog_vrt.res_norm_l2'	: '$L_2$ norm vorticity (res.\,normalized)',
 	'sphere_data_diff_prog_vrt.res_norm_linf'	: '$L_{\infty}$ norm vorticity',
