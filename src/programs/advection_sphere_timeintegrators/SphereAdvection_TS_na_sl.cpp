@@ -253,11 +253,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 			V_z_D
 		);
 
-#if 0
-	/*
-	 * This seems to be not necessary. It's still converging with 2nd order without it!
-	 */
-
+#if 1
 	/*********************************************************************
 	 * Step 2)
 	 * Prepare rotation
@@ -307,7 +303,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 
 
 	/*
-	 * Rotate vector (using transpose of rotation matrix without translation!)
+	 * Rotate vector
 	 */
 	ScalarDataArray V_x_A, V_y_A, V_z_A;
 	SWEETMath::point_rotate_3d_normalized_rotation_axis__array(

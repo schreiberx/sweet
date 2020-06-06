@@ -34,7 +34,7 @@ public:
 
 private:
 	SimulationVariables &simVars;
-	SphereOperators_SphereData &op;
+	SphereOperators_SphereData &ops;
 
 public:
 	enum LinearCoriolisTreatment_enum {
@@ -78,20 +78,6 @@ public:
 			LinearCoriolisTreatment_enum i_coriolis_treatment,
 			NLRemainderTreatment_enum i_nonlinear_divergence_treatment,
 			bool original_linear_operator_sl_treatment
-	);
-
-
-	void interpolate_departure_point_vd(
-			const SphereData_Spectral &i_phi,
-			const SphereData_Spectral &i_vrt,
-			const SphereData_Spectral &i_div,
-
-			const ScalarDataArray &i_pos_lon_d,
-			const ScalarDataArray &i_pos_lat_d,
-
-			SphereData_Spectral &o_phi,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div
 	);
 
 	void run_timestep(

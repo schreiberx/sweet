@@ -262,425 +262,6 @@ public:
 		}
 	}
 
-#if 0
-	/*
-	 * Compute SL departure points on unit sphere for given dt*(u,v) velocities
-	 */
-	void semi_lag_departure_points_settls_old(
-		const SphereData_Physical &i_u_lon_prev,	///< Velocities at time t-1
-		const SphereData_Physical &i_v_lat_prev,
-
-		const SphereData_Physical &i_dt_u_lon, 		///< Velocities at time t
-		const SphereData_Physical &i_dt_v_lat,
-
-		double i_dt,
-		double i_timestamp,
-		double i_radius,
-
-		// for varying velocity fields
-		const SWESphereBenchmarksCombined *i_sphereBenchmarks,
-
-		ScalarDataArray &o_pos_lon_D, 	///< OUTPUT: Position of departure points x / y
-		ScalarDataArray &o_pos_lat_D,
-
-		SphereOperators_SphereData &op,
-
-		int i_timestepping_order,
-
-		int max_iterations = 2,
-		double i_convergence_tolerance = -1,
-		int i_approximate_sphere_geometry = 0,
-		bool use_interpolation_limiters = false
-	)
-	{
-		o_pos_lon_D.setup_if_required(pos_lon_A);
-		o_pos_lat_D.setup_if_required(pos_lon_A);
-
-		std::size_t num_elements = o_pos_lon_D.number_of_elements;
-
-		if (i_timestepping_order == 1)
-		{
-			/*
-			 * Compute Cartesian velocity
-			 */
-			ScalarDataArray u_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_u_lon);
-			ScalarDataArray v_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_v_lat);
-
-			ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-			SWEETMath::velocity_latlon_to_cartesian__array(
-					pos_lon_A, pos_lat_A,
-					u_lon_array, v_lat_array,
-					vel_x_A, vel_y_A, vel_z_A
-				);
-
-			/*
-			 * Do advection in Cartesian space
-			 */
-
-			double dt_div_radius = i_dt/i_radius;
-			ScalarDataArray new_pos_x_d(num_elements), new_pos_y_d(num_elements), new_pos_z_d(num_elements);
-			doAdvectionOnSphere(
-				pos_x_A, pos_y_A, pos_z_A,
-				-dt_div_radius*vel_x_A, -dt_div_radius*vel_y_A, -dt_div_radius*vel_z_A,
-				new_pos_x_d, new_pos_y_d, new_pos_z_d,
-
-				i_approximate_sphere_geometry
-			);
-
-			/*
-			 * Departure point to lat/lon coordinate
-			 */
-			SWEETMath::point_cartesian_to_latlon__array(
-					new_pos_x_d, new_pos_y_d, new_pos_z_d,
-					o_pos_lon_D, o_pos_lat_D
-				);
-			return;
-		}
-
-
-		if (i_timestepping_order == 2)
-		{
-			if (trajectory_method == E_TRAJECTORY_METHOD_CANONICAL)
-			{
-				/*
-				 * Standard iterative method
-				 *
-				 * See also Michail Diamantarkis paper, p. 185
-				 */
-
-				/*
-				 * Prepare
-				 */
-				const SphereData_Physical &vel_lon = i_dt_u_lon;
-				const SphereData_Physical &vel_lat = i_dt_v_lat;
-
-				ScalarDataArray vel_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(vel_lon);
-				ScalarDataArray vel_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(vel_lat);
-
-				/*
-				 * Polar => Cartesian velocities
-				 */
-				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::velocity_latlon_to_cartesian__array(
-						pos_lon_A, pos_lat_A,
-						vel_lon_array, vel_lat_array,
-						vel_x_A, vel_y_A, vel_z_A
-					);
-
-				/*
-				 * Step 1)
-				 */
-				// Departure points for iterations
-				ScalarDataArray pos_x_D(sphereDataConfig->physical_array_data_number_of_elements);
-				ScalarDataArray pos_y_D(sphereDataConfig->physical_array_data_number_of_elements);
-				ScalarDataArray pos_z_D(sphereDataConfig->physical_array_data_number_of_elements);
-
-				double dt_div_radius = i_dt/i_radius;
-				doAdvectionOnSphere(
-					pos_x_A,
-					pos_y_A,
-					pos_z_A,
-
-					-dt_div_radius*vel_x_A,
-					-dt_div_radius*vel_y_A,
-					-dt_div_radius*vel_z_A,
-
-					pos_x_D,
-					pos_y_D,
-					pos_z_D,
-
-					i_approximate_sphere_geometry
-				);
-
-
-				/*
-				 * 2 iterations to get midpoint
-				 */
-				for (int i = 0; i < 2; i++)
-				{
-					/*
-					 * Step 2a
-					 */
-					ScalarDataArray pos_x_mid = 0.5*(pos_x_A + pos_x_D);
-					ScalarDataArray pos_y_mid = 0.5*(pos_y_A + pos_y_D);
-					ScalarDataArray pos_z_mid = 0.5*(pos_z_A + pos_z_D);
-
-					ScalarDataArray pos_lon_mid(sphereDataConfig->physical_array_data_number_of_elements);
-					ScalarDataArray pos_lat_mid(sphereDataConfig->physical_array_data_number_of_elements);
-
-					SWEETMath::point_cartesian_to_latlon__array(
-							pos_x_mid, pos_y_mid, pos_z_mid,
-							pos_lon_mid, pos_lat_mid
-						);
-
-					ScalarDataArray vel_u_mid = sphereSampler.bilinear_scalar(vel_lon, pos_lon_mid, pos_lat_mid, true, simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points);
-					ScalarDataArray vel_v_mid = sphereSampler.bilinear_scalar(vel_lat, pos_lon_mid, pos_lat_mid, true, simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points);
-
-					// convert extrapolated velocities to Cartesian velocities
-					ScalarDataArray vel_x_mid(num_elements), vel_y_mid(num_elements), vel_z_mid(num_elements);
-					SWEETMath::velocity_latlon_to_cartesian__array(
-							pos_lon_mid, pos_lat_mid,
-							vel_u_mid, vel_v_mid,
-							vel_x_mid, vel_y_mid, vel_z_mid
-						);
-
-					/*
-					 * Step 2b
-					 */
-					double dt_div_radius = i_dt/i_radius;
-					doAdvectionOnSphere(
-						pos_x_A,
-						pos_y_A,
-						pos_z_A,
-
-						-dt_div_radius*vel_x_mid,
-						-dt_div_radius*vel_y_mid,
-						-dt_div_radius*vel_z_mid,
-
-						pos_x_D,
-						pos_y_D,
-						pos_z_D,
-
-						i_approximate_sphere_geometry
-					);
-				}
-
-				// convert final points from Cartesian space to angular space
-				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
-			}
-			else if (trajectory_method == E_TRAJECTORY_METHOD_MIDPOINT_RITCHIE)
-			{
-
-				/*
-				 * Ritchies midpoint rule
-				 */
-				ScalarDataArray vel_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_u_lon);
-				ScalarDataArray vel_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_v_lat);
-
-				// Polar => Cartesian velocities
-				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::velocity_latlon_to_cartesian__array(
-						pos_lon_A, pos_lat_A,
-						vel_lon_array, vel_lat_array,
-						vel_x_A, vel_y_A, vel_z_A
-					);
-
-				/*
-				 * Setup iterations
-				 */
-				// Departure points for iterations
-				ScalarDataArray pos_x_D(sphereDataConfig->physical_array_data_number_of_elements);
-				ScalarDataArray pos_y_D(sphereDataConfig->physical_array_data_number_of_elements);
-				ScalarDataArray pos_z_D(sphereDataConfig->physical_array_data_number_of_elements);
-
-				double dt_div_radius = i_dt/i_radius;
-				doAdvectionOnSphere(
-					pos_x_A,
-					pos_y_A,
-					pos_z_A,
-
-					-0.5*dt_div_radius*vel_x_A,
-					-0.5*dt_div_radius*vel_y_A,
-					-0.5*dt_div_radius*vel_z_A,
-
-					pos_x_D,
-					pos_y_D,
-					pos_z_D,
-
-					i_approximate_sphere_geometry
-				);
-
-
-				/*
-				 * 2 iterations to get midpoint
-				 */
-				for (int i = 0; i < 2; i++)
-				{
-					SWEETMath::point_cartesian_to_latlon__array(
-							pos_x_D, pos_y_D, pos_z_D,
-							o_pos_lon_D, o_pos_lat_D
-						);
-
-					ScalarDataArray u_D = sphereSampler.bilinear_scalar(i_dt_u_lon, o_pos_lon_D, o_pos_lat_D, true, simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points);
-					ScalarDataArray v_D = sphereSampler.bilinear_scalar(i_dt_v_lat, o_pos_lon_D, o_pos_lat_D, true, simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points);
-
-					// convert extrapolated velocities to Cartesian velocities
-					ScalarDataArray vel_x_D(num_elements), vel_y_D(num_elements), vel_z_D(num_elements);
-					SWEETMath::velocity_latlon_to_cartesian__array(
-							o_pos_lon_D, o_pos_lat_D,
-							u_D, v_D,
-							vel_x_D, vel_y_D, vel_z_D
-						);
-
-					doAdvectionOnSphere(
-						pos_x_A,
-						pos_y_A,
-						pos_z_A,
-
-						-0.5*i_dt*vel_x_D,
-						-0.5*i_dt*vel_y_D,
-						-0.5*i_dt*vel_z_D,
-
-						pos_x_D,
-						pos_y_D,
-						pos_z_D,
-
-						i_approximate_sphere_geometry
-					);
-				}
-
-				/*
-				 * Given the midpoint at pos_?_D, we compute the full time step
-				 */
-
-				ScalarDataArray dot2 = 2.0*(pos_x_D*pos_x_A + pos_y_D*pos_y_A + pos_z_D*pos_z_A);
-
-				pos_x_D = dot2*pos_x_D - pos_x_A;
-				pos_y_D = dot2*pos_y_D - pos_y_A;
-				pos_z_D = dot2*pos_z_D - pos_z_A;
-
-				// convert final points from Cartesian space to angular space
-				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
-			}
-			else if (trajectory_method == E_TRAJECTORY_METHOD_SETTLS_HORTAL)
-			{
-				/**
-				 * See SETTLS paper
-				 * Hortal, M. (2002). The development and testing of a new two-time-level semi-Lagrangian scheme (SETTLS) in the ECMWF forecast model. Q. J. R. Meteorol. Soc., 2, 1671–1687.
-				 *
-				 * We use the SETTLS formulation also to compute the departure points.
-				 */
-
-				// Extrapolate velocities at departure points
-				SphereData_Physical u_extrapol = 2.0*i_dt_u_lon - i_u_lon_prev;
-				SphereData_Physical v_extrapol = 2.0*i_dt_v_lat - i_v_lat_prev;
-
-				// Convert velocities along lon/lat to scalardata array
-				ScalarDataArray vel_lon_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_u_lon);
-				ScalarDataArray vel_lat_array = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(i_dt_v_lat);
-
-				// Polar => Cartesian velocities
-				ScalarDataArray vel_x_A(num_elements), vel_y_A(num_elements), vel_z_A(num_elements);
-				SWEETMath::velocity_latlon_to_cartesian__array(
-						pos_lon_A, pos_lat_A,
-						vel_lon_array, vel_lat_array,
-						vel_x_A, vel_y_A, vel_z_A
-					);
-
-				/*
-				 * Setup iterations
-				 */
-
-				// Departure points for iterations
-				ScalarDataArray pos_x_D(sphereDataConfig->physical_array_data_number_of_elements);
-				ScalarDataArray pos_y_D(sphereDataConfig->physical_array_data_number_of_elements);
-				ScalarDataArray pos_z_D(sphereDataConfig->physical_array_data_number_of_elements);
-
-				double dt_div_radius = i_dt/i_radius;
-				doAdvectionOnSphere(
-					pos_x_A,
-					pos_y_A,
-					pos_z_A,
-
-					-dt_div_radius*vel_x_A,
-					-dt_div_radius*vel_y_A,
-					-dt_div_radius*vel_z_A,
-
-					pos_x_D,
-					pos_y_D,
-					pos_z_D,
-
-					i_approximate_sphere_geometry
-				);
-
-				double diff = 999999;
-
-				for (int iters = 0; iters < max_iterations; iters++)
-				{
-					SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
-
-
-					/*
-					 * WARNING: Never convert this to vort/div space!!!
-					 * This creates some artificial waves
-					 */
-					ScalarDataArray vel_lon_extrapol_D = sphereSampler.bilinear_scalar(u_extrapol, o_pos_lon_D, o_pos_lat_D, true, simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points);
-					ScalarDataArray vel_lat_extrapol_D = sphereSampler.bilinear_scalar(v_extrapol, o_pos_lon_D, o_pos_lat_D, true, simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points);
-
-					// convert extrapolated velocities to Cartesian velocities
-					ScalarDataArray vel_x_extrapol_D(num_elements), vel_y_extrapol_D(num_elements), vel_z_extrapol_D(num_elements);
-
-					// polar => Cartesian coordinates
-					SWEETMath::velocity_latlon_to_cartesian__array(
-							o_pos_lon_D, o_pos_lat_D,
-							vel_lon_extrapol_D, vel_lat_extrapol_D,
-							vel_x_extrapol_D, vel_y_extrapol_D, vel_z_extrapol_D
-						);
-
-					ScalarDataArray new_pos_x_D(num_elements), new_pos_y_D(num_elements), new_pos_z_D(num_elements);
-
-					double dt_div_radius = i_dt/i_radius;
-					doAdvectionOnSphere(
-						pos_x_A,
-						pos_y_A,
-						pos_z_A,
-
-						-dt_div_radius*0.5*(vel_x_extrapol_D + vel_x_A),
-						-dt_div_radius*0.5*(vel_y_extrapol_D + vel_y_A),
-						-dt_div_radius*0.5*(vel_z_extrapol_D + vel_z_A),
-
-						new_pos_x_D,
-						new_pos_y_D,
-						new_pos_z_D,
-
-						i_approximate_sphere_geometry
-					);
-
-					if (i_convergence_tolerance > 0)
-					{
-						diff =  (pos_x_D-new_pos_x_D).reduce_maxAbs() +
-								(pos_y_D-new_pos_y_D).reduce_maxAbs() +
-								(pos_z_D-new_pos_z_D).reduce_maxAbs();
-
-						if (diff < i_convergence_tolerance)
-						{
-							pos_x_D = new_pos_x_D;
-							pos_y_D = new_pos_y_D;
-							pos_z_D = new_pos_z_D;
-
-							break;
-						}
-					}
-
-					pos_x_D = new_pos_x_D;
-					pos_y_D = new_pos_y_D;
-					pos_z_D = new_pos_z_D;
-				}
-
-				if (i_convergence_tolerance > 0)
-				{
-					if (diff > i_convergence_tolerance)
-					{
-						std::cout << "WARNING: Over convergence tolerance" << std::endl;
-						std::cout << "+ maxAbs: " << diff << std::endl;
-						std::cout << "+ Convergence tolerance: " << i_convergence_tolerance << std::endl;
-					}
-				}
-
-				// convert final points from Cartesian space to angular space
-				SWEETMath::point_cartesian_to_latlon__array(pos_x_D, pos_y_D, pos_z_D, o_pos_lon_D, o_pos_lat_D);
-			}
-			else
-			{
-				SWEETError("Unknown departure point calculation method");
-			}
-
-			return;
-		}
-
-		SWEETError("Only 1st and 2nd order time integration supported");
-	}
-#endif
 
 
 	/*
@@ -1160,6 +741,230 @@ public:
 		}
 
 		SWEETError("Only 1st and 2nd order time integration supported");
+	}
+
+
+
+	/*
+	 * Interpolation of prognostic fields at departure points.
+	 *
+	 * We assume the velocity U-V to be the SL advected field!
+	 */
+	void interpolate_with_departure_point_vd(
+			const SphereOperators_SphereData &i_ops,
+
+			const SphereData_Spectral &i_phi,
+			const SphereData_Spectral &i_vrt,
+			const SphereData_Spectral &i_div,
+
+			const ScalarDataArray &i_pos_lon_d,
+			const ScalarDataArray &i_pos_lat_d,
+
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
+	)
+	{
+		o_phi.setup_if_required(i_phi.sphereDataConfig);
+		o_vrt.setup_if_required(i_phi.sphereDataConfig);
+		o_div.setup_if_required(i_phi.sphereDataConfig);
+
+		o_phi = sphereSampler.bicubic_scalar_ret_phys(
+				i_phi.toPhys(),
+				i_pos_lon_d, i_pos_lat_d,
+				false,
+				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+		o_vrt = sphereSampler.bicubic_scalar_ret_phys(
+				i_vrt.toPhys(),
+				i_pos_lon_d, i_pos_lat_d,
+				false,
+				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+		o_div = sphereSampler.bicubic_scalar_ret_phys(
+				i_div.toPhys(),
+				i_pos_lon_d, i_pos_lat_d,
+				false,
+				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+	}
+
+
+	/*
+	 * Interpolation of prognostic fields at departure points.
+	 *
+	 * We assume the velocity U-V to be the SL advected field!
+	 */
+	void apply_sl_timeintegration_uv(
+			const SphereOperators_SphereData &i_ops,
+
+			const SphereData_Spectral &i_phi,
+			const SphereData_Spectral &i_vrt,
+			const SphereData_Spectral &i_div,
+
+			const ScalarDataArray &i_pos_lon_D,
+			const ScalarDataArray &i_pos_lat_D,
+
+			SphereData_Spectral &o_phi,
+			SphereData_Spectral &o_vrt,
+			SphereData_Spectral &o_div
+	)
+	{
+		o_phi.setup_if_required(i_phi.sphereDataConfig);
+		o_vrt.setup_if_required(i_phi.sphereDataConfig);
+		o_div.setup_if_required(i_phi.sphereDataConfig);
+
+
+		/*************************************************************************
+		 * Phi
+		 *************************************************************************
+		 */
+		o_phi = sphereSampler.bicubic_scalar_ret_phys(
+				i_phi.toPhys(),
+				i_pos_lon_D, i_pos_lat_D,
+				false,
+				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+
+	#if 1
+
+		/*************************************************************************
+		 * Prepare rotation system for handling velocities
+		 *************************************************************************
+		 */
+
+		ScalarDataArray P_x_D, P_y_D, P_z_D;
+		SWEETMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
+
+		ScalarDataArray	&P_x_A = pos_x_A,
+						&P_y_A = pos_y_A,
+						&P_z_A = pos_z_A;
+
+		/*
+		 * Compute rotation angle
+		 */
+
+		ScalarDataArray rotation_angle_ =
+				SWEETMath::dot_prod(
+					P_x_D, P_y_D, P_z_D,
+					P_x_A, P_y_A, P_z_A
+				);
+
+		// Can be slightly larger than 1, leading to NaN, hence this hack
+		rotation_angle_ = SWEETMath::min(rotation_angle_, 1.0);
+
+		ScalarDataArray rotation_angle = SWEETMath::arccos(rotation_angle_);
+
+
+		/*
+		 * Compute Rotation axis
+		 */
+		ScalarDataArray rot_x, rot_y, rot_z;
+		SWEETMath::cross_prod(
+				P_x_D, P_y_D, P_z_D,
+				P_x_A, P_y_A, P_z_A,
+				rot_x, rot_y, rot_z
+			);
+
+		SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
+
+
+
+		/*************************************************************************
+		 * Velocity
+		 *************************************************************************
+		 */
+
+		SphereData_Physical u_tmp, v_tmp;
+		i_ops.vrtdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
+
+		SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+				u_tmp,
+				i_pos_lon_D, i_pos_lat_D,
+				true,
+				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+		SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+				v_tmp,
+				i_pos_lon_D, i_pos_lat_D,
+				true,
+				simVars.disc.semi_lagrangian_sampler_use_pole_pseudo_points,
+				simVars.disc.semi_lagrangian_interpolation_limiter
+			);
+
+		/*
+		 * Convert to Cartesian space
+		 */
+
+		ScalarDataArray V_lon_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(u_tmp_D);
+		ScalarDataArray V_lat_D = Convert_SphereDataPhysical_to_ScalarDataArray::physical_convert(v_tmp_D);
+
+		ScalarDataArray V_x_D, V_y_D, V_z_D;
+		SWEETMath::velocity_latlon_to_cartesian__array(
+				i_pos_lon_D,
+				i_pos_lat_D,
+				V_lon_D,
+				V_lat_D,
+				V_x_D,
+				V_y_D,
+				V_z_D
+			);
+
+		/*
+		 * Rotate to velocity vector
+		 */
+		ScalarDataArray V_x_A, V_y_A, V_z_A;
+		SWEETMath::vector_rotate_3d_normalized_rotation_axis__array(
+				V_x_D, V_y_D, V_z_D,
+				rotation_angle,
+				rot_x, rot_y, rot_z,
+				V_x_A, V_y_A, V_z_A
+			);
+
+	#if 0
+		if (V_x_A.reduce_isAnyNaNorInf())
+			std::cout << "V_x_A" << std::endl;
+
+		if (V_y_A.reduce_isAnyNaNorInf())
+			std::cout << "V_y_A" << std::endl;
+
+		if (V_z_A.reduce_isAnyNaNorInf())
+			std::cout << "V_z_A" << std::endl;
+	#endif
+
+		/*
+		 * Return velocity in lat/lon space
+		 */
+		ScalarDataArray V_lon_A, V_lat_A;
+		SWEETMath::velocity_cartesian_to_latlon__array(
+				pos_lon_A,
+				pos_lat_A,
+				V_x_A,
+				V_y_A,
+				V_z_A,
+				V_lon_A, V_lat_A
+		);
+
+		i_ops.uv_to_vrtdiv(
+				Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lon_A, i_vrt.sphereDataConfig),
+				Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lat_A, i_vrt.sphereDataConfig),
+				o_vrt, o_div
+			);
+
+	#else
+
+		op.uv_to_vrtdiv(u_tmp_D, v_tmp_D, o_vrt, o_div);
+
+	#endif
 	}
 
 };

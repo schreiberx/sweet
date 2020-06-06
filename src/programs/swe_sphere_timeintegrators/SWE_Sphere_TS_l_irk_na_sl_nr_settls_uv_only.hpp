@@ -34,7 +34,7 @@ public:
 
 private:
 	SimulationVariables &simVars;
-	SphereOperators_SphereData &op;
+	SphereOperators_SphereData &ops;
 	SphereTimestepping_SemiLagrangian semiLagrangian;
 	SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
@@ -56,20 +56,6 @@ public:
 
 	void setup(
 			int i_timestepping_order
-	);
-
-
-	void interpolate_departure_point_uv(
-			const SphereData_Spectral &i_phi,
-			const SphereData_Spectral &i_vrt,
-			const SphereData_Spectral &i_div,
-
-			const ScalarDataArray &i_pos_lon_d,
-			const ScalarDataArray &i_pos_lat_d,
-
-			SphereData_Spectral &o_phi,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div
 	);
 
 
