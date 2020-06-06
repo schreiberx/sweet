@@ -138,7 +138,6 @@ jg.runtime.benchmark_name = "galewsky"
 #
 jg.runtime.output_file_mode = "bin"
 
-
 #
 # Compute error
 #
@@ -273,7 +272,7 @@ if __name__ == "__main__":
             exp_integrator = False
 
             tsm_name = tsm[0]
-            if 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+            if 'l_erk' in tsm_name or 'lg_erk' in tsm_name or 'ln_erk' in tsm_name:
                 params_timestep_sizes = params_timestep_sizes_explicit
             elif 'l_na_erk' in tsm_name or 'ln_erk' in tsm_name:
                 params_timestep_sizes = params_timestep_sizes_explicit

@@ -56,20 +56,10 @@ space_res_spectral_ = [256]
 # Reference time step size
 timestep_size_reference = 5
 
-if 1:
-    params_timestep_sizes_explicit = [15*(2**i) for i in range(9)]
-    params_timestep_sizes_implicit = [15*(2**i) for i in range(9)]
-    params_timestep_sizes_exp = [15*(2**i) for i in range(9)]
 
-else:
-    #params_timestep_sizes_explicit = [15/4, 15/2, 15, 30, 60, 120, 180, 360]
-    #params_timestep_sizes_explicit = [30*(2**i) for i in range(5)]
-
-    params_timestep_sizes_implicit = [30, 60, 120, 180, 270, 360, 480, 600]
-    params_timestep_sizes_implicit += [240*i for i in range(3, 13)]
-    params_timestep_sizes_implicit = [30*(2**i) for i in range(5)]
-
-    params_timestep_sizes_exp = params_timestep_sizes_implicit[:]
+params_timestep_sizes_explicit = [15/2*(2**i) for i in range(10)]
+params_timestep_sizes_implicit = [15/2*(2**i) for i in range(10)]
+params_timestep_sizes_exp = [15/2*(2**i) for i in range(9)]
 
 
 # Parallelization
@@ -96,13 +86,6 @@ jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 # No output
 #jg.runtime.output_filename = "-"
-
-# REXI stuff
-def fun_params_ci_N(ci_max_real, ci_max_imag):
-    if ci_max_imag >= 7:
-        return 128
-    else:
-        return 32
 
 
 #
@@ -149,6 +132,12 @@ jg.runtime.verbosity = 0
 # Benchmark
 #
 jg.runtime.benchmark_name = "gaussian_bumps_pvd"
+
+#
+# Binary output
+#
+jg.runtime.output_file_mode = "bin"
+
 
 #
 # Compute error
@@ -291,7 +280,7 @@ if __name__ == "__main__":
             exp_integrator = False
 
             tsm_name = tsm[0]
-            if 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+            if 'l_erk' in tsm_name or 'lg_erk' in tsm_name or 'ln_erk' in tsm_name:
                 params_timestep_sizes = params_timestep_sizes_explicit
             elif 'l_na_erk' in tsm_name or 'ln_erk' in tsm_name:
                 params_timestep_sizes = params_timestep_sizes_explicit
