@@ -24,7 +24,7 @@ if [ "#$TRAVIS" != "#" ]; then
 fi
 
 # Special flag for sk2 (@ CAPS hardware)
-if [ "#$(hostname)" = "#sk2" ]; then
+if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
        export CFLAGS="$CFLAGS -march=skylake"
 fi
 
@@ -32,7 +32,7 @@ config_configure --disable-openmp $EXTRA_FLAGS
 
 # Special flag for sk2 (@ CAPS hardware)
 pwd
-if [ "#$(hostname)" = "#sk2" ]; then
+if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
 	sed -i "s/-march=native/-march=skylake/" "Makefile"
 fi
 
@@ -45,7 +45,7 @@ echo_info "SHTNS OpenMP:"
 config_configure --enable-openmp $EXTRA_FLAGS
 
 # Special flag for sk2 (@ CAPS hardware)
-if [ "#$(hostname)" = "#sk2" ]; then
+if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
 	sed -i "s/-march=native/-march=skylake/" "Makefile"
 fi
 
