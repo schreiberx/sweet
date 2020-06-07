@@ -96,10 +96,6 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 			lg_erk->run_timestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
 		else
 			l_erk->run_timestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
-
-		std::cout << no_coriolis << std::endl;
-		std::cout << dt_explicit << std::endl;
-		std::cout << dt_implicit << std::endl;
 	}
 
 
