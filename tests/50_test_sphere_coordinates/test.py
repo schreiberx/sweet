@@ -14,6 +14,7 @@ jg = JobGeneration()
 jg.compile.unit_test = "test_sphere_coordinates"
 jg.compile.sphere_spectral_space = "enable"
 jg.runtime.verbosity = 5
+jg.compile.mode = 'debug'
 
 jg.gen_jobscript_directory()
 
