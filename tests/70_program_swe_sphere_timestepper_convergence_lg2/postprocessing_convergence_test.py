@@ -19,7 +19,7 @@ groups = ['runtime.timestepping_method']
 tagnames_y = [
    'sphere_data_diff_prog_phi_pert.res_norm_linf',
    'sphere_data_diff_prog_div.res_norm_linf',
-   'sphere_data_diff_prog_vort.res_norm_linf',
+   'sphere_data_diff_prog_vrt.res_norm_linf',
 ]
 
 
@@ -82,7 +82,7 @@ for tagname_y in tagnames_y:
 
          error_tolerance_convergence = -1
          error_tolerance_error = -1
-         if 'vort' in tagname_y:
+         if 'vrt' in tagname_y:
 
             if 'exp' in group_name:
                # Convergence for rexi fracking fast

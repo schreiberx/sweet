@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-TAGS="prog_h prog_vort prog_div"
+TAGS="prog_h prog_vrt prog_div"
 
 for ANALYTICAL in 0 1; do
 

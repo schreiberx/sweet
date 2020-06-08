@@ -19,7 +19,7 @@ groups = ['runtime.timestepping_method']
 tagnames_y = [
     'sphere_data_diff_prog_phi_pert.res_norm_linf',
     'sphere_data_diff_prog_div.res_norm_linf',
-    'sphere_data_diff_prog_vort.res_norm_linf',
+    'sphere_data_diff_prog_vrt.res_norm_linf',
 ]
 
 
@@ -95,7 +95,7 @@ for tagname_y in tagnames_y:
                 #
                 # Use convergence tests for all implementations since the nonlienearity will lead to "converging" errors
                 #
-                if 'vort' in tagname_y or 'div' in tagname_y:
+                if 'vrt' in tagname_y or 'div' in tagname_y:
 
                     if 'exp' in group_name:
                         test_type = 'error'

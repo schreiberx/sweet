@@ -33,7 +33,7 @@ jg.runtime.verbosity = 2
 jg.runtime.space_res_spectral = None
 jg.runtime.space_res_physical = 128
 
-#jg.runtime.benchmark_name = "gaussian_bumps_phi_vort_div"
+#jg.runtime.benchmark_name = "gaussian_bumps_phi_vrt_div"
 jg.runtime.benchmark_name = "70"
 
 # Viscosity

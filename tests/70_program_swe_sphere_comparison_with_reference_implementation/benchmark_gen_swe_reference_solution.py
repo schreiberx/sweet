@@ -446,7 +446,7 @@ if __name__ == "__main__":
 
     #savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
     savefile(phispec/grav, "prog_h", t)
-    savefile(vrtspec, "prog_vort", t)
+    savefile(vrtspec, "prog_vrt", t)
     savefile(divspec, "prog_div", t)
 
     # time loop.
@@ -518,7 +518,7 @@ if __name__ == "__main__":
             print("FILEOUTPUT TIMESTEP "+str(ncycle)+", t="+str(t/(60*60))+", maxval="+str(maxval))
             #savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
             savefile(phispec/grav, "prog_h", t)
-            savefile(vrtspec, "prog_vort", t)
+            savefile(vrtspec, "prog_vrt", t)
             savefile(divspec, "prog_div", t)
         else:
             if debug > 0:
@@ -527,7 +527,7 @@ if __name__ == "__main__":
 
     #savefile((phispec-phispec_init)/grav, "prog_ht0diff", t)
     savefile(phispec/grav, "prog_h", t)
-    savefile(vrtspec, "prog_vort", t)
+    savefile(vrtspec, "prog_vrt", t)
     savefile(divspec, "prog_div", t)
 
     vrtg = x.spectogrd(vrtspec)

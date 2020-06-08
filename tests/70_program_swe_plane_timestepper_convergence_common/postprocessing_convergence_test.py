@@ -99,7 +99,7 @@ for tagname_y in tagnames_y:
     		print("")
     		print("Testing convergence")
 
-    		if 'vort' in tagname_y:
+    		if 'vrt' in tagname_y:
     			conv_test_range_start = 0
     			conv_test_range_end = 4
     			error_tolerance_convergence = 0.1

@@ -20,7 +20,7 @@ ht0diff_contour_levels_ = [np.arange(-s*30, -s+s/2, s), np.arange(s, s*30, s)]
 print(ht0diff_contour_levels_)
 
 s = 2e-5
-vort_contour_levels_ = [np.arange(-s*30, -s+s/2, s), np.arange(s, s*30, s)]
+vrt_contour_levels_ = [np.arange(-s*30, -s+s/2, s), np.arange(s, s*30, s)]
 s = 4e-7
 div_contour_levels_ = [np.arange(-s*30, -s+s/2, s), np.arange(s, s*30, s)]
 print(div_contour_levels_)
@@ -37,12 +37,12 @@ print("ht0diff_contour_levels:")
 print(ht0diff_contour_levels_)
 print("")
 
-print("vort_contour_levels:")
-print(vort_contour_levels_)
+print("vrt_contour_levels:")
+print(vrt_contour_levels_)
 print("")
 
 print("div_contour_levels:")
-print(vort_contour_levels_)
+print(vrt_contour_levels_)
 print("")
 
 
@@ -82,8 +82,8 @@ for filename in sys.argv[1:]:
     print("+ min(data): "+str(np.min(data)))
     print("+ max(data): "+str(np.max(data)))
 
-    if 'prog_vort_' in filename:
-        contour_levels = vort_contour_levels_
+    if 'prog_vrt_' in filename:
+        contour_levels = vrt_contour_levels_
 
     elif 'prog_phi_' in filename:
         contour_levels = phi_contour_levels_
