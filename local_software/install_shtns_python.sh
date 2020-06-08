@@ -30,7 +30,7 @@ echo_info "SHTNS Python noOpenMP:"
 # Python, no OpenMP
 
 # Special flag for sk2 (@ CAPS hardware)
-if [ "#$(hostname)" = "#sk2" ]; then
+if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
        export CFLAGS="$CFLAGS -march=skylake"
 fi
 
@@ -38,7 +38,7 @@ config_configure --enable-python --disable-openmp $CONFIGURE_EXTRA_FLAGS
 
 # Special flag for sk2 (@ CAPS hardware)
 pwd
-if [ "#$(hostname)" = "#sk2" ]; then
+if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
 	sed -i "s/-march=native/-march=skylake/" "Makefile"
 fi
 
@@ -53,7 +53,7 @@ config_configure --enable-python --enable-openmp $CONFIGURE_EXTRA_FLAGS
 
 # Special flag for sk2 (@ CAPS hardware)
 pwd
-if [ "#$(hostname)" = "#sk2" ]; then
+if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
 	sed -i "s/-march=native/-march=skylake/" "Makefile"
 fi
 
