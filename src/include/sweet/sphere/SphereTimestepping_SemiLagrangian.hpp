@@ -750,7 +750,7 @@ public:
 	 *
 	 * We assume the velocity U-V to be the SL advected field!
 	 */
-	void interpolate_with_departure_point_vd(
+	void apply_sl_timeintegration_vd(
 			const SphereOperators_SphereData &i_ops,
 
 			const SphereData_Spectral &i_phi,

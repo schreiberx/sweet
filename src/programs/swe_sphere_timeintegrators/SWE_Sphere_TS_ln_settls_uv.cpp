@@ -11,6 +11,26 @@
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_settls_uv.hpp"
 
 
+bool SWE_Sphere_TS_ln_settls_uv::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	/*
+	 * Should contain _exp and _settls
+	 */
+	return (
+		!(i_timestepping_method.find("_exp") != std::string::npos)		&&
+		(i_timestepping_method.find("_settls") != std::string::npos)	&&
+		(i_timestepping_method.find("_uv") != std::string::npos)		&&
+		!(i_timestepping_method.find("_only") != std::string::npos)		&&
+		true
+	);
+}
+
+
+std::string SWE_Sphere_TS_ln_settls_uv::string_id()
+{
+	return string_id_storage;
+}
+
 
 void SWE_Sphere_TS_ln_settls_uv::run_timestep(
 		SphereData_Spectral &io_phi,	///< prognostic variables

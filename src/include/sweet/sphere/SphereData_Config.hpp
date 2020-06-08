@@ -681,6 +681,7 @@ public:
 		fftw_free(lat_cogaussian);
 		lat_cogaussian = nullptr;
 
+		shtns_unset_grid(shtns);
 		shtns_destroy(shtns);
 		shtns = nullptr;
 

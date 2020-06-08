@@ -1078,7 +1078,6 @@ public:
   		file << "GRID_TYPE GAUSSIAN" << std::endl;
   		file << "NUM_ELEMENTS " << sphereDataConfig->spectral_array_data_number_of_elements << std::endl;
   		file << "FIN" << std::endl;
-  		//std::cout << file.tellp() << std::endl;
 
   		file.write((const char*)spectral_space_data, sizeof(std::complex<double>)*sphereDataConfig->spectral_array_data_number_of_elements);
 

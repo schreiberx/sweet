@@ -115,7 +115,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 	 * Compute X_D
 	 */
 	SphereData_Spectral U_phi_D, U_vrt_D, U_div_D;
-	semiLagrangian.interpolate_with_departure_point_vd(
+	semiLagrangian.apply_sl_timeintegration_vd(
 			ops,
 			U_phi, U_vrt, U_div,
 			pos_lon_d, pos_lat_d,
@@ -155,7 +155,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 				);
 		}
 
-		semiLagrangian.interpolate_with_departure_point_vd(
+		semiLagrangian.apply_sl_timeintegration_vd(
 				ops,
 				L_U_phi, L_U_vrt, L_U_div,
 				pos_lon_d, pos_lat_d,
@@ -169,7 +169,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		 */
 
 		SphereData_Spectral U_phi_D, U_vrt_D, U_div_D;
-		semiLagrangian.interpolate_with_departure_point_vd(
+		semiLagrangian.apply_sl_timeintegration_vd(
 				ops,
 				U_phi, U_vrt, U_div,
 				pos_lon_d, pos_lat_d,
@@ -213,7 +213,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 	/*
 	 * Nonlinear remainder term starts here
 	 */
-	if (1)
+	if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR || coriolis_treatment == CORIOLIS_NONLINEAR)
 	{
 		/*
 		 * N*(t+0.5dt) = 1/2 ([ 2*N(t) - N(t-dt) ]_D + N(t))
@@ -279,7 +279,7 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		 * N(t+dt)_D = [ 2*N(t) - N(t-dt) ]_D
 		 */
 		SphereData_Spectral N_U_phi_next_D, N_U_vrt_next_D, N_U_div_next_D;
-		semiLagrangian.interpolate_with_departure_point_vd(
+		semiLagrangian.apply_sl_timeintegration_vd(
 				ops,
 				2.0 * N_U_phi_nr - N_U_phi_prev_nr,
 				2.0 * N_U_vrt_nr - N_U_vrt_prev_nr,
@@ -394,16 +394,20 @@ void SWE_Sphere_TS_ln_settls_vd::setup(
 	{
 		swe_sphere_ts_lg_irk = new SWE_Sphere_TS_lg_irk(simVars, ops);
 		if (timestepping_order == 1)
+		{
 			swe_sphere_ts_lg_irk->setup(
 					1,
 					simVars.timecontrol.current_timestep_size
 				);
+		}
 		else
+		{
 			// initialize with 1st order and half time step size
 			swe_sphere_ts_lg_irk->setup(
 					1,
 					0.5 * simVars.timecontrol.current_timestep_size
 				);
+		}
 	}
 }
 

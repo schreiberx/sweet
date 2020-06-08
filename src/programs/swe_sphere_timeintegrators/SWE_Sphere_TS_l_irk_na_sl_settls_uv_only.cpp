@@ -1,8 +1,5 @@
 /*
- * SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.cpp
- *
- *  Created on: 2020-04-29
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.hpp"
@@ -66,9 +63,6 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 	double i_simulation_timestamp
 )
 {
-	if (i_dt <= 0)
-		SWEETError("SWE_Sphere_TS_l_na_settls_only: Only constant time step size allowed (Please set --dt)");
-
 	const SphereData_Spectral &U_phi = io_U_phi;
 	const SphereData_Spectral &U_vrt = io_U_vrt;
 	const SphereData_Spectral &U_div = io_U_div;

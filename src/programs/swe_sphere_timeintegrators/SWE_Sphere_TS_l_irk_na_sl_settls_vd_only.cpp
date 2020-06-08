@@ -120,7 +120,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 	 * Compute X_D
 	 */
 	SphereData_Spectral U_phi_D, U_vrt_D, U_div_D;
-	semiLagrangian.interpolate_with_departure_point_vd(
+	semiLagrangian.apply_sl_timeintegration_vd(
 			ops,
 			U_phi, U_vrt, U_div,
 			pos_lon_d, pos_lat_d,
@@ -157,7 +157,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 
 
 	SphereData_Spectral L_U_phi_D, L_U_vrt_D, L_U_div_D;
-	semiLagrangian.interpolate_with_departure_point_vd(
+	semiLagrangian.apply_sl_timeintegration_vd(
 			ops,
 			L_U_phi, L_U_vrt, L_U_div,
 			pos_lon_d, pos_lat_d,
@@ -213,7 +213,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 		 * N(t+dt)_D = [ 2*N(t) - N(t-dt) ]_D
 		 */
 		SphereData_Spectral N_U_phi_next_D, N_U_vrt_next_D, N_U_div_next_D;
-		semiLagrangian.interpolate_with_departure_point_vd(
+		semiLagrangian.apply_sl_timeintegration_vd(
 				ops,
 				2.0 * N_U_phi - N_U_phi_prev_nr,
 				2.0 * N_U_vrt - N_U_vrt_prev_nr,
