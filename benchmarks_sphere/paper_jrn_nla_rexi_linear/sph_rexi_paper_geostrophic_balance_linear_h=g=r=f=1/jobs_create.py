@@ -15,7 +15,7 @@ class default_params:
 	rexi_m = 256
 	rexi_h = 0.15
 	rexi_half_poles = 1
-	rexi_extended_modes = 2
+	sphere_extended_modes = 2
 	rexi_normalization = 1
 
 	pde_id = 0
@@ -100,7 +100,7 @@ cd "$BASEDIR"
 		content += ' --rexi-h='+str(self.rexi_h)
 		content += ' --rexi-half='+str(self.rexi_half_poles)
 		content += ' --rexi-normalization='+str(self.rexi_normalization)
-		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+		content += ' --rexi-ext-modes='+str(self.sphere_extended_modes)
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		content += ' --compute-error='+str(self.compute_error)
@@ -147,7 +147,7 @@ $EXEC || exit 1
 			idstr += '_rexih'+str(self.rexi_h)
 			idstr += '_rexinorm'+str(self.rexi_normalization)
 			idstr += '_rexihalf'+str(self.rexi_half_poles)
-			idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
+			idstr += '_rexiextmodes'+str(self.sphere_extended_modes).zfill(2)
 			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
 		idstr += '_C'+str(self.timestep_size).zfill(8)
@@ -203,7 +203,7 @@ if True:
 
 	for p.rexi_half_poles in [0, 1]:
 		for p.rexi_normalization in [1,0]:
-			for p.rexi_extended_modes in [2]:
+			for p.sphere_extended_modes in [2]:
 				for p.space_res_spectral in [64]:
 					for p.rexi_m in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
 						p.gen_script('script'+p.create_job_id(), 'run.sh')

@@ -81,11 +81,11 @@ for p.runtime.f_sphere in [0, 1]:
 
 		p.runtime.rexi_method = 'terry'
 
-		for p.runtime.rexi_extended_modes in [0]:
+		for p.runtime.sphere_extended_modes in [0]:
 			for p.runtime.rexi_m in [4, 64, 128, 256]:
 				p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
-		p.runtime.rexi_extended_modes = 0
+		p.runtime.sphere_extended_modes = 0
 		p.runtime.rexi_m = 0
 
 		p.runtime.rexi_method = ''
@@ -102,7 +102,7 @@ for p.runtime.f_sphere in [0, 1]:
 		p.runtime.max_simulation_time = default_timestep_size*default_timesteps
 		p.runtime.max_timesteps_nr = default_timesteps
 
-		p.runtime.rexi_extended_modes = 0
+		p.runtime.sphere_extended_modes = 0
 		p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
@@ -117,7 +117,7 @@ for p.runtime.f_sphere in [0, 1]:
 		p.runtime.max_simulation_time = default_timestep_size*default_timesteps
 		p.runtime.max_timesteps_nr = default_timesteps
 
-		p.runtime.rexi_extended_modes = 0
+		p.runtime.sphere_extended_modes = 0
 		p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
@@ -132,7 +132,7 @@ for p.runtime.f_sphere in [0, 1]:
 		p.runtime.max_simulation_time = default_timestep_size*default_timesteps
 		p.runtime.max_timesteps_nr = default_timesteps
 
-		p.runtime.rexi_extended_modes = 0
+		p.runtime.sphere_extended_modes = 0
 		p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 
 
@@ -147,6 +147,6 @@ for p.runtime.f_sphere in [0, 1]:
 		p.runtime.max_simulation_time = default_timestep_size*default_timesteps
 		p.runtime.max_timesteps_nr = default_timesteps
 
-		p.runtime.rexi_extended_modes = 0
+		p.runtime.sphere_extended_modes = 0
 		p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')
 

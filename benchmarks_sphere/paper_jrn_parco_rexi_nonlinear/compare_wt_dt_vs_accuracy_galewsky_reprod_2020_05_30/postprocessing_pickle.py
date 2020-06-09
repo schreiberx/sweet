@@ -4,7 +4,7 @@ import sys
 import math
 import glob
 
-from sweet.postprocessing.pickle_SphereDataPhysicalDiff import *
+from mule_local.postprocessing.pickle_SphereDataPhysicalDiff import *
 from mule.exec_program import *
 
 # Ugly hack!

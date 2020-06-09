@@ -36,7 +36,7 @@ p.runtime.timestepping_order = 2
 p.runtime.rexi_m = 256
 p.runtime.rexi_h = 0.15
 p.runtime.rexi_half_poles = 1
-p.runtime.rexi_extended_modes = 2
+p.runtime.sphere_extended_modes = 2
 p.runtime.rexi_normalization = 1
 
 p.runtime.gravitation= 1	# gravity
@@ -83,7 +83,7 @@ if True:
 
 	for p.runtime.rexi_half_poles in [0, 1]:
 		for p.runtime.rexi_normalization in [1,0]:
-			for p.runtime.rexi_extended_modes in [0, 2]:
+			for p.runtime.sphere_extended_modes in [0, 2]:
 				for p.runtime.space_res_spectral in [64]:
 					for p.runtime.rexi_m in [1, 2, 4, 8, 16, 32, 64, 128, 256]:
 						p.gen_script('script'+p.runtime.getUniqueID(p.compile), 'run.sh')

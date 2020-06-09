@@ -263,7 +263,7 @@ jg.runtime.viscosity = 0.0
 timestep_size_reference = params_timestep_sizes_explicit[0]
 
 
-jg.runtime.rexi_extended_modes = 0
+jg.runtime.sphere_extended_modes = 0
 
 # Groups to execute, see below
 # l: linear

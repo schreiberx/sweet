@@ -16,9 +16,9 @@ mule_plotting_usetex(False)
 groups = ['runtime.timestepping_method']
 
 tagnames_y = [
-    'sphere_data_diff_prog_div.res_norm_l1',
-    'sphere_data_diff_prog_div.res_norm_l2',
-    'sphere_data_diff_prog_div.res_norm_linf',
+    'sphere_data_diff_prog_vrt.res_norm_l1',
+    'sphere_data_diff_prog_vrt.res_norm_l2',
+    'sphere_data_diff_prog_vrt.res_norm_linf',
 ]
 
 

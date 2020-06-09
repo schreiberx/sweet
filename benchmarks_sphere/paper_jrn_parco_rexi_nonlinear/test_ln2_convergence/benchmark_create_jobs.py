@@ -253,7 +253,7 @@ p.runtime.viscosity = 0.0
 
 
 
-p.runtime.rexi_extended_modes = 0
+p.runtime.sphere_extended_modes = 0
 
 # Groups to execute, see below
 # l: linear

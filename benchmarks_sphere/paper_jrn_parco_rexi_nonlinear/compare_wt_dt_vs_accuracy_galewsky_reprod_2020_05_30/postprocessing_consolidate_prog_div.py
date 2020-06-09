@@ -2,9 +2,7 @@
 
 import sys
 import math
-import copy
 
-from SWEET import *
 from mule.plotting.Plotting import *
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
@@ -13,16 +11,14 @@ sys.path.append('../')
 import pretty_plotting as pp
 sys.path.pop()
 
-groups = [
-		'runtime.timestepping_method',
-		'runtime.h',
-	]
+mule_plotting_usetex(False)
 
+groups = ['runtime.timestepping_method']
 
 tagnames_y = [
-	'sphere_data_diff_prog_h.res_norm_l1',
-	'sphere_data_diff_prog_h.res_norm_l2',
-	'sphere_data_diff_prog_h.res_norm_linf',
+	'sphere_data_diff_prog_div.res_norm_l1',
+	'sphere_data_diff_prog_div.res_norm_l2',
+	'sphere_data_diff_prog_div.res_norm_linf',
 ]
 
 
@@ -50,7 +46,6 @@ for tagname_y in tagnames_y:
 			},
 		]
 
-	"""
 	params += [
 			{
 				'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
@@ -61,7 +56,6 @@ for tagname_y in tagnames_y:
 				'yscale': 'log',
 			},
 		]
-	"""
 
 
 	for param in params:
@@ -77,23 +71,6 @@ for tagname_y in tagnames_y:
 		print("Processing tag "+tagname_x)
 		print("*"*80)
 
-		#if True:
-		if False:
-			"""
-			Table format
-			"""
-
-			d = JobsData_GroupsDataTable(
-					job_groups,
-					tagname_x,
-					tagname_y,
-					data_filter = data_filter
-				)
-			fileid = "output_table_"+tagname_x.replace('.', '-').replace('_', '-')+"_vs_"+tagname_y.replace('.', '-').replace('_', '-')
-
-			print("Data table:")
-			d.print()
-			d.write(fileid+".csv")
 
 
 		if True:
@@ -112,14 +89,23 @@ for tagname_y in tagnames_y:
 				if math.isnan(y):
 					return True
 
-				# inconsistency of REXI
-				# finding right coefficients is part of future work
-				if x < 20:
-					return True
-
 				if 'prog_h' in tagname_y:
-					return False
+					if 'l1' in tagname_y:
+						if y > 1e1:
+							print("Sorting out L1 data "+str(y))
+							return True
+					elif 'l2' in tagname_y:
+						if y > 1e1:
+							print("Sorting out L2 data "+str(y))
+							return True
+					elif 'linf' in tagname_y:
+						if y > 1e2:
+							print("Sorting out Linf data "+str(y))
+							return True
+					else:
+						raise Exception("Unknown y tag "+tagname_y)
 
+				elif 'prog_div' in tagname_y:
 					if 'l1' in tagname_y:
 						if y > 1e1:
 							print("Sorting out L1 data "+str(y))
@@ -160,23 +146,11 @@ for tagname_y in tagnames_y:
 				# new data dictionary
 				data_new = {}
 				for key, data in d.data.items():
-					# reduce key to it's main information
-					key_new = key
-					pos = key_new.find('.0')
-					if pos >= 0:
-						key_new = key_new[0:pos]
-					key_new = key_new.replace('lg_rexi_lc_n_erk_ver0_', '')
-					key_new = key_new.replace('lg_rexi_lc_n_erk_ver1_', '')
-					key_new = key_new.replace('lg_irk_lc_n_erk_ver0_', '')
-					key_new = key_new.replace('lg_irk_lc_n_erk_ver1_', '')
-
 					# generate nice tex label
-					label_new = pp.get_pretty_name(key_new)
-					label_new = '$h_0 = '+label_new+' m$'
-					data['label'] = label_new
+					#data['label'] = pp.get_pretty_name(key)
+					data['label'] = key #pp.get_pretty_name(key)
 
-					# Finally, care about proper key name for correct sorting
-					key_new = key_new.zfill(8)
+					key_new = pp.get_pretty_name_order(key)+'_'+key
 
 					# copy data
 					data_new[key_new] = copy.copy(data)
@@ -212,6 +186,7 @@ for tagname_y in tagnames_y:
 
 
 
+			annotate_text_template = "{:.1f} / {:.3f}"
 			p.plot(
 					data_plotting = d.get_data_float(),
 					xlabel = xlabel,
@@ -219,10 +194,14 @@ for tagname_y in tagnames_y:
 					title = title,
 					xscale = xscale,
 					yscale = yscale,
+					#annotate = True,
+					#annotate_each_nth_value = 3,
+					#annotate_fontsize = 6,
+					#annotate_text_template = annotate_text_template,
+					legend_fontsize = 8,
+					grid = True,
 					outfile = fileid+".pdf",
 					lambda_fun = fun,
-					#xlim = (20, 800),
-					ylim = (1e-4, 1e+3),
 				)
 
 			print("Data plotting:")

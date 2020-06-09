@@ -24,6 +24,10 @@ latex_pretty_names = {
 	'sphere_data_diff_prog_vort.res_norm_l1'	: '$L_1$ norm vorticity (res.\,normalized)',
 	'sphere_data_diff_prog_vort.res_norm_l2'	: '$L_2$ norm vorticity (res.\,normalized)',
 	'sphere_data_diff_prog_vort.res_norm_linf'	: '$L_{\infty}$ norm vorticity',
+
+	'sphere_data_diff_prog_div.res_norm_l1'	: '$L_1$ norm divergence (res.\,normalized)',
+	'sphere_data_diff_prog_div.res_norm_l2'	: '$L_2$ norm divergence (res.\,normalized)',
+	'sphere_data_diff_prog_div.res_norm_linf'	: '$L_{\infty}$ norm divergence',
 }
 
 

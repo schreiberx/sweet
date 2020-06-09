@@ -226,7 +226,14 @@ public:
 					i_dt_velocity_x, i_dt_velocity_y, i_dt_velocity_z,
 					rotation_axis_x, rotation_axis_y, rotation_axis_z
 				);
-
+#if 0
+			/*
+			 * TODO: replace this!
+			 *
+			 * Use a formulation without normalization by using the
+			 * angular vector / velocity e.g. by using quaternions
+			 */
+#else
 			/*
 			 * Normalize rotation axis since it's likely not normalized yet
 			 */
@@ -243,7 +250,7 @@ public:
 			 * given by the magnitude of the angular velocity by its definition
 			 */
 			ScalarDataArray angle = SWEETMath::length(i_dt_velocity_x, i_dt_velocity_y, i_dt_velocity_z);
-
+#endif
 			/*
 			 * Rotate
 			 */

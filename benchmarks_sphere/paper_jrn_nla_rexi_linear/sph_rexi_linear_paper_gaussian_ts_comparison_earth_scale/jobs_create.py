@@ -32,7 +32,7 @@ p.runtime.timestepping_method = 'l_erk'
 p.runtime.rexi_m = 256
 p.runtime.rexi_h = 0.15
 p.runtime.rexi_half_poles = 0
-p.runtime.rexi_extended_modes = 0
+p.runtime.sphere_extended_modes = 0
 p.runtime.rexi_normalization = 1
 
 p.runtime.f_sphere = 0

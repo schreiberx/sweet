@@ -149,7 +149,7 @@ p.runtime.max_simulation_time = 432000 #timestep_size_reference*(2**6)*10
 p.runtime.output_filename = "-"
 p.runtime.output_timestep_size = 60
 
-p.runtime.rexi_extended_modes = 0
+p.runtime.sphere_extended_modes = 0
 
 p.runtime.floating_point_output_digits = 14
 

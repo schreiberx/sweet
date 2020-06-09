@@ -25,7 +25,7 @@ class default_params:
 	rexi_m = 256
 	rexi_h = 0.15
 	rexi_half_poles = 1
-	rexi_extended_modes = 0
+	sphere_extended_modes = 0
 
 	g = 1	# gravity
 	h = 100000	# avg height
@@ -109,7 +109,7 @@ cd "$BASEDIR"
 		content += ' --rexi-h='+str(self.rexi_h)
 		content += ' --rexi-half='+str(self.rexi_half_poles)
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
-		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+		content += ' --rexi-ext-modes='+str(self.sphere_extended_modes)
 
 		content += ' --compute-error='+str(self.compute_error)
 
@@ -157,7 +157,7 @@ echo "$EXEC"
 			idstr += '_rexim'+str(self.rexi_m).zfill(5)
 			idstr += '_rexih'+str(self.rexi_h)
 			idstr += '_rexihalf'+str(self.rexi_half_poles)
-			idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
+			idstr += '_rexiextmodes'+str(self.sphere_extended_modes).zfill(2)
 			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
 		idstr += '_C'+str(self.timestep_size).zfill(8)
@@ -236,11 +236,11 @@ for p.pde_id in [0]:
 			p.max_simulation_time = default_timestep_size*default_timesteps
 			p.max_timesteps_nr = default_timesteps
 
-			for p.rexi_extended_modes in [0, 2]:
+			for p.sphere_extended_modes in [0, 2]:
 				for p.rexi_m in [4, 64, 128, 256]:
 					p.gen_script('script'+p.create_job_id(), 'run.sh')
 
-			p.rexi_extended_modes = 0
+			p.sphere_extended_modes = 0
 			p.rexi_m = 0
 
 
@@ -255,7 +255,7 @@ for p.pde_id in [0]:
 			p.max_simulation_time = default_timestep_size*default_timesteps
 			p.max_timesteps_nr = default_timesteps
 
-			p.rexi_extended_modes = 0
+			p.sphere_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
@@ -270,7 +270,7 @@ for p.pde_id in [0]:
 			p.max_simulation_time = default_timestep_size*default_timesteps
 			p.max_timesteps_nr = default_timesteps
 
-			p.rexi_extended_modes = 0
+			p.sphere_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
@@ -285,7 +285,7 @@ for p.pde_id in [0]:
 			p.max_simulation_time = default_timestep_size*default_timesteps
 			p.max_timesteps_nr = default_timesteps
 
-			p.rexi_extended_modes = 0
+			p.sphere_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
@@ -300,7 +300,7 @@ for p.pde_id in [0]:
 			p.max_simulation_time = default_timestep_size*default_timesteps
 			p.max_timesteps_nr = default_timesteps
 
-			p.rexi_extended_modes = 0
+			p.sphere_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 
@@ -315,7 +315,7 @@ for p.pde_id in [0]:
 			p.max_simulation_time = default_timestep_size*default_timesteps
 			p.max_timesteps_nr = default_timesteps
 
-			p.rexi_extended_modes = 0
+			p.sphere_extended_modes = 0
 			p.gen_script('script'+p.create_job_id(), 'run.sh')
 
 

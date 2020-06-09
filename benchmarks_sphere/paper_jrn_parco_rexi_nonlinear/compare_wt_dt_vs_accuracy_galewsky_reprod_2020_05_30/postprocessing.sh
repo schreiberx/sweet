@@ -3,7 +3,7 @@
 
 ./postprocessing_pickle.py
 
-./postprocessing_consolidate_prog_phi_pert.py
+./postprocessing_consolidate_prog_h.py
 ./postprocessing_consolidate_prog_div.py
-./postprocessing_consolidate_prog_vrt.py
+./postprocessing_consolidate_prog_vort.py
 

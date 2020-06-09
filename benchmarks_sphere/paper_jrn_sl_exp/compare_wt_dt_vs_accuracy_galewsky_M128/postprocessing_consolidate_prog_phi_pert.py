@@ -16,9 +16,9 @@ mule_plotting_usetex(False)
 groups = ['runtime.timestepping_method']
 
 tagnames_y = [
-    'sphere_data_diff_prog_div.res_norm_l1',
-    'sphere_data_diff_prog_div.res_norm_l2',
-    'sphere_data_diff_prog_div.res_norm_linf',
+    'sphere_data_diff_prog_phi_pert.res_norm_l1',
+    'sphere_data_diff_prog_phi_pert.res_norm_l2',
+    'sphere_data_diff_prog_phi_pert.res_norm_linf',
 ]
 
 
@@ -93,15 +93,18 @@ for tagname_y in tagnames_y:
                     return True
 
                 if 'l1' in tagname_y:
-                    if y > 1e1:
+                    #if y > 1e1:
+                    if y > 1e3:
                         print("Sorting out L1 data "+str(y))
                         return True
                 elif 'l2' in tagname_y:
-                    if y > 1e1:
+                    #if y > 1e1:
+                    if y > 1e3:
                         print("Sorting out L2 data "+str(y))
                         return True
                 elif 'linf' in tagname_y:
-                    if y > 1e2:
+                    #if y > 1e2:
+                    if y > 1e3:
                         print("Sorting out Linf data "+str(y))
                         return True
                 else:
@@ -174,11 +177,11 @@ for tagname_y in tagnames_y:
             if convergence:
 
                 if 'l1' in tagname_y:
-                    ps = [100, 1e-9]
+                    ps = [100, 1e-2]
                 elif 'l2' in tagname_y:
-                    ps = [100, 5e-8]
+                    ps = [100, 5e-2]
                 elif 'linf' in tagname_y:
-                    ps = [100, 1e-7]
+                    ps = [100, 1e-0]
                 else:
                     ps = [100, 1e-0]
 
