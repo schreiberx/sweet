@@ -176,6 +176,10 @@ public:
 		setHudVisibility(false);
 	}
 
+	~VisSweetHUD()
+	{
+		free();
+	}
 
 	void free()
 	{

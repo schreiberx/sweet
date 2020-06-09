@@ -42,6 +42,7 @@ public:
 	void benchmarks_register_all();
 	void benchmarks_free_all(SWESphereBenchmarks_interface *skip_this = nullptr);
 	BenchmarksSphereSWE();
+	~BenchmarksSphereSWE();
 
 public:
 	void printAvailableBenchmarks();

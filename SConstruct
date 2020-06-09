@@ -439,6 +439,15 @@ if compiler_to_use == 'llvm':
         Exit(-1)
 
 
+#
+# Intensive sanitization
+#
+if 0:
+    # Use address sanitizer checks (e.g. for memory allocation, out of boundary access, etc.)
+    #env.Append(CXXFLAGS=' -fsanitize=address')
+    #env.Append(LINKFLAGS=' -fsanitize=address')
+
+
 
 if p.mode == 'debug':
     env.Append(CXXFLAGS=' -DSWEET_DEBUG=1')
