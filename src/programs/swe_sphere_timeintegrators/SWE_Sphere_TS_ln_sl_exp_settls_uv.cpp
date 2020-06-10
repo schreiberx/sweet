@@ -32,9 +32,9 @@ std::string SWE_Sphere_TS_ln_sl_exp_settls_uv::string_id()
 
 
 void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep(
-		SphereData_Spectral &io_phi,	///< prognostic variables
-		SphereData_Spectral &io_vrt,	///< prognostic variables
-		SphereData_Spectral &io_div,	///< prognostic variables
+		SphereData_Spectral &io_phi,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div,
 
 		double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
 		double i_simulation_timestamp
@@ -57,7 +57,8 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 		SphereData_Spectral &io_U_div,
 
 		double i_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
-		double i_simulation_timestamp)
+		double i_simulation_timestamp
+)
 {
 	const SphereData_Spectral &U_phi = io_U_phi;
 	const SphereData_Spectral &U_vrt = io_U_vrt;
@@ -86,7 +87,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 	/*
 	 *************************************************************************************************
-	 * Step 1) Compute depature points
+	 * Step 1) Compute departure points
 	 *************************************************************************************************
 	 */
 	SphereData_Physical U_u_lon_prev, U_v_lat_prev;
@@ -246,8 +247,8 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 }
 
 
-void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 
+void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 {
 	SWE_Sphere_TS_ln_sl_exp_settls_uv::LinearCoriolisTreatment_enum linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::CORIOLIS_IGNORE;
 	SWE_Sphere_TS_ln_sl_exp_settls_uv::NLRemainderTreatment_enum nonlinear_remainder_treatment = SWE_Sphere_TS_ln_sl_exp_settls_uv::NL_REMAINDER_IGNORE;
@@ -342,8 +343,6 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup(
 		bool i_original_linear_operator_sl_treatment
 )
 {
-	std::cout << " + SWE_Sphere_TS_ln_sl_exp_settls.setup() called" << std::endl;
-
 	coriolis_treatment = i_coriolis_treatment;
 	nonlinear_remainder_treatment = i_nonlinear_remainder_treatment;
 	timestepping_order = i_timestepping_order;

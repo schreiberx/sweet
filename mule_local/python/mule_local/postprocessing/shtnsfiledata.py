@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import math
 import shtns
 
 
@@ -14,7 +15,7 @@ class shtnsfiledata:
         self.rsphere = rsphere
 
 
-    def setup(self, file_info):
+    def setup(self, file_info, anti_aliasing=False):
         import shtns
         import numpy as np
 
@@ -24,8 +25,18 @@ class shtnsfiledata:
         ntrunc = file_info['modes_n_max']
         self._shtns = shtns.sht(ntrunc, ntrunc, 1, shtns.sht_orthonormal+shtns.SHT_NO_CS_PHASE)
 
-        nlons = (ntrunc+1)*2
-        nlats = (ntrunc+1)
+        nlons = (ntrunc + 1) * 2
+        nlats = (ntrunc + 1)
+
+        if anti_aliasing:
+            if nlons & 1:
+                raise Exception("Only even numbers of longitudes coordinates allowed for anti-aliasing")
+            if nlats & 1:
+                raise Exception("Only even numbers of latitudinal coordinates allowed for anti-aliasing")
+
+            nlons += nlons//2
+            nlats += nlats//2
+
 
         if file_info['grid_type'] == 'GAUSSIAN':
                 #self._shtns.set_grid(nlats,nlons,shtns.sht_gauss_fly|shtns.SHT_PHI_CONTIGUOUS, 1.e-10)
@@ -50,16 +61,17 @@ class shtnsfiledata:
         self.invlap = self.invlap*self.rsphere**2
 
 
+
     def phys2spec(self, data):
         return self._shtns.analys(data)
 
     def spec2phys(self, dataspec):
         return self._shtns.synth(dataspec)
 
-    def vortdiv2uv(self, vrtspec, divspec):
+    def vrtdiv2uv(self, vrtspec, divspec):
         return self._shtns.synth((self.invlap/self.rsphere)*vrtspec, (self.invlap/self.rsphere)*divspec)
 
-    def uv2vortdiv(self,u,v):
+    def uv2vrtdiv(self,u,v):
         vrtspec, divspec = self._shtns.analys(u, v)
         return self.lap*self.rsphere*vrtspec, self.lap*rsphere*divspec
 

@@ -65,8 +65,9 @@ public:
 	int spectral_modes_n_max;
 	int spectral_modes_m_max;
 
-//	double shtns_error = 1.e-10;
 	double shtns_error = 0;
+//	double shtns_error = 1.e-10;
+//	double shtns_error = 1.e-6;
 
 	/**
 	 * Number of total number of modes (complex valued)

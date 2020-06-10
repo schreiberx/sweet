@@ -98,7 +98,7 @@ p.runtime.max_simulation_time = 60*60
 p.runtime.output_timestep_size = 60*60
 #p.runtime.output_timestep_size = -1
 
-p.runtime.rexi_extended_modes = 0
+p.runtime.sphere_extended_modes = 0
 
 # Groups to execute, see below
 # l: linear

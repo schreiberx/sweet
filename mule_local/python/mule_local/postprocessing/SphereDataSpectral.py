@@ -7,15 +7,15 @@ import mule_local.postprocessing.shtnsfiledata as shtnsfiledata
 
 class SphereDataSpectral:
 
-    def __init__(self, filename = None):
+    def __init__(self, filename = None, setup_physical=True):
 
         if filename != None:
-        	self.read_file(filename)
+        	self.read_file(filename, setup_physical=setup_physical)
 
         pass
 
 
-    def read_file(self, filename):
+    def read_file(self, filename, setup_physical=True):
         input_file = filename
         f = open(input_file, 'rb')
         content = f.read()
@@ -36,7 +36,6 @@ class SphereDataSpectral:
                 if line_nr == 0:
                     if acc == "SWEET":
                         pass
-                        #print("SWEET header detected")
                     else:
                         raise Exception("Header not detected, stopping")
 
@@ -90,7 +89,8 @@ class SphereDataSpectral:
 
         self.data_spectral = np.frombuffer(data, dtype=np.complex128)
 
-        sfd = shtnsfiledata.shtnsfiledata()
-        sfd.setup(self.file_info)
+        if setup_physical:
+            sfd = shtnsfiledata.shtnsfiledata()
+            sfd.setup(self.file_info)
 
-        self.data = sfd.spec2phys(self.data_spectral)
+            self.data = sfd.spec2phys(self.data_spectral)

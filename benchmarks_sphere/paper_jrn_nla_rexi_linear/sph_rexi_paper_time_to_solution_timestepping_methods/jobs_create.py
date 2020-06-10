@@ -25,7 +25,7 @@ class default_params:
 	rexi_m = 256
 	rexi_h = 0.15
 	rexi_half_poles = 1
-	rexi_extended_modes = 0
+	sphere_extended_modes = 0
 
 	g = 1	# gravity
 	h = 100000	# avg height
@@ -112,7 +112,7 @@ cd "$BASEDIR"
 		content += ' --rexi-h='+str(self.rexi_h)
 		content += ' --rexi-half='+str(self.rexi_half_poles)
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
-		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+		content += ' --rexi-ext-modes='+str(self.sphere_extended_modes)
 
 		content += ' --compute-error='+str(self.compute_error)
 
@@ -163,7 +163,7 @@ taskset -c 1 $EXEC || exit 1
 			idstr += '_rexim'+str(self.rexi_m).zfill(8)
 			idstr += '_rexih'+str(self.rexi_h)
 			idstr += '_rexihalf'+str(self.rexi_half_poles)
-			idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
+			idstr += '_rexiextmodes'+str(self.sphere_extended_modes).zfill(2)
 #			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
 		return idstr
@@ -189,7 +189,7 @@ p = default_params()
 
 p.use_robert_functions = 1
 p.f_sphere = 0
-p.rexi_extended_modes = 2
+p.sphere_extended_modes = 2
 
 
 

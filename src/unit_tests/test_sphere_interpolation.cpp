@@ -132,10 +132,10 @@ public:
 #if 1
 
 		double x0[3];
-		SWEETMath::latlon_to_cartesian(i_center_lon, i_center_lat, x0);
+		SWEETMath::point_latlon_to_cartesian__scalar(i_center_lon, i_center_lat, x0[0], x0[1], x0[2]);
 
 		double x[3];
-		SWEETMath::latlon_to_cartesian(i_lon, i_lat, x);
+		SWEETMath::point_latlon_to_cartesian__scalar(i_lon, i_lat, x[0], x[1], x[2]);
 
 #if 0
 		double d =	(x[0] - x0[0])*(x[0] - x0[0])*(2.0+i_lon*0.1) +

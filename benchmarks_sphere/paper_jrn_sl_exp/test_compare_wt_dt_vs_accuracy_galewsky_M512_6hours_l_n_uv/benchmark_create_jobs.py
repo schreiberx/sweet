@@ -200,6 +200,12 @@ if __name__ == "__main__":
 
         ['lg_irk_na_sl_lc_nr_settls_ver0_uv',    2,    2,    0],
         ['lg_irk_na_sl_lc_nr_settls_ver1_uv',    2,    2,    0],
+
+        ###########
+        # EXP variants
+        ###########
+        ['lg_exp_na_sl_lc_nr_settls_ver0_uv',    2,    2,    0],
+        ['lg_exp_na_sl_lc_nr_settls_ver1_uv',    2,    2,    0],
     ]
 
     for space_res_spectral in space_res_spectral_:

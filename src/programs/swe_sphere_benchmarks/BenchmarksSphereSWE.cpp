@@ -83,6 +83,12 @@ void BenchmarksSphereSWE::setup(
 }
 
 
+BenchmarksSphereSWE::~BenchmarksSphereSWE()
+{
+	reset();
+}
+
+
 void BenchmarksSphereSWE::reset()
 {
 	delete master;

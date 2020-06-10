@@ -2,8 +2,6 @@
 
 cd "$(dirname $0)"
 
-export
-
 if [[ -z "$1" ]]; then
 	TESTS=$(ls -1d test_*)
 else
@@ -22,12 +20,12 @@ for i in $TESTS; do
 
 	cd "$i" || exit
 
-	rm -rf jobs_* || { echo "FAILED: $i"; exit 1; }
+	rm -rf job_* || { echo "FAILED: $i"; exit 1; }
 	rm -f output_* || { echo "FAILED: $i"; exit 1; }
 	rm -f ./compile_platform_default_gnu.sh || { echo "FAILED: $i"; exit 1; }
 
 	echo_success_hline
-	echo_success "Test $i cleaned up successfully"
+	echo_success "Cleanup of test $i successful"
 	echo_success_hline
 done
 

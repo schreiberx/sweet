@@ -25,7 +25,7 @@ class default_params:
 	rexi_m = 256
 	rexi_h = 0.15
 	rexi_half_poles = 1
-	rexi_extended_modes = 0
+	sphere_extended_modes = 0
 	rexi_normalization = 1
 	rexi_sphere_preallocation = 1
 
@@ -113,7 +113,7 @@ cd "$BASEDIR"
 		content += ' --rexi-half='+str(self.rexi_half_poles)
 		content += ' --rexi-normalization='+str(self.rexi_normalization)
 		content += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
-		content += ' --rexi-ext-modes='+str(self.rexi_extended_modes)
+		content += ' --rexi-ext-modes='+str(self.sphere_extended_modes)
 		content += ' --use-robert-functions='+str(self.use_robert_functions)
 
 		content += ' --compute-error='+str(self.compute_error)
@@ -167,7 +167,7 @@ $EXEC || exit 1
 			idstr += '_rexinorm'+str(self.rexi_normalization)
 			idstr += '_rexihalf'+str(self.rexi_half_poles)
 			idstr += '_rexiprealloc'+str(self.rexi_sphere_preallocation)
-			idstr += '_rexiextmodes'+str(self.rexi_extended_modes).zfill(2)
+			idstr += '_rexiextmodes'+str(self.sphere_extended_modes).zfill(2)
 #			idstr += '_rexipar'+str(1 if self.rexi_par else 0)
 
 		return idstr
@@ -231,7 +231,7 @@ for p.pde_id in [0]:
 		# REXI dt=defaut_timestep_size
 		####################################
 		for p.rexi_normalization in [1]:
-			for p.rexi_extended_modes in [2]:
+			for p.sphere_extended_modes in [2]:
 				p.timestepping_method = 'l_rexi'
 				p.timestepping_order = 0
 
