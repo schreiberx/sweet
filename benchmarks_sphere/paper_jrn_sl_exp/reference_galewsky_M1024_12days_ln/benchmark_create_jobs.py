@@ -44,14 +44,14 @@ jg.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
 
-jg.runtime.max_simulation_time = 60*60*12   # 12 days
+jg.runtime.max_simulation_time = 60*60*24*12   # 12 days
 
 #space_res_spectral_ = [64, 128, 256]
-space_res_spectral_ = [2048]
+space_res_spectral_ = [1024]
 
 
 # Reference time step size
-timestep_size_reference = 5
+timestep_size_reference = 10
 
 
 #params_timestep_sizes_explicit = [15/2*(2**i) for i in range(10)]
@@ -79,7 +79,7 @@ unique_id_filter.append('parallelization')
 jg.unique_id_filter = unique_id_filter
 
 
-jg.runtime.output_timestep_size = 60*60*24 #jg.runtime.max_simulation_time
+jg.runtime.output_timestep_size = 60*60*12 #jg.runtime.max_simulation_time
 
 # No output
 #jg.runtime.output_filename = "-"
@@ -257,7 +257,7 @@ if __name__ == "__main__":
             jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
 
             _a = jg.runtime.max_wallclock_time
-            jg.runtime.max_wallclock_time = 2*24*60*60       # 30 minutes max
+            #jg.runtime.max_wallclock_time = 2*24*60*60       # 30 minutes max
 
             jg.reference_job_unique_id = None
             jg.gen_jobscript_directory('job_benchref_'+jg.getUniqueID())
