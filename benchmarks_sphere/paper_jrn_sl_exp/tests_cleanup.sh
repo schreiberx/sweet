@@ -17,7 +17,7 @@ for i in $TESTS; do
 	cd "$p"
 
 	echo_info_hline
-	echo_info "Executing test $i"
+	echo_info "Cleaning up test $i"
 	echo_info_hline
 
 	cd "$i" || exit
@@ -27,7 +27,7 @@ for i in $TESTS; do
 	rm -f ./compile_platform_default_gnu.sh || { echo "FAILED: $i"; exit 1; }
 
 	echo_success_hline
-	echo_success "Test $i executed successfully"
+	echo_success "Test $i cleaned up successfully"
 	echo_success_hline
 done
 
