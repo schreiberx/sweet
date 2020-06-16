@@ -44,19 +44,19 @@ jg.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
 
-jg.runtime.max_simulation_time = 60*60*6    # 6 days
+jg.runtime.max_simulation_time = 60*60*24*12   # 12 days
 
 #space_res_spectral_ = [64, 128, 256]
-space_res_spectral_ = [2048]
+space_res_spectral_ = [1024]
 
 
 # Reference time step size
-timestep_size_reference = 5
+timestep_size_reference = 10
 
 
-params_timestep_sizes_explicit = [15/2*(2**i) for i in range(10)]
-params_timestep_sizes_implicit = [15/2*(2**i) for i in range(10)]
-params_timestep_sizes_exp = [15/2*(2**i) for i in range(9)]
+#params_timestep_sizes_explicit = [15/2*(2**i) for i in range(10)]
+#params_timestep_sizes_implicit = [15/2*(2**i) for i in range(10)]
+#params_timestep_sizes_exp = [15/2*(2**i) for i in range(9)]
 
 
 # Parallelization
@@ -79,7 +79,7 @@ unique_id_filter.append('parallelization')
 jg.unique_id_filter = unique_id_filter
 
 
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+jg.runtime.output_timestep_size = 60*60*12 #jg.runtime.max_simulation_time
 
 # No output
 #jg.runtime.output_filename = "-"
@@ -179,38 +179,39 @@ def estimateWallclockTime(jg):
 if __name__ == "__main__":
 
     ts_methods = [
-        ['ln_erk_split_uv',        4,    4,    0],
+        ['ln_erk',        4,    4,    0],
+#        ['ln_erk_split_uv',        4,    4,    0],
 
         ###########
         # Runge-Kutta
         ###########
-        ['ln_erk',              2,    2,    0],
+#        ['ln_erk',              2,    2,    0],
 
         ###########
         # CN splitting
         ###########
         #['lg_irk_lc_n_erk_ver0',    2,    2,    0],
-        ['lg_irk_lc_n_erk_ver1',    2,    2,    0],
+#        ['lg_irk_lc_n_erk_ver1',    2,    2,    0],
 
         #['l_irk_n_erk_ver0',    2,    2,    0],
-        ['l_irk_n_erk_ver1',    2,    2,    0],
+#        ['l_irk_n_erk_ver1',    2,    2,    0],
 
         ###########
         # EXP
         ###########
-        ['lg_exp_lc_n_erk_ver0',    2,    2,    0],
-        ['lg_exp_lc_n_erk_ver1',    2,    2,    0],
+#        ['lg_exp_lc_n_erk_ver0',    2,    2,    0],
+#        ['lg_exp_lc_n_erk_ver1',    2,    2,    0],
 
 
         ###########
         # SETTLS variants
         ###########
-        ['l_irk_na_sl_nr_settls_uv_only',    2,    2,    0],
+#        ['l_irk_na_sl_nr_settls_uv_only',    2,    2,    0],
 
-        ['l_irk_na_sl_nr_settls_ver0_uv',    2,    2,    0],
+#        ['l_irk_na_sl_nr_settls_ver0_uv',    2,    2,    0],
 #        ['l_irk_na_sl_nr_settls_ver1_uv',    2,    2,    0],
 
-        ['lg_irk_na_sl_lc_nr_settls_ver0_uv',    2,    2,    0],
+#        ['lg_irk_na_sl_lc_nr_settls_ver0_uv',    2,    2,    0],
 #        ['lg_irk_na_sl_lc_nr_settls_ver1_uv',    2,    2,    0],
     ]
 
@@ -256,7 +257,7 @@ if __name__ == "__main__":
             jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
 
             _a = jg.runtime.max_wallclock_time
-            jg.runtime.max_wallclock_time = 2*24*60*60       # 30 minutes max
+            #jg.runtime.max_wallclock_time = 2*24*60*60       # 30 minutes max
 
             jg.reference_job_unique_id = None
             jg.gen_jobscript_directory('job_benchref_'+jg.getUniqueID())
