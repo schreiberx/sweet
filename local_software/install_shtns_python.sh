@@ -10,7 +10,7 @@ PKG_NAME="SHTNS_python"
 PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python$PYTHONVERSION/site-packages/shtns.py"
 
-PKG_URL_SRC="shtns_devel_2020_06_08.tar.bz2"
+PKG_URL_SRC="shtns-3.4.tar.gz"
 
 config_setup
 
