@@ -310,17 +310,29 @@ public:
 		{
 			std::string output_filename;
 
-			output_filename = write_file_bin(prog_phi_pert, "prog_phi_pert");
-			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << std::endl;
+			{
+				output_filename = write_file_bin(prog_phi_pert, "prog_phi_pert");
+				output_reference_filenames = output_filename;
+				SphereData_Physical prog_phys = prog_phi_pert.toPhys();
 
-			output_filename = write_file_bin(prog_vrt, "prog_vrt");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << std::endl;
+				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+			}
 
-			output_filename = write_file_bin(prog_div, "prog_div");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << std::endl;
+			{
+				output_filename = write_file_bin(prog_vrt, "prog_vrt");
+				output_reference_filenames += ";"+output_filename;
+				SphereData_Physical prog_phys = prog_vrt.toPhys();
+
+				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+			}
+
+			{
+				output_filename = write_file_bin(prog_div, "prog_div");
+				output_reference_filenames += ";"+output_filename;
+				SphereData_Physical prog_phys = prog_div.toPhys();
+
+				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+			}
 		}
 		else
 		{

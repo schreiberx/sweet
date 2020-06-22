@@ -59,11 +59,6 @@ class postprocessing_swe:
         self.sh_aa = shtnsfiledata.shtnsfiledata(rsphere=self.rsphere)
         self.sh_aa.setup(self.phi_pert_spec.file_info, anti_aliasing=True)
 
-        print("A")
-        print(self.vrt_spec.data_spectral)
-        print(self.vrt_spec.data_spectral.shape)
-        print(self.div_spec.data_spectral)
-        print(self.div_spec.data_spectral.shape)
         u_phys_data, v_phys_data = self.sh_aa.vrtdiv2uv(self.vrt_spec.data_spectral, self.div_spec.data_spectral)
 
     def plot_physical_field_data_only(
