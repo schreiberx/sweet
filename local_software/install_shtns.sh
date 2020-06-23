@@ -17,7 +17,8 @@ if [ "#$TRAVIS" != "#" ]; then
 	CONFIGURE_EXTRA_FLAGS="--disable-mkl --disable-knl --disable-cuda --disable-simd"
 fi
 
-CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
+#CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
+CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
 
 
 echo_info_hline
@@ -54,3 +55,5 @@ config_make_clean
 config_make_default_install
 
 config_success
+
+

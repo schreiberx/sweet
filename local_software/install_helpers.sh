@@ -14,15 +14,11 @@ fi
 #
 # Setup variables where to download source, to compile and to install
 #
-PWD=`pwd`
+PWD_=`pwd`
 
-SWEET_LOCAL_SOFTWARE_SRC_DIR="$PWD/local_src"
-SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local"
+SWEET_LOCAL_SOFTWARE_SRC_DIR="$PWD_/local_src"
+SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD_/local"
 
-# Each platform has its own source and binary directory
-# Not yet...
-#SWEET_LOCAL_SOFTWARE_SRC_DIR="$PWD/local_${PLATFORM}_src"
-#SWEET_LOCAL_SOFTWARE_DST_DIR="$PWD/local_${PLATFORM}"
 
 #
 # Prepare directory structure
@@ -174,7 +170,7 @@ function config_download_fun()
 function config_download()
 {
 	echo_info "Downloading $@"
-	config_download_fun $@ >> $PKG_CONFIG_STD_OUTPUT 2>&1
+	config_download_fun $@ >> $PKG_CONFIG_STD_OUTPUT #2>&1
 }
 
 
