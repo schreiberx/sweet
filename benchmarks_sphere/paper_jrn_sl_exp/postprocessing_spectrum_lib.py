@@ -12,7 +12,7 @@ import mule_local.postprocessing.shtnsfiledata as shtnsfiledata
 debug_active = False
 #debug_active = True
 
-class postprocessing_swe:
+class postprocessing_spectrum_lib:
     def __init__(self):
         self.job_data = None
         self.job_data_flattened = None
@@ -307,8 +307,126 @@ class postprocessing_swe:
     def _modes_to_wavelengths(self, modes):
         return np.pi * 2.0 * self.rsphere / modes
 
+    def _convert_phi_uv_fields_to_1d_spectrum(self, m_phys, u_phys, v_phys, sh):
+        print(""""
+        WARNING: This way of computing the KD doesn't work!!!
+        It's defined in a different way!!!
+        """)
+        def _spec_to_buckets_iter(mode_numbers, modes_data, buckets):
+            """
+            Iterate over all Fourier modes
+            m here relates to the number of waves
+            """
+            for m in range(len(mode_numbers)):
+                # Compute real mode (including shortening by being closer to poles)
+                # There would be additional number of waves, hence we need to divide by this
+                bucket_a_num, bucket_a_weight, bucket_b_num, bucket_b_weight = self._ke_spectrum_dist_bucket(mode_numbers[m])
 
-    def _convert_sphere_to_1d_spectrum(self, data_phys, sh):
+                ampl = np.abs(modes_data[m])
+
+                if bucket_a_num < len(buckets):
+                    buckets[bucket_a_num] += ampl
+
+                    if bucket_b_num < len(buckets):
+                        buckets[bucket_b_num] += ampl
+
+        def _spec_to_buckets_fast(
+                mode_numbers,   # Number of mode. Likely not integer
+                modes_data,     # Modal data
+                buckets         # Buckets to accumulate
+        ):
+            bucket_a_num_, bucket_a_weight_, bucket_b_num_, bucket_b_weight_ = self._ke_spectrum_dist_bucket_array(mode_numbers)
+            ampl_ = np.abs(modes_data)
+
+            for m in range(len(buckets)):
+                if bucket_a_num_[m] < len(buckets):
+                    buckets[bucket_a_num_[m]] += ampl_[m]
+
+                    if bucket_b_num_[m] < len(buckets):
+                        buckets[bucket_b_num_[m]] += ampl_[m]
+
+        print(" + resolution in physical space: ", m_phys.shape)
+        m_spec = np.fft.rfft(m_phys, axis=1)
+        u_spec = np.fft.rfft(u_phys, axis=1)
+        v_spec = np.fft.rfft(v_phys, axis=1)
+
+
+        """
+        No mass included here, see eq. (3) in
+        Koshyk, J. N., & Hamilton, K. (2001).
+        The horizontal kinetic energy spectrum and spectral budget simulated by a high-resolution troposphere-stratosphere-mesosphere
+        GCM. Journal of the Atmospheric Sciences, 58(4), 329–348. https://doi.org/10.1175/1520-0469(2001)058<0329:THKESA>2.0.CO;2
+        """
+        ke_spec = 0.25 * (u_spec * np.conj(u_spec) + v_spec * np.conj(v_spec))
+
+        print(" + resolution after longitudinal FT transformation: ", ke_spec.shape)
+
+        num_buckets = m_spec.shape[1]-1
+        print(" + setting up ", num_buckets, "spectral buckets")
+        buckets = np.zeros(num_buckets)
+
+        #
+        # Iterate over all longitude stripes
+        #
+        print(" + processing all latitudes")
+
+        assert(m_spec.shape[0] == sh.lats.shape[0])
+        weight_sum = 0
+        for i in range(sh.lats.shape[0]):
+            sys.stdout.write(".")
+            sys.stdout.flush()
+            #print(" + lat: ", sh.lats[i])
+
+            #
+            # Compute weight based on width of strip
+            #
+            # The latitudes are sorted starting with positive ones, then continuing to the negative ones
+            #
+            if i == 0:
+                strip_start = np.pi*0.5
+                strip_end = 0.5*(sh.lats[0]+sh.lats[1])
+
+            elif i == sh.lats.shape[0]-1:
+                strip_start = 0.5*(sh.lats[-1]+sh.lats[-2])
+                strip_end = -np.pi*0.5
+
+            else:
+                strip_start = 0.5*(sh.lats[i]+sh.lats[i-1])
+                strip_end = 0.5*(sh.lats[i]+sh.lats[i+1])
+
+            weight = (strip_start - strip_end)/np.pi
+            #print(" ++ weight: "+str(weight))
+
+            # Compute scalar to multiply modal number with
+            # scaling factor \in [
+            s = np.cos(sh.lats[i])
+
+            m_ = range(num_buckets)
+            real_m_ = np.array(m_) / s
+
+            if debug_active:
+                a = np.zeros_like(buckets)
+                _spec_to_buckets_iter(real_m_, ke_spec[i]*weight, a)
+
+                b = np.zeros_like(buckets)
+                _spec_to_buckets_fast(real_m_, ke_spec[i]*weight, b)
+
+                assert np.allclose(a, b)
+
+            _spec_to_buckets_fast(real_m_, ke_spec[i]*weight, buckets)
+
+            weight_sum += weight
+
+        sys.stdout.write("")
+        print(weight_sum)
+        #assert np.allclose(weight_sum, 1.0)
+
+        buckets /= weight_sum
+
+        return buckets
+
+
+    def _convert_phys_field_to_1d_spectrum(self, data_phys, sh):
         print(" + resolution in physical space: ", data_phys.shape)
         ke_spec = np.fft.rfft(np.copy(data_phys), axis=1)
 
@@ -497,97 +615,86 @@ class postprocessing_swe:
         """
         Compute
         Ke = 1/2 * m * V^2
+
+        Warning: We first choose the m-th mode of each m/v variable and then compute the ke in the spectrum.
         """
 
         print("Plotting spectrum of kinetic energy")
+        title_ext = ""
 
-        # [with/out anti-aliasing (comp_aa / comp_naa), with/out anti-aliased resolution in physical space (field_aa / field_naa)]
-        mode = ["comp_aa", "field_naa"]
-
-        if "comp_aa" in mode:
-            # With Antialiasing, but reduced field
-
-            # Compute u and v, prepared for anti-aliasing
-            u_phys_data, v_phys_data = self.sh_aa.vrtdiv2uv(self.vrt_spec.data_spectral, self.div_spec.data_spectral)
-
-            # Compute
-            #    u*u + v*v
-            # and apply anti-aliasing
-            V2_phys_data = self.sh_aa.spec2phys(self.sh_aa.phys2spec(u_phys_data * u_phys_data + v_phys_data * v_phys_data))
-
-            # Get mass (which we relate to the height of the SWE)
-            # m = phi_pert / g + h0
-            m_phys_data = self.sh_aa.spec2phys(self.phi_pert_spec.data_spectral) / self.grav + self.h0
-            #m_phys_data = self.sh_aa.spec2phys(self.phi_pert_spec.data_spectral) / self.grav
-
-            # Finish computation of
-            # Ke = 1/2 * m * V^2
-            # in physical space
-            ke_phys_data = 0.5 * m_phys_data * V2_phys_data
-
-            # Apply anti-aliasing
-            ke_spec_data = self.sh_aa.phys2spec(ke_phys_data)
-            ke_phys_data = self.sh_aa.spec2phys(ke_spec_data)
-
-            # Data given with anti-aliasing
-
-            if "field_aa" in mode:
-                field_sh = self.sh_aa
-                # Nothing to do
-                pass
-
-            elif "field_naa" in mode:
-                field_sh = self.sh
-
-                # Reduce physical resolution
-                ke_spec_data = self.sh_aa.phys2spec(ke_phys_data)
-                ke_phys_data = self.sh.spec2phys(ke_spec_data)
-                pass
-
-            else:
-                raise Exception("field in ", mode, " not supported")
-
-
-        elif "comp_naa" in mode:
-            # Compute u and v, prepared for anti-aliasing
+        if 0:
+            """
+            WARNING: This way of computing the spectrum doesn't work!!!
+            The KE is defined in a different way
+            """
             u_phys_data, v_phys_data = self.sh.vrtdiv2uv(self.vrt_spec.data_spectral, self.div_spec.data_spectral)
+            phi_phys_data = self.sh.spec2phys(self.phi_pert_spec.data_spectral)
+            h_phys_data = phi_phys_data / self.grav + self.h0
 
-            # Compute
-            #    u*u + v*v
-            # and apply anti-aliasing
-            V2_phys_data = self.sh.spec2phys(self.sh.phys2spec(u_phys_data * u_phys_data + v_phys_data * v_phys_data))
+            sh = self.sh
+            spectrum = self._convert_phi_uv_fields_to_1d_spectrum(
+                h_phys_data,
+                u_phys_data,
+                v_phys_data,
+                sh
+            )
 
-            # Get mass (which we relate to the height of the SWE)
-            # m = phi_pert / g + h0
-            m_phys_data = self.sh.spec2phys(self.phi_pert_spec.data_spectral) / self.grav + self.h0
 
-            # Finish computation of
-            # Ke = 1/2 * m * V^2
-            # in physical space
-            ke_phys_data = 0.5 * m_phys_data * V2_phys_data
+        elif 0:
+            """
+            See Eq. (3)
+            Koshyk, J. N., & Hamilton, K. (2001).
+            The horizontal kinetic energy spectrum and spectral budget simulated by a high-resolution troposphere-stratosphere-mesosphere
+            GCM. Journal of the Atmospheric Sciences, 58(4), 329–348. https://doi.org/10.1175/1520-0469(2001)058<0329:THKESA>2.0.CO;2
+            """
 
-            # Data given with reduced physical resolution
+            def getArrayIndexByModes(n, m):
+                return (m*(2*self.sh.ntrunc-m+1)>>1)+n
 
-            if "field_aa" in mode:
-                field_sh = self.sh_aa
+            u_phys_data, v_phys_data = self.sh.vrtdiv2uv(self.vrt_spec.data_spectral, self.div_spec.data_spectral)
+            u_spec = self.sh.phys2spec(u_phys_data)
+            v_spec = self.sh.phys2spec(v_phys_data)
 
-                # Enlarge resolution
-                ke_spec_data = self.sh.phys2spec(ke_phys_data)
-                ke_phys_data = self.sh_aa.spec2phys(ke_spec_data)
-                pass
+            spectrum = np.zeros(self.sh.lats.shape[0])
+            for m in range(self.sh.ntrunc):
+                idx = getArrayIndexByModes(m, m)
+                for n in range(m, self.sh.ntrunc):
+                    u = u_spec[idx]
+                    v = v_spec[idx]
 
-            elif "field_naa" in mode:
-                field_sh = self.sh
+                    if n != 0:
+                        spectrum[n] += np.real(1/4*(u*np.conj(u) + v*np.conj(v)))
 
-                # Nothing to do here
-                pass
+                    idx += 1
 
-            else:
-                raise Exception("field in ", mode, " not supported")
+            title_ext = " (UV KE)"
 
         else:
-            raise Exception("mode ", mode, " not supported")
+            """
+            See Eq. (5)
+            Koshyk, J. N., & Hamilton, K. (2001).
+            The horizontal kinetic energy spectrum and spectral budget simulated by a high-resolution troposphere-stratosphere-mesosphere
+            GCM. Journal of the Atmospheric Sciences, 58(4), 329–348. https://doi.org/10.1175/1520-0469(2001)058<0329:THKESA>2.0.CO;2
+            """
+            #self.vrt_spec.data_spectral
+            #self.div_spec.data_spectral
 
+            def getArrayIndexByModes(n, m):
+                return (m*(2*self.sh.ntrunc-m+1)>>1)+n
+
+            spectrum = np.zeros(self.sh.lats.shape[0])
+            for m in range(self.sh.ntrunc):
+                idx = getArrayIndexByModes(m, m)
+                for n in range(m, self.sh.ntrunc):
+                    v = self.vrt_spec.data_spectral[idx]
+                    d = self.div_spec.data_spectral[idx]
+
+                    if n != 0:
+                        spectrum[n] += np.real(1/4*self.rsphere**2/(n*(n+1))*(v*np.conj(v) + d*np.conj(d)))
+
+                    idx += 1
+
+            title_ext = " (VD KE)"
 
 
         # Pseudo input filename
@@ -598,6 +705,8 @@ class postprocessing_swe:
         title = title.replace('output_prog_', '')
         _, title = os.path.split(title)
 
+        title += title_ext
+
         output_filename = input_filename
         output_filename = output_filename.replace('.sweet', '.pdf')
         output_filename = output_filename.replace('/output', '/plot_output')
@@ -605,61 +714,6 @@ class postprocessing_swe:
 
         plt.close()
         self.fig, self.ax = plt.subplots(figsize=(6, 4))
-        plt.title(title)
-
-
-        spectrum = np.zeros(field_sh.lats.shape[0])
-
-        if 1:
-            c = 0
-            #
-            # X/Y: ??!?
-            # Z: Rotation axis
-            #
-            #for i in ['', 'X', 'Y', 'Z']:
-            for i in ['', 'X', 'Y']:
-                if i == '':
-                    print("No rotation")
-                    phys_data = ke_phys_data
-                elif i == 'X':
-                    print("X rotation")
-                    phys_data = field_sh.spec2phys(field_sh.rotateX90(field_sh.phys2spec(ke_phys_data)))
-                elif i == 'Y':
-                    print("Y rotation")
-                    phys_data = field_sh.spec2phys(field_sh.rotateY90(field_sh.phys2spec(ke_phys_data)))
-                elif i == 'Z':
-                    print("Z rotation")
-                    phys_data = field_sh.spec2phys(field_sh.rotateZ90(field_sh.phys2spec(ke_phys_data), np.pi*0.5))
-                else:
-                    raise Exception("Unknown rotation", i)
-
-                spectrum += self._convert_sphere_to_1d_spectrum(phys_data, field_sh)
-                c += 1
-
-            spectrum /= c
-
-        else:
-            """
-            See Koshyk, J. N., & Hamilton, K. (2001).
-            The horizontal kinetic energy spectrum and spectral budget simulated by a high-resolution troposphere-stratosphere-mesosphere
-            GCM. Journal of the Atmospheric Sciences, 58(4), 329–348. https://doi.org/10.1175/1520-0469(2001)058<0329:THKESA>2.0.CO;2
-            """
-            #self.vrt_spec.data_spectral
-            #self.div_spec.data_spectral
-
-            def getArrayIndexByModes(n, m):
-                return (m*(2*self.sh.ntrunc-m+1)>>1)+n
-
-            for m in range(self.sh.ntrunc):
-                idx = getArrayIndexByModes(m, m)
-                for n in range(m, self.sh.ntrunc):
-                    v = self.vrt_spec.data_spectral[idx]
-                    d = self.div_spec.data_spectral[idx]
-
-                    if n != 0:
-                        spectrum[n] += 1/4*self.rsphere**2/(n*(n+1))*(v*np.conj(v) + d*np.conj(d))
-
-                    idx += 1
 
         self._plot_spectrum(spectrum)
 
@@ -678,7 +732,8 @@ class postprocessing_swe:
         # Plot the lines
         self._plot_k_lines(self.ax, k_line_range, slope_scaling_factor)
 
-        plt.legend()
+        #plt.legend()
+        plt.title(title)
         plt.tight_layout()
         plt.savefig(output_filename)
 
@@ -702,13 +757,13 @@ class postprocessing_swe:
 
 
         plt.close()
-        plt.title(title)
         self.fig, self.ax = plt.subplots(figsize=(6, 4))
 
-        spectrum = self._convert_sphere_to_1d_spectrum(self.sh.spec2phys(self.phi_pert_spec.data_spectral), self.sh)
+        spectrum = self._convert_phys_field_to_1d_spectrum(self.sh.spec2phys(self.phi_pert_spec.data_spectral), self.sh)
         self._plot_spectrum(spectrum)
 
         #plt.legend()
+        plt.title(title)
         plt.tight_layout()
         plt.savefig(output_filename)
  
@@ -731,13 +786,13 @@ class postprocessing_swe:
         output_filename = output_filename.replace('output_prog_', '')
 
         plt.close()
-        plt.title(title)
         self.fig, self.ax = plt.subplots(figsize=(6, 4))
 
-        spectrum = self._convert_sphere_to_1d_spectrum(self.sh.spec2phys(self.vrt_spec.data_spectral), self.sh)
+        spectrum = self._convert_phys_field_to_1d_spectrum(self.sh.spec2phys(self.vrt_spec.data_spectral), self.sh)
         self._plot_spectrum(spectrum)
 
         #plt.legend()
+        plt.title(title)
         plt.tight_layout()
         plt.savefig(output_filename)
  
@@ -760,13 +815,13 @@ class postprocessing_swe:
         output_filename = output_filename.replace('output_prog_', '')
 
         plt.close()
-        plt.title(title)
         self.fig, self.ax = plt.subplots(figsize=(6, 4))
 
-        spectrum = self._convert_sphere_to_1d_spectrum(self.sh.spec2phys(self.div_spec.data_spectral), self.sh)
+        spectrum = self._convert_phys_field_to_1d_spectrum(self.sh.spec2phys(self.div_spec.data_spectral), self.sh)
         self._plot_spectrum(spectrum)
 
         #plt.legend()
+        plt.title(title)
         plt.tight_layout()
         plt.savefig(output_filename)
  

@@ -51,7 +51,8 @@ space_res_spectral_ = [1024]
 
 
 # Reference time step size
-timestep_size_reference = 10
+#timestep_size_reference = 10
+timestep_size_reference = 5
 
 
 #params_timestep_sizes_explicit = [15/2*(2**i) for i in range(10)]
