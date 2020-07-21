@@ -35,7 +35,6 @@ jg.compilecommand_in_jobscript = False
 
 # Wallclock time
 max_wallclock_seconds = 2*24*60*60
-max_wallclock_seconds = 1*24*60*60
 ref_max_wallclock_seconds = 48*60*60
 
 #Get Earth parameters (if necessary)
@@ -93,8 +92,8 @@ timestep_size_reference = earth.day/12 #3600 #1 hour  #864000/10 #1 day
 timestep_sizes = [timestep_size_reference*(2.0**(-i)) for i in range(0, timelevels)]
 
 # Use 10 days as the reference solution
-jg.runtime.max_simulation_time = earth.day*10 #1 day #timestep_size_reference #864000 #10 days
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+jg.runtime.max_simulation_time = earth.day*12 #1 day #timestep_size_reference #864000 #10 days
+jg.runtime.output_timestep_size = 60*60*12
 #datastorage = jg.runtime.max_simulation_time / jg.runtime.output_timestep_size
 #if datastorage > 200:
 #	print("Warning::Too much data will be stored, are you sure you wish to run this?")
@@ -137,6 +136,7 @@ unique_id_filter.append('parallelization')
 jg.unique_id_filter = unique_id_filter
 
 
+
 #
 # Reference solution
 if True:
@@ -147,12 +147,13 @@ if True:
 	jg.parallelization.max_wallclock_seconds = ref_max_wallclock_seconds
 
 	SetupSpectralMethods(jg)
-	jg.runtime.timestep_size = 2 # second #jg.runtime.output_timestep_size/100.0
+	jg.runtime.timestep_size = 10 # second #jg.runtime.output_timestep_size/100.0
 	jg.runtime.timestepping_method = tsm[0]
 	jg.runtime.timestepping_order = tsm[1]
 	jg.runtime.timestepping_order2 = tsm[2]
 	jg.runtime.space_res_physical = -1
-	jg.runtime.space_res_spectral = 1024
+	#jg.runtime.space_res_spectral = 1024
+	jg.runtime.space_res_spectral = phys_res_list[0]
 
 	# Tag this as a reference job
 	jg.reference_job = True
@@ -168,7 +169,6 @@ if True:
 # Use only 2 iterations for Semi-Lagrangian methods
 #
 unique_id_filter.append('runtime.semi_lagrangian')
-jg.runtime.semi_lagrangian_iterations = 2
 jg.runtime.semi_lagrangian_convergence_threshold = -1
 
 

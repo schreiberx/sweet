@@ -23,14 +23,13 @@ import sys
 import stat
 import math
 
-from sweet.SWEETRuntimeParametersScenarios import *
+from mule.SWEETRuntimeParametersScenarios import *
 from mule_local.JobGeneration import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 
 #Classes containing sweet compile/run basic option
 #from mule_local.JobGeneration import *
-#from sweet.SWEETRuntimeParametersScenarios import *
 
 #Create main compile/run options
 jg = JobGeneration()

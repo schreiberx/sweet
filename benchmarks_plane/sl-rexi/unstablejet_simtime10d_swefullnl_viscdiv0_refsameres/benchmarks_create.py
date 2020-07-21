@@ -25,7 +25,7 @@ import math
 
 #Classes containing sweet compile/run basic option
 from mule_local.JobGeneration import *
-from sweet.SWEETRuntimeParametersScenarios import *
+from mule.SWEETRuntimeParametersScenarios import *
 
 #Create main compile/run options
 jg = JobGeneration()
