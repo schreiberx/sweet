@@ -54,7 +54,7 @@ void Burgers_Plane_TS_l_erk::run_timestep(
 		PlaneData &io_u_prev,	///< prognostic variables
 		PlaneData &io_v_prev,	///< prognostic variables
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {

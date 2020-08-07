@@ -63,7 +63,7 @@ public:
 			SphereData_Physical &io_u,
 			SphereData_Physical &io_v,
 
-			double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt,
 			double i_simulation_timestamp,
 
 			// for varying velocity fields

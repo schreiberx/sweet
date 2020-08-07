@@ -8,7 +8,7 @@
  *  	2019-10-24: Partly based on plane version
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_settls_uv.hpp"
+#include "SWE_Sphere_TS_ln_settls_uv.hpp"
 
 
 bool SWE_Sphere_TS_ln_settls_uv::implements_timestepping_method(const std::string &i_timestepping_method)
@@ -33,17 +33,17 @@ std::string SWE_Sphere_TS_ln_settls_uv::string_id()
 
 
 void SWE_Sphere_TS_ln_settls_uv::run_timestep(
-		SphereData_Spectral &io_phi,	///< prognostic variables
+		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
 
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {
 	if (timestepping_order == 2)
 	{
-		run_timestep_2nd_order(io_phi, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
+		run_timestep_2nd_order(io_phi_pert, io_vrt, io_div, i_fixed_dt, i_simulation_timestamp);
 		return;
 	}
 }
@@ -51,15 +51,15 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep(
 
 
 void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
-	SphereData_Spectral &io_U_phi,		///< prognostic variables
-	SphereData_Spectral &io_U_vrt,		///< prognostic variables
-	SphereData_Spectral &io_U_div,		///< prognostic variables
+	SphereData_Spectral &io_U_phi_pert,
+	SphereData_Spectral &io_U_vrt,
+	SphereData_Spectral &io_U_div,
 
-	double i_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
+	double i_dt,		
 	double i_simulation_timestamp
 )
 {
-	const SphereData_Spectral &U_phi = io_U_phi;
+	const SphereData_Spectral &U_phi = io_U_phi_pert;
 	const SphereData_Spectral &U_vrt = io_U_vrt;
 	const SphereData_Spectral &U_div = io_U_div;
 
@@ -129,7 +129,7 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 		/*
 		 * Method 1) First evaluate L, then sample result at departure point
 		 */
-		const SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = io_U_phi_pert.sphereDataConfig;
 		SphereData_Spectral L_U_phi(sphereDataConfig, 0), L_U_vrt(sphereDataConfig, 0), L_U_div(sphereDataConfig, 0);
 
 		/*
@@ -174,7 +174,7 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 				U_phi_D, U_vrt_D, U_div_D
 			);
 
-		const SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = io_U_phi_pert.sphereDataConfig;
 		L_U_phi_D.setup(sphereDataConfig, 0);
 		L_U_vrt_D.setup(sphereDataConfig, 0);
 		L_U_div_D.setup(sphereDataConfig, 0);
@@ -227,7 +227,7 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 		/*
 		 * N(t-dt)
 		 */
-		const SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = io_U_phi_pert.sphereDataConfig;
 		SphereData_Spectral N_U_phi_prev_nr(sphereDataConfig, 0), N_U_vrt_prev_nr(sphereDataConfig, 0), N_U_div_prev_nr(sphereDataConfig, 0);
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
@@ -328,7 +328,7 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 	/*
 	 * Return new fields stored in R_*
 	 */
-	io_U_phi = R_phi;
+	io_U_phi_pert = R_phi;
 	io_U_vrt = R_vrt;
 	io_U_div = R_div;
 }

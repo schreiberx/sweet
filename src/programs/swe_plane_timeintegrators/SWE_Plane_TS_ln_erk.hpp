@@ -57,7 +57,7 @@ public:
 			PlaneData &io_u,	///< prognostic variables
 			PlaneData &io_v,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 

@@ -43,7 +43,7 @@ void SphereAdvection_TS_na_trajectories::run_timestep(
 		SphereData_Physical &io_U_u,
 		SphereData_Physical &io_U_v,
 
-		double i_fixed_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp,
 
 		// for varying velocity fields

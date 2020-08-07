@@ -2,7 +2,7 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp.hpp"
+#include "SWE_Sphere_TS_l_exp.hpp"
 
 #include <iostream>
 #include <cassert>
@@ -97,7 +97,7 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 	SphereData_Spectral &o_prog_vrt0,
 	SphereData_Spectral &o_prog_div0,
 
-	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+	double i_fixed_dt,
 	double i_simulation_timestamp
 )
 {
@@ -300,6 +300,12 @@ void SWE_Sphere_TS_l_exp::setup(
 	timestep_size = i_timestep_size;
 	function_name = i_function_name;
 
+	/*
+	 * Setup REXI function evaluations
+	 */
+	rexiFunctions.setup(i_function_name);
+
+
 	REXICoefficients<double> rexiCoefficients;
 
 	bool retval = REXI<>::load(
@@ -473,6 +479,7 @@ void SWE_Sphere_TS_l_exp::p_update_coefficients(
 
 
 
+
 /**
  * Solve the REXI of \f$ U(t) = exp(L*t) \f$
  *
@@ -486,7 +493,7 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 	SphereData_Spectral &io_prog_vrt,
 	SphereData_Spectral &io_prog_div,
 
-	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+	double i_fixed_dt,
 	double i_simulation_timestamp
 )
 {
@@ -533,22 +540,17 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 				// TODO: precompute this
 
 				// result will be imaginary only!
-				//std::complex<double> sqrt_D = std::sqrt(std::complex<double>(D));
-				//std::complex<double> sqrt_G = std::sqrt(std::complex<double>(G));
 				std::complex<double> sqrt_DG = std::sqrt(std::complex<double>(D*G));
 
 				// Multiply with Q^{-1}
 				std::complex<double> l0 = -sqrt_DG/(2*G) * phi0 + 0.5*div0;
 				std::complex<double> l1 = +sqrt_DG/(2*G) * phi0 + 0.5*div0;
 
-				l0 = std::exp(timestep_size*(-sqrt_DG))*l0;
-				l1 = std::exp(timestep_size*sqrt_DG)*l1;
+				l0 = rexiFunctions.eval(timestep_size*(-sqrt_DG))*l0;
+				l1 = rexiFunctions.eval(timestep_size*sqrt_DG)*l1;
 
 				phi0 = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
 				div0 = l0 + l1;
-
-				//std::cout << phi0 << std::endl;
-				//std::cout << div0 << std::endl;
 
 				idx++;
 			}

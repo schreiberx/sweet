@@ -890,7 +890,8 @@ u_{n+1} & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\left(
  & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL+e^{\Delta tL}-I-\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
  & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL\right)F(u_{n})+\Delta t\left(\Delta tL\right)^{-2}\left(e^{\Delta tL}-I-\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
  & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
- & = & \varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\varphi_{1}\left(\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)\left(F(u_{n})-F(u_{n-1})\right)
+ & = & \varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\varphi_{1}\left(\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)\left(F(u_{n})-F(u_{n-1})\right)\\
+ & = & \varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\left[\varphi_{1}\left(\Delta tL\right)F(u_{n})+\varphi_{2}\left(\Delta tL\right)\left(F(u_{n})-F(u_{n-1})\right)\right]
 \end{eqnarray*}
 
 \end_inset

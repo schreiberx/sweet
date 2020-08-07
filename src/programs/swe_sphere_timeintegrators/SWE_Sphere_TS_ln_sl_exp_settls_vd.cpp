@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
+#include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
 
 
 bool SWE_Sphere_TS_ln_sl_exp_settls_vd::implements_timestepping_method(const std::string &i_timestepping_method)
@@ -35,7 +35,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::run_timestep(
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
 
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {
@@ -55,7 +55,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::run_timestep_2nd_order(
 		SphereData_Spectral &io_U_vrt,	///< prognostic variables
 		SphereData_Spectral &io_U_div,	///< prognostic variables
 
-		double i_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,		
 		double i_simulation_timestamp)
 {
 	const SphereData_Spectral &U_phi = io_U_phi;
@@ -184,7 +184,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::run_timestep_2nd_order(
 			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lc(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
-					i_simulation_timestamp-i_dt
+					i_simulation_timestamp
 				);
 		}
 
@@ -329,6 +329,23 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup_auto()
 }
 
 
+
+void SWE_Sphere_TS_ln_sl_exp_settls_vd::print_help()
+{
+	std::cout << "	Exp. SETTLS VD:" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_settls_vd[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_nr_settls_vd[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_settls_vd[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_nr_settls_vd[_ver0]" << std::endl;
+	std::cout << "		+ l_exp_na_sl_settls_vd[_ver0]" << std::endl;
+	std::cout << "		+ l_exp_na_sl_nr_settls_vd[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_settls_vd_ver1" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_nr_settls_vd_ver1" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_settls_vd_ver1" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_nr_settls_vd_ver1" << std::endl;
+	std::cout << "		+ l_exp_na_sl_settls_vd_ver1" << std::endl;
+	std::cout << "		+ l_exp_na_sl_nr_settls_vd_ver1" << std::endl;
+}
 
 void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup(
 		int i_timestepping_order,

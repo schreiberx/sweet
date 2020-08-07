@@ -2,8 +2,8 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_Sphere_TS_lg_rexi_lf_n_etdrk_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_Sphere_TS_lg_rexi_lf_n_etdrk_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LG_EXP_LC_N_ETD_VD_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_LG_EXP_LC_N_ETD_VD_HPP_
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -12,34 +12,35 @@
 
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_exp.hpp"
-#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
 
 
-class SWE_Sphere_TS_lg_exp_lc_n_etdrk	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_lg_exp_lc_n_etd_vd	: public SWE_Sphere_TS_interface
 {
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method);
 	std::string string_id();
 	void setup_auto();
-
+	void print_help();
 
 private:
 	SimulationVariables &simVars;
-	SphereOperators_SphereData &op;
+	SphereOperators_SphereData &ops;
 
-	SWE_Sphere_TS_lg_erk_lc_n_erk ts_lg_erk_lc_n_erk;
+	SWE_Sphere_TS_ln_erk_split_vd ts_ln_erk_split_vd;
 
-	SWE_Sphere_TS_l_exp ts_phi0_rexi;
-	SWE_Sphere_TS_l_exp ts_phi1_rexi;
-	SWE_Sphere_TS_l_exp ts_phi2_rexi;
+	SphereData_Spectral NU_phi_prev, NU_vrt_prev, NU_div_prev;
+	SphereData_Spectral NU_phi_prev_2, NU_vrt_prev_2, NU_div_prev_2;
 
-	SWE_Sphere_TS_l_exp ts_ups0_rexi;
-	SWE_Sphere_TS_l_exp ts_ups1_rexi;
-	SWE_Sphere_TS_l_exp ts_ups2_rexi;
-	SWE_Sphere_TS_l_exp ts_ups3_rexi;
+	bool with_na;
+	bool with_nr;
+
+	SWE_Sphere_TS_l_exp ts_phi0_exp;
+	SWE_Sphere_TS_l_exp ts_phi1_exp;
+	SWE_Sphere_TS_l_exp ts_phi2_exp;
+	SWE_Sphere_TS_l_exp ts_phi3_exp;
 
 	int timestepping_order;
-	int timestepping_order2;
 
 private:
 	void euler_timestep_update_linear(
@@ -71,7 +72,7 @@ private:
 
 
 public:
-	SWE_Sphere_TS_lg_exp_lc_n_etdrk(
+	SWE_Sphere_TS_lg_exp_lc_n_etd_vd(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
@@ -93,7 +94,7 @@ public:
 	);
 
 
-	virtual ~SWE_Sphere_TS_lg_exp_lc_n_etdrk();
+	virtual ~SWE_Sphere_TS_lg_exp_lc_n_etd_vd();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

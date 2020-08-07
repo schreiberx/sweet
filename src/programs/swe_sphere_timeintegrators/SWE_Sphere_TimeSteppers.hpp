@@ -5,7 +5,7 @@
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_HPP_
 #define SRC_PROGRAMS_SWE_SPHERE_TIMESTEPPERS_HPP_
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
 
 
 /**
@@ -26,6 +26,8 @@ public:
 	void integrators_register_all(SphereOperators_SphereData &i_op, SimulationVariables &i_simVars);
 
 	void integrators_free_all(SWE_Sphere_TS_interface *skip_this = nullptr);
+
+	void print_help_all_registered();
 
 	void setup(
 			const std::string &i_timestepping_method,

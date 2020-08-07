@@ -30,7 +30,7 @@ void SWE_Plane_TS_l_direct::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {
@@ -51,7 +51,7 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 		PlaneData &io_u,		///< prognostic variables
 		PlaneData &io_v,		///< prognostic variables
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {
@@ -85,7 +85,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {
@@ -113,7 +113,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {
@@ -433,7 +433,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,	///< prognostic variables
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {

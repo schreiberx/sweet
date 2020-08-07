@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
+#include "SWE_Sphere_TS_ln_erk.hpp"
 
 
 
@@ -111,7 +111,7 @@ void SWE_Sphere_TS_ln_erk::run_timestep(
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {

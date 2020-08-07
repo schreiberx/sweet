@@ -186,7 +186,7 @@ public:
 			SphereData_Spectral &io_u,	///< prognostic variables
 			SphereData_Spectral &io_v,	///< prognostic variables
 
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt,
 			double i_simulation_timestamp
 	);
 
@@ -200,7 +200,7 @@ public:
 			SphereData_Spectral &o_u,	///< prognostic variables
 			SphereData_Spectral &o_v,	///< prognostic variables
 
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt,
 			double i_simulation_timestamp
 	);
 

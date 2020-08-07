@@ -1,12 +1,35 @@
 /*
- * SWE_Sphere_TS_ln_edtrk.cpp
- *
- *  Created on: 21 Aug 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
 
+
+bool SWE_Sphere_TS_lg_exp_lc_n_etdrk::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	if (i_timestepping_method == "lg_exp_lc_n_etdrk")
+		return true;
+
+	return false;
+}
+
+std::string SWE_Sphere_TS_lg_exp_lc_n_etdrk::string_id()
+{
+	return "lg_exp_lc_n_etdrk";
+}
+
+void SWE_Sphere_TS_lg_exp_lc_n_etdrk::setup_auto()
+{
+	if (simVars.sim.sphere_use_fsphere)
+		SWEETError("TODO: Not yet supported");
+
+	setup(
+			simVars.rexi,
+			simVars.disc.timestepping_order,
+			simVars.disc.timestepping_order2,
+			simVars.timecontrol.current_timestep_size
+		);
+}
 
 
 void SWE_Sphere_TS_lg_exp_lc_n_etdrk::run_timestep(
@@ -14,7 +37,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_etdrk::run_timestep(
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
 
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {

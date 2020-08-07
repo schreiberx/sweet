@@ -3,12 +3,12 @@
  */
 
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
+#include "SWE_Sphere_TS_lg_irk.hpp"
 
 #include <complex>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-#include "../swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
 
@@ -48,7 +48,7 @@ void SWE_Sphere_TS_lg_irk::run_timestep(
 		SphereData_Spectral &io_vrt,
 		SphereData_Spectral &io_div,
 
-		double i_fixed_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,		
 		double i_simulation_timestamp
 )
 {

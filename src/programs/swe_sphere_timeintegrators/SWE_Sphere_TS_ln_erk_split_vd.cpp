@@ -6,7 +6,7 @@
  */
 
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk_split_vd.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
 
 
 
@@ -35,9 +35,9 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_lc(
 		const SphereData_Spectral &i_U_vrt,
 		const SphereData_Spectral &i_U_div,
 
-		SphereData_Spectral &o_phi_t,
-		SphereData_Spectral &o_vrt_t,
-		SphereData_Spectral &o_div_t,
+		SphereData_Spectral &io_phi_t,
+		SphereData_Spectral &io_vrt_t,
+		SphereData_Spectral &io_div_t,
 
 		double i_simulation_timestamp
 )
@@ -53,8 +53,8 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_lc(
 	SphereData_Spectral div, vrt;
 	op.uv_to_vrtdiv(fu_nl, fv_nl, vrt, div);
 
-	o_vrt_t -= div;
-	o_div_t += vrt;
+	io_vrt_t -= div;
+	io_div_t += vrt;
 }
 
 
@@ -354,7 +354,7 @@ void SWE_Sphere_TS_ln_erk_split_vd::run_timestep(
 		SphereData_Spectral &io_vrt,
 		SphereData_Spectral &io_div,
 
-		double i_fixed_dt,			///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {

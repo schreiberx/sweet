@@ -129,21 +129,6 @@ public:
 
 		else
 			SWEETError("This phi function is not supported! : ");
-
-
-		
-/*
-		if (function_id == 1 || function_id == 2 || function_id == 3 || function_id == 101 || function_id == 102 || function_id == 103 || function_id == 1002 || function_id == 1003)
-		{
-			if (typeid(T) == typeid(double))
-			{
-				std::cout << "**************************************************************" << std::endl;
-				std::cout << "* WARNING: " << i_function_name << " typically requires __float128 precision!" << std::endl;
-				std::cout << "**************************************************************" << std::endl;
-//				SWEETError("Seriously, you shouldn't use me with only double precision!");
-			}
-		}
-*/
 	}
 
 
@@ -278,24 +263,6 @@ public:
         return phiNRec(N, z);
 	}
 
-
-
-#if 0
-	std::complex<T> phi(
-			int n,
-			const std::complex<T> &z
-	)
-	{
-		if (n == 0)
-			return l_expcplx(z);
-
-		T linf = z.real()*z.real() + z.imag()*z.imag();
-        if (linf < eps_phi)
-			return (T)1.0/(T)factorial(n);
-
-        return (phi(n-1, z) - (T)1.0/(T)factorial(n-1))/z;
-	}
-#endif
 
 
 	std::complex<T> upsNDirect(
