@@ -232,7 +232,19 @@ public:
 			 * Normalize rotation axis since it's likely not normalized yet
 			 */
 
-			std::cout << "TODO: REPLACE ME" << std::endl;
+			static int asdf = 1;
+
+			if (asdf == 1)
+			{
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				asdf = 0;
+			}
+
 			/*
 			 * TODO: replace this!
 			 *
