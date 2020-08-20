@@ -166,7 +166,9 @@ public:
 		);
 
 private:
-	void p_update_coefficients(bool i_update_rexi);
+	void p_update_coefficients(
+//			bool i_update_rexi
+		);
 
 	void p_get_workload_start_end(
 			std::size_t &o_start,

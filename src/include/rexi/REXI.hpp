@@ -34,14 +34,14 @@ public:
 public:
 	static
 	bool load(
-			REXI_SimulationVariables *i_rexiSimVars,
-			const std::string &i_function_name,
+		REXI_SimulationVariables *i_rexiSimVars,
+		const std::string &i_function_name,
 
-			std::vector<std::complex<T>> &o_alpha,
-			std::vector<std::complex<T>> &o_beta,
-			std::complex<T> &o_gamma,
+		std::vector<std::complex<T>> &o_alpha,
+		std::vector<std::complex<T>> &o_beta,
+		std::complex<T> &o_gamma,
 
-			int i_verbosity
+		int i_verbosity
 	)
 	{
 		o_alpha.clear();

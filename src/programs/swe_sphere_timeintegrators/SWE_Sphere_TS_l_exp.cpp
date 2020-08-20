@@ -30,7 +30,6 @@
 #endif
 
 
-
 #if SWEET_MPI
 #	include <mpi.h>
 #endif
@@ -407,7 +406,8 @@ void SWE_Sphere_TS_l_exp::setup(
 			}
 		}
 
-		p_update_coefficients(false);
+		//p_update_coefficients(false);
+		p_update_coefficients();
 
 		if (num_local_rexi_par_threads == 0)
 		{
@@ -426,9 +426,10 @@ void SWE_Sphere_TS_l_exp::setup(
 
 
 void SWE_Sphere_TS_l_exp::p_update_coefficients(
-		bool i_update_rexi
+//		bool i_update_rexi
 )
 {
+#if 0
 	if (i_update_rexi)
 	{
 		REXI<>::load(
@@ -440,6 +441,7 @@ void SWE_Sphere_TS_l_exp::p_update_coefficients(
 				simVars.misc.verbosity
 		);
 	}
+#endif
 
 	#if SWEET_THREADING_TIME_REXI
 	#pragma omp parallel for schedule(static,1) default(none) shared(std::cout)
@@ -602,7 +604,8 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 
 			timestep_size = i_fixed_dt;
 
-			p_update_coefficients(true);
+			//p_update_coefficients(true);
+			p_update_coefficients();
 		}
 
 		#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
