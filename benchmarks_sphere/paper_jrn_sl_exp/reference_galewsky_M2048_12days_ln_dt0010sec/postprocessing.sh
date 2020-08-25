@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+cd "$(dirname $(realpath $0))"
+
 JOB_DIR=job_benchref_RT_u0.0_tsm_ln_erk_tso4_tsob4_dt00010.00_W-00001
 
 for i in $JOB_DIR/output_prog_phi_pert_*.sweet; do
@@ -8,7 +10,7 @@ for i in $JOB_DIR/output_prog_phi_pert_*.sweet; do
 	FILE_VRT="${i/phi_pert/vrt}"
 	FILE_DIV="${i/phi_pert/div}"
 
-	./postprocessing_plot_solution.py "$JOB_DIR" "$FILE_PHI" "$FILE_VRT" "$FILE_DIV" || exit 1
+	../postprocessing_generate_spectrum_plots.py "$JOB_DIR" "$FILE_PHI" "$FILE_VRT" "$FILE_DIV" || exit 1
 done
 
 
