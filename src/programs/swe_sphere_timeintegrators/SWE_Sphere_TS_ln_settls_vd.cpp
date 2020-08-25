@@ -155,12 +155,26 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 				);
 		}
 
-		semiLagrangian.apply_sl_timeintegration_vd(
-				ops,
-				L_U_phi, L_U_vrt, L_U_div,
-				pos_lon_d, pos_lat_d,
-				L_U_phi_D, L_U_vrt_D, L_U_div_D
-			);
+		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+		{
+			semiLagrangian.apply_sl_timeintegration_vd(
+					ops,
+					L_U_phi, L_U_vrt + coriolis_spectral, L_U_div,		// Coriolis added to vorticity!
+					pos_lon_d, pos_lat_d,
+					L_U_phi_D, L_U_vrt_D, L_U_div_D
+				);
+
+			L_U_vrt_D -= coriolis_spectral;
+		}
+		else
+		{
+			semiLagrangian.apply_sl_timeintegration_vd(
+					ops,
+					L_U_phi, L_U_vrt, L_U_div,
+					pos_lon_d, pos_lat_d,
+					L_U_phi_D, L_U_vrt_D, L_U_div_D
+				);
+		}
 	}
 	else
 	{
@@ -169,12 +183,27 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		 */
 
 		SphereData_Spectral U_phi_D, U_vrt_D, U_div_D;
-		semiLagrangian.apply_sl_timeintegration_vd(
-				ops,
-				U_phi, U_vrt, U_div,
-				pos_lon_d, pos_lat_d,
-				U_phi_D, U_vrt_D, U_div_D
-			);
+
+		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+		{
+			semiLagrangian.apply_sl_timeintegration_vd(
+					ops,
+					U_phi, U_vrt + coriolis_spectral, U_div,	// Coriolis added to vorticity!
+					pos_lon_d, pos_lat_d,
+					U_phi_D, U_vrt_D, U_div_D
+				);
+
+			U_vrt_D -= coriolis_spectral;
+		}
+		else
+		{
+			semiLagrangian.apply_sl_timeintegration_vd(
+					ops,
+					U_phi, U_vrt, U_div,
+					pos_lon_d, pos_lat_d,
+					U_phi_D, U_vrt_D, U_div_D
+				);
+		}
 
 		const SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
 		L_U_phi_D.setup(sphereDataConfig, 0);
@@ -370,6 +399,11 @@ void SWE_Sphere_TS_ln_settls_vd::setup(
 
 	swe_sphere_ts_ln_erk_split_vd = new SWE_Sphere_TS_ln_erk_split_vd(simVars, ops);
 	swe_sphere_ts_ln_erk_split_vd->setup(1, true, true, true, true, false);
+
+	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+	{
+		coriolis_spectral = ops.fg;
+	}
 
 	if (coriolis_treatment == CORIOLIS_LINEAR)
 	{
