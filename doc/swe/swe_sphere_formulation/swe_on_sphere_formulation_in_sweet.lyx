@@ -215,10 +215,7 @@ We split each term of the equation into corresponding linear and non-linear
  by the non-linear advection term.
  This will make a significant difference for the vorticity-divergence formulatio
 n as we will see.
-\end_layout
-
-\begin_layout Standard
-Using a perturbed formulation 
+ Using a perturbed formulation 
 \begin_inset Formula $\Phi=\overline{\Phi}+\Phi'$
 \end_inset
 

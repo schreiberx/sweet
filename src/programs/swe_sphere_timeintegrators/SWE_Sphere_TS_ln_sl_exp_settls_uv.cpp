@@ -1,11 +1,8 @@
 /*
- * SWE_Sphere_TS_ln_exp_settls_uv.cpp
- *
- *  Created on: 31 Mar 2020
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
+#include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
 
 
 bool SWE_Sphere_TS_ln_sl_exp_settls_uv::implements_timestepping_method(const std::string &i_timestepping_method)
@@ -36,7 +33,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep(
 		SphereData_Spectral &io_vrt,
 		SphereData_Spectral &io_div,
 
-		double i_fixed_dt,				///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,	
 		double i_simulation_timestamp
 )
 {
@@ -56,7 +53,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 		SphereData_Spectral &io_U_vrt,
 		SphereData_Spectral &io_U_div,
 
-		double i_dt,					///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,		
 		double i_simulation_timestamp
 )
 {
@@ -334,6 +331,22 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup_auto()
 		);
 }
 
+void SWE_Sphere_TS_ln_sl_exp_settls_uv::print_help()
+{
+	std::cout << "	Exponential SETTLS UV:" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_settls_uv[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_nr_settls_uv[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_settls_uv[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_nr_settls_uv[_ver0]" << std::endl;
+	std::cout << "		+ l_exp_na_sl_settls_uv[_ver0]" << std::endl;
+	std::cout << "		+ l_exp_na_sl_nr_settls_uv[_ver0]" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_settls_uv_ver1" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_nr_settls_uv_ver1" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_settls_uv_ver1" << std::endl;
+	std::cout << "		+ lg_exp_na_sl_lc_nr_settls_uv_ver1" << std::endl;
+	std::cout << "		+ l_exp_na_sl_settls_uv_ver1" << std::endl;
+	std::cout << "		+ l_exp_na_sl_nr_settls_uv_ver1" << std::endl;
+}
 
 
 void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup(

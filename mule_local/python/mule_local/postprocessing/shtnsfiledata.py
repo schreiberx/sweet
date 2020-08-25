@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
-import math
+import math, sys
 import shtns
-
+import numpy as np
 
 class shtnsfiledata:
     #
@@ -30,20 +30,26 @@ class shtnsfiledata:
 
         if anti_aliasing:
             if nlons & 1:
-                raise Exception("Only even numbers of longitudes coordinates allowed for anti-aliasing")
+                raise Exception("Only even numbers of longitudinal coordinates allowed for anti-aliasing")
             if nlats & 1:
                 raise Exception("Only even numbers of latitudinal coordinates allowed for anti-aliasing")
+
+            print("Anti-aliasing:")
+            print(" + old lon/lat: ", nlons, nlats)
 
             nlons += nlons//2
             nlats += nlats//2
 
+            print(" + new lon/lat: ", nlons, nlats)
 
         if file_info['grid_type'] == 'GAUSSIAN':
-                #self._shtns.set_grid(nlats,nlons,shtns.sht_gauss_fly|shtns.SHT_PHI_CONTIGUOUS, 1.e-10)
-                self._shtns.set_grid(nlats, nlons, shtns.sht_quick_init|shtns.SHT_PHI_CONTIGUOUS, 0)
+            #self._shtns.set_grid(nlats,nlons,shtns.sht_gauss_fly|shtns.SHT_PHI_CONTIGUOUS, 1.e-10)
+            self._shtns.set_grid(nlats, nlons, shtns.sht_quick_init|shtns.SHT_PHI_CONTIGUOUS, 0)
+
         elif file_info['grid_type'] == 'REGULAR':
-                #self._shtns.set_grid(nlats,nlons,shtns.sht_reg_dct|shtns.SHT_PHI_CONTIGUOUS, 1.e-10)
-                self._shtns.set_grid(nlats, nlons, shtns.sht_reg_dct|shtns.SHT_PHI_CONTIGUOUS, 0)
+            #self._shtns.set_grid(nlats,nlons,shtns.sht_reg_dct|shtns.SHT_PHI_CONTIGUOUS, 1.e-10)
+            self._shtns.set_grid(nlats, nlons, shtns.sht_reg_dct|shtns.SHT_PHI_CONTIGUOUS, 0)
+
         else:
             raise Exception("Grid type '"+file_info['grid_type']+"' not supported!")
 
@@ -73,10 +79,19 @@ class shtnsfiledata:
 
     def uv2vrtdiv(self,u,v):
         vrtspec, divspec = self._shtns.analys(u, v)
-        return self.lap*self.rsphere*vrtspec, self.lap*rsphere*divspec
+        return self.lap*self.rsphere*vrtspec, self.lap*self.rsphere*divspec
 
     def getuv(self,divspec):
         vrtspec = np.zeros(divspec.shape, dtype=np.complex)
         u,v = self._shtns.synth(vrtspec,divspec)
         return u, v
+
+    def rotateX90(self, i_field):
+        return self._shtns.Xrotate90(i_field)
+
+    def rotateY90(self, i_field):
+        return self._shtns.Yrotate90(i_field)
+
+    def rotateZ90(self, i_field, angle):
+        return self._shtns.Zrotate(i_field, angle)
 

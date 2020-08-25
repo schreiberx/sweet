@@ -410,7 +410,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::run_timestep_pert(
 	SphereData_Spectral &o_prog_vort0,
 	SphereData_Spectral &o_prog_div0,
 
-	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+	double i_fixed_dt,
 	double i_simulation_timestamp
 )
 {
@@ -447,7 +447,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::run_timestep_nonpert(
 	SphereData_Spectral &io_prog_vort0,
 	SphereData_Spectral &io_prog_div0,
 
-	double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+	double i_fixed_dt,
 	double i_simulation_timestamp
 )
 {

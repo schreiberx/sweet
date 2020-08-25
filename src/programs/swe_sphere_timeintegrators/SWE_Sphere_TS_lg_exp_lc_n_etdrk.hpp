@@ -1,8 +1,5 @@
 /*
- * SWE_Sphere_TS_lg_rexi_lf_n_etdrk.hpp
- *
- *  Created on: 10 Sept. 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_Sphere_TS_lg_rexi_lf_n_etdrk_HPP_
@@ -13,39 +10,17 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_interface.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_l_exp.hpp"
+#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 
 
 class SWE_Sphere_TS_lg_exp_lc_n_etdrk	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
-	{
-		if (i_timestepping_method == "lg_exp_lc_n_etdrk")
-			return true;
-
-		return false;
-	}
-
-	std::string string_id()
-	{
-		return "lg_exp_lc_n_etdrk";
-	}
-
-	void setup_auto()
-	{
-		if (simVars.sim.sphere_use_fsphere)
-			SWEETError("TODO: Not yet supported");
-
-		setup(
-				simVars.rexi,
-				simVars.disc.timestepping_order,
-				simVars.disc.timestepping_order2,
-				simVars.timecontrol.current_timestep_size
-			);
-	}
+	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	std::string string_id();
+	void setup_auto();
 
 
 private:
@@ -113,7 +88,7 @@ public:
 			SphereData_Spectral &io_vrt,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 

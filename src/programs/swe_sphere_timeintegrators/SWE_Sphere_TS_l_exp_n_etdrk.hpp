@@ -13,9 +13,9 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_interface.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_l_exp.hpp"
 
 
 class SWE_Sphere_TS_l_exp_n_etdrk	: public SWE_Sphere_TS_interface
@@ -90,7 +90,7 @@ public:
 			SphereData_Spectral &io_vrt,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 

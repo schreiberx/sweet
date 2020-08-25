@@ -176,7 +176,7 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::euler_timestep_update(
 		SphereData_Spectral &o_vort_t,	///< time updates
 		SphereData_Spectral &o_div_t,	///< time updates
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {
@@ -232,7 +232,7 @@ void SWE_Sphere_TS_PFASST_lg_erk_lc_n_t_erk::run_timestep_nonpert(
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {

@@ -65,7 +65,7 @@ void Adv_Plane_TS_na_erk::run_timestep(
 		PlaneData &io_u,	///< prognostic variables
 		PlaneData &io_v,		///< prognostic variables
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {
@@ -77,7 +77,7 @@ void Adv_Plane_TS_na_erk::run_timestep(
 			this,
 			&Adv_Plane_TS_na_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_phi, io_u, io_v,
-			i_fixed_dt,
+			i_dt,
 			timestepping_order,
 			i_simulation_timestamp
 		);
@@ -85,8 +85,8 @@ void Adv_Plane_TS_na_erk::run_timestep(
 	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
 		// this is just called for cosmetic reasons to update the velocity field
-		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_u, simVars.benchmark.getExternalForcesUserData);
-		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_fixed_dt, &io_v, simVars.benchmark.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time+i_dt, &io_u, simVars.benchmark.getExternalForcesUserData);
+		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time+i_dt, &io_v, simVars.benchmark.getExternalForcesUserData);
 	}
 }
 

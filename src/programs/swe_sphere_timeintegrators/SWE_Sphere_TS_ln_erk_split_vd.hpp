@@ -14,7 +14,7 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
 
 
 class SWE_Sphere_TS_ln_erk_split_vd	: public SWE_Sphere_TS_interface
@@ -216,7 +216,7 @@ public:
 			SphereData_Spectral &io_U_vrt,
 			SphereData_Spectral &io_U_div,
 
-			double i_fixed_dt = 0,			///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 
@@ -226,7 +226,7 @@ public:
 			SphereData_Spectral &io_U_vrt,
 			SphereData_Spectral &io_U_div,
 
-			double i_fixed_dt = 0,			///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 

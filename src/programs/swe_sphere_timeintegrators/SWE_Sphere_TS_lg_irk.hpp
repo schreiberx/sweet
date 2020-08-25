@@ -12,9 +12,9 @@
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/SimulationVariables.hpp>
 
-#include "../swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_interface.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk.hpp"
+#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_lg_erk.hpp"
 
 
 class SWE_Sphere_TS_lg_irk	: public SWE_Sphere_TS_interface
@@ -91,7 +91,7 @@ public:
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
 
-		double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt = 0,
 		double i_simulation_timestamp = -1
 	);
 

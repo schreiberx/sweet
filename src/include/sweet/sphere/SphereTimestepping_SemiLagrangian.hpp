@@ -191,6 +191,7 @@ public:
 	{
 		if (i_approximate_sphere_geometry)
 		{
+			std::cout << "i_approximate_sphere_geometry" << std::endl;
 			/*
 			 * This just uses an approximation of the sphere geometry.
 			 */
@@ -226,16 +227,29 @@ public:
 					i_dt_velocity_x, i_dt_velocity_y, i_dt_velocity_z,
 					rotation_axis_x, rotation_axis_y, rotation_axis_z
 				);
-#if 0
+#if 1
+			/*
+			 * Normalize rotation axis since it's likely not normalized yet
+			 */
+
+			static int asdf = 1;
+
+			if (asdf == 1)
+			{
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				std::cout << "TODO: REPLACE ME" << std::endl;
+				asdf = 0;
+			}
+
 			/*
 			 * TODO: replace this!
 			 *
 			 * Use a formulation without normalization by using the
 			 * angular vector / velocity e.g. by using quaternions
-			 */
-#else
-			/*
-			 * Normalize rotation axis since it's likely not normalized yet
 			 */
 			SWEETMath::normalize_with_threshold(
 					rotation_axis_x,
@@ -250,6 +264,10 @@ public:
 			 * given by the magnitude of the angular velocity by its definition
 			 */
 			ScalarDataArray angle = SWEETMath::length(i_dt_velocity_x, i_dt_velocity_y, i_dt_velocity_z);
+#else
+			// doesn't work
+			ScalarDataArray angle = i_dt_velocity_x;
+			angle.physical_set_all(1.0);
 #endif
 			/*
 			 * Rotate

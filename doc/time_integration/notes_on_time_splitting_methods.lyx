@@ -840,7 +840,7 @@ We can approximate the quadrature of the nonlinearities with a 2nd order
  time interval
 \begin_inset Formula 
 \[
-N(\tau)\approx N_{0}+\frac{\tau}{\Delta t}\left(N_{-1}-N_{0}\right)
+N(\tau)\approx N_{0}+\frac{\tau}{\Delta t}\left(N_{0}-N_{-1}\right)
 \]
 
 \end_inset
@@ -848,7 +848,7 @@ N(\tau)\approx N_{0}+\frac{\tau}{\Delta t}\left(N_{-1}-N_{0}\right)
 With the exponential integrator formulation above this leads to
 \begin_inset Formula 
 \[
-\int_{0}^{t}e^{-\tau L}N(U)d\tau\approx\int_{0}^{t}e^{-\tau L}\left(N_{0}+\frac{\tau}{\Delta t}\left(N_{-1}-N_{0}\right)\right)d\tau.
+\int_{0}^{t}e^{-\tau L}N(U)d\tau\approx\int_{0}^{t}e^{-\tau L}\left(N_{0}+\frac{\tau}{\Delta t}\left(N_{0}-N_{-1}\right)\right)d\tau.
 \]
 
 \end_inset
@@ -890,7 +890,8 @@ u_{n+1} & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\left(
  & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL+e^{\Delta tL}-I-\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
  & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL\right)F(u_{n})+\Delta t\left(\Delta tL\right)^{-2}\left(e^{\Delta tL}-I-\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
  & = & e^{\Delta tL}u_{n}+\Delta t\left(\Delta tL\right)^{-2}\left(\Delta tLe^{\Delta tL}-\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n})-\Delta t\varphi_{2}\left(\Delta tL\right)F(u_{n-1})\\
- & = & \varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\varphi_{1}\left(\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)\left(F(u_{n})-F(u_{n-1})\right)
+ & = & \varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\varphi_{1}\left(\Delta tL\right)F(u_{n})+\Delta t\varphi_{2}\left(\Delta tL\right)\left(F(u_{n})-F(u_{n-1})\right)\\
+ & = & \varphi_{0}\left(\Delta tL\right)u_{n}+\Delta t\left[\varphi_{1}\left(\Delta tL\right)F(u_{n})+\varphi_{2}\left(\Delta tL\right)\left(F(u_{n})-F(u_{n-1})\right)\right]
 \end{eqnarray*}
 
 \end_inset

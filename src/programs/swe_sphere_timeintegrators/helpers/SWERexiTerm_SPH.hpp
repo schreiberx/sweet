@@ -14,7 +14,7 @@
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
-#include "../../swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalComplex.hpp"
+#include "../helpers/SWESphBandedMatrixPhysicalComplex.hpp"
 
 
 

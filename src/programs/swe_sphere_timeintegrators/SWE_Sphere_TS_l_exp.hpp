@@ -20,9 +20,10 @@
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_SphereDataComplex.hpp>
-#include "../swe_sphere_timeintegrators/helpers/SWERexiTerm_SPH.hpp"
+#include <rexi/REXIFunctions.hpp>
+#include "helpers/SWERexiTerm_SPH.hpp"
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
 
 
 #ifndef SWEET_BENCHMARK_TIMINGS
@@ -79,6 +80,9 @@ public:
 
 	/// This class is only setp and used in case of added modes
 	SphereData_Config sphereDataConfigInstance;
+
+	REXIFunctions<double> rexiFunctions;
+
 
 #if SWEET_MPI
 public:
@@ -162,7 +166,9 @@ public:
 		);
 
 private:
-	void p_update_coefficients(bool i_update_rexi);
+	void p_update_coefficients(
+//			bool i_update_rexi
+		);
 
 	void p_get_workload_start_end(
 			std::size_t &o_start,
@@ -189,7 +195,7 @@ public:
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_fixed_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 
@@ -203,7 +209,7 @@ public:
 			SphereData_Spectral &o_u,	///< prognostic variables
 			SphereData_Spectral &o_v,	///< prognostic variables
 
-			double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_fixed_dt,
 			double i_simulation_timestamp
 	);
 

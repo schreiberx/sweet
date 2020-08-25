@@ -20,10 +20,10 @@
 #include <sweet/sphere/SphereTimestepping_SemiLagrangian.hpp>
 #include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_interface.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk_split_vd.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_l_irk.hpp"
+#include "SWE_Sphere_TS_lg_irk.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
 
 
 
@@ -66,6 +66,7 @@ private:
 	int timestepping_order;
 	bool original_linear_operator_sl_treatment;
 
+	SphereData_Spectral coriolis_spectral;
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
 	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd = nullptr;
@@ -95,7 +96,7 @@ public:
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 
@@ -104,7 +105,7 @@ public:
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 
@@ -114,7 +115,7 @@ public:
 			SphereData_Spectral &io_vort,	///< prognostic variables
 			SphereData_Spectral &io_div,	///< prognostic variables
 
-			double i_dt = 0,		///< if this value is not equal to 0, use this time step size instead of computing one
+			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
 

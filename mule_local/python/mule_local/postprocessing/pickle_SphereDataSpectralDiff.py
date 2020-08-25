@@ -15,31 +15,28 @@ class pickle_SphereDataSpectralDiff:
     def __init__(
             self,
             job_directories = None,
-            ref_file_ending = None,
+            cmp_file_ending = None,
             jobdir_pattern = None,
         ):
         """
-        Generate the .pickle files in each job directory based on simulation output files given by 'ref_file_ending'
+        Generate the .pickle files in each job directory based on simulation output files given by 'cmp_file_ending'
 
         Parameters
         ----------
-        ref_file_ending: str
+        cmp_file_ending: str
             string with ending of reference files
         jobdir_pattern: str
             pattern to detect job directories
             Default: './job_bench*'
         """
-        self._setup(job_directories, ref_file_ending, jobdir_pattern)
+        self._setup(job_directories, cmp_file_ending, jobdir_pattern)
         pass
-
-
-
 
 
     def _setup(
             self,
             job_directories = None,
-            ref_file_ending = None,
+            cmp_file_ending = None,
             jobdir_pattern = None,
         ):
 
@@ -87,47 +84,48 @@ class pickle_SphereDataSpectralDiff:
             # Load reference job
             ref_job = jobs[ref_key]
 
-            if ref_file_ending != None:
-                use_ref_file_ending = ref_file_ending
+            if cmp_file_ending != None:
+                use_cmp_file_ending = cmp_file_ending
             else:
                 # "output_%s_t%020.8f.csv"
-                use_ref_file_ending = "_t{:020.8f}.sweet".format(float(ref_job['runtime.max_simulation_time'])/(60*60))
+                use_cmp_file_ending = "_t{:020.8f}.sweet".format(float(ref_job['runtime.max_simulation_time'])/(60*60))
 
-            if use_ref_file_ending == "":
-                raise Exception("No reference file ending provided / found")
+            if use_cmp_file_ending == "":
+                raise Exception("No comparison file ending provided / found")
 
-            # Load reference files
-            ref_files = []
+            # Load comparison files
+            cmp_files = []
             files = os.listdir(ref_job['jobgeneration.job_dirpath'])
             for f in files:
-                if use_ref_file_ending in f:
-                    ref_files.append(f)
+                if use_cmp_file_ending in f:
+                    cmp_files.append(f)
 
-            if len(ref_files) == 0:
+            if len(cmp_files) == 0:
                 print("No reference files found!")
                 print("*"*80)
                 print("Reference directory: "+ref_job['jobgeneration.job_dirpath'])
-                print("Reference file endings: "+use_ref_file_ending)
+                print("Comparison file endings: "+use_cmp_file_ending)
                 print("*"*80)
                 raise Exception("Reference files not found!")
 
-            for ref_file in ref_files:
+            for cmp_file in cmp_files:
                 s = None
                 try:
                     s = SphereDataSpectralDiff(
-                            ref_job['jobgeneration.job_dirpath']+'/'+ref_file,
-                            job['jobgeneration.job_dirpath']+'/'+ref_file
+                            ref_job['jobgeneration.job_dirpath']+'/'+cmp_file,
+                            job['jobgeneration.job_dirpath']+'/'+cmp_file
                     )
+
                 except Exception as e:
-                    raise e
-                    #print(str(e))
+                    #raise e
                     #raise Exception("Error occured which is ignored")
+                    print(str(e))
                     # Ignore missing files
                     return
 
                 s.print()
 
-                pickle_filename = 'sphere_data_diff_'+ref_file.replace('output_', '').replace(use_ref_file_ending, '')+'.pickle'
+                pickle_filename = 'sphere_data_diff_'+cmp_file.replace('output_', '').replace(use_cmp_file_ending, '')+'.pickle'
                 print("Writing file "+pickle_filename)
                 s.write_file(job['jobgeneration.job_dirpath']+'/'+pickle_filename)
 

@@ -9,7 +9,7 @@ from scipy.interpolate import RectBivariateSpline
 sys.stdout.write('')
 
 #SWEET stuff
-from sweet.SWEETRuntimeParametersScenarios import *
+from mule.SWEETRuntimeParametersScenarios import *
 
 #Go to working directory (need because .py is used as link)
 retval = os.getcwd()

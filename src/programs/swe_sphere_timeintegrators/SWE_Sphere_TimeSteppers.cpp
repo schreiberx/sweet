@@ -2,39 +2,42 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TimeSteppers.hpp"
+#include "SWE_Sphere_TimeSteppers.hpp"
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk_na_erk_uv.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk_na_erk_vd.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp_n_etdrk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_erk_uv.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_erk_vd.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_sl_settls_vd_only.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_exp_lc_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk_lc_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk_lc_na_erk_vd.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk_split_uv.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk_split_vd.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_settls_uv.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_settls_vd.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
+#include "SWE_Sphere_TS_l_erk.hpp"
+#include "SWE_Sphere_TS_l_erk_n_erk.hpp"
+#include "SWE_Sphere_TS_l_erk_na_erk_uv.hpp"
+#include "SWE_Sphere_TS_l_erk_na_erk_vd.hpp"
+#include "SWE_Sphere_TS_l_exp.hpp"
+#include "SWE_Sphere_TS_l_exp_n_erk.hpp"
+#include "SWE_Sphere_TS_l_exp_n_etdrk.hpp"
+#include "SWE_Sphere_TS_l_irk.hpp"
+#include "SWE_Sphere_TS_l_irk_n_erk.hpp"
+#include "SWE_Sphere_TS_l_irk_na_erk_uv.hpp"
+#include "SWE_Sphere_TS_l_irk_na_erk_vd.hpp"
+#include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only.hpp"
+#include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"
+#include "SWE_Sphere_TS_l_irk_na_sl_settls_uv_only.hpp"
+#include "SWE_Sphere_TS_l_irk_na_sl_settls_vd_only.hpp"
+#include "SWE_Sphere_TS_lg_erk.hpp"
+#include "SWE_Sphere_TS_lg_erk_lc_erk.hpp"
+#include "SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_etd_uv.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_etd_vd.hpp"
+#include "SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
+#include "SWE_Sphere_TS_lg_irk.hpp"
+#include "SWE_Sphere_TS_lg_irk_lc_erk.hpp"
+#include "SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
+#include "SWE_Sphere_TS_lg_irk_lc_na_erk_vd.hpp"
+#include "SWE_Sphere_TS_ln_erk.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
+#include "SWE_Sphere_TS_ln_settls_uv.hpp"
+#include "SWE_Sphere_TS_ln_settls_vd.hpp"
+#include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
+#include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
 
 
 
@@ -85,11 +88,13 @@ void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereDat
 
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp_n_etdrk(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_exp_lc_n_etdrk(i_simVars, i_op)));
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_exp_lc_n_etd_uv(i_simVars, i_op)));
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_exp_lc_n_etd_vd(i_simVars, i_op)));
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_irk(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_irk(i_simVars, i_op)));
 
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp(i_simVars, i_op)));
-//	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp_old(i_simVars, i_op)));
 
 	/*
 	 * EXP SETTLS VERSION
@@ -162,11 +167,34 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, Sp
 	}
 
 	if (master == nullptr)
+	{
+		std::cout << std::endl;
+		std::cout << "Selection of available time stepping methods:" << std::endl;
+		std::cout << std::endl;
+
+		print_help_all_registered();
+
 		SWEETError(std::string("No valid --timestepping-method '") + i_timestepping_method + std::string("' provided"));
+	}
 
 	// Found integrator, freeing others
 	integrators_free_all(master);
 }
+
+
+
+void SWE_Sphere_TimeSteppers::print_help_all_registered()
+{
+	std::cout << std::endl;
+	for (std::size_t i = 0; i < registered_integrators.size(); i++)
+	{
+		std::cout << "********************************************************************************" << std::endl;
+		registered_integrators[i]->print_help();
+	}
+
+	std::cout << std::endl;
+}
+
 
 
 SWE_Sphere_TimeSteppers::~SWE_Sphere_TimeSteppers()

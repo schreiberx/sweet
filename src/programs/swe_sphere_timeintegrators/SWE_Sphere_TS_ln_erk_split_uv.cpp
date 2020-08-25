@@ -6,7 +6,7 @@
  */
 
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk_split_uv.hpp"
+#include "SWE_Sphere_TS_ln_erk_split_uv.hpp"
 
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
@@ -356,7 +356,7 @@ void SWE_Sphere_TS_ln_erk_split_uv::run_timestep(
 		SphereData_Spectral &io_vrt,
 		SphereData_Spectral &io_div,
 
-		double i_fixed_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_fixed_dt,
 		double i_simulation_timestamp
 )
 {

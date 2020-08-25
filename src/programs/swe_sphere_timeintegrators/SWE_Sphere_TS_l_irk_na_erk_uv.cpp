@@ -5,7 +5,7 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_na_erk_uv.hpp"
+#include "SWE_Sphere_TS_l_irk_na_erk_uv.hpp"
 
 
 
@@ -60,7 +60,7 @@ void SWE_Sphere_TS_l_irk_na_erk_uv::run_timestep(
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
 
-		double i_dt,		///< if this value is not equal to 0, use this time step size instead of computing one
+		double i_dt,
 		double i_simulation_timestamp
 )
 {
