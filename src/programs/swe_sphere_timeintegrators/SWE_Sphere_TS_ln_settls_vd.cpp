@@ -159,12 +159,12 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		{
 			semiLagrangian.apply_sl_timeintegration_vd(
 					ops,
-					L_U_phi, L_U_vrt + coriolis_spectral, L_U_div,		// Coriolis added to vorticity!
+					L_U_phi, L_U_vrt - coriolis_spectral, L_U_div,		// Coriolis added to vorticity!
 					pos_lon_d, pos_lat_d,
 					L_U_phi_D, L_U_vrt_D, L_U_div_D
 				);
 
-			L_U_vrt_D -= coriolis_spectral;
+			L_U_vrt_D += coriolis_spectral;
 		}
 		else
 		{
@@ -188,12 +188,12 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		{
 			semiLagrangian.apply_sl_timeintegration_vd(
 					ops,
-					U_phi, U_vrt + coriolis_spectral, U_div,	// Coriolis added to vorticity!
+					U_phi, U_vrt - coriolis_spectral, U_div,	// Coriolis added to vorticity!
 					pos_lon_d, pos_lat_d,
 					U_phi_D, U_vrt_D, U_div_D
 				);
 
-			U_vrt_D -= coriolis_spectral;
+			U_vrt_D += coriolis_spectral;
 		}
 		else
 		{
