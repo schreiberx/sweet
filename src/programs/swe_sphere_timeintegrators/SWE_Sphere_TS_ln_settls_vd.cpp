@@ -140,6 +140,8 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 				o_data = 2.0*simVars.sim.sphere_rotating_coriolis_omega*std::sin(coriolis_depature_lat.physical_space_data[i_index]);
 			}
 		);
+
+		coriolis_departure_spectral = coriolis_departure_physical;
 	}
 
 
