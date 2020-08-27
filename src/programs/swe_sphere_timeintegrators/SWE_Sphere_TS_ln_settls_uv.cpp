@@ -120,6 +120,29 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 			U_phi_D, U_vrt_D, U_div_D
 		);
 
+
+	SphereData_Spectral coriolis_departure_spectral;
+	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+	{
+		/*
+		 * Compute Coriolis effect at the departure points
+		 */
+
+		SWEETDebugAssert(!simVars.sim.sphere_use_fsphere);
+
+		SphereData_Physical coriolis_depature_lat = Convert_ScalarDataArray_to_SphereDataPhysical::convert(pos_lon_d, ops.sphereDataConfig);
+
+		SphereData_Physical coriolis_departure_physical(ops.sphereDataConfig);
+		coriolis_departure_physical.physical_update_lambda_array_idx(
+			[&](int i_index, double &o_data)
+			{
+				o_data = 2.0*simVars.sim.sphere_rotating_coriolis_omega*std::sin(coriolis_depature_lat.physical_space_data[i_index]);
+			}
+		);
+
+		coriolis_departure_spectral = coriolis_departure_physical;
+	}
+
 	/*
 	 * Compute L_D
 	 */
@@ -132,33 +155,46 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 		const SphereData_Config *sphereDataConfig = io_U_phi_pert.sphereDataConfig;
 		SphereData_Spectral L_U_phi(sphereDataConfig, 0), L_U_vrt(sphereDataConfig, 0), L_U_div(sphereDataConfig, 0);
 
-		/*
-		 * L_g(U): Linear gravity modes
-		 */
-		swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lg(
-				U_phi, U_vrt, U_div,
-				L_U_phi, L_U_vrt, L_U_div,
-				i_simulation_timestamp
-			);
 
-		if (coriolis_treatment == CORIOLIS_LINEAR)
+		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
 		{
 			/*
-			 * L_c(U): Linear Coriolis effect
+			 * L_g(U): Linear gravity modes
 			 */
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
-					U_phi, U_vrt, U_div,
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lg(
+					U_phi, U_vrt - coriolis_arrival_spectral, U_div,		// SL treatment of Coriolis!!!
 					L_U_phi, L_U_vrt, L_U_div,
 					i_simulation_timestamp
 				);
 		}
+		else
+		{
+			/*
+			 * L_g(U): Linear gravity modes
+			 */
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lg(
+					U_phi, U_vrt, U_div,
+					L_U_phi, L_U_vrt, L_U_div,
+					i_simulation_timestamp
+				);
 
-		semiLagrangian.apply_sl_timeintegration_uv(
-				ops,
-				L_U_phi, L_U_vrt, L_U_div,
-				pos_lon_d, pos_lat_d,
-				L_U_phi_D, L_U_vrt_D, L_U_div_D
-			);
+			if (coriolis_treatment == CORIOLIS_LINEAR)
+			{
+				/*
+				 * L_c(U): Linear Coriolis effect
+				 */
+				swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
+						U_phi, U_vrt, U_div,
+						L_U_phi, L_U_vrt, L_U_div,
+						i_simulation_timestamp
+					);
+			}
+		}
+
+		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+		{
+			L_U_vrt_D += coriolis_departure_spectral;							// SL treatment of Coriolis!!!
+		}
 	}
 	else
 	{
@@ -167,12 +203,28 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 		 */
 
 		SphereData_Spectral U_phi_D, U_vrt_D, U_div_D;
-		semiLagrangian.apply_sl_timeintegration_uv(
-				ops,
-				U_phi, U_vrt, U_div,
-				pos_lon_d, pos_lat_d,
-				U_phi_D, U_vrt_D, U_div_D
-			);
+
+
+		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+		{
+			semiLagrangian.apply_sl_timeintegration_uv(
+					ops,
+					U_phi, U_vrt - coriolis_arrival_spectral, U_div,	// SL treatment of Coriolis!!!
+					pos_lon_d, pos_lat_d,
+					U_phi_D, U_vrt_D, U_div_D
+				);
+
+			U_vrt_D += coriolis_departure_spectral;						// SL treatment of Coriolis!!!
+		}
+		else
+		{
+			semiLagrangian.apply_sl_timeintegration_uv(
+					ops,
+					U_phi, U_vrt, U_div,
+					pos_lon_d, pos_lat_d,
+					U_phi_D, U_vrt_D, U_div_D
+				);
+		}
 
 		const SphereData_Config *sphereDataConfig = io_U_phi_pert.sphereDataConfig;
 		L_U_phi_D.setup(sphereDataConfig, 0);
@@ -371,6 +423,12 @@ void SWE_Sphere_TS_ln_settls_uv::setup(
 
 	swe_sphere_ts_ln_erk_split_uv = new SWE_Sphere_TS_ln_erk_split_uv(simVars, ops);
 	swe_sphere_ts_ln_erk_split_uv->setup(1, true, true, true, true, false);
+
+
+	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+	{
+		coriolis_arrival_spectral = ops.fg;
+	}
 
 	if (coriolis_treatment == CORIOLIS_LINEAR)
 	{

@@ -161,43 +161,46 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		/*
 		 * L_g(U): Linear gravity modes
 		 */
-		swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lg(
-				U_phi, U_vrt, U_div,
-				L_U_phi, L_U_vrt, L_U_div,
-				i_simulation_timestamp
-			);
 
-		if (coriolis_treatment == CORIOLIS_LINEAR)
+		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
 		{
-			/*
-			 * L_c(U): Linear Coriolis effect
-			 */
-			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lc(
-					U_phi, U_vrt, U_div,
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lg(
+					U_phi, U_vrt - coriolis_arrival_spectral, U_div,		// SL treatment of Coriolis!!!
 					L_U_phi, L_U_vrt, L_U_div,
 					i_simulation_timestamp
 				);
 		}
+		else
+		{
+			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lg(
+					U_phi, U_vrt, U_div,
+					L_U_phi, L_U_vrt, L_U_div,
+					i_simulation_timestamp
+				);
+
+			if (coriolis_treatment == CORIOLIS_LINEAR)
+			{
+				/*
+				 * L_c(U): Linear Coriolis effect
+				 */
+				swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lc(
+						U_phi, U_vrt, U_div,
+						L_U_phi, L_U_vrt, L_U_div,
+						i_simulation_timestamp
+					);
+			}
+		}
+
+		semiLagrangian.apply_sl_timeintegration_vd(
+				ops,
+				L_U_phi, L_U_vrt, L_U_div,
+				pos_lon_d, pos_lat_d,
+				L_U_phi_D, L_U_vrt_D, L_U_div_D
+			);
 
 		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
 		{
-			semiLagrangian.apply_sl_timeintegration_vd(
-					ops,
-					L_U_phi, L_U_vrt - coriolis_arrival_spectral, L_U_div,		// Coriolis added to vorticity!
-					pos_lon_d, pos_lat_d,
-					L_U_phi_D, L_U_vrt_D, L_U_div_D
-				);
-
-			L_U_vrt_D += coriolis_departure_spectral;
-		}
-		else
-		{
-			semiLagrangian.apply_sl_timeintegration_vd(
-					ops,
-					L_U_phi, L_U_vrt, L_U_div,
-					pos_lon_d, pos_lat_d,
-					L_U_phi_D, L_U_vrt_D, L_U_div_D
-				);
+			L_U_vrt_D += coriolis_departure_spectral;						// SL treatment of Coriolis!!!
 		}
 	}
 	else
@@ -212,12 +215,12 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		{
 			semiLagrangian.apply_sl_timeintegration_vd(
 					ops,
-					U_phi, U_vrt - coriolis_arrival_spectral, U_div,	// Coriolis added to vorticity!
+					U_phi, U_vrt - coriolis_arrival_spectral, U_div,	// SL treatment of Coriolis!!!
 					pos_lon_d, pos_lat_d,
 					U_phi_D, U_vrt_D, U_div_D
 				);
 
-			U_vrt_D += coriolis_departure_spectral;
+			U_vrt_D += coriolis_departure_spectral;						// SL treatment of Coriolis!!!
 		}
 		else
 		{
@@ -419,6 +422,7 @@ void SWE_Sphere_TS_ln_settls_vd::setup(
 
 	swe_sphere_ts_ln_erk_split_vd = new SWE_Sphere_TS_ln_erk_split_vd(simVars, ops);
 	swe_sphere_ts_ln_erk_split_vd->setup(1, true, true, true, true, false);
+
 
 	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
 	{
