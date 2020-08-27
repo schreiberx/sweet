@@ -66,7 +66,7 @@ private:
 	int timestepping_order;
 	bool original_linear_operator_sl_treatment;
 
-	SphereData_Spectral coriolis_spectral;
+	SphereData_Spectral coriolis_arrival_spectral;
 	SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
 	SWE_Sphere_TS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd = nullptr;

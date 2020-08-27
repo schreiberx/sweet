@@ -122,6 +122,28 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 			U_phi_D, U_vrt_D, U_div_D
 		);
 
+	SphereData_Spectral coriolis_departure_spectral;
+	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+	{
+		/*
+		 * Compute Coriolis effect at the departure points
+		 */
+
+		SWEETDebugAssert(!simVars.sim.sphere_use_fsphere);
+
+		SphereData_Physical coriolis_depature_lat = Convert_ScalarDataArray_to_SphereDataPhysical::convert(pos_lon_d, ops.sphereDataConfig);
+
+		SphereData_Physical coriolis_departure_physical(ops.sphereDataConfig);
+		coriolis_departure_physical.physical_update_lambda_array_idx(
+			[&](int i_index, double &o_data)
+			{
+				o_data = 2.0*simVars.sim.sphere_rotating_coriolis_omega*std::sin(coriolis_depature_lat.physical_space_data[i_index]);
+			}
+		);
+	}
+
+
+
 	/*
 	 * Compute L_D
 	 */
@@ -159,12 +181,12 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		{
 			semiLagrangian.apply_sl_timeintegration_vd(
 					ops,
-					L_U_phi, L_U_vrt - coriolis_spectral, L_U_div,		// Coriolis added to vorticity!
+					L_U_phi, L_U_vrt - coriolis_arrival_spectral, L_U_div,		// Coriolis added to vorticity!
 					pos_lon_d, pos_lat_d,
 					L_U_phi_D, L_U_vrt_D, L_U_div_D
 				);
 
-			L_U_vrt_D += coriolis_spectral;
+			L_U_vrt_D += coriolis_departure_spectral;
 		}
 		else
 		{
@@ -188,12 +210,12 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		{
 			semiLagrangian.apply_sl_timeintegration_vd(
 					ops,
-					U_phi, U_vrt - coriolis_spectral, U_div,	// Coriolis added to vorticity!
+					U_phi, U_vrt - coriolis_arrival_spectral, U_div,	// Coriolis added to vorticity!
 					pos_lon_d, pos_lat_d,
 					U_phi_D, U_vrt_D, U_div_D
 				);
 
-			U_vrt_D += coriolis_spectral;
+			U_vrt_D += coriolis_departure_spectral;
 		}
 		else
 		{
@@ -367,8 +389,6 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 
 
 
-
-
 void SWE_Sphere_TS_ln_settls_vd::setup(
 		int i_timestepping_order,
 		LinearCoriolisTreatment_enum i_coriolis_treatment,
@@ -391,18 +411,16 @@ void SWE_Sphere_TS_ln_settls_vd::setup(
 	// Setup semi-lag
 	semiLagrangian.setup(ops.sphereDataConfig);
 
-
 	swe_sphere_ts_ln_erk_split_vd = nullptr;
 	swe_sphere_ts_l_irk = nullptr;
 	swe_sphere_ts_lg_irk = nullptr;
-
 
 	swe_sphere_ts_ln_erk_split_vd = new SWE_Sphere_TS_ln_erk_split_vd(simVars, ops);
 	swe_sphere_ts_ln_erk_split_vd->setup(1, true, true, true, true, false);
 
 	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
 	{
-		coriolis_spectral = ops.fg;
+		coriolis_arrival_spectral = ops.fg;
 	}
 
 	if (coriolis_treatment == CORIOLIS_LINEAR)

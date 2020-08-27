@@ -534,6 +534,19 @@ public:
 	}
 
 
+	void physical_update_lambda_array_idx(
+			std::function<void(int,double&)> i_lambda	///< lambda function to return value for lat/mu
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+
+		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			i_lambda(i, physical_space_data[i]);
+		}
+	}
+
+
 	/*
 	 * Set values for all latitude and longitude degrees
 	 *
