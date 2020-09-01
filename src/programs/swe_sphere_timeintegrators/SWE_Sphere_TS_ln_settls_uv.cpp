@@ -167,6 +167,27 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 					i_simulation_timestamp
 				);
 		}
+		else if (coriolis_treatment == CORIOLIS_LINEAR)
+		{
+		
+			/*
+			 * L_g(U): Linear gravity modes
+			 */
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lg(
+					U_phi, U_vrt, U_div,
+					L_U_phi, L_U_vrt, L_U_div,
+					i_simulation_timestamp
+				);
+
+			/*
+			 * L_c(U): Linear Coriolis effect
+			 */
+			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
+					U_phi, U_vrt, U_div,
+					L_U_phi, L_U_vrt, L_U_div,
+					i_simulation_timestamp
+				);
+		}
 		else
 		{
 			/*
@@ -177,19 +198,14 @@ void SWE_Sphere_TS_ln_settls_uv::run_timestep_2nd_order(
 					L_U_phi, L_U_vrt, L_U_div,
 					i_simulation_timestamp
 				);
-
-			if (coriolis_treatment == CORIOLIS_LINEAR)
-			{
-				/*
-				 * L_c(U): Linear Coriolis effect
-				 */
-				swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
-						U_phi, U_vrt, U_div,
-						L_U_phi, L_U_vrt, L_U_div,
-						i_simulation_timestamp
-					);
-			}
 		}
+
+		semiLagrangian.apply_sl_timeintegration_uv(
+				ops,
+				L_U_phi, L_U_vrt, L_U_div,
+				pos_lon_d, pos_lat_d,
+				L_U_phi_D, L_U_vrt_D, L_U_div_D
+			);
 
 		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
 		{
