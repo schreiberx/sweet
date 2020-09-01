@@ -406,8 +406,6 @@ void SWE_Sphere_TS_ln_settls_uv::setup(
 	if (timestepping_order != 1 && timestepping_order != 2)
 		SWEETError("Invalid time stepping order, must be 1 or 2");
 
-	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
-		SWEETError("Semi-Lagrangian Coriolis treatment not available/possible with UV treatment");
 
 	// Setup sampler for future interpolations
 	sphereSampler.setup(ops.sphereDataConfig);
