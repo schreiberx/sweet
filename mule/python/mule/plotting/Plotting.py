@@ -278,6 +278,7 @@ class Plotting_ScatteredData(Plotting):
                     x_values,
                     y_values,
                     marker=marker,
+                    color=color,
                     linestyle=linestyle,
                     label=label,
                     fillstyle=self.fillstyle,
