@@ -82,7 +82,7 @@ public:
 #endif
 
 public:
-	REXI_SimulationVariables rexi;
+	EXP_SimulationVariables rexi;
 	SWEPolvani_SimulationVariables swe_polvani;
 
 

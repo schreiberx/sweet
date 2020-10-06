@@ -69,7 +69,7 @@ void Adv_Plane_TS_na_erk::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	if (i_fixed_dt <= 0)
+	if (i_dt <= 0)
 		SWEETError("Only constant time step size allowed");
 
 	// standard time stepping

@@ -540,7 +540,7 @@ public:
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 
-		for (int i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < sphereDataConfig->physical_array_data_number_of_elements; i++)
 		{
 			i_lambda(i, physical_space_data[i]);
 		}

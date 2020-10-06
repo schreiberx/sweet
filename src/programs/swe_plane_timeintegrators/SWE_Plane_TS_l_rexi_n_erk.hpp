@@ -51,7 +51,7 @@ public:
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi,
+			EXP_SimulationVariables &i_rexi,
 
 			int i_nonlinear_order,
 

@@ -484,7 +484,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_etd_uv::run_timestep(
  * Setup
  */
 void SWE_Sphere_TS_lg_exp_lc_n_etd_uv::setup(
-		REXI_SimulationVariables &i_rexiSimVars,
+		EXP_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
 		int i_timestepping_order2,
 		double i_timestep_size

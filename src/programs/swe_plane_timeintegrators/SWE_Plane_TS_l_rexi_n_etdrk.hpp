@@ -42,7 +42,7 @@ public:
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi,
+			EXP_SimulationVariables &i_rexi,
 			int i_timestepping_order,
 			bool i_use_only_linear_divergence
 	);

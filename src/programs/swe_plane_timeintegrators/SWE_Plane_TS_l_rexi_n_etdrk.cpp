@@ -409,7 +409,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_rexi_n_etdrk::setup(
-		REXI_SimulationVariables &i_rexiSimVars,
+		EXP_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
 		bool i_use_only_linear_divergence
 )

@@ -37,7 +37,7 @@
 class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 {
 	SimulationVariables &simVars;
-	REXI_SimulationVariables *rexiSimVars;
+	EXP_SimulationVariables *rexiSimVars;
 
 	PlaneOperators &op;
 
@@ -107,7 +107,7 @@ public:
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi,
+			EXP_SimulationVariables &i_rexi,
 			const std::string &i_function_name,
 			double i_timestep_size
 	);

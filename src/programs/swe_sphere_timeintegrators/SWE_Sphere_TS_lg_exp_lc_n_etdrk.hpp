@@ -77,7 +77,7 @@ public:
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexi,
+			EXP_SimulationVariables &i_rexi,
 			int i_timestepping_order,
 			int i_timestepping_order2,
 			double i_timestep_size

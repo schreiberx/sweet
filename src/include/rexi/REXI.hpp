@@ -34,7 +34,7 @@ public:
 public:
 	static
 	bool load(
-		REXI_SimulationVariables *i_rexiSimVars,
+		EXP_SimulationVariables *i_rexiSimVars,
 		const std::string &i_function_name,
 
 		std::vector<std::complex<T>> &o_alpha,
@@ -47,7 +47,7 @@ public:
 		o_alpha.clear();
 		o_beta.clear();
 
-		if (i_rexiSimVars->rexi_method == "terry")
+		if (i_rexiSimVars->exp_method == "terry")
 		{
 			std::cout << "WARNING: This way of using REXI is deprecated" << std::endl;
 			/// REXI stuff
@@ -57,7 +57,7 @@ public:
 			o_alpha = rexi_terry.alpha;
 			o_beta = rexi_terry.beta;
 		}
-		else if (i_rexiSimVars->rexi_method == "ci")
+		else if (i_rexiSimVars->exp_method == "ci")
 		{
 			std::cout << "WARNING: This way of using REXI is deprecated" << std::endl;
 			std::cout << "WARNING: Compile SWEET with quad precision if using an order > 2." << std::endl;
@@ -83,16 +83,16 @@ public:
 			o_alpha = rexi_ci.alpha;
 			o_beta = rexi_ci.beta;
 		}
-		else if (i_rexiSimVars->rexi_method == "direct")
+		else if (i_rexiSimVars->exp_method == "direct")
 		{
 			// no REXI, but direct exponential time integration
 		}
 		else
 		{
-			if (i_rexiSimVars->rexi_method == "")
+			if (i_rexiSimVars->exp_method == "")
 				SWEETError("Please specify rexi method via --rexi-method=[str]");
 			else
-				SWEETError(std::string("REXI method '")+ i_rexiSimVars->rexi_method+"' is not supported!");
+				SWEETError(std::string("REXI method '")+ i_rexiSimVars->exp_method+"' is not supported!");
 		}
 
 
@@ -115,7 +115,7 @@ public:
 public:
 	static
 	bool load(
-			REXI_SimulationVariables *i_rexiSimVars,
+			EXP_SimulationVariables *i_rexiSimVars,
 			const std::string &i_function_name,
 
 			REXICoefficients<T> &o_rexiCoefficients,
@@ -123,10 +123,10 @@ public:
 			int i_verbosity
 	)
 	{
-		if (i_rexiSimVars->rexi_method == "file")
+		if (i_rexiSimVars->exp_method == "file")
 		{
 			for (
-				std::vector<REXI_SimulationVariables::REXIFile>::iterator iter = i_rexiSimVars->p_rexi_files_processed.begin();
+				std::vector<EXP_SimulationVariables::REXIFile>::iterator iter = i_rexiSimVars->p_rexi_files_processed.begin();
 				iter != i_rexiSimVars->p_rexi_files_processed.end();
 				iter++
 			)

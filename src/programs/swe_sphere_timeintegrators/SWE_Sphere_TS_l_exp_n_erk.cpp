@@ -130,7 +130,7 @@ void SWE_Sphere_TS_l_exp_n_erk::run_timestep(
  * Setup
  */
 void SWE_Sphere_TS_l_exp_n_erk::setup(
-		REXI_SimulationVariables &i_rexiSimVars,
+		EXP_SimulationVariables &i_rexiSimVars,
 		int i_order,	///< order of RK time stepping method
 		int i_order2,	///< order of RK time stepping method of non-linear parts
 		double i_timestep_size,

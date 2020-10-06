@@ -205,7 +205,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::p_get_workload_start_end(
  * setup the REXI
  */
 void SWE_Sphere_TS_PFASST_l_rexi::setup(
-		REXI_SimulationVariables &i_rexi,
+		EXP_SimulationVariables &i_rexi,
 		const std::string &i_function_name,
 		double i_timestep_size,
 		bool i_use_f_sphere,
@@ -223,7 +223,7 @@ void SWE_Sphere_TS_PFASST_l_rexi::setup(
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();
 	#endif
 
-	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
+	rexi_use_direct_solution = (rexiSimVars->exp_method == "direct");
 
 	if (rexi_use_direct_solution)
 		SWEETError("Direct solution for exponentiation of this particular linear operator not available");

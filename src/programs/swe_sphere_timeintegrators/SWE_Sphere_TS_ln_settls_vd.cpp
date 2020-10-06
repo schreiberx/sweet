@@ -161,7 +161,6 @@ void SWE_Sphere_TS_ln_settls_vd::run_timestep_2nd_order(
 		/*
 		 * L_g(U): Linear gravity modes
 		 */
-
 		if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
 		{
 			swe_sphere_ts_ln_erk_split_vd->euler_timestep_update_lg(

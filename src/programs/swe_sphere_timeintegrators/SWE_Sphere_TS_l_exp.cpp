@@ -68,7 +68,7 @@ void SWE_Sphere_TS_l_exp::setup_auto()
 
 	if (simVars.misc.verbosity > 2)
 	{
-		if (simVars.rexi.rexi_method != "direct")
+		if (simVars.rexi.exp_method != "direct")
 		{
 			std::cout << "ALPHA:" << std::endl;
 			for (std::size_t n = 0; n < rexi_alphas.size(); n++)
@@ -270,7 +270,7 @@ void SWE_Sphere_TS_l_exp::p_get_workload_start_end(
  * setup the REXI
  */
 void SWE_Sphere_TS_l_exp::setup(
-		REXI_SimulationVariables &i_rexi,
+		EXP_SimulationVariables &i_rexi,
 		const std::string &i_function_name,
 		double i_timestep_size,
 		bool i_use_f_sphere,
@@ -288,7 +288,7 @@ void SWE_Sphere_TS_l_exp::setup(
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();
 	#endif
 
-	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
+	rexi_use_direct_solution = (rexiSimVars->exp_method == "direct");
 
 	if (rexi_use_direct_solution)
 	{

@@ -191,13 +191,13 @@ int main(
 
 	simVars.outputConfig();
 
-	if (simVars.rexi.rexi_method != "file")
+	if (simVars.rexi.exp_method != "file")
 	{
-		if (simVars.rexi.rexi_method == "terry")
+		if (simVars.rexi.exp_method == "terry")
 		{
-			simVars.rexi.p_rexi_files_processed.push_back(REXI_SimulationVariables::REXIFile("phi0", ""));
+			simVars.rexi.p_rexi_files_processed.push_back(EXP_SimulationVariables::REXIFile("phi0", ""));
 		}
-		else if (simVars.rexi.rexi_method == "ci")
+		else if (simVars.rexi.exp_method == "ci")
 		{
 			std::string function_names[9] =
 			{
@@ -214,7 +214,7 @@ int main(
 			};
 
 			for (int i = 0; i < 9; i++)
-				simVars.rexi.p_rexi_files_processed.push_back(REXI_SimulationVariables::REXIFile(function_names[i], ""));
+				simVars.rexi.p_rexi_files_processed.push_back(EXP_SimulationVariables::REXIFile(function_names[i], ""));
 		}
 		else
 		{

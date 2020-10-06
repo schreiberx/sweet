@@ -115,7 +115,7 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
  * Setup
  */
 void SWE_Plane_TS_l_rexi_n_erk::setup(
-		REXI_SimulationVariables &i_rexi,
+		EXP_SimulationVariables &i_rexi,
 
 		int i_nonlinear_order,
 

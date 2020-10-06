@@ -92,7 +92,7 @@ public:
 
 private:
 
-	REXI_SimulationVariables *rexiSimVars;
+	EXP_SimulationVariables *rexiSimVars;
 
 	/*
 	 * Time step size of REXI
@@ -182,7 +182,7 @@ private:
 	 */
 public:
 	void setup(
-			REXI_SimulationVariables &i_rexi,
+			EXP_SimulationVariables &i_rexi,
 			const std::string &i_function_name,
 			double i_timestep_size,
 			bool i_use_f_sphere,

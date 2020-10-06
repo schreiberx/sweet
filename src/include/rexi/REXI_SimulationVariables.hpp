@@ -16,19 +16,30 @@
 
 
 /**
- * REXI
+ * Exponential integration
  */
-struct REXI_SimulationVariables
+struct EXP_SimulationVariables
 {
 	/**
-	 * Choose REXI solver method
+	 * Choose EXP solver method
 	 */
-	std::string rexi_method = "";
+	std::string exp_method = "";
+
 
 	/**
 	 * Use REXI preallocation
 	 */
 	bool sphere_solver_preallocation = true;
+
+
+	/***************************************************
+	 * Taylor EXP
+	 */
+
+	/*
+	 * Number of Taylor expansions
+	 */
+	int taylor_num_expansions = 4;
 
 
 	/***************************************************
@@ -145,8 +156,10 @@ public:
 	void outputConfig()
 	{
 		std::cout << std::endl;
-		std::cout << "REXI:" << std::endl;
-		std::cout << " + rexi_method: " << rexi_method << std::endl;
+		std::cout << "EXP:" << std::endl;
+		std::cout << " + exp_method: " << exp_method << std::endl;
+		std::cout << " [EXP Taylor]" << std::endl;
+		std::cout << " + taylor_num_expansions: " << taylor_num_expansions << std::endl;
 		std::cout << "REXI generic parameters:" << std::endl;
 		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
 
@@ -307,7 +320,7 @@ public:
 		bool rexi_files_given = false;
 		switch(i_option_index)
 		{
-			case 0:		rexi_method = optarg;	return -1;
+			case 0:		exp_method = optarg;	return -1;
 
 			case 1:		sphere_solver_preallocation = atoi(optarg);	return -1;
 
@@ -369,7 +382,7 @@ public:
 			return -1;
 		}
 
-		if (rexi_method != "" && rexi_method == "terry" && rexi_method == "file")
+		if (exp_method != "" && exp_method == "terry" && exp_method == "file")
 			SWEETError("Invalid argument for '--rexi-method='");
 
 		return 15;

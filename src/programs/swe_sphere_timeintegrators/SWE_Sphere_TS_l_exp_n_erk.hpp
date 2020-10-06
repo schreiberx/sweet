@@ -80,7 +80,7 @@ public:
 		);
 
 	void setup(
-			REXI_SimulationVariables &i_rexiSimVars,
+			EXP_SimulationVariables &i_rexiSimVars,
 			int i_order,	///< order of RK time stepping method
 			int i_order2,	///< order of RK time stepping method
 			double i_timestep_size,

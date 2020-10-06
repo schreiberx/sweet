@@ -24,7 +24,7 @@
 
 
 void SWE_Plane_TS_l_rexi::setup(
-	REXI_SimulationVariables &i_rexi,
+	EXP_SimulationVariables &i_rexi,
 	const std::string &i_function_name,
 	double i_timestep_size
 )
@@ -36,7 +36,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	domain_size[0] = simVars.sim.plane_domain_size[0];
 	domain_size[1] = simVars.sim.plane_domain_size[1];
 
-	rexi_use_direct_solution = (rexiSimVars->rexi_method == "direct");
+	rexi_use_direct_solution = (rexiSimVars->exp_method == "direct");
 
 	if (rexi_use_direct_solution)
 	{
