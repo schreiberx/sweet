@@ -94,18 +94,18 @@ int main(
 	 */
 	REXICoefficientsSet<> rexiCoefficientsSet;
 
-	if (simVars.rexi.rexi_method == "direct")
+	if (simVars.rexi.exp_method == "direct")
 	{
 		SWEETError("Direct REXI mode not supported");
 	}
-	else if (simVars.rexi.rexi_method == "file")
+	else if (simVars.rexi.exp_method == "file")
 	{
 		rexiCoefficientsSet.setup_from_files(simVars.rexi.rexi_files);
 
 		if (rexiCoefficientsSet.rexiCoefficientVector.size() == 0)
 			SWEETError("No REXI coefficient loaded");
 	}
-	else if (simVars.rexi.rexi_method == "terry" || simVars.rexi.rexi_method == "ci")
+	else if (simVars.rexi.exp_method == "terry" || simVars.rexi.exp_method == "ci")
 	{
 		REXICoefficients<> rexiCoefficients;
 
@@ -177,7 +177,7 @@ int main(
 	std::vector< std::complex<double> > alpha;
 	std::vector< std::complex<double> > beta;
 
-	if (simVars.rexi.rexi_method == "ci")
+	if (simVars.rexi.exp_method == "ci")
 		if (simVars.timecontrol.current_timestep_size <= 0)
 			SWEETError("Please specify time step size with --dt=...");
 */
