@@ -1,5 +1,5 @@
 /*
- * SWE_Sphere_TS_lg_erk_lf_erk.hpp
+ * SWE_Sphere_TS_lg_erk_lc_erk.hpp
  *
  *  Created on: 11 November 2017
  *      Author: Martin Schreiber <SchreiberX@gmail.com>

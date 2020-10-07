@@ -602,9 +602,6 @@ public:
 
 			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				//std::cout << "* START *******************************************" << std::endl;
-				//std::cout << "implicit_F " << n << ", " << m << std::endl;
-
 				out_sph_data.spectral_space_data[idx] = 0;
 
 				// out of boundary check for P(n-1, m)
@@ -614,7 +611,6 @@ public:
 							i_dt_two_omega
 							* implicit_f_minus(n, m)
 							* i_sphere_data.spectral_get_(n-1, m);
-					//std::cout << "a: x" << std::endl;
 				}
 
 				// out of boundary check for P(n+1, m)
@@ -624,8 +620,6 @@ public:
 							i_dt_two_omega
 							* implicit_f_plus(n, m)
 							* i_sphere_data.spectral_get_(n+1, m);
-
-					//std::cout << "b: x" << std::endl;
 				}
 
 				idx++;
@@ -655,9 +649,6 @@ public:
 
 			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				//std::cout << "* START *******************************************" << std::endl;
-				//std::cout << "implicit_FJinv " << n << ", " << m << std::endl;
-
 				out_sph_data.spectral_space_data[idx] = 0;
 
 				// Out of boundary check for P(n-1, m)
@@ -668,8 +659,6 @@ public:
 							* implicit_f_minus(n, m)
 							/ implicit_J_scalar(n-1, m, i_dt_two_omega)
 							* i_sphere_data.spectral_get_(n-1, m);
-
-					//std::cout << "a: x" << std::endl;
 				}
 
 				// Out of boundary check for P(n+1, m)
@@ -680,8 +669,6 @@ public:
 							* implicit_f_plus(n, m)
 							/ implicit_J_scalar(n+1, m, i_dt_two_omega)
 							* i_sphere_data.spectral_get_(n+1, m);
-
-					//std::cout << "b: x" << std::endl;
 				}
 
 				idx++;

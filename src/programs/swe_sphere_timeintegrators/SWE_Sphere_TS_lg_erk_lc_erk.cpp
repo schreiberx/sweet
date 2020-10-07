@@ -1,5 +1,5 @@
 /*
- * SWE_Sphere_TS_lg_erk_lf_n_erk.cpp
+ * SWE_Sphere_TS_lg_erk_lc_n_erk.cpp
  *
  *  Created on: 21 Aug 2017
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
@@ -72,7 +72,7 @@ void SWE_Sphere_TS_lg_erk_lc_erk::run_timestep(
 	}
 	else
 	{
-		SWEETError("Not yet supported!");
+		SWEETError("This time stepping order is not yet supported!");
 	}
 }
 

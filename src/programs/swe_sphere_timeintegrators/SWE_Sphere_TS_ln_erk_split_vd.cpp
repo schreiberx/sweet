@@ -58,6 +58,28 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_lc(
 }
 
 
+/*
+ * This is a version which only operates in spectral space.
+ * It doesn't necessarily reflect 1:1 applying the Coriolis effect in physical space.
+ */
+void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_lc_spectral_only(
+		const SphereData_Spectral &i_U_phi,
+		const SphereData_Spectral &i_U_vrt,
+		const SphereData_Spectral &i_U_div,
+
+		SphereData_Spectral &io_phi_t,
+		SphereData_Spectral &io_vrt_t,
+		SphereData_Spectral &io_div_t,
+
+		double i_simulation_timestamp
+)
+{
+	//io_phi_t += 0;
+	io_vrt_t -= op.implicit_F(i_U_div, 2.0*simVars.sim.sphere_rotating_coriolis_omega);
+	io_div_t += op.implicit_F(i_U_vrt, 2.0*simVars.sim.sphere_rotating_coriolis_omega);
+}
+
+
 
 void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_na(
 		const SphereData_Spectral &i_U_phi,

@@ -23,7 +23,7 @@ struct EXP_SimulationVariables
 	/**
 	 * Choose EXP solver method
 	 */
-	std::string exp_method = "";
+	std::string exp_method = "direct";
 
 
 	/**
@@ -39,7 +39,7 @@ struct EXP_SimulationVariables
 	/*
 	 * Number of Taylor expansions
 	 */
-	int taylor_num_expansions = 4;
+	int taylor_num_expansions = -1;
 
 
 	/***************************************************
@@ -226,6 +226,12 @@ public:
 		io_long_options[io_next_free_program_option] = {"rexi-method", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"exp-method", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"exp-taylor-num-expansions", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 
 		// Generic REXI options
 //		io_long_options[io_next_free_program_option] = {"rexi-use-direct-solution", required_argument, 0, 256+io_next_free_program_option};
@@ -320,26 +326,31 @@ public:
 		bool rexi_files_given = false;
 		switch(i_option_index)
 		{
-			case 0:		exp_method = optarg;	return -1;
+			case 0:
+			case 1:
+					exp_method = optarg;	return -1;
 
-			case 1:		sphere_solver_preallocation = atoi(optarg);	return -1;
+			case 2:
+					taylor_num_expansions = atoi(optarg);	return -1;
+
+			case 3:		sphere_solver_preallocation = atoi(optarg);	return -1;
 
 			// Use a break here to process the rexi files below
-			case 2:		rexi_files = optarg;	rexi_files_given = true; break;
+			case 4:		rexi_files = optarg;	rexi_files_given = true; break;
 
-			case 3:		terry_h = atof(optarg);	return -1;
-			case 4:		terry_M = atoi(optarg);	return -1;
-			case 5:		terry_L = atoi(optarg);	return -1;
-			case 6:		terry_reduce_to_half = atoi(optarg);	return -1;
-			case 7:		terry_normalization = atoi(optarg);	return -1;
+			case 5:		terry_h = atof(optarg);	return -1;
+			case 6:		terry_M = atoi(optarg);	return -1;
+			case 7:		terry_L = atoi(optarg);	return -1;
+			case 8:		terry_reduce_to_half = atoi(optarg);	return -1;
+			case 9:		terry_normalization = atoi(optarg);	return -1;
 
-			case 8:	ci_n = atoi(optarg);	return -1;
-			case 9:	ci_primitive = optarg;	return -1;
-			case 10:	ci_max_real = atof(optarg);	return -1;
-			case 11:	ci_max_imag = atof(optarg);	return -1;
-			case 12:	ci_s_real = atof(optarg);	return -1;
-			case 13:	ci_s_imag = atof(optarg);	return -1;
-			case 14:	ci_mu = atof(optarg);	return -1;
+			case 10:	ci_n = atoi(optarg);	return -1;
+			case 11:	ci_primitive = optarg;	return -1;
+			case 12:	ci_max_real = atof(optarg);	return -1;
+			case 13:	ci_max_imag = atof(optarg);	return -1;
+			case 14:	ci_s_real = atof(optarg);	return -1;
+			case 15:	ci_s_imag = atof(optarg);	return -1;
+			case 16:	ci_mu = atof(optarg);	return -1;
 		}
 
 		if (rexi_files_given)
