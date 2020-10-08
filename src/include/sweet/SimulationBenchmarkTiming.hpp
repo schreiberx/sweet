@@ -1,8 +1,5 @@
 /*
- * SimulationBenchmarkTiming.hpp
- *
- *  Created on: 23 Sep 2018
- *      Author: Martin Schreiber
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
 

@@ -1,12 +1,9 @@
 /*
- * REXIFunctions.hpp
- *
- *  Created on: 10 Aug 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_REXI_REXIFUNCTIONS_HPP_
-#define SRC_INCLUDE_REXI_REXIFUNCTIONS_HPP_
+#ifndef SRC_INCLUDE_EXPFUNCTIONS_HPP_
+#define SRC_INCLUDE_EXPFUNCTIONS_HPP_
 
 #include <iostream>
 #include <typeinfo>
@@ -15,12 +12,12 @@
 
 
 /**
- * This class implements various REXI functions.
+ * This class implements various EXP functions.
  *
- * See Cox-Matthews paper for the provided REXI functions
+ * See Cox-Matthews paper for the provided EXP functions
  */
 template <typename T = double>
-class REXIFunctions
+class EXPFunctions
 {
 	enum fun_id_enum
 	{
@@ -79,7 +76,7 @@ public:
 
 
 public:
-	REXIFunctions()	:
+	EXPFunctions()	:
 		function_id(INVALID)
 	{
 		setup_constvars();
@@ -87,7 +84,7 @@ public:
 
 
 public:
-	REXIFunctions(const std::string &i_function_name)	:
+	EXPFunctions(const std::string &i_function_name)	:
 		function_id(INVALID)
 	{
 		setup_constvars();
@@ -411,7 +408,7 @@ public:
 			return -phiN(2, -i_K) + phiN(1, -i_K);
 #else
 			if (lamdt < eps_phi)
-				//					if (lamdt*lamdt < rexiFunctions.eps_phi)
+				//					if (lamdt*lamdt < expFunctions.eps_phi)
 			{
 				return 1.0/2.0;
 			}
@@ -430,7 +427,7 @@ public:
 			SWEETError("TODO: Redo this with e.g. series treatment");
 #else
 			if (lamdt < eps_phi)
-				//					if (lamdt*lamdt*lamdt < rexiFunctions.eps_phi)
+				//					if (lamdt*lamdt*lamdt < expFunctions.eps_phi)
 			{
 				return 1.0/(2.0*3.0);
 			}
@@ -514,4 +511,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_REXI_REXIFunctions_HPP_ */
+#endif

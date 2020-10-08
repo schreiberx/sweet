@@ -11,12 +11,11 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 
+#include <rexi/EXPFunctions.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-#include <rexi/REXIFunctions.hpp>
-
 #include <functional>
 #if SWEET_EIGEN
 #include <Eigen/Eigenvalues>
@@ -49,7 +48,7 @@ public:
 	)
 	{
 
-		REXIFunctions<T> rexiFunctions;
+		EXPFunctions<T> rexiFunctions;
 
 		const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
@@ -211,7 +210,7 @@ public:
 	)
 	{
 
-		REXIFunctions<T> rexiFunctions;
+		EXPFunctions<T> rexiFunctions;
 
 		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
 
@@ -288,7 +287,7 @@ public:
 			complex o_evalues[3] =  0 // output eigen values (optional)
 	)
 	{
-		REXIFunctions<T> rexiFunctions;
+		EXPFunctions<T> rexiFunctions;
 		bool i_evalues = false;
 		if (o_evalues){
 			i_evalues = true;

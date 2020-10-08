@@ -11,12 +11,11 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 
+#include <rexi/EXPFunctions.hpp>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-#include <rexi/REXIFunctions.hpp>
-
 #include <functional>
 #if SWEET_EIGEN
 #include <Eigen/Eigenvalues>

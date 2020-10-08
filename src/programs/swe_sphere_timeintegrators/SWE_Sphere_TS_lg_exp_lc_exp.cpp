@@ -1,5 +1,10 @@
-#include "SWE_Sphere_TS_lg_exp_lc_exp.hpp"
+/*
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ */
 
+
+
+#include "SWE_Sphere_TS_lg_exp_lc_exp.hpp"
 
 
 void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep(
@@ -105,7 +110,12 @@ void SWE_Sphere_TS_lg_exp_lc_exp::setup(
 	if (timestepping_order != 1 && timestepping_order != 2)
 		SWEETError("Only 1st and 2nd order time stepping order supported");
 
-	timestepping_lg_exp.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size, false, true);
+	timestepping_lg_exp.setup("phi0");
+
+	if (simVars.rexi.exp_method != "ss_taylor")
+	{
+		SWEETError("Use --exp-method=ss_taylor to use this time stepper");
+	}
 }
 
 

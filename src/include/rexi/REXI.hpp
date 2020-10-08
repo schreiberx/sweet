@@ -111,6 +111,32 @@ public:
 		return true;
 	}
 
+public:
+	static
+	bool is_rexi_method_supported(
+			std::string &i_rexi_method
+	)
+	{
+		return (
+				i_rexi_method == "file" ||
+				i_rexi_method == "terry" ||
+				i_rexi_method == "ci" ||
+				0
+			);
+	}
+
+
+public:
+	static
+	void get_available_rexi_methods(
+			std::stringstream &i_ss
+	)
+	{
+		i_ss << "        'file': File-based REXI" << std::endl;
+		i_ss << "        'terry': T-REXI (DEPRECATED, use 'file' interface)" << std::endl;
+		i_ss << "        'ci': Cauchy Contour-based REXI method  (DEPRECATED, use 'file' interface)" << std::endl;
+	}
+
 
 public:
 	static

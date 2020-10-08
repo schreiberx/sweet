@@ -6,7 +6,7 @@
 #include <sweet/SimulationVariables.hpp>
 
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_l_exp.hpp"
+#include "SWE_Sphere_TS_lg_exp_direct.hpp"
 #include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
 
 
@@ -30,7 +30,7 @@ public:
 
 	int timestepping_order;
 
-	SWE_Sphere_TS_l_exp timestepping_lg_exp;
+	SWE_Sphere_TS_lg_exp_direct timestepping_lg_exp;
 	SWE_Sphere_TS_ln_erk_split_vd timestepping_lc_erk;
 
 

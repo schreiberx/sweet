@@ -1,9 +1,7 @@
 /*
- * SWE_Sphere_TS_split_lg_lc_na_nr_erk.cpp
- *
- *  Created on: 24 Apr 2020
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
+
 
 
 #include "SWE_Sphere_TS_ln_erk_split_vd.hpp"
@@ -58,9 +56,11 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_lc(
 }
 
 
+
 /*
  * This is a version which only operates in spectral space.
- * It doesn't necessarily reflect 1:1 applying the Coriolis effect in physical space.
+ *
+ * It doesn't necessarily reflect exactly 1:1 the application of the Coriolis effect in physical space.
  */
 void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_lc_spectral_only(
 		const SphereData_Spectral &i_U_phi,

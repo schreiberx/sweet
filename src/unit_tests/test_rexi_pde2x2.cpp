@@ -8,8 +8,8 @@
 #include <iostream>
 #include <sweet/SimulationVariables.hpp>
 #include <quadmath.h>
+#include <rexi/EXPFunctions.hpp>
 #include <rexi/REXI.hpp>
-#include <rexi/REXIFunctions.hpp>
 #include <rexi/REXICoefficients.hpp>
 
 
@@ -21,7 +21,7 @@
 	typedef double T;
 #endif
 
-REXIFunctions<T> rexiFunctions;
+EXPFunctions<T> rexiFunctions;
 
 
 std::complex<double> fromTtoComplexDouble(

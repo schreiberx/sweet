@@ -8,13 +8,13 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_DIRECT_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_DIRECT_HPP_
 
+#include <rexi/EXPFunctions.hpp>
 #include <limits>
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataGridMapping.hpp>
-#include <rexi/REXIFunctions.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
 
 #include "SWE_Plane_TS_interface.hpp"
@@ -38,7 +38,7 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 	typedef double T;
 #endif
 
-	REXIFunctions<T> rexiFunctions;
+	EXPFunctions<T> rexiFunctions;
 
 	PlaneDataGridMapping planeDataGridMapping;
 

@@ -11,6 +11,7 @@
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
+#include "SWE_Sphere_TS_lg_exp_direct.hpp"
 
 #ifndef SWEET_THREADING_TIME_REXI
 #	define SWEET_THREADING_TIME_REXI 1
@@ -43,6 +44,7 @@ bool SWE_Sphere_TS_l_exp::implements_timestepping_method(const std::string &i_ti
 
 	return false;
 }
+
 
 std::string SWE_Sphere_TS_l_exp::string_id()
 {
@@ -115,8 +117,13 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 )	:
 	simVars(i_simVars),
 	simCoeffs(simVars.sim),
-	op(i_op),
-	sphereDataConfig(i_op.sphereDataConfig)
+	ops(i_op),
+	sphereDataConfig(i_op.sphereDataConfig),
+	use_exp_method_direct_solution(false),
+	use_exp_method_strang_split_taylor(false),
+	use_exp_method_rexi(false),
+	timestepping_method_lg_exp_direct(nullptr),
+	timestepping_method_lg_exp_lc_exp(nullptr)
 {
 	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi.start();
@@ -181,6 +188,18 @@ void SWE_Sphere_TS_l_exp::reset()
 		SimulationBenchmarkTimings::getInstance().rexi_setup.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
+
+	if (timestepping_method_lg_exp_direct)
+	{
+		delete timestepping_method_lg_exp_direct;
+		timestepping_method_lg_exp_direct = nullptr;
+	}
+
+	if (timestepping_method_lg_exp_lc_exp)
+	{
+		delete timestepping_method_lg_exp_lc_exp;
+		timestepping_method_lg_exp_lc_exp = nullptr;
+	}
 }
 
 
@@ -230,6 +249,18 @@ SWE_Sphere_TS_l_exp::~SWE_Sphere_TS_l_exp()
 		SimulationBenchmarkTimings::getInstance().rexi_shutdown.stop();
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
+
+	if (timestepping_method_lg_exp_direct)
+	{
+		delete timestepping_method_lg_exp_direct;
+		timestepping_method_lg_exp_direct = nullptr;
+	}
+
+	if (timestepping_method_lg_exp_lc_exp)
+	{
+		delete timestepping_method_lg_exp_lc_exp;
+		timestepping_method_lg_exp_lc_exp = nullptr;
+	}
 }
 
 
@@ -281,6 +312,32 @@ void SWE_Sphere_TS_l_exp::setup(
 
 	rexiSimVars = &i_rexi;
 
+
+	/*
+	 * Print some useful information
+	 */
+	if (	i_rexi.exp_method != "direct" &&
+			i_rexi.exp_method != "ss_taylor"
+	)
+	{
+		if (!REXI<>::is_rexi_method_supported(i_rexi.exp_method))
+		{
+			std::cerr << std::endl;
+			std::cerr << "Available EXP methods (--exp-method=...):" << std::endl;
+			std::cerr << "        'direct': Analytical solution" << std::endl;
+			std::cerr << "        'ss_taylor': Strang-Split Taylor of exp(L) \approx exp(L_g) taylor(L_c)" << std::endl;
+
+			std::stringstream ss;
+			REXI<>::get_available_rexi_methods(ss);
+			std::cerr << ss.str() << std::endl;
+
+			if (i_rexi.exp_method == "help")
+				SWEETError("See above for available REXI methods");
+			else
+				SWEETError("Unknown EXP method");
+		}
+	}
+
 	reset();
 
 	#if SWEET_BENCHMARK_TIMINGS
@@ -288,13 +345,6 @@ void SWE_Sphere_TS_l_exp::setup(
 		SimulationBenchmarkTimings::getInstance().rexi_setup.start();
 	#endif
 
-	rexi_use_direct_solution = (rexiSimVars->exp_method == "direct");
-
-	if (rexi_use_direct_solution)
-	{
-		if (!no_coriolis)
-			SWEETError("Direct solution for linear operator with Coriolis effect not available");
-	}
 
 	timestep_size = i_timestep_size;
 	function_name = i_function_name;
@@ -302,31 +352,61 @@ void SWE_Sphere_TS_l_exp::setup(
 	/*
 	 * Setup REXI function evaluations
 	 */
-	rexiFunctions.setup(i_function_name);
-
-
-	REXICoefficients<double> rexiCoefficients;
-
-	bool retval = REXI<>::load(
-			rexiSimVars,
-			function_name,
-			rexiCoefficients,
-			simVars.misc.verbosity
-	);
-
-	if (!retval)
-		SWEETError(std::string("Phi function '")+function_name+std::string("' not provided or not supported"));
-
-	rexi_alphas = rexiCoefficients.alphas;
-	rexi_betas = rexiCoefficients.betas;
-	rexi_gamma = rexiCoefficients.gamma;
-
+	expFunctions.setup(i_function_name);
 
 	use_f_sphere = i_use_f_sphere;
 	use_rexi_sphere_solver_preallocation = rexiSimVars->sphere_solver_preallocation;
 
-	if (!rexi_use_direct_solution)
+
+	use_exp_method_direct_solution = false;
+	use_exp_method_strang_split_taylor = false;
+	use_exp_method_rexi = false;
+
+	if (rexiSimVars->exp_method == "direct")
 	{
+		if (!no_coriolis)
+			SWEETError("Direct solution for linear operator with Coriolis effect not available");
+
+		use_exp_method_direct_solution = true;
+
+		if (timestepping_method_lg_exp_direct == nullptr)
+			timestepping_method_lg_exp_direct = new SWE_Sphere_TS_lg_exp_direct(simVars, ops);
+
+		timestepping_method_lg_exp_direct->setup("phi0");
+	}
+	else if (rexiSimVars->exp_method == "ss_taylor")
+	{
+		if (no_coriolis)
+			SWEETError("'ss_taylor' intended to include Coriolis effect!");
+
+		use_exp_method_strang_split_taylor = true;
+
+		if (timestepping_method_lg_exp_lc_exp == nullptr)
+			timestepping_method_lg_exp_lc_exp = new SWE_Sphere_TS_lg_exp_lc_exp(simVars, ops);
+
+		timestepping_method_lg_exp_lc_exp->setup(simVars.disc.timestepping_order);
+	}
+	else
+	{
+		use_exp_method_rexi = true;
+
+		SWEETAssert(use_exp_method_rexi, "should be true");
+
+		REXICoefficients<double> rexiCoefficients;
+		bool retval = REXI<>::load(
+				rexiSimVars,
+				function_name,
+				rexiCoefficients,
+				simVars.misc.verbosity
+		);
+
+		if (!retval)
+			SWEETError(std::string("Phi function '")+function_name+std::string("' not provided or not supported"));
+
+		rexi_alphas = rexiCoefficients.alphas;
+		rexi_betas = rexiCoefficients.betas;
+		rexi_gamma = rexiCoefficients.gamma;
+
 		std::size_t N = rexi_alphas.size();
 		block_size = N/num_global_threads;
 		if (block_size*num_global_threads != N)
@@ -415,7 +495,7 @@ void SWE_Sphere_TS_l_exp::setup(
 			exit(-1);
 		}
 
-	}	// rexi_use_direct_solution
+	}
 
 	#if SWEET_BENCHMARK_TIMINGS
 		SimulationBenchmarkTimings::getInstance().rexi_setup.stop();
@@ -499,13 +579,15 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 	double i_simulation_timestamp
 )
 {
-	#if SWEET_BENCHMARK_TIMINGS
-		SimulationBenchmarkTimings::getInstance().rexi.start();
-		SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
-	#endif
-
-	if (rexi_use_direct_solution)
+	if (use_exp_method_direct_solution)
 	{
+		#if SWEET_BENCHMARK_TIMINGS
+			SimulationBenchmarkTimings::getInstance().rexi.start();
+			SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
+		#endif
+
+		timestepping_method_lg_exp_direct->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+#if 0
 		// no Coriolis force active
 
 		/*
@@ -548,8 +630,8 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 				std::complex<double> l0 = -sqrt_DG/(2*G) * phi0 + 0.5*div0;
 				std::complex<double> l1 = +sqrt_DG/(2*G) * phi0 + 0.5*div0;
 
-				l0 = rexiFunctions.eval(timestep_size*(-sqrt_DG))*l0;
-				l1 = rexiFunctions.eval(timestep_size*sqrt_DG)*l1;
+				l0 = expFunctions.eval(timestep_size*(-sqrt_DG))*l0;
+				l1 = expFunctions.eval(timestep_size*sqrt_DG)*l1;
 
 				phi0 = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
 				div0 = l0 + l1;
@@ -557,6 +639,7 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 				idx++;
 			}
 		}
+#endif
 
 
 		#if SWEET_BENCHMARK_TIMINGS
@@ -565,8 +648,101 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 		#endif
 
 		return;
-	} // direct solution
+	}
 
+	if (use_exp_method_strang_split_taylor)
+	{
+		#if SWEET_BENCHMARK_TIMINGS
+			SimulationBenchmarkTimings::getInstance().rexi.start();
+			SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
+		#endif
+
+		timestepping_method_lg_exp_lc_exp->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+
+		#if SWEET_BENCHMARK_TIMINGS
+			SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+			SimulationBenchmarkTimings::getInstance().rexi.stop();
+		#endif
+
+		return;
+	}
+
+	if (use_exp_method_strang_split_taylor)
+	{
+		#if SWEET_BENCHMARK_TIMINGS
+			SimulationBenchmarkTimings::getInstance().rexi.start();
+			SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
+		#endif
+
+		timestepping_method_lg_exp_direct->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+#if 0
+		// no Coriolis force active
+
+		/*
+		 * Using exponential integrators, we must compute an
+		 */
+
+		double ir = 1.0/simVars.sim.sphere_radius;
+		// avg. geopotential
+
+		double G = -simCoeffs.h0*simCoeffs.gravitation;
+
+		/*
+		 * See doc/rexi/rexi_for_swe_on_nonrotating_sphere.pdf
+		 */
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				double D = -(double)n*((double)n+1.0)*ir*ir;
+				D = -D;
+
+				if (D == 0)
+				{
+					idx++;
+					continue;
+				}
+
+				std::complex<double> &phi0 = io_prog_phi.spectral_space_data[idx];
+				std::complex<double> &div0 = io_prog_div.spectral_space_data[idx];
+
+				// TODO: precompute this
+
+				// result will be imaginary only!
+				std::complex<double> sqrt_DG = std::sqrt(std::complex<double>(D*G));
+
+				// Multiply with Q^{-1}
+				std::complex<double> l0 = -sqrt_DG/(2*G) * phi0 + 0.5*div0;
+				std::complex<double> l1 = +sqrt_DG/(2*G) * phi0 + 0.5*div0;
+
+				l0 = expFunctions.eval(timestep_size*(-sqrt_DG))*l0;
+				l1 = expFunctions.eval(timestep_size*sqrt_DG)*l1;
+
+				phi0 = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
+				div0 = l0 + l1;
+
+				idx++;
+			}
+		}
+#endif
+
+
+		#if SWEET_BENCHMARK_TIMINGS
+			SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+			SimulationBenchmarkTimings::getInstance().rexi.stop();
+		#endif
+
+		return;
+	}
+
+
+#if SWEET_BENCHMARK_TIMINGS
+	SimulationBenchmarkTimings::getInstance().rexi.start();
+	SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
+#endif
 
 	bool use_rexi_gamma = false;
 

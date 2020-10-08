@@ -9,7 +9,7 @@
 #define SRC_INCLUDE_REXI_CI_HPP_
 
 #include <libmath/DQStuff.hpp>
-#include <rexi/REXIFunctions.hpp>
+#include <rexi/EXPFunctions.hpp>
 #include <sweet/SWEETError.hpp>
 #include <vector>
 
@@ -108,7 +108,7 @@ public:
 		alpha_eval.resize(N);
 		beta_eval.resize(N);
 
-		REXIFunctions<T> fun(i_function_name);
+		EXPFunctions<T> fun(i_function_name);
 
 		if (i_primitive_name == "circle")
 		{

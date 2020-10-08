@@ -2,11 +2,11 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
+#include <rexi/EXPFunctions.hpp>
 #include <iostream>
 #include <rexi/REXI.hpp>
 #include <rexi/REXICoefficients.hpp>
 #include <rexi/REXICoefficientsSet.hpp>
-#include <rexi/REXIFunctions.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/Timeloop.hpp>
 #include <stdlib.h>
@@ -86,7 +86,7 @@ int main(
 	/*
 	 * Load analytical function
 	 */
-	REXIFunctions<double> rexiFunctions;
+	EXPFunctions<double> rexiFunctions;
 	rexiFunctions.setup(function_name);
 
 	/*
