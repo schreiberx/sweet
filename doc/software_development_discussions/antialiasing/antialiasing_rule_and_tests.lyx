@@ -1,5 +1,5 @@
-#LyX 2.2 created this file. For more info see http://www.lyx.org/
-\lyxformat 508
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
 \begin_document
 \begin_header
 \save_transient_properties true
@@ -44,6 +44,8 @@
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -70,9 +72,10 @@
 \use_bibtopic false
 \use_indices false
 \paperorientation portrait
-\suppress_date false
+\suppress_date true
 \justification true
 \use_refstyle 1
+\use_minted 0
 \index Index
 \shortcut idx
 \color #008000
@@ -81,7 +84,10 @@
 \tocdepth 3
 \paragraph_separation indent
 \paragraph_indentation default
-\quotes_language english
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -102,6 +108,10 @@ Anti-aliasing for dummies
 Martin Schreiber <M.Schreiber@exeter.ac.uk>
 \end_layout
 
+\begin_layout Date
+2017-06-21
+\end_layout
+
 \begin_layout Standard
 This document gives a very brief introduction to the anti-aliasing strategies
  in SWEET and how to test for them.
@@ -109,17 +119,7 @@ This document gives a very brief introduction to the anti-aliasing strategies
  space.
 \end_layout
 
-\begin_layout Standard
-
-\series bold
-WARNING: There might be a missing 
-\begin_inset Formula $\pm1$
-\end_inset
-
- somewhere.
-\end_layout
-
-\begin_layout Paragraph
+\begin_layout Section
 Problem formulation
 \end_layout
 
@@ -158,6 +158,27 @@ Let our domain be given by the unit interval
 \end_layout
 
 \begin_layout Standard
+Using the identities
+\begin_inset Formula 
+\begin{align*}
+\cos(a+b) & =\cos a\sin b-\sin a\sin b\\
+\cos(a-b) & =\cos a\sin b+\sin a\sin b
+\end{align*}
+
+\end_inset
+
+we can subtract both terms to get
+\begin_inset Formula 
+\[
+\cos a\sin b=\frac{1}{2}\cos(a-b)-\frac{1}{2}\cos(a+b).
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
 Evaluating these non-linearities directly can be reformulated by using the
  product-to-sum rule:
 \begin_inset Formula 
@@ -190,7 +211,7 @@ The frequency
  does not require any special treatment.
 \end_layout
 
-\begin_layout Paragraph
+\begin_layout Section
 Errors with pseudo-spectrum
 \end_layout
 
