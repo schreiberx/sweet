@@ -37,7 +37,7 @@ else:
 jg.compile.sweet_mpi = 'enable'
 
 jg.runtime.space_res_spectral = 128
-jg.runtime.reuse_plans = 2
+jg.runtime.reuse_plans = "require_load"
 
 jg.parallelization.core_oversubscription = False
 jg.parallelization.core_affinity = 'compact'
@@ -67,13 +67,22 @@ params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket
 params_ptime_num_cores_per_rank = [1]
 
 unique_id_filter = []
-#unique_id_filter.append('simparams')
 unique_id_filter.append('compile')
-unique_id_filter.append('disc_space')
-unique_id_filter.append('timestep_order')
 #unique_id_filter.append('timestep_size')
 #unique_id_filter.append('rexi_params')
-unique_id_filter.append('benchmark')
+
+unique_id_filter.append('runtime.disc_space')
+unique_id_filter.append('runtime.reuse_plans')
+unique_id_filter.append('runtime.simparams')
+unique_id_filter.append('runtime.benchmark')
+unique_id_filter.append('runtime.timestepping_order')
+unique_id_filter.append('runtime.max_wallclock_time')
+
+unique_id_filter.append('parallelization.mpi_ranks')
+unique_id_filter.append('parallelization.cores_per_rank')
+unique_id_filter.append('parallelization.threads_per_rank')
+unique_id_filter.append('parallelization.dims')
+
 
 jg.unique_id_filter = unique_id_filter
 
@@ -362,7 +371,7 @@ if __name__ == "__main__":
             jg.reference_job = True
             jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
 
-            jg.gen_jobscript_directory('job_benchref_'+jg.getUniqueID())
+            jg.gen_jobscript_directory('job_benchref'+jg.getUniqueID())
             jg.reference_job = False
 
             jg.reference_job_unique_id = jg.job_unique_id
@@ -421,13 +430,14 @@ if __name__ == "__main__":
 
                     jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
 
-                    jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID())
+                    jg.gen_jobscript_directory('job_bench'+jg.getUniqueID())
 
                 else:
                     ###########################################################
                     # Special treatment for exponential time integrators
                     ###########################################################
 
+                    # We only support CI REXI here
                     jg.runtime.rexi_method = 'file'
                     for ci_max_imag, ci_max_real in product(params_ci_max_imag, params_ci_max_real):
 
@@ -471,7 +481,7 @@ if __name__ == "__main__":
                         if int(jg.runtime.max_simulation_time / jg.runtime.timestep_size) * jg.runtime.timestep_size != jg.runtime.max_simulation_time:
                             raise Exception("Simtime "+str(jg.runtime.max_simulation_time)+" not dividable without remainder by "+str(jg.runtime.timestep_size))
 
-                        jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID())
+                        jg.gen_jobscript_directory('job_bench'+jg.getUniqueID())
 
 
 
@@ -485,7 +495,7 @@ if __name__ == "__main__":
         # since they rely on using the same transformation plans in order to have no
         # load imbalances
         #
-        jg.runtime.reuse_plans = 1
+        jg.runtime.reuse_plans = "save"
 
         #
         # Create dummy scripts to be used for SHTNS script generation
@@ -533,7 +543,7 @@ if __name__ == "__main__":
                 jg.runtime.output_timestep_size = -1
                 jg.runtime.output_filename = "-"
 
-                jobdir = 'job_plan_'+jg.getUniqueID()
+                jobdir = 'job_plan'+jg.getUniqueID()
                 jg.gen_jobscript_directory(jobdir)
 
 

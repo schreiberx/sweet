@@ -8,12 +8,14 @@
 #ifndef SPHEREDATA_CONFIG_HPP_
 #define SPHEREDATA_CONFIG_HPP_
 
-
 #include <libmath/shtns_inc.hpp>
 #include <fftw3.h>
 #include <iostream>
 #include <sweet/sweetmath.hpp>
 #include <sweet/SWEETError.hpp>
+#include <sweet/FileOperations.hpp>
+#include <sweet/TransformationPlans.hpp>
+#include <stdexcept>
 
 #if SWEET_MPI
 #	include <mpi.h>
@@ -376,29 +378,70 @@ private:
 	}
 
 
-
 	int getFlags(
-			int i_reuse_spectral_transformation_plans
+			int i_reuse_spectral_transformation_plans,
+			int i_verbosity = 0
 	)
 	{
+		std::string cache_filename = "shtns_cfg";
+		std::string cache_filename_fftw = "shtns_cfg_fftw";
+
 		int flags = 0;
 
 		// lat or lon continue
 		flags |= SPHERE_DATA_GRID_LAYOUT;
 
-		if (i_reuse_spectral_transformation_plans == -1)
+		if (i_reuse_spectral_transformation_plans & TransformationPlans::QUICK)
 		{
+			/*
+			 * No special initialization, no caching
+			 */
 			flags |= sht_quick_init;
 		}
-		else
-		{
-			if (i_reuse_spectral_transformation_plans == 1)
-				flags |= SHT_LOAD_SAVE_CFG;
 
-			// TODO: Hope for shtns update to create error if plan doesn't exist
-			if (i_reuse_spectral_transformation_plans == 2)
+		if (i_reuse_spectral_transformation_plans & TransformationPlans::LOAD)
+		{
+			if (i_verbosity > 0)
+				std::cout << " + Trying to load plans" << std::endl;
+
+			bool plans_exist = true;
+			if (i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD)
+			{
+				if (!FileOperations::file_exists(cache_filename))
+				{
+					if ((i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD) == 0)
+						throw std::runtime_error(std::string("File '"+cache_filename+"' does not exist"));
+
+					plans_exist = false;
+				}
+
+				if (!FileOperations::file_exists(cache_filename_fftw))
+				{
+					if ((i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD) == 0)
+						throw std::runtime_error(std::string("File '"+cache_filename_fftw+"' does not exist"));
+
+					plans_exist = false;
+				}
+			}
+
+			if (!plans_exist)
+			{
+				if (i_verbosity > 0)
+					std::cout << " + WARNING: No existing plan found" << std::endl;
+			}
+			else
+			{
 				flags |= SHT_LOAD_SAVE_CFG;
+			}
 		}
+		else if (i_reuse_spectral_transformation_plans & TransformationPlans::SAVE)
+		{
+			if (i_verbosity > 0)
+				std::cout << " + Generating and storing SH transformation plans" << std::endl;
+
+			flags |= SHT_LOAD_SAVE_CFG;
+		}
+
 
 		return flags;
 	}
@@ -412,7 +455,8 @@ public:
 			int mmax,	// spectral
 			int nmax,
 
-			int i_reuse_transformation_plans //= false	///< Load or save plans to file (important for reproducibility)
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
+			int i_verbosity = 0
 	)
 	{
 		mmax--;
@@ -453,7 +497,7 @@ public:
 
 		shtns_set_grid(
 				shtns,
-				(shtns_type)getFlags(i_reuse_transformation_plans),
+				(shtns_type)getFlags(i_reuse_transformation_plans, i_verbosity),
 				shtns_error,
 				nlat,		// number of latitude grid points
 				nphi		// number of longitude grid points
@@ -478,7 +522,8 @@ public:
 			int i_nmax,		/// latitude modes
 			int *o_nphi,	/// physical resolution along longitude
 			int *o_nlat,	/// physical resolution along latitude
-			int i_reuse_transformation_plans //= false	///< load and/or save plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
+			int i_verbosity = 0
 	)
 	{
 		i_mmax--;
@@ -518,7 +563,7 @@ public:
 
 		shtns_set_grid_auto(
 				shtns,
-				(shtns_type)getFlags(i_reuse_transformation_plans),
+				(shtns_type)getFlags(i_reuse_transformation_plans, i_verbosity),
 				shtns_error,
 				2,		// use order 2
 				o_nlat,
@@ -543,7 +588,8 @@ public:
 	void setupAutoPhysicalSpace(
 			int i_mmax,		///< longitude modes
 			int i_nmax,		///< latitude modes
-			int i_reuse_transformation_plans //= false	///< load and/or save plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
+			int i_verbosity = 0
 	)
 	{
 		i_mmax--;
@@ -581,7 +627,7 @@ public:
 
 		shtns_set_grid_auto(
 				shtns,
-				(shtns_type)getFlags(i_reuse_transformation_plans),
+				(shtns_type)getFlags(i_reuse_transformation_plans, i_verbosity),
 				shtns_error,
 				2,		// use order 2
 				&physical_num_lat,
@@ -602,7 +648,8 @@ public:
 	void setupAuto(
 			int io_physical_res[2],
 			int io_spectral_modes[2],
-			int i_reuse_transformation_plans //= false
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE &i_reuse_transformation_plans,
+			int i_verbosity = 0
 	)
 	{
 		cleanup(false);
@@ -613,7 +660,8 @@ public:
 					io_physical_res[1],
 					io_spectral_modes[0],
 					io_spectral_modes[1],
-					i_reuse_transformation_plans
+					i_reuse_transformation_plans,
+					i_verbosity
 				);
 			return;
 		}
@@ -625,7 +673,8 @@ public:
 			setupAutoPhysicalSpace(
 					io_spectral_modes[0],
 					io_spectral_modes[1],
-					i_reuse_transformation_plans
+					i_reuse_transformation_plans,
+					i_verbosity
 				);
 
 			io_physical_res[0] = physical_num_lon;
@@ -642,12 +691,12 @@ public:
 
 
 
-
 	void setupAdditionalModes(
 			const SphereData_Config *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
-			int i_load_save_plan
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_plan_load_save,
+			int i_verbosity = 0
 	)
 	{
 		cleanup(false);
@@ -659,7 +708,8 @@ public:
 				i_sphereDataConfig->spectral_modes_n_max + i_additional_modes_latitude,
 				&physical_num_lon,
 				&physical_num_lat,
-				i_load_save_plan
+				i_plan_load_save,
+				i_verbosity
 		);
 	}
 

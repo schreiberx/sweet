@@ -17,6 +17,7 @@
 #include <sweet/sweetmath.hpp>
 #include <sweet/StringSplit.hpp>
 #include <sweet/SWEETError.hpp>
+#include <sweet/TransformationPlans.hpp>
 
 #if SWEET_THREADING
 #include <omp.h>
@@ -851,7 +852,6 @@ public:
 		std::string var[20];
 	} bogus;
 
-
 	/**
 	 * Miscellaneous variables
 	 */
@@ -877,7 +877,7 @@ public:
 		int use_nonlinear_only_visc = 0;
 
 		/// Load / Save plans for SHTNS (useful for reproducibility)
-		int reuse_spectral_transformation_plans = -1;
+		TransformationPlans::TRANSFORMATION_PLAN_CACHE reuse_spectral_transformation_plans = TransformationPlans::QUICK;
 
 		/*
 		 * Do a normal mode analysis, see
@@ -902,7 +902,8 @@ public:
 			std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 			std::cout << " + vis_id: " << vis_id << std::endl;
 			std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
-			std::cout << " + reuse_spectral_transformation_plans: " << reuse_spectral_transformation_plans << std::endl;
+			std::cout << " + reuse_spectral_transformation_plans: " << TransformationPlans::getStringFromEnum(reuse_spectral_transformation_plans) << std::endl;
+			std::cout << std::endl;
 			std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 			std::cout << " + comma_separated_tags: " << comma_separated_tags << std::endl;
 			std::cout << std::endl;
@@ -957,7 +958,7 @@ public:
 				return -1;
 
 			case 3:
-				reuse_spectral_transformation_plans = atoi(i_value);
+				reuse_spectral_transformation_plans = TransformationPlans::getEnumFromString(i_value);
 				return -1;
 
 			case 4:

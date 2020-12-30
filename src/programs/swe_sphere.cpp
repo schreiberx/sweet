@@ -10,6 +10,9 @@
 	#define SWEET_GUI 1
 #endif
 
+
+#include <stdexcept>
+
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 	#include <sweet/plane/PlaneDataConfig.hpp>
@@ -869,7 +872,7 @@ public:
 
 
 
-int main(int i_argc, char *i_argv[])
+int main_real(int i_argc, char *i_argv[])
 {
 	// Time counter
 	SimulationBenchmarkTimings::getInstance().main.start();
@@ -914,7 +917,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
 
 	int res_physical_nodealias[2] = {
 			2*simVars.disc.space_res_spectral[0],
@@ -924,7 +927,7 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations (nodealiasing)..." << std::endl;
 
-	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	sphereDataConfigInstance_nodealiasing.setupAuto(res_physical_nodealias, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
 
 
 #if SWEET_GUI
@@ -1090,3 +1093,20 @@ int main(int i_argc, char *i_argv[])
 
 	return 0;
 }
+
+
+
+
+int main(int i_argc, char *i_argv[])
+{
+	try
+	{
+		return main_real(i_argc, i_argv);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+
+}
+

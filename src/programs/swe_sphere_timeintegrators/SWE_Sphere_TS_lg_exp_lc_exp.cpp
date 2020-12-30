@@ -113,9 +113,7 @@ void SWE_Sphere_TS_lg_exp_lc_exp::setup(
 	timestepping_lg_exp.setup("phi0");
 
 	if (simVars.rexi.exp_method != "ss_taylor")
-	{
 		SWEETError("Use --exp-method=ss_taylor to use this time stepper");
-	}
 }
 
 

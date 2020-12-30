@@ -288,12 +288,12 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_REXIDIR'
                 else:
                     if self.rexi_method == "file":
-                        idstr += '_FILEREXI'
+                        idstr += '_FREXI'
                         if not 'runtime.rexi_params' in filter_list:
                             for i in self.rexi_files_coefficients:
                                 if i.unique_id_string == None:
                                     raise Exception("Unique ID String missing for REXI coefficients")
-                                idstr += "_"+i.unique_id_string
+                                idstr += "_"+i.unique_id_string.replace("REXI", "")
 
                     elif self.rexi_method == "terry":
                         idstr += '_TREXI'
@@ -359,8 +359,9 @@ class JobRuntimeOptions(InfoError):
             if self.space_use_spectral_basis_diffs != 1:
                 idstr += '_spd'+str(self.space_use_spectral_basis_diffs)
 
-        if self.reuse_plans != -1:
-            idstr += '_plans'+str(self.reuse_plans)
+        if not 'runtime.reuse_plans' in filter_list:
+            if self.reuse_plans != -1:
+                idstr += '_plans'+str(self.reuse_plans)
 
         if not 'runtime.comma_separated_tags' in filter_list:
             if self.comma_separated_tags != None:
@@ -377,6 +378,8 @@ class JobRuntimeOptions(InfoError):
 
     def getRuntimeOptions(self):
         retval = ''
+
+        self.cleanup_options()
 
         if self.gui != None:
             retval += ' -G '+str(self.gui)
@@ -551,8 +554,23 @@ class JobRuntimeOptions(InfoError):
         return retval
 
 
+    def cleanup_options(self):
+
+        # Cleanup old format of reuse plans to new one
+        if self.reuse_plans == -1:
+            self.reuse_plans == "quick"
+        elif self.reuse_plans == 0:
+            self.reuse_plans == "save"
+        elif self.reuse_plans == 1:
+            self.reuse_plans == "load"
+        elif self.reuse_plans == 2:
+            self.reuse_plans == "require_load"
+
+
     def get_jobscript_plan_exec_prefix(self, compile, runtime):
         content = ""
+
+        runtime.cleanup_options()
 
         plan_files = []
         if compile.plane_spectral_space == 'enable':
@@ -562,31 +580,27 @@ class JobRuntimeOptions(InfoError):
             plan_files.append('shtns_cfg')
             plan_files.append('shtns_cfg_fftw')
 
-        #
-        # Reusing plans assumes them to be stored in the folder one level up in the hierarchy
-        #
-        if runtime.reuse_plans == -1:
+
+        if runtime.reuse_plans == "quick":
             # Quick plan generation mode, nothing to do
             pass
 
-        elif runtime.reuse_plans == 0:
-            # Create plans, don't load/store them
-            pass
-
-        elif runtime.reuse_plans == 1:
+        elif "load" in runtime.reuse_plans:
             content += "\n"
             # Reuse plans if available
             # No error if plans don't exist
             for i in plan_files:
-                content += "cp ../"+i+" ./ 2>/dev/null\n"
-                
-        elif runtime.reuse_plans == 2:
-            content += "\n"
-            # Reuse and trigger error if they are not available
-            for i in plan_files:
-                content += "cp ../"+i+" ./ || exit 1\n"
+                if runtime.reuse_plans == "require_load":
+                    content += "cp ../"+i+" ./ || exit 1\n"
+                else:
+                    content += "cp ../"+i+" ./ 2>/dev/null\n"
+
+        elif runtime.reuse_plans == "save":
+            # Create plans, don't load/store them
+            pass
+
         else:
-            raise Exception("Invalid reuse_plans value"+str(jg.runtime.reuse_plans))
+            raise Exception("Invalid reuse_plans value '"+str(runtime.reuse_plans)+"'")
 
         return content
 
@@ -595,6 +609,8 @@ class JobRuntimeOptions(InfoError):
     def get_jobscript_plan_exec_suffix(self, compile, runtime):
         content = ""
 
+        runtime.cleanup_options()
+
         plan_files = []
         if compile.plane_spectral_space == 'enable':
             plan_files.append('sweet_fftw')
@@ -606,25 +622,23 @@ class JobRuntimeOptions(InfoError):
         #
         # Reusing plans assumes them to be stored in the folder one level up in the hierarchy
         #
-        if runtime.reuse_plans == -1:
+        if runtime.reuse_plans == "quick":
             # Quick plan generation mode, nothing to do
             pass
 
-        elif runtime.reuse_plans == 0:
-            # Create plans, don't load/store them
-            pass
-
-        elif runtime.reuse_plans == 1:
-            content += "\n"
+        elif "save" in runtime.reuse_plans:
             # Write back plans to main directory to reuse them
+            content += "\n"
             for i in plan_files:
                 content += "cp ./"+i+" ../ 2>/dev/null\n"
-                
-        elif runtime.reuse_plans == 2:
+            content += "\n"
+            pass
+
+        elif "load" in runtime.reuse_plans:
             pass
 
         else:
-            raise Exception("Invalid reuse_plans value"+str(jg.runtime.reuse_plans))
+            raise Exception("Invalid reuse_plans value '"+str(runtime.reuse_plans)+"'")
 
 
         return content

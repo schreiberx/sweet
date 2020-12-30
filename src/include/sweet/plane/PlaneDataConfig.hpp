@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <sweet/sweetmath.hpp>
 #include <sweet/SWEETError.hpp>
+#include <sweet/TransformationPlans.hpp>
 
 
 
@@ -79,12 +80,8 @@ public:
 	/// number of real valued data
 	std::size_t physical_array_data_number_of_elements;
 
-	/// reutilize spectral transformation plans (wisdom for FFTW plans)
-	/// -1: estimate plan as fast as possible
-	/// 0: no reutilization, always create new plan
-	/// 1: try to reutilize the plan
-	/// 2: try to reutilize the plan, fail if plan doesn't exist
-	int reuse_spectral_transformation_plans;
+	/// Different strategies to cope with transformation plans
+	TransformationPlans::TRANSFORMATION_PLAN_CACHE reuse_spectral_transformation_plans;
 
 
 public:
@@ -207,7 +204,7 @@ public:
 
 public:
 	static
-	bool loadWisdom(int i_reuse_spectral_transformation_plans)
+	bool loadWisdom(TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans)
 	{
 #if 1
 
@@ -234,7 +231,7 @@ public:
 		if (wisdom_plan_loaded == 0)
 		{
 			std::cerr << "Failed to load FFTW wisdom from file '" << wisdom_file << "'" << std::endl;
-			if (i_reuse_spectral_transformation_plans == 2)
+			if (i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD)
 			{
 				std::cerr << "IMPORTANT: Usage of FFTW wisdoms file enforced, hence exiting here" << std::endl;
 				exit(1);
@@ -313,7 +310,7 @@ public:
 
 private:
 	void setup_internal_data(
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		reuse_spectral_transformation_plans = i_reuse_spectral_transformation_plans;
@@ -403,7 +400,7 @@ private:
 		{
 			// load wisdom the first time
 			// this must be done after initializing the threading!
-			if (reuse_spectral_transformation_plans >= 1)
+			if (i_reuse_spectral_transformation_plans & TransformationPlans::LOAD)
 				loadWisdom(reuse_spectral_transformation_plans);
 		}
 
@@ -413,7 +410,8 @@ private:
 		// allow destroying input for faster transformations
 		//flags |= FFTW_DESTROY_INPUT;
 
-		if (reuse_spectral_transformation_plans == -1)
+
+		if (i_reuse_spectral_transformation_plans & TransformationPlans::QUICK)
 		{
 			flags |= FFTW_ESTIMATE;
 		}
@@ -430,9 +428,9 @@ private:
 			else
 				flags |= FFTW_PATIENT;
 
-			if (reuse_spectral_transformation_plans == 2)
+			if (i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD)
 			{
-				flags |= FFTW_WISDOM_ONLY;
+				flags |= FFTW_WISDOM_ONLY;	// only allow plans from wisdom
 			}
 		}
 
@@ -514,13 +512,13 @@ private:
 				data_spectral[i] = 1;	// dummy data
 
 			fftw_plan_forward =
-					fftw_plan_dft_r2c_2d(
-						physical_data_size[1],	// n0 = ny
-						physical_data_size[0],	// n1 = nx
-						data_physical,
-						(fftw_complex*)data_spectral,
-						flags | FFTW_PRESERVE_INPUT
-					);
+				fftw_plan_dft_r2c_2d(
+					physical_data_size[1],	// n0 = ny
+					physical_data_size[0],	// n1 = nx
+					data_physical,
+					(fftw_complex*)data_spectral,
+					flags | FFTW_PRESERVE_INPUT
+				);
 
 			if (fftw_plan_forward == nullptr)
 			{
@@ -528,7 +526,7 @@ private:
 				std::cerr << "Failed to get forward plan dft_r2c fftw" << std::endl;
 				std::cerr << "r2c preverse_input forward " << physical_res[0] << " x " << physical_res[1] << std::endl;
 				std::cerr << "FFTW-wisdom plan: rf" << physical_res[0] << "x" << physical_res[1] << std::endl;
-				if (i_reuse_spectral_transformation_plans == 2)
+				if (i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD)
 				{
 					std::cerr << "********************************************************************************" << std::endl;
 					std::cerr << "* IMPORTANT: Usage of FFTW wisdoms file enforced" << std::endl;
@@ -552,7 +550,7 @@ private:
 				std::cerr << "Failed to get backward plan dft_c2r fftw" << std::endl;
 				std::cerr << "r2c backward " << physical_res[0] << " x " << physical_res[1] << std::endl;
 				std::cerr << "fftw-wisdom plan: rb" << physical_res[0] << "x" << physical_res[1] << std::endl;
-				if (i_reuse_spectral_transformation_plans == 2)
+				if (i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD)
 				{
 					std::cerr << "********************************************************************************" << std::endl;
 					std::cerr << "* IMPORTANT: Usage of FFTW wisdoms file enforced" << std::endl;
@@ -767,7 +765,7 @@ public:
 			int i_spectral_modes_x,
 			int i_spectral_modes_y,
 
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		physical_res[0] = i_physical_res_x;
@@ -787,7 +785,7 @@ public:
 	void setupAuto(
 			int io_physical_res[2],
 			int io_spectral_modes[2],
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 
@@ -842,7 +840,7 @@ public:
 public:
 	void setupAutoSpectralSpace(
 			int i_physical_res[2],
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		setupAutoSpectralSpace(
@@ -858,7 +856,7 @@ public:
 	void setupAutoSpectralSpace(
 			int i_physical_res_x,
 			int i_physical_res_y,
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		physical_res[0] = i_physical_res_x;
@@ -889,7 +887,7 @@ public:
 			int i_physical_res_y,
 			int *o_spectral_res_x,
 			int *o_spectral_res_y,
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		setupAutoSpectralSpace(i_physical_res_x, i_physical_res_y, i_reuse_spectral_transformation_plans);
@@ -909,7 +907,7 @@ public:
 	void setupAutoPhysicalSpace(
 			int i_spectral_res_x,
 			int i_spectral_res_y,
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		spectral_modes[0] = i_spectral_res_x;
@@ -937,7 +935,7 @@ public:
 			int i_spectral_res_y,
 			int *o_physical_res_x,
 			int *o_physical_res_y,
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		setupAutoPhysicalSpace(
@@ -954,7 +952,7 @@ public:
 			PlaneDataConfig *i_planeConfig,
 			int i_additional_modes_x,
 			int i_additional_modes_y,
-			int i_reuse_spectral_transformation_plans
+			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
 		setupAutoPhysicalSpace(

@@ -150,8 +150,9 @@ class CIREXI:
 
         self.setup_shifted_circle(function_name, N, R, 0.0, half_shifted)
 
-        self.unique_id_string = "circ"
-        self.unique_id_string += "_"+function_name
+        self.unique_id_string = ""
+        #self.unique_id_string = "circ"
+        self.unique_id_string += function_name
         self.unique_id_string += "_"+str(N)
         self.unique_id_string += "_"+str(R)
 
@@ -192,11 +193,13 @@ class CIREXI:
 
         self.setup_shifted_circle(function_name, N, r, center, half_shifted=half_shifted)
 
-        self.unique_id_string = "limc"
+        self.unique_id_string = ""
+        #self.unique_id_string = "limc"
+        self.unique_id_string += function_name
         self.unique_id_string += "_"+str(N)
-        self.unique_id_string += "_"+function_name
         self.unique_id_string += "_"+str(lambda_max_real)
         self.unique_id_string += "_"+str(lambda_include_imag)
+        self.unique_id_string += "_h"+str(int(half_shifted))
 
 
 

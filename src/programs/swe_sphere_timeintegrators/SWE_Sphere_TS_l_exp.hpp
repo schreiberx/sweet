@@ -109,7 +109,9 @@ private:
 	 */
 	bool use_f_sphere;
 
-
+	/*
+	 * Preallocate the REXI matrices
+	 */
 	bool use_rexi_sphere_solver_preallocation;
 
 	/*

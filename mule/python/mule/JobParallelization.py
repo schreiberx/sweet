@@ -284,7 +284,7 @@ class JobParallelization(InfoError):
 
 
 
-    def getUniqueID(self, i_filter):
+    def getUniqueID(self, i_filters):
         """
         Return a unique ID including *all* string and number attributes of this class
 
@@ -292,20 +292,24 @@ class JobParallelization(InfoError):
             list of filter names to filter out from unique ID generation
         """
         retval = ''
-        if not 'parallelization' in i_filter:
+        if not 'parallelization' in i_filters:
 
-            # mpi ranks
-            retval += "_r"+str(self.num_ranks).zfill(5)
+            if not 'parallelization.mpi_ranks' in i_filters:
+                # mpi ranks
+                retval += "_r"+str(self.num_ranks).zfill(5)
 
-            # cores per rank
-            retval += "_cpr"+str(self.num_cores_per_rank).zfill(3)
+            if not 'parallelization.cores_per_rank' in i_filters:
+                # cores per rank
+                retval += "_cpr"+str(self.num_cores_per_rank).zfill(3)
 
-            # cores per rank
-            retval += "_tpr"+str(self.num_threads_per_rank).zfill(3)
+            if not 'parallelization.threads_per_rank' in i_filters:
+                # threads per rank
+                retval += "_tpr"+str(self.num_threads_per_rank).zfill(3)
 
-            retval += "_DIMS"
-            for i in self.pardims:
-                retval += '_'+i.dim_name+str(i.num_cores).zfill(3)
+            if not 'parallelization.dims' in i_filters:
+                retval += "_DIMS"
+                for i in self.pardims:
+                    retval += '_'+i.dim_name+str(i.num_cores).zfill(3)
 
             if retval != '':
                 retval = 'PAR'+retval
