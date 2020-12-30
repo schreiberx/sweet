@@ -88,8 +88,14 @@ def jobscript_get_header(jg : JobGeneration):
 #SBATCH -e """+jg.p_job_stderr_filepath+"""
 #SBATCH -D """+jg.p_job_dirpath+"""
 #SBATCH -J """+_job_id+"""
-#SBATCH --clusters=cm2
-#SBATCH --get-user-env 
+"""
+
+    if p.num_nodes <= 2:
+        content += "#SBATCH --clusters=cm2_tiny\n"
+    else:
+        content += "#SBATCH --clusters=cm2\n"
+
+    content += """#SBATCH --get-user-env 
 #SBATCH --nodes="""+str(p.num_nodes)+"""
 #SBATCH --ntasks-per-node="""+str(p.num_ranks_per_node)+"""
 # the above is a good match for the
@@ -102,10 +108,10 @@ def jobscript_get_header(jg : JobGeneration):
 
     if p.num_nodes <= 2:
     	content += "#SBATCH --partition=cm2_tiny\n"
-    	content += "#SBATCH --qos=cm2_tiny\n"
 
     elif p.num_nodes <= 24:
     	content += "#SBATCH --partition=cm2_std\n"
+    	content += "#SBATCH --qos=cm2_std\n"
 
     else:
     	content += "#SBATCH --partition=cm2_large\n"
@@ -193,6 +199,25 @@ def jobscript_get_exec_command(jg : JobGeneration):
 
     content = """
 
+# Output MPI version
+echo "**************************************************"
+echo "MPI Information"
+echo "**************************************************"
+echo "mpiexec --version"
+mpiexec --version 2>&1
+echo "**************************************************"
+
+
+# List loaded modules
+echo "**************************************************"
+echo "Loaded modules"
+echo "**************************************************"
+echo "module list"
+module list 2>&1
+echo "**************************************************"
+
+# Make sure that MULE library path is really known
+export LD_LIBRARY_PATH=\""""+sweet_ld_library_path+""":$LD_LIBRARY_PATH\"
 # mpiexec ... would be here without a line break
 EXEC=\""""+jg.compile.getProgramPath()+"""\"
 PARAMS=\""""+jg.runtime.getRuntimeOptions()+"""\"

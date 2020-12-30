@@ -9,15 +9,15 @@
 
 
 # Limit of max. jobs in queue
-LIMIT=50
+LIMIT=30
 if [[ ! -z "$MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION" ]]; then
 	LIMIT=$MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION
 fi
 
 # Seconds to wait before trying to enqueue more jobs
-SLEEP_SECS=50
+SLEEP_SECS=30
 
-echo_info "Using job limitation of ${MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION}"
+echo_info "Using job limitation of ${LIMIT}"
 
 
 JOBS=""
