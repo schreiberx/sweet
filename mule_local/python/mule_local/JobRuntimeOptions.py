@@ -558,13 +558,13 @@ class JobRuntimeOptions(InfoError):
 
         # Cleanup old format of reuse plans to new one
         if self.reuse_plans == -1:
-            self.reuse_plans == "quick"
+            self.reuse_plans = "quick"
         elif self.reuse_plans == 0:
-            self.reuse_plans == "save"
+            self.reuse_plans = "save"
         elif self.reuse_plans == 1:
-            self.reuse_plans == "load"
+            self.reuse_plans = "load"
         elif self.reuse_plans == 2:
-            self.reuse_plans == "require_load"
+            self.reuse_plans = "require_load"
 
 
     def get_jobscript_plan_exec_prefix(self, compile, runtime):
