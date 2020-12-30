@@ -18,7 +18,7 @@ DIR=$(dirname $0)
 if [[ "$1" = "nooversubscription" ]]; then
 
 	if [ "$2" = "close" ]; then
-		CORE_IDS=$(${MULE_ROOT}/platforms/bin/get_physical_cpus_close.sh)
+		CORE_IDS=$(${MULE_ROOT}/platforms/bin/get_physical_cpus_close.sh || exit 1)
 	elif [ "$2" = "spread" ]; then
 		echo "TODO: Not yet supported"
 		return

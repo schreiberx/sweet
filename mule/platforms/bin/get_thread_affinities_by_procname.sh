@@ -7,6 +7,6 @@ if [[ -z "$1" ]]; then
 	echo ""
 fi
 for PROCNAME in $@; do
-	PIDS=$(pgrep $@)
-	$(dirname $0)/get_thread_affinities_by_pid.sh $PIDS
+	PIDS=$(pgrep $@ || exit 1)
+	$(dirname $0)/get_thread_affinities_by_pid.sh $PIDS || exit 1
 done

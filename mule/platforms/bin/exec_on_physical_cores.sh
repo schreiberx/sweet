@@ -14,7 +14,7 @@ function join()
 }
 
 DIR=$(dirname $0)
-CORE_IDS=$(${DIR}/get_physical_cpus_close.sh)
+CORE_IDS=$(${DIR}/get_physical_cpus_close.sh || exit 1)
 
 LIST=$(join , $CORE_IDS)
 

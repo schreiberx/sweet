@@ -10,7 +10,7 @@ fi
 
 getmask()
 (
-	OUTPUT=$(taskset -p $1 2>&1)
+	OUTPUT=$(taskset -p $1 2>&1 || exit 1)
 	test $? -ne 0 && echo_error_exit "${OUTPUT}"
 
 	OUTPUT="${OUTPUT/*mask: /}"
