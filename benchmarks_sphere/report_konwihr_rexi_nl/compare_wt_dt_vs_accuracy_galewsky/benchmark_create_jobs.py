@@ -127,16 +127,8 @@ def estimateWallclockTime(jg):
     if jg.reference_job:
         return 2*24*60*60
 
+    return 60*60
 
-    """
-    Return an estimated wallclock time
-    """
-
-
-    if 'rexi' in jg.runtime.timestepping_method:
-        return 12*60*60
-
-    return 12*60*60
     # Give 2h for non-REXI runs
     #return 2*60*60
 
@@ -449,6 +441,17 @@ if __name__ == "__main__":
                         ptime.num_cores_per_rank = 1
                         ptime.num_threads_per_rank = 1
                         ptime.num_ranks = jg.runtime.rexi_files_coefficients[0].len()
+
+                        wallclock_multiplier = 1
+
+                        if True:
+                            max_ranks = 8
+                            new_num_ranks = min(ptime.num_ranks, max_ranks)
+                            wallclock_multiplier *= ptime.num_ranks/new_num_ranks
+                            print("NEW WALLCLOCK TIME: "+str(wallclock_multiplier))
+
+                            ptime.num_ranks = new_num_ranks
+
                         ptime.setup()
 
                         if jg.platform_resources.num_nodes == 1:
@@ -462,7 +465,7 @@ if __name__ == "__main__":
                             jg.parallelization.print()
 
                         # Generate only scripts with max number of cores
-                        jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
+                        jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)*wallclock_multiplier
 
                         if int(jg.runtime.max_simulation_time / jg.runtime.timestep_size) * jg.runtime.timestep_size != jg.runtime.max_simulation_time:
                             raise Exception("Simtime "+str(jg.runtime.max_simulation_time)+" not dividable without remainder by "+str(jg.runtime.timestep_size))
@@ -519,8 +522,8 @@ if __name__ == "__main__":
 
                 jg.setup_parallelization([pspace, ptime])
 
-                # Use 10 minutes per default to generate plans
-                jg.parallelization.max_wallclock_seconds = 60*10
+                # Use 12h per default to generate plans
+                jg.parallelization.max_wallclock_seconds = 60*60*12
 
                 # Set simtime to 0
                 jg.runtime.max_simulation_time = 0
