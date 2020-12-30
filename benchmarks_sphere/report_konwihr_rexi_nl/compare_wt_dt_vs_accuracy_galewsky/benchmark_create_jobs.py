@@ -71,6 +71,11 @@ unique_id_filter.append('compile')
 #unique_id_filter.append('timestep_size')
 #unique_id_filter.append('rexi_params')
 
+unique_id_filter.append('runtime.rexi_params_phi1')
+unique_id_filter.append('runtime.rexi_params_phi2')
+unique_id_filter.append('runtime.rexi_params_phi3')
+unique_id_filter.append('runtime.rexi_params_phi4')
+
 unique_id_filter.append('runtime.disc_space')
 unique_id_filter.append('runtime.reuse_plans')
 unique_id_filter.append('runtime.simparams')
@@ -78,10 +83,10 @@ unique_id_filter.append('runtime.benchmark')
 unique_id_filter.append('runtime.timestepping_order')
 unique_id_filter.append('runtime.max_wallclock_time')
 
-unique_id_filter.append('parallelization.mpi_ranks')
+#unique_id_filter.append('parallelization.mpi_ranks')
 unique_id_filter.append('parallelization.cores_per_rank')
 unique_id_filter.append('parallelization.threads_per_rank')
-unique_id_filter.append('parallelization.dims')
+#unique_id_filter.append('parallelization.dims')
 
 
 jg.unique_id_filter = unique_id_filter
