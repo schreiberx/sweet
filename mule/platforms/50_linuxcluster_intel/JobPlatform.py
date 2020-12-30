@@ -216,6 +216,11 @@ echo "module list"
 module list 2>&1
 echo "**************************************************"
 
+sweet_ld_library_path = os.getenv('MULE_LD_LIBRARY_PATH')
+
+if sweet_ld_library_path == None:
+    raise Exception("Environment variable MULE_LD_LIBRARY_PATH not found!")
+
 # Make sure that MULE library path is really known
 export LD_LIBRARY_PATH=\""""+sweet_ld_library_path+""":$LD_LIBRARY_PATH\"
 # mpiexec ... would be here without a line break
