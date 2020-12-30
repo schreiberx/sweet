@@ -32,11 +32,11 @@ if True:
     jg.setup_parallelization(pspace)
 
     # Create plans
-    jg.runtime.reuse_plans = 1
+    jg.runtime.reuse_plans = "save"
     jg.gen_jobscript_directory()
 
     # Reuse plans
-    jg.runtime.reuse_plans = 2
+    jg.runtime.reuse_plans = "require_load"
     jg.gen_jobscript_directory()
 
 
@@ -52,17 +52,29 @@ if True:
     	jg.setup_parallelization(pspace)
 
     	# Create plans
-    	jg.runtime.reuse_plans = 1
+    	jg.runtime.reuse_plans = "save"
     	jg.gen_jobscript_directory()
 
     	# Reuse plans
-    	jg.runtime.reuse_plans = 2
+    	jg.runtime.reuse_plans = "require_load"
     	jg.gen_jobscript_directory()
 
 
 
-exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
-if exitcode != 0:
-    sys.exit(exitcode)
+import glob
+
+print("Running jobs...")
+
+for i in glob.glob("job_bench_*_planssave_*"):
+    print("Executing: "+i)
+    exitcode = exec_program(['mule.benchmark.jobs_run_directly', i], catch_output=False)
+    if exitcode != 0:
+        sys.exit(exitcode)
+
+for i in glob.glob("job_bench_*_plansrequire_load_*"):
+    print("Executing: "+i)
+    exitcode = exec_program(['mule.benchmark.jobs_run_directly', i], catch_output=False)
+    if exitcode != 0:
+        sys.exit(exitcode)
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)

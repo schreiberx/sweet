@@ -4,8 +4,12 @@
 def exec_program(progparams, shell=True, catch_output=True):
 
     if catch_output:
+        import subprocess
         from subprocess import Popen, PIPE
-        p = Popen(progparams, stdout=PIPE, stderr=PIPE, shell=shell)
+        if False:
+            p = Popen(progparams, stdout=PIPE, stderr=PIPE, shell=shell)
+        else:
+            p = subprocess.run(progparams, stdout=PIPE, stderr=PIPE, shell=shell)
         output, error = p.communicate()
 
         error = error.decode()
