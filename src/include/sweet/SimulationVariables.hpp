@@ -401,6 +401,12 @@ public:
 
 
 
+		/*
+		 * This method is called to parse a particular
+		 * long option related to some ID.
+		 *
+		 * \return: -1 if the option has been processed
+		 */
 		int setup_longOptionValue(
 				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
 				const char *i_value		///< Value in string format
@@ -577,6 +583,13 @@ public:
 	        next_free_program_option++;
 		}
 
+
+		/*
+		 * This method is called to parse a particular
+		 * long option related to some ID.
+		 *
+		 * \return: -1 if the option has been processed
+		 */
 		int setup_longOptionValue(
 				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
 				const char *i_value		///< Value in string format
@@ -586,7 +599,7 @@ public:
 			{
 			case 0:
 				split3double(i_value, &advection_velocity[0], &advection_velocity[1], &advection_velocity[2]);
-				return 0;
+				return -1;
 			}
 
 			return 1;
@@ -780,6 +793,14 @@ public:
 	        next_free_program_option++;
 		}
 
+
+
+		/*
+		 * This method is called to parse a particular
+		 * long option related to some ID.
+		 *
+		 * \return: -1 if the option has been processed
+		 */
 		int setup_longOptionValue(
 				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
 				const char *i_value		///< Value in string format
@@ -937,6 +958,13 @@ public:
 		}
 
 
+
+		/*
+		 * This method is called to parse a particular
+		 * long option related to some ID.
+		 *
+		 * \return: -1 if the option has been processed
+		 */
 		int setup_longOptionValue(
 				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
 				const char *i_value		///< Value in string format
@@ -1010,6 +1038,13 @@ public:
 		}
 
 
+
+		/*
+		 * This method is called to parse a particular
+		 * long option related to some ID.
+		 *
+		 * \return: -1 if the option has been processed
+		 */
 		int setup_longOptionValue(
 				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
 				const char *i_value		///< Value in string format
@@ -1091,6 +1126,13 @@ public:
 		}
 
 
+
+		/*
+		 * This method is called to parse a particular
+		 * long option related to some ID.
+		 *
+		 * \return: -1 if the option has been processed
+		 */
 		int setup_longOptionValue(
 				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
 				const char *i_value		///< Value in string format
@@ -1334,7 +1376,7 @@ public:
 
 		int next_free_program_option = 0;
 
-        	int benchmark_start_option_index = next_free_program_option;
+        int benchmark_start_option_index = next_free_program_option;
 		benchmark.setup_longOptionsList(long_options, next_free_program_option);
 
         int sim_start_option_index = next_free_program_option;
@@ -1411,7 +1453,7 @@ public:
 			}
         }
 
-		// index into long_options for determined argument
+		// index into long_options for argument to be determined
 		int option_index = 0;
 
 		int opt;
@@ -1438,7 +1480,7 @@ public:
 			}
 
 			/*
-			 * LONG OPTIONS
+			 * LONG OPTIONS?
 			 */
 			if (opt >= 256)
 			{
@@ -1538,6 +1580,9 @@ public:
 					if (c != next_free_program_option-1)
 					{
 						outputConfig();
+						std::cout << "TESTTEST" << std::endl;
+						std::cout << (int)c << std::endl;
+						std::cout << (int)next_free_program_option-1 << std::endl;
 						SWEETError("Inconsistent processing of arguments");
 					}
 
@@ -1555,7 +1600,6 @@ public:
 						std::cout << std::endl;
 						exit(1);
 					}
-
 					bogus.var[i-next_free_program_option] = optarg;
 				}
 				continue;

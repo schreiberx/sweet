@@ -898,7 +898,7 @@ int main_real(int i_argc, char *i_argv[])
 
 #endif
 
-	//input parameter names (specific ones for this program)
+	// input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
 			nullptr
 	};
@@ -910,9 +910,7 @@ int main_real(int i_argc, char *i_argv[])
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
-	{
 		return -1;
-	}
 
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
