@@ -7,14 +7,7 @@ import math
 from itertools import product
 
 # REXI
-from mule_local.rexi.REXICoefficients import *
-from mule_local.rexi.trexi.TREXI import *
-from mule_local.rexi.cirexi.CIREXI import *
-from mule_local.rexi.brexi.BREXI import *
-
-efloat_mode = "float"
-#efloat_mode = "mpfloat"
-
+import rexi_benchmarks
 
 from mule_local.JobGeneration import *
 from mule.JobParallelization import *
@@ -442,32 +435,20 @@ if __name__ == "__main__":
                     # Special treatment for exponential time integrators
                     ###########################################################
 
-                    # We only support CI REXI here
-                    jg.runtime.rexi_method = 'file'
-                    for ci_max_imag, ci_max_real in product(params_ci_max_imag, params_ci_max_real):
+                    #
+                    # Load all variants of REXI which should be tested
+                    #
+                    rb = rexi_benchmarks.get_rexi_benchmarks(jg)
 
-                        if params_ci_max_imag_scaling_relative_to_timestep_size != None:
-                            ci_max_imag *= (jg.runtime.timestep_size/params_ci_max_imag_scaling_relative_to_timestep_size)
-
-                        # "phi0"
-                        cirexi = CIREXI(efloat_mode = efloat_mode)
-                        coeffs_phi0 = cirexi.setup(function_name="phi0", N=fun_params_ci_N(ci_max_real, ci_max_imag), lambda_include_imag=ci_max_imag, lambda_max_real=ci_max_real).toFloat()
-
-                        # "phi1"
-                        cirexi = CIREXI(efloat_mode = efloat_mode)
-                        coeffs_phi1 = cirexi.setup(function_name="phi1", N=fun_params_ci_N(ci_max_real, ci_max_imag), lambda_include_imag=ci_max_imag, lambda_max_real=ci_max_real).toFloat()
-
-                        # "phi2"
-                        cirexi = CIREXI(efloat_mode = efloat_mode)
-                        coeffs_phi2 = cirexi.setup(function_name="phi2", N=fun_params_ci_N(ci_max_real, ci_max_imag), lambda_include_imag=ci_max_imag, lambda_max_real=ci_max_real).toFloat()
-
-                        jg.runtime.rexi_files_coefficients = [coeffs_phi0, coeffs_phi1, coeffs_phi2]
+                    for r in rb:
+                        jg.runtime.rexi_method = r['rexi_method']
+                        jg.runtime.rexi_files_coefficients = r['rexi_files_coefficients']
 
                         # Update TIME parallelization
                         ptime = JobParallelizationDimOptions('time')
                         ptime.num_cores_per_rank = 1
                         ptime.num_threads_per_rank = 1
-                        ptime.num_ranks = coeffs_phi0.len()
+                        ptime.num_ranks = jg.runtime.rexi_files_coefficients[0].len()
                         ptime.setup()
 
                         if jg.platform_resources.num_nodes == 1:
