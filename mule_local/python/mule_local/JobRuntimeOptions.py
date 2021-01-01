@@ -288,16 +288,17 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_REXIDIRECT'
                 else:
                     if self.rexi_method == "file":
-                        idstr += '_FREXI'
-                        if not 'runtime.rexi_params' in filter_list:
+                        if len(self.rexi_files_coefficients) != 0:
+                            idstr += '_FREXI'
+                            if not 'runtime.rexi_params' in filter_list:
 
-                            for i in range(len(self.rexi_files_coefficients)):
-                                r = self.rexi_files_coefficients[i]
-                                if r.unique_id_string == None:
-                                    raise Exception("Unique ID String missing for REXI coefficients")
+                                for i in range(len(self.rexi_files_coefficients)):
+                                    r = self.rexi_files_coefficients[i]
+                                    if r.unique_id_string == None:
+                                        raise Exception("Unique ID String missing for REXI coefficients")
 
-                                if not 'runtime.rexi_params_phi'+str(i) in filter_list:
-                                    idstr += "_"+r.unique_id_string.replace("REXI", "")
+                                    if not 'runtime.rexi_params_phi'+str(i) in filter_list:
+                                        idstr += "_"+r.unique_id_string.replace("REXI", "")
 
 
                     elif self.rexi_method == "terry":

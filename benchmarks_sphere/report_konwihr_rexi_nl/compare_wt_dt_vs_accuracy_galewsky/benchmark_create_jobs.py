@@ -369,7 +369,7 @@ if __name__ == "__main__":
             jg.reference_job = True
             jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
 
-            jg.gen_jobscript_directory('job_benchref'+jg.getUniqueID())
+            jg.gen_jobscript_directory('job_benchref_'+jg.getUniqueID())
             jg.reference_job = False
 
             jg.reference_job_unique_id = jg.job_unique_id
@@ -428,7 +428,7 @@ if __name__ == "__main__":
 
                     jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
 
-                    jg.gen_jobscript_directory('job_bench'+jg.getUniqueID())
+                    jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID())
 
                 else:
                     ###########################################################

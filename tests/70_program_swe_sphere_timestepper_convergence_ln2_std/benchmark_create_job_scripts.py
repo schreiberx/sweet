@@ -67,6 +67,7 @@ rexi_thread_par = True
 
 
 jg.runtime.f_sphere = 0
+jg.compile.mode = "release"
 
 #jg.runtime.gravitation= 1
 #jg.runtime.sphere_rotating_coriolis_omega = 1
@@ -76,7 +77,11 @@ jg.runtime.f_sphere = 0
 jg.runtime.viscosity = 0.0
 
 
-jg.unique_id_filter = ['compile', 'parallelization']
+jg.unique_id_filter = [
+        'compile',
+        'parallelization',
+        'runtime.benchmark',
+    ]
 
 
 #####################################################
@@ -101,15 +106,6 @@ ts_methods = [
 
             'lg_irk_lc_n_erk_ver0',
             'lg_irk_lc_n_erk_ver1',
-
-            'l_exp_n_erk_ver0',
-            'l_exp_n_erk_ver1',
-
-            'lg_exp_lc_n_erk_ver0',
-            'lg_exp_lc_n_erk_ver1',
-
-            'l_exp_n_etdrk',
-            'lg_exp_lc_n_etdrk',
 
     ]
 

@@ -15,10 +15,17 @@ jg.compile.unit_test="test_sphere_sph_solver_real_and_complex"
 
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
-jg.compile.mode = "debug"
+jg.compile.mode = "release"
 
 jg.runtime.sphere_radius = 1
 jg.runtime.sphere_rotating_coriolis_omega = 1
+
+unique_id_filter = []
+unique_id_filter.append('compile')
+
+
+jg.unique_id_filter = unique_id_filter
+
 
 #params_runtime_mode_res = [64, 128, 256, 512, 1024, 2048]
 params_runtime_mode_res = [64, 128, 256, 512, 1024]
@@ -46,3 +53,4 @@ if exitcode != 0:
 print("Benchmarks successfully finished")
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
+

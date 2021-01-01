@@ -477,21 +477,24 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
             s = self.compile.getUniqueID(unique_id_filter)
 
             if s != '':
-                unique_id += '_'
+                if unique_id != '':
+                    unique_id += '_'
                 unique_id += s
 
         # Then runtime
         if 'runtime' not in unique_id_filter:
             s = self.runtime.getUniqueID(self.compile, unique_id_filter)
             if s != '':
-                unique_id += '_'
+                if unique_id != '':
+                    unique_id += '_'
                 unique_id += s
 
         # At the end the parallelization
         if 'parallelization' not in unique_id_filter:
             s = self.parallelization.getUniqueID(unique_id_filter)
             if s != '':
-                unique_id += '_'
+                if unique_id != '':
+                    unique_id += '_'
                 unique_id += s
 
         return unique_id
