@@ -142,7 +142,7 @@ def get_rexi_benchmarks(jg):
             coeffs_phi0 = pcirexi.setup_pcirexi(contour=contour,
                                                 interpolation_settings=i_s,
                                                 quadrature_settings=q_s)
-            coeffs_phi0.unique_id = "LR_REXI(width=23, height=" + str(2 * max_imag + 20) + ", center=-1, terms=128"
+            coeffs_phi0.unique_id = "LR_REXI(width=23, height=" + str(2 * max_imag + 20) + ", center=-1, terms=128)"
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
 
             # Add to list of REXI methods
@@ -172,7 +172,7 @@ def get_rexi_benchmarks(jg):
                                                 interpolation_settings=i_s,
                                                 quadrature_settings=q_s)
             coeffs_phi0.unique_id = "Bean_REXI(width=16, height=" + str(
-                max_imag / 30 * 35) + ", center=-2, terms=" + str(max(64, int(75 * max_imag / 30)))
+                max_imag / 30 * 35) + ", center=-2, terms=" + str(max(64, int(75 * max_imag / 30))) + ")"
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
 
             # Add to list of REXI methods
