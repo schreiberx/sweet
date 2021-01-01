@@ -50,7 +50,6 @@ class CauchyIntegrator:
                 print("Ig: lobatto")
                 base_nodes, weights_original = g_c.gauss_lobatto(terms_number, 20)
             elif integral.startswith('legendre'):
-                print("Ig: legendre")
                 base_nodes, weights_original = g_c.gauss_legendre(terms_number, 20)
             elif integral.startswith('chebychev'):
                 raise
@@ -60,7 +59,6 @@ class CauchyIntegrator:
             weights = [float(w) / 2 for w in weights_original]
             base_nodes = [float(b) / 2 + 0.5 for b in base_nodes]
         elif integral.startswith('trapeze'):
-            print("Ig: trapeze")
             if terms_number == 0:
                 base_nodes = []
                 weights = []
@@ -72,7 +70,6 @@ class CauchyIntegrator:
                     devisor = (2 * (terms_number - 1))
                     weights = [1 / devisor] + [2 / devisor] * (terms_number - 2) + [1 / devisor]
         elif integral.startswith('midpoint'):
-            print("Ig: midpoint")
             if terms_number == 0:
                 base_nodes = []
                 weights = []
@@ -189,4 +186,3 @@ class CauchyIntegrator:
                     max_i_so_far = i
                     max_value = current_length
             self.terms_section_list[max_i_so_far] += 1
-        print(self.terms_section_list)
