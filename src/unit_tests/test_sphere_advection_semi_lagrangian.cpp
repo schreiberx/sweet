@@ -238,7 +238,7 @@ int main(int i_argc, char *i_argv[])
 			V_lat_D.set_all(2.0);
 
 			ScalarDataArray V_x_D, V_y_D, V_z_D;
-			SWEETMath::velocity_latlon_to_cartesian__array(
+			SWEETVectorMath::velocity_latlon_to_cartesian__array(
 					sl.pos_lon_A,
 					sl.pos_lat_A,
 					V_lon_D,
@@ -249,7 +249,7 @@ int main(int i_argc, char *i_argv[])
 				);
 
 			ScalarDataArray V_lon_tmp, V_lat_tmp;
-			SWEETMath::velocity_cartesian_to_latlon__array(
+			SWEETVectorMath::velocity_cartesian_to_latlon__array(
 					sl.pos_lon_A,
 					sl.pos_lat_A,
 					V_x_D,

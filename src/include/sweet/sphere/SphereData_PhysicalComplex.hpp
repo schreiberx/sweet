@@ -17,7 +17,7 @@
 #include <utility>
 #include <functional>
 
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>

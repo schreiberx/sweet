@@ -9,7 +9,7 @@
 
 
 #include <stdlib.h>
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 

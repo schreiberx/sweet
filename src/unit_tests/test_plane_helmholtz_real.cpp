@@ -122,23 +122,23 @@ int main(int i_argc, char *i_argv[])
 					// u and v to reconstruct
 					u_ana.p_physical_set(
 						j, i,
-						sin(2*M_PIl*x)*cos(2*M_PIl*y)
+						sin(2*M_PI*x)*cos(2*M_PI*y)
 					);
 
 					v_ana.p_physical_set(
 						j, i,
-						cos(2*M_PIl*x)*sin(2*M_PIl*y)
+						cos(2*M_PI*x)*sin(2*M_PI*y)
 					);
 
 					// sources for the right hand side to fulfill the equation system for given u and v
 					f.p_physical_set(
 						j, i,
-						(1+8*M_PIl*M_PIl)*sin(2*M_PIl*x)*cos(2*M_PIl*y)-2*M_PIl*cos(2*M_PIl*x)*cos(2*M_PIl*y)+2*M_PIl*sin(2*M_PIl*x)*sin(2*M_PIl*y)
+						(1+8*M_PI*M_PI)*sin(2*M_PI*x)*cos(2*M_PI*y)-2*M_PI*cos(2*M_PI*x)*cos(2*M_PI*y)+2*M_PI*sin(2*M_PI*x)*sin(2*M_PI*y)
 					);
 
 					g.p_physical_set(
 						j, i,
-						(1+8*M_PIl*M_PIl)*cos(2*M_PIl*x)*sin(2*M_PIl*y)-2*M_PIl*cos(2*M_PIl*x)*cos(2*M_PIl*y)+2*M_PIl*sin(2*M_PIl*x)*sin(2*M_PIl*y)
+						(1+8*M_PI*M_PI)*cos(2*M_PI*x)*sin(2*M_PI*y)-2*M_PI*cos(2*M_PI*x)*cos(2*M_PI*y)+2*M_PI*sin(2*M_PI*x)*sin(2*M_PI*y)
 					);
 				}
 			}

@@ -18,7 +18,7 @@
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 
 #include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>

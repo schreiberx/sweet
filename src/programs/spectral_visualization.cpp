@@ -212,8 +212,8 @@ public:
 		double max = 1.0;
 		double shift = stopwatch.getTimeSinceStart()*0.1;
 
-		double c = cos(2.0*M_PIl*shift);
-		double s = sin(2.0*M_PIl*shift);
+		double c = cos(2.0*M_PI*shift);
+		double s = sin(2.0*M_PI*shift);
 		c *= max;
 		s *= max;
 

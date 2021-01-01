@@ -428,7 +428,7 @@ public:
 			{
 				for (int i = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[0][0][1]; i++)
 				{
-					std::complex<double> data(0.0, ((double)i*2.0*M_PIl/(double)i_domain_size[0]));
+					std::complex<double> data(0.0, ((double)i*2.0*M_PI/(double)i_domain_size[0]));
 					diff_c_x.p_spectral_set(j, i, data);
 				}
 			}
@@ -437,7 +437,7 @@ public:
 			{
 				for (int i = planeDataConfig->spectral_data_iteration_ranges[1][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[1][0][1]; i++)
 				{
-					std::complex<double> data(0.0, ((double)i*2.0*M_PIl/(double)i_domain_size[0]));
+					std::complex<double> data(0.0, ((double)i*2.0*M_PI/(double)i_domain_size[0]));
 					diff_c_x.p_spectral_set(j, i, data);
 				}
 			}
@@ -451,7 +451,7 @@ public:
 			{
 				for (int i = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[0][0][1]; i++)
 				{
-					std::complex<double> data(0, (double)((double)j*2.0*M_PIl/(double)i_domain_size[1]));
+					std::complex<double> data(0, (double)((double)j*2.0*M_PI/(double)i_domain_size[1]));
 					diff_c_y.p_spectral_set(j, i, data);
 				}
 			}
@@ -461,7 +461,7 @@ public:
 			{
 				for (int i = planeDataConfig->spectral_data_iteration_ranges[1][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[1][0][1]; i++)
 				{
-					std::complex<double> data(0, -(double)((double)(planeDataConfig->spectral_data_size[1]-j)*2.0*M_PIl/(double)i_domain_size[1]));
+					std::complex<double> data(0, -(double)((double)(planeDataConfig->spectral_data_size[1]-j)*2.0*M_PI/(double)i_domain_size[1]));
 					diff_c_y.p_spectral_set(j, i, data);
 				}
 			}

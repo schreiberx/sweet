@@ -8,7 +8,7 @@
 #define SRC_INCLUDE_REXI_REXI_TERRY_EXPONENTIALAPPROXIMATION_HPP_
 
 #include <libmath/DQStuff.hpp>
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #if SWEET_QUADMATH
 	#include <quadmath.h>
 #endif

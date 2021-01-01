@@ -7,7 +7,7 @@
 #ifndef SRC_INCLUDE_REXI_REXI_TERRY_GAUSSIANAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_REXI_TERRY_GAUSSIANAPPROXIMATION_HPP_
 
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <libmath/DQStuff.hpp>
 #include <sweet/SWEETError.hpp>
 #include <iostream>

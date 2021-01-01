@@ -19,9 +19,8 @@
 #include <limits>
 #include <utility>
 #include <functional>
-#include <cmath>
 
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/parmemcpy.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/openmp_helper.hpp>

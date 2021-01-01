@@ -128,7 +128,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_3d(
 	 * Compute departure position
 	 */
 	ScalarDataArray P_x_D, P_y_D, P_z_D;
-	SWEETMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
+	SWEETVectorMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
 
 	ScalarDataArray	&P_x_A = semiLagrangian.pos_x_A;
 	ScalarDataArray	&P_y_A = semiLagrangian.pos_y_A;
@@ -138,35 +138,35 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_3d(
 	 * Compute rotation angle based on departure and arrival position
 	 */
 	ScalarDataArray rotation_angle_ =
-			SWEETMath::dot_prod(
+			SWEETVectorMath::dot_prod(
 				P_x_D, P_y_D, P_z_D,
 				P_x_A, P_y_A, P_z_A
 			);
 
 	// Can be slightly larger than 1 due to round-off issues, leading to NaN, hence this hack
-	rotation_angle_ = SWEETMath::min(rotation_angle_, 1.0);
+	rotation_angle_ = SWEETVectorMath::min(rotation_angle_, 1.0);
 
 	/*
 	 * Compute rotation angle
 	 */
-	ScalarDataArray rotation_angle = SWEETMath::arccos(rotation_angle_);
+	ScalarDataArray rotation_angle = SWEETVectorMath::arccos(rotation_angle_);
 
 	/*
 	 * Compute Rotation axis and normalize
 	 */
 	ScalarDataArray rot_x, rot_y, rot_z;
-	SWEETMath::cross_prod(
+	SWEETVectorMath::cross_prod(
 			P_x_D, P_y_D, P_z_D,
 			P_x_A, P_y_A, P_z_A,
 			rot_x, rot_y, rot_z
 		);
-	SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
+	SWEETVectorMath::normalize_with_threshold(rot_x, rot_y, rot_z);
 
 	/*
 	 * Rotate vector (using transpose of rotation matrix without translation!)
 	 */
 	ScalarDataArray V_u_A, V_v_A, V_w_A;
-	SWEETMath::point_rotate_3d_normalized_rotation_axis__array(
+	SWEETVectorMath::point_rotate_3d_normalized_rotation_axis__array(
 			V_u_D, V_v_D, V_w_D,
 			rotation_angle,
 			rot_x, rot_y, rot_z,
@@ -243,7 +243,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 	 * Convert from UV Velocity space to 3D Cartesian space
 	 */
 	ScalarDataArray V_x_D, V_y_D, V_z_D;
-	SWEETMath::velocity_latlon_to_cartesian__array(
+	SWEETVectorMath::velocity_latlon_to_cartesian__array(
 			i_pos_lon_D,
 			i_pos_lat_D,
 			V_lon_D,
@@ -267,7 +267,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 	 * Compute departure position
 	 */
 	ScalarDataArray P_x_D, P_y_D, P_z_D;
-	SWEETMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
+	SWEETVectorMath::point_latlon_to_cartesian__array(i_pos_lon_D, i_pos_lat_D, P_x_D, P_y_D, P_z_D);
 
 	ScalarDataArray	&P_x_A = semiLagrangian.pos_x_A;
 	ScalarDataArray	&P_y_A = semiLagrangian.pos_y_A;
@@ -277,36 +277,36 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 	 * Compute rotation angle based on departure and arrival position
 	 */
 	ScalarDataArray rotation_angle_ =
-			SWEETMath::dot_prod(
+			SWEETVectorMath::dot_prod(
 				P_x_D, P_y_D, P_z_D,
 				P_x_A, P_y_A, P_z_A
 			);
 
 	// Can be slightly larger than 1 due to round-off issues, leading to NaN, hence this hack
-	rotation_angle_ = SWEETMath::min(rotation_angle_, 1.0);
+	rotation_angle_ = SWEETVectorMath::min(rotation_angle_, 1.0);
 
 	/*
 	 * Compute rotation angle
 	 */
-	ScalarDataArray rotation_angle = SWEETMath::arccos(rotation_angle_);
+	ScalarDataArray rotation_angle = SWEETVectorMath::arccos(rotation_angle_);
 
 	/*
 	 * Compute Rotation axis and normalize
 	 */
 	ScalarDataArray rot_x, rot_y, rot_z;
-	SWEETMath::cross_prod(
+	SWEETVectorMath::cross_prod(
 			P_x_D, P_y_D, P_z_D,
 			P_x_A, P_y_A, P_z_A,
 			rot_x, rot_y, rot_z
 		);
-	SWEETMath::normalize_with_threshold(rot_x, rot_y, rot_z);
+	SWEETVectorMath::normalize_with_threshold(rot_x, rot_y, rot_z);
 
 
 	/*
 	 * Rotate vector
 	 */
 	ScalarDataArray V_x_A, V_y_A, V_z_A;
-	SWEETMath::point_rotate_3d_normalized_rotation_axis__array(
+	SWEETVectorMath::point_rotate_3d_normalized_rotation_axis__array(
 			V_x_D, V_y_D, V_z_D,
 			rotation_angle,
 			rot_x, rot_y, rot_z,
@@ -330,7 +330,7 @@ void SphereAdvection_TS_na_sl::interpolate_departure_point_vec_uv(
 	 * Return velocity in lat/lon space
 	 */
 	ScalarDataArray V_lon_A, V_lat_A;
-	SWEETMath::velocity_cartesian_to_latlon__array(
+	SWEETVectorMath::velocity_cartesian_to_latlon__array(
 			semiLagrangian.pos_lon_A,
 			semiLagrangian.pos_lat_A,
 			V_x_A,

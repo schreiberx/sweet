@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 #include <limits>
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/StringSplit.hpp>
 #include <sweet/SWEETError.hpp>
 #include <sweet/TransformationPlans.hpp>

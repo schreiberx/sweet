@@ -170,8 +170,8 @@ int main(int i_argc, char *i_argv[])
 						freq_y = ((double)k * (double)nyq) / 4.0;
 					}
 
-					double fx = 2.0 * freq_x * M_PIl;
-					double fy = 2.0 * freq_y * M_PIl;
+					double fx = 2.0 * freq_x * M_PI;
+					double fy = 2.0 * freq_y * M_PI;
 
 					for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 					{
@@ -208,7 +208,7 @@ int main(int i_argc, char *i_argv[])
 					}
 
 					//This assumes freq_x = freq_y
-					//h_bilaplace=8.0*freq_x*freq_x*M_PIl*M_PIl*8.0*freq_x*freq_x*M_PIl*M_PIl*h;
+					//h_bilaplace=8.0*freq_x*freq_x*M_PI*M_PI*8.0*freq_x*freq_x*M_PI*M_PI*h;
 
 					// Normalization of errors
 					double norm_fx = fx / simVars.sim.plane_domain_size[0];
@@ -429,16 +429,16 @@ int main(int i_argc, char *i_argv[])
 						{
 							double x = (double)i * dx;
 							double y = (double)j * dy;
-							h1.p_physical_set(j, i, cos(2.0 * freq_1 * M_PIl * x) * cos(2.0 * freq_1 * M_PIl * y));
-							h2.p_physical_set(j, i, cos(2.0 * freq_2 * M_PIl * x) * cos(2.0 * freq_2 * M_PIl * y));
+							h1.p_physical_set(j, i, cos(2.0 * freq_1 * M_PI * x) * cos(2.0 * freq_1 * M_PI * y));
+							h2.p_physical_set(j, i, cos(2.0 * freq_2 * M_PI * x) * cos(2.0 * freq_2 * M_PI * y));
 
 							/*
 							 * Analytical solution
 							 * Doesn't care about resolution
 							 */
 							h12_analytical.p_physical_set(j, i,
-									0.5 * (cos(2.0 * (freq_sub) * M_PIl * x) + cos(2.0 * (freq_sum) * M_PIl * x))
-									* 0.5 * (cos(2.0 * (freq_sub) * M_PIl * y) + cos(2.0 * (freq_sum) * M_PIl * y)));
+									0.5 * (cos(2.0 * (freq_sub) * M_PI * x) + cos(2.0 * (freq_sum) * M_PI * x))
+									* 0.5 * (cos(2.0 * (freq_sub) * M_PI * y) + cos(2.0 * (freq_sum) * M_PI * y)));
 
 							/*
 							 * Solution without aliasing.
@@ -447,12 +447,12 @@ int main(int i_argc, char *i_argv[])
 							 * "trunc_sum" controls if the frequency is included or not
 							 */
 							h12_noalias.p_physical_set(j, i,
-									0.5 * (cos(2.0 * (freq_sub) * M_PIl * x) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PIl * x)) * 0.5
-											* (cos(2.0 * (freq_sub) * M_PIl * y) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PIl * y)));
+									0.5 * (cos(2.0 * (freq_sub) * M_PI * x) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PI * x)) * 0.5
+											* (cos(2.0 * (freq_sub) * M_PI * y) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PI * y)));
 
 							h12_truncated.p_physical_set(j, i,
-									spectral_trunc_freq1 * spectral_trunc_freq2 * 0.5 * (cos(2.0 * (freq_sub) * M_PIl * x) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PIl * x)) * 0.5
-											* (cos(2.0 * (freq_sub) * M_PIl * y) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PIl * y)));
+									spectral_trunc_freq1 * spectral_trunc_freq2 * 0.5 * (cos(2.0 * (freq_sub) * M_PI * x) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PI * x)) * 0.5
+											* (cos(2.0 * (freq_sub) * M_PI * y) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PI * y)));
 						}
 					}
 

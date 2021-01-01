@@ -12,7 +12,7 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
 #include <sweet/SWEETError.hpp>

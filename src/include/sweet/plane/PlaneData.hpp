@@ -9,7 +9,6 @@
 
 #include <complex>
 #include <cfloat>
-#include <cmath>
 #include <cassert>
 #include <cstddef>
 #include <cassert>
@@ -26,7 +25,8 @@
 #include <iostream>
 #include <string.h>
 #include <functional>
-#include <sweet/sweetmath.hpp>
+#include <utility>
+#include <cmath>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>

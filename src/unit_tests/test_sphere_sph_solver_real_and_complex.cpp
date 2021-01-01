@@ -8,8 +8,9 @@
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
  */
 
-#include "../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 #include <cmath>
+
+#include "../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>

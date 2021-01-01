@@ -11,7 +11,7 @@
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 
-#include <sweet/SWEETMath.hpp>
+#include <sweet/SWEETVectorMath.hpp>
 
 
 class BenchmarksSphereAdvection_nair_lauritzen_sl	: public BenchmarksSphereAdvection_interface
@@ -218,13 +218,13 @@ public:
 
 			// Caption Figure 1
 			double x0[3];
-			SWEETMath::point_latlon_to_cartesian__scalar(i_lambda0, i_theta0, x0[0], x0[1], x0[2]);
+			SWEETVectorMath::point_latlon_to_cartesian__scalar(i_lambda0, i_theta0, x0[0], x0[1], x0[2]);
 
 			phi_pert_phys_1.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 					double x[3];
-					SWEETMath::point_latlon_to_cartesian__scalar(i_lambda, i_theta, x[0], x[1], x[2]);
+					SWEETVectorMath::point_latlon_to_cartesian__scalar(i_lambda, i_theta, x[0], x[1], x[2]);
 
 					double d =	(x[0] - x0[0])*(x[0] - x0[0]) +
 								(x[1] - x0[1])*(x[1] - x0[1]) +
@@ -243,13 +243,13 @@ public:
 
 			// Caption Figure 1
 			double x0[3];
-			SWEETMath::point_latlon_to_cartesian__scalar(i_lambda1, i_theta1, x0[0], x0[1], x0[2]);
+			SWEETVectorMath::point_latlon_to_cartesian__scalar(i_lambda1, i_theta1, x0[0], x0[1], x0[2]);
 
 			phi_pert_phys_2.physical_update_lambda(
 				[&](double i_lambda, double i_theta, double &io_data)
 				{
 				double x[3];
-				SWEETMath::point_latlon_to_cartesian__scalar(i_lambda, i_theta, x[0], x[1], x[2]);
+				SWEETVectorMath::point_latlon_to_cartesian__scalar(i_lambda, i_theta, x[0], x[1], x[2]);
 
 				double d =	(x[0] - x0[0])*(x[0] - x0[0]) +
 							(x[1] - x0[1])*(x[1] - x0[1]) +

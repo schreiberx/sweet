@@ -134,7 +134,7 @@ public:
 				x /= simVars.sim.plane_domain_size[0];
 				y /= simVars.sim.plane_domain_size[1];
 
-				io_data = std::sin(freq_x*M_PIl*x)*std::sin(freq_x*M_PIl*y);
+				io_data = std::sin(freq_x*M_PI*x)*std::sin(freq_x*M_PI*y);
 #endif
 			}
 		);
@@ -206,7 +206,7 @@ public:
 				x /= simVars.sim.plane_domain_size[0];
 				y /= simVars.sim.plane_domain_size[1];
 
-				io_data = freq_x*M_PIl*std::cos(freq_x*M_PIl*x)*std::sin(freq_y*M_PIl*y)/simVars.sim.plane_domain_size[0];
+				io_data = freq_x*M_PI*std::cos(freq_x*M_PI*x)*std::sin(freq_y*M_PI*y)/simVars.sim.plane_domain_size[0];
 #endif
 			}
 		);
@@ -278,7 +278,7 @@ public:
 				x /= simVars.sim.plane_domain_size[0];
 				y /= simVars.sim.plane_domain_size[1];
 
-				io_data = freq_y*M_PIl*std::sin(freq_x*M_PIl*x)*std::cos(freq_y*M_PIl*y)/simVars.sim.plane_domain_size[1];
+				io_data = freq_y*M_PI*std::sin(freq_x*M_PI*x)*std::cos(freq_y*M_PI*y)/simVars.sim.plane_domain_size[1];
 #endif
 		});
 

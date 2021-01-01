@@ -7,7 +7,7 @@
 #ifndef SRC_INCLUDE_REXI_REXI_TERRY_FUNAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_REXI_TERRY_FUNAPPROXIMATION_HPP_
 
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <libmath/DQStuff.hpp>
 #include <libmath/GaussQuadrature.hpp>
 #include <rexi/REXI_Terry_GaussianApproximation.hpp>

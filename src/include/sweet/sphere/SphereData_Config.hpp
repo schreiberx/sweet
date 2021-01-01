@@ -11,7 +11,7 @@
 #include <libmath/shtns_inc.hpp>
 #include <fftw3.h>
 #include <iostream>
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/SWEETError.hpp>
 #include <sweet/FileOperations.hpp>
 #include <sweet/TransformationPlans.hpp>

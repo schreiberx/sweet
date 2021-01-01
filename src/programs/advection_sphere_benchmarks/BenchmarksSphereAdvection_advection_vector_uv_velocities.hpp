@@ -7,10 +7,9 @@
 
 #include "BenchmarksSphereAdvection_interface.hpp"
 #include <ostream>
-#include <sweet/SWEETMath.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-
+#include <sweet/SWEETVectorMath.hpp>
 #include "../swe_sphere_benchmarks/SWESphereBenchmark_williamson_1_advection_gauss_bump.hpp"
 
 

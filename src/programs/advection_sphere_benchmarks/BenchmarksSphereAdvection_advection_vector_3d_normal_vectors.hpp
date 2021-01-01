@@ -7,10 +7,9 @@
 
 #include "BenchmarksSphereAdvection_interface.hpp"
 #include <ostream>
-#include <sweet/SWEETMath.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-
+#include <sweet/SWEETVectorMath.hpp>
 #include "../swe_sphere_benchmarks/SWESphereBenchmark_williamson_1_advection_gauss_bump.hpp"
 
 
@@ -101,7 +100,7 @@ public:
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
-					SWEETMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
+					SWEETVectorMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
 					o_data = ret[0];
 				}
 		);
@@ -110,7 +109,7 @@ public:
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
-					SWEETMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
+					SWEETVectorMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
 					o_data = ret[1];
 				}
 		);
@@ -119,7 +118,7 @@ public:
 				[&](double lon, double lat, double &o_data)
 				{
 					double ret[3];
-					SWEETMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
+					SWEETVectorMath::point_latlon_to_cartesian__scalar(lon, lat, ret[0], ret[1], ret[2]);
 					o_data = ret[2];
 				}
 		);

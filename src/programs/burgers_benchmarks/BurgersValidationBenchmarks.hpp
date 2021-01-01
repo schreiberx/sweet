@@ -7,7 +7,7 @@
 #ifndef SRC_INCLUDE_SWEET_BURGERSVALIDATIONBENCHMARKS_HPP_
 #define SRC_INCLUDE_SWEET_BURGERSVALIDATIONBENCHMARKS_HPP_
 
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData.hpp>
 
@@ -106,8 +106,8 @@ public:
 			double eps = 0.1;
 			for (int k=1; k<kmax; k++)
 			{
-				double argument = 2*M_PIl*k*x - M_PIl*k*t + M_PIl*k;
-				tmpvar += sin(argument)*eps/sinh(M_PIl*k*eps*0.5);
+				double argument = 2*M_PI*k*x - M_PI*k*t + M_PI*k;
+				tmpvar += sin(argument)*eps/sinh(M_PI*k*eps*0.5);
 			}
 			tmpvar *= 0.5;
 			return tmpvar;
@@ -116,7 +116,7 @@ public:
 		if (benchmark_id == 63)
 		{
 			double tmpvar = 0;
-			tmpvar = sin(2*M_PIl*x)*sin(2*M_PIl*y);
+			tmpvar = sin(2*M_PI*x)*sin(2*M_PI*y);
 			return tmpvar;
 		}
 
@@ -139,7 +139,7 @@ public:
 		int benchmark_id = getBurgersBenchmarkID();
 
 		double t = i_simulation_time;
-		double tp = 2.0*M_PIl;
+		double tp = 2.0*M_PI;
 
 		/*
 		 * f(t,x,y) = 2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
@@ -401,14 +401,14 @@ public:
 					double AA = 0;
 					for (int k = 1; k < kmax; k++)
 					{
-						argument = tp*k*x + M_PIl*k*(1-t);
-						AA = eps/sinh(M_PIl*k*eps/2);
-						tmpvar += (i_parameters.sim.viscosity*sin(argument)*4*M_PIl*k - cos(argument))*k*AA;
-						A1 += cos(argument)*k*AA*M_PIl;
+						argument = tp*k*x + M_PI*k*(1-t);
+						AA = eps/sinh(M_PI*k*eps/2);
+						tmpvar += (i_parameters.sim.viscosity*sin(argument)*4*M_PI*k - cos(argument))*k*AA;
+						A1 += cos(argument)*k*AA*M_PI;
 						A2 += sin(argument)*0.5*AA;
 					}
 
-					tmpvar *= 0.5*M_PIl;
+					tmpvar *= 0.5*M_PI;
 					tmpvar += A1*A2;
 					io_data = tmpvar;
 				}

@@ -14,7 +14,7 @@
 #include <parareal/Parareal_Data_Scalar.hpp>
 #include <parareal/Parareal_Controller_Serial.hpp>
 
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/SimulationVariables.hpp>
 
 

@@ -384,7 +384,7 @@ public:
 					double x = (double)i/(double)simVars->disc.space_res_physical[0];
 					//double y = (double)j*(simVars->sim.domain_size[1]/(double)simVars->disc.res_physical[1]);
 
-					io_data = simVars->sim.gravitation/f*2.0*M_PIl*std::cos(2.0*M_PIl*x)/sx;
+					io_data = simVars->sim.gravitation/f*2.0*M_PI*std::cos(2.0*M_PI*x)/sx;
 				}
 			);
 

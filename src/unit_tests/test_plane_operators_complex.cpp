@@ -267,7 +267,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
 
-					h_cart.p_physical_set(j, i, (double)(sin(2.0*M_PIl*x)*cos(2.0*M_PIl*y)), 0.0);
+					h_cart.p_physical_set(j, i, (double)(sin(2.0*M_PI*x)*cos(2.0*M_PI*y)), 0.0);
 				}
 			}
 
@@ -324,12 +324,12 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
-					u.p_physical_set(j, i, sin(freq_x*M_PIl*x), 0.0);
-					v.p_physical_set(j, i, cos(freq_y*M_PIl*y), 0.0);
+					u.p_physical_set(j, i, sin(freq_x*M_PI*x), 0.0);
+					v.p_physical_set(j, i, cos(freq_y*M_PI*y), 0.0);
 
 					h_cart.p_physical_set(
 						j, i,
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y),
+						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y),
 						0.0
 					);
 				}
@@ -403,24 +403,24 @@ int main(int i_argc, char *i_argv[])
 //					double x = ((double)i)/(double)parameters.discretization.res[0];
 //					double y = ((double)j)/(double)parameters.discretization.res[1];
 
-					u.p_physical_set(j, i, sin(freq_x*M_PIl*x), 0);
-					v.p_physical_set(j, i, cos(freq_y*M_PIl*y), 0);
+					u.p_physical_set(j, i, sin(freq_x*M_PI*x), 0);
+					v.p_physical_set(j, i, cos(freq_y*M_PI*y), 0);
 
 					h_cart.p_physical_set(
 						j, i,
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y),
+						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y),
 						0
 					);
 
 					h_diff_x.p_physical_set(
 						j, i,
-						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)simVars.sim.plane_domain_size[0],
+						freq_x*M_PI*cos(freq_x*M_PI*x)*cos(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[0],
 						0
 					);
 
 					h_diff_y.p_physical_set(
 						j, i,
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)simVars.sim.plane_domain_size[1],
+						-sin(freq_x*M_PI*x)*freq_y*M_PI*sin(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[1],
 						0
 					);
 				}
@@ -430,8 +430,8 @@ int main(int i_argc, char *i_argv[])
 			double res_normalization = std::sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op.diff_c_x(h_cart)-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PIl);
-			double err_y = (op.diff_c_y(h_cart)-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PIl);
+			double err_x = (op.diff_c_x(h_cart)-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
+			double err_y = (op.diff_c_y(h_cart)-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
 			double err_z = (u*v-h_cart).reduce_norm2_quad()*res_normalization;
 
 			std::cout << "error diff x = " << err_x << std::endl;
@@ -444,12 +444,12 @@ int main(int i_argc, char *i_argv[])
 			double err_xy = (
 								h_diff_xy_spec
 								-h_diff_x-h_diff_y
-						).reduce_norm2_quad()*res_normalization/(2.0*M_PIl);
+						).reduce_norm2_quad()*res_normalization/(2.0*M_PI);
 
 			double err_xy_split = (
 								h_diff_xy_spec_split
 								-h_diff_x-h_diff_y
-						).reduce_norm2_quad()*res_normalization/(2.0*M_PIl);
+						).reduce_norm2_quad()*res_normalization/(2.0*M_PI);
 
 			if (err_x > eps)
 			{

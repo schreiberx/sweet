@@ -1,5 +1,5 @@
 /*
- * SWEETMath.hpp
+ * SWEETVectorMath.hpp
  *
  *  Created on: Mar 27, 2020
  *      Author: Martin Schreiber <schreiberx@gmail.com>
@@ -7,12 +7,12 @@
 
 #include <sweet/ScalarDataArray.hpp>
 
-#ifndef SRC_INCLUDE_SWEET_MATH_HPP_
-#define SRC_INCLUDE_SWEET_MATH_HPP_
+#ifndef SRC_INCLUDE_SWEET_VECTOR_MATH_HPP_
+#define SRC_INCLUDE_SWEET_VECTOR_MATH_HPP_
 
 
 
-class SWEETMath
+class SWEETVectorMath
 {
 public:
 	inline

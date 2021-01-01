@@ -193,7 +193,7 @@ public:
 		 */
 		{
 			diff_c_x.spectral_set_zero();
-			double scale_x = 2.0*M_PIl/i_domain_size[0];
+			double scale_x = 2.0*M_PI/i_domain_size[0];
 
 #if 1
 			/*
@@ -245,7 +245,7 @@ public:
 		 */
 		{
 			diff_c_y.spectral_set_zero();
-			double scale_y = 2.0*M_PIl/i_domain_size[1];
+			double scale_y = 2.0*M_PI/i_domain_size[1];
 
 
 #if 1

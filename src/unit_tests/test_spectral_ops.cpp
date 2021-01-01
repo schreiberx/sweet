@@ -231,7 +231,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
 
-					h.p_physical_set(j, i, sin(2.0*M_PIl*x)*cos(2.0*M_PIl*y));
+					h.p_physical_set(j, i, sin(2.0*M_PI*x)*cos(2.0*M_PI*y));
 				}
 			}
 
@@ -292,21 +292,21 @@ int main(int i_argc, char *i_argv[])
 #define FUN_ID	1
 
 	#if FUN_ID==1
-					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.p_physical_set(j, i, cos(freq_y*M_PIl*y));
+					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
+					v.p_physical_set(j, i, cos(freq_y*M_PI*y));
 	#elif FUN_ID==2
-					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
+					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
+					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PI*y)+2.0));
 	#endif
 
 					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
+						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==2
-						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
+						sin(freq_x*M_PI*x)*sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)
+						sin(freq_x*M_PI*x)/(cos(freq_y*M_PI*y)+2.0)
 	#endif
 					);
 
@@ -390,43 +390,43 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 	#if FUN_ID==1
-					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.p_physical_set(j, i, cos(freq_y*M_PIl*y));
+					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
+					v.p_physical_set(j, i, cos(freq_y*M_PI*y));
 	#elif FUN_ID==2
-					u.p_physical_set(j, i, sin(freq_x*M_PIl*x));
-					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PIl*y)+2.0));
+					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
+					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PI*y)+2.0));
 	#endif
 
 					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
+						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==2
-						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
+						sin(freq_x*M_PI*x)*sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)
+						sin(freq_x*M_PI*x)/(cos(freq_y*M_PI*y)+2.0)
 	#endif
 					);
 
 					h_diff_x.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						freq_x*M_PIl*cos(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(double)simVars.sim.plane_domain_size[0]
+						freq_x*M_PI*cos(freq_x*M_PI*x)*cos(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[0]
 	#elif FUN_ID==2
-						2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)simVars.sim.plane_domain_size[0]
+						2.0*sin(freq_x*M_PI*x)*std::pow(cos(freq_y*M_PI*y),2.0)*freq_x*M_PI*cos(freq_x*M_PI*x)/(double)simVars.sim.plane_domain_size[0]
 	#elif FUN_ID==3
-						freq_x*M_PIl*cos(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)/(double)simVars.sim.plane_domain_size[0]
+						freq_x*M_PI*cos(freq_x*M_PI*x)/(cos(freq_y*M_PI*y)+2.0)/(double)simVars.sim.plane_domain_size[0]
 	#endif
 					);
 
 					h_diff_y.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/(double)simVars.sim.plane_domain_size[1]
+						-sin(freq_x*M_PI*x)*freq_y*M_PI*sin(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[1]
 	#elif FUN_ID==2
-						-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)simVars.sim.plane_domain_size[1]
+						-2.0*std::pow(std::sin(freq_x*M_PI*x),2.0)*std::cos(freq_y*M_PI*y)*freq_y*M_PI*std::sin(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[1]
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)simVars.sim.plane_domain_size[1]
+						sin(freq_x*M_PI*x)*freq_y*M_PI*sin(freq_y*M_PI*y)/pow(cos(freq_y*M_PI*y)+2.0, 2.0)/(double)simVars.sim.plane_domain_size[1]
 	#endif
 					);
 #undef FUN_ID
@@ -446,8 +446,8 @@ int main(int i_argc, char *i_argv[])
 			double res_normalization = sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op.diff_c_x(h)-h_diff_x).reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PIl);
-			double err_y = (op.diff_c_y(h)-h_diff_y).reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PIl);
+			double err_x = (op.diff_c_x(h)-h_diff_x).reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
+			double err_y = (op.diff_c_y(h)-h_diff_y).reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
 			double err_z = (u*v-h).reduce_norm2()*res_normalization;
 
 			if (simVars.disc.space_use_spectral_basis_diffs)
@@ -557,33 +557,33 @@ int main(int i_argc, char *i_argv[])
 					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
+						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==2
-						sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
+						sin(freq_x*M_PI*x)*sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)
+						sin(freq_x*M_PI*x)/(cos(freq_y*M_PI*y)+2.0)
 	#endif
 					);
 
 					h_diff2_x.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						freq_x*freq_x*M_PIl*M_PIl*(-1.0)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)/(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])
+						freq_x*freq_x*M_PI*M_PI*(-1.0)*sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)/(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])
 	#elif FUN_ID==2
-	//					2.0*sin(freq_x*M_PIl*x)*std::pow(cos(freq_y*M_PIl*y),2.0)*freq_x*M_PIl*cos(freq_x*M_PIl*x)/(double)parameters.sim.domain_size[0]
+	//					2.0*sin(freq_x*M_PI*x)*std::pow(cos(freq_y*M_PI*y),2.0)*freq_x*M_PI*cos(freq_x*M_PI*x)/(double)parameters.sim.domain_size[0]
 	#elif FUN_ID==3
-	//					freq_x*M_PIl*cos(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)/(double)parameters.sim.domain_size[0]
+	//					freq_x*M_PI*cos(freq_x*M_PI*x)/(cos(freq_y*M_PI*y)+2.0)/(double)parameters.sim.domain_size[0]
 	#endif
 					);
 
 					h_diff2_y.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						-sin(freq_x*M_PIl*x)*freq_y*M_PIl*freq_y*M_PIl*cos(freq_y*M_PIl*y)/(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])
+						-sin(freq_x*M_PI*x)*freq_y*M_PI*freq_y*M_PI*cos(freq_y*M_PI*y)/(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])
 	#elif FUN_ID==2
-	//					-2.0*std::pow(std::sin(freq_x*M_PIl*x),2.0)*std::cos(freq_y*M_PIl*y)*freq_y*M_PIl*std::sin(freq_y*M_PIl*y)/(double)parameters.sim.domain_size[1]
+	//					-2.0*std::pow(std::sin(freq_x*M_PI*x),2.0)*std::cos(freq_y*M_PI*y)*freq_y*M_PI*std::sin(freq_y*M_PI*y)/(double)parameters.sim.domain_size[1]
 	#elif FUN_ID==3
-	//					sin(freq_x*M_PIl*x)*freq_y*M_PIl*sin(freq_y*M_PIl*y)/pow(cos(freq_y*M_PIl*y)+2.0, 2.0)/(double)parameters.sim.domain_size[1]
+	//					sin(freq_x*M_PI*x)*freq_y*M_PI*sin(freq_y*M_PI*y)/pow(cos(freq_y*M_PI*y)+2.0, 2.0)/(double)parameters.sim.domain_size[1]
 	#endif
 					);
 #undef FUN_ID
@@ -593,8 +593,8 @@ int main(int i_argc, char *i_argv[])
 			double normalization = sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
 			// diff2 normalization = 4.0 pi^2 / L^2
-			double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])/(4.0*M_PIl*M_PIl);
-			double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])/(4.0*M_PIl*M_PIl);
+			double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])/(4.0*M_PI*M_PI);
+			double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])/(4.0*M_PI*M_PI);
 
 			if (simVars.disc.space_use_spectral_basis_diffs)
 			{
@@ -665,11 +665,11 @@ int main(int i_argc, char *i_argv[])
 					h.p_physical_set(
 						j, i,
 	#if FUN_ID==1
-						sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)
+						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==2
-						10+sin(freq_x*M_PIl*x)*sin(freq_x*M_PIl*x)*cos(freq_y*M_PIl*y)*cos(freq_y*M_PIl*y)
+						10+sin(freq_x*M_PI*x)*sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)*cos(freq_y*M_PI*y)
 	#elif FUN_ID==3
-						sin(freq_x*M_PIl*x)/(cos(freq_y*M_PIl*y)+2.0)+10.0
+						sin(freq_x*M_PI*x)/(cos(freq_y*M_PI*y)+2.0)+10.0
 	#endif
 					);
 

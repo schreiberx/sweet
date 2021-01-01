@@ -15,7 +15,7 @@
 #include <fstream>
 #include <limits>
 #include <functional>
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>

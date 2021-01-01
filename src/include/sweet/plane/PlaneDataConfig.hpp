@@ -21,7 +21,7 @@
 #include <iostream>
 #include <complex>
 #include <iomanip>
-#include <sweet/sweetmath.hpp>
+#include <cmath>
 #include <sweet/SWEETError.hpp>
 #include <sweet/TransformationPlans.hpp>
 
