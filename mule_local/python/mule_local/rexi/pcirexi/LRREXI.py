@@ -7,10 +7,29 @@ from mule_local.rexi.pcirexi.PCIREXI import PCIREXI
 from mule_local.rexi.pcirexi.contour.RectangleContour import RectangleContour
 from mule_local.rexi.pcirexi.section.InterpolationSettings import InterpolationSettings
 from mule_local.rexi.pcirexi.section.QuadratureSettings import QuadratureSettings
+from mule_local.rexi.EFloat import *
+
 
 
 class LRREXI:
-    def setup(self, width:float, height:float, center:complex, N:int):
+
+    def __init__(
+        self,
+        efloat_mode = "float"
+    ):
+        self.efloat_mode = efloat_mode
+        self.efloat = EFloat(efloat_mode)
+
+        self.unique_id_string = ""
+
+
+    def setup(
+            self,
+            width:float,
+            height:float,
+            center:complex,
+            N:int
+    ):
         pcirexi = PCIREXI()
         contour = RectangleContour(width, height, center)
         i_s = InterpolationSettings(4, 2, 'equidistant', False, False)
@@ -21,12 +40,16 @@ class LRREXI:
                                             interpolation_settings=i_s,
                                             quadrature_settings=q_s)
 
-        unique_id_string = "LRREXI_"
-        unique_id_string += "phi0" #self.function_name
-        unique_id_string += "_N" + str(N)
-        unique_id_string += "_w" + str(width)
-        unique_id_string += "_h" + str(height)
-        unique_id_string += "_c" + str(center)
+        self.unique_id_string = "phi0" #self.function_name
+        self.unique_id_string += "_N" + str(N)
+        self.unique_id_string += "_w" + str(width)
+        self.unique_id_string += "_h" + str(height)
+        self.unique_id_string += "_c" + str(center)
 
-        coeffs.unique_id_string = unique_id_string
+        coeffs.unique_id_string = self.unique_id_string
         return coeffs
+
+
+    def getUniqueId(self):
+    	return "LRREXI_"+self.unique_id_string
+

@@ -8,9 +8,20 @@ from mule_local.rexi.pcirexi.contour.BeanContour import BeanContour
 from mule_local.rexi.pcirexi.contour.RectangleContour import RectangleContour
 from mule_local.rexi.pcirexi.section.InterpolationSettings import InterpolationSettings
 from mule_local.rexi.pcirexi.section.QuadratureSettings import QuadratureSettings
+from mule_local.rexi.EFloat import *
 
 
 class BeanREXI:
+    def __init__(
+        self,
+        efloat_mode = "float"
+    ):
+        self.efloat_mode = efloat_mode
+        self.efloat = EFloat(efloat_mode)
+
+        self.unique_id_string = ""
+
+
     def setup(self, horizontal_radius:float, vertical_radius:float, center:complex, N):
         pcirexi = PCIREXI()
         contour = BeanContour(horizontal_radius, vertical_radius, center, compression=0.25)

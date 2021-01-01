@@ -65,18 +65,29 @@ def get_rexi_benchmarks(jg):
 
             # "phi0"
             cirexi = CIREXI(efloat_mode=efloat_mode)
-            coeffs_phi0 = cirexi.setup(function_name="phi0", N=fun_params_ci_N(ci_max_real, ci_max_imag),
-                                       lambda_include_imag=ci_max_imag, lambda_max_real=ci_max_real).toFloat()
+            coeffs_phi0 = cirexi.setup(
+                    function_name="phi0",
+                    N=fun_params_ci_N(ci_max_real, ci_max_imag),
+                    lambda_include_imag=ci_max_imag,
+                    lambda_max_real=ci_max_real
+                ).toFloat()
 
             # "phi1"
             cirexi = CIREXI(efloat_mode=efloat_mode)
-            coeffs_phi1 = cirexi.setup(function_name="phi1", N=fun_params_ci_N(ci_max_real, ci_max_imag),
-                                       lambda_include_imag=ci_max_imag, lambda_max_real=ci_max_real).toFloat()
+            coeffs_phi1 = cirexi.setup(
+                    function_name="phi1",
+                    N=fun_params_ci_N(ci_max_real, ci_max_imag),
+                    lambda_include_imag=ci_max_imag,
+                    lambda_max_real=ci_max_real
+                ).toFloat()
 
             # "phi2"
             cirexi = CIREXI(efloat_mode=efloat_mode)
-            coeffs_phi2 = cirexi.setup(function_name="phi2", N=fun_params_ci_N(ci_max_real, ci_max_imag),
-                                       lambda_include_imag=ci_max_imag, lambda_max_real=ci_max_real).toFloat()
+            coeffs_phi2 = cirexi.setup(
+                    function_name="phi2",
+                    N=fun_params_ci_N(ci_max_real, ci_max_imag),
+                    lambda_include_imag=ci_max_imag, lambda_max_real=ci_max_real
+                ).toFloat()
 
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0, coeffs_phi1, coeffs_phi2]
 
@@ -99,18 +110,30 @@ def get_rexi_benchmarks(jg):
         for max_imag in max_imags:
             # "phi0"
             elrexi = ELREXI(efloat_mode=efloat_mode)
-            coeffs_phi0 = elrexi.setup(function_name="phi0", N=max(64, int(75 * max_imag / 30)), lambda_max_real=10.5,
-                                       lambda_max_imag=max_imag + 2.5).toFloat()
+            coeffs_phi0 = elrexi.setup(
+                    function_name="phi0",
+                    N=max(64, int(75 * max_imag / 30)),
+                    lambda_max_real=10.5,
+                    lambda_max_imag=max_imag + 2.5
+                ).toFloat()
 
             # "phi1"
             elrexi = ELREXI(efloat_mode=efloat_mode)
-            coeffs_phi1 = elrexi.setup(function_name="phi1", N=max(64, int(75 * max_imag / 30)), lambda_max_real=10.5,
-                                       lambda_max_imag=max_imag + 2.5).toFloat()
+            coeffs_phi1 = elrexi.setup(
+                    function_name="phi1",
+                    N=max(64, int(75 * max_imag / 30)),
+                    lambda_max_real=10.5,
+                    lambda_max_imag=max_imag + 2.5
+                ).toFloat()
 
             # "phi2"
             elrexi = ELREXI(efloat_mode=efloat_mode)
-            coeffs_phi2 = elrexi.setup(function_name="phi2", N=max(64, int(75 * max_imag / 30)), lambda_max_real=10.5,
-                                       lambda_max_imag=max_imag + 2.5).toFloat()
+            coeffs_phi2 = elrexi.setup(
+                    function_name="phi2",
+                    N=max(64, int(75 * max_imag / 30)),
+                    lambda_max_real=10.5,
+                    lambda_max_imag=max_imag + 2.5
+                ).toFloat()
 
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0, coeffs_phi1, coeffs_phi2]
 
@@ -131,9 +154,11 @@ def get_rexi_benchmarks(jg):
         rexi_method['rexi_files_coefficients'] = None
 
         for max_imag in max_imags:
+
             # "phi0"
-            lrrexi = LRREXI()
-            coeffs_phi0 = lrrexi.setup(23, 2 * max_imag + 20, -1, 128)
+            lrrexi = LRREXI(efloat_mode=efloat_mode)
+            # TODO: please comment on parameters
+            coeffs_phi0 = lrrexi.setup(23, 2 * max_imag + 20, -1, 128).toFloat()
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
 
             # Add to list of REXI methods
@@ -154,9 +179,10 @@ def get_rexi_benchmarks(jg):
 
         for max_imag in max_imags:
             # "phi0"
-            beanrexi = BeanREXI()
+            beanrexi = BeanREXI(efloat_mode=efloat_mode)
 
-            coeffs_phi0 = beanrexi.setup(16, max_imag / 30 * 35, -2, max(64, int(75 * max_imag / 30)))
+            # TODO: please comment on parameters
+            coeffs_phi0 = beanrexi.setup(16, max_imag / 30 * 35, -2, max(64, int(75 * max_imag / 30))).toFloat()
 
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
 

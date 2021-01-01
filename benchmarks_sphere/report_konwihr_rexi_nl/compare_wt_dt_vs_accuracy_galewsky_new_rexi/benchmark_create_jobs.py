@@ -287,16 +287,16 @@ if __name__ == "__main__":
                 ###########
                 # Runge-Kutta
                 ###########
-                ['ln_erk',        2,    2,    0],
+                #['ln_erk',        2,    2,    0],
 
                 ###########
                 # CN
                 ###########
-                ['lg_irk_lc_n_erk_ver0',    2,    2,    0],
-                ['lg_irk_lc_n_erk_ver1',    2,    2,    0],
+                #['lg_irk_lc_n_erk_ver0',    2,    2,    0],
+                #['lg_irk_lc_n_erk_ver1',    2,    2,    0],
 
-                ['l_irk_n_erk_ver0',    2,    2,    0],
-                ['l_irk_n_erk_ver1',    2,    2,    0],
+                #['l_irk_n_erk_ver0',    2,    2,    0],
+                #['l_irk_n_erk_ver1',    2,    2,    0],
 
                 ###########
                 # REXI
