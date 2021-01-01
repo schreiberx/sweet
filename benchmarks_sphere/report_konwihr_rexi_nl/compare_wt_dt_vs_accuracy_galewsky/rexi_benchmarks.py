@@ -8,13 +8,12 @@ from itertools import product
 
 # REXI
 from mule_local.rexi.REXICoefficients import *
-from mule_local.rexi.pcirexi.contour.BeanContour import BeanContour
-from mule_local.rexi.pcirexi.contour.RectangleContour import RectangleContour
+from mule_local.rexi.pcirexi.BeanREXI import BeanREXI
+from mule_local.rexi.pcirexi.LRREXI import LRREXI
 from mule_local.rexi.trexi.TREXI import *
 from mule_local.rexi.cirexi.CIREXI import *
 from mule_local.rexi.elrexi.ELREXI import *
 from mule_local.rexi.brexi.BREXI import *
-from mule_local.rexi.pcirexi.PCIREXI import *
 
 # EFloat
 efloat_mode = "float"
@@ -133,16 +132,8 @@ def get_rexi_benchmarks(jg):
 
         for max_imag in max_imags:
             # "phi0"
-            pcirexi = PCIREXI()
-            contour = RectangleContour(23, 2 * max_imag + 20, -1)
-            i_s = InterpolationSettings(4, 2, 'equidistant', False, False)
-            q_s = QuadratureSettings(overall_quadrature_points=128,
-                                     quadrature_method="legendre",
-                                     distribute_quad_points_based_on_arc_length=True)
-            coeffs_phi0 = pcirexi.setup_pcirexi(contour=contour,
-                                                interpolation_settings=i_s,
-                                                quadrature_settings=q_s)
-            coeffs_phi0.unique_id_string = "LR_REXI(width=23, height=" + str(2 * max_imag + 20) + ", center=-1, terms=128)"
+            lrrexi = LRREXI()
+            coeffs_phi0 = lrrexi.setup(23, 2 * max_imag + 20, -1, 128)
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
 
             # Add to list of REXI methods
@@ -163,16 +154,10 @@ def get_rexi_benchmarks(jg):
 
         for max_imag in max_imags:
             # "phi0"
-            pcirexi = PCIREXI()
-            contour = BeanContour(16, max_imag / 30 * 35, -2)
-            i_s = InterpolationSettings(1, 0, 'direct', False, False)
-            q_s = QuadratureSettings(overall_quadrature_points=max(64, int(75 * max_imag / 30)),
-                                     quadrature_method="midpoint", distribute_quad_points_based_on_arc_length=False)
-            coeffs_phi0 = pcirexi.setup_pcirexi(contour=contour,
-                                                interpolation_settings=i_s,
-                                                quadrature_settings=q_s)
-            coeffs_phi0.unique_id_string = "Bean_REXI(width=16, height=" + str(
-                max_imag / 30 * 35) + ", center=-2, terms=" + str(max(64, int(75 * max_imag / 30))) + ")"
+            beanrexi = BeanREXI()
+
+            coeffs_phi0 = beanrexi.setup(16, max_imag / 30 * 35, -2, max(64, int(75 * max_imag / 30)))
+
             rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
 
             # Add to list of REXI methods
