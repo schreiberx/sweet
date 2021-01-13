@@ -48,7 +48,7 @@ class LRREXI:
         self.unique_id_string += "_h" + str(height)
         self.unique_id_string += "_c" + str(center)
 
-        coeffs.unique_id_string = self.unique_id_string
+        coeffs.unique_id_string = self.getUniqueId()
         return coeffs
 
 
