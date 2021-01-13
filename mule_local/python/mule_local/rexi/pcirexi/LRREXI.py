@@ -25,6 +25,7 @@ class LRREXI:
 
     def setup(
             self,
+            function_name:str,
             width:float,
             height:float,
             center:complex,
@@ -35,12 +36,13 @@ class LRREXI:
         i_s = InterpolationSettings(4, 2, 'equidistant', False, False)
         q_s = QuadratureSettings(overall_quadrature_points=N,
                                  quadrature_method="legendre",
-                                 distribute_quad_points_based_on_arc_length=True)
+                                 distribute_quad_points_based_on_arc_length=True,
+                                 function_name=function_name)
         coeffs = pcirexi.setup_pcirexi(contour=contour,
                                             interpolation_settings=i_s,
                                             quadrature_settings=q_s)
 
-        self.unique_id_string = "phi0" #self.function_name
+        self.unique_id_string = function_name
         self.unique_id_string += "_N" + str(N)
         self.unique_id_string += "_w" + str(width)
         self.unique_id_string += "_h" + str(height)

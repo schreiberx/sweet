@@ -4,6 +4,7 @@
 #
 import cmath
 
+from mule_local.rexi.Functions import Functions
 from mule_local.rexi.REXICoefficients import REXICoefficients
 from mule_local.rexi.pcirexi.cauchy_integrator import CauchyIntegrator
 from mule_local.rexi.pcirexi.contour.Contour import Contour
@@ -56,14 +57,14 @@ class PCIREXI:
         coeffs = REXICoefficients()
         coeffs.alphas = [a for a in self.alphas[:]]
         coeffs.betas = [b for b in self.betas[:]]
-        coeffs.alphas.reverse()
-        coeffs.betas.reverse()
-        #TODO: Wirred hack to get the same oredring as EL-REXI
-        coeffs.alphas = coeffs.alphas[len(coeffs.alphas)*3//4:]+coeffs.alphas[0:len(coeffs.alphas)*3//4]
-        coeffs.betas = coeffs.betas[len(coeffs.alphas)*3//4:]+coeffs.betas[0:len(coeffs.alphas)*3//4]
+        if False: #Wirred hack to get the same oredring as EL-REXI
+            coeffs.alphas.reverse()
+            coeffs.betas.reverse()
+            coeffs.alphas = coeffs.alphas[len(coeffs.alphas)*3//4:]+coeffs.alphas[0:len(coeffs.alphas)*3//4]
+            coeffs.betas = coeffs.betas[len(coeffs.alphas)*3//4:]+coeffs.betas[0:len(coeffs.alphas)*3//4]
         coeffs.gamma = 0
         coeffs.unique_id_string = self.getUniqueId()
-        coeffs.function_name = "phi0"
+        coeffs.function_name = quadrature_settings.function_name
         return coeffs
 
 
@@ -87,8 +88,8 @@ class PCIREXI:
             )
 
     def create_coefficients(self):
-        # TODO: cmath.exp ist noch explizit
-        cauchy_integrator = CauchyIntegrator(self.section_list, cmath.exp, \
+        fun = Functions(self.quadrature_settings.function_name, efloat_mode=self.efloat_mode).eval
+        cauchy_integrator = CauchyIntegrator(self.section_list, fun, \
                                              self.quadrature_settings.overall_quadrature_points,
                                              self.quadrature_settings.quadrature_method,
                                              arc_length_distribution=self.quadrature_settings.
