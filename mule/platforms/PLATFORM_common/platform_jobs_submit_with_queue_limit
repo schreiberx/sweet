@@ -27,6 +27,9 @@ else
 	JOBS=$(ls -d */)
 fi
 
+NUM_TOTAL_JOBS=$(echo $JOBS | wc -w)
+NUM_REMAINING_JOBS=$NUM_TOTAL_JOBS
+
 for JOB in $JOBS; do
 	while true; do
 		NUM_JOBS=$($MULE_PLATFORM_DIR/platform_jobs_status | wc -l)
@@ -34,10 +37,14 @@ for JOB in $JOBS; do
 			break
 		fi
 		echo_info "Found ${NUM_JOBS} (of max. ${LIMIT}) in queue, waiting to submit more jobs"
+		echo_info "Status: $NUM_REMAINING_JOBS remaining jobs (from $NUM_TOTAL_JOBS jobs in total)"
 		sleep $SLEEP_SECS
 	done
 
 	echo_info "Found ${NUM_JOBS} of max. ${LIMIT} in queue"
 	echo_info "Submitting job '${JOB}'"
 	$MULE_PLATFORM_DIR/platform_jobs_submit $JOB
+
+	NUM_REMAINING_JOBS=$((NUM_REMAINING_JOBS-1))
+	echo_info "Status: $NUM_REMAINING_JOBS remaining jobs (from $NUM_TOTAL_JOBS jobs in total)"
 done
