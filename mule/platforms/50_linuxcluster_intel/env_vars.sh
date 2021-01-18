@@ -23,6 +23,9 @@ module unload python
 module load python/3.6_intel
 
 
+export MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION=30
+export MULE_JOB_SCHEDULER_NUM_REFRESH=30
+
 
 #
 # Compiler environment

@@ -157,9 +157,32 @@ def get_rexi_benchmarks(jg):
 
             # "phi0"
             lrrexi = LRREXI(efloat_mode=efloat_mode)
-            # TODO: please comment on parameters
-            coeffs_phi0 = lrrexi.setup(23, 2 * max_imag + 20, -1, 128).toFloat()
-            rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
+            coeffs_phi0 = lrrexi.setup(
+                    function_name="phi0",
+                    width=23,
+                    height=2 * max_imag + 20,
+                    center=-1,
+                    N=128).toFloat()
+
+            # "phi1"
+            lrrexi = LRREXI(efloat_mode=efloat_mode)
+            coeffs_phi1 = lrrexi.setup(
+                    function_name="phi1",
+                    width=23,
+                    height=2 * max_imag + 20,
+                    center=-1,
+                    N=128).toFloat()
+
+            # "phi2"
+            lrrexi = LRREXI(efloat_mode=efloat_mode)
+            coeffs_phi2 = lrrexi.setup(
+                    function_name="phi2",
+                    width=23,
+                    height=2 * max_imag + 20,
+                    center=-1,
+                    N=128).toFloat()
+
+            rexi_method['rexi_files_coefficients'] = [coeffs_phi0, coeffs_phi1, coeffs_phi2]
 
             # Add to list of REXI methods
             rexi_methods.append(rexi_method)
@@ -180,11 +203,33 @@ def get_rexi_benchmarks(jg):
         for max_imag in max_imags:
             # "phi0"
             beanrexi = BeanREXI(efloat_mode=efloat_mode)
+            coeffs_phi0 = beanrexi.setup(
+                    function_name="phi0",
+                    horizontal_radius=16,
+                    vertical_radius=max_imag / 30 * 35,
+                    center=-2,
+                    N=max(64, int(75 * max_imag / 30))).toFloat()
 
-            # TODO: please comment on parameters
-            coeffs_phi0 = beanrexi.setup(16, max_imag / 30 * 35, -2, max(64, int(75 * max_imag / 30))).toFloat()
+            # "phi1"
+            beanrexi = BeanREXI(efloat_mode=efloat_mode)
+            coeffs_phi1 = beanrexi.setup(
+                    function_name="phi1",
+                    horizontal_radius=16,
+                    vertical_radius=max_imag / 30 * 35,
+                    center=-2,
+                    N=max(64, int(75 * max_imag / 30))).toFloat()
 
-            rexi_method['rexi_files_coefficients'] = [coeffs_phi0]
+
+            # "phi2"
+            beanrexi = BeanREXI(efloat_mode=efloat_mode)
+            coeffs_phi2 = beanrexi.setup(
+                    function_name="phi2",
+                    horizontal_radius=16,
+                    vertical_radius=max_imag / 30 * 35,
+                    center=-2,
+                    N=max(64, int(75 * max_imag / 30))).toFloat()
+
+            rexi_method['rexi_files_coefficients'] = [coeffs_phi0, coeffs_phi1, coeffs_phi2]
 
             # Add to list of REXI methods
             rexi_methods.append(rexi_method)
