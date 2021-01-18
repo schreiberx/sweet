@@ -17,6 +17,7 @@
 #	define SWEET_THREADING_TIME_REXI 1
 #endif
 
+#define SWEET_REXI_SPECTRAL_SPACE_REDUCTION	1
 
 /*
  * Compute the REXI sum massively parallel *without* a parallelization with parfor in space
@@ -119,6 +120,8 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 	simCoeffs(simVars.sim),
 	ops(i_op),
 	sphereDataConfig(i_op.sphereDataConfig),
+	rexiSimVars(nullptr),
+	use_rexi_sphere_solver_preallocation(false),
 	use_exp_method_direct_solution(false),
 	use_exp_method_strang_split_taylor(false),
 	use_exp_method_rexi(false),
@@ -153,6 +156,16 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 		MPI_Comm_size(MPI_COMM_WORLD, &num_mpi_ranks);
 
 		num_global_threads = num_local_rexi_par_threads * num_mpi_ranks;
+
+		if (mpi_rank == 0)
+		{
+#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
+			int rexi_communication_size = i_op.sphereDataConfig->spectral_array_data_number_of_elements*2*sizeof(double);
+#else
+			int rexi_communication_size = i_op.sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
+#endif
+			std::cout<< "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
+		}
 
 	#else
 
@@ -1066,7 +1079,8 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_reduce.start();
 		#endif
 
-		#if 1
+		#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
+
 			/*
 			 * Reduction in spectral space
 			 *
