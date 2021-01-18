@@ -16,6 +16,9 @@ fi
 
 # Seconds to wait before trying to enqueue more jobs
 SLEEP_SECS=10
+if [[ ! -z "$MULE_JOB_SCHEDULER_SLEEP_SECS" ]]; then
+	SLEEP_SECS=$MULE_JOB_SCHEDULER_SLEEP_SECS
+fi
 
 echo_info "Using job limitation of ${MULE_JOB_SCHEDULER_NUM_JOB_LIMITATION}"
 
