@@ -164,7 +164,7 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 #else
 			int rexi_communication_size = i_op.sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
 #endif
-			std::cout<< "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
+			std::cout << "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
 		}
 
 	#else
