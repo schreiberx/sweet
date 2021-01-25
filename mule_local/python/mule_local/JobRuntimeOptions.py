@@ -31,8 +31,7 @@ class JobRuntimeOptions(InfoError):
         self.f_sphere = None
         self.verbosity = 0
 
-        # Deactivated per default for more performance
-        self.instability_checks = 0
+        self.instability_checks = None
 
         # Use 14 digits per default
         self.floating_point_output_digits = 12
@@ -461,7 +460,8 @@ class JobRuntimeOptions(InfoError):
 
         retval += ' --max-wallclock-time '+str(self.max_wallclock_time)
 
-        retval += ' --instability-checks='+str(self.instability_checks)
+        if self.instability_checks != None:
+            retval += ' --instability-checks='+str(self.instability_checks)
 
         if self.floating_point_output_digits >= 0:
             retval += ' -d '+str(self.floating_point_output_digits)
