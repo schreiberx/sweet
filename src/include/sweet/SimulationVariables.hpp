@@ -932,6 +932,28 @@ public:
 
 
 
+		void outputProgParams()
+		{
+			std::cout << "" << std::endl;
+			std::cout << "Misc options:" << std::endl;
+			std::cout << "	-v [int]			verbosity level" << std::endl;
+	//		std::cout << "	-V [double]			period of outputConfig" << std::endl;
+			std::cout << "	-G [0/1]			graphical user interface" << std::endl;
+			std::cout << "	-O [string]			string prefix for filename of output of simulation data (default output_%s_t%020.8f.csv)" << std::endl;
+			std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
+			std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
+			std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
+			std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
+			std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
+			std::cout << "	--reuse-plans [0/1]	Save plans for fftw transformations and SH transformations" << std::endl;
+			std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;
+			std::cout << "					0: compute optimized plans (no wisdom)" << std::endl;
+			std::cout << "					1: compute optimized plans, use wisdom if available and store wisdom" << std::endl;
+			std::cout << "					2: use wisdom if available if not, trigger error if wisdom doesn't exist (not yet working for SHTNS)" << std::endl;
+			std::cout << "					default: -1 (quick mode)" << std::endl;
+			std::cout << "" << std::endl;
+		}
+
 		void setup_longOptionsList(
 				struct option *long_options,
 				int &next_free_program_option
@@ -1312,6 +1334,7 @@ public:
 		benchmark.outputProgParams();
 		disc.outputProgParams();
 
+
 		std::cout << "" << std::endl;
 		std::cout << "Control:" << std::endl;
 		std::cout << "	--dt [time]	timestep size, default=?" << std::endl;
@@ -1319,24 +1342,8 @@ public:
 		std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
 		std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
 		std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
-		std::cout << "" << std::endl;
-		std::cout << "Misc options:" << std::endl;
-		std::cout << "	-v [int]			verbosity level" << std::endl;
-//		std::cout << "	-V [double]			period of outputConfig" << std::endl;
-		std::cout << "	-G [0/1]			graphical user interface" << std::endl;
-		std::cout << "	-O [string]			string prefix for filename of output of simulation data (default output_%s_t%020.8f.csv)" << std::endl;
-		std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
-		std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
-		std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
-		std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
-		std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
-		std::cout << "	--reuse-plans [0/1]	Save plans for fftw transformations and SH transformations" << std::endl;
-		std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;
-		std::cout << "					0: compute optimized plans (no wisdom)" << std::endl;
-		std::cout << "					1: compute optimized plans, use wisdom if available and store wisdom" << std::endl;
-		std::cout << "					2: use wisdom if available if not, trigger error if wisdom doesn't exist (not yet working for SHTNS)" << std::endl;
-		std::cout << "					default: -1 (quick mode)" << std::endl;
-		std::cout << "" << std::endl;
+
+		misc.outputProgParams();
 		rexi.outputProgParams();
 		swe_polvani.outputProgParams();
 

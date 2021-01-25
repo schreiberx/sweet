@@ -987,6 +987,25 @@ public:
 	}
 
 
+	bool spectral_reduce_is_any_nan_or_inf()	const
+	{
+		bool retval = false;
+
+#if SWEET_THREADING_SPACE
+		#pragma omp parallel for simd reduction(|:retval)
+#endif
+		for (int j = 0; j < sphereDataConfig->spectral_array_data_number_of_elements; j++)
+		{
+			retval |= std::isnan(spectral_space_data[j].real());
+			retval |= std::isinf(spectral_space_data[j].real());
+			retval |= std::isnan(spectral_space_data[j].imag());
+			retval |= std::isinf(spectral_space_data[j].imag());
+		}
+
+		return retval;
+	}
+
+
 	void spectral_print(
 			int i_precision = 16,
 			double i_abs_threshold = -1

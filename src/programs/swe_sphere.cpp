@@ -533,9 +533,10 @@ public:
 
 	bool detect_instability()
 	{
-		if (prog_phi_pert.toPhys().physical_isAnyNaNorInf())
+		if (prog_phi_pert.spectral_reduce_is_any_nan_or_inf())
 		{
-			std::cerr << "Inf value detected" << std::endl;
+			std::cout << "Infinity value detected" << std::endl;
+			std::cerr << "Infinity value detected" << std::endl;
 			return true;
 		}
 
