@@ -1,9 +1,9 @@
 #! /bin/bash
 
-TAG=$1
+TAGS=("${@}")
 
-if [ -z "$TAG" ]; then
-	TAG="total_wallclock_time:"
+if [ -z "${TAGS[0]}" ]; then
+	TAGS=("total_wallclock_time:")
 
 	#echo "Usage: $0 [tag]"
 	#echo ""
@@ -12,19 +12,21 @@ if [ -z "$TAG" ]; then
 	#exit 1
 fi
 
-
-for i in job_bench_*; do
+for i in job_bench*; do
 	OUTFILE="$i/output.out"
 
 	if [ -e "$OUTFILE" ]; then
 		# File exists => Next check
 
-		HITS=`grep "$TAG" "$OUTFILE" | wc -l`
+		for TAG in "${TAGS[@]}"; do
 
-		if [ "$HITS" -ge "1" ]; then
-			# Tag found => Just continue
-			continue
-		fi
+			HITS=`grep "$TAG" "$OUTFILE" | wc -l`
+
+			if [ "$HITS" -ge "1" ]; then
+				# Tag found => Just continue
+				continue 2
+			fi
+		done
 	fi
 
 	echo "$i"
