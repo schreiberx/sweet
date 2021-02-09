@@ -1,0 +1,31 @@
+#! /bin/bash
+
+TAG=$1
+
+if [ -z "$TAG" ]; then
+	TAG="total_wallclock_time:"
+
+	#echo "Usage: $0 [tag]"
+	#echo ""
+	#echo "Search through jobs in output.out whether the tag 'tag' exists"
+	#echo "If the tag doesn't exist, output the job directory"
+	#exit 1
+fi
+
+
+for i in job_bench_*; do
+	OUTFILE="$i/output.out"
+
+	if [ -e "$OUTFILE" ]; then
+		# File exists => Next check
+
+		HITS=`grep "$TAG" "$OUTFILE" | wc -l`
+
+		if [ "$HITS" -ge "1" ]; then
+			# Tag found => Just continue
+			continue
+		fi
+	fi
+
+	echo "$i"
+done
