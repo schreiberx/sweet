@@ -1053,8 +1053,14 @@ int main_real(int i_argc, char *i_argv[])
 				simulationSWE->timestep_check_output();
 			}
 
-			if (simVars.iodata.output_file_name.size() > 0)
-				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_reference_filenames << std::endl;
+#if SWEET_MPI
+			// Start counting time
+			if (mpi_rank == 0)
+#endif
+			{
+				if (simVars.iodata.output_file_name.size() > 0)
+					std::cout << "[MULE] reference_filenames: " << simulationSWE->output_reference_filenames << std::endl;
+			}
 
 			std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
 
