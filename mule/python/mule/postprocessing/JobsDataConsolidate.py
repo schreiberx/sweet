@@ -63,8 +63,8 @@ class JobsDataConsolidate(InfoError):
                     print("Job data "+i+" doesn't exist. Ignoring!")
 
             # create string identifier
-            group_attributes_id = "_".join(group_attributes)
-            group_attributes_short_id = "_".join(group_attributes_short)
+            group_attributes_id = "__".join(group_attributes)
+            group_attributes_short_id = "__".join(group_attributes_short)
 
             # create new group if it doesn't exist
             if not group_attributes_short_id in groups:
