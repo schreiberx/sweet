@@ -71,11 +71,8 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 	{
 		// STAGGERED GRID
 
-		PlaneData U(i_h.planeDataConfig);
-		PlaneData V(i_h.planeDataConfig);
-		PlaneData H(i_h.planeDataConfig);
-
-		/* Sadourny energy conserving scheme
+		/*
+		 * Sadourny energy conserving scheme
 		 *
 		 * Note, that this grid does not follow the formulation
 		 * in the paper of Robert Sadourny, but looks as follows:
@@ -97,13 +94,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		 * P_t + div(P V) = 0
 		 */
 
-		/*
-		 * U and V updates
-		 */
-		U = simVars.sim.h0*i_u;
-		V = simVars.sim.h0*i_v;
-
-		H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+		PlaneData H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
 		o_u_t = op.avg_f_y(simVars.sim.plane_rotating_f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
 		o_v_t = -op.avg_f_x(simVars.sim.plane_rotating_f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
