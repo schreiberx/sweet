@@ -382,7 +382,8 @@ Divergence equation
 Using the divergence operator on the velocity equations we then get
 \begin_inset Formula 
 \begin{align*}
-\nabla\cdot\left(\frac{\partial\vec{V}}{\partial t}\right) & =-\nabla^{2}\left(\Phi+\frac{\vec{V}\cdot\vec{V}}{2}\right)-\nabla\cdot\left(\eta\vec{k}\times\vec{V}\right)
+\nabla\cdot\left(\frac{\partial\vec{V}}{\partial t}\right) & =-\nabla^{2}\left(\Phi+\frac{\vec{V}\cdot\vec{V}}{2}\right)+\nabla\cdot\left(\eta\vec{k}\times\vec{V}\right)\\
+ & =-\nabla^{2}\left(\Phi+\frac{\vec{V}\cdot\vec{V}}{2}\right)+\nabla\cdot\left(\vec{k}\times\eta\vec{V}\right)
 \end{align*}
 
 \end_inset
@@ -390,7 +391,7 @@ Using the divergence operator on the velocity equations we then get
 and we use
 \begin_inset Formula 
 \[
-\nabla\cdot\left(A\times B\right)=\left(\nabla\times A\right)\cdot B-\left(\nabla\times B\right)\cdot A.
+\nabla\cdot\left(A\times B\right)=B\cdot\left(\nabla\times A\right).
 \]
 
 \end_inset
@@ -398,22 +399,12 @@ and we use
 to get
 \begin_inset Formula 
 \begin{align*}
-\nabla\cdot\left(\vec{k}\times\left(\eta\vec{V}\right)\right) & =\underbrace{\left(\nabla\times\vec{k}\right)\cdot\left(\eta\vec{V}\right)}_{=0}-\left(\nabla\times\eta\vec{V}\right)\cdot\vec{k}.
+\nabla\cdot\left(\vec{k}\times\eta\vec{V}\right) & =\vec{k}\cdot\left(\nabla\times\eta\vec{V}\right).
 \end{align*}
 
 \end_inset
 
-The zero identity is given by 
-\begin_inset Formula $\nabla\times\vec{k}=0$
-\end_inset
 
-.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-[TODO: Show that this one is really 0].
 \end_layout
 
 \begin_layout Standard
@@ -445,18 +436,30 @@ Using the divergence operator on the velocity equations we then get
 and furthermore
 \begin_inset Formula 
 \begin{align*}
-\frac{\partial\xi}{\partial t} & =-\vec{k}\cdot\left[\nabla\times\left(\eta\left(\vec{k}\times\vec{V}\right)\right)\right].
+\frac{\partial\xi}{\partial t} & =-\vec{k}\cdot\left[\nabla\times\left(\eta\left(\vec{k}\times\vec{V}\right)\right)\right]\\
+ & =-\vec{k}\cdot\left[\nabla\times\left(\vec{k}\times\eta\vec{V}\right)\right].
 \end{align*}
 
 \end_inset
 
+Using the identity
+\begin_inset Formula 
+\[
+\vec{k}\cdot\left(\nabla\times B\right)=B\cdot\left(\vec{k}\times\nabla\right)
+\]
 
-\series bold
-[TODO]
-\end_layout
+\end_inset
 
-\begin_layout Standard
-And finally we get
+we get
+\begin_inset Formula 
+\begin{align*}
+\frac{\partial\xi}{\partial t} & =-\nabla\cdot\left[\vec{k}\times\left(\vec{k}\times\eta\vec{V}\right)\right]\\
+ & =-\nabla\cdot\left(\eta\vec{V}\right).
+\end{align*}
+
+\end_inset
+
+Finally, we obtain
 \begin_inset Formula 
 \begin{align}
 \frac{\partial\xi}{\partial t} & =-\nabla\cdot\left(\eta\vec{V}\right)=-\nabla\cdot\left(\left(\xi+f\right)\vec{V}\right).\label{eq:pvd_dvort_dt}
