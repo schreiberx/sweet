@@ -59,6 +59,7 @@ private:
 	typedef std::complex<double> complex;
 
 
+
 	/// Simulation variables
 	SimulationVariables &simVars;
 
@@ -156,6 +157,9 @@ private:
 
 
 #if SWEET_MPI
+	// MPI communicator
+	MPI_Comm mpi_comm;
+
 	// number of mpi ranks to be used
 	int mpi_rank;
 

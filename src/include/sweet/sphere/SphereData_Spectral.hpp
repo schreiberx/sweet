@@ -1005,6 +1005,18 @@ public:
 		return retval;
 	}
 
+	bool spectral_is_first_nan_or_inf()	const
+	{
+		bool retval = false;
+
+		retval |= std::isnan(spectral_space_data[0].real());
+		retval |= std::isinf(spectral_space_data[0].real());
+		retval |= std::isnan(spectral_space_data[0].imag());
+		retval |= std::isinf(spectral_space_data[0].imag());
+
+		return retval;
+	}
+
 
 	void spectral_print(
 			int i_precision = 16,

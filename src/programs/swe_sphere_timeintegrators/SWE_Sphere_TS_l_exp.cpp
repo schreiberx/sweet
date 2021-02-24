@@ -151,9 +151,9 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 	#endif
 
 	#if SWEET_MPI
-
-		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-		MPI_Comm_size(MPI_COMM_WORLD, &num_mpi_ranks);
+		mpi_comm = MPI_COMM_WORLD;	// TODO: Make me more flexible in future versions
+		MPI_Comm_rank(mpi_comm, &mpi_rank);
+		MPI_Comm_size(mpi_comm, &num_mpi_ranks);
 
 		num_global_threads = num_local_rexi_par_threads * num_mpi_ranks;
 
@@ -234,7 +234,7 @@ SWE_Sphere_TS_l_exp::~SWE_Sphere_TS_l_exp()
 		#if SWEET_MPI
 
 			int num_ranks;
-			MPI_Comm_size(MPI_COMM_WORLD, &num_ranks);
+			MPI_Comm_size(mpi_comm, &num_ranks);
 
 			if (num_ranks > 1)
 			{
@@ -247,13 +247,13 @@ SWE_Sphere_TS_l_exp::~SWE_Sphere_TS_l_exp()
 				if (mpi_rank == 1)
 				{
 					double data = SimulationBenchmarkTimings::getInstance().rexi_timestepping_broadcast.time;
-					MPI_Send(&data, sizeof(double), MPI_BYTE, 0, 0, MPI_COMM_WORLD);
+					MPI_Send(&data, sizeof(double), MPI_BYTE, 0, 0, mpi_comm);
 				}
 
 				if (mpi_rank == 0)
 				{
 					MPI_Status status;
-					MPI_Recv(&SimulationBenchmarkTimings::getInstance().rexi_timestepping_broadcast.time, sizeof(double), MPI_BYTE, 1, 0, MPI_COMM_WORLD, &status);
+					MPI_Recv(&SimulationBenchmarkTimings::getInstance().rexi_timestepping_broadcast.time, sizeof(double), MPI_BYTE, 1, 0, mpi_comm, &status);
 				}
 
 			}
@@ -798,7 +798,7 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 		}
 
 		#if SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS && SWEET_MPI
-			MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Barrier(mpi_comm);
 		#endif
 
 	#if SWEET_BENCHMARK_TIMINGS
@@ -820,9 +820,9 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 
 			std::size_t spectral_data_num_doubles = io_prog_phi.sphereDataConfig->spectral_array_data_number_of_elements*2;
 
-			MPI_Bcast(io_prog_phi.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-			MPI_Bcast(io_prog_vrt.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-			MPI_Bcast(io_prog_div.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			MPI_Bcast(io_prog_phi.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, mpi_comm);
+			MPI_Bcast(io_prog_vrt.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, mpi_comm);
+			MPI_Bcast(io_prog_div.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, 0, mpi_comm);
 
 		#endif
 
@@ -1065,7 +1065,7 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.start();
 		#endif
 
-			MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Barrier(mpi_comm);
 
 		#if SWEET_BENCHMARK_TIMINGS
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping_miscprocessing.stop();
@@ -1095,26 +1095,26 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 
 			#if SWEET_REXI_ALLREDUCE
 
-				MPI_Allreduce(prog_phi0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				MPI_Allreduce(prog_phi0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, mpi_comm);
 				std::swap(prog_phi0_phys.spectral_space_data, tmp.spectral_space_data);
 
-				MPI_Allreduce(prog_vrt0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				MPI_Allreduce(prog_vrt0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, mpi_comm);
 				std::swap(prog_vrt0.spectral_space_data, tmp.spectral_space_data);
 
-				MPI_Allreduce(prog_div0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				MPI_Allreduce(prog_div0_phys.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, mpi_comm);
 				std::swap(prog_div0.spectral_space_data, tmp.spectral_space_data);
 
 			#else
 
-				MPI_Reduce(io_prog_phi.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(io_prog_phi.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, mpi_comm);
 				if (mpi_rank == 0)
 					std::swap(io_prog_phi.spectral_space_data, tmp.spectral_space_data);
 
-				MPI_Reduce(io_prog_vrt.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(io_prog_vrt.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, mpi_comm);
 				if (mpi_rank == 0)
 					std::swap(io_prog_vrt.spectral_space_data, tmp.spectral_space_data);
 
-				MPI_Reduce(io_prog_div.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(io_prog_div.spectral_space_data, tmp.spectral_space_data, spectral_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, mpi_comm);
 				if (mpi_rank == 0)
 					std::swap(io_prog_div.spectral_space_data, tmp.spectral_space_data);
 
@@ -1144,26 +1144,26 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 
 			#if SWEET_REXI_ALLREDUCE
 
-				MPI_Allreduce(prog_phi0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				MPI_Allreduce(prog_phi0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, mpi_comm);
 				std::swap(prog_phi0_phys.physical_space_data, tmp.physical_space_data);
 
-				MPI_Allreduce(prog_vrt0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				MPI_Allreduce(prog_vrt0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, mpi_comm);
 				std::swap(prog_vrt0.physical_space_data, tmp.physical_space_data);
 
-				MPI_Allreduce(prog_div0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+				MPI_Allreduce(prog_div0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, mpi_comm);
 				std::swap(prog_div0.physical_space_data, tmp.physical_space_data);
 
 			#else
 
-				MPI_Reduce(prog_phi0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(prog_phi0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, mpi_comm);
 				if (mpi_rank == 0)
 					std::swap(prog_phi0_phys.physical_space_data, tmp.physical_space_data);
 
-				MPI_Reduce(prog_vrt0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(prog_vrt0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, mpi_comm);
 				if (mpi_rank == 0)
 					std::swap(prog_vrt0_phys.physical_space_data, tmp.physical_space_data);
 
-				MPI_Reduce(prog_div0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+				MPI_Reduce(prog_div0_phys.physical_space_data, tmp.physical_space_data, physical_data_num_doubles, MPI_DOUBLE, MPI_SUM, 0, mpi_comm);
 				if (mpi_rank == 0)
 					std::swap(prog_div0_phys.physical_space_data, tmp.physical_space_data);
 
