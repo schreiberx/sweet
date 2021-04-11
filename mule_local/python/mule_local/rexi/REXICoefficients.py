@@ -27,6 +27,8 @@ class REXICoefficients:
         self.gamma = None
 
         self.unique_id = None
+        
+        self.normalized_steady_state = False
         return
 
     def len(self):
@@ -110,16 +112,16 @@ class REXICoefficients:
         """
         Exploit a symmetry of the poles in case that they are complex conjugate symmetric
         """
-
+        
         print("WARNING: THIS IS JUST A DUMMY IMPLEMENTATION (symred)")
-
+        
         new_alphas = []
         new_betas = []
-
+        
         self.symmetric_reduction_applied = True
         if not '_symred' in self.unique_id_string:
                 self.unique_id_string += '_symred'
-
+        
         return
 
 
@@ -150,6 +152,9 @@ class REXICoefficients:
         Rescale beta coefficients so that they the solution converges to 1 for dt -> 0
         """
         
+        if self.normalized_steady_state:
+            raise Exception("Normalization already triggered")
+        
         if self.gamma != 0:
             raise Exception("Normalization is not supported for beta != 0")
         
@@ -170,6 +175,7 @@ class REXICoefficients:
         
         self.betas = [i*rescale for i in self.betas]
         
+        self.unique_id_string += "_nrm"
         
 
     def eval(self, x):
