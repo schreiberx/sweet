@@ -20,7 +20,7 @@ class Functions:
     def phiNDirect(
         self,
         n: int,
-        z
+        z: float
     ):
         """
         Direct formulation of phiN functions.

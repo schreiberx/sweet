@@ -6,7 +6,9 @@ import sys
 d = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(d)
 from EFloat import *
+from Functions import *
 sys.path.pop()
+
 
 import math
 import struct
@@ -104,19 +106,6 @@ class REXICoefficients:
 
 
 
-    def normalize_steady_state(self):
-        """
-        Normalize for very accurate steady state modes (Eigenvalue 0)
-        """
-        val = 0.0
-        for i in range(len(self.alphas)):
-            val = val + self.betas[i]/self.alphas[i]
-
-        norm = 1.0/val
-        for i in range(len(self.alphas)):
-            self.betas[i] *= norm
-
-
     def symmetric_reduction(self):
         """
         Exploit a symmetry of the poles in case that they are complex conjugate symmetric
@@ -134,11 +123,10 @@ class REXICoefficients:
         return
 
 
-
     def beta_filter(
-                self,
-                beta_threshold
-        ):
+        self,
+        beta_threshold
+    ):
         """
         Filter out beta coefficients which amplitude is below a given threshold
         """
@@ -155,6 +143,34 @@ class REXICoefficients:
         return
 
 
+    def normalize_steady_state(
+        self
+    ):
+        """
+        Rescale beta coefficients so that they the solution converges to 1 for dt -> 0
+        """
+        
+        if self.gamma != 0:
+            raise Exception("Normalization is not supported for beta != 0")
+        
+        if self.function_name == None:
+            raise Exception("Function name required for normalization")
+            
+        
+        x = 0
+        val = 0
+        for i in range(len(self.alphas)):
+            val += self.betas[i] / (x + self.alphas[i])
+
+        fun = Functions(self.function_name, efloat_mode='float')     
+        
+        target_value = fun.eval(0)
+        
+        rescale = target_value/val
+        
+        self.betas = [i*rescale for i in self.betas]
+        
+        
 
     def eval(self, x):
         retval = self.gamma

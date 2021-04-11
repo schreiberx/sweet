@@ -1,10 +1,15 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 import numpy as np
+
+d = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(d+"/..")
 
 from mule_local.rexi.Functions import *
 
+sys.path.pop()
 
 funs = Functions()
 funs_mp = Functions(efloat_mode="mpfloat")
