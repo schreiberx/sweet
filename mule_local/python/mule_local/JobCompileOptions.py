@@ -117,14 +117,15 @@ class JobCompileOptions(InfoError):
         self.init_phase = False
 
 
-    def __setattr__(self, name, value):
 
+    def __setattr__(self, name, value):
         if name != 'init_phase':
             if not self.init_phase:
                 if not name in self.__dict__:
                     raise Exception("Attribute '"+name+"' does not exist!")
 
         self.__dict__[name] = value
+
 
 
     def getSConsParams(self):

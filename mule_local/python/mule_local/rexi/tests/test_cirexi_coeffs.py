@@ -1,7 +1,11 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 import numpy as np
+
+d = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(d+"/..")
 
 from Functions import *
 from trexi.TREXI import *
@@ -9,6 +13,7 @@ from cirexi.CIREXI import *
 from brexi.BREXI import *
 from elrexi.ELREXI import *
 
+sys.path.pop()
 
 for rexi_method in [
         "cirexi",

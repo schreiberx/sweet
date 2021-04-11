@@ -436,21 +436,6 @@ jobs:
             - gfortran-8
       env:
         - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
-      script: ./tests/50_test_rexi_pde2x2/test.py
-
-
-    # Test with G++-8
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - texinfo
-            - g++-8
-            - gfortran-8
-      env:
-        - MATRIX_EVAL="export CC=gcc-8 && export CXX=g++-8 && export FC=gfortran-8 && export F90=gfortran-8"
       script: ./tests/50_test_plane_sampler_interpolation/test.py
 
 
