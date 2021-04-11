@@ -19,6 +19,20 @@ from mule_local.rexi.brexi.BREXI import *
 efloat_mode = "float"
 
 
+
+
+def new_rexi_method():
+    rexi_method = {}
+
+    # Choose REXI method which is typically 'file' for all file-based ones
+    rexi_method['rexi_method'] = 'file'
+
+    # List with approximations for different 'phi' functions
+    rexi_method['rexi_files_coefficients'] = None
+
+    return rexi_method
+
+
 def get_rexi_benchmarks(jg):
     # Accumulator of all REXI methods
     # rexi_method['rexi_method'] = 'file'               # Choose REXI method which is typically 'file' for all file-based ones
@@ -31,6 +45,8 @@ def get_rexi_benchmarks(jg):
         # CI REXI
         #
         if False:
+
+
             # REXI stuff
             def fun_params_ci_N(ci_max_real, ci_max_imag):
                 raise Exception("XXX")
@@ -52,15 +68,8 @@ def get_rexi_benchmarks(jg):
 
             params_ci_min_imag = 5.0
 
-            rexi_method = {}
-
-            # Choose REXI method which is typically 'file' for all file-based ones
-            rexi_method['rexi_method'] = 'file'
-
-            # List with approximations for different 'phi' functions
-            rexi_method['rexi_files_coefficients'] = None
-
             for ci_max_imag, ci_max_real in product(params_ci_max_imag, params_ci_max_real):
+                rexi_method = new_rexi_method()
 
                 #if params_ci_max_imag_scaling_relative_to_timestep_size != None:
                 #    ci_max_imag *= (jg.runtime.timestep_size / params_ci_max_imag_scaling_relative_to_timestep_size)
@@ -111,16 +120,12 @@ def get_rexi_benchmarks(jg):
         #
         if True:
             max_imags = [30.0]
-            rexi_method = {}
 
-            # Choose REXI method which is typically 'file' for all file-based ones
-            rexi_method['rexi_method'] = 'file'
-
-            # List with approximations for different 'phi' functions
-            rexi_method['rexi_files_coefficients'] = None
 
             for normalize_rexi in [True, False]:
                 for max_imag in max_imags:
+                    rexi_method = new_rexi_method()
+
                     # "phi0"
                     elrexi = ELREXI(efloat_mode=efloat_mode)
                     coeffs_phi0 = elrexi.setup(
@@ -169,15 +174,9 @@ def get_rexi_benchmarks(jg):
         #
         if False:
             max_imags = [30.0]
-            rexi_method = {}
-
-            # Choose REXI method which is typically 'file' for all file-based ones
-            rexi_method['rexi_method'] = 'file'
-
-            # List with approximations for different 'phi' functions
-            rexi_method['rexi_files_coefficients'] = None
 
             for max_imag in max_imags:
+                rexi_method = new_rexi_method()
 
                 # "phi0"
                 lrrexi = LRREXI(efloat_mode=efloat_mode)
@@ -222,15 +221,10 @@ def get_rexi_benchmarks(jg):
         #
         if False:
             max_imags = [30.0]
-            rexi_method = {}
-
-            # Choose REXI method which is typically 'file' for all file-based ones
-            rexi_method['rexi_method'] = 'file'
-
-            # List with approximations for different 'phi' functions
-            rexi_method['rexi_files_coefficients'] = None
 
             for max_imag in max_imags:
+                rexi_method = new_rexi_method()
+
                 # "phi0"
                 beanrexi = BeanREXI(efloat_mode=efloat_mode)
                 coeffs_phi0 = beanrexi.setup(

@@ -438,6 +438,9 @@ if __name__ == "__main__":
                     rb = rexi_benchmarks.get_rexi_benchmarks(jg)
 
                     for r in rb:
+                        #print(r['rexi_files_coefficients'][0].unique_id_string)
+                        #continue
+
                         jg.runtime.rexi_method = r['rexi_method']
                         jg.runtime.rexi_files_coefficients = r['rexi_files_coefficients']
 
