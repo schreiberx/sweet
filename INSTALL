@@ -104,144 +104,29 @@ Most users don't have to read through this
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	**** MAC OSX USERS ****
-	**** MAC OSX USERS ****
-	**** MAC OSX USERS ****
+**** MAC OSX USERS ****
+**** MAC OSX USERS ****
+**** MAC OSX USERS ****
 
-	xcode-select --install
+xcode-select --install
 
-	FIRST:
-	Install GNU compiler with local_software scripts
+FIRST:
+Install GNU compiler with local_software scripts
 
-	SECOND:
-	Don't use the python version which is installed on MacOSX.
-	Install it with the installation scripts
+SECOND:
+Don't use the python version which is installed on MacOSX.
+Install it with the installation scripts
 
-	THIRD:
-	SCons is executed with /usr/bin/env
-	This basically removes all [DY]LD_LIBRARY_PATH variables
-	which makes plenty of trouble.
-	Edit the file local_software/local/bin/scons and replace
-	the first line with
-	#! [SWEET INSTALL DIR]/local_software/local/bin/python
+THIRD:
+SCons is executed with /usr/bin/env
+This basically removes all [DY]LD_LIBRARY_PATH variables
+which makes plenty of trouble.
+Edit the file local_software/local/bin/scons and replace
+the first line with
+#! [SWEET INSTALL DIR]/local_software/local/bin/python
 
-	**** MAC OSX USERS ****
-	**** MAC OSX USERS ****
-	**** MAC OSX USERS ****
-
-
-from the SWEET source code directory to setup your
-environment variables correctly.
+**** MAC OSX USERS ****
+**** MAC OSX USERS ****
+**** MAC OSX USERS ****
 
 
-
-
-Alternative installation options
-
-================
-Autoconf:
-================
-	Only install autoconf from the ./local_software directory
-	if your currently installed version is too old (e.g. on some
-	compute cluster)
-
-
-================
-SCons:
-================
-	SCons is required for building SWEET
-	http://www.scons.org/
-
-	OR
-	apt-get install scons
-
-	A version compatible with Python 3 is required
-
-	
-	
-
-================
-FFTW (almost mandatory): mandatory if Fourier space is required
-================
-	$ ./install_fftw3.sh
-
-	OR
-	apt-get install libfftw3-dev
-
-
-================
-SHTNS (optional): Required for Spherical Harmonics
-================
-
-	If you like to run simulations with spherical harmonics, you
-	need to install the SHTNS library:
-	
-	$ ./install_shtns.sh
-
-
-================
-LAPACK (optional): Required for REXI on the sphere for spectral space solver
-================
-
-	Lapack is required to solve the diagonal-blocked partitions of the spectral
-	matrix. Instsall with
-
-	$ ./install_lapack.sh
-
-
-================
-GUI:
-================
-
-
-	================
-	SDL (optional): Graphical user interface to simulations
-	================
-		The GUI depends on libSDL2
-		https://www.libsdl.org/
-
-		apt-get install libsdl2-dev
-
-		OR
-		
-		Download  http://libsdl.org/release/SDL2-2.X.X.tar.gz
-		./configure --prefix=$HOME/local/SDL2-2.0.3
-		make -j 4
-		make install
-		Add the SDL2-2.0.3 to manually installed libraries 
-		 enviromental variables to import them.
-		 (Such as in $HOME/bin/local_vars.sh).
-
-	================
-	Freetype: Font library
-	================
-		You also need to install the freetype library.
-		On Ubuntu Linux systems the developer libraries
-		can be installed e.g. with
-		$ sudo apt-get install libfreetype6-dev
-
-	================
-	Mesa 3D libs
-	================
-		You require the GL MESA drivers on Linux system.
-		Install them on Ubuntu systems e.g. by using
-		$ sudo apt-get install libgl1-mesa-dev
-
-
-================
-NUMA (optional): Optimized memory allocation
-================
-	Get libnuma from
-	ftp://oss.sgi.com/www/projects/libnuma/download/numactl-2.0.10.tar.gz
-
-
-================
-MPI - (Optional)
-================
-	Get OpenMPI or other MPI parallelization library
-	http://www.open-mpi.org/software/ompi/v1.8/
-	openmpi-1.8.6.tar.bz2
-
-	tar xzf openmpi-1.8.6.tar.bz2
-	./configure --prefix=$HOME/local/sweet_support
-	make -j 4 install

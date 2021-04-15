@@ -116,17 +116,26 @@ February 24, 2019
 Martin Schreiber
 \end_layout
 
-\begin_layout Standard
+\begin_layout Abstract
 This is a description of SWEET's build and execution framework.
  The reason for this development is a unified framework to support execution
  in a variety of environments without requiring to make changes in the scripts
  throughout many scripts used in the software development.
 \end_layout
 
-\begin_layout Standard
+\begin_layout Abstract
 With Python being available on all systems, SWEET strongly uses Python in
  a variety of cases, from compilation, job script generation to analysis
  of output data.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section*
@@ -625,7 +634,7 @@ noprefix "false"
 \begin_layout Itemize
 
 \series bold
-mule/site-packages/
+mule/python/
 \series default
 
 \begin_inset Newline newline
@@ -636,7 +645,7 @@ MULE's Python package
 
 \begin_deeper
 \begin_layout Itemize
-mule/site-packages/mule:
+mule/python/mule:
 \end_layout
 
 \begin_deeper
@@ -690,7 +699,7 @@ Accumulation of all available platforms
 \end_layout
 
 \begin_layout Itemize
-mule/site-packages/mule/plotting/:
+mule/python/mule/plotting/:
 \begin_inset Newline newline
 \end_inset
 
@@ -698,7 +707,7 @@ Plotting support (just for convenience)
 \end_layout
 
 \begin_layout Itemize
-mule/site-packages/mule/postprocessing/:
+mule/python/mule/postprocessing/:
 \begin_inset Newline newline
 \end_inset
 
@@ -761,7 +770,7 @@ These scripts provide information on additional 3rd party libraries which
 \end_layout
 
 \begin_layout Itemize
-mule_local/site-packages/mule_local/:
+mule_local/python/mule_local/:
 \begin_inset Newline newline
 \end_inset
 
@@ -770,7 +779,7 @@ Software specific Python packages
 
 \begin_deeper
 \begin_layout Itemize
-mule_local/site-packages/mule_local/:
+mule_local/python/mule_local/:
 \end_layout
 
 \begin_layout Itemize
