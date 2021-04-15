@@ -1,5 +1,5 @@
-#LyX 2.2 created this file. For more info see http://www.lyx.org/
-\lyxformat 508
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
 \begin_document
 \begin_header
 \save_transient_properties true
@@ -44,6 +44,8 @@
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -73,6 +75,7 @@
 \suppress_date false
 \justification true
 \use_refstyle 1
+\use_minted 0
 \index Index
 \shortcut idx
 \color #008000
@@ -81,7 +84,10 @@
 \tocdepth 3
 \paragraph_separation indent
 \paragraph_indentation default
-\quotes_language english
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -95,23 +101,24 @@
 \begin_body
 
 \begin_layout Title
-Time stepping methods for SWE on the plane in SWEET (PRELIMINARY VERSION)
+Time stepping methods for SWE in SWEET 
 \end_layout
 
 \begin_layout Author
-Martin Schreiber <M.Schreiber@exeter.ac.uk>
+Martin Schreiber <martin.schreiber@tum.de>
 \end_layout
 
 \begin_layout Standard
 The intention of this paper is to define an interface description for the
  different time stepping methods for the SWE as they are currently available
  in SWEET.
- This document focuses on the SWE on the bi-periodic plane.
+ This document focuses mainly on the SWE on the bi-periodic plane, but the
+ same nomenclature is used for the SWE on the sphere.
 \end_layout
 
 \begin_layout Standard
 To find a meaningful interface description, we first split up the non-linear
- SWE in its components.
+ SWE to its components.
  This is important since each of these components can be treated with a
  different time stepping method.
  Also, we provide some additional information on the SWE related to their
@@ -119,7 +126,7 @@ To find a meaningful interface description, we first split up the non-linear
 \end_layout
 
 \begin_layout Section
-Shallow water equations
+Shallow water equations on the plane
 \end_layout
 
 \begin_layout Standard
@@ -197,12 +204,8 @@ and
 .
 \end_layout
 
-\begin_layout Section
-Time stepping methods for SWE
-\end_layout
-
 \begin_layout Subsection
-Shallow-water equations on the plane
+Splitting
 \end_layout
 
 \begin_layout Standard
@@ -525,7 +528,7 @@ SL treatment allows running time steps which are about 6 to 10 times larger
 
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Section
 Time stepping methods
 \end_layout
 
@@ -535,7 +538,7 @@ In the following, we give an overview of different time stepping methods
  which time stepping method.
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Naming terms:
 \end_layout
 
@@ -683,7 +686,7 @@ nd
 \begin_inset Text
 
 \begin_layout Plain Layout
-lgc
+l(=lgc)
 \end_layout
 
 \end_inset
@@ -706,7 +709,7 @@ lgc
 \begin_inset Text
 
 \begin_layout Plain Layout
-ntd
+n(=ntd)
 \end_layout
 
 \end_inset
@@ -765,17 +768,18 @@ d
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Naming time stepping methods
 \end_layout
 
 \begin_layout Standard
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="8" columns="2">
+<lyxtabular version="3" rows="5" columns="3">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -788,13 +792,24 @@ Time stepping method
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 
 \series bold
 Naming
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Comment
 \end_layout
 
 \end_inset
@@ -810,11 +825,20 @@ Explicit Runge-Kutta
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
 erk
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1st / 2nd / 4th order
 \end_layout
 
 \end_inset
@@ -830,7 +854,7 @@ Implicit Runge-Kutta
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -839,42 +863,11 @@ irk
 
 \end_inset
 </cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-Crank-Nicolson
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-cn
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Leap-Frog
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-lf
+1st order and 2nd order Crank-Nicolson
 \end_layout
 
 \end_inset
@@ -890,7 +883,7 @@ Semi-Lagrangian
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
@@ -899,22 +892,11 @@ sl
 
 \end_inset
 </cell>
-</row>
-<row>
-<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-REXI
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-rexi
+1st / 2nd order
 \end_layout
 
 \end_inset
@@ -925,16 +907,25 @@ rexi
 \begin_inset Text
 
 \begin_layout Plain Layout
-Direct / Analytical solution
+Exponential integration
 \end_layout
 
 \end_inset
 </cell>
-<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
 
 \begin_layout Plain Layout
-direct
+exp
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+inf order
 \end_layout
 
 \end_inset
@@ -947,7 +938,7 @@ direct
 
 \end_layout
 
-\begin_layout Subsubsection
+\begin_layout Subsection
 Behavior of accuracy
 \end_layout
 
@@ -1096,7 +1087,7 @@ We provide an overview of the different time stepping methods which are
 \begin_layout Standard
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="8" columns="7">
+<lyxtabular version="3" rows="9" columns="7">
 <features tabularvalignment="middle">
 <column alignment="right" valignment="top" width="0pt">
 <column alignment="right" valignment="top" width="0pt">
@@ -1205,7 +1196,7 @@ l_irk
 \begin_inset Text
 
 \begin_layout Plain Layout
-1
+1/2/4
 \end_layout
 
 \end_inset
@@ -1263,7 +1254,7 @@ X
 \begin_layout Plain Layout
 
 \series bold
-ld_erk1
+l_erk
 \end_layout
 
 \end_inset
@@ -1272,7 +1263,7 @@ ld_erk1
 \begin_inset Text
 
 \begin_layout Plain Layout
-1
+1/2/4
 \end_layout
 
 \end_inset
@@ -1317,7 +1308,7 @@ X
 \begin_inset Text
 
 \begin_layout Plain Layout
-X
+
 \end_layout
 
 \end_inset
@@ -1330,7 +1321,7 @@ X
 \begin_layout Plain Layout
 
 \series bold
-l_rexi
+l_exp
 \end_layout
 
 \end_inset
@@ -1358,6 +1349,73 @@ X
 
 \begin_layout Plain Layout
 X
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+lg_exp
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+exp
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+X
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
 \end_layout
 
 \end_inset
@@ -1464,7 +1522,7 @@ X
 \begin_layout Plain Layout
 
 \series bold
-l_rexi_na_sl
+l_exp_na_sl
 \end_layout
 
 \end_inset
@@ -1473,7 +1531,7 @@ l_rexi_na_sl
 \begin_inset Text
 
 \begin_layout Plain Layout
-=2 ???
+1/2
 \end_layout
 
 \end_inset
@@ -1540,7 +1598,7 @@ ln_erk
 \begin_inset Text
 
 \begin_layout Plain Layout
-1/2/3/4
+1/2/4
 \end_layout
 
 \end_inset
@@ -1598,7 +1656,7 @@ X
 \begin_layout Plain Layout
 
 \series bold
-lg_rexi_lc_implicit_na_sl_nd_cn
+lg_exp_lc_implicit_na_sl_nr_settls
 \end_layout
 
 \end_inset
@@ -1607,7 +1665,7 @@ lg_rexi_lc_implicit_na_sl_nd_cn
 \begin_inset Text
 
 \begin_layout Plain Layout
-=2 ???
+2
 \end_layout
 
 \end_inset
