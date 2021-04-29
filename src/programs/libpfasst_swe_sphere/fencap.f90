@@ -15,7 +15,7 @@ module encap_module
   end type sweet_data_factory_t
 
   type, extends (pf_encap_t) :: sweet_data_encap_t
-     type(c_ptr) :: c_sweet_data_ptr = c_null_ptr ! c pointer to PlaneData/SpereData
+     type(c_ptr) :: c_sweet_data_ptr = c_null_ptr ! c pointer to PlaneData/SphereData
      integer     :: data_size ! size of the flat data array
    contains
      procedure   :: setval   => sweet_data_setval
@@ -126,17 +126,17 @@ contains
   ! constructors/destructors of the sweet_data objects 
   ! PlaneData or SphereData
 
-  subroutine sweet_data_create_single(this, x, level, kind, nvars, shape)
+  subroutine sweet_data_create_single(this, x, level_index, lev_shape)
     class(sweet_data_factory_t), intent(inout)              :: this
     class(pf_encap_t),           intent(inout), allocatable :: x
-    integer,                     intent(in   )              :: level, kind, nvars, shape(:)
+    integer,                     intent(in   )              :: level_index, lev_shape(:)
 
     allocate(sweet_data_encap_t::x)
 
     select type(x)
     type is (sweet_data_encap_t)
        call c_sweet_data_create(this%ctx,           &
-                                level-1,            &
+                                level_index-1,      &
                                 x%c_sweet_data_ptr, &
                                 x%data_size) ! conversion to C++ indexing
     class default
@@ -146,10 +146,10 @@ contains
   end subroutine sweet_data_create_single
 
 
-  subroutine sweet_data_create_array(this, x, n, level, kind, nvars, shape)
+  subroutine sweet_data_create_array(this, x, n, level_index, lev_shape)
     class(sweet_data_factory_t), intent(inout)              :: this
     class(pf_encap_t),           intent(inout), allocatable :: x(:)
-    integer,                     intent(in   )              :: n, level, kind, nvars, shape(:)
+    integer,                     intent(in   )              :: n, level_index, lev_shape(:)
 
     integer                                                 :: i
     class(sweet_data_encap_t), pointer                      :: x_ptr
@@ -161,7 +161,7 @@ contains
        select type(x_ptr)
        type is (sweet_data_encap_t)
           call c_sweet_data_create(this%ctx,              &
-                                   level-1,               & 
+                                   level_index-1,         &
                                    x_ptr%c_sweet_data_ptr, &
                                    x_ptr%data_size) ! conversion to C++ indexing    
        class default
@@ -172,10 +172,9 @@ contains
   end subroutine sweet_data_create_array
 
   
-  subroutine sweet_data_destroy_single(this, x, level, kind, nvars, shape)
+  subroutine sweet_data_destroy_single(this, x)
     class(sweet_data_factory_t), intent(inout)              :: this
     class(pf_encap_t),           intent(inout), allocatable :: x
-    integer,                     intent(in   )              :: level, kind, nvars, shape(:)
 
     class(sweet_data_encap_t), pointer                      :: x_ptr
     
@@ -188,17 +187,17 @@ contains
   end subroutine sweet_data_destroy_single
 
 
-  subroutine sweet_data_destroy_array(this, x, n, level, kind, nvars, shape)
+  subroutine sweet_data_destroy_array(this, x) !, n, level, kind, nvars, shape)
     class(sweet_data_factory_t), intent(inout)              :: this
     class(pf_encap_t),           intent(inout), allocatable :: x(:)
-    integer,                     intent(in   )              :: n, level, kind, nvars, shape(:)
+    !integer,                     intent(in   )              :: n, level, kind, nvars, shape(:)
 
     class(sweet_data_encap_t), pointer                      :: x_ptr
     integer                                                 :: i
 
     select type(x)
     class is (sweet_data_encap_t)
-       do i = 1, n
+       do i = 1, size(x) ! unsure about this --> TODO
           call c_sweet_data_destroy(x(i)%c_sweet_data_ptr)
        end do
     end select 
@@ -235,8 +234,9 @@ contains
   end subroutine sweet_data_copy
     
   
-  function sweet_data_norm(this) result (norm)
+  function sweet_data_norm(this, flags) result (norm)
     class(sweet_data_encap_t), intent(in   ) :: this
+    integer,                   intent(in   ), optional :: flags ! not used here
     real(c_double)                           :: norm
 
     call c_sweet_data_norm(this%c_sweet_data_ptr, & 
@@ -263,9 +263,10 @@ contains
   end subroutine sweet_data_saxpy
 
   
-  subroutine sweet_data_pack(this, z)
+  subroutine sweet_data_pack(this, z, flags)
     class(sweet_data_encap_t), intent(in   ) :: this
     real(pfdp),                intent(  out) :: z(:)
+    integer,                   intent(in   ), optional :: flags ! not used here
 
     real(pfdp),                pointer       :: z_ptr(:)
     type(c_ptr)                              :: z_c_ptr
@@ -285,9 +286,10 @@ contains
   end subroutine sweet_data_pack
 
 
-  subroutine sweet_data_unpack(this, z)
+  subroutine sweet_data_unpack(this, z, flags)
     class(sweet_data_encap_t), intent(inout)          :: this
     real(pfdp),                intent(in   )          :: z(:)
+    integer,                   intent(in   ), optional :: flags ! not used here
     real(pfdp),                               target  :: z2(size(z))
 
     type(c_ptr)                                       :: z_c_ptr
@@ -306,8 +308,9 @@ contains
   end subroutine sweet_data_unpack
 
 
-  subroutine sweet_data_eprint(this)
+  subroutine sweet_data_eprint(this, flags)
     class(sweet_data_encap_t), intent(inout) :: this
+    integer,                   intent(in   ), optional :: flags ! not used here
 
     call c_sweet_data_eprint(this%c_sweet_data_ptr)
   end subroutine sweet_data_eprint

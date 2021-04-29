@@ -1,3 +1,4 @@
+#include <mpi.h>
 #include "SphereDataVars.hpp"
 #include "SphereDataCtx.hpp"
 #include "ceval.hpp"
