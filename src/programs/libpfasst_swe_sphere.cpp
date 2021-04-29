@@ -3,6 +3,7 @@
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/libpfasst_swe_sphere
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
+ * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
 
@@ -61,7 +62,7 @@ int main(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		std::cout << "--compute-error [0/1]Output errors (if available, default: 1)" << std::endl;
-		std::cout << "--rexi-use-coriolis-formulation [0/1]Use Coriolisincluding  solver for REXI (default: 1)" << std::endl;
+		std::cout << "--rexi-use-coriolis-formulation [0/1]Use Coriolis-including solver for REXI (default: 1)" << std::endl;
 		return -1;
 	}
 
