@@ -19,10 +19,11 @@ module feval_module
      procedure :: f_eval                => sweet_f_eval_sweeper 
      procedure :: f_comp                => sweet_f_comp_sweeper
      procedure :: destroy               => sweet_sweeper_destroy
+     procedure :: compute_dt            => sweet_sweeper_compute_dt
   end type sweet_sweeper_t
 
   ! Define the derived sweeper type
-  type, extends(pf_ark_t) :: sweet_stepper_t
+  type, extends(pf_ark_stepper_t) :: sweet_stepper_t
      type(c_ptr)    :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
      integer        :: nnodes           ! number of nodes
      integer        :: sweep_niter      ! number of the current sweep
@@ -261,13 +262,18 @@ contains
   
   ! destructor
 
-  subroutine sweet_sweeper_destroy(this, lev)
+  subroutine sweet_sweeper_destroy(this, pf, level_index)
     class(sweet_sweeper_t), intent(inout) :: this
-    class(pf_level_t),      intent(inout) :: lev
+    type(pf_pfasst_t),   intent(inout),target :: pf
+    integer,             intent(in)    :: level_index
+
+    ! this is copy-pasted from LibPFASST, unsure about this
+    type(pf_level_t), pointer  :: lev       !  Current level
+    lev => pf%levels(level_index)           !  Assign level pointer
 
     ! need the following line since the "final" keyword is not supported by some (older) compilers
     ! it forces Fortran to destroy the parent class data structures
-    call this%misdcQ_destroy(lev) 
+    call this%misdcQ_destroy(pf, level_index)
 
   end subroutine sweet_sweeper_destroy
 
@@ -386,15 +392,34 @@ contains
   
   ! destructor
 
-  subroutine sweet_stepper_destroy(this, lev)
-    class(sweet_stepper_t), intent(inout) :: this
-    class(pf_level_t),      intent(inout) :: lev
+  subroutine sweet_stepper_destroy(this, pf, level_index)
+    class(sweet_stepper_t),         intent(inout) :: this
+    type(pf_pfasst_t),      target, intent(inout) :: pf
+    integer,                        intent(in   ) :: level_index
+
+    ! this is copy-pasted from LibPFASST, unsure about this
+    type(pf_level_t), pointer  :: lev       !  Current level
+    lev => pf%levels(level_index)           !  Assign level pointer
 
     ! need the following line since the "final" keyword is not supported by some (older) compilers
     ! it forces Fortran to destroy the parent class data structures
-    call this%ark_destroy(lev) 
+    call this%ark_destroy(pf, level_index)
 
   end subroutine sweet_stepper_destroy
+
+  subroutine sweet_sweeper_compute_dt(this, pf, level_index, t0, dt, flags)
+    class(sweet_sweeper_t),         intent(inout) :: this
+    type(pf_pfasst_t), target,      intent(inout) :: pf
+    integer,                        intent(in   ) :: level_index
+    real(pfdp),                     intent(in   ) :: t0
+    real(pfdp),                     intent(inout) :: dt
+    integer, optional,              intent(in   ) :: flags
+
+    type(pf_level_t),    pointer :: lev
+    lev => pf%levels(level_index)   !!  Assign level pointer
+    !  Do nothing now (copy-pasted from pf_imex_sweeper)
+    return
+  end subroutine sweet_sweeper_compute_dt
 
 
 end module feval_module
