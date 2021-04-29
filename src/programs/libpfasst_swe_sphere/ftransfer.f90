@@ -36,25 +36,26 @@ contains
 
   ! interpolation function
 
-  subroutine sweet_data_interpolate(this, levelF, levelG, qF, qG, t)
+  subroutine sweet_data_interpolate(this, f_lev, c_lev, f_vec, c_vec, t, flags)
     class(sweet_level_t),    intent(inout) :: this
-    class(pf_level_t),       intent(inout) :: levelF, levelG
-    class(pf_encap_t),       intent(inout) :: qF, qG
+    class(pf_level_t),       intent(inout) :: f_lev, c_lev ! fine and coarse levels
+    class(pf_encap_t),       intent(inout) :: f_vec, c_vec ! fine and coarse vectors
     real(pfdp),              intent(in)    :: t
+    integer, optional,       intent(in)    :: flags
 
     class(sweet_sweeper_t),  pointer       :: sweet_sweeper_ptr
 
     sweet_sweeper_ptr => as_sweet_sweeper(this%sweeper)
 
-    select type(qF)
+    select type(f_vec)
     type is (sweet_data_encap_t)
-       select type(qG)
+       select type(c_vec)
        type is (sweet_data_encap_t)
 
-          call c_sweet_data_interpolate(qF%c_sweet_data_ptr,   & 
-                                        qG%c_sweet_data_ptr,   & 
-                                        levelF%index-1,        & ! conversion to c++ indexing
-                                        levelG%index-1,        & ! conversion to c++ indexing
+          call c_sweet_data_interpolate(f_vec%c_sweet_data_ptr,   &
+                                        c_vec%c_sweet_data_ptr,   &
+                                        f_lev%index-1,        & ! conversion to c++ indexing
+                                        c_lev%index-1,        & ! conversion to c++ indexing
                                         sweet_sweeper_ptr%ctx, &
                                         t)
 
