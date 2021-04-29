@@ -123,9 +123,7 @@ contains
 
     call level%ulevel%factory%create_single(del,                   &
                                             level%index,           & 
-                                            SDC_KIND_SOL_NO_FEVAL, &
-                                            level%nvars,           &
-                                            level%shape)
+                                            level%lev_shape)
     call del%copy(level%q0)
     call del%axpy(-1.0_pfdp, level%Q(1))                                                            
     
