@@ -1468,7 +1468,7 @@ public:
 		{
 			opt = getopt_long(
 				i_argc, i_argv,
-				"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:zh",
+				"N:M:n:m:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:zh",
 				long_options, &option_index
 			);
 
@@ -1756,7 +1756,9 @@ public:
 			default:
 				print_params();
 
-				std::cerr << "Some option was specified to be available, but it's parameter detection is not implemented." << std::endl;
+				std::cerr << "The option '-";
+				std::cerr << (char)opt;
+				std::cerr << "' was specified to be available, but it's parameter detection is not implemented." << std::endl;
 				std::cerr << "Please contact the SWEET developer" << std::endl;
 
 				SWEETError("Exit");
