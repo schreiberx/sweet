@@ -220,12 +220,21 @@ public:
 				int &next_free_program_option
 		)
 		{
-	        // MISC
 	        long_options[next_free_program_option] = {"output-file-name", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"output-file-mode", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
+		}
+
+		void outputProgParams()
+		{
+			std::cout << std::endl;
+			std::cout << "IOData:" << std::endl;
+			std::cout << "	--output-file-name [string]		String specifying the name of the output file" << std::endl;
+			std::cout << "	--output-file-mode [string]		Format of output file, default: default" << std::endl;
+
+			std::cout << "" << std::endl;
 		}
 
 
@@ -1333,6 +1342,7 @@ public:
 		sim.outputProgParams();
 		benchmark.outputProgParams();
 		disc.outputProgParams();
+		iodata.outputProgParams();
 
 
 		std::cout << "" << std::endl;
