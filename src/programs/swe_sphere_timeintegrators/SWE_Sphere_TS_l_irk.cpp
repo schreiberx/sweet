@@ -70,7 +70,7 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	if (TimeStepSizeChanged::is_changed(timestep_size, i_fixed_dt))
+	if (TimeStepSizeChanged::is_changed(timestep_size, i_fixed_dt, true))
 		update_coefficients(i_fixed_dt);
 
 
