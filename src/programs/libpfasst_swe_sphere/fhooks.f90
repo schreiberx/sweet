@@ -14,11 +14,11 @@ module hooks_module
        integer,intent(in)           :: step
      end subroutine cecho_error
 
-     subroutine cecho_residual(i_ctx, i_norm, i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter) & 
+     subroutine cecho_residual(i_ctx, i_norm, i_current_proc) &
           bind(c, name="cecho_residual")
        use iso_c_binding
        type(c_ptr),     value :: i_ctx
-       integer,         value :: i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter
+       integer,         value :: i_current_proc
        real(c_double),  value :: i_norm
      end subroutine cecho_residual
 
@@ -49,11 +49,10 @@ contains
 
   ! error function
 
-  subroutine fecho_error(pf, level, state) 
-    use iso_c_binding    
-    type(pf_pfasst_t),  intent(inout) :: pf
-    class(pf_level_t),  intent(inout) :: level
-    type(pf_state_t),   intent(in)    :: state
+  subroutine fecho_error(pf, level_index)
+    use iso_c_binding
+    type(pf_pfasst_t), intent(inout) :: pf
+    integer, intent(in)              :: level_index
 
     class(pf_encap_t),  allocatable   :: Y_reference
 
@@ -64,77 +63,79 @@ contains
   
   ! function to output the residual 
 
-  subroutine fecho_residual(pf, level, state)
+  subroutine fecho_residual(pf, level_index)
     use iso_c_binding 
     use pf_mod_utils
     type(pf_pfasst_t), intent(inout) :: pf
-    class(pf_level_t), intent(inout) :: level
-    type(pf_state_t),  intent(in)    :: state
+    integer, intent(in)              :: level_index
+
+    real(pfdp)                       :: resid
+    integer                          :: step,rank,iter
 
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: x_ptr
 
-    select type(R => level%R(level%nnodes-1))
-    type is (sweet_data_encap_t)
-       
-       print '("resid: step: ",i7.5," iter: ",i5.3," level: ",i2.2," resid: ",es14.7)', &
-            state%step+1, state%iter, level%index, R%norm()
+    step=pf%state%step+1
+    rank=pf%rank
+    iter=pf%state%iter
+    resid=pf%levels(level_index)%residual
 
-       sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
-       x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
+    print '("resid: step: ",i7.5," iter: ",i5.3," level: ",i2.2," resid: ",es14.7)', &
+            step, iter, level_index, resid
 
-       if (level%index == pf%nlevels) then
+    sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
+    x_ptr             => as_sweet_data_encap(pf%levels(level_index)%Q(sweet_sweeper_ptr%nnodes))
 
-          call cecho_residual(sweet_sweeper_ptr%ctx,  &
-                              R%norm(),               &
-                              state%proc-1,           &
-                              state%step,             &
-                              state%iter,             &
-                              level%nnodes,           &
-                              pf%niters)
+   if (level_index == pf%nlevels) then
 
-       end if
+      call cecho_residual(sweet_sweeper_ptr%ctx,  &
+                          resid,               &
+                          pf%state%proc-1)
 
-   class default
-      stop "TYPE ERROR"
-   end select
+   end if
 
   end subroutine fecho_residual
 
   ! function to output the jump in the initial condition
 
-  subroutine fecho_output_jump(pf, level, state)
+  subroutine fecho_output_jump(pf, level_index)
     use iso_c_binding
     use pf_mod_utils
     use pf_mod_restrict
     use mpi
-    type(pf_pfasst_t),         intent(inout) :: pf
-    class(pf_level_t),         intent(inout) :: level
-    type(pf_state_t),          intent(in)    :: state
+    type(pf_pfasst_t), intent(inout) :: pf
+    integer, intent(in)              :: level_index
     
     class(pf_encap_t),         allocatable   :: del
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: x_ptr
     integer                                  :: ierr, num_procs
+
+    integer                          ::   proc,step,rank,iter
     
     call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
 
-    sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
+    sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
 
-    call level%ulevel%factory%create_single(del,                   &
-                                            level%index,           & 
-                                            level%lev_shape)
-    call del%copy(level%q0)
-    call del%axpy(-1.0_pfdp, level%Q(1))                                                            
+    proc=pf%state%proc
+    step=pf%state%step
+    rank=pf%rank
+    iter=pf%state%iter
+
+    call pf%levels(level_index)%ulevel%factory%create_single(del,  &
+                                            level_index,           &
+                                            pf%levels(level_index)%lev_shape)
+    call del%copy(pf%levels(level_index)%q0)
+    call del%axpy(-1.0_pfdp, pf%levels(level_index)%Q(1))
     
     x_ptr  => as_sweet_data_encap(del)
 
     call cecho_output_jump(sweet_sweeper_ptr%ctx,  &
                            x_ptr%c_sweet_data_ptr, &
-                           state%proc,             &
-                           state%step,             &
-                           state%iter,             &
-                           level%nnodes,           &
+                           proc,                   &
+                           step,                   &
+                           iter,                   &
+                           pf%levels(level_index)%nnodes,           &
                            pf%niters)
 
   end subroutine fecho_output_jump
@@ -142,80 +143,80 @@ contains
 
   ! function to output the solution
 
-  subroutine fecho_output_solution(pf, level, state)
+  subroutine fecho_output_solution(pf, level_index)
     use iso_c_binding
     use pf_mod_utils
     use pf_mod_restrict
     use mpi
-    type(pf_pfasst_t),         intent(inout) :: pf
-    class(pf_level_t),         intent(inout) :: level
-    type(pf_state_t),          intent(in)    :: state
+    type(pf_pfasst_t), intent(inout) :: pf
+    integer, intent(in)              :: level_index
+
+    integer                          ::   proc,step,rank,iter
 
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: x_ptr
     integer                                  :: ierr, num_procs
 
-    call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
-!    if (state%proc == num_procs) then
+    proc=pf%state%proc
+    step=pf%state%step
+    rank=pf%rank
+    iter=pf%state%iter
 
-       sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
-       x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
-       
-       ! if (modulo(state%step, 10000) == 0 .and. state%iter == pf%niters) then
+    call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
+
+       sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
+       x_ptr             => as_sweet_data_encap(pf%levels(level_index)%Q(sweet_sweeper_ptr%nnodes))
 
        call cecho_output_solution(sweet_sweeper_ptr%ctx,  &
                                       x_ptr%c_sweet_data_ptr, &
-                                      state%proc,             &
-                                      state%step,             &
-                                      state%iter,             &
-                                      level%nnodes,           &
+                                      proc,             &
+                                      step,             &
+                                      iter,             &
+                                      pf%levels(level_index)%nnodes,           &
                                       pf%niters)
-          
-           !print *, 'step = ', state%step, ' iter = ', state%iter, ' processor = ', state%proc
-
-       ! end if
-
-!    end if
 
   end subroutine fecho_output_solution
 
   ! function to output the solution
 
-  subroutine fecho_output_invariants(pf, level, state)
+  subroutine fecho_output_invariants(pf, level_index)
     use iso_c_binding
     use pf_mod_utils
     use pf_mod_restrict
     use mpi
-    type(pf_pfasst_t),         intent(inout) :: pf
-    class(pf_level_t),         intent(inout) :: level
-    type(pf_state_t),          intent(in)    :: state
+    type(pf_pfasst_t), intent(inout) :: pf
+    integer, intent(in)              :: level_index
+
+    integer                          :: proc,step,rank,iter
 
     class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
     class(sweet_data_encap_t), pointer       :: x_ptr
     integer                                  :: ierr, num_procs
 
+    proc=pf%state%proc
+    step=pf%state%step
+    rank=pf%rank
+    iter=pf%state%iter
+
     call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
 !    if (state%proc == num_procs) then
 
-       sweet_sweeper_ptr => as_sweet_sweeper(level%ulevel%sweeper)
-       x_ptr             => as_sweet_data_encap(level%Q(sweet_sweeper_ptr%nnodes))
+       sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
+       x_ptr             => as_sweet_data_encap(pf%levels(level_index)%Q(sweet_sweeper_ptr%nnodes))
 
-       if (modulo(state%step, 100) == 0 .and. state%iter == pf%niters) then
+       if (modulo(step, 100) == 0 .and. iter == pf%niters) then
 
           call cecho_output_invariants(sweet_sweeper_ptr%ctx,  &
                                        x_ptr%c_sweet_data_ptr, &
-                                       state%proc,             &
-                                       state%step,             &
-                                       state%iter,             &
-                                       level%nnodes,           &
+                                       proc,             &
+                                       step,             &
+                                       iter,             &
+                                       pf%levels(level_index)%nnodes,           &
                                        pf%niters)
 
        end if
-
-!    end if
        
      end subroutine fecho_output_invariants
-
 
 end module hooks_module
 

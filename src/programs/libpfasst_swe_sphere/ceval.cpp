@@ -23,7 +23,7 @@
 
 
 /**
- * Write file to data and return string of file name
+ * Write data to file and return string of file name
  */
 std::string write_file(
 		SphereDataCtx  &i_ctx,
@@ -45,10 +45,11 @@ std::string write_file(
 			filename_template,
 			i_name,
 			simVars->timecontrol.current_timestep_size);
-	sphereData.toPhys().physical_file_write(buffer);
+    sphereData.file_write_binary_spectral(buffer);
 
 	return buffer;
 }
+
 
 /**
  *  Write the spectrum to file and return string of file name
@@ -72,7 +73,7 @@ std::string write_spectrum_to_file(
 	sprintf(buffer,
 			filename_template,
 			i_name,
-			simVars->timecontrol.current_timestep_size);
+            simVars->timecontrol.current_timestep_size*simVars->timecontrol.current_simulation_time);
 	sphereData.spectrum_file_write(buffer);
 
 	return buffer;
@@ -81,7 +82,7 @@ std::string write_spectrum_to_file(
 /** 
  *  Write the physical invariants to file
  **/
-std::string write_physical_invariants_to_file(
+/*std::string write_physical_invariants_to_file(
 		SphereDataCtx &i_ctx,
 		const char* i_name
 )
@@ -118,48 +119,48 @@ std::string write_physical_invariants_to_file(
 	file.close();
 
 	return buffer;
-}
+}*/
 
 /**
  * Write the residuals to file
  **/
-std::string write_residuals_to_file(
-		SphereDataCtx &i_ctx,
-		int i_rank,
-		const char* i_name
-)
-{
-	char buffer[1024];
-
-	// get the pointer to the Simulation Variables object
-	SimulationVariables* simVars = i_ctx.get_simulation_variables();
-
-	// get the vector of residuals
-	const std::vector<std::vector<double> >& residuals = i_ctx.get_residuals();
-
-	// Write the spectrum into the file
-	const char* filename_template = simVars->iodata.output_file_name.c_str();
-	sprintf(buffer,
-			filename_template,
-			i_name,
-			simVars->timecontrol.current_timestep_size);
-
-	std::ofstream file(buffer, std::ios_base::trunc);
-
-	file << std::setprecision(20);
-
-	for (unsigned int i = 0; i < residuals[i_rank].size(); ++i)
-	{
-		file << i << " "
-				<< residuals[i_rank][i] << " "
-				<< std::endl;
-
-	}
-
-	file.close();
-
-	return buffer;
-}
+//std::string write_residuals_to_file(
+//		SphereDataCtx &i_ctx,
+//		int i_rank,
+//		const char* i_name
+//)
+//{
+//	char buffer[1024];
+//
+//	// get the pointer to the Simulation Variables object
+//	SimulationVariables* simVars = i_ctx.get_simulation_variables();
+//
+//	// get the vector of residuals
+//	const std::vector<std::vector<double> >& residuals = i_ctx.get_residuals();
+//
+//	// Write the spectrum into the file
+//	const char* filename_template = simVars->iodata.output_file_name.c_str();
+//	sprintf(buffer,
+//			filename_template,
+//			i_name,
+//			simVars->timecontrol.current_timestep_size);
+//
+//	std::ofstream file(buffer, std::ios_base::trunc);
+//
+//	file << std::setprecision(20);
+//
+//	for (unsigned int i = 0; i < residuals[i_rank].size(); ++i)
+//	{
+//		file << i << " "
+//				<< residuals[i_rank][i] << " "
+//				<< std::endl;
+//
+//	}
+//
+//	file.close();
+//
+//	return buffer;
+//}
 
 
 
@@ -223,7 +224,7 @@ void cinitial(
 
 
 	// output the configuration
-	// simVars->outputConfig();
+	simVars->outputConfig();
 
 	if (rank == 0)
 	{
@@ -379,18 +380,6 @@ void cfinal(
 		filename = "prog_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
 		write_file(*i_ctx, div_Y, filename.c_str());
 
-		// filename = "spectrum_vort_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_spectrum_to_file(*i_ctx, vort_Y, filename.c_str());
-
-		// filename = "spectrum_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_spectrum_to_file(*i_ctx, div_Y, filename.c_str());
-
-		// filename = "spectrum_phi_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_spectrum_to_file(*i_ctx, phi_Y, filename.c_str());
-
-		// filename = "invariants_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_physical_invariants_to_file(*i_ctx, filename.c_str());
-
 	}
 	else if (rank == 0)
 	{
@@ -407,15 +396,6 @@ void cfinal(
 		filename = "prog_div_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
 		write_file(*i_ctx, div_Y, filename.c_str());
 
-		// filename = "spectrum_vort_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_spectrum_to_file(*i_ctx, vort_Y, filename.c_str());
-
-		// filename = "spectrum_div_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_spectrum_to_file(*i_ctx, div_Y, filename.c_str());
-
-		// filename = "spectrum_phi_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_spectrum_to_file(*i_ctx, phi_Y, filename.c_str());
-
 		// filename = "invariants_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
 		// write_physical_invariants_to_file(*i_ctx, filename.c_str());
 
@@ -428,7 +408,8 @@ void cfinal(
 			filename = "residuals_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
 		else
 			filename = "residuals_nprocs_"+std::to_string(nprocs)+"_current_proc_"+std::to_string(rank)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		write_residuals_to_file(*i_ctx, rank, filename.c_str());
+		// TODO turn this back on at some point!
+		//write_residuals_to_file(*i_ctx, rank, filename.c_str());
 	}
 }
 
@@ -558,7 +539,7 @@ void ceval_f2 (
 	}
 	else
 	{
-
+        // TODO topography check does nothing?
 		if (!simVars->benchmark.use_topography)
 		{
 

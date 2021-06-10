@@ -69,12 +69,12 @@ public:
 
     if (simVars->libpfasst.use_exp)
       {
-	if (simVars->libpfasst.implicit_coriolis_force) 
+	if (simVars->libpfasst.implicit_coriolis_force)
 	  {
 	    timestepper_l_exp.resize(levelSingletons->size());
 	    timestepper_l_erk_n_erk.resize(levelSingletons->size());
 	  }
-	else 
+	else
 	  SWEETError("exp-based libPFASST with explicit coriolis force not implemented yet");
       }
     else
@@ -84,12 +84,12 @@ public:
 	    timestepper_l_irk.resize(levelSingletons->size());
 	    timestepper_l_erk_n_erk.resize(levelSingletons->size());
 	  }
-	else 
+	else
 	  {
 	    timestepper_lg_irk.resize(levelSingletons->size());
 	    if (!simVars->benchmark.use_topography)
 	      timestepper_lg_erk_lc_n_erk.resize(levelSingletons->size());
-	    else 
+	    else
 	      timestepper_lg_erk_lc_n_t_erk.resize(levelSingletons->size());
 	  }
       }
@@ -101,10 +101,10 @@ public:
 	simVars->disc.timestepping_order  = 2; 
 	simVars->disc.timestepping_order2 = 2; 
 		
-	// these timesteppers contain the functions called by LibPFASST 
-	if (simVars->libpfasst.implicit_coriolis_force) 
+	// these timesteppers contain the functions called by LibPFASST
+	if (simVars->libpfasst.implicit_coriolis_force)
 	  {
-	    timestepper_l_erk_n_erk[level] = 
+	    timestepper_l_erk_n_erk[level] =
 	      new SWE_Sphere_TS_l_erk_n_erk(
 					    *simVars,
 					    ((*levelSingletons)[level].op)
@@ -116,7 +116,7 @@ public:
 	  {
   	      if (simVars->benchmark.use_topography)
 	        {
-  	          timestepper_lg_erk_lc_n_t_erk[level] = 
+  	          timestepper_lg_erk_lc_n_t_erk[level] =
 	          new SWE_Sphere_TS_lg_erk_lc_n_erk(
 						*simVars,
 						((*levelSingletons)[level].op)
@@ -125,7 +125,7 @@ public:
                 }
 	      else
 		{
-  	          timestepper_lg_erk_lc_n_erk[level] = 
+  	          timestepper_lg_erk_lc_n_erk[level] =
 	          new SWE_Sphere_TS_lg_erk_lc_n_erk(
 						*simVars,
 						((*levelSingletons)[level].op)
@@ -150,22 +150,22 @@ public:
 					     false
 
 					     );
- 
+
 	  }
 	else
 	  {
-	    simVars->disc.timestepping_order  = 1; 
-	    simVars->disc.timestepping_order2 = 1; 
+	    simVars->disc.timestepping_order  = 1;
+	    simVars->disc.timestepping_order2 = 1;
 
 
 	    if (simVars->libpfasst.implicit_coriolis_force)
 	      {
-		timestepper_l_irk[level] = 
+		timestepper_l_irk[level] =
 		  new SWE_Sphere_TS_l_irk(
 					  *simVars,
 					  ((*levelSingletons)[level].op)
 					  );
-		
+
 		timestepper_l_irk[level]->setup(
 						simVars->disc.timestepping_order,
 						simVars->timecontrol.current_timestep_size
@@ -173,14 +173,14 @@ public:
 	      }
 	    else
 	      {
-		timestepper_lg_irk[level] = 
+		timestepper_lg_irk[level] =
 		  new SWE_Sphere_TS_lg_irk(
 					  *simVars,
 					  ((*levelSingletons)[level].op)
 					  );
- 		
+
 		timestepper_lg_irk[level]->setup(simVars->disc.timestepping_order,
-						 simVars->timecontrol.current_timestep_size);	
+						 simVars->timecontrol.current_timestep_size);
 	      }
 	  }
       }

@@ -18,37 +18,45 @@ contains
     character(c_char), intent(in) :: name(nl)
     character*72 :: tmp
     integer :: qtype, i
+    logical :: use_no_left_q
     do i=1,nl
        tmp(i:i) = name(i)
     enddo
     if (tmp(1:nl)      .eq. 'SDC_GAUSS_LOBATTO') then
        qtype = SDC_GAUSS_LOBATTO
-    else if (tmp(1:nl) .eq. 'SDC_GAUSS_RADAU') then
-       qtype = SDC_GAUSS_RADAU
-    else if (tmp(1:nl) .eq. 'SDC_CLENSHAW_CURTIS') then
-       qtype = SDC_CLENSHAW_CURTIS
-    else if (tmp(1:nl) .eq. 'SDC_UNIFORM') then
-       qtype = SDC_UNIFORM
-    else if (tmp(1:nl) .eq. 'SDC_GAUSS_LEGENDRE') then
-       qtype = SDC_GAUSS_LEGENDRE
-    else if (tmp(1:nl) .eq. 'SDC_PROPER_NODES') then
-       qtype = SDC_PROPER_NODES
-    else if (tmp(1:nl) .eq. 'SDC_COMPOSITE_NODES') then
-       qtype = SDC_COMPOSITE_NODES
-    else if (tmp(1:nl)      .eq. 'SDC_GAUSS_LOBATTO_NL') then
-       qtype = SDC_GAUSS_LOBATTO + SDC_NO_LEFT
-    else if (tmp(1:nl) .eq. 'SDC_GAUSS_RADAU_NL') then
-       qtype = SDC_GAUSS_RADAU + SDC_NO_LEFT
-    else if (tmp(1:nl) .eq. 'SDC_CLENSHAW_CURTIS_NL') then
-       qtype = SDC_CLENSHAW_CURTIS + SDC_NO_LEFT
-    else if (tmp(1:nl) .eq. 'SDC_UNIFORM_NL') then
-       qtype = SDC_UNIFORM + SDC_NO_LEFT
-    else if (tmp(1:nl) .eq. 'SDC_GAUSS_LEGENDRE_NL') then
-       qtype = SDC_GAUSS_LEGENDRE + SDC_NO_LEFT
-    else if (tmp(1:nl) .eq. 'SDC_PROPER_NODES_NL') then
-       qtype = SDC_PROPER_NODES + SDC_NO_LEFT
-    else if (tmp(1:nl) .eq. 'SDC_COMPOSITE_NODES_NL') then
-       qtype = SDC_COMPOSITE_NODES + SDC_NO_LEFT
+!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_RADAU') then
+!       qtype = SDC_GAUSS_RADAU
+!    else if (tmp(1:nl) .eq. 'SDC_CLENSHAW_CURTIS') then
+!       qtype = SDC_CLENSHAW_CURTIS
+!    else if (tmp(1:nl) .eq. 'SDC_UNIFORM') then
+!       qtype = SDC_UNIFORM
+!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_LEGENDRE') then
+!       qtype = SDC_GAUSS_LEGENDRE
+!    !else if (tmp(1:nl) .eq. 'SDC_PROPER_NODES') then
+!    !   qtype = SDC_PROPER_NODES
+!    !else if (tmp(1:nl) .eq. 'SDC_COMPOSITE_NODES') then
+!    !   qtype = SDC_COMPOSITE_NODES
+!    else if (tmp(1:nl)      .eq. 'SDC_GAUSS_LOBATTO_NL') then
+!       qtype = SDC_GAUSS_LOBATTO
+!       use_no_left_q = .true.
+!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_RADAU_NL') then
+!       qtype = SDC_GAUSS_RADAU
+!       use_no_left_q = .true.
+!    else if (tmp(1:nl) .eq. 'SDC_CLENSHAW_CURTIS_NL') then
+!       qtype = SDC_CLENSHAW_CURTIS
+!       use_no_left_q = .true.
+!    else if (tmp(1:nl) .eq. 'SDC_UNIFORM_NL') then
+!       qtype = SDC_UNIFORM
+!       use_no_left_q = .true.
+!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_LEGENDRE_NL') then
+!       qtype = SDC_GAUSS_LEGENDRE
+!       use_no_left_q = .true.
+!    ! don't catch these cases since proper/composite nodes are not set in qtype anymore
+!    else if (tmp(1:nl) .eq. 'SDC_PROPER_NODES_NL') then
+!       qtype = SDC_PROPER_NODES
+!
+!    else if (tmp(1:nl) .eq. 'SDC_COMPOSITE_NODES_NL') then
+!       qtype = SDC_COMPOSITE_NODES + SDC_NO_LEFT
     else
        qtype = -1
     endif
@@ -56,8 +64,7 @@ contains
 
   ! main Fortran routine calling LibPFASST
 
-  subroutine fmain(                                                                        &
-                   user_ctx_ptr,                                                           & ! user-defined context
+  subroutine fmain(user_ctx_ptr,                                                           & ! user-defined context
                    nlevs, niters, nsweeps_coarse, nnodes, qtype_name, qnl, use_rk_stepper, & ! LibPFASST parameters
                    nfields, nvars_per_field,                                               & ! SWEET parameters
                    t_max, dt                                                               & ! timestepping parameters
@@ -68,6 +75,7 @@ contains
     integer                                  :: nlevs, niters, nsweeps_coarse, nnodes(nlevs), nvars(nlevs), shape(nlevs),   &
                                                 nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype, use_rk_stepper, &
                                                 ierror, num_procs, my_id, mpi_stat
+    logical                                  :: use_no_left_q
     character(c_char)                        :: qtype_name
     real(c_double)                           :: t, t_max, dt
     class(pf_factory_t),         allocatable :: factory
@@ -81,14 +89,11 @@ contains
     real(c_double)                           :: val
 
     ! create the mpi and pfasst objects
-     call pf_mpi_create(pf_comm,    & 
-                        MPI_COMM_WORLD);
-     call pf_pfasst_create(pf,      & 
-                           pf_comm, & 
-                           nlevs)
+     call pf_mpi_create(pf_comm, MPI_COMM_WORLD);
+     call pf_pfasst_create(pf, pf_comm, nlevels=nlevs)
 
-     call MPI_COMM_RANK (MPI_COMM_WORLD, my_id, ierror)
-     call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierror)
+     call mpi_comm_rank(MPI_COMM_WORLD, my_id, ierror)
+     call mpi_comm_size(MPI_COMM_WORLD, num_procs, ierror)
 
      if (my_id == 0) then
         print *, 'Number of Processors: ', num_procs
@@ -101,7 +106,6 @@ contains
      ! LibPFASST parameters
      pf%nlevels           = nlevs                         ! number of SDC levels
      pf%niters            = niters                        ! number of SDC iterations
-     pf%pipeline_G        = .false.                       ! pipeline the coarse prediction sweeps
      if (use_rk_stepper == 1) then
         pf%use_rk_stepper = .true.                        ! replace the SDC sweeps with RK steps
         if (my_id == 0) then
@@ -113,7 +117,7 @@ contains
            print *, "++++++++++++ use_rk_stepper == false +++++++++++"
         end if
      end if
-     pf%echo_timings      = .true.                        ! output the timings in fort.601 file
+     pf%save_timings      = 1                             ! output the timings in fort.601 file
      qtype                = translate_qtype(qtype_name, & ! select the type of nodes
                                             qnl)
 
@@ -134,12 +138,14 @@ contains
 
      ! loop over levels to initialize level-specific data structures
      do level = 1, pf%nlevels
-
        ! define the level id
-       pf%levels(level)%index = level 
+       pf%levels(level)%index = level
+
+       ! TODO Fix the lev_shape thing
+       call pf_level_set_size(pf, level, nvars)
 
        ! define the number of internal rk time steps
-       pf%levels(level)%nsteps_rk = 1
+       pf%nsteps_rk = 1
 
        ! define number of sweeps for each level
        if (pf%nlevels == 1) then
@@ -166,11 +172,12 @@ contains
        end if
 
        ! allocate space for the levels
-       allocate(pf%levels(level)%shape(level))
-       pf%levels(level)%shape(level) = nvars(level)
+
+       !allocate(pf%levels%lev_shape(level))
+       pf%levels(level)%lev_shape = nvars(level)
        
        ! define the properties (number of degrees of freedom and number of SDC nodes)
-       pf%levels(level)%nvars   = nvars(level)
+       ! pf%levels(level)%nvars   = nvars(level)
        pf%levels(level)%nnodes  = nnodes(level)
        pf%levels(level)%Finterp = .false.
 
@@ -251,32 +258,32 @@ contains
     end if
     
 
-    ! call pf_add_hook(pf,                &
-    !                  pf%nlevels,        &
-    !                  PF_POST_ITERATION, &
-    !                  fecho_residual)   
-    ! if (num_procs > 1) then
-    !    call pf_add_hook(pf,                 &
-    !                     pf%nlevels,         &
-    !                     PF_PRE_INTERP_Q0,   &
-    !                     fecho_output_jump)
-    ! end if
-    ! if (num_procs .eq. 1) then
-    !    call pf_add_hook(pf,                 &
-    !                     -1,                 &
-    !                     PF_POST_ITERATION,  &
-    !                     fecho_output_solution)
-    ! else
-    !    call pf_add_hook(pf,                 &
-    !                     -1,                 &
-    !                     PF_POST_SWEEP,      &
-    !                     fecho_output_solution)
-    ! end if
+     call pf_add_hook(pf,                &
+                      -1,        &
+                      PF_POST_ITERATION, &
+                      fecho_residual)
+     if (num_procs > 1) then
+        call pf_add_hook(pf,                 &
+                         -1,         &
+                         PF_PRE_INTERP_Q0,   &
+                         fecho_output_jump)
+     end if
+     if (num_procs .eq. 1) then
+        call pf_add_hook(pf,                 &
+                         -1,                 &
+                         PF_POST_ITERATION,  &
+                         fecho_output_solution)
+     else
+        call pf_add_hook(pf,                 &
+                         -1,                 &
+                         PF_POST_SWEEP,      &
+                         fecho_output_solution)
+     end if
 
-    ! call pf_add_hook(pf,                 &
-    !                  pf%nlevels,         &
-    !                  PF_POST_STEP,       &
-    !                  fecho_output_invariants)
+     call pf_add_hook(pf,                 &
+                      pf%nlevels,         &
+                      PF_POST_BLOCK,       &
+                      fecho_output_invariants)
     
     ! advance in time with libpfasst
     level = nlevs
