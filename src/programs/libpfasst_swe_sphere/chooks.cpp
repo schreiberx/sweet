@@ -13,11 +13,7 @@ extern "C"
 
   void cecho_residual(SphereDataCtx *i_ctx,
 		      double i_norm,
-		      int i_current_proc,
-		      int i_current_step,
-		      int i_current_iter,
-		      int i_nnodes,
-		      int i_niters)
+		      int i_current_proc)
   {
     // get the residual vector
     std::vector<std::vector<double> >& residuals = i_ctx->get_residuals();
