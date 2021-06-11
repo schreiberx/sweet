@@ -92,15 +92,15 @@ void SWE_Sphere_TS_l_erk_n_erk::run_timestep(
 
 
 void SWE_Sphere_TS_l_erk_n_erk::euler_timestep_update_linear(
-		const SphereData_Spectral &i_phi,	///< prognostic variables
-		const SphereData_Spectral &i_vrt,	///< prognostic variables
-		const SphereData_Spectral &i_div,	///< prognostic variables
+	const SphereData_Spectral &i_phi,	///< prognostic variables
+	const SphereData_Spectral &i_vrt,	///< prognostic variables
+	const SphereData_Spectral &i_div,	///< prognostic variables
 
-		SphereData_Spectral &o_phi_t,	///< time updates
-		SphereData_Spectral &o_vrt_t,	///< time updates
-		SphereData_Spectral &o_div_t,	///< time updates
+	SphereData_Spectral &o_phi_t,	///< time updates
+	SphereData_Spectral &o_vrt_t,	///< time updates
+	SphereData_Spectral &o_div_t,	///< time updates
 
-		double i_simulation_timestamp
+	double i_simulation_timestamp
 )
 {
 	double gh0 = simVars.sim.gravitation * simVars.sim.h0;

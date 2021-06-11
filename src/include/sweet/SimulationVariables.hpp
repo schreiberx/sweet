@@ -220,12 +220,21 @@ public:
 				int &next_free_program_option
 		)
 		{
-	        // MISC
 	        long_options[next_free_program_option] = {"output-file-name", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"output-file-mode", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
+		}
+
+		void outputProgParams()
+		{
+			std::cout << std::endl;
+			std::cout << "IOData:" << std::endl;
+			std::cout << "	--output-file-name [string]		String specifying the name of the output file" << std::endl;
+			std::cout << "	--output-file-mode [string]		Format of output file, default: default" << std::endl;
+
+			std::cout << "" << std::endl;
 		}
 
 
@@ -1333,6 +1342,7 @@ public:
 		sim.outputProgParams();
 		benchmark.outputProgParams();
 		disc.outputProgParams();
+		iodata.outputProgParams();
 
 
 		std::cout << "" << std::endl;
@@ -1468,7 +1478,7 @@ public:
 		{
 			opt = getopt_long(
 				i_argc, i_argv,
-				"N:M:n:m:C:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:zh",
+				"N:M:n:m:u:U:s:X:Y:f:F:b:x:y:t:i:T:v:V:O:o:H:r:a:R:W:F:S:g:G:d:zh",
 				long_options, &option_index
 			);
 
@@ -1756,7 +1766,9 @@ public:
 			default:
 				print_params();
 
-				std::cerr << "Some option was specified to be available, but it's parameter detection is not implemented." << std::endl;
+				std::cerr << "The option '-";
+				std::cerr << (char)opt;
+				std::cerr << "' was specified to be available, but it's parameter detection is not implemented." << std::endl;
 				std::cerr << "Please contact the SWEET developer" << std::endl;
 
 				SWEETError("Exit");
