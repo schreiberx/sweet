@@ -161,12 +161,14 @@ int main(int i_argc, char *i_argv[])
 		const int thisLevelId = simVars.libpfasst.nlevels-1-i;
 		levelSingletons[thisLevelId].level = thisLevelId;
 
-		// setup data configuration at this level
-
+        // compute "additional" modes (negative because we're coarsening)
+		auto additional_modes_lat = 1 - std::ceil(simVars.disc.space_res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i));
+        auto additional_modes_lon = 1 - std::ceil(simVars.disc.space_res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i));
+        // setup data configuration at this level
 		levelSingletons[thisLevelId].dataConfig.setupAdditionalModes(
 				&(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
-				-std::ceil(simVars.disc.space_res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i)),
-				-std::ceil(simVars.disc.space_res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i)),
+				additional_modes_lat,
+				additional_modes_lon,
 				simVars.misc.reuse_spectral_transformation_plans
 		);
 
