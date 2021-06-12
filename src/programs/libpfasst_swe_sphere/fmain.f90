@@ -141,7 +141,6 @@ contains
        ! define the level id
        pf%levels(level)%index = level
 
-       ! TODO Fix the lev_shape thing
        call pf_level_set_size(pf, level, nvars)
 
        ! define the number of internal rk time steps
