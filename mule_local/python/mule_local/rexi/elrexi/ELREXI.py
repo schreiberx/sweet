@@ -86,7 +86,7 @@ class ELREXI:
 
 
     		self.betas.append(-self.efloat.i*self.fun.eval(sn)*sn_prime / N)
-    		self.alphas.append(-sn)
+    		self.alphas.append(sn)
 
     	coeffs = REXICoefficients()
     	coeffs.alphas = self.alphas[:]

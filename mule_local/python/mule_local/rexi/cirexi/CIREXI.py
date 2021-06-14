@@ -119,7 +119,7 @@ class CIREXI:
             gamma_j = pos + lambda_shift
 
             self.betas.append(-self.fun.eval(gamma_j)*pos / N)
-            self.alphas.append(-gamma_j)
+            self.alphas.append(gamma_j)
 
 
         self.unique_id_string = "shic"

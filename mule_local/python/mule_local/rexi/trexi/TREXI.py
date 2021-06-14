@@ -201,7 +201,7 @@ class TREXI:
             beta_new.append(-0.5*(self.beta_re[i] - 1.j*self.beta_im[i]))
             alpha_new.append(-self.alpha_reim[i])
 
-        self.alpha = alpha_new
+        self.alpha = [-a for a in alpha_new]
         self.beta = beta_new
 
         if self.reduce_to_half:
@@ -244,7 +244,7 @@ class TREXI:
 
         N = len(self.alpha)
         for n in range(N):
-            retval += self.beta[n]*numpy.linalg.solve(L + numpy.eye(2, dtype=complex)*self.alpha[n], u0)
+            retval += self.beta[n]*numpy.linalg.solve(L - numpy.eye(2, dtype=complex)*self.alpha[n], u0)
 
         return retval[0].real + retval[1].real*1.j
 
@@ -258,7 +258,7 @@ class TREXI:
         retval = 0
         # Split computation into real part of \f$ cos(x) \f$ and imaginary part \f$ sin(x) \f$
         for n in range(len(self.alpha)):
-            denom = (self.efloat.i*i_x + self.alpha[n])
+            denom = (self.efloat.i*i_x - self.alpha[n])
             retval += (self.beta[n] / denom)
 
         return retval
@@ -273,7 +273,7 @@ class TREXI:
         retval = 0
         # Split computation into real part of \f$ cos(x) \f$ and imaginary part \f$ sin(x) \f$
         for n in range(len(self.alpha)):
-            denom = (self.efloat.i*i_x + self.alpha[n])
+            denom = (self.efloat.i*i_x - self.alpha[n])
             retval += (self.beta[n] / denom * i_u0)
 
         return retval
