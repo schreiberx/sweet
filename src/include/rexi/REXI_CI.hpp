@@ -265,7 +265,7 @@ public:
 		for (int j = 0; j < N; j++)
 		{
 			alpha[j] = {(TStorage)alpha_eval[j].real(), (TStorage)alpha_eval[j].imag()};
-			alpha[j] = -alpha[j];
+			//alpha[j] = -alpha[j];
 
 			beta[j] = {(TStorage)beta_eval[j].real(), (TStorage)beta_eval[j].imag()};
 			beta[j] = -beta[j];

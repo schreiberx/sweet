@@ -416,7 +416,7 @@ void SWE_Sphere_TS_l_exp::setup(
 		if (!retval)
 			SWEETError(std::string("Phi function '")+function_name+std::string("' not provided or not supported"));
 
-		rexi_alphas = rexiCoefficients.alphas;
+		rexi_alphas = -rexiCoefficients.alphas;
 		rexi_betas = rexiCoefficients.betas;
 		rexi_gamma = rexiCoefficients.gamma;
 

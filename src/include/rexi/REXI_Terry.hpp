@@ -282,7 +282,7 @@ public:
 		beta.resize(beta_eval.size());
 		for (std::size_t n = 0; n < alpha.size(); n++)
 		{
-			alpha[n] = alpha_eval[n];
+			alpha[n] = -alpha_eval[n];
 			beta[n] = beta_eval[n];
 		}
 
