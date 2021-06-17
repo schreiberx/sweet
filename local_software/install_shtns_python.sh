@@ -10,7 +10,7 @@ PKG_NAME="SHTNS_python"
 PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python$PYTHONVERSION/site-packages/shtns.py"
 
-PKG_URL_SRC="shtns-3.4.tar.gz"
+PKG_URL_SRC="shtns-3.4.6.tar.gz"
 
 config_setup
 
@@ -23,7 +23,7 @@ if [ "#$TRAVIS" != "#" ]; then
 fi
 
 #CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
-CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
+#CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
 
 
 echo_info_hline

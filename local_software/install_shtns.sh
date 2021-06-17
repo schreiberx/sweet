@@ -5,7 +5,7 @@ source ./install_helpers.sh ""
 PKG_NAME="SHTNS"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns.a"
 
-PKG_URL_SRC="shtns-3.4.tar.gz"
+PKG_URL_SRC="shtns-3.4.6.tar.gz"
 
 config_setup
 
@@ -18,7 +18,7 @@ if [ "#$TRAVIS" != "#" ]; then
 fi
 
 #CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
-CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
+#CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
 
 
 echo_info_hline
