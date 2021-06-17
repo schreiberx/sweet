@@ -23,10 +23,10 @@ class PlaneData_Spectrum(InfoError):
         Parameters:
 
         filename_phys: string
-        	Filename (full path) of physical data
+            Filename (full path) of physical data
 
         params: list of strings
-        	-
+            -
         """
 
         InfoError.__init__(self, "PlaneData_Spectrum")
@@ -44,13 +44,13 @@ class PlaneData_Spectrum(InfoError):
 
 
         if filename_phys != None:
-        	self.compute_spectrum(filename_phys, params)
+            self.compute_spectrum(filename_phys, params)
 
 
     def compute_spectrum(
-        	self,
-        	filename_phys,
-        	params,
+            self,
+            filename_phys,
+            params,
         ):
 
         #
@@ -60,31 +60,31 @@ class PlaneData_Spectrum(InfoError):
         self.job_metadata_available = False
 
         try:
-        	# Step 1) Determine job directory name 
-        	jobdir = os.path.dirname(filename_phys)
+            # Step 1) Determine job directory name 
+            jobdir = os.path.dirname(filename_phys)
 
-        	print("Loading data from job directory '"+jobdir+"'")
+            print("Loading data from job directory '"+jobdir+"'")
 
-        	# Step 2) Load job meta information
-        	j = JobData(jobdir=jobdir)
+            # Step 2) Load job meta information
+            j = JobData(jobdir=jobdir)
 
-        	self.job_metadata_available = True
+            self.job_metadata_available = True
 
         except Exception as e:
-        	print(str(e))
-        	self.job_metadata_available = False
+            print(str(e))
+            self.job_metadata_available = False
 
 
         if self.job_metadata_available:
-        	data = j.get_flattened_data()
+            data = j.get_flattened_data()
 
-        	if 'runtime.plane_domain_size' not in data:
-        		raise Exception("Physical domain size must be specified via runtime parameters in MULE")
+            if 'runtime.plane_domain_size' not in data:
+                raise Exception("Physical domain size must be specified via runtime parameters in MULE")
 
-        	domain_size = data['runtime.plane_domain_size']
+            domain_size = data['runtime.plane_domain_size']
 
-        	if isinstance(domain_size, list):
-        		domain_size = domain_size[0]
+            if isinstance(domain_size, list):
+                domain_size = domain_size[0]
 
 
 
@@ -126,12 +126,12 @@ class PlaneData_Spectrum(InfoError):
         # m=int(n/2)+1
         m = int(2*n/3)+1 #anti-aliasing cut
         if mmin == 0:
-        	mmin = m
+            mmin = m
         else:
-        	if m > mmin:
-        		m = mmin
+            if m > mmin:
+                m = mmin
 
-        print("Anti-aliased spectrum region:", m)		
+        print("Anti-aliased spectrum region:", m)        
 
         #Calculate energy per shell
         # TODO: convert to linspace
@@ -141,16 +141,16 @@ class PlaneData_Spectrum(InfoError):
 
         print("Generating energy in shells (Each . is 1/", m, ")")
         for i in range(0,m):
-        	for j in range(0,m):
-        		k = np.sqrt(pow(float(i),2)+pow(float(j),2))
-        		intk = int(k)
-        		if intk < m :
-        			energy[intk] = energy[intk]+data[i,j]
-        			shell_pattern[i,j] = intk
-        	print(".", end='', flush=True)
-        	#print(i, j, k, intk, data[i,j], energy[intk], data.shape, energy.shape)
+            for j in range(0,m):
+                k = np.sqrt(pow(float(i),2)+pow(float(j),2))
+                intk = int(k)
+                if intk < m :
+                    energy[intk] = energy[intk]+data[i,j]
+                    shell_pattern[i,j] = intk
+            print(".", end='', flush=True)
+            #print(i, j, k, intk, data[i,j], energy[intk], data.shape, energy.shape)
 
-        print(".")	
+        print(".")    
 
         #Quick check to see if things match
         #print("Energy in shells: ", energy[0:10])
@@ -162,12 +162,12 @@ class PlaneData_Spectrum(InfoError):
         self.spectrum_mode = r[:]
 
         if self.job_metadata_available:
-        	# Convert wavenumber to wavelength
-        	self.spectrum_wavelength = np.zeros(m+1)
-        	self.spectrum_wavelength[1:] = domain_size*1000/r[1:]
+            # Convert wavenumber to wavelength
+            self.spectrum_wavelength = np.zeros(m+1)
+            self.spectrum_wavelength[1:] = domain_size*1000/r[1:]
 
         else:
-        	self.spectrum_wavelength = None
+            self.spectrum_wavelength = None
 
 
 
@@ -176,21 +176,21 @@ class PlaneData_Spectrum(InfoError):
         print("")
 
         if self.job_metadata_available:
-        	for i in range(len(self.spectrum)):
-        		print(str(self.spectrum_wavelength[i])+":\t"+str(self.spectrum[i])+"\t"+str(self.spectrum_mode[i]))
+            for i in range(len(self.spectrum)):
+                print(str(self.spectrum_wavelength[i])+":\t"+str(self.spectrum[i])+"\t"+str(self.spectrum_mode[i]))
 
         else:
-        	for i in range(len(self.spectrum)):
-        		print(str(self.spectrum_mode[i])+":\t"+str(self.spectrum[i]))
+            for i in range(len(self.spectrum)):
+                print(str(self.spectrum_mode[i])+":\t"+str(self.spectrum[i]))
 
         print("")
 
 
 
     def write_file(
-        	self,
-        	picklefile,
-        	tagname = None
+            self,
+            picklefile,
+            tagname = None
         ):
 
         #
@@ -198,24 +198,24 @@ class PlaneData_Spectrum(InfoError):
         # This can be later on further postprocessed!
         #
         if picklefile != None:
-        	import pickle
+            import pickle
 
-        	if tagname != None:
-        		tagname += '.'
-        	else:
-        		tagname = ''
+            if tagname != None:
+                tagname += '.'
+            else:
+                tagname = ''
 
-        	pickle_data = {
-        		tagname+'spectrum' : self.spectrum,
-        		tagname+'spectrum_mode' : self.spectrum_mode,
-        		tagname+'spectrum_wavelength' : self.spectrum_wavelength,
-        	}
+            pickle_data = {
+                tagname+'spectrum' : self.spectrum,
+                tagname+'spectrum_mode' : self.spectrum_mode,
+                tagname+'spectrum_wavelength' : self.spectrum_wavelength,
+            }
 
-        	print(" + picklefile: "+str(picklefile))
+            print(" + picklefile: "+str(picklefile))
 
-        	with open(picklefile, 'wb') as f:
-        		# Pickle the 'data' dictionary using the highest protocol available.
-        		pickle.dump(pickle_data, f)
+            with open(picklefile, 'wb') as f:
+                # Pickle the 'data' dictionary using the highest protocol available.
+                pickle.dump(pickle_data, f)
 
         print("")
 
@@ -225,18 +225,18 @@ if __name__ == "__main__":
     if len(sys.argv) <= 1:
         print("")
         print("Usage:")
-        print("	"+sys.argv[0]+" [plane_physical_data] [picklefile output file (optional)] [reference tagname (optional)]")
+        print("    "+sys.argv[0]+" [plane_physical_data] [picklefile output file (optional)] [reference tagname (optional)]")
         print("")
-        print("	plane_physical_data:")
-        print("		filename with physical plane data")
+        print("    plane_physical_data:")
+        print("        filename with physical plane data")
         print("")
-        print("	picklefile:")
-        print("		filename to write pickle file to")
-        print("		spectrum: list")
-        print("		spectrum_modes: list")
+        print("    picklefile:")
+        print("        filename to write pickle file to")
+        print("        spectrum: list")
+        print("        spectrum_modes: list")
         print("")
         print(" reference tagname:")
-        print("		How to name value in .pickle file")
+        print("        How to name value in .pickle file")
         print("")
         sys.exit(1)
 
