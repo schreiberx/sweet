@@ -94,7 +94,9 @@ class BREXI:
 if __name__ == "__main__":
     numpy.set_printoptions(precision=20)
 
-    for method in ['gauss_legendre', 'gauss_chebyshev_u']:
+    for method in ['gauss_legendre', 'gauss_chebyshev_u', 'gauss_chebyshev_t', 'gauss_hermite', 'gauss_lobatto', 'gauss_jacobi']:
+
+        print("Method: "+method)
 
         brexi = BREXI()
 

@@ -22,7 +22,7 @@ def lagrange_interpol(x, y, eval_x):
 
 
 class rk_co:
-    def __init__(self, M, collocation_type="gauss_lobatto"):
+    def __init__(self, M, collocation_type="gauss_legendre"):
         """
         _M: Number of quadrature points
         _collocation_type: e.g. "gauss_lobatto"
@@ -33,6 +33,21 @@ class rk_co:
 
         ref_x, w = quadrature.quad_coeffs(M, collocation_type)
         ref_x = (1.0 + ref_x)*0.5
+
+        if np.isclose(ref_x[0], 0):
+            print("WARNING:")
+            for i in range(5):
+                print("WARNING: Removing first point since this would create a singular matrix!")
+            print("WARNING:")
+
+            # Regenerate coefficients with one more coefficient
+            ref_x, w = quadrature.quad_coeffs(M+1, collocation_type)
+            ref_x = (1.0 + ref_x)*0.5
+
+            ref_x = ref_x[1:]
+            w = w[1:]
+
+        self.ref_x = ref_x
 
         #self.A, self.b, self.c = rkanalysis.irk_collocation(ref_x)
         #return
@@ -84,9 +99,14 @@ class rk_co:
 
             def quad(x, y, start=0, end=1):
                 dx = end - start
-                x = (x - start)/dx
 
-                z = lagrange_interpol(x, y, quad_x)
+                if np.abs(dx) < 1e-12:
+                    z = np.zeros_like(x)
+
+                else:
+                    x = (x - start)/dx
+                    z = lagrange_interpol(x, y, quad_x)
+
                 return z.dot(quad_w)*dx
             
             for j in range(M):
