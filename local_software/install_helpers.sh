@@ -139,6 +139,9 @@ function config_extract_fun()
 		TAR_CMD="fv"
 	elif [ "#$EXT" = "#bz2" ]; then
 		TAR_CMD="jvf"
+	elif [ "#$EXT" = "#sh" ]; then
+		echo "Shell script detected, skipping extraction"
+		return
 	else
 		config_error_exit "Unknown extension '${EXT}'"
 	fi
@@ -266,6 +269,9 @@ function config_package_extract()
 		TAR_CMD="f"
 	elif [ "#$EXT" = "#bz2" ]; then
 		TAR_CMD="jf"
+	elif [ "#$EXT" = "#sh" ]; then
+		echo "Shell script detected, skipping extraction"
+		return
 	else
 		config_error_exit "Unknown extension '${EXT}'"
 	fi

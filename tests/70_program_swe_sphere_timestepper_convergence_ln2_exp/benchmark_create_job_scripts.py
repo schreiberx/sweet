@@ -205,7 +205,7 @@ for tsm in ts_methods:
                 jg.runtime.rexi_method = 'file'
 
                 brexi = BREXI()
-                coeffs = brexi.setup(N=8, quadrature_method='gauss').toFloat()
+                coeffs = brexi.setup(N=8, quadrature_method='gauss_legendre').toFloat()
                 jg.runtime.rexi_files_coefficients = [coeffs]
 
         else:

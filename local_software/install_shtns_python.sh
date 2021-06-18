@@ -25,7 +25,6 @@ fi
 #CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
 #CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
 
-
 echo_info_hline
 echo_info "SHTNS Python OpenMP:"
 # Python, OpenMP
@@ -38,7 +37,7 @@ fi
 
 config_make_clean
 config_make_default
-python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "Failed to install"
+python3 setup.py install --prefix="$PYTHON_VENV_DIR" || echo_error_exit "Failed to install"
 
 cd "$MULE_SOFTWARE_ROOT/local_software"
 
