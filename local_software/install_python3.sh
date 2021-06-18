@@ -19,7 +19,7 @@ config_setup
 
 config_package $@
 
-config_configure_make_default_install
+config_configure_make_default_install --with-system-ffi
 
 #mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/python"
 #Create symlink to make python linked to python3

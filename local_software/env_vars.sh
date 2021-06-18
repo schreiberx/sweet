@@ -5,11 +5,18 @@
 #
 
 
+
 #######################################################################
 # Backup current directory to go back to it at the end of this script
 #######################################################################
 
 MULE_BACKDIR="$PWD"
+
+# Always clear the hash on the command line
+# The reason is, that once using the installer on, e.g., python3,
+# the wrong hash is kept
+PROMPT_COMMAND='hash -r'
+
 
 
 #######################################################################
