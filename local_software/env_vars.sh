@@ -183,7 +183,7 @@ export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
 #python3 -m venv "$MULE_SOFTWARE_ROOT/local_software/local/python_env"
 
 # Setup environment
-#source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
+source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
 
 #######################################################################
 # Setup platform specific parts
@@ -231,6 +231,7 @@ export PATH="$SCRIPTDIR/local/bin:$PATH"
 export PATH="$MULE_ROOT/bin:$PATH"
 export PATH="$MULE_LOCAL_ROOT/bin:$PATH"
 export PATH="$MULE_SOFTWARE_ROOT/bin:$PATH"
+export PATH="$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/"
 
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
