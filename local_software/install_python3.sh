@@ -27,10 +27,10 @@ config_configure_make_default_install
 
 # Use SWEET python environment in case that the system-wide installed python is used
 # Ignore errors in case that this folder doesn't exist
-#python3 -m venv "$SCRIPTDIR/local/python_env"
+python3 -m venv "$SCRIPTDIR/local/python_env"
 
 # Setup environment
-#source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
+source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
 
 
 config_success
