@@ -33,7 +33,8 @@ PKGS+=("install_likwid.sh")
 PKGS+=("install_numactl.sh")
 #PKGS+=("install_pfasst++.sh")
 
-PKGS+=("install_python3.sh")
+PKGS+=("install_anaconda.sh")
+
 PKGS+=("install_scons3.sh")
 PKGS+=("install_shtns.sh")
 PKGS+=("install_shtns_python.sh")

@@ -9,8 +9,8 @@ PKGS+=("install_binutils.sh")
 PKGS+=("install_openssl.sh")
 PKGS+=("install_cacerts.sh")
 # prereq: openssl, cacerts
-PKGS+=("install_python3.sh")
-PKGS+=("install_python_pip_packages.sh")
+
+PKGS+=("install_anaconda.sh")
 
 PKGS+=("install_fftw3.sh")
 
