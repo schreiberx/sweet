@@ -396,7 +396,12 @@ public:
 				double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
 				double error_div = diff_div.toPhys().physical_reduce_max_abs();
 
-				std::cout << "[MULE] errors: ";
+				
+				std::ios init(NULL);
+				init.copyfmt(std::cout);
+				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << simVars.timecontrol.current_timestep_nr << ": ";
+				std::cout.copyfmt(init);
+
 				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
 				std::cout << "\terror_linf_phi=" << error_phi;
 				std::cout << "\terror_linf_vrt=" << error_vrt;
