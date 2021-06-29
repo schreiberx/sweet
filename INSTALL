@@ -15,21 +15,24 @@ Not all software packages are required on all platforms. E.g. installing
 !!!   FIRST THING TO DO BEFORE ANYTHING              !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-Before doing anything, you *must* setup your environment variable via
-	source ./local_software/env_vars.sh
+1) Before doing anything, you *must* setup your environment variable via
+   $ source ./local_software/env_vars.sh
 
-or inside the local_software directory via
-	source ./env_vars.sh
+   or inside the local_software directory via
+   $ source ./env_vars.sh
 
 
-Within the 3rd party software directory in local_software,
-there are installation scripts named as follows:
+2) Second thing you should do is to install ANACONDA by typing
+   $ cd local_software
+   $ ./install_anaconda.sh
 
- * ./install_*.sh
+3) Within the 3rd party software directory in local_software,
+   there are installation scripts named as follows:
+
+   ./install_*.sh
    Build and install the 3rd party software automatically
    Please note that this does not necessarily generate highly optimized
    3rd party software, but focusses on getting SWEET running.
-
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -74,7 +77,6 @@ Packages required for simulations on the sphere:
 
 Packages required for pfasst++ (C++ PFASST):
   $ ./install_eigen3.sh	# Eigen library
-  $ ./install_pfast++.sh	# Eigen library
 
 Packages required for libpfasst (Fortran PFASST):
   $ ./install_libpfasst.sh
