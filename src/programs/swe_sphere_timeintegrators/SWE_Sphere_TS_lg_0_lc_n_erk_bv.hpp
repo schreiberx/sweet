@@ -36,43 +36,25 @@ public:
 	std::string string_id()
 	{
 		std::string s = "lg_0_lc_n_erk_bv";
-
-		if (version_id == 0)
-			s += "0";
-		else if (version_id == 1)
-			s += "1";
-		else
-			SWEETError("Version ID");
-
 		return s;
 	}
 
 	void setup_auto();
 	void print_help();
 
+
 private:
 	SimulationVariables &simVars;
 	SphereOperators_SphereData &op;
 
-	int version_id;
-
 	int timestepping_order;
-	int timestepping_order2;
 
 	double timestep_size;
 
 	/*
-	 * Linear time steppers
-	 */
-	SWE_Sphere_TS_lg_irk timestepping_lg_irk;
-
-	/*
 	 * Non-linear time steppers
 	 */
-	SWE_Sphere_TS_lg_erk_lc_n_erk timestepping_lg_erk_lc_n_erk;
-
-	SphereTimestepping_ExplicitRK timestepping_rk_nonlinear;
-
+	SphereTimestepping_ExplicitRK timestepping_rk;
 
 public:
 	SWE_Sphere_TS_lg_0_lc_n_erk_bv(
@@ -81,9 +63,7 @@ public:
 		);
 
 	void setup(
-			int i_order,	///< order of RK time stepping method
-			int i_order2,	///< order of RK time stepping method for non-linear parts
-			int i_version_id
+			int i_order	///< order of RK time stepping method
 	);
 
 	void run_timestep(
@@ -95,6 +75,17 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+	void euler_timestep_update(
+		const SphereData_Spectral &i_phi, //prog
+		const SphereData_Spectral &i_vrt, //prog
+		const SphereData_Spectral &i_div, //prog
+
+		SphereData_Spectral &o_phi_t, //updated with euler
+		SphereData_Spectral &o_vrt_t, //updated with euler
+		SphereData_Spectral &o_div_t, //updated with euler
+
+		double i_simulation_timestamp
+	);
 
 	virtual ~SWE_Sphere_TS_lg_0_lc_n_erk_bv();
 };

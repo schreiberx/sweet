@@ -196,6 +196,7 @@ public:
 
 	)	const
 	{
+		/* Calculate stream function and velocity potential */
 		SphereData_Spectral psi = inv_laplace(i_vrt)*ir;
 		SphereData_Spectral chi = inv_laplace(i_div)*ir;
 

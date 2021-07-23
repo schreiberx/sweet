@@ -1,10 +1,27 @@
 /*
+ * Author: Pedor Peixoto <ppeixoto@usp.br>
+ * based on stuff from:
  * Author: Martin Schreiber <SchreiberX@gmail.com>
+ *         
  */
-
 #include "SWE_Sphere_TS_lg_0_lc_n_erk_bv.hpp"
 
 
+/*
+ * Barotropic vorticity equation implementation
+ * Details from here: https://www.gfdl.noaa.gov/wp-content/uploads/files/user_files/pjp/barotropic.pdf
+ *
+ *  The main prognostic variable will be vorticity (vrt)
+ *  We are basically solving only the vorticity equation of the SWE equation written in vort-div formulation
+ *  The flow is non-divergent, so div=0 everywhere, therefore, also, we don't need phi (fuild depth)
+ *  We only need the streamfunction $\psi$, 
+ *  but not the the velocity potential (which is zero for this equation).
+ * In summary:
+ *  - Main prognostic: vrt
+ *  - Zero variables: chi, div, phi_pert
+ *  - Constant variables: phi_pert
+ *  - Diagnostic variables: u, v (obtained from psi and chi)
+ */
 
 void SWE_Sphere_TS_lg_0_lc_n_erk_bv::run_timestep(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
@@ -15,178 +32,86 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	if (timestepping_order == 1)
-	{
-		if (version_id == 0)
-		{
-			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt,
-					i_simulation_timestamp
-				);
 
-			SphereData_Spectral phi_fixed_dt(io_phi_pert.sphereDataConfig), vrt_dt(io_vrt.sphereDataConfig), div_dt(io_div.sphereDataConfig);
+	/* Calculate velocities and stream function */
+	SphereData_Physical ug(io_phi_pert.sphereDataConfig);
+	SphereData_Physical vg(io_phi_pert.sphereDataConfig);
 
-			// first order explicit for non-linear
-			timestepping_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
-					io_phi_pert, io_vrt, io_div,
-					phi_fixed_dt, vrt_dt, div_dt,
-					i_simulation_timestamp
-				);
+	SphereData_Physical vrtg = io_vrt.toPhys();
+	SphereData_Physical divg = io_div.toPhys(); /* this should be zero! */
 
-			io_phi_pert += i_fixed_dt*phi_fixed_dt;
-			io_vrt += i_fixed_dt*vrt_dt;
-			io_div += i_fixed_dt*div_dt;
-		}
-		else
-		{
-			SphereData_Spectral phi_fixed_dt(io_phi_pert.sphereDataConfig);
-			SphereData_Spectral vrt_dt(io_vrt.sphereDataConfig);
-			SphereData_Spectral div_dt(io_div.sphereDataConfig);
+	SphereData_Spectral psi = op.inv_laplace(io_vrt)/simVars.sim.sphere_radius;
+	SphereData_Spectral chi = op.inv_laplace(io_div)/simVars.sim.sphere_radius; /*this should be zero! */
 
-			timestepping_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
-					io_phi_pert, io_vrt, io_div,
-					phi_fixed_dt, vrt_dt, div_dt,
-					i_simulation_timestamp
-				);
 
-			io_phi_pert += i_fixed_dt*phi_fixed_dt;
-			io_vrt += i_fixed_dt*vrt_dt;
-			io_div += i_fixed_dt*div_dt;
+	op.vrtdiv_to_uv(io_vrt, io_div, ug, vg);
 
-			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt,
-					i_simulation_timestamp
-				);
-		}
-	}
-	else if (timestepping_order == 2)
-	{
-		if (version_id == 0)
-		{
-			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep(
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt*0.5,
-					i_simulation_timestamp
-				);
+	op.uv_to_vort(ug, vg);
 
-			// FULL time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
-					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt,
-					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
-					i_simulation_timestamp
-				);
+	// standard time stepping RK
+	timestepping_rk.run_timestep(
+			this,
+			&SWE_Sphere_TS_lg_0_lc_n_erk_bv::euler_timestep_update,	///< pointer to function to compute euler time step updates
+			io_phi_pert, io_vrt, io_div,
+			i_fixed_dt,
+			timestepping_order,
+			i_simulation_timestamp
+		);
 
-			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep(
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt*0.5,
-					i_simulation_timestamp+i_fixed_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
-				);
-		}
-		else if (version_id == 1)
-		{
-			// HALF time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
-					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt*0.5,
-					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
-					i_simulation_timestamp
-				);
-
-			// FULL time step for linear part
-			timestepping_lg_irk.run_timestep(
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt,
-					i_simulation_timestamp
-				);
-
-			// HALF time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
-					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
-					io_phi_pert, io_vrt, io_div,
-					i_fixed_dt*0.5,
-					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
-					i_simulation_timestamp
-				);
-		}
-		else
-		{
-			SWEETError("Invalid verison id");
-		}
-	}
-	else
-	{
-		SWEETError("Not yet supported!");
-	}
 }
 
+void SWE_Sphere_TS_lg_0_lc_n_erk_bv::euler_timestep_update(
+		const SphereData_Spectral &i_phi, //prog
+		const SphereData_Spectral &i_vrt, //prog
+		const SphereData_Spectral &i_div, //prog
 
+		SphereData_Spectral &o_phi_t, //updated with euler
+		SphereData_Spectral &o_vrt_t, //updated with euler
+		SphereData_Spectral &o_div_t, //updated with euler
+
+		double i_simulation_timestamp
+)
+{
+	//zero tendencies
+	o_phi_t.spectral_set_zero();
+	o_vrt_t.spectral_set_zero();
+	o_div_t.spectral_set_zero();
+
+	// Calculate velocities in physical space
+	SphereData_Physical u_phys, v_phys;
+	op.vrtdiv_to_uv(i_vrt, i_div, u_phys, v_phys);
+
+	/*
+	 * Calculate absolute vorticity in physical space (vrt+f)
+	 */
+	SphereData_Physical abs_vrtg = i_vrt.toPhys()+op.fg;
+
+	// Nonlinear product (velocity * abs_vort)
+	SphereData_Physical u_nl = u_phys*abs_vrtg;
+	SphereData_Physical v_nl = v_phys*abs_vrtg;
+
+	//nonlinear vort and divergence of (velocity * abs_vort)
+	SphereData_Spectral vrt, div; 
+	op.uv_to_vrtdiv(u_nl, v_nl, vrt, div);
+	o_vrt_t -= div; //This is basically the tendency in the Barotropic Vorticity Eq.
+
+	//Keep div constant
+	//o_div_t = o_div_t;
+
+	//Phi stays constant
+	//o_phi_t = o_phi_t; 
+
+}
 
 /*
  * Setup
  */
 void SWE_Sphere_TS_lg_0_lc_n_erk_bv::setup(
-		int i_timestepping_order,	///< order of RK time stepping method
-		int i_timestepping_order2,
-		int i_version_id
+		int i_timestepping_order	///< order of RK time stepping method
 )
 {
-	version_id = i_version_id;
-
 	timestepping_order = i_timestepping_order;
-	timestepping_order2 = i_timestepping_order2;
 	timestep_size = simVars.timecontrol.current_timestep_size;
-
-	if (timestepping_order == 1)
-	{
-		timestepping_lg_irk.setup(
-				1,
-				timestep_size*0.5
-		);
-	}
-	else if (timestepping_order == 2)
-	{
-		if (version_id == 0)
-		{
-			timestepping_lg_irk.setup(
-					2,
-					timestep_size*0.5
-			);
-		}
-		else if (version_id == 1)
-		{
-			timestepping_lg_irk.setup(
-					2,
-					timestep_size
-			);
-		}
-		else
-		{
-			SWEETError("Invalid version id");
-		}
-	}
-	else
-	{
-		SWEETError("Invalid time stepping order");
-	}
-
-
-	//
-	// Only request 1st order time stepping methods for irk and erk
-	// These 1st order methods will be combined to higher-order methods in this class
-	//
-	timestepping_lg_erk_lc_n_erk.setup(1, -1);
 }
 
 
@@ -198,9 +123,7 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::setup_auto()
 		version = 1;
 
 	setup(
-			simVars.disc.timestepping_order,
-			simVars.disc.timestepping_order2,
-			version
+		simVars.disc.timestepping_order
 		);
 }
 
@@ -216,9 +139,8 @@ SWE_Sphere_TS_lg_0_lc_n_erk_bv::SWE_Sphere_TS_lg_0_lc_n_erk_bv(
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		timestepping_order(-1),
-		timestepping_lg_irk(simVars, op),
-		timestepping_lg_erk_lc_n_erk(simVars, op)
+		timestepping_order(-1)
+		
 {
 }
 
