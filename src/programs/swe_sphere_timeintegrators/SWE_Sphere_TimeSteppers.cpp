@@ -40,6 +40,8 @@
 #include "SWE_Sphere_TS_ln_settls_vd.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls_uv.hpp"
 #include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
+#include "SWE_Sphere_TS_lg_0_lc_n_erk_bv.hpp"
+
 
 
 
@@ -119,6 +121,11 @@ void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereDat
 	 */
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_settls_vd(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_settls_uv(i_simVars, i_op)));
+
+	/*
+	 * BAROTROPIC VORTICITY EQ
+	 */
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_lg_0_lc_n_erk_bv(i_simVars, i_op)));
 }
 
 
@@ -175,9 +182,9 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, Sp
 		std::cout << std::endl;
 		std::cout << "Selection of available time stepping methods:" << std::endl;
 		std::cout << std::endl;
-
+		std::cout << "ppeixoto here" << std::endl;
 		print_help_all_registered();
-
+		std::cout << "ppeixoto there" << std::endl;
 		SWEETError(std::string("No valid --timestepping-method '") + i_timestepping_method + std::string("' provided"));
 	}
 
