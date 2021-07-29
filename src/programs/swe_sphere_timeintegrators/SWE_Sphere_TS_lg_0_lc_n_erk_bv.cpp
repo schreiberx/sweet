@@ -77,10 +77,11 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::euler_timestep_update(
 	o_vrt_t.spectral_set_zero();
 	o_div_t.spectral_set_zero();
 
+	//i_vrt.spectral_print(5);
 	// Calculate velocities in physical space
 	SphereData_Physical u_phys, v_phys;
 	op.vrtdiv_to_uv(i_vrt, i_div, u_phys, v_phys);
-
+	//v_phys.physical_print();
 	/*
 	 * Calculate absolute vorticity in physical space (vrt+f)
 	 */
