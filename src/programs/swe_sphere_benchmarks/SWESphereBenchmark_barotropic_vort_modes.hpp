@@ -78,7 +78,7 @@ public:
 		const SphereData_Config *sphereDataConfig = i_ops->sphereDataConfig;
 
 		/*
-		 * Compute vorticity and divergence from velocities
+		 * Compute velocities
 		 */
 		SphereData_Physical ug(sphereDataConfig);
 		SphereData_Physical vg(sphereDataConfig);
@@ -150,12 +150,24 @@ public:
 		o_vrt.spectral_set_zero();
 		o_div.spectral_set_zero();
 		
-		SphereData_Physical ug, vg;
+		//SphereData_Physical ug, vg;
 
 		std::complex<double> val = 1;
-		o_vrt.spectral_set(1,1,val);
+		// m=-M,...M are Fourier modes
+		// n=|m|, ..., M are Legendre nodes
+		// M max modes
+		//                 n,m  (n>=m)
+		// Set modes for the stream function
+		SphereData_Spectral psi(ops->sphereDataConfig); // = inv_laplace(i_vrt)*ir;
+	
+		psi.spectral_set_zero();
+		psi.spectral_set(6,4,val);
+		psi.spectral_print();
+		psi.spectral_structure_print();
 
-
+		o_vrt=ops->laplace(psi)*a;
+			
+		//exit(1);
 		//Set phi for steady state for SWE
 		std::cout << "[MULE] barotropic_vort_analytical_setup: 1" << std::endl;
 

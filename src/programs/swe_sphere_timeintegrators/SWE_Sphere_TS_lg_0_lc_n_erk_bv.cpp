@@ -34,19 +34,18 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::run_timestep(
 {
 
 	/* Calculate velocities and stream function */
-	SphereData_Physical ug(io_phi_pert.sphereDataConfig);
-	SphereData_Physical vg(io_phi_pert.sphereDataConfig);
+	//SphereData_Physical ug(io_phi_pert.sphereDataConfig);
+	//SphereData_Physical vg(io_phi_pert.sphereDataConfig);
 
-	SphereData_Physical vrtg = io_vrt.toPhys();
-	SphereData_Physical divg = io_div.toPhys(); /* this should be zero! */
+	//SphereData_Physical vrtg = io_vrt.toPhys();
+	//SphereData_Physical divg = io_div.toPhys(); /* this should be zero! */
 
-	SphereData_Spectral psi = op.inv_laplace(io_vrt)/simVars.sim.sphere_radius;
-	SphereData_Spectral chi = op.inv_laplace(io_div)/simVars.sim.sphere_radius; /*this should be zero! */
+	//SphereData_Spectral psi = op.inv_laplace(io_vrt);
+	//SphereData_Spectral chi = op.inv_laplace(io_div); /*this should be zero! */
 
+	//op.vrtdiv_to_uv(io_vrt, io_div, ug, vg);
 
-	op.vrtdiv_to_uv(io_vrt, io_div, ug, vg);
-
-	op.uv_to_vort(ug, vg);
+	//op.uv_to_vort(ug, vg);
 
 	// standard time stepping RK
 	timestepping_rk.run_timestep(
@@ -77,15 +76,17 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::euler_timestep_update(
 	o_vrt_t.spectral_set_zero();
 	o_div_t.spectral_set_zero();
 
-	//i_vrt.spectral_print(5);
+
 	// Calculate velocities in physical space
 	SphereData_Physical u_phys, v_phys;
 	op.vrtdiv_to_uv(i_vrt, i_div, u_phys, v_phys);
-	//v_phys.physical_print();
+
 	/*
 	 * Calculate absolute vorticity in physical space (vrt+f)
 	 */
 	SphereData_Physical abs_vrtg = i_vrt.toPhys()+op.fg;
+	//std::cout<< "Vort" << std::endl;
+	//i_vrt.spectral_print(6);
 
 	// Nonlinear product (velocity * abs_vort)
 	SphereData_Physical u_nl = u_phys*abs_vrtg;
@@ -94,8 +95,11 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::euler_timestep_update(
 	//nonlinear vort and divergence of (velocity * abs_vort)
 	SphereData_Spectral vrt, div; 
 	op.uv_to_vrtdiv(u_nl, v_nl, vrt, div);
-	o_vrt_t -= div; //This is basically the tendency in the Barotropic Vorticity Eq.
 
+	o_vrt_t -= div; //This is basically the tendency in the Barotropic Vorticity Eq.
+	//std::cout<< "Vort tendency" << std::endl;
+	//o_vrt_t.spectral_print(6);
+	
 	//Keep div constant
 	//o_div_t = o_div_t;
 
@@ -130,7 +134,7 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::setup_auto()
 
 void SWE_Sphere_TS_lg_0_lc_n_erk_bv::print_help()
 {
-	std::cout << "	Borotropic Vorticity Equation:" << std::endl;
+	std::cout << "	Barotropic Vorticity Equation:" << std::endl;
 	std::cout << "		+ lg_0_lc_n_erk_bv" << std::endl;
 }
 
@@ -140,7 +144,7 @@ SWE_Sphere_TS_lg_0_lc_n_erk_bv::SWE_Sphere_TS_lg_0_lc_n_erk_bv(
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		timestepping_order(-1)
+		timestepping_order(4)
 		
 {
 }

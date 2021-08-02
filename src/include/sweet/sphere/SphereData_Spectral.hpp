@@ -1041,6 +1041,24 @@ public:
 		}
 	}
 
+	void spectral_structure_print(
+			int i_precision = 16,
+			double i_abs_threshold = -1
+	)	const
+	{
+		std::cout << std::setprecision(i_precision);
+
+		std::cout << "m \\ n ----->" << std::endl;
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				std::cout << "(" << m <<"," << n <<")" << "\t";
+			}
+			std::cout << std::endl;
+		}
+	}
 
   
   	void spectrum_file_write(

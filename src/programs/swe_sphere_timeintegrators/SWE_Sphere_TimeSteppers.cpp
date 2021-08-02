@@ -182,9 +182,9 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method, Sp
 		std::cout << std::endl;
 		std::cout << "Selection of available time stepping methods:" << std::endl;
 		std::cout << std::endl;
-		std::cout << "ppeixoto here" << std::endl;
+
 		print_help_all_registered();
-		std::cout << "ppeixoto there" << std::endl;
+		
 		SWEETError(std::string("No valid --timestepping-method '") + i_timestepping_method + std::string("' provided"));
 	}
 
