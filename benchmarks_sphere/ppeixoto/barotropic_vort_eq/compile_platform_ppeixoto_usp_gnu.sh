@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # Loading Job environment variables
-cd "/media/pedrosp/Data/Simulations/sweet"
-source ./local_software/env_vars.sh "/media/pedrosp/Data/Simulations/sweet/mule/platforms/50_ppeixoto_usp_gnu/env_vars.sh" || exit 1
+cd "/home/pedrosp/Reps/sweet"
+source ./local_software/env_vars.sh "/home/pedrosp/Reps/sweet/mule/platforms/50_ppeixoto_usp_gnu/env_vars.sh" || exit 1
 
 
 

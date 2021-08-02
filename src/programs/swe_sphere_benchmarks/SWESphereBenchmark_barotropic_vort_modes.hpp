@@ -12,8 +12,6 @@
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 
-
-
 class SWESphereBenchmark_barotropic_vort_modes	: public SWESphereBenchmarks_interface
 {
 	SimulationVariables *simVars = nullptr;
@@ -25,6 +23,11 @@ public:
 	{
 	}
 
+	// Mode setup
+	std::size_t maxmodes;   //number of waves to be added
+	static const int maxmodeslimit=10; //max number of waves
+	std::size_t nmode[maxmodeslimit], mmode[maxmodeslimit];   // spherical harmonic indexes
+	double ampl[maxmodeslimit]; //coefficients of normal modes 
 
 	std::string benchmark_name;
 
@@ -32,13 +35,15 @@ public:
 			const std::string &i_benchmark_name
 		)
 	{
+		bool found_bench = false;
 		benchmark_name = i_benchmark_name;
+		std::cout << i_benchmark_name << std::endl;
+	    if (benchmark_name.find("barotropic_vort_modes") !=std::string::npos )
+			found_bench = true;
 
 		return
 				benchmark_name == "barotropic_vort_modes"			||
-				benchmark_name == "barotropic_vort_modes_1"	||
-				benchmark_name == "barotropic_vort_modes_2"	||
-				benchmark_name == "barotropic_vort_modes_3"	
+				found_bench
 		;
 	}
 
@@ -59,7 +64,7 @@ public:
 		stream << "  BOROTROPIC VORTICITY MODES :" << std::endl;
 		stream << "     'barotropic_vort_modes'" << std::endl;
 		stream << "     'barotropic_vort_modes': standard test" << std::endl;
-		stream << "     'barotropic_vort_modes_[N]_[M]': mode choices" << std::endl;
+		stream << "     'barotropic_vort_modes_[N]_[n1]_[m1]_[v1]_...[nN]_[mN]_[vN]': mode choices" << std::endl;
 		return stream.str();
 	}
 
@@ -97,8 +102,6 @@ public:
 
 		o_phi = i_ops->inv_laplace(tmpspec1) - 0.5*(ug*ug+vg*vg);
 	}
-
-
 
 
 	void get_initial_state(
@@ -140,12 +143,9 @@ public:
 
 		double freq_multiplier = 1.0;
 
-		if (benchmark_name == "geostrophic_balance_2")
-			freq_multiplier = 2.0;
-		else if (benchmark_name == "geostrophic_balance_4")
-			freq_multiplier = 4.0;
 
-		
+		extract_bench_info(benchmark_name);
+	
 
 		o_vrt.spectral_set_zero();
 		o_div.spectral_set_zero();
@@ -161,9 +161,19 @@ public:
 		SphereData_Spectral psi(ops->sphereDataConfig); // = inv_laplace(i_vrt)*ir;
 	
 		psi.spectral_set_zero();
-		psi.spectral_set(6,4,val);
+		//Add mode values
+		for (int n = 0; n < (int)maxmodes; n++){			
+			if(nmode[n] < mmode[n]){
+				std::cout<< "Modes: n="<<nmode[n]<<" , m="<<mmode[n]<<std::endl;
+				SWEETError("SWESphereBenchmark_barotropic_vort_modes: n cannot be smaller than m");	
+			}
+
+			psi.spectral_set(nmode[n],mmode[n],ampl[n]);	
+		}
+		
+
 		psi.spectral_print();
-		psi.spectral_structure_print();
+		//psi.spectral_structure_print();
 
 		o_vrt=ops->laplace(psi)*a;
 			
@@ -177,8 +187,54 @@ public:
 				o_div,
 				o_phi_pert
 		);
+	}
+
+
+	private:
+	void extract_bench_info(const std::string &bcase)
+	{
+		
+		std::string basic_name = "barotropic_vort_modes";
+		std::string bcase_code = bcase;
+
+		bcase_code.replace(benchmark_name.find(basic_name),basic_name.length()+1,"");
+
+		if(bcase_code==""){
+			SWEETError("SWESphereBenchmark_barotropic_vort_modes: please choose the normal mode case appending to benchmark name the code _[N]_[n1]_[m1]_[v1]_...[nN]_[mN]_[vN]");
+		};
+
+		std::cout<< "[MULE] benchmark_barotropic_vort_modes.case:"<< benchmark_name << std::endl;
+
+		//Convert parameter to words
+		std::string str = bcase_code;
+		std::replace( str.begin(), str.end(), '_', ' ');
+
+		std::stringstream iss(str);
+		
+		iss >> maxmodes;
+		if(maxmodes>maxmodeslimit){
+			std::cout<< "Modes:"<<maxmodes<<" , maxmodes hardcoded:"<<maxmodeslimit<<std::endl;
+			SWEETError("SWESphereBenchmark_barotropic_vort_modes: Adjust maximun number of waves");	
+		}
+		std::cout<< "[MULE] benchmark_barotropic_vort_modes.code: "<<bcase_code<< std::endl;
+		std::cout<< "[MULE] benchmark_barotropic_vort_modes.maxmodes: " << maxmodes << std::endl;
+		
+		//loop over waves
+		for (int n = 0; n < (int)maxmodes; n++){
+			//get a single mode
+			iss >> nmode[n];
+			iss >> mmode[n];
+			iss >> ampl[n];
+			std::cout<< "[MULE] benchmark_barotropic_vort_modes."<<n<<".nmode: "<< nmode[n] << std::endl;
+			std::cout<< "[MULE] benchmark_barotropic_vort_modes."<<n<<".mmode: "<< mmode[n] << std::endl;
+			std::cout<< "[MULE] benchmark_barotropic_vort_modes."<<n<<".ampl: "<< ampl[n] << std::endl;
+		}
+		
+		return;
 
 	}
+	
+
 };
 
 #endif

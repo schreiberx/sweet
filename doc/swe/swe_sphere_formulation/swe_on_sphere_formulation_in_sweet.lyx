@@ -1646,7 +1646,7 @@ y.
 \end_layout
 
 \begin_layout Section
-Implementation: Borotropic Vorticity Equations (added by P.Peixoto)
+Implementation: Barotropic Vorticity Equations (added by P.Peixoto)
 \end_layout
 
 \begin_layout Subsection
@@ -1662,8 +1662,47 @@ The lg_0 stands for zero gravity waves, to allow clear interpretation in
  as usual.
 \end_layout
 
-\begin_layout Enumerate
-sfdgdg
+\begin_layout Section
+Implementation: Normal Mode Initialization on the sphere (added by P.Peixoto)
+\end_layout
+
+\begin_layout Standard
+Nonlinear interaction studies require initiallization with energy posed
+ in specific spherical hamonics modes.
+ These are also normal modes of the barotropic vorticity equation.
+ The benchmark SWESphereBenchmark_barotropic_vort_modes implements the initializ
+ation using the following format:
+\end_layout
+
+\begin_layout Itemize
+Benchmark name: 
+\begin_inset Quotes eld
+\end_inset
+
+barotropic_vort_modes_CODE
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+CODE is a string coding that must have the following format: N_n1_m1_v1_n2_m2_v2
+_.......nN_mN_vN
+\end_layout
+
+\begin_layout Itemize
+N = number of modes to be included
+\end_layout
+
+\begin_layout Itemize
+nX_mX_vX = spherical harmonic mode indexes (nX, mX), integers, with $n
+\backslash
+leq m$, with value vX, float
+\end_layout
+
+\begin_layout Itemize
+Example: 2_4_3_1.0_
 \end_layout
 
 \end_body
