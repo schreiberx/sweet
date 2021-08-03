@@ -22,41 +22,11 @@ contains
     do i=1,nl
        tmp(i:i) = name(i)
     enddo
+    ! LibPFASST supports more quadrature types but we do not support them here
     if (tmp(1:nl)      .eq. 'SDC_GAUSS_LOBATTO') then
        qtype = SDC_GAUSS_LOBATTO
-!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_RADAU') then
-!       qtype = SDC_GAUSS_RADAU
-!    else if (tmp(1:nl) .eq. 'SDC_CLENSHAW_CURTIS') then
-!       qtype = SDC_CLENSHAW_CURTIS
-!    else if (tmp(1:nl) .eq. 'SDC_UNIFORM') then
-!       qtype = SDC_UNIFORM
-!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_LEGENDRE') then
-!       qtype = SDC_GAUSS_LEGENDRE
-!    !else if (tmp(1:nl) .eq. 'SDC_PROPER_NODES') then
-!    !   qtype = SDC_PROPER_NODES
-!    !else if (tmp(1:nl) .eq. 'SDC_COMPOSITE_NODES') then
-!    !   qtype = SDC_COMPOSITE_NODES
-!    else if (tmp(1:nl)      .eq. 'SDC_GAUSS_LOBATTO_NL') then
-!       qtype = SDC_GAUSS_LOBATTO
-!       use_no_left_q = .true.
-!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_RADAU_NL') then
-!       qtype = SDC_GAUSS_RADAU
-!       use_no_left_q = .true.
-!    else if (tmp(1:nl) .eq. 'SDC_CLENSHAW_CURTIS_NL') then
-!       qtype = SDC_CLENSHAW_CURTIS
-!       use_no_left_q = .true.
-!    else if (tmp(1:nl) .eq. 'SDC_UNIFORM_NL') then
-!       qtype = SDC_UNIFORM
-!       use_no_left_q = .true.
-!    else if (tmp(1:nl) .eq. 'SDC_GAUSS_LEGENDRE_NL') then
-!       qtype = SDC_GAUSS_LEGENDRE
-!       use_no_left_q = .true.
-!    ! don't catch these cases since proper/composite nodes are not set in qtype anymore
-!    else if (tmp(1:nl) .eq. 'SDC_PROPER_NODES_NL') then
-!       qtype = SDC_PROPER_NODES
-!
-!    else if (tmp(1:nl) .eq. 'SDC_COMPOSITE_NODES_NL') then
-!       qtype = SDC_COMPOSITE_NODES + SDC_NO_LEFT
+    else if (tmp(1:nl) .eq. 'SDC_GAUSS_LEGENDRE') then
+       qtype = SDC_GAUSS_LEGENDRE
     else
        qtype = -1
     endif
