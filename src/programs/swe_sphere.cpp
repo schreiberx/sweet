@@ -205,6 +205,27 @@ public:
 	}
 
 
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file_csv_spec_evol(
+			const SphereData_Spectral &i_sphereData,
+			const char* i_name		///< name of output variable
+	)
+	{
+		char buffer[1024];
+
+
+		const char* filename_template = simVars.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, 0.0);
+
+		i_sphereData.spectrum_file_write_line(buffer, 
+		i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
+		16, 10e-16);
+
+		return buffer;
+	}
+
 
 	/**
 	 * Write file to data and return string of file name
@@ -335,6 +356,16 @@ public:
 				SphereData_Physical prog_phys = prog_div.toPhys();
 
 				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+			}
+		}
+		else if (simVars.iodata.output_file_mode == "csv_spec_evol"){
+
+			std::string output_filename;
+
+			{
+				SphereData_Spectral psi = op.inv_laplace(prog_vrt)/simVars.sim.sphere_radius;
+				output_filename = write_file_csv_spec_evol(psi, "spec_psi");
+				std::cout << " + " << output_filename << " (min_abs : " << psi.spectral_reduce_min_abs() << ", max_abs:" << psi.spectral_reduce_max_abs() << ")" << std::endl;
 			}
 		}
 		else
