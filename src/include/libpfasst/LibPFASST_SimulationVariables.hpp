@@ -46,7 +46,7 @@ struct LibPFASST_SimulationVariables
     /**
      * Treat the Coriolis force implicitly
      */
-    bool implicit_coriolis_force = true;
+    bool implicit_coriolis_force = false;
 
     /**
      * Use the RK stepper instead of the spectral deferred correction sweeps
@@ -75,13 +75,13 @@ struct LibPFASST_SimulationVariables
         std::cout << "LibPFASST:"                                                                                                            << std::endl;
         std::cout << "	--libpfasst-nlevels [int]			LibPFASST parameter nlevels, default: 2"                         << std::endl;
         std::cout << "	--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8"                          << std::endl;
-        std::cout << "	--libpfasst-nsweeps_coarse [int]                LibPFASST parameter nsweeps_coarse, default: 1"                  << std::endl;
+        std::cout << "	--libpfasst-nsweeps-coarse [int]                LibPFASST parameter nsweeps-coarse, default: 1"                  << std::endl;
         std::cout << "	--libpfasst-nnodes [int]			LibPFASST parameter nnodes, default: 5"                          << std::endl;
-        std::cout << "	--libpfasst-nodes_type [string]			LibPFASST parameter nodes_type, default: SDC_GAUSS_LOBATTO"      << std::endl;
-        std::cout << "	--libpfasst-coarsening_multiplier [float]	LibPFASST parameter coarsening_multiplier, default: 0.5"         << std::endl;
-        std::cout << "	--libpfasst-use_rexi [bool]	                LibPFASST parameter use_rexi, default: false"                    << std::endl;
-        std::cout << "	--libpfasst-implicit_coriolis_force [bool]      LibPFASST parameter implicit_coriolis_force, default: true"      << std::endl;
-        std::cout << "      --libpfasst-use_rk_stepper [bool]               LibPFASST parameter use the Runge-Kutta stepper, default: false" << std::endl;
+        std::cout << "	--libpfasst-nodes-type [string]			LibPFASST parameter nodes-type, default: SDC_GAUSS_LOBATTO"      << std::endl;
+        std::cout << "	--libpfasst-coarsening-multiplier [float]	LibPFASST parameter coarsening-multiplier, default: 0.5"         << std::endl;
+        std::cout << "	--libpfasst-use-rexi [bool]	                LibPFASST parameter use-rexi, default: false"                    << std::endl;
+        std::cout << "	--libpfasst-implicit-coriolis-force [bool]      LibPFASST parameter implicit-coriolis-force, default: false"      << std::endl;
+        std::cout << "      --libpfasst-use-rk-stepper [bool]               LibPFASST parameter use the Runge-Kutta stepper, default: false" << std::endl;
         std::cout << ""                                                                                                                      << std::endl;
     }
 
@@ -97,25 +97,25 @@ struct LibPFASST_SimulationVariables
         io_long_options[io_next_free_program_option] = {"libpfasst-niters", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
-        io_long_options[io_next_free_program_option] = {"libpfasst-nsweeps_coarse", required_argument, 0, 256+io_next_free_program_option};
+        io_long_options[io_next_free_program_option] = {"libpfasst-nsweeps-coarse", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
         io_long_options[io_next_free_program_option] = {"libpfasst-nnodes", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
-        io_long_options[io_next_free_program_option] = {"libpfasst-nodes_type", required_argument, 0, 256+io_next_free_program_option};
+        io_long_options[io_next_free_program_option] = {"libpfasst-nodes-type", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
-        io_long_options[io_next_free_program_option] = {"libpfasst-coarsening_multiplier", required_argument, 0, 256+io_next_free_program_option};
+        io_long_options[io_next_free_program_option] = {"libpfasst-coarsening-multiplier", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
-        io_long_options[io_next_free_program_option] = {"libpfasst-use_rexi", required_argument, 0, 256+io_next_free_program_option};
+        io_long_options[io_next_free_program_option] = {"libpfasst-use-rexi", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
-        io_long_options[io_next_free_program_option] = {"libpfasst-implicit_coriolis_force", required_argument, 0, 256+io_next_free_program_option};
+        io_long_options[io_next_free_program_option] = {"libpfasst-implicit-coriolis-force", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
-        io_long_options[io_next_free_program_option] = {"libpfasst-use_rk_stepper", required_argument, 0, 256+io_next_free_program_option};
+        io_long_options[io_next_free_program_option] = {"libpfasst-use-rk-stepper", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
     }
@@ -134,13 +134,13 @@ struct LibPFASST_SimulationVariables
         {
             case 0:	nlevels                 = atoi(optarg);	return -1;
             case 1:	niters                  = atoi(optarg);	return -1;
-            case 2:   nsweeps_coarse          = atoi(optarg); return -1;
+            case 2: nsweeps_coarse          = atoi(optarg); return -1;
             case 3:	nnodes                  = atoi(optarg);	return -1;
-            case 4:	nodes_type              = optarg; 	return -1;
+            case 4:	nodes_type              = optarg; 	    return -1;
             case 5:	coarsening_multiplier   = atof(optarg);	return -1;
-            case 6:   use_exp                = atoi(optarg); return -1;
-            case 7:   implicit_coriolis_force = atoi(optarg); return -1;
-            case 8:   use_rk_stepper          = atoi(optarg); return -1;
+            case 6: use_exp                 = atoi(optarg); return -1;
+            case 7: implicit_coriolis_force = atoi(optarg); return -1;
+            case 8: use_rk_stepper          = atoi(optarg); return -1;
         }
 
         return 9;
