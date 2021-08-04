@@ -181,12 +181,6 @@ void cinitial(
 	SphereData_Spectral& vort_Y = o_Y->get_vort();
 	SphereData_Spectral& div_Y  = o_Y->get_div();
 
-	// set the time stepping params
-	i_ctx->setup_time_steps(
-			0,
-			i_dt
-	);
-
 	// get the SimulationVariables object from context
 	SimulationVariables* simVars(i_ctx->get_simulation_variables());
 
@@ -231,10 +225,20 @@ void cinitial(
 		write_file(*i_ctx, phi_Y,  "prog_phi_init");
 		write_file(*i_ctx, vort_Y, "prog_vort_init");
 		write_file(*i_ctx, div_Y,  "prog_div_init");
+		if (simVars->iodata.output_each_sim_seconds < 0) {
+		    // only write output at start and end
+		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.max_simulation_time;
+		}
+		else if (simVars->iodata.output_each_sim_seconds > 0) {
+		    // write output every output_each_sim_seconds
+		    // next output time is thus equal to output_each_sim_seconds
+		    simVars->iodata.output_next_sim_seconds = simVars->iodata.output_each_sim_seconds;
+		}
+		else {
+		    // output at every time step
+		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.current_timestep_size;
+		}
 	}
-	// write_spectrum_to_file(*i_ctx, phi_Y,  "init_spectrum_phi");
-	// write_spectrum_to_file(*i_ctx, vort_Y, "init_spectrum_vort");
-	// write_spectrum_to_file(*i_ctx, div_Y,  "init_spectrum_div");
 
 	SphereData_Spectral phi_Y_init(phi_Y);
 	SphereData_Spectral phi_Y_final(phi_Y);
@@ -454,7 +458,7 @@ void ceval_f1(SphereDataVars *i_Y,
 				phi_F1,
 				vort_F1,
 				div_F1,
-				simVars->timecontrol.max_simulation_time
+				simVars->timecontrol.current_simulation_time
 		);
 	}
 	else
@@ -473,7 +477,7 @@ void ceval_f1(SphereDataVars *i_Y,
 					phi_F1,
 					vort_F1,
 					div_F1,
-					simVars->timecontrol.max_simulation_time
+					simVars->timecontrol.current_simulation_time
 			);
 		}
 		else
@@ -489,7 +493,7 @@ void ceval_f1(SphereDataVars *i_Y,
 					phi_F1,
 					vort_F1,
 					div_F1,
-					simVars->timecontrol.max_simulation_time
+					simVars->timecontrol.current_simulation_time
 			);
 
 
@@ -534,7 +538,7 @@ void ceval_f2 (
 				phi_F2,
 				vort_F2,
 				div_F2,
-				simVars->timecontrol.max_simulation_time
+				simVars->timecontrol.current_simulation_time
 		);
 	}
 	else
@@ -554,7 +558,7 @@ void ceval_f2 (
 					phi_F2,
 					vort_F2,
 					div_F2,
-					simVars->timecontrol.max_simulation_time
+					simVars->timecontrol.current_simulation_time
 			);
 
 		}
@@ -572,7 +576,7 @@ void ceval_f2 (
 					phi_F2,
 					vort_F2,
 					div_F2,
-					simVars->timecontrol.max_simulation_time
+					simVars->timecontrol.current_simulation_time
 			);
 
 
@@ -620,7 +624,7 @@ void ccomp_f2 (
 				vort_Y,
 				div_Y,
 				i_dt,
-				simVars->timecontrol.max_simulation_time
+				simVars->timecontrol.current_simulation_time
 		);
 
 	}
@@ -638,7 +642,7 @@ void ccomp_f2 (
 					vort_Y,
 					div_Y,
 					i_dt,
-					simVars->timecontrol.max_simulation_time
+					simVars->timecontrol.current_simulation_time
 			);
 
 		}
@@ -654,7 +658,7 @@ void ccomp_f2 (
 					vort_Y,
 					div_Y,
 					i_dt,
-					simVars->timecontrol.max_simulation_time
+					simVars->timecontrol.current_simulation_time
 			);
 
 

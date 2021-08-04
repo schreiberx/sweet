@@ -368,17 +368,6 @@ public:
   {
     return levelSingletons->size();
   }
-
-  // Setter for the timestepping params
-  void setup_time_steps(
-			double i_t, 
-			double i_dt
-			)
-  {
-    simVars->timecontrol.current_timestep_size   = i_dt;
-    simVars->timecontrol.current_simulation_time = i_t;
-    simVars->timecontrol.max_simulation_time     = i_dt;
-  }
 	      
   // Save the physical invariants
   void save_physical_invariants(
