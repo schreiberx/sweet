@@ -764,7 +764,6 @@ public:
 	}
 
 
-
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
@@ -884,8 +883,6 @@ public:
 		for (int i = 0; i < sphereDataConfig->spectral_array_data_number_of_elements; i++)
 			spectral_space_data[i] = i_value;
 	}
-
-
 
 	/*
 	 * Add a constant in physical space by adding the corresponding value in spectral space
@@ -1162,17 +1159,19 @@ public:
 				std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
 				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 				{
-					file << "(" << n << "," << m << ")\t" ;
+					file << "(" << n << ";" << m << ")\t" ;
 				}
 			}
-			file<< std::endl;
+			file<< "TotalSum" <<std::endl;
 		}
 		else{
 			file.open(i_filename, std::ios_base::app);
+			file << std::setprecision(i_precision);
 		}  		
 
   		std::complex<double> w = {0,0};
 		double wabs = 0.0;
+		double sum = 0.0;
 
 		file << i_time << "\t";
   		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
@@ -1182,7 +1181,8 @@ public:
   			{
   				w = spectral_space_data[idx];
 				wabs = std::abs(w * std::conj(w));
-  				idx++;
+				sum += wabs;
+  				
 				if ( wabs < i_abs_threshold){
 					//file << "(" << n << "," << m << ")\t"<<std::endl;
 					file <<  0 << "\t"; //<<std::endl;
@@ -1191,9 +1191,10 @@ public:
 					//file << "(" << n << "," << m << ")\t"<<std::endl;
 					file <<  wabs << "\t"; //<<std::endl;;
 				}
+				idx++;
   			}
   		}
-		file<< std::endl;
+		file<< sum << std::endl;
   		file.close();
 	}
 

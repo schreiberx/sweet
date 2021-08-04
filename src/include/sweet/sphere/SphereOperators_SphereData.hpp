@@ -794,7 +794,24 @@ public:
 		return out_sph_data;
 	}
 
+	/**
+	 * root Laplace operator
+	 */
+	SphereData_Spectral root_laplace(
+			const SphereData_Spectral &i_sph_data
+	)	const
+	{
+		SphereData_Spectral out_sph_data(i_sph_data);
 
+		out_sph_data.spectral_update_lambda(
+				[&](int n, int m, std::complex<double> &o_data)
+				{
+					o_data *= std::sqrt((double)n*((double)n+1.0))*(ir);
+				}
+			);
+
+		return out_sph_data;
+	}
 
 	/**
 	 * Laplace operator

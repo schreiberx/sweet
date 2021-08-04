@@ -363,9 +363,20 @@ public:
 			std::string output_filename;
 
 			{
+				// See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
+				
+				//enstrophy per mode is 0.5 vrt*conj(vrt) in spectral space
+				// Total enstrophy is the sum of these
+				output_filename = write_file_csv_spec_evol(prog_vrt*std::sqrt(0.5), "spec_enstrophy"); 
+				std::cout << " + " << output_filename << " (min_abs : " << (0.5)*prog_vrt.spectral_reduce_min_abs() << ", max_abs:" << (0.5)*prog_vrt.spectral_reduce_max_abs() << ")" << std::endl;
+
+				//energy per mode is (0.5 n*(n+1) / a^2) *psi*conj(psi) in spectral space
 				SphereData_Spectral psi = op.inv_laplace(prog_vrt)/simVars.sim.sphere_radius;
-				output_filename = write_file_csv_spec_evol(psi, "spec_psi");
-				std::cout << " + " << output_filename << " (min_abs : " << psi.spectral_reduce_min_abs() << ", max_abs:" << psi.spectral_reduce_max_abs() << ")" << std::endl;
+				// multiply psi by sqrt( n * (n+1))/a (apply root laplacian)
+				psi= op.root_laplace(psi);
+				output_filename = write_file_csv_spec_evol(psi*std::sqrt(0.5), "spec_energy"); 
+				std::cout << " + " << output_filename << " (min_abs : " << (0.5)*psi.spectral_reduce_min_abs() << ", max_abs:" << (0.5)*psi.spectral_reduce_max_abs() << ")" << std::endl;
+
 			}
 		}
 		else
