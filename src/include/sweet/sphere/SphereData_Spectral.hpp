@@ -1183,12 +1183,14 @@ public:
   				w = spectral_space_data[idx];
 				wabs = std::abs(w * std::conj(w));
   				idx++;
-				if ( wabs < i_abs_threshold)
-					file <<  0 << "\t";
-				else
-					file <<  wabs << "\t";
-				idx++;
-				
+				if ( wabs < i_abs_threshold){
+					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					file <<  0 << "\t"; //<<std::endl;
+				}
+				else{
+					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					file <<  wabs << "\t"; //<<std::endl;;
+				}
   			}
   		}
 		file<< std::endl;
