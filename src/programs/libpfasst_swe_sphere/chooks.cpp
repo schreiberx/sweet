@@ -5,6 +5,42 @@
 
 extern "C"
 {
+    bool timestep_check_output(SphereDataCtx *i_ctx,
+                               int i_current_iter,
+                               int i_niters)
+    {
+        if (i_current_iter < i_niters) {
+            // TODO: make this controllable via command line argument
+            return false;
+        }
+
+        // get the simulation variables
+        SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+        if (simVars->iodata.output_each_sim_seconds < 0) {
+            // write no output between start and end of simulation
+            return false;
+        }
+
+        if (simVars->iodata.output_each_sim_seconds == 0) {
+            // write output at every time step
+            return true;
+        }
+
+        if (simVars->timecontrol.current_simulation_time < simVars->iodata.output_next_sim_seconds) {
+            // we have not reached the next output time step
+            return false;
+        }
+
+        if (simVars->timecontrol.max_simulation_time - simVars->timecontrol.current_simulation_time < 1e-3) {
+            // do not write output if final time step is reached
+            // (output will be written in cfinal anyways)
+            return false;
+        }
+
+        // we have reached the next output time step
+        return true;
+    }
 
     void cecho_error(SphereData_Spectral* sd,
                      int step)
@@ -125,19 +161,13 @@ extern "C"
         auto current_dt = simVars->timecontrol.current_timestep_size;
         simVars->timecontrol.current_simulation_time = (i_current_step + 1) * current_dt;
 
-        // check if output is necessary
-        const auto output_dt = simVars->iodata.output_each_sim_seconds;
-        if (output_dt < 0) {
-            // no output required
+        // check if we should write output
+        if (!timestep_check_output(i_ctx, i_current_iter, i_niters)) {
             return;
         }
-        if (output_dt != 0) {
-            // == 0 means output at every step
-            if (std::fmod(simVars->timecontrol.current_simulation_time, output_dt) != 0) {
-                // we haven't reached the next output time yet -> no output required
-                return;
-            }
-        }
+
+        // update when to write output the next time
+        simVars->iodata.output_next_sim_seconds += simVars->iodata.output_each_sim_seconds;
 
         const SphereData_Spectral& phi_Y  = i_Y->get_phi();
         const SphereData_Spectral& vort_Y = i_Y->get_vort();
