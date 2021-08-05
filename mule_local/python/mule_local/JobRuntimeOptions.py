@@ -357,6 +357,7 @@ class JobRuntimeOptions(InfoError):
                 else:
                     idstr += '_X'+str(self.plane_domain_size)
 
+            #PP This seems to be in the wrong place of badly defined
             if self.plane_domain_size == None:
                 idstr += '_spap'+str(self.semi_lagrangian_approximate_sphere_geometry)
 
