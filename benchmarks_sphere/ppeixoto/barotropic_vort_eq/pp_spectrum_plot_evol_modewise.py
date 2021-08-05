@@ -34,99 +34,54 @@ jd_raw = jd.get_job_raw_data()
 output=jd_raw['output']
 runtime=jd_raw['jobgeneration']
 runtime=runtime['runtime']
+print(output)
 
-nm_name=output['simulation_benchmark_normal_modes.case']
-nwaves=int(output['simulation_benchmark_normal_modes.nwaves'])
-
-k0=[]
-k1=[]
-d0=[]
-dwest=[]
-deast=[]
-waves = "Initial waves (k0,k1):(geo,west,east) "
-for i in range(nwaves):
-	wave="simulation_benchmark_normal_modes.w"+str(i)+"."
-	k0.append(int(output[wave+"k0"]))
-	k1.append(int(output[wave+"k1"]))
-	d0.append(int(output[wave+"d0"]))
-	dwest.append(int(output[wave+"dwest"]))
-	deast.append(int(output[wave+"deast"]))
-	waves = waves+"\n ("+str(k0[i])+","+str(k1[i])+"):("+str(d0[i])+","+str(dwest[i])+","+str(deast[i])+") "
+code=output['benchmark_barotropic_vort_modes.code']
+maxmodes = int(output["benchmark_barotropic_vort_modes.maxmodes"])
+nmodes=[]
+mmodes=[]
+ampls=[]
 
 print("Initial conditions")
-print(waves)
-#print("k1:        ", k1)
-#print("Geo_mode:  ", d0)
-#print("West_mode: ", dwest)
-#print("East_mode: ", deast)
-
-params = "h0="+str(runtime['h0'])+", "\
-	+"f="+str(runtime['sphere_rotating_coriolis_omega'])+", "\
-	+"g="+str(runtime['gravitation'])+", "\
-	+"L="+str(runtime['plane_domain_size'])+", "\
-	+"M="+str(runtime['space_res_spectral'])
-	#+"N="+str(runtime['space_res_physical'])
-
-
+print("Mode, n, m, amplitude")
+for i in range(maxmodes):
+	mode="benchmark_barotropic_vort_modes."+str(i)+"."
+	imode=i
+	nmode=int(output[mode+"nmode"])
+	mmode=int(output[mode+"nmode"])
+	ampl=float(output[mode+"ampl"])
+	print(i, nmode, mmode, ampl)
+	nmodes.append(nmode)
+	mmodes.append(mmode)
+	ampls.append(ampl)
 
 
 
 #Read output_nm files
-nm_geo_file    = jd_flat['runtime.p_job_dirpath']+"/output_nm_geo_evol.txt"
-nm_igwest_file = jd_flat['runtime.p_job_dirpath']+"/output_nm_igwest_evol.txt"
-nm_igeast_file = jd_flat['runtime.p_job_dirpath']+"/output_nm_igeast_evol.txt"
+energy_file    = jd_flat['runtime.p_job_dirpath']+"/output_spec_energy_t00000000000.00000000.txt"
+enstrophy_file = jd_flat['runtime.p_job_dirpath']+"/output_spec_enstrophy_t00000000000.00000000.txt"
 
-eps=10e-4
-eps2=10e-4
+
+eps=10e-15
 scales = {}
-timerescale=60*60
+timerescale=1.0
 #Remove modes with null values
-exclude = ['n']
+exclude = ['timestamp']
 
-df_geo=pd.read_csv(nm_geo_file, sep='\t', skipinitialspace=True, engine="python")
-time=df_geo['time']
-df_geo=df_geo.loc[:, df_geo.columns.difference(exclude)]
-df_geo_tmp=df_geo.loc[:, (df_geo > eps).any(axis=0)]
+df_energy=pd.read_csv(energy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
+print(df_energy)
+df_ens=pd.read_csv(enstrophy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
+print(df_ens)
+
+time=df_energy['timestamp']
+
+df_energy_clean = df_energy.loc[:, (df_energy > eps).any(axis=0)]
 scales['0']=eps
-if len(df_geo_tmp.columns) < 2:
-	print("Tolerance too large for geo, empty plot! Reducing tolerance!")
-	scales['0']=eps*eps2
-	df_geo=df_geo.loc[:, (df_geo > eps*eps2).any(axis=0)]
-else:
-	df_geo = df_geo_tmp
-df_geo.time=df_geo.time/timerescale
-df_geo.set_index('time',drop=True,inplace=True)
+print(df_energy)
+#df_energy.set_index('timestamp',drop=True,inplace=True)
+print(df_energy_clean)
 
-df_west=pd.read_csv(nm_igwest_file, sep='\t', skipinitialspace=True, engine="python")
-df_west=df_west.loc[:, df_west.columns.difference(exclude)]
-df_west_tmp=df_west.loc[:, (df_west > eps).any(axis=0)]
-scales['1']=eps
-if len(df_west_tmp.columns) < 2:
-	print("Tolerance too large for west, empty plot! Reducing tolerance!")
-	scales['1']=eps*eps2
-	df_west=df_west.loc[:, (df_west > eps*eps2).any(axis=0)]
-else:
-	df_west=df_west_tmp
-df_west.time=df_west.time/timerescale
-df_west.set_index('time',drop=True,inplace=True)
-
-df_east=pd.read_csv(nm_igeast_file, sep='\t', skipinitialspace=True, engine="python")
-df_east=df_east.loc[:, df_east.columns.difference(exclude)]
-df_east_tmp=df_east.loc[:, (df_east > eps).any(axis=0)]
-scales['2']=eps
-if len(df_east_tmp.columns) < 2:
-	print("Tolerance too large for east, empty plot! Reducing tolerance!")
-	scales['2']=eps*eps2
-	df_east=df_east.loc[:, (df_east > eps*eps2).any(axis=0)]
-else:
-	df_east=df_east_tmp
-df_east.time=df_east.time/timerescale
-df_east.set_index('time',drop=True,inplace=True)
-
-print(df_geo)
-print(df_west)
-print(df_east)
-
+exit(1)
 
 ##########################################################
 # Plotting starts here
