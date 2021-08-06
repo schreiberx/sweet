@@ -4,8 +4,6 @@ import os
 import sys
 import math
 
-from itertools import product
-
 efloat_mode = "float"
 #efloat_mode = "mpfloat"
 
@@ -14,8 +12,8 @@ from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 jg = JobGeneration()
 
-#verbose = False
-verbose = True
+verbose = False
+#verbose = True
 
 ##################################################
 #   Software enviroment stuff
@@ -76,8 +74,8 @@ jg.compile.fortran_source = 'enable'
 #   Basic simulation stuff
 ##################################################
 
-#jg.runtime.max_simulation_time = 60*60*24*5   # 5 days
-jg.runtime.max_simulation_time = 60*60*5    # 5 hours
+jg.runtime.max_simulation_time = 60*60*24*5   # 5 days
+#jg.runtime.max_simulation_time = 60*60*5    # 5 hours
 
 jg.runtime.timestep_size = 60 # 1 minute
 
@@ -140,6 +138,7 @@ if verbose:
 unique_id_filter = []
 #unique_id_filter.append('runtime.disc_space')
 unique_id_filter.append('runtime.simparams')
+unique_id_filter.append('runtime.reuse_plans')
 #unique_id_filter.append('runtime.benchmark') 
 #unique_id_filter.append('runtime.timestepping') 
 unique_id_filter.append('compile') 
@@ -147,15 +146,24 @@ unique_id_filter.append('parallelization')
 unique_id_filter.append('runtime.max_wallclock_time')
 jg.unique_id_filter = unique_id_filter
 
+import modes_experiment as mexp
+
 #
 # allow including this file
 #
 if __name__ == "__main__":
 
+
+    basename = jg.runtime.benchmark_name
+
+    experiment = mexp.modes(1, 3, 0, 1, 2, 2)
+    codes = experiment.codes
+    experiment.save_file("mode_setup_1.pckl")
+
     #setup up mode initializations
-    mode_code = "3_20_10_1.0_5_4_5.0_7_1_1.0"
-    jg.runtime.benchmark_name = jg.runtime.benchmark_name +"_"+mode_code
-    jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID())
+    for mode_code in codes:
+        jg.runtime.benchmark_name =  basename+"_"+mode_code
+        jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID())
 
     # Write compile script
     jg.write_compilecommands("./compile_platform_"+jg.platforms.platform_id+".sh")
