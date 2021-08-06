@@ -56,7 +56,7 @@ class modes:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
-def load_file(self, filename):
+def load_file(filename):
     f = open(filename, 'rb')
     obj = pickle.load(f)
     f.close()        

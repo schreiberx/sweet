@@ -12,34 +12,72 @@ import matplotlib.colors as colors
 from matplotlib.lines import Line2D
 
 
+
+from mule.plotting.Plotting import *
 from mule.postprocessing.JobData import *
+from mule.postprocessing.JobsData import *
+from mule.postprocessing.JobsDataConsolidate import *
 
 import modes_experiment as mexp
 
-if len(sys.argv) > 2:
+if len(sys.argv) > 1:
 	experiment_file = sys.argv[1]
-	output_filename = sys.argv[2]
 else:
 	print("")
 	print("Usage:")
 	print("")
-	print("	"+sys.argv[0]+" [experiment file.pckl] [output_filename.pdf] [jobdir]")
+	print("	"+sys.argv[0]+" [experiment file.pckl]")
 	print("")
 	sys.exit(1)
 
 
+#get experiment setup
+filename = experiment_file #"mode_setup_1.pckl"
+obj=mexp.load_file(filename)
+exp_codes=obj.codes
+basebanchname="barotropic_vort_modes_"
+exp_codes_bnames=[basebanchname+s for s in exp_codes]
+print("Benchmarks under investigation:")
+print(exp_codes_bnames)
 
-#List all parameters of job
-jd = JobData(sys.argv[3])
-jd_flat = jd.get_flattened_data()
-#for key in jd_flat:
-	#print(key, '->', jd_flat[key])		
-jd_raw = jd.get_job_raw_data()
+#get jobs data
+j = JobsData('./job_bench_*', verbosity=1)
+#print(j)
+jobs = j.get_jobs_data()
+#print(jobs)
+main_tag = 'runtime.benchmark_name'
+alpha_tag = 'output.benchmark_barotropic_vort_modes.0.ampl' #mode 0 is used as reference
+jobs_flat =[]
+jobs_raw =[]
+alphas = []
+job_dirs = []
+for key, job in jobs.items():
+	d = job.get_flattened_data()
+	r = job.get_job_raw_data()
+	if d[main_tag] in exp_codes_bnames:
+		jobs_flat.append(d)
+		jobs_raw.append(r)
+		a = d['output.benchmark_barotropic_vort_modes.0.ampl']
+		alphas.append(a)
+		dir = d['jobgeneration.job_dirpath']
+		job_dirs.append(dir)
+		
 
-output=jd_raw['output']
-runtime=jd_raw['jobgeneration']
-runtime=runtime['runtime']
-print(output)
+for i in range(len(alphas)):
+	print(alphas[i], job_dirs[i])
+
+
+	#List all parameters of job
+	jd_flat = jobs_flat[i]
+	#for key in jd_flat:
+	#	print(key, '->', jd_flat[key])		
+	jd_raw = jobs_raw[i]
+
+	output=jd_raw['output']
+	runtime=jd_raw['jobgeneration']
+	runtime=runtime['runtime']
+
+print(runtime)
 
 
 #modes_experiment=mexp.load_file()
