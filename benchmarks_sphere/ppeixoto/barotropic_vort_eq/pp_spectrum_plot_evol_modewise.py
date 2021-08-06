@@ -48,7 +48,7 @@ for i in range(maxmodes):
 	mode="benchmark_barotropic_vort_modes."+str(i)+"."
 	imode=i
 	nmode=int(output[mode+"nmode"])
-	mmode=int(output[mode+"nmode"])
+	mmode=int(output[mode+"mmode"])
 	ampl=float(output[mode+"ampl"])
 	print(i, nmode, mmode, ampl)
 	nmodes.append(nmode)
@@ -62,8 +62,8 @@ energy_file    = jd_flat['runtime.p_job_dirpath']+"/output_spec_energy_t00000000
 enstrophy_file = jd_flat['runtime.p_job_dirpath']+"/output_spec_enstrophy_t00000000000.00000000.txt"
 
 
-eps=10e-15
-scales = {}
+scalesmin = {}
+scalesmax = {}
 timerescale=1.0
 #Remove modes with null values
 exclude = ['timestamp']
@@ -73,15 +73,26 @@ print(df_energy)
 df_ens=pd.read_csv(enstrophy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
 print(df_ens)
 
-time=df_energy['timestamp']
-
-df_energy_clean = df_energy.loc[:, (df_energy > eps).any(axis=0)]
-scales['0']=eps
+time = df_energy['timestamp']
+tenergy = df_energy['TotalSum']
+maxenergy = df_energy['TotalSum'].max()
+eps_en=maxenergy/100
+scalesmin[0]=eps_en
+scalesmax[0]=maxenergy
+df_energy_clean = df_energy.loc[:, (df_energy > eps_en).any(axis=0)]
 print(df_energy)
 #df_energy.set_index('timestamp',drop=True,inplace=True)
 print(df_energy_clean)
 
-exit(1)
+tens = df_ens['TotalSum']
+maxens = df_ens['TotalSum'].max()
+eps_ens=maxens/100
+scalesmin[1]=eps_ens
+scalesmax[1]=maxens
+df_ens_clean = df_ens.loc[:, (df_ens > eps_ens).any(axis=0)]
+print(df_ens)
+#df_energy.set_index('timestamp',drop=True,inplace=True)
+print(df_ens_clean)
 
 ##########################################################
 # Plotting starts here
@@ -95,22 +106,20 @@ print("*"*80)
 fontsize=18
 figsize=(10, 10)
 
-fig, axs = plt.subplots(3, figsize=(10,10), sharex=True)
+fig, axs = plt.subplots(2, figsize=(10,10), sharex=True)
 #plt.rc('text', usetex=True)
-title="Normal Mode Nonlinear Interaction\n"+params+"\n"+waves
+title="SPH Mode Nonlinear Interaction\n"+code
 fig.suptitle(title)
 
+
 for i, ax in enumerate(axs):
-	ax.set_xscale("linear", nonposx='clip')
-	ax.set_yscale("log", nonposy='clip')
-	ylim=[scales[str(i)], 10]
+	ax.set_xscale("linear")
+	ax.set_yscale("log", nonpositive='clip')
+	ylim=[scalesmin[i], scalesmax[i]]
 	ax.set_ylim(ylim)
-
-
 
 for ax in axs.flat:
     ax.label_outer()
-
 
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
@@ -125,31 +134,16 @@ for m in Line2D.markers:
 linestyles = ['-', '--', ':', '-.']
 
 
-c = 0
-
-#ncol=2,handleheight=2.4, labelspacing=0.05
-ncol=1
-if len(df_geo.columns):
-	ncol = 2	
-axs[0].set(ylabel='Geostrophic Mode')
-df_geo.plot(ax=axs[0])
+ncol = 2	
+axs[0].set(ylabel='Energy', xlabel="time")
+df_energy_clean.plot(x='timestamp', ax=axs[0])
 axs[0].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
-ncol=1
-if len(df_west.columns):
-	ncol = 2	
-axs[1].set(ylabel='IGWest Mode')
-df_west.plot(ax=axs[1])
+
+ncol=2
+axs[1].set(ylabel='Enstrophy', xlabel="time")
+df_ens_clean.plot(x='timestamp', ax=axs[1])
 axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
-
-ncol=1
-if len(df_east.columns):
-	ncol = 2	
-
-
-df_east.plot(ax=axs[2])
-axs[2].set(xlabel="Time (hours)", ylabel='IG East Mode')
-axs[2].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
 fig.subplots_adjust(right=0.7)
 
