@@ -14,18 +14,23 @@ from matplotlib.lines import Line2D
 
 from mule.postprocessing.JobData import *
 
+import modes_experiment as mexp
+
 if len(sys.argv) > 2:
-	output_filename = sys.argv[1]
+	experiment_file = sys.argv[1]
+	output_filename = sys.argv[2]
 else:
 	print("")
 	print("Usage:")
 	print("")
-	print("	"+sys.argv[0]+" [output_filename.pdf] [jobdir]")
+	print("	"+sys.argv[0]+" [experiment file.pckl] [output_filename.pdf] [jobdir]")
 	print("")
 	sys.exit(1)
 
+
+
 #List all parameters of job
-jd = JobData(sys.argv[2])
+jd = JobData(sys.argv[3])
 jd_flat = jd.get_flattened_data()
 #for key in jd_flat:
 	#print(key, '->', jd_flat[key])		
@@ -36,6 +41,10 @@ runtime=jd_raw['jobgeneration']
 runtime=runtime['runtime']
 print(output)
 
+
+#modes_experiment=mexp.load_file()
+#print(modes_experiment.nmodes)
+exit(1)
 code=output['benchmark_barotropic_vort_modes.code']
 maxmodes = int(output["benchmark_barotropic_vort_modes.maxmodes"])
 nmodes=[]
@@ -76,7 +85,7 @@ print(df_ens)
 time = df_energy['timestamp']
 tenergy = df_energy['TotalSum']
 maxenergy = df_energy['TotalSum'].max()
-eps_en=maxenergy/1000
+eps_en=maxenergy/100
 scalesmin[0]=eps_en
 scalesmax[0]=maxenergy
 df_energy_clean = df_energy.loc[:, (df_energy > eps_en).any(axis=0)]
@@ -86,7 +95,7 @@ print(df_energy_clean)
 
 tens = df_ens['TotalSum']
 maxens = df_ens['TotalSum'].max()
-eps_ens=maxens/1000
+eps_ens=maxens/100
 scalesmin[1]=eps_ens
 scalesmax[1]=maxens
 df_ens_clean = df_ens.loc[:, (df_ens > eps_ens).any(axis=0)]
