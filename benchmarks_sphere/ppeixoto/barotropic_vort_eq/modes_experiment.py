@@ -99,7 +99,7 @@ class evol:
         self.df_energy_clean = self.df_energy_clean.set_index("timestamp")
         #print(self.df_energy)
         #df_energy.set_index('timestamp',drop=True,inplace=True)
-        print(self.df_energy_clean)
+        #print(self.df_energy_clean)
 
         self.df_ens['timestamp'] = self.df_ens['timestamp'] * timerescale
         maxens = self.df_ens['TotalSum'].max()
@@ -110,12 +110,21 @@ class evol:
         self.df_ens_clean = self.df_ens_clean.set_index("timestamp")
         #print(self.df_ens)
         #df_energy.set_index('timestamp',drop=True,inplace=True)
-        print(self.df_ens_clean)
+        #print(self.df_ens_clean)
 
 
     def set_out_shells(self, nmin, nmax):
+        self.out_modes_name = "out_n"+str(nmin)+"-"+str(nmax)
         self.df_energy_agg = self.set_out_shells_df(self.df_energy_clean, nmin, nmax)
         self.df_ens_agg = self.set_out_shells_df(self.df_ens_clean, nmin, nmax)
+
+        
+        self.max_exchange_out_energy = self.df_energy_agg[self.out_modes_name].max()/self.df_energy_agg["init"].iloc[0]
+        self.max_exchange_noninit_energy = self.df_energy_agg["non_init"].max()/self.df_energy_agg["init"].iloc[0]
+
+        self.max_exchange_out_ens = self.df_ens_agg[self.out_modes_name].max()/self.df_ens_agg["init"].iloc[0]
+        self.max_exchange_noninit_ens = self.df_ens_agg["non_init"].max()/self.df_ens_agg["init"].iloc[0]
+        
 
     def set_out_shells_df(self, df, nmin, nmax):
 
@@ -150,8 +159,8 @@ class evol:
             if n >= nmin and n <= nmax:
                 out_modes.append(col)
                 #print(col, n, m, "out")
-            
-        df_init = df[init_modes].sum(axis=1).rename("init_n"+str(ninit_min)+"-"+str(ninit_max))
+
+        df_init = df[init_modes].sum(axis=1).rename("init") #_n"+str(ninit_min)+"-"+str(ninit_max))
         df_noninit = df[non_init_modes].sum(axis=1).rename("non_init")
         df_out = df[out_modes].sum(axis=1).rename("out_n"+str(nmin)+"-"+str(nmax))
         
@@ -209,7 +218,7 @@ class evol:
         fig.subplots_adjust(right=0.7)
         
         print(self.basedir+"/"+output_filename)
-        plt.show()
+        #plt.show()
         plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
         plt.close()
@@ -262,8 +271,9 @@ class evol:
         fig.subplots_adjust(right=0.7)
         
         print(self.basedir+"/"+output_filename)
-        plt.show()
+        #plt.show()
         plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
         plt.close()
+
 

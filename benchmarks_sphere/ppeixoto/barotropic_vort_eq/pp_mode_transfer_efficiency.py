@@ -61,9 +61,15 @@ for key, job in jobs.items():
 		alphas.append(a)
 		dir = d['jobgeneration.job_dirpath']
 		job_dirs.append(dir)
-		
+
+
+max_exchange_out_energy = []
+max_exchange_noninit_energy = []
+max_exchange_out_ens = []
+max_exchange_noninit_ens = []
 
 for i in range(len(alphas)):
+
 	print()
 	print("Post-processing (alpha, dir):",	alphas[i], job_dirs[i])
 
@@ -77,7 +83,35 @@ for i in range(len(alphas)):
 	runtime=jd_raw['jobgeneration']
 	runtime=runtime['runtime']
 	code=output['benchmark_barotropic_vort_modes.code']
-	maxmodes = int(output["benchmark_barotropic_vort_modes.maxmodes"])
+
+	evol = mexp.evol(jd_flat['runtime.p_job_dirpath'])
+
+	nout_shell_min = 3
+	nout_shell_max = 6
+	evol.set_out_shells(nout_shell_min,nout_shell_max)
+	max_exchange_out_energy.append(evol.max_exchange_out_energy)
+	max_exchange_noninit_energy.append(evol.max_exchange_noninit_energy)
+	max_exchange_out_ens.append(evol.max_exchange_out_ens)
+	max_exchange_noninit_ens.append(evol.max_exchange_noninit_ens)
+
+	evol.plot(code, "mode_evol.pdf")
+
+	filename_shell = "shell_evol_n"+str(nout_shell_min)+"-"+str(nout_shell_max)+".pdf"
+	evol.plot_shells(code, filename_shell)
+
+
+#print(alphas, max_exchange_out_energy, max_exchange_out_ens)
+df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens)), columns =['Alpha', 'Exch_energy', 'Exch_ens'])
+df.set_index('Alpha')
+
+print(df)
+
+df.plot()
+plt.show()
+
+
+
+if False:
 
 	nmodes=[]
 	mmodes=[]
@@ -95,17 +129,3 @@ for i in range(len(alphas)):
 		nmodes.append(nmode)
 		mmodes.append(mmode)
 		ampls.append(ampl)
-
-	evol = mexp.evol(jd_flat['runtime.p_job_dirpath'])
-
-	nout_shell_min = 3
-	nout_shell_max = 6
-	evol.set_out_shells(nout_shell_min,nout_shell_max)
-	
-	evol.plot(code, "mode_evol.pdf")
-
-	filename_shell = "shell_evol_n"+str(nout_shell_min)+"-"+str(nout_shell_max)+".pdf"
-	evol.plot_shells(code, filename_shell)
-
-	#exit(1)
-
