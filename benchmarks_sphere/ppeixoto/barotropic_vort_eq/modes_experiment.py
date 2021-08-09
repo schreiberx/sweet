@@ -19,7 +19,7 @@ from mule.postprocessing.JobData import *
 class modes:
     def __init__(self, n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples):
             
-        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=True)
+        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
 
         # Select shells for initial energy
         # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
