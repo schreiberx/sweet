@@ -74,7 +74,7 @@ def load_file(filename):
     return obj
 
 class evol:
-    def __init__(self, basedir=".", eps=0.0001):
+    def __init__(self, basedir=".", eps=0.001):
 
         self.basedir = basedir
         self.energy_file    = basedir+"/output_spec_energy_t00000000000.00000000.txt"    

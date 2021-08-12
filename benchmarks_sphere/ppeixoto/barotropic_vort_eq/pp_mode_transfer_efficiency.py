@@ -64,7 +64,7 @@ for key, job in jobs.items():
 		jobs_flat.append(d)
 		jobs_raw.append(r)
 		a = d['output.benchmark_barotropic_vort_modes.0.ampl']
-		alphas.append(a)
+		alphas.append(float(a))
 		dir = d['jobgeneration.job_dirpath']
 		job_dirs.append(dir)
 
@@ -108,11 +108,12 @@ for i in range(len(alphas)):
 
 #print(alphas, max_exchange_out_energy, max_exchange_out_ens)
 df = pd.DataFrame(list(zip(alphas, max_exchange_noninit_energy, max_exchange_noninit_ens)), columns =['Alpha', 'Exch_energy', 'Exch_ens'])
-df.set_index('Alpha')
+df = df.set_index('Alpha')
 
+df = df.sort_index()
 print(df)
 
-df.plot()
+df.plot( )
 #plt.show()
 
 experiment_file
