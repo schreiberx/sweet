@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import sys
+import os
 
 import matplotlib
 matplotlib.use('Agg')
@@ -32,8 +33,13 @@ else:
 
 
 #get experiment setup
+print()
 filename = experiment_file #"mode_setup_1.pckl"
-obj=mexp.load_file(filename)
+base = os.path.basename(filename)
+base = os.path.splitext(base)[0]
+print("Basic experiment :", base)
+print()
+obj = mexp.load_file(filename)
 exp_codes=obj.codes
 basebanchname="barotropic_vort_modes_"
 exp_codes_bnames=[basebanchname+s for s in exp_codes]
@@ -101,14 +107,21 @@ for i in range(len(alphas)):
 
 
 #print(alphas, max_exchange_out_energy, max_exchange_out_ens)
-df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens)), columns =['Alpha', 'Exch_energy', 'Exch_ens'])
+df = pd.DataFrame(list(zip(alphas, max_exchange_noninit_energy, max_exchange_noninit_ens)), columns =['Alpha', 'Exch_energy', 'Exch_ens'])
 df.set_index('Alpha')
 
 print(df)
 
 df.plot()
-plt.show()
+#plt.show()
 
+experiment_file
+filename_final = base+".pdf"
+print("Output file:", filename_final)
+#plt.show()
+plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+
+plt.close()
 
 
 if False:
