@@ -74,14 +74,14 @@ jg.compile.fortran_source = 'enable'
 #   Basic simulation stuff
 ##################################################
 
-jg.runtime.max_simulation_time = 60*60*24*50   # 100 days
+jg.runtime.max_simulation_time = 60*60*24*100   # 100 days
 #jg.runtime.max_simulation_time = 60*60*5    # 5 hours
 
 jg.runtime.timestep_size = 60 # 1 minutes
 
-jg.runtime.space_res_spectral = 128
+jg.runtime.space_res_spectral = 256
 
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/100
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/200
 
 # No output
 #jg.runtime.output_filename = "output" #leave default
@@ -156,14 +156,23 @@ if __name__ == "__main__":
 
     basename = jg.runtime.benchmark_name
 
-    n_ini = 2
-    n_end = 4
-    m_ini = 0
+    
     alpha_min = 0.5
     alpha_max = 20.0
     alpha_samples = 39
-    experiment = mexp.modes(n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples) 
-    exp_filename = "mode_setup_n"+str(n_ini)+"_"+str(n_end)+".pckl"
+
+    full_modes = False
+    if full_modes:
+        n_ini = 2
+        n_end = 3
+        m_ini = 0
+        experiment = mexp.modes(n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples) 
+        exp_filename = "mode_setup_n"+str(n_ini)+"_"+str(n_end)+".pckl"
+    else: #Specific modes (use lists)
+        n_list = [5, 3]
+        m_list = [4, 1]
+        experiment = mexp.especific_modes(n_list, m_list, alpha_min, alpha_max, alpha_samples) 
+        exp_filename = "mode_setup_n"+'-'.join(map(str, n_list))+"_m"+'-'.join(map(str, m_list))+".pckl"
     codes = experiment.codes
     experiment.save_file(exp_filename)
     
