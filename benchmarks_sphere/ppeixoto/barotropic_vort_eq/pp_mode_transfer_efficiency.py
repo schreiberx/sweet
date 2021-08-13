@@ -49,6 +49,7 @@ print(exp_codes_bnames)
 #get jobs data
 j = JobsData('./job_bench_*', verbosity=1)
 #print(j)
+#print("Extracting jobs")
 jobs = j.get_jobs_data()
 #print(jobs)
 main_tag = 'runtime.benchmark_name'
@@ -59,11 +60,14 @@ alphas = []
 umax = []
 vmax = []
 job_dirs = []
+#print("jobs extracted")
+#print(jobs)
 
 for key, job in jobs.items():
 	d = job.get_flattened_data()
 	r = job.get_job_raw_data()
-	if d[main_tag] in exp_codes_bnames:
+	outfile_exists = os.path.isfile(d["jobgeneration.p_job_stdout_filepath"])
+	if d[main_tag] in exp_codes_bnames and outfile_exists:
 		jobs_flat.append(d)
 		jobs_raw.append(r)
 		a = d['output.benchmark_barotropic_vort_modes.0.ampl']
@@ -99,14 +103,15 @@ for i in range(len(alphas)):
 
 	evol = mexp.evol(jd_flat['runtime.p_job_dirpath'])
 
-	nout_shell_min = 3
-	nout_shell_max = 6
+	nout_shell_min = 5
+	nout_shell_max = 8
 	evol.set_out_shells(nout_shell_min,nout_shell_max)
 	max_exchange_out_energy.append(evol.max_exchange_out_energy)
 	max_exchange_noninit_energy.append(evol.max_exchange_noninit_energy)
 	max_exchange_out_ens.append(evol.max_exchange_out_ens)
 	max_exchange_noninit_ens.append(evol.max_exchange_noninit_ens)
 
+	print(evol.df_energy_clean)
 	evol.plot(code, "mode_evol.pdf")
 
 	filename_shell = "shell_evol_n"+str(nout_shell_min)+"-"+str(nout_shell_max)+".pdf"
