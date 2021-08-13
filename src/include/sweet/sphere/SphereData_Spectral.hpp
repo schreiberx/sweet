@@ -1202,7 +1202,7 @@ public:
   		std::complex<double> w = {0,0};
 		double wabs = 0.0;
 		double sum = 0.0;
-
+		std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
 		file << i_time << "\t";
   		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
   		{
