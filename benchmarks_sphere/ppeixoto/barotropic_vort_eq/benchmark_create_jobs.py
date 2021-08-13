@@ -74,12 +74,12 @@ jg.compile.fortran_source = 'enable'
 #   Basic simulation stuff
 ##################################################
 
-jg.runtime.max_simulation_time = 60*60*24*100   # 100 days
+jg.runtime.max_simulation_time = 60*60*24*50   # 100 days
 #jg.runtime.max_simulation_time = 60*60*5    # 5 hours
 
 jg.runtime.timestep_size = 60 # 1 minutes
 
-jg.runtime.space_res_spectral = 256
+jg.runtime.space_res_spectral = 128
 
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/100
 
@@ -156,17 +156,17 @@ if __name__ == "__main__":
 
     basename = jg.runtime.benchmark_name
 
-    n_ini = 1
-    n_end = 3
+    n_ini = 2
+    n_end = 4
     m_ini = 0
-    alpha_min = 1.0
-    alpha_max = 10.0
-    alpha_samples = 18
+    alpha_min = 0.5
+    alpha_max = 20.0
+    alpha_samples = 39
     experiment = mexp.modes(n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples) 
     exp_filename = "mode_setup_n"+str(n_ini)+"_"+str(n_end)+".pckl"
     codes = experiment.codes
     experiment.save_file(exp_filename)
-
+    
     #setup up mode initializations
     for mode_code in codes:
         jg.runtime.benchmark_name =  basename+"_"+mode_code

@@ -25,7 +25,7 @@ public:
 
 	// Mode setup
 	std::size_t maxmodes;   //number of waves to be added
-	static const int maxmodeslimit=10; //max number of waves
+	static const int maxmodeslimit=100; //max number of waves
 	std::size_t nmode[maxmodeslimit], mmode[maxmodeslimit];   // spherical harmonic indexes
 	double ampl[maxmodeslimit]; //coefficients of normal modes 
 
@@ -90,6 +90,9 @@ public:
 
 		i_ops->vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
+		std::cout<< "[MULE] benchmark_barotropic_vort_modes.umax: "<< ug.physical_reduce_max_abs() << std::endl;
+		std::cout<< "[MULE] benchmark_barotropic_vort_modes.vmax: "<< vg.physical_reduce_max_abs() << std::endl;
+		
 		SphereData_Physical vrtg = i_vort.toPhys();
 
 		SphereData_Physical tmpg1 = ug*(vrtg+i_ops->fg);
@@ -137,7 +140,7 @@ public:
 
 		double a = simVars->sim.sphere_radius;
 		double omega = simVars->sim.sphere_rotating_coriolis_omega;
-		double u0 = 2.0*M_PI*a/(12.0*24.0*60.0*60.0);
+		//double u0 = 2.0*M_PI*a/(12.0*24.0*60.0*60.0);
 		double alpha = 0;
 
 

@@ -56,7 +56,10 @@ alpha_tag = 'output.benchmark_barotropic_vort_modes.0.ampl' #mode 0 is used as r
 jobs_flat =[]
 jobs_raw =[]
 alphas = []
+umax = []
+vmax = []
 job_dirs = []
+
 for key, job in jobs.items():
 	d = job.get_flattened_data()
 	r = job.get_job_raw_data()
@@ -67,6 +70,10 @@ for key, job in jobs.items():
 		alphas.append(float(a))
 		dir = d['jobgeneration.job_dirpath']
 		job_dirs.append(dir)
+		u = d['output.benchmark_barotropic_vort_modes.umax']
+		umax.append(u)
+		v = d['output.benchmark_barotropic_vort_modes.vmax']
+		vmax.append(v)
 
 
 max_exchange_out_energy = []
@@ -77,8 +84,8 @@ max_exchange_noninit_ens = []
 for i in range(len(alphas)):
 
 	print()
-	print("Post-processing (alpha, dir):",	alphas[i], job_dirs[i])
-
+	print("Post-processing (alpha, dir, umax, vmax):",	alphas[i], job_dirs[i], umax[i], vmax[i])
+	
 	#List all parameters of job
 	jd_flat = jobs_flat[i]
 	#for key in jd_flat:
