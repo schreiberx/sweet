@@ -221,7 +221,7 @@ public:
 
 		i_sphereData.spectrum_file_write_line(buffer, 
 			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
-			16, 10e-16);
+			20, 10e-20);
 
 		return buffer;
 	}
