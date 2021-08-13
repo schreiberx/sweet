@@ -924,7 +924,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
+	 * return the sum of all values, use quad precision for reduction
 	 */
 	std::complex<double> spectral_reduce_sum_quad()	const
 	{
@@ -949,6 +949,36 @@ public:
 		return sum;
 	}
 
+	/**
+	 * return the sum of squares of all values, use quad precision for reduction
+	 * Important: Since m=0  modes appear only once and m>0 appear twice in the full spectrum
+	 */
+	double spectral_reduce_sum_sqr_quad()	const
+	{
+		std::complex<double> sum = 0;
+		std::complex<double> c = 0;
+
+		//m=0 case - weight 1
+		std::size_t idx = sphereDataConfig->getArrayIndexByModes(0, 0);
+		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+			idx++;
+		}
+		
+		//m>0 case - weight 2, as they appear twice
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				sum += 2.0*spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+				idx++;
+			}
+		}
+
+		return sum.real();
+	}
 
 	/**
 	 * Return the minimum value
@@ -1162,7 +1192,7 @@ public:
 					file << "(" << n << ";" << m << ")\t" ;
 				}
 			}
-			file<< "TotalSum" <<std::endl;
+			file<< "SpectralSum" <<std::endl;
 		}
 		else{
 			file.open(i_filename, std::ios_base::app);
@@ -1181,7 +1211,8 @@ public:
   			{
   				w = spectral_space_data[idx];
 				wabs = std::abs(w * std::conj(w));
-				sum += wabs;
+				if ( m > 0 ) sum += 2*wabs; //term appears twice in the spectrum
+				else sum += wabs;      // term appears only once
   				
 				if ( wabs < i_abs_threshold){
 					//file << "(" << n << "," << m << ")\t"<<std::endl;
@@ -1190,6 +1221,7 @@ public:
 				else{
 					//file << "(" << n << "," << m << ")\t"<<std::endl;
 					file <<  wabs << "\t"; //<<std::endl;;
+					std::cout << n << " " << m << " " << wabs <<std::endl;
 				}
 				idx++;
   			}

@@ -362,20 +362,38 @@ public:
 
 			std::string output_filename;
 
-			{
-				// See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
-				
-				//enstrophy per mode is 0.5 vrt*conj(vrt) in spectral space
-				// Total enstrophy is the sum of these
-				output_filename = write_file_csv_spec_evol(prog_vrt*std::sqrt(0.5), "spec_enstrophy"); 
-				std::cout << " + " << output_filename << " (min_abs : " << (0.5)*prog_vrt.spectral_reduce_min_abs() << ", max_abs:" << (0.5)*prog_vrt.spectral_reduce_max_abs() << ")" << std::endl;
+			{ 
+				/*
+				* Spectral kinetic energy and potential enstrophy calculation and output
+				*
+				* Details in Jakob-Chien, Ruediger, James J. Hack, and David L. Williamson. 
+				* "Spectral transform solutions to the shallow water test set." Journal of Computational Physics 119, no. 1 (1995): 164-187.
+				*/
+				// Kinetic energy is given in spectral space as
+				// KE per mode = a^2/((n(n+1)))*(vrt*conj(vrt))+a^2/((n(n+1)))*(div*conj(div))
+				// r = a/(sqrt(n(n+1))) (root_laplace)
+				// KE per mode = (r*vrt*conj(r*vrt))+(r*div*conj(r*div))
+				SphereData_Spectral rlap_vrt = op.inv_root_laplace(prog_vrt); 
+				SphereData_Spectral rlap_div = op.inv_root_laplace(prog_div); 
+				SphereData_Spectral kin_en = rlap_vrt + rlap_div ;
 
-				//energy per mode is (0.5 n*(n+1) / a^2) *psi*conj(psi) in spectral space
-				SphereData_Spectral psi = op.inv_laplace(prog_vrt)/simVars.sim.sphere_radius;
+				output_filename = write_file_csv_spec_evol(kin_en, "spec_kin_en"); 
+				std::cout << " + " << output_filename << " (Total Kin Energy : " << 0.25*kin_en.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
+
+				// For Barotropic vort eq: See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
+				// Kinetic energy is given in spectral space as
+				// Vortical energy per mode is (0.5 n*(n+1) / a^2) *psi*conj(psi) in spectral space
+				//SphereData_Spectral psi = op.inv_laplace(prog_vrt); // 
 				// multiply psi by sqrt( n * (n+1))/a (apply root laplacian)
-				psi= op.root_laplace(psi);
-				output_filename = write_file_csv_spec_evol(psi*std::sqrt(0.5), "spec_energy"); 
-				std::cout << " + " << output_filename << " (min_abs : " << (0.5)*psi.spectral_reduce_min_abs() << ", max_abs:" << (0.5)*psi.spectral_reduce_max_abs() << ")" << std::endl;
+				//SphereData_Spectral psi_root = op.root_laplace(psi);
+				//output_filename = write_file_csv_spec_evol(psi_root*std::sqrt(0.5), "spec_energy"); 
+				//std::cout << " + " << output_filename << " (Kinetic energy : " << (0.5)*psi_root.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
+
+				// See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
+				// enstrophy per mode is 0.5 vrt*conj(vrt) in spectral space
+				// Total enstrophy is the sum of these (counting twice modes with m>0 and once when m=0)
+				output_filename = write_file_csv_spec_evol(prog_vrt, "spec_enstrophy"); 
+				std::cout << " + " << output_filename << " (Total Enstrophy : " << prog_vrt.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
 
 			}
 		}

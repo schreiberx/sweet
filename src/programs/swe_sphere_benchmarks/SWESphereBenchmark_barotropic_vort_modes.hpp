@@ -128,6 +128,8 @@ public:
 			std::cout << "!!! WARNING !!!" << std::endl;
 			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
 			std::cout << "!!! WARNING !!!" << std::endl;
+			std::cout << "!!! WARNING: Amplitudes of normal modes will be divided by Earth Radius !!!" << std::endl;
+			std::cout << "!!! WARNING !!!" << std::endl;
 		}
 
 		simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
@@ -156,10 +158,11 @@ public:
 		// n=|m|, ..., M are Legendre nodes
 		// M max modes
 		//                 n,m  (n>=m)
-		// Set modes for the stream function
-		SphereData_Spectral psi(ops->sphereDataConfig); // = inv_laplace(i_vrt)*ir;
+		// Set modes for the vorticity stream function
+		//SphereData_Spectral psi(ops->sphereDataConfig); // = inv_laplace(i_vrt);
 	
-		psi.spectral_set_zero();
+		//psi.spectral_set_zero();
+
 		//Add mode values
 		for (int n = 0; n < (int)maxmodes; n++){			
 			if(nmode[n] < mmode[n]){
@@ -167,16 +170,16 @@ public:
 				SWEETError("SWESphereBenchmark_barotropic_vort_modes: n cannot be smaller than m");	
 			}
 			// Only real part of amplitude is considered, so ampl[] is a vector of real values
-			psi.spectral_set(nmode[n],mmode[n],ampl[n]);	
+			o_vrt.spectral_set(nmode[n],mmode[n],ampl[n]/a);	
+			//std::cout << nmode[n] << mmode[n] << ampl[n] << std::endl;
 		}
 		
 
 		//psi.spectral_print();
 		//psi.spectral_structure_print();
 
-		o_vrt=ops->laplace(psi)*a;
-			
-		
+		//o_vrt = ops->laplace(psi); 
+
 		//Set phi for steady state for SWE
 		// TODO: Not sure if the initial condition is really steady state in all cases
 		computeGeostrophicBalance_nonlinear(
