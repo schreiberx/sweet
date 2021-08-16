@@ -120,14 +120,14 @@ def load_file(filename):
     return obj
 
 class evol:
-    def __init__(self, basedir=".", eps=0.001):
+    def __init__(self, basedir=".", eps=0.0001):
 
         self.basedir = basedir
-        self.energy_file    = basedir+"/output_spec_energy_t00000000000.00000000.txt"    
+        self.energy_file    = basedir+"/output_spec_kin_en_t00000000000.00000000.txt"    
         self.enstrophy_file = basedir+"/output_spec_enstrophy_t00000000000.00000000.txt"
         self.scalesmin = {}
         self.scalesmax = {}
-        timerescale=1.0
+        timerescale=1.0/24.00 #Days
 
         #Remove modes with null values
 
@@ -137,7 +137,7 @@ class evol:
         #print(self.df_ens)
 
         self.df_energy['timestamp'] = self.df_energy['timestamp'] * timerescale
-        maxenergy = self.df_energy['TotalSum'].max()
+        maxenergy = self.df_energy['SpectralSum'].max()
         eps_en=maxenergy*eps
         self.scalesmin[0]=eps_en
         self.scalesmax[0]=maxenergy
@@ -148,7 +148,7 @@ class evol:
         #print(self.df_energy_clean)
 
         self.df_ens['timestamp'] = self.df_ens['timestamp'] * timerescale
-        maxens = self.df_ens['TotalSum'].max()
+        maxens = self.df_ens['SpectralSum'].max()
         eps_ens=maxens*eps
         self.scalesmin[1]=eps_ens
         self.scalesmax[1]=maxens
@@ -185,7 +185,7 @@ class evol:
         ninit_max = 0
         for col in df.columns:
             
-            if col == "timestamp" or col == "TotalSum":
+            if col == "timestamp" or col == "SpectralSum":
                 continue
             a = [int(s) for s in re.findall(r'\b\d+\b', col)]
             n = a[0]
@@ -252,13 +252,13 @@ class evol:
         ncol = 2	
         
         self.df_energy_clean.plot( ax=axs[0])
-        axs[0].set(ylabel='Energy', xlabel="Time (hours)")
+        axs[0].set(ylabel='Energy', xlabel="Time (days)")
         axs[0].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
         
         ncol=2
     
         self.df_ens_clean.plot( ax=axs[1])
-        axs[1].set(ylabel='Enstrophy', xlabel="Time (hours)")
+        axs[1].set(ylabel='Enstrophy', xlabel="Time (days)")
         axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
         fig.subplots_adjust(right=0.7)
@@ -305,13 +305,13 @@ class evol:
         ncol = 2	
         
         self.df_energy_agg.plot( ax=axs[0])
-        axs[0].set(ylabel='Energy', xlabel="Time (hours)")
+        axs[0].set(ylabel='Energy', xlabel="Time (days)")
         axs[0].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
         
         ncol=2
     
         self.df_ens_agg.plot( ax=axs[1])
-        axs[1].set(ylabel='Enstrophy', xlabel="Time (hours)")
+        axs[1].set(ylabel='Enstrophy', xlabel="Time (days)")
         axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
         fig.subplots_adjust(right=0.7)

@@ -135,23 +135,3 @@ print("Output file:", filename_final)
 plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
 plt.close()
-
-
-if False:
-
-	nmodes=[]
-	mmodes=[]
-	ampls=[]
-
-	print("Initial conditions")
-	print("Mode, n, m, amplitude")
-	for i in range(maxmodes):
-		mode="benchmark_barotropic_vort_modes."+str(i)+"."
-		imode=i
-		nmode=int(output[mode+"nmode"])
-		mmode=int(output[mode+"mmode"])
-		ampl=float(output[mode+"ampl"])
-		print(i, nmode, mmode, ampl)
-		nmodes.append(nmode)
-		mmodes.append(mmode)
-		ampls.append(ampl)

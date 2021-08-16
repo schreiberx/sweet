@@ -77,9 +77,9 @@ jg.compile.fortran_source = 'enable'
 jg.runtime.max_simulation_time = 60*60*24*100   # 100 days
 #jg.runtime.max_simulation_time = 60*60*5    # 5 hours
 
-jg.runtime.timestep_size = 60 # 1 minutes
+jg.runtime.timestep_size = 120 # 1 minutes
 
-jg.runtime.space_res_spectral = 256
+jg.runtime.space_res_spectral = 128
 
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/200
 
@@ -98,8 +98,8 @@ jg.runtime.verbosity = 1
 jg.runtime.benchmark_name = "barotropic_vort_modes"
 
 jg.runtime.timestepping_method = "lg_0_lc_n_erk_bv"
-jg.runtime.timestepping_order = 4
-jg.runtime.timestepping_order2 = 4
+jg.runtime.timestepping_order = 3
+jg.runtime.timestepping_order2 = 3
 
 #
 # Compute error
@@ -122,7 +122,7 @@ ptime.num_ranks = 1
 
 pspace = JobParallelizationDimOptions('space')
 pspace.num_cores_per_rank = 1
-pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
+pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]/2
 pspace.num_ranks = 1
 
 jg.reference_job = False
@@ -156,10 +156,15 @@ if __name__ == "__main__":
 
     basename = jg.runtime.benchmark_name
 
-    
-    alpha_min = 0.5
-    alpha_max = 20.0
-    alpha_samples = 39
+    half_samples = False
+    if half_samples:
+        alpha_min = 0.5
+        alpha_max = 20.0
+        alpha_samples = 39
+    else:
+        alpha_min = 1.0
+        alpha_max = 20.0
+        alpha_samples = 19
 
     full_modes = False
     if full_modes:
@@ -175,6 +180,7 @@ if __name__ == "__main__":
         exp_filename = "mode_setup_n"+'-'.join(map(str, n_list))+"_m"+'-'.join(map(str, m_list))+".pckl"
     codes = experiment.codes
     experiment.save_file(exp_filename)
+    
     
     #setup up mode initializations
     for mode_code in codes:
