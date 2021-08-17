@@ -63,6 +63,7 @@ job_dirs = []
 #print("jobs extracted")
 #print(jobs)
 
+print("alpha   umax  vmax" )
 for key, job in jobs.items():
 	d = job.get_flattened_data()
 	r = job.get_job_raw_data()
@@ -78,6 +79,7 @@ for key, job in jobs.items():
 		umax.append(u)
 		v = d['output.benchmark_barotropic_vort_modes.vmax']
 		vmax.append(v)
+		print(a, u, v)
 
 
 max_exchange_out_energy = []
@@ -103,8 +105,12 @@ for i in range(len(alphas)):
 
 	evol = mexp.evol(jd_flat['runtime.p_job_dirpath'])
 
-	nout_shell_min = 5
-	nout_shell_max = 8
+	if True:
+		nout_shell_min = 5
+		nout_shell_max = 6
+	else:
+		nout_shell_min = 7
+		nout_shell_max = 7
 	evol.set_out_shells(nout_shell_min,nout_shell_max)
 	max_exchange_out_energy.append(evol.max_exchange_out_energy)
 	max_exchange_noninit_energy.append(evol.max_exchange_noninit_energy)
@@ -113,23 +119,25 @@ for i in range(len(alphas)):
 
 	print(evol.df_energy_clean)
 	evol.plot(code, "mode_evol.pdf")
-
+	
 	filename_shell = "shell_evol_n"+str(nout_shell_min)+"-"+str(nout_shell_max)+".pdf"
 	evol.plot_shells(code, filename_shell)
 
 
 #print(alphas, max_exchange_out_energy, max_exchange_out_ens)
-df = pd.DataFrame(list(zip(alphas, max_exchange_noninit_energy, max_exchange_noninit_ens)), columns =['Alpha', 'Exch_energy', 'Exch_ens'])
+df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens)), columns =['Alpha', 'Exch_energy', 'Exch_ens'])
 df = df.set_index('Alpha')
 
 df = df.sort_index()
 print(df)
 
-df.plot( )
+out_energy = "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
+
+df.plot( title=base+" "+out_energy)
 #plt.show()
 
 experiment_file
-filename_final = base+".pdf"
+filename_final = base+"_"+out_energy+".pdf"
 print("Output file:", filename_final)
 #plt.show()
 plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)

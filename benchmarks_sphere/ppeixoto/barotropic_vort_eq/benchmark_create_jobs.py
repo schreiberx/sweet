@@ -156,17 +156,17 @@ if __name__ == "__main__":
 
     basename = jg.runtime.benchmark_name
 
-    half_samples = False
-    if half_samples:
-        alpha_min = 0.5
-        alpha_max = 20.0
-        alpha_samples = 39
+    more_samples = True
+    if more_samples:
+        alpha_min = 2.0
+        alpha_max = 100.0
+        alpha_samples = 49
     else:
         alpha_min = 1.0
         alpha_max = 20.0
         alpha_samples = 19
 
-    full_modes = False
+    full_modes = True
     if full_modes:
         n_ini = 2
         n_end = 3
@@ -179,6 +179,7 @@ if __name__ == "__main__":
         experiment = mexp.especific_modes(n_list, m_list, alpha_min, alpha_max, alpha_samples) 
         exp_filename = "mode_setup_n"+'-'.join(map(str, n_list))+"_m"+'-'.join(map(str, m_list))+".pckl"
     codes = experiment.codes
+    #exit(1)
     experiment.save_file(exp_filename)
     
     
