@@ -122,7 +122,7 @@ ptime.num_ranks = 1
 
 pspace = JobParallelizationDimOptions('space')
 pspace.num_cores_per_rank = 1
-pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]/2
+pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]/4
 pspace.num_ranks = 1
 
 jg.reference_job = False
