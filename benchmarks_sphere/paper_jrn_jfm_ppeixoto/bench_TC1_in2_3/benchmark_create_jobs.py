@@ -146,6 +146,8 @@ unique_id_filter.append('parallelization')
 unique_id_filter.append('runtime.max_wallclock_time')
 jg.unique_id_filter = unique_id_filter
 
+#experiment paramters
+sys.path.insert(1, '../')
 import modes_experiment as mexp
 
 #
@@ -166,20 +168,13 @@ if __name__ == "__main__":
         alpha_max = 20.0
         alpha_samples = 19
 
-    full_modes = True
-    if full_modes:
-        n_ini = 2
-        n_end = 3
-        m_ini = 0
-        experiment = mexp.modes(n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples) 
-        exp_filename = "mode_setup_n"+str(n_ini)+"_"+str(n_end)+".pckl"
-    else: #Specific modes (use lists)
-        n_list = [5, 3]
-        m_list = [4, 1]
-        experiment = mexp.especific_modes(n_list, m_list, alpha_min, alpha_max, alpha_samples) 
-        exp_filename = "mode_setup_n"+'-'.join(map(str, n_list))+"_m"+'-'.join(map(str, m_list))+".pckl"
+    
+    n_ini = 2
+    n_end = 3
+    m_ini = 0
+    experiment = mexp.modes_TC1(n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples) 
+    exp_filename = "mode_setup_n"+str(n_ini)+"_"+str(n_end)+".pckl"
     codes = experiment.codes
-    #exit(1)
     experiment.save_file(exp_filename)
     
     
