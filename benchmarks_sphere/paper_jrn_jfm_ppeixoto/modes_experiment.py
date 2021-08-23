@@ -237,7 +237,7 @@ def load_file(filename):
     return obj
 
 class evol:
-    def __init__(self, basedir=".", eps=0.0001):
+    def __init__(self, basedir=".", eps=0.001):
 
         self.basedir = basedir
         self.energy_file    = basedir+"/output_spec_kin_en_t00000000000.00000000.txt"    
@@ -276,18 +276,76 @@ class evol:
         #print(self.df_ens_clean)
 
 
+    def set_out_modes(self, n_list, m_list):
+        self.out_modes_name = "out_n"+"-".join([str(i) for i in n_list])+"m""-".join([str(i) for i in m_list])
+        self.df_energy_agg = self.set_out_modes_df(self.df_energy_clean, n_list, m_list)
+        self.df_ens_agg = self.set_out_modes_df(self.df_ens_clean, n_list, m_list)
+
+        
+        self.max_exchange_out_energy = self.df_energy_agg["out_modes"].max()/self.df_energy_agg["init"].iloc[0]
+        self.max_exchange_noninit_energy = self.df_energy_agg["non_init"].max()/self.df_energy_agg["init"].iloc[0]
+
+        self.max_exchange_out_ens = self.df_ens_agg["out_modes"].max()/self.df_ens_agg["init"].iloc[0]
+        self.max_exchange_noninit_ens = self.df_ens_agg["non_init"].max()/self.df_ens_agg["init"].iloc[0]
+        return self.out_modes_name
+
+    def set_out_modes_df(self, df, n_list, m_list):
+
+        tol = 10e-16
+
+        #get modes of initial energy 
+        init_modes = []
+        non_init_modes = []
+        out_modes = []
+
+        ninit_min = 9999
+        ninit_max = 0
+        for col in df.columns:
+            
+            if col == "timestamp" or col == "SpectralSum":
+                continue
+            a = [int(s) for s in re.findall(r'\b\d+\b', col)]
+            n = a[0]
+            m = a[1]
+            #print(df[col].iloc[0])
+            if df[col].iloc[0] > tol:
+                init_modes.append(col)
+                #print(col, n, m, "init")
+                if n > ninit_max:
+                    ninit_max = n
+                if n < ninit_min:
+                    ninit_min = n
+            else:
+                non_init_modes.append(col)
+                #print(col, n, m, "non-init")
+
+            mode = (n,m)
+            list_modes = list(zip(n_list, m_list))
+            if mode in list_modes:
+                out_modes.append(col)
+                print(col, n, m, "out")
+
+        df_init = df[init_modes].sum(axis=1).rename("init") #_n"+str(ninit_min)+"-"+str(ninit_max))
+        df_noninit = df[non_init_modes].sum(axis=1).rename("non_init")
+        df_out = df[out_modes].sum(axis=1).rename("out_modes")
+        
+        df_new = pd.concat([df_init, df_noninit, df_out], axis=1)
+
+        return df_new
+
     def set_out_shells(self, nmin, nmax):
         self.out_modes_name = "out_n"+str(nmin)+"-"+str(nmax)
         self.df_energy_agg = self.set_out_shells_df(self.df_energy_clean, nmin, nmax)
         self.df_ens_agg = self.set_out_shells_df(self.df_ens_clean, nmin, nmax)
 
         
-        self.max_exchange_out_energy = self.df_energy_agg[self.out_modes_name].max()/self.df_energy_agg["init"].iloc[0]
+        self.max_exchange_out_energy = self.df_energy_agg["out_modes"].max()/self.df_energy_agg["init"].iloc[0]
         self.max_exchange_noninit_energy = self.df_energy_agg["non_init"].max()/self.df_energy_agg["init"].iloc[0]
 
-        self.max_exchange_out_ens = self.df_ens_agg[self.out_modes_name].max()/self.df_ens_agg["init"].iloc[0]
+        self.max_exchange_out_ens = self.df_ens_agg["out_modes"].max()/self.df_ens_agg["init"].iloc[0]
         self.max_exchange_noninit_ens = self.df_ens_agg["non_init"].max()/self.df_ens_agg["init"].iloc[0]
         
+        return self.out_modes_name
 
     def set_out_shells_df(self, df, nmin, nmax):
 
@@ -325,7 +383,7 @@ class evol:
 
         df_init = df[init_modes].sum(axis=1).rename("init") #_n"+str(ninit_min)+"-"+str(ninit_max))
         df_noninit = df[non_init_modes].sum(axis=1).rename("non_init")
-        df_out = df[out_modes].sum(axis=1).rename("out_n"+str(nmin)+"-"+str(nmax))
+        df_out = df[out_modes].sum(axis=1).rename("out_modes")
         
         df_new = pd.concat([df_init, df_noninit, df_out], axis=1)
 
@@ -386,7 +444,7 @@ class evol:
 
         plt.close()
 
-    def plot_shells(self, title="", output_filename="out.pdf"):
+    def plot_out(self, title="", output_filename="out.pdf"):
 
         fontsize=18
         figsize=(10, 10)
