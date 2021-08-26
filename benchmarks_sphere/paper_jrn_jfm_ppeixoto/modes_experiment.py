@@ -197,10 +197,13 @@ class modes_TC4:
         
         for n in range(n_ini, n_end+1):
             for m in range(m_ini, n+1):
-                self.nmodes.append(n)
-                self.mmodes.append(m)
-                self.ampls.append(0.1)
-                count_modes+=1
+                if (n,m) in zip(n_list, m_list):
+                    continue
+                else:
+                    self.nmodes.append(n)
+                    self.mmodes.append(m)
+                    self.ampls.append(0.1)
+                    count_modes+=1
                 
         self.count_modes = count_modes 
 
@@ -229,6 +232,74 @@ class modes_TC4:
         with open(filename, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+class modes_TC5: #list + adds noise
+    def __init__(self, n_list, m_list, alpha_min, alpha_max, alpha_samples):
+            
+        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
+
+        # Select shells for initial energy
+        # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
+        # n defines the shell
+        self.nmodes=n_list
+        self.mmodes=m_list
+        self.ampls=[]
+        self.n_ini = min(n_list)
+        self.n_end = max(n_list)
+        self.m_ini = min(m_list)
+
+        count_modes = 0
+        code=""
+        
+        for n in n_list:
+            self.ampls.append(1.0)
+            count_modes+=1
+                
+        #add energy on other modes
+        n_ini = 3
+        n_end = 5
+        m_ini = 0
+        
+        for n in range(n_ini, n_end+1):
+            for m in range(m_ini, n+1):
+                if (n,m) in zip(n_list, m_list):
+                    continue
+                else:
+                    self.nmodes.append(n)
+                    self.mmodes.append(m)
+                    self.ampls.append(0.1)
+                    count_modes+=1
+
+        codes = []
+        print()
+        print("Mode init params:")
+        for a in self.alpha:
+            print()
+            print("alpha = ", a)
+            print("i n m amp")
+            code = str(count_modes)
+            for i in range(count_modes):
+                if i < 2: #first 2 modes get alpha multiplied
+                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
+                    print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
+                else: #last modes get a small constant (noise)
+                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(self.ampls[i])
+                    print(i, self.nmodes[i], self.mmodes[i], self.ampls[i])
+            codes.append(code)
+        
+        
+                
+        self.count_modes = count_modes 
+
+        self.codes = codes
+        print(codes)
+
+    def save_file(self, filename):
+
+        with open(filename, 'wb') as f:
+            # Pickle the 'data' dictionary using the highest protocol available.
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
 
 def load_file(filename):
     f = open(filename, 'rb')
@@ -277,7 +348,7 @@ class evol:
 
 
     def set_out_modes(self, n_list, m_list):
-        self.out_modes_name = "out_n"+"-".join([str(i) for i in n_list])+"m""-".join([str(i) for i in m_list])
+        self.out_modes_name = "out_n"+"-".join([str(i) for i in n_list])+"m"+"-".join([str(i) for i in m_list])
         self.df_energy_agg = self.set_out_modes_df(self.df_energy_clean, n_list, m_list)
         self.df_ens_agg = self.set_out_modes_df(self.df_ens_clean, n_list, m_list)
 
@@ -321,6 +392,7 @@ class evol:
 
             mode = (n,m)
             list_modes = list(zip(n_list, m_list))
+            print(list_modes)
             if mode in list_modes:
                 out_modes.append(col)
                 print(col, n, m, "out")
@@ -328,9 +400,10 @@ class evol:
         df_init = df[init_modes].sum(axis=1).rename("init") #_n"+str(ninit_min)+"-"+str(ninit_max))
         df_noninit = df[non_init_modes].sum(axis=1).rename("non_init")
         df_out = df[out_modes].sum(axis=1).rename("out_modes")
-        
+        print(df)
+        print(df_out)
         df_new = pd.concat([df_init, df_noninit, df_out], axis=1)
-
+        exit(1)
         return df_new
 
     def set_out_shells(self, nmin, nmax):

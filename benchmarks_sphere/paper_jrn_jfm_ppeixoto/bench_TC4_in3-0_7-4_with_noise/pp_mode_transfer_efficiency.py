@@ -33,22 +33,21 @@ else:
 
 
 #get experiment setup
-print(experiment_file)
+print()
 filename = experiment_file #"mode_setup_1.pckl"
-basename = os.path.basename(filename)
-basedir = os.path.dirname(filename)
-base = os.path.splitext(basename)[0]
-print("Basic experiment :", basedir, basename)
+base = os.path.basename(filename)
+base = os.path.splitext(base)[0]
+print("Basic experiment :", base)
 print()
 obj = mexp.load_file(filename)
-exp_codes = obj.codes
-basebanchname = "barotropic_vort_modes_"
-exp_codes_bnames = [basebanchname+s for s in exp_codes]
+exp_codes=obj.codes
+basebanchname="barotropic_vort_modes_"
+exp_codes_bnames=[basebanchname+s for s in exp_codes]
 print("Benchmarks under investigation:")
 print(exp_codes_bnames)
 
 #get jobs data
-j = JobsData(basedir+'/job_bench_*', verbosity=1)
+j = JobsData('./job_bench_*', verbosity=1)
 #print(j)
 #print("Extracting jobs")
 jobs = j.get_jobs_data()
@@ -88,37 +87,6 @@ max_exchange_noninit_energy = []
 max_exchange_out_ens = []
 max_exchange_noninit_ens = []
 
-#output shells
-if "TC1" in basedir:
-	nout_shell_min = 5
-	nout_shell_max = 6
-	out_type = "shell"
-elif "TC2" in basedir:
-	nout_shell_min = 7
-	nout_shell_max = 7
-	out_type = "shell"
-elif "TC3" in basedir:
-	nout_shell_min = 7
-	nout_shell_max = 7
-	n_out_list = [7,5]
-	m_out_list = [3,4]
-	out_type = "mode"
-elif "TC4" in basedir:
-	nout_shell_min = 7
-	nout_shell_max = 7
-	n_out_list = [7,5]
-	m_out_list = [3,4]
-	out_type = "mode"
-elif "TC5" in basedir:
-	nout_shell_min = 5
-	nout_shell_max = 7
-	n_out_list = [7,5]
-	m_out_list = [3,4]
-	out_type = "mode"
-else:
-	nout_shell_min = 7
-	nout_shell_max = 7
-
 for i in range(len(alphas)):
 
 	print()
@@ -137,24 +105,24 @@ for i in range(len(alphas)):
 
 	evol = mexp.evol(jd_flat['runtime.p_job_dirpath'])
 
-	if out_type == "shell":
-		filename_out = evol.set_out_shells(nout_shell_min, nout_shell_max) 
-	elif out_type == "mode":
-		filename_out = evol.set_out_modes(n_out_list, m_out_list) 
+	out_model_range = 1
+	if out_model_range == 1:
+		nout_shell_min = 4
+		nout_shell_max = 4
 	else:
-		print("Error: please set correct out type")
-		exit(1)
-
+		nout_shell_min = 7
+		nout_shell_max = 7
+	evol.set_out_shells(nout_shell_min,nout_shell_max)
 	max_exchange_out_energy.append(evol.max_exchange_out_energy)
 	max_exchange_noninit_energy.append(evol.max_exchange_noninit_energy)
 	max_exchange_out_ens.append(evol.max_exchange_out_ens)
 	max_exchange_noninit_ens.append(evol.max_exchange_noninit_ens)
 
 	print(evol.df_energy_clean)
-	print(evol.df_ens_clean)
 	evol.plot(code, "mode_evol.pdf")
 	
-	evol.plot_out(code+"_"+filename_out, filename_out+ ".pdf")
+	filename_shell = "shell_evol_n"+str(nout_shell_min)+"-"+str(nout_shell_max)+".pdf"
+	evol.plot_shells(code, filename_shell)
 
 
 #print(alphas, max_exchange_out_energy, max_exchange_out_ens)
@@ -164,12 +132,13 @@ df = df.set_index('Alpha')
 df = df.sort_index()
 print(df)
 
-out_energy = filename_out # "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
+out_energy = "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
 
 df.plot( title=base+" "+out_energy)
 #plt.show()
 
-filename_final = basedir+"/"+base+"_"+out_energy+".pdf"
+experiment_file
+filename_final = base+"_"+out_energy+".pdf"
 print("Output file:", filename_final)
 #plt.show()
 plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
