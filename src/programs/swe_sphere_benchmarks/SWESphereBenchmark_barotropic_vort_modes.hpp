@@ -171,7 +171,7 @@ public:
 			}
 			// Only real part of amplitude is considered, so ampl[] is a vector of real values
 			o_vrt.spectral_set(nmode[n],mmode[n],ampl[n]/a);	
-			//std::cout << nmode[n] << mmode[n] << ampl[n] << std::endl;
+			//std::cout << nmode[n] <<", "<< mmode[n] <<", "<< ampl[n] << std::endl;
 		}
 		
 

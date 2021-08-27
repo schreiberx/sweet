@@ -160,21 +160,22 @@ if __name__ == "__main__":
 
     more_samples = True
     if more_samples:
-        alpha_min = 2.0
-        alpha_max = 100.0
-        alpha_samples = 49
-    else:
         alpha_min = 1.0
+        alpha_max = 41.0
+        alpha_samples = 20
+    else:
+        alpha_min = 2.0
         alpha_max = 20.0
         alpha_samples = 19
 
     
     n_ini = 2
-    n_end = 3
+    n_end = 4
     m_ini = 0
     experiment = mexp.modes_TC1(n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples) 
     exp_filename = "mode_setup_n"+str(n_ini)+"_"+str(n_end)+".pckl"
     codes = experiment.codes
+    
     experiment.save_file(exp_filename)
     
     
