@@ -112,12 +112,13 @@ elif "TC4" in basedir:
 elif "TC5" in basedir:
 	nout_shell_min = 5
 	nout_shell_max = 7
-	n_out_list = [7,5]
-	m_out_list = [3,4]
+	n_out_list = [7,9, 5]
+	m_out_list = [3,2, 5]
 	out_type = "mode"
 else:
 	nout_shell_min = 7
 	nout_shell_max = 7
+
 
 for i in range(len(alphas)):
 
