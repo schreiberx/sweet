@@ -68,7 +68,7 @@ class modes_TC1: #Init with energy in full shells from n_ini to n_end
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
 class modes_TC2: #list of initial modes
-    def __init__(self, n_list, m_list, alpha_min, alpha_max, alpha_samples):
+    def __init__(self, n_list, m_list, alpha_min, alpha_max, alpha_samples, back_n_min=0, back_n_max=0, back_ampl=0.1):
             
         self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
 
@@ -90,121 +90,23 @@ class modes_TC2: #list of initial modes
             count_modes+=1
                 
         self.count_modes = count_modes 
+        list_modes = count_modes
 
-        codes = []
-        print()
-        print("Mode init params:")
-        for a in self.alpha:
-            print()
-            print("alpha = ", a)
-            print("i n m amp")
-            code = str(self.count_modes)
-            for i in range(self.count_modes):
-                code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
-                print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
-            codes.append(code)
-        
-        self.codes = codes
-        print(codes)
-
-    def save_file(self, filename):
-
-        with open(filename, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-
-
-class modes_TC3: #range of modes in shells with added background energy
-    def __init__(self, alpha_min, alpha_max, alpha_samples):
-            
-        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
-
-        # Select shells for initial energy
-        # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
-        # n defines the shell
-        n_list = [3, 7, 7, 5]
-        m_list = [0, 4, 3, 4]
-        self.nmodes=n_list
-        self.mmodes=m_list
-        self.ampls=[]
-        self.n_ini = min(n_list)
-        self.n_end = max(n_list)
-        self.m_ini = min(m_list)
-
-        count_modes = 0
-        code=""
-        
-        for n in n_list:
-            self.ampls.append(1.0)
-            count_modes+=1
-                
-        self.count_modes = count_modes 
-
-        codes = []
-        print()
-        print("Mode init params:")
-        for a in self.alpha:
-            print()
-            print("alpha = ", a)
-            print("i n m amp")
-            code = str(self.count_modes)
-            for i in range(self.count_modes):
-                if i < 2: #first 2 modes get alpha multiplied
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
-                    print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
-                else: #last 2 modes get a small constant
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(0.1)
-                    print(i, self.nmodes[i], self.mmodes[i], 0.1)
-            codes.append(code)
-        
-        self.codes = codes
-        print(codes)
-
-    def save_file(self, filename):
-
-        with open(filename, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-
-class modes_TC4:
-    def __init__(self, alpha_min, alpha_max, alpha_samples):
-            
-        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
-
-        # Select shells for initial energy
-        # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
-        # n defines the shell        
-        n_list = [5, 3]
-        m_list = [4, 1]
-        self.nmodes=n_list
-        self.mmodes=m_list
-        self.ampls=[]
-        self.n_ini = min(n_list)
-        self.n_end = max(n_list)
-        self.m_ini = min(m_list)
-
-        count_modes = 0
-        
-        for n in n_list:
-            self.ampls.append(1.0)
-            count_modes+=1
-                
-        self.count_modes = count_modes 
-
-        #add energy on other modes
-        n_ini = 2
-        n_end = 4
+        #add energy on other modes (background energy)
+        n_ini = back_n_min
+        n_end = back_n_max
         m_ini = 0
         
-        for n in range(n_ini, n_end+1):
-            for m in range(m_ini, n+1):
-                if (n,m) in zip(n_list, m_list):
-                    continue
-                else:
-                    self.nmodes.append(n)
-                    self.mmodes.append(m)
-                    self.ampls.append(0.1)
-                    count_modes+=1
+        if n_ini != 0 and n_end != 0:
+            for n in range(n_ini, n_end+1):
+                for m in range(m_ini, n+1):
+                    if (n,m) in zip(n_list, m_list):
+                        continue
+                    else:
+                        self.nmodes.append(n)
+                        self.mmodes.append(m)
+                        self.ampls.append(back_ampl)
+                        count_modes+=1
                 
         self.count_modes = count_modes 
 
@@ -217,89 +119,24 @@ class modes_TC4:
             print("i n m amp")
             code = str(self.count_modes)
             for i in range(self.count_modes):
-                if i < 2: #first 2 modes get alpha multiplied
+                if i < list_modes:
                     code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
                     print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
-                else: #last 2 modes get a small constant
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(self.ampls[i])
-                    print(i, self.nmodes[i], self.mmodes[i], 0.1)
-            codes.append(code)
-        
-        self.codes = codes
-        print(codes)
-
-    def save_file(self, filename):
-
-        with open(filename, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-
-class modes_TC5: #list + adds noise
-    def __init__(self, n_list, m_list, alpha_min, alpha_max, alpha_samples):
-            
-        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
-
-        # Select shells for initial energy
-        # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
-        # n defines the shell
-        self.nmodes=n_list
-        self.mmodes=m_list
-        self.ampls=[]
-        self.n_ini = min(n_list)
-        self.n_end = max(n_list)
-        self.m_ini = min(m_list)
-
-        count_modes = 0
-        code=""
-        
-        for n in n_list:
-            self.ampls.append(1.0)
-            count_modes+=1
-                
-        #add energy on other modes
-        n_ini = 3
-        n_end = 5
-        m_ini = 0
-        
-        for n in range(n_ini, n_end+1):
-            for m in range(m_ini, n+1):
-                if (n,m) in zip(n_list, m_list):
-                    continue
                 else:
-                    self.nmodes.append(n)
-                    self.mmodes.append(m)
-                    self.ampls.append(0.1)
-                    count_modes+=1
-
-        codes = []
-        print()
-        print("Mode init params:")
-        for a in self.alpha:
-            print()
-            print("alpha = ", a)
-            print("i n m amp")
-            code = str(count_modes)
-            for i in range(count_modes):
-                if i < 2: #first 2 modes get alpha multiplied
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
-                    print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
-                else: #last modes get a small constant (noise)
                     code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(self.ampls[i])
                     print(i, self.nmodes[i], self.mmodes[i], self.ampls[i])
             codes.append(code)
         
-        
-                
-        self.count_modes = count_modes 
-
         self.codes = codes
         print(codes)
+        
 
     def save_file(self, filename):
 
         with open(filename, 'wb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
 
 
 def load_file(filename):
