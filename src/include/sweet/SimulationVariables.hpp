@@ -1801,6 +1801,8 @@ public:
 						iodata.output_file_name = "output_%s_t%020.8f.csv";
 					else if (iodata.output_file_mode == "bin")
 						iodata.output_file_name = "output_%s_t%020.8f.sweet";
+					else if (iodata.output_file_mode == "csv_spec_evol")
+						iodata.output_file_name = "output_%s_t%020.8f.txt";
 					else
 						SWEETError("Unknown filemode '"+iodata.output_file_mode+"'");
 				}

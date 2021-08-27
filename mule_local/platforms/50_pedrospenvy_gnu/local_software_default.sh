@@ -17,10 +17,10 @@ done
 
 
 #PKGS+=("install_autoconf.sh")
-PKGS+=("install_make.sh")
-PKGS+=("install_gcc8.2.sh")
+#PKGS+=("install_make.sh")
+#PKGS+=("install_gcc8.2.sh")
 
-PKGS+=("install_cmake.sh")
+#PKGS+=("install_cmake.sh")
 #PKGS+=("install_automake.sh")
 
 PKGS+=("install_fftw3.sh")
@@ -33,14 +33,14 @@ PKGS+=("install_likwid.sh")
 PKGS+=("install_numactl.sh")
 #PKGS+=("install_pfasst++.sh")
 
-PKGS+=("install_anaconda.sh")
+#PKGS+=("install_anaconda.sh")
 
 PKGS+=("install_scons3.sh")
 PKGS+=("install_shtns.sh")
-PKGS+=("install_shtns_python.sh")
+#PKGS+=("install_shtns_python.sh")
 
 
-PKGS+=("install_openmpi.sh")
+#PKGS+=("install_openmpi.sh")
 PKGS+=("install_libpfasst.sh")
 
 PKGS+=("install_libfreetype.sh")

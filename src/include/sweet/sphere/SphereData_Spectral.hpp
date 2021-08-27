@@ -764,7 +764,6 @@ public:
 	}
 
 
-
 	/**
 	 * Truncate modes which are not representable in spectral space
 	 */
@@ -885,8 +884,6 @@ public:
 			spectral_space_data[i] = i_value;
 	}
 
-
-
 	/*
 	 * Add a constant in physical space by adding the corresponding value in spectral space
 	 */
@@ -927,7 +924,7 @@ public:
 
 
 	/**
-	 * return the maximum of all absolute values, use quad precision for reduction
+	 * return the sum of all values, use quad precision for reduction
 	 */
 	std::complex<double> spectral_reduce_sum_quad()	const
 	{
@@ -952,6 +949,36 @@ public:
 		return sum;
 	}
 
+	/**
+	 * return the sum of squares of all values, use quad precision for reduction
+	 * Important: Since m=0  modes appear only once and m>0 appear twice in the full spectrum
+	 */
+	double spectral_reduce_sum_sqr_quad()	const
+	{
+		std::complex<double> sum = 0;
+		std::complex<double> c = 0;
+
+		//m=0 case - weight 1
+		std::size_t idx = sphereDataConfig->getArrayIndexByModes(0, 0);
+		for (int n = 0; n <= sphereDataConfig->spectral_modes_n_max; n++)
+		{
+			sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+			idx++;
+		}
+		
+		//m>0 case - weight 2, as they appear twice
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				sum += 2.0*spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+				idx++;
+			}
+		}
+
+		return sum.real();
+	}
 
 	/**
 	 * Return the minimum value
@@ -971,7 +998,7 @@ public:
 
 
 	/**
-	 * Return the minimum value
+	 * Return the max value
 	 */
 	std::complex<double> spectral_reduce_max()	const
 	{
@@ -986,6 +1013,38 @@ public:
 		return error;
 	}
 
+
+	/**
+	 * Return the max abs value
+	 */
+	double spectral_reduce_max_abs()	const
+	{
+		double error = -std::numeric_limits<double>::infinity();
+		std::complex<double> w = {0,0};
+		for (int j = 0; j < sphereDataConfig->spectral_array_data_number_of_elements; j++)
+		{
+			w = spectral_space_data[j]*std::conj(spectral_space_data[j]);
+			error = std::max(std::abs(w), error);
+		}
+
+		return error;
+	}
+
+	/**
+	 * Return the minimum abs value
+	 */
+	double spectral_reduce_min_abs()	const
+	{
+		double error = std::numeric_limits<double>::infinity();
+		std::complex<double> w = {0,0};
+		for (int j = 0; j < sphereDataConfig->spectral_array_data_number_of_elements; j++)
+		{
+			w = spectral_space_data[j]*std::conj(spectral_space_data[j]);
+			error = std::min(std::abs(w), error);
+		}
+
+		return error;
+	}
 
 	bool spectral_reduce_is_any_nan_or_inf()	const
 	{
@@ -1041,6 +1100,24 @@ public:
 		}
 	}
 
+	void spectral_structure_print(
+			int i_precision = 16,
+			double i_abs_threshold = -1
+	)	const
+	{
+		std::cout << std::setprecision(i_precision);
+
+		std::cout << "m \\ n ----->" << std::endl;
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				std::cout << "(" << m <<"," << n <<")" << "\t";
+			}
+			std::cout << std::endl;
+		}
+	}
 
   
   	void spectrum_file_write(
@@ -1086,6 +1163,72 @@ public:
   		file.close();
 	}
 
+
+	void spectrum_file_write_line(
+			const std::string &i_filename,
+			const char *i_title = "",
+			const double i_time = 0.0,
+			int i_precision = 20,
+			double i_abs_threshold = -1
+	)	const
+	{
+
+		std::ofstream file;
+
+		if(i_time == 0.0){
+			file.open(i_filename, std::ios_base::trunc);
+			file << std::setprecision(i_precision);
+			file << "#SWEET_SPHERE_SPECTRAL_DATA_ASCII" << std::endl;
+  			file << "#TI " << i_title << std::endl;
+			file << "0\t"<< std::endl; // Use 0 to make it processable by python
+			file << "(n_max="<<sphereDataConfig->spectral_modes_n_max << " m_max="
+					<< sphereDataConfig->spectral_modes_n_max << ")" << std::endl;
+			file << "timestamp\t" ; 
+			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+			{
+				std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+				{
+					file << "(" << n << ";" << m << ")\t" ;
+				}
+			}
+			file<< "SpectralSum" <<std::endl;
+		}
+		else{
+			file.open(i_filename, std::ios_base::app);
+			file << std::setprecision(i_precision);
+		}  		
+
+  		std::complex<double> w = {0,0};
+		double wabs = 0.0;
+		double sum = 0.0;
+		std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
+		file << i_time << "\t";
+  		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+  		{
+  			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+  			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+  			{
+  				w = spectral_space_data[idx];
+				wabs = std::abs(w * std::conj(w));
+				if ( m > 0 ) sum += 2*wabs; //term appears twice in the spectrum
+				else sum += wabs;      // term appears only once
+  				
+				if ( wabs < i_abs_threshold){
+					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					file <<  0 << "\t"; //<<std::endl;
+				}
+				else{
+					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					file <<  wabs << "\t"; //<<std::endl;;
+					std::cout << n << " " << m << " " << wabs <<std::endl;
+				}
+				idx++;
+  			}
+  		}
+		file<< sum << std::endl;
+  		file.close();
+	}
 
 
 
