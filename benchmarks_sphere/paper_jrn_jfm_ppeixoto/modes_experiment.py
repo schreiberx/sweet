@@ -16,7 +16,7 @@ from matplotlib.lines import Line2D
 
 from mule.postprocessing.JobData import *
 
-class modes_TC1:
+class modes_TC1: #Init with energy in full shells from n_ini to n_end
     def __init__(self, n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples):
             
         self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
@@ -67,7 +67,7 @@ class modes_TC1:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
-class modes_TC2:
+class modes_TC2: #list of initial modes
     def __init__(self, n_list, m_list, alpha_min, alpha_max, alpha_samples):
             
         self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
@@ -113,7 +113,8 @@ class modes_TC2:
             # Pickle the 'data' dictionary using the highest protocol available.
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
-class modes_TC3:
+
+class modes_TC3: #range of modes in shells with added background energy
     def __init__(self, alpha_min, alpha_max, alpha_samples):
             
         self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
