@@ -9,6 +9,8 @@ import pandas as pd
 import re
 import os
 
+
+
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -424,13 +426,13 @@ class evol:
             #print(list_modes)
             if mode in list_modes:
                 out_modes.append(col)
-                print(col, n, m, "out")
+                #print(col, n, m, "out")
 
         df_init = df[init_modes].sum(axis=1).rename("init") #_n"+str(ninit_min)+"-"+str(ninit_max))
         df_noninit = df[non_init_modes].sum(axis=1).rename("non_init")
         df_out = df[out_modes].sum(axis=1).rename("out_modes")
-        print(df)
-        print(df_out)
+        #print(df)
+        #print(df_out)
         df_new = pd.concat([df_init, df_noninit, df_out], axis=1)
         
         return df_new
@@ -491,6 +493,20 @@ class evol:
 
         return df_new
 
+    def fourier_modes(self):
+
+        #Energy
+        outmodes = self.df_energy_agg["out_modes"].values
+        time = self.df_energy_agg.index.to_numpy()
+        self.large_periods_energy = fourier_largest(outmodes, T=time[-1])
+
+        #Enstrophy
+        outmodes = self.df_energy_agg["out_modes"].values
+        self.large_periods_ens = fourier_largest(outmodes, T=time[-1])
+            
+        return 
+
+    
     def plot(self, title="", output_filename="out.pdf"):
 
         
@@ -600,3 +616,41 @@ class evol:
         plt.close()
 
 
+def fourier_largest(array, T):
+
+    yf = np.fft.rfft(array)
+    yf = np.abs(yf[:-1])
+    n = len(yf)
+
+    xf = T/np.linspace(1, T, n)
+
+    nlargest = 10
+    ilargest = np.argpartition(yf, -nlargest)[-nlargest:]
+    large_periods = np.take(xf, ilargest)
+    large_spectrum = np.take(yf, ilargest)
+
+    #Ordered largest elements of spectrum
+    large_sort = large_spectrum.argsort()
+    large_periods = large_periods[large_sort[::-1]]
+    large_spectrum = large_spectrum[large_sort[::-1]]
+    print(large_periods)
+    print(large_spectrum)
+
+    #Filter modes of very large period
+    large_filter = large_periods<T/2
+    large_periods = large_periods[large_filter]
+    large_spectrum = large_spectrum[large_filter]
+    print(large_periods)
+    print(large_spectrum)
+
+    if False:        
+        print(xf)
+        print(yf)
+        fig, ax = plt.subplots()
+        ax.set_xscale('log')
+
+        ax.plot(xf, 1.0/n * yf)
+        #ax.plot(yf)
+        plt.show()
+
+    return large_periods

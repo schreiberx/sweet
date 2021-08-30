@@ -104,6 +104,8 @@ max_exchange_noninit_energy = []
 max_exchange_out_ens = []
 max_exchange_noninit_ens = []
 
+dominant_period = []
+
 #output shells
 print(basedir)
 
@@ -116,13 +118,15 @@ if "TC1_in2_3_4" in basedir:
 elif "TC2_in3-3_4-3_2-1" in basedir:
 	nout_shell_min = 5
 	nout_shell_max = 6
-	n_out_list = [5, 5, 5]
-	m_out_list = [1, 2, 3]
+	n_out_list = [5]
+	m_out_list = [1]
 	out_type = "mode"
-elif "TC2xx" in basedir:
+elif "TC2_in5-4_3-1_7-3" in basedir:
+	n_out_list = [9, 5]
+	m_out_list = [2, 5]
 	nout_shell_min = 7
 	nout_shell_max = 7
-	out_type = "shell"
+	out_type = "mode"
 elif "TC3xx" in basedir:
 	nout_shell_min = 7
 	nout_shell_max = 7
@@ -144,7 +148,7 @@ elif "TC5xx" in basedir:
 else:
 	nout_shell_min = 7
 	nout_shell_max = 7
-	print("Dont know thi8s test case")
+	print("Dont know this test case")
 	exit(1)
 
 for i in range(len(alphas)):
@@ -179,26 +183,38 @@ for i in range(len(alphas)):
 		print("Error: please set correct out type")
 		exit(1)
 
+	#fourier modes
+	evol.fourier_modes()
+	dominant_period.append(evol.large_periods_energy[0])
+
 	max_exchange_out_energy.append(evol.max_exchange_out_energy)
 	max_exchange_noninit_energy.append(evol.max_exchange_noninit_energy)
 	max_exchange_out_ens.append(evol.max_exchange_out_ens)
 	max_exchange_noninit_ens.append(evol.max_exchange_noninit_ens)
-
-	print(evol.df_energy_clean)
-	print(evol.df_ens_clean)
+	
+	
+	#print(evol.df_energy_clean)
+	#print(evol.df_ens_clean)
 	evol.plot(code, "mode_evol.pdf")
 	
 	evol.plot_out(code+"_"+filename_out, filename_out+ ".pdf")
 
 
 #print(alphas, max_exchange_out_energy, max_exchange_out_ens)
-df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens)), columns =['Alpha', 'Exch_energy', 'Exch_ens'])
+df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens, dominant_period, umax, vmax)), columns =['Alpha', 'Exch_energy', 'Exch_ens', "Period", "u_max", "v_max"])
 df = df.set_index('Alpha')
 
 df = df.sort_index()
 print(df)
 
 out_energy = filename_out # "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
+
+#df_periods = df[['Period']]
+#df_periods.plot( title=exp_tag+" "+out_energy)
+
+df = df[['Exch_energy', 'Exch_ens']]
+df['Exch_energy']=df['Exch_energy']/df.index
+df['Exch_ens']=df['Exch_ens']/df.index
 
 df.plot( title=exp_tag+" "+out_energy)
 #plt.show()
