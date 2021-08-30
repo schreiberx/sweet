@@ -22,7 +22,7 @@ from mule.postprocessing.JobsDataConsolidate import *
 import modes_experiment as mexp
 
 if len(sys.argv) > 1:
-	experiment_file = sys.argv[1]
+	experiment_pckl_file = sys.argv[1]
 else:
 	print("")
 	print("Usage:")
@@ -31,27 +31,37 @@ else:
 	print("")
 	sys.exit(1)
 
+#Sweet!
+sweetroot = os.environ.get('MULE_SOFTWARE_ROOT')
 
 #get experiment setup
-print(experiment_file)
-filename = experiment_file #"mode_setup_1.pckl"
-basename = os.path.basename(filename)
-basedir = os.path.dirname(filename)
-base = os.path.splitext(basename)[0]
-print("Basic experiment :", basedir, basename)
+print("Input experiment file:", experiment_pckl_file)
+pckl_file = experiment_pckl_file #"mode_setup_1.pckl"
+pckl_filename = os.path.basename(pckl_file)
+basedir = os.path.dirname(pckl_file)
+
+exp_tag = os.path.splitext(pckl_filename)[0]
+
+print("Experiment Dir:", basedir)
+print("Experiment tag:", exp_tag )
 print()
-obj = mexp.load_file(filename)
+
+#Load experiment info
+obj = mexp.load_file(pckl_file)
 exp_codes = obj.codes
 basebanchname = "barotropic_vort_modes_"
 exp_codes_bnames = [basebanchname+s for s in exp_codes]
 print("Benchmarks under investigation:")
 print(exp_codes_bnames)
 
+
+
 #get jobs data
 j = JobsData(basedir+'/job_bench_*', verbosity=1)
 #print(j)
 #print("Extracting jobs")
 jobs = j.get_jobs_data()
+
 #print(jobs)
 main_tag = 'runtime.benchmark_name'
 alpha_tag = 'output.benchmark_barotropic_vort_modes.0.ampl' #mode 0 is used as reference
@@ -68,7 +78,13 @@ print("alpha   umax  vmax" )
 for key, job in jobs.items():
 	d = job.get_flattened_data()
 	r = job.get_job_raw_data()
-	outfile_exists = os.path.isfile(d["jobgeneration.p_job_stdout_filepath"])
+
+	outfile_path = d["jobgeneration.p_job_stdout_filepath"]
+	
+	#In case this was generated in a server, fix the path
+	outfile_path = outfile_path.replace(d["jobgeneration.sweetroot"], sweetroot)
+	
+	outfile_exists = os.path.isfile(outfile_path)	
 	if d[main_tag] in exp_codes_bnames and outfile_exists:
 		jobs_flat.append(d)
 		jobs_raw.append(r)
@@ -89,27 +105,37 @@ max_exchange_out_ens = []
 max_exchange_noninit_ens = []
 
 #output shells
-if "TC1" in basedir:
+print(basedir)
+
+if "TC1_in2_3_4" in basedir:
 	nout_shell_min = 5
 	nout_shell_max = 6
+	n_out_list = [5]
+	m_out_list = [1]
 	out_type = "shell"
-elif "TC2" in basedir:
+elif "TC2_in3-3_4-3_2-1" in basedir:
+	nout_shell_min = 5
+	nout_shell_max = 6
+	n_out_list = [5, 5, 5]
+	m_out_list = [1, 2, 3]
+	out_type = "mode"
+elif "TC2xx" in basedir:
 	nout_shell_min = 7
 	nout_shell_max = 7
 	out_type = "shell"
-elif "TC3" in basedir:
+elif "TC3xx" in basedir:
 	nout_shell_min = 7
 	nout_shell_max = 7
 	n_out_list = [7,5]
 	m_out_list = [3,4]
 	out_type = "mode"
-elif "TC4" in basedir:
+elif "TC4xx" in basedir:
 	nout_shell_min = 7
 	nout_shell_max = 7
 	n_out_list = [7,5]
 	m_out_list = [3,4]
 	out_type = "mode"
-elif "TC5" in basedir:
+elif "TC5xx" in basedir:
 	nout_shell_min = 5
 	nout_shell_max = 7
 	n_out_list = [7,9, 5]
@@ -118,7 +144,8 @@ elif "TC5" in basedir:
 else:
 	nout_shell_min = 7
 	nout_shell_max = 7
-
+	print("Dont know thi8s test case")
+	exit(1)
 
 for i in range(len(alphas)):
 
@@ -131,13 +158,19 @@ for i in range(len(alphas)):
 	#	print(key, '->', jd_flat[key])		
 	jd_raw = jobs_raw[i]
 
-	output=jd_raw['output']
-	runtime=jd_raw['jobgeneration']
-	runtime=runtime['runtime']
-	code=output['benchmark_barotropic_vort_modes.code']
+	output = jd_raw['output']
+	jobgen = jd_raw['jobgeneration']
+	runtime = jobgen['runtime']
 
-	evol = mexp.evol(jd_flat['runtime.p_job_dirpath'])
+	job_sweet_dir = jobgen['jobgeneration']['sweetroot']
+	code = output['benchmark_barotropic_vort_modes.code']
+	dir_path = runtime['p_job_dirpath']
 
+	#fix path, in case generated in server
+	dir_path = dir_path.replace(job_sweet_dir, sweetroot)
+
+	evol = mexp.evol(dir_path)
+	
 	if out_type == "shell":
 		filename_out = evol.set_out_shells(nout_shell_min, nout_shell_max) 
 	elif out_type == "mode":
@@ -167,10 +200,10 @@ print(df)
 
 out_energy = filename_out # "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
 
-df.plot( title=base+" "+out_energy)
+df.plot( title=exp_tag+" "+out_energy)
 #plt.show()
 
-filename_final = basedir+"/"+base+"_"+out_energy+".pdf"
+filename_final = basedir+"/"+exp_tag+"_"+out_energy+".pdf"
 print("Output file:", filename_final)
 #plt.show()
 plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)

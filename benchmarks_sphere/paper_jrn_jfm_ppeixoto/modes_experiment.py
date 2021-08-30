@@ -7,6 +7,7 @@ import pickle
 from numpy.lib.function_base import append
 import pandas as pd
 import re
+import os
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -345,9 +346,9 @@ class evol:
         #Remove modes with null values
 
         self.df_energy=pd.read_csv(self.energy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
-        #print(self.df_energy)
+        #print(self.energy_file, self.df_energy)
         self.df_ens=pd.read_csv(self.enstrophy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
-        #print(self.df_ens)
+        #print(self.enstrophy_file , self.df_ens)
 
         self.df_energy['timestamp'] = self.df_energy['timestamp'] * timerescale
         maxenergy = self.df_energy['SpectralSum'].max()

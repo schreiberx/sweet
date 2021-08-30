@@ -173,7 +173,7 @@ if __name__ == "__main__":
     experiment = mexp.modes_TC2(n_list, m_list, alpha_min, alpha_max, alpha_samples, back_n_min=2, back_n_max=4, back_ampl=0.01) 
     exp_filename = "mode_setup_n"+'-'.join(map(str, n_list))+"_m"+'-'.join(map(str, m_list))+".pckl"
     codes = experiment.codes
-    exit(1)
+
     experiment.save_file(exp_filename)
     
     
