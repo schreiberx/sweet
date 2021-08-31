@@ -5,12 +5,22 @@ import os
 
 import matplotlib
 matplotlib.use('Agg')
-
-import numpy as np
-import pandas as pd
+matplotlib.rcParams['text.usetex'] = True
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.lines import Line2D
+#import seaborn as sns
+
+#sns.set_style('darkgrid') # darkgrid, white grid, dark, white and ticks
+plt.rc('axes', titlesize=18)     # fontsize of the axes title
+plt.rc('axes', labelsize=14)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=13)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=13)    # fontsize of the tick labels
+plt.rc('legend', fontsize=13)    # legend fontsize
+plt.rc('font', size=13)          # controls default text sizes
+
+import numpy as np
+import pandas as pd
 
 
 
@@ -122,8 +132,8 @@ elif "TC2_in3-3_4-3_2-1" in basedir:
 	m_out_list = [1]
 	out_type = "mode"
 elif "TC2_in5-4_3-1_7-3" in basedir:
-	n_out_list = [9, 5]
-	m_out_list = [2, 5]
+	n_out_list = [9]
+	m_out_list = [2]
 	nout_shell_min = 7
 	nout_shell_max = 7
 	out_type = "mode"
@@ -152,7 +162,7 @@ else:
 	exit(1)
 
 for i in range(len(alphas)):
-
+#for i in range(4):
 	print()
 	print("Post-processing (alpha, dir, umax, vmax):",	alphas[i], job_dirs[i], umax[i], vmax[i])
 	
@@ -216,7 +226,17 @@ df = df[['Exch_energy', 'Exch_ens']]
 df['Exch_energy']=df['Exch_energy']/df.index
 df['Exch_ens']=df['Exch_ens']/df.index
 
-df.plot( title=exp_tag+" "+out_energy)
+plt.figure(figsize=(10,6), tight_layout=True)
+#plotting
+plt.plot(df, '-', linewidth=2)
+#customization
+#plt.xticks([2017, 2018, 2019, 2020, 2021])
+plt.xlabel(r"Alpha ($\alpha$)")
+plt.ylabel(r"Efficiency/$\alpha$")
+plt.title(exp_tag+" "+out_energy)
+plt.legend(title_fontsize = 13, labels=['Energy' , 'Enstrophy'])
+
+#df.plot( title=exp_tag+" "+out_energy)
 #plt.show()
 
 filename_final = basedir+"/"+exp_tag+"_"+out_energy+".pdf"
@@ -225,3 +245,5 @@ print("Output file:", filename_final)
 plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
 plt.close()
+
+plt.show()

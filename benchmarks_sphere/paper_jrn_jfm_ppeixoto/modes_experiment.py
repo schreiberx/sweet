@@ -633,8 +633,8 @@ def fourier_largest(array, T):
     large_sort = large_spectrum.argsort()
     large_periods = large_periods[large_sort[::-1]]
     large_spectrum = large_spectrum[large_sort[::-1]]
-    print(large_periods)
-    print(large_spectrum)
+    #print(large_periods)
+    #print(large_spectrum)
 
     #Filter modes of very large period
     large_filter = large_periods<T/2
