@@ -74,14 +74,14 @@ jg.compile.fortran_source = 'enable'
 #   Basic simulation stuff
 ##################################################
 
-jg.runtime.max_simulation_time = 60*60*24*100   # 100 days
+jg.runtime.max_simulation_time = 60*60*24*365   # (in seconds) 1 year
 #jg.runtime.max_simulation_time = 60*60*5    # 5 hours
 
 jg.runtime.timestep_size = 120 # 1 minutes
 
 jg.runtime.space_res_spectral = 128
 
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/200
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/730
 
 # No output
 #jg.runtime.output_filename = "output" #leave default
@@ -160,9 +160,9 @@ if __name__ == "__main__":
 
     more_samples = True
     if more_samples:
-        alpha_min = 2.0
-        alpha_max = 122.0
-        alpha_samples = 40
+        alpha_min = 1.0
+        alpha_max = 161.0
+        alpha_samples = 160
     else:
         alpha_min = 1.0
         alpha_max = 20.0
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
     n_list = [5, 3, 7]
     m_list = [4, 1, 3]
-    experiment = mexp.modes_TC2(n_list, m_list, alpha_min, alpha_max, alpha_samples, back_n_min=2, back_n_max=4, back_ampl=0.01) 
+    experiment = mexp.modes_TC2(n_list, m_list, alpha_min, alpha_max, alpha_samples, back_n_min=2, back_n_max=4, back_ampl=0.1) 
     exp_filename = "mode_setup_n"+'-'.join(map(str, n_list))+"_m"+'-'.join(map(str, m_list))+".pckl"
     codes = experiment.codes
 

@@ -223,8 +223,8 @@ out_energy = filename_out # "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
 #df_periods.plot( title=exp_tag+" "+out_energy)
 
 df = df[['Exch_energy', 'Exch_ens']]
-df['Exch_energy']=df['Exch_energy']/df.index
-df['Exch_ens']=df['Exch_ens']/df.index
+#df['Exch_energy']=df['Exch_energy']/df.index
+#df['Exch_ens']=df['Exch_ens']/df.index
 
 plt.figure(figsize=(10,6), tight_layout=True)
 #plotting
@@ -232,7 +232,8 @@ plt.plot(df, '-', linewidth=2)
 #customization
 #plt.xticks([2017, 2018, 2019, 2020, 2021])
 plt.xlabel(r"Alpha ($\alpha$)")
-plt.ylabel(r"Efficiency/$\alpha$")
+plt.ylabel(r"Efficiency")
+#plt.ylabel(r"Efficiency/$\alpha$")
 plt.title(exp_tag+" "+out_energy)
 plt.legend(title_fontsize = 13, labels=['Energy' , 'Enstrophy'])
 
