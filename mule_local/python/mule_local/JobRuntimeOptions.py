@@ -83,6 +83,16 @@ class JobRuntimeOptions(InfoError):
         self.polvani_rossby = None
         self.polvani_froude = None
 
+        # Parameters for LibPFASST
+        self.libpfasst_nlevels = None
+        self.libpfasst_niters = None
+        self.libpfasst_nnodes = None
+        self.libpfasst_nsweeps_coarse = None
+        self.libpfasst_nodes_type = None
+        self.libpfasst_coarsening_multiplier = None
+        self.libpfasst_use_rexi = None
+        self.libpfasst_implicit_coriolis_force = None
+        self.libpfasst_use_rk_stepper = None
 
         self.gravitation= None
         self.h0 = None
@@ -543,6 +553,26 @@ class JobRuntimeOptions(InfoError):
 
         if self.polvani_froude != None:
             retval += ' --polvani-froude='+str(self.polvani_froude)
+
+        # TODO: think about a way to check that we're in LibPFASST mode s.th. we do not have to check every if statement
+        if self.libpfasst_nlevels != None:
+            retval += ' --libpfasst-nlevels='+str(self.libpfasst_nlevels)
+        if self.libpfasst_niters != None:
+            retval += ' --libpfasst-niters='+str(self.libpfasst_niters)
+        if self.libpfasst_nnodes != None:
+            retval += ' --libpfasst-nnodes='+str(self.libpfasst_nnodes)
+        if self.libpfasst_nsweeps_coarse != None:
+            retval += ' --libpfasst-nsweeps-coarse='+str(self.libpfasst_nsweeps_coarse)
+        if self.libpfasst_nodes_type != None:
+            retval += ' --libpfasst-nodes-type='+str(self.libpfasst_nodes_type)
+        if self.libpfasst_coarsening_multiplier != None:
+            retval += ' --libpfasst-coarsening-multiplier='+str(self.libpfasst_coarsening_multiplier)
+        if self.libpfasst_use_rexi != None:
+            retval += ' --libpfasst-use-rexi='+str(self.libpfasst_use_rexi)
+        if self.libpfasst_implicit_coriolis_force != None:
+            retval += ' --libpfasst-implicit-coriolis-force='+str(self.libpfasst_implicit_coriolis_force)
+        if self.libpfasst_use_rk_stepper != None:
+            retval += ' --libpfasst-use-rk-stepper='+str(self.libpfasst_use_rk_stepper)
 
         retval += ' --semi-lagrangian-approximate-sphere-geometry='+str(self.semi_lagrangian_approximate_sphere_geometry)
 
