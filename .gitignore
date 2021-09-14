@@ -11,6 +11,7 @@ FFTW_*
 **/*.lyx#
 **/*.o
 **/_archive
+**/dat/*
 
 **/*.pyc
 **/__pycache__
