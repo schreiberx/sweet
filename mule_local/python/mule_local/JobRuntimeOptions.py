@@ -347,6 +347,26 @@ class JobRuntimeOptions(InfoError):
             if self.polvani_froude != None:
                 idstr += '_PF'+str(self.polvani_froude)
 
+        # LibPFASST attributes
+        if not 'runtime.libpfasst' in filter_list:
+            if self.libpfasst_nlevels != None:
+                idstr += '_pf_nlev'+str(self.libpfasst_nlevels)
+            if self.libpfasst_niters != None:
+                idstr += '_pf_nit'+str(self.libpfasst_niters)
+            if self.libpfasst_nnodes != None:
+                idstr += '_pf_nnod'+str(self.libpfasst_nnodes)
+            if self.libpfasst_nsweeps_coarse != None:
+                idstr += '_pf_nswpc'+str(self.libpfasst_nsweeps_coarse)
+            if self.libpfasst_nodes_type != None:
+                idstr += '_'+str(self.libpfasst_nodes_type)
+            if self.libpfasst_coarsening_multiplier != None:
+                idstr += '_pf_coars'+str(self.libpfasst_coarsening_multiplier)
+            if self.libpfasst_use_rexi != None:
+                idstr += '_pf_rexi'+str(self.libpfasst_use_rexi)
+            if self.libpfasst_implicit_coriolis_force != None:
+                idstr += '_pf_icf'+str(self.libpfasst_implicit_coriolis_force)
+            if self.libpfasst_use_rk_stepper != None:
+                idstr += '_pf_rk'+str(self.libpfasst_use_rk_stepper)
 
         if not 'runtime.disc_space' in filter_list:
             if self.space_res_spectral != None:
@@ -387,6 +407,8 @@ class JobRuntimeOptions(InfoError):
 
         for key, param in self.user_defined_parameters.items():
             idstr += '_'+param['id']+str(param['value'])
+
+        print(idstr)
 
         return idstr
 
