@@ -34,7 +34,7 @@ jg.compile.libsph = 'enable'
 jg.compile.numa_block_allocator = 0
 jg.compile.threading = 'off'
 
-jg.compile.fft = 'enable'
+jg.compile.libfft = 'enable'
 
 # Enable quad math per default for CI REXI method
 jg.compile.quadmath = 'enable'
@@ -69,18 +69,25 @@ jg.runtime.viscosity = 0.0
 
 jg.unique_id_filter = ['compile', 'parallelization']
 
+# LibPFASST runtime parameters
+# set them all explicitly to make sure we know what's happening
+jg.runtime.libpfasst_nlevels = 1
+#jg.runtime.libpfasst_niters = None
+jg.runtime.libpfasst_nnodes = 5
+jg.runtime.libpfasst_nsweeps_coarse = 1
+jg.runtime.libpfasst_nodes_type = 'GAUSS_LOBATTO'
+jg.runtime.libpfasst_coarsening_multiplier = 0.5
+jg.runtime.libpfasst_use_rexi = 0
+jg.runtime.libpfasst_implicit_coriolis_force = 0
+jg.runtime.libpfasst_use_rk_stepper = 0
+
 
 #####################################################
 #####################################################
 #####################################################
 
-
-ts_order = 1
-
-
-ref_ts_order = 4
-
-
+ref_nnodes = 5
+ref_niters = 6
 ref_ts_size = 8
 timestep_size_min = 16
 timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
@@ -94,12 +101,12 @@ jg.runtime.max_simulation_time = timestep_size_min*512
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 
-
 #
 # Reference solution
 #
-jg.runtime.rexi_method = None
 jg.runtime.timestep_size = ref_ts_size
+jg.runtime.libpfasst_nnodes = ref_nnodes
+jg.runtime.libpfasst_niters = ref_niters
 
 jg.reference_job = True
 jg.gen_jobscript_directory()
@@ -114,66 +121,13 @@ jg.reference_job_unique_id = jg.job_unique_id
 # Create job scripts
 #
 
-jg.runtime.timestepping_order = ts_order
-jg.runtime.timestepping_order2 = ts_order
+for jg.runtime.libpfasst_nnodes in [3,5]:
+    for jg.runtime.libpfasst_niters in range(3,6):
+        for jg.runtime.timestep_size in timestep_sizes:
 
-for tsm in ts_methods:
-    for jg.runtime.timestep_size in timestep_sizes:
-        jg.runtime.timestepping_method = tsm
+            if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+                print("simtime: "+str(jg.runtime.max_simulation_time))
+                print("timestep_size: "+str(jg.runtime.timestep_size))
+                raise Exception("Invalid time step size (not remainder-less dividable)")
 
-        if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
-            print("simtime: "+str(jg.runtime.max_simulation_time))
-            print("timestep_size: "+str(jg.runtime.timestep_size))
-            raise Exception("Invalid time step size (not remainder-less dividable)")
-
-        if '_exp' in jg.runtime.timestepping_method:
-
-            if rexi_thread_par:
-                # OMP parallel for over REXI terms
-                jg.compile.threading = 'off'
-                jg.compile.rexi_thread_parallel_sum = 'enable'
-            else:
-                jg.compile.threading = 'omp'
-                jg.compile.rexi_thread_parallel_sum = 'disable'
-
-
-            if 0:
-                # CI REXI method in SWEET
-                jg.runtime.rexi_method = 'ci'
-
-                # Use reduced number of REXI coefficients for convergence studies
-                if ts_order == 1:
-                    jg.runtime.rexi_ci_n = 16
-                    jg.runtime.rexi_ci_max_real = 1
-                    jg.runtime.rexi_ci_max_imag = 1
-
-                else:
-                    jg.runtime.rexi_ci_n = 32
-                    jg.runtime.rexi_ci_max_real = 2
-                    jg.runtime.rexi_ci_max_imag = 2
-
-
-                jg.runtime.rexi_ci_mu = 0
-                jg.runtime.rexi_ci_primitive = 'circle'
-
-
-            elif 0:
-                # CI REXI via file input
-                jg.runtime.rexi_method = 'file'
-
-                cirexi = CIREXI()
-                coeffs = cirexi.setup("phi0", N=32, R=2).toFloat()
-                jg.runtime.rexi_files_coefficients = [coeffs]
-
-            else:
-                # B REXI via file
-                jg.runtime.rexi_method = 'file'
-
-                brexi = BREXI()
-                coeffs = brexi.setup(N=8, quadrature_method='gauss').toFloat()
-                jg.runtime.rexi_files_coefficients = [coeffs]
-
-        else:
-                jg.runtime.rexi_method = None
-
-        jg.gen_jobscript_directory()
+            jg.gen_jobscript_directory()
