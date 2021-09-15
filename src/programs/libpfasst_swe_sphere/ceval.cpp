@@ -44,7 +44,7 @@ std::string write_file(
 	sprintf(buffer,
 			filename_template,
 			i_name,
-			simVars->timecontrol.current_simulation_time);
+			simVars->timecontrol.current_simulation_time*simVars->iodata.output_time_scale);
     sphereData.file_write_binary_spectral(buffer);
 
 	return buffer;
@@ -73,7 +73,7 @@ std::string write_spectrum_to_file(
 	sprintf(buffer,
 			filename_template,
 			i_name,
-            simVars->timecontrol.current_simulation_time);
+            simVars->timecontrol.current_simulation_time*simVars->iodata.output_time_scale);
 	sphereData.spectrum_file_write(buffer);
 
 	return buffer;

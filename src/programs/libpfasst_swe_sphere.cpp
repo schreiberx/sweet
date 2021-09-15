@@ -53,6 +53,9 @@ int main(int i_argc, char *i_argv[])
 			nullptr
 	};
 
+	// set output time scale to hours
+	simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
+
 	// default values for specific input (for general input see SimulationVariables.hpp)
 	simVars.bogus.var[0] = 1;
 
