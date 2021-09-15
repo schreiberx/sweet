@@ -13,7 +13,7 @@ from matplotlib.lines import Line2D
 
 
 
-groups = ['runtime.nnodes', 'runtime.niters']
+groups = ['runtime.libpfasst_nnodes', 'runtime.libpfasst_niters']
 
 
 tagnames_y = [
