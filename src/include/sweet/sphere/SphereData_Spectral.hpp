@@ -1178,7 +1178,7 @@ public:
 		if(i_time == 0.0){
 			file.open(i_filename, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
-			file << "#SWEET_SPHERE_SPECTRAL_DATA_ASCII" << std::endl;
+			file << "#SWEET_SPHERE_SPECTRAL_EVOL_ASCII" << std::endl;
   			file << "#TI " << i_title << std::endl;
 			file << "0\t"<< std::endl; // Use 0 to make it processable by python
 			file << "(n_max="<<sphereDataConfig->spectral_modes_n_max << " m_max="
