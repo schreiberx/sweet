@@ -1221,7 +1221,7 @@ public:
 				else{
 					//file << "(" << n << "," << m << ")\t"<<std::endl;
 					file <<  wabs << "\t"; //<<std::endl;;
-					std::cout << n << " " << m << " " << wabs <<std::endl;
+					//std::cout << n << " " << m << " " << wabs <<std::endl;
 				}
 				idx++;
   			}
