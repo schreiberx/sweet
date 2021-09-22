@@ -6,7 +6,7 @@ rm -f ./prog_*
 SPHROOT="../../../"
 cd "$SPHROOT"
 
-make clean
+#make clean
 scons --program=swe_sphere --gui=disable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=omp --mode=release || exit 1
 
 cd "$BASEDIR"
@@ -14,7 +14,8 @@ cd "$BASEDIR"
 # h0=g=f=1
 
 
-OTS=$((120*20))
+TS=$((120))
+OTS=$((TS*20))
 
 RES=128
 
@@ -26,10 +27,15 @@ VISCOSITY=0
 SIMTIME=720000
 
 
-EXEC="$SPHROOT/build/swe_sphere_*_release -M $RES -C -$TS -o $OTS -u $VISCOSITY -t $SIMTIME --benchmark $BENCH --timestepping-method=ln_erk --timestepping-order=4"
+PARAMS=""
+#PARAMS+=" --output-file-mode bin"
+PARAMS+=" -M $RES"
+PARAMS+=" --dt $TS"
+PARAMS+=" -o $OTS -u $VISCOSITY -t $SIMTIME --benchmark-name $BENCH --timestepping-method=ln_erk --timestepping-order=4"
+EXEC="$(ls -1 $SPHROOT/build/swe_sphere_*_release)"
 echo "******************************************************************"
-echo "$EXEC"
+echo "$EXEC $PARAMS"
 echo "******************************************************************"
 
-$EXEC || exit 1
+$EXEC $PARAMS || exit 1
 
