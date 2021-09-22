@@ -165,12 +165,12 @@ plt.contour(data_phys, levels=np.arange(-e*50, 0, e), linestyles='dashed', linew
 plt.title(input_file)
 
 infile = sys.argv[1]
-outputfile = infile.replace('.sweet', '.pdf')
+outputfile = infile.replace('.sweet', '.png')
 
 
 if infile == outputfile:
     raise Exception("Input file didn't end with .sweet")
 
 print("Writing to "+str(outputfile))
-plt.savefig(outputfile)
+plt.savefig(outputfile, dpi=150)
 
