@@ -31,7 +31,7 @@ config_make_clean
 config_make_default_install
 
 
-if [ "`uname`" == "Darwin" ]; then
+if [ "`uname`" == "DarwinXXX" ]; then
 	echo_info_hline
 	echo_info "SHTNS Skipping OpenMP due to lack of OpenMP compiler with clang"
 	echo_info_hline

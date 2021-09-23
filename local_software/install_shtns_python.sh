@@ -25,7 +25,7 @@ fi
 #CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
 #CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
 
-if [ "`uname`" == "Darwin" ]; then
+if [ "`uname`" == "DarwinXXX" ]; then
 	echo_info_hline
 	echo_info "SHTNS Python without OpenMP:"
 	# Python, OpenMP
