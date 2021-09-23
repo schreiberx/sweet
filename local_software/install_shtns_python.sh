@@ -25,14 +25,16 @@ fi
 #CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
 #CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
 
-echo_info_hline
-echo_info "SHTNS Python OpenMP:"
-# Python, OpenMP
-config_configure --enable-python --enable-openmp $CONFIGURE_EXTRA_FLAGS
-
-# Special flag for sk2 (@ CAPS hardware)
-if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
-	sed -i "s/-march=native/-march=skylake/" "Makefile"
+if [ "`uname`" == "Darwin" ]; then
+	echo_info_hline
+	echo_info "SHTNS Python without OpenMP:"
+	# Python, OpenMP
+	config_configure --enable-python --disable-openmp $CONFIGURE_EXTRA_FLAGS
+else
+	echo_info_hline
+	echo_info "SHTNS Python OpenMP:"
+	# Python, OpenMP
+	config_configure --enable-python --enable-openmp $CONFIGURE_EXTRA_FLAGS
 fi
 
 config_make_clean

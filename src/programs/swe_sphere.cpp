@@ -3,7 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
- * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
+ * MULE_SCONS_OPTIONS: --fortran-source=enable --sphere-spectral-space=enable
  */
 
 #ifndef SWEET_GUI

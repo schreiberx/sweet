@@ -15,12 +15,11 @@ Not all software packages are required on all platforms. E.g. installing
 !!!   FIRST THING TO DO BEFORE ANYTHING              !!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+Change the directory to SWEET's root directory, e.g.
+$ cd sweet
+
 1) Before doing anything, you *must* setup your environment variable via
-   $ source ./local_software/env_vars.sh
-
-   or inside the local_software directory via
-   $ source ./env_vars.sh
-
+   $ source ./activate.sh
 
 2) Second thing you should do is to install ANACONDA by typing
    $ cd local_software
@@ -47,8 +46,8 @@ Once going into the local_software directory
   $ cd ./local_software
 install the following packages if required:
 
-Install python3 and pip:
-  $ ./install_python3.sh
+Install Anaconda (Python and more packages)
+  $ ./install_anaconda.sh
 
 Use pip to install other packages:
   $ pip3 install matplotlib sympy mpmath

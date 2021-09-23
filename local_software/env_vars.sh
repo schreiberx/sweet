@@ -156,11 +156,25 @@ if [ "$SOURCED" != "true" ]; then
 	exit 1
 fi
 
-if [ "`basename -- "$SHELL"`" != "bash" ]; then
-	echo_error_hline
-	echo_error "These scripts are only compatible to the bash shell"
-	echo_error_hline
-	return
+if [ "`uname`" == "Darwin" ]; then
+	if [ "$0" != "bash" ]; then
+		echo_error_hline
+		echo_error "These scripts are only compatible to the bash shell"
+		echo_error_hline
+		return
+	fi
+
+	# Setup environment for default compiler (installed via `brew install gcc@11`)
+	export CC=gcc-11
+	export CXX=g++-11
+	export F90=gfortran-11
+else
+	if [ "`basename -- "$SHELL"`" != "bash" ]; then
+		echo_error_hline
+		echo_error "These scripts are only compatible to the bash shell"
+		echo_error_hline
+		return
+	fi
 fi
 
 

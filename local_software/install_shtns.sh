@@ -25,31 +25,27 @@ echo_info_hline
 echo_info "SHTNS noOpenMP:"
 # Python, no OpenMP
 
-# Special flag for sk2 (@ CAPS hardware)
-if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
-       export CFLAGS="$CFLAGS -march=skylake"
-fi
-
 config_configure --disable-openmp $CONFIGURE_EXTRA_FLAGS
-
-# Special flag for sk2 (@ CAPS hardware)
-pwd
-if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
-	sed -i "s/-march=native/-march=skylake/" "Makefile"
-fi
 
 config_make_clean
 config_make_default_install
+
+
+if [ "`uname`" == "Darwin" ]; then
+	echo_info_hline
+	echo_info "SHTNS Skipping OpenMP due to lack of OpenMP compiler with clang"
+	echo_info_hline
+
+	config_success
+	return
+fi
+
 
 echo_info_hline
 echo_info "SHTNS OpenMP:"
 # Python, OpenMP
 config_configure --enable-openmp $CONFIGURE_EXTRA_FLAGS
 
-# Special flag for sk2 (@ CAPS hardware)
-if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
-	sed -i "s/-march=native/-march=skylake/" "Makefile"
-fi
 
 config_make_clean
 config_make_default_install

@@ -29,14 +29,18 @@ mkdir -p "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 #
 # Determine number of cores to involve in compilation process
 #
-NPROCS="$(nproc --all)"
-if [ "$NPROCS" -gt "10" ]; then
-	# We limit the number of parallel build processes
-	# This is important on architectures such as Cheyenne where this
-	# results in compilation errors due to a lack of resources
-	NPROCS=10
-fi
-MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
+if [ "`uname`" == "Darwin" ]; then
+	MAKE_DEFAULT_OPTS="-j"
+else
+	NPROCS="$(nproc --all)"
+	if [ "$NPROCS" -gt "10" ]; then
+		# We limit the number of parallel build processes
+		# This is important on architectures such as Cheyenne where this
+		# results in compilation errors due to a lack of resources
+		NPROCS=10
+	fi
+	MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
+else
 
 
 #
