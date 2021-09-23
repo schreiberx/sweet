@@ -135,26 +135,6 @@ fi
 # Include detection
 #
 #
-SOURCED="true"
-
-
-if [ "#$(basename -- $0)" = "#env_vars.sh" ]; then
-	SOURCED="false"
-fi
-
-if [ "$SOURCED" != "true" ]; then
-	echo_error_hline
-	echo_error "THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
-	echo_error_hline
-	echo_error "Use e.g. "
-	echo_error ""
-	echo_error "   $ source ./env_vars.sh"
-	echo_error ""
-	echo_error "to setup the environment variables correctly"
-	echo_error_hline
-	return 2>/dev/null
-	exit 1
-fi
 
 if [ "`uname`" == "Darwin" ]; then
 	if [ "$0" != "bash" ]; then
@@ -169,6 +149,26 @@ if [ "`uname`" == "Darwin" ]; then
 	export CXX=g++-11
 	export F90=gfortran-11
 else
+	SOURCED="true"
+
+	if [ "#$(basename -- $0)" = "#env_vars.sh" ]; then
+		SOURCED="false"
+	fi
+
+	if [ "$SOURCED" != "true" ]; then
+		echo_error_hline
+		echo_error "THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
+		echo_error_hline
+		echo_error "Use e.g. "
+		echo_error ""
+		echo_error "   $ source ./env_vars.sh"
+		echo_error ""
+		echo_error "to setup the environment variables correctly"
+		echo_error_hline
+		return 2>/dev/null
+		exit 1
+	fi
+
 	if [ "`basename -- "$SHELL"`" != "bash" ]; then
 		echo_error_hline
 		echo_error "These scripts are only compatible to the bash shell"

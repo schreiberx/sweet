@@ -31,6 +31,7 @@ mkdir -p "$SWEET_LOCAL_SOFTWARE_SRC_DIR"
 #
 if [ "`uname`" == "Darwin" ]; then
 	MAKE_DEFAULT_OPTS="-j"
+
 else
 	NPROCS="$(nproc --all)"
 	if [ "$NPROCS" -gt "10" ]; then
@@ -39,8 +40,9 @@ else
 		# results in compilation errors due to a lack of resources
 		NPROCS=10
 	fi
+
 	MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
-else
+fi
 
 
 #
