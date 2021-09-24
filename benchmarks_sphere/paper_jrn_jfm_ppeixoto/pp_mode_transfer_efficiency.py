@@ -68,8 +68,8 @@ print(exp_codes_bnames)
 
 #get jobs data
 j = JobsData(basedir+'/job_bench_*', verbosity=1)
-#print(j)
-#print("Extracting jobs")
+print(j)
+print("Extracting jobs")
 jobs = j.get_jobs_data()
 
 #print(jobs)
@@ -162,6 +162,7 @@ else:
 	exit(1)
 
 for i in range(len(alphas)):
+	i=70
 #for i in range(4):
 	print()
 	print("Post-processing (alpha, dir, umax, vmax):",	alphas[i], job_dirs[i], umax[i], vmax[i])
@@ -205,10 +206,23 @@ for i in range(len(alphas)):
 	
 	#print(evol.df_energy_clean)
 	#print(evol.df_ens_clean)
-	evol.plot(code, "mode_evol.pdf")
-	
-	evol.plot_out(code+"_"+filename_out, filename_out+ ".pdf")
+	arr = code.split('_')
+	title = "Init Modes:"
+	n = int(arr[0])
+	arr = arr[1:]
+	for i in range(n):
+		#print("(", str(arr[i*3+0]), ";", str(arr[i*3+1]), ")")
+		title = title + " ("+str(arr[i*3+0])+";"+str(arr[i*3+1])+")"
 
+	evol.plot(title, "mode_evol.pdf")
+	
+	title = title + "\n Out Modes:"
+	for i in range(len(n_out_list)):
+		#print("(", str(arr[i*3+0]), ";", str(arr[i*3+1]), ")")
+		title = title + " ("+str(n_out_list[i])+";"+str(m_out_list[i])+")"
+
+	evol.plot_out(title, filename_out+ ".pdf")
+	exit()
 
 #print(alphas, max_exchange_out_energy, max_exchange_out_ens)
 df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens, dominant_period, umax, vmax)), columns =['Alpha', 'Exch_energy', 'Exch_ens', "Period", "u_max", "v_max"])

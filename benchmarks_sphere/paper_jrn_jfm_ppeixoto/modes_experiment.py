@@ -591,7 +591,8 @@ class evol:
 
         fig, axs = plt.subplots(2, figsize=(10,10))#, sharex=True)
         plt.rc('text', usetex=False)
-        title="SPH Mode Nonlinear Interaction\n"+title
+        
+        #title="Init modes:"+title
         
         fig.suptitle(title)
 
@@ -618,22 +619,23 @@ class evol:
         linestyles = ['-', '--', ':', '-.']
 
         
-        ncol = 2	
+        ncol = 1	
         
         self.df_energy_clean.plot( ax=axs[0])
         axs[0].set(ylabel='Energy', xlabel="Time (days)")
-        axs[0].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
+        axs[0].legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), ncol=ncol, fontsize="small")
         
-        ncol=2
+        ncol=1
     
         self.df_ens_clean.plot( ax=axs[1])
         axs[1].set(ylabel='Enstrophy', xlabel="Time (days)")
-        axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
+        axs[1].get_legend().remove()
+        #axs[1].legend(loc='center left', ncol=ncol, fontsize="small")
 
         fig.subplots_adjust(right=0.7)
         
         print(self.basedir+"/"+output_filename)
-        #plt.show()
+        plt.tight_layout()
         plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
         plt.close()
@@ -645,7 +647,7 @@ class evol:
 
         fig, axs = plt.subplots(2, figsize=(10,10))#, sharex=True)
         plt.rc('text', usetex=False)
-        title="SPH Mode Nonlinear Interaction\n"+title
+        #title="SPH Mode Nonlinear Interaction\n"+title
         
         fig.suptitle(title)
 
@@ -671,20 +673,22 @@ class evol:
         linestyles = ['-', '--', ':', '-.']
 
         
-        ncol = 2	
+        ncol = 1	
         
         self.df_energy_agg.plot( ax=axs[0])
         axs[0].set(ylabel='Energy', xlabel="Time (days)")
-        axs[0].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
+        axs[0].legend(loc='center left',  bbox_to_anchor= (1.0, -0.1), ncol=ncol, fontsize="small")
         
-        ncol=2
+        ncol=1
     
         self.df_ens_agg.plot( ax=axs[1])
         axs[1].set(ylabel='Enstrophy', xlabel="Time (days)")
-        axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
+        axs[1].get_legend().remove()
+        #axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
 
         fig.subplots_adjust(right=0.7)
-        
+        plt.tight_layout()
+
         print(self.basedir+"/"+output_filename)
         #plt.show()
         plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
