@@ -143,12 +143,6 @@ if [ "`uname`" == "Darwin" ]; then
 		echo_error_hline
 		return
 	fi
-
-	# Setup environment for default compiler (installed via `brew install gcc@11`)
-	export PYTHON=python3
-	export CC=gcc-11
-	export CXX=g++-11
-	export F90=gfortran-11
 else
 	SOURCED="true"
 
