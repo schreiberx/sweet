@@ -8,11 +8,12 @@ from numpy.lib.function_base import append
 import pandas as pd
 import re
 import os
+import os.path
 
 
 
 import matplotlib
-#matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.lines import Line2D
@@ -420,35 +421,51 @@ class evol:
         self.scalesmin = {}
         self.scalesmax = {}
         timerescale=1.0/24.00 #Days
+        self.energy_file_clean    = basedir+"/output_spec_kin_en_clean.pkl"    
+        self.enstrophy_file_clean = basedir+"/output_spec_enstrophy_clean.pkl"
 
         #Remove modes with null values
 
-        self.df_energy=pd.read_csv(self.energy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
-        #print(self.energy_file, self.df_energy)
-        self.df_ens=pd.read_csv(self.enstrophy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
-        #print(self.enstrophy_file , self.df_ens)
+        if os.path.isfile(self.energy_file_clean):
+            self.df_energy_clean = pd.read_pickle(self.energy_file_clean)
+            maxenergy = self.df_energy_clean['SpectralSum'].max()
+            eps_en=maxenergy*eps
+            self.scalesmin[0]=eps_en
+            self.scalesmax[0]=maxenergy
+        else:
+            self.df_energy=pd.read_csv(self.energy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
+            self.df_energy['timestamp'] = self.df_energy['timestamp'] * timerescale
+            maxenergy = self.df_energy['SpectralSum'].max()
+            eps_en=maxenergy*eps
+            self.scalesmin[0]=eps_en
+            self.scalesmax[0]=maxenergy
+            self.df_energy_clean = self.df_energy.loc[:, (self.df_energy > eps_en).any(axis=0)]
+            self.df_energy_clean = self.df_energy_clean.set_index("timestamp")
+            pd.to_pickle(self.df_energy_clean, self.energy_file_clean)
 
-        self.df_energy['timestamp'] = self.df_energy['timestamp'] * timerescale
-        maxenergy = self.df_energy['SpectralSum'].max()
-        eps_en=maxenergy*eps
-        self.scalesmin[0]=eps_en
-        self.scalesmax[0]=maxenergy
-        self.df_energy_clean = self.df_energy.loc[:, (self.df_energy > eps_en).any(axis=0)]
-        self.df_energy_clean = self.df_energy_clean.set_index("timestamp")
         #print(self.df_energy)
         #df_energy.set_index('timestamp',drop=True,inplace=True)
         #print(self.df_energy_clean)
 
-        self.df_ens['timestamp'] = self.df_ens['timestamp'] * timerescale
-        maxens = self.df_ens['SpectralSum'].max()
-        eps_ens=maxens*eps
-        self.scalesmin[1]=eps_ens
-        self.scalesmax[1]=maxens
-        self.df_ens_clean = self.df_ens.loc[:, (self.df_ens > eps_ens).any(axis=0)]
-        self.df_ens_clean = self.df_ens_clean.set_index("timestamp")
-        #print(self.df_ens)
-        #df_energy.set_index('timestamp',drop=True,inplace=True)
-        #print(self.df_ens_clean)
+        if os.path.isfile(self.enstrophy_file_clean):
+            self.df_ens_clean = pd.read_pickle(self.enstrophy_file_clean)
+            maxens = self.df_ens_clean['SpectralSum'].max()
+            eps_ens=maxens*eps
+            self.scalesmin[1]=eps_ens
+            self.scalesmax[1]=maxens
+        else:
+            self.df_ens=pd.read_csv(self.enstrophy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
+            self.df_ens['timestamp'] = self.df_ens['timestamp'] * timerescale
+            maxens = self.df_ens['SpectralSum'].max()
+            eps_ens=maxens*eps
+            self.scalesmin[1]=eps_ens
+            self.scalesmax[1]=maxens
+            self.df_ens_clean = self.df_ens.loc[:, (self.df_ens > eps_ens).any(axis=0)]
+            self.df_ens_clean = self.df_ens_clean.set_index("timestamp")
+            pd.to_pickle(self.df_ens_clean, self.enstrophy_file_clean)
+            #print(self.df_ens)
+            #df_energy.set_index('timestamp',drop=True,inplace=True)
+            #print(self.df_ens_clean)
 
 
     def set_out_modes(self, n_list, m_list):
@@ -569,16 +586,16 @@ class evol:
 
         return df_new
 
-    def fourier_modes(self):
+    def fourier_modes(self, title="", output_filename="out.pdf", do_plot=True):
 
         #Energy
         outmodes = self.df_energy_agg["out_modes"].values
         time = self.df_energy_agg.index.to_numpy()
-        self.large_periods_energy = fourier_largest(outmodes, T=time[-1])
+        self.large_periods_energy = self.fourier_largest(outmodes, T=time[-1], title=title, output_filename=output_filename, do_plot=do_plot)
 
         #Enstrophy
-        outmodes = self.df_energy_agg["out_modes"].values
-        self.large_periods_ens = fourier_largest(outmodes, T=time[-1])
+        #outmodes = self.df_energy_agg["out_modes"].values
+        #self.large_periods_ens = fourier_largest(outmodes, T=time[-1])
             
         return 
 
@@ -634,7 +651,7 @@ class evol:
 
         fig.subplots_adjust(right=0.7)
         
-        print(self.basedir+"/"+output_filename)
+        print("    ", self.basedir+"/"+output_filename)
         plt.tight_layout()
         plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
@@ -689,48 +706,65 @@ class evol:
         fig.subplots_adjust(right=0.7)
         plt.tight_layout()
 
-        print(self.basedir+"/"+output_filename)
+        print("    ", self.basedir+"/"+output_filename)
         #plt.show()
         plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
         plt.close()
 
 
-def fourier_largest(array, T):
+    def fourier_largest(self, array, T, title="", output_filename="out.pdf", do_plot=True):
+        #plt.plot(array)
+        #plt.show()
+        if np.max(np.abs(array)) < 0.001:
+            return [0]
+        yf = np.fft.rfft(array)
+        #cut out zero freq
+        yf = np.abs(yf[1:])
+        yf = np.abs(yf)**2 #power spectrum
+        #plt.plot(yf)
+        #plt.show()
+        n = len(yf)
 
-    yf = np.fft.rfft(array)
-    yf = np.abs(yf[:-1])
-    n = len(yf)
+        xf = T/np.linspace(1, T, n)
 
-    xf = T/np.linspace(1, T, n)
+        nlargest = 10
+        ilargest = np.argpartition(yf, -nlargest)[-nlargest:]
+        large_periods = np.take(xf, ilargest)
+        large_spectrum = np.take(yf, ilargest)
 
-    nlargest = 10
-    ilargest = np.argpartition(yf, -nlargest)[-nlargest:]
-    large_periods = np.take(xf, ilargest)
-    large_spectrum = np.take(yf, ilargest)
+        #Ordered largest elements of spectrum
+        large_sort = large_spectrum.argsort()
+        large_periods = large_periods[large_sort[::-1]]
+        large_spectrum = large_spectrum[large_sort[::-1]]
+        #print(large_periods)
+        #print(large_spectrum)
 
-    #Ordered largest elements of spectrum
-    large_sort = large_spectrum.argsort()
-    large_periods = large_periods[large_sort[::-1]]
-    large_spectrum = large_spectrum[large_sort[::-1]]
-    #print(large_periods)
-    #print(large_spectrum)
+        #Filter modes of very large period
+        large_filter = large_periods<T/2
+        large_periods = large_periods[large_filter]
+        large_spectrum = large_spectrum[large_filter]
+        #print(large_periods)
+        #print(large_spectrum)
 
-    #Filter modes of very large period
-    large_filter = large_periods<T/2
-    large_periods = large_periods[large_filter]
-    large_spectrum = large_spectrum[large_filter]
-    print(large_periods)
-    print(large_spectrum)
+                
+        #print(xf)
+        #print(yf)
+        if do_plot:
+            fig, ax = plt.subplots()
+            #ax.set_xscale('log')
+            fig.suptitle(title)
+            #ax.plot(xf, 1.0/n * yf)
+            ax.plot(xf, yf)
+            ax.set(ylabel='Power Spectrum', xlabel="Periodicity (days)")
+            #ax.set(ylabel='Normalized Mode Amplitude', xlabel="Periodicity (days)", title=title)
+            plt.xscale('log', base=10)
+            plt.yscale('log', base=10)
+            #ax.plot(yf)
+            plt.tight_layout()
+            print("    ", self.basedir+"/"+output_filename)
+            plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+            plt.close()
 
-    if False:        
-        print(xf)
-        print(yf)
-        fig, ax = plt.subplots()
-        ax.set_xscale('log')
+        return large_periods
 
-        ax.plot(xf, 1.0/n * yf)
-        #ax.plot(yf)
-        plt.show()
-
-    return large_periods

@@ -26,11 +26,12 @@ for JOBDIR in $DIRS; do
 		out_clean=$DIR/output_clean.out
 
 		#Safety checks
-		size="$(wc -l <"$out")"
+		size=$(ls -l $out | awk '{print  $5}') #"$(wc -l <"$out")"
 		if test -f "$out_orig"; then
-			size_orig="$(wc -l <"$out_orig")"
+			size_orig=$(ls -l $out_orig | awk '{print  $5}') #"$(wc -l <"$out_orig")"
 			if [ $size_orig > $size ]; then
 				echo "   Cleanning already happened here"
+				continue
 			fi
 		else
 			cp $out $out_clean
@@ -39,12 +40,13 @@ for JOBDIR in $DIRS; do
 
 		#Clear out file
 		#head $out_orig
-		grep "MULE" $out_orig > $out_clean 
+		grep "MULE" $out > $out_clean 
 		cp $out_clean $out
 
 		#Safety checks
-		size_orig="$(wc -l <"$out_orig")"
-		size_clean="$(wc -l <"$out_clean")"
+		size=$(ls -l $out | awk '{print  $5}') #"$(wc -l <"$out")"
+		size_orig=$(ls -l $out_orig | awk '{print  $5}') #"$(wc -l <"$out_orig")"
+		size_clean=$(ls -l $out_clean | awk '{print  $5}') # "$(wc -l <"$out_clean")"
 		echo "   Sizes (out, original, clean): "  $size, $size_orig, $size_clean
 	done
 	cd "$P"
