@@ -54,6 +54,8 @@ if len(sys.argv) > 2:
 		plots = True
 	else:
 		plots = False
+else:
+	plots = True
 
 
 #get experiment setup
@@ -86,7 +88,6 @@ print(title_in)
 #get jobs data
 print("Extracting jobs")
 j = JobsData(basedir+'/job_bench_*', verbosity=1)
-#print(j)
 jobs = j.get_jobs_data()
 print("...done")
 
@@ -100,10 +101,9 @@ umax = []
 vmax = []
 job_dirs = []
 #print("jobs extracted")
-#print(jobs)
 
 #print("alpha   umax  vmax" )
-for key, job in jobs.items():
+for key, job in sorted(jobs.items()):
 	d = job.get_flattened_data()
 	r = job.get_job_raw_data()
 
@@ -116,6 +116,7 @@ for key, job in jobs.items():
 	if d[main_tag] in exp_codes_bnames and outfile_exists:
 		jobs_flat.append(d)
 		jobs_raw.append(r)
+
 		a = d['output.benchmark_barotropic_vort_modes.0.ampl']
 		alphas.append(float(a))
 		dir = d['jobgeneration.job_dirpath']
@@ -154,7 +155,8 @@ dominant_period = []
 
 #output shells
 print(basedir)
-
+lim_inf=0
+lim_sup=9999999
 if "TC1_in2_3_4" in basedir:
 	nout_shell_min = 5
 	nout_shell_max = 6
@@ -167,12 +169,21 @@ elif "TC2_in3-3_4-3_2-1" in basedir:
 	n_out_list = [5]
 	m_out_list = [1]
 	out_type = "mode"
+
 elif "TC2_in5-4_3-1_7-3" in basedir:
 	n_out_list = [9]
 	m_out_list = [2]
+	#n_out_list = [5]
+	#m_out_list = [3]
 	nout_shell_min = 7
 	nout_shell_max = 7
 	out_type = "mode"
+	trunc = True
+	trunc_alpha = 30
+	#fourier period truncation
+	lim_inf=60
+	lim_sup=70
+
 elif "TC2_in5-4_7-3" in basedir:
 	n_out_list = [9]
 	m_out_list = [2]
@@ -180,8 +191,8 @@ elif "TC2_in5-4_7-3" in basedir:
 	nout_shell_max = 7
 	out_type = "mode"
 elif "TC3_in7-3_3-1" in basedir:
-	n_out_list = [9]
-	m_out_list = [2]
+	n_out_list = [7, 3]
+	m_out_list = [4, 0]
 	nout_shell_min = 7
 	nout_shell_max = 7
 	out_type = "mode"
@@ -218,6 +229,19 @@ for i in range(len(n_out_list)):
 
 
 for i in range(len(alphas)):
+	
+	if trunc:
+		if alphas[i] > trunc_alpha:
+			max_exchange_out_energy.append(0)
+			max_exchange_noninit_energy.append(0)
+			max_exchange_out_ens.append(0)
+			max_exchange_noninit_ens.append(0)
+			dominant_period.append(0)
+			continue
+
+	#if alphas[i] != 20:
+	#	continue
+
 #	i=60
 #for i in range(8):
 	print()
@@ -265,41 +289,51 @@ for i in range(len(alphas)):
 		evol.plot_out(title, filename_out+".pdf")
 
 	#fourier modes
-	evol.fourier_modes(title, filename_out+"_spec.pdf", do_plot=plots)
-	dominant_period.append(evol.large_periods_energy[0])
+	spec_enegy = evol.fourier_modes(title, filename_out+"_spec.pdf", do_plot=plots, lim_inf=lim_inf, lim_sup=lim_sup)
+	dominant_period.append(spec_enegy)
 
 	
+#Sanity check!
+if len(alphas) > len(max_exchange_out_energy):
+	print("lengths not matching!")
+	exit()
 
-#print(alphas, max_exchange_out_energy, max_exchange_out_ens)
-df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens, dominant_period, umax, vmax)), columns =['Alpha', 'Exch_energy', 'Exch_ens', "Period", "u_max", "v_max"])
+#Dataframe for efficiency plot
+df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens, dominant_period, umax, vmax)), columns =['Alpha', 'Exch_energy', 'Exch_ens', 'SpecEnerg', "u_max", "v_max"])
 df = df.set_index('Alpha')
-
 df = df.sort_index()
+
+#truncate
+if trunc:
+	df = df.truncate(after=trunc_alpha)
+
+#put in %
+df = df[['Exch_energy', 'Exch_ens', 'SpecEnerg']]
+df['Exch_energy']=df['Exch_energy']*100
+df['Exch_ens']=df['Exch_ens']*100
 print(df)
 
-out_energy = filename_out # "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
+fig, ax = plt.subplots(figsize=(10,6)) #, tight_layout=True)
+ax.plot(df.index, df['Exch_energy'],  linewidth=1, color = 'blue', linestyle = '-', label='Energy') #, '--', ':'])
+#ax.plot(df.index, df['Exch_ens'],  linewidth=1, color = 'green', linestyle = '--', label='Enstrophy') #, '--', ':'])
+ax.set_xlabel(r" $\alpha$")
+ax.set_ylabel(r" $\epsilon(\alpha)$", color='blue')
+ax.yaxis.set_major_formatter(mtick.PercentFormatter())
 
-#df_periods = df[['Period']]
-#df_periods.plot( title=exp_tag+" "+out_energy)
+if lim_sup<200:
+	ax2=ax.twinx()
+	spec_string= '['+str(lim_inf)+','+str(lim_sup)+'] dys'
+	ax2.plot(df.index, df['SpecEnerg'],  linewidth=1, color = 'red', linestyle = ':', label='Spectral Amp\n'+spec_string) #, '--', ':'])
+	ax2.set_ylabel("Spectrum Amplitude", color='red')
 
-df = df[['Exch_energy', 'Exch_ens']]*100
-#df['Exch_energy']=df['Exch_energy']/df.index
-#df['Exch_ens']=df['Exch_ens']/df.index
-
-
-
-
-plt.figure(figsize=(10,6), tight_layout=True)
-plt.plot(df, '-', linewidth=2)
-plt.xlabel(r" $\alpha$")
-plt.ylabel(r" $\epsilon(\alpha)$")
 title = title_in+"\n"+title_out
 plt.title(title)
-plt.legend(title_fontsize = 13, labels=['Energy' , 'Enstrophy'])
-ax = plt.gca()
-ax.yaxis.set_major_formatter(mtick.PercentFormatter())
-filename_final = basedir+"/"+exp_tag+"_"+out_energy+".pdf"
+
+ax.legend(loc=2)
+ax2.legend(loc=1)
+
+
+filename_final = basedir+"/"+exp_tag+"_"+filename_out+".pdf"
 print("Output file:", filename_final)
 plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
-
 plt.close()
