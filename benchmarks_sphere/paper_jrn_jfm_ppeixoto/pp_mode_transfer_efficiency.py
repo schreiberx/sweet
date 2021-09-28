@@ -4,11 +4,15 @@ import sys
 import os
 
 import matplotlib
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
+matplotlib.use('TkAgg')
+
 matplotlib.rcParams['text.usetex'] = True
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.lines import Line2D
+import matplotlib.ticker as mtick
+
 #import seaborn as sns
 
 #sns.set_style('darkgrid') # darkgrid, white grid, dark, white and ticks
@@ -44,6 +48,14 @@ else:
 #Sweet!
 sweetroot = os.environ.get('MULE_SOFTWARE_ROOT')
 
+if len(sys.argv) > 2:
+	print(sys.argv[2])
+	if int(sys.argv[2])>0:
+		plots = True
+	else:
+		plots = False
+
+
 #get experiment setup
 print("Input experiment file:", experiment_pckl_file)
 pckl_file = experiment_pckl_file #"mode_setup_1.pckl"
@@ -53,7 +65,7 @@ basedir = os.path.dirname(pckl_file)
 exp_tag = os.path.splitext(pckl_filename)[0]
 
 print("Experiment Dir:", basedir)
-print("Experiment tag:", exp_tag )
+print("Experiment Tag:", exp_tag )
 print()
 
 #Load experiment info
@@ -61,16 +73,22 @@ obj = mexp.load_file(pckl_file)
 exp_codes = obj.codes
 basebanchname = "barotropic_vort_modes_"
 exp_codes_bnames = [basebanchname+s for s in exp_codes]
-print("Benchmarks under investigation:")
-print(exp_codes_bnames)
+#print("Benchmarks under investigation:")
+#print(exp_codes_bnames)
 
+title_in = "Init Modes:"
+n = len(obj.nmodes)
+for i in range(n):
+	title_in = title_in + " ("+str(obj.nmodes[i])+";"+str(obj.mmodes[i])+")"
 
+print(title_in)
 
 #get jobs data
+print("Extracting jobs")
 j = JobsData(basedir+'/job_bench_*', verbosity=1)
 #print(j)
-#print("Extracting jobs")
 jobs = j.get_jobs_data()
+print("...done")
 
 #print(jobs)
 main_tag = 'runtime.benchmark_name'
@@ -84,7 +102,7 @@ job_dirs = []
 #print("jobs extracted")
 #print(jobs)
 
-print("alpha   umax  vmax" )
+#print("alpha   umax  vmax" )
 for key, job in jobs.items():
 	d = job.get_flattened_data()
 	r = job.get_job_raw_data()
@@ -103,11 +121,29 @@ for key, job in jobs.items():
 		dir = d['jobgeneration.job_dirpath']
 		job_dirs.append(dir)
 		u = d['output.benchmark_barotropic_vort_modes.umax']
-		umax.append(u)
+		umax.append(float(u))
 		v = d['output.benchmark_barotropic_vort_modes.vmax']
-		vmax.append(v)
-		print(a, u, v)
+		vmax.append(float(v))
+		#print(a, u, v)
 
+df_reduced = pd.DataFrame(list(zip(alphas, umax, vmax)), columns =['Alpha', 'u_max', 'v_max'])
+df_reduced = df_reduced.set_index('Alpha')
+df_reduced = df_reduced.sort_index()
+print(df_reduced)
+if plots:
+	plt.figure(figsize=(10,6), tight_layout=True)
+	plt.plot(df_reduced, '-', linewidth=2)
+
+	plt.xlabel(r" $\alpha$")
+	plt.ylabel(r" Max Velocity $m/s$")
+	title = title_in
+	plt.title(title)
+	plt.legend(title_fontsize = 13, labels=['zonal (u)' , 'meridional (v)'])
+
+	filename_final = basedir+"/"+exp_tag+"_vel.pdf"
+	print("Vel file:", filename_final)
+	plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+	plt.close()
 
 max_exchange_out_energy = []
 max_exchange_noninit_energy = []
@@ -137,6 +173,18 @@ elif "TC2_in5-4_3-1_7-3" in basedir:
 	nout_shell_min = 7
 	nout_shell_max = 7
 	out_type = "mode"
+elif "TC2_in5-4_7-3" in basedir:
+	n_out_list = [9]
+	m_out_list = [2]
+	nout_shell_min = 7
+	nout_shell_max = 7
+	out_type = "mode"
+elif "TC3_in7-3_3-1" in basedir:
+	n_out_list = [9]
+	m_out_list = [2]
+	nout_shell_min = 7
+	nout_shell_max = 7
+	out_type = "mode"
 elif "TC3xx" in basedir:
 	nout_shell_min = 7
 	nout_shell_max = 7
@@ -161,10 +209,19 @@ else:
 	print("Dont know this test case")
 	exit(1)
 
+
+title_out = "Out Modes:"
+for i in range(len(n_out_list)):
+	#print("(", str(arr[i*3+0]), ";", str(arr[i*3+1]), ")")
+	title_out = title_out + " ("+str(n_out_list[i])+";"+str(m_out_list[i])+")"
+
+
+
 for i in range(len(alphas)):
-#for i in range(4):
+#	i=60
+#for i in range(8):
 	print()
-	print("Post-processing (alpha, dir, umax, vmax):",	alphas[i], job_dirs[i], umax[i], vmax[i])
+	print("Post-processing (alpha, dir, umax, vmax):\n   ",	alphas[i], job_dirs[i], umax[i], vmax[i])
 	
 	#List all parameters of job
 	jd_flat = jobs_flat[i]
@@ -193,22 +250,25 @@ for i in range(len(alphas)):
 		print("Error: please set correct out type")
 		exit(1)
 
-	#fourier modes
-	evol.fourier_modes()
-	dominant_period.append(evol.large_periods_energy[0])
 
 	max_exchange_out_energy.append(evol.max_exchange_out_energy)
 	max_exchange_noninit_energy.append(evol.max_exchange_noninit_energy)
 	max_exchange_out_ens.append(evol.max_exchange_out_ens)
 	max_exchange_noninit_ens.append(evol.max_exchange_noninit_ens)
 	
-	
-	#print(evol.df_energy_clean)
-	#print(evol.df_ens_clean)
-	evol.plot(code, "mode_evol.pdf")
-	
-	evol.plot_out(code+"_"+filename_out, filename_out+ ".pdf")
+	title = title_in + " alpha = " + str(alphas[i])
+	if plots:	
+		evol.plot(title, "mode_evol.pdf")
 
+	title = title + "\n" + title_out
+	if plots:	
+		evol.plot_out(title, filename_out+".pdf")
+
+	#fourier modes
+	evol.fourier_modes(title, filename_out+"_spec.pdf", do_plot=plots)
+	dominant_period.append(evol.large_periods_energy[0])
+
+	
 
 #print(alphas, max_exchange_out_energy, max_exchange_out_ens)
 df = pd.DataFrame(list(zip(alphas, max_exchange_out_energy, max_exchange_out_ens, dominant_period, umax, vmax)), columns =['Alpha', 'Exch_energy', 'Exch_ens', "Period", "u_max", "v_max"])
@@ -222,29 +282,24 @@ out_energy = filename_out # "out_n"+str(nout_shell_min)+"_"+str(nout_shell_max)
 #df_periods = df[['Period']]
 #df_periods.plot( title=exp_tag+" "+out_energy)
 
-df = df[['Exch_energy', 'Exch_ens']]
+df = df[['Exch_energy', 'Exch_ens']]*100
 #df['Exch_energy']=df['Exch_energy']/df.index
 #df['Exch_ens']=df['Exch_ens']/df.index
 
+
+
+
 plt.figure(figsize=(10,6), tight_layout=True)
-#plotting
 plt.plot(df, '-', linewidth=2)
-#customization
-#plt.xticks([2017, 2018, 2019, 2020, 2021])
-plt.xlabel(r"Alpha ($\alpha$)")
-plt.ylabel(r"Efficiency")
-#plt.ylabel(r"Efficiency/$\alpha$")
-plt.title(exp_tag+" "+out_energy)
+plt.xlabel(r" $\alpha$")
+plt.ylabel(r" $\epsilon(\alpha)$")
+title = title_in+"\n"+title_out
+plt.title(title)
 plt.legend(title_fontsize = 13, labels=['Energy' , 'Enstrophy'])
-
-#df.plot( title=exp_tag+" "+out_energy)
-#plt.show()
-
+ax = plt.gca()
+ax.yaxis.set_major_formatter(mtick.PercentFormatter())
 filename_final = basedir+"/"+exp_tag+"_"+out_energy+".pdf"
 print("Output file:", filename_final)
-#plt.show()
 plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
 plt.close()
-
-plt.show()
