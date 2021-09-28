@@ -162,7 +162,7 @@ if __name__ == "__main__":
     if more_samples:
         alpha_min = 1.0
         alpha_max = 161.0
-        alpha_samples = 160
+        alpha_samples = 80
     else:
         alpha_min = 1.0
         alpha_max = 20.0
