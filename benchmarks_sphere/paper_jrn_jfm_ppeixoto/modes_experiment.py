@@ -608,7 +608,7 @@ class evol:
         fig, ax = plt.subplots(1, figsize=(10,6))#, sharex=True)
         plt.rc('text', usetex=False)
         
-        fig.suptitle(title)
+        ax.set_title(title)
 
         #for i, ax in enumerate(axs):
         ax.set_xscale("linear")
@@ -617,11 +617,27 @@ class evol:
         ax.set_ylim(ylim)
 
         ncol = 1	
+        self.df_energy_clean = self.df_energy_clean.reindex((sorted(self.df_energy_clean.columns, reverse=True)), axis=1)
+        color_dict = {}
+        if "(5;4) (3;1) (7;3)" in title:
+            color_dict = {'(5;4)': 'blue', '(3;1)': 'green', '(7;3)': 'orange', '(9;2)':'red', 'SpectralSum':'gray',
+                          '(5;5)': 'blue', '(5;3)': 'green', '(5;1)': 'orange', '(3;2)': 'red'}             
+            style_dict = {'(5;4)': '-', '(3;1)': '-', '(7;3)': '-', '(9;2)':'-', 'SpectralSum':'-'}
+            linewidths_dict = {'(5;4)': '1', '(3;1)': '1', '(7;3)': '1', '(9;2)':'2', 'SpectralSum':'2'}
+            lws = [linewidths_dict.get(x, '0.5') for x in self.df_energy_clean.columns]
+
+        #self.df_energy_clean.plot( ax=ax, color=[color_dict.get(x, '#333333') for x in self.df_energy_clean.columns])
+        self.df_energy_clean.plot( ax=ax, 
+            style=[style_dict.get(x, '--') for x in self.df_energy_clean.columns], 
+            color=[color_dict.get(x, 'gray') for x in self.df_energy_clean.columns])
         
-        self.df_energy_clean.plot( ax=ax)
+        for i, l in enumerate(ax.lines):
+            plt.setp(l, linewidth=lws[i])
+
         ax.set(ylabel='Energy', xlabel="Time (days)")
         ax.legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), ncol=ncol, fontsize="small")
         
+
         fig.subplots_adjust(right=0.7)
         
         print("    ", self.basedir+"/energy_"+output_filename)
@@ -803,14 +819,15 @@ class evol:
         #print(yf)
         if do_plot:
             fig, ax = plt.subplots()
-            #ax.set_xscale('log')
+            
             fig.suptitle(title)
             #ax.plot(xf, 1.0/n * yf)
-            ax.plot(xf, yf)
+            ax.plot(xf[2:], yf[2:]**2)
             ax.set(ylabel='Power Spectrum', xlabel="Periodicity (days)")
             #ax.set(ylabel='Normalized Mode Amplitude', xlabel="Periodicity (days)", title=title)
             plt.xscale('log', base=10)
             plt.yscale('log', base=10)
+            ax.set_ylim([10e-5, 10e3])
             #ax.plot(yf)
             plt.tight_layout()
             print("    ", self.basedir+"/"+output_filename)

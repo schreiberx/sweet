@@ -182,7 +182,7 @@ elif "TC2_in5-4_3-1_7-3" in basedir:
 	trunc_alpha = 30
 	#fourier period truncation
 	lim_inf=60
-	lim_sup=70
+	lim_sup=62
 
 elif "TC2_in5-4_7-3" in basedir:
 	n_out_list = [9]
