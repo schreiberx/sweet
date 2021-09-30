@@ -221,7 +221,7 @@ else:
 	exit(1)
 
 
-title_out = "Out Modes:"
+title_out = "Out Mode:"
 for i in range(len(n_out_list)):
 	#print("(", str(arr[i*3+0]), ";", str(arr[i*3+1]), ")")
 	title_out = title_out + " ("+str(n_out_list[i])+";"+str(m_out_list[i])+")"
@@ -239,7 +239,7 @@ for i in range(len(alphas)):
 			dominant_period.append(0)
 			continue
 
-	#if alphas[i] != 20:
+	#if alphas[i] != 12:
 	#	continue
 
 #	i=60
@@ -282,14 +282,16 @@ for i in range(len(alphas)):
 	
 	title = title_in + " alpha = " + str(alphas[i])
 	if plots:	
-		evol.plot(title, "mode_evol.pdf")
+		#evol.plot(title, "mode_evol.pdf")
+		evol.plot(title, "mode_evol.png")
 
-	title = title + "\n" + title_out
+	title = title + " , "+title_out
 	if plots:	
-		evol.plot_out(title, filename_out+".pdf")
+		evol.plot_out(title, filename_out+".png")
 
 	#fourier modes
-	spec_enegy = evol.fourier_modes(title, filename_out+"_spec.pdf", do_plot=plots, lim_inf=lim_inf, lim_sup=lim_sup)
+	title = " alpha = " + str(alphas[i])+" , "+title_out
+	spec_enegy = evol.fourier_modes(title, filename_out+"_spec.png", do_plot=plots, lim_inf=lim_inf, lim_sup=lim_sup)
 	dominant_period.append(spec_enegy)
 
 	
@@ -313,11 +315,16 @@ df['Exch_energy']=df['Exch_energy']*100
 df['Exch_ens']=df['Exch_ens']*100
 print(df)
 
-fig, ax = plt.subplots(figsize=(10,6)) #, tight_layout=True)
-ax.plot(df.index, df['Exch_energy'],  linewidth=1, color = 'blue', linestyle = '-', label='Energy') #, '--', ':'])
-#ax.plot(df.index, df['Exch_ens'],  linewidth=1, color = 'green', linestyle = '--', label='Enstrophy') #, '--', ':'])
-ax.set_xlabel(r" $\alpha$")
-ax.set_ylabel(r" $\epsilon(\alpha)$", color='blue')
+fig, ax = plt.subplots(figsize=(5,5)) #, tight_layout=True)
+plot_energy = False
+if plot_energy:
+	ax.plot(df.index, df['Exch_energy'],  linewidth=1, color = 'blue', linestyle = '-', label='Energy') #, '--', ':'])
+	ax.set_ylabel(r" $\epsilon(\alpha)$", color='blue', fontsize=16)
+else:
+	ax.plot(df.index, df['Exch_ens'],  linewidth=1, color = 'green', linestyle = '-', label='Enstrophy') #, '--', ':'])
+	ax.set_ylabel(r" $\epsilon(\alpha)$", color='green', fontsize=16)
+ax.set_xlabel(r" $\alpha$", fontsize=16)
+
 ax.yaxis.set_major_formatter(mtick.PercentFormatter())
 
 if lim_sup<200:
@@ -326,14 +333,17 @@ if lim_sup<200:
 	ax2.plot(df.index, df['SpecEnerg'],  linewidth=1, color = 'red', linestyle = ':', label='Spectral Amp\n'+spec_string) #, '--', ':'])
 	ax2.set_ylabel("Spectrum Amplitude", color='red')
 
-title = title_in+"\n"+title_out
-plt.title(title)
+title = title_in+" "+title_out
+plt.title(title, fontsize=14)
 
-ax.legend(loc=2)
-ax2.legend(loc=1)
+ax.legend(loc=2, fontsize=12)
+ax2.legend(loc=4, fontsize=11)
 
-
-filename_final = basedir+"/"+exp_tag+"_"+filename_out+".pdf"
+if plot_energy:
+	filename_final = basedir+"/"+exp_tag+"_"+filename_out+"_energy.png"
+else:
+	filename_final = basedir+"/"+exp_tag+"_"+filename_out+"_ens.png"
 print("Output file:", filename_final)
-plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+plt.tight_layout()
+plt.savefig(filename_final, transparent=True,  dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
 plt.close()

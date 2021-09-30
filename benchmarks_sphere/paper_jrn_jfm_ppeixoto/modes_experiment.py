@@ -17,6 +17,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 from matplotlib.lines import Line2D
+import matplotlib.ticker as mtick
 
 from mule.postprocessing.JobData import *
 
@@ -413,7 +414,7 @@ def load_file(filename):
     return obj
 
 class evol:
-    def __init__(self, basedir=".", eps=0.001):
+    def __init__(self, basedir=".", eps=0.0001):
 
         self.basedir = basedir
         self.energy_file    = basedir+"/output_spec_kin_en_t00000000000.00000000.txt"    
@@ -421,8 +422,8 @@ class evol:
         self.scalesmin = {}
         self.scalesmax = {}
         timerescale=1.0/24.00 #Days
-        self.energy_file_clean    = basedir+"/output_spec_kin_en_clean.pkl"    
-        self.enstrophy_file_clean = basedir+"/output_spec_enstrophy_clean.pkl"
+        self.energy_file_clean    = basedir+"/output_spec_kin_en_clean_eps"+str(eps)+".pkl"    
+        self.enstrophy_file_clean = basedir+"/output_spec_enstrophy_clean_eps"+str(eps)+".pkl"
 
         #Remove modes with null values
 
@@ -605,40 +606,60 @@ class evol:
     def plot(self, title="", output_filename="out.pdf"):
 
         
-        fig, ax = plt.subplots(1, figsize=(10,6))#, sharex=True)
+        fig, ax = plt.subplots(1, figsize=(6,4))#, sharex=True)
         plt.rc('text', usetex=False)
         
-        ax.set_title(title)
+        ax.set_title(title,fontsize=14)
 
         #for i, ax in enumerate(axs):
-        ax.set_xscale("linear")
-        ax.set_yscale("log", nonpositive='clip')
-        ylim=[self.scalesmin[0], self.scalesmax[0]]
-        ax.set_ylim(ylim)
 
         ncol = 1	
         self.df_energy_clean = self.df_energy_clean.reindex((sorted(self.df_energy_clean.columns, reverse=True)), axis=1)
+        
+        plot_percent = True
+        if plot_percent:
+            df_percent = self.df_energy_clean.div(self.df_energy_clean['SpectralSum'], axis=0) 
+            df_percent = df_percent.drop(columns=['SpectralSum'])
+            #print(df_percent)
+        else:
+            df_percent = self.df_energy_clean
+
+        eps = 0.001
+        filter = df_percent.max() > eps
+        #print(df_percent)
+        df_percent = df_percent.loc[:,filter]
+        #print(df_percent)
+
         color_dict = {}
         if "(5;4) (3;1) (7;3)" in title:
             color_dict = {'(5;4)': 'blue', '(3;1)': 'green', '(7;3)': 'orange', '(9;2)':'red', 'SpectralSum':'gray',
                           '(5;5)': 'blue', '(5;3)': 'green', '(5;1)': 'orange', '(3;2)': 'red'}             
-            style_dict = {'(5;4)': '-', '(3;1)': '-', '(7;3)': '-', '(9;2)':'-', 'SpectralSum':'-'}
-            linewidths_dict = {'(5;4)': '1', '(3;1)': '1', '(7;3)': '1', '(9;2)':'2', 'SpectralSum':'2'}
-            lws = [linewidths_dict.get(x, '0.5') for x in self.df_energy_clean.columns]
+            style_dict = {'(5;4)': '-', '(3;1)': '-', '(7;3)': '-', '(9;2)':'-'}
+            linewidths_dict = {'(5;4)': '1', '(3;1)': '1', '(7;3)': '1', '(9;2)':'2'}
+            lws = [linewidths_dict.get(x, '0.4') for x in df_percent.columns]
 
         #self.df_energy_clean.plot( ax=ax, color=[color_dict.get(x, '#333333') for x in self.df_energy_clean.columns])
-        self.df_energy_clean.plot( ax=ax, 
-            style=[style_dict.get(x, '--') for x in self.df_energy_clean.columns], 
-            color=[color_dict.get(x, 'gray') for x in self.df_energy_clean.columns])
+        df_percent.plot( ax=ax, 
+            style=[style_dict.get(x, '--') for x in df_percent.columns], 
+            color=[color_dict.get(x, 'gray') for x in df_percent.columns])
         
         for i, l in enumerate(ax.lines):
             plt.setp(l, linewidth=lws[i])
-
-        ax.set(ylabel='Energy', xlabel="Time (days)")
-        ax.legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), ncol=ncol, fontsize="small")
         
+        ax.set_yscale("log", nonpositive='clip')
+        if plot_percent:
+            ax.set(ylabel='$\%$ Energy', xlabel="Time (days)")
+            ax.set_ylim([10e-5, 1])
+            ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 2, '%'))
+        else:
+            ax.set(ylabel='Energy', xlabel="Time (days)")
+        ax.legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), ncol=ncol, fontsize=8)
+        ax.set_xscale("linear")
+        
+        #ylim=[self.scalesmin[0], self.scalesmax[0]]
+        #ax.set_ylim(ylim)        
 
-        fig.subplots_adjust(right=0.7)
+        #fig.subplots_adjust(right=0.7)
         
         print("    ", self.basedir+"/energy_"+output_filename)
         plt.tight_layout()
@@ -669,12 +690,12 @@ class evol:
         fig.subplots_adjust(right=0.7)
         
         print("    ", self.basedir+"/enstrophy_"+output_filename)
-        plt.tight_layout()
-        plt.savefig(self.basedir+"/enstrophy_"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+        #plt.tight_layout()
+        plt.savefig(self.basedir+"/enstrophy_"+output_filename, transparent=True, dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
 
         plt.close()
 
-    def plot_out(self, title="", output_filename="out.pdf"):
+    def plot_out(self, title="", output_filename="out.png"):
 
         fontsize=18
         figsize=(10, 10)
@@ -725,7 +746,7 @@ class evol:
 
         print("    ", self.basedir+"/"+output_filename)
         #plt.show()
-        plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+        plt.savefig(self.basedir+"/"+output_filename, transparent=True, dpi=300) #, bbox_inches='tight') #, pad_inches=0.02)
 
         plt.close()
 
@@ -813,16 +834,16 @@ class evol:
 
         #print(periods)
         #print(spectrum)
-        print(power_spec_filtred, np.any(filter))
+        #print(power_spec_filtred, np.any(filter))
 
         #print(xf)
         #print(yf)
         if do_plot:
-            fig, ax = plt.subplots()
+            fig, ax = plt.subplots(figsize=(5,5))
             
-            fig.suptitle(title)
+            ax.set_title(title, fontsize=14)
             #ax.plot(xf, 1.0/n * yf)
-            ax.plot(xf[2:], yf[2:]**2)
+            ax.plot(xf[2:], yf[2:]**2, color='red')
             ax.set(ylabel='Power Spectrum', xlabel="Periodicity (days)")
             #ax.set(ylabel='Normalized Mode Amplitude', xlabel="Periodicity (days)", title=title)
             plt.xscale('log', base=10)
@@ -831,7 +852,7 @@ class evol:
             #ax.plot(yf)
             plt.tight_layout()
             print("    ", self.basedir+"/"+output_filename)
-            plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+            plt.savefig(self.basedir+"/"+output_filename, transparent=True, dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
             plt.close()
 
         return power_spec_filtred
