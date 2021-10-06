@@ -221,13 +221,13 @@ public:
 		const char* filename_template_arg = "output_spec_arg_%s.txt"; //.c_str();
 		int reduce_mode_factor = 4;
 
-		sprintf(buffer, filename_template_ampl, i_name);
-		i_sphereData.spectrum_abs_file_write_line(buffer, 
+		sprintf(buffer, filename_template_arg, i_name);
+		i_sphereData.spectrum_phase_file_write_line(buffer, 
 			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
 			20, 10e-20, reduce_mode_factor);
 
-		sprintf(buffer, filename_template_arg, i_name);
-		i_sphereData.spectrum_phase_file_write_line(buffer, 
+		sprintf(buffer, filename_template_ampl, i_name);
+		i_sphereData.spectrum_abs_file_write_line(buffer, 
 			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
 			20, 10e-20, reduce_mode_factor);
 
