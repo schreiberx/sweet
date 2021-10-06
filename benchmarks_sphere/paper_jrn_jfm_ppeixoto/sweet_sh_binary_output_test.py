@@ -4,6 +4,8 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import re
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 input_file = sys.argv[1]
 
@@ -160,7 +162,7 @@ data_spec = s.setup(file_info, data)
 
 data_phys = s.spec2phys(data_spec)
 
-fig = plt.figure(figsize=(8, 6))
+fig = plt.figure(figsize=(8, 4))
 ax = plt.gca()
 # dimensionless PV
 lons1d = (180./np.pi)*s.lons-180.
@@ -182,19 +184,23 @@ else:
 for c in cs.collections:
     c.set_edgecolor("face")
 
-if time >= 30:
-    cb = plt.colorbar(cs, orientation="horizontal", aspect=60, ax=ax, shrink=1.0, pad=0.1)
-    cb.set_label("Vorticity")
-
 plt.grid(c='gray', ls='--', alpha=0.3)
 plt.xlabel("Longitude")
 plt.ylabel("Latitude")
 plt.xticks(np.arange(-180, 180.1, 60))
 plt.yticks(np.arange(-90, 90.1, 30))
+plt.title(r'$T = %3.1f \, \mathrm{days}, \, \alpha=20.0$'%(time))
+
+
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="2%", pad=0.1)
+cb = plt.colorbar(cs, orientation="vertical", cax=cax) #, aspect=20, shrink=0.4, pad=0.2, cax=cax)
+cb.set_label("Vorticity")
+
 #plt.axis("equal")
 #plt.axis("tight")
 
-plt.title(r'$T = %3.1f \, \mathrm{days}, \, \alpha=20.0$'%(time))
+
 plt.tight_layout()
 
 outputfile = input_file.replace('.sweet', '.png')

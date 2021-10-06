@@ -184,8 +184,8 @@ elif "TC2_in5-4_3-1_7-3" in basedir:
 	trunc = True
 	trunc_alpha = 30
 	#fourier period truncation
-	lim_inf=10
-	lim_sup=999999
+	lim_inf=12
+	lim_sup=120
 
 elif "TC2_in5-4_7-3" in basedir:
 	n_out_list = [9]
@@ -224,8 +224,8 @@ for i in range(len(alphas)):
 			dominant_period.append(0)
 			continue
 
-	if alphas[i] != 20:
-		continue
+	#if alphas[i] != 20:
+	#	continue
 
 	print()
 	print("Post-processing (alpha, dir, umax, vmax):\n   ",	alphas[i], job_dirs[i], umax[i], vmax[i])
@@ -277,8 +277,8 @@ for i in range(len(alphas)):
 	dominant_period.append(spec_enegy)
 
 	#Phase analysis
-	dif_mean = evol.phase()
-	print(dif_mean['(3;0)'])
+	#dif_mean = evol.phase()
+	#print(dif_mean['(3;0)'])
 
 #Sanity check!
 if len(alphas) > len(max_exchange_out_energy):
@@ -301,7 +301,7 @@ df['Exch_ens']=df['Exch_ens']*100
 print(df)
 
 fig, ax = plt.subplots(figsize=(5,5)) #, tight_layout=True)
-plot_energy = False
+plot_energy = True
 if plot_energy:
 	ax.plot(df.index, df['Exch_energy'],  linewidth=1, color = 'blue', linestyle = '-', label='Energy') #, '--', ':'])
 	ax.set_ylabel(r" $\epsilon(\alpha)$", color='blue', fontsize=16)
@@ -315,8 +315,8 @@ ax.yaxis.set_major_formatter(mtick.PercentFormatter())
 if lim_sup<200:
 	ax2=ax.twinx()
 	spec_string= '['+str(lim_inf)+','+str(lim_sup)+'] dys'
-	ax2.plot(df.index, df['SpecEnerg'],  linewidth=1, color = 'red', linestyle = ':', label='Spectral Amp\n'+spec_string) #, '--', ':'])
-	ax2.set_ylabel("Spectrum Amplitude", color='red')
+	ax2.plot(df.index, df['SpecEnerg'],  linewidth=1, color = 'red', linestyle = ':', label='Low Freq Spec\n'+spec_string) #, '--', ':'])
+	ax2.set_ylabel(r'$\sqrt{PSD}$', color='red')
 
 title = title_in+" "+title_out
 plt.title(title, fontsize=14)

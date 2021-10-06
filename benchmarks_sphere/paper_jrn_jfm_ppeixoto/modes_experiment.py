@@ -229,19 +229,22 @@ class evol:
     def __init__(self, basedir=".", eps=0.0001):
 
         self.basedir = basedir
-        self.energy_file    = basedir+"/output_spec_ampl_kin_en.txt"    
-        self.enstrophy_file = basedir+"/output_spec_ampl_enstrophy.txt"
+        self.energy_file    = basedir+"/output_spec_kin_en_t00000000000.00000000.txt"
+        self.enstrophy_file = basedir+"/output_spec_enstrophy_t00000000000.00000000.txt"
+        #self.energy_file    = basedir+"/output_spec_ampl_kin_en.txt"    
+        #self.enstrophy_file = basedir+"/output_spec_ampl_enstrophy.txt"
         self.energy_phase_file    = basedir+"/output_spec_arg_kin_en.txt"    
         self.enstrophy_phase_file = basedir+"/output_spec_arg_enstrophy.txt"
         self.scalesmin = {}
         self.scalesmax = {}
         timerescale=1.0/24.00 #Days
-        self.energy_file_clean    = basedir+"/output_spec_ampl_kin_en_clean_eps"+str(eps)+".pkl"    
-        self.enstrophy_file_clean = basedir+"/output_spec_ampl_enstrophy_clean_eps"+str(eps)+".pkl"
+        self.energy_file_clean    = basedir+"/output_spec_kin_en_clean_eps"+str(eps)+".pkl"    
+        self.enstrophy_file_clean = basedir+"/output_spec_enstrophy_clean_eps"+str(eps)+".pkl"
         self.energy_phase_file_clean    = basedir+"/output_spec_arg_kin_en_clean_eps"+str(eps)+".pkl"    
         self.enstrophy_phase_file_clean = basedir+"/output_spec_arg_enstrophy_clean_eps"+str(eps)+".pkl"
 
         #Remove modes with null values
+        iphase = False
 
         if os.path.isfile(self.energy_file_clean):
             self.df_energy_clean = pd.read_pickle(self.energy_file_clean)
@@ -250,7 +253,8 @@ class evol:
             self.scalesmin[0] = eps_en
             self.scalesmax[0] = maxenergy
 
-            self.df_energy_phase_clean = pd.read_pickle(self.energy_phase_file_clean)
+            if iphase:
+                self.df_energy_phase_clean = pd.read_pickle(self.energy_phase_file_clean)
 
         else:
             self.df_energy = pd.read_csv(self.energy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
@@ -263,14 +267,15 @@ class evol:
             self.df_energy_clean = self.df_energy_clean.set_index("timestamp")
             pd.to_pickle(self.df_energy_clean, self.energy_file_clean)
             
-            self.df_energy_phase = pd.read_csv(self.energy_phase_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
-            self.df_energy_phase = self.df_energy_phase.iloc[:, :-1] #remove garbage column that come out of sweet
-            
-            self.df_energy_phase['timestamp'] = self.df_energy_phase['timestamp'] * timerescale
+            if iphase:
+                self.df_energy_phase = pd.read_csv(self.energy_phase_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
+                self.df_energy_phase = self.df_energy_phase.iloc[:, :-1] #remove garbage column that come out of sweet
                 
-            self.df_energy_phase_clean = self.df_energy_phase.loc[:, (self.df_energy > eps_en).any(axis=0)]
-            self.df_energy_phase_clean = self.df_energy_phase_clean.set_index("timestamp")
-            pd.to_pickle(self.df_energy_phase_clean, self.energy_phase_file_clean)
+                self.df_energy_phase['timestamp'] = self.df_energy_phase['timestamp'] * timerescale
+                    
+                self.df_energy_phase_clean = self.df_energy_phase.loc[:, (self.df_energy > eps_en).any(axis=0)]
+                self.df_energy_phase_clean = self.df_energy_phase_clean.set_index("timestamp")
+                pd.to_pickle(self.df_energy_phase_clean, self.energy_phase_file_clean)
             
 
         #df_energy.set_index('timestamp',drop=True,inplace=True)
@@ -283,7 +288,8 @@ class evol:
             self.scalesmin[1]=eps_ens
             self.scalesmax[1]=maxens
 
-            self.df_enstrophy_phase_clean = pd.read_pickle(self.enstrophy_phase_file_clean)
+            if iphase:
+                self.df_enstrophy_phase_clean = pd.read_pickle(self.enstrophy_phase_file_clean)
 
         else:
             self.df_ens=pd.read_csv(self.enstrophy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
@@ -296,14 +302,15 @@ class evol:
             self.df_ens_clean = self.df_ens_clean.set_index("timestamp")
             pd.to_pickle(self.df_ens_clean, self.enstrophy_file_clean)
 
-            self.df_enstrophy_phase = pd.read_csv(self.enstrophy_phase_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
-            self.df_enstrophy_phase = self.df_enstrophy_phase.iloc[:, :-1] #remove garbage column that come out of sweet
-            
-            self.df_enstrophy_phase['timestamp'] = self.df_enstrophy_phase['timestamp'] * timerescale
+            if iphase:
+                self.df_enstrophy_phase = pd.read_csv(self.enstrophy_phase_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
+                self.df_enstrophy_phase = self.df_enstrophy_phase.iloc[:, :-1] #remove garbage column that come out of sweet
                 
-            self.df_enstrophy_phase_clean = self.df_enstrophy_phase.loc[:, (self.df_ens > eps_ens).any(axis=0)]
-            self.df_enstrophy_phase_clean = self.df_enstrophy_phase_clean.set_index("timestamp")
-            pd.to_pickle(self.df_enstrophy_phase_clean, self.enstrophy_phase_file_clean)
+                self.df_enstrophy_phase['timestamp'] = self.df_enstrophy_phase['timestamp'] * timerescale
+                    
+                self.df_enstrophy_phase_clean = self.df_enstrophy_phase.loc[:, (self.df_ens > eps_ens).any(axis=0)]
+                self.df_enstrophy_phase_clean = self.df_enstrophy_phase_clean.set_index("timestamp")
+                pd.to_pickle(self.df_enstrophy_phase_clean, self.enstrophy_phase_file_clean)
 
 
     def set_out_modes(self, n_list, m_list):
@@ -682,7 +689,7 @@ class evol:
         periods = xf[filter]
         spectrum = yf[filter]
        
-        power_spec_filtred = spectrum.sum()
+        power_spec_filtred = np.sqrt((spectrum**2).sum())
 
         #print(periods)
         #print(spectrum)
