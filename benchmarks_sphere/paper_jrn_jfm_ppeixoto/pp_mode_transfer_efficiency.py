@@ -131,6 +131,8 @@ df_reduced = pd.DataFrame(list(zip(alphas, umax, vmax)), columns =['Alpha', 'u_m
 df_reduced = df_reduced.set_index('Alpha')
 df_reduced = df_reduced.sort_index()
 print(df_reduced)
+
+#Plot velocities
 if plots:
 	plt.figure(figsize=(10,6), tight_layout=True)
 	plt.plot(df_reduced, '-', linewidth=2)
@@ -146,6 +148,7 @@ if plots:
 	plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 	plt.close()
 
+#Calculate efficiency
 max_exchange_out_energy = []
 max_exchange_noninit_energy = []
 max_exchange_out_ens = []
@@ -181,8 +184,8 @@ elif "TC2_in5-4_3-1_7-3" in basedir:
 	trunc = True
 	trunc_alpha = 30
 	#fourier period truncation
-	lim_inf=60
-	lim_sup=62
+	lim_inf=10
+	lim_sup=999999
 
 elif "TC2_in5-4_7-3" in basedir:
 	n_out_list = [9]
@@ -196,38 +199,20 @@ elif "TC3_in7-3_3-1" in basedir:
 	nout_shell_min = 7
 	nout_shell_max = 7
 	out_type = "mode"
-elif "TC3xx" in basedir:
-	nout_shell_min = 7
-	nout_shell_max = 7
-	n_out_list = [7,5]
-	m_out_list = [3,4]
-	out_type = "mode"
-elif "TC4xx" in basedir:
-	nout_shell_min = 7
-	nout_shell_max = 7
-	n_out_list = [7,5]
-	m_out_list = [3,4]
-	out_type = "mode"
-elif "TC5xx" in basedir:
-	nout_shell_min = 5
-	nout_shell_max = 7
-	n_out_list = [7,9, 5]
-	m_out_list = [3,2, 5]
-	out_type = "mode"
 else:
 	nout_shell_min = 7
 	nout_shell_max = 7
 	print("Dont know this test case")
 	exit(1)
 
-
+#Nice Title 
 title_out = "Out Mode:"
 for i in range(len(n_out_list)):
 	#print("(", str(arr[i*3+0]), ";", str(arr[i*3+1]), ")")
 	title_out = title_out + " ("+str(n_out_list[i])+";"+str(m_out_list[i])+")"
 
 
-
+#Loop over all experiments
 for i in range(len(alphas)):
 	
 	if trunc:
@@ -239,11 +224,9 @@ for i in range(len(alphas)):
 			dominant_period.append(0)
 			continue
 
-	#if alphas[i] != 12:
-	#	continue
+	if alphas[i] != 20:
+		continue
 
-#	i=60
-#for i in range(8):
 	print()
 	print("Post-processing (alpha, dir, umax, vmax):\n   ",	alphas[i], job_dirs[i], umax[i], vmax[i])
 	
@@ -274,7 +257,6 @@ for i in range(len(alphas)):
 		print("Error: please set correct out type")
 		exit(1)
 
-
 	max_exchange_out_energy.append(evol.max_exchange_out_energy)
 	max_exchange_noninit_energy.append(evol.max_exchange_noninit_energy)
 	max_exchange_out_ens.append(evol.max_exchange_out_ens)
@@ -287,14 +269,17 @@ for i in range(len(alphas)):
 
 	title = title + " , "+title_out
 	if plots:	
-		evol.plot_out(title, filename_out+".png")
+		evol.plot_out(title, filename_out+"a"+str(alphas[i])+".png")
 
 	#fourier modes
 	title = " alpha = " + str(alphas[i])+" , "+title_out
-	spec_enegy = evol.fourier_modes(title, filename_out+"_spec.png", do_plot=plots, lim_inf=lim_inf, lim_sup=lim_sup)
+	spec_enegy = evol.fourier_modes(title, filename_out+"a"+str(alphas[i])+"_spec.png", do_plot=plots, lim_inf=lim_inf, lim_sup=lim_sup)
 	dominant_period.append(spec_enegy)
 
-	
+	#Phase analysis
+	dif_mean = evol.phase()
+	print(dif_mean['(3;0)'])
+
 #Sanity check!
 if len(alphas) > len(max_exchange_out_energy):
 	print("lengths not matching!")
