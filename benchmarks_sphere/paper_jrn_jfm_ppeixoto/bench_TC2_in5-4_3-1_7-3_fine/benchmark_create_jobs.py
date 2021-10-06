@@ -81,7 +81,7 @@ jg.runtime.timestep_size = 120 # 1 minutes
 
 jg.runtime.space_res_spectral = 128
 
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/730
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/8760
 
 # No output
 #jg.runtime.output_filename = "output" #leave default
