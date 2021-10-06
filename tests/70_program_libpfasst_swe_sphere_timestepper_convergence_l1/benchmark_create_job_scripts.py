@@ -8,11 +8,6 @@ import math
 from mule_local.JobMule import *
 jg = JobGeneration()
 
-from mule_local.rexi.REXICoefficients import *
-from mule_local.rexi.trexi.TREXI import *
-from mule_local.rexi.cirexi.CIREXI import *
-from mule_local.rexi.brexi.BREXI import *
-
 
 
 #
@@ -122,13 +117,13 @@ jg.reference_job_unique_id = jg.job_unique_id
 # Create job scripts
 #
 
-for jg.runtime.libpfasst_nnodes in [3,5]:
-    for jg.runtime.libpfasst_niters in range(3,6):
-        for jg.runtime.timestep_size in timestep_sizes:
+#for jg.runtime.libpfasst_nnodes in [3,5]:
+for jg.runtime.libpfasst_niters in range(4,8):
+    for jg.runtime.timestep_size in timestep_sizes:
 
-            if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
-                print("simtime: "+str(jg.runtime.max_simulation_time))
-                print("timestep_size: "+str(jg.runtime.timestep_size))
-                raise Exception("Invalid time step size (not remainder-less dividable)")
+        if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+            print("simtime: "+str(jg.runtime.max_simulation_time))
+            print("timestep_size: "+str(jg.runtime.timestep_size))
+            raise Exception("Invalid time step size (not remainder-less dividable)")
 
-            jg.gen_jobscript_directory()
+        jg.gen_jobscript_directory()
