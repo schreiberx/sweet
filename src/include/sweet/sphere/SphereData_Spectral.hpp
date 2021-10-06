@@ -1185,10 +1185,10 @@ public:
 			file << "(n_max="<<sphereDataConfig->spectral_modes_n_max << " m_max="
 					<< sphereDataConfig->spectral_modes_n_max << ")" << std::endl;
 			file << "timestamp\t" ; 
-			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
 			{
 				std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
-				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
 				}
@@ -1273,10 +1273,10 @@ public:
 		
 		//std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
 		file << i_time << "\t";
-  		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+  		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
   		{
   			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
-  			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+  			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
   			{
   				w = spectral_space_data[idx];
 				wphase = std::arg(w); // std::abs(w * std::conj(w));
