@@ -79,90 +79,6 @@ std::string write_spectrum_to_file(
 	return buffer;
 }
 
-/** 
- *  Write the physical invariants to file
- **/
-/*std::string write_physical_invariants_to_file(
-		SphereDataCtx &i_ctx,
-		const char* i_name
-)
-{
-	char buffer[1024];
-
-	// get the pointer to the Simulation Variables object
-	SimulationVariables* simVars = i_ctx.get_simulation_variables();
-
-	// get the vector of time and invariants
-	const std::vector<double>& time               = i_ctx.get_time();
-	const std::vector<double>& mass               = i_ctx.get_mass();
-	const std::vector<double>& energy             = i_ctx.get_energy();
-	const std::vector<double>& potentialEnstrophy = i_ctx.get_potential_enstrophy();
-
-	// Write the spectrum into the file
-	const char* filename_template = simVars->iodata.output_file_name.c_str();
-	sprintf(buffer,
-			filename_template,
-			i_name,
-			simVars->timecontrol.current_timestep_size);
-
-	std::ofstream file(buffer, std::ios_base::trunc);
-
-	file << std::setprecision(20);
-
-	for (unsigned int i = 0; i < time.size(); ++i)
-		file << time[i] << " "
-		<< mass[i] << " "
-		<< energy[i] << " "
-		<< potentialEnstrophy[i]
-							  << std::endl;
-
-	file.close();
-
-	return buffer;
-}*/
-
-/**
- * Write the residuals to file
- **/
-//std::string write_residuals_to_file(
-//		SphereDataCtx &i_ctx,
-//		int i_rank,
-//		const char* i_name
-//)
-//{
-//	char buffer[1024];
-//
-//	// get the pointer to the Simulation Variables object
-//	SimulationVariables* simVars = i_ctx.get_simulation_variables();
-//
-//	// get the vector of residuals
-//	const std::vector<std::vector<double> >& residuals = i_ctx.get_residuals();
-//
-//	// Write the spectrum into the file
-//	const char* filename_template = simVars->iodata.output_file_name.c_str();
-//	sprintf(buffer,
-//			filename_template,
-//			i_name,
-//			simVars->timecontrol.current_timestep_size);
-//
-//	std::ofstream file(buffer, std::ios_base::trunc);
-//
-//	file << std::setprecision(20);
-//
-//	for (unsigned int i = 0; i < residuals[i_rank].size(); ++i)
-//	{
-//		file << i << " "
-//				<< residuals[i_rank][i] << " "
-//				<< std::endl;
-//
-//	}
-//
-//	file.close();
-//
-//	return buffer;
-//}
-
-
 
 extern "C"
 {
@@ -195,7 +111,7 @@ void cinitial(
 
 	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
-	// // instantiate phi, vort, and div without dealiasing to get the initial condition
+	// instantiate phi, vort, and div without dealiasing to get the initial condition
 	SphereData_Spectral phi_Y_nodealiasing(data_config_nodealiasing);
 	SphereData_Spectral vort_Y_nodealiasing(data_config_nodealiasing);
 	SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
@@ -242,90 +158,15 @@ void cinitial(
 
 	SphereData_Spectral phi_Y_init(phi_Y);
 	SphereData_Spectral phi_Y_final(phi_Y);
-//	phi_Y_final.request_data_spectral();
-//	phi_Y_final.request_data_physical();
 	phi_Y_init -= phi_Y_final;
-	//std::cout << "Geopotential error during conversion (infty norm) = " << phi_Y_init.physical_reduce_max_abs() << std::endl;
 
 	SphereData_Spectral div_Y_init(div_Y);
 	SphereData_Spectral div_Y_final(div_Y);
-//	div_Y_final.request_data_spectral();
-//	div_Y_final.request_data_physical();
 	div_Y_init -= div_Y_final;
-	//std::cout << "Divergence error during conversion (infty norm) = " << div_Y_init.physical_reduce_max_abs() << std::endl;
 
 	SphereData_Spectral vort_Y_init(vort_Y);
 	SphereData_Spectral vort_Y_final(vort_Y);
-//	vort_Y_final.request_data_spectral();
-//	vort_Y_final.request_data_physical();
 	vort_Y_init -= vort_Y_final;
-	//std::cout << "Vorticity error during conversion (infty norm) = " << vort_Y_init.physical_reduce_max_abs() << std::endl;
-
-	// // get the timestepper
-	// SWE_Sphere_TS_lg_irk_lc_n_erk* timestepper = i_ctx->get_lg_irk_lc_n_erk_timestepper();
-	// //SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
-
-	// double current_simulation_time = 0;
-	// int nsteps                     = 0;
-
-	// std::cout << "current_simulation_time = " << current_simulation_time
-	//  	      << " i_t = " << i_t
-	//  	      << std::endl;
-
-	// std::cout << "i_dt = " << i_dt << std::endl;
-
-	// // compute the reference solution (i.e., obtained with the reference time stepper)
-	//  while (current_simulation_time < i_t)
-	//    {
-	//  	if (nsteps%120 == 0)
-	//  	  {
-	//  	    std::cout << "current_simulation_time = "
-	//  		      << current_simulation_time
-	//  		      << std::endl;
-
-	// // 	    // std::string name = "prog_phi_ref_"+std::to_string(nsteps)+"_";
-	// // 	    // write_file(*i_ctx, phi_Y, name.c_str());
-	// // 	    // name = "prog_vort_ref_"+std::to_string(nsteps)+"_";
-	// // 	    // write_file(*i_ctx, vort_Y,name.c_str());
-	// // 	    // name = "prog_div_ref_"+std::to_string(nsteps)+"_";
-	// // 	    // write_file(*i_ctx, div_Y, name.c_str());
-
-	// 	  }
-
-	// 	// solve the implicit system using the Helmholtz solver
-	// 	timestepper->run_timestep(
-	// 				  phi_Y,
-	// 				  vort_Y,
-	// 				  div_Y,
-	// 				  i_dt,
-	// 				  current_simulation_time
-	// 				  );
-
-	// 	if (simVars->sim.viscosity != 0)
-	// 	  {
-	// 	    double scalar = simVars->sim.viscosity*i_dt;
-	// 	    double r      = simVars->sim.earth_radius;
-
-	// 	    phi_Y  = phi_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
-	// 	    vort_Y = vort_Y.spectral_solve_helmholtz(1.0, -scalar, r);
-	// 	    div_Y  = div_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
-	// 	  }
-
-	// 	current_simulation_time += i_dt;
-	// 	nsteps += 1;
-	//    }
-
-	//  std::cout << "nsteps = " << nsteps << std::endl;
-
-	//  write_spectrum_to_file(*i_ctx, phi_Y,  "spectrum_phi_ref");
-	//  write_spectrum_to_file(*i_ctx, vort_Y, "spectrum_vort_ref");
-	//  write_spectrum_to_file(*i_ctx, div_Y,  "spectrum_div_ref");
-
-	//  write_file(*i_ctx, phi_Y,  "prog_phi_ref");
-	//  write_file(*i_ctx, vort_Y, "prog_vort_ref");
-	//  write_file(*i_ctx, div_Y,  "prog_div_ref");
-
-	//  SWEETError("stop the simulation");
 
 }
 
@@ -354,66 +195,41 @@ void cfinal(
 
 	SphereData_Spectral phi_Y_init(phi_Y);
 	SphereData_Spectral phi_Y_final(phi_Y);
-//	phi_Y_final.request_data_spectral();
-//	phi_Y_final.request_data_physical();
 	phi_Y_init -= phi_Y_final;
-	//std::cout << "Geopotential error during conversion (infty norm) = " << phi_Y_init.physical_reduce_max_abs() << std::endl;
-
+	
 	SphereData_Spectral div_Y_init(div_Y);
 	SphereData_Spectral div_Y_final(div_Y);
-//	div_Y_final.request_data_spectral();
-//	div_Y_final.request_data_physical();
 	div_Y_init -= div_Y_final;
-	//std::cout << "Divergence error during conversion (infty norm) = " << div_Y_init.physical_reduce_max_abs() << std::endl;
 
 	SphereData_Spectral vort_Y_init(vort_Y);
 	SphereData_Spectral vort_Y_final(vort_Y);
-//	vort_Y_final.request_data_spectral();
-//	vort_Y_final.request_data_physical();
 	vort_Y_init -= vort_Y_final;
-	//std::cout << "Vorticity error during conversion (infty norm) = " << vort_Y_init.physical_reduce_max_abs() << std::endl;
 
-	if (nprocs == 1)
+	if (level_id == simVars->libpfasst.nlevels-1) 
 	{
-		std::string filename = "prog_phi_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		write_file(*i_ctx, phi_Y, filename.c_str());
-
-		filename = "prog_vort_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		write_file(*i_ctx, vort_Y, filename.c_str());
-
-		filename = "prog_div_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		write_file(*i_ctx, div_Y, filename.c_str());
-
-	}
-	else if (rank == 0)
-	{
-
-		std::string filename = "prog_phi_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		write_file(*i_ctx, phi_Y, filename.c_str());
-
-		// filename = "prog_conversion_phi_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_file(*i_ctx, phi_Y_init, filename.c_str());
-
-		filename = "prog_vort_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		write_file(*i_ctx, vort_Y, filename.c_str());
-
-		filename = "prog_div_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		write_file(*i_ctx, div_Y, filename.c_str());
-
-		// filename = "invariants_nprocs_"+std::to_string(nprocs)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// write_physical_invariants_to_file(*i_ctx, filename.c_str());
-
-	}
-
-	if (level_id == simVars->libpfasst.nlevels-1)
-	{
-		std::string filename = "";
 		if (nprocs == 1)
-			filename = "residuals_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		else
-			filename = "residuals_nprocs_"+std::to_string(nprocs)+"_current_proc_"+std::to_string(rank)+"_nnodes_"+std::to_string(i_nnodes)+"_niters_"+std::to_string(i_niters);
-		// TODO turn this back on at some point!
-		//write_residuals_to_file(*i_ctx, rank, filename.c_str());
+		{
+			std::string filename = "prog_phi";
+			write_file(*i_ctx, phi_Y, filename.c_str());
+
+			filename = "prog_vort";
+			write_file(*i_ctx, vort_Y, filename.c_str());
+
+			filename = "prog_div";
+			write_file(*i_ctx, div_Y, filename.c_str());
+
+		}
+		else if (rank == 0)
+		{
+			std::string filename = "prog_phi_nprocs_"+std::to_string(nprocs);
+			write_file(*i_ctx, phi_Y, filename.c_str());
+
+			filename = "prog_vort_nprocs_"+std::to_string(nprocs);
+			write_file(*i_ctx, vort_Y, filename.c_str());
+
+			filename = "prog_div_nprocs_"+std::to_string(nprocs);
+			write_file(*i_ctx, div_Y, filename.c_str());
+		}
 	}
 }
 
