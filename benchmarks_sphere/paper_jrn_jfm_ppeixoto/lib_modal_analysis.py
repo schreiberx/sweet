@@ -1,5 +1,5 @@
 # ---------------------------------------------
-# Class to setup spherical modes initialization 
+# Class to setup spherical modes post-processing
 # author: Pedro Peixoto <ppeixoto@usp.br>
 # ----------------------------------------
 import numpy as np
@@ -10,8 +10,6 @@ import re
 import os
 import os.path
 
-
-
 import matplotlib
 #matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -21,218 +19,14 @@ import matplotlib.ticker as mtick
 
 from mule.postprocessing.JobData import *
 
-class modes_TC1: #Init with energy in full shells from n_ini to n_end
-    def __init__(self, n_ini, n_end, m_ini, alpha_min, alpha_max, alpha_samples):
-            
-        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
-
-        # Select shells for initial energy
-        # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
-        # n defines the shell
-        self.nmodes=[]
-        self.mmodes=[]
-        self.ampls=[]
-        self.n_ini = n_ini
-        self.n_end = n_end
-        self.m_ini = m_ini
-
-        count_modes = 0
-        code=""
-        
-        for n in range(n_ini, n_end+1):
-            for m in range(m_ini, n+1):
-                self.nmodes.append(n)
-                self.mmodes.append(m)
-                self.ampls.append(1.0)
-                count_modes+=1
-                
-
-        self.count_modes = count_modes 
-
-        codes = []
-        print()
-        print("Mode init params:")
-        for a in self.alpha:
-            print()
-            print("alpha = ", a)
-            print("i n m amp")
-            code = str(self.count_modes)
-            for i in range(self.count_modes):
-                code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
-                print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
-            codes.append(code)
-        
-        self.codes = codes
-        print(codes)
-
-    def save_file(self, filename):
-
-
-        with open(filename, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-
-class modes_TC2: #list of initial modes
-    def __init__(self, n_list, m_list, alpha_min, alpha_max, alpha_samples, back_n_min=0, back_n_max=0, back_ampl=0.1):
-            
-        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
-
-        # Select shells for initial energy
-        # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
-        # n defines the shell
-        self.nmodes=n_list
-        self.mmodes=m_list
-        self.ampls=[]
-        self.n_ini = min(n_list)
-        self.n_end = max(n_list)
-        self.m_ini = min(m_list)
-
-        count_modes = 0
-        code=""
-        
-        for n in n_list:
-            self.ampls.append(1.0)
-            count_modes+=1
-                
-        self.count_modes = count_modes 
-        list_modes = count_modes
-
-        #add energy on other modes (background energy)
-        n_ini = back_n_min
-        n_end = back_n_max
-        m_ini = 0
-        
-        if n_ini != 0 and n_end != 0:
-            for n in range(n_ini, n_end+1):
-                for m in range(m_ini, n+1):
-                    if (n,m) in zip(n_list, m_list):
-                        continue
-                    else:
-                        self.nmodes.append(n)
-                        self.mmodes.append(m)
-                        self.ampls.append(back_ampl)
-                        count_modes+=1
-                
-        self.count_modes = count_modes 
-
-        codes = []
-        print()
-        print("Mode init params:")
-        for a in self.alpha:
-            print()
-            print("alpha = ", a)
-            print("i n m amp")
-            code = str(self.count_modes)
-            for i in range(self.count_modes):
-                if i < list_modes:
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
-                    print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
-                else:
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(self.ampls[i])
-                    print(i, self.nmodes[i], self.mmodes[i], self.ampls[i])
-            codes.append(code)
-        
-        self.codes = codes
-        print(codes)
-        
-
-    def save_file(self, filename):
-
-        with open(filename, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-
-class modes_TC3: #list of initial modes and list of background modes
-    def __init__(self, n_list, m_list, n_list_back, m_list_back, alpha_min, alpha_max, alpha_samples, back_n_min=0, back_n_max=0, back_ampl=0.1):
-            
-        self.alpha = np.linspace(alpha_min, alpha_max, alpha_samples, endpoint=False)
-
-        # Select shells for initial energy
-        # Remember n >= m, and m=n, ..., N, where N it the max wavenumber (space_res_spectral)
-        # n defines the shell
-        self.nmodes=n_list+n_list_back
-        self.mmodes=m_list+m_list_back
-        self.ampls=[]
-        self.n_ini = min(n_list)
-        self.n_end = max(n_list)
-        self.m_ini = min(m_list)
-
-        count_modes = 0
-        code=""
-        
-        for n in n_list:
-            self.ampls.append(1.0)
-            count_modes+=1
-                
-        self.count_modes = count_modes 
-        list_modes = count_modes
-
-        for n in n_list_back:
-            self.ampls.append(1.0)
-            count_modes+=1
-
-        self.count_modes = count_modes 
-
-        #add energy on other modes (background energy)
-        n_ini = back_n_min
-        n_end = back_n_max
-        m_ini = 0
-        
-        if n_ini != 0 and n_end != 0:
-            for n in range(n_ini, n_end+1):
-                for m in range(m_ini, n+1):
-                    if (n,m) in zip(self.nmodes, self.mmodes):
-                        continue
-                    else:
-                        self.nmodes.append(n)
-                        self.mmodes.append(m)
-                        self.ampls.append(back_ampl)
-                        count_modes+=1
-                
-        self.count_modes = count_modes 
-
-        codes = []
-        print()
-        print("Mode init params:")
-        for a in self.alpha:
-            print()
-            print("alpha = ", a)
-            print("i n m amp")
-            code = str(self.count_modes)
-            for i in range(self.count_modes):
-                if i < list_modes:
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(a*self.ampls[i])
-                    print(i, self.nmodes[i], self.mmodes[i], a*self.ampls[i])
-                else:
-                    code+="_"+str(self.nmodes[i])+"_"+str(self.mmodes[i])+"_"+str(self.ampls[i])
-                    print(i, self.nmodes[i], self.mmodes[i], self.ampls[i])
-            codes.append(code)
-        
-        self.codes = codes
-        print(codes)
-        
-
-    def save_file(self, filename):
-
-        with open(filename, 'wb') as f:
-            # Pickle the 'data' dictionary using the highest protocol available.
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-
-
-def load_file(filename):
-    f = open(filename, 'rb')
-    obj = pickle.load(f)
-    f.close()        
-    return obj
-
-class evol:
+class mode_evol:
     def __init__(self, basedir=".", eps=0.0001):
 
         self.basedir = basedir
-        self.energy_file    = basedir+"/output_spec_kin_en_t00000000000.00000000.txt"
-        self.enstrophy_file = basedir+"/output_spec_enstrophy_t00000000000.00000000.txt"
-        #self.energy_file    = basedir+"/output_spec_ampl_kin_en.txt"    
-        #self.enstrophy_file = basedir+"/output_spec_ampl_enstrophy.txt"
+        #self.energy_file    = basedir+"/output_spec_kin_en_t00000000000.00000000.txt"
+        #self.enstrophy_file = basedir+"/output_spec_enstrophy_t00000000000.00000000.txt"
+        self.energy_file    = basedir+"/output_spec_ampl_kin_en.txt"    
+        self.enstrophy_file = basedir+"/output_spec_ampl_enstrophy.txt"
         self.energy_phase_file    = basedir+"/output_spec_arg_kin_en.txt"    
         self.enstrophy_phase_file = basedir+"/output_spec_arg_enstrophy.txt"
         self.scalesmin = {}
@@ -243,19 +37,15 @@ class evol:
         self.energy_phase_file_clean    = basedir+"/output_spec_arg_kin_en_clean_eps"+str(eps)+".pkl"    
         self.enstrophy_phase_file_clean = basedir+"/output_spec_arg_enstrophy_clean_eps"+str(eps)+".pkl"
 
-        #Remove modes with null values
-        iphase = False
+        iphase = True #Analyse phase
 
+        #Remove modes with null values
         if os.path.isfile(self.energy_file_clean):
             self.df_energy_clean = pd.read_pickle(self.energy_file_clean)
             maxenergy = self.df_energy_clean['SpectralSum'].max()
             eps_en = maxenergy*eps
             self.scalesmin[0] = eps_en
             self.scalesmax[0] = maxenergy
-
-            if iphase:
-                self.df_energy_phase_clean = pd.read_pickle(self.energy_phase_file_clean)
-
         else:
             self.df_energy = pd.read_csv(self.energy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
             self.df_energy['timestamp'] = self.df_energy['timestamp'] * timerescale
@@ -266,7 +56,10 @@ class evol:
             self.df_energy_clean = self.df_energy.loc[:, (self.df_energy > eps_en).any(axis=0)]
             self.df_energy_clean = self.df_energy_clean.set_index("timestamp")
             pd.to_pickle(self.df_energy_clean, self.energy_file_clean)
-            
+
+        if iphase and os.path.isfile(self.energy_phase_file_clean):
+            self.df_energy_phase_clean = pd.read_pickle(self.energy_phase_file_clean)
+        else:            
             if iphase:
                 self.df_energy_phase = pd.read_csv(self.energy_phase_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
                 self.df_energy_phase = self.df_energy_phase.iloc[:, :-1] #remove garbage column that come out of sweet
@@ -287,10 +80,6 @@ class evol:
             eps_ens=maxens*eps
             self.scalesmin[1]=eps_ens
             self.scalesmax[1]=maxens
-
-            if iphase:
-                self.df_enstrophy_phase_clean = pd.read_pickle(self.enstrophy_phase_file_clean)
-
         else:
             self.df_ens=pd.read_csv(self.enstrophy_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
             self.df_ens['timestamp'] = self.df_ens['timestamp'] * timerescale
@@ -302,6 +91,9 @@ class evol:
             self.df_ens_clean = self.df_ens_clean.set_index("timestamp")
             pd.to_pickle(self.df_ens_clean, self.enstrophy_file_clean)
 
+        if iphase and os.path.isfile(self.enstrophy_phase_file_clean):
+            self.df_enstrophy_phase_clean = pd.read_pickle(self.enstrophy_phase_file_clean)
+        else:
             if iphase:
                 self.df_enstrophy_phase = pd.read_csv(self.enstrophy_phase_file, sep='\t', skipinitialspace=True, skiprows=1, header=3, engine="python")
                 self.df_enstrophy_phase = self.df_enstrophy_phase.iloc[:, :-1] #remove garbage column that come out of sweet
@@ -452,16 +244,34 @@ class evol:
         df = self.df_energy_phase_clean.copy()
         t = df.index.values
         dt = t[1]-t[0]
+        #print(dt)
         for column in df:
             x = np.unwrap(df[column].values)
             dif = (x[1:]-x[0:-1])/dt
             dif = np.insert(dif, 0, 0.0, axis=0)
             df[column] = dif
-        self.df_energy_phase_dif = df
+        self.df_energy_phase_dif = df.iloc[4:] #Remove first hours (mode adjustment)
+        #print(df)
         self.df_dif_mean = df.mean(axis=0)
-        
         return self.df_dif_mean
     
+    def plot_phase(self, mode_list, title, output_filename="out.pdf"):
+        
+        fig, ax = plt.subplots(1, figsize=(8,6))#, sharex=True)
+        plt.rc('text', usetex=False)
+        
+        ax.set_title(title,fontsize=14)
+        print(mode_list)
+        self.df_energy_phase_dif[mode_list].plot(kind='line', ax=ax)
+        #self.df_energy_phase_clean[mode_list].plot(kind='line', ax=ax)
+        ax.set(ylabel='Deriv Phase (rad/s)', xlabel="Time (days)")
+        ax.set_ylim([-2, 3])
+        print("    ", self.basedir+"/energy_"+output_filename)
+        plt.tight_layout()
+        plt.savefig(self.basedir+"/energy_"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+
+        plt.close()
+
     def plot(self, title="", output_filename="out.pdf"):
 
         
@@ -715,3 +525,4 @@ class evol:
             plt.close()
 
         return power_spec_filtred
+
