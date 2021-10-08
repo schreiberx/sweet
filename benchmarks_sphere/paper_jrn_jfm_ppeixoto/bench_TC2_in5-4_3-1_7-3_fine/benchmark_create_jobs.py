@@ -148,7 +148,7 @@ jg.unique_id_filter = unique_id_filter
 
 #experiment paramters
 sys.path.insert(1, '../')
-import modes_experiment as mexp
+import benchmark_specific_settings as mexp
 
 #
 # allow including this file

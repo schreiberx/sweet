@@ -1,6 +1,7 @@
 # ---------------------------------------------
 # Class to setup spherical modes initialization 
 # author: Pedro Peixoto <ppeixoto@usp.br>
+# Oct 2021
 # ----------------------------------------
 import numpy as np
 import pickle

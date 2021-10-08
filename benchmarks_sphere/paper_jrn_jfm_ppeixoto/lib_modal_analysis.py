@@ -1,6 +1,7 @@
 # ---------------------------------------------
 # Class to setup spherical modes post-processing
 # author: Pedro Peixoto <ppeixoto@usp.br>
+#  Oct 2021
 # ----------------------------------------
 import numpy as np
 import pickle
@@ -9,6 +10,8 @@ import pandas as pd
 import re
 import os
 import os.path
+from scipy import stats
+from scipy import signal
 
 import matplotlib
 #matplotlib.use('TkAgg')
@@ -18,6 +21,15 @@ from matplotlib.lines import Line2D
 import matplotlib.ticker as mtick
 
 from mule.postprocessing.JobData import *
+
+class plot_fmt:
+    def __init__(self, color_dict={}, style_dict={}, linewidths_dict={}, valid=False):
+        self.color_dict = color_dict
+        self.style_dict = style_dict
+        self.linewidths_dict = linewidths_dict
+        if len(color_dict) > 0:
+            self.valid = True
+
 
 class mode_evol:
     def __init__(self, basedir=".", eps=0.0001):
@@ -57,6 +69,8 @@ class mode_evol:
             self.df_energy_clean = self.df_energy_clean.set_index("timestamp")
             pd.to_pickle(self.df_energy_clean, self.energy_file_clean)
 
+        self.df_energy_clean = self.df_energy_clean.reindex((sorted(self.df_energy_clean.columns, reverse=True)), axis=1)
+
         if iphase and os.path.isfile(self.energy_phase_file_clean):
             self.df_energy_phase_clean = pd.read_pickle(self.energy_phase_file_clean)
         else:            
@@ -91,6 +105,8 @@ class mode_evol:
             self.df_ens_clean = self.df_ens_clean.set_index("timestamp")
             pd.to_pickle(self.df_ens_clean, self.enstrophy_file_clean)
 
+        self.df_ens_clean = self.df_ens_clean.reindex((sorted(self.df_ens_clean.columns, reverse=True)), axis=1)
+
         if iphase and os.path.isfile(self.enstrophy_phase_file_clean):
             self.df_enstrophy_phase_clean = pd.read_pickle(self.enstrophy_phase_file_clean)
         else:
@@ -103,6 +119,9 @@ class mode_evol:
                 self.df_enstrophy_phase_clean = self.df_enstrophy_phase.loc[:, (self.df_ens > eps_ens).any(axis=0)]
                 self.df_enstrophy_phase_clean = self.df_enstrophy_phase_clean.set_index("timestamp")
                 pd.to_pickle(self.df_enstrophy_phase_clean, self.enstrophy_phase_file_clean)
+
+        
+        
 
 
     def set_out_modes(self, n_list, m_list):
@@ -224,20 +243,6 @@ class mode_evol:
 
         return df_new
 
-    def fourier_modes(self, title="", output_filename="out.pdf", do_plot=True, lim_inf=0, lim_sup=999999):
-
-        #Energy
-        outmodes = self.df_energy_agg["out_modes"].values
-        time = self.df_energy_agg.index.to_numpy()
-        #t_limit=-1
-        #self.large_periods_energy = self.fourier_largest(outmodes[:t_limit], T=time[t_limit], title=title, output_filename=output_filename, do_plot=do_plot)
-        self.fourier_spec = self.fourier_low_freq(outmodes, T=time[-1], title=title, output_filename=output_filename, do_plot=do_plot, lim_inf=lim_inf, lim_sup=lim_sup)
-        #Enstrophy
-        #outmodes = self.df_energy_agg["out_modes"].values
-        #self.large_periods_ens = fourier_largest(outmodes, T=time[-1])
-
-        return self.fourier_spec
-
     def phase(self):
 
         #print(self.df_energy_phase_clean)
@@ -249,30 +254,64 @@ class mode_evol:
             x = np.unwrap(df[column].values)
             dif = (x[1:]-x[0:-1])/dt
             dif = np.insert(dif, 0, 0.0, axis=0)
-            df[column] = dif
+            df[column] = dif  #differential d/dt
+            #df[column] = x #show just unwrapped phases
         self.df_energy_phase_dif = df.iloc[4:] #Remove first hours (mode adjustment)
         #print(df)
+        #self.df_energy_phase_dif['(9;2)']=self.df_energy_phase_dif['(9;2)'].rolling(72).mean()
+        #df_tmp = self.df_energy_phase_dif['(9;2)']
+        #self.df_energy_phase_dif['(9;2)'] = df_tmp[(np.abs(stats.zscore(df_tmp)) < 2)]
         self.df_dif_mean = df.mean(axis=0)
         return self.df_dif_mean
-    
-    def plot_phase(self, mode_list, title, output_filename="out.pdf"):
-        
-        fig, ax = plt.subplots(1, figsize=(8,6))#, sharex=True)
-        plt.rc('text', usetex=False)
-        
-        ax.set_title(title,fontsize=14)
-        print(mode_list)
-        self.df_energy_phase_dif[mode_list].plot(kind='line', ax=ax)
-        #self.df_energy_phase_clean[mode_list].plot(kind='line', ax=ax)
-        ax.set(ylabel='Deriv Phase (rad/s)', xlabel="Time (days)")
-        ax.set_ylim([-2, 3])
-        print("    ", self.basedir+"/energy_"+output_filename)
-        plt.tight_layout()
-        plt.savefig(self.basedir+"/energy_"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
-        plt.close()
+    def fourier_low_freq(self, array, T, lim_inf=0, lim_sup=99999):
+        
+        fs = T/(len(array)-1) #1 hour frequency
+        
+        if np.max(np.abs(array)) < 0.000001:
+            return 0, [0]
+        yf = np.fft.rfft(array)
+        
+        #cut out zero freq
+        yf = np.abs(yf[1:])
+        yf = np.abs(yf) #power spectrum
+        #plt.plot(yf)
+        #plt.show()
+        n = len(yf)
+        #https://en.wikipedia.org/wiki/Spectral_density
+        dt = 1 #in hours #1/24 hours -> per day
+        pds = (dt*dt*yf**2)/T #all is in hours
+        xf = T/np.linspace(1, T, n)
+        #print(xf)
+        #convert to days for filter
+        xf = xf / 24
+        #print(xf[1:5])
+        
+        #print(xf)
+        #Filter modes 
+        filter1 = xf > lim_inf
+        filter2 = xf < lim_sup
+        filter = filter1 & filter2
+        
+        
+        #filter =  lim_inf < xf and xf < lim_sup
+        #periods = xf[filter]
+        spectrum = yf[filter]
+       
+        power_spec_filtred = dt*dt*np.sqrt((spectrum**2).sum())/T
 
-    def plot(self, title="", output_filename="out.pdf"):
+        #save spectrum
+        #self.spec = yf
+
+        return power_spec_filtred, pds
+
+    #-----------------------------------------------
+    #  Ploting functions
+    #------------------------------------------------
+
+
+
+    def plot_modes(self, df, var, title="", output_filename="out.pdf", pltfmt=None):
 
         
         fig, ax = plt.subplots(1, figsize=(6,4))#, sharex=True)
@@ -280,49 +319,53 @@ class mode_evol:
         
         ax.set_title(title,fontsize=14)
 
-        #for i, ax in enumerate(axs):
-
-        ncol = 1	
-        self.df_energy_clean = self.df_energy_clean.reindex((sorted(self.df_energy_clean.columns, reverse=True)), axis=1)
+        #for i, ax in enumerate(axs):        
         
         plot_percent = True
         if plot_percent:
-            df_percent = self.df_energy_clean.div(self.df_energy_clean['SpectralSum'], axis=0) 
+            df_percent = df.div(df['SpectralSum'], axis=0) 
             df_percent = df_percent.drop(columns=['SpectralSum'])
             #print(df_percent)
         else:
-            df_percent = self.df_energy_clean
+            df_percent = df
 
-        eps = 0.001
+        if var == "Energy":
+            eps = 0.001
+        else:
+            eps = 0.01
+
         filter = df_percent.max() > eps
         #print(df_percent)
         df_percent = df_percent.loc[:,filter]
         #print(df_percent)
 
-        color_dict = {}
-        if "(5;4) (3;1) (7;3)" in title:
-            color_dict = {'(5;4)': 'blue', '(3;1)': 'green', '(7;3)': 'orange', '(9;2)':'red', 'SpectralSum':'gray',
-                          '(5;5)': 'blue', '(5;3)': 'green', '(5;1)': 'orange', '(3;2)': 'red'}             
-            style_dict = {'(5;4)': '-', '(3;1)': '-', '(7;3)': '-', '(9;2)':'-'}
-            linewidths_dict = {'(5;4)': '1', '(3;1)': '1', '(7;3)': '1', '(9;2)':'2'}
-            lws = [linewidths_dict.get(x, '0.4') for x in df_percent.columns]
+        if pltfmt is not None:
+            color_dict = pltfmt.color_dict 
+            style_dict = pltfmt.style_dict 
+            linewidths_dict = pltfmt.linewidths_dict 
+        else:
+            color_dict = {}
+            style_dict = {}
+            linewidths_dict = {}
+        lws = [linewidths_dict.get(x, '0.4') for x in df_percent.columns]
 
-        #self.df_energy_clean.plot( ax=ax, color=[color_dict.get(x, '#333333') for x in self.df_energy_clean.columns])
-        df_percent.plot( ax=ax, 
-            style=[style_dict.get(x, '--') for x in df_percent.columns], 
-            color=[color_dict.get(x, 'gray') for x in df_percent.columns])
-        
-        for i, l in enumerate(ax.lines):
-            plt.setp(l, linewidth=lws[i])
-        
+        if len(color_dict)>0:
+            df_percent.plot( ax=ax, 
+                style=[style_dict.get(x, '--') for x in df_percent.columns], 
+                color=[color_dict.get(x, 'gray') for x in df_percent.columns])
+            for i, l in enumerate(ax.lines):
+                plt.setp(l, linewidth=lws[i])
+        else:
+            df_percent.plot( ax=ax)
+
         ax.set_yscale("log", nonpositive='clip')
         if plot_percent:
-            ax.set(ylabel='$\%$ Energy', xlabel="Time (days)")
+            ax.set(ylabel='$\%$ '+var, xlabel="Time (days)")
             ax.set_ylim([10e-5, 1])
             ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 2, '%'))
         else:
-            ax.set(ylabel='Energy', xlabel="Time (days)")
-        ax.legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), ncol=ncol, fontsize=8)
+            ax.set(ylabel=var, xlabel="Time (days)")
+        ax.legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), fontsize=8)
         ax.set_xscale("linear")
         
         #ylim=[self.scalesmin[0], self.scalesmax[0]]
@@ -330,37 +373,9 @@ class mode_evol:
 
         #fig.subplots_adjust(right=0.7)
         
-        print("    ", self.basedir+"/energy_"+output_filename)
+        print("    ", self.basedir+"/"+output_filename)
         plt.tight_layout()
-        plt.savefig(self.basedir+"/energy_"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
-
-        plt.close()
-
-        #enstrophy
-        fig, ax = plt.subplots(1, figsize=(10,6))#, sharex=True)
-        plt.rc('text', usetex=False)
-        
-        fig.suptitle(title)
-
-        #for i, ax in enumerate(axs):
-        ax.set_xscale("linear")
-        ax.set_yscale("log", nonpositive='clip')
-        ylim=[self.scalesmin[1], self.scalesmax[1]]
-        ax.set_ylim(ylim)
-
-        
-        ncol = 1	
-    
-        self.df_ens_clean.plot( ax=ax)
-        ax.set(ylabel='Enstrophy', xlabel="Time (days)")
-        #axs[0].get_legend().remove()
-        ax.legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), ncol=ncol, fontsize="small")
-
-        fig.subplots_adjust(right=0.7)
-        
-        print("    ", self.basedir+"/enstrophy_"+output_filename)
-        #plt.tight_layout()
-        plt.savefig(self.basedir+"/enstrophy_"+output_filename, transparent=True, dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
+        plt.savefig(self.basedir+"/"+output_filename, transparent=True, dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
 
         plt.close()
 
@@ -381,31 +396,13 @@ class mode_evol:
             ylim=[self.scalesmin[i], self.scalesmax[i]]
             ax.set_ylim(ylim)
 
-        #for ax in axs.flat:
-        #    ax.label_outer()
-
-        colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-
-        markers = []
-        for m in Line2D.markers:
-            try:
-                if len(m) == 1 and m != ' ' and m != '':
-                    markers.append(m)
-            except TypeError:
-                pass
-
-        linestyles = ['-', '--', ':', '-.']
-
-        
-        ncol = 1	
-        
-        self.df_energy_agg.plot( ax=axs[0])
+       
+        self.df_energy_agg.plot( ax=axs[0], color = ['b', 'g', 'r'])
         axs[0].set(ylabel='Energy', xlabel="Time (days)")
-        axs[0].legend(loc='center left',  bbox_to_anchor= (1.0, -0.1), ncol=ncol, fontsize="small")
+        axs[0].legend(loc='center left',  bbox_to_anchor= (1.0, -0.1),  fontsize="small")
         
-        ncol=1
     
-        self.df_ens_agg.plot( ax=axs[1])
+        self.df_ens_agg.plot( ax=axs[1], color = ['b', 'g', 'r'])
         axs[1].set(ylabel='Enstrophy', xlabel="Time (days)")
         axs[1].get_legend().remove()
         #axs[1].legend(loc='center left', bbox_to_anchor= (1.01, 0.5), ncol=ncol)
@@ -419,110 +416,129 @@ class mode_evol:
 
         plt.close()
 
-
-    def fourier_largest(self, array, T, title="", output_filename="out.pdf", do_plot=True):
-        #plt.plot(array)
-        #plt.show()
-        if np.max(np.abs(array)) < 0.000001:
-            return [0]
-        yf = np.fft.rfft(array)
-        #cut out zero freq
-        yf = np.abs(yf[1:])
-        yf = np.abs(yf)**2 #power spectrum
-        #plt.plot(yf)
-        #plt.show()
-        n = len(yf)
-
-        xf = T/np.linspace(1, T, n)
-
-        nlargest = 10
-        ilargest = np.argpartition(yf, -nlargest)[-nlargest:]
-        large_periods = np.take(xf, ilargest)
-        large_spectrum = np.take(yf, ilargest)
-
-        #Ordered largest elements of spectrum
-        large_sort = large_spectrum.argsort()
-        large_periods = large_periods[large_sort[::-1]]
-        large_spectrum = large_spectrum[large_sort[::-1]]
-        print(large_periods)
-        print(large_spectrum)
-
-        #Filter modes of very large period
-        #large_filter = large_periods<T/2
-        #large_periods = large_periods[large_filter]
-        #large_spectrum = large_spectrum[large_filter]
-        #print(large_periods)
-        #print(large_spectrum)
-
-                
-        #print(xf)
-        #print(yf)
-        if do_plot:
-            fig, ax = plt.subplots()
-            #ax.set_xscale('log')
-            fig.suptitle(title)
-            #ax.plot(xf, 1.0/n * yf)
-            ax.plot(xf, yf)
-            ax.set(ylabel='Power Spectrum', xlabel="Periodicity (days)")
-            #ax.set(ylabel='Normalized Mode Amplitude', xlabel="Periodicity (days)", title=title)
-            plt.xscale('log', base=10)
-            plt.yscale('log', base=10)
-            #ax.plot(yf)
-            plt.tight_layout()
-            print("    ", self.basedir+"/"+output_filename)
-            plt.savefig(self.basedir+"/"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
-            plt.close()
-
-        return large_periods
-
-    def fourier_low_freq(self, array, T, title="", output_filename="out.pdf", do_plot=True, lim_inf=0, lim_sup=99999):
-        #plt.plot(array)
-        #plt.show()
-        if np.max(np.abs(array)) < 0.000001:
-            return 0
-        yf = np.fft.rfft(array)
-        #cut out zero freq
-        yf = np.abs(yf[1:])
-        yf = np.abs(yf) #power spectrum
-        #plt.plot(yf)
-        #plt.show()
-        n = len(yf)
-
-        xf = T/np.linspace(1, T, n)
-
-        #Filter modes 
-        filter1 = xf > lim_inf
-        filter2 = xf < lim_sup
-        filter = filter1 & filter2
+    def plot_phase(self, mode_list, title, output_filename="out.pdf"):
         
-        #filter =  lim_inf < xf and xf < lim_sup
-        periods = xf[filter]
-        spectrum = yf[filter]
-       
-        power_spec_filtred = np.sqrt((spectrum**2).sum())
+        fig, ax = plt.subplots(1, figsize=(8,6))#, sharex=True)
+        plt.rc('text', usetex=False)
+        
+        ax.set_title(title,fontsize=14)
+        
+        cols = set(mode_list)-set(self.df_energy_phase_dif.columns)
+        cols = list(set(mode_list) - cols)
+        
+        df=self.df_energy_phase_dif[list(cols)]
+        if df.empty:
+            return
 
-        #print(periods)
-        #print(spectrum)
-        #print(power_spec_filtred, np.any(filter))
+        df.plot(kind='line', ax=ax)
+        
+        ax.set(ylabel='Deriv Phase (rad/s)', xlabel="Time (days)")
+        ax.set_ylim([-2, 3])
+        print("    ", self.basedir+"/energy_"+output_filename)
+        plt.tight_layout()
+        plt.savefig(self.basedir+"/energy_"+output_filename, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
 
-        #print(xf)
-        #print(yf)
-        if do_plot:
-            fig, ax = plt.subplots(figsize=(5,5))
-            
-            ax.set_title(title, fontsize=14)
-            #ax.plot(xf, 1.0/n * yf)
-            ax.plot(xf[2:], yf[2:]**2, color='red')
-            ax.set(ylabel='Power Spectrum', xlabel="Periodicity (days)")
-            #ax.set(ylabel='Normalized Mode Amplitude', xlabel="Periodicity (days)", title=title)
-            plt.xscale('log', base=10)
-            plt.yscale('log', base=10)
-            ax.set_ylim([10e-5, 10e3])
-            #ax.plot(yf)
-            plt.tight_layout()
-            print("    ", self.basedir+"/"+output_filename)
-            plt.savefig(self.basedir+"/"+output_filename, transparent=True, dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
-            plt.close()
+        plt.close()
 
-        return power_spec_filtred
+    def fourier_plot(self, yf, T=365, title="", output_filename="out.pdf"):
+        
+        if len(yf) < 2:
+            return
+        n = len(yf)
+        xf = T/np.linspace(1, T, n)
+        xf = xf / 24 #(convert to hours)
+        
+        fig, ax = plt.subplots(figsize=(5,5))
+        
+        ax.set_title(title, fontsize=14)
+        #ax.plot(xf, 1.0/n * yf)
+        ax.plot(xf, yf, color='red')
+        ax.set(ylabel='Power Spectrum Density', xlabel="Periodicity (days)")
+        #ax.set(ylabel='Normalized Mode Amplitude', xlabel="Periodicity (days)", title=title)
+        plt.xscale('log', base=10)
+        plt.yscale('log', base=10)
+        ax.set_ylim([10e-7, 10e2])
+        ax.set_xlim([1, 370])
+        #ax.plot(yf)
+        plt.tight_layout()
+        print("    ", self.basedir+"/"+output_filename)
+        plt.savefig(self.basedir+"/"+output_filename, transparent=True, dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
+        plt.close()
 
+        return 
+
+
+
+def plot_uv(df, title, filename_final):
+
+	#Plot velocities
+	
+	plt.figure(figsize=(10,6), tight_layout=True)
+	plt.plot(df, '-', linewidth=2)
+
+	plt.xlabel(r" $\alpha$")
+	plt.ylabel(r" Max Velocity $m/s$")
+	
+	plt.title(title)
+	plt.legend(title_fontsize = 13, labels=['zonal (u)' , 'meridional (v)'])
+
+	print("Vel file:", filename_final)
+	plt.savefig(filename_final, transparent=True) #, bbox_inches='tight') #, pad_inches=0.02)
+	plt.close()
+
+
+def plot_v_alpha(x, y, z, var, title, spec_string="", filename_final="out.png"):
+
+    fig, ax = plt.subplots(figsize=(5,5)) #, tight_layout=True)
+    
+    if var == "Energy":
+        ax.plot(x, y,  linewidth=1, color = 'blue', linestyle = '-', label=var) #, '--', ':'])
+        ax.set_ylabel(r" $\epsilon(\alpha)$", color='blue', fontsize=16)
+    else:
+        ax.plot(x, y,  linewidth=1, color = 'green', linestyle = '-', label=var) #, '--', ':'])
+        ax.set_ylabel(r" $\epsilon(\alpha)$", color='green', fontsize=16)
+    ax.set_xlabel(r" $\alpha$", fontsize=16)
+
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter())
+
+    if len(spec_string)>1:
+        ax2=ax.twinx()
+        ax2.plot(x, z,  linewidth=1, color = 'red', linestyle = ':', label='Low Freq Spec\n'+spec_string) #, '--', ':'])
+        ax2.set_ylabel(r'$\sqrt{PSD}$', color='red')
+
+    
+    plt.title(title, fontsize=14)
+
+    ax.legend(loc=2, fontsize=12)
+    ax2.legend(loc=4, fontsize=11)
+
+    print("Output file:", filename_final)
+    plt.tight_layout()
+    plt.savefig(filename_final, transparent=True,  dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
+    plt.close()
+
+
+def plot_omega_v_alpha(x, y, z, w, var, title, spec_string="", filename_final="out.png"):
+
+    fig, ax = plt.subplots(figsize=(5,5)) #, tight_layout=True)
+        
+    ax.plot(x, y,  linewidth=1, color = 'blue', linestyle = '-', label=var+"-Main") #, '--', ':'])
+    ax.set_ylabel(r" $\Omega_N$", fontsize=16)
+    
+    ax.plot(x, z,  linewidth=1, color = 'green', linestyle = '-', label=var+"-Out") #, '--', ':'])
+    ax.set_xlabel(r" $\alpha$", fontsize=16)
+
+    if len(spec_string)>1:
+        ax2=ax.twinx()
+        ax2.plot(x, w,  linewidth=1, color = 'red', linestyle = ':', label='Low Freq Spec\n'+spec_string) #, '--', ':'])
+        ax2.set_ylabel(r'$\sqrt{PSD}$', color='red')
+    
+    plt.title(title, fontsize=14)
+
+    ax.legend(fontsize=12, bbox_to_anchor=(0.5, 0.8))
+    ax2.legend(loc=4, fontsize=11) #, bbox_to_anchor=(1.1, 1.05))
+
+    print("Output file:", filename_final)
+    plt.tight_layout()
+    plt.savefig(filename_final, transparent=True,  dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
+    plt.close()
