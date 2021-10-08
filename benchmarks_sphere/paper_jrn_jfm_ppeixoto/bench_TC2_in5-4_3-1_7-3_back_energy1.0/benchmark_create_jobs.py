@@ -81,7 +81,7 @@ jg.runtime.timestep_size = 120 # 1 minutes
 
 jg.runtime.space_res_spectral = 128
 
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/730
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time/8760 #by the hour
 
 # No output
 #jg.runtime.output_filename = "output" #leave default
@@ -148,7 +148,7 @@ jg.unique_id_filter = unique_id_filter
 
 #experiment paramters
 sys.path.insert(1, '../')
-import modes_experiment as mexp
+import benchmark_specific_settings as mexp
 
 #
 # allow including this file
@@ -161,8 +161,8 @@ if __name__ == "__main__":
     more_samples = True
     if more_samples:
         alpha_min = 1.0
-        alpha_max = 161.0
-        alpha_samples = 160
+        alpha_max = 41.0
+        alpha_samples = 80
     else:
         alpha_min = 1.0
         alpha_max = 20.0
@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
     n_list = [5, 3, 7]
     m_list = [4, 1, 3]
-    experiment = mexp.modes_TC2(n_list, m_list, alpha_min, alpha_max, alpha_samples, back_n_min=2, back_n_max=4, back_ampl=1.0) 
+    experiment = mexp.modes_TC2(n_list, m_list, alpha_min, alpha_max, alpha_samples, back_n_min=2, back_n_max=7, back_ampl=1.0) 
     exp_filename = "mode_setup_n"+'-'.join(map(str, n_list))+"_m"+'-'.join(map(str, m_list))+".pckl"
     codes = experiment.codes
 

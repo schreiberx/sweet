@@ -177,7 +177,7 @@ if "TC2_in5-4_3-1_7-3" in basedir:
 	#m_out_list = [3]
 	out_type = "mode"
 	trunc = True
-	trunc_alpha = 30
+	trunc_alpha = 40
 	lim_inf=20
 	lim_sup=25
 	triad_main = ["(3;1)", "(7;3)", "(5;4)"]
