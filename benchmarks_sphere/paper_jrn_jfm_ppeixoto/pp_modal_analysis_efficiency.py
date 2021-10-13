@@ -112,6 +112,8 @@ umax = []
 vmax = []
 job_dirs = []
 #print("jobs extracted")
+#print(jobs)
+print("-----------------------------------")
 
 #print("alpha   umax  vmax" )
 for key, job in sorted(jobs.items()):
@@ -127,14 +129,21 @@ for key, job in sorted(jobs.items()):
 	if d[main_tag] in exp_codes_bnames and outfile_exists:
 		jobs_flat.append(d)
 		jobs_raw.append(r)
+		
+		try:
+			a = d['output.benchmark_barotropic_vort_modes.0.ampl']
+			u = d['output.benchmark_barotropic_vort_modes.umax']
+			v = d['output.benchmark_barotropic_vort_modes.vmax']
+		except:
+			a = np.nan
+			u = np.nan
+			v = np.nan
+			print("Warning! No output file for :", d['jobgeneration.job_dirpath'])
 
-		a = d['output.benchmark_barotropic_vort_modes.0.ampl']
 		alphas.append(float(a))
 		dir = d['jobgeneration.job_dirpath']
 		job_dirs.append(dir)
-		u = d['output.benchmark_barotropic_vort_modes.umax']
 		umax.append(float(u))
-		v = d['output.benchmark_barotropic_vort_modes.vmax']
 		vmax.append(float(v))
 		#print(a, u, v)
 
@@ -177,11 +186,11 @@ if "TC2_in5-4_3-1_7-3" in basedir:
 	#m_out_list = [3]
 	out_type = "mode"
 	trunc = True
-	trunc_alpha = 40
-	lim_inf=20
-	lim_sup=25
+	trunc_alpha = 30
+	lim_inf=11
+	lim_sup=120
 	triad_main = ["(3;1)", "(7;3)", "(5;4)"]
-	triad_out = ["(7;3)", "(9;2)", "(3;1)"]
+	triad_out = ["(9;2)", "(7;3)", "(3;1)"]
 	color_dict = {'(5;4)': 'blue', '(3;1)': 'green', '(7;3)': 'orange', '(9;2)':'red', 'SpectralSum':'gray', '(5;5)': 'blue', '(5;3)': 'green', '(5;1)': 'orange', '(3;2)': 'red'}  
 	style_dict = {'(5;4)': '-', '(3;1)': '-', '(7;3)': '-', '(9;2)':'-' }
 	linewidths_dict = {'(5;4)': '1', '(3;1)': '1', '(7;3)': '1', '(9;2)':'2'}
@@ -329,6 +338,8 @@ df = df.sort_index()
 if trunc:
 	df = df.truncate(after=trunc_alpha)
 
+#total_spec = np.sum(df['SpecEnerg'].values)
+
 #------------------------------------
 #Energy and Enstrophy analysis
 #------------------------------------
@@ -338,6 +349,11 @@ title = title_in+" "+title_out
 if lim_sup<200:
 	spec_string= '['+str(lim_inf)+','+str(lim_sup)+'] dys'
 
+
+filename_final = basedir+"/"+exp_tag+"_"+filename_out+"_panel.pdf"
+modanal.plot_panel(df, title, spec_string, filename_final)
+
+exit(1)
 filename_final = basedir+"/"+exp_tag+"_"+filename_out+"_omega.png"
 modanal.plot_omega_v_alpha(df.index, df['Omega_Main'], df['Omega_Out'], df['SpecEnerg'], "Omega", title, spec_string, filename_final)
 

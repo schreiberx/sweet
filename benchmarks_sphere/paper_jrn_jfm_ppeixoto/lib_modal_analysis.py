@@ -20,6 +20,7 @@ import matplotlib.colors as colors
 from matplotlib.lines import Line2D
 import matplotlib.ticker as mtick
 
+
 from mule.postprocessing.JobData import *
 
 class plot_fmt:
@@ -537,6 +538,59 @@ def plot_omega_v_alpha(x, y, z, w, var, title, spec_string="", filename_final="o
 
     ax.legend(fontsize=12, bbox_to_anchor=(0.5, 0.8))
     ax2.legend(loc=4, fontsize=11) #, bbox_to_anchor=(1.1, 1.05))
+
+    print("Output file:", filename_final)
+    plt.tight_layout()
+    plt.savefig(filename_final, transparent=True,  dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
+    plt.close()
+
+def plot_panel(df, title, spec_string="", filename_final="out.png"):
+
+    fig, axs = plt.subplots(4, figsize=(8,8), tight_layout=True)
+    axs[0].set_title(title, fontsize=14)
+    
+
+    axs[0].plot(df.index, df['Exch_energy']*100,  linewidth=1, color = 'blue', linestyle = '-', label="Energy") #, '--', ':'])
+    axs[0].set_ylabel(r"$\epsilon$ (Energy) ", fontsize=14)
+    #axs[0].legend(fontsize=12)
+    axs[0].yaxis.set_major_formatter(mtick.PercentFormatter())
+
+    axs[1].plot(df.index, df['Exch_ens']*100,  linewidth=1, color = 'blue', linestyle = '-', label="Enstrophy") #, '--', ':'])
+    axs[1].set_ylabel(r"$\epsilon$ (Enstrophy)", fontsize=13)
+    axs[1].yaxis.set_major_formatter(mtick.PercentFormatter())
+    #axs[1].legend(fontsize=12, bbox_to_anchor=(0.5, 0.8))
+
+    #if len(spec_string)>1:
+    #    ax2=ax.twinx()
+    #    ax2.plot(x, w,  linewidth=1, color = 'red', linestyle = ':', label='Low Freq Spec\n'+spec_string) #, '--', ':'])
+    #    ax2.set_ylabel(r'$\sqrt{PSD}$', color='red')
+    
+    axs[2].plot(df.index, df['SpecEnerg'],  linewidth=1, color = 'blue', linestyle = '-', label='Low Freq Spec\n'+spec_string) #, '--', ':'])
+    #axs[2].set_ylabel("Power Spectrum", fontsize=13)
+    axs[2].set_ylabel(r'$\sqrt{PSD}$', fontsize=13)
+    axs[2].legend(fontsize=12)
+    axs[2].yaxis.set_major_locator(plt.MaxNLocator(4))
+    
+    y1 = np.abs(df['Omega_Main'])/3600
+    y2 = np.abs(df['Omega_Out'])/3600
+    axs[3].plot(df.index, y1,  linewidth=1, color = 'blue', linestyle = '--', label=r" $|\Omega_{12}^3|$") #, '--', ':'])
+    axs[3].plot(df.index, y2,  linewidth=1, color = 'orange', linestyle = '-', label=r" $|\Omega_{14}^2|$") #, '--', ':'])
+    axs[3].set_ylabel(r" Preces. Freq. ($Hz$)", fontsize=13)
+    axs[3].set_xlabel(r" $\alpha$", fontsize=16)
+    axs[3].legend(fontsize=12)
+    axs[3].yaxis.set_major_locator(plt.MaxNLocator(4))
+    #axs[3].yaxis.set_major_formatter(mtick.FormatStrFormatter('%0.1e'))
+    #axs[3].yaxis.set_ticks([0.0, 0.00005, 0.00010, 0.00015])
+    formatter = mtick.ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True) 
+    formatter.set_powerlimits((-1,1)) 
+    axs[3].yaxis.set_major_formatter(formatter) 
+
+    #plt.xscale('log', base=10)
+    #plt.yscale('log', base=10)
+    #ax.set_ylim([10e-7, 10e2])
+    #ax.set_xlim([1, 370])
+    #ax2.legend(loc=4, fontsize=11) #, bbox_to_anchor=(1.1, 1.05))
 
     print("Output file:", filename_final)
     plt.tight_layout()
