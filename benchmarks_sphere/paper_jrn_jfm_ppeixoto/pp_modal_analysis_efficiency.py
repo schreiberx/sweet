@@ -89,8 +89,13 @@ exp_codes_bnames = [basebanchname+s for s in exp_codes]
 
 title_in = "Init Modes:"
 n = len(obj.nmodes)
-for i in range(n):
-	title_in = title_in + " ("+str(obj.nmodes[i])+";"+str(obj.mmodes[i])+")"
+if n < 10:
+	for i in range(n):
+		title_in = title_in + " ("+str(obj.nmodes[i])+";"+str(obj.mmodes[i])+")"
+else:
+	for i in range(3):
+		title_in = title_in + " ("+str(obj.nmodes[i])+";"+str(obj.mmodes[i])+")"
+	title_in = title_in + " + small energy n=[2,7] "
 
 print(title_in)
 
@@ -191,8 +196,9 @@ if "TC2_in5-4_3-1_7-3" in basedir:
 	lim_sup=120
 	triad_main = ["(3;1)", "(7;3)", "(5;4)"]
 	triad_out = ["(9;2)", "(7;3)", "(3;1)"]
-	color_dict = {'(5;4)': 'blue', '(3;1)': 'green', '(7;3)': 'orange', '(9;2)':'red', 'SpectralSum':'gray', '(5;5)': 'blue', '(5;3)': 'green', '(5;1)': 'orange', '(3;2)': 'red'}  
-	style_dict = {'(5;4)': '-', '(3;1)': '-', '(7;3)': '-', '(9;2)':'-' }
+	color_dict = {'(5;4)': 'blue', '(3;1)': 'green', '(7;3)': 'orange', '(9;2)':'red', 'SpectralSum':'gray',
+		 '(5;3)': 'green', '(5;1)': 'orange', '(5;2)': 'red', '(5;5)': 'blue', '(3;0)': 'violet', '(7;4)': 'pink'}  
+	style_dict = {'(5;4)': '-', '(3;1)': '-', '(7;3)': '-', '(9;2)':'-', '(7;4)': '-.', '(3;0)': '-.', '(5;1)': '--' , '(5;2)': '--', '(5;3)': '--', '(5;5)': '--'}
 	linewidths_dict = {'(5;4)': '1', '(3;1)': '1', '(7;3)': '1', '(9;2)':'2'}
 else:
 	print("Dont know this test case")
@@ -233,7 +239,7 @@ for i in range(len(alphas)):
 			spec_energy.append(0)
 			continue
 
-	#if alphas[i] != 30:
+	#if alphas[i] != 20:
 	#	continue
 
 	print()
@@ -277,7 +283,10 @@ for i in range(len(alphas)):
 	#Plotting
 	
 	if plots:	
-		title = title_in + " alpha = " + str(alphas[i])
+		if "small energy" in title_in:
+			title = title_in + "\n alpha = " + str(alphas[i])	
+		else:
+			title = title_in + " alpha = " + str(alphas[i])
 		#evol.plot(title, "mode_evol.pdf")
 		evol.plot_modes( evol.df_energy_clean, "Energy", title, "mode_evol_energy.png", pltfmt)
 		evol.plot_modes( evol.df_ens_clean, "Enstrophy", title, "mode_evol_enstrophy.png", pltfmt)
@@ -306,15 +315,15 @@ for i in range(len(alphas)):
 	#print(dif_mean)
 	#Main triad
 	omega =  dif_mean[triad_main[0]] + dif_mean[triad_main[1]] - dif_mean[triad_main[2]]
-	print(triad_main[0],triad_main[1], triad_main[2])
-	print(dif_mean[triad_main[0]],dif_mean[triad_main[1]], dif_mean[triad_main[2]], omega)
+	#print(triad_main[0],triad_main[1], triad_main[2])
+	#print(dif_mean[triad_main[0]],dif_mean[triad_main[1]], dif_mean[triad_main[2]], omega)
 	omega_in.append(omega)
 
 	#out triad
 	try:
 		omega = dif_mean[triad_out[0]] + dif_mean[triad_out[1]] - dif_mean[triad_out[2]] 
-		print(triad_out[0],triad_out[1], triad_out[2])
-		print(dif_mean[triad_out[0]],dif_mean[triad_out[1]], dif_mean[triad_out[2]], omega)
+		#print(triad_out[0],triad_out[1], triad_out[2])
+		#print(dif_mean[triad_out[0]],dif_mean[triad_out[1]], dif_mean[triad_out[2]], omega)
 	except:
 		omega = np.nan
 	

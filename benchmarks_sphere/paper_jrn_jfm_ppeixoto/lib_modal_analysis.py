@@ -281,7 +281,7 @@ class mode_evol:
         n = len(yf)
         #https://en.wikipedia.org/wiki/Spectral_density
         dt = 1 #in hours #1/24 hours -> per day
-        pds = (dt*dt*yf**2)/T #all is in hours
+        pds = (dt*dt*yf**2) /T #all is in hours
         xf = T/np.linspace(1, T, n)
         #print(xf)
         #convert to days for filter
@@ -299,7 +299,7 @@ class mode_evol:
         #periods = xf[filter]
         spectrum = yf[filter]
        
-        power_spec_filtred = dt*dt*np.sqrt((spectrum**2).sum())/T
+        power_spec_filtred = dt*dt*np.sqrt((spectrum**2).sum()) /T
 
         #save spectrum
         #self.spec = yf
@@ -352,7 +352,7 @@ class mode_evol:
 
         if len(color_dict)>0:
             df_percent.plot( ax=ax, 
-                style=[style_dict.get(x, '--') for x in df_percent.columns], 
+                style=[style_dict.get(x, ':') for x in df_percent.columns], 
                 color=[color_dict.get(x, 'gray') for x in df_percent.columns])
             for i, l in enumerate(ax.lines):
                 plt.setp(l, linewidth=lws[i])
@@ -554,11 +554,19 @@ def plot_panel(df, title, spec_string="", filename_final="out.png"):
     axs[0].set_ylabel(r"$\epsilon$ (Energy) ", fontsize=14)
     #axs[0].legend(fontsize=12)
     axs[0].yaxis.set_major_formatter(mtick.PercentFormatter())
+    if "small" in title:
+        axs[0].text(30.0, 1.2, "(a)")
+    else:
+        axs[0].text(30.0, 2.0, "(a)")
 
     axs[1].plot(df.index, df['Exch_ens']*100,  linewidth=1, color = 'blue', linestyle = '-', label="Enstrophy") #, '--', ':'])
     axs[1].set_ylabel(r"$\epsilon$ (Enstrophy)", fontsize=13)
     axs[1].yaxis.set_major_formatter(mtick.PercentFormatter())
     #axs[1].legend(fontsize=12, bbox_to_anchor=(0.5, 0.8))
+    if "small" in title:
+        axs[1].text(30.0, 5.0, "(b)")
+    else:
+        axs[1].text(30.0, 8.0, "(b)")
 
     #if len(spec_string)>1:
     #    ax2=ax.twinx()
@@ -568,7 +576,11 @@ def plot_panel(df, title, spec_string="", filename_final="out.png"):
     axs[2].plot(df.index, df['SpecEnerg'],  linewidth=1, color = 'blue', linestyle = '-', label='Low Freq Spec\n'+spec_string) #, '--', ':'])
     #axs[2].set_ylabel("Power Spectrum", fontsize=13)
     axs[2].set_ylabel(r'$\sqrt{PSD}$', fontsize=13)
-    axs[2].legend(fontsize=12)
+    axs[2].legend(fontsize=12, loc=2)
+    if "small" in title:
+        axs[2].text(30.0, 0.028, "(c)")
+    else:
+        axs[2].text(30.0, 0.06, "(c)")
     axs[2].yaxis.set_major_locator(plt.MaxNLocator(4))
     
     y1 = np.abs(df['Omega_Main'])/3600
@@ -585,6 +597,10 @@ def plot_panel(df, title, spec_string="", filename_final="out.png"):
     formatter.set_scientific(True) 
     formatter.set_powerlimits((-1,1)) 
     axs[3].yaxis.set_major_formatter(formatter) 
+    if "small" in title:
+        axs[3].text(30.0, 0.00013, "(d)")    
+    else:
+        axs[3].text(30.0, 0.00016, "(d)")
 
     #plt.xscale('log', base=10)
     #plt.yscale('log', base=10)
