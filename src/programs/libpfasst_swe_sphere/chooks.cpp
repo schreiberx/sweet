@@ -69,7 +69,7 @@ extern "C"
                                  )
     {
         const SphereData_Spectral& phi_Y  = i_Y->get_phi();
-        const SphereData_Spectral& vort_Y = i_Y->get_vort();
+        const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
         const SphereData_Spectral& div_Y  = i_Y->get_div();
 
         // get the current space-time level
@@ -88,7 +88,7 @@ extern "C"
         sphereDiagnostics->update_phi_vrt_div_2_mass_energy_enstrophy(
                                        *sphereOperators,
                                        phi_Y,
-                                       vort_Y,
+                                       vrt_Y,
                                        div_Y,
                                        *simVars
                                        );
@@ -113,7 +113,7 @@ extern "C"
                            )
     {
         const SphereData_Spectral& phi_Y  = i_Y->get_phi();
-        const SphereData_Spectral& vort_Y = i_Y->get_vort();
+        const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
         const SphereData_Spectral& div_Y  = i_Y->get_div();
 
         // get the pointer to the Simulation Variables object
@@ -129,11 +129,11 @@ extern "C"
                                     +"_niters_"      +std::to_string(i_niters);
         write_file(*i_ctx, phi_Y, filename.c_str());
 
-        filename = "prog_jump_vort_current_proc_"+std::to_string(i_current_proc)
+        filename = "prog_jump_vrt_current_proc_"+std::to_string(i_current_proc)
                         +"_current_iter_"+std::to_string(i_current_iter)
                         +"_nnodes_"      +std::to_string(i_nnodes)
                         +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, vort_Y, filename.c_str());
+        write_file(*i_ctx, vrt_Y, filename.c_str());
 
         filename = "prog_jump_div_current_proc_"+std::to_string(i_current_proc)
                         +"_current_iter_"+std::to_string(i_current_iter)
@@ -170,7 +170,7 @@ extern "C"
         simVars->iodata.output_next_sim_seconds += simVars->iodata.output_each_sim_seconds;
 
         const SphereData_Spectral& phi_Y  = i_Y->get_phi();
-        const SphereData_Spectral& vort_Y = i_Y->get_vort();
+        const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
         const SphereData_Spectral& div_Y  = i_Y->get_div();
 
         // write the data to file
@@ -180,11 +180,11 @@ extern "C"
                                   +"_niters_"      +std::to_string(i_niters);
         write_file(*i_ctx, phi_Y, filename.c_str());
 
-        filename = "prog_vort_current_proc_"+std::to_string(i_current_proc)
+        filename = "prog_vrt_current_proc_"+std::to_string(i_current_proc)
                       +"_current_iter_"+std::to_string(i_current_iter)
                       +"_nnodes_"      +std::to_string(i_nnodes)
                       +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, vort_Y, filename.c_str());
+        write_file(*i_ctx, vrt_Y, filename.c_str());
 
         filename = "prog_div_current_proc_"+std::to_string(i_current_proc)
                       +"_current_iter_"+std::to_string(i_current_iter)

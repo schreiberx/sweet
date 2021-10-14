@@ -25,17 +25,17 @@ void c_sweet_data_create(
 	);
 
 	SphereData_Spectral& phi  = (*o_Y)->get_phi();
-	SphereData_Spectral& vort = (*o_Y)->get_vort();
+	SphereData_Spectral& vrt = (*o_Y)->get_vrt();
 	SphereData_Spectral& div  = (*o_Y)->get_div();
 
 	// initialize the SphereDataSpectral vectors
 	phi.spectral_set_zero();
-	vort.spectral_set_zero();
+	vrt.spectral_set_zero();
 	div.spectral_set_zero();
 
 	// return the size of the number of elements
 	*o_size = 2*(phi.sphereDataConfig->spectral_array_data_number_of_elements
-			+ vort.sphereDataConfig->spectral_array_data_number_of_elements
+			+ vrt.sphereDataConfig->spectral_array_data_number_of_elements
 			+ div.sphereDataConfig->spectral_array_data_number_of_elements);
 }
 
@@ -54,12 +54,12 @@ void c_sweet_data_setval(
 )
 {
 	SphereData_Spectral& phi  = io_Y->get_phi();
-	SphereData_Spectral& vort = io_Y->get_vort();
+	SphereData_Spectral& vrt = io_Y->get_vrt();
 	SphereData_Spectral& div  = io_Y->get_div();
 
 
 	phi.spectral_set_zero();
-	vort.spectral_set_zero();
+	vrt.spectral_set_zero();
 	div.spectral_set_zero();
 
 	if (i_val == 0)
@@ -70,7 +70,7 @@ void c_sweet_data_setval(
 	{
 		// set the SphereDataSpectral vectors to i_val in physical space
 		phi.spectral_add_physical_constant(i_val);
-		vort.spectral_add_physical_constant(i_val);
+		vrt.spectral_add_physical_constant(i_val);
 		div.spectral_add_physical_constant(i_val);
 	}
 }
@@ -81,15 +81,15 @@ void c_sweet_data_copy(SphereDataVars *i_src,
 		SphereDataVars *o_dst)
 {
 	const SphereData_Spectral& phi_src  = i_src->get_phi();
-	const SphereData_Spectral& vort_src = i_src->get_vort();
+	const SphereData_Spectral& vrt_src  = i_src->get_vrt();
 	const SphereData_Spectral& div_src  = i_src->get_div();
 
 	SphereData_Spectral&       phi_dst  = o_dst->get_phi();
-	SphereData_Spectral&       vort_dst = o_dst->get_vort();
+	SphereData_Spectral&       vrt_dst  = o_dst->get_vrt();
 	SphereData_Spectral&       div_dst  = o_dst->get_div();
 
 	phi_dst  = phi_src;
-	vort_dst = vort_src;
+	vrt_dst = vrt_src;
 	div_dst  = div_src;
 }
 
@@ -100,16 +100,16 @@ void c_sweet_data_norm(
 )
 {
 	const SphereData_Spectral& phi  = i_Y->get_phi();
-//	const SphereData_Spectral& vort = i_Y->get_vort();
+//	const SphereData_Spectral& vrt = i_Y->get_vrt();
 //	const SphereData_Spectral& div  = i_Y->get_div();
 
 	*o_val = phi.toPhys().physical_reduce_max_abs();
-//	const double vort_max = vort.toPhys().physical_reduce_max_abs();
+//	const double vrt_max = vrt.toPhys().physical_reduce_max_abs();
 //	const double div_max  = div.toPhys().physical_reduce_max_abs();
 
 	// L-infinity norm
-	// if (vort_max > *o_val)
-	//   *o_val = vort_max;
+	// if (vrt_max > *o_val)
+	//   *o_val = vrt_max;
 	// if (div_max > *o_val)
 	//   *o_val = div_max;
 }
@@ -121,17 +121,17 @@ void c_sweet_data_norm(
 // 			 )
 // {
 //   SphereDataSpectral& phi  = io_Y->get_phi();
-//   SphereDataSpectral& vort = io_Y->get_vort();
+//   SphereDataSpectral& vrt = io_Y->get_vrt();
 //   SphereDataSpectral& div  = io_Y->get_div();
 
 //   // make sure that the physical data is up to date
 //   phi.request_data_physical();
-//   vort.request_data_physical();
+//   vrt.request_data_physical();
 //   div.request_data_physical();
 
 //   // allocate the flat data array
 //   const int n_elems = (phi.sphereDataConfig->physical_array_data_number_of_elements
-// 		      +  vort.sphereDataConfig->physical_array_data_number_of_elements
+// 		      +  vrt.sphereDataConfig->physical_array_data_number_of_elements
 // 		      +  div.sphereDataConfig->physical_array_data_number_of_elements);
 //   io_Y->allocate_flat_data_array(n_elems);
 //   double*& flat_data_array = io_Y->get_flat_data_array();
@@ -142,9 +142,9 @@ void c_sweet_data_norm(
 //   for (int i = 0; i < phi.sphereDataConfig->physical_array_data_number_of_elements; ++i)
 //     flat_data_array[j++] = phi.physical_space_data[i];
 
-//   // vort
-//   for (int i = 0; i < vort.sphereDataConfig->physical_array_data_number_of_elements; ++i)
-//     flat_data_array[j++] = vort.physical_space_data[i];
+//   // vrt
+//   for (int i = 0; i < vrt.sphereDataConfig->physical_array_data_number_of_elements; ++i)
+//     flat_data_array[j++] = vrt.physical_space_data[i];
 
 //   // div
 //   for (int i = 0; i < div.sphereDataConfig->physical_array_data_number_of_elements; ++i)
@@ -161,13 +161,13 @@ void c_sweet_data_pack(
 )
 {
 	SphereData_Spectral& phi  = io_Y->get_phi();
-	SphereData_Spectral& vort = io_Y->get_vort();
+	SphereData_Spectral& vrt  = io_Y->get_vrt();
 	SphereData_Spectral& div  = io_Y->get_div();
 
 
 	// allocate the flat data array
 	const int n_elems = 2*(phi.sphereDataConfig->spectral_array_data_number_of_elements
-			+  vort.sphereDataConfig->spectral_array_data_number_of_elements
+			+  vrt.sphereDataConfig->spectral_array_data_number_of_elements
 			+   div.sphereDataConfig->spectral_array_data_number_of_elements);
 	io_Y->allocate_flat_data_array(n_elems);
 	double*& flat_data_array = io_Y->get_flat_data_array();
@@ -183,11 +183,11 @@ void c_sweet_data_pack(
 		flat_data_array[j++] = phi.spectral_space_data[i].real();
 	}
 
-	// vort
-	for (int i = 0; i < vort.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
+	// vrt
+	for (int i = 0; i < vrt.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
-		flat_data_array[j++] = vort.spectral_space_data[i].imag();
-		flat_data_array[j++] = vort.spectral_space_data[i].real();
+		flat_data_array[j++] = vrt.spectral_space_data[i].imag();
+		flat_data_array[j++] = vrt.spectral_space_data[i].real();
 	}
 
 	// div
@@ -216,10 +216,10 @@ void c_sweet_data_pack(
 //   for (int i = 0; i < phi.sphereDataConfig->physical_array_data_number_of_elements; ++i)
 //     phi.physical_space_data[i] = i_flat_data_ptr[0][j++];
 
-//   // vort
-//   SphereDataSpectral& vort = o_Y->get_vort();
-//   for (int i = 0; i < vort.sphereDataConfig->physical_array_data_number_of_elements; ++i) {
-//     vort.physical_space_data[i] = i_flat_data_ptr[0][j++];
+//   // vrt
+//   SphereDataSpectral& vrt = o_Y->get_vrt();
+//   for (int i = 0; i < vrt.sphereDataConfig->physical_array_data_number_of_elements; ++i) {
+//     vrt.physical_space_data[i] = i_flat_data_ptr[0][j++];
 //   }
 
 //   // v
@@ -230,17 +230,17 @@ void c_sweet_data_pack(
 
 //   // tell sweet that the physical data is up to date
 //   phi.physical_space_data_valid  = true;
-//   vort.physical_space_data_valid = true;
+//   vrt.physical_space_data_valid = true;
 //   div.physical_space_data_valid  = true;
 
 //   // the spectral data needs to be recomputed
 //   phi.spectral_space_data_valid  = false;
-//   vort.spectral_space_data_valid = false;
+//   vrt.spectral_space_data_valid = false;
 //   div.spectral_space_data_valid  = false;
 
 //   // make sure that the spectral data is up to date
 //   //phi.request_data_spectral();
-//   //vort.request_data_spectral();
+//   //vrt.request_data_spectral();
 //   //div.request_data_spectral();
 
 // }
@@ -265,11 +265,11 @@ void c_sweet_data_unpack(
 		);
 	}
 
-	// vort
-	SphereData_Spectral& vort = o_Y->get_vort();
-	for (int i = 0; i < vort.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
+	// vrt
+	SphereData_Spectral& vrt = o_Y->get_vrt();
+	for (int i = 0; i < vrt.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
-		vort.spectral_space_data[i] = std::complex<double>(
+		vrt.spectral_space_data[i] = std::complex<double>(
 				i_flat_data_ptr[0][j++],
 				i_flat_data_ptr[0][j++]
 		);
@@ -296,15 +296,15 @@ void c_sweet_data_saxpy(
 )
 {
 	const SphereData_Spectral& phi_x  = i_X->get_phi();
-	const SphereData_Spectral& vort_x = i_X->get_vort();
+	const SphereData_Spectral& vrt_x = i_X->get_vrt();
 	const SphereData_Spectral& div_x  = i_X->get_div();
 
 	SphereData_Spectral&       phi_y  = io_Y->get_phi();
-	SphereData_Spectral&       vort_y = io_Y->get_vort();
+	SphereData_Spectral&       vrt_y = io_Y->get_vrt();
 	SphereData_Spectral&       div_y  = io_Y->get_div();
 
 	phi_y  = i_a * phi_x  + phi_y;
-	vort_y = i_a * vort_x + vort_y;
+	vrt_y = i_a * vrt_x + vrt_y;
 	div_y  = i_a * div_x  + div_y;
 
 }
@@ -315,11 +315,11 @@ void c_sweet_data_eprint(
 )
 {
 	const SphereData_Spectral& phi  = i_Y->get_phi();
-	const SphereData_Spectral& vort = i_Y->get_vort();
+	const SphereData_Spectral& vrt = i_Y->get_vrt();
 	const SphereData_Spectral& div  = i_Y->get_div();
 
 	phi.toPhys().physical_print();
-	vort.toPhys().physical_print();
+	vrt.toPhys().physical_print();
 	div.toPhys().physical_print();
 
 }
