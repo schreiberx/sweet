@@ -4,7 +4,7 @@
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 
-// Class containing the prognostic SphereDataSpectral variables phi, vrt, and div
+// Class containing the prognostic SphereDataSpectral variables phi_pert, vrt, and div
 
 class SphereDataVars {
 
@@ -16,7 +16,7 @@ public:
 		int i_level
 		)
 
-    : prog_phi(sphereDataConfig),
+    : prog_phi_pert(sphereDataConfig),
       prog_vrt(sphereDataConfig),
       prog_div(sphereDataConfig),
       flat_data_array(nullptr),
@@ -50,8 +50,8 @@ public:
   }
   
   // getters for the SphereDataSpectral variables
-  const SphereData_Spectral& get_phi() const  {return prog_phi;}
-  SphereData_Spectral&       get_phi()        {return prog_phi;}
+  const SphereData_Spectral& get_phi_pert() const  {return prog_phi_pert;}
+  SphereData_Spectral&       get_phi_pert()        {return prog_phi_pert;}
   const SphereData_Spectral& get_vrt() const {return prog_vrt;}
   SphereData_Spectral&       get_vrt()       {return prog_vrt;}
   const SphereData_Spectral& get_div() const  {return prog_div;}
@@ -67,7 +67,7 @@ public:
 
 protected:
   
-  SphereData_Spectral prog_phi;
+  SphereData_Spectral prog_phi_pert;
   SphereData_Spectral prog_vrt;
   SphereData_Spectral prog_div;
 

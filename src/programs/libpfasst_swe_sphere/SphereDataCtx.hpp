@@ -144,7 +144,7 @@ public:
 
             timestepper_l_exp[level]->setup(
             			simVars->rexi,
-					     "phi0",
+					     "phi_pert0",
 					     simVars->timecontrol.current_timestep_size,
 					     simVars->sim.sphere_use_fsphere,
 					     false
