@@ -94,7 +94,7 @@ void cinitial(
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	SphereData_Spectral& phi_Y  = o_Y->get_phi();
-	SphereData_Spectral& vort_Y = o_Y->get_vort();
+	SphereData_Spectral& vrt_Y = o_Y->get_vrt();
 	SphereData_Spectral& div_Y  = o_Y->get_div();
 
 	// get the SimulationVariables object from context
@@ -111,25 +111,25 @@ void cinitial(
 
 	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
-	// instantiate phi, vort, and div without dealiasing to get the initial condition
+	// instantiate phi, vrt, and div without dealiasing to get the initial condition
 	SphereData_Spectral phi_Y_nodealiasing(data_config_nodealiasing);
-	SphereData_Spectral vort_Y_nodealiasing(data_config_nodealiasing);
+	SphereData_Spectral vrt_Y_nodealiasing(data_config_nodealiasing);
 	SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
 
 	phi_Y_nodealiasing.spectral_set_zero();
-	vort_Y_nodealiasing.spectral_set_zero();
+	vrt_Y_nodealiasing.spectral_set_zero();
 	div_Y_nodealiasing.spectral_set_zero();
 
-	// get the initial condition in phi, vort, and div
+	// get the initial condition in phi, vrt, and div
 	benchmarks->setup(*simVars,
 			*op_nodealiasing);
 	benchmarks->master->get_initial_state(
 			phi_Y_nodealiasing,
-			vort_Y_nodealiasing,
+			vrt_Y_nodealiasing,
 			div_Y_nodealiasing);
 
 	phi_Y.load_nodealiasing(phi_Y_nodealiasing);
-	vort_Y.load_nodealiasing(vort_Y_nodealiasing);
+	vrt_Y.load_nodealiasing(vrt_Y_nodealiasing);
 	div_Y.load_nodealiasing(div_Y_nodealiasing);
 
 
@@ -138,9 +138,9 @@ void cinitial(
 
 	if (rank == 0)
 	{
-		write_file(*i_ctx, phi_Y,  "prog_phi_init");
-		write_file(*i_ctx, vort_Y, "prog_vort_init");
-		write_file(*i_ctx, div_Y,  "prog_div_init");
+		// write_file(*i_ctx, phi_Y,  "prog_phi_init");
+		// write_file(*i_ctx, vrt_Y, "prog_vrt_init");
+		// write_file(*i_ctx, div_Y,  "prog_div_init");
 		if (simVars->iodata.output_each_sim_seconds < 0) {
 		    // only write output at start and end
 		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.max_simulation_time;
@@ -164,9 +164,9 @@ void cinitial(
 	SphereData_Spectral div_Y_final(div_Y);
 	div_Y_init -= div_Y_final;
 
-	SphereData_Spectral vort_Y_init(vort_Y);
-	SphereData_Spectral vort_Y_final(vort_Y);
-	vort_Y_init -= vort_Y_final;
+	SphereData_Spectral vrt_Y_init(vrt_Y);
+	SphereData_Spectral vrt_Y_final(vrt_Y);
+	vrt_Y_init -= vrt_Y_final;
 
 }
 
@@ -185,7 +185,7 @@ void cfinal(
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
 	const SphereData_Spectral& phi_Y  = i_Y->get_phi();
-	const SphereData_Spectral& vort_Y = i_Y->get_vort();
+	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
 	const SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	const int& level_id = i_Y->get_level();
@@ -201,9 +201,9 @@ void cfinal(
 	SphereData_Spectral div_Y_final(div_Y);
 	div_Y_init -= div_Y_final;
 
-	SphereData_Spectral vort_Y_init(vort_Y);
-	SphereData_Spectral vort_Y_final(vort_Y);
-	vort_Y_init -= vort_Y_final;
+	SphereData_Spectral vrt_Y_init(vrt_Y);
+	SphereData_Spectral vrt_Y_final(vrt_Y);
+	vrt_Y_init -= vrt_Y_final;
 
 	if (level_id == simVars->libpfasst.nlevels-1) 
 	{
@@ -212,8 +212,8 @@ void cfinal(
 			std::string filename = "prog_phi";
 			write_file(*i_ctx, phi_Y, filename.c_str());
 
-			filename = "prog_vort";
-			write_file(*i_ctx, vort_Y, filename.c_str());
+			filename = "prog_vrt";
+			write_file(*i_ctx, vrt_Y, filename.c_str());
 
 			filename = "prog_div";
 			write_file(*i_ctx, div_Y, filename.c_str());
@@ -224,8 +224,8 @@ void cfinal(
 			std::string filename = "prog_phi_nprocs_"+std::to_string(nprocs);
 			write_file(*i_ctx, phi_Y, filename.c_str());
 
-			filename = "prog_vort_nprocs_"+std::to_string(nprocs);
-			write_file(*i_ctx, vort_Y, filename.c_str());
+			filename = "prog_vrt_nprocs_"+std::to_string(nprocs);
+			write_file(*i_ctx, vrt_Y, filename.c_str());
 
 			filename = "prog_div_nprocs_"+std::to_string(nprocs);
 			write_file(*i_ctx, div_Y, filename.c_str());
@@ -241,11 +241,11 @@ void ceval_f1(SphereDataVars *i_Y,
 )
 {
 	const SphereData_Spectral& phi_Y  = i_Y->get_phi();
-	const SphereData_Spectral& vort_Y = i_Y->get_vort();
+	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
 	const SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	SphereData_Spectral& phi_F1  = o_F1->get_phi();
-	SphereData_Spectral& vort_F1 = o_F1->get_vort();
+	SphereData_Spectral& vrt_F1 = o_F1->get_vrt();
 	SphereData_Spectral& div_F1  = o_F1->get_div();
 
 	// get the time step parameters
@@ -269,10 +269,10 @@ void ceval_f1(SphereDataVars *i_Y,
 		// compute the explicit nonlinear right-hand side
 		timestepper->euler_timestep_update_nonlinear(
 				phi_Y,
-				vort_Y,
+				vrt_Y,
 				div_Y,
 				phi_F1,
-				vort_F1,
+				vrt_F1,
 				div_F1,
 				simVars->timecontrol.current_simulation_time
 		);
@@ -288,10 +288,10 @@ void ceval_f1(SphereDataVars *i_Y,
 			// compute the explicit nonlinear right-hand side
 			timestepper->euler_timestep_update_lc_n(
 					phi_Y,
-					vort_Y,
+					vrt_Y,
 					div_Y,
 					phi_F1,
-					vort_F1,
+					vrt_F1,
 					div_F1,
 					simVars->timecontrol.current_simulation_time
 			);
@@ -304,10 +304,10 @@ void ceval_f1(SphereDataVars *i_Y,
 			// compute the explicit nonlinear right-hand side
 			timestepper->euler_timestep_update_lc_n(
 					phi_Y,
-					vort_Y,
+					vrt_Y,
 					div_Y,
 					phi_F1,
-					vort_F1,
+					vrt_F1,
 					div_F1,
 					simVars->timecontrol.current_simulation_time
 			);
@@ -327,11 +327,11 @@ void ceval_f2 (
 )
 {
 	const SphereData_Spectral& phi_Y  = i_Y->get_phi();
-	const SphereData_Spectral& vort_Y = i_Y->get_vort();
+	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
 	const SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	SphereData_Spectral& phi_F2  = o_F2->get_phi();
-	SphereData_Spectral& vort_F2 = o_F2->get_vort();
+	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
 	SphereData_Spectral& div_F2  = o_F2->get_div();
 
 	// initialize the right-hand side
@@ -349,10 +349,10 @@ void ceval_f2 (
 		// compute the linear right-hand side
 		timestepper->euler_timestep_update_linear(
 				phi_Y,
-				vort_Y,
+				vrt_Y,
 				div_Y,
 				phi_F2,
-				vort_F2,
+				vrt_F2,
 				div_F2,
 				simVars->timecontrol.current_simulation_time
 		);
@@ -369,10 +369,10 @@ void ceval_f2 (
 			// compute the linear right-hand side
 			timestepper->euler_timestep_update_linear(
 					phi_Y,
-					vort_Y,
+					vrt_Y,
 					div_Y,
 					phi_F2,
-					vort_F2,
+					vrt_F2,
 					div_F2,
 					simVars->timecontrol.current_simulation_time
 			);
@@ -387,10 +387,10 @@ void ceval_f2 (
 			// compute the linear right-hand side
 			timestepper->euler_timestep_update_linear(
 					phi_Y,
-					vort_Y,
+					vrt_Y,
 					div_Y,
 					phi_F2,
-					vort_F2,
+					vrt_F2,
 					div_F2,
 					simVars->timecontrol.current_simulation_time
 			);
@@ -412,11 +412,11 @@ void ccomp_f2 (
 )
 {
 	SphereData_Spectral& phi_Y  = io_Y->get_phi();
-	SphereData_Spectral& vort_Y = io_Y->get_vort();
+	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
 	SphereData_Spectral& div_Y  = io_Y->get_div();
 
 	const SphereData_Spectral& phi_Rhs  = i_Rhs->get_phi();
-	const SphereData_Spectral& vort_Rhs = i_Rhs->get_vort();
+	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
 	const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
 
 	// get the simulation variables
@@ -425,7 +425,7 @@ void ccomp_f2 (
 	// first copy the rhs into the solution vector
 	// this is needed to call the SWEET function run_TS_PFASST_timestep
 	phi_Y  = phi_Rhs;
-	vort_Y = vort_Rhs;
+	vrt_Y = vrt_Rhs;
 	div_Y  = div_Rhs;
 
 
@@ -437,7 +437,7 @@ void ccomp_f2 (
 		// solve the implicit system using the Helmholtz solver
 		timestepper->run_timestep(
 				phi_Y,
-				vort_Y,
+				vrt_Y,
 				div_Y,
 				i_dt,
 				simVars->timecontrol.current_simulation_time
@@ -455,7 +455,7 @@ void ccomp_f2 (
 			// solve the implicit system using the Helmholtz solver
 			timestepper->run_timestep(
 					phi_Y,
-					vort_Y,
+					vrt_Y,
 					div_Y,
 					i_dt,
 					simVars->timecontrol.current_simulation_time
@@ -471,7 +471,7 @@ void ccomp_f2 (
 			// solve the implicit system using the Helmholtz solver
 			timestepper->run_timestep(
 					phi_Y,
-					vort_Y,
+					vrt_Y,
 					div_Y,
 					i_dt,
 					simVars->timecontrol.current_simulation_time
@@ -483,11 +483,11 @@ void ccomp_f2 (
 
 
 	SphereData_Spectral& phi_F2  = o_F2->get_phi();
-	SphereData_Spectral& vort_F2 = o_F2->get_vort();
+	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
 	SphereData_Spectral& div_F2  = o_F2->get_div();
 
 	phi_F2  = (phi_Y  - phi_Rhs)  / i_dt;
-	vort_F2 = (vort_Y - vort_Rhs) / i_dt;
+	vrt_F2 = (vrt_Y - vrt_Rhs) / i_dt;
 	div_F2  = (div_Y  - div_Rhs)  / i_dt;
 
 }
@@ -503,11 +503,11 @@ void ceval_f3 (
 )
 {
 	const SphereData_Spectral& phi_Y  = i_Y->get_phi();
-	const SphereData_Spectral& vort_Y = i_Y->get_vort();
+	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
 	const SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	SphereData_Spectral& phi_F3  = o_F3->get_phi();
-	SphereData_Spectral& vort_F3 = o_F3->get_vort();
+	SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
 	SphereData_Spectral& div_F3  = o_F3->get_div();
 
 	// initialize F3 to zero in case no artificial viscosity
@@ -535,8 +535,8 @@ void ceval_f3 (
 			}
 	);
 
-	vort_F3 = vort_Y;
-	vort_F3.spectral_update_lambda(
+	vrt_F3 = vrt_Y;
+	vrt_F3.spectral_update_lambda(
 			[&](
 					int n, int m,
 					std::complex<double> &io_data
@@ -572,11 +572,11 @@ void ccomp_f3 (
 )
 {
 	SphereData_Spectral& phi_Y  = io_Y->get_phi();
-	SphereData_Spectral& vort_Y = io_Y->get_vort();
+	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
 	SphereData_Spectral& div_Y  = io_Y->get_div();
 
 	SphereData_Spectral& phi_Rhs  = i_Rhs->get_phi();
-	SphereData_Spectral& vort_Rhs = i_Rhs->get_vort();
+	SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
 	SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
 
 	// initialize F3 to zero in case no artificial viscosity
@@ -595,16 +595,16 @@ void ccomp_f3 (
 
 	// solve (1-dt*visc*diff_op)*rhs = y
 	phi_Y  = phi_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r);
-	vort_Y = vort_Rhs.spectral_solve_helmholtz(1.0, -scalar, r);
+	vrt_Y = vrt_Rhs.spectral_solve_helmholtz(1.0, -scalar, r);
 	div_Y  = div_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r);
 
 	// now recompute F3 with the new value of Y
 	SphereData_Spectral& phi_F3  = o_F3->get_phi();
-	SphereData_Spectral& vort_F3 = o_F3->get_vort();
+	SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
 	SphereData_Spectral& div_F3  = o_F3->get_div();
 
 	phi_F3  = (phi_Y  - phi_Rhs)  / i_dt;
-	vort_F3 = (vort_Y - vort_Rhs) / i_dt;
+	vrt_F3 = (vrt_Y - vrt_Rhs) / i_dt;
 	div_F3  = (div_Y  - div_Rhs)  / i_dt;
 
 }
@@ -624,14 +624,14 @@ void cfinalize(
 		return;
 
 	SphereData_Spectral& phi_Y  = io_Y->get_phi();
-	SphereData_Spectral& vort_Y = io_Y->get_vort();
+	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
 	SphereData_Spectral& div_Y  = io_Y->get_div();
 
 	const double scalar = simVars->sim.viscosity*i_dt;
 	const double r      = simVars->sim.sphere_radius;
 
 	phi_Y  = phi_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
-	vort_Y = vort_Y.spectral_solve_helmholtz(1.0, -scalar, r);
+	vrt_Y = vrt_Y.spectral_solve_helmholtz(1.0, -scalar, r);
 	div_Y  = div_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
 }
 
