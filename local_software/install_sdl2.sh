@@ -4,7 +4,7 @@ source ./install_helpers.sh ""
 
 PKG_NAME="SDL2"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libSDL2.so"
-PKG_URL_SRC="SDL2-2.0.8.tar.gz"
+PKG_URL_SRC="SDL2-2.0.16.tar.gz"
 
 config_setup
 

@@ -14,9 +14,7 @@ config_package $@
 
 CONF_FLAGS=""
 
-if [ "`uname -s`" == "Linux" -o "`uname -s`" == "Darwin" ]; then
-	CONF_FLAGS+=" --enable-openmp "
-fi
+CONF_FLAGS+=" --enable-openmp "
 
 # Activate vectorization code
 

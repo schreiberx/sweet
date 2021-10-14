@@ -286,8 +286,8 @@ public:
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
 			if (
-					(std::isnan(scalar_data[i]) != 0) ||
-					(std::abs(std::isinf(scalar_data[i])) == 1)
+					std::isnan(scalar_data[i]) ||
+					std::isinf(scalar_data[i])
 			)
 				return true;
 		}
