@@ -1164,12 +1164,13 @@ public:
 	}
 
 
-	void spectrum_file_write_line(
+	void spectrum_abs_file_write_line(
 			const std::string &i_filename,
 			const char *i_title = "",
 			const double i_time = 0.0,
 			int i_precision = 20,
-			double i_abs_threshold = -1
+			double i_abs_threshold = -1,
+			int i_reduce_mode_factor = 1
 	)	const
 	{
 
@@ -1178,16 +1179,16 @@ public:
 		if(i_time == 0.0){
 			file.open(i_filename, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
-			file << "#SWEET_SPHERE_SPECTRAL_DATA_ASCII" << std::endl;
+			file << "#SWEET_SPHERE_SPECTRAL_ABS_EVOL_ASCII" << std::endl;
   			file << "#TI " << i_title << std::endl;
 			file << "0\t"<< std::endl; // Use 0 to make it processable by python
 			file << "(n_max="<<sphereDataConfig->spectral_modes_n_max << " m_max="
 					<< sphereDataConfig->spectral_modes_n_max << ")" << std::endl;
 			file << "timestamp\t" ; 
-			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
 			{
 				std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
-				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
 				}
@@ -1202,12 +1203,12 @@ public:
   		std::complex<double> w = {0,0};
 		double wabs = 0.0;
 		double sum = 0.0;
-		std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
+		//std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
 		file << i_time << "\t";
-  		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+  		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
   		{
   			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
-  			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+  			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
   			{
   				w = spectral_space_data[idx];
 				wabs = std::abs(w * std::conj(w));
@@ -1221,7 +1222,7 @@ public:
 				else{
 					//file << "(" << n << "," << m << ")\t"<<std::endl;
 					file <<  wabs << "\t"; //<<std::endl;;
-					std::cout << n << " " << m << " " << wabs <<std::endl;
+					//std::cout << n << " " << m << " " << wabs <<std::endl;
 				}
 				idx++;
   			}
@@ -1231,6 +1232,65 @@ public:
 	}
 
 
+	void spectrum_phase_file_write_line(
+			const std::string &i_filename,
+			const char *i_title = "",
+			const double i_time = 0.0,
+			int i_precision = 20,
+			double i_abs_threshold = -1,
+			int i_reduce_mode_factor = 1
+	)	const
+	{
+
+		std::ofstream file;
+
+		if(i_time == 0.0){
+			file.open(i_filename, std::ios_base::trunc);
+			file << std::setprecision(i_precision);
+			file << "#SWEET_SPHERE_SPECTRAL_PHASE_EVOL_ASCII" << std::endl;
+  			file << "#TI " << i_title << std::endl;
+			file << "0\t"<< std::endl; // Use 0 to make it processable by python
+			file << "(n_max="<<sphereDataConfig->spectral_modes_n_max << " m_max="
+					<< sphereDataConfig->spectral_modes_n_max << ")" << std::endl;
+			file << "timestamp\t" ; 
+			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
+			{
+				std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
+				{
+					file << "(" << n << ";" << m << ")\t" ;
+				}
+			}
+			file<<std::endl;
+		}
+		else{
+			file.open(i_filename, std::ios_base::app);
+			file << std::setprecision(i_precision);
+		}  		
+
+  		std::complex<double> w = {0,0};
+		double wphase = 0.0;
+		
+		//std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
+		file << i_time << "\t";
+  		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
+  		{
+  			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+  			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
+  			{
+  				w = spectral_space_data[idx];
+				wphase = std::arg(w); // std::abs(w * std::conj(w));
+				
+				//file << "(" << n << "," << m << ")\t"<<std::endl;
+				file <<  wphase << "\t"; //<<std::endl;;
+				//std::cout << n << " " << m << " " << wabs <<std::endl;
+				
+				idx++;
+  			}
+  		}
+		file<< std::endl;
+  		file.close();
+	}
 
   	/**
   	 * Write the spectral data to a file in binary format

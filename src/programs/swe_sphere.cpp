@@ -3,7 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
- * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
+ * MULE_SCONS_OPTIONS: --fortran-source=enable --sphere-spectral-space=enable
  */
 
 #ifndef SWEET_GUI
@@ -214,14 +214,22 @@ public:
 	)
 	{
 		char buffer[1024];
+		std::string phase = "_arg";
+		std::string ampl = "_amp"; 
 
+		const char* filename_template_ampl = "output_spec_ampl_%s.txt"; //.c_str();
+		const char* filename_template_arg = "output_spec_arg_%s.txt"; //.c_str();
+		int reduce_mode_factor = 4;
 
-		const char* filename_template = simVars.iodata.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, 0.0);
-
-		i_sphereData.spectrum_file_write_line(buffer, 
+		sprintf(buffer, filename_template_arg, i_name);
+		i_sphereData.spectrum_phase_file_write_line(buffer, 
 			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
-			20, 10e-20);
+			20, 10e-20, reduce_mode_factor);
+
+		sprintf(buffer, filename_template_ampl, i_name);
+		i_sphereData.spectrum_abs_file_write_line(buffer, 
+			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
+			20, 10e-20, reduce_mode_factor);
 
 		return buffer;
 	}
@@ -377,7 +385,7 @@ public:
 				SphereData_Spectral rlap_div = op.inv_root_laplace(prog_div); 
 				SphereData_Spectral kin_en = rlap_vrt + rlap_div ;
 
-				output_filename = write_file_csv_spec_evol(kin_en, "spec_kin_en"); 
+				output_filename = write_file_csv_spec_evol(kin_en, "kin_en"); 
 				std::cout << " + " << output_filename << " (Total Kin Energy : " << 0.25*kin_en.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
 
 				// For Barotropic vort eq: See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
@@ -392,7 +400,7 @@ public:
 				// See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
 				// enstrophy per mode is 0.5 vrt*conj(vrt) in spectral space
 				// Total enstrophy is the sum of these (counting twice modes with m>0 and once when m=0)
-				output_filename = write_file_csv_spec_evol(prog_vrt, "spec_enstrophy"); 
+				output_filename = write_file_csv_spec_evol(prog_vrt, "enstrophy"); 
 				std::cout << " + " << output_filename << " (Total Enstrophy : " << prog_vrt.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
 
 			}

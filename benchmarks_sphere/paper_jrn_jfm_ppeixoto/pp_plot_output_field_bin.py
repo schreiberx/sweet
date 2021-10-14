@@ -1,12 +1,20 @@
 #! /usr/bin/env python3
 
 import sys
+import matplotlib.pyplot as plt
+import numpy as np
+import re
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 input_file = sys.argv[1]
+
 f = open(input_file, 'rb')
 content = f.read()
 f.close()
 
+numbers = re.findall("\d+", input_file)
+time = int(numbers[-2])/24
 
 file_info = {}
 
@@ -86,7 +94,7 @@ class SHTNS_data:
     #
     def __init__(
             self,
-            rsphere = 1.0
+            rsphere = 6.37122e6
     ):
         self.rsphere = rsphere
 
@@ -94,7 +102,7 @@ class SHTNS_data:
         import shtns
         import numpy as np
 
-        if file_info['modes_m_max'] != file_info['modes_m_max']:
+        if file_info['modes_m_max'] != file_info['modes_n_max']:
             raise Exception("Only num_lon == num_lat supported")
 
         ntrunc = file_info['modes_n_max']
@@ -141,7 +149,7 @@ class SHTNS_data:
 
     def uv2vortdiv(self,u,v):
         vrtspec, divspec = self._shtns.analys(u, v)
-        return self.lap*self.rsphere*vrtspec, self.lap*rsphere*divspec
+        return self.lap*self.rsphere*vrtspec, self.lap*self.rsphere*divspec
 
     def getuv(self,divspec):
         vrtspec = np.zeros(divspec.shape, dtype=np.complex)
@@ -154,23 +162,52 @@ data_spec = s.setup(file_info, data)
 
 data_phys = s.spec2phys(data_spec)
 
-import matplotlib.pyplot as plt
-import numpy as np
+fig = plt.figure(figsize=(8, 4))
+ax = plt.gca()
+# dimensionless PV
+lons1d = (180./np.pi)*s.lons-180.
+lats1d = (180./np.pi)*s.lats
+lmax = np.max(np.max(data_phys))
+lmin = np.min(np.min(data_phys))
+ld = (lmax-lmin)/50
+levs = np.arange(lmin, lmax, ld)
+print(levs)
 
-plt.imshow(data_phys)
-e=2e-5
-plt.contour(data_phys, levels=np.arange(e, e*50, e), linestyles='solid', linewidths=0.2, colors='black')
-plt.contour(data_phys, levels=np.arange(-e*50, 0, e), linestyles='dashed', linewidths=0.2, colors='black')
+#cs = plt.contourf(lons1d, lats1d, data_phys, levs, extend="both", aspect='auto', cmap="nipy_spectral")
+if 'vrt' in input_file:
+    levs = np.arange(-7e-6, 7e-6, 1e-6)
+    cs = plt.contourf(lons1d, lats1d, data_phys, levs, extend="both", cmap="bwr") #, linewidth=0.01)
+else:
+    levs = np.arange(lmin, lmax, ld)
+    cs = plt.contourf(lons1d, lats1d, data_phys, levs, extend="both", cmap="nipy_spectral") #, linewidth=0.01)
 
-plt.title(input_file)
+for c in cs.collections:
+    c.set_edgecolor("face")
 
-infile = sys.argv[1]
-outputfile = infile.replace('.sweet', '.png')
+plt.grid(c='gray', ls='--', alpha=0.3)
+plt.xlabel("Longitude")
+plt.ylabel("Latitude")
+plt.xticks(np.arange(-180, 180.1, 60))
+plt.yticks(np.arange(-90, 90.1, 30))
+plt.title(r'$T = %3.1f \, \mathrm{days}, \, \alpha=20.0$'%(time))
 
 
-if infile == outputfile:
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="2%", pad=0.1)
+cb = plt.colorbar(cs, orientation="vertical", cax=cax) #, aspect=20, shrink=0.4, pad=0.2, cax=cax)
+cb.set_label("Vorticity")
+
+#plt.axis("equal")
+#plt.axis("tight")
+
+
+plt.tight_layout()
+
+outputfile = input_file.replace('.sweet', '.png')
+
+if input_file == outputfile:
     raise Exception("Input file didn't end with .sweet")
 
 print("Writing to "+str(outputfile))
-plt.savefig(outputfile, dpi=150)
+plt.savefig(outputfile)
 

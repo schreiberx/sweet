@@ -152,7 +152,7 @@ class ParameterFilename:
             else:
                 self.var = self.filename[pos1+8:pos2]
             self.title = self.var
-            self.outname = serf.var
+            self.outname = self.var
 
 
     def extract_method(self):
