@@ -25,34 +25,34 @@ sys.path.pop()
 class TREXI_GaussianPhi0:
 
     def __init__(
-    		self,
+            self,
                         gaussphi0_N,    # required argument
                         gaussphi0_basis_function_spacing,    # required argument
 
-    		floatmode = None
+            floatmode = None
     ):
-    	self.efloat = ef.EFloat(floatmode)
+        self.efloat = ef.EFloat(floatmode)
 
-    	self.h = self.efloat.to(gaussphi0_basis_function_spacing)
-    	self.M = int(gaussphi0_N)
+        self.h = self.efloat.to(gaussphi0_basis_function_spacing)
+        self.M = int(gaussphi0_N)
 
-    	self.b = [self.efloat.exp(self.h*self.h)*self.efloat.exp(-1j*(float(m)*self.h)) for m in range(-self.M, self.M+1)]
+        self.b = [self.efloat.exp(self.h*self.h)*self.efloat.exp(-1j*(float(m)*self.h)) for m in range(-self.M, self.M+1)]
 
-    	# Generate dummy Gaussian function
-    	fafcoeffs = TREXI_GaussianCoefficients()
-    	fafcoeffs.function_name = 'gaussianorig'
-    	fafcoeffs.function_scaling = self.efloat.to(1.0)
+        # Generate dummy Gaussian function
+        fafcoeffs = TREXI_GaussianCoefficients()
+        fafcoeffs.function_name = 'gaussianorig'
+        fafcoeffs.function_scaling = self.efloat.to(1.0)
 
 
     def output(self):
-    	for i in self.b:
-    		print(i)
+        for i in self.b:
+            print(i)
 
 
     def fun(
-    	self,
-    	i_x
+        self,
+        i_x
     ):
-    	return self.efloat.exp(self.efloat.i*i_x)
+        return self.efloat.exp(self.efloat.i*i_x)
 
 

@@ -26,7 +26,7 @@ class REXICoefficients:
         self.betas = []
         self.gamma = None
 
-        self.unique_id = None
+        self.unique_id_string = None
         
         self.normalized_steady_state = False
         return
@@ -165,7 +165,7 @@ class REXICoefficients:
         x = 0
         val = 0
         for i in range(len(self.alphas)):
-            val += self.betas[i] / (x + self.alphas[i])
+            val += self.betas[i] / (x - self.alphas[i])
 
         fun = Functions(self.function_name, efloat_mode='float')     
         
@@ -182,7 +182,7 @@ class REXICoefficients:
         retval = self.gamma
 
         for i in range(len(self.alphas)):
-            retval += self.betas[i] / (x + self.alphas[i])
+            retval += self.betas[i] / (x - self.alphas[i])
 
         return retval
 

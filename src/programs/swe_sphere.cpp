@@ -3,7 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
- * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
+ * MULE_SCONS_OPTIONS: --fortran-source=enable --sphere-spectral-space=enable
  */
 
 #ifndef SWEET_GUI
@@ -205,6 +205,35 @@ public:
 	}
 
 
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file_csv_spec_evol(
+			const SphereData_Spectral &i_sphereData,
+			const char* i_name		///< name of output variable
+	)
+	{
+		char buffer[1024];
+		std::string phase = "_arg";
+		std::string ampl = "_amp"; 
+
+		const char* filename_template_ampl = "output_spec_ampl_%s.txt"; //.c_str();
+		const char* filename_template_arg = "output_spec_arg_%s.txt"; //.c_str();
+		int reduce_mode_factor = 4;
+
+		sprintf(buffer, filename_template_arg, i_name);
+		i_sphereData.spectrum_phase_file_write_line(buffer, 
+			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
+			20, 10e-20, reduce_mode_factor);
+
+		sprintf(buffer, filename_template_ampl, i_name);
+		i_sphereData.spectrum_abs_file_write_line(buffer, 
+			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
+			20, 10e-20, reduce_mode_factor);
+
+		return buffer;
+	}
+
 
 	/**
 	 * Write file to data and return string of file name
@@ -337,6 +366,45 @@ public:
 				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 			}
 		}
+		else if (simVars.iodata.output_file_mode == "csv_spec_evol"){
+
+			std::string output_filename;
+
+			{ 
+				/*
+				* Spectral kinetic energy and potential enstrophy calculation and output
+				*
+				* Details in Jakob-Chien, Ruediger, James J. Hack, and David L. Williamson. 
+				* "Spectral transform solutions to the shallow water test set." Journal of Computational Physics 119, no. 1 (1995): 164-187.
+				*/
+				// Kinetic energy is given in spectral space as
+				// KE per mode = a^2/((n(n+1)))*(vrt*conj(vrt))+a^2/((n(n+1)))*(div*conj(div))
+				// r = a/(sqrt(n(n+1))) (root_laplace)
+				// KE per mode = (r*vrt*conj(r*vrt))+(r*div*conj(r*div))
+				SphereData_Spectral rlap_vrt = op.inv_root_laplace(prog_vrt); 
+				SphereData_Spectral rlap_div = op.inv_root_laplace(prog_div); 
+				SphereData_Spectral kin_en = rlap_vrt + rlap_div ;
+
+				output_filename = write_file_csv_spec_evol(kin_en, "kin_en"); 
+				std::cout << " + " << output_filename << " (Total Kin Energy : " << 0.25*kin_en.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
+
+				// For Barotropic vort eq: See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
+				// Kinetic energy is given in spectral space as
+				// Vortical energy per mode is (0.5 n*(n+1) / a^2) *psi*conj(psi) in spectral space
+				//SphereData_Spectral psi = op.inv_laplace(prog_vrt); // 
+				// multiply psi by sqrt( n * (n+1))/a (apply root laplacian)
+				//SphereData_Spectral psi_root = op.root_laplace(psi);
+				//output_filename = write_file_csv_spec_evol(psi_root*std::sqrt(0.5), "spec_energy"); 
+				//std::cout << " + " << output_filename << " (Kinetic energy : " << (0.5)*psi_root.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
+
+				// See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
+				// enstrophy per mode is 0.5 vrt*conj(vrt) in spectral space
+				// Total enstrophy is the sum of these (counting twice modes with m>0 and once when m=0)
+				output_filename = write_file_csv_spec_evol(prog_vrt, "enstrophy"); 
+				std::cout << " + " << output_filename << " (Total Enstrophy : " << prog_vrt.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
+
+			}
+		}
 		else
 		{
 			SWEETError("Unknown output file mode '"+simVars.iodata.output_file_mode+"'");
@@ -396,7 +464,12 @@ public:
 				double error_vrt = diff_vrt.toPhys().physical_reduce_max_abs();
 				double error_div = diff_div.toPhys().physical_reduce_max_abs();
 
-				std::cout << "[MULE] errors: ";
+				
+				std::ios init(NULL);
+				init.copyfmt(std::cout);
+				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << simVars.timecontrol.current_timestep_nr << ": ";
+				std::cout.copyfmt(init);
+
 				std::cout << "simtime=" << simVars.timecontrol.current_simulation_time;
 				std::cout << "\terror_linf_phi=" << error_phi;
 				std::cout << "\terror_linf_vrt=" << error_vrt;

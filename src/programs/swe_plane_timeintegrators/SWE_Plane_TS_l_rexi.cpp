@@ -420,7 +420,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		for (std::size_t n = start; n < end; n++)
 		{
 			// load alpha (a) and scale by inverse of tau
-			complex alpha = rexi_alphas[n]/i_dt;
+			complex alpha = -rexi_alphas[n]/i_dt;
 			complex beta = rexi_betas[n];
 
 			if (simVars.sim.plane_rotating_f0 == 0)

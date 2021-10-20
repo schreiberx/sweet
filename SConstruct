@@ -31,6 +31,12 @@ def exec_command(command):
     return out
 
 #
+# uname information
+#
+uname = exec_command('uname').replace("\n", "")
+
+
+#
 # determine hostname
 #
 hostname = exec_command('hostname')
@@ -285,14 +291,12 @@ if compiler_to_use == 'gnu':
     env.Append(CXXFLAGS=' -std=c++0x')
 
     # be pedantic to avoid stupid programming errors
-#    env.Append(CXXFLAGS=' -pedantic')
+    #  env.Append(CXXFLAGS=' -pedantic')
 
     # speedup compilation - remove this when compiler slows down or segfaults by running out of memory
-    env.Append(CXXFLAGS=' -pipe')
+    #env.Append(CXXFLAGS=' -pipe')
 
-    # activate gnu C++ compiler
-
-    if p.fortran_source=='enable':
+    if p.fortran_source == 'enable':
         #env.Replace(F90='gfortran')
         env.Append(F90FLAGS=' -cpp')
         env.Append(LIBS=['gfortran'])
@@ -395,13 +399,18 @@ if compiler_to_use == 'intel':
 
 # WARNING: don't use 'elif' here since clang may be activated via the 'gnu' compiler option
 if compiler_to_use == 'llvm':
-    reqversion = [5,1]
+    reqversion = [9,0]
     if p.threading == 'omp':
         reqversion = [9,0]
     version_line = exec_command('clang++ --version').splitlines()[0]
 
-    version_line = version_line.replace("clang version ", "")
+    verpos = version_line.find(" version ")
+    if verpos == -1:
+        raise Exception("Version number not detected")
+
+    version_line = version_line[verpos+9:]
     version = version_line.split('.')
+
     for i in range(0, 2):
         if (int(version[i]) > int(reqversion[i])):
             break
@@ -409,8 +418,8 @@ if compiler_to_use == 'llvm':
             print("LLVM version "+(".".join(reqversion))+" or higher required")
             Exit(1)
 
-    if p.gxx_toolchain != '':
-        env.Append(CXXFLAGS=' --gcc-toolchain='+p.gxx_toolchain)
+    #if p.gxx_toolchain != '':
+    #    env.Append(CXXFLAGS=' --gcc-toolchain='+p.gxx_toolchain)
 
     # eclipse specific flag
     env.Append(CXXFLAGS=' -fmessage-length=0')
@@ -427,16 +436,13 @@ if compiler_to_use == 'llvm':
     # speedup compilation - remove this when compiler slows down or segfaults by running out of memory
     env.Append(CXXFLAGS=' -pipe')
 
-    if p.sphere_spectral_space == 'enable':
-        # append gfortran library
-        env.Append(LIBS=['gfortran'])
-
     env.Replace(CXX = 'clang++')
+    env.Replace(LINK = 'clang++')
 
     if p.fortran_source == 'enable':
+        env.Replace(F90='gfortran')
+        env.Append(F90FLAGS=' -cpp')
         env.Append(LIBS=['gfortran'])
-        print("TODO: LLVM compiler not yet supported with fortran enabled")
-        Exit(-1)
 
 
 #

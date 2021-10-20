@@ -55,6 +55,10 @@ class JobData(InfoError):
             if m != None:
                 tag = m.group(1)
                 data = m.group(2)
+
+                if tag in retdict:
+                    print(f"WARNING: Duplicated tag '{tag}' found with value '{data}'")
+
                 retdict[tag] = data
 
         return retdict

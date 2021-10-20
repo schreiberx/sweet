@@ -124,7 +124,7 @@ for function_name in function_name_list:
             #N_list = [8, 10, 12]
             N_list = [8, 10]
 
-            quadrature_method_list = ["gauss", "radau", "chebyshev"]
+            quadrature_method_list = ["gauss_legendre", "gauss_chebyshev_u"]
 
             for (N, quadrature_method) in product(N_list, quadrature_method_list):
                 coeffs = brexi.setup(N=N, quadrature_method=quadrature_method).toFloat()

@@ -16,13 +16,13 @@ from elrexi.ELREXI import *
 sys.path.pop()
 
 for rexi_method in [
-        "trexi",
-        "cirexi",
-        "elrexi",
-        "brexi_tanhsinh",
+        #"trexi",
+        #"cirexi",
+        #"elrexi",
+        #"brexi_tanhsinh",
         "brexi_gauss",
-        "brexi_radau",
         "brexi_chebyshev",
+        "brexi_jacobi",
     ]:
 
     function = Functions(
@@ -94,6 +94,8 @@ for rexi_method in [
 
         coeffs = None
 
+        print("REXI method: "+rexi_method)
+
         if rexi_method == "trexi":
 
             if function_name != "phi0":
@@ -160,7 +162,7 @@ for rexi_method in [
                 continue
 
             brexi = BREXI(efloat_mode=efloat_mode)
-            coeffs = brexi.setup(N=butcherOrder, quadrature_method="gauss")
+            coeffs = brexi.setup(N=butcherOrder, quadrature_method="gauss_legendre")
 
             # Convert to floating point
             coeffs = coeffs.toFloat()
@@ -169,19 +171,21 @@ for rexi_method in [
             test_range_imag = [butcherOrder*0.5, butcherOrder*0.5]
 
 
-        elif rexi_method == "brexi_radau":
+
+        elif rexi_method == "brexi_jacobi":
 
             if function_name != "phi0":
                 continue
 
             brexi = BREXI(efloat_mode=efloat_mode)
-            coeffs = brexi.setup(N=butcherOrder, quadrature_method="radau")
+            coeffs = brexi.setup(N=butcherOrder, quadrature_method="gauss_jacobi")
 
             # Convert to floating point
             coeffs = coeffs.toFloat()
             unique_id_string = brexi.getUniqueId()
             test_range_real = [butcherOrder*0.25, butcherOrder*0.25]
             test_range_imag = [butcherOrder*0.5, butcherOrder*0.5]
+
 
         elif rexi_method == "brexi_chebyshev":
 
@@ -189,29 +193,13 @@ for rexi_method in [
                 continue
 
             brexi = BREXI(efloat_mode=efloat_mode)
-            coeffs = brexi.setup(N=butcherOrder, quadrature_method="chebyshev")
+            coeffs = brexi.setup(N=butcherOrder, quadrature_method="gauss_chebyshev_u")
 
             # Convert to floating point
             coeffs = coeffs.toFloat()
             unique_id_string = brexi.getUniqueId()
             test_range_real = [butcherOrder*0.15, butcherOrder*0.15]
             test_range_imag = [butcherOrder*0.25, butcherOrder*0.25]
-
-
-        elif rexi_method == "brexi_tanhsinh":
-
-            if function_name != "phi0":
-                continue
-
-            brexi = BREXI(efloat_mode=efloat_mode)
-            coeffs = brexi.setup(N=butcherOrder, quadrature_method="tanhsinh")
-
-            # Convert to floating point
-            coeffs = coeffs.toFloat()
-            unique_id_string = brexi.getUniqueId()
-            test_range_real = [butcherOrder*0.25, butcherOrder*0.25]
-            test_range_imag = [butcherOrder*0.25, butcherOrder*0.25]
-
 
 
         else:

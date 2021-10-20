@@ -1,7 +1,8 @@
 #
 # This is a template to set up environment variables correctly
 #
-# It assumes that you install all your libraries in subdirectories in $MULE_SOFTWARE_ROOT/local_software/local
+# It assumes that you install all your libraries in subdirectories
+# in $MULE_SOFTWARE_ROOT/local_software/local
 #
 
 
@@ -10,6 +11,18 @@
 #######################################################################
 
 MULE_BACKDIR="$PWD"
+
+#
+# We always try to activate the environemnt
+# This is important during the installation process
+#
+function activate_environment()
+{
+	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_anaconda/bin/activate" 2>/dev/null
+}
+PROMPT_COMMAND='activate_environment'
+
+
 
 
 #######################################################################
@@ -122,32 +135,41 @@ fi
 # Include detection
 #
 #
-SOURCED="true"
 
+if [ "`uname`" == "Darwin" ]; then
+	if [ "$0" != "bash" ]; then
+		echo_error_hline
+		echo_error "These scripts are only compatible to the bash shell"
+		echo_error_hline
+		return
+	fi
+else
+	SOURCED="true"
 
-if [ "#$(basename -- $0)" = "#env_vars.sh" ]; then
-	SOURCED="false"
-fi
+	if [ "#$(basename -- $0)" = "#env_vars.sh" ]; then
+		SOURCED="false"
+	fi
 
-if [ "$SOURCED" != "true" ]; then
-	echo_error_hline
-	echo_error "THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
-	echo_error_hline
-	echo_error "Use e.g. "
-	echo_error ""
-	echo_error "   $ source ./env_vars.sh"
-	echo_error ""
-	echo_error "to setup the environment variables correctly"
-	echo_error_hline
-	return 2>/dev/null
-	exit 1
-fi
+	if [ "$SOURCED" != "true" ]; then
+		echo_error_hline
+		echo_error "THIS SCRIPT MAY NOT BE EXECUTED, BUT INCLUDED IN THE ENVIRONMENT VARIABLES!"
+		echo_error_hline
+		echo_error "Use e.g. "
+		echo_error ""
+		echo_error "   $ source ./env_vars.sh"
+		echo_error ""
+		echo_error "to setup the environment variables correctly"
+		echo_error_hline
+		return 2>/dev/null
+		exit 1
+	fi
 
-if [ "`basename -- "$SHELL"`" != "bash" ]; then
-	echo_error_hline
-	echo_error "These scripts are only compatible to the bash shell"
-	echo_error_hline
-	return
+	if [ "`basename -- "$SHELL"`" != "bash" ]; then
+		echo_error_hline
+		echo_error "These scripts are only compatible to the bash shell"
+		echo_error_hline
+		return
+	fi
 fi
 
 
@@ -162,6 +184,11 @@ cd "$SCRIPTDIR"
 # Get full path
 SCRIPTDIR="$PWD"
 
+# Anaconda install directory
+#export PYTHON_VENV_DIR="$SCRIPTDIR/python_venv_anaconda__$(hostname)/"
+export PYTHON_VENV_DIR="$SCRIPTDIR/local/python_venv_anaconda/"
+
+
 # Get SOFTWARE root directory
 cd "../"
 export MULE_SOFTWARE_ROOT="$PWD"
@@ -174,9 +201,6 @@ export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
 # Use SWEET python environment in case that the system-wide installed python is used
 # Ignore errors in case that this folder doesn't exist
 #python3 -m venv "$MULE_SOFTWARE_ROOT/local_software/local/python_env"
-
-# Setup environment
-#source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
 
 #######################################################################
 # Setup platform specific parts
@@ -224,6 +248,7 @@ export PATH="$SCRIPTDIR/local/bin:$PATH"
 export PATH="$MULE_ROOT/bin:$PATH"
 export PATH="$MULE_LOCAL_ROOT/bin:$PATH"
 export PATH="$MULE_SOFTWARE_ROOT/bin:$PATH"
+#export PATH="$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/:$PATH"
 
 export PKG_CONFIG_PATH="$SCRIPTDIR/local/lib/pkgconfig:$PKG_CONFIG_PATH"
 
@@ -248,23 +273,27 @@ if [ -d "$SCRIPTDIR/local/lib64" ]; then
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 fi
 
-# Determine installed SWEET-installed python version
-PYTHON_EXEC=$MULE_SOFTWARE_ROOT/local_software/local/bin/python3
 
-if [ -x "$PYTHON_EXEC" ]; then
-	PYTHONVERSION=$($MULE_SOFTWARE_ROOT/local_software/local/bin/python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
-else
-	PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
+if false; then
+	# Determine installed SWEET-installed python version
+	PYTHON_EXEC=$MULE_SOFTWARE_ROOT/local_software/local/bin/python3
+
+	if [ -x "$PYTHON_EXEC" ]; then
+		PYTHONVERSION=$($MULE_SOFTWARE_ROOT/local_software/local/bin/python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
+	else
+		PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')" 2>/dev/null)
+	fi
+
+	# Fallback to 3.8 version
+	test "#" = "#$PYTHONVERSION" && PYTHONVERSION="3.8"
+
+	if [ "#" = "#$PYTHONPATH" ]; then
+		export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/"
+	else
+		export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/:$PYTHONPATH"
+	fi
 fi
 
-# Fallback to 3.8 version
-test "#" = "#$PYTHONVERSION" && PYTHONVERSION="3.8"
-
-if [ "#" = "#$PYTHONPATH" ]; then
-	export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/"
-else
-	export PYTHONPATH="$SCRIPTDIR/local/lib/python$PYTHONVERSION/site-packages/:$PYTHONPATH"
-fi
 
 
 # Add MULE python path
@@ -274,6 +303,7 @@ export PYTHONPATH="$MULE_ROOT/python/:$PYTHONPATH"
 
 # Add MULE SWEET python path
 export PYTHONPATH="$MULE_LOCAL_ROOT/python/:$PYTHONPATH"
+
 
 
 # Back to local software

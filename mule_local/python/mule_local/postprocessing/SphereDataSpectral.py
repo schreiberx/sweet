@@ -10,7 +10,7 @@ class SphereDataSpectral:
     def __init__(self, filename = None, setup_physical=True):
 
         if filename != None:
-        	self.read_file(filename, setup_physical=setup_physical)
+            self.read_file(filename, setup_physical=setup_physical)
 
         pass
 

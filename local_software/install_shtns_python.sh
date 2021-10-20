@@ -10,7 +10,7 @@ PKG_NAME="SHTNS_python"
 PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python$PYTHONVERSION/site-packages/shtns.py"
 
-PKG_URL_SRC="shtns-3.4.tar.gz"
+PKG_URL_SRC="shtns-3.4.6.tar.gz"
 
 config_setup
 
@@ -23,22 +23,23 @@ if [ "#$TRAVIS" != "#" ]; then
 fi
 
 #CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
-CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
+#CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
 
-
-echo_info_hline
-echo_info "SHTNS Python OpenMP:"
-# Python, OpenMP
-config_configure --enable-python --enable-openmp $CONFIGURE_EXTRA_FLAGS
-
-# Special flag for sk2 (@ CAPS hardware)
-if [ "#$(hostname)" = "#sk1" -o "#$(hostname)" = "#sk2" ]; then
-	sed -i "s/-march=native/-march=skylake/" "Makefile"
+if [ "`uname`" == "DarwinXXX" ]; then
+	echo_info_hline
+	echo_info "SHTNS Python without OpenMP:"
+	# Python, OpenMP
+	config_configure --enable-python --disable-openmp $CONFIGURE_EXTRA_FLAGS
+else
+	echo_info_hline
+	echo_info "SHTNS Python OpenMP:"
+	# Python, OpenMP
+	config_configure --enable-python --enable-openmp $CONFIGURE_EXTRA_FLAGS
 fi
 
 config_make_clean
 config_make_default
-python3 setup.py install --prefix="$SWEET_LOCAL_SOFTWARE_DST_DIR" || echo_error_exit "Failed to install"
+python3 setup.py install --prefix="$PYTHON_VENV_DIR" || echo_error_exit "Failed to install"
 
 cd "$MULE_SOFTWARE_ROOT/local_software"
 

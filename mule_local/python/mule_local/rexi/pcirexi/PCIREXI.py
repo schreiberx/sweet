@@ -94,6 +94,6 @@ class PCIREXI:
                                              self.quadrature_settings.quadrature_method,
                                              arc_length_distribution=self.quadrature_settings.
                                              distribute_quad_points_based_on_arc_length)
-        self.alphas = cauchy_integrator.a_s[:]
+        self.alphas = [-a for a in cauchy_integrator.a_s[:]]
         self.betas = cauchy_integrator.bs[:]
 

@@ -70,8 +70,8 @@ void solveLalpha(
 	Tcomplex val = Tcomplex(1.0)/(i_lambda*i_lambda - alpha*alpha);
 	Tcomplex ia = i*i_lambda;
 
-	o_u[0] = beta*(val*(-alpha*i_u[0] + ia*i_u[1]));
-	o_u[1] = beta*(val*(-ia*i_u[0] - alpha*i_u[1]));
+	o_u[0] = beta*(val*(alpha*i_u[0] + ia*i_u[1]));
+	o_u[1] = beta*(val*(-ia*i_u[0] + alpha*i_u[1]));
 }
 
 
@@ -160,7 +160,7 @@ std::complex<T> approx_returnComplex(
 	std::size_t S = alpha.size();
 
 	for (std::size_t n = 0; n < S; n++)
-		sum += beta_re[n] / (std::complex<T>(0, i_x) + alpha[n]);
+		sum += beta_re[n] / (std::complex<T>(0, i_x) - alpha[n]);
 
 	return sum;
 }

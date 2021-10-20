@@ -8,7 +8,7 @@ class SphereDataPhysical:
     def __init__(self, filename = None):
 
         if filename != None:
-        	self.read_file(filename)
+            self.read_file(filename)
 
         pass
 
@@ -18,14 +18,14 @@ class SphereDataPhysical:
 
         Return:
         -------
-        	Tuple with (data, longitude angles, latitude angles)
+            Tuple with (data, longitude angles, latitude angles)
         """
         print("Loading file: "+filename)
 
         try:
-        	data = np.loadtxt(filename, skiprows=0)
+            data = np.loadtxt(filename, skiprows=0)
         except Exception as e:
-        	raise e
+            raise e
 
         # First row and col are longitude and latitude coordinates
         self.labelsx = data[0,0:]

@@ -110,7 +110,7 @@ class CIREXI:
             if half_shifted:
                 theta_j = self.efloat.pi2*(j+self.efloat.to(0.5))/N
             else:
-                theta_j = self.efloat.pi2*(j)/N
+                theta_j = self.efloat.pi2*j/N
 
             # sampling position of support point
             pos = R*self.efloat.exp(self.efloat.i*theta_j)
@@ -119,7 +119,7 @@ class CIREXI:
             gamma_j = pos + lambda_shift
 
             self.betas.append(-self.fun.eval(gamma_j)*pos / N)
-            self.alphas.append(-gamma_j)
+            self.alphas.append(gamma_j)
 
 
         self.unique_id_string = "shic"

@@ -43,7 +43,7 @@ class Spharmt(object):
         self.ntrunc = ntrunc
         self.nlm = self._shtns.nlm
         self.degree = self._shtns.l
-        self.lap = -self.degree*(self.degree+1.0).astype(np.complex)
+        self.lap = -self.degree*(self.degree+1.0).astype(complex)
         self.invlap = np.zeros(self.lap.shape, self.lap.dtype)
         self.invlap[1:] = 1./self.lap[1:]
         self.rsphere = rsphere
@@ -254,14 +254,14 @@ if __name__ == "__main__":
 
         if analytical:
             # zonal jet.
-            vg = np.zeros((nlats,nlons),np.float)
+            vg = np.zeros((nlats,nlons),float)
             u1 = (umax/en)*np.exp(1./((x.lats-phi0)*(x.lats-phi1)))
             outputMinMaxSum(u1, "u1")
 
-            ug = np.zeros((nlats),np.float)
+            ug = np.zeros((nlats),float)
             ug = np.where(np.logical_and(x.lats < phi1, x.lats > phi0), u1, ug)
             ug.shape = (nlats,1)
-            ug = ug*np.ones((nlats,nlons),dtype=np.float) # broadcast to shape (nlats,nlonss)
+            ug = ug*np.ones((nlats,nlons),dtype=float) # broadcast to shape (nlats,nlonss)
 
             # initial vorticity, divergence in spectral space
             vrtspec, divspec =  x.getvrtdivspec(ug,vg)
@@ -300,7 +300,7 @@ if __name__ == "__main__":
 
         else:
             # zero v velocity
-            vg = np.zeros((nlats,nlons),np.float)
+            vg = np.zeros((nlats,nlons),float)
 
             # u_init
             ug = u_init(x.lats)

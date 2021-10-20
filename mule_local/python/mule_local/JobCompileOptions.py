@@ -695,7 +695,11 @@ class JobCompileOptions(InfoError):
                 self.plane_spectral_space = value
                 continue
 
-            raise Exception("TODO: Process option "+name)
+            if name == 'fortran-source':
+                self.fortran_source = value
+                continue
+
+            raise Exception("TODO: Process option '"+name+"'. Maybe you need to add it here!")
 
 
     def getProgramPath(self, ignore_errors = False):
