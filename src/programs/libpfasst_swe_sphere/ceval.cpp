@@ -251,17 +251,29 @@ void ceval_f1(SphereDataVars *i_Y,
 	// get the time step parameters
 	SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-#if 0
-	// return immediately if no nonlinear terms
-	if (simVars->pde.use_only_linear_divergence == 1)
-	{
-		c_sweet_data_setval(o_F1, 0.0);
-		return;
-	}
-#endif
+// #if 0
+// 	// return immediately if no nonlinear terms
+// 	if (simVars->pde.use_only_linear_divergence == 1)
+// 	{
+// 		c_sweet_data_setval(o_F1, 0.0);
+// 		return;
+// 	}
+// #endif
 
+	// use ERK timestepper for all terms
+	SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
+	// compute the explicit nonlinear right-hand side
+	timestepper->euler_timestep_update_pert(
+			phi_pert_Y,
+			vrt_Y,
+			div_Y,
+			phi_pert_F1,
+			vrt_F1,
+			div_F1,
+			simVars->timecontrol.current_simulation_time
+	);
 
-	if (simVars->libpfasst.implicit_coriolis_force)
+	/* if (simVars->libpfasst.implicit_coriolis_force)
 	{
 
 		SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
@@ -315,7 +327,7 @@ void ceval_f1(SphereDataVars *i_Y,
 
 		}
 
-	}
+	} */
 }
 
 // evaluates the first implicit piece o_F2 = F2(i_Y)
@@ -336,11 +348,25 @@ void ceval_f2 (
 
 	// initialize the right-hand side
 	c_sweet_data_setval(o_F2, 0.0);
+	return;
 
-	// get the simulation variables
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	// // get the simulation variables
+	// SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-	if (simVars->libpfasst.implicit_coriolis_force)
+	// // get ERK timestepper
+	// SWE_Sphere_TS_l_erk_n_erk* timestepper = i_ctx->get_l_erk_n_erk_timestepper(i_Y->get_level());
+	// // compute the linear right-hand side
+	// timestepper->euler_timestep_update_linear(
+	// 		phi_pert_Y,
+	// 		vrt_Y,
+	// 		div_Y,
+	// 		phi_pert_F2,
+	// 		vrt_F2,
+	// 		div_F2,
+	// 		simVars->timecontrol.current_simulation_time
+	// );
+
+	/* if (simVars->libpfasst.implicit_coriolis_force)
 	{
 
 		// get the explicit timestepper
@@ -397,7 +423,7 @@ void ceval_f2 (
 
 
 		}
-	}
+	} */
 }
 
 // solves the first implicit system for io_Y
@@ -411,84 +437,85 @@ void ccomp_f2 (
 		SphereDataVars *o_F2
 )
 {
-	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	SphereData_Spectral& div_Y  = io_Y->get_div();
+	return;
+	// SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
+	// SphereData_Spectral& vrt_Y = io_Y->get_vrt();
+	// SphereData_Spectral& div_Y  = io_Y->get_div();
 
-	const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
-	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
-	const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
+	// const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
+	// const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
+	// const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
 
-	// get the simulation variables
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	// // get the simulation variables
+	// SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-	// first copy the rhs into the solution vector
-	// this is needed to call the SWEET function run_TS_PFASST_timestep
-	phi_pert_Y  = phi_pert_Rhs;
-	vrt_Y = vrt_Rhs;
-	div_Y  = div_Rhs;
-
-
-	if (simVars->libpfasst.use_exp)
-	{
-		// get the exp time stepper
-		SWE_Sphere_TS_l_exp* timestepper = i_ctx->get_l_exp_timestepper(io_Y->get_level());
-
-		// solve the implicit system using the Helmholtz solver
-		timestepper->run_timestep(
-				phi_pert_Y,
-				vrt_Y,
-				div_Y,
-				i_dt,
-				simVars->timecontrol.current_simulation_time
-		);
-
-	}
-	else 
-	{
-		if (simVars->libpfasst.implicit_coriolis_force)
-		{
-
-			// get the irk timestepper
-			SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
-
-			// solve the implicit system using the Helmholtz solver
-			timestepper->run_timestep(
-					phi_pert_Y,
-					vrt_Y,
-					div_Y,
-					i_dt,
-					simVars->timecontrol.current_simulation_time
-			);
-
-		}
-		else
-		{
-
-			// get the irk timestepper
-			SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
-
-			// solve the implicit system using the Helmholtz solver
-			timestepper->run_timestep(
-					phi_pert_Y,
-					vrt_Y,
-					div_Y,
-					i_dt,
-					simVars->timecontrol.current_simulation_time
-			);
+	// // first copy the rhs into the solution vector
+	// // this is needed to call the SWEET function run_TS_PFASST_timestep
+	// phi_pert_Y  = phi_pert_Rhs;
+	// vrt_Y = vrt_Rhs;
+	// div_Y  = div_Rhs;
 
 
-		}
-	}
+	// if (simVars->libpfasst.use_exp)
+	// {
+	// 	// get the exp time stepper
+	// 	SWE_Sphere_TS_l_exp* timestepper = i_ctx->get_l_exp_timestepper(io_Y->get_level());
+
+	// 	// solve the implicit system using the Helmholtz solver
+	// 	timestepper->run_timestep(
+	// 			phi_pert_Y,
+	// 			vrt_Y,
+	// 			div_Y,
+	// 			i_dt,
+	// 			simVars->timecontrol.current_simulation_time
+	// 	);
+
+	// }
+	// else 
+	// {
+	// 	if (simVars->libpfasst.implicit_coriolis_force)
+	// 	{
+
+	// 		// get the irk timestepper
+	// 		SWE_Sphere_TS_l_irk* timestepper = i_ctx->get_l_irk_timestepper(io_Y->get_level());
+
+	// 		// solve the implicit system using the Helmholtz solver
+	// 		timestepper->run_timestep(
+	// 				phi_pert_Y,
+	// 				vrt_Y,
+	// 				div_Y,
+	// 				i_dt,
+	// 				simVars->timecontrol.current_simulation_time
+	// 		);
+
+	// 	}
+	// 	else
+	// 	{
+
+	// 		// get the irk timestepper
+	// 		SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper(io_Y->get_level());
+
+	// 		// solve the implicit system using the Helmholtz solver
+	// 		timestepper->run_timestep(
+	// 				phi_pert_Y,
+	// 				vrt_Y,
+	// 				div_Y,
+	// 				i_dt,
+	// 				simVars->timecontrol.current_simulation_time
+	// 		);
 
 
-	SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
-	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
-	SphereData_Spectral& div_F2  = o_F2->get_div();
+	// 	}
+	// }
 
-	phi_pert_F2  = (phi_pert_Y  - phi_pert_Rhs)  / i_dt;
-	vrt_F2 = (vrt_Y - vrt_Rhs) / i_dt;
-	div_F2  = (div_Y  - div_Rhs)  / i_dt;
+
+	// SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
+	// SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
+	// SphereData_Spectral& div_F2  = o_F2->get_div();
+
+	// phi_pert_F2  = (phi_pert_Y  - phi_pert_Rhs)  / i_dt;
+	// vrt_F2 = (vrt_Y - vrt_Rhs) / i_dt;
+	// div_F2  = (div_Y  - div_Rhs)  / i_dt;
 
 }
 
@@ -513,49 +540,49 @@ void ceval_f3 (
 	// initialize F3 to zero in case no artificial viscosity
 	c_sweet_data_setval(o_F3, 0.0);
 
-	// get the simulation variables
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	// // get the simulation variables
+	// SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-	// no need to do anything if no artificial viscosity
-	if (simVars->sim.viscosity == 0)
-		return;
+	// // no need to do anything if no artificial viscosity
+	// if (simVars->sim.viscosity == 0)
+	// 	return;
 
-	// get the parameters used to apply diffusion
-	const double r    = simVars->sim.sphere_radius;
-	const double visc = simVars->sim.viscosity;
+	// // get the parameters used to apply diffusion
+	// const double r    = simVars->sim.sphere_radius;
+	// const double visc = simVars->sim.viscosity;
 
-	phi_pert_F3 = phi_pert_Y;
-	phi_pert_F3.spectral_update_lambda(
-			[&](
-					int n, int m,
-					std::complex<double> &io_data
-			)
-			{
-		io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
-			}
-	);
+	// phi_pert_F3 = phi_pert_Y;
+	// phi_pert_F3.spectral_update_lambda(
+	// 		[&](
+	// 				int n, int m,
+	// 				std::complex<double> &io_data
+	// 		)
+	// 		{
+	// 	io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
+	// 		}
+	// );
 
-	vrt_F3 = vrt_Y;
-	vrt_F3.spectral_update_lambda(
-			[&](
-					int n, int m,
-					std::complex<double> &io_data
-			)
-			{
-		io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
-			}
-	);
+	// vrt_F3 = vrt_Y;
+	// vrt_F3.spectral_update_lambda(
+	// 		[&](
+	// 				int n, int m,
+	// 				std::complex<double> &io_data
+	// 		)
+	// 		{
+	// 	io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
+	// 		}
+	// );
 
-	div_F3 = div_Y;
-	div_F3.spectral_update_lambda(
-			[&](
-					int n, int m,
-					std::complex<double> &io_data
-			)
-			{
-		io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
-			}
-	);
+	// div_F3 = div_Y;
+	// div_F3.spectral_update_lambda(
+	// 		[&](
+	// 				int n, int m,
+	// 				std::complex<double> &io_data
+	// 		)
+	// 		{
+	// 	io_data *= (-visc*(double)n*((double)n+1.0))/(r*r);
+	// 		}
+	// );
 }
 
 // solves the second implicit system for io_Y
@@ -571,41 +598,42 @@ void ccomp_f3 (
 		SphereDataVars *o_F3
 )
 {
-	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	SphereData_Spectral& div_Y  = io_Y->get_div();
+	return;
+	// SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
+	// SphereData_Spectral& vrt_Y = io_Y->get_vrt();
+	// SphereData_Spectral& div_Y  = io_Y->get_div();
 
-	SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
-	SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
-	SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
+	// SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
+	// SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
+	// SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
 
-	// initialize F3 to zero in case no artificial viscosity
-	c_sweet_data_setval(o_F3, 0.0);
+	// // initialize F3 to zero in case no artificial viscosity
+	// c_sweet_data_setval(o_F3, 0.0);
 
-	// get the simulation variables
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	// // get the simulation variables
+	// SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-	// no need to do anything if no artificial viscosity
-	if (simVars->sim.viscosity == 0)
-		return;
+	// // no need to do anything if no artificial viscosity
+	// if (simVars->sim.viscosity == 0)
+	// 	return;
 
-	// get the parameters used to apply diffusion
-	const double scalar = simVars->sim.viscosity*i_dt;
-	const double r      = simVars->sim.sphere_radius;
+	// // get the parameters used to apply diffusion
+	// const double scalar = simVars->sim.viscosity*i_dt;
+	// const double r      = simVars->sim.sphere_radius;
 
-	// solve (1-dt*visc*diff_op)*rhs = y
-	phi_pert_Y  = phi_pert_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r);
-	vrt_Y = vrt_Rhs.spectral_solve_helmholtz(1.0, -scalar, r);
-	div_Y  = div_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r);
+	// // solve (1-dt*visc*diff_op)*rhs = y
+	// phi_pert_Y  = phi_pert_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r);
+	// vrt_Y = vrt_Rhs.spectral_solve_helmholtz(1.0, -scalar, r);
+	// div_Y  = div_Rhs.spectral_solve_helmholtz( 1.0, -scalar, r);
 
-	// now recompute F3 with the new value of Y
-	SphereData_Spectral& phi_pert_F3  = o_F3->get_phi_pert();
-	SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
-	SphereData_Spectral& div_F3  = o_F3->get_div();
+	// // now recompute F3 with the new value of Y
+	// SphereData_Spectral& phi_pert_F3  = o_F3->get_phi_pert();
+	// SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
+	// SphereData_Spectral& div_F3  = o_F3->get_div();
 
-	phi_pert_F3  = (phi_pert_Y  - phi_pert_Rhs)  / i_dt;
-	vrt_F3 = (vrt_Y - vrt_Rhs) / i_dt;
-	div_F3  = (div_Y  - div_Rhs)  / i_dt;
+	// phi_pert_F3  = (phi_pert_Y  - phi_pert_Rhs)  / i_dt;
+	// vrt_F3 = (vrt_Y - vrt_Rhs) / i_dt;
+	// div_F3  = (div_Y  - div_Rhs)  / i_dt;
 
 }
 
