@@ -13,13 +13,15 @@ from matplotlib.lines import Line2D
 
 
 
-groups = ['runtime.libpfasst_niters']
+groups = [
+    'runtime.libpfasst_niters',
+]
 
 
 tagnames_y = [
-    'sphere_data_diff_prog_phi.res_norm_linf',
-    'sphere_data_diff_prog_div.res_norm_linf',
-    'sphere_data_diff_prog_vort.res_norm_linf',
+    'sphere_data_diff_prog_phi_pert.res_norm_linf',
+    'sphere_data_diff_.res_norm_linf',
+    'sphere_data_diff_prog_vrt.res_norm_linf',
 ]
 
 
