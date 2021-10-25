@@ -115,46 +115,6 @@ void c_sweet_data_norm(
 }
 
 // packs all the values contained in the sweet data object into a flat array
-// void c_sweet_data_pack(
-// 			 SphereDataVars *io_Y,
-// 			 double **o_flat_data_ptr
-// 			 )
-// {
-//   SphereDataSpectral& phi_pert  = io_Y->get_phi_pert();
-//   SphereDataSpectral& vrt = io_Y->get_vrt();
-//   SphereDataSpectral& div  = io_Y->get_div();
-
-//   // make sure that the physical data is up to date
-//   phi_pert.request_data_physical();
-//   vrt.request_data_physical();
-//   div.request_data_physical();
-
-//   // allocate the flat data array
-//   const int n_elems = (phi_pert.sphereDataConfig->physical_array_data_number_of_elements
-// 		      +  vrt.sphereDataConfig->physical_array_data_number_of_elements
-// 		      +  div.sphereDataConfig->physical_array_data_number_of_elements);
-//   io_Y->allocate_flat_data_array(n_elems);
-//   double*& flat_data_array = io_Y->get_flat_data_array();
-
-//   int j = 0;
-
-//   // phi_pert
-//   for (int i = 0; i < phi_pert.sphereDataConfig->physical_array_data_number_of_elements; ++i)
-//     flat_data_array[j++] = phi_pert.physical_space_data[i];
-
-//   // vrt
-//   for (int i = 0; i < vrt.sphereDataConfig->physical_array_data_number_of_elements; ++i)
-//     flat_data_array[j++] = vrt.physical_space_data[i];
-
-//   // div
-//   for (int i = 0; i < div.sphereDataConfig->physical_array_data_number_of_elements; ++i)
-//     flat_data_array[j++] = div.physical_space_data[i];
-
-//   // return the pointer to the array
-//   *o_flat_data_ptr = flat_data_array;
-// }
-
-// packs all the values contained in the sweet data object into a flat array
 void c_sweet_data_pack(
 		SphereDataVars *io_Y,
 		double **o_flat_data_ptr
@@ -201,49 +161,6 @@ void c_sweet_data_pack(
 	*o_flat_data_ptr = flat_data_array;
 }
 
-// // unpacks the flat array into the sweet data object
-// void c_sweet_data_unpack(
-// 			   double **i_flat_data_ptr,
-// 			   SphereDataVars *o_Y
-// 			   )
-// {
-//   int j = 0;
-
-//   // copy the values into physical_space_data array
-
-//   // phi_pert
-//   SphereDataSpectral& phi_pert = o_Y->get_phi_pert();
-//   for (int i = 0; i < phi_pert.sphereDataConfig->physical_array_data_number_of_elements; ++i)
-//     phi_pert.physical_space_data[i] = i_flat_data_ptr[0][j++];
-
-//   // vrt
-//   SphereDataSpectral& vrt = o_Y->get_vrt();
-//   for (int i = 0; i < vrt.sphereDataConfig->physical_array_data_number_of_elements; ++i) {
-//     vrt.physical_space_data[i] = i_flat_data_ptr[0][j++];
-//   }
-
-//   // v
-//   SphereDataSpectral& div = o_Y->get_div();
-//   for (int i = 0; i < div.sphereDataConfig->physical_array_data_number_of_elements; ++i) {
-//     div.physical_space_data[i] = i_flat_data_ptr[0][j++];
-//   }
-
-//   // tell sweet that the physical data is up to date
-//   phi_pert.physical_space_data_valid  = true;
-//   vrt.physical_space_data_valid = true;
-//   div.physical_space_data_valid  = true;
-
-//   // the spectral data needs to be recomputed
-//   phi_pert.spectral_space_data_valid  = false;
-//   vrt.spectral_space_data_valid = false;
-//   div.spectral_space_data_valid  = false;
-
-//   // make sure that the spectral data is up to date
-//   //phi_pert.request_data_spectral();
-//   //vrt.request_data_spectral();
-//   //div.request_data_spectral();
-
-// }
 
 // unpacks the flat array into the sweet data object
 void c_sweet_data_unpack(
@@ -275,7 +192,7 @@ void c_sweet_data_unpack(
 		);
 	}
 
-	// v
+	// div
 	SphereData_Spectral& div = o_Y->get_div();
 	for (int i = 0; i < div.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
