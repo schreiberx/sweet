@@ -138,9 +138,9 @@ void cinitial(
 
 	if (rank == 0)
 	{
-		// write_file(*i_ctx, phi_pert_Y,  "prog_phi_pert_init");
-		// write_file(*i_ctx, vrt_Y, "prog_vrt_init");
-		// write_file(*i_ctx, div_Y,  "prog_div_init");
+		write_file(*i_ctx, phi_pert_Y,  "prog_phi_pert_init");
+		write_file(*i_ctx, vrt_Y, "prog_vrt_init");
+		write_file(*i_ctx, div_Y,  "prog_div_init");
 		if (simVars->iodata.output_each_sim_seconds < 0) {
 		    // only write output at start and end
 		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.max_simulation_time;
