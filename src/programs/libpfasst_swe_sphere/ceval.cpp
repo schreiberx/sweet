@@ -437,14 +437,22 @@ void ccomp_f2 (
 		SphereDataVars *o_F2
 )
 {
-	return;
-	// SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
-	// SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	// SphereData_Spectral& div_Y  = io_Y->get_div();
+	// set y = rhs, f = 0.0
+	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
+	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
+	SphereData_Spectral& div_Y  = io_Y->get_div();
 
-	// const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
-	// const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
-	// const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
+	const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
+	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
+	const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
+
+	phi_pert_Y = phi_pert_Rhs;
+	vrt_Y = vrt_Rhs;
+	div_Y = div_Rhs;
+
+	c_sweet_data_setval(o_F2, 0.0);
+
+	return;
 
 	// // get the simulation variables
 	// SimulationVariables* simVars = i_ctx->get_simulation_variables();
@@ -598,6 +606,21 @@ void ccomp_f3 (
 		SphereDataVars *o_F3
 )
 {
+	// set y = rhs, f = 0.0
+	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
+	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
+	SphereData_Spectral& div_Y  = io_Y->get_div();
+
+	const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
+	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
+	const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
+
+	phi_pert_Y = phi_pert_Rhs;
+	vrt_Y = vrt_Rhs;
+	div_Y = div_Rhs;
+
+	c_sweet_data_setval(o_F3, 0.0);
+
 	return;
 	// SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
 	// SphereData_Spectral& vrt_Y = io_Y->get_vrt();
