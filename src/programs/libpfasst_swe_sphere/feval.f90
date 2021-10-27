@@ -22,7 +22,7 @@ module feval_module
      procedure :: compute_dt            => sweet_sweeper_compute_dt
   end type sweet_sweeper_t
 
-  ! Define the derived sweeper type
+  ! Define the derived stepper type
   type, extends(pf_ark_stepper_t) :: sweet_stepper_t
      type(c_ptr)    :: ctx = c_null_ptr ! c pointer to PlaneDataCtx/SphereDataCtx
      integer        :: nnodes           ! number of nodes
