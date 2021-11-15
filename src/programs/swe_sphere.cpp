@@ -155,12 +155,18 @@ public:
 
 		if (simVars.benchmark.setup_dealiased)
 		{
+			//std::cout << "A" << std::endl;
+			//std::cout << sphereDataConfig->getConfigInformationString() << std::endl;
+			//exit(1);
 			// use dealiased physical space for setup
 			sphereBenchmarks.setup(simVars, op);
 			sphereBenchmarks.master->get_initial_state(prog_phi_pert, prog_vrt, prog_div);
 		}
 		else
 		{
+			//std::cout << "B" << std::endl;
+			//std::cout << sphereDataConfig_nodealiasing->getConfigInformationString() << std::endl;
+			//exit(1);
 			// this is not the default since noone uses it
 			// use reduced physical space for setup to avoid spurious modes
 			SphereData_Spectral prog_phi_pert_nodealiasing(sphereDataConfig_nodealiasing);

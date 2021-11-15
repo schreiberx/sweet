@@ -358,6 +358,7 @@ public:
 			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
 			std::cout << "	--random-seed [int]		random seed for random number generator" << std::endl;
 			std::cout << "	--benchmark-name [string]	benchmark name" << std::endl;
+			std::cout << "	--benchmark-setup-dealiased [bool]	Use dealiasing for setup (default: 1)" << std::endl;
 			std::cout << "	-x [float]				x coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-y [float]				y coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-r [radius]				scale factor of radius for initial condition, default=1" << std::endl;

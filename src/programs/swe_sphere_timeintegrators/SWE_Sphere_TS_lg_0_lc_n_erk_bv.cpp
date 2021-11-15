@@ -123,10 +123,6 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::setup(
 
 void SWE_Sphere_TS_lg_0_lc_n_erk_bv::setup_auto()
 {
-	int version = 0;
-	if (simVars.disc.timestepping_method == "SWE_Sphere_TS_lg_0_lc_n_erk_bv")
-		version = 1;
-
 	setup(
 		simVars.disc.timestepping_order
 		);

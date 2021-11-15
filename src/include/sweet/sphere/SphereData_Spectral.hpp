@@ -956,7 +956,7 @@ public:
 	double spectral_reduce_sum_sqr_quad()	const
 	{
 		std::complex<double> sum = 0;
-		std::complex<double> c = 0;
+		//std::complex<double> c = 0;
 
 		//m=0 case - weight 1
 		std::size_t idx = sphereDataConfig->getArrayIndexByModes(0, 0);
@@ -1110,7 +1110,7 @@ public:
 		std::cout << "m \\ n ----->" << std::endl;
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
 		{
-			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			//std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
 				std::cout << "(" << m <<"," << n <<")" << "\t";
@@ -1187,7 +1187,7 @@ public:
 			file << "timestamp\t" ; 
 			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
 			{
-				std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+				//std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
 				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
@@ -1255,13 +1255,13 @@ public:
 			file << "timestamp\t" ; 
 			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
 			{
-				std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+				//std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
 				for (int n = m; n <= sphereDataConfig->spectral_modes_n_max/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
 				}
 			}
-			file<<std::endl;
+			file << std::endl;
 		}
 		else{
 			file.open(i_filename, std::ios_base::app);

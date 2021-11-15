@@ -16,15 +16,15 @@
  *
  * 1: NUMA domains
  *    -> Allocate one memory block chain per NUMA domain
- *    -> requires additional synchronization (critical regions)
+ *    -> Requires additional synchronization (critical regions)
  *
  * 2: Threads
  *    -> Allocate one memory block chain per thread!
- *    -> requires no synchronization
+ *    -> Requires no synchronization
  *
  * 3: Non-NUMA:
  *    -> Allocate one memory block chain
- *    -> requires synchronization
+ *    -> Requires synchronization
  *    -> This is useful for XeonPhi KNC
  *
  */
