@@ -102,7 +102,7 @@ void cinitial(
 
 	if (simVars->benchmark.use_topography)
 		write_file(*i_ctx, simVars->benchmark.h_topo,  "prog_h_topo");
-
+	
 	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
 	if (simVars->benchmark.setup_dealiased)
@@ -118,20 +118,20 @@ void cinitial(
 		// this is not the default since noone uses it
 		// use reduced physical space for setup to avoid spurious modes
 
-	// get the configuration for this level
-	SphereData_Config* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
-	SphereData_Spectral phi_pert_Y_nodealiasing(data_config_nodealiasing);
-	SphereData_Spectral vrt_Y_nodealiasing(data_config_nodealiasing);
-	SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
+		// get the configuration for this level
+		SphereData_Config* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
+		SphereData_Spectral phi_pert_Y_nodealiasing(data_config_nodealiasing);
+		SphereData_Spectral vrt_Y_nodealiasing(data_config_nodealiasing);
+		SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
 
 		SphereOperators_SphereData* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
 		benchmarks->setup(*simVars, *op_nodealiasing);
 		benchmarks->master->get_initial_state(phi_pert_Y_nodealiasing, vrt_Y_nodealiasing, div_Y_nodealiasing);
 
-	phi_pert_Y.load_nodealiasing(phi_pert_Y_nodealiasing);
-	vrt_Y.load_nodealiasing(vrt_Y_nodealiasing);
-	div_Y.load_nodealiasing(div_Y_nodealiasing);
+		phi_pert_Y.load_nodealiasing(phi_pert_Y_nodealiasing);
+		vrt_Y.load_nodealiasing(vrt_Y_nodealiasing);
+		div_Y.load_nodealiasing(div_Y_nodealiasing);
 	}
 
 	// output the configuration
@@ -139,9 +139,9 @@ void cinitial(
 
 	if (rank == 0)
 	{
-		write_file(*i_ctx, phi_pert_Y,  "prog_phi_pert_init");
-		write_file(*i_ctx, vrt_Y, "prog_vrt_init");
-		write_file(*i_ctx, div_Y,  "prog_div_init");
+		write_file(*i_ctx, phi_pert_Y,  "prog_phi_pert");
+		write_file(*i_ctx, vrt_Y, "prog_vrt");
+		write_file(*i_ctx, div_Y,  "prog_div");
 		if (simVars->iodata.output_each_sim_seconds < 0) {
 		    // only write output at start and end
 		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.max_simulation_time;
