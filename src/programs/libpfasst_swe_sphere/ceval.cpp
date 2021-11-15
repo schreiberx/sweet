@@ -103,35 +103,36 @@ void cinitial(
 	if (simVars->benchmark.use_topography)
 		write_file(*i_ctx, simVars->benchmark.h_topo,  "prog_h_topo");
 
-	// get the configuration for this level
-	SphereData_Config* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
-
-	// get the operator for this level
-	SphereOperators_SphereData* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
-
 	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
-	// instantiate phi_pert, vrt, and div without dealiasing to get the initial condition
+	if (simVars->benchmark.setup_dealiased)
+	{
+		// use dealiased physical space for setup
+		// get operator for this level
+		SphereOperators_SphereData* op = i_ctx->get_sphere_operators(i_ctx->get_number_of_levels() - 1);
+		benchmarks->setup(*simVars, *op);
+		benchmarks->master->get_initial_state(phi_pert_Y, vrt_Y, div_Y);
+	}
+	else
+	{
+		// this is not the default since noone uses it
+		// use reduced physical space for setup to avoid spurious modes
+
+	// get the configuration for this level
+	SphereData_Config* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
 	SphereData_Spectral phi_pert_Y_nodealiasing(data_config_nodealiasing);
 	SphereData_Spectral vrt_Y_nodealiasing(data_config_nodealiasing);
 	SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
 
-	phi_pert_Y_nodealiasing.spectral_set_zero();
-	vrt_Y_nodealiasing.spectral_set_zero();
-	div_Y_nodealiasing.spectral_set_zero();
+		SphereOperators_SphereData* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
-	// get the initial condition in phi_pert, vrt, and div
-	benchmarks->setup(*simVars,
-			*op_nodealiasing);
-	benchmarks->master->get_initial_state(
-			phi_pert_Y_nodealiasing,
-			vrt_Y_nodealiasing,
-			div_Y_nodealiasing);
+		benchmarks->setup(*simVars, *op_nodealiasing);
+		benchmarks->master->get_initial_state(phi_pert_Y_nodealiasing, vrt_Y_nodealiasing, div_Y_nodealiasing);
 
 	phi_pert_Y.load_nodealiasing(phi_pert_Y_nodealiasing);
 	vrt_Y.load_nodealiasing(vrt_Y_nodealiasing);
 	div_Y.load_nodealiasing(div_Y_nodealiasing);
-
+	}
 
 	// output the configuration
 	simVars->outputConfig();
