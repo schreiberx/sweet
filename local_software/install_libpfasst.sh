@@ -14,7 +14,11 @@ if [ -z "$MULE_MPIF90" ]; then
 	echo_error_exit "MULE_MPIF90 environment variable must be set for libpfasst compilation, see platform configuration"
 fi
 
-sed -i "s/ftn/${MULE_MPIF90}/" Makefile.defaults || echo_error_exit "Replacing compiler failed"
+# Use SWEET's default compiler
+sed -i "s/ftn/${MULE_MPIF90}/" Makefile.defaults || echo_error_exit "Replacing Fortran Compiler failed"
+
+# Change flags since there are compiler issues with gfortran 11.2
+sed -i "s/FFLAGS = /FFLAGS = -fallow-argument-mismatch /" Makefile.defaults || echo_error_exit "Replacing FFLAGS failed"
 
 echo_info "Executing 'make clean'..."
 config_exec make clean
