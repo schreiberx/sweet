@@ -133,8 +133,10 @@ int main(int i_argc, char *i_argv[])
 	levelSingletons[fineLevelId].dataConfig.setupAuto(
 			simVars.disc.space_res_physical,
 			simVars.disc.space_res_spectral,
-			simVars.misc.reuse_spectral_transformation_plans
+			simVars.misc.reuse_spectral_transformation_plans,
+			simVars.misc.verbosity
 	);
+	std::cout << "SPH config string: " << levelSingletons[fineLevelId].dataConfig.getConfigInformationString() << std::endl;
 
 	int res_physical_nodealiasing[2] = {
 			2*(simVars.disc.space_res_spectral[0]+1),
