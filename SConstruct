@@ -692,12 +692,12 @@ else:
 
 
 if p.debug_symbols == 'enable':
-    env.Append(CXXFLAGS = '-g')
-    env.Append(LINKFLAGS = '-g')
+    env.Append(CXXFLAGS=['-g'])
+    env.Append(LINKFLAGS=['-g'])
 
     if compiler_to_use == 'intel':
-        env.Append(CXXFLAGS = ' -shared-intel -shared-libgcc -debug inline-debug-info')
-        env.Append(LINKFLAGS = ' -shared-intel  -shared-libgcc -debug inline-debug-info')
+        env.Append(CXXFLAGS=['-shared-intel -shared-libgcc -debug inline-debug-info'])
+        env.Append(LINKFLAGS=['-shared-intel  -shared-libgcc -debug inline-debug-info'])
 
 if compiler_to_use != p.compiler:
     print("*"*80)

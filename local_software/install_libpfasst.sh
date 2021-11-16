@@ -4,7 +4,7 @@ source ./install_helpers.sh ""
 
 PKG_NAME="libpfasst"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libpfasst.a"
-PKG_URL_SRC="libpfasst_sweet_2018_09_27.tar.bz2"
+PKG_URL_SRC="libpfasst_sweet_2021_11_16.tar.bz2"
 
 config_setup
 
@@ -15,10 +15,14 @@ if [ -z "$MULE_MPIF90" ]; then
 fi
 
 # Use SWEET's default compiler
-sed -i "s/ftn/${MULE_MPIF90}/" Makefile.defaults || echo_error_exit "Replacing Fortran Compiler failed"
+sed -i "s/FC.*=.*/FC = ${MULE_MPIF90}/" Makefile.local || echo_error_exit "Replacing Fortran Compiler failed"
 
-# Change flags since there are compiler issues with gfortran 11.2
-sed -i "s/FFLAGS = /FFLAGS = -fallow-argument-mismatch /" Makefile.defaults || echo_error_exit "Replacing FFLAGS failed"
+# Change flags since there are compiler issues with gfortran 11.x
+# We need to do this by inserting a line adding parameters to FFLAGS
+sed -i "s/#FFLAGS = -fallow-argument-mismatch/FFLAGS += -fallow-argument-mismatch/" Makefile.local || echo_error_exit "Activating special compiler flag (arg mismatch) failed"
+
+# Deactivate LTO due to bugs in the linker of Ubuntu 21.10
+sed -i "1s/#/LDFLAGS = -fno-lto\n#/" Makefile.local || echo_error_exit "Activating special compiler flag (no-lto) failed"
 
 echo_info "Executing 'make clean'..."
 config_exec make clean
