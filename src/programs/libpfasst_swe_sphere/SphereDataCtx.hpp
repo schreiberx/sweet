@@ -44,7 +44,15 @@ public:
 						  *simVars,
 						  ((*levelSingletons)[levelSingletons->size()-1].op)
 						  );
-    timestepper_ln_erk->setup(4);
+    
+    int timestepping_order = i_simVars->disc.timestepping_order;
+    if (timestepping_order == -1)
+    {
+      std::cout << "Timestepping Order not given! Choosing default = 4" << std::endl;
+      timestepping_order = 4;
+    }
+    
+    timestepper_ln_erk->setup(timestepping_order);
     
     // initialize the residuals
     residuals.resize(nprocs,std::vector<double>(0,0.));
