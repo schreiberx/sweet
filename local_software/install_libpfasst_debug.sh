@@ -38,6 +38,8 @@ echo "FFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
 # Add LDFLAGS for FFTW
 echo "LDFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
 
+# Add DEBUG flag
+echo "DEBUG = TRUE" >> Makefile.local
 
 echo_info "Executing 'make clean'..."
 config_exec make clean
