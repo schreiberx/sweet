@@ -1,7 +1,7 @@
 #ifndef _CTRANSFER_HPP_
 #define _CTRANSFER_HPP_
 
-#include "SphereDataVars.hpp"
+#include "../libpfasst_interface/SphereDataVars.hpp"
 #include "SphereDataCtx.hpp"
 
 extern "C"

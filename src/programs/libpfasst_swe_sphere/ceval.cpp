@@ -13,12 +13,6 @@
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_exp.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk_lc_n_erk_ver01.hpp"
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
 
 

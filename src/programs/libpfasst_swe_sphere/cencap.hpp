@@ -2,7 +2,7 @@
 #define _CENCAP_HPP_
 
 #include <iomanip>
-#include "SphereDataVars.hpp"
+#include "../libpfasst_interface/SphereDataVars.hpp"
 #include "SphereDataCtx.hpp"
 
 /*
