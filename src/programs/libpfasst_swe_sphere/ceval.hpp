@@ -1,7 +1,7 @@
 #ifndef _CEVAL_HPP_
 #define _CEVAL_HPP_
 
-#include "SphereDataVars.hpp"
+#include "../libpfasst_interface/SphereDataVars.hpp"
 #include "SphereDataCtx.hpp"
 
 /**

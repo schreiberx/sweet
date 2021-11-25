@@ -6,7 +6,7 @@
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <vector>
 #include <sweet/SimulationVariables.hpp>
-#include "LevelSingleton.hpp"
+#include "../libpfasst_interface/LevelSingleton.hpp"
 
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
 

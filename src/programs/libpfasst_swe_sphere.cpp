@@ -12,7 +12,7 @@
 #include <sweet/sphere/SphereHelpers_Diagnostics.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include "libpfasst_swe_sphere/LevelSingleton.hpp"
+#include "libpfasst_interface/LevelSingleton.hpp"
 #include "libpfasst_swe_sphere/SphereDataCtx.hpp"
 #include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 #include <sweet/SWEETError.hpp>
