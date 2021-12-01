@@ -37,47 +37,21 @@ extern "C"
 	      );
 
   // evaluates the explicit piece
-  void ceval_f1(
+  void ceval(
 		SphereDataVars *i_Y, 
 		double i_t, 
 		SphereDataCtxSDC *i_ctx,
 		SphereDataVars *o_F1
 		);
 
-  // evaluates the first implicit piece
-  void ceval_f2 (
-		 SphereDataVars *i_Y, 
-		 double i_t, 
-		 SphereDataCtxSDC *i_ctx,
-		 SphereDataVars *o_F2 
-		 );
-
   // solves the first implicit system
-  void ccomp_f2 (
+  void ccomp (
 		 SphereDataVars *io_Y, 
 		 double i_t, 
 		 double i_dt, 
 		 SphereDataVars *i_Rhs, 
 		 SphereDataCtxSDC *i_ctx,
 		 SphereDataVars *o_F2 
-		 );
-
-  // evaluates the second implicit piece
-  void ceval_f3 (SphereDataVars *i_Y, 
-		 double i_t, 
-		 int i_level,
-		 SphereDataCtxSDC *i_ctx,
-		 SphereDataVars *o_F3 
-		 );
-		 
-  // solves the second implicit system
-  void ccomp_f3 (SphereDataVars *io_Y, 
-		 double i_t, 
-		 double i_dt,
-		 int i_level,
-		 SphereDataVars *i_Rhs,
-		 SphereDataCtxSDC *i_ctx, 
-		 SphereDataVars *o_F3
 		 );
 
   // applies artificial diffusion

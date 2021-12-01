@@ -100,18 +100,8 @@ void c_sweet_data_norm(
 )
 {
 	const SphereData_Spectral& phi_pert  = i_Y->get_phi_pert();
-//	const SphereData_Spectral& vrt = i_Y->get_vrt();
-//	const SphereData_Spectral& div  = i_Y->get_div();
 
 	*o_val = phi_pert.toPhys().physical_reduce_max_abs();
-//	const double vrt_max = vrt.toPhys().physical_reduce_max_abs();
-//	const double div_max  = div.toPhys().physical_reduce_max_abs();
-
-	// L-infinity norm
-	// if (vrt_max > *o_val)
-	//   *o_val = vrt_max;
-	// if (div_max > *o_val)
-	//   *o_val = div_max;
 }
 
 // packs all the values contained in the sweet data object into a flat array

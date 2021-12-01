@@ -141,6 +141,8 @@ int main(int i_argc, char *i_argv[])
 	// flag for the RK stepper
 	const int rk_stepper_flag = (simVars.libpfasst.use_rk_stepper) ? 1 : 0;
 
+	simVars.outputConfig();
+
 	// call LibPFASST to advance in time
 	fmain(
 			pd_ctx,                                       // user defined context
