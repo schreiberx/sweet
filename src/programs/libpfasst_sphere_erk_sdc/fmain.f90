@@ -4,7 +4,6 @@ module main_module
     use feval_module
     use hooks_module
     use transfer_module
-    use pf_mod_rkstepper
     use pf_mod_parallel
     use pf_mod_mpi
     use pfasst
@@ -81,13 +80,13 @@ contains
         pf%nlevels           = nlevs                         ! number of SDC levels
         pf%niters            = niters                        ! number of SDC iterations
         pf%save_timings      = 1                             ! output the timings in fort.601 file
-        qtype                = translate_qtype(qtype_name, & ! select the type of nodes
+        pf%qtype             = translate_qtype(qtype_name, & ! select the type of nodes
                                             qnl)
 
         if (nlevs == 1) then
             nvars = [nfields*nvars_per_field(1)]    ! number of degrees of freedom for the levels
         else 
-            stop 'This number of levels is not supported yet'
+            stop 'This number of levels is not supported'
         end if
 
         ! initialize level-specific data structures
@@ -114,19 +113,6 @@ contains
         allocate(sweet_level_t::pf%levels(level)%ulevel)
         allocate(sweet_data_factory_t::pf%levels(level)%ulevel%factory)
         allocate(sweet_sweeper_t::pf%levels(level)%ulevel%sweeper)
-        
-        ! check the number of nodes for RK stepper
-        if (pf%use_rk_stepper .eqv. .true.) then
-            if (pf%levels(level)%ulevel%stepper%order      == 5 .and. nnodes(level) /= 9) then
-                stop "invalid number of nodes for the RK stepper"
-            else if (pf%levels(level)%ulevel%stepper%order == 4 .and. nnodes(level) /= 7) then
-                stop "invalid number of nodes for the RK stepper"
-            else if (pf%levels(level)%ulevel%stepper%order == 3 .and. nnodes(level) /= 5) then
-                stop "invalid number of nodes for the RK stepper"
-            else if (pf%levels(level)%ulevel%stepper%order == 2 .and. nnodes(level) /= 4) then
-                stop "invalid number of nodes for the RK stepper"
-            end if
-        end if
 
         ! cast the object into sweet data objects
         sd_factory_ptr    => as_sweet_data_factory(pf%levels(level)%ulevel%factory)
@@ -180,6 +166,8 @@ contains
                          pf%nlevels,          &
                          PF_POST_BLOCK,       &
                          fecho_output_invariants)
+        
+        call pf_print_options(pf,un_opt=6)
         
         ! advance in time with libpfasst
         level = nlevs
