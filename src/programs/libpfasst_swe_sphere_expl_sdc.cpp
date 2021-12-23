@@ -1,6 +1,6 @@
 /*
  * Author: Valentina Schüller & Francois Hamon & Martin Schreiber <SchreiberX@gmail.com>
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/libpfasst_sphere_erk_sdc
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/libpfasst_swe_sphere_expl_sdc
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
  * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
