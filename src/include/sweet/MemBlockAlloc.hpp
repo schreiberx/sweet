@@ -386,7 +386,7 @@ public:
 		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
 		{
 			if (verbosity_level > 0)
-				std::cout << "NUMA block alloc: Using non-numa single memory block chain" << std::endl;
+				std::cout << "NUMA block alloc: Using just a single memory block chain" << std::endl;
 
 			_num_block_chain_domains = 1;
 			getThreadLocalDomainIdRef() = 0;
