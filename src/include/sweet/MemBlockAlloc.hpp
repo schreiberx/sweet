@@ -1,77 +1,159 @@
 /*
- * NUMABlockAlloc.hpp
+ * MemBlockAlloc.hpp
  *
  *  Created on: 14 Sep 2015
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *
+ * Changelog:
+ *   * 2021-12-23: Made fully configurable via environment variable
  */
-#ifndef SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_
-#define SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_
-
-#include <sweet/openmp_helper.hpp>
-
-/**
- * define granularity of allocation
- *
- * 0: default allocator
- *
- * 1: NUMA domains
- *    -> Allocate one memory block chain per NUMA domain
- *    -> Requires additional synchronization (critical regions)
- *
- * 2: Threads
- *    -> Allocate one memory block chain per thread!
- *    -> Requires no synchronization
- *
- * 3: Non-NUMA:
- *    -> Allocate one memory block chain
- *    -> Requires synchronization
- *    -> This is useful for XeonPhi KNC
- *
- */
-#if !(NUMA_BLOCK_ALLOCATOR_TYPE >= 0 && NUMA_BLOCK_ALLOCATOR_TYPE <= 3)
-#	error	"Please specify allocator type via NUMA_BLOCK_ALLOCATOR_TYPE"
-#endif
-
-#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 2
-#	include <numa.h>
-#endif
+#ifndef INCLUDE_MEMBLOCKALLOC_NEW_HPP_
+#define INCLUDE_MEMBLOCKALLOC_NEW_HPP_
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-#	include <omp.h>
-#endif
 
 #include <cstdlib>
 #include <cassert>
 #include <iostream>
 #include <vector>
 
+#include <stdexcept>
+#include <cstdlib>
+#include <cassert>
 
-
+#include "StringSplit.hpp"
 
 
 /**
- * This class implements a memory manager which caches the allocation of large memory blocks.
- *
- * The idea is to avoid freeing blocks directly.
+ * Prefix string for console output
+ */
+#define MEMBLOCKALLOC_PREFIX	"[MEMBLOCKALLOC] "
+
+
+/**
+ * Support allocator with NUMA granularity
+ */
+#ifndef MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
+	#define MEMBLOCKALLOC_ENABLE_NUMA_ALLOC 1
+#endif
+
+#if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
+	#include <numa.h>
+#endif
+
+
+
+/*
+ * SWEET specific part
+ */
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+	#define MEMBLOCKALLOC_ENABLE_OMP 1
+#endif
+
+#ifndef MEMBLOCKALLOC_ENABLE_OMP
+	#define MEMBLOCKALLOC_ENABLE_OMP 1
+#endif
+
+
+/*
+ * SWEET specific part
+ */
+#if MEMBLOCKALLOC_ENABLE_OMP
+	#include <sweet/openmp_helper.hpp>
+	#include <omp.h>
+#endif
+
+
+#define MEMBLOCKALLOC_MODE__SYSTEM 0
+#define MEMBLOCKALLOC_MODE__ONE 1
+#define MEMBLOCKALLOC_MODE__PERTHREAD 2
+#define MEMBLOCKALLOC_MODE__PERNUMA 3
+
+
+/**
+ * This class implements a memory manager with various features:
+ *  - caches the allocation of large memory blocks
+ *  - first touch policy (optional)
+ *  - highly performing if only the same block sizes are required
  */
 class MemBlockAlloc
 {
+	static const char *get_helptext()
+	{
+		return
+		 " Use environment variable\n"
+		 " 		MEMBLOCKALLOC=[option1=...][,option2=...][...]\n"
+		 " to configure.\n"
+		 "\n"
+		 " Options:\n"
+		 "\n"
+		 " 	verbose=[int]\n"
+		 " 		0: Disable verbose mode\n"
+		 " 		1: Enable verbose mode during initialization\n"
+		 " 		9: Print information on allocation / releasing memory\n"
+		 "\n"
+		 " 	firsttouch=[int]\n"
+		 " 		0: Disabled\n"
+		 " 		1: Enabled, threaded with 'omp parallel for'\n"
+		 " 		2: Enabled, nonthreaded\n"
+		 "\n"
+		 "  blockchains={system,one"
+#if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
+				",pernuma"
+				",perthread"
+#endif
+		 "}:\n"
+		 "  	'system': Use system's allocator!\n"
+		 "\n"
+		 "		'one': Allocate one memory block chain\n"
+		 "    		- Performance: Requires finer granular synchronization\n"
+		 "    		- Hint: This was useful for XeonPhi KNC (not KNL)\n"
+		 "\n"
+
+#if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
+		 "  	'perthread': Allocate one memory block chain per thread!\n"
+		 "    		- Performance: Requires no synchronization\n"
+		 "\n"
+		 "  	'pernuma': Allocate one memory block chain per NUMA domain\n"
+		 "    		- Performance: Requires additional synchronization (critical regions)\n"
+		 "\n"
+#endif
+		;
+	};
+
+	/**
+	 * Block allocation mode
+	 */
+	int mem_block_allocation_mode = MEMBLOCKALLOC_MODE__ONE;
+
+	/**
+	 * First touch policy
+	 * 0: disabled
+	 * 1: enabled, threaded "omp parallel for"
+	 * 2: enabled, no threading
+	 */
+	#if MEMBLOCKALLOC_ENABLE_OMP
+		int first_touch_policy = 1;
+	#else
+		int first_touch_policy = 2;
+	#endif
+
+	/**
+	 * verbosity
+	 */
+	int verbosity_level = 1;
+
 	/**
 	 * Number of allocation domains
 	 *
 	 * Either this is the number of NUMA domains or the number of threads,
 	 * depending on NUMA_BLOCK_ALLOCATOR_TYPE
 	 */
-	int num_alloc_domains = 1;
+	int _num_block_chain_domains = 1;
 
-	/**
-	 * verbosity
-	 */
-	int verbosity = 1;
 
 	/**
 	 * List of memory blocks of same size
@@ -110,19 +192,13 @@ private:
 	 * -> list over all Block sizes which are a
 	 * ---> list over all free blocks with that size
 	 */
-	std::vector<DomainMemBlocks> domain_block_groups;
+	std::vector<DomainMemBlocks> _domain_block_groups;
 
-
-	/**
-	 * Hardware page size to use for memory alignment.
-	 * (avoid overlapping pages for different NUMA nodes)
-	 */
-//	long page_size;
 
 	/**
 	 * setup already executed?
 	 */
-	bool setup_done;
+	bool _setup_done;
 
 
 private:
@@ -130,173 +206,277 @@ private:
 	static
 	int& getThreadLocalDomainIdRef()
 	{
-#if 0
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-		static int domain_id = omp_get_thread_num();
-#else
-		static int domain_id = 0;
-#endif
-
-		return domain_id;
-
-#else
-
 		/**
 		 * Domain node for current thread
 		 */
-		// WARNING: This class has to be compiled always with
+		// WARNING: This class has to be compiled always with -fopenmp activated
 		static thread_local int domain_id;
 		return domain_id;
-#endif
 	}
 
-
-public:
-	MemBlockAlloc()	:
-		setup_done(false)
-	{
-		p_setup();
-	}
-
-
-public:
 	static
-	void setup()
+	void fatal_error(const std::string &str)
 	{
-		// access singleton to call constructor
-		getSingletonRef().p_setup();
+		std::cerr << MEMBLOCKALLOC_PREFIX "ERROR: " << str << std::endl;
+		assert(false);
+		throw std::runtime_error(str);
+		std::exit(1);
 	}
 
-private:
-	void p_setup()
+	void print_configuration()
 	{
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-		if (omp_in_parallel())
-		{
-			std::cerr << "ERROR: NUMAMemManager may not be initialized within parallel region!" << std::endl;
-			std::cerr << "       Call NUMAMemManager::setup() at program start" << std::endl;
-			exit(1);
-		}
-#endif
+		std::cout << MEMBLOCKALLOC_PREFIX "*** MemBlockAlloc VERBOSE information ***" << std::endl;
+		std::cout << MEMBLOCKALLOC_PREFIX " + verbosity_level: " << verbosity_level << std::endl;
+		std::cout << MEMBLOCKALLOC_PREFIX " + first_touch_policy: " << first_touch_policy << std::endl;
+		std::cout << MEMBLOCKALLOC_PREFIX " + mem_block_allocation_mode: ";
 
-		if (setup_done)
-			return;
-
-		const char* env_verbosity = getenv("NUMA_BLOCK_ALLOC_VERBOSITY");
-		if (env_verbosity == nullptr)
-			verbosity = 0;
+		if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
+			std::cout << "system";
+		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
+			std::cout << "one";
+		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD)
+			std::cout << "perthread";
+		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA)
+			std::cout << "pernuma";
 		else
-			verbosity = atoi(env_verbosity);
+			fatal_error("Internal error (invalid mode enum)");
 
+		std::cout << std::endl;
+	}
 
-#if  NUMA_BLOCK_ALLOCATOR_TYPE == 0
+	/*
+	 * Parse environment variable (if it exists) and set parameters
+	 */
+	void parse_argv()
+	{
+		char *val = std::getenv("MEMBLOCKALLOC");
 
-		if (verbosity > 0)
-			std::cout << "NUMA block alloc: Using default system's allocator" << std::endl;
-
-		num_alloc_domains = 1;
-		getThreadLocalDomainIdRef() = 0;
-
-#elif  NUMA_BLOCK_ALLOCATOR_TYPE == 1
-
-		if (verbosity > 0)
-			std::cout << "NUMA block alloc: Using NUMA node granularity" << std::endl;
-
-		/*
-		 * NUMA granularity
-		 */
-		num_alloc_domains = numa_num_configured_nodes();
-		if (verbosity > 0)
-			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
-
-		// set NUMA id in case that master thread has a different id than the first thread
-		int cpuid = sched_getcpu();
-		getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
-
-
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-#pragma omp parallel
+		if (val == nullptr)
 		{
-			int cpuid = sched_getcpu();
-			getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
-		}
-#else
-		getThreadLocalDomainIdRef() = 0;
-#endif
-
-#elif NUMA_BLOCK_ALLOCATOR_TYPE == 2
-
-		if (verbosity > 0)
-			std::cout << "NUMA block alloc: Using allocator based on thread granularity" << std::endl;
-
-		/*
-		 * Thread granularity, use this also per default
-		 */
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-		num_alloc_domains = omp_get_max_threads();
-#else
-		num_alloc_domains = 1;
-#endif
-
-		if (verbosity > 0)
-			std::cout << "num_alloc_domains: " << num_alloc_domains << std::endl;
-
-		// set NUMA id in case that master thread has a different id than the first thread
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-		getThreadLocalDomainIdRef() = omp_get_thread_num();
-
-#pragma omp parallel
-		{
-		getThreadLocalDomainIdRef() = omp_get_thread_num();
+			/*
+			 * Nothing to do
+			 */
+			return;
 		}
 
-#else
-		getThreadLocalDomainIdRef() = 0;
-#endif
+		const std::string envstring(val);
 
+		/**
+		 * Split comma separated parameters, e.g.,
+		 * 	 verbose=1,blockchain=perthread
+		 *
+		 * List with items
+		 *   verbose=1
+		 *   blockchain=perthread
+		 */
+		std::vector<std::string> params = StringSplit::split(envstring, ",");
 
-#elif  NUMA_BLOCK_ALLOCATOR_TYPE == 3
-
-
-		if (verbosity > 0)
-			std::cout << "NUMA block alloc: Using non-numa single memory block chain" << std::endl;
-
-		num_alloc_domains = 1;
-		getThreadLocalDomainIdRef() = 0;
-
-#else
-
-#	error "Invalid NUMA_BLOCK_ALLOCATOR_TYPE"
-
-#endif
-
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-		if (verbosity > 0)
+		for (auto iter = params.begin(); iter != params.end(); iter++)
 		{
-			#pragma omp parallel
+			const std::string &param = *iter;
+
+			std::vector<std::string> split_params = StringSplit::split(param, "=");
+
+			if (split_params.size() == 0)
+				fatal_error(std::string("Error with parameter")+param);
+
+			if (split_params[0] == "help")
 			{
-				#pragma omp critical
+				print_configuration();
+				std::exit(1);
+			}
+			else if (split_params[0] == "verbose")
+			{
+				/*
+				 * Parse, e.g.,
+				 * 	verbose=13
+				 */
+				if (split_params.size() > 2)
+					fatal_error(std::string("Parameter missing for ")+split_params[0]);
+
+				if (split_params.size() == 1)
+					verbosity_level = 99;
+				else
+					verbosity_level = std::atoi(split_params[1].c_str());
+			}
+			else if (split_params[0] == "firsttouch")
+			{
+				/*
+				 * Parse, e.g.,
+				 * 	firsttouch=1
+				 */
+				if (split_params.size() != 2)
+					fatal_error(std::string("first touch option must have exactly one parameter, given ")+param);
+
+				first_touch_policy = std::atoi(split_params[1].c_str());
+
+				if (first_touch_policy != 0 && first_touch_policy != 1 && first_touch_policy != 2)
+					fatal_error(std::string("first touch policy must be set to 0, 1 or 2"));
+
+			}
+			else if (split_params[0] == "blockchain")
+			{
+				/*
+				 * Parse, e.g.,
+				 * 	blockchain=perthread
+				 */
+				if (split_params.size() != 2)
+					fatal_error(std::string("Only one parameter required for 'blockchains='"));
+
+				if (split_params[1] == "system")
 				{
-					std::cout << "	thread id " << omp_get_thread_num() << " is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
+					mem_block_allocation_mode = MEMBLOCKALLOC_MODE__SYSTEM;
+				}
+				else if (split_params[1] == "one")
+				{
+					mem_block_allocation_mode = MEMBLOCKALLOC_MODE__ONE;
+				}
+#if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
+				else if (split_params[1] == "perthread")
+				{
+					mem_block_allocation_mode = MEMBLOCKALLOC_MODE__PERTHREAD;
+				}
+				else if (split_params[1] == "pernuma")
+				{
+					mem_block_allocation_mode = MEMBLOCKALLOC_MODE__PERNUMA;
+				}
+#endif
+				else
+				{
+					fatal_error(std::string("Unknown option '") + split_params[1] + ("' for parameter blockchains=..."));
 				}
 			}
 		}
-#endif
 
-		domain_block_groups.resize(num_alloc_domains);
+		if (verbosity_level >= 1)
+			print_configuration();
 
-#if 0
-		// TODO: care about first-touch policy
-		for (auto& n : domain_block_groups)
+		return;
+	}
+
+
+public:
+	/**
+	 * Constructor.
+	 *
+	 * To be used directly at the beginning of 'main'
+	 */
+	MemBlockAlloc()	:
+		_setup_done(false)
+	{
+		if (_setup_done)
+			fatal_error("Setup in MemBlockAlloc called twice!");
+
+		parse_argv();
+
+		if (	mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA		||
+				mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD	)
 		{
-			std::size_t S = num_alloc_domains*10;
+			std::cerr << MEMBLOCKALLOC_PREFIX "WARNING: Using thread-supported memory allocator, but without OMP enabled" << std::endl;
+		}
 
-			// preallocate S different size of blocks which should be sufficient
-			n.block_groups.reserve(S);
+		if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
+		{
+			/*
+			 * this is the system's default allocator
+			 */
+			_num_block_chain_domains = 1;
+			getThreadLocalDomainIdRef() = 0;
+		}
+		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
+		{
+			if (verbosity_level > 0)
+				std::cout << "NUMA block alloc: Using non-numa single memory block chain" << std::endl;
+
+			_num_block_chain_domains = 1;
+			getThreadLocalDomainIdRef() = 0;
+		}
+#if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
+		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD)
+		{
+			if (verbosity_level > 0)
+				std::cout << "NUMA block alloc: Using allocator based on thread granularity" << std::endl;
+
+			/*
+			 * Thread granularity, use this also per default
+			 */
+			#if MEMBLOCKALLOC_ENABLE_OMP
+				_num_block_chain_domains = omp_get_max_threads();
+			#else
+				_num_block_chain_domains = 1;
+			#endif
+
+			if (verbosity_level > 0)
+				std::cout << "num_block_chain_domains: " << _num_block_chain_domains << std::endl;
+
+			#if MEMBLOCKALLOC_ENABLE_OMP
+				getThreadLocalDomainIdRef() = omp_get_thread_num();
+
+				#pragma omp parallel
+				{
+					getThreadLocalDomainIdRef() = omp_get_thread_num();
+				}
+			#else
+				getThreadLocalDomainIdRef() = 0;
+			#endif
+
+		}
+		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA)
+		{
+			/*
+			 * Allocator which works per NUMA domain
+			 */
+			if (verbosity_level > 0)
+				std::cout << "NUMA block alloc: Using NUMA node granularity" << std::endl;
+
+			/*
+			 * NUMA granularity
+			 */
+			_num_block_chain_domains = numa_num_configured_nodes();
+			if (verbosity_level > 0)
+				std::cout << "_num_block_chain_domains: " << _num_block_chain_domains << std::endl;
+
+			// set NUMA id in case that master thread has a different id than the first thread
+			int cpuid = sched_getcpu();
+			getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
+
+			#if MEMBLOCKALLOC_ENABLE_OMP
+				#pragma omp parallel
+				{
+					int cpuid = sched_getcpu();
+					getThreadLocalDomainIdRef() = numa_node_of_cpu(cpuid);
+				}
+			#else
+				getThreadLocalDomainIdRef() = 0;
+			#endif
 		}
 #endif
+		else
+		{
+			fatal_error("Internal error (allocation mode enum)");
+		}
 
-		setup_done = true;
+		#if MEMBLOCKALLOC_ENABLE_OMP
+			if (verbosity_level >= 10)
+			{
+				#pragma omp parallel
+				{
+					#pragma omp critical
+					{
+						std::cout << MEMBLOCKALLOC_PREFIX " + thread_id " << omp_get_thread_num() << " is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
+					}
+				}
+			}
+		#else
+			if (verbosity_level >= 10)
+			{
+				std::cout << MEMBLOCKALLOC_PREFIX " + thread_id " << omp_get_thread_num() << " is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
+			}
+		#endif
+
+		_domain_block_groups.resize(_num_block_chain_domains);
+
+		_setup_done = true;
 	}
 
 
@@ -311,10 +491,10 @@ public:
 public:
 	void p_shutdown()
 	{
-		if (verbosity > 1)
+		if (verbosity_level > 1)
 			std::cout << "NUMABlockAlloc EXIT" << std::endl;
 
-		for (auto& n : domain_block_groups)
+		for (auto& n : _domain_block_groups)
 		{
 			for (auto& g : n.block_groups)
 			{
@@ -322,16 +502,16 @@ public:
 
 				for (auto& b : g.free_blocks)
 				{
-#if NUMA_BLOCK_ALLOCATOR_TYPE == 0 || NUMA_BLOCK_ALLOCATOR_TYPE == 3
-					::free(b);
-#else
-					numa_free(b, g.block_size);
-#endif
+					#if MEMBLOCKALLOC_ENABLE_OMP
+						::free(b);
+					#else
+						numa_free(b, g.block_size);
+					#endif
 				}
 			}
 		}
 
-		setup_done = false;
+		_setup_done = false;
 	}
 
 
@@ -342,6 +522,7 @@ public:
 	{
 		/*
 		 * Compilation details:
+		 *
 		 * this is compiled to a code such as
 		 * '
 		 * 		cmp memManager, 0
@@ -351,9 +532,10 @@ public:
 		 * 	return:
 		 * 		ret ...
 		 * '
+		 * In other words, it's initialized on the fly during the first access
 		 */
-		static MemBlockAlloc memManager;
-		return memManager;
+		static MemBlockAlloc memBlockAlloc;
+		return memBlockAlloc;
 	}
 
 
@@ -361,18 +543,20 @@ public:
 	/**
 	 * return a list of blocks with the same size
 	 *
-	 * If the list does not exist, insert it
+	 * If the list does not exist, add an empty one
+	 *
+	 * *** NOT THREAD SAFE ***
 	 */
 	static
-	std::vector<void*>& getBlocksSameSize(
+	std::vector<void*>& getBlockListSameSize(
 			std::size_t i_size				///< size of blocks
 	)
 	{
 		MemBlockAlloc &n = MemBlockAlloc::getSingletonRef();
 
-		assert(n.getThreadLocalDomainIdRef() < (int)n.domain_block_groups.size());
+		assert(n.getThreadLocalDomainIdRef() < (int)n._domain_block_groups.size());
 
-		std::vector<MemBlocksSameSize>& block_groups = n.domain_block_groups[n.getThreadLocalDomainIdRef()].block_groups;
+		std::vector<MemBlocksSameSize>& block_groups = n._domain_block_groups[n.getThreadLocalDomainIdRef()].block_groups;
 
 		// iterate over blocks available for this NUMA domain
 		for (auto& block_group : block_groups)
@@ -391,6 +575,29 @@ public:
 
 
 	/**
+	 * return a block of the given size or 0 if no block is already allocated
+	 *
+	 * *** NOT THREAD SAFE ***
+	 */
+	static
+	void* getBlockSameSize(
+			std::size_t i_size				///< size of blocks
+	)
+	{
+		std::vector<void*>& block_list = getBlockListSameSize(i_size);
+
+		void *data = nullptr;
+		if (block_list.size() > 0)
+		{
+			data = (void*)block_list.back();
+			block_list.pop_back();
+		}
+
+		return data;
+	}
+
+
+	/**
 	 * Explicitly write data to the areas instead of relying on
 	 * the program to apply a first touch policy
 	 */
@@ -401,17 +608,28 @@ public:
 			std::size_t i_size
 	)
 	{
-#if 1
-		return i_data;
-#else
+		int _first_touch_policy = getSingletonRef().first_touch_policy;
+
 		char *data = (char*)i_data;
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (std::size_t i = 0; i < i_size; i++)
-			data[i] = 0;
+		if (_first_touch_policy == 0)
+		{
+			// nothing
+		}
+		else if (_first_touch_policy == 1)
+		{
+#if MEMBLOCKALLOC_ENABLE_OMP
+			#pragma omp parallel for
+#endif
+			for (std::size_t i = 0; i < i_size; i++)
+				data[i] = 0;
+		}
+		else if (_first_touch_policy == 2)
+		{
+			for (std::size_t i = 0; i < i_size; i++)
+				data[i] = 0;
+		}
 
 		return i_data;
-#endif
 	}
 
 
@@ -425,45 +643,32 @@ public:
 	{
 		T *data = nullptr;
 
-		#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 2
+		int _mem_block_allocation_mode = getSingletonRef().mem_block_allocation_mode;
 
-			#if NUMA_BLOCK_ALLOCATOR_TYPE == 1
-				// dummy call here to initialize this class as part of the singleton out of critical region
-				getSingletonRef();
+		if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
+		{
+			// allocate a new element to the list of blocks given in block_list
 
-				#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-				#	pragma omp critical
-				#endif
+			// posix_memalign is thread safe
+			// http://www.qnx.com/developers/docs/6.3.0SP3/neutrino/lib_ref/p/posix_memalign.html
+			int retval = posix_memalign((void**)&data, 4096, i_size);
+			if (retval != 0)
+			{
+				std::cerr << "Unable to allocate memory" << std::endl;
+				assert(false);
+				exit(-1);
+			}
 
-			#endif
-				{
-					std::vector<void*>& block_list = getBlocksSameSize(i_size);
-
-					if (block_list.size() > 0)
-					{
-						data = (T*)block_list.back();
-						block_list.pop_back();
-					}
-				}
-
-				if (data != nullptr)
-					return data;
-
-				return (T*)first_touch_init(numa_alloc(i_size), i_size);
-
-		#elif NUMA_BLOCK_ALLOCATOR_TYPE == 3
-
-			#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+			first_touch_init(data, i_size);
+			return data;
+		}
+		else if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
+		{
+			#if MEMBLOCKALLOC_ENABLE_OMP
 			#	pragma omp critical
 			#endif
 			{
-				std::vector<void*>& block_list = getBlocksSameSize(i_size);
-
-				if (block_list.size() > 0)
-				{
-					data = (T*)block_list.back();
-					block_list.pop_back();
-				}
+				data = (T*)getBlockSameSize(i_size);
 			}
 
 			if (data != nullptr)
@@ -479,25 +684,47 @@ public:
 
 			first_touch_init(data, i_size);
 			return data;
+		}
+#if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
+		else if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD)
+		{
+			data = (T*)getBlockSameSize(i_size);
 
-		#else
+			if (data != nullptr)
+				return data;
 
-			// allocate a new element to the list of blocks given in block_list
-
-			// posix_memalign is thread safe
-			// http://www.qnx.com/developers/docs/6.3.0SP3/neutrino/lib_ref/p/posix_memalign.html
-			int retval = posix_memalign((void**)&data, 4096, i_size);
-			if (retval != 0)
-			{
-				std::cerr << "Unable to allocate memory" << std::endl;
-				assert(false);
-				exit(-1);
-			}
+			data = (T*)numa_alloc_local(i_size);
 
 			first_touch_init(data, i_size);
-			return data;
 
-		#endif
+			return data;
+		}
+		else if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA)
+		{
+			// use critical section since the block chain is shared by different threads of the same domain
+			#if MEMBLOCKALLOC_ENABLE_OMP
+			#	pragma omp critical
+			#endif
+			{
+				data = (T*)getBlockSameSize(i_size);
+			}
+
+			if (data != nullptr)
+				return data;		// Block found
+
+			// Allocate block
+			data = (T*)numa_alloc_local(i_size);
+
+			first_touch_init(data, i_size);
+
+			return data;
+		}
+#endif
+		else
+		{
+			fatal_error("ALLOC: mode not found");
+			return nullptr;
+		}
 	}
 
 
@@ -513,25 +740,33 @@ public:
 		if (i_data == nullptr)
 			return;
 
-#if NUMA_BLOCK_ALLOCATOR_TYPE == 0
+		int _mem_block_allocation_mode = getSingletonRef().mem_block_allocation_mode;
 
-		::free(i_data);
-
-#else
-
-	#if NUMA_BLOCK_ALLOCATOR_TYPE == 1 || NUMA_BLOCK_ALLOCATOR_TYPE == 3
-		#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-			#pragma omp critical
-		#endif
-	#endif
+		if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
 		{
-			std::vector<void*>& block_list = getBlocksSameSize(i_size);
-			block_list.push_back(i_data);
+			::free(i_data);
 		}
-
-#endif
+		else
+		{
+			if (	_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA ||
+					_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
+			{
+				#if MEMBLOCKALLOC_ENABLE_OMP
+					#pragma omp critical
+				#endif
+				{
+					std::vector<void*>& block_list = getBlockListSameSize(i_size);
+					block_list.push_back(i_data);
+				}
+			}
+			else
+			{
+				std::vector<void*>& block_list = getBlockListSameSize(i_size);
+				block_list.push_back(i_data);
+			}
+		}
 	}
 };
 
 
-#endif /* SRC_INCLUDE_SWEET_MEMBLOCKALLOC_HPP_ */
+#endif

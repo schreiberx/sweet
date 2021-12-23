@@ -1390,7 +1390,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Compiled for MIC" << std::endl;
 #endif
 
-	MemBlockAlloc::setup();
+	MemBlockAlloc memBlockAlloc;
 
 	// program specific input parameter names
 	const char *bogus_var_names[] = {

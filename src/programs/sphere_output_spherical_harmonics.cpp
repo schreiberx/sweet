@@ -59,7 +59,7 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	MemBlockAlloc::setup();
+	MemBlockAlloc memBlockAlloc;
 
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
