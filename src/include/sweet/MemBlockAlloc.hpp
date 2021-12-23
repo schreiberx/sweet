@@ -49,8 +49,12 @@
 /*
  * SWEET specific part
  */
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+#if SWEET_THREADING_SPACE == 1 || SWEET_THREADING_TIME_REXI == 1
 	#define MEMBLOCKALLOC_ENABLE_OMP 1
+#endif
+
+#if SWEET_THREADING_SPACE == 0 && SWEET_THREADING_TIME_REXI == 0
+	#define MEMBLOCKALLOC_ENABLE_OMP 0
 #endif
 
 #ifndef MEMBLOCKALLOC_ENABLE_OMP
@@ -470,7 +474,7 @@ public:
 		#else
 			if (verbosity_level >= 10)
 			{
-				std::cout << MEMBLOCKALLOC_PREFIX " + thread_id " << omp_get_thread_num() << " is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
+				std::cout << MEMBLOCKALLOC_PREFIX " + thread_id 0 is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
 			}
 		#endif
 
