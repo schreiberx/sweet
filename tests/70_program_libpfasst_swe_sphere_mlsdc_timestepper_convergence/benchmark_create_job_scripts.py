@@ -52,7 +52,7 @@ jg.runtime.viscosity = 0.0
 jg.unique_id_filter = ['compile', 'parallelization']
 
 timestep_size_min = 16
-jg.runtime.max_simulation_time = timestep_size_min*4096
+jg.runtime.max_simulation_time = timestep_size_min*1024
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 #####################################
@@ -82,7 +82,7 @@ jg.reference_job_unique_id = jg.job_unique_id
 # Test Jobs: libpfasst_swe_sphere
 #################################
 
-jg.compile.program = 'libpfasst_swe_sphere'
+jg.compile.program = 'libpfasst_swe_sphere_mlsdc'
 jg.compile.libpfasst = 'enable'
 
 # LibPFASST runtime parameters
