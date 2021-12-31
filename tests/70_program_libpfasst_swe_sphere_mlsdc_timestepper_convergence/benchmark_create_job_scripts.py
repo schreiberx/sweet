@@ -62,7 +62,7 @@ jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 jg.compile.program = 'swe_sphere'
 
 ref_ts_size = 8
-ref_ts_method = 'l_erk'
+ref_ts_method = 'ln_erk'
 ref_ts_order = 4
 jg.runtime.rexi_method = None
 jg.runtime.timestepping_method = ref_ts_method
