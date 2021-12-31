@@ -1,11 +1,11 @@
 #include <mpi.h>
 #include "../libpfasst_interface/SphereDataVars.hpp"
-#include "SphereDataCtx.hpp"
+#include "SphereDataCtxSDC.hpp"
 #include "ceval.hpp"
 
 extern "C"
 {
-    bool timestep_check_output(SphereDataCtx *i_ctx,
+    bool timestep_check_output(SphereDataCtxSDC *i_ctx,
                                int i_current_iter,
                                int i_niters)
     {
@@ -48,7 +48,7 @@ extern "C"
       // not implemented
     }
 
-    void cecho_residual(SphereDataCtx *i_ctx,
+    void cecho_residual(SphereDataCtxSDC *i_ctx,
                         double i_norm,
                         int i_current_proc)
     {
@@ -59,7 +59,7 @@ extern "C"
         residuals[i_current_proc].push_back(i_norm);
     }
 
-    void cecho_output_invariants(SphereDataCtx *i_ctx,
+    void cecho_output_invariants(SphereDataCtxSDC *i_ctx,
                                  SphereDataVars *i_Y,
                                  int i_current_proc,
                                  int i_current_step,
@@ -82,7 +82,7 @@ extern "C"
         SphereHelpers_Diagnostics* sphereDiagnostics = i_ctx->get_sphere_diagnostics();
 
         // get the SphereOperators object from context
-        SphereOperators_SphereData* sphereOperators     = i_ctx->get_sphere_operators(level);
+        SphereOperators_SphereData* sphereOperators     = i_ctx->get_sphere_operators();
 
         // compute the invariants
         sphereDiagnostics->update_phi_vrt_div_2_mass_energy_enstrophy(
@@ -103,7 +103,7 @@ extern "C"
         i_ctx->save_physical_invariants(i_current_step);
     }
 
-    void cecho_output_jump(SphereDataCtx *i_ctx,
+    void cecho_output_jump(SphereDataCtxSDC *i_ctx,
                            SphereDataVars *i_Y,
                            int i_current_proc,
                            int i_current_step,
@@ -144,7 +144,7 @@ extern "C"
 
 
 
-    void cecho_output_solution(SphereDataCtx *i_ctx,
+    void cecho_output_solution(SphereDataCtxSDC *i_ctx,
                                SphereDataVars *i_Y,
                                int i_current_proc,
                                int i_current_step,

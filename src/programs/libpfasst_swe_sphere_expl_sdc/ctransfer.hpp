@@ -2,7 +2,7 @@
 #define _CTRANSFER_HPP_
 
 #include "../libpfasst_interface/SphereDataVars.hpp"
-#include "SphereDataCtx.hpp"
+#include "SphereDataCtxSDC.hpp"
 
 extern "C"
 {
@@ -11,7 +11,7 @@ extern "C"
 			     SphereDataVars *i_Y_fine, 
 			     int i_level_coarse,
 			     int i_level_fine, 
-			     SphereDataCtx *i_ctx,
+			     SphereDataCtxSDC *i_ctx,
 			     double i_t
 			     );
 
@@ -20,7 +20,7 @@ extern "C"
 				SphereDataVars *i_Y_coarse, 
 				int i_level_fine,
 				int i_level_coarse,
-				SphereDataCtx *i_ctx,
+				SphereDataCtxSDC *i_ctx,
 				double i_t
 				);
 

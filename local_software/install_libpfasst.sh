@@ -4,7 +4,7 @@ source ./install_helpers.sh ""
 
 PKG_NAME="libpfasst"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libpfasst.a"
-PKG_URL_SRC="libpfasst_sweet_2018_09_27.tar.bz2"
+PKG_URL_SRC="libpfasst_sweet_2021_11_16.tar.bz2"
 
 config_setup
 

@@ -3,7 +3,7 @@
 
 #include <iomanip>
 #include "../libpfasst_interface/SphereDataVars.hpp"
-#include "SphereDataCtx.hpp"
+#include "SphereDataCtxSDC.hpp"
 
 /*
   "Encap" functions called from Fortran to manipulate SphereData
@@ -14,7 +14,7 @@ extern "C"
 {
   // instantiates and returns the sweet data encapsulated object
   void c_sweet_data_create(
-			   SphereDataCtx *i_ctx, 
+			   SphereDataCtxSDC *i_ctx, 
 			   int i_level,
 			   SphereDataVars **o_Y, 
 			   int *o_size

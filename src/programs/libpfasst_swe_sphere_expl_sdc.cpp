@@ -1,8 +1,8 @@
 /*
- * Author: Francois Hamon & Martin Schreiber <SchreiberX@gmail.com>
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/libpfasst_swe_sphere
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
+ * Author: Valentina Schüller & Francois Hamon & Martin Schreiber <SchreiberX@gmail.com>
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/libpfasst_swe_sphere_expl_sdc
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
  * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
@@ -13,19 +13,19 @@
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include "libpfasst_interface/LevelSingleton.hpp"
-#include "libpfasst_swe_sphere/SphereDataCtx.hpp"
+#include "libpfasst_swe_sphere_expl_sdc/SphereDataCtxSDC.hpp"
 #include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 #include <sweet/SWEETError.hpp>
 
 #define WITH_MPI
 
 SimulationVariables simVars;
-std::vector<LevelSingleton> levelSingletons;
+LevelSingleton levelSingleton;
 
 extern "C"
 {
 /* Driver function for pfasst control */
-void fmain (SphereDataCtx* pd_ctx,
+void fmain (SphereDataCtxSDC* pd_ctx,
 		const int*     nlevels,
 		const int*     niters,
 		const int*     nsweeps_coarse,
@@ -72,141 +72,66 @@ int main(int i_argc, char *i_argv[])
 	int nnodes[simVars.libpfasst.nlevels];
 	nnodes[simVars.libpfasst.nlevels-1] = simVars.libpfasst.nnodes; // finest level
 
-	switch (simVars.libpfasst.nlevels)
+	if (simVars.libpfasst.nlevels != 1)
 	{
-	// One level (nothing to do)
-	case 1: {
-		break;
-	}
-	// Two levels
-	case 2: {
-		if (simVars.libpfasst.nnodes == 3)
-			nnodes[0] = 2;
-		else if (simVars.libpfasst.nnodes == 5 ||
-				simVars.libpfasst.nnodes == 9)
-			nnodes[0] = 3;
-		else if (simVars.libpfasst.nnodes == 7)
-			nnodes[0] = 4; // for rk_stepper
-		else
-			SWEETError("With 2 levels, the number of SDC nodes on the fine level must be either 3, 5, or 9");
-		break;
-	}
-	// Three levels
-	case 3: {
-		if (simVars.libpfasst.nnodes == 9)
-		{
-			nnodes[0] = 3;
-			nnodes[1] = 5;
-		}
-		else if (simVars.libpfasst.nnodes == 5)
-		{
-			nnodes[0] = 2;
-			nnodes[1] = 3;
-		}
-		else if (simVars.libpfasst.nnodes == 3)
-		{
-			nnodes[0] = 3;
-			nnodes[1] = 3;
-		}
-		else
-			SWEETError("With 3 levels, the number of SDC nodes on the fine level must be either 5, or 9");
-		break;
-	}
-	// All other cases not supported yet
-	default:
-		SWEETError("Only 1, 2, or 3 levels are currently supported");
+		SWEETError("For SDC, nlevels has to be equal to 1");
 	}
 
-	// setup the LevelSingletons for all levels
-	// note: level #nlevels-1 is the finest, level #0 is the coarsest
-
-	levelSingletons.resize(simVars.libpfasst.nlevels);
-
-	// setup the finest level singleton
-	const int fineLevelId = simVars.libpfasst.nlevels-1;
-
-
-	levelSingletons[fineLevelId].level = fineLevelId;
+	// set up level of levelSingleton
+	levelSingleton.level = 0;
 
 	// setup data configuration in fine level
 
-	levelSingletons[fineLevelId].dataConfig.setupAuto(
+	levelSingleton.dataConfig.setupAuto(
 			simVars.disc.space_res_physical,
 			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans,
 			simVars.misc.verbosity
 	);
-	std::cout << "SPH config string: " << levelSingletons[fineLevelId].dataConfig.getConfigInformationString() << std::endl;
+	std::cout << "SPH config string: " << levelSingleton.dataConfig.getConfigInformationString() << std::endl;
 
 	int res_physical_nodealiasing[2] = {
 			2*(simVars.disc.space_res_spectral[0]+1),
 			simVars.disc.space_res_spectral[1]+2
 	};
 
-	levelSingletons[fineLevelId].dataConfigNoDealiasing.setupAuto(
+	levelSingleton.dataConfigNoDealiasing.setupAuto(
 			res_physical_nodealiasing,
 			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans
 	);
 
-	// setup data operators in fine level
-
-	levelSingletons[fineLevelId].op.setup(
-			&(levelSingletons[fineLevelId].dataConfig),
+	// setup data operators
+	levelSingleton.op.setup(
+			&(levelSingleton.dataConfig),
 			&(simVars.sim)
 	);
-	levelSingletons[fineLevelId].opNoDealiasing.setup(
-			&(levelSingletons[fineLevelId].dataConfigNoDealiasing),
+	levelSingleton.opNoDealiasing.setup(
+			&(levelSingleton.dataConfigNoDealiasing),
 			&(simVars.sim)
 	);
 
-	// define the number of modes for the coarser levels
-	for (int i = 1; i < simVars.libpfasst.nlevels; i++)
-	{
-		const int thisLevelId = simVars.libpfasst.nlevels-1-i;
-		levelSingletons[thisLevelId].level = thisLevelId;
-
-        // compute "additional" modes (negative because we're coarsening)
-		auto additional_modes_lat = 1 - std::ceil(simVars.disc.space_res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i));
-        auto additional_modes_lon = 1 - std::ceil(simVars.disc.space_res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i));
-        // setup data configuration at this level
-		levelSingletons[thisLevelId].dataConfig.setupAdditionalModes(
-				&(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
-				additional_modes_lat,
-				additional_modes_lon,
-				simVars.misc.reuse_spectral_transformation_plans
-		);
-
-		// setup data operators at this level
-
-		levelSingletons[thisLevelId].op.setup(
-				&(levelSingletons[thisLevelId].dataConfig),
-				&(simVars.sim)
-		);
-	}
 
 	// define the SWEET parameters
 
 	const int nfields = 3;  // number of vector fields (here, height and two horizontal velocities)
-	int nvars_per_field[simVars.libpfasst.nlevels];
-	for (int i = 0; i < simVars.libpfasst.nlevels; ++i)
-		nvars_per_field[i] = 2*levelSingletons[i].dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
+	int nvars_per_field[1];
+	nvars_per_field[0] = 2 * levelSingleton.dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
-	// initialize the topography before instantiating the SphereDataCtx object
+	// initialize the topography before instantiating the SphereDataCtxSDC object
 	if (simVars.benchmark.benchmark_name == "flow_over_mountain")
 	{
-
 		// create h_topo with the configuration at the finest level
-		simVars.benchmark.h_topo = SphereData_Physical(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
+		simVars.benchmark.h_topo = SphereData_Physical(&(levelSingleton.dataConfig));
 
 		// initialize the topography
-		(levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).master->setup_topography();
+		levelSingleton.benchmarks.master->setup_topography();
 	}
 
-	// instantiate the SphereDataCtx object
-	SphereDataCtx* pd_ctx = new SphereDataCtx(
+	// instantiate the SphereDataCtxSDC object
+	SphereDataCtxSDC* pd_ctx = new SphereDataCtxSDC(
 			&simVars,
-			&levelSingletons,
+			&levelSingleton,
 			nnodes
 	);
 
@@ -214,9 +139,9 @@ int main(int i_argc, char *i_argv[])
 	int string_length = simVars.libpfasst.nodes_type.size();
 
 	// flag for the RK stepper
-	const int rk_stepper_flag = (simVars.libpfasst.use_rk_stepper)
-                            		? 1
-                            				: 0;
+	const int rk_stepper_flag = (simVars.libpfasst.use_rk_stepper) ? 1 : 0;
+
+	simVars.outputConfig();
 
 	// call LibPFASST to advance in time
 	fmain(
