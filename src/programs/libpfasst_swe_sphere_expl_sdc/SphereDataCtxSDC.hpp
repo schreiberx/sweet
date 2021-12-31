@@ -44,7 +44,7 @@ public:
         // initialize the ln_erk time stepper
         timestepper_ln_erk = new SWE_Sphere_TS_ln_erk(*simVars, levelSingleton->op);
 
-        // this is never used anyway but this makes clear that with niters=1,
+        // this is never used but this makes clear that with niters=1,
         // we're actually just calling ERK1
         timestepper_ln_erk->setup(1);
     
