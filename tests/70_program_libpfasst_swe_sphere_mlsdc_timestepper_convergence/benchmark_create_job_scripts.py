@@ -22,7 +22,6 @@ jg.compile.sphere_spectral_dealiasing = 'enable'
 jg.compile.sweet_mpi = 'enable'
 
 jg.compile.libsph = 'enable'
-jg.compile.numa_block_allocator = 0
 jg.compile.threading = 'off'
 
 jg.compile.libfft = 'enable'

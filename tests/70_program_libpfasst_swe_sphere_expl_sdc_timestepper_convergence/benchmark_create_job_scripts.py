@@ -28,7 +28,6 @@ jg.compile.sweet_mpi = 'enable'
 
 # other compilation settings
 jg.compile.libsph = 'enable'
-jg.compile.numa_block_allocator = 0
 jg.compile.threading = 'off'
 jg.compile.libfft = 'enable'
 jg.compile.quadmath = 'enable'
