@@ -11,6 +11,7 @@
 #include <sweet/SWEETError.hpp>
 
 
+SimulationVariables simVars;
 
 SphereData_Config sphereDataConfigInstance;
 SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
@@ -362,8 +363,6 @@ int main(
 		char *const i_argv[]
 )
 {
-	SimulationVariables simVars;
-
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 

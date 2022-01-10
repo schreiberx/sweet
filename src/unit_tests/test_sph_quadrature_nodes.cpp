@@ -454,7 +454,6 @@ int main(
 		char *const i_argv[]
 )
 {
-	MemBlockAlloc numaBlockAlloc;
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
