@@ -19,9 +19,6 @@
 
 #define WITH_MPI
 
-SimulationVariables simVars;
-std::vector<LevelSingleton> levelSingletons;
-
 extern "C"
 {
 /* Driver function for pfasst control */
@@ -50,6 +47,9 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "+++++++++++++++++++++++++++++++++++++++++++" << std::endl;
 	std::cout << "WARNING: This program is NOT ready for use!" << std::endl;
 	std::cout << "+++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+
+	SimulationVariables simVars;
+	std::vector<LevelSingleton> levelSingletons;
 
 	// input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {

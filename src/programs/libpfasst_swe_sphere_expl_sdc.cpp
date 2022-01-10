@@ -19,9 +19,6 @@
 
 #define WITH_MPI
 
-SimulationVariables simVars;
-LevelSingleton levelSingleton;
-
 extern "C"
 {
 /* Driver function for pfasst control */
@@ -46,6 +43,9 @@ void fmain (SphereDataCtxSDC* pd_ctx,
 int main(int i_argc, char *i_argv[])
 {
 	MPI_Init(&i_argc, &i_argv);
+
+	SimulationVariables simVars;
+	LevelSingleton levelSingleton;
 
 	// input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
