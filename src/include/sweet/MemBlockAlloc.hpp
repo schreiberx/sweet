@@ -5,7 +5,9 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  *
  * Changelog:
- *   * 2021-12-23: Made fully configurable via environment variable
+ *   - 2021-12-23: Made fully configurable via environment variable
+ *   - 2022-01-08: Various updates to help finding bugs, more information if used with help
+ *
  */
 #ifndef INCLUDE_MEMBLOCKALLOC_NEW_HPP_
 #define INCLUDE_MEMBLOCKALLOC_NEW_HPP_
@@ -49,12 +51,23 @@
 /*
  * SWEET specific part
  */
-#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+#if SWEET_THREADING_SPACE == 1 || SWEET_THREADING_TIME_REXI == 1
 	#define MEMBLOCKALLOC_ENABLE_OMP 1
+#endif
+
+#if SWEET_THREADING_SPACE == 0 && SWEET_THREADING_TIME_REXI == 0
+	#define MEMBLOCKALLOC_ENABLE_OMP 0
 #endif
 
 #ifndef MEMBLOCKALLOC_ENABLE_OMP
 	#define MEMBLOCKALLOC_ENABLE_OMP 1
+#endif
+
+/*
+ * Debug mode with extra sanity checks
+ */
+#ifndef MEMBLOCKALLOC_DEBUG
+	#define MEMBLOCKALLOC_DEBUG 0
 #endif
 
 
@@ -71,6 +84,11 @@
 #define MEMBLOCKALLOC_MODE__ONE 1
 #define MEMBLOCKALLOC_MODE__PERTHREAD 2
 #define MEMBLOCKALLOC_MODE__PERNUMA 3
+
+#if SWEET_DEBUG == 1
+	#undef MEMBLOCKALLOC_DEBUG
+	#define MEMBLOCKALLOC_DEBUG 1
+#endif
 
 
 /**
@@ -100,7 +118,7 @@ class MemBlockAlloc
 		 " 		1: Enabled, threaded with 'omp parallel for'\n"
 		 " 		2: Enabled, nonthreaded\n"
 		 "\n"
-		 "  blockchains={system,one"
+		 "	alloc={system,one"
 #if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
 				",pernuma"
 				",perthread"
@@ -198,7 +216,8 @@ private:
 	/**
 	 * setup already executed?
 	 */
-	bool _setup_done;
+	bool _setup_done = false;
+
 
 
 private:
@@ -263,17 +282,18 @@ private:
 
 		/**
 		 * Split comma separated parameters, e.g.,
-		 * 	 verbose=1,blockchain=perthread
+		 * 	 verbose=1,alloc=perthread
 		 *
 		 * List with items
 		 *   verbose=1
-		 *   blockchain=perthread
+		 *   alloc=perthread
 		 */
 		std::vector<std::string> params = StringSplit::split(envstring, ",");
 
 		for (auto iter = params.begin(); iter != params.end(); iter++)
 		{
 			const std::string &param = *iter;
+
 
 			std::vector<std::string> split_params = StringSplit::split(param, "=");
 
@@ -283,6 +303,9 @@ private:
 			if (split_params[0] == "help")
 			{
 				print_configuration();
+				std::cout << std::endl;
+				std::cout << get_helptext() << std::endl;
+				std::cout << std::endl;
 				std::exit(1);
 			}
 			else if (split_params[0] == "verbose")
@@ -314,14 +337,14 @@ private:
 					fatal_error(std::string("first touch policy must be set to 0, 1 or 2"));
 
 			}
-			else if (split_params[0] == "blockchain")
+			else if (split_params[0] == "alloc")
 			{
 				/*
 				 * Parse, e.g.,
-				 * 	blockchain=perthread
+				 * 	alloc=perthread
 				 */
 				if (split_params.size() != 2)
-					fatal_error(std::string("Only one parameter required for 'blockchains='"));
+					fatal_error(std::string("Only one parameter required for 'alloc='"));
 
 				if (split_params[1] == "system")
 				{
@@ -343,8 +366,12 @@ private:
 #endif
 				else
 				{
-					fatal_error(std::string("Unknown option '") + split_params[1] + ("' for parameter blockchains=..."));
+					fatal_error(std::string("Unknown parameter '") + split_params[1] + ("' for parameter alloc=..."));
 				}
+			}
+			else
+			{
+				fatal_error(std::string("Unknown option '") + split_params[0] + "'");
 			}
 		}
 
@@ -361,22 +388,33 @@ public:
 	 *
 	 * To be used directly at the beginning of 'main'
 	 */
-	MemBlockAlloc()	:
+	MemBlockAlloc(int secret_code)	:
 		_setup_done(false)
 	{
 		if (_setup_done)
 			fatal_error("Setup in MemBlockAlloc called twice!");
 
+		if (secret_code != 1337)
+			fatal_error("Secret code mismatch, do NOT call MemBlockAlloc(...) on your own!");
+
 		parse_argv();
 
+		if (verbosity_level > 1)
+		{
+			std::cout << MEMBLOCKALLOC_PREFIX << "MemBlockAlloc() called (constructor, should be called only once)" << std::endl;
+		}
+
 		if (	mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA		||
-				mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD	)
+			mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD	)
 		{
 			std::cerr << MEMBLOCKALLOC_PREFIX "WARNING: Using thread-supported memory allocator, but without OMP enabled" << std::endl;
 		}
 
 		if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
 		{
+			if (verbosity_level > 0)
+				std::cout << MEMBLOCKALLOC_PREFIX "NUMA block alloc: Using default system's posix_memalign/free allocator" << std::endl;
+
 			/*
 			 * this is the system's default allocator
 			 */
@@ -386,7 +424,7 @@ public:
 		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
 		{
 			if (verbosity_level > 0)
-				std::cout << "NUMA block alloc: Using just a single memory block chain" << std::endl;
+				std::cout << MEMBLOCKALLOC_PREFIX "NUMA block alloc: Using just a single memory block chain" << std::endl;
 
 			_num_block_chain_domains = 1;
 			getThreadLocalDomainIdRef() = 0;
@@ -395,7 +433,7 @@ public:
 		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD)
 		{
 			if (verbosity_level > 0)
-				std::cout << "NUMA block alloc: Using allocator based on thread granularity" << std::endl;
+				std::cout << MEMBLOCKALLOC_PREFIX "NUMA block alloc: Using allocator based on thread granularity" << std::endl;
 
 			/*
 			 * Thread granularity, use this also per default
@@ -407,7 +445,7 @@ public:
 			#endif
 
 			if (verbosity_level > 0)
-				std::cout << "num_block_chain_domains: " << _num_block_chain_domains << std::endl;
+				std::cout << MEMBLOCKALLOC_PREFIX "num_block_chain_domains: " << _num_block_chain_domains << std::endl;
 
 			#if MEMBLOCKALLOC_ENABLE_OMP
 				getThreadLocalDomainIdRef() = omp_get_thread_num();
@@ -427,14 +465,14 @@ public:
 			 * Allocator which works per NUMA domain
 			 */
 			if (verbosity_level > 0)
-				std::cout << "NUMA block alloc: Using NUMA node granularity" << std::endl;
+				std::cout << MEMBLOCKALLOC_PREFIX "NUMA block alloc: Using NUMA node granularity" << std::endl;
 
 			/*
 			 * NUMA granularity
 			 */
 			_num_block_chain_domains = numa_num_configured_nodes();
 			if (verbosity_level > 0)
-				std::cout << "_num_block_chain_domains: " << _num_block_chain_domains << std::endl;
+				std::cout << MEMBLOCKALLOC_PREFIX "_num_block_chain_domains: " << _num_block_chain_domains << std::endl;
 
 			// set NUMA id in case that master thread has a different id than the first thread
 			int cpuid = sched_getcpu();
@@ -470,7 +508,7 @@ public:
 		#else
 			if (verbosity_level >= 10)
 			{
-				std::cout << MEMBLOCKALLOC_PREFIX " + thread_id " << omp_get_thread_num() << " is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
+				std::cout << MEMBLOCKALLOC_PREFIX " + thread_id 0 is assigned to memory allocator domain " << getThreadLocalDomainIdRef() << std::endl;
 			}
 		#endif
 
@@ -480,40 +518,12 @@ public:
 	}
 
 
-public:
 	static
-	void shutdown()
+	inline
+	void init()
 	{
-		getSingletonRef().p_shutdown();
+		getSingletonRef();
 	}
-
-
-public:
-	void p_shutdown()
-	{
-		if (verbosity_level > 1)
-			std::cout << "NUMABlockAlloc EXIT" << std::endl;
-
-		for (auto& n : _domain_block_groups)
-		{
-			for (auto& g : n.block_groups)
-			{
-//				std::cout << "cleaning up " << g.free_blocks.size() << " blocks of size " << g.block_size << std::endl;
-
-				for (auto& b : g.free_blocks)
-				{
-					#if MEMBLOCKALLOC_ENABLE_OMP
-						::free(b);
-					#else
-						numa_free(b, g.block_size);
-					#endif
-				}
-			}
-		}
-
-		_setup_done = false;
-	}
-
 
 public:
 	static
@@ -534,7 +544,7 @@ public:
 		 * '
 		 * In other words, it's initialized on the fly during the first access
 		 */
-		static MemBlockAlloc memBlockAlloc;
+		static MemBlockAlloc memBlockAlloc(1337);
 		return memBlockAlloc;
 	}
 
@@ -660,7 +670,6 @@ public:
 			}
 
 			first_touch_init(data, i_size);
-			return data;
 		}
 		else if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
 		{
@@ -671,33 +680,30 @@ public:
 				data = (T*)getBlockSameSize(i_size);
 			}
 
-			if (data != nullptr)
-				return data;
-
-			int retval = posix_memalign((void**)&data, 4096, i_size);
-			if (retval != 0)
+			if (data == nullptr)
 			{
-				std::cerr << "Unable to allocate memory" << std::endl;
-				assert(false);
-				exit(-1);
-			}
+				int retval = posix_memalign((void**)&data, 4096, i_size);
+				if (retval != 0)
+				{
+					std::cerr << "Unable to allocate memory" << std::endl;
+					assert(false);
+					exit(-1);
+				}
 
-			first_touch_init(data, i_size);
-			return data;
+				first_touch_init(data, i_size);
+			}
 		}
 #if MEMBLOCKALLOC_ENABLE_NUMA_ALLOC
 		else if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD)
 		{
 			data = (T*)getBlockSameSize(i_size);
 
-			if (data != nullptr)
-				return data;
+			if (data == nullptr)
+			{
+				data = (T*)numa_alloc_local(i_size);
 
-			data = (T*)numa_alloc_local(i_size);
-
-			first_touch_init(data, i_size);
-
-			return data;
+				first_touch_init(data, i_size);
+			}
 		}
 		else if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA)
 		{
@@ -709,15 +715,13 @@ public:
 				data = (T*)getBlockSameSize(i_size);
 			}
 
-			if (data != nullptr)
-				return data;		// Block found
+			if (data == nullptr)
+			{
+				// Allocate block
+				data = (T*)numa_alloc_local(i_size);
 
-			// Allocate block
-			data = (T*)numa_alloc_local(i_size);
-
-			first_touch_init(data, i_size);
-
-			return data;
+				first_touch_init(data, i_size);
+			}
 		}
 #endif
 		else
@@ -725,6 +729,14 @@ public:
 			fatal_error("ALLOC: mode not found");
 			return nullptr;
 		}
+
+#if MEMBLOCKALLOC_DEBUG
+		MemBlockAlloc &n = MemBlockAlloc::getSingletonRef();
+
+		if (n.verbosity_level >= 100)
+			std::cout << "ALLOC " << (long long)data << ", " << i_size << std::endl;
+#endif
+		return data;
 	}
 
 
@@ -737,10 +749,26 @@ public:
 			std::size_t i_size
 	)
 	{
-		if (i_data == nullptr)
-			return;
+		MemBlockAlloc &n = MemBlockAlloc::getSingletonRef();
 
-		int _mem_block_allocation_mode = getSingletonRef().mem_block_allocation_mode;
+		if (!n._setup_done)
+		{
+			fatal_error("free: _setup_done not set! Either not set up or deconstructor already called\nHint 1: Compile with MEMBLOCKALLOC_DEBUG=1\nHint 2: Execute by setting environment flag to MEMBLOCKALLOC=verbose=10 to get more information");
+		}
+
+#if MEMBLOCKALLOC_DEBUG
+
+		if (n.verbosity_level >= 100)
+			std::cout << "FREE " << (long long)i_data << ", " << i_size << std::endl;
+
+		if (i_data == nullptr)
+		{
+			fatal_error("free: nullptr received, not allowed with MemBlock");
+			return;
+		}
+#endif
+
+		int _mem_block_allocation_mode = n.mem_block_allocation_mode;
 
 		if (_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
 		{
@@ -749,7 +777,7 @@ public:
 		else
 		{
 			if (	_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA ||
-					_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
+				_mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
 			{
 				#if MEMBLOCKALLOC_ENABLE_OMP
 					#pragma omp critical
@@ -766,6 +794,69 @@ public:
 			}
 		}
 	}
+
+
+public:
+	~MemBlockAlloc()
+	{
+		if (verbosity_level > 1)
+		{
+			std::cout << MEMBLOCKALLOC_PREFIX << "~MemBlockAlloc() called (deconstructor, should be called only once)" << std::endl;
+		}
+
+		getSingletonRef()._shutdown();
+
+		if (verbosity_level > 1)
+		{
+			std::cout << MEMBLOCKALLOC_PREFIX << "~MemBlockAlloc() finished" << std::endl;
+		}
+	}
+
+
+public:
+	void _shutdown()
+	{
+		if (!_setup_done)
+			fatal_error("Setup not executed, but shutdown requested");
+
+		for (auto& n : _domain_block_groups)
+		{
+			for (auto& g : n.block_groups)
+			{
+//				std::cout << "cleaning up " << g.free_blocks.size() << " blocks of size " << g.block_size << std::endl;
+
+				for (auto& b : g.free_blocks)
+				{
+					if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
+					{
+						::free(b);
+					}
+					else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__ONE)
+					{
+						::free(b);
+					}
+					else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD)
+					{
+						numa_free(b, g.block_size);
+					}
+					else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA)
+					{
+						numa_free(b, g.block_size);
+					}
+					else
+					{
+						fatal_error("Internal error (_shutdown)");
+					}
+				}
+
+				// free all blocks
+				g.free_blocks.clear();
+			}
+		}
+
+		_setup_done = false;
+	}
+
 };
 
 
