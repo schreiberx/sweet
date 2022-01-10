@@ -21,6 +21,7 @@
 
 #include <cstddef>
 #include <cassert>
+#include <iostream>
 
 #define SWEET_TIMER_CHRONO	1
 
@@ -85,11 +86,13 @@ public:
 	inline void start()
 	{
 		if (recursive_counter == 0)
+		{
 #if SWEET_TIMER_CHRONO
 			timevalue_start = std::chrono::system_clock::now();
 #else
 			gettimeofday(&timevalue_start, NULL);
 #endif
+		}
 
 		recursive_counter++;
 	}
@@ -148,7 +151,11 @@ public:
 	inline double operator()()
 	{
 #if SWEET_DEBUG
-		assert(recursive_counter == 0);
+		if (recursive_counter != 0)
+		{
+			std::cout << "Recursion counter should be 0" << std::endl;
+			assert(false);
+		}
 #endif
 
 		return time;
