@@ -177,9 +177,10 @@ void c_sweet_data_unpack(
 	for (int i = 0; i < phi_pert.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
 		phi_pert.spectral_space_data[i] = std::complex<double>(
-				i_flat_data_ptr[0][j++],
-				i_flat_data_ptr[0][j++]
+				i_flat_data_ptr[0][j],
+				i_flat_data_ptr[0][j+1]
 		);
+		j += 2;
 	}
 
 	// vrt
@@ -187,9 +188,10 @@ void c_sweet_data_unpack(
 	for (int i = 0; i < vrt.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
 		vrt.spectral_space_data[i] = std::complex<double>(
-				i_flat_data_ptr[0][j++],
-				i_flat_data_ptr[0][j++]
+				i_flat_data_ptr[0][j],
+				i_flat_data_ptr[0][j+1]
 		);
+		j += 2;
 	}
 
 	// div
@@ -197,10 +199,10 @@ void c_sweet_data_unpack(
 	for (int i = 0; i < div.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
 		div.spectral_space_data[i] = std::complex<double>(
-				i_flat_data_ptr[0][j++],
-				i_flat_data_ptr[0][j++]
+				i_flat_data_ptr[0][j],
+				i_flat_data_ptr[0][j+1]
 		);
-
+		j += 2;
 	}
 }
 
