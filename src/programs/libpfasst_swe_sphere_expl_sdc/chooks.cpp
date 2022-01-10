@@ -72,9 +72,6 @@ extern "C"
         const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
         const SphereData_Spectral& div_Y  = i_Y->get_div();
 
-        // get the current space-time level
-        const int level = i_Y->get_level();
-
         // get the simulation variables
         SimulationVariables* simVars         = i_ctx->get_simulation_variables();
 
