@@ -707,7 +707,7 @@ exec_name = p.getProgramName()
 #
 build_dir='/tmp/'
 user = os.environ.get('USERNAME')
-if user != "":
+if user != None:
     build_dir += user.replace(' ', '')
     build_dir += '/'
 
