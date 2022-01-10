@@ -705,7 +705,13 @@ exec_name = p.getProgramName()
 #
 # BUILD directory
 #
-build_dir='/tmp/scons_build_'+exec_name+'/'
+build_dir='/tmp/'
+user = os.environ.get('USERNAME')
+if user != "":
+    build_dir += user.replace(' ', '')
+    build_dir += '/'
+
+build_dir += 'scons_build_'+exec_name+'/'
 
 if p.libpfasst == 'enable':
     #env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
