@@ -404,11 +404,13 @@ public:
 			std::cout << MEMBLOCKALLOC_PREFIX << "MemBlockAlloc() called (constructor, should be called only once)" << std::endl;
 		}
 
+#if MEMBLOCKALLOC_ENABLE_OMP == 0
 		if (	mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA		||
 			mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERTHREAD	)
 		{
-			std::cerr << MEMBLOCKALLOC_PREFIX "WARNING: Using thread-supported memory allocator, but without OMP enabled" << std::endl;
+			std::cerr << MEMBLOCKALLOC_PREFIX "WARNING: Using thread-supported memory allocator, but without OMP enabled." << std::endl;
 		}
+#endif
 
 		if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__SYSTEM)
 		{
