@@ -740,7 +740,6 @@ int main(
 		char *const i_argv[]
 )
 {
-
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
