@@ -261,35 +261,6 @@ void ceval(SphereDataVars *i_Y,
 }
 
 
-void ccomp (
-		SphereDataVars *io_Y,
-		double i_t,
-		double i_dt,
-		SphereDataVars *i_Rhs,
-		SphereDataCtxSDC *i_ctx,
-		SphereDataVars *o_F2
-)
-{
-	// set y = rhs, f = 0.0
-	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	SphereData_Spectral& div_Y  = io_Y->get_div();
-
-	const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
-	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
-	const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
-
-	phi_pert_Y = phi_pert_Rhs;
-	vrt_Y = vrt_Rhs;
-	div_Y = div_Rhs;
-
-	c_sweet_data_setval(o_F2, 0.0);
-
-	return;
-
-}
-
-
 // applies artificial diffusion to the system
 void cfinalize(
 		SphereDataVars *io_Y,

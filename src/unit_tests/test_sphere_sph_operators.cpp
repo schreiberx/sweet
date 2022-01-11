@@ -341,9 +341,6 @@ int main(
 		char *const i_argv[]
 )
 {
-	/*
-	 * Initialize NUMA block allocator
-	 */
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 

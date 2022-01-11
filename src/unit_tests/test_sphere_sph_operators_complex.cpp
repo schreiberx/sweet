@@ -11,7 +11,6 @@
 #include <sweet/SWEETError.hpp>
 
 
-
 SimulationVariables simVars;
 
 SphereData_Config sphereDataConfigInstance;
