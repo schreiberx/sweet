@@ -45,12 +45,6 @@ module feval_module
             real(c_double), value :: i_t
         end subroutine ceval
 
-        subroutine ccomp(io_Y, i_t, i_dt, i_Rhs, i_ctx, o_F) bind(c, name="ccomp")
-            use iso_c_binding
-            type(c_ptr),    value :: io_Y, i_Rhs, i_ctx, o_F
-            real(c_double), value :: i_t, i_dt
-        end subroutine ccomp
-
         subroutine cfinalize(i_Y, i_t, i_dt, i_ctx) bind(c, name="cfinalize")
             use iso_c_binding
             type(c_ptr),    value :: i_Y, i_ctx
@@ -169,16 +163,7 @@ contains
         f_sd_ptr   => as_sweet_data_encap(f)    
         rhs_sd_ptr => as_sweet_data_encap(rhs) 
 
-        if (piece == 2) then
-            call ccomp(y_sd_ptr%c_sweet_data_ptr,   & 
-                    t,                           & 
-                    dtq,                         & 
-                    rhs_sd_ptr%c_sweet_data_ptr, &
-                    this%ctx,                    & 
-                    f_sd_ptr%c_sweet_data_ptr)
-        else
-            stop 'Bad value for piece in sweet_f_comp'
-        end if
+        stop 'sweet_f_comp must not be called (pure explicit SDC)'
             
     end subroutine sweet_f_comp
 
