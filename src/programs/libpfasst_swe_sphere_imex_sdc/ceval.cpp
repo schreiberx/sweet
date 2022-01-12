@@ -3,18 +3,15 @@
 #include <string>
 
 #include <sweet/SimulationVariables.hpp>
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.hpp"
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
-#include "ceval.hpp"
-
-#include "../swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
-
-#include "cencap.hpp"
-
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
+
+#include "../swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
+
+#include "ceval.hpp"
+#include "cencap.hpp"
 
 
 /**
