@@ -13,7 +13,8 @@
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
 
 
 /**
@@ -229,7 +230,7 @@ void cfinal(
 }
 
 // evaluates the explicit (nonlinear) piece
-void ceval(SphereDataVars *i_Y,
+void ceval_f1(SphereDataVars *i_Y,
 		double i_t,
 		SphereDataCtxSDC *i_ctx,
 		SphereDataVars *o_F1
@@ -246,10 +247,9 @@ void ceval(SphereDataVars *i_Y,
 	// get the time step parameters
 	SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-	// use ERK timestepper for all terms
-	SWE_Sphere_TS_ln_erk* timestepper = i_ctx->get_ln_erk_timestepper();
+	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper();
 	// compute the explicit nonlinear right-hand side
-	timestepper->euler_timestep_update_pert(
+	timestepper->euler_timestep_update_lc_n(
 			phi_pert_Y,
 			vrt_Y,
 			div_Y,
@@ -261,7 +261,40 @@ void ceval(SphereDataVars *i_Y,
 }
 
 
-void ccomp (
+// evaluates the implicit (linear) piece
+void ceval_f2(SphereDataVars *i_Y,
+		double i_t,
+		SphereDataCtxSDC *i_ctx,
+		SphereDataVars *o_F2
+)
+{
+	const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
+	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
+	const SphereData_Spectral& div_Y  = i_Y->get_div();
+
+	SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
+	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
+	SphereData_Spectral& div_F2  = o_F2->get_div();
+
+	// get the time step parameters
+	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper();
+	// compute the linear right-hand side
+	timestepper->euler_timestep_update_linear(
+			phi_pert_Y,
+			vrt_Y,
+			div_Y,
+			phi_pert_F2,
+			vrt_F2,
+			div_F2,
+			simVars->timecontrol.current_simulation_time
+	);
+}
+
+// solves the first implicit system for io_Y
+// then updates o_F2 with the new value of F2(io_Y)
+void ccomp_f2(
 		SphereDataVars *io_Y,
 		double i_t,
 		double i_dt,
@@ -270,20 +303,41 @@ void ccomp (
 		SphereDataVars *o_F2
 )
 {
+	// get the time step parameters
+	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
 	// set y = rhs, f = 0.0
-	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
+	SphereData_Spectral& phi_pert_Y = io_Y->get_phi_pert();
 	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	SphereData_Spectral& div_Y  = io_Y->get_div();
+	SphereData_Spectral& div_Y = io_Y->get_div();
 
 	const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
 	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
 	const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
 
+	// first copy the rhs into the solution vector
+	// this is needed to call the SWEET function run_timestep
 	phi_pert_Y = phi_pert_Rhs;
 	vrt_Y = vrt_Rhs;
 	div_Y = div_Rhs;
 
-	c_sweet_data_setval(o_F2, 0.0);
+	SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper();
+	// solve the implicit system using the Helmholtz solver
+	timestepper->run_timestep(
+					phi_pert_Y,
+					vrt_Y,
+					div_Y,
+					i_dt,
+					simVars->timecontrol.max_simulation_time
+					);
+
+	SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
+	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
+	SphereData_Spectral& div_F2  = o_F2->get_div();
+	
+	phi_pert_F2 = (phi_pert_Y - phi_pert_Rhs) / i_dt;
+	vrt_F2      = (vrt_Y - vrt_Rhs) / i_dt;
+	div_F2      = (div_Y - div_Rhs) / i_dt;
 
 	return;
 

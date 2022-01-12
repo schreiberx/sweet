@@ -8,7 +8,8 @@
 #include <sweet/SimulationVariables.hpp>
 #include "../libpfasst_interface/LevelSingleton.hpp"
 
-#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
+#include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
 // Currently only contains a pointer to the LevelSingleton and the SimulationVariables object
@@ -40,14 +41,26 @@ public:
         {
             SWEETError("SphereDataCtx: levelSingleton pointer is NULL!");
         }
-        
-        // initialize the ln_erk time stepper
-        timestepper_ln_erk = new SWE_Sphere_TS_ln_erk(*simVars, levelSingleton->op);
 
-        // this is never used but this makes clear that with niters=1,
-        // we're actually just calling ERK1
-        timestepper_ln_erk->setup(1);
-    
+        // use first order integration in time for all pieces (only order supported)
+        if (simVars->disc.timestepping_order != -1)
+        {
+            std::cout << "WARNING: Supplying the timestepping order manually is not supported!" << std::endl;
+        }
+        int timestepping_order  = 1; 
+        
+        // initialize the timesteppers
+        timestepper_lg_erk_lc_n_erk = new SWE_Sphere_TS_lg_erk_lc_n_erk(*simVars, levelSingleton->op);
+        timestepper_lg_irk = new SWE_Sphere_TS_lg_irk(*simVars, levelSingleton->op);
+
+        // setup lg_erk_lc_n_erk timestepper
+        int num_off_diagonals = 1; // TODO why?
+        timestepper_lg_erk_lc_n_erk->setup(timestepping_order, num_off_diagonals);
+        // TODO what to do about the topography?
+
+        // setup lg_irk timestepper
+        timestepper_lg_irk->setup(timestepping_order, simVars->timecontrol.current_timestep_size);	
+
         // initialize the residuals
         residuals.resize(nprocs,std::vector<double>(0,0.));
 
@@ -62,7 +75,8 @@ public:
     // Destructor
     ~SphereDataCtxSDC() 
     {
-        delete timestepper_ln_erk;
+        delete timestepper_lg_erk_lc_n_erk;
+        delete timestepper_lg_irk;
         delete sphereDiagnostics;
     }
 
@@ -103,9 +117,15 @@ public:
     }
 
     // Getter for the explicit timestepper
-    SWE_Sphere_TS_ln_erk* get_ln_erk_timestepper() const
+    SWE_Sphere_TS_lg_erk_lc_n_erk* get_lg_erk_lc_n_erk_timestepper() const
     {
-        return timestepper_ln_erk;
+        return timestepper_lg_erk_lc_n_erk;
+    }
+
+    // Getter for the implicit timestepper
+    SWE_Sphere_TS_lg_irk* get_lg_irk_timestepper() const
+    {
+        return timestepper_lg_irk;
     }
 
     // Getter for the simulationVariables object
@@ -149,8 +169,11 @@ protected:
     // Pointer to the LevelSingleton object
     LevelSingleton *levelSingleton;
 
-    // Pointer to the ln_erk timestepper
-    SWE_Sphere_TS_ln_erk* timestepper_ln_erk;
+    // Pointer to the lg_erk_lc_n_erk timestepper (used for ceval_f1, ceval_f2)
+    SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper_lg_erk_lc_n_erk;
+
+    // Pointer to the lg_irk timestepper (used for ccomp_f2)
+    SWE_Sphere_TS_lg_irk* timestepper_lg_irk;
 
     // Saved Residuals for each processor
     std::vector<std::vector<double>> residuals;
