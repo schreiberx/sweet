@@ -43,12 +43,6 @@ extern "C"
 		SphereDataCtxSDC *i_ctx,
 		SphereDataVars *o_F1
 		);
-
-  // applies artificial diffusion
-  void cfinalize (SphereDataVars *io_Y,
-		  double i_t,
-		  double i_dt,
-		  SphereDataCtxSDC *i_ctx);
   
 }
 

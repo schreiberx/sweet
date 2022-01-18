@@ -20,7 +20,6 @@ module feval_module
         procedure :: f_comp                => sweet_f_comp
         procedure :: initialize            => sweet_sweeper_initialize
         procedure :: destroy               => sweet_sweeper_destroy
-        procedure :: compute_dt            => sweet_sweeper_compute_dt
     end type sweet_sweeper_t
   
     ! prototypes of the C functions
@@ -44,12 +43,6 @@ module feval_module
             type(c_ptr),    value :: i_Y, i_ctx, o_F
             real(c_double), value :: i_t
         end subroutine ceval
-
-        subroutine cfinalize(i_Y, i_t, i_dt, i_ctx) bind(c, name="cfinalize")
-            use iso_c_binding
-            type(c_ptr),    value :: i_Y, i_ctx
-            real(c_double), value :: i_t, i_dt
-        end subroutine cfinalize
 
     end interface
   
@@ -155,15 +148,7 @@ contains
         integer,                  intent(in)    :: level_index
         integer,                  intent(in)    :: piece
 
-        class(sweet_data_encap_t), pointer      :: y_sd_ptr
-        class(sweet_data_encap_t), pointer      :: f_sd_ptr
-        class(sweet_data_encap_t), pointer      :: rhs_sd_ptr
-
-        y_sd_ptr   => as_sweet_data_encap(y)
-        f_sd_ptr   => as_sweet_data_encap(f)    
-        rhs_sd_ptr => as_sweet_data_encap(rhs) 
-
-        stop 'sweet_f_comp must not be called (pure explicit SDC)'
+        stop 'sweet_f_comp must not be called (pure explicit SDC)'        
             
     end subroutine sweet_f_comp
 
@@ -194,20 +179,6 @@ contains
         ! it forces Fortran to destroy the parent class data structures
         call this%imex_destroy(pf, level_index)
     end subroutine sweet_sweeper_destroy
-
-    subroutine sweet_sweeper_compute_dt(this, pf, level_index, t0, dt, flags)
-        class(sweet_sweeper_t),         intent(inout) :: this
-        type(pf_pfasst_t), target,      intent(inout) :: pf
-        integer,                        intent(in   ) :: level_index
-        real(pfdp),                     intent(in   ) :: t0
-        real(pfdp),                     intent(inout) :: dt
-        integer, optional,              intent(in   ) :: flags
-
-        type(pf_level_t),    pointer :: lev
-        lev => pf%levels(level_index)   !!  Assign level pointer
-        !  Do nothing now (copy-pasted from pf_imex_sweeper)
-        return
-    end subroutine sweet_sweeper_compute_dt
 
 end module feval_module
 
