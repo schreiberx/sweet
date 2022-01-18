@@ -303,7 +303,6 @@ void ccomp_f2(
 	// get the time step parameters
 	SimulationVariables* simVars = i_ctx->get_simulation_variables();
 
-	// set y = rhs, f = 0.0
 	SphereData_Spectral& phi_pert_Y = io_Y->get_phi_pert();
 	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
 	SphereData_Spectral& div_Y = io_Y->get_div();
@@ -317,6 +316,14 @@ void ccomp_f2(
 	phi_pert_Y = phi_pert_Rhs;
 	vrt_Y = vrt_Rhs;
 	div_Y = div_Rhs;
+
+	if (i_dt == 0)
+	{
+		// quadrature weight is zero -> return trivial solution
+		// y = rhs (already done), f = 0.0
+		c_sweet_data_setval(o_F2, 0.0);
+		return;
+	}
 
 	SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper();
 	// solve the implicit system using the Helmholtz solver
