@@ -20,7 +20,6 @@ module feval_module
         procedure :: f_comp                => sweet_f_comp
         procedure :: initialize            => sweet_sweeper_initialize
         procedure :: destroy               => sweet_sweeper_destroy
-        procedure :: compute_dt            => sweet_sweeper_compute_dt
     end type sweet_sweeper_t
   
     ! prototypes of the C functions
@@ -51,17 +50,11 @@ module feval_module
             real(c_double), value :: i_t
         end subroutine ceval_f2
 
-        subroutine ccomp_f2(io_Y, i_t, i_dt, i_Rhs, i_ctx, o_F) bind(c, name="ccomp_f2")
+        subroutine ccomp_f2(io_Y, i_t, i_dtq, i_Rhs, i_ctx, o_F) bind(c, name="ccomp_f2")
             use iso_c_binding
             type(c_ptr),    value :: io_Y, i_Rhs, i_ctx, o_F
-            real(c_double), value :: i_t, i_dt
+            real(c_double), value :: i_t, i_dtq
         end subroutine ccomp_f2
-
-        subroutine cfinalize(i_Y, i_t, i_dt, i_ctx) bind(c, name="cfinalize")
-            use iso_c_binding
-            type(c_ptr),    value :: i_Y, i_ctx
-            real(c_double), value :: i_t, i_dt
-        end subroutine cfinalize
 
     end interface
   
@@ -218,20 +211,6 @@ contains
         ! it forces Fortran to destroy the parent class data structures
         call this%imex_destroy(pf, level_index)
     end subroutine sweet_sweeper_destroy
-
-    subroutine sweet_sweeper_compute_dt(this, pf, level_index, t0, dt, flags)
-        class(sweet_sweeper_t),         intent(inout) :: this
-        type(pf_pfasst_t), target,      intent(inout) :: pf
-        integer,                        intent(in   ) :: level_index
-        real(pfdp),                     intent(in   ) :: t0
-        real(pfdp),                     intent(inout) :: dt
-        integer, optional,              intent(in   ) :: flags
-
-        type(pf_level_t),    pointer :: lev
-        lev => pf%levels(level_index)   !!  Assign level pointer
-        !  Do nothing now (copy-pasted from pf_imex_sweeper)
-        return
-    end subroutine sweet_sweeper_compute_dt
 
 end module feval_module
 

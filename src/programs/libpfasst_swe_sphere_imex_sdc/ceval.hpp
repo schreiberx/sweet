@@ -56,17 +56,11 @@ extern "C"
   void ccomp_f2(
 		 SphereDataVars *io_Y, 
 		 double i_t, 
-		 double i_dt, 
+		 double i_dtq, 
 		 SphereDataVars *i_Rhs, 
 		 SphereDataCtxSDC *i_ctx,
 		 SphereDataVars *o_F2 
 		 );
-
-  // applies artificial diffusion
-  void cfinalize (SphereDataVars *io_Y,
-		  double i_t,
-		  double i_dt,
-		  SphereDataCtxSDC *i_ctx);
   
 }
 

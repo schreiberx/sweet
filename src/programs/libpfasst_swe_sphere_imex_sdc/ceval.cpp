@@ -294,7 +294,7 @@ void ceval_f2(SphereDataVars *i_Y,
 void ccomp_f2(
 		SphereDataVars *io_Y,
 		double i_t,
-		double i_dt,
+		double i_dtq,
 		SphereDataVars *i_Rhs,
 		SphereDataCtxSDC *i_ctx,
 		SphereDataVars *o_F2
@@ -317,7 +317,7 @@ void ccomp_f2(
 	vrt_Y = vrt_Rhs;
 	div_Y = div_Rhs;
 
-	if (i_dt == 0)
+	if (i_dtq == 0)
 	{
 		// quadrature weight is zero -> return trivial solution
 		// y = rhs (already done), f = 0.0
@@ -331,7 +331,7 @@ void ccomp_f2(
 					phi_pert_Y,
 					vrt_Y,
 					div_Y,
-					i_dt,
+					i_dtq,
 					simVars->timecontrol.max_simulation_time
 					);
 
@@ -339,39 +339,12 @@ void ccomp_f2(
 	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
 	SphereData_Spectral& div_F2  = o_F2->get_div();
 	
-	phi_pert_F2 = (phi_pert_Y - phi_pert_Rhs) / i_dt;
-	vrt_F2      = (vrt_Y - vrt_Rhs) / i_dt;
-	div_F2      = (div_Y - div_Rhs) / i_dt;
+	phi_pert_F2 = (phi_pert_Y - phi_pert_Rhs) / i_dtq;
+	vrt_F2      = (vrt_Y - vrt_Rhs) / i_dtq;
+	div_F2      = (div_Y - div_Rhs) / i_dtq;
 
 	return;
 
-}
-
-
-// applies artificial diffusion to the system
-void cfinalize(
-		SphereDataVars *io_Y,
-		double i_t,
-		double i_dt,
-		SphereDataCtxSDC *i_ctx
-)
-{
-	// get the simulation variables
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
-
-	if (simVars->sim.viscosity == 0)
-		return;
-
-	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	SphereData_Spectral& div_Y  = io_Y->get_div();
-
-	const double scalar = simVars->sim.viscosity*i_dt;
-	const double r      = simVars->sim.sphere_radius;
-
-	phi_pert_Y  = phi_pert_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
-	vrt_Y = vrt_Y.spectral_solve_helmholtz(1.0, -scalar, r);
-	div_Y  = div_Y.spectral_solve_helmholtz(1.0,  -scalar, r);
 }
 
 
