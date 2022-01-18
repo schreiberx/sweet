@@ -65,10 +65,10 @@ module feval_module
        real(c_double), value :: i_t
      end subroutine ceval_f2
 
-     subroutine ccomp_f2(io_Y, i_t, i_dt, i_Rhs, i_ctx, o_F2) bind(c, name="ccomp_f2")
+     subroutine ccomp_f2(io_Y, i_t, i_dtq, i_Rhs, i_ctx, o_F2) bind(c, name="ccomp_f2")
        use iso_c_binding
        type(c_ptr),    value :: io_Y, i_Rhs, i_ctx, o_F2
-       real(c_double), value :: i_t, i_dt
+       real(c_double), value :: i_t, i_dtq
      end subroutine ccomp_f2
 
      subroutine ceval_f3(i_Y, i_t, i_level, i_ctx, o_F3) bind(c, name="ceval_f3")
@@ -78,10 +78,10 @@ module feval_module
        real(c_double), value :: i_t
      end subroutine ceval_f3
 
-     subroutine ccomp_f3(i_Y, i_t, i_dt, i_level, i_Rhs, i_ctx, o_F3) bind(c, name="ccomp_f3")
+     subroutine ccomp_f3(i_Y, i_t, i_dtq, i_level, i_Rhs, i_ctx, o_F3) bind(c, name="ccomp_f3")
        use iso_c_binding
        type(c_ptr),    value :: i_Y, i_Rhs, i_ctx, o_F3
-       real(c_double), value :: i_t, i_dt
+       real(c_double), value :: i_t, i_dtq
        integer,        value :: i_level
      end subroutine ccomp_f3
 

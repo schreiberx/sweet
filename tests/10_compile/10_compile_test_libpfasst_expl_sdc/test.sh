@@ -3,7 +3,7 @@
 cd "$MULE_SOFTWARE_ROOT"
 
 echo_info_hline
-echo_info "PFASST"
+echo_info "PFASST-EXPL-SDC"
 echo_info_hline
 
 
