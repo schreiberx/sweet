@@ -16,6 +16,7 @@ from matplotlib.lines import Line2D
 groups = [
     'runtime.libpfasst_nnodes',
     'runtime.libpfasst_niters',
+    'runtime.libpfasst_nodes_type',
 ]
 
 

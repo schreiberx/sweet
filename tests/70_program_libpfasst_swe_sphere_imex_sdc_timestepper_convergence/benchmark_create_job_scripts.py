@@ -64,7 +64,6 @@ jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 # LibPFASST runtime parameters
 # set them all explicitly to make sure we know what's happening
 jg.runtime.libpfasst_nlevels = 1
-jg.runtime.libpfasst_nodes_type = 'SDC_GAUSS_LOBATTO'
 jg.runtime.libpfasst_use_rexi = 0
 jg.runtime.libpfasst_implicit_coriolis_force = 0
 jg.runtime.libpfasst_use_rk_stepper = 0
@@ -75,6 +74,7 @@ jg.runtime.libpfasst_use_rk_stepper = 0
 
 jg.runtime.libpfasst_nnodes = 5
 jg.runtime.libpfasst_niters = 8
+jg.runtime.libpfasst_nodes_type = 'SDC_GAUSS_LOBATTO'
 
 ref_ts_size = 8
 
@@ -98,6 +98,7 @@ timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
 # Create job scripts
 #
 
+jg.runtime.libpfasst_nodes_type = 'SDC_GAUSS_LOBATTO'
 for jg.runtime.libpfasst_nnodes in [3,5]:
     for jg.runtime.libpfasst_niters in range(1,5):
         for jg.runtime.timestep_size in timestep_sizes:
@@ -108,5 +109,19 @@ for jg.runtime.libpfasst_nnodes in [3,5]:
                 raise Exception("Invalid time step size (not remainder-less dividable)")
             
             jg.runtime.timestepping_order = min(jg.runtime.libpfasst_niters, 2 * jg.runtime.libpfasst_nnodes - 2)
+
+            jg.gen_jobscript_directory()
+
+jg.runtime.libpfasst_nodes_type = 'SDC_GAUSS_LEGENDRE'
+for jg.runtime.libpfasst_nnodes in [3,5]:
+    for jg.runtime.libpfasst_niters in range(2,5):
+        for jg.runtime.timestep_size in timestep_sizes:
+
+            if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+                print("simtime: "+str(jg.runtime.max_simulation_time))
+                print("timestep_size: "+str(jg.runtime.timestep_size))
+                raise Exception("Invalid time step size (not remainder-less dividable)")
+            
+            jg.runtime.timestepping_order = min(jg.runtime.libpfasst_niters, 2 * (jg.runtime.libpfasst_nnodes - 2))
 
             jg.gen_jobscript_directory()
