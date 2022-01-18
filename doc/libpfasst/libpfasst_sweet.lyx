@@ -1,0 +1,546 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+LibPFASST x SWEET
+\end_layout
+
+\begin_layout Author
+Valentina Schüller
+\end_layout
+
+\begin_layout Date
+January 18, 2022
+\end_layout
+
+\begin_layout Abstract
+This text outlines how to use the SWEET programs making use of 
+\begin_inset CommandInset href
+LatexCommand href
+name "LibPFASST"
+target "https://github.com/libpfasst/LibPFASST"
+literal "false"
+
+\end_inset
+
+.
+ I describe central development decisions as well as some peculiarities
+ of how these programs behave.
+ See the 
+\begin_inset CommandInset href
+LatexCommand href
+name "SWEET tutorials"
+target "https://schreiberx.github.io/sweetsite/tutorials.html"
+literal "false"
+
+\end_inset
+
+ for specific help with running the programs.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Using LibPFASST programs in SWEET
+\end_layout
+
+\begin_layout Standard
+Currently supported programs: 
+\end_layout
+
+\begin_layout Itemize
+explicit SDC for the shallow water equations on the sphere (
+\family typewriter
+libpfasst_swe_sphere_expl_sdc
+\family default
+)
+\end_layout
+
+\begin_layout Itemize
+IMEX SDC for the shallow water equations on the sphere (
+\family typewriter
+libpfasst_swe_sphere_imex_sdc
+\family default
+)
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Not supported yet:
+\end_layout
+
+\begin_layout Itemize
+MLSDC for the shallow water equations on the sphere (
+\family typewriter
+libpfasst_swe_sphere_mlsdc
+\family default
+)
+\end_layout
+
+\begin_layout Subsection
+Compilation
+\end_layout
+
+\begin_layout Standard
+This works: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+scons --program=PROGRAM_STRING --quadmath=disable --libpfasst=enable 
+\end_layout
+
+\begin_layout Plain Layout
+
+--sweet-mpi=enable --libsph=enable --plane-spectral-space=disable 
+\end_layout
+
+\begin_layout Plain Layout
+
+--sphere-spectral-space=enable --threading=off --libfft=enable 
+\end_layout
+
+\begin_layout Plain Layout
+
+--sphere-spectral-dealiasing=enable
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Runtime
+\end_layout
+
+\begin_layout Itemize
+so far, the programs have only been tested with the Galewsky benchmark!
+\end_layout
+
+\begin_layout Itemize
+in addition to the SWEET runtime options, the LibPFASST programs have flags
+ for customizing the PFASST algorithm.
+ These are the important ones, use 
+\family typewriter
+--help
+\family default
+ to see how to set them:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\family typewriter
+libpfasst-nodes-type
+\family default
+: type of nodes used by LibPFASST (Gauss-Lobatto or Gauss-Legendre)
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+libpfasst-nnodes
+\family default
+: number of nodes used by PFASST algorithm
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+libpfasst-niters
+\family default
+: number of iterations per time step used by PFASST algorithm
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+libpfasst-nlevels
+\family default
+: only relevant for MLSDC, anything above 1 will lead to an error!
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\series bold
+note:
+\series default
+ the flags 
+\family typewriter
+timestepping-method
+\family default
+ and 
+\family typewriter
+timestepping-order
+\family default
+ are not used by the LibPFASST programs! To compute your achievable order,
+ see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:hints-using"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Testing
+\end_layout
+
+\begin_layout Standard
+Convergence tests are contained in 
+\family typewriter
+tests/70_program_libpfasst_*
+\family default
+, compilation tests are in 
+\family typewriter
+tests/10_compile/10_compile_libpfasst_*
+\family default
+.
+\end_layout
+
+\begin_layout Section
+Special hints/peculiarities
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:hints-using"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+...
+ when using the programs
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+--output-file-mode=csv
+\family default
+ is the default for the other SWEET programs but 
+\series bold
+not supported
+\series default
+ in the LibPFASST programs.
+ Use 
+\family typewriter
+--output-file-mode=bin
+\family default
+ 
+\end_layout
+
+\begin_layout Itemize
+the LibPFASST programs do not support GUI output
+\end_layout
+
+\begin_layout Itemize
+in general: achievable convergence order of SDC: 
+\begin_inset Formula $\mathcal{\mathcal{O}}\left(\Delta t^{\min(n_{\text{iters}},m)}\right)$
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $m$
+\end_inset
+
+: order of quadrature nodes – not the integration but the 
+\emph on
+interpolation
+\emph default
+ order! (1 higher than for integration)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+achievable convergence order with Gauss-Lobatto nodes
+\begin_inset Formula 
+\[
+\mathcal{\mathcal{O}}\left(\Delta t^{\min(n_{\text{iters}},2n_{\text{nodes}}-2)}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+achievable convergence order with Gauss-Legendre nodes (for Gauss-Legendre
+ nodes, the interval boundaries are part of the node count)
+\begin_inset Formula 
+\[
+\mathcal{\mathcal{O}}\left(\Delta t^{\min\left(n_{\text{iters}},2\left(n_{\text{nodes}}-2\right)\right)}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+...
+ when looking at the code
+\end_layout
+
+\begin_layout Itemize
+in the code, 
+\family typewriter
+dt
+\family default
+ is the time step size 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+ provided at runtime with the 
+\family typewriter
+--dt
+\family default
+ flag.
+ 
+\family typewriter
+dtq
+\family default
+ is 
+\begin_inset Formula $\Delta t\cdot\omega$
+\end_inset
+
+, where 
+\begin_inset Formula $\omega$
+\end_inset
+
+ is the current quadrature weight.
+ 
+\series bold
+Note:
+\series default
+ for Gauss-Legendre nodes, the interval boundaries are part of the node
+ count but their weight is of course 0, thus 
+\family typewriter
+dtq
+\family default
+ can be 0!
+\end_layout
+
+\begin_layout Itemize
+it might seem surprising that there exists an evaluation function for the
+ implicit piece in the IMEX sweeper.
+ This is intended by the IMEX-SDC algorithm in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Algorithm 1"
+key "speck_multi-level_2015"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Section
+Development decisions
+\end_layout
+
+\begin_layout Itemize
+whenever a new version of the sweeper is used, a new 
+\family typewriter
+libpfasst_swe_sphere_*
+\family default
+ program should be created alongside a new compilation and convergence test
+\end_layout
+
+\begin_layout Itemize
+headers shared by all LibPFASST programs are to be stored in 
+\family typewriter
+src/programs/libpfasst_interface
+\family default
+.
+\end_layout
+
+\begin_layout Itemize
+the LibPFASST programs should behave as much as the 
+\family typewriter
+swe_sphere
+\family default
+ program as possible, from a user's perspective.
+ Particularly, this affects:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+variable naming
+\end_layout
+
+\begin_layout Itemize
+output behavior
+\end_layout
+
+\begin_layout Itemize
+output file name and structure
+\end_layout
+
+\end_deeper
+\begin_layout Section
+More information
+\end_layout
+
+\begin_layout Itemize
+\begin_inset CommandInset href
+LatexCommand href
+name "LibPFASST repository"
+target "https://github.com/libpfasst/LibPFASST"
+literal "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset href
+LatexCommand href
+name "documentation"
+target "https://libpfasst.github.io/LibPFASST"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+The IMEX-SDC algorithm is described in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Algorithm 1"
+key "speck_multi-level_2015"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+original SWEET x LibPFASST paper: 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "hamon_multi-level_2019"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "references"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

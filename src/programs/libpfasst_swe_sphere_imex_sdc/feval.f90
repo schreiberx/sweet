@@ -38,11 +38,23 @@ module feval_module
             integer,     value :: i_niter
         end subroutine cfinal
 
-        subroutine ceval(i_Y, i_t, i_ctx, o_F) bind(c, name="ceval")
+        subroutine ceval_f1(i_Y, i_t, i_ctx, o_F) bind(c, name="ceval_f1")
             use iso_c_binding
             type(c_ptr),    value :: i_Y, i_ctx, o_F
             real(c_double), value :: i_t
-        end subroutine ceval
+        end subroutine ceval_f1
+
+        subroutine ceval_f2(i_Y, i_t, i_ctx, o_F) bind(c, name="ceval_f2")
+            use iso_c_binding
+            type(c_ptr),    value :: i_Y, i_ctx, o_F
+            real(c_double), value :: i_t
+        end subroutine ceval_f2
+
+        subroutine ccomp_f2(io_Y, i_t, i_dtq, i_Rhs, i_ctx, o_F) bind(c, name="ccomp_f2")
+            use iso_c_binding
+            type(c_ptr),    value :: io_Y, i_Rhs, i_ctx, o_F
+            real(c_double), value :: i_t, i_dtq
+        end subroutine ccomp_f2
 
     end interface
   
@@ -127,12 +139,15 @@ contains
         f_sd_ptr  => as_sweet_data_encap(f)
 
         if (piece == 1) then
-            call ceval(y_sd_ptr%c_sweet_data_ptr, &
+            call ceval_f1(y_sd_ptr%c_sweet_data_ptr, &
                     t,                         & 
                     this%ctx,                  &  
                     f_sd_ptr%c_sweet_data_ptr)
         else
-            stop 'Bad value for piece in sweet_f_eval'
+            call ceval_f2(y_sd_ptr%c_sweet_data_ptr, &
+                    t,                         & 
+                    this%ctx,                  &  
+                    f_sd_ptr%c_sweet_data_ptr)
         end if 
 
     end subroutine sweet_f_eval
@@ -148,7 +163,24 @@ contains
         integer,                  intent(in)    :: level_index
         integer,                  intent(in)    :: piece
 
-        stop 'sweet_f_comp must not be called (pure explicit SDC)'        
+        class(sweet_data_encap_t), pointer      :: y_sd_ptr
+        class(sweet_data_encap_t), pointer      :: f_sd_ptr
+        class(sweet_data_encap_t), pointer      :: rhs_sd_ptr
+
+        y_sd_ptr   => as_sweet_data_encap(y)
+        f_sd_ptr   => as_sweet_data_encap(f)    
+        rhs_sd_ptr => as_sweet_data_encap(rhs) 
+
+        if (piece == 2) then
+            call ccomp_f2(y_sd_ptr%c_sweet_data_ptr,   & 
+                    t,                           & 
+                    dtq,                         & 
+                    rhs_sd_ptr%c_sweet_data_ptr, &
+                    this%ctx,                    & 
+                    f_sd_ptr%c_sweet_data_ptr)
+        else
+            stop 'Bad value for piece in sweet_f_comp'
+        end if
             
     end subroutine sweet_f_comp
 
@@ -160,7 +192,7 @@ contains
         ! call superclass initialize
         call this%imex_initialize(pf, level_index)
         
-        this%implicit=.FALSE.
+        this%implicit=.TRUE.
         this%explicit=.TRUE.
     end subroutine sweet_sweeper_initialize
   

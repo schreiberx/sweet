@@ -426,7 +426,7 @@ void ceval_f2 (
 void ccomp_f2 (
 		SphereDataVars *io_Y,
 		double i_t,
-		double i_dt,
+		double i_dtq,
 		SphereDataVars *i_Rhs,
 		SphereDataCtx *i_ctx,
 		SphereDataVars *o_F2
@@ -594,7 +594,7 @@ void ceval_f3 (
 void ccomp_f3 (
 		SphereDataVars *io_Y,
 		double i_t,
-		double i_dt,
+		double i_dtq,
 		int i_level,
 		SphereDataVars *i_Rhs,
 		SphereDataCtx *i_ctx,
@@ -659,7 +659,7 @@ void ccomp_f3 (
 void cfinalize(
 		SphereDataVars *io_Y,
 		double i_t,
-		double i_dt,
+		double i_dtq,
 		SphereDataCtx *i_ctx
 )
 {
@@ -673,7 +673,7 @@ void cfinalize(
 	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
 	SphereData_Spectral& div_Y  = io_Y->get_div();
 
-	const double scalar = simVars->sim.viscosity*i_dt;
+	const double scalar = simVars->sim.viscosity*i_dtq;
 	const double r      = simVars->sim.sphere_radius;
 
 	phi_pert_Y  = phi_pert_Y.spectral_solve_helmholtz(1.0,  -scalar, r);

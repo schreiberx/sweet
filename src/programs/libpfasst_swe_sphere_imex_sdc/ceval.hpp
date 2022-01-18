@@ -36,13 +36,31 @@ extern "C"
 	      int i_niters
 	      );
 
-  // evaluates the explicit piece
-  void ceval(
+  // evaluates the explicit nonlinear piece
+  void ceval_f1(
 		SphereDataVars *i_Y, 
 		double i_t, 
 		SphereDataCtxSDC *i_ctx,
 		SphereDataVars *o_F1
 		);
+
+  // evaluates the implicit linear piece
+  void ceval_f2(
+		SphereDataVars *i_Y, 
+		double i_t, 
+		SphereDataCtxSDC *i_ctx,
+		SphereDataVars *o_F1
+		);
+
+  // solves the implicit system
+  void ccomp_f2(
+		 SphereDataVars *io_Y, 
+		 double i_t, 
+		 double i_dtq, 
+		 SphereDataVars *i_Rhs, 
+		 SphereDataCtxSDC *i_ctx,
+		 SphereDataVars *o_F2 
+		 );
   
 }
 
