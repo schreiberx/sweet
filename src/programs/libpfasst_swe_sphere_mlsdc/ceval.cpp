@@ -45,35 +45,6 @@ std::string write_file(
 }
 
 
-/**
- *  Write the spectrum to file and return string of file name
- **/
-std::string write_spectrum_to_file(
-		SphereDataCtx &i_ctx,
-		const SphereData_Spectral &i_sphereData,
-		const char* i_name
-)
-{
-	char buffer[1024];
-
-	// get the pointer to the Simulation Variables object
-	SimulationVariables* simVars = i_ctx.get_simulation_variables();
-
-	// create copy
-	SphereData_Spectral sphereData(i_sphereData);
-
-	// Write the spectrum into the file
-	const char* filename_template = simVars->iodata.output_file_name.c_str();
-	sprintf(buffer,
-			filename_template,
-			i_name,
-            simVars->timecontrol.current_simulation_time*simVars->iodata.output_time_scale);
-	sphereData.spectrum_file_write(buffer);
-
-	return buffer;
-}
-
-
 extern "C"
 {
 // initialization of the variables (initial condition)

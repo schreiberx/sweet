@@ -22,13 +22,6 @@ module hooks_module
             real(c_double),  value :: i_norm
         end subroutine cecho_residual
 
-        subroutine cecho_output_jump(i_ctx, i_Y, i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter) & 
-            bind(c, name="cecho_output_jump")
-            use iso_c_binding
-            type(c_ptr),     value :: i_ctx, i_Y
-            integer,         value :: i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter
-        end subroutine cecho_output_jump
-
         subroutine cecho_output_solution(i_ctx, i_Y, i_current_proc, i_current_step, i_current_iter, i_nnodes, i_niter) & 
             bind(c, name="cecho_output_solution")
             use iso_c_binding
@@ -80,8 +73,8 @@ contains
         iter=pf%state%iter
         resid=pf%levels(level_index)%residual
 
-        print '("resid: step: ",i7.5," iter: ",i5.3," level: ",i2.2," resid: ",es14.7)', &
-                step, iter, level_index, resid
+        print '("[MULE] libpfasst.resid_s",i5.5,"_i",i3.3," = ",es14.7)', &
+                step, iter, resid
 
         sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
         x_ptr             => as_sweet_data_encap(pf%levels(level_index)%Q(sweet_sweeper_ptr%nnodes))
@@ -92,51 +85,6 @@ contains
                                 pf%state%proc-1)
         end if
     end subroutine fecho_residual
-
-    ! function to output the jump in the initial condition
-
-    subroutine fecho_output_jump(pf, level_index)
-        use iso_c_binding
-        use pf_mod_utils
-        use pf_mod_restrict
-        use mpi
-        type(pf_pfasst_t), intent(inout) :: pf
-        integer, intent(in)              :: level_index
-        
-        class(pf_encap_t),         allocatable   :: del
-        class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
-        class(sweet_data_encap_t), pointer       :: x_ptr
-        integer                                  :: ierr, num_procs
-
-        integer                          ::   proc,step,rank,iter
-        
-        call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
-
-        sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
-
-        proc=pf%state%proc
-        step=pf%state%step
-        rank=pf%rank
-        iter=pf%state%iter
-
-        call pf%levels(level_index)%ulevel%factory%create_single(del,         &
-                                                                 level_index, &
-                                                                 pf%levels(level_index)%lev_shape)
-        call del%copy(pf%levels(level_index)%q0)
-        call del%axpy(-1.0_pfdp, pf%levels(level_index)%Q(1))
-        
-        x_ptr  => as_sweet_data_encap(del)
-
-        call cecho_output_jump(sweet_sweeper_ptr%ctx,         &
-                               x_ptr%c_sweet_data_ptr,        &
-                               proc,                          &
-                               step,                          &
-                               iter,                          &
-                               pf%levels(level_index)%nnodes, &
-                               pf%niters)
-
-    end subroutine fecho_output_jump
-  
 
     ! function to output the solution
 
