@@ -5,6 +5,14 @@
 #include "SphereDataCtxSDC.hpp"
 
 /**
+ * Determine if output should be written for current time step & iteration
+ */
+bool timestep_check_output(SphereDataCtxSDC *i_ctx,
+                               int i_current_iter,
+                               int i_niters);
+
+
+/**
  * Write file to data and return string of file name
  */
 

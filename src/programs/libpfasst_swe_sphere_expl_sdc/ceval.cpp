@@ -16,6 +16,44 @@
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
 
 
+bool timestep_check_output(SphereDataCtxSDC *i_ctx,
+                               int i_current_iter,
+                               int i_niters)
+{
+    if (i_current_iter < i_niters) {
+        // TODO: make this controllable via command line argument
+        return false;
+    }
+
+    // get the simulation variables
+    SimulationVariables* simVars = i_ctx->get_simulation_variables();
+
+    if (simVars->iodata.output_each_sim_seconds < 0) {
+        // write no output between start and end of simulation
+        return false;
+    }
+
+    if (simVars->iodata.output_each_sim_seconds == 0) {
+        // write output at every time step
+        return true;
+    }
+
+    if (simVars->timecontrol.current_simulation_time < simVars->iodata.output_next_sim_seconds) {
+        // we have not reached the next output time step
+        return false;
+    }
+
+    if (simVars->timecontrol.max_simulation_time - simVars->timecontrol.current_simulation_time < 1e-3) {
+        // do not write output if final time step is reached
+        // (output will be written in cfinal anyways)
+        return false;
+    }
+
+    // we have reached the next output time step
+    return true;
+}
+
+
 /**
  * Write data to file and return string of file name
  */
@@ -45,35 +83,6 @@ std::string write_file(
 }
 
 
-/**
- *  Write the spectrum to file and return string of file name
- **/
-std::string write_spectrum_to_file(
-		SphereDataCtxSDC &i_ctx,
-		const SphereData_Spectral &i_sphereData,
-		const char* i_name
-)
-{
-	char buffer[1024];
-
-	// get the pointer to the Simulation Variables object
-	SimulationVariables* simVars = i_ctx.get_simulation_variables();
-
-	// create copy
-	SphereData_Spectral sphereData(i_sphereData);
-
-	// Write the spectrum into the file
-	const char* filename_template = simVars->iodata.output_file_name.c_str();
-	sprintf(buffer,
-			filename_template,
-			i_name,
-            simVars->timecontrol.current_simulation_time*simVars->iodata.output_time_scale);
-	sphereData.spectrum_file_write(buffer);
-
-	return buffer;
-}
-
-
 extern "C"
 {
 // initialization of the variables (initial condition)
@@ -94,7 +103,7 @@ void cinitial(
 	// get the SimulationVariables object from context
 	SimulationVariables* simVars(i_ctx->get_simulation_variables());
 
-	if (simVars->benchmark.use_topography)
+	if (simVars->benchmark.use_topography && simVars->iodata.output_each_sim_seconds >= 0)
 		write_file(*i_ctx, simVars->benchmark.h_topo,  "prog_h_topo");
 	
 	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark();
@@ -133,11 +142,13 @@ void cinitial(
 
 	if (rank == 0)
 	{
-		write_file(*i_ctx, phi_pert_Y,  "prog_phi_pert");
-		write_file(*i_ctx, vrt_Y, "prog_vrt");
-		write_file(*i_ctx, div_Y,  "prog_div");
+		if (simVars->iodata.output_each_sim_seconds >= 0) {
+			write_file(*i_ctx, phi_pert_Y, "prog_phi_pert");
+			write_file(*i_ctx, vrt_Y, "prog_vrt");
+			write_file(*i_ctx, div_Y, "prog_div");
+		}
 		if (simVars->iodata.output_each_sim_seconds < 0) {
-		    // only write output at start and end
+		    // do not write output
 		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.max_simulation_time;
 		}
 		else if (simVars->iodata.output_each_sim_seconds > 0) {
@@ -200,31 +211,21 @@ void cfinal(
 	SphereData_Spectral vrt_Y_final(vrt_Y);
 	vrt_Y_init -= vrt_Y_final;
 
-	if (level_id == simVars->libpfasst.nlevels-1) 
+	if (simVars->iodata.output_each_sim_seconds < 0) {
+		// do not write output
+		return;
+	}
+
+	if (rank == 0)
 	{
-		if (nprocs == 1)
-		{
-			std::string filename = "prog_phi_pert";
-			write_file(*i_ctx, phi_pert_Y, filename.c_str());
+		std::string filename = "prog_phi_pert";
+		write_file(*i_ctx, phi_pert_Y, filename.c_str());
 
-			filename = "prog_vrt";
-			write_file(*i_ctx, vrt_Y, filename.c_str());
+		filename = "prog_vrt";
+		write_file(*i_ctx, vrt_Y, filename.c_str());
 
-			filename = "prog_div";
-			write_file(*i_ctx, div_Y, filename.c_str());
-
-		}
-		else if (rank == 0)
-		{
-			std::string filename = "prog_phi_pert_nprocs_"+std::to_string(nprocs);
-			write_file(*i_ctx, phi_pert_Y, filename.c_str());
-
-			filename = "prog_vrt_nprocs_"+std::to_string(nprocs);
-			write_file(*i_ctx, vrt_Y, filename.c_str());
-
-			filename = "prog_div_nprocs_"+std::to_string(nprocs);
-			write_file(*i_ctx, div_Y, filename.c_str());
-		}
+		filename = "prog_div";
+		write_file(*i_ctx, div_Y, filename.c_str());
 	}
 }
 

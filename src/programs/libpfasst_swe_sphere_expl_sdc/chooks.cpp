@@ -5,43 +5,6 @@
 
 extern "C"
 {
-    bool timestep_check_output(SphereDataCtxSDC *i_ctx,
-                               int i_current_iter,
-                               int i_niters)
-    {
-        if (i_current_iter < i_niters) {
-            // TODO: make this controllable via command line argument
-            return false;
-        }
-
-        // get the simulation variables
-        SimulationVariables* simVars = i_ctx->get_simulation_variables();
-
-        if (simVars->iodata.output_each_sim_seconds < 0) {
-            // write no output between start and end of simulation
-            return false;
-        }
-
-        if (simVars->iodata.output_each_sim_seconds == 0) {
-            // write output at every time step
-            return true;
-        }
-
-        if (simVars->timecontrol.current_simulation_time < simVars->iodata.output_next_sim_seconds) {
-            // we have not reached the next output time step
-            return false;
-        }
-
-        if (simVars->timecontrol.max_simulation_time - simVars->timecontrol.current_simulation_time < 1e-3) {
-            // do not write output if final time step is reached
-            // (output will be written in cfinal anyways)
-            return false;
-        }
-
-        // we have reached the next output time step
-        return true;
-    }
-
     void cecho_error(SphereData_Spectral* sd,
                      int step)
     {
@@ -90,56 +53,16 @@ extern "C"
                                        *simVars
                                        );
 
-        std::cout << std::setprecision(20)
-              << "mass = " << simVars->diag.total_mass
-              << " energy = " << simVars->diag.total_energy
-              << " potential_enstrophy = " << simVars->diag.total_potential_enstrophy
-              << std::endl;
+        std::cout << "[MULE] libpfasst.mass_s" << std::setfill('0') << std::setw(5) << i_current_step;
+        std::cout <<  " = " << std::setprecision(20) << simVars->diag.total_mass << std::endl;
+        std::cout << "[MULE] libpfasst.energy_s" << std::setfill('0') << std::setw(5) << i_current_step;
+        std::cout << " = " << std::setprecision(20) << simVars->diag.total_energy << std::endl;
+        std::cout << "[MULE] libpfasst.potential_enstrophy_s" << std::setfill('0') << std::setw(5) << i_current_step;
+        std::cout << " = " << std::setprecision(20) << simVars->diag.total_potential_enstrophy << std::endl;
 
         // save the invariants for plotting at the end
         i_ctx->save_physical_invariants(i_current_step);
     }
-
-    void cecho_output_jump(SphereDataCtxSDC *i_ctx,
-                           SphereDataVars *i_Y,
-                           int i_current_proc,
-                           int i_current_step,
-                           int i_current_iter,
-                           int i_nnodes,
-                           int i_niters
-                           )
-    {
-        const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-        const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-        const SphereData_Spectral& div_Y  = i_Y->get_div();
-
-        // get the pointer to the Simulation Variables object
-        SimulationVariables* simVars = i_ctx->get_simulation_variables();
-        simVars->timecontrol.current_timestep_nr = i_current_step + 1;
-        auto current_dt = simVars->timecontrol.current_timestep_size;
-        simVars->timecontrol.current_simulation_time = (i_current_step + 1) * current_dt;
-
-        // write the data to file
-        std::string filename = "prog_jump_phi_pert_current_proc_"+std::to_string(i_current_proc)
-                                    +"_current_iter_"+std::to_string(i_current_iter)
-                                    +"_nnodes_"      +std::to_string(i_nnodes)
-                                    +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, phi_pert_Y, filename.c_str());
-
-        filename = "prog_jump_vrt_current_proc_"+std::to_string(i_current_proc)
-                        +"_current_iter_"+std::to_string(i_current_iter)
-                        +"_nnodes_"      +std::to_string(i_nnodes)
-                        +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, vrt_Y, filename.c_str());
-
-        filename = "prog_jump_div_current_proc_"+std::to_string(i_current_proc)
-                        +"_current_iter_"+std::to_string(i_current_iter)
-                        +"_nnodes_"      +std::to_string(i_nnodes)
-                        +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, div_Y, filename.c_str());
-    }
-
-
 
     void cecho_output_solution(SphereDataCtxSDC *i_ctx,
                                SphereDataVars *i_Y,
@@ -171,24 +94,20 @@ extern "C"
         const SphereData_Spectral& div_Y  = i_Y->get_div();
 
         // write the data to file
-        std::string filename = "prog_phi_pert_current_proc_"+std::to_string(i_current_proc)
-                                  +"_current_iter_"+std::to_string(i_current_iter)
-                                  +"_nnodes_"      +std::to_string(i_nnodes)
-                                  +"_niters_"      +std::to_string(i_niters);
+        int rank = 0;
+	    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+        if (rank != 0)
+        {
+            return;
+        }
+        std::string filename = "prog_phi_pert";
         write_file(*i_ctx, phi_pert_Y, filename.c_str());
 
-        filename = "prog_vrt_current_proc_"+std::to_string(i_current_proc)
-                      +"_current_iter_"+std::to_string(i_current_iter)
-                      +"_nnodes_"      +std::to_string(i_nnodes)
-                      +"_niters_"      +std::to_string(i_niters);
+        filename = "prog_vrt";
         write_file(*i_ctx, vrt_Y, filename.c_str());
 
-        filename = "prog_div_current_proc_"+std::to_string(i_current_proc)
-                      +"_current_iter_"+std::to_string(i_current_iter)
-                      +"_nnodes_"      +std::to_string(i_nnodes)
-                      +"_niters_"      +std::to_string(i_niters);
+        filename = "prog_div";
         write_file(*i_ctx, div_Y, filename.c_str());
-
     }
 
 }

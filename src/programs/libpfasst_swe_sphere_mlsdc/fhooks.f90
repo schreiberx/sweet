@@ -80,8 +80,8 @@ contains
     iter=pf%state%iter
     resid=pf%levels(level_index)%residual
 
-    print '("resid: step: ",i7.5," iter: ",i5.3," level: ",i2.2," resid: ",es14.7)', &
-            step, iter, level_index, resid
+    print '("[MULE] libpfasst.resid_s",i5.5,"_i",i3.3,"_l",i2.2," = ",es14.7)', &
+                step, iter, level_index, resid
 
     sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
     x_ptr             => as_sweet_data_encap(pf%levels(level_index)%Q(sweet_sweeper_ptr%nnodes))
