@@ -142,19 +142,26 @@ public:
 		 * SETUP time frame
 		 */
 		// size of coarse time step
-		double coarse_timestep_size = pVars->max_simulation_time / pVars->coarse_slices;
+
+		double time_slice_size = pVars->max_simulation_time / pVars->coarse_slices;
+
+		if (pVars->coarse_timestep_size < 0)
+			pVars->coarse_timestep_size = time_slice_size;
+
+		double coarse_timestep_size = pVars->coarse_timestep_size;
+
 
 		CONSOLEPREFIX_start(0);
-		parareal_simulationInstances[0]->sim_set_timeframe(0, coarse_timestep_size);
+		parareal_simulationInstances[0]->sim_set_timeframe(0, time_slice_size);
 
 		for (int k = 1; k < pVars->coarse_slices-1; k++)
 		{
 			CONSOLEPREFIX_start(k);
-			parareal_simulationInstances[k]->sim_set_timeframe(coarse_timestep_size*k, coarse_timestep_size*(k+1));
+			parareal_simulationInstances[k]->sim_set_timeframe(time_slice_size*k, time_slice_size*(k+1));
 		}
 
 		CONSOLEPREFIX_start(pVars->coarse_slices-1);
-		parareal_simulationInstances[pVars->coarse_slices-1]->sim_set_timeframe(i_pararealSimVars->max_simulation_time-coarse_timestep_size, i_pararealSimVars->max_simulation_time);
+		parareal_simulationInstances[pVars->coarse_slices-1]->sim_set_timeframe(i_pararealSimVars->max_simulation_time-time_slice_size, i_pararealSimVars->max_simulation_time);
 
 
 		/*
@@ -180,16 +187,24 @@ public:
 		{
 			CONSOLEPREFIX_start(i-1);
 			Parareal_Data &tmp = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse();
+			Parareal_Data &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse_previous_timestep(); // SL
 
 			// use coarse time step output data as initial data of next coarse time step
 			CONSOLEPREFIX_start(i);
 			parareal_simulationInstances[i]->sim_set_data(tmp);
+			parareal_simulationInstances[i]->sim_set_data_coarse_previous_time_slice(tmp2); // SL
 
 			// run coarse time step
 			parareal_simulationInstances[i]->run_timestep_coarse();
 		}
 
-
+		// Store initial propagation:
+		for (int i = 0; i < pVars->coarse_slices; i++)
+			parareal_simulationInstances[i]->output_data_file(
+					parareal_simulationInstances[i]->get_reference_to_data_timestep_coarse(),
+					0,  // 0-th iteration
+					i
+				);
 
 		/**
 		 * We run as much Parareal iterations as there are coarse slices
@@ -212,6 +227,14 @@ public:
 			for (int i = k; i < pVars->coarse_slices; i++)
 			{
 				CONSOLEPREFIX_start(i);
+
+				if (i > 0)
+				{
+				    // SL:
+				    Parareal_Data &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine_previous_timestep();
+				    parareal_simulationInstances[i]->sim_set_data_fine_previous_time_slice(tmp2);
+				}
+
 				parareal_simulationInstances[i]->run_timestep_fine();
 			}
 
@@ -232,10 +255,18 @@ public:
 			 * 3) Forward to next frame
 			 */
 			double max_convergence = -2;
-//			for (int i = k; i < pVars->coarse_slices; i++)
-			for (int i = 0; i < pVars->coarse_slices; i++)
+			for (int i = k; i < pVars->coarse_slices; i++)
+///			for (int i = 0; i < pVars->coarse_slices; i++)
 			{
 				CONSOLEPREFIX_start(i);
+
+				if (i > 0)
+				{
+				    // SL:
+				    Parareal_Data &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse_previous_timestep();
+				    parareal_simulationInstances[i]->sim_set_data_coarse_previous_time_slice(tmp2);
+				}
+
 				parareal_simulationInstances[i]->run_timestep_coarse();
 
 				// compute convergence
@@ -246,14 +277,14 @@ public:
 
 				parareal_simulationInstances[i]->output_data_file(
 						parareal_simulationInstances[i]->get_reference_to_output_data(),
-						k,
+						k + 1,
 						i
 					);
 
 				CONSOLEPREFIX.start(i);
 				parareal_simulationInstances[i]->output_data_console(
 						parareal_simulationInstances[i]->get_reference_to_output_data(),
-						k,
+						k + 1,
 						i
 					);
 
@@ -285,6 +316,8 @@ public:
 					CONSOLEPREFIX_start(i+1);
 					parareal_simulationInstances[i+1]->sim_set_data(tmp);
 				}
+
+				parareal_simulationInstances[i]->check_for_nan_parareal();
 
 			}
 ///			start_slice++;

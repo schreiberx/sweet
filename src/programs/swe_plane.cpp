@@ -201,7 +201,14 @@ public:
 		_parareal_data_fine_h(planeDataConfig), _parareal_data_fine_u(planeDataConfig), _parareal_data_fine_v(planeDataConfig),
 		_parareal_data_coarse_h(planeDataConfig), _parareal_data_coarse_u(planeDataConfig), _parareal_data_coarse_v(planeDataConfig),
 		_parareal_data_output_h(planeDataConfig), _parareal_data_output_u(planeDataConfig), _parareal_data_output_v(planeDataConfig),
-		_parareal_data_error_h(planeDataConfig), _parareal_data_error_u(planeDataConfig), _parareal_data_error_v(planeDataConfig)
+		_parareal_data_error_h(planeDataConfig), _parareal_data_error_u(planeDataConfig), _parareal_data_error_v(planeDataConfig),
+		// For parareal_SL: store penult time step in the current simulation (to be transmitted to the following time slice);
+		// and penult time step received from previous time slice
+		_parareal_data_coarse_previous_timestep_h(planeDataConfig), _parareal_data_coarse_previous_timestep_u(planeDataConfig), _parareal_data_coarse_previous_timestep_v(planeDataConfig),
+		_parareal_data_coarse_previous_time_slice_h(planeDataConfig), _parareal_data_coarse_previous_time_slice_u(planeDataConfig), _parareal_data_coarse_previous_time_slice_v(planeDataConfig),
+		// Same thing, but in the case where fine solver = SL
+		_parareal_data_fine_previous_timestep_h(planeDataConfig), _parareal_data_fine_previous_timestep_u(planeDataConfig), _parareal_data_fine_previous_timestep_v(planeDataConfig),
+		_parareal_data_fine_previous_time_slice_h(planeDataConfig), _parareal_data_fine_previous_time_slice_u(planeDataConfig), _parareal_data_fine_previous_time_slice_v(planeDataConfig)
 #endif
 	{
 		// Calls initialisation of the run (e.g. sets u, v, h)
@@ -1038,6 +1045,20 @@ public:
 	PlaneData _parareal_data_error_h, _parareal_data_error_u, _parareal_data_error_v;
 	Parareal_Data_PlaneData<3> parareal_data_error;
 
+	PlaneData _parareal_data_coarse_previous_timestep_h, _parareal_data_coarse_previous_timestep_u, _parareal_data_coarse_previous_timestep_v;
+	Parareal_Data_PlaneData<3> parareal_data_coarse_previous_timestep;
+
+	PlaneData _parareal_data_coarse_previous_time_slice_h, _parareal_data_coarse_previous_time_slice_u, _parareal_data_coarse_previous_time_slice_v;
+	Parareal_Data_PlaneData<3> parareal_data_coarse_previous_time_slice;
+
+	PlaneData _parareal_data_fine_previous_timestep_h, _parareal_data_fine_previous_timestep_u, _parareal_data_fine_previous_timestep_v;
+	Parareal_Data_PlaneData<3> parareal_data_fine_previous_timestep;
+
+	PlaneData _parareal_data_fine_previous_time_slice_h, _parareal_data_fine_previous_time_slice_u, _parareal_data_fine_previous_time_slice_v;
+	Parareal_Data_PlaneData<3> parareal_data_fine_previous_time_slice;
+
+
+
 	double timeframe_start = -1;
 	double timeframe_end = -1;
 
@@ -1070,6 +1091,27 @@ public:
 			parareal_data_error.setup(data_array);
 		}
 
+		{
+			PlaneData* data_array[3] = {&_parareal_data_coarse_previous_timestep_h, &_parareal_data_coarse_previous_timestep_u, &_parareal_data_coarse_previous_timestep_v};
+			parareal_data_coarse_previous_timestep.setup(data_array);
+		}
+
+		{
+			PlaneData* data_array[3] = {&_parareal_data_coarse_previous_time_slice_h, &_parareal_data_coarse_previous_time_slice_u, &_parareal_data_coarse_previous_time_slice_v};
+			parareal_data_coarse_previous_time_slice.setup(data_array);
+		}
+
+		{
+			PlaneData* data_array[3] = {&_parareal_data_fine_previous_timestep_h, &_parareal_data_fine_previous_timestep_u, &_parareal_data_fine_previous_timestep_v};
+			parareal_data_fine_previous_timestep.setup(data_array);
+		}
+
+		{
+			PlaneData* data_array[3] = {&_parareal_data_fine_previous_time_slice_h, &_parareal_data_fine_previous_time_slice_u, &_parareal_data_fine_previous_time_slice_v};
+			parareal_data_fine_previous_time_slice.setup(data_array);
+		}
+
+
 		timeSteppers.setup(
 				simVars.disc.timestepping_method,
 				simVars.disc.timestepping_order,
@@ -1096,8 +1138,8 @@ public:
 	 */
 	Parareal_Data& get_reference_to_data_timestep_fine()
 	{
-		SWEETError("TODO");
-		return parareal_data_start;
+		//SWEETError("TODO");
+		return parareal_data_fine;
 	}
 
 	/**
@@ -1106,8 +1148,8 @@ public:
 	 */
 	Parareal_Data& get_reference_to_data_timestep_coarse()
 	{
-		SWEETError("TODO");
-		return parareal_data_start;
+		//SWEETError("TODO");
+		return parareal_data_coarse;
 	}
 
 	/**
@@ -1116,8 +1158,26 @@ public:
 	 */
 	Parareal_Data& get_reference_to_output_data()
 	{
-		SWEETError("TODO");
-		return parareal_data_start;
+		//SWEETError("TODO");
+		return parareal_data_output;
+	}
+
+	/**
+	 * return the penult time step of the coarse propagation
+	 */
+	Parareal_Data& get_reference_to_data_timestep_coarse_previous_timestep()
+	{
+		///////////////SWEETError("TODO");
+		return parareal_data_coarse_previous_timestep;
+	}
+
+
+	/**
+	 * return the penult time step of the fine propagation
+	 */
+	Parareal_Data& get_reference_to_data_timestep_fine_previous_timestep()
+	{
+		return parareal_data_fine_previous_timestep;
 	}
 
 
@@ -1137,7 +1197,6 @@ public:
 	}
 
 
-
 	/**
 	 * Set the initial data at i_timeframe_start
 	 */
@@ -1149,10 +1208,19 @@ public:
 
 		reset();
 
-
 		*parareal_data_start.data_arrays[0] = prog_h_pert;
 		*parareal_data_start.data_arrays[1] = prog_u;
 		*parareal_data_start.data_arrays[2] = prog_v;
+
+                // Useful in the first timestep of each time slice
+		*parareal_data_coarse_previous_time_slice.data_arrays[0] = prog_h_pert;
+		*parareal_data_coarse_previous_time_slice.data_arrays[1] = prog_u;
+		*parareal_data_coarse_previous_time_slice.data_arrays[2] = prog_v;
+
+                // Useful in the first timestep of each time slice
+		*parareal_data_fine_previous_time_slice.data_arrays[0] = prog_h_pert;
+		*parareal_data_fine_previous_time_slice.data_arrays[1] = prog_u;
+		*parareal_data_fine_previous_time_slice.data_arrays[2] = prog_v;
 
 	}
 
@@ -1173,6 +1241,35 @@ public:
 
 		// cast to pararealPlaneData stuff
 	}
+
+	/**
+	 * Set solution of penult coarse timestep of previous time slice
+	 */
+	void sim_set_data_coarse_previous_time_slice(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data_coarse_previous_time_slice()" << std::endl;
+
+		// copy to buffers
+		parareal_data_coarse_previous_time_slice = i_pararealData;
+	}
+
+	/**
+	 * Set solution of penult fine timestep of previous time slice
+	 */
+	void sim_set_data_fine_previous_time_slice(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data_fine_previous_time_slice()" << std::endl;
+
+		// copy to buffers
+		parareal_data_fine_previous_time_slice = i_pararealData;
+	}
+
 
 	/**
 	 * Set the MPI communicator to use for simulation purpose
@@ -1203,6 +1300,15 @@ public:
 		simVars.timecontrol.current_simulation_time = timeframe_start;
 		simVars.timecontrol.max_simulation_time = timeframe_end;
 		simVars.timecontrol.current_timestep_nr = 0;
+
+		// If fine solver = SL, send penult fine time step of previous slice, except if it is the first time slice
+		if ( ! simVars.disc.timestepping_method.compare("l_cn_na_sl_nd_settls") ) // TODO: add others SL schemes
+		{
+			PlaneData h_prev = *parareal_data_fine_previous_time_slice.data_arrays[0];
+			PlaneData u_prev = *parareal_data_fine_previous_time_slice.data_arrays[1];
+			PlaneData v_prev = *parareal_data_fine_previous_time_slice.data_arrays[2];
+			timeSteppers.master->set_previous_solution(h_prev, u_prev, v_prev);
+		}
 
 		while (simVars.timecontrol.current_simulation_time != timeframe_end)
 		{
@@ -1243,19 +1349,48 @@ public:
 		prog_u = *parareal_data_start.data_arrays[1];
 		prog_v = *parareal_data_start.data_arrays[2];
 
-		timeSteppers.master->run_timestep(
-				prog_h_pert, prog_u, prog_v,
-				timeframe_end - timeframe_start,
-				-1
-		);
+		// reset simulation time
+		simVars.timecontrol.current_simulation_time = timeframe_start;
+		simVars.timecontrol.max_simulation_time = timeframe_end;
+		simVars.timecontrol.current_timestep_nr = 0;
 
+		// If coarse solver = SL, send penult coarse time step of previous slice, except if it is the first time slice
+		if ( ! simVars.parareal.coarse_timestepping_method.compare("l_cn_na_sl_nd_settls") ) // TODO: add others SL schemes
+		{
+			PlaneData h_prev = *parareal_data_coarse_previous_time_slice.data_arrays[0];
+			PlaneData u_prev = *parareal_data_coarse_previous_time_slice.data_arrays[1];
+			PlaneData v_prev = *parareal_data_coarse_previous_time_slice.data_arrays[2];
+			timeSteppersCoarse.master->set_previous_solution(h_prev, u_prev, v_prev);
+		}
+
+                // Considering the case coarse timestep != time slice length
+		while (simVars.timecontrol.current_simulation_time != timeframe_end)
+		{
+
+			// store previous time step
+			// to be used as n-1 in SL in the next time slice
+			*parareal_data_coarse_previous_timestep.data_arrays[0] = prog_h_pert;
+			*parareal_data_coarse_previous_timestep.data_arrays[1] = prog_u;
+			*parareal_data_coarse_previous_timestep.data_arrays[2] = prog_v;
+
+			// allowing coarse timestepping != fine timesteppin
+			timeSteppersCoarse.master->run_timestep(
+								prog_h_pert, prog_u, prog_v,
+								//timeframe_end - timeframe_start,
+								simVars.parareal.coarse_timestep_size,
+								simVars.timecontrol.current_timestep_nr++
+								//simVars.timecontrol.current_timestep_nr
+								//-1
+			);
+			simVars.timecontrol.current_simulation_time += simVars.parareal.coarse_timestep_size;
+			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+		}
 
 		// copy to buffers
 		*parareal_data_coarse.data_arrays[0] = prog_h_pert;
 		*parareal_data_coarse.data_arrays[1] = prog_u;
 		*parareal_data_coarse.data_arrays[2] = prog_v;
 	}
-
 
 
 	/**
@@ -1302,14 +1437,22 @@ public:
 
 		if (!i_compute_convergence_test || !output_data_valid)
 		{
-			for (int k = 0; k < 3; k++)
+			for (int k = 0; k < 3; k++) {
 				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+				//std::cout << timeframe_end << " " << k << " " << (*parareal_data_output.data_arrays[k] - *parareal_data_fine.data_arrays[k]).reduce_maxAbs() << std::endl;
+			}
+
+			// The following lines are necessary for correctly computing the 1st iteration
+			// (else, the first time step is not changed from the 0th to the 1st iteration)
+			// Why?
+			simVars.timecontrol.current_simulation_time = timeframe_end;
+			prog_h_pert = *parareal_data_output.data_arrays[0];
+			prog_u = *parareal_data_output.data_arrays[1];
+			prog_v = *parareal_data_output.data_arrays[2];
 
 			output_data_valid = true;
 			return convergence;
 		}
-
-
 
 		for (int k = 0; k < 3; k++)
 		{
@@ -1356,6 +1499,24 @@ public:
 	}
 
 
+/////////	void output_data_file(
+/////////			const Parareal_Data& i_data,
+/////////			int iteration_id,
+/////////			int time_slice_id
+/////////	)
+/////////	{
+/////////		Parareal_Data_PlaneData<3>& data = (Parareal_Data_PlaneData<3>&)i_data;
+/////////
+/////////		std::ostringstream ss;
+/////////		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
+/////////
+/////////		std::string filename = ss.str();
+/////////
+/////////		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
+/////////	}
+
+
+
 	void output_data_file(
 			const Parareal_Data& i_data,
 			int iteration_id,
@@ -1364,14 +1525,136 @@ public:
 	{
 		Parareal_Data_PlaneData<3>& data = (Parareal_Data_PlaneData<3>&)i_data;
 
-		std::ostringstream ss;
-		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
+////		std::ostringstream ss;
+////		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
+////
+////		std::string filename = ss.str();
+////
+////		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
 
-		std::string filename = ss.str();
+                // save same file but naming as slice_iter for visualizing in paraview
+		std::ostringstream ss2;
+		ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
 
-		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
+		std::string filename2 = ss2.str();
+
+		data.data_arrays[0]->file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
+
+		// save .csv files at each time step and iteration
+		// copy paste from function timestep_do_output
+		// a compiling flag would (maybe) be better
+
+		/*
+		 * File output
+		 *
+		 * We write everything in non-staggered output
+		 */
+		// For output, variables need to be on unstaggered A-grid
+		PlaneData t_h(planeDataConfig);
+		PlaneData t_u(planeDataConfig);
+		PlaneData t_v(planeDataConfig);
+
+		if (simVars.disc.space_grid_use_c_staggering) // Remap in case of C-grid
+		{
+			t_h = prog_h_pert;
+			gridMapping.mapCtoA_u(prog_u, t_u);
+			gridMapping.mapCtoA_v(prog_v, t_v);
+		}
+		else
+		{
+			t_h = prog_h_pert;
+			t_u = prog_u;
+			t_v = prog_v;
+		}
+
+		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
+
+		// Dump  data in csv, if output filename is not empty
+		if (simVars.iodata.output_file_name.size() > 0)
+		{
+			output_filenames = "";
+
+			output_filenames = write_file_parareal(t_h, "prog_h_pert", iteration_id);
+			output_filenames += ";" + write_file_parareal(t_u, "prog_u", iteration_id);
+			output_filenames += ";" + write_file_parareal(t_v, "prog_v", iteration_id);
+
+			output_filenames += ";" + write_file_parareal(op.ke(t_u,t_v),"diag_ke", iteration_id);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+			output_filenames += ";" + write_file_spec_parareal(op.ke(t_u,t_v),"diag_ke_spec", iteration_id);
+#endif
+
+			output_filenames += ";" + write_file_parareal(op.vort(t_u, t_v), "diag_vort", iteration_id);
+			output_filenames += ";" + write_file_parareal(op.div(t_u, t_v), "diag_div", iteration_id);
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+			if(compute_normal_modes){
+				output_filenames += ";" + write_file_spec_parareal(normalmodes.geo, "nm_geo", iteration_id);
+				output_filenames += ";" + write_file_spec_parareal(normalmodes.igwest, "nm_igwest", iteration_id);
+				output_filenames += ";" + write_file_spec_parareal(normalmodes.igeast, "nm_igeast", iteration_id);
+			}
+#endif
+			
+		}
+
 	}
 
+
+
+	/**
+	 * Write file to data and return string of file name (parareal)
+	 */
+	std::string write_file_parareal(
+			const PlaneData &i_planeData,
+			const char* i_name,	///< name of output variable
+			int iteration_id
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
+		sprintf(buffer, filename_template, i_name, timeframe_end, iteration_id);
+		i_planeData.file_physical_saveData_ascii(buffer);
+		return buffer;
+	}
+
+
+	/**
+	 * Write current time step info to file (parareal)
+	 */
+	
+	std::string write_output_file_parareal(
+			std::stringstream &buffer
+		)
+	{
+		const char* filename_template = "output_diag_evol.txt";
+		std::ofstream file(filename_template, std::ofstream::out | std::ofstream::app);
+		file << std::setprecision(12);
+  		file << buffer.str() << std::endl;
+
+		return buffer.str();
+	}
+
+
+	/**
+	 * Write spectrum info to data and return string of file name (parareal)
+	 */
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	std::string write_file_spec_parareal(
+			const PlaneData &i_planeData,
+			const char* i_name,	///< name of output variable
+			int iteration_id
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
+		sprintf(buffer, filename_template, i_name, timeframe_end, iteration_id);
+		i_planeData.file_spectral_abs_saveData_ascii(buffer);
+		return buffer;
+	}
+#endif
 
 	void output_data_console(
 			const Parareal_Data& i_data,
@@ -1379,6 +1662,19 @@ public:
 			int time_slice_id
 	)
 	{
+	}
+
+
+	// check for nan in parareal (to avoid unnecessary computation)
+	void check_for_nan_parareal()
+	{
+		int physical_size_x = parareal_data_output.data_arrays[0]->planeDataConfig->physical_data_size[0];
+		int physical_size_y = parareal_data_output.data_arrays[0]->planeDataConfig->physical_data_size[1];
+		for (int m = 0; m < 3; ++m)
+			for (int ix = 0; ix < physical_size_x; ++ix)
+				for (int iy = 0; iy < physical_size_y; ++iy)
+					if ( std::isnan(parareal_data_output.data_arrays[m]->p_physical_get(ix, iy)))
+						SWEETError("Instability detected in parareal!");
 	}
 
 #endif

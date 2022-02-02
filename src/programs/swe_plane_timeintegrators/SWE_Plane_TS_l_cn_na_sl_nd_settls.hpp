@@ -81,6 +81,22 @@ public:
 #endif
 	}
 
+	void set_previous_solution(
+				PlaneData &i_h_prev,
+				PlaneData &i_u_prev,
+				PlaneData &i_v_prev
+	) override
+	{
+#if SWEET_PARAREAL
+		std::cout << "set_previous_solution()" << std::endl;
+		h_prev = i_h_prev;
+		u_prev = i_u_prev;
+		v_prev = i_v_prev;
+#else
+		SWEETError("set_previous_solution() only needed within parareal");
+#endif
+	}
+
 
 	virtual ~SWE_Plane_TS_l_cn_na_sl_nd_settls();
 };

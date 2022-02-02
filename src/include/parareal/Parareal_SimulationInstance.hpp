@@ -49,6 +49,24 @@ public:
 	) = 0;
 
 	/**
+	 * Set solution of penult coarse timestep of previous time slice
+	 */
+	virtual void sim_set_data_coarse_previous_time_slice(
+			Parareal_Data &i_pararealData
+	) = 0;
+
+	/**
+	 * Set solution of penult fine timestep of previous time slice
+	 */
+	virtual void sim_set_data_fine_previous_time_slice(
+			Parareal_Data &i_pararealData
+	) = 0;
+
+
+
+
+
+	/**
 	 * Set the MPI communicator to use for simulation purpose
 	 * (TODO: not yet implemented since our parallelization-in-space
 	 * is done only via OpenMP)
@@ -88,13 +106,24 @@ public:
 	virtual
 	Parareal_Data& get_reference_to_data_timestep_coarse() = 0;
 
-
 	/**
 	 * Compute the error between the fine and coarse timestepping:
 	 * Y^E := Y^F - Y^C
 	 */
 	virtual
 	void compute_difference() = 0;
+
+	/**
+	 * return the penult solution after the coarse propagation:
+	 */
+	virtual
+	Parareal_Data& get_reference_to_data_timestep_coarse_previous_timestep() = 0;
+
+	/**
+	 * return the penult solution after the fine propagation:
+	 */
+	virtual
+	Parareal_Data& get_reference_to_data_timestep_fine_previous_timestep() = 0;
 
 
 	/**
@@ -130,6 +159,8 @@ public:
 			int iteration_id,
 			int time_slice_id
 	) = 0;
+
+	virtual void check_for_nan_parareal() = 0;
 
 	virtual ~Parareal_SimulationInstance()
 	{

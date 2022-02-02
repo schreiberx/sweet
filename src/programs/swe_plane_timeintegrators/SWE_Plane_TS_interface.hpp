@@ -25,6 +25,16 @@ public:
 			double i_dt,		///< time step size
 			double i_sim_timestamp
 	) = 0;
+
+	// for SL
+	virtual void set_previous_solution(
+				PlaneData &i_h_prev,
+				PlaneData &i_u_prev,
+				PlaneData &i_v_prev
+	)
+	{
+	};
+
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_INTERFACE_HPP_ */
