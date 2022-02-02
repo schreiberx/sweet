@@ -1304,7 +1304,9 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 
 		// If fine solver = SL, send penult fine time step of previous slice, except if it is the first time slice
-		if ( ! simVars.disc.timestepping_method.compare("l_cn_na_sl_nd_settls") ) // TODO: add others SL schemes
+		if ( ! simVars.disc.timestepping_method.compare("l_cn_na_sl_nd_settls") ||
+                     ! simVars.disc.timestepping_method.compare("l_rexi_na_sl_nd_etdrk") ||
+                     ! simVars.disc.timestepping_method.compare("l_rexi_na_sl_nd_settls") )
 		{
 			PlaneData h_prev = *parareal_data_fine_previous_time_slice.data_arrays[0];
 			PlaneData u_prev = *parareal_data_fine_previous_time_slice.data_arrays[1];
@@ -1357,7 +1359,9 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 
 		// If coarse solver = SL, send penult coarse time step of previous slice, except if it is the first time slice
-		if ( ! simVars.parareal.coarse_timestepping_method.compare("l_cn_na_sl_nd_settls") ) // TODO: add others SL schemes
+		if ( ! simVars.parareal.coarse_timestepping_method.compare("l_cn_na_sl_nd_settls") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("l_rexi_na_sl_nd_etdrk") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("l_rexi_na_sl_nd_settls") )
 		{
 			PlaneData h_prev = *parareal_data_coarse_previous_time_slice.data_arrays[0];
 			PlaneData u_prev = *parareal_data_coarse_previous_time_slice.data_arrays[1];
