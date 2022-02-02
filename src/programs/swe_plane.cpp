@@ -1059,8 +1059,6 @@ public:
 	PlaneData _parareal_data_fine_previous_time_slice_h, _parareal_data_fine_previous_time_slice_u, _parareal_data_fine_previous_time_slice_v;
 	Parareal_Data_PlaneData<3> parareal_data_fine_previous_time_slice;
 
-
-
 	double timeframe_start = -1;
 	double timeframe_end = -1;
 
@@ -1140,7 +1138,6 @@ public:
 	 */
 	Parareal_Data& get_reference_to_data_timestep_fine()
 	{
-		//SWEETError("TODO");
 		return parareal_data_fine;
 	}
 
@@ -1150,7 +1147,6 @@ public:
 	 */
 	Parareal_Data& get_reference_to_data_timestep_coarse()
 	{
-		//SWEETError("TODO");
 		return parareal_data_coarse;
 	}
 
@@ -1160,7 +1156,6 @@ public:
 	 */
 	Parareal_Data& get_reference_to_output_data()
 	{
-		//SWEETError("TODO");
 		return parareal_data_output;
 	}
 
@@ -1169,7 +1164,6 @@ public:
 	 */
 	Parareal_Data& get_reference_to_data_timestep_coarse_previous_timestep()
 	{
-		///////////////SWEETError("TODO");
 		return parareal_data_coarse_previous_timestep;
 	}
 
@@ -1490,8 +1484,6 @@ public:
 		return convergence;
 	}
 
-
-
 	/**
 	 * Return the data to be forwarded to the next coarse time step interval:
 	 * return Y^O
@@ -1505,24 +1497,6 @@ public:
 	}
 
 
-/////////	void output_data_file(
-/////////			const Parareal_Data& i_data,
-/////////			int iteration_id,
-/////////			int time_slice_id
-/////////	)
-/////////	{
-/////////		Parareal_Data_PlaneData<3>& data = (Parareal_Data_PlaneData<3>&)i_data;
-/////////
-/////////		std::ostringstream ss;
-/////////		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
-/////////
-/////////		std::string filename = ss.str();
-/////////
-/////////		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
-/////////	}
-
-
-
 	void output_data_file(
 			const Parareal_Data& i_data,
 			int iteration_id,
@@ -1530,13 +1504,6 @@ public:
 	)
 	{
 		Parareal_Data_PlaneData<3>& data = (Parareal_Data_PlaneData<3>&)i_data;
-
-////		std::ostringstream ss;
-////		ss << "output_iter" << iteration_id << "_slice" << time_slice_id << ".vtk";
-////
-////		std::string filename = ss.str();
-////
-////		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
 
                 // save same file but naming as slice_iter for visualizing in paraview
 		std::ostringstream ss2;
@@ -1573,8 +1540,6 @@ public:
 			t_v = prog_v;
 		}
 
-		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
-
 		// Dump  data in csv, if output filename is not empty
 		if (simVars.iodata.output_file_name.size() > 0)
 		{
@@ -1604,7 +1569,6 @@ public:
 		}
 
 	}
-
 
 
 	/**

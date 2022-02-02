@@ -39,6 +39,8 @@
 #include <sweet/SimulationBenchmarkTiming.hpp>
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
+#include <parareal/Parareal_Data.hpp>
+#include <parareal/Parareal_Data_SphereData.hpp>
 
 SimulationVariables simVars;
 
@@ -68,6 +70,11 @@ public:
 	SphereOperators_SphereData op_nodealiasing;
 
 	SWE_Sphere_TimeSteppers timeSteppers;
+
+#if SWEET_PARAREAL
+	// Implementation of different time steppers
+	SWE_Sphere_TimeSteppers timeSteppersCoarse;
+#endif
 
 
 	// Diagnostics measures
@@ -112,10 +119,29 @@ public:
 				simVars,
 				simVars.misc.verbosity
 		)
+
+#if SWEET_PARAREAL != 0
+		,
+		_parareal_data_start_phi(sphereDataConfig), _parareal_data_start_vrt(sphereDataConfig), _parareal_data_start_div(sphereDataConfig),
+		_parareal_data_fine_phi(sphereDataConfig), _parareal_data_fine_vrt(sphereDataConfig), _parareal_data_fine_div(sphereDataConfig),
+		_parareal_data_coarse_phi(sphereDataConfig), _parareal_data_coarse_vrt(sphereDataConfig), _parareal_data_coarse_div(sphereDataConfig),
+		_parareal_data_output_phi(sphereDataConfig), _parareal_data_output_vrt(sphereDataConfig), _parareal_data_output_div(sphereDataConfig),
+		_parareal_data_error_phi(sphereDataConfig), _parareal_data_error_vrt(sphereDataConfig), _parareal_data_error_div(sphereDataConfig),
+		// For parareal_SL: store penult time step in the current simulation (to be transmitted to the following time slice);
+		// and penult time step received from previous time slice
+		_parareal_data_coarse_previous_timestep_phi(sphereDataConfig), _parareal_data_coarse_previous_timestep_vrt(sphereDataConfig), _parareal_data_coarse_previous_timestep_div(sphereDataConfig),
+		_parareal_data_coarse_previous_time_slice_phi(sphereDataConfig), _parareal_data_coarse_previous_time_slice_vrt(sphereDataConfig), _parareal_data_coarse_previous_time_slice_div(sphereDataConfig),
+		// Same thing, but in the case where fine solver = SL
+		_parareal_data_fine_previous_timestep_phi(sphereDataConfig), _parareal_data_fine_previous_timestep_vrt(sphereDataConfig), _parareal_data_fine_previous_timestep_div(sphereDataConfig),
+		_parareal_data_fine_previous_time_slice_phi(sphereDataConfig), _parareal_data_fine_previous_time_slice_vrt(sphereDataConfig), _parareal_data_fine_previous_time_slice_div(sphereDataConfig)
+#endif
+
 	{
 #if SWEET_MPI
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 #endif
+
+
 		reset();
 	}
 
@@ -948,8 +974,695 @@ public:
 		}
 	}
 #endif
-};
 
+
+#if SWEET_PARAREAL
+
+	/******************************************************
+	 ******************************************************
+	 *       ************** PARAREAL **************
+	 ******************************************************
+	 ******************************************************/
+
+	SphereData_Spectral _parareal_data_start_phi, _parareal_data_start_vrt, _parareal_data_start_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_start;
+
+	SphereData_Spectral _parareal_data_fine_phi, _parareal_data_fine_vrt, _parareal_data_fine_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_fine;
+
+	SphereData_Spectral _parareal_data_coarse_phi, _parareal_data_coarse_vrt, _parareal_data_coarse_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_coarse;
+
+	SphereData_Spectral _parareal_data_output_phi, _parareal_data_output_vrt, _parareal_data_output_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_output;
+
+	SphereData_Spectral _parareal_data_error_phi, _parareal_data_error_vrt, _parareal_data_error_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_error;
+
+	SphereData_Spectral _parareal_data_coarse_previous_timestep_phi, _parareal_data_coarse_previous_timestep_vrt, _parareal_data_coarse_previous_timestep_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_coarse_previous_timestep;
+
+	SphereData_Spectral _parareal_data_coarse_previous_time_slice_phi, _parareal_data_coarse_previous_time_slice_vrt, _parareal_data_coarse_previous_time_slice_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_coarse_previous_time_slice;
+
+	SphereData_Spectral _parareal_data_fine_previous_timestep_phi, _parareal_data_fine_previous_timestep_vrt, _parareal_data_fine_previous_timestep_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_fine_previous_timestep;
+
+	SphereData_Spectral _parareal_data_fine_previous_time_slice_phi, _parareal_data_fine_previous_time_slice_vrt, _parareal_data_fine_previous_time_slice_div;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_fine_previous_time_slice;
+
+	double timeframe_start = -1;
+	double timeframe_end = -1;
+
+	bool output_data_valid = false;
+
+	void parareal_setup()
+	{
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_start_phi, &_parareal_data_start_vrt, &_parareal_data_start_div};
+			parareal_data_start.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_fine_phi, &_parareal_data_fine_vrt, &_parareal_data_fine_div};
+			parareal_data_fine.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_coarse_phi, &_parareal_data_coarse_vrt, &_parareal_data_coarse_div};
+			parareal_data_coarse.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_output_phi, &_parareal_data_output_vrt, &_parareal_data_output_div};
+			parareal_data_output.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_error_phi, &_parareal_data_error_vrt, &_parareal_data_error_div};
+			parareal_data_error.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_coarse_previous_timestep_phi, &_parareal_data_coarse_previous_timestep_vrt, &_parareal_data_coarse_previous_timestep_div};
+			parareal_data_coarse_previous_timestep.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_coarse_previous_time_slice_phi, &_parareal_data_coarse_previous_time_slice_vrt, &_parareal_data_coarse_previous_time_slice_div};
+			parareal_data_coarse_previous_time_slice.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_fine_previous_timestep_phi, &_parareal_data_fine_previous_timestep_vrt, &_parareal_data_fine_previous_timestep_div};
+			parareal_data_fine_previous_timestep.setup(data_array);
+		}
+
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_fine_previous_time_slice_phi, &_parareal_data_fine_previous_time_slice_vrt, &_parareal_data_fine_previous_time_slice_div};
+			parareal_data_fine_previous_time_slice.setup(data_array);
+		}
+
+
+		timeSteppers.setup(
+				simVars.disc.timestepping_method,
+//				simVars.disc.timestepping_order,
+//				simVars.disc.timestepping_order2,
+				op,
+				simVars
+			);
+
+		timeSteppersCoarse.setup(
+				simVars.parareal.coarse_timestepping_method,
+//				simVars.parareal.coarse_timestepping_order,
+//				simVars.parareal.coarse_timestepping_order2,
+				op,
+				simVars
+			);
+
+		output_data_valid = false;
+	}
+
+
+	/**
+	 * return the data after running computations with the fine timestepping:
+	 * return Y^F
+	 */
+	Parareal_Data& get_reference_to_data_timestep_fine()
+	{
+		return parareal_data_fine;
+	}
+
+	/**
+	 * return the solution after the coarse timestepping:
+	 * return Y^C
+	 */
+	Parareal_Data& get_reference_to_data_timestep_coarse()
+	{
+		return parareal_data_coarse;
+	}
+
+	/**
+	 * Return the data to be forwarded to the next coarse time step interval:
+	 * return Y^O
+	 */
+	Parareal_Data& get_reference_to_output_data()
+	{
+		return parareal_data_output;
+	}
+
+	/**
+	 * return the penult time step of the coarse propagation
+	 */
+	Parareal_Data& get_reference_to_data_timestep_coarse_previous_timestep()
+	{
+		return parareal_data_coarse_previous_timestep;
+	}
+
+
+	/**
+	 * return the penult time step of the fine propagation
+	 */
+	Parareal_Data& get_reference_to_data_timestep_fine_previous_timestep()
+	{
+		return parareal_data_fine_previous_timestep;
+	}
+
+
+	/**
+	 * Set the start and end of the coarse time step
+	 */
+	void sim_set_timeframe(
+			double i_timeframe_start,	///< start timestamp of coarse time step
+			double i_timeframe_end		///< end time stamp of coarse time step
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
+
+		timeframe_start = i_timeframe_start;
+		timeframe_end = i_timeframe_end;
+	}
+
+
+	/**
+	 * Set the initial data at i_timeframe_start
+	 */
+	void sim_setup_initial_data(
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_setup_initial_data()" << std::endl;
+
+		reset();
+
+		*parareal_data_start.data_arrays[0] = prog_phi_pert;
+		*parareal_data_start.data_arrays[1] = prog_vrt;
+		*parareal_data_start.data_arrays[2] = prog_div;
+
+                // Useful in the first timestep of each time slice
+		*parareal_data_coarse_previous_time_slice.data_arrays[0] = prog_phi_pert;
+		*parareal_data_coarse_previous_time_slice.data_arrays[1] = prog_vrt;
+		*parareal_data_coarse_previous_time_slice.data_arrays[2] = prog_div;
+
+                // Useful in the first timestep of each time slice
+		*parareal_data_fine_previous_time_slice.data_arrays[0] = prog_phi_pert;
+		*parareal_data_fine_previous_time_slice.data_arrays[1] = prog_vrt;
+		*parareal_data_fine_previous_time_slice.data_arrays[2] = prog_div;
+
+	}
+
+	/**
+	 * Set simulation data to data given in i_sim_data.
+	 * This can be data which is computed by another simulation.
+	 * Y^S := i_sim_data
+	 */
+	void sim_set_data(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data()" << std::endl;
+
+		// copy to buffers
+		parareal_data_start = i_pararealData;
+
+		// cast to pararealPlaneData stuff
+	}
+
+	/**
+	 * Set solution of penult coarse timestep of previous time slice
+	 */
+	void sim_set_data_coarse_previous_time_slice(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data_coarse_previous_time_slice()" << std::endl;
+
+		// copy to buffers
+		parareal_data_coarse_previous_time_slice = i_pararealData;
+	}
+
+	/**
+	 * Set solution of penult fine timestep of previous time slice
+	 */
+	void sim_set_data_fine_previous_time_slice(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data_fine_previous_time_slice()" << std::endl;
+
+		// copy to buffers
+		parareal_data_fine_previous_time_slice = i_pararealData;
+	}
+
+
+	/**
+	 * Set the MPI communicator to use for simulation purpose
+	 * (TODO: not yet implemented since our parallelization-in-space
+	 * is done only via OpenMP)
+	 */
+	void sim_set_mpi_comm(
+			int i_mpi_comm
+	)
+	{
+		// NOTHING TO DO HERE
+	}
+
+	/**
+	 * compute solution on time slice with fine timestep:
+	 * Y^F := F(Y^S)
+	 */
+	void run_timestep_fine()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "run_timestep_fine()" << std::endl;
+
+		prog_phi_pert = *parareal_data_start.data_arrays[0];
+		prog_vrt = *parareal_data_start.data_arrays[1];
+		prog_div = *parareal_data_start.data_arrays[2];
+
+		// reset simulation time
+		simVars.timecontrol.current_simulation_time = timeframe_start;
+		simVars.timecontrol.max_simulation_time = timeframe_end;
+		simVars.timecontrol.current_timestep_nr = 0;
+
+		// If fine solver = SL, send penult fine time step of previous slice, except if it is the first time slice
+		if ( ! simVars.disc.timestepping_method.compare("lg_exp_na_sl_lc_nr_etd_uv") ||
+                     ! simVars.disc.timestepping_method.compare("l_irk_na_sl_nr_settls_uv_only") ||
+                     ! simVars.disc.timestepping_method.compare("l_irk_na_sl_nr_settls_vd_only") ||
+                     ! simVars.disc.timestepping_method.compare("l_irk_na_sl_settls_uv_only") ||
+                     ! simVars.disc.timestepping_method.compare("l_irk_na_sl_settls_vd_only") ||
+                     ! simVars.disc.timestepping_method.compare("ln_settls_uv") ||
+                     ! simVars.disc.timestepping_method.compare("ln_sl_exp_settls_uv") ||
+                     ! simVars.disc.timestepping_method.compare("ln_sl_exp_settls_vd"))
+		{
+			SphereData_Spectral phi_prev = *parareal_data_fine_previous_time_slice.data_arrays[0];
+			SphereData_Spectral vrt_prev = *parareal_data_fine_previous_time_slice.data_arrays[1];
+			SphereData_Spectral div_prev = *parareal_data_fine_previous_time_slice.data_arrays[2];
+			timeSteppers.master->set_previous_solution(phi_prev, vrt_prev, div_prev);
+		}
+
+		while (simVars.timecontrol.current_simulation_time != timeframe_end)
+		{
+			run_timestep();
+			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+		}
+
+		// copy to buffers
+		*parareal_data_fine.data_arrays[0] = prog_phi_pert;
+		*parareal_data_fine.data_arrays[1] = prog_vrt;
+		*parareal_data_fine.data_arrays[2] = prog_div;
+	}
+
+
+	/**
+	 * return the data after running computations with the fine timestepping:
+	 * return Y^F
+	 */
+	Parareal_Data& get_data_timestep_fine()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_data_timestep_fine()" << std::endl;
+
+		return parareal_data_fine;
+	}
+
+
+	/**
+	 * compute solution with coarse timestepping:
+	 * Y^C := G(Y^S)
+	 */
+	void run_timestep_coarse()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "run_timestep_coarse()" << std::endl;
+
+		prog_phi_pert = *parareal_data_start.data_arrays[0];
+		prog_vrt = *parareal_data_start.data_arrays[1];
+		prog_div = *parareal_data_start.data_arrays[2];
+
+		// reset simulation time
+		simVars.timecontrol.current_simulation_time = timeframe_start;
+		simVars.timecontrol.max_simulation_time = timeframe_end;
+		simVars.timecontrol.current_timestep_nr = 0;
+
+		// If coarse solver = SL, send penult coarse time step of previous slice, except if it is the first time slice
+		if ( ! simVars.parareal.coarse_timestepping_method.compare("lg_exp_na_sl_lc_nr_etd_uv") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("l_irk_na_sl_nr_settls_uv_only") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("l_irk_na_sl_nr_settls_vd_only") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("l_irk_na_sl_settls_uv_only") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("l_irk_na_sl_settls_vd_only") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("ln_settls_uv") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("ln_sl_exp_settls_uv") ||
+                     ! simVars.parareal.coarse_timestepping_method.compare("ln_sl_exp_settls_vd"))
+		{
+			SphereData_Spectral phi_prev = *parareal_data_coarse_previous_time_slice.data_arrays[0];
+			SphereData_Spectral vrt_prev = *parareal_data_coarse_previous_time_slice.data_arrays[1];
+			SphereData_Spectral div_prev = *parareal_data_coarse_previous_time_slice.data_arrays[2];
+			timeSteppersCoarse.master->set_previous_solution(phi_prev, vrt_prev, div_prev);
+		}
+
+                // Considering the case coarse timestep != time slice length
+		while (simVars.timecontrol.current_simulation_time != timeframe_end)
+		{
+
+			// store previous time step
+			// to be used as n-1 in SL in the next time slice
+			*parareal_data_coarse_previous_timestep.data_arrays[0] = prog_phi_pert;
+			*parareal_data_coarse_previous_timestep.data_arrays[1] = prog_vrt;
+			*parareal_data_coarse_previous_timestep.data_arrays[2] = prog_div;
+
+			// allowing coarse timestepping != fine timesteppin
+			timeSteppersCoarse.master->run_timestep(
+								prog_phi_pert, prog_vrt, prog_div,
+								simVars.parareal.coarse_timestep_size,
+								simVars.timecontrol.current_timestep_nr++
+			);
+			simVars.timecontrol.current_simulation_time += simVars.parareal.coarse_timestep_size;
+			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+		}
+
+		// copy to buffers
+		*parareal_data_coarse.data_arrays[0] = prog_phi_pert;
+		*parareal_data_coarse.data_arrays[1] = prog_vrt;
+		*parareal_data_coarse.data_arrays[2] = prog_div;
+	}
+
+
+	/**
+	 * return the solution after the coarse timestepping:
+	 * return Y^C
+	 */
+	Parareal_Data& get_data_timestep_coarse()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_data_timestep_coarse()" << std::endl;
+
+		return parareal_data_coarse;
+	}
+
+
+
+	/**
+	 * Compute the error between the fine and coarse timestepping:
+	 * Y^E := Y^F - Y^C
+	 */
+	void compute_difference()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "compute_difference()" << std::endl;
+
+		for (int k = 0; k < 3; k++)
+			*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
+	}
+
+
+
+	/**
+	 * Compute the data to be forwarded to the next time step
+	 * Y^O := Y^C + Y^E
+	 *
+	 * Return: Error indicator based on the computed error norm between the
+	 * old values and new values
+	 */
+	double compute_output_data(
+			bool i_compute_convergence_test
+	)
+	{
+		double convergence = -1;
+
+		if (!i_compute_convergence_test || !output_data_valid)
+		{
+			for (int k = 0; k < 3; k++) {
+				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+				//std::cout << timeframe_end << " " << k << " " << (*parareal_data_output.data_arrays[k] - *parareal_data_fine.data_arrays[k]).reduce_maxAbs() << std::endl;
+			}
+
+			// The following lines are necessary for correctly computing the 1st iteration
+			// (else, the first time step is not changed from the 0th to the 1st iteration)
+			// Why?
+			simVars.timecontrol.current_simulation_time = timeframe_end;
+			prog_phi_pert = *parareal_data_output.data_arrays[0];
+			prog_vrt = *parareal_data_output.data_arrays[1];
+			prog_div = *parareal_data_output.data_arrays[2];
+
+			output_data_valid = true;
+			return convergence;
+		}
+
+		for (int k = 0; k < 3; k++)
+		{
+			SphereData_Spectral tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+
+			convergence = std::max(
+					convergence,
+					(*parareal_data_output.data_arrays[k]-tmp).spectral_reduce_max_abs()
+				);
+
+			*parareal_data_output.data_arrays[k] = tmp;
+		}
+
+		simVars.timecontrol.current_simulation_time = timeframe_end;
+		prog_phi_pert = *parareal_data_output.data_arrays[0];
+		prog_vrt = *parareal_data_output.data_arrays[1];
+		prog_div = *parareal_data_output.data_arrays[2];
+
+			// TODO
+//////////		if (compute_error_to_analytical_solution)
+//////////		{
+//////////			if (simVars.misc.compute_errors > 0)
+//////////			{
+//////////				compute_errors();
+//////////				std::cout << "maxabs error compared to analytical solution: " << benchmark.analytical_error_maxabs_h << std::endl;
+//////////			}
+//////////		}
+
+		output_data_valid = true;
+		return convergence;
+	}
+
+	/**
+	 * Return the data to be forwarded to the next coarse time step interval:
+	 * return Y^O
+	 */
+	Parareal_Data& get_output_data()
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "get_output_data()" << std::endl;
+
+		return parareal_data_output;
+	}
+
+
+	void output_data_file(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	)
+	{
+		Parareal_Data_SphereData_Spectral<3>& data = (Parareal_Data_SphereData_Spectral<3>&)i_data;
+
+                // save same file but naming as slice_iter for visualizing in paraview  // TODO
+		///////std::ostringstream ss2;
+		///////ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
+
+		///////std::string filename2 = ss2.str();
+
+		///////data.data_arrays[0]->file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
+
+		// save .csv files at each time step and iteration
+		// copy paste from function timestep_do_output
+		// a compiling flag would (maybe) be better
+
+		// Dump  data in csv, if output filename is not empty
+		if (simVars.iodata.output_file_name.size() > 0)
+		{
+			if (simVars.iodata.output_file_mode == "csv")
+			{
+				std::string output_filename;
+
+				SphereData_Spectral h = prog_phi_pert*(1.0/simVars.sim.gravitation);
+				h += simVars.sim.h0;
+
+				output_filename = write_file_parareal(h, "prog_h", iteration_id);
+				output_reference_filenames += ";"+output_filename;
+				std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
+
+				output_filename = write_file_parareal(prog_phi_pert, "prog_phi_pert", iteration_id);
+				output_reference_filenames = output_filename;
+				std::cout << " + " << output_filename << " (min: " << prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
+
+				SphereData_Physical u(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
+
+				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
+
+				output_filename = write_file_parareal(u, "prog_u", iteration_id);
+				output_reference_filenames += ";"+output_filename;
+				std::cout << " + " << output_filename << std::endl;
+
+				output_filename = write_file_parareal(v, "prog_v", iteration_id);
+				output_reference_filenames += ";"+output_filename;
+				std::cout << " + " << output_filename << std::endl;
+
+				output_filename = write_file_parareal(prog_vrt, "prog_vrt", iteration_id);
+				output_reference_filenames += ";"+output_filename;
+				std::cout << " + " << output_filename << std::endl;
+
+				output_filename = write_file_parareal(prog_div, "prog_div", iteration_id);
+				output_reference_filenames += ";"+output_filename;
+				std::cout << " + " << output_filename << std::endl;
+
+				SphereData_Spectral potvrt = (prog_phi_pert/simVars.sim.gravitation)*prog_vrt;
+
+				output_filename = write_file_parareal(potvrt, "prog_potvrt", iteration_id);
+				output_reference_filenames += ";"+output_filename;
+				std::cout << " + " << output_filename << std::endl;
+			}
+			else if (simVars.iodata.output_file_mode == "bin")
+			{
+				SWEETError("TODO");
+			}
+			else if (simVars.iodata.output_file_mode == "csv_spec_evol"){
+				SWEETError("TODO");
+			}
+			else
+			{
+				SWEETError("Unknown output file mode '"+simVars.iodata.output_file_mode+"'");
+			}
+
+///			output_filenames = "";
+///
+///			output_filenames = write_file_parareal(t_h, "prog_phi_pert", iteration_id);
+///			output_filenames += ";" + write_file_parareal(t_u, "prog_vrt", iteration_id);
+///			output_filenames += ";" + write_file_parareal(t_v, "prog_div", iteration_id);
+///
+///			output_filenames += ";" + write_file_parareal(op.ke(t_u,t_v),"diag_ke", iteration_id);
+///
+///#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///			output_filenames += ";" + write_file_spec_parareal(op.ke(t_u,t_v),"diag_ke_spec", iteration_id);
+///#endif
+///
+///			output_filenames += ";" + write_file_parareal(op.vort(t_u, t_v), "diag_vort", iteration_id);
+///			output_filenames += ";" + write_file_parareal(op.div(t_u, t_v), "diag_div", iteration_id);
+///
+///#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///			if(compute_normal_modes){
+///				output_filenames += ";" + write_file_spec_parareal(normalmodes.geo, "nm_geo", iteration_id);
+///				output_filenames += ";" + write_file_spec_parareal(normalmodes.igwest, "nm_igwest", iteration_id);
+///				output_filenames += ";" + write_file_spec_parareal(normalmodes.igeast, "nm_igeast", iteration_id);
+///			}
+///#endif
+///			
+		}
+
+	}
+
+
+	/**
+	 * Write file to data and return string of file name (parareal)
+	 */
+	std::string write_file_parareal(
+			const SphereData_Spectral &i_sphereData,
+			const char* i_name,	///< name of output variable
+			int iteration_id,
+			bool i_phi_shifted = false
+		)
+	{
+		char buffer[1024];
+
+		// create copy
+		SphereData_Physical sphereData = i_sphereData.toPhys();
+
+		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
+		sprintf(buffer, filename_template, i_name, timeframe_end, iteration_id);
+
+		if (i_phi_shifted)
+			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
+		else
+			sphereData.physical_file_write(buffer);
+
+		return buffer;
+
+	}
+
+
+	/**
+	 * Write current time step info to file (parareal)
+	 */
+	
+	std::string write_output_file_parareal(
+			std::stringstream &buffer
+		)
+	{
+		const char* filename_template = "output_diag_evol.txt";
+		std::ofstream file(filename_template, std::ofstream::out | std::ofstream::app);
+		file << std::setprecision(12);
+  		file << buffer.str() << std::endl;
+
+		return buffer.str();
+	}
+
+
+	/**
+	 * Write spectrum info to data and return string of file name (parareal)
+	 */
+
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	std::string write_file_spec_parareal(
+			const SphereData_Spectral &i_sphereData,
+			const char* i_name,	///< name of output variable
+			int iteration_id
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template_arg = "output_spec_arg_%s_t%020.8f_iter%03d.csv";
+		const char* filename_template_ampl = "output_spec_ampl_%s_t%020.8f_iter%03d.csv";
+		int reduce_mode_factor = 4;
+
+		sprintf(buffer, filename_template_arg, i_name);
+		i_sphereData.spectrum_phase_file_write_line(buffer, 
+			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
+			20, 10e-20, reduce_mode_factor);
+
+		sprintf(buffer, filename_template_ampl, i_name);
+		i_sphereData.spectrum_abs_file_write_line(buffer, 
+			i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale,
+			20, 10e-20, reduce_mode_factor);
+
+		return buffer;
+	}
+#endif
+
+	void output_data_console(
+			const Parareal_Data& i_data,
+			int iteration_id,
+			int time_slice_id
+	)
+	{
+	}
+
+
+	// check for nan in parareal (to avoid unnecessary computation)
+	void check_for_nan_parareal()
+	{
+		int physical_size_x = parareal_data_output.data_arrays[0]->sphereDataConfig->physical_num_lon;
+		int physical_size_y = parareal_data_output.data_arrays[0]->sphereDataConfig->physical_num_lat;
+		for (int m = 0; m < 3; ++m)
+			for (int ix = 0; ix < physical_size_x; ++ix)
+				for (int iy = 0; iy < physical_size_y; ++iy)
+					if ( std::isnan(parareal_data_output.data_arrays[m]->spectral_get_(ix, iy).real()) || 
+                                             std::isnan(parareal_data_output.data_arrays[m]->spectral_get_(ix, iy).imag()) )
+						SWEETError("Instability detected in parareal!");
+	}
+
+#endif  // PARAREAL
+
+};
 
 
 int main_real(int i_argc, char *i_argv[])
