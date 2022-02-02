@@ -42,6 +42,15 @@ public:
 	{
 	}
 
+	// for SL
+	virtual void set_previous_solution(
+				SphereData_Spectral &i_phi_prev,
+				SphereData_Spectral &i_vrt_prev,
+				SphereData_Spectral &i_div_prev
+	)
+	{
+	};
+
 	virtual ~SWE_Sphere_TS_interface()
 	{
 	}

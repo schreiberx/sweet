@@ -40,7 +40,12 @@
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
 #include <parareal/Parareal_Data.hpp>
-#include <parareal/Parareal_Data_SphereData.hpp>
+#include <parareal/Parareal_Data_SphereData_Spectral.hpp>
+
+#if SWEET_PARAREAL
+	#include <parareal/Parareal.hpp>
+#endif
+
 
 SimulationVariables simVars;
 
@@ -510,7 +515,9 @@ public:
 			}
 		}
 
+#if !SWEET_PARAREAL
 		write_file_output();
+#endif
 
 		update_diagnostics();
 
@@ -1667,6 +1674,7 @@ public:
 
 int main_real(int i_argc, char *i_argv[])
 {
+
 	// Time counter
 	SimulationBenchmarkTimings::getInstance().main.start();
 
@@ -1703,7 +1711,12 @@ int main_real(int i_argc, char *i_argv[])
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	{
+#if SWEET_PARAREAL
+		simVars.parareal.printOptions();
+#endif
 		return -1;
+	}
 
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
@@ -1756,6 +1769,23 @@ int main_real(int i_argc, char *i_argv[])
 			std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
 		}
 
+#if SWEET_PARAREAL
+		if (simVars.parareal.enabled)
+		{
+			/*
+			 * Allocate parareal controller and provide class
+			 * which implement the parareal features
+			 */
+			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+
+			// setup controller. This initializes several simulation instances
+			parareal_Controller_Serial.setup(&simVars.parareal);
+
+			// execute the simulation
+			parareal_Controller_Serial.run();
+		}
+		else
+#endif
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
 		{
@@ -1776,7 +1806,6 @@ int main_real(int i_argc, char *i_argv[])
 			{
 				// Do first output before starting timer
 				simulationSWE->timestep_check_output();
-
 #if SWEET_MPI
 				// Start counting time
 				if (mpi_rank == 0)

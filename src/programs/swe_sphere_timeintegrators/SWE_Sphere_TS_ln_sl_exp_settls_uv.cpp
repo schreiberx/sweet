@@ -63,6 +63,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 	if (i_simulation_timestamp == 0)
 	{
+#if !SWEET_PARAREAL
 		/*
 		 * First time step:
 		 * Simply backup existing fields for multi-step parts of this algorithm.
@@ -70,6 +71,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 		U_phi_prev = U_phi;
 		U_vrt_prev = U_vrt;
 		U_div_prev = U_div;
+#endif
 	}
 
 	/*

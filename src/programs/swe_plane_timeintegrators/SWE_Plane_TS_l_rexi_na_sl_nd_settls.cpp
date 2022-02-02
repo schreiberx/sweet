@@ -52,12 +52,14 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 
 	if (i_simulation_timestamp == 0)
 	{
+#if !SWEET_PARAREAL
 		/*
 		 * First time step
 		 */
 		h_prev = io_h;
 		u_prev = io_u;
 		v_prev = io_v;
+#endif
 	}
 
 	//Preserve io unmodified

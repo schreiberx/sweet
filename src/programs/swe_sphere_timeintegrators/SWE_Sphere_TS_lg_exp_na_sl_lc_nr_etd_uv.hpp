@@ -85,6 +85,23 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+	void set_previous_solution(
+				SphereData_Spectral &i_phi_prev,
+				SphereData_Spectral &i_vrt_prev,
+				SphereData_Spectral &i_div_prev
+	) override
+	{
+#if SWEET_PARAREAL
+		std::cout << "set_previous_solution()" << std::endl;
+		U_phi_prev = i_phi_prev;
+		U_vrt_prev = i_vrt_prev;
+		U_div_prev = i_div_prev;
+#else
+		SWEETError("set_previous_solution() only needed within parareal");
+#endif
+	}
+
+
 
 	virtual ~SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv();
 };

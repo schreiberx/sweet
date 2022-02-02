@@ -99,6 +99,7 @@ public:
 			Parareal_SimulationVariables *i_pararealSimVars
 	)
 	{
+
 		cleanup();
 
 		pVars = i_pararealSimVars;
