@@ -485,7 +485,9 @@ public:
 		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
 			SWEETError("Max simulation time exceeded!");
 
+#if !SWEET_PARAREAL
 		timestep_do_output();
+#endif
 	}
 
 
