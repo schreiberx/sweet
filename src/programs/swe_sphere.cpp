@@ -69,6 +69,10 @@ SphereData_Config *sphereDataConfig_nodealiasing = &sphereDataConfigInstance_nod
 
 
 class SimulationInstance
+#if SWEET_PARAREAL
+		:
+		public Parareal_SimulationInstance
+#endif
 {
 public:
 	SphereOperators_SphereData op;
@@ -148,6 +152,12 @@ public:
 
 
 		reset();
+
+#if SWEET_PARAREAL
+		parareal_setup();
+#endif
+
+
 	}
 
 
@@ -1144,6 +1154,7 @@ public:
 			double i_timeframe_end		///< end time stamp of coarse time step
 	)
 	{
+
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
 

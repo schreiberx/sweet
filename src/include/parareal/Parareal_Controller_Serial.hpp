@@ -151,7 +151,6 @@ public:
 
 		double coarse_timestep_size = pVars->coarse_timestep_size;
 
-
 		CONSOLEPREFIX_start(0);
 		parareal_simulationInstances[0]->sim_set_timeframe(0, time_slice_size);
 
@@ -170,7 +169,10 @@ public:
 		 */
 		CONSOLEPREFIX_start(0);
 		parareal_simulationInstances[0]->sim_setup_initial_data();
+		CONSOLEPREFIX_end();
 
+		CONSOLEPREFIX_start("[MAIN] ");
+		std::cout << "Finished setup parareal" << std::endl;
 		CONSOLEPREFIX_end();
 	}
 

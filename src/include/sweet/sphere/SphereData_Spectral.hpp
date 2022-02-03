@@ -174,6 +174,8 @@ public:
 			const SphereData_Spectral &i_sph_data
 	)
 	{
+
+
 		if (i_sph_data.sphereDataConfig == nullptr)
 			return *this;
 
