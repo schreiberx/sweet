@@ -1505,11 +1505,11 @@ public:
 				SphereData_Spectral h = prog_phi_pert*(1.0/simVars.sim.gravitation);
 				h += simVars.sim.h0;
 
-				output_filename = write_file_parareal(h, "prog_h", iteration_id);
+				output_filename = write_file_csv_parareal(h, "prog_h", iteration_id);
 				output_reference_filenames += ";"+output_filename;
 				std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
 
-				output_filename = write_file_parareal(prog_phi_pert, "prog_phi_pert", iteration_id);
+				output_filename = write_file_csv_parareal(prog_phi_pert, "prog_phi_pert", iteration_id);
 				output_reference_filenames = output_filename;
 				std::cout << " + " << output_filename << " (min: " << prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
 
@@ -1518,31 +1518,55 @@ public:
 
 				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
 
-				output_filename = write_file_parareal(u, "prog_u", iteration_id);
+				output_filename = write_file_csv_parareal(u, "prog_u", iteration_id);
 				output_reference_filenames += ";"+output_filename;
 				std::cout << " + " << output_filename << std::endl;
 
-				output_filename = write_file_parareal(v, "prog_v", iteration_id);
+				output_filename = write_file_csv_parareal(v, "prog_v", iteration_id);
 				output_reference_filenames += ";"+output_filename;
 				std::cout << " + " << output_filename << std::endl;
 
-				output_filename = write_file_parareal(prog_vrt, "prog_vrt", iteration_id);
+				output_filename = write_file_csv_parareal(prog_vrt, "prog_vrt", iteration_id);
 				output_reference_filenames += ";"+output_filename;
 				std::cout << " + " << output_filename << std::endl;
 
-				output_filename = write_file_parareal(prog_div, "prog_div", iteration_id);
+				output_filename = write_file_csv_parareal(prog_div, "prog_div", iteration_id);
 				output_reference_filenames += ";"+output_filename;
 				std::cout << " + " << output_filename << std::endl;
 
 				SphereData_Spectral potvrt = (prog_phi_pert/simVars.sim.gravitation)*prog_vrt;
 
-				output_filename = write_file_parareal(potvrt, "prog_potvrt", iteration_id);
+				output_filename = write_file_csv_parareal(potvrt, "prog_potvrt", iteration_id);
 				output_reference_filenames += ";"+output_filename;
 				std::cout << " + " << output_filename << std::endl;
 			}
 			else if (simVars.iodata.output_file_mode == "bin")
 			{
-				SWEETError("TODO");
+				std::string output_filename;
+
+				{
+					output_filename = write_file_bin_parareal(prog_phi_pert, "prog_phi_pert", iteration_id);
+					output_reference_filenames = output_filename;
+					SphereData_Physical prog_phys = prog_phi_pert.toPhys();
+
+					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+				}
+
+				{
+					output_filename = write_file_bin_parareal(prog_vrt, "prog_vrt", iteration_id);
+					output_reference_filenames += ";"+output_filename;
+					SphereData_Physical prog_phys = prog_vrt.toPhys();
+
+					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+				}
+
+				{
+					output_filename = write_file_bin_parareal(prog_div, "prog_div", iteration_id);
+					output_reference_filenames += ";"+output_filename;
+					SphereData_Physical prog_phys = prog_div.toPhys();
+
+					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+				}
 			}
 			else if (simVars.iodata.output_file_mode == "csv_spec_evol"){
 				SWEETError("TODO");
@@ -1552,29 +1576,6 @@ public:
 				SWEETError("Unknown output file mode '"+simVars.iodata.output_file_mode+"'");
 			}
 
-///			output_filenames = "";
-///
-///			output_filenames = write_file_parareal(t_h, "prog_phi_pert", iteration_id);
-///			output_filenames += ";" + write_file_parareal(t_u, "prog_vrt", iteration_id);
-///			output_filenames += ";" + write_file_parareal(t_v, "prog_div", iteration_id);
-///
-///			output_filenames += ";" + write_file_parareal(op.ke(t_u,t_v),"diag_ke", iteration_id);
-///
-///#if SWEET_USE_PLANE_SPECTRAL_SPACE
-///			output_filenames += ";" + write_file_spec_parareal(op.ke(t_u,t_v),"diag_ke_spec", iteration_id);
-///#endif
-///
-///			output_filenames += ";" + write_file_parareal(op.vort(t_u, t_v), "diag_vort", iteration_id);
-///			output_filenames += ";" + write_file_parareal(op.div(t_u, t_v), "diag_div", iteration_id);
-///
-///#if SWEET_USE_PLANE_SPECTRAL_SPACE
-///			if(compute_normal_modes){
-///				output_filenames += ";" + write_file_spec_parareal(normalmodes.geo, "nm_geo", iteration_id);
-///				output_filenames += ";" + write_file_spec_parareal(normalmodes.igwest, "nm_igwest", iteration_id);
-///				output_filenames += ";" + write_file_spec_parareal(normalmodes.igeast, "nm_igeast", iteration_id);
-///			}
-///#endif
-///			
 		}
 
 	}
@@ -1583,7 +1584,7 @@ public:
 	/**
 	 * Write file to data and return string of file name (parareal)
 	 */
-	std::string write_file_parareal(
+	std::string write_file_csv_parareal(
 			const SphereData_Spectral &i_sphereData,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
@@ -1596,7 +1597,7 @@ public:
 		SphereData_Physical sphereData = i_sphereData.toPhys();
 
 		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
-		sprintf(buffer, filename_template, i_name, timeframe_end, iteration_id);
+		sprintf(buffer, filename_template, i_name, timeframe_end * simVars.iodata.output_time_scale, iteration_id);
 
 		if (i_phi_shifted)
 			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
@@ -1606,6 +1607,28 @@ public:
 		return buffer;
 
 	}
+
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file_bin_parareal(
+			const SphereData_Spectral &i_sphereData,
+			const char* i_name,
+			int iteration_id
+	)
+	{
+		char buffer[1024];
+
+		SphereData_Spectral sphereData(i_sphereData);
+		//const char* filename_template = simVars.iodata.output_file_name.c_str();
+		const char* filename_template = "output_%s_t%020.8f_iter%03d.sweet";
+		sprintf(buffer, filename_template, i_name, timeframe_end * simVars.iodata.output_time_scale, iteration_id);
+		//sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+		sphereData.file_write_binary_spectral(buffer);
+
+		return buffer;
+	}
+
 
 
 	/**
