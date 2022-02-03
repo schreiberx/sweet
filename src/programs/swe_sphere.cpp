@@ -248,6 +248,8 @@ public:
 			simVars.outputConfig();
 		}
 
+		timestep_do_output();
+
 		stopwatch.start();
 	}
 
@@ -525,8 +527,12 @@ public:
 			}
 		}
 
+		// Ensure storage of initial solution in parareal
+		if (simVars.timecontrol.current_simulation_time == 0)
+			write_file_output();
 #if !SWEET_PARAREAL
-		write_file_output();
+		else
+			write_file_output();
 #endif
 
 		update_diagnostics();
