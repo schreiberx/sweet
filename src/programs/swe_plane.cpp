@@ -1672,8 +1672,6 @@ int main(int i_argc, char *i_argv[])
 
 #endif
 
-	MemBlockAlloc::setup();
-
 	//input parameter names (specific ones for this program)
 	const char *bogus_var_names[] = {
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup

@@ -35,10 +35,6 @@
 #include "burgers_benchmarks/BurgersValidationBenchmarks.hpp"
 
 
-// Plane data config
-PlaneDataConfig planeDataConfigInstance;
-PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
 
 
 #ifndef SWEET_PARAREAL
@@ -50,10 +46,15 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 #endif
 
 
+const int NUM_OF_UNKNOWNS=2;
+
+// Plane data config
+PlaneDataConfig planeDataConfigInstance;
+PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+
 // General parameters
 SimulationVariables simVars;
 
-const int NUM_OF_UNKNOWNS=2;
 
 
 class SimulationInstance
@@ -62,6 +63,7 @@ class SimulationInstance
 		public Parareal_SimulationInstance
 #endif
 {
+
 public:
 	// Prognostic variables
 	// u: velocity in x-direction
@@ -1390,8 +1392,6 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "Compiled for MIC" << std::endl;
 #endif
 
-	MemBlockAlloc::setup();
-
 	// program specific input parameter names
 	const char *bogus_var_names[] = {
 			nullptr
@@ -1467,7 +1467,7 @@ int main(int i_argc, char *i_argv[])
 			Stopwatch time;
 
 			// Start counting time
-			time.reset();
+			time.start();
 
 			// Main time loop
 			while(true)
@@ -1487,7 +1487,7 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			//Stop counting time
+			// Stop counting time
 			time.stop();
 
 			double seconds = time();

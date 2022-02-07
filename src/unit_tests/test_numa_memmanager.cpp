@@ -8,7 +8,6 @@
 int main(int argc, char *argv[])
 {
 	std::cout << "MAIN" << std::endl;
-	MemBlockAlloc::setup();
 
 	int num_threads = omp_get_max_threads();
 

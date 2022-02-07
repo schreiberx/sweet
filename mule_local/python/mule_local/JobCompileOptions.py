@@ -78,12 +78,6 @@ class JobCompileOptions(InfoError):
         # Use reduce all instead of reduce to root rank
         self.rexi_allreduce = 'disable'
 
-        # Memory allocator
-        if _exec_command('uname -s') == "Darwin":
-            # Deactivate efficient NUMA block allocation on MacOSX systems (missing numa.h0 file)
-            self.numa_block_allocator = 0
-        else:
-            self.numa_block_allocator = 2
 
         # Program / Unit test
         self.program = ''
@@ -156,9 +150,6 @@ class JobCompileOptions(InfoError):
         retval += ' --benchmark-timings='+self.benchmark_timings
         retval += ' --rexi-timings-additional-barriers='+self.rexi_timings_additional_barriers
         retval += ' --rexi-allreduce='+self.rexi_allreduce
-
-        # Memory allocator
-        retval += ' --numa-block-allocator='+str(self.numa_block_allocator)
 
         # Program / Unit test
         if self.program != '':
@@ -250,15 +241,6 @@ class JobCompileOptions(InfoError):
                 help='specify compiler to use: gnu, intel, llvm, pgi [default: %default]'
         )
         self.compiler = scons.GetOption('compiler')
-
-        scons.AddOption(    '--numa-block-allocator',
-                dest='numa_block_allocator',
-                type='choice',
-                choices=['0', '1', '2', '3'],
-                default=str(self.numa_block_allocator),
-                help='Specify allocation method to use: 0: default system\'s malloc, 1: allocation with NUMA granularity, 2: allocation with thread granularity, 3: allocation with non-NUMA granularity [default: %default]'
-        )
-        self.numa_block_allocator = int(scons.GetOption('numa_block_allocator'))
 
 
         scons.AddOption(    '--gxx-toolchain',
@@ -736,9 +718,6 @@ class JobCompileOptions(InfoError):
 
             if self.quadmath == 'enable':
                 retval+='_quadmath'
-
-            if self.numa_block_allocator in [1, 2]:
-                retval+='_numa'+str(self.numa_block_allocator)
 
             if self.libfft == 'enable':
                 retval+='_fft'

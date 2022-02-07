@@ -126,11 +126,6 @@ else:
 
 
 if p.sphere_spectral_space == 'enable':
-
-#    if p.numa_block_allocator != 0:
-#        print("NUMA Block allocator option > 0 not tested with SHTNS, buffers in SHTNS may be shared")
-#        Exit(1)
-
     env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
 else:
     env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')
@@ -558,9 +553,9 @@ else:
     env.Append(CXXFLAGS=' -DSWEET_FORTRAN=0')
 
 
-env.Append(CXXFLAGS=' -DNUMA_BLOCK_ALLOCATOR_TYPE='+str(p.numa_block_allocator))
-
-if p.numa_block_allocator in [1, 2]:
+if exec_command('uname -s') == "Darwin":
+    env.Append(CXXFLAGS=' -DMEMBLOCKALLOC_ENABLE_NUMA_ALLOC=0')
+else:
     env.Append(LIBS=['numa'])
 
 
@@ -710,7 +705,13 @@ exec_name = p.getProgramName()
 #
 # BUILD directory
 #
-build_dir='/tmp/scons_build_'+exec_name+'/'
+build_dir='/tmp/'
+user = os.environ.get('USERNAME')
+if user != None:
+    build_dir += user.replace(' ', '')
+    build_dir += '/'
+
+build_dir += 'scons_build_'+exec_name+'/'
 
 if p.libpfasst == 'enable':
     #env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])

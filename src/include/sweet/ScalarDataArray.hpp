@@ -200,6 +200,9 @@ public:
 
 	void p_free_buffer()
 	{
+		if (scalar_data == nullptr)
+			return;
+
 		MemBlockAlloc::free(scalar_data, number_of_elements*sizeof(double));
 		scalar_data = nullptr;
 	}
