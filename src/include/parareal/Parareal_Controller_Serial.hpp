@@ -149,10 +149,12 @@ public:
 		if (pVars->coarse_timestep_size < 0)
 			pVars->coarse_timestep_size = time_slice_size;
 
-		CONSOLEPREFIX_start(0);
-		parareal_simulationInstances[0]->sim_check_timesteps(time_slice_size);
 		// if time slices are not homogeneous, this should be called by each parareal_simulationInstance
-
+		//for (int k = 0; k < pVars->coarse_slices; k++)
+		//{
+			CONSOLEPREFIX_start(0);
+			parareal_simulationInstances[0]->sim_check_timesteps(time_slice_size);
+		//}
 
 		CONSOLEPREFIX_start(0);
 		parareal_simulationInstances[0]->sim_set_timeframe(0, time_slice_size);

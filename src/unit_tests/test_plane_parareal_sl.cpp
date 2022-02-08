@@ -55,11 +55,9 @@ public:
 		reset();
 	}
 
-
 	~SimulationInstance()
 	{
 	}
-
 
 	void reset()
 	{
@@ -83,8 +81,6 @@ public:
 			simVars.outputConfig();
 	}
 
-
-
 	void run_timestep()
 	{
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
@@ -103,8 +99,6 @@ public:
 		simVars.timecontrol.current_timestep_nr++;
 
 	}
-
-
 
 	void run_simulation()
 	{
@@ -173,10 +167,6 @@ public:
 
 
 };
-
-
-
-
 
 int main(int i_argc, char *i_argv[])
 {

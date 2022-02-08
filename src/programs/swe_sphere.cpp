@@ -1618,7 +1618,6 @@ public:
 
 	}
 
-
 	/**
 	 * Write file to data and return string of file name (parareal)
 	 */

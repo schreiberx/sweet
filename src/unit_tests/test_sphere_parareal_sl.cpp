@@ -54,11 +54,9 @@ public:
 		reset();
 	}
 
-
 	~SimulationInstance()
 	{
 	}
-
 
 	void reset()
 	{
@@ -77,8 +75,6 @@ public:
 		if (simVars.misc.verbosity > 2)
 			simVars.outputConfig();
 	}
-
-
 
 	void run_timestep()
 	{
@@ -166,12 +162,7 @@ public:
 				);
 	}
 
-
 };
-
-
-
-
 
 int main(int i_argc, char *i_argv[])
 {
