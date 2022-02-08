@@ -1194,6 +1194,23 @@ public:
 		return parareal_data_fine_previous_timestep;
 	}
 
+	/**
+	 * Check if the time slice contains an integer number of coarse and fine time steŝ
+	 */
+	void sim_check_timesteps(
+				double time_slice_size
+	)
+	{
+		// check if each time slice contains an integer number of fine and coarse time steps
+		double eps = 1e-12;
+		double mod_coarse = fmod(time_slice_size, simVars.parareal.coarse_timestep_size);
+		double mod_fine = fmod(time_slice_size, simVars.timecontrol.current_timestep_size);
+                if ( std::abs(mod_coarse) > eps && std::abs(mod_coarse - time_slice_size) > eps  )
+			SWEETError("Time slice length must be an integer multiple of the coarse time step!");
+                if ( std::abs(mod_fine) > eps && std::abs(mod_fine - time_slice_size) > eps  )
+			SWEETError("Time slice length must be an integer multiple of the fine time step!");
+	}
+
 
 	/**
 	 * Set the start and end of the coarse time step

@@ -15,7 +15,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
+#include <math.h>
 
 /**
  * This class takes over the control and
@@ -148,6 +148,11 @@ public:
 
 		if (pVars->coarse_timestep_size < 0)
 			pVars->coarse_timestep_size = time_slice_size;
+
+		CONSOLEPREFIX_start(0);
+		parareal_simulationInstances[0]->sim_check_timesteps(time_slice_size);
+		// if time slices are not homogeneous, this should be called by each parareal_simulationInstance
+
 
 		CONSOLEPREFIX_start(0);
 		parareal_simulationInstances[0]->sim_set_timeframe(0, time_slice_size);

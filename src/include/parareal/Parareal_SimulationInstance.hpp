@@ -27,6 +27,14 @@ class Parareal_SimulationInstance
 {
 public:
 	/**
+	 * Check if the time slice contains an integer number of coarse and fine time steŝ
+	 */
+	virtual void sim_check_timesteps(
+			double time_slice_size
+	) = 0;
+
+
+	/**
 	 * Set the start and end of the coarse time step
 	 */
 	virtual void sim_set_timeframe(
