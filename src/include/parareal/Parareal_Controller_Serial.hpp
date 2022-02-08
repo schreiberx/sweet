@@ -149,8 +149,6 @@ public:
 		if (pVars->coarse_timestep_size < 0)
 			pVars->coarse_timestep_size = time_slice_size;
 
-		double coarse_timestep_size = pVars->coarse_timestep_size;
-
 		CONSOLEPREFIX_start(0);
 		parareal_simulationInstances[0]->sim_set_timeframe(0, time_slice_size);
 
@@ -178,6 +176,37 @@ public:
 
 	void run()
 	{
+
+#if SWEET_DEBUG
+		// Perform a full fine simulation
+		CONSOLEPREFIX_start("[MAIN] ");
+		std::cout << "Full fine simulation (debugging)" << std::endl;
+
+		CONSOLEPREFIX_start(0);
+		parareal_simulationInstances[0]->run_timestep_fine();
+		Parareal_Data &fine_exact = parareal_simulationInstances[0]->get_reference_to_data_timestep_fine();
+		parareal_simulationInstances[0]->sim_set_data_fine_exact(fine_exact);
+
+		for (int i = 1; i < pVars->coarse_slices; i++)
+		{
+			CONSOLEPREFIX_start(i-1);
+			Parareal_Data &tmp = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine();
+			Parareal_Data &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine_previous_timestep(); // SL
+
+			// use fine time step output data as initial data of next time slice
+			CONSOLEPREFIX_start(i);
+			parareal_simulationInstances[i]->sim_set_data(tmp);
+			parareal_simulationInstances[i]->sim_set_data_fine_previous_time_slice(tmp2); // SL
+
+			// run fine time step
+			parareal_simulationInstances[i]->run_timestep_fine();
+
+			//store
+			Parareal_Data &fine_exact = parareal_simulationInstances[i]->get_reference_to_data_timestep_fine();
+			parareal_simulationInstances[i]->sim_set_data_fine_exact(fine_exact);
+		}
+#endif
+
 		CONSOLEPREFIX_start("[MAIN] ");
 		std::cout << "Initial propagation" << std::endl;
 
@@ -259,7 +288,6 @@ public:
 			 */
 			double max_convergence = -2;
 			for (int i = k; i < pVars->coarse_slices; i++)
-///			for (int i = 0; i < pVars->coarse_slices; i++)
 			{
 				CONSOLEPREFIX_start(i);
 
@@ -310,6 +338,7 @@ public:
 					}
 				}
 
+
 				// forward to next time slice if it exists
 				if (i < pVars->coarse_slices-1)
 				{
@@ -321,6 +350,12 @@ public:
 				}
 
 				parareal_simulationInstances[i]->check_for_nan_parareal();
+
+#if SWEET_DEBUG
+				// fine serial solution should be retrieved
+				if (i == k)
+					parareal_simulationInstances[i]->compare_to_fine_exact();
+#endif
 
 			}
 ///			start_slice++;

@@ -209,6 +209,12 @@ public:
 		// Same thing, but in the case where fine solver = SL
 		_parareal_data_fine_previous_timestep_h(planeDataConfig), _parareal_data_fine_previous_timestep_u(planeDataConfig), _parareal_data_fine_previous_timestep_v(planeDataConfig),
 		_parareal_data_fine_previous_time_slice_h(planeDataConfig), _parareal_data_fine_previous_time_slice_u(planeDataConfig), _parareal_data_fine_previous_time_slice_v(planeDataConfig)
+
+#if SWEET_DEBUG
+		,
+		_parareal_data_fine_exact_h(planeDataConfig), _parareal_data_fine_exact_u(planeDataConfig), _parareal_data_fine_exact_v(planeDataConfig)
+#endif
+
 #endif
 	{
 		// Calls initialisation of the run (e.g. sets u, v, h)
@@ -1059,6 +1065,11 @@ public:
 	PlaneData _parareal_data_fine_previous_time_slice_h, _parareal_data_fine_previous_time_slice_u, _parareal_data_fine_previous_time_slice_v;
 	Parareal_Data_PlaneData<3> parareal_data_fine_previous_time_slice;
 
+#if SWEET_DEBUG
+	PlaneData _parareal_data_fine_exact_h, _parareal_data_fine_exact_u, _parareal_data_fine_exact_v;
+	Parareal_Data_PlaneData<3> parareal_data_fine_exact;
+#endif
+
 	double timeframe_start = -1;
 	double timeframe_end = -1;
 
@@ -1110,6 +1121,13 @@ public:
 			PlaneData* data_array[3] = {&_parareal_data_fine_previous_time_slice_h, &_parareal_data_fine_previous_time_slice_u, &_parareal_data_fine_previous_time_slice_v};
 			parareal_data_fine_previous_time_slice.setup(data_array);
 		}
+
+#if SWEET_DEBUG
+		{
+			PlaneData* data_array[3] = {&_parareal_data_fine_exact_h, &_parareal_data_fine_exact_u, &_parareal_data_fine_exact_v};
+			parareal_data_fine_exact.setup(data_array);
+		}
+#endif
 
 
 		timeSteppers.setup(
@@ -1514,8 +1532,6 @@ public:
 		data.data_arrays[0]->file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
 
 		// save .csv files at each time step and iteration
-		// copy paste from function timestep_do_output
-		// a compiling flag would (maybe) be better
 
 		/*
 		 * File output
@@ -1646,6 +1662,44 @@ public:
 					if ( std::isnan(parareal_data_output.data_arrays[m]->p_physical_get(ix, iy)))
 						SWEETError("Instability detected in parareal!");
 	}
+
+#if SWEET_DEBUG
+	/**
+	* Store exact solution (full fine simulation) at the end of the time slice
+	*/
+	void sim_set_data_fine_exact(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data_fine_exact()" << std::endl;
+
+		// copy to buffers
+		parareal_data_fine_exact = i_pararealData;
+	}
+
+	/**
+	* Check if solution at time k (end of time slice k-1) is exact (= fine) at iteration k
+	*/
+	virtual void compare_to_fine_exact()
+	{
+		double error = -1e10;
+		double eps = 1e-10;
+		for (int k = 0; k < 3; ++k)
+			error = std::max(error,
+					(*parareal_data_output.data_arrays[k] - *parareal_data_fine_exact.data_arrays[k]).reduce_maxAbs());
+
+		std::cout << "Error between parareal and fine (exact) solution at t = " << timeframe_end << ": " << error << std::endl;
+		if (error < eps)
+			std::cout << "Parareal solution computed correctly" << std::endl;
+		else
+			SWEETError("Parareal solution has not been correctly computed");
+
+	}
+
+#endif
+
+
 
 #endif
 };

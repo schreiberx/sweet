@@ -63,8 +63,21 @@ public:
 			Parareal_Data &i_pararealData
 	) = 0;
 
+#if SWEET_DEBUG
+	/**
+	* Store exact solution (full fine simulation) at the end of the time slice
+	*/
+	virtual void sim_set_data_fine_exact(
+			Parareal_Data &i_pararealData
+	) = 0;
 
+	/**
+	* Check if solution at time k (end of time slice k-1) is exact (= fine) at iteration k
+	*/
+	virtual void compare_to_fine_exact(
+	) = 0;
 
+#endif
 
 
 	/**

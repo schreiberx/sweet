@@ -143,6 +143,12 @@ public:
 		// Same thing, but in the case where fine solver = SL
 		_parareal_data_fine_previous_timestep_phi(sphereDataConfig), _parareal_data_fine_previous_timestep_vrt(sphereDataConfig), _parareal_data_fine_previous_timestep_div(sphereDataConfig),
 		_parareal_data_fine_previous_time_slice_phi(sphereDataConfig), _parareal_data_fine_previous_time_slice_vrt(sphereDataConfig), _parareal_data_fine_previous_time_slice_div(sphereDataConfig)
+#if SWEET_DEBUG
+		,
+		_parareal_data_fine_exact_h(sphereDataConfig), _parareal_data_fine_exact_u(sphereDataConfig), _parareal_data_fine_exact_v(sphereDataConfig)
+#endif
+
+
 #endif
 
 	{
@@ -1034,6 +1040,12 @@ public:
 	SphereData_Spectral _parareal_data_fine_previous_time_slice_phi, _parareal_data_fine_previous_time_slice_vrt, _parareal_data_fine_previous_time_slice_div;
 	Parareal_Data_SphereData_Spectral<3> parareal_data_fine_previous_time_slice;
 
+#if SWEET_DEBUG
+	SphereData_Spectral _parareal_data_fine_exact_h, _parareal_data_fine_exact_u, _parareal_data_fine_exact_v;
+	Parareal_Data_SphereData_Spectral<3> parareal_data_fine_exact;
+#endif
+
+
 	double timeframe_start = -1;
 	double timeframe_end = -1;
 
@@ -1085,6 +1097,13 @@ public:
 			SphereData_Spectral* data_array[3] = {&_parareal_data_fine_previous_time_slice_phi, &_parareal_data_fine_previous_time_slice_vrt, &_parareal_data_fine_previous_time_slice_div};
 			parareal_data_fine_previous_time_slice.setup(data_array);
 		}
+
+#if SWEET_DEBUG
+		{
+			SphereData_Spectral* data_array[3] = {&_parareal_data_fine_exact_h, &_parareal_data_fine_exact_u, &_parareal_data_fine_exact_v};
+			parareal_data_fine_exact.setup(data_array);
+		}
+#endif
 
 
 		timeSteppers.setup(
@@ -1487,8 +1506,6 @@ public:
 			int time_slice_id
 	)
 	{
-		Parareal_Data_SphereData_Spectral<3>& data = (Parareal_Data_SphereData_Spectral<3>&)i_data;
-
                 // save same file but naming as slice_iter for visualizing in paraview  // TODO
 		///////std::ostringstream ss2;
 		///////ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
@@ -1498,8 +1515,6 @@ public:
 		///////data.data_arrays[0]->file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
 
 		// save .csv files at each time step and iteration
-		// copy paste from function timestep_do_output
-		// a compiling flag would (maybe) be better
 
 		// Dump  data in csv, if output filename is not empty
 		if (simVars.iodata.output_file_name.size() > 0)
@@ -1697,15 +1712,55 @@ public:
 	// check for nan in parareal (to avoid unnecessary computation)
 	void check_for_nan_parareal()
 	{
-		int physical_size_x = parareal_data_output.data_arrays[0]->sphereDataConfig->physical_num_lon;
-		int physical_size_y = parareal_data_output.data_arrays[0]->sphereDataConfig->physical_num_lat;
-		for (int m = 0; m < 3; ++m)
-			for (int ix = 0; ix < physical_size_x; ++ix)
-				for (int iy = 0; iy < physical_size_y; ++iy)
-					if ( std::isnan(parareal_data_output.data_arrays[m]->spectral_get_(ix, iy).real()) || 
-                                             std::isnan(parareal_data_output.data_arrays[m]->spectral_get_(ix, iy).imag()) )
+		//int physical_size_x = parareal_data_output.data_arrays[0]->sphereDataConfig->physical_num_lon;
+		//int physical_size_y = parareal_data_output.data_arrays[0]->sphereDataConfig->physical_num_lat;
+		int size_n = parareal_data_output.data_arrays[0]->sphereDataConfig->spectral_modes_n_max;
+		int size_m = parareal_data_output.data_arrays[0]->sphereDataConfig->spectral_modes_m_max;
+		std::cout << size_n << " " << size_m << std::endl;
+		for (int k = 0; k < 3; ++k)
+			for (int m = 0; m < size_m; ++m)
+				for (int n = m; n < size_n; ++n)
+					if ( std::isnan(parareal_data_output.data_arrays[k]->spectral_get_(n, m).real()) || 
+                                             std::isnan(parareal_data_output.data_arrays[k]->spectral_get_(n, m).imag()) )
 						SWEETError("Instability detected in parareal!");
 	}
+
+#if SWEET_DEBUG
+	/**
+	* Store exact solution (full fine simulation) at the end of the time slice
+	*/
+	void sim_set_data_fine_exact(
+			Parareal_Data &i_pararealData
+	)
+	{
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_set_data_fine_exact()" << std::endl;
+
+		// copy to buffers
+		parareal_data_fine_exact = i_pararealData;
+	}
+
+	/**
+	* Check if solution at time k (end of time slice k-1) is exact (= fine) at iteration k
+	*/
+	virtual void compare_to_fine_exact()
+	{
+		double error = -1e10;
+		double eps = 1e-10;
+		for (int k = 0; k < 3; ++k)
+			error = std::max(error,
+					(*parareal_data_output.data_arrays[k] - *parareal_data_fine_exact.data_arrays[k]).spectral_reduce_max_abs());
+
+		std::cout << "Error between parareal and fine (exact) solution at t = " << timeframe_end << ": " << error << std::endl;
+		if (error < eps)
+			std::cout << "Parareal solution computed correctly" << std::endl;
+		else
+			SWEETError("Parareal solution has not been correctly computed");
+
+	}
+
+#endif
+
 
 #endif  // PARAREAL
 
