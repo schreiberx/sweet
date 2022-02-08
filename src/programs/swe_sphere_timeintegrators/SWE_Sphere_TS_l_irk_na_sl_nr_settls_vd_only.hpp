@@ -85,14 +85,11 @@ public:
 				SphereData_Spectral &i_div_prev
 	) override
 	{
-#if SWEET_PARAREAL
-		std::cout << "set_previous_solution()" << std::endl;
+		if (simVars.misc.verbosity > 5)
+			std::cout << "set_previous_solution()" << std::endl;
 		U_phi_prev = i_phi_prev;
 		U_vrt_prev = i_vrt_prev;
 		U_div_prev = i_div_prev;
-#else
-		SWEETError("set_previous_solution() only needed within parareal");
-#endif
 	}
 
 	virtual ~SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only();

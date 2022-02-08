@@ -42,7 +42,7 @@ public:
 	{
 	}
 
-	// for SL
+	// for parareal SL
 	virtual void set_previous_solution(
 				SphereData_Spectral &i_phi_prev,
 				SphereData_Spectral &i_vrt_prev,

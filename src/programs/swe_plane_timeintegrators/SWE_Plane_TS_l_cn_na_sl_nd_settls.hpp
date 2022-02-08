@@ -87,14 +87,11 @@ public:
 				PlaneData &i_v_prev
 	) override
 	{
-#if SWEET_PARAREAL
-		std::cout << "set_previous_solution()" << std::endl;
+		if (simVars.misc.verbosity > 5)
+			std::cout << "set_previous_solution()" << std::endl;
 		h_prev = i_h_prev;
 		u_prev = i_u_prev;
 		v_prev = i_v_prev;
-#else
-		SWEETError("set_previous_solution() only needed within parareal");
-#endif
 	}
 
 

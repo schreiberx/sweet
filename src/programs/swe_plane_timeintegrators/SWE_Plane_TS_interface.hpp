@@ -26,7 +26,7 @@ public:
 			double i_sim_timestamp
 	) = 0;
 
-	// for SL
+	// for parareal SL
 	virtual void set_previous_solution(
 				PlaneData &i_h_prev,
 				PlaneData &i_u_prev,
