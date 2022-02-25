@@ -487,6 +487,12 @@ elif p.mode == 'release':
     if compiler_to_use == 'gnu':
         env.Append(CXXFLAGS=' -O3 -mtune=native')
 
+        # Ensure vectorization
+        env.Append(CXXFLAGS=' -ftree-vectorize')
+
+        # Let the compiler know about no aliasing of function arguments
+        env.Append(CXXFLAGS=' -fstrict-aliasing')
+
     elif compiler_to_use == 'llvm':
         env.Append(CXXFLAGS=' -O3 -mtune=native')
 
