@@ -312,6 +312,20 @@ public:
 			int i_mpi_comm
 	) = 0;
 
+
+	void run_timestep(
+			Parareal_GenericData &i_data,
+			std::string tsm_level
+	)
+	{
+
+
+
+
+	}
+
+
+
 	/**
 	 * compute solution on time slice with fine timestep:
 	 * Y^F := F(Y^S)
@@ -359,43 +373,49 @@ public:
 	 * return the data after running computations with the fine timestepping:
 	 * return Y^F
 	 */
-	virtual
-	Parareal_Data& get_reference_to_data_timestep_fine() = 0;
+	Parareal_GenericData& get_reference_to_data_timestep_fine()
+	{
+	};
 
 
 	/**
 	 * compute solution with coarse timestepping:
 	 * Y^C := G(Y^S)
 	 */
-	virtual
-	void run_timestep_coarse() = 0;
+	void run_timestep_coarse()
+	{
+	};
 
 
 	/**
 	 * return the solution after the coarse timestepping:
 	 * return Y^C
 	 */
-	virtual
-	Parareal_Data& get_reference_to_data_timestep_coarse() = 0;
+	Parareal_GenericData& get_reference_to_data_timestep_coarse()
+	{
+	};
 
 	/**
 	 * Compute the error between the fine and coarse timestepping:
 	 * Y^E := Y^F - Y^C
 	 */
-	virtual
-	void compute_difference() = 0;
+	void compute_difference()
+	{
+	};
 
 	/**
 	 * return the penult solution after the coarse propagation:
 	 */
-	virtual
-	Parareal_Data& get_reference_to_data_timestep_coarse_previous_timestep() = 0;
+	Parareal_GenericData& get_reference_to_data_timestep_coarse_previous_timestep()
+	{
+	};
 
 	/**
 	 * return the penult solution after the fine propagation:
 	 */
-	virtual
-	Parareal_Data& get_reference_to_data_timestep_fine_previous_timestep() = 0;
+	Parareal_GenericData& get_reference_to_data_timestep_fine_previous_timestep()
+	{
+	};
 
 
 	/**
@@ -405,36 +425,90 @@ public:
 	 * Return: If true, the error indicator based on the computed error norm between the
 	 * old values and new values
 	 */
-	virtual
 	double compute_output_data(
 			bool i_return_convergence
-	) = 0;
+	)
+	{
+		double convergence = -1;
+
+		if (!i_compute_convergence_test || !output_data_valid)
+		{
+			this->parareal_data_output = this->parareal_data_coarse - this->parareal_data_error;
+			//////for (int k = 0; k < 3; k++) {
+			//////	*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+			//////	//std::cout << timeframe_end << " " << k << " " << (*parareal_data_output.data_arrays[k] - *parareal_data_fine.data_arrays[k]).reduce_maxAbs() << std::endl;
+			//////}
+
+			///////// The following lines are necessary for correctly computing the 1st iteration
+			///////// (else, the first time step is not changed from the 0th to the 1st iteration)
+			///////// Why?
+			///////simVars.timecontrol.current_simulation_time = timeframe_end;
+			///////prog_h_pert = *parareal_data_output.data_arrays[0];
+			///////prog_u = *parareal_data_output.data_arrays[1];
+			///////prog_v = *parareal_data_output.data_arrays[2];
+
+			output_data_valid = true;
+			return convergence;
+		}
+
+		Parareal_GenericData tmp = this->parareal_data_coarse + this->parareal_data_error;
+		//PlaneData tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+
+		convergence = std::max(
+				convergence,
+				(this->parareal_data_output-tmp).reduce_maxAbs()
+			);
+
+		this->parareal_data_output = tmp;
+		
+
+		//////////////simVars.timecontrol.current_simulation_time = timeframe_end;
+		//////////////prog_h_pert = *parareal_data_output.data_arrays[0];
+		//////////////prog_u = *parareal_data_output.data_arrays[1];
+		//////////////prog_v = *parareal_data_output.data_arrays[2];
+
+		//////////////if (compute_error_to_analytical_solution)
+		//////////////{
+		//////////////	if (simVars.misc.compute_errors > 0)
+		//////////////	{
+		//////////////		compute_errors();
+		//////////////		std::cout << "maxabs error compared to analytical solution: " << benchmark.analytical_error_maxabs_h << std::endl;
+		//////////////	}
+		//////////////}
+
+		output_data_valid = true;
+		return convergence;
+
+	};
 
 
 	/**
 	 * Return the data to be forwarded to the next coarse time step interval:
 	 * return Y^O
 	 */
-	virtual
-	Parareal_Data& get_reference_to_output_data() = 0;
+	Parareal_GenericData& get_reference_to_output_data()
+	{
+	};
 
-	virtual
 	void output_data_console(
-			const Parareal_Data& i_data,
 			int iteration_id,
 			int time_slice_id
-	) = 0;
+	)
+	{
+	};
 
-	virtual
 	void output_data_file(
-			const Parareal_Data& i_data,
 			int iteration_id,
 			int time_slice_id
-	) = 0;
+	)
+	{
+	};
 
-	virtual void check_for_nan_parareal() = 0;
+	void check_for_nan_parareal()
+	{
+	};
 
-	virtual ~Parareal_SimulationInstance()
+	~Parareal_SimulationInstance_GenericData()
 	{
 	}
 };
