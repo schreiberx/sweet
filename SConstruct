@@ -440,18 +440,8 @@ if compiler_to_use == 'llvm':
         env.Append(LIBS=['gfortran'])
 
 
-#
-# Intensive sanitization
-#
-if 0:
-    # Use address sanitizer checks (e.g. for memory allocation, out of boundary access, etc.)
-    #env.Append(CXXFLAGS=' -fsanitize=address')
-    #env.Append(LINKFLAGS=' -fsanitize=address')
-    pass
 
-
-
-if p.mode == 'debug':
+if p.mode in ['debug', 'debug_thread', 'debug_leak']:
     env.Append(CXXFLAGS=' -DSWEET_DEBUG=1')
 
     if compiler_to_use == 'gnu':
@@ -510,6 +500,9 @@ elif p.mode == 'release':
             env.Append(F90FLAGS=' -O2')
         elif compiler_to_use == 'intel':
             env.Append(F90FLAGS=' -O2')
+
+if p.sanitize != '':
+    env.Append(CXXFLAGS=' -fsanitize='+p.sanitize)
 
 
 if p.quadmath == 'enable':
