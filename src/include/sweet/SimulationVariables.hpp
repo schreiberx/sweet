@@ -493,7 +493,7 @@ public:
 		int viscosity_order = 2;
 
 
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE || SWEET_PARAREAL
 		/**
 		 * Earth radius for simulations on the sphere
 		 */

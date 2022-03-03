@@ -14,57 +14,107 @@
  * This class may be inherited and specialized to each data type
  */
 
+#include <sweet/plane/PlaneData.hpp>
+#include <sweet/sphere/SphereData_Spectral.hpp>
+
+////template <class t_dataType, int N>
+//template <class t_dataType>
 class Parareal_GenericData
 {
-	/*
-	 * For Parareal data
-	 * start of coarse time step
-	 * end of coarse time step
-	 * corrections
-	 */
 
+	template <class t_dataType>
 	class DataContainer
 	{
 	public:
 		int level;
 		double time;
+		int nb_fields;
+///		t_dataType* simfields;
+
+	public:
+		t_dataType* simfields;
 
 	public:
 
-		Data_Container(double i_time, int i_level = 0)
-			level(i_level),
-			time(i_time)
+		DataContainer()
 		{
 		};
 
-		Data_Containter(Data_Container &i_data) :
-			level(i_data.level),
-			time(i_data.time)
+		DataContainer(int i_nb_fields, double i_time, int i_level = 0) :
+			level(i_level),
+			time(i_time),
+			nb_fields(i_nb_fields)
 		{
 		};
-	}
+
+		DataContainer(DataContainer &i_data) :
+			level(i_data.level),
+			time(i_data.time),
+			nb_fields(i_data.nb_fields)
+		{
+		};
+
+		~DataContainer()
+		{
+		}
+
+	};
+
+//public:
+//	DataContainer* data = nullptr;
+
+public:
+	// to avoid template in Parareal_GenericData
+	virtual DataContainer<double>* get_pointer_to_data_Scalar() const
+	{
+	};
+
+	virtual DataContainer<PlaneData*>* get_pointer_to_data_PlaneData_Spectral() const
+	{
+	};
+
+	virtual DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const
+	{
+	};
 
 
 public:
 
-	Parareal_GenericData(double i_time, int i_level = 0)
+	Parareal_GenericData()
 	{
-		this->data.time = i_time;
-		this->data.level = i_level;
 	};
 
-	virtual Parareal_GenericData(Parareal_GenericData &i_data) = 0;
-	virtual Parareal_GenericData(Parareal_GenericData &&i_data) = 0;
+	Parareal_GenericData(double i_time, int i_level = 0)
+	{
+		//this->data->nb_fields = i_nb_fields;
+		//this->data->time = i_time;
+		//this->data->level = i_level;
+	};
+
+	Parareal_GenericData(Parareal_GenericData &i_data)
+	{
+	};
+
+
+
+	//Parareal_GenericData(Parareal_GenericData &&i_data){
+	//};
+
+	~Parareal_GenericData()
+	{
+	}
 
 	virtual void allocate_data()=0;
 	
-	virtual void free_data()=0;
+	virtual void free_data() = 0;
 
 #if SWEET_MPI
 	virtual std::size_t size() = 0;
 	virtual void serialize(void *data) = 0;
 	virtual void deserialize(void *data) = 0;
 #endif
+
+	virtual double reduce_maxAbs()=0;
 
 
 	virtual Parareal_GenericData& operator+(const Parareal_GenericData &i_data) = 0;
@@ -73,11 +123,11 @@ public:
 	virtual Parareal_GenericData& operator-(const Parareal_GenericData &i_data) = 0;
 	virtual void operator-=(const Parareal_GenericData &i_data) = 0;
 
-	virtual Parareal_GenericData& operator*(const Parareal_GenericData &i_data) = 0;
-	virtual void operator*=(const Parareal_GenericData &i_data) = 0;
-
-	virtual Parareal_GenericData& operator/(const Parareal_GenericData &i_data) = 0;
-	virtual void operator/=(const Parareal_GenericData &i_data) = 0;
+///	virtual Parareal_GenericData& operator*(const Parareal_GenericData &i_data) = 0;
+///	virtual void operator*=(const Parareal_GenericData &i_data) = 0;
+///
+///	virtual Parareal_GenericData& operator/(const Parareal_GenericData &i_data) = 0;
+///	virtual void operator/=(const Parareal_GenericData &i_data) = 0;
 };
 
 

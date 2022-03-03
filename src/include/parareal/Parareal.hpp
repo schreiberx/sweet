@@ -23,10 +23,13 @@ template <class T> class PararealDataInherited	: public T {};
 
 #elif SWEET_PARAREAL==1
 
-#	include <parareal/Parareal_SimulationInstance.hpp>
-#	include <parareal/Parareal_Controller_Serial.hpp>
-#	include <parareal/Parareal_Data_PlaneData.hpp>
-#	include <parareal/Parareal_Data_SphereData_Spectral.hpp>
+///#	include <parareal/Parareal_SimulationInstance.hpp>
+///#	include <parareal/Parareal_Controller_Serial.hpp>
+///#	include <parareal/Parareal_Data_PlaneData.hpp>
+///#	include <parareal/Parareal_Data_SphereData_Spectral.hpp>
+#	include <parareal/Parareal_SimulationInstance_GenericData.hpp>
+#	include <parareal/Parareal_Controller_Serial_GenericData.hpp>
+#	include <parareal/Parareal_GenericData.hpp>
 
 
 #elif SWEET_PARAREAL==2
