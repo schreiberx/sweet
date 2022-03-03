@@ -170,6 +170,11 @@ public:
 #endif
 
 
+	void set_time(double i_time)
+	{
+		this->data->set_time(i_time);
+	}
+
 
 	double reduce_maxAbs()
 	{

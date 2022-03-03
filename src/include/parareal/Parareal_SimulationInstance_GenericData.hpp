@@ -84,29 +84,12 @@ public:
 	{
 	};
 
-///	// Scalar
-///	Parareal_SimulationInstance_GenericData(simulationVariables &i_simVars, std::string i_geometry, std::string i_model):
-///		simVars(i_simVars), geometry(i_geometry), model(i_model)
-///	{
-///	};
-///
-///	// Plane
-///	Parareal_SimulationInstance_GenericData(simulationVariables &i_simVars, PlaneOperators &i_op_plane, std::string i_geometry, std::string i_model):
-///		simVars(i_simVars), op_plane(i_op_plane), geometry(i_geometry), model(i_model)
-///	{
-///	};
-///
-///	// Sphere
-///	Parareal_SimulationInstance_GenericData(simulationVariables &i_simVars, SphereOperators &i_op_sphere, SphereOperators &i_op_sphere_nodealiasing, std::string i_geometry, std::string i_model):
-///		simVars(i_simVars), op_sphere(i_op_sphere), op_sphere_nodealising(i_op_sphere_nodealising), geometry(i_geometry), model(i_model)
-///	{
-///	};
-
 	// Plane
 	void setup(SimulationVariables &i_simVars, std::string i_geometry, std::string i_model,
 		   PlaneOperators &i_op_plane,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
+		// call default setup
 		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
 		this->op_plane = i_op_plane;
 	}
@@ -116,7 +99,7 @@ public:
 		   SphereOperators_SphereData &i_op_sphere, SphereOperators_SphereData &i_op_sphere_nodealiasing,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
-
+		// call default setup
 		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
 		this->op_sphere = i_op_sphere;
 		this->op_sphere_nodealiasing = i_op_sphere_nodealiasing;
@@ -130,143 +113,113 @@ public:
 		this->timeSteppersFine = i_timeSteppersFine;
 		this->timeSteppersCoarse = i_timeSteppersCoarse;
 
-///		int aux_nb_fields;
-///		if ( ! i_model.compare("simple"))
-///			aux_nb_fields = 1;
-///		else if ( ! i_model.compare("burgers"))
-///			aux_nb_fields = 2;
-///		else if ( ! i_model.compare("swe"))
-///			aux_nb_fields = 3;
-///		else
-///			SWEETError("Unknown model");
-///		static const int nb_fields(aux_nb_fields);
-
-			this->parareal_data_start = new t_dataType2<N>;
-			this->parareal_data_fine = new t_dataType2<N>;
-			this->parareal_data_coarse = new t_dataType2<N>;
-			this->parareal_data_output = new t_dataType2<N>;
-			this->parareal_data_error = new t_dataType2<N>;
-			this->parareal_data_coarse_previous_timestep = new t_dataType2<N>;
-			this->parareal_data_coarse_previous_time_slice = new t_dataType2<N>;
-			this->parareal_data_fine_previous_timestep = new t_dataType2<N>;
-			this->parareal_data_fine_previous_time_slice = new t_dataType2<N>;
+		this->parareal_data_start = new t_dataType2<N>;
+		this->parareal_data_fine = new t_dataType2<N>;
+		this->parareal_data_coarse = new t_dataType2<N>;
+		this->parareal_data_output = new t_dataType2<N>;
+		this->parareal_data_error = new t_dataType2<N>;
+		this->parareal_data_coarse_previous_timestep = new t_dataType2<N>;
+		this->parareal_data_coarse_previous_time_slice = new t_dataType2<N>;
+		this->parareal_data_fine_previous_timestep = new t_dataType2<N>;
+		this->parareal_data_fine_previous_time_slice = new t_dataType2<N>;
 #if SWEET_DEBUG
-			this->parareal_data_fine_exact = new t_dataType2<N>;
+		this->parareal_data_fine_exact = new t_dataType2<N>;
 #endif
-
-		///	this->timeSteppersFine = new t_tsmType;
-		///	this->timeSteppersCoarse = new t_tsmType;
-
-
-
-		///const int nb_fields = 3;
-		if (this->geometry == "scalar")
-		{
-//////////			this->parareal_data_start = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_fine = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_coarse = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_output = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_error = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_coarse_previous_timestep = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_coarse_previous_time_slice = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_fine_previous_timestep = new Parareal_GenericData_Scalar<N>;
-//////////			this->parareal_data_fine_previous_time_slice = new Parareal_GenericData_Scalar<N>;
-//////////#if SWEET_DEBUG
-//////////			this->parareal_data_fine_exact = new Parareal_GenericData_Scalar<N>;
-//////////#endif
-//////////
-//////////			this->timeSteppersFine = new SWE_Plane_TimeSteppers;
-//////////			this->timeSteppersCoarse = new SWE_Plane_TimeSteppers;
-		}
-		else if (this->geometry == "plane")
-		{
-////////////			this->parareal_data_start = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_fine = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_coarse = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_output = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_error = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_coarse_previous_timestep = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_coarse_previous_time_slice = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_fine_previous_timestep = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////			this->parareal_data_fine_previous_time_slice = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////#if SWEET_DEBUG
-////////////			this->parareal_data_fine_exact = new Parareal_GenericData_PlaneData_Spectral<N>;
-////////////#endif
-////////////
-////////////			if (this->model == "Burgers")
-////////////			{
-////////////				this->timeSteppersFine = new Burgers_Plane_TimeSteppers;
-////////////				this->timeSteppersCoarse = new Burgers_Plane_TimeSteppers;
-////////////			}
-////////////			else if (this->model == "SWE")
-////////////			{
-////////////				this->timeSteppers = new SWE_Plane_TimeSteppers;
-////////////				this->timeSteppersCoarse = new SWE_Plane_TimeSteppers;
-////////////			}
-////////////			else
-				SWEETError("Unknown model.");
-
-///			timeSteppersFine->setup(
-///					simVars.disc.timestepping_method,
-///					simVars.disc.timestepping_order,
-///					simVars.disc.timestepping_order2,
-///					op_plane,
-///					simVars
-///				);
-///
-///			timeSteppersCoarse->setup(
-///					simVars.parareal.coarse_timestepping_method,
-///					simVars.parareal.coarse_timestepping_order,
-///					simVars.parareal.coarse_timestepping_order2,
-///					op_plane,
-///					simVars
-///				);
-
-		}
-		else if (this->geometry == "sphere")
-		{
-//////////////			this->parareal_data_start = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_fine = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_coarse = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_output = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_error = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_coarse_previous_timestep = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_coarse_previous_time_slice = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_fine_previous_timestep = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////			this->parareal_data_fine_previous_time_slice = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////#if SWEET_DEBUG
-//////////////			this->parareal_data_fine_exact = new Parareal_GenericData_SphereData_Spectral<N>;
-//////////////#endif
-//////////////
-//////////////			if (this->model == "SWE")
-//////////////			{
-//////////////				this->timeSteppersFine = new SWE_Sphere_TimeSteppers;
-//////////////				this->timeSteppersCoarse = new SWE_Sphere_TimeSteppers;
-//////////////			}
-//////////////			else
-//////////////				SWEETError("Unknown model.");
-
-///			timeSteppersFine->setup(
-///					simVars.disc.timestepping_method,
-///					op_sphere,
-///					simVars
-///				);
-///
-///			timeSteppersCoarse->setup(
-///					simVars.parareal.coarse_timestepping_method,
-///					op_sphere,
-///					simVars
-///				);
-
-		}
-		else
-			SWEETError("Unknown geometry.");
 
 	};
 
 
 
 public:
+
+	// Functions to exchange data between Parareal_GenericDAta instances and individual data arrays
+
+	void dataArrays_to_GenericData_Scalar(Parareal_GenericData* i_data
+						double &u)
+	{
+		if (this->model == "ode1")
+		{
+			*(i_data.get_pointer_to_data_Scalar()->simfields[0]) = u;
+		}
+		else
+			SWEETError("Unknown model");
+	}
+
+	void GenericData_Scalar_to_DataArrays(Parareal_GenericData* i_data
+						double &u)
+	{
+		if (this->model == "ode1")
+		{
+			u = *(i_data.get_pointer_to_data_Scalar()->simfields[0]);
+		}
+		else
+			SWEETError("Unknown model");
+	}
+
+	void dataArrays_to_GenericData_PlaneData_Spectral(Parareal_GenericData* i_data
+						PlaneData &h, PlaneData &u, PlaneData&v)
+	{
+		if (this->model == "swe")
+		{
+			*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = h;
+			*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = u;
+			*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = v;
+		}
+		else if (this->model == "burgers")
+		{
+			*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = u;
+			*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = v;
+		}
+		else
+			SWEETError("Unknown model");
+	}
+
+	void GenericData_PlaneData_Spectral_to_dataArrays(Parareal_GenericData* i_pararealData
+						PlaneData &h, PlaneData &u, PlaneData&v)
+	{
+		if (this->model == "swe")
+		{
+			h = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
+			u = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
+			v = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
+		}
+		else if (this->model == "burgers")
+		{
+			u = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
+			v = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
+		}
+		else
+			SWEETError("Unknown model");
+	}
+
+	void dataArrays_to_GenericData_SphereData_Spectral(Parareal_GenericData* i_data
+						SphereData_Spectral &h, SphereData_Spectral &u, SphereData_Spectral&v)
+	{
+		if (this->model == "swe")
+		{
+			*(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[0]) = h;
+			*(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[1]) = u;
+			*(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[2]) = v;
+		}
+		else
+			SWEETError("Unknown model");
+	}
+
+	void GenericData_SphereData_Spectral_to_dataArrays(Parareal_GenericData* i_pararealData
+						SphereData_Spectral &h, SphereData_Spectral &u, SphereData_Spectral&v)
+	{
+		if (this->model == "swe")
+		{
+			h = *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[0]);
+			u = *(i_data.get_pointer_to_data_Data_Spectral()->simfields[1]);
+			v = *(i_data.get_pointer_to_data_Data_Spectral()->simfields[2]);
+		}
+		else
+			SWEETError("Unknown model");
+	}
+
+
+
 	/**
 	 * Check if the time slice contains an integer number of coarse and fine time steŝ
 	 */
@@ -292,18 +245,123 @@ public:
 			double i_timeframe_start,	///< start timestamp of coarse time step
 			double i_timeframe_end		///< end time stamp of coarse time step
 	){
-		// Replacing the function sim_set_timeframe
 		if (simVars.parareal.verbosity > 2)
 			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
 		this->timeframe_start = i_timeframe_start;
 		this->timeframe_end = i_timeframe_end;
+
+		// set time to parareal_genericdata instances
+		this->parareal_data_start->set_time(i_timeframe_begin);
+		this->parareal_data_fine->set_time(i_timeframe_end);
+		this->parareal_data_coarse->set_time(i_timeframe_end);
+		this->parareal_data_output->set_time(i_timeframe_end);
+		this->parareal_data_error->set_time(i_timeframe_end);
+		this->parareal_data_coarse_previous_timestep->set_time(i_timeframe_end);
+		this->parareal_data_coarse_previous_time_slice->set_time(i_timeframe_end);
+		this->parareal_data_fine_previous_timestep->set_time(i_timeframe_end);
+		this->parareal_data_fine_previous_time_slice->set_time(i_timeframe_end);
+#if SWEET_DEBUG
+		this->parareal_data_fine_exact->set_time(i_timeframe_end);
+#endif
+
 	};
 
 	/**
 	 * Set the initial data at i_timeframe_start
 	 */
-	virtual void sim_setup_initial_data(
-	) = 0;
+	void sim_setup_initial_data(
+		if (simVars.parareal.verbosity > 2)
+			std::cout << "sim_setup_initial_data()" << std::endl;
+
+		reset();
+
+		if (this->geometry == "scalar")
+		{
+			if (this->model == "ode1")
+			{
+				SWEETError("TODO");
+			}
+			else
+				SWEETError("Unknown model for this geometry");
+		}
+		else if (this->geometry == "plane")
+		{
+			PlaneData t0_prog_h_pert(planeDataConfig),
+			PlaneData t0_prog_u(planeDataConfig),
+			PlaneData t0_prog_v(planeDataConfig),
+
+			if (this->model == "swe")
+			{
+				SWEPlaneBenchmarksCombined swePlaneBenchmarks;
+				swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
+			}
+			else if (this->model == "burgers")
+			{
+				if (simVars.disc.space_grid_use_c_staggering)
+				{
+					prog_u.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+						}
+					);
+					prog_v.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+						io_data = 0.0;
+						}
+					);
+				}
+				else
+				{
+					prog_u.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+						}
+					);
+		
+					prog_v.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+						io_data = 0.0;
+						}
+					);
+				}
+			}
+			else
+				SWEETError("Unknown model for this geometry");
+
+			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start, t0_prog_h_pert, t0_prog_u, t0_prog_v)
+			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v)
+			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v)
+
+		}
+		else if (this->geometry == "sphere")
+		{
+			PlaneData t0_prog_phi_pert(planeDataConfig),
+			PlaneData t0_prog_vrt(planeDataConfig),
+			PlaneData t0_prog_div(planeDataConfig),
+			if (model == "swe")
+			{
+				BenchmarksSphereSWE sphereBenchmarks;
+				sphereBenchmarks.setup(simVars, op);
+				sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			}
+			else
+				SWEETError("Unknown model for this geometry");
+
+			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_start, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div)
+			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div)
+			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div)
+		}
+		else
+			SWEETError("Unknown geometry");
+	);
 
 	/**
 	 * Set simulation data to data given in i_sim_data.
@@ -336,7 +394,7 @@ public:
 	/**
 	 * Set solution of penult fine timestep of previous time slice
 	 */
-	virtual void sim_set_data_fine_previous_time_slice(
+	void sim_set_data_fine_previous_time_slice(
 			Parareal_GenericData &i_pararealData
 	){
 		if (simVars.parareal.verbosity > 2)
@@ -350,15 +408,21 @@ public:
 	/**
 	* Store exact solution (full fine simulation) at the end of the time slice
 	*/
-	virtual void sim_set_data_fine_exact(
+	void sim_set_data_fine_exact(
 			Parareal_GenericData &i_pararealData
-	) = 0;
+	)
+	{
+		SWEETError("TODO");
+	};
 
 	/**
 	* Check if solution at time k (end of time slice k-1) is exact (= fine) at iteration k
 	*/
-	virtual void compare_to_fine_exact(
-	) = 0;
+	void compare_to_fine_exact(
+	)
+	{
+		SWEETError("TODO");
+	};
 
 #endif
 

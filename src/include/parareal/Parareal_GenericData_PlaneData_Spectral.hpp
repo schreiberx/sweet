@@ -78,24 +78,6 @@ public:
 	{
 	}
 
-//////	Parareal_GenericData_PlaneData_Spectral(double i_time, int i_level = 0)	:
-//////		Parareal_GenericData(i_time, i_level)
-//////	{
-//////	}
-//////
-//////	Parareal_GenericData_Scalar(
-//////			double i_time,
-//////			double i_level,
-//////#if SPLITTED_PLANE_DATA
-//////				PlaneData_Spectral* i_simfields[N]
-//////#else
-//////				PlaneData* i_simfields[N]
-//////#endif
-//////	)	:
-//////		Parareal_GenericData(i_time, i_level),
-//////		data(i_simfields)
-//////	{
-//////	}
 
 	Parareal_GenericData_PlaneData_Spectral(Parareal_GenericData_PlaneData_Spectral &i_data)
 	{
@@ -113,6 +95,12 @@ public:
 	{
 		free_data();
 	};
+
+
+	void set_time(double i_time)
+	{
+		this->data->set_time(i_time);
+	}
 
 	void allocate_data()
 	{

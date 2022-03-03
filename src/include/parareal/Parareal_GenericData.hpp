@@ -58,13 +58,16 @@ class Parareal_GenericData
 		{
 		}
 
+		void set_time(double i_time)
+		{
+			this->time = i_time;
+		}
+
 	};
 
-//public:
-//	DataContainer* data = nullptr;
 
 public:
-	// to avoid template in Parareal_GenericData
+	// different interface functions to avoid template in Parareal_GenericData
 	virtual DataContainer<double>* get_pointer_to_data_Scalar() const
 	{
 	};
@@ -103,6 +106,9 @@ public:
 	~Parareal_GenericData()
 	{
 	}
+
+
+	virtual void set_time(double i_time)=0;
 
 	virtual void allocate_data()=0;
 	
