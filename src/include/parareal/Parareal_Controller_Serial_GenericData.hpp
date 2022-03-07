@@ -45,22 +45,13 @@ class Parareal_Controller_Serial_GenericData
 	 * Pointers to interfaces of simulationInstances
 	 * This helps to clearly separate between the allocation of the simulation classes and the parareal interfaces.
 	 */
-	Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N> **parareal_simulationInstances = nullptr;
+	///Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N> **parareal_simulationInstances = nullptr;
+	std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>*> parareal_simulationInstances = {};
 
-	SimulationVariables *simVars = nullptr;
-	t_tsmType* timeSteppersFine = nullptr;
-	t_tsmType* timeSteppersCoarse = nullptr;
+	SimulationVariables* simVars;
 
-	/**
-	 * Pointer to parareal simulation variables.
-	 * These variables are used as a singleton
-	 */
-	Parareal_SimulationVariables *pVars;
-
-	/**
-	 * Class which helps prefixing console output
-	 */
-	Parareal_ConsolePrefix CONSOLEPREFIX;
+	PlaneDataConfig* planeDataConfig = nullptr;
+	SphereData_Config* sphereDataConfig = nullptr;
 
 	// Operators
 	PlaneOperators op_plane;
@@ -73,27 +64,44 @@ class Parareal_Controller_Serial_GenericData
 	// Model (ODE, Burgers, SWE)
 	std::string model = "";
 
+	t_tsmType* timeSteppersFine = nullptr;
+	t_tsmType* timeSteppersCoarse = nullptr;
+
+
+	/**
+	 * Pointer to parareal simulation variables.
+	 * These variables are used as a singleton
+	 */
+	Parareal_SimulationVariables *pVars;
+
+	/**
+	 * Class which helps prefixing console output
+	 */
+	Parareal_ConsolePrefix CONSOLEPREFIX;
+
+
+
 
 public:
 
 	// Scalar
-	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars, std::string i_geometry, std::string i_model,
+	Parareal_Controller_Serial_GenericData(SimulationVariables i_simVars, std::string i_geometry, std::string i_model,
 						t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse):
-		simVars(i_simVars), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
+		simVars(&i_simVars), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
 	{
 	};
 
 	// Plane
-	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars, PlaneOperators &i_op_plane, std::string i_geometry, std::string i_model,
+	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars, PlaneDataConfig* i_planeDataConfig, PlaneOperators &i_op_plane, std::string i_geometry, std::string i_model,
 						t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse):
-		simVars(i_simVars), op_plane(i_op_plane), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
+		simVars(&i_simVars), planeDataConfig(i_planeDataConfig), op_plane(i_op_plane), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
 	{
 	};
 
 	// Sphere
-	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars, SphereOperators_SphereData &i_op_sphere, SphereOperators_SphereData &i_op_sphere_nodealiasing, std::string i_geometry, std::string i_model,
+	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars, SphereData_Config* i_sphereDataConfig, SphereOperators_SphereData &i_op_sphere, SphereOperators_SphereData &i_op_sphere_nodealiasing, std::string i_geometry, std::string i_model,
 						t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse):
-		simVars(i_simVars), op_sphere(i_op_sphere), op_sphere_nodealiasing(i_op_sphere_nodealiasing), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
+		simVars(&i_simVars), sphereDataConfig(i_sphereDataConfig), op_sphere(i_op_sphere), op_sphere_nodealiasing(i_op_sphere_nodealiasing), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
 	{
 	};
 
@@ -136,16 +144,11 @@ public:
 
 	void cleanup()
 	{
-		////////if (simulationInstances != nullptr)
-		////////{
-		////////	delete [] simulationInstances;
-		////////	delete [] parareal_simulationInstances;
-		////////}
-		if (parareal_simulationInstances != nullptr)
-		{
-			delete [] parareal_simulationInstances;
-		}
-
+		for (typename std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>*>::iterator it = this->parareal_simulationInstances.begin();
+															it != this->parareal_simulationInstances.end();
+															it++)
+			if (*it)
+				delete *it;
 	}
 
 
@@ -176,9 +179,7 @@ public:
 		// allocate raw simulation instances
 		////simulationInstances = new t_SimulationInstance[pVars->coarse_slices];
 
-
-
-		parareal_simulationInstances = new Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>*[pVars->coarse_slices];
+		//parareal_simulationInstances = new Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>*[pVars->coarse_slices];
 
 		CONSOLEPREFIX.start("[MAIN] ");
 		std::cout << "Resetting simulation instances" << std::endl;
@@ -187,26 +188,30 @@ public:
 		for (int k = 0; k < pVars->coarse_slices; k++)
 		{
 			CONSOLEPREFIX_start(k);
+		
+			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>);
 		///	parareal_simulationInstances[k] = &(Parareal_SimulationInstance&)(simulationInstances[k]);
 			if ( ! this->geometry.compare("scalar") )
-				parareal_simulationInstances[k]->setup(*(this->simVars),
+				parareal_simulationInstances[k]->setup(this->simVars,
 								       this->geometry,
 								       this->model,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
 			else if ( !this->geometry.compare("plane") )
-				parareal_simulationInstances[k]->setup(*(this->simVars),
+				parareal_simulationInstances[k]->setup(this->simVars,
+								       this->planeDataConfig,
 								       this->geometry,
 								       this->model,
-								       this->op_plane,
+								       &this->op_plane,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
 			else if ( !this->geometry.compare("sphere") )
-				parareal_simulationInstances[k]->setup(*(this->simVars),
+				parareal_simulationInstances[k]->setup(this->simVars,
+								       this->sphereDataConfig,
 								       this->geometry,
 								       this->model,
-								       this->op_sphere,
-								       this->op_sphere_nodealiasing,
+								       &this->op_sphere,
+								       &this->op_sphere_nodealiasing,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
 			else

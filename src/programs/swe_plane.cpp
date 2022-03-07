@@ -1828,12 +1828,12 @@ int main(int i_argc, char *i_argv[])
 					simVars
 				);
 
-
 			/*
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller_Serial_GenericData<SWE_Plane_TimeSteppers, Parareal_GenericData_PlaneData_Spectral, 3> parareal_Controller_Serial(&simVars, op, std::string("plane"), std::string("swe"),
+			Parareal_Controller_Serial_GenericData<SWE_Plane_TimeSteppers, Parareal_GenericData_PlaneData_Spectral, 3> parareal_Controller_Serial(simVars, planeDataConfig,
+																					op, std::string("plane"), std::string("swe"),
 																					timeSteppersFine,
 																					timeSteppersCoarse);
 			//Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;

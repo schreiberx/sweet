@@ -68,18 +68,35 @@ class Parareal_GenericData
 
 public:
 	// different interface functions to avoid template in Parareal_GenericData
+	// these interfaces are overridden in the respective child classes
 	virtual DataContainer<double>* get_pointer_to_data_Scalar() const
 	{
+		SWEETError("This interface function should not be called");
+		DataContainer<double>* dummy = nullptr;
+		return dummy;
 	};
 
 	virtual DataContainer<PlaneData*>* get_pointer_to_data_PlaneData_Spectral() const
 	{
+		SWEETError("This interface function should not be called");
+		DataContainer<PlaneData*>* dummy = nullptr;
+		return dummy;
 	};
 
 	virtual DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const
 	{
+		SWEETError("This interface function should not be called");
+		DataContainer<SphereData_Spectral*>* dummy = nullptr;
+		return dummy;
 	};
 
+	virtual void setup(PlaneDataConfig* i_planeDataConfig)
+	{
+	};
+
+	virtual void setup(SphereData_Config* i_sphereDataConfig)
+	{
+	};
 
 public:
 
@@ -103,7 +120,7 @@ public:
 	//Parareal_GenericData(Parareal_GenericData &&i_data){
 	//};
 
-	~Parareal_GenericData()
+	virtual ~Parareal_GenericData()
 	{
 	}
 
@@ -122,12 +139,13 @@ public:
 
 	virtual double reduce_maxAbs()=0;
 
+	virtual bool check_for_nan()=0;
 
-	virtual Parareal_GenericData& operator+(const Parareal_GenericData &i_data) = 0;
-	virtual void operator+=(const Parareal_GenericData &i_data) = 0;
+////	virtual Parareal_GenericData operator+(const Parareal_GenericData &i_data) = 0;  // --> not possible because it is an abstract class
+	virtual Parareal_GenericData& operator+=(const Parareal_GenericData &i_data) = 0;
 
-	virtual Parareal_GenericData& operator-(const Parareal_GenericData &i_data) = 0;
-	virtual void operator-=(const Parareal_GenericData &i_data) = 0;
+////	virtual Parareal_GenericData operator-(const Parareal_GenericData &i_data) = 0;
+	virtual Parareal_GenericData& operator-=(const Parareal_GenericData &i_data) = 0;
 
 ///	virtual Parareal_GenericData& operator*(const Parareal_GenericData &i_data) = 0;
 ///	virtual void operator*=(const Parareal_GenericData &i_data) = 0;

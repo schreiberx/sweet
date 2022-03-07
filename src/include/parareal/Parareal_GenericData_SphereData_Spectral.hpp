@@ -24,9 +24,12 @@ class Parareal_GenericData_SphereData_Spectral :
 
 	public:
 
-		DataContainer_SphereData_Spectral()
+		DataContainer_SphereData_Spectral(SphereData_Config i_sphereDataConfig)
 		{
 			this->simfields = new SphereData_Spectral*[N];
+			for (int i = 0; i < N; i++)
+				this->simfields[i] = new SphereData_Spectral(i_sphereDataConfig);
+
 		};
 
 		DataContainer_SphereData_Spectral(
@@ -63,23 +66,9 @@ public:
 	Parareal_GenericData_SphereData_Spectral():
 		Parareal_GenericData()
 	{
+		this->allocate_data();
 	}
 
-//////	Parareal_GenericData_SphereData_Spectral(double i_time, int i_level = 0)	:
-//////		Parareal_GenericData(i_time, i_level),
-//////		data(0)
-//////	{
-//////	}
-//////
-//////	Parareal_GenericData_SphereData_Spectral(
-//////			double i_time,
-//////			double i_level,
-//////			double i_data
-//////	)	:
-//////		Parareal_GenericData(i_time, i_level),
-//////		data(i_data)
-//////	{
-//////	}
 
 	Parareal_GenericData_SphereData_Spectral(Parareal_GenericData_SphereData_Spectral &i_data)
 	{
@@ -100,7 +89,7 @@ public:
 
 	void allocate_data()
 	{
-		this->data = new DataContainer_SphereData_Spectral();
+		this->data = new DataContainer_SphereData_Spectral(this->sphereDataConfig);
 	}
 
 	void free_data()
@@ -155,44 +144,75 @@ public:
 		return e;
 	}
 
-
-
-	Parareal_GenericData& operator+(const Parareal_GenericData &i_data)
+	bool check_for_nan()
 	{
-		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
-		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
+		bool found_nan = false;
 
-		Parareal_GenericData_SphereData_Spectral<N> o_data = *this;
-		o_data += i_data;
+		int size_n = this->data->simfields[0]->sphereDataConfig->spectral_modes_n_max;
+		int size_m = this->data->simfields[0]->sphereDataConfig->spectral_modes_m_max;
 
-		return o_data;
+		for (int i = 0; i < N; i++)
+			if (!found_nan)
+			{
+				for (int m = 0; m < size_m; ++m)
+				{
+					if (!found_nan)
+					{
+						for (int n = m; n < size_n; ++n)
+							if ( std::isnan(this->data->simfields[i]->spectral_get_(n, m).real()) || 
+								std::isnan(this->data->simfields[i]->spectral_get_(n, m).imag()) )
+							{
+								found_nan = true;
+								break;
+							}
+					}
+				}
+			}
+
+		return found_nan;
 	}
 
-	void operator+=(const Parareal_GenericData &i_data)
+
+////	Parareal_GenericData operator+(const Parareal_GenericData &i_data)
+////	{
+////		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
+////		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
+////
+////		Parareal_GenericData_SphereData_Spectral<N> o_data = *this;
+////		o_data += i_data;
+////
+////		return o_data;
+////	}
+
+	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
 		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) += *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]);
+
+		return *this;
 	}
 
-	Parareal_GenericData& operator-(const Parareal_GenericData &i_data)
-	{
-		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
-		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
+////	Parareal_GenericData& operator-(const Parareal_GenericData &i_data)
+////	{
+////		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
+////		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
+////
+////		Parareal_GenericData_SphereData_Spectral<N> o_data = *this;
+////		o_data -= i_data;
+////
+////		return o_data;
+////	}
 
-		Parareal_GenericData_SphereData_Spectral<N> o_data = *this;
-		o_data -= i_data;
-
-		return o_data;
-	}
-
-	void operator-=(const Parareal_GenericData &i_data)
+	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
 		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) -= *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]);
+
+		return *this;
 	}
 
 /////////	Parareal_GenericData<SphereData_Spectral*, N>& operator*(const Parareal_GenericData<SphereData_Spectral*, N> &i_data)
