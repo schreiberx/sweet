@@ -24,7 +24,7 @@ class Parareal_GenericData_SphereData_Spectral :
 
 	public:
 
-		DataContainer_SphereData_Spectral(SphereData_Config i_sphereDataConfig)
+		DataContainer_SphereData_Spectral(SphereData_Config* i_sphereDataConfig)
 		{
 			this->simfields = new SphereData_Spectral*[N];
 			for (int i = 0; i < N; i++)
@@ -53,6 +53,7 @@ class Parareal_GenericData_SphereData_Spectral :
 public:
 
 	DataContainer<SphereData_Spectral*>* data;
+	SphereData_Config* sphereDataConfig;
 
 public:
 	DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const override
@@ -66,7 +67,7 @@ public:
 	Parareal_GenericData_SphereData_Spectral():
 		Parareal_GenericData()
 	{
-		this->allocate_data();
+//		this->allocate_data();
 	}
 
 

@@ -65,6 +65,10 @@ class Parareal_GenericData
 
 	};
 
+public:
+
+	PlaneDataConfig* planeDataConfig = nullptr;
+	SphereData_Config* sphereDataConfig = nullptr;
 
 public:
 	// different interface functions to avoid template in Parareal_GenericData
@@ -90,12 +94,14 @@ public:
 		return dummy;
 	};
 
-	virtual void setup(PlaneDataConfig* i_planeDataConfig)
+	void setup_data_config(PlaneDataConfig* i_planeDataConfig)
 	{
+		this->planeDataConfig = i_planeDataConfig;
 	};
 
-	virtual void setup(SphereData_Config* i_sphereDataConfig)
+	void setup_data_config(SphereData_Config* i_sphereDataConfig)
 	{
+		this->sphereDataConfig = i_sphereDataConfig;
 	};
 
 public:

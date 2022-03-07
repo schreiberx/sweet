@@ -80,6 +80,9 @@ public:
 	Parareal_GenericData* parareal_data_fine_exact = nullptr;
 #endif
 
+	// list of data containers
+	std::vector<Parareal_GenericData*> list_data_containers;
+
 	// Fine and coarse timesteppers
 	t_tsmType* timeSteppersFine = nullptr;
 	t_tsmType* timeSteppersCoarse = nullptr;
@@ -87,7 +90,8 @@ public:
 	// list of SL schemes
 	std::vector<std::string> SL_tsm = {};
 
-	
+
+
 public:
 
 	Parareal_SimulationInstance_GenericData()
@@ -132,26 +136,74 @@ public:
 		this->timeSteppersFine = i_timeSteppersFine;
 		this->timeSteppersCoarse = i_timeSteppersCoarse;
 
-		std::cout << "data_start" << std::endl;
-		this->parareal_data_start = new t_dataType2<N>;
-		std::cout << "data_fine" << std::endl;
-		this->parareal_data_fine = new t_dataType2<N>;
-		this->parareal_data_coarse = new t_dataType2<N>;
-		this->parareal_data_output = new t_dataType2<N>;
-		this->parareal_data_error = new t_dataType2<N>;
-		this->parareal_data_coarse_previous_timestep = new t_dataType2<N>;
-		this->parareal_data_coarse_previous_time_slice = new t_dataType2<N>;
-		this->parareal_data_fine_previous_timestep = new t_dataType2<N>;
-		this->parareal_data_fine_previous_time_slice = new t_dataType2<N>;
+		this->list_data_containers = {  parareal_data_start,
+						parareal_data_fine,
+						parareal_data_coarse,
+						parareal_data_output,
+						parareal_data_error,
+						parareal_data_coarse_previous_timestep,
+						parareal_data_coarse_previous_time_slice,
+						parareal_data_fine_previous_timestep,
+						parareal_data_fine_previous_time_slice
 #if SWEET_DEBUG
-		this->parareal_data_fine_exact = new t_dataType2<N>;
+						,
+						parareal_data_fine_exact
 #endif
+						};
+
+
+		for (std::vector<Parareal_GenericData*>::iterator it = this->list_data_containers.begin();
+								  it != this->list_data_containers.end();
+								  it++
+			)
+			*it = this->create_new_data_container();
+
+////		this->parareal_data_start = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_fine = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_coarse = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_output = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_error = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_coarse_previous_timestep = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_coarse_previous_time_slice = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_fine_previous_timestep = new t_dataType2<N>(this->pararealDataConfig);
+////		this->parareal_data_fine_previous_time_slice = new t_dataType2<N>(this->pararealDataConfig);
+////#if SWEET_DEBUG
+////		this->parareal_data_fine_exact = new t_dataType2<N>(this->pararealDataConfig);
+////#endif
 
 	};
 
+
 public:
 
-	// Functions to exchange data between Parareal_GenericDAta instances and individual data arrays
+	Parareal_GenericData* create_new_data_container()
+	{
+		if (this->geometry == "scalar") 
+		{
+			t_dataType2<N>* out = new t_dataType2<N>;
+			out->allocate_data();
+			return out;
+		}
+		else if (this->geometry == "plane") {
+			t_dataType2<N>* out = new t_dataType2<N>;
+			out->setup_data_config(this->planeDataConfig);
+			out->allocate_data();
+			return out;
+		}
+		else
+		{
+			t_dataType2<N>* out = new t_dataType2<N>;
+			out->setup_data_config(this->sphereDataConfig);
+			out->allocate_data();
+			return out;
+		}
+	}
+
+
+
+public:
+
+	// Functions to exchange data between Parareal_GenericData instances and individual data arrays
 
 	void dataArrays_to_GenericData_Scalar(Parareal_GenericData* i_data,
 						double &u)
@@ -688,13 +740,15 @@ public:
 		}
 
 		// compute output data
-		Parareal_GenericData* tmp = new t_dataType2<N>;
+		//Parareal_GenericData* tmp = new t_dataType2<N>;
+		Parareal_GenericData* tmp = this->create_new_data_container();
 		*tmp = *(this->parareal_data_coarse);
                 *tmp += *(this->parareal_data_error);
 		//PlaneData tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
 		// compute difference w.r.t. previous output data
-		Parareal_GenericData* tmp2 = new t_dataType2<N>;
+		//Parareal_GenericData* tmp2 = new t_dataType2<N>;
+		Parareal_GenericData* tmp2 = this->create_new_data_container();
 		*tmp2 = *(this->parareal_data_output);
 		*tmp2 -= *tmp;
 		convergence = tmp2->reduce_maxAbs();

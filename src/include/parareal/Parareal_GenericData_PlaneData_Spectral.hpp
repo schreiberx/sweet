@@ -25,7 +25,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 	public:
 
-		DataContainer_PlaneData_Spectral(PlaneDataConfig i_planeDataConfig)
+		DataContainer_PlaneData_Spectral(PlaneDataConfig* i_planeDataConfig)
 		{
 			this->simfields = new PlaneData*[N];
 			for (int i = 0; i < N; i++)
@@ -65,6 +65,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 public:
 
 	DataContainer<PlaneData*>* data;
+	PlaneDataConfig* planeDataConfig;
 
 public:
 	DataContainer<PlaneData*>* get_pointer_to_data_PlaneData_Spectral() const override
@@ -74,15 +75,18 @@ public:
 
 public:
 
+///	Parareal_GenericData_PlaneData_Spectral(PlaneDataConfig* i_planeDataConfig):
+///		Parareal_GenericData(),
+///		planeDataConfig(i_planeDataConfig)
+///	{
+///		this->allocate_data();
+///	}
 	Parareal_GenericData_PlaneData_Spectral():
-#if SPLITTED_PLANE_DATA
 		Parareal_GenericData()
-#else
-		Parareal_GenericData()
-#endif
 	{
-		this->allocate_data();
+//		this->allocate_data();
 	}
+
 
 
 	Parareal_GenericData_PlaneData_Spectral(Parareal_GenericData_PlaneData_Spectral &i_data)
@@ -102,11 +106,6 @@ public:
 		free_data();
 	};
 
-
-	virtual void setup(PlaneDataConfig* i_planeDataConfig)
-	{
-		this->planeDataConfig = i_planeDataConfig;
-	};
 
 	void set_time(double i_time)
 	{
