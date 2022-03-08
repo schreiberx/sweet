@@ -79,38 +79,6 @@ public:
 		this->allocate_data();
 	}
 
-
-
-//////////	Parareal_GenericData_Scalar(double i_time, int i_level = 0):
-//////////		Parareal_GenericData(N, i_time, i_level)
-//////////		//data(0)
-//////////	{
-//////////		this->allocate_data(N, i_time, i_level);
-////template <class t_dataType, int N>
-//////////	}
-//////////
-//////////	Parareal_GenericData_Scalar(
-//////////			double i_time,
-//////////			double i_level,
-//////////			double i_data
-//////////	)	:
-//////////		Parareal_GenericData(i_time, i_level)
-//////////		///data(i_data)
-//////////	{
-//////////		this->allocate_data(N, i_time, i_level);
-//////////	}
-//////////
-//////////	Parareal_GenericData_Scalar(
-//////////			double i_time,
-//////////			double* i_data,
-//////////			double i_level = 0
-//////////	)	:
-//////////		Parareal_GenericData(i_time, i_level)
-//////////	{
-//////////		this->allocate_data(N, i_time, i_level);
-//////////		///this->data = i_data;
-//////////	}
-
 	Parareal_GenericData_Scalar(Parareal_GenericData_Scalar &i_data)
 	{
 		*(this->data) = *(i_data.get_pointer_to_data_Scalar());
@@ -198,17 +166,6 @@ public:
 		return found_nan;
 	}
 
-////	Parareal_GenericData operator+(const Parareal_GenericData &i_data)
-////	{
-////		assert(this->data->time == i_data.get_pointer_to_data_Scalar()->time);
-////		assert(this->data->nb_fields == i_data.get_pointer_to_data_Scalar()->nb_fields);
-////
-////		Parareal_GenericData_Scalar o_data = *this;
-////		o_data += i_data;
-////
-////		return o_data;
-////	}
-
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
 		assert(this->data->time == i_data.get_pointer_to_data_Scalar()->time);
@@ -220,16 +177,6 @@ public:
 		return *this;
 	}
 
-////	Parareal_GenericData operator-(const Parareal_GenericData &i_data)
-////	{
-////		assert(this->data->time == i_data.get_pointer_to_data_Scalar()->time);
-////		assert(this->data->nb_fields == i_data.get_pointer_to_data_Scalar()->nb_fields);
-////
-////		Parareal_GenericData_Scalar o_data = *this;
-////		o_data -= i_data;
-////
-////		return o_data;
-////	}
 
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
@@ -241,44 +188,6 @@ public:
 
 		return *this;
 	}
-
-/////	Parareal_GenericData<double>& operator*(const Parareal_GenericData<double> &i_data)
-/////	{
-/////		assert(this->data->time == i_data.data->time);
-/////
-/////		Parareal_GenericData_Scalar o_data = *this;
-/////		o_data *= i_data;
-/////
-/////		return o_data;
-/////	}
-/////
-/////	void operator*=(const Parareal_GenericData<double> &i_data)
-/////	{
-/////		assert(this->data->time == i_data.data->time);
-/////		assert(this->data->nb_fields = i_data.data->nb_fields);
-/////
-/////		for (int i = 0; i < N; i++)
-/////			this->data->simfields[i] *= i_data.data->simfields[i];
-/////	}
-/////
-/////	Parareal_GenericData<double>& operator/(const Parareal_GenericData<double> &i_data)
-/////	{
-/////		assert(this->data->time == i_data.data->time);
-/////
-/////		Parareal_GenericData_Scalar o_data = *this;
-/////		o_data /= i_data;
-/////
-/////		return o_data;
-/////	}
-/////
-/////	void operator/=(const Parareal_GenericData<double> &i_data)
-/////	{
-/////		assert(this->data->time == i_data.data->time);
-/////		assert(this->data->nb_fields = i_data.data->nb_fields);
-/////
-/////		for (int i = 0; i < N; i++)
-/////			this->data->simfields[i] /= i_data.data->simfields[i];
-/////	}
 
 
 };

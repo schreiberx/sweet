@@ -52,6 +52,15 @@ class Parareal_GenericData_PlaneData_Spectral :
 				this->simfields[i] = i_data.simfields[i];
 		};
 
+		DataContainer_PlaneData_Spectral& operator=(const DataContainer_PlaneData_Spectral &i_data)
+		{
+			std::cout << "GG" << std::endl;
+			for (int i = 0; i < N; i++)
+				this->simfields[i] = i_data.simfields[i];
+			return *this;
+		};
+
+
 		~DataContainer_PlaneData_Spectral()
 		{
 			for (int i = 0; i < N; ++i)
@@ -65,7 +74,6 @@ class Parareal_GenericData_PlaneData_Spectral :
 public:
 
 	DataContainer<PlaneData*>* data;
-	PlaneDataConfig* planeDataConfig;
 
 public:
 	DataContainer<PlaneData*>* get_pointer_to_data_PlaneData_Spectral() const override
@@ -196,17 +204,6 @@ public:
 		return found_nan;
 	}
 
-////	Parareal_GenericData operator+(const Parareal_GenericData &i_data)
-////	{
-////
-////		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
-////		assert(this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
-////
-////		Parareal_GenericData_PlaneData_Spectral<N> o_data = *this;
-////		o_data += i_data;
-////
-////		return o_data;
-////	}
 
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
@@ -219,17 +216,6 @@ public:
 		return *this;
 	}
 
-////	Parareal_GenericData operator-(const Parareal_GenericData &i_data)
-////	{
-////		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
-////		assert(this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
-////
-////		Parareal_GenericData_PlaneData_Spectral<N> o_data = *this;
-////		o_data -= i_data;
-////
-////		return o_data;
-////	}
-
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
@@ -240,47 +226,6 @@ public:
 
 		return *this;
 	}
-
-//////	Parareal_GenericData<PlaneData*>& operator*(const Parareal_GenericData<PlaneData*> &i_data)
-//////	{
-//////		assert(this->data->time == i_data.data->time);
-//////		assert(this->data->nb_fields = i_data.data->nb_fields);
-//////
-//////		Parareal_GenericData_PlaneData_Spectral o_data = *this;
-//////		o_data *= i_data;
-//////
-//////		return o_data;
-//////	}
-//////
-//////	void operator*=(const Parareal_GenericData<PlaneData*> &i_data)
-//////	{
-//////		assert(this->data->time == i_data.data->time);
-//////		assert(this->data->nb_fields = i_data.data->nb_fields);
-//////
-//////		for (int i = 0; i < N; i++)
-//////			*(this->data->simfields[i]) *= *(i_data.data->simfields[i]);
-//////	}
-//////
-//////	Parareal_GenericData<PlaneData*>& operator/(const Parareal_GenericData<PlaneData*> &i_data)
-//////	{
-//////		assert(this->data->time == i_data.data->time);
-//////		assert(this->data->nb_fields = i_data.data->nb_fields);
-//////
-//////		Parareal_GenericData_PlaneData_Spectral o_data = *this;
-//////		o_data /= i_data;
-//////
-//////		return o_data;
-//////	}
-//////
-//////	void operator/=(const Parareal_GenericData<PlaneData*> &i_data)
-//////	{
-//////		assert(this->data->time == i_data.data->time);
-//////		assert(this->data->nb_fields = i_data.data->nb_fields);
-//////
-//////		for (int i = 0; i < N; i++)
-//////			*(this->data->simfields[i]) /= *(i_data.data->simfields[i]);
-//////	}
-
 
 };
 

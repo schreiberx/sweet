@@ -17,8 +17,6 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 
-////template <class t_dataType, int N>
-//template <class t_dataType>
 class Parareal_GenericData
 {
 
@@ -29,7 +27,6 @@ class Parareal_GenericData
 		int level;
 		double time;
 		int nb_fields;
-///		t_dataType* simfields;
 
 	public:
 		t_dataType* simfields;
@@ -112,15 +109,13 @@ public:
 
 	Parareal_GenericData(double i_time, int i_level = 0)
 	{
-		//this->data->nb_fields = i_nb_fields;
-		//this->data->time = i_time;
-		//this->data->level = i_level;
 	};
 
 	Parareal_GenericData(Parareal_GenericData &i_data)
 	{
 	};
 
+	virtual Parareal_GenericData& operator=(const Parareal_GenericData &i_data) = 0;
 
 
 	//Parareal_GenericData(Parareal_GenericData &&i_data){
@@ -153,11 +148,6 @@ public:
 ////	virtual Parareal_GenericData operator-(const Parareal_GenericData &i_data) = 0;
 	virtual Parareal_GenericData& operator-=(const Parareal_GenericData &i_data) = 0;
 
-///	virtual Parareal_GenericData& operator*(const Parareal_GenericData &i_data) = 0;
-///	virtual void operator*=(const Parareal_GenericData &i_data) = 0;
-///
-///	virtual Parareal_GenericData& operator/(const Parareal_GenericData &i_data) = 0;
-///	virtual void operator/=(const Parareal_GenericData &i_data) = 0;
 };
 
 

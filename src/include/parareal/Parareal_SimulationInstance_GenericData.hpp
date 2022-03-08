@@ -39,7 +39,7 @@
  *
  * These interfaces were ported from the Python implementation.
  */
-template <class t_tsmType, template <int N> class t_dataType2, int N>
+template <class t_tsmType, int N>
 class Parareal_SimulationInstance_GenericData
 {
 public:
@@ -80,8 +80,6 @@ public:
 	Parareal_GenericData* parareal_data_fine_exact = nullptr;
 #endif
 
-	// list of data containers
-	std::vector<Parareal_GenericData*> list_data_containers;
 
 	// Fine and coarse timesteppers
 	t_tsmType* timeSteppersFine = nullptr;
@@ -104,10 +102,15 @@ public:
 		   PlaneOperators* i_op_plane,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
-		// call default setup
-		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
 		this->planeDataConfig = i_planeDataConfig;
 		this->op_plane = i_op_plane;
+		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
+
+		this->SL_tsm = { "l_cn_na_sl_nd_settls",
+				 "l_rexi_na_sl_nd_etdrk",
+				 "l_rexi_na_sl_nd_settls"
+				};
+
 	}
 
 	// Sphere
@@ -116,11 +119,19 @@ public:
 		   SphereOperators_SphereData* i_op_sphere, SphereOperators_SphereData* i_op_sphere_nodealiasing,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
-		// call default setup
-		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
 		this->sphereDataConfig = i_sphereDataConfig;
 		this->op_sphere = i_op_sphere;
 		this->op_sphere_nodealiasing = i_op_sphere_nodealiasing;
+		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
+
+		this->SL_tsm = { "lg_exp_na_sl_lc_nr_etd_uv",
+				 "l_irk_na_sl_nr_settls_uv_only",
+				 "l_irk_na_sl_nr_settls_vd_only",
+				 "l_irk_na_sl_settls_uv_only",
+				 "l_irk_na_sl_settls_vd_only",
+				 "ln_sl_exp_settls_uv",
+				 "ln_sl_exp_settls_vd"
+				};
 	}
 
 
@@ -136,41 +147,18 @@ public:
 		this->timeSteppersFine = i_timeSteppersFine;
 		this->timeSteppersCoarse = i_timeSteppersCoarse;
 
-		this->list_data_containers = {  parareal_data_start,
-						parareal_data_fine,
-						parareal_data_coarse,
-						parareal_data_output,
-						parareal_data_error,
-						parareal_data_coarse_previous_timestep,
-						parareal_data_coarse_previous_time_slice,
-						parareal_data_fine_previous_timestep,
-						parareal_data_fine_previous_time_slice
+		this->parareal_data_start                      = this->create_new_data_container();
+		this->parareal_data_fine                       = this->create_new_data_container();
+		this->parareal_data_coarse                     = this->create_new_data_container();
+		this->parareal_data_output                     = this->create_new_data_container();
+		this->parareal_data_error                      = this->create_new_data_container();
+		this->parareal_data_coarse_previous_timestep   = this->create_new_data_container();
+		this->parareal_data_coarse_previous_time_slice = this->create_new_data_container();
+		this->parareal_data_fine_previous_timestep     = this->create_new_data_container();
+		this->parareal_data_fine_previous_time_slice   = this->create_new_data_container();
 #if SWEET_DEBUG
-						,
-						parareal_data_fine_exact
+		this->parareal_data_fine_exact                 = this->create_new_data_container();
 #endif
-						};
-
-
-		for (std::vector<Parareal_GenericData*>::iterator it = this->list_data_containers.begin();
-								  it != this->list_data_containers.end();
-								  it++
-			)
-			*it = this->create_new_data_container();
-
-////		this->parareal_data_start = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_fine = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_coarse = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_output = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_error = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_coarse_previous_timestep = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_coarse_previous_time_slice = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_fine_previous_timestep = new t_dataType2<N>(this->pararealDataConfig);
-////		this->parareal_data_fine_previous_time_slice = new t_dataType2<N>(this->pararealDataConfig);
-////#if SWEET_DEBUG
-////		this->parareal_data_fine_exact = new t_dataType2<N>(this->pararealDataConfig);
-////#endif
-
 	};
 
 
@@ -180,19 +168,19 @@ public:
 	{
 		if (this->geometry == "scalar") 
 		{
-			t_dataType2<N>* out = new t_dataType2<N>;
+			Parareal_GenericData_Scalar<N>* out = new Parareal_GenericData_Scalar<N>;
 			out->allocate_data();
 			return out;
 		}
 		else if (this->geometry == "plane") {
-			t_dataType2<N>* out = new t_dataType2<N>;
+			Parareal_GenericData_PlaneData_Spectral<N>* out = new Parareal_GenericData_PlaneData_Spectral<N>;
 			out->setup_data_config(this->planeDataConfig);
 			out->allocate_data();
 			return out;
 		}
 		else
 		{
-			t_dataType2<N>* out = new t_dataType2<N>;
+			Parareal_GenericData_SphereData_Spectral<N>* out = new Parareal_GenericData_SphereData_Spectral<N>;
 			out->setup_data_config(this->sphereDataConfig);
 			out->allocate_data();
 			return out;
@@ -232,10 +220,6 @@ public:
 	{
 		if (this->model == "swe")
 		{
-			std::cout << "AAAAAA" << std::endl;
-			std::cout << i_data << std::endl;
-			std::cout << i_data->get_pointer_to_data_PlaneData_Spectral() << std::endl;
-			std::cout << i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0] << std::endl;
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = h;
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = u;
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = v;
@@ -326,7 +310,7 @@ public:
 		this->timeframe_end = i_timeframe_end;
 
 		// set time to parareal_genericdata instances
-		this->parareal_data_start->set_time(i_timeframe_start);
+		this->parareal_data_start->set_time(i_timeframe_end);
 		this->parareal_data_fine->set_time(i_timeframe_end);
 		this->parareal_data_coarse->set_time(i_timeframe_end);
 		this->parareal_data_output->set_time(i_timeframe_end);
@@ -415,7 +399,6 @@ public:
 			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start, t0_prog_h_pert, t0_prog_u, t0_prog_v);
 			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v);
 			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v);
-
 		}
 		else if (this->geometry == "sphere")
 		{
@@ -518,18 +501,22 @@ public:
 			{
 				if (tsm_level == "fine")
 				{
-					PlaneData h_prev = *(this->parareal_data_fine_previous_time_slice->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
-					PlaneData u_prev = *(this->parareal_data_fine_previous_time_slice->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
-					PlaneData v_prev = *(this->parareal_data_fine_previous_time_slice->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
+					PlaneData h_prev(this->planeDataConfig);
+					PlaneData u_prev(this->planeDataConfig);
+					PlaneData v_prev(this->planeDataConfig);
+					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_fine_previous_time_slice, h_prev, u_prev, v_prev);
 					timeSteppersFine->master->set_previous_solution(h_prev, u_prev, v_prev);
 				}
-				else if (tsm_level == "coarse"){
-					PlaneData h_prev = *(this->parareal_data_coarse_previous_time_slice->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
-					PlaneData u_prev = *(this->parareal_data_coarse_previous_time_slice->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
-					PlaneData v_prev = *(this->parareal_data_coarse_previous_time_slice->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
+				else if (tsm_level == "coarse")
+				{
+					PlaneData h_prev(this->planeDataConfig);
+					PlaneData u_prev(this->planeDataConfig);
+					PlaneData v_prev(this->planeDataConfig);
+					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_coarse_previous_time_slice, h_prev, u_prev, v_prev);
 					timeSteppersCoarse->master->set_previous_solution(h_prev, u_prev, v_prev);
 				}
-				SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
+				else
+					SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
 
 			}
 		}
@@ -551,7 +538,7 @@ public:
 
 
 	void run_timestep(
-			Parareal_GenericData &i_data,
+			Parareal_GenericData* i_data,
 			std::string tsm_level
 	)
 	{
@@ -570,9 +557,10 @@ public:
 			else if (this->model == "swe")
 			{
 
-				PlaneData prog_h_pert = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
-				PlaneData prog_u = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
-				PlaneData prog_v = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
+				PlaneData prog_h_pert(this->planeDataConfig);
+				PlaneData prog_u(this->planeDataConfig);
+				PlaneData prog_v(this->planeDataConfig);
+				this->GenericData_PlaneData_Spectral_to_dataArrays(i_data, prog_h_pert, prog_u, prog_v);
 
 				if (tsm_level == "fine")
 					timeSteppersFine->master->run_timestep(
@@ -588,9 +576,7 @@ public:
 							);
 
 				// copy to buffers
-				*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = prog_h_pert;
-				*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = prog_u;
-				*(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = prog_v;
+				this->dataArrays_to_GenericData_PlaneData_Spectral(i_data, prog_h_pert, prog_u, prog_v);
 
 			}
 			else
@@ -633,7 +619,12 @@ public:
 
 		while (simVars->timecontrol.current_simulation_time != timeframe_end)
 		{
-			this->run_timestep(*parareal_data_fine, "fine");
+			// store previous time step
+			// to be used as n-1 in SL in the next time slice
+			*(this->parareal_data_fine_previous_timestep) = *(this->parareal_data_fine);
+
+			this->run_timestep(this->parareal_data_fine, "fine");
+			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestep_size;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
 		}
 	};
@@ -671,7 +662,12 @@ public:
 
 		while (simVars->timecontrol.current_simulation_time != timeframe_end)
 		{
-			this->run_timestep(*parareal_data_coarse, "coarse");
+			// store previous time step
+			// to be used as n-1 in SL in the next time slice
+			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse);
+
+			this->run_timestep(this->parareal_data_coarse, "coarse");
+			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
 		}
 	};
@@ -740,14 +736,12 @@ public:
 		}
 
 		// compute output data
-		//Parareal_GenericData* tmp = new t_dataType2<N>;
 		Parareal_GenericData* tmp = this->create_new_data_container();
 		*tmp = *(this->parareal_data_coarse);
                 *tmp += *(this->parareal_data_error);
 		//PlaneData tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
 		// compute difference w.r.t. previous output data
-		//Parareal_GenericData* tmp2 = new t_dataType2<N>;
 		Parareal_GenericData* tmp2 = this->create_new_data_container();
 		*tmp2 = *(this->parareal_data_output);
 		*tmp2 -= *tmp;

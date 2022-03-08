@@ -33,7 +33,7 @@
  * \param t_SimulationInstance	class which implements the Parareal_SimulationInstance interfaces
  */
 ////template <class t_SimulationInstance>
-template <class t_tsmType, template <int N> class t_dataType2, int N>
+template <class t_tsmType, int N>
 class Parareal_Controller_Serial_GenericData
 {
 	/**
@@ -45,8 +45,7 @@ class Parareal_Controller_Serial_GenericData
 	 * Pointers to interfaces of simulationInstances
 	 * This helps to clearly separate between the allocation of the simulation classes and the parareal interfaces.
 	 */
-	///Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N> **parareal_simulationInstances = nullptr;
-	std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>*> parareal_simulationInstances = {};
+	std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, N>*> parareal_simulationInstances = {};
 
 	SimulationVariables* simVars;
 
@@ -144,7 +143,7 @@ public:
 
 	void cleanup()
 	{
-		for (typename std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>*>::iterator it = this->parareal_simulationInstances.begin();
+		for (typename std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, N>*>::iterator it = this->parareal_simulationInstances.begin();
 															it != this->parareal_simulationInstances.end();
 															it++)
 			if (*it)
@@ -179,8 +178,6 @@ public:
 		// allocate raw simulation instances
 		////simulationInstances = new t_SimulationInstance[pVars->coarse_slices];
 
-		//parareal_simulationInstances = new Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>*[pVars->coarse_slices];
-
 		CONSOLEPREFIX.start("[MAIN] ");
 		std::cout << "Resetting simulation instances" << std::endl;
 
@@ -189,7 +186,7 @@ public:
 		{
 			CONSOLEPREFIX_start(k);
 		
-			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, t_dataType2, N>);
+			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, N>);
 		///	parareal_simulationInstances[k] = &(Parareal_SimulationInstance&)(simulationInstances[k]);
 			if ( ! this->geometry.compare("scalar") )
 				parareal_simulationInstances[k]->setup(this->simVars,

@@ -53,7 +53,6 @@ class Parareal_GenericData_SphereData_Spectral :
 public:
 
 	DataContainer<SphereData_Spectral*>* data;
-	SphereData_Config* sphereDataConfig;
 
 public:
 	DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const override
@@ -174,17 +173,6 @@ public:
 	}
 
 
-////	Parareal_GenericData operator+(const Parareal_GenericData &i_data)
-////	{
-////		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
-////		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
-////
-////		Parareal_GenericData_SphereData_Spectral<N> o_data = *this;
-////		o_data += i_data;
-////
-////		return o_data;
-////	}
-
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
 		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
@@ -195,16 +183,6 @@ public:
 		return *this;
 	}
 
-////	Parareal_GenericData& operator-(const Parareal_GenericData &i_data)
-////	{
-////		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
-////		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
-////
-////		Parareal_GenericData_SphereData_Spectral<N> o_data = *this;
-////		o_data -= i_data;
-////
-////		return o_data;
-////	}
 
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
@@ -215,41 +193,6 @@ public:
 
 		return *this;
 	}
-
-/////////	Parareal_GenericData<SphereData_Spectral*, N>& operator*(const Parareal_GenericData<SphereData_Spectral*, N> &i_data)
-/////////	{
-/////////		assert(this->data.time == i_data->data.time);
-/////////
-/////////		Parareal_GenericData_SphereData_Spectral o_data = *this;
-/////////		o_data *= i_data;
-/////////
-/////////		return o_data;
-/////////	}
-/////////
-/////////	void operator*=(const Parareal_GenericData<SphereData_Spectral*, N> &i_data)
-/////////	{
-/////////		assert(this->data.time == i_data->data.time);
-/////////		for (int i = 0; i < N; i++)
-/////////			this->data.simfield[i] *= i_data.simfield[i];
-/////////	}
-/////////
-/////////	Parareal_GenericData<SphereData_Spectral*, N>& operator/(const Parareal_GenericData<SphereData_Spectral*, N> &i_data)
-/////////	{
-/////////		assert(this->data.time == i_data->data.time);
-/////////
-/////////		Parareal_GenericData_SphereData_Spectral o_data = *this;
-/////////		o_data /= i_data;
-/////////
-/////////		return o_data;
-/////////	}
-/////////
-/////////	void operator/=(const Parareal_GenericData<SphereData_Spectral*, N> &i_data)
-/////////	{
-/////////		assert(this->data.time == i_data->data.time);
-/////////		for (int i = 0; i < N; i++)
-/////////			this->data.simfield[i] /= i_data.simfield[i];
-/////////	}
-
 
 };
 
