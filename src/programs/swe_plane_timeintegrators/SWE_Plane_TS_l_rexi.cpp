@@ -8,7 +8,7 @@
 #include "../swe_plane_timeintegrators/SWE_Plane_TS_l_rexi.hpp"
 
 #include <rexi/REXI.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
@@ -192,13 +192,13 @@ void SWE_Plane_TS_l_rexi::setup(
 
 
 void SWE_Plane_TS_l_rexi::run_timestep(
-		const PlaneData &i_h_pert,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_h_pert,	///< prognostic variables
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_h_pert,	///< prognostic variables
-		PlaneData &o_u,	///< prognostic variables
-		PlaneData &o_v,	///< prognostic variables
+		PlaneData_Spectral &o_h_pert,	///< prognostic variables
+		PlaneData_Spectral &o_u,	///< prognostic variables
+		PlaneData_Spectral &o_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -211,13 +211,13 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 
 
 void SWE_Plane_TS_l_rexi::run_timestep_real(
-		const PlaneData &i_h_pert,	///< prognostic variables
-		const PlaneData &i_u,		///< prognostic variables
-		const PlaneData &i_v,		///< prognostic variables
+		const PlaneData_Spectral &i_h_pert,	///< prognostic variables
+		const PlaneData_Spectral &i_u,		///< prognostic variables
+		const PlaneData_Spectral &i_v,		///< prognostic variables
 
-		PlaneData &o_h_pert,	///< prognostic variables
-		PlaneData &o_u,			///< prognostic variables
-		PlaneData &o_v,			///< prognostic variables
+		PlaneData_Spectral &o_h_pert,	///< prognostic variables
+		PlaneData_Spectral &o_u,			///< prognostic variables
+		PlaneData_Spectral &o_v,			///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -323,15 +323,15 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 		PlaneOperatorsComplex &opc = perThreadVars[i]->op;
 
-		PlaneDataComplex &eta0 = perThreadVars[i]->eta0;
-		PlaneDataComplex &u0 = perThreadVars[i]->u0;
-		PlaneDataComplex &v0 = perThreadVars[i]->v0;
+		PlaneData_SpectralComplex &eta0 = perThreadVars[i]->eta0;
+		PlaneData_SpectralComplex &u0 = perThreadVars[i]->u0;
+		PlaneData_SpectralComplex &v0 = perThreadVars[i]->v0;
 
-		PlaneDataComplex &h_sum = perThreadVars[i]->h_sum;
-		PlaneDataComplex &u_sum = perThreadVars[i]->u_sum;
-		PlaneDataComplex &v_sum = perThreadVars[i]->v_sum;
+		PlaneData_SpectralComplex &h_sum = perThreadVars[i]->h_sum;
+		PlaneData_SpectralComplex &u_sum = perThreadVars[i]->u_sum;
+		PlaneData_SpectralComplex &v_sum = perThreadVars[i]->v_sum;
 
-		PlaneDataComplex &eta = perThreadVars[i]->eta;
+		PlaneData_SpectralComplex &eta = perThreadVars[i]->eta;
 
 
 		h_sum.spectral_set_zero();
@@ -402,10 +402,10 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		//
 		// (kappa + lhs_a)\eta = kappa/alpha*\eta_0 - (i_parameters.sim.f0*eta_bar/alpha) * rhs_b + rhs_a
 		//
-		PlaneDataComplex rhs_a = eta_bar*(opc.diff_c_x(u0) + opc.diff_c_y(v0));
-		PlaneDataComplex rhs_b = (opc.diff_c_x(v0) - opc.diff_c_y(u0));
+		PlaneData_SpectralComplex rhs_a = eta_bar*(opc.diff_c_x(u0) + opc.diff_c_y(v0));
+		PlaneData_SpectralComplex rhs_b = (opc.diff_c_x(v0) - opc.diff_c_y(u0));
 
-		PlaneDataComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
+		PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
 
 #if SWEET_BENCHMARK_TIMINGS
 		if (stopwatch_measure)
@@ -429,18 +429,18 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				 * TODO: we can even get more performance out of this operations
 				 * by partly using the real Fourier transformation
 				 */
-				PlaneDataComplex rhs =
+				PlaneData_SpectralComplex rhs =
 						eta0*alpha
 						+ eta_bar*(opc.diff_c_x(u0) + opc.diff_c_y(v0))
 					;
 
-				PlaneDataComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
-				PlaneDataComplex lhs = lhs_a.spectral_addScalarAll(alpha*alpha);
+				PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
+				PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(alpha*alpha);
 
 				eta = rhs.spectral_div_element_wise(lhs);
 
-				PlaneDataComplex u1 = (u0 + g*opc.diff_c_x(eta))*(1.0/alpha);
-				PlaneDataComplex v1 = (v0 + g*opc.diff_c_y(eta))*(1.0/alpha);
+				PlaneData_SpectralComplex u1 = (u0 + g*opc.diff_c_x(eta))*(1.0/alpha);
+				PlaneData_SpectralComplex v1 = (v0 + g*opc.diff_c_y(eta))*(1.0/alpha);
 
 				h_sum += eta*beta;
 				u_sum += u1*beta;
@@ -455,20 +455,20 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				 * TODO: we can even get more performance out of this operations
 				 * by partly using the real Fourier transformation
 				 */
-				PlaneDataComplex rhs =
+				PlaneData_SpectralComplex rhs =
 						(kappa/alpha) * eta0
 						+ (-simVars.sim.plane_rotating_f0*eta_bar/alpha) * rhs_b
 						+ rhs_a
 					;
 
-				PlaneDataComplex lhs = lhs_a.spectral_addScalarAll(kappa);
+				PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(kappa);
 				eta = rhs.spectral_div_element_wise(lhs);
 
-				PlaneDataComplex uh = u0 + g*opc.diff_c_x(eta);
-				PlaneDataComplex vh = v0 + g*opc.diff_c_y(eta);
+				PlaneData_SpectralComplex uh = u0 + g*opc.diff_c_x(eta);
+				PlaneData_SpectralComplex vh = v0 + g*opc.diff_c_y(eta);
 
-				PlaneDataComplex u1 = (alpha/kappa) * uh     - (simVars.sim.plane_rotating_f0/kappa) * vh;
-				PlaneDataComplex v1 = (simVars.sim.plane_rotating_f0/kappa) * uh + (alpha/kappa) * vh;
+				PlaneData_SpectralComplex u1 = (alpha/kappa) * uh     - (simVars.sim.plane_rotating_f0/kappa) * vh;
+				PlaneData_SpectralComplex v1 = (simVars.sim.plane_rotating_f0/kappa) * uh + (alpha/kappa) * vh;
 
 				PlaneData tmp(h_sum.planeDataConfig);
 
@@ -531,7 +531,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		perThreadVars[n]->u_sum.request_data_spectral();
 		perThreadVars[n]->v_sum.request_data_spectral();
 
-		PlaneData tmp(planeDataConfig);
+		PlaneData_Spectral tmp(planeDataConfig);
 
 		o_h_pert = o_h_pert + Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[n]->h_sum);
 		o_u = o_u + Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[n]->u_sum);
@@ -580,7 +580,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #if SWEET_MPI
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE ||1
-	PlaneData tmp(o_h_pert.planeDataConfig);
+	PlaneData_Spectral tmp(o_h_pert.planeDataConfig);
 
 	o_h_pert.request_data_physical();
 	int retval = MPI_Reduce(o_h_pert.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -622,9 +622,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 
 void SWE_Plane_TS_l_rexi::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -700,7 +700,7 @@ void SWE_Plane_TS_l_rexi::MPI_quitWorkers(
 )
 {
 #if SWEET_MPI
-	PlaneData dummyData(i_planeDataConfig);
+	PlaneData_Spectral dummyData(i_planeDataConfig);
 	dummyData.physical_set_all(NAN);
 
 	MPI_Bcast(dummyData.physical_space_data, dummyData.planeDataConfig->physical_array_data_number_of_elements, MPI_DOUBLE, 0, MPI_COMM_WORLD);

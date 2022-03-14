@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_ERK_N_ERK_HPP_
 
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -32,13 +32,13 @@ class SWE_Plane_TS_l_erk_n_erk	: public SWE_Plane_TS_interface
 
 private:
 	void euler_timestep_update_linear(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_h,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_h_t,	///< time updates
-			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t,	///< time updates
+			PlaneData_Spectral &o_h_t,	///< time updates
+			PlaneData_Spectral &o_u_t,	///< time updates
+			PlaneData_Spectral &o_v_t,	///< time updates
 
 			double i_simulation_timestamp
 	);
@@ -46,13 +46,13 @@ private:
 
 private:
 	void euler_timestep_update_nonlinear(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_h,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_h_t,	///< time updates
-			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t,	///< time updates
+			PlaneData_Spectral &o_h_t,	///< time updates
+			PlaneData_Spectral &o_u_t,	///< time updates
+			PlaneData_Spectral &o_v_t,	///< time updates
 
 			double i_simulation_timestamp
 	);
@@ -71,9 +71,9 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_h_pert,	///< prognostic variables
-			PlaneData &io_u,		///< prognostic variables
-			PlaneData &io_v,		///< prognostic variables
+			PlaneData_Spectral &io_h_pert,	///< prognostic variables
+			PlaneData_Spectral &io_u,		///< prognostic variables
+			PlaneData_Spectral &io_v,		///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

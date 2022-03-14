@@ -14,13 +14,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
-		const PlaneData &i_h,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_h,	///< prognostic variables
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
+		PlaneData_Spectral &o_h_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_timestamp
 )
@@ -66,9 +66,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 
 
 void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -82,13 +82,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 	// Tmp vars
 	//h, u, v tmp
-	PlaneData h(planeDataConfig);
-	PlaneData u(planeDataConfig);
-	PlaneData v(planeDataConfig);
+	PlaneData_Spectral h(planeDataConfig);
+	PlaneData_Spectral u(planeDataConfig);
+	PlaneData_Spectral v(planeDataConfig);
 	//Nonlinear calculation of u,v,h from input
-	PlaneData FUn_h(planeDataConfig);
-	PlaneData FUn_u(planeDataConfig);
-	PlaneData FUn_v(planeDataConfig);
+	PlaneData_Spectral FUn_h(planeDataConfig);
+	PlaneData_Spectral FUn_u(planeDataConfig);
+	PlaneData_Spectral FUn_v(planeDataConfig);
 
 
 	//Departure points and arrival points
@@ -156,9 +156,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 
 			//Apply psi_1 to N(U_{0})
-			PlaneData psi1_FUn_h(planeDataConfig);
-			PlaneData psi1_FUn_u(planeDataConfig);
-			PlaneData psi1_FUn_v(planeDataConfig);
+			PlaneData_Spectral psi1_FUn_h(planeDataConfig);
+			PlaneData_Spectral psi1_FUn_u(planeDataConfig);
+			PlaneData_Spectral psi1_FUn_v(planeDataConfig);
 
 			ts_psi1_rexi.run_timestep(
 					FUn_h, FUn_u, FUn_v,
@@ -182,9 +182,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 
 		//Calculate phi_0 of interpolated U
-		PlaneData phi0_Un_h(planeDataConfig);
-		PlaneData phi0_Un_u(planeDataConfig);
-		PlaneData phi0_Un_v(planeDataConfig);
+		PlaneData_Spectral phi0_Un_h(planeDataConfig);
+		PlaneData_Spectral phi0_Un_u(planeDataConfig);
+		PlaneData_Spectral phi0_Un_v(planeDataConfig);
 		ts_phi0_rexi.run_timestep(
 				h, u, v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
@@ -218,9 +218,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		//Calculate order 1 SL-ETDRK (as above) : {U}_1^{n+1}
 		//-----------------------------------------------------
 		// Save SL-ETD1RK from above
-		PlaneData h1(planeDataConfig);
-		PlaneData u1(planeDataConfig);
-		PlaneData v1(planeDataConfig);
+		PlaneData_Spectral h1(planeDataConfig);
+		PlaneData_Spectral u1(planeDataConfig);
+		PlaneData_Spectral v1(planeDataConfig);
 		h1 = h;
 		u1 = u;
 		v1 = v;
@@ -229,9 +229,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		//-----------------------
 
 		//NU_1
-		PlaneData FU1_h(planeDataConfig);
-		PlaneData FU1_u(planeDataConfig);
-		PlaneData FU1_v(planeDataConfig);
+		PlaneData_Spectral FU1_h(planeDataConfig);
+		PlaneData_Spectral FU1_u(planeDataConfig);
+		PlaneData_Spectral FU1_v(planeDataConfig);
 		euler_timestep_update_nonlinear(
 				h1, u1, v1,
 				FU1_h, FU1_u, FU1_v,
@@ -240,9 +240,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 
 		//Apply psi2
-		PlaneData psi2_FU1_h(planeDataConfig);
-		PlaneData psi2_FU1_u(planeDataConfig);
-		PlaneData psi2_FU1_v(planeDataConfig);
+		PlaneData_Spectral psi2_FU1_h(planeDataConfig);
+		PlaneData_Spectral psi2_FU1_u(planeDataConfig);
+		PlaneData_Spectral psi2_FU1_v(planeDataConfig);
 		ts_psi2_rexi.run_timestep(
 				FU1_h, FU1_u, FU1_v,
 				psi2_FU1_h, psi2_FU1_u, psi2_FU1_v,
@@ -251,9 +251,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		);
 
 		//Calculate psi2NUn
-		PlaneData psi2_FUn_h(planeDataConfig);
-		PlaneData psi2_FUn_u(planeDataConfig);
-		PlaneData psi2_FUn_v(planeDataConfig);
+		PlaneData_Spectral psi2_FUn_h(planeDataConfig);
+		PlaneData_Spectral psi2_FUn_u(planeDataConfig);
+		PlaneData_Spectral psi2_FUn_v(planeDataConfig);
 
 		ts_psi2_rexi.run_timestep(
 				FUn_h, FUn_u, FUn_v,
@@ -265,18 +265,18 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 		//Interpolate psi2NUn to departure points ( )_*
 
-		PlaneData psi2FUn_h_dep(planeDataConfig);
-		PlaneData psi2FUn_u_dep(planeDataConfig);
-		PlaneData psi2FUn_v_dep(planeDataConfig);
+		PlaneData_Spectral psi2FUn_h_dep(planeDataConfig);
+		PlaneData_Spectral psi2FUn_u_dep(planeDataConfig);
+		PlaneData_Spectral psi2FUn_v_dep(planeDataConfig);
 		psi2FUn_h_dep = sampler2D.bicubic_scalar(psi2_FUn_h, posx_d, posy_d, -0.5, -0.5);
 		psi2FUn_u_dep = sampler2D.bicubic_scalar(psi2_FUn_u, posx_d, posy_d, -0.5, -0.5);
 		psi2FUn_v_dep = sampler2D.bicubic_scalar(psi2_FUn_v, posx_d, posy_d, -0.5, -0.5);
 
 
 		//psi2NU_1-psi2NUn_dep
-		PlaneData dif2_h(io_h.planeDataConfig);
-		PlaneData dif2_u(io_u.planeDataConfig);
-		PlaneData dif2_v(io_v.planeDataConfig);
+		PlaneData_Spectral dif2_h(io_h.planeDataConfig);
+		PlaneData_Spectral dif2_u(io_u.planeDataConfig);
+		PlaneData_Spectral dif2_v(io_v.planeDataConfig);
 
 		dif2_h = psi2_FU1_h-psi2FUn_h_dep;
 		dif2_u = psi2_FU1_u-psi2FUn_u_dep;
@@ -284,9 +284,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 		//Apply phi0
 		//second order final forcing
-		PlaneData phi0_dif2_h(planeDataConfig);
-		PlaneData phi0_dif2_u(planeDataConfig);
-		PlaneData phi0_dif2_v(planeDataConfig);
+		PlaneData_Spectral phi0_dif2_h(planeDataConfig);
+		PlaneData_Spectral phi0_dif2_u(planeDataConfig);
+		PlaneData_Spectral phi0_dif2_v(planeDataConfig);
 		ts_phi0_rexi.run_timestep(
 				dif2_h, dif2_u, dif2_v,
 				phi0_dif2_h, phi0_dif2_u, phi0_dif2_v,
@@ -370,7 +370,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
-	PlaneData tmp_x(op.planeDataConfig);
+	PlaneData_Spectral tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -379,7 +379,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 			false
 	);
 
-	PlaneData tmp_y(op.planeDataConfig);
+	PlaneData_Spectral tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{

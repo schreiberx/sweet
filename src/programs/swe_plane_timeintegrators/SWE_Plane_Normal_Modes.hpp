@@ -13,6 +13,8 @@
 
 #include <rexi/EXPFunctions.hpp>
 #include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataComplex.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -30,9 +32,9 @@ public:
 	template <typename TCallbackClass>
 	static
 	void normal_mode_analysis(
-			PlaneData &io_prog_h_pert, // h: surface height (perturbation)
-			PlaneData &io_prog_u, // u: velocity in x-direction
-			PlaneData &io_prog_v, // v: velocity in y-direction
+			PlaneData_Spectral &io_prog_h_pert, // h: surface height (perturbation)
+			PlaneData_Spectral &io_prog_u, // u: velocity in x-direction
+			PlaneData_Spectral &io_prog_v, // v: velocity in y-direction
 			int number_of_prognostic_variables,
 			SimulationVariables &i_simVars, // Simulation variables
 			TCallbackClass *i_class,
@@ -120,7 +122,7 @@ public:
 #endif
 			file << std::endl;
 
-			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
+			PlaneData_Spectral* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
 
 			int number_of_prognostic_variables = 3;
 			//The basic state is with zero in all variables
@@ -298,7 +300,7 @@ public:
 			// use very high precision
 			file << std::setprecision(20);
 
-			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
+			PlaneData_Spectral* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
 
 			/*
 			 * Maximum number of prognostic variables
@@ -532,9 +534,9 @@ public:
 #else
 				else if (i_simVars.misc.normal_mode_analysis_generation == 3 || i_simVars.misc.normal_mode_analysis_generation == 13)
 				{
-					PlaneDataComplex t1(planeDataConfig);
-					PlaneDataComplex t2(planeDataConfig);
-					PlaneDataComplex t3(planeDataConfig);
+					PlaneData_SpectralComplex t1(planeDataConfig);
+					PlaneData_SpectralComplex t2(planeDataConfig);
+					PlaneData_SpectralComplex t3(planeDataConfig);
 					PlaneDataComplex* prog_cplx[3] = {&t1, &t2, &t3};
 
 					// iterate over spectral space
@@ -553,7 +555,7 @@ public:
 						prog_cplx[outer_prog_id]->request_data_spectral();
 						prog_cplx[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
-						// convert PlaneDataComplex to PlaneData
+						// convert PlaneData_SpectralComplex to PlaneData
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							*prog[inner_prog_id] = Convert_PlaneDataComplex_To_PlaneData::physical_convert(*prog_cplx[inner_prog_id]);
@@ -590,7 +592,7 @@ public:
 						}
 
 
-						// convert PlaneDataComplex to PlaneData
+						// convert PlaneData_SpectralComplex to PlaneData
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							prog_cplx[inner_prog_id]->request_data_spectral();

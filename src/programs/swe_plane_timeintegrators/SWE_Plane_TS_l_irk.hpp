@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_XX_SWE_PLANE_REXI_SWE_PLANE_TS_L_IRK_HPP_
 
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -43,9 +43,9 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

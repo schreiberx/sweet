@@ -22,13 +22,13 @@
  *
  */
 void SWE_Plane_TS_ln_erk::euler_timestep_update(
-		const PlaneData &i_h,	///< prognostic variables (perturbed part of height)
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_h,	///< prognostic variables (perturbed part of height)
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
+		PlaneData_Spectral &o_h_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -44,7 +44,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
 
-		PlaneData total_h = i_h + simVars.sim.h0;
+		PlaneData_Spectral total_h = i_h + simVars.sim.h0;
 
 		o_u_t = -simVars.sim.gravitation*op.diff_c_x(total_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 		o_v_t = -simVars.sim.gravitation*op.diff_c_y(total_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
@@ -73,10 +73,10 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 	{
 		// STAGGERED GRID
 
-		PlaneData U(i_h.planeDataConfig); // U flux
-		PlaneData V(i_h.planeDataConfig); // V flux
-		PlaneData H(i_h.planeDataConfig); //Bernoulli potential
-		PlaneData total_h = i_h + simVars.sim.h0;
+		PlaneData_Spectral U(i_h.planeDataConfig); // U flux
+		PlaneData_Spectral V(i_h.planeDataConfig); // V flux
+		PlaneData_Spectral H(i_h.planeDataConfig); //Bernoulli potential
+		PlaneData_Spectral total_h = i_h + simVars.sim.h0;
 
 		/*
 		 * Sadourny energy conserving scheme
@@ -114,7 +114,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 
 
 		// Potential vorticity
-		PlaneData total_h_pv = total_h;
+		PlaneData_Spectral total_h_pv = total_h;
 		total_h_pv = op.avg_b_x(op.avg_b_y(total_h));
 
 #if 0
@@ -128,7 +128,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		}
 #endif
 
-		PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
+		PlaneData_Spectral q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
 
 		// u, v tendencies
 		// Energy conserving scheme
@@ -155,9 +155,9 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 
 
 void SWE_Plane_TS_ln_erk::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
