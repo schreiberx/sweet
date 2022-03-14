@@ -422,6 +422,24 @@ public:
 			SWEETError("Unknown geometry");
 	};
 
+
+	/**
+	 * This function will be no longer necessary with PlaneData_Spectral
+	 *
+	 */
+        void request_data_physical_all_fields(
+			Parareal_GenericData &i_pararealData
+		)
+	{
+		if (this->geometry == "plane")
+		{
+			if (this->geometry == "model")
+				for (int k = 0; k < 3; k++)
+					i_pararealData.get_pointer_to_data_PlaneData_Spectral()->simfields[k]->request_data_physical();
+		}
+	}
+
+
 	/**
 	 * Set simulation data to data given in i_sim_data.
 	 * This can be data which is computed by another simulation.
@@ -434,7 +452,9 @@ public:
 			std::cout << "sim_set_data()" << std::endl;
 
 		// copy to buffers
+		this->request_data_physical_all_fields(i_pararealData);
 		*parareal_data_start = i_pararealData;
+		std::cout << "CCC " <<  " " << this->parareal_data_start->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
 	};
 
 	/**
@@ -575,6 +595,9 @@ public:
 								simVars->timecontrol.current_simulation_time
 							);
 
+				prog_h_pert.request_data_physical();
+				prog_u.request_data_physical();
+				prog_v.request_data_physical();
 				// copy to buffers
 				this->dataArrays_to_GenericData_PlaneData_Spectral(i_data, prog_h_pert, prog_u, prog_v);
 
@@ -660,6 +683,8 @@ public:
 
 		*(this->parareal_data_coarse) = *(this->parareal_data_start);
 
+		std::cout << "BBB " <<  " " << this->parareal_data_start->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "BBB " <<  " " << this->parareal_data_coarse->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
 		while (simVars->timecontrol.current_simulation_time != timeframe_end)
 		{
 			// store previous time step
@@ -670,6 +695,8 @@ public:
 			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
 		}
+		std::cout << "DDD " <<  " " << this->parareal_data_start->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "DDD " <<  " " << this->parareal_data_coarse->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
 	};
 
 
@@ -725,6 +752,11 @@ public:
 	{
 		double convergence = -1;
 
+		std::cout << "W " << this->parareal_data_coarse->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "W " << this->parareal_data_output->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "W " << this->parareal_data_error->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "W " << this->parareal_data_fine->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "W " << this->parareal_data_start->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
 		if (!i_compute_convergence_test)
 		//if (!i_compute_convergence_test || !output_data_valid)
 		{
@@ -744,6 +776,11 @@ public:
 		// compute difference w.r.t. previous output data
 		Parareal_GenericData* tmp2 = this->create_new_data_container();
 		*tmp2 = *(this->parareal_data_output);
+		std::cout << "X " << this->parareal_data_coarse->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "X " << this->parareal_data_output->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "X " << this->parareal_data_error->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "X " << this->parareal_data_fine->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
+		std::cout << "X " << this->parareal_data_start->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->physical_space_data_valid << std::endl;
 		*tmp2 -= *tmp;
 		convergence = tmp2->reduce_maxAbs();
 
