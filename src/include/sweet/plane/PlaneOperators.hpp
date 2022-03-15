@@ -12,7 +12,7 @@
 //	#include <sweet/plane/PlaneDataComplex.hpp>
 #endif
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
 
 
@@ -23,26 +23,26 @@ public:
 
 public:
 	// differential operators (central / forward / backward)
-	PlaneData diff_c_x, diff_c_y;
-	PlaneData diff_f_x, diff_f_y;
-	PlaneData diff_b_x, diff_b_y;
+	PlaneData_Spectral diff_c_x, diff_c_y;
+	PlaneData_Spectral diff_f_x, diff_f_y;
+	PlaneData_Spectral diff_b_x, diff_b_y;
 
-	PlaneData diff2_c_x, diff2_c_y;
+	PlaneData_Spectral diff2_c_x, diff2_c_y;
 
-	PlaneData avg_f_x, avg_f_y;
-	PlaneData avg_b_x, avg_b_y;
+	PlaneData_Spectral avg_f_x, avg_f_y;
+	PlaneData_Spectral avg_b_x, avg_b_y;
 
-	PlaneData shift_left;
-	PlaneData shift_right;
-	PlaneData shift_up;
-	PlaneData shift_down;
+	PlaneData_Spectral shift_left;
+	PlaneData_Spectral shift_right;
+	PlaneData_Spectral shift_up;
+	PlaneData_Spectral shift_down;
 
 
 	/**
 	 * D2, e.g. for viscosity
 	 */
-	PlaneData diff2(
-			const PlaneData &i_dataArray
+	PlaneData_Spectral diff2(
+			const PlaneData_Spectral &i_dataArray
 	)
 	{
 		return diff2_c_x(i_dataArray) + diff2_c_y(i_dataArray);
@@ -54,8 +54,8 @@ public:
 	 *        __2
 	 * apply  \/  operator (aka Laplace)
 	 */
-	inline PlaneData laplace(
-			const PlaneData &i_a
+	inline PlaneData_Spectral laplace(
+			const PlaneData_Spectral &i_a
 	)
 	{
 		return diff2_c_x(i_a)+diff2_c_y(i_a);
@@ -68,9 +68,9 @@ public:
 	 *
 	 * vort(a,b) = db/dx - da/dy
 	 */
-	PlaneData vort(
-			const PlaneData &a,
-			const PlaneData &b
+	PlaneData_Spectral vort(
+			const PlaneData_Spectral &a,
+			const PlaneData_Spectral &b
 	)
 	{
 		return diff_c_x(b) - diff_c_y(a);
@@ -83,9 +83,9 @@ public:
 	 *
 	 * div(a,b) = da/dx + db/dy
 	 */
-	PlaneData div(
-			const PlaneData &a,
-			const PlaneData &b
+	PlaneData_Spectral div(
+			const PlaneData_Spectral &a,
+			const PlaneData_Spectral &b
 	)
 	{
 		return diff_c_x(a) + diff_c_y(b);
@@ -96,9 +96,9 @@ public:
 	 *
 	 * ke(a,b) = 0.5*(a^2+b^2)
 	 */
-	PlaneData ke(
-			const PlaneData &a,
-			const PlaneData &b
+	PlaneData_Spectral ke(
+			const PlaneData_Spectral &a,
+			const PlaneData_Spectral &b
 	)
 	{
 		return 0.5*(a*a+b*b);
@@ -112,9 +112,9 @@ public:
 	 *
 	 * J(a,b) = da/dx db/dy - da/dy db/dx
 	 */
-	PlaneData J(
-			const PlaneData &a,
-			const PlaneData &b
+	PlaneData_Spectral J(
+			const PlaneData_Spectral &a,
+			const PlaneData_Spectral &b
 	)
 	{
 		return diff_c_x(a)*diff_c_y(b) - diff_c_y(a)*diff_c_x(b);
@@ -126,11 +126,11 @@ public:
 	 *
 	 * J(a,b)_t = (da/dx db/dy - da/dy db/dx)_t
 	 */
-	PlaneData J_t(
-			const PlaneData &a,
-			const PlaneData &b,
-			const PlaneData &a_t,
-			const PlaneData &b_t
+	PlaneData_Spectral J_t(
+			const PlaneData_Spectral &a,
+			const PlaneData_Spectral &b,
+			const PlaneData_Spectral &a_t,
+			const PlaneData_Spectral &b_t
 	)
 	{
 		return	  diff_c_x(a_t)*diff_c_y(b)
@@ -145,8 +145,8 @@ public:
 	 *        __
 	 * apply  \/ .  operator
 	 */
-	inline PlaneData diff_dot(
-			const PlaneData &i_a
+	inline PlaneData_Spectral diff_dot(
+			const PlaneData_Spectral &i_a
 	)
 	{
 		return diff_c_x(i_a)+diff_c_y(i_a);
@@ -158,15 +158,15 @@ public:
 	 * Diff N operator for hyperviscosity, see
 	 * "Numerical Techniques for Global Atmospheric Models", page 500
 	 */
-	inline PlaneData diffN_x(
-			const PlaneData &io_u,
+	inline PlaneData_Spectral diffN_x(
+			const PlaneData_Spectral &io_u,
 			int i_order
 	)
 	{
 		if (i_order == 0)
 			return io_u;
 
-		PlaneData tu = io_u;
+		PlaneData_Spectral tu = io_u;
 
 		for (int i = 0; i < i_order/2; i++)
 			tu = diff2_c_x(tu);
@@ -182,15 +182,15 @@ public:
 	 * Diff N operator for hyperviscosity, see
 	 * "Numerical Techniques for Global Atmospheric Models", page 500
 	 */
-	inline PlaneData diffN_y(
-			const PlaneData &io_v,
+	inline PlaneData_Spectral diffN_y(
+			const PlaneData_Spectral &io_v,
 			int i_order
 	)
 	{
 		if (i_order == 0)
 			return io_v;
 
-		PlaneData tv = io_v;
+		PlaneData_Spectral tv = io_v;
 
 		for (int i = 0; i < i_order/2; i++)
 			tv = diff2_c_y(tv);
@@ -213,14 +213,14 @@ public:
 	 * Returns operator D^q
 	 *
 	 */
-	inline PlaneData diffusion_coefficient(
+	inline PlaneData_Spectral diffusion_coefficient(
 			int i_order
 	)
 	{
 		//Check if even
 		assert( i_order % 2 == 0);
 		assert( i_order > 0);
-		PlaneData out = diff2_c_x+diff2_c_y;
+		PlaneData_Spectral out = diff2_c_x+diff2_c_y;
 
 #if 0
 		for (int i = 1; i < i_order/2; i++)
@@ -246,16 +246,16 @@ public:
 	 * Only works in spectral space
 	 *
 	 */
-	inline PlaneData implicit_diffusion(
-			const PlaneData &i_data,
+	inline PlaneData_Spectral implicit_diffusion(
+			const PlaneData_Spectral &i_data,
 			double i_coef,
 			int i_order
 	)
 	{
-		PlaneData out=i_data;
+		PlaneData_Spectral out=i_data;
 
 		// Get diffusion coefficients (these are the -mu*dt*D^q, where q is the order
-		PlaneData diff = -i_coef*diffusion_coefficient(i_order);
+		PlaneData_Spectral diff = -i_coef*diffusion_coefficient(i_order);
 
 		// Add 1 to get denominator
 		diff = diff.spectral_addScalarAll(1.0);

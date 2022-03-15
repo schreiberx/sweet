@@ -12,7 +12,8 @@
 
 #include <cmath>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <libmath/GaussQuadrature.hpp>
 
 
@@ -114,10 +115,12 @@ class SWE_bench_UnstableJetAdv
 	}
 
 	void setup_depth(
-			PlaneData &o_depth
+			PlaneData_Spectral &o_depth
 	)
 	{
 		// First set for the first column (one vertical slice)
+
+		PlaneData_Physical pdeth_phys(o_depth.planeDataConfig);
 
 		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 		{
@@ -125,7 +128,7 @@ class SWE_bench_UnstableJetAdv
 			double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
 			double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 
-			o_depth.p_physical_set(j, i, depth(x, y));
+			depth_phys.physical_set(j, i, depth(x, y));
 		}
 
 		//Now set for other "x" and add bump
@@ -139,20 +142,26 @@ class SWE_bench_UnstableJetAdv
 				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 
-				o_depth.p_physical_set(j, i, o_depth.p_physical_get(j, 0) + bump(x,y));
+				depth_phys.physical_set(j, i, o_depth.p_physical_get(j, 0) + bump(x,y));
 
 			}
 		}
 
+
+		o_depth.loadPlaneDataPhysical(depth_phys);
+
 	}
 
 	void setup_velocity(
-			PlaneData &o_u,
-			PlaneData &o_v
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v
 	)
 	{
 
-		o_v.physical_set_zero();
+		o_v.spectral_set_zero();
+
+		PlaneData_Spectral u_phys(o_u.planeDataConfig);
+
 
 		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 		{
@@ -163,9 +172,11 @@ class SWE_bench_UnstableJetAdv
 				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 				// (x,y) \in [0,1]x[0,1]
-				o_u.p_physical_set(j, i, u(x, y));
+				u_phys.physical_set(j, i, u(x, y));
 			}
 		}
+
+		o_u.loadPlaneDataPhysical(u_phys);
 	}
 
 public:
@@ -179,9 +190,9 @@ public:
 	}
 
 	void setup(
-			PlaneData &o_h,
-			PlaneData &o_u,
-			PlaneData &o_v
+			PlaneData_Spectral &o_h,
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v
 	)
 	{
 		std::cout<< "Generating Unstable Jet initial conditions.";

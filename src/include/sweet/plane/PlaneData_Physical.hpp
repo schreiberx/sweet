@@ -787,8 +787,8 @@ public:
 	 * Set all values to a specific value
 	 */
 	void physical_set_value(
-			int i_x_idx,
 			int i_y_idx,
+			int i_x_idx,
 			double i_value
 	)
 	{
@@ -1185,7 +1185,7 @@ public:
 					if (y > planeDataConfig->physical_res[1])
 						return false;
 
-					physical_set_value(x, y, i_value);
+					physical_set_value(y, x, i_value);
 
 					col++;
 				}

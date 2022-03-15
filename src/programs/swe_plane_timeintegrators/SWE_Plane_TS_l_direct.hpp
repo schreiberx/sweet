@@ -10,7 +10,7 @@
 
 #include <rexi/EXPFunctions.hpp>
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -147,9 +147,9 @@ public:
 
 
 	void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -157,9 +157,9 @@ public:
 
 
 	void run_timestep_cgrid(
-			PlaneData &io_h_pert,	///< prognostic variables
-			PlaneData &io_u,		///< prognostic variables
-			PlaneData &io_v,		///< prognostic variables
+			PlaneData_Spectral &io_h_pert,	///< prognostic variables
+			PlaneData_Spectral &io_u,		///< prognostic variables
+			PlaneData_Spectral &io_v,		///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -167,9 +167,9 @@ public:
 
 
 	void run_timestep_agrid(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -177,9 +177,9 @@ public:
 
 
 	void run_timestep_agrid_planedata(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -188,9 +188,9 @@ public:
 
 
 	void run_timestep_agrid_planedatacomplex(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp

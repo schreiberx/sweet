@@ -136,7 +136,7 @@ public:
 
 public:
 	void bicubic_scalar(
-			const PlaneData &i_data,			///< sampling data
+			const PlaneData_Physical &i_data,			///< sampling data
 
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
@@ -252,12 +252,12 @@ public:
 
 public:
 	void bicubic_scalar(
-			const PlaneData &i_data,			///< sampling data
+			const PlaneData_Physical &i_data,			///< sampling data
 
 			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
 
-			PlaneData &o_data,					///< output values
+			PlaneData_Physical &o_data,					///< output values
 
 			double i_shift_x = 0.0,				///< shift in x for staggered grids
 			double i_shift_y = 0.0				///< shift in y for staggered grids
@@ -280,7 +280,7 @@ public:
 
 public:
 	void bicubic_scalar(
-			const PlaneData &i_data,				///< sampling data
+			const PlaneData_Physical &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,			///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,			///< y positions of interpolation points
@@ -302,7 +302,7 @@ public:
 
 public:
 	void bilinear_scalar(
-			const PlaneData &i_data,				///< sampling data
+			const PlaneData_Physical &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
@@ -381,7 +381,7 @@ public:
 
 public:
 	void bilinear_scalar(
-			const PlaneData &i_data,				///< sampling data
+			const PlaneData_Physical &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
@@ -397,12 +397,12 @@ public:
 
 public:
 	void bilinear_scalar(
-			const PlaneData &i_data,				///< sampling data
+			const PlaneData_Physical &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
 
-			PlaneData &o_data,				///< output values
+			PlaneData_Physical &o_data,				///< output values
 
 			double i_shift_x = 0.0,
 			double i_shift_y = 0.0
@@ -429,7 +429,7 @@ public:
 
 public:
 	const ScalarDataArray bilinear_scalar(
-			const PlaneData &i_data,				///< sampling data
+			const PlaneData_Physical &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
@@ -444,8 +444,8 @@ public:
 	}
 
 public:
-	const PlaneData bicubic_scalar(
-			PlaneData &i_data,				///< sampling data
+	const PlaneData_Physical bicubic_scalar(
+			PlaneData_Physical &i_data,				///< sampling data
 
 			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
 			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
@@ -454,7 +454,7 @@ public:
 			double i_shift_y = 0.0
 	)
 	{
-		PlaneData out(planeDataConfig);
+		PlaneData_Physical out(planeDataConfig);
 		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
