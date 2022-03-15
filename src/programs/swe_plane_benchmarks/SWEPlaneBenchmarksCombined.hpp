@@ -484,7 +484,6 @@ public:
 			);
 
 			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
-
 			o_u.physical_set_zero();
 			o_v.spectral_set_zero();
 
