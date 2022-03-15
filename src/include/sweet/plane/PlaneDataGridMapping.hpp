@@ -63,44 +63,44 @@ public:
 
 
 	void mapCtoA_u(
-			const PlaneData_Spectral &i_src,
-			PlaneData_Spectral &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to A grid
-		sampler2D.bicubic_scalar(i_src.toPhys(), pos_ll_x, pos_ll_y, o_dst, staggering.u[0], staggering.u[1]);
+		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, staggering.u[0], staggering.u[1]);
 	}
 
 
 	void mapCtoA_v(
-			const PlaneData_Spectral &i_src,
-			PlaneData_Spectral &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to A grid
-		sampler2D.bicubic_scalar(i_src.toPhys(), pos_ll_x, pos_ll_y, o_dst, staggering.v[0], staggering.v[1]);
+		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, staggering.v[0], staggering.v[1]);
 	}
 
 
 
 
 	void mapAtoC_u(
-			const PlaneData_Spectral &i_src,
-			PlaneData_Spectral &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to C grid
-		sampler2D.bicubic_scalar(i_src.toPhys(), pos_ll_x, pos_ll_y, o_dst, -staggering.u[0], -staggering.u[1]);
+		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, -staggering.u[0], -staggering.u[1]);
 	}
 
 
 	void mapAtoC_v(
-			const PlaneData_Spectral &i_src,
-			PlaneData_Spectral &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to C grid
-		sampler2D.bicubic_scalar(i_src.toPhys(), pos_ll_x, pos_ll_y, o_dst, -staggering.v[0], -staggering.v[1]);
+		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, -staggering.v[0], -staggering.v[1]);
 	}
 };
 

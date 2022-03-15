@@ -739,6 +739,47 @@ public:
 		}
 	}
 
+
+	void spectral_zeroAliasingModes()	const
+	{
+//		spectral_space_data[0].imag(0);
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1	/// ALWAYS run this to eliminate Nyquist Frequency even without dealiasing activated
+////		assert(spectral_space_data_valid);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int k = 0; k < 2; k++)
+		{
+			if (k == 0)
+			{
+				/*
+				 * First process part between top and bottom spectral data blocks
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = planeDataConfig->spectral_complex_ranges[0][1][1]; jj < planeDataConfig->spectral_complex_ranges[1][1][0]; jj++)
+					for (std::size_t ii = 0; ii < planeDataConfig->spectral_complex_data_size[0]; ii++)
+					{
+						spectral_space_data[jj*planeDataConfig->spectral_complex_data_size[0]+ii] = 0;
+					}
+			}
+			else
+			{
+				/*
+				 * Then process the aliasing block on the right side
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = 0; jj < planeDataConfig->spectral_complex_data_size[1]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_complex_ranges[0][0][1]; ii < planeDataConfig->spectral_complex_ranges[2][0][0]; ii++)
+					{
+						spectral_space_data[jj*planeDataConfig->spectral_complex_data_size[0]+ii] = 0;
+					}
+			}
+		}
+#else
+
+#endif
+	}
+
 };
 
 

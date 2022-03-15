@@ -100,11 +100,11 @@ class SWE_bench_MergeVortex
 				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
-				psi_phys.physical_set(j, i, stream(x, y));
+				psi_phys.physical_set_value(j, i, stream(x, y));
 			}
 		}
 
-		o_pis.loadPlaneDataPhysical(psi_phys);
+		o_psi.loadPlaneDataPhysical(psi_phys);
 
 	}
 

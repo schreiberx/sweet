@@ -253,15 +253,15 @@ public:
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_h_pert.spectral_set_all(0, 0);
-		prog_u.spectral_set_all(0, 0);
-		prog_v.spectral_set_all(0, 0);
+		prog_h_pert.spectral_set_value(std::complex<double>(0, 0));
+		prog_u.spectral_set_value(std::complex<double>(0, 0));
+		prog_v.spectral_set_value(std::complex<double>(0, 0));
 #endif
 
-		// Setup prog vars
-		prog_h_pert.physical_set_all(simVars.sim.h0);
-		prog_u.physical_set_all(0);
-		prog_v.physical_set_all(0);
+///		// Setup prog vars
+///		prog_h_pert.physical_set_value(simVars.sim.h0);
+///		prog_u.physical_set_value(0);
+///		prog_v.physical_set_value(0);
 
 		// Check if input parameters are adequate for this simulation
 		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
@@ -349,13 +349,13 @@ public:
 		
 		if (simVars.timecontrol.current_timestep_nr == 0){
 			//save the reference normalization parameter
-			std::cout << normalmodes.geo.reduce_rms_spec() << std::endl;
-			std::cout << normalmodes.igwest.reduce_rms_spec() << std::endl;
-			std::cout << normalmodes.igeast.reduce_rms_spec() << std::endl;
+			std::cout << normalmodes.geo.spectral_reduce_rms() << std::endl;
+			std::cout << normalmodes.igwest.spectral_reduce_rms() << std::endl;
+			std::cout << normalmodes.igeast.spectral_reduce_rms() << std::endl;
 
-			normalmodes.norm_spec = normalmodes.geo.reduce_sum_sq_spec()+
-				normalmodes.igwest.reduce_sum_sq_spec()+
-				normalmodes.igeast.reduce_sum_sq_spec();
+			normalmodes.norm_spec = normalmodes.geo.spectral_reduce_sum_sqr_quad()+
+				normalmodes.igwest.spectral_reduce_sum_sqr_quad()+
+				normalmodes.igeast.spectral_reduce_sum_sqr_quad();
 
 			normalmodes.norm_spec=std::sqrt(normalmodes.norm_spec);
 
@@ -567,15 +567,15 @@ public:
 
 		if (simVars.disc.space_grid_use_c_staggering) // Remap in case of C-grid
 		{
-			t_h = prog_h_pert;
-			gridMapping.mapCtoA_u(prog_u, t_u);
-			gridMapping.mapCtoA_v(prog_v, t_v);
+			t_h = prog_h_pert.toPhys();
+			gridMapping.mapCtoA_u(prog_u.toPhys(), t_u);
+			gridMapping.mapCtoA_v(prog_v.toPhys(), t_v);
 		}
 		else
 		{
-			t_h = prog_h_pert;
-			t_u = prog_u;
-			t_v = prog_v;
+			t_h = prog_h_pert.toPhys();
+			t_u = prog_u.toPhys();
+			t_v = prog_v.toPhys();
 		}
 
 		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
@@ -678,7 +678,7 @@ public:
 				if (simVars.timecontrol.current_timestep_nr == 0)
 					header << "\tNM_GEO_RMS\tNM_IGWEST_RMS\tNM_IGEAST_RMS";
 
-				rows << "\t" << normalmodes.geo.reduce_rms() << "\t" << normalmodes.igwest.reduce_rms_spec() << "\t" << normalmodes.igeast.reduce_rms_spec();
+				rows << "\t" << normalmodes.geo.reduce_rms() << "\t" << normalmodes.igwest.spectral_reduce_rms() << "\t" << normalmodes.igeast.spectral_reduce_rms();
 
 				//Dump to file all normal mode evolution
 				dump_normal_modes();
@@ -734,9 +734,9 @@ public:
 			 */
 			if (compute_error_difference_to_initial_condition)
 			{
-				benchmark.t0_error_max_abs_h_pert = (prog_h_pert - t0_prog_h_pert).reduce_maxAbs();
-				benchmark.t0_error_max_abs_u = (prog_u - t0_prog_u).reduce_maxAbs();
-				benchmark.t0_error_max_abs_v = (prog_v - t0_prog_v).reduce_maxAbs();
+				benchmark.t0_error_max_abs_h_pert = (prog_h_pert - t0_prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmark.t0_error_max_abs_u = (prog_u - t0_prog_u).toPhys().physical_reduce_max_abs();
+				benchmark.t0_error_max_abs_v = (prog_v - t0_prog_v).toPhys().physical_reduce_max_abs();
 			}
 
 			// Calculate linear exact solution, if compute error requests
@@ -754,13 +754,13 @@ public:
 						0				// initial condition given at time 0
 				);
 
-				benchmark.analytical_error_rms_h = (ts_h_pert-prog_h_pert).reduce_rms_quad();
-				benchmark.analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
-				benchmark.analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
+				benchmark.analytical_error_rms_h = (ts_h_pert-prog_h_pert).toPhys().physical_reduce_rms();
+				benchmark.analytical_error_rms_u = (ts_u-prog_u).toPhys().physical_reduce_rms();
+				benchmark.analytical_error_rms_v = (ts_v-prog_v).toPhys().physical_reduce_rms();
 
-				benchmark.analytical_error_maxabs_h = (ts_h_pert-prog_h_pert).reduce_maxAbs();
-				benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
-				benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
+				benchmark.analytical_error_maxabs_h = (ts_h_pert-prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmark.analytical_error_maxabs_u = (ts_u-prog_u).toPhys().physical_reduce_max_abs();
+				benchmark.analytical_error_maxabs_v = (ts_v-prog_v).toPhys().physical_reduce_max_abs();
 			}
 		}
 	}
@@ -1321,7 +1321,7 @@ public:
 /////////////////////////////////////////////
 /////////////////////////////////////////////			convergence = std::max(
 /////////////////////////////////////////////					convergence,
-/////////////////////////////////////////////					(*parareal_data_output.data_arrays[k]-tmp).reduce_maxAbs()
+/////////////////////////////////////////////					(*parareal_data_output.data_arrays[k]-tmp).reduce_max_abs()
 /////////////////////////////////////////////				);
 /////////////////////////////////////////////
 /////////////////////////////////////////////			*parareal_data_output.data_arrays[k] = tmp;

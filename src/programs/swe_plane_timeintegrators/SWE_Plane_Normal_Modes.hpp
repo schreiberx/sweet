@@ -173,23 +173,23 @@ public:
 						prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
 						//Activate the symetric couterpart of the mode (only needed if j>0 )
 						if (j > 0)
-							prog[outer_prog_id]->p_spectral_set(planeDataConfig->spectral_data_size[1]-j, i, 1.0);
+							prog[outer_prog_id]->spectral_set_value(planeDataConfig->spectral_data_size[1]-j, i, 1.0);
 
 						/*
 						 * RUN timestep
 						 */
-						prog[outer_prog_id]->request_data_physical();
+						////prog[outer_prog_id]->request_data_physical();
 						(i_class->*i_run_timestep_method)();
 
 						/*
 						 * compute
 						 * 1/dt * (U(t+1) - U(t))
 						 */
-						prog[outer_prog_id]->request_data_spectral();
+						///////prog[outer_prog_id]->request_data_spectral();
 
 						std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
 						val = val - 1.0; //subtract U(0) from mode
-						prog[outer_prog_id]->p_spectral_set(j, i, val);
+						prog[outer_prog_id]->spectral_set_value(j, i, val);
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 							(*prog[inner_prog_id]) /= eps;
@@ -312,13 +312,13 @@ public:
 
 			if (number_of_prognostic_variables == 3)
 			{
-				io_prog_h_pert.physical_set_zero();
-				io_prog_u.physical_set_zero();
-				io_prog_v.physical_set_zero();
+				io_prog_h_pert.spectral_set_zero();
+				io_prog_u.spectral_set_zero();
+				io_prog_v.spectral_set_zero();
 			}
 			else if (number_of_prognostic_variables == 1)
 			{
-				io_prog_h_pert.physical_set_zero();
+				io_prog_h_pert.spectral_set_zero();
 			}
 			else
 			{
@@ -391,11 +391,14 @@ public:
 						std::cout << "." << std::flush;
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
-							prog[inner_prog_id]->physical_set_zero();
+							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode
-						prog[outer_prog_id]->request_data_physical();
-						prog[outer_prog_id]->physical_space_data[outer_i] = 1;
+						///prog[outer_prog_id]->request_data_physical();
+						///prog[outer_prog_id]->physical_space_data[outer_i] = 1;
+						PlaneData_Physical tmp = prog[outer_prog_id]->toPhys();
+						tmp.physical_space_data[outer_i] = 1;
+						prog[outer_prog_id]->loadPlaneDataPhysical(tmp);
 
 						/*
 						 * RUN timestep
@@ -409,19 +412,26 @@ public:
 							 * compute
 							 * 1/dt * (U(t+1) - U(t))
 							 */
-							prog[outer_prog_id]->request_data_physical();
-							prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+							///////prog[outer_prog_id]->request_data_physical();
+							///////prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+							PlaneData_Physical tmp2 = prog[outer_prog_id]->toPhys();
+							tmp2.physical_space_data[outer_i] -= 1.0;
 
 							for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
-								(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
+								tmp2 /= i_simVars.timecontrol.current_timestep_size;
+								//(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
+
+							prog[outer_prog_id]->loadPlaneDataPhysical(tmp2);
 						}
 
+						tmp = prog[outer_prog_id]->toPhys();
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
-							prog[inner_prog_id]->request_data_physical();
+							///prog[inner_prog_id]->request_data_physical();
 							for (std::size_t k = 0; k < planeDataConfig->physical_array_data_number_of_elements; k++)
 							{
-								file << prog[inner_prog_id]->physical_space_data[k];
+								///file << prog[inner_prog_id]->physical_space_data[k];
+								file << tmp->physical_space_data[k];
 								if (inner_prog_id != number_of_prognostic_variables-1 || k != planeDataConfig->physical_array_data_number_of_elements-1)
 									file << "\t";
 								else
@@ -455,7 +465,7 @@ public:
 									prog[inner_prog_id]->spectral_set_zero();
 
 								// activate mode via real coefficient
-								prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+								prog[outer_prog_id]->spectral_set_value(j, i, 1.0);
 
 								/*
 								 * RUN timestep
@@ -469,11 +479,11 @@ public:
 									 * compute
 									 * 1/dt * (U(t+1) - U(t))
 									 */
-									prog[outer_prog_id]->request_data_spectral();
+									///prog[outer_prog_id]->request_data_spectral();
 
-									std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
+									std::complex<double> val = prog[outer_prog_id]->spectral_get_(j, i);
 									val = val - 1.0;
-									prog[outer_prog_id]->p_spectral_set(j, i, val);
+									prog[outer_prog_id]->spectral_set_value(j, i, val);
 
 									for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 										(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
@@ -482,7 +492,7 @@ public:
 
 								for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								{
-									prog[inner_prog_id]->request_data_spectral();
+									///prog[inner_prog_id]->request_data_spectral();
 
 									/*
 									 * REAL

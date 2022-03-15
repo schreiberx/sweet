@@ -56,26 +56,34 @@ void SWE_Plane_TS_l_direct::run_timestep_cgrid(
 )
 {
 	// For output, variables need to be on unstaggered A-grid
-	PlaneData_Spectral t_u(io_h_pert.planeDataConfig);
-	PlaneData_Spectral t_v(io_h_pert.planeDataConfig);
+	PlaneData_Physical t_u(io_h_pert.planeDataConfig);
+	PlaneData_Physical t_v(io_h_pert.planeDataConfig);
 
 	if (!simVars.disc.space_grid_use_c_staggering)
 		SWEETError("Expected staggering");
 
-	planeDataGridMapping.mapCtoA_u(io_u, t_u);
-	planeDataGridMapping.mapCtoA_v(io_v, t_v);
+	planeDataGridMapping.mapCtoA_u(io_u.toPhys(), t_u);
+	planeDataGridMapping.mapCtoA_v(io_v.toPhys(), t_v);
 
 	simVars.disc.space_grid_use_c_staggering = false;
 
+	PlaneData_Spectral t_u_spec(io_h_pert.planeDataConfig);
+	PlaneData_Spectral t_v_spec(io_h_pert.planeDataConfig);
+	t_u_spec.loadPlaneDataPhysical(t_u);
+	t_v_spec.loadPlaneDataPhysical(t_v);
+
 	run_timestep_agrid(
-			io_h_pert, t_u, t_v,
+			io_h_pert, t_u_spec, t_v_spec,
 			i_dt, i_simulation_timestamp
 	);
 
 	simVars.disc.space_grid_use_c_staggering = true;
 
-	planeDataGridMapping.mapAtoC_u(t_u, io_u);
-	planeDataGridMapping.mapAtoC_v(t_v, io_v);
+	planeDataGridMapping.mapAtoC_u(t_u_spec.toPhys(), t_u);
+	planeDataGridMapping.mapAtoC_v(t_v_spec.toPhys(), t_v);
+
+	io_u.loadPlaneDataPhysical(t_u);
+	io_v.loadPlaneDataPhysical(t_v);
 }
 
 

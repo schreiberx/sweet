@@ -148,7 +148,7 @@ private:
 	 */
 public:
 	PlaneData_Spectral(int i)	:
-		planeDataConfig(nullptr)
+		planeDataConfig(nullptr),
 		spectral_space_data(nullptr)
 {
 }
@@ -283,6 +283,61 @@ public:
 #endif
 	}
 
+public:
+	void spectral_debugCheckForZeroAliasingModes()	const
+	{
+#if SWEET_DEBUG
+		if (!spectral_space_data_valid)
+			SWEETError("Spectral data not valid, but trying to apply anti-aliasing rule!\nDid you call spectral_zeroAliasingModes() after initializing data in physical space?");
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int k = 0; k < 2; k++)
+		{
+			if (k == 0)
+			{
+				/*
+				 * First process part between top and bottom spectral data blocks
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
+					{
+						std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
+
+						double error = std::sqrt(data.real()*data.real() + data.imag()*data.imag());
+						if (error >= 1e-9)
+						{
+							print_spectralData_zeroNumZero();
+							std::cout << "Value at spectral coordinate " << jj << ", " << ii << " should be zero, but is " << data << std::endl;
+							SWEETError("EXIT");
+						}
+					}
+			}
+			else
+			{
+				/*
+				 * Then process the aliasing block on the right side
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
+					{
+						std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
+
+						double error = std::sqrt(data.real()*data.real() + data.imag()*data.imag());
+						if (error >= 1e-9)
+						{
+							print_spectralData_zeroNumZero();
+							std::cout << "Value at spectral coordinate " << jj << ", " << ii << " should be zero, but is " << data << std::endl;
+							SWEETError("EXIT");
+						}
+					}
+			}
+		}
+#endif
+	}
+
+
 
 
 	/**
@@ -394,6 +449,24 @@ public:
 				memcpy(dst, src, size);
 			}
 		}
+
+		return out;
+	}
+
+
+	/**
+	 * Return Plane Array with all spectral coefficients a+bi --> 1/(a+bi)
+	 */
+	inline
+	PlaneData_Spectral spectral_invert()	const
+	{
+		PlaneData_Spectral out(planeDataConfig);
+
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = 1.0/spectral_space_data[idx];
+		);
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
@@ -1147,6 +1220,38 @@ public:
 		return error;
 	}
 
+	/**
+	 * reduce to root mean square in spectrum
+	 */
+	double spectral_reduce_rms()
+	{
+		double rms = 0.0;
+
+		std::complex<double> sum = 0;
+
+		for (int r = 0; r < 2; r++)								
+		{														
+			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+			{	
+				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+				{	
+					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	
+					sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+				}
+			}
+		}
+
+		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
+
+		if(sum.imag()>DBL_EPSILON)
+			SWEETError("Reduce operation of complex values (rms) error");
+
+		rms = std::sqrt(sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements)); 
+		return rms;
+
+	}
+
+
 	bool spectral_reduce_is_any_nan_or_inf()	const
 	{
 		bool retval = false;
@@ -1552,7 +1657,7 @@ public:
 				i_scale,
 
 				planeDataConfig,
-				physical_space_data
+				spectral_space_data
 		);
 
 ///////#if SWEET_USE_PLANE_SPECTRAL_SPACE

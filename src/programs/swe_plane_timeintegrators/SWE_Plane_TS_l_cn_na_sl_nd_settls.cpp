@@ -126,14 +126,17 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	PlaneData_Spectral rhs_h = alpha * io_h - h_bar * div;
 
 	// All the RHS are to be evaluated at the departure points
-	rhs_u = sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
-	rhs_v = sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
-	rhs_h = sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
+	PlaneData_Physical rhs_u_phys = rhs_u.toPhys();
+	PlaneData_Physical rhs_v_phys = rhs_v.toPhys();
+	PlaneData_Physical rhs_h_phys = rhs_h.toPhys();
+	rhs_u = sampler2D.bicubic_scalar(rhs_u_phys, posx_d, posy_d, -0.5, -0.5);
+	rhs_v = sampler2D.bicubic_scalar(rhs_v_phys, posx_d, posy_d, -0.5, -0.5);
+	rhs_h = sampler2D.bicubic_scalar(rhs_h_phys, posx_d, posy_d, -0.5, -0.5);
 
-	// Get data in spectral space
-	rhs_u.request_data_spectral();
-	rhs_v.request_data_spectral();
-	rhs_h.request_data_spectral();
+///	// Get data in spectral space
+///	rhs_u.request_data_spectral();
+///	rhs_v.request_data_spectral();
+///	rhs_h.request_data_spectral();
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
 
@@ -156,7 +159,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 		// Add to RHS h (TODO (2020-03-16): No clue why there's a -2.0)
 		rhs_h = rhs_h - 2.0*nonlin;
-		rhs_h.request_data_spectral();
+///		rhs_h.request_data_spectral();
 	}
 
 
@@ -231,7 +234,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 			false
 	);
 
-	//pectral  Initialize arrival points with h position
+	//Initialize arrival points with h position
 	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
 	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 

@@ -127,7 +127,7 @@ class SWE_bench_UnstableJetFast
 			double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
 			double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 
-			depth_physical.p_physical_set(j, i, depth(x, y));
+			depth_phys.physical_set_value(j, i, depth(x, y));
 		}
 
 		//Now set for other "x" and add bump
@@ -141,7 +141,7 @@ class SWE_bench_UnstableJetFast
 				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 
-				depth_physical.p_physical_set(j, i, o_depth.p_physical_get(j, 0) + bump(x,y));
+				depth_phys.physical_set_value(j, i, depth_phys.physical_get(j, 0) + bump(x,y));
 
 			}
 		}

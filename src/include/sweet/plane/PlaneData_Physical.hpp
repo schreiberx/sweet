@@ -820,6 +820,13 @@ public:
 		physical_space_data[i_y_idx*planeDataConfig->physical_res[0] + i_x_idx] = i_value;
 	}
 
+	const double physical_get(
+			int i_y_idx,
+			int i_x_idx
+	)	const
+	{
+		return physical_space_data[i_y_idx*planeDataConfig->physical_res[0] + i_x_idx];
+	}
 
 
 	/**

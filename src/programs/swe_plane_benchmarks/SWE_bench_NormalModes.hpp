@@ -138,9 +138,9 @@ public:
 		//     since in the backwards transform a scale factor is also applied.
 		complex h_add, u_add, v_add;
 		double scale_factor = ((double)(planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1]));
-		h_add = io_h.spectral_get(ik1, ik0)+UEV[0]*scale_factor;
-		u_add = io_u.spectral_get(ik1, ik0)+UEV[1]*scale_factor;
-		v_add = io_v.spectral_get(ik1, ik0)+UEV[2]*scale_factor;
+		h_add = io_h.spectral_get_(ik1, ik0)+UEV[0]*scale_factor;
+		u_add = io_u.spectral_get_(ik1, ik0)+UEV[1]*scale_factor;
+		v_add = io_v.spectral_get_(ik1, ik0)+UEV[2]*scale_factor;
 
 		/* Add normal mode to data */
 		io_h.spectral_set(ik1, ik0, h_add);
@@ -290,9 +290,9 @@ public:
 		complex U[3];
 		// Set (h,u,v) spectral coeficients
 		// These are weights for the modes
-		U[0] = i_h.spectral_get(ik1, ik0);
-		U[1] = i_u.spectral_get(ik1, ik0);
-		U[2] = i_v.spectral_get(ik1, ik0);
+		U[0] = i_h.spectral_get_(ik1, ik0);
+		U[1] = i_u.spectral_get_(ik1, ik0);
+		U[2] = i_v.spectral_get_(ik1, ik0);
 
 
 		//Apply inverse EV matrix to obtain data in EV space
@@ -657,7 +657,7 @@ public:
 		{
 			for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
 			{
-				const std::complex<double> &value = i_mode.spectral_get(ik1, ik0);
+				const std::complex<double> &value = i_mode.spectral_get_(ik1, ik0);
 				double norm = value.real()*value.real()+value.imag()*value.imag();
 				norm=std::sqrt(norm/scale_factor);
 				if (norm > 1.0e-15)

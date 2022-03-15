@@ -84,7 +84,8 @@ class SWE_bench_Polvani
 
 		double scale = o_psi.planeDataConfig->spectral_data_size[0]*o_psi.planeDataConfig->spectral_data_size[1];
 
-		o_psi.spectral_update_lambda_modes(
+		//o_psi.spectral_update_lambda_modes(
+		o_psi.spectral_update_lambda(
 			[&](int k0, int k1, std::complex<double> &o_data)
 			{
 #if SWEET_DEBUG && SWEET_THREADING_SPACE
@@ -253,8 +254,8 @@ public:
 			double rms_0;
 			{
 				setup_inner_iter(o_h, o_u, o_v);
-				double rms_u = o_u.reduce_rms();
-				double rms_v = o_v.reduce_rms();
+				double rms_u = o_u.toPhys().physical_reduce_rms();
+				double rms_v = o_v.toPhys().physical_reduce_rms();
 				rms_0 = 0.5*(rms_u + rms_v);
 			}
 
@@ -268,8 +269,8 @@ public:
 			double rms_1;
 			{
 				setup_inner_iter(o_h, o_u, o_v);
-				double rms_u = o_u.reduce_rms();
-				double rms_v = o_v.reduce_rms();
+				double rms_u = o_u.toPhys().physical_reduce_rms();
+				double rms_v = o_v.toPhys().physical_reduce_rms();
 				rms_1 = 0.5*(rms_u + rms_v);
 			}
 
@@ -372,7 +373,8 @@ public:
 			 */
 			PlaneData_Spectral I(o_h.planeDataConfig);
 			I.spectral_set_zero();
-			I.spectral_addScalarAll(1.0);
+			//I.spectral_addScalarAll(1.0);
+			I += 1.0;
 
 			PlaneData_Spectral lhs = R_1*(I - laplace*B);
 			//PlaneData_Spectral new_chi = stuff_chi.spectral_div_element_wise(laplace).spectral_div_element_wise(lhs);
@@ -415,8 +417,8 @@ public:
 		o_u = -op.diff_c_y(psi) + eps*op.diff_c_x(chi);
 		o_v = op.diff_c_x(psi) + eps*op.diff_c_y(chi);
 
-		double chi_rms = chi.reduce_rms();
-		double psi_rms = psi.reduce_rms();
+		double chi_rms = chi.toPhys().physical_reduce_rms();
+		double psi_rms = psi.toPhys().physical_reduce_rms();
 
 		std::cout << "POLVANI: chi_rms = " << chi_rms << std::endl;
 		std::cout << "POLVANI: psi_rms = " << psi_rms << std::endl;

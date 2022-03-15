@@ -151,7 +151,7 @@ public:
 		assert(cached_scale_factor[0] > 0);
 		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
 
-		i_data.request_data_physical();
+///		i_data.request_data_physical();
 
 		std::size_t max_pos_idx = i_pos_x.number_of_elements;
 
@@ -233,10 +233,10 @@ public:
 			{
 				double p[4];
 
-				p[0] = i_data.p_physical_get(idx_j, idx_i[0]);
-				p[1] = i_data.p_physical_get(idx_j, idx_i[1]);
-				p[2] = i_data.p_physical_get(idx_j, idx_i[2]);
-				p[3] = i_data.p_physical_get(idx_j, idx_i[3]);
+				p[0] = i_data.physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.physical_get(idx_j, idx_i[1]);
+				p[2] = i_data.physical_get(idx_j, idx_i[2]);
+				p[3] = i_data.physical_get(idx_j, idx_i[3]);
 
 				q[kj] = p[1] + 0.5 * x*(p[2] - p[0] + x*(2.0*p[0] - 5.0*p[1] + 4.0*p[2] - p[3] + x*(3.0*(p[1] - p[2]) + p[3] - p[0])));
 
@@ -271,10 +271,10 @@ public:
 		bicubic_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_shift_x, i_shift_y);
 
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_data.physical_space_data_valid = true;
-		o_data.spectral_space_data_valid = false;
-#endif
+///#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///		o_data.physical_space_data_valid = true;
+///		o_data.spectral_space_data_valid = false;
+///#endif
 	}
 
 
@@ -321,7 +321,7 @@ public:
 		 */
 
 
-		i_data.request_data_physical();
+//		i_data.request_data_physical();
 
 		std::size_t size = i_pos_x.number_of_elements;
 
@@ -363,8 +363,8 @@ public:
 			for (int kj = 0; kj < 2; kj++)
 			{
 				double p[2];
-				p[0] = i_data.p_physical_get(idx_j, idx_i[0]);
-				p[1] = i_data.p_physical_get(idx_j, idx_i[1]);
+				p[0] = i_data.physical_get(idx_j, idx_i[0]);
+				p[1] = i_data.physical_get(idx_j, idx_i[1]);
 
 				q[kj] = p[0] + x*(p[1]-p[0]);
 
@@ -420,10 +420,10 @@ public:
 
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_shift_x, i_shift_y);
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		o_data.physical_space_data_valid = true;
-		o_data.spectral_space_data_valid = false;
-#endif
+////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+////		o_data.physical_space_data_valid = true;
+////		o_data.spectral_space_data_valid = false;
+////#endif
 	}
 
 
