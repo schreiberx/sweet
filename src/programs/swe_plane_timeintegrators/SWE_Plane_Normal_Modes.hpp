@@ -15,7 +15,7 @@
 #include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <functional>
@@ -558,7 +558,7 @@ public:
 						// convert PlaneData_SpectralComplex to PlaneData
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
-							*prog[inner_prog_id] = Convert_PlaneDataComplex_To_PlaneData::physical_convert(*prog_cplx[inner_prog_id]);
+							*prog[inner_prog_id] = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(*prog_cplx[inner_prog_id]);
 							prog[inner_prog_id]->spectral_zeroAliasingModes();
 						}
 
@@ -573,7 +573,7 @@ public:
 							prog[inner_prog_id]->spectral_zeroAliasingModes();
 #warning "update this physical_convert maybe to spectral_convert"
 
-							*prog_cplx[inner_prog_id] = Convert_PlaneData_To_PlaneDataComplex::physical_convert(*prog[inner_prog_id]);
+							*prog_cplx[inner_prog_id] = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(*prog[inner_prog_id]);
 
 							prog_cplx[inner_prog_id]->request_data_spectral();
 						}

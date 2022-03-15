@@ -63,7 +63,7 @@ public:
 
 
 	void mapCtoA_u(
-			const PlaneData &i_src,
+			const PlaneData_Spectral &i_src,
 			PlaneData_Spectral &o_dst
 	)
 	{
@@ -73,7 +73,7 @@ public:
 
 
 	void mapCtoA_v(
-			const PlaneData &i_src,
+			const PlaneData_Spectral &i_src,
 			PlaneData_Spectral &o_dst
 	)
 	{
@@ -85,7 +85,7 @@ public:
 
 
 	void mapAtoC_u(
-			const PlaneData &i_src,
+			const PlaneData_Spectral &i_src,
 			PlaneData_Spectral &o_dst
 	)
 	{
@@ -95,7 +95,7 @@ public:
 
 
 	void mapAtoC_v(
-			const PlaneData &i_src,
+			const PlaneData_Spectral &i_src,
 			PlaneData_Spectral &o_dst
 	)
 	{

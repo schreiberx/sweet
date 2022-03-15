@@ -72,7 +72,7 @@ public:
 
 
 	void swap(
-			PlaneData_Physical &i_paneData
+			PlaneData_Physical &i_planeData
 	)
 	{
 		assert(planeDataConfig == i_planeData.planeDataConfig);
@@ -167,7 +167,7 @@ public:
 		if (i_plane_data.planeDataConfig == nullptr)
 			return *this;
 
-		if (paneDataConfig == nullptr)
+		if (planeDataConfig == nullptr)
 			setup(i_plane_data.planeDataConfig);
 
 		memcpy(physical_space_data, i_plane_data.physical_space_data, sizeof(double)*planeDataConfig->physical_array_data_number_of_elements);
@@ -188,6 +188,31 @@ public:
 
 		return *this;
 	}
+
+
+public:
+	/**
+	 * assignment operator
+	 */
+	PlaneData_Physical &operator=(double i_value)
+	{
+		physical_set_all_value(i_value);
+
+		return *this;
+	}
+
+
+public:
+	/**
+	 * assignment operator
+	 */
+	PlaneData_Physical &operator=(int i_value)
+	{
+		physical_set_all_value(i_value);
+
+		return *this;
+	}
+
 
 
 	PlaneData_Physical operator+(
@@ -1142,7 +1167,7 @@ public:
 		 */
 
 		int row = 0;
-		while (row < planeDataConfig->physical_num_lat)
+		while (row < planeDataConfig->physical_res[1])
 		{
 			std::getline(file, line);
 			if (!file.good())

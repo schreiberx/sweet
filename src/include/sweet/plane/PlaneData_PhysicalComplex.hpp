@@ -40,7 +40,7 @@
 				for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)	\
 				{			\
 					std::size_t idx = j*planeDataConfig->physical_data_size[0]+i;	\
-					{CORE};	\
+					CORE;	\
 				}			\
 			}
 
@@ -48,7 +48,7 @@
 
 	#define PLANE_DATA_COMPLEX_PHYSICAL_FOR_IDX(CORE)				\
 			for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)	\
-			{	{CORE};	}
+			{	CORE;	}
 
 	#define PLANE_DATA_COMPLEX_PHYSICAL_FOR_2D_IDX(CORE)										\
 			for (std::size_t j = 0; j < planeDataConfig->physical_data_size[1]; j++)						\
@@ -56,7 +56,7 @@
 				for (std::size_t i = 0; i < planeDataConfig->physical_data_size[0]; i++)	\
 				{			\
 					std::size_t idx = j*planeDataConfig->physical_data_size[0]+i;	\
-					{CORE};	\
+					CORE;	\
 				}			\
 			}
 
@@ -602,6 +602,7 @@ public:
 		return error;
 	}
 
+};
 
 /**
  * operator to support operations such as:

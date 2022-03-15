@@ -11,7 +11,8 @@
 #include <stdlib.h>
 #include <cmath>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 
 
 /**
@@ -84,9 +85,11 @@ class SWE_bench_MergeVortex
 	}
 
 	void setup_stream(
-			PlaneData &o_psi
+			PlaneData_Spectral &o_psi
 	)
 	{
+
+		PlaneData_Physical psi_phys(o_psi.planeDataConfig);
 
 		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 		{
@@ -97,9 +100,11 @@ class SWE_bench_MergeVortex
 				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
 
-				o_psi.p_physical_set(j, i, stream(x, y));
+				psi_phys.physical_set(j, i, stream(x, y));
 			}
 		}
+
+		o_pis.loadPlaneDataPhysical(psi_phys);
 
 	}
 
@@ -115,18 +120,18 @@ public:
 	}
 
 	void setup(
-			PlaneData &o_h,
-			PlaneData &o_u,
-			PlaneData &o_v
+			PlaneData_Spectral &o_h,
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v
 	)
 	{
 
-		PlaneData psi(o_h.planeDataConfig);
+		PlaneData_Spectral psi(o_h.planeDataConfig);
 
 		/*
 		 * Prepare laplace operator
 		 */
-		PlaneData laplace = op.diff2_c_x + op.diff2_c_y;
+		PlaneData_Spectral laplace = op.diff2_c_x + op.diff2_c_y;
 
 
 		/*
@@ -140,11 +145,12 @@ public:
 		o_v = -op.diff_c_x(psi);
 
 		//Calculate vorticity
-		PlaneData vort = op.vort(o_u, o_v);
+		PlaneData_Spectral vort = op.vort(o_u, o_v);
 
 		//Solve Poisson equation for height to get balance initial condition
-		PlaneData lap_h = (f/g)*vort;
-		o_h = lap_h.spectral_div_element_wise(laplace);
+		PlaneData_Spectral lap_h = (f/g)*vort;
+		//o_h = lap_h.spectral_div_element_wise(laplace);
+		o_h = lap_h / laplace;
 
 	}
 

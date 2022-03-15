@@ -131,13 +131,27 @@ public:
 
 
 
-public:
+	/**
+	 * prohibit empty initialization by making this method private
+	 */
+//public:
+private:
 	PlaneData_Spectral()	:
 		planeDataConfig(nullptr),
 		spectral_space_data(nullptr)
 	{
 	}
 
+
+	/**
+	 * dummy initialization by handing over an unused integer
+	 */
+public:
+	PlaneData_Spectral(int i)	:
+		planeDataConfig(nullptr)
+		spectral_space_data(nullptr)
+{
+}
 
 
 public:
@@ -207,6 +221,67 @@ public:
 		return *this;
 	}
 
+public:
+	/**
+	 * assignment operator
+	 */
+	PlaneData_Spectral &operator=(double i_value)
+	{
+		spectral_set_value(i_value);
+
+		return *this;
+	}
+
+public:
+	/**
+	 * assignment operator
+	 */
+	PlaneData_Spectral &operator=(int i_value)
+	{
+		spectral_set_value(i_value);
+
+		return *this;
+	}
+
+
+public:
+	void spectral_zeroAliasingModes()
+	{
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1	/// ALWAYS run this to eliminate Nyquist Frequency even without dealiasing activated
+		assert(spectral_space_data_valid);
+
+		//SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int k = 0; k < 2; k++)
+		{
+			if (k == 0)
+			{
+				/*
+				 * First process part between top and bottom spectral data blocks
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
+					{
+						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+					}
+			}
+			else
+			{
+				/*
+				 * Then process the aliasing block on the right side
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
+					{
+						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+					}
+			}
+		}
+#else
+
+#endif
+	}
 
 
 
@@ -363,7 +438,7 @@ public:
 	/*
 	 * Return the data converted to physical space
 	 *
-	 * alias for "getSphereDataPhysical"
+	 * alias for "getPlaneDataPhysical"
 	 */
 	PlaneData_Physical toPhys()	const
 	{
@@ -389,7 +464,7 @@ public:
 		 */
 		PlaneData_Spectral tmp_spectral(*this);
 		PlaneData_Physical tmp_physical(planeDataConfig);
-		planeDataConfig->fft_spectral_to_physical(tmp.spectral_space_data, tmp_physical.physical_space_data);
+		planeDataConfig->fft_spectral_to_physical(tmp_spectral.spectral_space_data, tmp_physical.physical_space_data);
 
 		parmemcpy(out.physical_space_data, tmp_physical.physical_space_data, sizeof(double)*planeDataConfig->physical_array_data_number_of_elements);
 
@@ -746,7 +821,7 @@ public:
 				std::complex<double> &io_data
 			)
 			{
-				io_data /= (a + (-b* (m * m + n * n) ); //???
+				io_data /= (a + (-b* (m * m + n * n) )); //???
 			}
 		);
 
@@ -806,7 +881,7 @@ public:
 	)
 	{
 		PLANE_DATA_SPECTRAL_FOR_IDX(
-					i_lambda(n, m, spectral_space_data[idx]);
+					i_lambda(jj, ii, spectral_space_data[idx]);
 				)
 
 ////		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -1415,10 +1490,10 @@ public:
   		if (data_type != "MODES_DATA")
   			SWEETError("Unknown data type '"+data_type+"'");
 
-  		if (num_lon != planeDataConfig->spectral_data_size[0])
+  		if (num_x != planeDataConfig->spectral_data_size[0])
   			SWEETError("NUM_X "+std::to_string(num_x)+" doesn't match planeDataConfig");
 
-  		if (num_lat != planeDataConfig->spectral_data_size[1])
+  		if (num_y != planeDataConfig->spectral_data_size[1])
   			SWEETError("NUM_Y "+std::to_string(num_y)+" doesn't match planeDataConfig");
 
   		file.read((char*)spectral_space_data, sizeof(std::complex<double>)*planeDataConfig->spectral_array_data_number_of_elements);
@@ -1436,8 +1511,8 @@ public:
 		if (normalization == "avg_zero")
 		{
 			// move average value to 0
-			double phi_min = getSphereDataPhysical().physical_reduce_min();
-			double phi_max = getSphereDataPhysical().physical_reduce_max();
+			double phi_min = getPlaneDataPhysical().physical_reduce_min();
+			double phi_max = getPlaneDataPhysical().physical_reduce_max();
 
 			double avg = 0.5*(phi_max+phi_min);
 
@@ -1446,13 +1521,13 @@ public:
 		else if (normalization == "min_zero")
 		{
 			// move minimum value to zero
-			double phi_min = getSphereDataPhysical().physical_reduce_min();
+			double phi_min = getPlaneDataPhysical().physical_reduce_min();
 			operator-=(phi_min);
 		}
 		else if (normalization == "max_zero")
 		{
 			// move maximum value to zero
-			double phi_max = getSphereDataPhysical().physical_reduce_max();
+			double phi_max = getPlaneDataPhysical().physical_reduce_max();
 			operator-=(phi_max);
 		}
 		else if (normalization == "")
@@ -1463,6 +1538,76 @@ public:
 			SWEETError("Normalization not supported!");
 		}
 	}
+
+
+public:
+	template <int S>
+	void kernel_stencil_setup(
+			const double i_kernel_array[S][S],
+			double i_scale = 1.0
+	)
+	{
+		((PlaneData_Kernels&)*this).kernel_stencil_setup(
+				i_kernel_array,
+				i_scale,
+
+				planeDataConfig,
+				physical_space_data
+		);
+
+///////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///////		physical_space_data_valid = true;
+///////		spectral_space_data_valid = false;
+///////
+///////		request_data_spectral();
+///////#endif
+	}
+
+
+	/**
+	 * Apply a linear operator given by this class to the input data array.
+	 */
+	inline
+	PlaneData_Spectral operator()(
+			const PlaneData_Spectral &i_array_data
+	)	const
+	{
+		PlaneData_Spectral out(planeDataConfig);
+
+//////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)i_array_data;
+
+////		request_data_spectral();
+////		rw_array_data.request_data_spectral();
+
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx]*i_array_data.spectral_space_data[idx];
+		);
+
+////		out.spectral_space_data_valid = true;
+////		out.physical_space_data_valid = false;
+
+		out.spectral_zeroAliasingModes();
+
+//////#else
+//////
+//////		PlaneData &rw_array_data = (PlaneData&)i_array_data;
+//////
+//////		kernel_apply(
+//////				planeDataConfig->physical_data_size[0],
+//////				planeDataConfig->physical_data_size[1],
+//////				rw_array_data.physical_space_data,
+//////
+//////				out.physical_space_data
+//////		);
+//////#endif
+
+
+		return out;
+	}
+
+
+
 
 };
 

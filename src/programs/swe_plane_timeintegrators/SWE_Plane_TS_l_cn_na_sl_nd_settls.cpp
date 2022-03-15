@@ -214,7 +214,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
-	PlaneData_Spectral tmp_x(op.planeDataConfig);
+	PlaneData_Physical tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -222,7 +222,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 			},
 			false
 	);
-	PlaneData_Spectral tmp_y(op.planeDataConfig);
+	PlaneData_Physical tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -232,8 +232,8 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 	);
 
 	//pectral  Initialize arrival points with h position
-	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];

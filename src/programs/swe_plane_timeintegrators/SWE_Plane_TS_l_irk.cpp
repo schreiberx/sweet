@@ -8,8 +8,8 @@
 #include "../swe_plane_timeintegrators/SWE_Plane_TS_l_irk.hpp"
 
 #include <sweet/plane/PlaneData_SpectralComplex.hpp>
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectral_to_PlaneDataSpectralComplex.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectralComplex_to_PlaneDataSpectral.hpp>
 
 
 
@@ -76,9 +76,9 @@ void SWE_Plane_TS_l_irk::run_timestep(
 
 #else
 
-	PlaneData_SpectralComplex eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h);
-	PlaneData_SpectralComplex u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
-	PlaneData_SpectralComplex v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
+	PlaneData_SpectralComplex eta0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_h);
+	PlaneData_SpectralComplex u0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_u);
+	PlaneData_SpectralComplex v0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_v);
 
 	double alpha = 1.0/i_dt;
 
@@ -107,9 +107,9 @@ void SWE_Plane_TS_l_irk::run_timestep(
 	PlaneData_SpectralComplex u1 = alpha/kappa * uh     + simVars.sim.plane_rotating_f0/kappa * vh;
 	PlaneData_SpectralComplex v1 =    -simVars.sim.plane_rotating_f0/kappa * uh + alpha/kappa * vh;
 
-	io_h = Convert_PlaneDataComplex_To_PlaneData::physical_convert(eta);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(u1);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(v1);
+	io_h = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(eta);
+	io_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(u1);
+	io_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(v1);
 #endif
 }
 

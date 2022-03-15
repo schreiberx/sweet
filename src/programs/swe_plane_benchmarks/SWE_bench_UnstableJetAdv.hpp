@@ -120,7 +120,7 @@ class SWE_bench_UnstableJetAdv
 	{
 		// First set for the first column (one vertical slice)
 
-		PlaneData_Physical pdeth_phys(o_depth.planeDataConfig);
+		PlaneData_Physical depth_phys(o_depth.planeDataConfig);
 
 		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
 		{
@@ -160,7 +160,7 @@ class SWE_bench_UnstableJetAdv
 
 		o_v.spectral_set_zero();
 
-		PlaneData_Spectral u_phys(o_u.planeDataConfig);
+		PlaneData_Physical u_phys(o_u.planeDataConfig);
 
 
 		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)

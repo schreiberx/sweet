@@ -11,8 +11,8 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectral_to_PlaneDataSpectralComplex.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectralComplex_to_PlaneDataSpectral.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
 
 
@@ -445,15 +445,15 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	complex I(0.0, 1.0);
 
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	PlaneData_SpectralComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
-	PlaneData_SpectralComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
-	PlaneData_SpectralComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
-#else
-	PlaneData_SpectralComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_h_pert);
-	PlaneData_SpectralComplex i_u = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
-	PlaneData_SpectralComplex i_v = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
-#endif
+/////#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	PlaneData_SpectralComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
+/////	PlaneData_SpectralComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
+/////	PlaneData_SpectralComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
+/////#else
+	PlaneData_SpectralComplex i_h_pert = Convert_PlaneDataiSpectral_To_PlaneDataSpectralComplex::spectral_convert(io_h_pert);
+	PlaneData_SpectralComplex i_u = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(io_u);
+	PlaneData_SpectralComplex i_v = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(io_v);
+///////#endif
 
 	PlaneData_SpectralComplex o_h_pert(io_h_pert.planeDataConfig);
 	PlaneData_SpectralComplex o_u(io_h_pert.planeDataConfig);
@@ -782,15 +782,15 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	o_u.spectral_zeroAliasingModes();
 	o_v.spectral_zeroAliasingModes();
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
-#else
-	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_h_pert);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_v);
-#endif
+/////#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
+/////	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
+/////	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
+/////#else
+	io_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(o_h_pert);
+	io_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(o_u);
+	io_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(o_v);
+///////#endif
 }
 
 

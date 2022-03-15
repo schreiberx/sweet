@@ -9,11 +9,11 @@
 
 #include <rexi/REXI.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectral_to_PlaneDataSpectralComplex.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectralComplex_to_PlaneDataSpectral.hpp>
 
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
@@ -340,24 +340,24 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-		eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_h_pert);
-		u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
-		v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
+		eta0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_h_pert);
+		u0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_u);
+		v0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_v);
 #else
 
 // TODO: find a nice solution for this
 //		if (simVars.rexi.use_half_poles)
 		if (true)
 		{
-			eta0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_h_pert);
-			u0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_u);
-			v0 = Convert_PlaneData_To_PlaneDataComplex::physical_convert(i_v);
+			eta0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_h_pert);
+			u0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_u);
+			v0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_v);
 		}
 		else
 		{
-			eta0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_h_pert);
-			u0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_u);
-			v0 = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(i_v);
+			eta0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_h_pert);
+			u0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_u);
+			v0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_v);
 		}
 #endif
 
@@ -533,9 +533,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 		PlaneData_Spectral tmp(planeDataConfig);
 
-		o_h_pert = o_h_pert + Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[n]->h_sum);
-		o_u = o_u + Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[n]->u_sum);
-		o_v = o_v + Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[n]->v_sum);
+		o_h_pert = o_h_pert + Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[n]->h_sum);
+		o_u = o_u + Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[n]->u_sum);
+		o_v = o_v + Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[n]->v_sum);
 	}
 #endif
 
@@ -543,9 +543,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #else
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	o_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
-	o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
-	o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
+	o_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->h_sum);
+	o_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->u_sum);
+	o_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->v_sum);
 
 #else
 
@@ -553,15 +553,15 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 //		if (simVars.rexi.use_half_poles)
 	if (true)
 	{
-		o_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->h_sum);
-		o_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->u_sum);
-		o_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(perThreadVars[0]->v_sum);
+		o_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->h_sum);
+		o_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->u_sum);
+		o_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->v_sum);
 	}
 	else
 	{
-		o_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->h_sum);
-		o_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->u_sum);
-		o_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(perThreadVars[0]->v_sum);
+		o_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[0]->h_sum);
+		o_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[0]->u_sum);
+		o_v = Convert_PlaneDataSpectralComplex_To_PlaneData::spectral_convert_physical_real(perThreadVars[0]->v_sum);
 	}
 #endif
 

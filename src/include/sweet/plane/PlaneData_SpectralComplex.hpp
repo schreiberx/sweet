@@ -615,7 +615,7 @@ public:
 				std::complex<double> &io_data
 			)
 			{
-				io_data /= (a + (-b*(m * m + n * n));
+				io_data /= (a + (-b*((double)(m * m + n * n))));
 			}
 		);
 

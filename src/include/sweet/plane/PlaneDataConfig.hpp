@@ -966,6 +966,37 @@ public:
 #endif
 
 
+	// TODO: CHECK THIS
+	inline
+	std::size_t getArrayIndexByModes(
+			int n,
+			int m
+	)	const
+	{
+		assert(n >= 0);
+		//assert(n >= m);
+
+//		return (m*(2*spectral_modes_n_max-m+1)>>1)+n;
+		return m * spectral_data_size[1] + n;
+	}
+
+
+	// TODO: CHECK THIS
+	inline
+	std::size_t getArrayIndexByModes_Complex(
+			int n,
+			int m
+	)	const
+	{
+		assert(n >= 0);
+		//assert(n >= std::abs(m));
+
+		///int idx = n*n+(m+n);
+		int idx =  m * spectral_data_size[1] + n;
+		return idx;
+	}
+
+
 
 	void cleanup_data()
 	{
