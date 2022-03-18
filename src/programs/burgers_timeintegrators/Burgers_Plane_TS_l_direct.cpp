@@ -11,8 +11,8 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectral_to_PlaneDataSpectralComplex.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectralComplex_to_PlaneDataSpectral.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
 
 
@@ -24,10 +24,10 @@ void Burgers_Plane_TS_l_direct:: setup()
 
 
 void Burgers_Plane_TS_l_direct::run_timestep(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
-		PlaneData &io_prev_u,	///< prognostic variables
-		PlaneData &io_prev_v,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_prev_u,	///< prognostic variables
+		PlaneData_Spectral &io_prev_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -46,16 +46,16 @@ void Burgers_Plane_TS_l_direct::run_timestep(
  * Computation of analytical solution on staggered grid
  */
 void Burgers_Plane_TS_l_direct::run_timestep_cgrid(
-		PlaneData &io_u,		///< prognostic variables
-		PlaneData &io_v,		///< prognostic variables
+		PlaneData_Spectral &io_u,		///< prognostic variables
+		PlaneData_Spectral &io_v,		///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
 )
 {
 	// For output, variables need to be on unstaggered A-grid
-	PlaneData t_u(io_u.planeDataConfig);
-	PlaneData t_v(io_u.planeDataConfig);
+	PlaneData_Spectral t_u(io_u.planeDataConfig);
+	PlaneData_Spectral t_v(io_u.planeDataConfig);
 
 	if (!simVars.disc.space_grid_use_c_staggering)
 		SWEETError("Expected staggering");
@@ -79,27 +79,27 @@ void Burgers_Plane_TS_l_direct::run_timestep_cgrid(
 
 
 void Burgers_Plane_TS_l_direct::run_timestep_agrid(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
 )
 {
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	run_timestep_agrid_planedata(io_u, io_v, i_dt, i_simulation_timestamp);
-#else
-	run_timestep_agrid_planedatacomplex(io_u, io_v, i_dt, i_simulation_timestamp);
-#endif
+///#else
+///	run_timestep_agrid_planedatacomplex(io_u, io_v, i_dt, i_simulation_timestamp);
+///#endif
 }
 
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
 void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -120,8 +120,8 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	 * This implementation works directly on PlaneData
 	 */
 
-	io_u.request_data_spectral();
-	io_v.request_data_spectral();
+//	io_u.request_data_spectral();
+//	io_v.request_data_spectral();
 
 	for (std::size_t ik1 = 0; ik1 < io_u.planeDataConfig->spectral_data_size[1]; ik1++)
 	{
@@ -162,13 +162,13 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 #if BURGERS_PLANE_TS_L_DIRECT_QUADPRECISION
 			std::complex<double> tmp1(U[0].real(), U[0].imag());
-			io_u.p_spectral_set(ik1, ik0, tmp1);
+			io_u.spectral_set(ik1, ik0, tmp1);
 
 			std::complex<double> tmp2(U[1].real(), U[1].imag());
-			io_v.p_spectral_set(ik1, ik0, tmp2);
+			io_v.spectral_set(ik1, ik0, tmp2);
 #else
-			io_u.p_spectral_set(ik1, ik0, U[0]);
-			io_v.p_spectral_set(ik1, ik0, U[1]);
+			io_u.spectral_set(ik1, ik0, U[0]);
+			io_v.spectral_set(ik1, ik0, U[1]);
 #endif
 		}
 	}
@@ -207,13 +207,13 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 	T dt = i_dt;
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	o_u.spectral_space_data_valid = true;
-	o_u.physical_space_data_valid = false;
-
-	o_v.spectral_space_data_valid = true;
-	o_v.physical_space_data_valid = false;
-#endif
+///#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///	o_u.spectral_space_data_valid = true;
+///	o_u.physical_space_data_valid = false;
+///
+///	o_v.spectral_space_data_valid = true;
+///	o_v.physical_space_data_valid = false;
+///#endif
 
 	for (std::size_t ik1 = 0; ik1 < i_u.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
@@ -232,8 +232,8 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				k0 = (T)((int)ik0-(int)i_u.planeDataConfig->spectral_complex_data_size[0]);
 
 			complex U[2];
-			U[0] = i_u.p_spectral_get(ik1, ik0);
-			U[1] = i_v.p_spectral_get(ik1, ik0);
+			U[0] = i_u.spectral_get(ik1, ik0);
+			U[1] = i_v.spectral_get(ik1, ik0);
 
 			/*
 			 * Eigenvalues
@@ -258,13 +258,13 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 #if BURGERS_PLANE_TS_L_DIRECT_QUADPRECISION
 			std::complex<double> tmp1(U[0].real(), U[0].imag());
-			o_u.p_spectral_set(ik1, ik0, tmp1);
+			o_u.spectral_set(ik1, ik0, tmp1);
 
 			std::complex<double> tmp2(U[1].real(), U[1].imag());
-			o_v.p_spectral_set(ik1, ik0, tmp2);
+			o_v.spectral_set(ik1, ik0, tmp2);
 #else
-			o_u.p_spectral_set(ik1, ik0, U[0]);
-			o_v.p_spectral_set(ik1, ik0, U[1]);
+			o_u.spectral_set(ik1, ik0, U[0]);
+			o_v.spectral_set(ik1, ik0, U[1]);
 #endif
 		}
 	}
@@ -277,13 +277,13 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	o_u.spectral_zeroAliasingModes();
 	o_v.spectral_zeroAliasingModes();
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
-#else
+///#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+///	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
+///	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
+///#else
 	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_u);
 	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_v);
-#endif
+///#endif
 }
 
 

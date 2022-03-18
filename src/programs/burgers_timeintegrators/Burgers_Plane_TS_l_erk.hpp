@@ -10,7 +10,7 @@
 
 
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
@@ -30,13 +30,13 @@ class Burgers_Plane_TS_l_erk	: public Burgers_Plane_TS_interface
 
 private:
 	void euler_timestep_update(
-			const PlaneData &i_tmp,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_tmp,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_tmp_t,	///< time updates
-			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t,	///< time updates
+			PlaneData_Spectral &o_tmp_t,	///< time updates
+			PlaneData_Spectral &o_u_t,	///< time updates
+			PlaneData_Spectral &o_v_t,	///< time updates
 
 			double i_simulation_timestamp = -1
 	);
@@ -52,9 +52,9 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
-			PlaneData &io_u_prev,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_u_prev,	///< prognostic variables
 			PlaneData &io_v_prev,	///< prognostic variables
 
 			double i_fixed_dt = 0,

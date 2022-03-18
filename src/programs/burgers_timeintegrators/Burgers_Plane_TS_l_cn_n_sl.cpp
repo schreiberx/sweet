@@ -10,10 +10,10 @@
 
 
 void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
-		PlaneData &io_u_prev,	///< prognostic variables
-		PlaneData &io_v_prev,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -33,8 +33,8 @@ void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
 
 	//Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			io_u_prev, io_v_prev,
-			io_u, io_v,
+			io_u_prev.toPhys(), io_v_prev.toPhys(),
+			io_u.toPhys(), io_v.toPhys(),
 			posx_a, posy_a,
 			dt,
 			posx_d, posy_d,
@@ -102,7 +102,7 @@ void Burgers_Plane_TS_l_cn_n_sl::setup()
 	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
-	PlaneData tmp_x(op.planeDataConfig);
+	PlaneData_Physical tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
@@ -111,7 +111,7 @@ void Burgers_Plane_TS_l_cn_n_sl::setup()
 		false
 	);
 
-	PlaneData tmp_y(op.planeDataConfig);
+	PlaneData_Physical tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
@@ -121,8 +121,8 @@ void Burgers_Plane_TS_l_cn_n_sl::setup()
 	);
 
 	// Initialize arrival points with h position
-	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];

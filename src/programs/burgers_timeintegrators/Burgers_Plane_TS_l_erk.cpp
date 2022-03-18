@@ -13,13 +13,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void Burgers_Plane_TS_l_erk::euler_timestep_update(
-		const PlaneData &i_tmp,	///< prognostic variables (perturbed part of height)
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_tmp,	///< prognostic variables (perturbed part of height)
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_tmp_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
+		PlaneData_Spectral &o_tmp_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -49,10 +49,10 @@ void Burgers_Plane_TS_l_erk::euler_timestep_update(
 
 
 void Burgers_Plane_TS_l_erk::run_timestep(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
-		PlaneData &io_u_prev,	///< prognostic variables
-		PlaneData &io_v_prev,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -63,11 +63,11 @@ void Burgers_Plane_TS_l_erk::run_timestep(
 
 
 	// setup dummy data
-	PlaneData tmp(io_u.planeDataConfig);
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	PlaneData_Spectral tmp(io_u.planeDataConfig);
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	tmp.spectral_set_all(0,0);
-#endif
-	tmp.physical_set_all(0);
+//#endif
+//	tmp.physical_set_all(0);
 
 	// run standard Runge Kutta
 	timestepping_rk.run_timestep(

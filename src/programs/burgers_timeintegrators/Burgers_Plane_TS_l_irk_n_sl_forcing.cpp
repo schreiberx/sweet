@@ -10,10 +10,10 @@
 
 
 void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
-		PlaneData &io_u_prev,	///< prognostic variables
-		PlaneData &io_v_prev,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -30,8 +30,8 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 
 	//Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			io_u_prev, io_v_prev,
-			io_u, io_v,
+			io_u_prev.toPhys(), io_v_prev.toPhys(),
+			io_u.toPhys(), io_v.toPhys(),
 			posx_a, posy_a,
 			i_fixed_dt,
 			posx_d, posy_d,
@@ -65,11 +65,11 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 			staggering.v[1]
 	);
 
-	PlaneData u=io_u;
-	PlaneData v=io_v;
+	PlaneData_Spectral u=io_u;
+	PlaneData_Spectral v=io_v;
 
 	// Initialize and set timestep dependent source for manufactured solution
-	PlaneData f(io_u.planeDataConfig);
+	PlaneData_Spectral f(io_u.planeDataConfig);
 
 	BurgersValidationBenchmarks::set_source(
 			simVars.timecontrol.current_simulation_time+i_fixed_dt,
@@ -81,18 +81,21 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 	f.request_data_spectral();
 
 	// Setting explicit right hand side and operator of the left hand side
-	PlaneData rhs_u = u;
-	PlaneData rhs_v = v;
+	PlaneData_Spectral rhs_u = u;
+	PlaneData_Spectral rhs_v = v;
 
 	rhs_u += i_fixed_dt*f;
 
 	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 	{
-		PlaneData lhs = u;
+		PlaneData_Spectral lhs = u;
 
-		lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
-		io_u = rhs_u.spectral_div_element_wise(lhs);
-		io_v = rhs_v.spectral_div_element_wise(lhs);
+		//lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+		//io_u = rhs_u.spectral_div_element_wise(lhs);
+		//io_v = rhs_v.spectral_div_element_wise(lhs);
+		lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
+		io_u = rhs_u / lhs;
+		io_v = rhs_v / lhs;
 
 	} else { //Jacobi
 		SWEETError("NOT available");
@@ -115,7 +118,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::setup()
 	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
-	PlaneData tmp_x(op.planeDataConfig);
+	PlaneData_Physical tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
@@ -124,7 +127,7 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::setup()
 		false
 	);
 
-	PlaneData tmp_y(op.planeDataConfig);
+	PlaneData_Physical tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
@@ -134,8 +137,8 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::setup()
 	);
 
 	// Initialize arrival points with h position
-	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
