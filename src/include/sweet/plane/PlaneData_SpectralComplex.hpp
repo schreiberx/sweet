@@ -751,7 +751,7 @@ public:
 
 
 	inline
-	const std::complex<double>& spectral_get_(
+	const std::complex<double>& spectral_get(
 			int in,
 			int im
 	)	const

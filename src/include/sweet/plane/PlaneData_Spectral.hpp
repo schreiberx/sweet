@@ -248,7 +248,6 @@ public:
 	void spectral_zeroAliasingModes()
 	{
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1	/// ALWAYS run this to eliminate Nyquist Frequency even without dealiasing activated
-		assert(spectral_space_data_valid);
 
 		//SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int k = 0; k < 2; k++)
@@ -287,8 +286,6 @@ public:
 	void spectral_debugCheckForZeroAliasingModes()	const
 	{
 #if SWEET_DEBUG
-		if (!spectral_space_data_valid)
-			SWEETError("Spectral data not valid, but trying to apply anti-aliasing rule!\nDid you call spectral_zeroAliasingModes() after initializing data in physical space?");
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int k = 0; k < 2; k++)
@@ -993,7 +990,7 @@ public:
 ///////////	}
 
 
-	const std::complex<double>& spectral_get_(
+	const std::complex<double>& spectral_get(
 			int i_n,
 			int i_m
 	)	const
@@ -1320,6 +1317,50 @@ public:
 			this->loadPlaneDataPhysical(phys);
 		return status;
 	}
+
+	inline
+	void print_spectralData()	const
+	{
+		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
+
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				std::cout << "(" << value.real() << ", " << value.imag() << ")\t";
+			}
+			std::cout << std::endl;
+		}
+	}
+
+
+	/**
+	 * print spectral data and zero out values which are numerically close to zero
+	 */
+	inline
+	void print_spectralData_zeroNumZero(double i_zero_threshold = 1e-13)	const
+	{
+		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
+
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+
+				double re = value.real();
+				double im = value.imag();
+
+				if (std::abs(re) < i_zero_threshold)	re = 0.0;
+				if (std::abs(im) < i_zero_threshold)	im = 0.0;
+
+				std::cout << "(" << re << ", " << im << ")\t";
+			}
+			std::cout << std::endl;
+		}
+	}
+
 
 
 
@@ -1653,7 +1694,7 @@ public:
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				const std::complex<double> &value = spectral_get_(y, x);
+				const std::complex<double> &value = spectral_get(y, x);
 				file << "(" << value.real() << ", " << value.imag() << ")";
 
 				if (x < planeDataConfig->spectral_data_size[0]-1)
@@ -1763,7 +1804,7 @@ public:
 			std::size_t i
 	) const
 	{
-		std::complex<double> val = spectral_get_(j,i);
+		std::complex<double> val = spectral_get(j,i);
 		val.real(val.real()*2/(planeDataConfig->physical_array_data_number_of_elements));
 		val.imag(val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements));
 
@@ -1776,7 +1817,7 @@ public:
 			std::size_t i
 	) const
 	{
-		std::complex<double> val = spectral_get_(j,i);
+		std::complex<double> val = spectral_get(j,i);
 		val.real(val.real()*2/(planeDataConfig->physical_array_data_number_of_elements));
 		val.imag(val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements));
 

@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_ERK_HPP_
 
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
@@ -31,9 +31,9 @@ class Adv_Plane_TS_na_erk	: public Adv_Plane_TS_interface
 
 private:
 	void euler_timestep_update(
-			const PlaneData &i_phi,	///< prognostic variables
-			const PlaneData &i_vort,	///< prognostic variables
-			const PlaneData &i_div,	///< prognostic variables
+			const PlaneData_Spectral &i_phi,	///< prognostic variables
+			const PlaneData_Spectral &i_vort,	///< prognostic variables
+			const PlaneData_Spectral &i_div,	///< prognostic variables
 
 			PlaneData &o_phi_t,	///< time updates
 			PlaneData &o_vort_t,	///< time updates
@@ -53,9 +53,9 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_phi,	///< prognostic variables
-			PlaneData &io_vort,	///< prognostic variables
-			PlaneData &io_div,	///< prognostic variables
+			PlaneData_Spectral &io_phi,	///< prognostic variables
+			PlaneData_Spectral &io_vort,	///< prognostic variables
+			PlaneData_Spectral &io_div,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

@@ -481,7 +481,7 @@ public:
 									 */
 									///prog[outer_prog_id]->request_data_spectral();
 
-									std::complex<double> val = prog[outer_prog_id]->spectral_get_(j, i);
+									std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 									val = val - 1.0;
 									prog[outer_prog_id]->spectral_set(j, i, val);
 
@@ -504,7 +504,7 @@ public:
 										{
 											for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 											{
-												file << prog[inner_prog_id]->spectral_get_(j, i).real();
+												file << prog[inner_prog_id]->spectral_get(j, i).real();
 												file << "\t";
 											}
 										}
@@ -524,7 +524,7 @@ public:
 										{
 											for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 											{
-												file << prog[inner_prog_id]->spectral_get_(j, i).imag();
+												file << prog[inner_prog_id]->spectral_get(j, i).imag();
 
 												if (inner_prog_id != number_of_prognostic_variables-1 || c != specmodes-1)
 													file << "\t";

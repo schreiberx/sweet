@@ -168,9 +168,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 
 			complex U[3];
-			U[0] = io_h_pert.spectral_get_(ik1, ik0);
-			U[1] = io_u.spectral_get_(ik1, ik0);
-			U[2] = io_v.spectral_get_(ik1, ik0);
+			U[0] = io_h_pert.spectral_get(ik1, ik0);
+			U[1] = io_u.spectral_get(ik1, ik0);
+			U[2] = io_v.spectral_get(ik1, ik0);
 
 			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 			complex c = -k1*I;
@@ -508,9 +508,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				k0 = (T)((int)ik0-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[0]);
 
 			complex U[3];
-			U[0] = i_h_pert.spectral_get_(ik1, ik0);
-			U[1] = i_u.spectral_get_(ik1, ik0);
-			U[2] = i_v.spectral_get_(ik1, ik0);
+			U[0] = i_h_pert.spectral_get(ik1, ik0);
+			U[1] = i_u.spectral_get(ik1, ik0);
+			U[2] = i_v.spectral_get(ik1, ik0);
 
 			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 			complex c = -k1*I;

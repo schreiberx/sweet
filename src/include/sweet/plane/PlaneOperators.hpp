@@ -512,7 +512,7 @@ public:
 				{
 					for (int i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 					{
-						std::complex<double> data = diff_c_x.spectral_get_(j, i);
+						std::complex<double> data = diff_c_x.spectral_get(j, i);
 						diff2_c_x.spectral_set(j, i, data*data);
 					}
 				}
@@ -525,7 +525,7 @@ public:
 				{
 					for (int i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < (int)planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 					{
-						std::complex<double> data = diff_c_y.spectral_get_(j, i);
+						std::complex<double> data = diff_c_y.spectral_get(j, i);
 						diff2_c_y.spectral_set(j, i, data*data);
 					}
 				}
