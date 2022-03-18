@@ -68,8 +68,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	// Calculate departure points
 	//Calculate departure points - always force to be second order accurate!
 	semiLagrangian.semi_lag_departure_points_settls(
-			u_prev,	v_prev,
-			u,		v,
+			u_prev.toPhys(),	v_prev.toPhys(),
+			u.toPhys(),		v.toPhys(),
 			posx_a,		posy_a,
 			dt,
 			posx_d,	posy_d,			// output
@@ -81,12 +81,12 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 			simVars.disc.semi_lagrangian_convergence_threshold
 	);
 
-	N_u.physical_set_all(0);
-	N_v.physical_set_all(0);
-	N_h.physical_set_all(0);
-	N_h_prev.physical_set_all(0);
-	N_h_ext.physical_set_all(0);
-	hdiv.physical_set_all(0);
+	N_u.spectral_set_zero();
+	N_v.spectral_set_zero();
+	N_h.spectral_set_zero();
+	N_h_prev.spectral_set_zero();
+	N_h_ext.spectral_set_zero();
+	hdiv.spectral_set_zero();
 
 	//Original more stable scheme
 

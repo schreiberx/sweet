@@ -458,6 +458,25 @@ public:
 		bicubic_scalar(i_data, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
+
+public:
+	const PlaneData_Physical bicubic_scalar(
+			PlaneData_Spectral &i_data,				///< sampling data
+
+			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+			//PlaneData* i_pos[2],	///< sampling position
+			double i_shift_x = 0.0,
+			double i_shift_y = 0.0
+	)
+	{
+		PlaneData_Physical tmp = i_data.toPhys();
+		PlaneData_Physical out(planeDataConfig);
+		bicubic_scalar(tmp, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
+		return out;
+	}
+
+
 };
 
 

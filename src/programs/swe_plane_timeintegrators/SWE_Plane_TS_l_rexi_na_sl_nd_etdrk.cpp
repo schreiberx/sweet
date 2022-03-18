@@ -38,13 +38,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 	 */
 	// In lagrangian form, the only nonlinearity is the nonlinear divergence
-	o_u_t.physical_set_zero(); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t.physical_set_zero(); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	o_u_t.spectral_set_zero(); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
+	o_v_t.spectral_set_zero(); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
 
 	// linear div only
 	if (use_only_linear_divergence)
 	{
-		o_h_t.physical_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_t.spectral_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
 	}
 	else
 	{
@@ -117,8 +117,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 	// Calculate departure points - always force to be second order accurate!
 	semiLagrangian.semi_lag_departure_points_settls(
-			u_prev,	v_prev,
-			u,		v,
+			u_prev.toPhys(),	v_prev.toPhys(),
+			u.toPhys(),		v.toPhys(),
 			posx_a,		posy_a,
 			i_dt,
 			posx_d,	posy_d,			// output

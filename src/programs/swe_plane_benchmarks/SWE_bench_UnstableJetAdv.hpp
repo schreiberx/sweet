@@ -142,7 +142,7 @@ class SWE_bench_UnstableJetAdv
 				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
 				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
 
-				depth_phys.physical_set_value(j, i, o_depth.physical_get(j, 0) + bump(x,y));
+				depth_phys.physical_set_value(j, i, depth_phys.physical_get(j, 0) + bump(x,y));
 
 			}
 		}

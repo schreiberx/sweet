@@ -881,9 +881,9 @@ public:
 				}
 			}
 		};
-		std::cout<< "[MULE] benchmark_normal_modes.h_max:"<<o_h.reduce_max_abs()<<std::endl;
-		std::cout<< "[MULE] benchmark_normal_modes.u_max:"<<o_u.reduce_max_abs()<<std::endl;
-		std::cout<< "[MULE] benchmark_normal_modes.v_max:"<<o_v.reduce_max_abs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.h_max:"<<o_h.spectral_reduce_max_abs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.u_max:"<<o_u.spectral_reduce_max_abs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.v_max:"<<o_v.spectral_reduce_max_abs()<<std::endl;
 		
 		//o_h.print_spectralData_zeroNumZero();
 		

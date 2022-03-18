@@ -374,7 +374,7 @@ public:
 			PlaneData_Spectral I(o_h.planeDataConfig);
 			I.spectral_set_zero();
 			//I.spectral_addScalarAll(1.0);
-			I += 1.0;
+			I = I + 1.0;
 
 			PlaneData_Spectral lhs = R_1*(I - laplace*B);
 			//PlaneData_Spectral new_chi = stuff_chi.spectral_div_element_wise(laplace).spectral_div_element_wise(lhs);

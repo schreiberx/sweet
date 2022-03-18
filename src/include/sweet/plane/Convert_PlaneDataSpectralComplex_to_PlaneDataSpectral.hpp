@@ -23,7 +23,7 @@ public:
 	)
 	{
 		PlaneData_PhysicalComplex tmp_cplx = i_planeData.toPhys();
-		PlaneData_Physical tmp(i_sphereData.planeDataConfig);
+		PlaneData_Physical tmp(i_planeData.planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < tmp_cplx.planeDataConfig->physical_array_data_number_of_elements; i++)
@@ -39,7 +39,7 @@ public:
 	)
 	{
 		PlaneData_PhysicalComplex tmp_cplx = i_planeData.toPhys();
-		PlaneData_Physical tmp(i_sphereData.planeDataConfig);
+		PlaneData_Physical tmp(i_planeData.planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < tmp_cplx.planeDataConfig->physical_array_data_number_of_elements; i++)

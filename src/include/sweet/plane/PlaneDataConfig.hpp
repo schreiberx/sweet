@@ -740,7 +740,7 @@ public:
 
 
 
-	void fft_spectral_to_complex_physical(
+	void fft_complex_spectral_to_physical(
 			std::complex<double> *i_spectral_data,
 			std::complex<double> *o_physical_data
 	)	const

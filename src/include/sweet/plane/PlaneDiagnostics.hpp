@@ -35,7 +35,7 @@ public:
 		PlaneData_Physical v_phys = i_prog_v.toPhys();
 
 		// mass (mean depth needs to be added)
-		io_simVars.diag.total_mass = (i_prog_h+ io_simVars.sim.h0).reduce_sum_quad() * normalization;
+		io_simVars.diag.total_mass = (h_phys+ io_simVars.sim.h0).physical_reduce_sum_quad() * normalization;
 
 		// energy
 		PlaneData_Physical pot_energy = (h_phys + io_simVars.sim.h0)*(io_simVars.sim.gravitation*normalization);
@@ -83,7 +83,7 @@ public:
 		PlaneData_Physical pot_energy = (h_phys + io_simVars.sim.h0)*(io_simVars.sim.gravitation*normalization);
 		PlaneData_Physical kin_energy = (h_phys + io_simVars.sim.h0)*(u_phys*u_phys+v_phys*v_phys)*(0.5*normalization);
 
-		io_simVars.diag.total_energy = (pot_energy + kin_energy).toPhys().physical_reduce_sum_quad();
+		io_simVars.diag.total_energy = (pot_energy + kin_energy).physical_reduce_sum_quad();
 
 		// total vorticity
 		PlaneData_Spectral eta = (op.diff_c_x(v) - op.diff_c_y(u) + io_simVars.sim.plane_rotating_f0);

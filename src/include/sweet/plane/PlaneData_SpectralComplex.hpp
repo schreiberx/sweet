@@ -8,16 +8,32 @@
 #ifndef SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
 #define SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
 
+///#include <complex>
+///#include <functional>
+///#include <array>
+///#include <string.h>
+///#include <iostream>
+///#include <fstream>
+///#include <iomanip>
+///#include <cassert>
+///#include <utility>
+///#include <functional>
+
 #include <complex>
-#include <functional>
-#include <array>
-#include <string.h>
+#include <cassert>
+#include <cstddef>
+#include <cassert>
+#include <algorithm>
+#include <memory>
+#include <stdlib.h>
+#include <string>
 #include <iostream>
+#include <utility>
+#include <limits>
 #include <fstream>
 #include <iomanip>
-#include <cassert>
-#include <utility>
 #include <functional>
+#include <cmath>
 
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/parmemcpy.hpp>
@@ -127,8 +143,6 @@ public:
 
 		operator=(i_plane_data);
 	}
-
-
 
 
 public:
@@ -349,7 +363,7 @@ public:
 		 * We have to use a temporary array here because of destructive SH transformations
 		 */
 		PlaneData_SpectralComplex tmp = *this;
-		planeDataConfig->fft_complex_spectral_to_physical(tmp->spectral_space_data, out.spectral_space_data);
+		planeDataConfig->fft_complex_spectral_to_physical(tmp.spectral_space_data, out.physical_space_data);
 
 		return out;
 	}
@@ -474,6 +488,21 @@ public:
 		return out_plane_data;
 	}
 
+	PlaneData_SpectralComplex operator/(
+			const PlaneData_SpectralComplex &i_plane_data
+	)	const
+	{
+		check_planeDataConfig_identical_res(i_plane_data.planeDataConfig);
+
+		PlaneData_SpectralComplex out_plane_data(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+			out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] / i_plane_data.spectral_space_data[idx];
+
+		return out_plane_data;
+	}
+
 
 	const PlaneData_SpectralComplex& operator/=(
 			const std::complex<double> &i_value
@@ -552,6 +581,43 @@ public:
 		return out_plane_data;
 	}
 
+	/**
+	 * Apply a linear operator given by this class to the input data array.
+	 */
+	inline
+	PlaneData_SpectralComplex operator()(
+			const PlaneData_SpectralComplex &i_array_data
+	)	const
+	{
+		PlaneData_SpectralComplex out(planeDataConfig);
+
+///#if SWEET_USE_PLANE_COMPLEX_SPECTRAL_SPACE
+
+		PlaneData_SpectralComplex &rw_array_data = (PlaneData_SpectralComplex&)i_array_data;
+
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx]*i_array_data.spectral_space_data[idx];
+		);
+
+		out.spectral_zeroAliasingModes();
+
+////////#else
+////////
+////////		PlaneDataComplex &rw_array_data = (PlaneDataComplex&)i_array_data;
+////////
+////////		kernel_apply(
+////////				planeDataConfig->physical_data_size[0],
+////////				planeDataConfig->physical_data_size[1],
+////////				rw_array_data.physical_space_data,
+////////
+////////				out.physical_space_data
+////////			);
+////////#endif
+
+
+		return out;
+	}
+
 
 
 
@@ -624,6 +690,7 @@ public:
 
 
 
+	// TODO: CHECK
 	inline
 	void spectral_update_lambda(
 			std::function<void(int,int,Tcomplex&)> i_lambda
@@ -633,7 +700,7 @@ public:
 		for (int n = 0; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
 		{
 			int idx = planeDataConfig->getArrayIndexByModes_Complex(n, -n);
-			for (int m = -n; m <= n; m++)
+			for (int m = -n; m <= n; m++) // TODO: CHECK
 			{
 				i_lambda(n, m, spectral_space_data[idx]);
 				idx++;
@@ -642,16 +709,16 @@ public:
 	}
 
 
-	inline
-	void spectral_update_lambda_array_indices(
-			std::function<void(int,int,std::complex<double>&)> i_lambda	///< lambda function to return value for lat/mu
-	)
-	{
-		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX_ALL (
-				i_lambda(idx, spectral_space_data[idx]);
-		);
-		spectral_zeroAliasingModes();
-	}
+////	inline
+////	void spectral_update_lambda_array_indices(
+////			std::function<void(int,int,std::complex<double>&)> i_lambda	///< lambda function to return value for lat/mu
+////	)
+////	{
+////		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX_ALL (
+////				i_lambda(i, j, spectral_space_data[idx]);
+////		);
+////		spectral_zeroAliasingModes();
+////	}
 
 
 	inline
@@ -717,6 +784,117 @@ public:
 			}
 		}
 	}
+
+	void spectral_set(
+			int i_n,
+			int i_m,
+			double i_real,
+			double i_imag
+	)	const
+	{
+#if SWEET_DEBUG
+		if (i_n < 0 ||  i_m < 0)
+			SWEETError("Out of boundary a");
+
+		if (i_n > planeDataConfig->spectral_data_size[0])
+			SWEETError("Out of boundary b");
+
+		if (i_m > planeDataConfig->spectral_data_size[1])
+			SWEETError("Out of boundary c");
+
+		if (i_m > i_n)
+			SWEETError("Out of boundary d");
+
+		assert (i_m <= planeDataConfig->spectral_data_size[1]);
+#endif
+
+		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].real(i_real);
+		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].imag(i_imag);
+	}
+
+	void spectral_set(
+			int i_n,
+			int i_m,
+			std::complex<double> i_data
+	)	const
+	{
+#if SWEET_DEBUG
+		if (i_n < 0 ||  i_m < 0)
+			SWEETError("Out of boundary a");
+
+		if (i_n > planeDataConfig->spectral_data_size[0])
+			SWEETError("Out of boundary b");
+
+		if (i_m > planeDataConfig->spectral_data_size[1])
+			SWEETError("Out of boundary c");
+
+		if (i_m > i_n)
+			SWEETError("Out of boundary d");
+
+		assert (i_m <= planeDataConfig->spectral_data_size[1]);
+#endif
+
+		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].real(i_data.real());
+		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].imag(i_data.imag());
+	}
+
+
+	/**
+	 * Add scalar to all spectral modes
+	 */
+	inline
+	PlaneData_SpectralComplex spectral_addScalarAll(
+			const double &i_value
+	)	const
+	{
+		PlaneData_SpectralComplex out(planeDataConfig);
+
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
+		);
+
+		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
+
+	/**
+	 * Add scalar to all spectral modes
+	 */
+	inline
+	PlaneData_SpectralComplex spectral_addScalarAll(
+			const std::complex<double> &i_value
+	)	const
+	{
+		PlaneData_SpectralComplex out(planeDataConfig);
+
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
+		);
+
+		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
+	/**
+	 * Return Plane Array with all spectral coefficients a+bi --> 1/(a+bi)
+	 */
+	inline
+	PlaneData_SpectralComplex spectral_invert()	const
+	{
+		PlaneData_SpectralComplex out(planeDataConfig);
+
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = 1.0/spectral_space_data[idx];
+		);
+
+		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
 
 
 	void spectral_print(

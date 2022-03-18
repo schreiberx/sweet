@@ -259,7 +259,7 @@ public:
 
 		// Add 1 to get denominator
 		//diff = diff.spectral_addScalarAll(1.0);
-		diff += 1.0;
+		diff = diff + 1.0;
 
 		// Invert
 		diff = diff.spectral_invert();
@@ -348,28 +348,28 @@ public:
 				{0,1,1},
 				{0,0,0},
 		};
-		avg_f_x.kernel_stencil_setup(avg_f_x_kernel, 0.5);
+		avg_f_x.toPhys().kernel_stencil_setup(avg_f_x_kernel, 0.5);
 
 		double avg_f_y_kernel[3][3] = {
 				{0,1,0},
 				{0,1,0},
 				{0,0,0},
 		};
-		avg_f_y.kernel_stencil_setup(avg_f_y_kernel, 0.5);
+		avg_f_y.toPhys().kernel_stencil_setup(avg_f_y_kernel, 0.5);
 
 		double avg_b_x_kernel[3][3] = {
 				{0,0,0},
 				{1,1,0},
 				{0,0,0},
 		};
-		avg_b_x.kernel_stencil_setup(avg_b_x_kernel, 0.5);
+		avg_b_x.toPhys().kernel_stencil_setup(avg_b_x_kernel, 0.5);
 
 		double avg_b_y_kernel[3][3] = {
 				{0,0,0},
 				{0,1,0},
 				{0,1,0},
 		};
-		avg_b_y.kernel_stencil_setup(avg_b_y_kernel, 0.5);
+		avg_b_y.toPhys().kernel_stencil_setup(avg_b_y_kernel, 0.5);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -378,28 +378,28 @@ public:
 				{0,0,1},
 				{0,0,0},
 		};
-		shift_left.kernel_stencil_setup(shift_left_kernel);
+		shift_left.toPhys().kernel_stencil_setup(shift_left_kernel);
 
 		double shift_right_kernel[3][3] = {
 				{0,0,0},
 				{1,0,0},
 				{0,0,0},
 		};
-		shift_right.kernel_stencil_setup(shift_right_kernel);
+		shift_right.toPhys().kernel_stencil_setup(shift_right_kernel);
 
 		double shift_up_kernel[3][3] = {
 				{0,0,0},
 				{0,0,0},
 				{0,1,0},
 		};
-		shift_up.kernel_stencil_setup(shift_up_kernel);
+		shift_up.toPhys().kernel_stencil_setup(shift_up_kernel);
 
 		double shift_down_kernel[3][3] = {
 				{0,1,0},
 				{0,0,0},
 				{0,0,0},
 		};
-		shift_down.kernel_stencil_setup(shift_down_kernel);
+		shift_down.toPhys().kernel_stencil_setup(shift_down_kernel);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -477,14 +477,14 @@ public:
 					{0,-1,1},
 					{0,0,0}
 			};
-			diff_f_x.kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
+			diff_f_x.toPhys().kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
 
 			double d_f_y_kernel[3][3] = {
 					{0,1,0},
 					{0,-1,0},
 					{0,0,0},
 			};
-			diff_f_y.kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
+			diff_f_y.toPhys().kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
 
 
 			double d_b_x_kernel[3][3] = {
@@ -492,14 +492,14 @@ public:
 					{-1,1,0},
 					{0,0,0}
 			};
-			diff_b_x.kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
+			diff_b_x.toPhys().kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
 
 			double d_b_y_kernel[3][3] = {
 					{0,0,0},
 					{0,1,0},
 					{0,-1,0},
 			};
-			diff_b_y.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
+			diff_b_y.toPhys().kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
 
 
 			/*
@@ -544,28 +544,28 @@ public:
 					{-1.0,0,1.0},
 					{0,0,0}
 			};
-			diff_c_x.kernel_stencil_setup(diff1_x_kernel, 1.0/(2.0*h[0]));
+			diff_c_x.toPhys().kernel_stencil_setup(diff1_x_kernel, 1.0/(2.0*h[0]));
 
 			double diff1_y_kernel[3][3] = {
 					{0,1.0,0},	// higher y coordinate
 					{0,0,0},
 					{0,-1.0,0},	// lower y coordinate
 			};
-			diff_c_y.kernel_stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
+			diff_c_y.toPhys().kernel_stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
 
 			double d_f_x_kernel[3][3] = {
 					{0,0,0},
 					{0,-1,1},
 					{0,0,0}
 			};
-			diff_f_x.kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
+			diff_f_x.toPhys().kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
 
 			double d_f_y_kernel[3][3] = {
 					{0,1,0},
 					{0,-1,0},
 					{0,0,0},
 			};
-			diff_f_y.kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
+			diff_f_y.toPhys().kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
 
 
 			double d_b_x_kernel[3][3] = {
@@ -573,14 +573,14 @@ public:
 					{-1,1,0},
 					{0,0,0}
 			};
-			diff_b_x.kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
+			diff_b_x.toPhys().kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
 
 			double d_b_y_kernel[3][3] = {
 					{0,0,0},
 					{0,1,0},
 					{0,-1,0},
 			};
-			diff_b_y.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
+			diff_b_y.toPhys().kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
 
 
 			double diff2_x_kernel[3][3] = {
@@ -588,14 +588,14 @@ public:
 					{1.0,-2.0,1.0},
 					{0,0,0}
 				};
-			diff2_c_x.kernel_stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
+			diff2_c_x.toPhys().kernel_stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
 
 			double diff2_y_kernel[3][3] = {
 					{0,1.0,0},
 					{0,-2.0,0},
 					{0,1.0,0}
 			};
-			diff2_c_y.kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
+			diff2_c_y.toPhys().kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
 		}
 	}
 

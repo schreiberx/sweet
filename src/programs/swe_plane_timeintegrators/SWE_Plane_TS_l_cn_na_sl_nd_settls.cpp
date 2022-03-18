@@ -89,8 +89,8 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			u_prev,	v_prev,
-			io_u,		io_v,
+			u_prev.toPhys(),	v_prev.toPhys(),
+			io_u.toPhys(),		io_v.toPhys(),
 			posx_a,	posy_a,
 			dt,
 			posx_d,	posy_d,
@@ -155,7 +155,8 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 #endif
 		}
 		// Average
-		nonlin = 0.5*(io_h*div) + 0.5*sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+	        PlaneData_Physical hdiv_phys = hdiv.toPhys();
+		nonlin = 0.5*(io_h*div) + 0.5*sampler2D.bicubic_scalar(hdiv_phys, posx_d, posy_d, -0.5, -0.5);
 
 		// Add to RHS h (TODO (2020-03-16): No clue why there's a -2.0)
 		rhs_h = rhs_h - 2.0*nonlin;

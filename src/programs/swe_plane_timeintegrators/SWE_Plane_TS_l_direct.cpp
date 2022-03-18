@@ -7,7 +7,7 @@
 
 #include "../swe_plane_timeintegrators/SWE_Plane_TS_l_direct.hpp"
 
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
@@ -140,9 +140,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	T s0 = simVars.sim.plane_domain_size[0];
 	T s1 = simVars.sim.plane_domain_size[1];
 
-	io_h_pert.request_data_spectral();
-	io_u.request_data_spectral();
-	io_v.request_data_spectral();
+	//io_h_pert.request_data_spectral();
+	//io_u.request_data_spectral();
+	//io_v.request_data_spectral();
 
 	T f = simVars.sim.plane_rotating_f0;
 	T h = simVars.sim.h0;
@@ -168,9 +168,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 
 			complex U[3];
-			U[0] = io_h_pert.spectral_get(ik1, ik0);
-			U[1] = io_u.spectral_get(ik1, ik0);
-			U[2] = io_v.spectral_get(ik1, ik0);
+			U[0] = io_h_pert.spectral_get_(ik1, ik0);
+			U[1] = io_u.spectral_get_(ik1, ik0);
+			U[2] = io_v.spectral_get_(ik1, ik0);
 
 			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 			complex c = -k1*I;
@@ -413,17 +413,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 #if SWEET_QUADMATH
 			std::complex<double> tmp0(U[0].real(), U[0].imag());
-			io_h_pert.p_spectral_set(ik1, ik0, tmp0);
+			io_h_pert.spectral_set(ik1, ik0, tmp0);
 
 			std::complex<double> tmp1(U[1].real(), U[1].imag());
-			io_u.p_spectral_set(ik1, ik0, tmp1);
+			io_u.spectral_set(ik1, ik0, tmp1);
 
 			std::complex<double> tmp2(U[2].real(), U[2].imag());
-			io_v.p_spectral_set(ik1, ik0, tmp2);
+			io_v.spectral_set(ik1, ik0, tmp2);
 #else
-			io_h_pert.p_spectral_set(ik1, ik0, U[0]);
-			io_u.p_spectral_set(ik1, ik0, U[1]);
-			io_v.p_spectral_set(ik1, ik0, U[2]);
+			io_h_pert.spectral_set(ik1, ik0, U[0]);
+			io_u.spectral_set(ik1, ik0, U[1]);
+			io_v.spectral_set(ik1, ik0, U[2]);
 #endif
 		}
 	}
@@ -458,9 +458,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 /////	PlaneData_SpectralComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
 /////	PlaneData_SpectralComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
 /////#else
-	PlaneData_SpectralComplex i_h_pert = Convert_PlaneDataiSpectral_To_PlaneDataSpectralComplex::spectral_convert(io_h_pert);
-	PlaneData_SpectralComplex i_u = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(io_u);
-	PlaneData_SpectralComplex i_v = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(io_v);
+	PlaneData_SpectralComplex i_h_pert = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_h_pert);
+	PlaneData_SpectralComplex i_u = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_u);
+	PlaneData_SpectralComplex i_v = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_v);
 ///////#endif
 
 	PlaneData_SpectralComplex o_h_pert(io_h_pert.planeDataConfig);
@@ -472,16 +472,16 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	T s0 = simVars.sim.plane_domain_size[0];
 	T s1 = simVars.sim.plane_domain_size[1];
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	o_h_pert.spectral_space_data_valid = true;
-	o_h_pert.physical_space_data_valid = false;
-
-	o_u.spectral_space_data_valid = true;
-	o_u.physical_space_data_valid = false;
-
-	o_v.spectral_space_data_valid = true;
-	o_v.physical_space_data_valid = false;
-#endif
+/////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	o_h_pert.spectral_space_data_valid = true;
+/////	o_h_pert.physical_space_data_valid = false;
+/////
+/////	o_u.spectral_space_data_valid = true;
+/////	o_u.physical_space_data_valid = false;
+/////
+/////	o_v.spectral_space_data_valid = true;
+/////	o_v.physical_space_data_valid = false;
+/////#endif
 
 	T f = simVars.sim.plane_rotating_f0;
 	T h = simVars.sim.h0;
@@ -508,9 +508,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				k0 = (T)((int)ik0-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[0]);
 
 			complex U[3];
-			U[0] = i_h_pert.p_spectral_get(ik1, ik0);
-			U[1] = i_u.p_spectral_get(ik1, ik0);
-			U[2] = i_v.p_spectral_get(ik1, ik0);
+			U[0] = i_h_pert.spectral_get_(ik1, ik0);
+			U[1] = i_u.spectral_get_(ik1, ik0);
+			U[2] = i_v.spectral_get_(ik1, ik0);
 
 			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 			complex c = -k1*I;
@@ -765,17 +765,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			 */
 #if SWEET_QUADMATH
 			std::complex<double> tmp0(U[0].real(), U[0].imag());
-			o_h_pert.p_spectral_set(ik1, ik0, tmp0);
+			o_h_pert.spectral_set(ik1, ik0, tmp0);
 
 			std::complex<double> tmp1(U[1].real(), U[1].imag());
-			o_u.p_spectral_set(ik1, ik0, tmp1);
+			o_u.spectral_set(ik1, ik0, tmp1);
 
 			std::complex<double> tmp2(U[2].real(), U[2].imag());
-			o_v.p_spectral_set(ik1, ik0, tmp2);
+			o_v.spectral_set(ik1, ik0, tmp2);
 #else
-			o_h_pert.p_spectral_set(ik1, ik0, U[0]);
-			o_u.p_spectral_set(ik1, ik0, U[1]);
-			o_v.p_spectral_set(ik1, ik0, U[2]);
+			o_h_pert.spectral_set(ik1, ik0, U[0]);
+			o_u.spectral_set(ik1, ik0, U[1]);
+			o_v.spectral_set(ik1, ik0, U[2]);
 #endif
 		}
 	}
@@ -795,9 +795,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 /////	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 /////	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
 /////#else
-	io_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(o_h_pert);
-	io_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(o_u);
-	io_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(o_v);
+	io_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_h_pert);
+	io_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_u);
+	io_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_v);
 ///////#endif
 }
 

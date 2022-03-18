@@ -1306,6 +1306,23 @@ public:
 		}
 	}
 
+	/**
+	* Call file_physical_loadData from PlaneData_Physical
+	 */
+	bool file_physical_loadData(
+			const char *i_filename,		///< Name of file to load data from
+			bool i_binary_data = false	///< load as binary data (disabled per default)
+	)
+	{
+		PlaneData_Physical phys(this->planeDataConfig);
+		bool status = phys.file_physical_loadData(i_filename, i_binary_data);
+		if (status)
+			this->loadPlaneDataPhysical(phys);
+		return status;
+	}
+
+
+
 	void spectral_structure_print(
 			int i_precision = 16,
 			double i_abs_threshold = -1
@@ -1607,6 +1624,165 @@ public:
 	}
 
 
+	/**
+	 * Write spectral data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_spectral_saveData_ascii(
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 12,		///< number of floating point digits
+			int dimension = 2			///< store 1D or 2D
+	)	const
+	{
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		file << "#SWEET_PLANE_SPECTRAL_CPLX_DATA_ASCII" << std::endl;
+
+		size_t ymax = 0;
+		if (dimension == 2)
+			ymax = planeDataConfig->spectral_data_size[1];
+		else
+			ymax = 1;
+
+		for (std::size_t y = 0; y < ymax; y++)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = spectral_get_(y, x);
+				file << "(" << value.real() << ", " << value.imag() << ")";
+
+				if (x < planeDataConfig->spectral_data_size[0]-1)
+					file << i_separator;
+				else
+					file << std::endl;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Write amplitude of spectral data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_spectral_abs_saveData_ascii(
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 12,		///< number of floating point digits
+			int dimension = 2			///< store 1D or 2D
+	)	const
+	{
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		file << "#SWEET_PLANE_SPECTRAL_ABS_DATA_ASCII" << std::endl;
+
+		size_t ymax = 0;
+		if (dimension == 2)
+			ymax = planeDataConfig->spectral_data_size[1];
+		else
+			ymax = 1;
+
+		for (std::size_t y = 0; y < ymax; y++)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				file << spectral_return_amplitude(y, x);
+
+				if (x < planeDataConfig->spectral_data_size[0]-1)
+					file << i_separator;
+				else
+					file << std::endl;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Write spectral data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_spectral_arg_saveData_ascii(
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 12,		///< number of floating point digits
+			int dimension = 2			///< store 1D or 2D
+	)	const
+	{
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		size_t ymax = 0;
+		if (dimension == 2)
+			ymax = planeDataConfig->spectral_data_size[1];
+		else
+			ymax = 1;
+
+		for (std::size_t y = 0; y < ymax; y++)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+
+				file << spectral_return_phase(y, x);
+
+				if (x < planeDataConfig->spectral_data_size[0]-1)
+					file << i_separator;
+				else
+					file << std::endl;
+			}
+		}
+
+		return true;
+	}
+
+
+	/**
+	 * Return average which is given by the first mode
+	 */
+	inline
+	double get_average()	const
+	{
+		return spectral_space_data[0].real()/(double)planeDataConfig->physical_array_data_number_of_elements;
+	}
+
+	inline
+	double spectral_return_amplitude(
+			std::size_t j,
+			std::size_t i
+	) const
+	{
+		std::complex<double> val = spectral_get_(j,i);
+		val.real(val.real()*2/(planeDataConfig->physical_array_data_number_of_elements));
+		val.imag(val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements));
+
+		return std::abs(val);
+	}
+
+	inline
+	double spectral_return_phase(
+			std::size_t j,
+			std::size_t i
+	) const
+	{
+		std::complex<double> val = spectral_get_(j,i);
+		val.real(val.real()*2/(planeDataConfig->physical_array_data_number_of_elements));
+		val.imag(val.imag()*2/(planeDataConfig->physical_array_data_number_of_elements));
+
+		return std::arg(val);
+	}
+
 
 
 	void normalize(
@@ -1645,28 +1821,28 @@ public:
 	}
 
 
-public:
-	template <int S>
-	void kernel_stencil_setup(
-			const double i_kernel_array[S][S],
-			double i_scale = 1.0
-	)
-	{
-		((PlaneData_Kernels&)*this).kernel_stencil_setup(
-				i_kernel_array,
-				i_scale,
-
-				planeDataConfig,
-				spectral_space_data
-		);
-
-///////#if SWEET_USE_PLANE_SPECTRAL_SPACE
-///////		physical_space_data_valid = true;
-///////		spectral_space_data_valid = false;
-///////
-///////		request_data_spectral();
-///////#endif
-	}
+////public:
+////	template <int S>
+////	void kernel_stencil_setup(
+////			const double i_kernel_array[S][S],
+////			double i_scale = 1.0
+////	)
+////	{
+////		((PlaneData_Kernels&)*this).kernel_stencil_setup(
+////				i_kernel_array,
+////				i_scale,
+////
+////				planeDataConfig,
+////				spectral_space_data
+////		);
+////
+///////////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///////////		physical_space_data_valid = true;
+///////////		spectral_space_data_valid = false;
+///////////
+///////////		request_data_spectral();
+///////////#endif
+////	}
 
 
 	/**

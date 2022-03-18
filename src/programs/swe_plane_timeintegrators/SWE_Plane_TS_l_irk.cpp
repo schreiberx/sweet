@@ -65,8 +65,10 @@ void SWE_Plane_TS_l_irk::run_timestep(
 			- (simVars.sim.plane_rotating_f0*eta_bar/alpha) * (op.diff_c_x(v0) - op.diff_c_y(u0))
 		;
 
-	PlaneData_Spectral lhs = (-g*eta_bar*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(kappa);
-	io_h = rhs.spectral_div_element_wise(lhs);
+	//PlaneData_Spectral lhs = (-g*eta_bar*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(kappa);
+	//io_h = rhs.spectral_div_element_wise(lhs);
+	PlaneData_Spectral lhs = -g*eta_bar*(op.diff2_c_x + op.diff2_c_y) + kappa;
+	io_h = rhs / lhs;
 
 	PlaneData_Spectral uh = u0 - g*op.diff_c_x(io_h);
 	PlaneData_Spectral vh = v0 - g*op.diff_c_y(io_h);

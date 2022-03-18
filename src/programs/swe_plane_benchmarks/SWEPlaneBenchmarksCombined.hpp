@@ -529,7 +529,6 @@ public:
 			PlaneData_Physical v_phys(o_v.planeDataConfig);
 			v_phys.physical_set_zero();
 			v_phys.physical_update_lambda_array_indices(
-			o_v.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);

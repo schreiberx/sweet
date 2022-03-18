@@ -8,8 +8,8 @@
 #ifndef SRC_INCLUDE_SWEET_PLANE_CONVERT_PLANEDATACOMPLEX_TO_PLANEDATA_HPP_
 #define SRC_INCLUDE_SWEET_PLANE_CONVERT_PLANEDATACOMPLEX_TO_PLANEDATA_HPP_
 
-#include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
+#include <sweet/plane/PlaneData_PhysicalComplex.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
 class Convert_PlaneDataPhysicalComplex_To_PlaneDataPhysical

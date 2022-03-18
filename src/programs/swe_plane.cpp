@@ -21,7 +21,7 @@
 
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+////#include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
 
@@ -498,7 +498,7 @@ public:
 
 		const char* filename_template = simVars.iodata.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
-		i_planeData.file_physical_saveData_ascii(buffer);
+		i_planeData.toPhys().file_physical_saveData_ascii(buffer);
 		return buffer;
 	}
 
@@ -678,7 +678,7 @@ public:
 				if (simVars.timecontrol.current_timestep_nr == 0)
 					header << "\tNM_GEO_RMS\tNM_IGWEST_RMS\tNM_IGEAST_RMS";
 
-				rows << "\t" << normalmodes.geo.reduce_rms() << "\t" << normalmodes.igwest.spectral_reduce_rms() << "\t" << normalmodes.igeast.spectral_reduce_rms();
+				rows << "\t" << normalmodes.geo.spectral_reduce_rms() << "\t" << normalmodes.igwest.spectral_reduce_rms() << "\t" << normalmodes.igeast.spectral_reduce_rms();
 
 				//Dump to file all normal mode evolution
 				dump_normal_modes();
@@ -1012,9 +1012,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h_pert.reduce_boolean_all_finite() &&
-					prog_u.reduce_boolean_all_finite() &&
-					prog_v.reduce_boolean_all_finite()
+		return !(	prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 

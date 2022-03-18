@@ -9,11 +9,34 @@
 #define PLANE_DATA_PHYSICAL_HPP_
 
 
+#include <complex>
+#include <cfloat>
+#include <cassert>
+#include <cstddef>
+#include <cassert>
+#include <algorithm>
+#include <memory>
+#include <string.h>
+#include <stdlib.h>
+#include <string>
+#include <iostream>
+#include <utility>
+#include <limits>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <string.h>
+#include <functional>
+#include <utility>
+#include <cmath>
+
+
 
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/SWEETError.hpp>
+#include <sweet/plane/PlaneData_Kernels.hpp>
 
 
 #if SWEET_THREADING_SPACE
@@ -394,6 +417,18 @@ public:
 		return out;
 	}
 
+	PlaneData_Physical& operator/=(
+			double i_scalar
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] /= i_scalar;
+
+		return *this;
+	}
+
+
 
 
 	PlaneData_Physical operator+(
@@ -496,230 +531,28 @@ public:
 		planeDataConfig = nullptr;
 	}
 
+public:
+	template <int S>
+	void kernel_stencil_setup(
+			const double i_kernel_array[S][S],
+			double i_scale = 1.0
+	)
+	{
+		((PlaneData_Kernels&)*this).kernel_stencil_setup(
+				i_kernel_array,
+				i_scale,
+
+				planeDataConfig,
+				physical_space_data
+		);
+
+	}
 
 
-////	/*
-////	 * Set values for all latitude and longitude degrees
-////	 *
-////	 * lambda function parameters: (longitude \in [0;2*pi], Gaussian latitude \in [-M_PI/2;M_PI/2])
-////	 */
-////	void physical_update_lambda(
-////			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
-////	)
-////	{
-////		SWEET_THREADING_SPACE_PARALLEL_FOR
-////
-////#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
-////
-////		for (int i = 0; i < planeDataConfig->physical_num_lon; i++)
-////		{
-////			double lon_degree = ((double)i/(double)planeDataConfig->physical_num_lon)*2.0*M_PI;
-////
-////			for (int j = 0; j < planeDataConfig->physical_num_lat; j++)
-////			{
-////				//double colatitude = acos(shtns->ct[j]);
-////
-////				/*
-////				 * Colatitude is 0 at the north pole and 180 at the south pole
-////				 *
-////				 * WARNING: The latitude degrees are not equidistant spaced in the angles!!!! We have to use the shtns->ct lookup table
-////				 */
-////				//double lat_degree = M_PI*0.5 - colatitude;
-////				double lat_degree = planeDataConfig->lat[j];
-////
-////				i_lambda(lon_degree, lat_degree, physical_space_data[i*planeDataConfig->physical_num_lat + j]);
-////			}
-////		}
-////
-////#else
-////
-////		for (int jlat = 0; jlat < planeDataConfig->physical_num_lat; jlat++)
-////		{
-////			double lat_degree = planeDataConfig->lat[jlat];
-////
-////			for (int ilon = 0; ilon < planeDataConfig->physical_num_lon; ilon++)
-////			{
-////				double lon_degree = ((double)ilon/(double)planeDataConfig->physical_num_lon)*2.0*M_PI;
-////
-////				//double colatitude = acos(shtns->ct[j]);
-////
-////				/*
-////				 * Colatitude is 0 at the north pole and 180 at the south pole
-////				 *
-////				 * WARNING: The latitude degrees are not equidistant spaced in the angles!!!! We have to use the shtns->ct lookup table
-////				 */
-////				//double lat_degree = M_PI*0.5 - colatitude;
-////
-////				i_lambda(lon_degree, lat_degree, physical_space_data[jlat*planeDataConfig->physical_num_lon + ilon]);
-////			}
-////		}
-////
-////#endif
-////	}
-
-
-//////	void physical_update_lambda_array(
-//////			std::function<void(int,int,double&)> i_lambda	///< lambda function to return value for lat/mu
-//////	)
-//////	{
-//////
-//////		SWEET_THREADING_SPACE_PARALLEL_FOR
-//////
-//////#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
-//////
-//////		for (int i = 0; i < planeDataConfig->physical_num_lon; i++)
-//////		{
-//////			for (int j = 0; j < planeDataConfig->physical_num_lat; j++)
-//////			{
-//////				i_lambda(i, j, physical_space_data[i*planeDataConfig->physical_num_lat + j]);
-//////			}
-//////		}
-//////
-//////#else
-//////
-//////		for (int jlat = 0; jlat < planeDataConfig->physical_num_lat; jlat++)
-//////		{
-//////			for (int ilon = 0; ilon < planeDataConfig->physical_num_lon; ilon++)
-//////			{
-//////				i_lambda(ilon, jlat, physical_space_data[jlat*planeDataConfig->physical_num_lon + ilon]);
-//////			}
-//////		}
-//////
-//////#endif
-//////	}
-//////
-//////
-//////	void physical_update_lambda_array_idx(
-//////			std::function<void(int,double&)> i_lambda	///< lambda function to return value for lat/mu
-//////	)
-//////	{
-//////		SWEET_THREADING_SPACE_PARALLEL_FOR
-//////
-//////		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-//////		{
-//////			i_lambda(i, physical_space_data[i]);
-//////		}
-//////	}
-//////
-//////
-//////	/*
-//////	 * Set values for all latitude and longitude degrees
-//////	 *
-//////	 * lambda function parameters: (longitude \in [0;2*pi], Gaussian latitude sin(phi) \in [-1;1])
-//////	 */
-//////	void physical_update_lambda_gaussian_grid(
-//////			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
-//////	)
-//////	{
-//////		SWEET_THREADING_SPACE_PARALLEL_FOR
-//////
-//////#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
-//////
-//////		for (int i = 0; i < planeDataConfig->physical_num_lon; i++)
-//////		{
-//////			double lon_degree = ((double)i/(double)planeDataConfig->physical_num_lon)*2.0*M_PI;
-//////
-//////			for (int j = 0; j < planeDataConfig->physical_num_lat; j++)
-//////			{
-//////				double sin_phi = planeDataConfig->lat_gaussian[j];
-//////
-//////				i_lambda(lon_degree, sin_phi, physical_space_data[i*planeDataConfig->physical_num_lat + j]);
-//////			}
-//////		}
-//////#else
-//////
-//////		for (int jlat = 0; jlat < planeDataConfig->physical_num_lat; jlat++)
-//////		{
-//////			double sin_phi = planeDataConfig->lat_gaussian[jlat];
-//////
-//////			for (int ilon = 0; ilon < planeDataConfig->physical_num_lon; ilon++)
-//////			{
-//////				double lon_degree = ((double)ilon/(double)planeDataConfig->physical_num_lon)*2.0*M_PI;
-//////
-//////				i_lambda(lon_degree, sin_phi, physical_space_data[jlat*planeDataConfig->physical_num_lon + ilon]);
-//////			}
-//////		}
-//////#endif
-//////	}
-//////
-//////
-//////
-//////
-//////	/*
-//////	 * Set values for all latitude and longitude degrees
-//////	 *
-//////	 * lambda function parameters:
-//////	 *   (longitude \in [0;2*pi], Cogaussian latitude cos(phi) \in [0;1])
-//////	 */
-//////	void physical_update_lambda_cogaussian_grid(
-//////			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
-//////	)
-//////	{
-//////
-//////#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
-//////
-//////		SWEET_THREADING_SPACE_PARALLEL_FOR
-//////		for (int i = 0; i < planeDataConfig->physical_num_lon; i++)
-//////		{
-//////			double lon_degree = (((double)i)/(double)planeDataConfig->physical_num_lon)*2.0*M_PI;
-//////
-//////			for (int j = 0; j < planeDataConfig->physical_num_lat; j++)
-//////			{
-//////				double cos_phi = planeDataConfig->lat_cogaussian[j];
-//////
-//////				/*
-//////				 * IDENTITAL FORMULATION
-//////				double mu = shtns->ct[j];
-//////				double comu = sqrt(1.0-mu*mu);
-//////				*/
-//////
-//////				i_lambda(lon_degree, cos_phi, physical_space_data[i*planeDataConfig->physical_num_lat + j]);
-//////			}
-//////		}
-//////#else
-//////
-//////		SWEET_THREADING_SPACE_PARALLEL_FOR
-//////		for (int jlat = 0; jlat < planeDataConfig->physical_num_lat; jlat++)
-//////		{
-//////			double cos_phi = planeDataConfig->lat_cogaussian[jlat];
-//////
-//////			for (int ilon = 0; ilon < planeDataConfig->physical_num_lon; ilon++)
-//////			{
-//////				double lon_degree = (((double)ilon)/(double)planeDataConfig->physical_num_lon)*2.0*M_PI;
-//////
-//////				/*
-//////				 * IDENTITAL FORMULATION
-//////				double mu = shtns->ct[j];
-//////				double comu = sqrt(1.0-mu*mu);
-//////				*/
-//////
-//////				i_lambda(lon_degree, cos_phi, physical_space_data[jlat*planeDataConfig->physical_num_lon + ilon]);
-//////			}
-//////		}
-//////#endif
-//////	}
-//////
-//////
-//////	void physical_update_lambda_sinphi_grid(
-//////			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
-//////	)
-//////	{
-//////		physical_update_lambda_gaussian_grid(i_lambda);
-//////	}
-//////
-//////	void physical_update_lambda_cosphi_grid(
-//////			std::function<void(double,double,double&)> i_lambda	///< lambda function to return value for lat/mu
-//////	)
-//////	{
-//////		physical_update_lambda_cogaussian_grid(i_lambda);
-//////	}
-
-
-
-
+public:
 	void physical_update_lambda_array_indices(
 			std::function<void(int,int,double&)> i_lambda,	///< lambda function to return value for lat/mu
-			bool i_anti_aliasing = true
+			bool anti_aliasing = true
 	)
 	{
 		PLANE_DATA_PHYSICAL_FOR_2D_IDX(
@@ -729,7 +562,8 @@ public:
 
 
 	void physical_update_lambda_array_idx(
-			std::function<void(int,double&)> i_lambda	///< lambda function to return value for lat/mu
+			std::function<void(int,double&)> i_lambda,	///< lambda function to return value for lat/mu
+			bool anti_aliasing = true
 	)
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -743,7 +577,7 @@ public:
 
 	void physical_update_lambda_unit_coordinates_corner_centered(
 			std::function<void(double,double,double&)> i_lambda,	///< lambda function to return value for lat/mu
-			bool i_anti_aliasing = true
+			bool anti_aliasing = true
 	)
 	{
 		PLANE_DATA_PHYSICAL_FOR_2D_IDX(
@@ -757,7 +591,7 @@ public:
 
 	void physical_update_lambda_unit_coordinates_cell_centered(
 			std::function<void(double,double,double&)> i_lambda,	///< lambda function to return value for lat/mu
-			bool i_anti_aliasing = true
+			bool anti_aliasing = true
 	)
 	{
 		PLANE_DATA_PHYSICAL_FOR_2D_IDX(
@@ -809,7 +643,7 @@ public:
 
 
 	/*
-	 * Set all values to a specific value
+	 * Set given point a specific value
 	 */
 	void physical_set_value(
 			int i_y_idx,
@@ -1050,6 +884,22 @@ public:
 	}
 
 
+	/**
+	 * return true, if any value is infinity
+	 */
+	bool physical_reduce_boolean_all_finite() const
+	{
+
+		bool isallfinite = true;
+
+#if SWEET_THREADING_SPACE
+#pragma omp parallel for PROC_BIND_CLOSE reduction(&&:isallfinite)
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			isallfinite = isallfinite && std::isfinite(physical_space_data[i]);
+
+		return isallfinite;
+	}
 
 
 
@@ -1077,6 +927,7 @@ public:
 
 	void physical_file_write(
 			const std::string &i_filename,
+			double plane_domain_size[2],
 			const char *i_title = "",
 			int i_precision = 20
 	)	const
@@ -1097,7 +948,7 @@ public:
 		for (int i = 0; i < planeDataConfig->physical_res[0]; i++)
 		{
 //			double lon_degree = ((double)i/(double)planeDataConfig->spat_num_lon)*2.0*M_PI;
-			double x = ((double)i/(double)planeDataConfig->physical_res[0])*simVars.sim.plane_domain_size[0]; // ????
+			double x = ((double)i/(double)planeDataConfig->physical_res[0])*plane_domain_size[0]; // ????
 
 			file << x;
 			if (i < planeDataConfig->physical_res[0]-1)
@@ -1107,7 +958,7 @@ public:
 
         for (int j = planeDataConfig->physical_res[1]-1; j >= 0; j--)
         {
-			double y = ((double)i/(double)planeDataConfig->physical_res[1])*simVars.sim.plane_domain_size[1]; // ????
+			double y = ((double)j/(double)planeDataConfig->physical_res[1])*plane_domain_size[1]; // ????
 
         		file << y << "\t";
 
@@ -1240,6 +1091,192 @@ public:
 			return false;
 		}
 
+
+		return true;
+	}
+
+
+	/**
+	 * Write data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_physical_saveData_ascii(
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 16,		///< number of floating point digits
+			int dimension = 2			///< store 1D or 2D
+	)	const
+	{
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		file << "#SWEET" << std::endl;
+		file << "#FORMAT ASCII" << std::endl;
+		file << "#PRIMITIVE PLANE" << std::endl;
+
+		std::size_t resx = planeDataConfig->physical_res[0];
+		std::size_t resy = planeDataConfig->physical_res[1];
+
+		file << "#SPACE PHYSICAL" << std::endl;
+		file << "#RESX " << resx << std::endl;
+		file << "#RESY " << resy << std::endl;
+
+		std::size_t ymin = 0;
+		if (dimension == 2)
+			ymin = 0;
+		else
+			ymin = planeDataConfig->physical_res[1]-1;
+
+		for (int y = (int) resy-1; y >= (int) ymin; y--)
+		{
+			for (std::size_t x = 0; x < resx; x++)
+			{
+				file << physical_get(y, x);
+
+				if (x < planeDataConfig->physical_res[0]-1)
+					file << i_separator;
+				else
+					file << std::endl;
+			}
+		}
+
+
+		return true;
+	}
+
+
+/**
+ * Write data to VTK file
+ *
+ * Each array row is stored to a line.
+ * Per default, a tab separator is used in each line to separate the values.
+ */
+	bool file_physical_saveData_vtk(
+			const char *i_filename,		///< Name of file to store data to
+			const char *i_title,		///< Title of scalars
+			int i_precision = 12		///< number of floating point digits
+	)	const
+	{
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		file << "# vtk DataFile Version 2.0" << std::endl;
+		file << "Rectangular solid example" << std::endl;
+		file << "ASCII" << std::endl;
+		file << "DATASET RECTILINEAR_GRID" << std::endl;
+		file << "DIMENSIONS " << planeDataConfig->physical_res[0]+1 << " " << planeDataConfig->physical_res[1]+1 << " 1" << std::endl;
+
+		file << "X_COORDINATES " << planeDataConfig->physical_res[0]+1 << " float" << std::endl;
+		for (std::size_t x = 0; x < planeDataConfig->physical_res[0]+1; x++)
+			file << (double)x/((double)planeDataConfig->physical_res[0]+1) << std::endl;
+
+		file << "Y_COORDINATES " << planeDataConfig->physical_res[1]+1 << " float" << std::endl;
+		for (std::size_t y = 0; y < planeDataConfig->physical_res[1]+1; y++)
+			file << (double)y/((double)planeDataConfig->physical_res[1]+1) << std::endl;
+
+		file << "Z_COORDINATES 1 float" << std::endl;
+		file << "0" << std::endl;
+
+
+		std::string title = i_title;
+		std::replace(title.begin(), title.end(), ' ', '_');
+		file << "CELL_DATA " << planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1] << std::endl;
+		file << "SCALARS " << title << " float 1" << std::endl;
+		file << "LOOKUP_TABLE default" << std::endl;
+
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			file << physical_space_data[i] << std::endl;
+
+		return true;
+	}
+
+
+
+	/**
+	 * Load data from ASCII file.
+	 * This is a non-bullet proof implementation, so be careful for invalid file formats.
+	 *
+	 * New array rows are initialized with a newline.
+	 * Each line then has the floating point values stored separated with space ' ' or tabs '\t'
+	 *
+	 * Note, that the number of values in the ASCII file have to match the resolution of the PlaneData.
+	 *
+	 * \return true if data was successfully read
+	 */
+	bool file_physical_loadData(
+			const char *i_filename,		///< Name of file to load data from
+			bool i_binary_data = false	///< load as binary data (disabled per default)
+	)
+	{
+		if (i_binary_data)
+		{
+			std::ifstream file(i_filename, std::ios::binary);
+
+			if (!file)
+				SWEETError(std::string("Failed to open file ")+i_filename);
+
+			file.seekg(0, std::ios::end);
+			std::size_t size = file.tellg();
+			file.seekg(0, std::ios::beg);
+
+
+			std::size_t expected_size = sizeof(double)*planeDataConfig->physical_res[0]*planeDataConfig->physical_res[1];
+
+			if (size != expected_size)
+			{
+				std::cerr << "Error while loading data from file " << i_filename << ":" << std::endl;
+				std::cerr << "Size of file " << size << " does not match expected size of " << expected_size << std::endl;
+				SWEETError("EXIT");
+			}
+
+			if (!file.read((char*)physical_space_data, expected_size))
+			{
+				std::cerr << "Error while loading data from file " << i_filename << std::endl;
+				SWEETError("EXIT");
+			}
+
+			return true;
+		}
+		std::ifstream file(i_filename);
+
+		for (std::size_t row = 0; row < planeDataConfig->physical_res[1]; row++)
+		{
+			std::string line;
+			std::getline(file, line);
+			if (!file.good())
+			{
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << std::endl;
+				return false;
+			}
+
+			std::size_t last_pos = 0;
+			std::size_t col = 0;
+			for (std::size_t pos = 0; pos < line.size()+1; pos++)
+			{
+				if (pos < line.size())
+					if (line[pos] != '\t' && line[pos] != ' ')
+						continue;
+
+				std::string strvalue = line.substr(last_pos, pos-last_pos);
+
+				double i_value = atof(strvalue.c_str());
+
+				physical_set_value(planeDataConfig->physical_res[1]-row-1, col, i_value);
+
+				col++;
+				last_pos = pos+1;
+			}
+
+			if (col < planeDataConfig->physical_res[0])
+			{
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << ", column " << col << std::endl;
+				return false;
+			}
+		}
 
 		return true;
 	}

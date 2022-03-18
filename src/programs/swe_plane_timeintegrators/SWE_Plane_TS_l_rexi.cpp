@@ -136,7 +136,7 @@ void SWE_Plane_TS_l_rexi::setup(
 
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
-		if (perThreadVars[i]->op.diff_c_x.physical_space_data == nullptr)
+		if (perThreadVars[i]->op.diff_c_x.spectral_space_data == nullptr)
 		{
 			std::cerr << "ARRAY NOT INITIALIZED!!!!" << std::endl;
 			exit(-1);
@@ -159,7 +159,7 @@ void SWE_Plane_TS_l_rexi::setup(
 
 #endif
 
-		if (perThreadVars[i]->eta.physical_space_data == nullptr)
+		if (perThreadVars[i]->eta.spectral_space_data == nullptr)
 		{
 			std::cout << "ERROR, data == nullptr" << std::endl;
 			exit(-1);
@@ -168,15 +168,15 @@ void SWE_Plane_TS_l_rexi::setup(
 		perThreadVars[i]->op.setup(planeDataConfig_local, domain_size);
 
 		// initialize all values to account for first touch policy reason
-		perThreadVars[i]->eta.spectral_set_all(0, 0);
-		perThreadVars[i]->eta0.spectral_set_all(0, 0);
+		perThreadVars[i]->eta.spectral_set_zero();
+		perThreadVars[i]->eta0.spectral_set_zero();
 
-		perThreadVars[i]->u0.spectral_set_all(0, 0);
-		perThreadVars[i]->v0.spectral_set_all(0, 0);
+		perThreadVars[i]->u0.spectral_set_zero();
+		perThreadVars[i]->v0.spectral_set_zero();
 
-		perThreadVars[i]->h_sum.spectral_set_all(0, 0);
-		perThreadVars[i]->u_sum.spectral_set_all(0, 0);
-		perThreadVars[i]->v_sum.spectral_set_all(0, 0);
+		perThreadVars[i]->h_sum.spectral_set_zero();
+		perThreadVars[i]->u_sum.spectral_set_zero();
+		perThreadVars[i]->v_sum.spectral_set_zero();
 
 	}
 
@@ -256,15 +256,15 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	/*
 	 * Request physical or spectral here to avoid parallel race conditions
 	 */
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	i_h_pert.request_data_physical();
-	i_u.request_data_physical();
-	i_v.request_data_physical();
-#else
-	i_h_pert.request_data_spectral();
-	i_u.request_data_spectral();
-	i_v.request_data_spectral();
-#endif
+/////#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	i_h_pert.request_data_physical();
+/////	i_u.request_data_physical();
+/////	i_v.request_data_physical();
+/////#else
+/////	i_h_pert.request_data_spectral();
+/////	i_u.request_data_spectral();
+/////	i_v.request_data_spectral();
+/////#endif
 
 #if SWEET_MPI
 
@@ -353,12 +353,12 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 			u0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_u);
 			v0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_v);
 		}
-		else
-		{
-			eta0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_h_pert);
-			u0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_u);
-			v0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_v);
-		}
+///		else
+///		{
+///			eta0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_h_pert);
+///			u0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_u);
+///			v0 = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(i_v);
+///		}
 #endif
 
 		/**
@@ -437,7 +437,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
 				PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(alpha*alpha);
 
-				eta = rhs.spectral_div_element_wise(lhs);
+				//eta = rhs.spectral_div_element_wise(lhs);
+				eta = rhs / lhs;
 
 				PlaneData_SpectralComplex u1 = (u0 + g*opc.diff_c_x(eta))*(1.0/alpha);
 				PlaneData_SpectralComplex v1 = (v0 + g*opc.diff_c_y(eta))*(1.0/alpha);
@@ -461,8 +462,10 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 						+ rhs_a
 					;
 
-				PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(kappa);
-				eta = rhs.spectral_div_element_wise(lhs);
+				///PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(kappa);
+				///eta = rhs.spectral_div_element_wise(lhs);
+				PlaneData_SpectralComplex lhs = lhs_a + kappa;
+				eta = rhs / lhs;
 
 				PlaneData_SpectralComplex uh = u0 + g*opc.diff_c_x(eta);
 				PlaneData_SpectralComplex vh = v0 + g*opc.diff_c_y(eta);
@@ -470,7 +473,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				PlaneData_SpectralComplex u1 = (alpha/kappa) * uh     - (simVars.sim.plane_rotating_f0/kappa) * vh;
 				PlaneData_SpectralComplex v1 = (simVars.sim.plane_rotating_f0/kappa) * uh + (alpha/kappa) * vh;
 
-				PlaneData tmp(h_sum.planeDataConfig);
+				PlaneData_Spectral tmp(h_sum.planeDataConfig);
 
 				h_sum += eta*beta;
 				u_sum += u1*beta;
@@ -502,9 +505,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 	for (int n = 0; n < num_local_rexi_par_threads; n++)
 	{
-		perThreadVars[n]->h_sum.request_data_physical();
-		perThreadVars[n]->u_sum.request_data_physical();
-		perThreadVars[n]->v_sum.request_data_physical();
+///		perThreadVars[n]->h_sum.request_data_physical();
+///		perThreadVars[n]->u_sum.request_data_physical();
+///		perThreadVars[n]->v_sum.request_data_physical();
 
 		// sum real-valued elements
 		#pragma omp parallel for schedule(static)
@@ -527,9 +530,9 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 	for (int n = 0; n < num_local_rexi_par_threads; n++)
 	{
-		perThreadVars[n]->h_sum.request_data_spectral();
-		perThreadVars[n]->u_sum.request_data_spectral();
-		perThreadVars[n]->v_sum.request_data_spectral();
+///		perThreadVars[n]->h_sum.request_data_spectral();
+///		perThreadVars[n]->u_sum.request_data_spectral();
+///		perThreadVars[n]->v_sum.request_data_spectral();
 
 		PlaneData_Spectral tmp(planeDataConfig);
 
@@ -553,16 +556,16 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 //		if (simVars.rexi.use_half_poles)
 	if (true)
 	{
-		o_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->h_sum);
-		o_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->u_sum);
-		o_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(perThreadVars[0]->v_sum);
+		o_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(perThreadVars[0]->h_sum);
+		o_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(perThreadVars[0]->u_sum);
+		o_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(perThreadVars[0]->v_sum);
 	}
-	else
-	{
-		o_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[0]->h_sum);
-		o_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[0]->u_sum);
-		o_v = Convert_PlaneDataSpectralComplex_To_PlaneData::spectral_convert_physical_real(perThreadVars[0]->v_sum);
-	}
+////	else
+////	{
+////		o_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[0]->h_sum);
+////		o_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real(perThreadVars[0]->u_sum);
+////		o_v = Convert_PlaneDataSpectralComplex_To_PlaneData::spectral_convert_physical_real(perThreadVars[0]->v_sum);
+////	}
 #endif
 
 
@@ -582,7 +585,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE ||1
 	PlaneData_Spectral tmp(o_h_pert.planeDataConfig);
 
-	o_h_pert.request_data_physical();
+///	o_h_pert.request_data_physical();
 	int retval = MPI_Reduce(o_h_pert.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (retval != MPI_SUCCESS)
 	{
@@ -592,11 +595,11 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 	std::swap(o_h_pert.physical_space_data, tmp.physical_space_data);
 
-	o_u.request_data_physical();
+//	o_u.request_data_physical();
 	MPI_Reduce(o_u.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(o_u.physical_space_data, tmp.physical_space_data);
 
-	o_v.request_data_physical();
+///	o_v.request_data_physical();
 	MPI_Reduce(o_v.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	std::swap(o_v.physical_space_data, tmp.physical_space_data);
 
