@@ -73,11 +73,13 @@ public:
 		// mass
 		io_simVars.diag.total_mass = (h_phys + io_simVars.sim.h0).physical_reduce_sum_quad() * normalization;
 
-		PlaneData_Spectral u = op.avg_b_x(i_prog_u);
-		PlaneData_Spectral v = op.avg_b_y(i_prog_v);
+		PlaneData_Physical u_phys = op.avg_b_x(i_prog_u.toPhys());
+		PlaneData_Physical v_phys = op.avg_b_y(i_prog_v.toPhys());
 
-		PlaneData_Physical u_phys = u.toPhys();
-		PlaneData_Physical v_phys = v.toPhys();
+		PlaneData_Spectral u(u_phys.planeDataConfig);
+		PlaneData_Spectral v(v_phys.planeDataConfig);
+		u.loadPlaneDataPhysical(u_phys);
+		v.loadPlaneDataPhysical(v_phys);
 
 		// energy
 		PlaneData_Physical pot_energy = (h_phys + io_simVars.sim.h0)*(io_simVars.sim.gravitation*normalization);

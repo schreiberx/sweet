@@ -84,6 +84,7 @@
 
 
 class PlaneData_Physical
+			:	private PlaneData_Kernels
 {
 
 public:
@@ -134,6 +135,16 @@ public:
 		physical_space_data(nullptr)
 	{
 	}
+
+	/**
+	 * dummy initialization by handing over an unused integer
+	 */
+public:
+	PlaneData_Physical(int i)	:
+		planeDataConfig(nullptr),
+		physical_space_data(nullptr)
+{
+}
 
 
 public:
@@ -468,6 +479,31 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = i_value - physical_space_data[idx];
+
+		return out;
+	}
+
+
+	/**
+	 * Apply a linear operator given by this class to the input data array.
+	 */
+	inline
+	PlaneData_Physical operator()(
+			const PlaneData_Physical &i_array_data
+	)	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		PlaneData_Physical &rw_array_data = (PlaneData_Physical&)i_array_data;
+
+		kernel_apply(
+				planeDataConfig->physical_data_size[0],
+				planeDataConfig->physical_data_size[1],
+				rw_array_data.physical_space_data,
+
+				out.physical_space_data
+		);
+
 
 		return out;
 	}
@@ -881,6 +917,59 @@ public:
 
 		return false;
 	}
+
+	inline
+	PlaneData_Physical physical_query_return_one_if_positive()
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] > 0 ? 1 : 0);
+		);
+
+		return out;
+	}
+
+
+
+	inline
+	PlaneData_Physical physical_query_return_value_if_positive()	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] > 0 ? physical_space_data[idx] : 0);
+		);
+
+		return out;
+	}
+
+
+	inline
+	PlaneData_Physical physical_query_return_one_if_negative()	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] < 0 ? 1 : 0);
+		);
+
+		return out;
+	}
+
+
+	inline
+	PlaneData_Physical physical_query_return_value_if_negative()	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		PLANE_DATA_PHYSICAL_FOR_IDX(
+				out.physical_space_data[idx] = (physical_space_data[idx] < 0 ? physical_space_data[idx] : 0);
+		);
+
+		return out;
+	}
+
 
 
 	/**

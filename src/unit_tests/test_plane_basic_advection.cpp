@@ -222,7 +222,7 @@ public:
 
 
 
-	PlaneData get_advected_solution_diffy(
+	PlaneData_Spectral get_advected_solution_diffy(
 		double i_timestamp
 	)
 	{
@@ -300,14 +300,14 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
-		PlaneData_Physical prog_u_phys(palneDataConfig);
-		PlaneData_Physical prog_v_phys(palneDataConfig);
+		PlaneData_Physical prog_u_phys(planeDataConfig);
+		PlaneData_Physical prog_v_phys(planeDataConfig);
 
 		prog_u_phys.physical_set_all_value(vel0);
 		prog_v_phys.physical_set_all_value(vel1);
 
 		prog_u.loadPlaneDataPhysical(prog_u_phys);
-		prog_v.loadPlaneDataPhysical(prog_v_phys)
+		prog_v.loadPlaneDataPhysical(prog_v_phys);
 
 		prog_h = get_advected_solution(0);
 	}
@@ -329,41 +329,49 @@ public:
 		double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 		double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
+
 		int asdf = atoi(simVars.bogus.var[2].c_str());
 		if (asdf == 0)
 		{
 			// UP/DOWNWINDING
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			static bool output_given = false;
-			if (!output_given)
-			{
-				std::cout << "WARNING: upwinding in spectral space not working" << std::endl;
-				output_given = true;
-			}
-#endif
+////////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+////////			static bool output_given = false;
+////////			if (!output_given)
+////////			{
+////////				std::cout << "WARNING: upwinding in spectral space not working" << std::endl;
+////////				output_given = true;
+////////			}
+////////#endif
 
-			o_h_t =
+			PlaneData_Physical o_h_t_phys = o_h_t.toPhys();
+			PlaneData_Physical i_h_phys = i_h.toPhys();
+			PlaneData_Physical i_u_phys = i_u.toPhys();
+			PlaneData_Physical i_v_phys = i_v.toPhys();
+
+			o_h_t_phys =
 				(
 					(
 						// u is positive
-						op.shift_right(i_h)*i_u.physical_query_return_value_if_positive()	// inflow
-						-i_h*op.shift_left(i_u.physical_query_return_value_if_positive())	// outflow
+						op.shift_right(i_h_phys)*i_u_phys.physical_query_return_value_if_positive()	// inflow
+						-i_h_phys*op.shift_left(i_u_phys.physical_query_return_value_if_positive())	// outflow
 
 						// u is negative
-						+(i_h*i_u.physical_query_return_value_if_negative())					// outflow
-						-op.shift_left(i_h*i_u.physical_query_return_value_if_negative())	// inflow
+						+(i_h_phys*i_u_phys.physical_query_return_value_if_negative())					// outflow
+						-op.shift_left(i_h_phys*i_u_phys.physical_query_return_value_if_negative())	// inflow
 					)*(1.0/cell_size_x)				// here we see a finite-difference-like formulation
 					+
 					(
 						// v is positive
-						op.shift_up(i_h)*i_v.physical_query_return_value_if_positive()		// inflow
-						-i_h*op.shift_down(i_v.physical_query_return_value_if_positive())	// outflow
+						op.shift_up(i_h_phys)*i_v_phys.physical_query_return_value_if_positive()		// inflow
+						-i_h_phys*op.shift_down(i_v_phys.physical_query_return_value_if_positive())	// outflow
 
 						// v is negative
-						+(i_h*i_v.physical_query_return_value_if_negative())					// outflow
-						-op.shift_down(i_h*i_v.physical_query_return_value_if_negative())	// inflow
+						+(i_h_phys*i_v_phys.physical_query_return_value_if_negative())					// outflow
+						-op.shift_down(i_h_phys*i_v_phys.physical_query_return_value_if_negative())	// inflow
 					)*(1.0/cell_size_y)
 				);
+
+			o_h_t.loadPlaneDataPhysical(o_h_t_phys);
 		}
 		else if (asdf == 1)
 		{
@@ -373,10 +381,14 @@ public:
 			// --v---------|-----------v-----------|-----------v-----------|
 			//   h-1       u0          h0          u1          h1          u2
 
+			PlaneData_Spectral avg_b_x_spec(o_h_t.planeDataConfig);
+			PlaneData_Spectral avg_b_y_spec(o_h_t.planeDataConfig);
+			avg_b_x_spec.loadPlaneDataPhysical(op.avg_b_x(i_h.toPhys()));
+			avg_b_y_spec.loadPlaneDataPhysical(op.avg_b_y(i_h.toPhys()));
 			// staggered
 			o_h_t = -(
-					op.diff_f_x(op.avg_b_x(i_h)*i_u) +
-					op.diff_f_y(op.avg_b_y(i_h)*i_v)
+					op.diff_f_x(avg_b_x_spec*i_u) +
+					op.diff_f_y(avg_b_y_spec*i_v)
 				);
 		}
 		else  if (asdf == 2)
@@ -410,7 +422,7 @@ public:
 		else  if (asdf == 3)
 		{
 			// NO H UPDATE
-			o_h_t.physical_set_all(0);
+			o_h_t.spectral_set_zero();
 		}
 		else
 		{
@@ -418,8 +430,8 @@ public:
 			exit(-1);
 		}
 
-		o_u_t.physical_set_all(0);
-		o_v_t.physical_set_all(0);
+		o_u_t.spectral_set_zero();
+		o_v_t.spectral_set_zero();
 
 		simVars.timecontrol.current_timestep_nr++;
 	}
@@ -470,7 +482,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Spectral **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -557,9 +569,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_boolean_all_finite() &&
-					prog_u.reduce_boolean_all_finite() &&
-					prog_v.reduce_boolean_all_finite()
+		return !(	prog_h.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 };
@@ -569,9 +581,9 @@ double compute_current_error(
 		SimulationAdvection *simulationAdvection
 )
 {
-	PlaneData benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
+	PlaneData_Spectral benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
 
-	return (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
+	return (simulationAdvection->prog_h-benchmark_h).spectral_reduce_rms();
 }
 
 

@@ -29,13 +29,13 @@ public:
 
 	PlaneData_Spectral diff2_c_x, diff2_c_y;
 
-	PlaneData_Spectral avg_f_x, avg_f_y;
-	PlaneData_Spectral avg_b_x, avg_b_y;
+	PlaneData_Physical avg_f_x, avg_f_y;
+	PlaneData_Physical avg_b_x, avg_b_y;
 
-	PlaneData_Spectral shift_left;
-	PlaneData_Spectral shift_right;
-	PlaneData_Spectral shift_up;
-	PlaneData_Spectral shift_down;
+	PlaneData_Physical shift_left;
+	PlaneData_Physical shift_right;
+	PlaneData_Physical shift_up;
+	PlaneData_Physical shift_down;
 
 
 	/**
@@ -348,28 +348,28 @@ public:
 				{0,1,1},
 				{0,0,0},
 		};
-		avg_f_x.toPhys().kernel_stencil_setup(avg_f_x_kernel, 0.5);
+		avg_f_x.kernel_stencil_setup(avg_f_x_kernel, 0.5);
 
 		double avg_f_y_kernel[3][3] = {
 				{0,1,0},
 				{0,1,0},
 				{0,0,0},
 		};
-		avg_f_y.toPhys().kernel_stencil_setup(avg_f_y_kernel, 0.5);
+		avg_f_y.kernel_stencil_setup(avg_f_y_kernel, 0.5);
 
 		double avg_b_x_kernel[3][3] = {
 				{0,0,0},
 				{1,1,0},
 				{0,0,0},
 		};
-		avg_b_x.toPhys().kernel_stencil_setup(avg_b_x_kernel, 0.5);
+		avg_b_x.kernel_stencil_setup(avg_b_x_kernel, 0.5);
 
 		double avg_b_y_kernel[3][3] = {
 				{0,0,0},
 				{0,1,0},
 				{0,1,0},
 		};
-		avg_b_y.toPhys().kernel_stencil_setup(avg_b_y_kernel, 0.5);
+		avg_b_y.kernel_stencil_setup(avg_b_y_kernel, 0.5);
 
 /////////////////////////////////////////////////////////////////////
 
@@ -378,28 +378,28 @@ public:
 				{0,0,1},
 				{0,0,0},
 		};
-		shift_left.toPhys().kernel_stencil_setup(shift_left_kernel);
+		shift_left.kernel_stencil_setup(shift_left_kernel);
 
 		double shift_right_kernel[3][3] = {
 				{0,0,0},
 				{1,0,0},
 				{0,0,0},
 		};
-		shift_right.toPhys().kernel_stencil_setup(shift_right_kernel);
+		shift_right.kernel_stencil_setup(shift_right_kernel);
 
 		double shift_up_kernel[3][3] = {
 				{0,0,0},
 				{0,0,0},
 				{0,1,0},
 		};
-		shift_up.toPhys().kernel_stencil_setup(shift_up_kernel);
+		shift_up.kernel_stencil_setup(shift_up_kernel);
 
 		double shift_down_kernel[3][3] = {
 				{0,1,0},
 				{0,0,0},
 				{0,0,0},
 		};
-		shift_down.toPhys().kernel_stencil_setup(shift_down_kernel);
+		shift_down.kernel_stencil_setup(shift_down_kernel);
 
 /////////////////////////////////////////////////////////////////////
 

@@ -76,7 +76,18 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		PlaneData_Spectral U(i_h.planeDataConfig); // U flux
 		PlaneData_Spectral V(i_h.planeDataConfig); // V flux
 		PlaneData_Spectral H(i_h.planeDataConfig); //Bernoulli potential
-		PlaneData_Spectral total_h = i_h + simVars.sim.h0;
+
+		PlaneData_Physical U_phys(i_h.planeDataConfig); // U flux
+		PlaneData_Physical V_phys(i_h.planeDataConfig); // V flux
+		PlaneData_Physical H_phys(i_h.planeDataConfig); //Bernoulli potential
+
+		PlaneData_Physical i_u_phys = i_u.toPhys();
+		PlaneData_Physical i_v_phys = i_v.toPhys();
+
+		PlaneData_Physical total_h_phys = i_h.toPhys() + simVars.sim.h0;
+		PlaneData_Spectral total_h(i_h.planeDataConfig);
+		total_h.loadPlaneDataPhysical(total_h_phys);
+
 
 		/*
 		 * Sadourny energy conserving scheme
@@ -105,17 +116,20 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 */
 
 
-		U = op.avg_b_x(total_h)*i_u;
-		V = op.avg_b_y(total_h)*i_v;
+		U_phys = op.avg_b_x(total_h_phys)*i_u_phys;
+		V_phys = op.avg_b_y(total_h_phys)*i_v_phys;
+		H_phys = simVars.sim.gravitation*total_h_phys + 0.5*(op.avg_f_x(i_u_phys*i_u_phys) + op.avg_f_y(i_v_phys*i_v_phys));
 
-
-		H = simVars.sim.gravitation*total_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
-
+		U.loadPlaneDataPhysical(U_phys);
+		V.loadPlaneDataPhysical(V_phys);
+		H.loadPlaneDataPhysical(H_phys);
 
 
 		// Potential vorticity
-		PlaneData_Spectral total_h_pv = total_h;
-		total_h_pv = op.avg_b_x(op.avg_b_y(total_h));
+		PlaneData_Physical total_h_pv_phys = total_h_phys;
+		PlaneData_Spectral total_h_pv = total_h_phys(i_h.planeDataConfig);
+		total_h_pv_phys = op.avg_b_x(op.avg_b_y(total_h_phys));
+		total_h_pv.loadPlaneDataPhysical(total_h_pv_phys);
 
 #if 0
 		if (total_h_pv.reduce_min() < 0.00000001)
@@ -129,12 +143,14 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 #endif
 
 		PlaneData_Spectral q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
+		PlaneData_Physical q_phys = q.toPhys();
 
 		// u, v tendencies
 		// Energy conserving scheme
-		o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);
-		o_v_t = -op.avg_f_x(q*op.avg_b_y(U)) - op.diff_b_y(H);
-
+		PlaneData_Physical o_u_t_phys = op.avg_f_y(q_phys*op.avg_b_x(V_phys)) - op.diff_b_x(H).toPhys();
+		PlaneData_Physical o_v_t_phys = -op.avg_f_x(q_phys*op.avg_b_y(U_phys)) - op.diff_b_y(H).toPhys();
+		o_u_t.loadPlaneDataPhysical(o_u_t_phys);
+		o_v_t.loadPlaneDataPhysical(o_v_t_phys);
 
 		/*
 		 * P UPDATE
