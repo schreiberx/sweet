@@ -1,5 +1,5 @@
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
@@ -36,14 +36,14 @@ double vel1 = 0.0;
 class SimulationAdvection
 {
 public:
-	PlaneData prog_h;
-	PlaneData prog_u;
-	PlaneData prog_v;
+	PlaneData_Spectral prog_h;
+	PlaneData_Spectral prog_u;
+	PlaneData_Spectral prog_v;
 
-	PlaneData hu;
-	PlaneData hv;
+	PlaneData_Spectral hu;
+	PlaneData_Spectral hv;
 
-	PlaneData tmp;
+	PlaneData_Spectral tmp;
 
 	PlaneOperators op;
 
@@ -75,11 +75,12 @@ public:
 	}
 
 
-	PlaneData get_advected_solution(
+	PlaneData_Spectral get_advected_solution(
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(planeDataConfig);
+		PlaneData_Spectral ret_h(planeDataConfig);
+		PlaneData_Physical ret_h_phys(planeDataConfig);
 
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
@@ -90,7 +91,7 @@ public:
 				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
-		ret_h.physical_update_lambda_array_indices(
+		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 
@@ -139,16 +140,19 @@ public:
 			}
 		);
 
+		ret_h.loadPlaneDataPhysical(ret_h_phys);
+
 		return ret_h;
 	}
 
 
 
-	PlaneData get_advected_solution_diffx(
+	PlaneData_Spectral get_advected_solution_diffx(
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(planeDataConfig);
+		PlaneData_Spectral ret_h(planeDataConfig);
+		PlaneData_Physical ret_h_phys(planeDataConfig);
 
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
@@ -161,7 +165,7 @@ public:
 		double radius = simVars.benchmark.object_scale*radius_scale;
 
 
-		ret_h.physical_update_lambda_array_indices(
+		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 #if ADV_FUNCTION==0
@@ -211,6 +215,8 @@ public:
 			}
 		);
 
+		ret_h.loadPlaneDataPhysical(ret_h_phys);
+
 		return ret_h;
 	}
 
@@ -220,7 +226,8 @@ public:
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(planeDataConfig);
+		PlaneData_Spectral ret_h(planeDataConfig);
+		PlaneData_Physical ret_h_phys(planeDataConfig);
 
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
@@ -233,7 +240,7 @@ public:
 		double radius = simVars.benchmark.object_scale*radius_scale;
 
 
-		ret_h.physical_update_lambda_array_indices(
+		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 #if ADV_FUNCTION==0
@@ -282,6 +289,7 @@ public:
 #endif
 		});
 
+		ret_h.loadPlaneDataPhysical(ret_h_phys);
 		return ret_h;
 	}
 
@@ -292,8 +300,14 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
-		prog_u.physical_set_all(vel0);
-		prog_v.physical_set_all(vel1);
+		PlaneData_Physical prog_u_phys(palneDataConfig);
+		PlaneData_Physical prog_v_phys(palneDataConfig);
+
+		prog_u_phys.physical_set_all_value(vel0);
+		prog_v_phys.physical_set_all_value(vel1);
+
+		prog_u.loadPlaneDataPhysical(prog_u_phys);
+		prog_v.loadPlaneDataPhysical(prog_v_phys)
 
 		prog_h = get_advected_solution(0);
 	}
@@ -301,13 +315,13 @@ public:
 
 
 	void p_run_euler_timestep_update(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_h,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_h_t,		///< time updates
-			PlaneData &o_u_t,		///< time updates
-			PlaneData &o_v_t,		///< time updates
+			PlaneData_Spectral &o_h_t,		///< time updates
+			PlaneData_Spectral &o_u_t,		///< time updates
+			PlaneData_Spectral &o_v_t,		///< time updates
 
 			double i_simulation_timestamp = -1
 	)

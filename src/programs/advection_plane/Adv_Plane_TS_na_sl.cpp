@@ -58,12 +58,12 @@ void Adv_Plane_TS_na_sl::run_timestep(
 	prog_u_prev = io_u;
 	prog_v_prev = io_v;
 
-	PlaneData new_prog_phi(io_phi.planeDataConfig);
+	PlaneData_Spectral new_prog_phi(io_phi.planeDataConfig);
 
 	if (timestepping_order == 1)
 	{
 		sampler2D.bilinear_scalar(
-				io_phii.toPhys(),
+				io_phi,
 				posx_d,
 				posy_d,
 				new_prog_phi
@@ -72,7 +72,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 	else if (timestepping_order == 2)
 	{
 		sampler2D.bicubic_scalar(
-				io_phi.toPhys(),
+				io_phi,
 				posx_d,
 				posy_d,
 				new_prog_phi

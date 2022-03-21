@@ -31,7 +31,6 @@
 #include <cmath>
 
 
-
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/openmp_helper.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
@@ -900,8 +899,6 @@ public:
 
 		return isallfinite;
 	}
-
-
 
 
 	void physical_print(

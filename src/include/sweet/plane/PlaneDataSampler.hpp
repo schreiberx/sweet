@@ -459,6 +459,66 @@ public:
 		return out;
 	}
 
+
+// Same interface functions but with PlaneData_Spectral as argument
+
+public:
+	void bilinear_scalar(
+			const PlaneData_Spectral &i_data,				///< sampling data
+
+			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+
+			ScalarDataArray &o_data,				///< output values
+			double i_shift_x = 0.0,
+			double i_shift_y = 0.0
+	)
+	{
+		PlaneData_Physical tmp = i_data.toPhys();
+		bilinear_scalar(tmp, i_pos_x, i_pos_y, o_data.scalar_data, i_shift_x, i_shift_y);
+	}
+
+
+public:
+	void bilinear_scalar(
+			const PlaneData_Spectral &i_data,				///< sampling data
+
+			const ScalarDataArray &i_pos_x,				///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,				///< y positions of interpolation points
+
+			PlaneData_Spectral &o_data,				///< output values
+
+			double i_shift_x = 0.0,
+			double i_shift_y = 0.0
+	)
+	{
+
+		PlaneData_Physical tmp = i_data.toPhys();
+		PlaneData_Physical o_data_phys(i_data.planeDataConfig);
+
+		/*
+		 * SHIFT - important
+		 * for C grid, to interpolate given u data, use i_shift_x = 0.0,  i_shift_y = -0.5
+		 *             to interpolate given v data, use i_shift_y = -0.5, i_shift_y = 0.0
+		 *  pay attention to the negative shift, which is necessary because the staggered grids are positively shifted
+		 *  and this shift has to be removed for the interpolation
+		 */
+		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
+		assert(i_pos_x.number_of_elements == o_data.planeDataConfig->physical_array_data_number_of_elements);
+
+		bilinear_scalar(tmp, i_pos_x, i_pos_y, o_data_phys.physical_space_data, i_shift_x, i_shift_y);
+
+		o_data.loadPlaneDataPhysical(o_data_phys);
+
+////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+////		o_data.physical_space_data_valid = true;
+////		o_data.spectral_space_data_valid = false;
+////#endif
+	}
+
+
+
+
 public:
 	const PlaneData_Physical bicubic_scalar(
 			PlaneData_Spectral &i_data,				///< sampling data
@@ -471,10 +531,42 @@ public:
 	)
 	{
 		PlaneData_Physical tmp = i_data.toPhys();
-		PlaneData_Physical out(planeDataConfig);
+		PlaneData_Physical out(i_data.planeDataConfig);
 		bicubic_scalar(tmp, i_pos_x, i_pos_y, out, i_shift_x, i_shift_y);
 		return out;
 	}
+
+public:
+	void bicubic_scalar(
+			const PlaneData_Spectral &i_data,			///< sampling data
+
+			const ScalarDataArray &i_pos_x,		///< x positions of interpolation points
+			const ScalarDataArray &i_pos_y,		///< y positions of interpolation points
+
+			PlaneData_Spectral &o_data,					///< output values
+
+			double i_shift_x = 0.0,				///< shift in x for staggered grids
+			double i_shift_y = 0.0				///< shift in y for staggered grids
+	)
+	{
+		PlaneData_Physical tmp = i_data.toPhys();
+		PlaneData_Physical o_data_phys(i_data.planeDataConfig);
+
+		assert(res[0] > 0);
+		assert(cached_scale_factor[0] > 0);
+		assert(i_pos_x.number_of_elements == i_pos_y.number_of_elements);
+		assert(i_pos_x.number_of_elements == o_data.planeDataConfig->physical_array_data_number_of_elements);
+
+		bicubic_scalar(tmp, i_pos_x, i_pos_y, o_data_phys.physical_space_data, i_shift_x, i_shift_y);
+
+		o_data.loadPlaneDataPhysical(o_data_phys);
+
+///#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///		o_data.physical_space_data_valid = true;
+///		o_data.spectral_space_data_valid = false;
+///#endif
+	}
+
 
 
 };

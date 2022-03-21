@@ -4,7 +4,7 @@
 #endif
 
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
@@ -75,7 +75,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 
-		PlaneData h(planeDataConfig);
+		PlaneData_Spectral h(planeDataConfig);
 
 		/////////////////////////////////////////////////////////
 		/////////////////////////////////////////////////////////
@@ -83,10 +83,10 @@ int main(int i_argc, char *i_argv[])
 
 		h.spectral_set_zero();
 
-		h.spectral_space_data_valid = true;
-		h.physical_space_data_valid = false;
+///		h.spectral_space_data_valid = true;
+///		h.physical_space_data_valid = false;
 
-		h = h.spectral_addScalarAll(1.0);
+		h = h + 1.0;
 
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
@@ -104,8 +104,8 @@ int main(int i_argc, char *i_argv[])
 		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 			h.spectral_space_data[i] = {1.0,0.0};
 
-		h.spectral_space_data_valid = true;
-		h.physical_space_data_valid = false;
+///		h.spectral_space_data_valid = true;
+///		h.physical_space_data_valid = false;
 
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)
@@ -129,7 +129,7 @@ int main(int i_argc, char *i_argv[])
 		}
 #endif
 
-		h = h.spectral_addScalarAll(1.0);
+		h = h + 1.0;
 
 #if PRINT_SPECCTRUM
 		if (res[0] < res_max && res[1] < res_max)

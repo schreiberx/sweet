@@ -35,9 +35,9 @@ private:
 			const PlaneData_Spectral &i_vort,	///< prognostic variables
 			const PlaneData_Spectral &i_div,	///< prognostic variables
 
-			PlaneData &o_phi_t,	///< time updates
-			PlaneData &o_vort_t,	///< time updates
-			PlaneData &o_div_t,	///< time updates
+			PlaneData_Spectral &o_phi_t,	///< time updates
+			PlaneData_Spectral &o_vort_t,	///< time updates
+			PlaneData_Spectral &o_div_t,	///< time updates
 
 			double i_simulation_timestamp = -1
 	);

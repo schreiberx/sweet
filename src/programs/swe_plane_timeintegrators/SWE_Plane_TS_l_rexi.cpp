@@ -273,10 +273,10 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		stopwatch_broadcast.start();
 #endif
 
-	std::size_t data_size = i_h_pert.planeDataConfig->physical_array_data_number_of_elements;
-	MPI_Bcast(i_h_pert.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	std::size_t data_size = i_h_pert.planeDataConfig->spectral_array_data_number_of_elements;
+	MPI_Bcast(i_h_pert.spectral_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-	if (std::isnan(i_h_pert.p_physical_get(0,0)))
+	if (std::isnan(i_h_pert.spectral_get(0,0).real()) || std::isnan(i_h_pert.spectral_get(0,0).imag()))
 	{
 		final_timestep = true;
 
@@ -287,8 +287,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	}
 
 
-	MPI_Bcast(i_u.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-	MPI_Bcast(i_v.physical_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(i_u.spectral_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(i_v.spectral_space_data, data_size, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
 #if SWEET_BENCHMARK_TIMINGS
 	if (mpi_rank == 0)
@@ -586,22 +586,22 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 	PlaneData_Spectral tmp(o_h_pert.planeDataConfig);
 
 ///	o_h_pert.request_data_physical();
-	int retval = MPI_Reduce(o_h_pert.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	int retval = MPI_Reduce(o_h_pert.spectral_space_data, tmp.spectral_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (retval != MPI_SUCCESS)
 	{
 		std::cerr << "MPI FAILED!" << std::endl;
 		exit(1);
 	}
 
-	std::swap(o_h_pert.physical_space_data, tmp.physical_space_data);
+	std::swap(o_h_pert.spectral_space_data, tmp.spectral_space_data);
 
 //	o_u.request_data_physical();
-	MPI_Reduce(o_u.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	std::swap(o_u.physical_space_data, tmp.physical_space_data);
+	MPI_Reduce(o_u.spectral_space_data, tmp.spectral_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(o_u.spectral_space_data, tmp.spectral_space_data);
 
 ///	o_v.request_data_physical();
-	MPI_Reduce(o_v.physical_space_data, tmp.physical_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	std::swap(o_v.physical_space_data, tmp.physical_space_data);
+	MPI_Reduce(o_v.spectral_space_data, tmp.spectral_space_data, data_size, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	std::swap(o_v.spectral_space_data, tmp.spectral_space_data);
 
 #else
 
@@ -704,9 +704,9 @@ void SWE_Plane_TS_l_rexi::MPI_quitWorkers(
 {
 #if SWEET_MPI
 	PlaneData_Spectral dummyData(i_planeDataConfig);
-	dummyData.physical_set_all(NAN);
+	dummyData.spectral_set_value(NAN);
 
-	MPI_Bcast(dummyData.physical_space_data, dummyData.planeDataConfig->physical_array_data_number_of_elements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+	MPI_Bcast(dummyData.spectral_space_data, dummyData.planeDataConfig->spectral_array_data_number_of_elements, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 #endif
 }
 

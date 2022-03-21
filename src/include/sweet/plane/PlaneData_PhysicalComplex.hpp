@@ -23,9 +23,9 @@
 #include <cmath>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/openmp_helper.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/SWEETError.hpp>
-
 
 #if SWEET_THREADING_SPACE
 	#define PLANE_DATA_COMPLEX_PHYSICAL_FOR_IDX(CORE)				\

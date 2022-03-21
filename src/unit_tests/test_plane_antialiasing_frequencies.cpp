@@ -13,7 +13,8 @@
 #endif
 
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
@@ -68,26 +69,26 @@ int main(
 	std::cout << "*************************************************************" << std::endl;
 	std::cout << std::endl;
 
-	PlaneData h1_x(planeDataConfig);
-	PlaneData h2_x(planeDataConfig);
+	PlaneData_Physical h1_x(planeDataConfig);
+	PlaneData_Physical h2_x(planeDataConfig);
 
-	PlaneData h1_y(planeDataConfig);
-	PlaneData h2_y(planeDataConfig);
+	PlaneData_Physical h1_y(planeDataConfig);
+	PlaneData_Physical h2_y(planeDataConfig);
 
-	PlaneData h1h2_numerical_x(planeDataConfig);
-	PlaneData h1h2_numerical(planeDataConfig);
-	PlaneData h1h2_numerical_y(planeDataConfig);
+	PlaneData_Physical h1h2_numerical_x(planeDataConfig);
+	PlaneData_Physical h1h2_numerical(planeDataConfig);
+	PlaneData_Physical h1h2_numerical_y(planeDataConfig);
 
-	PlaneData h1h2_analytical_x_high(planeDataConfig);
-	PlaneData h1h2_analytical_x_low(planeDataConfig);
-	PlaneData h1h2_analytical_x(planeDataConfig);
+	PlaneData_Physical h1h2_analytical_x_high(planeDataConfig);
+	PlaneData_Physical h1h2_analytical_x_low(planeDataConfig);
+	PlaneData_Physical h1h2_analytical_x(planeDataConfig);
 
 
-	PlaneData h1h2_analytical_y_high(planeDataConfig);
-	PlaneData h1h2_analytical_y_low(planeDataConfig);
-	PlaneData h1h2_analytical_y(planeDataConfig);
+	PlaneData_Physical h1h2_analytical_y_high(planeDataConfig);
+	PlaneData_Physical h1h2_analytical_y_low(planeDataConfig);
+	PlaneData_Physical h1h2_analytical_y(planeDataConfig);
 
-	PlaneData h1h2_analytical(planeDataConfig);
+	PlaneData_Physical h1h2_analytical(planeDataConfig);
 
 	double epsilon = 1e-10;
 
@@ -166,7 +167,7 @@ int main(
 				}
 				else
 				{
-					h1h2_analytical_y_high.spectral_set_zero();
+					h1h2_analytical_y_high.physical_set_all_value(0.);
 					std::cout << "Higher mode truncated in this case!" << std::endl;
 				}
 
@@ -255,7 +256,7 @@ int main(
 						}
 						else
 						{
-							h1h2_analytical_x_high.spectral_set_zero();
+							h1h2_analytical_x_high.physical_set_all_value(0.);
 							std::cout << "Higher mode truncated in this case!" << std::endl;
 						}
 
@@ -266,49 +267,61 @@ int main(
 							h1h2_numerical = h1h2_numerical_x + h1h2_numerical_y;
 							h1h2_analytical = h1h2_analytical_x + h1h2_analytical_y;
 
-							double max_error = (h1h2_analytical - h1h2_numerical).reduce_maxAbs();
+							double max_error = (h1h2_analytical - h1h2_numerical).physical_reduce_max_abs();
 							std::cout << "Max error: " << max_error << std::endl;
 
 							if (max_error > epsilon)
 							{
+								PlaneData_Spectral tmp_spec(h1_y.planeDataConfig);
+
 								std::cout << "H1_y:" << std::endl;
-								h1_y.print_spectralData_zeroNumZero();
+								tmp_spec.loadPlaneDataPhysical(h1_y);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "H2_y:" << std::endl;
-								h2_y.print_spectralData_zeroNumZero();
+								tmp_spec.loadPlaneDataPhysical(h2_y);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "H1_x:" << std::endl;
-								h1_x.print_spectralData_zeroNumZero();
+								tmp_spec.loadPlaneDataPhysical(h1_x);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "H2_x:" << std::endl;
-								h2_x.print_spectralData_zeroNumZero();
+								tmp_spec.loadPlaneDataPhysical(h2_x);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Numerical spectrum:" << std::endl;
-								h1h2_numerical.print_spectralData_zeroNumZero(epsilon);
+								tmp_spec.loadPlaneDataPhysical(h1h2_numerical);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Analytical spectrum x:" << std::endl;
-								h1h2_analytical_x.print_spectralData_zeroNumZero(epsilon);
+								tmp_spec.loadPlaneDataPhysical(h1h2_analytical_x);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Analytical spectrum y (low):" << std::endl;
-								h1h2_analytical_y_low.print_spectralData_zeroNumZero(epsilon);
+								tmp_spec.loadPlaneDataPhysical(h1h2_analytical_y_low);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Analytical spectrum y (high):" << std::endl;
-								h1h2_analytical_y_high.print_spectralData_zeroNumZero(epsilon);
+								tmp_spec.loadPlaneDataPhysical(h1h2_analytical_y_high);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Analytical spectrum y:" << std::endl;
-								h1h2_analytical_y.print_spectralData_zeroNumZero(epsilon);
+								tmp_spec.loadPlaneDataPhysical(h1h2_analytical_y);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Analytical spectrum:" << std::endl;
-								h1h2_analytical.print_spectralData_zeroNumZero(epsilon);
+								tmp_spec.loadPlaneDataPhysical(h1h2_analytical);
+								tmp_spec.print_spectralData_zeroNumZero();
 								std::cout << std::endl;
 
 								if (max_error > epsilon)

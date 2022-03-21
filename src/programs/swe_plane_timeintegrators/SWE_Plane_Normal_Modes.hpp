@@ -128,9 +128,9 @@ public:
 			//The basic state is with zero in all variables
 			// The only non zero variable in the basic state is the total height
 			//    for which the constant is added within run_timestep()
-			io_prog_h_pert.physical_set_zero();
-			io_prog_u.physical_set_zero();
-			io_prog_v.physical_set_zero();
+			io_prog_h_pert.spectral_set_zero();
+			io_prog_u.spectral_set_zero();
+			io_prog_v.spectral_set_zero();
 
 			//int num_timesteps = 1;
 
@@ -170,7 +170,7 @@ public:
 							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode via real coefficient
-						prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+						prog[outer_prog_id]->spectral_set(j, i, 1.0);
 						//Activate the symetric couterpart of the mode (only needed if j>0 )
 						if (j > 0)
 							prog[outer_prog_id]->spectral_set(planeDataConfig->spectral_data_size[1]-j, i, 1.0);
@@ -187,7 +187,7 @@ public:
 						 */
 						///////prog[outer_prog_id]->request_data_spectral();
 
-						std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
+						std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 						val = val - 1.0; //subtract U(0) from mode
 						prog[outer_prog_id]->spectral_set(j, i, val);
 
@@ -196,7 +196,7 @@ public:
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
-							A(inner_prog_id,outer_prog_id)=prog[inner_prog_id]->p_spectral_get(j, i);;
+							A(inner_prog_id,outer_prog_id)=prog[inner_prog_id]->spectral_get(j, i);;
 						}
 
 					}

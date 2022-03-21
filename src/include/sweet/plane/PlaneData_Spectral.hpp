@@ -54,7 +54,6 @@
 #endif
 
 
-
 class PlaneData_Spectral
 {
 

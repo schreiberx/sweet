@@ -20,7 +20,8 @@
 #endif
 #include "../libgl/hud/GlFreeType.hpp"
 #include "../libgl/hud/GlRenderOStream.hpp"
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 
 
 
@@ -97,7 +98,7 @@ class VisSweet	:
 
 	void vis_render()
 	{
-		const PlaneData *ro_visPlaneData;
+		const PlaneData_Spectral *ro_visPlaneData;
 		double aspect_ratio = 0;
 		int render_primitive = 0;
 		void *bogus_data;
@@ -116,14 +117,15 @@ class VisSweet	:
 				&reset
 		);
 
-		PlaneData &visData = (PlaneData&)*ro_visPlaneData;
+		PlaneData_Physical ro_visPlaneData_phys = ro_visPlaneData->toPhys();
+		PlaneData_Physical &visData = (PlaneData_Physical&)*&ro_visPlaneData_phys;
 
-		visData.request_data_physical();
+//		visData.request_data_physical();
 
 		if (std::isinf(viz_min))
 		{
-			viz_min = visData.reduce_min();
-			viz_max = visData.reduce_max();
+			viz_min = visData.physical_reduce_min();
+			viz_max = visData.physical_reduce_max();
 
 			viz_max = std::max(viz_max, viz_min+1e-20);	//< avoid numerical issues if min == max
 		}
