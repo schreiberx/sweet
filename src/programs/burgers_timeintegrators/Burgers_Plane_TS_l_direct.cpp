@@ -7,7 +7,7 @@
 
 #include "../burgers_timeintegrators/Burgers_Plane_TS_l_direct.hpp"
 
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
@@ -181,8 +181,8 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 
 void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -194,16 +194,16 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	typedef std::complex<T> complex;
 
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
-	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
-#else
-	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
-	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
-#endif
+///#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+	PlaneData_SpectralComplex i_u = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_u);
+	PlaneData_SpectralComplex i_v = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_v);
+///#else
+///	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
+///	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
+///#endif
 
-	PlaneDataComplex o_u(io_u.planeDataConfig);
-	PlaneDataComplex o_v(io_u.planeDataConfig);
+	PlaneData_SpectralComplex o_u(io_u.planeDataConfig);
+	PlaneData_SpectralComplex o_v(io_u.planeDataConfig);
 
 	T dt = i_dt;
 
@@ -281,8 +281,8 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 ///	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
 ///	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
 ///#else
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_v);
+	io_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_u);
+	io_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_v);
 ///#endif
 }
 

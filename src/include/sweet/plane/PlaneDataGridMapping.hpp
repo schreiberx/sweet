@@ -131,7 +131,7 @@ public:
 		PlaneData_Physical o_dst_phys = o_dst.toPhys();
 
 		// remap solution to A grid
-		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, staggering.v[0], staggering.v[1]);
+		sampler2D.bicubic_scalar(i_src_phys, pos_ll_x, pos_ll_y, o_dst_phys, staggering.v[0], staggering.v[1]);
 
 		o_dst.loadPlaneDataPhysical(o_dst_phys);
 	}
@@ -148,7 +148,7 @@ public:
 		PlaneData_Physical o_dst_phys = o_dst.toPhys();
 
 		// remap solution to C grid
-		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, -staggering.u[0], -staggering.u[1]);
+		sampler2D.bicubic_scalar(i_src_phys, pos_ll_x, pos_ll_y, o_dst_phys, -staggering.u[0], -staggering.u[1]);
 
 		o_dst.loadPlaneDataPhysical(o_dst_phys);
 	}
@@ -163,7 +163,7 @@ public:
 		PlaneData_Physical o_dst_phys = o_dst.toPhys();
 
 		// remap solution to C grid
-		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, -staggering.v[0], -staggering.v[1]);
+		sampler2D.bicubic_scalar(i_src_phys, pos_ll_x, pos_ll_y, o_dst_phys, -staggering.v[0], -staggering.v[1]);
 
 		o_dst.loadPlaneDataPhysical(o_dst_phys);
 	}

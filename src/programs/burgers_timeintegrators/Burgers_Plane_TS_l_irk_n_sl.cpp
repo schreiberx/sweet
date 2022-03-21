@@ -33,8 +33,8 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 
 	//Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			io_u_prev, io_v_prev,
-			io_u, io_v,
+			io_u_prev.toPhys(), io_v_prev.toPhys(),
+			io_u.toPhys(), io_v.toPhys(),
 			posx_a, posy_a,
 			dt,
 			posx_d, posy_d,
@@ -137,8 +137,8 @@ void Burgers_Plane_TS_l_irk_n_sl::setup()
 	);
 
 	// Initialize arrival points with h position
-	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];

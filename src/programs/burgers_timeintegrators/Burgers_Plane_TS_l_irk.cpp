@@ -24,9 +24,9 @@ void Burgers_Plane_TS_l_irk::run_timestep(
 
 
 	// setup dummy data
-	PlaneData tmp(io_u.planeDataConfig);
+	PlaneData_Spectral tmp(io_u.planeDataConfig);
 //#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	tmp.spectral_set_all_zero();
+	tmp.spectral_set_zero();
 //#endif
 //	tmp.physical_set_all(0);
 
@@ -41,19 +41,19 @@ void Burgers_Plane_TS_l_irk::run_timestep(
 
 		if (timestepping_order == 1)
 		{
-			lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
 
-			io_u = rhs_u.spectral_div_element_wise(lhs);
-			io_v = rhs_v.spectral_div_element_wise(lhs);
+			io_u = rhs_u / lhs;
+			io_v = rhs_v / lhs;
 		}
 		else if (timestepping_order ==2)
 		{
 			rhs_u = simVars.sim.viscosity*(op.diff2_c_x(rhs_u) + op.diff2_c_y(rhs_u));
 			rhs_v = simVars.sim.viscosity*(op.diff2_c_x(rhs_v) + op.diff2_c_y(rhs_v));
-			lhs = ((-0.5*i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			lhs = ((-0.5*i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
 
-			PlaneData_Spectral k1_u = rhs_u.spectral_div_element_wise(lhs);
-			PlaneData_Spectral k1_v = rhs_v.spectral_div_element_wise(lhs);
+			PlaneData_Spectral k1_u = rhs_u / lhs;
+			PlaneData_Spectral k1_v = rhs_v / lhs;
 
 			io_u = io_u + i_fixed_dt*k1_u;
 			io_v = io_v + i_fixed_dt*k1_v;

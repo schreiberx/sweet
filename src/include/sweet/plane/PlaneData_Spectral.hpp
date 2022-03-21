@@ -418,7 +418,7 @@ public:
 			 * more modes -> less modes
 			 */
 			SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (int m = 0; m <= out.planeDataConfig->spectral_data_size[0]; m++)
+			for (std::size_t m = 0; m <= out.planeDataConfig->spectral_data_size[0]; m++)
 			{
 				Tcomplex *dst = &out.spectral_space_data[out.planeDataConfig->getArrayIndexByModes(m, m)];
 				Tcomplex *src = &spectral_space_data[planeDataConfig->getArrayIndexByModes(m, m)];
@@ -437,7 +437,7 @@ public:
 			out.spectral_set_zero();
 
 			SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (int m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+			for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
 			{
 				Tcomplex *dst = &out.spectral_space_data[out.planeDataConfig->getArrayIndexByModes(m, m)];
 				Tcomplex *src = &spectral_space_data[planeDataConfig->getArrayIndexByModes(m, m)];
@@ -564,7 +564,7 @@ public:
 
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx] + i_plane_data.spectral_space_data[idx];
 
 		return out;
@@ -579,7 +579,7 @@ public:
 		check(i_plane_data.planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] += i_plane_data.spectral_space_data[idx];
 
 		return *this;
@@ -593,7 +593,7 @@ public:
 		check(i_plane_data.planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] -= i_plane_data.spectral_space_data[idx];
 
 		return *this;
@@ -610,7 +610,7 @@ public:
 		PlaneData_Spectral out(planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx] - i_plane_data.spectral_space_data[idx];
 
 		return out;
@@ -623,7 +623,7 @@ public:
 		PlaneData_Spectral out(planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = -spectral_space_data[idx];
 
 		return out;
@@ -682,7 +682,7 @@ public:
 		PlaneData_Spectral out(planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
 
 		return out;
@@ -696,7 +696,7 @@ public:
 	)	const
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] *= i_value;
 
 		return *this;
@@ -710,7 +710,7 @@ public:
 	)	const
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] /= i_value;
 
 		return *this;
@@ -725,7 +725,7 @@ public:
 	)	const
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] *= i_value;
 
 		return *this;
@@ -740,7 +740,7 @@ public:
 		PlaneData_Spectral out(planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx]/i_value;
 
 		return out;
@@ -763,7 +763,7 @@ public:
 	{
 		PlaneData_Spectral out(planeDataConfig);
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = -spectral_space_data[idx];
 
 		out.spectral_space_data[0] = i_value*std::sqrt(4.0*M_PI) + out.spectral_space_data[0];
@@ -996,8 +996,8 @@ public:
 	)	const
 	{
 		assert(i_n >= 0 && i_m >= 0);
-		assert(i_n <= planeDataConfig->spectral_data_size[1]);
-		assert(i_m <= planeDataConfig->spectral_data_size[0]);
+		assert(i_n <= (int)planeDataConfig->spectral_data_size[1]);
+		assert(i_m <= (int)planeDataConfig->spectral_data_size[0]);
 		assert(i_m <= i_n);
 
 		return spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)];
@@ -1015,16 +1015,16 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_n > planeDataConfig->spectral_data_size[0])
+		if (i_n > (int)planeDataConfig->spectral_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_m > planeDataConfig->spectral_data_size[1])
+		if (i_m > (int)planeDataConfig->spectral_data_size[1])
 			SWEETError("Out of boundary c");
 
 		if (i_m > i_n)
 			SWEETError("Out of boundary d");
 
-		assert (i_m <= planeDataConfig->spectral_data_size[1]);
+		assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
 #endif
 
 		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)] = i_data;
@@ -1037,7 +1037,7 @@ public:
 	void spectral_set_zero()
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 			spectral_space_data[i] = {0,0};
 	}
 
@@ -1052,7 +1052,7 @@ public:
 	)
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (int i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 			spectral_space_data[i] = i_value;
 	}
 
@@ -1078,7 +1078,7 @@ public:
 #if SWEET_THREADING_SPACE
 //#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
-		for (int i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 		{
 			std::complex<double> value = spectral_space_data[i]*(double)i;
 
@@ -1105,7 +1105,7 @@ public:
 #if SWEET_THREADING_SPACE
 //#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
-		for (int i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 		{
 			std::complex<double> value = spectral_space_data[i];
 
@@ -1132,17 +1132,17 @@ public:
 
 		//m=0 case - weight 1
 		std::size_t idx = planeDataConfig->getArrayIndexByModes(0, 0);
-		for (int n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
+		for (std::size_t n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
 		{
 			sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
 			idx++;
 		}
 		
 		//m>0 case - weight 2, as they appear twice
-		for (int m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
 		{
 			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-			for (int n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
 			{
 				sum += 2.0*spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
 				idx++;
@@ -1159,7 +1159,7 @@ public:
 	{
 		std::complex<double> error = std::numeric_limits<double>::infinity();
 
-		for (int j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
 		{
 			error.real(std::min(spectral_space_data[j].real(), error.real()));
 			error.imag(std::min(spectral_space_data[j].imag(), error.imag()));
@@ -1175,7 +1175,7 @@ public:
 	{
 		std::complex<double> error = -std::numeric_limits<double>::infinity();
 
-		for (int j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
 		{
 			error.real(std::max(spectral_space_data[j].real(), error.real()));
 			error.imag(std::max(spectral_space_data[j].imag(), error.imag()));
@@ -1192,7 +1192,7 @@ public:
 	{
 		double error = -std::numeric_limits<double>::infinity();
 		std::complex<double> w = {0,0};
-		for (int j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
 		{
 			w = spectral_space_data[j]*std::conj(spectral_space_data[j]);
 			error = std::max(std::abs(w), error);
@@ -1208,7 +1208,7 @@ public:
 	{
 		double error = std::numeric_limits<double>::infinity();
 		std::complex<double> w = {0,0};
-		for (int j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
 		{
 			w = spectral_space_data[j]*std::conj(spectral_space_data[j]);
 			error = std::min(std::abs(w), error);
@@ -1256,7 +1256,7 @@ public:
 #if SWEET_THREADING_SPACE
 		#pragma omp parallel for simd reduction(|:retval)
 #endif
-		for (int j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
+		for (std::size_t j = 0; j < planeDataConfig->spectral_array_data_number_of_elements; j++)
 		{
 			retval |= std::isnan(spectral_space_data[j].real());
 			retval |= std::isinf(spectral_space_data[j].real());
@@ -1288,10 +1288,10 @@ public:
 		std::cout << std::setprecision(i_precision);
 
 		std::cout << "m \\ n ----->" << std::endl;
-		for (int m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
 		{
 			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-			for (int n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
 			{
 				if (std::abs(spectral_space_data[idx]) < i_abs_threshold)
 					std::cout << 0 << "\t";
@@ -1323,7 +1323,7 @@ public:
 	{
 		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
 
-		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
@@ -1343,7 +1343,7 @@ public:
 	{
 		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
 
-		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
@@ -1372,10 +1372,10 @@ public:
 		std::cout << std::setprecision(i_precision);
 
 		std::cout << "m \\ n ----->" << std::endl;
-		for (int m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
 		{
 			//std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-			for (int n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
 			{
 				std::cout << "(" << m <<"," << n <<")" << "\t";
 			}
@@ -1405,10 +1405,10 @@ public:
   		std::vector<double> sum_squared(planeDataConfig->spectral_data_size[1]+1,0);
   		std::vector<double> max(planeDataConfig->spectral_data_size[1]+1,0);
 
-  		for (int m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+  		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
   		{
   			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-  			for (int n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+  			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
   			{
   				w = spectral_space_data[idx];
   				idx++;
@@ -1421,7 +1421,7 @@ public:
 
   		file << planeDataConfig->spectral_data_size[0] << " "
   				<< planeDataConfig->spectral_data_size[1] << std::endl;
-  		for (int n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
+  		for (std::size_t n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
   			file << n << " " << sum[n] << " " << max[n] << " " << std::sqrt(sum_squared[n]) << std::endl;
 
   		file.close();
@@ -1449,10 +1449,10 @@ public:
 			file << "(n_max="<<planeDataConfig->spectral_data_size[1] << " m_max="
 					<< planeDataConfig->spectral_data_size[1] << ")" << std::endl;
 			file << "timestamp\t" ; 
-			for (int m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+			for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
 			{
 				//std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-				for (int n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+				for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
 				}
@@ -1469,10 +1469,10 @@ public:
 		double sum = 0.0;
 		//std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
 		file << i_time << "\t";
-  		for (int m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+  		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
   		{
   			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-  			for (int n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+  			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
   			{
   				w = spectral_space_data[idx];
 				wabs = std::abs(w * std::conj(w));
@@ -1517,10 +1517,10 @@ public:
 			file << "(n_max="<<planeDataConfig->spectral_data_size[1] << " m_max="
 					<< planeDataConfig->spectral_data_size[1] << ")" << std::endl;
 			file << "timestamp\t" ; 
-			for (int m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+			for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
 			{
 				//std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-				for (int n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+				for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
 				}
@@ -1537,10 +1537,10 @@ public:
 		
 		//std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
 		file << i_time << "\t";
-  		for (int m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+  		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
   		{
   			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-  			for (int n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+  			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
   			{
   				w = spectral_space_data[idx];
 				wphase = std::arg(w); // std::abs(w * std::conj(w));
@@ -1653,10 +1653,10 @@ public:
   		if (data_type != "MODES_DATA")
   			SWEETError("Unknown data type '"+data_type+"'");
 
-  		if (num_x != planeDataConfig->spectral_data_size[0])
+  		if (num_x != (int)planeDataConfig->spectral_data_size[0])
   			SWEETError("NUM_X "+std::to_string(num_x)+" doesn't match planeDataConfig");
 
-  		if (num_y != planeDataConfig->spectral_data_size[1])
+  		if (num_y != (int)planeDataConfig->spectral_data_size[1])
   			SWEETError("NUM_Y "+std::to_string(num_y)+" doesn't match planeDataConfig");
 
   		file.read((char*)spectral_space_data, sizeof(std::complex<double>)*planeDataConfig->spectral_array_data_number_of_elements);
@@ -1897,7 +1897,7 @@ public:
 		PlaneData_Spectral out(planeDataConfig);
 
 //////#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)i_array_data;
+////		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)i_array_data;
 
 ////		request_data_spectral();
 ////		rw_array_data.request_data_spectral();

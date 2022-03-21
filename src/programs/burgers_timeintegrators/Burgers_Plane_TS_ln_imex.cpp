@@ -11,10 +11,10 @@
 
 
 void Burgers_Plane_TS_ln_imex::run_timestep(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
-		PlaneData &io_u_prev,	///< prognostic variables
-		PlaneData &io_v_prev,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -23,13 +23,13 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 	if (simVars.misc.verbosity > 2)
 		std::cout << "Burgers_Plane::run_timestep_imex()" << std::endl;
 
-	PlaneData u=io_u;
-	PlaneData v=io_v;
+	PlaneData_Spectral u=io_u;
+	PlaneData_Spectral v=io_v;
 	double t = i_fixed_dt;
 
 	// Setting explicit right hand side and operator of the left hand side
-	PlaneData rhs_u = u;
-	PlaneData rhs_v = v;
+	PlaneData_Spectral rhs_u = u;
+	PlaneData_Spectral rhs_v = v;
 
 	if (timestepping_order == 1)
 	{
@@ -47,17 +47,17 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 	{
 
-		PlaneData lhs = u;
+		PlaneData_Spectral lhs = u;
 		if (timestepping_order == 1)
 		{
-			lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
 		}
 		else
 		{
-			lhs = ((-t*0.5)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			lhs = ((-t*0.5)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
 		}
-		PlaneData u1 = rhs_u.spectral_div_element_wise(lhs);
-		PlaneData v1 = rhs_v.spectral_div_element_wise(lhs);
+		PlaneData_Spectral u1 = rhs_u / lhs;
+		PlaneData_Spectral v1 = rhs_v / lhs;
 
 		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
 			  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1));

@@ -913,10 +913,10 @@ public:
 
         for (int j = (int)(planeDataConfig->physical_res[1]-1); j >= 0; j--)
         {
-        		for (int i = 0; i < planeDataConfig->physical_res[0]; i++)
+        		for (int i = 0; i < (int)planeDataConfig->physical_res[0]; i++)
         		{
         			std::cout << physical_space_data[j*planeDataConfig->physical_res[0]+i];
-        			if (i < planeDataConfig->physical_res[0]-1)
+        			if (i < (int)planeDataConfig->physical_res[0]-1)
         				std::cout << "\t";
         		}
         		std::cout << std::endl;
@@ -945,27 +945,27 @@ public:
 		// Use 0 to make it processable by python
 		file << "0\t";
 
-		for (int i = 0; i < planeDataConfig->physical_res[0]; i++)
+		for (int i = 0; i < (int)planeDataConfig->physical_res[0]; i++)
 		{
 //			double lon_degree = ((double)i/(double)planeDataConfig->spat_num_lon)*2.0*M_PI;
 			double x = ((double)i/(double)planeDataConfig->physical_res[0])*plane_domain_size[0]; // ????
 
 			file << x;
-			if (i < planeDataConfig->physical_res[0]-1)
+			if (i < (int)planeDataConfig->physical_res[0]-1)
 				file << "\t";
 		}
 		file << std::endl;
 
-        for (int j = planeDataConfig->physical_res[1]-1; j >= 0; j--)
+        for (int j = (int)planeDataConfig->physical_res[1]-1; j >= 0; j--)
         {
 			double y = ((double)j/(double)planeDataConfig->physical_res[1])*plane_domain_size[1]; // ????
 
         		file << y << "\t";
 
-        		for (int i = 0; i < planeDataConfig->physical_res[0]; i++)
+        		for (int i = 0; i < (int)planeDataConfig->physical_res[0]; i++)
         		{
         			file << physical_space_data[j*planeDataConfig->physical_res[0]+i];
-        			if (i < planeDataConfig->physical_res[0]-1)
+        			if (i < (int)planeDataConfig->physical_res[0]-1)
         				file << "\t";
         		}
         		file << std::endl;
@@ -1025,7 +1025,7 @@ public:
 		 */
 
 		int row = 0;
-		while (row < planeDataConfig->physical_res[1])
+		while (row < (int)planeDataConfig->physical_res[1])
 		{
 			std::getline(file, line);
 			if (!file.good())
@@ -1062,10 +1062,10 @@ public:
 					int x = col;
 					int y = planeDataConfig->physical_res[1]-row-1;
 
-					if (x > planeDataConfig->physical_res[0])
+					if (x > (int)planeDataConfig->physical_res[0])
 						return false;
 
-					if (y > planeDataConfig->physical_res[1])
+					if (y > (int)planeDataConfig->physical_res[1])
 						return false;
 
 					physical_set_value(y, x, i_value);
@@ -1076,7 +1076,7 @@ public:
 				last_pos = pos+1;
 		    }
 
-			if (col != planeDataConfig->physical_res[0])
+			if (col != (int)planeDataConfig->physical_res[0])
 			{
 				std::cerr << "ERROR: column mismatch - Failed to read data from file " << i_filename << " in line " << row << ", column " << col << std::endl;
 				return false;
@@ -1085,7 +1085,7 @@ public:
 			row++;
 		}
 
-		if (row != planeDataConfig->physical_res[1])
+		if (row != (int)planeDataConfig->physical_res[1])
 		{
 			std::cerr << "ERROR: rows mismatch - Failed to read data from file " << i_filename << " in line " << row << std::endl;
 			return false;
