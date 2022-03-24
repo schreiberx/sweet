@@ -1360,7 +1360,41 @@ public:
 		}
 	}
 
+	inline
+	void print_spectralIndex()	const
+	{
+		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
 
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")\t";
+			}
+			std::cout << std::endl;
+		}
+		std::cout << std::endl;
+
+	}
+
+	inline
+	void print_spectralNonZero()	const
+	{
+		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
+
+		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+			{
+				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
+				if (value.real()*value.real()+value.imag()*value.imag() > 1.0e-13)
+					std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")" <<std::endl;;
+			}
+			//std::cout << std::endl;
+		}
+		//std::cout << std::endl;
+	}
 
 
 	void spectral_structure_print(

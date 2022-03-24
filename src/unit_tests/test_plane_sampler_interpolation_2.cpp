@@ -6,7 +6,8 @@
  */
 
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Physical.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
@@ -14,7 +15,7 @@
 #include "../programs/swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
-#include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
+#include <sweet/plane/Convert_PlaneDataPhysical_to_ScalarDataArray.hpp>
 #include <unistd.h>
 #include <stdio.h>
 
@@ -65,12 +66,12 @@ int main(
 
 		//simVars.reset();
 		planeDataConfigInstance3.setupAutoSpectralSpace(res3, simVars.misc.reuse_spectral_transformation_plans);
-		PlaneData prog_h3_pert(planeDataConfig3);
+		PlaneData_Spectral prog_h3_pert(planeDataConfig3);
 
 		//PlaneData prog_test3(planeDataConfig3);
 		{
-			PlaneData prog_u3(planeDataConfig3);
-			PlaneData prog_v3(planeDataConfig3);
+			PlaneData_Spectral prog_u3(planeDataConfig3);
+			PlaneData_Spectral prog_v3(planeDataConfig3);
 
 			PlaneOperators op3(planeDataConfig3, simVars.sim.plane_domain_size);
 			SWEPlaneBenchmarksCombined b;
@@ -94,11 +95,11 @@ int main(
 
 		//simVars.reset();
 		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
-		PlaneData prog_h_pert(planeDataConfig);
+		PlaneData_Spectral prog_h_pert(planeDataConfig);
 
 		{
-			PlaneData prog_u(planeDataConfig);
-			PlaneData prog_v(planeDataConfig);
+			PlaneData_Spectral prog_u(planeDataConfig);
+			PlaneData_Spectral prog_v(planeDataConfig);
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size);
 			SWEPlaneBenchmarksCombined b;
@@ -116,8 +117,8 @@ int main(
 		/*
 		 * Sampling points with different resolution
 		 */
-		PlaneData px(planeDataConfig3);
-		PlaneData py(planeDataConfig3);
+		PlaneData_Physical px(planeDataConfig3);
+		PlaneData_Physical py(planeDataConfig3);
 
 		// setup some test sampling points
 		// we use 2 arrays - one for each sampling position
@@ -125,8 +126,8 @@ int main(
 		{
 			for (int i = 0; i < res3[0]; i++)
 			{
-				px.p_physical_set(j, i, ((double)i)*(simVars.sim.plane_domain_size[0]/(double)res3[0]));
-				py.p_physical_set(j, i, ((double)j)*(simVars.sim.plane_domain_size[1]/(double)res3[1]));
+				px.physical_set_value(j, i, ((double)i)*(simVars.sim.plane_domain_size[0]/(double)res3[0]));
+				py.physical_set_value(j, i, ((double)j)*(simVars.sim.plane_domain_size[1]/(double)res3[1]));
 			}
 		}
 
@@ -142,17 +143,17 @@ int main(
 			/*
 			 * sample with BiLinear interpolation
 			 */
-			PlaneData prog_h3_bilinear(planeDataConfig3);
+			PlaneData_Spectral prog_h3_bilinear(planeDataConfig3);
 
 			sampler2D.bilinear_scalar(
 					prog_h_pert,	///< input scalar field
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
+					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(px),
+					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(py),
 					prog_h3_bilinear
 			);
 
-			double error_rms = (prog_h3_bilinear-prog_h3_pert).reduce_rms();
-			double error_max = (prog_h3_bilinear-prog_h3_pert).reduce_maxAbs();
+			double error_rms = (prog_h3_bilinear-prog_h3_pert).toPhys().physical_reduce_rms();
+			double error_max = (prog_h3_bilinear-prog_h3_pert).toPhys().physical_reduce_max_abs();
 
 			double rate_rms = 0;
 			double rate_max = 0;
@@ -189,18 +190,18 @@ int main(
 			/*
 			 * sample with BiCubic interpolation
 			 */
-			PlaneData prog_h3_bicubic(planeDataConfig3);
+			PlaneData_Spectral prog_h3_bicubic(planeDataConfig3);
 
 			sampler2D.bicubic_scalar(
 					prog_h_pert,	///< input scalar field
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
-					Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
+					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(px),
+					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(py),
 					prog_h3_bicubic	///< output field
 			);
 
 	//		double error_norm2 = (prog_h3_bicubic-prog_h3).reduce_norm2()/((double)res3[0] * (double)res3[1]);
-			double error_rms = (prog_h3_bicubic-prog_h3_pert).reduce_rms();
-			double error_max = (prog_h3_bicubic-prog_h3_pert).reduce_maxAbs();
+			double error_rms = (prog_h3_bicubic-prog_h3_pert).toPhys().physical_reduce_rms();
+			double error_max = (prog_h3_bicubic-prog_h3_pert).toPhys().physical_reduce_max_abs();
 
 			double rate_rms = 0;
 			double rate_max = 0;

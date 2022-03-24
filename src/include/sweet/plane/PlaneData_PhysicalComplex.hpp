@@ -525,6 +525,21 @@ public:
 			physical_space_data[i] = i_value;
 	}
 
+	/*
+	 * Set all values to a specific value
+	 */
+	void physical_set_all_value(
+			double i_value_real,
+			double i_value_imag
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			physical_space_data[i].real(i_value_real);
+			physical_space_data[i].imag(i_value_imag);
+		}
+	}
 
 
 
@@ -540,6 +555,19 @@ public:
 		physical_space_data[i_y_idx*planeDataConfig->physical_res[0] + i_x_idx] = i_value;
 	}
 
+	/*
+	 * Set all values to a specific value
+	 */
+	void physical_set_value(
+			int i_x_idx,
+			int i_y_idx,
+			double i_value_real,
+			double i_value_imag
+	)
+	{
+		physical_space_data[i_y_idx*planeDataConfig->physical_res[0] + i_x_idx].real(i_value_real);
+		physical_space_data[i_y_idx*planeDataConfig->physical_res[0] + i_x_idx].imag(i_value_imag);
+	}
 
 
 	/**
@@ -601,6 +629,94 @@ public:
 
 		return error;
 	}
+
+	/**
+	 * return the maximum of all absolute values, use quad precision for reduction
+	 */
+	double physical_reduce_sum_re_quad()	const
+	{
+		double sum = 0;
+		double c = 0;
+
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
+		#pragma omp parallel for reduction(+:sum,c)
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			double value = physical_space_data[i].real();
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return sum;
+	}
+
+	/**
+	 * reduce to root mean square
+	 */
+	double physical_reduce_rms_quad()
+	{
+		double sum = 0;
+		double c = 0;
+
+#if SWEET_THREADING_SPACE
+//#if !SWEET_THREADING_TIME_REXI
+		#pragma omp parallel for reduction(+:sum,c)
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			double radius2 = physical_space_data[i].real()*physical_space_data[i].real()+physical_space_data[i].imag()*physical_space_data[i].imag();
+			//double value = std::sqrt(radius2);
+			//value *= value;
+			double value = radius2;
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		sum = std::sqrt(sum/double(planeDataConfig->physical_array_data_number_of_elements));
+		return sum;
+	}
+
+	/**
+	 * return the sqrt of the sum of the squared values, use quad precision for reduction
+	 */
+	double physical_reduce_norm2_quad()	const
+	{
+		double sum = 0.0;
+		double c = 0.0;
+
+		#if SWEET_THREADING_SPACE
+			#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
+		#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			double value = physical_space_data[i].real()*physical_space_data[i].real() + physical_space_data[i].imag()*physical_space_data[i].imag();
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return std::sqrt(sum);
+	}
+
 
 };
 

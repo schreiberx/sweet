@@ -331,23 +331,6 @@ public:
 	}
 
 
-	/*
-	 * Setup spectral plane data based on data in physical space
-	 */
-	void loadSphereDataPhysical(
-			const PlaneData_PhysicalComplex &i_planeDataPhysical
-	)
-	{
-		/**
-		 * Warning: The sphat_to_SH function is an in-situ operation.
-		 * Therefore, the data in the source array will be destroyed.
-		 * Hence, we create a copy
-		 */
-		PlaneData_PhysicalComplex tmp(i_planeDataPhysical);
-		planeDataConfig->fft_complex_physical_to_spectral(tmp.physical_space_data, this->spectral_space_data);
-	}
-
-
 
 	PlaneData_PhysicalComplex toPhys()	const
 	{
@@ -472,6 +455,22 @@ public:
 
 		return *this;
 	}
+
+	PlaneData_SpectralComplex operator*(
+			const PlaneData_SpectralComplex &i_plane_data
+	)	const
+	{
+		check_planeDataConfig_identical_res(i_plane_data.planeDataConfig);
+
+		PlaneData_SpectralComplex out_plane_data(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+			out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] * i_plane_data.spectral_space_data[idx];
+
+		return out_plane_data;
+	}
+
 
 
 	PlaneData_SpectralComplex operator/(
@@ -998,6 +997,23 @@ public:
 			}
 		}
 
+	}
+
+
+	/*
+	 * Setup spectral sphere data based on data in physical space
+	 */
+	void loadPlaneDataPhysical(
+			const PlaneData_PhysicalComplex &i_planeDataPhysical
+	)
+	{
+		/**
+		 * Warning: The sphat_to_SH function is an in-situ operation.
+		 * Therefore, the data in the source array will be destroyed.
+		 * Hence, we create a copy
+		 */
+		PlaneData_PhysicalComplex tmp(i_planeDataPhysical);
+		planeDataConfig->fft_complex_physical_to_spectral(tmp.physical_space_data, this->spectral_space_data);
 	}
 
 

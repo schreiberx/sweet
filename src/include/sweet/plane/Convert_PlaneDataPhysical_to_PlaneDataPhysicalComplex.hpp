@@ -25,7 +25,7 @@ public:
 #if SWEET_THREADING_SPACE
 #pragma omp parallel for
 #endif
-		for (std::size_t i = 0; i < tmp.planeDataConfig->physical_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < i_planeData.planeDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_planeData.physical_space_data[i];
 
 		return out;

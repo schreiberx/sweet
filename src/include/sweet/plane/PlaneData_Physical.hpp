@@ -813,6 +813,80 @@ public:
 		return sum;
 	}
 
+	/**
+	 * reduce to root mean square
+	 */
+	double physical_reduce_rms_quad()
+	{
+
+		double sum = 0;
+		double c = 0;
+
+#if SWEET_THREADING_SPACE
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			double value = physical_space_data[i]*physical_space_data[i];
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		sum = std::sqrt(sum/(double)(planeDataConfig->physical_array_data_number_of_elements));
+
+		return sum;
+	}
+
+	/**
+	 * return the sqrt of the sum of the squared values
+	 */
+	double physical_reduce_norm2()	const
+	{
+		double sum = 0;
+#if SWEET_THREADING_SPACE
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			sum += physical_space_data[i]*physical_space_data[i];
+
+
+		return std::sqrt(sum);
+	}
+
+
+	/**
+	 * return the sqrt of the sum of the squared values, use quad precision for reduction
+	 */
+	double physical_reduce_norm2_quad()	const
+	{
+		double sum = 0.0;
+		double c = 0.0;
+
+#if SWEET_THREADING_SPACE
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			double value = physical_space_data[i]*physical_space_data[i];
+
+			// Use Kahan summation
+			double y = value - c;
+			double t = sum + y;
+			c = (t - sum) - y;
+			sum = t;
+		}
+
+		sum -= c;
+
+		return std::sqrt(sum);
+	}
+
 
 
 
@@ -1008,6 +1082,33 @@ public:
         		std::cout << std::endl;
         }
 	}
+
+	/**
+	 * print spectral data and zero out values which are numerically close to zero
+	 */
+	inline
+	void print_physicalData_zeroNumZero(double i_zero_threshold = 1e-13)	const
+	{
+		PlaneData_Physical &rw_array_data = (PlaneData_Physical&)*this;
+
+		for (int y = planeDataConfig->physical_data_size[1]-1; y >= 0; y--)
+		{
+			for (std::size_t x = 0; x < planeDataConfig->physical_data_size[0]; x++)
+			{
+				double value = rw_array_data.physical_get(y, x);
+
+				if (std::abs(value) < i_zero_threshold)
+					value = 0.0;
+
+				std::cout << value;
+
+				if (x != planeDataConfig->physical_data_size[0]-1)
+					std::cout << "\t";
+			}
+			std::cout << std::endl;
+		}
+	}
+
 
 
 

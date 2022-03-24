@@ -6,7 +6,8 @@
 #	error	"GUI not supported"
 #endif
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
+#include "../include/sweet/plane/PlaneData_Physical.hpp"
 #include <sweet/SimulationVariables.hpp>
 #include "../include/sweet/plane/PlaneOperators.hpp"
 
@@ -119,7 +120,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneData h(planeDataConfig);
+		PlaneData_Physical h(planeDataConfig);
 
 		{
 			std::cout << "**********************************************" << std::endl;
@@ -142,11 +143,11 @@ int main(int i_argc, char *i_argv[])
 				std::cout << std::endl;
 				std::cout << " Testing differentiation for different frequencies (including Nyquist)" << std::endl;
 
-				PlaneData h_diff_x(planeDataConfig);
-				PlaneData h_diff_y(planeDataConfig);
-				PlaneData h_diff2_x(planeDataConfig);
-				PlaneData h_diff2_y(planeDataConfig);
-				PlaneData h_bilaplace(planeDataConfig);
+				PlaneData_Physical h_diff_x(planeDataConfig);
+				PlaneData_Physical h_diff_y(planeDataConfig);
+				PlaneData_Physical h_diff2_x(planeDataConfig);
+				PlaneData_Physical h_diff2_y(planeDataConfig);
+				PlaneData_Physical h_bilaplace(planeDataConfig);
 
 				PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
@@ -188,18 +189,18 @@ int main(int i_argc, char *i_argv[])
 							double dx = simVars.sim.plane_domain_size[0];
 							double dy = simVars.sim.plane_domain_size[1];
 
-							h.p_physical_set(j, i, sin_x * sin_y);
+							h.physical_set_value(j, i, sin_x * sin_y);
 
 							double diff_x = fx * cos_x * sin_y / (simVars.sim.plane_domain_size[0]);
 							double diff_y = fy * sin_x * cos_y / (simVars.sim.plane_domain_size[1]);
 
-							h_diff_x.p_physical_set(j, i, diff_x);
-							h_diff_y.p_physical_set(j, i, diff_y);
+							h_diff_x.physical_set_value(j, i, diff_x);
+							h_diff_y.physical_set_value(j, i, diff_y);
 
-							h_diff2_x.p_physical_set(j, i, -fx * fx * sin_x * sin_y / (dx * dx));
-							h_diff2_y.p_physical_set(j, i, -fy * fy * sin_x * sin_y / (dy * dy));
+							h_diff2_x.physical_set_value(j, i, -fx * fx * sin_x * sin_y / (dx * dx));
+							h_diff2_y.physical_set_value(j, i, -fy * fy * sin_x * sin_y / (dy * dy));
 
-							h_bilaplace.p_physical_set(j, i,
+							h_bilaplace.physical_set_value(j, i,
 							// d/dx
 									fx * fx * fx * fx * sin_x * sin_y / (dx * dx * dx * dx) + fx * fx * fy * fy * sin_x * sin_y / (dy * dy * dx * dx)
 									// d/dy
@@ -218,18 +219,21 @@ int main(int i_argc, char *i_argv[])
 					double norm_fft_x = std::sqrt(simVars.disc.space_res_physical[0]);
 					double norm_fft_y = std::sqrt(simVars.disc.space_res_physical[1]);
 
-					double err_x = (op.diff_c_x(h) - h_diff_x).reduce_maxAbs() / norm_fx / norm_fft_x;
-					double err_y = (op.diff_c_y(h) - h_diff_y).reduce_maxAbs() / norm_fy / norm_fft_y;
+					PlaneData_Spectral h_spec(h.planeDataConfig);
+					h_spec.loadPlaneDataPhysical(h);
+
+					double err_x = (op.diff_c_x(h_spec).toPhys() - h_diff_x).physical_reduce_max_abs() / norm_fx / norm_fft_x;
+					double err_y = (op.diff_c_y(h_spec).toPhys() - h_diff_y).physical_reduce_max_abs() / norm_fy / norm_fft_y;
 
 					// diff2 normalization = 4.0 pi^2 / L^2
-					double err2_x = (op.diff2_c_x(h) - h_diff2_x).reduce_maxAbs() / (norm_fx * norm_fx) / norm_fft_x;
-					double err2_y = (op.diff2_c_y(h) - h_diff2_y).reduce_maxAbs() / (norm_fy * norm_fy) / norm_fft_y;
+					double err2_x = (op.diff2_c_x(h_spec).toPhys() - h_diff2_x).physical_reduce_max_abs() / (norm_fx * norm_fx) / norm_fft_x;
+					double err2_y = (op.diff2_c_y(h_spec).toPhys() - h_diff2_y).physical_reduce_max_abs() / (norm_fy * norm_fy) / norm_fft_y;
 
-					double err_laplace = (op.laplace(h) - h_diff2_x - h_diff2_y).reduce_maxAbs()
+					double err_laplace = (op.laplace(h_spec).toPhys() - h_diff2_x - h_diff2_y).physical_reduce_max_abs()
 							/ (norm_fx * norm_fx + norm_fy * norm_fy)
 							/ (norm_fft_x + norm_fft_y);
 
-					double err_bilaplace = (op.laplace(op.laplace(h)) - h_bilaplace).reduce_maxAbs()
+					double err_bilaplace = (op.laplace(op.laplace(h_spec)).toPhys() - h_bilaplace).physical_reduce_max_abs()
 							/ (norm_fx * norm_fx * norm_fx * norm_fx + norm_fy * norm_fy * norm_fy * norm_fy)
 							/ (norm_fft_x + norm_fft_y)	// for first laplace operator
 							/ (norm_fft_x + norm_fft_y) // for second laplace operator
@@ -318,12 +322,12 @@ int main(int i_argc, char *i_argv[])
 				std::cout << " Testing multiplication and de-aliasing" << std::endl;
 				std::cout << "----------------------------------------" << std::endl;
 
-				PlaneData h1(planeDataConfig);
-				PlaneData h2(planeDataConfig);
-				PlaneData h12_analytical(planeDataConfig);
-				PlaneData h12_dealiased(planeDataConfig);
-				PlaneData h12_noalias(planeDataConfig);
-				PlaneData h12_truncated(planeDataConfig);
+				PlaneData_Physical h1(planeDataConfig);
+				PlaneData_Physical h2(planeDataConfig);
+				PlaneData_Physical h12_analytical(planeDataConfig);
+				PlaneData_Physical h12_dealiased(planeDataConfig);
+				PlaneData_Physical h12_noalias(planeDataConfig);
+				PlaneData_Physical h12_truncated(planeDataConfig);
 
 				PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
@@ -429,14 +433,14 @@ int main(int i_argc, char *i_argv[])
 						{
 							double x = (double)i * dx;
 							double y = (double)j * dy;
-							h1.p_physical_set(j, i, cos(2.0 * freq_1 * M_PI * x) * cos(2.0 * freq_1 * M_PI * y));
-							h2.p_physical_set(j, i, cos(2.0 * freq_2 * M_PI * x) * cos(2.0 * freq_2 * M_PI * y));
+							h1.physical_set_value(j, i, cos(2.0 * freq_1 * M_PI * x) * cos(2.0 * freq_1 * M_PI * y));
+							h2.physical_set_value(j, i, cos(2.0 * freq_2 * M_PI * x) * cos(2.0 * freq_2 * M_PI * y));
 
 							/*
 							 * Analytical solution
 							 * Doesn't care about resolution
 							 */
-							h12_analytical.p_physical_set(j, i,
+							h12_analytical.physical_set_value(j, i,
 									0.5 * (cos(2.0 * (freq_sub) * M_PI * x) + cos(2.0 * (freq_sum) * M_PI * x))
 									* 0.5 * (cos(2.0 * (freq_sub) * M_PI * y) + cos(2.0 * (freq_sum) * M_PI * y)));
 
@@ -446,11 +450,11 @@ int main(int i_argc, char *i_argv[])
 							 *
 							 * "trunc_sum" controls if the frequency is included or not
 							 */
-							h12_noalias.p_physical_set(j, i,
+							h12_noalias.physical_set_value(j, i,
 									0.5 * (cos(2.0 * (freq_sub) * M_PI * x) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PI * x)) * 0.5
 											* (cos(2.0 * (freq_sub) * M_PI * y) + physical_trunc_sum * cos(2.0 * (freq_sum) * M_PI * y)));
 
-							h12_truncated.p_physical_set(j, i,
+							h12_truncated.physical_set_value(j, i,
 									spectral_trunc_freq1 * spectral_trunc_freq2 * 0.5 * (cos(2.0 * (freq_sub) * M_PI * x) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PI * x)) * 0.5
 											* (cos(2.0 * (freq_sub) * M_PI * y) + spectral_trunc_freq_sum * cos(2.0 * (freq_sum) * M_PI * y)));
 						}
@@ -458,11 +462,11 @@ int main(int i_argc, char *i_argv[])
 
 					// Standard multiplication
 					// Iff there's no aliasing possible, this should return the correct solution
-					double err_mult = (h1 * h2 - h12_analytical).reduce_maxAbs();
+					double err_mult = (h1 * h2 - h12_analytical).physical_reduce_max_abs();
 
 					// Multiplication with dealiasing from * operator
 					// Even if there's dealiasing, this should return the non-aliased result
-					double err_mult_dealias = (h1 * h2 - h12_noalias).reduce_maxAbs();
+					double err_mult_dealias = (h1 * h2 - h12_noalias).physical_reduce_max_abs();
 
 					//Multiplication with dealiasing from mult function (truncation)
 					/// TODO: CHECK THIS
@@ -505,7 +509,9 @@ int main(int i_argc, char *i_argv[])
 						else
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
-						(h1 * h2).print_spectralNonZero();
+						PlaneData_Spectral tmp(planeDataConfig);
+						tmp.loadPlaneDataPhysical(h1 * h2);
+						tmp.print_spectralNonZero();
 						SWEETError("EXIT");
 					}
 

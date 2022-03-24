@@ -12,8 +12,8 @@
 #define SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 
 #include <rexi/EXPFunctions.hpp>
-#include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <functional>
@@ -41,9 +41,9 @@ public:
 			double geo_mode,    //Coeficient multiplying geostrophic mode
 			double igwest_mode, //Coeficient multiplying west gravity mode
 			double igeast_mode, //Coeficient multiplying east gravity mode
-			PlaneData &io_h, // h: surface height (perturbation)
-			PlaneData &io_u, // u: velocity in x-direction
-			PlaneData &io_v, // v: velocity in y-direction
+			PlaneData_Spectral &io_h, // h: surface height (perturbation)
+			PlaneData_Spectral &io_u, // u: velocity in x-direction
+			PlaneData_Spectral &io_v, // v: velocity in y-direction
 			SimulationVariables &i_simVars // Simulation variables
 	)
 	{
@@ -56,10 +56,6 @@ public:
 			SWEETError("Staggering not supported");
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
-
-		io_h.request_data_spectral();
-		io_u.request_data_spectral();
-		io_v.request_data_spectral();
 
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
@@ -107,23 +103,23 @@ public:
 		//io_v.print_spectralIndex();
 
 		complex h_add, u_add, v_add;
-		h_add = io_h.p_spectral_get(ik1, ik0)+UEV[0];
-		u_add = io_u.p_spectral_get(ik1, ik0)+UEV[1];
-		v_add = io_v.p_spectral_get(ik1, ik0)+UEV[2];
+		h_add = io_h.spectral_get(ik1, ik0)+UEV[0];
+		u_add = io_u.spectral_get(ik1, ik0)+UEV[1];
+		v_add = io_v.spectral_get(ik1, ik0)+UEV[2];
 
 		/* Add normal mode to data */
-		io_h.p_spectral_set(ik1, ik0, h_add);
-		io_u.p_spectral_set(ik1, ik0, u_add);
-		io_v.p_spectral_set(ik1, ik0, v_add);
+		io_h.spectral_set(ik1, ik0, h_add);
+		io_u.spectral_set(ik1, ik0, u_add);
+		io_v.spectral_set(ik1, ik0, v_add);
 
 		io_h.spectral_zeroAliasingModes();
 		io_u.spectral_zeroAliasingModes();
 		io_v.spectral_zeroAliasingModes();
 
-		//Request physical data, to ensure that irroring is well well balanced (it may fill in the mirror mode)
-		io_h.request_data_physical();
-		io_u.request_data_physical();
-		io_v.request_data_physical();
+////		//Request physical data, to ensure that irroring is well well balanced (it may fill in the mirror mode)
+////		io_h.request_data_physical();
+////		io_u.request_data_physical();
+////		io_v.request_data_physical();
 
 /*Debug output*/
 #if 0
@@ -154,13 +150,13 @@ public:
 
 	static
 	void convert_allspectralmodes_to_normalmodes(
-			PlaneData &i_h, // h: surface height (perturbation)
-			PlaneData &i_u, // u: velocity in x-direction
-			PlaneData &i_v, // v: velocity in y-direction
+			PlaneData_Spectral &i_h, // h: surface height (perturbation)
+			PlaneData_Spectral &i_u, // u: velocity in x-direction
+			PlaneData_Spectral &i_v, // v: velocity in y-direction
 			SimulationVariables &i_simVars, // Simulation variables
-			PlaneData &o_geo_mode,    //Output: Coeficients multiplying geostrophic mode
-			PlaneData &o_igwest_mode, //Output: Coeficients multiplying west gravity mode
-			PlaneData &o_igeast_mode //Output: Coeficients multiplying east gravity mode
+			PlaneData_Spectral &o_geo_mode,    //Output: Coeficients multiplying geostrophic mode
+			PlaneData_Spectral &o_igwest_mode, //Output: Coeficients multiplying west gravity mode
+			PlaneData_Spectral &o_igeast_mode //Output: Coeficients multiplying east gravity mode
 	)
 	{
 		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
@@ -187,9 +183,9 @@ public:
 									igwest_mode_c,
 									igeast_mode_c
 							);
-				o_geo_mode.p_spectral_set(ik1, ik0, geo_mode_c);
-				o_igwest_mode.p_spectral_set(ik1, ik0, igwest_mode_c);
-				o_igeast_mode.p_spectral_set(ik1, ik0, igeast_mode_c);
+				o_geo_mode.spectral_set(ik1, ik0, geo_mode_c);
+				o_igwest_mode.spectral_set(ik1, ik0, igwest_mode_c);
+				o_igeast_mode.spectral_set(ik1, ik0, igeast_mode_c);
 
 			}
 		}	
@@ -200,9 +196,9 @@ public:
 	void convert_spectralmode_to_normalmode(
 			std::size_t ik0,				//wavenumber in x
 			std::size_t ik1,				// wavenumeber in y
-			PlaneData &i_h, // h: surface height (perturbation)
-			PlaneData &i_u, // u: velocity in x-direction
-			PlaneData &i_v, // v: velocity in y-direction
+			PlaneData_Spectral &i_h, // h: surface height (perturbation)
+			PlaneData_Spectral &i_u, // u: velocity in x-direction
+			PlaneData_Spectral &i_v, // v: velocity in y-direction
 			SimulationVariables &i_simVars, // Simulation variables
 			complex &o_geo_mode,    //Output: Coeficient multiplying geostrophic mode
 			complex &o_igwest_mode, //Output: Coeficient multiplying west gravity mode
@@ -218,10 +214,6 @@ public:
 			SWEETError("Staggering not supported");
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
-
-		i_h.request_data_spectral();
-		i_u.request_data_spectral();
-		i_v.request_data_spectral();
 
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
@@ -254,9 +246,9 @@ public:
 		complex U[3];
 		// Set (h,u,v) spectral coeficients
 		// These are weights for the modes
-		U[0] = i_h.p_spectral_get(ik1, ik0);
-		U[1] = i_u.p_spectral_get(ik1, ik0);
-		U[2] = i_v.p_spectral_get(ik1, ik0);
+		U[0] = i_h.spectral_get(ik1, ik0);
+		U[1] = i_u.spectral_get(ik1, ik0);
+		U[2] = i_v.spectral_get(ik1, ik0);
 
 
 		//Apply inverse EV matrix to obtain data in EV space
@@ -575,9 +567,9 @@ public:
 	template <typename TCallbackClass>
 	static
 	void normal_mode_analysis(
-			PlaneData &io_prog_h_pert, // h: surface height (perturbation)
-			PlaneData &io_prog_u, // u: velocity in x-direction
-			PlaneData &io_prog_v, // v: velocity in y-direction
+			PlaneData_Spectral &io_prog_h_pert, // h: surface height (perturbation)
+			PlaneData_Spectral &io_prog_u, // u: velocity in x-direction
+			PlaneData_Spectral &io_prog_v, // v: velocity in y-direction
 			int number_of_prognostic_variables,
 			SimulationVariables &i_simVars, // Simulation variables
 			TCallbackClass *i_class,
@@ -665,15 +657,15 @@ public:
 #endif
 			file << std::endl;
 
-			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
+			PlaneData_Spectral* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
 
 			int number_of_prognostic_variables = 3;
 			//The basic state is with zero in all variables
 			// The only non zero variable in the basic state is the total height
 			//    for which the constant is added within run_timestep()
-			io_prog_h_pert.physical_set_zero();
-			io_prog_u.physical_set_zero();
-			io_prog_v.physical_set_zero();
+			io_prog_h_pert.spectral_set_zero();
+			io_prog_u.spectral_set_zero();
+			io_prog_v.spectral_set_zero();
 
 			//int num_timesteps = 1;
 
@@ -713,33 +705,33 @@ public:
 							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode via real coefficient
-						prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+						prog[outer_prog_id]->spectral_set(j, i, 1.0);
 						//Activate the symetric couterpart of the mode (only needed if j>0 )
 						if (j > 0)
-							prog[outer_prog_id]->p_spectral_set(planeDataConfig->spectral_data_size[1]-j, i, 1.0);
+							prog[outer_prog_id]->spectral_set(planeDataConfig->spectral_data_size[1]-j, i, 1.0);
 
 						/*
 						 * RUN timestep
 						 */
-						prog[outer_prog_id]->request_data_physical();
+						//prog[outer_prog_id]->request_data_physical();
 						(i_class->*i_run_timestep_method)();
 
 						/*
 						 * compute
 						 * 1/dt * (U(t+1) - U(t))
 						 */
-						prog[outer_prog_id]->request_data_spectral();
+						//prog[outer_prog_id]->request_data_spectral();
 
-						std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
+						std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 						val = val - 1.0; //subtract U(0) from mode
-						prog[outer_prog_id]->p_spectral_set(j, i, val);
+						prog[outer_prog_id]->spectral_set(j, i, val);
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 							(*prog[inner_prog_id]) /= eps;
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
-							A(inner_prog_id,outer_prog_id)=prog[inner_prog_id]->p_spectral_get(j, i);;
+							A(inner_prog_id,outer_prog_id)=prog[inner_prog_id]->spectral_get(j, i);;
 						}
 
 					}
@@ -843,7 +835,7 @@ public:
 			// use very high precision
 			file << std::setprecision(20);
 
-			PlaneData* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
+			PlaneData_Spectral* prog[3] = {&io_prog_h_pert, &io_prog_u, &io_prog_v};
 
 			/*
 			 * Maximum number of prognostic variables
@@ -855,13 +847,13 @@ public:
 
 			if (number_of_prognostic_variables == 3)
 			{
-				io_prog_h_pert.physical_set_zero();
-				io_prog_u.physical_set_zero();
-				io_prog_v.physical_set_zero();
+				io_prog_h_pert.spectral_set_zero();
+				io_prog_u.spectral_set_zero();
+				io_prog_v.spectral_set_zero();
 			}
 			else if (number_of_prognostic_variables == 1)
 			{
-				io_prog_h_pert.physical_set_zero();
+				io_prog_h_pert.spectral_set_zero();
 			}
 			else
 			{
@@ -934,11 +926,13 @@ public:
 						std::cout << "." << std::flush;
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
-							prog[inner_prog_id]->physical_set_zero();
+							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode
-						prog[outer_prog_id]->request_data_physical();
-						prog[outer_prog_id]->physical_space_data[outer_i] = 1;
+						PlaneData_Physical tmp = prog[outer_prog_id]->toPhys();
+						//prog[outer_prog_id]->request_data_physical();
+						tmp.physical_space_data[outer_i] = 1;
+						prog[outer_prog_id]->loadPlaneDataPhysical(tmp);
 
 						/*
 						 * RUN timestep
@@ -952,8 +946,10 @@ public:
 							 * compute
 							 * 1/dt * (U(t+1) - U(t))
 							 */
-							prog[outer_prog_id]->request_data_physical();
-							prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
+							//prog[outer_prog_id]->request_data_physical();
+							tmp = prog[outer_prog_id]->toPhys();
+							tmp.physical_space_data[outer_i] -= 1.0;
+							prog[outer_prog_id]->loadPlaneDataPhysical(tmp);
 
 							for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
@@ -961,10 +957,11 @@ public:
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
-							prog[inner_prog_id]->request_data_physical();
+							//prog[inner_prog_id]->request_data_physical();
+							tmp = prog[outer_prog_id]->toPhys();
 							for (std::size_t k = 0; k < planeDataConfig->physical_array_data_number_of_elements; k++)
 							{
-								file << prog[inner_prog_id]->physical_space_data[k];
+								file << tmp.physical_space_data[k];
 								if (inner_prog_id != number_of_prognostic_variables-1 || k != planeDataConfig->physical_array_data_number_of_elements-1)
 									file << "\t";
 								else
@@ -998,7 +995,7 @@ public:
 									prog[inner_prog_id]->spectral_set_zero();
 
 								// activate mode via real coefficient
-								prog[outer_prog_id]->p_spectral_set(j, i, 1.0);
+								prog[outer_prog_id]->spectral_set(j, i, 1.0);
 
 								/*
 								 * RUN timestep
@@ -1012,11 +1009,11 @@ public:
 									 * compute
 									 * 1/dt * (U(t+1) - U(t))
 									 */
-									prog[outer_prog_id]->request_data_spectral();
+									//prog[outer_prog_id]->request_data_spectral();
 
-									std::complex<double> val = prog[outer_prog_id]->p_spectral_get(j, i);
+									std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 									val = val - 1.0;
-									prog[outer_prog_id]->p_spectral_set(j, i, val);
+									prog[outer_prog_id]->spectral_set(j, i, val);
 
 									for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 										(*prog[inner_prog_id]) /= i_simVars.timecontrol.current_timestep_size;
@@ -1025,7 +1022,7 @@ public:
 
 								for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								{
-									prog[inner_prog_id]->request_data_spectral();
+									//prog[inner_prog_id]->request_data_spectral();
 
 									/*
 									 * REAL
@@ -1037,7 +1034,7 @@ public:
 										{
 											for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 											{
-												file << prog[inner_prog_id]->p_spectral_get(j, i).real();
+												file << prog[inner_prog_id]->spectral_get(j, i).real();
 												file << "\t";
 											}
 										}
@@ -1057,7 +1054,7 @@ public:
 										{
 											for (std::size_t i = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; i < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; i++)
 											{
-												file << prog[inner_prog_id]->p_spectral_get(j, i).imag();
+												file << prog[inner_prog_id]->spectral_get(j, i).imag();
 
 												if (inner_prog_id != number_of_prognostic_variables-1 || c != specmodes-1)
 													file << "\t";
