@@ -260,7 +260,8 @@ public:
 				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
 					{
-						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
 					}
 			}
 			else
@@ -272,7 +273,8 @@ public:
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
 					{
-						spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
 					}
 			}
 		}
@@ -997,7 +999,7 @@ public:
 		assert(i_n >= 0 && i_m >= 0);
 		assert(i_n <= (int)planeDataConfig->spectral_data_size[1]);
 		assert(i_m <= (int)planeDataConfig->spectral_data_size[0]);
-		assert(i_m <= i_n);
+		///assert(i_m <= i_n);
 
 		return spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)];
 	}
@@ -1014,14 +1016,14 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_n > (int)planeDataConfig->spectral_data_size[0])
+		if (i_m > (int)planeDataConfig->spectral_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_m > (int)planeDataConfig->spectral_data_size[1])
+		if (i_n > (int)planeDataConfig->spectral_data_size[1])
 			SWEETError("Out of boundary c");
 
-		if (i_m > i_n)
-			SWEETError("Out of boundary d");
+		////if (i_m > i_n)
+		////	SWEETError("Out of boundary d");
 
 		assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
 #endif
@@ -1290,7 +1292,7 @@ public:
 		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
 		{
 			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+			for (std::size_t n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
 			{
 				if (std::abs(spectral_space_data[idx]) < i_abs_threshold)
 					std::cout << 0 << "\t";
@@ -1322,7 +1324,8 @@ public:
 	{
 		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
 
-		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		//for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--) // https://stackoverflow.com/questions/3623263/reverse-iteration-with-an-unsigned-loop-variable
+		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y < planeDataConfig->spectral_data_size[1]; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
@@ -1342,7 +1345,8 @@ public:
 	{
 		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
 
-		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
+		//for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--) //  https://stackoverflow.com/questions/3623263/reverse-iteration-with-an-unsigned-loop-variable
+		for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y < planeDataConfig->spectral_data_size[1]; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
@@ -1365,6 +1369,7 @@ public:
 	{
 		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)*this;
 
+		//for (std::size_t y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--) //  https://stackoverflow.com/questions/3623263/reverse-iteration-with-an-unsigned-loop-variable
 		for (int y = planeDataConfig->spectral_data_size[1]-1; y >= 0; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
@@ -1929,34 +1934,11 @@ public:
 	{
 		PlaneData_Spectral out(planeDataConfig);
 
-//////#if SWEET_USE_PLANE_SPECTRAL_SPACE
-////		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)i_array_data;
-
-////		request_data_spectral();
-////		rw_array_data.request_data_spectral();
-
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 				out.spectral_space_data[idx] = spectral_space_data[idx]*i_array_data.spectral_space_data[idx];
 		);
 
-////		out.spectral_space_data_valid = true;
-////		out.physical_space_data_valid = false;
-
 		out.spectral_zeroAliasingModes();
-
-//////#else
-//////
-//////		PlaneData &rw_array_data = (PlaneData&)i_array_data;
-//////
-//////		kernel_apply(
-//////				planeDataConfig->physical_data_size[0],
-//////				planeDataConfig->physical_data_size[1],
-//////				rw_array_data.physical_space_data,
-//////
-//////				out.physical_space_data
-//////		);
-//////#endif
-
 
 		return out;
 	}

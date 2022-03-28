@@ -229,6 +229,12 @@ int main(int i_argc, char *i_argv[])
 					double err2_x = (op.diff2_c_x(h_spec).toPhys() - h_diff2_x).physical_reduce_max_abs() / (norm_fx * norm_fx) / norm_fft_x;
 					double err2_y = (op.diff2_c_y(h_spec).toPhys() - h_diff2_y).physical_reduce_max_abs() / (norm_fy * norm_fy) / norm_fft_y;
 
+					std::cout << "PRINTING" << std::endl;
+					h_spec.print_spectralData_zeroNumZero();
+					std::cout << std::endl;
+					op.diff2_c_x(h_spec).print_spectralData_zeroNumZero();
+					std::cout << op.diff2_c_x(h_spec).toPhys().physical_reduce_max_abs() << " " << h_diff2_x.physical_reduce_max_abs() << std::endl;
+
 					double err_laplace = (op.laplace(h_spec).toPhys() - h_diff2_x - h_diff2_y).physical_reduce_max_abs()
 							/ (norm_fx * norm_fx + norm_fy * norm_fy)
 							/ (norm_fft_x + norm_fft_y);

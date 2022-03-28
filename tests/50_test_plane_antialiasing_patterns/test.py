@@ -14,7 +14,7 @@ jg = JobGeneration()
 jg.compile.unit_test="test_plane_antialiasing_patterns"
 jg.compile.plane_spectral_space="enable"
 jg.compile.plane_spectral_dealiasing="enable"
-jg.compile.mode="releasr"
+jg.compile.mode="release"
 for jg.runtime.space_use_spectral_basis_diffs in [0, 1]:
     for nx in [16, 36]:
     	for ny in [16, 36]:
