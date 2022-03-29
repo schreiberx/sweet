@@ -37,6 +37,8 @@
 #include <sweet/SWEETError.hpp>
 #include <sweet/plane/PlaneData_Kernels.hpp>
 
+//#include <sweet/plane/PlaneData_Spectral.hpp>
+class PlaneData_Spectral;
 
 #if SWEET_THREADING_SPACE
 #define PLANE_DATA_PHYSICAL_FOR_IDX(CORE)				\
@@ -86,6 +88,8 @@
 class PlaneData_Physical
 			:	private PlaneData_Kernels
 {
+////	friend class PlaneData_Spectral;
+////	friend PlaneData_Physical PlaneData_Spectral::multiplication_physical_space(PlaneData_Physical& i_a, PlaneData_Physical& i_b);
 
 public:
 	const PlaneDataConfig *planeDataConfig;
@@ -349,6 +353,76 @@ public:
 
 
 	PlaneData_Physical operator*(
+			const PlaneData_Physical &i_plane_data
+	)	const
+	{
+		check(i_plane_data.planeDataConfig);
+
+
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = physical_space_data[i]*i_plane_data.physical_space_data[i];
+
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+
+		// Ugly fix to circular dependency between PlaneData_Physical and PlaneData_Spectral
+
+		// create spectral data container
+		std::complex<double> *spectral_space_data = nullptr;
+		spectral_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
+
+		// FFT
+		planeDataConfig->fft_physical_to_spectral(out.physical_space_data, spectral_space_data);
+
+		// Dealiasing
+		//SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int k = 0; k < 2; k++)
+		{
+			if (k == 0)
+			{
+				/*
+				 * First process part between top and bottom spectral data blocks
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
+					{
+						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
+					}
+			}
+			else
+			{
+				/*
+				 * Then process the aliasing block on the right side
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
+					{
+						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
+					}
+			}
+		}
+
+		// IFFT
+		planeDataConfig->fft_spectral_to_physical(spectral_space_data, out.physical_space_data);
+
+		// Free spectral data
+		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
+		spectral_space_data = nullptr;
+
+#endif
+
+		return out;
+
+	}
+
+	PlaneData_Physical multiplication_no_dealiasing(
 			const PlaneData_Physical &i_plane_data
 	)	const
 	{

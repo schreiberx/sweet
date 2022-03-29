@@ -222,24 +222,18 @@ int main(int i_argc, char *i_argv[])
 					PlaneData_Spectral h_spec(h.planeDataConfig);
 					h_spec.loadPlaneDataPhysical(h);
 
-					double err_x = (op.diff_c_x(h_spec).toPhys() - h_diff_x).physical_reduce_max_abs() / norm_fx / norm_fft_x;
-					double err_y = (op.diff_c_y(h_spec).toPhys() - h_diff_y).physical_reduce_max_abs() / norm_fy / norm_fft_y;
+					double err_x = (op.diff_c_x(h_spec) - h_diff_x).toPhys().physical_reduce_max_abs() / norm_fx / norm_fft_x;
+					double err_y = (op.diff_c_y(h_spec) - h_diff_y).toPhys().physical_reduce_max_abs() / norm_fy / norm_fft_y;
 
 					// diff2 normalization = 4.0 pi^2 / L^2
-					double err2_x = (op.diff2_c_x(h_spec).toPhys() - h_diff2_x).physical_reduce_max_abs() / (norm_fx * norm_fx) / norm_fft_x;
-					double err2_y = (op.diff2_c_y(h_spec).toPhys() - h_diff2_y).physical_reduce_max_abs() / (norm_fy * norm_fy) / norm_fft_y;
+					double err2_x = (op.diff2_c_x(h_spec) - h_diff2_x).toPhys().physical_reduce_max_abs() / (norm_fx * norm_fx) / norm_fft_x;
+					double err2_y = (op.diff2_c_y(h_spec) - h_diff2_y).toPhys().physical_reduce_max_abs() / (norm_fy * norm_fy) / norm_fft_y;
 
-					std::cout << "PRINTING" << std::endl;
-					h_spec.print_spectralData_zeroNumZero();
-					std::cout << std::endl;
-					op.diff2_c_x(h_spec).print_spectralData_zeroNumZero();
-					std::cout << op.diff2_c_x(h_spec).toPhys().physical_reduce_max_abs() << " " << h_diff2_x.physical_reduce_max_abs() << std::endl;
-
-					double err_laplace = (op.laplace(h_spec).toPhys() - h_diff2_x - h_diff2_y).physical_reduce_max_abs()
+					double err_laplace = (op.laplace(h_spec) - h_diff2_x - h_diff2_y).toPhys().physical_reduce_max_abs()
 							/ (norm_fx * norm_fx + norm_fy * norm_fy)
 							/ (norm_fft_x + norm_fft_y);
 
-					double err_bilaplace = (op.laplace(op.laplace(h_spec)).toPhys() - h_bilaplace).physical_reduce_max_abs()
+					double err_bilaplace = (op.laplace(op.laplace(h_spec)) - h_bilaplace).toPhys().physical_reduce_max_abs()
 							/ (norm_fx * norm_fx * norm_fx * norm_fx + norm_fy * norm_fy * norm_fy * norm_fy)
 							/ (norm_fft_x + norm_fft_y)	// for first laplace operator
 							/ (norm_fft_x + norm_fft_y) // for second laplace operator
@@ -468,6 +462,9 @@ int main(int i_argc, char *i_argv[])
 
 					// Standard multiplication
 					// Iff there's no aliasing possible, this should return the correct solution
+					PlaneData_Spectral h1_spec(planeDataConfig);
+					h1_spec.loadPlaneDataPhysical(h1);
+					PlaneData_Spectral h2_spec(h2);
 					double err_mult = (h1 * h2 - h12_analytical).physical_reduce_max_abs();
 
 					// Multiplication with dealiasing from * operator
@@ -481,7 +478,9 @@ int main(int i_argc, char *i_argv[])
 					//double err_mult_dealias2 = (h1.mult(h2)-h12_truncated).reduce_maxAbs();
 					double err_mult_dealias2 = 0;
 
-#if 0
+					std::cout << "BB " << (h12_analytical - h12_noalias).physical_reduce_max_abs() << std::endl;
+
+#if 1
 					std::cout << "error mult * with possibly aliased exact solution = " << err_mult << std::endl;
 					std::cout << "error mult * with respect to dealised exact solution = " << err_mult_dealias << std::endl;
 					std::cout << "error mult function with respect to truncated and dealiased exact solution = " << err_mult_dealias2 << std::endl;
@@ -515,9 +514,13 @@ int main(int i_argc, char *i_argv[])
 						else
 							std::cerr << "    Multiplication dealiasing affected spectrum without need" << std::endl;
 						std::cout << "    h1*h2 nonzero spectrum entries" << std::endl;
-						PlaneData_Spectral tmp(planeDataConfig);
-						tmp.loadPlaneDataPhysical(h1 * h2);
+						PlaneData_Spectral tmp = h1_spec * h2_spec;
 						tmp.print_spectralNonZero();
+						std::cout << "PHYSICAL h1" << std::endl;
+						h1.physical_print();
+						PlaneData_Spectral ttt(h1);
+						ttt.spectral_print();
+						ttt.toPhys().physical_print();
 						SWEETError("EXIT");
 					}
 

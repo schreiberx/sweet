@@ -795,14 +795,14 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_n > (int)planeDataConfig->spectral_data_size[0])
+		if (i_m > (int)planeDataConfig->spectral_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_m > (int)planeDataConfig->spectral_data_size[1])
+		if (i_n > (int)planeDataConfig->spectral_data_size[1])
 			SWEETError("Out of boundary c");
 
-		if (i_m > i_n)
-			SWEETError("Out of boundary d");
+///		if (i_m > i_n)
+///			SWEETError("Out of boundary d");
 
 		assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
 #endif
@@ -821,14 +821,14 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_n > (int)planeDataConfig->spectral_data_size[0])
+		if (i_m > (int)planeDataConfig->spectral_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_m > (int)planeDataConfig->spectral_data_size[1])
+		if (i_n > (int)planeDataConfig->spectral_data_size[1])
 			SWEETError("Out of boundary c");
 
-		if (i_m > i_n)
-			SWEETError("Out of boundary d");
+///		if (i_m > i_n)
+///			SWEETError("Out of boundary d");
 
 		assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
 #endif

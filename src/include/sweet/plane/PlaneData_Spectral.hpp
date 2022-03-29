@@ -56,6 +56,7 @@
 
 class PlaneData_Spectral
 {
+	///friend class PlaneData_Physical;
 
 	typedef std::complex<double> Tcomplex;
 
@@ -248,7 +249,7 @@ public:
 	{
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING || 1	/// ALWAYS run this to eliminate Nyquist Frequency even without dealiasing activated
 
-		//SWEET_THREADING_SPACE_PARALLEL_FOR
+		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (int k = 0; k < 2; k++)
 		{
 			if (k == 0)
@@ -300,7 +301,8 @@ public:
 				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
 					{
-						std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
+						//std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
+						std::complex<double> &data = spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)];
 
 						double error = std::sqrt(data.real()*data.real() + data.imag()*data.imag());
 						if (error >= 1e-9)
@@ -320,7 +322,8 @@ public:
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
 					{
-						std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
+						//std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
+						std::complex<double> &data = spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)];
 
 						double error = std::sqrt(data.real()*data.real() + data.imag()*data.imag());
 						if (error >= 1e-9)
@@ -485,6 +488,8 @@ public:
 		 */
 		PlaneData_Physical tmp(i_planeDataPhysical);
 		planeDataConfig->fft_physical_to_spectral(tmp.physical_space_data, this->spectral_space_data);
+		// ALWAYS zero aliasing modes after doing transformation to spectral space
+		this->spectral_zeroAliasingModes();
 	}
 
 
@@ -568,6 +573,8 @@ public:
 		for (size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx] + i_plane_data.spectral_space_data[idx];
 
+		out.spectral_zeroAliasingModes();
+
 		return out;
 	}
 
@@ -583,6 +590,8 @@ public:
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] += i_plane_data.spectral_space_data[idx];
 
+		this->spectral_zeroAliasingModes();
+
 		return *this;
 	}
 
@@ -596,6 +605,8 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			spectral_space_data[idx] -= i_plane_data.spectral_space_data[idx];
+
+		this->spectral_zeroAliasingModes();
 
 		return *this;
 	}
@@ -614,6 +625,29 @@ public:
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx] - i_plane_data.spectral_space_data[idx];
 
+		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
+
+	PlaneData_Spectral operator-(
+			const PlaneData_Physical &i_plane_data_physical
+	)	const
+	{
+		check(i_plane_data_physical.planeDataConfig);
+
+		PlaneData_Spectral i_plane_data_spectral(planeDataConfig);
+		PlaneData_Spectral out(planeDataConfig);
+
+		i_plane_data_spectral.loadPlaneDataPhysical(i_plane_data_physical);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+			out.spectral_space_data[idx] = spectral_space_data[idx] - i_plane_data_spectral.spectral_space_data[idx];
+
+		out.spectral_zeroAliasingModes();
+
 		return out;
 	}
 
@@ -627,6 +661,8 @@ public:
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = -spectral_space_data[idx];
 
+		out.spectral_zeroAliasingModes();
+
 		return out;
 	}
 
@@ -638,20 +674,42 @@ public:
 	{
 		check(i_plane_data.planeDataConfig);
 
-		PlaneData_Physical a = getPlaneDataPhysical();
+		PlaneData_Physical a = this->toPhys();
 		PlaneData_Physical b = i_plane_data.toPhys();
 
 		PlaneData_Physical mul(planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
 			mul.physical_space_data[i] = a.physical_space_data[i]*b.physical_space_data[i];
+		}
 
+		// Dealiasing is performed inside the following call
 		PlaneData_Spectral out(mul);
 
 		return out;
 	}
 
+
+	PlaneData_Physical multiplication_physical_space(
+				const PlaneData_Physical &i_a,
+				const PlaneData_Physical &i_b
+	) const
+	{
+		check(i_a.planeDataConfig);
+		check(i_b.planeDataConfig);
+
+		PlaneData_Physical mul(planeDataConfig);
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+		{
+			mul.physical_space_data[i] = i_a.physical_space_data[i]*i_b.physical_space_data[i];
+		}
+
+		PlaneData_Spectral out_spec(mul);
+		return out_spec.toPhys();
+	}
 
 
 	PlaneData_Spectral operator/(
@@ -660,7 +718,7 @@ public:
 	{
 		check(i_plane_data.planeDataConfig);
 
-		PlaneData_Physical a = getPlaneDataPhysical();
+		PlaneData_Physical a = this->toPhys();
 		PlaneData_Physical b = i_plane_data.toPhys();
 
 		PlaneData_Physical div(planeDataConfig);
@@ -685,6 +743,8 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx]*i_value;
+
+		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
@@ -744,6 +804,8 @@ public:
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
 			out.spectral_space_data[idx] = spectral_space_data[idx]/i_value;
 
+		out.spectral_zeroAliasingModes();
+
 		return out;
 	}
 
@@ -753,7 +815,12 @@ public:
 	)	const
 	{
 		PlaneData_Spectral out(*this);
-		out.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+			out.spectral_space_data[idx] += i_value;
+
+		out.spectral_zeroAliasingModes();
+
 		return out;
 	}
 
@@ -777,7 +844,10 @@ public:
 			double i_value
 	)	const
 	{
-		spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] += i_value;
+
 		return *this;
 	}
 
@@ -789,7 +859,12 @@ public:
 	)	const
 	{
 		PlaneData_Spectral out(*this);
-		out.spectral_space_data[0] -= i_value*std::sqrt(4.0*M_PI);
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+			out.spectral_space_data[idx] -= i_value;
+
+		out.spectral_zeroAliasingModes();
+
 		return out;
 	}
 
@@ -799,7 +874,12 @@ public:
 			double i_value
 	)
 	{
-		spectral_space_data[0] -= i_value*std::sqrt(4.0*M_PI);
+		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+			spectral_space_data[idx] -= i_value;
+
+		this->spectral_zeroAliasingModes();
+
 		return *this;
 	}
 
@@ -1025,7 +1105,7 @@ public:
 		////if (i_m > i_n)
 		////	SWEETError("Out of boundary d");
 
-		assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
+		////assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
 #endif
 
 		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)] = i_data;
@@ -1152,6 +1232,39 @@ public:
 
 		return sum.real();
 	}
+
+	/**
+	 * reduce to sum square in spectrum
+	 */
+	double spectral_reduce_sum_sq()
+	{
+		double rms = 0.0;
+
+		std::complex<double> sum = 0;
+
+		for (int r = 0; r < 2; r++)								
+		{														
+			for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; jj < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; jj++)		\
+			{	
+				for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[r][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[r][0][1]; ii++)	\
+				{	
+					std::size_t idx = jj*planeDataConfig->spectral_data_size[0]+ii;	
+					sum += (spectral_space_data[idx]*std::conj(spectral_space_data[idx]));
+				}
+			}
+		}
+
+		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
+
+		if(sum.imag()>DBL_EPSILON)
+			SWEETError("Reduce operation of complex values (rms) error");
+
+		rms = sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements); 
+		//rms = (sum.real()*sum.real()+sum.imag()*sum.imag()); 
+		return rms;
+
+	}
+
 
 	/**
 	 * Return the minimum value
@@ -1992,7 +2105,6 @@ PlaneData_Spectral operator+(
 
 
 
-
 /**
  * operator to support operations such as:
  *
@@ -2009,6 +2121,22 @@ PlaneData_Spectral operator-(
 	return i_array_data.operator_scalar_sub_this(i_value);
 }
 
+
+/**
+ * operator to support operations such as:
+ *
+ * array_data_physical - arrayData
+ *
+ */
+inline
+static
+PlaneData_Spectral operator-(
+		const PlaneData_Physical &i_plane_data_physical,
+		const PlaneData_Spectral &i_array_data
+)
+{
+	return - (i_array_data - i_plane_data_physical);
+}
 
 
 

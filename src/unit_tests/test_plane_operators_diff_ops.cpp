@@ -209,6 +209,9 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
+			//PlaneData_Spectral u_spec(u);
+			//PlaneData_Spectral v_spec(v);
+			//double err_z = (u_spec*v_spec-h).toPhys().physical_reduce_rms_quad();
 			double err_z = (u*v-h).physical_reduce_rms_quad();
 
 #if FUN_ID == 1
@@ -289,12 +292,12 @@ int main(int i_argc, char *i_argv[])
 
 			double res_normalization = sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
-			PlaneData_Spectral h_spec(h.planeDataConfig);
-			h_spec.loadPlaneDataPhysical(h);
+			PlaneData_Spectral h_spec(h);
+//			h_spec.loadPlaneDataPhysical(h);
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op.diff_c_x(h_spec).toPhys()-h_diff_x).physical_reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
-			double err_y = (op.diff_c_y(h_spec).toPhys()-h_diff_y).physical_reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
+			double err_x = (op.diff_c_x(h_spec)-h_diff_x).toPhys().physical_reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
+			double err_y = (op.diff_c_y(h_spec)-h_diff_y).toPhys().physical_reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
 //			double err_z = (u*v-h).reduce_norm2()*res_normalization;
 
 			{
@@ -399,8 +402,8 @@ int main(int i_argc, char *i_argv[])
 			h_spec.loadPlaneDataPhysical(h);
 
 			// diff2 normalization = 4.0 pi^2 / L^2
-			double err2_x = (op.diff2_c_x(h_spec).toPhys() -h_diff2_x).physical_reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])/(4.0*M_PI*M_PI);
-			double err2_y = (op.diff2_c_y(h_spec).toPhys() -h_diff2_y).physical_reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])/(4.0*M_PI*M_PI);
+			double err2_x = (op.diff2_c_x(h_spec) - h_diff2_x).toPhys().physical_reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])/(4.0*M_PI*M_PI);
+			double err2_y = (op.diff2_c_y(h_spec) - h_diff2_y).toPhys().physical_reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])/(4.0*M_PI*M_PI);
 
 			{
 				double conv2_x = prev_error_diff2_x/err2_x;

@@ -68,9 +68,9 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "SPEC SIZE: " << planeDataConfig->spectral_data_size[0] << " x " << planeDataConfig->spectral_data_size[1] << std::endl;
 		std::cout << std::endl;
 
-#define PRINT_SPECTRUM	0
+#define PRINT_SPECTRUM	1
 
-#if PRINT_SPECCTRUM
+#if PRINT_SPECTRUM
 		int res_max = 32;
 #endif
 
@@ -83,12 +83,9 @@ int main(int i_argc, char *i_argv[])
 
 		h.spectral_set_zero();
 
-///		h.spectral_space_data_valid = true;
-///		h.physical_space_data_valid = false;
-
 		h = h + 1.0;
 
-#if PRINT_SPECCTRUM
+#if PRINT_SPECTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "***************************************" << std::endl;
@@ -97,17 +94,12 @@ int main(int i_argc, char *i_argv[])
 			std::cout << std::endl;
 		}
 #endif
-		/////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////
 
 		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 			h.spectral_space_data[i] = {1.0,0.0};
 
-///		h.spectral_space_data_valid = true;
-///		h.physical_space_data_valid = false;
 
-#if PRINT_SPECCTRUM
+#if PRINT_SPECTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "***************************************" << std::endl;
@@ -119,7 +111,7 @@ int main(int i_argc, char *i_argv[])
 
 		h.spectral_zeroAliasingModes();
 
-#if PRINT_SPECCTRUM
+#if PRINT_SPECTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "***************************************" << std::endl;
@@ -131,7 +123,7 @@ int main(int i_argc, char *i_argv[])
 
 		h = h + 1.0;
 
-#if PRINT_SPECCTRUM
+#if PRINT_SPECTRUM
 		if (res[0] < res_max && res[1] < res_max)
 		{
 			std::cout << "***************************************" << std::endl;

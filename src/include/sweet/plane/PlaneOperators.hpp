@@ -431,6 +431,7 @@ public:
 				{
 					std::complex<double> data(0.0, ((double)i*2.0*M_PI/(double)i_domain_size[0]));
 					diff_c_x.spectral_set(j, i, data);
+					std::cout << i << " " << j << " " << data << std::endl;
 				}
 			}
 
@@ -440,6 +441,7 @@ public:
 				{
 					std::complex<double> data(0.0, ((double)i*2.0*M_PI/(double)i_domain_size[0]));
 					diff_c_x.spectral_set(j, i, data);
+					std::cout << i << " " << j << " " << data << std::endl;
 				}
 			}
 
@@ -539,33 +541,42 @@ public:
 		}
 		else
 		{
+			PlaneData_Physical tmp(planeDataConfig);
+
 			double diff1_x_kernel[3][3] = {
 					{0,0,0},
 					{-1.0,0,1.0},
 					{0,0,0}
 			};
-			diff_c_x.toPhys().kernel_stencil_setup(diff1_x_kernel, 1.0/(2.0*h[0]));
+			tmp.kernel_stencil_setup(diff1_x_kernel, 1.0/(2.0*h[0]));
+			diff_c_x.loadPlaneDataPhysical(tmp);
 
 			double diff1_y_kernel[3][3] = {
 					{0,1.0,0},	// higher y coordinate
 					{0,0,0},
 					{0,-1.0,0},	// lower y coordinate
 			};
-			diff_c_y.toPhys().kernel_stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
+			//diff_c_y.toPhys().kernel_stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
+			tmp.kernel_stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
+			diff_c_y.loadPlaneDataPhysical(tmp);
 
 			double d_f_x_kernel[3][3] = {
 					{0,0,0},
 					{0,-1,1},
 					{0,0,0}
 			};
-			diff_f_x.toPhys().kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
+			//diff_f_x.toPhys().kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
+			tmp.kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
+			diff_f_x.loadPlaneDataPhysical(tmp);
 
 			double d_f_y_kernel[3][3] = {
 					{0,1,0},
 					{0,-1,0},
 					{0,0,0},
 			};
-			diff_f_y.toPhys().kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
+			//diff_f_y.toPhys().kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
+			tmp.kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
+			diff_f_y.loadPlaneDataPhysical(tmp);
 
 
 			double d_b_x_kernel[3][3] = {
@@ -573,14 +584,18 @@ public:
 					{-1,1,0},
 					{0,0,0}
 			};
-			diff_b_x.toPhys().kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
+			//diff_b_x.toPhys().kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
+			tmp.kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
+			diff_b_x.loadPlaneDataPhysical(tmp);
 
 			double d_b_y_kernel[3][3] = {
 					{0,0,0},
 					{0,1,0},
 					{0,-1,0},
 			};
-			diff_b_y.toPhys().kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
+			//diff_b_y.toPhys().kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
+			tmp.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
+			diff_b_y.loadPlaneDataPhysical(tmp);
 
 
 			double diff2_x_kernel[3][3] = {
@@ -588,14 +603,18 @@ public:
 					{1.0,-2.0,1.0},
 					{0,0,0}
 				};
-			diff2_c_x.toPhys().kernel_stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
+			//diff2_c_x.toPhys().kernel_stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
+			tmp.kernel_stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
+			diff2_c_x.loadPlaneDataPhysical(tmp);
 
 			double diff2_y_kernel[3][3] = {
 					{0,1.0,0},
 					{0,-2.0,0},
 					{0,1.0,0}
 			};
-			diff2_c_y.toPhys().kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
+			//diff2_c_y.toPhys().kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
+			tmp.kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
+			diff2_c_y.loadPlaneDataPhysical(tmp);
 		}
 	}
 

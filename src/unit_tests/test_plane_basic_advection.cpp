@@ -583,7 +583,8 @@ double compute_current_error(
 {
 	PlaneData_Spectral benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
 
-	return (simulationAdvection->prog_h-benchmark_h).spectral_reduce_rms();
+
+	return (simulationAdvection->prog_h-benchmark_h).toPhys().physical_reduce_rms();
 }
 
 
