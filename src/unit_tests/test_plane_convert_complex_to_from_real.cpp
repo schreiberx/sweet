@@ -45,8 +45,8 @@ public:
 				testcplx = Convert_PlaneDataPhysical_To_PlaneDataPhysicalComplex::physical_convert(test);
 
 				test_spc_cplx.loadPlaneDataPhysical(testcplx);
-				test_spc_cplx.test_realphysical();
 
+				test_spc_cplx.test_realphysical();
 				PlaneData_Physical tmp = Convert_PlaneDataPhysicalComplex_To_PlaneDataPhysical::physical_convert_real(testcplx);
 
 				double error = (test-tmp).physical_reduce_max_abs();
@@ -129,7 +129,7 @@ public:
 					test_spc_cplx.loadPlaneDataPhysical(testcplx);
 					test_spc_cplx.test_realphysical();
 
-					PlaneData_Physical tmp = Convert_PlaneDataPhysicalComplex_To_PlaneDataPhysical::physical_convert_imag(testcplx);
+					PlaneData_Physical tmp = Convert_PlaneDataPhysicalComplex_To_PlaneDataPhysical::physical_convert_real(testcplx);
 
 					double error = (test-tmp).physical_reduce_max_abs();
 
@@ -218,8 +218,8 @@ public:
 				testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
 				testcplx.test_realphysical();
 
-				PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
-				//PlaneData_Spectral tmp = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(testcplx);
+				//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+				PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
 
 				double error = (test-tmp).spectral_reduce_max_abs();
 
@@ -253,10 +253,13 @@ public:
 					test.spectral_set(y, x, 1.0);
 					test.spectral_zeroAliasingModes();
 
+					test.loadPlaneDataPhysical(test.toPhys()); // EXTRA DEALIASING REQUIRED FOR CORRECT RESULT??
+
 					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).spectral_reduce_max_abs();
 
@@ -284,10 +287,13 @@ public:
 					test.spectral_set(y, x, std::complex<double>(0.0, 1.0));
 					test.spectral_zeroAliasingModes();
 
+					test.loadPlaneDataPhysical(test.toPhys()); // EXTRA DEALIASING REQUIRED FOR CORRECT RESULT??
+
 					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_imag(testcplx);
+					//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).spectral_reduce_max_abs();
 
@@ -315,10 +321,13 @@ public:
 					test.spectral_set(y, x, std::complex<double>(1.0, 1.0));
 					test.spectral_zeroAliasingModes();
 
+					test.loadPlaneDataPhysical(test.toPhys()); // EXTRA DEALIASING REQUIRED FOR CORRECT RESULT??
+
 					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).spectral_reduce_max_abs();
 
@@ -350,6 +359,7 @@ public:
 		PlaneData_Physical test_phys(planeDataConfig);
 		PlaneData_PhysicalComplex test_phys_cplx(planeDataConfig);
 
+
 		for (std::size_t y = 0; y < planeDataConfig->physical_data_size[1]; y++)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->physical_data_size[0]; x++)
@@ -359,10 +369,12 @@ public:
 				test_phys.physical_set_value(y, x, 1.0);
 				test.loadPlaneDataPhysical(test_phys);
 
-				testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
+				//testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
+				testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(test);
 				testcplx.test_realphysical();
 
-				PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+				//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+				PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
 
 				double error = (test-tmp).spectral_reduce_max_abs();
 
@@ -396,10 +408,11 @@ public:
 					test.spectral_set(y, x, 1.0);
 					test.spectral_zeroAliasingModes();
 
-					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
+					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
 
 					double error = (test-tmp).spectral_reduce_max_abs();
 
@@ -427,10 +440,11 @@ public:
 					test.spectral_set(y, x, std::complex<double>(0.0, 1.0));
 					test.spectral_zeroAliasingModes();
 
-					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
+					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_imag(testcplx);
+					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
+					//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_imag(testcplx);
 
 					double error = (test-tmp).spectral_reduce_max_abs();
 
@@ -458,10 +472,11 @@ public:
 					test.spectral_set(y, x, std::complex<double>(1.0, 1.0));
 					test.spectral_zeroAliasingModes();
 
-					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(test);
+					testcplx = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::spectral_convert(test);
 					testcplx.test_realphysical();
 
-					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
+					PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::spectral_convert_physical_real_only(testcplx);
+					//PlaneData_Spectral tmp = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(testcplx);
 
 					double error = (test-tmp).spectral_reduce_max_abs();
 

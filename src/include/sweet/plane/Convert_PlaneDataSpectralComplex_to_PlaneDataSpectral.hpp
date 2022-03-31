@@ -48,6 +48,34 @@ public:
 		return PlaneData_Spectral(tmp);
 	}
 
+public:
+	static
+	PlaneData_Spectral spectral_convert_physical_real_only(
+			const PlaneData_SpectralComplex &i_planeData
+	)
+	{
+		PlaneData_Spectral out(i_planeData.planeDataConfig);
+		out.spectral_set_zero();
+
+		for (int r = 0; r < 2; r++)
+		{
+			for (	std::size_t j = out.planeDataConfig->spectral_data_iteration_ranges[r][1][0];
+					j < out.planeDataConfig->spectral_data_iteration_ranges[r][1][1];
+					j++
+			) {
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
+						i++
+				) {
+					const std::complex<double> &data = i_planeData.spectral_get(j, i);
+					out.spectral_set(j, i, data);
+				}
+			}
+		}
+
+		return out;
+	}
+
 };
 
 

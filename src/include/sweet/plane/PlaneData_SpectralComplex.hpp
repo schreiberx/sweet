@@ -334,17 +334,33 @@ public:
 
 	PlaneData_PhysicalComplex toPhys()	const
 	{
-		return getSphereDataPhysicalComplex();
+		return getPlaneDataPhysicalComplex();
 	}
 
-	PlaneData_PhysicalComplex getSphereDataPhysicalComplex()	const
+	PlaneData_PhysicalComplex getPlaneDataPhysicalComplex()	const
 	{
+
+////		PlaneData_PhysicalComplex out(planeDataConfig);
+
+////		/*
+////		 * WARNING:
+////		 * We have to use a temporary array here because of destructive SH transformations
+////		 */
+////		this->spectral_zeroAliasingModes();
+////		PlaneData_SpectralComplex tmp_spectral(*this);
+////		PlaneData_Physical tmp_physical(planeDataConfig);
+////		planeDataConfig->fft_spectral_to_physical(tmp_spectral.spectral_space_data, tmp_physical.physical_space_data);
+////
+////		parmemcpy(out.physical_space_data, tmp_physical.physical_space_data, sizeof(double)*planeDataConfig->physical_array_data_number_of_elements);
+
+
 		PlaneData_PhysicalComplex out(planeDataConfig);
 
 		/*
 		 * WARNING:
 		 * We have to use a temporary array here because of destructive SH transformations
 		 */
+		this->spectral_zeroAliasingModes();
 		PlaneData_SpectralComplex tmp = *this;
 		planeDataConfig->fft_complex_spectral_to_physical(tmp.spectral_space_data, out.physical_space_data);
 
@@ -698,11 +714,10 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t n = 0; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
 		{
-			int idx = planeDataConfig->getArrayIndexByModes_Complex(n, -n);
-			for (std::size_t m = -n; m <= n; m++) // TODO: CHECK
+			for (std::size_t m = 0; n <= planeDataConfig->spectral_complex_data_size[0]; m++)
 			{
+				int idx = planeDataConfig->getArrayIndexByModes_Complex(n, m);
 				i_lambda(n, m, spectral_space_data[idx]);
-				idx++;
 			}
 		}
 	}
@@ -758,8 +773,9 @@ public:
 		assert(in >= 0);
 		assert(in <= (int)planeDataConfig->spectral_complex_data_size[1]);
 		assert(std::abs(im) <= (int)planeDataConfig->spectral_complex_data_size[0]);
-		assert(std::abs(im) <= in);
+		//assert(std::abs(im) <= in);
 
+		//std::cout << "SPECTRAL GET " << in << " " << im << " " << planeDataConfig->getArrayIndexByModes_Complex(in, im) << std::endl;
 		return spectral_space_data[planeDataConfig->getArrayIndexByModes_Complex(in, im)];
 	}
 
@@ -772,16 +788,25 @@ public:
 	{
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
-
 		for (std::size_t n = 0; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
 		{
-			int idx = planeDataConfig->getArrayIndexByModes_Complex(n, -n);
-			for (std::size_t m = -n; m <= n; m++)
+			for (std::size_t m = 0; m <= planeDataConfig->spectral_complex_data_size[0]; m++)
 			{
+				int idx = planeDataConfig->getArrayIndexByModes_Complex(n, m);
 				spectral_space_data[idx] = 0;
-				idx++;
 			}
 		}
+
+
+		////for (std::size_t n = 0; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
+		////{
+		////	int idx = planeDataConfig->getArrayIndexByModes(n, -n);
+		////	for (std::size_t m = -n; m <= n; m++)
+		////	{
+		////		spectral_space_data[idx] = 0;
+		////		idx++;
+		////	}
+		////}
 	}
 
 	void spectral_set(
@@ -795,20 +820,20 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_m > (int)planeDataConfig->spectral_data_size[0])
+		if (i_m > (int)planeDataConfig->spectral_complex_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_n > (int)planeDataConfig->spectral_data_size[1])
+		if (i_n > (int)planeDataConfig->spectral_complex_data_size[1])
 			SWEETError("Out of boundary c");
 
 ///		if (i_m > i_n)
 ///			SWEETError("Out of boundary d");
 
-		assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
+		assert (i_m <= (int)planeDataConfig->spectral_complex_data_size[1]);
 #endif
 
-		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].real(i_real);
-		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].imag(i_imag);
+		spectral_space_data[planeDataConfig->getArrayIndexByModes_Complex(i_n, i_m)].real(i_real);
+		spectral_space_data[planeDataConfig->getArrayIndexByModes_Complex(i_n, i_m)].imag(i_imag);
 	}
 
 	void spectral_set(
@@ -821,20 +846,20 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_m > (int)planeDataConfig->spectral_data_size[0])
+		if (i_m > (int)planeDataConfig->spectral_complex_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_n > (int)planeDataConfig->spectral_data_size[1])
+		if (i_n > (int)planeDataConfig->spectral_complex_data_size[1])
 			SWEETError("Out of boundary c");
 
 ///		if (i_m > i_n)
 ///			SWEETError("Out of boundary d");
 
-		assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
+		assert (i_m <= (int)planeDataConfig->spectral_complex_data_size[1]);
 #endif
 
-		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].real(i_data.real());
-		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)].imag(i_data.imag());
+		spectral_space_data[planeDataConfig->getArrayIndexByModes_Complex(i_n, i_m)].real(i_data.real());
+		spectral_space_data[planeDataConfig->getArrayIndexByModes_Complex(i_n, i_m)].imag(i_data.imag());
 	}
 
 
@@ -909,7 +934,7 @@ public:
 		{
 			for (std::size_t n = m; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
 			{
-				std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
+				std::size_t idx = planeDataConfig->getArrayIndexByModes_Complex(n, m);
 				std::cout << spectral_space_data[idx] << "\t";
 			}
 			std::cout << std::endl;
@@ -989,8 +1014,7 @@ public:
 					if (error_real > 1e-6 || error_imag > 1e-6)
 					{
 						std::cout << std::setprecision(5);
-						print_spectralData_zeroNumZero();
-						std::cout << "Mode " << j << ", " << i << std::endl;
+						std::cout << "Mode " << j << ", " << i << " : " << error_real << " " << error_imag << std::endl;
 						SWEETError("Invalid symmetry detected");
 					}
 				}
@@ -1007,13 +1031,16 @@ public:
 			const PlaneData_PhysicalComplex &i_planeDataPhysical
 	)
 	{
+
 		/**
 		 * Warning: The sphat_to_SH function is an in-situ operation.
 		 * Therefore, the data in the source array will be destroyed.
 		 * Hence, we create a copy
 		 */
+		//PlaneData_SpectralComplex *rw_array_data = (PlaneData_SpectralComplex*)this;
 		PlaneData_PhysicalComplex tmp(i_planeDataPhysical);
 		planeDataConfig->fft_complex_physical_to_spectral(tmp.physical_space_data, this->spectral_space_data);
+		//planeDataConfig->fft_complex_physical_to_spectral(tmp.physical_space_data, rw_array_data->spectral_space_data);
 	}
 
 
@@ -1024,7 +1051,8 @@ public:
 
 ///		rw_array_data.request_data_spectral();
 
-		for (std::size_t y = planeDataConfig->spectral_complex_data_size[1]-1; y >= 0; y--)
+		//for (std::size_t y = planeDataConfig->spectral_complex_data_size[1]-1; y >= 0; y--) // https://stackoverflow.com/questions/3623263/reverse-iteration-with-an-unsigned-loop-variable
+		for (std::size_t y = planeDataConfig->spectral_complex_data_size[1]-1; y < planeDataConfig->spectral_complex_data_size[1]; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_complex_data_size[0]; x++)
 			{
@@ -1046,7 +1074,9 @@ public:
 
 ///		rw_array_data.request_data_spectral();
 
-		for (std::size_t y = planeDataConfig->spectral_complex_data_size[1]-1; y >= 0; y--)
+		//for (std::size_t y = planeDataConfig->spectral_complex_data_size[1]-1; y >= 0; y--) // https://stackoverflow.com/questions/3623263/reverse-iteration-with-an-unsigned-loop-variable
+		for (std::size_t y = planeDataConfig->spectral_complex_data_size[1]-1; y < planeDataConfig->spectral_complex_data_size[1]; y--)
+		//for (int y = (int)planeDataConfig->spectral_complex_data_size[1]-1; y < planeDataConfig->spectral_complex_data_size[1]; y--)
 		{
 			for (std::size_t x = 0; x < planeDataConfig->spectral_complex_data_size[0]; x++)
 			{

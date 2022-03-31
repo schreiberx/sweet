@@ -582,6 +582,28 @@ public:
 		return out;
 	}
 
+	friend
+	inline
+	std::ostream& operator<<(
+			std::ostream &o_ostream,
+			const PlaneData_Physical &i_dataArray
+	)
+	{
+		PlaneData_Physical &rw_array_data = (PlaneData_Physical&)i_dataArray;
+
+		for (int j = (int)rw_array_data.planeDataConfig->physical_data_size[1]-1; j >= 0; j--)
+		{
+			for (std::size_t i = 0; i < rw_array_data.planeDataConfig->physical_data_size[0]; i++)
+			{
+				std::cout << i_dataArray.physical_space_data[j*i_dataArray.planeDataConfig->physical_data_size[0]+i] << "\t";
+			}
+			std::cout << std::endl;
+		}
+
+		return o_ostream;
+	}
+
+
 
 
 public:

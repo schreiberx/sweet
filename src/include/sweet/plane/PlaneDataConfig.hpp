@@ -671,7 +671,6 @@ private:
 				exit(-1);
 			}
 
-
 			MemBlockAlloc::free(data_physical, physical_array_data_number_of_elements*sizeof(std::complex<double>));
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 		}
@@ -994,7 +993,7 @@ public:
 
 		///int idx = n*n+(m+n);
 		//int idx =  m * spectral_data_size[1] + n;
-		int idx =  n * spectral_data_size[0] + m;
+		int idx =  n * spectral_complex_data_size[0] + m;
 		return idx;
 	}
 

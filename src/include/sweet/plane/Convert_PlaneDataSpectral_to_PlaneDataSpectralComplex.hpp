@@ -35,6 +35,51 @@ public:
 		PlaneData_SpectralComplex ret(tmpc);
 		return ret;
 	}
+
+
+public:
+	static
+	PlaneData_SpectralComplex spectral_convert(
+			const PlaneData_Spectral &i_planeData
+	)
+	{
+		PlaneData_SpectralComplex out(i_planeData.planeDataConfig);
+		out.spectral_set_zero();
+
+		for (int r = 0; r < 2; r++)
+		{
+			for (	std::size_t j = out.planeDataConfig->spectral_data_iteration_ranges[r][1][0];
+					j < out.planeDataConfig->spectral_data_iteration_ranges[r][1][1];
+					j++
+			) {
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0];
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
+						i++
+				) {
+					const std::complex<double> &data = i_planeData.spectral_get(j, i);
+					out.spectral_set(j, i, data);
+				}
+
+				for (	std::size_t i = out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]+1;
+						i < out.planeDataConfig->spectral_data_iteration_ranges[r][0][1];
+						i++
+				) {
+					const std::complex<double> &data = i_planeData.spectral_get(j, i);
+					std::complex<double> data2 = data;
+
+					data2.imag(-data2.imag());
+					if (j == 0)
+						out.spectral_set(j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
+					else
+						out.spectral_set(out.planeDataConfig->spectral_complex_data_size[1]-j, out.planeDataConfig->spectral_complex_data_size[0]-i, data2);
+				}
+			}
+		}
+
+		return out;
+	}
+
+
 };
 
 
