@@ -209,6 +209,8 @@ public:
 
 		memcpy(physical_space_data, i_plane_data.physical_space_data, sizeof(double)*planeDataConfig->physical_array_data_number_of_elements);
 
+		this->dealiasing(*this);
+
 		return *this;
 	}
 
@@ -222,6 +224,8 @@ public:
 			setup(i_plane_data.planeDataConfig);
 
 		std::swap(physical_space_data, i_plane_data.physical_space_data);
+
+		this->dealiasing(*this);
 
 		return *this;
 	}
@@ -263,6 +267,10 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx] + i_plane_data.physical_space_data[idx];
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		this->dealiasing(out);
+#endif
 
 		return out;
 	}
@@ -334,6 +342,10 @@ public:
 		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx] - i_plane_data.physical_space_data[idx];
 
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		this->dealiasing(out);
+#endif
+
 		return out;
 	}
 
@@ -367,7 +379,18 @@ public:
 
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		this->dealiasing(out);
+#endif
 
+		return out;
+
+	}
+
+	void dealiasing(
+		PlaneData_Physical& io_data
+	) const
+	{
+		
 		// Ugly fix to circular dependency between PlaneData_Physical and PlaneData_Spectral
 
 		// create spectral data container
@@ -375,7 +398,7 @@ public:
 		spectral_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
 
 		// FFT
-		planeDataConfig->fft_physical_to_spectral(out.physical_space_data, spectral_space_data);
+		planeDataConfig->fft_physical_to_spectral(io_data.physical_space_data, spectral_space_data);
 
 		// Dealiasing
 		//SWEET_THREADING_SPACE_PARALLEL_FOR
@@ -410,17 +433,13 @@ public:
 		}
 
 		// IFFT
-		planeDataConfig->fft_spectral_to_physical(spectral_space_data, out.physical_space_data);
+		planeDataConfig->fft_spectral_to_physical(spectral_space_data, io_data.physical_space_data);
 
 		// Free spectral data
 		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
 		spectral_space_data = nullptr;
-
-#endif
-
-		return out;
-
 	}
+
 
 	PlaneData_Physical multiplication_no_dealiasing(
 			const PlaneData_Physical &i_plane_data
@@ -452,6 +471,8 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
+
+		this->dealiasing(out);
 
 		return out;
 	}
@@ -539,6 +560,7 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
 			out.physical_space_data[idx] = physical_space_data[idx]-i_value;
+
 
 		return out;
 	}

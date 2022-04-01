@@ -351,8 +351,8 @@ int main(int i_argc, char *i_argv[])
 				double err3_laplace =
 					(
 							h-
-							( (op.diff2_c_x(h_spec)+op.diff2_c_y(h_spec)) / 
-								(op.diff2_c_x+op.diff2_c_y) ).toPhys()
+							( (op.diff2_c_x(h_spec)+op.diff2_c_y(h_spec)).
+								spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y) ).toPhys()
 					).physical_reduce_rms_quad();
 
 				std::cout << "SPEC: Error threshold for Laplace and its inverse: " << err3_laplace << std::endl;
@@ -492,7 +492,7 @@ int main(int i_argc, char *i_argv[])
 				h_diff_x_spec.loadPlaneDataPhysical(h_diff_x);
 				h_diff_y_spec.loadPlaneDataPhysical(h_diff_y);
 
-				double err_int_x = (h-(h_diff_x_spec/op.diff_c_x).toPhys()).physical_reduce_norm2_quad()*res_normalization;
+				double err_int_x = (h-(h_diff_x_spec.spectral_div_element_wise(op.diff_c_x)).toPhys()).physical_reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
 				if (err_int_x > eps || std::isnan(err_int_x))
@@ -501,7 +501,7 @@ int main(int i_argc, char *i_argv[])
 					SWEETError(std::string("SPEC: Error threshold for integration in x too high for spectral integration! "));
 				}
 
-				double err_int_y = (h-(h_diff_y_spec/op.diff_c_y).toPhys()).physical_reduce_norm2_quad()*res_normalization;
+				double err_int_y = (h-(h_diff_y_spec.spectral_div_element_wise(op.diff_c_y)).toPhys()).physical_reduce_norm2_quad()*res_normalization;
 				std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
 
 				if (err_int_y > eps || std::isnan(err_int_y))
@@ -714,13 +714,13 @@ int main(int i_argc, char *i_argv[])
 				 *   ( kappa*h - c * (diff2x(h) + diff2y(h))) =
 				 *   ( kappa - c*diff2x - c*diff2y) * h = rhs;
 				 */
-				PlaneData_Spectral helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)) + kappa;
+				PlaneData_Spectral helmholtz_operator = (-a*b*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(kappa);
 
 				PlaneData_Spectral rhs =  kappa*h_spec - a*b*(op.diff2_c_x(h_spec) + op.diff2_c_y(h_spec));
 
 				double err3_helmholtz =
 					(
-							h_spec - rhs / helmholtz_operator
+							h_spec - rhs.spectral_div_element_wise(helmholtz_operator)
 					).toPhys().physical_reduce_rms_quad();
 
 				std::cout << "SPEC: Error threshold for Helmholtz operator with kappa = " << kappa << " and its inverse: " << err3_helmholtz << std::endl;

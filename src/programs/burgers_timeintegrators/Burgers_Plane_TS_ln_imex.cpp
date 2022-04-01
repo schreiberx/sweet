@@ -50,14 +50,14 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 		PlaneData_Spectral lhs = u;
 		if (timestepping_order == 1)
 		{
-			lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
+			lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 		}
 		else
 		{
-			lhs = ((-t*0.5)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
+			lhs = ((-t*0.5)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 		}
-		PlaneData_Spectral u1 = rhs_u / lhs;
-		PlaneData_Spectral v1 = rhs_v / lhs;
+		PlaneData_Spectral u1 = rhs_u.spectral_div_element_wise(lhs);
+		PlaneData_Spectral v1 = rhs_v.spectral_div_element_wise(lhs);
 
 		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
 			  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1));

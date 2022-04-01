@@ -381,6 +381,8 @@ public:
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] + i_plane_data.spectral_space_data[idx];
 
+		out_plane_data.spectral_zeroAliasingModes();
+
 		return out_plane_data;
 	}
 
@@ -426,6 +428,8 @@ public:
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] - i_plane_data.spectral_space_data[idx];
+
+		out_plane_data.spectral_zeroAliasingModes();
 
 		return out_plane_data;
 	}
@@ -484,6 +488,8 @@ public:
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
 			out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] * i_plane_data.spectral_space_data[idx];
 
+		out_plane_data.spectral_zeroAliasingModes();
+
 		return out_plane_data;
 	}
 
@@ -511,9 +517,22 @@ public:
 
 		PlaneData_SpectralComplex out_plane_data(planeDataConfig);
 
+		///SWEET_THREADING_SPACE_PARALLEL_FOR
+		///for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
+		///	out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] / i_plane_data.spectral_space_data[idx];
+
+		////PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 		SWEET_THREADING_SPACE_PARALLEL_FOR
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_complex_array_data_number_of_elements; idx++)
-			out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] / i_plane_data.spectral_space_data[idx];
+		{
+			if (i_plane_data.spectral_space_data[idx] == std::complex<double>(0))
+				out_plane_data.spectral_space_data[idx] = 0;
+			else
+				out_plane_data.spectral_space_data[idx] = spectral_space_data[idx] / i_plane_data.spectral_space_data[idx];
+		}
+
+		out_plane_data.spectral_zeroAliasingModes();
+
 
 		return out_plane_data;
 	}
@@ -901,6 +920,34 @@ public:
 
 		return out;
 	}
+
+	/**
+	 * Invert the application of a linear operator in spectral space.
+	 * The operator is given in i_array_data
+	 */
+	inline
+	PlaneData_SpectralComplex spectral_div_element_wise(
+			const PlaneData_SpectralComplex &i_array_data	///< operator
+	)	const
+	{
+		PlaneData_SpectralComplex out(planeDataConfig);
+
+		PlaneData_SpectralComplex &rw_array_data = (PlaneData_SpectralComplex&)i_array_data;
+
+		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
+		{
+			if (i_array_data.spectral_space_data[idx] == std::complex<double>(0))
+				out.spectral_space_data[idx] = 0;
+			else
+				out.spectral_space_data[idx] = spectral_space_data[idx] / i_array_data.spectral_space_data[idx];
+		}
+		);
+
+		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
 
 	/**
 	 * Return Plane Array with all spectral coefficients a+bi --> 1/(a+bi)

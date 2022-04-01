@@ -149,8 +149,7 @@ public:
 
 		//Solve Poisson equation for height to get balance initial condition
 		PlaneData_Spectral lap_h = (f/g)*vort;
-		//o_h = lap_h.spectral_div_element_wise(laplace);
-		o_h = lap_h / laplace;
+		o_h = lap_h.spectral_div_element_wise(laplace);
 
 	}
 

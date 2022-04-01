@@ -143,17 +143,18 @@ int main(
 			/*
 			 * sample with BiLinear interpolation
 			 */
-			PlaneData_Spectral prog_h3_bilinear(planeDataConfig3);
+			PlaneData_Physical prog_h3_bilinear(planeDataConfig3);
 
+			std::cout << "res_x res_y " << res_x << " " << res_y << std::endl;
 			sampler2D.bilinear_scalar(
-					prog_h_pert,	///< input scalar field
+					prog_h_pert.toPhys(),	///< input scalar field
 					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(px),
 					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(py),
 					prog_h3_bilinear
 			);
 
-			double error_rms = (prog_h3_bilinear-prog_h3_pert).toPhys().physical_reduce_rms();
-			double error_max = (prog_h3_bilinear-prog_h3_pert).toPhys().physical_reduce_max_abs();
+			double error_rms = (prog_h3_bilinear-prog_h3_pert.toPhys()).physical_reduce_rms();
+			double error_max = (prog_h3_bilinear-prog_h3_pert.toPhys()).physical_reduce_max_abs();
 
 			double rate_rms = 0;
 			double rate_max = 0;
@@ -190,18 +191,18 @@ int main(
 			/*
 			 * sample with BiCubic interpolation
 			 */
-			PlaneData_Spectral prog_h3_bicubic(planeDataConfig3);
+			PlaneData_Physical prog_h3_bicubic(planeDataConfig3);
 
 			sampler2D.bicubic_scalar(
-					prog_h_pert,	///< input scalar field
+					prog_h_pert.toPhys(),	///< input scalar field
 					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(px),
 					Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(py),
 					prog_h3_bicubic	///< output field
 			);
 
 	//		double error_norm2 = (prog_h3_bicubic-prog_h3).reduce_norm2()/((double)res3[0] * (double)res3[1]);
-			double error_rms = (prog_h3_bicubic-prog_h3_pert).toPhys().physical_reduce_rms();
-			double error_max = (prog_h3_bicubic-prog_h3_pert).toPhys().physical_reduce_max_abs();
+			double error_rms = (prog_h3_bicubic-prog_h3_pert.toPhys()).physical_reduce_rms();
+			double error_max = (prog_h3_bicubic-prog_h3_pert.toPhys()).physical_reduce_max_abs();
 
 			double rate_rms = 0;
 			double rate_max = 0;

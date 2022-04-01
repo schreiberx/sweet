@@ -388,22 +388,21 @@ public:
 		 */
 		int scaling_mode = 0;
 
-		if (planeDataConfig->spectral_data_size[0] < out.planeDataConfig->spectral_data_size[0])
+		if (planeDataConfig->spectral_modes[0] < out.planeDataConfig->spectral_modes[0])
 		{
 			scaling_mode = 1;
 		}
-		else if (planeDataConfig->spectral_data_size[0] > out.planeDataConfig->spectral_data_size[0])
+		else if (planeDataConfig->spectral_modes[0] > out.planeDataConfig->spectral_modes[0])
 		{
 			scaling_mode = -1;
 		}
 
-
-		if (planeDataConfig->spectral_data_size[1] < out.planeDataConfig->spectral_data_size[1])
+		if (planeDataConfig->spectral_modes[1] < out.planeDataConfig->spectral_modes[1])
 		{
 			assert(scaling_mode != -1);
 			scaling_mode = 1;
 		}
-		else if (planeDataConfig->spectral_data_size[1] > out.planeDataConfig->spectral_data_size[1])
+		else if (planeDataConfig->spectral_modes[1] > out.planeDataConfig->spectral_modes[1])
 		{
 			assert(scaling_mode != 1);
 			scaling_mode = -1;
@@ -416,39 +415,189 @@ public:
 			return out;
 		}
 
-		if (scaling_mode == -1)
+		double rescale =
+				(double)(out.planeDataConfig->physical_array_data_number_of_elements)
+				/
+				(double)(planeDataConfig->physical_array_data_number_of_elements);
+
+		//rescale = 1.0;
+
 		{
-			/*
-			 * more modes -> less modes
-			 */
-			SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (std::size_t m = 0; m <= out.planeDataConfig->spectral_data_size[0]; m++)
+			if (scaling_mode == -1)
 			{
-				Tcomplex *dst = &out.spectral_space_data[out.planeDataConfig->getArrayIndexByModes(m, m)];
-				Tcomplex *src = &spectral_space_data[planeDataConfig->getArrayIndexByModes(m, m)];
+				/*
+				 * more modes -> less modes
+				 */
 
-				std::size_t size = sizeof(Tcomplex)*(out.planeDataConfig->spectral_data_size[1] - m + 1);
-				memcpy(dst, src, size);
+				/*
+				 * Region #1
+				 *
+				 * 00000000 7
+				 * 00000000 6
+				 * 00000000 5
+				 * 00000000 4
+				 * 00000000 3
+				 * XXXXX000 2
+				 * XXXXX000 1
+				 * XXXXX000 0
+				 */
+				{
+					const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[0][0][0]);
+					const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[0][1][0]);
+
+					const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[0][0][0]);
+					const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[0][1][0]);
+
+					assert(src_range_dim0[0] == 0);
+					assert(dst_range_dim0[0] == 0);
+					assert(src_range_dim1[0] == 0);
+					assert(dst_range_dim1[0] == 0);
+
+					std::size_t dst_size = dst_range_dim0[1];//-dst_range_dim0[0];
+
+					SWEET_THREADING_SPACE_PARALLEL_FOR
+					for (std::size_t j = 0; j < dst_range_dim1[1]; j++)
+					{
+						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*j];
+						std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*j];
+
+						for (std::size_t i = 0; i < dst_size; i++)
+							dst[i] = src[i]*rescale;
+					}
+				}
+
+
+				/*
+				 * Region #2
+				 *
+				 * XXXXX000 7
+				 * XXXXX000 6
+				 * XXXXX000 5
+				 * 00000000 4
+				 * 00000000 3
+				 * 00000000 2
+				 * 00000000 1
+				 * 00000000 0
+				 */
+				{
+					const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[1][0][0]);
+					const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[1][1][0]);
+
+					const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[1][0][0]);
+					const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[1][1][0]);
+
+					assert(src_range_dim0[0] == 0);
+					assert(dst_range_dim0[0] == 0);
+
+					std::size_t dst_size = dst_range_dim0[1];//-dst_range_dim0[0];
+
+					SWEET_THREADING_SPACE_PARALLEL_FOR
+					for (std::size_t j = dst_range_dim1[0]; j < dst_range_dim1[1]; j++)
+					{
+						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*(src_range_dim1[1]-(dst_range_dim1[1]-j))];
+						std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*j];
+
+						for (std::size_t i = 0; i < dst_size; i++)
+							dst[i] = src[i]*rescale;
+					}
+				}
+
+				out.spectral_zeroAliasingModes();
 			}
-		}
-		else
-		{
-			/*
-			 * less modes -> more modes
-			 */
-
-			// zero all values
-			out.spectral_set_zero();
-
-			SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+			else
 			{
-				Tcomplex *dst = &out.spectral_space_data[out.planeDataConfig->getArrayIndexByModes(m, m)];
-				Tcomplex *src = &spectral_space_data[planeDataConfig->getArrayIndexByModes(m, m)];
+				/*
+				 * less modes -> more modes
+				 */
 
-				std::size_t size = sizeof(Tcomplex)*(planeDataConfig->spectral_data_size[1] - m + 1);
-				memcpy(dst, src, size);
+				/*
+				 * Region #1
+				 *
+				 * 00000000 7
+				 * 00000000 6
+				 * 00000000 5
+				 * 00000000 4
+				 * 00000000 3
+				 * XXXXX000 2
+				 * XXXXX000 1
+				 * XXXXX000 0
+				 */
+				out.spectral_set_zero();
+
+				{
+					int r = 0;
+
+					const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+					const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+					const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+					const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+					assert(src_range_dim0[0] == 0);
+					assert(dst_range_dim0[0] == 0);
+					assert(src_range_dim1[0] == 0);
+
+					std::size_t src_size = src_range_dim0[1];//-dst_range_dim0[0];
+
+
+					SWEET_THREADING_SPACE_PARALLEL_FOR
+					for (std::size_t j = 0; j < src_range_dim1[1]; j++)
+					{
+						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*(j-src_range_dim1[0]+dst_range_dim1[0])];
+						std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*j];
+
+						for (std::size_t i = 0; i < src_size; i++)
+							dst[i] = src[i]*rescale;
+					}
+				}
+
+
+				/*
+				 * Region #2
+				 *
+				 * XXXXX000 7
+				 * XXXXX000 6
+				 * XXXXX000 5
+				 * 00000000 4
+				 * 00000000 3
+				 * 00000000 2
+				 * 00000000 1
+				 * 00000000 0
+				 */
+				{
+					int r = 1;
+
+					const std::size_t* src_range_dim0 = &(planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+					const std::size_t* src_range_dim1 = &(planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+					const std::size_t* dst_range_dim0 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][0][0]);
+					const std::size_t* dst_range_dim1 = &(out.planeDataConfig->spectral_data_iteration_ranges[r][1][0]);
+
+					assert(src_range_dim0[0] == 0);
+					assert(dst_range_dim0[0] == 0);
+
+					std::size_t src_size0 = src_range_dim0[1];//-dst_range_dim0[0];
+					std::size_t src_size1 = src_range_dim1[1]-src_range_dim1[0];
+
+
+					SWEET_THREADING_SPACE_PARALLEL_FOR
+					for (std::size_t j = src_range_dim1[0]; j < src_range_dim1[1]; j++)
+					{
+						std::complex<double> *src = &spectral_space_data[planeDataConfig->spectral_data_size[0]*j];
+						std::complex<double> *dst = &out.spectral_space_data[out.planeDataConfig->spectral_data_size[0]*(dst_range_dim1[1]-src_size1+(j-src_range_dim1[0]))];
+
+						for (std::size_t i = 0; i < src_size0; i++)
+						{
+#if SWEET_DEBUG
+							assert((int)(out.spectral_space_data - &dst[i]) < (int)out.planeDataConfig->spectral_array_data_number_of_elements);
+#endif
+							dst[i] = src[i]*rescale;
+						}
+					}
+
+				}
 			}
+
 		}
 
 		return out;
@@ -567,7 +716,6 @@ public:
 		check(i_plane_data.planeDataConfig);
 
 		PlaneData_Spectral out(planeDataConfig);
-
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
@@ -815,10 +963,11 @@ public:
 	)	const
 	{
 		PlaneData_Spectral out(*this);
-		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
-			out.spectral_space_data[idx] += i_value;
+		//SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		//for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		//	out.spectral_space_data[idx] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 
+		out.spectral_space_data[0] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 		out.spectral_zeroAliasingModes();
 
 		return out;
@@ -844,9 +993,10 @@ public:
 			double i_value
 	)	const
 	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
-			spectral_space_data[idx] += i_value;
+		//SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		//for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		//	spectral_space_data[idx] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
+		spectral_space_data[0] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 
 		return *this;
 	}
@@ -859,9 +1009,10 @@ public:
 	)	const
 	{
 		PlaneData_Spectral out(*this);
-		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
-			out.spectral_space_data[idx] -= i_value;
+		//SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		//for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		//	out.spectral_space_data[idx] -= i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
+		out.spectral_space_data[0] -= i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 
 		out.spectral_zeroAliasingModes();
 
@@ -874,14 +1025,84 @@ public:
 			double i_value
 	)
 	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
-			spectral_space_data[idx] -= i_value;
+		//SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+		//for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
+		//	spectral_space_data[idx] -= i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
+		spectral_space_data[0] -= i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 
 		this->spectral_zeroAliasingModes();
 
 		return *this;
 	}
+
+public:
+	/**
+	 * Add scalar to all spectral modes
+	 */
+	inline
+	PlaneData_Spectral spectral_addScalarAll(
+			const double &i_value
+	)	const
+	{
+		PlaneData_Spectral out(planeDataConfig);
+
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+				out.spectral_space_data[idx] = spectral_space_data[idx] + i_value;
+		);
+
+		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
+	/**
+	 * Invert the application of a linear operator in spectral space.
+	 * The operator is given in i_array_data
+	 *
+	 * Solving for phi in
+	 *
+	 * 		\Delta^2 phi = delta_phi
+	 *
+	 * can be accomplished by
+	 *
+	 * 		phi = delta_phi.spectral_div_element_wise(\Delta^2)
+	 */
+	inline
+	PlaneData_Spectral spectral_div_element_wise(
+			const PlaneData_Spectral &i_array_data	///< operator
+	)	const
+	{
+		PlaneData_Spectral out(planeDataConfig);
+
+		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)i_array_data;
+
+		PLANE_DATA_SPECTRAL_FOR_IDX(
+
+				double ar = spectral_space_data[idx].real();
+				double ai = spectral_space_data[idx].imag();
+				double br = i_array_data.spectral_space_data[idx].real();
+				double bi = i_array_data.spectral_space_data[idx].imag();
+
+				double den = br*br+bi*bi;
+
+				if (den == 0)
+				{
+					out.spectral_space_data[idx].real(0);
+					out.spectral_space_data[idx].imag(0);
+				}
+				else
+				{
+					out.spectral_space_data[idx].real((ar*br + ai*bi)/den);
+					out.spectral_space_data[idx].imag((ai*br - ar*bi)/den);
+				}
+		);
+
+		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
+
 
 
 public:

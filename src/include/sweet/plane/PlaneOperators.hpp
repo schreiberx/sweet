@@ -258,8 +258,7 @@ public:
 		PlaneData_Spectral diff = -i_coef*diffusion_coefficient(i_order);
 
 		// Add 1 to get denominator
-		//diff = diff.spectral_addScalarAll(1.0);
-		diff = diff + 1.0;
+		diff = diff.spectral_addScalarAll(1.0);
 
 		// Invert
 		diff = diff.spectral_invert();
@@ -431,7 +430,6 @@ public:
 				{
 					std::complex<double> data(0.0, ((double)i*2.0*M_PI/(double)i_domain_size[0]));
 					diff_c_x.spectral_set(j, i, data);
-					std::cout << i << " " << j << " " << data << std::endl;
 				}
 			}
 
@@ -441,7 +439,6 @@ public:
 				{
 					std::complex<double> data(0.0, ((double)i*2.0*M_PI/(double)i_domain_size[0]));
 					diff_c_x.spectral_set(j, i, data);
-					std::cout << i << " " << j << " " << data << std::endl;
 				}
 			}
 

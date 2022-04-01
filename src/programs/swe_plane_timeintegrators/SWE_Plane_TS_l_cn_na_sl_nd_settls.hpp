@@ -73,11 +73,9 @@ public:
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		PlaneData_Spectral laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
-		//PlaneData_Spectral lhs = laplacian.spectral_addScalarAll(i_kappa);
-		PlaneData_Spectral lhs = laplacian + i_kappa;
+		PlaneData_Spectral lhs = laplacian.spectral_addScalarAll(i_kappa);
 
-		//io_x = i_rhs.spectral_div_element_wise(lhs);
-		io_x = i_rhs / lhs;
+		io_x = i_rhs.spectral_div_element_wise(lhs);
 #else
 		SWEETError("Cannot use helmholtz_spectral_solver if spectral space not enable in compilation time");
 #endif

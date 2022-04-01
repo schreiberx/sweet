@@ -49,9 +49,9 @@ void Burgers_Plane_TS_ln_imex_forcing::run_timestep(
 	{
 
 		PlaneData_Spectral lhs = u;
-		lhs = ((-dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y))+ 1.0;
-        	PlaneData_Spectral u1 = rhs_u / lhs;
-        	PlaneData_Spectral v1 = rhs_v / lhs;
+		lhs = ((-dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+        	PlaneData_Spectral u1 = rhs_u.spectral_div_element_wise(lhs);
+        	PlaneData_Spectral v1 = rhs_v.spectral_div_element_wise(lhs);
 
         	//std::cout << std::endl << std::endl << "u1" << std::endl;
         	//u1.print_physicalArrayData();

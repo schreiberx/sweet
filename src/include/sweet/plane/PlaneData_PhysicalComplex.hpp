@@ -309,9 +309,18 @@ public:
 
 		PlaneData_PhysicalComplex out(planeDataConfig);
 
+///		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
+///		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+///			out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
+
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
+		{
+			//if (i_plane_data.physical_space_data[i] == std::complex<double>(0))
+			//	out.physical_space_data[i] = 0;
+			//else
+				out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
+		}
 
 		return out;
 	}
@@ -568,8 +577,8 @@ public:
 	 * Set all values to a specific value
 	 */
 	void physical_set_value(
-			int i_x_idx,
 			int i_y_idx,
+			int i_x_idx,
 			std::complex<double> &i_value
 	)
 	{
@@ -580,8 +589,8 @@ public:
 	 * Set all values to a specific value
 	 */
 	void physical_set_value(
-			int i_x_idx,
 			int i_y_idx,
+			int i_x_idx,
 			double i_value_real,
 			double i_value_imag
 	)

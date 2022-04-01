@@ -90,12 +90,9 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 	{
 		PlaneData_Spectral lhs = u;
 
-		//lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
-		//io_u = rhs_u.spectral_div_element_wise(lhs);
-		//io_v = rhs_v.spectral_div_element_wise(lhs);
-		lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)) + 1.0;
-		io_u = rhs_u / lhs;
-		io_v = rhs_v / lhs;
+		lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+		io_u = rhs_u.spectral_div_element_wise(lhs);
+		io_v = rhs_v.spectral_div_element_wise(lhs);
 
 	} else { //Jacobi
 		SWEETError("NOT available");

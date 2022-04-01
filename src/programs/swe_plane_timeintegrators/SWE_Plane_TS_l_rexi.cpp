@@ -436,9 +436,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 				PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
 				PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(alpha*alpha);
-
-				//eta = rhs.spectral_div_element_wise(lhs);
-				eta = rhs / lhs;
+				eta = rhs.spectral_div_element_wise(lhs);
 
 				PlaneData_SpectralComplex u1 = (u0 + g*opc.diff_c_x(eta))*(1.0/alpha);
 				PlaneData_SpectralComplex v1 = (v0 + g*opc.diff_c_y(eta))*(1.0/alpha);
@@ -462,10 +460,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 						+ rhs_a
 					;
 
-				///PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(kappa);
-				///eta = rhs.spectral_div_element_wise(lhs);
-				PlaneData_SpectralComplex lhs = lhs_a + kappa;
-				eta = rhs / lhs;
+				PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(kappa);
+				eta = rhs.spectral_div_element_wise(lhs);
 
 				PlaneData_SpectralComplex uh = u0 + g*opc.diff_c_x(eta);
 				PlaneData_SpectralComplex vh = v0 + g*opc.diff_c_y(eta);

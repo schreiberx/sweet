@@ -353,7 +353,7 @@ int main(int i_argc, char *i_argv[])
 							(
 								//((op.diff2_c_x+op.diff2_c_y)(h_spec)).
 								//spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
-								( ((op.diff2_c_x+op.diff2_c_y)(h_spec)) / (op.diff2_c_x+op.diff2_c_y) ).toPhys()
+								( ((op.diff2_c_x+op.diff2_c_y)(h_spec)).spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y) ).toPhys()
 							)
 				).physical_reduce_rms_quad();
 
@@ -436,8 +436,8 @@ int main(int i_argc, char *i_argv[])
 			double res_normalization = std::sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op.diff_c_x(h_cart)-h_diff_x).toPhys().physical_reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
-			double err_y = (op.diff_c_y(h_cart)-h_diff_y).toPhys().physical_reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
+			double err_x = (op.diff_c_x(h_cart).toPhys()-h_diff_x).physical_reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
+			double err_y = (op.diff_c_y(h_cart).toPhys()-h_diff_y).physical_reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
 			double err_z = (u*v-h_cart).physical_reduce_norm2_quad()*res_normalization;
 
 			std::cout << "error diff x = " << err_x << std::endl;
@@ -493,7 +493,9 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			//double err_int_x = (h_cart-h_diff_x.spectral_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
-			double err_int_x = (h_cart-h_diff_x/op.diff_c_x.toPhys()).physical_reduce_norm2_quad()*res_normalization;
+			PlaneData_SpectralComplex h_cart_spec(h_cart);
+			PlaneData_SpectralComplex h_diff_x_spec(h_diff_x);
+			double err_int_x = (h_cart_spec-h_diff_x_spec.spectral_div_element_wise(op.diff_c_x)).toPhys().physical_reduce_norm2_quad()*res_normalization;
 			std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
 			if (err_int_x > eps)
@@ -504,7 +506,8 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			//double err_int_y = (h_cart-h_diff_y.spectral_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*res_normalization;
-			double err_int_y = (h_cart-h_diff_y/op.diff_c_y.toPhys()).physical_reduce_norm2_quad()*res_normalization;
+			PlaneData_SpectralComplex h_diff_y_spec(h_diff_y);
+			double err_int_y = (h_cart_spec-h_diff_y_spec.spectral_div_element_wise(op.diff_c_y)).toPhys().physical_reduce_norm2_quad()*res_normalization;
 			std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
 
 			if (err_int_y > eps)

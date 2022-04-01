@@ -324,8 +324,7 @@ public:
 		 */
 
 		PlaneData_Spectral lap_h = op.diff2(psi) + 2.0*R*op.J(op.diff_c_x(psi), op.diff_c_y(psi));
-		//PlaneData_Spectral h = lap_h.spectral_div_element_wise(laplace);
-		PlaneData_Spectral h = lap_h / laplace;
+		PlaneData_Spectral h = lap_h.spectral_div_element_wise(laplace);
 
 		/*
 		 * Setup chi
@@ -353,8 +352,7 @@ public:
 						)
 					;
 
-			//PlaneData_Spectral psi_t = laplace_psi_t.spectral_div_element_wise(laplace);
-			PlaneData_Spectral psi_t = laplace_psi_t / laplace;
+			PlaneData_Spectral psi_t = laplace_psi_t.spectral_div_element_wise(laplace);
 
 			/*
 			 * Solve equation (2.5c)
@@ -373,12 +371,10 @@ public:
 			 */
 			PlaneData_Spectral I(o_h.planeDataConfig);
 			I.spectral_set_zero();
-			//I.spectral_addScalarAll(1.0);
-			I = I + 1.0;
+			I.spectral_addScalarAll(1.0);
 
 			PlaneData_Spectral lhs = R_1*(I - laplace*B);
-			//PlaneData_Spectral new_chi = stuff_chi.spectral_div_element_wise(laplace).spectral_div_element_wise(lhs);
-			PlaneData_Spectral new_chi = (stuff_chi/laplace)/lhs;
+			PlaneData_Spectral new_chi = stuff_chi.spectral_div_element_wise(laplace).spectral_div_element_wise(lhs);
 
 			diff = (new_chi-chi).spectral_reduce_max_abs();
 			std::cout << i << ": chi update = " << diff << std::endl;

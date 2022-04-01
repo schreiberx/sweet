@@ -83,7 +83,7 @@ int main(int i_argc, char *i_argv[])
 
 		h.spectral_set_zero();
 
-		h = h + 1.0;
+		h = h.spectral_addScalarAll(1.0);
 
 #if PRINT_SPECTRUM
 		if (res[0] < res_max && res[1] < res_max)
@@ -121,7 +121,7 @@ int main(int i_argc, char *i_argv[])
 		}
 #endif
 
-		h = h + 1.0;
+		h = h.spectral_addScalarAll(1.0);
 
 #if PRINT_SPECTRUM
 		if (res[0] < res_max && res[1] < res_max)

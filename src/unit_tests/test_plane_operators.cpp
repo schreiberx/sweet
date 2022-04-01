@@ -440,6 +440,7 @@ int main(int i_argc, char *i_argv[])
 							 * Analytical solution
 							 * Doesn't care about resolution
 							 */
+
 							h12_analytical.physical_set_value(j, i,
 									0.5 * (cos(2.0 * (freq_sub) * M_PI * x) + cos(2.0 * (freq_sum) * M_PI * x))
 									* 0.5 * (cos(2.0 * (freq_sub) * M_PI * y) + cos(2.0 * (freq_sum) * M_PI * y)));
