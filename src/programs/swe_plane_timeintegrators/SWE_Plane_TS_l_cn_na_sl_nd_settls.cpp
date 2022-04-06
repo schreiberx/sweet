@@ -125,11 +125,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	PlaneData_Spectral rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
 	PlaneData_Spectral rhs_h = alpha * io_h - h_bar * div;
 
-	std::cout << "div " << div.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "rhs_u " << rhs_u.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "rhs_v " << rhs_v.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "rhs_h " << rhs_h.toPhys().physical_reduce_sum() << std::endl;
-
 	// All the RHS are to be evaluated at the departure points
 	PlaneData_Physical rhs_u_phys = rhs_u.toPhys();
 	PlaneData_Physical rhs_v_phys = rhs_v.toPhys();
@@ -137,14 +132,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	rhs_u = sampler2D.bicubic_scalar(rhs_u_phys, posx_d, posy_d, -0.5, -0.5);
 	rhs_v = sampler2D.bicubic_scalar(rhs_v_phys, posx_d, posy_d, -0.5, -0.5);
 	rhs_h = sampler2D.bicubic_scalar(rhs_h_phys, posx_d, posy_d, -0.5, -0.5);
-
-	std::cout << "rhs_u2 " << rhs_u.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "rhs_v2 " << rhs_v.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "rhs_h2 " << rhs_h.toPhys().physical_reduce_sum() << std::endl;
-///	// Get data in spectral space
-///	rhs_u.request_data_spectral();
-///	rhs_v.request_data_spectral();
-///	rhs_h.request_data_spectral();
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
 
@@ -169,9 +156,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		// Add to RHS h (TODO (2020-03-16): No clue why there's a -2.0)
 		rhs_h = rhs_h - 2.0*nonlin;
 
-		std::cout << "hdiv " << hdiv.toPhys().physical_reduce_sum() << std::endl;
-		std::cout << "nonlin " << nonlin.toPhys().physical_reduce_sum() << std::endl;
-		std::cout << "rhsh3 " << rhs_h.toPhys().physical_reduce_sum() << std::endl;
 	}
 
 
@@ -179,10 +163,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	PlaneData_Spectral rhs_div = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
 	PlaneData_Spectral rhs_vort = op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
 	PlaneData_Spectral rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
-
-	std::cout << "rhs_div " << rhs_div.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "rhs_vort " << rhs_vort.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "rhs " << rhs.toPhys().physical_reduce_sum() << std::endl;
 
 	// Helmholtz solver
 	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h);
@@ -199,10 +179,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 					+ g * f0 * op.diff_c_x(h)
 					- g * alpha * op.diff_c_y(h))
 					;
-
-	std::cout << "u " << u.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "v " << v.toPhys().physical_reduce_sum() << std::endl;
-	std::cout << "h " << h.toPhys().physical_reduce_sum() << std::endl;
 
 	// Set time (n) as time (n-1)
 	h_prev = io_h;
