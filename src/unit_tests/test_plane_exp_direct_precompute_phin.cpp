@@ -237,6 +237,7 @@ int main(int i_argc, char *i_argv[])
 
 
 	double dt = simVars.timecontrol.current_timestep_size;
+	double Tmax = simVars.timecontrol.max_simulation_time;
 
 	simVars.misc.verbosity = 6;
 
@@ -261,16 +262,19 @@ int main(int i_argc, char *i_argv[])
 		else if (i == 2)
 		{
 			simVars.rexi.exp_direct_precompute_phin = 0;
-			simVars.timecontrol.max_simulation_time += simVars.timecontrol.current_timestep_size / 2.;
+			simVars.timecontrol.max_simulation_time = Tmax + simVars.timecontrol.current_timestep_size / 2.;
 		}
 		else if (i == 3)
 		{
 			simVars.rexi.exp_direct_precompute_phin = 1;
+			simVars.timecontrol.max_simulation_time = Tmax + simVars.timecontrol.current_timestep_size / 2.;
 		}
 
+		std::cout << std::endl;
+		std::cout << " --> Running simulation with Tmax = " << simVars.timecontrol.max_simulation_time << "; precompute = " << simVars.rexi.exp_direct_precompute_phin << std::endl;
 		while (!simulations[i]->should_quit())
 			simulations[i]->run_timestep();
-		
+		std::cout << std::endl;
 
 	}
 
@@ -282,8 +286,8 @@ int main(int i_argc, char *i_argv[])
 		double err_u = (simulations[2 * i]->prog_u - simulations[2 * i + 1]->prog_u).reduce_maxAbs();
 		double err_v = (simulations[2 * i]->prog_v - simulations[2 * i + 1]->prog_v).reduce_maxAbs();
 
-		std::cout << " ** Comparing solutions with Tmax = " << simVars.timecontrol.max_simulation_time + i * simVars.timecontrol.current_timestep_size / 2. << ", dt = " << simVars.timecontrol.current_timestep_size << std::endl;
-		std::cout << " ** Error with / without precomputing phin:" << std::endl;
+		std::cout << " --> Comparing solutions with Tmax = " << Tmax + i * simVars.timecontrol.current_timestep_size / 2. << ", dt = " << simVars.timecontrol.current_timestep_size << std::endl;
+		std::cout << "  ** Error with / without precomputing phin:" << std::endl;
 		std::cout << "    * Error h: " << err_h << std::endl;
 		std::cout << "    * Error u: " << err_u << std::endl;
 		std::cout << "    * Error v: " << err_v << std::endl;

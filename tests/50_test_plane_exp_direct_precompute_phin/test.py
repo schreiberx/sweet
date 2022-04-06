@@ -31,9 +31,12 @@ jg.runtime.space_res_spectral = 512
 
 jg.runtime.timestepping_method = "l_rexi_na_sl_nd_etdrk";
 jg.runtime.timestep_size = 3600.;
+
 jg.gen_jobscript_directory();
 
-exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
+
+##exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
+exitcode = os.system('job*/run.sh');
 if exitcode != 0:
     sys.exit(exitcode)
 
