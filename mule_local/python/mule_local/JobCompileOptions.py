@@ -1,6 +1,4 @@
 #! /usr/bin/env python3
-
-#
 # This file describes all possible compile options
 #
 # The underlying concept is to separate compile options
@@ -50,6 +48,8 @@ class JobCompileOptions(InfoError):
         # Compile options
         self.mode = 'release'
         self.compiler = 'gnu'
+
+        self.sanitize = ''
 
         self.debug_symbols = 'enable'
         self.simd = 'enable'
@@ -126,6 +126,7 @@ class JobCompileOptions(InfoError):
         retval = ''
         retval += ' --mode='+self.mode
         retval += ' --compiler='+self.compiler
+        retval += ' --sanitize='+self.sanitize
         retval += ' --debug-symbols='+("enable" if self.debug_symbols else "disable")
         retval += ' --simd='+self.simd
         retval += ' --mic='+self.mic
@@ -228,7 +229,7 @@ class JobCompileOptions(InfoError):
                 type='choice',
                 choices=['debug', 'release'],
                 default='release',
-                help='specify compiler to use: debug, release [default: %default]'
+                help='specify compilation mode to use: debug, release [default: %default]'
         )
         self.mode = scons.GetOption('mode')
 
@@ -241,6 +242,14 @@ class JobCompileOptions(InfoError):
                 help='specify compiler to use: gnu, intel, llvm, pgi [default: %default]'
         )
         self.compiler = scons.GetOption('compiler')
+
+        scons.AddOption(    '--sanitize',
+                dest='sanitize',
+                type='string',
+                default='',
+                help='specify sanitize to forward to the compiler'
+        )
+        self.sanitize = scons.GetOption('sanitize')
 
 
         scons.AddOption(    '--gxx-toolchain',
@@ -723,6 +732,9 @@ class JobCompileOptions(InfoError):
                 retval+='_fft'
 
             retval += '_'+self.compiler
+
+            if self.sanitize != '':
+                retval += '_'+self.sanitize.replace(',', '_')
 
         if self.benchmark_timings == 'enable':
             retval+='_benchtime'
