@@ -1358,26 +1358,32 @@ public:
 	double spectral_reduce_sum_sqr_quad()	const
 	{
 		std::complex<double> sum = 0;
-		//std::complex<double> c = 0;
 
-		//m=0 case - weight 1
-		std::size_t idx = planeDataConfig->getArrayIndexByModes(0, 0);
 		for (std::size_t n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
-		{
-			sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
-			idx++;
-		}
-		
-		//m>0 case - weight 2, as they appear twice
-		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
-		{
-			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+			for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
 			{
-				sum += 2.0*spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
-				idx++;
+				std::size_t idx = planeDataConfig->getArrayIndexByModes(n, m);
+				sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
 			}
-		}
+
+		//////m=0 case - weight 1
+		////std::size_t idx = planeDataConfig->getArrayIndexByModes(0, 0);
+		////for (std::size_t n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
+		////{
+		////	sum += spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+		////	idx++;
+		////}
+		////
+		//////m>0 case - weight 2, as they appear twice
+		////for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+		////{
+		////	std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
+		////	for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+		////	{
+		////		sum += 2.0*spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+		////		idx++;
+		////	}
+		////}
 
 		return sum.real();
 	}
@@ -1551,10 +1557,10 @@ public:
 		std::cout << std::setprecision(i_precision);
 
 		std::cout << "m \\ n ----->" << std::endl;
-		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]; m++)
 		{
 			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-			for (std::size_t n = 0; n <= planeDataConfig->spectral_data_size[1]; n++)
+			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]; n++)
 			{
 				if (std::abs(spectral_space_data[idx]) < i_abs_threshold)
 					std::cout << 0 << "\t";
@@ -1670,10 +1676,10 @@ public:
 		std::cout << std::setprecision(i_precision);
 
 		std::cout << "m \\ n ----->" << std::endl;
-		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]; m++)
 		{
 			//std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]; n++)
 			{
 				std::cout << "(" << m <<"," << n <<")" << "\t";
 			}
@@ -1703,10 +1709,10 @@ public:
   		std::vector<double> sum_squared(planeDataConfig->spectral_data_size[1]+1,0);
   		std::vector<double> max(planeDataConfig->spectral_data_size[1]+1,0);
 
-  		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]; m++)
+  		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]; m++)
   		{
   			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-  			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]; n++)
+  			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]; n++)
   			{
   				w = spectral_space_data[idx];
   				idx++;
@@ -1747,10 +1753,10 @@ public:
 			file << "(n_max="<<planeDataConfig->spectral_data_size[1] << " m_max="
 					<< planeDataConfig->spectral_data_size[1] << ")" << std::endl;
 			file << "timestamp\t" ; 
-			for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+			for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
 			{
 				//std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-				for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+				for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
 				}
@@ -1767,10 +1773,10 @@ public:
 		double sum = 0.0;
 		//std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
 		file << i_time << "\t";
-  		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+  		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
   		{
   			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-  			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+  			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
   			{
   				w = spectral_space_data[idx];
 				wabs = std::abs(w * std::conj(w));
@@ -1815,10 +1821,10 @@ public:
 			file << "(n_max="<<planeDataConfig->spectral_data_size[1] << " m_max="
 					<< planeDataConfig->spectral_data_size[1] << ")" << std::endl;
 			file << "timestamp\t" ; 
-			for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+			for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
 			{
 				//std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-				for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+				for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
 				{
 					file << "(" << n << ";" << m << ")\t" ;
 				}
@@ -1834,10 +1840,10 @@ public:
 		double wphase = 0.0;
 		
 		file << i_time << "\t";
-  		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
+  		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
   		{
   			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-  			for (std::size_t n = m; n <= planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
+  			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
   			{
   				w = spectral_space_data[idx];
 				wphase = std::arg(w); // std::abs(w * std::conj(w));

@@ -693,6 +693,7 @@ public:
 
 
 #if SWEET_USE_LIBFFT
+public:
 	void fft_physical_to_spectral(
 			double *i_physical_data,
 			std::complex<double> *o_spectral_data

@@ -231,104 +231,106 @@ public:
 
 
 
-	PlaneData_SpectralComplex spectral_returnWithTruncatedModes(
-			const PlaneDataConfig *i_planeDataConfigTargetTruncation
-	)	const
-	{
-		return spectral_returnWithDifferentModes(i_planeDataConfigTargetTruncation).spectral_returnWithDifferentModes(planeDataConfig);
-	}
-
-
-public:
-	PlaneData_SpectralComplex spectral_returnWithDifferentModes(
-			const PlaneDataConfig *i_planeDataConfigNew
-	)	const
-	{
-		PlaneData_SpectralComplex out(i_planeDataConfigNew);
-
-		/*
-		 *  0 = invalid
-		 * -1 = scale down
-		 *  1 = scale up
-		 */
-		int scaling_mode = 0;
-
-		if (planeDataConfig->spectral_complex_data_size[0] < out.planeDataConfig->spectral_complex_data_size[0])
-		{
-			scaling_mode = 1;
-		}
-		else if (planeDataConfig->spectral_complex_data_size[0] > out.planeDataConfig->spectral_complex_data_size[0])
-		{
-			scaling_mode = -1;
-		}
-
-
-		if (planeDataConfig->spectral_complex_data_size[1] < out.planeDataConfig->spectral_complex_data_size[1])
-		{
-			assert(scaling_mode != -1);
-			scaling_mode = 1;
-		}
-		else if (planeDataConfig->spectral_complex_data_size[1] > out.planeDataConfig->spectral_complex_data_size[1])
-		{
-			assert(scaling_mode != 1);
-			scaling_mode = -1;
-		}
-
-		if (scaling_mode == 0)
-		{
-			// Just copy the data
-			out = *this;
-			return out;
-		}
-
-		if (scaling_mode == -1)
-		{
-			/*
-			 * more modes -> less modes
-			 */
-
-
-	SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (std::size_t n = 0; n <= out.planeDataConfig->spectral_complex_data_size[1]; n++)
-			{
-				int src_idx = planeDataConfig->getArrayIndexByModes_Complex(n, -n);
-				int dst_idx = out.planeDataConfig->getArrayIndexByModes_Complex(n, -n);
-
-				for (std::size_t m = -n; m <= n; m++)
-				{
-					out.spectral_space_data[dst_idx] = spectral_space_data[src_idx];
-					src_idx++;
-					dst_idx++;
-				}
-			}
-		}
-		else
-		{
-			/*
-			 * less modes -> more modes
-			 */
-
-			// zero all values
-			out.spectral_set_zero();
-
-
-	SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (std::size_t n = 0; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
-			{
-				int src_idx = planeDataConfig->getArrayIndexByModes_Complex(n, -n);
-				int dst_idx = out.planeDataConfig->getArrayIndexByModes_Complex(n, -n);
-
-				for (std::size_t m = -n; m <= n; m++)
-				{
-					out.spectral_space_data[dst_idx] = spectral_space_data[src_idx];
-					src_idx++;
-					dst_idx++;
-				}
-			}
-		}
-
-		return out;
-	}
+//////	PlaneData_SpectralComplex spectral_returnWithTruncatedModes(
+//////			const PlaneDataConfig *i_planeDataConfigTargetTruncation
+//////	)	const
+//////	{
+//////		return spectral_returnWithDifferentModes(i_planeDataConfigTargetTruncation).spectral_returnWithDifferentModes(planeDataConfig);
+//////	}
+//////
+//////
+//////public:
+//////	PlaneData_SpectralComplex spectral_returnWithDifferentModes(
+//////			const PlaneDataConfig *i_planeDataConfigNew
+//////	)	const
+//////	{
+//////		PlaneData_SpectralComplex out(i_planeDataConfigNew);
+//////
+//////		/*
+//////		 *  0 = invalid
+//////		 * -1 = scale down
+//////		 *  1 = scale up
+//////		 */
+//////		int scaling_mode = 0;
+//////
+//////		if (planeDataConfig->spectral_complex_data_size[0] < out.planeDataConfig->spectral_complex_data_size[0])
+//////		{
+//////			scaling_mode = 1;
+//////		}
+//////		else if (planeDataConfig->spectral_complex_data_size[0] > out.planeDataConfig->spectral_complex_data_size[0])
+//////		{
+//////			scaling_mode = -1;
+//////		}
+//////
+//////
+//////		if (planeDataConfig->spectral_complex_data_size[1] < out.planeDataConfig->spectral_complex_data_size[1])
+//////		{
+//////			assert(scaling_mode != -1);
+//////			scaling_mode = 1;
+//////		}
+//////		else if (planeDataConfig->spectral_complex_data_size[1] > out.planeDataConfig->spectral_complex_data_size[1])
+//////		{
+//////			assert(scaling_mode != 1);
+//////			scaling_mode = -1;
+//////		}
+//////
+//////		if (scaling_mode == 0)
+//////		{
+//////			// Just copy the data
+//////			out = *this;
+//////			return out;
+//////		}
+//////
+//////		if (scaling_mode == -1)
+//////		{
+//////			/*
+//////			 * more modes -> less modes
+//////			 */
+//////
+//////
+//////	SWEET_THREADING_SPACE_PARALLEL_FOR
+//////			for (std::size_t n = 0; n < out.planeDataConfig->spectral_complex_data_size[1]; n++)
+//////			{
+//////				int src_idx = planeDataConfig->getArrayIndexByModes_Complex(n, -n);
+//////				int dst_idx = out.planeDataConfig->getArrayIndexByModes_Complex(n, -n);
+//////
+//////				for (std::size_t m = 0; m < out.planeDataConfig->spectral_complex_data_size[0]; m++)
+//////				//for (std::size_t m = -n; m <= n; m++)
+//////				{
+//////					out.spectral_space_data[dst_idx] = spectral_space_data[src_idx];
+//////					src_idx++;
+//////					dst_idx++;
+//////				}
+//////			}
+//////		}
+//////		else
+//////		{
+//////			/*
+//////			 * less modes -> more modes
+//////			 */
+//////
+//////			// zero all values
+//////			out.spectral_set_zero();
+//////
+//////
+//////	SWEET_THREADING_SPACE_PARALLEL_FOR
+//////			for (std::size_t n = 0; n < planeDataConfig->spectral_complex_data_size[1]; n++)
+//////			{
+//////				int src_idx = planeDataConfig->getArrayIndexByModes_Complex(n, -n);
+//////				int dst_idx = out.planeDataConfig->getArrayIndexByModes_Complex(n, -n);
+//////
+//////				for (std::size_t m = 0; m < out.planeDataConfig->spectral_complex_data_size[0]; m++)
+//////				//for (std::size_t m = -n; m <= n; m++)
+//////				{
+//////					out.spectral_space_data[dst_idx] = spectral_space_data[src_idx];
+//////					src_idx++;
+//////					dst_idx++;
+//////				}
+//////			}
+//////		}
+//////
+//////		return out;
+//////	}
 
 
 
@@ -697,9 +699,9 @@ public:
 	)
 	{
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t n = 0; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
+		for (std::size_t n = 0; n < planeDataConfig->spectral_complex_data_size[1]; n++)
 		{
-			for (std::size_t m = 0; n <= planeDataConfig->spectral_complex_data_size[0]; m++)
+			for (std::size_t m = 0; m < planeDataConfig->spectral_complex_data_size[0]; m++)
 			{
 				int idx = planeDataConfig->getArrayIndexByModes_Complex(n, m);
 				i_lambda(n, m, spectral_space_data[idx]);
@@ -759,9 +761,9 @@ public:
 	{
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR
-			for (std::size_t n = 0; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
+			for (std::size_t n = 0; n < planeDataConfig->spectral_complex_data_size[1]; n++)
 			{
-				for (std::size_t m = 0; m <= planeDataConfig->spectral_complex_data_size[0]; m++)
+				for (std::size_t m = 0; m < planeDataConfig->spectral_complex_data_size[0]; m++)
 				{
 					int idx = planeDataConfig->getArrayIndexByModes_Complex(n, m);
 					spectral_space_data[idx] = 0;
@@ -780,13 +782,13 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_m > (int)planeDataConfig->spectral_complex_data_size[0])
+		if (i_m >= (int)planeDataConfig->spectral_complex_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_n > (int)planeDataConfig->spectral_complex_data_size[1])
+		if (i_n >= (int)planeDataConfig->spectral_complex_data_size[1])
 			SWEETError("Out of boundary c");
 
-		assert (i_m <= (int)planeDataConfig->spectral_complex_data_size[1]);
+///		assert (i_m <= (int)planeDataConfig->spectral_complex_data_size[0]);
 #endif
 
 		spectral_space_data[planeDataConfig->getArrayIndexByModes_Complex(i_n, i_m)].real(i_real);
@@ -803,13 +805,13 @@ public:
 		if (i_n < 0 ||  i_m < 0)
 			SWEETError("Out of boundary a");
 
-		if (i_m > (int)planeDataConfig->spectral_complex_data_size[0])
+		if (i_m >= (int)planeDataConfig->spectral_complex_data_size[0])
 			SWEETError("Out of boundary b");
 
-		if (i_n > (int)planeDataConfig->spectral_complex_data_size[1])
+		if (i_n >= (int)planeDataConfig->spectral_complex_data_size[1])
 			SWEETError("Out of boundary c");
 
-		assert (i_m <= (int)planeDataConfig->spectral_complex_data_size[1]);
+//		assert (i_m <= (int)planeDataConfig->spectral_complex_data_size[1]);
 #endif
 
 		spectral_space_data[planeDataConfig->getArrayIndexByModes_Complex(i_n, i_m)].real(i_data.real());
@@ -912,9 +914,9 @@ public:
 		/**
 		 * WARNING: This follows a different order contrast to how it is stored
 		 */
-		for (std::size_t m = 0; m <= planeDataConfig->spectral_complex_data_size[0]; m++)
+		for (std::size_t m = 0; m < planeDataConfig->spectral_complex_data_size[0]; m++)
 		{
-			for (std::size_t n = m; n <= planeDataConfig->spectral_complex_data_size[1]; n++)
+			for (std::size_t n = 0; n < planeDataConfig->spectral_complex_data_size[1]; n++)
 			{
 				std::size_t idx = planeDataConfig->getArrayIndexByModes_Complex(n, m);
 				std::cout << spectral_space_data[idx] << "\t";
