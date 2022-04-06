@@ -553,7 +553,6 @@ public:
 					{0,0,0},
 					{0,-1.0,0},	// lower y coordinate
 			};
-			//diff_c_y.toPhys().kernel_stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
 			tmp.kernel_stencil_setup(diff1_y_kernel, 1.0/(2.0*h[1]));
 			diff_c_y.loadPlaneDataPhysical(tmp);
 
@@ -562,7 +561,6 @@ public:
 					{0,-1,1},
 					{0,0,0}
 			};
-			//diff_f_x.toPhys().kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
 			tmp.kernel_stencil_setup(d_f_x_kernel, 1.0/h[0]);
 			diff_f_x.loadPlaneDataPhysical(tmp);
 
@@ -571,7 +569,6 @@ public:
 					{0,-1,0},
 					{0,0,0},
 			};
-			//diff_f_y.toPhys().kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
 			tmp.kernel_stencil_setup(d_f_y_kernel, 1.0/h[1]);
 			diff_f_y.loadPlaneDataPhysical(tmp);
 
@@ -581,7 +578,6 @@ public:
 					{-1,1,0},
 					{0,0,0}
 			};
-			//diff_b_x.toPhys().kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
 			tmp.kernel_stencil_setup(d_b_x_kernel, 1.0/h[0]);
 			diff_b_x.loadPlaneDataPhysical(tmp);
 
@@ -590,7 +586,6 @@ public:
 					{0,1,0},
 					{0,-1,0},
 			};
-			//diff_b_y.toPhys().kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
 			tmp.kernel_stencil_setup(d_b_y_kernel, 1.0/h[1]);
 			diff_b_y.loadPlaneDataPhysical(tmp);
 
@@ -600,7 +595,6 @@ public:
 					{1.0,-2.0,1.0},
 					{0,0,0}
 				};
-			//diff2_c_x.toPhys().kernel_stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
 			tmp.kernel_stencil_setup(diff2_x_kernel, 1.0/(h[0]*h[0]));
 			diff2_c_x.loadPlaneDataPhysical(tmp);
 
@@ -609,7 +603,6 @@ public:
 					{0,-2.0,0},
 					{0,1.0,0}
 			};
-			//diff2_c_y.toPhys().kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
 			tmp.kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
 			diff2_c_y.loadPlaneDataPhysical(tmp);
 		}

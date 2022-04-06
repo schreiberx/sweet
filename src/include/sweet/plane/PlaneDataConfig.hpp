@@ -974,10 +974,7 @@ public:
 	)	const
 	{
 		assert(n >= 0);
-		//assert(n >= m);
 
-//		return (m*(2*spectral_modes_n_max-m+1)>>1)+n;
-//		return m * spectral_data_size[1] + n;
 		return n * spectral_data_size[0] + m;
 	}
 
@@ -990,10 +987,7 @@ public:
 	)	const
 	{
 		assert(n >= 0);
-		//assert(n >= std::abs(m));
 
-		///int idx = n*n+(m+n);
-		//int idx =  m * spectral_data_size[1] + n;
 		int idx =  n * spectral_complex_data_size[0] + m;
 		return idx;
 	}

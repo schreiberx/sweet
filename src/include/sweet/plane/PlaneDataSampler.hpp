@@ -420,10 +420,6 @@ public:
 
 		bilinear_scalar(i_data, i_pos_x, i_pos_y, o_data.physical_space_data, i_shift_x, i_shift_y);
 
-////#if SWEET_USE_PLANE_SPECTRAL_SPACE
-////		o_data.physical_space_data_valid = true;
-////		o_data.spectral_space_data_valid = false;
-////#endif
 	}
 
 
