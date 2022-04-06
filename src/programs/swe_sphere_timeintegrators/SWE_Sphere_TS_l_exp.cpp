@@ -385,7 +385,7 @@ void SWE_Sphere_TS_l_exp::setup(
 		if (timestepping_method_lg_exp_direct == nullptr)
 			timestepping_method_lg_exp_direct = new SWE_Sphere_TS_lg_exp_direct(simVars, ops);
 
-		timestepping_method_lg_exp_direct->setup("phi0");
+		timestepping_method_lg_exp_direct->setup(function_name);
 	}
 	else if (rexiSimVars->exp_method == "ss_taylor")
 	{
