@@ -116,11 +116,6 @@ public:
 		io_u.spectral_zeroAliasingModes();
 		io_v.spectral_zeroAliasingModes();
 
-////		//Request physical data, to ensure that irroring is well well balanced (it may fill in the mirror mode)
-////		io_h.request_data_physical();
-////		io_u.request_data_physical();
-////		io_v.request_data_physical();
-
 /*Debug output*/
 #if 0
 
@@ -713,14 +708,12 @@ public:
 						/*
 						 * RUN timestep
 						 */
-						//prog[outer_prog_id]->request_data_physical();
 						(i_class->*i_run_timestep_method)();
 
 						/*
 						 * compute
 						 * 1/dt * (U(t+1) - U(t))
 						 */
-						//prog[outer_prog_id]->request_data_spectral();
 
 						std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 						val = val - 1.0; //subtract U(0) from mode
@@ -930,7 +923,6 @@ public:
 
 						// activate mode
 						PlaneData_Physical tmp = prog[outer_prog_id]->toPhys();
-						//prog[outer_prog_id]->request_data_physical();
 						tmp.physical_space_data[outer_i] = 1;
 						prog[outer_prog_id]->loadPlaneDataPhysical(tmp);
 
@@ -946,7 +938,6 @@ public:
 							 * compute
 							 * 1/dt * (U(t+1) - U(t))
 							 */
-							//prog[outer_prog_id]->request_data_physical();
 							tmp = prog[outer_prog_id]->toPhys();
 							tmp.physical_space_data[outer_i] -= 1.0;
 							prog[outer_prog_id]->loadPlaneDataPhysical(tmp);
@@ -957,7 +948,6 @@ public:
 
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
-							//prog[inner_prog_id]->request_data_physical();
 							tmp = prog[outer_prog_id]->toPhys();
 							for (std::size_t k = 0; k < planeDataConfig->physical_array_data_number_of_elements; k++)
 							{
@@ -1009,7 +999,6 @@ public:
 									 * compute
 									 * 1/dt * (U(t+1) - U(t))
 									 */
-									//prog[outer_prog_id]->request_data_spectral();
 
 									std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 									val = val - 1.0;
@@ -1022,7 +1011,6 @@ public:
 
 								for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								{
-									//prog[inner_prog_id]->request_data_spectral();
 
 									/*
 									 * REAL

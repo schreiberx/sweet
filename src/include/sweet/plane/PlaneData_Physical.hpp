@@ -88,8 +88,6 @@ class PlaneData_Spectral;
 class PlaneData_Physical
 			:	private PlaneData_Kernels
 {
-////	friend class PlaneData_Spectral;
-////	friend PlaneData_Physical PlaneData_Spectral::multiplication_physical_space(PlaneData_Physical& i_a, PlaneData_Physical& i_b);
 
 public:
 	const PlaneDataConfig *planeDataConfig;
@@ -256,376 +254,6 @@ public:
 
 
 
-	PlaneData_Physical operator+(
-			const PlaneData_Physical &i_plane_data
-	)	const
-	{
-		check(i_plane_data.planeDataConfig);
-
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			out.physical_space_data[idx] = physical_space_data[idx] + i_plane_data.physical_space_data[idx];
-
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		this->dealiasing(out);
-#endif
-
-		return out;
-	}
-
-
-
-	PlaneData_Physical& operator+=(
-			const PlaneData_Physical &i_plane_data
-	)
-	{
-		check(i_plane_data.planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			physical_space_data[idx] += i_plane_data.physical_space_data[idx];
-
-		return *this;
-	}
-
-
-	PlaneData_Physical& operator+=(
-			double i_scalar
-	)
-	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			physical_space_data[idx] += i_scalar;
-
-		return *this;
-	}
-
-
-	PlaneData_Physical& operator-=(
-			const PlaneData_Physical &i_plane_data
-	)
-	{
-		check(i_plane_data.planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			physical_space_data[idx] -= i_plane_data.physical_space_data[idx];
-
-		return *this;
-	}
-
-
-	PlaneData_Physical& operator-=(
-			double i_scalar
-	)
-	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			physical_space_data[idx] -= i_scalar;
-
-		return *this;
-	}
-
-
-
-	PlaneData_Physical operator-(
-			const PlaneData_Physical &i_plane_data
-	)	const
-	{
-		check(i_plane_data.planeDataConfig);
-
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			out.physical_space_data[idx] = physical_space_data[idx] - i_plane_data.physical_space_data[idx];
-
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		this->dealiasing(out);
-#endif
-
-		return out;
-	}
-
-
-
-	PlaneData_Physical operator-()
-	{
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			out.physical_space_data[idx] = -physical_space_data[idx];
-
-		return out;
-	}
-
-
-
-	PlaneData_Physical operator*(
-			const PlaneData_Physical &i_plane_data
-	)	const
-	{
-		check(i_plane_data.planeDataConfig);
-
-
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]*i_plane_data.physical_space_data[i];
-
-
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		this->dealiasing(out);
-#endif
-
-		return out;
-
-	}
-
-	void dealiasing(
-		PlaneData_Physical& io_data
-	) const
-	{
-		
-		// Ugly fix to circular dependency between PlaneData_Physical and PlaneData_Spectral
-
-		// create spectral data container
-		std::complex<double> *spectral_space_data = nullptr;
-		spectral_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
-
-		// FFT
-		planeDataConfig->fft_physical_to_spectral(io_data.physical_space_data, spectral_space_data);
-
-		// Dealiasing
-		//SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (int k = 0; k < 2; k++)
-		{
-			if (k == 0)
-			{
-				/*
-				 * First process part between top and bottom spectral data blocks
-				 */
-				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
-				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
-					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
-					{
-						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
-						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
-					}
-			}
-			else
-			{
-				/*
-				 * Then process the aliasing block on the right side
-				 */
-				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
-				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
-					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
-					{
-						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
-						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
-					}
-			}
-		}
-
-		// IFFT
-		planeDataConfig->fft_spectral_to_physical(spectral_space_data, io_data.physical_space_data);
-
-		// Free spectral data
-		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
-		spectral_space_data = nullptr;
-	}
-
-
-	PlaneData_Physical multiplication_no_dealiasing(
-			const PlaneData_Physical &i_plane_data
-	)	const
-	{
-		check(i_plane_data.planeDataConfig);
-
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]*i_plane_data.physical_space_data[i];
-
-		return out;
-	}
-
-
-
-	PlaneData_Physical operator/(
-			const PlaneData_Physical &i_plane_data
-	)	const
-	{
-		check(i_plane_data.planeDataConfig);
-
-		check(i_plane_data.planeDataConfig);
-
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
-
-		this->dealiasing(out);
-
-		return out;
-	}
-
-
-
-	PlaneData_Physical operator*(
-			const double i_value
-	)	const
-	{
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-			out.physical_space_data[i] = physical_space_data[i]*i_value;
-
-		return out;
-	}
-
-
-
-
-	const PlaneData_Physical& operator*=(
-			const double i_value
-	)	const
-	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			physical_space_data[idx] *= i_value;
-
-		return *this;
-	}
-
-
-
-
-	PlaneData_Physical operator/(
-			double i_value
-	)	const
-	{
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			out.physical_space_data[idx] = physical_space_data[idx]/i_value;
-
-		return out;
-	}
-
-	PlaneData_Physical& operator/=(
-			double i_scalar
-	)
-	{
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			physical_space_data[idx] /= i_scalar;
-
-		return *this;
-	}
-
-
-
-
-	PlaneData_Physical operator+(
-			double i_value
-	)	const
-	{
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			out.physical_space_data[idx] = physical_space_data[idx]+i_value;
-
-		return out;
-	}
-
-
-
-	PlaneData_Physical operator-(
-			double i_value
-	)	const
-	{
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			out.physical_space_data[idx] = physical_space_data[idx]-i_value;
-
-
-		return out;
-	}
-
-
-	PlaneData_Physical operator_scalar_sub_this(
-			double i_value
-	)	const
-	{
-		PlaneData_Physical out(planeDataConfig);
-
-		SWEET_THREADING_SPACE_PARALLEL_FOR
-		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
-			out.physical_space_data[idx] = i_value - physical_space_data[idx];
-
-		return out;
-	}
-
-
-	/**
-	 * Apply a linear operator given by this class to the input data array.
-	 */
-	inline
-	PlaneData_Physical operator()(
-			const PlaneData_Physical &i_array_data
-	)	const
-	{
-		PlaneData_Physical out(planeDataConfig);
-
-		PlaneData_Physical &rw_array_data = (PlaneData_Physical&)i_array_data;
-
-		kernel_apply(
-				planeDataConfig->physical_data_size[0],
-				planeDataConfig->physical_data_size[1],
-				rw_array_data.physical_space_data,
-
-				out.physical_space_data
-		);
-
-
-		return out;
-	}
-
-	friend
-	inline
-	std::ostream& operator<<(
-			std::ostream &o_ostream,
-			const PlaneData_Physical &i_dataArray
-	)
-	{
-		PlaneData_Physical &rw_array_data = (PlaneData_Physical&)i_dataArray;
-
-		for (int j = (int)rw_array_data.planeDataConfig->physical_data_size[1]-1; j >= 0; j--)
-		{
-			for (std::size_t i = 0; i < rw_array_data.planeDataConfig->physical_data_size[0]; i++)
-			{
-				std::cout << i_dataArray.physical_space_data[j*i_dataArray.planeDataConfig->physical_data_size[0]+i] << "\t";
-			}
-			std::cout << std::endl;
-		}
-
-		return o_ostream;
-	}
-
-
 
 
 public:
@@ -641,15 +269,12 @@ public:
 	}
 
 
-
 private:
 	void alloc_data()
 	{
 		assert(physical_space_data == nullptr);
 		physical_space_data = MemBlockAlloc::alloc<double>(planeDataConfig->physical_array_data_number_of_elements * sizeof(double));
 	}
-
-
 
 
 public:
@@ -662,7 +287,6 @@ public:
 
 		setup(i_planeDataConfig);
 	}
-
 
 
 public:
@@ -757,9 +381,6 @@ public:
 	}
 
 
-
-
-
 	/*
 	 * Set all values to zero
 	 */
@@ -768,11 +389,6 @@ public:
 		PLANE_DATA_PHYSICAL_FOR_2D_IDX(
 				physical_space_data[idx] = 0;
 				)
-		///SWEET_THREADING_SPACE_PARALLEL_FOR
-
-		///for (int i = 0; i < planeDataConfig->physical_num_lon; i++)
-		///	for (int j = 0; j < planeDataConfig->physical_num_lat; j++)
-		///		physical_space_data[j*planeDataConfig->physical_num_lon + i] = 0;
 	}
 
 
@@ -787,10 +403,6 @@ public:
 		PLANE_DATA_PHYSICAL_FOR_2D_IDX(
 				physical_space_data[idx] = i_value;
 				)
-		////SWEET_THREADING_SPACE_PARALLEL_FOR
-		////for (int i = 0; i < planeDataConfig->physical_num_lon; i++)
-		////	for (int j = 0; j < planeDataConfig->physical_num_lat; j++)
-		////		physical_space_data[j*planeDataConfig->physical_num_lon + i] = i_value;
 	}
 
 
@@ -813,6 +425,344 @@ public:
 	)	const
 	{
 		return physical_space_data[i_y_idx*planeDataConfig->physical_res[0] + i_x_idx];
+	}
+
+
+	PlaneData_Physical operator+(
+			const PlaneData_Physical &i_plane_data
+	)	const
+	{
+		check(i_plane_data.planeDataConfig);
+
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = physical_space_data[idx] + i_plane_data.physical_space_data[idx];
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		this->dealiasing(out);
+#endif
+
+		return out;
+	}
+
+
+	PlaneData_Physical& operator+=(
+			const PlaneData_Physical &i_plane_data
+	)
+	{
+		check(i_plane_data.planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] += i_plane_data.physical_space_data[idx];
+
+		return *this;
+	}
+
+
+	PlaneData_Physical& operator+=(
+			double i_scalar
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] += i_scalar;
+
+		return *this;
+	}
+
+
+	PlaneData_Physical& operator-=(
+			const PlaneData_Physical &i_plane_data
+	)
+	{
+		check(i_plane_data.planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] -= i_plane_data.physical_space_data[idx];
+
+		return *this;
+	}
+
+
+	PlaneData_Physical& operator-=(
+			double i_scalar
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] -= i_scalar;
+
+		return *this;
+	}
+
+
+	PlaneData_Physical operator-(
+			const PlaneData_Physical &i_plane_data
+	)	const
+	{
+		check(i_plane_data.planeDataConfig);
+
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = physical_space_data[idx] - i_plane_data.physical_space_data[idx];
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		this->dealiasing(out);
+#endif
+
+		return out;
+	}
+
+
+	PlaneData_Physical operator-()
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = -physical_space_data[idx];
+
+		return out;
+	}
+
+
+
+	PlaneData_Physical operator*(
+			const PlaneData_Physical &i_plane_data
+	)	const
+	{
+		check(i_plane_data.planeDataConfig);
+
+
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = physical_space_data[i]*i_plane_data.physical_space_data[i];
+
+
+#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
+		this->dealiasing(out);
+#endif
+
+		return out;
+
+	}
+
+
+	PlaneData_Physical operator*(
+			const double i_value
+	)	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = physical_space_data[i]*i_value;
+
+		return out;
+	}
+
+	const PlaneData_Physical& operator*=(
+			const double i_value
+	)	const
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] *= i_value;
+
+		return *this;
+	}
+
+	PlaneData_Physical operator/(
+			double i_value
+	)	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = physical_space_data[idx]/i_value;
+
+		return out;
+	}
+
+	PlaneData_Physical& operator/=(
+			double i_scalar
+	)
+	{
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			physical_space_data[idx] /= i_scalar;
+
+		return *this;
+	}
+
+	PlaneData_Physical operator+(
+			double i_value
+	)	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = physical_space_data[idx]+i_value;
+
+		return out;
+	}
+
+	PlaneData_Physical operator-(
+			double i_value
+	)	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = physical_space_data[idx]-i_value;
+
+		return out;
+	}
+
+	PlaneData_Physical operator_scalar_sub_this(
+			double i_value
+	)	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t idx = 0; idx < planeDataConfig->physical_array_data_number_of_elements; idx++)
+			out.physical_space_data[idx] = i_value - physical_space_data[idx];
+
+		return out;
+	}
+
+
+	/**
+	 * Apply a linear operator given by this class to the input data array.
+	 */
+	inline
+	PlaneData_Physical operator()(
+			const PlaneData_Physical &i_array_data
+	)	const
+	{
+		PlaneData_Physical out(planeDataConfig);
+
+		PlaneData_Physical &rw_array_data = (PlaneData_Physical&)i_array_data;
+
+		kernel_apply(
+				planeDataConfig->physical_data_size[0],
+				planeDataConfig->physical_data_size[1],
+				rw_array_data.physical_space_data,
+
+				out.physical_space_data
+		);
+
+
+		return out;
+	}
+
+	friend
+	inline
+	std::ostream& operator<<(
+			std::ostream &o_ostream,
+			const PlaneData_Physical &i_dataArray
+	)
+	{
+		PlaneData_Physical &rw_array_data = (PlaneData_Physical&)i_dataArray;
+
+		for (int j = (int)rw_array_data.planeDataConfig->physical_data_size[1]-1; j >= 0; j--)
+		{
+			for (std::size_t i = 0; i < rw_array_data.planeDataConfig->physical_data_size[0]; i++)
+			{
+				std::cout << i_dataArray.physical_space_data[j*i_dataArray.planeDataConfig->physical_data_size[0]+i] << "\t";
+			}
+			std::cout << std::endl;
+		}
+
+		return o_ostream;
+	}
+
+
+	PlaneData_Physical operator/(
+			const PlaneData_Physical &i_plane_data
+	)	const
+	{
+		check(i_plane_data.planeDataConfig);
+
+		check(i_plane_data.planeDataConfig);
+
+		PlaneData_Physical out(planeDataConfig);
+
+		SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
+
+		this->dealiasing(out);
+
+		return out;
+	}
+
+
+	// Ugly fix to circular dependency between PlaneData_Physical and PlaneData_Spectral
+	// Implementation of basic features of PlaneData_Spectral allowing to convert to psectral space and dealiase
+	void dealiasing(
+		PlaneData_Physical& io_data
+	) const
+	{
+		
+
+		// create spectral data container
+		std::complex<double> *spectral_space_data = nullptr;
+		spectral_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
+
+		// FFT
+		planeDataConfig->fft_physical_to_spectral(io_data.physical_space_data, spectral_space_data);
+
+		// Dealiasing
+		//SWEET_THREADING_SPACE_PARALLEL_FOR
+		for (int k = 0; k < 2; k++)
+		{
+			if (k == 0)
+			{
+				/*
+				 * First process part between top and bottom spectral data blocks
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
+					{
+						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
+					}
+			}
+			else
+			{
+				/*
+				 * Then process the aliasing block on the right side
+				 */
+				SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
+				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
+					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
+					{
+						//spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii] = 0;
+						spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)] = 0;
+					}
+			}
+		}
+
+		// IFFT
+		planeDataConfig->fft_spectral_to_physical(spectral_space_data, io_data.physical_space_data);
+
+		// Free spectral data
+		MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
+		spectral_space_data = nullptr;
 	}
 
 
@@ -1189,16 +1139,16 @@ public:
 		if (i_precision >= 0)
 			std::cout << std::setprecision(i_precision);
 
-        for (int j = (int)(planeDataConfig->physical_res[1]-1); j >= 0; j--)
-        {
-        		for (int i = 0; i < (int)planeDataConfig->physical_res[0]; i++)
-        		{
-        			std::cout << physical_space_data[j*planeDataConfig->physical_res[0]+i];
-        			if (i < (int)planeDataConfig->physical_res[0]-1)
-        				std::cout << "\t";
-        		}
-        		std::cout << std::endl;
-        }
+		for (int j = (int)(planeDataConfig->physical_res[1]-1); j >= 0; j--)
+		{
+			for (int i = 0; i < (int)planeDataConfig->physical_res[0]; i++)
+			{
+				std::cout << physical_space_data[j*planeDataConfig->physical_res[0]+i];
+				if (i < (int)planeDataConfig->physical_res[0]-1)
+					std::cout << "\t";
+			}
+			std::cout << std::endl;
+		}
 	}
 
 	/**
@@ -1226,8 +1176,6 @@ public:
 			std::cout << std::endl;
 		}
 	}
-
-
 
 
 	void physical_file_write(
@@ -1261,24 +1209,22 @@ public:
 		}
 		file << std::endl;
 
-        for (int j = (int)planeDataConfig->physical_res[1]-1; j >= 0; j--)
-        {
+		for (int j = (int)planeDataConfig->physical_res[1]-1; j >= 0; j--)
+		{
 			double y = ((double)j/(double)planeDataConfig->physical_res[1])*plane_domain_size[1]; // ????
 
-        		file << y << "\t";
-
-        		for (int i = 0; i < (int)planeDataConfig->physical_res[0]; i++)
-        		{
-        			file << physical_space_data[j*planeDataConfig->physical_res[0]+i];
-        			if (i < (int)planeDataConfig->physical_res[0]-1)
-        				file << "\t";
-        		}
-        		file << std::endl;
-        }
-        file.close();
+			file << y << "\t";
+	
+			for (int i = 0; i < (int)planeDataConfig->physical_res[0]; i++)
+			{
+				file << physical_space_data[j*planeDataConfig->physical_res[0]+i];
+				if (i < (int)planeDataConfig->physical_res[0]-1)
+					file << "\t";
+			}
+			file << std::endl;
+		}
+	file.close();
 	}
-
-
 
 
 	bool physical_file_load(
@@ -1651,7 +1597,6 @@ PlaneData_Physical operator*(
 }
 
 
-
 /**
  * operator to support operations such as:
  *
@@ -1666,7 +1611,6 @@ PlaneData_Physical operator-(
 {
 	return i_array_data.operator_scalar_sub_this(i_value);
 }
-
 
 
 /**

@@ -121,9 +121,6 @@ void Burgers_Plane_TS_ln_erk_forcing::run_timestep(
 		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time,simVars,simVars.disc.space_grid_use_c_staggering,f);
 		BurgersValidationBenchmarks::set_source(simVars.timecontrol.current_simulation_time+0.5*t,simVars,simVars.disc.space_grid_use_c_staggering,ff);
 
-//		f.request_data_spectral();
-//		ff.request_data_spectral();
-
 		if (simVars.disc.space_use_spectral_basis_diffs) //spectral
 		{
 			PlaneData_Spectral u1 = u + t*simVars.sim.viscosity*(op.diff2_c_x(u)+op.diff2_c_y(u))

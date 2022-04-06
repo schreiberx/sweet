@@ -120,9 +120,6 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	 * This implementation works directly on PlaneData
 	 */
 
-//	io_u.request_data_spectral();
-//	io_v.request_data_spectral();
-
 	for (std::size_t ik1 = 0; ik1 < io_u.planeDataConfig->spectral_data_size[1]; ik1++)
 	{
 		T k1;

@@ -208,6 +208,47 @@ public:
 	}
 
 
+
+
+
+public:
+	void setup(
+			const PlaneDataConfig *i_planeDataConfig
+	)
+	{
+		planeDataConfig = i_planeDataConfig;
+
+		physical_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+	}
+
+
+
+public:
+	void setup_if_required(
+			const PlaneDataConfig *i_planeDataConfig
+	)
+	{
+		if (planeDataConfig != nullptr)
+		{
+			assert(physical_space_data != nullptr);
+			return;
+		}
+
+		planeDataConfig = i_planeDataConfig;
+		physical_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+	}
+
+
+
+public:
+	~PlaneData_PhysicalComplex()
+	{
+		if (physical_space_data != nullptr)
+			MemBlockAlloc::free(physical_space_data, planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+	}
+
+
+public:
 	PlaneData_PhysicalComplex operator+(
 			const PlaneData_PhysicalComplex &i_plane_data
 	)	const
@@ -309,17 +350,10 @@ public:
 
 		PlaneData_PhysicalComplex out(planeDataConfig);
 
-///		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-///		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
-///			out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
-
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 		{
-			//if (i_plane_data.physical_space_data[i] == std::complex<double>(0))
-			//	out.physical_space_data[i] = 0;
-			//else
-				out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
+			out.physical_space_data[i] = physical_space_data[i]/i_plane_data.physical_space_data[i];
 		}
 
 		return out;
@@ -437,45 +471,6 @@ public:
 	}
 
 
-
-public:
-	void setup(
-			const PlaneDataConfig *i_planeDataConfig
-	)
-	{
-		planeDataConfig = i_planeDataConfig;
-
-		physical_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
-	}
-
-
-
-public:
-	void setup_if_required(
-			const PlaneDataConfig *i_planeDataConfig
-	)
-	{
-		if (planeDataConfig != nullptr)
-		{
-			assert(physical_space_data != nullptr);
-			return;
-		}
-
-		planeDataConfig = i_planeDataConfig;
-		physical_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
-	}
-
-
-
-public:
-	~PlaneData_PhysicalComplex()
-	{
-		if (physical_space_data != nullptr)
-			MemBlockAlloc::free(physical_space_data, planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
-	}
-
-
-
 	void physical_update_lambda_array_indices(
 			std::function<void(int,int,std::complex<double>&)> i_lambda,	///< lambda function to return value for lat/mu
 			bool i_anti_aliasing = true
@@ -529,8 +524,6 @@ public:
 	}
 
 
-
-
 	/*
 	 * Set all values to zero
 	 */
@@ -540,7 +533,6 @@ public:
 		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
 			physical_space_data[i] = 0;
 	}
-
 
 
 	/*
@@ -570,7 +562,6 @@ public:
 			physical_space_data[i].imag(i_value_imag);
 		}
 	}
-
 
 
 	/*

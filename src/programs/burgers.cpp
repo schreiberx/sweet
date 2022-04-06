@@ -426,8 +426,6 @@ public:
 			output_filenames += write_file(u_phys, "prog_u");
 			//write_file(tmp_v, "prog_v");
 
-////			tmp_u.request_data_spectral();
-
 			char buffer[1024];
 			const char* filename_template = simVars.iodata.output_file_name.c_str();
 			sprintf(buffer,filename_template,"prog_u_amp_phase",simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
@@ -454,7 +452,6 @@ public:
 
 				PlaneData_Spectral tmp_spec(planeDataConfig);
 				tmp_spec.loadPlaneDataPhysical(tmp);
-/////				tmp.request_data_spectral();
 
 				char buffer[1024];
 				const char* filename_template = simVars.iodata.output_file_name.c_str();

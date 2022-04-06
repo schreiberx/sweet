@@ -56,8 +56,6 @@
 
 class PlaneData_Spectral
 {
-	///friend class PlaneData_Physical;
-
 	typedef std::complex<double> Tcomplex;
 
 public:
@@ -301,7 +299,6 @@ public:
 				for (std::size_t jj = planeDataConfig->spectral_data_iteration_ranges[0][1][1]; jj < planeDataConfig->spectral_data_iteration_ranges[1][1][0]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][0]; ii < planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii++)
 					{
-						//std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
 						std::complex<double> &data = spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)];
 
 						double error = std::sqrt(data.real()*data.real() + data.imag()*data.imag());
@@ -322,7 +319,6 @@ public:
 				for (std::size_t jj = 0; jj < planeDataConfig->spectral_data_size[1]; jj++)
 					for (std::size_t ii = planeDataConfig->spectral_data_iteration_ranges[0][0][1]; ii < planeDataConfig->spectral_data_size[0]; ii++)
 					{
-						//std::complex<double> &data = spectral_space_data[jj*planeDataConfig->spectral_data_size[0]+ii];
 						std::complex<double> &data = spectral_space_data[planeDataConfig->getArrayIndexByModes(jj, ii)];
 
 						double error = std::sqrt(data.real()*data.real() + data.imag()*data.imag());
@@ -631,7 +627,7 @@ public:
 	)
 	{
 		/**
-		 * Warning: The sphat_to_SH function is an in-situ operation.
+		 * Warning: The fftw functions are in-situ operations.
 		 * Therefore, the data in the source array will be destroyed.
 		 * Hence, we create a copy
 		 */
@@ -685,7 +681,7 @@ public:
 
 		/*
 		 * WARNING:
-		 * We have to use a temporary array here because of destructive SH transformations
+		 * We have to use a temporary array here because of destructive FFTW transformations
 		 */
 		PlaneData_Spectral tmp_spectral(*this);
 		PlaneData_Physical tmp_physical(planeDataConfig);
@@ -705,6 +701,71 @@ public:
 		setup(i_plane_data_physical.planeDataConfig);
 
 		loadPlaneDataPhysical(i_plane_data_physical);
+	}
+
+
+
+
+
+public:
+	void setup(
+		const PlaneDataConfig *i_planeDataConfig
+	)
+	{
+		planeDataConfig = i_planeDataConfig;
+		alloc_data();
+	}
+
+
+public:
+	void setup(
+		const PlaneDataConfig *i_planeDataConfig,
+		double i_value
+	)
+	{
+		planeDataConfig = i_planeDataConfig;
+		alloc_data();
+		spectral_set_value(i_value);
+	}
+
+
+private:
+	void alloc_data()
+	{
+		assert(spectral_space_data == nullptr);
+		spectral_space_data = MemBlockAlloc::alloc<Tcomplex>(planeDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
+	}
+
+
+public:
+	void setup_if_required(
+		const PlaneDataConfig *i_planeDataConfig
+	)
+	{
+		if (planeDataConfig != nullptr)
+			return;
+
+		setup(i_planeDataConfig);
+	}
+
+
+public:
+	void free()
+	{
+		if (spectral_space_data != nullptr)
+		{
+			MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
+			spectral_space_data = nullptr;
+
+			planeDataConfig = nullptr;
+		}
+	}
+
+
+public:
+	~PlaneData_Spectral()
+	{
+		free();
 	}
 
 
@@ -881,7 +942,6 @@ public:
 	}
 
 
-
 	PlaneData_Spectral operator*(
 			double i_value
 	)	const
@@ -898,8 +958,6 @@ public:
 	}
 
 
-
-
 	const PlaneData_Spectral& operator*=(
 			double i_value
 	)	const
@@ -910,8 +968,6 @@ public:
 
 		return *this;
 	}
-
-
 
 
 	const PlaneData_Spectral& operator/=(
@@ -926,9 +982,6 @@ public:
 	}
 
 
-
-
-
 	const PlaneData_Spectral& operator*=(
 			const std::complex<double> &i_value
 	)	const
@@ -939,7 +992,6 @@ public:
 
 		return *this;
 	}
-
 
 
 	PlaneData_Spectral operator/(
@@ -963,9 +1015,6 @@ public:
 	)	const
 	{
 		PlaneData_Spectral out(*this);
-		//SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		//for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
-		//	out.spectral_space_data[idx] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 
 		out.spectral_space_data[0] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 		out.spectral_zeroAliasingModes();
@@ -988,20 +1037,14 @@ public:
 	}
 
 
-
 	const PlaneData_Spectral& operator+=(
 			double i_value
 	)	const
 	{
-		//SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		//for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
-		//	spectral_space_data[idx] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 		spectral_space_data[0] += i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 
 		return *this;
 	}
-
-
 
 
 	PlaneData_Spectral operator-(
@@ -1009,16 +1052,12 @@ public:
 	)	const
 	{
 		PlaneData_Spectral out(*this);
-		//SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
-		//for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
-		//	out.spectral_space_data[idx] -= i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 		out.spectral_space_data[0] -= i_value * (double)planeDataConfig->physical_array_data_number_of_elements;
 
 		out.spectral_zeroAliasingModes();
 
 		return out;
 	}
-
 
 
 	PlaneData_Spectral& operator-=(
@@ -1054,6 +1093,7 @@ public:
 
 		return out;
 	}
+
 
 	/**
 	 * Invert the application of a linear operator in spectral space.
@@ -1100,72 +1140,6 @@ public:
 		out.spectral_zeroAliasingModes();
 
 		return out;
-	}
-
-
-
-
-public:
-	void setup(
-		const PlaneDataConfig *i_planeDataConfig
-	)
-	{
-		planeDataConfig = i_planeDataConfig;
-		alloc_data();
-	}
-
-
-public:
-	void setup(
-		const PlaneDataConfig *i_planeDataConfig,
-		double i_value
-	)
-	{
-		planeDataConfig = i_planeDataConfig;
-		alloc_data();
-		spectral_set_value(i_value);
-	}
-
-
-private:
-	void alloc_data()
-	{
-		assert(spectral_space_data == nullptr);
-		spectral_space_data = MemBlockAlloc::alloc<Tcomplex>(planeDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
-	}
-
-
-public:
-	void setup_if_required(
-		const PlaneDataConfig *i_planeDataConfig
-	)
-	{
-		if (planeDataConfig != nullptr)
-			return;
-
-		setup(i_planeDataConfig);
-	}
-
-
-
-public:
-	void free()
-	{
-		if (spectral_space_data != nullptr)
-		{
-			MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
-			spectral_space_data = nullptr;
-
-			planeDataConfig = nullptr;
-		}
-	}
-
-
-
-public:
-	~PlaneData_Spectral()
-	{
-		free();
 	}
 
 
@@ -1241,8 +1215,6 @@ public:
 
 		planeDataConfig->fft_spectral_to_physical(this->spectral_space_data, tmp.physical_space_data);
 		planeDataConfig->fft_physical_to_spectral(tmp.physical_space_data, this->spectral_space_data);
-		//SH_to_spat(planeDataConfig->shtns, spectral_space_data, tmp.physical_space_data);
-		//spat_to_SH(planeDataConfig->shtns, tmp.physical_space_data, spectral_space_data);
 
 		return *this;
 	}
@@ -1255,41 +1227,7 @@ public:
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 					i_lambda(jj, ii, spectral_space_data[idx]);
 				)
-
-////		SWEET_THREADING_SPACE_PARALLEL_FOR
-////		for (int m = 0; m <= planeDataConfig->spectral_data_size[] m++)
-////		{
-////			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
-////			for (int n = m; n <= planeDataConfig->spectral_data_size[0] n++)
-////			{
-////				i_lambda(n, m, spectral_space_data[idx]);
-////				idx++;
-////			}
-////		}
 	}
-
-///////////	const std::complex<double>& spectral_get_DEPRECATED(
-///////////			int i_n,
-///////////			int i_m
-///////////	)	const
-///////////	{
-///////////		static const std::complex<double> zero = {0,0};
-///////////
-///////////		if (i_n < 0 ||  i_m < 0)
-///////////			return zero;
-///////////
-///////////		if (i_n > planeDataConfig->spectral_data_size[1])
-///////////			return zero;
-///////////
-///////////		if (i_m > planeDataConfig->spectral_data_size[0])
-///////////			return zero;
-///////////
-///////////		if (i_m > i_n)
-///////////			return zero;
-///////////
-///////////		assert (i_m <= planeDataConfig->spectral_data_size[0]);
-///////////		return spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)];
-///////////	}
 
 
 	const std::complex<double>& spectral_get(
@@ -1304,7 +1242,6 @@ public:
 
 		return spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)];
 	}
-
 
 
 	void spectral_set(
@@ -1322,11 +1259,6 @@ public:
 
 		if (i_n > (int)planeDataConfig->spectral_data_size[1])
 			SWEETError("Out of boundary c");
-
-		////if (i_m > i_n)
-		////	SWEETError("Out of boundary d");
-
-		////assert (i_m <= (int)planeDataConfig->spectral_data_size[1]);
 #endif
 
 		spectral_space_data[planeDataConfig->getArrayIndexByModes(i_n, i_m)] = i_data;
@@ -1342,8 +1274,6 @@ public:
 		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
 			spectral_space_data[i] = {0,0};
 	}
-
-
 
 
 	/*
@@ -1367,8 +1297,6 @@ public:
 	{
 		this->spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
 	}
-
-
 
 	/**
 	 * return the maximum of all absolute values, use quad precision for reduction
@@ -1730,9 +1658,7 @@ public:
 				if (value.real()*value.real()+value.imag()*value.imag() > 1.0e-13)
 					std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")" <<std::endl;;
 			}
-			//std::cout << std::endl;
 		}
-		//std::cout << std::endl;
 	}
 
 
@@ -1907,7 +1833,6 @@ public:
   		std::complex<double> w = {0,0};
 		double wphase = 0.0;
 		
-		//std::cout << "n" << " " << "m" << " " << "norm" <<std::endl;
 		file << i_time << "\t";
   		for (std::size_t m = 0; m <= planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
   		{
@@ -1917,9 +1842,7 @@ public:
   				w = spectral_space_data[idx];
 				wphase = std::arg(w); // std::abs(w * std::conj(w));
 				
-				//file << "(" << n << "," << m << ")\t"<<std::endl;
 				file <<  wphase << "\t"; //<<std::endl;;
-				//std::cout << n << " " << m << " " << wabs <<std::endl;
 				
 				idx++;
   			}
@@ -2234,30 +2157,6 @@ public:
 	}
 
 
-////public:
-////	template <int S>
-////	void kernel_stencil_setup(
-////			const double i_kernel_array[S][S],
-////			double i_scale = 1.0
-////	)
-////	{
-////		((PlaneData_Kernels&)*this).kernel_stencil_setup(
-////				i_kernel_array,
-////				i_scale,
-////
-////				planeDataConfig,
-////				spectral_space_data
-////		);
-////
-///////////#if SWEET_USE_PLANE_SPECTRAL_SPACE
-///////////		physical_space_data_valid = true;
-///////////		spectral_space_data_valid = false;
-///////////
-///////////		request_data_spectral();
-///////////#endif
-////	}
-
-
 	/**
 	 * Apply a linear operator given by this class to the input data array.
 	 */
@@ -2276,8 +2175,6 @@ public:
 
 		return out;
 	}
-
-
 
 
 };

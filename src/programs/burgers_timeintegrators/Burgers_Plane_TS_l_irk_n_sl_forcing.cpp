@@ -78,8 +78,6 @@ void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
 			f
 		);
 
-	///f.request_data_spectral();
-
 	// Setting explicit right hand side and operator of the left hand side
 	PlaneData_Spectral rhs_u = u;
 	PlaneData_Spectral rhs_v = v;
