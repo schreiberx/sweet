@@ -43,9 +43,9 @@
  *
  */
 void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -65,9 +65,9 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	}
 
 	// Out vars
-	PlaneData h(io_h.planeDataConfig);
-	PlaneData u(io_h.planeDataConfig);
-	PlaneData v(io_h.planeDataConfig);
+	PlaneData_Spectral h(io_h.planeDataConfig);
+	PlaneData_Spectral u(io_h.planeDataConfig);
+	PlaneData_Spectral v(io_h.planeDataConfig);
 
 	// Departure points and arrival points
 	ScalarDataArray posx_d = posx_a;
@@ -89,8 +89,8 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 	// Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			u_prev,	v_prev,
-			io_u,		io_v,
+			u_prev.toPhys(),	v_prev.toPhys(),
+			io_u.toPhys(),		io_v.toPhys(),
 			posx_a,	posy_a,
 			dt,
 			posx_d,	posy_d,
@@ -105,10 +105,10 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 
 	// Calculate Divergence and vorticity spectrally
-	PlaneData div = op.diff_c_x(io_u) + op.diff_c_y(io_v);
+	PlaneData_Spectral div = op.diff_c_x(io_u) + op.diff_c_y(io_v);
 
 	// This could be pre-stored
-	PlaneData div_prev = op.diff_c_x(u_prev) + op.diff_c_y(v_prev);
+	PlaneData_Spectral div_prev = op.diff_c_x(u_prev) + op.diff_c_y(v_prev);
 
 	/**
 	 * Calculate the RHS
@@ -121,27 +121,25 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	 * 
 	 *    = 1/2 * dt (2.0/dt U + L U + 2.0 * N(U))
 	 */
-	PlaneData rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
-	PlaneData rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
-	PlaneData rhs_h = alpha * io_h - h_bar * div;
+	PlaneData_Spectral rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
+	PlaneData_Spectral rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
+	PlaneData_Spectral rhs_h = alpha * io_h - h_bar * div;
 
 	// All the RHS are to be evaluated at the departure points
-	rhs_u = sampler2D.bicubic_scalar(rhs_u, posx_d, posy_d, -0.5, -0.5);
-	rhs_v = sampler2D.bicubic_scalar(rhs_v, posx_d, posy_d, -0.5, -0.5);
-	rhs_h = sampler2D.bicubic_scalar(rhs_h, posx_d, posy_d, -0.5, -0.5);
-
-	// Get data in spectral space
-	rhs_u.request_data_spectral();
-	rhs_v.request_data_spectral();
-	rhs_h.request_data_spectral();
+	PlaneData_Physical rhs_u_phys = rhs_u.toPhys();
+	PlaneData_Physical rhs_v_phys = rhs_v.toPhys();
+	PlaneData_Physical rhs_h_phys = rhs_h.toPhys();
+	rhs_u = sampler2D.bicubic_scalar(rhs_u_phys, posx_d, posy_d, -0.5, -0.5);
+	rhs_v = sampler2D.bicubic_scalar(rhs_v_phys, posx_d, posy_d, -0.5, -0.5);
+	rhs_h = sampler2D.bicubic_scalar(rhs_h_phys, posx_d, posy_d, -0.5, -0.5);
 
 	// Calculate nonlinear term at half timestep and add to RHS of h eq.
 
 	if (!use_only_linear_divergence) //full nonlinear case
 	{
 		// Extrapolation
-		PlaneData hdiv = 2.0 * io_h * div - h_prev * div_prev;
-		PlaneData nonlin(io_h.planeDataConfig);
+		PlaneData_Spectral hdiv = 2.0 * io_h * div - h_prev * div_prev;
+		PlaneData_Spectral nonlin(io_h.planeDataConfig);
 		if(simVars.misc.use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -152,18 +150,19 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 #endif
 		}
 		// Average
-		nonlin = 0.5*(io_h*div) + 0.5*sampler2D.bicubic_scalar(hdiv, posx_d, posy_d, -0.5, -0.5);
+	        PlaneData_Physical hdiv_phys = hdiv.toPhys();
+		nonlin = 0.5*(io_h*div) + 0.5*sampler2D.bicubic_scalar(hdiv_phys, posx_d, posy_d, -0.5, -0.5);
 
 		// Add to RHS h (TODO (2020-03-16): No clue why there's a -2.0)
 		rhs_h = rhs_h - 2.0*nonlin;
-		rhs_h.request_data_spectral();
+
 	}
 
 
 	// Build Helmholtz eq.
-	PlaneData rhs_div = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
-	PlaneData rhs_vort = op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
-	PlaneData rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
+	PlaneData_Spectral rhs_div = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
+	PlaneData_Spectral rhs_vort = op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
+	PlaneData_Spectral rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
 
 	// Helmholtz solver
 	helmholtz_spectral_solver(kappa, g*h_bar, rhs, h);
@@ -180,7 +179,6 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 					+ g * f0 * op.diff_c_x(h)
 					- g * alpha * op.diff_c_y(h))
 					;
-
 
 	// Set time (n) as time (n-1)
 	h_prev = io_h;
@@ -214,7 +212,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
-	PlaneData tmp_x(op.planeDataConfig);
+	PlaneData_Physical tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -222,7 +220,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 			},
 			false
 	);
-	PlaneData tmp_y(op.planeDataConfig);
+	PlaneData_Physical tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -231,9 +229,9 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 			false
 	);
 
-	//pectral  Initialize arrival points with h position
-	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+	//Initialize arrival points with h position
+	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];

@@ -9,19 +9,19 @@
 #define SRC_PROGRAMS_BURGERS_PLANE_TS_LN_IMEX_FORCING_HPP_
 
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <complex>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 
 #include <cmath>
 
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectral_to_PlaneDataSpectralComplex.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectralComplex_to_PlaneDataSpectral.hpp>
 
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
@@ -49,10 +49,10 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
-			PlaneData &io_u_prev,	///< prognostic variables
-			PlaneData &io_v_prev,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_u_prev,	///< prognostic variables
+			PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1

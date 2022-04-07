@@ -12,7 +12,7 @@
 
 #include "../swe_plane_timeintegrators/SWE_Plane_TS_l_cn.hpp"
 
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
+///#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 
 /*
  * This is a Crank-Nicolson scheme for linear equation
@@ -38,9 +38,9 @@
  */
 
 void SWE_Plane_TS_l_cn::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -50,9 +50,9 @@ void SWE_Plane_TS_l_cn::run_timestep(
 		SWEETError("SWE_Plane_TS_l_cn: Only constant time step size allowed (Please set --dt)");
 
 
-	PlaneData h_linear_t1 = io_h;
-	PlaneData u_linear_t1 = io_u;
-	PlaneData v_linear_t1 = io_v;
+	PlaneData_Spectral h_linear_t1 = io_h;
+	PlaneData_Spectral u_linear_t1 = io_u;
+	PlaneData_Spectral v_linear_t1 = io_v;
 
 	ts_l_erk.run_timestep(
 			io_h,

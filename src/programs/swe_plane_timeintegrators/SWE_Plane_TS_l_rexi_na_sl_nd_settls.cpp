@@ -14,9 +14,9 @@
 
 
 void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
-		PlaneData &io_h,	///< prognostic variables - perturbation of height!
-		PlaneData &io_u,	///< prognostic variables - zonal velocity
-		PlaneData &io_v,	///< prognostic variables - meridional velocity
+		PlaneData_Spectral &io_h,	///< prognostic variables - perturbation of height!
+		PlaneData_Spectral &io_u,	///< prognostic variables - zonal velocity
+		PlaneData_Spectral &io_v,	///< prognostic variables - meridional velocity
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -28,17 +28,17 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 	//Out vars
-	PlaneData h(io_h.planeDataConfig);
-	PlaneData u(io_h.planeDataConfig);
-	PlaneData v(io_h.planeDataConfig);
+	PlaneData_Spectral h(io_h.planeDataConfig);
+	PlaneData_Spectral u(io_h.planeDataConfig);
+	PlaneData_Spectral v(io_h.planeDataConfig);
 
 	//Temporary
-	PlaneData N_h(io_h.planeDataConfig);
-	PlaneData N_u(io_h.planeDataConfig);
-	PlaneData N_v(io_h.planeDataConfig);
-	PlaneData hdiv(io_h.planeDataConfig);
-	PlaneData N_h_prev(io_h.planeDataConfig);
-	PlaneData N_h_ext(io_h.planeDataConfig);
+	PlaneData_Spectral N_h(io_h.planeDataConfig);
+	PlaneData_Spectral N_u(io_h.planeDataConfig);
+	PlaneData_Spectral N_v(io_h.planeDataConfig);
+	PlaneData_Spectral hdiv(io_h.planeDataConfig);
+	PlaneData_Spectral N_h_prev(io_h.planeDataConfig);
+	PlaneData_Spectral N_h_ext(io_h.planeDataConfig);
 
 	// Departure points
 	ScalarDataArray posx_d(io_h.planeDataConfig->physical_array_data_number_of_elements);
@@ -68,8 +68,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	// Calculate departure points
 	//Calculate departure points - always force to be second order accurate!
 	semiLagrangian.semi_lag_departure_points_settls(
-			u_prev,	v_prev,
-			u,		v,
+			u_prev.toPhys(),	v_prev.toPhys(),
+			u.toPhys(),		v.toPhys(),
 			posx_a,		posy_a,
 			dt,
 			posx_d,	posy_d,			// output
@@ -81,12 +81,12 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 			simVars.disc.semi_lagrangian_convergence_threshold
 	);
 
-	N_u.physical_set_all(0);
-	N_v.physical_set_all(0);
-	N_h.physical_set_all(0);
-	N_h_prev.physical_set_all(0);
-	N_h_ext.physical_set_all(0);
-	hdiv.physical_set_all(0);
+	N_u.spectral_set_zero();
+	N_v.spectral_set_zero();
+	N_h.spectral_set_zero();
+	N_h_prev.spectral_set_zero();
+	N_h_ext.spectral_set_zero();
+	hdiv.spectral_set_zero();
 
 	//Original more stable scheme
 
@@ -149,9 +149,9 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	 * Calculate the exp(Ldt) of the resulting u,v,h
 	 */
 	//Calculate phi_0 of interpolated U
-	PlaneData phi0_Un_h(planeDataConfig);
-	PlaneData phi0_Un_u(planeDataConfig);
-	PlaneData phi0_Un_v(planeDataConfig);
+	PlaneData_Spectral phi0_Un_h(planeDataConfig);
+	PlaneData_Spectral phi0_Un_u(planeDataConfig);
+	PlaneData_Spectral phi0_Un_v(planeDataConfig);
 	//ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
 	ts_l_rexi.run_timestep(
 			h, u, v,
@@ -200,7 +200,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
 
 
-	PlaneData tmp_x(op.planeDataConfig);
+	PlaneData_Physical tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -209,7 +209,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 			false
 	);
 
-	PlaneData tmp_y(op.planeDataConfig);
+	PlaneData_Physical tmp_y(op.planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
@@ -219,8 +219,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 	);
 
 	// Initialize arrival points with h position
-	ScalarDataArray pos_x = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_x);
-	ScalarDataArray pos_y = Convert_PlaneData_To_ScalarDataArray::physical_convert(tmp_y);
+	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
+	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 
 	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];

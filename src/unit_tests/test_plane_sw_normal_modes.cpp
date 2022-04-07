@@ -16,7 +16,7 @@
 #endif
 
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "test_plane_sw_normal_modes/SWE_Plane_Normal_Modes.hpp"
@@ -67,9 +67,9 @@ int main(
 	std::cout << "*************************************************************" << std::endl;
 	std::cout << std::endl;
 
-	PlaneData h(planeDataConfig);
-	PlaneData u(planeDataConfig);
-	PlaneData v(planeDataConfig);
+	PlaneData_Spectral h(planeDataConfig);
+	PlaneData_Spectral u(planeDataConfig);
+	PlaneData_Spectral v(planeDataConfig);
 
 	//Normal modes to be generated
 	double geo_mode=1.0;
@@ -112,9 +112,9 @@ int main(
 	//std::cout<< "Projecting fields on wavenumber (" << ik0 << ","<< ik1<<") to normal modes"<< std::endl;
 	std::cout<< "\n\n Extracting Normal Modes:"<< std::endl;
 
-	PlaneData geo(planeDataConfig);
-	PlaneData igwest(planeDataConfig);
-	PlaneData igeast(planeDataConfig);
+	PlaneData_Spectral geo(planeDataConfig);
+	PlaneData_Spectral igwest(planeDataConfig);
+	PlaneData_Spectral igeast(planeDataConfig);
 	complex geo_mode_c;
 	complex igwest_mode_c;
 	complex igeast_mode_c;
@@ -134,9 +134,9 @@ int main(
 		for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]/2; ik0++)
 		{
 			std::cout<< "From wavenumber (" << ik0 << ","<< ik1<<"):";
-			geo_mode_c = geo.p_spectral_get(ik1, ik0);
-			igwest_mode_c = igwest.p_spectral_get(ik1, ik0);
-			igeast_mode_c = igeast.p_spectral_get(ik1, ik0);
+			geo_mode_c = geo.spectral_get(ik1, ik0);
+			igwest_mode_c = igwest.spectral_get(ik1, ik0);
+			igeast_mode_c = igeast.spectral_get(ik1, ik0);
 
 			std::cout<< " Geost: "<< geo_mode_c;
 			std::cout<< " IGWest: "<< igwest_mode_c;

@@ -10,10 +10,10 @@
 
 
 void Burgers_Plane_TS_ln_adomian::run_timestep(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
-		PlaneData &io_u_prev,	///< prognostic variables
-		PlaneData &io_v_prev,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -23,23 +23,23 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 		SWEETError("Burgers_Plane_TS_ln_adomian: Only constant time step size allowed");
 
 	// setup dummy data
-	PlaneData tmp(io_u.planeDataConfig);
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	PlaneData_Spectral tmp(io_u.planeDataConfig);
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	tmp.spectral_set_zero();
-#endif
-	tmp.physical_set_zero();
+//#endif
+//	tmp.physical_set_zero();
 	/*
 	 * Applying the Adomian decomposition method. Using up to timestepping_order Adomian polynomials
 	 */
 
 	//TODO: implement this correctly
-	if (op.diff_c_y(io_u).reduce_maxAbs()>1e-11)
+	if (op.diff_c_y(io_u).spectral_reduce_max_abs()>1e-11)
 		SWEETError("The Adomian decomposition method is implemented in 1D only!");
 
-	std::vector<PlaneData> u;
-	u.resize(timestepping_order+1,PlaneData(io_u.planeDataConfig));
-	std::vector<PlaneData> A;
-	A.resize(timestepping_order+1,PlaneData(io_u.planeDataConfig));
+	std::vector<PlaneData_Spectral> u;
+	u.resize(timestepping_order+1,PlaneData_Spectral(io_u.planeDataConfig));
+	std::vector<PlaneData_Spectral> A;
+	A.resize(timestepping_order+1,PlaneData_Spectral(io_u.planeDataConfig));
 
 	//Forward differencing uses dt
 	double time = i_fixed_dt;
@@ -72,7 +72,7 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 
 		io_u=io_u+u[kk+1];
 
-		if(u[kk+1].reduce_rms() < 1e-12)
+		if(u[kk+1].toPhys().physical_reduce_rms() < 1e-12)
 			break;
 	}
 }

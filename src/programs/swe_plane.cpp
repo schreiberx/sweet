@@ -21,14 +21,16 @@
 
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+////#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataGridMapping.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
+//#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+//#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/SWEETError.hpp>
 #include <ostream>
@@ -81,19 +83,19 @@ public:
 	// h: surface height (perturbation)
 	// u: velocity in x-direction
 	// v: velocity in y-direction
-	PlaneData prog_h_pert, prog_u, prog_v;
+	PlaneData_Spectral prog_h_pert, prog_u, prog_v;
 
 
 #if SWEET_GUI
 	//visualization variable
-	PlaneData vis;
+	PlaneData_Physical vis;
 #endif
 
 	// Initial values for comparison with analytical solution
-	PlaneData t0_prog_h_pert, t0_prog_u, t0_prog_v;
+	PlaneData_Spectral t0_prog_h_pert, t0_prog_u, t0_prog_v;
 
 	// Forcings
-	PlaneData force_h_pert, force_u, force_v;
+	PlaneData_Spectral force_h_pert, force_u, force_v;
 
 	PlaneDataGridMapping gridMapping;
 
@@ -138,9 +140,9 @@ public:
 		// Diagnostic information about the projection to 
 		//    the linear normal wave mode eigenspace (see SWE_bench_NormalModes.hpp)
 		
-		PlaneData geo;    //Coefficients multiplying geostrophic mode
-		PlaneData igwest; //Coefficients multiplying west gravity mode
-		PlaneData igeast; //Coefficients multiplying east gravity mode
+		PlaneData_Spectral geo;    //Coefficients multiplying geostrophic mode
+		PlaneData_Spectral igwest; //Coefficients multiplying west gravity mode
+		PlaneData_Spectral igeast; //Coefficients multiplying east gravity mode
 		double norm_spec;
 		
 	public:
@@ -251,15 +253,15 @@ public:
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_h_pert.spectral_set_all(0, 0);
-		prog_u.spectral_set_all(0, 0);
-		prog_v.spectral_set_all(0, 0);
+		prog_h_pert.spectral_set_value(std::complex<double>(0, 0));
+		prog_u.spectral_set_value(std::complex<double>(0, 0));
+		prog_v.spectral_set_value(std::complex<double>(0, 0));
 #endif
 
-		// Setup prog vars
-		prog_h_pert.physical_set_all(simVars.sim.h0);
-		prog_u.physical_set_all(0);
-		prog_v.physical_set_all(0);
+///		// Setup prog vars
+///		prog_h_pert.physical_set_value(simVars.sim.h0);
+///		prog_u.physical_set_value(0);
+///		prog_v.physical_set_value(0);
 
 		// Check if input parameters are adequate for this simulation
 		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
@@ -347,13 +349,13 @@ public:
 		
 		if (simVars.timecontrol.current_timestep_nr == 0){
 			//save the reference normalization parameter
-			std::cout << normalmodes.geo.reduce_rms_spec() << std::endl;
-			std::cout << normalmodes.igwest.reduce_rms_spec() << std::endl;
-			std::cout << normalmodes.igeast.reduce_rms_spec() << std::endl;
+			std::cout << normalmodes.geo.spectral_reduce_rms() << std::endl;
+			std::cout << normalmodes.igwest.spectral_reduce_rms() << std::endl;
+			std::cout << normalmodes.igeast.spectral_reduce_rms() << std::endl;
 
-			normalmodes.norm_spec = normalmodes.geo.reduce_sum_sq_spec()+
-				normalmodes.igwest.reduce_sum_sq_spec()+
-				normalmodes.igeast.reduce_sum_sq_spec();
+			normalmodes.norm_spec = normalmodes.geo.spectral_reduce_sum_sqr_quad()+
+				normalmodes.igwest.spectral_reduce_sum_sqr_quad()+
+				normalmodes.igeast.spectral_reduce_sum_sqr_quad();
 
 			normalmodes.norm_spec=std::sqrt(normalmodes.norm_spec);
 
@@ -486,15 +488,17 @@ public:
 	 * Write file to data and return string of file name
 	 */
 	std::string write_file(
-			const PlaneData &i_planeData,
+			const PlaneData_Spectral &i_planeData,
 			const char* i_name	///< name of output variable
 		)
 	{
 		char buffer[1024];
 
+		// TODO: convert spectral datato physical
+
 		const char* filename_template = simVars.iodata.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
-		i_planeData.file_physical_saveData_ascii(buffer);
+		i_planeData.toPhys().file_physical_saveData_ascii(buffer);
 		return buffer;
 	}
 
@@ -520,7 +524,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	std::string write_file_spec(
-			const PlaneData &i_planeData,
+			const PlaneData_Spectral &i_planeData,
 			const char* i_name	///< name of output variable
 		)
 	{
@@ -557,21 +561,21 @@ public:
 		 * We write everything in non-staggered output
 		 */
 		// For output, variables need to be on unstaggered A-grid
-		PlaneData t_h(planeDataConfig);
-		PlaneData t_u(planeDataConfig);
-		PlaneData t_v(planeDataConfig);
+		PlaneData_Physical t_h(planeDataConfig);
+		PlaneData_Physical t_u(planeDataConfig);
+		PlaneData_Physical t_v(planeDataConfig);
 
 		if (simVars.disc.space_grid_use_c_staggering) // Remap in case of C-grid
 		{
-			t_h = prog_h_pert;
-			gridMapping.mapCtoA_u(prog_u, t_u);
-			gridMapping.mapCtoA_v(prog_v, t_v);
+			t_h = prog_h_pert.toPhys();
+			gridMapping.mapCtoA_u(prog_u.toPhys(), t_u);
+			gridMapping.mapCtoA_v(prog_v.toPhys(), t_v);
 		}
 		else
 		{
-			t_h = prog_h_pert;
-			t_u = prog_u;
-			t_v = prog_v;
+			t_h = prog_h_pert.toPhys();
+			t_u = prog_u.toPhys();
+			t_v = prog_v.toPhys();
 		}
 
 		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
@@ -674,7 +678,7 @@ public:
 				if (simVars.timecontrol.current_timestep_nr == 0)
 					header << "\tNM_GEO_RMS\tNM_IGWEST_RMS\tNM_IGEAST_RMS";
 
-				rows << "\t" << normalmodes.geo.reduce_rms() << "\t" << normalmodes.igwest.reduce_rms_spec() << "\t" << normalmodes.igeast.reduce_rms_spec();
+				rows << "\t" << normalmodes.geo.spectral_reduce_rms() << "\t" << normalmodes.igwest.spectral_reduce_rms() << "\t" << normalmodes.igeast.spectral_reduce_rms();
 
 				//Dump to file all normal mode evolution
 				dump_normal_modes();
@@ -730,18 +734,18 @@ public:
 			 */
 			if (compute_error_difference_to_initial_condition)
 			{
-				benchmark.t0_error_max_abs_h_pert = (prog_h_pert - t0_prog_h_pert).reduce_maxAbs();
-				benchmark.t0_error_max_abs_u = (prog_u - t0_prog_u).reduce_maxAbs();
-				benchmark.t0_error_max_abs_v = (prog_v - t0_prog_v).reduce_maxAbs();
+				benchmark.t0_error_max_abs_h_pert = (prog_h_pert - t0_prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmark.t0_error_max_abs_u = (prog_u - t0_prog_u).toPhys().physical_reduce_max_abs();
+				benchmark.t0_error_max_abs_v = (prog_v - t0_prog_v).toPhys().physical_reduce_max_abs();
 			}
 
 			// Calculate linear exact solution, if compute error requests
 			if (compute_error_to_analytical_solution)
 			{
 				// Analytical solution at specific time on A-grid
-				PlaneData ts_h_pert = t0_prog_h_pert;
-				PlaneData ts_u = t0_prog_u;
-				PlaneData ts_v = t0_prog_v;
+				PlaneData_Spectral ts_h_pert = t0_prog_h_pert;
+				PlaneData_Spectral ts_u = t0_prog_u;
+				PlaneData_Spectral ts_v = t0_prog_v;
 
 				// Run exact solution for linear case
 				timeSteppers.l_direct->run_timestep(
@@ -750,13 +754,13 @@ public:
 						0				// initial condition given at time 0
 				);
 
-				benchmark.analytical_error_rms_h = (ts_h_pert-prog_h_pert).reduce_rms_quad();
-				benchmark.analytical_error_rms_u = (ts_u-prog_u).reduce_rms_quad();
-				benchmark.analytical_error_rms_v = (ts_v-prog_v).reduce_rms_quad();
+				benchmark.analytical_error_rms_h = (ts_h_pert-prog_h_pert).toPhys().physical_reduce_rms();
+				benchmark.analytical_error_rms_u = (ts_u-prog_u).toPhys().physical_reduce_rms();
+				benchmark.analytical_error_rms_v = (ts_v-prog_v).toPhys().physical_reduce_rms();
 
-				benchmark.analytical_error_maxabs_h = (ts_h_pert-prog_h_pert).reduce_maxAbs();
-				benchmark.analytical_error_maxabs_u = (ts_u-prog_u).reduce_maxAbs();
-				benchmark.analytical_error_maxabs_v = (ts_v-prog_v).reduce_maxAbs();
+				benchmark.analytical_error_maxabs_h = (ts_h_pert-prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmark.analytical_error_maxabs_u = (ts_u-prog_u).toPhys().physical_reduce_max_abs();
+				benchmark.analytical_error_maxabs_v = (ts_v-prog_v).toPhys().physical_reduce_max_abs();
 			}
 		}
 	}
@@ -797,7 +801,7 @@ public:
 
 	struct VisStuff
 	{
-		const PlaneData* data;
+		const PlaneData_Physical* data;
 		const char *description;
 	};
 
@@ -813,7 +817,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -825,9 +829,9 @@ public:
 		if (simVars.misc.vis_id < 0)
 		{
 			// Analytical solution at specific time on A-grid
-			PlaneData ts_h_pert = t0_prog_h_pert;
-			PlaneData ts_u = t0_prog_u;
-			PlaneData ts_v = t0_prog_v;
+			PlaneData_Physical ts_h_pert = t0_prog_h_pert;
+			PlaneData_Physical ts_u = t0_prog_u;
+			PlaneData_Physical ts_v = t0_prog_v;
 
 			if(simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
 			{
@@ -1008,9 +1012,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h_pert.reduce_boolean_all_finite() &&
-					prog_u.reduce_boolean_all_finite() &&
-					prog_v.reduce_boolean_all_finite()
+		return !(	prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 
@@ -1023,19 +1027,19 @@ public:
 	 ******************************************************
 	 ******************************************************/
 
-	PlaneData _parareal_data_start_h, _parareal_data_start_u, _parareal_data_start_v;
+	PlaneData_Spectral _parareal_data_start_h, _parareal_data_start_u, _parareal_data_start_v;
 	Parareal_Data_PlaneData<3> parareal_data_start;
 
-	PlaneData _parareal_data_fine_h, _parareal_data_fine_u, _parareal_data_fine_v;
+	PlaneData_Spectral _parareal_data_fine_h, _parareal_data_fine_u, _parareal_data_fine_v;
 	Parareal_Data_PlaneData<3> parareal_data_fine;
 
-	PlaneData _parareal_data_coarse_h, _parareal_data_coarse_u, _parareal_data_coarse_v;
+	PlaneData_Spectral _parareal_data_coarse_h, _parareal_data_coarse_u, _parareal_data_coarse_v;
 	Parareal_Data_PlaneData<3> parareal_data_coarse;
 
-	PlaneData _parareal_data_output_h, _parareal_data_output_u, _parareal_data_output_v;
+	PlaneData_Spectral _parareal_data_output_h, _parareal_data_output_u, _parareal_data_output_v;
 	Parareal_Data_PlaneData<3> parareal_data_output;
 
-	PlaneData _parareal_data_error_h, _parareal_data_error_u, _parareal_data_error_v;
+	PlaneData_Spectral _parareal_data_error_h, _parareal_data_error_u, _parareal_data_error_v;
 	Parareal_Data_PlaneData<3> parareal_data_error;
 
 	double timeframe_start = -1;
@@ -1046,27 +1050,27 @@ public:
 	void parareal_setup()
 	{
 		{
-			PlaneData* data_array[3] = {&_parareal_data_start_h, &_parareal_data_start_u, &_parareal_data_start_v};
+			PlaneData_Spectral* data_array[3] = {&_parareal_data_start_h, &_parareal_data_start_u, &_parareal_data_start_v};
 			parareal_data_start.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[3] = {&_parareal_data_fine_h, &_parareal_data_fine_u, &_parareal_data_fine_v};
+			PlaneData_Spectral* data_array[3] = {&_parareal_data_fine_h, &_parareal_data_fine_u, &_parareal_data_fine_v};
 			parareal_data_fine.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[3] = {&_parareal_data_coarse_h, &_parareal_data_coarse_u, &_parareal_data_coarse_v};
+			PlaneData_Spectral* data_array[3] = {&_parareal_data_coarse_h, &_parareal_data_coarse_u, &_parareal_data_coarse_v};
 			parareal_data_coarse.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
+			PlaneData_Spectral* data_array[3] = {&_parareal_data_output_h, &_parareal_data_output_u, &_parareal_data_output_v};
 			parareal_data_output.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[3] = {&_parareal_data_error_h, &_parareal_data_error_u, &_parareal_data_error_v};
+			PlaneData_Spectral* data_array[3] = {&_parareal_data_error_h, &_parareal_data_error_u, &_parareal_data_error_v};
 			parareal_data_error.setup(data_array);
 		}
 
@@ -1313,11 +1317,11 @@ public:
 
 		for (int k = 0; k < 3; k++)
 		{
-			PlaneData tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+			PlaneData_Spectral tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
 
 			convergence = std::max(
 					convergence,
-					(*parareal_data_output.data_arrays[k]-tmp).reduce_maxAbs()
+					(*parareal_data_output.data_arrays[k]-tmp).spectral_reduce_max_abs()
 				);
 
 			*parareal_data_output.data_arrays[k] = tmp;
@@ -1369,7 +1373,7 @@ public:
 
 		std::string filename = ss.str();
 
-		data.data_arrays[0]->file_physical_saveData_vtk(filename.c_str(), filename.c_str());
+		data.data_arrays[0]->toPhys().file_physical_saveData_vtk(filename.c_str(), filename.c_str());
 	}
 
 
@@ -1621,9 +1625,9 @@ int main(int i_argc, char *i_argv[])
 			 */
 			rexiSWE.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
 
-			PlaneData prog_h_pert(planeDataConfig);
-			PlaneData prog_u(planeDataConfig);
-			PlaneData prog_v(planeDataConfig);
+			PlaneData_Spectral prog_h_pert(planeDataConfig);
+			PlaneData_Spectral prog_u(planeDataConfig);
+			PlaneData_Spectral prog_v(planeDataConfig);
 
 			MPI_Barrier(MPI_COMM_WORLD);
 

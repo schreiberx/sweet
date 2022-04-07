@@ -9,7 +9,7 @@
 #define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
@@ -33,7 +33,7 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	PlaneData prog_h;
+	PlaneData_Spectral prog_h;
 
 	PlaneOperators op;
 
@@ -107,7 +107,9 @@ public:
 	{
 		simVars.reset();
 
-		prog_h.physical_update_lambda_array_indices(
+		PlaneData_Physical prog_h_phys(prog_h.planeDataConfig);
+
+		prog_h_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 			{
 				double x = (double)i*(simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0]);
@@ -116,6 +118,8 @@ public:
 				io_data = gaussianValue(center_x, center_y, x, y, exp_fac);
 			}
 		);
+
+		prog_h.loadPlaneDataPhysical(prog_h_phys);
 
 		posx_a.setup(planeDataConfigOversampling->physical_array_data_number_of_elements);
 		posy_a.setup(planeDataConfigOversampling->physical_array_data_number_of_elements);
@@ -160,7 +164,7 @@ public:
 		if (interpolation_order == 2)
 		{
 			planeDataSampler.bilinear_scalar(
-					prog_h,
+					prog_h.toPhys(),
 					posx_a,
 					posy_a,
 					out_data
@@ -169,7 +173,7 @@ public:
 		else if (interpolation_order == 3)
 		{
 			planeDataSampler.bicubic_scalar(
-					prog_h,
+					prog_h.toPhys(),
 					posx_a,
 					posy_a,
 					out_data
@@ -211,7 +215,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,

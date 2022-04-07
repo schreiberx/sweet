@@ -8,14 +8,14 @@
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_PHYSICAL_TO_PLANEDATA_HPP_
 #define SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATA_PHYSICAL_TO_PLANEDATA_HPP_
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/sphere/SphereData_Physical.hpp>
 
 class Convert_SphereDataPhysical_To_PlaneData
 {
 public:
 	static
-	PlaneData physical_convert(
+	PlaneData_Physical physical_convert(
 			const SphereData_Physical &i_sphereData,
 			PlaneDataConfig *i_planeDataConfig
 	)
@@ -24,7 +24,7 @@ public:
 		assert(i_sphereData.sphereDataConfig->physical_num_lat == (int)i_planeDataConfig->physical_res[1]);
 		assert(i_planeDataConfig->physical_array_data_number_of_elements == i_sphereData.sphereDataConfig->physical_array_data_number_of_elements);
 
-		PlaneData out(i_planeDataConfig);
+		PlaneData_Physical out(i_planeDataConfig);
 
 
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
@@ -41,10 +41,10 @@ public:
 				out.physical_space_data[(i_sphereData.sphereDataConfig->physical_num_lat-1-j)*i_sphereData.sphereDataConfig->physical_num_lon + i] = i_sphereData.physical_space_data[j*i_sphereData.sphereDataConfig->physical_num_lon + i];
 #endif
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		out.physical_space_data_valid = true;
-		out.spectral_space_data_valid = false;
-#endif
+///#if SWEET_USE_PLANE_SPECTRAL_SPACE
+///		out.physical_space_data_valid = true;
+///		out.spectral_space_data_valid = false;
+///#endif
 
 		return out;
 	}

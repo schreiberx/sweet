@@ -25,10 +25,11 @@
 
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 
 #include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
+#include <sweet/plane/Convert_ScalarDataArray_to_PlaneDataPhysical.hpp>
 
 #include "burgers_timeintegrators/Burgers_Plane_TimeSteppers.hpp"
 
@@ -68,18 +69,18 @@ public:
 	// Prognostic variables
 	// u: velocity in x-direction
 	// v: velocity in y-direction
-	PlaneData prog_u, prog_v;
+	PlaneData_Spectral prog_u, prog_v;
 
 	// Prognostic variables at time step t-dt
-	PlaneData prog_u_prev, prog_v_prev;
+	PlaneData_Spectral prog_u_prev, prog_v_prev;
 
 #if SWEET_GUI
 	// visualization variable
-	PlaneData vis;
+	PlaneData_Physical vis;
 #endif
 
 	// Initial values for comparison with analytical solution
-	PlaneData t0_prog_u, t0_prog_v;
+	PlaneData_Spectral t0_prog_u, t0_prog_v;
 
 	// implementation of different time steppers
 	Burgers_Plane_TimeSteppers timeSteppers;
@@ -194,16 +195,16 @@ public:
 		simVars.reset();
 
 		// set to some values for first touch NUMA policy (HPC stuff)
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_u.spectral_set_all(0,0);
-		prog_v.spectral_set_all(0,0);
-		prog_u_prev.spectral_set_all(0,0);
-		prog_v_prev.spectral_set_all(0,0);
-#endif
-		prog_u.physical_set_all(0);
-		prog_v.physical_set_all(0);
-		prog_u_prev.physical_set_all(0);
-		prog_v_prev.physical_set_all(0);
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		prog_u.spectral_set_zero();
+		prog_v.spectral_set_zero();
+		prog_u_prev.spectral_set_zero();
+		prog_v_prev.spectral_set_zero();
+////#endif
+////		prog_u.physical_set_all(0);
+////		prog_v.physical_set_all(0);
+////		prog_u_prev.physical_set_all(0);
+////		prog_v_prev.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
 		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
@@ -214,10 +215,13 @@ public:
 			SWEETError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
+		PlaneData_Physical u_phys(planeDataConfig);
+		PlaneData_Physical v_phys(planeDataConfig);
+
 		// Set initial conditions given from BurgersValidationBenchmarks
 		if (simVars.disc.space_grid_use_c_staggering)
 		{
-			prog_u.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
@@ -225,7 +229,7 @@ public:
 					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
 				}
 			);
-			prog_v.physical_update_lambda_array_indices(
+			v_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 				io_data = 0.0;
@@ -239,7 +243,7 @@ public:
 		}
 		else
 		{
-			prog_u.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
@@ -248,7 +252,7 @@ public:
 				}
 			);
 
-			prog_v.physical_update_lambda_array_indices(
+			v_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 				io_data = 0.0;
@@ -260,6 +264,9 @@ public:
 				}
 			);
 		}
+
+		prog_u.loadPlaneDataPhysical(u_phys);
+		prog_v.loadPlaneDataPhysical(v_phys);
 
 		// Initialize t-dt time step with initial condition
 		prog_u_prev = prog_u;
@@ -321,15 +328,15 @@ public:
 								((double)simVars.disc.space_res_physical[0]*(double)simVars.disc.space_res_physical[1]);
 
 		// Reduce amount of possible FFTs to minimize numerical error
-		PlaneData tmp_u = prog_u;
-		PlaneData tmp_v = prog_v;
+		PlaneData_Physical tmp_u = prog_u.toPhys();
+		PlaneData_Physical tmp_v = prog_v.toPhys();
 
 		// Energy
 		simVars.diag.total_energy =
 			0.5*((
 					tmp_u*tmp_u +
 					tmp_v*tmp_v
-				).reduce_sum_quad()) * normalization;
+				).physical_reduce_sum_quad()) * normalization;
 	}
 
 
@@ -380,7 +387,7 @@ public:
 	 * Write file to data and return string of file name
 	 */
 	std::string write_file(
-			const PlaneData &i_planeData,
+			const PlaneData_Physical &i_planeData,
 			const char* i_name	///< name of output variable
 		)
 	{
@@ -409,17 +416,15 @@ public:
 		if (simVars.iodata.output_next_sim_seconds-simVars.iodata.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
 			return false;
 
-		PlaneData tmp_u = prog_u;
-		PlaneData tmp_v = prog_v;
+		PlaneData_Physical u_phys = prog_u.toPhys();
+		PlaneData_Physical v_phys = prog_v.toPhys();
 
 		// Dump data in csv, if requested
 		if (simVars.iodata.output_file_name.size() > 0)
 		{
 			output_filenames = "";
-			output_filenames += write_file(tmp_u, "prog_u");
+			output_filenames += write_file(u_phys, "prog_u");
 			//write_file(tmp_v, "prog_v");
-
-			tmp_u.request_data_spectral();
 
 			char buffer[1024];
 			const char* filename_template = simVars.iodata.output_file_name.c_str();
@@ -430,7 +435,7 @@ public:
 
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
-				file << x << ", " << tmp_u.spectral_return_amplitude(0,x) << ", " << tmp_u.spectral_return_phase(0,x) << std::endl;
+				file << x << ", " << prog_u.spectral_return_amplitude(0,x) << ", " << prog_u.spectral_return_phase(0,x) << std::endl;
 			}
 			file.close();
 		}
@@ -440,12 +445,13 @@ public:
 			update_diagnostics();
 			if (simVars.misc.compute_errors)
 			{
-				PlaneData tmp(planeDataConfig);
-				tmp = compute_errors2(tmp_u,tmp_v);
+				PlaneData_Physical tmp(planeDataConfig);
+				tmp = compute_errors2(prog_u, prog_v).toPhys();
 
 				write_file(tmp, "analytical");
 
-				tmp.request_data_spectral();
+				PlaneData_Spectral tmp_spec(planeDataConfig);
+				tmp_spec.loadPlaneDataPhysical(tmp);
 
 				char buffer[1024];
 				const char* filename_template = simVars.iodata.output_file_name.c_str();
@@ -455,7 +461,7 @@ public:
 				file << std::setprecision(12);
 				for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 				{
-					file << x << ", " << tmp.spectral_return_amplitude(0,x) << ", " << tmp.spectral_return_phase(0,x) << std::endl;
+					file << x << ", " << tmp_spec.spectral_return_amplitude(0,x) << ", " << tmp_spec.spectral_return_phase(0,x) << std::endl;
 				}
 				file.close();
 			}
@@ -484,7 +490,7 @@ public:
 			{
 				if (simVars.timecontrol.current_timestep_nr == 0)
 					header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
-				rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << prog_u.reduce_max();
+				rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << prog_u.spectral_reduce_max_abs();
 			}
 
 			if (simVars.timecontrol.current_timestep_nr == 0)
@@ -515,17 +521,20 @@ public:
 
 public:
 	void compute_errors(
-         const PlaneData &i_planeData_u,
-         const PlaneData &i_planeData_v
+         const PlaneData_Spectral &i_planeData_u,
+         const PlaneData_Spectral &i_planeData_v
 	)
 	{
 		// Necessary to circumvent FFTW transformations on i_planeData_u and i_planeData_v, which would lead to errors
-		PlaneData u = i_planeData_u;
-		PlaneData v = i_planeData_v;
+		PlaneData_Physical u = i_planeData_u.toPhys();
+		PlaneData_Physical v = i_planeData_v.toPhys();
 
 		// Analytical solution at current time on original grid
-		PlaneData ts_u = t0_prog_u;
-		PlaneData ts_v = t0_prog_v;
+		PlaneData_Spectral ts_u = t0_prog_u;
+		PlaneData_Spectral ts_v = t0_prog_v;
+
+		PlaneData_Physical ts_u_phys = ts_u.toPhys();
+		PlaneData_Physical ts_v_phys = ts_v.toPhys();
 
 		if (simVars.misc.compute_errors)
 		{
@@ -534,7 +543,7 @@ public:
 			{
 				if (simVars.disc.space_grid_use_c_staggering)
 				{
-					ts_u.physical_update_lambda_array_indices(
+					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
@@ -543,7 +552,7 @@ public:
 						}
 					);
 
-					ts_v.physical_update_lambda_array_indices(
+					ts_v_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							io_data = 0.0;
@@ -557,7 +566,7 @@ public:
 				}
 				else
 				{
-					ts_u.physical_update_lambda_array_indices(
+					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
@@ -567,7 +576,7 @@ public:
 						}
 					);
 
-					ts_v.physical_update_lambda_array_indices(
+					ts_v_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							io_data = 0.0;
@@ -580,6 +589,8 @@ public:
 						}
 					);
 				}
+				ts_u.loadPlaneDataPhysical(ts_u_phys);
+				ts_v.loadPlaneDataPhysical(ts_v_phys);
 			}
 			else //if (simVars.setup.benchmark_id == 70)
 			{
@@ -602,28 +613,31 @@ public:
 				   );
 				}
 			}
-			benchmark.benchmark_analytical_error_rms_u = (ts_u-u).reduce_rms_quad();
-			benchmark.benchmark_analytical_error_rms_v = (ts_v-v).reduce_rms_quad();
+			benchmark.benchmark_analytical_error_rms_u = (ts_u-u).toPhys().physical_reduce_rms();
+			benchmark.benchmark_analytical_error_rms_v = (ts_v-v).toPhys().physical_reduce_rms();
 
-			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).reduce_maxAbs();
-			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).reduce_maxAbs();
+			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).toPhys().physical_reduce_max_abs();
+			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).toPhys().physical_reduce_max_abs();
 
 		}
 	}
 
 
-	PlaneData compute_errors2(
-         const PlaneData &i_planeData_u,
-         const PlaneData &i_planeData_v
+	PlaneData_Spectral compute_errors2(
+         const PlaneData_Spectral &i_planeData_u,
+         const PlaneData_Spectral &i_planeData_v
 	)
 	{
 		// Necessary to circumvent FFTW transformations on i_planeData_u and i_planeData_v, which would lead to errors
-		PlaneData u = i_planeData_u;
-		PlaneData v = i_planeData_v;
+		PlaneData_Physical u = i_planeData_u.toPhys();
+		PlaneData_Physical v = i_planeData_v.toPhys();
 
 		// Analytical solution at current time on original grid
-		PlaneData ts_u = t0_prog_u;
-		PlaneData ts_v = t0_prog_v;
+		PlaneData_Spectral ts_u = t0_prog_u;
+		PlaneData_Spectral ts_v = t0_prog_v;
+
+		PlaneData_Physical ts_u_phys = ts_u.toPhys();
+		PlaneData_Physical ts_v_phys = ts_v.toPhys();
 
 		if (simVars.misc.compute_errors)
 		{
@@ -632,7 +646,7 @@ public:
 			{
 				if (simVars.disc.space_grid_use_c_staggering)
 				{
-					ts_u.physical_update_lambda_array_indices(
+					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
@@ -641,7 +655,7 @@ public:
 						}
 					);
 
-					ts_v.physical_update_lambda_array_indices(
+					ts_v_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							io_data = 0.0;
@@ -655,7 +669,7 @@ public:
 				}
 				else
 				{
-					ts_u.physical_update_lambda_array_indices(
+					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
@@ -665,7 +679,7 @@ public:
 						}
 					);
 
-					ts_v.physical_update_lambda_array_indices(
+					ts_v_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
 							io_data = 0.0;
@@ -678,6 +692,8 @@ public:
 						}
 					);
 				}
+				ts_u.loadPlaneDataPhysical(ts_u_phys);
+				ts_v.loadPlaneDataPhysical(ts_v_phys);
 			}
 			else //if (simVars.setup.benchmark_id == 70)
 			{
@@ -700,11 +716,11 @@ public:
 				   );
 				}
 			}
-			benchmark.benchmark_analytical_error_rms_u = (ts_u-u).reduce_rms_quad();
-			benchmark.benchmark_analytical_error_rms_v = (ts_v-v).reduce_rms_quad();
+			benchmark.benchmark_analytical_error_rms_u = (ts_u-u).toPhys().physical_reduce_rms();
+			benchmark.benchmark_analytical_error_rms_v = (ts_v-v).toPhys().physical_reduce_rms();
 
-			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).reduce_maxAbs();
-			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).reduce_maxAbs();
+			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).toPhys().physical_reduce_max_abs();
+			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).toPhys().physical_reduce_max_abs();
 
 			return ts_u;
 		}
@@ -744,7 +760,7 @@ public:
 
 	struct VisStuff
 	{
-		const PlaneData* data;
+		const PlaneData_Physical* data;
 		const char *description;
 	};
 
@@ -761,7 +777,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -770,8 +786,8 @@ public:
 			bool *viz_reset
 	)
 	{
-		PlaneData ts_u = t0_prog_u;
-		PlaneData ts_v = t0_prog_v;
+		PlaneData_Physical ts_u = t0_prog_u.toPhys();
+		PlaneData_Physical ts_v = t0_prog_v.toPhys();
 
 		timeSteppers.ln_cole_hopf->run_timestep(
 				ts_u, ts_v,
@@ -892,11 +908,11 @@ public:
 	bool instability_detected()
 	{
 		// Necessary to circumvent FFTW transformations on prog_u and prog_v, which would lead to errors
-		PlaneData u = prog_u;
-		PlaneData v = prog_v;
+		PlaneData_Spectral u = prog_u;
+		PlaneData_Spectral v = prog_v;
 
-		return !(	u.reduce_boolean_all_finite() &&
-					v.reduce_boolean_all_finite()
+		return !(	u.toPhys().physical_reduce_boolean_all_finite() &&
+					v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 
@@ -909,22 +925,22 @@ public:
 	 ******************************************************
 	 ******************************************************/
 
-	PlaneData _parareal_data_start_u, _parareal_data_start_v,
+	PlaneData_Spectral _parareal_data_start_u, _parareal_data_start_v,
 		_parareal_data_start_u_prev, _parareal_data_start_v_prev;
 	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_start;
 
-	PlaneData _parareal_data_fine_u, _parareal_data_fine_v;
+	PlaneData_Spectral _parareal_data_fine_u, _parareal_data_fine_v;
 	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_fine;
 
-	PlaneData _parareal_data_coarse_u, _parareal_data_coarse_v,
+	PlaneData_Spectral _parareal_data_coarse_u, _parareal_data_coarse_v,
 		_parareal_data_coarse_u_prev, _parareal_data_coarse_v_prev;
 	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_coarse;
 
-	PlaneData _parareal_data_output_u, _parareal_data_output_v,
+	PlaneData_Spectral _parareal_data_output_u, _parareal_data_output_v,
 		_parareal_data_output_u_prev, _parareal_data_output_v_prev;
 	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_output;
 
-	PlaneData _parareal_data_error_u, _parareal_data_error_v;
+	PlaneData_Spectral _parareal_data_error_u, _parareal_data_error_v;
 	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_error;
 
 	double timeframe_start = -1;
@@ -942,30 +958,30 @@ public:
 			std::cout << "parareal_setup()" << std::endl;
 
 		{
-			PlaneData* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_start_u, &_parareal_data_start_v,
+			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_start_u, &_parareal_data_start_v,
 					&_parareal_data_start_u_prev, &_parareal_data_start_v_prev};
 			parareal_data_start.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
+			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
 			parareal_data_fine.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v,
+			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v,
 					&_parareal_data_coarse_u_prev, &_parareal_data_coarse_v_prev};
 			parareal_data_coarse.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_output_u, &_parareal_data_output_v,
+			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_output_u, &_parareal_data_output_v,
 					&_parareal_data_output_u_prev, &_parareal_data_output_v_prev};
 			parareal_data_output.setup(data_array);
 		}
 
 		{
-			PlaneData* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_error_u, &_parareal_data_error_v};
+			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_error_u, &_parareal_data_error_v};
 			parareal_data_error.setup(data_array);
 		}
 
@@ -1204,11 +1220,11 @@ public:
 			return convergence;
 		}
 
-		PlaneData tmp(planeDataConfig);
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		tmp.spectral_set_all(0,0);
-#endif
-		tmp.physical_set_all(0.0);
+		PlaneData_Spectral tmp(planeDataConfig);
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		tmp.spectral_set_zero();
+//#endif
+//		tmp.physical_set_all_value(0.0);
 
 		for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
 		{
@@ -1216,7 +1232,7 @@ public:
 
 			convergence = std::max(
 					convergence,
-					(*parareal_data_output.data_arrays[k]-tmp).reduce_maxAbs()
+					(*parareal_data_output.data_arrays[k]-tmp).spectral_reduce_max_abs()
 				);
 
 			*parareal_data_output.data_arrays[k] = tmp;
@@ -1253,7 +1269,7 @@ public:
 	 * Write file to data and return string of file name
 	 */
 	std::string write_file_parareal(
-			const PlaneData &i_planeData,
+			const PlaneData_Physical &i_planeData,
 			const char* i_name, ///< name of output variable
 			const int i_iteration_id,
 			const int i_time_slice_id
@@ -1291,10 +1307,10 @@ public:
 		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
 
 		// Copy to minimize errors from FFT
-		PlaneData tmp_u = *data.data_arrays[0];
-		PlaneData tmp_v = *data.data_arrays[1];
+		PlaneData_Spectral tmp_u = *data.data_arrays[0];
+		PlaneData_Spectral tmp_v = *data.data_arrays[1];
 
-		write_file_parareal(tmp_u,"prog_u",iteration_id,time_slice_id);
+		write_file_parareal(tmp_u.toPhys(),"prog_u",iteration_id,time_slice_id);
 
 		char buffer[1024];
 		sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
@@ -1312,9 +1328,9 @@ public:
 
 		if (simVars.misc.compute_errors)
 		{
-			PlaneData ana = compute_errors2(tmp_u, tmp_v);
+			PlaneData_Spectral ana = compute_errors2(tmp_u, tmp_v);
 
-			write_file_parareal(ana,"analytical",iteration_id,time_slice_id);
+			write_file_parareal(ana.toPhys(),"analytical",iteration_id,time_slice_id);
 
 			sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
 
@@ -1367,10 +1383,10 @@ public:
 		if (simVars.misc.compute_errors)
 		{
 			// Copy to minimize errors from FFT
-			PlaneData tmp_u = prog_u;
+			PlaneData_Spectral tmp_u = prog_u;
 			if (iteration_id == 0 && time_slice_id == 0)
 				header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
-			rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << tmp_u.reduce_max();
+			rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << tmp_u.toPhys().physical_reduce_max_abs();
 		}
 
 		if (iteration_id == 0 && time_slice_id == 0)

@@ -7,12 +7,12 @@
 
 #include "../swe_plane_timeintegrators/SWE_Plane_TS_l_direct.hpp"
 
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 
-#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectral_to_PlaneDataSpectralComplex.hpp>
+#include <sweet/plane/Convert_PlaneDataSpectralComplex_to_PlaneDataSpectral.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
 
 
@@ -26,9 +26,9 @@ void SWE_Plane_TS_l_direct::setup(
 
 
 void SWE_Plane_TS_l_direct::run_timestep(
-		PlaneData &io_h_pert,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h_pert,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -47,43 +47,51 @@ void SWE_Plane_TS_l_direct::run_timestep(
  * Computation of analytical solution on staggered grid
  */
 void SWE_Plane_TS_l_direct::run_timestep_cgrid(
-		PlaneData &io_h_pert,	///< prognostic variables
-		PlaneData &io_u,		///< prognostic variables
-		PlaneData &io_v,		///< prognostic variables
+		PlaneData_Spectral &io_h_pert,	///< prognostic variables
+		PlaneData_Spectral &io_u,		///< prognostic variables
+		PlaneData_Spectral &io_v,		///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
 )
 {
 	// For output, variables need to be on unstaggered A-grid
-	PlaneData t_u(io_h_pert.planeDataConfig);
-	PlaneData t_v(io_h_pert.planeDataConfig);
+	PlaneData_Physical t_u(io_h_pert.planeDataConfig);
+	PlaneData_Physical t_v(io_h_pert.planeDataConfig);
 
 	if (!simVars.disc.space_grid_use_c_staggering)
 		SWEETError("Expected staggering");
 
-	planeDataGridMapping.mapCtoA_u(io_u, t_u);
-	planeDataGridMapping.mapCtoA_v(io_v, t_v);
+	planeDataGridMapping.mapCtoA_u(io_u.toPhys(), t_u);
+	planeDataGridMapping.mapCtoA_v(io_v.toPhys(), t_v);
 
 	simVars.disc.space_grid_use_c_staggering = false;
 
+	PlaneData_Spectral t_u_spec(io_h_pert.planeDataConfig);
+	PlaneData_Spectral t_v_spec(io_h_pert.planeDataConfig);
+	t_u_spec.loadPlaneDataPhysical(t_u);
+	t_v_spec.loadPlaneDataPhysical(t_v);
+
 	run_timestep_agrid(
-			io_h_pert, t_u, t_v,
+			io_h_pert, t_u_spec, t_v_spec,
 			i_dt, i_simulation_timestamp
 	);
 
 	simVars.disc.space_grid_use_c_staggering = true;
 
-	planeDataGridMapping.mapAtoC_u(t_u, io_u);
-	planeDataGridMapping.mapAtoC_v(t_v, io_v);
+	planeDataGridMapping.mapAtoC_u(t_u_spec.toPhys(), t_u);
+	planeDataGridMapping.mapAtoC_v(t_v_spec.toPhys(), t_v);
+
+	io_u.loadPlaneDataPhysical(t_u);
+	io_v.loadPlaneDataPhysical(t_v);
 }
 
 
 
 void SWE_Plane_TS_l_direct::run_timestep_agrid(
-		PlaneData &io_h_pert,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h_pert,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -109,9 +117,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid(
  * for the dimension full formulation.
  */
 void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
-		PlaneData &io_h_pert,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h_pert,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -127,14 +135,14 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	T dt = i_dt;
 
 	/*
-	 * This implementation works directly on PlaneData
+	 * This implementation works directly on PlaneData_Spectral
 	 */
 	T s0 = simVars.sim.plane_domain_size[0];
 	T s1 = simVars.sim.plane_domain_size[1];
 
-	io_h_pert.request_data_spectral();
-	io_u.request_data_spectral();
-	io_v.request_data_spectral();
+	//io_h_pert.request_data_spectral();
+	//io_u.request_data_spectral();
+	//io_v.request_data_spectral();
 
 	T f = simVars.sim.plane_rotating_f0;
 	T h = simVars.sim.h0;
@@ -462,17 +470,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 #if SWEET_QUADMATH
 			std::complex<double> tmp0(U[0].real(), U[0].imag());
-			io_h_pert.p_spectral_set(ik1, ik0, tmp0);
+			io_h_pert.spectral_set(ik1, ik0, tmp0);
 
 			std::complex<double> tmp1(U[1].real(), U[1].imag());
-			io_u.p_spectral_set(ik1, ik0, tmp1);
+			io_u.spectral_set(ik1, ik0, tmp1);
 
 			std::complex<double> tmp2(U[2].real(), U[2].imag());
-			io_v.p_spectral_set(ik1, ik0, tmp2);
+			io_v.spectral_set(ik1, ik0, tmp2);
 #else
-			io_h_pert.p_spectral_set(ik1, ik0, U[0]);
-			io_u.p_spectral_set(ik1, ik0, U[1]);
-			io_v.p_spectral_set(ik1, ik0, U[2]);
+			io_h_pert.spectral_set(ik1, ik0, U[0]);
+			io_u.spectral_set(ik1, ik0, U[1]);
+			io_v.spectral_set(ik1, ik0, U[2]);
 #endif
 		}
 	}
@@ -486,9 +494,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 
 void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
-		PlaneData &io_h_pert,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h_pert,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -502,35 +510,35 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	complex I(0.0, 1.0);
 
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	PlaneDataComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
-	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
-	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
-#else
-	PlaneDataComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_h_pert);
-	PlaneDataComplex i_u = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_u);
-	PlaneDataComplex i_v = Convert_PlaneData_To_PlaneDataComplex::spectral_convert(io_v);
-#endif
+/////#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	PlaneData_SpectralComplex i_h_pert = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_h_pert);
+/////	PlaneData_SpectralComplex i_u = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_u);
+/////	PlaneData_SpectralComplex i_v = Convert_PlaneData_To_PlaneDataComplex::physical_convert(io_v);
+/////#else
+	PlaneData_SpectralComplex i_h_pert = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_h_pert);
+	PlaneData_SpectralComplex i_u = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_u);
+	PlaneData_SpectralComplex i_v = Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(io_v);
+///////#endif
 
-	PlaneDataComplex o_h_pert(io_h_pert.planeDataConfig);
-	PlaneDataComplex o_u(io_h_pert.planeDataConfig);
-	PlaneDataComplex o_v(io_h_pert.planeDataConfig);
+	PlaneData_SpectralComplex o_h_pert(io_h_pert.planeDataConfig);
+	PlaneData_SpectralComplex o_u(io_h_pert.planeDataConfig);
+	PlaneData_SpectralComplex o_v(io_h_pert.planeDataConfig);
 
 	T dt = i_dt;
 
 	T s0 = simVars.sim.plane_domain_size[0];
 	T s1 = simVars.sim.plane_domain_size[1];
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	o_h_pert.spectral_space_data_valid = true;
-	o_h_pert.physical_space_data_valid = false;
-
-	o_u.spectral_space_data_valid = true;
-	o_u.physical_space_data_valid = false;
-
-	o_v.spectral_space_data_valid = true;
-	o_v.physical_space_data_valid = false;
-#endif
+/////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	o_h_pert.spectral_space_data_valid = true;
+/////	o_h_pert.physical_space_data_valid = false;
+/////
+/////	o_u.spectral_space_data_valid = true;
+/////	o_u.physical_space_data_valid = false;
+/////
+/////	o_v.spectral_space_data_valid = true;
+/////	o_v.physical_space_data_valid = false;
+/////#endif
 
 	T f = simVars.sim.plane_rotating_f0;
 	T h = simVars.sim.h0;
@@ -593,9 +601,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				k0 = (T)((int)ik0-(int)i_h_pert.planeDataConfig->spectral_complex_data_size[0]);
 
 			complex U[3];
-			U[0] = i_h_pert.p_spectral_get(ik1, ik0);
-			U[1] = i_u.p_spectral_get(ik1, ik0);
-			U[2] = i_v.p_spectral_get(ik1, ik0);
+			U[0] = i_h_pert.spectral_get(ik1, ik0);
+			U[1] = i_u.spectral_get(ik1, ik0);
+			U[2] = i_v.spectral_get(ik1, ik0);
 
 			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 			complex c = -k1*I;
@@ -868,17 +876,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			 */
 #if SWEET_QUADMATH
 			std::complex<double> tmp0(U[0].real(), U[0].imag());
-			o_h_pert.p_spectral_set(ik1, ik0, tmp0);
+			o_h_pert.spectral_set(ik1, ik0, tmp0);
 
 			std::complex<double> tmp1(U[1].real(), U[1].imag());
-			o_u.p_spectral_set(ik1, ik0, tmp1);
+			o_u.spectral_set(ik1, ik0, tmp1);
 
 			std::complex<double> tmp2(U[2].real(), U[2].imag());
-			o_v.p_spectral_set(ik1, ik0, tmp2);
+			o_v.spectral_set(ik1, ik0, tmp2);
 #else
-			o_h_pert.p_spectral_set(ik1, ik0, U[0]);
-			o_u.p_spectral_set(ik1, ik0, U[1]);
-			o_v.p_spectral_set(ik1, ik0, U[2]);
+			o_h_pert.spectral_set(ik1, ik0, U[0]);
+			o_u.spectral_set(ik1, ik0, U[1]);
+			o_v.spectral_set(ik1, ik0, U[2]);
 #endif
 		}
 	}
@@ -893,15 +901,15 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	o_u.spectral_zeroAliasingModes();
 	o_v.spectral_zeroAliasingModes();
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
-#else
-	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_h_pert);
-	io_u = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_u);
-	io_v = Convert_PlaneDataComplex_To_PlaneData::spectral_convert_physical_real_only(o_v);
-#endif
+/////#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+/////	io_h_pert = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_h_pert);
+/////	io_u = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_u);
+/////	io_v = Convert_PlaneDataComplex_To_PlaneData::physical_convert(o_v);
+/////#else
+	io_h_pert = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_h_pert);
+	io_u = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_u);
+	io_v = Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_v);
+///////#endif
 }
 
 

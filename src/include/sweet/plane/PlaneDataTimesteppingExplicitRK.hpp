@@ -2,14 +2,14 @@
 #ifndef PLANEDATA_TIMESTEPPING_EXPLICIT_RK_HPP__
 #define PLANEDATA_TIMESTEPPING_EXPLICIT_RK_HPP__
 
-#include "PlaneData.hpp"
+#include "PlaneData_Spectral.hpp"
 
 class PlaneDataTimesteppingExplicitRK
 {
 	// runge kutta data storages
-	PlaneData** RK_h_t;
-	PlaneData** RK_u_t;
-	PlaneData** RK_v_t;
+	PlaneData_Spectral** RK_h_t;
+	PlaneData_Spectral** RK_u_t;
+	PlaneData_Spectral** RK_v_t;
 
 	int runge_kutta_order;
 
@@ -38,15 +38,15 @@ public:
 		if (N <= 0 || N > 4)
 			SWEETError("Invalid order for RK time stepping (Please set --timestepping-order and/or --timestepping-order2)");
 
-		RK_h_t = new PlaneData*[N];
-		RK_u_t = new PlaneData*[N];
-		RK_v_t = new PlaneData*[N];
+		RK_h_t = new PlaneData_Spectral*[N];
+		RK_u_t = new PlaneData_Spectral*[N];
+		RK_v_t = new PlaneData_Spectral*[N];
 
 		for (int i = 0; i < N; i++)
 		{
-			RK_h_t[i] = new PlaneData(i_planeDataConfig);
-			RK_u_t[i] = new PlaneData(i_planeDataConfig);
-			RK_v_t[i] = new PlaneData(i_planeDataConfig);
+			RK_h_t[i] = new PlaneData_Spectral(i_planeDataConfig);
+			RK_u_t[i] = new PlaneData_Spectral(i_planeDataConfig);
+			RK_v_t[i] = new PlaneData_Spectral(i_planeDataConfig);
 		}
 	}
 
@@ -85,20 +85,20 @@ public:
 	void run_timestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
-					const PlaneData &i_P,	///< prognostic variables
-					const PlaneData &i_u,	///< prognostic variables
-					const PlaneData &i_v,	///< prognostic variables
+					const PlaneData_Spectral &i_P,	///< prognostic variables
+					const PlaneData_Spectral &i_u,	///< prognostic variables
+					const PlaneData_Spectral &i_v,	///< prognostic variables
 
-					PlaneData &o_P_t,	///< time updates
-					PlaneData &o_u_t,	///< time updates
-					PlaneData &o_v_t,	///< time updates
+					PlaneData_Spectral &o_P_t,	///< time updates
+					PlaneData_Spectral &o_u_t,	///< time updates
+					PlaneData_Spectral &o_v_t,	///< time updates
 
 					double i_simulation_time	///< simulation time, e.g. for tidal waves
 			),
 
-			PlaneData &io_var0,
-			PlaneData &io_var1,
-			PlaneData &io_var2,
+			PlaneData_Spectral &io_var0,
+			PlaneData_Spectral &io_var1,
+			PlaneData_Spectral &io_var2,
 
 			double i_dt = 0,				///< Use this time step size
 			int i_runge_kutta_order = 1,	///< Order of RK time stepping
