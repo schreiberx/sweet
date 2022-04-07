@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
@@ -43,10 +43,10 @@ public:
 	void setup();
 
 	void run_timestep(
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
-			PlaneData &io_u_prev,	///< prognostic variables
-			PlaneData &io_v_prev,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_u_prev,	///< prognostic variables
+			PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1

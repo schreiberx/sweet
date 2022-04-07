@@ -7,10 +7,10 @@
 #ifndef SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_
 #define SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_
 
-#include <sweet/plane/Convert_PlaneData_to_ScalarDataArray.hpp>
-#include <sweet/plane/Convert_ScalarDataArray_to_PlaneData.hpp>
+#include <sweet/plane/Convert_PlaneDataPhysical_to_ScalarDataArray.hpp>
+#include <sweet/plane/Convert_ScalarDataArray_to_PlaneDataPhysical.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
-#include "PlaneData.hpp"
+#include "PlaneData_Physical.hpp"
 #include "PlaneDataSampler.hpp"
 #include <sweet/ScalarDataArray.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
@@ -48,10 +48,10 @@ public:
 	 * r_d = r_a - dt/2 * v_n(r_d) - v^{iter}(r_d)
 	 */
 	void semi_lag_departure_points_settls(
-			const PlaneData &i_u_prev,	// Velocities at time t-1
-			const PlaneData &i_v_prev,
-			const PlaneData &i_u, 		// Velocities at time t
-			const PlaneData &i_v,
+			const PlaneData_Physical &i_u_prev,	// Velocities at time t-1
+			const PlaneData_Physical &i_v_prev,
+			const PlaneData_Physical &i_u, 		// Velocities at time t
+			const PlaneData_Physical &i_v,
 
 			const ScalarDataArray &i_posx_a,	// Position of arrival points x / y
 			const ScalarDataArray &i_posy_a,
@@ -85,16 +85,16 @@ public:
 
 		if (i_timestepping_order == 1)
 		{
-			o_posx_d = i_posx_a - i_dt*Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u, false);
-			o_posy_d = i_posy_a - i_dt*Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v, false);
+			o_posx_d = i_posx_a - i_dt*Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(i_u, false);
+			o_posy_d = i_posy_a - i_dt*Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(i_v, false);
 		}
 		else if (i_timestepping_order == 2)
 		{
-			ScalarDataArray u_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u_prev, false);
-			ScalarDataArray v_prev = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v_prev, false);
+			ScalarDataArray u_prev = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(i_u_prev, false);
+			ScalarDataArray v_prev = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(i_v_prev, false);
 
-			ScalarDataArray u = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_u, false);
-			ScalarDataArray v = Convert_PlaneData_To_ScalarDataArray::physical_convert(i_v, false);
+			ScalarDataArray u = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(i_u, false);
+			ScalarDataArray v = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(i_v, false);
 
 			double dt = i_dt;
 
@@ -102,11 +102,11 @@ public:
 			//ScalarDataArray u_iter = dt * u - dt*0.5 * u_prev;
 			//ScalarDataArray v_iter = dt * v - dt*0.5 * v_prev;
 #if 1
-			PlaneData u_extrap = Convert_ScalarDataArray_to_PlaneData::convert(2.0*u - u_prev, planeDataConfig);
-			PlaneData v_extrap = Convert_ScalarDataArray_to_PlaneData::convert(2.0*v - v_prev, planeDataConfig);
+			PlaneData_Physical u_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(2.0*u - u_prev, planeDataConfig);
+			PlaneData_Physical v_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(2.0*v - v_prev, planeDataConfig);
 #else       //To avoid multi-step method
-			PlaneData u_extrap = Convert_ScalarDataArray_to_PlaneData::convert(u , planeDataConfig);
-			PlaneData v_extrap = Convert_ScalarDataArray_to_PlaneData::convert(v , planeDataConfig);
+			PlaneDataPhysical u_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(u , planeDataConfig);
+			PlaneDataPhysical v_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(v , planeDataConfig);
 #endif
 			//Departure point tmp
 			ScalarDataArray rx_d_new(num_points);

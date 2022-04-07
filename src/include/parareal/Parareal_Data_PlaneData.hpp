@@ -18,7 +18,7 @@ class Parareal_Data_PlaneData	:
 		public Parareal_Data
 {
 public:
-	PlaneData* data_arrays[N];
+	PlaneData_Spectral* data_arrays[N];
 
 	Parareal_Data_PlaneData()
 	{
@@ -27,7 +27,7 @@ public:
 
 
 	Parareal_Data_PlaneData(
-			PlaneData* i_data_arrays[N]
+			PlaneData_Spectral* i_data_arrays[N]
 	)
 	{
 		setup(i_data_arrays);
@@ -38,7 +38,7 @@ public:
 	 * Setup data
 	 */
 	void setup(
-			PlaneData* i_data_arrays[N]
+			PlaneData_Spectral* i_data_arrays[N]
 	)
 	{
 		for (int i = 0; i < N; i++)
@@ -68,7 +68,7 @@ public:
 	{
 		for (int i = 0; i < N; i++)
 		{
-			PlaneData** i_data_arrays = ((Parareal_Data_PlaneData&)i_data).data_arrays;
+			PlaneData_Spectral** i_data_arrays = ((Parareal_Data_PlaneData&)i_data).data_arrays;
 			data_arrays[i] = i_data_arrays[i];
 		}
 

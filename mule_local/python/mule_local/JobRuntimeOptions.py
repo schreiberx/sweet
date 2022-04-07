@@ -78,6 +78,9 @@ class JobRuntimeOptions(InfoError):
         self.rexi_ci_sy = None
         self.rexi_ci_mu = None
 
+        ## Parameters for direct exp. solver
+        self.exp_direct_precompute_phin = 0;
+
         self.gui = None
 
         self.polvani_rossby = None
@@ -218,6 +221,8 @@ class JobRuntimeOptions(InfoError):
         if 'comma_separated_tags' in d:
             self.comma_separated_tags = d['comma_separated_tags']
 
+        if 'exp_direct_precompute_phin' in d:
+            self.exp_direct_precompute_phin = d['exp_direct_precompute_phin']
 
 
 
@@ -549,7 +554,10 @@ class JobRuntimeOptions(InfoError):
         if self.rexi_method != '' and self.rexi_method != None:
             retval += ' --rexi-method='+str(self.rexi_method)
 
-            if self.rexi_method != 'direct':
+            if self.rexi_method == 'direct':
+                retval += ' --exp-direct-precompute-phin='+str(self.exp_direct_precompute_phin)
+
+            else:
                 retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
 
                 if self.rexi_method == 'file':

@@ -10,17 +10,17 @@ SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=enable --m
 echo "$SCONS"
 $SCONS  || exit
 
-echo
-echo "SWE REXI"
-SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=disable --libfft=enable --mode=debug"
-echo "$SCONS"
-$SCONS  || exit
+####echo
+####echo "SWE REXI"
+####SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=disable --libfft=enable --mode=debug"
+####echo "$SCONS"
+####$SCONS  || exit
 
-echo
-echo "SWE REXI"
-SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=disable --libfft=enable --mode=debug"
-echo "$SCONS"
-$SCONS  || exit
+###echo
+###echo "SWE REXI"
+###SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=disable --libfft=enable --mode=debug"
+###echo "$SCONS"
+###$SCONS  || exit
 
 
 SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=enable --plane-spectral-dealiasing=disable --mode=debug"

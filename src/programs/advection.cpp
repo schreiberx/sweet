@@ -10,7 +10,8 @@
 	#include "sweet/VisSweet.hpp"
 #endif
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <unistd.h>
@@ -30,14 +31,14 @@ double vely = 0;
 class SimulationSWE
 {
 public:
-	PlaneData h;
-	PlaneData u;
-	PlaneData v;
+	PlaneData_Physical h;
+	PlaneData_Physical u;
+	PlaneData_Physical v;
 
-	PlaneData hu;
-	PlaneData hv;
+	PlaneData_Physical hu;
+	PlaneData_Physical hv;
 
-	PlaneData h_t;
+	PlaneData_Physical h_t;
 
 	PlaneOperators op;
 
@@ -66,9 +67,9 @@ public:
 
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		h.physical_set_all(simVars.sim.h0);
-		u.physical_set_all(velx);
-		v.physical_set_all(vely);
+		h.physical_set_all_value(simVars.sim.h0);
+		u.physical_set_all_value(velx);
+		v.physical_set_all_value(vely);
 
 		double center_x = 0.7;
 		double center_y = 0.6;
@@ -142,7 +143,7 @@ public:
 		h -= dt*(
 				op.diff_b_x(op.avg_f_x(h)*u) +
 				op.diff_b_y(op.avg_f_y(h)*v)
-			);
+			).toPhys();
 #endif
 
 #if ADVECTION_METHOD == 1
@@ -150,7 +151,7 @@ public:
 		h = h - dt*(
 				op.diff_c_x(h*u) +
 				op.diff_c_y(h*v)
-			);
+			).toPhys();
 #endif
 
 #if ADVECTION_METHOD == 2
@@ -199,7 +200,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,

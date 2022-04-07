@@ -7,7 +7,7 @@
 	#define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
@@ -30,9 +30,9 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	PlaneData prog_h;
-	PlaneData prog_h0;	// at t0
-	PlaneData prog_u, prog_v;
+	PlaneData_Spectral prog_h;
+	PlaneData_Spectral prog_h0;	// at t0
+	PlaneData_Spectral prog_u, prog_v;
 
 	Adv_Plane_TimeSteppers timeSteppers;
 
@@ -43,7 +43,7 @@ public:
 	PlaneOperators op;
 
 #if SWEET_GUI
-	PlaneData viz_plane_data;
+	PlaneData_Physical viz_plane_data;
 
 	int render_primitive_id = 0;
 #endif
@@ -121,8 +121,8 @@ public:
 		if (simVars.misc.verbosity >= 10)
 			std::cout << simVars.timecontrol.current_timestep_nr << ": " << simVars.timecontrol.current_simulation_time/(60*60*24.0) << std::endl;
 
-		max_error_h0 = (prog_h-prog_h0).reduce_maxAbs();
-		rms_error_h0 = (prog_h-prog_h0).reduce_rms();
+		max_error_h0 = (prog_h-prog_h0).toPhys().physical_reduce_max_abs();
+		rms_error_h0 = (prog_h-prog_h0).toPhys().physical_reduce_rms();
 	}
 
 
@@ -194,7 +194,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -269,8 +269,8 @@ public:
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min()
+				viz_plane_data.physical_reduce_max(),
+				viz_plane_data.physical_reduce_min()
 		);
 
 		return title_string;

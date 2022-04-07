@@ -12,7 +12,7 @@
 
 
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
@@ -31,7 +31,7 @@ SimulationVariables simVars;
 
 
 void setupDataFreq(
-		PlaneData &io_data,
+		PlaneData_Spectral &io_data,
 		int fx,	///< frequency x
 		int fy	///< frequency y
 )
@@ -42,7 +42,9 @@ void setupDataFreq(
 	// shift by half a cell to generate exactly this mode in spectral space
 	double phase_shift = 0.0;
 
-	io_data.physical_update_lambda_array_indices(
+	PlaneData_Physical tmp(io_data.planeDataConfig);
+
+	tmp.physical_update_lambda_array_indices(
 			[&](int x, int y, double &o_data)
 			{
 				o_data = 0.0;
@@ -54,20 +56,26 @@ void setupDataFreq(
 					o_data += std::cos(((double)y+phase_shift)*(double)fy*M_PI*2.0/(double)res_y);
 			}
 	);
+
+	io_data.loadPlaneDataPhysical(tmp);
 }
 
 
 void setupData123(
-		PlaneData &io_data
+		PlaneData_Spectral &io_data
 )
 {
 
-	io_data.physical_update_lambda_array_indices(
+	PlaneData_Physical tmp(io_data.planeDataConfig);
+
+	tmp.physical_update_lambda_array_indices(
 			[&](int x, int y, double &o_data)
 			{
 				o_data = (x+1.0)+(y+3.0)*y;
 			}
 	);
+
+	io_data.loadPlaneDataPhysical(tmp);
 }
 
 int main(int i_argc, char *i_argv[])
@@ -116,7 +124,7 @@ int main(int i_argc, char *i_argv[])
 		if ((res & 1) == 1)
 			SWEETError("Only even resolutions supported");
 
-		PlaneData a(planeDataConfig);
+		PlaneData_Spectral a(planeDataConfig);
 
 		// relative spectral resolution deltas to test restriction / interpolation
 		for (int spec_delta = -4; spec_delta <= 4; spec_delta+=2)
@@ -185,11 +193,9 @@ int main(int i_argc, char *i_argv[])
 							/*
 							 * Test for conserving high frequencies in Fourier transformations
 							 */
-							PlaneData tmp = a;
-							tmp.request_data_spectral();
-							tmp.request_data_physical();
+							PlaneData_Spectral tmp = a;
 
-							error = (a-tmp).reduce_maxAbs();
+							error = (a-tmp).spectral_reduce_max_abs();
 							if (error > epsilon)
 							{
 								std::cout << "Error: " << error << std::endl;
@@ -197,10 +203,10 @@ int main(int i_argc, char *i_argv[])
 							}
 						}
 
-						PlaneData b = a.spectral_returnWithDifferentModes(planeDataConfigDst);
+						PlaneData_Spectral b = a.spectral_returnWithDifferentModes(planeDataConfigDst);
 
 						{
-							PlaneData test(planeDataConfigDst);
+							PlaneData_Spectral test(planeDataConfigDst);
 							setupDataFreq(test, test_freq_x, test_freq_y);
 
 #if 0
@@ -213,7 +219,7 @@ int main(int i_argc, char *i_argv[])
 							std::cout << std::endl;
 #endif
 
-							error = (b-test).reduce_maxAbs();
+							error = (b-test).spectral_reduce_max_abs();
 
 							if (error > epsilon)
 							{
@@ -229,7 +235,7 @@ int main(int i_argc, char *i_argv[])
 								std::cout << std::endl;
 
 								std::cout << "Physical data of A:" << std::endl;
-								a.print_physicalData_zeroNumZero();
+								a.toPhys().print_physicalData_zeroNumZero();
 								std::cout << std::endl;
 
 
@@ -238,7 +244,7 @@ int main(int i_argc, char *i_argv[])
 								std::cout << std::endl;
 
 								std::cout << "Physical data of b:" << std::endl;
-								b.print_physicalData_zeroNumZero();
+								b.toPhys().print_physicalData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Spectral data of test:" << std::endl;
@@ -246,7 +252,7 @@ int main(int i_argc, char *i_argv[])
 								std::cout << std::endl;
 
 								std::cout << "Physical data of test:" << std::endl;
-								test.print_physicalData_zeroNumZero();
+								test.toPhys().print_physicalData_zeroNumZero();
 								std::cout << std::endl;
 
 								std::cout << "Error: " << error << std::endl;
@@ -263,10 +269,10 @@ int main(int i_argc, char *i_argv[])
 
 						setupData123(a);
 
-						PlaneData b = a.spectral_returnWithDifferentModes(planeDataConfigDst);
-						PlaneData test = b.spectral_returnWithDifferentModes(planeDataConfig);
+						PlaneData_Spectral b = a.spectral_returnWithDifferentModes(planeDataConfigDst);
+						PlaneData_Spectral test = b.spectral_returnWithDifferentModes(planeDataConfig);
 
-						error = (a-test).reduce_maxAbs();
+						error = (a-test).spectral_reduce_max_abs();
 						if (error > epsilon)
 						{
 							std::cout << "**************************************************" << std::endl;

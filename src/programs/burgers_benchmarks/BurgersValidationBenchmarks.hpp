@@ -9,7 +9,8 @@
 
 #include <cmath>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 
 
 class BurgersValidationBenchmarks
@@ -133,7 +134,7 @@ public:
 			double i_simulation_time,
 			const SimulationVariables &i_parameters,
 			bool i_use_staggering,
-			PlaneData &io_u_t
+			PlaneData_Spectral &io_u_t
 	)
 	{
 		int benchmark_id = getBurgersBenchmarkID();
@@ -141,6 +142,7 @@ public:
 		double t = i_simulation_time;
 		double tp = 2.0*M_PI;
 
+		PlaneData_Physical u_phys(io_u_t.planeDataConfig);
 		/*
 		 * f(t,x,y) = 2*PI*sin(2*PI*k*x)*cos(2*PI*k*t)+2*PI*sin(2*PI*k*x)*cos(2*PI*k*x)*sin^2(2*PI*k*t)
 		 *          - nu(-4*PI^2*k*sin(2*PI*k*x)*sin(2*PI*k*t))
@@ -151,7 +153,7 @@ public:
 		{
 			double k = i_parameters.sim.plane_rotating_f0;
 
-			io_u_t.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					// u space
@@ -184,7 +186,7 @@ public:
 			double k = i_parameters.sim.plane_rotating_f0;
 
 
-			io_u_t.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					// u space
@@ -217,7 +219,7 @@ public:
 		{
 			double k = i_parameters.sim.plane_rotating_f0;
 
-			io_u_t.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					// u space
@@ -246,7 +248,7 @@ public:
 		 */
 		if (benchmark_id == 51)
 		{
-			io_u_t.physical_set_all(1.0);
+			u_phys.physical_set_all_value(1.0);
 		}
 
 		/*
@@ -256,7 +258,7 @@ public:
 		 */
 		if (benchmark_id == 52)
 		{
-			io_u_t.physical_set_all(2.0*t);
+			u_phys.physical_set_all_value(2.0*t);
 		}
 
 		/*
@@ -266,7 +268,7 @@ public:
 		 */
 		if (benchmark_id == 53)
 		{
-			io_u_t.physical_set_all(3.0*t*t);
+			u_phys.physical_set_all_value(3.0*t*t);
 		}
 
 		/*
@@ -277,7 +279,7 @@ public:
 		if (benchmark_id == 54)
 		{
 
-			io_u_t.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					// u space
@@ -303,7 +305,7 @@ public:
 		 */
 		if (benchmark_id == 55)
 		{
-			io_u_t.physical_set_all(tp*std::cos(tp*t));
+			u_phys.physical_set_all_value(tp*std::cos(tp*t));
 		}
 
 		/*
@@ -314,7 +316,7 @@ public:
 		if (benchmark_id == 56)
 		{
 			double k=i_parameters.sim.plane_rotating_f0;
-			io_u_t.physical_set_all(tp*std::cos(tp*k*t));
+			u_phys.physical_set_all_value(tp*std::cos(tp*k*t));
 		}
 
 		/*
@@ -325,7 +327,7 @@ public:
 		if (benchmark_id == 60)
 		{
 
-			io_u_t.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					// u space
@@ -352,7 +354,7 @@ public:
 		if (benchmark_id == 61)
 		{
 
-			io_u_t.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					// u space
@@ -383,7 +385,7 @@ public:
 			double eps = 0.1;
 
 
-			io_u_t.physical_update_lambda_array_indices(
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					// u space
@@ -416,10 +418,12 @@ public:
 		}
 
 		if (benchmark_id == 63)
-			io_u_t.physical_set_all(0.0);
+			u_phys.physical_set_all_value(0.0);
 
 		if (benchmark_id == 70)
-			io_u_t.physical_set_all(0.0);
+			u_phys.physical_set_all_value(0.0);
+
+		io_u_t.loadPlaneDataPhysical(u_phys);
 	}
 
 	static void printScenarioInformation()

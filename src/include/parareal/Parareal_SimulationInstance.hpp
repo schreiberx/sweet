@@ -10,8 +10,8 @@
 
 
 #include <parareal/Parareal_Data.hpp>
-#include "../sweet/plane/PlaneData.hpp"
 #include "../sweet/sphere/SphereData_Spectral.hpp"
+#include "../sweet/plane/PlaneData_Spectral.hpp"
 
 
 /**

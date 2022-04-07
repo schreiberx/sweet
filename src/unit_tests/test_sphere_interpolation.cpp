@@ -16,8 +16,8 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
-#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
-#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+#include <sweet/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
+#include <sweet/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 #include <sweet/SWEETVectorMath.hpp>
 
 
@@ -46,7 +46,7 @@ public:
 	SphereOperators_SphereData op;
 
 #if SWEET_GUI
-	PlaneData viz_plane_data;
+	PlaneData_Physical viz_plane_data;
 
 	int render_primitive_id = 1;
 #endif
@@ -286,7 +286,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -302,7 +302,7 @@ public:
 		switch (id)
 		{
 		case 0:
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_h, planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(prog_h, planeDataConfig);
 			break;
 		}
 
@@ -344,8 +344,8 @@ public:
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min()
+				viz_plane_data.physical_reduce_max(),
+				viz_plane_data.physical_reduce_min()
 		);
 
 		return title_string;
