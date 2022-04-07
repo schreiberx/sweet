@@ -143,6 +143,39 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	T sqrt_h = rexiFunctions.l_sqrt(h);
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
+
+	// The phin functions (Q * exp(Lambda) * Q^{-1}) are computed in three situations):
+	// - If wanted by the user ( ! simVars.rexi.precompute_phin);
+	// - If it is the first time step (timastamp = 0)
+	// - If the time step has changed
+
+	bool compute_phin = false;
+	if ( (! simVars.rexi.exp_direct_precompute_phin) ||
+	      i_simulation_timestamp == 0                ||
+	      this->dt_precompute_phin != dt       )
+		compute_phin = true;
+
+	if (compute_phin)
+	{
+		for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
+		{
+			//if (i_simulation_timestamp == 0)
+			//{
+				dt_precompute_phin = dt;
+				std::vector<std::array<std::array<complex, 3>, 3>> aux = {};
+				Z.push_back(aux);  // Z[k1][k2][0,1,2][0,1,2];
+			//}
+			for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
+			{
+				//if (i_simulation_timestamp == 0)
+				//{
+					std::array<std::array<complex, 3>, 3> aux2 = {{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
+					Z[ik1].push_back(aux2);
+        	                //}
+			}
+		}
+	}
+
 #if SWEET_THREADING_SPACE
 	SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 #endif
@@ -150,11 +183,13 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	{
 		for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
 		{
+
 			T k1;
 			if (ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]/2)
 				k1 = (T)ik1;
 			else
 				k1 = (T)((int)ik1-(int)io_h_pert.planeDataConfig->spectral_data_size[1]);
+
 
 			T k0 = (T)ik0;
 
@@ -170,237 +205,259 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 			b = b*rexiFunctions.pi2/s0;
 			c = c*rexiFunctions.pi2/s1;
 			
-			/*
-			 * Matrix with Eigenvectors (column-wise)
-			 */
-			complex v[3][3];
 
-			/*
-			 * Eigenvalues
-			 */
-			complex lambda[3];
 
-			if (simVars.sim.plane_rotating_f0 == 0)
+                        if (compute_phin)
 			{
+
+				if (simVars.misc.verbosity > 5 && ik1 == 0 && ik0 == 0)
+					std::cout << "Computing phin functions at t = " << i_simulation_timestamp << std::endl;
+
 				/*
-				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
+				 * Matrix with Eigenvectors (column-wise)
 				 */
-				if (k0 == 0 && k1 == 0)
-				{
-					v[0][0] = 1;
-					v[1][0] = 0;
-					v[2][0] = 0;
+				complex v[3][3];
 
-					v[0][1] = 0;
-					v[1][1] = 1;
-					v[2][1] = 0;
+				/*
+				 * Eigenvalues
+				 */
+				complex lambda[3];
 
-					v[0][2] = 0;
-					v[1][2] = 0;
-					v[2][2] = 1;
-
-					lambda[0] = 0;
-					lambda[1] = 0;
-					lambda[2] = 0;
-				}
-				else if (k0 == 0)
-				{
-					v[0][0] = 0;
-					v[1][0] = 1;
-					v[2][0] = 0;
-
-					v[0][1] = -sqrt_h/sqrt_g;
-					v[1][1] = 0;
-					v[2][1] = 1;
-
-					v[0][2] = sqrt_h/sqrt_g;
-					v[1][2] = 0;
-					v[2][2] = 1;
-
-					lambda[0] = 0;
-					lambda[1] = -c*sqrt_g*sqrt_h;
-					lambda[2] = c*sqrt_g*sqrt_h;;
-				}
-				else if (k1 == 0)
+				if (simVars.sim.plane_rotating_f0 == 0)
 				{
 					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
 					 */
+					if (k0 == 0 && k1 == 0)
+					{
+						v[0][0] = 1;
+						v[1][0] = 0;
+						v[2][0] = 0;
 
-					v[0][0] = 0;
-					v[1][0] = 0;
-					v[2][0] = 1;
+						v[0][1] = 0;
+						v[1][1] = 1;
+						v[2][1] = 0;
 
-					v[0][1] = -sqrt_h/sqrt_g;
-					v[1][1] = 1;
-					v[2][1] = 0;
+						v[0][2] = 0;
+						v[1][2] = 0;
+						v[2][2] = 1;
 
-					v[0][2] = sqrt_h/sqrt_g;
-					v[1][2] = 1;
-					v[2][2] = 0;
+						lambda[0] = 0;
+						lambda[1] = 0;
+						lambda[2] = 0;
+					}
+					else if (k0 == 0)
+					{
+						v[0][0] = 0;
+						v[1][0] = 1;
+						v[2][0] = 0;
 
-					lambda[0] = 0;
-					lambda[1] = -b*sqrt_g*sqrt_h;
-					lambda[2] = b*sqrt_g*sqrt_h;
+						v[0][1] = -sqrt_h/sqrt_g;
+						v[1][1] = 0;
+						v[2][1] = 1;
+
+						v[0][2] = sqrt_h/sqrt_g;
+						v[1][2] = 0;
+						v[2][2] = 1;
+
+						lambda[0] = 0;
+						lambda[1] = -c*sqrt_g*sqrt_h;
+						lambda[2] = c*sqrt_g*sqrt_h;;
+					}
+					else if (k1 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
+						 */
+
+						v[0][0] = 0;
+						v[1][0] = 0;
+						v[2][0] = 1;
+
+						v[0][1] = -sqrt_h/sqrt_g;
+						v[1][1] = 1;
+						v[2][1] = 0;
+
+						v[0][2] = sqrt_h/sqrt_g;
+						v[1][2] = 1;
+						v[2][2] = 0;
+
+						lambda[0] = 0;
+						lambda[1] = -b*sqrt_g*sqrt_h;
+						lambda[2] = b*sqrt_g*sqrt_h;
+					}
+					else
+					{
+						v[0][0] = 0;
+						v[1][0] = -c/b;
+						v[2][0] = 1.0;
+
+						v[0][1] = -(sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[1][1] = b/c;
+						v[2][1] = 1.0;
+
+						v[0][2] = (sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[1][2] = b/c;
+						v[2][2] = 1.0;
+
+						lambda[0] = 0.0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+						lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+					}
 				}
 				else
 				{
-					v[0][0] = 0;
-					v[1][0] = -c/b;
-					v[2][0] = 1.0;
+					if (k0 == 0 && k1 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
+						 */
+						v[0][0] = 0;
+						v[1][0] = -I;
+						v[2][0] = 1;
 
-					v[0][1] = -(sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
-					v[1][1] = b/c;
-					v[2][1] = 1.0;
+						v[0][1] = 0;
+						v[1][1] = I;
+						v[2][1] = 1;
 
-					v[0][2] = (sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
-					v[1][2] = b/c;
-					v[2][2] = 1.0;
+						v[0][2] = 1;
+						v[1][2] = 0;
+						v[2][2] = 0;
 
-					lambda[0] = 0.0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
-					lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+						lambda[0] = I*f;
+						lambda[1] = -I*f;
+						lambda[2] = 0;
+					}
+					else if (k0 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
+						 */
+						v[0][0] = f/(c*g);
+						v[1][0] = 1;
+						v[2][0] = 0;
+
+						v[0][1] = -(c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][1] =  -f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[2][1] = 1;
+
+						v[0][2] = (c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][2] = f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[2][2] = 1;
+
+						lambda[0] = 0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+						lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+					}
+					else if (k1 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
+						 */
+						v[0][0] = -f/(b*g);
+						v[1][0] = 0;
+						v[2][0] = 1;
+
+						v[0][1] = -(b*h)/f;
+						v[1][1] = rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[2][1] = 1;
+
+						v[0][2] = -(b*h)/f;
+						v[1][2] = -rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[2][2] = 1;
+
+						lambda[0] = 0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+						lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+					}
+					else
+					{
+						/*
+						 * Compute EV's of
+						 * Linear operator
+						 *
+						 * [ 0  hb  hc ]
+						 * [ gb  0   f ]
+						 * [ gc -f   0 ]
+						 *
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
+						 */
+
+						v[0][0] = -f/(b*g);
+						v[1][0] = -c/b;
+						v[2][0] = 1.0;
+
+						v[0][1] = -(c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[2][1] = 1.0;
+
+						v[0][2] = -(-c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[2][2] = 1.0;
+
+						lambda[0] = 0.0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+						lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+					}
 				}
-			}
-			else
-			{
-				if (k0 == 0 && k1 == 0)
-				{
-					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
-					 */
-					v[0][0] = 0;
-					v[1][0] = -I;
-					v[2][0] = 1;
 
-					v[0][1] = 0;
-					v[1][1] = I;
-					v[2][1] = 1;
+				/*
+				 * Invert Eigenvalue matrix
+				 */
+				complex v_inv[3][3];
 
-					v[0][2] = 1;
-					v[1][2] = 0;
-					v[2][2] = 0;
+				v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
+				v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
+				v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
 
-					lambda[0] = I*f;
-					lambda[1] = -I*f;
-					lambda[2] = 0;
-				}
-				else if (k0 == 0)
-				{
-					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
-					 */
-					v[0][0] = f/(c*g);
-					v[1][0] = 1;
-					v[2][0] = 0;
+				v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
+				v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
+				v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
 
-					v[0][1] = -(c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[1][1] =  -f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[2][1] = 1;
+				v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
+				v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
+				v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
 
-					v[0][2] = (c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[1][2] = f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[2][2] = 1;
+				complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
 
-					lambda[0] = 0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
-					lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
-				}
-				else if (k1 == 0)
-				{
-					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
-					 */
-					v[0][0] = -f/(b*g);
-					v[1][0] = 0;
-					v[2][0] = 1;
+				for (int j = 0; j < 3; j++)
+					for (int i = 0; i < 3; i++)
+						v_inv[j][i] /= s;
 
-					v[0][1] = -(b*h)/f;
-					v[1][1] = rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
-					v[2][1] = 1;
+                                complex v_lambda[3][3];
 
-					v[0][2] = -(b*h)/f;
-					v[1][2] = -rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
-					v[2][2] = 1;
 
-					lambda[0] = 0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
-					lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
-				}
-				else
-				{
-					/*
-					 * Compute EV's of
-					 * Linear operator
-					 *
-					 * [ 0  hb  hc ]
-					 * [ gb  0   f ]
-					 * [ gc -f   0 ]
-					 *
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
-					 */
-
-					v[0][0] = -f/(b*g);
-					v[1][0] = -c/b;
-					v[2][0] = 1.0;
-
-					v[0][1] = -(c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[2][1] = 1.0;
-
-					v[0][2] = -(-c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[2][2] = 1.0;
-
-					lambda[0] = 0.0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
-					lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
-				}
-			}
-
-			/*
-			 * Invert Eigenvalue matrix
-			 */
-			complex v_inv[3][3];
-
-			v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
-			v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
-			v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
-
-			v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
-			v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
-			v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
-
-			v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
-			v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
-			v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
-
-			complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
-
-			for (int j = 0; j < 3; j++)
 				for (int i = 0; i < 3; i++)
-					v_inv[j][i] /= s;
+				{
 
-			complex UEV[3] = {0.0, 0.0, 0.0};
-			for (int k = 0; k < 3; k++)
+					std::complex<T> &lam = lambda[i];
+
+					std::complex<T> K = rexiFunctions.eval(lam*dt);
+					for (int j = 0; j < 3; j++)
+						v_lambda[j][i] = v[j][i] * K;
+				}
+
 				for (int j = 0; j < 3; j++)
-					UEV[k] += v_inv[k][j] * U[j];
-			
+					for (int i = 0; i < 3; i++)
+					{
+						Z[ik1][ik0][j][i] = 0.;
+						for (int k = 0; k < 3; k++)
+							Z[ik1][ik0][j][i] += v_lambda[j][k] * v_inv[k][i];
+					}
+
+			}
+
+
+			complex U_copy[3];
 			for (int k = 0; k < 3; k++)
 			{
-				std::complex<T> &lam = lambda[k];
-
-				std::complex<T> K = rexiFunctions.eval(lam*dt);
-
-				UEV[k] = K*UEV[k];
+				U_copy[k] = U[k];
+				U[k] = 0.0;
 			}
 
 			for (int k = 0; k < 3; k++)
-				U[k] = 0.0;
-
-			for (int k = 0; k < 3; k++)
 				for (int j = 0; j < 3; j++)
-					U[k] += v[k][j] * UEV[j];
+					U[k] += Z[ik1][ik0][k][j] * U_copy[j];
 
 
 #if SWEET_QUADMATH
@@ -482,6 +539,42 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	T sqrt_h = rexiFunctions.l_sqrt(h);
 	T sqrt_g = rexiFunctions.l_sqrt(g);
 
+
+	// The phin functions (Q * exp(Lambda) * Q^{-1}) are computed in three situations):
+	// - If wanted by the user ( ! simVars.rexi.precompute_phin);
+	// - If it is the first time step (timastamp = 0)
+	// - If the time step has changed
+
+	bool compute_phin = false;
+	if ( (! simVars.rexi.exp_direct_precompute_phin) ||
+	      i_simulation_timestamp == 0                ||
+	      this->dt_precompute_phin != dt       )
+		compute_phin = true;
+
+	if (compute_phin)
+	{
+		for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
+		{
+			//if (i_simulation_timestamp == 0)
+			//{
+				dt_precompute_phin = dt;
+				std::vector<std::array<std::array<complex, 3>, 3>> aux = {};
+				Z.push_back(aux);  // Z[k1][k2][0,1,2][0,1,2];
+			//}
+			for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
+			{
+				//if (i_simulation_timestamp == 0)
+				//{
+					std::array<std::array<complex, 3>, 3> aux2 = {{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
+					Z[ik1].push_back(aux2);
+        	                //}
+			}
+		}
+	}
+
+
+
+
 	SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD_COLLAPSE2
 	for (std::size_t ik1 = 0; ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]; ik1++)
 	{
@@ -510,238 +603,256 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			b = b*rexiFunctions.pi2/s0;
 			c = c*rexiFunctions.pi2/s1;
 
-			/*
-			 * Matrix with Eigenvectors (column-wise)
-			 */
-			complex v[3][3];
 
-			/*
-			 * Eigenvalues
-			 */
-			complex lambda[3];
-
-			if (simVars.sim.plane_rotating_f0 == 0)
+                        if (compute_phin)
 			{
 				/*
-				 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
+				 * Matrix with Eigenvectors (column-wise)
 				 */
-				if (k0 == 0 && k1 == 0)
-				{
-					v[0][0] = 1;
-					v[1][0] = 0;
-					v[2][0] = 0;
-
-					v[0][1] = 0;
-					v[1][1] = 1;
-					v[2][1] = 0;
-
-					v[0][2] = 0;
-					v[1][2] = 0;
-					v[2][2] = 1;
-
-					lambda[0] = 0;
-					lambda[1] = 0;
-					lambda[2] = 0;
-				}
-				else if (k0 == 0)
-				{
-					v[0][0] = 0;
-					v[1][0] = 1;
-					v[2][0] = 0;
-
-					v[0][1] = -sqrt_h/sqrt_g;
-					v[1][1] = 0;
-					v[2][1] = 1;
-
-					v[0][2] = sqrt_h/sqrt_g;
-					v[1][2] = 0;
-					v[2][2] = 1;
-
-					lambda[0] = 0;
-					lambda[1] = -c*sqrt_g*sqrt_h;
-					lambda[2] = c*sqrt_g*sqrt_h;;
-				}
-				else if (k1 == 0)
+				complex v[3][3];
+	
+				/*
+				 * Eigenvalues
+				 */
+				complex lambda[3];
+	
+				if (simVars.sim.plane_rotating_f0 == 0)
 				{
 					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
+					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
 					 */
-
-					v[0][0] = 0;
-					v[1][0] = 0;
-					v[2][0] = 1;
-
-					v[0][1] = -sqrt_h/sqrt_g;
-					v[1][1] = 1;
-					v[2][1] = 0;
-
-					v[0][2] = sqrt_h/sqrt_g;
-					v[1][2] = 1;
-					v[2][2] = 0;
-
-					lambda[0] = 0;
-					lambda[1] = -b*sqrt_g*sqrt_h;
-					lambda[2] = b*sqrt_g*sqrt_h;
+					if (k0 == 0 && k1 == 0)
+					{
+						v[0][0] = 1;
+						v[1][0] = 0;
+						v[2][0] = 0;
+	
+						v[0][1] = 0;
+						v[1][1] = 1;
+						v[2][1] = 0;
+	
+						v[0][2] = 0;
+						v[1][2] = 0;
+						v[2][2] = 1;
+	
+						lambda[0] = 0;
+						lambda[1] = 0;
+						lambda[2] = 0;
+					}
+					else if (k0 == 0)
+					{
+						v[0][0] = 0;
+						v[1][0] = 1;
+						v[2][0] = 0;
+	
+						v[0][1] = -sqrt_h/sqrt_g;
+						v[1][1] = 0;
+						v[2][1] = 1;
+	
+						v[0][2] = sqrt_h/sqrt_g;
+						v[1][2] = 0;
+						v[2][2] = 1;
+	
+						lambda[0] = 0;
+						lambda[1] = -c*sqrt_g*sqrt_h;
+						lambda[2] = c*sqrt_g*sqrt_h;;
+					}
+					else if (k1 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,0%7D,%7Bg*c*0,0,0%7D%7D
+						 */
+	
+						v[0][0] = 0;
+						v[1][0] = 0;
+						v[2][0] = 1;
+	
+						v[0][1] = -sqrt_h/sqrt_g;
+						v[1][1] = 1;
+						v[2][1] = 0;
+	
+						v[0][2] = sqrt_h/sqrt_g;
+						v[1][2] = 1;
+						v[2][2] = 0;
+	
+						lambda[0] = 0;
+						lambda[1] = -b*sqrt_g*sqrt_h;
+						lambda[2] = b*sqrt_g*sqrt_h;
+					}
+					else
+					{
+						v[0][0] = 0;
+						v[1][0] = -c/b;
+						v[2][0] = 1.0;
+	
+						v[0][1] = -(sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[1][1] = b/c;
+						v[2][1] = 1.0;
+	
+						v[0][2] = (sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[1][2] = b/c;
+						v[2][2] = 1.0;
+	
+						lambda[0] = 0.0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+						lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+					}
 				}
 				else
 				{
-					v[0][0] = 0;
-					v[1][0] = -c/b;
-					v[2][0] = 1.0;
-
-					v[0][1] = -(sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
-					v[1][1] = b/c;
-					v[2][1] = 1.0;
-
-					v[0][2] = (sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
-					v[1][2] = b/c;
-					v[2][2] = 1.0;
-
-					lambda[0] = 0.0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
-					lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+					if (k0 == 0 && k1 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
+						 */
+						v[0][0] = 0;
+						v[1][0] = -I;
+						v[2][0] = 1;
+	
+						v[0][1] = 0;
+						v[1][1] = I;
+						v[2][1] = 1;
+	
+						v[0][2] = 1;
+						v[1][2] = 0;
+						v[2][2] = 0;
+	
+						lambda[0] = I*f;
+						lambda[1] = -I*f;
+						lambda[2] = 0;
+					}
+					else if (k0 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
+						 */
+						v[0][0] = f/(c*g);
+						v[1][0] = 1;
+						v[2][0] = 0;
+	
+						v[0][1] = -(c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][1] =  -f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[2][1] = 1;
+	
+						v[0][2] = (c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][2] = f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[2][2] = 1;
+	
+						lambda[0] = 0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+						lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+					}
+					else if (k1 == 0)
+					{
+						/*
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
+						 */
+						v[0][0] = -f/(b*g);
+						v[1][0] = 0;
+						v[2][0] = 1;
+	
+						v[0][1] = -(b*h)/f;
+						v[1][1] = rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[2][1] = 1;
+	
+						v[0][2] = -(b*h)/f;
+						v[1][2] = -rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[2][2] = 1;
+	
+						lambda[0] = 0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+						lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+					}
+					else
+					{
+						/*
+						 * Compute EV's of
+						 * Linear operator
+						 *
+						 * [ 0  hb  hc ]
+						 * [ gb  0   f ]
+						 * [ gc -f   0 ]
+						 *
+						 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
+						 */
+	
+						v[0][0] = -f/(b*g);
+						v[1][0] = -c/b;
+						v[2][0] = 1.0;
+	
+						v[0][1] = -(c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[2][1] = 1.0;
+	
+						v[0][2] = -(-c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[2][2] = 1.0;
+	
+						lambda[0] = 0.0;
+						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+						lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+					}
 				}
-			}
-			else
-			{
-				if (k0 == 0 && k1 == 0)
-				{
-					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,0,0%7D,%7B0,0,f%7D,%7B0,-f,0%7D%7D
-					 */
-					v[0][0] = 0;
-					v[1][0] = -I;
-					v[2][0] = 1;
 
-					v[0][1] = 0;
-					v[1][1] = I;
-					v[2][1] = 1;
 
-					v[0][2] = 1;
-					v[1][2] = 0;
-					v[2][2] = 0;
+				/*
+				 * Invert Eigenvalue matrix
+				 */
+				complex v_inv[3][3];
 
-					lambda[0] = I*f;
-					lambda[1] = -I*f;
-					lambda[2] = 0;
-				}
-				else if (k0 == 0)
-				{
-					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b*0,h*c%7D,%7Bg*b*0,0,f%7D,%7Bg*c,-f,0%7D%7D
-					 */
-					v[0][0] = f/(c*g);
-					v[1][0] = 1;
-					v[2][0] = 0;
+				v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
+				v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
+				v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
+	
+				v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
+				v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
+				v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
 
-					v[0][1] = -(c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[1][1] =  -f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[2][1] = 1;
+				v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
+				v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
+				v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
 
-					v[0][2] = (c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[1][2] = f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-					v[2][2] = 1;
+				complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
 
-					lambda[0] = 0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
-					lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
-				}
-				else if (k1 == 0)
-				{
-					/*
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c*0%7D,%7Bg*b,0,f%7D,%7Bg*c*0,-f,0%7D%7D
-					 */
-					v[0][0] = -f/(b*g);
-					v[1][0] = 0;
-					v[2][0] = 1;
+				for (int j = 0; j < 3; j++)
+					for (int i = 0; i < 3; i++)
+						v_inv[j][i] /= s;
 
-					v[0][1] = -(b*h)/f;
-					v[1][1] = rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
-					v[2][1] = 1;
+                                complex v_lambda[3][3];
 
-					v[0][2] = -(b*h)/f;
-					v[1][2] = -rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
-					v[2][2] = 1;
 
-					lambda[0] = 0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
-					lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
-				}
-				else
-				{
-					/*
-					 * Compute EV's of
-					 * Linear operator
-					 *
-					 * [ 0  hb  hc ]
-					 * [ gb  0   f ]
-					 * [ gc -f   0 ]
-					 *
-					 * http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,f%7D,%7Bg*c,-f,0%7D%7D
-					 */
-
-					v[0][0] = -f/(b*g);
-					v[1][0] = -c/b;
-					v[2][0] = 1.0;
-
-					v[0][1] = -(c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[2][1] = 1.0;
-
-					v[0][2] = -(-c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-					v[2][2] = 1.0;
-
-					lambda[0] = 0.0;
-					lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
-					lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
-				}
-			}
-
-			/*
-			 * Invert Eigenvalue matrix
-			 */
-			complex v_inv[3][3];
-
-			v_inv[0][0] =  (v[1][1]*v[2][2] - v[1][2]*v[2][1]);
-			v_inv[0][1] = -(v[0][1]*v[2][2] - v[0][2]*v[2][1]);
-			v_inv[0][2] =  (v[0][1]*v[1][2] - v[0][2]*v[1][1]);
-
-			v_inv[1][0] = -(v[1][0]*v[2][2] - v[1][2]*v[2][0]);
-			v_inv[1][1] =  (v[0][0]*v[2][2] - v[0][2]*v[2][0]);
-			v_inv[1][2] = -(v[0][0]*v[1][2] - v[0][2]*v[1][0]);
-
-			v_inv[2][0] =  (v[1][0]*v[2][1] - v[1][1]*v[2][0]);
-			v_inv[2][1] = -(v[0][0]*v[2][1] - v[0][1]*v[2][0]);
-			v_inv[2][2] =  (v[0][0]*v[1][1] - v[0][1]*v[1][0]);
-
-			complex s = v[0][0]*v_inv[0][0] + v[0][1]*v_inv[1][0] + v[0][2]*v_inv[2][0];
-
-			for (int j = 0; j < 3; j++)
 				for (int i = 0; i < 3; i++)
-					v_inv[j][i] /= s;
+				{
 
-			complex UEV[3] = {0.0, 0.0, 0.0};
-			for (int k = 0; k < 3; k++)
+					std::complex<T> &lam = lambda[i];
+
+					std::complex<T> K = rexiFunctions.eval(lam*dt);
+					for (int j = 0; j < 3; j++)
+						v_lambda[j][i] = v[j][i] * K;
+				}
+
 				for (int j = 0; j < 3; j++)
-					UEV[k] += v_inv[k][j] * U[j];
+					for (int i = 0; i < 3; i++)
+					{
+						Z[ik1][ik0][j][i] = 0.;
+						for (int k = 0; k < 3; k++)
+							Z[ik1][ik0][j][i] += v_lambda[j][k] * v_inv[k][i];
+					}
+
+			}
 
 
+			complex U_copy[3];
 			for (int k = 0; k < 3; k++)
 			{
-				std::complex<T> &lam = lambda[k];
-
-				std::complex<T> K = rexiFunctions.eval(lam*dt);
-
-				UEV[k] = K*UEV[k];
+				U_copy[k] = U[k];
+				U[k] = 0.0;
 			}
 
 			for (int k = 0; k < 3; k++)
-				U[k] = 0.0;
-
-			for (int k = 0; k < 3; k++)
 				for (int j = 0; j < 3; j++)
-					U[k] += v[k][j] * UEV[j];
+					U[k] += Z[ik1][ik0][k][j] * U_copy[j];
+
 
 			/*
 			 * Make sure that symmetry is correct
