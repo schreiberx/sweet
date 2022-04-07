@@ -856,8 +856,8 @@ public:
 				simVars.timecontrol.current_timestep_size,
 				description,
 				simVars.diag.total_energy,
-				vis.reduce_max(),
-				vis.reduce_min() );
+				vis.physical_reduce_max(),
+				vis.physical_reduce_min() );
 		return title_string;
 	}
 

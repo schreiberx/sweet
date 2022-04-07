@@ -42,6 +42,7 @@ class TestSpectral
 {
 public:
 	PlaneData_Spectral tmp;
+	PlaneData_Physical tmp_phys;
 	PlaneOperators op;
 	char vis_description[1024];
 
@@ -139,7 +140,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData_Spectral **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -148,7 +149,7 @@ public:
 			bool *viz_reset
 	)
 	{
-		*o_dataArray = &tmp;
+		*o_dataArray = &tmp_phys;
 		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 
 		if (simVars.timecontrol.run_simulation_timesteps)
@@ -222,6 +223,9 @@ public:
 		int asdf = 2;
 		tmp.spectral_set(0, asdf, {c, s});
 		tmp.spectral_set(asdf, 0, {c, s});
+
+		tmp_phys = tmp.toPhys();
+
 	}
 
 

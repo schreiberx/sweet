@@ -12,7 +12,6 @@
 #define SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 
 #include <rexi/EXPFunctions.hpp>
-//#include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneData_SpectralComplex.hpp>

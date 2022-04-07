@@ -21,7 +21,6 @@
 
 
 #include <sweet/SimulationVariables.hpp>
-////#include <sweet/plane/PlaneData.hpp>
 #include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
 
@@ -29,8 +28,6 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataGridMapping.hpp>
 #include <sweet/plane/PlaneDiagnostics.hpp>
-//#include <sweet/plane/Convert_PlaneDataComplex_to_PlaneData.hpp>
-//#include <sweet/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
 #include <sweet/Stopwatch.hpp>
 #include <sweet/SWEETError.hpp>
 #include <ostream>
@@ -958,8 +955,8 @@ public:
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
-				vis.reduce_max(),
-				vis.reduce_min() );
+				vis.physical_reduce_max(),
+				vis.physical_reduce_min() );
 
 		return title_string;
 	}

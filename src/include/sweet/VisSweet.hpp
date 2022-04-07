@@ -98,7 +98,7 @@ class VisSweet	:
 
 	void vis_render()
 	{
-		const PlaneData_Spectral *ro_visPlaneData;
+		const PlaneData_Physical *ro_visPlaneData;
 		double aspect_ratio = 0;
 		int render_primitive = 0;
 		void *bogus_data;
@@ -106,6 +106,7 @@ class VisSweet	:
 		viz_min = std::numeric_limits<double>::infinity();
 		viz_max = std::numeric_limits<double>::infinity();
 		bool reset = false;
+
 
 		simulation->vis_get_vis_data_array(
 				&ro_visPlaneData,
@@ -117,8 +118,7 @@ class VisSweet	:
 				&reset
 		);
 
-		PlaneData_Physical ro_visPlaneData_phys = ro_visPlaneData->toPhys();
-		PlaneData_Physical &visData = (PlaneData_Physical&)*&ro_visPlaneData_phys;
+		PlaneData_Physical &visData = (PlaneData_Physical&)*&ro_visPlaneData;
 
 //		visData.request_data_physical();
 

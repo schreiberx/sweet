@@ -482,7 +482,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData_Spectral **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -496,33 +496,51 @@ public:
 		switch (vis_id)
 		{
 		default:
-			*o_dataArray = &prog_h;
+		{
+			PlaneData_Physical prog_h_phys = prog_h.toPhys();
+			*o_dataArray = &prog_h_phys;
 			break;
+		}
 
 		case 1:
+		{
 			tmp = get_advected_solution(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 2:
+		{
 			tmp = op.diff_c_x(get_advected_solution(simVars.timecontrol.current_simulation_time));
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 3:
+		{
 			tmp = get_advected_solution_diffx(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 4:
+		{
 			tmp = op.diff_c_y(get_advected_solution(simVars.timecontrol.current_simulation_time));
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 5:
+		{
 			tmp = get_advected_solution_diffy(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 		}
 
 		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];

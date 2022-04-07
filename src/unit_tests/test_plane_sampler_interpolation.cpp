@@ -38,7 +38,7 @@ public:
 	PlaneOperators op;
 
 #if SWEET_GUI
-	PlaneData viz_plane_data;
+	PlaneData_Physical viz_plane_data;
 
 	int render_primitive_id = 0;
 #endif
@@ -273,8 +273,8 @@ public:
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min()
+				viz_plane_data.physical_reduce_max(),
+				viz_plane_data.physical_reduce_min()
 		);
 
 		return title_string;

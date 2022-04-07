@@ -8,7 +8,8 @@
 #endif
 
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
+#include "../include/sweet/plane/PlaneData_Physical.hpp"
 #include "../programs/swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include "../programs/swe_plane_timeintegrators/SWE_Plane_TimeSteppers.hpp"
 #include <sweet/SimulationVariables.hpp>
@@ -24,13 +25,13 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	PlaneData prog_h_pert, prog_u, prog_v;
+	PlaneData_Spectral prog_h_pert, prog_u, prog_v;
 
 	// Initial values for comparison with analytical solution
-	PlaneData t0_prog_h_pert, t0_prog_u, t0_prog_v;
+	PlaneData_Spectral t0_prog_h_pert, t0_prog_u, t0_prog_v;
 
 	// Forcings
-	PlaneData force_h_pert, force_u, force_v;
+	PlaneData_Spectral force_h_pert, force_u, force_v;
 
 	PlaneDataGridMapping gridMapping;
 
@@ -42,7 +43,7 @@ public:
 	PlaneOperators op;
 
 #if SWEET_GUI
-	PlaneData viz_plane_data;
+	PlaneData_Spectral viz_plane_data;
 
 	int render_primitive_id = 0;
 #endif
@@ -97,17 +98,19 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
+		PlaneData_Physical prog_h_pert_phys(planeDataConfig);
+		PlaneData_Physical prog_u_phys(planeDataConfig);
+		PlaneData_Physical prog_v_phys(planeDataConfig);
+
 		// set to some values for first touch NUMA policy (HPC stuff)
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_h_pert.spectral_set_all(0, 0);
-		prog_u.spectral_set_all(0, 0);
-		prog_v.spectral_set_all(0, 0);
-#endif
+		prog_h_pert_phys.physical_set_all_value(simVars.sim.h0);
+		prog_h_pert.loadPlaneDataPhysical(prog_h_pert_phys);
+		prog_u.spectral_set_zero();
+		prog_v.spectral_set_zero();
 
 		// Setup prog vars
-		prog_h_pert.physical_set_all(simVars.sim.h0);
-		prog_u.physical_set_all(0);
-		prog_v.physical_set_all(0);
+		//prog_u.physical_set_all(0);
+		//prog_v.physical_set_all(0);
 
 		// Check if input parameters are adequate for this simulation
 		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
@@ -129,13 +132,22 @@ public:
 		
 		// Load data, if requested
 		if (simVars.iodata.initial_condition_data_filenames.size() > 0)
-			prog_h_pert.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[0].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		{
+			prog_h_pert_phys.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[0].c_str(), simVars.iodata.initial_condition_input_data_binary);
+			prog_h_pert.loadPlaneDataPhysical(prog_h_pert_phys);
+		}
 
 		if (simVars.iodata.initial_condition_data_filenames.size() > 1)
-			prog_u.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[1].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		{
+			prog_u_phys.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[1].c_str(), simVars.iodata.initial_condition_input_data_binary);
+			prog_u.loadPlaneDataPhysical(prog_u_phys);
+		}
 
 		if (simVars.iodata.initial_condition_data_filenames.size() > 2)
-			prog_v.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[2].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		{
+			prog_v_phys.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[2].c_str(), simVars.iodata.initial_condition_input_data_binary);
+			prog_v.loadPlaneDataPhysical(prog_v_phys);
+		}
 
 		timeSteppers.setup(
 				simVars.disc.timestepping_method,
@@ -282,9 +294,9 @@ int main(int i_argc, char *i_argv[])
 	double eps = 1e-13;
 	for (int i = 0; i < 2; ++i)
 	{
-		double err_h = (simulations[2 * i]->prog_h_pert - simulations[2 * i + 1]->prog_h_pert).reduce_maxAbs();
-		double err_u = (simulations[2 * i]->prog_u - simulations[2 * i + 1]->prog_u).reduce_maxAbs();
-		double err_v = (simulations[2 * i]->prog_v - simulations[2 * i + 1]->prog_v).reduce_maxAbs();
+		double err_h = (simulations[2 * i]->prog_h_pert - simulations[2 * i + 1]->prog_h_pert).toPhys().physical_reduce_max_abs();
+		double err_u = (simulations[2 * i]->prog_u - simulations[2 * i + 1]->prog_u).toPhys().physical_reduce_max_abs();
+		double err_v = (simulations[2 * i]->prog_v - simulations[2 * i + 1]->prog_v).toPhys().physical_reduce_max_abs();
 
 		std::cout << " --> Comparing solutions with Tmax = " << Tmax + i * simVars.timecontrol.current_timestep_size / 2. << ", dt = " << simVars.timecontrol.current_timestep_size << std::endl;
 		std::cout << "  ** Error with / without precomputing phin:" << std::endl;

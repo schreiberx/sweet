@@ -105,8 +105,8 @@ public:
 			PlaneData_Physical u_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(2.0*u - u_prev, planeDataConfig);
 			PlaneData_Physical v_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(2.0*v - v_prev, planeDataConfig);
 #else       //To avoid multi-step method
-			PlaneData u_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(u , planeDataConfig);
-			PlaneData v_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(v , planeDataConfig);
+			PlaneDataPhysical u_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(u , planeDataConfig);
+			PlaneDataPhysical v_extrap = Convert_ScalarDataArray_to_PlaneDataPhysical::convert(v , planeDataConfig);
 #endif
 			//Departure point tmp
 			ScalarDataArray rx_d_new(num_points);

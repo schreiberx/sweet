@@ -269,8 +269,8 @@ public:
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min()
+				viz_plane_data.physical_reduce_max(),
+				viz_plane_data.physical_reduce_min()
 		);
 
 		return title_string;
