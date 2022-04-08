@@ -17,7 +17,8 @@
 #	error	"Parareal must be enabled in this unit test"
 #endif
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include "../programs/swe_plane_timeintegrators/SWE_Plane_TimeSteppers.hpp"
@@ -32,7 +33,7 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	PlaneData prog_h, prog_u, prog_v;
+	PlaneData_Spectral prog_h, prog_u, prog_v;
 
 	SWE_Plane_TimeSteppers timeSteppers;
 
@@ -107,9 +108,9 @@ public:
 		timeSteppers.master->set_previous_solution(prog_h, prog_u, prog_v);
 		while (!should_quit()) {
 
-			PlaneData h_prev = prog_h;
-			PlaneData u_prev = prog_u;
-			PlaneData v_prev = prog_v;
+			PlaneData_Spectral h_prev = prog_h;
+			PlaneData_Spectral u_prev = prog_u;
+			PlaneData_Spectral v_prev = prog_v;
 			run_timestep();
 
 			if (set_previous_solution == 0)
@@ -123,9 +124,9 @@ public:
 			} else if (set_previous_solution == 2)
 			{
 				// set wrong_previous_solution
-				PlaneData h2 = 0.5 * h_prev;
-				PlaneData u2 = 0.5 * u_prev;
-				PlaneData v2 = 0.5 * v_prev;
+				PlaneData_Spectral h2 = 0.5 * h_prev;
+				PlaneData_Spectral u2 = 0.5 * u_prev;
+				PlaneData_Spectral v2 = 0.5 * v_prev;
 				timeSteppers.master->set_previous_solution(h2, u2, v2);
 			}
 
@@ -152,9 +153,9 @@ public:
 
 
 	double compute_error(
-				PlaneData h2,
-				PlaneData u2,
-				PlaneData v2)
+				PlaneData_Spectral h2,
+				PlaneData_Spectral u2,
+				PlaneData_Spectral v2)
 	{
 		return std::max(
 				(prog_h - h2).reduce_maxAbs(),

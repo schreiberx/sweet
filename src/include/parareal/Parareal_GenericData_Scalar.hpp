@@ -190,6 +190,9 @@ public:
 	}
 
 
+	void physical_print()
+	{
+	}
 };
 
 #endif

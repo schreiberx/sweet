@@ -28,9 +28,9 @@ public:
 
 	// for parareal SL
 	virtual void set_previous_solution(
-				PlaneData &i_h_prev,
-				PlaneData &i_u_prev,
-				PlaneData &i_v_prev
+				PlaneData_Spectral &i_h_prev,
+				PlaneData_Spectral &i_u_prev,
+				PlaneData_Spectral &i_v_prev
 	)
 	{
 	};

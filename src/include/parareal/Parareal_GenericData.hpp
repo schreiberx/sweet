@@ -14,7 +14,7 @@
  * This class may be inherited and specialized to each data type
  */
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 
 class Parareal_GenericData
@@ -51,6 +51,16 @@ class Parareal_GenericData
 		{
 		};
 
+		DataContainer operator=(const DataContainer &i_data)
+		{
+			//std::cout << "OPERATOR=2" << std::endl;
+			this->level = i_data.level;
+			this->time = i_data.time;
+			this->nb_fields = i_data.nb_fields;
+			return *this;
+		};
+
+
 		~DataContainer()
 		{
 		}
@@ -77,10 +87,10 @@ public:
 		return dummy;
 	};
 
-	virtual DataContainer<PlaneData*>* get_pointer_to_data_PlaneData_Spectral() const
+	virtual DataContainer<PlaneData_Spectral*>* get_pointer_to_data_PlaneData_Spectral() const
 	{
 		SWEETError("This interface function should not be called");
-		DataContainer<PlaneData*>* dummy = nullptr;
+		DataContainer<PlaneData_Spectral*>* dummy = nullptr;
 		return dummy;
 	};
 
@@ -147,6 +157,8 @@ public:
 
 ////	virtual Parareal_GenericData operator-(const Parareal_GenericData &i_data) = 0;
 	virtual Parareal_GenericData& operator-=(const Parareal_GenericData &i_data) = 0;
+
+	virtual void physical_print() = 0;
 
 };
 

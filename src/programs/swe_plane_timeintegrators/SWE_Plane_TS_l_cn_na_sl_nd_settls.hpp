@@ -82,9 +82,9 @@ public:
 	}
 
 	void set_previous_solution(
-				PlaneData &i_h_prev,
-				PlaneData &i_u_prev,
-				PlaneData &i_v_prev
+				PlaneData_Spectral &i_h_prev,
+				PlaneData_Spectral &i_u_prev,
+				PlaneData_Spectral &i_v_prev
 	) override
 	{
 		if (simVars.misc.verbosity > 5)

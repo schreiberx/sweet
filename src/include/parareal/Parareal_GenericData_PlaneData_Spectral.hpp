@@ -12,14 +12,12 @@
 #include <assert.h>
 #include <parareal/Parareal_GenericData.hpp>
 
-#define SPLITTED_PLANE_DATA 0
-
 template <int N>
 class Parareal_GenericData_PlaneData_Spectral :
 		public Parareal_GenericData
 {
 	class DataContainer_PlaneData_Spectral:
-			public Parareal_GenericData::DataContainer<PlaneData*>
+			public Parareal_GenericData::DataContainer<PlaneData_Spectral*>
 	{
 
 
@@ -27,36 +25,31 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 		DataContainer_PlaneData_Spectral(PlaneDataConfig* i_planeDataConfig)
 		{
-			this->simfields = new PlaneData*[N];
+			this->simfields = new PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
-				this->simfields[i] = new PlaneData(i_planeDataConfig);
+				this->simfields[i] = new PlaneData_Spectral(i_planeDataConfig);
 		};
 
 		DataContainer_PlaneData_Spectral(
-#if SPLITTED_PLANE_DATA
 				PlaneData_Spectral* i_simfields[N]
-#else
-				PlaneData* i_simfields[N]
-#endif
 		)
 		{
-			this->simfields = new PlaneData*[N];
+			this->simfields = new PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
-				this->simfields[i] = i_simfields[i];
+				*(this->simfields[i]) = *(i_simfields[i]);
 		};
 
 		DataContainer_PlaneData_Spectral(DataContainer_PlaneData_Spectral &i_data)
 		{
-			this->simfields = new PlaneData*[N];
+			this->simfields = new PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
-				this->simfields[i] = i_data.simfields[i];
+				*(this->simfields[i]) = *(i_data.simfields[i]);
 		};
 
 		DataContainer_PlaneData_Spectral& operator=(const DataContainer_PlaneData_Spectral &i_data)
 		{
-			std::cout << "GG" << std::endl;
 			for (int i = 0; i < N; i++)
-				this->simfields[i] = i_data.simfields[i];
+				*(this->simfields[i]) = *(i_data.simfields[i]);
 			return *this;
 		};
 
@@ -73,10 +66,10 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 public:
 
-	DataContainer<PlaneData*>* data;
+	DataContainer<PlaneData_Spectral*>* data;
 
 public:
-	DataContainer<PlaneData*>* get_pointer_to_data_PlaneData_Spectral() const override
+	DataContainer<PlaneData_Spectral*>* get_pointer_to_data_PlaneData_Spectral() const override
 	{
 		return this->data;
 	};
@@ -99,12 +92,16 @@ public:
 
 	Parareal_GenericData_PlaneData_Spectral(Parareal_GenericData_PlaneData_Spectral &i_data)
 	{
-		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		//*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		for (int i = 0; i < N; i++)
+			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
 	};
 
 	Parareal_GenericData_PlaneData_Spectral& operator=(const Parareal_GenericData &i_data)
 	{
-		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		//*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		for (int i = 0; i < N; i++)
+			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
 		return *this;
 	};
 
@@ -141,11 +138,7 @@ public:
 	 * Setup data
 	 */
 	void setup(
-#if SPLITTED_PLANE_DATA
 				PlaneData_Spectral* i_simfields[N]
-#else
-				PlaneData* i_simfields[N]
-#endif
 	)
 	{
 		this->get_pointer_to_data_PlaneData_Spectral()->simfields = i_simfields;
@@ -173,7 +166,7 @@ public:
 		double e = -1;
 		for (int k = 0; k < N; k++)
 			e = std::max( e,
-					this->data->simfields[k]->reduce_maxAbs());
+					this->data->simfields[k]->toPhys().physical_reduce_max_abs());
 		return e;
 	}
 
@@ -185,6 +178,8 @@ public:
 		int physical_size_y = this->data->simfields[0]->planeDataConfig->physical_data_size[1];
 
 		for (int i = 0; i < N; i++)
+		{
+			PlaneData_Physical data_phys = this->data->simfields[i]->toPhys();
 			if (!found_nan)
 			{
 				for (int ix = 0; ix < physical_size_x; ++ix)
@@ -192,7 +187,7 @@ public:
 					if (!found_nan)
 					{
 						for (int iy = 0; iy < physical_size_y; ++iy)
-							if ( std::isnan(this->data->simfields[i]->p_physical_get(ix, iy)))
+							if ( std::isnan(data_phys.physical_get(ix, iy)))
 							{
 								found_nan = true;
 								break;
@@ -200,6 +195,7 @@ public:
 					}
 				}
 			}
+		}
 
 		return found_nan;
 	}
@@ -226,6 +222,17 @@ public:
 
 		return *this;
 	}
+
+
+	void physical_print()
+	{
+		for (int i = 0; i < N; i++)
+		{
+			std::cout << "Field #" << i << std::endl;
+			this->data->simfields[i]->toPhys().print();
+		}
+	}
+
 
 };
 

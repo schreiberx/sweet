@@ -294,6 +294,14 @@ public:
 //////////		}
 //////////#endif
 
+		// Store initial solution:
+		parareal_simulationInstances[0]->output_data_file(
+				0,
+				0,
+				true
+			);
+
+
 		CONSOLEPREFIX_start("[MAIN] ");
 		std::cout << "Initial propagation" << std::endl;
 
@@ -302,9 +310,10 @@ public:
 		 */
 		CONSOLEPREFIX_start(0);
 		parareal_simulationInstances[0]->run_timestep_coarse();
+		*(parareal_simulationInstances[0]->parareal_data_output) = *(parareal_simulationInstances[0]->parareal_data_coarse);
 		for (int i = 1; i < pVars->coarse_slices; i++)
 		{
-			CONSOLEPREFIX_start(i-1);
+			CONSOLEPREFIX_start(i - 1);
 			Parareal_GenericData &tmp = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse();
 			Parareal_GenericData &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse_previous_timestep(); // SL
 
@@ -315,6 +324,9 @@ public:
 
 			// run coarse time step
 			parareal_simulationInstances[i]->run_timestep_coarse();
+
+			*(parareal_simulationInstances[i]->parareal_data_output) = *(parareal_simulationInstances[i]->parareal_data_coarse);
+
 		}
 
 		// Store initial propagation:
@@ -356,7 +368,6 @@ public:
 				parareal_simulationInstances[i]->run_timestep_fine();
 			}
 
-
 			/**
 			 * Compute difference between coarse and fine solution
 			 */
@@ -365,7 +376,6 @@ public:
 				CONSOLEPREFIX_start(i);
 				parareal_simulationInstances[i]->compute_difference();
 			}
-
 
 			/**
 			 * 1) Coarse time stepping
