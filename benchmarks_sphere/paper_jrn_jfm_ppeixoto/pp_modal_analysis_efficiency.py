@@ -239,8 +239,8 @@ for i in range(len(alphas)):
 			spec_energy.append(0)
 			continue
 
-	#if alphas[i] != 20:
-	#	continue
+	if alphas[i] != 20:
+		continue
 
 	print()
 	print("Post-processing (alpha, dir, umax, vmax):\n   ",	alphas[i], job_dirs[i], umax[i], vmax[i])
@@ -290,7 +290,8 @@ for i in range(len(alphas)):
 		#evol.plot(title, "mode_evol.pdf")
 		evol.plot_modes( evol.df_energy_clean, "Energy", title, "mode_evol_energy.png", pltfmt)
 		evol.plot_modes( evol.df_ens_clean, "Enstrophy", title, "mode_evol_enstrophy.png", pltfmt)
-
+		evol.plot_total( evol.df_energy_clean, "Energy", title, "total_evol_energy.png", pltfmt)
+		evol.plot_total( evol.df_ens_clean, "Enstrophy", title, "total_evol_enstrophy.png", pltfmt)
 	if plots:	
 		title = title_in + "\n alpha = " + str(alphas[i]) + " , "+title_out
 		evol.plot_out(title, filename_out+"a"+str(alphas[i])+".png")
