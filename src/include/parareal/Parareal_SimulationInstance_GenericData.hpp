@@ -4,7 +4,8 @@
  *  Created on: 25 Feb 2022
  *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
  * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
@@ -30,7 +31,7 @@
 
 #include "../../programs/swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include "../../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
-#include "../../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp"  // TODO: ????
+//#include "../../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp"
 
 /**
  * Interface descriptions which are required
@@ -183,19 +184,22 @@ public:
 			out->allocate_data();
 			return out;
 		}
-		else if (this->geometry == "plane") {
+		else if (this->geometry == "plane")
+		{
 			Parareal_GenericData_PlaneData_Spectral<N>* out = new Parareal_GenericData_PlaneData_Spectral<N>;
 			out->setup_data_config(this->planeDataConfig);
 			out->allocate_data();
 			return out;
 		}
-		else
+		else if (this->geometry == "sphere")
 		{
 			Parareal_GenericData_SphereData_Spectral<N>* out = new Parareal_GenericData_SphereData_Spectral<N>;
 			out->setup_data_config(this->sphereDataConfig);
 			out->allocate_data();
 			return out;
 		}
+		else
+			SWEETError("Unknown geometry");
 	}
 
 
@@ -263,26 +267,26 @@ public:
 	}
 
 	void dataArrays_to_GenericData_SphereData_Spectral(Parareal_GenericData* i_data,
-						SphereData_Spectral &h, SphereData_Spectral &u, SphereData_Spectral&v)
+						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
 	{
 		if (this->model == "swe")
 		{
-			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]) = h;
-			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]) = u;
-			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]) = v;
+			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]) = phi;
+			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]) = vrt;
+			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]) = div;
 		}
 		else
 			SWEETError("Unknown model");
 	}
 
 	void GenericData_SphereData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
-						SphereData_Spectral &h, SphereData_Spectral &u, SphereData_Spectral&v)
+						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
 	{
 		if (this->model == "swe")
 		{
-			h = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]);
-			u = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
-			v = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
+			phi = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]);
+			vrt = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
+			div = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
 		}
 		else
 			SWEETError("Unknown model");
@@ -331,9 +335,7 @@ public:
 		this->parareal_data_fine_previous_timestep->set_time(i_timeframe_end);
 		this->parareal_data_fine_previous_time_slice->set_time(i_timeframe_end);
 		this->parareal_data_ref_exact->set_time(i_timeframe_end);
-//#if SWEET_DEBUG
 		this->parareal_data_fine_exact->set_time(i_timeframe_end);
-//#endif
 
 	};
 
@@ -506,40 +508,14 @@ public:
 				std::string tsm_level
 				)
 	{
-		if (this->geometry == "scalar")
-		{
-		}
-		else if (this->geometry == "plane")
-		{
-			if (this->model == "burgers")
-			{
-			}
-			else if (this->model == "swe")
-			{
-				if (tsm_level == "fine")
-				{
-					PlaneData_Spectral h_prev(this->planeDataConfig);
-					PlaneData_Spectral u_prev(this->planeDataConfig);
-					PlaneData_Spectral v_prev(this->planeDataConfig);
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_fine_previous_time_slice, h_prev, u_prev, v_prev);
-					timeSteppersFine->master->set_previous_solution(h_prev, u_prev, v_prev);
-				}
-				else if (tsm_level == "coarse")
-				{
-					PlaneData_Spectral h_prev(this->planeDataConfig);
-					PlaneData_Spectral u_prev(this->planeDataConfig);
-					PlaneData_Spectral v_prev(this->planeDataConfig);
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_coarse_previous_time_slice, h_prev, u_prev, v_prev);
-					timeSteppersCoarse->master->set_previous_solution(h_prev, u_prev, v_prev);
-				}
-				else
-					SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
 
-			}
-		}
-		else if (this->geometry == "sphere")
-		{
-		}
+		if (tsm_level == "fine")
+			timeSteppersFine->master->set_previous_solution(this->parareal_data_fine_previous_time_slice);
+		else if (tsm_level == "coarse")
+			timeSteppersCoarse->master->set_previous_solution(this->parareal_data_fine_previous_time_slice);
+		else
+			SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
+
 	};
 
 	/**
@@ -559,56 +535,21 @@ public:
 			std::string tsm_level
 	)
 	{
-		if ( ! (tsm_level == "fine" || tsm_level == "coarse"))
-			SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
 
-
-		if (this->geometry == "scalar")
-		{
-		}
-		else if (this->geometry == "plane")
-		{
-			if (this->model == "burgers")
-			{
-			}
-			else if (this->model == "swe")
-			{
-
-				PlaneData_Spectral prog_h_pert(this->planeDataConfig);
-				PlaneData_Spectral prog_u(this->planeDataConfig);
-				PlaneData_Spectral prog_v(this->planeDataConfig);
-				this->GenericData_PlaneData_Spectral_to_dataArrays(i_data, prog_h_pert, prog_u, prog_v);
-
-				if (tsm_level == "fine")
-					timeSteppersFine->master->run_timestep(
-								prog_h_pert, prog_u, prog_v,
-								simVars->timecontrol.current_timestep_size,
-								simVars->timecontrol.current_simulation_time
-							);
-				else if (tsm_level == "coarse")
-					timeSteppersCoarse->master->run_timestep(
-								prog_h_pert, prog_u, prog_v,
-								simVars->timecontrol.current_timestep_size,
-								simVars->timecontrol.current_simulation_time
-							);
-
-				// copy to buffers
-				this->dataArrays_to_GenericData_PlaneData_Spectral(i_data, prog_h_pert, prog_u, prog_v);
-
-			}
-			else
-				SWEETError("Unknown model for this geometry");
-		}
-		else if (this->geometry == "sphere")
-		{
-			if (this->model == "swe")
-			{
-			}
-			else
-				SWEETError("Unknown model for this geometry");
-		}
+		if (tsm_level == "fine")
+			timeSteppersFine->master->run_timestep(
+						i_data,
+						simVars->timecontrol.current_timestep_size,
+						simVars->timecontrol.current_simulation_time
+					);
+		else if (tsm_level == "coarse")
+			timeSteppersCoarse->master->run_timestep(
+						i_data,
+						simVars->timecontrol.current_timestep_size,
+						simVars->timecontrol.current_simulation_time
+					);
 		else
-			SWEETError("Unknown geometry");
+			SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
 
 	}
 
@@ -809,7 +750,6 @@ public:
 			else if (this->model == "swe")
 			{
 
-
 				PlaneData_Spectral h_out(this->planeDataConfig);
 				PlaneData_Spectral u_out(this->planeDataConfig);
 				PlaneData_Spectral v_out(this->planeDataConfig);
@@ -859,16 +799,16 @@ public:
 				{
 					std::string output_filenames = "";
 
-					output_filenames = write_file_parareal(t_h, "prog_h_pert", iteration_id, output_initial_data);
-					output_filenames += ";" + write_file_parareal(t_u, "prog_u", iteration_id, output_initial_data);
-					output_filenames += ";" + write_file_parareal(t_v, "prog_v", iteration_id, output_initial_data);
+					output_filenames = write_file_parareal_plane(t_h, "prog_h_pert", iteration_id, output_initial_data);
+					output_filenames += ";" + write_file_parareal_plane(t_u, "prog_u", iteration_id, output_initial_data);
+					output_filenames += ";" + write_file_parareal_plane(t_v, "prog_v", iteration_id, output_initial_data);
 
-					output_filenames += ";" + write_file_parareal(op_plane->ke(t_u,t_v).toPhys(),"diag_ke", iteration_id, output_initial_data);
+					output_filenames += ";" + write_file_parareal_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke", iteration_id, output_initial_data);
 
-					output_filenames += ";" + write_file_spec_parareal(op_plane->ke(t_u,t_v).toPhys(),"diag_ke_spec", iteration_id, output_initial_data);
+					output_filenames += ";" + write_file_spec_parareal_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke_spec", iteration_id, output_initial_data);
 
-					output_filenames += ";" + write_file_parareal(op_plane->vort(t_u, t_v).toPhys(), "diag_vort", iteration_id, output_initial_data);
-					output_filenames += ";" + write_file_parareal(op_plane->div(t_u, t_v).toPhys(), "diag_div", iteration_id, output_initial_data);
+					output_filenames += ";" + write_file_parareal_plane(op_plane->vort(t_u, t_v).toPhys(), "diag_vort", iteration_id, output_initial_data);
+					output_filenames += ";" + write_file_parareal_plane(op_plane->div(t_u, t_v).toPhys(), "diag_div", iteration_id, output_initial_data);
 
 					if(this->compute_normal_modes){
 						SWEETError("TODO");
@@ -880,13 +820,167 @@ public:
 				}
 			}
 		}
+		else if (this->geometry == "sphere")
+		{
+
+			if (this->model == "swe")
+			{
+				SphereData_Spectral phi_out(this->sphereDataConfig);
+				SphereData_Spectral vrt_out(this->sphereDataConfig);
+				SphereData_Spectral div_out(this->sphereDataConfig);
+				if (output_initial_data)
+					this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_start, phi_out, vrt_out, div_out);
+				else
+					this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_output, phi_out, vrt_out, div_out);
+	
+				SphereData_Physical phi_out_phys = phi_out.toPhys();
+				SphereData_Physical vrt_out_phys = vrt_out.toPhys();
+				SphereData_Physical div_out_phys = div_out.toPhys();
+	
+				///////////////// Save .vtk files for visualizing in paraview
+				///////////////std::ostringstream ss2;
+				///////////////if (output_initial_data)
+				///////////////	ss2 << "output_slice" << time_slice_id - 1 << "_iter" << iteration_id << ".vtk";
+				///////////////else
+				///////////////	ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
+				///////////////std::string filename2 = ss2.str();
+				///////////////phi_out_phys.file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
+
+
+				/*
+				 * File output
+				 *
+				 * We write everything in non-staggered output
+				 */
+				// Dump  data in csv, if output filename is not empty
+				if (simVars->iodata.output_file_name.size() > 0)
+				{
+					if (simVars->iodata.output_file_mode == "csv")
+					{
+						std::string output_filename;
+		
+						SphereData_Spectral h = phi_out_phys*(1.0/simVars->sim.gravitation);
+						h += simVars->sim.h0;
+		
+						output_filename = write_file_csv_parareal_sphere(h, "prog_h", iteration_id, output_initial_data);
+						std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
+		
+						output_filename = write_file_csv_parareal_sphere(phi_out, "prog_phi_pert", iteration_id, output_initial_data);
+						std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
+		
+						SphereData_Physical u(sphereDataConfig);
+						SphereData_Physical v(sphereDataConfig);
+		
+						op_sphere->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
+		
+						output_filename = write_file_csv_parareal_sphere(u, "prog_u", iteration_id, output_initial_data);
+						std::cout << " + " << output_filename << std::endl;
+		
+						output_filename = write_file_csv_parareal_sphere(v, "prog_v", iteration_id, output_initial_data);
+						std::cout << " + " << output_filename << std::endl;
+		
+						output_filename = write_file_csv_parareal_sphere(vrt_out, "prog_vrt", iteration_id, output_initial_data);
+						std::cout << " + " << output_filename << std::endl;
+		
+						output_filename = write_file_csv_parareal_sphere(div_out, "prog_div", iteration_id, output_initial_data);
+						std::cout << " + " << output_filename << std::endl;
+		
+						SphereData_Spectral potvrt = (phi_out/simVars->sim.gravitation)*vrt_out;
+		
+						output_filename = write_file_csv_parareal_sphere(potvrt, "prog_potvrt", iteration_id, output_initial_data);
+						std::cout << " + " << output_filename << std::endl;
+					}
+					else if (simVars->iodata.output_file_mode == "bin")
+					{
+						std::string output_filename;
+		
+						{
+							output_filename = write_file_bin_parareal_sphere(phi_out, "prog_phi_pert", iteration_id);
+							SphereData_Physical prog_phys = phi_out.toPhys();
+		
+							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+						}
+		
+						{
+							output_filename = write_file_bin_parareal_sphere(vrt_out, "prog_vrt", iteration_id);
+							SphereData_Physical prog_phys = vrt_out.toPhys();
+		
+							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+						}
+		
+						{
+							output_filename = write_file_bin_parareal_sphere(div_out, "prog_div", iteration_id);
+							SphereData_Physical prog_phys = div_out.toPhys();
+		
+							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+						}
+					}
+					
+				}
+
+			}
+
+		}
+		else
+			SWEETError("Unknown geometry");
 	};
 
 
 	/**
 	 * Write file to data and return string of file name (parareal)
 	 */
-	std::string write_file_parareal(
+	std::string write_file_csv_parareal_sphere(
+			const SphereData_Spectral &i_sphereData,
+			const char* i_name,	///< name of output variable
+			int iteration_id,
+			bool output_initial_data = false,
+			bool i_phi_shifted = false
+		)
+	{
+		char buffer[1024];
+
+		// create copy
+		SphereData_Physical sphereData = i_sphereData.toPhys();
+
+		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
+		sprintf(buffer, filename_template, i_name, timeframe_end * simVars->iodata.output_time_scale, iteration_id);
+
+		if (i_phi_shifted)
+			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
+		else
+			sphereData.physical_file_write(buffer);
+
+		return buffer;
+
+	}
+
+	/**
+	 * Write file to data and return string of file name
+	 */
+	std::string write_file_bin_parareal_sphere(
+			const SphereData_Spectral &i_sphereData,
+			const char* i_name,
+			int iteration_id
+	)
+	{
+		char buffer[1024];
+
+		SphereData_Spectral sphereData(i_sphereData);
+		//const char* filename_template = simVars.iodata.output_file_name.c_str();
+		const char* filename_template = "output_%s_t%020.8f_iter%03d.sweet";
+		sprintf(buffer, filename_template, i_name, timeframe_end * simVars->iodata.output_time_scale, iteration_id);
+		//sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+		sphereData.file_write_binary_spectral(buffer);
+
+		return buffer;
+	}
+
+
+
+	/**
+	 * Write file to data and return string of file name (parareal)
+	 */
+	std::string write_file_parareal_plane(
 			const PlaneData_Physical &i_planeData,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
@@ -908,7 +1002,7 @@ public:
 	 * Write spectrum info to data and return string of file name (parareal)
 	 */
 
-	std::string write_file_spec_parareal(
+	std::string write_file_spec_parareal_plane(
 			const PlaneData_Spectral &i_planeData,
 			const char* i_name,	///< name of output variable
 			int iteration_id,

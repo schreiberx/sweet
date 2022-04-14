@@ -264,35 +264,6 @@ public:
 	void run()
 	{
 
-//////////#if SWEET_DEBUG
-//////////		// Perform a full fine simulation
-//////////		CONSOLEPREFIX_start("[MAIN] ");
-//////////		std::cout << "Full fine simulation (debugging)" << std::endl;
-//////////
-//////////		CONSOLEPREFIX_start(0);
-//////////		parareal_simulationInstances[0]->run_timestep_fine();
-//////////		Parareal_Data &fine_exact = parareal_simulationInstances[0]->get_reference_to_data_timestep_fine();
-//////////		parareal_simulationInstances[0]->sim_set_data_fine_exact(fine_exact);
-//////////
-//////////		for (int i = 1; i < pVars->coarse_slices; i++)
-//////////		{
-//////////			CONSOLEPREFIX_start(i-1);
-//////////			Parareal_Data &tmp = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine();
-//////////			Parareal_Data &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine_previous_timestep(); // SL
-//////////
-//////////			// use fine time step output data as initial data of next time slice
-//////////			CONSOLEPREFIX_start(i);
-//////////			parareal_simulationInstances[i]->sim_set_data(tmp);
-//////////			parareal_simulationInstances[i]->sim_set_data_fine_previous_time_slice(tmp2); // SL
-//////////
-//////////			// run fine time step
-//////////			parareal_simulationInstances[i]->run_timestep_fine();
-//////////
-//////////			//store
-//////////			Parareal_Data &fine_exact = parareal_simulationInstances[i]->get_reference_to_data_timestep_fine();
-//////////			parareal_simulationInstances[i]->sim_set_data_fine_exact(fine_exact);
-//////////		}
-//////////#endif
 
 		// Store initial solution:
 		parareal_simulationInstances[0]->output_data_file(

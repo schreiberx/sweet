@@ -10,6 +10,10 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
+#if SWEET_PARAREAL
+#include <parareal/Parareal_GenericData.hpp>
+#endif
+
 
 class SWE_Sphere_TS_interface
 {
@@ -42,6 +46,31 @@ public:
 	{
 	}
 
+#if SWEET_PARAREAL
+	void run_timestep(
+			Parareal_GenericData* io_data,
+
+			double i_dt,		///< time step size
+			double i_sim_timestamp
+	)
+	{
+		SphereData_Spectral h = *(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]);
+		SphereData_Spectral u = *(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
+		SphereData_Spectral v = *(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
+
+		run_timestep(h, u, v,
+				i_dt,
+				i_sim_timestamp
+			);
+
+		*(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]) = h;
+		*(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]) = u;
+		*(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]) = v;
+
+	}
+
+
+
 	// for parareal SL
 	virtual void set_previous_solution(
 				SphereData_Spectral &i_phi_prev,
@@ -50,6 +79,21 @@ public:
 	)
 	{
 	};
+
+	// for parareal SL
+	void set_previous_solution(
+			Parareal_GenericData* i_data
+	)
+	{
+		SphereData_Spectral phi_prev = *i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0];
+		SphereData_Spectral vrt_prev = *i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1];
+		SphereData_Spectral div_prev = *i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2];
+
+		set_previous_solution(phi_prev, vrt_prev, div_prev);
+	};
+#endif
+
+
 
 	virtual ~SWE_Sphere_TS_interface()
 	{

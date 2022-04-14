@@ -70,6 +70,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+#if SWEET_PARAREAL
 	void set_previous_solution(
 				PlaneData_Spectral &i_h_prev,
 				PlaneData_Spectral &i_u_prev,
@@ -82,7 +83,7 @@ public:
 		u_prev = i_u_prev;
 		v_prev = i_v_prev;
 	}
-
+#endif
 
 
 

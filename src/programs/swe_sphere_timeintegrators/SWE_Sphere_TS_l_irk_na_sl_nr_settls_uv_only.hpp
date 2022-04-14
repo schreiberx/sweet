@@ -77,6 +77,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+#if SWEET_PARAREAL
 	void set_previous_solution(
 				SphereData_Spectral &i_phi_prev,
 				SphereData_Spectral &i_vrt_prev,
@@ -89,7 +90,7 @@ public:
 		U_vrt_prev = i_vrt_prev;
 		U_div_prev = i_div_prev;
 	}
-
+#endif
 
 	virtual ~SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only();
 };
