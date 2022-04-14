@@ -81,6 +81,7 @@ public:
 	Parareal_GenericData* parareal_data_coarse_previous_time_slice = nullptr;
 	Parareal_GenericData* parareal_data_fine_previous_timestep = nullptr;
 	Parareal_GenericData* parareal_data_fine_previous_time_slice = nullptr;
+	Parareal_GenericData* parareal_data_ref_exact = nullptr;
 #if SWEET_DEBUG
 	Parareal_GenericData* parareal_data_fine_exact = nullptr;
 #endif
@@ -165,6 +166,7 @@ public:
 		this->parareal_data_coarse_previous_time_slice = this->create_new_data_container();
 		this->parareal_data_fine_previous_timestep     = this->create_new_data_container();
 		this->parareal_data_fine_previous_time_slice   = this->create_new_data_container();
+		this->parareal_data_ref_exact   = this->create_new_data_container();
 #if SWEET_DEBUG
 		this->parareal_data_fine_exact                 = this->create_new_data_container();
 #endif
@@ -328,6 +330,7 @@ public:
 		this->parareal_data_coarse_previous_time_slice->set_time(i_timeframe_end);
 		this->parareal_data_fine_previous_timestep->set_time(i_timeframe_end);
 		this->parareal_data_fine_previous_time_slice->set_time(i_timeframe_end);
+		this->parareal_data_ref_exact->set_time(i_timeframe_end);
 #if SWEET_DEBUG
 		this->parareal_data_fine_exact->set_time(i_timeframe_end);
 #endif
@@ -485,7 +488,7 @@ public:
 			Parareal_GenericData &i_pararealData
 	)
 	{
-		SWEETError("TODO");
+		//SWEETError("TODO");
 	};
 
 	/**
@@ -494,7 +497,7 @@ public:
 	void compare_to_fine_exact(
 	)
 	{
-		SWEETError("TODO");
+		//SWEETError("TODO");
 	};
 
 #endif
@@ -924,6 +927,155 @@ public:
 	}
 
 
+	/**
+	 * Compute and store parareal errors during simulation
+	 */
+	void store_parareal_error(
+			int iteration_id,
+			int time_slice_id,
+			std::string path_ref,
+			std::string base_solution,	// "ref" or "fine"
+			bool output_initial_data = false,
+			int i_precision = 16
+	)
+	{
+
+		if ( ! (base_solution == "ref" || base_solution == "fine"))
+			SWEETError("Wrong base solution for computing parareal errors.");
+
+		// READ REF DATA
+		//Parareal_GenericData& data;
+		//if (output_initial_data)
+		//	data = (Parareal_GenericData&)this->parareal_data_start;
+		//else
+		//	data = (Parareal_GenericData&)this->parareal_data_output;
+		//Parareal_GenericData& data = (Parareal_GenericData&)this->parareal_data_output;
+
+		if (this->geometry == "scalar")
+		{
+			SWEETError("TODO");
+		}
+		else if (this->geometry == "plane")
+		{
+			PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig),
+					                  PlaneData_Spectral(this->planeDataConfig),
+					                  PlaneData_Spectral(this->planeDataConfig)};
+
+			for (int ivar = 0; ivar < 3; ivar++)
+			{
+				std::string i_name;
+				if (ivar == 0)
+					i_name = "prog_h_pert";
+				else if (ivar == 1)
+					i_name = "prog_u";
+				else if (ivar == 2)
+					i_name = "prog_v";
+
+				if (iteration_id == 0)
+				{
+					// load ref file
+					char buffer[1024];
+					const char* filename_template = simVars->iodata.output_file_name.c_str();
+					sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
+					std::string buffer2 = path_ref + "/" + std::string(buffer);
+                                        PlaneData_Physical tmp(this->planeDataConfig);
+					tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
+					ref_data[ivar].loadPlaneDataPhysical(tmp);
+
+					// If necessary, interpolate to coarsest spatial grid
+					if (	this->planeDataConfig->physical_res[0] != ref_data[ivar].planeDataConfig->physical_res[0] ||
+						this->planeDataConfig->physical_res[1] != ref_data[ivar].planeDataConfig->physical_res[1]
+					)
+					{
+						//TODO
+	///					/*
+	///					 * setup sampler
+	///					 */
+	///					PlaneDataSampler sampler2D;
+	///					sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
+	///		
+	///		
+	///						/*
+	///						 * sample with BiLinear interpolation
+	///						 */
+	///						PlaneData prog_h3_bilinear(planeDataConfig3);
+	///		
+	///						sampler2D.bilinear_scalar(
+	///								prog_h_pert,	///< input scalar field
+	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
+	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
+	///								prog_h3_bilinear
+	///						);
+					}
+				}
+			}
+			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_ref_exact, ref_data[0], ref_data[1], ref_data[2]);
+			
+		}
+		else if (this->geometry == "sphere")
+		{
+		}
+
+		// COMPUTE AND STORE ERRORS
+		for (int ivar = 0; ivar < 3; ivar++)
+		{
+
+			int resx_data;
+			int resy_data;
+			double err_L1;
+			double err_L2;
+			double err_Linf;
+			std::string i_name;
+
+			if (this->geometry == "scalar")
+			{
+				SWEETError("TODO");
+			}
+			else if (this->geometry == "plane")
+			{
+
+				if (ivar == 0)
+					i_name = "prog_h_pert";
+				else if (ivar == 1)
+					i_name = "prog_u";
+				else if (ivar == 2)
+					i_name = "prog_v";
+
+				resx_data = this->planeDataConfig->physical_res[0];
+				resy_data = this->planeDataConfig->physical_res[1];
+
+				PlaneData_Physical diff = this->parareal_data_output->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
+                                                          parareal_data_ref_exact->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
+				err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
+				err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
+				err_Linf = diff.physical_reduce_max_abs();
+
+			}
+			else if (this->geometry == "sphere")
+			{
+			}
+
+			// save errors in file
+			char buffer_out[1024];
+
+			const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
+			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), timeframe_end, iteration_id);
+
+			std::ofstream file(buffer_out, std::ios_base::trunc);
+			file << std::setprecision(i_precision);
+
+			file << "#BASESOLUTION " << base_solution << " " << path_ref << std::endl;
+			file << "#VAR " << i_name << std::endl;
+			file << "#ITERATION " << iteration_id << std::endl;
+			file << "#TIMESLICE " << time_slice_id << std::endl;
+			file << "#TIMEFRAMEEND " << timeframe_end << std::endl;
+			file << "errL1 " << err_L1 << std::endl;
+			file << "errL2 " << err_L2 << std::endl;
+			file << "errLinf " << err_Linf << std::endl;
+
+			file.close();
+		}
+	}
 
 	void check_for_nan_parareal()
 	{

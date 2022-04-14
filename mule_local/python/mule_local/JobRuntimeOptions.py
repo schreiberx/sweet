@@ -142,6 +142,11 @@ class JobRuntimeOptions(InfoError):
         self.parareal_coarse_timestepping_order = 1
         self.parareal_coarse_timestepping_order2 = 1
         self.parareal_coarse_timestep_size = -1;
+        self.parareal_load_ref_csv_files = 0;
+        self.parareal_path_ref_csv_files = "";
+        self.parareal_load_fine_csv_files = 0;
+        self.parareal_path_fine_csv_files = "";
+        self.parareal_store_iterations = 1;
 
 
         #
@@ -427,6 +432,8 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_ptsm_'+str(self.parareal_coarse_timestepping_method)
             if not 'runtime.parareal_coarse_timestep_size' in filter_list:
                     idstr += '_pDt_'+str(self.parareal_coarse_timestep_size)
+            if not 'runtime.parareal_store_iterations' in filter_list:
+                    idstr += '_pStore_'+str(self.parareal_store_iterations)
 
         if idstr != '':
             idstr = "RT"+idstr
@@ -645,6 +652,11 @@ class JobRuntimeOptions(InfoError):
             retval += " --parareal-coarse-timestepping-order="+str(self.parareal_coarse_timestepping_order)
             retval += " --parareal-coarse-timestepping-order2="+str(self.parareal_coarse_timestepping_order2)
             retval += " --parareal-coarse-timestep-size="+str(self.parareal_coarse_timestep_size);
+            retval += " --parareal-load-ref-csv-files="+str(self.parareal_load_ref_csv_files);
+            retval += " --parareal-path-ref-csv-files="+str(self.parareal_path_ref_csv_files);
+            retval += " --parareal-load-fine-csv-files="+str(self.parareal_load_fine_csv_files);
+            retval += " --parareal-path-fine-csv-files="+str(self.parareal_path_fine_csv_files);
+            retval += " --parareal-store-iterations="+str(self.parareal_store_iterations);
 
             ##if self.parareal_coarse_timestep_size > 0:
             ##    retval += " --parareal-coarse-timestep-size="+str(self.parareal_coarse_timestep_size);

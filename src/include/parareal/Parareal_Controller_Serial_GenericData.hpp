@@ -301,7 +301,6 @@ public:
 				true
 			);
 
-
 		CONSOLEPREFIX_start("[MAIN] ");
 		std::cout << "Initial propagation" << std::endl;
 
@@ -330,11 +329,31 @@ public:
 		}
 
 		// Store initial propagation:
-		for (int i = 0; i < pVars->coarse_slices; i++)
-			parareal_simulationInstances[i]->output_data_file(
-					0,  // 0-th iteration
-					i
-				);
+		if (pVars->store_iterations)
+			for (int i = 0; i < pVars->coarse_slices; i++)
+				parareal_simulationInstances[i]->output_data_file(
+						0,  // 0-th iteration
+						i
+					);
+		// Store initial error relative to reference solution
+		if (pVars->load_ref_csv_files)
+			for (int i = 0; i < pVars->coarse_slices; i++)
+				parareal_simulationInstances[i]->store_parareal_error(
+						0,
+						i,
+						pVars->path_ref_csv_files,
+						"ref",
+						"false");
+		// Store initial error relative to fine solution
+		if (pVars->load_fine_csv_files)
+			for (int i = 0; i < pVars->coarse_slices; i++)
+				parareal_simulationInstances[i]->store_parareal_error(
+						0,
+						i,
+						pVars->path_fine_csv_files,
+						"fine",
+						"false");
+
 
 		/**
 		 * We run as much Parareal iterations as there are coarse slices
@@ -402,10 +421,26 @@ public:
 				if (max_convergence != -1)
 					max_convergence = (convergence==-1)?(convergence):(std::max(max_convergence,convergence));
 
-				parareal_simulationInstances[i]->output_data_file(
-						k + 1,
-						i
-					);
+				if (pVars->store_iterations)
+					parareal_simulationInstances[i]->output_data_file(
+							k + 1,
+							i
+						);
+				if (pVars->load_ref_csv_files)
+					parareal_simulationInstances[i]->store_parareal_error(
+							k + 1,
+							i,
+							pVars->path_ref_csv_files,
+							"ref",
+							"false");
+				if (pVars->load_fine_csv_files)
+					parareal_simulationInstances[i]->store_parareal_error(
+							k + 1,
+							i,
+							pVars->path_fine_csv_files,
+							"fine",
+							"false");
+
 
 				CONSOLEPREFIX.start(i);
 				parareal_simulationInstances[i]->output_data_console(

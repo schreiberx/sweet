@@ -92,14 +92,20 @@ public:
 
 	Parareal_GenericData_PlaneData_Spectral(Parareal_GenericData_PlaneData_Spectral &i_data)
 	{
-		//*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		//this->data->level = i_data.get_pointer_to_data_PlaneData_Spectral()->level;
+		//this->data->time = i_data.get_pointer_to_data_PlaneData_Spectral()->time;
+		//this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields;
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
 	};
 
 	Parareal_GenericData_PlaneData_Spectral& operator=(const Parareal_GenericData &i_data)
 	{
-		//*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
+		//this->data->level = i_data.get_pointer_to_data_PlaneData_Spectral()->level;
+		//this->data->time = i_data.get_pointer_to_data_PlaneData_Spectral()->time;
+		//this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields;
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
 		return *this;
@@ -215,6 +221,7 @@ public:
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
+		std::cout << "AAA " << this->data->nb_fields << " " << i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields << std::endl;
 		assert(this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
 
 		for (int i = 0; i < N; i++)

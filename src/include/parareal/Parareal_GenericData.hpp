@@ -53,7 +53,6 @@ class Parareal_GenericData
 
 		DataContainer operator=(const DataContainer &i_data)
 		{
-			//std::cout << "OPERATOR=2" << std::endl;
 			this->level = i_data.level;
 			this->time = i_data.time;
 			this->nb_fields = i_data.nb_fields;
