@@ -82,9 +82,9 @@ public:
 	Parareal_GenericData* parareal_data_fine_previous_timestep = nullptr;
 	Parareal_GenericData* parareal_data_fine_previous_time_slice = nullptr;
 	Parareal_GenericData* parareal_data_ref_exact = nullptr;
-#if SWEET_DEBUG
+//#if SWEET_DEBUG
 	Parareal_GenericData* parareal_data_fine_exact = nullptr;
-#endif
+//#endif
 
 
 	// Fine and coarse timesteppers
@@ -167,9 +167,9 @@ public:
 		this->parareal_data_fine_previous_timestep     = this->create_new_data_container();
 		this->parareal_data_fine_previous_time_slice   = this->create_new_data_container();
 		this->parareal_data_ref_exact   = this->create_new_data_container();
-#if SWEET_DEBUG
+//#if SWEET_DEBUG
 		this->parareal_data_fine_exact                 = this->create_new_data_container();
-#endif
+//#endif
 	};
 
 
@@ -331,9 +331,9 @@ public:
 		this->parareal_data_fine_previous_timestep->set_time(i_timeframe_end);
 		this->parareal_data_fine_previous_time_slice->set_time(i_timeframe_end);
 		this->parareal_data_ref_exact->set_time(i_timeframe_end);
-#if SWEET_DEBUG
+//#if SWEET_DEBUG
 		this->parareal_data_fine_exact->set_time(i_timeframe_end);
-#endif
+//#endif
 
 	};
 
@@ -935,12 +935,16 @@ public:
 			int time_slice_id,
 			std::string path_ref,
 			std::string base_solution,	// "ref" or "fine"
-			bool output_initial_data = false,
 			int i_precision = 16
 	)
 	{
 
-		if ( ! (base_solution == "ref" || base_solution == "fine"))
+		Parareal_GenericData* parareal_data_ref;
+		if (base_solution == "ref")
+			parareal_data_ref = this->parareal_data_ref_exact;
+		else if (base_solution == "fine")
+			parareal_data_ref = this->parareal_data_fine_exact;
+		else
 			SWEETError("Wrong base solution for computing parareal errors.");
 
 		// READ REF DATA
@@ -1007,9 +1011,9 @@ public:
 	///								prog_h3_bilinear
 	///						);
 					}
+					this->dataArrays_to_GenericData_PlaneData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
 				}
 			}
-			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_ref_exact, ref_data[0], ref_data[1], ref_data[2]);
 			
 		}
 		else if (this->geometry == "sphere")
@@ -1045,7 +1049,7 @@ public:
 				resy_data = this->planeDataConfig->physical_res[1];
 
 				PlaneData_Physical diff = this->parareal_data_output->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
-                                                          parareal_data_ref_exact->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
+                                                          parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
 				err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
 				err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
 				err_Linf = diff.physical_reduce_max_abs();
@@ -1075,6 +1079,7 @@ public:
 
 			file.close();
 		}
+		parareal_data_ref = nullptr;
 	}
 
 	void check_for_nan_parareal()

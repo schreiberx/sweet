@@ -342,8 +342,7 @@ public:
 						0,
 						i,
 						pVars->path_ref_csv_files,
-						"ref",
-						"false");
+						"ref");
 		// Store initial error relative to fine solution
 		if (pVars->load_fine_csv_files)
 			for (int i = 0; i < pVars->coarse_slices; i++)
@@ -351,8 +350,7 @@ public:
 						0,
 						i,
 						pVars->path_fine_csv_files,
-						"fine",
-						"false");
+						"fine");
 
 
 		/**
@@ -431,15 +429,13 @@ public:
 							k + 1,
 							i,
 							pVars->path_ref_csv_files,
-							"ref",
-							"false");
+							"ref");
 				if (pVars->load_fine_csv_files)
 					parareal_simulationInstances[i]->store_parareal_error(
 							k + 1,
 							i,
 							pVars->path_fine_csv_files,
-							"fine",
-							"false");
+							"fine");
 
 
 				CONSOLEPREFIX.start(i);
