@@ -846,7 +846,6 @@ public:
 				///////////////std::string filename2 = ss2.str();
 				///////////////phi_out_phys.file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
 
-
 				/*
 				 * File output
 				 *
@@ -895,21 +894,21 @@ public:
 						std::string output_filename;
 		
 						{
-							output_filename = write_file_bin_parareal_sphere(phi_out, "prog_phi_pert", iteration_id);
+							output_filename = write_file_bin_parareal_sphere(phi_out, "prog_phi_pert", iteration_id, output_initial_data);
 							SphereData_Physical prog_phys = phi_out.toPhys();
 		
 							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 						}
 		
 						{
-							output_filename = write_file_bin_parareal_sphere(vrt_out, "prog_vrt", iteration_id);
+							output_filename = write_file_bin_parareal_sphere(vrt_out, "prog_vrt", iteration_id, output_initial_data);
 							SphereData_Physical prog_phys = vrt_out.toPhys();
 		
 							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 						}
 		
 						{
-							output_filename = write_file_bin_parareal_sphere(div_out, "prog_div", iteration_id);
+							output_filename = write_file_bin_parareal_sphere(div_out, "prog_div", iteration_id, output_initial_data);
 							SphereData_Physical prog_phys = div_out.toPhys();
 		
 							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
@@ -943,7 +942,10 @@ public:
 		SphereData_Physical sphereData = i_sphereData.toPhys();
 
 		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
-		sprintf(buffer, filename_template, i_name, timeframe_end * simVars->iodata.output_time_scale, iteration_id);
+		if (output_initial_data)
+			sprintf(buffer, filename_template, i_name, timeframe_start * simVars->iodata.output_time_scale, iteration_id);
+		else
+			sprintf(buffer, filename_template, i_name, timeframe_end * simVars->iodata.output_time_scale, iteration_id);
 
 		if (i_phi_shifted)
 			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
@@ -960,7 +962,8 @@ public:
 	std::string write_file_bin_parareal_sphere(
 			const SphereData_Spectral &i_sphereData,
 			const char* i_name,
-			int iteration_id
+			int iteration_id,
+			bool output_initial_data = false
 	)
 	{
 		char buffer[1024];
@@ -968,7 +971,10 @@ public:
 		SphereData_Spectral sphereData(i_sphereData);
 		//const char* filename_template = simVars.iodata.output_file_name.c_str();
 		const char* filename_template = "output_%s_t%020.8f_iter%03d.sweet";
-		sprintf(buffer, filename_template, i_name, timeframe_end * simVars->iodata.output_time_scale, iteration_id);
+		if (output_initial_data)
+			sprintf(buffer, filename_template, i_name, timeframe_start * simVars->iodata.output_time_scale, iteration_id);
+		else
+			sprintf(buffer, filename_template, i_name, timeframe_end * simVars->iodata.output_time_scale, iteration_id);
 		//sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
 		sphereData.file_write_binary_spectral(buffer);
 
