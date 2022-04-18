@@ -19,6 +19,8 @@
 #include <limits>
 #include <utility>
 #include <functional>
+#include <vector>
+#include <iterator>
 
 #include <cmath>
 #include <sweet/MemBlockAlloc.hpp>
@@ -745,6 +747,31 @@ public:
 		return std::sqrt(error / (double)sphereDataConfig->physical_array_data_number_of_elements);
 	}
 
+	double physical_reduce_norm1()
+	{
+		double error = 0;
+
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		{
+			double &d = physical_space_data[j];
+			error += std::abs(d);
+		}
+
+		return error;
+	}
+
+	double physical_reduce_norm2()
+	{
+		double error = 0;
+
+		for (std::size_t j = 0; j < sphereDataConfig->physical_array_data_number_of_elements; j++)
+		{
+			double &d = physical_space_data[j];
+			error += d*d;
+		}
+
+		return std::sqrt(error);
+	}
 
 
 	double physical_reduce_sum()	const
@@ -1233,7 +1260,7 @@ public:
 
 		int resx_ref = -1;
 		int resy_ref = -1;
-		for (int i = 0; i < 6; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			std::string line;
 			std::getline(file, line);
@@ -1265,7 +1292,7 @@ public:
 				assert(str_vector.size() == sphereDataConfig->physical_num_lon + 1);
 				assert(str_vector[0] == "0");
 				for (int l = 0; l < sphereDataConfig->physical_num_lon; l++)
-					assert(std::abs(atof(str_vector[l + 1]) - ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI/M_PI*180.0  ) < 1e-13)
+					assert(std::abs(atof(str_vector[l + 1].c_str()) - ((double)l/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI/M_PI*180.0  ) < 1e-13);
 			}
 		}
 
@@ -1284,17 +1311,17 @@ public:
 
 			if (!file.good())
 			{
-				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << std::endl;
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << sphereDataConfig->physical_num_lat - 1 - j + 3 << std::endl;
 				return false;
 			}
 
 
 			assert(str_vector.size() == sphereDataConfig->physical_num_lon + 1);
-			assert(std::abs(atof(str_vector[0]) - sphereDataConfig->lat[j]/M_PI*180.0 ) < 1e-13);
+			assert(std::abs(atof(str_vector[0].c_str()) - sphereDataConfig->lat[j]/M_PI*180.0 ) < 1e-13);
 
 			for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
 			{
-				double val = atof(str_vector[i + 1]);
+				double val = atof(str_vector[i + 1].c_str());
 #if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
         			physical_space_data[i*sphereDataConfig->physical_num_lat+j] = val;
 #else

@@ -28,7 +28,6 @@ class Parareal_GenericData_SphereData_Spectral :
 			this->simfields = new SphereData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = new SphereData_Spectral(i_sphereDataConfig);
-
 		};
 
 		DataContainer_SphereData_Spectral(
@@ -216,6 +215,12 @@ public:
 
 	void physical_print()
 	{
+		for (int i = 0; i < N; i++)
+		{
+			std::cout << "Field #" << i << std::endl;
+			this->data->simfields[i]->toPhys().print();
+		}
+
 	}
 };
 

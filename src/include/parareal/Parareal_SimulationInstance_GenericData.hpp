@@ -512,7 +512,7 @@ public:
 		if (tsm_level == "fine")
 			timeSteppersFine->master->set_previous_solution(this->parareal_data_fine_previous_time_slice);
 		else if (tsm_level == "coarse")
-			timeSteppersCoarse->master->set_previous_solution(this->parareal_data_fine_previous_time_slice);
+			timeSteppersCoarse->master->set_previous_solution(this->parareal_data_coarse_previous_time_slice);
 		else
 			SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
 
@@ -1118,9 +1118,9 @@ public:
 		}
 		else if (this->geometry == "sphere")
 		{
-			SphereData_Spectral ref_data[] = { SphereData_Spectral(this->planeDataConfig),
-					                   SphereData_Spectral(this->planeDataConfig),
-					                   SphereData_Spectral(this->planeDataConfig)};
+			SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig),
+					                   SphereData_Spectral(this->sphereDataConfig),
+					                   SphereData_Spectral(this->sphereDataConfig)};
 
 			for (int ivar = 0; ivar < 3; ivar++)
 			{
@@ -1130,22 +1130,22 @@ public:
 				else if (ivar == 1)
 					i_name = "prog_vrt";
 				else if (ivar == 2)
-					i_name = "prog_divv";
+					i_name = "prog_div";
 
 				if (iteration_id == 0)
 				{
 					// load ref file
 					char buffer[1024];
 					const char* filename_template = simVars->iodata.output_file_name.c_str();
-					sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
+					sprintf(buffer, filename_template, i_name.c_str(), timeframe_end * simVars->iodata.output_time_scale);
 					std::string buffer2 = path_ref + "/" + std::string(buffer);
-                                        PlaneData_Physical tmp(this->planeDataConfig);
+					SphereData_Physical tmp(this->sphereDataConfig);
 					tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
-					ref_data[ivar].loadPlaneDataPhysical(tmp);
+					ref_data[ivar].loadSphereDataPhysical(tmp);
 
 					// If necessary, interpolate to coarsest spatial grid
-					if (	this->sphereDataConfig->physical_res[0] != ref_data[ivar].sphereDataConfig->physical_res[0] ||
-						this->sphereDataConfig->physical_res[1] != ref_data[ivar].sphereDataConfig->physical_res[1]
+					if (	this->sphereDataConfig->physical_num_lat != ref_data[ivar].sphereDataConfig->physical_num_lat ||
+						this->sphereDataConfig->physical_num_lon != ref_data[ivar].sphereDataConfig->physical_num_lon
 					)
 					{
 						//TODO
@@ -1213,13 +1213,29 @@ public:
 			}
 			else if (this->geometry == "sphere")
 			{
+				if (ivar == 0)
+					i_name = "prog_phi_pert";
+				else if (ivar == 1)
+					i_name = "prog_vrt";
+				else if (ivar == 2)
+					i_name = "prog_div";
+
+				resx_data = this->sphereDataConfig->physical_num_lon;
+				resy_data = this->sphereDataConfig->physical_num_lat;
+
+				SphereData_Physical diff = this->parareal_data_output->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys() -
+                                                          parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys();
+				err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
+				err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
+				err_Linf = diff.physical_reduce_max_abs();
+
 			}
 
 			// save errors in file
 			char buffer_out[1024];
 
 			const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
-			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), timeframe_end, iteration_id);
+			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), timeframe_end * simVars->iodata.output_time_scale, iteration_id);
 
 			std::ofstream file(buffer_out, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
@@ -1228,7 +1244,7 @@ public:
 			file << "#VAR " << i_name << std::endl;
 			file << "#ITERATION " << iteration_id << std::endl;
 			file << "#TIMESLICE " << time_slice_id << std::endl;
-			file << "#TIMEFRAMEEND " << timeframe_end << std::endl;
+			file << "#TIMEFRAMEEND " << timeframe_end  * simVars->iodata.output_time_scale << std::endl;
 			file << "errL1 " << err_L1 << std::endl;
 			file << "errL2 " << err_L2 << std::endl;
 			file << "errLinf " << err_Linf << std::endl;
