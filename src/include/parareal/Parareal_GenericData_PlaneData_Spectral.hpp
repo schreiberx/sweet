@@ -76,26 +76,15 @@ public:
 
 public:
 
-///	Parareal_GenericData_PlaneData_Spectral(PlaneDataConfig* i_planeDataConfig):
-///		Parareal_GenericData(),
-///		planeDataConfig(i_planeDataConfig)
-///	{
-///		this->allocate_data();
-///	}
 	Parareal_GenericData_PlaneData_Spectral():
 		Parareal_GenericData()
 	{
 //		this->allocate_data();
 	}
 
-
-
 	Parareal_GenericData_PlaneData_Spectral(Parareal_GenericData_PlaneData_Spectral &i_data)
 	{
 		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
-		//this->data->level = i_data.get_pointer_to_data_PlaneData_Spectral()->level;
-		//this->data->time = i_data.get_pointer_to_data_PlaneData_Spectral()->time;
-		//this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields;
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
 	};
@@ -103,9 +92,6 @@ public:
 	Parareal_GenericData_PlaneData_Spectral& operator=(const Parareal_GenericData &i_data)
 	{
 		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
-		//this->data->level = i_data.get_pointer_to_data_PlaneData_Spectral()->level;
-		//this->data->time = i_data.get_pointer_to_data_PlaneData_Spectral()->time;
-		//this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields;
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
 		return *this;

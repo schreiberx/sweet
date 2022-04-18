@@ -19,7 +19,6 @@ class Parareal_GenericData_SphereData_Spectral :
 {
 	class DataContainer_SphereData_Spectral :
 			public Parareal_GenericData::DataContainer<SphereData_Spectral*>
-			//public Parareal_GenericData<SphereData_Spectral*>::DataContainer
 	{
 
 	public:
@@ -48,6 +47,23 @@ class Parareal_GenericData_SphereData_Spectral :
 				*(this->simfields[i]) = *(i_data.simfields[i]);
 		};
 
+		DataContainer_SphereData_Spectral& operator=(const DataContainer_SphereData_Spectral &i_data)
+		{
+			for (int i = 0; i < N; i++)
+				*(this->simfields[i]) = *(i_data.simfields[i]);
+			return *this;
+		};
+
+
+		~DataContainer_SphereData_Spectral()
+		{
+			for (int i = 0; i < N; ++i)
+				if (this->simfields[i])
+					delete this->simfields[i];
+			if (this->simfields)
+				delete [] this->simfields;
+		}
+
 	};
 
 public:
@@ -73,11 +89,15 @@ public:
 	Parareal_GenericData_SphereData_Spectral(Parareal_GenericData_SphereData_Spectral &i_data)
 	{
 		*(this->data) = *(i_data.get_pointer_to_data_SphereData_Spectral());
+		for (int i = 0; i < N; i++)
+			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]);
 	};
 
 	Parareal_GenericData_SphereData_Spectral& operator=(const Parareal_GenericData &i_data)
 	{
 		*(this->data) = *(i_data.get_pointer_to_data_SphereData_Spectral());
+		for (int i = 0; i < N; i++)
+			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]);
 		return *this;
 	};
 

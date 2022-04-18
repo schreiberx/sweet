@@ -1192,6 +1192,135 @@ public:
 
 
 
+
+#if SWEET_PARAREAL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/**
+	 * Load data from ASCII file.
+	 *
+	 * Read csv files from reference data in parareal, in order to compute parareal erros online
+	 * instead of producing csv files during the parareal simulation.
+	 *
+	 * \return true if data was successfully read
+	 */
+	bool file_physical_loadRefData_Parareal(
+			const char *i_filename,		///< Name of file to load data from
+			bool i_binary_data = false	///< load as binary data (disabled per default)
+	)
+	{
+
+		///SphereDataConfig sphereDataConfig_ref;
+
+		std::cout << "loading DATA from " << i_filename << std::endl;
+
+		std::ifstream file(i_filename);
+
+
+		int resx_ref = -1;
+		int resy_ref = -1;
+		for (int i = 0; i < 6; i++)
+		{
+			std::string line;
+			std::getline(file, line);
+			std::istringstream iss(line);
+			std::vector<std::string> str_vector((std::istream_iterator<std::string>(iss)),
+				std::istream_iterator<std::string>());
+
+			if (i == 0)
+			{
+				assert(str_vector.size() == 1);
+				assert(str_vector[0] == "#TI");
+			}
+			else if (i == 1)
+			{
+				assert(str_vector.size() == 2);
+				assert(str_vector[0] == "#TX");
+				assert(str_vector[1] == "Longitude");
+			}
+			else if (i == 2)
+			{
+				assert(str_vector.size() == 2);
+				assert(str_vector[0] == "#TY");
+				assert(str_vector[1] == "Latitude");
+			}
+			// Line 4: longitude values
+			// First character is "0"
+			else if (i == 3)
+			{
+				assert(str_vector.size() == sphereDataConfig->physical_num_lon + 1);
+				assert(str_vector[0] == "0");
+				for (int l = 0; l < sphereDataConfig->physical_num_lon; l++)
+					assert(std::abs(atof(str_vector[l + 1]) - ((double)i/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI/M_PI*180.0  ) < 1e-13)
+			}
+		}
+
+
+		///sphereDataConfig_ref.setup(resx_ref, resy_ref, (int)((resx_ref * 2) / 3), (int)((resx_ref * 2) / 3), planeDataConfig->reuse_spectral_transformation_plans);
+		///*this = SphereData_Physical(&sphereDataConfig_ref);
+
+
+		for (int j = sphereDataConfig->physical_num_lat - 1; j >= 0; j--)
+		{
+			std::string line;
+			std::getline(file, line);
+			std::istringstream iss(line);
+			std::vector<std::string> str_vector((std::istream_iterator<std::string>(iss)),
+				std::istream_iterator<std::string>());
+
+			if (!file.good())
+			{
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << std::endl;
+				return false;
+			}
+
+
+			assert(str_vector.size() == sphereDataConfig->physical_num_lon + 1);
+			assert(std::abs(atof(str_vector[0]) - sphereDataConfig->lat[j]/M_PI*180.0 ) < 1e-13);
+
+			for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)
+			{
+				double val = atof(str_vector[i + 1]);
+#if SPHERE_DATA_GRID_LAYOUT	== SPHERE_DATA_LAT_CONTINUOUS
+        			physical_space_data[i*sphereDataConfig->physical_num_lat+j] = val;
+#else
+        			physical_space_data[j*sphereDataConfig->physical_num_lon+i] = val;
+#endif
+			}
+		}
+
+		file.close();
+		std::cout << "DATA loaded OK" << std::endl;
+
+		return true;
+	}
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
 	void file_write_raw(
 			const std::string &i_filename
 	)	const

@@ -1118,6 +1118,62 @@ public:
 		}
 		else if (this->geometry == "sphere")
 		{
+			SphereData_Spectral ref_data[] = { SphereData_Spectral(this->planeDataConfig),
+					                   SphereData_Spectral(this->planeDataConfig),
+					                   SphereData_Spectral(this->planeDataConfig)};
+
+			for (int ivar = 0; ivar < 3; ivar++)
+			{
+				std::string i_name;
+				if (ivar == 0)
+					i_name = "prog_phi_pert";
+				else if (ivar == 1)
+					i_name = "prog_vrt";
+				else if (ivar == 2)
+					i_name = "prog_divv";
+
+				if (iteration_id == 0)
+				{
+					// load ref file
+					char buffer[1024];
+					const char* filename_template = simVars->iodata.output_file_name.c_str();
+					sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
+					std::string buffer2 = path_ref + "/" + std::string(buffer);
+                                        PlaneData_Physical tmp(this->planeDataConfig);
+					tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
+					ref_data[ivar].loadPlaneDataPhysical(tmp);
+
+					// If necessary, interpolate to coarsest spatial grid
+					if (	this->sphereDataConfig->physical_res[0] != ref_data[ivar].sphereDataConfig->physical_res[0] ||
+						this->sphereDataConfig->physical_res[1] != ref_data[ivar].sphereDataConfig->physical_res[1]
+					)
+					{
+						//TODO
+	///					/*
+	///					 * setup sampler
+	///					 */
+	///					PlaneDataSampler sampler2D;
+	///					sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
+	///		
+	///		
+	///						/*
+	///						 * sample with BiLinear interpolation
+	///						 */
+	///						PlaneData prog_h3_bilinear(planeDataConfig3);
+	///		
+	///						sampler2D.bilinear_scalar(
+	///								prog_h_pert,	///< input scalar field
+	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
+	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
+	///								prog_h3_bilinear
+	///						);
+					}
+					this->dataArrays_to_GenericData_SphereData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
+				}
+			}
+
+
+
 		}
 
 		// COMPUTE AND STORE ERRORS

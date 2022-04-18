@@ -533,9 +533,10 @@ public:
 			}
 		}
 
-		// Ensure storage of initial solution in parareal
-		if (simVars.timecontrol.current_simulation_time == 0)
 			write_file_output();
+////////		// Ensure storage of initial solution in parareal
+////////		if (simVars.timecontrol.current_simulation_time == 0)
+////////			write_file_output();
 /////////#if !SWEET_PARAREAL
 /////////		else
 /////////			write_file_output();
@@ -1883,6 +1884,8 @@ int main_real(int i_argc, char *i_argv[])
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
 		{
+
+			simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
 
 			//SphereOperators op(sphereDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
