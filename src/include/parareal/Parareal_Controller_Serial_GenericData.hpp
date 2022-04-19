@@ -265,6 +265,30 @@ public:
 	{
 
 
+#if SWEET_DEBUG
+		// DEBUG: full fine simulation
+		CONSOLEPREFIX_start(0);
+		parareal_simulationInstances[0]->run_timestep_fine();
+		*(parareal_simulationInstances[0]->parareal_data_fine_exact_debug) = *(parareal_simulationInstances[0]->parareal_data_fine);
+		for (int i = 1; i < pVars->coarse_slices; i++)
+		{
+			CONSOLEPREFIX_start(i - 1);
+			Parareal_GenericData &tmp = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine();
+			Parareal_GenericData &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine_previous_timestep(); // SL
+
+			// use coarse time step output data as initial data of next coarse time step
+			CONSOLEPREFIX_start(i);
+			parareal_simulationInstances[i]->sim_set_data(tmp);
+			parareal_simulationInstances[i]->sim_set_data_fine_previous_time_slice(tmp2); // SL
+
+			// run coarse time step
+			parareal_simulationInstances[i]->run_timestep_fine();
+
+			*(parareal_simulationInstances[i]->parareal_data_fine_exact_debug) = *(parareal_simulationInstances[i]->parareal_data_fine);
+		}
+#endif
+
+
 		// Store initial solution:
 		parareal_simulationInstances[0]->output_data_file(
 				0,
@@ -451,11 +475,14 @@ public:
 #if SWEET_DEBUG
 				// fine serial solution should be retrieved
 				if (i == k)
+				{
+					std::cout << "Comparing parareal to fine solution at iteration " << i << " and end of timeframe " << i << ". Solutions should be identical." << std::endl;
 					parareal_simulationInstances[i]->compare_to_fine_exact();
+					std::cout << "Comparison OK!" << std::endl;
+				}
 #endif
 
 			}
-///			start_slice++;
 		}
 
 converged:

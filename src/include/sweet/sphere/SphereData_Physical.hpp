@@ -1218,24 +1218,7 @@ public:
 	}
 
 
-
-
 #if SWEET_PARAREAL
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	/**
 	 * Load data from ASCII file.
@@ -1257,9 +1240,6 @@ public:
 
 		std::ifstream file(i_filename);
 
-
-		int resx_ref = -1;
-		int resy_ref = -1;
 		for (int i = 0; i < 4; i++)
 		{
 			std::string line;
@@ -1289,7 +1269,7 @@ public:
 			// First character is "0"
 			else if (i == 3)
 			{
-				assert(str_vector.size() == sphereDataConfig->physical_num_lon + 1);
+				assert((int)str_vector.size() == (int)sphereDataConfig->physical_num_lon + 1);
 				assert(str_vector[0] == "0");
 				for (int l = 0; l < sphereDataConfig->physical_num_lon; l++)
 					assert(std::abs(atof(str_vector[l + 1].c_str()) - ((double)l/(double)sphereDataConfig->physical_num_lon)*2.0*M_PI/M_PI*180.0  ) < 1e-13);
@@ -1316,7 +1296,7 @@ public:
 			}
 
 
-			assert(str_vector.size() == sphereDataConfig->physical_num_lon + 1);
+			assert((int)str_vector.size() == (int)sphereDataConfig->physical_num_lon + 1);
 			assert(std::abs(atof(str_vector[0].c_str()) - sphereDataConfig->lat[j]/M_PI*180.0 ) < 1e-13);
 
 			for (int i = 0; i < sphereDataConfig->physical_num_lon; i++)

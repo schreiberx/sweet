@@ -1889,21 +1889,10 @@ int main_real(int i_argc, char *i_argv[])
 
 			//SphereOperators op(sphereDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
-			SphereOperators_SphereData op_nodealiasing(sphereDataConfig, &(simVars.sim));
+			SphereOperators_SphereData op_nodealiasing(sphereDataConfig_nodealiasing, &(simVars.sim));
 
 			SWE_Sphere_TimeSteppers* timeSteppersFine = new SWE_Sphere_TimeSteppers;
-			timeSteppersFine->setup(
-						simVars.disc.timestepping_method,
-						op,
-						simVars
-					);
-
 			SWE_Sphere_TimeSteppers* timeSteppersCoarse = new SWE_Sphere_TimeSteppers;
-			timeSteppersCoarse->setup(
-						simVars.parareal.coarse_timestepping_method,
-						op,
-						simVars
-					);
 
 			/*
 			 * Allocate parareal controller and provide class

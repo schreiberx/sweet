@@ -1114,8 +1114,6 @@ public:
 	{
 		PlaneData_Spectral out(planeDataConfig);
 
-		PlaneData_Spectral &rw_array_data = (PlaneData_Spectral&)i_array_data;
-
 		PLANE_DATA_SPECTRAL_FOR_IDX(
 
 				double ar = spectral_space_data[idx].real();

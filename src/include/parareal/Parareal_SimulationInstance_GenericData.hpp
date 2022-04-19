@@ -83,10 +83,10 @@ public:
 	Parareal_GenericData* parareal_data_fine_previous_timestep = nullptr;
 	Parareal_GenericData* parareal_data_fine_previous_time_slice = nullptr;
 	Parareal_GenericData* parareal_data_ref_exact = nullptr;
-//#if SWEET_DEBUG
 	Parareal_GenericData* parareal_data_fine_exact = nullptr;
-//#endif
-
+#if SWEET_DEBUG
+	Parareal_GenericData* parareal_data_fine_exact_debug = nullptr;
+#endif
 
 	// Fine and coarse timesteppers
 	t_tsmType* timeSteppersFine = nullptr;
@@ -114,6 +114,26 @@ public:
 		this->op_plane = i_op_plane;
 		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
 
+		// IMPORTANT: setup initial conditions (inside this->setup) before setting up timesteppers
+		// because simulation parameters may change
+		this->timeSteppersFine->setup(
+				this->simVars->disc.timestepping_method,
+				this->simVars->disc.timestepping_order,
+				this->simVars->disc.timestepping_order2,
+				*this->op_plane,
+				*this->op_sphere,
+				*this->simVars
+			);
+
+		this->timeSteppersCoarse->setup(
+				this->simVars->parareal.coarse_timestepping_method,
+				this->simVars->parareal.coarse_timestepping_order,
+				this->simVars->parareal.coarse_timestepping_order2,
+				*this->op_plane,
+				*this->op_sphere,
+				*this->simVars
+			);
+
 		this->SL_tsm = { "l_cn_na_sl_nd_settls",
 				 "l_rexi_na_sl_nd_etdrk",
 				 "l_rexi_na_sl_nd_settls"
@@ -134,6 +154,25 @@ public:
 		this->op_sphere = i_op_sphere;
 		this->op_sphere_nodealiasing = i_op_sphere_nodealiasing;
 		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
+
+		// IMPORTANT: setup initial conditions (inside this->setup) before setting up timesteppers
+		// because simulation parameters may change
+		this->timeSteppersFine->setup(
+					this->simVars->disc.timestepping_method,
+					this->simVars->parareal.coarse_timestepping_order,
+					this->simVars->parareal.coarse_timestepping_order2,
+					*this->op_plane,
+					*this->op_sphere,
+					*this->simVars
+				);
+		this->timeSteppersCoarse->setup(
+					this->simVars->parareal.coarse_timestepping_method,
+					this->simVars->parareal.coarse_timestepping_order,
+					this->simVars->parareal.coarse_timestepping_order2,
+					*this->op_plane,
+					*this->op_sphere,
+					*this->simVars
+				);
 
 		this->SL_tsm = { "lg_exp_na_sl_lc_nr_etd_uv",
 				 "l_irk_na_sl_nr_settls_uv_only",
@@ -167,10 +206,13 @@ public:
 		this->parareal_data_coarse_previous_time_slice = this->create_new_data_container();
 		this->parareal_data_fine_previous_timestep     = this->create_new_data_container();
 		this->parareal_data_fine_previous_time_slice   = this->create_new_data_container();
-		this->parareal_data_ref_exact   = this->create_new_data_container();
-//#if SWEET_DEBUG
+		this->parareal_data_ref_exact                  = this->create_new_data_container();
 		this->parareal_data_fine_exact                 = this->create_new_data_container();
-//#endif
+#if SWEET_DEBUG
+		this->parareal_data_fine_exact_debug           = this->create_new_data_container();
+#endif
+
+		this->sim_setup_initial_data();
 	};
 
 
@@ -336,6 +378,9 @@ public:
 		this->parareal_data_fine_previous_time_slice->set_time(i_timeframe_end);
 		this->parareal_data_ref_exact->set_time(i_timeframe_end);
 		this->parareal_data_fine_exact->set_time(i_timeframe_end);
+#if SWEET_DEBUG
+		this->parareal_data_fine_exact_debug->set_time(i_timeframe_end);
+#endif
 
 	};
 
@@ -490,7 +535,7 @@ public:
 			Parareal_GenericData &i_pararealData
 	)
 	{
-		//SWEETError("TODO");
+		*parareal_data_fine_exact_debug = i_pararealData;
 	};
 
 	/**
@@ -499,7 +544,12 @@ public:
 	void compare_to_fine_exact(
 	)
 	{
-		//SWEETError("TODO");
+		Parareal_GenericData* diff = this->create_new_data_container();
+		*diff = *parareal_data_fine_exact_debug;
+		*diff -= *parareal_data_output;
+		std::cout << "DIFF: " << diff->reduce_maxAbs() << std::endl;
+		assert(diff->reduce_maxAbs() < 1e-13);
+		delete diff;
 	};
 
 #endif
@@ -531,20 +581,20 @@ public:
 
 
 	void run_timestep(
-			Parareal_GenericData* i_data,
+			Parareal_GenericData* io_data,
 			std::string tsm_level
 	)
 	{
 
 		if (tsm_level == "fine")
 			timeSteppersFine->master->run_timestep(
-						i_data,
+						io_data,
 						simVars->timecontrol.current_timestep_size,
 						simVars->timecontrol.current_simulation_time
 					);
 		else if (tsm_level == "coarse")
 			timeSteppersCoarse->master->run_timestep(
-						i_data,
+						io_data,
 						simVars->timecontrol.current_timestep_size,
 						simVars->timecontrol.current_simulation_time
 					);

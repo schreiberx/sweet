@@ -207,7 +207,6 @@ public:
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
-		std::cout << "AAA " << this->data->nb_fields << " " << i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields << std::endl;
 		assert(this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
 
 		for (int i = 0; i < N; i++)

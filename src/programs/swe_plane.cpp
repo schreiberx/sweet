@@ -1490,22 +1490,7 @@ int main(int i_argc, char *i_argv[])
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
 			SWE_Plane_TimeSteppers* timeSteppersFine = new SWE_Plane_TimeSteppers;
-			timeSteppersFine->setup(
-					simVars.disc.timestepping_method,
-					simVars.disc.timestepping_order,
-					simVars.disc.timestepping_order2,
-					op,
-					simVars
-				);
-
 			SWE_Plane_TimeSteppers* timeSteppersCoarse = new SWE_Plane_TimeSteppers;
-			timeSteppersCoarse->setup(
-					simVars.parareal.coarse_timestepping_method,
-					simVars.parareal.coarse_timestepping_order,
-					simVars.parareal.coarse_timestepping_order2,
-					op,
-					simVars
-				);
 
 			/*
 			 * Allocate parareal controller and provide class
