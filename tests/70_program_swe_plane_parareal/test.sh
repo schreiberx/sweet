@@ -106,3 +106,7 @@ for i in {0,1,2};do
 		done;
 	done;
 done;
+
+mule.benchmark.cleanup_all || exit 1
+rm -r $dirname;
+rm dummy;
