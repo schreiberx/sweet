@@ -22,16 +22,16 @@ mkdir $dirname;
 echo ""
 
 for i in {0,1,2};do
-	##for tsm_fine in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
-	for tsm_fine in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_erk,l_rexi_na_sl_nd_etdrk}; do ## short version
+	##for tsm_fine in ../../src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS*hpp; do ## full version
+	for tsm_fine in l_irk_na_sl_settls_uv_only; do ## short version
 
 		tsm_fine=$(get_tsm $tsm_fine);
 		if [ "$tsm_fine" = "interface" ]; then
 		  continue;
 		fi
 
-		##for tsm_coarse in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
-		for tsm_coarse in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_erk,l_rexi_na_sl_nd_etdrk}; do ## short version
+		##for tsm_coarse in ../../src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS*hpp; do ## full version
+		for tsm_coarse in l_irk_na_sl_settls_uv_only; do ## short version
 
 			tsm_coarse=$(get_tsm $tsm_coarse);
 			if [ "$tsm_coarse" = "interface" ]; then

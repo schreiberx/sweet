@@ -548,7 +548,7 @@ public:
 		*diff = *parareal_data_fine_exact_debug;
 		*diff -= *parareal_data_output;
 		std::cout << "DIFF: " << diff->reduce_maxAbs() << std::endl;
-		assert(diff->reduce_maxAbs() < 1e-13);
+		assert(diff->reduce_maxAbs() < 1e-10);
 		delete diff;
 	};
 

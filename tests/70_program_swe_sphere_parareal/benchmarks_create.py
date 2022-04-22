@@ -17,7 +17,6 @@ from glob import glob
 from mule_local.JobGeneration import *
 from mule_local.SWEETRuntimeParametersScenarios import *
 
-
 tsm_ref = "ln_erk";
 tsm_fine = sys.argv[1];
 tsm_coarse = sys.argv[2];
@@ -27,23 +26,6 @@ online_error = int(sys.argv[4])
 if online_error:
     path_ref = sys.argv[5];
     path_fine = sys.argv[6];
-
-orders = {};
-orders["l_irk_n_erk"] = 1;
-orders["l_irk"] = 1;
-orders["l_erk_n_erk"] = 2;
-orders["l_erk"] = 2;
-orders["l_cn_n_erk"] = 2;
-orders["l_cn"] = 2;
-orders["l_rexi_n_etdrk"] = 2;
-orders["l_rexi_n_erk"] = 2;
-orders["l_rexi"] = 2;
-orders["ln_erk"] = 2;
-orders["l_direct"] = 2;
-orders["l_rexi_na_sl_nd_settls"] = 2;
-orders["l_rexi_na_sl_nd_etdrk"] = 2;
-orders["l_cn_na_sl_nd_settls"] = 2;
-
 
 
 #Create main compile/run options
@@ -56,7 +38,7 @@ earth = EarthMKSDimensions()
 # Run simulation on plane or sphere
 #
 #Basic plane options
-jg = CompileSWEPlane(jg)
+jg.compile.program = "swe_sphere"
 jg.compile.mode = "debug"
 
 # Verbosity mode
@@ -69,13 +51,12 @@ jg.compile.sphere_spectral_dealiasing = "enable";
 # Benchmark ID
 # 14: Steady diagonal benchmark
 #
-#jg.runtime.bench_id = 1
-jg.runtime.benchmark_name = "unstablejet"
+jg.runtime.benchmark_name = "rossby_haurwitz_wave"
 
 #
 # Compute error or difference to initial data
 #
-jg.runtime.compute_error = 1
+jg.runtime.compute_error = 0
 
 # Enable/Disbale GUI
 #jg = EnableGUI(jg)
@@ -104,8 +85,10 @@ timestep_size_fine = 5.
 
 jg.runtime.timestep_size = timestep_size_fine
 jg.runtime.timestepping_method = tsm_fine
-jg.runtime.timestepping_order = orders[tsm_fine]
-jg.runtime.timestepping_order2 = orders[tsm_fine]
+jg.runtime.timestepping_order = 2;
+jg.runtime.timestepping_order2 = 2;
+##jg.runtime.timestepping_order = orders[tsm_fine]
+##jg.runtime.timestepping_order2 = orders[tsm_fine]
 jg.runtime.space_res_physical = -1
 jg.runtime.space_res_spectral = 32
 
@@ -115,11 +98,15 @@ jg.runtime.parareal_enabled = 1
 jg.runtime.parareal_convergence_threshold = -1
 jg.runtime.parareal_verbosity = 6
 jg.runtime.parareal_max_simulation_time = jg.runtime.max_simulation_time;
-jg.runtime.parareal_coarse_timestepping_order = orders[tsm_coarse];
-jg.runtime.parareal_coarse_timestepping_order2 = orders[tsm_coarse]
+jg.runtime.parareal_coarse_timestepping_order = 2;
+jg.runtime.parareal_coarse_timestepping_order2 = 2;
+##jg.runtime.parareal_coarse_timestepping_order = orders[tsm_coarse];
+##jg.runtime.parareal_coarse_timestepping_order2 = orders[tsm_coarse]
 
 parareal_coarse_slices = [5, 10];
 parareal_coarse_timesteps = [25, 50, -1]
+parareal_coarse_slices = [5];
+parareal_coarse_timesteps = [-1]
 ##parareal_coarse_slices = [4, 6];
 ##parareal_coarse_timesteps = [15.,  30., -1]
 jg.runtime.parareal_coarse_timestepping_method = tsm_coarse;
