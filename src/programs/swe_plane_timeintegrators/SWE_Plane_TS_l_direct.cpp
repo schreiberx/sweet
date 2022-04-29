@@ -165,21 +165,24 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 
 	if (compute_phin)
 	{
-		for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
+		if (simVars.rexi.exp_direct_precompute_phin)
 		{
-			//if (i_simulation_timestamp == 0)
-			//{
-				dt_precompute_phin = dt;
-				std::vector<std::array<std::array<complex, 3>, 3>> aux = {};
-				Z.push_back(aux);  // Z[k1][k2][0,1,2][0,1,2];
-			//}
-			for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
+			for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
 			{
 				//if (i_simulation_timestamp == 0)
 				//{
-					std::array<std::array<complex, 3>, 3> aux2 = {{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
-					Z[ik1].push_back(aux2);
-        	                //}
+					dt_precompute_phin = dt;
+					std::vector<std::array<std::array<complex, 3>, 3>> aux = {};
+					Z.push_back(aux);  // Z[k1][k2][0,1,2][0,1,2];
+				//}
+				for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
+				{
+					//if (i_simulation_timestamp == 0)
+					//{
+						std::array<std::array<complex, 3>, 3> aux2 = {{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
+						Z[ik1].push_back(aux2);
+        		                //}
+				}
 			}
 		}
 	}
@@ -191,6 +194,9 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	{
 		for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
 		{
+
+			// Light alternative
+			std::array<std::array<std::complex<T>, 3>, 3> Z_single_wavenumber_pair;  // to avoid too much memory allocation in very large simulations;
 
 			T k1;
 			if (ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]/2)
@@ -448,9 +454,14 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 				for (int j = 0; j < 3; j++)
 					for (int i = 0; i < 3; i++)
 					{
-						Z[ik1][ik0][j][i] = 0.;
+						std::complex<double> d = 0.;
 						for (int k = 0; k < 3; k++)
-							Z[ik1][ik0][j][i] += v_lambda[j][k] * v_inv[k][i];
+							d += v_lambda[j][k] * v_inv[k][i];
+
+						if (simVars.rexi.exp_direct_precompute_phin)
+							Z[ik1][ik0][j][i] = d;
+						else // light version
+							Z_single_wavenumber_pair[j][i] = d;
 					}
 
 			}
@@ -463,9 +474,18 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 				U[k] = 0.0;
 			}
 
-			for (int k = 0; k < 3; k++)
-				for (int j = 0; j < 3; j++)
-					U[k] += Z[ik1][ik0][k][j] * U_copy[j];
+			if (simVars.rexi.exp_direct_precompute_phin)
+			{
+				for (int k = 0; k < 3; k++)
+					for (int j = 0; j < 3; j++)
+						U[k] += Z[ik1][ik0][k][j] * U_copy[j];
+			}
+			else // light version
+			{
+				for (int k = 0; k < 3; k++)
+					for (int j = 0; j < 3; j++)
+						U[k] += Z_single_wavenumber_pair[k][j] * U_copy[j];
+			}
 
 
 #if SWEET_QUADMATH
@@ -561,21 +581,24 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 	if (compute_phin)
 	{
-		for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
+		if (simVars.rexi.exp_direct_precompute_phin)
 		{
-			//if (i_simulation_timestamp == 0)
-			//{
-				dt_precompute_phin = dt;
-				std::vector<std::array<std::array<complex, 3>, 3>> aux = {};
-				Z.push_back(aux);  // Z[k1][k2][0,1,2][0,1,2];
-			//}
-			for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
+			for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
 			{
 				//if (i_simulation_timestamp == 0)
 				//{
-					std::array<std::array<complex, 3>, 3> aux2 = {{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
-					Z[ik1].push_back(aux2);
-        	                //}
+					dt_precompute_phin = dt;
+					std::vector<std::array<std::array<complex, 3>, 3>> aux = {};
+					Z.push_back(aux);  // Z[k1][k2][0,1,2][0,1,2];
+				//}
+				for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
+				{
+					//if (i_simulation_timestamp == 0)
+					//{
+						std::array<std::array<complex, 3>, 3> aux2 = {{{0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
+						Z[ik1].push_back(aux2);
+        		                //}
+				}
 			}
 		}
 	}
@@ -588,6 +611,10 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	{
 		for (std::size_t ik0 = 0; ik0 < i_h_pert.planeDataConfig->spectral_complex_data_size[0]; ik0++)
 		{
+
+			// Light alternative
+			std::array<std::array<std::complex<T>, 3>, 3> Z_single_wavenumber_pair;  // to avoid too much memory allocation in very large simulations;
+
 			T k1;
 			if (ik1 < i_h_pert.planeDataConfig->spectral_complex_data_size[1]/2)
 				k1 = (T)ik1;
@@ -842,9 +869,14 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				for (int j = 0; j < 3; j++)
 					for (int i = 0; i < 3; i++)
 					{
-						Z[ik1][ik0][j][i] = 0.;
+						std::complex<double> d = 0.;
 						for (int k = 0; k < 3; k++)
-							Z[ik1][ik0][j][i] += v_lambda[j][k] * v_inv[k][i];
+							d += v_lambda[j][k] * v_inv[k][i];
+
+						if (simVars.rexi.exp_direct_precompute_phin)
+							Z[ik1][ik0][j][i] = d;
+						else // light version
+							Z_single_wavenumber_pair[j][i] = d;
 					}
 
 			}
@@ -857,9 +889,19 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				U[k] = 0.0;
 			}
 
-			for (int k = 0; k < 3; k++)
-				for (int j = 0; j < 3; j++)
-					U[k] += Z[ik1][ik0][k][j] * U_copy[j];
+			if (simVars.rexi.exp_direct_precompute_phin)
+			{
+				for (int k = 0; k < 3; k++)
+					for (int j = 0; j < 3; j++)
+						U[k] += Z[ik1][ik0][k][j] * U_copy[j];
+			}
+			else // light version
+			{
+				for (int k = 0; k < 3; k++)
+					for (int j = 0; j < 3; j++)
+						U[k] += Z_single_wavenumber_pair[k][j] * U_copy[j];
+			}
+
 
 
 			/*
