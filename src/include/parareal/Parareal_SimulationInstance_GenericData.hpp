@@ -347,10 +347,10 @@ public:
 		double eps = 1e-12;
 		double mod_coarse = fmod(time_slice_size, simVars->parareal.coarse_timestep_size);
 		double mod_fine = fmod(time_slice_size, simVars->timecontrol.current_timestep_size);
-                if ( std::abs(mod_coarse) > eps && std::abs(mod_coarse - time_slice_size) > eps  )
-			SWEETError("Time slice length must be an integer multiple of the coarse time step!");
-                if ( std::abs(mod_fine) > eps && std::abs(mod_fine - time_slice_size) > eps  )
-			SWEETError("Time slice length must be an integer multiple of the fine time step!");
+                if ( std::abs(mod_coarse) > eps && std::abs(mod_coarse - time_slice_size) > eps )
+			SWEETError("Time slice length must be an integer multiple of the coarse time step! (" + std::to_string(simVars->parareal.coarse_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
+                if ( std::abs(mod_fine) > eps && std::abs(mod_fine - time_slice_size) > eps )
+			SWEETError("Time slice length must be an integer multiple of the fine time step! (" + std::to_string(simVars->timecontrol.current_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
 	};
 
 
@@ -1141,6 +1141,7 @@ public:
 						this->planeDataConfig->physical_res[1] != ref_data[ivar].planeDataConfig->physical_res[1]
 					)
 					{
+						SWEETError("TODO");
 						//TODO
 	///					/*
 	///					 * setup sampler
@@ -1198,6 +1199,7 @@ public:
 						this->sphereDataConfig->physical_num_lon != ref_data[ivar].sphereDataConfig->physical_num_lon
 					)
 					{
+						SWEETError("TODO");
 						//TODO
 	///					/*
 	///					 * setup sampler

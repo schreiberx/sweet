@@ -19,6 +19,8 @@ bool SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv::implements_timestepping_method(con
 	);
 #endif
 
+	this->timestepping_method = i_timestepping_method;
+
 	if (	i_timestepping_method == "lg_exp_na_sl_lc_nr_etd_uv"	||
 			i_timestepping_method == "lg_exp_na_sl_lc_etd_uv"	||
 			false
@@ -42,17 +44,17 @@ void SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv::setup_auto()
 
 	NLRemainderTreatment_enum nonlinear_remainder_treatment = NLRemainderTreatment_enum::NL_REMAINDER_NONLINEAR;
 
-	if (simVars.disc.timestepping_method == "lg_exp_na_sl_lc_nr_etd_uv")
+	if (this->timestepping_method == "lg_exp_na_sl_lc_nr_etd_uv")
 	{
 		nonlinear_remainder_treatment = NLRemainderTreatment_enum::NL_REMAINDER_NONLINEAR;
 	}
-	else if (simVars.disc.timestepping_method == "lg_exp_na_sl_lc_etd_uv")
+	else if (this->timestepping_method == "lg_exp_na_sl_lc_etd_uv")
 	{
 		nonlinear_remainder_treatment = NLRemainderTreatment_enum::NL_REMAINDER_IGNORE;
 	}
 	else
 	{
-		SWEETError(std::string("Timestepping method '")+simVars.disc.timestepping_method+std::string("' not known"));
+		SWEETError(std::string("Timestepping method '")+this->timestepping_method+std::string("' not known"));
 	}
 
 	setup(

@@ -63,7 +63,7 @@ for key in jd.keys():
         job_info[path][s] = jd[key][s];
 
 ## find identical jobs
-small = 1e-10;
+small = 1e-8;
 read_jobs = [];
 ipair = 0;
 for job1 in list_jobs:
@@ -93,13 +93,14 @@ for job1 in list_jobs:
             for f in list_files:
                 err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                 err_L1_2, err_L2_2, err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
-                ###print(err_L1_1, err_L1_2);
-                ###print(err_L1_2, err_L2_2);
-                ###print(err_Linf_1, err_Linf_2);
+                ###print(f);
+                ###print(err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2));
+                ###print(err_L1_1, err_L1_2, np.abs(err_L1_1 - err_L1_2));
+                ###print(err_L2_1, err_L2_2, np.abs(err_L2_1 - err_L2_2));
                 ###print("");
-                assert np.abs(err_Linf_1 - err_Linf_2) < small, (err_Linf_1, err_Linf_2);
-                assert np.abs(err_L1_1 - err_L1_2) < small, (err_L1_1, err_L1_2);
-                assert np.abs(err_L2_1 - err_L2_2) < small, (err_L2_1, err_L2_2);
+                assert np.abs(err_Linf_1 - err_Linf_2) < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f);
+                assert np.abs(err_L1_1 - err_L1_2) < small, (err_L1_1, err_L1_2, f);
+                assert np.abs(err_L2_1 - err_L2_2) < small, (err_L2_1, err_L2_2, f);
             print("        -> OK");
             break;
 

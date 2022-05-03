@@ -22,6 +22,9 @@ def read_ref_solution(ref_path):
             ref_sol[var] = {};
         ref_sol[var][t] = np.loadtxt(f);
 
+        ## discard first line (longitudes) and first column (latitudes)
+        ref_sol[var][t] = ref_sol[var][t][1:, 1:];
+
     return ref_sol;
 
 
@@ -59,7 +62,7 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
             continue;
 
         ref = ref_sol[var][t];
-        sol = np.loadtxt(f);
+        sol = np.loadtxt(f)[1:, 1:];
 
         nx_ref, ny_ref = ref.shape;
         nx, ny = sol.shape;

@@ -31,6 +31,7 @@ private:
 
 	SWE_Sphere_TS_ln_erk_split_uv ts_ln_erk_split_uv;
 
+	std::string timestepping_method = "";
 
 private:
 	enum NLRemainderTreatment_enum{
