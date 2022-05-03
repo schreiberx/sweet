@@ -34,6 +34,10 @@ public:
 
 	void setup(
 			const std::string &i_timestepping_method,
+#if SWEET_PARAREAL
+			int &i_timestepping_order,
+			int &i_timestepping_order2,
+#endif
 			SphereOperators_SphereData &i_op,
 			SimulationVariables &i_simVars
 	);

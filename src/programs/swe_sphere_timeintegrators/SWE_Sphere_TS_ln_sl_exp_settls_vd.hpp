@@ -26,7 +26,13 @@
 class SWE_Sphere_TS_ln_sl_exp_settls_vd	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+#if SWEET_PARAREAL
+						,
+						int &i_timestepping_order,
+						int &i_timestepping_order2
+#endif
+					);
 	std::string string_id();
 	void setup_auto();
 	void print_help();

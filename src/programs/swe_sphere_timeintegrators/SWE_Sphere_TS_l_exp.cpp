@@ -38,8 +38,21 @@
 
 
 
-bool SWE_Sphere_TS_l_exp::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_l_exp::implements_timestepping_method(const std::string &i_timestepping_method
+#if SWEET_PARAREAL
+									,
+									int &i_timestepping_order,
+									int &i_timestepping_order2
+#endif
+									)
 {
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
+#if SWEET_PARAREAL
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+#endif
 	if (i_timestepping_method == "l_exp" || i_timestepping_method == "lg_exp")
 		return true;
 
@@ -57,7 +70,7 @@ void SWE_Sphere_TS_l_exp::setup_auto()
 {
 	bool no_coriolis = false;
 
-	if (simVars.disc.timestepping_method == "lg_exp")
+	if (timestepping_method == "lg_exp")
 		no_coriolis = true;
 
 	setup(
@@ -397,7 +410,7 @@ void SWE_Sphere_TS_l_exp::setup(
 		if (timestepping_method_lg_exp_lc_exp == nullptr)
 			timestepping_method_lg_exp_lc_exp = new SWE_Sphere_TS_lg_exp_lc_exp(simVars, ops);
 
-		timestepping_method_lg_exp_lc_exp->setup(simVars.disc.timestepping_order);
+		timestepping_method_lg_exp_lc_exp->setup(timestepping_order);
 	}
 	else
 	{

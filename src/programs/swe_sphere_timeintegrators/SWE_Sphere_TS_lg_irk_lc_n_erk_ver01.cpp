@@ -194,12 +194,12 @@ void SWE_Sphere_TS_lg_irk_lc_n_erk::setup(
 void SWE_Sphere_TS_lg_irk_lc_n_erk::setup_auto()
 {
 	int version = 0;
-	if (simVars.disc.timestepping_method == "lg_irk_lc_n_erk_ver1")
+	if (timestepping_method == "lg_irk_lc_n_erk_ver1")
 		version = 1;
 
 	setup(
-			simVars.disc.timestepping_order,
-			simVars.disc.timestepping_order2,
+			timestepping_order,
+			timestepping_order2,
 			version
 		);
 }

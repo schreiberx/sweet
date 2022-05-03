@@ -11,8 +11,21 @@
 #include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
-bool SWE_Sphere_TS_l_irk::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_l_irk::implements_timestepping_method(const std::string &i_timestepping_method
+#if SWEET_PARAREAL
+									,
+									int &i_timestepping_order,
+									int &i_timestepping_order2
+#endif
+									)
 {
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
+#if SWEET_PARAREAL
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+#endif
 	if (
 			i_timestepping_method == "l_irk"	||
 			i_timestepping_method == "lg_irk"	||
@@ -40,7 +53,7 @@ void SWE_Sphere_TS_l_irk::setup_auto()
 
 	if (timestepping_method == "l_irk")
 	{
-		setup(	simVars.disc.timestepping_order,
+		setup(timestepping_order,
 				simVars.timecontrol.current_timestep_size,
 				0.5,
 				false
@@ -48,7 +61,7 @@ void SWE_Sphere_TS_l_irk::setup_auto()
 	}
 	else if (timestepping_method == "lg_irk")
 	{
-		setup(	simVars.disc.timestepping_order,
+		setup(timestepping_order,
 				simVars.timecontrol.current_timestep_size,
 				0.5,
 				true

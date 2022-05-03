@@ -5,7 +5,13 @@
 #include "SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv.hpp"
 
 
-bool SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv::implements_timestepping_method(const std::string &i_timestepping_method
+#if SWEET_PARAREAL
+									,
+									int &i_timestepping_order,
+									int &i_timestepping_order2
+#endif
+									)
 {
 #if 0
 	/*
@@ -19,7 +25,13 @@ bool SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv::implements_timestepping_method(con
 	);
 #endif
 
-	this->timestepping_method = i_timestepping_method;
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
+#if SWEET_PARAREAL
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+#endif
 
 	if (	i_timestepping_method == "lg_exp_na_sl_lc_nr_etd_uv"	||
 			i_timestepping_method == "lg_exp_na_sl_lc_etd_uv"	||
@@ -59,8 +71,8 @@ void SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv::setup_auto()
 
 	setup(
 			simVars.rexi,
-			simVars.disc.timestepping_order,
-			simVars.disc.timestepping_order2,
+			timestepping_order,
+			timestepping_order2,
 			simVars.timecontrol.current_timestep_size,
 
 			nonlinear_remainder_treatment

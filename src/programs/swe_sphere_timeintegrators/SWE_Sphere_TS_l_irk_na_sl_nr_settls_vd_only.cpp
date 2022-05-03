@@ -6,8 +6,21 @@
 
 
 
-bool SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::implements_timestepping_method(const std::string &i_timestepping_method
+#if SWEET_PARAREAL
+									,
+									int &i_timestepping_order,
+									int &i_timestepping_order2
+#endif
+									)
 {
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
+#if SWEET_PARAREAL
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+#endif
 	if (i_timestepping_method == "l_irk_na_sl_nr_settls_vd_only")
 		return true;
 
@@ -23,7 +36,7 @@ std::string SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::string_id()
 void SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only::setup_auto()
 {
 	setup(
-		simVars.disc.timestepping_order
+		timestepping_order
 	);
 }
 

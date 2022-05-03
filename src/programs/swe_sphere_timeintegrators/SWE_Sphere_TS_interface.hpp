@@ -17,6 +17,12 @@
 
 class SWE_Sphere_TS_interface
 {
+// needed for parareal (instead of using directily simVars.disc.timestepping_method)
+protected:
+	std::string timestepping_method;
+	int timestepping_order;
+	int timestepping_order2;
+
 public:
 
 	/*
@@ -38,6 +44,11 @@ public:
 
 	virtual bool implements_timestepping_method(
 			const std::string &i_timestepping_method
+#if SWEET_PARAREAL
+			,
+			int & i_timestepping_order,
+			int & i_timestepping_order2
+#endif
 		) = 0;
 
 	virtual std::string string_id() = 0;

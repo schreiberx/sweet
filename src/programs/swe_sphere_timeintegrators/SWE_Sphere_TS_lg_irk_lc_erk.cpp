@@ -180,10 +180,10 @@ void SWE_Sphere_TS_lg_irk_lc_erk::setup(
  */
 void SWE_Sphere_TS_lg_irk_lc_erk::setup_auto()
 {
-	if (simVars.disc.timestepping_method == "lg_irk_lc_erk_ver1")
-		setup(simVars.disc.timestepping_order, 1);
+	if (timestepping_method == "lg_irk_lc_erk_ver1")
+		setup(timestepping_order, 1);
 	else
-		setup(simVars.disc.timestepping_order, 0);
+		setup(timestepping_order, 0);
 }
 
 
