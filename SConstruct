@@ -152,6 +152,12 @@ else:
     raise Exception("Invalid option '"+str(p.parareal)+"' for parareal method")
 
 
+if p.parareal_scalar == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_SCALAR=1')
+if p.parareal_plane == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE=1')
+if p.parareal_sphere == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_SPHERE=1')
 
 
 #

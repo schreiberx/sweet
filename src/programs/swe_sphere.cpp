@@ -1091,7 +1091,8 @@ int main_real(int i_argc, char *i_argv[])
 			 */
 			Parareal_Controller_Serial_GenericData<SWE_Sphere_TimeSteppers, 3> parareal_Controller_Serial(simVars, sphereDataConfig,
 																op, op_nodealiasing,
-																std::string("sphere"), std::string("swe"),
+																//std::string("sphere"),
+																std::string("swe"),
 																timeSteppersFine,
 																timeSteppersCoarse);
 			//Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;

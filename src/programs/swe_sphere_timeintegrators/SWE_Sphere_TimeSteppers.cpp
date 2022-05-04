@@ -146,27 +146,6 @@ void SWE_Sphere_TimeSteppers::integrators_free_all(SWE_Sphere_TS_interface *skip
 	registered_integrators.clear();
 }
 
-#if SWEET_PARAREAL
-void SWE_Sphere_TimeSteppers::setup(
-		const std::string &i_timestepping_method,
-		int &i_timestepping_order,
-		int &i_timestepping_order2,
-
-		PlaneOperators &i_op_plane,
-		SphereOperators_SphereData &i_op_sphere,
-		SimulationVariables &i_simVars
-)
-{
-	this->setup(
-			i_timestepping_method,
-			i_timestepping_order,
-			i_timestepping_order2,
-			i_op_sphere,
-			i_simVars
-	);
-}
-#endif
-
 
 void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method,
 #if SWEET_PARAREAL

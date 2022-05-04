@@ -85,6 +85,9 @@ class JobCompileOptions(InfoError):
 
         # PinT
         self.parareal = 'none'
+        self.parareal_scalar = 'disable'
+        self.parareal_plane = 'disable'
+        self.parareal_sphere = 'disable'
         self.libpfasst = 'disable'
 
         # Eigen library
@@ -160,6 +163,9 @@ class JobCompileOptions(InfoError):
 
         # PinT
         retval += ' --parareal='+self.parareal
+        retval += ' --parareal-scalar='+self.parareal_scalar
+        retval += ' --parareal-plane='+self.parareal_plane
+        retval += ' --parareal-sphere='+self.parareal_sphere
         retval += ' --libpfasst='+self.libpfasst
 
         retval += ' --eigen='+self.eigen
@@ -499,6 +505,34 @@ class JobCompileOptions(InfoError):
         )
         self.parareal = scons.GetOption('parareal')
 
+        scons.AddOption(    '--parareal-scalar',
+                dest='parareal_scalar',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable Parareal for scalar problems (enable, disable) [default: %default]'
+        )
+        self.parareal_scalar = scons.GetOption('parareal_scalar')
+
+        scons.AddOption(    '--parareal-plane',
+                dest='parareal_plane',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable Parareal on the plane (enable, disable) [default: %default]'
+        )
+        self.parareal_plane = scons.GetOption('parareal_plane')
+
+        scons.AddOption(    '--parareal-sphere',
+                dest='parareal_sphere',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable Parareal on the sphere (enable, disable) [default: %default]'
+        )
+        self.parareal_sphere = scons.GetOption('parareal_sphere')
+
+
 
         files = os.listdir('src/programs/')
         files = sorted(files)
@@ -515,6 +549,13 @@ class JobCompileOptions(InfoError):
                 help='Specify program to compile: '+', '.join(example_programs)+' '*80+' [default: %default]'
         )
         self.program = scons.GetOption('program')
+
+
+        if not self.parareal == 'none':
+            if self.program == 'swe_plane':
+                self.parareal_plane = 'enable';
+            if self.program == 'swe_sphere':
+                self.parareal_sphere = 'enable';
 
 
         scons.AddOption(      '--program-binary-name',

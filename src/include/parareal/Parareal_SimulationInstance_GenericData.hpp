@@ -4,33 +4,39 @@
  *  Created on: 25 Feb 2022
  *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
- * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
+ * MUddddLE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp
+ * MUddddLE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
+ * MUddddLE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_GENERICDATA_HPP_
 #define SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_GENERICDATA_HPP_
 
 
-#include <parareal/Parareal_GenericData.hpp>
-#include <parareal/Parareal_GenericData_Scalar.hpp>
-#include <parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
-#include <parareal/Parareal_GenericData_SphereData_Spectral.hpp>
 
+
+
+#include <parareal/Parareal_GenericData.hpp>
+
+#if SWEET_PARAREAL_SCALAR
+#include <parareal/Parareal_GenericData_Scalar.hpp>
+
+#elif SWEET_PARAREAL_PLANE
+#include <parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
+#include <sweet/plane/PlaneDataGridMapping.hpp>
+#include "../../programs/swe_plane_timeintegrators/SWE_Plane_TimeSteppers.hpp"
+#include "../../programs/burgers_timeintegrators/Burgers_Plane_TimeSteppers.hpp"
+#include "../../programs/swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
+
+#elif SWEET_PARAREAL_SPHERE
+#include <parareal/Parareal_GenericData_SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-
-#include <sweet/plane/PlaneDataGridMapping.hpp>
-
-#include "../../programs/swe_plane_timeintegrators/SWE_Plane_TimeSteppers.hpp"
 #include "../../programs/swe_sphere_timeintegrators/SWE_Sphere_TimeSteppers.hpp"
-#include "../../programs/burgers_timeintegrators/Burgers_Plane_TimeSteppers.hpp"
-
-#include "../../programs/swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include "../../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
+#endif
 //#include "../../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp"
 
 /**
@@ -53,17 +59,15 @@ public:
 	// Grid Mapping (staggered grid)
 	PlaneDataGridMapping gridMapping;
 
-	// Operators
+	// Operators and DataConfig
+#if SWEET_PARAREAL_PLANE
 	PlaneOperators* op_plane;
+	PlaneDataConfig* planeDataConfig;
+#elif SWEET_PARAREAL_SPHERE
 	SphereOperators_SphereData* op_sphere;
 	SphereOperators_SphereData* op_sphere_nodealiasing;
-
-	// Data config
-	PlaneDataConfig* planeDataConfig;
 	SphereData_Config* sphereDataConfig;
-
-	// Geometry (scalar, plane, sphere)
-	std::string geometry = "";
+#endif
 
 	// Model (ODE, Burgers, SWE)
 	std::string model = "";
@@ -104,15 +108,17 @@ public:
 	{
 	};
 
+#if SWEET_PARAREAL_PLANE
 	// Plane
 	void setup(SimulationVariables* i_simVars, PlaneDataConfig* i_planeDataConfig,
-		   std::string i_geometry, std::string i_model,
+		   std::string i_model,
 		   PlaneOperators* i_op_plane,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
 		this->planeDataConfig = i_planeDataConfig;
 		this->op_plane = i_op_plane;
-		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
+		this->setup(i_simVars, 
+			    i_model, i_timeSteppersFine, i_timeSteppersCoarse);
 
 		// IMPORTANT: setup initial conditions (inside this->setup) before setting up timesteppers
 		// because simulation parameters may change
@@ -121,7 +127,6 @@ public:
 				this->simVars->disc.timestepping_order,
 				this->simVars->disc.timestepping_order2,
 				*this->op_plane,
-				*this->op_sphere,
 				*this->simVars
 			);
 
@@ -130,7 +135,6 @@ public:
 				this->simVars->parareal.coarse_timestepping_order,
 				this->simVars->parareal.coarse_timestepping_order2,
 				*this->op_plane,
-				*this->op_sphere,
 				*this->simVars
 			);
 
@@ -144,16 +148,18 @@ public:
 
 	}
 
+#elif SWEET_PARAREAL_SPHERE
 	// Sphere
 	void setup(SimulationVariables* i_simVars, SphereData_Config* i_sphereDataConfig,
-		   std::string i_geometry, std::string i_model,
+		   std::string i_model,
 		   SphereOperators_SphereData* i_op_sphere, SphereOperators_SphereData* i_op_sphere_nodealiasing,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
 		this->sphereDataConfig = i_sphereDataConfig;
 		this->op_sphere = i_op_sphere;
 		this->op_sphere_nodealiasing = i_op_sphere_nodealiasing;
-		this->setup(i_simVars, i_geometry, i_model, i_timeSteppersFine, i_timeSteppersCoarse);
+		this->setup(i_simVars,
+			    i_model, i_timeSteppersFine, i_timeSteppersCoarse);
 
 		// IMPORTANT: setup initial conditions (inside this->setup) before setting up timesteppers
 		// because simulation parameters may change
@@ -161,7 +167,6 @@ public:
 					this->simVars->disc.timestepping_method,
 					this->simVars->parareal.coarse_timestepping_order,
 					this->simVars->parareal.coarse_timestepping_order2,
-					*this->op_plane,
 					*this->op_sphere,
 					*this->simVars
 				);
@@ -169,7 +174,6 @@ public:
 					this->simVars->parareal.coarse_timestepping_method,
 					this->simVars->parareal.coarse_timestepping_order,
 					this->simVars->parareal.coarse_timestepping_order2,
-					*this->op_plane,
 					*this->op_sphere,
 					*this->simVars
 				);
@@ -183,15 +187,15 @@ public:
 				 "ln_sl_exp_settls_vd"
 				};
 	}
+#endif
 
-
-	void setup(SimulationVariables* i_simVars, std::string i_geometry, std::string i_model,
+	void setup(SimulationVariables* i_simVars,
+			std::string i_model,
 			t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
 
 		this->simVars = i_simVars;
 
-		this->geometry = i_geometry;
 		this->model = i_model;
 
 		this->timeSteppersFine = i_timeSteppersFine;
@@ -220,28 +224,29 @@ public:
 
 	Parareal_GenericData* create_new_data_container()
 	{
-		if (this->geometry == "scalar") 
+#if SWEET_PARAREAL_SCALAR
 		{
 			Parareal_GenericData_Scalar<N>* out = new Parareal_GenericData_Scalar<N>;
 			out->allocate_data();
 			return out;
 		}
-		else if (this->geometry == "plane")
+
+#elif SWEET_PARAREAL_PLANE
 		{
 			Parareal_GenericData_PlaneData_Spectral<N>* out = new Parareal_GenericData_PlaneData_Spectral<N>;
 			out->setup_data_config(this->planeDataConfig);
 			out->allocate_data();
 			return out;
 		}
-		else if (this->geometry == "sphere")
+
+#elif SWEET_PARAREAL_SPHERE
 		{
 			Parareal_GenericData_SphereData_Spectral<N>* out = new Parareal_GenericData_SphereData_Spectral<N>;
 			out->setup_data_config(this->sphereDataConfig);
 			out->allocate_data();
 			return out;
 		}
-		else
-			SWEETError("Unknown geometry");
+#endif
 	}
 
 
@@ -250,6 +255,7 @@ public:
 
 	// Functions to exchange data between Parareal_GenericData instances and individual data arrays
 
+#if SWEET_PARAREAL_SCALAR
 	void dataArrays_to_GenericData_Scalar(Parareal_GenericData* i_data,
 						double &u)
 	{
@@ -272,6 +278,7 @@ public:
 			SWEETError("Unknown model");
 	}
 
+#elif SWEET_PARAREAL_PLANE
 	void dataArrays_to_GenericData_PlaneData_Spectral(Parareal_GenericData* i_data,
 						PlaneData_Spectral &h, PlaneData_Spectral &u, PlaneData_Spectral &v)
 	{
@@ -308,6 +315,7 @@ public:
 			SWEETError("Unknown model");
 	}
 
+#elif SWEET_PARAREAL_SPHERE
 	void dataArrays_to_GenericData_SphereData_Spectral(Parareal_GenericData* i_data,
 						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
 	{
@@ -333,7 +341,7 @@ public:
 		else
 			SWEETError("Unknown model");
 	}
-
+#endif
 
 
 	/**
@@ -394,7 +402,7 @@ public:
 
 		///reset();
 
-		if (this->geometry == "scalar")
+#if SWEET_PARAREAL_SCALAR
 		{
 			if (this->model == "ode1")
 			{
@@ -403,7 +411,8 @@ public:
 			else
 				SWEETError("Unknown model for this geometry");
 		}
-		else if (this->geometry == "plane")
+
+#elif SWEET_PARAREAL_PLANE
 		{
 			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
 			PlaneData_Spectral t0_prog_u(planeDataConfig);
@@ -457,13 +466,14 @@ public:
 				t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
 			}
 			else
-				SWEETError("Unknown model for this geometry");
+				SWEETError("Unknown model for this geometry!");
 
 			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start, t0_prog_h_pert, t0_prog_u, t0_prog_v);
 			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v);
 			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v);
 		}
-		else if (this->geometry == "sphere")
+
+#elif SWEET_PARAREAL_SPHERE
 		{
 			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig);
 			SphereData_Spectral t0_prog_vrt(sphereDataConfig);
@@ -481,8 +491,7 @@ public:
 			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 		}
-		else
-			SWEETError("Unknown geometry");
+#endif
 	};
 
 
@@ -789,10 +798,11 @@ public:
 			bool output_initial_data = false
 	)
 	{
-		if (this->geometry == "scalar")
+#if SWEET_PARAREAL_SCALAR
 		{
+			SWEETError("TODO");
 		}
-		else if (this->geometry == "plane")
+#elif SWEET_PARAREAL_PLANE
 		{
 			if (this->model == "burgers")
 			{
@@ -870,7 +880,8 @@ public:
 				}
 			}
 		}
-		else if (this->geometry == "sphere")
+
+#elif SWEET_PARAREAL_SPHERE
 		{
 
 			if (this->model == "swe")
@@ -970,8 +981,7 @@ public:
 			}
 
 		}
-		else
-			SWEETError("Unknown geometry");
+#endif
 	};
 
 
@@ -1105,11 +1115,12 @@ public:
 		//	data = (Parareal_GenericData&)this->parareal_data_output;
 		//Parareal_GenericData& data = (Parareal_GenericData&)this->parareal_data_output;
 
-		if (this->geometry == "scalar")
+#if SWEET_PARAREAL_SCALAR
 		{
 			SWEETError("TODO");
 		}
-		else if (this->geometry == "plane")
+
+#elif SWEET_PARAREAL_PLANE
 		{
 			PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig),
 					                  PlaneData_Spectral(this->planeDataConfig),
@@ -1167,7 +1178,8 @@ public:
 			}
 			
 		}
-		else if (this->geometry == "sphere")
+
+#elif SWEET_PARAREAL_SPHERE
 		{
 			SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig),
 					                   SphereData_Spectral(this->sphereDataConfig),
@@ -1223,10 +1235,8 @@ public:
 					this->dataArrays_to_GenericData_SphereData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
 				}
 			}
-
-
-
 		}
+#endif
 
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < 3; ivar++)
@@ -1239,11 +1249,12 @@ public:
 			double err_Linf;
 			std::string i_name;
 
-			if (this->geometry == "scalar")
+#if SWEET_PARAREAL_SCALAR
 			{
 				SWEETError("TODO");
 			}
-			else if (this->geometry == "plane")
+
+#elif SWEET_PARAREAL_PLANE
 			{
 
 				if (ivar == 0)
@@ -1263,7 +1274,8 @@ public:
 				err_Linf = diff.physical_reduce_max_abs();
 
 			}
-			else if (this->geometry == "sphere")
+
+#elif SWEET_PARAREAL_SPHERE
 			{
 				if (ivar == 0)
 					i_name = "prog_phi_pert";
@@ -1282,6 +1294,7 @@ public:
 				err_Linf = diff.physical_reduce_max_abs();
 
 			}
+#endif
 
 			// save errors in file
 			char buffer_out[1024];

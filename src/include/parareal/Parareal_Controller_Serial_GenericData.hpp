@@ -8,23 +8,47 @@
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_GENERICDATA_HPP_
 #define SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_GENERICDATA_HPP_
 
+// Checking if geometry has been correctly defined
+#if SWEET_PARAREAL_SCALAR
+	#if SWEET_PARAREAL_PLANE || SWEET_PARAREAL_SPHERE
+		#error "More than one geometry has been defined for parareal"
+	#endif
+#elif SWEET_PARAREAL_PLANE
+	#if SWEET_PARAREAL_SCALAR || SWEET_PARAREAL_SPHERE
+		#error "More than one geometry has been defined for parareal"
+	#endif
+#elif SWEET_PARAREAL_SPHERE
+	#if SWEET_PARAREAL_SCALAR || SWEET_PARAREAL_PLANE
+		#error "More than one geometry has been defined for parareal"
+	#endif
+#else
+	#error "No geometry has been defined for parareal"
+#endif
+
 
 #include <parareal/Parareal_ConsolePrefix.hpp>
 #include <parareal/Parareal_SimulationInstance_GenericData.hpp>
 #include <parareal/Parareal_SimulationVariables.hpp>
 
 #include <parareal/Parareal_GenericData.hpp>
-#include <parareal/Parareal_GenericData_Scalar.hpp>
-#include <parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
-#include <parareal/Parareal_GenericData_SphereData_Spectral.hpp>
 
+#if SWEET_PARAREAL_SCALAR
+#include <parareal/Parareal_GenericData_Scalar.hpp>
+
+#elif SWEET_PARAREAL_PLANE
+#include <parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
+
+#elif SWEET_PARAREAL_SPHERE
+#include <parareal/Parareal_GenericData_SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
+#endif
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <math.h>
+
 
 /**
  * This class takes over the control and
@@ -49,16 +73,17 @@ class Parareal_Controller_Serial_GenericData
 
 	SimulationVariables* simVars;
 
-	PlaneDataConfig* planeDataConfig = nullptr;
-	SphereData_Config* sphereDataConfig = nullptr;
 
-	// Operators
+	// Operators and DataConfig
+#if SWEET_PARAREAL_PLANE
 	PlaneOperators op_plane;
+	PlaneDataConfig* planeDataConfig = nullptr;
+#elif SWEET_PARAREAL_SPHERE
 	SphereOperators_SphereData op_sphere;
 	SphereOperators_SphereData op_sphere_nodealiasing;
+	SphereData_Config* sphereDataConfig = nullptr;
+#endif
 
-	// Geometry (scalar, plane, sphere)
-	std::string geometry = "";
 
 	// Model (ODE, Burgers, SWE)
 	std::string model = "";
@@ -83,27 +108,55 @@ class Parareal_Controller_Serial_GenericData
 
 public:
 
+#if SWEET_PARAREAL_SCALAR
 	// Scalar
-	Parareal_Controller_Serial_GenericData(SimulationVariables i_simVars, std::string i_geometry, std::string i_model,
-						t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse):
-		simVars(&i_simVars), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
+	Parareal_Controller_Serial_GenericData(SimulationVariables i_simVars,
+						std::string i_model,
+						t_tsmType* i_timeSteppersFine,
+						t_tsmType* i_timeSteppersCoarse):
+		simVars(&i_simVars),
+		model(i_model),
+		timeSteppersFine(i_timeSteppersFine),
+		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
 	};
 
+#elif SWEET_PARAREAL_PLANE
 	// Plane
-	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars, PlaneDataConfig* i_planeDataConfig, PlaneOperators &i_op_plane, std::string i_geometry, std::string i_model,
-						t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse):
-		simVars(&i_simVars), planeDataConfig(i_planeDataConfig), op_plane(i_op_plane), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
+	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars,
+						PlaneDataConfig* i_planeDataConfig,
+						PlaneOperators &i_op_plane,
+						std::string i_model,
+						t_tsmType* i_timeSteppersFine,
+						t_tsmType* i_timeSteppersCoarse):
+		simVars(&i_simVars),
+		planeDataConfig(i_planeDataConfig),
+		op_plane(i_op_plane),
+		model(i_model),
+		timeSteppersFine(i_timeSteppersFine),
+		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
 	};
 
+#elif SWEET_PARAREAL_SPHERE
 	// Sphere
-	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars, SphereData_Config* i_sphereDataConfig, SphereOperators_SphereData &i_op_sphere, SphereOperators_SphereData &i_op_sphere_nodealiasing, std::string i_geometry, std::string i_model,
-						t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse):
-		simVars(&i_simVars), sphereDataConfig(i_sphereDataConfig), op_sphere(i_op_sphere), op_sphere_nodealiasing(i_op_sphere_nodealiasing), geometry(i_geometry), model(i_model), timeSteppersFine(i_timeSteppersFine), timeSteppersCoarse(i_timeSteppersCoarse)
+	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars,
+						SphereData_Config* i_sphereDataConfig,
+						SphereOperators_SphereData &i_op_sphere,
+						SphereOperators_SphereData &i_op_sphere_nodealiasing,
+						std::string i_model,
+						t_tsmType* i_timeSteppersFine,
+						t_tsmType* i_timeSteppersCoarse):
+		simVars(&i_simVars),
+		sphereDataConfig(i_sphereDataConfig),
+		op_sphere(i_op_sphere),
+		op_sphere_nodealiasing(i_op_sphere_nodealiasing),
+		model(i_model),
+		timeSteppersFine(i_timeSteppersFine),
+		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
 	};
-
+#endif
 
 ///	Parareal_Controller_Serial()
 ///	{
@@ -188,31 +241,29 @@ public:
 		
 			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, N>);
 		///	parareal_simulationInstances[k] = &(Parareal_SimulationInstance&)(simulationInstances[k]);
-			if ( ! this->geometry.compare("scalar") )
+#if SWEET_PARAREAL_SCALAR
 				parareal_simulationInstances[k]->setup(this->simVars,
-								       this->geometry,
 								       this->model,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
-			else if ( !this->geometry.compare("plane") )
+
+#elif SWEET_PARAREAL_PLANE
 				parareal_simulationInstances[k]->setup(this->simVars,
 								       this->planeDataConfig,
-								       this->geometry,
 								       this->model,
 								       &this->op_plane,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
-			else if ( !this->geometry.compare("sphere") )
+
+#elif SWEET_PARAREAL_SPHERE
 				parareal_simulationInstances[k]->setup(this->simVars,
 								       this->sphereDataConfig,
-								       this->geometry,
 								       this->model,
 								       &this->op_sphere,
 								       &this->op_sphere_nodealiasing,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
-			else
-				SWEETError("Unknown geometry");
+#endif
 		}
 
 

@@ -29,6 +29,7 @@
 
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
 #	include <sweet/sphere/SphereData_Spectral.hpp>
+#	include <sweet/sphere/SphereData_Physical.hpp>
 #endif
 
 #ifndef SWEET_PARAREAL
@@ -493,7 +494,7 @@ public:
 		int viscosity_order = 2;
 
 
-#if SWEET_USE_SPHERE_SPECTRAL_SPACE || SWEET_PARAREAL
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
 		/**
 		 * Earth radius for simulations on the sphere
 		 */

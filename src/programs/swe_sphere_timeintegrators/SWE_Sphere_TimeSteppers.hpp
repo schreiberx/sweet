@@ -7,10 +7,6 @@
 
 #include "SWE_Sphere_TS_interface.hpp"
 
-#if SWEET_PARAREAL
-#include <sweet/plane/PlaneOperators.hpp>
-#endif
-
 /**
  * SWE Plane time steppers
  */
@@ -41,19 +37,6 @@ public:
 			SphereOperators_SphereData &i_op,
 			SimulationVariables &i_simVars
 	);
-
-#if SWEET_PARAREAL
-	void setup(
-			const std::string &i_timestepping_method,
-			int &i_timestepping_order,
-			int &i_timestepping_order2,
-
-			PlaneOperators &i_op_plane,
-			SphereOperators_SphereData &i_op_sphere,
-			SimulationVariables &i_simVars
-	);
-#endif
-
 
 	~SWE_Sphere_TimeSteppers();
 };

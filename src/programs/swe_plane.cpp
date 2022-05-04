@@ -3,7 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_benchmarks
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
+ * MUddddLE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
  */
 
 
@@ -43,6 +43,10 @@
 #include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include "swe_plane_timeintegrators/SWE_Plane_TimeSteppers.hpp"
 #include "swe_plane_timeintegrators/SWE_Plane_Normal_Modes.hpp"
+
+////#if SWEET_PARAREAL
+////	#include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
+////#endif
 
 
 // Plane data config
@@ -1101,7 +1105,9 @@ int main(int i_argc, char *i_argv[])
 			 * which implement the parareal features
 			 */
 			Parareal_Controller_Serial_GenericData<SWE_Plane_TimeSteppers, 3> parareal_Controller_Serial(simVars, planeDataConfig,
-																op, std::string("plane"), std::string("swe"),
+																op,
+																//std::string("plane"),
+																std::string("swe"),
 																timeSteppersFine,
 																timeSteppersCoarse);
 			//Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;

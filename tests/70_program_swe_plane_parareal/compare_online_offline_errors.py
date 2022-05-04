@@ -89,6 +89,7 @@ for job1 in list_jobs:
             list_files = glob.glob(path_simulations + "/" + job1 + "/parareal_error*");
             list_files = [os.path.basename(f) for f in list_files];
 
+            max_diff = 0
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             for f in list_files:
                 err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
@@ -97,9 +98,14 @@ for job1 in list_jobs:
                 ###print(err_L1_2, err_L2_2);
                 ###print(err_Linf_1, err_Linf_2);
                 ###print("");
-                assert np.abs(err_L1_1 - err_L1_2) < small, (err_L1_1, err_L1_2);
-                assert np.abs(err_L2_1 - err_L2_2) < small, (err_L2_1, err_L2_2);
-                assert np.abs(err_Linf_1 - err_Linf_2) < small, (err_Linf_1, err_Linf_2);
-            print("        -> OK");
+                err_Linf = np.abs(err_Linf_1 - err_Linf_2);
+                err_L1 = np.abs(err_L1_1 - err_L1_2);
+                err_L2 = np.abs(err_L2_1 - err_L2_2);
+                assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f);
+                assert err_L1 < small, (err_L1_1, err_L1_2, f);
+                assert err_L2 < small, (err_L2_1, err_L2_2, f);
+                max_diff = np.max([max_diff, err_Linf, err_L1, err_L2]);
+            print("     -> Max diff between errors: " + str(max_diff));
+            print("                                             -> OK");
             break;
 
