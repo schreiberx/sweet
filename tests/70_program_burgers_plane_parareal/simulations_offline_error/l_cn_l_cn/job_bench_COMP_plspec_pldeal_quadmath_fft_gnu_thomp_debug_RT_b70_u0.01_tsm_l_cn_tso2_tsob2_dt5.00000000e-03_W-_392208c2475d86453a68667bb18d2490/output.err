@@ -1,0 +1,13 @@
+In file included from src/include/parareal/Parareal.hpp:31,
+                 from src/programs/burgers.cpp:46:
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp: In instantiation of ‘Parareal_Controller_Serial_GenericData<t_tsmType, N>::Parareal_Controller_Serial_GenericData(SimulationVariables&, PlaneDataConfig*, PlaneOperators&, std::string, t_tsmType*, t_tsmType*) [with t_tsmType = Burgers_Plane_TimeSteppers; int N = 3; std::string = std::__cxx11::basic_string<char>]’:
+src/programs/burgers.cpp:1468:35:   required from here
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp:80:19: warning: ‘Parareal_Controller_Serial_GenericData<Burgers_Plane_TimeSteppers, 3>::planeDataConfig’ will be initialized after [-Wreorder]
+   80 |  PlaneDataConfig* planeDataConfig = nullptr;
+      |                   ^~~~~~~~~~~~~~~
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp:79:17: warning:   ‘PlaneOperators Parareal_Controller_Serial_GenericData<Burgers_Plane_TimeSteppers, 3>::op_plane’ [-Wreorder]
+   79 |  PlaneOperators op_plane;
+      |                 ^~~~~~~~
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp:126:2: warning:   when initialized here [-Wreorder]
+  126 |  Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars,
+      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1,0 +1,46 @@
+In file included from src/programs/burgers_timeintegrators/Burgers_Plane_TS_l_cn_n_sl.cpp:9:
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_cn_n_sl.hpp: In constructor ‘Burgers_Plane_TS_l_cn_n_sl::Burgers_Plane_TS_l_cn_n_sl(SimulationVariables&, PlaneOperators&)’:
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_cn_n_sl.hpp:40:24: warning: ‘Burgers_Plane_TS_l_cn_n_sl::ts_l_cn’ will be initialized after [-Wreorder]
+   40 |  Burgers_Plane_TS_l_cn ts_l_cn;
+      |                        ^~~~~~~
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_cn_n_sl.hpp:32:21: warning:   ‘PlaneData_Spectral Burgers_Plane_TS_l_cn_n_sl::u_prev’ [-Wreorder]
+   32 |  PlaneData_Spectral u_prev, v_prev;
+      |                     ^~~~~~
+src/programs/burgers_timeintegrators/Burgers_Plane_TS_l_cn_n_sl.cpp:148:1: warning:   when initialized here [-Wreorder]
+  148 | Burgers_Plane_TS_l_cn_n_sl::Burgers_Plane_TS_l_cn_n_sl(
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from src/include/parareal/Parareal.hpp:31,
+                 from src/programs/burgers.cpp:46:
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp: In instantiation of ‘Parareal_Controller_Serial_GenericData<t_tsmType, N>::Parareal_Controller_Serial_GenericData(SimulationVariables&, PlaneDataConfig*, PlaneOperators&, std::string, t_tsmType*, t_tsmType*) [with t_tsmType = Burgers_Plane_TimeSteppers; int N = 3; std::string = std::__cxx11::basic_string<char>]’:
+src/programs/burgers.cpp:1468:35:   required from here
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp:80:19: warning: ‘Parareal_Controller_Serial_GenericData<Burgers_Plane_TimeSteppers, 3>::planeDataConfig’ will be initialized after [-Wreorder]
+   80 |  PlaneDataConfig* planeDataConfig = nullptr;
+      |                   ^~~~~~~~~~~~~~~
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp:79:17: warning:   ‘PlaneOperators Parareal_Controller_Serial_GenericData<Burgers_Plane_TimeSteppers, 3>::op_plane’ [-Wreorder]
+   79 |  PlaneOperators op_plane;
+      |                 ^~~~~~~~
+src/include/parareal/Parareal_Controller_Serial_GenericData.hpp:126:2: warning:   when initialized here [-Wreorder]
+  126 |  Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars,
+      |  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from src/programs/burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl.cpp:9:
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl.hpp: In constructor ‘Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(SimulationVariables&, PlaneOperators&)’:
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl.hpp:40:25: warning: ‘Burgers_Plane_TS_l_irk_n_sl::ts_l_irk’ will be initialized after [-Wreorder]
+   40 |  Burgers_Plane_TS_l_irk ts_l_irk;
+      |                         ^~~~~~~~
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl.hpp:32:21: warning:   ‘PlaneData_Spectral Burgers_Plane_TS_l_irk_n_sl::u_prev’ [-Wreorder]
+   32 |  PlaneData_Spectral u_prev, v_prev;
+      |                     ^~~~~~
+src/programs/burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl.cpp:164:1: warning:   when initialized here [-Wreorder]
+  164 | Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from src/programs/burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl_forcing.cpp:9:
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl_forcing.hpp: In constructor ‘Burgers_Plane_TS_l_irk_n_sl_forcing::Burgers_Plane_TS_l_irk_n_sl_forcing(SimulationVariables&, PlaneOperators&)’:
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl_forcing.hpp:37:26: warning: ‘Burgers_Plane_TS_l_irk_n_sl_forcing::posy_d’ will be initialized after [-Wreorder]
+   37 |  ScalarDataArray posx_d, posy_d;
+      |                          ^~~~~~
+src/programs/burgers_timeintegrators/../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl_forcing.hpp:31:21: warning:   ‘PlaneData_Spectral Burgers_Plane_TS_l_irk_n_sl_forcing::u_prev’ [-Wreorder]
+   31 |  PlaneData_Spectral u_prev, v_prev;
+      |                     ^~~~~~
+src/programs/burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl_forcing.cpp:161:1: warning:   when initialized here [-Wreorder]
+  161 | Burgers_Plane_TS_l_irk_n_sl_forcing::Burgers_Plane_TS_l_irk_n_sl_forcing(
+      | ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

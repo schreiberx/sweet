@@ -87,10 +87,10 @@ jg.runtime.benchmark_name = "70"
 jg.runtime.viscosity = 0.01
 
 # Simulation time
-jg.runtime.max_simulation_time = 0.1
+jg.runtime.max_simulation_time = 1.
 
 # Output data
-jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+jg.runtime.output_timestep_size = 0.1
 
 # Compute error
 jg.runtime.compute_error = 0
@@ -122,7 +122,7 @@ jg.runtime.parareal_coarse_timestepping_order = 2;
 jg.runtime.parareal_coarse_timestepping_order2 = 2;
 
 parareal_coarse_slices = [5, 10];
-parareal_coarse_timesteps = [25, 50, -1]
+parareal_coarse_timesteps = [0.01, 0.05, -1]
 ##parareal_coarse_slices = [4, 6];
 ##parareal_coarse_timesteps = [15.,  30., -1]
 jg.runtime.parareal_coarse_timestepping_method = tsm_coarse;

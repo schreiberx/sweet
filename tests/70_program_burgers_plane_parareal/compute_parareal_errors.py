@@ -13,6 +13,8 @@ def read_ref_solution(ref_path):
     list_ref_files = glob(ref_path + "/*csv");
 
     for f in list_ref_files:
+        if "amp_phase" in f:
+            continue;
         ## identify variable and time
         ff = os.path.basename(f).split("_t0");
         var = ff[0];
@@ -34,6 +36,8 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
     list_parareal_files = glob(path + "/*csv");
 
     for f in list_parareal_files:
+        if "amp_phase" in f:
+            continue;
         ## identify variable, time and iteration
         ff = os.path.basename(f).split("_t0");
         var = ff[0];
