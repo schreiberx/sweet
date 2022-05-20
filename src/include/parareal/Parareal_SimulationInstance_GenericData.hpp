@@ -56,8 +56,10 @@ public:
 	// Simulation variables
 	SimulationVariables* simVars;
 
+#if SWEET_PARAREAL_PLANE
 	// Grid Mapping (staggered grid)
 	PlaneDataGridMapping gridMapping;
+#endif
 
 	// Operators and DataConfig
 #if SWEET_PARAREAL_PLANE
@@ -101,6 +103,28 @@ public:
 
 
 	bool compute_normal_modes = false;
+
+
+	// For Burgers
+	class BenchmarkErrors
+	{
+	public:
+		// Max difference to initial conditions
+		double benchmark_diff_u;
+		double benchmark_diff_v;
+
+		// Error measures L2 norm
+		double benchmark_analytical_error_rms_u;
+		double benchmark_analytical_error_rms_v;
+
+		// Error measures max norm
+		double benchmark_analytical_error_maxabs_u;
+		double benchmark_analytical_error_maxabs_v;
+	};
+
+	BenchmarkErrors benchmark;
+
+
 
 public:
 
@@ -406,7 +430,8 @@ public:
 		{
 			if (this->model == "ode1")
 			{
-				SWEETError("TODO");
+				double u0 = atof(simVars.bogus.var[1].c_str());
+				this->dataArrays_to_GenericData_Scalar(this->parareal_data_start, u0);
 			}
 			else
 				SWEETError("Unknown model for this geometry");
@@ -800,12 +825,96 @@ public:
 	{
 #if SWEET_PARAREAL_SCALAR
 		{
-			SWEETError("TODO");
+			double u_out(this->planeDataConfig);
+			if (output_initial_data)
+				this->GenericData_Scalar_to_dataArrays(this->parareal_data_start, u_out);
+			else
+				this->GenericData_Scalar_to_dataArrays(this->parareal_data_output, u_out);
+
+			// Dump  data in csv, if output filename is not empty
+			if (simVars->iodata.output_file_name.size() > 0)
+			{
+				std::string output_filenames = "";
+				output_filenames = write_file_parareal_scalar(u_out, "prog_u", iteration_id, output_initial_data);
+			}
 		}
+
 #elif SWEET_PARAREAL_PLANE
 		{
 			if (this->model == "burgers")
 			{
+
+				PlaneData_Spectral dummy(this->planeDataConfig);
+				PlaneData_Spectral u_out(this->planeDataConfig);
+				PlaneData_Spectral v_out(this->planeDataConfig);
+				if (output_initial_data)
+					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_start, dummy, u_out, v_out);
+				else
+					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_output, dummy, u_out, v_out);
+
+				PlaneData_Physical u_out_phys = u_out.toPhys();
+				PlaneData_Physical v_out_phys = v_out.toPhys();
+
+				/*
+				 * File output
+				 *
+				 * We write everything in non-staggered output
+				 */
+				// For output, variables need to be on unstaggered A-grid
+				PlaneData_Physical t_u(planeDataConfig);
+				PlaneData_Physical t_v(planeDataConfig);
+
+				if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
+				{
+					gridMapping.mapCtoA_u(u_out_phys, t_u);
+					gridMapping.mapCtoA_v(v_out_phys, t_v);
+				}
+				else
+				{
+					t_u = u_out_phys;
+					t_v = v_out_phys;
+				}
+
+				// Dump  data in csv, if output filename is not empty
+				if (simVars->iodata.output_file_name.size() > 0)
+				{
+					std::string output_filenames = "";
+
+					output_filenames = write_file_parareal_plane(t_u, "prog_u", iteration_id, output_initial_data);
+					output_filenames += ";" + write_file_parareal_plane(t_v, "prog_v", iteration_id, output_initial_data);
+
+				}
+
+				char buffer[1024];
+				sprintf(buffer,(simVars->iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
+				std::ofstream file(buffer, std::ios_base::trunc);
+				file << std::setprecision(12);
+
+				for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+				{
+					file << x << ", " << u_out.spectral_return_amplitude(0,x) << ", " << u_out.spectral_return_phase(0,x) << std::endl;
+				}
+				file.close();
+				file.clear();
+
+
+				if (simVars->misc.compute_errors)
+				{
+					PlaneData_Spectral ana = compute_errors2(u_out, v_out);
+
+					write_file_parareal_plane(ana.toPhys(),"analytical",iteration_id,time_slice_id);
+
+					sprintf(buffer,(simVars->iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
+
+					file.open(buffer, std::ios_base::trunc);
+					file << std::setprecision(12);
+					for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+					{
+						file << x << ", " << ana.spectral_return_amplitude(0,x) << ", " << ana.spectral_return_phase(0,x) << std::endl;
+					}
+					file.close();
+				}
+
 			}
 			else if (this->model == "swe")
 			{
@@ -985,6 +1094,170 @@ public:
 	};
 
 
+#if SWEET_PARAREAL_PLANE
+	// For Burgers
+	PlaneData_Spectral compute_errors2(
+         const PlaneData_Spectral &i_planeData_u,
+         const PlaneData_Spectral &i_planeData_v
+	)
+	{
+
+		int analytic_solution;
+		if (simVars->misc.compute_errors)
+		{
+			bool foundl = (simVars->disc.timestepping_method.find("l_")==0) || (simVars->disc.timestepping_method.find("_l_")!=std::string::npos);
+			bool foundn = (simVars->disc.timestepping_method.find("n_")==0) || (simVars->disc.timestepping_method.find("_n_")!=std::string::npos);
+			bool foundnl = (simVars->disc.timestepping_method.find("ln_")==0) || (foundl && foundn);
+		
+			if (foundnl)
+				analytic_solution = 1;
+			else if (foundl)
+				analytic_solution = 2;
+			else
+				SWEETError("Computing errors for this timestepping-method is not possible");
+		}
+
+
+
+		// Necessary to circumvent FFTW transformations on i_planeData_u and i_planeData_v, which would lead to errors
+		PlaneData_Physical u = i_planeData_u.toPhys();
+		PlaneData_Physical v = i_planeData_v.toPhys();
+
+		///// Analytical solution at current time on original grid
+		///PlaneData_Spectral ts_u = t0_prog_u;
+		///PlaneData_Spectral ts_v = t0_prog_v;
+
+		PlaneData_Spectral ts_u(planeDataConfig);
+		PlaneData_Spectral ts_v(planeDataConfig);
+		PlaneData_Physical ts_u_phys(planeDataConfig);
+		PlaneData_Physical ts_v_phys(planeDataConfig);
+
+		if (simVars->misc.compute_errors)
+		{
+			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
+			if (simVars->disc.timestepping_method.find("forcing")!=std::string::npos)
+			{
+				if (simVars->disc.space_grid_use_c_staggering)
+				{
+					ts_u_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+							double x = (((double)i)/(double)simVars->disc.space_res_physical[0])*simVars->sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars->disc.space_res_physical[1])*simVars->sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_u(*simVars, x, y);
+						}
+					);
+
+					ts_v_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+							io_data = 0.0;
+#if 0
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
+						}
+					);
+				}
+				else
+				{
+					ts_u_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+							double x = (((double)i+0.5)/(double)simVars->disc.space_res_physical[0])*simVars->sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars->disc.space_res_physical[1])*simVars->sim.plane_domain_size[1];
+
+							io_data = BurgersValidationBenchmarks::return_u(*simVars, x, y);
+						}
+					);
+
+					ts_v_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+						{
+							io_data = 0.0;
+#if 0
+							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+
+							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+#endif
+						}
+					);
+				}
+				ts_u.loadPlaneDataPhysical(ts_u_phys);
+				ts_v.loadPlaneDataPhysical(ts_v_phys);
+			}
+			else //if (simVars.setup.benchmark_id == 70)
+			{
+				if (analytic_solution == 1)
+				{
+				   timeSteppersFine->ln_cole_hopf->run_timestep(
+						 ts_u, ts_v,
+						 //ts_u, ts_v,
+						 simVars->timecontrol.current_simulation_time,
+						 0
+				   );
+				}
+				else if (analytic_solution == 2)
+				{
+				   timeSteppersFine->l_direct->run_timestep(
+						 ts_u, ts_v,
+						 //ts_u, ts_v,
+						 simVars->timecontrol.current_simulation_time,
+						 0
+				   );
+				}
+			}
+			benchmark.benchmark_analytical_error_rms_u = (ts_u-u).toPhys().physical_reduce_rms();
+			benchmark.benchmark_analytical_error_rms_v = (ts_v-v).toPhys().physical_reduce_rms();
+
+			benchmark.benchmark_analytical_error_maxabs_u = (ts_u-u).toPhys().physical_reduce_max_abs();
+			benchmark.benchmark_analytical_error_maxabs_v = (ts_v-v).toPhys().physical_reduce_max_abs();
+
+			return ts_u;
+		}
+		return nullptr;
+	}
+
+#endif
+
+
+#if SWEET_PARAREAL_SCALAR
+	/**
+	 * Write file to data and return string of file name (parareal)
+	 */
+	std::string write_file_parareal_scalar(
+			const double &i_u,
+			const char* i_name,	///< name of output variable
+			int iteration_id,
+			bool output_initial_data = false
+		)
+	{
+		char buffer[1024];
+
+		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
+		if (output_initial_data)
+			sprintf(buffer, filename_template, i_name, timeframe_start, iteration_id);
+		else
+			sprintf(buffer, filename_template, i_name, timeframe_end, iteration_id);
+
+		std::ofstream file(buffer, std::ios_base::trunc);
+		file << std::setprecision(16);
+
+		file << "#SWEET" << std::endl;
+		file << "#FORMAT ASCII" << std::endl;
+		file << "#PRIMITIVE SCALAR" << std::endl;
+
+		file << i_u;
+
+		file.close();
+
+		return buffer;
+	}
+#endif
+
+#if SWEET_PARAREAL_SPHERE
 	/**
 	 * Write file to data and return string of file name (parareal)
 	 */
@@ -1040,9 +1313,10 @@ public:
 
 		return buffer;
 	}
+#endif
 
 
-
+#if SWEET_PARAREAL_PLANE
 	/**
 	 * Write file to data and return string of file name (parareal)
 	 */
@@ -1085,6 +1359,8 @@ public:
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
 		return buffer;
 	}
+#endif
+
 
 
 	/**

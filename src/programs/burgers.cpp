@@ -141,26 +141,26 @@ public:
 
 		// Initialise operators
 		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
-#if SWEET_PARAREAL != 0
-		,
-		_parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
-		_parareal_data_start_u_prev(planeDataConfig), _parareal_data_start_v_prev(planeDataConfig),
-		_parareal_data_fine_u(planeDataConfig), _parareal_data_fine_v(planeDataConfig),
-		_parareal_data_coarse_u(planeDataConfig), _parareal_data_coarse_v(planeDataConfig),
-		_parareal_data_coarse_u_prev(planeDataConfig), _parareal_data_coarse_v_prev(planeDataConfig),
-		_parareal_data_output_u(planeDataConfig), _parareal_data_output_v(planeDataConfig),
-		_parareal_data_output_u_prev(planeDataConfig), _parareal_data_output_v_prev(planeDataConfig),
-		_parareal_data_error_u(planeDataConfig), _parareal_data_error_v(planeDataConfig)
-#endif
+/////////////#if SWEET_PARAREAL != 0
+/////////////		,
+/////////////		_parareal_data_start_u(planeDataConfig), _parareal_data_start_v(planeDataConfig),
+/////////////		_parareal_data_start_u_prev(planeDataConfig), _parareal_data_start_v_prev(planeDataConfig),
+/////////////		_parareal_data_fine_u(planeDataConfig), _parareal_data_fine_v(planeDataConfig),
+/////////////		_parareal_data_coarse_u(planeDataConfig), _parareal_data_coarse_v(planeDataConfig),
+/////////////		_parareal_data_coarse_u_prev(planeDataConfig), _parareal_data_coarse_v_prev(planeDataConfig),
+/////////////		_parareal_data_output_u(planeDataConfig), _parareal_data_output_v(planeDataConfig),
+/////////////		_parareal_data_output_u_prev(planeDataConfig), _parareal_data_output_v_prev(planeDataConfig),
+/////////////		_parareal_data_error_u(planeDataConfig), _parareal_data_error_v(planeDataConfig)
+/////////////#endif
 	{
 		// Calls initialization of the run (e.g. sets u, v)
 		reset();
 
-#if SWEET_PARAREAL
-		if (simVars.parareal.enabled)
-			parareal_setup();
-
-#endif
+/////////#if SWEET_PARAREAL
+/////////		if (simVars.parareal.enabled)
+/////////			parareal_setup();
+/////////
+/////////#endif
 	}
 
 
@@ -198,8 +198,8 @@ public:
 //#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		prog_u.spectral_set_zero();
 		prog_v.spectral_set_zero();
-		prog_u_prev.spectral_set_zero();
-		prog_v_prev.spectral_set_zero();
+		///prog_u_prev.spectral_set_zero();
+		///prog_v_prev.spectral_set_zero();
 ////#endif
 ////		prog_u.physical_set_all(0);
 ////		prog_v.physical_set_all(0);
@@ -269,8 +269,8 @@ public:
 		prog_v.loadPlaneDataPhysical(v_phys);
 
 		// Initialize t-dt time step with initial condition
-		prog_u_prev = prog_u;
-		prog_v_prev = prog_v;
+		//prog_u_prev = prog_u;
+		//prog_v_prev = prog_v;
 		// Save initial conditions for analytic solution
 		t0_prog_u = prog_u;
 		t0_prog_v = prog_v;
@@ -294,9 +294,9 @@ public:
 		update_diagnostics();
 		diagnostics_energy_start = simVars.diag.total_energy;
 
-#if SWEET_PARAREAL
-		if (!simVars.parareal.enabled)
-#endif
+/////////#if SWEET_PARAREAL
+/////////		if (!simVars.parareal.enabled)
+/////////#endif
 		timestep_output();
 
       if (simVars.misc.compute_errors)
@@ -354,7 +354,7 @@ public:
 			prog_v = t0_prog_v;
 			timeSteppers.master->run_timestep(
 				prog_u, prog_v,
-				prog_u_prev, prog_v_prev,
+				///prog_u_prev, prog_v_prev,
 				simVars.timecontrol.current_timestep_size+simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time
 			);
@@ -363,7 +363,7 @@ public:
 		{
 			timeSteppers.master->run_timestep(
 				prog_u, prog_v,
-				prog_u_prev, prog_v_prev,
+				///prog_u_prev, prog_v_prev,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time
 			);
@@ -376,9 +376,9 @@ public:
 		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
 			SWEETError("Max simulation time exceeded!");
 
-#if SWEET_PARAREAL
-		if (!simVars.parareal.enabled)
-#endif
+//////////#if SWEET_PARAREAL
+//////////		if (!simVars.parareal.enabled)
+//////////#endif
 		timestep_output();
 	}
 
@@ -917,486 +917,486 @@ public:
 	}
 
 
-#if SWEET_PARAREAL
-
-	/******************************************************
-	 ******************************************************
-	 *       ************** PARAREAL **************
-	 ******************************************************
-	 ******************************************************/
-
-	PlaneData_Spectral _parareal_data_start_u, _parareal_data_start_v,
-		_parareal_data_start_u_prev, _parareal_data_start_v_prev;
-	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_start;
-
-	PlaneData_Spectral _parareal_data_fine_u, _parareal_data_fine_v;
-	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_fine;
-
-	PlaneData_Spectral _parareal_data_coarse_u, _parareal_data_coarse_v,
-		_parareal_data_coarse_u_prev, _parareal_data_coarse_v_prev;
-	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_coarse;
-
-	PlaneData_Spectral _parareal_data_output_u, _parareal_data_output_v,
-		_parareal_data_output_u_prev, _parareal_data_output_v_prev;
-	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_output;
-
-	PlaneData_Spectral _parareal_data_error_u, _parareal_data_error_v;
-	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_error;
-
-	double timeframe_start = -1;
-	double timeframe_end = -1;
-
-	bool output_data_valid = false;
-
-
-	/*
-	 * Setup Parareal variables
-	 */
-	void parareal_setup()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "parareal_setup()" << std::endl;
-
-		{
-			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_start_u, &_parareal_data_start_v,
-					&_parareal_data_start_u_prev, &_parareal_data_start_v_prev};
-			parareal_data_start.setup(data_array);
-		}
-
-		{
-			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
-			parareal_data_fine.setup(data_array);
-		}
-
-		{
-			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v,
-					&_parareal_data_coarse_u_prev, &_parareal_data_coarse_v_prev};
-			parareal_data_coarse.setup(data_array);
-		}
-
-		{
-			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_output_u, &_parareal_data_output_v,
-					&_parareal_data_output_u_prev, &_parareal_data_output_v_prev};
-			parareal_data_output.setup(data_array);
-		}
-
-		{
-			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_error_u, &_parareal_data_error_v};
-			parareal_data_error.setup(data_array);
-		}
-
-		timeSteppers.setup(
-				simVars.disc.timestepping_method,
-				simVars.disc.timestepping_order,
-				simVars.disc.timestepping_order2,
-				op,
-				simVars
-			);
-
-		timeSteppersCoarse.setup(
-				simVars.parareal.coarse_timestepping_method,
-				simVars.parareal.coarse_timestepping_order,
-				simVars.parareal.coarse_timestepping_order2,
-				op,
-				simVars
-			);
-
-		output_data_valid = false;
-	}
-
-
-	/**
-	 * Set the start and end of the coarse time step
-	 */
-	void sim_set_timeframe(
-			double i_timeframe_start,	///< start timestamp of coarse time step
-			double i_timeframe_end		///< end time stamp of coarse time step
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
-
-		timeframe_start = i_timeframe_start;
-		timeframe_end = i_timeframe_end;
-	}
-
-
-	/**
-	 * Set the initial data at i_timeframe_start
-	 */
-	void sim_setup_initial_data(
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "sim_setup_initial_data()" << std::endl;
-
-		reset();
-
-
-		*parareal_data_start.data_arrays[0] = prog_u;
-		*parareal_data_start.data_arrays[1] = prog_v;
-		*parareal_data_start.data_arrays[2] = prog_u_prev;
-		*parareal_data_start.data_arrays[3] = prog_v_prev;
-
-	}
-
-
-	/**
-	 * Set simulation data to data given in i_sim_data.
-	 * This can be data which is computed by another simulation.
-	 * Y^S := i_sim_data
-	 */
-	void sim_set_data(
-			Parareal_Data &i_pararealData
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "sim_set_data()" << std::endl;
-
-		// copy to buffers
-		parareal_data_start = i_pararealData;
-
-		// cast to pararealPlaneData stuff
-	}
-
-
-	/**
-	 * Set the MPI communicator to use for simulation purpose
-	 * (TODO: not yet implemented since our parallelization-in-space
-	 * is done only via OpenMP)
-	 */
-	void sim_set_mpi_comm(
-			int i_mpi_comm
-	)
-	{
-		// NOTHING TO DO HERE
-	}
-
-
-	/**
-	 * compute solution on time slice with fine timestep:
-	 * Y^F := F(Y^S)
-	 */
-	void run_timestep_fine()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "run_timestep_fine()" << std::endl;
-
-		prog_u = *parareal_data_start.data_arrays[0];
-		prog_v = *parareal_data_start.data_arrays[1];
-
-		// reset simulation time
-		simVars.timecontrol.current_simulation_time = timeframe_start;
-		simVars.timecontrol.max_simulation_time = timeframe_end;
-		simVars.timecontrol.current_timestep_nr = 0;
-		double dt = simVars.timecontrol.current_timestep_size;
-
-		while (simVars.timecontrol.current_simulation_time < timeframe_end)
-		{
-			run_timestep();
-			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
-		}
-
-		// Reset dt as it might be changed due to timesize limitation
-		simVars.timecontrol.current_timestep_size = dt;
-
-		// copy to buffers
-		*parareal_data_fine.data_arrays[0] = prog_u;
-		*parareal_data_fine.data_arrays[1] = prog_v;
-	}
-
-
-	/**
-	 * return the data after running computations with the fine timestepping:
-	 * return Y^F
-	 */
-	Parareal_Data& get_reference_to_data_timestep_fine()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "get_data_timestep_fine()" << std::endl;
-
-		return parareal_data_fine;
-	}
-
-
-	/**
-	 * compute solution with coarse timestepping:
-	 * Y^C := G(Y^S)
-	 */
-	void run_timestep_coarse()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "run_timestep_coarse()" << std::endl;
-
-		prog_u = *parareal_data_start.data_arrays[0];
-		prog_v = *parareal_data_start.data_arrays[1];
-		prog_u_prev = *parareal_data_start.data_arrays[2];
-		prog_v_prev = *parareal_data_start.data_arrays[3];
-
-		// Preserve parareal_data_start for next timestep to be prog_u_prev
-		*parareal_data_output.data_arrays[2] = prog_u;
-		*parareal_data_output.data_arrays[3] = prog_v;
-		*parareal_data_coarse.data_arrays[2] = prog_u;
-		*parareal_data_coarse.data_arrays[3] = prog_v;
-
-		// reset simulation time
-		simVars.timecontrol.current_simulation_time = timeframe_start;
-		simVars.timecontrol.max_simulation_time = timeframe_end;
-		simVars.timecontrol.current_timestep_nr = 0;
-
-		// make multiple time steps in the coarse solver possible
-		while (simVars.timecontrol.current_simulation_time < timeframe_end)
-		{
-			//run_timestep(simVars.parareal.coarse_timestepping_method, simVars.parareal.coarse_timestepping_order);
-			timeSteppersCoarse.master->run_timestep(
-				prog_u, prog_v,
-				prog_u_prev, prog_v_prev,
-				timeframe_end-timeframe_start,
-				simVars.timecontrol.current_simulation_time
-			);
-			// Provide information to parameters
-//			simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
-			simVars.timecontrol.current_simulation_time += timeframe_end-timeframe_start;
-			simVars.timecontrol.current_timestep_nr++;
-
-			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
-		}
-
-		// copy to buffers
-		*parareal_data_coarse.data_arrays[0] = prog_u;
-		*parareal_data_coarse.data_arrays[1] = prog_v;
-	}
-
-
-	/**
-	 * return the solution after the coarse timestepping:
-	 * return Y^C
-	 */
-	Parareal_Data& get_reference_to_data_timestep_coarse()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "get_data_timestep_coarse()" << std::endl;
-
-		return parareal_data_coarse;
-	}
-
-
-	/**
-	 * Compute the error between the fine and coarse timestepping:
-	 * Y^E := Y^F - Y^C
-	 */
-	void compute_difference()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "compute_difference()" << std::endl;
-
-		for (int k = 0; k < 2; k++)
-			*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
-	}
-
-
-	/**
-	 * Compute the data to be forwarded to the next time step
-	 * Y^O := Y^C + Y^E
-	 *
-	 * Return: Error indicator based on the computed error norm between the
-	 * old values and new values
-	 */
-	double compute_output_data(
-			bool i_compute_convergence_test
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "compute_output_data()" << std::endl;
-
-		double convergence = -1;
-
-		if (!i_compute_convergence_test || !output_data_valid)
-		{
-			for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
-				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
-
-			output_data_valid = true;
-			return convergence;
-		}
-
-		PlaneData_Spectral tmp(planeDataConfig);
-//#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		tmp.spectral_set_zero();
-//#endif
-//		tmp.physical_set_all_value(0.0);
-
-		for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
-		{
-			tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
-
-			convergence = std::max(
-					convergence,
-					(*parareal_data_output.data_arrays[k]-tmp).spectral_reduce_max_abs()
-				);
-
-			*parareal_data_output.data_arrays[k] = tmp;
-		}
-
-		simVars.timecontrol.current_simulation_time = timeframe_end;
-		prog_u = *parareal_data_output.data_arrays[0];
-		prog_v = *parareal_data_output.data_arrays[1];
-
-		if (simVars.misc.compute_errors){
-			compute_errors(prog_u, prog_v);
-			std::cout << "maxabs error compared to analytical solution: " << benchmark.benchmark_analytical_error_maxabs_u << std::endl;
-		}
-
-		output_data_valid = true;
-		return convergence;
-	}
-
-
-	/**
-	 * Return the data to be forwarded to the next coarse time step interval:
-	 * return Y^O
-	 */
-	Parareal_Data& get_reference_to_output_data()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "get_output_data()" << std::endl;
-
-		return parareal_data_output;
-	}
-
-
-	/**
-	 * Write file to data and return string of file name
-	 */
-	std::string write_file_parareal(
-			const PlaneData_Physical &i_planeData,
-			const char* i_name, ///< name of output variable
-			const int i_iteration_id,
-			const int i_time_slice_id
-		)
-	{
-		char buffer[1024];
-
-		sprintf(buffer, (simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), i_name, i_iteration_id, i_time_slice_id);
-		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
-
-		/*
-		char tmp[128];
-		strcpy(tmp,i_name);
-		strcat(tmp,"_spec");
-		sprintf(buffer, (simVars.inputoutput.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), tmp, simVars.timecontrol.current_simulation_time*simVars.inputoutput.output_time_scale);
-		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
-		*/
-
-		return buffer;
-	}
-
-
-	/*
-	 * Write output of Parareal data to file
-	 */
-	void output_data_file(
-			const Parareal_Data& i_data,
-			int iteration_id,
-			int time_slice_id
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "output_data_file()" << std::endl;
-
-		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
-
-		// Copy to minimize errors from FFT
-		PlaneData_Spectral tmp_u = *data.data_arrays[0];
-		PlaneData_Spectral tmp_v = *data.data_arrays[1];
-
-		write_file_parareal(tmp_u.toPhys(),"prog_u",iteration_id,time_slice_id);
-
-		char buffer[1024];
-		sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
-
-		std::ofstream file(buffer, std::ios_base::trunc);
-		file << std::setprecision(12);
-
-		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
-		{
-			file << x << ", " << tmp_u.spectral_return_amplitude(0,x) << ", " << tmp_u.spectral_return_phase(0,x) << std::endl;
-		}
-		file.close();
-		file.clear();
-
-
-		if (simVars.misc.compute_errors)
-		{
-			PlaneData_Spectral ana = compute_errors2(tmp_u, tmp_v);
-
-			write_file_parareal(ana.toPhys(),"analytical",iteration_id,time_slice_id);
-
-			sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
-
-			file.open(buffer, std::ios_base::trunc);
-			file << std::setprecision(12);
-			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
-			{
-				file << x << ", " << ana.spectral_return_amplitude(0,x) << ", " << ana.spectral_return_phase(0,x) << std::endl;
-			}
-			file.close();
-		}
-	}
-
-
-	/*
-	 * Write output of Parareal data to console
-	 */
-	void output_data_console(
-			const Parareal_Data& i_data,
-			int iteration_id,
-			int time_slice_id
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "output_data_console()" << std::endl;
-
-		update_diagnostics();
-		// Print timestep data to console
-
-		std::stringstream header;
-		std::stringstream rows;
-
-		rows << std::setprecision(12);
-
-		// Prefix
-		if (iteration_id == 0 && time_slice_id == 0)
-			header << "DATA";
-		rows << "DATA";
-
-		// Time
-		if (iteration_id == 0 && time_slice_id == 0)
-			header << "\tITERATION\tTIME_SLICE";
-		rows << "\t" << iteration_id << "\t" << time_slice_id;
-
-		// Energy
-		if (iteration_id == 0 && time_slice_id == 0)
-			header << "\tTOTAL_ENERGY";
-		rows << "\t" << simVars.diag.total_energy;
-
-		if (simVars.misc.compute_errors)
-		{
-			// Copy to minimize errors from FFT
-			PlaneData_Spectral tmp_u = prog_u;
-			if (iteration_id == 0 && time_slice_id == 0)
-				header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
-			rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << tmp_u.toPhys().physical_reduce_max_abs();
-		}
-
-		if (iteration_id == 0 && time_slice_id == 0)
-			std::cout << header.str() << std::endl;
-
-		std::cout << rows.str() << std::endl;
-
-	}
-
-#endif
+//////////////#if SWEET_PARAREAL
+//////////////
+//////////////	/******************************************************
+//////////////	 ******************************************************
+//////////////	 *       ************** PARAREAL **************
+//////////////	 ******************************************************
+//////////////	 ******************************************************/
+//////////////
+//////////////	PlaneData_Spectral _parareal_data_start_u, _parareal_data_start_v,
+//////////////		_parareal_data_start_u_prev, _parareal_data_start_v_prev;
+//////////////	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_start;
+//////////////
+//////////////	PlaneData_Spectral _parareal_data_fine_u, _parareal_data_fine_v;
+//////////////	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_fine;
+//////////////
+//////////////	PlaneData_Spectral _parareal_data_coarse_u, _parareal_data_coarse_v,
+//////////////		_parareal_data_coarse_u_prev, _parareal_data_coarse_v_prev;
+//////////////	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_coarse;
+//////////////
+//////////////	PlaneData_Spectral _parareal_data_output_u, _parareal_data_output_v,
+//////////////		_parareal_data_output_u_prev, _parareal_data_output_v_prev;
+//////////////	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2> parareal_data_output;
+//////////////
+//////////////	PlaneData_Spectral _parareal_data_error_u, _parareal_data_error_v;
+//////////////	Parareal_Data_PlaneData<NUM_OF_UNKNOWNS> parareal_data_error;
+//////////////
+//////////////	double timeframe_start = -1;
+//////////////	double timeframe_end = -1;
+//////////////
+//////////////	bool output_data_valid = false;
+//////////////
+//////////////
+//////////////	/*
+//////////////	 * Setup Parareal variables
+//////////////	 */
+//////////////	void parareal_setup()
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "parareal_setup()" << std::endl;
+//////////////
+//////////////		{
+//////////////			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_start_u, &_parareal_data_start_v,
+//////////////					&_parareal_data_start_u_prev, &_parareal_data_start_v_prev};
+//////////////			parareal_data_start.setup(data_array);
+//////////////		}
+//////////////
+//////////////		{
+//////////////			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_fine_u, &_parareal_data_fine_v};
+//////////////			parareal_data_fine.setup(data_array);
+//////////////		}
+//////////////
+//////////////		{
+//////////////			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_coarse_u, &_parareal_data_coarse_v,
+//////////////					&_parareal_data_coarse_u_prev, &_parareal_data_coarse_v_prev};
+//////////////			parareal_data_coarse.setup(data_array);
+//////////////		}
+//////////////
+//////////////		{
+//////////////			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS*2] = {&_parareal_data_output_u, &_parareal_data_output_v,
+//////////////					&_parareal_data_output_u_prev, &_parareal_data_output_v_prev};
+//////////////			parareal_data_output.setup(data_array);
+//////////////		}
+//////////////
+//////////////		{
+//////////////			PlaneData_Spectral* data_array[NUM_OF_UNKNOWNS] = {&_parareal_data_error_u, &_parareal_data_error_v};
+//////////////			parareal_data_error.setup(data_array);
+//////////////		}
+//////////////
+//////////////		timeSteppers.setup(
+//////////////				simVars.disc.timestepping_method,
+//////////////				simVars.disc.timestepping_order,
+//////////////				simVars.disc.timestepping_order2,
+//////////////				op,
+//////////////				simVars
+//////////////			);
+//////////////
+//////////////		timeSteppersCoarse.setup(
+//////////////				simVars.parareal.coarse_timestepping_method,
+//////////////				simVars.parareal.coarse_timestepping_order,
+//////////////				simVars.parareal.coarse_timestepping_order2,
+//////////////				op,
+//////////////				simVars
+//////////////			);
+//////////////
+//////////////		output_data_valid = false;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Set the start and end of the coarse time step
+//////////////	 */
+//////////////	void sim_set_timeframe(
+//////////////			double i_timeframe_start,	///< start timestamp of coarse time step
+//////////////			double i_timeframe_end		///< end time stamp of coarse time step
+//////////////	)
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
+//////////////
+//////////////		timeframe_start = i_timeframe_start;
+//////////////		timeframe_end = i_timeframe_end;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Set the initial data at i_timeframe_start
+//////////////	 */
+//////////////	void sim_setup_initial_data(
+//////////////	)
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "sim_setup_initial_data()" << std::endl;
+//////////////
+//////////////		reset();
+//////////////
+//////////////
+//////////////		*parareal_data_start.data_arrays[0] = prog_u;
+//////////////		*parareal_data_start.data_arrays[1] = prog_v;
+//////////////		*parareal_data_start.data_arrays[2] = prog_u_prev;
+//////////////		*parareal_data_start.data_arrays[3] = prog_v_prev;
+//////////////
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Set simulation data to data given in i_sim_data.
+//////////////	 * This can be data which is computed by another simulation.
+//////////////	 * Y^S := i_sim_data
+//////////////	 */
+//////////////	void sim_set_data(
+//////////////			Parareal_Data &i_pararealData
+//////////////	)
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "sim_set_data()" << std::endl;
+//////////////
+//////////////		// copy to buffers
+//////////////		parareal_data_start = i_pararealData;
+//////////////
+//////////////		// cast to pararealPlaneData stuff
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Set the MPI communicator to use for simulation purpose
+//////////////	 * (TODO: not yet implemented since our parallelization-in-space
+//////////////	 * is done only via OpenMP)
+//////////////	 */
+//////////////	void sim_set_mpi_comm(
+//////////////			int i_mpi_comm
+//////////////	)
+//////////////	{
+//////////////		// NOTHING TO DO HERE
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * compute solution on time slice with fine timestep:
+//////////////	 * Y^F := F(Y^S)
+//////////////	 */
+//////////////	void run_timestep_fine()
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "run_timestep_fine()" << std::endl;
+//////////////
+//////////////		prog_u = *parareal_data_start.data_arrays[0];
+//////////////		prog_v = *parareal_data_start.data_arrays[1];
+//////////////
+//////////////		// reset simulation time
+//////////////		simVars.timecontrol.current_simulation_time = timeframe_start;
+//////////////		simVars.timecontrol.max_simulation_time = timeframe_end;
+//////////////		simVars.timecontrol.current_timestep_nr = 0;
+//////////////		double dt = simVars.timecontrol.current_timestep_size;
+//////////////
+//////////////		while (simVars.timecontrol.current_simulation_time < timeframe_end)
+//////////////		{
+//////////////			run_timestep();
+//////////////			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+//////////////		}
+//////////////
+//////////////		// Reset dt as it might be changed due to timesize limitation
+//////////////		simVars.timecontrol.current_timestep_size = dt;
+//////////////
+//////////////		// copy to buffers
+//////////////		*parareal_data_fine.data_arrays[0] = prog_u;
+//////////////		*parareal_data_fine.data_arrays[1] = prog_v;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * return the data after running computations with the fine timestepping:
+//////////////	 * return Y^F
+//////////////	 */
+//////////////	Parareal_Data& get_reference_to_data_timestep_fine()
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "get_data_timestep_fine()" << std::endl;
+//////////////
+//////////////		return parareal_data_fine;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * compute solution with coarse timestepping:
+//////////////	 * Y^C := G(Y^S)
+//////////////	 */
+//////////////	void run_timestep_coarse()
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "run_timestep_coarse()" << std::endl;
+//////////////
+//////////////		prog_u = *parareal_data_start.data_arrays[0];
+//////////////		prog_v = *parareal_data_start.data_arrays[1];
+//////////////		prog_u_prev = *parareal_data_start.data_arrays[2];
+//////////////		prog_v_prev = *parareal_data_start.data_arrays[3];
+//////////////
+//////////////		// Preserve parareal_data_start for next timestep to be prog_u_prev
+//////////////		*parareal_data_output.data_arrays[2] = prog_u;
+//////////////		*parareal_data_output.data_arrays[3] = prog_v;
+//////////////		*parareal_data_coarse.data_arrays[2] = prog_u;
+//////////////		*parareal_data_coarse.data_arrays[3] = prog_v;
+//////////////
+//////////////		// reset simulation time
+//////////////		simVars.timecontrol.current_simulation_time = timeframe_start;
+//////////////		simVars.timecontrol.max_simulation_time = timeframe_end;
+//////////////		simVars.timecontrol.current_timestep_nr = 0;
+//////////////
+//////////////		// make multiple time steps in the coarse solver possible
+//////////////		while (simVars.timecontrol.current_simulation_time < timeframe_end)
+//////////////		{
+//////////////			//run_timestep(simVars.parareal.coarse_timestepping_method, simVars.parareal.coarse_timestepping_order);
+//////////////			timeSteppersCoarse.master->run_timestep(
+//////////////				prog_u, prog_v,
+//////////////				prog_u_prev, prog_v_prev,
+//////////////				timeframe_end-timeframe_start,
+//////////////				simVars.timecontrol.current_simulation_time
+//////////////			);
+//////////////			// Provide information to parameters
+////////////////			simVars.timecontrol.current_timestep_size = simVars.timecontrol.current_timestep_size;
+//////////////			simVars.timecontrol.current_simulation_time += timeframe_end-timeframe_start;
+//////////////			simVars.timecontrol.current_timestep_nr++;
+//////////////
+//////////////			assert(simVars.timecontrol.current_simulation_time <= timeframe_end);
+//////////////		}
+//////////////
+//////////////		// copy to buffers
+//////////////		*parareal_data_coarse.data_arrays[0] = prog_u;
+//////////////		*parareal_data_coarse.data_arrays[1] = prog_v;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * return the solution after the coarse timestepping:
+//////////////	 * return Y^C
+//////////////	 */
+//////////////	Parareal_Data& get_reference_to_data_timestep_coarse()
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "get_data_timestep_coarse()" << std::endl;
+//////////////
+//////////////		return parareal_data_coarse;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Compute the error between the fine and coarse timestepping:
+//////////////	 * Y^E := Y^F - Y^C
+//////////////	 */
+//////////////	void compute_difference()
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "compute_difference()" << std::endl;
+//////////////
+//////////////		for (int k = 0; k < 2; k++)
+//////////////			*parareal_data_error.data_arrays[k] = *parareal_data_fine.data_arrays[k] - *parareal_data_coarse.data_arrays[k];
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Compute the data to be forwarded to the next time step
+//////////////	 * Y^O := Y^C + Y^E
+//////////////	 *
+//////////////	 * Return: Error indicator based on the computed error norm between the
+//////////////	 * old values and new values
+//////////////	 */
+//////////////	double compute_output_data(
+//////////////			bool i_compute_convergence_test
+//////////////	)
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "compute_output_data()" << std::endl;
+//////////////
+//////////////		double convergence = -1;
+//////////////
+//////////////		if (!i_compute_convergence_test || !output_data_valid)
+//////////////		{
+//////////////			for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
+//////////////				*parareal_data_output.data_arrays[k] = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+//////////////
+//////////////			output_data_valid = true;
+//////////////			return convergence;
+//////////////		}
+//////////////
+//////////////		PlaneData_Spectral tmp(planeDataConfig);
+////////////////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+//////////////		tmp.spectral_set_zero();
+////////////////#endif
+////////////////		tmp.physical_set_all_value(0.0);
+//////////////
+//////////////		for (int k = 0; k < NUM_OF_UNKNOWNS; k++)
+//////////////		{
+//////////////			tmp = *parareal_data_coarse.data_arrays[k] + *parareal_data_error.data_arrays[k];
+//////////////
+//////////////			convergence = std::max(
+//////////////					convergence,
+//////////////					(*parareal_data_output.data_arrays[k]-tmp).spectral_reduce_max_abs()
+//////////////				);
+//////////////
+//////////////			*parareal_data_output.data_arrays[k] = tmp;
+//////////////		}
+//////////////
+//////////////		simVars.timecontrol.current_simulation_time = timeframe_end;
+//////////////		prog_u = *parareal_data_output.data_arrays[0];
+//////////////		prog_v = *parareal_data_output.data_arrays[1];
+//////////////
+//////////////		if (simVars.misc.compute_errors){
+//////////////			compute_errors(prog_u, prog_v);
+//////////////			std::cout << "maxabs error compared to analytical solution: " << benchmark.benchmark_analytical_error_maxabs_u << std::endl;
+//////////////		}
+//////////////
+//////////////		output_data_valid = true;
+//////////////		return convergence;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Return the data to be forwarded to the next coarse time step interval:
+//////////////	 * return Y^O
+//////////////	 */
+//////////////	Parareal_Data& get_reference_to_output_data()
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "get_output_data()" << std::endl;
+//////////////
+//////////////		return parareal_data_output;
+//////////////	}
+//////////////
+//////////////
+//////////////	/**
+//////////////	 * Write file to data and return string of file name
+//////////////	 */
+//////////////	std::string write_file_parareal(
+//////////////			const PlaneData_Physical &i_planeData,
+//////////////			const char* i_name, ///< name of output variable
+//////////////			const int i_iteration_id,
+//////////////			const int i_time_slice_id
+//////////////		)
+//////////////	{
+//////////////		char buffer[1024];
+//////////////
+//////////////		sprintf(buffer, (simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), i_name, i_iteration_id, i_time_slice_id);
+//////////////		i_planeData.file_physical_saveData_ascii(buffer,'\n',12,1);
+//////////////
+//////////////		/*
+//////////////		char tmp[128];
+//////////////		strcpy(tmp,i_name);
+//////////////		strcat(tmp,"_spec");
+//////////////		sprintf(buffer, (simVars.inputoutput.output_file_name_prefix+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), tmp, simVars.timecontrol.current_simulation_time*simVars.inputoutput.output_time_scale);
+//////////////		i_planeData.file_spectral_saveData_ascii(buffer,'\n',12,1);
+//////////////		*/
+//////////////
+//////////////		return buffer;
+//////////////	}
+//////////////
+//////////////
+//////////////	/*
+//////////////	 * Write output of Parareal data to file
+//////////////	 */
+//////////////	void output_data_file(
+//////////////			const Parareal_Data& i_data,
+//////////////			int iteration_id,
+//////////////			int time_slice_id
+//////////////	)
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "output_data_file()" << std::endl;
+//////////////
+//////////////		Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>& data = (Parareal_Data_PlaneData<NUM_OF_UNKNOWNS*2>&)i_data;
+//////////////
+//////////////		// Copy to minimize errors from FFT
+//////////////		PlaneData_Spectral tmp_u = *data.data_arrays[0];
+//////////////		PlaneData_Spectral tmp_v = *data.data_arrays[1];
+//////////////
+//////////////		write_file_parareal(tmp_u.toPhys(),"prog_u",iteration_id,time_slice_id);
+//////////////
+//////////////		char buffer[1024];
+//////////////		sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
+//////////////
+//////////////		std::ofstream file(buffer, std::ios_base::trunc);
+//////////////		file << std::setprecision(12);
+//////////////
+//////////////		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+//////////////		{
+//////////////			file << x << ", " << tmp_u.spectral_return_amplitude(0,x) << ", " << tmp_u.spectral_return_phase(0,x) << std::endl;
+//////////////		}
+//////////////		file.close();
+//////////////		file.clear();
+//////////////
+//////////////
+//////////////		if (simVars.misc.compute_errors)
+//////////////		{
+//////////////			PlaneData_Spectral ana = compute_errors2(tmp_u, tmp_v);
+//////////////
+//////////////			write_file_parareal(ana.toPhys(),"analytical",iteration_id,time_slice_id);
+//////////////
+//////////////			sprintf(buffer,(simVars.iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
+//////////////
+//////////////			file.open(buffer, std::ios_base::trunc);
+//////////////			file << std::setprecision(12);
+//////////////			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+//////////////			{
+//////////////				file << x << ", " << ana.spectral_return_amplitude(0,x) << ", " << ana.spectral_return_phase(0,x) << std::endl;
+//////////////			}
+//////////////			file.close();
+//////////////		}
+//////////////	}
+//////////////
+//////////////
+//////////////	/*
+//////////////	 * Write output of Parareal data to console
+//////////////	 */
+//////////////	void output_data_console(
+//////////////			const Parareal_Data& i_data,
+//////////////			int iteration_id,
+//////////////			int time_slice_id
+//////////////	)
+//////////////	{
+//////////////		if (simVars.parareal.verbosity > 2)
+//////////////			std::cout << "output_data_console()" << std::endl;
+//////////////
+//////////////		update_diagnostics();
+//////////////		// Print timestep data to console
+//////////////
+//////////////		std::stringstream header;
+//////////////		std::stringstream rows;
+//////////////
+//////////////		rows << std::setprecision(12);
+//////////////
+//////////////		// Prefix
+//////////////		if (iteration_id == 0 && time_slice_id == 0)
+//////////////			header << "DATA";
+//////////////		rows << "DATA";
+//////////////
+//////////////		// Time
+//////////////		if (iteration_id == 0 && time_slice_id == 0)
+//////////////			header << "\tITERATION\tTIME_SLICE";
+//////////////		rows << "\t" << iteration_id << "\t" << time_slice_id;
+//////////////
+//////////////		// Energy
+//////////////		if (iteration_id == 0 && time_slice_id == 0)
+//////////////			header << "\tTOTAL_ENERGY";
+//////////////		rows << "\t" << simVars.diag.total_energy;
+//////////////
+//////////////		if (simVars.misc.compute_errors)
+//////////////		{
+//////////////			// Copy to minimize errors from FFT
+//////////////			PlaneData_Spectral tmp_u = prog_u;
+//////////////			if (iteration_id == 0 && time_slice_id == 0)
+//////////////				header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
+//////////////			rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << tmp_u.toPhys().physical_reduce_max_abs();
+//////////////		}
+//////////////
+//////////////		if (iteration_id == 0 && time_slice_id == 0)
+//////////////			std::cout << header.str() << std::endl;
+//////////////
+//////////////		std::cout << rows.str() << std::endl;
+//////////////
+//////////////	}
+//////////////
+//////////////#endif
 };
 
 
@@ -1449,20 +1449,53 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_PARAREAL
 		if (simVars.parareal.enabled)
 		{
+
+			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+
+			Burgers_Plane_TimeSteppers* timeSteppersFine = new Burgers_Plane_TimeSteppers;
+			Burgers_Plane_TimeSteppers* timeSteppersCoarse = new Burgers_Plane_TimeSteppers;
+
 			/*
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+			Parareal_Controller_Serial_GenericData<Burgers_Plane_TimeSteppers, 3> parareal_Controller_Serial(simVars, planeDataConfig,
+																op,
+																std::string("burgers"),
+																timeSteppersFine,
+																timeSteppersCoarse);
 
 			// setup controller. This initializes several simulation instances
 			parareal_Controller_Serial.setup(&simVars.parareal);
 
 			// execute the simulation
 			parareal_Controller_Serial.run();
+
+			delete timeSteppersFine;
+			delete timeSteppersCoarse;
 		}
 		else
 #endif
+
+
+
+/////////////#if SWEET_PARAREAL
+/////////////		if (simVars.parareal.enabled)
+/////////////		{
+/////////////			/*
+/////////////			 * Allocate parareal controller and provide class
+/////////////			 * which implement the parareal features
+/////////////			 */
+/////////////			Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+/////////////
+/////////////			// setup controller. This initializes several simulation instances
+/////////////			parareal_Controller_Serial.setup(&simVars.parareal);
+/////////////
+/////////////			// execute the simulation
+/////////////			parareal_Controller_Serial.run();
+/////////////		}
+/////////////		else
+/////////////#endif
 
 #if SWEET_GUI
 		if (simVars.misc.gui_enabled)

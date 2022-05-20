@@ -552,7 +552,7 @@ class JobCompileOptions(InfoError):
 
 
         if not self.parareal == 'none':
-            if self.program == 'swe_plane':
+            if self.program == 'swe_plane' or self.program == 'burgers':
                 self.parareal_plane = 'enable';
             if self.program == 'swe_sphere':
                 self.parareal_sphere = 'enable';

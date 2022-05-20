@@ -35,82 +35,160 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
  *
  */
 
+class ODE_Scalar_TS_interface
+{
+public:
+	void run_timestep(
+			double &io_y,			///< prognostic variables
+			double i_t			///< time
+
+			double i_dt,		///< time step size
+			double i_sim_timestamp
+	)
+	{
+		double a = param_parareal_function_a;
+		double b = param_parareal_function_b;
+
+		y += i_dt * (a * std::sin(y) + b * std::sin(t));
+	}
+
+	void run_timestep(
+			Parareal_GenericData* io_data,
+
+			double i_t,
+			double i_dt,		///< time step size
+			double i_sim_timestamp
+	)
+	{
+		double y = *(io_data->get_pointer_to_data_Scalar()->simfields[0]);
+
+		run_timestep(y,
+				t,
+				i_dt,
+				i_sim_timestamp
+			);
+
+		*(io_data->get_pointer_to_data_Scalar()->simfields[0]) = y;
+
+	}
+
+};
+
+
+
+
+class ODE_Scalar_TimeSteppers
+{
+public:
+	ODE_Scalar_TS_interface *master = nullptr;
+
+	Burgers_Plane_TimeSteppers()
+	{
+	}
+
+	void reset()
+	{
+		if (master != nullptr)
+		{
+			delete master;
+			master = nullptr;
+		}
+	}
+
+	void setup(
+			const std::string &i_timestepping_method,
+			int &i_timestepping_order,
+
+			SimulationVariables &i_simVars
+	)
+	{
+		reset();
+		master = new ODE_Scalar_TS_interface;
+	}
+
+	~ODE_Scalar_TimeSteppers()
+	{
+		reset();
+	}
+};
+
+
 
 class SimulationInstance	:
 		public Parareal_SimulationInstance
 {
-	Parareal_Data_Scalar parareal_data_start;
-	Parareal_Data_Scalar parareal_data_fine;
-	Parareal_Data_Scalar parareal_data_coarse;
-	Parareal_Data_Scalar parareal_data_output;
-	Parareal_Data_Scalar parareal_data_error;
-
-
-	double timeframe_start = -1;
-	double timeframe_end = -1;
-
-	bool output_data_valid = false;
+//////////	Parareal_Data_Scalar parareal_data_start;
+//////////	Parareal_Data_Scalar parareal_data_fine;
+//////////	Parareal_Data_Scalar parareal_data_coarse;
+//////////	Parareal_Data_Scalar parareal_data_output;
+//////////	Parareal_Data_Scalar parareal_data_error;
+//////////
+//////////
+//////////	double timeframe_start = -1;
+//////////	double timeframe_end = -1;
+//////////
+//////////	bool output_data_valid = false;
 
 
 public:
-	/**
-	 * Set the start and end of the coarse time step
-	 */
-	void sim_set_timeframe(
-			double i_timeframe_start,	///< start timestamp of coarse time step
-			double i_timeframe_end		///< end time stamp of coarse time step
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
+///////////	/**
+///////////	 * Set the start and end of the coarse time step
+///////////	 */
+///////////	void sim_set_timeframe(
+///////////			double i_timeframe_start,	///< start timestamp of coarse time step
+///////////			double i_timeframe_end		///< end time stamp of coarse time step
+///////////	)
+///////////	{
+///////////		if (simVars.parareal.verbosity > 2)
+///////////			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
+///////////
+///////////		timeframe_start = i_timeframe_start;
+///////////		timeframe_end = i_timeframe_end;
+///////////	}
+///////////
+///////////
+///////////
+///////////	/**
+///////////	 * Set the initial data at i_timeframe_start
+///////////	 */
+///////////	void sim_setup_initial_data(
+///////////	)
+///////////	{
+///////////		if (simVars.parareal.verbosity > 2)
+///////////			std::cout << "sim_setup_initial_data()" << std::endl;
+///////////
+///////////		parareal_data_start.data = param_parareal_function_y0;
+///////////	}
 
-		timeframe_start = i_timeframe_start;
-		timeframe_end = i_timeframe_end;
-	}
 
 
-
-	/**
-	 * Set the initial data at i_timeframe_start
-	 */
-	void sim_setup_initial_data(
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "sim_setup_initial_data()" << std::endl;
-
-		parareal_data_start.data = param_parareal_function_y0;
-	}
-
-
-
-	/**
-	 * Set simulation data to data given in i_sim_data.
-	 * This can be data which is computed by another simulation.
-	 * Y^S := i_sim_data
-	 */
-	void sim_set_data(
-			Parareal_Data &i_pararealData
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "sim_set_data()" << std::endl;
-
-		// copy to buffers
-		parareal_data_start = i_pararealData;
-	}
-
-	/**
-	 * Set the MPI communicator to use for simulation purpose
-	 * (TODO: not yet implemented since our parallelization-in-space
-	 * is done only via OpenMP)
-	 */
-	void sim_set_mpi_comm(
-			int i_mpi_comm
-	)
-	{
-		// NOTHING TO DO HERE
-	}
+///////////////	/**
+///////////////	 * Set simulation data to data given in i_sim_data.
+///////////////	 * This can be data which is computed by another simulation.
+///////////////	 * Y^S := i_sim_data
+///////////////	 */
+///////////////	void sim_set_data(
+///////////////			Parareal_Data &i_pararealData
+///////////////	)
+///////////////	{
+///////////////		if (simVars.parareal.verbosity > 2)
+///////////////			std::cout << "sim_set_data()" << std::endl;
+///////////////
+///////////////		// copy to buffers
+///////////////		parareal_data_start = i_pararealData;
+///////////////	}
+///////////////
+///////////////	/**
+///////////////	 * Set the MPI communicator to use for simulation purpose
+///////////////	 * (TODO: not yet implemented since our parallelization-in-space
+///////////////	 * is done only via OpenMP)
+///////////////	 */
+///////////////	void sim_set_mpi_comm(
+///////////////			int i_mpi_comm
+///////////////	)
+///////////////	{
+///////////////		// NOTHING TO DO HERE
+///////////////	}
 
 
 
@@ -149,185 +227,185 @@ public:
 
 
 
-	/**
-	 * compute solution on time slice with fine timestep:
-	 * Y^F := F(Y^S)
-	 */
-	void run_timestep_fine()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "run_timestep_fine()" << std::endl;
-
-		double y = parareal_data_start.data;
-		double t = timeframe_start;
-
-		while (t != timeframe_end)
-		{
-			double dt = std::min(param_parareal_fine_dt, timeframe_end-t);
-
-			if (simVars.misc.verbosity > 5)
-				std::cout << t << ": " << y << std::endl;
-
-			y += f_dt(y, t)*dt;
-			t += dt;
-
-			assert(t <= timeframe_end);
-		}
-
-		if (simVars.misc.verbosity > 5)
-			std::cout << t << ": " << y << std::endl;
-
-		parareal_data_fine.data = y;
-	}
-
-
-	/**
-	 * return the data after running computations with the fine timestepping:
-	 * return Y^F
-	 */
-	Parareal_Data& get_reference_to_data_timestep_fine()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "get_data_timestep_fine()" << std::endl;
-
-		return parareal_data_fine;
-	}
-
-
-	/**
-	 * compute solution with coarse timestepping:
-	 * Y^C := G(Y^S)
-	 */
-	void run_timestep_coarse()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "run_timestep_coarse()" << std::endl;
-
-		double y = parareal_data_start.data;
-		double dt = timeframe_end - timeframe_start;
-
-		if (simVars.misc.verbosity > 5)
-			std::cout << timeframe_start << ": " << y << std::endl;
-
-		y += dt*f_dt(y, timeframe_start);
-
-		if (simVars.misc.verbosity > 5)
-			std::cout << timeframe_end << ": " << y << std::endl;
-
-		parareal_data_coarse.data = y;
-	}
-
-
-
-	/**
-	 * return the solution after the coarse timestepping:
-	 * return Y^C
-	 */
-	Parareal_Data& get_reference_to_data_timestep_coarse()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "get_data_timestep_coarse()" << std::endl;
-
-		return parareal_data_coarse;
-	}
-
-
-
-	/**
-	 * Compute the error between the fine and coarse timestepping:
-	 * Y^E := Y^F - Y^C
-	 */
-	void compute_difference()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "compute_difference()" << std::endl;
-
-		parareal_data_error.data = parareal_data_fine.data - parareal_data_coarse.data;
-	}
-
-
-
-	/**
-	 * Compute the data to be forwarded to the next time step
-	 * Y^O := Y^C + Y^E
-	 *
-	 * Return: Error indicator based on the computed error norm between the
-	 * old values and new values
-	 */
-	double compute_output_data(
-			bool i_compute_convergence_test
-	)
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "compute_output_data()" << std::endl;
-
-		double convergence = -1;
-
-		if (!i_compute_convergence_test || !output_data_valid)
-		{
-			parareal_data_output.data = parareal_data_coarse.data + parareal_data_error.data;
-
-			output_data_valid = true;
-			return convergence;
-		}
-
-
-		for (int k = 0; k < 3; k++)
-		{
-			double tmp = parareal_data_coarse.data + parareal_data_error.data;
-
-			convergence = std::max(
-					convergence,
-					std::abs(parareal_data_output.data-tmp)
-				);
-
-			parareal_data_output.data = tmp;
-		}
-
-		std::cout << "                           computed solution: " << parareal_data_output.data << std::endl;
-//		std::cout << "                                       error: " << std::abs(parareal_data_output.data-param_fine_timestepping_solution) << std::endl;
-
-		output_data_valid = true;
-		return convergence;
-	}
-
-
-
-	/**
-	 * Return the data to be forwarded to the next coarse time step interval:
-	 * return Y^O
-	 */
-	Parareal_Data& get_reference_to_output_data()
-	{
-		if (simVars.parareal.verbosity > 2)
-			std::cout << "get_output_data()" << std::endl;
-
-		return parareal_data_output;
-	}
-
-
-	void output_data_console(
-			const Parareal_Data& i_data,
-			int iteration_id,
-			int time_slice_id
-	)
-	{
-		double y = ((Parareal_Data_Scalar&)i_data).data;
-		std::cout << "Solution: " << y << std::endl;
-
-		if (timeframe_end == simVars.parareal.max_simulation_time)
-			std::cout << "ERROR in last time slice: " << std::abs(y-param_fine_timestepping_solution) << std::endl;
-	}
-
-
-	void output_data_file(
-			const Parareal_Data& i_data,
-			int iteration_id,
-			int time_slice_id
-	)
-	{
-//		std::cout << ((Parareal_Data_Scalar&)i_data).data << std::endl;
-	}
+//////////////////	/**
+//////////////////	 * compute solution on time slice with fine timestep:
+//////////////////	 * Y^F := F(Y^S)
+//////////////////	 */
+//////////////////	void run_timestep_fine()
+//////////////////	{
+//////////////////		if (simVars.parareal.verbosity > 2)
+//////////////////			std::cout << "run_timestep_fine()" << std::endl;
+//////////////////
+//////////////////		double y = parareal_data_start.data;
+//////////////////		double t = timeframe_start;
+//////////////////
+//////////////////		while (t != timeframe_end)
+//////////////////		{
+//////////////////			double dt = std::min(param_parareal_fine_dt, timeframe_end-t);
+//////////////////
+//////////////////			if (simVars.misc.verbosity > 5)
+//////////////////				std::cout << t << ": " << y << std::endl;
+//////////////////
+//////////////////			y += f_dt(y, t)*dt;
+//////////////////			t += dt;
+//////////////////
+//////////////////			assert(t <= timeframe_end);
+//////////////////		}
+//////////////////
+//////////////////		if (simVars.misc.verbosity > 5)
+//////////////////			std::cout << t << ": " << y << std::endl;
+//////////////////
+//////////////////		parareal_data_fine.data = y;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////	/**
+//////////////////	 * return the data after running computations with the fine timestepping:
+//////////////////	 * return Y^F
+//////////////////	 */
+//////////////////	Parareal_Data& get_reference_to_data_timestep_fine()
+//////////////////	{
+//////////////////		if (simVars.parareal.verbosity > 2)
+//////////////////			std::cout << "get_data_timestep_fine()" << std::endl;
+//////////////////
+//////////////////		return parareal_data_fine;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////	/**
+//////////////////	 * compute solution with coarse timestepping:
+//////////////////	 * Y^C := G(Y^S)
+//////////////////	 */
+//////////////////	void run_timestep_coarse()
+//////////////////	{
+//////////////////		if (simVars.parareal.verbosity > 2)
+//////////////////			std::cout << "run_timestep_coarse()" << std::endl;
+//////////////////
+//////////////////		double y = parareal_data_start.data;
+//////////////////		double dt = timeframe_end - timeframe_start;
+//////////////////
+//////////////////		if (simVars.misc.verbosity > 5)
+//////////////////			std::cout << timeframe_start << ": " << y << std::endl;
+//////////////////
+//////////////////		y += dt*f_dt(y, timeframe_start);
+//////////////////
+//////////////////		if (simVars.misc.verbosity > 5)
+//////////////////			std::cout << timeframe_end << ": " << y << std::endl;
+//////////////////
+//////////////////		parareal_data_coarse.data = y;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////
+//////////////////	/**
+//////////////////	 * return the solution after the coarse timestepping:
+//////////////////	 * return Y^C
+//////////////////	 */
+//////////////////	Parareal_Data& get_reference_to_data_timestep_coarse()
+//////////////////	{
+//////////////////		if (simVars.parareal.verbosity > 2)
+//////////////////			std::cout << "get_data_timestep_coarse()" << std::endl;
+//////////////////
+//////////////////		return parareal_data_coarse;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////
+//////////////////	/**
+//////////////////	 * Compute the error between the fine and coarse timestepping:
+//////////////////	 * Y^E := Y^F - Y^C
+//////////////////	 */
+//////////////////	void compute_difference()
+//////////////////	{
+//////////////////		if (simVars.parareal.verbosity > 2)
+//////////////////			std::cout << "compute_difference()" << std::endl;
+//////////////////
+//////////////////		parareal_data_error.data = parareal_data_fine.data - parareal_data_coarse.data;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////
+//////////////////	/**
+//////////////////	 * Compute the data to be forwarded to the next time step
+//////////////////	 * Y^O := Y^C + Y^E
+//////////////////	 *
+//////////////////	 * Return: Error indicator based on the computed error norm between the
+//////////////////	 * old values and new values
+//////////////////	 */
+//////////////////	double compute_output_data(
+//////////////////			bool i_compute_convergence_test
+//////////////////	)
+//////////////////	{
+//////////////////		if (simVars.parareal.verbosity > 2)
+//////////////////			std::cout << "compute_output_data()" << std::endl;
+//////////////////
+//////////////////		double convergence = -1;
+//////////////////
+//////////////////		if (!i_compute_convergence_test || !output_data_valid)
+//////////////////		{
+//////////////////			parareal_data_output.data = parareal_data_coarse.data + parareal_data_error.data;
+//////////////////
+//////////////////			output_data_valid = true;
+//////////////////			return convergence;
+//////////////////		}
+//////////////////
+//////////////////
+//////////////////		for (int k = 0; k < 3; k++)
+//////////////////		{
+//////////////////			double tmp = parareal_data_coarse.data + parareal_data_error.data;
+//////////////////
+//////////////////			convergence = std::max(
+//////////////////					convergence,
+//////////////////					std::abs(parareal_data_output.data-tmp)
+//////////////////				);
+//////////////////
+//////////////////			parareal_data_output.data = tmp;
+//////////////////		}
+//////////////////
+//////////////////		std::cout << "                           computed solution: " << parareal_data_output.data << std::endl;
+////////////////////		std::cout << "                                       error: " << std::abs(parareal_data_output.data-param_fine_timestepping_solution) << std::endl;
+//////////////////
+//////////////////		output_data_valid = true;
+//////////////////		return convergence;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////
+//////////////////	/**
+//////////////////	 * Return the data to be forwarded to the next coarse time step interval:
+//////////////////	 * return Y^O
+//////////////////	 */
+//////////////////	Parareal_Data& get_reference_to_output_data()
+//////////////////	{
+//////////////////		if (simVars.parareal.verbosity > 2)
+//////////////////			std::cout << "get_output_data()" << std::endl;
+//////////////////
+//////////////////		return parareal_data_output;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////	void output_data_console(
+//////////////////			const Parareal_Data& i_data,
+//////////////////			int iteration_id,
+//////////////////			int time_slice_id
+//////////////////	)
+//////////////////	{
+//////////////////		double y = ((Parareal_Data_Scalar&)i_data).data;
+//////////////////		std::cout << "Solution: " << y << std::endl;
+//////////////////
+//////////////////		if (timeframe_end == simVars.parareal.max_simulation_time)
+//////////////////			std::cout << "ERROR in last time slice: " << std::abs(y-param_fine_timestepping_solution) << std::endl;
+//////////////////	}
+//////////////////
+//////////////////
+//////////////////	void output_data_file(
+//////////////////			const Parareal_Data& i_data,
+//////////////////			int iteration_id,
+//////////////////			int time_slice_id
+//////////////////	)
+//////////////////	{
+////////////////////		std::cout << ((Parareal_Data_Scalar&)i_data).data << std::endl;
+//////////////////	}
 };
 
 
@@ -385,30 +463,58 @@ int main(int i_argc, char *i_argv[])
 	std::cout << " + function df(y,t)/dt = " << param_parareal_function_a << "*sin(y) + " << param_parareal_function_b << "*sin(t)" << std::endl;
 
 
-	/*
-	 * Compute fine time stepping solution with single time slice
-	 */
-	SimulationInstance fineSolution;
-	fineSolution.sim_set_timeframe(0, simVars.parareal.max_simulation_time);
-	fineSolution.sim_setup_initial_data();
-	fineSolution.run_timestep_fine();
-	Parareal_Data &data_fine = fineSolution.get_reference_to_data_timestep_fine();
-	param_fine_timestepping_solution = ((Parareal_Data_Scalar&)(data_fine)).data;
+//////////////////////////////////////	/*
+//////////////////////////////////////	 * Compute fine time stepping solution with single time slice
+//////////////////////////////////////	 */
+//////////////////////////////////////	SimulationInstance fineSolution;
+//////////////////////////////////////	fineSolution.sim_set_timeframe(0, simVars.parareal.max_simulation_time);
+//////////////////////////////////////	fineSolution.sim_setup_initial_data();
+//////////////////////////////////////	fineSolution.run_timestep_fine();
+//////////////////////////////////////	Parareal_Data &data_fine = fineSolution.get_reference_to_data_timestep_fine();
+//////////////////////////////////////	param_fine_timestepping_solution = ((Parareal_Data_Scalar&)(data_fine)).data;
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////	/*
+//////////////////////////////////////	 * Allocate parareal controller and provide class
+//////////////////////////////////////	 * which implement the parareal features
+//////////////////////////////////////	 */
+//////////////////////////////////////
+//////////////////////////////////////	Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+//////////////////////////////////////
+//////////////////////////////////////	// setup controller. This initializes several simulation instances
+//////////////////////////////////////	parareal_Controller_Serial.setup(&simVars.parareal);
+//////////////////////////////////////
+//////////////////////////////////////
+//////////////////////////////////////	// execute the simulation
+//////////////////////////////////////	parareal_Controller_Serial.run();
+
+		if (simVars.parareal.enabled)
+		{
+
+			ODE_Scalar_TimeSteppers* timeSteppersFine = new ODE_Scalar_TimeSteppers;
+			ODE_Scalar_TimeSteppers* timeSteppersCoarse = new ODE_Scalar_TimeSteppers;
+
+			/*
+			 * Allocate parareal controller and provide class
+			 * which implement the parareal features
+			 */
+			Parareal_Controller_Serial_GenericData<SWE_Plane_TimeSteppers, 3> parareal_Controller_Serial(simVars, planeDataConfig,
+																std::string("ode1"),
+																timeSteppersFine,
+																timeSteppersCoarse);
+			//Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+
+			// setup controller. This initializes several simulation instances
+			parareal_Controller_Serial.setup(&simVars.parareal);
+
+			// execute the simulation
+			parareal_Controller_Serial.run();
+
+			delete timeSteppersFine;
+			delete timeSteppersCoarse;
+		}
 
 
-	/*
-	 * Allocate parareal controller and provide class
-	 * which implement the parareal features
-	 */
-
-	Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
-
-	// setup controller. This initializes several simulation instances
-	parareal_Controller_Serial.setup(&simVars.parareal);
-
-
-	// execute the simulation
-	parareal_Controller_Serial.run();
 
 	return 0;
 }

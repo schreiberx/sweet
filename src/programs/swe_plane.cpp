@@ -1106,7 +1106,6 @@ int main(int i_argc, char *i_argv[])
 			 */
 			Parareal_Controller_Serial_GenericData<SWE_Plane_TimeSteppers, 3> parareal_Controller_Serial(simVars, planeDataConfig,
 																op,
-																//std::string("plane"),
 																std::string("swe"),
 																timeSteppersFine,
 																timeSteppersCoarse);
