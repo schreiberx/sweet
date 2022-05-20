@@ -158,6 +158,10 @@ if p.parareal_plane == 'enable':
     env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE=1')
 if p.parareal_sphere == 'enable':
     env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_SPHERE=1')
+if p.parareal_plane_swe == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE_SWE=1')
+if p.parareal_plane_burgers == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE_BURGERS=1')
 
 
 #

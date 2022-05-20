@@ -57,7 +57,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 
 	phi.loadPlaneDataPhysical(phi_phys);
 
-	ts_l_direct.run_timestep(phi, io_v, io_u, io_v, i_fixed_dt, i_simulation_timestamp);
+	ts_l_direct.run_timestep(phi, io_v, /*io_u, io_v,*/ i_fixed_dt, i_simulation_timestamp);
 
 	phi_phys = phi.toPhys();
 

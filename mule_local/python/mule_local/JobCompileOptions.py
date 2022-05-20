@@ -88,6 +88,8 @@ class JobCompileOptions(InfoError):
         self.parareal_scalar = 'disable'
         self.parareal_plane = 'disable'
         self.parareal_sphere = 'disable'
+        self.parareal_plane_swe = 'disable'
+        self.parareal_plane_burgers = 'disable'
         self.libpfasst = 'disable'
 
         # Eigen library
@@ -166,6 +168,8 @@ class JobCompileOptions(InfoError):
         retval += ' --parareal-scalar='+self.parareal_scalar
         retval += ' --parareal-plane='+self.parareal_plane
         retval += ' --parareal-sphere='+self.parareal_sphere
+        retval += ' --parareal-plane-swe='+self.parareal_plane_swe
+        retval += ' --parareal-plane-burgers='+self.parareal_plane_burgers
         retval += ' --libpfasst='+self.libpfasst
 
         retval += ' --eigen='+self.eigen
@@ -532,6 +536,23 @@ class JobCompileOptions(InfoError):
         )
         self.parareal_sphere = scons.GetOption('parareal_sphere')
 
+        scons.AddOption(    '--parareal-plane-swe',
+                dest='parareal_plane_swe',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable Parareal for SWE on the plane (enable, disable) [default: %default]'
+        )
+        self.parareal_plane_swe = scons.GetOption('parareal_plane_swe')
+
+        scons.AddOption(    '--parareal-plane-burgers',
+                dest='parareal_plane_burgers',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable Parareal for Burgers on the plane (enable, disable) [default: %default]'
+        )
+        self.parareal_plane_burgers = scons.GetOption('parareal_plane_burgers')
 
 
         files = os.listdir('src/programs/')
@@ -552,9 +573,15 @@ class JobCompileOptions(InfoError):
 
 
         if not self.parareal == 'none':
-            if self.program == 'swe_plane' or self.program == 'burgers':
+            if self.program == "ode":
+                self.parareal_scalar = 'enable';
+            elif self.program == 'swe_plane' or self.program == 'burgers':
                 self.parareal_plane = 'enable';
-            if self.program == 'swe_sphere':
+                if self.program == 'swe_plane':
+                    self.parareal_plane_swe = 'enable';
+                elif self.program == 'burgers':
+                    self.parareal_plane_burgers = 'enable';
+            elif self.program == 'swe_sphere':
                 self.parareal_sphere = 'enable';
 
 

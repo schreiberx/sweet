@@ -59,10 +59,10 @@ SimulationVariables simVars;
 
 
 class SimulationInstance
-#if SWEET_PARAREAL
-		:
-		public Parareal_SimulationInstance
-#endif
+////#if SWEET_PARAREAL
+////		:
+////		public Parareal_SimulationInstance
+////#endif
 {
 
 public:
@@ -395,7 +395,8 @@ public:
 
 		const char* filename_template = simVars.iodata.output_file_name.c_str();
 		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
-		i_planeData.file_physical_saveData_ascii(buffer, '\n', 12, 1);
+		//i_planeData.file_physical_saveData_ascii(buffer, '\n', 12, 1);
+		i_planeData.file_physical_saveData_ascii(buffer);
 
 		return buffer;
 	}
@@ -424,6 +425,7 @@ public:
 		{
 			output_filenames = "";
 			output_filenames += write_file(u_phys, "prog_u");
+			output_filenames += write_file(v_phys, "prog_v");
 			//write_file(tmp_v, "prog_v");
 
 			char buffer[1024];
@@ -598,7 +600,7 @@ public:
 				{
 				   timeSteppers.ln_cole_hopf->run_timestep(
 						 ts_u, ts_v,
-						 ts_u, ts_v,
+						 ////ts_u, ts_v,
 						 simVars.timecontrol.current_simulation_time,
 						 0
 				   );
@@ -607,7 +609,7 @@ public:
 				{
 				   timeSteppers.l_direct->run_timestep(
 						 ts_u, ts_v,
-						 ts_u, ts_v,
+						 ////ts_u, ts_v,
 						 simVars.timecontrol.current_simulation_time,
 						 0
 				   );
@@ -701,7 +703,7 @@ public:
 				{
 				   timeSteppers.ln_cole_hopf->run_timestep(
 						 ts_u, ts_v,
-						 ts_u, ts_v,
+						 /////ts_u, ts_v,
 						 simVars.timecontrol.current_simulation_time,
 						 0
 				   );
@@ -710,7 +712,7 @@ public:
 				{
 				   timeSteppers.l_direct->run_timestep(
 						 ts_u, ts_v,
-						 ts_u, ts_v,
+						 /////ts_u, ts_v,
 						 simVars.timecontrol.current_simulation_time,
 						 0
 				   );

@@ -169,7 +169,10 @@ Burgers_Plane_TS_l_irk_n_sl_forcing::Burgers_Plane_TS_l_irk_n_sl_forcing(
 		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
 		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
+		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
+
+		u_prev(i_op.planeDataConfig),
+		v_prev(i_op.planeDataConfig)
 {
 }
 

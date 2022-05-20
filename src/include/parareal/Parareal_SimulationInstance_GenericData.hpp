@@ -659,7 +659,8 @@ public:
 
 		*(this->parareal_data_fine) = *(this->parareal_data_start);
 
-		while (simVars->timecontrol.current_simulation_time != timeframe_end)
+		///while (simVars->timecontrol.current_simulation_time != timeframe_end)
+		while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
 		{
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
@@ -668,7 +669,7 @@ public:
 			this->run_timestep(this->parareal_data_fine, "fine");
 
 			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestep_size;
-			assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
+			assert(simVars->timecontrol.current_simulation_time <= timeframe_end + 1e-14);
 		}
 	};
 
@@ -703,7 +704,8 @@ public:
 
 		*(this->parareal_data_coarse) = *(this->parareal_data_start);
 
-		while (simVars->timecontrol.current_simulation_time != timeframe_end)
+		//while (simVars->timecontrol.current_simulation_time != timeframe_end)
+		while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
 		{
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
@@ -711,7 +713,8 @@ public:
 
 			this->run_timestep(this->parareal_data_coarse, "coarse");
 			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;
-			assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
+			//std::cout << simVars->timecontrol.current_simulation_time << " " << timeframe_end << " " << simVars->timecontrol.current_simulation_time - timeframe_end << std::endl;
+			assert(simVars->timecontrol.current_simulation_time <= timeframe_end + 1e-14);
 		}
 	};
 
@@ -841,8 +844,9 @@ public:
 
 #elif SWEET_PARAREAL_PLANE
 		{
-			if (this->model == "burgers")
-			{
+	#if SWEET_PARAREAL_PLANE_BURGERS
+			//if (this->model == "burgers")
+			//{
 
 				PlaneData_Spectral dummy(this->planeDataConfig);
 				PlaneData_Spectral u_out(this->planeDataConfig);
@@ -885,39 +889,20 @@ public:
 
 				}
 
-				char buffer[1024];
-				sprintf(buffer,(simVars->iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(), "prog_u_amp_phase", iteration_id, time_slice_id);
-				std::ofstream file(buffer, std::ios_base::trunc);
-				file << std::setprecision(12);
-
-				for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
-				{
-					file << x << ", " << u_out.spectral_return_amplitude(0,x) << ", " << u_out.spectral_return_phase(0,x) << std::endl;
-				}
-				file.close();
-				file.clear();
-
+				write_file_spec_amp_phase_parareal_plane(u_out, "prog_u", iteration_id, output_initial_data);
 
 				if (simVars->misc.compute_errors)
 				{
 					PlaneData_Spectral ana = compute_errors2(u_out, v_out);
 
 					write_file_parareal_plane(ana.toPhys(),"analytical",iteration_id,time_slice_id);
-
-					sprintf(buffer,(simVars->iodata.output_file_name+std::string("output_%s_iter_%d_slice_%d.csv")).c_str(),"analytical_amp_phase", iteration_id, time_slice_id);
-
-					file.open(buffer, std::ios_base::trunc);
-					file << std::setprecision(12);
-					for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
-					{
-						file << x << ", " << ana.spectral_return_amplitude(0,x) << ", " << ana.spectral_return_phase(0,x) << std::endl;
-					}
-					file.close();
+					write_file_spec_amp_phase_parareal_plane(ana.toPhys(), "analytical", iteration_id, output_initial_data);
 				}
 
-			}
-			else if (this->model == "swe")
-			{
+			//}
+	#elif SWEET_PARAREAL_PLANE_SWE
+			//else if (this->model == "swe")
+			//{
 
 				PlaneData_Spectral h_out(this->planeDataConfig);
 				PlaneData_Spectral u_out(this->planeDataConfig);
@@ -987,7 +972,8 @@ public:
 					}
 					
 				}
-			}
+			//}
+	#endif
 		}
 
 #elif SWEET_PARAREAL_SPHERE
@@ -1094,7 +1080,7 @@ public:
 	};
 
 
-#if SWEET_PARAREAL_PLANE
+#if SWEET_PARAREAL_PLANE_BURGERS
 	// For Burgers
 	PlaneData_Spectral compute_errors2(
          const PlaneData_Spectral &i_planeData_u,
@@ -1341,7 +1327,6 @@ public:
 	/**
 	 * Write spectrum info to data and return string of file name (parareal)
 	 */
-
 	std::string write_file_spec_parareal_plane(
 			const PlaneData_Spectral &i_planeData,
 			const char* i_name,	///< name of output variable
@@ -1359,6 +1344,39 @@ public:
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
 		return buffer;
 	}
+
+	/**
+	 * Write spectrum info to data and return string of file name (parareal)
+	 */
+	std::string write_file_spec_amp_phase_parareal_plane(
+			const PlaneData_Spectral &i_planeData,
+			const char* i_name,	///< name of output variable
+			int iteration_id,
+			bool output_initial_data = false
+		)
+	{
+
+		char buffer[1024];
+
+		const char* filename_template = "output_%s_amp_phase_t%020.8f_iter%03d.csv";
+		if (output_initial_data)
+			sprintf(buffer, filename_template, i_name, timeframe_start, iteration_id);
+		else
+			sprintf(buffer, filename_template, i_name, timeframe_end, iteration_id);
+
+		std::ofstream file(buffer, std::ios_base::trunc);
+		file << std::setprecision(12);
+
+		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+		{
+			file << x << ", " << i_planeData.spectral_return_amplitude(0,x) << ", " << i_planeData.spectral_return_phase(0,x) << std::endl;
+		}
+		file.close();
+		file.clear();
+
+		return buffer;
+	}
+
 #endif
 
 
@@ -1402,13 +1420,26 @@ public:
 					                  PlaneData_Spectral(this->planeDataConfig),
 					                  PlaneData_Spectral(this->planeDataConfig)};
 
-			for (int ivar = 0; ivar < 3; ivar++)
+	#if SWEET_PARAREAL_PLANE_SWE
+			int nvar = 3;
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+			int nvar = 2;
+	#endif
+			for (int ivar = 0; ivar < nvar; ivar++)
 			{
 				std::string i_name;
 				if (ivar == 0)
+	#if SWEET_PARAREAL_PLANE_SWE
 					i_name = "prog_h_pert";
-				else if (ivar == 1)
+	#elif SWEET_PARAREAL_PLANE_BURGERS
 					i_name = "prog_u";
+	#endif
+				else if (ivar == 1)
+	#if SWEET_PARAREAL_PLANE_SWE
+					i_name = "prog_u";
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+					i_name = "prog_v";
+	#endif
 				else if (ivar == 2)
 					i_name = "prog_v";
 
@@ -1513,9 +1544,13 @@ public:
 			}
 		}
 #endif
-
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_PARAREAL_SPHERE
+			int nvar = 3;
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+			int nvar = 2;
+	#endif
 		// COMPUTE AND STORE ERRORS
-		for (int ivar = 0; ivar < 3; ivar++)
+		for (int ivar = 0; ivar < nvar; ivar++)
 		{
 
 			int resx_data;
@@ -1534,9 +1569,17 @@ public:
 			{
 
 				if (ivar == 0)
+	#if SWEET_PARAREAL_PLANE_SWE
 					i_name = "prog_h_pert";
-				else if (ivar == 1)
+	#elif SWEET_PARAREAL_PLANE_BURGERS
 					i_name = "prog_u";
+	#endif
+				else if (ivar == 1)
+	#if SWEET_PARAREAL_PLANE_SWE
+					i_name = "prog_u";
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+					i_name = "prog_v";
+	#endif
 				else if (ivar == 2)
 					i_name = "prog_v";
 

@@ -174,7 +174,10 @@ Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
 		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-		ts_l_irk(simVars, op)
+		ts_l_irk(simVars, op),
+
+		u_prev(i_op.planeDataConfig),
+		v_prev(i_op.planeDataConfig)
 {
 }
 
