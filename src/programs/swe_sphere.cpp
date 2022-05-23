@@ -1089,16 +1089,16 @@ int main_real(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller_Serial_GenericData<SWE_Sphere_TimeSteppers, 3> parareal_Controller_Serial(simVars, sphereDataConfig,
-																op, op_nodealiasing,
-																//std::string("sphere"),
-																std::string("swe"),
+			Parareal_Controller_Serial_GenericData<SWE_Sphere_TimeSteppers, 3> parareal_Controller_Serial(simVars,
+																sphereDataConfig,
+																op,
+																op_nodealiasing,
 																timeSteppersFine,
 																timeSteppersCoarse);
 			//Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
 
 			// setup controller. This initializes several simulation instances
-			parareal_Controller_Serial.setup(&simVars.parareal);
+			parareal_Controller_Serial.setup();
 
 			// execute the simulation
 			parareal_Controller_Serial.run();

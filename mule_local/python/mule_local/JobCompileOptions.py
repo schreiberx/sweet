@@ -573,7 +573,7 @@ class JobCompileOptions(InfoError):
 
 
         if not self.parareal == 'none':
-            if self.program == "ode":
+            if self.program == "parareal_ode":
                 self.parareal_scalar = 'enable';
             elif self.program == 'swe_plane' or self.program == 'burgers':
                 self.parareal_plane = 'enable';

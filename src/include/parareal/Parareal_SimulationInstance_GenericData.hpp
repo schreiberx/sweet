@@ -4,9 +4,9 @@
  *  Created on: 25 Feb 2022
  *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
- * MUddddLE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp
- * MUddddLE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
- * MUddddLE_SCONS_OPTIONS: --sphere-spectral-space=enable
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
+ * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_GENERICDATA_HPP_
@@ -14,7 +14,7 @@
 
 
 
-
+#include <sweet/SimulationVariables.hpp>
 
 #include <parareal/Parareal_GenericData.hpp>
 
@@ -70,9 +70,6 @@ public:
 	SphereOperators_SphereData* op_sphere_nodealiasing;
 	SphereData_Config* sphereDataConfig;
 #endif
-
-	// Model (ODE, Burgers, SWE)
-	std::string model = "";
 
 	// Time slice
 	double timeframe_start;
@@ -137,14 +134,13 @@ public:
 #if SWEET_PARAREAL_PLANE
 	// Plane
 	void setup(SimulationVariables* i_simVars, PlaneDataConfig* i_planeDataConfig,
-		   std::string i_model,
 		   PlaneOperators* i_op_plane,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
 		this->planeDataConfig = i_planeDataConfig;
 		this->op_plane = i_op_plane;
 		this->setup(i_simVars, 
-			    i_model, i_timeSteppersFine, i_timeSteppersCoarse);
+				i_timeSteppersFine, i_timeSteppersCoarse);
 
 		// IMPORTANT: setup initial conditions (inside this->setup) before setting up timesteppers
 		// because simulation parameters may change
@@ -177,7 +173,6 @@ public:
 #elif SWEET_PARAREAL_SPHERE
 	// Sphere
 	void setup(SimulationVariables* i_simVars, SphereData_Config* i_sphereDataConfig,
-		   std::string i_model,
 		   SphereOperators_SphereData* i_op_sphere, SphereOperators_SphereData* i_op_sphere_nodealiasing,
 		   t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
@@ -185,7 +180,7 @@ public:
 		this->op_sphere = i_op_sphere;
 		this->op_sphere_nodealiasing = i_op_sphere_nodealiasing;
 		this->setup(i_simVars,
-			    i_model, i_timeSteppersFine, i_timeSteppersCoarse);
+				i_timeSteppersFine, i_timeSteppersCoarse);
 
 		// IMPORTANT: setup initial conditions (inside this->setup) before setting up timesteppers
 		// because simulation parameters may change
@@ -216,13 +211,10 @@ public:
 #endif
 
 	void setup(SimulationVariables* i_simVars,
-			std::string i_model,
 			t_tsmType* i_timeSteppersFine, t_tsmType* i_timeSteppersCoarse)
 	{
 
 		this->simVars = i_simVars;
-
-		this->model = i_model;
 
 		this->timeSteppersFine = i_timeSteppersFine;
 		this->timeSteppersCoarse = i_timeSteppersCoarse;
@@ -285,23 +277,13 @@ public:
 	void dataArrays_to_GenericData_Scalar(Parareal_GenericData* i_data,
 						double &u)
 	{
-		if (this->model == "ode1")
-		{
-			i_data->get_pointer_to_data_Scalar()->simfields[0] = u;
-		}
-		else
-			SWEETError("Unknown model");
+		i_data->get_pointer_to_data_Scalar()->simfields[0] = u;
 	}
 
-	void GenericData_Scalar_to_DataArrays(Parareal_GenericData* i_data,
+	void GenericData_Scalar_to_dataArrays(Parareal_GenericData* i_data,
 						double &u)
 	{
-		if (this->model == "ode1")
-		{
-			u = i_data->get_pointer_to_data_Scalar()->simfields[0];
-		}
-		else
-			SWEETError("Unknown model");
+		u = i_data->get_pointer_to_data_Scalar()->simfields[0];
 	}
 
 #elif SWEET_PARAREAL_PLANE
@@ -313,22 +295,14 @@ public:
 								PlaneData_Spectral &v
 							)
 	{
-	///	if (this->model == "swe")
 	#if SWEET_PARAREAL_PLANE_SWE
-		{
-			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = h;
-			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = u;
-			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = v;
-		}
+		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = h;
+		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = u;
+		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = v;
 	#elif SWEET_PARAREAL_PLANE_BURGERS
-	///	else if (this->model == "burgers")
-		{
-			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = u;
-			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = v;
-		}
+		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = u;
+		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = v;
 	#endif
-	//	else
-	//		SWEETError("Unknown model");
 	}
 
 	void GenericData_PlaneData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
@@ -339,49 +313,31 @@ public:
 								PlaneData_Spectral &v
 							)
 	{
-	//	if (this->model == "swe")
 	#if SWEET_PARAREAL_PLANE_SWE
-		{
-			h = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
-			u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
-			v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
-		}
+		h = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
+		u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
+		v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
 	#elif SWEET_PARAREAL_PLANE_BURGERS
-	//	else if (this->model == "burgers")
-		{
-			u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
-			v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
-		}
+		u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
+		v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
 	#endif
-	//	else
-	//		SWEETError("Unknown model");
 	}
 
 #elif SWEET_PARAREAL_SPHERE
 	void dataArrays_to_GenericData_SphereData_Spectral(Parareal_GenericData* i_data,
 						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
 	{
-		if (this->model == "swe")
-		{
-			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]) = phi;
-			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]) = vrt;
-			*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]) = div;
-		}
-		else
-			SWEETError("Unknown model");
+		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]) = phi;
+		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]) = vrt;
+		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]) = div;
 	}
 
 	void GenericData_SphereData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
 						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
 	{
-		if (this->model == "swe")
-		{
-			phi = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]);
-			vrt = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
-			div = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
-		}
-		else
-			SWEETError("Unknown model");
+		phi = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]);
+		vrt = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
+		div = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
 	}
 #endif
 
@@ -400,7 +356,12 @@ public:
                 if ( std::abs(mod_coarse) > eps && std::abs(mod_coarse - time_slice_size) > eps )
 			SWEETError("Time slice length must be an integer multiple of the coarse time step! (" + std::to_string(simVars->parareal.coarse_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
                 if ( std::abs(mod_fine) > eps && std::abs(mod_fine - time_slice_size) > eps )
+		{
+			std::cout << "Number of timesteps: " << this->nb_timesteps_fine << std::endl;
+			std::cout << "Mod(dt): " << std::abs(mod_fine) << std::endl;
+			std::cout << "Mod(dt) - Dt: " << std::abs(mod_fine - time_slice_size) << std::endl;
 			SWEETError("Time slice length must be an integer multiple of the fine time step! (" + std::to_string(simVars->timecontrol.current_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
+		}
 	};
 
 
@@ -422,8 +383,15 @@ public:
 			this->nb_timesteps_fine++;
 		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-15)
 			this->nb_timesteps_coarse++;
+		std::cout << "Time slice size: " << this->timeframe_end - this->timeframe_start << std::endl;
+		std::cout << "Coarse time step: " << simVars->parareal.coarse_timestep_size << std::endl;
+		std::cout << "Fine time step: " << simVars->timecontrol.current_timestep_size << std::endl;
+		std::cout << &simVars->parareal << std::endl;
+		std::cout << simVars << std::endl;
+		std::cout << this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end << std::endl;
 		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-15);
 		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-15);
+
 
 		// set time to parareal_genericdata instances
 		this->parareal_data_start->set_time(i_timeframe_end);
@@ -454,113 +422,95 @@ public:
 		///reset();
 
 #if SWEET_PARAREAL_SCALAR
-		{
-			if (this->model == "ode1")
-			{
-				double u0 = atof(simVars.bogus.var[1].c_str());
-				this->dataArrays_to_GenericData_Scalar(this->parareal_data_start, u0);
-			}
-			else
-				SWEETError("Unknown model for this geometry");
-		}
+		double u0 = atof(simVars->bogus.var[1].c_str());
+		this->dataArrays_to_GenericData_Scalar(this->parareal_data_start, u0);
 
 #elif SWEET_PARAREAL_PLANE
-		{
-			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
-			PlaneData_Spectral t0_prog_u(planeDataConfig);
-			PlaneData_Spectral t0_prog_v(planeDataConfig);
+		PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
+		PlaneData_Spectral t0_prog_u(planeDataConfig);
+		PlaneData_Spectral t0_prog_v(planeDataConfig);
 
 	#if SWEET_PARAREAL_PLANE_SWE
-			//if (this->model == "swe")
-			{
-				SWEPlaneBenchmarksCombined swePlaneBenchmarks;
-				swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane);
-			}
+		SWEPlaneBenchmarksCombined swePlaneBenchmarks;
+		swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane);
 	#elif SWEET_PARAREAL_PLANE_BURGERS
-			//else if (this->model == "burgers")
-			{
-				PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig);
-				PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig);
-				if (simVars->disc.space_grid_use_c_staggering)
+		PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig);
+		PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig);
+		if (simVars->disc.space_grid_use_c_staggering)
+		{
+			t0_prog_u_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
 				{
-					t0_prog_u_phys.physical_update_lambda_array_indices(
-								[&](int i, int j, double &io_data)
-						{
-							double x = (((double)i)/(double)simVars->disc.space_res_physical[0])*simVars->sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars->disc.space_res_physical[1])*simVars->sim.plane_domain_size[1];
-							io_data = BurgersValidationBenchmarks::return_u(*simVars, x, y);
-						}
-					);
-					t0_prog_v_phys.physical_update_lambda_array_indices(
-								[&](int i, int j, double &io_data)
-						{
-						io_data = 0.0;
-						}
-					);
+					double x = (((double)i)/(double)simVars->disc.space_res_physical[0])*simVars->sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars->disc.space_res_physical[1])*simVars->sim.plane_domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_u(*simVars, x, y);
 				}
-				else
+			);
+			t0_prog_v_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
 				{
-					t0_prog_u_phys.physical_update_lambda_array_indices(
-								[&](int i, int j, double &io_data)
-						{
-							double x = (((double)i+0.5)/(double)simVars->disc.space_res_physical[0])*simVars->sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars->disc.space_res_physical[1])*simVars->sim.plane_domain_size[1];
-							io_data = BurgersValidationBenchmarks::return_u(*simVars, x, y);
-						}
-					);
-		
-					t0_prog_v_phys.physical_update_lambda_array_indices(
-								[&](int i, int j, double &io_data)
-						{
-						io_data = 0.0;
-						}
-					);
+				io_data = 0.0;
 				}
-				t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
-				t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
-			}
-	#endif
-			//else
-			//	SWEETError("Unknown model for this geometry!");
-
-			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start,
-	#if SWEET_PARAREAL_PLANE_SWE
-										t0_prog_h_pert,
-	#endif
-										t0_prog_u,
-										t0_prog_v);
-			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice,
-	#if SWEET_PARAREAL_PLANE_SWE
-										t0_prog_h_pert,
-	#endif
-										t0_prog_u,
-										t0_prog_v);
-			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice,
-	#if SWEET_PARAREAL_PLANE_SWE
-										t0_prog_h_pert,
-	#endif
-										t0_prog_u,
-										t0_prog_v);
+			);
 		}
+		else
+		{
+			t0_prog_u_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+				{
+					double x = (((double)i+0.5)/(double)simVars->disc.space_res_physical[0])*simVars->sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)simVars->disc.space_res_physical[1])*simVars->sim.plane_domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_u(*simVars, x, y);
+				}
+			);
+	
+			t0_prog_v_phys.physical_update_lambda_array_indices(
+						[&](int i, int j, double &io_data)
+				{
+				io_data = 0.0;
+				}
+			);
+		}
+		t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
+		t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
+	#endif
+
+
+		this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start,
+	#if SWEET_PARAREAL_PLANE_SWE
+										t0_prog_h_pert,
+	#endif
+										t0_prog_u,
+										t0_prog_v);
+
+
+		this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice,
+	#if SWEET_PARAREAL_PLANE_SWE
+										t0_prog_h_pert,
+	#endif
+										t0_prog_u,
+										t0_prog_v);
+
+
+		this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice,
+	#if SWEET_PARAREAL_PLANE_SWE
+										t0_prog_h_pert,
+	#endif
+										t0_prog_u,
+										t0_prog_v);
 
 #elif SWEET_PARAREAL_SPHERE
-		{
-			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig);
-			SphereData_Spectral t0_prog_vrt(sphereDataConfig);
-			SphereData_Spectral t0_prog_div(sphereDataConfig);
-			if (model == "swe")
-			{
-				BenchmarksSphereSWE sphereBenchmarks;
-				sphereBenchmarks.setup(*simVars, *op_sphere);
-				sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
-			}
-			else
-				SWEETError("Unknown model for this geometry");
+		SphereData_Spectral t0_prog_phi_pert(sphereDataConfig);
+		SphereData_Spectral t0_prog_vrt(sphereDataConfig);
+		SphereData_Spectral t0_prog_div(sphereDataConfig);
 
-			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_start, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
-			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
-			this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
-		}
+		BenchmarksSphereSWE sphereBenchmarks;
+		sphereBenchmarks.setup(*simVars, *op_sphere);
+		sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+
+		this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_start, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+		this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+		this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 #endif
 	};
 
@@ -626,6 +576,10 @@ public:
 		Parareal_GenericData* diff = this->create_new_data_container();
 		*diff = *parareal_data_fine_exact_debug;
 		*diff -= *parareal_data_output;
+		///parareal_data_fine_exact_debug->physical_print();
+		///parareal_data_output->physical_print();
+		std::cout << "Max serial:" << parareal_data_fine_exact_debug->reduce_maxAbs() << std::endl;
+		std::cout << "Max parareal:" << parareal_data_output->reduce_maxAbs() << std::endl;
 		std::cout << "DIFF: " << diff->reduce_maxAbs() << std::endl;
 		assert(diff->reduce_maxAbs() < 1e-10);
 		delete diff;
@@ -705,9 +659,7 @@ public:
 		*(this->parareal_data_fine) = *(this->parareal_data_start);
 
 		int nb_timesteps = 0;
-		//while (simVars->timecontrol.current_simulation_time != timeframe_end)
 		while (nb_timesteps != this->nb_timesteps_fine)
-		//while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
 		{
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
@@ -717,7 +669,6 @@ public:
 
 			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestep_size;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end + 1e-14);
-			///assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
 			nb_timesteps++;
 		}
 	};
@@ -754,9 +705,7 @@ public:
 		*(this->parareal_data_coarse) = *(this->parareal_data_start);
 
 		int nb_timesteps = 0;
-		//while (simVars->timecontrol.current_simulation_time != timeframe_end)
 		while (nb_timesteps != this->nb_timesteps_coarse)
-		//while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
 		{
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
@@ -764,9 +713,7 @@ public:
 
 			this->run_timestep(this->parareal_data_coarse, "coarse");
 			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;
-			//std::cout << simVars->timecontrol.current_simulation_time << " " << timeframe_end << " " << simVars->timecontrol.current_simulation_time - timeframe_end << std::endl;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
-			//assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
 			nb_timesteps++;
 		}
 	};
@@ -880,255 +827,241 @@ public:
 	)
 	{
 #if SWEET_PARAREAL_SCALAR
-		{
-			double u_out(this->planeDataConfig);
-			if (output_initial_data)
-				this->GenericData_Scalar_to_dataArrays(this->parareal_data_start, u_out);
-			else
-				this->GenericData_Scalar_to_dataArrays(this->parareal_data_output, u_out);
+		double u_out;
+		if (output_initial_data)
+			this->GenericData_Scalar_to_dataArrays(this->parareal_data_start, u_out);
+		else
+			this->GenericData_Scalar_to_dataArrays(this->parareal_data_output, u_out);
 
-			// Dump  data in csv, if output filename is not empty
-			if (simVars->iodata.output_file_name.size() > 0)
-			{
-				std::string output_filenames = "";
-				output_filenames = write_file_parareal_scalar(u_out, "prog_u", iteration_id, output_initial_data);
-			}
+		// Dump  data in csv, if output filename is not empty
+		if (simVars->iodata.output_file_name.size() > 0)
+		{
+			std::string output_filenames = "";
+			output_filenames = write_file_parareal_scalar(u_out, "prog_u", iteration_id, output_initial_data);
 		}
 
 #elif SWEET_PARAREAL_PLANE
-		{
 	#if SWEET_PARAREAL_PLANE_BURGERS
-			//if (this->model == "burgers")
-			//{
 
-				PlaneData_Spectral dummy(this->planeDataConfig);
-				PlaneData_Spectral u_out(this->planeDataConfig);
-				PlaneData_Spectral v_out(this->planeDataConfig);
-				if (output_initial_data)
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_start, u_out, v_out);
-				else
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_output, u_out, v_out);
+		PlaneData_Spectral dummy(this->planeDataConfig);
+		PlaneData_Spectral u_out(this->planeDataConfig);
+		PlaneData_Spectral v_out(this->planeDataConfig);
+		if (output_initial_data)
+			this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_start, u_out, v_out);
+		else
+			this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_output, u_out, v_out);
 
-				PlaneData_Physical u_out_phys = u_out.toPhys();
-				PlaneData_Physical v_out_phys = v_out.toPhys();
+		PlaneData_Physical u_out_phys = u_out.toPhys();
+		PlaneData_Physical v_out_phys = v_out.toPhys();
 
-				/*
-				 * File output
-				 *
-				 * We write everything in non-staggered output
-				 */
-				// For output, variables need to be on unstaggered A-grid
-				PlaneData_Physical t_u(planeDataConfig);
-				PlaneData_Physical t_v(planeDataConfig);
+		/*
+		 * File output
+		 *
+		 * We write everything in non-staggered output
+		 */
+		// For output, variables need to be on unstaggered A-grid
+		PlaneData_Physical t_u(planeDataConfig);
+		PlaneData_Physical t_v(planeDataConfig);
 
-				if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
-				{
-					gridMapping.mapCtoA_u(u_out_phys, t_u);
-					gridMapping.mapCtoA_v(v_out_phys, t_v);
-				}
-				else
-				{
-					t_u = u_out_phys;
-					t_v = v_out_phys;
-				}
-
-				// Dump  data in csv, if output filename is not empty
-				if (simVars->iodata.output_file_name.size() > 0)
-				{
-					std::string output_filenames = "";
-
-					output_filenames = write_file_parareal_plane(t_u, "prog_u", iteration_id, output_initial_data);
-					output_filenames += ";" + write_file_parareal_plane(t_v, "prog_v", iteration_id, output_initial_data);
-
-				}
-
-				write_file_spec_amp_phase_parareal_plane(u_out, "prog_u", iteration_id, output_initial_data);
-
-				if (simVars->misc.compute_errors)
-				{
-					PlaneData_Spectral ana = compute_errors2(u_out, v_out);
-
-					write_file_parareal_plane(ana.toPhys(),"analytical",iteration_id,time_slice_id);
-					write_file_spec_amp_phase_parareal_plane(ana.toPhys(), "analytical", iteration_id, output_initial_data);
-				}
-
-			//}
-	#elif SWEET_PARAREAL_PLANE_SWE
-			//else if (this->model == "swe")
-			//{
-
-				PlaneData_Spectral h_out(this->planeDataConfig);
-				PlaneData_Spectral u_out(this->planeDataConfig);
-				PlaneData_Spectral v_out(this->planeDataConfig);
-				if (output_initial_data)
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_start, h_out, u_out, v_out);
-				else
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_output, h_out, u_out, v_out);
-
-				PlaneData_Physical h_out_phys = h_out.toPhys();
-				PlaneData_Physical u_out_phys = u_out.toPhys();
-				PlaneData_Physical v_out_phys = v_out.toPhys();
-
-				// Save .vtk files for visualizing in paraview
-				std::ostringstream ss2;
-				if (output_initial_data)
-					ss2 << "output_slice" << time_slice_id - 1 << "_iter" << iteration_id << ".vtk";
-				else
-					ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
-				std::string filename2 = ss2.str();
-				h_out_phys.file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
-
-				/*
-				 * File output
-				 *
-				 * We write everything in non-staggered output
-				 */
-				// For output, variables need to be on unstaggered A-grid
-				PlaneData_Physical t_h(planeDataConfig);
-				PlaneData_Physical t_u(planeDataConfig);
-				PlaneData_Physical t_v(planeDataConfig);
-
-				if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
-				{
-					t_h = h_out_phys;
-					gridMapping.mapCtoA_u(u_out_phys, t_u);
-					gridMapping.mapCtoA_v(v_out_phys, t_v);
-				}
-				else
-				{
-					t_h = h_out_phys;
-					t_u = u_out_phys;
-					t_v = v_out_phys;
-				}
-
-				// Dump  data in csv, if output filename is not empty
-				if (simVars->iodata.output_file_name.size() > 0)
-				{
-					std::string output_filenames = "";
-
-					output_filenames = write_file_parareal_plane(t_h, "prog_h_pert", iteration_id, output_initial_data);
-					output_filenames += ";" + write_file_parareal_plane(t_u, "prog_u", iteration_id, output_initial_data);
-					output_filenames += ";" + write_file_parareal_plane(t_v, "prog_v", iteration_id, output_initial_data);
-
-					output_filenames += ";" + write_file_parareal_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke", iteration_id, output_initial_data);
-
-					output_filenames += ";" + write_file_spec_parareal_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke_spec", iteration_id, output_initial_data);
-
-					output_filenames += ";" + write_file_parareal_plane(op_plane->vort(t_u, t_v).toPhys(), "diag_vort", iteration_id, output_initial_data);
-					output_filenames += ";" + write_file_parareal_plane(op_plane->div(t_u, t_v).toPhys(), "diag_div", iteration_id, output_initial_data);
-
-					if(this->compute_normal_modes){
-						SWEETError("TODO");
-						///output_filenames += ";" + write_file_spec_parareal(normalmodes.geo, "nm_geo", iteration_id, output_initial_data);
-						///output_filenames += ";" + write_file_spec_parareal(normalmodes.igwest, "nm_igwest", iteration_id, output_initial_data);
-						///output_filenames += ";" + write_file_spec_parareal(normalmodes.igeast, "nm_igeast", iteration_id, output_initial_data);
-					}
-					
-				}
-			//}
-	#endif
+		if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
+		{
+			gridMapping.mapCtoA_u(u_out_phys, t_u);
+			gridMapping.mapCtoA_v(v_out_phys, t_v);
 		}
+		else
+		{
+			t_u = u_out_phys;
+			t_v = v_out_phys;
+		}
+
+		// Dump  data in csv, if output filename is not empty
+		if (simVars->iodata.output_file_name.size() > 0)
+		{
+			std::string output_filenames = "";
+
+			output_filenames = write_file_parareal_plane(t_u, "prog_u", iteration_id, output_initial_data);
+			output_filenames += ";" + write_file_parareal_plane(t_v, "prog_v", iteration_id, output_initial_data);
+
+		}
+
+		write_file_spec_amp_phase_parareal_plane(u_out, "prog_u", iteration_id, output_initial_data);
+
+		if (simVars->misc.compute_errors)
+		{
+			PlaneData_Spectral ana = compute_errors2(u_out, v_out);
+
+			write_file_parareal_plane(ana.toPhys(),"analytical",iteration_id,time_slice_id);
+			write_file_spec_amp_phase_parareal_plane(ana.toPhys(), "analytical", iteration_id, output_initial_data);
+		}
+
+	#elif SWEET_PARAREAL_PLANE_SWE
+
+		PlaneData_Spectral h_out(this->planeDataConfig);
+		PlaneData_Spectral u_out(this->planeDataConfig);
+		PlaneData_Spectral v_out(this->planeDataConfig);
+		if (output_initial_data)
+			this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_start, h_out, u_out, v_out);
+		else
+			this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_output, h_out, u_out, v_out);
+
+		PlaneData_Physical h_out_phys = h_out.toPhys();
+		PlaneData_Physical u_out_phys = u_out.toPhys();
+		PlaneData_Physical v_out_phys = v_out.toPhys();
+
+		// Save .vtk files for visualizing in paraview
+		std::ostringstream ss2;
+		if (output_initial_data)
+			ss2 << "output_slice" << time_slice_id - 1 << "_iter" << iteration_id << ".vtk";
+		else
+			ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
+		std::string filename2 = ss2.str();
+		h_out_phys.file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
+
+		/*
+		 * File output
+		 *
+		 * We write everything in non-staggered output
+		 */
+		// For output, variables need to be on unstaggered A-grid
+		PlaneData_Physical t_h(planeDataConfig);
+		PlaneData_Physical t_u(planeDataConfig);
+		PlaneData_Physical t_v(planeDataConfig);
+
+		if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
+		{
+			t_h = h_out_phys;
+			gridMapping.mapCtoA_u(u_out_phys, t_u);
+			gridMapping.mapCtoA_v(v_out_phys, t_v);
+		}
+		else
+		{
+			t_h = h_out_phys;
+			t_u = u_out_phys;
+			t_v = v_out_phys;
+		}
+
+		// Dump  data in csv, if output filename is not empty
+		if (simVars->iodata.output_file_name.size() > 0)
+		{
+			std::string output_filenames = "";
+
+			output_filenames = write_file_parareal_plane(t_h, "prog_h_pert", iteration_id, output_initial_data);
+			output_filenames += ";" + write_file_parareal_plane(t_u, "prog_u", iteration_id, output_initial_data);
+			output_filenames += ";" + write_file_parareal_plane(t_v, "prog_v", iteration_id, output_initial_data);
+
+			output_filenames += ";" + write_file_parareal_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke", iteration_id, output_initial_data);
+
+			output_filenames += ";" + write_file_spec_parareal_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke_spec", iteration_id, output_initial_data);
+
+			output_filenames += ";" + write_file_parareal_plane(op_plane->vort(t_u, t_v).toPhys(), "diag_vort", iteration_id, output_initial_data);
+			output_filenames += ";" + write_file_parareal_plane(op_plane->div(t_u, t_v).toPhys(), "diag_div", iteration_id, output_initial_data);
+
+			if(this->compute_normal_modes){
+				SWEETError("TODO");
+				///output_filenames += ";" + write_file_spec_parareal(normalmodes.geo, "nm_geo", iteration_id, output_initial_data);
+				///output_filenames += ";" + write_file_spec_parareal(normalmodes.igwest, "nm_igwest", iteration_id, output_initial_data);
+				///output_filenames += ";" + write_file_spec_parareal(normalmodes.igeast, "nm_igeast", iteration_id, output_initial_data);
+			}
+			
+		}
+	#endif
+
 
 #elif SWEET_PARAREAL_SPHERE
+
+		SphereData_Spectral phi_out(this->sphereDataConfig);
+		SphereData_Spectral vrt_out(this->sphereDataConfig);
+		SphereData_Spectral div_out(this->sphereDataConfig);
+		if (output_initial_data)
+			this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_start, phi_out, vrt_out, div_out);
+		else
+			this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_output, phi_out, vrt_out, div_out);
+	
+		SphereData_Physical phi_out_phys = phi_out.toPhys();
+		SphereData_Physical vrt_out_phys = vrt_out.toPhys();
+		SphereData_Physical div_out_phys = div_out.toPhys();
+	
+		///////////////// Save .vtk files for visualizing in paraview
+		///////////////std::ostringstream ss2;
+		///////////////if (output_initial_data)
+		///////////////	ss2 << "output_slice" << time_slice_id - 1 << "_iter" << iteration_id << ".vtk";
+		///////////////else
+		///////////////	ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
+		///////////////std::string filename2 = ss2.str();
+		///////////////phi_out_phys.file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
+
+		/*
+		 * File output
+		 *
+		 * We write everything in non-staggered output
+		 */
+		// Dump  data in csv, if output filename is not empty
+		if (simVars->iodata.output_file_name.size() > 0)
 		{
-
-			if (this->model == "swe")
+			if (simVars->iodata.output_file_mode == "csv")
 			{
-				SphereData_Spectral phi_out(this->sphereDataConfig);
-				SphereData_Spectral vrt_out(this->sphereDataConfig);
-				SphereData_Spectral div_out(this->sphereDataConfig);
-				if (output_initial_data)
-					this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_start, phi_out, vrt_out, div_out);
-				else
-					this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_output, phi_out, vrt_out, div_out);
+				std::string output_filename;
 	
-				SphereData_Physical phi_out_phys = phi_out.toPhys();
-				SphereData_Physical vrt_out_phys = vrt_out.toPhys();
-				SphereData_Physical div_out_phys = div_out.toPhys();
+				SphereData_Spectral h = phi_out_phys*(1.0/simVars->sim.gravitation);
+				h += simVars->sim.h0;
 	
-				///////////////// Save .vtk files for visualizing in paraview
-				///////////////std::ostringstream ss2;
-				///////////////if (output_initial_data)
-				///////////////	ss2 << "output_slice" << time_slice_id - 1 << "_iter" << iteration_id << ".vtk";
-				///////////////else
-				///////////////	ss2 << "output_slice" << time_slice_id << "_iter" << iteration_id << ".vtk";
-				///////////////std::string filename2 = ss2.str();
-				///////////////phi_out_phys.file_physical_saveData_vtk(filename2.c_str(), filename2.c_str());
-
-				/*
-				 * File output
-				 *
-				 * We write everything in non-staggered output
-				 */
-				// Dump  data in csv, if output filename is not empty
-				if (simVars->iodata.output_file_name.size() > 0)
-				{
-					if (simVars->iodata.output_file_mode == "csv")
-					{
-						std::string output_filename;
-		
-						SphereData_Spectral h = phi_out_phys*(1.0/simVars->sim.gravitation);
-						h += simVars->sim.h0;
-		
-						output_filename = write_file_csv_parareal_sphere(h, "prog_h", iteration_id, output_initial_data);
-						std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
-		
-						output_filename = write_file_csv_parareal_sphere(phi_out, "prog_phi_pert", iteration_id, output_initial_data);
-						std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
-		
-						SphereData_Physical u(sphereDataConfig);
-						SphereData_Physical v(sphereDataConfig);
-		
-						op_sphere->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
-		
-						output_filename = write_file_csv_parareal_sphere(u, "prog_u", iteration_id, output_initial_data);
-						std::cout << " + " << output_filename << std::endl;
-		
-						output_filename = write_file_csv_parareal_sphere(v, "prog_v", iteration_id, output_initial_data);
-						std::cout << " + " << output_filename << std::endl;
-		
-						output_filename = write_file_csv_parareal_sphere(vrt_out, "prog_vrt", iteration_id, output_initial_data);
-						std::cout << " + " << output_filename << std::endl;
-		
-						output_filename = write_file_csv_parareal_sphere(div_out, "prog_div", iteration_id, output_initial_data);
-						std::cout << " + " << output_filename << std::endl;
-		
-						SphereData_Spectral potvrt = (phi_out/simVars->sim.gravitation)*vrt_out;
-		
-						output_filename = write_file_csv_parareal_sphere(potvrt, "prog_potvrt", iteration_id, output_initial_data);
-						std::cout << " + " << output_filename << std::endl;
-					}
-					else if (simVars->iodata.output_file_mode == "bin")
-					{
-						std::string output_filename;
-		
-						{
-							output_filename = write_file_bin_parareal_sphere(phi_out, "prog_phi_pert", iteration_id, output_initial_data);
-							SphereData_Physical prog_phys = phi_out.toPhys();
-		
-							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
-						}
-		
-						{
-							output_filename = write_file_bin_parareal_sphere(vrt_out, "prog_vrt", iteration_id, output_initial_data);
-							SphereData_Physical prog_phys = vrt_out.toPhys();
-		
-							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
-						}
-		
-						{
-							output_filename = write_file_bin_parareal_sphere(div_out, "prog_div", iteration_id, output_initial_data);
-							SphereData_Physical prog_phys = div_out.toPhys();
-		
-							std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
-						}
-					}
-					
-				}
-
+				output_filename = write_file_csv_parareal_sphere(h, "prog_h", iteration_id, output_initial_data);
+				std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
+	
+				output_filename = write_file_csv_parareal_sphere(phi_out, "prog_phi_pert", iteration_id, output_initial_data);
+				std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
+	
+				SphereData_Physical u(sphereDataConfig);
+				SphereData_Physical v(sphereDataConfig);
+	
+				op_sphere->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
+	
+				output_filename = write_file_csv_parareal_sphere(u, "prog_u", iteration_id, output_initial_data);
+				std::cout << " + " << output_filename << std::endl;
+	
+				output_filename = write_file_csv_parareal_sphere(v, "prog_v", iteration_id, output_initial_data);
+				std::cout << " + " << output_filename << std::endl;
+	
+				output_filename = write_file_csv_parareal_sphere(vrt_out, "prog_vrt", iteration_id, output_initial_data);
+				std::cout << " + " << output_filename << std::endl;
+	
+				output_filename = write_file_csv_parareal_sphere(div_out, "prog_div", iteration_id, output_initial_data);
+				std::cout << " + " << output_filename << std::endl;
+	
+				SphereData_Spectral potvrt = (phi_out/simVars->sim.gravitation)*vrt_out;
+	
+				output_filename = write_file_csv_parareal_sphere(potvrt, "prog_potvrt", iteration_id, output_initial_data);
+				std::cout << " + " << output_filename << std::endl;
 			}
-
+			else if (simVars->iodata.output_file_mode == "bin")
+			{
+				std::string output_filename;
+	
+				{
+					output_filename = write_file_bin_parareal_sphere(phi_out, "prog_phi_pert", iteration_id, output_initial_data);
+					SphereData_Physical prog_phys = phi_out.toPhys();
+	
+					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+				}
+	
+				{
+					output_filename = write_file_bin_parareal_sphere(vrt_out, "prog_vrt", iteration_id, output_initial_data);
+					SphereData_Physical prog_phys = vrt_out.toPhys();
+	
+					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+				}
+	
+				{
+					output_filename = write_file_bin_parareal_sphere(div_out, "prog_div", iteration_id, output_initial_data);
+					SphereData_Physical prog_phys = div_out.toPhys();
+	
+					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+				}
+			}
+			
 		}
+
+
 #endif
 	};
 
@@ -1454,158 +1387,187 @@ public:
 		else
 			SWEETError("Wrong base solution for computing parareal errors.");
 
-		// READ REF DATA
-		//Parareal_GenericData& data;
-		//if (output_initial_data)
-		//	data = (Parareal_GenericData&)this->parareal_data_start;
-		//else
-		//	data = (Parareal_GenericData&)this->parareal_data_output;
-		//Parareal_GenericData& data = (Parareal_GenericData&)this->parareal_data_output;
+		int nvar = N;
 
 #if SWEET_PARAREAL_SCALAR
+		if (iteration_id == 0)
 		{
-			SWEETError("TODO");
+			// load ref file
+			char buffer[1024];
+			std::string i_name = "prog_u";
+			const char* filename_template = simVars->iodata.output_file_name.c_str();
+			sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
+			std::string buffer2 = path_ref + "/" + std::string(buffer);
+
+			double tmp;
+
+			std::cout << path_ref << std::endl;
+			std::cout << "loading DATA from " << buffer2 << std::endl;
+			std::ifstream file(buffer2);
+			for (int i = 0; i < 4; i++)
+			{
+				std::string line;
+				std::getline(file, line);
+				std::istringstream iss(line);
+				std::vector<std::string> str_vector((std::istream_iterator<std::string>(iss)),
+					std::istream_iterator<std::string>());
+
+				if (i == 0)
+				{
+					assert(str_vector.size() == 1);
+					assert(str_vector[0] == "#SWEET");
+				}
+				else if (i == 1)
+				{
+					assert(str_vector.size() == 2);
+					assert(str_vector[0] == "#FORMAT");
+					assert(str_vector[1] == "ASCII");
+				}
+				else if (i == 2)
+				{
+					assert(str_vector.size() == 2);
+					assert(str_vector[0] == "#PRIMITIVE");
+					assert(str_vector[1] == "SCALAR");
+				}
+				else if (i == 3)
+				{
+					assert(str_vector.size() == 2);
+					tmp = stod(str_vector[1]);
+				}
+			}
+
+			this->dataArrays_to_GenericData_Scalar(parareal_data_ref, tmp);
 		}
 
 #elif SWEET_PARAREAL_PLANE
+		PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig),
+				                  PlaneData_Spectral(this->planeDataConfig),
+				                  PlaneData_Spectral(this->planeDataConfig)};
+
+		for (int ivar = 0; ivar < nvar; ivar++)
 		{
-			PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig),
-					                  PlaneData_Spectral(this->planeDataConfig),
-					                  PlaneData_Spectral(this->planeDataConfig)};
+			std::string i_name;
+			if (ivar == 0)
+	#if SWEET_PARAREAL_PLANE_SWE
+				i_name = "prog_h_pert";
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+				i_name = "prog_u";
+	#endif
 
-			int nvar = N;
-			for (int ivar = 0; ivar < nvar; ivar++)
+			else if (ivar == 1)
+	#if SWEET_PARAREAL_PLANE_SWE
+				i_name = "prog_u";
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+				i_name = "prog_v";
+	#endif
+
+			else if (ivar == 2)
+				i_name = "prog_v";
+
+			if (iteration_id == 0)
 			{
-				std::string i_name;
-				if (ivar == 0)
-	#if SWEET_PARAREAL_PLANE_SWE
-					i_name = "prog_h_pert";
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-					i_name = "prog_u";
-	#endif
-				else if (ivar == 1)
-	#if SWEET_PARAREAL_PLANE_SWE
-					i_name = "prog_u";
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-					i_name = "prog_v";
-	#endif
-				else if (ivar == 2)
-					i_name = "prog_v";
+				// load ref file
+				char buffer[1024];
+				const char* filename_template = simVars->iodata.output_file_name.c_str();
+				sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
+				std::string buffer2 = path_ref + "/" + std::string(buffer);
+                                PlaneData_Physical tmp(this->planeDataConfig);
+				tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
+				ref_data[ivar].loadPlaneDataPhysical(tmp);
 
-				if (iteration_id == 0)
+				// If necessary, interpolate to coarsest spatial grid
+				if (	this->planeDataConfig->physical_res[0] != ref_data[ivar].planeDataConfig->physical_res[0] ||
+					this->planeDataConfig->physical_res[1] != ref_data[ivar].planeDataConfig->physical_res[1]
+				)
 				{
-					// load ref file
-					char buffer[1024];
-					const char* filename_template = simVars->iodata.output_file_name.c_str();
-					sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
-					std::string buffer2 = path_ref + "/" + std::string(buffer);
-                                        PlaneData_Physical tmp(this->planeDataConfig);
-					tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
-					ref_data[ivar].loadPlaneDataPhysical(tmp);
-
-					// If necessary, interpolate to coarsest spatial grid
-					if (	this->planeDataConfig->physical_res[0] != ref_data[ivar].planeDataConfig->physical_res[0] ||
-						this->planeDataConfig->physical_res[1] != ref_data[ivar].planeDataConfig->physical_res[1]
-					)
-					{
-						SWEETError("TODO");
-						//TODO
+					SWEETError("TODO");
+					//TODO
+	///				/*
+	///				 * setup sampler
+	///				 */
+	///				PlaneDataSampler sampler2D;
+	///				sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
+	///		
+	///		
 	///					/*
-	///					 * setup sampler
+	///					 * sample with BiLinear interpolation
 	///					 */
-	///					PlaneDataSampler sampler2D;
-	///					sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
+	///					PlaneData prog_h3_bilinear(planeDataConfig3);
 	///		
-	///		
-	///						/*
-	///						 * sample with BiLinear interpolation
-	///						 */
-	///						PlaneData prog_h3_bilinear(planeDataConfig3);
-	///		
-	///						sampler2D.bilinear_scalar(
-	///								prog_h_pert,	///< input scalar field
-	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
-	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
-	///								prog_h3_bilinear
-	///						);
-					}
-					this->dataArrays_to_GenericData_PlaneData_Spectral(parareal_data_ref,
-												ref_data[0],
-												ref_data[1]
+	///					sampler2D.bilinear_scalar(
+	///							prog_h_pert,	///< input scalar field
+	///							Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
+	///							Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
+	///							prog_h3_bilinear
+	///					);
+				}
+				this->dataArrays_to_GenericData_PlaneData_Spectral(parareal_data_ref,
+											ref_data[0],
+											ref_data[1]
 	#if SWEET_PARAREAL_PLANE_SWE
-												, ref_data[2]
+											, ref_data[2]
 	#endif
-											);
+										);
 				}
 			}
-			///this->dataArrays_to_GenericData_PlaneData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
-			
-		}
 
 #elif SWEET_PARAREAL_SPHERE
+		SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig),
+				                   SphereData_Spectral(this->sphereDataConfig),
+				                   SphereData_Spectral(this->sphereDataConfig)};
+
+		for (int ivar = 0; ivar < nvar; ivar++)
 		{
-			SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig),
-					                   SphereData_Spectral(this->sphereDataConfig),
-					                   SphereData_Spectral(this->sphereDataConfig)};
+			std::string i_name;
+			if (ivar == 0)
+				i_name = "prog_phi_pert";
+			else if (ivar == 1)
+				i_name = "prog_vrt";
+			else if (ivar == 2)
+				i_name = "prog_div";
 
-			for (int ivar = 0; ivar < 3; ivar++)
+			if (iteration_id == 0)
 			{
-				std::string i_name;
-				if (ivar == 0)
-					i_name = "prog_phi_pert";
-				else if (ivar == 1)
-					i_name = "prog_vrt";
-				else if (ivar == 2)
-					i_name = "prog_div";
+				// load ref file
+				char buffer[1024];
+				const char* filename_template = simVars->iodata.output_file_name.c_str();
+				sprintf(buffer, filename_template, i_name.c_str(), timeframe_end * simVars->iodata.output_time_scale);
+				std::string buffer2 = path_ref + "/" + std::string(buffer);
+				SphereData_Physical tmp(this->sphereDataConfig);
+				tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
+				ref_data[ivar].loadSphereDataPhysical(tmp);
 
-				if (iteration_id == 0)
+				// If necessary, interpolate to coarsest spatial grid
+				if (	this->sphereDataConfig->physical_num_lat != ref_data[ivar].sphereDataConfig->physical_num_lat ||
+					this->sphereDataConfig->physical_num_lon != ref_data[ivar].sphereDataConfig->physical_num_lon
+				)
 				{
-					// load ref file
-					char buffer[1024];
-					const char* filename_template = simVars->iodata.output_file_name.c_str();
-					sprintf(buffer, filename_template, i_name.c_str(), timeframe_end * simVars->iodata.output_time_scale);
-					std::string buffer2 = path_ref + "/" + std::string(buffer);
-					SphereData_Physical tmp(this->sphereDataConfig);
-					tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
-					ref_data[ivar].loadSphereDataPhysical(tmp);
-
-					// If necessary, interpolate to coarsest spatial grid
-					if (	this->sphereDataConfig->physical_num_lat != ref_data[ivar].sphereDataConfig->physical_num_lat ||
-						this->sphereDataConfig->physical_num_lon != ref_data[ivar].sphereDataConfig->physical_num_lon
-					)
-					{
-						SWEETError("TODO");
-						//TODO
+					SWEETError("TODO");
+					//TODO
+	///				/*
+	///				 * setup sampler
+	///				 */
+	///				PlaneDataSampler sampler2D;
+	///				sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
+	///	
+	///	
 	///					/*
-	///					 * setup sampler
+	///					 * sample with BiLinear interpolation
 	///					 */
-	///					PlaneDataSampler sampler2D;
-	///					sampler2D.setup(simVars.sim.plane_domain_size, planeDataConfig);
-	///		
-	///		
-	///						/*
-	///						 * sample with BiLinear interpolation
-	///						 */
-	///						PlaneData prog_h3_bilinear(planeDataConfig3);
-	///		
-	///						sampler2D.bilinear_scalar(
-	///								prog_h_pert,	///< input scalar field
-	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
-	///								Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
-	///								prog_h3_bilinear
-	///						);
-					}
-					this->dataArrays_to_GenericData_SphereData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
+	///					PlaneData prog_h3_bilinear(planeDataConfig3);
+	///	
+	///					sampler2D.bilinear_scalar(
+	///							prog_h_pert,	///< input scalar field
+	///							Convert_PlaneData_To_ScalarDataArray::physical_convert(px),
+	///							Convert_PlaneData_To_ScalarDataArray::physical_convert(py),
+	///							prog_h3_bilinear
+	///					);
 				}
+				this->dataArrays_to_GenericData_SphereData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
 			}
 		}
 #endif
-			int nvar = N;
-	////#if SWEET_PARAREAL_PLANE_SWE || SWEET_PARAREAL_SPHERE
-	////		int nvar = 3;
-	////#elif SWEET_PARAREAL_PLANE_BURGERS
-	////		int nvar = 2;
-	////#endif
+
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
@@ -1618,58 +1580,60 @@ public:
 			std::string i_name;
 
 #if SWEET_PARAREAL_SCALAR
-			{
-				SWEETError("TODO");
-			}
+			double u_ref;
+			this->GenericData_Scalar_to_dataArrays(parareal_data_ref, u_ref);
+			double err = std::abs(	this->parareal_data_output->get_pointer_to_data_Scalar()->simfields[ivar] -
+						parareal_data_ref->get_pointer_to_data_Scalar()->simfields[ivar]);
+			err_L1 = err;
+			err_L2 = err;
+			err_Linf = err;
 
 #elif SWEET_PARAREAL_PLANE
-			{
 
-				if (ivar == 0)
+			if (ivar == 0)
 	#if SWEET_PARAREAL_PLANE_SWE
-					i_name = "prog_h_pert";
+				i_name = "prog_h_pert";
 	#elif SWEET_PARAREAL_PLANE_BURGERS
-					i_name = "prog_u";
+				i_name = "prog_u";
 	#endif
-				else if (ivar == 1)
+
+			else if (ivar == 1)
 	#if SWEET_PARAREAL_PLANE_SWE
-					i_name = "prog_u";
+				i_name = "prog_u";
 	#elif SWEET_PARAREAL_PLANE_BURGERS
-					i_name = "prog_v";
+				i_name = "prog_v";
 	#endif
-				else if (ivar == 2)
-					i_name = "prog_v";
 
-				resx_data = this->planeDataConfig->physical_res[0];
-				resy_data = this->planeDataConfig->physical_res[1];
+			else if (ivar == 2)
+				i_name = "prog_v";
 
-				PlaneData_Physical diff = this->parareal_data_output->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
-                                                          parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
-				err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
-				err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
-				err_Linf = diff.physical_reduce_max_abs();
+			resx_data = this->planeDataConfig->physical_res[0];
+			resy_data = this->planeDataConfig->physical_res[1];
 
-			}
+			PlaneData_Physical diff = this->parareal_data_output->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
+                                                  parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
+			err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
+			err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
+			err_Linf = diff.physical_reduce_max_abs();
+
 
 #elif SWEET_PARAREAL_SPHERE
-			{
-				if (ivar == 0)
-					i_name = "prog_phi_pert";
-				else if (ivar == 1)
-					i_name = "prog_vrt";
-				else if (ivar == 2)
-					i_name = "prog_div";
+			if (ivar == 0)
+				i_name = "prog_phi_pert";
+			else if (ivar == 1)
+				i_name = "prog_vrt";
+			else if (ivar == 2)
+				i_name = "prog_div";
 
-				resx_data = this->sphereDataConfig->physical_num_lon;
-				resy_data = this->sphereDataConfig->physical_num_lat;
+			resx_data = this->sphereDataConfig->physical_num_lon;
+			resy_data = this->sphereDataConfig->physical_num_lat;
 
-				SphereData_Physical diff = this->parareal_data_output->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys() -
-                                                          parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys();
-				err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
-				err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
-				err_Linf = diff.physical_reduce_max_abs();
+			SphereData_Physical diff = this->parareal_data_output->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys() -
+                                                  parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys();
+			err_L1 = diff.physical_reduce_norm1() / (resx_data * resy_data);
+			err_L2 = diff.physical_reduce_norm2() / std::sqrt(resx_data * resy_data);
+			err_Linf = diff.physical_reduce_max_abs();
 
-			}
 #endif
 
 			// save errors in file

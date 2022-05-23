@@ -82,11 +82,15 @@ public:
 	Parareal_GenericData_Scalar(Parareal_GenericData_Scalar &i_data)
 	{
 		*(this->data) = *(i_data.get_pointer_to_data_Scalar());
+		for (int i = 0; i < N; i++)
+			this->data->simfields[i] = i_data.get_pointer_to_data_Scalar()->simfields[i];
 	};
 
 	Parareal_GenericData_Scalar& operator=(const Parareal_GenericData &i_data)
 	{
 		*(this->data) = *(i_data.get_pointer_to_data_Scalar());
+		for (int i = 0; i < N; i++)
+			this->data->simfields[i] = i_data.get_pointer_to_data_Scalar()->simfields[i];
 		return *this;
 	};
 
@@ -192,6 +196,11 @@ public:
 
 	void physical_print()
 	{
+		for (int i = 0; i < N; i++)
+		{
+			std::cout << "Field #" << i << ": " << this->data->simfields[i] << std::endl;
+		}
+
 	}
 };
 

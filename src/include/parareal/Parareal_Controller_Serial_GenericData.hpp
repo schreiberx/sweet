@@ -8,7 +8,7 @@
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_GENERICDATA_HPP_
 #define SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_GENERICDATA_HPP_
 
-// Checking if geometry has been correctly defined
+// Checking if geometry and model have been correctly defined
 #if SWEET_PARAREAL_SCALAR
 	#if SWEET_PARAREAL_PLANE || SWEET_PARAREAL_SPHERE
 		#error "More than one geometry has been defined for parareal"
@@ -16,6 +16,12 @@
 #elif SWEET_PARAREAL_PLANE
 	#if SWEET_PARAREAL_SCALAR || SWEET_PARAREAL_SPHERE
 		#error "More than one geometry has been defined for parareal"
+	#endif
+	#if (!SWEET_PARAREAL_PLANE_SWE) && (!SWEET_PARAREAL_PLANE_BURGERS)
+		#error "No model has been defined for parareal on the plane"
+	#endif
+	#if SWEET_PARAREAL_PLANE_SWE && SWEET_PARAREAL_PLANE_BURGERS
+		#error "More than one model has been defined for parareal on the plane"
 	#endif
 #elif SWEET_PARAREAL_SPHERE
 	#if SWEET_PARAREAL_SCALAR || SWEET_PARAREAL_PLANE
@@ -60,10 +66,6 @@
 template <class t_tsmType, int N>
 class Parareal_Controller_Serial_GenericData
 {
-	/**
-	 * Array with instantiations of PararealSimulations
-	 */
-////	t_SimulationInstance *simulationInstances = nullptr;
 
 	/**
 	 * Pointers to interfaces of simulationInstances
@@ -85,9 +87,6 @@ class Parareal_Controller_Serial_GenericData
 #endif
 
 
-	// Model (ODE, Burgers, SWE)
-	std::string model = "";
-
 	t_tsmType* timeSteppersFine = nullptr;
 	t_tsmType* timeSteppersCoarse = nullptr;
 
@@ -103,7 +102,7 @@ class Parareal_Controller_Serial_GenericData
 	 */
 	Parareal_ConsolePrefix CONSOLEPREFIX;
 
-
+	//std::string tmp_str;
 
 
 public:
@@ -111,14 +110,14 @@ public:
 #if SWEET_PARAREAL_SCALAR
 	// Scalar
 	Parareal_Controller_Serial_GenericData(SimulationVariables i_simVars,
-						std::string i_model,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
 		simVars(&i_simVars),
-		model(i_model),
 		timeSteppersFine(i_timeSteppersFine),
 		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
+		///tmp_str = simVars->parareal.path_ref_csv_files ;
+		std::cout << "AAAA " << simVars->parareal.path_ref_csv_files << std::endl;
 	};
 
 #elif SWEET_PARAREAL_PLANE
@@ -126,13 +125,11 @@ public:
 	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars,
 						PlaneDataConfig* i_planeDataConfig,
 						PlaneOperators &i_op_plane,
-						std::string i_model,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
 		simVars(&i_simVars),
 		planeDataConfig(i_planeDataConfig),
 		op_plane(i_op_plane),
-		model(i_model),
 		timeSteppersFine(i_timeSteppersFine),
 		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
@@ -144,14 +141,12 @@ public:
 						SphereData_Config* i_sphereDataConfig,
 						SphereOperators_SphereData &i_op_sphere,
 						SphereOperators_SphereData &i_op_sphere_nodealiasing,
-						std::string i_model,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
 		simVars(&i_simVars),
 		sphereDataConfig(i_sphereDataConfig),
 		op_sphere(i_op_sphere),
 		op_sphere_nodealiasing(i_op_sphere_nodealiasing),
-		model(i_model),
 		timeSteppersFine(i_timeSteppersFine),
 		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
@@ -205,13 +200,17 @@ public:
 
 
 	void setup(
-			Parareal_SimulationVariables *i_pararealSimVars
+			//Parareal_SimulationVariables *i_pararealSimVars
 	)
 	{
 
+		//simVars->parareal.path_ref_csv_files  = tmp_str;
+		std::cout << "BBB " << simVars->parareal.path_ref_csv_files << std::endl;
 		cleanup();
 
-		pVars = i_pararealSimVars;
+		std::cout << "AAAA " << simVars->parareal.path_ref_csv_files << std::endl;
+		pVars = &this->simVars->parareal;
+		std::cout << "AAAA " << pVars->path_ref_csv_files << std::endl;
 
 		if (!pVars->enabled)
 			return;
@@ -240,17 +239,14 @@ public:
 			CONSOLEPREFIX_start(k);
 		
 			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, N>);
-		///	parareal_simulationInstances[k] = &(Parareal_SimulationInstance&)(simulationInstances[k]);
 #if SWEET_PARAREAL_SCALAR
 				parareal_simulationInstances[k]->setup(this->simVars,
-								       this->model,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
 
 #elif SWEET_PARAREAL_PLANE
 				parareal_simulationInstances[k]->setup(this->simVars,
 								       this->planeDataConfig,
-								       this->model,
 								       &this->op_plane,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
@@ -258,7 +254,6 @@ public:
 #elif SWEET_PARAREAL_SPHERE
 				parareal_simulationInstances[k]->setup(this->simVars,
 								       this->sphereDataConfig,
-								       this->model,
 								       &this->op_sphere,
 								       &this->op_sphere_nodealiasing,
 								       this->timeSteppersFine,
@@ -297,7 +292,7 @@ public:
 		}
 
 		CONSOLEPREFIX_start(pVars->coarse_slices-1);
-		parareal_simulationInstances[pVars->coarse_slices-1]->sim_set_timeframe(i_pararealSimVars->max_simulation_time-time_slice_size, i_pararealSimVars->max_simulation_time);
+		parareal_simulationInstances[pVars->coarse_slices-1]->sim_set_timeframe(this->pVars->max_simulation_time-time_slice_size, this->pVars->max_simulation_time);
 
 
 		/*
