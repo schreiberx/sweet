@@ -102,7 +102,6 @@ class Parareal_Controller_Serial_GenericData
 	 */
 	Parareal_ConsolePrefix CONSOLEPREFIX;
 
-	//std::string tmp_str;
 
 
 public:
@@ -116,8 +115,6 @@ public:
 		timeSteppersFine(i_timeSteppersFine),
 		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
-		///tmp_str = simVars->parareal.path_ref_csv_files ;
-		std::cout << "AAAA " << simVars->parareal.path_ref_csv_files << std::endl;
 	};
 
 #elif SWEET_PARAREAL_PLANE
@@ -205,12 +202,9 @@ public:
 	{
 
 		//simVars->parareal.path_ref_csv_files  = tmp_str;
-		std::cout << "BBB " << simVars->parareal.path_ref_csv_files << std::endl;
 		cleanup();
 
-		std::cout << "AAAA " << simVars->parareal.path_ref_csv_files << std::endl;
 		pVars = &this->simVars->parareal;
-		std::cout << "AAAA " << pVars->path_ref_csv_files << std::endl;
 
 		if (!pVars->enabled)
 			return;
