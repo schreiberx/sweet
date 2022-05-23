@@ -101,7 +101,7 @@ for job1 in list_jobs:
                 err_Linf = np.abs(err_Linf_1 - err_Linf_2);
                 err_L1 = np.abs(err_L1_1 - err_L1_2);
                 err_L2 = np.abs(err_L2_1 - err_L2_2);
-                assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f);
+                assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f, job1, job2);
                 assert err_L1 < small, (err_L1_1, err_L1_2, f);
                 assert err_L2 < small, (err_L2_1, err_L2_2, f);
                 max_diff = np.max([max_diff, err_Linf, err_L1, err_L2]);

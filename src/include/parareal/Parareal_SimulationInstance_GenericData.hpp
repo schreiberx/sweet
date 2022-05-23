@@ -77,6 +77,8 @@ public:
 	// Time slice
 	double timeframe_start;
 	double timeframe_end;
+	int nb_timesteps_fine;
+	int nb_timesteps_coarse;
 
 	// Data containers
 	Parareal_GenericData* parareal_data_start = nullptr;
@@ -304,39 +306,55 @@ public:
 
 #elif SWEET_PARAREAL_PLANE
 	void dataArrays_to_GenericData_PlaneData_Spectral(Parareal_GenericData* i_data,
-						PlaneData_Spectral &h, PlaneData_Spectral &u, PlaneData_Spectral &v)
+	#if SWEET_PARAREAL_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							)
 	{
-		if (this->model == "swe")
+	///	if (this->model == "swe")
+	#if SWEET_PARAREAL_PLANE_SWE
 		{
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = h;
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = u;
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = v;
 		}
-		else if (this->model == "burgers")
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+	///	else if (this->model == "burgers")
 		{
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = u;
 			*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = v;
 		}
-		else
-			SWEETError("Unknown model");
+	#endif
+	//	else
+	//		SWEETError("Unknown model");
 	}
 
 	void GenericData_PlaneData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
-						PlaneData_Spectral &h, PlaneData_Spectral &u, PlaneData_Spectral &v)
+	#if SWEET_PARAREAL_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							)
 	{
-		if (this->model == "swe")
+	//	if (this->model == "swe")
+	#if SWEET_PARAREAL_PLANE_SWE
 		{
 			h = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
 			u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
 			v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
 		}
-		else if (this->model == "burgers")
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+	//	else if (this->model == "burgers")
 		{
 			u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
 			v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
 		}
-		else
-			SWEETError("Unknown model");
+	#endif
+	//	else
+	//		SWEETError("Unknown model");
 	}
 
 #elif SWEET_PARAREAL_SPHERE
@@ -398,6 +416,15 @@ public:
 		this->timeframe_start = i_timeframe_start;
 		this->timeframe_end = i_timeframe_end;
 
+		this->nb_timesteps_fine = (int)((this->timeframe_end - this->timeframe_start) / simVars->timecontrol.current_timestep_size);
+		this->nb_timesteps_coarse = (int)((this->timeframe_end - this->timeframe_start) / simVars->parareal.coarse_timestep_size);
+		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-15)
+			this->nb_timesteps_fine++;
+		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-15)
+			this->nb_timesteps_coarse++;
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-15);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-15);
+
 		// set time to parareal_genericdata instances
 		this->parareal_data_start->set_time(i_timeframe_end);
 		this->parareal_data_fine->set_time(i_timeframe_end);
@@ -443,12 +470,14 @@ public:
 			PlaneData_Spectral t0_prog_u(planeDataConfig);
 			PlaneData_Spectral t0_prog_v(planeDataConfig);
 
-			if (this->model == "swe")
+	#if SWEET_PARAREAL_PLANE_SWE
+			//if (this->model == "swe")
 			{
 				SWEPlaneBenchmarksCombined swePlaneBenchmarks;
 				swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane);
 			}
-			else if (this->model == "burgers")
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+			//else if (this->model == "burgers")
 			{
 				PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig);
 				PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig);
@@ -490,12 +519,28 @@ public:
 				t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
 				t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
 			}
-			else
-				SWEETError("Unknown model for this geometry!");
+	#endif
+			//else
+			//	SWEETError("Unknown model for this geometry!");
 
-			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start, t0_prog_h_pert, t0_prog_u, t0_prog_v);
-			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v);
-			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_h_pert, t0_prog_u, t0_prog_v);
+			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start,
+	#if SWEET_PARAREAL_PLANE_SWE
+										t0_prog_h_pert,
+	#endif
+										t0_prog_u,
+										t0_prog_v);
+			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice,
+	#if SWEET_PARAREAL_PLANE_SWE
+										t0_prog_h_pert,
+	#endif
+										t0_prog_u,
+										t0_prog_v);
+			this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice,
+	#if SWEET_PARAREAL_PLANE_SWE
+										t0_prog_h_pert,
+	#endif
+										t0_prog_u,
+										t0_prog_v);
 		}
 
 #elif SWEET_PARAREAL_SPHERE
@@ -659,8 +704,10 @@ public:
 
 		*(this->parareal_data_fine) = *(this->parareal_data_start);
 
-		///while (simVars->timecontrol.current_simulation_time != timeframe_end)
-		while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
+		int nb_timesteps = 0;
+		//while (simVars->timecontrol.current_simulation_time != timeframe_end)
+		while (nb_timesteps != this->nb_timesteps_fine)
+		//while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
 		{
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
@@ -670,6 +717,8 @@ public:
 
 			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestep_size;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end + 1e-14);
+			///assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
+			nb_timesteps++;
 		}
 	};
 
@@ -704,8 +753,10 @@ public:
 
 		*(this->parareal_data_coarse) = *(this->parareal_data_start);
 
+		int nb_timesteps = 0;
 		//while (simVars->timecontrol.current_simulation_time != timeframe_end)
-		while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
+		while (nb_timesteps != this->nb_timesteps_coarse)
+		//while (simVars->timecontrol.current_simulation_time <= timeframe_end - 1e-14)
 		{
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
@@ -714,7 +765,9 @@ public:
 			this->run_timestep(this->parareal_data_coarse, "coarse");
 			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;
 			//std::cout << simVars->timecontrol.current_simulation_time << " " << timeframe_end << " " << simVars->timecontrol.current_simulation_time - timeframe_end << std::endl;
-			assert(simVars->timecontrol.current_simulation_time <= timeframe_end + 1e-14);
+			assert(simVars->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
+			//assert(simVars->timecontrol.current_simulation_time <= timeframe_end);
+			nb_timesteps++;
 		}
 	};
 
@@ -852,9 +905,9 @@ public:
 				PlaneData_Spectral u_out(this->planeDataConfig);
 				PlaneData_Spectral v_out(this->planeDataConfig);
 				if (output_initial_data)
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_start, dummy, u_out, v_out);
+					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_start, u_out, v_out);
 				else
-					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_output, dummy, u_out, v_out);
+					this->GenericData_PlaneData_Spectral_to_dataArrays(this->parareal_data_output, u_out, v_out);
 
 				PlaneData_Physical u_out_phys = u_out.toPhys();
 				PlaneData_Physical v_out_phys = v_out.toPhys();
@@ -1420,11 +1473,7 @@ public:
 					                  PlaneData_Spectral(this->planeDataConfig),
 					                  PlaneData_Spectral(this->planeDataConfig)};
 
-	#if SWEET_PARAREAL_PLANE_SWE
-			int nvar = 3;
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-			int nvar = 2;
-	#endif
+			int nvar = N;
 			for (int ivar = 0; ivar < nvar; ivar++)
 			{
 				std::string i_name;
@@ -1480,9 +1529,16 @@ public:
 	///								prog_h3_bilinear
 	///						);
 					}
-					this->dataArrays_to_GenericData_PlaneData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
+					this->dataArrays_to_GenericData_PlaneData_Spectral(parareal_data_ref,
+												ref_data[0],
+												ref_data[1]
+	#if SWEET_PARAREAL_PLANE_SWE
+												, ref_data[2]
+	#endif
+											);
 				}
 			}
+			///this->dataArrays_to_GenericData_PlaneData_Spectral(parareal_data_ref, ref_data[0], ref_data[1], ref_data[2]);
 			
 		}
 
@@ -1544,11 +1600,12 @@ public:
 			}
 		}
 #endif
-	#if SWEET_PARAREAL_PLANE_SWE || SWEET_PARAREAL_SPHERE
-			int nvar = 3;
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-			int nvar = 2;
-	#endif
+			int nvar = N;
+	////#if SWEET_PARAREAL_PLANE_SWE || SWEET_PARAREAL_SPHERE
+	////		int nvar = 3;
+	////#elif SWEET_PARAREAL_PLANE_BURGERS
+	////		int nvar = 2;
+	////#endif
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
