@@ -160,10 +160,17 @@ public:
 				*this->simVars
 			);
 
+	#if SWEET_PARAREAL_PLANE_SWE
 		this->SL_tsm = { "l_cn_na_sl_nd_settls",
 				 "l_rexi_na_sl_nd_etdrk",
 				 "l_rexi_na_sl_nd_settls"
 				};
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+		this->SL_tsm = { "l_cn_n_sl",
+				 "l_irk_n_sl",
+				 "l_irk_n_sl_forcing"
+				};
+	#endif
 
 		if (simVars->benchmark.benchmark_name == "normalmodes" )
 			this->compute_normal_modes = true;
@@ -383,12 +390,6 @@ public:
 			this->nb_timesteps_fine++;
 		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-15)
 			this->nb_timesteps_coarse++;
-		std::cout << "Time slice size: " << this->timeframe_end - this->timeframe_start << std::endl;
-		std::cout << "Coarse time step: " << simVars->parareal.coarse_timestep_size << std::endl;
-		std::cout << "Fine time step: " << simVars->timecontrol.current_timestep_size << std::endl;
-		std::cout << &simVars->parareal << std::endl;
-		std::cout << simVars << std::endl;
-		std::cout << this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end << std::endl;
 		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-15);
 		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-15);
 
@@ -1431,8 +1432,8 @@ public:
 				}
 				else if (i == 3)
 				{
-					assert(str_vector.size() == 2);
-					tmp = stod(str_vector[1]);
+					assert(str_vector.size() == 1);
+					tmp = stod(str_vector[0]);
 				}
 			}
 
@@ -1580,6 +1581,7 @@ public:
 			std::string i_name;
 
 #if SWEET_PARAREAL_SCALAR
+			i_name = "prog_u";
 			double u_ref;
 			this->GenericData_Scalar_to_dataArrays(parareal_data_ref, u_ref);
 			double err = std::abs(	this->parareal_data_output->get_pointer_to_data_Scalar()->simfields[ivar] -

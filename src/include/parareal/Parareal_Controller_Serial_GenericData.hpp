@@ -108,10 +108,10 @@ public:
 
 #if SWEET_PARAREAL_SCALAR
 	// Scalar
-	Parareal_Controller_Serial_GenericData(SimulationVariables i_simVars,
+	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
-		simVars(&i_simVars),
+		simVars(i_simVars),
 		timeSteppersFine(i_timeSteppersFine),
 		timeSteppersCoarse(i_timeSteppersCoarse)
 	{
@@ -119,12 +119,12 @@ public:
 
 #elif SWEET_PARAREAL_PLANE
 	// Plane
-	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars,
+	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars,
 						PlaneDataConfig* i_planeDataConfig,
 						PlaneOperators &i_op_plane,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
-		simVars(&i_simVars),
+		simVars(i_simVars),
 		planeDataConfig(i_planeDataConfig),
 		op_plane(i_op_plane),
 		timeSteppersFine(i_timeSteppersFine),
@@ -134,13 +134,13 @@ public:
 
 #elif SWEET_PARAREAL_SPHERE
 	// Sphere
-	Parareal_Controller_Serial_GenericData(SimulationVariables& i_simVars,
+	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars,
 						SphereData_Config* i_sphereDataConfig,
 						SphereOperators_SphereData &i_op_sphere,
 						SphereOperators_SphereData &i_op_sphere_nodealiasing,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
-		simVars(&i_simVars),
+		simVars(i_simVars),
 		sphereDataConfig(i_sphereDataConfig),
 		op_sphere(i_op_sphere),
 		op_sphere_nodealiasing(i_op_sphere_nodealiasing),
@@ -201,7 +201,11 @@ public:
 	)
 	{
 
-		//simVars->parareal.path_ref_csv_files  = tmp_str;
+		std::cout << "BBB" << std::endl;
+		std::cout << simVars->parareal.path_ref_csv_files << std::endl;
+		std::cout << &simVars->parareal.path_ref_csv_files << std::endl;
+		std::cout << &simVars->parareal << std::endl;
+		std::cout << simVars << std::endl;
 		cleanup();
 
 		pVars = &this->simVars->parareal;

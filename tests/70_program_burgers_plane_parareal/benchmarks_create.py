@@ -29,20 +29,20 @@ if online_error:
     path_fine = sys.argv[6];
 
 orders = {};
-orders["l_irk_n_erk"] = 1;
-orders["l_irk"] = 1;
-orders["l_erk_n_erk"] = 2;
-orders["l_erk"] = 2;
-orders["l_cn_n_erk"] = 2;
-orders["l_cn"] = 2;
-orders["l_rexi_n_etdrk"] = 2;
-orders["l_rexi_n_erk"] = 2;
-orders["l_rexi"] = 2;
-orders["ln_erk"] = 2;
-orders["l_direct"] = 2;
-orders["l_rexi_na_sl_nd_settls"] = 2;
-orders["l_rexi_na_sl_nd_etdrk"] = 2;
-orders["l_cn_na_sl_nd_settls"] = 2;
+####orders["l_irk_n_erk"] = 1;
+####orders["l_irk"] = 1;
+####orders["l_erk_n_erk"] = 2;
+####orders["l_erk"] = 2;
+####orders["l_cn_n_erk"] = 2;
+####orders["l_cn"] = 2;
+####orders["l_rexi_n_etdrk"] = 2;
+####orders["l_rexi_n_erk"] = 2;
+####orders["l_rexi"] = 2;
+####orders["ln_erk"] = 2;
+####orders["l_direct"] = 2;
+####orders["l_rexi_na_sl_nd_settls"] = 2;
+####orders["l_rexi_na_sl_nd_etdrk"] = 2;
+####orders["l_cn_na_sl_nd_settls"] = 2;
 
 
 
@@ -105,8 +105,8 @@ timestep_size_fine = 0.005
 
 jg.runtime.timestep_size = timestep_size_fine
 jg.runtime.timestepping_method = tsm_fine
-jg.runtime.timestepping_order = orders[tsm_fine]
-jg.runtime.timestepping_order2 = orders[tsm_fine]
+##jg.runtime.timestepping_order = orders[tsm_fine]
+##jg.runtime.timestepping_order2 = orders[tsm_fine]
 jg.runtime.space_res_physical = -1
 jg.runtime.space_res_spectral = 32
 

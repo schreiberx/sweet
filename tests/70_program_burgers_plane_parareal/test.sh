@@ -22,21 +22,31 @@ mkdir $dirname;
 echo ""
 
 for i in {0,1,2};do
-	##for tsm_fine in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
-	##for tsm_fine in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_erk,l_rexi_na_sl_nd_etdrk}; do ## short version
-	for tsm_fine in l_cn; do ## short version
+	##for tsm_fine in ../../src/programs/burgers_timeintegrators/Burgers_Plane_TS*hpp; do ## full version
+	for tsm_fine in {l_cn_n_sl,l_direct,l_erk,l_irk,l_irk_n_sl_forcing,ln_imex_forcing}; do ## short version
 
 		tsm_fine=$(get_tsm $tsm_fine);
 		if [ "$tsm_fine" = "interface" ]; then
 		  continue;
 		fi
+		if [ "$tsm_fine" = "ln_cole_hopf" ]; then
+		  continue;
+		fi
+		if [ "$tsm_fine" = "ln_adomian" ]; then
+		  continue;
+		fi
 
-		##for tsm_coarse in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
-		##for tsm_coarse in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_erk,l_rexi_na_sl_nd_etdrk}; do ## short version
-		for tsm_coarse in l_cn; do ## short version
+		##for tsm_coarse in ../../src/programs/burgers_timeintegrators/Burgers_Plane_TS*hpp; do ## full version
+		for tsm_coarse in {l_cn_n_sl,l_direct,l_erk,l_irk,l_irk_n_sl_forcing,ln_imex_forcing}; do ## short version
 
 			tsm_coarse=$(get_tsm $tsm_coarse);
 			if [ "$tsm_coarse" = "interface" ]; then
+			  continue;
+			fi
+			if [ "$tsm_coarse" = "ln_cole_hopf" ]; then
+			  continue;
+			fi
+			if [ "$tsm_coarse" = "ln_adomian" ]; then
 			  continue;
 			fi
 

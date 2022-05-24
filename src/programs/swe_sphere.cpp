@@ -1089,7 +1089,7 @@ int main_real(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller_Serial_GenericData<SWE_Sphere_TimeSteppers, 3> parareal_Controller_Serial(simVars,
+			Parareal_Controller_Serial_GenericData<SWE_Sphere_TimeSteppers, 3> parareal_Controller_Serial(&simVars,
 																sphereDataConfig,
 																op,
 																op_nodealiasing,
