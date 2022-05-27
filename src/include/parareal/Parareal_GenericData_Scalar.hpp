@@ -128,9 +128,10 @@ public:
 
 #if SWEET_MPI
 	// size in bytes (for MPI)
+	// size of each simfield of data
 	std::size_t size()
 	{
-		return 120398123;
+		return 1;
 	}
 
 	void serialize(void *data)

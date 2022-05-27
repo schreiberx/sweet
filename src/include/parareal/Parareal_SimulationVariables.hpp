@@ -35,6 +35,9 @@ public:
 	 * If set to -1, the number of coarse slices is automatically determined.
 	 */
 	int coarse_slices = -1;
+#if SWEET_PARAREAL==2
+	int coarse_slices_per_proc = -1;
+#endif
 
 	/**
 	 * Verbosity of Parareal controller

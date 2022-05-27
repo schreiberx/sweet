@@ -745,6 +745,25 @@ public:
 	/**
 	 * return the penult solution after the coarse propagation:
 	 */
+	Parareal_GenericData& get_reference_to_data_timestep_difference()
+	{
+		return *(this->parareal_data_error);
+	};
+
+	void sim_set_data_diff(
+			Parareal_GenericData &i_pararealData
+	){
+		if (simVars->parareal.verbosity > 2)
+			std::cout << "sim_set_data_diff()" << std::endl;
+
+		// copy to buffers
+		*parareal_data_error = i_pararealData;
+	};
+
+
+	/**
+	 * return the penult solution after the coarse propagation:
+	 */
 	Parareal_GenericData& get_reference_to_data_timestep_coarse_previous_timestep()
 	{
 		return *(this->parareal_data_coarse_previous_timestep);

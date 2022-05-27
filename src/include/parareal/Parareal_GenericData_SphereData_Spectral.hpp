@@ -133,9 +133,10 @@ public:
 
 #if SWEET_MPI
 	// size in bytes (for MPI)
+	// size of each simfield of data
 	std::size_t size()
 	{
-		return 120398123;
+		return this->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->planeDataConfig->spectral_array_data_number_of_elements;
 	}
 
 	void serialize(void *data)
