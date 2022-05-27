@@ -105,7 +105,7 @@ public:
 	);
 
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL && SWEET_PARAREAL_SPHERE
 	void set_previous_solution(
 				SphereData_Spectral &i_phi_prev,
 				SphereData_Spectral &i_vrt_prev,

@@ -11,6 +11,8 @@ set -e
 
 dirname="simulations_offline_error";
 
+cd "$(dirname $0)"
+
 echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1
 if [ -d $dirname ]; then

@@ -39,9 +39,6 @@
 #include <sweet/SimulationBenchmarkTiming.hpp>
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
-#include <parareal/Parareal_Data.hpp>
-#include <parareal/Parareal_Data_SphereData_Spectral.hpp>
-
 #if SWEET_PARAREAL
 	#include <parareal/Parareal.hpp>
 #endif

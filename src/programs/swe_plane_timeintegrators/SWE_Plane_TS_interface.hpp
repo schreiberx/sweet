@@ -29,7 +29,7 @@ public:
 			double i_sim_timestamp
 	) = 0;
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL && SWEET_PARAREAL_PLANE
 	void run_timestep(
 			Parareal_GenericData* io_data,
 

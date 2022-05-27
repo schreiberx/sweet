@@ -403,7 +403,8 @@ public:
 		{
 			output_filenames = "";
 			output_filenames += write_file(u_phys, "prog_u");
-			output_filenames += write_file(v_phys, "prog_v");
+			write_file(v_phys, "prog_v");
+			//output_filenames += write_file(v_phys, "prog_v");
 			//write_file(tmp_v, "prog_v");
 
 			char buffer[1024];

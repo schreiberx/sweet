@@ -57,7 +57,7 @@ public:
 	{
 	}
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL && SWEET_PARAREAL_SPHERE
 	void run_timestep(
 			Parareal_GenericData* io_data,
 
