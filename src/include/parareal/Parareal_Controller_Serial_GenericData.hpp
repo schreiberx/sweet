@@ -711,35 +711,22 @@ public:
 				if (mpi_rank == 0 && working_rank == 0)
 					continue;
 				// communicate from each proc to mpi_rank = 0
-				Parareal_GenericData* tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_diff(); // dummy init
+				///Parareal_GenericData* tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_diff(); // dummy init
+				Parareal_GenericData* tmp2;
 				if (mpi_rank == working_rank) // send
 				{
-					///tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_diff();
-					std::cout << "DDD " << i << " " <<
-									parareal_simulationInstances[local_slice]->parareal_data_error->reduce_maxAbs() << " " <<
-									parareal_simulationInstances[local_slice]->parareal_data_coarse->reduce_maxAbs() << " " <<
-									parareal_simulationInstances[local_slice]->parareal_data_fine->reduce_maxAbs() << 
-									std::endl;
+					tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_diff();
 					this->communicate_solution(tmp2, mpi_rank, 0, 30000 + i);
 				}
 				else if (mpi_rank == 0) // recv
 				{
 					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
-					///*tmp2 = *parareal_simulationInstances[local_slice]->parareal_data_coarse; // dummy init
 					this->communicate_solution(tmp2, working_rank, 0, 30000 + i);
 					parareal_simulationInstances[local_slice]->sim_set_data_diff(*tmp2);
 					delete tmp2;
 				}
 #endif
 			}
-
-			for (int i = k; i < pVars->coarse_slices; i++)
-				if (mpi_rank == 0)
-					std::cout << "CCC " << i << " " <<
-								parareal_simulationInstances[i]->parareal_data_error->reduce_maxAbs() << " " <<
-								parareal_simulationInstances[i]->parareal_data_coarse->reduce_maxAbs() << " " <<
-								parareal_simulationInstances[i]->parareal_data_fine->reduce_maxAbs() <<
-								std::endl;
 
 			/**
 			 * 1) Coarse time stepping (serial)
