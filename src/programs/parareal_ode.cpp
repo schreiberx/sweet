@@ -13,7 +13,7 @@
 #include <parareal/Parareal.hpp>
 #include <parareal/Parareal_GenericData.hpp>
 #include <parareal/Parareal_GenericData_Scalar.hpp>
-#include <parareal/Parareal_Controller_Serial_GenericData.hpp>
+#include <parareal/Parareal_Controller.hpp>
 #endif
 
 #include <cmath>
@@ -320,20 +320,19 @@ int main(int i_argc, char *i_argv[])
 		 * Allocate parareal controller and provide class
 		 * which implement the parareal features
 		 */
-		Parareal_Controller_Serial_GenericData<ODE_Scalar_TimeSteppers, 1> parareal_Controller_Serial(&simVars,
-															timeSteppersFine,
-															timeSteppersCoarse);
+		Parareal_Controller<ODE_Scalar_TimeSteppers, 1> parareal_Controller(&simVars,
+											timeSteppersFine,
+											timeSteppersCoarse);
 
 		std::cout << simVars.parareal.path_ref_csv_files << std::endl;
 		std::cout << &simVars.parareal.path_ref_csv_files << std::endl;
 		std::cout << &simVars.parareal << std::endl;
 		std::cout << &simVars << std::endl;
 		// setup controller. This initializes several simulation instances
-		//parareal_Controller_Serial.setup(&simVars.parareal);
-		parareal_Controller_Serial.setup();
+		parareal_Controller.setup();
 
 		// execute the simulation
-		parareal_Controller_Serial.run();
+		parareal_Controller.run();
 
 		delete timeSteppersFine;
 		delete timeSteppersCoarse;

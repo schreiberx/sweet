@@ -1106,18 +1106,17 @@ int main(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller_Serial_GenericData<SWE_Plane_TimeSteppers, 3> parareal_Controller_Serial(&simVars,
-																planeDataConfig,
-																op,
-																timeSteppersFine,
-																timeSteppersCoarse);
-			//Parareal_Controller_Serial<SimulationInstance> parareal_Controller_Serial;
+			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(&simVars,
+												planeDataConfig,
+												op,
+												timeSteppersFine,
+												timeSteppersCoarse);
 
 			// setup controller. This initializes several simulation instances
-			parareal_Controller_Serial.setup();
+			parareal_Controller.setup();
 
 			// execute the simulation
-			parareal_Controller_Serial.run();
+			parareal_Controller.run();
 
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;

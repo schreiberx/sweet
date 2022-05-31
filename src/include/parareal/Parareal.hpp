@@ -23,8 +23,8 @@ template <class T> class PararealDataInherited	: public T {};
 
 #elif SWEET_PARAREAL==1
 
-#	include <parareal/Parareal_SimulationInstance_GenericData.hpp>
-#	include <parareal/Parareal_Controller_Serial_GenericData.hpp>
+#	include <parareal/Parareal_SimulationInstance.hpp>
+#	include <parareal/Parareal_Controller.hpp>
 #	include <parareal/Parareal_GenericData.hpp>
 
 
@@ -34,8 +34,8 @@ template <class T> class PararealDataInherited	: public T {};
 		#error "SWEET_MPI must be activated to use SWEET_PARAREAL=2"
 	#endif
 
-#	include <parareal/Parareal_SimulationInstance_GenericData.hpp>
-#	include <parareal/Parareal_Controller_Serial_GenericData.hpp>
+#	include <parareal/Parareal_SimulationInstance.hpp>
+#	include <parareal/Parareal_Controller.hpp>
 #	include <parareal/Parareal_GenericData.hpp>
 
 #	error "Parareal with MPI implemented but still requires a complete validation."

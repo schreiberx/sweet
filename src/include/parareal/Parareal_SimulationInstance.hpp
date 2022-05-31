@@ -9,8 +9,8 @@
  * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
-#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_GENERICDATA_HPP_
-#define SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_GENERICDATA_HPP_
+#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_
+#define SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_
 
 
 
@@ -49,7 +49,7 @@
  * These interfaces were ported from the Python implementation.
  */
 template <class t_tsmType, int N>
-class Parareal_SimulationInstance_GenericData
+class Parareal_SimulationInstance
 {
 public:
 
@@ -127,7 +127,7 @@ public:
 
 public:
 
-	Parareal_SimulationInstance_GenericData()
+	Parareal_SimulationInstance()
 	{
 	};
 
@@ -1714,10 +1714,10 @@ public:
 			SWEETError("Instability detected in parareal!");
 	};
 
-	~Parareal_SimulationInstance_GenericData()
+	~Parareal_SimulationInstance()
 	{
 	}
 };
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_GENERICDATA_HPP_ */
+#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_ */

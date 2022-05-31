@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_GENERICDATA_HPP_
-#define SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_GENERICDATA_HPP_
+#ifndef SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_HPP_
+#define SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_HPP_
 
 // Checking if geometry and model have been correctly defined
 #if SWEET_PARAREAL_SCALAR
@@ -36,7 +36,7 @@
 #endif
 
 #include <parareal/Parareal_ConsolePrefix.hpp>
-#include <parareal/Parareal_SimulationInstance_GenericData.hpp>
+#include <parareal/Parareal_SimulationInstance.hpp>
 #include <parareal/Parareal_SimulationVariables.hpp>
 
 #include <parareal/Parareal_GenericData.hpp>
@@ -67,14 +67,14 @@
  */
 ////template <class t_SimulationInstance>
 template <class t_tsmType, int N>
-class Parareal_Controller_Serial_GenericData
+class Parareal_Controller
 {
 
 	/**
 	 * Pointers to interfaces of simulationInstances
 	 * This helps to clearly separate between the allocation of the simulation classes and the parareal interfaces.
 	 */
-	std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, N>*> parareal_simulationInstances = {};
+	std::vector<Parareal_SimulationInstance<t_tsmType, N>*> parareal_simulationInstances = {};
 
 	SimulationVariables* simVars;
 
@@ -193,7 +193,7 @@ public:
 
 #if SWEET_PARAREAL_SCALAR
 	// Scalar
-	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars,
+	Parareal_Controller(SimulationVariables* i_simVars,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
 		simVars(i_simVars),
@@ -204,7 +204,7 @@ public:
 
 #elif SWEET_PARAREAL_PLANE
 	// Plane
-	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars,
+	Parareal_Controller(SimulationVariables* i_simVars,
 						PlaneDataConfig* i_planeDataConfig,
 						PlaneOperators &i_op_plane,
 						t_tsmType* i_timeSteppersFine,
@@ -219,7 +219,7 @@ public:
 
 #elif SWEET_PARAREAL_SPHERE
 	// Sphere
-	Parareal_Controller_Serial_GenericData(SimulationVariables* i_simVars,
+	Parareal_Controller(SimulationVariables* i_simVars,
 						SphereData_Config* i_sphereDataConfig,
 						SphereOperators_SphereData &i_op_sphere,
 						SphereOperators_SphereData &i_op_sphere_nodealiasing,
@@ -235,12 +235,7 @@ public:
 	};
 #endif
 
-///	Parareal_Controller_Serial()
-///	{
-///	}
-
-
-	~Parareal_Controller_Serial_GenericData()
+	~Parareal_Controller()
 	{
 		cleanup();
 	}
@@ -273,7 +268,7 @@ public:
 
 	void cleanup()
 	{
-		for (typename std::vector<Parareal_SimulationInstance_GenericData<t_tsmType, N>*>::iterator it = this->parareal_simulationInstances.begin();
+		for (typename std::vector<Parareal_SimulationInstance<t_tsmType, N>*>::iterator it = this->parareal_simulationInstances.begin();
 															it != this->parareal_simulationInstances.end();
 															it++)
 			if (*it)
@@ -367,7 +362,7 @@ public:
 			CONSOLEPREFIX_start(k);
 
 			int local_k = global_to_local_slice.at(k);
-			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, N>);
+			parareal_simulationInstances.push_back(new Parareal_SimulationInstance<t_tsmType, N>);
 			std::cout << "mpi_rank " << mpi_rank << " setting up instance " << k << " " << local_k << std::endl;
 			std::cout << parareal_simulationInstances.back() << std::endl;
 #if SWEET_PARAREAL_SCALAR
@@ -836,4 +831,4 @@ converged:
 
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_SERIAL_GENERICDATA_HPP_ */
+#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_HPP_ */
