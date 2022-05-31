@@ -148,8 +148,15 @@ public:
 ///#if SWEET_MPI
 #if SWEET_PARAREAL==2
 	virtual std::size_t size() = 0;
-	virtual void serialize(void *data) = 0;
-	virtual void deserialize(void *data) = 0;
+	////virtual void serialize(void *data) = 0;
+	////virtual void deserialize(void *data) = 0;
+	#if SWEET_PARAREAL_SCALAR
+	virtual void serialize(double *data) = 0;
+	virtual void deserialize(double *data) = 0;
+	#else
+	virtual void serialize(std::complex<double> *data) = 0;
+	virtual void deserialize(std::complex<double> *data) = 0;
+	#endif
 #endif
 
 	virtual double reduce_maxAbs()=0;

@@ -40,7 +40,7 @@ earth = EarthMKSDimensions()
 #Basic plane options
 jg.compile.program = "parareal_ode"
 jg.compile.mode = "debug"
-jg.compile.sweet_mpi = "enable"
+###jg.compile.sweet_mpi = "enable"
 
 # Verbosity mode
 jg.runtime.verbosity = 3
@@ -93,7 +93,8 @@ jg.runtime.timestep_size = timestep_size_fine
 jg.runtime.space_res_spectral = 32
 
 ## Parareal parameters
-jg.compile.parareal = "mpi";
+###jg.compile.parareal = "mpi";
+jg.compile.parareal = "serial";
 jg.runtime.parareal_enabled = 1
 jg.runtime.parareal_convergence_threshold = -1
 jg.runtime.parareal_verbosity = 6

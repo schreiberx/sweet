@@ -150,17 +150,20 @@ public:
 		return N * this->data->simfields[0]->planeDataConfig->spectral_array_data_number_of_elements;
 	}
 
-	void serialize(void *data)
+	void serialize(std::complex<double> *data)
 	{
+		int s = this->data->simfields[0]->planeDataConfig->spectral_array_data_number_of_elements;
 		for (int i = 0; i < N; i++)
-			std::memcpy(data + i * N, this->data->simfields[i]->spectral_space_data, N);
+			std::copy(&this->data->simfields[i]->spectral_space_data[0], &this->data->simfields[i]->spectral_space_data[s], &data[i * s]);
 	};
 
-	void deserialize(void *data)
+	void deserialize(std::complex<double> *data)
 	{
+		int s = this->data->simfields[0]->planeDataConfig->spectral_array_data_number_of_elements;
 		for (int i = 0; i < N; i++)
-			std::memcpy(this->data->simfields[i]->spectral_space_data, data + i * N, N);
+			std::copy(&data[i * s], &data[(i + 1) * s], &this->data->simfields[i]->spectral_space_data[0]);
 	};
+
 #endif
 
 	double reduce_maxAbs()
@@ -205,6 +208,7 @@ public:
 
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
+		std::cout << "AAA " << this->data->time << " " << i_data.get_pointer_to_data_PlaneData_Spectral()->time << std::endl;
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
 		assert(this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
 

@@ -253,6 +253,7 @@ public:
 		{
 			Parareal_GenericData_Scalar<N>* out = new Parareal_GenericData_Scalar<N>;
 			out->allocate_data();
+			out->set_time(this->timeframe_end);
 			return out;
 		}
 
@@ -531,6 +532,8 @@ public:
 
 		// copy to buffers
 		*parareal_data_start = i_pararealData;
+
+		parareal_data_start->set_time(this->timeframe_end);
 	};
 
 	/**
@@ -544,6 +547,8 @@ public:
 
 		// copy to buffers
 		*parareal_data_coarse_previous_time_slice = i_pararealData;
+
+		parareal_data_coarse_previous_time_slice->set_time(this->timeframe_end);
 	};
 
 	/**
@@ -557,6 +562,8 @@ public:
 
 		// copy to buffers
 		*parareal_data_fine_previous_time_slice = i_pararealData;
+
+		parareal_data_fine_previous_time_slice->set_time(this->timeframe_end);
 	};
 
 #if SWEET_PARAREAL == 2
@@ -568,6 +575,8 @@ public:
 
 		// copy to buffers
 		*parareal_data_coarse = i_pararealData;
+
+		parareal_data_coarse->set_time(this->timeframe_end);
 	};
 
 #endif
@@ -581,6 +590,8 @@ public:
 	)
 	{
 		*parareal_data_fine_exact_debug = i_pararealData;
+
+		parareal_data_fine_exact_debug->set_time(this->timeframe_end);
 	};
 
 	/**
@@ -773,6 +784,8 @@ public:
 
 		// copy to buffers
 		*parareal_data_error = i_pararealData;
+
+		parareal_data_error->set_time(this->timeframe_end);
 	};
 
 

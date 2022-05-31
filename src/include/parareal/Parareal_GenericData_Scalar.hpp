@@ -135,16 +135,22 @@ public:
 		return 1;
 	}
 
-	void serialize(void *data)
+	void serialize(double *data)
 	{
 		for (int i = 0; i < N; i++)
-			std::memcpy(data + i * N, &this->data->simfields[i], N);
+		{
+			///std::memcpy(data + i, &this->data->simfields[i], 1);
+			std::copy(&this->data->simfields[i], &this->data->simfields[i + 1], data);
+		}
 	};
 
-	void deserialize(void *data)
+	void deserialize(double *data)
 	{
 		for (int i = 0; i < N; i++)
-			std::memcpy(&this->data->simfields[i], data + i * N, N);
+		{
+			///std::memcpy(&this->data->simfields[i], data + i, 1);
+			std::copy(&data[i], &data[i + 1], &this->data->simfields[i]);
+		}
 	};
 #endif
 

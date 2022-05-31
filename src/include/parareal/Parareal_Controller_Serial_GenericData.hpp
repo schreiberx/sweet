@@ -154,7 +154,11 @@ public:
 			std::cout << "Proc " << mpi_rank << " is sending solution to proc " << dest_rank << " with tag " << tag << std::endl;
 
 			io_data->serialize(serial_data);
+	#if SWEET_PARAREAL_SCALAR
+			MPI_Send(serial_data, size, MPI_DOUBLE, dest_rank, tag + 0, MPI_COMM_WORLD);
+	#else
 			MPI_Send(serial_data, size, MPI_DOUBLE_COMPLEX, dest_rank, tag + 0, MPI_COMM_WORLD);
+	#endif
 
 		}
 		else if (recv)
@@ -163,7 +167,11 @@ public:
 			std::cout << "Proc " << mpi_rank << " is receiving solution from proc " << source_rank << " with tag " << tag << std::endl;
 
 			MPI_Status status;
+	#if SWEET_PARAREAL_SCALAR
+			MPI_Recv(serial_data, size, MPI_DOUBLE, source_rank, tag + 0, MPI_COMM_WORLD, &status);
+	#else
 			MPI_Recv(serial_data, size, MPI_DOUBLE_COMPLEX, source_rank, tag + 0, MPI_COMM_WORLD, &status);
+	#endif
 			io_data->deserialize(serial_data);
 
 		}
@@ -361,6 +369,7 @@ public:
 			int local_k = global_to_local_slice.at(k);
 			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, N>);
 			std::cout << "mpi_rank " << mpi_rank << " setting up instance " << k << " " << local_k << std::endl;
+			std::cout << parareal_simulationInstances.back() << std::endl;
 #if SWEET_PARAREAL_SCALAR
 				parareal_simulationInstances[local_k]->setup(this->simVars,
 								       this->timeSteppersFine,
@@ -381,7 +390,6 @@ public:
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
 #endif
-
 		}
 
 
@@ -405,9 +413,13 @@ public:
 		parareal_simulationInstances[0]->sim_check_timesteps(time_slice_size);
 		//}
 
-		////for (int k = 0; k < pVars->coarse_slices; k++)
-		for (int k = slices_for_proc[0]; k <= slices_for_proc.back(); k++)
+		for (int k = 0; k < pVars->coarse_slices; k++)
+		////for (int k = slices_for_proc[0]; k <= slices_for_proc.back(); k++)
 		{
+			if (mpi_rank > 0)
+				if (k < slices_for_proc[0] || k > slices_for_proc.back())
+					continue;
+
 			CONSOLEPREFIX_start(k);
 			int local_k = global_to_local_slice.at(k);
 			parareal_simulationInstances[local_k]->sim_set_timeframe(time_slice_size*k, time_slice_size*(k+1));
@@ -431,10 +443,9 @@ public:
 		if (mpi_rank == 0)
 			this->buffer_size = parareal_simulationInstances[0]->parareal_data_start->size();
 		MPI_Bcast(&this->buffer_size, 1, MPI_INT, 0, MPI_COMM_WORLD );
-#endif
-
 
 		MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 	}
 
@@ -476,8 +487,9 @@ public:
 		}
 #endif
 
+#if SWEET_PARAREAL == 2
 		MPI_Barrier(MPI_COMM_WORLD);
-
+#endif
 
 		if (mpi_rank == 0)
 		{
@@ -543,7 +555,9 @@ public:
 							"fine");
 		}
 
+#if SWEET_PARAREAL == 2
 		MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 		/**
 		 * We run as much Parareal iterations as there are coarse slices
@@ -580,16 +594,24 @@ public:
 					continue;
 				else if (working_rank == mpi_rank) // recv
 				{
-					///tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
-					tmp2 = &parareal_simulationInstances[0]->get_reference_to_data_timestep_coarse();
-					this->communicate_solution(tmp2, 0, mpi_rank, 10000);
+					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					this->communicate_solution(tmp2, 0, mpi_rank, 10000 + i);
+					parareal_simulationInstances[local_slice]->sim_set_data(*tmp2);
+					delete tmp2;
+
+					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					this->communicate_solution(tmp2, 0, mpi_rank, 10000 + 10 + i);
 					parareal_simulationInstances[local_slice]->sim_set_data_coarse(*tmp2);
-					////delete tmp2;
+					delete tmp2;
 				}
 				else if (mpi_rank == 0) // send
 				{
-					tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_output_data();
-					this->communicate_solution(tmp2, 0, working_rank, 10000);
+					int local_slice_prev = global_to_local_slice.at(i-1);
+					tmp2 = &parareal_simulationInstances[local_slice_prev]->get_reference_to_output_data();
+					this->communicate_solution(tmp2, 0, working_rank, 10000 + i);
+
+					tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_coarse();
+					this->communicate_solution(tmp2, 0, working_rank, 10000 + 10 + i);
 				}
 
 			}
@@ -623,16 +645,16 @@ public:
 				{
 					if (local_slice == 0) // recv
 					{
-						tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_fine_previous_timestep();
-						///tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
-						this->communicate_solution(tmp2, 0, mpi_rank, 20000);
+						///tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_fine_previous_timestep();
+						tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+						this->communicate_solution(tmp2, 0, mpi_rank, 20000 + i);
 						parareal_simulationInstances[local_slice]->sim_set_data_fine_previous_time_slice(*tmp2);
-						////delete tmp2;
+						delete tmp2;
 					}
 					else // send
 					{
 						tmp2 = &parareal_simulationInstances[global_to_local_slice.at(i - 1)]->get_reference_to_data_timestep_fine_previous_timestep();
-						this->communicate_solution(tmp2, 0, working_rank, 20000);
+						this->communicate_solution(tmp2, 0, working_rank, 20000 + i);
 					}
 				}
 #endif
@@ -661,13 +683,16 @@ public:
 				}
 			}
 
+#if SWEET_PARAREAL == 2
 			MPI_Barrier(MPI_COMM_WORLD);
+#endif
 
 			/**
 			 * Compute difference between coarse and fine solution
 			 */
 			for (int i = k; i < pVars->coarse_slices; i++)
 			{
+
 				CONSOLEPREFIX_start(i);
 				int working_rank = proc_for_slices[i];
 				int local_slice = global_to_local_slice.at(i);
@@ -690,19 +715,31 @@ public:
 				if (mpi_rank == working_rank) // send
 				{
 					///tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_diff();
-					this->communicate_solution(tmp2, mpi_rank, 0, 30000);
+					std::cout << "DDD " << i << " " <<
+									parareal_simulationInstances[local_slice]->parareal_data_error->reduce_maxAbs() << " " <<
+									parareal_simulationInstances[local_slice]->parareal_data_coarse->reduce_maxAbs() << " " <<
+									parareal_simulationInstances[local_slice]->parareal_data_fine->reduce_maxAbs() << 
+									std::endl;
+					this->communicate_solution(tmp2, mpi_rank, 0, 30000 + i);
 				}
 				else if (mpi_rank == 0) // recv
 				{
-					///tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
-					*tmp2 = *parareal_simulationInstances[local_slice]->parareal_data_coarse; // dummy init
-					this->communicate_solution(tmp2, working_rank, 0, 30000);
+					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					///*tmp2 = *parareal_simulationInstances[local_slice]->parareal_data_coarse; // dummy init
+					this->communicate_solution(tmp2, working_rank, 0, 30000 + i);
 					parareal_simulationInstances[local_slice]->sim_set_data_diff(*tmp2);
-					///delete tmp2;
+					delete tmp2;
 				}
 #endif
 			}
 
+			for (int i = k; i < pVars->coarse_slices; i++)
+				if (mpi_rank == 0)
+					std::cout << "CCC " << i << " " <<
+								parareal_simulationInstances[i]->parareal_data_error->reduce_maxAbs() << " " <<
+								parareal_simulationInstances[i]->parareal_data_coarse->reduce_maxAbs() << " " <<
+								parareal_simulationInstances[i]->parareal_data_fine->reduce_maxAbs() <<
+								std::endl;
 
 			/**
 			 * 1) Coarse time stepping (serial)
