@@ -35,6 +35,9 @@ public:
 	 * If set to -1, the number of coarse slices is automatically determined.
 	 */
 	int coarse_slices = -1;
+#if SWEET_PARAREAL==2
+	int coarse_slices_per_proc = -1;
+#endif
 
 	/**
 	 * Verbosity of Parareal controller
@@ -65,6 +68,34 @@ public:
 	 * Coarse time stepping method order
 	 */
 	int coarse_timestepping_order2 = 1;
+
+	/**
+	 * Time step size for coarse propagator
+	 * If == -1 then coarse timestep = time slice length
+	 */
+	double coarse_timestep_size = -1;
+
+	/**
+	 * Read reference csv files
+	 * in order to compute and store errors
+	 * instead of storing parareal iterations
+	 */
+	bool load_ref_csv_files = false;
+	std::string path_ref_csv_files = "";
+
+	/**
+	 * Read csv files of fine simulation
+	 * in order to compute and store errors
+	 * instead of storing parareal iterations
+	 */
+	bool load_fine_csv_files = false;
+	std::string path_fine_csv_files = "";
+
+	/**
+	 * Store parareal iterations
+	 * May require too much disk storage!
+	 */
+	bool store_iterations = true;
 
 	/**
 	 * setup long options for program arguments
@@ -105,6 +136,24 @@ public:
 
 		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-order2", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestep-size", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-load-ref-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-path-ref-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-load-fine-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-path-fine-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-store-iterations", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
 	}
 
 
@@ -123,6 +172,12 @@ public:
 		std::cout << "	--parareal-coarse-timestepping-method=[string]	Identifier for coarse time stepping method (default=ln_erk)" << std::endl;
 		std::cout << "	--parareal-coarse-timestepping-order=[int]	Order for coarse time stepping method (default=1)" << std::endl;
 		std::cout << "	--parareal-coarse-timestepping-order2=[int]	Order for coarse time stepping method (default=1)" << std::endl;
+		std::cout << "	--parareal-coarse-timestep_size=[float]	Time step for coarse propagation (default=-1)" << std::endl;
+		std::cout << "	--parareal-load-ref-csv-files=[0/1]	Load physical reference files (default=0)" << std::endl;
+		std::cout << "	--parareal-path-ref-csv-files=[0/1]	Path containing ref csv files (default="")" << std::endl;
+		std::cout << "	--parareal-load-fine-csv-files=[0/1]	Load physical files of fine simulation (default=0)" << std::endl;
+		std::cout << "	--parareal-path-fine-csv-files=[0/1]	Path containing fine csv files (default="")" << std::endl;
+		std::cout << "	--parareal-store-iterations=[0/1]	Store physical files at each iteration (default=1)" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -141,6 +196,12 @@ public:
 		std::cout << " + coarse_timestepping_method: " << coarse_timestepping_method << std::endl;
 		std::cout << " + coarse_timestepping_method_order: " << coarse_timestepping_order << std::endl;
 		std::cout << " + coarse_timestepping_method_order2: " << coarse_timestepping_order2 << std::endl;
+		std::cout << " + coarse_timestep_size: " << coarse_timestep_size << std::endl;
+		std::cout << " + load_ref_csv_files: " << load_ref_csv_files << std::endl;
+		std::cout << " + path_ref_csv_files: " << path_ref_csv_files << std::endl;
+		std::cout << " + load_fine_csv_files: " << load_fine_csv_files << std::endl;
+		std::cout << " + path_fine_csv_files: " << path_fine_csv_files << std::endl;
+		std::cout << " + store_iterations: " << store_iterations << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -189,9 +250,34 @@ public:
 		case 7:
 			coarse_timestepping_order2 = atoi(i_value);
 			return -1;
+
+		case 8:
+			coarse_timestep_size = atof(i_value);
+			return -1;
+
+		case 9:
+			load_ref_csv_files = atoi(i_value);
+			return -1;
+
+		case 10:
+			path_ref_csv_files = i_value;
+			return -1;
+
+		case 11:
+			load_fine_csv_files = atoi(i_value);
+			return -1;
+
+		case 12:
+			path_fine_csv_files = i_value;
+			return -1;
+
+		case 13:
+			store_iterations = atoi(i_value);
+			return -1;
+
 		}
 
-		return 8;
+		return 14;
 	}
 
 

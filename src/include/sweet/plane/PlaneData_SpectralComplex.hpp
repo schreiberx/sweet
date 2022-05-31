@@ -869,8 +869,6 @@ public:
 	{
 		PlaneData_SpectralComplex out(planeDataConfig);
 
-		PlaneData_SpectralComplex &rw_array_data = (PlaneData_SpectralComplex&)i_array_data;
-
 		PLANE_DATA_COMPLEX_SPECTRAL_FOR_IDX(
 		{
 			if (i_array_data.spectral_space_data[idx] == std::complex<double>(0))

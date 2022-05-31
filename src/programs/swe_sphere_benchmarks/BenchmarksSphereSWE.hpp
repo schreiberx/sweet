@@ -10,7 +10,7 @@
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 
-#if !SWEET_USE_SPHERE_SPECTRAL_SPACE
+#if !SWEET_USE_SPHERE_SPECTRAL_SPACE && SWEET_PARAREAL
 	#error "SWEET_USE_SPHERE_SPECTRAL_SPACE not enabled"
 #endif
 

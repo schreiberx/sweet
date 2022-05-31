@@ -136,7 +136,9 @@ SWE_Plane_TS_l_cn_n_erk::SWE_Plane_TS_l_cn_n_erk(
 		op(i_op),
 		ts_l_cn(simVars, op)
 {
+#if !SWEET_PARAREAL
 	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, simVars.disc.timestepping_crank_nicolson_filter, false);
+#endif
 }
 
 

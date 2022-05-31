@@ -12,8 +12,8 @@
 void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 		PlaneData_Spectral &io_u,	///< prognostic variables
 		PlaneData_Spectral &io_v,	///< prognostic variables
-		PlaneData_Spectral &io_u_prev,	///< prognostic variables
-		PlaneData_Spectral &io_v_prev,	///< prognostic variables
+		///PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		///PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -21,6 +21,17 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 {
 	if (i_fixed_dt <= 0)
 		SWEETError("Burgers_Plane_TS_l_irk_n_sl: Only constant time step size allowed");
+
+	if (i_simulation_timestamp == 0)
+	{
+#if !SWEET_PARAREAL
+		/*
+		 * First time step
+		 */
+		u_prev = io_u;
+		v_prev = io_v;
+#endif
+	}
 
 	//Departure points and arrival points
 	ScalarDataArray posx_d = posx_a;
@@ -33,7 +44,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 
 	//Calculate departure points
 	semiLagrangian.semi_lag_departure_points_settls(
-			io_u_prev.toPhys(), io_v_prev.toPhys(),
+			u_prev.toPhys(), v_prev.toPhys(),
 			io_u.toPhys(), io_v.toPhys(),
 			posx_a, posy_a,
 			dt,
@@ -47,15 +58,15 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 			);
 
 	// Save old velocities
-	io_u_prev = io_u;
-	io_v_prev = io_v;
+	u_prev = io_u;
+	v_prev = io_v;
 
 	if (simVars.disc.timestepping_order == 2)
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
 		ts_l_irk.run_timestep(
 				io_u, io_v,
-				io_u_prev, io_v_prev,
+				///io_u_prev, io_v_prev,
 				0.5*dt,
 				i_simulation_timestamp
 		);
@@ -84,7 +95,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
 		ts_l_irk.run_timestep(
 				io_u, io_v,
-				io_u_prev, io_v_prev,
+				///io_u_prev, io_v_prev,
 				0.5*dt,
 				i_simulation_timestamp
 		);
@@ -94,7 +105,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
 		ts_l_irk.run_timestep(
 				io_u, io_v,
-				io_u_prev, io_v_prev,
+				////io_u_prev, io_v_prev,
 				dt,
 				i_simulation_timestamp
 		);
@@ -163,7 +174,10 @@ Burgers_Plane_TS_l_irk_n_sl::Burgers_Plane_TS_l_irk_n_sl(
 		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-		ts_l_irk(simVars, op)
+		ts_l_irk(simVars, op),
+
+		u_prev(i_op.planeDataConfig),
+		v_prev(i_op.planeDataConfig)
 {
 }
 

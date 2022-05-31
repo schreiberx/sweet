@@ -29,6 +29,7 @@
 
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
 #	include <sweet/sphere/SphereData_Spectral.hpp>
+#	include <sweet/sphere/SphereData_Physical.hpp>
 #endif
 
 #ifndef SWEET_PARAREAL

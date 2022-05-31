@@ -12,8 +12,8 @@
 void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 		PlaneData_Spectral &io_u,	///< prognostic variables
 		PlaneData_Spectral &io_v,	///< prognostic variables
-		PlaneData_Spectral &io_u_prev,	///< prognostic variables
-		PlaneData_Spectral &io_v_prev,	///< prognostic variables
+		///PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		///PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -57,7 +57,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 
 	phi.loadPlaneDataPhysical(phi_phys);
 
-	ts_l_direct.run_timestep(phi, io_v, io_u, io_v, i_fixed_dt, i_simulation_timestamp);
+	ts_l_direct.run_timestep(phi, io_v, /*io_u, io_v,*/ i_fixed_dt, i_simulation_timestamp);
 
 	phi_phys = phi.toPhys();
 

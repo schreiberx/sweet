@@ -39,6 +39,10 @@
 #include <sweet/SimulationBenchmarkTiming.hpp>
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
+#if SWEET_PARAREAL
+	#include <parareal/Parareal.hpp>
+#endif
+
 
 SimulationVariables simVars;
 
@@ -68,6 +72,11 @@ public:
 	SphereOperators_SphereData op_nodealiasing;
 
 	SWE_Sphere_TimeSteppers timeSteppers;
+
+#if SWEET_PARAREAL
+	// Implementation of different time steppers
+	SWE_Sphere_TimeSteppers timeSteppersCoarse;
+#endif
 
 
 	// Diagnostics measures
@@ -112,11 +121,15 @@ public:
 				simVars,
 				simVars.misc.verbosity
 		)
+
 	{
 #if SWEET_MPI
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 #endif
+
+
 		reset();
+
 	}
 
 
@@ -184,7 +197,11 @@ public:
 		/*
 		 * SETUP time steppers
 		 */
-		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
+		timeSteppers.setup(simVars.disc.timestepping_method,
+#if SWEET_PARAREAL
+		simVars.disc.timestepping_order, simVars.disc.timestepping_order2, // orders (this function is not called with parareal activated //TODO: clean this
+#endif
+				op, simVars);
 
 		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;
 
@@ -206,6 +223,8 @@ public:
 		{
 			simVars.outputConfig();
 		}
+
+		timestep_do_output();
 
 		stopwatch.start();
 	}
@@ -484,7 +503,7 @@ public:
 			}
 		}
 
-		write_file_output();
+			write_file_output();
 
 		update_diagnostics();
 
@@ -948,12 +967,14 @@ public:
 		}
 	}
 #endif
-};
 
+
+};
 
 
 int main_real(int i_argc, char *i_argv[])
 {
+
 	// Time counter
 	SimulationBenchmarkTimings::getInstance().main.start();
 
@@ -990,7 +1011,12 @@ int main_real(int i_argc, char *i_argv[])
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	{
+#if SWEET_PARAREAL
+		simVars.parareal.printOptions();
+#endif
 		return -1;
+	}
 
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
@@ -1043,6 +1069,42 @@ int main_real(int i_argc, char *i_argv[])
 			std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
 		}
 
+#if SWEET_PARAREAL
+		if (simVars.parareal.enabled)
+		{
+
+			simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
+
+			//SphereOperators op(sphereDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
+			SphereOperators_SphereData op_nodealiasing(sphereDataConfig_nodealiasing, &(simVars.sim));
+
+			SWE_Sphere_TimeSteppers* timeSteppersFine = new SWE_Sphere_TimeSteppers;
+			SWE_Sphere_TimeSteppers* timeSteppersCoarse = new SWE_Sphere_TimeSteppers;
+
+			/*
+			 * Allocate parareal controller and provide class
+			 * which implement the parareal features
+			 */
+			Parareal_Controller<SWE_Sphere_TimeSteppers, 3> parareal_Controller(&simVars,
+												sphereDataConfig,
+												op,
+												op_nodealiasing,
+												timeSteppersFine,
+												timeSteppersCoarse);
+
+			// setup controller. This initializes several simulation instances
+			parareal_Controller.setup();
+
+			// execute the simulation
+			parareal_Controller.run();
+
+			delete timeSteppersFine;
+			delete timeSteppersCoarse;
+		}
+		else
+#endif
+
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
 		{
@@ -1063,7 +1125,6 @@ int main_real(int i_argc, char *i_argv[])
 			{
 				// Do first output before starting timer
 				simulationSWE->timestep_check_output();
-
 #if SWEET_MPI
 				// Start counting time
 				if (mpi_rank == 0)

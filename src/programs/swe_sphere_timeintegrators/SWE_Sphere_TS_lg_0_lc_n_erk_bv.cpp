@@ -124,7 +124,7 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::setup(
 void SWE_Sphere_TS_lg_0_lc_n_erk_bv::setup_auto()
 {
 	setup(
-		simVars.disc.timestepping_order
+		timestepping_order
 		);
 }
 

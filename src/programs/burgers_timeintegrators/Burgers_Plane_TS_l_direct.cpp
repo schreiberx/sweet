@@ -26,8 +26,8 @@ void Burgers_Plane_TS_l_direct:: setup()
 void Burgers_Plane_TS_l_direct::run_timestep(
 		PlaneData_Spectral &io_u,	///< prognostic variables
 		PlaneData_Spectral &io_v,	///< prognostic variables
-		PlaneData_Spectral &io_prev_u,	///< prognostic variables
-		PlaneData_Spectral &io_prev_v,	///< prognostic variables
+		///PlaneData_Spectral &io_prev_u,	///< prognostic variables
+		///PlaneData_Spectral &io_prev_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp

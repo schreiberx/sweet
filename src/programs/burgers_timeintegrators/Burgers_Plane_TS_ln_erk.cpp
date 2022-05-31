@@ -56,8 +56,8 @@ void Burgers_Plane_TS_ln_erk::euler_timestep_update(
 void Burgers_Plane_TS_ln_erk::run_timestep(
 		PlaneData_Spectral &io_u,	///< prognostic variables
 		PlaneData_Spectral &io_v,	///< prognostic variables
-		PlaneData_Spectral &io_u_prev,	///< prognostic variables
-		PlaneData_Spectral &io_v_prev,	///< prognostic variables
+		///PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		///PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp

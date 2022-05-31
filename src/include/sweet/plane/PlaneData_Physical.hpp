@@ -29,6 +29,7 @@
 #include <functional>
 #include <utility>
 #include <cmath>
+#include <iterator>
 
 
 #include <sweet/MemBlockAlloc.hpp>
@@ -912,6 +913,23 @@ public:
 	}
 
 	/**
+	 * return the sum of the absolute values
+	 */
+	double physical_reduce_norm1()	const
+	{
+		double sum = 0;
+#if SWEET_THREADING_SPACE
+#pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
+#endif
+		for (std::size_t i = 0; i < planeDataConfig->physical_array_data_number_of_elements; i++)
+			sum += std::abs(physical_space_data[i]);
+
+
+		return sum;
+	}
+
+
+	/**
 	 * return the sqrt of the sum of the squared values
 	 */
 	double physical_reduce_norm2()	const
@@ -1532,6 +1550,121 @@ public:
 		return true;
 	}
 
+
+#if SWEET_PARAREAL
+	/**
+	 * Load data from ASCII file.
+	 *
+	 * Read csv files from reference data in parareal, in order to compute parareal erros online
+	 * instead of producing csv files during the parareal simulation.
+	 *
+	 * \return true if data was successfully read
+	 */
+	bool file_physical_loadRefData_Parareal(
+			const char *i_filename,		///< Name of file to load data from
+			bool i_binary_data = false	///< load as binary data (disabled per default)
+	)
+	{
+
+		PlaneDataConfig planeDataConfig_ref;
+
+		std::cout << "loading DATA from " << i_filename << std::endl;
+
+		std::ifstream file(i_filename);
+
+
+		int resx_ref = -1;
+		int resy_ref = -1;
+		for (int i = 0; i < 6; i++)
+		{
+			std::string line;
+			std::getline(file, line);
+			std::istringstream iss(line);
+			std::vector<std::string> str_vector((std::istream_iterator<std::string>(iss)),
+				std::istream_iterator<std::string>());
+
+			if (i == 0)
+			{
+				assert(str_vector.size() == 1);
+				assert(str_vector[0] == "#SWEET");
+			}
+			else if (i == 1)
+			{
+				assert(str_vector.size() == 2);
+				assert(str_vector[0] == "#FORMAT");
+				assert(str_vector[1] == "ASCII");
+			}
+			else if (i == 2)
+			{
+				assert(str_vector.size() == 2);
+				assert(str_vector[0] == "#PRIMITIVE");
+				assert(str_vector[1] == "PLANE");
+			}
+			else if (i == 3)
+			{
+				assert(str_vector.size() == 2);
+				assert(str_vector[0] == "#SPACE");
+				assert(str_vector[1] == "PHYSICAL");
+			}
+			else if (i == 4)
+			{
+				assert(str_vector.size() == 2);
+				assert(str_vector[0] == "#RESX");
+				resx_ref = stoi(str_vector[1]);
+			}
+			else if (i == 5)
+			{
+				assert(str_vector.size() == 2);
+				assert(str_vector[0] == "#RESY");
+				resy_ref = stoi(str_vector[1]);
+			}
+		}
+
+		std::cout << "RESXY " << resx_ref << " " << resy_ref << std::endl;
+
+		planeDataConfig_ref.setup(resx_ref, resy_ref, (int)((resx_ref * 2) / 3), (int)((resx_ref * 2) / 3), planeDataConfig->reuse_spectral_transformation_plans);
+		*this = PlaneData_Physical(&planeDataConfig_ref);
+
+		for (std::size_t row = 0; row < planeDataConfig_ref.physical_res[1]; row++)
+		{
+			std::string line;
+			std::getline(file, line);
+			if (!file.good())
+			{
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << std::endl;
+				return false;
+			}
+
+			std::size_t last_pos = 0;
+			std::size_t col = 0;
+			for (std::size_t pos = 0; pos < line.size()+1; pos++)
+			{
+				if (pos < line.size())
+					if (line[pos] != '\t' && line[pos] != ' ')
+						continue;
+
+				std::string strvalue = line.substr(last_pos, pos-last_pos);
+
+				double i_value = atof(strvalue.c_str());
+
+				physical_set_value(planeDataConfig_ref.physical_res[1]-row-1, col, i_value);
+
+				col++;
+				last_pos = pos+1;
+			}
+
+			if (col < planeDataConfig_ref.physical_res[0])
+			{
+				std::cerr << "Failed to read data from file " << i_filename << " in line " << row << ", column " << col << std::endl;
+				return false;
+			}
+		}
+
+		std::cout << "DATA loaded OK" << std::endl;
+
+		return true;
+	}
+#endif
 
 
 	void file_write_raw(

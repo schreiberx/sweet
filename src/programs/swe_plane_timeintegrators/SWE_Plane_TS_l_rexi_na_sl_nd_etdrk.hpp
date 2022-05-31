@@ -92,6 +92,21 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+#if SWEET_PARAREAL && SWEET_PARAREAL_PLANE
+	void set_previous_solution(
+				PlaneData_Spectral &i_h_prev,
+				PlaneData_Spectral &i_u_prev,
+				PlaneData_Spectral &i_v_prev
+	) override
+	{
+		if (simVars.misc.verbosity > 5)
+			std::cout << "set_previous_solution()" << std::endl;
+		h_prev = i_h_prev;
+		u_prev = i_u_prev;
+		v_prev = i_v_prev;
+	}
+#endif
+
 
 	virtual ~SWE_Plane_TS_l_rexi_na_sl_nd_etdrk();
 };
