@@ -1081,8 +1081,10 @@ int main(int i_argc, char *i_argv[])
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+	#if SWEET_PARAREAL != 2
 	// only start simulation and time stepping for first rank
 	if (mpi_rank == 0)
+	#endif
 #endif
 	{
 #if SWEET_MPI
@@ -1245,7 +1247,9 @@ int main(int i_argc, char *i_argv[])
 		}
 	}
 #if SWEET_MPI
+	#if SWEET_PARAREAL !=2
 	else	// mpi_rank != 0
+	#endif
 	{
 
 		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)

@@ -17,6 +17,11 @@ from glob import glob
 from mule_local.JobGeneration import *
 from mule_local.SWEETRuntimeParametersScenarios import *
 
+from mule_local.JobMule import *
+from mule.exec_program import *
+from mule.InfoError import *
+
+
 
 tsm_ref = "ln_erk";
 tsm_fine = sys.argv[1];
@@ -58,6 +63,8 @@ earth = EarthMKSDimensions()
 #Basic plane options
 jg = CompileSWEPlane(jg)
 jg.compile.mode = "debug"
+jg.compile.sweet_mpi = "enable"
+
 
 # Verbosity mode
 jg.runtime.verbosity = 3
@@ -96,8 +103,10 @@ jg.runtime.viscosity = 0.0
 #
 # Time, Mode and Physical resolution
 #
-jg.runtime.max_simulation_time = 500.
-jg.runtime.output_timestep_size = 25.
+######jg.runtime.max_simulation_time = 500.
+######jg.runtime.output_timestep_size = 25.
+jg.runtime.max_simulation_time = 50.
+jg.runtime.output_timestep_size = 5.
 
 timestep_size_reference = 2.5
 timestep_size_fine = 5.
@@ -107,10 +116,12 @@ jg.runtime.timestepping_method = tsm_fine
 jg.runtime.timestepping_order = orders[tsm_fine]
 jg.runtime.timestepping_order2 = orders[tsm_fine]
 jg.runtime.space_res_physical = -1
-jg.runtime.space_res_spectral = 32
+##jg.runtime.space_res_spectral = 32
+jg.runtime.space_res_spectral = 2
 
 ## Parareal parameters
-jg.compile.parareal = "serial";
+###jg.compile.parareal = "serial";
+jg.compile.parareal = "mpi";
 jg.runtime.parareal_enabled = 1
 jg.runtime.parareal_convergence_threshold = -1
 jg.runtime.parareal_verbosity = 6
@@ -118,10 +129,11 @@ jg.runtime.parareal_max_simulation_time = jg.runtime.max_simulation_time;
 jg.runtime.parareal_coarse_timestepping_order = orders[tsm_coarse];
 jg.runtime.parareal_coarse_timestepping_order2 = orders[tsm_coarse]
 
-parareal_coarse_slices = [5, 10];
-parareal_coarse_timesteps = [25, 50, -1]
-##parareal_coarse_slices = [4, 6];
-##parareal_coarse_timesteps = [15.,  30., -1]
+###parareal_coarse_slices = [5, 10];
+parareal_coarse_slices = [2];
+parareal_coarse_timesteps = [25]
+#####parareal_coarse_slices = [5, 10];
+#####parareal_coarse_timesteps = [25, 50, -1]
 jg.runtime.parareal_coarse_timestepping_method = tsm_coarse;
 
 if simulation_to_run == "parareal":

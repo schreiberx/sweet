@@ -272,6 +272,8 @@ public:
 			return out;
 		}
 #endif
+
+		// default time set
 	}
 
 
@@ -557,6 +559,19 @@ public:
 		*parareal_data_fine_previous_time_slice = i_pararealData;
 	};
 
+#if SWEET_PARAREAL == 2
+	void sim_set_data_coarse(
+			Parareal_GenericData &i_pararealData
+	){
+		if (simVars->parareal.verbosity > 2)
+			std::cout << "sim_set_data_coarse()" << std::endl;
+
+		// copy to buffers
+		*parareal_data_coarse = i_pararealData;
+	};
+
+#endif
+
 #if SWEET_DEBUG
 	/**
 	* Store exact solution (full fine simulation) at the end of the time slice
@@ -743,9 +758,9 @@ public:
 	};
 
 	/**
-	 * return the penult solution after the coarse propagation:
+	 * return the difference between fine and coarse solution:
 	 */
-	Parareal_GenericData& get_reference_to_data_timestep_difference()
+	Parareal_GenericData& get_reference_to_data_timestep_diff()
 	{
 		return *(this->parareal_data_error);
 	};

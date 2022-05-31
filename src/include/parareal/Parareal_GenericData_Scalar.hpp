@@ -126,7 +126,8 @@ public:
 		this->data = i_data;
 	}
 
-#if SWEET_MPI
+/////#if SWEET_MPI
+#if SWEET_PARAREAL==2
 	// size in bytes (for MPI)
 	// size of each simfield of data
 	std::size_t size()
@@ -136,10 +137,14 @@ public:
 
 	void serialize(void *data)
 	{
+		for (int i = 0; i < N; i++)
+			std::memcpy(data + i * N, &this->data->simfields[i], N);
 	};
 
 	void deserialize(void *data)
 	{
+		for (int i = 0; i < N; i++)
+			std::memcpy(&this->data->simfields[i], data + i * N, N);
 	};
 #endif
 

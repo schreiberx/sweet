@@ -31,6 +31,9 @@
 	#error "No geometry has been defined for parareal"
 #endif
 
+#if SWEET_PARAREAL==2
+#include <mpi.h>
+#endif
 
 #include <parareal/Parareal_ConsolePrefix.hpp>
 #include <parareal/Parareal_SimulationInstance_GenericData.hpp>
@@ -109,6 +112,7 @@ class Parareal_Controller_Serial_GenericData
 	std::vector<int> slices_for_proc = {};
 	std::vector<int> proc_for_slices = {};
 	std::map<int, int> global_to_local_slice;
+	int buffer_size;
 
 
 
@@ -117,16 +121,12 @@ public:
 #if SWEET_PARAREAL==2
 
 	// every communication is made between mpi_proc = 0 and mpi_proc > 0
-	void communicate_solution( Parareal_GenericData* io_data, int source_rank, int dest_rank)
+	void communicate_solution( Parareal_GenericData* io_data, int source_rank, int dest_rank, int tag)
 	{
 
 		bool send = false;
 		bool recv = false;
 
-		////if (end_timeslice == slices_per_proc.back())
-		////	send = true;
-		////else if (end_timeslice == slices_per_proc[0] - 1)
-		////	recv = true;
 		if (mpi_rank == source_rank)
 			send = true;
 		else if (mpi_rank == dest_rank)
@@ -134,71 +134,48 @@ public:
 		else
 			return;
 
+
 	#if SWEET_PARAREAL_SCALAR
-		double u;
-	#elif SWEET_PARAREAL_PLANE_SWE
-		PlaneData_Spectral h(planeDataConfig);
-		PlaneData_Spectral u(planeDataConfig);
-		PlaneData_Spectral v(planeDataConfig);
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-		PlaneData_Spectral u(planeDataConfig);
-		PlaneData_Spectral v(planeDataConfig);
+		double* serial_data = MemBlockAlloc::alloc<double>(N * sizeof(double));
+	#elif SWEET_PARAREAL_PLANE
+		std::complex<double>* serial_data = MemBlockAlloc::alloc<std::complex<double>>(N * planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
 	#elif SWEET_PARAREAL_SPHERE
-		SphereData_Spectral phi(sphereDataConfig);
-		SphereData_Spectral vrt(sphereDataConfig);
-		SphereData_Spectral div(sphereDataConfig);
+		std::complex<double>* serial_data = MemBlockAlloc::alloc<std::complex<double>>(N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
 	#endif
 
-		int size = io_data.size();
-		int tag = 1000 * end_timeslice;
+
+		int size = io_data->size();
+		///int size = this->buffer_size;
+		tag = tag + 1000 * source_rank + 100 * dest_rank;
 
 		if (send)
 		{
 
-	#if SWEET_PARAREAL_SCALAR
-			parareal_simulationInstances[0]->GenericData_Scalar_to_dataArrays(io_data, u);
-			MPI_Send(u, size, MPI_DOUBLE, dest_rank, tag + 0, MPI_COMM_WORLD);
-	#elif SWEET_PARAREAL_PLANE_SWE
-			parareal_simulationInstances[0]->GenericData_PlaneData_Spectral_to_dataArrays(io_data, h, u, v);
-			MPI_Send(h.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 0, MPI_COMM_WORLD);
-			MPI_Send(u.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 1, MPI_COMM_WORLD);
-			MPI_Send(v.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 2, MPI_COMM_WORLD);
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-			parareal_simulationInstances[0]->GenericData_PlaneData_Spectral_to_dataArrays(io_data, u, v);
-			MPI_Send(u.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 0, MPI_COMM_WORLD);
-			MPI_Send(v.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 1, MPI_COMM_WORLD);
-	#elif SWEET_PARAREAL_SPHERE
-			parareal_simulationInstances[0]->GenericData_SphereData_Spectral_to_dataArrays(io_data, phi, vrt, div);
-			MPI_Send(phi.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 0, MPI_COMM_WORLD);
-			MPI_Send(vrt.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 1, MPI_COMM_WORLD);
-			MPI_Send(div.spectral_space_data, size, MPI_DOUBLE, dest_rank, tag + 2, MPI_COMM_WORLD);
-	#endif
+			std::cout << "Proc " << mpi_rank << " is sending solution to proc " << dest_rank << " with tag " << tag << std::endl;
+
+			io_data->serialize(serial_data);
+			MPI_Send(serial_data, size, MPI_DOUBLE_COMPLEX, dest_rank, tag + 0, MPI_COMM_WORLD);
 
 		}
 		else if (recv)
 		{
 
-	#if SWEET_PARAREAL_SCALAR
-			MPI_Recv(u, size, MPI_DOUBLE, source_rank, tag + 0, MPI_COMM_WORLD);
-			parareal_simulationInstances[0]->GenericData_Scalar_to_dataArrays(io_data, u);
-	#elif SWEET_PARAREAL_PLANE_SWE
-			MPI_Recv(h.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 0, MPI_COMM_WORLD);
-			MPI_Recv(u.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 1, MPI_COMM_WORLD);
-			MPI_Recv(v.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 2, MPI_COMM_WORLD);
-			parareal_simulationInstances[0]->data_arrays_to_GenericData_PlaneData_Spectral(io_data, h, u, v);
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-			MPI_Recv(u.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 0, MPI_COMM_WORLD);
-			MPI_Recv(v.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 1, MPI_COMM_WORLD);
-			parareal_simulationInstances[0]->dataArrays_to_GenericData_PlaneData_Spectral(io_data, u, v);
-	#elif SWEET_PARAREAL_SPHERE
-			MPI_Recv(phi.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 0, MPI_COMM_WORLD);
-			MPI_Recv(vrt.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 1, MPI_COMM_WORLD);
-			MPI_Recv(div.spectral_space_data, size, MPI_DOUBLE, source_rank, tag + 2, MPI_COMM_WORLD);
-			parareal_simulationInstances[0]->dataArrays_to_GenericData_SphereData_Spectral(io_data, phi, vrt, div);
-	#endif
+			std::cout << "Proc " << mpi_rank << " is receiving solution from proc " << source_rank << " with tag " << tag << std::endl;
 
+			MPI_Status status;
+			MPI_Recv(serial_data, size, MPI_DOUBLE_COMPLEX, source_rank, tag + 0, MPI_COMM_WORLD, &status);
+			io_data->deserialize(serial_data);
 
 		}
+
+	#if SWEET_PARAREAL_SCALAR
+		MemBlockAlloc::free(serial_data, N * sizeof(double));
+	#elif SWEET_PARAREAL_PLANE
+		MemBlockAlloc::free(serial_data, N * planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+	#elif SWEET_PARAREAL_SPHERE
+		MemBlockAlloc::free(serial_data, N * sphereDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+	#endif
+
 
 	}
 
@@ -308,38 +285,33 @@ public:
 		MPI_Comm_size(MPI_COMM_WORLD, &mpi_nprocs);
 #endif
 
+		pVars = &this->simVars->parareal;
 
-		if (mpi_rank == 0)
+		if (!pVars->enabled)
+			return;
+
+		if (pVars->coarse_slices <= 0)
 		{
-			pVars = &this->simVars->parareal;
-
-			if (!pVars->enabled)
-				return;
-
-			if (pVars->coarse_slices <= 0)
-			{
-				std::cerr << "Invalid number of coarse slices" << std::endl;
-				exit(1);
-			}
-
-			if (pVars->coarse_slices % mpi_nprocs != 0)
-			{
-				SWEETError("Number of coarse slices must be a multiple integer of the number of MPI processes");
-			}
-
-			if (pVars->max_simulation_time <= 0)
-			{
-				std::cerr << "Invalid simulation time" << std::endl;
-				exit(1);
-			}
-
-			// allocate raw simulation instances
-			////simulationInstances = new t_SimulationInstance[pVars->coarse_slices];
-
-			CONSOLEPREFIX.start("[MAIN] ");
-			std::cout << "Resetting simulation instances" << std::endl;
-
+			std::cerr << "Invalid number of coarse slices" << std::endl;
+			exit(1);
 		}
+
+		if (pVars->coarse_slices % mpi_nprocs != 0)
+		{
+			SWEETError("Number of coarse slices must be a multiple integer of the number of MPI processes");
+		}
+
+		if (pVars->max_simulation_time <= 0)
+		{
+			std::cerr << "Invalid simulation time" << std::endl;
+			exit(1);
+		}
+
+		// allocate raw simulation instances
+		////simulationInstances = new t_SimulationInstance[pVars->coarse_slices];
+
+		CONSOLEPREFIX.start("[MAIN] ");
+		std::cout << "Resetting simulation instances" << std::endl;
 
 
 		// Distribute slices for each MPI proc
@@ -362,8 +334,6 @@ public:
 			for (int k = 0; k < pVars->coarse_slices; k++)
 				if (k < mpi_rank * slices_per_proc || k >= (mpi_rank + 1) * slices_per_proc)
 					global_to_local_slice.emplace(std::make_pair(k, -1)); // slice k is not treated by proc mpi_rank
-
-
 
 		//// Distribute MPI proc for each slice
 		proc_for_slices = std::vector<int>(pVars->coarse_slices);
@@ -390,6 +360,7 @@ public:
 
 			int local_k = global_to_local_slice.at(k);
 			parareal_simulationInstances.push_back(new Parareal_SimulationInstance_GenericData<t_tsmType, N>);
+			std::cout << "mpi_rank " << mpi_rank << " setting up instance " << k << " " << local_k << std::endl;
 #if SWEET_PARAREAL_SCALAR
 				parareal_simulationInstances[local_k]->setup(this->simVars,
 								       this->timeSteppersFine,
@@ -414,11 +385,8 @@ public:
 		}
 
 
-		if (mpi_rank == 0)
-		{
-			CONSOLEPREFIX_start("[MAIN] ");
-			std::cout << "Setup time frames" << std::endl;
-		}
+		CONSOLEPREFIX_start("[MAIN] ");
+		std::cout << "Setup time frames" << std::endl;
 
 		/*
 		 * SETUP time frame
@@ -458,12 +426,25 @@ public:
 			std::cout << "Finished setup parareal" << std::endl;
 			CONSOLEPREFIX_end();
 		}
+
+#if SWEET_PARAREAL == 2
+		if (mpi_rank == 0)
+			this->buffer_size = parareal_simulationInstances[0]->parareal_data_start->size();
+		MPI_Bcast(&this->buffer_size, 1, MPI_INT, 0, MPI_COMM_WORLD );
+#endif
+
+
+		MPI_Barrier(MPI_COMM_WORLD);
+
 	}
 
 
 
 	void run()
 	{
+
+		std::cout << "Starting run() with mpi_rank " << mpi_rank << std::endl;
+
 
 #if SWEET_DEBUG
 		// DEBUG: full fine simulation
@@ -494,6 +475,8 @@ public:
 
 		}
 #endif
+
+		MPI_Barrier(MPI_COMM_WORLD);
 
 
 		if (mpi_rank == 0)
@@ -560,6 +543,8 @@ public:
 							"fine");
 		}
 
+		MPI_Barrier(MPI_COMM_WORLD);
+
 		/**
 		 * We run as much Parareal iterations as there are coarse slices
 		 */
@@ -581,10 +566,83 @@ public:
 			 */
 
 
+#if SWEET_PARAREAL == 2
+			// Communicate coarse solution from proc 0 to proc mpi_rank
+			for (int i = k; i < pVars->coarse_slices; i++)
+			{
+				int working_rank = proc_for_slices[i];
+				int local_slice = global_to_local_slice.at(i);
+
+				///Parareal_GenericData* tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_coarse();
+				Parareal_GenericData* tmp2;
+				// no need of communication
+				if (working_rank == 0 && mpi_rank == 0)
+					continue;
+				else if (working_rank == mpi_rank) // recv
+				{
+					///tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					tmp2 = &parareal_simulationInstances[0]->get_reference_to_data_timestep_coarse();
+					this->communicate_solution(tmp2, 0, mpi_rank, 10000);
+					parareal_simulationInstances[local_slice]->sim_set_data_coarse(*tmp2);
+					////delete tmp2;
+				}
+				else if (mpi_rank == 0) // send
+				{
+					tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_output_data();
+					this->communicate_solution(tmp2, 0, working_rank, 10000);
+				}
+
+			}
+#endif
+
+			// SL: send previous timestep for next slice
+			for (int i = k; i < pVars->coarse_slices; i++)
+			{
+				// no previous timestep
+				if (i == 0)
+					continue;
+
+				// identify proc responsible for this time slice
+				int working_rank = proc_for_slices[i];
+				int local_slice = global_to_local_slice.at(i);
+
+				// dummy init
+				///Parareal_GenericData* tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_fine_previous_timestep();
+				//Parareal_GenericData* tmp2 = parareal_simulationInstances[0]->create_new_data_container();
+				Parareal_GenericData* tmp2;
+
+				// there is a previous timestep in this same proc
+				if (local_slice > 0 && working_rank == mpi_rank )
+				{
+					tmp2 = &parareal_simulationInstances[global_to_local_slice.at(i - 1)]->get_reference_to_data_timestep_fine_previous_timestep();
+					parareal_simulationInstances[local_slice]->sim_set_data_fine_previous_time_slice(*tmp2);
+				}
+
+#if SWEET_PARAREAL == 2
+				else if (local_slice == 0 || mpi_rank == 0) // communicate
+				{
+					if (local_slice == 0) // recv
+					{
+						tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_fine_previous_timestep();
+						///tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+						this->communicate_solution(tmp2, 0, mpi_rank, 20000);
+						parareal_simulationInstances[local_slice]->sim_set_data_fine_previous_time_slice(*tmp2);
+						////delete tmp2;
+					}
+					else // send
+					{
+						tmp2 = &parareal_simulationInstances[global_to_local_slice.at(i - 1)]->get_reference_to_data_timestep_fine_previous_timestep();
+						this->communicate_solution(tmp2, 0, working_rank, 20000);
+					}
+				}
+#endif
+			}
+
+
+
 			/**
 			 * Fine time stepping (in parallel)
 			 */
-			//for (int i = k; i < pVars->coarse_slices; i++)
 			for (int i = slices_for_proc[0]; i <= slices_for_proc.back(); i++)
 			{
 
@@ -592,61 +650,59 @@ public:
 				if (i < k)
 					continue;
 
+				// identify proc responsible for this time slice
 				int working_rank = proc_for_slices[i];
 				int local_slice = global_to_local_slice.at(i);
 
 				if (mpi_rank == working_rank)
-					CONSOLEPREFIX_start(i);
-
-				if (mpi_rank == working_rank || mpi_rank == 0)
 				{
-
-					// For SL
-					if (i > 0)
-					{
-						int local_prev_slice = global_to_local_slice.at(i-1);
-
-						Parareal_GenericData* tmp2;
-						// data taken from mpi_rank itself
-						if (local_prev_slice >= 0)
-							tmp2 = &parareal_simulationInstances[local_prev_slice]->get_reference_to_data_timestep_fine_previous_timestep();
-							//Parareal_GenericData &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_fine_previous_timestep();
-#if SWEET_PARAREAL==2
-						else
-							this->communicate_solution(&tmp2, 0, mpi_rank);
-#endif
-
-						if (mpi_rank == working_rank)
-							parareal_simulationInstances[local_slice]->sim_set_data_fine_previous_time_slice(*tmp2);
-					}
-
-					if (mpi_rank == working_rank)
-						parareal_simulationInstances[local_slice]->run_timestep_fine();
+					CONSOLEPREFIX_start(i);
+					parareal_simulationInstances[local_slice]->run_timestep_fine();
 				}
 			}
+
+			MPI_Barrier(MPI_COMM_WORLD);
 
 			/**
 			 * Compute difference between coarse and fine solution
 			 */
-			///for (int i = k; i < pVars->coarse_slices; i++)
-			for (int i = slices_for_proc[0]; i <= slices_for_proc.back(); i++)
+			for (int i = k; i < pVars->coarse_slices; i++)
 			{
 				CONSOLEPREFIX_start(i);
-				int local_slice = global_to_local_slice.at(i);
-				parareal_simulationInstances[local_slice]->compute_difference();
-#if SWEET_PARAREAL==2
-				// communicate from each proc to mpi_rank = 0
-				Parareal_GenericData* tmp2;
 				int working_rank = proc_for_slices[i];
-				if (mpi_rank == working_rank || mpi_rank == 0)
+				int local_slice = global_to_local_slice.at(i);
+
+				// continue only if this proc is responsible for this time slice
+				// or if it is proc 0 (it will receive the computed differences)
+				if (local_slice < 0)
+					continue;
+
+				// this proc is responsible for this time slice
+				if (mpi_rank == working_rank)
+					parareal_simulationInstances[local_slice]->compute_difference();
+
+#if SWEET_PARAREAL==2
+				// no need to communicate
+				if (mpi_rank == 0 && working_rank == 0)
+					continue;
+				// communicate from each proc to mpi_rank = 0
+				Parareal_GenericData* tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_diff(); // dummy init
+				if (mpi_rank == working_rank) // send
 				{
-					tmp2 = parareal_simulationInstances[local_slice]->get_reference_to_data_diff();
-					this->communicate_solution(tmp2, mpi_rank, 0);
-					if (mpi_rank == 0)
-						parareal_simulationInstances[local_slice]->sim_set_data_diff(tmp2);
+					///tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_diff();
+					this->communicate_solution(tmp2, mpi_rank, 0, 30000);
+				}
+				else if (mpi_rank == 0) // recv
+				{
+					///tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					*tmp2 = *parareal_simulationInstances[local_slice]->parareal_data_coarse; // dummy init
+					this->communicate_solution(tmp2, working_rank, 0, 30000);
+					parareal_simulationInstances[local_slice]->sim_set_data_diff(*tmp2);
+					///delete tmp2;
 				}
 #endif
 			}
+
 
 			/**
 			 * 1) Coarse time stepping (serial)
@@ -663,8 +719,8 @@ public:
 					if (i > 0)
 					{
 					    // SL:
-					    Parareal_GenericData &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse_previous_timestep();
-					    parareal_simulationInstances[i]->sim_set_data_coarse_previous_time_slice(tmp2);
+						Parareal_GenericData &tmp2 = parareal_simulationInstances[i-1]->get_reference_to_data_timestep_coarse_previous_timestep();
+						parareal_simulationInstances[i]->sim_set_data_coarse_previous_time_slice(tmp2);
 					}
 
 					parareal_simulationInstances[i]->run_timestep_coarse();

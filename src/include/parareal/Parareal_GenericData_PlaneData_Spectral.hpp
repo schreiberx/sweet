@@ -25,6 +25,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 		DataContainer_PlaneData_Spectral(PlaneDataConfig* i_planeDataConfig)
 		{
+			this->nb_fields = N;
 			this->simfields = new PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = new PlaneData_Spectral(i_planeDataConfig);
@@ -34,6 +35,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 				PlaneData_Spectral* i_simfields[N]
 		)
 		{
+			this->nb_fields = N;
 			this->simfields = new PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_simfields[i]);
@@ -41,6 +43,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 		DataContainer_PlaneData_Spectral(DataContainer_PlaneData_Spectral &i_data)
 		{
+			this->nb_fields = N;
 			this->simfields = new PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_data.simfields[i]);
@@ -48,6 +51,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 		DataContainer_PlaneData_Spectral& operator=(const DataContainer_PlaneData_Spectral &i_data)
 		{
+			this->nb_fields = N;
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_data.simfields[i]);
 			return *this;
@@ -137,20 +141,25 @@ public:
 	}
 
 
-#if SWEET_MPI
+////#if SWEET_MPI
+#if SWEET_PARAREAL==2
 	// size in bytes (for MPI)
 	// size of each simfield of data
 	std::size_t size()
 	{
-		return this->get_pointer_to_data_PlaneData_Spectral()->simfields[0]->planeDataConfig->spectral_array_data_number_of_elements;
+		return N * this->data->simfields[0]->planeDataConfig->spectral_array_data_number_of_elements;
 	}
 
 	void serialize(void *data)
 	{
+		for (int i = 0; i < N; i++)
+			std::memcpy(data + i * N, this->data->simfields[i]->spectral_space_data, N);
 	};
 
 	void deserialize(void *data)
 	{
+		for (int i = 0; i < N; i++)
+			std::memcpy(this->data->simfields[i]->spectral_space_data, data + i * N, N);
 	};
 #endif
 

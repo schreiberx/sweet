@@ -240,6 +240,14 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
+
+#if SWEET_MPI
+
+	MPI_Init(&i_argc, &i_argv);
+
+#endif
+
+
 	const char *bogus_var_names[] = {
 		"parareal-fine-dt",
 		"parareal-function-param-y0",

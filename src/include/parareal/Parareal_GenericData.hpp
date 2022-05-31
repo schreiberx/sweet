@@ -145,7 +145,8 @@ public:
 	
 	virtual void free_data() = 0;
 
-#if SWEET_MPI
+///#if SWEET_MPI
+#if SWEET_PARAREAL==2
 	virtual std::size_t size() = 0;
 	virtual void serialize(void *data) = 0;
 	virtual void deserialize(void *data) = 0;

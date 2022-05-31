@@ -30,7 +30,14 @@ template <class T> class PararealDataInherited	: public T {};
 
 #elif SWEET_PARAREAL==2
 
-#	error "Parareal with MPI not yet supported"
+	#if !SWEET_MPI
+		#error "SWEET_MPI must be activated to use SWEET_PARAREAL=2"
+	#endif
+
+#	include <parareal/Parareal_SimulationInstance_GenericData.hpp>
+#	include <parareal/Parareal_Controller_Serial_GenericData.hpp>
+#	include <parareal/Parareal_GenericData.hpp>
+/////////#	error "Parareal with MPI not yet supported"
 
 #endif
 
