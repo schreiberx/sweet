@@ -83,13 +83,23 @@ class JobCompileOptions(InfoError):
         self.program = ''
         self.unit_test = ''
 
-        # PinT
+        # Parareal
         self.parareal = 'none'
         self.parareal_scalar = 'disable'
         self.parareal_plane = 'disable'
         self.parareal_sphere = 'disable'
         self.parareal_plane_swe = 'disable'
         self.parareal_plane_burgers = 'disable'
+
+        # XBraid
+        self.xbraid = 'none'
+        self.xbraid_scalar = 'disable'
+        self.xbraid_plane = 'disable'
+        self.xbraid_sphere = 'disable'
+        self.xbraid_plane_swe = 'disable'
+        self.xbraid_plane_burgers = 'disable'
+
+        #LibPFASST
         self.libpfasst = 'disable'
 
         # Eigen library
@@ -163,13 +173,24 @@ class JobCompileOptions(InfoError):
         if self.unit_test != '':
             retval += ' --unit-test='+self.unit_test
 
-        # PinT
+        # Parareal
         retval += ' --parareal='+self.parareal
         retval += ' --parareal-scalar='+self.parareal_scalar
         retval += ' --parareal-plane='+self.parareal_plane
         retval += ' --parareal-sphere='+self.parareal_sphere
         retval += ' --parareal-plane-swe='+self.parareal_plane_swe
         retval += ' --parareal-plane-burgers='+self.parareal_plane_burgers
+
+        # XBraid
+        retval += ' --xbraid='+self.xbraid
+        retval += ' --xbraid-scalar='+self.xbraid_scalar
+        retval += ' --xbraid-plane='+self.xbraid_plane
+        retval += ' --xbraid-sphere='+self.xbraid_sphere
+        retval += ' --xbraid-plane-swe='+self.xbraid_plane_swe
+        retval += ' --xbraid-plane-burgers='+self.xbraid_plane_burgers
+
+
+        # LibPFASST
         retval += ' --libpfasst='+self.libpfasst
 
         retval += ' --eigen='+self.eigen
@@ -554,6 +575,61 @@ class JobCompileOptions(InfoError):
         )
         self.parareal_plane_burgers = scons.GetOption('parareal_plane_burgers')
 
+        scons.AddOption(    '--xbraid',
+                dest='xbraid',
+                type='choice',
+                choices=['none', 'mpi'],
+                default='none',
+                help='Enable XBBraid (none,  mpi) [default: %default]\nOnly works, if XBraid is supported by the simulation'
+        )
+        self.xbraid = scons.GetOption('xbraid')
+
+        scons.AddOption(    '--xbraid-scalar',
+                dest='xbraid_scalar',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable XBraid for scalar problems (enable, disable) [default: %default]'
+        )
+        self.xbraid_scalar = scons.GetOption('xbraid_scalar')
+
+        scons.AddOption(    '--xbraid-plane',
+                dest='xbraid_plane',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable XBraid on the plane (enable, disable) [default: %default]'
+        )
+        self.xbraid_plane = scons.GetOption('xbraid_plane')
+
+        scons.AddOption(    '--xbraid-sphere',
+                dest='xbraid_sphere',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable XBraid on the sphere (enable, disable) [default: %default]'
+        )
+        self.xbraid_sphere = scons.GetOption('xbraid_sphere')
+
+        scons.AddOption(    '--xbraid-plane-swe',
+                dest='xbraid_plane_swe',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable XBraid for SWE on the plane (enable, disable) [default: %default]'
+        )
+        self.xbraid_plane_swe = scons.GetOption('xbraid_plane_swe')
+
+        scons.AddOption(    '--xbraid-plane-burgers',
+                dest='xbraid_plane_burgers',
+                type='choice',
+                choices=['enable', 'disable'],
+                default='0',
+                help='Enable XBraid for Burgers on the plane (enable, disable) [default: %default]'
+        )
+        self.xbraid_plane_burgers = scons.GetOption('xbraid_plane_burgers')
+
+
 
         files = os.listdir('src/programs/')
         files = sorted(files)
@@ -583,6 +659,18 @@ class JobCompileOptions(InfoError):
                     self.parareal_plane_burgers = 'enable';
             elif self.program == 'swe_sphere':
                 self.parareal_sphere = 'enable';
+
+        if not self.xbraid == 'none':
+            if self.program == "parareal_ode":
+                self.xbraid_scalar = 'enable';
+            elif self.program == 'swe_plane' or self.program == 'burgers':
+                self.xbraid_plane = 'enable';
+                if self.program == 'swe_plane':
+                    self.xbraid_plane_swe = 'enable';
+                elif self.program == 'burgers':
+                    self.xbraid_plane_burgers = 'enable';
+            elif self.program == 'swe_sphere':
+                self.xbraid_sphere = 'enable';
 
 
         scons.AddOption(      '--program-binary-name',

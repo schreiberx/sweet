@@ -1612,7 +1612,7 @@ public:
 
 #if SWEET_XBRAID
 					{
-						int retval = xbraid.setup_longOptionValue(i-libpfasst_start_option_index, optarg);
+						int retval = xbraid.setup_longOptionValue(i-xbraid_start_option_index, optarg);
 						if (retval == -1)
 							continue;
 						c += retval;

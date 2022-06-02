@@ -79,7 +79,7 @@ public:
 public:
 	// different interface functions to avoid template in Parareal_GenericData
 	// these interfaces are overridden in the respective child classes
-#if SWEET_PARAREAL_SCALAR
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 	virtual DataContainer<double>* get_pointer_to_data_Scalar() const
 	{
 		SWEETError("This interface function should not be called");
@@ -87,7 +87,7 @@ public:
 		return dummy;
 	};
 
-#elif SWEET_PARAREAL_PLANE
+#elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	virtual DataContainer<PlaneData_Spectral*>* get_pointer_to_data_PlaneData_Spectral() const
 	{
 		SWEETError("This interface function should not be called");
@@ -95,7 +95,7 @@ public:
 		return dummy;
 	};
 
-#elif SWEET_PARAREAL_SPHERE
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 	virtual DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const
 	{
 		SWEETError("This interface function should not be called");
@@ -160,6 +160,8 @@ public:
 #endif
 
 	virtual double reduce_maxAbs()=0;
+	virtual double reduce_norm1()=0;
+	virtual double reduce_norm2()=0;
 
 	virtual bool check_for_nan()=0;
 
@@ -168,6 +170,8 @@ public:
 
 ////	virtual Parareal_GenericData operator-(const Parareal_GenericData &i_data) = 0;
 	virtual Parareal_GenericData& operator-=(const Parareal_GenericData &i_data) = 0;
+
+	virtual Parareal_GenericData& operator*=(const double v) = 0;
 
 	virtual void physical_print() = 0;
 

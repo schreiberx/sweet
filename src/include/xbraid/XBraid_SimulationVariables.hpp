@@ -9,6 +9,11 @@ struct XBraid_SimulationVariables
 {
 
 	/**
+	 * Enable XBraid
+	 */
+	bool xbraid_enabled = false;
+
+	/**
 	 * Max levels for XBraid solver
 	 */
 	int xbraid_max_levels = 15;
@@ -114,6 +119,7 @@ struct XBraid_SimulationVariables
 	{
 		std::cout << std::endl;
 		std::cout << "XBraid:" << std::endl;
+		std::cout << " + xbraid_enabled: "              << xbraid_enabled            << std::endl;
 		std::cout << " + xbraid_max_levels: "           << xbraid_max_levels         << std::endl;
 		std::cout << " + xbraid_skip: "                 << xbraid_skip               << std::endl;
 		std::cout << " + xbraid_min_coarse: "           << xbraid_min_coarse         << std::endl;
@@ -126,7 +132,7 @@ struct XBraid_SimulationVariables
 		std::cout << " + xbraid_max_iter: "             << xbraid_max_iter           << std::endl;
 		std::cout << " + xbraid_fmg: "                  << xbraid_fmg                << std::endl;
 		std::cout << " + xbraid_res: "                  << xbraid_res                << std::endl;
-		std::cout << " + xbraid_storage: "              << xbraid_storage_           << std::endl;
+		std::cout << " + xbraid_storage: "              << xbraid_storage            << std::endl;
 		std::cout << " + xbraid_print_level: "          << xbraid_print_level        << std::endl;
 		std::cout << " + xbraid_access_level: "         << xbraid_access_level       << std::endl;
 		std::cout << " + xbraid_run_wrapper_tests: "    << xbraid_run_wrapper_tests  << std::endl;
@@ -141,6 +147,7 @@ struct XBraid_SimulationVariables
 	{
 		std::cout << ""                                                                                       << std::endl;
 		std::cout << "XBraid:"                                                                                << std::endl;
+		std::cout << "	--xbraid-enabled [0/1]             XBraid parameter enabled, default: 0"              << std::endl;
 		std::cout << "	--xbraid-max-levels [int]          XBraid parameter max_levels, default: 15"          << std::endl;
 		std::cout << "	--xbraid-skip [int]                XBraid parameter skip, default: 1"                 << std::endl;
 		std::cout << "	--xbraid-min-coarse [int]          XBraid parameter min_coarse, default: 3"           << std::endl;
@@ -170,6 +177,9 @@ struct XBraid_SimulationVariables
 					int i_max_options					///< maximum number of options
 	)
 	{
+		io_long_options[io_next_free_program_option] = {"xbraid-enabled", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 		io_long_options[io_next_free_program_option] = {"xbraid-max-levels", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
@@ -244,28 +254,29 @@ struct XBraid_SimulationVariables
 	{
 		switch(i_option_index)
 		{
-			case 0:  xbraid_max_levels                = atoi(optarg);	return -1;
-			case 1:  xbraid_skip                      = atoi(optarg);	return -1;
-			case 2:  xbraid_min_coarse                = atoi(optarg);	return -1;
-			case 3:  xbraid_nrelax                    = atoi(optarg);	return -1;
-			case 4:  xbraid_nrelax0                   = atoi(optarg);	return -1;
-			case 5:  xbraid_tol                       = atof(optarg);	return -1;
-			case 6:  xbraid_tnorm                     = atoi(optarg);	return -1;
-			case 7:  xbraid_cfactor                   = atoi(optarg);	return -1;
-			case 8:  xbraid_cfactor0                  = atoi(optarg);	return -1;
-			case 9:  xbraid_max_iter                  = atoi(optarg);	return -1;
-			case 10: xbraid_fmg                       = atoi(optarg);	return -1;
-			case 11: xbraid_res                       = atoi(optarg);	return -1;
-			case 12: xbraid_storage                   = atoi(optarg);	return -1;
-			case 13: xbraid_print_level               = atoi(optarg);	return -1;
-			case 14: xbraid_access_level              = atoi(optarg);	return -1;
-			case 15: xbraid_rn_wrapper_tests          = atoi(optarg);	return -1;
-			case 16: xbraid_fullrnorm                 = atoi(optarg);	return -1;
-			case 17: xbraid_use_seq_soln              = atoi(optarg);	return -1;
-			case 18: xbraid_use_rand                  = atoi(optarg);	return -1;
-			case 19: xbraid_pt                        = atoi(optarg);	return -1;
+			case 0:  xbraid_enabled                   = atoi(optarg);	return -1;
+			case 1:  xbraid_max_levels                = atoi(optarg);	return -1;
+			case 2:  xbraid_skip                      = atoi(optarg);	return -1;
+			case 3:  xbraid_min_coarse                = atoi(optarg);	return -1;
+			case 4:  xbraid_nrelax                    = atoi(optarg);	return -1;
+			case 5:  xbraid_nrelax0                   = atoi(optarg);	return -1;
+			case 6:  xbraid_tol                       = atof(optarg);	return -1;
+			case 7:  xbraid_tnorm                     = atoi(optarg);	return -1;
+			case 8:  xbraid_cfactor                   = atoi(optarg);	return -1;
+			case 9:  xbraid_cfactor0                  = atoi(optarg);	return -1;
+			case 10: xbraid_max_iter                  = atoi(optarg);	return -1;
+			case 11: xbraid_fmg                       = atoi(optarg);	return -1;
+			case 12: xbraid_res                       = atoi(optarg);	return -1;
+			case 13: xbraid_storage                   = atoi(optarg);	return -1;
+			case 14: xbraid_print_level               = atoi(optarg);	return -1;
+			case 15: xbraid_access_level              = atoi(optarg);	return -1;
+			case 16: xbraid_run_wrapper_tests         = atoi(optarg);	return -1;
+			case 17: xbraid_fullrnorm                 = atoi(optarg);	return -1;
+			case 18: xbraid_use_seq_soln              = atoi(optarg);	return -1;
+			case 19: xbraid_use_rand                  = atoi(optarg);	return -1;
+			case 20: xbraid_pt                        = atoi(optarg);	return -1;
 		}
-		return 20;
+		return 21;
 	}
 
 };

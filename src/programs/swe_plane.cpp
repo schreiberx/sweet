@@ -71,6 +71,10 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 	#include <parareal/Parareal.hpp>
 #endif
 
+#if SWEET_XBRAID
+	#include <xbraid/XBraid_sweet_lib.hpp>
+#endif
+
 /// general parameters
 SimulationVariables simVars;
 
@@ -1081,7 +1085,7 @@ int main(int i_argc, char *i_argv[])
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-	#if SWEET_PARAREAL != 2
+	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
 	// only start simulation and time stepping for first rank
 	if (mpi_rank == 0)
 	#endif
@@ -1127,14 +1131,14 @@ int main(int i_argc, char *i_argv[])
 
 #if SWEET_XBRAID
 
-		if (simVars.xbraid.enabled)
+		if (simVars.xbraid.xbraid_enabled)
 		{
 
 			MPI_Comm comm = MPI_COMM_WORLD;
 			MPI_Comm comm_x, comm_t;
 
-			braid_Core    core;
-			sweet_App       *app = (sweet_App *) malloc(sizeof(sweet_App));
+			braid_Core core;
+			sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App));
 
 
 			if( run_wrapper_tests)

@@ -172,6 +172,25 @@ public:
 		return e;
 	}
 
+	double reduce_norm1()
+	{
+		double e = 0;
+		for (int k = 0; k < N; k++)
+			e += this->data->simfields[k]->toPhys().physical_reduce_norm1();
+		return e;
+	}
+
+	double reduce_norm2()
+	{
+		double e = 0;
+		for (int k = 0; k < N; k++)
+		{
+			double n = this->data->simfields[k]->toPhys().physical_reduce_norm2();
+			e += n * n;
+		}
+		return std::sqrt(e);
+	}
+
 	bool check_for_nan()
 	{
 		bool found_nan = false;
@@ -221,6 +240,16 @@ public:
 
 		return *this;
 	}
+
+	Parareal_GenericData& operator*=(const double v)
+	{
+
+		for (int i = 0; i < N; i++)
+			*(this->data->simfields[i]) *= v;
+
+		return *this;
+	}
+
 
 	void physical_print()
 	{
