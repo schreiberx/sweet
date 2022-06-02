@@ -1,3 +1,8 @@
+// TODO:
+// in all methods in App:
+// sweet_BraidVector *u = (sweet_BraidVector*) u_; where u_ is braid_Vector
+
+
 #include <braid.hpp>
 
 #include <parareal/Parareal_GenericData.hpp>
@@ -21,17 +26,48 @@
 #endif
 
 
-typedef struct _braid_Vector_struct sweet_BraidVector;
+class sweet_BraidVector;
 class sweet_BraidApp;
+
+
+/* --------------------------------------------------------------------
+ * Simulation manager structure.  
+ * Holds the needed simulation data structures, e.g., discretizaion 'e' 
+ * or 'i', spatial distribution, and solver used at each time point
+ */
+///template <class t_tsmType, int N>
+typedef struct _simulation_manager_struct
+{
+	MPI_Comm		comm;
+	SimulationVariables*	simVars;
+	t_tsmType*		timeSteppers;
+	double			dt;
+} simulation_manager;
+
+
+////////////int print_app(sweet_BraidApp* app)
+////////////{
+////////////	int myid,i;
+////////////	MPI_Comm_rank( app->comm, &myid );
+////////////	printf("\n\nmyid:  %d,  App contents:\n", myid);
+////////////	printf("myid:  %d,  pt:            %d\n", myid, app->pt);
+////////////	printf("myid:  %d,  use_rand:      %d\n", myid, app->use_rand);
+////////////	printf("\nmyid:  %d,  Note that some object members like comm, comm_t, comm_x, man, A and solver cannot be printed\n\n", myid);
+////////////	return 0;
+////////////}
+
 
 
 
 /* --------------------------------------------------------------------
  * XBraid vector 
  * Stores the state of the simulation for a given time step
+ * Define BraidVector, can contain anything, and be named anything
+ * --> Put all time-dependent information here
  * -------------------------------------------------------------------- */
-typedef struct _braid_Vector_struct
+class sweet_BraidVector
 {
+public:
 	Parareal_GenericData*	data = nullptr;
 
 	sweet_BraidVector()
@@ -48,14 +84,14 @@ typedef struct _braid_Vector_struct
 		}
 	}
 
-	sweet_BraidVector(sweet_BraidVector &i_vector)
+	sweet_BraidVector(const sweet_BraidVector &i_vector)
 	{
 		this->data = i_vector.data;
 	};
 
 	sweet_BraidVector& operator=(const sweet_BraidVector &i_vector)
 	{
-		this->data = i_vector.data;
+		*this->data = *i_vector.data;
 		return *this;
 	};
 
@@ -64,7 +100,8 @@ typedef struct _braid_Vector_struct
 	)	const
 	{
 		sweet_BraidVector out;
-		out->data = this->data + i_vector.data
+		*out.data = *this->data;
+		*out.data += *i_vector.data;
 		return out;
 	}
 
@@ -73,7 +110,8 @@ typedef struct _braid_Vector_struct
 	)	const
 	{
 		sweet_BraidVector out;
-		out->data = this->data * i_value;
+		*out.data = *this->data;
+		*out.data *= i_value;
 		return out;
 	}
 
@@ -83,32 +121,28 @@ typedef struct _braid_Vector_struct
 #if SWEET_PARAREAL_SCALAR
 		{
 			data = new Parareal_GenericData_Scalar<N>;
-			out->allocate_data();
-			out->set_time(this->timeframe_end);
-			return out;
+			//this->set_time(this->timeframe_end);
 		}
 
 #elif SWEET_PARAREAL_PLANE
 		{
 			data = new Parareal_GenericData_PlaneData_Spectral<N>;
-			out->setup_data_config(this->planeDataConfig);
-			out->allocate_data();
-			return out;
+			//this->setup_data_config(this->planeDataConfig);
+			//this->set_time(this->timeframe_end);
 		}
 
 #elif SWEET_PARAREAL_SPHERE
 		{
 			data = new Parareal_GenericData_SphereData_Spectral<N>;
-			out->setup_data_config(this->sphereDataConfig);
-			out->allocate_data();
-			return out;
+			//this->setup_data_config(this->sphereDataConfig);
+			//this->set_time(this->timeframe_end);
 		}
 #endif
 	}
 
 
 
-} sweet_BraidVector;
+};
 
 
 /**
@@ -126,14 +160,42 @@ sweet_BraidVector operator*(
 		const sweet_BraidVector &i_vector
 )
 {
-	return i_vector*i_value;
+	return i_vector * i_value;
 }
 
 
+
+// Wrapper for BRAID's App object·
+// --> Put all time INDEPENDENT information here
 class sweet_BraidApp
 			: public BraidApp
 {
 
+public:
+
+	simulation_manager man;
+
+	t_tsmType** timeSteppers;
+
+public:
+
+	// Constructor·
+	sweet_BraidApp( MPI_Comm comm_t_,
+			int rank_,
+			double tstart_ = 0.0,
+			double tstop_ = 1.0,
+			int ntime_ = 100
+			);
+
+	// We will need the MPI Rank
+	int rank;
+
+
+	~sweet_BraidApp()
+	{
+	}
+
+public:
 	/* --------------------------------------------------------------------
 	 * Time integrator routine that performs the update
 	 *   u_i = Phi_i(u_{i-1}) + g_i 
@@ -143,10 +205,10 @@ class sweet_BraidApp
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Step(
-			sweet_BraidVector		i_ustop,
-			sweet_BraidVector		i_fstop,
-			sweet_BraidVector		io_U,
-			braid_StepStatus	io_status
+			braid_Vector		i_ustop,
+			braid_Vector		i_fstop,
+			braid_Vector		io_U,
+			braid_StepStatus		io_status
 			)
 	{
 		double tstart;             /* current time */
@@ -154,34 +216,35 @@ class sweet_BraidApp
 		int level;
 	
 		/* Grab status of current time step */
-		braid_StepStatusGetTstartTstop(status, &tstart, &tstop);
-		braid_StepStatusGetLevel(status, &level);
+		braid_StepStatusGetTstartTstop(io_status, &tstart, &tstop);
+		braid_StepStatusGetLevel(io_status, &level);
 	
 		/* Set the new dt in the user's manager*/
-		app->man->dt = tstop - tstart;
+		this->man.dt = tstop - tstart;
 	
 		/* Set the correct solver for the current level */
-		app->man->timeSteppers = app->timeSteppers[solver];
+		this->man.timeSteppers = this->timeSteppers[level];
 	
-		timeSteppers.master->run_timestep(
+		timeSteppes[level].master->run_timestep(
 							io_U,
 							simVars.timecontrol.current_timestep_size,
 							simVars.timecontrol.current_simulation_time
 		);
 	
 		/* Tell XBraid no refinement */
-		braid_StepStatusSetRFactor(status, 1);
+		braid_StepStatusSetRFactor(io_status, 1);
 	
 		return 0;
 	}
 	
 	/* --------------------------------------------------------------------
 	 * -------------------------------------------------------------------- */
-	braid_Int
+
+	virtual braid_Int
 	Residual(
-				sweet_BraidVector		i_ustop,
-				sweet_BraidVector		o_r,
-				braid_StepStatus	io_status
+				braid_Vector		i_ustop,
+				braid_Vector		o_r,
+				BraidStepStatus&		io_status
 			)
 	{
 		double tstart;             /* current time */
@@ -228,11 +291,11 @@ class sweet_BraidApp
 	braid_Int
 	Init(
 			double		i_t,
-			sweet_BraidVector*	o_U
+			braid_Vector*	o_U
 			)
 	{
 	
-		///sweet_BraidVector * U = (sweet_BraidVector *) malloc( sizeof(sweet_BraidVector) );
+		///braid_Vector * U = (braid_Vector *) malloc( sizeof(braid_Vector) );
 	
 		if( t == app->man->tstart )
 		{
@@ -439,8 +502,8 @@ class sweet_BraidApp
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Clone(
-			sweet_BraidVector	i_U,
-			sweet_BraidVector*	o_V
+			braid_Vector	i_U,
+			braid_Vector*	o_V
 		)
 	{
 		o_V->data = U->data;
@@ -452,7 +515,7 @@ class sweet_BraidApp
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Free(
-			sweet_BraidVector	i_U)
+			braid_Vector	i_U)
 	{
 		delete i_U->data;
 		///free(i_U);
@@ -466,10 +529,10 @@ class sweet_BraidApp
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Sum(
-			double		i_alpha,
-			sweet_BraidVector	i_X,
-			double		i_beta,
-			sweet_BraidVector&	io_Y
+			double			i_alpha,
+			braid_Vector	i_X,
+			double			i_beta,
+			braid_Vector	io_Y
 		)
 	{
 	
@@ -485,8 +548,8 @@ class sweet_BraidApp
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Access(
-				sweet_BraidVector		i_U,
-				braid_AccessStatus	io_astatus
+				braid_Vector		i_U,
+				BraidAccessStatus&		io_astatus
 			)
 	{
 		double     tstart         = (app->man->tstart);
@@ -531,7 +594,7 @@ class sweet_BraidApp
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	SpatialNorm(
-			sweet_BraidVector  i_U,
+			braid_Vector  i_U,
 			double*       o_norm)
 	{
 		*o_norm = i_U->data->reduce_norm2();
@@ -539,27 +602,27 @@ class sweet_BraidApp
 	}
 	
 	/* --------------------------------------------------------------------
-	 * Return buffer size needed to pack one spatial sweet_BraidVector.  Here the
+	 * Return buffer size needed to pack one spatial braid_Vector.  Here the
 	 * vector contains one double at every grid point and thus, the buffer 
 	 * size is the number of grid points.
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	BufSize(
 			int*			o_size,
-			braid_BufferStatus	o_status)
+			BraidBufferStatus&	o_status)
 	{
 		*o_size = i_app->size_buffer * sizeof(double);
 		return 0;
 	}
 	
 	/* --------------------------------------------------------------------
-	 * Pack a sweet_BraidVector into a buffer.
+	 * Pack a braid_Vector into a buffer.
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	BufPack(
-			sweet_BraidVector		i_u,
-			void*			o_buffer,
-			braid_BufferStatus	o_status
+			braid_Vector		i_u,
+			void*				o_buffer,
+			BraidBufferStatus&		o_status
 		)
 	{
 	
@@ -573,18 +636,18 @@ class sweet_BraidApp
 	}
 	
 	/* --------------------------------------------------------------------
-	 * Unpack a buffer and place into a sweet_BraidVector
+	 * Unpack a buffer and place into a braid_Vector
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	BufUnpack(
 			void*			i_buffer,
-			sweet_BraidVector*		o_U,
-			braid_BufferStatus	status
+			braid_Vector*		o_U,
+			BraidBufferStatus&	status
 			)
 	{
 		double* dbuffer = buffer;
-		///sweet_BraidVector* U = (sweet_BraidVector *) malloc( sizeof(sweet_BraidVector) );
-		sweet_BraidVector* U = new sweet_BraidVector;
+		///braid_Vector* U = (braid_Vector *) malloc( sizeof(braid_Vector) );
+		braid_Vector* U = new braid_Vector;
 	
 		U->data->deserialize(dbuffer);
 	
@@ -597,50 +660,5 @@ class sweet_BraidApp
 
 
 
-
-/* --------------------------------------------------------------------
- * Simulation manager structure.  
- * Holds the needed simulation data structures, e.g., discretizaion 'e' 
- * or 'i', spatial distribution, and solver used at each time point
- */
-///template <class t_tsmType, int N>
-typedef struct _simulation_manager_struct
-{
-	MPI_Comm		comm;
-	SimulationVariables*	simVars;
-	t_tsmType*		timeSteppers;
-} simulation_manager;
-
-//////////////////////* --------------------------------------------------------------------
-///////////////////// * XBraid app struct 
-///////////////////// * -------------------------------------------------------------------- */
-////////////////////////template <class t_tsmType, int N>
-/////////////////////typedef struct _braid_App_struct {
-/////////////////////	MPI_Comm			mpi_comm;		/* global communicator */
-/////////////////////	MPI_Comm			mpi_comm_t;		/* communicator for parallelizing in time  */
-/////////////////////	MPI_Comm			mpi_comm_x;		/* communicator for parallelizing in space  */
-/////////////////////	int				mpi_pt;			/* number of processors in time  */
-/////////////////////	simulation_manager*		man;			/* user's simulation manager structure --> defined in ex03-lib */
-/////////////////////	t_tsmType**			timeSteppers;		/* nA sized array of solvers (one per time level) */
-/////////////////////	int				use_rand;		/* binary, use random initial guess (1) or zero initial guess (0) */
-/////////////////////
-/////////////////////#if SWEET_XBRAID_PLANE
-/////////////////////	PlaneDataConfig*		planeDataConfig;
-/////////////////////#elif SWEET_XBRAID_SPHERE
-/////////////////////	PlaneDataConfig*		sphereDataConfig;
-/////////////////////#endif
-/////////////////////
-/////////////////////} sweet_App;
-
-int print_app(sweet_BraidApp* app)
-{
-	int myid,i;
-	MPI_Comm_rank( app->comm, &myid );
-	printf("\n\nmyid:  %d,  App contents:\n", myid);
-	printf("myid:  %d,  pt:            %d\n", myid, app->pt);
-	printf("myid:  %d,  use_rand:      %d\n", myid, app->use_rand);
-	printf("\nmyid:  %d,  Note that some object members like comm, comm_t, comm_x, man, A and solver cannot be printed\n\n", myid);
-	return 0;
-}
 
 

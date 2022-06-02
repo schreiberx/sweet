@@ -1138,7 +1138,8 @@ int main(int i_argc, char *i_argv[])
 			MPI_Comm comm_x, comm_t;
 
 			braid_Core core;
-			sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App));
+			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App));
+			sweet_BraidApp app = new sweet_BraidApp;
 
 
 			if( run_wrapper_tests)
@@ -1241,7 +1242,7 @@ int main(int i_argc, char *i_argv[])
 			}
 
 
-			free(sweet_App);
+			delete app;
 		}
 		else
 #endif
