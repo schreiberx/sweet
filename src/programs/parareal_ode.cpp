@@ -9,7 +9,7 @@
 #include <limits>
 #include <stdlib.h>
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL || SWEET_XBRAID
 #include <parareal/Parareal.hpp>
 #include <parareal/Parareal_GenericData.hpp>
 #include <parareal/Parareal_GenericData_Scalar.hpp>
@@ -56,7 +56,7 @@ public:
 		io_y += i_dt * (a * std::sin(io_y) + b * std::sin(i_sim_timestamp));
 	}
 
-#if SWEET_PARAREAL
+#if (SWEET_PARAREAL && SWEET_PARAREAL_SCALAR) || (SWEET_XBRAID && SWEET_XBRAID_SCALAR)
 	void run_timestep(
 			Parareal_GenericData* io_data,
 

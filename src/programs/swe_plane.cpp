@@ -1138,107 +1138,121 @@ int main(int i_argc, char *i_argv[])
 			MPI_Comm comm_x, comm_t;
 
 			braid_Core core;
-			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App));
-			sweet_BraidApp app = new sweet_BraidApp;
+			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
+			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+			sweet_BraidApp* app = new sweet_BraidApp(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
 
 
-			if( run_wrapper_tests)
+			if( simVars.xbraid.xbraid_run_wrapper_tests)
 			{
-				/* Run the XBraid wrapper tests */
-				mytime = 0.0;
-				for(i = 0; i < 2; i++)
-				{
-					braid_TestInitAccess( app, comm_x, stdout, mytime, my_Init, my_Access, my_Free);
-					braid_TestClone( app, comm_x, stdout, mytime, my_Init, my_Access, my_Free, my_Clone);
-					braid_TestSum( app, comm_x, stdout, mytime, my_Init, my_Access, my_Free, my_Clone, my_Sum);
-					braid_TestResidual(app, comm_x, stdout, mytime, app->man->dt, my_Init, my_Access, my_Free, my_Clone, my_Sum, my_SpatialNorm, my_Residual, my_Step);
-					correct1 = braid_TestSpatialNorm( app, comm_x, stdout, mytime, my_Init, my_Free, my_Clone, my_Sum, my_SpatialNorm);
-					correct2 = braid_TestBuf( app, comm_x, stdout, mytime, my_Init, my_Free, my_Sum, my_SpatialNorm, my_BufSize, my_BufPack, my_BufUnpack);
-					mytime += app->man->dt;
+				////////////////* Run the XBraid wrapper tests */
+				///////////////mytime = 0.0;
+				///////////////for(int i = 0; i < 2; i++)
+				///////////////{
+				///////////////	braid_TestInitAccess( app, comm_x, stdout, mytime, sweet_BraidApp::Init, my_Access, my_Free);
+				///////////////	braid_TestClone( app, comm_x, stdout, mytime, my_Init, my_Access, my_Free, my_Clone);
+				///////////////	braid_TestSum( app, comm_x, stdout, mytime, my_Init, my_Access, my_Free, my_Clone, my_Sum);
+				///////////////	braid_TestResidual(app, comm_x, stdout, mytime, app->man->dt, my_Init, my_Access, my_Free, my_Clone, my_Sum, my_SpatialNorm, my_Residual, my_Step);
+				///////////////	correct1 = braid_TestSpatialNorm( app, comm_x, stdout, mytime, my_Init, my_Free, my_Clone, my_Sum, my_SpatialNorm);
+				///////////////	correct2 = braid_TestBuf( app, comm_x, stdout, mytime, my_Init, my_Free, my_Sum, my_SpatialNorm, my_BufSize, my_BufPack, my_BufUnpack);
+				///////////////	mytime += app->man->dt;
 
-					if( (correct1 == 0) || (correct2 == 0))
-					{
-						printf("Failed: at least one of the tests failed\n");
-					}
-					else
-					{
-						printf("Passed: all tests passed\n");
-					}
-				}
+				///////////////	if( (correct1 == 0) || (correct2 == 0))
+				///////////////	{
+				///////////////		printf("Failed: at least one of the tests failed\n");
+				///////////////	}
+				///////////////	else
+				///////////////	{
+				///////////////		printf("Passed: all tests passed\n");
+				///////////////	}
+				///////////////}
 			}
 			else
 			{
-				/* Run XBraid simulation */
+				//////////////////////* Run XBraid simulation */
 			
-				mystarttime = MPI_Wtime();
-				braid_Init(comm, comm_t, app->man->tstart, app->man->tstop, app->man->nt, 
-						app, my_Step, my_Init, my_Clone, my_Free, my_Sum, 
-						my_SpatialNorm, my_Access, my_BufSize, my_BufPack, my_BufUnpack, &core);
-				
-				/* Set Braid parameters */
-				braid_SetSkip( core, skip );
-				braid_SetMaxLevels( core, max_levels );
-				braid_SetMinCoarse( core, min_coarse );
-				braid_SetPrintLevel( core, print_level);
-				braid_SetAccessLevel( core, access_level);
-				braid_SetNRelax(core, -1, nrelax);
-				braid_SetSeqSoln(core, use_seq_soln);
-				if (nrelax0 > -1)
-				{
-				   braid_SetNRelax(core,  0, nrelax0);
-				}
-				braid_SetAbsTol(core, tol /
-				   sqrt( (app->man->dx)*(app->man->dy)*(app->man->dt)) );
-				braid_SetTemporalNorm(core, tnorm);
-				braid_SetCFactor(core, -1, cfactor);
-				if (fullrnorm)
-				{
-				  braid_SetFullRNormRes(core, my_Residual);
-				}
-				if( cfactor0 > 0 )
-				{
-				   braid_SetCFactor(core,  0, cfactor0);
-				}
-				braid_SetMaxIter(core, max_iter);
-				if (fmg)
-				{
-				   braid_SetFMG(core);
-				}
-				if (res)
-				{
-				   braid_SetResidual(core, my_Residual);
-				}
-				if (storage >= -2)
-				{
-				   braid_SetStorage(core, storage);
-				}
-				
-				MPI_Comm_rank( comm, &myid );
-				if( myid == 0 )
-				{
-					printf("\n  --------------------- \n");
-					printf("  Begin simulation \n");
-					printf("  --------------------- \n\n");
-				}
-				
-				/* This call "Drives" or runs the simulation -- woo hoo! */
-				braid_Drive(core);
-				
-				/* Compute run time */
-				myendtime = MPI_Wtime();
-				mytime    = myendtime - mystarttime;
-				MPI_Reduce( &mytime, &maxtime, 1, MPI_DOUBLE, MPI_MAX, 0, comm );
-				
-				/* Determine maximum number of iterations for hypre PFMG spatial solves at each time level */
-				MPI_Allreduce( &(app->nA), &nA_max, 1, MPI_INT, MPI_MAX, comm ); 
-				runtime_max_iter_global = (int*) malloc( nA_max*sizeof(int) );
-				for( i = 0; i < nA_max; i++ )
-				{
-					MPI_Allreduce( &(app->runtime_max_iter[i]), 
-							&runtime_max_iter_global[i], 1, MPI_INT, MPI_MAX, comm );
-				}
-				
-				braid_Destroy(core);
+				/////////////////////mystarttime = MPI_Wtime();
+				/////////////////////braid_Init(comm, comm_t, app->man->tstart, app->man->tstop, app->man->nt, 
+				/////////////////////		app, my_Step, my_Init, my_Clone, my_Free, my_Sum, 
+				/////////////////////		my_SpatialNorm, my_Access, my_BufSize, my_BufPack, my_BufUnpack, &core);
+				/////////////////////
+				//////////////////////* Set Braid parameters */
+				/////////////////////braid_SetSkip( core, skip );
+				/////////////////////braid_SetMaxLevels( core, max_levels );
+				/////////////////////braid_SetMinCoarse( core, min_coarse );
+				/////////////////////braid_SetPrintLevel( core, print_level);
+				/////////////////////braid_SetAccessLevel( core, access_level);
+				/////////////////////braid_SetNRelax(core, -1, nrelax);
+				/////////////////////braid_SetSeqSoln(core, use_seq_soln);
+				/////////////////////if (nrelax0 > -1)
+				/////////////////////{
+				/////////////////////   braid_SetNRelax(core,  0, nrelax0);
+				/////////////////////}
+				/////////////////////braid_SetAbsTol(core, tol /
+				/////////////////////   sqrt( (app->man->dx)*(app->man->dy)*(app->man->dt)) );
+				/////////////////////braid_SetTemporalNorm(core, tnorm);
+				/////////////////////braid_SetCFactor(core, -1, cfactor);
+				/////////////////////if (fullrnorm)
+				/////////////////////{
+				/////////////////////  braid_SetFullRNormRes(core, my_Residual);
+				/////////////////////}
+				/////////////////////if( cfactor0 > 0 )
+				/////////////////////{
+				/////////////////////   braid_SetCFactor(core,  0, cfactor0);
+				/////////////////////}
+				/////////////////////braid_SetMaxIter(core, max_iter);
+				/////////////////////if (fmg)
+				/////////////////////{
+				/////////////////////   braid_SetFMG(core);
+				/////////////////////}
+				/////////////////////if (res)
+				/////////////////////{
+				/////////////////////   braid_SetResidual(core, my_Residual);
+				/////////////////////}
+				/////////////////////if (storage >= -2)
+				/////////////////////{
+				/////////////////////   braid_SetStorage(core, storage);
+				/////////////////////}
+				/////////////////////
+				/////////////////////MPI_Comm_rank( comm, &myid );
+				/////////////////////if( myid == 0 )
+				/////////////////////{
+				/////////////////////	printf("\n  --------------------- \n");
+				/////////////////////	printf("  Begin simulation \n");
+				/////////////////////	printf("  --------------------- \n\n");
+				/////////////////////}
+				/////////////////////
+				//////////////////////* This call "Drives" or runs the simulation -- woo hoo! */
+				/////////////////////braid_Drive(core);
+				/////////////////////
+				//////////////////////* Compute run time */
+				/////////////////////myendtime = MPI_Wtime();
+				/////////////////////mytime    = myendtime - mystarttime;
+				/////////////////////MPI_Reduce( &mytime, &maxtime, 1, MPI_DOUBLE, MPI_MAX, 0, comm );
+				/////////////////////
+				//////////////////////* Determine maximum number of iterations for hypre PFMG spatial solves at each time level */
+				/////////////////////MPI_Allreduce( &(app->nA), &nA_max, 1, MPI_INT, MPI_MAX, comm ); 
+				/////////////////////runtime_max_iter_global = (int*) malloc( nA_max*sizeof(int) );
+				/////////////////////for( i = 0; i < nA_max; i++ )
+				/////////////////////{
+				/////////////////////	MPI_Allreduce( &(app->runtime_max_iter[i]), 
+				/////////////////////			&runtime_max_iter_global[i], 1, MPI_INT, MPI_MAX, comm );
+				/////////////////////}
+				/////////////////////
+				/////////////////////braid_Destroy(core);
+
+
+				// Initialize Braid Core Object and set some solver options
+				BraidCore core(MPI_COMM_WORLD, app);
+				/////////core.SetPrintLevel(2);
+				/////////core.SetMaxLevels(2);
+				/////////core.SetAbsTol(1.0e-6);
+				/////////core.SetCFactor(-1, 2);
+
+				// Run Simulation
+				core.Drive();
+
+
 			}
 
 
@@ -1370,7 +1384,7 @@ int main(int i_argc, char *i_argv[])
 		}
 	}
 #if SWEET_MPI
-	#if SWEET_PARAREAL !=2
+	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
 	else	// mpi_rank != 0
 	#endif
 	{

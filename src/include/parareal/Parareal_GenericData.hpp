@@ -95,6 +95,23 @@ public:
 		return dummy;
 	};
 
+	virtual void dataArrays_to_GenericData_PlaneData_Spectral(
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							);
+
+	virtual void GenericData_PlaneData_Spectral_to_dataArrays(
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							);
+
+
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 	virtual DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const
 	{
@@ -146,7 +163,7 @@ public:
 	virtual void free_data() = 0;
 
 ///#if SWEET_MPI
-#if SWEET_PARAREAL==2
+#if SWEET_PARAREAL==2 || SWEET_XBRAID
 	virtual std::size_t size() = 0;
 	////virtual void serialize(void *data) = 0;
 	////virtual void deserialize(void *data) = 0;

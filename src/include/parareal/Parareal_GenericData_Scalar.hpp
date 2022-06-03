@@ -127,7 +127,7 @@ public:
 	}
 
 /////#if SWEET_MPI
-#if SWEET_PARAREAL==2
+#if SWEET_PARAREAL==2 || SWEET_XBRAID
 	// size in bytes (for MPI)
 	// size of each simfield of data
 	std::size_t size()

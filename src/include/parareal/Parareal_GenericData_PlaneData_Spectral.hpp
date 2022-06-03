@@ -142,7 +142,7 @@ public:
 
 
 ////#if SWEET_MPI
-#if SWEET_PARAREAL==2
+#if SWEET_PARAREAL==2 || SWEET_XBRAID
 	// size in bytes (for MPI)
 	// size of each simfield of data
 	std::size_t size()
@@ -265,6 +265,43 @@ public:
 			this->data->simfields[i]->toPhys().print();
 		}
 	}
+
+	void dataArrays_to_GenericData_PlaneData_Spectral(
+	#if SWEET_PARAREAL_PLANE_SWE_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							) override
+	{
+	#if SWEET_PARAREAL_PLANE_SWE
+		*(this->data->simfields[0]) = h;
+		*(this->data->simfields[1]) = u;
+		*(this->data->simfields[2]) = v;
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+		*(this->data->simfields[0]) = u;
+		*(this->data->simfields[1]) = v;
+	#endif
+	}
+
+	void GenericData_PlaneData_Spectral_to_dataArrays(
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							) override
+	{
+	#if SWEET_PARAREAL_PLANE_SWE
+		h = *(this->data->simfields[0]);
+		u = *(this->data->simfields[1]);
+		v = *(this->data->simfields[2]);
+	#elif SWEET_PARAREAL_PLANE_BURGERS
+		u = *(this->data->simfields[0]);
+		v = *(this->data->simfields[1]);
+	#endif
+	}
+
 
 
 };

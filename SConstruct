@@ -168,6 +168,7 @@ if p.xbraid == 'none':
     env.Append(CXXFLAGS = ' -DSWEET_XBRAID=0')
 elif p.xbraid == 'mpi':
     env.Append(CXXFLAGS=['-Ilocal_software/local/include/xbraid'])
+    env.Append(LIBS=['braid'])
     env.Append(CXXFLAGS = ' -DSWEET_XBRAID=1')
 else:
     raise Exception("Invalid option '"+str(p.xbraid)+"' for XBraid")

@@ -4,8 +4,8 @@
 
 
 #include <braid.hpp>
-
 #include <parareal/Parareal_GenericData.hpp>
+
 #if SWEET_XBRAID_SCALAR
 	#include <parareal/Parareal_GenericData_Scalar.hpp>
 	typedef ODE_Scalar_TimeSteppers t_tsmType;
@@ -30,19 +30,19 @@ class sweet_BraidVector;
 class sweet_BraidApp;
 
 
-/* --------------------------------------------------------------------
- * Simulation manager structure.  
- * Holds the needed simulation data structures, e.g., discretizaion 'e' 
- * or 'i', spatial distribution, and solver used at each time point
- */
-///template <class t_tsmType, int N>
-typedef struct _simulation_manager_struct
-{
-	MPI_Comm		comm;
-	SimulationVariables*	simVars;
-	t_tsmType*		timeSteppers;
-	double			dt;
-} simulation_manager;
+///////////////////////* --------------------------------------------------------------------
+////////////////////// * Simulation manager structure.  
+////////////////////// * Holds the needed simulation data structures, e.g., discretizaion 'e' 
+////////////////////// * or 'i', spatial distribution, and solver used at each time point
+////////////////////// */
+/////////////////////////template <class t_tsmType, int N>
+//////////////////////typedef struct _simulation_manager_struct
+//////////////////////{
+//////////////////////	MPI_Comm		comm;
+//////////////////////	SimulationVariables*	simVars;
+//////////////////////	t_tsmType*		timeSteppers;
+//////////////////////	double			dt;
+//////////////////////} simulation_manager;
 
 
 ////////////int print_app(sweet_BraidApp* app)
@@ -173,23 +173,42 @@ class sweet_BraidApp
 
 public:
 
-	simulation_manager man;
+////////////	simulation_manager man;
 
-	t_tsmType** timeSteppers;
+	MPI_Comm		comm;
+	SimulationVariables*	simVars;
+	double			dt;
+	t_tsmType**		timeSteppers;
 
-public:
+#if SWEET_XBRAID_PLANE
+	PlaneOperators*		op_plane;
+#elif SWEET_XBRAID_SPHERE
+	SphereOperators*	op_sphere;
+#endif
 
-	// Constructor·
-	sweet_BraidApp( MPI_Comm comm_t_,
-			int rank_,
-			double tstart_ = 0.0,
-			double tstop_ = 1.0,
-			int ntime_ = 100
-			);
+
+	double			tstart;
+	double			tstop;
+
+	int			size_buffer;
 
 	// We will need the MPI Rank
 	int rank;
+public:
 
+	// Constructor·
+	sweet_BraidApp( MPI_Comm		i_comm_t,
+			int			i_rank,
+			double			i_tstart,
+			double			i_tstop,
+			int 			i_ntime,
+			SimulationVariables*	i_simVars
+			)
+		: BraidApp(i_comm_t, i_tstart, i_tstop, i_ntime)
+	{
+		this->rank = i_rank;
+		this->simVars = i_simVars;
+	}
 
 	~sweet_BraidApp()
 	{
@@ -205,35 +224,36 @@ public:
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Step(
+			braid_Vector		io_U,
 			braid_Vector		i_ustop,
 			braid_Vector		i_fstop,
-			braid_Vector		io_U,
-			braid_StepStatus		io_status
+			BraidStepStatus&	io_status
 			)
 	{
+
+		sweet_BraidVector* U = (sweet_BraidVector*) io_U;
+		braid_StepStatus& status = (braid_StepStatus&) io_status;
+
 		double tstart;             /* current time */
 		double tstop;              /* evolve u to this time*/
 		int level;
-	
+
 		/* Grab status of current time step */
-		braid_StepStatusGetTstartTstop(io_status, &tstart, &tstop);
-		braid_StepStatusGetLevel(io_status, &level);
-	
+		braid_StepStatusGetTstartTstop(status, &tstart, &tstop);
+		braid_StepStatusGetLevel(status, &level);
+
 		/* Set the new dt in the user's manager*/
-		this->man.dt = tstop - tstart;
-	
-		/* Set the correct solver for the current level */
-		this->man.timeSteppers = this->timeSteppers[level];
-	
-		timeSteppes[level].master->run_timestep(
-							io_U,
-							simVars.timecontrol.current_timestep_size,
-							simVars.timecontrol.current_simulation_time
+		this->dt = tstop - tstart;
+
+		this->timeSteppers[level]->master->run_timestep(
+								U->data,
+								this->simVars->timecontrol.current_timestep_size,
+								this->simVars->timecontrol.current_simulation_time
 		);
 	
 		/* Tell XBraid no refinement */
-		braid_StepStatusSetRFactor(io_status, 1);
-	
+		braid_StepStatusSetRFactor(status, 1);
+
 		return 0;
 	}
 	
@@ -242,15 +262,18 @@ public:
 
 	virtual braid_Int
 	Residual(
-				braid_Vector		i_ustop,
-				braid_Vector		o_r,
+				braid_Vector			i_ustop,
+				braid_Vector			o_r,
 				BraidStepStatus&		io_status
 			)
 	{
+
+		braid_StepStatus& status = (braid_StepStatus&) io_status;
+
 		double tstart;             /* current time */
 		double tstop;              /* evolve u to this time*/
 		int level;
-	
+
 		/* Grab status of current time step */
 		braid_StepStatusGetTstartTstop(status, &tstart, &tstop);
 	
@@ -258,28 +281,28 @@ public:
 		braid_StepStatusGetLevel(status, &level);
 	
 		/* Set the new dt in the user's manager*/
-		app->man->dt = tstop - tstart;
+		this->dt = tstop - tstart;
 	
-		/* Now, set up the discretization matrix.  Use the XBraid level to index
-		 * into the matrix lookup table */
-		if( app->dt_A[level] == -1.0 ){
-			app->nA++;
-			app->dt_A[level] = tstop-tstart;
+		/////////////////* Now, set up the discretization matrix.  Use the XBraid level to index
+		//////////////// * into the matrix lookup table */
+		////////////////if( app->dt_A[level] == -1.0 ){
+		////////////////	app->nA++;
+		////////////////	app->dt_A[level] = tstop-tstart;
 	
-			setUpImplicitMatrix( app->man );
-			app->A[level] = app->man->A;
+		////////////////	setUpImplicitMatrix( app->man );
+		////////////////	app->A[level] = app->man->A;
 	
-			/* Set up the PFMG solver using r->x as dummy vectors. */
-			setUpStructSolver( app->man, r->x, r->x );
-			app->solver[level] = app->man->solver;
-		}
+		////////////////	/* Set up the PFMG solver using r->x as dummy vectors. */
+		////////////////	setUpStructSolver( app->man, r->x, r->x );
+		////////////////	app->solver[level] = app->man->solver;
+		////////////////}
 	
-		/* Set the correct solver for the current level */
-		app->man->timeSteppers = app->timeSteppers[solver];
+		/////////////////* Set the correct solver for the current level */
+		////////////////app->man->timeSteppers = app->timeSteppers[solver];
 	
-		/* Compute residual Ax */
-		//////app->man->A = app->A[level];
-		comp_res(app->man, ustop->x, r->x, tstart, tstop);
+		/////////////////* Compute residual Ax */
+		//////////////////////app->man->A = app->A[level];
+		////////////////comp_res(app->man, ustop->x, r->x, tstart, tstop);
 	
 		return 0;
 	}
@@ -294,14 +317,15 @@ public:
 			braid_Vector*	o_U
 			)
 	{
+
+
+		sweet_BraidVector* U = new sweet_BraidVector;
 	
-		///braid_Vector * U = (braid_Vector *) malloc( sizeof(braid_Vector) );
-	
-		if( t == app->man->tstart )
+		if( i_t == this->tstart )
 		{
 	#if SWEET_XBRAID_SCALAR
 			double u0 = atof(simVars->bogus.var[1].c_str());
-			this->dataArrays_to_GenericData_Scalar(o_U->data, u0);
+			this->dataArrays_to_GenericData_Scalar(U->data, u0);
 	
 	#elif SWEET_XBRAID_PLANE
 			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
@@ -354,7 +378,7 @@ public:
 		#endif
 	
 	
-			this->dataArrays_to_GenericData_PlaneData_Spectral(	U->data,
+			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
 		#if SWEET_XBRAID_PLANE_SWE
 										t0_prog_h_pert,
 		#endif
@@ -370,54 +394,57 @@ public:
 			sphereBenchmarks.setup(*simVars, *op_sphere);
 			sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	
-			this->dataArrays_to_GenericData_SphereData_Spectral(o_U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			Parareal_SimulationInstace::dataArrays_to_GenericData_SphereData_Spectral(U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 	
 	
 		}
-		else if (app->use_rand)
+		else if (this->simVars->xbraid.xbraid_use_rand)
 		{
 	#if SWEET_XBRAID_SCALAR
 			double u0 = ((double)braid_Rand())/braid_RAND_MAX;
-			this->dataArrays_to_GenericData_Scalar(o_U->data, u0);
+			this->dataArrays_to_GenericData_Scalar(U->data, u0);
 	#elif SWEET_XBRAID_PLANE
 	
 		#if SWEET_XBRAID_PLANE_SWE
 			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
-			PlaneData_Physical t0_prog_h_phys(t0_prog_u.planeDataConfig);
+			PlaneData_Physical t0_prog_h_phys(planeDataConfig);
 		#endif
 	
 			PlaneData_Spectral t0_prog_u(planeDataConfig);
 			PlaneData_Spectral t0_prog_v(planeDataConfig);
 	
-			PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig);
-			PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig);
+			PlaneData_Physical t0_prog_u_phys(planeDataConfig);
+			PlaneData_Physical t0_prog_v_phys(planeDataConfig);
 	
 		#if SWEET_XBRAID_PLANE_SWE
 			t0_prog_h_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 				{
-					io_data = i_app->man->simVars->sim.h0 + ((double)braid_Rand())/braid_RAND_MAX;
+					io_data = this->simVars->sim.h0 + ((double)braid_Rand())/braid_RAND_MAX;
 				}
+			);
 		#endif
 			t0_prog_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 				{
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
+			);
 			t0_prog_v_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 				{
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
+			);
 	
 		#if SWEET_XBRAID_PLANE_SWE
-			t0_prog_h.loadPlaneDataPhysical(t0_prog_u_phys);
+			t0_prog_h_pert.loadPlaneDataPhysical(t0_prog_h_phys);
 		#endif
 			t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
 			t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
 	
-			this->dataArrays_to_GenericData_PlaneData_Spectral(	o_U->data,
+			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
 		#if SWEET_XBRAID_PLANE_SWE
 										t0_prog_h_pert,
 		#endif
@@ -437,30 +464,33 @@ public:
 			t0_prog_phi_pert_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 				{
-					io_data = i_app->man->simVars->sim.h0 + ((double)braid_Rand())/braid_RAND_MAX;
+					io_data = this->simVars->sim.h0 + ((double)braid_Rand())/braid_RAND_MAX;
 				}
+			);
 			t0_prog_vrt_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 				{
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
+			);
 			t0_prog_div_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 				{
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
+			);
 	
 			t0_prog_phi_pert.loadPlaneDataPhysical(t0_prog_phi_pert_phys);
 			t0_prog_vrt.loadPlaneDataPhysical(t0_prog_vrt_phys);
 			t0_prog_div.loadPlaneDataPhysical(t0_prog_div_phys);
 	
-			this->dataArrays_to_GenericData_SphereData_Spectral(o_U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			this->dataArrays_to_GenericData_SphereData_Spectral(U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
 		else
 		{
 			/* Sets U as an all zero vector*/
-	#if SWEET_XBRAID_SCALAAR
+	#if SWEET_XBRAID_SCALAR
 			this->dataArrays_to_GenericData_Scalar(U->data, 0.);
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
@@ -471,10 +501,10 @@ public:
 			PlaneData_Spectral t0_prog_u(planeDataConfig);
 			t0_prog_u.spectral_set_zero();
 	
-			PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig);
+			PlaneData_Spectral t0_prog_v(planeDataConfig);
 			t0_prog_v.spectral_set_zero();
 	
-			this->dataArrays_to_GenericData_PlaneData_Spectral(	U->data,
+			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
 		#if SWEET_XBRAID_PLANE_SWE
 										t0_prog_h_pert,
 		#endif
@@ -490,10 +520,12 @@ public:
 			t0_prog_vrt.spectral_set_zero();
 			t0_prog_div_pert.spectral_set_zero();
 	
-			this->dataArrays_to_GenericData_SphereData_Spectral(o_U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			this->dataArrays_to_GenericData_SphereData_Spectral(U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
-	
+
+		*o_U = (braid_Vector) U;
+
 		return 0;
 	}
 	
@@ -506,10 +538,15 @@ public:
 			braid_Vector*	o_V
 		)
 	{
-		o_V->data = U->data;
+		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
+		sweet_BraidVector* V = new sweet_BraidVector;
+		V->data = U->data;
+		*o_V = (braid_Vector) V;
+
 		return 0;
 	}
-	
+
+
 	/* --------------------------------------------------------------------
 	 * Destroy vector object.
 	 * -------------------------------------------------------------------- */
@@ -517,30 +554,35 @@ public:
 	Free(
 			braid_Vector	i_U)
 	{
-		delete i_U->data;
-		///free(i_U);
-	        delete i_U;
-	
+		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
+		delete U->data;
+	        delete U;
+
 		return 0;
 	}
-	
+
+
 	/* --------------------------------------------------------------------
 	 * Compute vector sum y = alpha*x + beta*y.
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Sum(
 			double			i_alpha,
-			braid_Vector	i_X,
+			braid_Vector		i_X,
 			double			i_beta,
-			braid_Vector	io_Y
+			braid_Vector		io_Y
 		)
 	{
-	
-		io_Y = i_X * i_alpha + io_Y * i_beta;
+
+		sweet_BraidVector* X = (sweet_BraidVector*) i_X;
+		sweet_BraidVector* Y = (sweet_BraidVector*) io_Y;
+
+		*Y = *X * i_alpha + *Y * i_beta;
 	
 		return 0;
 	}
-	
+
+
 	/* --------------------------------------------------------------------
 	 * User access routine to spatial solution vectors and allows for user
 	 * output.  The default XBraid parameter of access_level=1, calls 
@@ -549,24 +591,26 @@ public:
 	braid_Int
 	Access(
 				braid_Vector		i_U,
-				BraidAccessStatus&		io_astatus
+				BraidAccessStatus&	io_astatus
 			)
 	{
-		double     tstart         = (app->man->tstart);
-		double     tstop          = (app->man->tstop);
-		int        nt             = (app->man->nt);
+		double     tstart         = (this->tstart);
+		double     tstop          = (this->tstop);
+		////int        nt             = (this->nt);
 	
 		double     rnorm, disc_err, t;
 		int        iter, level, done, index, myid;
 		char       filename[255], filename_mesh[255], filename_err[255], filename_sol[255];
-	
+
+		braid_AccessStatus& astatus = (braid_AccessStatus&) io_astatus;
+
 		/* Retrieve current time from Status Object */
 		braid_AccessStatusGetT(astatus, &t);
 	
 		/* Retrieve XBraid State Information from Status Object */
-		MPI_Comm_rank(app->comm_x, &myid);
-		braid_AccessStatusGetTILD(astatus, &t, &iter, &level, &done);
-		braid_AccessStatusGetResidual(astatus, &rnorm);
+		///////////MPI_Comm_rank(app->comm_x, &myid);
+		///////////braid_AccessStatusGetTILD(astatus, &t, &iter, &level, &done);
+		///////////braid_AccessStatusGetResidual(astatus, &rnorm);
 	
 		if(level == 0)
 		{
@@ -580,11 +624,11 @@ public:
 		}
 	
 		/* Write the norm of the discretization error to a separate file for each time step */
-		if( app->man->output_files )
-		{
-	/////         sprintf(filename, "%s.iter%03d.time%07d", "ex-03.error_norm", iter, index);
-	/////         output_error_file(app->man, t, disc_err, filename); 
-		}
+	//////////	if( this->output_files )
+	//////////	{
+	//////////         sprintf(filename, "%s.iter%03d.time%07d", "ex-03.error_norm", iter, index);
+	//////////         output_error_file(app->man, t, disc_err, filename); 
+	//////////	}
 	
 		return 0;
 	}
@@ -597,10 +641,12 @@ public:
 			braid_Vector  i_U,
 			double*       o_norm)
 	{
-		*o_norm = i_U->data->reduce_norm2();
+		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
+		*o_norm = U->data->reduce_norm2();
 		return 0;
 	}
-	
+
+
 	/* --------------------------------------------------------------------
 	 * Return buffer size needed to pack one spatial braid_Vector.  Here the
 	 * vector contains one double at every grid point and thus, the buffer 
@@ -611,30 +657,37 @@ public:
 			int*			o_size,
 			BraidBufferStatus&	o_status)
 	{
-		*o_size = i_app->size_buffer * sizeof(double);
+		*o_size = this->size_buffer * sizeof(double);
 		return 0;
 	}
-	
+
+
 	/* --------------------------------------------------------------------
 	 * Pack a braid_Vector into a buffer.
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	BufPack(
-			braid_Vector		i_u,
-			void*				o_buffer,
-			BraidBufferStatus&		o_status
+			braid_Vector		i_U,
+			void*			o_buffer,
+			BraidBufferStatus&	o_status
 		)
 	{
-	
-		double* dbuffer = buffer;
-	
+
+		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
+
+#if SWEET_XBRAID_SCALAR
+		double* dbuffer = (double*) o_buffer;
+#else
+		std::complex<double>* dbuffer = (std::complex<double>*) o_buffer;
+#endif
+
 		U->data->serialize(dbuffer);
-	
+
 		/* Return the number of bytes actually packed */
-		braid_BufferStatusSetSize(o_status, i_app->size_buffer*sizeof(double) );
+		o_status.SetSize( this->size_buffer*sizeof(double) );
 		return 0;
 	}
-	
+
 	/* --------------------------------------------------------------------
 	 * Unpack a buffer and place into a braid_Vector
 	 * -------------------------------------------------------------------- */
@@ -645,14 +698,19 @@ public:
 			BraidBufferStatus&	status
 			)
 	{
-		double* dbuffer = buffer;
-		///braid_Vector* U = (braid_Vector *) malloc( sizeof(braid_Vector) );
-		braid_Vector* U = new braid_Vector;
-	
+
+		sweet_BraidVector* U = new sweet_BraidVector;
+
+#if SWEET_XBRAID_SCALAR
+		double* dbuffer = (double*) i_buffer;
+#else
+		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
+#endif
+
 		U->data->deserialize(dbuffer);
-	
-		o_U = U;
-	
+
+		*o_U = (braid_Vector) U;
+
 		return 0;
 	}
 
