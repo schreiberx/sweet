@@ -30,34 +30,6 @@ class sweet_BraidVector;
 class sweet_BraidApp;
 
 
-///////////////////////* --------------------------------------------------------------------
-////////////////////// * Simulation manager structure.  
-////////////////////// * Holds the needed simulation data structures, e.g., discretizaion 'e' 
-////////////////////// * or 'i', spatial distribution, and solver used at each time point
-////////////////////// */
-/////////////////////////template <class t_tsmType, int N>
-//////////////////////typedef struct _simulation_manager_struct
-//////////////////////{
-//////////////////////	MPI_Comm		comm;
-//////////////////////	SimulationVariables*	simVars;
-//////////////////////	t_tsmType*		timeSteppers;
-//////////////////////	double			dt;
-//////////////////////} simulation_manager;
-
-
-////////////int print_app(sweet_BraidApp* app)
-////////////{
-////////////	int myid,i;
-////////////	MPI_Comm_rank( app->comm, &myid );
-////////////	printf("\n\nmyid:  %d,  App contents:\n", myid);
-////////////	printf("myid:  %d,  pt:            %d\n", myid, app->pt);
-////////////	printf("myid:  %d,  use_rand:      %d\n", myid, app->use_rand);
-////////////	printf("\nmyid:  %d,  Note that some object members like comm, comm_t, comm_x, man, A and solver cannot be printed\n\n", myid);
-////////////	return 0;
-////////////}
-
-
-
 
 /* --------------------------------------------------------------------
  * XBraid vector 
@@ -114,6 +86,8 @@ public:
 		*out.data *= i_value;
 		return out;
 	}
+
+
 
 
 	void allocate_data()
@@ -213,6 +187,77 @@ public:
 	~sweet_BraidApp()
 	{
 	}
+
+public:
+	void setup(BraidCore& i_core)
+	{
+
+
+		// get parameters from simVars and set to Core
+		i_core.SetMaxLevels(this->simVars->xbraid.xbraid_max_levels);
+		/////i_core.SetIncrMaxLevels();
+
+		i_core.SetSkip(this->simVars->xbraid.xbraid_skip);
+
+		i_core.SetMinCoarse(this->simVars->xbraid.xbraid_min_coarse);
+
+		///i_core.SetRelaxOnlyCG(this->simVars->xbraid.xbraid_relax_only_cg);
+
+		i_core.SetNRelax(-1, this->simVars->xbraid.xbraid_nrelax);
+		if (this->simVars->xbraid.xbraid_nrelax0 > -1)
+			i_core.SetNRelax(0, this->simVars->xbraid.xbraid_nrelax0);
+
+		i_core.SetAbsTol(this->simVars->xbraid.xbraid_tol);
+		i_core.SetRelTol(this->simVars->xbraid.xbraid_tol);
+
+		i_core.SetTemporalNorm(this->simVars->xbraid.xbraid_tnorm);
+
+		i_core.SetCFactor(-1, this->simVars->xbraid.xbraid_cfactor);
+		if (this->simVars->xbraid.xbraid_cfactor0 > -1)
+			i_core.SetCFactor(0, this->simVars->xbraid.xbraid_cfactor0);
+
+		///i_core.SetiPeriodic(this->simVars->xbraid.xbraid_periodic);
+
+		i_core.SetResidual();
+
+		i_core.SetMaxIter(this->simVars->xbraid.xbraid_max_iter);
+
+		i_core.SetPrintLevel(this->simVars->xbraid.xbraid_print_level);
+
+		i_core.SetSeqSoln(this->simVars->xbraid.xbraid_use_seq_soln);
+
+		i_core.SetAccessLevel(this->simVars->xbraid.xbraid_access_level);
+
+		i_core.SetNFMG(this->simVars->xbraid.xbraid_fmg);
+
+		//i_core.SetiNFMGVcyc(this->simVars->xbraid.xbraid_fmgvcyc);
+
+		i_core.SetStorage(this->simVars->xbraid.xbraid_storage);
+
+		//i_core.SetRevertedRanks(this->simVars->xbraid.xbraid_reverted_ranks);
+
+		////i_core.SetRefine(this->simVars->xbraid.xbraid_refine);
+		///i_core.SetMaxRefinements(this->simVars->xbraid.xbraid_max_Refinements);
+
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+		/////i_core.Set(this->simVars->xbraid.xbraid_);
+
+
+
+	}
+
+
 
 public:
 	/* --------------------------------------------------------------------
