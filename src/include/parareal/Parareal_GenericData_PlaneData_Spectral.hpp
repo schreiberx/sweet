@@ -70,7 +70,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 public:
 
-	DataContainer<PlaneData_Spectral*>* data;
+	DataContainer<PlaneData_Spectral*>* data = nullptr;
 
 public:
 	DataContainer<PlaneData_Spectral*>* get_pointer_to_data_PlaneData_Spectral() const override
@@ -171,7 +171,7 @@ public:
 		double e = -1;
 		for (int k = 0; k < N; k++)
 			e = std::max( e,
-					this->data->simfields[k]->toPhys().physical_reduce_max_abs());
+				this->data->simfields[k]->toPhys().physical_reduce_max_abs());
 		return e;
 	}
 
@@ -267,18 +267,18 @@ public:
 	}
 
 	void dataArrays_to_GenericData_PlaneData_Spectral(
-	#if SWEET_PARAREAL_PLANE_SWE_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 								PlaneData_Spectral &h,
 	#endif
 								PlaneData_Spectral &u,
 								PlaneData_Spectral &v
 							) override
 	{
-	#if SWEET_PARAREAL_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 		*(this->data->simfields[0]) = h;
 		*(this->data->simfields[1]) = u;
 		*(this->data->simfields[2]) = v;
-	#elif SWEET_PARAREAL_PLANE_BURGERS
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 		*(this->data->simfields[0]) = u;
 		*(this->data->simfields[1]) = v;
 	#endif
@@ -292,11 +292,11 @@ public:
 								PlaneData_Spectral &v
 							) override
 	{
-	#if SWEET_PARAREAL_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 		h = *(this->data->simfields[0]);
 		u = *(this->data->simfields[1]);
 		v = *(this->data->simfields[2]);
-	#elif SWEET_PARAREAL_PLANE_BURGERS
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 		u = *(this->data->simfields[0]);
 		v = *(this->data->simfields[1]);
 	#endif

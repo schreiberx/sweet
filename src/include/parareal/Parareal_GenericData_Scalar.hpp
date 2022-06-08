@@ -62,7 +62,7 @@ class Parareal_GenericData_Scalar :
 
 public:
 
-	DataContainer<double>* data;
+	DataContainer<double>* data = nullptr;
 
 public:
 	DataContainer<double>* get_pointer_to_data_Scalar() const override

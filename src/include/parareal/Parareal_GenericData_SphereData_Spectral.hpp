@@ -67,7 +67,7 @@ class Parareal_GenericData_SphereData_Spectral :
 
 public:
 
-	DataContainer<SphereData_Spectral*>* data;
+	DataContainer<SphereData_Spectral*>* data = nullptr;
 
 public:
 	DataContainer<SphereData_Spectral*>* get_pointer_to_data_SphereData_Spectral() const override

@@ -171,6 +171,9 @@ class JobRuntimeOptions(InfoError):
         self.xbraid_use_seq_soln = None;
         self.xbraid_use_rand = None;
         self.xbraid_pt = None;
+        self.xbraid_timestepping_method = None;
+        self.xbraid_timestepping_order = None;
+        self.xbraid_timestepping_order2 = None;
 
         #
         # User defined parameters
@@ -470,7 +473,7 @@ class JobRuntimeOptions(InfoError):
                 if self.xbraid_nrelax != None:
                     idstr += '_xb_nrlx'+str(self.xbraid_nrelax)
                 if self.xbraid_nrelax0 != None:
-                    idstr += '_xb_nrlx0'+str(self.xbraid_nrleax0)
+                    idstr += '_xb_nrlx0'+str(self.xbraid_nrelax0)
                 if self.xbraid_tol != None:
                     idstr += '_xb_tol'+str(self.xbraid_tol)
                 if self.xbraid_tnorm != None:
@@ -501,6 +504,12 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_xb_rand'+str(self.xbraid_use_rand)
                 if self.xbraid_pt != None:
                     idstr += '_xb_pt'+str(self.xbraid_pt)
+                if self.xbraid_timestepping_method != None:
+                    idstr += '_xb_tsm'+str(self.xbraid_timestepping_method)
+                if self.xbraid_timestepping_order != None:
+                    idstr += '_xb_tso'+str(self.xbraid_timestepping_order)
+                if self.xbraid_timestepping_order != None:
+                    idstr += '_xb_tso2'+str(self.xbraid_timestepping_order2)
 
         if idstr != '':
             idstr = "RT"+idstr
@@ -753,6 +762,9 @@ class JobRuntimeOptions(InfoError):
             retval += " --xbraid-use-seq-soln="+str(self.xbraid_use_seq_soln)
             retval += " --xbraid-use-rand="+str(self.xbraid_use_rand)
             retval += " --xbraid-pt="+str(self.xbraid_pt)
+            retval += " --xbraid-timestepping-method="+str(self.xbraid_timestepping_method)
+            retval += " --xbraid-timestepping-order="+str(self.xbraid_timestepping_order2)
+            retval += " --xbraid-timestepping-order2="+str(self.xbraid_timestepping_order2)
 
 
 

@@ -1134,39 +1134,54 @@ int main(int i_argc, char *i_argv[])
 		if (simVars.xbraid.xbraid_enabled)
 		{
 
+			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+
 			MPI_Comm comm = MPI_COMM_WORLD;
 			MPI_Comm comm_x, comm_t;
 
-			braid_Core core;
+			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
 			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
-			sweet_BraidApp* app = new sweet_BraidApp(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
+			sweet_BraidApp* app = new sweet_BraidApp(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfig, &op);
 
 			braid_App* app2 = (braid_App*) app;
 
+			BraidCore core(MPI_COMM_WORLD, app);
+			app->setup(core);
+
 			if( simVars.xbraid.xbraid_run_wrapper_tests)
 			{
-				////////* Run the XBraid wrapper tests */
-				///////double mytime = 0.0;
-				///////for(int i = 0; i < 2; i++)
-				///////{
-				///////	braid_TestInitAccess( *app2, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free);
-				///////	braid_TestClone( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free, &sweet_BraidApp::Clone);
-				///////	braid_TestSum( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free, &sweet_BraidApp::Clone, &sweet_BraidApp::Sum);
-				///////	braid_TestResidual(app, comm_x, stdout, mytime, app->man->dt, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free, &sweet_BraidApp::Clone, &sweet_BraidApp::Sum, &sweet_BraidApp::SpatialNorm, &sweet_BraidApp::Residual, &sweet_BraidApp::Step);
-				///////	int correct1 = braid_TestSpatialNorm( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Free, &sweet_BraidApp::Clone, &sweet_BraidApp::Sum, &sweet_BraidApp::SpatialNorm);
-				///////	int correct2 = braid_TestBuf( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Free, &sweet_BraidApp::Sum, &sweet_BraidApp::SpatialNorm, &sweet_BraidApp::BufSize, &sweet_BraidApp::BufPack, &sweet_BraidApp::BufUnpack);
-				///////	mytime += app->man->dt;
 
-				///////	if( (correct1 == 0) || (correct2 == 0))
-				///////	{
-				///////		printf("Failed: at least one of the tests failed\n");
-				///////	}
-				///////	else
-				///////	{
-				///////		printf("Passed: all tests passed\n");
-				///////	}
-				///////}
+				BraidUtil braid_util;
+				int test = braid_util.TestAll(app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
+				if (test == 0)
+					SWEETError("Tests failed!");
+				else
+					std::cout << "Tests successful!" << std::endl;
+
+
+				///////////* Run the XBraid wrapper tests */
+				//////////double mytime = 0.0;
+				//////////for(int i = 0; i < 2; i++)
+				//////////{
+				//////////	braid_TestInitAccess( *app2, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free);
+				//////////	braid_TestClone( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free, &sweet_BraidApp::Clone);
+				//////////	braid_TestSum( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free, &sweet_BraidApp::Clone, &sweet_BraidApp::Sum);
+				//////////	braid_TestResidual(app, comm_x, stdout, mytime, app->man->dt, &sweet_BraidApp::Init, &sweet_BraidApp::Access, &sweet_BraidApp::Free, &sweet_BraidApp::Clone, &sweet_BraidApp::Sum, &sweet_BraidApp::SpatialNorm, &sweet_BraidApp::Residual, &sweet_BraidApp::Step);
+				//////////	int correct1 = braid_TestSpatialNorm( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Free, &sweet_BraidApp::Clone, &sweet_BraidApp::Sum, &sweet_BraidApp::SpatialNorm);
+				//////////	int correct2 = braid_TestBuf( app, comm_x, stdout, mytime, &sweet_BraidApp::Init, &sweet_BraidApp::Free, &sweet_BraidApp::Sum, &sweet_BraidApp::SpatialNorm, &sweet_BraidApp::BufSize, &sweet_BraidApp::BufPack, &sweet_BraidApp::BufUnpack);
+				//////////	mytime += app->man->dt;
+
+				//////////	if( (correct1 == 0) || (correct2 == 0))
+				//////////	{
+				//////////		printf("Failed: at least one of the tests failed\n");
+				//////////	}
+				//////////	else
+				//////////	{
+				//////////		printf("Passed: all tests passed\n");
+				//////////	}
+				//////////}
 			}
 			else
 			{
@@ -1244,13 +1259,13 @@ int main(int i_argc, char *i_argv[])
 
 
 				// Initialize Braid Core Object and set some solver options
-				BraidCore core(MPI_COMM_WORLD, app);
+				///BraidCore core(MPI_COMM_WORLD, app);
 				/////////core.SetPrintLevel(2);
 				/////////core.SetMaxLevels(2);
 				/////////core.SetAbsTol(1.0e-6);
 				/////////core.SetCFactor(-1, 2);
 
-				app->setup(core);
+				//app->setup(core);
 
 				// Run Simulation
 				core.Drive();

@@ -101,7 +101,9 @@ public:
 	#endif
 								PlaneData_Spectral &u,
 								PlaneData_Spectral &v
-							);
+							)
+	{
+	};
 
 	virtual void GenericData_PlaneData_Spectral_to_dataArrays(
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
@@ -109,7 +111,9 @@ public:
 	#endif
 								PlaneData_Spectral &u,
 								PlaneData_Spectral &v
-							);
+							)
+	{
+	};
 
 
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
