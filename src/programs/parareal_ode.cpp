@@ -363,21 +363,16 @@ int main(int i_argc, char *i_argv[])
 		MPI_Comm comm = MPI_COMM_WORLD;
 		MPI_Comm comm_x, comm_t;
 
-		//////braid_Core core;
-		///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
 		int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
-		//sweet_BraidApp* app = new sweet_BraidApp(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
 		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
-
-		BraidCore core(MPI_COMM_WORLD, &app);
-		app.setup(core);
 
 		if( simVars.xbraid.xbraid_run_wrapper_tests)
 		{
 
+			app.setup();
+
 			BraidUtil braid_util;
 			int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
-			////int test = braid_util.TestBuf(app, comm, stdout, 0.);
 			if (test == 0)
 				SWEETError("Tests failed!");
 			else
@@ -386,6 +381,8 @@ int main(int i_argc, char *i_argv[])
 		}
 		else
 		{
+			BraidCore core(MPI_COMM_WORLD, &app);
+			app.setup(core);
 			// Run Simulation
 			core.Drive();
 		}

@@ -197,7 +197,7 @@ public:
 		double e = 0;
 		for (int k = 0; k < N; k++)
 			e += this->data->simfields[k] * this->data->simfields[k];
-		return e;
+		return std::sqrt(e);
 	}
 
 
@@ -215,7 +215,9 @@ public:
 
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_Scalar()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_Scalar()->nb_fields);
 
 		for (int i = 0; i < N; i++)
@@ -227,7 +229,9 @@ public:
 
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_Scalar()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_Scalar()->nb_fields);
 
 		for (int i = 0; i < N; i++)

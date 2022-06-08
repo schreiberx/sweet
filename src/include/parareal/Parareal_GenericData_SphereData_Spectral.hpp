@@ -222,7 +222,9 @@ public:
 
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) += *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]);
@@ -233,7 +235,9 @@ public:
 
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_SphereData_Spectral()->nb_fields);
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) -= *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]);

@@ -303,6 +303,12 @@ public:
 		///i_core.SetMaxRefinements(this->simVars->xbraid.xbraid_max_Refinements);
 
 
+		this->setup();
+	}
+
+public:
+	void setup()
+	{
 		////////////////////////////////////
 		// get tsm and tso for each level //
 		////////////////////////////////////
@@ -955,31 +961,16 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) o_buffer;
 #endif
 
-#if SWEET_XBRAID_SCALAR
-		dbuffer = MemBlockAlloc::alloc<double>(N * sizeof(double));
-#elif SWEET_XBRAID_PLANE
-		dbuffer = MemBlockAlloc::alloc<std::complex<double>>(N * planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>) );
-#elif SWEET_XBRAID_SPHERE
-		dbuffer = MemBlockAlloc::alloc<std::complex<double>>(N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
-#endif
+///////////#if SWEET_XBRAID_SCALAR
+///////////		dbuffer = MemBlockAlloc::alloc<double>(N * sizeof(double));
+///////////#elif SWEET_XBRAID_PLANE
+///////////		dbuffer = MemBlockAlloc::alloc<std::complex<double>>(N * planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>) );
+///////////#elif SWEET_XBRAID_SPHERE
+///////////		dbuffer = MemBlockAlloc::alloc<std::complex<double>>(N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
+///////////#endif
 
 		U->data->serialize(dbuffer);
 
-
-		o_buffer = dbuffer;
-		std::complex<double>* dbuffer2 = (std::complex<double>*) o_buffer;
-
-		std::cout << "PACK " << U->data->reduce_maxAbs() << std::endl;
-		////////int s = planeDataConfig->spectral_array_data_number_of_elements;
-		////////for (int i = 0; i < N; i++)
-		////////	for (int k = 0; k < s; k++)
-		////////		std::cout << i << " " << k << " " << i * s + k << " " << U->data->get_pointer_to_data_PlaneData_Spectral()->simfields[i]->spectral_space_data[k] << " " <<  dbuffer[i * s + k] << " " << dbuffer2[i * s + k] << std::endl;
-
-
-
-
-		/* Return the number of bytes actually packed */
-		//////////std::cout << "SIZE " << this->size_buffer  << std::endl;
 		o_status.SetSize( this->size_buffer );
 		return 0;
 	}
@@ -1003,22 +994,7 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif
 
-		////int s = planeDataConfig->spectral_array_data_number_of_elements;
-		////for (int i = 0; i < N; i++)
-		////	for (int k = 0; k < s; k++)
-		////		std::cout << U->data->get_pointer_to_data_PlaneData_Spectral()->simfields[i]->spectral_space_data[k] << " " <<  dbuffer[i * s + k] << std::endl;
-
 		U->data->deserialize(dbuffer);
-
-		std::cout << "UNPACK " << U->data->reduce_maxAbs() << std::endl;
-
-		//////////int s = planeDataConfig->spectral_array_data_number_of_elements;
-		//////////////for (int i = 0; i < N; i++)
-		//////////////	for (int k = 0; k < s; k++)
-		//////////////		std::cout << U->data->get_pointer_to_data_PlaneData_Spectral()->simfields[i]->spectral_space_data[k] << " " <<  dbuffer[i * s + k] << std::endl;
-		//////////for (int i = 0; i < 10000; i++)
-		//////////	std::cout << i << " " <<  dbuffer[i] << std::endl;
-
 
 		*o_U = (braid_Vector) U;
 
