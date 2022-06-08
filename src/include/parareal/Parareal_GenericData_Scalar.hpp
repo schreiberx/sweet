@@ -70,6 +70,20 @@ public:
 		return this->data;
 	};
 
+	void dataArrays_to_GenericData_Scalar(
+						double &u
+						) override
+	{
+		this->get_pointer_to_data_Scalar()->simfields[0] = u;
+	}
+
+	void GenericData_Scalar_to_dataArrays(
+						double &u
+						) override
+	{
+		u = this->get_pointer_to_data_Scalar()->simfields[0];
+	}
+
 
 public:
 

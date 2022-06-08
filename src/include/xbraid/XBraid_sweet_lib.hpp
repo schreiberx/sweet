@@ -3,6 +3,7 @@
 
 #if SWEET_XBRAID_SCALAR
 	#include <parareal/Parareal_GenericData_Scalar.hpp>
+	#include "src/programs/ode_scalar_timeintegrators/ODE_Scalar_TimeSteppers.hpp"
 	typedef ODE_Scalar_TimeSteppers t_tsmType;
 	#define N 1
 #elif SWEET_XBRAID_PLANE
@@ -24,6 +25,7 @@
 	// Grid Mapping (staggered grid)
 	PlaneDataGridMapping gridMapping;
 #endif
+
 
 
 class sweet_BraidVector;
@@ -76,13 +78,21 @@ public:
 
 	sweet_BraidVector(const sweet_BraidVector &i_vector)
 	{
+#if SWEET_XBRAID_PLANE
 		this->planeDataConfig = i_vector.planeDataConfig;
+#elif SWEET_XBRAID_SPHERE
+		this->sphereDataConfig = i_vector.sphereDataConfig;
+#endif
 		*this->data = *i_vector.data;
 	};
 
 	sweet_BraidVector& operator=(const sweet_BraidVector &i_vector)
 	{
+#if SWEET_XBRAID_PLANE
 		this->planeDataConfig = i_vector.planeDataConfig;
+#elif SWEET_XBRAID_SPHERE
+		this->sphereDataConfig = i_vector.sphereDataConfig;
+#endif
 		*this->data = *i_vector.data;
 		return *this;
 	};
@@ -91,7 +101,13 @@ public:
 			const sweet_BraidVector &i_vector
 	)	const
 	{
+#if SWEET_XBRAID_SCALAR
+		sweet_BraidVector out;
+#elif SWEET_XBRAID_PLANE
 		sweet_BraidVector out(this->planeDataConfig);
+#elif SWEET_XBRAID_SPHERE
+		sweet_BraidVector out(this->sphereDataConfig);
+#endif
 		*out.data = *this->data;
 		*out.data += *i_vector.data;
 		return out;
@@ -101,28 +117,18 @@ public:
 			const double i_value
 	)	const
 	{
+#if SWEET_XBRAID_SCALAR
+		sweet_BraidVector out;
+#elif SWEET_XBRAID_PLANE
 		sweet_BraidVector out(this->planeDataConfig);
+#elif SWEET_XBRAID_SPHERE
+		sweet_BraidVector out(this->sphereDataConfig);
+#endif
 		*out.data = *this->data;
 		*out.data *= i_value;
 		return out;
 	}
 
-
-////#if SWEET_XBRAID_SCALAR
-////	void setup()
-////	{
-////	}
-////#elif SWEET_XBRAID_PLANE
-////	void setup(PlaneDataConfig* i_planeDataConfig)
-////	{
-////		this->planeDataConfig = i_planeDataConfig;
-////	}
-////#elif SWEET_XBRAID_SPHERE
-////	void setup(SphereDataConfig* i_sphereDataConfig)
-////	{
-////		this->sphereDataConfig = i_sphereDataConfig;
-////	}
-////#endif
 
 	void allocate_data()
 	{
@@ -238,7 +244,7 @@ public:
 	{
 	}
 
-	~sweet_BraidApp()
+	virtual ~sweet_BraidApp()
 	{
 	}
 
@@ -309,7 +315,12 @@ public:
 		{
 
 #if SWEET_XBRAID_SCALAR
-			SWEETError("TODO");
+			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
+			tsm->setup(
+					tsms[level],
+					tsos[level],
+					*this->simVars
+				);
 #elif SWEET_XBRAID_PLANE
 	#if SWEET_XBRAID_PLANE_SWE
 			SWE_Plane_TimeSteppers* tsm = new SWE_Plane_TimeSteppers;
@@ -569,7 +580,7 @@ public:
 			std::cout << "Setting initial solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
 			double u0 = atof(simVars->bogus.var[1].c_str());
-			this->dataArrays_to_GenericData_Scalar(U->data, u0);
+			U->data->dataArrays_to_GenericData_Scalar(u0);
 	
 	#elif SWEET_XBRAID_PLANE
 			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
@@ -648,7 +659,7 @@ public:
 			std::cout << "Setting random solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
 			double u0 = ((double)braid_Rand())/braid_RAND_MAX;
-			this->dataArrays_to_GenericData_Scalar(U->data, u0);
+			U->data->dataArrays_to_GenericData_Scalar(u0);
 	#elif SWEET_XBRAID_PLANE
 	
 		#if SWEET_XBRAID_PLANE_SWE
@@ -737,7 +748,8 @@ public:
 			std::cout << "Setting zero solution " << std::endl;
 			/* Sets U as an all zero vector*/
 	#if SWEET_XBRAID_SCALAR
-			this->dataArrays_to_GenericData_Scalar(U->data, 0.);
+			double zero = 0;
+			U->data->dataArrays_to_GenericData_Scalar(zero);
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
 			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
