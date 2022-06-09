@@ -323,8 +323,8 @@ public:
 #if SWEET_XBRAID_SCALAR
 			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
 			tsm->setup(
-					tsms[level],
-					tsos[level],
+					//tsms[level],
+					//tsos[level],
 					*this->simVars
 				);
 #elif SWEET_XBRAID_PLANE
@@ -578,8 +578,6 @@ public:
 	{
 
 		sweet_BraidVector* U = create_new_vector();
-
-		std::cout << "i_t tstart " << i_t << " " << tstart << std::endl;
 
 		if( i_t == this->tstart )
 		{
@@ -873,6 +871,7 @@ public:
 		io_astatus.GetT(&t);
 		io_astatus.GetTIndex(&it);
 		io_astatus.GetIter(&iter);
+		io_astatus.GetLevel(&level);
 	
 		/* Retrieve XBraid State Information from Status Object */
 		///////////MPI_Comm_rank(app->comm_x, &myid);
@@ -880,19 +879,24 @@ public:
 		///////////braid_AccessStatusGetResidual(astatus, &rnorm);
 
 
-
 		if(level == 0)
 		{
-			std::cout << "ACCESS" << std::endl;
 
-			// Print physical solution
-			std::cout << "Storing solution at t it iter = " << t << " " << it << " " << iter << std::endl;
-
+			// Output physical solution to file
 			this->output_data_file(U->data,
 						iter,
 						it,
 						t,
 						false);
+
+
+			// Store residual
+			if (it == 0) {
+				double res;
+				io_astatus.GetResidual(&res);
+				this->output_residual_file(res,
+								iter);
+			}
 
 	/////   /* Print discretization error to screen for only final time */
 	/////   index = ((t - tstart) / ((tstop - tstart)/nt) + 0.1);
@@ -1007,6 +1011,30 @@ public:
 ///////////////////////////
 // Copied from Parareal; find an unified formulation!
 
+	void output_residual_file(
+			double res,
+			int iteration_id
+	)
+	{
+
+		char buffer[1024];
+
+		const char* filename_template = "residual_iter%03d.csv";
+		sprintf(buffer, filename_template, iteration_id);
+
+		std::ofstream file(buffer, std::ios_base::trunc);
+		file << std::setprecision(16);
+
+		file << "#SWEET" << std::endl;
+		file << "#FORMAT ASCII" << std::endl;
+		file << "#PRIMITIVE SCALAR" << std::endl;
+
+		file << res;
+
+		file.close();
+
+	}
+
 
 	void output_data_file(
 			Parareal_GenericData* i_data,
@@ -1028,7 +1056,7 @@ public:
 		if (simVars->iodata.output_file_name.size() > 0)
 		{
 			std::string output_filenames = "";
-			output_filenames = write_file_xbraid_scalar(u_out, "prog_u", iteration_id, output_initial_data);
+			output_filenames = write_file_xbraid_scalar(u_out, "prog_u", iteration_id, t, output_initial_data);
 		}
 
 #elif SWEET_XBRAID_PLANE
@@ -1401,6 +1429,7 @@ public:
 		)
 	{
 		char buffer[1024];
+
 
 		const char* filename_template = "output_%s_t%020.8f_iter%03d.csv";
 		if (output_initial_data)

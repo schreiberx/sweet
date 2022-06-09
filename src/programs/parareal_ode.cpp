@@ -149,6 +149,7 @@ public:
 		: simVars(i_simVars)
 	{
 		timeSteppers = new ODE_Scalar_TimeSteppers;
+		timeSteppers->setup(*simVars);
 	}
 
 	~SimulationInstance()

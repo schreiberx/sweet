@@ -68,8 +68,6 @@ public:
 	{
 		this->param_parareal_function_a = i_a;
 		this->param_parareal_function_b = i_b;
-
-		std::cout << "SETUP " << this->param_parareal_function_a << " " << this->param_parareal_function_b << std::endl;
 	}
 
 };

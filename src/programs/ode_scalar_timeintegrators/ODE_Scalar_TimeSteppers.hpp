@@ -33,8 +33,8 @@ public:
 	}
 
 	void setup(
-			const std::string &i_timestepping_method,
-			int &i_timestepping_order,
+			//const std::string &i_timestepping_method,
+			///int &i_timestepping_order,
 
 			SimulationVariables &i_simVars
 	)
