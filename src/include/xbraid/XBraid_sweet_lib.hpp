@@ -281,7 +281,7 @@ public:
 
 		///i_core.SetiPeriodic(this->simVars->xbraid.xbraid_periodic);
 
-		i_core.SetResidual();
+		////i_core.SetResidual();
 
 		i_core.SetMaxIter(this->simVars->xbraid.xbraid_max_iter);
 
@@ -366,7 +366,6 @@ public:
 		this->size_buffer = N * sizeof(double);
 #elif SWEET_XBRAID_PLANE
 		this->size_buffer = N * planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
-		std::cout << "N " << N << " " << planeDataConfig->spectral_array_data_number_of_elements << " " << sizeof(std::complex<double>) << " " << this->size_buffer << std::endl;
 #elif SWEET_XBRAID_SPHERE
 		this->size_buffer = N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
@@ -437,7 +436,7 @@ private:
 		}
 
 		if ( ! (tso.size() == 1 || tso.size() == 2 || tso.size() == this->simVars->xbraid.xbraid_max_levels ) )
-			SWEETError("xbraid_timestepping_order must contain 1, 2 or N timestepping names.");
+			SWEETError("xbraid_timestepping_order must contain 1, 2 or N timestepping orders.");
 
 		// all levels use same tso
 		if (tso.size() == 1)
@@ -515,16 +514,16 @@ public:
 
 		return 0;
 	}
-	
-	/* --------------------------------------------------------------------
-	 * -------------------------------------------------------------------- */
+		
+		/* --------------------------------------------------------------------
+		 * -------------------------------------------------------------------- */
 
 	virtual braid_Int
 	Residual(
 				braid_Vector			i_ustop,
 				braid_Vector			o_r,
 				BraidStepStatus&		io_status
-			)
+		)
 	{
 
 		//braid_StepStatus& status = (braid_StepStatus&) io_status;
@@ -541,7 +540,13 @@ public:
 	
 		/* Set the new dt in the user's manager*/
 		this->dt = tstop - tstart;
-	
+
+
+		sweet_BraidVector* u = (sweet_BraidVector*) i_ustop;
+		sweet_BraidVector* r = (sweet_BraidVector*) o_r;
+		std::cout << "SOLUTION " << tstop << " " << u->data->get_pointer_to_data_Scalar()->simfields[0] << std::endl;
+		std::cout << "RESIDUAL " << tstop << " " << r->data->get_pointer_to_data_Scalar()->simfields[0] << std::endl;
+
 		/////////////////* Now, set up the discretization matrix.  Use the XBraid level to index
 		//////////////// * into the matrix lookup table */
 		////////////////if( app->dt_A[level] == -1.0 ){
@@ -964,14 +969,6 @@ public:
 #else
 		std::complex<double>* dbuffer = (std::complex<double>*) o_buffer;
 #endif
-
-///////////#if SWEET_XBRAID_SCALAR
-///////////		dbuffer = MemBlockAlloc::alloc<double>(N * sizeof(double));
-///////////#elif SWEET_XBRAID_PLANE
-///////////		dbuffer = MemBlockAlloc::alloc<std::complex<double>>(N * planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>) );
-///////////#elif SWEET_XBRAID_SPHERE
-///////////		dbuffer = MemBlockAlloc::alloc<std::complex<double>>(N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
-///////////#endif
 
 		U->data->serialize(dbuffer);
 

@@ -130,6 +130,7 @@ if simulation_to_run == "xbraid":
         jg.runtime.xbraid_tol = 0.
         jg.runtime.xbraid_max_iter = 3
         jg.runtime.xbraid_use_seq_soln = 1
+        jg.runtime.xbraid_access_level = 2
     elif (itest == 4):
         jg.runtime.xbraid_print_level = 3
     elif (itest == 5):

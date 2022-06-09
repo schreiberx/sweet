@@ -80,6 +80,7 @@ for itest in {-1..5};do
 	elif [ "$itest" == 3 ]; then
 		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
 		mule.benchmark.jobs_run_directly|| exit 1
+		./check_residual.py 1e-16
 		mule.benchmark.cleanup_all || exit 1
 	fi;
 

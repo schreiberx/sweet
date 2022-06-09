@@ -25,6 +25,7 @@ class Parareal_GenericData_Scalar :
 
 		DataContainer_Scalar()
 		{
+			this->nb_fields = N;
 			this->simfields = new double[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = 0.;
@@ -34,6 +35,7 @@ class Parareal_GenericData_Scalar :
 				double i_data
 		)
 		{
+			this->nb_fields = N;
 			this->simfields = new double[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data;
@@ -43,6 +45,7 @@ class Parareal_GenericData_Scalar :
 				double* i_data
 		)
 		{
+			this->nb_fields = N;
 			this->simfields = new double[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data[i];
