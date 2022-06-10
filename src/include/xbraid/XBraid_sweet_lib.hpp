@@ -888,11 +888,30 @@ public:
 		{
 
 			// Output physical solution to file
-			this->output_data_file(U->data,
-						iter,
-						it,
-						t,
-						false);
+			if (simVars->xbraid.xbraid_store_iterations)
+				this->output_data_file(
+							U->data,
+							iter,
+							it,
+							t,
+							false
+				);
+			// Compute and store errors w.r.t. ref solution
+			if (simVars->xbraid.xbraid_load_ref_csv_files)
+				this->store_parareal_error(
+								k + 1,
+								i,
+								pVars->path_ref_csv_files,
+								"ref"
+				);
+			// Compute and store errors w.r.t. fine (serial) solution
+			if (simVars->xbraid.xbraid_load_fine_csv_files)
+				this->store_parareal_error(
+								k + 1,
+								i,
+								pVars->path_fine_csv_files,
+								"fine"
+				);
 
 
 			// Store residual
@@ -903,25 +922,11 @@ public:
 								iter);
 			}
 
-	/////   /* Print discretization error to screen for only final time */
-	/////   index = ((t - tstart) / ((tstop - tstart)/nt) + 0.1);
-	/////   compute_disc_err(app->man, u->x, t, app->e, &disc_err);
-	/////   if( (t == app->man->tstop) && myid == 0 ) {
-	/////      printf("\n  Discr. error         = %1.5e\n", disc_err);
-	/////      printf("\n  my_Access():  Braid iter %d,  discr. error at final time:  %1.4e\n", iter, disc_err);
-	
-		}
-	
-		/* Write the norm of the discretization error to a separate file for each time step */
-	//////////	if( this->output_files )
-	//////////	{
-	//////////         sprintf(filename, "%s.iter%03d.time%07d", "ex-03.error_norm", iter, index);
-	//////////         output_error_file(app->man, t, disc_err, filename); 
-	//////////	}
-	
 		return 0;
 	}
-	
+
+
+
 	/* --------------------------------------------------------------------
 	 * Compute norm of a spatial vector 
 	 * -------------------------------------------------------------------- */

@@ -6,7 +6,7 @@
 ## itest = 1: max_levels = 1 -> solution should be equal to the serial one
 ## itest = 2: max_levels = 1 and 2 processors in time -> idem
 ## itest = 3: max_levels = 2, tol = 0., max_iter = 3, use_seqsoln, n processors in time -> residul should be zero at each iteration
-## itest = 4: print_level = 3 -> check residual norm at each C-point
+## itest = 4: print_level = 3 -> check residual norm at each C-point: should be zero for two C-points per iteration
 ## itest = 5: multilevel tests + n processors in time -> XBraid solution within tol w.r.t. serial solution
 ###############
 
@@ -63,25 +63,30 @@ for itest in {-1..5};do
 
 	if [ "$itest" == -1  ]; then
 		./benchmarks_create.py $tsm_fine $tsm_coarse ref $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
-		mule.benchmark.jobs_run_directly|| exit 1
+		mule.benchmark.jobs_run_directly || exit 1
 		mv job_bench_* "$dirname_serial"/.
 		mule.benchmark.cleanup_all || exit 1
 	elif [ "$itest" == 0 ]; then
 		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
-		mule.benchmark.jobs_run_directly|| exit 1
+		mule.benchmark.jobs_run_directly || exit 1
 		mule.benchmark.cleanup_all || exit 1
 	elif [ "$itest" == 1 ] || [ "$itest" == 2 ]; then
 		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
-		mule.benchmark.jobs_run_directly|| exit 1
+		mule.benchmark.jobs_run_directly || exit 1
 		fine_sim=$(cat fine_sim);
 		cp -r "$dirname_serial"/"$fine_sim" .
 		./compare_to_fine_solution.py $fine_sim;
 		mule.benchmark.cleanup_all || exit 1
 	elif [ "$itest" == 3 ]; then
 		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
-		mule.benchmark.jobs_run_directly|| exit 1
-		./check_residual.py 1e-16
+		mule.benchmark.jobs_run_directly || exit 1
+		./check_residual.py iteration 1e-16
 		mule.benchmark.cleanup_all || exit 1
+	elif [ "$itest" == 4 ]; then
+		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
+		mule.benchmark.jobs_run_directly || exit 1
+		./check_residual.py C-point 1e-16
+		#########mule.benchmark.cleanup_all || exit 1
 	fi;
 
 ####	for tsm_fine in dummy; do ## short version
@@ -174,8 +179,8 @@ for itest in {-1..5};do
 	echo "";
 done;
 
-mule.benchmark.cleanup_all || exit 1
-####rm -r $dirname_serial;
+
+##########33mule.benchmark.cleanup_all || exit 1
 if [ -d $dirname_serial ]; then
 	rm -r $dirname_serial;
 fi

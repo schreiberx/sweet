@@ -129,6 +129,33 @@ struct XBraid_SimulationVariables
 	 */
 	std::string xbraid_timestepping_order2;
 
+	/**
+	 * Verbosity of XBraid controller
+	 */
+	int verbosity = 0;
+
+	/**
+	 * Read reference csv files
+	 * in order to compute and store errors
+	 * instead of storing XBraid iterations
+	 */
+	bool xbraid_load_ref_csv_files = false;
+	std::string xbraid_path_ref_csv_files = "";
+
+	/**
+	 * Read csv files of fine simulation
+	 * in order to compute and store errors
+	 * instead of storing XBraid iterations
+	 */
+	bool xbraid_load_fine_csv_files = false;
+	std::string xbraid_path_fine_csv_files = "";
+
+	/**
+	 * Store XBraid iterations
+	 * May require too much disk storage!
+	 */
+	bool xbraid_store_iterations = true;
+
 
 	void outputConfig()
 	{
@@ -158,37 +185,48 @@ struct XBraid_SimulationVariables
 		std::cout << " + xbraid_timestepping_method: "    << xbraid_timestepping_method     << std::endl;
 		std::cout << " + xbraid_timestepping_order: "     << xbraid_timestepping_order      << std::endl;
 		std::cout << " + xbraid_timestepping_order2: "    << xbraid_timestepping_order2     << std::endl;
-		std::cout                                                                           << std::endl;
+		std::cout << " + xbraid_verbosity: "              << xbraid_verbosity               << std::endl;
+		std::cout << " + xbraid_load_ref_csv_files: "     << xbraid_load_ref_csv_files      << std::endl;
+		std::cout << " + xbraid_path_ref_csv_files: "     << xbraid_path_ref_csv_files      << std::endl;
+		std::cout << " + xbraid_load_fine_csv_files: "    << xbraid_load_fine_csv_files     << std::endl;
+		std::cout << " + xbraid_path_fine_csv_files: "    << xbraid_path_fine_csv_files     << std::endl;
+		std::cout << " + xbraid_store_iterations: "       << xbraid_store_iterations        << std::endl;
 	}
 
 	void printOptions()
 	{
-		std::cout << ""                                                                                       << std::endl;
-		std::cout << "XBraid:"                                                                                << std::endl;
-		std::cout << "	--xbraid-enabled [0/1]             XBraid parameter enabled, default: 0"              << std::endl;
-		std::cout << "	--xbraid-max-levels [int]          XBraid parameter max_levels, default: 15"          << std::endl;
-		std::cout << "	--xbraid-skip [int]                XBraid parameter skip, default: 1"                 << std::endl;
-		std::cout << "	--xbraid-min-coarse [int]          XBraid parameter min_coarse, default: 3"           << std::endl;
-		std::cout << "	--xbraid-nrelax [int]              XBraid parameter nrelax, default: 1"               << std::endl;
-		std::cout << "	--xbraid-nrelax0 [int]             XBraid parameter nrelax0, default: -1"             << std::endl;
-		std::cout << "	--xbraid-tol [float]               XBraid parameter tol, default: 1e-9"               << std::endl;
-		std::cout << "	--xbraid-tnorm [int]               XBraid parameter tnorm, default: 2"                << std::endl;
-		std::cout << "	--xbraid-cfactor [int]             XBraid parameter cfactor, default: 2"              << std::endl;
-		std::cout << "	--xbraid-cfactor0 [int]            XBraid parameter cfactor0, default: -1"            << std::endl;
-		std::cout << "	--xbraid-max-iter [int]            XBraid parameter max_iter, default: 100"           << std::endl;
-		std::cout << "	--xbraid-fmg [int]                 XBraid parameter fmg, default: 0"                  << std::endl;
-		std::cout << "	--xbraid-res [int]                 XBraid parameter res, default: 0"                  << std::endl;
-		std::cout << "	--xbraid-storage [int]             XBraid parameter storage, default: -1"             << std::endl;
-		std::cout << "	--xbraid-print-level [int]         XBraid parameter print_level, default: 2"          << std::endl;
-		std::cout << "	--xbraid-access-level [int]        XBraid parameter access_level, default: 1"         << std::endl;
-		std::cout << "	--xbraid-run-wrapper-tests [int]   XBraid parameter run_wrapper_tests, default: 0"    << std::endl;
-		std::cout << "	--xbraid-fullrnorm [int]           XBraid parameter fullrnorm, default: 0"            << std::endl;
-		std::cout << "	--xbraid-use-seq-soln [int]        XBraid parameter use_seq_soln, default: 0"         << std::endl;
-		std::cout << "	--xbraid-use-rand [int]            XBraid parameter use_rand, default: 1"             << std::endl;
-		std::cout << "	--xbraid-pt [int]                  XBraid parameter pt, default: 1"                   << std::endl;
-		std::cout << "	--xbraid-timestepping-method [int] XBraid parameter timestepping-method, default: ''" << std::endl;
-		std::cout << "	--xbraid-timestepping-order [int]  XBraid parameter timestepping-order, default: ''"  << std::endl;
-		std::cout << "	--xbraid-timestepping-order2 [int] XBraid parameter timestepping-order2, default: ''" << std::endl;
+		std::cout << ""                                                                                             << std::endl;
+		std::cout << "XBraid:"                                                                                      << std::endl;
+		std::cout << "	--xbraid-enabled [0/1]                   XBraid parameter enabled, default: 0"              << std::endl;
+		std::cout << "	--xbraid-max-levels [int]                XBraid parameter max_levels, default: 15"          << std::endl;
+		std::cout << "	--xbraid-skip [0/1]                      XBraid parameter skip, default: 1"                 << std::endl;
+		std::cout << "	--xbraid-min-coarse [int]                XBraid parameter min_coarse, default: 3"           << std::endl;
+		std::cout << "	--xbraid-nrelax [int]                    XBraid parameter nrelax, default: 1"               << std::endl;
+		std::cout << "	--xbraid-nrelax0 [int]                   XBraid parameter nrelax0, default: -1"             << std::endl;
+		std::cout << "	--xbraid-tol [float]                     XBraid parameter tol, default: 1e-9"               << std::endl;
+		std::cout << "	--xbraid-tnorm [int]                     XBraid parameter tnorm, default: 2"                << std::endl;
+		std::cout << "	--xbraid-cfactor [int]                   XBraid parameter cfactor, default: 2"              << std::endl;
+		std::cout << "	--xbraid-cfactor0 [int]                  XBraid parameter cfactor0, default: -1"            << std::endl;
+		std::cout << "	--xbraid-max-iter [int]                  XBraid parameter max_iter, default: 100"           << std::endl;
+		std::cout << "	--xbraid-fmg [int]                       XBraid parameter fmg, default: 0"                  << std::endl;
+		std::cout << "	--xbraid-res [int]                       XBraid parameter res, default: 0"                  << std::endl;
+		std::cout << "	--xbraid-storage [int]                   XBraid parameter storage, default: -1"             << std::endl;
+		std::cout << "	--xbraid-print-level [int]               XBraid parameter print_level, default: 2"          << std::endl;
+		std::cout << "	--xbraid-access-level [int]              XBraid parameter access_level, default: 1"         << std::endl;
+		std::cout << "	--xbraid-run-wrapper-tests [0/1]         XBraid parameter run_wrapper_tests, default: 0"    << std::endl;
+		std::cout << "	--xbraid-fullrnorm [int]                 XBraid parameter fullrnorm, default: 0"            << std::endl;
+		std::cout << "	--xbraid-use-seq-soln [0/1]              XBraid parameter use_seq_soln, default: 0"         << std::endl;
+		std::cout << "	--xbraid-use-rand [0/1]                  XBraid parameter use_rand, default: 1"             << std::endl;
+		std::cout << "	--xbraid-pt [int]                        XBraid parameter pt, default: 1"                   << std::endl;
+		std::cout << "	--xbraid-timestepping-method [string]    XBraid parameter timestepping-method, default: ''" << std::endl;
+		std::cout << "	--xbraid-timestepping-order [string]     XBraid parameter timestepping-order, default: ''"  << std::endl;
+		std::cout << "	--xbraid-timestepping-order2 [string]    XBraid parameter timestepping-order2, default: ''" << std::endl;
+		std::cout << "	--xbraid-verbosity [int]                 XBraid parameter verbosity, default: 0"            << std::endl;
+		std::cout << "	--xbraid-load-ref-csv-files [0/1]        XBraid parameter load_ref_csv_files, default: 0"   << std::endl;
+		std::cout << "	--xbraid-path-ref-csv-files [string]     XBraid parameter path_ref_csv_files, default: ''"  << std::endl;
+		std::cout << "	--xbraid-load-fine-csv-files [0/1]       XBraid parameter load_fine_csv_files, default: 0"  << std::endl;
+		std::cout << "	--xbraid-path-fine-csv-files [string]    XBraid parameter path_fine_csv_files, default: ''" << std::endl;
+		std::cout << "	--xbraid-store-iterations [0/1]          XBraid parameter store_iterations, default: 0"     << std::endl;
 		std::cout << ""                                                                                       << std::endl;
 	}
 
@@ -270,6 +308,24 @@ struct XBraid_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"xbraid-timestepping-order2", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"xbraid-verbosity", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"xbraid-load-ref-csv-files", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"xbraid-path-ref-csv-files", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"xbraid-load-fine-csv-files", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"xbraid-path-fine-csv-files", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"xbraid-store-iterations", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 	}
 	
 	/**
@@ -308,8 +364,14 @@ struct XBraid_SimulationVariables
 			case 21: xbraid_timestepping_method       = optarg;		return -1;
 			case 22: xbraid_timestepping_order        = optarg;		return -1;
 			case 23: xbraid_timestepping_order2       = optarg;		return -1;
+			case 24: xbraid_verbosity                 = optarg;		return -1;
+			case 25: xbraid_load_ref_csv_files        = optarg;		return -1;
+			case 26: xbraid_path_ref_csv_files        = optarg;		return -1;
+			case 27: xbraid_load_fine_csv_files       = optarg;		return -1;
+			case 28: xbraid_path_fine_csv_files       = optarg;		return -1;
+			case 29: xbraid_store_iterations          = optarg;		return -1;
 		}
-		return 24;
+		return 30;
 	}
 
 };
