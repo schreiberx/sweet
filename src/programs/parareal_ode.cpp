@@ -169,6 +169,7 @@ public:
 		simVars->timecontrol.current_timestep_nr = 0;
 		this->prog_u = param_parareal_function_y0;
 
+		this->do_output();
 		while (true)
 		{
 			this->timeSteppers->master->run_timestep(this->prog_u,

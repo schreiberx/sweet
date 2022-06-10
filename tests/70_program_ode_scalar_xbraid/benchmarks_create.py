@@ -116,14 +116,21 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_timestepping_method = "dummy"
     jg.runtime.xbraid_timestepping_order = "2"
     jg.runtime.xbraid_timestepping_order2 = "2"
-
+    jg.runtime.xbraid_verbosity = 0;
+    jg.runtime.xbraid_load_ref_csv_files = 0;
+    jg.runtime.xbraid_path_ref_csv_files = "";
+    jg.runtime.xbraid_load_fine_csv_files = 0;
+    jg.runtime.xbraid_path_fine_csv_files = "";
+    jg.runtime.xbraid_store_iterations = 0;
 
     if (itest == 0):
         jg.runtime.xbraid_run_wrapper_tests = 1;
     elif (itest == 1):
         jg.runtime.xbraid_max_levels = 1
+        jg.runtime.xbraid_store_iterations = 1;
     elif (itest == 2):
         jg.runtime.xbraid_max_levels = 1
+        jg.runtime.xbraid_store_iterations = 1;
         jg.runtime.xbraid_pt = 2
     elif (itest == 3):
         jg.runtime.xbraid_max_levels = 2

@@ -132,7 +132,7 @@ struct XBraid_SimulationVariables
 	/**
 	 * Verbosity of XBraid controller
 	 */
-	int verbosity = 0;
+	int xbraid_verbosity = 0;
 
 	/**
 	 * Read reference csv files
@@ -364,12 +364,12 @@ struct XBraid_SimulationVariables
 			case 21: xbraid_timestepping_method       = optarg;		return -1;
 			case 22: xbraid_timestepping_order        = optarg;		return -1;
 			case 23: xbraid_timestepping_order2       = optarg;		return -1;
-			case 24: xbraid_verbosity                 = optarg;		return -1;
-			case 25: xbraid_load_ref_csv_files        = optarg;		return -1;
+			case 24: xbraid_verbosity                 = atoi(optarg);	return -1;
+			case 25: xbraid_load_ref_csv_files        = atoi(optarg);	return -1;
 			case 26: xbraid_path_ref_csv_files        = optarg;		return -1;
-			case 27: xbraid_load_fine_csv_files       = optarg;		return -1;
+			case 27: xbraid_load_fine_csv_files       = atoi(optarg);	return -1;
 			case 28: xbraid_path_fine_csv_files       = optarg;		return -1;
-			case 29: xbraid_store_iterations          = optarg;		return -1;
+			case 29: xbraid_store_iterations          = atoi(optarg);	return -1;
 		}
 		return 30;
 	}
