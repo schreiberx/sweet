@@ -282,9 +282,9 @@ public:
 	}
 
 	void GenericData_SphereData_Spectral_to_dataArrays(
-								PlaneData_Spectral &phi,
-								PlaneData_Spectral &vrt,
-								PlaneData_Spectral &div
+								SphereData_Spectral &phi,
+								SphereData_Spectral &vrt,
+								SphereData_Spectral &div
 							) override
 	{
 		phi = *(this->data->simfields[0]);

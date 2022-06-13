@@ -19,15 +19,18 @@ from mule_local.SWEETRuntimeParametersScenarios import *
 
 
 ####tsm_ref = "ln_erk";
-####tsm_fine = sys.argv[1];
-####tsm_coarse = sys.argv[2];
-simulation_to_run = sys.argv[3];
-itest = int(sys.argv[4]);
-###online_error = int(sys.argv[4])
-###
-###if online_error:
+
+simulation_to_run = sys.argv[1];
+itest = int(sys.argv[2]);
+tsm_fine = sys.argv[3];
+tsm_coarse = sys.argv[4];
+
+if (itest == 5):
+    online_error = int(sys.argv[5])
+
+    if online_error:
+        path_fine = sys.argv[6];
 ###    path_ref = sys.argv[5];
-###    path_fine = sys.argv[6];
 
 #Create main compile/run options
 jg = JobGeneration()
@@ -87,7 +90,9 @@ timestep_size_reference = 0.001
 timestep_size_fine = 0.005
 jg.runtime.timestep_size = timestep_size_fine
 jg.runtime.space_res_spectral = 32
-
+cfactors = [2, 4, 8];
+nbs_levels = [2, 4];
+nb_pts = [1];
 
 if simulation_to_run == "xbraid":
 
@@ -141,11 +146,28 @@ if simulation_to_run == "xbraid":
     elif (itest == 4):
         jg.runtime.xbraid_print_level = 3
     elif (itest == 5):
-        sys.exit("Not implemented!");
+        jg.runtime.xbraid_timestepping_method = tsm_fine + "," + tsm_coarse;
+        jg.runtime.xbraid_store_iterations = 1;
+        jg.runtime.xbraid_access_level = 2;
 
+        if online_error:
+            jg.runtime.xbraid_store_iterations = 0;
+            ###jg.runtime.xbraid_load_ref_csv_files = 1;
+            ###jg.runtime.xbraid_path_ref_csv_files = path_ref;
+            jg.runtime.xbraid_load_fine_csv_files = 1;
+            jg.runtime.xbraid_path_fine_csv_files = path_fine;
 
+        ## parareal simulations
+        for cfactor in cfactors:
+            for nb_levels in nbs_levels:
+                for pt in nb_pts:
+                    jg.runtime.xbraid_cfactor = cfactor;
+                    jg.runtime.xbraid_max_levels = nb_levels;
+                    jg.runtime.xbraid_pt = pt;
+                    jg.gen_jobscript_directory()
 
-    jg.gen_jobscript_directory();
+    if (itest < 5):
+        jg.gen_jobscript_directory();
 
 elif simulation_to_run == "ref":
 

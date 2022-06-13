@@ -30,6 +30,21 @@ class PInT_Common
 protected:
 	SimulationVariables* simVars = nullptr;
 
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+	// Grid Mapping (staggered grid)
+	PlaneDataGridMapping gridMapping;
+#endif
+
+	// Operators and DataConfig
+#if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
+	PlaneOperators* op_plane;
+	PlaneDataConfig* planeDataConfig;
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
+	SphereOperators_SphereData* op_sphere;
+	SphereOperators_SphereData* op_sphere_nodealiasing;
+	SphereData_Config* sphereDataConfig;
+#endif
+
 public:
 	PInT_Common()
 	{
@@ -253,10 +268,10 @@ public:
 				SphereData_Spectral h = phi_out_phys*(1.0/simVars->sim.gravitation);
 				h += simVars->sim.h0;
 	
-				output_filename = write_file_csv_parareal_sphere(h, "prog_h", iteration_id);
+				output_filename = write_file_csv_parareal_sphere(h, t, "prog_h", iteration_id);
 				std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
 	
-				output_filename = write_file_csv_parareal_sphere(phi_out, "prog_phi_pert", iteration_id);
+				output_filename = write_file_csv_parareal_sphere(phi_out, t, "prog_phi_pert", iteration_id);
 				std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
 	
 				SphereData_Physical u(sphereDataConfig);
@@ -264,21 +279,21 @@ public:
 	
 				op_sphere->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
 	
-				output_filename = write_file_csv_parareal_sphere(u, "prog_u", iteration_id);
+				output_filename = write_file_csv_parareal_sphere(u, t, "prog_u", iteration_id);
 				std::cout << " + " << output_filename << std::endl;
 	
-				output_filename = write_file_csv_parareal_sphere(v, "prog_v", iteration_id);
+				output_filename = write_file_csv_parareal_sphere(v, t, "prog_v", iteration_id);
 				std::cout << " + " << output_filename << std::endl;
 	
-				output_filename = write_file_csv_parareal_sphere(vrt_out, "prog_vrt", iteration_id);
+				output_filename = write_file_csv_parareal_sphere(vrt_out, t, "prog_vrt", iteration_id);
 				std::cout << " + " << output_filename << std::endl;
 	
-				output_filename = write_file_csv_parareal_sphere(div_out, "prog_div", iteration_id);
+				output_filename = write_file_csv_parareal_sphere(div_out, t, "prog_div", iteration_id);
 				std::cout << " + " << output_filename << std::endl;
 	
 				SphereData_Spectral potvrt = (phi_out/simVars->sim.gravitation)*vrt_out;
 	
-				output_filename = write_file_csv_parareal_sphere(potvrt, "prog_potvrt", iteration_id);
+				output_filename = write_file_csv_parareal_sphere(potvrt, t, "prog_potvrt", iteration_id);
 				std::cout << " + " << output_filename << std::endl;
 			}
 			else if (simVars->iodata.output_file_mode == "bin")
@@ -286,21 +301,21 @@ public:
 				std::string output_filename;
 	
 				{
-					output_filename = write_file_bin_parareal_sphere(phi_out, "prog_phi_pert", iteration_id);
+					output_filename = write_file_bin_parareal_sphere(phi_out, t, "prog_phi_pert", iteration_id);
 					SphereData_Physical prog_phys = phi_out.toPhys();
 	
 					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
 	
 				{
-					output_filename = write_file_bin_parareal_sphere(vrt_out, "prog_vrt", iteration_id);
+					output_filename = write_file_bin_parareal_sphere(vrt_out, t, "prog_vrt", iteration_id);
 					SphereData_Physical prog_phys = vrt_out.toPhys();
 	
 					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
 	
 				{
-					output_filename = write_file_bin_parareal_sphere(div_out, "prog_div", iteration_id);
+					output_filename = write_file_bin_parareal_sphere(div_out, t, "prog_div", iteration_id);
 					SphereData_Physical prog_phys = div_out.toPhys();
 	
 					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
@@ -479,10 +494,11 @@ public:
 	/**
 	 * Write file to data and return string of file name (parareal)
 	 */
-	std::string write_file_csv_xbraid_sphere(
+	std::string write_file_csv_parareal_sphere(
 			const SphereData_Spectral &i_sphereData,
+			double t,
 			const char* i_name,	///< name of output variable
-			int iteration_id
+			int iteration_id,
 			bool i_phi_shifted = false
 		)
 	{
@@ -506,8 +522,9 @@ public:
 	/**
 	 * Write file to data and return string of file name
 	 */
-	std::string write_file_bin_xbraid_sphere(
+	std::string write_file_bin_parareal_sphere(
 			const SphereData_Spectral &i_sphereData,
+			double t,
 			const char* i_name,
 			int iteration_id
 	)
@@ -619,7 +636,7 @@ public:
 
 		////int nvar = N;
 
-#if SWEET_PARAREAL_SCALAR
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 		if (iteration_id == 0)
 		{
 			// load ref file
@@ -670,7 +687,7 @@ public:
 			parareal_data_ref->dataArrays_to_GenericData_Scalar(tmp);
 		}
 
-#elif SWEET_PARAREAL_PLANE
+#elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 		PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig),
 				                  PlaneData_Spectral(this->planeDataConfig),
 				                  PlaneData_Spectral(this->planeDataConfig)};
@@ -679,16 +696,16 @@ public:
 		{
 			std::string i_name;
 			if (ivar == 0)
-	#if SWEET_PARAREAL_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 				i_name = "prog_h_pert";
-	#elif SWEET_PARAREAL_PLANE_BURGERS
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 				i_name = "prog_u";
 	#endif
 
 			else if (ivar == 1)
-	#if SWEET_PARAREAL_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 				i_name = "prog_u";
-	#elif SWEET_PARAREAL_PLANE_BURGERS
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 				i_name = "prog_v";
 	#endif
 
@@ -700,7 +717,7 @@ public:
 				// load ref file
 				char buffer[1024];
 				const char* filename_template = simVars->iodata.output_file_name.c_str();
-				sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
+				sprintf(buffer, filename_template, i_name.c_str(), t);
 				std::string buffer2 = path_ref + "/" + std::string(buffer);
                                 PlaneData_Physical tmp(this->planeDataConfig);
 				tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
@@ -732,17 +749,17 @@ public:
 	///							prog_h3_bilinear
 	///					);
 				}
-				parareal_data_ref->dataArrays_to_GenericData_PlaneData_Spectral(,
+				parareal_data_ref->dataArrays_to_GenericData_PlaneData_Spectral(
 											ref_data[0],
 											ref_data[1]
-	#if SWEET_PARAREAL_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 											, ref_data[2]
 	#endif
 										);
 				}
 			}
 
-#elif SWEET_PARAREAL_SPHERE
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 		SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig),
 				                   SphereData_Spectral(this->sphereDataConfig),
 				                   SphereData_Spectral(this->sphereDataConfig)};
@@ -762,7 +779,7 @@ public:
 				// load ref file
 				char buffer[1024];
 				const char* filename_template = simVars->iodata.output_file_name.c_str();
-				sprintf(buffer, filename_template, i_name.c_str(), timeframe_end * simVars->iodata.output_time_scale);
+				sprintf(buffer, filename_template, i_name.c_str(), t * simVars->iodata.output_time_scale);
 				std::string buffer2 = path_ref + "/" + std::string(buffer);
 				SphereData_Physical tmp(this->sphereDataConfig);
 				tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
@@ -810,7 +827,7 @@ public:
 			double err_Linf;
 			std::string i_name;
 
-#if SWEET_PARAREAL_SCALAR
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 			i_name = "prog_u";
 			double u_ref;
 			parareal_data_ref->GenericData_Scalar_to_dataArrays(u_ref);
@@ -820,19 +837,20 @@ public:
 			err_L2 = err;
 			err_Linf = err;
 
-#elif SWEET_PARAREAL_PLANE
+
+#elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 
 			if (ivar == 0)
-	#if SWEET_PARAREAL_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 				i_name = "prog_h_pert";
-	#elif SWEET_PARAREAL_PLANE_BURGERS
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 				i_name = "prog_u";
 	#endif
 
 			else if (ivar == 1)
-	#if SWEET_PARAREAL_PLANE_SWE
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 				i_name = "prog_u";
-	#elif SWEET_PARAREAL_PLANE_BURGERS
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 				i_name = "prog_v";
 	#endif
 
@@ -849,7 +867,7 @@ public:
 			err_Linf = diff.physical_reduce_max_abs();
 
 
-#elif SWEET_PARAREAL_SPHERE
+#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 			if (ivar == 0)
 				i_name = "prog_phi_pert";
 			else if (ivar == 1)

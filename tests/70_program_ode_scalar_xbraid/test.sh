@@ -21,6 +21,7 @@ get_tsm(){
 set -e
 
 dirname_serial="serial";
+dirname_offline_error="simulations_offline_error";
 
 cd "$(dirname $0)"
 
@@ -31,10 +32,17 @@ if [ -d $dirname_serial ]; then
 fi
 mkdir $dirname_serial;
 
+if [ -d $dirname_offline_error ]; then
+	rm -r $dirname_offline_error;
+fi
+mkdir $dirname_offline_error;
+
+
 
 echo ""
 
-for itest in {-1..5};do
+###########for itest in {-1..5};do
+for itest in 5;do
 	echo "*********************";
 	echo "Running debug test" $itest;
 	echo "*********************";
@@ -62,129 +70,138 @@ for itest in {-1..5};do
 
 
 	if [ "$itest" == -1  ]; then
-		./benchmarks_create.py $tsm_fine $tsm_coarse ref $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
+		./benchmarks_create.py ref $itest $tsm_fine $tsm_coarse  > dummy || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
 		mv job_bench_* "$dirname_serial"/.
 		mule.benchmark.cleanup_all || exit 1
 	elif [ "$itest" == 0 ]; then
-		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
+		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse  > dummy || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
 		mule.benchmark.cleanup_all || exit 1
 	elif [ "$itest" == 1 ] || [ "$itest" == 2 ]; then
-		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
+		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse  > dummy || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
 		fine_sim=$(cat fine_sim);
 		cp -r "$dirname_serial"/"$fine_sim" .
 		./compare_to_fine_solution.py $fine_sim;
 		mule.benchmark.cleanup_all || exit 1
 	elif [ "$itest" == 3 ]; then
-		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
+		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse > dummy || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
 		./check_residual.py iteration 1e-16
 		mule.benchmark.cleanup_all || exit 1
 	elif [ "$itest" == 4 ]; then
-		./benchmarks_create.py $tsm_fine $tsm_coarse xbraid $itest $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
+		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $ref_sim  > dummy || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
 		./check_residual.py C-point 1e-16
-		#########mule.benchmark.cleanup_all || exit 1
+		mule.benchmark.cleanup_all || exit 1
+	elif [ "$itest" == 5 ]; then
+
+
+		for i in {0,1,2}; do
+			for tsm_fine in dummy; do ## short version
+
+				tsm_fine=$(get_tsm $tsm_fine);
+				if [ "$tsm_fine" = "interface" ]; then
+				  continue;
+				fi
+
+				for tsm_coarse in dummy; do ## short version
+
+					tsm_coarse=$(get_tsm $tsm_coarse);
+					if [ "$tsm_coarse" = "interface" ]; then
+					  continue;
+					fi
+
+					dirname2=${dirname_offline_error}"/"${tsm_fine}"_"${tsm_coarse}
+
+					## only xbraid
+					if [ $i == 0 ]; then
+						## xbraid tests without online error computation
+						echo_info "---> Running XBraid simulations (offline error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
+
+						./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse 0 $dirname2"/"$fine_sim > dummy || exit 1
+
+						mule.benchmark.jobs_run_directly || exit 1
+					fi;
+
+					## fine and ref
+					if [ $i == 1 ]; then
+						## parareal tests without online error computation
+						echo_info "---> Running fine and ref simulations with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
+
+						./benchmarks_create.py ref $itest $tsm_fine $tsm_coarse 0 $dirname2"/"$fine_sim  > dummy || exit 1
+
+						mule.benchmark.jobs_run_directly|| exit 1
+
+						##### identify ref simulation
+						###ref_sim=$(cat ref_sim);
+
+						## identify fine simulation
+						fine_sim=$(cat fine_sim);
+
+						mv $dirname2/job_bench* .;
+
+						echo_info "---> Computing errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
+						./compute_parareal_errors.py $fine_sim || exit 1
+
+						########mv ref_sim $dirname2/.;
+						mv fine_sim $dirname2/.;
+					fi;
+
+					## only xbraid with online error computation
+					if [ $i == 2 ]; then
+						echo_info "---> Running XBraid simulations (online error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
+
+						##### identify ref simulation
+						###ref_sim=$(cat $dirname2/ref_sim);
+	
+						## identify fine simulation
+						fine_sim=$(cat $dirname2/fine_sim);
+
+						./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse 1 ../$dirname2"/"$fine_sim > dummy || exit 1
+
+
+						#####mv $ref_sim $dirname2/.
+
+						mule.benchmark.jobs_run_directly || exit 1
+
+						#####mv $dirname2/$ref_sim .
+
+					fi;
+
+					if [ $i -eq 0 ]; then
+						mkdir $dirname2;
+					fi;
+					if [ $i -le 2 ]; then
+						mv job_bench_* $dirname2;
+					fi;
+					if [ $i -eq 2 ]; then
+						echo_info "---> Comparing online and offline errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
+						./compare_online_offline_errors.py $dirname2 $fine_sim
+					fi;
+					echo ""
+
+				done;
+			done;
+
+		done;
+
 	fi;
 
-####	for tsm_fine in dummy; do ## short version
-####
-####		tsm_fine=$(get_tsm $tsm_fine);
-####		if [ "$tsm_fine" = "interface" ]; then
-####		  continue;
-####		fi
-####
-####		for tsm_coarse in dummy; do ## short version
-####
-####			tsm_coarse=$(get_tsm $tsm_coarse);
-####			if [ "$tsm_coarse" = "interface" ]; then
-####			  continue;
-####			fi
-####
-####			dirname2=simulations_offline_error"/"${tsm_fine}"_"${tsm_coarse}
-####
-####			## only parareal
-####			if [ $i == 0 ]; then
-####				## parareal tests without online error computation
-####				echo_info "---> Running parareal simulations (offline error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-####
-####				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 0 $ref_sim $dirname2"/"$fine_sim > dummy || exit 1
-####
-####				mule.benchmark.jobs_run_directly || exit 1
-####                        fi;
-####
-####			## fine and ref
-####			if [ $i == 1 ]; then
-####				## parareal tests without online error computation
-####				echo_info "---> Running fine and ref simulations with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-####
-####				./benchmarks_create.py $tsm_fine $tsm_coarse ref 0 $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
-####
-####				mule.benchmark.jobs_run_directly|| exit 1
-####
-####				## identify ref simulation
-####				ref_sim=$(cat ref_sim);
-####
-####				## identify fine simulation
-####				fine_sim=$(cat fine_sim);
-####
-####				mv $dirname2/job_bench* .;
-####
-####				echo_info "---> Computing errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-####				./compute_parareal_errors.py $ref_sim $fine_sim || exit 1
-####
-####                                mv ref_sim $dirname2/.;
-####                                mv fine_sim $dirname2/.;
-####                        fi;
-####
-####			## only parareal with online error computation
-####			if [ $i == 2 ]; then
-####				## parareal tests without online error computation
-####				echo_info "---> Running parareal simulations (online error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-####
-####				## identify ref simulation
-####				ref_sim=$(cat $dirname2/ref_sim);
-####
-####				## identify fine simulation
-####				fine_sim=$(cat $dirname2/fine_sim);
-####
-####				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 1 ../$dirname2"/"$ref_sim ../$dirname2"/"$fine_sim > dummy || exit 1
-####
-####				mv $ref_sim $dirname2/.
-####
-####				mule.benchmark.jobs_run_directly || exit 1
-####
-####				mv $dirname2/$ref_sim .
-####
-####                        fi;
-####
-####			if [ $i -eq 0 ]; then
-####				mkdir $dirname2;
-####			fi;
-####			if [ $i -le 2 ]; then
-####				mv job_bench_* $dirname2;
-####			fi;
-####			if [ $i -eq 2 ]; then
-####				echo_info "---> Comparing online and offline errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-####				./compare_online_offline_errors.py $dirname2 $fine_sim
-####			fi;
-####			echo ""
-####
-####		done;
-####	done;
 
 	echo "";
 	echo "";
 done;
 
 
-##########33mule.benchmark.cleanup_all || exit 1
+mule.benchmark.cleanup_all || exit 1
 if [ -d $dirname_serial ]; then
 	rm -r $dirname_serial;
 fi
-rm fine_sim
+if [ -d $dirname_offline_error ]; then
+	rm -r $dirname_offline_error;
+fi
 
 rm dummy;
 

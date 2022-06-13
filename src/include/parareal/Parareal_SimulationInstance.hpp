@@ -59,20 +59,20 @@ public:
 	// Simulation variables
 	///////SimulationVariables* simVars;
 
-#if SWEET_PARAREAL_PLANE
-	// Grid Mapping (staggered grid)
-	PlaneDataGridMapping gridMapping;
-#endif
+////#if SWEET_PARAREAL_PLANE
+////	// Grid Mapping (staggered grid)
+////	PlaneDataGridMapping gridMapping;
+////#endif
 
-	// Operators and DataConfig
-#if SWEET_PARAREAL_PLANE
-	PlaneOperators* op_plane;
-	PlaneDataConfig* planeDataConfig;
-#elif SWEET_PARAREAL_SPHERE
-	SphereOperators_SphereData* op_sphere;
-	SphereOperators_SphereData* op_sphere_nodealiasing;
-	SphereData_Config* sphereDataConfig;
-#endif
+/////	// Operators and DataConfig
+/////#if SWEET_PARAREAL_PLANE
+/////	PlaneOperators* op_plane;
+/////	//PlaneDataConfig* planeDataConfig;
+/////#elif SWEET_PARAREAL_SPHERE
+/////	SphereOperators_SphereData* op_sphere;
+/////	SphereOperators_SphereData* op_sphere_nodealiasing;
+/////	//SphereData_Config* sphereDataConfig;
+/////#endif
 
 	// Time slice
 	double timeframe_start;
@@ -293,73 +293,73 @@ public:
 
 	// Functions to exchange data between Parareal_GenericData instances and individual data arrays
 
-#if SWEET_PARAREAL_SCALAR
-	void dataArrays_to_GenericData_Scalar(Parareal_GenericData* i_data,
-						double &u)
-	{
-		i_data->get_pointer_to_data_Scalar()->simfields[0] = u;
-	}
-
-	void GenericData_Scalar_to_dataArrays(Parareal_GenericData* i_data,
-						double &u)
-	{
-		u = i_data->get_pointer_to_data_Scalar()->simfields[0];
-	}
-
-#elif SWEET_PARAREAL_PLANE
-	void dataArrays_to_GenericData_PlaneData_Spectral(Parareal_GenericData* i_data,
-	#if SWEET_PARAREAL_PLANE_SWE
-								PlaneData_Spectral &h,
-	#endif
-								PlaneData_Spectral &u,
-								PlaneData_Spectral &v
-							)
-	{
-	#if SWEET_PARAREAL_PLANE_SWE
-		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = h;
-		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = u;
-		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = v;
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = u;
-		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = v;
-	#endif
-	}
-
-	void GenericData_PlaneData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
-	#if SWEET_PARAREAL_PLANE_SWE
-								PlaneData_Spectral &h,
-	#endif
-								PlaneData_Spectral &u,
-								PlaneData_Spectral &v
-							)
-	{
-	#if SWEET_PARAREAL_PLANE_SWE
-		h = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
-		u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
-		v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-		u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
-		v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
-	#endif
-	}
-
-#elif SWEET_PARAREAL_SPHERE
-	void dataArrays_to_GenericData_SphereData_Spectral(Parareal_GenericData* i_data,
-						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
-	{
-		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]) = phi;
-		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]) = vrt;
-		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]) = div;
-	}
-
-	void GenericData_SphereData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
-						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
-	{
-		phi = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]);
-		vrt = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
-		div = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
-	}
-#endif
+/////////////#if SWEET_PARAREAL_SCALAR
+/////////////	void dataArrays_to_GenericData_Scalar(Parareal_GenericData* i_data,
+/////////////						double &u)
+/////////////	{
+/////////////		i_data->get_pointer_to_data_Scalar()->simfields[0] = u;
+/////////////	}
+/////////////
+/////////////	void GenericData_Scalar_to_dataArrays(Parareal_GenericData* i_data,
+/////////////						double &u)
+/////////////	{
+/////////////		u = i_data->get_pointer_to_data_Scalar()->simfields[0];
+/////////////	}
+/////////////
+/////////////#elif SWEET_PARAREAL_PLANE
+/////////////	void dataArrays_to_GenericData_PlaneData_Spectral(Parareal_GenericData* i_data,
+/////////////	#if SWEET_PARAREAL_PLANE_SWE
+/////////////								PlaneData_Spectral &h,
+/////////////	#endif
+/////////////								PlaneData_Spectral &u,
+/////////////								PlaneData_Spectral &v
+/////////////							)
+/////////////	{
+/////////////	#if SWEET_PARAREAL_PLANE_SWE
+/////////////		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = h;
+/////////////		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = u;
+/////////////		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]) = v;
+/////////////	#elif SWEET_PARAREAL_PLANE_BURGERS
+/////////////		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]) = u;
+/////////////		*(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]) = v;
+/////////////	#endif
+/////////////	}
+/////////////
+/////////////	void GenericData_PlaneData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
+/////////////	#if SWEET_PARAREAL_PLANE_SWE
+/////////////								PlaneData_Spectral &h,
+/////////////	#endif
+/////////////								PlaneData_Spectral &u,
+/////////////								PlaneData_Spectral &v
+/////////////							)
+/////////////	{
+/////////////	#if SWEET_PARAREAL_PLANE_SWE
+/////////////		h = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
+/////////////		u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
+/////////////		v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
+/////////////	#elif SWEET_PARAREAL_PLANE_BURGERS
+/////////////		u = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[0]);
+/////////////		v = *(i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
+/////////////	#endif
+/////////////	}
+/////////////
+/////////////#elif SWEET_PARAREAL_SPHERE
+/////////////	void dataArrays_to_GenericData_SphereData_Spectral(Parareal_GenericData* i_data,
+/////////////						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
+/////////////	{
+/////////////		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]) = phi;
+/////////////		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]) = vrt;
+/////////////		*(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]) = div;
+/////////////	}
+/////////////
+/////////////	void GenericData_SphereData_Spectral_to_dataArrays(Parareal_GenericData* i_data,
+/////////////						SphereData_Spectral &phi, SphereData_Spectral &vrt, SphereData_Spectral& div)
+/////////////	{
+/////////////		phi = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[0]);
+/////////////		vrt = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
+/////////////		div = *(i_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
+/////////////	}
+/////////////#endif
 
 
 	/**
@@ -437,7 +437,7 @@ public:
 
 #if SWEET_PARAREAL_SCALAR
 		double u0 = atof(simVars->bogus.var[1].c_str());
-		this->dataArrays_to_GenericData_Scalar(this->parareal_data_start, u0);
+		this->parareal_data_start->dataArrays_to_GenericData_Scalar(u0);
 
 #elif SWEET_PARAREAL_PLANE
 		PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
@@ -490,28 +490,28 @@ public:
 	#endif
 
 
-		this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_start,
+		this->parareal_data_start->dataArrays_to_GenericData_PlaneData_Spectral(
 	#if SWEET_PARAREAL_PLANE_SWE
-										t0_prog_h_pert,
+											t0_prog_h_pert,
 	#endif
-										t0_prog_u,
-										t0_prog_v);
+											t0_prog_u,
+											t0_prog_v);
 
 
-		this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_coarse_previous_time_slice,
+		this->parareal_data_coarse_previous_time_slice->dataArrays_to_GenericData_PlaneData_Spectral(
 	#if SWEET_PARAREAL_PLANE_SWE
-										t0_prog_h_pert,
+											t0_prog_h_pert,
 	#endif
-										t0_prog_u,
-										t0_prog_v);
+											t0_prog_u,
+											t0_prog_v);
 
 
-		this->dataArrays_to_GenericData_PlaneData_Spectral(this->parareal_data_fine_previous_time_slice,
+		this->parareal_data_fine_previous_time_slice->dataArrays_to_GenericData_PlaneData_Spectral(
 	#if SWEET_PARAREAL_PLANE_SWE
-										t0_prog_h_pert,
+											t0_prog_h_pert,
 	#endif
-										t0_prog_u,
-										t0_prog_v);
+											t0_prog_u,
+											t0_prog_v);
 
 #elif SWEET_PARAREAL_SPHERE
 		SphereData_Spectral t0_prog_phi_pert(sphereDataConfig);
@@ -522,9 +522,9 @@ public:
 		sphereBenchmarks.setup(*simVars, *op_sphere);
 		sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 
-		this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_start, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
-		this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_coarse_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
-		this->dataArrays_to_GenericData_SphereData_Spectral(this->parareal_data_fine_previous_time_slice, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+		this->parareal_data_start->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+		this->parareal_data_coarse_previous_time_slice->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+		this->parareal_data_fine_previous_time_slice->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 #endif
 	};
 
