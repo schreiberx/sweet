@@ -208,13 +208,13 @@ public:
 	double				dt;
 	std::vector<t_tsmType*>		timeSteppers;
 
-#if SWEET_XBRAID_PLANE
-	PlaneOperators*		op_plane;
-	PlaneDataConfig*	planeDataConfig;
-#elif SWEET_XBRAID_SPHERE
-	SphereOperators*	op_sphere;
-	SphereDataConfig*	sphereDataConfig;
-#endif
+///////#if SWEET_XBRAID_PLANE
+///////	PlaneOperators*		op_plane;
+///////	PlaneDataConfig*	planeDataConfig;
+///////#elif SWEET_XBRAID_SPHERE
+///////	SphereOperators*	op_sphere;
+///////	SphereDataConfig*	sphereDataConfig;
+///////#endif
 
 
 	int			size_buffer;
@@ -248,17 +248,25 @@ public:
 			rank(i_rank)
 			//simVars(i_simVars)
 			///PInT_Common(i_simVars)
-#if SWEET_XBRAID_PLANE
-			,
-			planeDataConfig(i_planeDataConfig),
-			op_plane(i_op_plane)
-#elif SWEET_XBRAID_SPHERE
-			,
-			sphereDataConfig(i_sphereDataConfig)
-			op_sphere(i_op_sphere)
-#endif
+/////////#if SWEET_XBRAID_PLANE
+/////////			,
+/////////			planeDataConfig(i_planeDataConfig),
+/////////			op_plane(i_op_plane)
+/////////#elif SWEET_XBRAID_SPHERE
+/////////			,
+/////////			sphereDataConfig(i_sphereDataConfig)
+/////////			op_sphere(i_op_sphere)
+/////////#endif
 	{
 		this->simVars = i_simVars;
+
+#if SWEET_XBRAID_PLANE
+			this->planeDataConfig = i_planeDataConfig;
+			this->op_plane = i_op_plane;
+#elif SWEET_XBRAID_SPHERE
+			this->sphereDataConfig = i_sphereDataConfig;
+			this->op_sphere = i_op_sphere;
+#endif
 
 		///this->xbraid_data_ref_exact = this->create_new_vector();
 		///this->xbraid_data_fine_exact = this->create_new_vector();
@@ -593,8 +601,6 @@ public:
 
 		sweet_BraidVector* u = (sweet_BraidVector*) i_ustop;
 		sweet_BraidVector* r = (sweet_BraidVector*) o_r;
-		std::cout << "SOLUTION " << tstop << " " << u->data->get_pointer_to_data_Scalar()->simfields[0] << std::endl;
-		std::cout << "RESIDUAL " << tstop << " " << r->data->get_pointer_to_data_Scalar()->simfields[0] << std::endl;
 
 		/////////////////* Now, set up the discretization matrix.  Use the XBraid level to index
 		//////////////// * into the matrix lookup table */
