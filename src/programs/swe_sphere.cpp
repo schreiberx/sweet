@@ -43,6 +43,9 @@
 	#include <parareal/Parareal.hpp>
 #endif
 
+#if SWEET_XBRAID
+	#include <xbraid/XBraid_sweet_lib.hpp>
+#endif
 
 SimulationVariables simVars;
 
@@ -1104,6 +1107,50 @@ int main_real(int i_argc, char *i_argv[])
 		}
 		else
 #endif
+
+#if SWEET_XBRAID
+
+		if (simVars.xbraid.xbraid_enabled)
+		{
+
+			simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
+
+			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
+
+			MPI_Comm comm = MPI_COMM_WORLD;
+			MPI_Comm comm_x, comm_t;
+
+			//////braid_Core core;
+			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
+			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfig, &op);
+
+
+			if( simVars.xbraid.xbraid_run_wrapper_tests)
+			{
+				app.setup();
+
+				BraidUtil braid_util;
+				int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
+				if (test == 0)
+					SWEETError("Tests failed!");
+				else
+					std::cout << "Tests successful!" << std::endl;
+
+			}
+			else
+			{
+				BraidCore core(MPI_COMM_WORLD, &app);
+				app.setup(core);
+				// Run Simulation
+				core.Drive();
+			}
+
+		}
+		else
+#endif
+
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)

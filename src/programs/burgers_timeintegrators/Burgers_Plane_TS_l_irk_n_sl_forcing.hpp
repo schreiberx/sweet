@@ -54,7 +54,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL || SWEET_XBRAID
 	void set_previous_solution(
 				PlaneData_Spectral &i_u_prev,
 				PlaneData_Spectral &i_v_prev

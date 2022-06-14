@@ -18,23 +18,6 @@ from mule_local.JobGeneration import *
 from mule_local.SWEETRuntimeParametersScenarios import *
 
 
-orders = {};
-orders["l_irk_n_erk"] = 1;
-orders["l_irk"] = 1;
-orders["l_erk_n_erk"] = 2;
-orders["l_erk"] = 2;
-orders["l_cn_n_erk"] = 2;
-orders["l_cn"] = 2;
-orders["l_rexi_n_etdrk"] = 2;
-orders["l_rexi_n_erk"] = 2;
-orders["l_rexi"] = 2;
-orders["ln_erk"] = 2;
-orders["l_direct"] = 2;
-orders["l_rexi_na_sl_nd_settls"] = 2;
-orders["l_rexi_na_sl_nd_etdrk"] = 2;
-orders["l_cn_na_sl_nd_settls"] = 2;
-
-
 ####tsm_ref = "ln_erk";
 
 simulation_to_run = sys.argv[1];
@@ -59,7 +42,7 @@ earth = EarthMKSDimensions()
 # Run simulation on plane or sphere
 #
 #Basic plane options
-jg = CompileSWEPlane(jg)
+jg.compile.program = "swe_sphere"
 jg.compile.mode = "debug"
 jg.compile.sweet_mpi = "enable"
 
@@ -75,12 +58,12 @@ jg.compile.sphere_spectral_dealiasing = "enable";
 # 14: Steady diagonal benchmark
 #
 #jg.runtime.bench_id = 1
-jg.runtime.benchmark_name = "unstablejet"
+jg.runtime.benchmark_name = "rossby_haurwitz_wave"
 
 #
 # Compute error or difference to initial data
 #
-jg.runtime.compute_error = 1
+jg.runtime.compute_error = 0
 
 # Enable/Disbale GUI
 #jg = EnableGUI(jg)
@@ -102,17 +85,22 @@ jg.runtime.viscosity = 0.0
 # Time, Mode and Physical resolution
 #
 ###jg.runtime.max_simulation_time = 500.
-jg.runtime.max_simulation_time = 100.
-jg.runtime.output_timestep_size = 5.
-timestep_size_reference = 2.5
-timestep_size_fine = 5.
+##jg.runtime.max_simulation_time = 3600.
+jg.runtime.max_simulation_time = 7200.
+jg.runtime.output_timestep_size = 36.
+
+timestep_size_reference = 18
+timestep_size_fine = 36
+
 jg.runtime.timestep_size = timestep_size_fine
 jg.runtime.timestepping_method = tsm_fine
-jg.runtime.timestepping_order = orders[tsm_fine]
-jg.runtime.timestepping_order2 = orders[tsm_fine]
+jg.runtime.timestepping_order = 2;
+jg.runtime.timestepping_order2 = 2;
+
+
 jg.runtime.space_res_spectral = 32
 
-cfactors = [2, 4, 8];
+cfactors = [2, 4];
 nbs_levels = [2, 4];
 nb_pts = [1];
 
@@ -141,8 +129,8 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_use_rand = 1
     jg.runtime.xbraid_pt = 1
     jg.runtime.xbraid_timestepping_method = tsm_fine
-    jg.runtime.xbraid_timestepping_order = orders[tsm_fine]
-    jg.runtime.xbraid_timestepping_order2 = orders[tsm_fine]
+    jg.runtime.xbraid_timestepping_order = 2
+    jg.runtime.xbraid_timestepping_order2 = 2
     jg.runtime.xbraid_verbosity = 0;
     jg.runtime.xbraid_load_ref_csv_files = 0;
     jg.runtime.xbraid_path_ref_csv_files = "";
@@ -169,8 +157,8 @@ if simulation_to_run == "xbraid":
         jg.runtime.xbraid_print_level = 3
     elif (itest == 5):
         jg.runtime.xbraid_timestepping_method = tsm_fine + "," + tsm_coarse;
-        jg.runtime.xbraid_timestepping_order = str(orders[tsm_fine]) + "," + str(orders[tsm_coarse])
-        jg.runtime.xbraid_timestepping_order2 = str(orders[tsm_fine]) + "," + str(orders[tsm_coarse])
+        jg.runtime.xbraid_timestepping_order = "2,2"
+        jg.runtime.xbraid_timestepping_order2 = "2,2"
         jg.runtime.xbraid_store_iterations = 1;
         jg.runtime.xbraid_access_level = 2;
 

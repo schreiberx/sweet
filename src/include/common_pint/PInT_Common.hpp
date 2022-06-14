@@ -45,6 +45,9 @@ protected:
 	SphereData_Config* sphereDataConfig;
 #endif
 
+	// list of SL schemes
+	std::vector<std::string> SL_tsm = {};
+
 public:
 	PInT_Common()
 	{
@@ -58,10 +61,33 @@ public:
 public:
 
 	void setup(
-			SimulationVariables* i_simVars
+			///SimulationVariables* i_simVars
 	)
 	{
-		this->simVars = i_simVars;
+		////this->simVars = i_simVars;
+
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+		this->SL_tsm = { "l_cn_na_sl_nd_settls",
+				 "l_rexi_na_sl_nd_etdrk",
+				 "l_rexi_na_sl_nd_settls"
+				};
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
+		this->SL_tsm = { "l_cn_n_sl",
+				 "l_irk_n_sl",
+				 "l_irk_n_sl_forcing"
+				};
+	#elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
+		this->SL_tsm = { "lg_exp_na_sl_lc_nr_etd_uv",
+				 "l_irk_na_sl_nr_settls_uv_only",
+				 "l_irk_na_sl_nr_settls_vd_only",
+				 "l_irk_na_sl_settls_uv_only",
+				 "l_irk_na_sl_settls_vd_only",
+				 "ln_sl_exp_settls_uv",
+				 "ln_sl_exp_settls_vd"
+				};
+	#endif
+
+
 	}
 
 	void output_residual_file(
@@ -234,16 +260,12 @@ public:
 		SphereData_Spectral phi_out(this->sphereDataConfig);
 		SphereData_Spectral vrt_out(this->sphereDataConfig);
 		SphereData_Spectral div_out(this->sphereDataConfig);
-		///if (output_initial_data)
-		///	this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_start, phi_out, vrt_out, div_out);
-		///else
-		///	this->GenericData_SphereData_Spectral_to_dataArrays(this->parareal_data_output, phi_out, vrt_out, div_out);
 		i_data->GenericData_SphereData_Spectral_to_dataArrays(phi_out, vrt_out, div_out);
 
 		SphereData_Physical phi_out_phys = phi_out.toPhys();
 		SphereData_Physical vrt_out_phys = vrt_out.toPhys();
 		SphereData_Physical div_out_phys = div_out.toPhys();
-	
+
 		///////////////// Save .vtk files for visualizing in paraview
 		///////////////std::ostringstream ss2;
 		///////////////if (output_initial_data)

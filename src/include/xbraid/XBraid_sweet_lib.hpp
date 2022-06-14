@@ -59,7 +59,7 @@ public:
 #if SWEET_XBRAID_PLANE
 	PlaneDataConfig* planeDataConfig;
 #elif SWEET_XBRAID_SPHERE
-	SphereDataConfig* sphereDataConfig;
+	SphereData_Config* sphereDataConfig;
 #endif
 
 
@@ -67,7 +67,7 @@ public:
 #if SWEET_XBRAID_PLANE
 				PlaneDataConfig* i_planeDataConfig
 #elif SWEET_XBRAID_SPHERE
-				SphereDataConfig* i_sphereDataConfig
+				SphereData_Config* i_sphereDataConfig
 #endif
 	)
 #if SWEET_XBRAID_PLANE
@@ -221,8 +221,18 @@ public:
 
 	int rank;
 
+	// Reference solutions (online error computation)
 	std::vector<sweet_BraidVector*> xbraid_data_ref_exact;
 	std::vector<sweet_BraidVector*> xbraid_data_fine_exact;
+
+	// Solution from previous timestep (for SL)
+	std::vector<std::vector<sweet_BraidVector*>> sol_prev; // sol_prev[level][timestep]
+
+
+	// Timestepping method and orders for each level
+	std::vector<std::string> tsms;
+	std::vector<int> tsos;
+	std::vector<int> tsos2;
 
 public:
 
@@ -239,8 +249,8 @@ public:
 			PlaneOperators* i_op_plane
 #elif SWEET_XBRAID_SPHERE
 			,
-			SphereDataConfig* i_sphereDataConfig,
-			SphereOperators* i_op_sphere
+			SphereData_Config* i_sphereDataConfig,
+			SphereOperators_SphereData* i_op_sphere
 #endif
 			)
 		:
@@ -292,6 +302,18 @@ public:
 				delete *it;
 				*it = nullptr;
 			}
+
+		for (std::vector<std::vector<sweet_BraidVector*>>::iterator it = this->sol_prev.begin();
+										it != this->sol_prev.end();
+										it++)
+			for (std::vector<sweet_BraidVector*>::iterator it2 = it->begin();
+										it2 != it->end();
+										it2++)
+				if (*it2)
+				{
+					delete *it2;
+					*it2 = nullptr;
+				}
 
 		////if (this->xbraid_data_ref_exact)
 		////{
@@ -366,16 +388,23 @@ public:
 public:
 	void setup()
 	{
+
+		PInT_Common::setup();
+
 		////////////////////////////////////
 		// get tsm and tso for each level //
 		////////////////////////////////////
-		std::vector<std::string> tsms = this->getTimeSteppingMethodFromParameters();
-		std::vector<int> tsos = this->getTimeSteppingOrderFromParameters(1);
-		std::vector<int> tsos2 = this->getTimeSteppingOrderFromParameters(2);
+		this->tsms = this->getTimeSteppingMethodFromParameters();
+		this->tsos = this->getTimeSteppingOrderFromParameters(1);
+		this->tsos2 = this->getTimeSteppingOrderFromParameters(2);
 
 		// create a timeSteppers instance for each level
 		for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
 		{
+
+			// Configure timesteppers with the correct timestep for this level
+			double dt = this->simVars->timecontrol.current_timestep_size;
+			this->simVars->timecontrol.current_timestep_size *= std::pow(this->simVars->xbraid.xbraid_cfactor, level);
 
 #if SWEET_XBRAID_SCALAR
 			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
@@ -405,13 +434,18 @@ public:
 				);
 	#endif
 #elif SWEET_XBRAID_SPHERE
+
 			SWE_Sphere_TimeSteppers* tsm = new SWE_Sphere_TimeSteppers;
 			tsm->setup(
 						tsms[level],
 						*this->op_sphere,
 						*this->simVars
 					);
+
 #endif
+
+			// get back the original timestep size
+			this->simVars->timecontrol.current_timestep_size = dt;
 
 			this->timeSteppers.push_back(tsm);
 
@@ -426,6 +460,13 @@ public:
 #elif SWEET_XBRAID_SPHERE
 		this->size_buffer = N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
+
+		// create vectors for storing solutions from previous timestep (SL)
+		for (int i = 0; i < this->simVars->xbraid.xbraid_max_levels; i++)
+		{
+			std::vector<sweet_BraidVector*> v = {};
+			this->sol_prev.push_back(v);
+		}
 
 	}
 
@@ -523,6 +564,45 @@ public:
 		return U;
 	}
 
+private:
+	void store_prev_solution(
+					sweet_BraidVector* i_U,
+					int i_time_id,
+					int i_level
+				)
+	{
+		// if not SL scheme: nothing to do
+		if ( std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
+			return;
+
+		*this->sol_prev[i_level][i_time_id] = *i_U;
+	}
+
+	void set_prev_solution(
+					sweet_BraidVector* i_U,
+					int i_time_id,
+					int i_level
+				)
+	{
+
+		// if not SL scheme: nothing to do
+		if (  std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
+			return;
+
+		// if t == 0 or prev solution not available
+		// prev_solution = solution
+		bool prev_sol_exists = true;
+
+		if ( i_time_id == 0 )
+			prev_sol_exists = false;
+		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
+			prev_sol_exists = false;
+
+		if (prev_sol_exists)
+			this->timeSteppers[i_level]->master->set_previous_solution(this->sol_prev[i_level][i_time_id - 1]->data);
+		else
+			this->timeSteppers[i_level]->master->set_previous_solution(i_U->data);
+	}
 
 public:
 	/* --------------------------------------------------------------------
@@ -547,15 +627,30 @@ public:
 		double tstop;              /* evolve u to this time*/
 		int level;
 		int nlevels;
+		int time_id;
 
 		/* Grab status of current time step */
 		io_status.GetTstartTstop(&tstart, &tstop);
 		io_status.GetLevel(&level);
 		io_status.GetNLevels(&nlevels);
+		io_status.GetTIndex(&time_id);
 
 		/////std::cout << "NLevels " << nlevels << std::endl;
 		/////std::cout << "tstart tstop " << tstart << " " << tstop << std::endl;
 		/////std::cout << "level " << level << std::endl;
+
+		// create containers for prev solution
+		if (this->sol_prev[level].size() == 0)
+		{
+			// store nt solutions (overestimated for coarse levels!)
+			int nt;
+			io_status.GetNTPoints(&nt);
+			for (int i = 0; i < nt + 1; i++)
+				this->sol_prev[level].push_back(this->create_new_vector());
+		}
+
+		// set prev solution for SL
+		this->set_prev_solution(U, time_id, level);
 
 		this->simVars->timecontrol.current_simulation_time = tstart;
 		this->simVars->timecontrol.current_timestep_size = tstop - tstart;
@@ -565,6 +660,9 @@ public:
 								this->simVars->timecontrol.current_timestep_size,
 								this->simVars->timecontrol.current_simulation_time
 		);
+
+		// store solution for SL
+		this->store_prev_solution(U, time_id, level);
 
 		/* Tell XBraid no refinement */
 		io_status.SetRFactor(1);
@@ -713,7 +811,7 @@ public:
 			sphereBenchmarks.setup(*simVars, *op_sphere);
 			sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	
-			Parareal_SimulationInstace::dataArrays_to_GenericData_SphereData_Spectral(U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 	
 	
@@ -781,30 +879,30 @@ public:
 			SphereData_Physical t0_prog_vrt_phys(sphereDataConfig);
 			SphereData_Physical t0_prog_div_phys(sphereDataConfig);
 	
-			t0_prog_phi_pert_phys.physical_update_lambda_array_indices(
+			t0_prog_phi_pert_phys.physical_update_lambda_array(
 						[&](int i, int j, double &io_data)
 				{
 					io_data = this->simVars->sim.h0 + ((double)braid_Rand())/braid_RAND_MAX;
 				}
 			);
-			t0_prog_vrt_phys.physical_update_lambda_array_indices(
+			t0_prog_vrt_phys.physical_update_lambda_array(
 						[&](int i, int j, double &io_data)
 				{
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
 			);
-			t0_prog_div_phys.physical_update_lambda_array_indices(
+			t0_prog_div_phys.physical_update_lambda_array(
 						[&](int i, int j, double &io_data)
 				{
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
 			);
 	
-			t0_prog_phi_pert.loadPlaneDataPhysical(t0_prog_phi_pert_phys);
-			t0_prog_vrt.loadPlaneDataPhysical(t0_prog_vrt_phys);
-			t0_prog_div.loadPlaneDataPhysical(t0_prog_div_phys);
+			t0_prog_phi_pert.loadSphereDataPhysical(t0_prog_phi_pert_phys);
+			t0_prog_vrt.loadSphereDataPhysical(t0_prog_vrt_phys);
+			t0_prog_div.loadSphereDataPhysical(t0_prog_div_phys);
 	
-			this->dataArrays_to_GenericData_SphereData_Spectral(U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
 		else
@@ -840,9 +938,9 @@ public:
 	
 			t0_prog_phi_pert.spectral_set_zero();
 			t0_prog_vrt.spectral_set_zero();
-			t0_prog_div_pert.spectral_set_zero();
+			t0_prog_div.spectral_set_zero();
 	
-			this->dataArrays_to_GenericData_SphereData_Spectral(U->data, t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
 

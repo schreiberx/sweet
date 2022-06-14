@@ -100,8 +100,8 @@ public:
 	t_tsmType* timeSteppersFine = nullptr;
 	t_tsmType* timeSteppersCoarse = nullptr;
 
-	// list of SL schemes
-	std::vector<std::string> SL_tsm = {};
+	///// list of SL schemes
+	///std::vector<std::string> SL_tsm = {};
 
 
 	bool compute_normal_modes = false;
@@ -163,17 +163,19 @@ public:
 				*this->simVars
 			);
 
-	#if SWEET_PARAREAL_PLANE_SWE
-		this->SL_tsm = { "l_cn_na_sl_nd_settls",
-				 "l_rexi_na_sl_nd_etdrk",
-				 "l_rexi_na_sl_nd_settls"
-				};
-	#elif SWEET_PARAREAL_PLANE_BURGERS
-		this->SL_tsm = { "l_cn_n_sl",
-				 "l_irk_n_sl",
-				 "l_irk_n_sl_forcing"
-				};
-	#endif
+		PInT_Common::setup();
+
+	////#if SWEET_PARAREAL_PLANE_SWE
+	////	this->SL_tsm = { "l_cn_na_sl_nd_settls",
+	////			 "l_rexi_na_sl_nd_etdrk",
+	////			 "l_rexi_na_sl_nd_settls"
+	////			};
+	////#elif SWEET_PARAREAL_PLANE_BURGERS
+	////	this->SL_tsm = { "l_cn_n_sl",
+	////			 "l_irk_n_sl",
+	////			 "l_irk_n_sl_forcing"
+	////			};
+	////#endif
 
 		if (simVars->benchmark.benchmark_name == "normalmodes" )
 			this->compute_normal_modes = true;
@@ -209,14 +211,14 @@ public:
 					*this->simVars
 				);
 
-		this->SL_tsm = { "lg_exp_na_sl_lc_nr_etd_uv",
-				 "l_irk_na_sl_nr_settls_uv_only",
-				 "l_irk_na_sl_nr_settls_vd_only",
-				 "l_irk_na_sl_settls_uv_only",
-				 "l_irk_na_sl_settls_vd_only",
-				 "ln_sl_exp_settls_uv",
-				 "ln_sl_exp_settls_vd"
-				};
+		////this->SL_tsm = { "lg_exp_na_sl_lc_nr_etd_uv",
+		////		 "l_irk_na_sl_nr_settls_uv_only",
+		////		 "l_irk_na_sl_nr_settls_vd_only",
+		////		 "l_irk_na_sl_settls_uv_only",
+		////		 "l_irk_na_sl_settls_vd_only",
+		////		 "ln_sl_exp_settls_uv",
+		////		 "ln_sl_exp_settls_vd"
+		////		};
 	}
 #endif
 
