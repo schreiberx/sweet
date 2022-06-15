@@ -22,13 +22,13 @@
  *
  */
 void SWE_Plane_TS_ln_erk::euler_timestep_update(
-		const PlaneData &i_h,	///< prognostic variables (perturbed part of height)
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_h,	///< prognostic variables (perturbed part of height)
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
+		PlaneData_Spectral &o_h_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -44,7 +44,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
 
-		PlaneData total_h = i_h + simVars.sim.h0;
+		PlaneData_Spectral total_h = i_h + simVars.sim.h0;
 
 		o_u_t = -simVars.sim.gravitation*op.diff_c_x(total_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
 		o_v_t = -simVars.sim.gravitation*op.diff_c_y(total_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
@@ -73,10 +73,21 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 	{
 		// STAGGERED GRID
 
-		PlaneData U(i_h.planeDataConfig); // U flux
-		PlaneData V(i_h.planeDataConfig); // V flux
-		PlaneData H(i_h.planeDataConfig); //Bernoulli potential
-		PlaneData total_h = i_h + simVars.sim.h0;
+		PlaneData_Spectral U(i_h.planeDataConfig); // U flux
+		PlaneData_Spectral V(i_h.planeDataConfig); // V flux
+		PlaneData_Spectral H(i_h.planeDataConfig); //Bernoulli potential
+
+		PlaneData_Physical U_phys(i_h.planeDataConfig); // U flux
+		PlaneData_Physical V_phys(i_h.planeDataConfig); // V flux
+		PlaneData_Physical H_phys(i_h.planeDataConfig); //Bernoulli potential
+
+		PlaneData_Physical i_u_phys = i_u.toPhys();
+		PlaneData_Physical i_v_phys = i_v.toPhys();
+
+		PlaneData_Physical total_h_phys = i_h.toPhys() + simVars.sim.h0;
+		PlaneData_Spectral total_h(i_h.planeDataConfig);
+		total_h.loadPlaneDataPhysical(total_h_phys);
+
 
 		/*
 		 * Sadourny energy conserving scheme
@@ -105,17 +116,20 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 */
 
 
-		U = op.avg_b_x(total_h)*i_u;
-		V = op.avg_b_y(total_h)*i_v;
+		U_phys = op.avg_b_x(total_h_phys)*i_u_phys;
+		V_phys = op.avg_b_y(total_h_phys)*i_v_phys;
+		H_phys = simVars.sim.gravitation*total_h_phys + 0.5*(op.avg_f_x(i_u_phys*i_u_phys) + op.avg_f_y(i_v_phys*i_v_phys));
 
-
-		H = simVars.sim.gravitation*total_h + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
-
+		U.loadPlaneDataPhysical(U_phys);
+		V.loadPlaneDataPhysical(V_phys);
+		H.loadPlaneDataPhysical(H_phys);
 
 
 		// Potential vorticity
-		PlaneData total_h_pv = total_h;
-		total_h_pv = op.avg_b_x(op.avg_b_y(total_h));
+		PlaneData_Physical total_h_pv_phys = total_h_phys;
+		PlaneData_Spectral total_h_pv = total_h_phys(i_h.planeDataConfig);
+		total_h_pv_phys = op.avg_b_x(op.avg_b_y(total_h_phys));
+		total_h_pv.loadPlaneDataPhysical(total_h_pv_phys);
 
 #if 0
 		if (total_h_pv.reduce_min() < 0.00000001)
@@ -128,13 +142,15 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		}
 #endif
 
-		PlaneData q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
+		PlaneData_Spectral q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
+		PlaneData_Physical q_phys = q.toPhys();
 
 		// u, v tendencies
 		// Energy conserving scheme
-		o_u_t = op.avg_f_y(q*op.avg_b_x(V)) - op.diff_b_x(H);
-		o_v_t = -op.avg_f_x(q*op.avg_b_y(U)) - op.diff_b_y(H);
-
+		PlaneData_Physical o_u_t_phys = op.avg_f_y(q_phys*op.avg_b_x(V_phys)) - op.diff_b_x(H).toPhys();
+		PlaneData_Physical o_v_t_phys = -op.avg_f_x(q_phys*op.avg_b_y(U_phys)) - op.diff_b_y(H).toPhys();
+		o_u_t.loadPlaneDataPhysical(o_u_t_phys);
+		o_v_t.loadPlaneDataPhysical(o_v_t_phys);
 
 		/*
 		 * P UPDATE
@@ -155,9 +171,9 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 
 
 void SWE_Plane_TS_ln_erk::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp

@@ -204,13 +204,13 @@ void SWE_Sphere_TS_l_exp_n_erk::setup_auto()
 {
 	int version_id = 0;
 
-	if (simVars.disc.timestepping_method == "l_exp_n_erk_ver1")
+	if (timestepping_method == "l_exp_n_erk_ver1")
 		version_id = 1;
 
 	setup(
 			simVars.rexi,
-			simVars.disc.timestepping_order,
-			simVars.disc.timestepping_order2,
+			timestepping_order,
+			timestepping_order2,
 			simVars.timecontrol.current_timestep_size,
 			simVars.sim.sphere_use_fsphere,
 			version_id

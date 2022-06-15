@@ -11,9 +11,9 @@
 
 
 void Adv_Plane_TS_na_sl::run_timestep(
-		PlaneData &io_phi,		///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,		///< prognostic variables
+		PlaneData_Spectral &io_phi,		///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,		///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -42,8 +42,8 @@ void Adv_Plane_TS_na_sl::run_timestep(
 	ScalarDataArray posy_d(io_phi.planeDataConfig->physical_array_data_number_of_elements);
 
 	semiLagrangian.semi_lag_departure_points_settls(
-			prog_u_prev, prog_v_prev,
-			io_u, io_v,
+			prog_u_prev.toPhys(), prog_v_prev.toPhys(),
+			io_u.toPhys(), io_v.toPhys(),
 			posx_a, posy_a,
 			dt,
 			posx_d, posy_d,
@@ -58,7 +58,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 	prog_u_prev = io_u;
 	prog_v_prev = io_v;
 
-	PlaneData new_prog_phi(io_phi.planeDataConfig);
+	PlaneData_Spectral new_prog_phi(io_phi.planeDataConfig);
 
 	if (timestepping_order == 1)
 	{

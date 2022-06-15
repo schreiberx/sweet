@@ -17,6 +17,7 @@ class JobsData(InfoError):
     def __init__(
         self,
         job_dirs_pattern = 'job_bench_*',
+        #####job_dirs_pattern = 'job_bench*',
         job_dirs = [],
         verbosity = 10,
     ):

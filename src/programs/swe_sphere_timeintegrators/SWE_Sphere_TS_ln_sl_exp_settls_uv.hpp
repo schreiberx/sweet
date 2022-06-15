@@ -23,7 +23,13 @@
 class SWE_Sphere_TS_ln_sl_exp_settls_uv	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+#if SWEET_PARAREAL
+						,
+						int &i_timestepping_order,
+						int &i_timestepping_order2
+#endif
+					);
 	std::string string_id();
 	void setup_auto();
 
@@ -99,6 +105,20 @@ public:
 	);
 
 
+#if SWEET_PARAREAL && SWEET_PARAREAL_SPHERE
+	void set_previous_solution(
+				SphereData_Spectral &i_phi_prev,
+				SphereData_Spectral &i_vrt_prev,
+				SphereData_Spectral &i_div_prev
+	) override
+	{
+		if (simVars.misc.verbosity > 5)
+			std::cout << "set_previous_solution()" << std::endl;
+		U_phi_prev = i_phi_prev;
+		U_vrt_prev = i_vrt_prev;
+		U_div_prev = i_div_prev;
+	}
+#endif
 
 	virtual ~SWE_Sphere_TS_ln_sl_exp_settls_uv();
 };

@@ -14,7 +14,7 @@
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
@@ -39,7 +39,7 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	PlaneDataSampler sampler2D;
 
 	//Previous values (t_n-1)
-	PlaneData h_prev, u_prev, v_prev;
+	PlaneData_Spectral h_prev, u_prev, v_prev;
 
 	// Arrival points for semi-lag
 	ScalarDataArray posx_a, posy_a;
@@ -62,13 +62,28 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
+
+#if SWEET_PARAREAL && SWEET_PARAREAL_PLANE
+	void set_previous_solution(
+				PlaneData_Spectral &i_h_prev,
+				PlaneData_Spectral &i_u_prev,
+				PlaneData_Spectral &i_v_prev
+	) override
+	{
+		if (simVars.misc.verbosity > 5)
+			std::cout << "set_previous_solution()" << std::endl;
+		h_prev = i_h_prev;
+		u_prev = i_u_prev;
+		v_prev = i_v_prev;
+	}
+#endif
 
 
 

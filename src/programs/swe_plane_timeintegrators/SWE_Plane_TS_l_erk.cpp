@@ -16,13 +16,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Plane_TS_l_erk::euler_timestep_update(
-		const PlaneData &i_h,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_h,	///< prognostic variables
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
+		PlaneData_Spectral &o_h_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -94,10 +94,14 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		 * P_t + div(P V) = 0
 		 */
 
-		PlaneData H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+		PlaneData_Spectral H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
 
-		o_u_t = op.avg_f_y(simVars.sim.plane_rotating_f0*op.avg_b_x(i_v)) - op.diff_b_x(H);
-		o_v_t = -op.avg_f_x(simVars.sim.plane_rotating_f0*op.avg_b_y(i_u)) - op.diff_b_y(H);
+		PlaneData_Physical o_u_t_phys(o_u_t.planeDataConfig);
+		PlaneData_Physical o_v_t_phys(o_v_t.planeDataConfig);
+		o_u_t_phys = op.avg_f_y(simVars.sim.plane_rotating_f0*op.avg_b_x(i_v.toPhys())) - op.diff_b_x(H).toPhys();
+		o_v_t_phys = -op.avg_f_x(simVars.sim.plane_rotating_f0*op.avg_b_y(i_u.toPhys())) - op.diff_b_y(H).toPhys();
+		o_u_t.loadPlaneDataPhysical(o_u_t_phys);
+		o_v_t.loadPlaneDataPhysical(o_v_t_phys);
 
 		/*
 		 * P UPDATE
@@ -109,9 +113,9 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 
 
 void SWE_Plane_TS_l_erk::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -155,7 +159,9 @@ SWE_Plane_TS_l_erk::SWE_Plane_TS_l_erk(
 		simVars(i_simVars),
 		op(i_op)
 {
+#if !SWEET_PARAREAL
 	setup(simVars.disc.timestepping_order);
+#endif
 }
 
 

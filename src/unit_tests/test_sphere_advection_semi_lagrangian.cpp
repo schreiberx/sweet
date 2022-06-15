@@ -9,8 +9,8 @@
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
-#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+#include <sweet/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
+#include <sweet/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 
 #include "../programs/advection_sphere_benchmarks/BenchmarksSphereAdvection.hpp"
 #include "../programs/advection_sphere_timeintegrators/SphereAdvectionTimeSteppers.hpp"

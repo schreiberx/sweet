@@ -671,7 +671,6 @@ private:
 				exit(-1);
 			}
 
-
 			MemBlockAlloc::free(data_physical, physical_array_data_number_of_elements*sizeof(std::complex<double>));
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 		}
@@ -694,6 +693,7 @@ public:
 
 
 #if SWEET_USE_LIBFFT
+public:
 	void fft_physical_to_spectral(
 			double *i_physical_data,
 			std::complex<double> *o_spectral_data
@@ -740,7 +740,7 @@ public:
 
 
 
-	void fft_spectral_to_complex_physical(
+	void fft_complex_spectral_to_physical(
 			std::complex<double> *i_spectral_data,
 			std::complex<double> *o_physical_data
 	)	const
@@ -964,6 +964,33 @@ public:
 
 
 #endif
+
+
+	// TODO: CHECK THIS
+	inline
+	std::size_t getArrayIndexByModes(
+			int n,
+			int m
+	)	const
+	{
+		assert(n >= 0);
+
+		return n * spectral_data_size[0] + m;
+	}
+
+
+	// TODO: CHECK THIS
+	inline
+	std::size_t getArrayIndexByModes_Complex(
+			int n,
+			int m
+	)	const
+	{
+		assert(n >= 0);
+
+		int idx =  n * spectral_complex_data_size[0] + m;
+		return idx;
+	}
 
 
 

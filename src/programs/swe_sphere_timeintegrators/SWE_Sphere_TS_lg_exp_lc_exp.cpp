@@ -120,7 +120,7 @@ void SWE_Sphere_TS_lg_exp_lc_exp::setup(
 
 void SWE_Sphere_TS_lg_exp_lc_exp::setup_auto()
 {
-	setup(simVars.disc.timestepping_order);
+	setup(timestepping_order);
 }
 
 

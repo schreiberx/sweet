@@ -78,6 +78,9 @@ class JobRuntimeOptions(InfoError):
         self.rexi_ci_sy = None
         self.rexi_ci_mu = None
 
+        ## Parameters for direct exp. solver
+        self.exp_direct_precompute_phin = 0;
+
         self.gui = None
 
         self.polvani_rossby = None
@@ -128,6 +131,23 @@ class JobRuntimeOptions(InfoError):
 
         self.reuse_plans = -1
         self.comma_separated_tags = None
+
+        ## parareal parameters
+        self.parareal_enabled = 0
+        self.parareal_coarse_slices = None
+        self.parareal_convergence_threshold = -1
+        self.parareal_verbosity = 0
+        self.parareal_max_simulation_time = None
+        self.parareal_coarse_timestepping_method = None
+        self.parareal_coarse_timestepping_order = 1
+        self.parareal_coarse_timestepping_order2 = 1
+        self.parareal_coarse_timestep_size = -1;
+        self.parareal_load_ref_csv_files = 0;
+        self.parareal_path_ref_csv_files = "";
+        self.parareal_load_fine_csv_files = 0;
+        self.parareal_path_fine_csv_files = "";
+        self.parareal_store_iterations = 1;
+
 
         #
         # User defined parameters
@@ -206,6 +226,8 @@ class JobRuntimeOptions(InfoError):
         if 'comma_separated_tags' in d:
             self.comma_separated_tags = d['comma_separated_tags']
 
+        if 'exp_direct_precompute_phin' in d:
+            self.exp_direct_precompute_phin = d['exp_direct_precompute_phin']
 
 
 
@@ -402,6 +424,17 @@ class JobRuntimeOptions(InfoError):
             if self.comma_separated_tags != None:
                 idstr += '_tags'+str(self.comma_separated_tags)
 
+        if not 'runtime.parareal' in filter_list:
+            if self.parareal_enabled:
+                if not 'runtime.parareal_coarse_slices' in filter_list:
+                    idstr += '_par_'+str(self.parareal_coarse_slices)
+            if not 'runtime.parareal_coarse_timestepping_method' in filter_list:
+                    idstr += '_ptsm_'+str(self.parareal_coarse_timestepping_method)
+            if not 'runtime.parareal_coarse_timestep_size' in filter_list:
+                    idstr += '_pDt_'+str(self.parareal_coarse_timestep_size)
+            if not 'runtime.parareal_store_iterations' in filter_list:
+                    idstr += '_pStore_'+str(self.parareal_store_iterations)
+
         if idstr != '':
             idstr = "RT"+idstr
 
@@ -528,7 +561,10 @@ class JobRuntimeOptions(InfoError):
         if self.rexi_method != '' and self.rexi_method != None:
             retval += ' --rexi-method='+str(self.rexi_method)
 
-            if self.rexi_method != 'direct':
+            if self.rexi_method == 'direct':
+                retval += ' --exp-direct-precompute-phin='+str(self.exp_direct_precompute_phin)
+
+            else:
                 retval += ' --rexi-sphere-preallocation='+str(self.rexi_sphere_preallocation)
 
                 if self.rexi_method == 'file':
@@ -604,6 +640,29 @@ class JobRuntimeOptions(InfoError):
 
         if self.comma_separated_tags != None:
             retval += ' --comma-separated-tags='+str(self.comma_separated_tags)
+
+        ## Parareal parameters
+        if self.parareal_enabled:
+            retval += " --parareal-enable=1"
+            retval += " --parareal-coarse-slices="+str(self.parareal_coarse_slices)
+            retval += " --parareal-convergence-threshold="+str(self.parareal_convergence_threshold)
+            retval += " --parareal-verbosity="+str(self.parareal_verbosity)
+            retval += " --parareal-max-simulation-time="+str(self.parareal_max_simulation_time)
+            retval += " --parareal-coarse-timestepping-method="+str(self.parareal_coarse_timestepping_method)
+            retval += " --parareal-coarse-timestepping-order="+str(self.parareal_coarse_timestepping_order)
+            retval += " --parareal-coarse-timestepping-order2="+str(self.parareal_coarse_timestepping_order2)
+            retval += " --parareal-coarse-timestep-size="+str(self.parareal_coarse_timestep_size);
+            retval += " --parareal-load-ref-csv-files="+str(self.parareal_load_ref_csv_files);
+            retval += " --parareal-path-ref-csv-files="+str(self.parareal_path_ref_csv_files);
+            retval += " --parareal-load-fine-csv-files="+str(self.parareal_load_fine_csv_files);
+            retval += " --parareal-path-fine-csv-files="+str(self.parareal_path_fine_csv_files);
+            retval += " --parareal-store-iterations="+str(self.parareal_store_iterations);
+
+            ##if self.parareal_coarse_timestep_size > 0:
+            ##    retval += " --parareal-coarse-timestep-size="+str(self.parareal_coarse_timestep_size);
+            ##else:
+            ##    retval += " --parareal-coarse-timestep-size="+str(self.parareal_max_simulation_time/self.parareal_coarse_slices);
+
 
 
         for key, param in self.user_defined_parameters.items():

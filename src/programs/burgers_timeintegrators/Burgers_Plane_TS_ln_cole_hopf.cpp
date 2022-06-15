@@ -10,10 +10,10 @@
 
 
 void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
-		PlaneData &io_u_prev,	///< prognostic variables
-		PlaneData &io_v_prev,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
+		///PlaneData_Spectral &io_u_prev,	///< prognostic variables
+		///PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -27,37 +27,49 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 		SWEETError("Cole-Hopf solution does only work with functions which oszillate around 0");
 
 	// setup dummy data
-	PlaneData tmp(io_u.planeDataConfig);
-	PlaneData phi(io_u.planeDataConfig);
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-	tmp.spectral_set_all(0,0);
-	phi.spectral_set_all(0,0);
-#endif
-	tmp.physical_set_all(0);
-	phi.physical_set_all(0);
+	PlaneData_Spectral tmp(io_u.planeDataConfig);
+	PlaneData_Spectral phi(io_u.planeDataConfig);
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
+	tmp.spectral_set_zero();
+	phi.spectral_set_zero();
+//#endif
+//	tmp.physical_set_all(0);
+//	phi.physical_set_all(0);
 
 	/*
 	 * Calculating the analytic solution to the initial condition i_prog_u
 	 * with Cole-Hopf transformation
 	 */
-	PlaneData lhs = op.diff_c_x;
+	PlaneData_Spectral lhs = op.diff_c_x;
+
 	tmp = io_u.spectral_div_element_wise(lhs);
-	phi = tmp;
-	phi.physical_update_lambda_array_indices(
+//	phi = tmp;
+
+	PlaneData_Physical phi_phys(phi.planeDataConfig);
+	phi_phys = tmp.toPhys();
+
+	phi_phys.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
 			io_data = exp(-io_data/(2*simVars.sim.viscosity));
 		}
 	);
 
-	ts_l_direct.run_timestep(phi, io_v, io_u, io_v, i_fixed_dt, i_simulation_timestamp);
+	phi.loadPlaneDataPhysical(phi_phys);
 
-	phi.physical_update_lambda_array_indices(
+	ts_l_direct.run_timestep(phi, io_v, /*io_u, io_v,*/ i_fixed_dt, i_simulation_timestamp);
+
+	phi_phys = phi.toPhys();
+
+	phi_phys.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
 			io_data = log(io_data);
 		}
 	);
+
+	phi.loadPlaneDataPhysical(phi_phys);
+
 	io_u = -2*simVars.sim.viscosity*op.diff_c_x(phi);
 
 }

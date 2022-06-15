@@ -17,8 +17,8 @@
 #include "advection_sphere_benchmarks/BenchmarksSphereAdvection.hpp"
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
-#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
-#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+#include <sweet/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
+#include <sweet/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
@@ -55,7 +55,7 @@ public:
 	bool time_varying_fields;
 
 #if SWEET_GUI
-	PlaneData viz_plane_data;
+	PlaneData_Physical viz_plane_data;
 
 	int render_primitive_id = 1;
 #endif
@@ -223,7 +223,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -244,9 +244,9 @@ public:
 			{
 				SphereData_DebugContainer::DataContainer &d = SphereData_DebugContainer().container_data()[id];
 				if (d.is_spectral)
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(d.data_spectral, planeDataConfig);
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(d.data_spectral, planeDataConfig);
 				else
-					viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(d.data_physical, planeDataConfig);
+					viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(d.data_physical, planeDataConfig);
 
 				*o_dataArray = &viz_plane_data;
 				*o_aspect_ratio = 0.5;
@@ -255,7 +255,7 @@ public:
 #else
 			if (id <  (int)prognostic_variables.size())
 			{
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(
 							*prognostic_variables[id] - *prognostic_variables_t0[id],
 							planeDataConfig
 						);
@@ -271,18 +271,18 @@ public:
 
 		if (id >= 0 && id < prognostic_variables.size())
 		{
-			viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prognostic_variables[id], planeDataConfig);
+			viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(*prognostic_variables[id], planeDataConfig);
 		}
 		else if (id >= prognostic_variables.size() && id < prognostic_variables.size() + 2)
 		{
 			switch (id - prognostic_variables.size())
 			{
 			case 0:
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(velocity_field_u, planeDataConfig);
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(velocity_field_u, planeDataConfig);
 				break;
 
 			case 1:
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(velocity_field_v, planeDataConfig);
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(velocity_field_v, planeDataConfig);
 				break;
 			}
 		}
@@ -298,11 +298,11 @@ public:
 			switch (id - prognostic_variables.size() - 2)
 			{
 			case 0:
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(u, planeDataConfig);
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(u, planeDataConfig);
 				break;
 
 			case 1:
-				viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(v, planeDataConfig);
+				viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(v, planeDataConfig);
 				break;
 			}
 		}
@@ -406,8 +406,8 @@ public:
 				simVars.diag.total_mass,
 				simVars.diag.total_energy,
 				simVars.diag.total_potential_enstrophy,
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min()
+				viz_plane_data.physical_reduce_max(),
+				viz_plane_data.physical_reduce_min()
 		);
 
 		return title_string;

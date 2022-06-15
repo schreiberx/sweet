@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
 
@@ -18,9 +18,9 @@ class Adv_Plane_TS_interface
 {
 public:
 	virtual void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp

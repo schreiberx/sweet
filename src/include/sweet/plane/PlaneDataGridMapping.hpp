@@ -9,7 +9,8 @@
 #define SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_
 
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/ScalarDataArray.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneStaggering.hpp>
@@ -63,8 +64,8 @@ public:
 
 
 	void mapCtoA_u(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to A grid
@@ -73,8 +74,8 @@ public:
 
 
 	void mapCtoA_v(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to A grid
@@ -85,8 +86,8 @@ public:
 
 
 	void mapAtoC_u(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to C grid
@@ -95,13 +96,79 @@ public:
 
 
 	void mapAtoC_v(
-			const PlaneData &i_src,
-			PlaneData &o_dst
+			const PlaneData_Physical &i_src,
+			PlaneData_Physical &o_dst
 	)
 	{
 		// remap solution to C grid
 		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, -staggering.v[0], -staggering.v[1]);
 	}
+
+
+
+
+	void mapCtoA_u(
+			const PlaneData_Spectral &i_src,
+			PlaneData_Spectral &o_dst
+	)
+	{
+		PlaneData_Physical i_src_phys = i_src.toPhys();
+		PlaneData_Physical o_dst_phys = o_dst.toPhys();
+
+		// remap solution to A grid
+		sampler2D.bicubic_scalar(i_src_phys, pos_ll_x, pos_ll_y, o_dst_phys, staggering.u[0], staggering.u[1]);
+
+		o_dst.loadPlaneDataPhysical(o_dst_phys);
+	}
+
+
+	void mapCtoA_v(
+			const PlaneData_Spectral &i_src,
+			PlaneData_Spectral &o_dst
+	)
+	{
+		PlaneData_Physical i_src_phys = i_src.toPhys();
+		PlaneData_Physical o_dst_phys = o_dst.toPhys();
+
+		// remap solution to A grid
+		sampler2D.bicubic_scalar(i_src_phys, pos_ll_x, pos_ll_y, o_dst_phys, staggering.v[0], staggering.v[1]);
+
+		o_dst.loadPlaneDataPhysical(o_dst_phys);
+	}
+
+
+
+
+	void mapAtoC_u(
+			const PlaneData_Spectral &i_src,
+			PlaneData_Spectral &o_dst
+	)
+	{
+		PlaneData_Physical i_src_phys = i_src.toPhys();
+		PlaneData_Physical o_dst_phys = o_dst.toPhys();
+
+		// remap solution to C grid
+		sampler2D.bicubic_scalar(i_src_phys, pos_ll_x, pos_ll_y, o_dst_phys, -staggering.u[0], -staggering.u[1]);
+
+		o_dst.loadPlaneDataPhysical(o_dst_phys);
+	}
+
+
+	void mapAtoC_v(
+			const PlaneData_Spectral &i_src,
+			PlaneData_Spectral &o_dst
+	)
+	{
+		PlaneData_Physical i_src_phys = i_src.toPhys();
+		PlaneData_Physical o_dst_phys = o_dst.toPhys();
+
+		// remap solution to C grid
+		sampler2D.bicubic_scalar(i_src_phys, pos_ll_x, pos_ll_y, o_dst_phys, -staggering.v[0], -staggering.v[1]);
+
+		o_dst.loadPlaneDataPhysical(o_dst_phys);
+	}
+
+
 };
 
 

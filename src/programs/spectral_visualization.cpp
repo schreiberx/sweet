@@ -13,8 +13,8 @@
 
 
 
-#include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
 #if SWEET_GUI
@@ -41,7 +41,8 @@ SimulationVariables simVars;
 class TestSpectral
 {
 public:
-	PlaneData tmp;
+	PlaneData_Spectral tmp;
+	PlaneData_Physical tmp_phys;
 	PlaneOperators op;
 	char vis_description[1024];
 
@@ -139,7 +140,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -148,12 +149,12 @@ public:
 			bool *viz_reset
 	)
 	{
-		*o_dataArray = &tmp;
+		*o_dataArray = &tmp_phys;
 		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 
 		if (simVars.timecontrol.run_simulation_timesteps)
 		{
-			tmp.spectral_set_all(0, 0);
+			tmp.spectral_set_zero();
 
 			int spec_array[][4] =
 			{
@@ -202,12 +203,12 @@ public:
 			int id = simVars.misc.vis_id % (sizeof(spec_array)/sizeof(spec_array[0]));
 
 			sprintf(vis_description, "spec_coord (j, i) = (%i, %i), value = %i + i*%i", spec_array[id][0], spec_array[id][1], spec_array[id][2], spec_array[id][3]);
-			tmp.p_spectral_set(spec_array[id][0], spec_array[id][1], {(double)spec_array[id][2], (double)spec_array[id][3]});
+			tmp.spectral_set(spec_array[id][0], spec_array[id][1], {(double)spec_array[id][2], (double)spec_array[id][3]});
 
 			return;
 		}
 
-		PlaneData dataArray(planeDataConfig);
+		PlaneData_Spectral dataArray(planeDataConfig);
 
 		double max = 1.0;
 		double shift = stopwatch.getTimeSinceStart()*0.1;
@@ -218,10 +219,13 @@ public:
 		s *= max;
 
 		sprintf(vis_description, "test spectrum");
-		tmp.spectral_set_all(0, 0);
+		tmp.spectral_set_zero();
 		int asdf = 2;
-		tmp.p_spectral_set(0, asdf, {c, s});
-		tmp.p_spectral_set(asdf, 0, {c, s});
+		tmp.spectral_set(0, asdf, {c, s});
+		tmp.spectral_set(asdf, 0, {c, s});
+
+		tmp_phys = tmp.toPhys();
+
 	}
 
 

@@ -120,7 +120,7 @@ void SWE_Sphere_TS_l_erk::setup(
  */
 void SWE_Sphere_TS_l_erk::setup_auto()
 {
-	setup(simVars.disc.timestepping_order);
+	setup(timestepping_order);
 }
 
 

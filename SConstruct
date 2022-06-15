@@ -97,8 +97,8 @@ p.makeOptionsConsistent()
 if p.libxml == 'enable':
     env.ParseConfig("xml2-config --cflags --libs")
 
-if p.parareal == 'mpi':
-    raise Exception("TODO: Implement MPI Parareal")
+####if p.parareal == 'mpi':
+####    raise Exception("TODO: Implement MPI Parareal")
 
 p.ld_flags = GetOption('ld_flags')
 
@@ -152,6 +152,16 @@ else:
     raise Exception("Invalid option '"+str(p.parareal)+"' for parareal method")
 
 
+if p.parareal_scalar == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_SCALAR=1')
+if p.parareal_plane == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE=1')
+if p.parareal_sphere == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_SPHERE=1')
+if p.parareal_plane_swe == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE_SWE=1')
+if p.parareal_plane_burgers == 'enable':
+    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE_BURGERS=1')
 
 
 #

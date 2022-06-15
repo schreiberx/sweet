@@ -7,7 +7,6 @@
 
 #include "SWE_Sphere_TS_interface.hpp"
 
-
 /**
  * SWE Plane time steppers
  */
@@ -31,10 +30,13 @@ public:
 
 	void setup(
 			const std::string &i_timestepping_method,
+#if SWEET_PARAREAL
+			int &i_timestepping_order,
+			int &i_timestepping_order2,
+#endif
 			SphereOperators_SphereData &i_op,
 			SimulationVariables &i_simVars
 	);
-
 
 	~SWE_Sphere_TimeSteppers();
 };
