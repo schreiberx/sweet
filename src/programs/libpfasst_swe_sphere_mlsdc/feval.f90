@@ -33,7 +33,6 @@ module feval_module
    contains 
      procedure :: f_eval                => sweet_f_eval_stepper 
      procedure :: f_comp                => sweet_f_comp_stepper
-     procedure :: f_finalize            => sweet_f_finalize_stepper
      procedure :: destroy               => sweet_stepper_destroy
   end type sweet_stepper_t
   
@@ -84,12 +83,6 @@ module feval_module
        real(c_double), value :: i_t, i_dtq
        integer,        value :: i_level
      end subroutine ccomp_f3
-
-     subroutine cfinalize(i_Y, i_t, i_dt, i_ctx) bind(c, name="cfinalize")
-       use iso_c_binding
-       type(c_ptr),    value :: i_Y, i_ctx
-       real(c_double), value :: i_t, i_dt
-     end subroutine cfinalize
 
   end interface
   
@@ -209,7 +202,7 @@ contains
                         f_sd_ptr%c_sweet_data_ptr)
 
        case DEFAULT
-          print *, 'Piece argument in f_eval can only be 1, 2'!, or 3'
+          print *, 'Piece argument in f_eval can only be 1, 2 or 3'
           call exit(0)
     end select    
 
@@ -254,7 +247,7 @@ contains
                          f_sd_ptr%c_sweet_data_ptr)
 
        case DEFAULT
-          print *, 'Piece argument in f_comp can only be 2'! or 3'
+          print *, 'Piece argument in f_comp can only be 2 or 3'
           call exit(0)
     end select
          
@@ -369,26 +362,6 @@ contains
     end select
          
   end subroutine sweet_f_comp_stepper
-
-  ! apply artificial viscosity
-  
-    subroutine sweet_f_finalize_stepper(this, y, t, dtq, level_index)
-    class(sweet_stepper_t), intent(inout) :: this
-    class(pf_encap_t),      intent(inout) :: y
-    real(pfdp),             intent(in   ) :: t
-    real(pfdp),             intent(in   ) :: dtq
-    integer,                intent(in   ) :: level_index
-
-    class(sweet_data_encap_t),    pointer :: y_sd_ptr
-
-    y_sd_ptr   => as_sweet_data_encap(y)
-
-    call cfinalize(y_sd_ptr%c_sweet_data_ptr, &
-                   t,                         &
-                   dtq,                       &
-                   this%ctx)                   
-    
-  end subroutine sweet_f_finalize_stepper
   
   ! destructor
 

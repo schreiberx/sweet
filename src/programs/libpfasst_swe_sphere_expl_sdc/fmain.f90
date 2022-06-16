@@ -93,7 +93,7 @@ contains
         level = 1
         pf%levels(level)%index = level
         
-        call pf_level_set_size(pf, level, nvars)
+        call pf_level_set_size(pf, level, nvars, nvars(1))
 
         ! define the number of internal rk time steps
         pf%nsteps_rk = 1

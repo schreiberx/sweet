@@ -64,8 +64,6 @@ jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 # LibPFASST runtime parameters
 # set them all explicitly to make sure we know what's happening
 jg.runtime.libpfasst_nlevels = 1
-jg.runtime.libpfasst_use_rexi = 0
-jg.runtime.libpfasst_implicit_coriolis_force = 0
 jg.runtime.libpfasst_use_rk_stepper = 0
 
 #################

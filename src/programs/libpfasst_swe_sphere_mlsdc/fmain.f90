@@ -111,7 +111,10 @@ contains
        ! define the level id
        pf%levels(level)%index = level
 
-       call pf_level_set_size(pf, level, nvars)
+       ! use the number of degrees of freedom as both the lev_shape and the buffer length of each level
+       ! from what I understand, lev_shape refers to a collection of general variables relevant to the level
+       ! buffer length: the amount of doubles to send in an MPI call
+       call pf_level_set_size(pf, level, [nvars(level)], nvars(level))
 
        ! define the number of internal rk time steps
        pf%nsteps_rk = 1

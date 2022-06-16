@@ -1333,7 +1333,7 @@ public:
 			return 3;
 		}
 
-		SWEETError("More than 2 values given");
+		SWEETError("More than 3 values given");
 		return -1;
 	}
 

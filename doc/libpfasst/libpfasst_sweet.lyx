@@ -147,12 +147,6 @@ libpfasst_swe_sphere_imex_sdc
 )
 \end_layout
 
-\begin_layout Standard
-
-\series bold
-Not supported yet:
-\end_layout
-
 \begin_layout Itemize
 MLSDC for the shallow water equations on the sphere (
 \family typewriter
@@ -210,11 +204,12 @@ so far, the programs have only been tested with the Galewsky benchmark!
 \begin_layout Itemize
 in addition to the SWEET runtime options, the LibPFASST programs have flags
  for customizing the PFASST algorithm.
- These are the important ones, use 
-\family typewriter
---help
-\family default
- to see how to set them:
+ 
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Flags for all programs
 \end_layout
 
 \begin_deeper
@@ -242,14 +237,66 @@ libpfasst-niters
 : number of iterations per time step used by PFASST algorithm
 \end_layout
 
+\end_deeper
+\begin_layout Itemize
+Additional flags for 
+\family typewriter
+libpfasst_swe_sphere_mlsdc
+\family default
+ 
+\end_layout
+
+\begin_deeper
 \begin_layout Itemize
 
 \family typewriter
 libpfasst-nlevels
 \family default
-: only relevant for MLSDC, anything above 1 will lead to an error!
+: only 1 and 2 levels are supported so far.
+ 
 \end_layout
 
+\begin_layout Itemize
+
+\family typewriter
+libpfasst-u2/4/6/8
+\family default
+: hyperviscosity values of order 2, 4, 6, 8.
+ See 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "p. 500"
+key "lauritzen_numerical_2011"
+literal "false"
+
+\end_inset
+
+ for an explanation of hyperviscosity.
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+libpfasst-u-fields
+\family default
+: which fields to apply hyperviscosity to.
+ Can be any comma-separated combination of 
+\emph on
+phi_pert, div, vrt
+\emph default
+.
+ Additional options are 
+\emph on
+all
+\emph default
+ and 
+\emph on
+none
+\emph default
+.
+\end_layout
+
+\end_deeper
 \end_deeper
 \begin_layout Itemize
 
@@ -264,8 +311,12 @@ timestepping-method
 \family typewriter
 timestepping-order
 \family default
- are not used by the LibPFASST programs! To compute your achievable order,
- see section 
+ are 
+\series bold
+not
+\series default
+ used by the LibPFASST programs! To compute your achievable order, see section
+ 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "sec:hints-using"
@@ -276,6 +327,26 @@ noprefix "false"
 \end_inset
 
 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+note: 
+\series default
+the flags 
+\family typewriter
+-u
+\family default
+ and 
+\family typewriter
+-U
+\family default
+ are 
+\series bold
+not
+\series default
+ used by the LibPFASST programs.
 \end_layout
 
 \begin_layout Subsection
@@ -422,7 +493,128 @@ dtq
 \end_layout
 
 \begin_layout Itemize
-it might seem surprising that there exists an evaluation function for the
+
+\family typewriter
+eval()
+\family default
+ functions refer to an explicit evaluation of (parts of) the right hand
+ side at a particular point in time 
+\end_layout
+
+\begin_layout Itemize
+
+\family typewriter
+comp()
+\family default
+ functions refer to an implicit solve of (parts of) the right hand side
+ at a particular point in time
+\end_layout
+
+\begin_layout Subsubsection*
+Explicit SDC
+\end_layout
+
+\begin_layout Standard
+The explicit SDC program 
+\family typewriter
+libpfasst_swe_sphere_expl_sdc
+\family default
+ uses 
+\begin_inset CommandInset href
+LatexCommand href
+name "LibPFASST's IMEX sweeper"
+target "https://libpfasst.github.io/LibPFASST/docs/FORD/doc/sourcefile/pf_imex_sweeper.f90.html"
+literal "false"
+
+\end_inset
+
+ but does not use its IMEX functionality.
+ Instead, we integrate the whole right hand side explicitly by providing
+ one routine 
+\family typewriter
+ceval()
+\family default
+ which evaluates the whole right-hand side 
+\begin_inset Formula $\frac{\partial\boldsymbol{U}}{\partial t}$
+\end_inset
+
+at once.
+\end_layout
+
+\begin_layout Subsubsection*
+IMEX-SDC
+\end_layout
+
+\begin_layout Standard
+The IMEX SDC program 
+\family typewriter
+libpfasst_swe_sphere_imex_sdc
+\family default
+ uses 
+\begin_inset CommandInset href
+LatexCommand href
+name "LibPFASST's IMEX sweeper"
+target "https://libpfasst.github.io/LibPFASST/docs/FORD/doc/sourcefile/pf_imex_sweeper.f90.html"
+literal "false"
+
+\end_inset
+
+ and the following splitting (cf.
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "hamon_multi-level_2019"
+literal "false"
+
+\end_inset
+
+):
+\begin_inset Formula 
+\[
+\frac{\partial\boldsymbol{U}}{\partial t}=\mathcal{L}_{G}(\boldsymbol{U})+\mathcal{L}_{F}(\boldsymbol{U})+\mathcal{N}(\boldsymbol{U})
+\]
+
+\end_inset
+
+The IMEX sweeper uses a splitting of the right-hand side
+\begin_inset Formula 
+\[
+f=f_{1}+f_{2}
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ is solved explicitly and 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ is solved implicitly.
+ In our implementation, 
+\begin_inset Formula $f_{1}=\mathcal{L}_{F}(\boldsymbol{U})+\mathcal{N}(\boldsymbol{U})$
+\end_inset
+
+ is solved explicitly and the stiff linear gravity modes 
+\begin_inset Formula $f_{2}=\mathcal{L}_{G}(\boldsymbol{U})$
+\end_inset
+
+ are integrated implicitly, as described in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "hamon_multi-level_2019"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+It might seem surprising that there exists an evaluation function for the
  implicit piece in the IMEX sweeper.
  This is intended by the IMEX-SDC algorithm in 
 \begin_inset CommandInset citation
@@ -434,7 +626,407 @@ literal "false"
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Subsubsection*
+MLSDC
+\end_layout
+
+\begin_layout Standard
+The MLSDC implementation 
+\family typewriter
+libpfasst_swe_sphere_imex_sdc
+\family default
+ uses 
+\begin_inset CommandInset href
+LatexCommand href
+name "LibPFASST's MISDC sweeper"
+target "https://libpfasst.github.io/LibPFASST/docs/FORD/doc/sourcefile/pf_misdcq_sweeper.f90.html"
+literal "false"
+
+\end_inset
+
+ and splits the right-hand side into three pieces
+\begin_inset Formula 
+\[
+f=f_{1}+f_{2}+f_{3}
+\]
+
+\end_inset
+
+where 
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ is the explicit piece and both 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{3}$
+\end_inset
+
+ are solved implicitly.
  
+\begin_inset Formula $f_{1}$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{2}$
+\end_inset
+
+ are both implemented as given above, 
+\begin_inset Formula $f_{1}=\mathcal{L}_{F}(\boldsymbol{U})+\mathcal{N}(\boldsymbol{U})$
+\end_inset
+
+ and 
+\begin_inset Formula $f_{2}=\mathcal{L}_{G}(\boldsymbol{U})$
+\end_inset
+
+.
+ 
+\begin_inset Formula $f_{3}$
+\end_inset
+
+ is used to apply artificial viscosity to the system.
+\end_layout
+
+\begin_layout Standard
+It might seem surprising that there exists an evaluation function for the
+ implicit pieces in the MISDC sweeper.
+ This is intended by the IMEX-SDC algorithm in 
+\begin_inset CommandInset citation
+LatexCommand cite
+after "Algorithm 1"
+key "speck_multi-level_2015"
+literal "false"
+
+\end_inset
+
+.
+ These functions are called once per sweep, before the corrections.
+\end_layout
+
+\begin_layout Standard
+For an overview of these functions, see Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:mlsdc-components"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Right-hand side components of the MLSDC sweeper.
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:mlsdc-components"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="4">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top" width="20page%">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+function
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+related physics
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+meaning
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+function calls / sweep
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ceval_f1()
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{L}_{F}(\boldsymbol{U})+\mathcal{N}(\boldsymbol{U})$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+explicit evaluation of non-stiff terms (the EX in IMEX)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+in each correction
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ceval_f2()
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{L}_{G}(\boldsymbol{U})$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+explicit evaluation of stiff terms
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+once, before the corrections
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ccomp_f2()
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $\mathcal{L}_{G}(\boldsymbol{U})$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+implicit computation of stiff terms
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+in each correction
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ceval_f3()
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+(hyper-)viscosity
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+explicit evaluation of viscosity
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+once, before the corrections
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family typewriter
+ccomp_f3()
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+(hyper-)viscosity
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+implicit computation of viscosity
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+in each correction
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
