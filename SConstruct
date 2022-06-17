@@ -336,10 +336,12 @@ if p.sweet_mpi == 'enable':
 
         output = exec_command(env['CC']+' -v')
         if 'MPICH' in output:
-            if p.fortran_source == 'enabled':
-                env.Append(LINKFLAGS='-lmpif90')
+            if p.fortran_source == 'enable':
+                env.Append(LIBS='mpif90')
         else:
-            pass
+            # Assume OpenMPI
+            if p.fortran_source == 'enable':
+                env.Append(LIBS='mpi_cxx')
         
     if p.threading != 'off' and compiler_to_use == 'intel':
         env.Append(CXXFLAGS='-mt_mpi')
