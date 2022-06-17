@@ -94,52 +94,7 @@ contains
 
    end if
 
-  end subroutine fecho_residual
-
-  ! function to output the jump in the initial condition
-
-  subroutine fecho_output_jump(pf, level_index)
-    use iso_c_binding
-    use pf_mod_utils
-    use pf_mod_restrict
-    use mpi
-    type(pf_pfasst_t), intent(inout) :: pf
-    integer, intent(in)              :: level_index
-    
-    class(pf_encap_t),         allocatable   :: del
-    class(sweet_sweeper_t),    pointer       :: sweet_sweeper_ptr
-    class(sweet_data_encap_t), pointer       :: x_ptr
-    integer                                  :: ierr, num_procs
-
-    integer                          ::   proc,step,rank,iter
-    
-    call MPI_COMM_SIZE (MPI_COMM_WORLD, num_procs, ierr)
-
-    sweet_sweeper_ptr => as_sweet_sweeper(pf%levels(level_index)%ulevel%sweeper)
-
-    proc=pf%state%proc
-    step=pf%state%step
-    rank=pf%rank
-    iter=pf%state%iter
-
-    call pf%levels(level_index)%ulevel%factory%create_single(del,  &
-                                            level_index,           &
-                                            pf%levels(level_index)%lev_shape)
-    call del%copy(pf%levels(level_index)%q0)
-    call del%axpy(-1.0_pfdp, pf%levels(level_index)%Q(1))
-    
-    x_ptr  => as_sweet_data_encap(del)
-
-    call cecho_output_jump(sweet_sweeper_ptr%ctx,  &
-                           x_ptr%c_sweet_data_ptr, &
-                           proc,                   &
-                           step,                   &
-                           iter,                   &
-                           pf%levels(level_index)%nnodes,           &
-                           pf%niters)
-
-  end subroutine fecho_output_jump
-  
+  end subroutine fecho_residual  
 
   ! function to output the solution
 

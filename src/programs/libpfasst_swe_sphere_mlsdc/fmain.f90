@@ -234,12 +234,6 @@ contains
                       -1,        &
                       PF_POST_ITERATION, &
                       fecho_residual)
-     if (num_procs > 1) then
-        call pf_add_hook(pf,                 &
-                         -1,         &
-                         PF_PRE_INTERP_Q0,   &
-                         fecho_output_jump)
-     end if
      if (num_procs .eq. 1) then
         call pf_add_hook(pf,                 &
                          -1,                 &
