@@ -291,10 +291,10 @@ public:
 				h += simVars->sim.h0;
 	
 				output_filename = write_file_csv_parareal_sphere(h, t, "prog_h", iteration_id);
-				std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
+				//std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
 	
 				output_filename = write_file_csv_parareal_sphere(phi_out, t, "prog_phi_pert", iteration_id);
-				std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
+				//std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
 	
 				SphereData_Physical u(sphereDataConfig);
 				SphereData_Physical v(sphereDataConfig);
@@ -302,21 +302,21 @@ public:
 				op_sphere->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
 	
 				output_filename = write_file_csv_parareal_sphere(u, t, "prog_u", iteration_id);
-				std::cout << " + " << output_filename << std::endl;
+				//std::cout << " + " << output_filename << std::endl;
 	
 				output_filename = write_file_csv_parareal_sphere(v, t, "prog_v", iteration_id);
-				std::cout << " + " << output_filename << std::endl;
+				//std::cout << " + " << output_filename << std::endl;
 	
 				output_filename = write_file_csv_parareal_sphere(vrt_out, t, "prog_vrt", iteration_id);
-				std::cout << " + " << output_filename << std::endl;
+				//std::cout << " + " << output_filename << std::endl;
 	
 				output_filename = write_file_csv_parareal_sphere(div_out, t, "prog_div", iteration_id);
-				std::cout << " + " << output_filename << std::endl;
+				//std::cout << " + " << output_filename << std::endl;
 	
 				SphereData_Spectral potvrt = (phi_out/simVars->sim.gravitation)*vrt_out;
 	
 				output_filename = write_file_csv_parareal_sphere(potvrt, t, "prog_potvrt", iteration_id);
-				std::cout << " + " << output_filename << std::endl;
+				//std::cout << " + " << output_filename << std::endl;
 			}
 			else if (simVars->iodata.output_file_mode == "bin")
 			{
@@ -326,21 +326,21 @@ public:
 					output_filename = write_file_bin_parareal_sphere(phi_out, t, "prog_phi_pert", iteration_id);
 					SphereData_Physical prog_phys = phi_out.toPhys();
 	
-					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+					//std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
 	
 				{
 					output_filename = write_file_bin_parareal_sphere(vrt_out, t, "prog_vrt", iteration_id);
 					SphereData_Physical prog_phys = vrt_out.toPhys();
 	
-					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+					//std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
 	
 				{
 					output_filename = write_file_bin_parareal_sphere(div_out, t, "prog_div", iteration_id);
 					SphereData_Physical prog_phys = div_out.toPhys();
 	
-					std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
+					//std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 				}
 			}
 			

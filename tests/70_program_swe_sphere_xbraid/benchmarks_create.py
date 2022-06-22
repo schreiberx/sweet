@@ -86,7 +86,7 @@ jg.runtime.viscosity = 0.0
 #
 ###jg.runtime.max_simulation_time = 500.
 ##jg.runtime.max_simulation_time = 3600.
-jg.runtime.max_simulation_time = 7200.
+jg.runtime.max_simulation_time = 720.
 jg.runtime.output_timestep_size = 36.
 
 timestep_size_reference = 18
