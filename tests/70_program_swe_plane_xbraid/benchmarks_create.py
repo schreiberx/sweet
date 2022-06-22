@@ -125,7 +125,7 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_min_coarse = 2
     jg.runtime.xbraid_nrelax = 1
     jg.runtime.xbraid_nrelax0 = -1
-    jg.runtime.xbraid_tol = 1e-9
+    jg.runtime.xbraid_tol = 1e-15
     jg.runtime.xbraid_tnorm = 2
     jg.runtime.xbraid_cfactor = 2
     jg.runtime.xbraid_cfactor0 = -1

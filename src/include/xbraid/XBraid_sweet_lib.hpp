@@ -227,6 +227,7 @@ public:
 
 	// Solution from previous timestep (for SL)
 	std::vector<std::vector<sweet_BraidVector*>> sol_prev; // sol_prev[level][timestep]
+	std::vector<std::vector<int>> sol_prev_iter; // store iteration in which the solution has been stored
 
 
 	// Timestepping method and orders for each level
@@ -466,6 +467,9 @@ public:
 		{
 			std::vector<sweet_BraidVector*> v = {};
 			this->sol_prev.push_back(v);
+
+			std::vector<int> w = {};
+			this->sol_prev_iter.push_back(w);
 		}
 
 	}
@@ -568,14 +572,26 @@ private:
 	void store_prev_solution(
 					sweet_BraidVector* i_U,
 					int i_time_id,
-					int i_level
+					int i_level,
+					int iter
 				)
 	{
 		// if not SL scheme: nothing to do
 		if ( std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
 			return;
 
+		// if solution has already been stored in this iteration: nothing to do
+		if ( this->sol_prev_iter[i_level][i_time_id] == iter )
+			return;
+		///assert(this->sol_prev_iter[i_level][i_time_id] == iter - 1);
+
+		// create vector if necessary
+		if ( ! this->sol_prev[i_level][i_time_id] )
+			this->sol_prev[i_level][i_time_id] = this->create_new_vector();
+
+		// set solution
 		*this->sol_prev[i_level][i_time_id] = *i_U;
+		this->sol_prev_iter[i_level][i_time_id] = iter;
 	}
 
 	void set_prev_solution(
@@ -590,7 +606,7 @@ private:
 			return;
 
 		// if t == 0 or prev solution not available
-		// prev_solution = solution
+		// then: prev_solution = solution
 		bool prev_sol_exists = true;
 
 		if ( i_time_id == 0 )
@@ -628,16 +644,14 @@ public:
 		int level;
 		int nlevels;
 		int time_id;
+		int iter;
 
 		/* Grab status of current time step */
 		io_status.GetTstartTstop(&tstart, &tstop);
 		io_status.GetLevel(&level);
 		io_status.GetNLevels(&nlevels);
 		io_status.GetTIndex(&time_id);
-
-		/////std::cout << "NLevels " << nlevels << std::endl;
-		/////std::cout << "tstart tstop " << tstart << " " << tstop << std::endl;
-		/////std::cout << "level " << level << std::endl;
+		io_status.GetIter(&iter);
 
 		// create containers for prev solution
 		if (this->sol_prev[level].size() == 0)
@@ -646,8 +660,15 @@ public:
 			int nt;
 			io_status.GetNTPoints(&nt);
 			for (int i = 0; i < nt + 1; i++)
-				this->sol_prev[level].push_back(this->create_new_vector());
+			{
+				this->sol_prev[level].push_back(nullptr);
+				this->sol_prev_iter[level].push_back(-1);
+			}
+				///this->sol_prev[level].push_back(this->create_new_vector());
 		}
+
+		// store solution for SL
+		this->store_prev_solution(U, time_id, level, iter);
 
 		// set prev solution for SL
 		this->set_prev_solution(U, time_id, level);
@@ -661,8 +682,8 @@ public:
 								this->simVars->timecontrol.current_simulation_time
 		);
 
-		// store solution for SL
-		this->store_prev_solution(U, time_id, level);
+		////// store solution for SL
+		////this->store_prev_solution(U, time_id, level);
 
 		/* Tell XBraid no refinement */
 		io_status.SetRFactor(1);
@@ -1111,6 +1132,9 @@ public:
 								iter);
 			}
 		}
+
+
+		// TODO: verify if convergence stagnates and stop simulation
 
 		return 0;
 	}

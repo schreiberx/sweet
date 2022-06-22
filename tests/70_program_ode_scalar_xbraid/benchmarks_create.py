@@ -99,7 +99,7 @@ if simulation_to_run == "xbraid":
     jg.compile.xbraid = "mpi";
     jg.runtime.xbraid_enabled = 1;
     jg.runtime.xbraid_max_levels = 3
-    jg.runtime.xbraid_skip = 1
+    jg.runtime.xbraid_skip = 0
     jg.runtime.xbraid_min_coarse = 2
     jg.runtime.xbraid_nrelax = 1
     jg.runtime.xbraid_nrelax0 = -1

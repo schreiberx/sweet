@@ -56,7 +56,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 	if (i_simulation_timestamp == 0)
 	{
-#if !SWEET_PARAREAL
+#if (!SWEET_PARAREAL) && (!SWEET_XBRAID)
 		/*
 		 * First time step
 		 */
