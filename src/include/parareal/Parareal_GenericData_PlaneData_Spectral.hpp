@@ -125,7 +125,6 @@ public:
 			delete this->data;
 			this->data = nullptr;
 		}
-		
 	}
 
 

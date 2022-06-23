@@ -79,7 +79,7 @@ public:
 		this->allocate_data();
 	}
 
-	~sweet_BraidVector()
+	virtual ~sweet_BraidVector()
 	{
 		if (data)
 		{
@@ -147,7 +147,7 @@ public:
 #if SWEET_XBRAID_SCALAR
 		{
 			data = new Parareal_GenericData_Scalar<N>;
-			data->allocate_data();
+			///data->allocate_data();
 			//this->set_time(this->timeframe_end);
 		}
 
@@ -155,7 +155,7 @@ public:
 		{
 			data = new Parareal_GenericData_PlaneData_Spectral<N>;
 			data->setup_data_config(this->planeDataConfig);
-			data->allocate_data();
+			////data->allocate_data();
 			//this->setup_data_config(this->planeDataConfig);
 			//this->set_time(this->timeframe_end);
 		}
@@ -164,7 +164,7 @@ public:
 		{
 			data = new Parareal_GenericData_SphereData_Spectral<N>;
 			data->setup_data_config(this->sphereDataConfig);
-			data->allocate_data();
+			///data->allocate_data();
 			//this->setup_data_config(this->sphereDataConfig);
 			//this->set_time(this->timeframe_end);
 		}
@@ -207,15 +207,6 @@ public:
 	///SimulationVariables*		simVars;
 	double				dt;
 	std::vector<t_tsmType*>		timeSteppers;
-
-///////#if SWEET_XBRAID_PLANE
-///////	PlaneOperators*		op_plane;
-///////	PlaneDataConfig*	planeDataConfig;
-///////#elif SWEET_XBRAID_SPHERE
-///////	SphereOperators*	op_sphere;
-///////	SphereDataConfig*	sphereDataConfig;
-///////#endif
-
 
 	int			size_buffer;
 
@@ -286,6 +277,16 @@ public:
 
 	virtual ~sweet_BraidApp()
 	{
+
+		for (std::vector<t_tsmType*>::iterator it = this->timeSteppers.begin();
+							it != this->timeSteppers.end();
+							it++)
+			if (*it)
+			{
+				delete *it;
+				*it = nullptr;
+			}
+
 		for (std::vector<sweet_BraidVector*>::iterator it = this->xbraid_data_ref_exact.begin();
 								it != this->xbraid_data_ref_exact.end();
 								it++)
@@ -316,16 +317,6 @@ public:
 					*it2 = nullptr;
 				}
 
-		////if (this->xbraid_data_ref_exact)
-		////{
-		////	delete this->xbraid_data_ref_exact;
-		////	this->xbraid_data_ref_exact = nullptr;
-		////}
-		////if (this->xbraid_data_fine_exact)
-		////{
-		////	delete this->xbraid_data_fine_exact;
-		////	this->xbraid_data_fine_exact = nullptr;
-		////}
 	}
 
 public:
@@ -406,6 +397,8 @@ public:
 			// Configure timesteppers with the correct timestep for this level
 			double dt = this->simVars->timecontrol.current_timestep_size;
 			this->simVars->timecontrol.current_timestep_size *= std::pow(this->simVars->xbraid.xbraid_cfactor, level);
+
+			std::cout << "Timestep size at level " << level << " : " << this->simVars->timecontrol.current_timestep_size << std::endl;
 
 #if SWEET_XBRAID_SCALAR
 			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
@@ -721,27 +714,6 @@ public:
 		sweet_BraidVector* u = (sweet_BraidVector*) i_ustop;
 		sweet_BraidVector* r = (sweet_BraidVector*) o_r;
 
-		/////////////////* Now, set up the discretization matrix.  Use the XBraid level to index
-		//////////////// * into the matrix lookup table */
-		////////////////if( app->dt_A[level] == -1.0 ){
-		////////////////	app->nA++;
-		////////////////	app->dt_A[level] = tstop-tstart;
-	
-		////////////////	setUpImplicitMatrix( app->man );
-		////////////////	app->A[level] = app->man->A;
-	
-		////////////////	/* Set up the PFMG solver using r->x as dummy vectors. */
-		////////////////	setUpStructSolver( app->man, r->x, r->x );
-		////////////////	app->solver[level] = app->man->solver;
-		////////////////}
-	
-		/////////////////* Set the correct solver for the current level */
-		////////////////app->man->timeSteppers = app->timeSteppers[solver];
-	
-		/////////////////* Compute residual Ax */
-		//////////////////////app->man->A = app->A[level];
-		////////////////comp_res(app->man, ustop->x, r->x, tstart, tstop);
-	
 		return 0;
 	}
 	

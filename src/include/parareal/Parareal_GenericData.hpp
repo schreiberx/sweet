@@ -60,7 +60,7 @@ class Parareal_GenericData
 		};
 
 
-		~DataContainer()
+		virtual ~DataContainer()
 		{
 		}
 

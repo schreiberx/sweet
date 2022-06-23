@@ -395,6 +395,10 @@ int main(int i_argc, char *i_argv[])
 
 #endif
 
+#if SWEET_MPI
+	MPI_Finalize();
+#endif
+
 
 	return 0;
 }

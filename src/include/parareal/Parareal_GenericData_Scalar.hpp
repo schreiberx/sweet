@@ -60,6 +60,15 @@ class Parareal_GenericData_Scalar :
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data.simfields[i];
 		};
+
+		~DataContainer_Scalar()
+		{
+			if (this->simfields)
+			{
+				delete [] this->simfields;
+				this->simfields = nullptr;
+			}
+		}
 	};
 
 
@@ -113,6 +122,7 @@ public:
 
 	~Parareal_GenericData_Scalar()
 	{
+		this->free_data();
 	};
 
 	void allocate_data()
@@ -127,7 +137,6 @@ public:
 			delete this->data;
 			this->data = nullptr;
 		}
-		
 	}
 	
 
