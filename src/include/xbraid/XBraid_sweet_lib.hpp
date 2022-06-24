@@ -147,7 +147,7 @@ public:
 #if SWEET_XBRAID_SCALAR
 		{
 			data = new Parareal_GenericData_Scalar<N>;
-			///data->allocate_data();
+			data->allocate_data();
 			//this->set_time(this->timeframe_end);
 		}
 
@@ -155,7 +155,7 @@ public:
 		{
 			data = new Parareal_GenericData_PlaneData_Spectral<N>;
 			data->setup_data_config(this->planeDataConfig);
-			////data->allocate_data();
+			data->allocate_data();
 			//this->setup_data_config(this->planeDataConfig);
 			//this->set_time(this->timeframe_end);
 		}
@@ -164,7 +164,7 @@ public:
 		{
 			data = new Parareal_GenericData_SphereData_Spectral<N>;
 			data->setup_data_config(this->sphereDataConfig);
-			///data->allocate_data();
+			data->allocate_data();
 			//this->setup_data_config(this->sphereDataConfig);
 			//this->set_time(this->timeframe_end);
 		}
@@ -220,11 +220,13 @@ public:
 	std::vector<std::vector<sweet_BraidVector*>> sol_prev; // sol_prev[level][timestep]
 	std::vector<std::vector<int>> sol_prev_iter; // store iteration in which the solution has been stored
 
-
 	// Timestepping method and orders for each level
 	std::vector<std::string> tsms;
 	std::vector<int> tsos;
 	std::vector<int> tsos2;
+
+	// was the output of the time step already done for this simulation state?
+	////double timestep_last_output_simtime;
 
 public:
 
@@ -273,6 +275,9 @@ public:
 		///this->xbraid_data_ref_exact = this->create_new_vector();
 		///this->xbraid_data_fine_exact = this->create_new_vector();
 
+		// start at one second in the past to ensure output at t=0
+		////this->timestep_last_output_simtime = i_tstart-1.0;
+		////this->simVars->iodata.output_next_sim_seconds = 0;
 	}
 
 	virtual ~sweet_BraidApp()
@@ -1036,64 +1041,87 @@ public:
 		if(level == 0)
 		{
 
-			// Output physical solution to file
-			if (simVars->xbraid.xbraid_store_iterations)
-				this->output_data_file(
-							U->data,
-							iter,
-							it,
-							t
-				);
 
+			// Decide whether to output or not
+			bool do_output = false;
+			double small = 1e-10;
 
-			// Compute and store errors w.r.t. ref solution
-			if (simVars->xbraid.xbraid_load_ref_csv_files)
+			// output each time step if:
+			// output_timestep < 0 (i.e. output every timestep)
+			// t == 0
+			// t == Tmax
+			// t is a multiple of dt_output
+			if (
+				this->simVars->iodata.output_each_sim_seconds < 0 ||
+				std::abs(t) < small ||
+				std::abs(t - this->simVars->timecontrol.max_simulation_time) < small ||
+				fmod(t, this->simVars->iodata.output_each_sim_seconds) == 0
+			)
+				do_output = true;
+
+			///if (do_output)
+			///	std::cout << t << " " << it << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
+
+			if (do_output)
 			{
-				// create containers for ref solution
-				if (this->xbraid_data_ref_exact.size() == 0)
-				{
-					int nt;
-					io_astatus.GetNTPoints(&nt);
-					for (int i = 0; i < nt + 1; i++)
-						this->xbraid_data_ref_exact.push_back(this->create_new_vector());
-				}
-
-				if (it > 0)
-					this->store_parareal_error(
-									U->data,
-									this->xbraid_data_ref_exact[it]->data,
-									N,
-									iter /* + 1 */,
-									it,
-									t,
-									this->simVars->xbraid.xbraid_path_ref_csv_files,
-									"ref"
+				// Output physical solution to file
+				if (simVars->xbraid.xbraid_store_iterations)
+					this->output_data_file(
+								U->data,
+								iter,
+								it,
+								t
 					);
-			}
-			// Compute and store errors w.r.t. fine (serial) solution
-			if (simVars->xbraid.xbraid_load_fine_csv_files)
-			{
-				// create containers for fine solution
-				if (this->xbraid_data_fine_exact.size() == 0)
-				{
-					int nt;
-					io_astatus.GetNTPoints(&nt);
-					std::cout << "NT " << nt << std::endl;
-					for (int i = 0; i < nt + 1; i++)
-						this->xbraid_data_fine_exact.push_back(this->create_new_vector());
-				}
 
-				if (it > 0)
-					this->store_parareal_error(
-									U->data,
-									this->xbraid_data_fine_exact[it]->data,
-									N,
-									iter /* + 1 */,
-									it,
-									t,
-									this->simVars->xbraid.xbraid_path_fine_csv_files,
-									"fine"
-					);
+				// Compute and store errors w.r.t. ref solution
+				if (simVars->xbraid.xbraid_load_ref_csv_files)
+				{
+					// create containers for ref solution
+					if (this->xbraid_data_ref_exact.size() == 0)
+					{
+						int nt;
+						io_astatus.GetNTPoints(&nt);
+						for (int i = 0; i < nt + 1; i++)
+							this->xbraid_data_ref_exact.push_back(this->create_new_vector());
+					}
+
+					if (it > 0)
+						this->store_parareal_error(
+										U->data,
+										this->xbraid_data_ref_exact[it]->data,
+										N,
+										iter /* + 1 */,
+										it,
+										t,
+										this->simVars->xbraid.xbraid_path_ref_csv_files,
+										"ref"
+						);
+				}
+				// Compute and store errors w.r.t. fine (serial) solution
+				if (simVars->xbraid.xbraid_load_fine_csv_files)
+				{
+					// create containers for fine solution
+					if (this->xbraid_data_fine_exact.size() == 0)
+					{
+						int nt;
+						io_astatus.GetNTPoints(&nt);
+						std::cout << "NT " << nt << std::endl;
+						for (int i = 0; i < nt + 1; i++)
+							this->xbraid_data_fine_exact.push_back(this->create_new_vector());
+					}
+
+					if (it > 0)
+						this->store_parareal_error(
+										U->data,
+										this->xbraid_data_fine_exact[it]->data,
+										N,
+										iter /* + 1 */,
+										it,
+										t,
+										this->simVars->xbraid.xbraid_path_fine_csv_files,
+										"fine"
+						);
+				}
 			}
 
 			// Store residual (residual per iteration)
@@ -1103,6 +1131,7 @@ public:
 				this->output_residual_file(res,
 								iter);
 			}
+
 		}
 
 

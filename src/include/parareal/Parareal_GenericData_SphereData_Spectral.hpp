@@ -85,7 +85,7 @@ public:
 	Parareal_GenericData_SphereData_Spectral():
 		Parareal_GenericData()
 	{
-//		this->allocate_data();
+		///this->allocate_data();
 	}
 
 

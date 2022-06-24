@@ -83,7 +83,7 @@ public:
 	Parareal_GenericData_PlaneData_Spectral():
 		Parareal_GenericData()
 	{
-//		this->allocate_data();
+		////this->allocate_data();
 	}
 
 	Parareal_GenericData_PlaneData_Spectral(Parareal_GenericData_PlaneData_Spectral &i_data)

@@ -102,7 +102,7 @@ public:
 	Parareal_GenericData_Scalar():
 		Parareal_GenericData()
 	{
-		this->allocate_data();
+		////this->allocate_data();
 	}
 
 	Parareal_GenericData_Scalar(Parareal_GenericData_Scalar &i_data)
