@@ -261,6 +261,15 @@ public:
 		return *this;
 	}
 
+	// Nothing to do
+	void restrict(const Parareal_GenericData& i_data)
+	{
+	}
+
+	// Nothing to do
+	void pad_zeros(const Parareal_GenericData& i_data)
+	{
+	}
 
 	void physical_print()
 	{

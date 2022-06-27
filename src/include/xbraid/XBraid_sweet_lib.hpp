@@ -55,6 +55,7 @@ class sweet_BraidVector
 {
 public:
 	Parareal_GenericData*	data = nullptr;
+	int level;
 
 #if SWEET_XBRAID_PLANE
 	PlaneDataConfig* planeDataConfig;
@@ -65,16 +66,18 @@ public:
 
 	sweet_BraidVector(
 #if SWEET_XBRAID_PLANE
-				PlaneDataConfig* i_planeDataConfig
+				PlaneDataConfig* i_planeDataConfig,
 #elif SWEET_XBRAID_SPHERE
-				SphereData_Config* i_sphereDataConfig
+				SphereData_Config* i_sphereDataConfig,
 #endif
+				int i_level
 	)
 #if SWEET_XBRAID_PLANE
-		: planeDataConfig(i_planeDataConfig)
+		: planeDataConfig(i_planeDataConfig),
 #elif SWEET_XBRAID_SPHERE
-		: sphereDataConfig(i_sphereDataConfig)
+		: sphereDataConfig(i_sphereDataConfig),
 #endif
+		level(i_level)
 	{
 		this->allocate_data();
 	}
@@ -96,6 +99,7 @@ public:
 		this->sphereDataConfig = i_vector.sphereDataConfig;
 #endif
 		*this->data = *i_vector.data;
+		this->level = i_vector.level;
 	};
 
 	sweet_BraidVector& operator=(const sweet_BraidVector &i_vector)
@@ -106,6 +110,7 @@ public:
 		this->sphereDataConfig = i_vector.sphereDataConfig;
 #endif
 		*this->data = *i_vector.data;
+		this->level = i_vector.level;
 		return *this;
 	};
 
@@ -116,9 +121,9 @@ public:
 #if SWEET_XBRAID_SCALAR
 		sweet_BraidVector out;
 #elif SWEET_XBRAID_PLANE
-		sweet_BraidVector out(this->planeDataConfig);
+		sweet_BraidVector out(this->planeDataConfig, this->level);
 #elif SWEET_XBRAID_SPHERE
-		sweet_BraidVector out(this->sphereDataConfig);
+		sweet_BraidVector out(this->sphereDataConfig, this->level);
 #endif
 		*out.data = *this->data;
 		*out.data += *i_vector.data;
@@ -132,9 +137,9 @@ public:
 #if SWEET_XBRAID_SCALAR
 		sweet_BraidVector out;
 #elif SWEET_XBRAID_PLANE
-		sweet_BraidVector out(this->planeDataConfig);
+		sweet_BraidVector out(this->planeDataConfig, this->level);
 #elif SWEET_XBRAID_SPHERE
-		sweet_BraidVector out(this->sphereDataConfig);
+		sweet_BraidVector out(this->sphereDataConfig, this->level);
 #endif
 		*out.data = *this->data;
 		*out.data *= i_value;
@@ -239,28 +244,21 @@ public:
 			SimulationVariables*	i_simVars
 #if SWEET_XBRAID_PLANE
 			,
-			PlaneDataConfig* i_planeDataConfig,
-			PlaneOperators* i_op_plane
+			//PlaneDataConfig* i_planeDataConfig,
+			//PlaneOperators* i_op_plane
+			std::vector<PlaneDataConfig*> i_planeDataConfig,
+			std::vector<PlaneOperators*> i_op_plane
 #elif SWEET_XBRAID_SPHERE
 			,
-			SphereData_Config* i_sphereDataConfig,
-			SphereOperators_SphereData* i_op_sphere
+			///SphereData_Config* i_sphereDataConfig,
+			///SphereOperators_SphereData* i_op_sphere
+			std::vector<SphereData_Config*> i_sphereDataConfig,
+			std::vector<SphereOperators_SphereData*> i_op_sphere
 #endif
 			)
 		:
 			BraidApp(i_comm_t, i_tstart, i_tstop, i_ntime),
 			rank(i_rank)
-			//simVars(i_simVars)
-			///PInT_Common(i_simVars)
-/////////#if SWEET_XBRAID_PLANE
-/////////			,
-/////////			planeDataConfig(i_planeDataConfig),
-/////////			op_plane(i_op_plane)
-/////////#elif SWEET_XBRAID_SPHERE
-/////////			,
-/////////			sphereDataConfig(i_sphereDataConfig)
-/////////			op_sphere(i_op_sphere)
-/////////#endif
 	{
 		this->simVars = i_simVars;
 
@@ -419,7 +417,7 @@ public:
 					tsms[level],
 					tsos[level],
 					tsos2[level],
-					*this->op_plane,
+					*this->op_plane[level],
 					*this->simVars
 				);
 	#elif SWEET_XBRAID_PLANE_BURGERS
@@ -428,7 +426,7 @@ public:
 					tsms[level],
 					tsos[level],
 					tsos2[level],
-					*this->op_plane,
+					*this->op_plane[level],
 					*this->simVars
 				);
 	#endif
@@ -437,7 +435,7 @@ public:
 			SWE_Sphere_TimeSteppers* tsm = new SWE_Sphere_TimeSteppers;
 			tsm->setup(
 						tsms[level],
-						*this->op_sphere,
+						*this->op_sphere[level],
 						*this->simVars
 					);
 
@@ -455,9 +453,9 @@ public:
 #if SWEET_XBRAID_SCALAR
 		this->size_buffer = N * sizeof(double);
 #elif SWEET_XBRAID_PLANE
-		this->size_buffer = N * planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+		this->size_buffer = N * planeDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #elif SWEET_XBRAID_SPHERE
-		this->size_buffer = N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+		this->size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
 
 		// create vectors for storing solutions from previous timestep (SL)
@@ -554,14 +552,14 @@ private:
 
 
 public:
-	sweet_BraidVector* create_new_vector()
+	sweet_BraidVector* create_new_vector(int i_level)
 	{
 #if SWEET_XBRAID_SCALAR
-		sweet_BraidVector* U = new sweet_BraidVector;
+		sweet_BraidVector* U = new sweet_BraidVector(i_level);
 #elif SWEET_XBRAID_PLANE
-		sweet_BraidVector* U = new sweet_BraidVector(this->planeDataConfig);
+		sweet_BraidVector* U = new sweet_BraidVector(this->planeDataConfig[i_level], i_level);
 #elif SWEET_XBRAID_SPHERE
-		sweet_BraidVector* U = new sweet_BraidVector(this->sphereDataConfig);
+		sweet_BraidVector* U = new sweet_BraidVector(this->sphereDataConfig[i_level], i_level);
 #endif
 		return U;
 	}
@@ -585,7 +583,7 @@ private:
 
 		// create vector if necessary
 		if ( ! this->sol_prev[i_level][i_time_id] )
-			this->sol_prev[i_level][i_time_id] = this->create_new_vector();
+			this->sol_prev[i_level][i_time_id] = this->create_new_vector(i_level);
 
 		// set solution
 		*this->sol_prev[i_level][i_time_id] = *i_U;
@@ -625,6 +623,9 @@ public:
 	 * 
 	 * When Phi is called, u is u_{i-1}.
 	 * The return value is that u is set to u_i upon completion
+	 *
+	 * Always receives and returns a solution defined on the finest spatial grid
+	 * Spatial interpolation is performed if necessary
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	Step(
@@ -650,6 +651,10 @@ public:
 		io_status.GetNLevels(&nlevels);
 		io_status.GetTIndex(&time_id);
 		io_status.GetIter(&iter);
+
+		// Interpolate to coarser grid in space if necessary
+		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
+			U->data->restrict(*U->data);
 
 		// create containers for prev solution
 		if (this->sol_prev[level].size() == 0)
@@ -680,8 +685,9 @@ public:
 								this->simVars->timecontrol.current_simulation_time
 		);
 
-		////// store solution for SL
-		////this->store_prev_solution(U, time_id, level);
+		// Interpolate to finest grid in space if necessary
+		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
+			U->data->pad_zeros(*U->data);
 
 		/* Tell XBraid no refinement */
 		io_status.SetRFactor(1);
@@ -733,7 +739,7 @@ public:
 			)
 	{
 
-		sweet_BraidVector* U = create_new_vector();
+		sweet_BraidVector* U = create_new_vector(0);
 
 		if( i_t == this->tstart )
 		{
@@ -743,16 +749,16 @@ public:
 			U->data->dataArrays_to_GenericData_Scalar(u0);
 	
 	#elif SWEET_XBRAID_PLANE
-			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
-			PlaneData_Spectral t0_prog_u(planeDataConfig);
-			PlaneData_Spectral t0_prog_v(planeDataConfig);
+			PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
+			PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
+			PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
 	
 		#if SWEET_XBRAID_PLANE_SWE
 			SWEPlaneBenchmarksCombined swePlaneBenchmarks;
-			swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane);
+			swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane[0]);
 		#elif SWEET_XBRAID_PLANE_BURGERS
-			PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig);
-			PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig);
+			PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig[0]);
+			PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig[0]);
 			if (simVars->disc.space_grid_use_c_staggering)
 			{
 				t0_prog_u_phys.physical_update_lambda_array_indices(
@@ -780,7 +786,7 @@ public:
 						io_data = BurgersValidationBenchmarks::return_u(*simVars, x, y);
 					}
 				);
-		
+
 				t0_prog_v_phys.physical_update_lambda_array_indices(
 							[&](int i, int j, double &io_data)
 					{
@@ -791,28 +797,28 @@ public:
 			t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
 			t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
 		#endif
-	
-	
+
+
 			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
 		#if SWEET_XBRAID_PLANE_SWE
 										t0_prog_h_pert,
 		#endif
 										t0_prog_u,
 										t0_prog_v);
-	
+
 	#elif SWEET_XBRAID_SPHERE
-			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig);
-			SphereData_Spectral t0_prog_vrt(sphereDataConfig);
-			SphereData_Spectral t0_prog_div(sphereDataConfig);
-	
+			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
+			SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
+			SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+
 			BenchmarksSphereSWE sphereBenchmarks;
-			sphereBenchmarks.setup(*simVars, *op_sphere);
+			sphereBenchmarks.setup(*simVars, *op_sphere[0]);
 			sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
-	
+
 			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
-	
-	
+
+
 		}
 		else if (this->simVars->xbraid.xbraid_use_rand)
 		{
@@ -821,18 +827,18 @@ public:
 			double u0 = ((double)braid_Rand())/braid_RAND_MAX;
 			U->data->dataArrays_to_GenericData_Scalar(u0);
 	#elif SWEET_XBRAID_PLANE
-	
+
 		#if SWEET_XBRAID_PLANE_SWE
-			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
-			PlaneData_Physical t0_prog_h_phys(planeDataConfig);
+			PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
+			PlaneData_Physical t0_prog_h_phys(planeDataConfig[0]);
 		#endif
-	
-			PlaneData_Spectral t0_prog_u(planeDataConfig);
-			PlaneData_Spectral t0_prog_v(planeDataConfig);
-	
-			PlaneData_Physical t0_prog_u_phys(planeDataConfig);
-			PlaneData_Physical t0_prog_v_phys(planeDataConfig);
-	
+
+			PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
+			PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
+
+			PlaneData_Physical t0_prog_u_phys(planeDataConfig[0]);
+			PlaneData_Physical t0_prog_v_phys(planeDataConfig[0]);
+
 		#if SWEET_XBRAID_PLANE_SWE
 			t0_prog_h_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
@@ -853,30 +859,30 @@ public:
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
 			);
-	
+
 		#if SWEET_XBRAID_PLANE_SWE
 			t0_prog_h_pert.loadPlaneDataPhysical(t0_prog_h_phys);
 		#endif
 			t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
 			t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
-	
+
 			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
 		#if SWEET_XBRAID_PLANE_SWE
 										t0_prog_h_pert,
 		#endif
 										t0_prog_u,
 										t0_prog_v);
-	
-	
+
+
 	#elif SWEET_XBRAID_SPHERE
-			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig);
-			SphereData_Spectral t0_prog_vrt(sphereDataConfig);
-			SphereData_Spectral t0_prog_div(sphereDataConfig);
-	
-			SphereData_Physical t0_prog_phi_pert_phys(sphereDataConfig);
-			SphereData_Physical t0_prog_vrt_phys(sphereDataConfig);
-			SphereData_Physical t0_prog_div_phys(sphereDataConfig);
-	
+			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
+			SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
+			SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+
+			SphereData_Physical t0_prog_phi_pert_phys(sphereDataConfig[0]);
+			SphereData_Physical t0_prog_vrt_phys(sphereDataConfig[0]);
+			SphereData_Physical t0_prog_div_phys(sphereDataConfig[0]);
+
 			t0_prog_phi_pert_phys.physical_update_lambda_array(
 						[&](int i, int j, double &io_data)
 				{
@@ -895,11 +901,11 @@ public:
 					io_data = ((double)braid_Rand())/braid_RAND_MAX;
 				}
 			);
-	
+
 			t0_prog_phi_pert.loadSphereDataPhysical(t0_prog_phi_pert_phys);
 			t0_prog_vrt.loadSphereDataPhysical(t0_prog_vrt_phys);
 			t0_prog_div.loadSphereDataPhysical(t0_prog_div_phys);
-	
+
 			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
@@ -912,14 +918,14 @@ public:
 			U->data->dataArrays_to_GenericData_Scalar(zero);
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
-			PlaneData_Spectral t0_prog_h_pert(planeDataConfig);
+			PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
 			t0_prog_h_pert.spectral_set_zero();
 		#endif
 	
-			PlaneData_Spectral t0_prog_u(planeDataConfig);
+			PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
 			t0_prog_u.spectral_set_zero();
 	
-			PlaneData_Spectral t0_prog_v(planeDataConfig);
+			PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
 			t0_prog_v.spectral_set_zero();
 
 			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
@@ -930,14 +936,14 @@ public:
 										t0_prog_v);
 	
 	#elif SWEET_XBRAID_SPHERE
-			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig);
-			SphereData_Spectral t0_prog_vrt(sphereDataConfig);
-			SphereData_Spectral t0_prog_div(sphereDataConfig);
-	
+			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
+			SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
+			SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+
 			t0_prog_phi_pert.spectral_set_zero();
 			t0_prog_vrt.spectral_set_zero();
 			t0_prog_div.spectral_set_zero();
-	
+
 			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
@@ -946,7 +952,9 @@ public:
 
 		return 0;
 	}
-	
+
+
+
 	/* --------------------------------------------------------------------
 	 * Create a copy of a vector object.
 	 * -------------------------------------------------------------------- */
@@ -957,7 +965,7 @@ public:
 		)
 	{
 		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
-		sweet_BraidVector* V = create_new_vector();
+		sweet_BraidVector* V = create_new_vector(U->level);
 		*V = *U;
 		*o_V = (braid_Vector) V;
 
@@ -1028,14 +1036,11 @@ public:
 		io_astatus.GetTIndex(&it);
 		io_astatus.GetIter(&iter);
 		io_astatus.GetLevel(&level);
-	
+
 		/* Retrieve XBraid State Information from Status Object */
 		///////////MPI_Comm_rank(app->comm_x, &myid);
 		///////////braid_AccessStatusGetTILD(astatus, &t, &iter, &level, &done);
 		///////////braid_AccessStatusGetResidual(astatus, &rnorm);
-
-
-
 
 
 		if(level == 0)
@@ -1082,7 +1087,7 @@ public:
 						int nt;
 						io_astatus.GetNTPoints(&nt);
 						for (int i = 0; i < nt + 1; i++)
-							this->xbraid_data_ref_exact.push_back(this->create_new_vector());
+							this->xbraid_data_ref_exact.push_back(this->create_new_vector(0));
 					}
 
 					if (it > 0)
@@ -1107,7 +1112,7 @@ public:
 						io_astatus.GetNTPoints(&nt);
 						std::cout << "NT " << nt << std::endl;
 						for (int i = 0; i < nt + 1; i++)
-							this->xbraid_data_fine_exact.push_back(this->create_new_vector());
+							this->xbraid_data_fine_exact.push_back(this->create_new_vector(0));
 					}
 
 					if (it > 0)
@@ -1203,11 +1208,14 @@ public:
 	BufUnpack(
 			void*			i_buffer,
 			braid_Vector*		o_U,
-			BraidBufferStatus&	status
+			BraidBufferStatus&	io_status
 		)
 	{
 
-		sweet_BraidVector* U = create_new_vector();
+		int level = 0;
+		///io_status.GetLevel(&level);
+
+		sweet_BraidVector* U = create_new_vector(level);
 
 #if SWEET_XBRAID_SCALAR
 		double* dbuffer = (double*) i_buffer;

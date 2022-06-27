@@ -1136,13 +1136,40 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<PlaneDataConfig*> planeDataConfigs;
+			std::vector<PlaneOperators*> ops;
+			for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			{
+				if (simVars.xbraid.xbraid_spatial_coarsening)
+				{
+					assert(simVars.disc.space_res_physical == -1);
+					int N_spectral[2];
+					for (int j = 0; j < 2; j++)
+						N_spectral[j] = int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i));
+					planeDataConfigs.push_back(new PlaneDataConfig);
+					planeDataConfigs.back()->setupAuto(simVars.disc.space_res_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+
+					//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+					ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+				}
+				else
+				{
+					planeDataConfigs.push_back(planeDataConfig);
+					ops.push_back(&op);
+				}
+			}
+
+
+
 			MPI_Comm comm = MPI_COMM_WORLD;
 			MPI_Comm comm_x, comm_t;
 
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
 			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
-			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfig, &op);
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfigs, ops);
 
 
 			if( simVars.xbraid.xbraid_run_wrapper_tests)
@@ -1165,6 +1192,16 @@ int main(int i_argc, char *i_argv[])
 				// Run Simulation
 				core.Drive();
 			}
+
+
+			if (simVars.xbraid.xbraid_spatial_coarsening)
+				for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+				{
+					delete planeDataConfigs[i];
+					delete ops[i];
+					planeDataConfigs[i] = nullptr;
+					ops[i] = nullptr;
+				}
 
 		}
 		else

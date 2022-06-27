@@ -292,6 +292,21 @@ public:
 		div = *(this->data->simfields[2]);
 	}
 
+	// Nothing to do
+	void restrict(const Parareal_GenericData& i_data)
+	{
+		for (int i = 0; i < N; i++)
+			this->data->simfields[i]->restrict( *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]) );
+	}
+
+	// Nothing to do
+	void pad_zeros(const Parareal_GenericData& i_data)
+	{
+		for (int i = 0; i < N; i++)
+			this->data->simfields[i]->pad_zeros( *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]) );
+	}
+
+
 };
 
 

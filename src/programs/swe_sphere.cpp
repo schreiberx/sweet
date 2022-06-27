@@ -1117,13 +1117,43 @@ int main_real(int i_argc, char *i_argv[])
 
 			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
 
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<SphereData_Config*> sphereDataConfigs;
+			std::vector<SphereOperators_SphereData*> ops;
+			for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			{
+				if (simVars.xbraid.xbraid_spatial_coarsening)
+				{
+					assert(simVars.disc.space_res_physical == -1);
+					int N_spectral[2];
+					for (int j = 0; j < 2; j++)
+						N_spectral[j] = int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i));
+					sphereDataConfigs.push_back(new SphereData_Config);
+					sphereDataConfigs.back()->setupAuto(simVars.disc.space_res_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+
+					//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+					ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
+				}
+				else
+				{
+					sphereDataConfigs.push_back(sphereDataConfig);
+					ops.push_back(&op);
+				}
+			}
+
+
+
+
+
+
 			MPI_Comm comm = MPI_COMM_WORLD;
 			MPI_Comm comm_x, comm_t;
 
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
 			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
-			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfig, &op);
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfigs, ops);
 
 
 			if( simVars.xbraid.xbraid_run_wrapper_tests)
@@ -1146,6 +1176,15 @@ int main_real(int i_argc, char *i_argv[])
 				// Run Simulation
 				core.Drive();
 			}
+
+			if (simVars.xbraid.xbraid_spatial_coarsening)
+				for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+				{
+					delete sphereDataConfigs[i];
+					delete ops[i];
+					sphereDataConfigs[i] = nullptr;
+					ops[i] = nullptr;
+				}
 
 		}
 		else

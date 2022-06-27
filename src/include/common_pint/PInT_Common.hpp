@@ -37,12 +37,12 @@ protected:
 
 	// Operators and DataConfig
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-	PlaneOperators* op_plane;
-	PlaneDataConfig* planeDataConfig;
+	std::vector<PlaneOperators*> op_plane;
+	std::vector<PlaneDataConfig*> planeDataConfig;
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-	SphereOperators_SphereData* op_sphere;
-	SphereOperators_SphereData* op_sphere_nodealiasing;
-	SphereData_Config* sphereDataConfig;
+	std::vector<SphereOperators_SphereData*> op_sphere;
+	std::vector<SphereOperators_SphereData*> op_sphere_nodealiasing;
+	std::vector<SphereData_Config*> sphereDataConfig;
 #endif
 
 	// list of SL schemes
@@ -136,9 +136,9 @@ public:
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	#if SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
 
-		PlaneData_Spectral dummy(this->planeDataConfig);
-		PlaneData_Spectral u_out(this->planeDataConfig);
-		PlaneData_Spectral v_out(this->planeDataConfig);
+		PlaneData_Spectral dummy(this->planeDataConfig[0]);
+		PlaneData_Spectral u_out(this->planeDataConfig[0]);
+		PlaneData_Spectral v_out(this->planeDataConfig[0]);
 		i_data->GenericData_PlaneData_Spectral_to_dataArrays(u_out, v_out);
 
 		PlaneData_Physical u_out_phys = u_out.toPhys();
@@ -150,8 +150,8 @@ public:
 		 * We write everything in non-staggered output
 		 */
 		// For output, variables need to be on unstaggered A-grid
-		PlaneData_Physical t_u(planeDataConfig);
-		PlaneData_Physical t_v(planeDataConfig);
+		PlaneData_Physical t_u(planeDataConfig[0]);
+		PlaneData_Physical t_v(planeDataConfig[0]);
 
 		if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
 		{
@@ -186,9 +186,9 @@ public:
 
 	#elif SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 
-		PlaneData_Spectral h_out(this->planeDataConfig);
-		PlaneData_Spectral u_out(this->planeDataConfig);
-		PlaneData_Spectral v_out(this->planeDataConfig);
+		PlaneData_Spectral h_out(this->planeDataConfig[0]);
+		PlaneData_Spectral u_out(this->planeDataConfig[0]);
+		PlaneData_Spectral v_out(this->planeDataConfig[0]);
 		i_data->GenericData_PlaneData_Spectral_to_dataArrays(h_out, u_out, v_out);
 
 		PlaneData_Physical h_out_phys = h_out.toPhys();
@@ -211,9 +211,9 @@ public:
 		 * We write everything in non-staggered output
 		 */
 		// For output, variables need to be on unstaggered A-grid
-		PlaneData_Physical t_h(planeDataConfig);
-		PlaneData_Physical t_u(planeDataConfig);
-		PlaneData_Physical t_v(planeDataConfig);
+		PlaneData_Physical t_h(planeDataConfig[0]);
+		PlaneData_Physical t_u(planeDataConfig[0]);
+		PlaneData_Physical t_v(planeDataConfig[0]);
 
 		if (simVars->disc.space_grid_use_c_staggering) // Remap in case of C-grid
 		{
@@ -237,12 +237,12 @@ public:
 			output_filenames += ";" + write_file_xbraid_plane(t_u, "prog_u", iteration_id, t);
 			output_filenames += ";" + write_file_xbraid_plane(t_v, "prog_v", iteration_id, t);
 
-			output_filenames += ";" + write_file_xbraid_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke", iteration_id, t);
+			output_filenames += ";" + write_file_xbraid_plane(op_plane[0]->ke(t_u,t_v).toPhys(),"diag_ke", iteration_id, t);
 
-			output_filenames += ";" + write_file_spec_xbraid_plane(op_plane->ke(t_u,t_v).toPhys(),"diag_ke_spec", iteration_id, t);
+			output_filenames += ";" + write_file_spec_xbraid_plane(op_plane[0]->ke(t_u,t_v).toPhys(),"diag_ke_spec", iteration_id, t);
 
-			output_filenames += ";" + write_file_xbraid_plane(op_plane->vort(t_u, t_v).toPhys(), "diag_vort", iteration_id, t);
-			output_filenames += ";" + write_file_xbraid_plane(op_plane->div(t_u, t_v).toPhys(), "diag_div", iteration_id, t);
+			output_filenames += ";" + write_file_xbraid_plane(op_plane[0]->vort(t_u, t_v).toPhys(), "diag_vort", iteration_id, t);
+			output_filenames += ";" + write_file_xbraid_plane(op_plane[0]->div(t_u, t_v).toPhys(), "diag_div", iteration_id, t);
 
 			/////////if(this->compute_normal_modes){
 			/////////	SWEETError("TODO");
@@ -257,9 +257,9 @@ public:
 
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 
-		SphereData_Spectral phi_out(this->sphereDataConfig);
-		SphereData_Spectral vrt_out(this->sphereDataConfig);
-		SphereData_Spectral div_out(this->sphereDataConfig);
+		SphereData_Spectral phi_out(this->sphereDataConfig[0]);
+		SphereData_Spectral vrt_out(this->sphereDataConfig[0]);
+		SphereData_Spectral div_out(this->sphereDataConfig[0]);
 		i_data->GenericData_SphereData_Spectral_to_dataArrays(phi_out, vrt_out, div_out);
 
 		SphereData_Physical phi_out_phys = phi_out.toPhys();
@@ -296,10 +296,10 @@ public:
 				output_filename = write_file_csv_parareal_sphere(phi_out, t, "prog_phi_pert", iteration_id);
 				//std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
 	
-				SphereData_Physical u(sphereDataConfig);
-				SphereData_Physical v(sphereDataConfig);
+				SphereData_Physical u(sphereDataConfig[0]);
+				SphereData_Physical v(sphereDataConfig[0]);
 	
-				op_sphere->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
+				op_sphere[0]->vrtdiv_to_uv(vrt_out_phys, div_out_phys, u, v);
 	
 				output_filename = write_file_csv_parareal_sphere(u, t, "prog_u", iteration_id);
 				//std::cout << " + " << output_filename << std::endl;
@@ -384,10 +384,10 @@ public:
 		///PlaneData_Spectral ts_u = t0_prog_u;
 		///PlaneData_Spectral ts_v = t0_prog_v;
 
-		PlaneData_Spectral ts_u(planeDataConfig);
-		PlaneData_Spectral ts_v(planeDataConfig);
-		PlaneData_Physical ts_u_phys(planeDataConfig);
-		PlaneData_Physical ts_v_phys(planeDataConfig);
+		PlaneData_Spectral ts_u(planeDataConfig[0]);
+		PlaneData_Spectral ts_v(planeDataConfig[0]);
+		PlaneData_Physical ts_u_phys(planeDataConfig[0]);
+		PlaneData_Physical ts_v_phys(planeDataConfig[0]);
 
 		if (simVars->misc.compute_errors)
 		{
@@ -620,7 +620,7 @@ public:
 		std::ofstream file(buffer, std::ios_base::trunc);
 		file << std::setprecision(12);
 
-		for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
+		for (std::size_t x = 0; x < planeDataConfig[0]->spectral_data_size[0]; x++)
 		{
 			file << x << ", " << i_planeData.spectral_return_amplitude(0,x) << ", " << i_planeData.spectral_return_phase(0,x) << std::endl;
 		}
@@ -710,9 +710,9 @@ public:
 		}
 
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-		PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig),
-				                  PlaneData_Spectral(this->planeDataConfig),
-				                  PlaneData_Spectral(this->planeDataConfig)};
+		PlaneData_Spectral ref_data[] = { PlaneData_Spectral(this->planeDataConfig[0]),
+				                  PlaneData_Spectral(this->planeDataConfig[0]),
+				                  PlaneData_Spectral(this->planeDataConfig[0])};
 
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
@@ -741,13 +741,13 @@ public:
 				const char* filename_template = simVars->iodata.output_file_name.c_str();
 				sprintf(buffer, filename_template, i_name.c_str(), t);
 				std::string buffer2 = path_ref + "/" + std::string(buffer);
-                                PlaneData_Physical tmp(this->planeDataConfig);
+                                PlaneData_Physical tmp(this->planeDataConfig[0]);
 				tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
 				ref_data[ivar].loadPlaneDataPhysical(tmp);
 
 				// If necessary, interpolate to coarsest spatial grid
-				if (	this->planeDataConfig->physical_res[0] != ref_data[ivar].planeDataConfig->physical_res[0] ||
-					this->planeDataConfig->physical_res[1] != ref_data[ivar].planeDataConfig->physical_res[1]
+				if (	this->planeDataConfig[0]->physical_res[0] != ref_data[ivar].planeDataConfig->physical_res[0] ||
+					this->planeDataConfig[0]->physical_res[1] != ref_data[ivar].planeDataConfig->physical_res[1]
 				)
 				{
 					SWEETError("TODO");
@@ -782,9 +782,9 @@ public:
 			}
 
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-		SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig),
-				                   SphereData_Spectral(this->sphereDataConfig),
-				                   SphereData_Spectral(this->sphereDataConfig)};
+		SphereData_Spectral ref_data[] = { SphereData_Spectral(this->sphereDataConfig[0]),
+				                   SphereData_Spectral(this->sphereDataConfig[0]),
+				                   SphereData_Spectral(this->sphereDataConfig[0])};
 
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
@@ -803,13 +803,13 @@ public:
 				const char* filename_template = simVars->iodata.output_file_name.c_str();
 				sprintf(buffer, filename_template, i_name.c_str(), t * simVars->iodata.output_time_scale);
 				std::string buffer2 = path_ref + "/" + std::string(buffer);
-				SphereData_Physical tmp(this->sphereDataConfig);
+				SphereData_Physical tmp(this->sphereDataConfig[0]);
 				tmp.file_physical_loadRefData_Parareal(buffer2.c_str());
 				ref_data[ivar].loadSphereDataPhysical(tmp);
 
 				// If necessary, interpolate to coarsest spatial grid
-				if (	this->sphereDataConfig->physical_num_lat != ref_data[ivar].sphereDataConfig->physical_num_lat ||
-					this->sphereDataConfig->physical_num_lon != ref_data[ivar].sphereDataConfig->physical_num_lon
+				if (	this->sphereDataConfig[0]->physical_num_lat != ref_data[ivar].sphereDataConfig->physical_num_lat ||
+					this->sphereDataConfig[0]->physical_num_lon != ref_data[ivar].sphereDataConfig->physical_num_lon
 				)
 				{
 					SWEETError("TODO");
@@ -879,8 +879,8 @@ public:
 			else if (ivar == 2)
 				i_name = "prog_v";
 
-			resx_data = this->planeDataConfig->physical_res[0];
-			resy_data = this->planeDataConfig->physical_res[1];
+			resx_data = this->planeDataConfig[0]->physical_res[0];
+			resy_data = this->planeDataConfig[0]->physical_res[1];
 
 			PlaneData_Physical diff = i_data->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
                                                   parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
@@ -897,8 +897,8 @@ public:
 			else if (ivar == 2)
 				i_name = "prog_div";
 
-			resx_data = this->sphereDataConfig->physical_num_lon;
-			resy_data = this->sphereDataConfig->physical_num_lat;
+			resx_data = this->sphereDataConfig[0]->physical_num_lon;
+			resy_data = this->sphereDataConfig[0]->physical_num_lat;
 
 			SphereData_Physical diff = i_data->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys() -
                                                   parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys();

@@ -1440,6 +1440,72 @@ public:
 		}
 	}
 
+
+	/**
+	 * Interpolate from a finer mesh. Remove highest frequency modes.
+	 */
+	void restrict(
+			const SphereData_Spectral &i_array_data
+	)
+	{
+
+		int M_fine = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		int N_fine = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		int M_coarse = this->sphereDataConfig->spectral_modes_m_max;
+		int N_coarse = this->sphereDataConfig->spectral_modes_n_max;
+
+		assert(M_fine >= M_coarse);
+		assert(N_fine >= N_coarse);
+
+		// just copy data
+		if (M_fine == M_coarse && N_fine == N_coarse)
+			*this = i_array_data;
+		else
+			for (std::size_t m = 0; m < M_coarse; m++)
+				for (std::size_t n = m; n < N_coarse; n++)
+				{
+					std::size_t idx_coarse = this->sphereDataConfig->getArrayIndexByModes(n, m);
+					std::size_t idx_fine = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
+					this->spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine];
+				}
+
+	}
+
+
+	/**
+	 * Interpolate from a coarser mesh. Pad zeros corresponding to highest frequency modes.
+	 */
+	void pad_zeros(
+			const SphereData_Spectral &i_array_data
+	)
+	{
+
+		int M_coarse = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		int N_coarse = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		int M_fine = this->sphereDataConfig->spectral_modes_m_max;
+		int N_fine = this->sphereDataConfig->spectral_modes_n_max;
+
+		assert(M_fine >= M_coarse);
+		assert(N_fine >= N_coarse);
+
+		// just copy data
+		if (M_fine == M_coarse && N_fine == N_coarse)
+			*this = i_array_data;
+		else
+		{
+			this->spectral_set_zero();
+			for (std::size_t m = 0; m < M_coarse; m++)
+				for (std::size_t n = m; n < N_coarse; n++)
+				{
+					std::size_t idx_coarse = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
+					std::size_t idx_fine = this->sphereDataConfig->getArrayIndexByModes(n, m);
+					this->spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse];
+				}
+		}
+	}
+
+
+
 };
 
 

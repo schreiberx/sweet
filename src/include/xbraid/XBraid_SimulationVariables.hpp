@@ -156,6 +156,12 @@ struct XBraid_SimulationVariables
 	 */
 	bool xbraid_store_iterations = true;
 
+	/**
+	 * Spatial coarsen between levels
+	 * Proportionally to the timestep size
+	 */
+	bool xbraid_spatial_coarsening = false;
+
 
 	void outputConfig()
 	{
@@ -191,6 +197,7 @@ struct XBraid_SimulationVariables
 		std::cout << " + xbraid_load_fine_csv_files: "          << xbraid_load_fine_csv_files          << std::endl;
 		std::cout << " + xbraid_path_fine_csv_files: "          << xbraid_path_fine_csv_files          << std::endl;
 		std::cout << " + xbraid_store_iterations: "             << xbraid_store_iterations             << std::endl;
+		std::cout << " + xbraid_spatial_coarsening: "           << xbraid_spatial_coarsening           << std::endl;
 	}
 
 	void printOptions()
@@ -227,6 +234,7 @@ struct XBraid_SimulationVariables
 		std::cout << "	--xbraid-load-fine-csv-files [0/1]           XBraid parameter load_fine_csv_files, default: 0"          << std::endl;
 		std::cout << "	--xbraid-path-fine-csv-files [string]        XBraid parameter path_fine_csv_files, default: ''"         << std::endl;
 		std::cout << "	--xbraid-store-iterations [0/1]              XBraid parameter store_iterations, default: 0"             << std::endl;
+		std::cout << "	--xbraid-spatial-coarsening [0/1]            XBraid parameter spatial_coarsening, default: 0"           << std::endl;
 		std::cout << ""                                                                                                         << std::endl;
 	}
 
@@ -326,6 +334,9 @@ struct XBraid_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"xbraid-store-iterations", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"xbraid-spatial-coarsening", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 	}
 	
 	/**
@@ -370,8 +381,9 @@ struct XBraid_SimulationVariables
 			case 27: xbraid_load_fine_csv_files       = atoi(optarg);	return -1;
 			case 28: xbraid_path_fine_csv_files       = optarg;		return -1;
 			case 29: xbraid_store_iterations          = atoi(optarg);	return -1;
+			case 30: xbraid_spatial_coarsening        = atoi(optarg);	return -1;
 		}
-		return 30;
+		return 31;
 	}
 
 };

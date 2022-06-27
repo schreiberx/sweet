@@ -225,6 +225,9 @@ public:
 
 	virtual Parareal_GenericData& operator*=(const double v) = 0;
 
+	virtual void restrict(const Parareal_GenericData& i_data) = 0;
+	virtual void pad_zeros(const Parareal_GenericData& i_data) = 0;
+
 	virtual void physical_print() = 0;
 
 };

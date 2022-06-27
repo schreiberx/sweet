@@ -180,6 +180,7 @@ class JobRuntimeOptions(InfoError):
         self.xbraid_load_fine_csv_files = None;
         self.xbraid_path_fine_csv_files = None;
         self.xbraid_store_iterations = None;
+        self.xbraid_spatial_coarsening = None;
 
         #
         # User defined parameters
@@ -528,6 +529,8 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_xb_path_fine'+str(self.xbraid_path_fine_csv_files)
                 if self.xbraid_store_iterations != None:
                     idstr += '_xb_store_iterations'+str(self.xbraid_store_iterations)
+                if self.xbraid_spatial_coarsening != None:
+                    idstr += '_xb_spc'+str(self.xbraid_spatial_coarsening)
 
         if idstr != '':
             idstr = "RT"+idstr
@@ -789,6 +792,7 @@ class JobRuntimeOptions(InfoError):
             retval += " --xbraid-load-fine-csv-files="+str(self.xbraid_load_fine_csv_files)
             retval += " --xbraid-path-fine-csv-files="+str(self.xbraid_path_fine_csv_files)
             retval += " --xbraid-store-iterations="+str(self.xbraid_store_iterations)
+            retval += " --xbraid-spatial-coarsening="+str(self.xbraid_spatial_coarsening)
 
         for key, param in self.user_defined_parameters.items():
             retval += ' '+param['option']+str(param['value'])
