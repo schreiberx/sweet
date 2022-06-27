@@ -1082,6 +1082,40 @@ int main_real(int i_argc, char *i_argv[])
 			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
 			SphereOperators_SphereData op_nodealiasing(sphereDataConfig_nodealiasing, &(simVars.sim));
 
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<SphereData_Config*> sphereDataConfigs;
+			std::vector<SphereOperators_SphereData*> ops;
+			std::vector<SphereOperators_SphereData*> ops_nodealiasing;
+
+			// fine
+			sphereDataConfigs.push_back(sphereDataConfig);
+			ops.push_back(&op);
+			ops_nodealiasing.push_back(&op_nodealiasing);
+
+			// coarse
+			if (simVars.parareal.spatial_coarsening)
+			{
+				for (int j = 0; j < 2; j++)
+					assert(simVars.disc.space_res_physical[j] == -1);
+				int N_spectral[2];
+				double frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				for (int j = 0; j < 2; j++)
+					N_spectral[j] = int(simVars.disc.space_res_spectral[j] * frac);
+				sphereDataConfigs.push_back(new SphereData_Config);
+				sphereDataConfigs.back()->setupAuto(simVars.disc.space_res_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+
+				ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
+				// @TODO: nodealiasing case
+				ops_nodealiasing.push_back(ops.back());
+			}
+			else
+			{
+				sphereDataConfigs.push_back(sphereDataConfig);
+				ops.push_back(&op);
+				ops_nodealiasing.push_back(&op_nodealiasing);
+			}
+
+
 			SWE_Sphere_TimeSteppers* timeSteppersFine = new SWE_Sphere_TimeSteppers;
 			SWE_Sphere_TimeSteppers* timeSteppersCoarse = new SWE_Sphere_TimeSteppers;
 
@@ -1089,10 +1123,10 @@ int main_real(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<SWE_Sphere_TimeSteppers, 3> parareal_Controller(&simVars,
-												sphereDataConfig,
-												op,
-												op_nodealiasing,
+			Parareal_Controller<SWE_Sphere_TimeSteppers, 3> parareal_Controller(	&simVars,
+												sphereDataConfigs,
+												ops,
+												ops_nodealiasing,
 												timeSteppersFine,
 												timeSteppersCoarse);
 
@@ -1104,6 +1138,12 @@ int main_real(int i_argc, char *i_argv[])
 
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
+
+			if (simVars.parareal.spatial_coarsening)
+			{
+				delete sphereDataConfigs[1];
+				delete ops[1];
+			}
 		}
 		else
 #endif

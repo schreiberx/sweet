@@ -98,6 +98,11 @@ public:
 	bool store_iterations = true;
 
 	/**
+	 * Spatial coarsening between the fine and coarse levels
+	 */
+	bool spatial_coarsening = false;
+
+	/**
 	 * setup long options for program arguments
 	 */
 public:
@@ -154,6 +159,9 @@ public:
 
 		io_long_options[io_next_free_program_option] = {"parareal-store-iterations", required_argument, 0, (int)256+io_next_free_program_option};
 		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"parareal-spatial-coarsening", required_argument, 0, (int)256+io_next_free_program_option};
+		io_next_free_program_option++;
 	}
 
 
@@ -178,6 +186,7 @@ public:
 		std::cout << "	--parareal-load-fine-csv-files=[0/1]	Load physical files of fine simulation (default=0)" << std::endl;
 		std::cout << "	--parareal-path-fine-csv-files=[0/1]	Path containing fine csv files (default="")" << std::endl;
 		std::cout << "	--parareal-store-iterations=[0/1]	Store physical files at each iteration (default=1)" << std::endl;
+		std::cout << "	--parareal-spatial-coarsening=[0/1]	Spatial coarsening between the fine and coarse levels (default=0)" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -202,6 +211,7 @@ public:
 		std::cout << " + load_fine_csv_files: " << load_fine_csv_files << std::endl;
 		std::cout << " + path_fine_csv_files: " << path_fine_csv_files << std::endl;
 		std::cout << " + store_iterations: " << store_iterations << std::endl;
+		std::cout << " + spatial coarsening: " << spatial_coarsening << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -275,9 +285,12 @@ public:
 			store_iterations = atoi(i_value);
 			return -1;
 
+		case 14:
+			spatial_coarsening = atoi(i_value);
+			return -1;
 		}
 
-		return 14;
+		return 15;
 	}
 
 

@@ -81,12 +81,12 @@ class Parareal_Controller
 
 	// Operators and DataConfig
 #if SWEET_PARAREAL_PLANE
-	PlaneOperators op_plane;
-	PlaneDataConfig* planeDataConfig = nullptr;
+	std::vector<PlaneOperators*> op_plane;
+	std::vector<PlaneDataConfig*> planeDataConfig;
 #elif SWEET_PARAREAL_SPHERE
-	SphereOperators_SphereData op_sphere;
-	SphereOperators_SphereData op_sphere_nodealiasing;
-	SphereData_Config* sphereDataConfig = nullptr;
+	std::vector<SphereOperators_SphereData*> op_sphere;
+	std::vector<SphereOperators_SphereData*> op_sphere_nodealiasing;
+	std::vector<SphereData_Config*> sphereDataConfig;
 #endif
 
 
@@ -138,9 +138,9 @@ public:
 	#if SWEET_PARAREAL_SCALAR
 		double* serial_data = MemBlockAlloc::alloc<double>(N * sizeof(double));
 	#elif SWEET_PARAREAL_PLANE
-		std::complex<double>* serial_data = MemBlockAlloc::alloc<std::complex<double>>(N * planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
+		std::complex<double>* serial_data = MemBlockAlloc::alloc<std::complex<double>>(N * planeDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
 	#elif SWEET_PARAREAL_SPHERE
-		std::complex<double>* serial_data = MemBlockAlloc::alloc<std::complex<double>>(N * sphereDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
+		std::complex<double>* serial_data = MemBlockAlloc::alloc<std::complex<double>>(N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
 	#endif
 
 
@@ -179,9 +179,9 @@ public:
 	#if SWEET_PARAREAL_SCALAR
 		MemBlockAlloc::free(serial_data, N * sizeof(double));
 	#elif SWEET_PARAREAL_PLANE
-		MemBlockAlloc::free(serial_data, N * planeDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+		MemBlockAlloc::free(serial_data, N * planeDataConfig[0]->physical_array_data_number_of_elements * sizeof(std::complex<double>));
 	#elif SWEET_PARAREAL_SPHERE
-		MemBlockAlloc::free(serial_data, N * sphereDataConfig->physical_array_data_number_of_elements * sizeof(std::complex<double>));
+		MemBlockAlloc::free(serial_data, N * sphereDataConfig[0]->physical_array_data_number_of_elements * sizeof(std::complex<double>));
 	#endif
 
 
@@ -205,8 +205,8 @@ public:
 #elif SWEET_PARAREAL_PLANE
 	// Plane
 	Parareal_Controller(SimulationVariables* i_simVars,
-						PlaneDataConfig* i_planeDataConfig,
-						PlaneOperators &i_op_plane,
+						std::vector<PlaneDataConfig*> i_planeDataConfig,
+						std::vector<PlaneOperators*> i_op_plane,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
 		simVars(i_simVars),
@@ -220,9 +220,9 @@ public:
 #elif SWEET_PARAREAL_SPHERE
 	// Sphere
 	Parareal_Controller(SimulationVariables* i_simVars,
-						SphereData_Config* i_sphereDataConfig,
-						SphereOperators_SphereData &i_op_sphere,
-						SphereOperators_SphereData &i_op_sphere_nodealiasing,
+						std::vector<SphereData_Config*> i_sphereDataConfig,
+						std::vector<SphereOperators_SphereData*> &i_op_sphere,
+						std::vector<SphereOperators_SphereData*> &i_op_sphere_nodealiasing,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
 		simVars(i_simVars),
@@ -373,15 +373,15 @@ public:
 #elif SWEET_PARAREAL_PLANE
 				parareal_simulationInstances[local_k]->setup(this->simVars,
 								       this->planeDataConfig,
-								       &this->op_plane,
+								       this->op_plane,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
 
 #elif SWEET_PARAREAL_SPHERE
 				parareal_simulationInstances[local_k]->setup(this->simVars,
 								       this->sphereDataConfig,
-								       &this->op_sphere,
-								       &this->op_sphere_nodealiasing,
+								       this->op_sphere,
+								       this->op_sphere_nodealiasing,
 								       this->timeSteppersFine,
 								       this->timeSteppersCoarse);
 #endif
@@ -589,12 +589,12 @@ public:
 					continue;
 				else if (working_rank == mpi_rank) // recv
 				{
-					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container("fine");
 					this->communicate_solution(tmp2, 0, mpi_rank, 10000 + i);
 					parareal_simulationInstances[local_slice]->sim_set_data(*tmp2);
 					delete tmp2;
 
-					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container("fine");
 					this->communicate_solution(tmp2, 0, mpi_rank, 10000 + 10 + i);
 					parareal_simulationInstances[local_slice]->sim_set_data_coarse(*tmp2);
 					delete tmp2;
@@ -641,7 +641,7 @@ public:
 					if (local_slice == 0) // recv
 					{
 						///tmp2 = &parareal_simulationInstances[local_slice]->get_reference_to_data_timestep_fine_previous_timestep();
-						tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+						tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container("fine");
 						this->communicate_solution(tmp2, 0, mpi_rank, 20000 + i);
 						parareal_simulationInstances[local_slice]->sim_set_data_fine_previous_time_slice(*tmp2);
 						delete tmp2;
@@ -715,7 +715,7 @@ public:
 				}
 				else if (mpi_rank == 0) // recv
 				{
-					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container();
+					tmp2 = parareal_simulationInstances[local_slice]->create_new_data_container("fine");
 					this->communicate_solution(tmp2, working_rank, 0, 30000 + i);
 					parareal_simulationInstances[local_slice]->sim_set_data_diff(*tmp2);
 					delete tmp2;

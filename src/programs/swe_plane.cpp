@@ -3,7 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_benchmarks
- * MUddddLE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
+ * //////MU//LE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
  */
 
 
@@ -1103,6 +1103,35 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<PlaneDataConfig*> planeDataConfigs;
+			std::vector<PlaneOperators*> ops;
+
+			// fine
+			planeDataConfigs.push_back(planeDataConfig);
+			ops.push_back(&op);
+
+			// coarse
+			if (simVars.parareal.spatial_coarsening)
+			{
+				for (int j = 0; j < 2; j++)
+					assert(simVars.disc.space_res_physical[j] == -1);
+				int N_spectral[2];
+				double frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				for (int j = 0; j < 2; j++)
+					N_spectral[j] = int(simVars.disc.space_res_spectral[j] * frac);
+				planeDataConfigs.push_back(new PlaneDataConfig);
+				planeDataConfigs.back()->setupAuto(simVars.disc.space_res_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+
+				ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+			}
+			else
+			{
+				planeDataConfigs.push_back(planeDataConfig);
+				ops.push_back(&op);
+			}
+
+
 			SWE_Plane_TimeSteppers* timeSteppersFine = new SWE_Plane_TimeSteppers;
 			SWE_Plane_TimeSteppers* timeSteppersCoarse = new SWE_Plane_TimeSteppers;
 
@@ -1110,9 +1139,9 @@ int main(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(&simVars,
-												planeDataConfig,
-												op,
+			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(	&simVars,
+												planeDataConfigs,
+												ops,
 												timeSteppersFine,
 												timeSteppersCoarse);
 
@@ -1124,6 +1153,12 @@ int main(int i_argc, char *i_argv[])
 
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
+
+			if (simVars.parareal.spatial_coarsening)
+			{
+				delete planeDataConfigs[1];
+				delete ops[1];
+			}
 		}
 		else
 #endif
@@ -1143,7 +1178,8 @@ int main(int i_argc, char *i_argv[])
 			{
 				if (simVars.xbraid.xbraid_spatial_coarsening)
 				{
-					assert(simVars.disc.space_res_physical == -1);
+					for (int j = 0; j < 2; j++)
+						assert(simVars.disc.space_res_physical[j] == -1);
 					int N_spectral[2];
 					for (int j = 0; j < 2; j++)
 						N_spectral[j] = int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i));

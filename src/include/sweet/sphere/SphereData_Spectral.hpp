@@ -1449,10 +1449,10 @@ public:
 	)
 	{
 
-		int M_fine = i_array_data.sphereDataConfig->spectral_modes_m_max;
-		int N_fine = i_array_data.sphereDataConfig->spectral_modes_n_max;
-		int M_coarse = this->sphereDataConfig->spectral_modes_m_max;
-		int N_coarse = this->sphereDataConfig->spectral_modes_n_max;
+		std::size_t M_fine = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		std::size_t N_fine = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		std::size_t M_coarse = this->sphereDataConfig->spectral_modes_m_max;
+		std::size_t N_coarse = this->sphereDataConfig->spectral_modes_n_max;
 
 		assert(M_fine >= M_coarse);
 		assert(N_fine >= N_coarse);
@@ -1480,10 +1480,10 @@ public:
 	)
 	{
 
-		int M_coarse = i_array_data.sphereDataConfig->spectral_modes_m_max;
-		int N_coarse = i_array_data.sphereDataConfig->spectral_modes_n_max;
-		int M_fine = this->sphereDataConfig->spectral_modes_m_max;
-		int N_fine = this->sphereDataConfig->spectral_modes_n_max;
+		std::size_t M_coarse = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		std::size_t N_coarse = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		std::size_t M_fine = this->sphereDataConfig->spectral_modes_m_max;
+		std::size_t N_fine = this->sphereDataConfig->spectral_modes_n_max;
 
 		assert(M_fine >= M_coarse);
 		assert(N_fine >= N_coarse);

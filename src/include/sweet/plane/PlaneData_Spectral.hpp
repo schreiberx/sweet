@@ -2193,10 +2193,10 @@ public:
 	)
 	{
 
-		int M_fine = i_array_data.planeDataConfig->spectral_data_size[0];
-		int N_fine = i_array_data.planeDataConfig->spectral_data_size[1];
-		int M_coarse = this->planeDataConfig->spectral_data_size[0];
-		int N_coarse = this->planeDataConfig->spectral_data_size[1];
+		std::size_t M_fine = i_array_data.planeDataConfig->spectral_data_size[0];
+		std::size_t N_fine = i_array_data.planeDataConfig->spectral_data_size[1];
+		std::size_t M_coarse = this->planeDataConfig->spectral_data_size[0];
+		std::size_t N_coarse = this->planeDataConfig->spectral_data_size[1];
 
 		assert(M_fine >= M_coarse);
 		assert(N_fine >= N_coarse);
@@ -2224,10 +2224,10 @@ public:
 	)
 	{
 
-		int M_coarse = i_array_data.planeDataConfig->spectral_data_size[0];
-		int N_coarse = i_array_data.planeDataConfig->spectral_data_size[1];
-		int M_fine = this->planeDataConfig->spectral_data_size[0];
-		int N_fine = this->planeDataConfig->spectral_data_size[1];
+		std::size_t M_coarse = i_array_data.planeDataConfig->spectral_data_size[0];
+		std::size_t N_coarse = i_array_data.planeDataConfig->spectral_data_size[1];
+		std::size_t M_fine = this->planeDataConfig->spectral_data_size[0];
+		std::size_t N_fine = this->planeDataConfig->spectral_data_size[1];
 
 		assert(M_fine >= M_coarse);
 		assert(N_fine >= N_coarse);
