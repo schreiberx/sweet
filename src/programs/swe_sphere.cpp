@@ -1095,14 +1095,21 @@ int main_real(int i_argc, char *i_argv[])
 			// coarse
 			if (simVars.parareal.spatial_coarsening)
 			{
-				for (int j = 0; j < 2; j++)
-					assert(simVars.disc.space_res_physical[j] == -1);
+				///for (int j = 0; j < 2; j++)
+				///	assert(simVars.disc.space_res_physical[j] == -1);
+				int N_physical[2] = {-1, -1};
 				int N_spectral[2];
-				double frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+
+				double frac;
+				if ( simVars.parareal.coarse_timestep_size > 0)
+					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				else
+					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
-					N_spectral[j] = int(simVars.disc.space_res_spectral[j] * frac);
+					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+
 				sphereDataConfigs.push_back(new SphereData_Config);
-				sphereDataConfigs.back()->setupAuto(simVars.disc.space_res_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+				sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
 
 				ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
 				// @TODO: nodealiasing case
@@ -1143,7 +1150,10 @@ int main_real(int i_argc, char *i_argv[])
 			{
 				delete sphereDataConfigs[1];
 				delete ops[1];
+				sphereDataConfigs[1] = nullptr;
+				ops[1] = nullptr;
 			}
+
 		}
 		else
 #endif

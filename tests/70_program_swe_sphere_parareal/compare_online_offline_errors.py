@@ -59,7 +59,11 @@ for key in jd.keys():
     if path == fine_sim:
         continue;
     job_info[path] = {};
-    for s in ["runtime.parareal_coarse_slices", "runtime.parareal_coarse_timestep_size", "runtime.parareal_coarse_timestepping_method", "runtime.parareal_store_iterations"]:
+    for s in ["runtime.parareal_coarse_slices",
+              "runtime.parareal_coarse_timestep_size",
+              "runtime.parareal_coarse_timestepping_method",
+              "runtime.parareal_store_iterations",
+              "runtime.parareal_spatial_coarsening"]:
         job_info[path][s] = jd[key][s];
 
 ## find identical jobs
@@ -76,7 +80,10 @@ for job1 in list_jobs:
         if job2 in read_jobs:
             continue;
         found_job = True;
-        for s in ["runtime.parareal_coarse_slices", "runtime.parareal_coarse_timestep_size", "runtime.parareal_coarse_timestepping_method"]:
+        for s in ["runtime.parareal_coarse_slices",
+                  "runtime.parareal_coarse_timestep_size",
+                  "runtime.parareal_coarse_timestepping_method",
+                  "runtime.parareal_spatial_coarsening"]:
             if not job_info[job1][s] == job_info[job2][s]:
                 found_job = False;
 

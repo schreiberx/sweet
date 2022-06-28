@@ -65,7 +65,8 @@ public:
 	// Data containers
 	Parareal_GenericData* parareal_data_start = nullptr;
 	Parareal_GenericData* parareal_data_fine = nullptr;
-	Parareal_GenericData* parareal_data_coarse = nullptr;
+	Parareal_GenericData* parareal_data_coarse = nullptr; // defined on fine spatial mesh; used almost everywhere
+	Parareal_GenericData* parareal_data_coarse_coarse_mesh = nullptr; // defined on coarse spatial mesh; used only on run_timestep_coarse
 	Parareal_GenericData* parareal_data_output = nullptr;
 	Parareal_GenericData* parareal_data_error = nullptr;
 	Parareal_GenericData* parareal_data_coarse_previous_timestep = nullptr;
@@ -77,6 +78,9 @@ public:
 #if SWEET_DEBUG
 	Parareal_GenericData* parareal_data_fine_exact_debug = nullptr;
 #endif
+
+	Parareal_GenericData* parareal_data_debug = nullptr;
+	bool debug_contains_data = false;
 
 	// Fine and coarse timesteppers
 	t_tsmType* timeSteppersFine = nullptr;
@@ -164,7 +168,6 @@ public:
 			t_tsmType* i_timeSteppersCoarse)
 	{
 		this->sphereDataConfig = i_sphereDataConfig;
-		std::cout << "AAAA " << sphereDataConfig[0] << " " << sphereDataConfig[1] << std::endl;
 		this->op_sphere = i_op_sphere;
 		this->op_sphere_nodealiasing = i_op_sphere_nodealiasing;
 		this->setup(i_simVars,
@@ -212,6 +215,7 @@ public:
 		this->parareal_data_start                      = this->create_new_data_container("fine");
 		this->parareal_data_fine                       = this->create_new_data_container("fine");
 		this->parareal_data_coarse                     = this->create_new_data_container("fine");
+		this->parareal_data_coarse_coarse_mesh         = this->create_new_data_container("coarse");
 		this->parareal_data_output                     = this->create_new_data_container("fine");
 		this->parareal_data_error                      = this->create_new_data_container("fine");
 		this->parareal_data_coarse_previous_timestep   = this->create_new_data_container("coarse");
@@ -223,6 +227,8 @@ public:
 #if SWEET_DEBUG
 		this->parareal_data_fine_exact_debug           = this->create_new_data_container("fine");
 #endif
+
+		this->parareal_data_debug           = this->create_new_data_container("coarse");
 
 		this->sim_setup_initial_data();
 	};
@@ -321,6 +327,7 @@ public:
 		this->parareal_data_start->set_time(i_timeframe_end);
 		this->parareal_data_fine->set_time(i_timeframe_end);
 		this->parareal_data_coarse->set_time(i_timeframe_end);
+		this->parareal_data_coarse_coarse_mesh->set_time(i_timeframe_end);
 		this->parareal_data_output->set_time(i_timeframe_end);
 		this->parareal_data_error->set_time(i_timeframe_end);
 		this->parareal_data_coarse_previous_timestep->set_time(i_timeframe_end);
@@ -662,25 +669,42 @@ public:
 
 		// interpolate to coarse spatial mesh
 		if (this->simVars->parareal.spatial_coarsening)
-			this->parareal_data_coarse->restrict(*this->parareal_data_coarse);
+			this->parareal_data_coarse_coarse_mesh->restrict(*this->parareal_data_coarse);
+		else
+			*this->parareal_data_coarse_coarse_mesh = *this->parareal_data_coarse;
 
 		int nb_timesteps = 0;
 		while (nb_timesteps != this->nb_timesteps_coarse)
 		{
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
-			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse);
+			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse_coarse_mesh);
 
-			this->run_timestep(this->parareal_data_coarse, "coarse");
+			////if (simVars->timecontrol.current_simulation_time == 0)
+			////	if (!this->debug_contains_data)
+			////	{
+			////		*this->parareal_data_debug = *this->parareal_data_coarse_coarse_mesh;
+			////		this->debug_contains_data =  true;
+			////	}
+			////	else
+			////	{
+			////		*this->parareal_data_debug -= *this->parareal_data_coarse_coarse_mesh;
+			////		std::cout << "FFFFFFFF " << this->parareal_data_debug->reduce_maxAbs() << std::endl;
+			////		std::cout << "FFFFFFFF " << this->parareal_data_debug->reduce_norm1() << std::endl;
+			////		std::cout << "FFFFFFFF " << this->parareal_data_debug->reduce_norm2() << std::endl;
+			////	}
+
+			this->run_timestep(this->parareal_data_coarse_coarse_mesh, "coarse");
 			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
 			nb_timesteps++;
-
 		}
 
 		// interpolate to coarse spatial mesh
 		if (this->simVars->parareal.spatial_coarsening)
-			this->parareal_data_coarse->pad_zeros(*this->parareal_data_coarse);
+			this->parareal_data_coarse->pad_zeros(*this->parareal_data_coarse_coarse_mesh);
+		else
+			*this->parareal_data_coarse = *this->parareal_data_coarse_coarse_mesh;
 
 	};
 
@@ -873,8 +897,37 @@ public:
 			SWEETError("Instability detected in parareal!");
 	};
 
+	void delete_data_container(
+					Parareal_GenericData* i_data
+	)
+	{
+		if (i_data)
+		{
+			delete i_data;
+			i_data = nullptr;
+		}
+	}
+
 	~Parareal_SimulationInstance()
 	{
+
+/////////		this->delete_data_container(this->parareal_data_start);
+/////////		this->delete_data_container(this->parareal_data_fine);
+/////////		this->delete_data_container(this->parareal_data_coarse);
+/////////		this->delete_data_container(this->parareal_data_coarse_coarse_mesh);
+/////////		this->delete_data_container(this->parareal_data_output);
+/////////		this->delete_data_container(this->parareal_data_error);
+/////////		this->delete_data_container(this->parareal_data_coarse_previous_timestep);
+/////////		this->delete_data_container(this->parareal_data_coarse_previous_time_slice);
+/////////		this->delete_data_container(this->parareal_data_fine_previous_timestep);
+/////////		this->delete_data_container(this->parareal_data_fine_previous_time_slice);
+/////////		this->delete_data_container(this->parareal_data_ref_exact);
+/////////		this->delete_data_container(this->parareal_data_fine_exact);
+/////////#if SWEET_DEBUG
+/////////		this->delete_data_container(this->parareal_data_fine_exact_debug);
+/////////#endif
+
+
 	}
 };
 
