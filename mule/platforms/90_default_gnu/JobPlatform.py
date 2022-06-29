@@ -139,12 +139,21 @@ def jobscript_get_exec_command(jg : JobGeneration):
     string
         multiline text for scripts
     """
+
+    mpiprefix = ""
+    if not p.mpiexec_disabled:
+        if jg.compile.sweet_mpi == 'enable':
+            mpiprefix += "mpirun -n "+str(p.num_ranks)
+            mpiprefix += ""
+
+
+
     content = """
 
 """+p_gen_script_info(jg)+"""
 
 # mpiexec ... would be here without a line break
-EXEC=\""""+jg.get_program_exec()+"""\"
+EXEC=\""""+mpiprefix+jg.get_program_exec()+"""\"
 echo \"$EXEC\"
 $EXEC || exit 1
 
