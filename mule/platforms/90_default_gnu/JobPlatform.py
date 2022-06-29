@@ -140,11 +140,13 @@ def jobscript_get_exec_command(jg : JobGeneration):
         multiline text for scripts
     """
 
+    p = jg.parallelization
+
     mpiprefix = ""
     if not p.mpiexec_disabled:
-        if jg.compile.sweet_mpi == 'enable':
+        if jg.compile.sweet_mpi == 'enable' and p.num_ranks > 1:
             mpiprefix += "mpirun -n "+str(p.num_ranks)
-            mpiprefix += ""
+            mpiprefix += " "
 
 
 

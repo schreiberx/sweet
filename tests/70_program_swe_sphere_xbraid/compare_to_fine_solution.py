@@ -77,6 +77,7 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
         err_L2 = np.sqrt(np.sum(np.abs(sol - ref)**2));
         err_Linf = np.max(np.abs(sol - ref));
 
+        print (err_L1, err_L2, err_Linf)
         assert err_L1 < eps, (err_L1, eps);
         max_error = max(max_error, err_L1);
 
@@ -96,6 +97,8 @@ fine_sim = sys.argv[1];
 list_jobs = glob("job_bench_*");
 ## exclude fine simulation
 list_jobs.remove(fine_sim);
+
+print(list_jobs)
 
 ## read ref and fine solutions
 ####ref_sol = read_ref_solution(ref_sim);

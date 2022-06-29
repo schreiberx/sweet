@@ -64,7 +64,7 @@ def read_check_residuals_C_points(path):
                     spl = lines[j].split();
                     res = float(spl[5]);
                     print(res)
-                    assert res < 1e-16;
+                    assert res < 1e-15;
                 print("    --> OK");
 
         iline += 1;

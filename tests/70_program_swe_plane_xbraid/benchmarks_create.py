@@ -115,6 +115,7 @@ jg.runtime.space_res_spectral = 32
 cfactors = [2, 4, 8];
 nbs_levels = [2, 4];
 nb_pts = [1];
+spatial_coarsening = [0, 1];
 
 if simulation_to_run == "xbraid":
 
@@ -149,6 +150,7 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_load_fine_csv_files = 0;
     jg.runtime.xbraid_path_fine_csv_files = "";
     jg.runtime.xbraid_store_iterations = 0;
+    jg.runtime.xbraid_spatial_coarsening = 0;
 
     if (itest == 0):
         jg.runtime.xbraid_run_wrapper_tests = 1;
@@ -185,10 +187,12 @@ if simulation_to_run == "xbraid":
         for cfactor in cfactors:
             for nb_levels in nbs_levels:
                 for pt in nb_pts:
-                    jg.runtime.xbraid_cfactor = cfactor;
-                    jg.runtime.xbraid_max_levels = nb_levels;
-                    jg.runtime.xbraid_pt = pt;
-                    jg.gen_jobscript_directory()
+                    for coarsening in spatial_coarsening:
+                        jg.runtime.xbraid_cfactor = cfactor;
+                        jg.runtime.xbraid_max_levels = nb_levels;
+                        jg.runtime.xbraid_pt = pt;
+                        jg.runtime.xbraid_spatial_coarsening = coarsening;
+                        jg.gen_jobscript_directory()
 
     if (itest < 5):
         jg.gen_jobscript_directory();

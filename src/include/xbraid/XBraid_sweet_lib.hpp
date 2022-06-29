@@ -636,6 +636,7 @@ public:
 			)
 	{
 
+		// Vector defined in the finest level
 		sweet_BraidVector* U = (sweet_BraidVector*) io_U;
 
 		double tstart;             /* current time */
@@ -652,9 +653,14 @@ public:
 		io_status.GetTIndex(&time_id);
 		io_status.GetIter(&iter);
 
+		// Vector defined in the current level (defined via interpolaiton if necessary)
+		sweet_BraidVector* U_level = this->create_new_vector(level);
+
 		// Interpolate to coarser grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
-			U->data->restrict(*U->data);
+			U_level->data->restrict(*U->data);
+		else if (level == 0)
+			*U_level->data = *U->data;
 
 		// create containers for prev solution
 		if (this->sol_prev[level].size() == 0)
@@ -671,26 +677,30 @@ public:
 		}
 
 		// store solution for SL
-		this->store_prev_solution(U, time_id, level, iter);
+		this->store_prev_solution(U_level, time_id, level, iter);
 
 		// set prev solution for SL
-		this->set_prev_solution(U, time_id, level);
+		this->set_prev_solution(U_level, time_id, level);
 
 		this->simVars->timecontrol.current_simulation_time = tstart;
 		this->simVars->timecontrol.current_timestep_size = tstop - tstart;
 
 		this->timeSteppers[level]->master->run_timestep(
-								U->data,
+								U_level->data,
 								this->simVars->timecontrol.current_timestep_size,
 								this->simVars->timecontrol.current_simulation_time
 		);
 
 		// Interpolate to finest grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
-			U->data->pad_zeros(*U->data);
+			U->data->pad_zeros(*U_level->data);
+		else if (level == 0)
+			*U->data = *U_level->data;
 
 		/* Tell XBraid no refinement */
 		io_status.SetRFactor(1);
+
+		delete U_level;
 
 		return 0;
 	}
@@ -1067,6 +1077,7 @@ public:
 			///if (do_output)
 			///	std::cout << t << " " << it << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
 
+			////std::cout << "AAAA " << iter << " " << it << " " << U->data->reduce_maxAbs() << std::endl;
 			if (do_output)
 			{
 				// Output physical solution to file

@@ -1450,29 +1450,30 @@ public:
 	{
 
 		SphereData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.sphereDataConfig);
 
-		std::size_t M_fine = i_array_data.sphereDataConfig->spectral_modes_m_max;
-		std::size_t N_fine = i_array_data.sphereDataConfig->spectral_modes_n_max;
-		std::size_t M_coarse = out.sphereDataConfig->spectral_modes_m_max;
-		std::size_t N_coarse = out.sphereDataConfig->spectral_modes_n_max;
+		////std::size_t M_fine = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		////std::size_t N_fine = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		////std::size_t M_coarse = out.sphereDataConfig->spectral_modes_m_max;
+		////std::size_t N_coarse = out.sphereDataConfig->spectral_modes_n_max;
 
-		assert(M_fine >= M_coarse);
-		assert(N_fine >= N_coarse);
+		////assert(M_fine >= M_coarse);
+		////assert(N_fine >= N_coarse);
 
-		// just copy data
-		if (M_fine == M_coarse && N_fine == N_coarse)
-			out = i_array_data;
-		else
-		{
-			out.spectral_set_zero();
-			for (std::size_t m = 0; m < M_coarse; m++)
-				for (std::size_t n = m; n < N_coarse; n++)
-				{
-					std::size_t idx_coarse = out.sphereDataConfig->getArrayIndexByModes(n, m);
-					std::size_t idx_fine = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
-					out.spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine];
-				}
-		}
+		////// just copy data
+		////if (M_fine == M_coarse && N_fine == N_coarse)
+		////	out = i_array_data;
+		////else
+		////{
+		////	out.spectral_set_zero();
+		////	for (std::size_t m = 0; m < M_coarse; m++)
+		////		for (std::size_t n = m; n < N_coarse; n++)
+		////		{
+		////			std::size_t idx_coarse = out.sphereDataConfig->getArrayIndexByModes(n, m);
+		////			std::size_t idx_fine = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
+		////			out.spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine];
+		////		}
+		////}
 
 		return out;
 
@@ -1488,29 +1489,30 @@ public:
 	{
 
 		SphereData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.sphereDataConfig);
 
-		std::size_t M_coarse = i_array_data.sphereDataConfig->spectral_modes_m_max;
-		std::size_t N_coarse = i_array_data.sphereDataConfig->spectral_modes_n_max;
-		std::size_t M_fine = out.sphereDataConfig->spectral_modes_m_max;
-		std::size_t N_fine = out.sphereDataConfig->spectral_modes_n_max;
+		/////std::size_t M_coarse = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		/////std::size_t N_coarse = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		/////std::size_t M_fine = out.sphereDataConfig->spectral_modes_m_max;
+		/////std::size_t N_fine = out.sphereDataConfig->spectral_modes_n_max;
 
-		assert(M_fine >= M_coarse);
-		assert(N_fine >= N_coarse);
+		/////assert(M_fine >= M_coarse);
+		/////assert(N_fine >= N_coarse);
 
-		// just copy data
-		if (M_fine == M_coarse && N_fine == N_coarse)
-			out = i_array_data;
-		else
-		{
-			out.spectral_set_zero();
-			for (std::size_t m = 0; m < M_coarse; m++)
-				for (std::size_t n = m; n < N_coarse; n++)
-				{
-					std::size_t idx_coarse = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
-					std::size_t idx_fine = out.sphereDataConfig->getArrayIndexByModes(n, m);
-					out.spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse];
-				}
-		}
+		/////// just copy data
+		/////if (M_fine == M_coarse && N_fine == N_coarse)
+		/////	out = i_array_data;
+		/////else
+		/////{
+		/////	out.spectral_set_zero();
+		/////	for (std::size_t m = 0; m < M_coarse; m++)
+		/////		for (std::size_t n = m; n < N_coarse; n++)
+		/////		{
+		/////			std::size_t idx_coarse = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
+		/////			std::size_t idx_fine = out.sphereDataConfig->getArrayIndexByModes(n, m);
+		/////			out.spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse];
+		/////		}
+		/////}
 
 		return out;
 

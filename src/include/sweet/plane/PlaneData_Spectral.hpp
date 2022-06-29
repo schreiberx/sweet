@@ -2194,26 +2194,34 @@ public:
 	{
 
 		PlaneData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.planeDataConfig);
 
-		std::size_t M_fine = i_array_data.planeDataConfig->spectral_data_size[0];
-		std::size_t N_fine = i_array_data.planeDataConfig->spectral_data_size[1];
-		std::size_t M_coarse = out.planeDataConfig->spectral_data_size[0];
-		std::size_t N_coarse = out.planeDataConfig->spectral_data_size[1];
+		//////std::size_t M_fine = i_array_data.planeDataConfig->spectral_data_size[0];
+		//////std::size_t N_fine = i_array_data.planeDataConfig->spectral_data_size[1];
+		//////std::size_t M_coarse = out.planeDataConfig->spectral_data_size[0];
+		//////std::size_t N_coarse = out.planeDataConfig->spectral_data_size[1];
 
-		assert(M_fine >= M_coarse);
-		assert(N_fine >= N_coarse);
+		//////assert(M_fine >= M_coarse);
+		//////assert(N_fine >= N_coarse);
 
-		// just copy data
-		if (M_fine == M_coarse && N_fine == N_coarse)
-			out = i_array_data;
-		else
-			for (std::size_t m = 0; m < M_coarse; m++)
-				for (std::size_t n = 0; n < N_coarse; n++)
-				{
-					std::size_t idx_coarse = out.planeDataConfig->getArrayIndexByModes(n, m);
-					std::size_t idx_fine = i_array_data.planeDataConfig->getArrayIndexByModes(n, m);
-					out.spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine];
-				}
+		//////double rescale =
+		//////		(double)(out.planeDataConfig->physical_array_data_number_of_elements)
+		//////		/
+		//////		(double)(i_array_data.planeDataConfig->physical_array_data_number_of_elements);
+
+		//////// just copy data
+		//////if (M_fine == M_coarse && N_fine == N_coarse)
+		//////	out = i_array_data;
+		//////else
+		//////	for (std::size_t m = 0; m < M_coarse; m++)
+		//////		for (std::size_t n = 0; n < N_coarse; n++)
+		//////		{
+		//////			std::size_t idx_coarse = out.planeDataConfig->getArrayIndexByModes(n, m);
+		//////			std::size_t idx_fine = i_array_data.planeDataConfig->getArrayIndexByModes(n, m);
+		//////			out.spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine] * rescale;
+		//////		}
+
+
 
 		return out;
 	}
@@ -2228,29 +2236,35 @@ public:
 	{
 
 		PlaneData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.planeDataConfig);
 
-		std::size_t M_coarse = i_array_data.planeDataConfig->spectral_data_size[0];
-		std::size_t N_coarse = i_array_data.planeDataConfig->spectral_data_size[1];
-		std::size_t M_fine = out.planeDataConfig->spectral_data_size[0];
-		std::size_t N_fine = out.planeDataConfig->spectral_data_size[1];
+		///////std::size_t M_coarse = i_array_data.planeDataConfig->spectral_data_size[0];
+		///////std::size_t N_coarse = i_array_data.planeDataConfig->spectral_data_size[1];
+		///////std::size_t M_fine = out.planeDataConfig->spectral_data_size[0];
+		///////std::size_t N_fine = out.planeDataConfig->spectral_data_size[1];
 
-		assert(M_fine >= M_coarse);
-		assert(N_fine >= N_coarse);
+		///////assert(M_fine >= M_coarse);
+		///////assert(N_fine >= N_coarse);
 
-		// just copy data
-		if (M_fine == M_coarse && N_fine == N_coarse)
-			out = i_array_data;
-		else
-		{
-			out.spectral_set_zero();
-			for (std::size_t m = 0; m < M_coarse; m++)
-				for (std::size_t n = 0; n < N_coarse; n++)
-				{
-					std::size_t idx_coarse = i_array_data.planeDataConfig->getArrayIndexByModes(n, m);
-					std::size_t idx_fine = out.planeDataConfig->getArrayIndexByModes(n, m);
-					out.spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse];
-				}
-		}
+		///////double rescale =
+		///////		(double)(out.planeDataConfig->physical_array_data_number_of_elements)
+		///////		/
+		///////		(double)(i_array_data.planeDataConfig->physical_array_data_number_of_elements);
+
+		///////// just copy data
+		///////if (M_fine == M_coarse && N_fine == N_coarse)
+		///////	out = i_array_data;
+		///////else
+		///////{
+		///////	out.spectral_set_zero();
+		///////	for (std::size_t m = 0; m < M_coarse; m++)
+		///////		for (std::size_t n = 0; n < N_coarse; n++)
+		///////		{
+		///////			std::size_t idx_coarse = i_array_data.planeDataConfig->getArrayIndexByModes(n, m);
+		///////			std::size_t idx_fine = out.planeDataConfig->getArrayIndexByModes(n, m);
+		///////			out.spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse] * rescale;
+		///////		}
+		///////}
 
 		return out;
 	}
