@@ -35,14 +35,14 @@ contains
   ! main Fortran routine calling LibPFASST
 
   subroutine fmain(user_ctx_ptr,                                                           & ! user-defined context
-                   nlevs, niters, nsweeps_coarse, nnodes, qtype_name, qnl, use_rk_stepper, & ! LibPFASST parameters
+                   nlevs, niters, nsweeps, nnodes, qtype_name, qnl, use_rk_stepper, & ! LibPFASST parameters
                    nfields, nvars_per_field,                                               & ! SWEET parameters
                    t_max, dt                                                               & ! timestepping parameters
                    ) bind (c, name='fmain')
     use mpi
 
     type(c_ptr),                 value       :: user_ctx_ptr
-    integer                                  :: nlevs, niters, nsweeps_coarse, nnodes(nlevs), nvars(nlevs), shape(nlevs),   &
+    integer                                  :: nlevs, niters, nsweeps(nlevs), nnodes(nlevs), nvars(nlevs), shape(nlevs),   &
                                                 nfields, nvars_per_field(nlevs), nsteps, level, qnl, qtype, use_rk_stepper, &
                                                 ierror, num_procs, my_id, mpi_stat
     logical                                  :: use_no_left_q
@@ -120,21 +120,15 @@ contains
        pf%nsteps_rk = 1
 
        ! define number of sweeps for each level
+       pf%nsweeps(level)             = nsweeps(level)
+       pf%levels(level)%nsweeps      = nsweeps(level) 
+
        if (pf%nlevels == 1) then
-          
-          pf%levels(level)%nsweeps      = 1
           pf%levels(level)%nsweeps_pred = 1
-             
        else
-
           if (level > 1) then
-             
-             pf%levels(level)%nsweeps      = 1             
              pf%levels(level)%nsweeps_pred = 1
-
           else
-             pf%levels(level)%nsweeps      = nsweeps_coarse
-
              if (num_procs .eq. 1) then 
                 pf%levels(level)%nsweeps_pred = 0 
              else
@@ -145,11 +139,9 @@ contains
 
        ! allocate space for the levels
 
-       !allocate(pf%levels%lev_shape(level))
        pf%levels(level)%lev_shape = nvars(level)
        
        ! define the properties (number of degrees of freedom and number of SDC nodes)
-       ! pf%levels(level)%nvars   = nvars(level)
        pf%levels(level)%nnodes  = nnodes(level)
        pf%levels(level)%Finterp = .false.
 

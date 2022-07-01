@@ -15,17 +15,18 @@ struct LibPFASST_SimulationVariables
     /**
      * Number of space-time levels in the PFASST algorithms
      */
-    int nlevels = 2;
+    int nlevels = 1;
 
     /**
      * Number of (ML)SDC iterations
      */
     int niters = 8;
 
-    /**
-     * Number of sweeps on the coarse level
+    /** 
+     * Number of sweeps per level
      */
-    int nsweeps_coarse = 1;
+    std::string nsweeps_str = "";
+    std::vector<int> nsweeps;
 
     /**
      * Number of SDC temporal nodes on the finest level
@@ -65,10 +66,11 @@ struct LibPFASST_SimulationVariables
                                                {"vrt", true}});
 
 private:
-    std::string _print_hyperviscosities(const std::vector<double> & hv_vector)
+    template <typename T>
+    std::string _print_vector(const std::vector<T> & input_vector)
     {
         std::stringstream result;
-        std::copy(hv_vector.begin(), hv_vector.end(), std::ostream_iterator<double>(result, "\t"));
+        std::copy(input_vector.begin(), input_vector.end(), std::ostream_iterator<T>(result, "\t"));
         return result.str();
     }
 
@@ -117,35 +119,35 @@ public:
         std::cout << "LibPFASST:" << std::endl;
         std::cout << " + nlevels: "                 << nlevels                 << std::endl;
         std::cout << " + niters: "                  << niters                  << std::endl;
-        std::cout << " + nsweeps_coarse: "          << nsweeps_coarse          << std::endl;
+        std::cout << " + nsweeps: "                 << _print_vector<int>(nsweeps)       << std::endl;
         std::cout << " + nnodes: "                  << nnodes                  << std::endl;
         std::cout << " + nodes_type: "              << nodes_type              << std::endl;
         std::cout << " + coarsening_multiplier: "   << coarsening_multiplier   << std::endl;
         std::cout << " + use_rk_stepper: "          << use_rk_stepper          << std::endl;
-        std::cout << " + hyperviscosity order 2 [from coarse to fine]:  " << _print_hyperviscosities(hyperviscosity_2) << std::endl; 
-        std::cout << " + hyperviscosity order 4 [from coarse to fine]:  " << _print_hyperviscosities(hyperviscosity_4) << std::endl; 
-        std::cout << " + hyperviscosity order 6 [from coarse to fine]:  " << _print_hyperviscosities(hyperviscosity_6) << std::endl; 
-        std::cout << " + hyperviscosity order 8 [from coarse to fine]:  " << _print_hyperviscosities(hyperviscosity_8) << std::endl;
+        std::cout << " + hyperviscosity order 2 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_2) << std::endl; 
+        std::cout << " + hyperviscosity order 4 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_4) << std::endl; 
+        std::cout << " + hyperviscosity order 6 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_6) << std::endl; 
+        std::cout << " + hyperviscosity order 8 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_8) << std::endl;
         std::cout << " + apply hyperviscosity on field(s):              " << _print_hyperviscosity_fields() << std::endl;
         std::cout << std::endl;
     }
 
     void printOptions()
     {
-        std::cout << ""                                                                                                                      << std::endl;
-        std::cout << "LibPFASST:"                                                                                                            << std::endl;
-        std::cout << "	--libpfasst-nlevels [int]			LibPFASST parameter nlevels, default: 2"                         << std::endl;
-        std::cout << "	--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8"                          << std::endl;
-        std::cout << "	--libpfasst-nsweeps-coarse [int]                LibPFASST parameter nsweeps-coarse, default: 1"                  << std::endl;
-        std::cout << "	--libpfasst-nnodes [int]			LibPFASST parameter nnodes, default: 5"                          << std::endl;
-        std::cout << "	--libpfasst-nodes-type [string]		        LibPFASST parameter nodes-type, default: SDC_GAUSS_LOBATTO"      << std::endl;
-        std::cout << "	--libpfasst-coarsening-multiplier [float]       LibPFASST parameter coarsening-multiplier, default: 0.5"         << std::endl;
-        std::cout << "        --libpfasst-use-rk-stepper [bool]               LibPFASST parameter use the Runge-Kutta stepper, default: false" << std::endl;
-        std::cout << "        --libpfasst-u2 [floats]                         Hyperviscosity of order 2, default: 0 on all levels"             << std::endl;
-        std::cout << "        --libpfasst-u4 [floats]                         Hyperviscosity of order 4, default: 0 on all levels"             << std::endl;
-        std::cout << "        --libpfasst-u6 [floats]                         Hyperviscosity of order 6, default: 0 on all levels"             << std::endl;
-        std::cout << "        --libpfasst-u8 [floats]                         Hyperviscosity of order 8, default: 0 on all levels"             << std::endl;
-        std::cout << "        --libpfasst-u-fields [string]                   Set fields for hyperviscosity, default: all"                     << std::endl;
+        std::cout << ""                                                                                                                        << std::endl;
+        std::cout << "LibPFASST:"                                                                                                              << std::endl;
+        std::cout << "\t--libpfasst-nlevels [int]                       LibPFASST parameter nlevels, default: 1"                               << std::endl;
+        std::cout << "\t--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8"                                << std::endl;
+        std::cout << "\t--libpfasst-nsweeps [ints]                      LibPFASST parameter nsweeps, default: 1 on all levels"                 << std::endl;
+        std::cout << "\t--libpfasst-nnodes [int]                        LibPFASST parameter nnodes, default: 5"                                << std::endl;
+        std::cout << "\t--libpfasst-nodes-type [string]                 LibPFASST parameter nodes-type, default: SDC_GAUSS_LOBATTO"                << std::endl;
+        std::cout << "\t--libpfasst-coarsening-multiplier [float]       LibPFASST parameter coarsening-multiplier, default: 0.5"               << std::endl;
+        std::cout << "\t--libpfasst-use-rk-stepper [bool]               LibPFASST parameter use the Runge-Kutta stepper, default: false" << std::endl;
+        std::cout << "\t--libpfasst-u2 [floats]                         Hyperviscosity of order 2, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u4 [floats]                         Hyperviscosity of order 4, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u6 [floats]                         Hyperviscosity of order 6, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u8 [floats]                         Hyperviscosity of order 8, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u-fields [string]                   Set fields for hyperviscosity, default: all"                     << std::endl;
         std::cout << std::endl;
     }
 
@@ -161,7 +163,7 @@ public:
         io_long_options[io_next_free_program_option] = {"libpfasst-niters", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
-        io_long_options[io_next_free_program_option] = {"libpfasst-nsweeps-coarse", required_argument, 0, 256+io_next_free_program_option};
+        io_long_options[io_next_free_program_option] = {"libpfasst-nsweeps", required_argument, 0, 256+io_next_free_program_option};
         io_next_free_program_option++;
 
         io_long_options[io_next_free_program_option] = {"libpfasst-nnodes", required_argument, 0, 256+io_next_free_program_option};
@@ -223,6 +225,20 @@ public:
     }
 
     /**
+     * @brief finalize nsweeps values using loaded LibPFASST parameters
+     * 
+     */
+    void postprocess_nsweeps()
+    {
+        nsweeps = std::vector<int>(nlevels, 1);
+        const std::string delimiter = ",";
+        if (nsweeps_str != "")
+        {
+            StringSplit::split_n_ints(nsweeps_str, nsweeps, delimiter);
+        }
+    }
+
+    /**
      * Callback method to setup the values for the option with given index.
      *
      * \return Number of processed options or 0 in case of processed arguments
@@ -236,7 +252,7 @@ public:
         {
             case 0:	 nlevels                 = atoi(optarg); return -1;
             case 1:	 niters                  = atoi(optarg); return -1;
-            case 2:  nsweeps_coarse          = atoi(optarg); return -1;
+            case 2:  nsweeps_str             = optarg; return -1;
             case 3:	 nnodes                  = atoi(optarg); return -1;
             case 4:	 nodes_type              = optarg; 	     return -1;
             case 5:	 coarsening_multiplier   = atof(optarg); return -1;

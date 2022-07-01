@@ -25,7 +25,7 @@ extern "C"
 void fmain (SphereDataCtx* pd_ctx,
 		const int*     nlevels,
 		const int*     niters,
-		const int*     nsweeps_coarse,
+		const int      nsweeps[],
 		const int      nnodes[],
 		const char*    qtype_name,
 		const int*     qtype_name_len,
@@ -71,6 +71,7 @@ int main(int i_argc, char *i_argv[])
 		SWEETError("To apply viscosity, use the --libpfasst-u2/4/6/8 flags, not -u or -U!");
 	}
 	simVars.libpfasst.postprocess_hyperviscosity();
+	simVars.libpfasst.postprocess_nsweeps();
 
 	// define the number of levels and SDC nodes for each level
 	// note: level #nlevels-1 is the finest, level #0 is the coarsest
@@ -152,7 +153,8 @@ int main(int i_argc, char *i_argv[])
 	levelSingletons[fineLevelId].dataConfigNoDealiasing.setupAuto(
 			res_physical_nodealiasing,
 			simVars.disc.space_res_spectral,
-			simVars.misc.reuse_spectral_transformation_plans
+			simVars.misc.reuse_spectral_transformation_plans,
+			simVars.misc.verbosity
 	);
 
 	// setup data operators in fine level
@@ -223,7 +225,7 @@ int main(int i_argc, char *i_argv[])
 			pd_ctx,                                       // user defined context
 			&simVars.libpfasst.nlevels,                   // number of SDC levels
 			&simVars.libpfasst.niters,                    // number of SDC iterations
-			&simVars.libpfasst.nsweeps_coarse,            // number of SDC sweeps on coarse level
+			simVars.libpfasst.nsweeps.data(),                   // number of SDC sweeps on coarse level
 			nnodes,                                       // number of SDC nodes
 			(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 			&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()

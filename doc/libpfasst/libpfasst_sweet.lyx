@@ -237,6 +237,14 @@ libpfasst-niters
 : number of iterations per time step used by PFASST algorithm
 \end_layout
 
+\begin_layout Itemize
+
+\family typewriter
+libpfasst-nsweeps
+\family default
+: number of sweeps per time step and level used by PFASST algorithm
+\end_layout
+
 \end_deeper
 \begin_layout Itemize
 Additional flags for 

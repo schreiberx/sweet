@@ -90,7 +90,7 @@ class JobRuntimeOptions(InfoError):
         self.libpfasst_nlevels = None
         self.libpfasst_niters = None
         self.libpfasst_nnodes = None
-        self.libpfasst_nsweeps_coarse = None
+        self.libpfasst_nsweeps = None
         self.libpfasst_nodes_type = None
         self.libpfasst_coarsening_multiplier = None
         self.libpfasst_use_rexi = None
@@ -382,8 +382,8 @@ class JobRuntimeOptions(InfoError):
                 idstr += '_pf_nit'+str(self.libpfasst_niters)
             if self.libpfasst_nnodes != None:
                 idstr += '_pf_nnod'+str(self.libpfasst_nnodes)
-            if self.libpfasst_nsweeps_coarse != None:
-                idstr += '_pf_nswpc'+str(self.libpfasst_nsweeps_coarse)
+            if self.libpfasst_nsweeps != None:
+                idstr += '_pf_nswps'+str(self.libpfasst_nsweeps)
             if self.libpfasst_nodes_type != None:
                 idstr += '_'+str(self.libpfasst_nodes_type)
             if self.libpfasst_coarsening_multiplier != None:
@@ -624,8 +624,8 @@ class JobRuntimeOptions(InfoError):
             retval += ' --libpfasst-niters='+str(self.libpfasst_niters)
         if self.libpfasst_nnodes != None:
             retval += ' --libpfasst-nnodes='+str(self.libpfasst_nnodes)
-        if self.libpfasst_nsweeps_coarse != None:
-            retval += ' --libpfasst-nsweeps-coarse='+str(self.libpfasst_nsweeps_coarse)
+        if self.libpfasst_nsweeps != None:
+            retval += ' --libpfasst-nsweeps='+str(self.libpfasst_nsweeps)
         if self.libpfasst_nodes_type != None:
             retval += ' --libpfasst-nodes-type='+str(self.libpfasst_nodes_type)
         if self.libpfasst_coarsening_multiplier != None:

@@ -68,6 +68,7 @@ jg.runtime.libpfasst_use_rk_stepper = 0
 #################
 
 jg.runtime.libpfasst_nlevels = 1
+jg.runtime.libpfasst_nsweeps = 1
 jg.runtime.libpfasst_nnodes = 5
 jg.runtime.libpfasst_niters = 8
 jg.runtime.libpfasst_nodes_type = 'SDC_GAUSS_LOBATTO'
@@ -92,7 +93,7 @@ jg.reference_job_unique_id = jg.job_unique_id
 # set them all explicitly to make sure we know what's happening
 jg.runtime.libpfasst_nlevels = 2
 jg.runtime.libpfasst_nnodes = 5
-jg.runtime.libpfasst_nsweeps_coarse = 1
+jg.runtime.libpfasst_nsweeps = 1
 jg.runtime.libpfasst_coarsening_multiplier = 0.5
 jg.runtime.libpfasst_use_rk_stepper = 0
 
