@@ -5,7 +5,7 @@ source ./install_helpers.sh ""
 PKG_NAME="SHTNS"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns.a"
 
-PKG_URL_SRC="shtns-3.4.6.tar.gz"
+PKG_URL_SRC="shtns-3.5.2.tar.gz"
 
 config_setup
 
