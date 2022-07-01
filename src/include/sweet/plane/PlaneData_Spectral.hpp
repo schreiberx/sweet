@@ -1468,6 +1468,32 @@ public:
 		return error;
 	}
 
+
+	/**
+	 * Return the max abs value for the first rnorm spectral coefficients
+	 */
+	double spectral_reduce_max_abs(std::size_t rnorm)	const
+	{
+
+		assert (rnorm <= planeDataConfig->spectral_data_size[0]);
+		assert (rnorm <= planeDataConfig->spectral_data_size[1]);
+
+		double error = -std::numeric_limits<double>::infinity();
+		std::complex<double> w = {0,0};
+
+		for (std::size_t n = 0; n <= rnorm; n++)
+			for (std::size_t m = 0; m <= rnorm; m++)
+			{
+				std::size_t idx = planeDataConfig->getArrayIndexByModes(n, m);
+				w = spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+				error = std::max(std::abs(w), error);
+			}
+
+		return error;
+	}
+
+
+
 	/**
 	 * Return the minimum abs value
 	 */

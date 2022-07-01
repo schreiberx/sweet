@@ -4,34 +4,39 @@ import numpy as np
 import sys
 import os
 from glob import glob
+from read_bin_file import read_bin_file
 
+
+type_file = "sweet";
+list_vars = ["prog_phi_pert", "prog_vrt", "prog_div"];
 
 def read_ref_solution(ref_path):
 
     ref_sol = {};
 
-    list_ref_files = glob(ref_path + "/*csv");
+    list_ref_files = glob(ref_path + "/*" + type_file);
 
     for f in list_ref_files:
         ## identify variable and time
         ff = os.path.basename(f).split("_t0");
         var = ff[0];
-        t = float(ff[1].split(".csv")[0]);
+        t = float(ff[1].split("." + type_file)[0]);
 
         if not var in ref_sol.keys():
             ref_sol[var] = {};
-        ref_sol[var][t] = np.loadtxt(f);
+        ref_sol[var][t], m_max, n_max = read_bin_file(f);
+        ###ref_sol[var][t] = np.loadtxt(f);
 
     return ref_sol;
 
 
 
-list_vars = ["prog_u"];
 def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
+
 
     xbraid_sol = {};
 
-    list_xbraid_files = glob(path + "/*csv");
+    list_xbraid_files = glob(path + "/*" + type_file);
 
     print(" ** Comparing solution at ", len(list_xbraid_files) ,"timestepts");
 
@@ -40,16 +45,18 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
     for f in list_xbraid_files:
         ## identify variable, time and iteration
         ff = os.path.basename(f).split("_t0");
-        print(f)
-        print(ff)
+        ###print(f)
+        ###print(ff)
         var = ff[0];
         fff = ff[1].split("_iter");
         t = float(fff[0]);
-        it = int(fff[1].split(".csv")[0]);
+        it = int(fff[1].split("." + type_file)[0]);
 
         ##### check if csv file already contains computed errors
         ###if var[:14] == "parareal_error":
         ###    continue;
+
+        print(var, t, it)
 
         ## check if csv file contains listed vars
         var_ok = False;
@@ -65,7 +72,8 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
             continue;
 
         ref = ref_sol[var][t];
-        sol = np.loadtxt(f);
+        sol, m_max, n_max = read_bin_file(f);
+        ##sol = np.loadtxt(f);
 
         ###nx_ref, ny_ref = ref.shape;
         ###nx, ny = sol.shape;
