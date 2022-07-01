@@ -45,7 +45,6 @@ if true; then
 	echo "DEBUG = TRUE" > Makefile.local
 	echo "" >> Makefile.local
 	cat "${TMPFILE}" >> Makefile.local
-	exit 1
 fi
 
 
