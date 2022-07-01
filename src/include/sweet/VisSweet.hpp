@@ -118,7 +118,7 @@ class VisSweet	:
 				&reset
 		);
 
-		PlaneData_Physical &visData = (PlaneData_Physical&)*&ro_visPlaneData;
+		PlaneData_Physical &visData = (PlaneData_Physical&)*ro_visPlaneData;
 
 //		visData.request_data_physical();
 
