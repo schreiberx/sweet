@@ -6,7 +6,7 @@ pipeline {
         stage('Test') {
             steps {
                 checkout scm
-		sh 'export; source ./activate.sh; ./tests/05_jobs_run_directly_compile_error/test.py'
+		sh '/bin/bash -c "source ./activate.sh; ./tests/05_jobs_run_directly_compile_error/test.py"'
             }
         }
     }
