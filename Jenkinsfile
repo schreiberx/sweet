@@ -5,11 +5,8 @@ pipeline {
     stages {
         stage('Test') {
             steps {
-                echo 'Testing..'
                 checkout scm
-		sh 'echo "hello world"'
-		sh 'source ./activate.sh'
-		sh 'export'
+		sh 'source ./activate.sh; ./tests/05_jobs_run_directly_compile_error/test.py'
             }
         }
     }
