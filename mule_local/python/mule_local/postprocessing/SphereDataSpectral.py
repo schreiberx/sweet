@@ -9,6 +9,9 @@ class SphereDataSpectral:
 
     def __init__(self, filename = None, setup_physical=True):
 
+        self.data_physical = None
+        self.data_spectral = None
+
         if filename != None:
             self.read_file(filename, setup_physical=setup_physical)
 
@@ -93,4 +96,9 @@ class SphereDataSpectral:
             sfd = shtnsfiledata.shtnsfiledata()
             sfd.setup(self.file_info)
 
-            self.data = sfd.spec2phys(self.data_spectral)
+            self.data_physical = sfd.spec2phys(self.data_spectral)
+
+            # Deprecated
+            self.data = self.data_physical
+
+

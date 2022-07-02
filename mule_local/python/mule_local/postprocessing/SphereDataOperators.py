@@ -1,36 +1,62 @@
 #! /usr/bin/env python3
-"""
-DEPRECATED
-DEPRECATED
-DEPRECATED
-
-Use SphereDataOperators
-
-DEPRECATED
-DEPRECATED
-DEPRECATED
-"""
 
 import math, sys
 import shtns
 import numpy as np
 
-class shtnsfiledata:
+class SphereDataOperators:
     """
-    Adopted from https://bitbucket.org/nschaeff/shtns/src/master/examples/shallow_water.py
+    Process data given in spectral space
+
+    Usage case 1:
+
+        from mule_local.postprocessing.SphereDataOperators import *
+
+        sphere_data = SphereDataSpectral(input_file)
+        ops = SphereDataOperators(file_info=sphere_data.file_info)
+
+        ... = ops...(sphere_data.data_spectral)
+
+
+    Info: To just convert the data to physical space, use an option to SphereDataSpectral:
+
+        sphere_data = SphereDataSpectral(input_file, setup_physical=True)
+        data_phys = sphere_data.data_physical
+
+
+    Code is adopted from https://bitbucket.org/nschaeff/shtns/src/master/examples/shallow_water.py
     """
     def __init__(
             self,
-            rsphere = 1.0
+            rsphere = 1.0,
+            file_info = None,
+            anti_aliasing = None,
     ):
-        print("*"*80)
-        print("DEPRECATED, don't use this, use SphereDataOperators instead!")
-        print("*"*80)
-
         self.rsphere = rsphere
 
+        kwargs = {}
+        run_setup_from_file_info = False
+        if file_info != None:
+            kwargs['file_info'] = file_info
+            run_setup_from_file_info = True
 
-    def setup(self, file_info, anti_aliasing=False):
+        if anti_aliasing != None:
+            kwargs['anti_aliasing'] = anti_aliasing
+            run_setup_from_file_info = True
+
+        """
+        Setup from file_info data (originates from SphereDataSpectral)
+        """
+        if run_setup_from_file_info:
+            self.setup_from_file_info(**kwargs)
+
+
+
+    def setup_from_file_info(
+            self,
+            file_info,
+            anti_aliasing=False
+    ):
         import shtns
         import numpy as np
 

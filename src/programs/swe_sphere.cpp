@@ -503,7 +503,7 @@ public:
 			}
 		}
 
-			write_file_output();
+		write_file_output();
 
 		update_diagnostics();
 
@@ -574,6 +574,9 @@ public:
 			std::cout << "." << std::flush;
 
 		// output each time step
+		//std::cout << "simVars.iodata.output_each_sim_seconds" << std::endl;
+		//std::cout << simVars.iodata.output_each_sim_seconds << std::endl;
+		//exit(1);
 		if (simVars.iodata.output_each_sim_seconds < 0)
 			return false;
 
@@ -1230,7 +1233,6 @@ int main_real(int i_argc, char *i_argv[])
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << std::endl;
 	}
-
 
 #if SWEET_MPI
 	MPI_Finalize();
