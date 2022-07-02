@@ -20,6 +20,7 @@
 class Parareal_GenericData
 {
 
+public:
 	template <class t_dataType>
 	class DataContainer
 	{

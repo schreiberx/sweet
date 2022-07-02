@@ -146,7 +146,7 @@ def jobscript_get_exec_command(jg : JobGeneration):
     if not p.mpiexec_disabled:
         if jg.compile.sweet_mpi == 'enable':
             mpiprefix += "mpirun -n "+str(p.num_ranks)
-            mpiprefix += ""
+            mpiprefix += " "
 
 
 
