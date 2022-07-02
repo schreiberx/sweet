@@ -12,6 +12,9 @@ from mule_local.postprocessing.PlaneData_KineticEnergy import *
 
 
 class pickle_PlaneData_KineticEnergy(InfoError):
+    """
+    Generate the .pickle files in each job directory based on simulation output files given by 'ref_file_ending'
+    """
 
     def __init__(
             self,
