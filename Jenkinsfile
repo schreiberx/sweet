@@ -4,7 +4,7 @@ pipeline {
 
     stages {
         stage('Test') {
-            steps1 {
+            steps {
                 echo 'Testing..'
                 checkout scm
 		sh 'echo "hello world"'
