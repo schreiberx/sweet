@@ -4,8 +4,7 @@ Welcome to the sphere-related benchmark directory of SWEET!
 
 Here, you find various folders related to different test cases or even publications.
 
-<br />
-## <u>Hello world bechmarks</u>
+## Hello world bechmarks
 
 ### &rarr; `galewsky_bin_output`:
 
@@ -16,8 +15,9 @@ Hello world of SWEET: Barotropic instability benchmark with binary output files
 
 Same as `bin` version, but using .csv text files for output
 
-<br />
-## <u>Publications (accepted)</u>
+
+
+## Publications (accepted)
 
 
 ### &rarr; `paper_jrn_nla_rexi_linear`:
@@ -42,8 +42,8 @@ https://doi.org/10.1016/j.parco.2019.01.005
 TODO
 
 
-<br />
-## <u>Publications (work in progress)</u>
+
+## Publications (work in progress)
 
 
 ### &rarr; `paper_jrn_sl_exp`:
@@ -55,8 +55,9 @@ SL-EXP on the sphere
 Unified REXI approach
 
 
-<br />
-## <u>Reports (online / offline)</u>
+
+
+## Reports (online / offline)
 
 ### &rarr; `report_konwihr_rexi_nl`:
 
@@ -64,8 +65,7 @@ Benchmarks related to report KONWIHR funding (Martin Schreiber)
 
 
 
-<br />
-## <u>Misc</u>
+## Misc
 
 ### &rarr; README.md
 This file
