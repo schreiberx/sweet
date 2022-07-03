@@ -10,7 +10,7 @@
 #PKGS+=("install_cacerts.sh")
 # prereq: openssl, cacerts
 
-#PKGS+=("install_anaconda.sh")
+PKGS+=("install_anaconda.sh")
 
 PKGS+=("install_fftw3.sh")
 
