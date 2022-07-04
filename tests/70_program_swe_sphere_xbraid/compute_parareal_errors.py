@@ -14,9 +14,9 @@ def getArrayIndexByModes(n, m, N_max):
     assert n >= 0;
     assert n >= m;
 
-    return m * (2 * N_max - m + 1) >> 1  + n;
+    return (m * (2 * N_max - m + 1) >> 1)  + n;
 
-def getMaxAbsRnorm(u, rnorm, N_max):
+def getMaxAbsRnorm(u, rnorm, N_max, verbose = False):
 
     err = 0;
 
@@ -24,8 +24,25 @@ def getMaxAbsRnorm(u, rnorm, N_max):
         for n in range(m, int(rnorm)):
             idx = getArrayIndexByModes(n, m, N_max);
             err = np.max([err, np.abs(u[idx] * np.conj(u[idx]))]);
+            if verbose:
+                print(m, n, idx, u[idx], err);
 
     return float(err);
+
+def getMaxAbsRnormWithIndex(u, rnorm, N_max):
+
+    err = 0;
+    i = -1;
+
+    for m in range(int(rnorm)):
+        for n in range(m, int(rnorm)):
+            idx = getArrayIndexByModes(n, m, N_max);
+            err = np.max([err, np.abs(u[idx] * np.conj(u[idx]))]);
+            if np.abs(err - np.abs(u[idx] * np.conj(u[idx]))) < 1e-13:
+                i = idx;
+
+    return float(err), i;
+
 
 
 def read_ref_solution(ref_path):
@@ -57,8 +74,6 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
 
     list_parareal_files = glob(path + "/*" + file_type);
 
-    print (list_parareal_files)
-
     for f in list_parareal_files:
 
         ## identify variable, time and iteration
@@ -69,8 +84,6 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
         fff = ff[1].split("_iter");
         t = float(fff[0]);
         it = int(fff[1].split("." + file_type)[0]);
-
-        print ("AAA", var, t, it);
 
         ## check if csv file already contains computed errors
         if var[:14] == "parareal_error":
@@ -122,17 +135,36 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
             rnorms = n_modes * np.array([1, 1./2., 1./4., 1./8., 1./16.]);
 
             dirname = f.split("/")[0];
-            error_file = open(dirname + "/parareal_error_" + ref_type + "_" + os.path.basename(f)[7:], "w");
+            error_file = open(dirname + "/parareal_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv", "w");
+            ####print(dirname + "/parareal_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv")
 
+            eps_small = 1e-20;
             for rnorm in rnorms:
-                err = getMaxAbsRnorm(diff, rnorm, n_modes - 1) / getMaxAbsRnorm(ref, rnorm, n_modes - 1);
+                norm_diff = getMaxAbsRnorm(diff, rnorm, n_modes - 1);
+                norm_ref = getMaxAbsRnorm(ref, rnorm, n_modes - 1);
+                if norm_diff < eps_small and norm_ref < eps_small:
+                    err = 0.
+                else:
+                    err = norm_diff / norm_ref;
                 error_file.write("errLinf {}".format(int(rnorm)) + " {}\n".format(err));
-
-                print ("AAAA", var, it, t, rnorm, getMaxAbsRnorm(diff, rnorm, n_modes - 1), getMaxAbsRnorm(sol, rnorm, n_modes - 1), getMaxAbsRnorm(ref, rnorm, n_modes - 1), err);
-            if it == 1 and np.abs(t - 0.15) < 1e-10:
-                print("REF", ref);
-                print("SOL", sol);
-                print("DIFF", diff);
+                ####err2, idx = getMaxAbsRnormWithIndex(diff, rnorm, n_modes - 1);
+                ####print ("AAAA", var, it, t, rnorm, getMaxAbsRnorm(diff, rnorm, n_modes - 1), err2, idx, getMaxAbsRnorm(sol, rnorm, n_modes - 1), getMaxAbsRnorm(ref, rnorm, n_modes - 1), err);
+                ####if "prog_div" in f and it == 4 and np.abs(t - 0.16) < 1e-10 and rnorm < 10:
+                ####    print("DIFF");
+                ####    getMaxAbsRnorm(diff, rnorm, n_modes - 1, verbose = True);
+                ####    print("REF");
+                ####    getMaxAbsRnorm(ref, rnorm, n_modes - 1, verbose = True);
+                ####    print("SOL");
+                ####    getMaxAbsRnorm(sol, rnorm, n_modes - 1, verbose = True);
+            ####    print("DIFF");
+            ####    for i in range(diff.size):
+            ####        print (i, diff[i]);
+            ####    print("REF");
+            ####    for i in range(ref.size):
+            ####        print (i, ref[i]);
+            ####    print("SOL");
+            ####    for i in range(sol.size):
+            ####        print (i, sol[i]);
 
             error_file.close();
 

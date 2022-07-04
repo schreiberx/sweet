@@ -101,14 +101,14 @@ jg.runtime.timestepping_order2 = 2;
 
 jg.runtime.space_res_spectral = 32
 
-cfactors = [2];
-nbs_levels = [2];
+####cfactors = [2];
+####nbs_levels = [2];
+####nb_pts = [1];
+####spatial_coarsening = [0];
+cfactors = [2, 4];
+nbs_levels = [2, 4];
 nb_pts = [1];
-spatial_coarsening = [0];
-##cfactors = [2, 4];
-##nbs_levels = [2, 4];
-###nb_pts = [1];
-###spatial_coarsening = [0, 1];
+spatial_coarsening = [0, 1];
 
 if simulation_to_run == "xbraid":
 

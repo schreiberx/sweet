@@ -902,11 +902,17 @@ public:
 			std::map<std::size_t, double> err_Linf_spectral;
 			std::vector<std::size_t> rnorms;
 			for (int ip = 0; ip <= 5; ip++)
+			{
 #if SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
-				rnorms.push_back(this->planeDataConfig[0]->spectral_data_size[0] / std::pow(2, ip));
+				int rnorm = this->planeDataConfig[0]->spectral_data_size[0] / std::pow(2, ip);
+				if (rnorm >= 1)
+					rnorms.push_back(rnorm);
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-				rnorms.push_back(this->sphereDataConfig[0]->spectral_modes_m_max / std::pow(2, ip));
+				int rnorm = this->sphereDataConfig[0]->spectral_modes_m_max / std::pow(2, ip);
+				if (rnorm >= 1)
+					rnorms.push_back(rnorm);
 #endif
+			}
 
 			std::string i_name;
 
@@ -977,24 +983,16 @@ public:
 			err_Linf = diff.physical_reduce_max_abs();
 
 			// Spectral space
+			double small = 1e-20;
 			for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
 			{
-				err_Linf_spectral.emplace(std::make_pair(*it, diff_spectral.spectral_reduce_max_abs(*it) / 
+				double norm_diff = diff_spectral.spectral_reduce_max_abs(*it);
+				double norm_ref = parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it);
+				if (norm_diff < small and norm_ref < small)
+					err_Linf_spectral.emplace(std::make_pair(*it, 0.));
+				else
+					err_Linf_spectral.emplace(std::make_pair(*it, diff_spectral.spectral_reduce_max_abs(*it) / 
                                                                                 parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it) ));
-				std::cout << "AAA " << i_name << " " << iteration_id << " " << t * simVars->iodata.output_time_scale << " " << *it << " " << diff_spectral.spectral_reduce_max_abs(*it) << " " << i_data->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it)  << " " << parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it)  << " " << err_Linf << std::endl;
-			}
-
-                        if (iteration_id == 1 && std::abs(t * simVars->iodata.output_time_scale - 0.15) < 1e-10)
-			{
-				std::cout << "REF" << std::endl;
-				for (int idx = 0; idx < diff_spectral.sphereDataConfig->spectral_array_data_number_of_elements; idx++)
-					std::cout << idx << " " << parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_space_data[idx] << std::endl;
-				std::cout << "SOL" << std::endl;
-				for (int idx = 0; idx < diff_spectral.sphereDataConfig->spectral_array_data_number_of_elements; idx++)
-					std::cout << idx << " " << i_data->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_space_data[idx] << std::endl;
-				std::cout << "DIFF" << std::endl;
-				for (int idx = 0; idx < diff_spectral.sphereDataConfig->spectral_array_data_number_of_elements; idx++)
-					std::cout << idx << " " << diff_spectral.spectral_space_data[idx] << std::endl;
 			}
 
 #endif
