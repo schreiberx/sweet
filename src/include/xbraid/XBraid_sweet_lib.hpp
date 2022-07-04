@@ -1074,10 +1074,9 @@ public:
 			)
 				do_output = true;
 
-			///if (do_output)
-			///	std::cout << t << " " << it << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
+			if (do_output)
+				std::cout << "AAA " << t << " " << it << " " <<  t * simVars->iodata.output_time_scale << " " << this->simVars->iodata.output_each_sim_seconds << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
 
-			////std::cout << "AAAA " << iter << " " << it << " " << U->data->reduce_maxAbs() << std::endl;
 			if (do_output)
 			{
 				// Output physical solution to file
@@ -1121,7 +1120,6 @@ public:
 					{
 						int nt;
 						io_astatus.GetNTPoints(&nt);
-						std::cout << "NT " << nt << std::endl;
 						for (int i = 0; i < nt + 1; i++)
 							this->xbraid_data_fine_exact.push_back(this->create_new_vector(0));
 					}

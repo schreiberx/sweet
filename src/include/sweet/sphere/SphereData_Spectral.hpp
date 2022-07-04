@@ -1397,7 +1397,7 @@ public:
   		std::ifstream file(i_filename, std::ios_base::binary);
 
 		if (!file.is_open())
-			SWEETError("Error while opening file");
+			SWEETError("Error while opening file " + i_filename);
 
   		std::string magic;
   		std::getline(file, magic);
