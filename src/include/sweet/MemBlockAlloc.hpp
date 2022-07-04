@@ -111,7 +111,7 @@ class MemBlockAlloc
 		 " 	verbose=[int]\n"
 		 " 		0: Disable verbose mode\n"
 		 " 		1: Enable verbose mode during initialization\n"
-		 " 		9: Print information on allocation / releasing memory\n"
+		 " 		9: Print information on allocating / releasing memory\n"
 		 "\n"
 		 " 	firsttouch=[int]\n"
 		 " 		0: Disabled\n"

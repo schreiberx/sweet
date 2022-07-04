@@ -1,10 +1,10 @@
 import os
 import sys
 
-import matplotlib
-d = os.getenv('DISPLAY')
-if d == None or not d in [':0', ':0.0', ':1']:
-    matplotlib.use('agg')
+#import matplotlib
+#d = os.getenv('DISPLAY')
+#if d == None or not d in [':0', ':0.0', ':1']:
+#    matplotlib.use('agg')
 
 from mule.InfoError import *
 

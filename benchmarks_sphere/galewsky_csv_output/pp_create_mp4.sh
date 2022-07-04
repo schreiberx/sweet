@@ -7,4 +7,4 @@ if [ -z "$2" ]; then
 	exit
 fi
 
-ffmpeg -y -framerate 30 -pattern_type glob -i "$1*.png" -c:v libx264 -pix_fmt yuv420p $2
+ffmpeg -y -framerate 30 -pattern_type glob -i "$1" -c:v libx264 -pix_fmt yuv420p $2

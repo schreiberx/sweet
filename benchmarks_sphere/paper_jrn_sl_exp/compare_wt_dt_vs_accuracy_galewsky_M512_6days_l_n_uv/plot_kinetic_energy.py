@@ -5,7 +5,7 @@ import numpy as np
 
 from mule.postprocessing.JobData import JobData
 from mule_local.postprocessing.SphereDataSpectral import SphereDataSpectral
-import mule_local.postprocessing.shtnsfiledata as shtnsfiledata
+import mule_local.postprocessing.SphereDataOperators as SphereDataOperators
 
 debug_active = False
 
@@ -31,11 +31,11 @@ vrt_spec = SphereDataSpectral(vrt_file, setup_physical=False)
 div_spec = SphereDataSpectral(div_file, setup_physical=False)
 
 # Setup transformations
-sh = shtnsfiledata.shtnsfiledata(rsphere=rsphere)
+sh = SphereDataOperators.SphereDataOperators(rsphere=rsphere)
 sh.setup(phi_spec.file_info, anti_aliasing=False)
 
 # Setup transformations
-sh_aa = shtnsfiledata.shtnsfiledata(rsphere=rsphere)
+sh_aa = SphereDataOperators.SphereDataOperators(rsphere=rsphere)
 sh_aa.setup(phi_spec.file_info, anti_aliasing=True)
 
 
