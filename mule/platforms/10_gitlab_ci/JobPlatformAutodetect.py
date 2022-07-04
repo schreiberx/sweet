@@ -12,10 +12,10 @@ def autodetect():
     """
 
     if 'GITLAB_CI' in os.environ:
-        if os.environ['GITLAB_CI'] != 'true':
-            return False
+        if os.environ['GITLAB_CI'] == 'true':
+            return True
 
-    return True
+    return False
 
 if __name__ == "__main__":
     print("Autodetect: "+str(autodetect()))
