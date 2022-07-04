@@ -21,7 +21,13 @@ echo "" >> Makefile.local
 echo "FC = ${MULE_MPIF90}" >> Makefile.local
 
 # Add special flag for compilation with newer compilers
-echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
+# https://unix.stackexchange.com/questions/285924/how-to-compare-a-programs-version-in-a-shell-script
+currentver="$(${MULE_MPIF90} -dumpversion)"
+requiredver="10.0.0"
+if [ "$(printf '%s\n' "$requiredver" "$currentver" | sort -V | head -n1)" = "$requiredver" ]; then
+	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
+fi
+
 
 # Disable LTO since this doesn't work on all platforms
 echo "LDFLAGS += -fno-lto" >> Makefile.local

@@ -29,4 +29,5 @@ PKGS+=("install_numactl.sh")
 PKGS+=("install_scons3.sh")
 
 #PKGS+=("install_mpich.sh")
-PKGS+=("install_libpfasst.sh")
+#PKGS+=("install_libpfasst.sh")
+PKGS+=("install_libpfasst_debug.sh")

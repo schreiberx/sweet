@@ -11,6 +11,7 @@ config_setup
 
 config_package $@
 
+
 if [ "#$TRAVIS" != "#" ]; then
 	echo_info "Detected Travis"
 	echo_info "Disabling SIMD because of Travis"
