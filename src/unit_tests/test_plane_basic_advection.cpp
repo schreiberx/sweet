@@ -36,6 +36,8 @@ double vel1 = 0.0;
 class SimulationAdvection
 {
 public:
+	PlaneDataConfig *planeDataConfig;
+
 	PlaneData_Spectral prog_h;
 	PlaneData_Spectral prog_u;
 	PlaneData_Spectral prog_v;
@@ -53,8 +55,6 @@ public:
 	double freq_x = 4.0;
 	double freq_y = 4.0;
 #endif
-
-	PlaneDataConfig *planeDataConfig;
 
 
 public:
@@ -85,11 +85,13 @@ public:
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
 
+#if ADV_FUNCTION==0
 		double radius = simVars.benchmark.object_scale*
 			std::sqrt(
 				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
 				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
+#endif
 
 		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
@@ -157,12 +159,14 @@ public:
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
 
+#if ADV_FUNCTION==0
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
 				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
 		double radius = simVars.benchmark.object_scale*radius_scale;
+#endif
 
 
 		ret_h_phys.physical_update_lambda_array_indices(
@@ -232,13 +236,14 @@ public:
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
 
+#if ADV_FUNCTION==0
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
 				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
 		double radius = simVars.benchmark.object_scale*radius_scale;
-
+#endif
 
 		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
@@ -793,7 +798,7 @@ int main(
 				if (print_output)
 				{
 					double &this_error = computed_errors[res_iterator_id];
-					double &this_conv_rate_space = conv_rate[res_iterator_id];
+					//double &this_conv_rate_space = conv_rate[res_iterator_id];
 
 					/*
 					 * TODO: Something's not right here.
@@ -865,8 +870,8 @@ int main(
 		double *computed_errors = new double[1024];
 		double *conv_rate = new double[1024];
 
-		std::size_t res_x = simVars.disc.space_res_physical[0];
-		std::size_t res_y = simVars.disc.space_res_physical[1];
+		//std::size_t res_x = simVars.disc.space_res_physical[0];
+		//std::size_t res_y = simVars.disc.space_res_physical[1];
 
 		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 

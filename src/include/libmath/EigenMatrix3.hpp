@@ -113,6 +113,7 @@ public:
 	{
 		SWEETError("DO NOT USE EigenMatrix3.hpp : CONFLICTS IN TYPES IN FINAL FORMULA ");
 
+		/*
 		double a00 = matrix[0][0];
 		double a01 = matrix[0][1];
 		double a02 = matrix[0][2];
@@ -122,6 +123,7 @@ public:
 		double a20 = matrix[2][0];
 		double a21 = matrix[2][1];
 		double a22 = matrix[2][2];
+		*/
 
 		std::complex<double> I;
 		I = -1;
