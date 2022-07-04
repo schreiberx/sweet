@@ -14,13 +14,14 @@ from matplotlib.lines import Line2D
 
 
 groups = [
+    'runtime.libpfasst_nnodes',
     'runtime.libpfasst_niters',
 ]
 
 
 tagnames_y = [
     'sphere_data_diff_prog_phi_pert.res_norm_linf',
-    'sphere_data_diff_.res_norm_linf',
+    'sphere_data_diff_prog_div.res_norm_linf',
     'sphere_data_diff_prog_vrt.res_norm_linf',
 ]
 
@@ -87,7 +88,7 @@ for tagname_y in tagnames_y:
             test_type = 'convergence'
 
             # Convergence tolerance
-            error_tolerance_convergence = 0.05
+            error_tolerance_convergence = 0.15
 
             # Range to check for convergence
             conv_test_range_start = 0

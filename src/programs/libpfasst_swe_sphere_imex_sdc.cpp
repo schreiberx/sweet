@@ -23,15 +23,14 @@ extern "C"
 {
 /* Driver function for pfasst control */
 void fmain (SphereDataCtxSDC* pd_ctx,
-		const int*     nlevels,
 		const int*     niters,
-		const int*     nsweeps_coarse,
-		const int      nnodes[],
+		const int*     nsweeps,
+		const int*     nnodes,
 		const char*    qtype_name,
 		const int*     qtype_name_len,
 		const int*     use_rk_stepper, // 1 means true, 0 means false
 		const int*     nfields,
-		const int      nvars_per_field[],
+		const int*     nvars_per_field,
 		double*        t_max,
 		double*        dt);
 }
@@ -66,22 +65,15 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	// define the number of levels and SDC nodes for each level
-	// note: level #nlevels-1 is the finest, level #0 is the coarsest
-
-	int nnodes[simVars.libpfasst.nlevels];
-	nnodes[simVars.libpfasst.nlevels-1] = simVars.libpfasst.nnodes; // finest level
-
 	if (simVars.libpfasst.nlevels != 1)
 	{
 		SWEETError("For SDC, nlevels has to be equal to 1");
 	}
 
-	// set up level of levelSingleton
+	simVars.libpfasst.postprocess_nsweeps();
+
+	// set up levelSingleton
 	levelSingleton.level = 0;
-
-	// setup data configuration in fine level
-
 	levelSingleton.dataConfig.setupAuto(
 			simVars.disc.space_res_physical,
 			simVars.disc.space_res_spectral,
@@ -98,7 +90,8 @@ int main(int i_argc, char *i_argv[])
 	levelSingleton.dataConfigNoDealiasing.setupAuto(
 			res_physical_nodealiasing,
 			simVars.disc.space_res_spectral,
-			simVars.misc.reuse_spectral_transformation_plans
+			simVars.misc.reuse_spectral_transformation_plans,
+			simVars.misc.verbosity
 	);
 
 	// setup data operators
@@ -115,8 +108,8 @@ int main(int i_argc, char *i_argv[])
 	// define the SWEET parameters
 
 	const int nfields = 3;  // number of vector fields (here, height and two horizontal velocities)
-	int nvars_per_field[1];
-	nvars_per_field[0] = 2 * levelSingleton.dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
+	int nvars_per_field;
+	nvars_per_field = 2 * levelSingleton.dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
 	// initialize the topography before instantiating the SphereDataCtxSDC object
 	if (simVars.benchmark.benchmark_name == "flow_over_mountain")
@@ -129,6 +122,8 @@ int main(int i_argc, char *i_argv[])
 	}
 
 	// instantiate the SphereDataCtxSDC object
+	int nnodes[1];
+	nnodes[0] = simVars.libpfasst.nnodes;
 	SphereDataCtxSDC* pd_ctx = new SphereDataCtxSDC(
 			&simVars,
 			&levelSingleton,
@@ -144,15 +139,14 @@ int main(int i_argc, char *i_argv[])
 	// call LibPFASST to advance in time
 	fmain(
 			pd_ctx,                                       // user defined context
-			&simVars.libpfasst.nlevels,                   // number of SDC levels
 			&simVars.libpfasst.niters,                    // number of SDC iterations
-			&simVars.libpfasst.nsweeps_coarse,            // number of SDC sweeps on coarse level
-			nnodes,                                       // number of SDC nodes
+			&simVars.libpfasst.nsweeps[0],            // number of SDC sweeps on coarse level
+			&nnodes[0],                                       // number of SDC nodes
 			(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 			&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
 			&rk_stepper_flag,                             // flag for the RK stepper => 1 means true, 0 means false
 			&nfields,                                     // number of vector fields
-			nvars_per_field,                              // number of dofs per vector field
+			&nvars_per_field,                              // number of dofs per vector field
 			&(simVars.timecontrol.max_simulation_time),   // simulation time
 			&(simVars.timecontrol.current_timestep_size)  // time step size
 	);
