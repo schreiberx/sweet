@@ -81,12 +81,12 @@ class Parareal_Controller
 
 	// Operators and DataConfig
 #if SWEET_PARAREAL_PLANE
-	PlaneOperators op_plane;
 	PlaneDataConfig* planeDataConfig = nullptr;
+	PlaneOperators op_plane;
 #elif SWEET_PARAREAL_SPHERE
+	SphereData_Config* sphereDataConfig = nullptr;
 	SphereOperators_SphereData op_sphere;
 	SphereOperators_SphereData op_sphere_nodealiasing;
-	SphereData_Config* sphereDataConfig = nullptr;
 #endif
 
 

@@ -192,7 +192,7 @@ void cfinal(
 	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
 	const SphereData_Spectral& div_Y  = i_Y->get_div();
 
-	const int& level_id = i_Y->get_level();
+	//const int& level_id = i_Y->get_level();
 
 	// get the SimulationVariables object from context
 	SimulationVariables* simVars(i_ctx->get_simulation_variables());

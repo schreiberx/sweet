@@ -31,7 +31,6 @@ fi
 PKGS=()
 source "$LOCAL_SOFTWARE_PLATFORM"
 
-
 echo_info "Installing packages: ${PKGS[@]}"
 
 for D in "${PKGS[@]}"; do
