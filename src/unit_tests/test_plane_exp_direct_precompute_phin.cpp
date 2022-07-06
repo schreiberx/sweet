@@ -248,7 +248,7 @@ int main(int i_argc, char *i_argv[])
 		SWEETError("Timestep size not set");
 
 
-	double dt = simVars.timecontrol.current_timestep_size;
+	//double dt = simVars.timecontrol.current_timestep_size;
 	double Tmax = simVars.timecontrol.max_simulation_time;
 
 	simVars.misc.verbosity = 6;
