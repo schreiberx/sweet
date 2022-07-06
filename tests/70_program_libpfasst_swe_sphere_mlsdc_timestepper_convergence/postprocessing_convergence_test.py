@@ -88,7 +88,7 @@ for tagname_y in tagnames_y:
             test_type = 'convergence'
 
             # Convergence tolerance
-            error_tolerance_convergence = 0.15
+            error_tolerance_convergence = 0.26
 
             # Range to check for convergence
             conv_test_range_start = 0
