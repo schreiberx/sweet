@@ -1,5 +1,5 @@
 
-MULE_SYSTEM_PACKAGES="libssl-dev"
+MULE_SYSTEM_PACKAGES=" libssl-dev"
 MULE_SYSTEM_PACKAGES+=" zlib1g-dev"
 MULE_SYSTEM_PACKAGES+=" libffi-dev"
 
@@ -12,7 +12,7 @@ for i in $MULE_SYSTEM_PACKAGES; do
 	if [[ "$?" != "0" ]]; then
 		echo_error "Debian-based system detected and packages (test for $i failed) missing, please use"
 		echo_error "    sudo apt-get install $MULE_SYSTEM_PACKAGES"
-		return
+		#return
 	fi
 done
 
@@ -20,12 +20,12 @@ done
 # Martin Schreiber's laptop (martinium)
 #
 
-PKGS+=("install_anaconda.sh")
+PKGS+=("install_miniconda.sh")
 PKGS+=("install_scons3.sh")
 
 #PKGS+=("install_gcc7.1.sh")
 PKGS+=("install_fftw3.sh")
-#PKGS+=("install_eigen3.sh")
+PKGS+=("install_eigen3.sh")
 PKGS+=("install_cmake.sh")
 PKGS+=("install_lapack.sh")
 PKGS+=("install_numactl.sh")

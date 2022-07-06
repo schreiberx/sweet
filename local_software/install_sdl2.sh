@@ -10,6 +10,7 @@ config_setup
 
 config_package $@
 
-config_configure_make_default_install
+config_configure --enable-video-opengl
+config_make_default_install
 
 config_success

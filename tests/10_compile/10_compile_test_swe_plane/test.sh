@@ -2,10 +2,6 @@
 
 cd "$MULE_SOFTWARE_ROOT"
 
-echo
-echo "SWE REXI"
-echo
-
 SCONS="scons --program=swe_plane --gui=disable --plane-spectral-space=enable --mode=debug"
 echo "$SCONS"
 $SCONS  || exit

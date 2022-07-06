@@ -1619,9 +1619,6 @@ public:
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
-
-			int resx_data;
-			int resy_data;
 			double err_L1;
 			double err_L2;
 			double err_Linf;
@@ -1656,8 +1653,8 @@ public:
 			else if (ivar == 2)
 				i_name = "prog_v";
 
-			resx_data = this->planeDataConfig->physical_res[0];
-			resy_data = this->planeDataConfig->physical_res[1];
+			int resx_data = this->planeDataConfig->physical_res[0];
+			int resy_data = this->planeDataConfig->physical_res[1];
 
 			PlaneData_Physical diff = this->parareal_data_output->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys() -
                                                   parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->toPhys();
@@ -1674,8 +1671,8 @@ public:
 			else if (ivar == 2)
 				i_name = "prog_div";
 
-			resx_data = this->sphereDataConfig->physical_num_lon;
-			resy_data = this->sphereDataConfig->physical_num_lat;
+			int resx_data = this->sphereDataConfig->physical_num_lon;
+			int resy_data = this->sphereDataConfig->physical_num_lat;
 
 			SphereData_Physical diff = this->parareal_data_output->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys() -
                                                   parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->toPhys();
