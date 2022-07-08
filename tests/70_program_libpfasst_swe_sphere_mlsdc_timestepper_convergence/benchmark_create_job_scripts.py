@@ -55,8 +55,8 @@ jg.runtime.viscosity = 0.0
 
 jg.unique_id_filter = ['compile', 'parallelization']
 
-timestep_size_min = 16
-jg.runtime.max_simulation_time = timestep_size_min*256
+timestep_size_min = 64
+jg.runtime.max_simulation_time = timestep_size_min*64
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 # LibPFASST runtime parameters
@@ -92,7 +92,6 @@ jg.reference_job_unique_id = jg.job_unique_id
 # LibPFASST runtime parameters
 # set them all explicitly to make sure we know what's happening
 jg.runtime.libpfasst_nlevels = 2
-jg.runtime.libpfasst_nnodes = 5
 jg.runtime.libpfasst_nsweeps = 1
 jg.runtime.libpfasst_coarsening_multiplier = 0.5
 jg.runtime.libpfasst_use_rk_stepper = 0
@@ -102,21 +101,35 @@ jg.runtime.libpfasst_use_rk_stepper = 0
 #####################################################
 #####################################################
 
-timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 6)]
+timestep_sizes = [timestep_size_min*(2.0**i) for i in range(0, 5)]
 
 #
 # Create job scripts
 #
 
-for jg.runtime.libpfasst_nnodes in [5]:
-    for jg.runtime.libpfasst_niters in range(2,5):
-        for jg.runtime.timestep_size in timestep_sizes:
+jg.runtime.libpfasst_nnodes = 3
+jg.runtime.libpfasst_niters = 2
+for jg.runtime.timestep_size in timestep_sizes:
 
-            if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
-                print("simtime: "+str(jg.runtime.max_simulation_time))
-                print("timestep_size: "+str(jg.runtime.timestep_size))
-                raise Exception("Invalid time step size (not remainder-less dividable)")
-            
-            jg.runtime.timestepping_order = min(jg.runtime.libpfasst_niters, 2 * jg.runtime.libpfasst_nnodes - 2)
+    if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+        print("simtime: "+str(jg.runtime.max_simulation_time))
+        print("timestep_size: "+str(jg.runtime.timestep_size))
+        raise Exception("Invalid time step size (not remainder-less dividable)")
+    
+    jg.runtime.timestepping_order = 4 # cf. (Hamon et al., 2019, Fig. 6a)
 
-            jg.gen_jobscript_directory()
+    jg.gen_jobscript_directory()
+
+timestep_sizes = [timestep_size_min*(2.0**i) for i in range(1, 6)]
+jg.runtime.libpfasst_nnodes = 5
+jg.runtime.libpfasst_niters = 7
+for jg.runtime.timestep_size in timestep_sizes:
+
+    if jg.runtime.max_simulation_time % jg.runtime.timestep_size != 0:
+        print("simtime: "+str(jg.runtime.max_simulation_time))
+        print("timestep_size: "+str(jg.runtime.timestep_size))
+        raise Exception("Invalid time step size (not remainder-less dividable)")
+    
+    jg.runtime.timestepping_order = 8 # cf. (Hamon et al., 2019, Fig. 6a)
+
+    jg.gen_jobscript_directory()

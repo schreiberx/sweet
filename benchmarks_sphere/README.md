@@ -39,7 +39,9 @@ https://doi.org/10.1016/j.parco.2019.01.005
 
 ### &rarr; `paper_jrn_jfm_ppeixoto`:
 
-TODO
+2022, Raphaldini, Peixoto, Raupp, Teruya, Bustamante. Precession resonance of Rossby wave triads and the generation of low frequency atmospheric oscillations (Physics of Fluids)
+
+https://aip.scitation.org/doi/10.1063/5.0091383
 
 
 
