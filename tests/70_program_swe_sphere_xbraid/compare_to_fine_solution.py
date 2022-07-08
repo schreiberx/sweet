@@ -56,7 +56,7 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
         ###if var[:14] == "parareal_error":
         ###    continue;
 
-        print(var, t, it)
+        ####print(var, t, it)
 
         ## check if csv file contains listed vars
         var_ok = False;
@@ -85,7 +85,7 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
         err_L2 = np.sqrt(np.sum(np.abs(sol - ref)**2));
         err_Linf = np.max(np.abs(sol - ref));
 
-        print (err_L1, err_L2, err_Linf)
+        ###print (err_L1, err_L2, err_Linf)
         assert err_L1 < eps, (err_L1, eps);
         max_error = max(max_error, err_L1);
 
@@ -97,7 +97,7 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
         ########error_file.write("errLinf {}".format(err_Linf));
         ########error_file.close();
 
-        return max_error;
+    return max_error;
 
 fine_sim = sys.argv[1];
 

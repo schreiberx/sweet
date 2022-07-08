@@ -297,7 +297,12 @@ public:
 	
 				output_filename = write_file_csv_parareal_sphere(h, t, "prog_h", iteration_id);
 				//std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
-	
+
+				SphereData_Physical phi_phys = h.toPhys() * this->simVars->sim.gravitation;
+				SphereData_Spectral phi(sphereDataConfig[0]);
+				phi.loadSphereDataPhysical(phi_phys);
+				output_filename = write_file_csv_parareal_sphere(phi, t, "prog_phi", iteration_id);
+
 				output_filename = write_file_csv_parareal_sphere(phi_out, t, "prog_phi_pert", iteration_id);
 				//std::cout << " + " << output_filename << " (min: " << phi_out_phys.physical_reduce_min() << ", max: " << phi_out_phys.physical_reduce_max() << ")" << std::endl;
 	
@@ -960,8 +965,8 @@ public:
 
 			// Spectral space
 			for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
-				err_Linf_spectral.emplace(std::make_pair(rnorm, diff_spectral.spectral_reduce_max_abs(rnorm) / 
-                                                                                parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(rnorm) ));
+				err_Linf_spectral.emplace(std::make_pair(*it, diff_spectral.spectral_reduce_max_abs(*it) / 
+                                                                                parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it) ));
 
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 			if (ivar == 0)
@@ -1018,6 +1023,7 @@ public:
 			file.close();
 
 
+#if !(SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR)
 			// save spectral errors in file
 			char buffer_out_spec[1024];
 
@@ -1036,7 +1042,7 @@ public:
 				file_spec << "errLinf " << *it + 1 << " " << err_Linf_spectral.at(*it) << std::endl;
 
 			file_spec.close();
-
+#endif
 
 		}
 		parareal_data_ref = nullptr;

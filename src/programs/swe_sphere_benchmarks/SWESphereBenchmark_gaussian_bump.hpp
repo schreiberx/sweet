@@ -112,11 +112,12 @@ public:
 				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 				simVars->sim.gravitation = 9.80616;
 				simVars->sim.sphere_radius = 6.37122e6;
-				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+				////simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+				simVars->sim.h0 = 29400.0;
 
 				// Scale geopotential to make NL influencing the stiffness stronger
-				simVars->sim.h0 *= 0.2;
-				simVars->sim.gravitation *= 0.2;
+				//////////simVars->sim.h0 *= 0.2;
+				//////////simVars->sim.gravitation *= 0.2;
 
 				ops->setup(ops->sphereDataConfig, &(simVars->sim));
 			}
@@ -130,12 +131,14 @@ public:
 		 *
 		 * Vrt and div need to be of the same order of magnitude due to the stream formulation
 		 */
-		double phi_scale = 0.1*simVars->sim.h0;
+		/////////double phi_scale = 0.1*simVars->sim.h0;
+		double phi_scale = 6000 * simVars->sim.gravitation;
 		double vrt_scale = phi_scale/(simVars->sim.sphere_radius*simVars->sim.sphere_radius);
 		double div_scale = phi_scale/(simVars->sim.sphere_radius*simVars->sim.sphere_radius);
 
 		if (benchmark_name == "gaussian_bump" || benchmark_name == "gaussian_bump_phi")
-			o_phi_pert = get_gaussian_bump(M_PI, M_PI/3, 20.0)*phi_scale;
+			o_phi_pert = get_gaussian_bump(M_PI, M_PI/4., 20.)*phi_scale;
+			////o_phi_pert = get_gaussian_bump(M_PI, M_PI/3, 20.0)*phi_scale;
 		else
 			o_phi_pert.spectral_set_zero();
 

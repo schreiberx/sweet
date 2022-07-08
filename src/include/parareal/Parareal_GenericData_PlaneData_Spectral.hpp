@@ -322,8 +322,6 @@ public:
 			///this->data->simfields[i]->pad_zeros( *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]) );
 	}
 
-
-
 };
 
 

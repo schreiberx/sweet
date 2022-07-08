@@ -163,6 +163,7 @@ class JobRuntimeOptions(InfoError):
         self.xbraid_cfactor0 = None;
         self.xbraid_max_iter = None;
         self.xbraid_fmg = None;
+        self.xbraid_fmg_vcyc = None;
         self.xbraid_res = None;
         self.xbraid_storage = None;
         self.xbraid_print_level = None;
@@ -496,6 +497,8 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_xb_max_i'+str(self.xbraid_max_iter)
                 if self.xbraid_fmg != None:
                     idstr += '_xb_fmg'+str(self.xbraid_fmg)
+                if self.xbraid_fmg_vcyc != None:
+                    idstr += '_xb_fmg_vcyc'+str(self.xbraid_fmg_vcyc)
                 if self.xbraid_res != None:
                     idstr += '_xb_res'+str(self.xbraid_res)
                 if self.xbraid_storage != None:
@@ -778,6 +781,7 @@ class JobRuntimeOptions(InfoError):
             retval += " --xbraid-cfactor0="+str(self.xbraid_cfactor0)
             retval += " --xbraid-max-iter="+str(self.xbraid_max_iter)
             retval += " --xbraid-fmg="+str(self.xbraid_fmg)
+            retval += " --xbraid-fmg-vcyc="+str(self.xbraid_fmg_vcyc)
             retval += " --xbraid-res="+str(self.xbraid_res)
             retval += " --xbraid-storage="+str(self.xbraid_storage)
             retval += " --xbraid-print-level="+str(self.xbraid_print_level)

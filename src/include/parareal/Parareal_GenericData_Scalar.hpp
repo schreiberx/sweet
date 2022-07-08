@@ -277,8 +277,8 @@ public:
 		{
 			std::cout << "Field #" << i << ": " << this->data->simfields[i] << std::endl;
 		}
-
 	}
+
 };
 
 #endif

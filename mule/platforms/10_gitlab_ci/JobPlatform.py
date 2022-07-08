@@ -61,7 +61,7 @@ def get_platform_id():
         unique ID of platform
     """
 
-    return "gitlab-ci"
+    return "gitlab_ci"
 
 
 def get_platform_resources():

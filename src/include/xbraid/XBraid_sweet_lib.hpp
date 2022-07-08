@@ -72,10 +72,11 @@ public:
 #endif
 				int i_level
 	)
+		:
 #if SWEET_XBRAID_PLANE
-		: planeDataConfig(i_planeDataConfig),
+		 planeDataConfig(i_planeDataConfig),
 #elif SWEET_XBRAID_SPHERE
-		: sphereDataConfig(i_sphereDataConfig),
+		sphereDataConfig(i_sphereDataConfig),
 #endif
 		level(i_level)
 	{
@@ -119,7 +120,7 @@ public:
 	)	const
 	{
 #if SWEET_XBRAID_SCALAR
-		sweet_BraidVector out;
+		sweet_BraidVector out(this->level);
 #elif SWEET_XBRAID_PLANE
 		sweet_BraidVector out(this->planeDataConfig, this->level);
 #elif SWEET_XBRAID_SPHERE
@@ -135,7 +136,7 @@ public:
 	)	const
 	{
 #if SWEET_XBRAID_SCALAR
-		sweet_BraidVector out;
+		sweet_BraidVector out(this->level);
 #elif SWEET_XBRAID_PLANE
 		sweet_BraidVector out(this->planeDataConfig, this->level);
 #elif SWEET_XBRAID_SPHERE
@@ -366,8 +367,10 @@ public:
 		i_core.SetAccessLevel(this->simVars->xbraid.xbraid_access_level);
 
 		i_core.SetNFMG(this->simVars->xbraid.xbraid_fmg);
+		if (this->simVars->xbraid.xbraid_fmg)
+			i_core.SetFMG();
 
-		//i_core.SetiNFMGVcyc(this->simVars->xbraid.xbraid_fmgvcyc);
+		i_core.SetNFMGVcyc(this->simVars->xbraid.xbraid_fmg_vcyc);
 
 		i_core.SetStorage(this->simVars->xbraid.xbraid_storage);
 
@@ -376,15 +379,18 @@ public:
 		////i_core.SetRefine(this->simVars->xbraid.xbraid_refine);
 		///i_core.SetMaxRefinements(this->simVars->xbraid.xbraid_max_Refinements);
 
-
+		///this->setup_timesteppers();
 		this->setup();
 	}
 
 public:
-	void setup()
+	/*
+	 * Setup timesteppers for each level.
+	 * IMPORTANT: this function must be called after setting up initial conditions, since the benchmark may modify simulation parameters
+	 *            call it in the first call of Step function.
+	 */
+	void setup_timesteppers()
 	{
-
-		PInT_Common::setup();
 
 		////////////////////////////////////
 		// get tsm and tso for each level //
@@ -447,6 +453,16 @@ public:
 			this->timeSteppers.push_back(tsm);
 
 		}
+
+
+	}
+
+public:
+	void setup()
+	{
+
+		PInT_Common::setup();
+
 
 
 		// get buffer size
@@ -636,6 +652,13 @@ public:
 			)
 	{
 
+		// First call of this function: create timesteppers
+		// Benchmark::setup_initial_conditions has already been called
+		if (this->timeSteppers.size() == 0)
+			this->setup_timesteppers();
+
+
+
 		// Vector defined in the finest level
 		sweet_BraidVector* U = (sweet_BraidVector*) io_U;
 
@@ -659,7 +682,8 @@ public:
 		// Interpolate to coarser grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
 			U_level->data->restrict(*U->data);
-		else if (level == 0)
+		//////else if (level == 0)
+		else
 			*U_level->data = *U->data;
 
 		// create containers for prev solution
@@ -682,19 +706,48 @@ public:
 		// set prev solution for SL
 		this->set_prev_solution(U_level, time_id, level);
 
-		this->simVars->timecontrol.current_simulation_time = tstart;
-		this->simVars->timecontrol.current_timestep_size = tstop - tstart;
+		////////this->simVars->timecontrol.current_simulation_time = tstart;
+		////////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
 
+		//std::cout << iter << " " << level << " " << tstart << " " << tstop << std::endl;
 		this->timeSteppers[level]->master->run_timestep(
 								U_level->data,
-								this->simVars->timecontrol.current_timestep_size,
-								this->simVars->timecontrol.current_simulation_time
+								///this->simVars->timecontrol.current_timestep_size,
+								///this->simVars->timecontrol.current_simulation_time
+								tstop - tstart,
+								tstart
 		);
+
+
+		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
+
+		if (simVars->sim.viscosity != 0 && simVars->misc.use_nonlinear_only_visc == 0)
+		{
+#if SWEET_XBRAID_PLANE
+			for (int i = 0; i < N; i++)
+			{
+				PlaneData_Spectral* field = U_level->data->get_pointer_to_data_PlaneData_Spectral()->simfields[i];
+				*field = this->op_plane[level]->implicit_diffusion(	*field,
+											this->simVars->timecontrol.current_timestep_size * this->simVars->sim.viscosity,
+											this->simVars->sim.viscosity_order);
+			}
+#elif SWEET_XBRAID_SPHERE
+			for (int i = 0; i < N; i++)
+			{
+				SphereData_Spectral* field = U_level->data->get_pointer_to_data_SphereData_Spectral()->simfields[i];
+				*field = this->op_sphere[level]->implicit_diffusion(	*field,
+											this->simVars->timecontrol.current_timestep_size * this->simVars->sim.viscosity,
+											this->simVars->sim.sphere_radius);
+			}
+#endif
+		}
+
 
 		// Interpolate to finest grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
 			U->data->pad_zeros(*U_level->data);
-		else if (level == 0)
+		////else if (level == 0)
+		else
 			*U->data = *U_level->data;
 
 		/* Tell XBraid no refinement */
@@ -753,7 +806,7 @@ public:
 
 		if( i_t == this->tstart )
 		{
-			std::cout << "Setting initial solution " << std::endl;
+			////std::cout << "Setting initial solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
 			double u0 = atof(simVars->bogus.var[1].c_str());
 			U->data->dataArrays_to_GenericData_Scalar(u0);
@@ -832,7 +885,7 @@ public:
 		}
 		else if (this->simVars->xbraid.xbraid_use_rand)
 		{
-			std::cout << "Setting random solution " << std::endl;
+			///std::cout << "Setting random solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
 			double u0 = ((double)braid_Rand())/braid_RAND_MAX;
 			U->data->dataArrays_to_GenericData_Scalar(u0);
@@ -921,7 +974,7 @@ public:
 		}
 		else
 		{
-			std::cout << "Setting zero solution " << std::endl;
+			///std::cout << "Setting zero solution " << std::endl;
 			/* Sets U as an all zero vector*/
 	#if SWEET_XBRAID_SCALAR
 			double zero = 0;
@@ -1074,8 +1127,8 @@ public:
 			)
 				do_output = true;
 
-			if (do_output)
-				std::cout << "AAA " << t << " " << it << " " <<  t * simVars->iodata.output_time_scale << " " << this->simVars->iodata.output_each_sim_seconds << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
+			////if (do_output)
+			////	std::cout << "AAA " << t << " " << it << " " <<  t * simVars->iodata.output_time_scale << " " << this->simVars->iodata.output_each_sim_seconds << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
 
 			if (do_output)
 			{
@@ -1100,7 +1153,7 @@ public:
 							this->xbraid_data_ref_exact.push_back(this->create_new_vector(0));
 					}
 
-					if (it > 0)
+					if (it >= 0)
 						this->store_parareal_error(
 										U->data,
 										this->xbraid_data_ref_exact[it]->data,
@@ -1124,7 +1177,7 @@ public:
 							this->xbraid_data_fine_exact.push_back(this->create_new_vector(0));
 					}
 
-					if (it > 0)
+					if (it >= 0)
 						this->store_parareal_error(
 										U->data,
 										this->xbraid_data_fine_exact[it]->data,

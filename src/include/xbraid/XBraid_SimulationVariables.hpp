@@ -69,6 +69,12 @@ struct XBraid_SimulationVariables
 	int xbraid_fmg = 0;
 
 	/**
+	 * Number of V-cycles at the end of a F-cycle
+	 */
+	int xbraid_fmg_vcyc = 0;
+
+
+	/**
 	 * (Boolean) Use user-defined residual
 	 */
 	int xbraid_res = 0;
@@ -179,6 +185,7 @@ struct XBraid_SimulationVariables
 		std::cout << " + xbraid_cfactor0: "                     << xbraid_cfactor0                     << std::endl;
 		std::cout << " + xbraid_max_iter: "                     << xbraid_max_iter                     << std::endl;
 		std::cout << " + xbraid_fmg: "                          << xbraid_fmg                          << std::endl;
+		std::cout << " + xbraid_fmg_vcyc: "                     << xbraid_fmg_vcyc                     << std::endl;
 		std::cout << " + xbraid_res: "                          << xbraid_res                          << std::endl;
 		std::cout << " + xbraid_storage: "                      << xbraid_storage                      << std::endl;
 		std::cout << " + xbraid_print_level: "                  << xbraid_print_level                  << std::endl;
@@ -216,6 +223,7 @@ struct XBraid_SimulationVariables
 		std::cout << "	--xbraid-cfactor0 [int]                      XBraid parameter cfactor0, default: -1"                    << std::endl;
 		std::cout << "	--xbraid-max-iter [int]                      XBraid parameter max_iter, default: 100"                   << std::endl;
 		std::cout << "	--xbraid-fmg [int]                           XBraid parameter fmg, default: 0"                          << std::endl;
+		std::cout << "	--xbraid-fmg-vcyc [int]                      XBraid parameter fmg_vcyc, default: 0"                     << std::endl;
 		std::cout << "	--xbraid-res [int]                           XBraid parameter res, default: 0"                          << std::endl;
 		std::cout << "	--xbraid-storage [int]                       XBraid parameter storage, default: -1"                     << std::endl;
 		std::cout << "	--xbraid-print-level [int]                   XBraid parameter print_level, default: 2"                  << std::endl;
@@ -278,6 +286,9 @@ struct XBraid_SimulationVariables
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"xbraid-fmg", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"xbraid-fmg-vcyc", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"xbraid-res", required_argument, 0, 256+io_next_free_program_option};
@@ -363,27 +374,28 @@ struct XBraid_SimulationVariables
 			case 9:  xbraid_cfactor0                  = atoi(optarg);	return -1;
 			case 10: xbraid_max_iter                  = atoi(optarg);	return -1;
 			case 11: xbraid_fmg                       = atoi(optarg);	return -1;
-			case 12: xbraid_res                       = atoi(optarg);	return -1;
-			case 13: xbraid_storage                   = atoi(optarg);	return -1;
-			case 14: xbraid_print_level               = atoi(optarg);	return -1;
-			case 15: xbraid_access_level              = atoi(optarg);	return -1;
-			case 16: xbraid_run_wrapper_tests         = atoi(optarg);	return -1;
-			case 17: xbraid_fullrnorm                 = atoi(optarg);	return -1;
-			case 18: xbraid_use_seq_soln              = atoi(optarg);	return -1;
-			case 19: xbraid_use_rand                  = atoi(optarg);	return -1;
-			case 20: xbraid_pt                        = atoi(optarg);	return -1;
-			case 21: xbraid_timestepping_method       = optarg;		return -1;
-			case 22: xbraid_timestepping_order        = optarg;		return -1;
-			case 23: xbraid_timestepping_order2       = optarg;		return -1;
-			case 24: xbraid_verbosity                 = atoi(optarg);	return -1;
-			case 25: xbraid_load_ref_csv_files        = atoi(optarg);	return -1;
-			case 26: xbraid_path_ref_csv_files        = optarg;		return -1;
-			case 27: xbraid_load_fine_csv_files       = atoi(optarg);	return -1;
-			case 28: xbraid_path_fine_csv_files       = optarg;		return -1;
-			case 29: xbraid_store_iterations          = atoi(optarg);	return -1;
-			case 30: xbraid_spatial_coarsening        = atoi(optarg);	return -1;
+			case 12: xbraid_fmg_vcyc                  = atoi(optarg);	return -1;
+			case 13: xbraid_res                       = atoi(optarg);	return -1;
+			case 14: xbraid_storage                   = atoi(optarg);	return -1;
+			case 15: xbraid_print_level               = atoi(optarg);	return -1;
+			case 16: xbraid_access_level              = atoi(optarg);	return -1;
+			case 17: xbraid_run_wrapper_tests         = atoi(optarg);	return -1;
+			case 18: xbraid_fullrnorm                 = atoi(optarg);	return -1;
+			case 19: xbraid_use_seq_soln              = atoi(optarg);	return -1;
+			case 20: xbraid_use_rand                  = atoi(optarg);	return -1;
+			case 21: xbraid_pt                        = atoi(optarg);	return -1;
+			case 22: xbraid_timestepping_method       = optarg;		return -1;
+			case 23: xbraid_timestepping_order        = optarg;		return -1;
+			case 24: xbraid_timestepping_order2       = optarg;		return -1;
+			case 25: xbraid_verbosity                 = atoi(optarg);	return -1;
+			case 26: xbraid_load_ref_csv_files        = atoi(optarg);	return -1;
+			case 27: xbraid_path_ref_csv_files        = optarg;		return -1;
+			case 28: xbraid_load_fine_csv_files       = atoi(optarg);	return -1;
+			case 29: xbraid_path_fine_csv_files       = optarg;		return -1;
+			case 30: xbraid_store_iterations          = atoi(optarg);	return -1;
+			case 31: xbraid_spatial_coarsening        = atoi(optarg);	return -1;
 		}
-		return 31;
+		return 32;
 	}
 
 };
