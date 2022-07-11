@@ -681,8 +681,8 @@ public:
 
 		// Interpolate to coarser grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
+		/////if (this->simVars->xbraid.xbraid_spatial_coarsening)
 			U_level->data->restrict(*U->data);
-		//////else if (level == 0)
 		else
 			*U_level->data = *U->data;
 
@@ -745,8 +745,8 @@ public:
 
 		// Interpolate to finest grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
+		/////if (this->simVars->xbraid.xbraid_spatial_coarsening)
 			U->data->pad_zeros(*U_level->data);
-		////else if (level == 0)
 		else
 			*U->data = *U_level->data;
 
