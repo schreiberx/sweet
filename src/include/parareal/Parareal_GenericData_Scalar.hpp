@@ -196,6 +196,11 @@ public:
 		return e;
 	}
 
+	double reduce_maxAbs(std::size_t rnorm)
+	{
+		return this->reduce_maxAbs();
+	}
+
 	double reduce_norm1()
 	{
 		double e = 0;

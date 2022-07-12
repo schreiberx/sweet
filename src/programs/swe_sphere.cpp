@@ -678,7 +678,6 @@ public:
 
 		if (simVars.sim.viscosity != 0 && simVars.misc.use_nonlinear_only_visc == 0)
 		{
-			std::cout << "APPLYING DIFFUSION " << simVars.sim.viscosity << " " << simVars.sim.viscosity_order << std::endl;
 			prog_vrt = op.implicit_diffusion(prog_vrt, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
 			prog_div = op.implicit_diffusion(prog_div, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
 			prog_phi_pert = op.implicit_diffusion(prog_phi_pert, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);

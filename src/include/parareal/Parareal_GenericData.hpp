@@ -213,6 +213,7 @@ public:
 #endif
 
 	virtual double reduce_maxAbs()=0;
+	virtual double reduce_maxAbs(std::size_t rnorm)=0;
 	virtual double reduce_norm1()=0;
 	virtual double reduce_norm2()=0;
 

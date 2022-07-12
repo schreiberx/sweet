@@ -168,13 +168,21 @@ public:
 		this->data->set_time(i_time);
 	}
 
-
 	double reduce_maxAbs()
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
 			e = std::max( e,
 					this->data->simfields[k]->spectral_reduce_max_abs());
+		return e;
+	}
+
+	double reduce_maxAbs(std::size_t rnorm)
+	{
+		double e = -1;
+		for (int k = 0; k < N; k++)
+			e = std::max( e,
+					this->data->simfields[k]->spectral_reduce_max_abs(rnorm));
 		return e;
 	}
 

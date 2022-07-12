@@ -231,6 +231,9 @@ public:
 	std::vector<int> tsos;
 	std::vector<int> tsos2;
 
+	// Smaller spectral resolution among levels
+	int min_spectral_size = INT_MAX;
+
 	// was the output of the time step already done for this simulation state?
 	////double timestep_last_output_simtime;
 
@@ -266,9 +269,22 @@ public:
 #if SWEET_XBRAID_PLANE
 			this->planeDataConfig = i_planeDataConfig;
 			this->op_plane = i_op_plane;
+
+			// get min_spectral size
+			for (std::size_t i = 0; i < this->planeDataConfig.size(); i++)
+				this->min_spectral_size = std::min(	this->min_spectral_size,
+									std::min(this->planeDataConfig[i]->spectral_data_size[0], this->planeDataConfig[i]->spectral_data_size[1])
+								);
+
 #elif SWEET_XBRAID_SPHERE
 			this->sphereDataConfig = i_sphereDataConfig;
 			this->op_sphere = i_op_sphere;
+
+			// get min_spectral size
+			for (std::size_t i = 0; i < this->sphereDataConfig.size(); i++)
+				this->min_spectral_size = std::min(	this->min_spectral_size,
+									std::min(this->sphereDataConfig[i]->spectral_modes_m_max, this->sphereDataConfig[i]->spectral_modes_n_max)
+								);
 #endif
 
 		///this->xbraid_data_ref_exact = this->create_new_vector();
@@ -709,7 +725,7 @@ public:
 		////////this->simVars->timecontrol.current_simulation_time = tstart;
 		////////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
 
-		//std::cout << iter << " " << level << " " << tstart << " " << tstop << std::endl;
+		std::cout << iter << " " << level << " " << tstart << " " << tstop << std::endl;
 		this->timeSteppers[level]->master->run_timestep(
 								U_level->data,
 								///this->simVars->timecontrol.current_timestep_size,
@@ -1218,7 +1234,10 @@ public:
 			double*       o_norm)
 	{
 		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
-		*o_norm = U->data->reduce_norm2();
+		///*o_norm = U->data->reduce_norm2();
+		/////std::cout << "MIN SPECTRAL " << this->min_spectral_size << std::endl;
+		*o_norm = U->data->reduce_maxAbs(this->min_spectral_size);
+		////*o_norm = U->data->reduce_maxAbs();
 		return 0;
 	}
 
