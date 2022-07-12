@@ -321,7 +321,6 @@ public:
 		if (simVars.iodata.output_file_name.length() == 0)
 			return;
 
-
 		std::cout << "Writing output files at simulation time: " << simVars.timecontrol.current_simulation_time << " secs" << std::endl;
 
 		if (simVars.iodata.output_file_mode == "csv")
@@ -1225,6 +1224,8 @@ int main_real(int i_argc, char *i_argv[])
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
 			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+                        if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+				nt++;
 			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfig, &op);
 			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfigs, ops);
 

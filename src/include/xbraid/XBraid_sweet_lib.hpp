@@ -234,8 +234,8 @@ public:
 	// Smaller spectral resolution among levels
 	int min_spectral_size = INT_MAX;
 
-	// was the output of the time step already done for this simulation state?
-	////double timestep_last_output_simtime;
+	// Custom time grid
+	std::vector<double> custom_time_steps = {};
 
 public:
 
@@ -264,7 +264,7 @@ public:
 			BraidApp(i_comm_t, i_tstart, i_tstop, i_ntime),
 			rank(i_rank)
 	{
-		this->simVars = i_simVars;
+			this->simVars = i_simVars;
 
 #if SWEET_XBRAID_PLANE
 			this->planeDataConfig = i_planeDataConfig;
@@ -370,7 +370,7 @@ public:
 		if (this->simVars->xbraid.xbraid_cfactor0 > -1)
 			i_core.SetCFactor(0, this->simVars->xbraid.xbraid_cfactor0);
 
-		///i_core.SetiPeriodic(this->simVars->xbraid.xbraid_periodic);
+		///i_core.SetPeriodic(this->simVars->xbraid.xbraid_periodic);
 
 		////i_core.SetResidual();
 
@@ -394,6 +394,8 @@ public:
 
 		////i_core.SetRefine(this->simVars->xbraid.xbraid_refine);
 		///i_core.SetMaxRefinements(this->simVars->xbraid.xbraid_max_Refinements);
+
+		i_core.SetTimeGrid(sweet_BraidApp::sweet_TimeGrid);
 
 		///this->setup_timesteppers();
 		this->setup();
@@ -498,6 +500,22 @@ public:
 
 			std::vector<int> w = {};
 			this->sol_prev_iter.push_back(w);
+		}
+
+
+		// set custom time grid
+		double t = 0;
+		while (t < this->simVars->timecontrol.max_simulation_time - 1e-10)
+		{
+			double dt = this->simVars->timecontrol.current_timestep_size;
+			double dt2;
+			if ( t + dt < this->simVars->timecontrol.max_simulation_time - 1e-10)
+				dt2 = dt;
+			else
+				dt2 = this->simVars->timecontrol.max_simulation_time - t;
+			this->custom_time_steps.push_back(dt2);
+			t += dt2;
+			////std::cout << "TIME STEP " << dt2 << std::endl;
 		}
 
 	}
@@ -722,10 +740,12 @@ public:
 		// set prev solution for SL
 		this->set_prev_solution(U_level, time_id, level);
 
-		////////this->simVars->timecontrol.current_simulation_time = tstart;
-		////////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
+		// TODO: check if this is thread safe
+		/////this->simVars->timecontrol.current_simulation_time = tstart;
+		/////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
+		// TODO
 
-		std::cout << iter << " " << level << " " << tstart << " " << tstop << std::endl;
+		////std::cout << iter << " " << level << " " << tstart << " " << tstop << std::endl;
 		this->timeSteppers[level]->master->run_timestep(
 								U_level->data,
 								///this->simVars->timecontrol.current_timestep_size,
@@ -744,7 +764,7 @@ public:
 			{
 				PlaneData_Spectral* field = U_level->data->get_pointer_to_data_PlaneData_Spectral()->simfields[i];
 				*field = this->op_plane[level]->implicit_diffusion(	*field,
-											this->simVars->timecontrol.current_timestep_size * this->simVars->sim.viscosity,
+											(tstop - tstart) * this->simVars->sim.viscosity,
 											this->simVars->sim.viscosity_order);
 			}
 #elif SWEET_XBRAID_SPHERE
@@ -752,7 +772,7 @@ public:
 			{
 				SphereData_Spectral* field = U_level->data->get_pointer_to_data_SphereData_Spectral()->simfields[i];
 				*field = this->op_sphere[level]->implicit_diffusion(	*field,
-											this->simVars->timecontrol.current_timestep_size * this->simVars->sim.viscosity,
+											(tstop - tstart) * this->simVars->sim.viscosity,
 											this->simVars->sim.sphere_radius);
 			}
 #endif
@@ -1311,7 +1331,46 @@ public:
 		return 0;
 	}
 
+
+	/* --------------------------------------------------------------------
+	 * Define time grid
+	 * -------------------------------------------------------------------- */
+	static braid_Int
+	sweet_TimeGrid(
+				_braid_App_struct* i_app,
+				braid_Real* i_ta,
+				braid_Int* i_ilower,
+				braid_Int* i_iupper
+			)
+	{
+
+		sweet_BraidApp* app =  (sweet_BraidApp*) i_app;
+
+		double tstart;
+		int lower = *i_ilower;
+		int upper = *i_iupper;
+
+		/* Start from the global tstart to compute the local tstart */
+		tstart = app->tstart;
+		for (int i = 0; i < lower; i++)
+			tstart += app->custom_time_steps[i];
+
+		/* Assign time point values for local time point index values lower:upper */
+		for (int i = lower; i <= upper; i++)
+		{
+			i_ta[i - lower] = tstart;
+			tstart += app->custom_time_steps[i];
+		}
+
+
+
+		return 0;
+	}
+
 };
+
+
+
 
 
 #endif

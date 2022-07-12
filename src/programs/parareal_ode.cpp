@@ -366,6 +366,8 @@ int main(int i_argc, char *i_argv[])
 		MPI_Comm comm_x, comm_t;
 
 		int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+                if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+			nt++;
 		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
 
 		if( simVars.xbraid.xbraid_run_wrapper_tests)
