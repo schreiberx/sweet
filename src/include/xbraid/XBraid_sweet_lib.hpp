@@ -745,7 +745,7 @@ public:
 		/////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
 		// TODO
 
-		////std::cout << iter << " " << level << " " << tstart << " " << tstop << std::endl;
+		////std::cout << rank << " " << iter << " " << level << " " << tstart << " " << tstop << std::endl;
 		this->timeSteppers[level]->master->run_timestep(
 								U_level->data,
 								///this->simVars->timecontrol.current_timestep_size,
