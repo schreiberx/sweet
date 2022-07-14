@@ -168,7 +168,7 @@ public:
 		this->data->set_time(i_time);
 	}
 
-	double reduce_maxAbs()
+	double spectral_reduce_maxAbs()
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
@@ -177,7 +177,7 @@ public:
 		return e;
 	}
 
-	double reduce_maxAbs(std::size_t rnorm)
+	double spectral_reduce_maxAbs(std::size_t rnorm)
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
@@ -186,7 +186,17 @@ public:
 		return e;
 	}
 
-	double reduce_norm1()
+	double physical_reduce_maxAbs()
+	{
+		double e = -1;
+		for (int k = 0; k < N; k++)
+			e = std::max( e,
+					this->data->simfields[k]->toPhys().physical_reduce_max_abs());
+		return e;
+	}
+
+
+	double physical_reduce_norm1()
 	{
 		double e = 0;
 		for (int k = 0; k < N; k++)
@@ -194,7 +204,7 @@ public:
 		return e;
 	}
 
-	double reduce_norm2()
+	double physical_reduce_norm2()
 	{
 		double e = 0;
 		for (int k = 0; k < N; k++)

@@ -588,6 +588,12 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			output_filenames += ";" + write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
+
+			output_filenames += ";" + write_file_spec(t_h, "prog_h_pert_spec");
+			output_filenames += ";" + write_file_spec(t_u, "prog_u_spec");
+			output_filenames += ";" + write_file_spec(t_v, "prog_v_spec");
+
+			output_filenames += ";" + write_file_spec(op.ke(t_u,t_v).toPhys(), "diag_ke_spec");
 #endif
 
 			output_filenames += ";" + write_file(op.vort(t_u, t_v), "diag_vort");

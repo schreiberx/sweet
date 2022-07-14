@@ -16,6 +16,8 @@ from glob import glob
 #Classes containing sweet compile/run basic option
 from mule_local.JobGeneration import *
 from mule_local.SWEETRuntimeParametersScenarios import *
+from mule.JobParallelization import *
+from mule.JobParallelizationDimOptions import *
 
 
 ####tsm_ref = "ln_erk";
@@ -24,12 +26,13 @@ simulation_to_run = sys.argv[1];
 itest = int(sys.argv[2]);
 tsm_fine = sys.argv[3];
 tsm_coarse = sys.argv[4];
+nb_pt = int(sys.argv[5]);
 
 if (itest == 5):
-    online_error = int(sys.argv[5])
+    online_error = int(sys.argv[6])
 
     if online_error:
-        path_fine = sys.argv[6];
+        path_fine = sys.argv[7];
 ###    path_ref = sys.argv[5];
 
 #Create main compile/run options
@@ -117,7 +120,6 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_fullrnorm = 2
     jg.runtime.xbraid_use_seq_soln = 0
     jg.runtime.xbraid_use_rand = 1
-    jg.runtime.xbraid_pt = 1
     jg.runtime.xbraid_timestepping_method = "dummy"
     jg.runtime.xbraid_timestepping_order = "2"
     jg.runtime.xbraid_timestepping_order2 = "2"
@@ -127,6 +129,28 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_load_fine_csv_files = 0;
     jg.runtime.xbraid_path_fine_csv_files = "";
     jg.runtime.xbraid_store_iterations = 0;
+
+
+    jg.runtime.xbraid_pt = nb_pt;
+    if nb_pt > 1:
+        params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
+        params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
+        params_ptime_num_cores_per_rank = [1]
+
+        # Update TIME parallelization
+        ptime = JobParallelizationDimOptions('time')
+        ptime.num_cores_per_rank = 1
+        ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+        ptime.num_ranks = nb_pt
+
+        pspace = JobParallelizationDimOptions('space')
+        pspace.num_cores_per_rank = 1
+        pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
+        pspace.num_ranks = 1
+
+        # Setup parallelization
+        jg.setup_parallelization([pspace, ptime])
+
 
     if (itest == 0):
         jg.runtime.xbraid_run_wrapper_tests = 1;

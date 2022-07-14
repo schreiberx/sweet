@@ -38,6 +38,10 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
     eps = 1e-14;
     max_error = 0.;
     for f in list_xbraid_files:
+
+        if "residual" in f:
+            continue;
+
         ## identify variable, time and iteration
         ff = os.path.basename(f).split("_t0");
         var = ff[0];

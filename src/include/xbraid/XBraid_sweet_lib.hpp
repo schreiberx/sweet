@@ -273,7 +273,7 @@ public:
 			// get min_spectral size
 			for (std::size_t i = 0; i < this->planeDataConfig.size(); i++)
 				this->min_spectral_size = std::min(	this->min_spectral_size,
-									std::min(this->planeDataConfig[i]->spectral_data_size[0], this->planeDataConfig[i]->spectral_data_size[1])
+									std::min((int)this->planeDataConfig[i]->spectral_data_size[0], (int)this->planeDataConfig[i]->spectral_data_size[1])
 								);
 
 #elif SWEET_XBRAID_SPHERE
@@ -745,6 +745,7 @@ public:
 		/////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
 		// TODO
 
+		/////////std::cout << "BEFORE: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U_level->data->reduce_maxAbs() << std::endl;
 		////std::cout << rank << " " << iter << " " << level << " " << tstart << " " << tstop << std::endl;
 		this->timeSteppers[level]->master->run_timestep(
 								U_level->data,
@@ -753,6 +754,7 @@ public:
 								tstop - tstart,
 								tstart
 		);
+		///////////std::cout << "INTERM: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U_level->data->reduce_maxAbs() << std::endl;
 
 
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
@@ -770,6 +772,7 @@ public:
 #elif SWEET_XBRAID_SPHERE
 			for (int i = 0; i < N; i++)
 			{
+				std::cout << "AAAAAAAA " << tstart << " " << tstop << " " << this->simVars->sim.viscosity << std::endl;
 				SphereData_Spectral* field = U_level->data->get_pointer_to_data_SphereData_Spectral()->simfields[i];
 				*field = this->op_sphere[level]->implicit_diffusion(	*field,
 											(tstop - tstart) * this->simVars->sim.viscosity,
@@ -778,6 +781,7 @@ public:
 #endif
 		}
 
+		////////std::cout << "AFTER1: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U_level->data->reduce_maxAbs() << std::endl;
 
 		// Interpolate to finest grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
@@ -789,6 +793,8 @@ public:
 		/* Tell XBraid no refinement */
 		io_status.SetRFactor(1);
 
+		//////////std::cout << "AFTER2: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U->data->reduce_maxAbs() << std::endl;
+		/////////std::cout << std::endl;
 		delete U_level;
 
 		return 0;
@@ -1142,7 +1148,9 @@ public:
 		///////////braid_AccessStatusGetResidual(astatus, &rnorm);
 
 
-		if(level == 0)
+		////std::cout << "ACCESS " << rank << " " << level << " " << t << std::endl;
+
+		if(level == 0 /*&& rank == 0*/)
 		{
 
 
@@ -1256,8 +1264,26 @@ public:
 		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
 		///*o_norm = U->data->reduce_norm2();
 		/////std::cout << "MIN SPECTRAL " << this->min_spectral_size << std::endl;
-		*o_norm = U->data->reduce_maxAbs(this->min_spectral_size);
+		//////////*o_norm = U->data->reduce_maxAbs(this->min_spectral_size);
 		////*o_norm = U->data->reduce_maxAbs();
+
+		// Compute residual in the coarsest level
+		// Restrict solution in spectral space then compute residual in physical space
+
+#if SWEET_XBRAID_SCALAR
+		*o_norm = U->data->physical_reduce_maxAbs();
+#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+	#if SWEET_XBRAID_PLANE
+		int max_level = (int)this->planeDataConfig.size() - 1;
+	#elif SWEET_XBRAID_SPHERE
+		int max_level = (int)this->sphereDataConfig.size() - 1;
+	#endif
+		sweet_BraidVector* U_level = this->create_new_vector(max_level);
+		U_level->data->restrict(*U->data);
+		*o_norm = U_level->data->physical_reduce_maxAbs();
+		delete U_level;
+#endif
+
 		return 0;
 	}
 

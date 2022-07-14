@@ -7,7 +7,7 @@ from glob import glob
 from read_bin_file import read_bin_file
 
 
-type_file = "sweet";
+type_file = "csv";
 list_vars = ["prog_phi_pert", "prog_vrt", "prog_div"];
 
 def read_ref_solution(ref_path):
@@ -43,6 +43,8 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
     eps = 1e-9;
     max_error = 0.;
     for f in list_xbraid_files:
+        if "residual" in f:
+            continue;
         ## identify variable, time and iteration
         ff = os.path.basename(f).split("_t0");
         ###print(f)

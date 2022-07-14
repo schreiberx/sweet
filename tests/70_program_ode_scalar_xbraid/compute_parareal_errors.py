@@ -58,8 +58,8 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
             continue;
 
         ## check if not initial solution
-        if t == 0:
-            continue;
+        ####if t == 0:
+        ####    continue;
 
         ref = ref_sol[var][t];
         sol = np.loadtxt(f);

@@ -187,7 +187,7 @@ public:
 	}
 
 
-	double reduce_maxAbs()
+	double spectral_reduce_maxAbs()
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
@@ -196,12 +196,18 @@ public:
 		return e;
 	}
 
-	double reduce_maxAbs(std::size_t rnorm)
+	double spectral_reduce_maxAbs(std::size_t rnorm)
 	{
-		return this->reduce_maxAbs();
+		return this->spectral_reduce_maxAbs();
 	}
 
-	double reduce_norm1()
+	double physical_reduce_maxAbs()
+	{
+		return this->spectral_reduce_maxAbs();
+	}
+
+
+	double physical_reduce_norm1()
 	{
 		double e = 0;
 		for (int k = 0; k < N; k++)
@@ -209,7 +215,7 @@ public:
 		return e;
 	}
 
-	double reduce_norm2()
+	double physical_reduce_norm2()
 	{
 		double e = 0;
 		for (int k = 0; k < N; k++)

@@ -94,6 +94,9 @@ for job1 in list_jobs:
             max_diff = 0
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             for f in list_files:
+                if "_spec_" in f:
+                    continue;
+
                 ###print(job1, job2)
                 err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                 err_L1_2, err_L2_2, err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
@@ -104,7 +107,7 @@ for job1 in list_jobs:
                 err_Linf = np.abs(err_Linf_1 - err_Linf_2);
                 err_L1 = np.abs(err_L1_1 - err_L1_2);
                 err_L2 = np.abs(err_L2_1 - err_L2_2);
-                ###print (err_Linf, err_L1, err_L2, small)
+                print (err_Linf, err_L1, err_L2, small)
                 assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f, job1, job2);
                 assert err_L1 < small, (err_L1_1, err_L1_2, f);
                 assert err_L2 < small, (err_L2_1, err_L2_2, f);

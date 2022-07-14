@@ -212,10 +212,11 @@ public:
 	#endif
 #endif
 
-	virtual double reduce_maxAbs()=0;
-	virtual double reduce_maxAbs(std::size_t rnorm)=0;
-	virtual double reduce_norm1()=0;
-	virtual double reduce_norm2()=0;
+	virtual double spectral_reduce_maxAbs()=0;
+	virtual double spectral_reduce_maxAbs(std::size_t rnorm)=0;
+	virtual double physical_reduce_maxAbs()=0;
+	virtual double physical_reduce_norm1()=0;
+	virtual double physical_reduce_norm2()=0;
 
 	virtual bool check_for_nan()=0;
 
