@@ -7,7 +7,7 @@ from glob import glob
 from read_bin_file import read_bin_file
 
 
-type_file = "csv";
+type_file = "sweet";
 list_vars = ["prog_phi_pert", "prog_vrt", "prog_div"];
 
 def read_ref_solution(ref_path):

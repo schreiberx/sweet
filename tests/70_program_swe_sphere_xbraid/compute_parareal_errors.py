@@ -98,9 +98,9 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
         if not var_ok:
             continue;
 
-        ## check if not initial solution
-        if t == 0:
-            continue;
+        ##### check if not initial solution
+        ###if t == 0:
+        ###    continue;
 
         ref = ref_sol[var][t];
         if file_type == "csv":

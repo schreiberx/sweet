@@ -679,7 +679,7 @@ public:
 			double t,
 			std::string path_ref,
 			std::string base_solution,	// "ref" or "fine"
-			int i_precision = 16
+			int i_precision = 32
 	)
 	{
 

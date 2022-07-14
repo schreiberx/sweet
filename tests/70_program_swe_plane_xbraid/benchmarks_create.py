@@ -116,7 +116,6 @@ jg.runtime.timestepping_order2 = orders[tsm_fine]
 jg.runtime.space_res_spectral = 32
 
 cfactors = [2, 4, 8];
-cfactors = [2];
 nbs_levels = [2, 4];
 nb_pts = [1];
 spatial_coarsening = [0, 1];
