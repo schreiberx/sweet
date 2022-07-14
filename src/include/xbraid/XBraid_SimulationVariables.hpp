@@ -166,7 +166,7 @@ struct XBraid_SimulationVariables
 	 * Spatial coarsen between levels
 	 * Proportionally to the timestep size
 	 */
-	bool xbraid_spatial_coarsening = false;
+	int xbraid_spatial_coarsening = 0;
 
 
 	void outputConfig()

@@ -1197,7 +1197,15 @@ int main_real(int i_argc, char *i_argv[])
 					int N_physical[2] = {-1, -1};
 					int N_spectral[2];
 					for (int j = 0; j < 2; j++)
-						N_spectral[j] = std::max(4,int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
+					{
+						// proportional to time step
+						if (simVars.xbraid.xbraid_spatial_coarsening == 1)
+							N_spectral[j] = std::max(4,int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
+						else if (simVars.xbraid.xbraid_spatial_coarsening > 1)
+							N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+						else
+							SWEETError("Invalid parameter xbraid_spatial_coarsening");
+					}
 					sphereDataConfigs.push_back(new SphereData_Config);
 					sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
 
