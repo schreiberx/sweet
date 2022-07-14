@@ -2,8 +2,6 @@
 
 cd "$(dirname $0)"
 
-export
-
 if [[ -z "$1" ]]; then
 	TESTS=$(ls -1 ??_*/test.sh ??_*/test.py)
 else

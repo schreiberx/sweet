@@ -250,7 +250,7 @@ public:
 #if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
 #endif
-		assert(this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
+		assert(this->data->nb_fields == i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
 
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) += *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
@@ -263,7 +263,7 @@ public:
 #if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
 #endif
-		assert(this->data->nb_fields = i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
+		assert(this->data->nb_fields == i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
 
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) -= *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);

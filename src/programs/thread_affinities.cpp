@@ -63,10 +63,9 @@ int main(int argc, char *argv[])
 	int rank, thread;
 	cpu_set_t coremask;
 	int niter = 100000;            //number of iterations per FOR loop
-	double x,y;                     //x,y value for the random coordinate
-	int i;                          //loop counter
+	volatile double x,y;                     //x,y value for the random coordinate
 	int count=0;                //Count holds all the number of how many good coordinates
-	double z;                       //Used to check if x^2+y^2<=1
+	volatile double z;                       //Used to check if x^2+y^2<=1
 	char clbuf[7 * CPU_SETSIZE], hnbuf[64];
 	#if SWEET_MPI
 		MPI_Init(&argc, &argv);
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
 	memset(hnbuf, 0, sizeof(hnbuf));
 	(void)gethostname(hnbuf, sizeof(hnbuf));
 
-	#pragma omp parallel firstprivate(x, y, z, i) private(thread, coremask, clbuf)
+	#pragma omp parallel firstprivate(x, y, z) private(thread, coremask, clbuf)
 	{
 		thread = omp_get_thread_num();
 		clock_t t;
@@ -88,6 +87,7 @@ int main(int argc, char *argv[])
 		//Let's do some work generating random nubmers to see if core affinity impacts execution time.
 		if((rank==0)||(rank==1)) // put this labor on ranks 0 and 1.
 		{
+			int i;
 			srandom((int)time(NULL) ^ omp_get_thread_num());    //Give random() a seed value
 			for (i=0; i<niter; ++i)              //main loop
 			{

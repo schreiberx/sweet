@@ -178,7 +178,7 @@ for input_filepath in sys.argv[1:]:
         ax.contour(data_phys, levels=np.arange(-e*50, 0, e), linestyles='dashed', linewidths=0.2, colors='black')
     else:
         e=2e-5
-        ax.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
+        ax.contour(data_phys, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
 
 
     # Fontsize

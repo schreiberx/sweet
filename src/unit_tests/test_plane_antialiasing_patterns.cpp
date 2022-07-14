@@ -71,7 +71,7 @@ int main(int i_argc, char *i_argv[])
 #define PRINT_SPECTRUM	1
 
 #if PRINT_SPECTRUM
-		int res_max = 32;
+		std::size_t res_max = 32;
 #endif
 
 

@@ -355,13 +355,12 @@ if p.sweet_mpi == 'enable':
         # GNU compiler needs special treatment!
         # Linking with Fortran MPI requires
         # for OpenMPI: -lmpi_mpifh
-        # for MPICH: -lmpif90
+        # for MPICH: -lmpifort
 
         output = exec_command(env['CC']+' -v')
         if 'MPICH' in output:
             if p.fortran_source == 'enable':
-                env.Append(LIBS='mpichf90')
-                ###env.Append(LIBS='mpif90')
+                env.Append(LIBS='mpifort')
         else:
             # Assume OpenMPI
             if p.fortran_source == 'enable':

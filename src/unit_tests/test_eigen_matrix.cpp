@@ -48,7 +48,6 @@ int main(
 
 
 	std::complex<double> eval[3];
-	std::complex<double> evec[3][3];
 	for(int i=0; i<3; i++)
 	{
 		eval[i]=ces.eigenvalues()[i];

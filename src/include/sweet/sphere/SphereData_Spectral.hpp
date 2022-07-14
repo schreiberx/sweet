@@ -733,6 +733,36 @@ public:
 		return out;
 	}
 
+	/**
+	 * Solve a Helmholtz problem given by
+	 *
+	 * (a + b0 D^2 + b1 D^4 + b2 D^6 + b3 D^8) x = rhs
+	 */
+	inline
+	SphereData_Spectral spectral_solve_helmholtz_higher_order(
+			const double & a,
+			const std::array<double, 4> & b,
+			double r
+	)
+	{
+		SphereData_Spectral out(*this);
+
+		out.spectral_update_lambda(
+			[&](
+				int n, int m,
+				std::complex<double> &io_data
+			)
+			{
+				double laplace_op_2 = - (double)n*((double)n+1.0)/(r*r);
+				double laplace_op_4 = laplace_op_2 * laplace_op_2;
+				double laplace_op_6 = laplace_op_4 * laplace_op_2;
+				double laplace_op_8 = laplace_op_4 * laplace_op_4;
+				io_data /= (a + b[0] * laplace_op_2 + b[1] * laplace_op_4 + b[2] * laplace_op_6 + b[3] * laplace_op_8);
+			}
+		);
+
+		return out;
+	}
 
 
 	/**

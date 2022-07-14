@@ -26,11 +26,6 @@ class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
 	SimulationVariables &simVars;
 	PlaneOperators &op;
 
-	PlaneDataSemiLagrangian semiLagrangian;
-	PlaneDataSampler sampler2D;
-
-	PlaneData_Spectral u_prev, v_prev;
-
 	// Arrival points for semi-lag
 	ScalarDataArray posx_a, posy_a;
 
@@ -38,6 +33,12 @@ class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
 	ScalarDataArray posx_d, posy_d;
 
 	Burgers_Plane_TS_l_irk ts_l_irk;
+
+	PlaneData_Spectral u_prev, v_prev;
+
+	PlaneDataSemiLagrangian semiLagrangian;
+	PlaneDataSampler sampler2D;
+
 
 public:
 	Burgers_Plane_TS_l_irk_n_sl(

@@ -90,12 +90,17 @@ class JobRuntimeOptions(InfoError):
         self.libpfasst_nlevels = None
         self.libpfasst_niters = None
         self.libpfasst_nnodes = None
-        self.libpfasst_nsweeps_coarse = None
+        self.libpfasst_nsweeps = None
         self.libpfasst_nodes_type = None
         self.libpfasst_coarsening_multiplier = None
         self.libpfasst_use_rexi = None
         self.libpfasst_implicit_coriolis_force = None
         self.libpfasst_use_rk_stepper = None
+        self.libpfasst_u2 = None
+        self.libpfasst_u4 = None
+        self.libpfasst_u6 = None
+        self.libpfasst_u8 = None
+        self.libpfasst_u_fields = None
 
         self.gravitation= None
         self.h0 = None
@@ -412,8 +417,8 @@ class JobRuntimeOptions(InfoError):
                 idstr += '_pf_nit'+str(self.libpfasst_niters)
             if self.libpfasst_nnodes != None:
                 idstr += '_pf_nnod'+str(self.libpfasst_nnodes)
-            if self.libpfasst_nsweeps_coarse != None:
-                idstr += '_pf_nswpc'+str(self.libpfasst_nsweeps_coarse)
+            if self.libpfasst_nsweeps != None:
+                idstr += '_pf_nswps'+str(self.libpfasst_nsweeps)
             if self.libpfasst_nodes_type != None:
                 idstr += '_'+str(self.libpfasst_nodes_type)
             if self.libpfasst_coarsening_multiplier != None:
@@ -722,8 +727,8 @@ class JobRuntimeOptions(InfoError):
             retval += ' --libpfasst-niters='+str(self.libpfasst_niters)
         if self.libpfasst_nnodes != None:
             retval += ' --libpfasst-nnodes='+str(self.libpfasst_nnodes)
-        if self.libpfasst_nsweeps_coarse != None:
-            retval += ' --libpfasst-nsweeps-coarse='+str(self.libpfasst_nsweeps_coarse)
+        if self.libpfasst_nsweeps != None:
+            retval += ' --libpfasst-nsweeps='+str(self.libpfasst_nsweeps)
         if self.libpfasst_nodes_type != None:
             retval += ' --libpfasst-nodes-type='+str(self.libpfasst_nodes_type)
         if self.libpfasst_coarsening_multiplier != None:
@@ -734,6 +739,16 @@ class JobRuntimeOptions(InfoError):
             retval += ' --libpfasst-implicit-coriolis-force='+str(self.libpfasst_implicit_coriolis_force)
         if self.libpfasst_use_rk_stepper != None:
             retval += ' --libpfasst-use-rk-stepper='+str(self.libpfasst_use_rk_stepper)
+        if self.libpfasst_u2 != None:
+            retval += ' --libpfasst-u2='+str(self.libpfasst_u2)
+        if self.libpfasst_u4 != None:
+            retval += ' --libpfasst-u4='+str(self.libpfasst_u4)
+        if self.libpfasst_u6 != None:
+            retval += ' --libpfasst-u6='+str(self.libpfasst_u6)
+        if self.libpfasst_u8 != None:
+            retval += ' --libpfasst-u8='+str(self.libpfasst_u8)
+        if self.libpfasst_u_fields != None:
+            retval += ' --libpfasst-u-fields='+str(self.libpfasst_u_fields)
 
         retval += ' --semi-lagrangian-approximate-sphere-geometry='+str(self.semi_lagrangian_approximate_sphere_geometry)
 

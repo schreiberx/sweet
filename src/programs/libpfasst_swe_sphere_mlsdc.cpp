@@ -25,7 +25,7 @@ extern "C"
 void fmain (SphereDataCtx* pd_ctx,
 		const int*     nlevels,
 		const int*     niters,
-		const int*     nsweeps_coarse,
+		const int      nsweeps[],
 		const int      nnodes[],
 		const char*    qtype_name,
 		const int*     qtype_name_len,
@@ -43,10 +43,6 @@ void fmain (SphereDataCtx* pd_ctx,
 int main(int i_argc, char *i_argv[])
 {
 	MPI_Init(&i_argc, &i_argv);
-
-	std::cout << "+++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-	std::cout << "WARNING: This program is NOT ready for use!" << std::endl;
-	std::cout << "+++++++++++++++++++++++++++++++++++++++++++" << std::endl;
 
 	SimulationVariables simVars;
 	std::vector<LevelSingleton> levelSingletons;
@@ -69,6 +65,13 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "--compute-error [0/1]Output errors (if available, default: 1)" << std::endl;
 		return -1;
 	}
+
+	if ((simVars.sim.viscosity > 0) || (simVars.sim.viscosity_order != 2))
+	{
+		SWEETError("To apply viscosity, use the --libpfasst-u2/4/6/8 flags, not -u or -U!");
+	}
+	simVars.libpfasst.postprocess_hyperviscosity();
+	simVars.libpfasst.postprocess_nsweeps();
 
 	// define the number of levels and SDC nodes for each level
 	// note: level #nlevels-1 is the finest, level #0 is the coarsest
@@ -150,7 +153,8 @@ int main(int i_argc, char *i_argv[])
 	levelSingletons[fineLevelId].dataConfigNoDealiasing.setupAuto(
 			res_physical_nodealiasing,
 			simVars.disc.space_res_spectral,
-			simVars.misc.reuse_spectral_transformation_plans
+			simVars.misc.reuse_spectral_transformation_plans,
+			simVars.misc.verbosity
 	);
 
 	// setup data operators in fine level
@@ -171,11 +175,13 @@ int main(int i_argc, char *i_argv[])
 		levelSingletons[thisLevelId].level = thisLevelId;
 
         // compute "additional" modes (negative because we're coarsening)
-		auto additional_modes_lat = 1 - std::ceil(simVars.disc.space_res_spectral[0]*pow(simVars.libpfasst.coarsening_multiplier,i));
-        auto additional_modes_lon = 1 - std::ceil(simVars.disc.space_res_spectral[1]*pow(simVars.libpfasst.coarsening_multiplier,i));
+		// use 1 - alpha to compute what to take away (we want to have alpha^i * res modes on level n-1-i)
+		double coarsener = 1 - simVars.libpfasst.coarsening_multiplier;
+		int additional_modes_lat = 1 - std::ceil(simVars.disc.space_res_spectral[0]*pow(coarsener,i));
+        int additional_modes_lon = 1 - std::ceil(simVars.disc.space_res_spectral[1]*pow(coarsener,i));
         // setup data configuration at this level
 		levelSingletons[thisLevelId].dataConfig.setupAdditionalModes(
-				&(levelSingletons[simVars.libpfasst.nlevels-i].dataConfig),
+				&(levelSingletons[thisLevelId + 1].dataConfig),
 				additional_modes_lat,
 				additional_modes_lon,
 				simVars.misc.reuse_spectral_transformation_plans
@@ -194,17 +200,9 @@ int main(int i_argc, char *i_argv[])
 	const int nfields = 3;  // number of vector fields (here, height and two horizontal velocities)
 	int nvars_per_field[simVars.libpfasst.nlevels];
 	for (int i = 0; i < simVars.libpfasst.nlevels; ++i)
-		nvars_per_field[i] = 2*levelSingletons[i].dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
-
-	// initialize the topography before instantiating the SphereDataCtx object
-	if (simVars.benchmark.benchmark_name == "flow_over_mountain")
 	{
-
-		// create h_topo with the configuration at the finest level
-		simVars.benchmark.h_topo = SphereData_Physical(&(levelSingletons[simVars.libpfasst.nlevels-1].dataConfig));
-
-		// initialize the topography
-		(levelSingletons[simVars.libpfasst.nlevels-1].benchmarks).master->setup_topography();
+		// number of degrees of freedom per vector field
+		nvars_per_field[i] = 2*levelSingletons[i].dataConfig.spectral_array_data_number_of_elements; 
 	}
 
 	// instantiate the SphereDataCtx object
@@ -227,7 +225,7 @@ int main(int i_argc, char *i_argv[])
 			pd_ctx,                                       // user defined context
 			&simVars.libpfasst.nlevels,                   // number of SDC levels
 			&simVars.libpfasst.niters,                    // number of SDC iterations
-			&simVars.libpfasst.nsweeps_coarse,            // number of SDC sweeps on coarse level
+			simVars.libpfasst.nsweeps.data(),                   // number of SDC sweeps on coarse level
 			nnodes,                                       // number of SDC nodes
 			(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
 			&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()

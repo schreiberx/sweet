@@ -10,6 +10,10 @@
 #PKGS+=("install_cacerts.sh")
 # prereq: openssl, cacerts
 
+# REMOVE ME AGAIN
+PKGS+=("install_numactl.sh")
+return
+
 PKGS+=("install_miniconda.sh")
 
 PKGS+=("install_fftw3.sh")

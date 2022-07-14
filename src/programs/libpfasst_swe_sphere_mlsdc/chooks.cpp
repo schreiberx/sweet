@@ -104,46 +104,6 @@ extern "C"
         i_ctx->save_physical_invariants(i_current_step);
     }
 
-    void cecho_output_jump(SphereDataCtx *i_ctx,
-                           SphereDataVars *i_Y,
-                           int i_current_proc,
-                           int i_current_step,
-                           int i_current_iter,
-                           int i_nnodes,
-                           int i_niters
-                           )
-    {
-        const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-        const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-        const SphereData_Spectral& div_Y  = i_Y->get_div();
-
-        // get the pointer to the Simulation Variables object
-        SimulationVariables* simVars = i_ctx->get_simulation_variables();
-        simVars->timecontrol.current_timestep_nr = i_current_step + 1;
-        auto current_dt = simVars->timecontrol.current_timestep_size;
-        simVars->timecontrol.current_simulation_time = (i_current_step + 1) * current_dt;
-
-        // write the data to file
-        std::string filename = "prog_jump_phi_pert_current_proc_"+std::to_string(i_current_proc)
-                                    +"_current_iter_"+std::to_string(i_current_iter)
-                                    +"_nnodes_"      +std::to_string(i_nnodes)
-                                    +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, phi_pert_Y, filename.c_str());
-
-        filename = "prog_jump_vrt_current_proc_"+std::to_string(i_current_proc)
-                        +"_current_iter_"+std::to_string(i_current_iter)
-                        +"_nnodes_"      +std::to_string(i_nnodes)
-                        +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, vrt_Y, filename.c_str());
-
-        filename = "prog_jump_div_current_proc_"+std::to_string(i_current_proc)
-                        +"_current_iter_"+std::to_string(i_current_iter)
-                        +"_nnodes_"      +std::to_string(i_nnodes)
-                        +"_niters_"      +std::to_string(i_niters);
-        write_file(*i_ctx, div_Y, filename.c_str());
-    }
-
-
 
     void cecho_output_solution(SphereDataCtx *i_ctx,
                                SphereDataVars *i_Y,

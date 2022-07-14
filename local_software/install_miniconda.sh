@@ -24,7 +24,7 @@ sh "${INSTALLER}" -b -u -p ${PYTHON_VENV_DIR} || exit 1
 
 . ${PYTHON_VENV_DIR}/bin/activate || exit 1
 
-pip3 install matplotlib numpy sympy || exit 1
+pip3 install matplotlib numpy sympy scipy || exit 1
 
 echo
 echo "Installation of Miniconda finished"
