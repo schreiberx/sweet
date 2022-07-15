@@ -1204,7 +1204,12 @@ int main_real(int i_argc, char *i_argv[])
 						if (simVars.xbraid.xbraid_spatial_coarsening == 1)
 							N_spectral[j] = std::max(4,int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
 						else if (simVars.xbraid.xbraid_spatial_coarsening > 1)
-							N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+						{
+							if (i == 0)
+								N_spectral[j] = std::max(4, simVars.disc.space_res_spectral[j]);
+							else
+								N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+						}
 						else
 							SWEETError("Invalid parameter xbraid_spatial_coarsening");
 					}
