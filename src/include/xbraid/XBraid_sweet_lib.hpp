@@ -689,7 +689,15 @@ public:
 		// First call of this function: create timesteppers
 		// Benchmark::setup_initial_conditions has already been called
 		if (this->timeSteppers.size() == 0)
+		{
+			// if rank > 0, call setup_init_conditions to ensure that parameters from benchmark are set
+			if (rank > 0)
+			{
+				braid_Vector dummy;
+				this->Init(0., &dummy);
+			}
 			this->setup_timesteppers();
+		}
 
 
 
@@ -745,8 +753,7 @@ public:
 		/////this->simVars->timecontrol.current_timestep_size = tstop - tstart;
 		// TODO
 
-		/////////std::cout << "BEFORE: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U_level->data->reduce_maxAbs() << std::endl;
-		////std::cout << rank << " " << iter << " " << level << " " << tstart << " " << tstop << std::endl;
+		///std::cout << rank << " " << iter << " " << level << " " << tstart << " " << tstop << std::endl;
 		this->timeSteppers[level]->master->run_timestep(
 								U_level->data,
 								///this->simVars->timecontrol.current_timestep_size,
@@ -754,7 +761,6 @@ public:
 								tstop - tstart,
 								tstart
 		);
-		///////////std::cout << "INTERM: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U_level->data->reduce_maxAbs() << std::endl;
 
 
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
@@ -772,7 +778,6 @@ public:
 #elif SWEET_XBRAID_SPHERE
 			for (int i = 0; i < N; i++)
 			{
-				std::cout << "AAAAAAAA " << tstart << " " << tstop << " " << this->simVars->sim.viscosity << std::endl;
 				SphereData_Spectral* field = U_level->data->get_pointer_to_data_SphereData_Spectral()->simfields[i];
 				*field = this->op_sphere[level]->implicit_diffusion(	*field,
 											(tstop - tstart) * this->simVars->sim.viscosity,
@@ -781,7 +786,6 @@ public:
 #endif
 		}
 
-		////////std::cout << "AFTER1: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U_level->data->reduce_maxAbs() << std::endl;
 
 		// Interpolate to finest grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
@@ -793,8 +797,6 @@ public:
 		/* Tell XBraid no refinement */
 		io_status.SetRFactor(1);
 
-		//////////std::cout << "AFTER2: " << rank << " " << iter << " " << level << " " << tstart << " " << tstop << " " << U->data->reduce_maxAbs() << std::endl;
-		/////////std::cout << std::endl;
 		delete U_level;
 
 		return 0;
@@ -1264,7 +1266,7 @@ public:
 		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
 		///*o_norm = U->data->reduce_norm2();
 		/////std::cout << "MIN SPECTRAL " << this->min_spectral_size << std::endl;
-		//////////*o_norm = U->data->reduce_maxAbs(this->min_spectral_size);
+		/////*o_norm = U->data->spectral_reduce_maxAbs(this->min_spectral_size);
 		////*o_norm = U->data->reduce_maxAbs();
 
 		// Compute residual in the coarsest level

@@ -1071,7 +1071,7 @@ int main_real(int i_argc, char *i_argv[])
 		std::cout << " + setup finished" << std::endl;
 
 #if SWEET_MPI
-	std::cout << "Helo from MPI rank: " << mpi_rank << std::endl;
+	std::cout << "Hello from MPI rank: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
 	if (mpi_rank > 0)
@@ -1080,7 +1080,9 @@ int main_real(int i_argc, char *i_argv[])
 		 * Deactivate all output for ranks larger than the current one
 		 */
 		simVars.misc.verbosity = 0;
+	#if !SWEET_XBRAID
 		simVars.iodata.output_each_sim_seconds = -1;
+	#endif
 	}
 #endif
 
