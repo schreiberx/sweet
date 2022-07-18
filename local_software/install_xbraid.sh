@@ -21,7 +21,7 @@ cd xbraid
 make
 
 ## copy library and source files
-cp braid/libbraid.a  $PKG_INSTALLED_FILE
+cp braid/libbraid.a  $PKG_INSTALLED_FILE/.
 mkdir -p $PKG_INSTALLED_HEADERS
 cp braid/* $PKG_INSTALLED_HEADERS/.
 rm $PKG_INSTALLED_HEADERS/libbraid.a
