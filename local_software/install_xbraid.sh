@@ -11,24 +11,24 @@ PKG_URL_SRC="https://github.com/XBraid/xbraid.git"
 
 ## temporary folder for installation
 mkdir -p tmp_xbraid
-cd $tmp_xbraid
+cd tmp_xbraid
 
 ## download package
 git clone $PKG_URL_SRC
 
 ## install
 cd xbraid
-make
+make braid
 
 ## copy library and source files
-cp braid/libbraid.a  $PKG_INSTALLED_FILE/.
+cp braid/libbraid.a  $PKG_INSTALLED_FILE
 mkdir -p $PKG_INSTALLED_HEADERS
 cp braid/* $PKG_INSTALLED_HEADERS/.
 rm $PKG_INSTALLED_HEADERS/libbraid.a
 
 ## clean
 cd ../../
-rm -r tmp_xbraid
+rm -rf tmp_xbraid
 
 
 
