@@ -964,9 +964,16 @@ public:
 
 
 			// Spectral space
+			double small = 1e-20;
 			for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
-				err_Linf_spectral.emplace(std::make_pair(*it, diff_spectral.spectral_reduce_max_abs(*it) / 
-                                                                                parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it) ));
+			{
+				double norm_diff = std::sqrt(diff_spectral.spectral_reduce_max_abs(*it) );
+				double norm_ref = std::sqrt(parareal_data_ref->get_pointer_to_data_PlaneData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it) );
+				if (norm_diff < small and norm_ref < small)
+					err_Linf_spectral.emplace(std::make_pair(*it, 0.));
+				else
+					err_Linf_spectral.emplace(std::make_pair(*it, norm_diff / norm_ref ));
+			}
 
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 			if (ivar == 0)
@@ -991,13 +998,12 @@ public:
 			double small = 1e-20;
 			for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
 			{
-				double norm_diff = diff_spectral.spectral_reduce_max_abs(*it);
-				double norm_ref = parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it);
+				double norm_diff = std::sqrt(diff_spectral.spectral_reduce_max_abs(*it));
+				double norm_ref = std::sqrt(parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it));
 				if (norm_diff < small and norm_ref < small)
 					err_Linf_spectral.emplace(std::make_pair(*it, 0.));
 				else
-					err_Linf_spectral.emplace(std::make_pair(*it, diff_spectral.spectral_reduce_max_abs(*it) / 
-                                                                                parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it) ));
+					err_Linf_spectral.emplace(std::make_pair(*it, norm_Diff / norm_ref ));
 			}
 
 #endif

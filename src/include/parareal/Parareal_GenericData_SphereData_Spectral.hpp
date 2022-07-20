@@ -44,6 +44,7 @@ class Parareal_GenericData_SphereData_Spectral :
 		DataContainer_SphereData_Spectral(DataContainer_SphereData_Spectral &i_data)
 		{
 			this->nb_fields = N;
+			this->level = i_data.level;
 			this->simfields = new SphereData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_data.simfields[i]);
@@ -52,6 +53,7 @@ class Parareal_GenericData_SphereData_Spectral :
 		DataContainer_SphereData_Spectral& operator=(const DataContainer_SphereData_Spectral &i_data)
 		{
 			this->nb_fields = N;
+			this->level = i_data.level;
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_data.simfields[i]);
 			return *this;

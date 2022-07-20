@@ -225,11 +225,15 @@ public:
 	// Solution from previous timestep (for SL)
 	std::vector<std::vector<sweet_BraidVector*>> sol_prev; // sol_prev[level][timestep]
 	std::vector<std::vector<int>> sol_prev_iter; // store iteration in which the solution has been stored
+	std::vector<int> first_timeid_level; // store first timestep (time id) in this level and processor
+	std::vector<int> last_timeid_level; // store last timestep (time id) in this level and processor
 
 	// Timestepping method and orders for each level
 	std::vector<std::string> tsms;
 	std::vector<int> tsos;
 	std::vector<int> tsos2;
+	std::vector<bool> is_SL;
+	bool contains_SL = false;
 
 	// Smaller spectral resolution among levels
 	int min_spectral_size = INT_MAX;
@@ -470,8 +474,20 @@ public:
 
 			this->timeSteppers.push_back(tsm);
 
+			// check if tsm is SL
+			if ( std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[level]) == this->SL_tsm.end())
+				this->is_SL.push_back(false);
+			else
+			{
+				this->is_SL.push_back(true);
+				this->contains_SL = true; // requires extra communication
+#if SWEET_XBRAID_PLANE
+				this->size_buffer += N * this->planeDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+#elif SWEET_XBRAID_SPHERE
+				this->size_buffer += N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+#endif
+			}
 		}
-
 
 	}
 
@@ -500,6 +516,9 @@ public:
 
 			std::vector<int> w = {};
 			this->sol_prev_iter.push_back(w);
+
+			this->first_timeid_level.push_back(INT_MAX);
+			this->last_timeid_level.push_back(-1);
 		}
 
 
@@ -623,7 +642,8 @@ private:
 				)
 	{
 		// if not SL scheme: nothing to do
-		if ( std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
+		//if ( std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
+		if ( ! this->is_SL[i_level] )
 			return;
 
 		// if solution has already been stored in this iteration: nothing to do
@@ -638,6 +658,8 @@ private:
 		// set solution
 		*this->sol_prev[i_level][i_time_id] = *i_U;
 		this->sol_prev_iter[i_level][i_time_id] = iter;
+		this->first_timeid_level[i_level] = std::min(first_timeid_level[i_level], i_time_id);
+		this->last_timeid_level[i_level] = std::max(last_timeid_level[i_level], i_time_id);
 	}
 
 	void set_prev_solution(
@@ -648,7 +670,8 @@ private:
 	{
 
 		// if not SL scheme: nothing to do
-		if (  std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
+		///if (  std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
+		if ( ! this->is_SL[i_level] )
 			return;
 
 		// if t == 0 or prev solution not available
@@ -1307,6 +1330,13 @@ public:
 
 	/* --------------------------------------------------------------------
 	 * Pack a braid_Vector into a buffer.
+	 *
+	 * Issue concerning SL: the first time step in each processor needs to receive
+	 *                      the penult time step from the previous processor;
+	 *                      However, communication is made only in level 0
+	 * Solution (possibly not optimal): if SL is used in at least one level,
+	 *                                  each communication includes the previous
+	 *                                  time step of all levels.
 	 * -------------------------------------------------------------------- */
 	braid_Int
 	BufPack(
@@ -1324,7 +1354,37 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) o_buffer;
 #endif
 
-		U->data->serialize(dbuffer);
+		// no SL method is used: only communicate solution
+		if ( ! contains_SL )
+			U->data->serialize(dbuffer);
+		// SL method is used: also communcate prev solution
+		else
+		{
+			// store solution from level 0
+			std::complex<double> *level_buffer_data = nullptr;
+			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+			int s2 = 0;
+			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+			U->data->serialize(level_buffer_data);
+			std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
+			s2 += s;
+			MemBlockAlloc::free(level_buffer_data, s);
+
+			// store prev solution from every level using SL
+			for (size_t level = 0; level < this->is_SL.size(); ++level)
+			{
+				if (this->is_SL[level])
+				{
+					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+					int time_id = this->last_timeid_level[level];
+					this->sol_prev[level][time_id]->data->serialize(level_buffer_data);
+					std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
+					s2 += s;
+					MemBlockAlloc::free(level_buffer_data, s);
+				}
+			}
+		}
 
 		o_status.SetSize( this->size_buffer );
 		return 0;
@@ -1352,7 +1412,38 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif
 
-		U->data->deserialize(dbuffer);
+		// no SL method is used: only communicate solution
+		if ( ! contains_SL )
+			U->data->deserialize(dbuffer);
+		// SL method is used: also communcate prev solution
+		else
+		{
+			// get solution for level 0
+			std::complex<double> *level_buffer_data = nullptr;
+			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+			int s2 = 0;
+			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+			std::copy(&dbuffer[0], &dbuffer[s], &level_buffer_data[0]);
+			U->data->deserialize(level_buffer_data);
+			s2 += s;
+			MemBlockAlloc::free(level_buffer_data, s);
+
+			// get prev solution for every level using SL
+			for (size_t level = 0; level < this->is_SL.size(); ++level)
+			{
+				if (this->is_SL[level])
+				{
+					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+					std::copy(&dbuffer[s2], &dbuffer[s2 + s], &level_buffer_data[0]);
+					int time_id = this->first_timeid_level[level];
+					this->sol_prev[level][time_id - 1] = this->create_new_vector(level);
+					this->sol_prev[level][time_id - 1]->data->deserialize(level_buffer_data);
+					s2 += s;
+					MemBlockAlloc::free(level_buffer_data, s);
+				}
+			}
+		}
 
 		*o_U = (braid_Vector) U;
 
