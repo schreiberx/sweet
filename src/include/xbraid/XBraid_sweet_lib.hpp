@@ -1362,9 +1362,9 @@ public:
 		{
 			// store solution from level 0
 			std::complex<double> *level_buffer_data = nullptr;
-			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
 			int s2 = 0;
-			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			U->data->serialize(level_buffer_data);
 			std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
 			s2 += s;
@@ -1375,8 +1375,8 @@ public:
 			{
 				if (this->is_SL[level])
 				{
-					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
-					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
+					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					int time_id = this->last_timeid_level[level];
 					this->sol_prev[level][time_id]->data->serialize(level_buffer_data);
 					std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
@@ -1420,9 +1420,9 @@ public:
 		{
 			// get solution for level 0
 			std::complex<double> *level_buffer_data = nullptr;
-			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
 			int s2 = 0;
-			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			std::copy(&dbuffer[0], &dbuffer[s], &level_buffer_data[0]);
 			U->data->deserialize(level_buffer_data);
 			s2 += s;
@@ -1433,8 +1433,8 @@ public:
 			{
 				if (this->is_SL[level])
 				{
-					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
-					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s);
+					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
+					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					std::copy(&dbuffer[s2], &dbuffer[s2 + s], &level_buffer_data[0]);
 					int time_id = this->first_timeid_level[level];
 					this->sol_prev[level][time_id - 1] = this->create_new_vector(level);

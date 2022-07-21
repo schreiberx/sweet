@@ -1003,7 +1003,7 @@ public:
 				if (norm_diff < small and norm_ref < small)
 					err_Linf_spectral.emplace(std::make_pair(*it, 0.));
 				else
-					err_Linf_spectral.emplace(std::make_pair(*it, norm_Diff / norm_ref ));
+					err_Linf_spectral.emplace(std::make_pair(*it, norm_diff / norm_ref ));
 			}
 
 #endif
