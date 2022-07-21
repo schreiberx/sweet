@@ -214,7 +214,8 @@ public:
 	double				dt;
 	std::vector<t_tsmType*>		timeSteppers;
 
-	int			size_buffer;
+	int			size_buffer;		// overestimated
+	int			actual_size_buffer;
 
 	int rank;
 
@@ -482,9 +483,9 @@ public:
 				this->is_SL.push_back(true);
 				this->contains_SL = true; // requires extra communication
 #if SWEET_XBRAID_PLANE
-				this->size_buffer += N * this->planeDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+				this->actual_size_buffer += N * this->planeDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #elif SWEET_XBRAID_SPHERE
-				this->size_buffer += N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+				this->actual_size_buffer += N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
 			}
 		}
@@ -503,9 +504,19 @@ public:
 #if SWEET_XBRAID_SCALAR
 		this->size_buffer = N * sizeof(double);
 #elif SWEET_XBRAID_PLANE
-		this->size_buffer = N * planeDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+		// To be updated depending on the tsm
+		this->actual_size_buffer = N * planeDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+		// Overestimated
+		this->size_buffer = 0;
+		for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
+			this->size_buffer += N * planeDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #elif SWEET_XBRAID_SPHERE
-		this->size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+		// To be updated depending on the tsm
+		this->actual_size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
+		// Overestimated
+		this->size_buffer = 0;
+		for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
+			this->size_buffer += N * sphereDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
 
 		// create vectors for storing solutions from previous timestep (SL)
@@ -1362,31 +1373,31 @@ public:
 		{
 			// store solution from level 0
 			std::complex<double> *level_buffer_data = nullptr;
-			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
+			int s = N * this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
 			int s2 = 0;
 			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			U->data->serialize(level_buffer_data);
 			std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
 			s2 += s;
-			MemBlockAlloc::free(level_buffer_data, s);
+			MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
 
 			// store prev solution from every level using SL
 			for (size_t level = 0; level < this->is_SL.size(); ++level)
 			{
 				if (this->is_SL[level])
 				{
-					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
+					s = N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
 					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					int time_id = this->last_timeid_level[level];
 					this->sol_prev[level][time_id]->data->serialize(level_buffer_data);
 					std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
 					s2 += s;
-					MemBlockAlloc::free(level_buffer_data, s);
+					MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
 				}
 			}
 		}
 
-		o_status.SetSize( this->size_buffer );
+		o_status.SetSize( this->actual_size_buffer );
 		return 0;
 	}
 
@@ -1420,27 +1431,27 @@ public:
 		{
 			// get solution for level 0
 			std::complex<double> *level_buffer_data = nullptr;
-			int s = this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
+			int s = N * this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
 			int s2 = 0;
 			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			std::copy(&dbuffer[0], &dbuffer[s], &level_buffer_data[0]);
 			U->data->deserialize(level_buffer_data);
 			s2 += s;
-			MemBlockAlloc::free(level_buffer_data, s);
+			MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
 
 			// get prev solution for every level using SL
 			for (size_t level = 0; level < this->is_SL.size(); ++level)
 			{
 				if (this->is_SL[level])
 				{
-					s = this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
+					s = N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
 					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					std::copy(&dbuffer[s2], &dbuffer[s2 + s], &level_buffer_data[0]);
 					int time_id = this->first_timeid_level[level];
 					this->sol_prev[level][time_id - 1] = this->create_new_vector(level);
 					this->sol_prev[level][time_id - 1]->data->deserialize(level_buffer_data);
 					s2 += s;
-					MemBlockAlloc::free(level_buffer_data, s);
+					MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
 				}
 			}
 		}
