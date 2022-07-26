@@ -28,7 +28,7 @@ tsm_fine = sys.argv[3];
 tsm_coarse = sys.argv[4];
 nb_pt = int(sys.argv[5])
 
-if (itest == 5):
+if (itest == 5 or itest == 6):
     online_error = int(sys.argv[6])
 
     if online_error:
@@ -196,8 +196,6 @@ if simulation_to_run == "xbraid":
 
         if online_error:
             jg.runtime.xbraid_store_iterations = 0;
-            ###jg.runtime.xbraid_load_ref_csv_files = 1;
-            ###jg.runtime.xbraid_path_ref_csv_files = path_ref;
             jg.runtime.xbraid_load_fine_csv_files = 1;
             jg.runtime.xbraid_path_fine_csv_files = path_fine;
 
@@ -211,6 +209,19 @@ if simulation_to_run == "xbraid":
                         jg.runtime.xbraid_pt = pt;
                         jg.runtime.xbraid_spatial_coarsening = coarsening;
                         jg.gen_jobscript_directory()
+
+    elif (itest == 6):
+
+        spatial_coarsening = [0, jg.runtime.space_res_spectral];
+
+        jg.runtime.xbraid_access_level = 2;
+        jg.runtime.xbraid_store_iterations = 0;
+        jg.runtime.xbraid_load_fine_csv_files = 1;
+        jg.runtime.xbraid_path_fine_csv_files = path_fine;
+
+        for coarsening in spatial_coarsening:
+            jg.runtime.xbraid_spatial_coarsening = coarsening;
+            jg.gen_jobscript_directory();
 
     if (itest < 5):
         jg.gen_jobscript_directory();

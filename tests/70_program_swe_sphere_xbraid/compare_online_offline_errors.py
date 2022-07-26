@@ -58,12 +58,21 @@ def read_error_file(path):
 
 path_simulations = sys.argv[1];
 fine_sim = sys.argv[2];
+test_spatial_coarsening = False;
+if len(sys.argv) > 3:
+    test_spatial_coarsening = int(sys.argv[3]);
+
+list_vars = ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_store_iterations", "runtime.xbraid_spatial_coarsening"];
+list_vars2 = ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_spatial_coarsening"];
+if test_spatial_coarsening:
+    list_vars2.remove("runtime.xbraid_spatial_coarsening");
 
 ## get list of jobs in this directory
 list_jobs = glob.glob(path_simulations + "/job_bench_*");
 list_jobs = [os.path.basename(job) for job in list_jobs];
 ## exclude fine simulation
-list_jobs.remove(fine_sim);
+if fine_sim in list_jobs:
+    list_jobs.remove(fine_sim);
 
 print("    ** {} jobs found.".format(len(list_jobs)));
 
@@ -75,7 +84,7 @@ for key in jd.keys():
     if path == fine_sim:
         continue;
     job_info[path] = {};
-    for s in ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_store_iterations", "runtime.xbraid_spatial_coarsening"]:
+    for s in list_vars:
         job_info[path][s] = jd[key][s];
 
 
@@ -93,14 +102,18 @@ for job1 in list_jobs:
         if job2 in read_jobs:
             continue;
         found_job = True;
-        for s in ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_spatial_coarsening"]:
+        for s in list_vars2:
             if not job_info[job1][s] == job_info[job2][s]:
                 found_job = False;
 
 
         if found_job:
             ipair += 1;
-            assert not job_info[job1]["runtime.xbraid_store_iterations"] == job_info[job2]["runtime.xbraid_store_iterations"], (job1, job2);
+            if not test_spatial_coarsening:
+                assert not job_info[job1]["runtime.xbraid_store_iterations"] == job_info[job2]["runtime.xbraid_store_iterations"], (job1, job2);
+            else:
+                assert not job_info[job1]["runtime.xbraid_spatial_coarsening"] == job_info[job2]["runtime.xbraid_spatial_coarsening"], (job1, job2);
+                assert job_info[job1]["runtime.xbraid_spatial_coarsening"] * job_info[job2]["runtime.xbraid_spatial_coarsening"] == 0;
 
             read_jobs.append(job2);
 

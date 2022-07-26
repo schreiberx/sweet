@@ -9,6 +9,9 @@
 ## itest = 4: print_level = 3 -> check residual norm at each C-point: should be zero for two C-points per iteration
 ## itest = 5: multilevel tests + n processors in time -> XBraid solution within tol w.r.t. serial solution
 ###############
+## Additional unit tests:
+## itest = 6: basic test for spatial coarsening feature: simulations with spatial_coarsening = 0 or = N ( = fine resolution) should be identical
+###############
 
 
 get_tsm(){
@@ -41,8 +44,8 @@ mkdir $dirname_offline_error;
 
 echo ""
 
-for itest in {-1..5};do
-##for itest in 5;do
+##for itest in {-1..6};do
+for itest in {-1,6};do
 	echo "*********************";
 	echo "Running debug test" $itest;
 	echo "*********************";
@@ -183,7 +186,7 @@ for itest in {-1..5};do
 
 							##### identify ref simulation
 							###ref_sim=$(cat $dirname2/ref_sim);
-	
+
 							## identify fine simulation
 							fine_sim=$(cat $dirname2/fine_sim);
 
@@ -219,6 +222,16 @@ for itest in {-1..5};do
 
 		done;
 
+	elif [ "$itest" == 6 ]; then
+
+		for nproc in 1; do
+			fine_sim=$(cat fine_sim);
+			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim > dummy || exit 1
+
+			mule.benchmark.jobs_run_directly || exit 1
+			./compare_online_offline_errors.py . $fine_sim 1
+		done;
+
 	fi;
 
 
@@ -227,15 +240,15 @@ for itest in {-1..5};do
 done;
 
 
-mule.benchmark.cleanup_all || exit 1
-if [ -d $dirname_serial ]; then
-	rm -r $dirname_serial;
-fi
-if [ -d $dirname_offline_error ]; then
-	rm -r $dirname_offline_error;
-fi
-
-rm dummy;
+###############mule.benchmark.cleanup_all || exit 1
+###############if [ -d $dirname_serial ]; then
+###############	rm -r $dirname_serial;
+###############fi
+###############if [ -d $dirname_offline_error ]; then
+###############	rm -r $dirname_offline_error;
+###############fi
+###############
+###############rm dummy;
 
 echo ""
 echo_info "Test successful!"

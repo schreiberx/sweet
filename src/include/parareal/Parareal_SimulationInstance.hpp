@@ -801,7 +801,7 @@ public:
 		Parareal_GenericData* tmp2 = this->create_new_data_container("fine");
 		*tmp2 = *(this->parareal_data_output);
 		*tmp2 -= *tmp;
-		convergence = tmp2->reduce_maxAbs();
+		convergence = tmp2->spectral_reduce_maxAbs();
 
 		// store output data
 		*(this->parareal_data_output) = *tmp;
