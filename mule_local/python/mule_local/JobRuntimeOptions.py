@@ -433,11 +433,11 @@ class JobRuntimeOptions(InfoError):
             if self.parareal_enabled:
                 if not 'runtime.parareal_coarse_slices' in filter_list:
                     idstr += '_par_'+str(self.parareal_coarse_slices)
-            if not 'runtime.parareal_coarse_timestepping_method' in filter_list:
+                if not 'runtime.parareal_coarse_timestepping_method' in filter_list:
                     idstr += '_ptsm_'+str(self.parareal_coarse_timestepping_method)
-            if not 'runtime.parareal_coarse_timestep_size' in filter_list:
+                if not 'runtime.parareal_coarse_timestep_size' in filter_list:
                     idstr += '_pDt_'+str(self.parareal_coarse_timestep_size)
-            if not 'runtime.parareal_store_iterations' in filter_list:
+                if not 'runtime.parareal_store_iterations' in filter_list:
                     idstr += '_pStore_'+str(self.parareal_store_iterations)
 
         if idstr != '':
