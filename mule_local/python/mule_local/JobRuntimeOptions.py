@@ -134,7 +134,7 @@ class JobRuntimeOptions(InfoError):
 
         self.compute_error = 0
 
-        self.reuse_plans = -1
+        self.reuse_plans = "quick"
         self.comma_separated_tags = None
 
         ## parareal parameters
