@@ -44,8 +44,7 @@ mkdir $dirname_offline_error;
 
 echo ""
 
-##for itest in {-1..6};do
-for itest in {-1,6};do
+for itest in {-1..6};do
 	echo "*********************";
 	echo "Running debug test" $itest;
 	echo "*********************";
@@ -240,15 +239,15 @@ for itest in {-1,6};do
 done;
 
 
-###############mule.benchmark.cleanup_all || exit 1
-###############if [ -d $dirname_serial ]; then
-###############	rm -r $dirname_serial;
-###############fi
-###############if [ -d $dirname_offline_error ]; then
-###############	rm -r $dirname_offline_error;
-###############fi
-###############
-###############rm dummy;
+mule.benchmark.cleanup_all || exit 1
+if [ -d $dirname_serial ]; then
+	rm -r $dirname_serial;
+fi
+if [ -d $dirname_offline_error ]; then
+	rm -r $dirname_offline_error;
+fi
+
+rm dummy;
 
 echo ""
 echo_info "Test successful!"

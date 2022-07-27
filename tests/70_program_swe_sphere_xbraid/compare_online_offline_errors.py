@@ -152,7 +152,7 @@ for job1 in list_jobs:
                         if err_Linf_1[rnorm] < eps_small and err_Linf_2[rnorm] < eps_small:
                             continue;
                         err_Linf = np.abs(err_Linf_1[rnorm] - err_Linf_2[rnorm]);
-                        assert err_Linf < small, (rnorm, err_Linf_1, err_Linf_2, np.abs(err_Linf_1[rnorm] - err_Linf_2[rnorm]), f, job1, job2);
+                        assert err_Linf < small, (rnorm, err_Linf_1, err_Linf_2, np.abs(err_Linf_1[rnorm] - err_Linf_2[rnorm]), f, job1, job2, err_Linf, small);
                         max_diff = np.max([max_diff, err_Linf]);
 
 

@@ -1213,10 +1213,10 @@ int main_real(int i_argc, char *i_argv[])
 						else
 							SWEETError("Invalid parameter xbraid_spatial_coarsening");
 					}
+
 					sphereDataConfigs.push_back(new SphereData_Config);
 					sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
 
-					//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 					ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
 
 					std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;

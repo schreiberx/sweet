@@ -723,12 +723,14 @@ public:
 		// Benchmark::setup_initial_conditions has already been called
 		if (this->timeSteppers.size() == 0)
 		{
+
 			// if rank > 0, call setup_init_conditions to ensure that parameters from benchmark are set
 			if (rank > 0)
 			{
 				braid_Vector dummy;
 				this->Init(0., &dummy);
 			}
+
 			this->setup_timesteppers();
 		}
 
@@ -751,7 +753,7 @@ public:
 		io_status.GetTIndex(&time_id);
 		io_status.GetIter(&iter);
 
-		// Vector defined in the current level (defined via interpolaiton if necessary)
+		// Vector defined in the current level (defined via interpolation if necessary)
 		sweet_BraidVector* U_level = this->create_new_vector(level);
 
 		// Interpolate to coarser grid in space if necessary
@@ -760,6 +762,7 @@ public:
 			U_level->data->restrict(*U->data);
 		else
 			*U_level->data = *U->data;
+
 
 		// create containers for prev solution
 		if (this->sol_prev[level].size() == 0)
@@ -896,6 +899,21 @@ public:
 		#if SWEET_XBRAID_PLANE_SWE
 			SWEPlaneBenchmarksCombined swePlaneBenchmarks;
 			swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane[0]);
+
+			// Dummy initialization in coarse levels
+			// The only purpose is to call Operators setup from benchmark (sim parameters may change!)
+			for (size_t level = 1; level < op_sphere.size(); level++)
+			{
+				PlaneData_Spectral dummy1(planeDataConfig[level]);
+				PlaneData_Spectral dummy2(planeDataConfig[level]);
+				PlaneData_Spectral dummy3(planeDataConfig[level]);
+
+				SWEPlaneBenchmarksCombined swePlaneBenchmarks_dummy;
+				swePlaneBenchmarks_dummy.setupInitialConditions(dummy1, dummy2, dummy3, *simVars, *op_plane[level]);
+			}
+
+
+
 		#elif SWEET_XBRAID_PLANE_BURGERS
 			PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig[0]);
 			PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig[0]);
@@ -954,6 +972,20 @@ public:
 			BenchmarksSphereSWE sphereBenchmarks;
 			sphereBenchmarks.setup(*simVars, *op_sphere[0]);
 			sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+
+			// Dummy initialization in coarse levels
+			// The only purpose is to call Operators setup from benchmark (sim parameters may change!)
+			for (size_t level = 1; level < op_sphere.size(); level++)
+			{
+				SphereData_Spectral dummy1(sphereDataConfig[level]);
+				SphereData_Spectral dummy2(sphereDataConfig[level]);
+				SphereData_Spectral dummy3(sphereDataConfig[level]);
+
+				BenchmarksSphereSWE sphereBenchmarks_dummy;
+				sphereBenchmarks_dummy.setup(*simVars, *op_sphere[level]);
+				sphereBenchmarks_dummy.master->get_initial_state(dummy1, dummy2, dummy3);
+			}
+
 
 			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
