@@ -131,7 +131,7 @@ for rexi_file_method in rexi_file_methods:
 
         # CI-REXI: Number of quadrature poles
         #N_list = [32, 64, 128, 256, 512, 1024, 2048, 2*2048, 4*2048]
-        N_list = [128]
+        N_list = [16]
 
         # CI-REXI: Value on imaginary axis to be included
         #lambda_include_imag_list = [5, 10, 15, 20, 40, 80, 120, 160, 200]
