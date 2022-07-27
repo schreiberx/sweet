@@ -232,6 +232,7 @@ public:
 	virtual void pad_zeros(const Parareal_GenericData& i_data) = 0;
 
 	virtual void physical_print() = 0;
+	virtual void spectral_print() = 0;
 
 };
 

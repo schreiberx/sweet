@@ -290,6 +290,12 @@ public:
 		}
 	}
 
+	void spectral_print()
+	{
+		this->physical_print();
+	}
+
+
 };
 
 #endif

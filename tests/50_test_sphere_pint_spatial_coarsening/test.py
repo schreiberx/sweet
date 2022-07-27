@@ -11,13 +11,14 @@ from mule.exec_program import *
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
+jg.compile.mode = "debug"
 jg.compile.parareal_sphere = "enable"
 jg.compile.unit_test="test_sphere_pint_spatial_coarsening"
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
 
 
-jg.runtime.benchmark_name = "gaussian_bump"
+jg.runtime.benchmark_name = "rossby_haurwitz_wave"
 jg.runtime.space_res_spectral = 256;
 jg.runtime.verbosity = 0
 

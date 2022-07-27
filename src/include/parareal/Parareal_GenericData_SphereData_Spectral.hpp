@@ -288,9 +288,16 @@ public:
 			std::cout << "Field #" << i << std::endl;
 			this->data->simfields[i]->toPhys().print();
 		}
-
 	}
 
+	void spectral_print()
+	{
+		for (int i = 0; i < N; i++)
+		{
+			std::cout << "Field #" << i << std::endl;
+			this->data->simfields[i]->spectral_print();
+		}
+	}
 
 	void dataArrays_to_GenericData_SphereData_Spectral(
 								SphereData_Spectral &phi,

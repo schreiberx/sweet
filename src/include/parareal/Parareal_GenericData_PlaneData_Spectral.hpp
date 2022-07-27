@@ -291,6 +291,16 @@ public:
 		}
 	}
 
+	void spectral_print()
+	{
+		for (int i = 0; i < N; i++)
+		{
+			std::cout << "Field #" << i << std::endl;
+			this->data->simfields[i]->spectral_print();
+		}
+	}
+
+
 	void dataArrays_to_GenericData_PlaneData_Spectral(
 	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 								PlaneData_Spectral &h,

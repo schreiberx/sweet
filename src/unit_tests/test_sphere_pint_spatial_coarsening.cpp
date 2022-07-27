@@ -8,6 +8,7 @@
  */
 
 #include <iostream>
+#include <cassert>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
@@ -17,11 +18,11 @@
 
 SimulationVariables simVars;
 
-SphereData_Config sphereDataConfigInstance_highres;
-SphereData_Config *sphereDataConfig_highres = &sphereDataConfigInstance_highres;
+SphereData_Config sphereDataConfigInstance_H;
+SphereData_Config *sphereDataConfig_H = &sphereDataConfigInstance_H;
 
-SphereData_Config sphereDataConfigInstance_lowres;
-SphereData_Config *sphereDataConfig_lowres = &sphereDataConfigInstance_lowres;
+SphereData_Config sphereDataConfigInstance_L;
+SphereData_Config *sphereDataConfig_L = &sphereDataConfigInstance_L;
 
 
 void printTest(std::string test_name)
@@ -77,6 +78,9 @@ public:
 		SphereData_Spectral* vrt = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[1];
 		SphereData_Spectral* div = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[2];
 
+		// To avoid warning message in benchmark
+		simVars.timecontrol.current_simulation_time = 1;
+
 		this->sphereBenchmarks.setup(simVars, *this->op);
 		this->sphereBenchmarks.master->get_initial_state(*phi_pert, *vrt, *div);
 
@@ -113,97 +117,164 @@ int main(
 		return -1;
 	}
 
-	int N_highres = 256;
-	int N_lowres = 32;
-
-	int N_physical[2] = {-1, -1};
-	int N_spectral_highres[2] = {N_highres, N_highres};
-	int N_spectral_lowres[2] = {N_lowres, N_lowres};
-
-	sphereDataConfigInstance_highres.setupAuto(
-						N_physical,
-						N_spectral_highres,
-						simVars.misc.reuse_spectral_transformation_plans
-					);
-
-	sphereDataConfigInstance_lowres.setupAuto(
-						N_physical,
-						N_spectral_lowres,
-						simVars.misc.reuse_spectral_transformation_plans
-					);
-
-	SphereOperators_SphereData op_highres(sphereDataConfig_highres, &(simVars.sim));
-	SphereOperators_SphereData op_lowres(sphereDataConfig_lowres, &(simVars.sim));
-
-	Data* data_highres = new Data(sphereDataConfig_highres, &op_highres);
-	data_highres->setup();
-
-	Data* data_lowres = new Data(sphereDataConfig_lowres, &op_lowres);
-	data_lowres->setup();
-
-	// Error storage
-	Parareal_GenericData* error_highres = new Parareal_GenericData_SphereData_Spectral<3>;
-	Parareal_GenericData* error_lowres = new Parareal_GenericData_SphereData_Spectral<3>;
-	error_highres->setup_data_config(sphereDataConfig_highres);
-	error_lowres->setup_data_config(sphereDataConfig_lowres);
-	error_highres->allocate_data();
-	error_lowres->allocate_data();
+	double eps = 1e-15;
 
 
+	int N_Hs[5] = {16, 32, 64, 128, 256};
+	int N_Ls[5] = {8, 16, 32, 64, 128};
+
+	for (int i_H = 0; i_H < 5; i_H++)
+	{
+		for (int i_L = 0; i_L < 5; i_L++)
+		{
+
+			int N_H = N_Hs[i_H];
+			int N_L = N_Ls[i_L];
+
+			if (N_L >= N_H)
+				continue;
+
+			std::cout << std::endl;
+			std::cout << "-------------------------------------------" << std::endl;
+			std::cout << "-------------------------------------------" << std::endl;
+			std::cout << " TESTING FOR N_H = " << N_H << "; " << "N_L = " << N_L << std::endl;
+			std::cout << "-------------------------------------------" << std::endl;
+			std::cout << "-------------------------------------------" << std::endl;
 
 
-	// Tests 1 and 2: High res -> high res (no restriction nor padding zeros)
-	Data* data_highres_to_highres = new Data(sphereDataConfig_highres, &op_highres);
-	data_highres_to_highres->setup();
-	data_highres_to_highres->set_zero();
+			int N_physical[2] = {-1, -1};
+			int N_spectral_H[2] = {N_H, N_H};
+			int N_spectral_L[2] = {N_L, N_L};
 
-	printTest("Test 1: high res -> high res (dummy restriction) ");
-	data_highres_to_highres->restrict(data_highres);
-	*error_highres = *data_highres->data;
-	*error_highres -= *data_highres_to_highres->data;
-	printError(error_highres->spectral_reduce_maxAbs());
+			sphereDataConfigInstance_H.setupAuto(
+								N_physical,
+								N_spectral_H,
+								simVars.misc.reuse_spectral_transformation_plans
+							);
 
-	data_highres_to_highres->set_zero();
-	printTest("Test 2: high res -> high res (dummy prolongation) ");
-	data_highres_to_highres->pad_zeros(data_highres);
-	*error_highres = *data_highres->data;
-	*error_highres -= *data_highres_to_highres->data;
-	printError(error_highres->spectral_reduce_maxAbs());
+			sphereDataConfigInstance_L.setupAuto(
+								N_physical,
+								N_spectral_L,
+								simVars.misc.reuse_spectral_transformation_plans
+							);
 
-	delete data_highres_to_highres;
+			SphereOperators_SphereData op_H(sphereDataConfig_H, &(simVars.sim));
+			SphereOperators_SphereData op_L(sphereDataConfig_L, &(simVars.sim));
 
+			Data* data_H = new Data(sphereDataConfig_H, &op_H);
+			data_H->setup();
 
-	// Test 3:
-	Data* data_highres_to_lowres = new Data(sphereDataConfig_lowres, &op_lowres);
-	data_highres_to_lowres->setup();
-	printTest("Test 3: high res -> low res (restriction) ");
-	data_highres_to_lowres->set_zero();
-	data_highres_to_lowres->restrict(data_highres);
-	*error_lowres = *data_lowres->data;
-	*error_lowres -= *data_highres_to_lowres->data;
-	printError(error_lowres->spectral_reduce_maxAbs());
+			Data* data_L = new Data(sphereDataConfig_L, &op_L);
+			data_L->setup();
 
-	// Test 4: 
-	Data* data_highres_to_lowres_to_highres = new Data(sphereDataConfig_highres, &op_highres);
-	data_highres_to_lowres_to_highres->setup();
-	printTest("Test 3: high res -> low res -> high res (restriction + prolongation) ");
-	data_highres_to_lowres_to_highres->set_zero();
-	data_highres_to_lowres_to_highres->pad_zeros(data_highres_to_lowres);
-	*error_highres = *data_highres->data;
-	*error_highres -= *data_highres_to_lowres_to_highres->data;
-	printError(error_highres->spectral_reduce_maxAbs(N_lowres - 1),"(Up to mode " + std::to_string(N_lowres - 1) + ")" );
-	printError(error_highres->spectral_reduce_maxAbs(N_lowres), "(Up to mode " + std::to_string(N_lowres) + ")" );
-	delete data_highres_to_lowres;
-	delete data_highres_to_lowres_to_highres;
-
-	// Test 5: 
+			// Error storage
+			Parareal_GenericData* error_H = new Parareal_GenericData_SphereData_Spectral<3>;
+			Parareal_GenericData* error_L = new Parareal_GenericData_SphereData_Spectral<3>;
+			error_H->setup_data_config(sphereDataConfig_H);
+			error_L->setup_data_config(sphereDataConfig_L);
+			error_H->allocate_data();
+			error_L->allocate_data();
 
 
+			// Tests 1 and 2:
+			Data* data_H_to_H = new Data(sphereDataConfig_H, &op_H);
+			data_H_to_H->setup();
+			data_H_to_H->set_zero();
+
+			printTest("Test 1: high res -> high res (dummy restriction) ");
+			data_H_to_H->restrict(data_H);
+			*error_H = *data_H->data;
+			*error_H -= *data_H_to_H->data;
+			double error = error_H->spectral_reduce_maxAbs();
+			printError(error);
+			assert(error < eps);
+
+			data_H_to_H->set_zero();
+			printTest("Test 2: high res -> high res (dummy prolongation) ");
+			data_H_to_H->pad_zeros(data_H);
+			*error_H = *data_H->data;
+			*error_H -= *data_H_to_H->data;
+			error = error_H->spectral_reduce_maxAbs();
+			printError(error);
+			assert(error < eps);
+
+			delete data_H_to_H;
 
 
-	delete data_highres;
-	delete data_lowres;
+			// Test 3:
+			Data* data_H_to_L = new Data(sphereDataConfig_L, &op_L);
+			data_H_to_L->setup();
+			printTest("Test 3: high res -> low res (restriction) ");
+			data_H_to_L->set_zero();
+			data_H_to_L->restrict(data_H);
+			*error_L = *data_L->data;
+			*error_L -= *data_H_to_L->data;
+			error = error_L->spectral_reduce_maxAbs();
+			printError(error);
+			assert(error < eps);
 
-	delete error_highres;
-	delete error_lowres;
+			// Test 4:
+			Data* data_H_to_L_to_H = new Data(sphereDataConfig_H, &op_H);
+			data_H_to_L_to_H->setup();
+			printTest("Test 4: high res -> low res -> high res (restriction + prolongation) ");
+			data_H_to_L_to_H->set_zero();
+			data_H_to_L_to_H->pad_zeros(data_H_to_L);
+			*error_H = *data_H->data;
+			*error_H -= *data_H_to_L_to_H->data;
+			error = error_H->spectral_reduce_maxAbs(N_L - 1);
+			printError(error, "(Up to mode " + std::to_string(N_L - 1) + ")" );
+			printError(error_H->spectral_reduce_maxAbs(N_L), "(Up to mode " + std::to_string(N_L) + ")" );
+			assert(error < eps);
+			delete data_H_to_L;
+			delete data_H_to_L_to_H;
+
+			// Test 5:
+			Data* data_L_to_H = new Data(sphereDataConfig_H, &op_H);
+			data_L_to_H->setup();
+			printTest("Test 5: low res -> high res (prolongation) ");
+			data_L_to_H->set_zero();
+			data_L_to_H->restrict(data_L);
+			*error_H = *data_H->data;
+			*error_H -= *data_L_to_H->data;
+			error = error_H->spectral_reduce_maxAbs(N_L - 1);
+			printError(error, "(Up to mode " + std::to_string(N_L - 1) + ")" );
+			printError(error_H->spectral_reduce_maxAbs(N_L), "(Up to mode " + std::to_string(N_L) + ")" );
+			assert(error < eps);
+
+			// Test 6:
+			Data* data_L_to_H_to_L = new Data(sphereDataConfig_L, &op_L);
+			data_L_to_H_to_L->setup();
+			printTest("Test 6: low res -> high res -> low res (prolongation + restriction) ");
+			data_L_to_H_to_L->set_zero();
+			data_L_to_H_to_L->pad_zeros(data_L_to_H);
+			*error_L = *data_L->data;
+			*error_L -= *data_L_to_H_to_L->data;
+			error = error_L->spectral_reduce_maxAbs();
+			printError(error);
+			assert(error < eps);
+			delete data_L_to_H;
+			delete data_L_to_H_to_L;
+
+
+
+			delete data_H;
+			delete data_L;
+
+			delete error_H;
+			delete error_L;
+
+			std::cout << "-------------------------------------------" << std::endl;
+			std::cout << "-------------------------------------------" << std::endl;
+			std::cout << " TEST SUCCESSFUL" << std::endl;
+			std::cout << "-------------------------------------------" << std::endl;
+			std::cout << "-------------------------------------------" << std::endl;
+			std::cout << std::endl;
+		}
+	}
+
+	std::cout << std::endl;
+	std::cout << " !!!!!!!!!!!!!!!!!! " << std::endl;
+	std::cout << "  ALL TESTS PASSED " << std::endl;
+	std::cout << " !!!!!!!!!!!!!!!!!! " << std::endl;
+	std::cout << std::endl;
 }
