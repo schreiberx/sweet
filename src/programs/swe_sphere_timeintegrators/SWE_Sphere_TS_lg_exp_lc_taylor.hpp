@@ -11,7 +11,7 @@
 
 
 
-class SWE_Sphere_TS_lg_exp_lc_exp	: public SWE_Sphere_TS_interface
+class SWE_Sphere_TS_lg_exp_lc_taylor	: public SWE_Sphere_TS_interface
 {
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method
@@ -49,7 +49,7 @@ public:
 
 
 public:
-	SWE_Sphere_TS_lg_exp_lc_exp(
+	SWE_Sphere_TS_lg_exp_lc_taylor(
 			SimulationVariables &i_simVars,
 			SphereOperators_SphereData &i_op
 		);
@@ -87,7 +87,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-	virtual ~SWE_Sphere_TS_lg_exp_lc_exp();
+	virtual ~SWE_Sphere_TS_lg_exp_lc_taylor();
 };
 
 #endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */

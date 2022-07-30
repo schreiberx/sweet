@@ -44,13 +44,14 @@ class SWEETError_
 
 
 public:
-	[[ noreturn ]]
+//	[[ noreturn ]]
 	SWEETError_(
 			const std::string &i_error_type,
 			const std::string &i_error_message,
 			const char* i_filename,
 			int i_line_no,
-			const char* i_func
+			const char* i_func,
+			bool stop_after_error = true
 		)
 	{
 		std::cerr << std::flush << std::endl;
@@ -67,10 +68,13 @@ public:
 		std::cerr << " + Function: " << i_func << std::endl;
 		std::cerr << "********************************************" << std::endl;
 		std::cerr << std::endl;
-		print_trace();
-		assert(false);	// Trigger every possible error we can trigger to suport debuggers
-		raise(SIGABRT);
-		exit(-1);
+		if (stop_after_error)
+		{
+			print_trace();
+			assert(false);	// Trigger every possible error we can trigger to suport debuggers
+			raise(SIGABRT);
+			exit(-1);
+		}
 	}
 };
 
@@ -83,6 +87,9 @@ public:
 
 // Regular errors such as wrong time integration method, negative resolution, etc.
 #define SWEETError(msg)			SWEETError_("ERROR", msg, __FILE__, __LINE__, __func__)
+
+// Regular errors such as wrong time integration method, negative resolution, etc.
+#define SWEETError_nostop(msg)			SWEETError_("ERROR", msg, __FILE__, __LINE__, __func__, false)
 
 
 

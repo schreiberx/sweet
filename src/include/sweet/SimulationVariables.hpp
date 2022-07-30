@@ -1108,25 +1108,25 @@ public:
 		/// This is beneficial to pause simulations if driven interactively.
 		bool run_simulation_timesteps = true;
 
-		/// number of simulated time steps
+		/// Number of simulated time steps
 		int current_timestep_nr = 0;
 
-		/// time step size used during setup
+		/// Time step size used during setup
 		double setup_timestep_size = -1;
 
-		/// current time step size
+		/// Current time step size
 		double current_timestep_size = -1;
 
-		/// time in simulation
+		/// Time in simulation
 		double current_simulation_time = 0;
 
-		/// maximum number of time steps to simulate
+		/// Maximum number of time steps to simulate
 		int max_timesteps_nr = std::numeric_limits<int>::max();
 
-		/// maximum simulation time to execute the simulation for
+		/// Maximum simulation time to execute the simulation for
 		double max_simulation_time = std::numeric_limits<double>::infinity();
 
-		/// maximum wallclock time to execute the simulation for
+		/// Maximum wallclock time to execute the simulation for
 		double max_wallclock_time = -1;
 
 

@@ -14,15 +14,17 @@
 
 
 
-bool SWE_Sphere_TS_lg_exp_direct::implements_timestepping_method(const std::string &i_timestepping_method
+bool SWE_Sphere_TS_lg_exp_direct::implements_timestepping_method(
+		const std::string &i_timestepping_method
 #if SWEET_PARAREAL
-									,
-									int &i_timestepping_order,
-									int &i_timestepping_order2
+		,
+		int &i_timestepping_order,
+		int &i_timestepping_order2
 #endif
-									)
+)
 {
 	timestepping_method = i_timestepping_method;
+
 	timestepping_order = simVars.disc.timestepping_order;
 	timestepping_order2 = simVars.disc.timestepping_order2;
 #if SWEET_PARAREAL
@@ -32,18 +34,23 @@ bool SWE_Sphere_TS_lg_exp_direct::implements_timestepping_method(const std::stri
 	if (i_timestepping_method == "lg_exp_direct")
 		return true;
 
+	if (i_timestepping_method == "l_exp_direct")
+		return true;
+
 	return false;
 }
 
 
 std::string SWE_Sphere_TS_lg_exp_direct::string_id()
 {
-	return "lg_exp_direct";
+	return "l_exp_direct";
 }
 
 
 void SWE_Sphere_TS_lg_exp_direct::setup_auto()
 {
+	timestepping_method = simVars.disc.timestepping_method;
+
 	setup("phi0");
 }
 
@@ -82,21 +89,19 @@ SWE_Sphere_TS_lg_exp_direct::SWE_Sphere_TS_lg_exp_direct(
 }
 
 
-
-
 SWE_Sphere_TS_lg_exp_direct::~SWE_Sphere_TS_lg_exp_direct()
 {
 }
 
 
-
 /**
- * setup the REXI
+ * Setup the REXI
  */
 void SWE_Sphere_TS_lg_exp_direct::setup(
 		const std::string &i_function_name
 )
 {
+	timestepping_method = "lg_exp";
 	function_name = i_function_name;
 
 	rexiFunctions.setup(i_function_name);

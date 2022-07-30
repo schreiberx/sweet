@@ -11,7 +11,7 @@
 #include <sweet/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
-#include "SWE_Sphere_TS_lg_exp_direct.hpp"
+#include "SWE_Sphere_TS_l_exp_direct_special.hpp"
 
 #ifndef SWEET_THREADING_TIME_REXI
 #	define SWEET_THREADING_TIME_REXI 1
@@ -138,7 +138,7 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 	use_exp_method_direct_solution(false),
 	use_exp_method_strang_split_taylor(false),
 	use_exp_method_rexi(false),
-	timestepping_method_lg_exp_direct(nullptr),
+	timestepping_method_l_exp_direct_special(nullptr),
 	timestepping_method_lg_exp_lc_exp(nullptr)
 {
 	#if SWEET_BENCHMARK_TIMINGS
@@ -215,10 +215,10 @@ void SWE_Sphere_TS_l_exp::reset()
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
 
-	if (timestepping_method_lg_exp_direct)
+	if (timestepping_method_l_exp_direct_special)
 	{
-		delete timestepping_method_lg_exp_direct;
-		timestepping_method_lg_exp_direct = nullptr;
+		delete timestepping_method_l_exp_direct_special;
+		timestepping_method_l_exp_direct_special = nullptr;
 	}
 
 	if (timestepping_method_lg_exp_lc_exp)
@@ -276,10 +276,10 @@ SWE_Sphere_TS_l_exp::~SWE_Sphere_TS_l_exp()
 		SimulationBenchmarkTimings::getInstance().rexi.stop();
 	#endif
 
-	if (timestepping_method_lg_exp_direct)
+	if (timestepping_method_l_exp_direct_special)
 	{
-		delete timestepping_method_lg_exp_direct;
-		timestepping_method_lg_exp_direct = nullptr;
+		delete timestepping_method_l_exp_direct_special;
+		timestepping_method_l_exp_direct_special = nullptr;
 	}
 
 	if (timestepping_method_lg_exp_lc_exp)
@@ -390,15 +390,15 @@ void SWE_Sphere_TS_l_exp::setup(
 
 	if (rexiSimVars->exp_method == "direct")
 	{
-		if (!no_coriolis)
-			SWEETError("Direct solution for linear operator with Coriolis effect not available");
+		if (use_f_sphere)
+			SWEETError("f-sphere solution not implemented");
 
 		use_exp_method_direct_solution = true;
 
-		if (timestepping_method_lg_exp_direct == nullptr)
-			timestepping_method_lg_exp_direct = new SWE_Sphere_TS_lg_exp_direct(simVars, ops);
+		if (timestepping_method_l_exp_direct_special == nullptr)
+			timestepping_method_l_exp_direct_special = new SWE_Sphere_TS_l_exp_direct_special(simVars, ops);
 
-		timestepping_method_lg_exp_direct->setup(function_name);
+		timestepping_method_l_exp_direct_special->setup(timestepping_order, !no_coriolis, function_name);
 	}
 	else if (rexiSimVars->exp_method == "ss_taylor")
 	{
@@ -408,7 +408,7 @@ void SWE_Sphere_TS_l_exp::setup(
 		use_exp_method_strang_split_taylor = true;
 
 		if (timestepping_method_lg_exp_lc_exp == nullptr)
-			timestepping_method_lg_exp_lc_exp = new SWE_Sphere_TS_lg_exp_lc_exp(simVars, ops);
+			timestepping_method_lg_exp_lc_exp = new SWE_Sphere_TS_lg_exp_lc_taylor(simVars, ops);
 
 		timestepping_method_lg_exp_lc_exp->setup(timestepping_order);
 	}
@@ -615,7 +615,7 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_lg_exp_direct->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_l_exp_direct_special->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 #if 0
 		// no Coriolis force active
 
@@ -703,7 +703,7 @@ void SWE_Sphere_TS_l_exp::run_timestep(
 			SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_lg_exp_direct->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_l_exp_direct_special->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 #if 0
 		// no Coriolis force active
 
