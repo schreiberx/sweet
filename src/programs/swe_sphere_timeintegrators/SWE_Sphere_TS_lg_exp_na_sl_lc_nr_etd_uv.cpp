@@ -325,29 +325,29 @@ void SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv::setup(
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
 	}
 	else if  (timestepping_order == 4)
 	{
 		SWEETError("4th order method not (yet) supported");
 
 #if 0
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true, timestepping_order);
+		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, true, timestepping_order);
 
 		// phi0, but with a full time step size
-		ts_ups0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);
-		ts_ups1_exp.setup(i_rexiSimVars, "ups1", i_timestep_size, false, true);
-		ts_ups2_exp.setup(i_rexiSimVars, "ups2", i_timestep_size, false, true);
-		ts_ups3_exp.setup(i_rexiSimVars, "ups3", i_timestep_size, false, true);
+		ts_ups0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);
+		ts_ups1_exp.setup(i_rexiSimVars, "ups1", i_timestep_size, false, true, timestepping_order);
+		ts_ups2_exp.setup(i_rexiSimVars, "ups2", i_timestep_size, false, true, timestepping_order);
+		ts_ups3_exp.setup(i_rexiSimVars, "ups3", i_timestep_size, false, true, timestepping_order);
 #endif
 	}
 	else

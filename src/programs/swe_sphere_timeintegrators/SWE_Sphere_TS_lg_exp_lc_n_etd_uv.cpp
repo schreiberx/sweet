@@ -512,14 +512,14 @@ void SWE_Sphere_TS_lg_exp_lc_n_etd_uv::setup(
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
 
 		NU_phi_prev.setup(ops.sphereDataConfig);
 		NU_vrt_prev.setup(ops.sphereDataConfig);
@@ -527,10 +527,10 @@ void SWE_Sphere_TS_lg_exp_lc_n_etd_uv::setup(
 	}
 	else if (timestepping_order == 3)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
-		ts_phi3_exp.setup(i_rexiSimVars, "phi3", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
+		ts_phi3_exp.setup(i_rexiSimVars, "phi3", i_timestep_size, false, true, timestepping_order);
 
 		NU_phi_prev.setup(ops.sphereDataConfig);
 		NU_vrt_prev.setup(ops.sphereDataConfig);

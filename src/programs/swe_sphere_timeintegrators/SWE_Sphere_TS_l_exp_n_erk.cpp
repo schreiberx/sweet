@@ -155,7 +155,8 @@ void SWE_Sphere_TS_l_exp_n_erk::setup(
 				"phi0",
 				i_timestep_size,
 				i_use_f_sphere,
-				false
+				false,
+				timestepping_order
 		);
 	}
 	else if (timestepping_order2 == 2 || timestepping_order2 == 4)
@@ -167,7 +168,8 @@ void SWE_Sphere_TS_l_exp_n_erk::setup(
 					"phi0",
 					i_timestep_size*0.5,
 					i_use_f_sphere,
-					false
+					false,
+					timestepping_order
 			);
 		}
 		else if (version_id == 1)
@@ -177,7 +179,8 @@ void SWE_Sphere_TS_l_exp_n_erk::setup(
 					"phi0",
 					i_timestep_size,
 					i_use_f_sphere,
-					false
+					false,
+					timestepping_order
 			);
 		}
 		else

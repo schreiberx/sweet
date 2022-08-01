@@ -2,11 +2,10 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-#include "SWE_Sphere_TS_lg_exp_lc_n_erk.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_erk.hpp"
 
 
-
-void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
+void SWE_Sphere_TS_lg_exp_lc_erk::run_timestep(
 		SphereData_Spectral &io_phi,		///< prognostic variables
 		SphereData_Spectral &io_vort,	///< prognostic variables
 		SphereData_Spectral &io_div,		///< prognostic variables
@@ -22,7 +21,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 		SphereData_Spectral tmp_div = io_div;
 
 		// first order IRK for linear
-		timestepping_lg_rexi.run_timestep(
+		timestepping_l_exp.run_timestep(
 				io_phi, io_vort, io_div,
 				i_dt,
 				i_simulation_timestamp
@@ -33,12 +32,11 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 		SphereData_Spectral div_dt(io_div.sphereDataConfig);
 
 		// first order explicit for non-linear
-		timestepping_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
+		timestepping_lg_erk_lc_erk.euler_timestep_update_lc(
 				tmp_phi, tmp_vort, tmp_div,
 				phi_dt, vort_dt, div_dt,
 				i_simulation_timestamp
 			);
-
 
 		io_phi += i_dt*phi_dt;
 		io_vort += i_dt*vort_dt;
@@ -49,7 +47,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_lg_rexi.run_timestep(
+			timestepping_l_exp.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -57,8 +55,8 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 
 			// FULL time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
-					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute Euler time step updates
+					&timestepping_lg_erk_lc_erk,
+					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute Euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -66,7 +64,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 				);
 
 			// HALF time step for linear part
-			timestepping_lg_rexi.run_timestep(
+			timestepping_l_exp.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
@@ -76,8 +74,8 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 		{
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
-					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
+					&timestepping_lg_erk_lc_erk,
+					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -85,7 +83,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 				);
 
 			// FULL time step for linear part
-			timestepping_lg_rexi.run_timestep(
+			timestepping_l_exp.run_timestep(
 					io_phi, io_vort, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -93,8 +91,8 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 
 			// HALF time step for non-linear part
 			timestepping_rk_nonlinear.run_timestep(
-					&timestepping_lg_erk_lc_n_erk,
-					&SWE_Sphere_TS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
+					&timestepping_lg_erk_lc_erk,
+					&SWE_Sphere_TS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute euler time step updates
 					io_phi, io_vort, io_div,
 					i_dt*0.5,
 					timestepping_order2,		/// This must be 2nd order accurate to get overall 2nd order accurate method
@@ -117,7 +115,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Sphere_TS_lg_exp_lc_n_erk::setup(
+void SWE_Sphere_TS_lg_exp_lc_erk::setup(
 		EXP_SimulationVariables &i_rexiSimVars,
 		int i_timestepping_order,
 		int i_timestepping_order2,
@@ -134,7 +132,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::setup(
 
 	if (timestepping_order2 == 1)
 	{
-		timestepping_lg_rexi.setup(
+		timestepping_l_exp.setup(
 				i_rexiSimVars,
 				"phi0",
 				i_timestep_size,
@@ -147,7 +145,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::setup(
 	{
 		if (version_id == 0)
 		{
-			timestepping_lg_rexi.setup(
+			timestepping_l_exp.setup(
 					i_rexiSimVars,
 					"phi0",
 					i_timestep_size*0.5,
@@ -158,7 +156,7 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::setup(
 		}
 		else if (version_id == 1)
 		{
-			timestepping_lg_rexi.setup(
+			timestepping_l_exp.setup(
 					i_rexiSimVars,
 					"phi0",
 					i_timestep_size,
@@ -177,31 +175,30 @@ void SWE_Sphere_TS_lg_exp_lc_n_erk::setup(
 		SWEETError("Invalid timestepping order");
 	}
 
-
 	//
 	// Only request 1st order time stepping methods for irk and erk
 	// These 1st order methods will be combined to higher-order methods in this class
 	//
-	timestepping_lg_erk_lc_n_erk.setup(1, -1);
+	timestepping_lg_erk_lc_erk.setup(1);
 }
 
 
 
-SWE_Sphere_TS_lg_exp_lc_n_erk::SWE_Sphere_TS_lg_exp_lc_n_erk(
+SWE_Sphere_TS_lg_exp_lc_erk::SWE_Sphere_TS_lg_exp_lc_erk(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
 )	:
 		simVars(i_simVars),
 		op(i_op),
 		timestepping_order(-1),
-		timestepping_lg_rexi(simVars, op),
-		timestepping_lg_erk_lc_n_erk(simVars, op)
+		timestepping_l_exp(simVars, op),
+		timestepping_lg_erk_lc_erk(simVars, op)
 {
 }
 
 
 
-SWE_Sphere_TS_lg_exp_lc_n_erk::~SWE_Sphere_TS_lg_exp_lc_n_erk()
+SWE_Sphere_TS_lg_exp_lc_erk::~SWE_Sphere_TS_lg_exp_lc_erk()
 {
 }
 

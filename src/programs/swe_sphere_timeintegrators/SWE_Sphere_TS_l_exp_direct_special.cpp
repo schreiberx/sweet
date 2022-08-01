@@ -26,6 +26,7 @@ void SWE_Sphere_TS_l_exp_direct_special::euler_timestep_store_update_lc(
 	o_vrt.spectral_set_zero();
 	o_div.spectral_set_zero();
 
+	//timestepping_lc_erk.euler_timestep_update_lc_spectral_only(
 	timestepping_lc_erk.euler_timestep_update_lc(
 			i_phi_pert, i_vrt, i_div,
 			o_phi_pert, o_vrt, o_div,
@@ -409,7 +410,9 @@ SWE_Sphere_TS_l_exp_direct_special::SWE_Sphere_TS_l_exp_direct_special(
 		timestepping_lg_exp_ups2(i_simVars, i_op),
 		timestepping_lg_exp_ups3(i_simVars, i_op),
 
-		timestepping_lc_erk(i_simVars, i_op)
+		timestepping_lc_erk(i_simVars, i_op),
+
+		timestepping_order(-1)
 {
 }
 

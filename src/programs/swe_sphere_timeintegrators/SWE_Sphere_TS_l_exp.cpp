@@ -73,12 +73,16 @@ void SWE_Sphere_TS_l_exp::setup_auto()
 	if (timestepping_method == "lg_exp")
 		no_coriolis = true;
 
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
+
 	setup(
 		simVars.rexi,
 		"phi0",
 		simVars.timecontrol.current_timestep_size,
 		simVars.sim.sphere_use_fsphere,
-		no_coriolis
+		no_coriolis,
+		timestepping_order
 	);
 
 
@@ -331,13 +335,15 @@ void SWE_Sphere_TS_l_exp::setup(
 		const std::string &i_function_name,
 		double i_timestep_size,
 		bool i_use_f_sphere,
-		bool i_no_coriolis
+		bool i_no_coriolis,
+		int i_timestepping_order
 )
 {
 	no_coriolis = i_no_coriolis;
 
 	rexiSimVars = &i_rexi;
 
+	timestepping_order = i_timestepping_order;
 
 	/*
 	 * Print some useful information

@@ -392,7 +392,8 @@ void SWE_Sphere_TS_ln_sl_exp_settls_uv::setup(
 			"phi0",
 			simVars.timecontrol.current_timestep_size,
 			simVars.sim.sphere_use_fsphere,
-			!(coriolis_treatment == CORIOLIS_LINEAR)
+			!(coriolis_treatment == CORIOLIS_LINEAR),
+			timestepping_order
 		);
 }
 
