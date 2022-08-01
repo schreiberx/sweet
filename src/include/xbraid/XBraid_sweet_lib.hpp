@@ -241,6 +241,7 @@ public:
 	// Custom time grid
 	std::vector<double> custom_time_steps = {};
 
+
 public:
 
 	// Constructor·
@@ -346,7 +347,6 @@ public:
 public:
 	void setup(BraidCore& i_core)
 	{
-
 
 		/////////////////////////////////////////////////
 		// get parameters from simVars and set to Core //
@@ -1310,6 +1310,8 @@ public:
 								iter);
 			}
 
+
+
 		}
 
 
@@ -1406,7 +1408,7 @@ public:
 #endif
 
 
-
+#if SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->serialize(dbuffer);
@@ -1415,7 +1417,11 @@ public:
 		{
 			// store solution from level 0
 			std::complex<double> *level_buffer_data = nullptr;
+	#if SWEET_XBRAID_PLANE
+			int s = N * this->planeDataConfig[0]->spectral_array_data_number_of_elements;
+	#elif SWEET_XBRAID_SPHERE
 			int s = N * this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
+	#endif
 			int s2 = 0;
 			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			U->data->serialize(level_buffer_data);
@@ -1428,7 +1434,11 @@ public:
 			{
 				if (this->is_SL[level])
 				{
+	#if SWEET_XBRAID_PLANE
+					s = N * this->planeDataConfig[level]->spectral_array_data_number_of_elements;
+	#elif SWEET_XBRAID_SPHERE
 					s = N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
+	#endif
 					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					int time_id = this->last_timeid_level[level];
 					if (time_id < 0)
@@ -1441,6 +1451,7 @@ public:
 				}
 			}
 		}
+#endif
 
 		o_status.SetSize( actual_size_buffer );
 		return 0;
@@ -1468,6 +1479,7 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif
 
+#if SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->deserialize(dbuffer);
@@ -1476,7 +1488,11 @@ public:
 		{
 			// get solution for level 0
 			std::complex<double> *level_buffer_data = nullptr;
+	#if SWEET_XBRAID_PLANE
+			int s = N * this->planeDataConfig[0]->spectral_array_data_number_of_elements;
+	#elif SWEET_XBRAID_SPHERE
 			int s = N * this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
+	#endif
 			int s2 = 0;
 			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			std::copy(&dbuffer[0], &dbuffer[s], &level_buffer_data[0]);
@@ -1489,7 +1505,11 @@ public:
 			{
 				if (this->is_SL[level])
 				{
+	#if SWEET_XBRAID_PLANE
+					s = N * this->planeDataConfig[level]->spectral_array_data_number_of_elements;
+	#elif SWEET_XBRAID_SPHERE
 					s = N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
+	#endif
 					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					std::copy(&dbuffer[s2], &dbuffer[s2 + s], &level_buffer_data[0]);
 					int time_id = this->first_timeid_level[level];
@@ -1502,6 +1522,7 @@ public:
 				}
 			}
 		}
+#endif
 
 		*o_U = (braid_Vector) U;
 

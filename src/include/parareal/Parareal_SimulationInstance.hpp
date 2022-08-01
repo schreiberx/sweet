@@ -315,12 +315,12 @@ public:
 
 		this->nb_timesteps_fine = (int)((this->timeframe_end - this->timeframe_start) / simVars->timecontrol.current_timestep_size);
 		this->nb_timesteps_coarse = (int)((this->timeframe_end - this->timeframe_start) / simVars->parareal.coarse_timestep_size);
-		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-15)
+		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-14)
 			this->nb_timesteps_fine++;
-		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-15)
+		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-14)
 			this->nb_timesteps_coarse++;
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-15);
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-15);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-14);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-14);
 
 
 		// set time to parareal_genericdata instances
@@ -537,10 +537,10 @@ public:
 		*diff -= *parareal_data_output;
 		///parareal_data_fine_exact_debug->physical_print();
 		///parareal_data_output->physical_print();
-		std::cout << "Max serial:" << parareal_data_fine_exact_debug->reduce_maxAbs() << std::endl;
-		std::cout << "Max parareal:" << parareal_data_output->reduce_maxAbs() << std::endl;
-		std::cout << "DIFF: " << diff->reduce_maxAbs() << std::endl;
-		assert(diff->reduce_maxAbs() < 1e-10);
+		std::cout << "Max serial:" << parareal_data_fine_exact_debug->spectral_reduce_maxAbs() << std::endl;
+		std::cout << "Max parareal:" << parareal_data_output->spectral_reduce_maxAbs() << std::endl;
+		std::cout << "DIFF: " << diff->spectral_reduce_maxAbs() << std::endl;
+		assert(diff->spectral_reduce_maxAbs() < 1e-10);
 		delete diff;
 	};
 

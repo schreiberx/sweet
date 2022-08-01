@@ -94,6 +94,8 @@ class Parareal_Controller
 	t_tsmType* timeSteppersCoarse = nullptr;
 
 
+	std::vector<bool> timeframe_do_output = {};
+
 	/**
 	 * Pointer to parareal simulation variables.
 	 * These variables are used as a singleton
@@ -418,6 +420,7 @@ public:
 			CONSOLEPREFIX_start(k);
 			int local_k = global_to_local_slice.at(k);
 			parareal_simulationInstances[local_k]->sim_set_timeframe(time_slice_size*k, time_slice_size*(k+1));
+			this->timeframe_do_output.push_back(this->check_do_output(time_slice_size*(k+1)));
 		}
 
 		/*
@@ -444,6 +447,31 @@ public:
 
 	}
 
+
+	bool check_do_output(
+				double t
+			)
+	{
+
+		// Decide whether to output or not
+		bool do_output = false;
+		double small = 1e-10;
+
+		// output each time step if:
+		// output_timestep < 0 (i.e. output every timestep)
+		// t == 0
+		// t == Tmax
+		// t is a multiple of dt_output
+		if (
+			this->simVars->iodata.output_each_sim_seconds < 0 ||
+			std::abs(t) < small ||
+			std::abs(t - pVars->max_simulation_time) < small ||
+			fmod(t, this->simVars->iodata.output_each_sim_seconds) == 0
+		)
+			do_output = true;
+
+		return do_output;
+	}
 
 
 	void run()
@@ -525,29 +553,33 @@ public:
 				*(parareal_simulationInstances[i]->parareal_data_output) = *(parareal_simulationInstances[i]->parareal_data_coarse);
 			}
 
+
 			// Store initial propagation:
 			if (pVars->store_iterations)
 				for (int i = 0; i < pVars->coarse_slices; i++)
-					parareal_simulationInstances[i]->output_data_file(
-							0,  // 0-th iteration
-							i
-						);
+					if (this->timeframe_do_output[i])
+						parareal_simulationInstances[i]->output_data_file(
+								0,  // 0-th iteration
+								i
+							);
 			// Store initial error relative to reference solution
 			if (pVars->load_ref_csv_files)
 				for (int i = 0; i < pVars->coarse_slices; i++)
-					parareal_simulationInstances[i]->store_parareal_error(
-							0,
-							i,
-							pVars->path_ref_csv_files,
-							"ref");
+					if (this->timeframe_do_output[i])
+						parareal_simulationInstances[i]->store_parareal_error(
+								0,
+								i,
+								pVars->path_ref_csv_files,
+								"ref");
 			// Store initial error relative to fine solution
 			if (pVars->load_fine_csv_files)
 				for (int i = 0; i < pVars->coarse_slices; i++)
-					parareal_simulationInstances[i]->store_parareal_error(
-							0,
-							i,
-							pVars->path_fine_csv_files,
-							"fine");
+					if (this->timeframe_do_output[i])
+						parareal_simulationInstances[i]->store_parareal_error(
+								0,
+								i,
+								pVars->path_fine_csv_files,
+								"fine");
 		}
 
 #if SWEET_PARAREAL == 2
@@ -750,30 +782,54 @@ public:
 					if (max_convergence != -1)
 						max_convergence = (convergence==-1)?(convergence):(std::max(max_convergence,convergence));
 
-					if (pVars->store_iterations)
-						parareal_simulationInstances[i]->output_data_file(
+
+
+					////////// Decide whether to output or not
+					////////bool do_output = false;
+					////////double small = 1e-10;
+					////////double t = this->parareal_simulationInstances[i]->timeframe_end;
+
+					////////// output each time step if:
+					////////// output_timestep < 0 (i.e. output every timestep)
+					////////// t == 0
+					////////// t == Tmax
+					////////// t is a multiple of dt_output
+					////////if (
+					////////	this->simVars->iodata.output_each_sim_seconds < 0 ||
+					////////	std::abs(t) < small ||
+					////////	std::abs(t - pVars->max_simulation_time) < small ||
+					////////	fmod(t, this->simVars->iodata.output_each_sim_seconds) == 0
+					////////)
+					////////	do_output = true;
+
+					if (this->timeframe_do_output[i])
+					{
+						if (pVars->store_iterations)
+							parareal_simulationInstances[i]->output_data_file(
+									k + 1,
+									i
+								);
+						if (pVars->load_ref_csv_files)
+							parareal_simulationInstances[i]->store_parareal_error(
+									k + 1,
+									i,
+									pVars->path_ref_csv_files,
+									"ref");
+						if (pVars->load_fine_csv_files)
+							parareal_simulationInstances[i]->store_parareal_error(
+									k + 1,
+									i,
+									pVars->path_fine_csv_files,
+									"fine");
+
+
+						CONSOLEPREFIX.start(i);
+						parareal_simulationInstances[i]->output_data_console(
 								k + 1,
 								i
 							);
-					if (pVars->load_ref_csv_files)
-						parareal_simulationInstances[i]->store_parareal_error(
-								k + 1,
-								i,
-								pVars->path_ref_csv_files,
-								"ref");
-					if (pVars->load_fine_csv_files)
-						parareal_simulationInstances[i]->store_parareal_error(
-								k + 1,
-								i,
-								pVars->path_fine_csv_files,
-								"fine");
 
-
-					CONSOLEPREFIX.start(i);
-					parareal_simulationInstances[i]->output_data_console(
-							k + 1,
-							i
-						);
+					}
 
 					// last coarse time step slice?
 					if (i == pVars->coarse_slices-1)
@@ -819,6 +875,9 @@ public:
 
 				}
 			}
+
+			if (pVars->max_iter >= 0 && k == pVars->max_iter)
+				break;
 		}
 
 converged:

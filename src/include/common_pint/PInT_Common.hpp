@@ -914,7 +914,7 @@ public:
 					rnorms.push_back(rnorm);
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
 				int rnorm = this->sphereDataConfig[0]->spectral_modes_m_max / std::pow(2, ip);
-				if (rnorm >= 1)
+				if (rnorm >= 8)
 					rnorms.push_back(rnorm);
 #endif
 			}
@@ -995,12 +995,13 @@ public:
 			err_Linf = diff.physical_reduce_max_abs();
 
 			// Spectral space
-			double small = 1e-20;
+			///double small = 1e-20;
+			double small = 1e-16;
 			for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
 			{
 				double norm_diff = std::sqrt(diff_spectral.spectral_reduce_max_abs(*it));
 				double norm_ref = std::sqrt(parareal_data_ref->get_pointer_to_data_SphereData_Spectral()->simfields[ivar]->spectral_reduce_max_abs(*it));
-				if (norm_diff < small and norm_ref < small)
+				if ( norm_diff < small && norm_ref < small )
 					err_Linf_spectral.emplace(std::make_pair(*it, 0.));
 				else
 					err_Linf_spectral.emplace(std::make_pair(*it, norm_diff / norm_ref ));

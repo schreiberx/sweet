@@ -153,6 +153,7 @@ class JobRuntimeOptions(InfoError):
         self.parareal_path_fine_csv_files = "";
         self.parareal_store_iterations = 1;
         self.parareal_spatial_coarsening = None;
+        self.parareal_max_iter = None;
 
 
         ## XBraid parameters
@@ -474,8 +475,10 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_pDt_'+str(self.parareal_coarse_timestep_size)
             if not 'runtime.parareal_store_iterations' in filter_list:
                     idstr += '_pStore_'+str(self.parareal_store_iterations)
-            if not 'runtime.parareal_spatial_Coarsening' in filter_list:
+            if not 'runtime.parareal_spatial_coarsening' in filter_list:
                     idstr += '_pSpc_'+str(self.parareal_spatial_coarsening)
+            if not 'runtime.parareal_max_iter' in filter_list:
+                    idstr += '_pMaxIter_'+str(self.parareal_max_iter)
 
 
         if not 'runtime.xbraid' in filter_list:
@@ -776,6 +779,8 @@ class JobRuntimeOptions(InfoError):
             retval += " --parareal-path-fine-csv-files="+str(self.parareal_path_fine_csv_files);
             retval += " --parareal-store-iterations="+str(self.parareal_store_iterations);
             retval += " --parareal-spatial-coarsening="+str(self.parareal_spatial_coarsening);
+            if self.parareal_max_iter != None:
+                retval += " --parareal-max-iter="+str(self.parareal_max_iter);
 
             ##if self.parareal_coarse_timestep_size > 0:
             ##    retval += " --parareal-coarse-timestep-size="+str(self.parareal_coarse_timestep_size);
