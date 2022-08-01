@@ -61,6 +61,8 @@ public:
 	double timeframe_end;
 	int nb_timesteps_fine;
 	int nb_timesteps_coarse;
+	double dt_fine;
+	double dt_coarse;
 
 	// Data containers
 	Parareal_GenericData* parareal_data_start = nullptr;
@@ -322,6 +324,8 @@ public:
 		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-14);
 		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-14);
 
+		this->dt_fine = simVars->timecontrol.current_timestep_size;
+		this->dt_coarse = simVars->parareal.coarse_timestep_size;
 
 		// set time to parareal_genericdata instances
 		this->parareal_data_start->set_time(i_timeframe_end);
@@ -610,6 +614,7 @@ public:
 		simVars->timecontrol.current_simulation_time = timeframe_start;
 		simVars->timecontrol.max_simulation_time = timeframe_end;
 		simVars->timecontrol.current_timestep_nr = 0;
+		simVars->timecontrol.current_timestep_size = this->dt_fine;
 
 		//std::cout << simVars->disc.timestepping_method << std::endl;
 		///std::cout << this->SL_tsm.size() << std::endl;
@@ -660,6 +665,7 @@ public:
 		simVars->timecontrol.current_simulation_time = timeframe_start;
 		simVars->timecontrol.max_simulation_time = timeframe_end;
 		simVars->timecontrol.current_timestep_nr = 0;
+		simVars->timecontrol.current_timestep_size = this->dt_coarse;
 
 		// If fine solver = SL, send penult fine time step of previous slice, except if it is the first time slice
 		if (std::find(this->SL_tsm.begin(), this->SL_tsm.end(), simVars->parareal.coarse_timestepping_method) != this->SL_tsm.end())
@@ -679,20 +685,6 @@ public:
 			// store previous time step
 			// to be used as n-1 in SL in the next time slice
 			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse_coarse_mesh);
-
-			////if (simVars->timecontrol.current_simulation_time == 0)
-			////	if (!this->debug_contains_data)
-			////	{
-			////		*this->parareal_data_debug = *this->parareal_data_coarse_coarse_mesh;
-			////		this->debug_contains_data =  true;
-			////	}
-			////	else
-			////	{
-			////		*this->parareal_data_debug -= *this->parareal_data_coarse_coarse_mesh;
-			////		std::cout << "FFFFFFFF " << this->parareal_data_debug->reduce_maxAbs() << std::endl;
-			////		std::cout << "FFFFFFFF " << this->parareal_data_debug->reduce_norm1() << std::endl;
-			////		std::cout << "FFFFFFFF " << this->parareal_data_debug->reduce_norm2() << std::endl;
-			////	}
 
 			this->run_timestep(this->parareal_data_coarse_coarse_mesh, "coarse");
 			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;

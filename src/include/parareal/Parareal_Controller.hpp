@@ -366,7 +366,6 @@ public:
 			int local_k = global_to_local_slice.at(k);
 			parareal_simulationInstances.push_back(new Parareal_SimulationInstance<t_tsmType, N>);
 			std::cout << "mpi_rank " << mpi_rank << " setting up instance " << k << " " << local_k << std::endl;
-			std::cout << parareal_simulationInstances.back() << std::endl;
 #if SWEET_PARAREAL_SCALAR
 				parareal_simulationInstances[local_k]->setup(this->simVars,
 								       this->timeSteppersFine,
@@ -782,25 +781,6 @@ public:
 					if (max_convergence != -1)
 						max_convergence = (convergence==-1)?(convergence):(std::max(max_convergence,convergence));
 
-
-
-					////////// Decide whether to output or not
-					////////bool do_output = false;
-					////////double small = 1e-10;
-					////////double t = this->parareal_simulationInstances[i]->timeframe_end;
-
-					////////// output each time step if:
-					////////// output_timestep < 0 (i.e. output every timestep)
-					////////// t == 0
-					////////// t == Tmax
-					////////// t is a multiple of dt_output
-					////////if (
-					////////	this->simVars->iodata.output_each_sim_seconds < 0 ||
-					////////	std::abs(t) < small ||
-					////////	std::abs(t - pVars->max_simulation_time) < small ||
-					////////	fmod(t, this->simVars->iodata.output_each_sim_seconds) == 0
-					////////)
-					////////	do_output = true;
 
 					if (this->timeframe_do_output[i])
 					{
