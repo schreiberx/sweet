@@ -54,7 +54,8 @@ class Parareal_SimulationInstance
 public:
 
 	// Simulation variables
-	SimulationVariables* simVars;
+	SimulationVariables* simVars = nullptr; // fine
+	SimulationVariables* simVars_coarse = nullptr;
 
 #if SWEET_PARAREAL_PLANE
 	// Grid Mapping (staggered grid)
@@ -153,11 +154,11 @@ public:
 			);
 
 		this->timeSteppersCoarse->setup(
-				this->simVars->parareal.coarse_timestepping_method,
-				this->simVars->parareal.coarse_timestepping_order,
-				this->simVars->parareal.coarse_timestepping_order2,
+				this->simVars_coarse->disc.timestepping_method,
+				this->simVars_coarse->disc.timestepping_order,
+				this->simVars_coarse->disc.timestepping_order2,
 				*this->op_plane,
-				*this->simVars
+				*this->simVars_coarse
 			);
 
 	#if SWEET_PARAREAL_PLANE_SWE
@@ -193,15 +194,15 @@ public:
 		// because simulation parameters may change
 		this->timeSteppersFine->setup(
 					this->simVars->disc.timestepping_method,
-					this->simVars->parareal.coarse_timestepping_order,
-					this->simVars->parareal.coarse_timestepping_order2,
+					////this->simVars->disc.timestepping_order,
+					////this->simVars->disc.timestepping_order2,
 					*this->op_sphere,
 					*this->simVars
 				);
 		this->timeSteppersCoarse->setup(
-					this->simVars->parareal.coarse_timestepping_method,
-					this->simVars->parareal.coarse_timestepping_order,
-					this->simVars->parareal.coarse_timestepping_order2,
+					this->simVars_coarse->disc.timestepping_method,
+					////this->simVars_coarse->disc.timestepping_order,
+					////this->simVars_coarse->disc.timestepping_order2,
 					*this->op_sphere,
 					*this->simVars
 				);
@@ -222,6 +223,11 @@ public:
 	{
 
 		this->simVars = i_simVars;
+		this->simVars_coarse = new SimulationVariables;
+		*this->simVars_coarse = *this->simVars;
+		this->simVars_coarse->disc.timestepping_method = this->simVars->parareal.coarse_timestepping_method;
+		this->simVars_coarse->disc.timestepping_order = this->simVars->parareal.coarse_timestepping_order;
+		this->simVars_coarse->disc.timestepping_order2 = this->simVars->parareal.coarse_timestepping_order2;
 
 		this->timeSteppersFine = i_timeSteppersFine;
 		this->timeSteppersCoarse = i_timeSteppersCoarse;
@@ -389,12 +395,12 @@ public:
 
 		this->nb_timesteps_fine = (int)((this->timeframe_end - this->timeframe_start) / simVars->timecontrol.current_timestep_size);
 		this->nb_timesteps_coarse = (int)((this->timeframe_end - this->timeframe_start) / simVars->parareal.coarse_timestep_size);
-		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-15)
+		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-14)
 			this->nb_timesteps_fine++;
-		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-15)
+		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-14)
 			this->nb_timesteps_coarse++;
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-15);
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-15);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-14);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-14);
 
 
 		// set time to parareal_genericdata instances
@@ -1713,6 +1719,11 @@ public:
 
 	~Parareal_SimulationInstance()
 	{
+		if (this->simVars_coarse)
+		{
+			delete this->simVars_coarse;
+			this->simVars_coarse = nullptr;
+		}
 	}
 };
 
