@@ -213,6 +213,7 @@ public:
 	///SimulationVariables*		simVars;
 	double				dt;
 	std::vector<t_tsmType*>		timeSteppers;
+	std::vector<SimulationVariables*> simVars_levels;
 
 	int			size_buffer;		// overestimated
 
@@ -291,13 +292,6 @@ public:
 									std::min(this->sphereDataConfig[i]->spectral_modes_m_max, this->sphereDataConfig[i]->spectral_modes_n_max)
 								);
 #endif
-
-		///this->xbraid_data_ref_exact = this->create_new_vector();
-		///this->xbraid_data_fine_exact = this->create_new_vector();
-
-		// start at one second in the past to ensure output at t=0
-		////this->timestep_last_output_simtime = i_tstart-1.0;
-		////this->simVars->iodata.output_next_sim_seconds = 0;
 	}
 
 	virtual ~sweet_BraidApp()
@@ -341,6 +335,15 @@ public:
 					delete *it2;
 					*it2 = nullptr;
 				}
+
+		for (std::vector<SimulationVariables*>::iterator it = this->simVars_levels.begin();
+									it != this->simVars_levels.end();
+									it++)
+			if (*it)
+			{
+				delete *it;
+				*it = nullptr;
+			}
 
 	}
 
@@ -425,18 +428,24 @@ public:
 		for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
 		{
 
-			// Configure timesteppers with the correct timestep for this level
-			double dt = this->simVars->timecontrol.current_timestep_size;
-			this->simVars->timecontrol.current_timestep_size *= std::pow(this->simVars->xbraid.xbraid_cfactor, level);
+			// Set tsm and tso to instance of simVars
+			this->simVars_levels[level]->disc.timestepping_method = this->tsms[level];
+			this->simVars_levels[level]->disc.timestepping_order = this->tsos[level];
+			this->simVars_levels[level]->disc.timestepping_order2 = this->tsos2[level];
 
-			std::cout << "Timestep size at level " << level << " : " << this->simVars->timecontrol.current_timestep_size << std::endl;
+			// Configure timesteppers with the correct timestep for this level
+			//////double dt = this->simVars->timecontrol.current_timestep_size;
+			//////this->simVars->timecontrol.current_timestep_size *= std::pow(this->simVars->xbraid.xbraid_cfactor, level);
+			this->simVars_levels[level]->timecontrol.current_timestep_size *= std::pow(this->simVars->xbraid.xbraid_cfactor, level);
+
+			std::cout << "Timestep size at level " << level << " : " << this->simVars_levels[level]->timecontrol.current_timestep_size << std::endl;
 
 #if SWEET_XBRAID_SCALAR
 			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
 			tsm->setup(
 					//tsms[level],
 					//tsos[level],
-					*this->simVars
+					*this->simVars_levels[level]
 				);
 #elif SWEET_XBRAID_PLANE
 	#if SWEET_XBRAID_PLANE_SWE
@@ -446,7 +455,7 @@ public:
 					tsos[level],
 					tsos2[level],
 					*this->op_plane[level],
-					*this->simVars
+					*this->simVars_levels[level]
 				);
 	#elif SWEET_XBRAID_PLANE_BURGERS
 			Burgers_Plane_TimeSteppers* tsm = new Burgers_Plane_TimeSteppers;
@@ -455,7 +464,7 @@ public:
 					tsos[level],
 					tsos2[level],
 					*this->op_plane[level],
-					*this->simVars
+					*this->simVars_levels[level]
 				);
 	#endif
 #elif SWEET_XBRAID_SPHERE
@@ -464,13 +473,13 @@ public:
 			tsm->setup(
 						tsms[level],
 						*this->op_sphere[level],
-						*this->simVars
+						*this->simVars_levels[level]
 					);
 
 #endif
 
 			// get back the original timestep size
-			this->simVars->timecontrol.current_timestep_size = dt;
+			////////this->simVars->timecontrol.current_timestep_size = dt;
 
 			this->timeSteppers.push_back(tsm);
 
@@ -504,14 +513,12 @@ public:
 		this->size_buffer = N * sizeof(double);
 #elif SWEET_XBRAID_PLANE
 		///// To be updated depending on the tsm
-		///this->actual_size_buffer = N * planeDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 		// Overestimated
 		this->size_buffer = 0;
 		for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
 			this->size_buffer += N * planeDataConfig[level]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #elif SWEET_XBRAID_SPHERE
 		///// To be updated depending on the tsm
-		///this->actual_size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 		// Overestimated
 		this->size_buffer = 0;
 		for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
@@ -545,6 +552,14 @@ public:
 			this->custom_time_steps.push_back(dt2);
 			t += dt2;
 			////std::cout << "TIME STEP " << dt2 << std::endl;
+		}
+
+		// create SimulationVariables instance for each level
+		for (int i = 0; i < this->simVars->xbraid.xbraid_max_levels; i++)
+		{
+			SimulationVariables* simVars_level = new SimulationVariables;
+			*simVars_level = *this->simVars;
+			this->simVars_levels.push_back(simVars_level);
 		}
 
 	}
@@ -902,7 +917,7 @@ public:
 
 			// Dummy initialization in coarse levels
 			// The only purpose is to call Operators setup from benchmark (sim parameters may change!)
-			for (size_t level = 1; level < op_sphere.size(); level++)
+			for (size_t level = 1; level < op_plane.size(); level++)
 			{
 				PlaneData_Spectral dummy1(planeDataConfig[level]);
 				PlaneData_Spectral dummy2(planeDataConfig[level]);
@@ -1407,8 +1422,9 @@ public:
 		int actual_size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
 
-
-#if SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+#if SWEET_XBRAID_SCALAR
+		U->data->serialize(dbuffer);
+#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->serialize(dbuffer);
@@ -1479,7 +1495,9 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif
 
-#if SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+#if SWEET_XBRAID_SCALAR
+		U->data->deserialize(dbuffer);
+#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->deserialize(dbuffer);
