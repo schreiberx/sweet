@@ -436,15 +436,14 @@ public:
 			// Configure timesteppers with the correct timestep for this level
 			//////double dt = this->simVars->timecontrol.current_timestep_size;
 			//////this->simVars->timecontrol.current_timestep_size *= std::pow(this->simVars->xbraid.xbraid_cfactor, level);
-			this->simVars_levels[level]->timecontrol.current_timestep_size *= std::pow(this->simVars->xbraid.xbraid_cfactor, level);
+			this->simVars_levels[level]->timecontrol.current_timestep_size = this->simVars->timecontrol.current_timestep_size *
+												std::pow(this->simVars->xbraid.xbraid_cfactor, level);
 
 			std::cout << "Timestep size at level " << level << " : " << this->simVars_levels[level]->timecontrol.current_timestep_size << std::endl;
 
 #if SWEET_XBRAID_SCALAR
 			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
 			tsm->setup(
-					//tsms[level],
-					//tsos[level],
 					*this->simVars_levels[level]
 				);
 #elif SWEET_XBRAID_PLANE
@@ -807,8 +806,6 @@ public:
 		///std::cout << rank << " " << iter << " " << level << " " << tstart << " " << tstop << std::endl;
 		this->timeSteppers[level]->master->run_timestep(
 								U_level->data,
-								///this->simVars->timecontrol.current_timestep_size,
-								///this->simVars->timecontrol.current_simulation_time
 								tstop - tstart,
 								tstart
 		);
@@ -913,7 +910,7 @@ public:
 	
 		#if SWEET_XBRAID_PLANE_SWE
 			SWEPlaneBenchmarksCombined swePlaneBenchmarks;
-			swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane[0]);
+			swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars_levels[0], *op_plane[0]);
 
 			// Dummy initialization in coarse levels
 			// The only purpose is to call Operators setup from benchmark (sim parameters may change!)
@@ -924,7 +921,7 @@ public:
 				PlaneData_Spectral dummy3(planeDataConfig[level]);
 
 				SWEPlaneBenchmarksCombined swePlaneBenchmarks_dummy;
-				swePlaneBenchmarks_dummy.setupInitialConditions(dummy1, dummy2, dummy3, *simVars, *op_plane[level]);
+				swePlaneBenchmarks_dummy.setupInitialConditions(dummy1, dummy2, dummy3, *simVars_levels[level], *op_plane[level]);
 			}
 
 
@@ -985,7 +982,7 @@ public:
 			SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
 
 			BenchmarksSphereSWE sphereBenchmarks;
-			sphereBenchmarks.setup(*simVars, *op_sphere[0]);
+			sphereBenchmarks.setup(*simVars_levels[0], *op_sphere[0]);
 			sphereBenchmarks.master->get_initial_state(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 
 			// Dummy initialization in coarse levels
@@ -997,7 +994,7 @@ public:
 				SphereData_Spectral dummy3(sphereDataConfig[level]);
 
 				BenchmarksSphereSWE sphereBenchmarks_dummy;
-				sphereBenchmarks_dummy.setup(*simVars, *op_sphere[level]);
+				sphereBenchmarks_dummy.setup(*simVars_levels[level], *op_sphere[level]);
 				sphereBenchmarks_dummy.master->get_initial_state(dummy1, dummy2, dummy3);
 			}
 
