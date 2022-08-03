@@ -54,8 +54,8 @@ class Parareal_SimulationInstance
 public:
 
 	// Simulation variables
-	SimulationVariables* simVars = nullptr; // fine
-	SimulationVariables* simVars_coarse = nullptr;
+	SimulationVariables* simVars = nullptr; // fine level (default dt, tsm, tso)
+	SimulationVariables* simVars_coarse = nullptr; // coarse level (dt, tsm, tso provided by specific parareal parameters)
 
 #if SWEET_PARAREAL_PLANE
 	// Grid Mapping (staggered grid)
@@ -368,7 +368,6 @@ public:
 	{
 
 		// check if seup has been called
-		std::cout << "AAAA " << simVars_coarse->timecontrol.current_timestep_size << " " <<  simVars->parareal.coarse_timestep_size << std::endl;
 		assert(simVars_coarse->timecontrol.current_timestep_size == simVars->parareal.coarse_timestep_size);
 
 		// check if each time slice contains an integer number of fine and coarse time steps
