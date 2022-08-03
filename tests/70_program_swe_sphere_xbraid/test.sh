@@ -11,6 +11,7 @@
 ###############
 ## Additional unit tests:
 ## itest = 6: basic test for spatial coarsening feature: simulations with spatial_coarsening = 0 or = N ( = fine resolution) should be identical
+## itest = 7: check if parareal and xbraid with specific configurations provide identical results
 ###############
 
 
@@ -223,7 +224,7 @@ for itest in {-1..6};do
 
 	elif [ "$itest" == 6 ]; then
 
-		for nproc in 1; do
+		for nproc in {1..4}; do
 			fine_sim=$(cat fine_sim);
 			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim > dummy || exit 1
 

@@ -47,9 +47,24 @@ fine_sim = sys.argv[2];
 list_jobs = glob.glob(path_simulations + "/job_bench_*");
 list_jobs = [os.path.basename(job) for job in list_jobs];
 ## exclude fine simulation
-list_jobs.remove(fine_sim);
+if fine_sim in list_jobs:
+    list_jobs.remove(fine_sim);
 
 print("    ** {} jobs found.".format(len(list_jobs)));
+
+
+list_vars_parareal = [
+                        "runtime.timestep_size", "runtime.timestepping_order", "runtime.timestepping_order2", "runtime.max_simulation_time",
+                        "runtime.parareal_enabled", "runtime.parareal_coarse_slices", "runtime.parareal_coarse_timestepping_method", "runtime.parareal_coarse_timestepping_order"
+                     ];
+list_vars_xbraid = [
+                        "runtime.timestep_size", "runtime.timestepping_order", "runtime.timestepping_order2", "runtime.max_simulation_time",
+                        "runtime.xbraid_enabled", "runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_store_iterations",
+                     ];
+list_vars_common = [
+                        "runtime.timestep_size", "runtime.timestepping_order", "runtime.timestepping_order2", "runtime.max_simulation_time"
+                   ];
+
 
 jd = JobsData(path_simulations + '/job_bench_*', verbosity=0).get_flattened_data();
 ## get useful job info
@@ -59,8 +74,17 @@ for key in jd.keys():
     if path == fine_sim:
         continue;
     job_info[path] = {};
-    for s in ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_store_iterations"]:
-        job_info[path][s] = jd[key][s];
+    if jd[key]["runtime.parareal_enabled"]:
+        for s in list_vars_parareal:
+            job_info[path][s] = jd[key][s];
+        job_info[path]["runtime.xbraid_enabled"] = False;
+    elif jd[key]["runtime.xbraid_enabled"]:
+        for s in list_vars_xbraid:
+            job_info[path][s] = jd[key][s];
+        job_info[path]["runtime.parareal_enabled"] = False;
+    else:
+        sys.exit("Simulation " + path + "must be parareal or xbraid.");
+
 
 
 ## find identical jobs
@@ -71,20 +95,44 @@ for job1 in list_jobs:
     if job1 in read_jobs:
         continue;
     read_jobs.append(job1);
+    if job_info[job1]["runtime.parareal_enabled"]:
+        p_or_x = "parareal";
+    elif job_info[job1]["runtime.xbraid_enabled"]:
+        p_or_x = "xbraid";
 
     found_job = False;
     for job2 in list_jobs:
         if job2 in read_jobs:
             continue;
         found_job = True;
-        for s in ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt"]:
+        ## check if simulation have same parameters
+        for s in list_vars_common:
             if not job_info[job1][s] == job_info[job2][s]:
                 found_job = False;
+        ## check if one simulation is parareal and the other is xbraid
+        if p_or_x == "parareal":
+            if not job_info[job2]["runtime.xbraid_enabled"]:
+                found_job = False;
+        elif p_or_x == "xbraid":
+            if not job_info[job2]["runtime.parareal_enabled"]:
+                found_job = False;
 
+        if found_job:
+            if p_or_x == "parareal":
+                job_p = job1;
+                job_x = job2;
+            else:
+                job_p = job2;
+                job_x = job1;
+
+            dt_p = job_info[job_p]["runtime.max_simulation_time"] / job_info[job_p]["runtime.parareal_coarse_slices"];
+            dt_x = job_info[job_x]["runtime.timestep_size"] * job_info[job_x]["runtime.xbraid_cfactor"];
+
+            if np.abs(dt_p - dt_x) > 1e-10:
+                found_job = False;
 
         if found_job:
             ipair += 1;
-            assert not job_info[job1]["runtime.xbraid_store_iterations"] == job_info[job2]["runtime.xbraid_store_iterations"];
 
             read_jobs.append(job2);
 
@@ -115,4 +163,3 @@ for job1 in list_jobs:
             print("     -> Max diff between errors: " + str(max_diff));
             print("                                             -> OK");
             break;
-
