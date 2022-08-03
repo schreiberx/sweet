@@ -159,9 +159,9 @@ SWE_Plane_TS_l_erk::SWE_Plane_TS_l_erk(
 		simVars(i_simVars),
 		op(i_op)
 {
-#if !SWEET_PARAREAL
+/////#if !SWEET_PARAREAL
 	setup(simVars.disc.timestepping_order);
-#endif
+/////#endif
 }
 
 

@@ -22,11 +22,6 @@ class SWE_Sphere_TS_l_erk_na_erk_vd	: public SWE_Sphere_TS_interface
 {
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method
-#if SWEET_PARAREAL
-						,
-						int &i_timestepping_order,
-						int &i_timestepping_order2
-#endif
 					);
 	std::string string_id();
 
