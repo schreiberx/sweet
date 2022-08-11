@@ -204,7 +204,7 @@ public:
 					////this->simVars_coarse->disc.timestepping_order,
 					////this->simVars_coarse->disc.timestepping_order2,
 					*this->op_sphere,
-					*this->simVars
+					*this->simVars_coarse
 				);
 
 		this->SL_tsm = { "lg_exp_na_sl_lc_nr_etd_uv",

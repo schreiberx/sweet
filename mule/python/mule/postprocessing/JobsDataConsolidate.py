@@ -8,7 +8,8 @@ import glob
 import os
 import re
 import sys
-
+import shutil
+import pickle
 
 
 
@@ -147,11 +148,9 @@ class JobsData_GroupsPlottingScattered:
                     if data_filter != None:
                         if data_filter(x, placeholder, jobdata):
                             continue
-
                     y = placeholder
                 else:
                     y = jobdata[y_attribute_name]
-
                     if data_filter != None:
                         if data_filter(x, y, jobdata):
                             continue
@@ -627,4 +626,71 @@ class JobsData_DataTable:
             for row in self.data:
                 f.write("\t".join([str(d) for d in row])+"\n")
 
+
+
+class JobsDataPInTConsolidate(InfoError):
+    """
+    Consolidate PInT data:
+
+    Postprocessing tools allowing to plot PInT output data
+    e.g. error vs iteration
+    """
+
+    def __init__(
+            self,
+            jobs_data,
+            verbosity : int = 0
+    ):
+        """
+        Initialize consolidation with job data
+        """
+        self.jobs_data = jobs_data
+        self.verbosity = verbosity
+
+
+    def create_copy_for_each_iteration(self):
+        """
+        For each job in jobs_data, create a copy for each iteration
+        Include iteration as a field in jobgeneration.pickle
+        """
+
+        jobs = self.jobs_data.get_flattened_data()
+        for job in jobs.keys():
+
+            path = jobs[job]['jobgeneration.job_dirpath'];
+
+            ## don't make copies of copies!
+            if "_iter" in path:
+                continue;
+
+            ## find PInT output files in path
+            list_files = glob.glob(path + "/*iter*.csv");
+
+            ## find max iter
+            max_iter = -1;
+            for f in list_files:
+                ff = os.path.basename(f).split("_iter")
+                niter = int(ff[1].split(".csv")[0])
+
+                max_iter = max(max_iter, niter)
+
+            print(job, max_iter)
+
+            ## modify jobegenration.pickle
+            with open(path + "/jobgeneration.pickle", 'rb') as ff:
+                # Pickle the 'data' dictionary using the highest protocol available.
+                pickle_data = pickle.load(ff)
+
+            orig_job_dirpath = pickle_data['jobgeneration']['job_dirpath'];
+            orig_job_unique_id = pickle_data['jobgeneration']['job_unique_id'];
+
+            if max_iter >= 0:
+                for niter in range(max_iter + 1):
+                    suffix = "_iter" + str(niter);
+                    shutil.copytree(path, path + suffix, dirs_exist_ok = True);
+                    pickle_data['jobgeneration']['job_dirpath'] = orig_job_dirpath + suffix
+                    pickle_data['jobgeneration']['job_unique_id'] = orig_job_unique_id + suffix
+                    pickle_data['runtime']['iteration'] = niter
+                    with open(path + suffix + "/jobgeneration.pickle", 'wb') as ff:
+                        pickle.dump(pickle_data, ff, pickle.HIGHEST_PROTOCOL)
 

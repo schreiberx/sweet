@@ -490,11 +490,12 @@ public:
 		if (mpi_rank == 0)
 		{
 			// Store initial solution:
-			parareal_simulationInstances[0]->output_data_file(
-					0,
-					0,
-					true
-				);
+			if (pVars->store_iterations)
+				parareal_simulationInstances[0]->output_data_file(
+						0,
+						0,
+						true
+					);
 
 			CONSOLEPREFIX_start("[MAIN] ");
 			std::cout << "Initial propagation" << std::endl;
