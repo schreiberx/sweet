@@ -47,9 +47,9 @@ params_timestep_sizes_explicit_fine = [15/8]
 params_timestep_sizes_implicit_fine = [15/8]
 params_timestep_sizes_exp_fine = [15]
 
-params_timestep_sizes_explicit_coarse = [60, 120, 180, 360]
-params_timestep_sizes_implicit_coarse = [60, 120, 180, 360, 480, 600, 720, 960]
-params_timestep_sizes_exp_coarse = [60, 120, 180, 240, 300, 360, 480, 600, 720, 960]
+params_timestep_sizes_explicit_coarse = [120, 240]
+params_timestep_sizes_implicit_coarse = [120, 240]
+params_timestep_sizes_exp_coarse = [120, 240]
 
 
 # Parallelization
