@@ -18,22 +18,28 @@ sys.path.pop()
 
 mule_plotting_usetex(False)
 
+
+#### TODO
+##### add command-line argument to choose between
+##### - plot vs iteration
+##### - plot fixed iteration vs parareal_coarse_timestep_size
+
 """
 Postprocessing script
 Plot parareal errors and residuals along iterations for simulations with given parameter values
+plot_type : "iteration" or "timestep"
 
 Run:
-        ./postprocessing_consolidate var1 "name_var1" "vals_var1" var2 "names_var2" "vals_var2"
+        ./postprocessing_consolidate plot_type var1 "name_var1" "vals_var1" var2 "names_var2" "vals_var2"
 Example
-        ./postprocessing_consolidate var1 runtime.parareal_coarse_slices 5 var2 runtime.parareal_coarse_timestep_size 120 240 360
+        ./postprocessing_consolidate plot_type var1 runtime.parareal_coarse_slices 5 var2 runtime.parareal_coarse_timestep_size 120 240 360
 """
 
 
 groups = [
-             'runtime.timestepping_method',
+             ####'runtime.timestepping_method',
              'runtime.parareal_coarse_timestepping_method',
              'runtime.parareal_coarse_timestepping_order',
-             'runtime.parareal_coarse_timestep_size',
              'runtime.parareal_coarse_slices'
          ]
 
@@ -70,25 +76,21 @@ for i in range(1, len(sys.argv)):
             j += 1
         filter_params[var] = vals
 
-###i = 1
-###while i < len(sys.argv) - 1:
-###    print(i)
-###    if sys.argv[1][:3] != "var":
-###        raise Exception("Invalid arguments")
-###    if sys.argv[i][:3] == "var":
-###        i += 1
-###        var = sys.argv[i]
-###        if sys.argv[i + 1][:3] == "var":
-###            raise Exception("Invalid arguments")
-###        vals = [];
-###        while True:
-###            vals.append(sys.argv[i + 1])
-###            i += 1
-###            if i == len(sys.argv) - 1:
-###                break
-###            if sys.argv[i + 1][:3] != "var":
-###                break
-###        filter_params[var] = vals
+
+plot_type = sys.argv[1]
+if not (plot_type == "iteration" or plot_type == "timestep"):
+    raise Exception("Invalid plot_type")
+if plot_type == "iteration" and "runtime.iteration" in filter_params.keys():
+    raise Exception("'runtime.iteration' should not be set as a filter parameter")
+if plot_type == "timestep" and "runtime.iteration" not in filter_params.keys():
+    raise Exception("'runtime.iteration' should be set as a filter parameter")
+
+if plot_type == "iteration":
+    groups.append('runtime.parareal_coarse_timestep_size')
+if plot_type == "timestep":
+    groups.append('runtime.iteration')
+
+
 
 print(filter_params)
 
@@ -103,7 +105,8 @@ c_pint = JobsDataPInTConsolidate(j)
 
 
 
-## Little hack for plotting error vs iteration using JobsData_GroupsPlottingScattered:
+## Small hack for plotting error vs iteration using JobsData_GroupsPlottingScattered
+## and also for plotting error at fixed iteration (in function e.g. of coarse timestep size)
 ## For each job job_name, make one copy job_name_iterXXX per iteration
 ## modifying its jobgeneration.pickle:
 ##   - Modify field jobgeneration.job_unique_id
@@ -146,28 +149,52 @@ err = pint_errors.get_pint_errors()
 
 for tagname_y in tagnames_y:
 
-	params = []
-	params += [
-			{
-				'tagname_x': 'runtime.iteration',
-				'xlabel': "Iteration",
-				'ylabel': pp.latex_pretty_names[tagname_y],
-				'title': 'Iteration vs. error',
-				'xscale': 'linear',
-				'yscale': 'log',
-			},
-		]
+	if plot_type == "iteration":
+		params = []
+		params += [
+				{
+					'tagname_x': 'runtime.iteration',
+					'xlabel': "Iteration",
+					'ylabel': pp.latex_pretty_names[tagname_y],
+					'title': 'Iteration vs. error',
+					'xscale': 'linear',
+					'yscale': 'log',
+				},
+			]
 
-	params += [
-			{
-				'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
-				'xlabel': "Wallclock time (seconds)",
-				'ylabel': pp.latex_pretty_names[tagname_y],
-				'title': 'Wallclock time vs. error',
-				'xscale': 'log',
-				'yscale': 'log',
-			},
-		]
+		params += [
+				{
+					'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
+					'xlabel': "Wallclock time (seconds)",
+					'ylabel': pp.latex_pretty_names[tagname_y],
+					'title': 'Wallclock time vs. error',
+					'xscale': 'log',
+					'yscale': 'log',
+				},
+			]
+	elif plot_type == "timestep":
+		params = []
+		params += [
+				{
+					'tagname_x': 'runtime.parareal_coarse_timestep_size',
+					'xlabel': "Coarse timestep size",
+					'ylabel': pp.latex_pretty_names[tagname_y],
+					'title': 'Coarse timestep size vs. error',
+					'xscale': 'log',
+					'yscale': 'log',
+				},
+			]
+
+		params += [
+				{
+					'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
+					'xlabel': "Wallclock time (seconds)",
+					'ylabel': pp.latex_pretty_names[tagname_y],
+					'title': 'Wallclock time vs. error',
+					'xscale': 'log',
+					'yscale': 'log',
+				},
+			]
 
 
 	for param in params:
@@ -275,13 +302,16 @@ for tagname_y in tagnames_y:
 				from matplotlib import ticker
 				from matplotlib.ticker import FormatStrFormatter
 
-				###plt.tick_params(axis='x', which='minor')
-				###p.ax.xaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
-				###p.ax.xaxis.set_major_formatter(FormatStrFormatter("%.0f"))
+				if plot_type == "iteration":
+					p.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+				elif plot_type == "timestep":
+					###pass
+					plt.tick_params(axis='x', which='minor')
+					p.ax.xaxis.set_minor_formatter(FormatStrFormatter("%.0f"))
+					p.ax.xaxis.set_major_formatter(FormatStrFormatter("%.0f"))
 
-				###p.ax.xaxis.set_minor_locator(ticker.LogLocator(subs=[1.5, 2.0, 3.0, 5.0]))
+					p.ax.xaxis.set_minor_locator(ticker.LogLocator(subs=[1.5, 2.0, 3.0, 5.0]))
 
-				p.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
 				for tick in p.ax.xaxis.get_minor_ticks():
 					tick.label.set_fontsize(8) 

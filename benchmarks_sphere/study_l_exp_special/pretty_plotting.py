@@ -58,7 +58,8 @@ abbrev_param_names = {
         'runtime.parareal_coarse_timestepping_method': 'pCtsm',
         'runtime.parareal_coarse_timestepping_order': 'pCtso',
         'runtime.parareal_coarse_timestep_size': 'pCtss',
-        'runtime.parareal_coarse_slices': 'pCslc'
+        'runtime.parareal_coarse_slices': 'pCslc',
+        'runtime.iteration': 'pIter'
 }
 
 
