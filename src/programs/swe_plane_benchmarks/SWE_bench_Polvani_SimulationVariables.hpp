@@ -13,6 +13,7 @@
 
 struct SWEPolvani_SimulationVariables
 {
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	/**
 	 * Rossby number
 	 */
@@ -22,27 +23,31 @@ struct SWEPolvani_SimulationVariables
 	 * Froude number
 	 */
 	double f = 0.04;
-
+#endif
 
 
 	void outputConfig()
 	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		std::cout << std::endl;
 		std::cout << "SWEPolvani:" << std::endl;
 		std::cout << " + Rossby number: " << r << std::endl;
 		std::cout << " + Froude number: " << f << std::endl;
 		std::cout << std::endl;
+#endif
 	}
 
 
 
 	void outputProgParams()
 	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		std::cout << "" << std::endl;
-		std::cout << "REXI:" << std::endl;
+		std::cout << "Polvani benchmark settings (on the plane):" << std::endl;
 		std::cout << "	--polvani-rossby [float]	Choose Rossby number, default:0" << std::endl;
 		std::cout << "	--polvani-froude [float]	Choose Froude number, default:0" << std::endl;
 		std::cout << "" << std::endl;
+#endif
 	}
 
 
@@ -53,11 +58,13 @@ struct SWEPolvani_SimulationVariables
 			int i_max_options					///< maximum number of options
 	)
 	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		io_long_options[io_next_free_program_option] = {"polvani-rossby", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
 		io_long_options[io_next_free_program_option] = {"polvani-froude", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
+#endif
 	}
 
 	/**
@@ -70,11 +77,13 @@ struct SWEPolvani_SimulationVariables
 			const char *i_value		///< Value in string format
 	)
 	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
 		switch(i_option_index)
 		{
 			case 0:	r = atof(optarg);	return -1;
 			case 1:	f = atof(optarg);	return -1;
 		}
+#endif
 
 		return 2;
 	}

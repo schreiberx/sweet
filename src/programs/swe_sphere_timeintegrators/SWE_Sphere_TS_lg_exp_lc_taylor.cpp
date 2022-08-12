@@ -4,10 +4,10 @@
 
 
 
-#include "SWE_Sphere_TS_lg_exp_lc_exp.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_taylor.hpp"
 
 
-void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep(
+void SWE_Sphere_TS_lg_exp_lc_taylor::run_timestep(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -36,7 +36,7 @@ void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep(
 
 
 
-void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep_lg(
+void SWE_Sphere_TS_lg_exp_lc_taylor::run_timestep_lg(
 		SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -56,7 +56,7 @@ void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep_lg(
 
 
 
-void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep_lc(
+void SWE_Sphere_TS_lg_exp_lc_taylor::run_timestep_lc(
 		SphereData_Spectral &io_phi,	///< prognostic variables
 		SphereData_Spectral &io_vrt,	///< prognostic variables
 		SphereData_Spectral &io_div,	///< prognostic variables
@@ -65,6 +65,12 @@ void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep_lc(
 		double i_simulation_timestamp
 )
 {
+	/*
+	 * Strang split version
+	 *
+	 * Treat $L_g$ terms exponentially
+	 * Treat $L_c$ terms with Taylor expansion
+	 */
 	SphereData_Spectral phi_Lc_pow_i_prev = io_phi;
 	SphereData_Spectral vrt_Lc_pow_i_prev = io_vrt;
 	SphereData_Spectral div_Lc_pow_i_prev = io_div;
@@ -73,17 +79,19 @@ void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep_lc(
 
 	for (int i = 1; i <= simVars.rexi.taylor_num_expansions; i++)
 	{
+		// Dummy output variables
 		SphereData_Spectral phi_Lc_pow_i(io_phi.sphereDataConfig, 0);
 		SphereData_Spectral vrt_Lc_pow_i(io_phi.sphereDataConfig, 0);
 		SphereData_Spectral div_Lc_pow_i(io_phi.sphereDataConfig, 0);
 
-		//timestepping_lc_erk.euler_timestep_update_lc(
+		// Time tendencies
 		timestepping_lc_erk.euler_timestep_update_lc_spectral_only(
 				phi_Lc_pow_i_prev, vrt_Lc_pow_i_prev, div_Lc_pow_i_prev,
 				phi_Lc_pow_i, vrt_Lc_pow_i, div_Lc_pow_i,
 				i_simulation_timestamp
 		);
 
+		// Taylor coefficients
 		taylor_coeff *= i_dt/(double)i;
 
 		io_phi += taylor_coeff*phi_Lc_pow_i;
@@ -98,12 +106,12 @@ void SWE_Sphere_TS_lg_exp_lc_exp::run_timestep_lc(
 
 
 
-void SWE_Sphere_TS_lg_exp_lc_exp::setup(
+void SWE_Sphere_TS_lg_exp_lc_taylor::setup(
 		int i_order
 )
 {
 	if (simVars.rexi.taylor_num_expansions <= 0)
-		SWEETError("This time stepping method required setting the number of Taylor expansions");
+		SWEETError("This time stepping method requires setting the number of Taylor expansions");
 
 	timestepping_order = i_order;
 
@@ -118,14 +126,14 @@ void SWE_Sphere_TS_lg_exp_lc_exp::setup(
 
 
 
-void SWE_Sphere_TS_lg_exp_lc_exp::setup_auto()
+void SWE_Sphere_TS_lg_exp_lc_taylor::setup_auto()
 {
 	setup(timestepping_order);
 }
 
 
 
-SWE_Sphere_TS_lg_exp_lc_exp::SWE_Sphere_TS_lg_exp_lc_exp(
+SWE_Sphere_TS_lg_exp_lc_taylor::SWE_Sphere_TS_lg_exp_lc_taylor(
 		SimulationVariables &i_simVars,
 		SphereOperators_SphereData &i_op
 )	:
@@ -138,7 +146,7 @@ SWE_Sphere_TS_lg_exp_lc_exp::SWE_Sphere_TS_lg_exp_lc_exp(
 
 
 
-SWE_Sphere_TS_lg_exp_lc_exp::~SWE_Sphere_TS_lg_exp_lc_exp()
+SWE_Sphere_TS_lg_exp_lc_taylor::~SWE_Sphere_TS_lg_exp_lc_taylor()
 {
 }
 

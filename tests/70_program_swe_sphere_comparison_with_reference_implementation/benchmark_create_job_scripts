@@ -48,7 +48,7 @@ for analytical in [0, 1]:
         p.runtime.comma_separated_tags = "galewsky_analytical_geostrophic_setup"
         file_ext = "_analytical_1"
     else:
-        p.runtime.comma_separated_tags = "0"
+        p.runtime.comma_separated_tags = "galewsky_numerical_geostrophic_setup"
         file_ext = "_analytical_0"
 
     p.runtime.timestepping_method = 'ln_erk'

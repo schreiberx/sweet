@@ -201,9 +201,6 @@ public:
 		 * SETUP time steppers
 		 */
 		timeSteppers.setup(simVars.disc.timestepping_method,
-#if SWEET_PARAREAL
-		simVars.disc.timestepping_order, simVars.disc.timestepping_order2, // orders (this function is not called with parareal activated //TODO: clean this
-#endif
 				op, simVars);
 
 		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;
@@ -227,7 +224,12 @@ public:
 			simVars.outputConfig();
 		}
 
-		timestep_do_output();
+
+		/*
+		 * Output data for the first time step as well if output of datafiels is requested
+		 */
+		if (simVars.iodata.output_each_sim_seconds >= 0)
+			timestep_do_output();
 
 		stopwatch.start();
 	}
@@ -582,10 +584,6 @@ public:
 		if (simVars.misc.verbosity > 0)
 			std::cout << "." << std::flush;
 
-		// output each time step
-		//std::cout << "simVars.iodata.output_each_sim_seconds" << std::endl;
-		//std::cout << simVars.iodata.output_each_sim_seconds << std::endl;
-		//exit(1);
 		if (simVars.iodata.output_each_sim_seconds < 0)
 			return false;
 
