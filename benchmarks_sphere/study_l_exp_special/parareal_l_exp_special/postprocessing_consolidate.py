@@ -43,20 +43,6 @@ groups = [
              'runtime.parareal_coarse_slices'
          ]
 
-tagnames_y = [
-        'parareal_errors.prog_phi_pert.t1.0.norm_l1',
-        'parareal_errors.prog_vrt.t1.0.norm_l1',
-        'parareal_errors.prog_div.t1.0.norm_l1',
-        'parareal_errors.prog_phi_pert.t1.0.norm_l2',
-        'parareal_errors.prog_vrt.t1.0.norm_l2',
-        'parareal_errors.prog_div.t1.0.norm_l2',
-        'parareal_errors.prog_phi_pert.t1.0.norm_linf',
-        'parareal_errors.prog_vrt.t1.0.norm_linf',
-        'parareal_errors.prog_div.t1.0.norm_linf'
-	###'sphere_data_diff_prog_h.res_norm_l1',
-	###'sphere_data_diff_prog_h.res_norm_l2',
-	###'sphere_data_diff_prog_h.res_norm_linf',
-]
 
 
 ## get filter params
@@ -78,6 +64,7 @@ for i in range(1, len(sys.argv)):
 
 
 plot_type = sys.argv[1]
+error_type = sys.argv[2]
 if not (plot_type == "iteration" or plot_type == "timestep"):
     raise Exception("Invalid plot_type")
 if plot_type == "iteration" and "runtime.iteration" in filter_params.keys():
@@ -90,9 +77,33 @@ if plot_type == "iteration":
 if plot_type == "timestep":
     groups.append('runtime.iteration')
 
+if not (error_type == "physical" or error_type == "spectral"):
+    raise Exception("Wrong error_type")
 
 
 print(filter_params)
+
+if error_type == "physical":
+    tagnames_y = [
+            'parareal_errors.prog_phi_pert.t1.0.norm_l1',
+            'parareal_errors.prog_phi_pert.t1.0.norm_l2',
+            'parareal_errors.prog_phi_pert.t1.0.norm_linf',
+            'parareal_errors.prog_vrt.t1.0.norm_l1',
+            'parareal_errors.prog_vrt.t1.0.norm_l2',
+            'parareal_errors.prog_vrt.t1.0.norm_linf',
+            'parareal_errors.prog_div.t1.0.norm_l1',
+            'parareal_errors.prog_div.t1.0.norm_l2',
+            'parareal_errors.prog_div.t1.0.norm_linf'
+    ]
+elif error_type == "spectral":
+    tagnames_y = [
+            'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm_16',
+            'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm_32',
+            'parareal_errors.spec.prog_vrt.t1.0.norm_linf_rnorm_16',
+            'parareal_errors.spec.prog_vrt.t1.0.norm_linf_rnorm_32',
+            'parareal_errors.spec.prog_div.t1.0.norm_linf_rnorm_16',
+            'parareal_errors.spec.prog_div.t1.0.norm_linf_rnorm_32'
+    ]
 
 ####filter_params = {
 ####                     'runtime.parareal_coarse_slices' : [5]
@@ -141,6 +152,7 @@ pint_errors = PInT_Errors(
                            precomputed_errors = True,
                            file_type = "csv",
                            ref_type = "ref",
+                           error_type = error_type,
                            jobdir_pattern = None
               )
 

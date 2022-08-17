@@ -9,6 +9,7 @@ from mule.postprocessing.JobsData import *
 from mule_local.postprocessing.SphereDataPhysicalDiff import *
 from mule_local.postprocessing.PlaneDataPhysicalDiff import *
 from mule.parhelper import *
+from mule_local.postprocessing.SphereReadBinFile import read_bin_file
 
 
 class PInT_Errors:
@@ -21,6 +22,7 @@ class PInT_Errors:
             precomputed_errors = None,
             file_type = None,
             ref_type = None,
+            error_type = None,
             jobdir_pattern = None
         ):
         """
@@ -37,30 +39,31 @@ class PInT_Errors:
             False: read reference and PInT solutions and compute error
         file_type: str
             'csv' or 'bin'
-        ref_type: reference solution (given ref or fine solution)
+        ref_type: str, reference solution (given ref or fine solution)
             'ref' or 'fine'
+        error_type: str
+            'physical' or 'spectral'
         jobdir_pattern: str
             pattern to detect job directories
             Default: './job_bench*'
         """
-        self._setup(job_directories, pint_type, geometry, precomputed_errors, file_type, ref_type, jobdir_pattern)
+        self._setup(job_directories, pint_type, geometry, precomputed_errors, file_type, ref_type, error_type, jobdir_pattern)
 
-    def store_err_in_dict(self, err_dict, errL1, errL2, errLinf, var, t, niter):
+    def store_err_in_dict(self, err_dict, var, t, niter, errL1 = None, errL2 = None, errLinf = None, err_spec = None):
 
         ## store in dict
-        ## dict to store errors: err[var][t][err_order] = [[0, err_0], [1, err_1], ... , [niter, err_niter]]
         ## dict to store errors: err[var][t][err_order] = val
         if var not in err_dict.keys():
             err_dict[var] = {}
         if t not in err_dict[var].keys():
             err_dict[var][t] = {}
-            err_dict[var][t]["errL1"] = errL1
-            err_dict[var][t]["errL2"] = errL2
-            err_dict[var][t]["errLinf"] = errLinf
-
-        ###err_dict[var][t]["errL1"] = np.vstack((err_dict[var][t]["errL1"], np.array([niter, errL1])))
-        ###err_dict[var][t]["errL2"] = np.vstack((err_dict[var][t]["errL2"], np.array([niter, errL2])))
-        ###err_dict[var][t]["errLinf"] = np.vstack((err_dict[var][t]["errLinf"], np.array([niter, errLinf])))
+            if self.error_type == "physical":
+                err_dict[var][t]["errL1"] = errL1
+                err_dict[var][t]["errL2"] = errL2
+                err_dict[var][t]["errLinf"] = errLinf
+            elif self.error_type == "spectral":
+                for rnorm in err_spec.keys:
+                    err_dict[var][t][rnorm] = err_spec[rnorm]
 
         return
 
@@ -87,6 +90,12 @@ class PInT_Errors:
             if "residual" in f:
                 continue;
 
+            ## keep correct error files
+            if self.error_type == "physical" and "_spec_" in f:
+                continue
+            if self.error_type == "spectral" and "_spec_" not in f:
+                continue
+
             ## identify variable
             ff = os.path.basename(f).split("_t0")
             var = ff[0].split("_" + self.ref_type + "_")[1]
@@ -103,59 +112,91 @@ class PInT_Errors:
                 continue;
 
             lines = [line.rstrip() for line in open(f)]
-            assert len(lines) == 8
 
-            ## check info
+            if self.error_type == "physical":
+                assert len(lines) == 8
 
-            spl = lines[0].split();
-            assert spl[0] == "#BASESOLUTION", spl
-            assert spl[1] == self.ref_type, spl
+                ## check info
 
-            spl = lines[1].split();
-            assert spl[0] == "#VAR", spl
-            assert spl[1] == var, (spl, var)
+                spl = lines[0].split();
+                assert spl[0] == "#BASESOLUTION", spl
+                assert spl[1] == self.ref_type, spl
 
-            spl = lines[2].split();
-            assert spl[0] == "#ITERATION", spl
-            assert int(spl[1]) == niter, (spl, niter)
+                spl = lines[1].split();
+                assert spl[0] == "#VAR", spl
+                assert spl[1] == var, (spl, var)
 
-            spl = lines[3].split();
-            assert spl[0] == "#TIMESLICE", spl
+                spl = lines[2].split();
+                assert spl[0] == "#ITERATION", spl
+                assert int(spl[1]) == niter, (spl, niter)
 
-            spl = lines[4].split();
-            assert spl[0] == "#TIMEFRAMEEND", spl
-            assert float(spl[1]) == t, (spl, t)
+                spl = lines[3].split();
+                assert spl[0] == "#TIMESLICE", spl
 
-            ## get errors
+                spl = lines[4].split();
+                assert spl[0] == "#TIMEFRAMEEND", spl
+                assert float(spl[1]) == t, (spl, t)
 
-            errL1 = -1;
-            errL2 = -1;
-            errLinf = -1;
+                ## get errors
 
-            spl = lines[5].split();
-            assert spl[0] == "errL1"
-            errL1 = float(spl[1]);
+                errL1 = -1;
+                errL2 = -1;
+                errLinf = -1;
 
-            spl = lines[6].split();
-            assert spl[0] == "errL2"
-            errL2 = float(spl[1]);
+                spl = lines[5].split();
+                assert spl[0] == "errL1"
+                errL1 = float(spl[1]);
 
-            spl = lines[7].split();
-            assert spl[0] == "errLinf"
-            errLinf = float(spl[1]);
+                spl = lines[6].split();
+                assert spl[0] == "errL2"
+                errL2 = float(spl[1]);
 
-            if errL1 < 0:
-                print("ERROR: err_L1 not found in " + path);
-                sys.exit();
-            if errL2 < 0:
-                print("ERROR: err_L2 not found in " + path);
-                sys.exit();
-            if errLinf < 0:
-                print("ERROR: err_Linf not found in " + path);
-                sys.exit();
+                spl = lines[7].split();
+                assert spl[0] == "errLinf"
+                errLinf = float(spl[1]);
 
+                if errL1 < 0:
+                    raise Exception("ERROR: err_L1 not found in " + path);
+                if errL2 < 0:
+                    raise Exception("ERROR: err_L2 not found in " + path);
+                if errLinf < 0:
+                    raise Exception("ERROR: err_Linf not found in " + path);
 
-            self.store_err_in_dict(err, errL1, errL2, errLinf, var, t, niter)
+                self.store_err_in_dict(err, var, t, niter, errL1 = errL1, errL2 = errL2, errLinf = errLinf)
+
+            ## error in spectral space for each resolution
+            elif self.error_type == "spectral":
+
+                ## check info
+
+                spl = lines[0].split();
+                assert spl[0] == "#BASESOLUTION", spl
+                assert spl[1] == self.ref_type, spl
+
+                spl = lines[1].split();
+                assert spl[0] == "#VAR", spl
+                assert spl[1] == var, (spl, var)
+
+                spl = lines[2].split();
+                assert spl[0] == "#ITERATION", spl
+                assert int(spl[1]) == niter, (spl, niter)
+
+                spl = lines[3].split();
+                assert spl[0] == "#TIMESLICE", spl
+
+                spl = lines[4].split();
+                assert spl[0] == "#TIMEFRAMEEND", spl
+                assert float(spl[1]) == t, (spl, t)
+
+                ## get errors
+                err_spec = err_spec
+                for iline in range(5, len(lines)):
+                    spl = lines[iline].split()
+                    assert len(spl) == 3, spl
+                    err_spec[int(spl[1])] = float(spl[2])
+
+                self.store_err_in_dict(err, var, t, niter, err_spec = err_spec)
+
 
         if len(list_files) > 0:
             print(job, path)
@@ -186,6 +227,12 @@ class PInT_Errors:
             if "residual" in f:
                 continue;
 
+            ## keep correct error files
+            if self.error_type == "physical" and "_spec_" in f:
+                continue
+            if self.error_type == "spectral" and "_spec_" not in f:
+                continue
+
             ## skip files containing computed errors (should not exist!)
             if var[:14] == self.pint_type + "_error":
                 continue;
@@ -206,25 +253,59 @@ class PInT_Errors:
                 continue;
 
             ## compute errors
-            if file_type == "csv":
-                if self.geometry == "plane":
-                    pass
-                else:
-                    e = SphereDataPhysicalDiff(
-                                                  self.ref_job['jobgeneration.job_dirpath']+'/' + ref_file,
-                                                  job['jobgeneration.job_dirpath']+'/' + f
-                    )
-            elif file_type == "sweet":
-                pass
-                ###sol, m_max, n_max = read_bin_file(f);
+            if self.err_type == "physical":
+                if self.file_type == "csv":
+                    if self.geometry == "plane":
+                        raise Exception("Not yet implemented")
+                    else:
+                        e = SphereDataPhysicalDiff(
+                                                      self.ref_job['jobgeneration.job_dirpath'] + '/' + ref_file,
+                                                      job['jobgeneration.job_dirpath'] + '/' + f
+                        )
+                elif self.file_type == "sweet":
+                    raise Exception("Not yet implemented")
+                    ###sol, m_max, n_max = read_bin_file(f);
 
-            errL1 = e["errL1"]
-            errL2 = e["errL2"]
-            errLinf = e["errLinf"]
+                errL1 = e["errL1"]
+                errL2 = e["errL2"]
+                errLinf = e["errLinf"]
 
-            self.store_err_in_dict(err, errL1, errL2, errLinf, var, t, niter)
+                self.store_err_in_dict(err, var, t, niter, errL1 = errL1, errL2 = errL2, errLinf = errLinf)
 
-        pass
+            elif self.err_type == "spectral":
+
+                err_spec = {};
+
+                if self.file_type == "csv":
+                    raise Exception("Not yet implented")
+                elif self.file_type == "sweet":
+
+                    ref, m_max_ref, n_max_ref = self.read_bin_file(self.ref_job['jobgeneration.job_dirpath'] + '/' + ref_file);
+                    sol, m_max, n_max = self.read_bin_file(job['jobgeneration.job_dirpath'] + '/' + f);
+
+                    assert(m_max_ref == m_max)
+                    assert(n_max_ref == n_max)
+
+                    diff = sol - ref
+
+                    n_modes = m_max + 1
+
+                    ## resolutions for computing errors
+                    rnorms = n_modes * np.array([1, 1./2., 1./4., 1./8., 1./16.])
+
+                    eps = 1e-20;
+                    for rnorm in rnorms:
+                        if rnorm < 16:
+                            continue
+                        norm_diff = getMaxAbsRnorm(diff, rnorm, n_modes - 1)
+                        norm_ref = getMaxAbsRnorm(ref, rnorm, n_modes - 1)
+                        if norm_diff < eps and norm_ref < eps:
+                            err_rnorm = 0.
+                        else:
+                            err_rnorm = norm_diff / norm_ref
+                        err_spec[rnorm] = err_rnorm
+
+                self.store_err_in_dict(err, var, t, niter, err_spec = err_spec)
 
 
     def get_pint_errors(self):
@@ -282,9 +363,13 @@ class PInT_Errors:
 
                 for t in err[var].keys():
 
-                    pickle_data[tagname +  var + '.t' + str(t) + '.norm_l1'] = err[var][t]['errL1']
-                    pickle_data[tagname +  var + '.t' + str(t) + '.norm_l2'] = err[var][t]['errL2']
-                    pickle_data[tagname +  var + '.t' + str(t) + '.norm_linf'] = err[var][t]['errLinf']
+                    if self.error_type == "physical":
+                        pickle_data[tagname +  var + '.t' + str(t) + '.norm_l1'] = err[var][t]['errL1']
+                        pickle_data[tagname +  var + '.t' + str(t) + '.norm_l2'] = err[var][t]['errL2']
+                        pickle_data[tagname +  var + '.t' + str(t) + '.norm_linf'] = err[var][t]['errLinf']
+                    elif self.error_type == "spectral":
+                        for rnorm in err[var][t].keys():
+                            pickle_data[tagname +  "spec." + var + '.t' + str(t) + '.norm_linf_rnorm' + str(rnorm)] = err[var][t][rnorm]
 
             print(" + picklefile: "+str(picklefile))
 
@@ -352,6 +437,25 @@ class PInT_Errors:
             print("*"*80)
             raise Exception("Reference files not found!")
 
+    def getArrayIndexByModes(self, n, m, N_max):
+
+        assert n >= 0;
+        assert n >= m;
+
+        return (m * (2 * N_max - m + 1) >> 1)  + n;
+
+    def getMaxAbsRnorm(self, u, rnorm, N_max, verbose = False):
+
+        err = 0;
+
+        for m in range(int(rnorm)):
+            for n in range(m, int(rnorm)):
+                idx = getArrayIndexByModes(n, m, N_max);
+                err = np.max([err, np.abs(u[idx] * np.conj(u[idx]))]);
+                if verbose:
+                    print(m, n, idx, u[idx], err);
+
+        return np.sqrt(float(err));
 
 
     def _setup(
@@ -362,6 +466,7 @@ class PInT_Errors:
             precomputed_errors = None,
             file_type = None,
             ref_type = None,
+            error_type = None,
             jobdir_pattern = None
         ):
 
@@ -373,6 +478,7 @@ class PInT_Errors:
         elif file_type == "bin":
             self.file_type = "sweet"
         self.ref_type = ref_type
+        self.error_type = error_type
 
         if job_directories != None:
             j = JobsData(job_dirs = job_directories, verbosity=0)
