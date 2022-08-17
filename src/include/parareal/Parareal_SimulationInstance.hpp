@@ -158,6 +158,11 @@ public:
 
 		PInT_Common::setup();
 
+	#if SWEET_PARAREAL_PLANE_BURGERS
+		PInT_Common::set_tsm_burgers(i_timeSteppersFine);
+	#endif
+
+
 		if (simVars->benchmark.benchmark_name == "normalmodes" )
 			this->compute_normal_modes = true;
 
@@ -385,8 +390,8 @@ public:
 		SWEPlaneBenchmarksCombined swePlaneBenchmarks;
 		swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, *simVars, *op_plane[0]);
 	#elif SWEET_PARAREAL_PLANE_BURGERS
-		PlaneData_Physical t0_prog_u_phys(t0_prog_u.planeDataConfig[0]);
-		PlaneData_Physical t0_prog_v_phys(t0_prog_v.planeDataConfig[0]);
+		PlaneData_Physical t0_prog_u_phys = t0_prog_u.toPhys();
+		PlaneData_Physical t0_prog_v_phys = t0_prog_v.toPhys();
 		if (simVars->disc.space_grid_use_c_staggering)
 		{
 			t0_prog_u_phys.physical_update_lambda_array_indices(
@@ -702,7 +707,7 @@ public:
 			// to be used as n-1 in SL in the next time slice
 			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse_coarse_mesh);
 
-			this->run_timestep(this->parareal_data_coarse, "coarse");
+			this->run_timestep(this->parareal_data_coarse_coarse_mesh, "coarse");
 			simVars_coarse->timecontrol.current_simulation_time += simVars_coarse->timecontrol.current_timestep_size;
 			assert(simVars_coarse->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
 			nb_timesteps++;
@@ -875,7 +880,7 @@ public:
 
 		int nvar = N;
 
-		PInT_Common::store_parareal_error(
+		PInT_Common::store_pint_error(
 						this->parareal_data_output,
 						parareal_data_ref,
 						nvar,
@@ -884,6 +889,7 @@ public:
 						this->timeframe_end,
 						path_ref,
 						base_solution,
+						"parareal",
 						i_precision
 					);
 

@@ -88,7 +88,7 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
         it = int(fff[1].split("." + file_type)[0]);
 
         ## check if csv file already contains computed errors
-        if var[:14] == "parareal_error":
+        if var[:14] == "xbraid_error":
             continue;
 
         ## check if csv file contains listed vars
@@ -122,7 +122,7 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
 
             dirname = f.split("/")[0];
 
-            error_file = open(dirname + "/parareal_error_" + ref_type + "_" + os.path.basename(f)[7:], "w");
+            error_file = open(dirname + "/xbraid_error_" + ref_type + "_" + os.path.basename(f)[7:], "w");
             error_file.write("errL1 {}\n".format(err_L1));
             error_file.write("errL2 {}\n".format(err_L2));
             error_file.write("errLinf {}".format(err_Linf));
@@ -137,7 +137,7 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
             rnorms = n_modes * np.array([1, 1./2., 1./4., 1./8., 1./16.]);
 
             dirname = f.split("/")[0];
-            error_file = open(dirname + "/parareal_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv", "w");
+            error_file = open(dirname + "/xbraid_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv", "w");
             ####print(dirname + "/parareal_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv")
 
             eps_small = 1e-20;

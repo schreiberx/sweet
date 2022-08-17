@@ -117,8 +117,9 @@ for job1 in list_jobs:
 
             read_jobs.append(job2);
 
-            list_files = glob.glob(path_simulations + "/" + job1 + "/parareal_error*");
+            list_files = glob.glob(path_simulations + "/" + job1 + "/xbraid_error*");
             list_files = [os.path.basename(f) for f in list_files];
+            assert len(list_files) > 0;
 
             max_diff = -1
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
@@ -127,6 +128,9 @@ for job1 in list_jobs:
                     if "_spec_" in f:
                         continue;
 
+                    if not os.path.exists(path_simulations + "/" + job2 + "/" + f):
+                        not_found_files += 1;
+                        continue;
                     err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                     err_L1_2, err_L2_2, err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
                     err_Linf = np.abs(err_Linf_1 - err_Linf_2);
@@ -145,7 +149,7 @@ for job1 in list_jobs:
                     err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                     err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
 
-                    assert len(list(err_Linf_1.keys())) == len(list(err_Linf_2.keys()))
+                    assert len(list(err_Linf_1.keys())) == len(list(err_Linf_2.keys())), (len(list(err_Linf_1.keys())),len(list(err_Linf_2.keys())), err_Linf_1.keys(), err_Linf_2.keys() )
                     for rnorm in err_Linf_1.keys():
                         eps_small = 1e-20;
                         ## ignore too small values

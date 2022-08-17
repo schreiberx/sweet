@@ -76,7 +76,6 @@ expected_max_residual = float(sys.argv[2]);
 list_jobs = glob("job_bench_*");
 
 if residual_type == "iteration":
-    ## read parareal solutions
     for job in list_jobs:
         res = read_residuals(job);
         check_residuals(res, expected_max_residual);

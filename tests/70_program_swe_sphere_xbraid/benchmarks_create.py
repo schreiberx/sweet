@@ -28,7 +28,7 @@ tsm_fine = sys.argv[3];
 tsm_coarse = sys.argv[4];
 nb_pt = int(sys.argv[5])
 
-if (itest == 5 or itest == 6):
+if (itest >= 5):
     online_error = int(sys.argv[6])
 
     if online_error:
@@ -223,6 +223,44 @@ if simulation_to_run == "xbraid":
             jg.runtime.xbraid_spatial_coarsening = coarsening;
             jg.gen_jobscript_directory();
 
+    ## xbraid vs parareal
+    elif (itest == 7):
+
+        for cfactor in cfactors:
+            ## xbraid with two leves and F-relaxation only
+            jg.compile.xbraid = "mpi";
+            jg.runtime.xbraid_enabled = 1;
+            jg.compile.parareal = "none";
+            jg.runtime.parareal_enabled = 0;
+            jg.runtime.parareal_max_iter = jg.runtime.xbraid_max_iter;
+            jg.runtime.xbraid_access_level = 2;
+            jg.runtime.xbraid_store_iterations = 0;
+            jg.runtime.xbraid_load_fine_csv_files = 1;
+            jg.runtime.xbraid_path_fine_csv_files = path_fine;
+            jg.runtime.xbraid_max_levels = 2;
+            jg.runtime.xbraid_skip = 1;
+            jg.runtime.xbraid_fmg = 0;
+            jg.runtime.xbraid_nrelax = 0; ## F-relaxation
+            jg.runtime.xbraid_cfactor = cfactor;
+            jg.gen_jobscript_directory();
+
+            ## parareal
+            jg.compile.xbraid = "none";
+            jg.runtime.xbraid_enabled = 0;
+            jg.compile.parareal = "mpi";
+            jg.runtime.parareal_enabled = 1;
+            jg.runtime.parareal_max_iter = jg.runtime.xbraid_max_iter;
+            jg.runtime.parareal_coarse_timestepping_method = tsm_coarse
+            jg.runtime.parareal_coarse_timestepping_order = orders[tsm_coarse]
+            jg.runtime.parareal_coarse_timestepping_order2 = orders[tsm_coarse]
+            jg.runtime.parareal_load_fine_csv_files = 1;
+            jg.runtime.parareal_path_fine_csv_files = path_fine;
+            jg.runtime.parareal_store_iterations = 0;
+            jg.runtime.parareal_coarse_timestep_size = -1
+            jg.runtime.parareal_coarse_slices = int(jg.runtime.max_simulation_time / (timestep_size_fine * cfactor) );
+            jg.gen_jobscript_directory();
+
+
     if (itest < 5):
         jg.gen_jobscript_directory();
 
@@ -239,21 +277,3 @@ elif simulation_to_run == "ref":
     f = open("fine_sim", "w");
     f.write(jg.job_dirpath);
     f.close();
-
-    ####    ## if ref simulation does not exist
-    ####    print (glob("job_benchref*"))
-    ####    if len(glob("job_benchref*")) == 0:
-    ####        ## ref simulation
-    ####        jg.compile.parareal = "none";
-    ####        jg.runtime.parareal_enabled = 0;
-    ####        ###jg.runtime.timestepping_method = tsm_ref
-    ####        jg.runtime.timestep_size = timestep_size_reference
-    ####        jg.reference_job = True;
-    ####        jg.gen_jobscript_directory();
-    ####        f = open("ref_sim", "w");
-    ####        f.write(jg.job_dirpath);
-    ####        f.close();
-    ####    else:
-    ####        f = open("ref_sim", "w");
-    ####        f.write(glob("job_benchref*")[0]);
-    ####        f.close();

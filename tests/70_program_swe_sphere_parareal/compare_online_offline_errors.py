@@ -99,6 +99,9 @@ for job1 in list_jobs:
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             max_diff = 0;
             for f in list_files:
+                if "_spec_" in f:
+                    continue;
+
                 err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                 err_L1_2, err_L2_2, err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
                 ###print(f);

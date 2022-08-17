@@ -88,8 +88,9 @@ for job1 in list_jobs:
 
             read_jobs.append(job2);
 
-            list_files = glob.glob(path_simulations + "/" + job1 + "/parareal_error*");
+            list_files = glob.glob(path_simulations + "/" + job1 + "/xbraid_error*");
             list_files = [os.path.basename(f) for f in list_files];
+            assert len(list_files) > 0
 
             max_diff = 0
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));

@@ -50,7 +50,7 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
         it = int(fff[1].split(".csv")[0]);
 
         ##### check if csv file already contains computed errors
-        ###if var[:14] == "parareal_error":
+        ###if var[:14] == "xbraid_error":
         ###    continue;
 
         ## check if csv file contains listed vars
@@ -84,7 +84,7 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
 
         ########dirname = f.split("/")[0];
 
-        ########error_file = open(dirname + "/parareal_error_" + ref_type + "_" + os.path.basename(f)[7:], "w");
+        ########error_file = open(dirname + "/xbraid_error_" + ref_type + "_" + os.path.basename(f)[7:], "w");
         ########error_file.write("errL1 {}\n".format(err_L1));
         ########error_file.write("errL2 {}\n".format(err_L2));
         ########error_file.write("errLinf {}".format(err_Linf));
@@ -103,9 +103,9 @@ list_jobs.remove(fine_sim);
 ####ref_sol = read_ref_solution(ref_sim);
 fine_sol = read_ref_solution(fine_sim);
 
-## read parareal solutions
+## read xbraid solutions
 for job in list_jobs:
-    ####read_parareal_solution_compute_store_errors(job, ref_sol, "ref");
+    ####read_xbraid_solution_compute_store_errors(job, ref_sol, "ref");
     max_error = read_xbraid_solution_compare_to_fine(job, fine_sol, "fine");
     print(" *** Max error: ", max_error);
 

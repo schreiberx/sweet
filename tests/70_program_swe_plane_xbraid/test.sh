@@ -9,6 +9,10 @@
 ## itest = 4: print_level = 3 -> check residual norm at each C-point: should be zero for two C-points per iteration
 ## itest = 5: multilevel tests + n processors in time -> XBraid solution within tol w.r.t. serial solution
 ###############
+## Additional unit tests:
+## itest = 6: basic test for spatial coarsening feature: simulations with spatial_coarsening = 0 or = N ( = fine resolution) should be identical
+## itest = 7: check if parareal and xbraid with specific configurations provide identical results
+###############
 
 
 get_tsm(){
@@ -41,7 +45,7 @@ mkdir $dirname_offline_error;
 
 echo ""
 
-for itest in {-1..5};do
+for itest in {-1..7};do
 	echo "*********************";
 	echo "Running debug test" $itest;
 	echo "*********************";
@@ -170,10 +174,10 @@ for itest in {-1..5};do
 							mv $dirname2/job_bench* .;
 
 							echo_info "---> Computing errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-							./compute_parareal_errors.py $fine_sim || exit 1
+							./compute_xbraid_errors.py $fine_sim || exit 1
 
 							########mv ref_sim $dirname2/.;
-							mv fine_sim $dirname2/.;
+							cp fine_sim $dirname2/.;
 						fi;
 
 						## only xbraid with online error computation
@@ -217,6 +221,33 @@ for itest in {-1..5};do
 			echo "";
 
 		done;
+
+	elif [ "$itest" == 6 ]; then
+
+		for nproc in {1..4}; do
+			fine_sim=$(cat fine_sim);
+			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim > dummy || exit 1
+
+			mule.benchmark.jobs_run_directly || exit 1
+			./compare_online_offline_errors.py . $fine_sim 1
+		done;
+
+	elif [ "$itest" == 7 ]; then
+
+		for nproc in {1,5}; do
+
+			echo "  -------------";
+			echo "  -- nproc:" $nproc
+			echo "  -------------";
+
+			fine_sim=$(cat fine_sim);
+			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim > dummy || exit 1
+
+			mule.benchmark.jobs_run_directly || exit 1
+			./compare_parareal_xbraid_errors.py . $fine_sim 1
+		done;
+
+
 	fi;
 
 

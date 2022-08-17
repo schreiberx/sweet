@@ -37,6 +37,10 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
     list_parareal_files = glob(path + "/*csv");
 
     for f in list_parareal_files:
+
+        if "_spec_" in f:
+            continue;
+
         ## identify variable, time and iteration
         ff = os.path.basename(f).split("_t0");
         var = ff[0];

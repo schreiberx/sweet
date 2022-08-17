@@ -900,17 +900,50 @@ public:
 
 		sweet_BraidVector* U = create_new_vector(0);
 
+	// Set correct resolution in SimVars
+	for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
+	{
+#if SWEET_XBRAID_PLANE
+			for (int j = 0; j < 2; j++)
+			{
+				this->simVars_levels[level]->disc.space_res_physical[j] = this->planeDataConfig[level]->physical_res[j];
+				this->simVars_levels[level]->disc.space_res_spectral[j] = this->planeDataConfig[level]->spectral_data_size[j];
+			}
+#elif SWEET_XBRAID_SPHERE
+			this->simVars_levels[level]->disc.space_res_physical[0] = this->sphereDataConfig[level]->physical_num_lon;
+			this->simVars_levels[level]->disc.space_res_physical[1] = this->sphereDataConfig[level]->physical_num_lat;
+			this->simVars_levels[level]->disc.space_res_spectral[0] = this->sphereDataConfig[level]->spectral_modes_m_max;
+			this->simVars_levels[level]->disc.space_res_spectral[1] = this->sphereDataConfig[level]->spectral_modes_n_max;
+#endif
+	}
+
+
+	#if SWEET_XBRAID_SCALAR
+		double u0;
+	#elif SWEET_XBRAID_PLANE
+		#if SWEET_XBRAID_PLANE_SWE
+		PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
+		#endif
+		PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
+		PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
+	#elif SWEET_XBRAID_SPHERE
+		SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
+		SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
+		SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+	#endif
+
+
 		if( i_t == this->tstart )
 		{
 			////std::cout << "Setting initial solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
-			double u0 = atof(simVars->bogus.var[1].c_str());
-			U->data->dataArrays_to_GenericData_Scalar(u0);
+			u0 = atof(simVars->bogus.var[1].c_str());
+			////////U->data->dataArrays_to_GenericData_Scalar(u0);
 	
 	#elif SWEET_XBRAID_PLANE
-			PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
-			PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
-			PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
+			////PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
+			////PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
+			////PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
 	
 		#if SWEET_XBRAID_PLANE_SWE
 			SWEPlaneBenchmarksCombined swePlaneBenchmarks;
@@ -973,17 +1006,17 @@ public:
 		#endif
 
 
-			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
-		#if SWEET_XBRAID_PLANE_SWE
-										t0_prog_h_pert,
-		#endif
-										t0_prog_u,
-										t0_prog_v);
+	////////		U->data->dataArrays_to_GenericData_PlaneData_Spectral(
+	////////	#if SWEET_XBRAID_PLANE_SWE
+	////////									t0_prog_h_pert,
+	////////	#endif
+	////////									t0_prog_u,
+	////////									t0_prog_v);
 
 	#elif SWEET_XBRAID_SPHERE
-			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
-			SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
-			SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
 
 			BenchmarksSphereSWE sphereBenchmarks;
 			sphereBenchmarks.setup(*simVars_levels[0], *op_sphere[0]);
@@ -1003,7 +1036,7 @@ public:
 			}
 
 
-			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			////U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 
 
@@ -1012,17 +1045,17 @@ public:
 		{
 			///std::cout << "Setting random solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
-			double u0 = ((double)braid_Rand())/braid_RAND_MAX;
-			U->data->dataArrays_to_GenericData_Scalar(u0);
+			u0 = ((double)braid_Rand())/braid_RAND_MAX;
+			///////U->data->dataArrays_to_GenericData_Scalar(u0);
 	#elif SWEET_XBRAID_PLANE
 
 		#if SWEET_XBRAID_PLANE_SWE
-			PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
+			///PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
 			PlaneData_Physical t0_prog_h_phys(planeDataConfig[0]);
 		#endif
 
-			PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
-			PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
+			///PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
+			////PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
 
 			PlaneData_Physical t0_prog_u_phys(planeDataConfig[0]);
 			PlaneData_Physical t0_prog_v_phys(planeDataConfig[0]);
@@ -1054,18 +1087,18 @@ public:
 			t0_prog_u.loadPlaneDataPhysical(t0_prog_u_phys);
 			t0_prog_v.loadPlaneDataPhysical(t0_prog_v_phys);
 
-			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
-		#if SWEET_XBRAID_PLANE_SWE
-										t0_prog_h_pert,
-		#endif
-										t0_prog_u,
-										t0_prog_v);
+	/////		U->data->dataArrays_to_GenericData_PlaneData_Spectral(
+	/////	#if SWEET_XBRAID_PLANE_SWE
+	/////									t0_prog_h_pert,
+	/////	#endif
+	/////									t0_prog_u,
+	/////									t0_prog_v);
 
 
 	#elif SWEET_XBRAID_SPHERE
-			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
-			SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
-			SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
 
 			SphereData_Physical t0_prog_phi_pert_phys(sphereDataConfig[0]);
 			SphereData_Physical t0_prog_vrt_phys(sphereDataConfig[0]);
@@ -1094,7 +1127,7 @@ public:
 			t0_prog_vrt.loadSphereDataPhysical(t0_prog_vrt_phys);
 			t0_prog_div.loadSphereDataPhysical(t0_prog_div_phys);
 
-			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			////U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
 		else
@@ -1102,39 +1135,53 @@ public:
 			///std::cout << "Setting zero solution " << std::endl;
 			/* Sets U as an all zero vector*/
 	#if SWEET_XBRAID_SCALAR
-			double zero = 0;
-			U->data->dataArrays_to_GenericData_Scalar(zero);
+			u0 = 0;
+			////U->data->dataArrays_to_GenericData_Scalar(u0);
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
-			PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
+			///PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
 			t0_prog_h_pert.spectral_set_zero();
 		#endif
 	
-			PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
+			////PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
 			t0_prog_u.spectral_set_zero();
 	
-			PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
+			////PlaneData_Spectral t0_prog_v(planeDataConfig[0]);
 			t0_prog_v.spectral_set_zero();
 
-			U->data->dataArrays_to_GenericData_PlaneData_Spectral(
-		#if SWEET_XBRAID_PLANE_SWE
-										t0_prog_h_pert,
-		#endif
-										t0_prog_u,
-										t0_prog_v);
+	////		U->data->dataArrays_to_GenericData_PlaneData_Spectral(
+	////	#if SWEET_XBRAID_PLANE_SWE
+	////									t0_prog_h_pert,
+	////	#endif
+	////									t0_prog_u,
+	////									t0_prog_v);
 	
 	#elif SWEET_XBRAID_SPHERE
-			SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
-			SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
-			SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_phi_pert(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_vrt(sphereDataConfig[0]);
+			////SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
 
 			t0_prog_phi_pert.spectral_set_zero();
 			t0_prog_vrt.spectral_set_zero();
 			t0_prog_div.spectral_set_zero();
 
-			U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+			////U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
 	#endif
 		}
+
+
+	#if SWEET_XBRAID_SCALAR
+		U->data->dataArrays_to_GenericData_Scalar(u0);
+	#elif SWEET_XBRAID_PLANE
+		U->data->dataArrays_to_GenericData_PlaneData_Spectral(
+		#if SWEET_XBRAID_PLANE_SWE
+										t0_prog_h_pert,
+		#endif
+										t0_prog_u,
+										t0_prog_v);
+	#elif SWEET_XBRAID_SPHERE
+		U->data->dataArrays_to_GenericData_SphereData_Spectral(t0_prog_phi_pert, t0_prog_vrt, t0_prog_div);
+	#endif
 
 		*o_U = (braid_Vector) U;
 
@@ -1281,7 +1328,7 @@ public:
 					}
 
 					if (it >= 0)
-						this->store_parareal_error(
+						this->store_pint_error(
 										U->data,
 										this->xbraid_data_ref_exact[it]->data,
 										N,
@@ -1289,7 +1336,8 @@ public:
 										it,
 										t,
 										this->simVars->xbraid.xbraid_path_ref_csv_files,
-										"ref"
+										"ref",
+										"xbraid"
 						);
 				}
 				// Compute and store errors w.r.t. fine (serial) solution
@@ -1305,7 +1353,7 @@ public:
 					}
 
 					if (it >= 0)
-						this->store_parareal_error(
+						this->store_pint_error(
 										U->data,
 										this->xbraid_data_fine_exact[it]->data,
 										N,
@@ -1313,7 +1361,8 @@ public:
 										it,
 										t,
 										this->simVars->xbraid.xbraid_path_fine_csv_files,
-										"fine"
+										"fine",
+										"xbraid"
 						);
 				}
 			}

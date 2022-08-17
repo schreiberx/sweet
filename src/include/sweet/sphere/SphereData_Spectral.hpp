@@ -1069,8 +1069,8 @@ public:
 	double spectral_reduce_max_abs(std::size_t rnorm)	const
 	{
 
-		assert (rnorm <= sphereDataConfig->spectral_modes_m_max);
-		assert (rnorm <= sphereDataConfig->spectral_modes_n_max);
+		assert ((int)rnorm <= sphereDataConfig->spectral_modes_m_max);
+		assert ((int)rnorm <= sphereDataConfig->spectral_modes_n_max);
 
 		double error = -std::numeric_limits<double>::infinity();
 		std::complex<double> w = {0,0};

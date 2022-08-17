@@ -9,35 +9,49 @@ from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
 
 
-def read_error_file(path):
+def read_error_file(path, error_type):
 
     lines = [line.rstrip() for line in open(path)];
 
-    err_L1 = -1;
-    err_L2 = -1;
-    err_Linf = -1;
+    if error_type == "physical":
 
-    for line in lines:
-        spl = line.split();
-        if spl[0] == "errL1":
-            err_L1 = float(spl[1]);
-            continue;
-        if spl[0] == "errL2":
-            err_L2 = float(spl[1]);
-            continue;
-        if spl[0] == "errLinf":
-            err_Linf = float(spl[1]);
-            continue;
+        err_L1 = -1;
+        err_L2 = -1;
+        err_Linf = -1;
 
-    if err_L1 < 0:
-        print("ERROR: err_L1 not found in " + path);
-        sys.exit();
-    if err_L2 < 0:
-        print("ERROR: err_L2 not found in " + path);
-    if err_Linf < 0:
-        print("ERROR: err_Linf not found in " + path);
+        for line in lines:
+            spl = line.split();
+            if spl[0] == "errL1":
+                err_L1 = float(spl[1]);
+                continue;
+            if spl[0] == "errL2":
+                err_L2 = float(spl[1]);
+                continue;
+            if spl[0] == "errLinf":
+                err_Linf = float(spl[1]);
+                continue;
 
-    return err_L1, err_L2, err_Linf
+        if err_L1 < 0:
+            raise Exception("ERROR: err_L1 not found in " + path);
+        if err_L2 < 0:
+            raise Exception("ERROR: err_L2 not found in " + path);
+        if err_Linf < 0:
+            raise Exception("ERROR: err_Linf not found in " + path);
+
+        return err_L1, err_L2, err_Linf
+
+    elif error_type == "spectral":
+        err = {};
+
+        for line in lines:
+            spl = line.split();
+            if spl[0] == "errLinf":
+                err[int(spl[1])] = float(spl[2]);
+
+        return err;
+
+    else:
+        raise Exception("Wrong error type")
 
 
 path_simulations = sys.argv[1];
@@ -146,26 +160,40 @@ for job1 in list_jobs:
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             nb_not_found_files = 0;
             for f in list_files:
-                err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
-                if p_or_x == "parareal":
-                    fname2 = path_simulations + "/" + job2 + "/" + f.replace("parareal", "xbraid");
-                elif p_or_x == "xbraid":
-                    fname2 = path_simulations + "/" + job2 + "/" + f.replace("xbraid", "parareal");
-                if not os.path.exists(fname2):
-                    nb_not_found_files += 1;
-                    continue;
-                err_L1_2, err_L2_2, err_Linf_2 = read_error_file(fname2);
-                ###print(err_L1_1, err_L1_2);
-                ###print(err_L1_2, err_L2_2);
-                ###print(err_Linf_1, err_Linf_2);
-                ###print("");
-                err_Linf = np.abs(err_Linf_1 - err_Linf_2);
-                err_L1 = np.abs(err_L1_1 - err_L1_2);
-                err_L2 = np.abs(err_L2_1 - err_L2_2);
-                assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f, job1, job2);
-                assert err_L1 < small, (err_L1_1, err_L1_2, f);
-                assert err_L2 < small, (err_L2_1, err_L2_2, f);
-                max_diff = np.max([max_diff, err_Linf, err_L1, err_L2]);
+
+                if "_spec" not in f:
+
+                    err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f, error_type = "physical");
+                    if p_or_x == "parareal":
+                        fname2 = path_simulations + "/" + job2 + "/" + f.replace("parareal", "xbraid");
+                    elif p_or_x == "xbraid":
+                        fname2 = path_simulations + "/" + job2 + "/" + f.replace("xbraid", "parareal");
+                    if not os.path.exists(fname2):
+                        nb_not_found_files += 1;
+                        continue;
+                    err_L1_2, err_L2_2, err_Linf_2 = read_error_file(fname2, error_type = "physical");
+                    err_Linf = np.abs(err_Linf_1 - err_Linf_2);
+                    err_L1 = np.abs(err_L1_1 - err_L1_2);
+                    err_L2 = np.abs(err_L2_1 - err_L2_2);
+                    assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f, job1, job2);
+                    assert err_L1 < small, (err_L1_1, err_L1_2, f);
+                    assert err_L2 < small, (err_L2_1, err_L2_2, f);
+                    max_diff = np.max([max_diff, err_Linf, err_L1, err_L2]);
+                else:
+                    err_1 = read_error_file(path_simulations + "/" + job1 + "/" + f, error_type = "spectral");
+                    if p_or_x == "parareal":
+                        fname2 = path_simulations + "/" + job2 + "/" + f.replace("parareal", "xbraid");
+                    elif p_or_x == "xbraid":
+                        fname2 = path_simulations + "/" + job2 + "/" + f.replace("xbraid", "parareal");
+                    if not os.path.exists(fname2):
+                        nb_not_found_files += 1;
+                        continue;
+                    err_2 = read_error_file(fname2, error_type = "spectral");
+                    for rnorm in err_1.keys():
+                        err = np.abs(err_1[rnorm] - err_2[rnorm])
+                        assert err < small, (rnorm, err_1, err_2, f)
+                        max_diff = np.max([max_diff, err])
+
             print("     -> Number of files not found in both jobs: " + str(nb_not_found_files));
             print("     -> Max diff between errors: " + str(max_diff));
             print("                                             -> OK");

@@ -171,7 +171,7 @@ for itest in {-1..6};do
 							mv $dirname2/job_bench* .;
 
 							echo_info "---> Computing errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-							./compute_parareal_errors.py $fine_sim || exit 1
+							./compute_xbraid_errors.py $fine_sim || exit 1
 
 							########mv ref_sim $dirname2/.;
 							cp fine_sim $dirname2/.;
@@ -221,7 +221,7 @@ for itest in {-1..6};do
 
 	elif [ "$itest" == 6 ]; then
 
-		for nproc in 1; do
+		for nproc in {1,5}; do
 
 			echo "  -------------";
 			echo "  -- nproc:" $nproc

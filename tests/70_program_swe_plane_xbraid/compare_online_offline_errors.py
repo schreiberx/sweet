@@ -30,24 +30,32 @@ def read_error_file(path):
             continue;
 
     if err_L1 < 0:
-        print("ERROR: err_L1 not found in " + path);
-        sys.exit();
+        raise Exception("ERROR: err_L1 not found in " + path);
     if err_L2 < 0:
-        print("ERROR: err_L2 not found in " + path);
+        raise Exception("ERROR: err_L2 not found in " + path);
     if err_Linf < 0:
-        print("ERROR: err_Linf not found in " + path);
+        raise Exception("ERROR: err_Linf not found in " + path);
 
     return err_L1, err_L2, err_Linf
 
 
 path_simulations = sys.argv[1];
 fine_sim = sys.argv[2];
+test_spatial_coarsening = False;
+if len(sys.argv) > 3:
+    test_spatial_coarsening = int(sys.argv[3]);
+
+list_vars = ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_store_iterations", "runtime.xbraid_spatial_coarsening"];
+list_vars2 = ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_spatial_coarsening"];
+if test_spatial_coarsening:
+    list_vars2.remove("runtime.xbraid_spatial_coarsening");
 
 ## get list of jobs in this directory
 list_jobs = glob.glob(path_simulations + "/job_bench_*");
 list_jobs = [os.path.basename(job) for job in list_jobs];
 ## exclude fine simulation
-list_jobs.remove(fine_sim);
+if fine_sim in list_jobs:
+    list_jobs.remove(fine_sim);
 
 print("    ** {} jobs found.".format(len(list_jobs)));
 
@@ -59,7 +67,7 @@ for key in jd.keys():
     if path == fine_sim:
         continue;
     job_info[path] = {};
-    for s in ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt", "runtime.xbraid_store_iterations"]:
+    for s in list_vars:
         job_info[path][s] = jd[key][s];
 
 
@@ -77,42 +85,46 @@ for job1 in list_jobs:
         if job2 in read_jobs:
             continue;
         found_job = True;
-        for s in ["runtime.xbraid_cfactor", "runtime.xbraid_max_levels", "runtime.xbraid_pt"]:
+        for s in list_vars2:
             if not job_info[job1][s] == job_info[job2][s]:
                 found_job = False;
 
 
         if found_job:
             ipair += 1;
-            assert not job_info[job1]["runtime.xbraid_store_iterations"] == job_info[job2]["runtime.xbraid_store_iterations"];
+            if not test_spatial_coarsening:
+                assert not job_info[job1]["runtime.xbraid_store_iterations"] == job_info[job2]["runtime.xbraid_store_iterations"], (job1, job2);
+            else:
+                assert not job_info[job1]["runtime.xbraid_spatial_coarsening"] == job_info[job2]["runtime.xbraid_spatial_coarsening"], (job1, job2);
+                assert job_info[job1]["runtime.xbraid_spatial_coarsening"] * job_info[job2]["runtime.xbraid_spatial_coarsening"] == 0;
 
             read_jobs.append(job2);
 
-            list_files = glob.glob(path_simulations + "/" + job1 + "/parareal_error*");
+            list_files = glob.glob(path_simulations + "/" + job1 + "/xbraid_error*");
             list_files = [os.path.basename(f) for f in list_files];
+            assert len(list_files) > 0
 
+            not_found_files = 0;
             max_diff = 0
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             for f in list_files:
                 if "_spec_" in f:
                     continue;
 
-                ###print(job1, job2)
+                if not os.path.exists(path_simulations + "/" + job2 + "/" + f):
+                    not_found_files += 1;
+                    continue;
                 err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                 err_L1_2, err_L2_2, err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
-                ###print(err_L1_1, err_L1_2);
-                ###print(err_L1_2, err_L2_2);
-                ###print(err_Linf_1, err_Linf_2);
-                ###print("");
                 err_Linf = np.abs(err_Linf_1 - err_Linf_2);
                 err_L1 = np.abs(err_L1_1 - err_L1_2);
                 err_L2 = np.abs(err_L2_1 - err_L2_2);
-                ###print (err_Linf, err_L1, err_L2, small)
                 assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f, job1, job2);
                 assert err_L1 < small, (err_L1_1, err_L1_2, f);
                 assert err_L2 < small, (err_L2_1, err_L2_2, f);
                 max_diff = np.max([max_diff, err_Linf, err_L1, err_L2]);
             print("     -> Max diff between errors: " + str(max_diff));
+            print("     -> Number of files not found in second job: " + str(not_found_files));
             print("                                             -> OK");
             break;
 
