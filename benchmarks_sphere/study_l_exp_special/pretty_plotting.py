@@ -39,17 +39,25 @@ latex_pretty_names = {
 	'sphere_data_diff_prog_div.res_norm_l2'	: '$L_2$ norm divergence (res.\,normalized)',
 	'sphere_data_diff_prog_div.res_norm_linf'	: '$L_{\infty}$ norm divergence',
 
-        'parareal_errors.prog_phi_pert.t1.0.norm_l1' : '$L_1$ error norm geopotential pert. (res.\,normalized)',
-        'parareal_errors.prog_vrt.t1.0.norm_l1' : '$L_1$ error norm vorticity (res.\,normalized)',
-        'parareal_errors.prog_div.t1.0.norm_l1' : '$L_1$ error norm divergence (res.\,normalized)',
+        'parareal_errors.prog_phi_pert.t1.0.norm_l1' : '$L_1$ normalized error geopotential pert.',
+        'parareal_errors.prog_vrt.t1.0.norm_l1' : '$L_1$ normalized error vorticity',
+        'parareal_errors.prog_div.t1.0.norm_l1' : '$L_1$ normalized error divergence',
 
-        'parareal_errors.prog_phi_pert.t1.0.norm_l2' : '$L_2$ error norm geopotential pert. (res.\,normalized)',
-        'parareal_errors.prog_vrt.t1.0.norm_l2' : '$L_2$ error norm vorticity (res.\,normalized)',
-        'parareal_errors.prog_div.t1.0.norm_l2' : '$L_2$ error norm divergence (res.\,normalized)',
+        'parareal_errors.prog_phi_pert.t1.0.norm_l2' : '$L_2$ normalized error geopotential pert.',
+        'parareal_errors.prog_vrt.t1.0.norm_l2' : '$L_2$ normalized error vorticity',
+        'parareal_errors.prog_div.t1.0.norm_l2' : '$L_2$ normalized error divergence',
 
-        'parareal_errors.prog_phi_pert.t1.0.norm_linf' : '$L_{\infty}$ error norm geopotential pert. (res.\,normalized)',
-        'parareal_errors.prog_vrt.t1.0.norm_linf' : '$L_{\infty}$ error norm vorticity (res.\,normalized)',
-        'parareal_errors.prog_div.t1.0.norm_linf' : '$L_{\infty}$ error norm divergence (res.\,normalized)',
+        'parareal_errors.prog_phi_pert.t1.0.norm_linf' : '$L_{\infty}$ normalized error geopotential pert.',
+        'parareal_errors.prog_vrt.t1.0.norm_linf' : '$L_{\infty}$ normalized error vorticity',
+        'parareal_errors.prog_div.t1.0.norm_linf' : '$L_{\infty}$ normalized error divergence',
+
+        'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm_16': '$L_{\infty, R_{norm} = 16}$ normalized error geopotential pert. (spectral)',
+        'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm_32': '$L_{\infty, R_{norm} = 32}$ normalized error geopotential pert. (spectral)',
+        'parareal_errors.spec.vrt.t1.0.norm_linf_rnorm_16': '$L_{\infty, R_{norm} = 16}$ normalized error vorticity (spectral)',
+        'parareal_errors.spec.vrt.t1.0.norm_linf_rnorm_32': '$L_{\infty, R_{norm} = 32}$ normalized error vorticity (spectral)',
+        'parareal_errors.spec.div.t1.0.norm_linf_rnorm_16': '$L_{\infty, R_{norm} = 16}$ normalized error divergence (spectral)',
+        'parareal_errors.spec.div.t1.0.norm_linf_rnorm_32': '$L_{\infty, R_{norm} = 32}$ normalized error divergence (spectral)'
+
 }
 
 
