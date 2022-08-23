@@ -158,6 +158,9 @@ for itest in {-1..6};do
 							## parareal tests without online error computation
 							echo_info "---> Running fine and ref simulations with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 
+							## backup file containing fine sim name (used for next tests)
+							mv fine_sim fine_sim_BKP
+
 							./benchmarks_create.py ref $itest $tsm_fine $tsm_coarse 1 0 $dirname2"/"$fine_sim  > dummy || exit 1
 
 							mule.benchmark.jobs_run_directly|| exit 1
@@ -174,7 +177,10 @@ for itest in {-1..6};do
 							./compute_xbraid_errors.py $fine_sim || exit 1
 
 							########mv ref_sim $dirname2/.;
-							cp fine_sim $dirname2/.;
+							mv fine_sim $dirname2/.;
+
+							## recover fine sim
+							mv fine_sim_BKP fine_sim
 						fi;
 
 						## only xbraid with online error computation
