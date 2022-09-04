@@ -44,11 +44,6 @@ public:
 
 	virtual bool implements_timestepping_method(
 			const std::string &i_timestepping_method
-#if SWEET_PARAREAL
-			,
-			int & i_timestepping_order,
-			int & i_timestepping_order2
-#endif
 		) = 0;
 
 	virtual std::string string_id() = 0;

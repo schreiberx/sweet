@@ -350,6 +350,12 @@ public:
 #endif
 
 
+		// size of coarse time step
+		double time_slice_size = pVars->max_simulation_time / pVars->coarse_slices;
+		if (pVars->coarse_timestep_size < 0)
+			pVars->coarse_timestep_size = time_slice_size;
+
+
 		// convert to pararealsimulationInstances to get Parareal interfaces
 		for (int k = 0; k < pVars->coarse_slices; k++)
 		{
@@ -394,12 +400,7 @@ public:
 		/*
 		 * SETUP time frame
 		 */
-		// size of coarse time step
 
-		double time_slice_size = pVars->max_simulation_time / pVars->coarse_slices;
-
-		if (pVars->coarse_timestep_size < 0)
-			pVars->coarse_timestep_size = time_slice_size;
 
 		// if time slices are not homogeneous, this should be called by each parareal_simulationInstance
 		//for (int k = 0; k < pVars->coarse_slices; k++)
@@ -489,11 +490,12 @@ public:
 		if (mpi_rank == 0)
 		{
 			// Store initial solution:
-			parareal_simulationInstances[0]->output_data_file(
-					0,
-					0,
-					true
-				);
+			if (pVars->store_iterations)
+				parareal_simulationInstances[0]->output_data_file(
+						0,
+						0,
+						true
+					);
 
 			CONSOLEPREFIX_start("[MAIN] ");
 			std::cout << "Initial propagation" << std::endl;

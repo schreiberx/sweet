@@ -21,20 +21,11 @@ class SWE_Sphere_TS_ln_erk	: public SWE_Sphere_TS_interface
 {
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method
-#if SWEET_PARAREAL
-						,
-						int &i_timestepping_order,
-						int &i_timestepping_order2
-#endif
 					)
 	{
 		timestepping_method = i_timestepping_method;
 		timestepping_order = simVars.disc.timestepping_order;
 		timestepping_order2 = simVars.disc.timestepping_order2;
-#if SWEET_PARAREAL
-		timestepping_order = i_timestepping_order;
-		timestepping_order2 = i_timestepping_order2;
-#endif
 		if (i_timestepping_method == "ln_erk")
 			return true;
 

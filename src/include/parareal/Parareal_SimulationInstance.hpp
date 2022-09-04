@@ -54,7 +54,8 @@ class Parareal_SimulationInstance
 public:
 
 	// Simulation variables
-	SimulationVariables* simVars;
+	SimulationVariables* simVars = nullptr; // fine level (default dt, tsm, tso)
+	SimulationVariables* simVars_coarse = nullptr; // coarse level (dt, tsm, tso provided by specific parareal parameters)
 
 #if SWEET_PARAREAL_PLANE
 	// Grid Mapping (staggered grid)
@@ -153,11 +154,11 @@ public:
 			);
 
 		this->timeSteppersCoarse->setup(
-				this->simVars->parareal.coarse_timestepping_method,
-				this->simVars->parareal.coarse_timestepping_order,
-				this->simVars->parareal.coarse_timestepping_order2,
+				this->simVars_coarse->disc.timestepping_method,
+				this->simVars_coarse->disc.timestepping_order,
+				this->simVars_coarse->disc.timestepping_order2,
 				*this->op_plane,
-				*this->simVars
+				*this->simVars_coarse
 			);
 
 	#if SWEET_PARAREAL_PLANE_SWE
@@ -193,17 +194,17 @@ public:
 		// because simulation parameters may change
 		this->timeSteppersFine->setup(
 					this->simVars->disc.timestepping_method,
-					this->simVars->parareal.coarse_timestepping_order,
-					this->simVars->parareal.coarse_timestepping_order2,
+					////this->simVars->disc.timestepping_order,
+					////this->simVars->disc.timestepping_order2,
 					*this->op_sphere,
 					*this->simVars
 				);
 		this->timeSteppersCoarse->setup(
-					this->simVars->parareal.coarse_timestepping_method,
-					this->simVars->parareal.coarse_timestepping_order,
-					this->simVars->parareal.coarse_timestepping_order2,
+					this->simVars_coarse->disc.timestepping_method,
+					////this->simVars_coarse->disc.timestepping_order,
+					////this->simVars_coarse->disc.timestepping_order2,
 					*this->op_sphere,
-					*this->simVars
+					*this->simVars_coarse
 				);
 
 		this->SL_tsm = { "lg_exp_na_sl_lc_nr_etd_uv",
@@ -222,6 +223,12 @@ public:
 	{
 
 		this->simVars = i_simVars;
+		this->simVars_coarse = new SimulationVariables;
+		*this->simVars_coarse = *this->simVars;
+		this->simVars_coarse->disc.timestepping_method = this->simVars->parareal.coarse_timestepping_method;
+		this->simVars_coarse->disc.timestepping_order = this->simVars->parareal.coarse_timestepping_order;
+		this->simVars_coarse->disc.timestepping_order2 = this->simVars->parareal.coarse_timestepping_order2;
+		this->simVars_coarse->timecontrol.current_timestep_size = this->simVars->parareal.coarse_timestep_size;
 
 		this->timeSteppersFine = i_timeSteppersFine;
 		this->timeSteppersCoarse = i_timeSteppersCoarse;
@@ -359,12 +366,16 @@ public:
 			double time_slice_size
 	)
 	{
+
+		// check if seup has been called
+		assert(simVars_coarse->timecontrol.current_timestep_size == simVars->parareal.coarse_timestep_size);
+
 		// check if each time slice contains an integer number of fine and coarse time steps
 		double eps = 1e-12;
-		double mod_coarse = fmod(time_slice_size, simVars->parareal.coarse_timestep_size);
+		double mod_coarse = fmod(time_slice_size, simVars_coarse->timecontrol.current_timestep_size);
 		double mod_fine = fmod(time_slice_size, simVars->timecontrol.current_timestep_size);
                 if ( std::abs(mod_coarse) > eps && std::abs(mod_coarse - time_slice_size) > eps )
-			SWEETError("Time slice length must be an integer multiple of the coarse time step! (" + std::to_string(simVars->parareal.coarse_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
+			SWEETError("Time slice length must be an integer multiple of the coarse time step! (" + std::to_string(simVars_coarse->timecontrol.current_timestep_size) + ", " + std::to_string(time_slice_size) + ")");
                 if ( std::abs(mod_fine) > eps && std::abs(mod_fine - time_slice_size) > eps )
 		{
 			std::cout << "Number of timesteps: " << this->nb_timesteps_fine << std::endl;
@@ -382,19 +393,22 @@ public:
 			double i_timeframe_start,	///< start timestamp of coarse time step
 			double i_timeframe_end		///< end time stamp of coarse time step
 	){
+		// check if seup has been called
+		assert(simVars_coarse->timecontrol.current_timestep_size == simVars->parareal.coarse_timestep_size);
+
 		if (simVars->parareal.verbosity > 2)
 			std::cout << "Timeframe: [" << i_timeframe_start << ", " << i_timeframe_end << "]" << std::endl;
 		this->timeframe_start = i_timeframe_start;
 		this->timeframe_end = i_timeframe_end;
 
 		this->nb_timesteps_fine = (int)((this->timeframe_end - this->timeframe_start) / simVars->timecontrol.current_timestep_size);
-		this->nb_timesteps_coarse = (int)((this->timeframe_end - this->timeframe_start) / simVars->parareal.coarse_timestep_size);
-		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-15)
+		this->nb_timesteps_coarse = (int)((this->timeframe_end - this->timeframe_start) / simVars_coarse->timecontrol.current_timestep_size);
+		if (this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size < this->timeframe_end - 1e-14)
 			this->nb_timesteps_fine++;
-		if (this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size < this->timeframe_end - 1e-15)
+		if (this->timeframe_start + this->nb_timesteps_coarse * simVars_coarse->timecontrol.current_timestep_size < this->timeframe_end - 1e-14)
 			this->nb_timesteps_coarse++;
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-15);
-		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars->parareal.coarse_timestep_size - this->timeframe_end) < 1e-15);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_fine * simVars->timecontrol.current_timestep_size - this->timeframe_end) < 1e-14);
+		assert( std::abs(this->timeframe_start + this->nb_timesteps_coarse * simVars_coarse->timecontrol.current_timestep_size - this->timeframe_end) < 1e-14);
 
 
 		// set time to parareal_genericdata instances
@@ -655,8 +669,8 @@ public:
 		else if (tsm_level == "coarse")
 			timeSteppersCoarse->master->run_timestep(
 						io_data,
-						simVars->timecontrol.current_timestep_size,
-						simVars->timecontrol.current_simulation_time
+						simVars_coarse->timecontrol.current_timestep_size,
+						simVars_coarse->timecontrol.current_simulation_time
 					);
 		else
 			SWEETError("Wrong tsm_level (should be 'fine' or 'coarse')");
@@ -721,12 +735,12 @@ public:
 			std::cout << "run_timestep_coarse()" << std::endl;
 
 		// reset simulation time
-		simVars->timecontrol.current_simulation_time = timeframe_start;
-		simVars->timecontrol.max_simulation_time = timeframe_end;
-		simVars->timecontrol.current_timestep_nr = 0;
+		simVars_coarse->timecontrol.current_simulation_time = timeframe_start;
+		simVars_coarse->timecontrol.max_simulation_time = timeframe_end;
+		simVars_coarse->timecontrol.current_timestep_nr = 0;
 
 		// If fine solver = SL, send penult fine time step of previous slice, except if it is the first time slice
-		if (std::find(this->SL_tsm.begin(), this->SL_tsm.end(), simVars->parareal.coarse_timestepping_method) != this->SL_tsm.end())
+		if (std::find(this->SL_tsm.begin(), this->SL_tsm.end(), simVars_coarse->disc.timestepping_method) != this->SL_tsm.end())
 			this->set_previous_solution("coarse");
 
 		*(this->parareal_data_coarse) = *(this->parareal_data_start);
@@ -739,8 +753,8 @@ public:
 			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse);
 
 			this->run_timestep(this->parareal_data_coarse, "coarse");
-			simVars->timecontrol.current_simulation_time += simVars->parareal.coarse_timestep_size;
-			assert(simVars->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
+			simVars_coarse->timecontrol.current_simulation_time += simVars_coarse->timecontrol.current_timestep_size;
+			assert(simVars_coarse->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
 			nb_timesteps++;
 		}
 	};
@@ -1713,6 +1727,11 @@ public:
 
 	~Parareal_SimulationInstance()
 	{
+		if (this->simVars_coarse)
+		{
+			delete this->simVars_coarse;
+			this->simVars_coarse = nullptr;
+		}
 	}
 };
 

@@ -198,9 +198,6 @@ public:
 		 * SETUP time steppers
 		 */
 		timeSteppers.setup(simVars.disc.timestepping_method,
-#if SWEET_PARAREAL
-		simVars.disc.timestepping_order, simVars.disc.timestepping_order2, // orders (this function is not called with parareal activated //TODO: clean this
-#endif
 				op, simVars);
 
 		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;

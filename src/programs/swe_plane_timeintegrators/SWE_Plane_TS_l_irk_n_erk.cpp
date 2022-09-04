@@ -120,10 +120,10 @@ SWE_Plane_TS_l_irk_n_erk::SWE_Plane_TS_l_irk_n_erk(
 		op(i_op),
 		ts_l_irk(simVars, op)
 {
-#if !SWEET_PARAREAL
+/////#if !SWEET_PARAREAL
 	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, false);
 	ts_l_irk.setup(simVars.disc.timestepping_order);
-#endif
+/////#endif
 }
 
 
