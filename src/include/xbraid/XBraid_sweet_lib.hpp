@@ -1185,6 +1185,9 @@ public:
 
 		*o_U = (braid_Vector) U;
 
+		// ensure correct output of Phi (phi0 may have been modified)
+		*this->simVars = *this->simVars_levels[0];
+
 		return 0;
 	}
 
