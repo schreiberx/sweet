@@ -6,6 +6,12 @@
 //////////#	error "Parareal not activated"
 //////////#endif
 
+#if ! SWEET_SCALAR_COMPLEX
+	#define typename_scalar double
+#else
+	#define typename_scalar std::complex<double>
+#endif
+
 #include <limits>
 #include <stdlib.h>
 
@@ -31,9 +37,11 @@
 SimulationVariables simVars;
 
 double param_parareal_fine_dt = -1;
-double param_parareal_function_y0 = 0.123;
-double param_parareal_function_a = 0.1;
-double param_parareal_function_b = 1.0;
+double param_function_y0_real = 0.123;
+double param_function_y0_imag = 0.;
+double param_function_L = 0.1;
+double param_function_N = 1.0;
+std::string ode_model = "ode1";
 
 double param_fine_timestepping_solution = std::numeric_limits<double>::infinity();
 
@@ -58,8 +66,8 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
 //////////			double i_sim_timestamp
 //////////	)
 //////////	{
-//////////		double a = param_parareal_function_a;
-//////////		double b = param_parareal_function_b;
+//////////		double a = param_parareal_function_L;
+//////////		double b = param_parareal_function_N;
 //////////
 //////////		io_y += i_dt * (a * std::sin(io_y) + b * std::sin(i_sim_timestamp));
 //////////	}
@@ -138,18 +146,22 @@ class SimulationInstance
 
 
 private:
-	double prog_u;
+	typename_scalar prog_u;
 	SimulationVariables* simVars;
 
 public:
-	ODE_Scalar_TimeSteppers* timeSteppers = nullptr;
+	ODE_Scalar_TimeSteppers<typename_scalar>* timeSteppers = nullptr;
 
 public:
 	SimulationInstance(SimulationVariables* i_simVars)
 		: simVars(i_simVars)
 	{
-		timeSteppers = new ODE_Scalar_TimeSteppers;
-		timeSteppers->setup(*simVars);
+		timeSteppers = new ODE_Scalar_TimeSteppers<typename_scalar>;
+		timeSteppers->setup(
+					simVars->disc.timestepping_method,
+					simVars->disc.timestepping_order,
+					*simVars
+				);
 	}
 
 	~SimulationInstance()
@@ -167,7 +179,11 @@ public:
 		// reset simulation time
 		simVars->timecontrol.current_simulation_time = 0;
 		simVars->timecontrol.current_timestep_nr = 0;
-		this->prog_u = param_parareal_function_y0;
+#if !SWEET_SCALAR_COMPLEX
+		this->prog_u = param_function_y0_real;
+#else
+		this->prog_u = std::complex<double>(param_function_y0_real, param_function_y0_imag);
+#endif
 
 		this->do_output();
 		while (true)
@@ -196,8 +212,8 @@ public:
 ///////////	 */
 ///////////	double f_dt(double y, double t)
 ///////////	{
-///////////		double a = param_parareal_function_a;
-///////////		double b = param_parareal_function_b;
+///////////		double a = param_parareal_function_L;
+///////////		double b = param_parareal_function_N;
 ///////////
 ///////////#if 0
 ///////////		double y0 = param_parareal_function_y0;
@@ -262,23 +278,29 @@ int main(int i_argc, char *i_argv[])
 
 	const char *bogus_var_names[] = {
 		"parareal-fine-dt",
-		"parareal-function-param-y0",
-		"parareal-function-param-a",
-		"parareal-function-param-b",
+		"function-param-y0-real",
+		"function-param-y0-imag",
+		"function-param-L",
+		"function-param-N",
+		"ode-model",
 		nullptr
 	};
 
 	param_parareal_fine_dt = -1;
-	param_parareal_function_y0 = 0.123;
-	param_parareal_function_a = 1.0;
-	param_parareal_function_b = 0.1;
+	param_function_y0_real = 0.123;
+	param_function_y0_imag = 0.;
+	param_function_L = 1.0;
+	param_function_N = 0.1;
+	ode_model = "ode1";
 
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
 	{
 		///std::cout << "	--parareal-fine-dt				Fine time stepping size" << std::endl;
-		std::cout << "	--parareal-function-param-y0	Parameter 'y0' (initial condition) for function y(t=0)" << std::endl;
-		std::cout << "	--parareal-function-param-a		Parameter 'a' for function 'a*sin(y) + b*sin(t)" << std::endl;
-		std::cout << "	--parareal-function-param-b		Parameter 'b' for function 'a*sin(y) + b*sin(t)" << std::endl;
+		std::cout << "	--function-param-y0-real	Parameter 'Re(y0)' (initial condition) for function y(t=0)" << std::endl;
+		std::cout << "	--function-param-y0-imag	Parameter 'Im(y0)' (initial condition) for function y(t=0)" << std::endl;
+		std::cout << "	--function-param-L		Parameter 'a_L' for function 'a_L*f_L(y,dt,t) + a_N*f_N(y,dt,t)" << std::endl;
+		std::cout << "	--function-param-N		Parameter 'a_N' for function 'a_L*f_L(y,dt,t) + a_N*f_N(y,dt,t)" << std::endl;
+		std::cout << "	--ode-model			string naming the ODE model" << std::endl;
 		std::cout << "Unknown option detected" << std::endl;
 		exit(-1);
 	}
@@ -288,19 +310,30 @@ int main(int i_argc, char *i_argv[])
 	//if (simVars.bogus.var[0] != "")
 	//	param_parareal_fine_dt = atof(simVars.bogus.var[0].c_str());
 	if (simVars.bogus.var[1] != "")
-		param_parareal_function_y0 = atof(simVars.bogus.var[1].c_str());
+		param_function_y0_real = atof(simVars.bogus.var[1].c_str());
 	else
-		simVars.bogus.var[1] = std::to_string(param_parareal_function_y0);
+		simVars.bogus.var[1] = std::to_string(param_function_y0_real);
 
 	if (simVars.bogus.var[2] != "")
-		param_parareal_function_a = atof(simVars.bogus.var[2].c_str());
+		param_function_y0_imag = atof(simVars.bogus.var[2].c_str());
 	else
-		simVars.bogus.var[2] = std::to_string(param_parareal_function_a);
+		simVars.bogus.var[2] = std::to_string(param_function_y0_imag);
 
 	if (simVars.bogus.var[3] != "")
-		param_parareal_function_b = atof(simVars.bogus.var[3].c_str());
+		param_function_L = atof(simVars.bogus.var[3].c_str());
 	else
-		simVars.bogus.var[3] = std::to_string(param_parareal_function_b);
+		simVars.bogus.var[3] = std::to_string(param_function_L);
+
+	if (simVars.bogus.var[4] != "")
+		param_function_N = atof(simVars.bogus.var[4].c_str());
+	else
+		simVars.bogus.var[4] = std::to_string(param_function_N);
+
+	if (simVars.bogus.var[5] != "")
+		ode_model = simVars.bogus.var[5];
+	else
+		simVars.bogus.var[5] = ode_model;
+
 
 	if (param_parareal_fine_dt <= 0)
 	{
@@ -319,6 +352,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 #if SWEET_PARAREAL
+	typename_scalar aux;
 	if (!simVars.parareal.enabled)
 	{
 		std::cout << "Activate parareal mode via --parareal0enable=1" << std::endl;
@@ -327,20 +361,20 @@ int main(int i_argc, char *i_argv[])
 
 	std::cout << "Running parareal" << std::endl;
 	std::cout << " + fine dt: " << param_parareal_fine_dt << std::endl;
-	std::cout << " + initial condition: y0=" << param_parareal_function_y0 << std::endl;
-	std::cout << " + function df(y,t)/dt = " << param_parareal_function_a << "*sin(y) + " << param_parareal_function_b << "*sin(t)" << std::endl;
+	std::cout << " + initial condition: y0 = (" << param_function_y0_real << ", " << param_function_y0_imag << ")" << std::endl;
+	std::cout << " + function df(y,t)/dt = " << param_function_L << "*sin(y) + " << param_function_N << "*sin(t)" << std::endl;
 
 	if (simVars.parareal.enabled)
 	{
 
-		ODE_Scalar_TimeSteppers* timeSteppersFine = new ODE_Scalar_TimeSteppers;
-		ODE_Scalar_TimeSteppers* timeSteppersCoarse = new ODE_Scalar_TimeSteppers;
+		ODE_Scalar_TimeSteppers<typename_scalar>* timeSteppersFine = new ODE_Scalar_TimeSteppers<typename_scalar>;
+		ODE_Scalar_TimeSteppers<typename_scalar>* timeSteppersCoarse = new ODE_Scalar_TimeSteppers<typename_scalar>;
 
 		/*
 		 * Allocate parareal controller and provide class
 		 * which implement the parareal features
 		 */
-		Parareal_Controller<ODE_Scalar_TimeSteppers, 1> parareal_Controller(&simVars,
+		Parareal_Controller<ODE_Scalar_TimeSteppers<typename_scalar>, 1> parareal_Controller(&simVars,
 											timeSteppersFine,
 											timeSteppersCoarse);
 

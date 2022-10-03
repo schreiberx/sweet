@@ -190,6 +190,14 @@ class JobRuntimeOptions(InfoError):
         self.xbraid_store_iterations = None;
         self.xbraid_spatial_coarsening = None;
 
+
+        ## ODE parameters
+        self.function_param_y0_real = None;
+        self.function_param_y0_imag = None;
+        self.function_param_L = None;
+        self.function_param_N = None;
+        self.ode_model = None;
+
         #
         # User defined parameters
         # Each new entry must set three values:
@@ -546,6 +554,18 @@ class JobRuntimeOptions(InfoError):
                 if self.xbraid_spatial_coarsening != None:
                     idstr += '_xb_spc'+str(self.xbraid_spatial_coarsening)
 
+        if not 'runtime.ode' in filter_list:
+            if self.function_param_y0_real != None:
+                idstr += '_ode_y0Re'+str(self.function_param_y0_real)
+            if self.function_param_y0_imag != None:
+                idstr += '_ode_y0Im'+str(self.function_param_y0_imag)
+            if self.function_param_L != None:
+                idstr += '_ode_L'+str(self.function_param_L)
+            if self.function_param_N != None:
+                idstr += '_ode_N'+str(self.function_param_N)
+            if self.ode_model != None:
+                idstr += '_ode_model'+str(self.ode_model)
+
         if idstr != '':
             idstr = "RT"+idstr
 
@@ -821,6 +841,19 @@ class JobRuntimeOptions(InfoError):
             retval += " --xbraid-path-fine-csv-files="+str(self.xbraid_path_fine_csv_files)
             retval += " --xbraid-store-iterations="+str(self.xbraid_store_iterations)
             retval += " --xbraid-spatial-coarsening="+str(self.xbraid_spatial_coarsening)
+
+        ## ODE parameters
+        if self.function_param_y0_real != None:
+            retval += ' --function-param-y0-real='+str(self.function_param_y0_real)
+        if self.function_param_y0_imag != None:
+            retval += ' --function-param-y0-imag='+str(self.function_param_y0_imag)
+        if self.function_param_L != None:
+            retval += ' --function-param-L='+str(self.function_param_L)
+        if self.function_param_N != None:
+            retval += ' --function-param-N='+str(self.function_param_N)
+        if self.ode_model != None:
+            retval += ' --ode-model='+str(self.ode_model)
+
 
         for key, param in self.user_defined_parameters.items():
             retval += ' '+param['option']+str(param['value'])

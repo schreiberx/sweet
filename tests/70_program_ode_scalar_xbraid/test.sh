@@ -69,8 +69,8 @@ for itest in {-1..6};do
 	fi;
 	echo "";
 
-	tsm_fine="dummy";
-	tsm_coarse="dummy";
+	tsm_fine="ln_erk";
+	tsm_coarse="ln_erk";
 
 
 	if [ "$itest" == -1  ]; then

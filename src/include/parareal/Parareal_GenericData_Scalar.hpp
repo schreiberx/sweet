@@ -9,6 +9,12 @@
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_GENERICDATA_SCALAR_HPP_
 #define SRC_INCLUDE_PARAREAL_PARAREAL_GENERICDATA_SCALAR_HPP_
 
+#if ! SWEET_SCALAR_COMPLEX
+	#define typename_scalar double
+#else
+	#define typename_scalar std::complex<double>
+#endif
+
 #include <assert.h>
 #include <parareal/Parareal_GenericData.hpp>
 
@@ -18,7 +24,7 @@ class Parareal_GenericData_Scalar :
 		public Parareal_GenericData
 {
 	class DataContainer_Scalar :
-			public Parareal_GenericData::DataContainer<double>
+			public Parareal_GenericData::DataContainer<typename_scalar>
 	{
 
 	public:
@@ -26,27 +32,27 @@ class Parareal_GenericData_Scalar :
 		DataContainer_Scalar()
 		{
 			this->nb_fields = N;
-			this->simfields = new double[N];
+			this->simfields = new typename_scalar[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = 0.;
 		};
 
 		DataContainer_Scalar(
-				double i_data
+				typename_scalar i_data
 		)
 		{
 			this->nb_fields = N;
-			this->simfields = new double[N];
+			this->simfields = new typename_scalar[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data;
 		};
 
 		DataContainer_Scalar(
-				double* i_data
+				typename_scalar* i_data
 		)
 		{
 			this->nb_fields = N;
-			this->simfields = new double[N];
+			this->simfields = new typename_scalar[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data[i];
 		};
@@ -74,23 +80,23 @@ class Parareal_GenericData_Scalar :
 
 public:
 
-	DataContainer<double>* data = nullptr;
+	DataContainer<typename_scalar>* data = nullptr;
 
 public:
-	DataContainer<double>* get_pointer_to_data_Scalar() const override
+	DataContainer<typename_scalar>* get_pointer_to_data_Scalar() const override
 	{
 		return this->data;
 	};
 
 	void dataArrays_to_GenericData_Scalar(
-						double &u
+						typename_scalar &u
 						) override
 	{
 		this->get_pointer_to_data_Scalar()->simfields[0] = u;
 	}
 
 	void GenericData_Scalar_to_dataArrays(
-						double &u
+						typename_scalar &u
 						) override
 	{
 		u = this->get_pointer_to_data_Scalar()->simfields[0];
@@ -145,7 +151,7 @@ public:
 	 * Setup data
 	 */
 	void setup(
-			double i_data
+			typename_scalar i_data
 	)
 	{
 		this->allocate_data();
@@ -161,7 +167,7 @@ public:
 		return 1;
 	}
 
-	void serialize(double *data)
+	void serialize(typename_scalar *data)
 	{
 		for (int i = 0; i < N; i++)
 		{
@@ -170,7 +176,7 @@ public:
 		}
 	};
 
-	void deserialize(double *data)
+	void deserialize(typename_scalar *data)
 	{
 		for (int i = 0; i < N; i++)
 		{
@@ -219,7 +225,8 @@ public:
 	{
 		double e = 0;
 		for (int k = 0; k < N; k++)
-			e += this->data->simfields[k] * this->data->simfields[k];
+			//e += this->data->simfields[k] * this->data->simfields[k];
+			e += std::abs(this->data->simfields[k]) * std::abs(this->data->simfields[k]);
 		return std::sqrt(e);
 	}
 
@@ -228,7 +235,11 @@ public:
 	{
 		bool found_nan = false;
 		for (int i = 0; i < N; i++)
+#if ! SWEET_SCALAR_COMPLEX
 			if (std::isnan(this->data->simfields[i]))
+#else
+			if ( std::isnan(this->data->simfields[i].real()) ||  std::isnan(this->data->simfields[i].imag()) )
+#endif
 			{
 				found_nan = true;
 				break;

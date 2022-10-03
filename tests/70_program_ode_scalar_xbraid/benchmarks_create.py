@@ -38,6 +38,8 @@ if (itest == 5 or itest == 6):
 #Create main compile/run options
 jg = JobGeneration()
 
+jg.compile.scalar_type = "complex"
+
 #Get Earth parameters (if necessary)
 earth = EarthMKSDimensions()
 
@@ -120,7 +122,7 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_fullrnorm = 2
     jg.runtime.xbraid_use_seq_soln = 0
     jg.runtime.xbraid_use_rand = 1
-    jg.runtime.xbraid_timestepping_method = "dummy"
+    jg.runtime.xbraid_timestepping_method = tsm_fine
     jg.runtime.xbraid_timestepping_order = "2"
     jg.runtime.xbraid_timestepping_order2 = "2"
     jg.runtime.xbraid_verbosity = 0;
@@ -217,7 +219,7 @@ if simulation_to_run == "xbraid":
             jg.compile.parareal = "mpi";
             jg.runtime.parareal_enabled = 1;
             jg.runtime.parareal_max_iter = jg.runtime.xbraid_max_iter;
-            jg.runtime.parareal_coarse_timestepping_method = "dummy"
+            jg.runtime.parareal_coarse_timestepping_method = tsm_coarse
             jg.runtime.parareal_coarse_timestepping_order = 1
             jg.runtime.parareal_coarse_timestepping_order2 = 1
             jg.runtime.parareal_load_fine_csv_files = 1;

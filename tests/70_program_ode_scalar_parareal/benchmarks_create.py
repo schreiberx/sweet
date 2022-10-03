@@ -19,8 +19,8 @@ from mule_local.SWEETRuntimeParametersScenarios import *
 
 
 ####tsm_ref = "ln_erk";
-####tsm_fine = sys.argv[1];
-####tsm_coarse = sys.argv[2];
+tsm_fine = sys.argv[1];
+tsm_coarse = sys.argv[2];
 simulation_to_run = sys.argv[3];
 online_error = int(sys.argv[4])
 
@@ -39,6 +39,7 @@ earth = EarthMKSDimensions()
 #
 #Basic plane options
 jg.compile.program = "parareal_ode"
+jg.compile.scalar_type = "complex"
 jg.compile.mode = "debug"
 ###jg.compile.sweet_mpi = "enable"
 
@@ -86,9 +87,9 @@ timestep_size_reference = 0.001
 timestep_size_fine = 0.005
 
 jg.runtime.timestep_size = timestep_size_fine
-###jg.runtime.timestepping_method = tsm_fine
-###jg.runtime.timestepping_order = orders[tsm_fine]
-###jg.runtime.timestepping_order2 = orders[tsm_fine]
+jg.runtime.timestepping_method = tsm_fine
+jg.runtime.timestepping_order = 1
+jg.runtime.timestepping_order2 = 1
 ###jg.runtime.space_res_physical = -1
 jg.runtime.space_res_spectral = 32
 
@@ -106,7 +107,7 @@ parareal_coarse_slices = [5, 10];
 parareal_coarse_timesteps = [0.01, 0.05, -1]
 ##parareal_coarse_slices = [4, 6];
 ##parareal_coarse_timesteps = [15.,  30., -1]
-##jg.runtime.parareal_coarse_timestepping_method = tsm_coarse;
+jg.runtime.parareal_coarse_timestepping_method = tsm_coarse;
 
 if simulation_to_run == "parareal":
     if online_error:

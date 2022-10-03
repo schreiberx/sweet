@@ -13,6 +13,11 @@
 #define SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_
 
 
+#if ! SWEET_SCALAR_COMPLEX
+	#define typename_scalar double
+#else
+	#define typename_scalar std::complex<double>
+#endif
 
 #include <common_pint/PInT_Common.hpp>
 
@@ -221,8 +226,16 @@ public:
 
 
 #if SWEET_PARAREAL_SCALAR
-		this->timeSteppersFine->setup(*this->simVars);
-		this->timeSteppersCoarse->setup(*this->simVars);
+		this->timeSteppersFine->setup(
+						this->simVars->disc.timestepping_method,
+						this->simVars->disc.timestepping_order,
+						*this->simVars
+					);
+		this->timeSteppersCoarse->setup(
+						this->simVars_coarse->disc.timestepping_method,
+						this->simVars_coarse->disc.timestepping_order,
+						*this->simVars_coarse
+					);
 #endif
 
 		// All containers contain data defined on the fine spatial grid
@@ -378,7 +391,7 @@ public:
 		///reset();
 
 #if SWEET_PARAREAL_SCALAR
-		double u0 = atof(simVars->bogus.var[1].c_str());
+		typename_scalar u0 = atof(simVars->bogus.var[1].c_str());
 		this->parareal_data_start->dataArrays_to_GenericData_Scalar(u0);
 
 #elif SWEET_PARAREAL_PLANE

@@ -14,6 +14,13 @@
 #ifndef SRC_INCLUDE_PINT_COMMON_HPP_
 #define SRC_INCLUDE_PINT_COMMON_HPP_
 
+#if ! SWEET_SCALAR_COMPLEX
+	#define typename_scalar double
+#else
+	#define typename_scalar std::complex<double>
+#endif
+
+
 #include <sweet/SimulationVariables.hpp>
 #include <parareal/Parareal_GenericData.hpp>
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
@@ -154,7 +161,7 @@ public:
 	)
 	{
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-		double u_out;
+		typename_scalar u_out;
 		i_data->GenericData_Scalar_to_dataArrays(u_out);
 
 		// Dump  data in csv, if output filename is not empty
@@ -528,7 +535,7 @@ public:
 	 * Write file to data and return string of file name (parareal)
 	 */
 	std::string write_file_pint_scalar(
-			const double &i_u,
+			const typename_scalar &i_u,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
 			double t
@@ -724,7 +731,7 @@ public:
 			sprintf(buffer, filename_template, i_name.c_str(), t);
 			std::string buffer2 = path_ref + "/" + std::string(buffer);
 
-			double tmp;
+			typename_scalar tmp;
 
 			std::cout << path_ref << std::endl;
 			std::cout << "loading DATA from " << buffer2 << std::endl;
@@ -757,7 +764,13 @@ public:
 				else if (i == 3)
 				{
 					assert(str_vector.size() == 1);
+					std::cout << str_vector[0] << std::endl;
+#if !SWEET_SCALAR_COMPLEX
 					tmp = stod(str_vector[0]);
+#else
+					std::istringstream is(str_vector[0]);
+					is >> tmp;
+#endif
 				}
 			}
 
@@ -943,7 +956,7 @@ public:
 
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 			i_name = "prog_u";
-			double u_ref;
+			typename_scalar u_ref;
 			pint_data_ref->GenericData_Scalar_to_dataArrays(u_ref);
 			double err = std::abs(	i_data->get_pointer_to_data_Scalar()->simfields[ivar] -
 						pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar]);

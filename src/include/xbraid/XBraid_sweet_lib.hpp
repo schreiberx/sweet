@@ -9,6 +9,12 @@
 #ifndef SRC_INCLUDE_XBRAID_SWEET_LIB_HPP_
 #define SRC_INCLUDE_XBRAID_SWEET_LIB_HPP_
 
+#if ! SWEET_SCALAR_COMPLEX
+	#define typename_scalar double
+#else
+	#define typename_scalar std::complex<double>
+#endif
+
 #include <braid.hpp>
 #include <common_pint/PInT_Common.hpp>
 #include <parareal/Parareal_GenericData.hpp>
@@ -16,7 +22,7 @@
 #if SWEET_XBRAID_SCALAR
 	#include <parareal/Parareal_GenericData_Scalar.hpp>
 	#include "src/programs/ode_scalar_timeintegrators/ODE_Scalar_TimeSteppers.hpp"
-	typedef ODE_Scalar_TimeSteppers t_tsmType;
+	typedef ODE_Scalar_TimeSteppers<typename_scalar> t_tsmType;
 	#define N 1
 #elif SWEET_XBRAID_PLANE
 	#include <parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
@@ -442,8 +448,10 @@ public:
 			std::cout << "Timestep size at level " << level << " : " << this->simVars_levels[level]->timecontrol.current_timestep_size << std::endl;
 
 #if SWEET_XBRAID_SCALAR
-			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
+			ODE_Scalar_TimeSteppers<typename_scalar>* tsm = new ODE_Scalar_TimeSteppers<typename_scalar>;
 			tsm->setup(
+					tsms[level],
+					tsos[level],
 					*this->simVars_levels[level]
 				);
 #elif SWEET_XBRAID_PLANE
@@ -509,7 +517,7 @@ public:
 
 		// get buffer size
 #if SWEET_XBRAID_SCALAR
-		this->size_buffer = N * sizeof(double);
+		this->size_buffer = N * sizeof(typename_scalar);
 #elif SWEET_XBRAID_PLANE
 		///// To be updated depending on the tsm
 		// Overestimated
@@ -919,7 +927,7 @@ public:
 
 
 	#if SWEET_XBRAID_SCALAR
-		double u0;
+		typename_scalar u0;
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
 		PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
@@ -1461,14 +1469,14 @@ public:
 		sweet_BraidVector* U = (sweet_BraidVector*) i_U;
 
 #if SWEET_XBRAID_SCALAR
-		double* dbuffer = (double*) o_buffer;
+		typename_scalar* dbuffer = (typename_scalar*) o_buffer;
 #else
 		std::complex<double>* dbuffer = (std::complex<double>*) o_buffer;
 #endif
 
 		// get buffer size
 #if SWEET_XBRAID_SCALAR
-		int actual_size_buffer = N * sizeof(double);
+		int actual_size_buffer = N * sizeof(typename_scalar);
 #elif SWEET_XBRAID_PLANE
 		int actual_size_buffer = N * planeDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #elif SWEET_XBRAID_SPHERE
@@ -1543,7 +1551,7 @@ public:
 		sweet_BraidVector* U = create_new_vector(level);
 
 #if SWEET_XBRAID_SCALAR
-		double* dbuffer = (double*) i_buffer;
+		typename_scalar* dbuffer = (typename_scalar*) i_buffer;
 #else
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif

@@ -99,6 +99,9 @@ class JobCompileOptions(InfoError):
         self.xbraid_plane_swe = 'disable'
         self.xbraid_plane_burgers = 'disable'
 
+        # Scalar type (double or complex) for scalar ODE
+        self.scalar_type = 'double'
+
         #LibPFASST
         self.libpfasst = 'disable'
 
@@ -189,6 +192,8 @@ class JobCompileOptions(InfoError):
         retval += ' --xbraid-plane-swe='+self.xbraid_plane_swe
         retval += ' --xbraid-plane-burgers='+self.xbraid_plane_burgers
 
+        # Scalar type (double or complex) for scalar ODE
+        retval += ' --scalar-type='+self.scalar_type
 
         # LibPFASST
         retval += ' --libpfasst='+self.libpfasst
@@ -629,6 +634,14 @@ class JobCompileOptions(InfoError):
         )
         self.xbraid_plane_burgers = scons.GetOption('xbraid_plane_burgers')
 
+        scons.AddOption(    '--scalar-type',
+                dest='scalar_type',
+                type='choice',
+                choices=['double', 'complex'],
+                default='double',
+                help='Scalar type in scalar ODE (double, complex) [default: %default]'
+        )
+        self.scalar_type = scons.GetOption('scalar_type')
 
 
         files = os.listdir('src/programs/')

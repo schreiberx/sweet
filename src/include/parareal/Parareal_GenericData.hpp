@@ -14,6 +14,13 @@
  * This class may be inherited and specialized to each data type
  */
 
+#if ! SWEET_SCALAR_COMPLEX
+	#define typename_scalar double
+#else
+	#define typename_scalar std::complex<double>
+#endif
+
+
 #include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/sphere/SphereData_Spectral.hpp>
 
@@ -81,21 +88,21 @@ public:
 	// different interface functions to avoid template in Parareal_GenericData
 	// these interfaces are overridden in the respective child classes
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-	virtual DataContainer<double>* get_pointer_to_data_Scalar() const
+	virtual DataContainer<typename_scalar>* get_pointer_to_data_Scalar() const
 	{
 		SWEETError("This interface function should not be called");
-		DataContainer<double>* dummy = nullptr;
+		DataContainer<typename_scalar>* dummy = nullptr;
 		return dummy;
 	};
 
 	virtual void dataArrays_to_GenericData_Scalar(
-							double &u
+							typename_scalar &u
 							)
 	{
 	};
 
 	virtual void GenericData_Scalar_to_dataArrays(
-							double &u
+							typename_scalar &u
 							)
 	{
 	};
@@ -204,8 +211,8 @@ public:
 	////virtual void serialize(void *data) = 0;
 	////virtual void deserialize(void *data) = 0;
 	#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-	virtual void serialize(double *data) = 0;
-	virtual void deserialize(double *data) = 0;
+	virtual void serialize(typename_scalar *data) = 0;
+	virtual void deserialize(typename_scalar *data) = 0;
 	#else
 	virtual void serialize(std::complex<double> *data) = 0;
 	virtual void deserialize(std::complex<double> *data) = 0;

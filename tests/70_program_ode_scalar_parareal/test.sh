@@ -24,16 +24,18 @@ mkdir $dirname;
 echo ""
 
 for i in {0,1,2};do
-	for tsm_fine in dummy; do ## short version
+	for tsm_fine in ln_erk; do ## short version
 
 		tsm_fine=$(get_tsm $tsm_fine);
+		echo $tsm_fine
 		if [ "$tsm_fine" = "interface" ]; then
 		  continue;
 		fi
 
-		for tsm_coarse in dummy; do ## short version
+		for tsm_coarse in ln_erk; do ## short version
 
 			tsm_coarse=$(get_tsm $tsm_coarse);
+			echo $tsm_coarse
 			if [ "$tsm_coarse" = "interface" ]; then
 			  continue;
 			fi

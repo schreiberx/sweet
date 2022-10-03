@@ -185,6 +185,12 @@ if p.xbraid_plane_swe == 'enable':
 if p.xbraid_plane_burgers == 'enable':
     env.Append(CXXFLAGS = ' -DSWEET_XBRAID_PLANE_BURGERS=1')
 
+if p.scalar_type == 'double':
+    env.Append(CXXFLAGS = ' -DSWEET_SCALAR_COMPLEX=0')
+elif p.scalar_type == 'complex':
+    env.Append(CXXFLAGS = ' -DSWEET_SCALAR_COMPLEX=1')
+else:
+    raise Exception("Invalid option '"+str(p.scalar_type)+"' for scalar_type")
 
 
 #
@@ -799,4 +805,3 @@ if p.program_name != 'DUMMY':
                 obj_files.append(str(a))
 
     env.Program('build/'+exec_name, obj_files)
-
