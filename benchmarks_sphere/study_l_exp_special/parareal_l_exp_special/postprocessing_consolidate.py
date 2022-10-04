@@ -65,6 +65,7 @@ for i in range(1, len(sys.argv)):
 
 plot_type = sys.argv[1]
 error_type = sys.argv[2]
+plot_timings = int(sys.argv[3])
 if not (plot_type == "iteration" or plot_type == "timestep"):
     raise Exception("Invalid plot_type")
 if plot_type == "iteration" and "runtime.iteration" in filter_params.keys():
@@ -78,8 +79,7 @@ if plot_type == "timestep":
     groups.append('runtime.iteration')
 
 if not (error_type == "physical" or error_type == "spectral"):
-    raise Exception("Wrong error_type")
-
+    raise Exception("Wrong error_type: " + error_type);
 
 print(filter_params)
 
@@ -97,12 +97,12 @@ if error_type == "physical":
     ]
 elif error_type == "spectral":
     tagnames_y = [
-            'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm_16',
-            'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm_32',
-            'parareal_errors.spec.prog_vrt.t1.0.norm_linf_rnorm_16',
-            'parareal_errors.spec.prog_vrt.t1.0.norm_linf_rnorm_32',
-            'parareal_errors.spec.prog_div.t1.0.norm_linf_rnorm_16',
-            'parareal_errors.spec.prog_div.t1.0.norm_linf_rnorm_32'
+            'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm16',
+            'parareal_errors.spec.prog_phi_pert.t1.0.norm_linf_rnorm32',
+            'parareal_errors.spec.prog_vrt.t1.0.norm_linf_rnorm16',
+            'parareal_errors.spec.prog_vrt.t1.0.norm_linf_rnorm32',
+            'parareal_errors.spec.prog_div.t1.0.norm_linf_rnorm16',
+            'parareal_errors.spec.prog_div.t1.0.norm_linf_rnorm32'
     ]
 
 ####filter_params = {
@@ -135,7 +135,8 @@ jobs = j.get_flattened_data()
 
 ## keep simulations with given parameters
 for var, val in filter_params.items():
-	for job in jobs.copy().keys():
+	jobs_copy = jobs.copy();
+	for job in jobs_copy.keys():
 		if str(jobs[job][var]) not in val:
 			del(jobs[job])
 
@@ -161,6 +162,15 @@ err = pint_errors.get_pint_errors()
 
 for tagname_y in tagnames_y:
 
+	err_title = "";
+	if error_type == "physical":
+		err_title = " (physical)"
+	elif error_type == "spectral":
+		## find rnorm value
+		rnorm = tagname_y[tagname_y.find("rnorm") + 5:]
+		print("Rnorm", rnorm);
+		err_title = " (spectral, " + r'$R_{norm} = $' + r'${}$'.format(rnorm) + ")"
+
 	if plot_type == "iteration":
 		params = []
 		params += [
@@ -168,22 +178,24 @@ for tagname_y in tagnames_y:
 					'tagname_x': 'runtime.iteration',
 					'xlabel': "Iteration",
 					'ylabel': pp.latex_pretty_names[tagname_y],
-					'title': 'Iteration vs. error',
+					'title': 'Iteration vs. error' + err_title,
 					'xscale': 'linear',
 					'yscale': 'log',
 				},
 			]
 
-		params += [
-				{
-					'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
-					'xlabel': "Wallclock time (seconds)",
-					'ylabel': pp.latex_pretty_names[tagname_y],
-					'title': 'Wallclock time vs. error',
-					'xscale': 'log',
-					'yscale': 'log',
-				},
-			]
+		if plot_timings:
+			raise Exception("Plot timings not implemented.")
+			params += [
+					{
+						'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
+						'xlabel': "Wallclock time (seconds)",
+						'ylabel': pp.latex_pretty_names[tagname_y],
+						'title': 'Wallclock time vs. error' + err_title,
+						'xscale': 'log',
+						'yscale': 'log',
+					},
+				]
 	elif plot_type == "timestep":
 		params = []
 		params += [
@@ -191,22 +203,24 @@ for tagname_y in tagnames_y:
 					'tagname_x': 'runtime.parareal_coarse_timestep_size',
 					'xlabel': "Coarse timestep size",
 					'ylabel': pp.latex_pretty_names[tagname_y],
-					'title': 'Coarse timestep size vs. error',
+					'title': 'Coarse timestep size vs. error' + err_title,
 					'xscale': 'log',
 					'yscale': 'log',
 				},
 			]
 
-		params += [
-				{
-					'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
-					'xlabel': "Wallclock time (seconds)",
-					'ylabel': pp.latex_pretty_names[tagname_y],
-					'title': 'Wallclock time vs. error',
-					'xscale': 'log',
-					'yscale': 'log',
-				},
-			]
+		if plot_timings:
+			raise Exception("Plot timings not implemented.")
+			params += [
+					{
+						'tagname_x': 'output.simulation_benchmark_timings.main_timestepping',
+						'xlabel': "Wallclock time (seconds)",
+						'ylabel': pp.latex_pretty_names[tagname_y],
+						'title': 'Wallclock time vs. error' + err_title,
+						'xscale': 'log',
+						'yscale': 'log',
+					},
+				]
 
 
 	for param in params:

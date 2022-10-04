@@ -37,7 +37,7 @@ jg.compile.threading = 'omp'
 gen_reference_solution = True
 
 # TODO
-jg.runtime.max_simulation_time = 60*60*24*5    # 5 days
+####jg.runtime.max_simulation_time = 60*60*24*5    # 5 days
 jg.runtime.max_simulation_time = 60*60    # 1 hour
 
 ###params_timestep_sizes_explicit_fine = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360]
@@ -47,9 +47,9 @@ params_timestep_sizes_explicit_fine = [15/8]
 params_timestep_sizes_implicit_fine = [15/8]
 params_timestep_sizes_exp_fine = [15]
 
-params_timestep_sizes_explicit_coarse = [15, 30, 60, 120, 240]
-params_timestep_sizes_implicit_coarse = [15, 30, 60, 120, 240]
-params_timestep_sizes_exp_coarse = [15, 30, 60, 120, 240]
+params_timestep_sizes_explicit_coarse = [30, 60, 120]
+params_timestep_sizes_implicit_coarse = [30, 60, 120]
+params_timestep_sizes_exp_coarse = [30, 60, 120]
 
 
 # Parallelization
@@ -233,7 +233,7 @@ if __name__ == "__main__":
                 # CN
                 ###########
                 ['lg_irk_lc_erk_ver0',    2,    2,    0],
-                ['lg_irk_lc_erk_ver1',    2,    2,    0],
+                #####['lg_irk_lc_erk_ver1',    2,    2,    0],
 
                 ['l_irk',    2,    2,    0],
                 #####['l_irk',    2,    2,    0],
@@ -242,7 +242,7 @@ if __name__ == "__main__":
                 # EXP
                 ###########
                 ['lg_exp_lc_erk_ver0',    2,    2,    0],
-                ['lg_exp_lc_erk_ver1',    2,    2,    0],
+                #####['lg_exp_lc_erk_ver1',    2,    2,    0],
 
                 ['l_exp_special',    1,    1,    0],
                 ['l_exp_special',    2,    2,    0],

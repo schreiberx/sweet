@@ -62,7 +62,7 @@ class PInT_Errors:
                 err_dict[var][t]["errL2"] = errL2
                 err_dict[var][t]["errLinf"] = errLinf
             elif self.error_type == "spectral":
-                for rnorm in err_spec.keys:
+                for rnorm in err_spec.keys():
                     err_dict[var][t][rnorm] = err_spec[rnorm]
 
         return
@@ -189,7 +189,7 @@ class PInT_Errors:
                 assert float(spl[1]) == t, (spl, t)
 
                 ## get errors
-                err_spec = err_spec
+                err_spec = {}
                 for iline in range(5, len(lines)):
                     spl = lines[iline].split()
                     assert len(spl) == 3, spl
