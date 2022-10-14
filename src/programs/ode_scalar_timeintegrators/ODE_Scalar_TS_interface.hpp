@@ -8,12 +8,14 @@
 #ifndef SRC_PROGRAMS_ODE_SCALAR_TS_INTERFACE_HPP_
 #define SRC_PROGRAMS_ODE_SCALAR_TS_INTERFACE_HPP_
 
+#if (!SWEET_PARAREAL) && (!SWEET_XBRAID)
 const std::complex<double> I(0.0,1.0);
+#endif
 
 template <typename T>
 class ODE_Scalar_TS_interface
 {
-private:
+protected:
 	T u_prev;
 	std::string model;
 
@@ -22,22 +24,41 @@ protected:
 	double param_function_N;
 
 protected:
+	T lambda_L(
+			double i_dt,
+			double i_sim_timestamp
+		)
+	{
+		if (this->model == "ode1")
+			return std::sin(i_sim_timestamp) * this->param_function_L;
+		else if (this->model == "cox_matthews_decay")
+			return this->param_function_L;
+#if SWEET_SCALAR_COMPLEX
+		else if (this->model == "cox_matthews_oscillation")
+			return I * this->param_function_L;
+#endif
+		else
+			SWEETError("Unknown model " + this->model);
+	}
+
 	T function_L(
 			T &i_u,
 			double i_dt,
 			double i_sim_timestamp
 		)
 	{
-		if (model == "ode1")
-			return std::sin(i_u);
-		else if (model == "cox_matthews_decay")
-			return i_u;
-#if SWEET_SCALAR_COMPLEX
-		else if (model == "cox_matthews_oscillation")
-			return I * i_u;
-#endif
+		if (this->model == "ode1")
+			return std::sin(i_sim_timestamp);
 		else
-			SWEETError("Unknown model " + this->model);
+			return this->lambda_L(i_dt, i_sim_timestamp) * i_u;
+////		else if (this->model == "cox_matthews_decay")
+////			return i_u;
+////#if SWEET_SCALAR_COMPLEX
+////		else if (this->model == "cox_matthews_oscillation")
+////			return I * i_u;
+////#endif
+////		else
+////			SWEETError("Unknown model " + this->model);
 	}
 
 	T function_N(
@@ -46,13 +67,13 @@ protected:
 			double i_sim_timestamp
 		)
 	{
-		if (model == "ode1")
-			return std::sin(i_sim_timestamp);
-		else if (model == "cox_matthews_decay")
-			return std::sin(i_sim_timestamp);
+		if (this->model == "ode1")
+			return std::sin(i_u) * this->param_function_N;
+		else if (this->model == "cox_matthews_decay")
+			return std::sin(i_sim_timestamp) * this->param_function_N;
 #if SWEET_SCALAR_COMPLEX
-		else if (model == "cox_matthews_oscillation")
-			return std::exp(I * i_sim_timestamp);
+		else if (this->model == "cox_matthews_oscillation")
+			return std::exp(I * i_sim_timestamp) * this->param_function_N;
 #endif
 		else
 			SWEETError("Unknown model " + this->model);
@@ -100,7 +121,6 @@ public:
 		u_prev = i_data->get_pointer_to_data_Scalar()->simfields[0];
 	};
 #endif
-
 
 	void setup(
 			double i_a,

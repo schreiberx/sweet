@@ -391,7 +391,11 @@ public:
 		///reset();
 
 #if SWEET_PARAREAL_SCALAR
-		typename_scalar u0 = atof(simVars->bogus.var[1].c_str());
+		#if !SWEET_SCALAR_COMPLEX
+				typename_scalar u0 = atof(simVars->bogus.var[1].c_str());
+		#else
+				typename_scalar u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
+		#endif
 		this->parareal_data_start->dataArrays_to_GenericData_Scalar(u0);
 
 #elif SWEET_PARAREAL_PLANE

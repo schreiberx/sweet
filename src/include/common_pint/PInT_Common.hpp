@@ -14,6 +14,9 @@
 #ifndef SRC_INCLUDE_PINT_COMMON_HPP_
 #define SRC_INCLUDE_PINT_COMMON_HPP_
 
+
+const std::complex<double> I(0.0,1.0);
+
 #if ! SWEET_SCALAR_COMPLEX
 	#define typename_scalar double
 #else
@@ -723,58 +726,104 @@ public:
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 		if (iteration_id == 0)
 		{
-			// load ref file
-			char buffer[1024];
-			std::string i_name = "prog_u";
-			const char* filename_template = simVars->iodata.output_file_name.c_str();
-			///sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
-			sprintf(buffer, filename_template, i_name.c_str(), t);
-			std::string buffer2 = path_ref + "/" + std::string(buffer);
-
-			typename_scalar tmp;
-
-			std::cout << path_ref << std::endl;
-			std::cout << "loading DATA from " << buffer2 << std::endl;
-			std::ifstream file(buffer2);
-			for (int i = 0; i < 4; i++)
+			// exact solution
+			if (base_solution == "ref")
 			{
-				std::string line;
-				std::getline(file, line);
-				std::istringstream iss(line);
-				std::vector<std::string> str_vector((std::istream_iterator<std::string>(iss)),
-					std::istream_iterator<std::string>());
 
-				if (i == 0)
+				std::string model = simVars->bogus.var[5];
+				typename_scalar tmp;
+
+	#if !SWEET_SCALAR_COMPLEX
+				typename_scalar u0 = atof(simVars->bogus.var[1].c_str());
+	#else
+				typename_scalar u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
+	#endif
+				typename_scalar lambdaL = atof(simVars->bogus.var[3].c_str());
+
+				if (model == "ode1")
+					tmp = std::sin(t);
+				else if (model == "cox_matthews_decay")
 				{
-					assert(str_vector.size() == 1);
-					assert(str_vector[0] == "#SWEET");
+					typename_scalar e = std::exp(lambdaL * t);
+					tmp = u0 * e + (e - lambdaL * std::sin(t) - std::cos(t)) / (1. + lambdaL * lambdaL);
 				}
-				else if (i == 1)
+		#if SWEET_SCALAR_COMPLEX
+				else if (model == "cox_matthews_oscillation")
 				{
-					assert(str_vector.size() == 2);
-					assert(str_vector[0] == "#FORMAT");
-					assert(str_vector[1] == "ASCII");
+					typename_scalar e = std::exp(I * lambdaL * t);
+					tmp = u0 * e + (std::exp(I * t) - e) / (I * (1. - lambdaL));
 				}
-				else if (i == 2)
+				else if (model == "quadratic_nonlinearity")
 				{
-					assert(str_vector.size() == 2);
-					assert(str_vector[0] == "#PRIMITIVE");
-					assert(str_vector[1] == "SCALAR");
+					typename_scalar e = std::exp(lambdaL * t);
+					tmp = (lambdaL * u0 * e) / (-u0 * e + lambdaL + u0);
 				}
-				else if (i == 3)
-				{
-					assert(str_vector.size() == 1);
-					std::cout << str_vector[0] << std::endl;
-#if !SWEET_SCALAR_COMPLEX
-					tmp = stod(str_vector[0]);
-#else
-					std::istringstream is(str_vector[0]);
-					is >> tmp;
-#endif
-				}
+		#endif
+				else
+					SWEETError("Unknown model " + model);
+
+
+				std::cout << "BBBBBBB " << t << " " << tmp << " " << lambdaL << " " << model << std::endl;
+				pint_data_ref->dataArrays_to_GenericData_Scalar(tmp);
 			}
+			// read fine solution from file
+			else
+			{
 
-			pint_data_ref->dataArrays_to_GenericData_Scalar(tmp);
+				// load ref file
+				char buffer[1024];
+				std::string i_name = "prog_u";
+				const char* filename_template = simVars->iodata.output_file_name.c_str();
+				///sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
+				sprintf(buffer, filename_template, i_name.c_str(), t);
+				std::string buffer2 = path_ref + "/" + std::string(buffer);
+
+				typename_scalar tmp;
+
+				std::cout << path_ref << std::endl;
+				std::cout << "loading DATA from " << buffer2 << std::endl;
+				std::ifstream file(buffer2);
+				for (int i = 0; i < 4; i++)
+				{
+					std::string line;
+					std::getline(file, line);
+					std::istringstream iss(line);
+					std::vector<std::string> str_vector((std::istream_iterator<std::string>(iss)),
+						std::istream_iterator<std::string>());
+
+					if (i == 0)
+					{
+						assert(str_vector.size() == 1);
+						assert(str_vector[0] == "#SWEET");
+					}
+					else if (i == 1)
+					{
+						assert(str_vector.size() == 2);
+						assert(str_vector[0] == "#FORMAT");
+						assert(str_vector[1] == "ASCII");
+					}
+					else if (i == 2)
+					{
+						assert(str_vector.size() == 2);
+						assert(str_vector[0] == "#PRIMITIVE");
+						assert(str_vector[1] == "SCALAR");
+					}
+					else if (i == 3)
+					{
+						assert(str_vector.size() == 1);
+						std::cout << str_vector[0] << std::endl;
+#if !SWEET_SCALAR_COMPLEX
+						tmp = stod(str_vector[0]);
+#else
+						std::istringstream is(str_vector[0]);
+						is >> tmp;
+#endif
+					}
+				}
+
+				std::cout << "CCCCCCC " << t << " " << tmp << std::endl;
+				pint_data_ref->dataArrays_to_GenericData_Scalar(tmp);
+			}
 		}
 
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
@@ -960,6 +1009,7 @@ public:
 			pint_data_ref->GenericData_Scalar_to_dataArrays(u_ref);
 			double err = std::abs(	i_data->get_pointer_to_data_Scalar()->simfields[ivar] -
 						pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar]);
+			std::cout << "AAAA " << i_data->get_pointer_to_data_Scalar()->simfields[ivar] << " " << pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar] << " " << err << std::endl;
 			err_L1 = err;
 			err_L2 = err;
 			err_Linf = err;

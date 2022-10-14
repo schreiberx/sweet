@@ -945,7 +945,13 @@ public:
 		{
 			////std::cout << "Setting initial solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
-			u0 = atof(simVars->bogus.var[1].c_str());
+		#if !SWEET_SCALAR_COMPLEX
+				u0 = atof(simVars->bogus.var[1].c_str());
+		#else
+				u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
+		#endif
+
+			////////u0 = atof(simVars->bogus.var[1].c_str());
 			////////U->data->dataArrays_to_GenericData_Scalar(u0);
 	
 	#elif SWEET_XBRAID_PLANE

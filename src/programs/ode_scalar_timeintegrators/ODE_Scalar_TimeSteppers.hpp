@@ -10,7 +10,8 @@
 
 #include "../ode_scalar_timeintegrators/ODE_Scalar_TS_interface.hpp"
 #include "../ode_scalar_timeintegrators/ODE_Scalar_TS_ln_erk.hpp"
-///#include "../ode_scalar_timeintegrators/ODE_Scalar_TS_l_exp_n_etdrk.hpp"
+#include "../ode_scalar_timeintegrators/ODE_Scalar_TS_l_cn_n_settls.hpp"
+#include "../ode_scalar_timeintegrators/ODE_Scalar_TS_l_exp_n_etdrk.hpp"
 
 #include <sweet/SimulationVariables.hpp>
 
@@ -19,7 +20,8 @@ class ODE_Scalar_TimeSteppers
 {
 public:
 	ODE_Scalar_TS_ln_erk<T> *ln_erk = nullptr;
-	///ODE_Scalar_TS_l_exp_n_etdrk *l_exp_n_etdrk = nullptr;
+	ODE_Scalar_TS_l_cn_n_settls<T> *l_cn_n_settls = nullptr;
+	ODE_Scalar_TS_l_exp_n_etdrk<T> *l_exp_n_etdrk = nullptr;
 
 	ODE_Scalar_TS_interface<T> *master = nullptr;
 
@@ -35,11 +37,18 @@ public:
 			ln_erk = nullptr;
 		}
 
-		////if (l_exp_n_etdrk != nullptr)
-		////{
-		////	delete l_exp_n_etdrk;
-		////	l_exp_n_etdrk = nullptr;
-		////}
+		if (l_cn_n_settls != nullptr)
+		{
+			delete l_cn_n_settls;
+			l_cn_n_settls = nullptr;
+		}
+
+
+		if (l_exp_n_etdrk != nullptr)
+		{
+			delete l_exp_n_etdrk;
+			l_exp_n_etdrk = nullptr;
+		}
 
 		///////if (master != nullptr)
 		///////{
@@ -59,28 +68,53 @@ public:
 		if (i_timestepping_method == "ln_erk")
 		{
 			ln_erk = new ODE_Scalar_TS_ln_erk<T>(i_simVars);
-			ln_erk->setup(
-						i_timestepping_order
-					);
-
 			master = &(ODE_Scalar_TS_interface<T>&)*ln_erk;
+
 			master->setup(
 					atof(i_simVars.bogus.var[3].c_str()),
 					atof(i_simVars.bogus.var[4].c_str()),
 					i_simVars.bogus.var[5]
 				);
+
+			ln_erk->setup(
+						i_timestepping_order
+					);
+
 		}
 
-		/////////else if (i_timestepping_method == "l_exp_n_etdrk")
-		/////////{
-		/////////	l_exp_n_etdrk = new SWE_Plane_TS_l_exp_n_etdrk(i_simVars, i_op);
-		/////////	l_exp_n_etdrk->setup(
-		/////////				atof(i_simVars.bogus.var[1].c_str()),
-		/////////				atof(i_simVars.bogus.var[2].c_str())
-		/////////			);
+		else if (i_timestepping_method == "l_cn_n_settls")
+		{
+			l_cn_n_settls = new ODE_Scalar_TS_l_cn_n_settls<T>(i_simVars);
+			master = &(ODE_Scalar_TS_interface<T>&)*l_cn_n_settls;
 
-		/////////	master = &(SWE_Plane_TS_interface&)*l_exp_n_etdrk;
-		/////////}
+			master->setup(
+					atof(i_simVars.bogus.var[3].c_str()),
+					atof(i_simVars.bogus.var[4].c_str()),
+					i_simVars.bogus.var[5]
+				);
+
+			l_cn_n_settls->setup(
+					);
+
+		}
+
+		else if (i_timestepping_method == "l_exp_n_etdrk")
+		{
+			l_exp_n_etdrk = new ODE_Scalar_TS_l_exp_n_etdrk<T>(i_simVars);
+			master = &(ODE_Scalar_TS_interface<T>&)*l_exp_n_etdrk;
+
+			master->setup(
+					atof(i_simVars.bogus.var[3].c_str()),
+					atof(i_simVars.bogus.var[4].c_str()),
+					i_simVars.bogus.var[5]
+				);
+
+			l_exp_n_etdrk->setup(
+						i_simVars.rexi,
+						i_timestepping_order
+					);
+
+		}
 
 		else //Help menu with list of schemes
 		{
@@ -103,6 +137,7 @@ public:
 
 			SWEETError("No valid --timestepping-method provided");
 		}
+
 
 
 

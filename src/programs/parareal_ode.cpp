@@ -15,11 +15,18 @@
 #include <limits>
 #include <stdlib.h>
 
+// Parareal_GenericData_Scalar is always used (even if not Parareal nor XBraid)
+// because it handles N-dim solutions both for real and complex values
+// ScalarDataArray only handles doubles.
+#include <parareal/Parareal_GenericData_Scalar.hpp>
+
+
 #if SWEET_PARAREAL || SWEET_XBRAID
 #include <parareal/Parareal.hpp>
 #include <parareal/Parareal_GenericData.hpp>
-#include <parareal/Parareal_GenericData_Scalar.hpp>
+///#include <parareal/Parareal_GenericData_Scalar.hpp>
 #endif
+
 
 #if SWEET_PARAREAL
 #include <parareal/Parareal_Controller.hpp>
@@ -52,94 +59,6 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
  * --parareal-fine-dt=0.0001 --parareal-enabled=1 --parareal-coarse-slices=10 -t 10 --parareal-convergence-threshold=0.0001 --parareal-function-param-a=0.3 --parareal-function-param-b=1.0 --parareal-function-param-y0=0.123
  *
  */
-
-//////////class ODE_Scalar_TS_interface
-//////////{
-//////////private:
-//////////	double u_prev;
-//////////
-//////////public:
-//////////	void run_timestep(
-//////////			double &io_y,			///< prognostic variables
-//////////
-//////////			double i_dt,		///< time step size
-//////////			double i_sim_timestamp
-//////////	)
-//////////	{
-//////////		double a = param_parareal_function_L;
-//////////		double b = param_parareal_function_N;
-//////////
-//////////		io_y += i_dt * (a * std::sin(io_y) + b * std::sin(i_sim_timestamp));
-//////////	}
-//////////
-//////////#if (SWEET_PARAREAL && SWEET_PARAREAL_SCALAR) || (SWEET_XBRAID && SWEET_XBRAID_SCALAR)
-//////////	void run_timestep(
-//////////			Parareal_GenericData* io_data,
-//////////
-//////////			double i_dt,		///< time step size
-//////////			double i_sim_timestamp
-//////////	)
-//////////	{
-//////////		double y = io_data->get_pointer_to_data_Scalar()->simfields[0];
-//////////
-//////////		run_timestep(y,
-//////////				i_dt,
-//////////				i_sim_timestamp
-//////////			);
-//////////
-//////////		io_data->get_pointer_to_data_Scalar()->simfields[0] = y;
-//////////
-//////////	}
-//////////
-//////////	// for parareal SL (not needed here)
-//////////	void set_previous_solution(
-//////////			Parareal_GenericData* i_data
-//////////	)
-//////////	{
-//////////		u_prev = i_data->get_pointer_to_data_Scalar()->simfields[0];
-//////////	};
-//////////#endif
-//////////};
-//////////
-//////////
-//////////
-//////////
-//////////class ODE_Scalar_TimeSteppers
-//////////{
-//////////public:
-//////////	ODE_Scalar_TS_interface *master = nullptr;
-//////////
-//////////	ODE_Scalar_TimeSteppers()
-//////////	{
-//////////	}
-//////////
-//////////	void reset()
-//////////	{
-//////////		if (master != nullptr)
-//////////		{
-//////////			delete master;
-//////////			master = nullptr;
-//////////		}
-//////////	}
-//////////
-//////////	void setup(
-//////////			const std::string &i_timestepping_method,
-//////////			int &i_timestepping_order,
-//////////
-//////////			SimulationVariables &i_simVars
-//////////	)
-//////////	{
-//////////		reset();
-//////////		master = new ODE_Scalar_TS_interface;
-//////////	}
-//////////
-//////////	~ODE_Scalar_TimeSteppers()
-//////////	{
-//////////		reset();
-//////////	}
-//////////};
-
-
 
 class SimulationInstance
 {
@@ -188,6 +107,10 @@ public:
 		this->do_output();
 		while (true)
 		{
+
+			if (simVars->timecontrol.current_simulation_time + simVars->timecontrol.current_timestep_size > simVars->timecontrol.max_simulation_time)
+				simVars->timecontrol.current_timestep_size = simVars->timecontrol.max_simulation_time - simVars->timecontrol.current_simulation_time;
+
 			this->timeSteppers->master->run_timestep(this->prog_u,
 					simVars->timecontrol.current_timestep_size,
 					simVars->timecontrol.current_simulation_time
@@ -233,7 +156,7 @@ public:
 			return true;
 
 		if (!std::isinf(simVars->timecontrol.max_simulation_time))
-			if (simVars->timecontrol.max_simulation_time <= simVars->timecontrol.current_simulation_time+simVars->timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
+			if (simVars->timecontrol.max_simulation_time <= simVars->timecontrol.current_simulation_time+simVars->timecontrol.max_simulation_time*1e-16)	// care about roundoff errors with 1e-10
 				return true;
 
 		return false;
@@ -242,6 +165,16 @@ public:
 
 	void do_output()
 	{
+
+		// output each time step
+		if (simVars->iodata.output_each_sim_seconds < 0)
+			return;
+
+		if (simVars->iodata.output_next_sim_seconds-simVars->iodata.output_next_sim_seconds*(1e-12) > simVars->timecontrol.current_simulation_time)
+			return;
+
+
+
 		char buffer[1024];
 
 		const char* filename_template = "output_%s_t%020.8f.csv";
@@ -257,6 +190,24 @@ public:
 		file << this->prog_u;
 
 		file.close();
+
+
+
+
+		if (simVars->iodata.output_next_sim_seconds == simVars->timecontrol.max_simulation_time)
+		{
+			simVars->iodata.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+		}
+		else
+		{
+			while (simVars->iodata.output_next_sim_seconds-simVars->iodata.output_next_sim_seconds*(1e-12) <= simVars->timecontrol.current_simulation_time)
+				simVars->iodata.output_next_sim_seconds += simVars->iodata.output_each_sim_seconds;
+
+			if (simVars->iodata.output_next_sim_seconds > simVars->timecontrol.max_simulation_time)
+				simVars->iodata.output_next_sim_seconds = simVars->timecontrol.max_simulation_time;
+		}
+
+
 	}
 
 

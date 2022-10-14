@@ -49,8 +49,8 @@ public:
 			SWEETError("ODE_Scalar_TS_ln_erk: Only constant time step size allowed");
 
 		/////io_u += i_dt * (this->param_function_L * std::sin(io_u) + this->param_function_N * std::sin(i_simulation_timestamp));
-		io_u += i_dt * (  this->param_function_L * this->function_L(io_u, i_dt, i_simulation_timestamp)
-				+ this->param_function_N * this->function_N(io_u, i_dt, i_simulation_timestamp));
+		io_u += i_dt * (  this->function_L(io_u, i_dt, i_simulation_timestamp)
+				+ this->function_N(io_u, i_dt, i_simulation_timestamp));
 	}
 
 
