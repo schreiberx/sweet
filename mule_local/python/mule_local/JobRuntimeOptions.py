@@ -196,6 +196,7 @@ class JobRuntimeOptions(InfoError):
         self.function_param_y0_imag = None;
         self.function_param_L = None;
         self.function_param_N = None;
+        self.function_param_extra = None;
         self.ode_model = None;
 
         #
@@ -563,6 +564,8 @@ class JobRuntimeOptions(InfoError):
                 idstr += '_ode_L'+str(self.function_param_L)
             if self.function_param_N != None:
                 idstr += '_ode_N'+str(self.function_param_N)
+            if self.function_param_extra != None:
+                idstr += '_ode_extra'+str(self.function_param_extra)
             if self.ode_model != None:
                 idstr += '_ode_model'+str(self.ode_model)
 
@@ -851,6 +854,8 @@ class JobRuntimeOptions(InfoError):
             retval += ' --function-param-L='+str(self.function_param_L)
         if self.function_param_N != None:
             retval += ' --function-param-N='+str(self.function_param_N)
+        if self.function_param_extra != None:
+            retval += ' --function-param-extra='+str(self.function_param_extra)
         if self.ode_model != None:
             retval += ' --ode-model='+str(self.ode_model)
 

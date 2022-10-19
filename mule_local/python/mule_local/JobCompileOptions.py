@@ -102,6 +102,9 @@ class JobCompileOptions(InfoError):
         # Scalar type (double or complex) for scalar ODE
         self.scalar_type = 'double'
 
+        # Dimension of ODE
+        self.N_ode = 0
+
         #LibPFASST
         self.libpfasst = 'disable'
 
@@ -194,6 +197,9 @@ class JobCompileOptions(InfoError):
 
         # Scalar type (double or complex) for scalar ODE
         retval += ' --scalar-type='+self.scalar_type
+
+        # Dimension of ODE
+        retval += ' --N-ode='+str(self.N_ode)
 
         # LibPFASST
         retval += ' --libpfasst='+self.libpfasst
@@ -642,6 +648,14 @@ class JobCompileOptions(InfoError):
                 help='Scalar type in scalar ODE (double, complex) [default: %default]'
         )
         self.scalar_type = scons.GetOption('scalar_type')
+
+        scons.AddOption(    '--N-ode',
+                dest='N_ode',
+                type='int',
+                default='0',
+                help='Dimension of ODE [default: %default]'
+        )
+        self.N_ode = scons.GetOption('N_ode')
 
 
         files = os.listdir('src/programs/')

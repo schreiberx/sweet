@@ -145,23 +145,35 @@ public:
 	}
 
 	void run_timestep(
-			T &io_u,	///< prognostic variables
+			///T &io_u,	///< prognostic variables
+			ScalarDataArray &io_u,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	)
 	{
 
-		///std::complex<double> lambda = this->param_function_L;
-		std::complex<double> lambda = this->lambda_L(i_dt, i_simulation_timestamp);
+		std::size_t N = io_u.number_of_elements;
+		ScalarDataArray lL = this->lambda_L(i_dt, i_simulation_timestamp);
 
-		std::complex<double> K = rexiFunctions.eval(lambda * i_dt);
+		for (std::size_t i = 0; i < N; i++)
+		{
+
+			///std::complex<double> lambda = this->param_function_L;
+			std::complex<double> lambda = lL.get(i);
+
+			std::complex<double> K = rexiFunctions.eval(lambda * i_dt);
+
 
 #if !SWEET_SCALAR_COMPLEX
-		io_u *= K.real();
+			double u = io_u.get(i);
+			u *= K.real();
 #else
-		io_u *= K;
+			std::complex<double> u = io_u.get(i);
+			u *= K;
 #endif
+			io_u.set(i, u);
+		}
 	}
 
 	void setup(
@@ -172,13 +184,15 @@ public:
 	}
 
 	void setup(
-			double i_a,
-			double i_b,
+			std::vector<double> i_L,
+			std::vector<double> i_N,
+			std::vector<double> i_extra,
 			std::string i_model
 		)
 	{
-		this->param_function_L = i_a;
-		this->param_function_N = i_b;
+		this->param_function_L = i_L;
+		this->param_function_N = i_N;
+		this->param_function_extra = i_extra;
 		this->model = i_model;
 	}
 

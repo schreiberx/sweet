@@ -89,17 +89,22 @@ public:
 	};
 
 	void dataArrays_to_GenericData_Scalar(
-						typename_scalar &u
+						std::vector<typename_scalar> &u
 						) override
 	{
-		this->get_pointer_to_data_Scalar()->simfields[0] = u;
+		//this->get_pointer_to_data_Scalar()->simfields[0] = u;
+		for (std::size_t i = 0; i < u.size(); ++i)
+			this->get_pointer_to_data_Scalar()->simfields[i] = u[i];
 	}
 
 	void GenericData_Scalar_to_dataArrays(
-						typename_scalar &u
+						std::vector<typename_scalar> &u
+						//typename_scalar &u
 						) override
 	{
-		u = this->get_pointer_to_data_Scalar()->simfields[0];
+		///u = this->get_pointer_to_data_Scalar()->simfields[0];
+		for (std::size_t i = 0; i < u.size(); ++i)
+			u[i] = this->get_pointer_to_data_Scalar()->simfields[i];
 	}
 
 

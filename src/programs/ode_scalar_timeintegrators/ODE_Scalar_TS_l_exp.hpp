@@ -36,6 +36,7 @@ class ODE_Scalar_TS_l_exp	: public ODE_Scalar_TS_interface<T>
 	SimulationVariables &simVars;
 	EXP_SimulationVariables *expSimVars;
 
+	ODE_Scalar_TS_interface<T> *master = nullptr;
 	ODE_Scalar_TS_l_direct<T> ts_l_direct;
 
 public:
@@ -59,21 +60,33 @@ public:
 	}
 
 	void setup(
-			double i_a,
-			double i_b,
+			std::vector<double> i_L,
+			std::vector<double> i_N,
+			std::vector<double> i_extra,
 			std::string i_model
 		)
 	{
-		this->param_function_L = i_a;
-		this->param_function_N = i_b;
+		this->param_function_L = i_L;
+		this->param_function_N = i_N;
+		this->param_function_N = i_extra;
 		this->model = i_model;
-		ts_l_direct.setup(this->param_function_L, this->param_function_N, this->model);
+
+		ts_l_direct.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+
+		master = &(ODE_Scalar_TS_interface<T>&)*(&ts_l_direct);
+		master->setup(
+				this->simVars.bogus.var[3],
+				this->simVars.bogus.var[4],
+				this->simVars.bogus.var[5],
+				this->simVars.bogus.var[6]
+			);
 	}
 
 
 
 	void run_timestep(
-			T &io_u,	///< prognostic variables
+			///T &io_u,	///< prognostic variables
+			ScalarDataArray &io_u,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -85,9 +98,9 @@ public:
 
 
 	void run_timestep(
-			const T &i_u,	///< prognostic variables
+			const ScalarDataArray &i_u,	///< prognostic variables
 
-			T &o_u,
+			ScalarDataArray &o_u,
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

@@ -45,6 +45,11 @@
 #	include <omp.h>
 #endif
 
+#define TT double
+#if SWEET_SCALAR_COMPLEX
+	#undef TT
+	#define TT std::complex<double>
+#endif
 
 
 
@@ -57,7 +62,7 @@ public:
 	/**
 	 * physical space data
 	 */
-	double *scalar_data;
+	TT *scalar_data;
 
 	/**
 	 * allow empty initialization
@@ -74,8 +79,8 @@ public:
 private:
 	void p_allocate_buffers()
 	{
-		scalar_data = MemBlockAlloc::alloc<double>(
-				number_of_elements*sizeof(double)
+		scalar_data = MemBlockAlloc::alloc<TT>(
+				number_of_elements*sizeof(TT)
 		);
 	}
 
@@ -203,7 +208,7 @@ public:
 		if (scalar_data == nullptr)
 			return;
 
-		MemBlockAlloc::free(scalar_data, number_of_elements*sizeof(double));
+		MemBlockAlloc::free(scalar_data, number_of_elements*sizeof(TT));
 		scalar_data = nullptr;
 	}
 
@@ -218,7 +223,7 @@ public:
 	inline
 	void set(
 			std::size_t i,
-			double i_value
+			TT i_value
 	)
 	{
 		scalar_data[i] = i_value;
@@ -228,7 +233,7 @@ public:
 
 	inline
 	void set_all(
-			double i_value
+			TT i_value
 	)
 	{
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -237,7 +242,7 @@ public:
 
 
 	inline
-	double get(
+	TT get(
 			std::size_t i
 	)
 	{
@@ -247,7 +252,7 @@ public:
 
 	inline
 	void update_lambda_array_indices(
-			std::function<void(int,double&)> i_lambda	///< lambda function to return value for lat/mu
+			std::function<void(int,TT&)> i_lambda	///< lambda function to return value for lat/mu
 	)
 	{
 		SCALAR_DATA_FOR_IDX(
@@ -257,7 +262,7 @@ public:
 
 
 	inline
-	double physical_get(
+	TT physical_get(
 			std::size_t i
 	)	const
 	{
@@ -267,7 +272,7 @@ public:
 
 	inline
 	void physical_set_all(
-			double i_value
+			TT i_value
 	)
 	{
 		SCALAR_DATA_FOR_IDX(
@@ -288,10 +293,19 @@ public:
 	{
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
+#if SWEET_SCALAR_COMPLEX
+			if (
+					std::isnan(scalar_data[i].real()) ||
+					std::isnan(scalar_data[i].imag()) ||
+					std::isinf(scalar_data[i].real()) ||
+					std::isinf(scalar_data[i].imag())
+			)
+#else
 			if (
 					std::isnan(scalar_data[i]) ||
 					std::isinf(scalar_data[i])
 			)
+#endif
 				return true;
 		}
 
@@ -311,7 +325,11 @@ public:
 #pragma omp parallel for PROC_BIND_CLOSE reduction(&&:isallfinite)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
+#if SWEET_SCALAR_COMPLEX
+			isallfinite = isallfinite && std::isfinite(scalar_data[i].real()) && std::isfinite(scalar_data[i].imag());
+#else
 			isallfinite = isallfinite && std::isfinite(scalar_data[i]);
+#endif
 
 		return isallfinite;
 	}
@@ -346,7 +364,7 @@ public:
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
-			sum += scalar_data[i]*scalar_data[i];
+			sum += std::abs(scalar_data[i])*std::abs(scalar_data[i]);
 
 		sum = std::sqrt(sum/(double)(number_of_elements));
 
@@ -367,7 +385,7 @@ public:
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
-			double value = scalar_data[i]*scalar_data[i];
+			double value = std::abs(scalar_data[i])*std::abs(scalar_data[i]);
 
 			// Use Kahan summation
 			double y = value - c;
@@ -395,7 +413,11 @@ public:
 #pragma omp parallel for PROC_BIND_CLOSE reduction(max:maxvalue)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
+#if SWEET_SCALAR_COMPLEX
+			maxvalue = std::max(maxvalue, std::abs(scalar_data[i]));
+#else
 			maxvalue = std::max(maxvalue, scalar_data[i]);
+#endif
 
 		return maxvalue;
 	}
@@ -411,7 +433,11 @@ public:
 #pragma omp parallel for PROC_BIND_CLOSE reduction(min:minvalue)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
+#if SWEET_SCALAR_COMPLEX
+			minvalue = std::min(minvalue, std::abs(scalar_data[i]));
+#else
 			minvalue = std::min(minvalue, scalar_data[i]);
+#endif
 
 		return minvalue;
 	}
@@ -420,10 +446,10 @@ public:
 	/**
 	 * return the maximum of all absolute values
 	 */
-	double reduce_sum()	const
+	TT reduce_sum()	const
 	{
-		double sum = 0;
-#if SWEET_THREADING_SPACE
+		TT sum = 0;
+#if SWEET_THREADING_SPACE && !(SWEET_SCALAR_COMPLEX)
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -436,20 +462,20 @@ public:
 	/**
 	 * return the maximum of all absolute values, use quad precision for reduction
 	 */
-	double reduce_sum_quad()	const
+	TT reduce_sum_quad()	const
 	{
-		double sum = 0;
-		double c = 0;
-#if SWEET_THREADING_SPACE
+		TT sum = 0;
+		TT c = 0;
+#if SWEET_THREADING_SPACE && !(SWEET_SCALAR_COMPLEX)
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
-			double value = scalar_data[i];
+			TT value = scalar_data[i];
 
 			// Use Kahan summation
-			double y = value - c;
-			double t = sum + y;
+			TT y = value - c;
+			TT t = sum + y;
 			c = (t - sum) - y;
 			sum = t;
 		}
@@ -465,7 +491,7 @@ public:
 	double reduce_norm1()	const
 	{
 		double sum = 0;
-#if SWEET_THREADING_SPACE
+#if SWEET_THREADING_SPACE && !(SWEET_SCALAR_COMPLEX)
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -482,7 +508,7 @@ public:
 	{
 		double sum = 0;
 		double c = 0;
-#if SWEET_THREADING_SPACE
+#if SWEET_THREADING_SPACE && !(SWEET_SCALAR_COMPLEX)
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
@@ -508,11 +534,11 @@ public:
 	double reduce_norm2()	const
 	{
 		double sum = 0;
-#if SWEET_THREADING_SPACE
+#if SWEET_THREADING_SPACE && !(SWEET_SCALAR_COMPLEX)
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
-			sum += scalar_data[i]*scalar_data[i];
+			sum += std::abs(scalar_data[i])*std::abs(scalar_data[i]);
 
 
 		return std::sqrt(sum);
@@ -527,12 +553,12 @@ public:
 		double sum = 0.0;
 		double c = 0.0;
 
-#if SWEET_THREADING_SPACE
+#if SWEET_THREADING_SPACE && !(SWEET_SCALAR_COMPLEX)
 #pragma omp parallel for PROC_BIND_CLOSE reduction(+:sum,c)
 #endif
 		for (std::size_t i = 0; i < number_of_elements; i++)
 		{
-			double value = scalar_data[i]*scalar_data[i];
+			double value = std::abs(scalar_data[i])*std::abs(scalar_data[i]);
 
 			// Use Kahan summation
 			double y = value - c;
@@ -551,7 +577,7 @@ public:
 	/**
 	 * array operator
 	 */
-	double operator[](std::size_t i_index)	const
+	TT operator[](std::size_t i_index)	const
 	{
 		return scalar_data[i_index];
 	}
@@ -562,7 +588,7 @@ public:
 	/**
 	 * array operator
 	 */
-	double& operator[](std::size_t i_index)
+	TT& operator[](std::size_t i_index)
 	{
 		return scalar_data[i_index];
 	}
@@ -573,7 +599,7 @@ public:
 	/**
 	 * assignment operator
 	 */
-	ScalarDataArray &operator=(double i_value)
+	ScalarDataArray &operator=(TT i_value)
 	{
 		physical_set_all(i_value);
 
@@ -752,6 +778,23 @@ public:
 		return *this;
 	}
 
+	/**
+	 * Compute multiplication with scalar
+	 */
+	inline
+	ScalarDataArray& operator*=(
+			const std::complex<double> i_value
+	)
+	{
+
+
+		SCALAR_DATA_FOR_IDX(
+			scalar_data[idx] *= i_value;
+		);
+
+		return *this;
+	}
+
 
 
 	/**
@@ -760,6 +803,21 @@ public:
 	inline
 	ScalarDataArray& operator/=(
 			const double i_value
+	)
+	{
+
+		SCALAR_DATA_FOR_IDX(
+			scalar_data[idx] /= i_value;
+		);
+		return *this;
+	}
+
+	/**
+	 * Compute division with scalar
+	 */
+	inline
+	ScalarDataArray& operator/=(
+			const std::complex<double> i_value
 	)
 	{
 
@@ -858,6 +916,22 @@ public:
 		return out;
 	}
 
+	/**
+	 * Compute element-wise subtraction
+	 */
+	inline
+	ScalarDataArray valueDivThis(
+			const std::complex<double> i_value
+	)	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+				out.scalar_data[idx] = i_value/scalar_data[idx];
+			);
+
+		return out;
+	}
 
 
 	/**
@@ -1023,6 +1097,23 @@ public:
 		return out;
 	}
 
+	/**
+	 * Compute multiplication with a scalar
+	 */
+	inline
+	ScalarDataArray operator*(
+			const std::complex<double> i_value
+	)	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+			out.scalar_data[idx] = scalar_data[idx]*i_value;
+		);
+
+		return out;
+	}
+
 
 	/**
 	 * Compute element-wise division
@@ -1041,6 +1132,22 @@ public:
 		return out;
 	}
 
+	/**
+	 * Compute element-wise division
+	 */
+	inline
+	ScalarDataArray operator/(
+			const std::complex<double> &i_value
+	)	const
+	{
+		ScalarDataArray out(number_of_elements);
+
+		SCALAR_DATA_FOR_IDX(
+				out.scalar_data[idx] = scalar_data[idx] / i_value;
+		);
+
+		return out;
+	}
 
 
 	/**
@@ -1124,6 +1231,24 @@ ScalarDataArray operator*(
 /**
  * operator to support operations such as:
  *
+ * 1.5 * arrayData;
+ *
+ * Otherwise, we'd have to write it as arrayData*1.5
+ *
+ */
+inline
+static
+ScalarDataArray operator*(
+		const std::complex<double> i_value,
+		const ScalarDataArray &i_array_data
+)
+{
+	return ((ScalarDataArray&)i_array_data)*i_value;
+}
+
+/**
+ * operator to support operations such as:
+ *
  * 1.5 - arrayData;
  *
  * Otherwise, we'd have to write it as arrayData-1.5
@@ -1169,6 +1294,15 @@ ScalarDataArray operator/(
 	return i_array_data.valueDivThis(i_value);
 }
 
+inline
+static
+ScalarDataArray operator/(
+		const std::complex<double> i_value,
+		const ScalarDataArray &i_array_data
+)
+{
+	return i_array_data.valueDivThis(i_value);
+}
 
 /*
  * Namespace to use for convenient sin/cos/pow/... calls

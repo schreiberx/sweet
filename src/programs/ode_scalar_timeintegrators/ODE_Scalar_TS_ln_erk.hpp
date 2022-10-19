@@ -39,7 +39,8 @@ public:
 	}
 
 	void run_timestep(
-			T &io_u,	///< prognostic variables
+			///T &io_u,	///< prognostic variables
+			ScalarDataArray &io_u,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

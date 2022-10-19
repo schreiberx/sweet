@@ -87,7 +87,7 @@ public:
 public:
 	// different interface functions to avoid template in Parareal_GenericData
 	// these interfaces are overridden in the respective child classes
-#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR || 1
 	virtual DataContainer<typename_scalar>* get_pointer_to_data_Scalar() const
 	{
 		SWEETError("This interface function should not be called");
@@ -96,13 +96,14 @@ public:
 	};
 
 	virtual void dataArrays_to_GenericData_Scalar(
-							typename_scalar &u
+							std::vector<typename_scalar> &u
+							//typename_scalar &u
 							)
 	{
 	};
 
 	virtual void GenericData_Scalar_to_dataArrays(
-							typename_scalar &u
+							std::vector<typename_scalar> &u
 							)
 	{
 	};

@@ -24,7 +24,7 @@ class ODE_Scalar_TS_l_cn_n_settls	: public ODE_Scalar_TS_interface<T>
 {
 	SimulationVariables &simVars;
 
-	T u_prev;
+	ScalarDataArray u_prev;
 
 public:
 	ODE_Scalar_TS_l_cn_n_settls(
@@ -41,7 +41,8 @@ public:
 	}
 
 	void run_timestep(
-			T &io_u,	///< prognostic variables
+			///T &io_u,	///< prognostic variables
+			ScalarDataArray &io_u,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -62,24 +63,24 @@ public:
 		}
 
 		// Out vars
-		T u;
+		ScalarDataArray u;
 
 		double dt = i_dt;
 
 		// Nonlinear term at t_n
-		T nonlin = this->function_N(io_u, i_dt, i_simulation_timestamp);
+		ScalarDataArray nonlin = this->function_N(io_u, i_dt, i_simulation_timestamp);
 
 		// Nonlinear term at t_{n-1}
-		T nonlin1 = this->function_N(u_prev, i_dt, i_simulation_timestamp);
+		ScalarDataArray nonlin1 = this->function_N(u_prev, i_dt, i_simulation_timestamp);
 
 		// Extrapolate + average nonlinear term
 		nonlin = i_dt * .5 * (2. * nonlin - nonlin1 + nonlin);
 
 		// Factor multiplying the implicit terms
-		T facI = 1. - i_dt * .5 * this->lambda_L(i_dt, i_simulation_timestamp);
+		ScalarDataArray facI = 1. - i_dt * .5 * this->lambda_L(i_dt, i_simulation_timestamp);
 
 		// Factor multiplying the explicit linear term
-		T facE = 1. + i_dt * .5 * this->lambda_L(i_dt, i_simulation_timestamp);
+		ScalarDataArray facE = 1. + i_dt * .5 * this->lambda_L(i_dt, i_simulation_timestamp);
 
 		// Solve
 		u = 1. / facI * (facE * io_u + nonlin);

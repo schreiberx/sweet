@@ -71,9 +71,10 @@ public:
 			master = &(ODE_Scalar_TS_interface<T>&)*ln_erk;
 
 			master->setup(
-					atof(i_simVars.bogus.var[3].c_str()),
-					atof(i_simVars.bogus.var[4].c_str()),
-					i_simVars.bogus.var[5]
+					i_simVars.bogus.var[3],
+					i_simVars.bogus.var[4],
+					i_simVars.bogus.var[5],
+					i_simVars.bogus.var[6]
 				);
 
 			ln_erk->setup(
@@ -88,9 +89,10 @@ public:
 			master = &(ODE_Scalar_TS_interface<T>&)*l_cn_n_settls;
 
 			master->setup(
-					atof(i_simVars.bogus.var[3].c_str()),
-					atof(i_simVars.bogus.var[4].c_str()),
-					i_simVars.bogus.var[5]
+					i_simVars.bogus.var[3],
+					i_simVars.bogus.var[4],
+					i_simVars.bogus.var[5],
+					i_simVars.bogus.var[6]
 				);
 
 			l_cn_n_settls->setup(
@@ -104,9 +106,10 @@ public:
 			master = &(ODE_Scalar_TS_interface<T>&)*l_exp_n_etdrk;
 
 			master->setup(
-					atof(i_simVars.bogus.var[3].c_str()),
-					atof(i_simVars.bogus.var[4].c_str()),
-					i_simVars.bogus.var[5]
+					i_simVars.bogus.var[3],
+					i_simVars.bogus.var[4],
+					i_simVars.bogus.var[5],
+					i_simVars.bogus.var[6]
 				);
 
 			l_exp_n_etdrk->setup(

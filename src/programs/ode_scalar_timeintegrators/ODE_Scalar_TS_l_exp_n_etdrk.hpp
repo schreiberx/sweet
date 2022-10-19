@@ -58,8 +58,8 @@ public:
 			ts_phi0_exp.setup(i_expSimVars, "phi0", simVars.timecontrol.current_timestep_size);
 			ts_phi1_exp.setup(i_expSimVars, "phi1", simVars.timecontrol.current_timestep_size);
 
-			ts_phi0_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_phi1_exp.setup(this->param_function_L, this->param_function_N, this->model);
+			ts_phi0_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_phi1_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
 		}
 		else if (timestepping_order == 2)
 		{
@@ -67,9 +67,9 @@ public:
 			ts_phi1_exp.setup(i_expSimVars, "phi1", simVars.timecontrol.current_timestep_size);
 			ts_phi2_exp.setup(i_expSimVars, "phi2", simVars.timecontrol.current_timestep_size);
 
-			ts_phi0_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_phi1_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_phi2_exp.setup(this->param_function_L, this->param_function_N, this->model);
+			ts_phi0_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_phi1_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_phi2_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
 		}
 		else if (timestepping_order == 4)
 		{
@@ -82,21 +82,21 @@ public:
 			ts_ups2_exp.setup(i_expSimVars, "ups2", simVars.timecontrol.current_timestep_size);
 			ts_ups3_exp.setup(i_expSimVars, "ups3", simVars.timecontrol.current_timestep_size);
 
-			ts_phi0_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_phi1_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_phi2_exp.setup(this->param_function_L, this->param_function_N, this->model);
+			ts_phi0_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_phi1_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_phi2_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
 
-			ts_ups0_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_ups1_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_ups2_exp.setup(this->param_function_L, this->param_function_N, this->model);
-			ts_ups3_exp.setup(this->param_function_L, this->param_function_N, this->model);
+			ts_ups0_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_ups1_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_ups2_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
+			ts_ups3_exp.setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
 		}
 	}
 
 	void euler_timestep_update_nonlinear(
-			T &i_u,	///< prognostic variables
+			ScalarDataArray &i_u,	///< prognostic variables
 
-			T &o_u,	///< time updates
+			ScalarDataArray &o_u,	///< time updates
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -110,7 +110,8 @@ public:
 	}
 
 	void run_timestep(
-			T &io_u,	///< prognostic variables
+			///T &io_u,	///< prognostic variables
+			ScalarDataArray &io_u,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -126,7 +127,7 @@ public:
 			 * 			+\Delta t \psi_{1}(\Delta tL) N(U_{0}).
 			 */
 
-			T phi0_Un_u;
+			ScalarDataArray phi0_Un_u;
 			ts_phi0_exp.run_timestep(
 					io_u,
 					phi0_Un_u,
@@ -134,7 +135,7 @@ public:
 					i_simulation_timestamp
 				);
 
-			T FUn_u;
+			ScalarDataArray FUn_u;
 			euler_timestep_update_nonlinear(
 					io_u,
 					FUn_u,
@@ -142,7 +143,7 @@ public:
 					i_simulation_timestamp
 			);
 
-			T phi1_FUn_u;
+			ScalarDataArray phi1_FUn_u;
 
 			ts_phi1_exp.run_timestep(
 					FUn_u,
@@ -160,7 +161,7 @@ public:
 			 * A_{n}=\psi_{0}(\Delta tL)U_{n}+\Delta t\psi_{1}(\Delta tL)F(U_{n})
 			 */
 
-			T phi0_Un_u;
+			ScalarDataArray phi0_Un_u;
 
 			ts_phi0_exp.run_timestep(
 					io_u,
@@ -169,7 +170,7 @@ public:
 					i_simulation_timestamp
 				);
 
-			T FUn_u;
+			ScalarDataArray FUn_u;
 
 			euler_timestep_update_nonlinear(
 					io_u,
@@ -178,7 +179,7 @@ public:
 					i_simulation_timestamp
 			);
 
-			T phi1_FUn_u;
+			ScalarDataArray phi1_FUn_u;
 
 			ts_phi1_exp.run_timestep(
 					FUn_u,
@@ -187,23 +188,23 @@ public:
 					i_simulation_timestamp
 				);
 
-			T A_u = phi0_Un_u + i_dt*phi1_FUn_u;
+			ScalarDataArray A_u = phi0_Un_u + i_dt*phi1_FUn_u;
 
 			/*
 			 * U_{n+1} = A_{n}+ \Delta t \psi_{2}(\Delta tL)
 			 * 				\left(F(A_{n},t_{n}+\Delta t)-F(U_{n})\right)
 			 */
 
-			T FAn_u;
+			ScalarDataArray FAn_u;
 
 			euler_timestep_update_nonlinear(
 					A_u,
 					FAn_u,
 					i_dt,
-					i_simulation_timestamp
+					i_simulation_timestamp + i_dt
 			);
 
-			T phi2_X_u;
+			ScalarDataArray phi2_X_u;
 
 			ts_phi2_exp.run_timestep(
 					FAn_u - FUn_u,
@@ -224,7 +225,7 @@ public:
 			/*
 			 * Precompute commonly used terms
 			 */
-			T phi0_Un_u;
+			ScalarDataArray phi0_Un_u;
 
 			ts_phi0_exp.run_timestep(
 					io_u,
@@ -233,7 +234,7 @@ public:
 					i_simulation_timestamp
 				);
 
-			T FUn_u;
+			ScalarDataArray FUn_u;
 
 			euler_timestep_update_nonlinear(
 					io_u,
@@ -246,7 +247,7 @@ public:
 			 * Some commonly shared buffers
 			 */
 
-			T phi1_u;
+			ScalarDataArray phi1_u;
 
 			/*
 			 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + \Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
@@ -258,14 +259,14 @@ public:
 					i_simulation_timestamp
 				);
 
-			T A_u = phi0_Un_u + dt_half*phi1_u;
+			ScalarDataArray A_u = phi0_Un_u + dt_half*phi1_u;
 
 
 			/*
 			 * B_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + 0.5*\Delta t\psi_{1}(0.5*\Delta tL) F(A_{n}, t_{n} + 0.5*\Delta t)
 			 */
 
-			T FAn_u;
+			ScalarDataArray FAn_u;
 
 			euler_timestep_update_nonlinear(
 					A_u,
@@ -281,14 +282,14 @@ public:
 					i_simulation_timestamp
 				);
 
-			T B_u = phi0_Un_u + dt_half*phi1_u;
+			ScalarDataArray B_u = phi0_Un_u + dt_half*phi1_u;
 
 
 			/*
 			 * C_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + 0.5*\Delta t\psi_{1}(0.5* \Delta tL) ( 2 F(B_{n},t_{n} + 0.5*\Delta t)-F(U_{n},t_{n})).
 			 */
 
-			T phi0_An_u;
+			ScalarDataArray phi0_An_u;
 
 			ts_phi0_exp.run_timestep(
 					A_u,
@@ -297,7 +298,7 @@ public:
 					i_simulation_timestamp
 				);
 
-			T FBn_u;
+			ScalarDataArray FBn_u;
 
 			euler_timestep_update_nonlinear(
 					B_u,
@@ -313,13 +314,13 @@ public:
 					i_simulation_timestamp
 				);
 
-			T C_u = phi0_An_u + dt_half*phi1_u;
+			ScalarDataArray C_u = phi0_An_u + dt_half*phi1_u;
 
 
 			/*
 			 * R0 - R3
 			 */
-			T FCn_u;
+			ScalarDataArray FCn_u;
 
 			euler_timestep_update_nonlinear(
 					C_u,
@@ -328,13 +329,13 @@ public:
 					i_simulation_timestamp + dt
 			);
 
-			T R0_u = io_u;
+			ScalarDataArray R0_u = io_u;
 
-			T &R1_u = FUn_u;
+			ScalarDataArray &R1_u = FUn_u;
 
-			T R2_u = FAn_u + FBn_u;
+			ScalarDataArray R2_u = FAn_u + FBn_u;
 
-			T &R3_u = FCn_u;
+			ScalarDataArray &R3_u = FCn_u;
 
 
 			/*
