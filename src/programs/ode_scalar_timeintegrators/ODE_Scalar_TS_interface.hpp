@@ -49,6 +49,9 @@ protected:
 		else if (this->model == "barotropic_triad_NL")
 			for (std::size_t i = 0; i < this->N; i++)
 				out[i] = 0.;
+		else if (this->model == "SWE_triad")
+			for (std::size_t i = 0; i < this->N; i++)
+				out[i] = -I * this->param_function_L[i];
 #endif
 		else
 			SWEETError("Unknown model " + this->model);
@@ -97,6 +100,12 @@ protected:
 			o_u.set(0, I * this->param_function_N[0] * i_u.get(1) * i_u.get(2)            * std::exp( I * delta * i_sim_timestamp));
 			o_u.set(1, I * this->param_function_N[1] * i_u.get(0) * std::conj(i_u.get(2)) * std::exp(-I * delta * i_sim_timestamp));
 			o_u.set(2, I * this->param_function_N[2] * i_u.get(0) * std::conj(i_u.get(1)) * std::exp(-I * delta * i_sim_timestamp));
+		}
+		else if (this->model == "SWE_triad")
+		{
+			o_u.set(0, I * this->param_function_N[0] * std::conj(i_u.get(1)) * i_u.get(2));
+			o_u.set(1, I * this->param_function_N[1] * std::conj(i_u.get(0)) * i_u.get(2));
+			o_u.set(2, I * this->param_function_N[2] *           i_u.get(0)  * i_u.get(1));
 		}
 #endif
 		else

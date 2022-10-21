@@ -1,12 +1,12 @@
 /*
- * ODE_Scalar_TS_ln_erk.hpp
+ * ODE_Scalar_TS_n_erk.hpp
  *
  *  Created on: 30 Sep 2022
  *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  */
 
-#ifndef SRC_PROGRAMS_ODE_SCALAR_TIMEINTEGRATORS_ODE_SCALAR_TS_LN_ERK_HPP_
-#define SRC_PROGRAMS_ODE_SCALAR_TIMEINTEGRATORS_ODE_SCALAR_TS_LN_ERK_HPP_
+#ifndef SRC_PROGRAMS_ODE_SCALAR_TIMEINTEGRATORS_ODE_SCALAR_TS_N_ERK_HPP_
+#define SRC_PROGRAMS_ODE_SCALAR_TIMEINTEGRATORS_ODE_SCALAR_TS_N_ERK_HPP_
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
@@ -15,14 +15,14 @@
 
 
 template <typename T>
-class ODE_Scalar_TS_ln_erk	: public ODE_Scalar_TS_interface<T>
+class ODE_Scalar_TS_n_erk	: public ODE_Scalar_TS_interface<T>
 {
 	SimulationVariables &simVars;
 
 	int timestepping_order;
 
 public:
-	ODE_Scalar_TS_ln_erk(
+	ODE_Scalar_TS_n_erk(
 			SimulationVariables &i_simVars
 		)
 		:
@@ -48,15 +48,14 @@ public:
 		if (i_dt <= 0)
 			SWEETError("ODE_Scalar_TS_ln_erk: Only constant time step size allowed");
 
-		io_u += i_dt * (  this->function_L(io_u, i_dt, i_simulation_timestamp)
-				+ this->function_N(io_u, i_dt, i_simulation_timestamp));
+		io_u += i_dt * (this->function_N(io_u, i_dt, i_simulation_timestamp));
 	}
 
 
 
-	virtual ~ODE_Scalar_TS_ln_erk()
+	virtual ~ODE_Scalar_TS_n_erk()
 	{
 	}
 };
 
-#endif /* SRC_PROGRAMS_ODE_SCALAR_TIMEINTEGRATORS_ODE_SCALAR_TS_LN_ERK_HPP_ */
+#endif /* SRC_PROGRAMS_ODE_SCALAR_TIMEINTEGRATORS_ODE_SCALAR_TS_N_ERK_HPP_ */

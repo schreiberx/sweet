@@ -178,8 +178,6 @@ public:
 			simVars->timecontrol.current_timestep_nr++;
 			simVars->timecontrol.current_simulation_time = simVars->timecontrol.current_timestep_nr * simVars->timecontrol.current_timestep_size;
 
-			///std::cout << "BBBBBBBB " << simVars->timecontrol.current_simulation_time << " " << simVars->timecontrol.current_timestep_nr * simVars->timecontrol.current_timestep_size << std::endl;
-
 			this->do_output();
 
 			if (this->should_quit())
@@ -217,7 +215,7 @@ public:
 			return true;
 
 		if (!std::isinf(simVars->timecontrol.max_simulation_time))
-			if (simVars->timecontrol.max_simulation_time <= simVars->timecontrol.current_simulation_time+simVars->timecontrol.max_simulation_time*1e-16)	// care about roundoff errors with 1e-10
+			if (simVars->timecontrol.max_simulation_time <= simVars->timecontrol.current_simulation_time+simVars->timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
 				return true;
 
 		return false;

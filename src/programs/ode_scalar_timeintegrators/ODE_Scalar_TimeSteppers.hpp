@@ -10,6 +10,9 @@
 
 #include "../ode_scalar_timeintegrators/ODE_Scalar_TS_interface.hpp"
 #include "../ode_scalar_timeintegrators/ODE_Scalar_TS_ln_erk.hpp"
+#include "../ode_scalar_timeintegrators/ODE_Scalar_TS_l_irk.hpp"
+#include "../ode_scalar_timeintegrators/ODE_Scalar_TS_n_erk.hpp"
+#include "../ode_scalar_timeintegrators/ODE_Scalar_TS_l_irk_n_erk.hpp"
 #include "../ode_scalar_timeintegrators/ODE_Scalar_TS_l_cn_n_settls.hpp"
 #include "../ode_scalar_timeintegrators/ODE_Scalar_TS_l_exp_n_etdrk.hpp"
 
@@ -20,6 +23,9 @@ class ODE_Scalar_TimeSteppers
 {
 public:
 	ODE_Scalar_TS_ln_erk<T> *ln_erk = nullptr;
+	ODE_Scalar_TS_n_erk<T> *n_erk = nullptr;
+	ODE_Scalar_TS_l_irk<T> *l_irk = nullptr;
+	ODE_Scalar_TS_l_irk_n_erk<T> *l_irk_n_erk = nullptr;
 	ODE_Scalar_TS_l_cn_n_settls<T> *l_cn_n_settls = nullptr;
 	ODE_Scalar_TS_l_exp_n_etdrk<T> *l_exp_n_etdrk = nullptr;
 
@@ -37,12 +43,29 @@ public:
 			ln_erk = nullptr;
 		}
 
+		if (n_erk != nullptr)
+		{
+			delete n_erk;
+			n_erk = nullptr;
+		}
+
+		if (l_irk != nullptr)
+		{
+			delete l_irk;
+			l_irk = nullptr;
+		}
+
+		if (l_irk_n_erk != nullptr)
+		{
+			delete l_irk_n_erk;
+			l_irk_n_erk = nullptr;
+		}
+
 		if (l_cn_n_settls != nullptr)
 		{
 			delete l_cn_n_settls;
 			l_cn_n_settls = nullptr;
 		}
-
 
 		if (l_exp_n_etdrk != nullptr)
 		{
@@ -82,6 +105,61 @@ public:
 					);
 
 		}
+
+		if (i_timestepping_method == "n_erk")
+		{
+			n_erk = new ODE_Scalar_TS_n_erk<T>(i_simVars);
+			master = &(ODE_Scalar_TS_interface<T>&)*n_erk;
+
+			master->setup(
+					i_simVars.bogus.var[3],
+					i_simVars.bogus.var[4],
+					i_simVars.bogus.var[5],
+					i_simVars.bogus.var[6]
+				);
+
+			n_erk->setup(
+						i_timestepping_order
+					);
+
+		}
+
+		if (i_timestepping_method == "l_irk")
+		{
+			l_irk = new ODE_Scalar_TS_l_irk<T>(i_simVars);
+			master = &(ODE_Scalar_TS_interface<T>&)*l_irk;
+
+			master->setup(
+					i_simVars.bogus.var[3],
+					i_simVars.bogus.var[4],
+					i_simVars.bogus.var[5],
+					i_simVars.bogus.var[6]
+				);
+
+			l_irk->setup(
+						i_timestepping_order
+					);
+
+		}
+
+		if (i_timestepping_method == "l_irk_n_erk")
+		{
+			l_irk_n_erk = new ODE_Scalar_TS_l_irk_n_erk<T>(i_simVars);
+			master = &(ODE_Scalar_TS_interface<T>&)*l_irk_n_erk;
+
+			master->setup(
+					i_simVars.bogus.var[3],
+					i_simVars.bogus.var[4],
+					i_simVars.bogus.var[5],
+					i_simVars.bogus.var[6]
+				);
+
+			l_irk_n_erk->setup(
+						i_timestepping_order
+					);
+
+		}
+
 
 		else if (i_timestepping_method == "l_cn_n_settls")
 		{
