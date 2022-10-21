@@ -50,15 +50,20 @@ public:
 		else
 			SWEETError("Unsupported order.");
 
-		////ODE_Scalar_TS_interface<T> *master = nullptr;
-		////master = &(ODE_Scalar_TS_interface<T>&)*ts_l_irk;
-		////master->setup(this->param_function_L, this->param_function_N, this->param_function_extra, this->model);
 		ts_l_irk.setup(
 					simVars.bogus.var[3],
 					simVars.bogus.var[4],
 					simVars.bogus.var[5],
 					simVars.bogus.var[6]
-		)
+		);
+
+		ts_n_erk.setup(
+					simVars.bogus.var[3],
+					simVars.bogus.var[4],
+					simVars.bogus.var[5],
+					simVars.bogus.var[6]
+		);
+
 	}
 
 	void run_timestep(

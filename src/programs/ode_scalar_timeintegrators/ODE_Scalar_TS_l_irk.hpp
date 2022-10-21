@@ -40,6 +40,16 @@ public:
 			SWEETError("ODE_Scalar_TS_l_irk: Only 1st order IRK is supported. Please set --timestepping-order 1.");
 	}
 
+	void setup(
+			std::string i_L,
+			std::string i_N,
+			std::string i_extra,
+			std::string i_model
+		)
+	{
+		ODE_Scalar_TS_interface<T>::setup(i_L, i_N, i_extra, i_model);
+	}
+
 	void run_timestep(
 			ScalarDataArray &io_u,	///< prognostic variables
 

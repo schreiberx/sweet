@@ -48,8 +48,18 @@ public:
 		if (i_dt <= 0)
 			SWEETError("ODE_Scalar_TS_ln_erk: Only constant time step size allowed");
 
-		io_u += i_dt * (  this->function_L(io_u, i_dt, i_simulation_timestamp)
-				+ this->function_N(io_u, i_dt, i_simulation_timestamp));
+		if (this->timestepping_order == 1)
+			io_u += i_dt * (  this->function_L(io_u, i_dt, i_simulation_timestamp)
+					+ this->function_N(io_u, i_dt, i_simulation_timestamp));
+		else if (this->timestepping_order == 2)
+		{
+			ScalarDataArray k1 = this->function_L(io_u, i_dt, i_simulation_timestamp) + this->function_N(io_u, i_dt, i_simulation_timestamp);
+			ScalarDataArray u2 = io_u + i_dt * k1;
+			ScalarDataArray k2 = this->function_L(u2, i_dt, i_simulation_timestamp + i_dt) + this->function_N(u2, i_dt, i_simulation_timestamp + i_dt);
+			io_u += .5 * i_dt * (k1 + k2);
+		}
+		else
+			SWEETError("Not implemented yet.");
 	}
 
 

@@ -164,7 +164,7 @@ public:
 	)
 	{
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-		typename_scalar u_out;
+		ScalarDataArray u_out;
 		i_data->GenericData_Scalar_to_dataArrays(u_out);
 
 		// Dump  data in csv, if output filename is not empty
@@ -538,7 +538,7 @@ public:
 	 * Write file to data and return string of file name (parareal)
 	 */
 	std::string write_file_pint_scalar(
-			const typename_scalar &i_u,
+			const ScalarDataArray &i_u,
 			const char* i_name,	///< name of output variable
 			int iteration_id,
 			double t
@@ -557,7 +557,8 @@ public:
 		file << "#FORMAT ASCII" << std::endl;
 		file << "#PRIMITIVE SCALAR" << std::endl;
 
-		file << i_u;
+		for (size_t i = 0; i < i_u.number_of_elements; i++)
+			file << i_u[i] << std::endl;
 
 		file.close();
 
@@ -731,7 +732,7 @@ public:
 			{
 
 				std::string model = simVars->bogus.var[5];
-				typename_scalar tmp;
+				ScalarDataArray tmp;
 
 	#if !SWEET_SCALAR_COMPLEX
 				typename_scalar u0 = atof(simVars->bogus.var[1].c_str());
@@ -741,22 +742,28 @@ public:
 				typename_scalar lambdaL = atof(simVars->bogus.var[3].c_str());
 
 				if (model == "ode1")
-					tmp = std::sin(t);
+				{
+					tmp.setup(1);
+					tmp.set(0, std::sin(t));
+				}
 				else if (model == "cox_matthews_decay")
 				{
+					tmp.setup(1);
 					typename_scalar e = std::exp(lambdaL * t);
-					tmp = u0 * e + (e - lambdaL * std::sin(t) - std::cos(t)) / (1. + lambdaL * lambdaL);
+					tmp.set(0, u0 * e + (e - lambdaL * std::sin(t) - std::cos(t)) / (1. + lambdaL * lambdaL));
 				}
 		#if SWEET_SCALAR_COMPLEX
 				else if (model == "cox_matthews_oscillation")
 				{
+					tmp.setup(1);
 					typename_scalar e = std::exp(I * lambdaL * t);
-					tmp = u0 * e + (std::exp(I * t) - e) / (I * (1. - lambdaL));
+					tmp.set(0, u0 * e + (std::exp(I * t) - e) / (I * (1. - lambdaL)));
 				}
 				else if (model == "quadratic_nonlinearity")
 				{
+					tmp.setup(1);
 					typename_scalar e = std::exp(lambdaL * t);
-					tmp = (lambdaL * u0 * e) / (-u0 * e + lambdaL + u0);
+					tmp.set(0, (lambdaL * u0 * e) / (-u0 * e + lambdaL + u0));
 				}
 		#endif
 				else
@@ -778,7 +785,8 @@ public:
 				sprintf(buffer, filename_template, i_name.c_str(), t);
 				std::string buffer2 = path_ref + "/" + std::string(buffer);
 
-				typename_scalar tmp;
+				ScalarDataArray tmp;
+				tmp.setup(N_ode);
 
 				std::cout << path_ref << std::endl;
 				std::cout << "loading DATA from " << buffer2 << std::endl;
@@ -808,15 +816,17 @@ public:
 						assert(str_vector[0] == "#PRIMITIVE");
 						assert(str_vector[1] == "SCALAR");
 					}
-					else if (i == 3)
+					else if (i >= 3)
 					{
 						assert(str_vector.size() == 1);
 						std::cout << str_vector[0] << std::endl;
 #if !SWEET_SCALAR_COMPLEX
-						tmp = stod(str_vector[0]);
+						tmp.set(i - 3, stod(str_vector[0]));
 #else
+						typename_scalar tmp2;
 						std::istringstream is(str_vector[0]);
-						is >> tmp;
+						is >> tmp2;
+						tmp.set(i - 3, tmp2);
 #endif
 					}
 				}
@@ -1005,7 +1015,7 @@ public:
 
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 			i_name = "prog_u";
-			typename_scalar u_ref;
+			ScalarDataArray u_ref;
 			pint_data_ref->GenericData_Scalar_to_dataArrays(u_ref);
 			double err = std::abs(	i_data->get_pointer_to_data_Scalar()->simfields[ivar] -
 						pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar]);

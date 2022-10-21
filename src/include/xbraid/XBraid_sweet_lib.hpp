@@ -927,7 +927,8 @@ public:
 
 
 	#if SWEET_XBRAID_SCALAR
-		typename_scalar u0;
+		ScalarDataArray u0;
+		u0.setup(N_ode);
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
 		PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);

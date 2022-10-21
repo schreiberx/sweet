@@ -96,14 +96,14 @@ public:
 	};
 
 	virtual void dataArrays_to_GenericData_Scalar(
-							std::vector<typename_scalar> &u
+							ScalarDataArray &u
 							//typename_scalar &u
 							)
 	{
 	};
 
 	virtual void GenericData_Scalar_to_dataArrays(
-							std::vector<typename_scalar> &u
+							ScalarDataArray &u
 							)
 	{
 	};

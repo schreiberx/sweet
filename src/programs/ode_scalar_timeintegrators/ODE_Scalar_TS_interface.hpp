@@ -136,7 +136,7 @@ public:
 			double i_sim_timestamp
 	)
 	{
-		T u = io_data->get_pointer_to_data_Scalar()->simfields[0];
+		ScalarDataArray u = io_data->get_pointer_to_data_Scalar()->simfields[0];
 
 		run_timestep(
 				u,
