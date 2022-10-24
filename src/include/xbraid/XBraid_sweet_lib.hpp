@@ -708,7 +708,7 @@ private:
 			prev_sol_exists = false;
 
 
-		prev_sol_exists = false;
+		////prev_sol_exists = false;
 
 
 		if (prev_sol_exists)
