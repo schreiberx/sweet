@@ -128,8 +128,6 @@ public:
 		for (std::size_t i = 0; i < N_ode; i++)
 			this->prog_u.set(i, u0[i]);
 
-		////this->prog_u = param_function_y0_real;
-		////this->prog_u.dataArrays_to_GenericData_Scalar(u0);
 #else
 		std::vector<double> u0_real = {};
 		std::vector<double> u0_imag = {};
@@ -157,8 +155,6 @@ public:
 		for (std::size_t i = 0; i < N_ode; i++)
 			this->prog_u.set(i, u0[i]);
 
-		///this->prog_u = std::complex<double>(param_function_y0_real, param_function_y0_imag);
-		///this->prog_u.dataArrays_to_GenericData_Scalar(u0);
 #endif
 
 		this->do_output();
@@ -396,7 +392,7 @@ int main(int i_argc, char *i_argv[])
 		 * Allocate parareal controller and provide class
 		 * which implement the parareal features
 		 */
-		Parareal_Controller<ODE_Scalar_TimeSteppers<typename_scalar>, 1> parareal_Controller(&simVars,
+		Parareal_Controller<ODE_Scalar_TimeSteppers<typename_scalar>, N_ode> parareal_Controller(&simVars,
 											timeSteppersFine,
 											timeSteppersCoarse);
 

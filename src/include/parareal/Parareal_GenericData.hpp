@@ -97,7 +97,6 @@ public:
 
 	virtual void dataArrays_to_GenericData_Scalar(
 							ScalarDataArray &u
-							//typename_scalar &u
 							)
 	{
 	};

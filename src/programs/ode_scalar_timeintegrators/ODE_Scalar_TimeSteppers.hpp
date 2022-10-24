@@ -106,7 +106,7 @@ public:
 
 		}
 
-		if (i_timestepping_method == "n_erk")
+		else if (i_timestepping_method == "n_erk")
 		{
 			n_erk = new ODE_Scalar_TS_n_erk<T>(i_simVars);
 			master = &(ODE_Scalar_TS_interface<T>&)*n_erk;
@@ -124,7 +124,7 @@ public:
 
 		}
 
-		if (i_timestepping_method == "l_irk")
+		else if (i_timestepping_method == "l_irk")
 		{
 			l_irk = new ODE_Scalar_TS_l_irk<T>(i_simVars);
 			master = &(ODE_Scalar_TS_interface<T>&)*l_irk;
@@ -142,7 +142,7 @@ public:
 
 		}
 
-		if (i_timestepping_method == "l_irk_n_erk")
+		else if (i_timestepping_method == "l_irk_n_erk")
 		{
 			l_irk_n_erk = new ODE_Scalar_TS_l_irk_n_erk<T>(i_simVars);
 			master = &(ODE_Scalar_TS_interface<T>&)*l_irk_n_erk;

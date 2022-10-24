@@ -107,7 +107,9 @@ public:
 	{
 		////this->simVars = i_simVars;
 
-	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+	#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+		this->SL_tsm = { "l_cn_n_settls" };
+	#elif SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
 		this->SL_tsm = { "l_cn_na_sl_nd_settls",
 				 "l_rexi_na_sl_nd_etdrk",
 				 "l_rexi_na_sl_nd_settls"
@@ -731,7 +733,7 @@ public:
 			if (base_solution == "ref")
 			{
 
-				std::string model = simVars->bogus.var[5];
+				std::string model = simVars->bogus.var[6];
 				ScalarDataArray tmp;
 
 	#if !SWEET_SCALAR_COMPLEX
@@ -765,12 +767,18 @@ public:
 					typename_scalar e = std::exp(lambdaL * t);
 					tmp.set(0, (lambdaL * u0 * e) / (-u0 * e + lambdaL + u0));
 				}
+				else if (model == "SWE_triad")
+				{
+					tmp.setup(3);
+					typename_scalar e = 2;
+					for (int i = 0; i < N_ode; i++)
+						tmp.set(i, e);
+				}
 		#endif
 				else
 					SWEETError("Unknown model " + model);
 
 
-				std::cout << "BBBBBBB " << t << " " << tmp << " " << lambdaL << " " << model << std::endl;
 				pint_data_ref->dataArrays_to_GenericData_Scalar(tmp);
 			}
 			// read fine solution from file
@@ -791,10 +799,14 @@ public:
 				std::cout << path_ref << std::endl;
 				std::cout << "loading DATA from " << buffer2 << std::endl;
 				std::ifstream file(buffer2);
-				for (int i = 0; i < 4; i++)
+				int i = 0;
+				while (true)
+				////for (int i = 0; i < 10; i++)
 				{
 					std::string line;
 					std::getline(file, line);
+					if (line == "")
+						break;
 					std::istringstream iss(line);
 					std::vector<std::string> str_vector((std::istream_iterator<std::string>(iss)),
 						std::istream_iterator<std::string>());
@@ -829,9 +841,9 @@ public:
 						tmp.set(i - 3, tmp2);
 #endif
 					}
+					i++;
 				}
 
-				std::cout << "CCCCCCC " << t << " " << tmp << std::endl;
 				pint_data_ref->dataArrays_to_GenericData_Scalar(tmp);
 			}
 		}
@@ -1014,12 +1026,14 @@ public:
 			std::string i_name;
 
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-			i_name = "prog_u";
+			if (nvar == 1)
+				i_name = "prog_u";
+			else
+				i_name = "prog_u" + std::to_string(ivar);
 			ScalarDataArray u_ref;
 			pint_data_ref->GenericData_Scalar_to_dataArrays(u_ref);
 			double err = std::abs(	i_data->get_pointer_to_data_Scalar()->simfields[ivar] -
 						pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar]);
-			std::cout << "AAAA " << i_data->get_pointer_to_data_Scalar()->simfields[ivar] << " " << pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar] << " " << err << std::endl;
 			err_L1 = err;
 			err_L2 = err;
 			err_Linf = err;

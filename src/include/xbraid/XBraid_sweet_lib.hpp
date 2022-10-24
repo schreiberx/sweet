@@ -23,7 +23,7 @@
 	#include <parareal/Parareal_GenericData_Scalar.hpp>
 	#include "src/programs/ode_scalar_timeintegrators/ODE_Scalar_TimeSteppers.hpp"
 	typedef ODE_Scalar_TimeSteppers<typename_scalar> t_tsmType;
-	#define N 1
+	#define N N_ode
 #elif SWEET_XBRAID_PLANE
 	#include <parareal/Parareal_GenericData_PlaneData_Spectral.hpp>
 	#if SWEET_XBRAID_PLANE_BURGERS
@@ -673,16 +673,19 @@ private:
 					int iter
 				)
 	{
+		std::cout << "AAAAAAAAA " << i_level << " " << this->is_SL[i_level] << std::endl;
 		// if not SL scheme: nothing to do
 		//if ( std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
 		if ( ! this->is_SL[i_level] )
 			return;
 
+		std::cout << "BBBBBBBBB " << i_level << " " << this->is_SL[i_level] << std::endl;
 		// if solution has already been stored in this iteration: nothing to do
 		if ( this->sol_prev_iter[i_level][i_time_id] == iter )
 			return;
 		///assert(this->sol_prev_iter[i_level][i_time_id] == iter - 1);
 
+		std::cout << "CCCCCCCCC " << i_level << " " << this->is_SL[i_level] << std::endl;
 		// create vector if necessary
 		if ( ! this->sol_prev[i_level][i_time_id] )
 			this->sol_prev[i_level][i_time_id] = this->create_new_vector(i_level);
@@ -718,6 +721,7 @@ private:
 
 		prev_sol_exists = false;
 
+		std::cout << "PREV SOL " << prev_sol_exists << std::endl;
 
 		if (prev_sol_exists)
 			this->timeSteppers[i_level]->master->set_previous_solution(this->sol_prev[i_level][i_time_id - 1]->data);
@@ -947,14 +951,49 @@ public:
 			////std::cout << "Setting initial solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
 		#if !SWEET_SCALAR_COMPLEX
-				u0 = atof(simVars->bogus.var[1].c_str());
+
+			std::vector<double> u0_input = {};
+			std::stringstream all_u0 = std::stringstream(simVars->bogus.var[1].c_str());
+			while (all_u0.good())
+			{
+				std::string str;
+				getline(all_u0, str, ',');
+				u0_input.push_back(atof(str.c_str()));
+			}
+			if ( u0.size() != N_ode )
+				SWEETError("Initial solution must contain N_ode values!");
+
+			for (std::size_t i = 0; i < N_ode; i++)
+				u0.set(i, u0_input[i]);
+
+				////u0 = atof(simVars->bogus.var[1].c_str());
 		#else
-				u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
+
+			std::vector<double> u0_real = {};
+			std::vector<double> u0_imag = {};
+			std::stringstream all_u0_real = std::stringstream(simVars->bogus.var[1].c_str());
+			std::stringstream all_u0_imag = std::stringstream(simVars->bogus.var[2].c_str());
+			while (all_u0_real.good())
+			{
+				std::string str;
+				getline(all_u0_real, str, ',');
+				u0_real.push_back(atof(str.c_str()));
+			}
+			while (all_u0_imag.good())
+			{
+				std::string str;
+				getline(all_u0_imag, str, ',');
+				u0_imag.push_back(atof(str.c_str()));
+			}
+			if ( ! ( ( u0_real.size() == N_ode ) && ( u0_imag.size() == N_ode ) ) )
+				SWEETError("Initial solution must contain N_ode values!");
+
+			for (std::size_t i = 0; i < N_ode; i++)
+				u0.set(i, std::complex<double>(u0_real[i], u0_imag[i]));
+
+				/////u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
 		#endif
 
-			////////u0 = atof(simVars->bogus.var[1].c_str());
-			////////U->data->dataArrays_to_GenericData_Scalar(u0);
-	
 	#elif SWEET_XBRAID_PLANE
 			////PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
 			////PlaneData_Spectral t0_prog_u(planeDataConfig[0]);
@@ -1304,7 +1343,7 @@ public:
 
 			// Decide whether to output or not
 			bool do_output = false;
-			double small = 1e-10;
+			double small = 1e-8;
 
 			// output each time step if:
 			// output_timestep < 0 (i.e. output every timestep)
@@ -1490,9 +1529,11 @@ public:
 		int actual_size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
 
-#if SWEET_XBRAID_SCALAR
+////#if SWEET_XBRAID_SCALAR
+#if 0
 		U->data->serialize(dbuffer);
-#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+#else
+////#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->serialize(dbuffer);
@@ -1500,30 +1541,56 @@ public:
 		else
 		{
 			// store solution from level 0
+	#if SWEET_XBRAID_SCALAR
+			typename_scalar *level_buffer_data = nullptr;
+			int s = N;
+	#elif SWEET_XBRAID_PLANE
 			std::complex<double> *level_buffer_data = nullptr;
-	#if SWEET_XBRAID_PLANE
 			int s = N * this->planeDataConfig[0]->spectral_array_data_number_of_elements;
 	#elif SWEET_XBRAID_SPHERE
+			std::complex<double> *level_buffer_data = nullptr;
 			int s = N * this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
 	#endif
-			int s2 = 0;
+
+	#if SWEET_XBRAID_SCALAR
+			level_buffer_data = MemBlockAlloc::alloc<typename_scalar>(s * sizeof(typename_scalar));
+	#else
 			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
+	#endif
+
+			int s2 = 0;
+			//level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			U->data->serialize(level_buffer_data);
 			std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
 			s2 += s;
+			///MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+
+	#if SWEET_XBRAID_SCALAR
+			MemBlockAlloc::free(level_buffer_data, s * sizeof(typename_scalar));
+	#else
 			MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+	#endif
 
 			// store prev solution from every level using SL
 			for (size_t level = 0; level < this->is_SL.size(); ++level)
 			{
 				if (this->is_SL[level])
 				{
-	#if SWEET_XBRAID_PLANE
+	#if SWEET_XBRAID_SCALAR
+					s = N;
+	#elif SWEET_XBRAID_PLANE
 					s = N * this->planeDataConfig[level]->spectral_array_data_number_of_elements;
 	#elif SWEET_XBRAID_SPHERE
 					s = N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
 	#endif
+
+	#if SWEET_XBRAID_SCALAR
+					level_buffer_data = MemBlockAlloc::alloc<typename_scalar>(s * sizeof(typename_scalar));
+	#else
 					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
+	#endif
+
+					///level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					int time_id = this->last_timeid_level[level];
 					if (time_id < 0)
 						continue;
@@ -1532,6 +1599,15 @@ public:
 					s2 += s;
 					actual_size_buffer += s * sizeof(std::complex<double>);
 					MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+
+	#if SWEET_XBRAID_SCALAR
+					actual_size_buffer += s * sizeof(typename_scalar);
+					MemBlockAlloc::free(level_buffer_data, s * sizeof(typename_scalar));
+	#else
+					actual_size_buffer += s * sizeof(std::complex<double>);
+					MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+	#endif
+
 				}
 			}
 		}
@@ -1563,9 +1639,11 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif
 
-#if SWEET_XBRAID_SCALAR
+#if 0
+///#if SWEET_XBRAID_SCALAR
 		U->data->deserialize(dbuffer);
-#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+#else
+///#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->deserialize(dbuffer);
@@ -1573,30 +1651,56 @@ public:
 		else
 		{
 			// get solution for level 0
+	#if SWEET_XBRAID_SCALAR
+			typename_scalar *level_buffer_data = nullptr;
+			int s = N;
+	#elif SWEET_XBRAID_PLANE
 			std::complex<double> *level_buffer_data = nullptr;
-	#if SWEET_XBRAID_PLANE
 			int s = N * this->planeDataConfig[0]->spectral_array_data_number_of_elements;
 	#elif SWEET_XBRAID_SPHERE
+			std::complex<double> *level_buffer_data = nullptr;
 			int s = N * this->sphereDataConfig[0]->spectral_array_data_number_of_elements;
 	#endif
-			int s2 = 0;
+
+	#if SWEET_XBRAID_SCALAR
+			level_buffer_data = MemBlockAlloc::alloc<typename_scalar>(s * sizeof(typename_scalar));
+	#else
 			level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
+	#endif
+
+			int s2 = 0;
+			///level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 			std::copy(&dbuffer[0], &dbuffer[s], &level_buffer_data[0]);
 			U->data->deserialize(level_buffer_data);
 			s2 += s;
+			//MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+
+	#if SWEET_XBRAID_SCALAR
+			MemBlockAlloc::free(level_buffer_data, s * sizeof(typename_scalar));
+	#else
 			MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+	#endif
 
 			// get prev solution for every level using SL
 			for (size_t level = 0; level < this->is_SL.size(); ++level)
 			{
 				if (this->is_SL[level])
 				{
-	#if SWEET_XBRAID_PLANE
+	#if SWEET_XBRAID_SCALAR
+					s = N;
+	#elif SWEET_XBRAID_PLANE
 					s = N * this->planeDataConfig[level]->spectral_array_data_number_of_elements;
 	#elif SWEET_XBRAID_SPHERE
 					s = N * this->sphereDataConfig[level]->spectral_array_data_number_of_elements;
 	#endif
+
+	#if SWEET_XBRAID_SCALAR
+					level_buffer_data = MemBlockAlloc::alloc<typename_scalar>(s * sizeof(typename_scalar));
+	#else
 					level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
+	#endif
+
+					////level_buffer_data = MemBlockAlloc::alloc<std::complex<double>>(s * sizeof(std::complex<double>));
 					std::copy(&dbuffer[s2], &dbuffer[s2 + s], &level_buffer_data[0]);
 					int time_id = this->first_timeid_level[level];
 					if (time_id == INT_MAX)
@@ -1604,7 +1708,13 @@ public:
 					this->sol_prev[level][time_id - 1] = this->create_new_vector(level);
 					this->sol_prev[level][time_id - 1]->data->deserialize(level_buffer_data);
 					s2 += s;
+					//MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+					//
+	#if SWEET_XBRAID_SCALAR
+					MemBlockAlloc::free(level_buffer_data, s * sizeof(typename_scalar));
+	#else
 					MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+	#endif
 				}
 			}
 		}

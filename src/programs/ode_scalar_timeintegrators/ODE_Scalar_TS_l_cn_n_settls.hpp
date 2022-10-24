@@ -24,7 +24,7 @@ class ODE_Scalar_TS_l_cn_n_settls	: public ODE_Scalar_TS_interface<T>
 {
 	SimulationVariables &simVars;
 
-	ScalarDataArray u_prev;
+	////ScalarDataArray u_prev;
 
 public:
 	ODE_Scalar_TS_l_cn_n_settls(
@@ -58,12 +58,13 @@ public:
 			/*
 			 * First time step
 			 */
-			u_prev = io_u;
+			this->u_prev = io_u;
 #endif
 		}
 
 		// Out vars
 		ScalarDataArray u;
+		u.setup(N_ode);
 
 		double dt = i_dt;
 
@@ -71,7 +72,7 @@ public:
 		ScalarDataArray nonlin = this->function_N(io_u, i_dt, i_simulation_timestamp);
 
 		// Nonlinear term at t_{n-1}
-		ScalarDataArray nonlin1 = this->function_N(u_prev, i_dt, i_simulation_timestamp);
+		ScalarDataArray nonlin1 = this->function_N(this->u_prev, i_dt, i_simulation_timestamp);
 
 		// Extrapolate + average nonlinear term
 		nonlin = i_dt * .5 * (2. * nonlin - nonlin1 + nonlin);
@@ -85,7 +86,7 @@ public:
 		// Solve
 		u = 1. / facI * (facE * io_u + nonlin);
 
-		u_prev = io_u;
+		this->u_prev = io_u;
 
 		// output data
 		io_u = u;

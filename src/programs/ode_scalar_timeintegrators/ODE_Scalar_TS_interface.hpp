@@ -18,7 +18,7 @@ template <typename T>
 class ODE_Scalar_TS_interface
 {
 protected:
-	T u_prev;
+	ScalarDataArray u_prev;
 	std::string model;
 
 protected:
@@ -136,7 +136,10 @@ public:
 			double i_sim_timestamp
 	)
 	{
-		ScalarDataArray u = io_data->get_pointer_to_data_Scalar()->simfields[0];
+		ScalarDataArray u;
+		u.setup(N_ode);
+		for (int i = 0; i < N_ode; i++)
+			u.set(i, io_data->get_pointer_to_data_Scalar()->simfields[i]);
 
 		run_timestep(
 				u,
@@ -144,7 +147,8 @@ public:
 				i_sim_timestamp
 			);
 
-		io_data->get_pointer_to_data_Scalar()->simfields[0] = u;
+		for (int i = 0; i < N_ode; i++)
+			io_data->get_pointer_to_data_Scalar()->simfields[i] = u.get(i);
 
 	}
 
@@ -153,7 +157,10 @@ public:
 			Parareal_GenericData* i_data
 	)
 	{
-		u_prev = i_data->get_pointer_to_data_Scalar()->simfields[0];
+
+		///u_prev = i_data->get_pointer_to_data_Scalar()->simfields[0];
+		for (int i = 0; i < N_ode; i++)
+			u_prev.set(i, i_data->get_pointer_to_data_Scalar()->simfields[i]);
 	};
 #endif
 
@@ -164,6 +171,8 @@ public:
 			std::string i_model
 		)
 	{
+
+		this->u_prev.setup(N_ode);
 
 		// get param L
 		this->param_function_L = {};
