@@ -665,6 +665,7 @@ public:
 		return U;
 	}
 
+
 private:
 	void store_prev_solution(
 					sweet_BraidVector* i_U,
@@ -673,19 +674,16 @@ private:
 					int iter
 				)
 	{
-		std::cout << "AAAAAAAAA " << i_level << " " << this->is_SL[i_level] << std::endl;
 		// if not SL scheme: nothing to do
 		//if ( std::find(this->SL_tsm.begin(), this->SL_tsm.end(), this->tsms[i_level]) == this->SL_tsm.end())
 		if ( ! this->is_SL[i_level] )
 			return;
 
-		std::cout << "BBBBBBBBB " << i_level << " " << this->is_SL[i_level] << std::endl;
 		// if solution has already been stored in this iteration: nothing to do
-		if ( this->sol_prev_iter[i_level][i_time_id] == iter )
-			return;
+		/////////////if ( this->sol_prev_iter[i_level][i_time_id] == iter )
+		/////////////	return;
 		///assert(this->sol_prev_iter[i_level][i_time_id] == iter - 1);
 
-		std::cout << "CCCCCCCCC " << i_level << " " << this->is_SL[i_level] << std::endl;
 		// create vector if necessary
 		if ( ! this->sol_prev[i_level][i_time_id] )
 			this->sol_prev[i_level][i_time_id] = this->create_new_vector(i_level);
@@ -695,7 +693,10 @@ private:
 		this->sol_prev_iter[i_level][i_time_id] = iter;
 		this->first_timeid_level[i_level] = std::min(first_timeid_level[i_level], i_time_id);
 		this->last_timeid_level[i_level] = std::max(last_timeid_level[i_level], i_time_id);
+
 	}
+
+
 
 	void set_prev_solution(
 					sweet_BraidVector* i_U,
@@ -718,10 +719,7 @@ private:
 		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
 			prev_sol_exists = false;
 
-
 		prev_sol_exists = false;
-
-		std::cout << "PREV SOL " << prev_sol_exists << std::endl;
 
 		if (prev_sol_exists)
 			this->timeSteppers[i_level]->master->set_previous_solution(this->sol_prev[i_level][i_time_id - 1]->data);
