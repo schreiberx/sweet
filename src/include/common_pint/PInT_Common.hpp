@@ -61,6 +61,17 @@ protected:
 	std::vector<std::string> SL_tsm = {};
 
 
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+	// for computing energy, invariants, hamiltonian etc
+	std::vector<double> param_function_N = {};
+	std::vector<double> param_function_extra = {};
+	double S123;
+	std::vector<double> invariants = {};
+	double hamiltonian;
+	double total_energy;
+#endif
+
+
 #if SWEET_PARAREAL_PLANE_BURGERS
 	// required for computing analytical solution
 	class BenchmarkErrors
@@ -769,7 +780,9 @@ public:
 				}
 				else if (model == "SWE_triad")
 				{
-					tmp.setup(3);
+					///tmp.setup(3);
+					tmp.setup(3);		// 3 unknowns + 3 invariants + hamiltonian + total_energy
+								// 2nd order energy + 3rd order energy
 					typename_scalar e = 2;
 					for (int i = 0; i < N_ode; i++)
 						tmp.set(i, e);
@@ -789,7 +802,6 @@ public:
 				char buffer[1024];
 				std::string i_name = "prog_u";
 				const char* filename_template = simVars->iodata.output_file_name.c_str();
-				///sprintf(buffer, filename_template, i_name.c_str(), timeframe_end);
 				sprintf(buffer, filename_template, i_name.c_str(), t);
 				std::string buffer2 = path_ref + "/" + std::string(buffer);
 
@@ -840,9 +852,104 @@ public:
 						is >> tmp2;
 						tmp.set(i - 3, tmp2);
 #endif
+
 					}
 					i++;
 				}
+
+
+				std::string model = simVars->bogus.var[6];
+				// Invariants, energy etc
+				if (model == "SWE_triad")
+				{
+					if (this->invariants.size() == 0)
+					{
+						// load ref file at t = 0
+						char buffer0[1024];
+						std::string i_name0 = "prog_u";
+						const char* filename_template0 = simVars->iodata.output_file_name.c_str();
+						sprintf(buffer0, filename_template0, i_name0.c_str(), 0);
+						std::string buffer20 = path_ref + "/" + std::string(buffer0);
+
+						ScalarDataArray tmp0;
+						tmp0.setup(N_ode);
+
+						std::ifstream file0(buffer20);
+
+						std::string line0;
+						for (int i = 0; i < 6; i++)
+						{
+							std::getline(file0, line0);
+							if (i < 3)
+								continue;
+							std::istringstream iss0(line0);
+							std::vector<std::string> str_vector0((std::istream_iterator<std::string>(iss0)),
+								std::istream_iterator<std::string>());
+
+							assert(str_vector0.size() == 1);
+							std::cout << str_vector0[0] << std::endl;
+#if !SWEET_SCALAR_COMPLEX
+							tmp0.set(i - 3, stod(str_vector0[0]));
+#else
+							typename_scalar tmp20;
+							std::istringstream is0(str_vector0[0]);
+							is0 >> tmp20;
+							tmp0.set(i - 3, tmp20);
+#endif
+						}
+
+						// get param N
+						std::stringstream all_i_N = std::stringstream(simVars->bogus.var[4]);
+						while (all_i_N.good())
+						{
+							std::string str;
+							getline(all_i_N, str, ',');
+							this->param_function_N.push_back(atof(str.c_str()));
+						}
+						if ( this->param_function_N.size() != N_ode )
+							SWEETError("param_function_N must contain N_ode values!");
+
+						// get param extra
+						this->param_function_extra = {};
+						std::stringstream all_i_extra = std::stringstream(simVars->bogus.var[5]);
+						while (all_i_extra.good())
+						{
+							std::string str;
+							getline(all_i_extra, str, ',');
+							this->param_function_extra.push_back(atof(str.c_str()));
+						}
+						if ( this->param_function_extra.size() != 4 )
+							SWEETError("param_function_N must contain N_ode values!");
+						this->S123 = param_function_extra[3];
+
+
+						typename_scalar A1 = tmp0.get(0);
+						typename_scalar A2 = tmp0.get(1);
+						typename_scalar A3 = tmp0.get(2);
+						double I12 = std::abs(A1) * std::abs(A1) / this->param_function_N[0] + std::abs(A2) * std::abs(A2) / this->param_function_N[1];
+						double I23 = std::abs(A2) * std::abs(A2) / this->param_function_N[1] + std::abs(A3) * std::abs(A3) / this->param_function_N[2];
+						double I31 = std::abs(A1) * std::abs(A1) / this->param_function_N[0] + std::abs(A3) * std::abs(A3) / this->param_function_N[2];
+						double H =	(
+									std::conj(A1) / std::sqrt(this->param_function_N[1] * this->param_function_N[2]) +
+									           A2 / std::sqrt(this->param_function_N[0] * this->param_function_N[2]) +
+									           A3 / std::sqrt(this->param_function_N[0] * this->param_function_N[1])
+								).real();
+						double Etotal = std::abs(A1) * std::abs(A1) +
+								std::abs(A2) * std::abs(A2) +
+								std::abs(A3) * std::abs(A3) +
+								2. * ( A3 * std::conj(A1) * std::conj(A2) ).real() * this->S123;
+
+						std::cout << "BBBBBBB " << I12 << " " << I23 << " " << I31 << " " << H << " " << Etotal << std::endl;
+						this->invariants = {I12, I23, I31};
+						this->hamiltonian = H;
+						this->total_energy = Etotal;
+					}
+				}
+
+
+
+
+
 
 				pint_data_ref->dataArrays_to_GenericData_Scalar(tmp);
 			}
@@ -998,6 +1105,13 @@ public:
 		}
 #endif
 
+
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+		std::string model = simVars->bogus.var[6];
+		if (model == "SWE_triad" && base_solution == "fine")
+			nvar += 5;
+#endif
+
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
@@ -1029,15 +1143,72 @@ public:
 			if (nvar == 1)
 				i_name = "prog_u";
 			else
-				i_name = "prog_u" + std::to_string(ivar);
+				if (ivar < N_ode)
+					i_name = "prog_u" + std::to_string(ivar);
+				else if (ivar == N_ode)
+					i_name = "diag_I12";
+				else if (ivar == N_ode + 1)
+					i_name = "diag_I23";
+				else if (ivar == N_ode + 2)
+					i_name = "diag_I31";
+				else if (ivar == N_ode + 3)
+					i_name = "diag_H";
+				else if (ivar == N_ode + 4)
+					i_name = "diag_Etotal";
 			ScalarDataArray u_ref;
 			pint_data_ref->GenericData_Scalar_to_dataArrays(u_ref);
-			double err = std::abs(	i_data->get_pointer_to_data_Scalar()->simfields[ivar] -
-						pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar]);
+			double err;
+
+			typename_scalar data;
+			typename_scalar data_ref;
+			if (ivar < N_ode)
+			{
+				data = i_data->get_pointer_to_data_Scalar()->simfields[ivar];
+				data_ref = pint_data_ref->get_pointer_to_data_Scalar()->simfields[ivar];
+			}
+			else
+			{
+				typename_scalar A1 = i_data->get_pointer_to_data_Scalar()->simfields[0];
+				typename_scalar A2 = i_data->get_pointer_to_data_Scalar()->simfields[1];
+				typename_scalar A3 = i_data->get_pointer_to_data_Scalar()->simfields[2];
+				if (ivar == N_ode)
+				{
+					data = std::abs(A1) * std::abs(A1) / this->param_function_N[0] + std::abs(A2) * std::abs(A2) / this->param_function_N[1];
+					data_ref = this->invariants[0];
+				}
+				else if (ivar == N_ode + 1)
+				{
+					data = std::abs(A2) * std::abs(A2) / this->param_function_N[1] + std::abs(A3) * std::abs(A3) / this->param_function_N[2];
+					data_ref = this->invariants[1];
+				}
+				else if (ivar == N_ode + 2)
+				{
+					data = std::abs(A1) * std::abs(A1) / this->param_function_N[0] + std::abs(A3) * std::abs(A3) / this->param_function_N[2];
+					data_ref = this->invariants[2];
+				}
+				else if (ivar == N_ode + 3)
+				{
+					data =		(
+								std::conj(A1) / std::sqrt(this->param_function_N[1] * this->param_function_N[2]) +
+								           A2 / std::sqrt(this->param_function_N[0] * this->param_function_N[2]) +
+								           A3 / std::sqrt(this->param_function_N[0] * this->param_function_N[1])
+							).real();
+					data_ref = this->hamiltonian;
+				}
+				else if (ivar == N_ode + 4)
+				{
+					data = std::abs(A1) * std::abs(A1) +
+						std::abs(A2) * std::abs(A2) +
+						std::abs(A3) * std::abs(A3) +
+						2. * ( A3 * std::conj(A1) * std::conj(A2) ).real() * this->S123;
+					data_ref = this->total_energy;
+				}
+			}
+
+			err = std::abs( data - data_ref );
 			err_L1 = err;
 			err_L2 = err;
 			err_Linf = err;
-
 
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 

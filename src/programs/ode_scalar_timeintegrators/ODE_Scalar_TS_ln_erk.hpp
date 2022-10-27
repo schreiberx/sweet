@@ -58,6 +58,17 @@ public:
 			ScalarDataArray k2 = this->function_L(u2, i_dt, i_simulation_timestamp + i_dt) + this->function_N(u2, i_dt, i_simulation_timestamp + i_dt);
 			io_u += .5 * i_dt * (k1 + k2);
 		}
+		else if (this->timestepping_order == 4)
+		{
+			ScalarDataArray k1 = this->function_L(io_u, i_dt, i_simulation_timestamp) + this->function_N(io_u, i_dt, i_simulation_timestamp);
+			ScalarDataArray u2 = io_u + .5 * i_dt * k1;
+			ScalarDataArray k2 = this->function_L(u2, i_dt, i_simulation_timestamp + .5 * i_dt) + this->function_N(u2, i_dt, i_simulation_timestamp + .5 * i_dt);
+			ScalarDataArray u3 = io_u + .5 * i_dt * k2;
+			ScalarDataArray k3 = this->function_L(u3, i_dt, i_simulation_timestamp + .5 * i_dt) + this->function_N(u3, i_dt, i_simulation_timestamp + .5 * i_dt);
+			ScalarDataArray u4 = io_u + i_dt * k3;
+			ScalarDataArray k4 = this->function_L(u4, i_dt, i_simulation_timestamp + i_dt) + this->function_N(u4, i_dt, i_simulation_timestamp + i_dt);
+			io_u += 1. / 6. * i_dt * (k1 + 2. * k2 + 2. * k3 + k4);
+		}
 		else
 			SWEETError("Not implemented yet.");
 	}

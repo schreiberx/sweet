@@ -186,7 +186,7 @@ public:
 		if ( this->param_function_L.size() != N_ode )
 			SWEETError("param_function_L must contain N_ode values!");
 
-		// get param L
+		// get param N
 		this->param_function_N = {};
 		std::stringstream all_i_N = std::stringstream(i_N);
 		while (all_i_N.good())

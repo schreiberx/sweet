@@ -224,6 +224,7 @@ for itest in {-1..7};do
 
 			done;
 
+			mule.benchmark.cleanup_all || exit 1
 			echo "";
 
 		done;
@@ -236,11 +237,14 @@ for itest in {-1..7};do
 
 			mule.benchmark.jobs_run_directly || exit 1
 			./compare_online_offline_errors.py . $fine_sim 1
+
+			mule.benchmark.cleanup_all || exit 1
 		done;
 
 	elif [ "$itest" == 7 ]; then
 
-		for nproc in {1,5}; do
+		for nproc in 1; do
+		##for nproc in {1,5}; do
 
 			echo "  -------------";
 			echo "  -- nproc:" $nproc
@@ -251,6 +255,8 @@ for itest in {-1..7};do
 
 			mule.benchmark.jobs_run_directly || exit 1
 			./compare_parareal_xbraid_errors.py . $fine_sim 1
+
+			mule.benchmark.cleanup_all || exit 1
 		done;
 
 	fi;

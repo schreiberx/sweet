@@ -719,7 +719,7 @@ private:
 		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
 			prev_sol_exists = false;
 
-		prev_sol_exists = false;
+		////prev_sol_exists = false;
 
 		if (prev_sol_exists)
 			this->timeSteppers[i_level]->master->set_previous_solution(this->sol_prev[i_level][i_time_id - 1]->data);
@@ -860,6 +860,13 @@ public:
 		io_status.SetRFactor(1);
 
 		delete U_level;
+
+
+		////if (level == 1)
+		////{
+		////	std::cout << "AAAA " << level << " " << time_id << std::endl;
+		////	U->data->physical_print();
+		////}
 
 		return 0;
 	}
