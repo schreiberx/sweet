@@ -358,7 +358,7 @@ void ceval_f3 (
 	// lambda for applying viscosity
 	auto viscosity_applier = [&](int n, int m, std::complex<double> &io_data) 
 	    {
-			double laplace_op_2 = (double)n*((double)n+1.0)/(r*r);
+			double laplace_op_2 = -(double)n*((double)n+1.0)/(r*r);
 			double laplace_op_4 = laplace_op_2 * laplace_op_2;
 			double laplace_op_6 = laplace_op_4 * laplace_op_2;
 			double laplace_op_8 = laplace_op_4 * laplace_op_4;
