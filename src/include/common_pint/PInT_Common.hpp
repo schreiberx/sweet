@@ -740,11 +740,11 @@ public:
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 		if (iteration_id == 0)
 		{
+			std::string model = simVars->bogus.var[6];
 			// exact solution
-			if (base_solution == "ref")
+			if (base_solution == "ref" && (model == "ode1" || model == "cox_matthews_decay" || model == "cox_matthews_oscillation" || model == "quadratic_nonlinearity"))
 			{
 
-				std::string model = simVars->bogus.var[6];
 				ScalarDataArray tmp;
 
 	#if !SWEET_SCALAR_COMPLEX
@@ -939,7 +939,6 @@ public:
 								std::abs(A3) * std::abs(A3) +
 								2. * ( A3 * std::conj(A1) * std::conj(A2) ).real() * this->S123;
 
-						std::cout << "BBBBBBB " << I12 << " " << I23 << " " << I31 << " " << H << " " << Etotal << std::endl;
 						this->invariants = {I12, I23, I31};
 						this->hamiltonian = H;
 						this->total_energy = Etotal;
@@ -1118,9 +1117,16 @@ public:
 
 			int resx_data;
 			int resy_data;
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+			double err_abs;
+			double err_real;
+			double err_imag;
+			double err_phase;
+#else
 			double err_L1; // physical space
 			double err_L2; // physical space
 			double err_Linf; // physical space
+#endif
 
 			std::map<std::size_t, double> err_Linf_spectral;
 			std::vector<std::size_t> rnorms;
@@ -1157,7 +1163,6 @@ public:
 					i_name = "diag_Etotal";
 			ScalarDataArray u_ref;
 			pint_data_ref->GenericData_Scalar_to_dataArrays(u_ref);
-			double err;
 
 			typename_scalar data;
 			typename_scalar data_ref;
@@ -1205,10 +1210,24 @@ public:
 				}
 			}
 
-			err = std::abs( data - data_ref );
-			err_L1 = err;
-			err_L2 = err;
-			err_Linf = err;
+			err_abs = std::abs( data - data_ref ) / std::abs(data_ref);
+			if (ivar < N_ode)
+			{
+#if SWEET_SCALAR_COMPLEX
+				err_real = std::abs(data.real() - data_ref.real()) / std::abs(data_ref.real());
+				err_imag = std::abs(data.imag() - data_ref.imag()) / std::abs(data_ref.imag());
+				double phase = atan2(data.imag(), data.real());
+				double phase_ref = atan2(data_ref.imag(), data_ref.real());
+				err_phase = std::abs( phase - phase_ref ) / std::abs( phase_ref );
+#else
+				err_real = std::abs(data - data_ref) / std::abs(data_ref);
+				err_imag = 0.;
+				err_phase = 0.;
+#endif
+			}
+			////err_L1 = err;
+			////err_L2 = err;
+			////err_Linf = err;
 
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 
@@ -1303,9 +1322,19 @@ public:
 			file << "#ITERATION " << iteration_id << std::endl;
 			file << "#TIMESLICE " << time_slice_id << std::endl;
 			file << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+			file << "errAbs " << err_abs << std::endl;
+			if (ivar < N_ode)
+			{
+				file << "errReal " << err_real << std::endl;
+				file << "errImag " << err_imag << std::endl;
+				file << "errPhase " << err_phase << std::endl;
+			}
+#else
 			file << "errL1 " << err_L1 << std::endl;
 			file << "errL2 " << err_L2 << std::endl;
 			file << "errLinf " << err_Linf << std::endl;
+#endif
 
 			file.close();
 

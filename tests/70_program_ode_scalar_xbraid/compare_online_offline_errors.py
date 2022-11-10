@@ -13,31 +13,37 @@ def read_error_file(path):
 
     lines = [line.rstrip() for line in open(path)];
 
-    err_L1 = -1;
-    err_L2 = -1;
-    err_Linf = -1;
+    err_Abs = -1;
+    err_Real = -1;
+    err_Imag = -1;
+    err_Phase = -1;
 
     for line in lines:
         spl = line.split();
-        if spl[0] == "errL1":
-            err_L1 = float(spl[1]);
+        if spl[0] == "errAbs":
+            err_Abs = float(spl[1]);
             continue;
-        if spl[0] == "errL2":
-            err_L2 = float(spl[1]);
+        if spl[0] == "errReal":
+            err_Real = float(spl[1]);
             continue;
-        if spl[0] == "errLinf":
-            err_Linf = float(spl[1]);
+        if spl[0] == "errImag":
+            err_Imag = float(spl[1]);
+            continue;
+        if spl[0] == "errPhase":
+            err_Phase = float(spl[1]);
             continue;
 
-    if err_L1 < 0:
-        print("ERROR: err_L1 not found in " + path);
+    if err_Abs < 0:
+        print("ERROR: err_Abs not found in " + path);
         sys.exit();
-    if err_L2 < 0:
-        print("ERROR: err_L2 not found in " + path);
-    if err_Linf < 0:
-        print("ERROR: err_Linf not found in " + path);
+    if err_Real < 0:
+        print("ERROR: err_Real not found in " + path);
+    if err_Imag < 0:
+        print("ERROR: err_Imag not found in " + path);
+    if err_Phase < 0:
+        print("ERROR: err_Phase not found in " + path);
 
-    return err_L1, err_L2, err_Linf
+    return err_Abs, err_Real, err_Imag, err_Phase
 
 
 path_simulations = sys.argv[1];
@@ -96,22 +102,24 @@ for job1 in list_jobs:
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             nb_not_found_files = 0;
             for f in list_files:
-                err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
+                err_Abs_1, err_Real_1, err_Imag_1, err_Phase_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                 if not os.path.exists(path_simulations + "/" + job2 + "/" + f):
                     nb_not_found_files += 1;
                     continue;
-                err_L1_2, err_L2_2, err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
+                err_Abs_2, err_Real_2, err_Imag_2, err_Phase_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
                 ###print(err_L1_1, err_L1_2);
                 ###print(err_L1_2, err_L2_2);
                 ###print(err_Linf_1, err_Linf_2);
                 ###print("");
-                err_Linf = np.abs(err_Linf_1 - err_Linf_2);
-                err_L1 = np.abs(err_L1_1 - err_L1_2);
-                err_L2 = np.abs(err_L2_1 - err_L2_2);
-                assert err_Linf < small, (err_Linf_1, err_Linf_2, np.abs(err_Linf_1 - err_Linf_2), f, job1, job2);
-                assert err_L1 < small, (err_L1_1, err_L1_2, f);
-                assert err_L2 < small, (err_L2_1, err_L2_2, f);
-                max_diff = np.max([max_diff, err_Linf, err_L1, err_L2]);
+                err_Abs = np.abs(err_Abs_1 - err_Abs_2);
+                err_Real = np.abs(err_Real_1 - err_Real_2);
+                err_Imag = np.abs(err_Imag_1 - err_Imag_2);
+                err_Phase = np.abs(err_Phase_1 - err_Phase_2);
+                assert err_Abs < small, (err_Abs_1, err_Abs_2, np.abs(err_Abs_1 - err_Abs_2), f, job1, job2);
+                assert err_Real < small, (err_Real_1, err_Real_2, f);
+                assert err_Imag < small, (err_Imag_1, err_Imag_2, f);
+                assert err_Phase < small, (err_Phase_1, err_Phase_2, f);
+                max_diff = np.max([max_diff, err_Abs, err_Real, err_Imag, err_Phase]);
             print("     -> Number of files not found in both jobs: " + str(nb_not_found_files));
             print("     -> Max diff between errors: " + str(max_diff));
             print("                                             -> OK");

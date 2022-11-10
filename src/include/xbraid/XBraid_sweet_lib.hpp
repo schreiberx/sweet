@@ -950,7 +950,6 @@ public:
 		SphereData_Spectral t0_prog_div(sphereDataConfig[0]);
 	#endif
 
-
 		if( i_t == this->tstart )
 		{
 			////std::cout << "Setting initial solution " << std::endl;
@@ -965,7 +964,7 @@ public:
 				getline(all_u0, str, ',');
 				u0_input.push_back(atof(str.c_str()));
 			}
-			if ( u0.size() != N_ode )
+			if ( u0_input.size() != N_ode )
 				SWEETError("Initial solution must contain N_ode values!");
 
 			for (std::size_t i = 0; i < N_ode; i++)
@@ -996,7 +995,6 @@ public:
 			for (std::size_t i = 0; i < N_ode; i++)
 				u0.set(i, std::complex<double>(u0_real[i], u0_imag[i]));
 
-				/////u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
 		#endif
 
 	#elif SWEET_XBRAID_PLANE
@@ -1104,7 +1102,7 @@ public:
 		{
 			///std::cout << "Setting random solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
-			u0 = ((double)braid_Rand())/braid_RAND_MAX;
+			u0 = (double)braid_Rand()/(double)braid_RAND_MAX;
 			///////U->data->dataArrays_to_GenericData_Scalar(u0);
 	#elif SWEET_XBRAID_PLANE
 
@@ -1194,7 +1192,7 @@ public:
 			///std::cout << "Setting zero solution " << std::endl;
 			/* Sets U as an all zero vector*/
 	#if SWEET_XBRAID_SCALAR
-			u0 = 0;
+			u0 = 1;
 			////U->data->dataArrays_to_GenericData_Scalar(u0);
 	#elif SWEET_XBRAID_PLANE
 		#if SWEET_XBRAID_PLANE_SWE
@@ -1359,9 +1357,11 @@ public:
 				this->simVars->iodata.output_each_sim_seconds < 0 ||
 				std::abs(t) < small ||
 				std::abs(t - this->simVars->timecontrol.max_simulation_time) < small ||
-				fmod(t, this->simVars->iodata.output_each_sim_seconds) == 0
+				std::abs(fmod(t, this->simVars->iodata.output_each_sim_seconds)) < small ||
+				std::abs(fmod(t, this->simVars->iodata.output_each_sim_seconds) - this->simVars->iodata.output_each_sim_seconds) < small
 			)
 				do_output = true;
+			///std::cout << t << " " << this->simVars->iodata.output_each_sim_seconds << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
 
 			////if (do_output)
 			////	std::cout << "AAA " << t << " " << it << " " <<  t * simVars->iodata.output_time_scale << " " << this->simVars->iodata.output_each_sim_seconds << " " << fmod(t, this->simVars->iodata.output_each_sim_seconds) << " " << do_output << std::endl;
@@ -1602,8 +1602,8 @@ public:
 					this->sol_prev[level][time_id]->data->serialize(level_buffer_data);
 					std::copy(&level_buffer_data[0], &level_buffer_data[s], &dbuffer[s2]);
 					s2 += s;
-					actual_size_buffer += s * sizeof(std::complex<double>);
-					MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
+					///actual_size_buffer += s * sizeof(std::complex<double>);
+					///MemBlockAlloc::free(level_buffer_data, s * sizeof(std::complex<double>));
 
 	#if SWEET_XBRAID_SCALAR
 					actual_size_buffer += s * sizeof(typename_scalar);

@@ -778,6 +778,7 @@ public:
 		return *this;
 	}
 
+#if SWEET_SCALAR_COMPLEX
 	/**
 	 * Compute multiplication with scalar
 	 */
@@ -794,7 +795,7 @@ public:
 
 		return *this;
 	}
-
+#endif
 
 
 	/**
@@ -812,6 +813,7 @@ public:
 		return *this;
 	}
 
+#if SWEET_SCALAR_COMPLEX
 	/**
 	 * Compute division with scalar
 	 */
@@ -826,7 +828,7 @@ public:
 		);
 		return *this;
 	}
-
+#endif
 
 
 	/**
@@ -916,6 +918,7 @@ public:
 		return out;
 	}
 
+#if SWEET_SCALAR_COMPLEX
 	/**
 	 * Compute element-wise subtraction
 	 */
@@ -932,7 +935,7 @@ public:
 
 		return out;
 	}
-
+#endif
 
 	/**
 	 * Compute sine
@@ -1097,6 +1100,7 @@ public:
 		return out;
 	}
 
+#if SWEET_SCALAR_COMPLEX
 	/**
 	 * Compute multiplication with a scalar
 	 */
@@ -1113,7 +1117,7 @@ public:
 
 		return out;
 	}
-
+#endif
 
 	/**
 	 * Compute element-wise division
@@ -1132,6 +1136,7 @@ public:
 		return out;
 	}
 
+#if SWEET_SCALAR_COMPLEX
 	/**
 	 * Compute element-wise division
 	 */
@@ -1148,7 +1153,7 @@ public:
 
 		return out;
 	}
-
+#endif
 
 	/**
 	 * Print data
@@ -1236,6 +1241,7 @@ ScalarDataArray operator*(
  * Otherwise, we'd have to write it as arrayData*1.5
  *
  */
+#if SWEET_SCALAR_COMPLEX
 inline
 static
 ScalarDataArray operator*(
@@ -1245,6 +1251,7 @@ ScalarDataArray operator*(
 {
 	return ((ScalarDataArray&)i_array_data)*i_value;
 }
+#endif
 
 /**
  * operator to support operations such as:
@@ -1294,6 +1301,8 @@ ScalarDataArray operator/(
 	return i_array_data.valueDivThis(i_value);
 }
 
+
+#if SWEET_SCALAR_COMPLEX
 inline
 static
 ScalarDataArray operator/(
@@ -1303,6 +1312,7 @@ ScalarDataArray operator/(
 {
 	return i_array_data.valueDivThis(i_value);
 }
+#endif
 
 /*
  * Namespace to use for convenient sin/cos/pow/... calls

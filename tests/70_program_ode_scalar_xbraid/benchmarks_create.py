@@ -19,26 +19,34 @@ from mule_local.SWEETRuntimeParametersScenarios import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 
+orders = {};
+orders["l_irk_n_erk"] = 2;
+orders["ln_erk"] = 2;
+orders["l_cn_n_settls"] = 2;
+orders["l_exp_n_etdrk"] = 2;
+
 
 ####tsm_ref = "ln_erk";
 
 simulation_to_run = sys.argv[1];
-itest = int(sys.argv[2]);
-tsm_fine = sys.argv[3];
-tsm_coarse = sys.argv[4];
-nb_pt = int(sys.argv[5]);
+model = sys.argv[2];
+itest = int(sys.argv[3]);
+tsm_fine = sys.argv[4];
+tsm_coarse = sys.argv[5];
+nb_pt = int(sys.argv[6]);
 
 if (itest == 5 or itest == 6):
-    online_error = int(sys.argv[6])
+    online_error = int(sys.argv[7])
 
     if online_error:
-        path_fine = sys.argv[7];
+        path_fine = sys.argv[8];
+
 ###    path_ref = sys.argv[5];
 
 #Create main compile/run options
 jg = JobGeneration()
 
-jg.compile.scalar_type = "complex"
+####jg.compile.scalar_type = "complex"
 
 #Get Earth parameters (if necessary)
 earth = EarthMKSDimensions()
@@ -50,6 +58,7 @@ earth = EarthMKSDimensions()
 jg.compile.program = "parareal_ode"
 jg.compile.mode = "debug"
 jg.compile.sweet_mpi = "enable"
+jg.runtime.ode_model = model;
 
 # Verbosity mode
 jg.runtime.verbosity = 3
@@ -62,7 +71,28 @@ jg.compile.sphere_spectral_dealiasing = "enable";
 # 14: Steady diagonal benchmark
 #
 #jg.runtime.bench_id = 1
-jg.runtime.benchmark_name = "unstablejet"
+##jg.runtime.benchmark_name = "unstablejet"
+if model == "ode1":
+    jg.compile.scalar_type = "double"
+    jg.compile.N_ode = 1
+    jg.runtime.function_param_y0_real = 0.123
+    jg.runtime.function_param_y0_imag = 0.
+    jg.runtime.function_param_L = 1.
+    jg.runtime.function_param_N = 1.
+elif model == "SWE_triad":
+    jg.compile.scalar_type = "complex"
+    jg.compile.N_ode = 3
+    y01 = 0.75
+    y02 = 1.0
+    y03 = 0.
+    jg.runtime.function_param_y0_real = "{y01:.32f},{y02:.32f},{y03:.32f}".format(y01 = y01.real, y02 = y02.real, y03 = y03.real)
+    jg.runtime.function_param_y0_imag = "{y01:.32f},{y02:.32f},{y03:.32f}".format(y01 = y01.imag, y02 = y02.imag, y03 = y03.imag)
+    jg.runtime.function_param_L = "-2.3169272638598764,2.285662617093631,-0.05017777332080157"
+    jg.runtime.function_param_N = "0.23644915578412212,-0.2359816957698708,0.005172082005927391"
+    jg.runtime.function_param_extra = "-2.3169272638598764,2.285662617093631,-0.05017777332080157,0.24874903565537898" ## omega1, omega2, omega3, S123
+else:
+    sys.exit("Invalid model: " + model);
+
 
 #
 # Compute error or difference to initial data
@@ -94,6 +124,9 @@ jg.runtime.output_timestep_size = .1
 timestep_size_reference = 0.001
 timestep_size_fine = 0.005
 jg.runtime.timestep_size = timestep_size_fine
+jg.runtime.timestepping_method = tsm_fine
+jg.runtime.timestepping_order = orders[tsm_fine]
+jg.runtime.timestepping_order2 = orders[tsm_fine]
 jg.runtime.space_res_spectral = 32
 cfactors = [2, 4, 8];
 nbs_levels = [2, 4];
@@ -104,7 +137,7 @@ if simulation_to_run == "xbraid":
     jg.compile.xbraid = "mpi";
     jg.runtime.xbraid_enabled = 1;
     jg.runtime.xbraid_max_levels = 3
-    jg.runtime.xbraid_skip = 0
+    jg.runtime.xbraid_skip = 1
     jg.runtime.xbraid_min_coarse = 2
     jg.runtime.xbraid_nrelax = 1
     jg.runtime.xbraid_nrelax0 = -1
@@ -203,7 +236,7 @@ if simulation_to_run == "xbraid":
             jg.runtime.parareal_enabled = 0;
             jg.runtime.parareal_max_iter = jg.runtime.xbraid_max_iter;
             jg.runtime.xbraid_access_level = 2;
-            jg.runtime.xbraid_store_iterations = 0;
+            jg.runtime.xbraid_store_iterations = 1;
             jg.runtime.xbraid_load_fine_csv_files = 1;
             jg.runtime.xbraid_path_fine_csv_files = path_fine;
             jg.runtime.xbraid_max_levels = 2;
@@ -220,11 +253,11 @@ if simulation_to_run == "xbraid":
             jg.runtime.parareal_enabled = 1;
             jg.runtime.parareal_max_iter = jg.runtime.xbraid_max_iter;
             jg.runtime.parareal_coarse_timestepping_method = tsm_coarse
-            jg.runtime.parareal_coarse_timestepping_order = 1
-            jg.runtime.parareal_coarse_timestepping_order2 = 1
+            jg.runtime.parareal_coarse_timestepping_order = 2
+            jg.runtime.parareal_coarse_timestepping_order2 = 2
             jg.runtime.parareal_load_fine_csv_files = 1;
             jg.runtime.parareal_path_fine_csv_files = path_fine;
-            jg.runtime.parareal_store_iterations = 0;
+            jg.runtime.parareal_store_iterations = 1;
             jg.runtime.parareal_coarse_timestep_size = -1
             jg.runtime.parareal_coarse_slices = int(jg.runtime.max_simulation_time / (timestep_size_fine * cfactor) );
             jg.gen_jobscript_directory();

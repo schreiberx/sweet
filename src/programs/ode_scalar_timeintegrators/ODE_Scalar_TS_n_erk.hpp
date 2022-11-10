@@ -28,7 +28,7 @@ public:
 		:
 		simVars(i_simVars)
 	{
-		setup(simVars.disc.timestepping_order);
+		///setup(simVars.disc.timestepping_order);
 	}
 
 	void setup(

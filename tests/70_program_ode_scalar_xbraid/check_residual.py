@@ -57,11 +57,14 @@ def read_check_residuals_C_points(path):
             spl = line.split();
             niter = int(spl[2][2:]);
 
-            ## check the follozing 2 * niter lines have residual equal to zero
+            ## check the following 2 * niter lines have residual equal to zero
             if len(lines[iline + 1]) > 1:
                 print(" -- Checking C-points residuals at iter", niter);
                 for j in range(iline + 1, iline + 1 + 2 * niter):
                     spl = lines[j].split();
+                    print(spl)
+                    if 'reached.' in spl: ## max iterations reached
+                        break;
                     res = float(spl[5]);
                     print(res)
                     assert res == 0.;

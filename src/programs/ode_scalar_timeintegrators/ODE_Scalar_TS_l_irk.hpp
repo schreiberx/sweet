@@ -27,7 +27,7 @@ public:
 		)
 		: simVars(i_simVars)
 	{
-		this->setup(simVars.disc.timestepping_order);
+		///this->setup(simVars.disc.timestepping_order);
 	}
 
 	void setup(
@@ -37,7 +37,7 @@ public:
 		timestepping_order = i_order;
 
 		if (timestepping_order != 2)
-			SWEETError("ODE_Scalar_TS_l_irk: Only 1st order IRK is supported. Please set --timestepping-order 1.");
+			SWEETError("ODE_Scalar_TS_l_irk: Only 2nd order IRK is supported. Please set --timestepping-order 2.");
 	}
 
 	void setup(

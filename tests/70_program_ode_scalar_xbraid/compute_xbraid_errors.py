@@ -69,16 +69,28 @@ def read_xbraid_solution_compute_store_errors(path, ref_sol, ref_type):
         ###assert nx == nx_ref;
         ###assert ny == ny_ref;
 
-        err_L1 = np.sum(np.abs(sol - ref));
-        err_L2 = np.sqrt(np.sum(np.abs(sol - ref)**2));
-        err_Linf = np.max(np.abs(sol - ref));
+        err_Abs = np.abs(sol - ref);
+        err_Real = np.abs(sol.real - ref.real);
+        err_Imag = np.abs(sol.imag - ref.imag);
+        err_Phase = np.abs(np.angle(sol) - np.angle(ref));
+
+        small = 1e-14;
+        if np.abs(ref) > small:
+            err_Abs /= np.abs(ref);
+        if np.abs(ref.real) > small:
+            err_Real /= np.abs(ref.real);
+        if np.abs(ref.imag) > small:
+            err_Imag /= np.abs(ref.imag);
+        if np.abs(np.angle(ref)) > small:
+            err_Phase /= np.abs(np.angle(ref));
 
         dirname = f.split("/")[0];
 
         error_file = open(dirname + "/xbraid_error_" + ref_type + "_" + os.path.basename(f)[7:], "w");
-        error_file.write("errL1 {}\n".format(err_L1));
-        error_file.write("errL2 {}\n".format(err_L2));
-        error_file.write("errLinf {}".format(err_Linf));
+        error_file.write("errAbs {}\n".format(err_Abs));
+        error_file.write("errReal {}\n".format(err_Real));
+        error_file.write("errImag {}\n".format(err_Imag));
+        error_file.write("errPhase {}".format(err_Phase));
         error_file.close();
 
 

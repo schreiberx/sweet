@@ -391,12 +391,60 @@ public:
 		///reset();
 
 #if SWEET_PARAREAL_SCALAR
+		ScalarDataArray u0;
+		u0.setup(N_ode);
+
 		#if !SWEET_SCALAR_COMPLEX
-				typename_scalar u0 = atof(simVars->bogus.var[1].c_str());
+
+			std::vector<double> u0_input = {};
+			std::stringstream all_u0 = std::stringstream(simVars->bogus.var[1].c_str());
+			while (all_u0.good())
+			{
+				std::string str;
+				getline(all_u0, str, ',');
+				u0_input.push_back(atof(str.c_str()));
+			}
+			if ( u0_input.size() != N_ode )
+				SWEETError("Initial solution must contain N_ode values!");
+
+			for (std::size_t i = 0; i < N_ode; i++)
+				u0.set(i, u0_input[i]);
+
+				////u0 = atof(simVars->bogus.var[1].c_str());
 		#else
-				typename_scalar u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
+
+			std::vector<double> u0_real = {};
+			std::vector<double> u0_imag = {};
+			std::stringstream all_u0_real = std::stringstream(simVars->bogus.var[1].c_str());
+			std::stringstream all_u0_imag = std::stringstream(simVars->bogus.var[2].c_str());
+			while (all_u0_real.good())
+			{
+				std::string str;
+				getline(all_u0_real, str, ',');
+				u0_real.push_back(atof(str.c_str()));
+			}
+			while (all_u0_imag.good())
+			{
+				std::string str;
+				getline(all_u0_imag, str, ',');
+				u0_imag.push_back(atof(str.c_str()));
+			}
+			if ( ! ( ( u0_real.size() == N_ode ) && ( u0_imag.size() == N_ode ) ) )
+				SWEETError("Initial solution must contain N_ode values!");
+
+			for (std::size_t i = 0; i < N_ode; i++)
+				u0.set(i, std::complex<double>(u0_real[i], u0_imag[i]));
+
 		#endif
+
+
+		/////#if !SWEET_SCALAR_COMPLEX
+		/////		typename_scalar u0 = atof(simVars->bogus.var[1].c_str());
+		/////#else
+		/////		typename_scalar u0 = std::complex<double>(atof(simVars->bogus.var[1].c_str()), atof(simVars->bogus.var[2].c_str()));
+		/////#endif
 		this->parareal_data_start->dataArrays_to_GenericData_Scalar(u0);
+
 
 #elif SWEET_PARAREAL_PLANE
 		PlaneData_Spectral t0_prog_h_pert(planeDataConfig[0]);
