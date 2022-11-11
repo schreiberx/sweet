@@ -114,6 +114,25 @@ Changelog
 \end_layout
 
 \begin_layout Section
+Spherical harmonics
+\end_layout
+
+\begin_layout Standard
+Using spherical harmonics, we work with a lat-lon grid.
+\end_layout
+
+\begin_layout Standard
+\align center
+\begin_inset Graphics
+	filename sphere_lon_lat.pdf
+	scale 45
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
 Velocity-based formulation (Advective form)
 \end_layout
 

@@ -1,5 +1,5 @@
-#LyX 2.2 created this file. For more info see http://www.lyx.org/
-\lyxformat 508
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
 \begin_document
 \begin_header
 \save_transient_properties true
@@ -24,6 +24,8 @@
 \font_osf false
 \font_sf_scale 100 100
 \font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -53,6 +55,7 @@
 \suppress_date false
 \justification true
 \use_refstyle 0
+\use_minted 0
 \index Index
 \shortcut idx
 \color #008000
@@ -61,7 +64,10 @@
 \tocdepth 3
 \paragraph_separation indent
 \paragraph_indentation default
-\quotes_language english
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
 \papercolumns 1
 \papersides 1
 \paperpagestyle default
@@ -75,7 +81,8 @@
 \begin_body
 
 \begin_layout Title
-Understanding the Rational Approximation of the Exponential Integrator (REXI)
+Understanding Terry's Rational Approximation of the Exponential Integrator
+ (T-REXI)
 \end_layout
 
 \begin_layout Author
@@ -88,8 +95,8 @@ Martin Schreiber <M.Schreiber@exeter.ac.uk>
 \end_layout
 
 \begin_layout Standard
-This document serves as the basis for implementing the Rational approximation
- of the EXponential Integrator (REXI).
+This document serves as the basis for implementing Terry's Rational approximatio
+n of the EXponential Integrator (T-REXI).
  Here, we purely focus on the linear part of the shallow-water equations
  (SWE) and show the different steps to approximate solving this linear part
  with an exponential integrator.
@@ -114,6 +121,7 @@ We use linearised shallow water equations (SWE) with respect to a rest state
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Schreiber:Formulations of the shallow-water equations"
+literal "true"
 
 \end_inset
 
@@ -182,6 +190,7 @@ see e.g.
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix"
+literal "true"
 
 \end_inset
 
@@ -192,6 +201,7 @@ key "Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix"
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Schreiber:Formulations of the shallow-water equations"
+literal "true"
 
 \end_inset
 
@@ -210,6 +220,7 @@ Terry et al.
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Terry:High-order time-parallel approximation of evolution operators"
+literal "true"
 
 \end_inset
 
@@ -396,6 +407,7 @@ where the
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Terry:High-order time-parallel approximation of evolution operators"
+literal "true"
 
 \end_inset
 
@@ -545,6 +557,7 @@ The second step is the approximation of the basis function
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Damle:Near optimal rational approximations of large data sets"
+literal "true"
 
 \end_inset
 
@@ -587,6 +600,7 @@ with the
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Damle:Near optimal rational approximations of large data sets"
+literal "true"
 
 \end_inset
 
@@ -607,6 +621,7 @@ The theory of how these coefficients are calculated are in
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Damle:Near optimal rational approximations of large data sets"
+literal "true"
 
 \end_inset
 
@@ -787,6 +802,7 @@ for complex values of
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Terry:High-order time-parallel approximation of evolution operators"
+literal "true"
 
 \end_inset
 
@@ -2016,6 +2032,7 @@ This is also shows (see Sec.
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Terry:High-order time-parallel approximation of evolution operators"
+literal "true"
 
 \end_inset
 
@@ -2400,6 +2417,7 @@ Some important points about the choice of
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Terry:High-order time-parallel approximation of evolution operators"
+literal "true"
 
 \end_inset
 
@@ -4463,6 +4481,7 @@ To ensure that the REXI is bounded by unit, a filtering process is proposed
 \begin_inset CommandInset citation
 LatexCommand cite
 key "Terry:High-order time-parallel approximation of evolution operators"
+literal "true"
 
 \end_inset
 
@@ -4607,6 +4626,7 @@ Thanks to Terry for the feedback & discussions!
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "Schreiber:Formulations of the shallow-water equations"
+literal "true"
 
 \end_inset
 
@@ -4619,6 +4639,7 @@ Formulations of the shallow-water equations, M.
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "Terry:High-order time-parallel approximation of evolution operators"
+literal "true"
 
 \end_inset
 
@@ -4630,6 +4651,7 @@ High-order time-parallel approximation of evolution operators, T.
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "Moler:Nineteen Dubious Ways to Compute the Exponential of a Matrix"
+literal "true"
 
 \end_inset
 
@@ -4641,6 +4663,7 @@ Nineteen Dubious Ways to Compute the Exponential of a Matrix, Twenty-Five
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "Damle:Near optimal rational approximations of large data sets"
+literal "true"
 
 \end_inset
 
