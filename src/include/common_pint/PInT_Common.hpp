@@ -1111,6 +1111,11 @@ public:
 			nvar += 5;
 #endif
 
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+		double err_delta_phase;
+		double delta_phase = 0.;
+		double delta_phase_ref = 0.;
+#endif
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
@@ -1219,10 +1224,25 @@ public:
 				double phase = atan2(data.imag(), data.real());
 				double phase_ref = atan2(data_ref.imag(), data_ref.real());
 				err_phase = std::abs( phase - phase_ref ) / std::abs( phase_ref );
+
+				if (ivar == N_ode - 1)
+				{
+					delta_phase += phase;
+					delta_phase_ref += phase_ref;
+				}
+				else
+				{
+					delta_phase -= phase;
+					delta_phase_ref -= phase_ref;
+				}
+
+				if (ivar == N_ode - 1)
+					err_delta_phase = std::abs(delta_phase - delta_phase_ref) / std::abs(delta_phase_ref);
 #else
 				err_real = std::abs(data - data_ref) / std::abs(data_ref);
 				err_imag = 0.;
 				err_phase = 0.;
+				err_delta_phase = 0.;
 #endif
 			}
 			////err_L1 = err;
@@ -1330,6 +1350,8 @@ public:
 				file << "errImag " << err_imag << std::endl;
 				file << "errPhase " << err_phase << std::endl;
 			}
+			if (ivar == N_ode - 1)
+				file << "errDeltaPhase " << err_delta_phase << std::endl;
 #else
 			file << "errL1 " << err_L1 << std::endl;
 			file << "errL2 " << err_L2 << std::endl;
