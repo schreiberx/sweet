@@ -267,33 +267,35 @@ which leads to
 \begin_layout Standard
 Using
 \begin_inset Formula 
-\[
-\alpha(\theta)=-\left(R\exp(i\theta)+\mu\right)
-\]
-
-\end_inset
-
-and
-\begin_inset Formula 
-\[
-\beta(\theta)=-\psi(R\exp(i\theta)+\mu)\left(iR\exp(i\theta)\right)
-\]
+\begin{align*}
+\alpha(\theta) & =\left(R\exp(i\theta)+\mu\right)\\
+\beta(\theta) & =-\psi(R\exp(i\theta)+\mu)\left(R\exp(i\theta)\right)
+\end{align*}
 
 \end_inset
 
 we can write
 \begin_inset Formula 
 \[
-\frac{1}{2\pi i}\ointop_{0}^{2\pi}\frac{\beta(\theta)}{x+\alpha(\theta)}d\theta.
+\frac{1}{2\pi}\ointop_{0}^{2\pi}\frac{\beta(\theta)}{x-\alpha(\theta)}d\theta.
 \]
 
 \end_inset
 
-A discretization of the contour integral leads to
+A discretization of the contour integral with a trapezoidal rule leads to
 \begin_inset Formula 
 \[
-\frac{1}{N}\sum_{n=1}^{N}\frac{\beta_{n}}{x+\alpha_{n}},
+\sum_{n=1}^{N}\frac{\beta_{n}}{x-\alpha_{n}}
 \]
+
+\end_inset
+
+with
+\begin_inset Formula 
+\begin{align*}
+\alpha(\theta_{n}) & =\left(R\exp(i\theta_{n})+\mu\right)\\
+\beta(\theta_{n}) & =-\frac{1}{N}\psi(R\exp(i\theta_{n})+\mu)\left(R\exp(i\theta_{n})\right).
+\end{align*}
 
 \end_inset
 
@@ -500,7 +502,7 @@ and the alphas by
 \begin_layout Standard
 \begin_inset Formula 
 \[
-\alpha(\theta)=-\left(R\exp(i\theta)+\mu\right)
+\alpha(\theta)=\left(R\exp(i\theta)+\mu\right)
 \]
 
 \end_inset
@@ -510,7 +512,7 @@ and the alphas by
 
 \begin_layout Standard
 Hence, the quadrature points are given by 
-\begin_inset Formula $-\alpha_{n}$
+\begin_inset Formula $\alpha_{n}$
 \end_inset
 
 .
@@ -547,66 +549,82 @@ For a radius > 10, the Cauchy contour integration suffers increasingly from
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[0] = (-2585.75,-2120.81)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[1] = (1344.27,-2563.9)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[2] = (2100.59,553.566)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[3] = (3.77547,1416.9)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[4] = (-767.79,247.343)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[5] = (-254.154,-312.771)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[6] = (76.3302,-160.693)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[7] = (69.6664,-6.12502)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[8] = (16.2192,18.6306)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[9] = (-0.930128,7.85576)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[10] = (-1.71593,1.55317)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[11] = (-0.613435,0.0849086)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[12] = (-0.138315,-0.0537611)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[13] = (-0.0156466,-0.0254132)
 \end_layout
 
 \begin_layout Verbatim
+
 beta_re[14] = (0.00955142,-0.00808595)
 \end_layout
 
 \begin_layout Verbatim
+
 ...
 \end_layout
 
