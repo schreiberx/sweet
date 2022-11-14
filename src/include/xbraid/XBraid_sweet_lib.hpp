@@ -248,6 +248,9 @@ public:
 	// Custom time grid
 	std::vector<double> custom_time_steps = {};
 
+	int nlevels = -1;
+
+	braid_Core core;
 
 public:
 
@@ -409,6 +412,10 @@ public:
 		///i_core.SetMaxRefinements(this->simVars->xbraid.xbraid_max_Refinements);
 
 		i_core.SetTimeGrid(sweet_BraidApp::sweet_TimeGrid);
+
+
+		this->core = (braid_Core&)i_core;
+
 
 		///this->setup_timesteppers();
 		this->setup();
@@ -694,11 +701,11 @@ private:
 		this->first_timeid_level[i_level] = std::min(first_timeid_level[i_level], i_time_id);
 		this->last_timeid_level[i_level] = std::max(last_timeid_level[i_level], i_time_id);
 
-		if (i_time_id < 3 && i_level == 0)
-		{
-			std::cout << "STORING SOLUTION AT t = " << i_time_id << std::endl;
-			i_U->data->physical_print();
-		}
+		/////if (i_time_id < 3 && i_level == 0)
+		/////{
+		/////	std::cout << "STORING SOLUTION AT t = " << i_time_id << std::endl;
+		/////	i_U->data->physical_print();
+		/////}
 
 	}
 
@@ -707,7 +714,8 @@ private:
 	void set_prev_solution(
 					sweet_BraidVector* i_U,
 					int i_time_id,
-					int i_level
+					int i_level,
+					int i_iter
 				)
 	{
 
@@ -724,26 +732,30 @@ private:
 			prev_sol_exists = false;
 		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
 			prev_sol_exists = false;
+		////std::cout << this->sol_prev_iter[i_level][i_time_id] << " " << i_iter << std::endl;
 
 		///if (i_level < 3)
+		///if (this->sol_prev_iter[i_level][i_time_id] == i_iter)
+		///if (i_level < this->nlevels - 1)
+		////if (i_time_id % (int)this->simVars->xbraid.xbraid_cfactor == 0);
 			prev_sol_exists = false;
 
-		if (i_time_id - 1 < 3 && i_level == 0)
-		{
-			std::cout << "SETTING SOLUTION AT t = " << i_time_id - 1 << std::endl;
-			std::cout << "prev_sol_exists = " << prev_sol_exists << std::endl;
-		}
+		////if (i_time_id - 1 < 3 && i_level == 0)
+		////{
+		////	std::cout << "SETTING SOLUTION AT t = " << i_time_id - 1 << std::endl;
+		////	std::cout << "prev_sol_exists = " << prev_sol_exists << std::endl;
+		////}
 		if (prev_sol_exists)
 		{
 			this->timeSteppers[i_level]->master->set_previous_solution(this->sol_prev[i_level][i_time_id - 1]->data);
-			if (i_time_id - 1 < 3 && i_level == 0)
-				this->sol_prev[i_level][i_time_id - 1]->data->physical_print();
+			//if (i_time_id - 1 < 3 && i_level == 0)
+			//	this->sol_prev[i_level][i_time_id - 1]->data->physical_print();
 		}
 		else
 		{
 			this->timeSteppers[i_level]->master->set_previous_solution(i_U->data);
-			if (i_time_id - 1 < 3 && i_level == 0)
-				i_U->data->physical_print();
+			//if (i_time_id - 1 < 3 && i_level == 0)
+			//	i_U->data->physical_print();
 		}
 	}
 
@@ -780,7 +792,18 @@ public:
 			}
 
 			this->setup_timesteppers();
+
+			io_status.GetNLevels(&this->nlevels);
 		}
+
+		/////braid_SyncStatus _sstatus = (braid_SyncStatus)this->core;
+		/////BraidSyncStatus sstatus(_sstatus);
+		/////int lower;
+		/////int upper;
+		/////std::cout << "AAAAAAAAAA " << 0 << " " << lower << " " << upper << std::endl;
+		/////sstatus.GetTIUL(&lower, &upper, 0);
+		/////std::cout << "AAAAAAAAAA " << 0 << " " << lower << " " << upper << std::endl;
+
 
 
 
@@ -800,6 +823,7 @@ public:
 		io_status.GetNLevels(&nlevels);
 		io_status.GetTIndex(&time_id);
 		io_status.GetIter(&iter);
+
 
 		// Vector defined in the current level (defined via interpolation if necessary)
 		sweet_BraidVector* U_level = this->create_new_vector(level);
@@ -826,12 +850,12 @@ public:
 				///this->sol_prev[level].push_back(this->create_new_vector());
 		}
 
-		if (time_id < 3 && level == 2)
-		{
-			std::cout << std::endl << std::endl;
-			if (level == 1)
-				std::cout << "PREV SOLUTION iter " << iter << std::endl;
-		}
+		/////if (time_id < 3 && level == 2)
+		/////{
+		/////	std::cout << std::endl << std::endl;
+		/////	if (level == 1)
+		/////		std::cout << "PREV SOLUTION iter " << iter << std::endl;
+		/////}
 
 
 
@@ -846,7 +870,7 @@ public:
 			this->store_prev_solution(U_level, time_id, level, iter);
 
 		// set prev solution for SL
-		this->set_prev_solution(U_level, time_id, level);
+		this->set_prev_solution(U_level, time_id, level, iter);
 
 
 

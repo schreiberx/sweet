@@ -808,8 +808,8 @@ public:
 				ScalarDataArray tmp;
 				tmp.setup(N_ode);
 
-				std::cout << path_ref << std::endl;
-				std::cout << "loading DATA from " << buffer2 << std::endl;
+				////std::cout << path_ref << std::endl;
+				////std::cout << "loading DATA from " << buffer2 << std::endl;
 				std::ifstream file(buffer2);
 				int i = 0;
 				while (true)
@@ -843,7 +843,7 @@ public:
 					else if (i >= 3)
 					{
 						assert(str_vector.size() == 1);
-						std::cout << str_vector[0] << std::endl;
+						///std::cout << str_vector[0] << std::endl;
 #if !SWEET_SCALAR_COMPLEX
 						tmp.set(i - 3, stod(str_vector[0]));
 #else
@@ -887,7 +887,7 @@ public:
 								std::istream_iterator<std::string>());
 
 							assert(str_vector0.size() == 1);
-							std::cout << str_vector0[0] << std::endl;
+							////std::cout << str_vector0[0] << std::endl;
 #if !SWEET_SCALAR_COMPLEX
 							tmp0.set(i - 3, stod(str_vector0[0]));
 #else
