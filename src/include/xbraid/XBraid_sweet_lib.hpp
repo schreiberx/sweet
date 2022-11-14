@@ -694,6 +694,12 @@ private:
 		this->first_timeid_level[i_level] = std::min(first_timeid_level[i_level], i_time_id);
 		this->last_timeid_level[i_level] = std::max(last_timeid_level[i_level], i_time_id);
 
+		if (i_time_id < 3 && i_level == 0)
+		{
+			std::cout << "STORING SOLUTION AT t = " << i_time_id << std::endl;
+			i_U->data->physical_print();
+		}
+
 	}
 
 
@@ -719,12 +725,26 @@ private:
 		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
 			prev_sol_exists = false;
 
-		////prev_sol_exists = false;
+		///if (i_level < 3)
+			prev_sol_exists = false;
 
+		if (i_time_id - 1 < 3 && i_level == 0)
+		{
+			std::cout << "SETTING SOLUTION AT t = " << i_time_id - 1 << std::endl;
+			std::cout << "prev_sol_exists = " << prev_sol_exists << std::endl;
+		}
 		if (prev_sol_exists)
+		{
 			this->timeSteppers[i_level]->master->set_previous_solution(this->sol_prev[i_level][i_time_id - 1]->data);
+			if (i_time_id - 1 < 3 && i_level == 0)
+				this->sol_prev[i_level][i_time_id - 1]->data->physical_print();
+		}
 		else
+		{
 			this->timeSteppers[i_level]->master->set_previous_solution(i_U->data);
+			if (i_time_id - 1 < 3 && i_level == 0)
+				i_U->data->physical_print();
+		}
 	}
 
 public:
@@ -806,11 +826,30 @@ public:
 				///this->sol_prev[level].push_back(this->create_new_vector());
 		}
 
+		if (time_id < 3 && level == 2)
+		{
+			std::cout << std::endl << std::endl;
+			if (level == 1)
+				std::cout << "PREV SOLUTION iter " << iter << std::endl;
+		}
+
+
+
+		////// store solution for SL
+		////this->store_prev_solution(U_level, time_id, level, iter);
+
+		////// set prev solution for SL
+		////this->set_prev_solution(U_level, time_id, level);
+
 		// store solution for SL
-		this->store_prev_solution(U_level, time_id, level, iter);
+		if (time_id == 0)
+			this->store_prev_solution(U_level, time_id, level, iter);
 
 		// set prev solution for SL
 		this->set_prev_solution(U_level, time_id, level);
+
+
+
 
 		// TODO: check if this is thread safe
 		/////this->simVars->timecontrol.current_simulation_time = tstart;
@@ -855,6 +894,12 @@ public:
 			U->data->pad_zeros(*U_level->data);
 		else
 			*U->data = *U_level->data;
+
+
+
+		// store solution for SL
+		this->store_prev_solution(U_level, time_id + 1, level, iter);
+
 
 		/* Tell XBraid no refinement */
 		io_status.SetRFactor(1);

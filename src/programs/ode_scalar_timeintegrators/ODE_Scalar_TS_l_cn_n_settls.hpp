@@ -62,6 +62,14 @@ public:
 #endif
 		}
 
+
+		if (std::abs(i_dt - 0.08)< 1e-10 && i_simulation_timestamp < 0.25)
+		{
+		std::cout << "TIME " << i_simulation_timestamp << " " << i_dt << std::endl;
+		std::cout << "u_prev " << this->u_prev[0] << " " << this->u_prev[1] << " " << this->u_prev[2] << std::endl;
+		std::cout << "u " << io_u[0] << " " << io_u[1] << " " << io_u[2] << std::endl;
+		}
+
 		// Out vars
 		ScalarDataArray u;
 		u.setup(N_ode);
@@ -90,6 +98,11 @@ public:
 
 		// output data
 		io_u = u;
+
+		if (std::abs(i_dt - 0.08)< 1e-5 && i_simulation_timestamp < 0.25)
+		{
+		std::cout << "new u " << io_u[0] << " " << io_u[1] << " " << io_u[2] << std::endl;
+		}
 
 	}
 
