@@ -707,7 +707,7 @@ private:
 		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
 			prev_sol_exists = false;
 
-		if (time_id % this->simVars->xbraid.xbraid_cfactor == 0)
+		if (i_time_id % this->simVars->xbraid.xbraid_cfactor == 0)
 			prev_sol_exists = false;
 
 

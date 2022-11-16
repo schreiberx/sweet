@@ -233,6 +233,7 @@ if simulation_to_run == "xbraid":
     ## xbraid vs parareal
     elif (itest == 7):
 
+        cfactors = [2, 4];
         for cfactor in cfactors:
             ## xbraid with two leves and F-relaxation only
             jg.compile.xbraid = "mpi";

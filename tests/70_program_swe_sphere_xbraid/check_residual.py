@@ -54,8 +54,11 @@ def read_check_residuals_C_points(path):
 
         ## found line before printing C-point residuals
         if "Braid: || r_" in line:
-            spl = line.split();
-            niter = int(spl[2][2:]);
+            ###spl = line.split();
+            ###niter = int(spl[2][2:]);
+            spl = line.split("Braid: ");
+            spl2 = spl[1].split("|| ");
+            niter = int(spl2[1][2:]);
 
             ## check the follozing 2 * niter lines have residual equal to zero
             if len(lines[iline + 1]) > 1:

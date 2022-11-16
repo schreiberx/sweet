@@ -222,6 +222,8 @@ for itest in {-1..7};do
 					done;
 				done;
 
+			mule.benchmark.cleanup_all || exit 1
+
 			done;
 
 			echo "";
@@ -236,6 +238,8 @@ for itest in {-1..7};do
 
 			mule.benchmark.jobs_run_directly || exit 1
 			./compare_online_offline_errors.py . $fine_sim 1
+
+			mule.benchmark.cleanup_all || exit 1
 		done;
 
 	elif [ "$itest" == 7 ]; then
@@ -251,6 +255,8 @@ for itest in {-1..7};do
 
 			mule.benchmark.jobs_run_directly || exit 1
 			./compare_parareal_xbraid_errors.py . $fine_sim 1
+
+			mule.benchmark.cleanup_all || exit 1
 		done;
 
 

@@ -78,8 +78,10 @@ jg.runtime.viscosity = 0.0
 #
 # Time, Mode and Physical resolution
 #
-jg.runtime.max_simulation_time = 3600.
-jg.runtime.output_timestep_size = 180.
+###jg.runtime.max_simulation_time = 3600.
+###jg.runtime.output_timestep_size = 180.
+jg.runtime.max_simulation_time = 720.
+jg.runtime.output_timestep_size = 36.
 
 timestep_size_reference = 18
 timestep_size_fine = 36
@@ -106,7 +108,8 @@ jg.runtime.parareal_coarse_timestepping_order2 = 2;
 ##jg.runtime.parareal_coarse_timestepping_order2 = orders[tsm_coarse]
 
 parareal_coarse_slices = [5, 10];
-parareal_coarse_timesteps = [180, 360, -1]
+##parareal_coarse_timesteps = [180, 360, -1]
+parareal_coarse_timesteps = [36., 72., -1]
 parareal_spatial_coarsening = [0, 1];
 ##parareal_coarse_slices = [4, 6];
 ##parareal_coarse_timesteps = [15.,  30., -1]
