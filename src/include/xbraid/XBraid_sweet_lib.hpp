@@ -1475,7 +1475,8 @@ public:
 		int actual_size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
 
-#if SWEET_XBRAID_SCALAR
+///#if SWEET_XBRAID_SCALAR
+#if 1
 		U->data->serialize(dbuffer);
 #elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
@@ -1548,7 +1549,8 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif
 
-#if SWEET_XBRAID_SCALAR
+///#if SWEET_XBRAID_SCALAR
+#if 1
 		U->data->deserialize(dbuffer);
 #elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
