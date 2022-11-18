@@ -1123,6 +1123,7 @@ public:
 			int resx_data;
 			int resy_data;
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+			double err_L1;
 			double err_abs;
 			double err_real;
 			double err_imag;
@@ -1215,10 +1216,11 @@ public:
 				}
 			}
 
-			err_abs = std::abs( data - data_ref ) / std::abs(data_ref);
+			err_L1 = std::abs( data - data_ref ) / std::abs(data_ref);
 			if (ivar < N_ode)
 			{
 #if SWEET_SCALAR_COMPLEX
+				err_abs = std::abs(std::abs(data) - std::abs(data_ref)) / std::abs(data_ref);
 				err_real = std::abs(data.real() - data_ref.real()) / std::abs(data_ref.real());
 				err_imag = std::abs(data.imag() - data_ref.imag()) / std::abs(data_ref.imag());
 				double phase = atan2(data.imag(), data.real());
@@ -1239,6 +1241,7 @@ public:
 				if (ivar == N_ode - 1)
 					err_delta_phase = std::abs(delta_phase - delta_phase_ref) / std::abs(delta_phase_ref);
 #else
+				err_abs = std::abs(data - data_ref) / std::abs(data_ref);
 				err_real = std::abs(data - data_ref) / std::abs(data_ref);
 				err_imag = 0.;
 				err_phase = 0.;
@@ -1343,9 +1346,10 @@ public:
 			file << "#TIMESLICE " << time_slice_id << std::endl;
 			file << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-			file << "errAbs " << err_abs << std::endl;
+			file << "errL1 " << err_L1 << std::endl;
 			if (ivar < N_ode)
 			{
+				file << "errAbs " << err_abs << std::endl;
 				file << "errReal " << err_real << std::endl;
 				file << "errImag " << err_imag << std::endl;
 				file << "errPhase " << err_phase << std::endl;
