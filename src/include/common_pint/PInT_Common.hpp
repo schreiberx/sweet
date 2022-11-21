@@ -1107,8 +1107,8 @@ public:
 
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 		std::string model = simVars->bogus.var[6];
-		if (model == "SWE_triad" && base_solution == "fine")
-			nvar += 5;
+		/////////////////if (model == "SWE_triad" && base_solution == "fine")
+		/////////////////	nvar += 5;
 #endif
 
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
