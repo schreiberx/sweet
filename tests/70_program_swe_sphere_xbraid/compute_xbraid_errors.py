@@ -136,7 +136,6 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
 
             dirname = f.split("/")[0];
             error_file = open(dirname + "/xbraid_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv", "w");
-            ####print(dirname + "/parareal_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv")
 
             eps_small = 1e-20;
             for rnorm in rnorms:
@@ -149,29 +148,6 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
                 else:
                     err = norm_diff / norm_ref;
                 error_file.write("errLinf {}".format(int(rnorm)) + " {}\n".format(err));
-                ##########if dirname == 'job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_brossby_haurwitz_wave_g09.81_h010000.000_bc81825d38f8a29bb091d02945c479c0' and os.path.basename(f)[7:-5] ==  'prog_phi_pert_t00000000000.07000000_iter001.':
-                ##########    print(error_file)
-                ##########    np.set_printoptions(precision=32, floatmode='fixed')
-                ##########    print(ref)
-                ##########    print(norm_diff, norm_ref, err)
-                ####err2, idx = getMaxAbsRnormWithIndex(diff, rnorm, n_modes - 1);
-                ####print ("AAAA", var, it, t, rnorm, getMaxAbsRnorm(diff, rnorm, n_modes - 1), err2, idx, getMaxAbsRnorm(sol, rnorm, n_modes - 1), getMaxAbsRnorm(ref, rnorm, n_modes - 1), err);
-                ####if "prog_div" in f and it == 4 and np.abs(t - 0.16) < 1e-10 and rnorm < 10:
-                ####    print("DIFF");
-                ####    getMaxAbsRnorm(diff, rnorm, n_modes - 1, verbose = True);
-                ####    print("REF");
-                ####    getMaxAbsRnorm(ref, rnorm, n_modes - 1, verbose = True);
-                ####    print("SOL");
-                ####    getMaxAbsRnorm(sol, rnorm, n_modes - 1, verbose = True);
-            ####    print("DIFF");
-            ####    for i in range(diff.size):
-            ####        print (i, diff[i]);
-            ####    print("REF");
-            ####    for i in range(ref.size):
-            ####        print (i, ref[i]);
-            ####    print("SOL");
-            ####    for i in range(sol.size):
-            ####        print (i, sol[i]);
 
             error_file.close();
 
