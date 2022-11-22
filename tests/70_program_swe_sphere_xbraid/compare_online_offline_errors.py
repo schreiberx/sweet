@@ -124,6 +124,7 @@ for job1 in list_jobs:
             max_diff = -1
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             if file_type == "csv":
+                not_found_files = 0;
                 for f in list_files:
                     if "_spec_" in f:
                         continue;
@@ -142,8 +143,13 @@ for job1 in list_jobs:
                     max_diff = np.max([max_diff, err_Linf, err_L1, err_L2]);
 
             elif file_type == "sweet":
+                not_found_files = 0;
                 for f in list_files:
                     if not "_spec_" in f:
+                        continue;
+
+                    if not os.path.exists(path_simulations + "/" + job2 + "/" + f):
+                        not_found_files += 1;
                         continue;
 
                     err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
@@ -161,6 +167,7 @@ for job1 in list_jobs:
 
 
             print("     -> Max diff between errors: " + str(max_diff));
+            print("     -> Number of files not found in second job: " + str(not_found_files));
             print("                                             -> OK");
             break;
 
