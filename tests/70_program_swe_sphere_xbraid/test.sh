@@ -45,8 +45,7 @@ mkdir $dirname_offline_error;
 
 echo ""
 
-###for itest in {-1..7};do
-for itest in {-1,5};do
+for itest in {-1..7};do
 	echo "*********************";
 	echo "Running debug test" $itest;
 	echo "*********************";

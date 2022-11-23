@@ -137,7 +137,7 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
             dirname = f.split("/")[0];
             error_file = open(dirname + "/xbraid_error_spec_" + ref_type + "_" + os.path.basename(f)[7:-5] + "csv", "w");
 
-            eps_small = 1e-20;
+            eps_small = 1e-16;
             for rnorm in rnorms:
                 if rnorm < 16:
                     continue
