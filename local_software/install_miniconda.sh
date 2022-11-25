@@ -4,7 +4,7 @@ source ./install_helpers.sh ""
 
 PKG_NAME="Miniconda"
 PKG_INSTALLED_FILE="$PYTHON_VENV_DIR/bin/activate"
-FILENAME="Miniconda3-latest-Linux-x86_64.sh"
+FILENAME="Miniconda3-py39_4.12.0-Linux-x86_64.sh"
 PKG_URL_SRC="https://repo.anaconda.com/miniconda/$FILENAME"
 
 if [ "`uname`" == "Darwin" ]; then
