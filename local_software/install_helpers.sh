@@ -173,8 +173,14 @@ function config_extract()
 function config_download_fun()
 {
 	PKG_FILENAME="$(basename ${1})"
-	wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
-	#curl -C - -o "$PKG_FILENAME" "$1" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
+
+        if type wget >/dev/null 2>&1; then
+		echo_info "Using 'wget'" 1>&2
+		wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
+	else
+		echo_info "Using 'curl'" 1>&2
+		curl -C - -o "$PKG_FILENAME" "$1" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
+	fi
 }
 
 function config_download()
