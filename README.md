@@ -103,7 +103,7 @@ This tests plenty of features of SWEET, but not everything. It might be necessar
 
 ## Coding
 
-Please read the coding conventions in doc/coding_conventions.
+Please read the coding conventions in doc/sweet/coding_conventions.
 
 
 
