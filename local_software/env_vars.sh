@@ -16,15 +16,15 @@ MULE_BACKDIR="$PWD"
 # We always try to activate the environemnt
 # This is important during the installation process
 #
-function activate_anaconda_environment()
+function activate_miniconda_environment()
 {
-	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_anaconda/bin/activate" 2>/dev/null
+	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" 2>/dev/null
 }
 #
 # Bash provides an environment variable called PROMPT_COMMAND.
 # The contents of this variable are executed as a regular Bash command just before Bash displays a prompt.
 #
-PROMPT_COMMAND='activate_anaconda_environment'
+PROMPT_COMMAND='activate_miniconda_environment'
 
 
 
@@ -189,8 +189,8 @@ cd "$SCRIPTDIR"
 SCRIPTDIR="$PWD"
 
 # Anaconda install directory
-#export PYTHON_VENV_DIR="$SCRIPTDIR/python_venv_anaconda__$(hostname)/"
-export PYTHON_VENV_DIR="$SCRIPTDIR/local/python_venv_anaconda/"
+#export PYTHON_VENV_DIR="$SCRIPTDIR/python_venv_miniconda__$(hostname)/"
+export PYTHON_VENV_DIR="$SCRIPTDIR/local/python_venv_miniconda/"
 
 
 # Get SOFTWARE root directory
@@ -332,8 +332,8 @@ fi
 
 cd "$MULE_BACKDIR"
 
-# Activate anaconda environment if available
-activate_anaconda_environment
+# Activate miniconda environment if available
+activate_miniconda_environment
 
 echo_success_hline
 echo_success " MULE SOFTWARE environment setup successfully"

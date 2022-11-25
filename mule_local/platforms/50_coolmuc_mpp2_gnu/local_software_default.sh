@@ -3,7 +3,7 @@
 # This is also important for python
 PKGS+=("install_openssl.sh")
 
-PKGS+=("install_anaconda.sh")
+PKGS+=("install_miniconda.sh")
 PKGS+=("install_scons3.sh")
 
 #PKGS+=("install_gcc7.1.sh")
