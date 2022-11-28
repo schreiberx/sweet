@@ -17,6 +17,9 @@ from mule_local.rexi.REXICoefficients import *
 
 
 class CIREXI:
+    """
+    Cauchy Contour Integration REXI method
+    """
 
     #
     # Constructor
@@ -116,10 +119,10 @@ class CIREXI:
             pos = R*self.efloat.exp(self.efloat.i*theta_j)
 
             # shifted position
-            gamma_j = pos + lambda_shift
+            alpha = pos + lambda_shift
 
-            self.betas.append(-self.fun.eval(gamma_j)*pos / N)
-            self.alphas.append(gamma_j)
+            self.betas.append(-self.fun.eval(alpha)*pos / N)
+            self.alphas.append(alpha)
 
 
         self.unique_id_string = "shic"

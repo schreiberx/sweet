@@ -1,4 +1,4 @@
-Before trying out anything, please have a detailed look into the INSTALL instructions to cope with the required libraries!
+Before trying out anything, please have a detailed look into the INSTALL.md instructions about how to cope with the required libraries!
 
 # SWEET
 
@@ -103,7 +103,7 @@ This tests plenty of features of SWEET, but not everything. It might be necessar
 
 ## Coding
 
-Please read the coding conventions in doc/coding_conventions.
+Please read the coding conventions in doc/sweet/coding_conventions.
 
 
 
