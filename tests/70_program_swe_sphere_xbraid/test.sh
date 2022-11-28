@@ -127,17 +127,14 @@ for itest in {-1..7};do
 
 			for i in {0,1,2}; do
 				##for tsm_fine in ../../src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS*hpp; do ## full version
-				for tsm_fine in {l_irk_na_sl_settls_uv_only,l_irk_na_sl_settls_vd_only,lg_exp_na_sl_lc_nr_etd_uv,lg_irk,lg_erk_lc_n_erk}; do ## short version
-				####for tsm_fine in l_irk_na_sl_settls_uv_only; do ## short version
-
+				for tsm_fine in {l_irk_na_sl_settls_uv_only,lg_exp_na_sl_lc_nr_etd_uv,lg_irk,lg_erk_lc_n_erk}; do ## short version
 					tsm_fine=$(get_tsm $tsm_fine);
 					if [ "$tsm_fine" = "interface" ]; then
 					  continue;
 					fi
 
 					##for tsm_coarse in ../../src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS*hpp; do ## full version
-					for tsm_coarse in {l_irk_na_sl_settls_uv_only,l_irk_na_sl_settls_vd_only,lg_exp_na_sl_lc_nr_etd_uv,lg_irk,lg_erk_lc_n_erk}; do ## short version
-					###for tsm_coarse in l_irk_na_sl_settls_uv_only; do ## short version
+					for tsm_coarse in {l_irk_na_sl_settls_uv_only,lg_exp_na_sl_lc_nr_etd_uv,lg_irk,lg_erk_lc_n_erk}; do ## short version
 
 						tsm_coarse=$(get_tsm $tsm_coarse);
 						if [ "$tsm_coarse" = "interface" ]; then
@@ -221,6 +218,8 @@ for itest in {-1..7};do
 
 					done;
 				done;
+
+			mule.benchmark.cleanup_all || exit 1
 
 			done;
 

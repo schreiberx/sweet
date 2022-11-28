@@ -222,6 +222,8 @@ for itest in {-1..7};do
 					done;
 				done;
 
+			mule.benchmark.cleanup_all || exit 1
+
 			done;
 
 			mule.benchmark.cleanup_all || exit 1

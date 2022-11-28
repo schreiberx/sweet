@@ -10,8 +10,8 @@ PKG_NAME="SHTNS_python"
 PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/python$PYTHONVERSION/site-packages/shtns.py"
 
-test ! -e "$PKG_INSTALLED_FILE" && PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/python_venv_anaconda/lib/python$PYTHONVERSION/site-packages/shtns.py"
-test ! -e "$PKG_INSTALLED_FILE" && PKG_INSTALLED_FILE="$(ls -1 $SWEET_LOCAL_SOFTWARE_DST_DIR/python_venv_anaconda/lib/python$PYTHONVERSION/site-packages/SHTns-*/shtns.py | tail -n 1)"
+test ! -e "$PKG_INSTALLED_FILE" && PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/python_venv_miniconda/lib/python$PYTHONVERSION/site-packages/shtns.py"
+test ! -e "$PKG_INSTALLED_FILE" && PKG_INSTALLED_FILE="$(ls -1 $SWEET_LOCAL_SOFTWARE_DST_DIR/python_venv_miniconda/lib/python$PYTHONVERSION/site-packages/SHTns-*/shtns.py | tail -n 1)"
 
 PKG_URL_SRC="shtns-3.5.2.tar.gz"
 

@@ -732,31 +732,14 @@ private:
 			prev_sol_exists = false;
 		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
 			prev_sol_exists = false;
-		////std::cout << this->sol_prev_iter[i_level][i_time_id] << " " << i_iter << std::endl;
 
-		///if (i_level < 3)
-		///if (this->sol_prev_iter[i_level][i_time_id] == i_iter)
-		///if (i_level < this->nlevels - 1)
-		////if (i_time_id % (int)this->simVars->xbraid.xbraid_cfactor == 0);
+		if (i_time_id % this->simVars->xbraid.xbraid_cfactor == 0)
 			prev_sol_exists = false;
 
-		////if (i_time_id - 1 < 3 && i_level == 0)
-		////{
-		////	std::cout << "SETTING SOLUTION AT t = " << i_time_id - 1 << std::endl;
-		////	std::cout << "prev_sol_exists = " << prev_sol_exists << std::endl;
-		////}
 		if (prev_sol_exists)
-		{
 			this->timeSteppers[i_level]->master->set_previous_solution(this->sol_prev[i_level][i_time_id - 1]->data);
-			//if (i_time_id - 1 < 3 && i_level == 0)
-			//	this->sol_prev[i_level][i_time_id - 1]->data->physical_print();
-		}
 		else
-		{
 			this->timeSteppers[i_level]->master->set_previous_solution(i_U->data);
-			//if (i_time_id - 1 < 3 && i_level == 0)
-			//	i_U->data->physical_print();
-		}
 	}
 
 public:
@@ -1603,8 +1586,8 @@ public:
 		int actual_size_buffer = N * sphereDataConfig[0]->spectral_array_data_number_of_elements * sizeof(std::complex<double>);
 #endif
 
-////#if SWEET_XBRAID_SCALAR
-#if 0
+///#if SWEET_XBRAID_SCALAR
+#if 1
 		U->data->serialize(dbuffer);
 #else
 ////#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
@@ -1713,8 +1696,8 @@ public:
 		std::complex<double>* dbuffer = (std::complex<double>*) i_buffer;
 #endif
 
-#if 0
 ///#if SWEET_XBRAID_SCALAR
+#if 1
 		U->data->deserialize(dbuffer);
 #else
 ///#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE

@@ -145,7 +145,7 @@ public:
 	// size of each simfield of data
 	std::size_t size()
 	{
-		return this->data->simfields[0]->sphereDataConfig->spectral_array_data_number_of_elements;
+		return N * this->data->simfields[0]->sphereDataConfig->spectral_array_data_number_of_elements;
 	}
 
 	void serialize(std::complex<double> *data)

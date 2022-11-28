@@ -30,14 +30,15 @@ Before doing anything, you *must* setup your environment variable via
 $ source ./activate.sh
 ```
 
-### 2. Anaconda
+### 2. Miniconda
 
-Second thing you should do is to install ANACONDA by typing
+DEACTIVATE ALL (ANA)CONDA ENVIRONMENTS!
+
+Then, install ANACONDA by typing
 ```
 $ cd local_software
-$ ./install_anaconda.sh
+$ ./install_miniconda.sh
 ```
-
 This is not always required, but you're on the safer side to have a Python version and its modules in a particular version.
 
 
@@ -65,10 +66,6 @@ $ cd ./local_software
 ```
 install the following packages if required:
 
-Install Anaconda (Python and more packages)
-```
-$ ./install_anaconda.sh
-```
 
 Use pip to install other packages:
 ```
@@ -95,7 +92,7 @@ After installing the above mentioned software, you should
 be able to compile an example program such as with
 
 ```
-   $ scons --program=swe_nonstaggered_advective
+   $ scons --program=swe_plane
 ```
 
 

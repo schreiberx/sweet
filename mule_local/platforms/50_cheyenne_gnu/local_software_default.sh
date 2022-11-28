@@ -14,7 +14,7 @@ PKGS+=("install_numa.sh")
 #PKGS+=("install_openmpi.sh")
 #PKGS+=("install_pfasst++.sh")
 
-PKGS+=("install_anaconda.sh")
+PKGS+=("install_miniconda.sh")
 
 #PKGS+=("install_rdic.sh")
 PKGS+=("install_scons3.sh")

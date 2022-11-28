@@ -251,8 +251,8 @@ if simulation_to_run == "xbraid":
             jg.runtime.parareal_enabled = 1;
             jg.runtime.parareal_max_iter = jg.runtime.xbraid_max_iter;
             jg.runtime.parareal_coarse_timestepping_method = tsm_coarse
-            jg.runtime.parareal_coarse_timestepping_order = orders[tsm_coarse]
-            jg.runtime.parareal_coarse_timestepping_order2 = orders[tsm_coarse]
+            jg.runtime.parareal_coarse_timestepping_order = 2
+            jg.runtime.parareal_coarse_timestepping_order2 = 2
             jg.runtime.parareal_load_fine_csv_files = 1;
             jg.runtime.parareal_path_fine_csv_files = path_fine;
             jg.runtime.parareal_store_iterations = 0;
