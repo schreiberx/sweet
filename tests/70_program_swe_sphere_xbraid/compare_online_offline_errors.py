@@ -89,7 +89,7 @@ for key in jd.keys():
 
 
 ## find identical jobs
-small = 1e-8;
+small = 1e-7;  ## avoid problems with small values
 read_jobs = [];
 ipair = 0;
 for job1 in list_jobs:
