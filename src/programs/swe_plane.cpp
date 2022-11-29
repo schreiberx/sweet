@@ -1390,10 +1390,14 @@ int main(int i_argc, char *i_argv[])
 			SimulationBenchmarkTimings::getInstance().output();
 		}
 	}
-#if SWEET_MPI
-	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
-	else	// mpi_rank != 0
-	#endif
+#if SWEET_MPI && (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
+	else
+///#if SWEET_MPI
+///	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
+///	else	// mpi_rank != 0
+///	#else
+///	if (mpi_rank != 0)
+///	#endif
 	{
 
 		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
@@ -1435,7 +1439,9 @@ int main(int i_argc, char *i_argv[])
 		if (mpi_rank == 0)
 			SWE_Plane_TS_l_rexi::MPI_quitWorkers(planeDataConfig);
 	}
+#endif
 
+#if SWEET_MPI
 	MPI_Finalize();
 #endif
 
