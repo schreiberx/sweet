@@ -733,6 +733,7 @@ private:
 		if ( prev_sol_exists && (!this->sol_prev[i_level][i_time_id - 1]) )
 			prev_sol_exists = false;
 
+		// only store prev solution if it is not the first time step inside a coarse slice
 		if (i_time_id % this->simVars->xbraid.xbraid_cfactor == 0)
 			prev_sol_exists = false;
 
@@ -1589,8 +1590,8 @@ public:
 ///#if SWEET_XBRAID_SCALAR
 #if 1
 		U->data->serialize(dbuffer);
-#else
-////#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+// communication of prev solution (SL) is no longer needed (see function store_prev_solution)
+#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->serialize(dbuffer);
@@ -1699,8 +1700,8 @@ public:
 ///#if SWEET_XBRAID_SCALAR
 #if 1
 		U->data->deserialize(dbuffer);
-#else
-///#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
+// communication of prev solution (SL) is no longer needed (see function store_prev_solution)
+#elif SWEET_XBRAID_PLANE || SWEET_XBRAID_SPHERE
 		// no SL method is used: only communicate solution
 		if ( ! contains_SL )
 			U->data->deserialize(dbuffer);

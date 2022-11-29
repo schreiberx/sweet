@@ -51,7 +51,7 @@ struct XBraid_SimulationVariables
 	/**
 	 * Coarsening factor
 	 */
-	double xbraid_cfactor = 2;
+	int xbraid_cfactor = 2;
 
 	/**
 	 * Coarsening factor for only level 0 -- overrides cfactor
@@ -370,7 +370,7 @@ struct XBraid_SimulationVariables
 			case 5:  xbraid_nrelax0                   = atoi(optarg);	return -1;
 			case 6:  xbraid_tol                       = atof(optarg);	return -1;
 			case 7:  xbraid_tnorm                     = atoi(optarg);	return -1;
-			case 8:  xbraid_cfactor                   = atof(optarg);	return -1;
+			case 8:  xbraid_cfactor                   = atoi(optarg);	return -1;
 			case 9:  xbraid_cfactor0                  = atoi(optarg);	return -1;
 			case 10: xbraid_max_iter                  = atoi(optarg);	return -1;
 			case 11: xbraid_fmg                       = atoi(optarg);	return -1;
