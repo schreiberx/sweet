@@ -87,7 +87,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-#if SWEET_PARAREAL && SWEET_PARAREAL_SPHERE
+#if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
 	void set_previous_solution(
 				SphereData_Spectral &i_phi_prev,
 				SphereData_Spectral &i_vrt_prev,
@@ -101,7 +101,6 @@ public:
 		U_div_prev = i_div_prev;
 	}
 #endif
-
 
 	virtual ~SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv();
 };

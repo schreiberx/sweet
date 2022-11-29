@@ -59,7 +59,11 @@ for key in jd.keys():
     if path == fine_sim:
         continue;
     job_info[path] = {};
-    for s in ["runtime.parareal_coarse_slices", "runtime.parareal_coarse_timestep_size", "runtime.parareal_coarse_timestepping_method", "runtime.parareal_store_iterations"]:
+    for s in ["runtime.parareal_coarse_slices",
+              "runtime.parareal_coarse_timestep_size",
+              "runtime.parareal_coarse_timestepping_method",
+              "runtime.parareal_store_iterations",
+              "runtime.parareal_spatial_coarsening"]:
         job_info[path][s] = jd[key][s];
 
 ## find identical jobs
@@ -76,7 +80,10 @@ for job1 in list_jobs:
         if job2 in read_jobs:
             continue;
         found_job = True;
-        for s in ["runtime.parareal_coarse_slices", "runtime.parareal_coarse_timestep_size", "runtime.parareal_coarse_timestepping_method"]:
+        for s in ["runtime.parareal_coarse_slices",
+                  "runtime.parareal_coarse_timestep_size",
+                  "runtime.parareal_coarse_timestepping_method",
+                  "runtime.parareal_spatial_coarsening"]:
             if not job_info[job1][s] == job_info[job2][s]:
                 found_job = False;
 
@@ -92,6 +99,9 @@ for job1 in list_jobs:
             max_diff = 0
             print("      -> Pair #{} : comparing {} files".format(ipair, len(list_files)));
             for f in list_files:
+                if "_spec_" in f:
+                    continue;
+
                 err_L1_1, err_L2_1, err_Linf_1 = read_error_file(path_simulations + "/" + job1 + "/" + f);
                 err_L1_2, err_L2_2, err_Linf_2 = read_error_file(path_simulations + "/" + job2 + "/" + f);
                 ###print(err_L1_1, err_L1_2);

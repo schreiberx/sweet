@@ -73,7 +73,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 
 	if (i_simulation_timestamp == 0)
 	{
-#if !SWEET_PARAREAL
+#if !SWEET_PARAREAL && !SWEET_XBRAID
 		/*
 		 * First time step:
 		 * Simply backup existing fields for multi-step parts of this algorithm.

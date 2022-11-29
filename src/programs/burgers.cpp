@@ -948,6 +948,39 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<PlaneDataConfig*> planeDataConfigs;
+			std::vector<PlaneOperators*> ops;
+
+			// fine
+			planeDataConfigs.push_back(planeDataConfig);
+			ops.push_back(&op);
+
+			// coarse
+			if (simVars.parareal.spatial_coarsening)
+			{
+				///for (int j = 0; j < 2; j++)
+				///	assert(simVars.disc.space_res_physical[j] == -1);
+				int N_physical[2] = {-1, -1};
+				int N_spectral[2];
+				double frac;
+				if ( simVars.parareal.coarse_timestep_size > 0)
+					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				else
+					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
+				for (int j = 0; j < 2; j++)
+					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+				planeDataConfigs.push_back(new PlaneDataConfig);
+				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+
+				ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+			}
+			else
+			{
+				planeDataConfigs.push_back(planeDataConfig);
+				ops.push_back(&op);
+			}
+
 			Burgers_Plane_TimeSteppers* timeSteppersFine = new Burgers_Plane_TimeSteppers;
 			Burgers_Plane_TimeSteppers* timeSteppersCoarse = new Burgers_Plane_TimeSteppers;
 
@@ -956,8 +989,8 @@ int main(int i_argc, char *i_argv[])
 			 * which implement the parareal features
 			 */
 			Parareal_Controller<Burgers_Plane_TimeSteppers, 2> parareal_Controller(&simVars,
-												planeDataConfig,
-												op,
+												planeDataConfigs,
+												ops,
 												timeSteppersFine,
 												timeSteppersCoarse);
 
@@ -969,6 +1002,12 @@ int main(int i_argc, char *i_argv[])
 
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
+
+			if (simVars.parareal.spatial_coarsening)
+			{
+				delete planeDataConfigs[1];
+				delete ops[1];
+			}
 		}
 		else
 #endif

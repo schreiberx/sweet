@@ -27,6 +27,7 @@ echo ""
 for i in {0,1,2};do
 	##for tsm_fine in ../../src/programs/burgers_timeintegrators/Burgers_Plane_TS*hpp; do ## full version
 	for tsm_fine in {l_cn_n_sl,l_direct,l_irk,l_irk_n_sl_forcing,ln_imex_forcing}; do ## short version
+	###for tsm_fine in l_cn_n_sl; do ## short version
 
 		tsm_fine=$(get_tsm $tsm_fine);
 		if [ "$tsm_fine" = "interface" ]; then
@@ -41,6 +42,7 @@ for i in {0,1,2};do
 
 		##for tsm_coarse in ../../src/programs/burgers_timeintegrators/Burgers_Plane_TS*hpp; do ## full version
 		for tsm_coarse in {l_cn_n_sl,l_direct,l_irk,l_irk_n_sl_forcing,ln_imex_forcing}; do ## short version
+		##for tsm_coarse in l_cn_n_sl; do ## short version
 
 			tsm_coarse=$(get_tsm $tsm_coarse);
 			if [ "$tsm_coarse" = "interface" ]; then

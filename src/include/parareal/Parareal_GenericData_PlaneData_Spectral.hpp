@@ -44,6 +44,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 		DataContainer_PlaneData_Spectral(DataContainer_PlaneData_Spectral &i_data)
 		{
 			this->nb_fields = N;
+			this->level = i_data.level;
 			this->simfields = new PlaneData_Spectral*[N];
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_data.simfields[i]);
@@ -52,6 +53,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 		DataContainer_PlaneData_Spectral& operator=(const DataContainer_PlaneData_Spectral &i_data)
 		{
 			this->nb_fields = N;
+			this->level = i_data.level;
 			for (int i = 0; i < N; i++)
 				*(this->simfields[i]) = *(i_data.simfields[i]);
 			return *this;
@@ -70,7 +72,7 @@ class Parareal_GenericData_PlaneData_Spectral :
 
 public:
 
-	DataContainer<PlaneData_Spectral*>* data;
+	DataContainer<PlaneData_Spectral*>* data = nullptr;
 
 public:
 	DataContainer<PlaneData_Spectral*>* get_pointer_to_data_PlaneData_Spectral() const override
@@ -83,7 +85,7 @@ public:
 	Parareal_GenericData_PlaneData_Spectral():
 		Parareal_GenericData()
 	{
-//		this->allocate_data();
+		////this->allocate_data();
 	}
 
 	Parareal_GenericData_PlaneData_Spectral(Parareal_GenericData_PlaneData_Spectral &i_data)
@@ -91,6 +93,7 @@ public:
 		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
+		this->planeDataConfig = i_data.planeDataConfig;
 	};
 
 	Parareal_GenericData_PlaneData_Spectral& operator=(const Parareal_GenericData &i_data)
@@ -98,6 +101,7 @@ public:
 		*(this->data) = *(i_data.get_pointer_to_data_PlaneData_Spectral());
 		for (int i = 0; i < N; i++)
 			*(this->data->simfields[i]) = *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]);
+		this->planeDataConfig = i_data.planeDataConfig;
 		return *this;
 	};
 
@@ -125,7 +129,6 @@ public:
 			delete this->data;
 			this->data = nullptr;
 		}
-		
 	}
 
 
@@ -142,7 +145,7 @@ public:
 
 
 ////#if SWEET_MPI
-#if SWEET_PARAREAL==2
+#if SWEET_PARAREAL==2 || SWEET_XBRAID
 	// size in bytes (for MPI)
 	// size of each simfield of data
 	std::size_t size()
@@ -166,14 +169,52 @@ public:
 
 #endif
 
-	double reduce_maxAbs()
+	double spectral_reduce_maxAbs()
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
 			e = std::max( e,
-					this->data->simfields[k]->toPhys().physical_reduce_max_abs());
+				this->data->simfields[k]->spectral_reduce_max_abs());
 		return e;
 	}
+
+	double spectral_reduce_maxAbs(std::size_t rnorm)
+	{
+		double e = -1;
+		for (int k = 0; k < N; k++)
+			e = std::max( e,
+				this->data->simfields[k]->spectral_reduce_max_abs(rnorm));
+		return e;
+	}
+
+	double physical_reduce_maxAbs()
+	{
+		double e = -1;
+		for (int k = 0; k < N; k++)
+			e = std::max( e,
+				this->data->simfields[k]->toPhys().physical_reduce_max_abs());
+		return e;
+	}
+
+	double physical_reduce_norm1()
+	{
+		double e = 0;
+		for (int k = 0; k < N; k++)
+			e += this->data->simfields[k]->toPhys().physical_reduce_norm1();
+		return e;
+	}
+
+	double physical_reduce_norm2()
+	{
+		double e = 0;
+		for (int k = 0; k < N; k++)
+		{
+			double n = this->data->simfields[k]->toPhys().physical_reduce_norm2();
+			e += n * n;
+		}
+		return std::sqrt(e);
+	}
+
 
 	bool check_for_nan()
 	{
@@ -208,7 +249,9 @@ public:
 
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
 
 		for (int i = 0; i < N; i++)
@@ -219,7 +262,9 @@ public:
 
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_PlaneData_Spectral()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_PlaneData_Spectral()->nb_fields);
 
 		for (int i = 0; i < N; i++)
@@ -228,6 +273,14 @@ public:
 		return *this;
 	}
 
+	Parareal_GenericData& operator*=(const double v)
+	{
+
+		for (int i = 0; i < N; i++)
+			*(this->data->simfields[i]) *= v;
+
+		return *this;
+	}
 
 	void physical_print()
 	{
@@ -238,6 +291,66 @@ public:
 		}
 	}
 
+	void spectral_print()
+	{
+		for (int i = 0; i < N; i++)
+		{
+			std::cout << "Field #" << i << std::endl;
+			this->data->simfields[i]->spectral_print();
+		}
+	}
+
+
+	void dataArrays_to_GenericData_PlaneData_Spectral(
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							) override
+	{
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+		*(this->data->simfields[0]) = h;
+		*(this->data->simfields[1]) = u;
+		*(this->data->simfields[2]) = v;
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
+		*(this->data->simfields[0]) = u;
+		*(this->data->simfields[1]) = v;
+	#endif
+	}
+
+	void GenericData_PlaneData_Spectral_to_dataArrays(
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+								PlaneData_Spectral &h,
+	#endif
+								PlaneData_Spectral &u,
+								PlaneData_Spectral &v
+							) override
+	{
+	#if SWEET_PARAREAL_PLANE_SWE || SWEET_XBRAID_PLANE_SWE
+		h = *(this->data->simfields[0]);
+		u = *(this->data->simfields[1]);
+		v = *(this->data->simfields[2]);
+	#elif SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
+		u = *(this->data->simfields[0]);
+		v = *(this->data->simfields[1]);
+	#endif
+	}
+
+
+	void restrict(const Parareal_GenericData& i_data)
+	{
+		for (int i = 0; i < N; i++)
+			*this->data->simfields[i] = this->data->simfields[i]->restrict( *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]) );
+			///this->data->simfields[i]->restrict( *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]) );
+	}
+
+	void pad_zeros(const Parareal_GenericData& i_data)
+	{
+		for (int i = 0; i < N; i++)
+			*this->data->simfields[i] = this->data->simfields[i]->pad_zeros( *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]) );
+			///this->data->simfields[i]->pad_zeros( *(i_data.get_pointer_to_data_PlaneData_Spectral()->simfields[i]) );
+	}
 
 };
 

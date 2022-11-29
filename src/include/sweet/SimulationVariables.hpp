@@ -44,12 +44,20 @@
 #	define SWEET_LIBPFASST 1
 #endif
 
+#ifndef SWEET_XBRAID
+#	define SWEET_XVRAID 1
+#endif
+
 #if SWEET_PARAREAL
 #	include <parareal/Parareal_SimulationVariables.hpp>
 #endif
 
 #if SWEET_LIBPFASST
 #       include <libpfasst/LibPFASST_SimulationVariables.hpp>
+#endif
+
+#if SWEET_XBRAID
+#       include <xbraid/XBraid_SimulationVariables.hpp>
 #endif
 
 
@@ -82,6 +90,11 @@ public:
 #if SWEET_LIBPFASST
 	LibPFASST_SimulationVariables libpfasst;
 #endif
+
+#if SWEET_XBRAID
+	XBraid_SimulationVariables xbraid;
+#endif
+
 
 public:
 	EXP_SimulationVariables rexi;
@@ -1211,6 +1224,11 @@ public:
 #if SWEET_LIBPFASST
 		libpfasst.outputConfig();
 #endif
+
+#if SWEET_XBRAID
+		xbraid.outputConfig();
+#endif
+
 	}
 
 
@@ -1368,6 +1386,11 @@ public:
 		libpfasst.printOptions();
 #endif
 
+#if SWEET_XBRAID
+		xbraid.printOptions();
+#endif
+
+
 		std::cout << std::endl;
 	}
 
@@ -1433,6 +1456,16 @@ public:
 				       max_options
 				       );
 #endif
+
+#if SWEET_XBRAID
+        int xbraid_start_option_index = next_free_program_option;
+        xbraid.setup_longOptionList(
+				       long_options,
+				       next_free_program_option,	///< also updated (IO)
+				       max_options
+				       );
+#endif
+
 
         int rexi_start_option_index = next_free_program_option;
         rexi.setup_longOptionList(
@@ -1576,6 +1609,16 @@ public:
 						c += retval;
 					}
 #endif
+
+#if SWEET_XBRAID
+					{
+						int retval = xbraid.setup_longOptionValue(i-xbraid_start_option_index, optarg);
+						if (retval == -1)
+							continue;
+						c += retval;
+					}
+#endif
+
 
 					{
 						int retval = rexi.setup_longOptionValue(i-rexi_start_option_index, optarg);

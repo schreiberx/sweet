@@ -10,7 +10,7 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL || SWEET_XBRAID
 #include <parareal/Parareal_GenericData.hpp>
 #endif
 
@@ -52,7 +52,7 @@ public:
 	{
 	}
 
-#if SWEET_PARAREAL && SWEET_PARAREAL_SPHERE
+#if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
 	void run_timestep(
 			Parareal_GenericData* io_data,
 

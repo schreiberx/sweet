@@ -1218,7 +1218,7 @@ public:
 	}
 
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL || SWEET_XBRAID
 
 	/**
 	 * Load data from ASCII file.
