@@ -734,7 +734,8 @@ private:
 			prev_sol_exists = false;
 
 		// only store prev solution if it is not the first time step inside a coarse slice
-		if (i_time_id % this->simVars->xbraid.xbraid_cfactor == 0)
+		if (i_level < this->nlevels - 1)
+		/////if (i_time_id % this->simVars->xbraid.xbraid_cfactor == 0)
 			prev_sol_exists = false;
 
 		if (prev_sol_exists)
