@@ -157,6 +157,11 @@ struct XBraid_SimulationVariables
 	std::string xbraid_path_fine_csv_files = "";
 
 	/**
+	 * Store XBraid errors per iteration and time
+	 */
+	bool xbraid_store_full_errors = false;
+
+	/**
 	 * Store XBraid iterations
 	 * May require too much disk storage!
 	 */
@@ -203,6 +208,7 @@ struct XBraid_SimulationVariables
 		std::cout << " + xbraid_path_ref_csv_files: "           << xbraid_path_ref_csv_files           << std::endl;
 		std::cout << " + xbraid_load_fine_csv_files: "          << xbraid_load_fine_csv_files          << std::endl;
 		std::cout << " + xbraid_path_fine_csv_files: "          << xbraid_path_fine_csv_files          << std::endl;
+		std::cout << " + xbraid_store_full_errors: "            << xbraid_store_full_errors            << std::endl;
 		std::cout << " + xbraid_store_iterations: "             << xbraid_store_iterations             << std::endl;
 		std::cout << " + xbraid_spatial_coarsening: "           << xbraid_spatial_coarsening           << std::endl;
 	}
@@ -241,6 +247,7 @@ struct XBraid_SimulationVariables
 		std::cout << "	--xbraid-path-ref-csv-files [string]         XBraid parameter path_ref_csv_files, default: ''"          << std::endl;
 		std::cout << "	--xbraid-load-fine-csv-files [0/1]           XBraid parameter load_fine_csv_files, default: 0"          << std::endl;
 		std::cout << "	--xbraid-path-fine-csv-files [string]        XBraid parameter path_fine_csv_files, default: ''"         << std::endl;
+		std::cout << "	--xbraid-store-full-errors [0/1]             XBraid parameter store_full_errors, default: 0"            << std::endl;
 		std::cout << "	--xbraid-store-iterations [0/1]              XBraid parameter store_iterations, default: 0"             << std::endl;
 		std::cout << "	--xbraid-spatial-coarsening [0/1]            XBraid parameter spatial_coarsening, default: 0"           << std::endl;
 		std::cout << ""                                                                                                         << std::endl;
@@ -342,6 +349,9 @@ struct XBraid_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"xbraid-path-fine-csv-files", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"xbraid-store-full-errors", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 		io_long_options[io_next_free_program_option] = {"xbraid-store-iterations", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
@@ -392,10 +402,11 @@ struct XBraid_SimulationVariables
 			case 27: xbraid_path_ref_csv_files        = optarg;		return -1;
 			case 28: xbraid_load_fine_csv_files       = atoi(optarg);	return -1;
 			case 29: xbraid_path_fine_csv_files       = optarg;		return -1;
-			case 30: xbraid_store_iterations          = atoi(optarg);	return -1;
-			case 31: xbraid_spatial_coarsening        = atoi(optarg);	return -1;
+			case 30: xbraid_store_full_errors         = atoi(optarg);	return -1;
+			case 31: xbraid_store_iterations          = atoi(optarg);	return -1;
+			case 32: xbraid_spatial_coarsening        = atoi(optarg);	return -1;
 		}
-		return 32;
+		return 33;
 	}
 
 };

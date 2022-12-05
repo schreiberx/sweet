@@ -71,6 +71,35 @@ protected:
 	double total_energy;
 #endif
 
+	// Max error (in time) per iteration
+	// vec[j][i] contains the max err(u_j) in iteration i
+	std::vector<std::vector<double>> err_iters_L1 = {};
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+	std::vector<std::vector<double>> err_iters_Abs = {};
+	std::vector<std::vector<double>> err_iters_Real = {};
+	std::vector<std::vector<double>> err_iters_Imag = {};
+	std::vector<std::vector<double>> err_iters_Phase = {};
+	std::vector<std::vector<double>> err_iters_DeltaPhase = {};
+#else
+	std::vector<std::vector<double>> err_iters_L2 = {};
+	std::vector<std::vector<double>> err_iters_Linf = {};
+#endif
+
+	// Number of iterations for reaching a given threshold
+	// vec[j][i] = nb of iterations for reaching err(u_j) < 10^{-i}
+	int min_threshold = 17;
+	std::vector<std::vector<int>> iters_threshold_L1 = {};
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+	std::vector<std::vector<int>> iters_threshold_Abs = {};
+	std::vector<std::vector<int>> iters_threshold_Real = {};
+	std::vector<std::vector<int>> iters_threshold_Imag = {};
+	std::vector<std::vector<int>> iters_threshold_Phase = {};
+	std::vector<std::vector<int>> iters_threshold_DeltaPhase = {};
+#else
+	std::vector<std::vector<int>> iters_threshold_L2 = {};
+	std::vector<std::vector<int>> iters_threshold_Linf = {};
+#endif
+
 
 #if SWEET_PARAREAL_PLANE_BURGERS
 	// required for computing analytical solution
@@ -737,6 +766,75 @@ public:
 	)
 	{
 
+	// create vectors for storing nb iterations for gien thresholds
+	if (this->err_iters_L1.size() == 0)
+	{
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+		this->err_iters_L1 = std::vector<std::vector<double>>(N_ode);
+		this->err_iters_Abs = std::vector<std::vector<double>>(N_ode);
+		this->err_iters_Real = std::vector<std::vector<double>>(N_ode);
+		this->err_iters_Imag = std::vector<std::vector<double>>(N_ode);
+		this->err_iters_Phase = std::vector<std::vector<double>>(N_ode);
+		this->err_iters_DeltaPhase = std::vector<std::vector<double>>(N_ode);
+		this->iters_threshold_L1 = std::vector<std::vector<int>>(N_ode);
+		this->iters_threshold_Abs = std::vector<std::vector<int>>(N_ode);
+		this->iters_threshold_Real = std::vector<std::vector<int>>(N_ode);
+		this->iters_threshold_Imag = std::vector<std::vector<int>>(N_ode);
+		this->iters_threshold_Phase = std::vector<std::vector<int>>(N_ode);
+		this->iters_threshold_DeltaPhase = std::vector<std::vector<int>>(N_ode);
+		for (int i = 0; i < N_ode; i++)
+		{
+			this->iters_threshold_L1[i] = std::vector<int>(this->min_threshold, int(1e6));
+			this->iters_threshold_Abs[i] = std::vector<int>(this->min_threshold, int(1e6));
+			this->iters_threshold_Real[i] = std::vector<int>(this->min_threshold, int(1e6));
+			this->iters_threshold_Imag[i] = std::vector<int>(this->min_threshold, int(1e6));
+			this->iters_threshold_Phase[i] = std::vector<int>(this->min_threshold, int(1e6));
+			this->iters_threshold_DeltaPhase[i] = std::vector<int>(this->min_threshold, int(1e6));
+		}
+#else
+		this->err_iters_L1 = std::vector<std::vector<double>>(1);
+		this->err_iters_L2 = std::vector<std::vector<double>>(1);
+		this->err_iters_Linf = std::vector<std::vector<double>>(1);
+		this->iters_threshold_L1 = std::vector<std::vector<int>>(1);
+		this->iters_threshold_L2 = std::vector<std::vector<int>>(1);
+		this->iters_threshold_Linf = std::vector<std::vector<int>>(1);
+		for (int i = 0; i < 1; i++)
+		{
+			this->iters_threshold_L1[i] = std::vector<int>(this->min_threshold, int(1e6));
+			this->iters_threshold_L2[i] = std::vector<int>(this->min_threshold, int(1e6));
+			this->iters_threshold_Linf[i] = std::vector<int>(this->min_threshold, int(1e6));
+		}
+#endif
+	}
+
+
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+	for (int i = 0; i < N_ode; i++)
+	{
+		if (this->err_iters_L1[i].size() < iteration_id + 1)
+		{
+			this->err_iters_L1[i].push_back(0);
+			this->err_iters_Abs[i].push_back(0);
+			this->err_iters_Real[i].push_back(0);
+			this->err_iters_Imag[i].push_back(0);
+			this->err_iters_Phase[i].push_back(0);
+			this->err_iters_DeltaPhase[i].push_back(0);
+		}
+	}
+#else
+	for (int i = 0; i < 1; i++)
+	{
+		if (this->err_iters_L1[i].size() < iteration_id + 1)
+		{
+			this->err_iters_L1[i].push_back(0);
+			this->err_iters_L2[i].push_back(0);
+			this->err_iters_Linf[i].push_back(0);
+		}
+	}
+#endif
+
+
+
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 		if (iteration_id == 0)
 		{
@@ -918,7 +1016,7 @@ public:
 							getline(all_i_extra, str, ',');
 							this->param_function_extra.push_back(atof(str.c_str()));
 						}
-						if ( this->param_function_extra.size() != 4 )
+						if ( this->param_function_extra.size() != 13 )
 							SWEETError("param_function_N must contain N_ode values!");
 						this->S123 = param_function_extra[3];
 
@@ -1329,63 +1427,152 @@ public:
 
 #endif
 
-			// save physical errors in file
-			char buffer_out[1024];
 
-			///const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
-			std::string str = pint_type + "_error_%s_%s_t%020.8f_iter%03d.csv";
-			const char* filename_template_out = str.c_str();
-			sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
-
-			std::ofstream file(buffer_out, std::ios_base::trunc);
-			file << std::setprecision(i_precision);
-
-			file << "#BASESOLUTION " << base_solution << " " << path_ref << std::endl;
-			file << "#VAR " << i_name << std::endl;
-			file << "#ITERATION " << iteration_id << std::endl;
-			file << "#TIMESLICE " << time_slice_id << std::endl;
-			file << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
+			// update nb of iterations for reaching given thresholds
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-			file << "errL1 " << err_L1 << std::endl;
-			if (ivar < N_ode)
+			if (err_L1 > this->err_iters_L1[ivar][iteration_id])
+				this->err_iters_L1[ivar][iteration_id] = err_L1;
+			if (err_abs > this->err_iters_Abs[ivar][iteration_id])
+				this->err_iters_Abs[ivar][iteration_id] = err_abs;
+			if (err_real > this->err_iters_Real[ivar][iteration_id])
+				this->err_iters_Real[ivar][iteration_id] = err_real;
+			if (err_imag > this->err_iters_Imag[ivar][iteration_id])
+				this->err_iters_Imag[ivar][iteration_id] = err_imag;
+			if (err_phase > this->err_iters_Phase[ivar][iteration_id])
+				this->err_iters_Phase[ivar][iteration_id] = err_phase;
+			if (err_delta_phase > this->err_iters_DeltaPhase[ivar][iteration_id])
+				this->err_iters_DeltaPhase[ivar][iteration_id] = err_delta_phase;
+			for (int i = 0; i < this->min_threshold; i++)
 			{
-				file << "errAbs " << err_abs << std::endl;
-				file << "errReal " << err_real << std::endl;
-				file << "errImag " << err_imag << std::endl;
-				file << "errPhase " << err_phase << std::endl;
+				if (this->err_iters_L1[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_L1[ivar][i])
+					this->iters_threshold_L1[ivar][i] = iteration_id;
+				if (this->err_iters_Abs[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Abs[ivar][i])
+					this->iters_threshold_Abs[ivar][i] = iteration_id;
+				if (this->err_iters_Real[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Real[ivar][i])
+					this->iters_threshold_Real[ivar][i] = iteration_id;
+				if (this->err_iters_Imag[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Imag[ivar][i])
+					this->iters_threshold_Imag[ivar][i] = iteration_id;
+				if (this->err_iters_Phase[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Phase[ivar][i])
+					this->iters_threshold_Phase[ivar][i] = iteration_id;
+				if (this->err_iters_DeltaPhase[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_DeltaPhase[ivar][i])
+					this->iters_threshold_DeltaPhase[ivar][i] = iteration_id;
 			}
-			if (ivar == N_ode - 1)
-				file << "errDeltaPhase " << err_delta_phase << std::endl;
 #else
-			file << "errL1 " << err_L1 << std::endl;
-			file << "errL2 " << err_L2 << std::endl;
-			file << "errLinf " << err_Linf << std::endl;
+			if (err_L1 > this->err_iters_L1[ivar][iteration_id])
+				this->err_iters_L1[ivar][iteration_id] = err_L1;
+			if (err_L2 > this->err_iters_L2[ivar][iteration_id])
+				this->err_iters_L2[ivar][iteration_id] = err_L2;
+			if (err_Linf > this->err_iters_Linf[ivar][iteration_id])
+				this->err_iters_Linf[ivar][iteration_id] = err_Linf;
+			for (int i = 0; i < this->min_threshold; i++)
+			{
+				if (this->err_iters_L1[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_L1[ivar][i])
+					this->iters_threshold_L1[ivar][i] = iteration_id;
+				if (this->err_iters_L2[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_L2[ivar][i])
+					this->iters_threshold_L2[ivar][i] = iteration_id;
+				if (this->err_iters_Linf[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Linf[ivar][i])
+					this->iters_threshold_Linf[ivar][i] = iteration_id;
+			}
 #endif
 
-			file.close();
+			// save nb of iterations fo reaching given thresholds in file
+			char buffer_out_threshold[1024];
+
+			///const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
+			std::string str_threshold = pint_type + "_iter_thresholds_%s_%s.csv";
+			const char* filename_template_out_threshold = str_threshold.c_str();
+			sprintf(buffer_out_threshold, filename_template_out_threshold, base_solution.c_str(), i_name.c_str());
+
+			std::ofstream file_threshold(buffer_out_threshold, std::ios_base::trunc);
+			///file << std::setprecision(i_precision);
+
+			file_threshold << "#BASESOLUTION " << base_solution << " " << path_ref << std::endl;
+			file_threshold << "#VAR " << i_name << std::endl;
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+			for (int i = 0; i < this->min_threshold; i++)
+			{
+				file_threshold << "errL1 " << i << " " << this->iters_threshold_L1[ivar][i] << std::endl;
+				if (ivar < N_ode)
+				{
+					file_threshold << "errAbs " << i << " " << this->iters_threshold_Abs[ivar][i] << std::endl;
+					file_threshold << "errReal " << i << " " << this->iters_threshold_Real[ivar][i] << std::endl;
+					file_threshold << "errImag " << i << " " << this->iters_threshold_Imag[ivar][i] << std::endl;
+					file_threshold << "errPhase " << i << " " << this->iters_threshold_Phase[ivar][i] << std::endl;
+				}
+				if (ivar == N_ode - 1)
+					file_threshold << "errDeltaPhase " << i << " " << this->iters_threshold_DeltaPhase[ivar][i] << std::endl;
+			}
+#else
+			for (int i = 0; i < this->min_threshold; i++)
+			{
+				file_threshold << "errL1 " << i << " " << this->iters_threshold_L1[ivar][i] << std::endl;
+				file_threshold << "errL2 " << i << " " << this->iters_threshold_L2[ivar][i] << std::endl;
+				file_threshold << "errLinf " << i << " " << this->iters_threshold_Linf[ivar][i] << std::endl;
+			}
+#endif
+
+
+			if (this->simVars->xbraid.xbraid_store_full_errors)
+			{
+				// save physical errors in file
+				char buffer_out[1024];
+
+				///const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
+				std::string str = pint_type + "_error_%s_%s_t%020.8f_iter%03d.csv";
+				const char* filename_template_out = str.c_str();
+				sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
+
+				std::ofstream file(buffer_out, std::ios_base::trunc);
+				file << std::setprecision(i_precision);
+
+				file << "#BASESOLUTION " << base_solution << " " << path_ref << std::endl;
+				file << "#VAR " << i_name << std::endl;
+				file << "#ITERATION " << iteration_id << std::endl;
+				file << "#TIMESLICE " << time_slice_id << std::endl;
+				file << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
+#if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
+				file << "errL1 " << err_L1 << std::endl;
+				if (ivar < N_ode)
+				{
+					file << "errAbs " << err_abs << std::endl;
+					file << "errReal " << err_real << std::endl;
+					file << "errImag " << err_imag << std::endl;
+					file << "errPhase " << err_phase << std::endl;
+				}
+				if (ivar == N_ode - 1)
+					file << "errDeltaPhase " << err_delta_phase << std::endl;
+#else
+				file << "errL1 " << err_L1 << std::endl;
+				file << "errL2 " << err_L2 << std::endl;
+				file << "errLinf " << err_Linf << std::endl;
+#endif
+
+				file.close();
 
 
 #if !(SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR)
-			// save spectral errors in file
-			char buffer_out_spec[1024];
+				// save spectral errors in file
+				char buffer_out_spec[1024];
 
-			std::string str2 = pint_type + "_error_spec_%s_%s_t%020.8f_iter%03d.csv";
-			const char* filename_template_out_spec = str2.c_str();
-			sprintf(buffer_out_spec, filename_template_out_spec, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
+				std::string str2 = pint_type + "_error_spec_%s_%s_t%020.8f_iter%03d.csv";
+				const char* filename_template_out_spec = str2.c_str();
+				sprintf(buffer_out_spec, filename_template_out_spec, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
 
-			std::ofstream file_spec(buffer_out_spec, std::ios_base::trunc);
-			file_spec << std::setprecision(i_precision);
+				std::ofstream file_spec(buffer_out_spec, std::ios_base::trunc);
+				file_spec << std::setprecision(i_precision);
 
-			file_spec << "#BASESOLUTION " << base_solution << " " << path_ref << std::endl;
-			file_spec << "#VAR " << i_name << std::endl;
-			file_spec << "#ITERATION " << iteration_id << std::endl;
-			file_spec << "#TIMESLICE " << time_slice_id << std::endl;
-			file_spec << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
-			for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
-				file_spec << "errLinf " << *it + 1 << " " << err_Linf_spectral.at(*it) << std::endl;
+				file_spec << "#BASESOLUTION " << base_solution << " " << path_ref << std::endl;
+				file_spec << "#VAR " << i_name << std::endl;
+				file_spec << "#ITERATION " << iteration_id << std::endl;
+				file_spec << "#TIMESLICE " << time_slice_id << std::endl;
+				file_spec << "#TIMEFRAMEEND " << t  * simVars->iodata.output_time_scale << std::endl;
+				for (std::vector<std::size_t>::iterator it = rnorms.begin(); it != rnorms.end(); it++)
+					file_spec << "errLinf " << *it + 1 << " " << err_Linf_spectral.at(*it) << std::endl;
 
-			file_spec.close();
+				file_spec.close();
 #endif
+			}
+
 
 		}
 		pint_data_ref = nullptr;
