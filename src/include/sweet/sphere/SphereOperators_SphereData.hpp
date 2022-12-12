@@ -858,6 +858,36 @@ public:
 		return out;
 	}
 
+
+	/**
+	 * Calculates implicit diffusion (applies 1/(1-mu*dt*D^q) to spectrum)
+	 *  see "Numerical Techniques for Global Atmospheric Models", page 500
+	 *
+	 * i_order (q) needs to be even!!! (second or forth order usually)
+	 * i_coef is mu*dt
+	 *
+	 * Only works in spectral space
+	 *
+	 */
+	inline SphereData_Spectral implicit_diffusion(
+			const SphereData_Spectral &i_data,
+			double i_coef,
+			/*int i_order*/
+			double i_r
+	)
+	{
+		SphereData_Spectral out = i_data;
+
+		const double scalar = i_coef;
+		const double r      = i_r;
+
+		out  = out.spectral_solve_helmholtz(1.0,  -scalar, r);
+
+		return out;
+	}
+
+
+
 };
 
 

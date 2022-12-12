@@ -78,8 +78,10 @@ jg.runtime.viscosity = 0.0
 #
 # Time, Mode and Physical resolution
 #
-jg.runtime.max_simulation_time = 3600.
-jg.runtime.output_timestep_size = 180.
+###jg.runtime.max_simulation_time = 3600.
+###jg.runtime.output_timestep_size = 180.
+jg.runtime.max_simulation_time = 720.
+jg.runtime.output_timestep_size = 36.
 
 timestep_size_reference = 18
 timestep_size_fine = 36
@@ -106,7 +108,9 @@ jg.runtime.parareal_coarse_timestepping_order2 = 2;
 ##jg.runtime.parareal_coarse_timestepping_order2 = orders[tsm_coarse]
 
 parareal_coarse_slices = [5, 10];
-parareal_coarse_timesteps = [180, 360, -1]
+##parareal_coarse_timesteps = [180, 360, -1]
+parareal_coarse_timesteps = [36., 72., -1]
+parareal_spatial_coarsening = [0, 1];
 ##parareal_coarse_slices = [4, 6];
 ##parareal_coarse_timesteps = [15.,  30., -1]
 jg.runtime.parareal_coarse_timestepping_method = tsm_coarse;
@@ -124,9 +128,12 @@ if simulation_to_run == "parareal":
 
         for coarse_timestep in parareal_coarse_timesteps:
 
-            jg.runtime.parareal_coarse_slices = nb_coarse_slices;
-            jg.runtime.parareal_coarse_timestep_size = coarse_timestep;
-            jg.gen_jobscript_directory()
+            for spatial_coarsening in parareal_spatial_coarsening:
+
+                jg.runtime.parareal_coarse_slices = nb_coarse_slices;
+                jg.runtime.parareal_coarse_timestep_size = coarse_timestep;
+                jg.runtime.parareal_spatial_coarsening = spatial_coarsening;
+                jg.gen_jobscript_directory()
 
 elif simulation_to_run == "ref":
     if not online_error:

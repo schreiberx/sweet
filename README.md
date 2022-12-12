@@ -1,4 +1,4 @@
-Before trying out anything, please have a detailed look into the INSTALL instructions to cope with the required libraries!
+Before trying out anything, please have a detailed look into the INSTALL.md instructions about how to cope with the required libraries!
 
 # SWEET
 

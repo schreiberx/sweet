@@ -1468,6 +1468,32 @@ public:
 		return error;
 	}
 
+
+	/**
+	 * Return the max abs value for the first rnorm spectral coefficients
+	 */
+	double spectral_reduce_max_abs(std::size_t rnorm)	const
+	{
+
+		assert (rnorm <= planeDataConfig->spectral_data_size[0]);
+		assert (rnorm <= planeDataConfig->spectral_data_size[1]);
+
+		double error = -std::numeric_limits<double>::infinity();
+		std::complex<double> w = {0,0};
+
+		for (std::size_t n = 0; n <= rnorm; n++)
+			for (std::size_t m = 0; m <= rnorm; m++)
+			{
+				std::size_t idx = planeDataConfig->getArrayIndexByModes(n, m);
+				w = spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+				error = std::max(std::abs(w), error);
+			}
+
+		return error;
+	}
+
+
+
 	/**
 	 * Return the minimum abs value
 	 */
@@ -1557,9 +1583,10 @@ public:
 		std::cout << "m \\ n ----->" << std::endl;
 		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]; m++)
 		{
-			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
+			///std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
 			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]; n++)
 			{
+				std::size_t idx = planeDataConfig->getArrayIndexByModes(n, m);
 				if (std::abs(spectral_space_data[idx]) < i_abs_threshold)
 					std::cout << 0 << "\t";
 				else
@@ -1709,9 +1736,10 @@ public:
 
   		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]; m++)
   		{
-  			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
+  			///std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
   			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]; n++)
   			{
+  				std::size_t idx = planeDataConfig->getArrayIndexByModes(n, m);
   				w = spectral_space_data[idx];
   				idx++;
 
@@ -1773,9 +1801,10 @@ public:
 		file << i_time << "\t";
   		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
   		{
-  			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
+  			///std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
   			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
   			{
+  				std::size_t idx = planeDataConfig->getArrayIndexByModes(n, m);
   				w = spectral_space_data[idx];
 				wabs = std::abs(w * std::conj(w));
 				if ( m > 0 ) sum += 2*wabs; //term appears twice in the spectrum
@@ -1840,9 +1869,10 @@ public:
 		file << i_time << "\t";
   		for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
   		{
-  			std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
+  			///std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
   			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]/i_reduce_mode_factor; n++)
   			{
+  				std::size_t idx = planeDataConfig->getArrayIndexByModes(n, m);
   				w = spectral_space_data[idx];
 				wphase = std::arg(w); // std::abs(w * std::conj(w));
 				
@@ -2176,6 +2206,91 @@ public:
 		);
 
 		out.spectral_zeroAliasingModes();
+
+		return out;
+	}
+
+
+	/**
+	 * Interpolate from a finer mesh. Remove highest frequency modes.
+	 */
+	PlaneData_Spectral restrict(
+			const PlaneData_Spectral &i_array_data
+	)
+	{
+
+		PlaneData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.planeDataConfig);
+
+		//////std::size_t M_fine = i_array_data.planeDataConfig->spectral_data_size[0];
+		//////std::size_t N_fine = i_array_data.planeDataConfig->spectral_data_size[1];
+		//////std::size_t M_coarse = out.planeDataConfig->spectral_data_size[0];
+		//////std::size_t N_coarse = out.planeDataConfig->spectral_data_size[1];
+
+		//////assert(M_fine >= M_coarse);
+		//////assert(N_fine >= N_coarse);
+
+		//////double rescale =
+		//////		(double)(out.planeDataConfig->physical_array_data_number_of_elements)
+		//////		/
+		//////		(double)(i_array_data.planeDataConfig->physical_array_data_number_of_elements);
+
+		//////// just copy data
+		//////if (M_fine == M_coarse && N_fine == N_coarse)
+		//////	out = i_array_data;
+		//////else
+		//////	for (std::size_t m = 0; m < M_coarse; m++)
+		//////		for (std::size_t n = 0; n < N_coarse; n++)
+		//////		{
+		//////			std::size_t idx_coarse = out.planeDataConfig->getArrayIndexByModes(n, m);
+		//////			std::size_t idx_fine = i_array_data.planeDataConfig->getArrayIndexByModes(n, m);
+		//////			out.spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine] * rescale;
+		//////		}
+
+
+
+		return out;
+	}
+
+
+	/**
+	 * Interpolate from a coarser mesh. Pad zeros corresponding to highest frequency modes.
+	 */
+	PlaneData_Spectral pad_zeros(
+			const PlaneData_Spectral &i_array_data
+	)
+	{
+
+		PlaneData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.planeDataConfig);
+
+		///////std::size_t M_coarse = i_array_data.planeDataConfig->spectral_data_size[0];
+		///////std::size_t N_coarse = i_array_data.planeDataConfig->spectral_data_size[1];
+		///////std::size_t M_fine = out.planeDataConfig->spectral_data_size[0];
+		///////std::size_t N_fine = out.planeDataConfig->spectral_data_size[1];
+
+		///////assert(M_fine >= M_coarse);
+		///////assert(N_fine >= N_coarse);
+
+		///////double rescale =
+		///////		(double)(out.planeDataConfig->physical_array_data_number_of_elements)
+		///////		/
+		///////		(double)(i_array_data.planeDataConfig->physical_array_data_number_of_elements);
+
+		///////// just copy data
+		///////if (M_fine == M_coarse && N_fine == N_coarse)
+		///////	out = i_array_data;
+		///////else
+		///////{
+		///////	out.spectral_set_zero();
+		///////	for (std::size_t m = 0; m < M_coarse; m++)
+		///////		for (std::size_t n = 0; n < N_coarse; n++)
+		///////		{
+		///////			std::size_t idx_coarse = i_array_data.planeDataConfig->getArrayIndexByModes(n, m);
+		///////			std::size_t idx_fine = out.planeDataConfig->getArrayIndexByModes(n, m);
+		///////			out.spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse] * rescale;
+		///////		}
+		///////}
 
 		return out;
 	}

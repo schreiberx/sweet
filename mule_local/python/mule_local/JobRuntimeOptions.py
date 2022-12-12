@@ -152,7 +152,43 @@ class JobRuntimeOptions(InfoError):
         self.parareal_load_fine_csv_files = 0;
         self.parareal_path_fine_csv_files = "";
         self.parareal_store_iterations = 1;
+        self.parareal_spatial_coarsening = None;
+        self.parareal_max_iter = None;
 
+
+        ## XBraid parameters
+        self.xbraid_enabled = 0;
+        self.xbraid_max_levels = None;
+        self.xbraid_skip = None;
+        self.xbraid_min_coarse = None;
+        self.xbraid_nrelax = None;
+        self.xbraid_nrelax0 = None;
+        self.xbraid_tol = None;
+        self.xbraid_tnorm = None;
+        self.xbraid_cfactor = None;
+        self.xbraid_cfactor0 = None;
+        self.xbraid_max_iter = None;
+        self.xbraid_fmg = None;
+        self.xbraid_fmg_vcyc = None;
+        self.xbraid_res = None;
+        self.xbraid_storage = None;
+        self.xbraid_print_level = None;
+        self.xbraid_access_level = None;
+        self.xbraid_run_wrapper_tests = None;
+        self.xbraid_fullrnorm = None;
+        self.xbraid_use_seq_soln = None;
+        self.xbraid_use_rand = None;
+        self.xbraid_pt = None;
+        self.xbraid_timestepping_method = None;
+        self.xbraid_timestepping_order = None;
+        self.xbraid_timestepping_order2 = None;
+        self.xbraid_verbosity = None;
+        self.xbraid_load_ref_csv_files = None;
+        self.xbraid_path_ref_csv_files = None;
+        self.xbraid_load_fine_csv_files = None;
+        self.xbraid_path_fine_csv_files = None;
+        self.xbraid_store_iterations = None;
+        self.xbraid_spatial_coarsening = None;
 
         #
         # User defined parameters
@@ -439,6 +475,76 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_pDt_'+str(self.parareal_coarse_timestep_size)
                 if not 'runtime.parareal_store_iterations' in filter_list:
                     idstr += '_pStore_'+str(self.parareal_store_iterations)
+            if not 'runtime.parareal_spatial_coarsening' in filter_list:
+                    idstr += '_pSpc_'+str(self.parareal_spatial_coarsening)
+            if not 'runtime.parareal_max_iter' in filter_list:
+                    idstr += '_pMaxIter_'+str(self.parareal_max_iter)
+
+
+        if not 'runtime.xbraid' in filter_list:
+            if self.xbraid_enabled:
+                if self.xbraid_max_levels != None:
+                    idstr += '_xb_max_l'+str(self.xbraid_max_levels)
+                if self.xbraid_skip!= None:
+                    idstr += '_xb_skip'+str(self.xbraid_skip)
+                if self.xbraid_min_coarse != None:
+                    idstr += '_xb_min_c'+str(self.xbraid_min_coarse)
+                if self.xbraid_nrelax != None:
+                    idstr += '_xb_nrlx'+str(self.xbraid_nrelax)
+                if self.xbraid_nrelax0 != None:
+                    idstr += '_xb_nrlx0'+str(self.xbraid_nrelax0)
+                if self.xbraid_tol != None:
+                    idstr += '_xb_tol'+str(self.xbraid_tol)
+                if self.xbraid_tnorm != None:
+                    idstr += '_xb_tnorm'+str(self.xbraid_tnorm)
+                if self.xbraid_cfactor != None:
+                    idstr += '_xb_cfr'+str(self.xbraid_cfactor)
+                if self.xbraid_cfactor0 != None:
+                    idstr += '_xb_cfr0'+str(self.xbraid_cfactor0)
+                if self.xbraid_max_iter != None:
+                    idstr += '_xb_max_i'+str(self.xbraid_max_iter)
+                if self.xbraid_fmg != None:
+                    idstr += '_xb_fmg'+str(self.xbraid_fmg)
+                if self.xbraid_fmg_vcyc != None:
+                    idstr += '_xb_fmg_vcyc'+str(self.xbraid_fmg_vcyc)
+                if self.xbraid_res != None:
+                    idstr += '_xb_res'+str(self.xbraid_res)
+                if self.xbraid_storage != None:
+                    idstr += '_xb_stg'+str(self.xbraid_storage)
+                if self.xbraid_print_level != None:
+                    idstr += '_xb_prt_l'+str(self.xbraid_print_level)
+                if self.xbraid_access_level != None:
+                    idstr += '_xb_acc_l'+str(self.xbraid_access_level)
+                if self.xbraid_run_wrapper_tests != None:
+                    idstr += '_xb_wrap'+str(self.xbraid_run_wrapper_tests)
+                if self.xbraid_fullrnorm != None:
+                    idstr += '_xb_frnm'+str(self.xbraid_fullrnorm)
+                if self.xbraid_use_seq_soln != None:
+                    idstr += '_xb_seq'+str(self.xbraid_use_seq_soln)
+                if self.xbraid_use_rand != None:
+                    idstr += '_xb_rand'+str(self.xbraid_use_rand)
+                if self.xbraid_pt != None:
+                    idstr += '_xb_pt'+str(self.xbraid_pt)
+                if self.xbraid_timestepping_method != None:
+                    idstr += '_xb_tsm'+str(self.xbraid_timestepping_method)
+                if self.xbraid_timestepping_order != None:
+                    idstr += '_xb_tso'+str(self.xbraid_timestepping_order)
+                if self.xbraid_timestepping_order != None:
+                    idstr += '_xb_tso2'+str(self.xbraid_timestepping_order2)
+                if self.xbraid_verbosity != None:
+                    idstr += '_xb_verb'+str(self.xbraid_verbosity)
+                if self.xbraid_load_ref_csv_files != None:
+                    idstr += '_xb_load_ref'+str(self.xbraid_load_ref_csv_files)
+                if self.xbraid_path_ref_csv_files != None:
+                    idstr += '_xb_path_ref'+str(self.xbraid_path_ref_csv_files)
+                if self.xbraid_load_fine_csv_files != None:
+                    idstr += '_xb_load_fine'+str(self.xbraid_load_fine_csv_files)
+                if self.xbraid_path_fine_csv_files != None:
+                    idstr += '_xb_path_fine'+str(self.xbraid_path_fine_csv_files)
+                if self.xbraid_store_iterations != None:
+                    idstr += '_xb_store_iterations'+str(self.xbraid_store_iterations)
+                if self.xbraid_spatial_coarsening != None:
+                    idstr += '_xb_spc'+str(self.xbraid_spatial_coarsening)
 
         if idstr != '':
             idstr = "RT"+idstr
@@ -672,13 +778,49 @@ class JobRuntimeOptions(InfoError):
             retval += " --parareal-load-fine-csv-files="+str(self.parareal_load_fine_csv_files);
             retval += " --parareal-path-fine-csv-files="+str(self.parareal_path_fine_csv_files);
             retval += " --parareal-store-iterations="+str(self.parareal_store_iterations);
+            retval += " --parareal-spatial-coarsening="+str(self.parareal_spatial_coarsening);
+            if self.parareal_max_iter != None:
+                retval += " --parareal-max-iter="+str(self.parareal_max_iter);
 
             ##if self.parareal_coarse_timestep_size > 0:
             ##    retval += " --parareal-coarse-timestep-size="+str(self.parareal_coarse_timestep_size);
             ##else:
             ##    retval += " --parareal-coarse-timestep-size="+str(self.parareal_max_simulation_time/self.parareal_coarse_slices);
 
-
+        ## XBraid parameters
+        if self.xbraid_enabled:
+            retval += " --xbraid-enable=1"
+            retval += " --xbraid-max-levels="+str(self.xbraid_max_levels)
+            retval += " --xbraid-skip="+str(self.xbraid_skip)
+            retval += " --xbraid-min-coarse="+str(self.xbraid_min_coarse)
+            retval += " --xbraid-nrelax="+str(self.xbraid_nrelax)
+            retval += " --xbraid-nrelax0="+str(self.xbraid_nrelax0)
+            retval += " --xbraid-tol="+str(self.xbraid_tol)
+            retval += " --xbraid-tnorm="+str(self.xbraid_tnorm)
+            retval += " --xbraid-cfactor="+str(self.xbraid_cfactor)
+            retval += " --xbraid-cfactor0="+str(self.xbraid_cfactor0)
+            retval += " --xbraid-max-iter="+str(self.xbraid_max_iter)
+            retval += " --xbraid-fmg="+str(self.xbraid_fmg)
+            retval += " --xbraid-fmg-vcyc="+str(self.xbraid_fmg_vcyc)
+            retval += " --xbraid-res="+str(self.xbraid_res)
+            retval += " --xbraid-storage="+str(self.xbraid_storage)
+            retval += " --xbraid-print-level="+str(self.xbraid_print_level)
+            retval += " --xbraid-access-level="+str(self.xbraid_access_level)
+            retval += " --xbraid-run-wrapper-tests="+str(self.xbraid_run_wrapper_tests)
+            retval += " --xbraid-fullrnorm="+str(self.xbraid_fullrnorm)
+            retval += " --xbraid-use-seq-soln="+str(self.xbraid_use_seq_soln)
+            retval += " --xbraid-use-rand="+str(self.xbraid_use_rand)
+            retval += " --xbraid-pt="+str(self.xbraid_pt)
+            retval += " --xbraid-timestepping-method="+str(self.xbraid_timestepping_method)
+            retval += " --xbraid-timestepping-order="+str(self.xbraid_timestepping_order2)
+            retval += " --xbraid-timestepping-order2="+str(self.xbraid_timestepping_order2)
+            retval += " --xbraid-verbosity="+str(self.xbraid_verbosity)
+            retval += " --xbraid-load-ref-csv-files="+str(self.xbraid_load_ref_csv_files)
+            retval += " --xbraid-path-ref-csv-files="+str(self.xbraid_path_ref_csv_files)
+            retval += " --xbraid-load-fine-csv-files="+str(self.xbraid_load_fine_csv_files)
+            retval += " --xbraid-path-fine-csv-files="+str(self.xbraid_path_fine_csv_files)
+            retval += " --xbraid-store-iterations="+str(self.xbraid_store_iterations)
+            retval += " --xbraid-spatial-coarsening="+str(self.xbraid_spatial_coarsening)
 
         for key, param in self.user_defined_parameters.items():
             retval += ' '+param['option']+str(param['value'])

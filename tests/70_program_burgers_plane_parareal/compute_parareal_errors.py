@@ -28,15 +28,18 @@ def read_ref_solution(ref_path):
 
 
 
-list_vars = ["prog_h_pert", "prog_u", "prog_v"];
+list_vars = ["prog_u", "prog_v"];
 def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
 
     parareal_sol = {};
 
     list_parareal_files = glob(path + "/*csv");
 
+    ###print("LIST FILES", list_parareal_files)
     for f in list_parareal_files:
         if "amp_phase" in f:
+            continue;
+        if "_spec_" in f:
             continue;
         ## identify variable, time and iteration
         ff = os.path.basename(f).split("_t0");

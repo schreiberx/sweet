@@ -13,7 +13,7 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL || SWEET_XBRAID
 #include <parareal/Parareal_GenericData.hpp>
 #endif
 
@@ -29,7 +29,7 @@ public:
 			double i_sim_timestamp
 	) = 0;
 
-#if SWEET_PARAREAL && SWEET_PARAREAL_PLANE
+#if (SWEET_PARAREAL && SWEET_PARAREAL_PLANE) || (SWEET_XBRAID && SWEET_XBRAID_PLANE)
 	void run_timestep(
 			Parareal_GenericData* io_data,
 

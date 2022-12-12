@@ -25,6 +25,7 @@ class Parareal_GenericData_Scalar :
 
 		DataContainer_Scalar()
 		{
+			this->nb_fields = N;
 			this->simfields = new double[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = 0.;
@@ -34,6 +35,7 @@ class Parareal_GenericData_Scalar :
 				double i_data
 		)
 		{
+			this->nb_fields = N;
 			this->simfields = new double[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data;
@@ -43,6 +45,7 @@ class Parareal_GenericData_Scalar :
 				double* i_data
 		)
 		{
+			this->nb_fields = N;
 			this->simfields = new double[N];
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data[i];
@@ -57,12 +60,21 @@ class Parareal_GenericData_Scalar :
 			for (int i = 0; i < N; i++)
 				this->simfields[i] = i_data.simfields[i];
 		};
+
+		~DataContainer_Scalar()
+		{
+			if (this->simfields)
+			{
+				delete [] this->simfields;
+				this->simfields = nullptr;
+			}
+		}
 	};
 
 
 public:
 
-	DataContainer<double>* data;
+	DataContainer<double>* data = nullptr;
 
 public:
 	DataContainer<double>* get_pointer_to_data_Scalar() const override
@@ -70,13 +82,27 @@ public:
 		return this->data;
 	};
 
+	void dataArrays_to_GenericData_Scalar(
+						double &u
+						) override
+	{
+		this->get_pointer_to_data_Scalar()->simfields[0] = u;
+	}
+
+	void GenericData_Scalar_to_dataArrays(
+						double &u
+						) override
+	{
+		u = this->get_pointer_to_data_Scalar()->simfields[0];
+	}
+
 
 public:
 
 	Parareal_GenericData_Scalar():
 		Parareal_GenericData()
 	{
-		this->allocate_data();
+		////this->allocate_data();
 	}
 
 	Parareal_GenericData_Scalar(Parareal_GenericData_Scalar &i_data)
@@ -96,6 +122,7 @@ public:
 
 	~Parareal_GenericData_Scalar()
 	{
+		this->free_data();
 	};
 
 	void allocate_data()
@@ -110,7 +137,6 @@ public:
 			delete this->data;
 			this->data = nullptr;
 		}
-		
 	}
 	
 
@@ -127,7 +153,7 @@ public:
 	}
 
 /////#if SWEET_MPI
-#if SWEET_PARAREAL==2
+#if SWEET_PARAREAL==2 || SWEET_XBRAID
 	// size in bytes (for MPI)
 	// size of each simfield of data
 	std::size_t size()
@@ -161,7 +187,7 @@ public:
 	}
 
 
-	double reduce_maxAbs()
+	double spectral_reduce_maxAbs()
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
@@ -169,6 +195,34 @@ public:
 					std::abs(this->data->simfields[k]));
 		return e;
 	}
+
+	double spectral_reduce_maxAbs(std::size_t rnorm)
+	{
+		return this->spectral_reduce_maxAbs();
+	}
+
+	double physical_reduce_maxAbs()
+	{
+		return this->spectral_reduce_maxAbs();
+	}
+
+
+	double physical_reduce_norm1()
+	{
+		double e = 0;
+		for (int k = 0; k < N; k++)
+			e += std::abs(this->data->simfields[k]);
+		return e;
+	}
+
+	double physical_reduce_norm2()
+	{
+		double e = 0;
+		for (int k = 0; k < N; k++)
+			e += this->data->simfields[k] * this->data->simfields[k];
+		return std::sqrt(e);
+	}
+
 
 	bool check_for_nan()
 	{
@@ -184,7 +238,9 @@ public:
 
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_Scalar()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_Scalar()->nb_fields);
 
 		for (int i = 0; i < N; i++)
@@ -196,7 +252,9 @@ public:
 
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
 	{
+#if SWEET_PARAREAL
 		assert(this->data->time == i_data.get_pointer_to_data_Scalar()->time);
+#endif
 		assert(this->data->nb_fields == i_data.get_pointer_to_data_Scalar()->nb_fields);
 
 		for (int i = 0; i < N; i++)
@@ -205,6 +263,24 @@ public:
 		return *this;
 	}
 
+	Parareal_GenericData& operator*=(const double v)
+	{
+
+		for (int i = 0; i < N; i++)
+			this->data->simfields[i] *= v;
+
+		return *this;
+	}
+
+	// Nothing to do
+	void restrict(const Parareal_GenericData& i_data)
+	{
+	}
+
+	// Nothing to do
+	void pad_zeros(const Parareal_GenericData& i_data)
+	{
+	}
 
 	void physical_print()
 	{
@@ -212,8 +288,14 @@ public:
 		{
 			std::cout << "Field #" << i << ": " << this->data->simfields[i] << std::endl;
 		}
-
 	}
+
+	void spectral_print()
+	{
+		this->physical_print();
+	}
+
+
 };
 
 #endif

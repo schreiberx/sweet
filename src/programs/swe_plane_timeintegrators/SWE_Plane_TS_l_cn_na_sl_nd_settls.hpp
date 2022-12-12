@@ -81,7 +81,7 @@ public:
 #endif
 	}
 
-#if SWEET_PARAREAL && SWEET_PARAREAL_PLANE
+#if ( SWEET_PARAREAL && SWEET_PARAREAL_PLANE ) || ( SWEET_XBRAID && SWEET_XBRAID_PLANE )
 	void set_previous_solution(
 				PlaneData_Spectral &i_h_prev,
 				PlaneData_Spectral &i_u_prev,
