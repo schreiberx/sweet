@@ -766,6 +766,8 @@ public:
 	)
 	{
 
+	bool stop_simulation = false;
+
 	// create vectors for storing nb iterations for gien thresholds
 	if (this->err_iters_L1.size() == 0)
 	{
@@ -1430,50 +1432,53 @@ public:
 
 			// update nb of iterations for reaching given thresholds
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
-			if (err_L1 > this->err_iters_L1[ivar][iteration_id])
+			if (err_L1 > this->err_iters_L1[ivar][iteration_id] || ! std::isfinite(err_L1) )
 				this->err_iters_L1[ivar][iteration_id] = err_L1;
-			if (err_abs > this->err_iters_Abs[ivar][iteration_id])
+			if (err_abs > this->err_iters_Abs[ivar][iteration_id] || ! std::isfinite(err_abs))
 				this->err_iters_Abs[ivar][iteration_id] = err_abs;
-			if (err_real > this->err_iters_Real[ivar][iteration_id])
+			if (err_real > this->err_iters_Real[ivar][iteration_id] || ! std::isfinite(err_real))
 				this->err_iters_Real[ivar][iteration_id] = err_real;
-			if (err_imag > this->err_iters_Imag[ivar][iteration_id])
+			if (err_imag > this->err_iters_Imag[ivar][iteration_id] || ! std::isfinite(err_imag))
 				this->err_iters_Imag[ivar][iteration_id] = err_imag;
-			if (err_phase > this->err_iters_Phase[ivar][iteration_id])
+			if (err_phase > this->err_iters_Phase[ivar][iteration_id] || ! std::isfinite(err_phase))
 				this->err_iters_Phase[ivar][iteration_id] = err_phase;
-			if (err_delta_phase > this->err_iters_DeltaPhase[ivar][iteration_id])
+			if (err_delta_phase > this->err_iters_DeltaPhase[ivar][iteration_id] || ! std::isfinite(err_delta_phase))
 				this->err_iters_DeltaPhase[ivar][iteration_id] = err_delta_phase;
 			for (int i = 0; i < this->min_threshold; i++)
 			{
-				if (this->err_iters_L1[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_L1[ivar][i])
+				if (this->err_iters_L1[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_L1[ivar][iteration_id]) && iteration_id < this->iters_threshold_L1[ivar][i])
 					this->iters_threshold_L1[ivar][i] = iteration_id;
-				if (this->err_iters_Abs[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Abs[ivar][i])
+				if (this->err_iters_Abs[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_Abs[ivar][iteration_id]) && iteration_id < this->iters_threshold_Abs[ivar][i])
 					this->iters_threshold_Abs[ivar][i] = iteration_id;
-				if (this->err_iters_Real[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Real[ivar][i])
+				if (this->err_iters_Real[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_Real[ivar][iteration_id]) && iteration_id < this->iters_threshold_Real[ivar][i])
 					this->iters_threshold_Real[ivar][i] = iteration_id;
-				if (this->err_iters_Imag[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Imag[ivar][i])
+				if (this->err_iters_Imag[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_Imag[ivar][iteration_id]) && iteration_id < this->iters_threshold_Imag[ivar][i])
 					this->iters_threshold_Imag[ivar][i] = iteration_id;
-				if (this->err_iters_Phase[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Phase[ivar][i])
+				if (this->err_iters_Phase[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_Phase[ivar][iteration_id]) && iteration_id < this->iters_threshold_Phase[ivar][i])
 					this->iters_threshold_Phase[ivar][i] = iteration_id;
-				if (this->err_iters_DeltaPhase[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_DeltaPhase[ivar][i])
+				if (this->err_iters_DeltaPhase[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_DeltaPhase[ivar][iteration_id]) && iteration_id < this->iters_threshold_DeltaPhase[ivar][i])
 					this->iters_threshold_DeltaPhase[ivar][i] = iteration_id;
 			}
 #else
-			if (err_L1 > this->err_iters_L1[ivar][iteration_id])
+			if (err_L1 > this->err_iters_L1[ivar][iteration_id] || ! std::isfinite(err_L1))
 				this->err_iters_L1[ivar][iteration_id] = err_L1;
-			if (err_L2 > this->err_iters_L2[ivar][iteration_id])
+			if (err_L2 > this->err_iters_L2[ivar][iteration_id] || ! std::isfinite(err_L2))
 				this->err_iters_L2[ivar][iteration_id] = err_L2;
-			if (err_Linf > this->err_iters_Linf[ivar][iteration_id])
+			if (err_Linf > this->err_iters_Linf[ivar][iteration_id] || ! std::isfinite(err_Linf))
 				this->err_iters_Linf[ivar][iteration_id] = err_Linf;
 			for (int i = 0; i < this->min_threshold; i++)
 			{
-				if (this->err_iters_L1[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_L1[ivar][i])
+				if (this->err_iters_L1[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_L1[ivar][iteration_id]) && iteration_id < this->iters_threshold_L1[ivar][i])
 					this->iters_threshold_L1[ivar][i] = iteration_id;
-				if (this->err_iters_L2[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_L2[ivar][i])
+				if (this->err_iters_L2[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_L2[ivar][iteration_id]) && iteration_id < this->iters_threshold_L2[ivar][i])
 					this->iters_threshold_L2[ivar][i] = iteration_id;
-				if (this->err_iters_Linf[ivar][iteration_id] < std::pow(10, -i) && iteration_id < this->iters_threshold_Linf[ivar][i])
+				if (this->err_iters_Linf[ivar][iteration_id] < std::pow(10, -i) && std::isfinite(this->err_iters_Linf[ivar][iteration_id]) && iteration_id < this->iters_threshold_Linf[ivar][i])
 					this->iters_threshold_Linf[ivar][i] = iteration_id;
 			}
 #endif
+			if ( !std::isfinite(err_L1) )
+				stop_simulation = true;
+
 
 			// save nb of iterations fo reaching given thresholds in file
 			char buffer_out_threshold[1024];
@@ -1577,9 +1582,11 @@ public:
 		}
 		pint_data_ref = nullptr;
 		pint_data_ref = nullptr;
+
+		if (stop_simulation)
+			SWEETError("PInT simulation stopped due to instabilities.");
+
 	}
-
-
 
 
 };
