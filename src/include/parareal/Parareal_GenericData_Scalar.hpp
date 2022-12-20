@@ -178,7 +178,7 @@ public:
 		for (int i = 0; i < N; i++)
 		{
 			///std::memcpy(data + i, &this->data->simfields[i], 1);
-			std::copy(&this->data->simfields[i], &this->data->simfields[i + 1], data);
+			std::copy(&this->data->simfields[i], &this->data->simfields[i + 1], &data[i]);
 		}
 	};
 

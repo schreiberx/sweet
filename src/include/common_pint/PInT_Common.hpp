@@ -1316,7 +1316,10 @@ public:
 				}
 			}
 
-			err_L1 = std::abs( data - data_ref ) / std::abs(data_ref);
+			if (std::abs(data_ref) > 1e-14)
+				err_L1 = std::abs( data - data_ref ) / std::abs(data_ref);
+			else
+				err_L1 = std::abs( data - data_ref );
 			if (ivar < N_ode)
 			{
 #if SWEET_SCALAR_COMPLEX
