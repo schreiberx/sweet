@@ -1453,7 +1453,8 @@ public:
 										t,
 										this->simVars->xbraid.xbraid_path_ref_csv_files,
 										"ref",
-										"xbraid"
+										"xbraid",
+										rank
 						);
 				}
 				// Compute and store errors w.r.t. fine (serial) solution
@@ -1478,7 +1479,8 @@ public:
 										t,
 										this->simVars->xbraid.xbraid_path_fine_csv_files,
 										"fine",
-										"xbraid"
+										"xbraid",
+										rank
 						);
 				}
 			}

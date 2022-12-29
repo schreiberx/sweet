@@ -762,6 +762,7 @@ public:
 			std::string path_ref,
 			std::string base_solution,	// "ref" or "fine"
 			std::string pint_type,
+			int rank,
 			int i_precision = 32
 	)
 	{
@@ -1487,9 +1488,12 @@ public:
 			char buffer_out_threshold[1024];
 
 			///const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
-			std::string str_threshold = pint_type + "_iter_thresholds_%s_%s.csv";
+			///std::string str_threshold = pint_type + "_iter_thresholds_%s_%s.csv";
+			///const char* filename_template_out_threshold = str_threshold.c_str();
+			///sprintf(buffer_out_threshold, filename_template_out_threshold, base_solution.c_str(), i_name.c_str());
+			std::string str_threshold = pint_type + "_iter_thresholds_%s_%s_proc%d.csv";
 			const char* filename_template_out_threshold = str_threshold.c_str();
-			sprintf(buffer_out_threshold, filename_template_out_threshold, base_solution.c_str(), i_name.c_str());
+			sprintf(buffer_out_threshold, filename_template_out_threshold, base_solution.c_str(), i_name.c_str(), rank);
 
 			std::ofstream file_threshold(buffer_out_threshold, std::ios_base::trunc);
 			///file << std::setprecision(i_precision);
@@ -1526,9 +1530,12 @@ public:
 				char buffer_out[1024];
 
 				///const char* filename_template_out = "parareal_error_%s_%s_t%020.8f_iter%03d.csv";
-				std::string str = pint_type + "_error_%s_%s_t%020.8f_iter%03d.csv";
+				/////std::string str = pint_type + "_error_%s_%s_t%020.8f_iter%03d.csv";
+				/////const char* filename_template_out = str.c_str();
+				/////sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
+				std::string str = pint_type + "_error_%s_%s_t%020.8f_iter%03d_proc%d.csv";
 				const char* filename_template_out = str.c_str();
-				sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id);
+				sprintf(buffer_out, filename_template_out, base_solution.c_str(), i_name.c_str(), t * simVars->iodata.output_time_scale, iteration_id, rank);
 
 				std::ofstream file(buffer_out, std::ios_base::trunc);
 				file << std::setprecision(i_precision);
