@@ -6,6 +6,7 @@
 #include "SWE_Sphere_TS_lg_irk.hpp"
 
 #include <complex>
+#include <sweet/SWEETError.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
@@ -15,6 +16,9 @@
 bool SWE_Sphere_TS_lg_irk::implements_timestepping_method(const std::string &i_timestepping_method
 									)
 {
+	/*
+	 * Supported directly in l_irk, not in this class anymore
+	 */
 	timestepping_method = i_timestepping_method;
 	timestepping_order = simVars.disc.timestepping_order;
 	timestepping_order2 = simVars.disc.timestepping_order2;

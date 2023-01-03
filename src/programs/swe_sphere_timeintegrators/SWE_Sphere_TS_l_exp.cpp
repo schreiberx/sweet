@@ -165,16 +165,6 @@ SWE_Sphere_TS_l_exp::SWE_Sphere_TS_l_exp(
 
 		num_global_threads = num_local_rexi_par_threads * num_mpi_ranks;
 
-		if (mpi_rank == 0)
-		{
-#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
-			int rexi_communication_size = i_op.sphereDataConfig->spectral_array_data_number_of_elements*2*sizeof(double);
-#else
-			int rexi_communication_size = i_op.sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
-#endif
-			std::cout << "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
-		}
-
 	#else
 
 		num_global_threads = num_local_rexi_par_threads;
@@ -359,6 +349,17 @@ void SWE_Sphere_TS_l_exp::setup(
 			else
 				SWEETError("Unknown EXP method");
 		}
+	}
+
+
+	if (mpi_rank == 0)
+	{
+#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
+		int rexi_communication_size = i_op.sphereDataConfig->spectral_array_data_number_of_elements*2*sizeof(double);
+#else
+		int rexi_communication_size = i_op.sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
+#endif
+		std::cout << "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
 	}
 
 	reset();

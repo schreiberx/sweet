@@ -522,6 +522,10 @@ public:
 				std::complex<double> &io_data
 			)
 			{
+				/*
+				 * Note, the Laplace operator in SPH space is given by
+				 * 	-(double)n*((double)n+1.0))/r^2
+				 */
 				io_data /= (1 + (-b*(double)n*((double)n+1.0)));
 			}
 		);
@@ -684,6 +688,8 @@ public:
 	/**
 	 * Compute multiplication with "L" linear operator used for implicit time integration
 	 * see Temperton "Coriolis Terms in SL spectral models"
+	 *
+	 * return -dt * D^2 * sphere_data
 	 */
 	SphereData_Spectral implicit_L(
 			const SphereData_Spectral &i_sphere_data,
@@ -699,6 +705,10 @@ public:
 
 			for (int n = m; n <= i_sphere_data.sphereDataConfig->spectral_modes_n_max; n++)
 			{
+				/*
+				 * Note, the Laplace operator in SPH space is given by
+				 * 	-(double)n*((double)n+1.0))/r^2
+				 */
 				out_sph_data[idx] = i_dt*ir2*(n*(n+1)) * i_sphere_data[idx];
 				idx++;
 			}
