@@ -20,6 +20,8 @@
 #include <limits>
 #include <stdlib.h>
 
+#include <libmath/Hough.hpp>
+
 ////// Parareal_GenericData_Scalar is always used (even if not Parareal nor XBraid)
 ////// because it handles N-dim solutions both for real and complex values
 ////// ScalarDataArray only handles doubles.
@@ -448,8 +450,6 @@ int main(int i_argc, char *i_argv[])
 
 	}
 
-
-
 #endif
 
 #if SWEET_MPI
@@ -459,3 +459,4 @@ int main(int i_argc, char *i_argv[])
 
 	return 0;
 }
+

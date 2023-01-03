@@ -14,27 +14,31 @@
 #include <functional>
 #include <sweet/SWEETError.hpp>
 #include <Eigen/Eigenvalues>
+#include <sweet/MemBlockAlloc.hpp>
 
-
-class ALPCoefficients
-{
-public:
-	int size;
-	double* A = nullptr;
-	double* B = nullptr;
-
-	ALPCoefficients(int i_max_degree)
-	{
-		this->size = Hough::sizeP(i_max_degree);
-		this->A = MemBlockAlloc::alloc<double>(size * sizeof(double));
-		this->B = MemBlockAlloc::alloc<double>(size * sizeof(double));
-	}
-
-}
+const std::complex<double> I(0.0,1.0);
 
 class Hough
 {
 public:
+
+	class ALPCoefficients
+	{
+	public:
+		int size;
+		double* A = nullptr;
+		double* B = nullptr;
+	
+		ALPCoefficients(int i_max_degree)
+		{
+			this->size = Hough::sizeP(i_max_degree);
+			this->A = MemBlockAlloc::alloc<double>(size * sizeof(double));
+			this->B = MemBlockAlloc::alloc<double>(size * sizeof(double));
+		}
+
+	};
+
+
 
 	double g  = 9.8;
 	double h0 = 1e3;
@@ -54,7 +58,7 @@ public:
 	//sizeP(maxDegree)
 	//Return the size of the set of Associated Legendre Polynomials ``P_l^m(x)`` of
 	//degree less than or equal to the given maximum degree
-	int sizeP(int i_max_degree)
+	static int sizeP(int i_max_degree)
 	{
 		return int( (i_max_degree + 1) * (i_max_degree + 2) / 2);
 	}
@@ -62,7 +66,7 @@ public:
 	//sizeY(maxDegree)
 	//Return the size of the set of real spherical harmonics ``Y_{l,m}(θ,φ)`` of·
 	//degree less than or equal to the given maximum degree
-	int sizeY(int o_max_degree)
+	int sizeY(int i_max_degree)
 	{
 		return (i_max_degree + 1) * (i_max_degree + 1);
 	}
@@ -73,7 +77,7 @@ public:
 	//``P_l^m`` are stored in l-major order i.e. [P(0,0), [P(1,0), P(1,1), P(2,0), ...]
 	int index_p(int i_l, int i_m)
 	{
-		return i_m + int(i_l * (i_l + 1) / 2) + 1
+		return i_m + int(i_l * (i_l + 1) / 2) + 1;
 	}
 
 	//index_y(l,m)
@@ -83,19 +87,11 @@ public:
 	//[Y(0,0), [Y(1,-1), Y(1,0), Y(1,1), Y(2,-2), ...]
 	int index_y(int i_l, int i_m)
 	{
-		return i_m + i_l + (i_l * i_l) + 1
+		return i_m + i_l + (i_l * i_l) + 1;
 	}
 
 
 
-
-
-
-	double* legendreP(int i_l, int i_m, double i_x, int i_lmax)
-	{
-		int ind = this->index_p(i_l, i_m);
-		return std::sqrt(M_PI) * this->compute_p(i_lmax, i_x)[ind];
-	}
 
 
 	double* legendreP(int i_l, int i_m, double* i_x, int i_lmax, int size)
@@ -103,19 +99,28 @@ public:
 		double* y = nullptr;
 		y = MemBlockAlloc::alloc<double>(size * sizeof(double));
 		for (int i = 0; i < size; i++)
-			y[i] = this->legendreP(i_l, i_m, i_x[i], i_lmax)
+			y[i] = this->legendreP(i_l, i_m, i_x[i], i_lmax);
 		return y;
+	}
+
+	double legendreP(int i_l, int i_m, double i_x, int i_lmax)
+	{
+		int ind = this->index_p(i_l, i_m);
+		return std::sqrt(M_PI) * this->compute_p(i_lmax, i_x)[ind];
 	}
 
 
 	double* legendreP(int i_lmax, double* i_x)
 	{
-		return std::sqrt(M_PI) * this->compute_p(i_lmax, i_x);
+		double* P = this->compute_p(i_lmax, i_x);
+		for (int i = 0; i < this->sizeP(i_lmax); i++)
+			P[i] *= std::sqrt(M_PI);
+		return P;
 	}
 
 	ALPCoefficients* compute_coefficients(int i_L)
 	{
-		for (int l = 2; l <= L; l++)
+		for (int l = 2; l <= i_L; l++)
 		{
 			int ls = l * l;
 			int lm1s = (l - 1) * (l - 1);
@@ -146,11 +151,11 @@ public:
 //using the given coefficients, and store in the array P.
 	void compute_P(int i_L, double i_x, ALPCoefficients* i_coeffs, double* io_P)
 	{
-		int size = this->sizeP(L);
-		assert(i_coeffs.size >= size);
+		int size = this->sizeP(i_L);
+		assert(i_coeffs->size >= size);
 
 		double sintheta = std::sqrt(1. - i_x * i_x);
-		double temp = istd::sqrt(.5 / M_PI);
+		double temp = std::sqrt(.5 / M_PI);
 		P[this->index_p(0, 0)] = temp;
 
 		if (i_L > 0)
@@ -163,8 +168,8 @@ public:
 			{
 				for (int m = 0; m <= l-2; m++)
 				{
-					int idx = this->index_p(l, m) =   i_coeffs.A[idx] * (i_x * io_P[this->index_p(l - 1, m)]
-									+ i_coeffs.B[idx] * io_P[this->idxed_p(l - 2, m)] );
+					int idx = this->index_p(l, m) =   i_coeffs->A[idx] * (i_x * io_P[this->index_p(l - 1, m)]
+									+ i_coeffs->B[idx] * io_P[this->index_p(l - 2, m)] );
 				}
 				io_P[this->index_p(l, l - 1)] = i_x * std::sqrt(2. * (l - 1) + 3) * temp;
 				temp = -std::sqrt(1. + .5 / l) * sintheta * temp;
@@ -196,30 +201,30 @@ public:
 	void compute_y(int i_L, double* i_P, double i_phi, double* o_Y)
 	{
 		for (int l = 0; l <= i_L; l++)
-			o_Y[this->index_y(l, 0)] = P[this->index_p(l, 0)] * .5 * std::sqrt(2);
-	}
+			o_Y[this->index_y(l, 0)] = i_P[this->index_p(l, 0)] * .5 * std::sqrt(2);
 
-	double c1 = 1.;
-	double c2 = std::cos(i_phi);
-	double s1 = 0.;
-	double s2 = -std::sin(i_phi);
-	double tc = 2. * c2;
+		double c1 = 1.;
+		double c2 = std::cos(i_phi);
+		double s1 = 0.;
+		double s2 = -std::sin(i_phi);
+		double tc = 2. * c2;
 
-	for (int m = 1; m <= L; m++)
-	{
-		double s = tc * s1 - s2;
-		double c = tc * c1 - c2;
-		s2 = s1;
-		s1 = s;
-		c2 = c1;
-		c1 = c;
-		for (int l = m; l <= L; l++)
+		for (int m = 1; m <= i_L; m++)
 		{
-			o_Y[this->index_y(l, -m)] = P[this->index_p(l, m)] * s;
-			o_Y[this->index_y(l, m)] = P[this->index_p(l, m)] * c;
+			double s = tc * s1 - s2;
+			double c = tc * c1 - c2;
+			s2 = s1;
+			s1 = s;
+			c2 = c1;
+			c1 = c;
+			for (int l = m; l <= L; l++)
+			{
+				o_Y[this->index_y(l, -m)] = P[this->index_p(l, m)] * s;
+				o_Y[this->index_y(l, m)] = P[this->index_p(l, m)] * c;
+			}
 		}
-	}
 
+	}
 
 	//compute_y(L, x, φ)
 	//Compute an entire set of real spherical harmonics ``Y_{l,m}(θ,φ)`` for·
@@ -381,7 +386,7 @@ public:
 	}
 
 
-	bool check_sym(int i_s. int i_l, int i_n, int i_kind)
+	bool check_sym(int i_s, int i_l, int i_n, int i_kind)
 	{
 		if (i_kind == 2)
 		{
@@ -427,21 +432,18 @@ public:
 	}
 
 
-
-!·······return u, -1im.*v, z,  du, -1im.*dv, dz,  1im*s.*u, s.*v, 1im*s.*z, dive, vrt
-
 	void uvz_and_deriv(	int i_s, int i_l, int i_lmax, int i_kind, double i_x, int i_nlat,
-				double* o_u,
-				double* o_miv,
-				double* o_z,
-				double* o_du,
-				double* o_midv,
-				double* o_dz,
-				double* o_pisu,
-				double* o_sv,
-				double* o_pisz,
-				double* o_div,
-				double* o_vort
+				std::complex<double>* o_u,
+				std::complex<double>* o_miv,
+				std::complex<double>* o_z,
+				std::complex<double>* o_du,
+				std::complex<double>* o_midv,
+				std::complex<double>* o_dz,
+				std::complex<double>* o_pisu,
+				std::complex<double>* o_sv,
+				std::complex<double>* o_pisz,
+				std::complex<double>* o_div,
+				std::complex<double>* o_vrt
 			)
 	{
 		Eigen::VectorXd foo = this->eigen_vec(i_s, i_l, i_lmax, i_kind);
@@ -458,6 +460,33 @@ public:
 		coef_a = MemBlockAlloc::alloc<double>(lmax2 * sizeof(double));
 		coef_b = MemBlockAlloc::alloc<double>(lmax2 * sizeof(double));
 		coef_c = MemBlockAlloc::alloc<double>(lmax2 * sizeof(double));
+
+		std::complex<double>* u = nullptr;
+		std::complex<double>* v = nullptr;
+		std::complex<double>* z = nullptr;
+		std::complex<double>* vrt = nullptr;
+		std::complex<double>* div = nullptr;
+		std::complex<double>* du = nullptr;
+		std::complex<double>* dv = nullptr;
+		std::complex<double>* dz = nullptr;
+		std::vector<std::vector<std::complex<double>>> lpmn;
+
+		u = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+		v = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+		z = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+		vrt = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+		div = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+		du = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+		dv = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+		dz = MemBlockAlloc::alloc<std::complex<double>>(nlat * sizeof(std::complex<double>));
+
+		// Calculating psi, phi, z, dpsi, dphi
+		for (int i = 0; i < i_nlat; i++)
+		{
+			std::vector<std::complex<double>> aux(i_nlat, 0.);
+			lpmn.push_back(aux);
+		}
+
 
 		// Gathering/ordering expansion coefficients
 		for (int i = 1; i <= i_lmax; i++)
@@ -496,7 +525,7 @@ public:
 		std::vector<std::vector<std::complex<double>>> xi = {};
 		for (int i = 0; i < 7; i++)
 		{
-			std::vector<std::complex<double>> aux(i_nlat, 1i);
+			std::vector<std::complex<double>> aux(i_nlat, I);
 			xi.push_back(aux);
 		}
 
@@ -506,9 +535,9 @@ public:
 			lpmn = pmn[:, this->index_p(i_m, i_s)];
 			for (int j = 0; j < nlat; j++)
 			{
-				xi[0, j] += 1i * coef_a[i - 1] * lpmn[j];
-				xi[1, j] += coef_b[i - 1] * lpmn[j];
-				xi[2, j] += coef_c[i - 1] * lpmn[j];
+				xi[0][j] += I * coef_a[i - 1] * lpmn[j];
+				xi[1][j] += coef_b[i - 1] * lpmn[j];
+				xi[2][j] += coef_c[i - 1] * lpmn[j];
 			}
 
 			double* lpmn_m1 = nullptr;
@@ -520,7 +549,7 @@ public:
 			{
 				int idx = this->index_p(m - 1, i_s);
 				for (int j = 0; j < nlat; j++)
-					lpmn_m1[j] = pmn[j, idx];
+					lpmn_m1[j] = pmn[j][idx];
 			}
 
 			double* lpmn_p1 = nullptr;
@@ -532,7 +561,7 @@ public:
 			{
 				int idx = this->index_p(m + 1, i_s);
 				for (int j = 0; j < nlat; j++)
-					lpmn_p1[j] = pmn[j, idx];
+					lpmn_p1[j] = pmn[j][idx];
 			}
 
 			double* dlpmn = nullptr;
@@ -540,34 +569,34 @@ public:
 			double e21 = this->e2(m, i_s);
 			double e22 = this->e2(m + 1, i_s);
 			for (int j = 0; j < nlat; j++)
-				dplmn[j] = (m + 1) * e21 * lpmn_m1[j] - m * e22 * lpmn_p1[j];
+				dlpmn[j] = (m + 1) * e21 * lpmn_m1[j] - m * e22 * lpmn_p1[j];
 
-			for (int j = 0; j < nlat; j++)
+			for (int j = 0; j < i_nlat; j++)
 			{
-				xi[3, j] += coef_b[i - 1] * dplmn[j];
-				xi[4, j] += 1i * coef_a[i - 1] * dplmn[j];
-				xi[5, j] += -m * (m + 1) * 1i * coef_a[i - 1] * lpmn[j];
-				xi[6, j] += -m * (m + 1) * coef_b[i - 1] * lpmn[j];
+				xi[3][j] += coef_b[i - 1] * dlpmn[j];
+				xi[4][j] += I * coef_a[i - 1] * dplmn[j];
+				xi[5][j] += double(-m * (m + 1)) * I * coef_a[i - 1] * lpmn[j];
+				xi[6][j] += -m * (m + 1) * coef_b[i - 1] * lpmn[j];
 			}
 
 		}
 
 		// Calculating u, v, z
-		for (int j = 0; j < nlat; j++)
+		for (int j = 0; j < i_nlat; j++)
 		{
-			u[j] = (1i * i_s * xi[0, j] - xi[3, j]) / std::sqrt(epsl * 1. - i_x * i_x);
-			v[j] = 1i * (1i * i_s * xi[1, j] + xi[4, j]) / std::sqrt(epsl * 1. - i_x * i_x);
-			z[j] = xi[2, j];
+			u[j] = (I * double(i_s) * xi[0][j] - xi[3][j]) / std::sqrt(epsl * 1. - i_x * i_x);
+			v[j] = I * (I * double(i_s) * xi[1][j] + xi[4][j]) / std::sqrt(epsl * 1. - i_x * i_x);
+			z[j] = xi[2][j];
 
-			div[j] = xi[5, j] / std::sqrt(epsl);
-			vrt[j] = xi[6, j] / std::sqrt(epsl);
+			div[j] = xi[5][j] / std::sqrt(epsl);
+			vrt[j] = xi[6][j] / std::sqrt(epsl);
 		}
 
 		// Calculating du, dv, dz
-		for (int j = 0; j < nlat; j++)
+		for (int j = 0; j < i_nlat; j++)
 		{
-			du[j] = i_s * v[j];
-			dv[j] = i_s * u[j];
+			du[j] = double(i_s) * v[j];
+			dv[j] = double(i_s) * u[j];
 			dz[j] = 0.;
 		}
 
@@ -605,7 +634,7 @@ public:
 			{
 				du[j] += std::sqrt( (1. - i_x * i_x) / epsl) * m * (m + 1.) * coef_b[i - 1] * lpmn[j];
 				dv[j] += std::sqrt( (1. - i_x * i_x) / epsl) * m * (m + 1.) * coef_a[i - 1] * lpmn[j];
-				dz[j] += 1. / std::sqrt(1. - i_x * i_x) * coef_c[i - 1] * ( (m + 1) * this->e2(m, s) * lpmn_m1[j] - m * this->e2(m + 1, s) * lpmn_p1[j]);
+				dz[j] += 1. / std::sqrt(1. - i_x * i_x) * coef_c[i - 1] * ( (m + 1) * this->e2(m, i_s) * lpmn_m1[j] - m * this->e2(m + 1, i_s) * lpmn_p1[j]);
 			}
 
 		}
@@ -614,19 +643,26 @@ public:
 		for (int j = 0; j < i_nlat; j++)
 		{
 			o_u[j] = u[j];
-			o_miv[j] = -1i * v[j];
+			o_miv[j] = -I * v[j];
 			o_z[j] = z[j];
 			o_du[j] = du[j];
-			o_midv[j] = -1i * dv[j];
-			o_pisu[j] = 1i * i_s * u[j];
-			o_sv[j] = i_s * v[j];
-			o_pisz[j] = 1i * i_s * z[j];
-			o_div = div[j];
-			o_vrt = vrt[j];
+			o_midv[j] = -I * dv[j];
+			o_pisu[j] = I * double(i_s) * u[j];
+			o_sv[j] = double(i_s) * v[j];
+			o_pisz[j] = I * double(i_s) * z[j];
+			o_div[j] = div[j];
+			o_vrt[j] = vrt[j];
 		}
 
 
 	}
 
+
+
+
+
 };
 
+
+
+#endif

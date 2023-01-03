@@ -192,7 +192,7 @@ elif p.scalar_type == 'complex':
 else:
     raise Exception("Invalid option '"+str(p.scalar_type)+"' for scalar_type")
 
-if p.N_ode > 0:
+if int(p.N_ode) > 0:
     env.Append(CXXFLAGS = ' -DSWEET_N_ODE='+str(p.N_ode))
 
 #

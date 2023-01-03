@@ -8,9 +8,9 @@
 #ifndef SRC_PROGRAMS_ODE_SCALAR_TS_INTERFACE_HPP_
 #define SRC_PROGRAMS_ODE_SCALAR_TS_INTERFACE_HPP_
 
-#if (!SWEET_PARAREAL) && (!SWEET_XBRAID)
-const std::complex<double> I(0.0,1.0);
-#endif
+////////////////////////////////#if (!SWEET_PARAREAL) && (!SWEET_XBRAID)
+////////////////////////////////const std::complex<double> I(0.0,1.0);
+////////////////////////////////#endif
 
 #include <cassert>
 
