@@ -96,23 +96,28 @@ def jobscript_get_header(jg : JobGeneration):
     config_file = os.environ["HOME"]+"/sweet_supermuc_per_user_config.py"
     config_per_user = {}
 
-    try:
-        with open(config_file, "rb") as f:
-            code = compile(f.read(), config_file, "exec")
-            exec(code, config_per_user)
+    # Special override for unit test
+    if "MULE_TEST_PLATFORMS" in os.environ:
+        config_per_user['project_id'] = 'dummy_project_id'
+        config_per_user['user_email'] = 'dummy_email'
+    else:
+        try:
+            with open(config_file, "rb") as f:
+                code = compile(f.read(), config_file, "exec")
+                exec(code, config_per_user)
 
-    except:
-        print("*"*80)
-        print("ERROR: Failed to parse '"+supermuc_config+"'")
-        print("*"*80)
-        print("""
+        except:
+            print("*"*80)
+            print("ERROR: Failed to parse '"+supermuc_config+"'")
+            print("*"*80)
+            print("""
 Make sure that it's in the following format:
 
 user_email = 'someemail@address.com'
 project_id = 'pro123abc'
 
 """)
-        raise Exception("ERROR - stopping here")
+            raise Exception("ERROR - stopping here")
 
     print("Project ID: "+config_per_user['project_id'])
     print("User Email: "+config_per_user['user_email'])

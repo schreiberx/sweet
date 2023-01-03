@@ -81,12 +81,12 @@ class Parareal_Controller
 
 	// Operators and DataConfig
 #if SWEET_PARAREAL_PLANE
-	std::vector<PlaneOperators*> op_plane;
 	std::vector<PlaneDataConfig*> planeDataConfig;
+	std::vector<PlaneOperators*> op_plane;
 #elif SWEET_PARAREAL_SPHERE
+	std::vector<SphereData_Config*> sphereDataConfig;
 	std::vector<SphereOperators_SphereData*> op_sphere;
 	std::vector<SphereOperators_SphereData*> op_sphere_nodealiasing;
-	std::vector<SphereData_Config*> sphereDataConfig;
 #endif
 
 
