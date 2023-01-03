@@ -475,10 +475,10 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_pDt_'+str(self.parareal_coarse_timestep_size)
                 if not 'runtime.parareal_store_iterations' in filter_list:
                     idstr += '_pStore_'+str(self.parareal_store_iterations)
-            if not 'runtime.parareal_spatial_coarsening' in filter_list:
-                    idstr += '_pSpc_'+str(self.parareal_spatial_coarsening)
-            if not 'runtime.parareal_max_iter' in filter_list:
-                    idstr += '_pMaxIter_'+str(self.parareal_max_iter)
+                if not 'runtime.parareal_spatial_coarsening' in filter_list:
+                        idstr += '_pSpc_'+str(self.parareal_spatial_coarsening)
+                if not 'runtime.parareal_max_iter' in filter_list:
+                        idstr += '_pMaxIter_'+str(self.parareal_max_iter)
 
 
         if not 'runtime.xbraid' in filter_list:
