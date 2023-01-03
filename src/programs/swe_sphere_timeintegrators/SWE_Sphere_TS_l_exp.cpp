@@ -352,15 +352,17 @@ void SWE_Sphere_TS_l_exp::setup(
 	}
 
 
-	if (mpi_rank == 0)
-	{
-#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
-		int rexi_communication_size = ops.sphereDataConfig->spectral_array_data_number_of_elements*2*sizeof(double);
-#else
-		int rexi_communication_size = ops.sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
-#endif
-		std::cout << "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
-	}
+	#if SWEET_MPI
+		if (mpi_rank == 0)
+		{
+			#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
+				int rexi_communication_size = ops.sphereDataConfig->spectral_array_data_number_of_elements*2*sizeof(double);
+			#else
+				int rexi_communication_size = ops.sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
+			#endif
+			std::cout << "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
+		}
+	#endif
 
 	reset();
 

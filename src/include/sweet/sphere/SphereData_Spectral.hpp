@@ -1438,7 +1438,7 @@ public:
   		std::string data_type;
   		int num_lon = -1;
   		int num_lat = -1;
-  		int size = -1;
+  		//int size = -1;
                 std::string grid_type = "";
 
   		while (true)
@@ -1488,8 +1488,8 @@ public:
   			//if (buf == "SIZE")
   			{
   				file >> buf;
-  				size = std::stoi(buf);
-  				///std::cout << size << std::endl;
+  				//size = std::stoi(buf);
+  				//std::cout << size << std::endl;
   				continue;
   			}
 
