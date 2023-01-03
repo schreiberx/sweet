@@ -14,9 +14,14 @@ SCRIPTDIR="$(pwd)"
 cd "${MULE_ROOT}"
 PLATFORMS=$(ls -d -1 platforms/??_*)
 
+
+# Special variable for SuperMUC Job scripts to skip loading special config file from home directory
+export MULE_TEST_PLATFORMS=1
+
 for PLATFORM  in $PLATFORMS; do
 
 	TEST_PLATFORM_DIR="${PLATFORM/platforms\//}"
+
 	echo_info_hline
 	echo_info "Testing platform from directory '$TEST_PLATFORM_DIR'"
 	echo_info_hline
