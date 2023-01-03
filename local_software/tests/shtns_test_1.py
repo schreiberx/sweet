@@ -40,8 +40,8 @@ nlats = 1536
 x = Spharmt(nlons,nlats,ntrunc,rsphere=1,gridtype='gaussian')
 lons,lats = np.meshgrid(x.lons, x.lats)
 
-ug = np.zeros((nlats,nlons),np.float)
-vg = np.zeros((nlats,nlons),np.float)
+ug = np.zeros((nlats,nlons),np.double)
+vg = np.zeros((nlats,nlons),np.double)
 
 print("Running transformation")
 # Do transformation (should segfault)
