@@ -54,7 +54,7 @@ def get_platform_resources():
     h.num_nodes = 6336
     #h.num_nodes = 60
     h.num_cores_per_socket = 24
-    h.max_wallclock_seconds = 24*60*60
+    h.max_wallclock_seconds = 2*24*60*60
     return h
 
 
@@ -129,16 +129,16 @@ def jobscript_get_header(jg : JobGeneration):
     	content += "#SBATCH --qos=cm2_large\n"
 
 
+    if True:
+    	if p.force_turbo_off:
+    		content += """# Try to avoid slowing down some CPUs
+#SBATCH --ear=off
+"""
 
     content += "\n"
     content += "module load slurm_setup\n"
  
 
-    if False:
-    	if p.force_turbo_off:
-    		content += """# Try to avoid slowing down CPUs
-#SBATCH --cpu-freq=Performance
-"""
 
     content += """
 source /etc/profile.d/modules.sh

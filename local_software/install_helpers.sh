@@ -174,6 +174,18 @@ function config_download_fun()
 {
 	PKG_FILENAME="$(basename ${1})"
 
+	if [ "${MULE_PLATFORM_ID:0:9}" == "supermuc_" ]; then
+		echo_warning "Detected SUPERMUC platform, skipping download!" 1>&2
+
+		if [ ! -f "${PKG_FILENAME}" ]; then
+			echo_error "Skipped download on SUPERMUC, but source file '${PKG_FILENAME}' not found."
+			echo_error "Please copy it manually to the local_src folder!"
+			exit 1
+		fi
+
+		return
+	fi
+
         if type wget >/dev/null 2>&1; then
 		echo_info "Using 'wget'" 1>&2
 		wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"

@@ -20,6 +20,8 @@ config_setup
 config_package $@
 
 INSTALLER="$SWEET_LOCAL_SOFTWARE_SRC_DIR/$FILENAME"
+
+echo_info "Running Miniconda installer..."
 sh "${INSTALLER}" -b -u -p ${PYTHON_VENV_DIR} || exit 1
 
 . ${PYTHON_VENV_DIR}/bin/activate || exit 1

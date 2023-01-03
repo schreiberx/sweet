@@ -125,8 +125,8 @@ def jobscript_get_header(jg : JobGeneration):
 
     if False:
     	if p.force_turbo_off:
-    		content += """# Try to avoid slowing down CPUs
-#SBATCH --cpu-freq=Performance
+    		content += """# Try to avoid slowing down some CPUs
+#SBATCH --ear=off
 """
 
     content += """
