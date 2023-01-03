@@ -40,7 +40,7 @@ jg.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
 
-jg.runtime.max_simulation_time = 60*60*24*5    # 5 days
+jg.runtime.max_simulation_time = 60*60*24*1    # 5 days
 
 #params_timestep_sizes_explicit = [30]
 params_timestep_sizes_explicit = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360]
@@ -124,6 +124,7 @@ jg.parallelization.force_turbo_off = True
 
 def estimateWallclockTime(jg):
 
+    return 24*60*60*2
     if jg.reference_job:
         return 2*24*60*60
 

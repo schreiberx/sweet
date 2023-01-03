@@ -1,3 +1,9 @@
+"""
+Platform job scripts for SuperMUC, see also
+
+https://doku.lrz.de/display/PUBLIC/Job+Processing+with+SLURM+on+SuperMUC-NG
+"""
+
 import platform
 import socket
 import sys
@@ -8,7 +14,7 @@ from mule.JobPlatformResources import *
 from . import JobPlatformAutodetect
 
 # Underscore defines symbols to be private
-_job_id = None
+#_job_id = None
 
 
 
@@ -64,9 +70,8 @@ def jobscript_setup(jg : JobGeneration):
     Setup data to generate job script
     """
 
-    global _job_id
-    _job_id = jg.runtime.getUniqueID(jg.compile, jg.unique_id_filter)
-    return
+    pass
+    #_job_id = jg.runtime.getUniqueID(jg.compile, jg.unique_id_filter)
 
 
 
@@ -79,19 +84,47 @@ def jobscript_get_header(jg : JobGeneration):
     string
     	multiline text for scripts
     """
-    global _job_id
+    #global _job_id
+    _job_id = jg.runtime.getUniqueID(jg.compile, jg.unique_id_filter)
 
     p = jg.parallelization
     time_str = p.get_max_wallclock_seconds_hh_mm_ss()
 
     #
+    # Next, we load the supermuc-specific configuration file which we assume to be in the HOME folder of the user
+    #
+    config_file = os.environ["HOME"]+"/sweet_supermuc_per_user_config.py"
+    config_per_user = {}
+
+    try:
+        with open(config_file, "rb") as f:
+            code = compile(f.read(), config_file, "exec")
+            exec(code, config_per_user)
+
+    except:
+        print("*"*80)
+        print("ERROR: Failed to parse '"+supermuc_config+"'")
+        print("*"*80)
+        print("""
+Make sure that it's in the following format:
+
+user_email = 'someemail@address.com'
+project_id = 'pro123abc'
+
+""")
+        raise Exception("ERROR - stopping here")
+
+    print("Project ID: "+config_per_user['project_id'])
+    print("User Email: "+config_per_user['user_email'])
+
+    #
     # https://doku.lrz.de/display/PUBLIC/Hardware+of+SuperMUC-NG
     #
-    content = """#! /bin/bash
-#SBATCH -o """+jg.p_job_stdout_filepath+"""
-#SBATCH -e """+jg.p_job_stderr_filepath+"""
-#SBATCH -D """+jg.p_job_dirpath+"""
-#SBATCH -J """+_job_id+"""
+    content = f"""#! /bin/bash
+#SBATCH -J {_job_id}
+#SBATCH -o {jg.p_job_stdout_filepath}
+#SBATCH -e {jg.p_job_stderr_filepath}
+#SBATCH -D {jg.p_job_dirpath}
 """
 
     """
@@ -100,34 +133,32 @@ def jobscript_get_header(jg : JobGeneration):
     """
 
     if p.num_nodes <= 16:
-        content += "#SBATCH --clusters=micro\n"
+        content += "#SBATCH --partition=micro\n"
+        if p.max_wallclock_seconds > 48*60*60:
+            raise Exception("Max. wallclock time exceeds maximum time")
+
     elif p.num_nodes <= 768:
-        content += "#SBATCH --clusters=general\n"
-    else:
-        content += "#SBATCH --clusters=large\n"
+        content += "#SBATCH --partition=general\n"
 
-    content += """#SBATCH --get-user-env 
-#SBATCH --nodes="""+str(p.num_nodes)+"""
-#SBATCH --ntasks-per-node="""+str(p.num_ranks_per_node)+"""
-# the above is a good match for the
-# CooLMUC2 architecture.
+        if p.max_wallclock_seconds > 48*60*60:
+            raise Exception("Max. wallclock time exceeds maximum time")
+    else:
+        content += "#SBATCH --partition=large\n"
+
+        if p.max_wallclock_seconds > 24*60*60:
+            raise Exception("Max. wallclock time exceeds maximum time")
+
+    content += f"""
+#SBATCH --nodes={p.num_nodes}
+#SBATCH --ntasks-per-node={p.num_ranks_per_node}
 #SBATCH --mail-type=end 
-#SBATCH --mail-user=schreiberx@gmail.com
+#SBATCH --mail-user={config_per_user['user_email']}
+#SBATCH --account={config_per_user['project_id']}
+#SBATCH --time={time_str}
+#SBATCH --no-requeue
+#SBATCH --get-user-env 
 #SBATCH --export=NONE 
-#SBATCH --time="""+time_str+"""
 """
-
-    if p.num_nodes <= 2:
-    	content += "#SBATCH --partition=cm2_tiny\n"
-
-    elif p.num_nodes <= 24:
-    	content += "#SBATCH --partition=cm2_std\n"
-    	content += "#SBATCH --qos=cm2_std\n"
-
-    else:
-    	content += "#SBATCH --partition=cm2_large\n"
-    	content += "#SBATCH --qos=cm2_large\n"
-
 
     if True:
     	if p.force_turbo_off:
