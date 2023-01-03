@@ -51,7 +51,7 @@ class JobCompileOptions(InfoError):
 
         self.sanitize = ''
 
-        self.debug_symbols = 'enable'
+        self.debug_symbols = 'disable'
         self.simd = 'enable'
         self.mic = 'disable'
 
