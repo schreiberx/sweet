@@ -467,6 +467,7 @@ class JobRuntimeOptions(InfoError):
 
         if not 'runtime.parareal' in filter_list:
             if self.parareal_enabled:
+                idstr += '_PARAREAL'
                 if not 'runtime.parareal_coarse_slices' in filter_list:
                     idstr += '_par_'+str(self.parareal_coarse_slices)
                 if not 'runtime.parareal_coarse_timestepping_method' in filter_list:
@@ -476,13 +477,14 @@ class JobRuntimeOptions(InfoError):
                 if not 'runtime.parareal_store_iterations' in filter_list:
                     idstr += '_pStore_'+str(self.parareal_store_iterations)
                 if not 'runtime.parareal_spatial_coarsening' in filter_list:
-                        idstr += '_pSpc_'+str(self.parareal_spatial_coarsening)
+                    idstr += '_pSpc_'+str(self.parareal_spatial_coarsening)
                 if not 'runtime.parareal_max_iter' in filter_list:
-                        idstr += '_pMaxIter_'+str(self.parareal_max_iter)
+                    idstr += '_pMaxIter_'+str(self.parareal_max_iter)
 
 
         if not 'runtime.xbraid' in filter_list:
             if self.xbraid_enabled:
+                idstr += '_XBRAID'
                 if self.xbraid_max_levels != None:
                     idstr += '_xb_max_l'+str(self.xbraid_max_levels)
                 if self.xbraid_skip!= None:
