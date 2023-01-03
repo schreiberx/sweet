@@ -16,9 +16,9 @@ mule_plotting_usetex(False)
 groups = ['runtime.timestepping_method']
 
 tagnames_y = [
-	'sphere_data_diff_prog_div.res_norm_l1',
-	'sphere_data_diff_prog_div.res_norm_l2',
-	'sphere_data_diff_prog_div.res_norm_linf',
+	'sphere_data_diff_prog_vrt.res_norm_l1',
+	'sphere_data_diff_prog_vrt.res_norm_l2',
+	'sphere_data_diff_prog_vrt.res_norm_linf',
 ]
 
 
@@ -105,7 +105,7 @@ for tagname_y in tagnames_y:
 					else:
 						raise Exception("Unknown y tag "+tagname_y)
 
-				elif 'prog_div' in tagname_y:
+				elif 'prog_vrt' in tagname_y:
 					if 'l1' in tagname_y:
 						if y > 1e1:
 							print("Sorting out L1 data "+str(y))
@@ -172,7 +172,7 @@ for tagname_y in tagnames_y:
 				p.ax.xaxis.set_minor_locator(ticker.LogLocator(subs=[1.5, 2.0, 3.0, 5.0]))
 
 				for tick in p.ax.xaxis.get_minor_ticks():
-					tick.label.set_fontsize(8) 
+					tick.label1.set_fontsize(8) 
 
 
 				plt.tick_params(axis='y', which='minor')
@@ -182,7 +182,7 @@ for tagname_y in tagnames_y:
 				p.ax.yaxis.set_minor_locator(ticker.LogLocator(subs=[1.5, 2.0, 3.0, 5.0]))
 
 				for tick in p.ax.yaxis.get_minor_ticks():
-					tick.label.set_fontsize(6) 
+					tick.label1.set_fontsize(6) 
 
 
 

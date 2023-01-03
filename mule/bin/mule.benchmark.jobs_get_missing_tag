@@ -3,7 +3,7 @@
 TAGS=("${@}")
 
 if [ -z "${TAGS[0]}" ]; then
-	TAGS=("total_wallclock_time:")
+	TAGS=("^output.simulation_benchmark_timings.main ")
 
 	#echo "Usage: $0 [tag]"
 	#echo ""
@@ -12,22 +12,18 @@ if [ -z "${TAGS[0]}" ]; then
 	#exit 1
 fi
 
-for i in job_bench*; do
-	OUTFILE="$i/output.out"
+for DIR in job_bench*; do
+	# File exists => Next check
 
-	if [ -e "$OUTFILE" ]; then
-		# File exists => Next check
+	for TAG in "${TAGS[@]}"; do
 
-		for TAG in "${TAGS[@]}"; do
+		HITS=`mule.jobdata "$DIR" | grep "$TAG" | wc -l`
 
-			HITS=`grep "$TAG" "$OUTFILE" | wc -l`
+		if [ "$HITS" -ge "1" ]; then
+			# Tag found => Just continue
+			continue 2
+		fi
+	done
 
-			if [ "$HITS" -ge "1" ]; then
-				# Tag found => Just continue
-				continue 2
-			fi
-		done
-	fi
-
-	echo "$i"
+	echo "${DIR}"
 done
