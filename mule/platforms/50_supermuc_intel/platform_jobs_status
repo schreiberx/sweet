@@ -5,16 +5,12 @@
 #
 # One line for each job
 #
-#
-#
 
 # Avoid using $@ for this test since -z fails to compare arrays
 if [[ -z "$1" ]]; then
-	squeue --cluster=cm2 -h --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" | tail -n +2
-	squeue --cluster=cm2_tiny -h --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" | tail -n +2
+	squeue -h --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" --user=$USER
 else
 	for i in $@; do
-		squeue --cluster=cm2 -h -j "$i" --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" 2>/dev/null | tail -n +2
-		squeue --cluster=cm2_tiny -h -j "$i" --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" 2>/dev/null | tail -n +2
+		squeue -h -j "$i" --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" --user=$USER 2>/dev/null
 	done
 fi

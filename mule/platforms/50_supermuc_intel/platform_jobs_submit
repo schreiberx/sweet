@@ -16,6 +16,10 @@ else
 fi
 
 for i in $DIRS; do
+	# From SLURM documentation:
+	#
+	# --parsable: outputs only the jobid and cluster name (if present), separated by semicolon, only on successful submission.
+
 	sbatch --parsable "$i/run.sh" | sed "s/;.*//"
 done
 
