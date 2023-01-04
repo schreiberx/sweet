@@ -35,7 +35,7 @@ PKGS+=("install_numactl.sh")
 
 PKGS+=("install_miniconda.sh")
 
-PKGS+=("install_scons3.sh")
+PKGS+=("install_scons.sh")
 PKGS+=("install_shtns.sh")
 PKGS+=("install_shtns_python.sh")
 

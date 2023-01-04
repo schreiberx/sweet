@@ -11,7 +11,7 @@ PKGS+=("install_shtns_python.sh")
 #PKGS+=("install_eigen3.sh")
 #PKGS+=("install_likwid.sh")
 
-PKGS+=("install_scons3.sh")
+PKGS+=("install_scons.sh")
 
 #PKGS+=("install_mpich.sh")
 #PKGS+=("install_libpfasst.sh")
