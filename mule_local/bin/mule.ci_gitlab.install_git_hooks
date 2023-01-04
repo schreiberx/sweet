@@ -12,7 +12,7 @@ cd $MULE_SOFTWARE_ROOT/.git/hooks || exit 1
 echo "Installing hooks"
 echo " + pre-commit"
 ln ../../mule_local/git_hooks/pre-commit  ./ -fs || exit 1
-echo " + post-commit"
-ln ../../mule_local/git_hooks/post-commit  ./ -fs || exit 1
+echo " + post-push"
+ln ../../mule_local/git_hooks/post-push  ./ -fs || exit 1
 
 echo "Done..."

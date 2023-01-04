@@ -7,7 +7,7 @@ stages:          # List of stages for jobs, and their order of execution
   - test
 
 
-setup-software-ubuntu18-gcc6:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu18-gcc6:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:18.04
   tags:
@@ -61,10 +61,10 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_compile_error:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -92,10 +92,10 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_parameter_error:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -123,10 +123,10 @@ job-test-ubuntu18-gcc6-10_compile:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -154,10 +154,10 @@ job-test-ubuntu18-gcc6-20_platforms_job_generation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -185,10 +185,10 @@ job-test-ubuntu18-gcc6-35_test_exp_phi:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -216,10 +216,10 @@ job-test-ubuntu18-gcc6-50_test_plane_advection_semi_lagrangian:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -247,10 +247,10 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_frequencies:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -278,10 +278,10 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_patterns:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -309,10 +309,10 @@ job-test-ubuntu18-gcc6-50_test_plane_basic_advection:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -340,10 +340,10 @@ job-test-ubuntu18-gcc6-50_test_plane_convert_complex_to_from_real:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -371,10 +371,10 @@ job-test-ubuntu18-gcc6-50_test_plane_diff_stencil_ops:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -402,10 +402,10 @@ job-test-ubuntu18-gcc6-50_test_plane_exp_direct_precompute_phin:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -433,10 +433,10 @@ job-test-ubuntu18-gcc6-50_test_plane_fftw_wisdom_import_export:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -464,10 +464,10 @@ job-test-ubuntu18-gcc6-50_test_plane_modal_restriction_interpolation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -495,10 +495,10 @@ job-test-ubuntu18-gcc6-50_test_plane_normal_mode_conversion:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -526,10 +526,10 @@ job-test-ubuntu18-gcc6-50_test_plane_operators:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -557,10 +557,10 @@ job-test-ubuntu18-gcc6-50_test_plane_operators_complex:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -588,10 +588,10 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -619,10 +619,10 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation_2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -650,10 +650,10 @@ job-test-ubuntu18-gcc6-50_test_quadrature:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -681,10 +681,10 @@ job-test-ubuntu18-gcc6-50_test_sph_quadrature_nodes:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -712,10 +712,10 @@ job-test-ubuntu18-gcc6-50_test_sphere_advection_semi_lagrangian:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -743,10 +743,10 @@ job-test-ubuntu18-gcc6-50_test_sphere_coordinates:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -774,10 +774,10 @@ job-test-ubuntu18-gcc6-50_test_sphere_interpolation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -805,10 +805,10 @@ job-test-ubuntu18-gcc6-50_test_sphere_pint_spatial_coarsening:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -836,10 +836,10 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -867,10 +867,10 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators_complex:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -898,10 +898,10 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_solver_real_and_complex:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -929,10 +929,10 @@ job-test-ubuntu18-gcc6-50_test_timestepping_runge_kutta:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -960,10 +960,10 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_plane_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -991,10 +991,10 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_timestepper_convergence:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1022,10 +1022,10 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_spatial_convergence:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1053,10 +1053,10 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1084,10 +1084,10 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1115,10 +1115,10 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1146,10 +1146,10 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1177,10 +1177,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_comparison_with_reference_implem
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1208,10 +1208,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_linear:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1239,10 +1239,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1270,10 +1270,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1301,10 +1301,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1332,10 +1332,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1363,10 +1363,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1394,10 +1394,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1425,10 +1425,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1456,10 +1456,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_spli
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1487,10 +1487,10 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1518,10 +1518,10 @@ job-test-ubuntu18-gcc6-80_10_program_ode_scalar_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1549,10 +1549,10 @@ job-test-ubuntu18-gcc6-80_20_program_ode_scalar_xbraid:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1580,10 +1580,10 @@ job-test-ubuntu18-gcc6-85_10_program_swe_plane_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1611,10 +1611,10 @@ job-test-ubuntu18-gcc6-85_30_program_swe_plane_xbraid:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1642,10 +1642,10 @@ job-test-ubuntu18-gcc6-87_10_program_swe_sphere_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1673,10 +1673,10 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_c
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1704,10 +1704,10 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_c
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1735,10 +1735,10 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1766,10 +1766,10 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_conv
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1797,10 +1797,10 @@ job-test-ubuntu18-gcc6-87_30_program_swe_sphere_xbraid:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubuntu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu18-gcc6"
+    - "setup-local-software-ubuntu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1821,7 +1821,7 @@ job-test-ubuntu18-gcc6-87_30_program_swe_sphere_xbraid:
     - echo "TEST 87_30_program_swe_sphere_xbraid SUCCESSFULLY FINISHED"
 
 
-setup-software-ubuntu18-gcc7:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu18-gcc7:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:18.04
   tags:
@@ -1868,7 +1868,7 @@ setup-software-ubuntu18-gcc7:       # This job runs in the build stage, which ru
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu18-gcc8:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu18-gcc8:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:18.04
   tags:
@@ -1915,7 +1915,7 @@ setup-software-ubuntu18-gcc8:       # This job runs in the build stage, which ru
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu20-gcc8:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu20-gcc8:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:20.04
   tags:
@@ -1962,7 +1962,7 @@ setup-software-ubuntu20-gcc8:       # This job runs in the build stage, which ru
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu20-gcc9:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu20-gcc9:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:20.04
   tags:
@@ -2009,7 +2009,7 @@ setup-software-ubuntu20-gcc9:       # This job runs in the build stage, which ru
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu20-gcc10:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu20-gcc10:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:20.04
   tags:
@@ -2056,7 +2056,7 @@ setup-software-ubuntu20-gcc10:       # This job runs in the build stage, which r
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu22-gcc9:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu22-gcc9:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:22.04
   tags:
@@ -2103,7 +2103,7 @@ setup-software-ubuntu22-gcc9:       # This job runs in the build stage, which ru
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu22-gcc10:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu22-gcc10:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:22.04
   tags:
@@ -2150,7 +2150,7 @@ setup-software-ubuntu22-gcc10:       # This job runs in the build stage, which r
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu22-gcc11:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu22-gcc11:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:22.04
   tags:
@@ -2197,7 +2197,7 @@ setup-software-ubuntu22-gcc11:       # This job runs in the build stage, which r
     name: $CI_JOB_NAME
   
 
-setup-software-ubuntu22-gcc12:       # This job runs in the build stage, which runs first.
+setup-local-software-ubuntu22-gcc12:       # This job runs in the build stage, which runs first.
   stage: setup
   image: library/ubuntu:22.04
   tags:
@@ -2251,10 +2251,10 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_compile_error:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2282,10 +2282,10 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_parameter_error:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2313,10 +2313,10 @@ job-test-ubuntu22-gcc12-10_compile:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2344,10 +2344,10 @@ job-test-ubuntu22-gcc12-20_platforms_job_generation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2375,10 +2375,10 @@ job-test-ubuntu22-gcc12-35_test_exp_phi:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2406,10 +2406,10 @@ job-test-ubuntu22-gcc12-50_test_plane_advection_semi_lagrangian:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2437,10 +2437,10 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_frequencies:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2468,10 +2468,10 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_patterns:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2499,10 +2499,10 @@ job-test-ubuntu22-gcc12-50_test_plane_basic_advection:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2530,10 +2530,10 @@ job-test-ubuntu22-gcc12-50_test_plane_convert_complex_to_from_real:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2561,10 +2561,10 @@ job-test-ubuntu22-gcc12-50_test_plane_diff_stencil_ops:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2592,10 +2592,10 @@ job-test-ubuntu22-gcc12-50_test_plane_exp_direct_precompute_phin:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2623,10 +2623,10 @@ job-test-ubuntu22-gcc12-50_test_plane_fftw_wisdom_import_export:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2654,10 +2654,10 @@ job-test-ubuntu22-gcc12-50_test_plane_modal_restriction_interpolation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2685,10 +2685,10 @@ job-test-ubuntu22-gcc12-50_test_plane_normal_mode_conversion:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2716,10 +2716,10 @@ job-test-ubuntu22-gcc12-50_test_plane_operators:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2747,10 +2747,10 @@ job-test-ubuntu22-gcc12-50_test_plane_operators_complex:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2778,10 +2778,10 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2809,10 +2809,10 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation_2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2840,10 +2840,10 @@ job-test-ubuntu22-gcc12-50_test_quadrature:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2871,10 +2871,10 @@ job-test-ubuntu22-gcc12-50_test_sph_quadrature_nodes:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2902,10 +2902,10 @@ job-test-ubuntu22-gcc12-50_test_sphere_advection_semi_lagrangian:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2933,10 +2933,10 @@ job-test-ubuntu22-gcc12-50_test_sphere_coordinates:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2964,10 +2964,10 @@ job-test-ubuntu22-gcc12-50_test_sphere_interpolation:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2995,10 +2995,10 @@ job-test-ubuntu22-gcc12-50_test_sphere_pint_spatial_coarsening:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3026,10 +3026,10 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3057,10 +3057,10 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators_complex:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3088,10 +3088,10 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_solver_real_and_complex:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3119,10 +3119,10 @@ job-test-ubuntu22-gcc12-50_test_timestepping_runge_kutta:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3150,10 +3150,10 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_plane_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3181,10 +3181,10 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_timestepper_convergence:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3212,10 +3212,10 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_spatial_convergence:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3243,10 +3243,10 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3274,10 +3274,10 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3305,10 +3305,10 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3336,10 +3336,10 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3367,10 +3367,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_comparison_with_reference_imple
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3398,10 +3398,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_linear:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3429,10 +3429,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3460,10 +3460,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3491,10 +3491,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3522,10 +3522,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3553,10 +3553,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg2:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3584,10 +3584,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln1:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3615,10 +3615,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_exp
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3646,10 +3646,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_spl
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3677,10 +3677,10 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_std
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3708,10 +3708,10 @@ job-test-ubuntu22-gcc12-80_10_program_ode_scalar_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3739,10 +3739,10 @@ job-test-ubuntu22-gcc12-80_20_program_ode_scalar_xbraid:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3770,10 +3770,10 @@ job-test-ubuntu22-gcc12-85_10_program_swe_plane_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3801,10 +3801,10 @@ job-test-ubuntu22-gcc12-85_30_program_swe_plane_xbraid:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3832,10 +3832,10 @@ job-test-ubuntu22-gcc12-87_10_program_swe_sphere_parareal:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3863,10 +3863,10 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3894,10 +3894,10 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3925,10 +3925,10 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3956,10 +3956,10 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_con
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3987,10 +3987,10 @@ job-test-ubuntu22-gcc12-87_30_program_swe_sphere_xbraid:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubuntu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-software-ubuntu22-gcc12"
+    - "setup-local-software-ubuntu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
