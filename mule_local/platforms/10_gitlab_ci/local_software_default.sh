@@ -18,3 +18,4 @@ PKGS+=("install_numactl.sh")
 PKGS+=("install_libpfasst_debug.sh")
 PKGS+=("install_xbraid.sh")
 
+PKGS+=("install_sdl2.sh")

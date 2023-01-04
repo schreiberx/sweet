@@ -12,7 +12,12 @@ before_script:
     # Install packages
     - apt-get update -qq
     - apt-get install -y -qq g++-8 gcc-8 gfortran-8
-    - apt-get install -y -qq git make automake cmake libfftw3-dev libopenmpi-dev libeigen3-dev liblapack-dev numactl python3 curl
+    - apt-get install -y -qq git make automake cmake python3 curl
+    - export CC=gcc-8
+    - export CXX=g++-8
+    - export F90=gfortran-8
+    - export FC=gfortran-8
+    - export LD=ld
 
 stages:          # List of stages for jobs, and their order of execution
   - setup-software
