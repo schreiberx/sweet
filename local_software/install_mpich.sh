@@ -13,6 +13,11 @@ export FCFLAGS=$F90FLAGS
 unset F90
 unset F90FLAGS
 
+config_setup
+
+config_package $@
+
+
 #
 # Check if gfortran supports -fallow-argument-mismatch and enable it per default
 #
@@ -24,10 +29,6 @@ if [[ $? -eq 0 ]]; then
 	export FFLAGS="-fallow-argument-mismatch $FFLAGS"
 fi
 rm -rf "${TMPDIR}"
-
-config_setup
-
-config_package $@
 
 config_configure
 

@@ -14,12 +14,13 @@ if [ "`uname`" == "Darwin" ]; then
         export CXX=g++-11
         export F90=gfortran-11
 else
-	export F90=gfortran
-	export CC=gcc
-	export CXX=g++
-	export FC=$F90
-	export LD=ld
+	test -z "$F90" && export F90=gfortran
+	test -z "$CC" && export CC=gcc
+	test -z "$CXX" && export CXX=g++
+	test -z "$FC" && export FC=$F90
+	test -z "$LD" && export LD=ld
 fi
+
 
 export MULE_LINK=$MULE_CXX
 
