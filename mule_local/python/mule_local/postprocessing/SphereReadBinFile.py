@@ -98,7 +98,7 @@ def read_bin_file(filename):
     ## LINE 8+
     skip += 4;
     f.seek(skip, os.SEEK_SET);
-    data  = np.fromfile(f, dtype = np.complex_)
+    data  = np.fromfile(f, dtype = np.cdouble)
 
     return data, m_max, n_max;
 
