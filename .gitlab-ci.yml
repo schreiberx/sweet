@@ -1,32 +1,28 @@
-
 #
 # Gitlab CI file for SWEET
 #
 
-image: ubuntu:focal
+stages:          # List of stages for jobs, and their order of execution
+  - test
 
-before_script:
-    # Install required packages
+
+setup-software-ubuntu18-gcc6:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:18.04
+  tags:
+    - ci.inria.fr
+    - large
+  script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
     # Install packages
     - apt-get update -qq
-    - apt-get install -y -qq g++-8 gcc-8 gfortran-8
-    - apt-get install -y -qq git make automake cmake python3 curl
-    - export CC=gcc-8
-    - export CXX=g++-8
-    - export F90=gfortran-8
-    - export FC=gfortran-8
+    - apt-get install -y -qq git make automake cmake python3 wget g++-6 gcc-6 gfortran-6 pkg-config libfreetype6-dev libglu1-mesa-dev
+    - export CC=gcc-6
+    - export CXX=g++-6
+    - export F90=gfortran-6
+    - export FC=gfortran-6
     - export LD=ld
-
-stages:          # List of stages for jobs, and their order of execution
-  - setup-software
-  - tests
-
-
-setup-job:       # This job runs in the build stage, which runs first.
-  stage: setup-software
-  script:
     # Setup SWEET
 
     # Get only head by specifying -- depth 1
@@ -54,693 +50,428 @@ setup-job:       # This job runs in the build stage, which runs first.
     # Just get everything for the next stage
     untracked: true
     expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu18-gcc6
   
-  #artifacts:
-  #  paths:
-  #    - sweet/local_software/local/
 
-
-
-
-job-test-05_jobs_run_directly_compile_error:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+setup-software-ubuntu18-gcc7:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:18.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-7 gcc-7 gfortran-7 pkg-config libfreetype6-dev libglu1-mesa-dev
+    - export CC=gcc-7
+    - export CXX=g++-7
+    - export F90=gfortran-7
+    - export FC=gfortran-7
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/05_jobs_run_directly_compile_error/test.py
-    - echo "TEST 0 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-05_jobs_run_directly_parameter_error:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu18-gcc7
+  
+
+setup-software-ubuntu18-gcc8:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:18.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-8 gcc-8 gfortran-8 pkg-config libfreetype6-dev libglu1-mesa-dev
+    - export CC=gcc-8
+    - export CXX=g++-8
+    - export F90=gfortran-8
+    - export FC=gfortran-8
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/05_jobs_run_directly_parameter_error/test.py
-    - echo "TEST 1 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-10_compile:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu18-gcc8
+  
+
+setup-software-ubuntu20-gcc8:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:20.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-8 gcc-8 gfortran-8 pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev
+    - export CC=gcc-8
+    - export CXX=g++-8
+    - export F90=gfortran-8
+    - export FC=gfortran-8
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/10_compile/test.sh
-    - echo "TEST 2 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-20_platforms_job_generation:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu20-gcc8
+  
+
+setup-software-ubuntu20-gcc9:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:20.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-9 gcc-9 gfortran-9 pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev
+    - export CC=gcc-9
+    - export CXX=g++-9
+    - export F90=gfortran-9
+    - export FC=gfortran-9
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/20_platforms_job_generation/test.sh
-    - echo "TEST 3 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-35_test_exp_phi:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu20-gcc9
+  
+
+setup-software-ubuntu20-gcc10:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:20.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-10 gcc-10 gfortran-10 pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev
+    - export CC=gcc-10
+    - export CXX=g++-10
+    - export F90=gfortran-10
+    - export FC=gfortran-10
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/35_test_exp_phi/test.py
-    - echo "TEST 4 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-50_test_plane_advection_semi_lagrangian:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu20-gcc10
+  
+
+setup-software-ubuntu22-gcc9:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:22.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-9 gcc-9 gfortran-9 pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev
+    - export CC=gcc-9
+    - export CXX=g++-9
+    - export F90=gfortran-9
+    - export FC=gfortran-9
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/50_test_plane_advection_semi_lagrangian/test.py
-    - echo "TEST 5 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-50_test_plane_antialiasing_frequencies:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu22-gcc9
+  
+
+setup-software-ubuntu22-gcc10:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:22.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-10 gcc-10 gfortran-10 pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev
+    - export CC=gcc-10
+    - export CXX=g++-10
+    - export F90=gfortran-10
+    - export FC=gfortran-10
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/50_test_plane_antialiasing_frequencies/test.py
-    - echo "TEST 6 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-50_test_plane_antialiasing_patterns:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu22-gcc10
+  
+
+setup-software-ubuntu22-gcc11:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:22.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-11 gcc-11 gfortran-11 pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev
+    - export CC=gcc-11
+    - export CXX=g++-11
+    - export F90=gfortran-11
+    - export FC=gfortran-11
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/50_test_plane_antialiasing_patterns/test.py
-    - echo "TEST 7 SUCCESSFULLY FINISHED"
+    - echo "SWEET environment activated"
 
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
 
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
 
-job-test-50_test_plane_basic_advection:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu22-gcc11
+  
+
+setup-software-ubuntu22-gcc12:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: library/ubuntu:22.04
+  tags:
+    - ci.inria.fr
+    - large
   script:
+    # Avoid interaction by setting 
+    - export DEBIAN_FRONTEND=noninteractive
+    # Install packages
+    - apt-get update -qq
+    - apt-get install -y -qq git make automake cmake python3 wget g++-12 gcc-12 gfortran-12 pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev
+    - export CC=gcc-12
+    - export CXX=g++-12
+    - export F90=gfortran-12
+    - export FC=gfortran-12
+    - export LD=ld
+    # Setup SWEET
+
+    # Get only head by specifying -- depth 1
+    - git clone --depth 1 https://github.com/schreiberx/sweet.git
     - cd sweet
     - source ./activate.sh
-    - ./tests/50_test_plane_basic_advection/test.py
-    - echo "TEST 8 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_convert_complex_to_from_real:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_convert_complex_to_from_real/test.py
-    - echo "TEST 9 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_diff_stencil_ops:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_diff_stencil_ops/test.py
-    - echo "TEST 10 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_exp_direct_precompute_phin:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_exp_direct_precompute_phin/test.py
-    - echo "TEST 11 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_fftw_wisdom_import_export:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_fftw_wisdom_import_export/test.py
-    - echo "TEST 12 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_modal_restriction_interpolation:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_modal_restriction_interpolation/test.py
-    - echo "TEST 13 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_normal_mode_conversion:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_normal_mode_conversion/test.py
-    - echo "TEST 14 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_operators:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_operators/test.py
-    - echo "TEST 15 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_operators_complex:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_operators_complex/test.py
-    - echo "TEST 16 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_sampler_interpolation:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_sampler_interpolation/test.py
-    - echo "TEST 17 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_plane_sampler_interpolation_2:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_plane_sampler_interpolation_2/test.py
-    - echo "TEST 18 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_quadrature:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_quadrature/test.py
-    - echo "TEST 19 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sph_quadrature_nodes:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sph_quadrature_nodes/test.py
-    - echo "TEST 20 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sphere_advection_semi_lagrangian:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sphere_advection_semi_lagrangian/test.py
-    - echo "TEST 21 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sphere_coordinates:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sphere_coordinates/test.py
-    - echo "TEST 22 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sphere_interpolation:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sphere_interpolation/test.py
-    - echo "TEST 23 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sphere_pint_spatial_coarsening:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sphere_pint_spatial_coarsening/test.py
-    - echo "TEST 24 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sphere_sph_operators:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sphere_sph_operators/test.py
-    - echo "TEST 25 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sphere_sph_operators_complex:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sphere_sph_operators_complex/test.py
-    - echo "TEST 26 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_sphere_sph_solver_real_and_complex:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_sphere_sph_solver_real_and_complex/test.py
-    - echo "TEST 27 SUCCESSFULLY FINISHED"
-
-
-
-job-test-50_test_timestepping_runge_kutta:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/50_test_timestepping_runge_kutta/test.py
-    - echo "TEST 28 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_20_program_burgers_plane_parareal:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_20_program_burgers_plane_parareal/test.sh
-    - echo "TEST 29 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_20_program_burgers_timestepper_convergence:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_20_program_burgers_timestepper_convergence/test.sh
-    - echo "TEST 30 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_40_program_swe_plane_spatial_convergence:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_40_program_swe_plane_spatial_convergence/test.sh
-    - echo "TEST 31 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_40_program_swe_plane_timestepper_convergence_l1:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_40_program_swe_plane_timestepper_convergence_l1/test.sh
-    - echo "TEST 32 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_40_program_swe_plane_timestepper_convergence_l2:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_40_program_swe_plane_timestepper_convergence_l2/test.sh
-    - echo "TEST 33 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_40_program_swe_plane_timestepper_convergence_ln1:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_40_program_swe_plane_timestepper_convergence_ln1/test.sh
-    - echo "TEST 34 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_40_program_swe_plane_timestepper_convergence_ln2:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_40_program_swe_plane_timestepper_convergence_ln2/test.sh
-    - echo "TEST 35 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_comparison_with_reference_implementation:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_comparison_with_reference_implementation/test.sh
-    - echo "TEST 36 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_geostrophic_balance_linear:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_geostrophic_balance_linear/test.py
-    - echo "TEST 37 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_geostrophic_balance_nonlinear:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_geostrophic_balance_nonlinear/test.py
-    - echo "TEST 38 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_l1:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_l1/test.sh
-    - echo "TEST 39 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_l2:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_l2/test.sh
-    - echo "TEST 40 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_lg1:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_lg1/test.sh
-    - echo "TEST 41 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_lg2:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_lg2/test.sh
-    - echo "TEST 42 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_ln1:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln1/test.sh
-    - echo "TEST 43 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_exp/test.sh
-    - echo "TEST 44 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_ln2_split:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_split/test.sh
-    - echo "TEST 45 SUCCESSFULLY FINISHED"
-
-
-
-job-test-70_60_program_swe_sphere_timestepper_convergence_ln2_std:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_std/test.sh
-    - echo "TEST 46 SUCCESSFULLY FINISHED"
-
-
-
-job-test-80_10_program_ode_scalar_parareal:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/80_10_program_ode_scalar_parareal/test.sh
-    - echo "TEST 47 SUCCESSFULLY FINISHED"
-
-
-
-job-test-80_20_program_ode_scalar_xbraid:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/80_20_program_ode_scalar_xbraid/test.sh
-    - echo "TEST 48 SUCCESSFULLY FINISHED"
-
-
-
-job-test-85_10_program_swe_plane_parareal:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/85_10_program_swe_plane_parareal/test.sh
-    - echo "TEST 49 SUCCESSFULLY FINISHED"
-
-
-
-job-test-85_30_program_swe_plane_xbraid:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/85_30_program_swe_plane_xbraid/test.sh
-    - echo "TEST 50 SUCCESSFULLY FINISHED"
-
-
-
-job-test-87_10_program_swe_sphere_parareal:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/87_10_program_swe_sphere_parareal/test.sh
-    - echo "TEST 51 SUCCESSFULLY FINISHED"
-
-
-
-job-test-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence/test.sh
-    - echo "TEST 52 SUCCESSFULLY FINISHED"
-
-
-
-job-test-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence/test.sh
-    - echo "TEST 53 SUCCESSFULLY FINISHED"
-
-
-
-job-test-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/87_20_program_swe_sphere_libpfasst_mlsdc_one_step/test.sh
-    - echo "TEST 54 SUCCESSFULLY FINISHED"
-
-
-
-job-test-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence/test.sh
-    - echo "TEST 55 SUCCESSFULLY FINISHED"
-
-
-
-job-test-87_30_program_swe_sphere_xbraid:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - "setup-job"
-  script:
-    - cd sweet
-    - source ./activate.sh
-    - ./tests/87_30_program_swe_sphere_xbraid/test.sh
-    - echo "TEST 56 SUCCESSFULLY FINISHED"
-
+    - echo "SWEET environment activated"
+
+    # Compile other required software
+    - echo "Fetching and compiling software"
+    - cd local_software
+    - time ./setup_local_software.sh
+    - cd ../
+
+    # Cleaning up things a little bit
+    - echo "Cleaning up..."
+    - rm -rf .git
+    - rm -rf local_software/local_src
+    - echo "Finished"
+
+    # We're ready to use SWEET
+  
+  # Now we just want to store all the software as an artifact to use it for the next steps
+  artifacts:
+    # Just get everything for the next stage
+    untracked: true
+    expire_in: 1 day
+    name: $CI_JOB_NAME-ubuntu22-gcc12
+  

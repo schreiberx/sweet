@@ -13,6 +13,18 @@ export FCFLAGS=$F90FLAGS
 unset F90
 unset F90FLAGS
 
+#
+# Check if gfortran supports -fallow-argument-mismatch and enable it per default
+#
+TMPDIR="$(mktemp -d)"
+echo "" > "$TMPDIR/dummy.f90"
+$FC -c -fallow-argument-mismatch "$TMPDIR/dummy.f90" -o "$TMPDIR/dummy.o" 2> /dev/null
+if [[ $? -eq 0 ]]; then
+	echo "$FC seems to support -fallow-argument-mismatch, using this per default"
+	export FFLAGS="-fallow-argument-mismatch $FFLAGS"
+fi
+rm -rf "${TMPDIR}"
+
 config_setup
 
 config_package $@
