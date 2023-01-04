@@ -33,9 +33,11 @@ The test cases can be also manually triggered by calling the following command i
 
 ```curl -X POST --fail -F token=glptt-0d66598d696a02da33fb65e2a039f607c68ea50d -F ref=main https://gitlab.inria.fr/api/v4/projects/42631/trigger/pipeline```
 
-Please do so only if you really want to start a test.
+or simply using
 
-Running these tests is very compute intensive. Think about our environment, green computing and the CO2 footprint!
+```mule.ci_gitlab.start_ci_pipeline``` from within SWEET.
+
+Please do so only if you really want to start a test. Running these tests is very compute intensive. Think about our environment, green computing and the CO2 footprint!
 
 
 

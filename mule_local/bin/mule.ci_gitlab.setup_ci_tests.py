@@ -158,12 +158,21 @@ content += """\
 #
 
 stages:          # List of stages for jobs, and their order of execution
-  - setup
-  - test
+  - setup_local_software
+"""
+
+for te in test_environment_:
+    content += f"""\
+  - stage_tests_{te['id']}
+"""
+
+content += f"""\
 
 """
 
-
+#
+# Setup local software for each environment
+#
 for te in test_environment_:
 
     script_header = f"""\
@@ -182,7 +191,7 @@ for te in test_environment_:
     content += f"""\
 
 setup-local-software-{te['id']}:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: {te['image_version']}
 {te['tags']}\
   script:
@@ -220,6 +229,12 @@ setup-local-software-{te['id']}:       # This job runs in the build stage, which
 
     job_counter += 1
 
+
+#
+# Generate individual test cases
+#
+
+#for te in test_environment_:
     if te['gen_ci_tests']:
         for test in tests:
 
@@ -229,7 +244,7 @@ setup-local-software-{te['id']}:       # This job runs in the build stage, which
             content += f"""\
 
 job-test-{te['id']}-{job_id}:
-  stage: test
+  stage: stage_tests_{te['id']}
   image: {te['image_version']}
 {te['tags']}\
   # Job dependency

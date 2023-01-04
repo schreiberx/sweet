@@ -3,12 +3,21 @@
 #
 
 stages:          # List of stages for jobs, and their order of execution
-  - setup
-  - test
+  - setup_local_software
+  - stage_tests_ubuntu18-gcc6
+  - stage_tests_ubuntu18-gcc7
+  - stage_tests_ubuntu18-gcc8
+  - stage_tests_ubuntu20-gcc8
+  - stage_tests_ubuntu20-gcc9
+  - stage_tests_ubuntu20-gcc10
+  - stage_tests_ubuntu22-gcc9
+  - stage_tests_ubuntu22-gcc10
+  - stage_tests_ubuntu22-gcc11
+  - stage_tests_ubuntu22-gcc12
 
 
 setup-local-software-ubuntu18-gcc6:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -55,7 +64,7 @@ setup-local-software-ubuntu18-gcc6:       # This job runs in the build stage, wh
   
 
 job-test-ubuntu18-gcc6-05_jobs_run_directly_compile_error:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -86,7 +95,7 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_compile_error:
 
 
 job-test-ubuntu18-gcc6-05_jobs_run_directly_parameter_error:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -117,7 +126,7 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_parameter_error:
 
 
 job-test-ubuntu18-gcc6-10_compile:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -148,7 +157,7 @@ job-test-ubuntu18-gcc6-10_compile:
 
 
 job-test-ubuntu18-gcc6-20_platforms_job_generation:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -179,7 +188,7 @@ job-test-ubuntu18-gcc6-20_platforms_job_generation:
 
 
 job-test-ubuntu18-gcc6-35_test_exp_phi:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -210,7 +219,7 @@ job-test-ubuntu18-gcc6-35_test_exp_phi:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_advection_semi_lagrangian:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -241,7 +250,7 @@ job-test-ubuntu18-gcc6-50_test_plane_advection_semi_lagrangian:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_antialiasing_frequencies:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -272,7 +281,7 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_frequencies:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_antialiasing_patterns:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -303,7 +312,7 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_patterns:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_basic_advection:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -334,7 +343,7 @@ job-test-ubuntu18-gcc6-50_test_plane_basic_advection:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_convert_complex_to_from_real:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -365,7 +374,7 @@ job-test-ubuntu18-gcc6-50_test_plane_convert_complex_to_from_real:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_diff_stencil_ops:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -396,7 +405,7 @@ job-test-ubuntu18-gcc6-50_test_plane_diff_stencil_ops:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_exp_direct_precompute_phin:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -427,7 +436,7 @@ job-test-ubuntu18-gcc6-50_test_plane_exp_direct_precompute_phin:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_fftw_wisdom_import_export:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -458,7 +467,7 @@ job-test-ubuntu18-gcc6-50_test_plane_fftw_wisdom_import_export:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_modal_restriction_interpolation:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -489,7 +498,7 @@ job-test-ubuntu18-gcc6-50_test_plane_modal_restriction_interpolation:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_normal_mode_conversion:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -520,7 +529,7 @@ job-test-ubuntu18-gcc6-50_test_plane_normal_mode_conversion:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_operators:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -551,7 +560,7 @@ job-test-ubuntu18-gcc6-50_test_plane_operators:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_operators_complex:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -582,7 +591,7 @@ job-test-ubuntu18-gcc6-50_test_plane_operators_complex:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -613,7 +622,7 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation:
 
 
 job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation_2:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -644,7 +653,7 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation_2:
 
 
 job-test-ubuntu18-gcc6-50_test_quadrature:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -675,7 +684,7 @@ job-test-ubuntu18-gcc6-50_test_quadrature:
 
 
 job-test-ubuntu18-gcc6-50_test_sph_quadrature_nodes:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -706,7 +715,7 @@ job-test-ubuntu18-gcc6-50_test_sph_quadrature_nodes:
 
 
 job-test-ubuntu18-gcc6-50_test_sphere_advection_semi_lagrangian:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -737,7 +746,7 @@ job-test-ubuntu18-gcc6-50_test_sphere_advection_semi_lagrangian:
 
 
 job-test-ubuntu18-gcc6-50_test_sphere_coordinates:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -768,7 +777,7 @@ job-test-ubuntu18-gcc6-50_test_sphere_coordinates:
 
 
 job-test-ubuntu18-gcc6-50_test_sphere_interpolation:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -799,7 +808,7 @@ job-test-ubuntu18-gcc6-50_test_sphere_interpolation:
 
 
 job-test-ubuntu18-gcc6-50_test_sphere_pint_spatial_coarsening:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -830,7 +839,7 @@ job-test-ubuntu18-gcc6-50_test_sphere_pint_spatial_coarsening:
 
 
 job-test-ubuntu18-gcc6-50_test_sphere_sph_operators:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -861,7 +870,7 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators:
 
 
 job-test-ubuntu18-gcc6-50_test_sphere_sph_operators_complex:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -892,7 +901,7 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators_complex:
 
 
 job-test-ubuntu18-gcc6-50_test_sphere_sph_solver_real_and_complex:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -923,7 +932,7 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_solver_real_and_complex:
 
 
 job-test-ubuntu18-gcc6-50_test_timestepping_runge_kutta:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -954,7 +963,7 @@ job-test-ubuntu18-gcc6-50_test_timestepping_runge_kutta:
 
 
 job-test-ubuntu18-gcc6-70_20_program_burgers_plane_parareal:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -985,7 +994,7 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_plane_parareal:
 
 
 job-test-ubuntu18-gcc6-70_20_program_burgers_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1016,7 +1025,7 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_timestepper_convergence:
 
 
 job-test-ubuntu18-gcc6-70_40_program_swe_plane_spatial_convergence:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1047,7 +1056,7 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_spatial_convergence:
 
 
 job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l1:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1078,7 +1087,7 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l1:
 
 
 job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l2:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1109,7 +1118,7 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l2:
 
 
 job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln1:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1140,7 +1149,7 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln1:
 
 
 job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln2:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1171,7 +1180,7 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln2:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_comparison_with_reference_implementation:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1202,7 +1211,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_comparison_with_reference_implem
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_linear:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1233,7 +1242,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_linear:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1264,7 +1273,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l1:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1295,7 +1304,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l1:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l2:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1326,7 +1335,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l2:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg1:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1357,7 +1366,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg1:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg2:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1388,7 +1397,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg2:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln1:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1419,7 +1428,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln1:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1450,7 +1459,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1481,7 +1490,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_spli
 
 
 job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1512,7 +1521,7 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
 
 
 job-test-ubuntu18-gcc6-80_10_program_ode_scalar_parareal:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1543,7 +1552,7 @@ job-test-ubuntu18-gcc6-80_10_program_ode_scalar_parareal:
 
 
 job-test-ubuntu18-gcc6-80_20_program_ode_scalar_xbraid:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1574,7 +1583,7 @@ job-test-ubuntu18-gcc6-80_20_program_ode_scalar_xbraid:
 
 
 job-test-ubuntu18-gcc6-85_10_program_swe_plane_parareal:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1605,7 +1614,7 @@ job-test-ubuntu18-gcc6-85_10_program_swe_plane_parareal:
 
 
 job-test-ubuntu18-gcc6-85_30_program_swe_plane_xbraid:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1636,7 +1645,7 @@ job-test-ubuntu18-gcc6-85_30_program_swe_plane_xbraid:
 
 
 job-test-ubuntu18-gcc6-87_10_program_swe_sphere_parareal:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1667,7 +1676,7 @@ job-test-ubuntu18-gcc6-87_10_program_swe_sphere_parareal:
 
 
 job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1698,7 +1707,7 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_c
 
 
 job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1729,7 +1738,7 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_c
 
 
 job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1760,7 +1769,7 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
 
 
 job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1791,7 +1800,7 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_conv
 
 
 job-test-ubuntu18-gcc6-87_30_program_swe_sphere_xbraid:
-  stage: test
+  stage: stage_tests_ubuntu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1822,7 +1831,7 @@ job-test-ubuntu18-gcc6-87_30_program_swe_sphere_xbraid:
 
 
 setup-local-software-ubuntu18-gcc7:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1869,7 +1878,7 @@ setup-local-software-ubuntu18-gcc7:       # This job runs in the build stage, wh
   
 
 setup-local-software-ubuntu18-gcc8:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
@@ -1916,7 +1925,7 @@ setup-local-software-ubuntu18-gcc8:       # This job runs in the build stage, wh
   
 
 setup-local-software-ubuntu20-gcc8:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
@@ -1963,7 +1972,7 @@ setup-local-software-ubuntu20-gcc8:       # This job runs in the build stage, wh
   
 
 setup-local-software-ubuntu20-gcc9:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
@@ -2010,7 +2019,7 @@ setup-local-software-ubuntu20-gcc9:       # This job runs in the build stage, wh
   
 
 setup-local-software-ubuntu20-gcc10:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
@@ -2057,7 +2066,7 @@ setup-local-software-ubuntu20-gcc10:       # This job runs in the build stage, w
   
 
 setup-local-software-ubuntu22-gcc9:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2104,7 +2113,7 @@ setup-local-software-ubuntu22-gcc9:       # This job runs in the build stage, wh
   
 
 setup-local-software-ubuntu22-gcc10:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2151,7 +2160,7 @@ setup-local-software-ubuntu22-gcc10:       # This job runs in the build stage, w
   
 
 setup-local-software-ubuntu22-gcc11:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2198,7 +2207,7 @@ setup-local-software-ubuntu22-gcc11:       # This job runs in the build stage, w
   
 
 setup-local-software-ubuntu22-gcc12:       # This job runs in the build stage, which runs first.
-  stage: setup
+  stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2245,7 +2254,7 @@ setup-local-software-ubuntu22-gcc12:       # This job runs in the build stage, w
   
 
 job-test-ubuntu22-gcc12-05_jobs_run_directly_compile_error:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2276,7 +2285,7 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_compile_error:
 
 
 job-test-ubuntu22-gcc12-05_jobs_run_directly_parameter_error:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2307,7 +2316,7 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_parameter_error:
 
 
 job-test-ubuntu22-gcc12-10_compile:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2338,7 +2347,7 @@ job-test-ubuntu22-gcc12-10_compile:
 
 
 job-test-ubuntu22-gcc12-20_platforms_job_generation:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2369,7 +2378,7 @@ job-test-ubuntu22-gcc12-20_platforms_job_generation:
 
 
 job-test-ubuntu22-gcc12-35_test_exp_phi:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2400,7 +2409,7 @@ job-test-ubuntu22-gcc12-35_test_exp_phi:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_advection_semi_lagrangian:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2431,7 +2440,7 @@ job-test-ubuntu22-gcc12-50_test_plane_advection_semi_lagrangian:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_antialiasing_frequencies:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2462,7 +2471,7 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_frequencies:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_antialiasing_patterns:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2493,7 +2502,7 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_patterns:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_basic_advection:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2524,7 +2533,7 @@ job-test-ubuntu22-gcc12-50_test_plane_basic_advection:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_convert_complex_to_from_real:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2555,7 +2564,7 @@ job-test-ubuntu22-gcc12-50_test_plane_convert_complex_to_from_real:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_diff_stencil_ops:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2586,7 +2595,7 @@ job-test-ubuntu22-gcc12-50_test_plane_diff_stencil_ops:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_exp_direct_precompute_phin:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2617,7 +2626,7 @@ job-test-ubuntu22-gcc12-50_test_plane_exp_direct_precompute_phin:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_fftw_wisdom_import_export:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2648,7 +2657,7 @@ job-test-ubuntu22-gcc12-50_test_plane_fftw_wisdom_import_export:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_modal_restriction_interpolation:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2679,7 +2688,7 @@ job-test-ubuntu22-gcc12-50_test_plane_modal_restriction_interpolation:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_normal_mode_conversion:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2710,7 +2719,7 @@ job-test-ubuntu22-gcc12-50_test_plane_normal_mode_conversion:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_operators:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2741,7 +2750,7 @@ job-test-ubuntu22-gcc12-50_test_plane_operators:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_operators_complex:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2772,7 +2781,7 @@ job-test-ubuntu22-gcc12-50_test_plane_operators_complex:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2803,7 +2812,7 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation:
 
 
 job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation_2:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2834,7 +2843,7 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation_2:
 
 
 job-test-ubuntu22-gcc12-50_test_quadrature:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2865,7 +2874,7 @@ job-test-ubuntu22-gcc12-50_test_quadrature:
 
 
 job-test-ubuntu22-gcc12-50_test_sph_quadrature_nodes:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2896,7 +2905,7 @@ job-test-ubuntu22-gcc12-50_test_sph_quadrature_nodes:
 
 
 job-test-ubuntu22-gcc12-50_test_sphere_advection_semi_lagrangian:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2927,7 +2936,7 @@ job-test-ubuntu22-gcc12-50_test_sphere_advection_semi_lagrangian:
 
 
 job-test-ubuntu22-gcc12-50_test_sphere_coordinates:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2958,7 +2967,7 @@ job-test-ubuntu22-gcc12-50_test_sphere_coordinates:
 
 
 job-test-ubuntu22-gcc12-50_test_sphere_interpolation:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -2989,7 +2998,7 @@ job-test-ubuntu22-gcc12-50_test_sphere_interpolation:
 
 
 job-test-ubuntu22-gcc12-50_test_sphere_pint_spatial_coarsening:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3020,7 +3029,7 @@ job-test-ubuntu22-gcc12-50_test_sphere_pint_spatial_coarsening:
 
 
 job-test-ubuntu22-gcc12-50_test_sphere_sph_operators:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3051,7 +3060,7 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators:
 
 
 job-test-ubuntu22-gcc12-50_test_sphere_sph_operators_complex:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3082,7 +3091,7 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators_complex:
 
 
 job-test-ubuntu22-gcc12-50_test_sphere_sph_solver_real_and_complex:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3113,7 +3122,7 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_solver_real_and_complex:
 
 
 job-test-ubuntu22-gcc12-50_test_timestepping_runge_kutta:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3144,7 +3153,7 @@ job-test-ubuntu22-gcc12-50_test_timestepping_runge_kutta:
 
 
 job-test-ubuntu22-gcc12-70_20_program_burgers_plane_parareal:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3175,7 +3184,7 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_plane_parareal:
 
 
 job-test-ubuntu22-gcc12-70_20_program_burgers_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3206,7 +3215,7 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_timestepper_convergence:
 
 
 job-test-ubuntu22-gcc12-70_40_program_swe_plane_spatial_convergence:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3237,7 +3246,7 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_spatial_convergence:
 
 
 job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l1:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3268,7 +3277,7 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l1:
 
 
 job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l2:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3299,7 +3308,7 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l2:
 
 
 job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln1:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3330,7 +3339,7 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln1:
 
 
 job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln2:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3361,7 +3370,7 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln2:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_comparison_with_reference_implementation:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3392,7 +3401,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_comparison_with_reference_imple
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_linear:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3423,7 +3432,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_linear:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3454,7 +3463,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l1:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3485,7 +3494,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l1:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l2:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3516,7 +3525,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l2:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg1:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3547,7 +3556,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg1:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg2:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3578,7 +3587,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg2:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln1:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3609,7 +3618,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln1:
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3640,7 +3649,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_exp
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3671,7 +3680,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_spl
 
 
 job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3702,7 +3711,7 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_std
 
 
 job-test-ubuntu22-gcc12-80_10_program_ode_scalar_parareal:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3733,7 +3742,7 @@ job-test-ubuntu22-gcc12-80_10_program_ode_scalar_parareal:
 
 
 job-test-ubuntu22-gcc12-80_20_program_ode_scalar_xbraid:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3764,7 +3773,7 @@ job-test-ubuntu22-gcc12-80_20_program_ode_scalar_xbraid:
 
 
 job-test-ubuntu22-gcc12-85_10_program_swe_plane_parareal:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3795,7 +3804,7 @@ job-test-ubuntu22-gcc12-85_10_program_swe_plane_parareal:
 
 
 job-test-ubuntu22-gcc12-85_30_program_swe_plane_xbraid:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3826,7 +3835,7 @@ job-test-ubuntu22-gcc12-85_30_program_swe_plane_xbraid:
 
 
 job-test-ubuntu22-gcc12-87_10_program_swe_sphere_parareal:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3857,7 +3866,7 @@ job-test-ubuntu22-gcc12-87_10_program_swe_sphere_parareal:
 
 
 job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3888,7 +3897,7 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_
 
 
 job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3919,7 +3928,7 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_
 
 
 job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3950,7 +3959,7 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
 
 
 job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
@@ -3981,7 +3990,7 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_con
 
 
 job-test-ubuntu22-gcc12-87_30_program_swe_sphere_xbraid:
-  stage: test
+  stage: stage_tests_ubuntu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
