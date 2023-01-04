@@ -4,16 +4,122 @@ import sys
 import os
 
 if not 'MULE_SOFTWARE_ROOT' in os.environ:
-    print("No SWEET environment variables detected, skipping Travis updates")
+    print("No SWEET environment variables detected, skipping CI updates")
     sys.exit(0)
 
-os.chdir(os.environ['MULE_SOFTWARE_ROOT'])
 
+
+# Which gitlab CI to use
+#gitlab_ci_kind = 'gricad'
+gitlab_ci_kind = 'inria'
+
+
+
+"""
+List of dictionaries describing the test environments
+"""
+test_environment_ = []
+
+
+ubuntu_version_ = [18, 20, 22]
+
+# Setup configurations for all different ubuntu versions and compilers
+for ubuntu_version in ubuntu_version_:
+
+    # Available Ubuntu compiler versions
+    if ubuntu_version == 18:
+        gcc_version_ = [6,7,8]
+    elif ubuntu_version == 20:
+        gcc_version_ = [8,9,10]
+    elif ubuntu_version == 22:
+        gcc_version_ = [9,10,11,12]
+
+    # Particular image version - named differently on different CI systems
+    image_version = None
+    if gitlab_ci_kind == "gricad":
+        # bionic: 18.04
+        # focal: 20.04
+        # jammy: 22.04
+        if ubuntu_version == 18:
+            image_version = "ubuntu:bionic"
+        elif ubuntu_version == 20:
+            image_version = "ubuntu:focal"
+        elif ubuntu_version == 22:
+            image_version = "ubuntu:jammy"
+        else:
+            raise Exception("Unsupported version")
+
+    elif gitlab_ci_kind == "inria":
+        if ubuntu_version == 18:
+            image_version = "library/ubuntu:18.04"
+        elif ubuntu_version == 20:
+            image_version = "library/ubuntu:20.04"
+        elif ubuntu_version == 22:
+            image_version = "library/ubuntu:22.04"
+        else:
+            raise Exception("Unsupported version")
+
+    # Graphics packages vary in Ubuntu versions
+    apt_get_graphics_pkgs = None
+    if ubuntu_version == 18:
+        apt_get_graphics_pkgs = "pkg-config libfreetype6-dev libglu1-mesa-dev"
+    elif ubuntu_version == 20:
+        apt_get_graphics_pkgs = "pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev"
+    elif ubuntu_version == 22:
+        apt_get_graphics_pkgs = "pkg-config libfreetype-dev libopengl-dev libglu1-mesa-dev libxext-dev"
+    else:
+        raise Exception("Unsupported version")
+
+    # Special tags for INRIA CI
+    tags = ""
+    if gitlab_ci_kind == "inria":
+        tags = """\
+  tags:
+    - ci.inria.fr
+    - large
+"""
+
+
+    # Standard apt-get packages
+    apt_get_packages = "git make automake cmake python3 wget"
+
+    for gcc_version in gcc_version_:
+
+        #
+        # Generate individual CI tests
+        # only for these particular environments
+        #
+        gen_ci_tests = False
+        if ubuntu_version == 22 and gcc_version == 12:
+            gen_ci_tests = True
+        #elif ubuntu_version == 20 and gcc_version == 10:
+        #    gen_ci_tests = True
+        #elif ubuntu_version == 18 and gcc_version == 8:
+        #    gen_ci_tests = True
+        elif ubuntu_version == 18 and gcc_version == 6:
+            gen_ci_tests = True
+
+        test_environment_ += [{
+                    'id': f"ubuntu{ubuntu_version}-gcc{gcc_version}",
+                    'ubuntu_version': ubuntu_version,
+                    'gcc_version': gcc_version,
+                    'apt_get': f"apt-get install -y -qq {apt_get_packages} g++-{gcc_version} gcc-{gcc_version} gfortran-{gcc_version} {apt_get_graphics_pkgs}",
+                    'image_version': image_version,
+                    'tags': tags,
+                    'gen_ci_tests': gen_ci_tests,
+                }]
+
+
+
+
+os.chdir(os.environ['MULE_SOFTWARE_ROOT'])
 
 import glob
 import re
 
 from itertools import product
+
+
 
 gitlab_ci_file=".gitlab-ci.yml"
 
@@ -33,55 +139,54 @@ tests += glob.glob('./tests/??_*/test.py')
 tests.sort()
 
 
+
+job_counter = 0
+
 if verbosity >= 10:
     for test in tests:
         print(" + Found test script '"+test+"'")
-
-
 
 if verbosity >= 10:
     print("Writing content to file '"+gitlab_ci_file+"'")
 
 
-# bionic: 18.04
-# focal: 20.04
-# jammy: 22.04
-image_version = 'ubuntu:focal'
+content = ""
 
-# GNU version of compiler
-gnu_comp_version = 8
-
-
-with open(gitlab_ci_file, 'w') as f:
-    f.write(f"""
+content += """\
 #
 # Gitlab CI file for SWEET
 #
 
-image: {image_version}
+stages:          # List of stages for jobs, and their order of execution
+  - setup
+  - test
 
-before_script:
-    # Install required packages
+"""
+
+
+for te in test_environment_:
+
+    script_header = f"""\
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
     # Install packages
     - apt-get update -qq
-    - apt-get install -y -qq g++-{gnu_comp_version} gcc-{gnu_comp_version} gfortran-{gnu_comp_version}
-    - apt-get install -y -qq git make automake cmake python3 curl
-    - export CC=gcc-{gnu_comp_version}
-    - export CXX=g++-{gnu_comp_version}
-    - export F90=gfortran-{gnu_comp_version}
-    - export FC=gfortran-{gnu_comp_version}
+    - {te['apt_get']}
+    - export CC=gcc-{te['gcc_version']}
+    - export CXX=g++-{te['gcc_version']}
+    - export F90=gfortran-{te['gcc_version']}
+    - export FC=gfortran-{te['gcc_version']}
     - export LD=ld
+"""
 
-stages:          # List of stages for jobs, and their order of execution
-  - setup-software
-  - tests
+    content += f"""\
 
-
-setup-job:       # This job runs in the build stage, which runs first.
-  stage: setup-software
+setup-local-software-{te['id']}:       # This job runs in the build stage, which runs first.
+  stage: setup
+  image: {te['image_version']}
+{te['tags']}\
   script:
+{script_header}\
     # Setup SWEET
 
     # Get only head by specifying -- depth 1
@@ -109,35 +214,50 @@ setup-job:       # This job runs in the build stage, which runs first.
     # Just get everything for the next stage
     untracked: true
     expire_in: 1 day
+    name: $CI_JOB_NAME
   
-  #artifacts:
-  #  paths:
-  #    - sweet/local_software/local/
+"""
 
+    job_counter += 1
 
-""")
+    if te['gen_ci_tests']:
+        for test in tests:
 
-    c = 0
-    for test in tests:
+            r = re.match(r".*/([0-9_a-z]*)/test.*", test)
+            job_id = r.group(1)
 
-        r = re.match(r".*/([0-9_a-z]*)/test.*", test)
-        job_id = r.group(1)
+            content += f"""\
 
-        f.write(f"""
-
-job-test-{job_id}:   # This job runs in the test stage.
-  stage: tests  # It only starts when the job in the build stage completes successfully.
+job-test-{te['id']}-{job_id}:
+  stage: test
+  image: {te['image_version']}
+{te['tags']}\
+  # Job dependency
+  needs: ["setup-local-software-{te['id']}"]
+  # Download files from artifact of this build
   dependencies:
-    - "setup-job"
+    - "setup-local-software-{te['id']}"
   script:
+{script_header}\
+    - ls
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls
     - {test}
-    - echo "TEST {c} SUCCESSFULLY FINISHED"
+    - echo "TEST {job_id} SUCCESSFULLY FINISHED"
 
-""")
-        c += 1
+"""
+            job_counter += 1
+
+
+print(content)
+
+
+with open(gitlab_ci_file, 'w') as f:
+    f.write(content)
 
 
 if verbosity >= 10:
-    print("Job combinations: "+str(c))
+    print(f"Job counter: {job_counter}")
+

@@ -60,7 +60,9 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_compile_error:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -89,7 +91,9 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_parameter_error:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -118,7 +122,9 @@ job-test-ubuntu18-gcc6-10_compile:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -147,7 +153,9 @@ job-test-ubuntu18-gcc6-20_platforms_job_generation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -176,7 +184,9 @@ job-test-ubuntu18-gcc6-35_test_exp_phi:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -205,7 +215,9 @@ job-test-ubuntu18-gcc6-50_test_plane_advection_semi_lagrangian:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -234,7 +246,9 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_frequencies:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -263,7 +277,9 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_patterns:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -292,7 +308,9 @@ job-test-ubuntu18-gcc6-50_test_plane_basic_advection:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -321,7 +339,9 @@ job-test-ubuntu18-gcc6-50_test_plane_convert_complex_to_from_real:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -350,7 +370,9 @@ job-test-ubuntu18-gcc6-50_test_plane_diff_stencil_ops:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -379,7 +401,9 @@ job-test-ubuntu18-gcc6-50_test_plane_exp_direct_precompute_phin:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -408,7 +432,9 @@ job-test-ubuntu18-gcc6-50_test_plane_fftw_wisdom_import_export:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -437,7 +463,9 @@ job-test-ubuntu18-gcc6-50_test_plane_modal_restriction_interpolation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -466,7 +494,9 @@ job-test-ubuntu18-gcc6-50_test_plane_normal_mode_conversion:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -495,7 +525,9 @@ job-test-ubuntu18-gcc6-50_test_plane_operators:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -524,7 +556,9 @@ job-test-ubuntu18-gcc6-50_test_plane_operators_complex:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -553,7 +587,9 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -582,7 +618,9 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation_2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -611,7 +649,9 @@ job-test-ubuntu18-gcc6-50_test_quadrature:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -640,7 +680,9 @@ job-test-ubuntu18-gcc6-50_test_sph_quadrature_nodes:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -669,7 +711,9 @@ job-test-ubuntu18-gcc6-50_test_sphere_advection_semi_lagrangian:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -698,7 +742,9 @@ job-test-ubuntu18-gcc6-50_test_sphere_coordinates:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -727,7 +773,9 @@ job-test-ubuntu18-gcc6-50_test_sphere_interpolation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -756,7 +804,9 @@ job-test-ubuntu18-gcc6-50_test_sphere_pint_spatial_coarsening:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -785,7 +835,9 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -814,7 +866,9 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators_complex:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -843,7 +897,9 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_solver_real_and_complex:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -872,7 +928,9 @@ job-test-ubuntu18-gcc6-50_test_timestepping_runge_kutta:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -901,7 +959,9 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_plane_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -930,7 +990,9 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_timestepper_convergence:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -959,7 +1021,9 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_spatial_convergence:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -988,7 +1052,9 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1017,7 +1083,9 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1046,7 +1114,9 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1075,7 +1145,9 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1104,7 +1176,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_comparison_with_reference_implem
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1133,7 +1207,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_linear:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1162,7 +1238,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1191,7 +1269,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1220,7 +1300,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1249,7 +1331,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1278,7 +1362,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1307,7 +1393,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1336,7 +1424,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1365,7 +1455,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_spli
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1394,7 +1486,9 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1423,7 +1517,9 @@ job-test-ubuntu18-gcc6-80_10_program_ode_scalar_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1452,7 +1548,9 @@ job-test-ubuntu18-gcc6-80_20_program_ode_scalar_xbraid:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1481,7 +1579,9 @@ job-test-ubuntu18-gcc6-85_10_program_swe_plane_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1510,7 +1610,9 @@ job-test-ubuntu18-gcc6-85_30_program_swe_plane_xbraid:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1539,7 +1641,9 @@ job-test-ubuntu18-gcc6-87_10_program_swe_sphere_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1568,7 +1672,9 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_c
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1597,7 +1703,9 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_c
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1626,7 +1734,9 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1655,7 +1765,9 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_conv
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -1684,7 +1796,9 @@ job-test-ubuntu18-gcc6-87_30_program_swe_sphere_xbraid:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu18-gcc6"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu18-gcc6"
   script:
@@ -2136,7 +2250,9 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_compile_error:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2165,7 +2281,9 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_parameter_error:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2194,7 +2312,9 @@ job-test-ubuntu22-gcc12-10_compile:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2223,7 +2343,9 @@ job-test-ubuntu22-gcc12-20_platforms_job_generation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2252,7 +2374,9 @@ job-test-ubuntu22-gcc12-35_test_exp_phi:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2281,7 +2405,9 @@ job-test-ubuntu22-gcc12-50_test_plane_advection_semi_lagrangian:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2310,7 +2436,9 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_frequencies:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2339,7 +2467,9 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_patterns:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2368,7 +2498,9 @@ job-test-ubuntu22-gcc12-50_test_plane_basic_advection:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2397,7 +2529,9 @@ job-test-ubuntu22-gcc12-50_test_plane_convert_complex_to_from_real:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2426,7 +2560,9 @@ job-test-ubuntu22-gcc12-50_test_plane_diff_stencil_ops:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2455,7 +2591,9 @@ job-test-ubuntu22-gcc12-50_test_plane_exp_direct_precompute_phin:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2484,7 +2622,9 @@ job-test-ubuntu22-gcc12-50_test_plane_fftw_wisdom_import_export:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2513,7 +2653,9 @@ job-test-ubuntu22-gcc12-50_test_plane_modal_restriction_interpolation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2542,7 +2684,9 @@ job-test-ubuntu22-gcc12-50_test_plane_normal_mode_conversion:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2571,7 +2715,9 @@ job-test-ubuntu22-gcc12-50_test_plane_operators:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2600,7 +2746,9 @@ job-test-ubuntu22-gcc12-50_test_plane_operators_complex:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2629,7 +2777,9 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2658,7 +2808,9 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation_2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2687,7 +2839,9 @@ job-test-ubuntu22-gcc12-50_test_quadrature:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2716,7 +2870,9 @@ job-test-ubuntu22-gcc12-50_test_sph_quadrature_nodes:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2745,7 +2901,9 @@ job-test-ubuntu22-gcc12-50_test_sphere_advection_semi_lagrangian:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2774,7 +2932,9 @@ job-test-ubuntu22-gcc12-50_test_sphere_coordinates:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2803,7 +2963,9 @@ job-test-ubuntu22-gcc12-50_test_sphere_interpolation:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2832,7 +2994,9 @@ job-test-ubuntu22-gcc12-50_test_sphere_pint_spatial_coarsening:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2861,7 +3025,9 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2890,7 +3056,9 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators_complex:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2919,7 +3087,9 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_solver_real_and_complex:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2948,7 +3118,9 @@ job-test-ubuntu22-gcc12-50_test_timestepping_runge_kutta:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -2977,7 +3149,9 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_plane_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3006,7 +3180,9 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_timestepper_convergence:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3035,7 +3211,9 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_spatial_convergence:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3064,7 +3242,9 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3093,7 +3273,9 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3122,7 +3304,9 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3151,7 +3335,9 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3180,7 +3366,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_comparison_with_reference_imple
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3209,7 +3397,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_linear:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3238,7 +3428,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3267,7 +3459,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3296,7 +3490,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3325,7 +3521,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3354,7 +3552,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg2:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3383,7 +3583,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln1:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3412,7 +3614,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_exp
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3441,7 +3645,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_spl
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3470,7 +3676,9 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_std
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3499,7 +3707,9 @@ job-test-ubuntu22-gcc12-80_10_program_ode_scalar_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3528,7 +3738,9 @@ job-test-ubuntu22-gcc12-80_20_program_ode_scalar_xbraid:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3557,7 +3769,9 @@ job-test-ubuntu22-gcc12-85_10_program_swe_plane_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3586,7 +3800,9 @@ job-test-ubuntu22-gcc12-85_30_program_swe_plane_xbraid:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3615,7 +3831,9 @@ job-test-ubuntu22-gcc12-87_10_program_swe_sphere_parareal:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3644,7 +3862,9 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3673,7 +3893,9 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3702,7 +3924,9 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3731,7 +3955,9 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_con
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:
@@ -3760,7 +3986,9 @@ job-test-ubuntu22-gcc12-87_30_program_swe_sphere_xbraid:
   tags:
     - ci.inria.fr
     - large
+  # Job dependency
   needs: ["setup-software-ubuntu22-gcc12"]
+  # Download files from artifact of this build
   dependencies:
     - "setup-software-ubuntu22-gcc12"
   script:

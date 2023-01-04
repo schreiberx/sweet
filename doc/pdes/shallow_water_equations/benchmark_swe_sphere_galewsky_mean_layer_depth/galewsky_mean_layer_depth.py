@@ -33,7 +33,7 @@ class Spharmt(object):
         self.ntrunc = ntrunc
         self.nlm = self._shtns.nlm
         self.degree = self._shtns.l
-        self.lap = -self.degree*(self.degree+1.0).astype(np.complex)
+        self.lap = -self.degree*(self.degree+1.0).astype(np.cdouble)
         self.invlap = np.zeros(self.lap.shape, self.lap.dtype)
         self.invlap[1:] = 1./self.lap[1:]
         self.rsphere = rsphere
