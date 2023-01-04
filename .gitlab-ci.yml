@@ -34,7 +34,7 @@ setup-job:       # This job runs in the build stage, which runs first.
     # Compile other required software
     - echo "Fetching and compiling software"
     - cd local_software
-    - ./setup_local_software.sh
+    - time ./setup_local_software.sh
     - cd ../
 
     # Cleaning up things a little bit
@@ -64,7 +64,9 @@ job-test-0:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_40_program_swe_plane_timestepper_convergence_l1/test.sh
     - ./tests/70_40_program_swe_plane_timestepper_convergence_l1/test.sh
     - echo "TEST 0 SUCCESSFULLY FINISHED"
 
@@ -76,7 +78,9 @@ job-test-1:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_20_program_burgers_timestepper_convergence/test.sh
     - ./tests/70_20_program_burgers_timestepper_convergence/test.sh
     - echo "TEST 1 SUCCESSFULLY FINISHED"
 
@@ -88,7 +92,9 @@ job-test-2:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_40_program_swe_plane_timestepper_convergence_ln1/test.sh
     - ./tests/70_40_program_swe_plane_timestepper_convergence_ln1/test.sh
     - echo "TEST 2 SUCCESSFULLY FINISHED"
 
@@ -100,7 +106,9 @@ job-test-3:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence/test.sh
     - ./tests/87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence/test.sh
     - echo "TEST 3 SUCCESSFULLY FINISHED"
 
@@ -112,7 +120,9 @@ job-test-4:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/80_10_program_ode_scalar_parareal/test.sh
     - ./tests/80_10_program_ode_scalar_parareal/test.sh
     - echo "TEST 4 SUCCESSFULLY FINISHED"
 
@@ -124,7 +134,9 @@ job-test-5:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_l2/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_l2/test.sh
     - echo "TEST 5 SUCCESSFULLY FINISHED"
 
@@ -136,7 +148,9 @@ job-test-6:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence/test.sh
     - ./tests/87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence/test.sh
     - echo "TEST 6 SUCCESSFULLY FINISHED"
 
@@ -148,7 +162,9 @@ job-test-7:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/20_platforms_job_generation/test.sh
     - ./tests/20_platforms_job_generation/test.sh
     - echo "TEST 7 SUCCESSFULLY FINISHED"
 
@@ -160,7 +176,9 @@ job-test-8:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_20_program_burgers_plane_parareal/test.sh
     - ./tests/70_20_program_burgers_plane_parareal/test.sh
     - echo "TEST 8 SUCCESSFULLY FINISHED"
 
@@ -172,7 +190,9 @@ job-test-9:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/87_10_program_swe_sphere_parareal/test.sh
     - ./tests/87_10_program_swe_sphere_parareal/test.sh
     - echo "TEST 9 SUCCESSFULLY FINISHED"
 
@@ -184,7 +204,9 @@ job-test-10:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_comparison_with_reference_implementation/test.sh
     - ./tests/70_60_program_swe_sphere_comparison_with_reference_implementation/test.sh
     - echo "TEST 10 SUCCESSFULLY FINISHED"
 
@@ -196,7 +218,9 @@ job-test-11:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_exp/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_exp/test.sh
     - echo "TEST 11 SUCCESSFULLY FINISHED"
 
@@ -208,7 +232,9 @@ job-test-12:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence/test.sh
     - ./tests/87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence/test.sh
     - echo "TEST 12 SUCCESSFULLY FINISHED"
 
@@ -220,7 +246,9 @@ job-test-13:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/87_20_program_swe_sphere_libpfasst_mlsdc_one_step/test.sh
     - ./tests/87_20_program_swe_sphere_libpfasst_mlsdc_one_step/test.sh
     - echo "TEST 13 SUCCESSFULLY FINISHED"
 
@@ -232,7 +260,9 @@ job-test-14:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_ln1/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln1/test.sh
     - echo "TEST 14 SUCCESSFULLY FINISHED"
 
@@ -244,7 +274,9 @@ job-test-15:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_lg1/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_lg1/test.sh
     - echo "TEST 15 SUCCESSFULLY FINISHED"
 
@@ -256,7 +288,9 @@ job-test-16:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_lg2/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_lg2/test.sh
     - echo "TEST 16 SUCCESSFULLY FINISHED"
 
@@ -268,7 +302,9 @@ job-test-17:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/85_10_program_swe_plane_parareal/test.sh
     - ./tests/85_10_program_swe_plane_parareal/test.sh
     - echo "TEST 17 SUCCESSFULLY FINISHED"
 
@@ -280,7 +316,9 @@ job-test-18:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_40_program_swe_plane_timestepper_convergence_ln2/test.sh
     - ./tests/70_40_program_swe_plane_timestepper_convergence_ln2/test.sh
     - echo "TEST 18 SUCCESSFULLY FINISHED"
 
@@ -292,7 +330,9 @@ job-test-19:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_std/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_std/test.sh
     - echo "TEST 19 SUCCESSFULLY FINISHED"
 
@@ -304,7 +344,9 @@ job-test-20:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_40_program_swe_plane_spatial_convergence/test.sh
     - ./tests/70_40_program_swe_plane_spatial_convergence/test.sh
     - echo "TEST 20 SUCCESSFULLY FINISHED"
 
@@ -316,7 +358,9 @@ job-test-21:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/10_compile/test.sh
     - ./tests/10_compile/test.sh
     - echo "TEST 21 SUCCESSFULLY FINISHED"
 
@@ -328,7 +372,9 @@ job-test-22:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/87_30_program_swe_sphere_xbraid/test.sh
     - ./tests/87_30_program_swe_sphere_xbraid/test.sh
     - echo "TEST 22 SUCCESSFULLY FINISHED"
 
@@ -340,7 +386,9 @@ job-test-23:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_40_program_swe_plane_timestepper_convergence_l2/test.sh
     - ./tests/70_40_program_swe_plane_timestepper_convergence_l2/test.sh
     - echo "TEST 23 SUCCESSFULLY FINISHED"
 
@@ -352,7 +400,9 @@ job-test-24:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_l1/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_l1/test.sh
     - echo "TEST 24 SUCCESSFULLY FINISHED"
 
@@ -364,7 +414,9 @@ job-test-25:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_split/test.sh
     - ./tests/70_60_program_swe_sphere_timestepper_convergence_ln2_split/test.sh
     - echo "TEST 25 SUCCESSFULLY FINISHED"
 
@@ -376,7 +428,9 @@ job-test-26:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/80_20_program_ode_scalar_xbraid/test.sh
     - ./tests/80_20_program_ode_scalar_xbraid/test.sh
     - echo "TEST 26 SUCCESSFULLY FINISHED"
 
@@ -388,7 +442,9 @@ job-test-27:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/85_30_program_swe_plane_xbraid/test.sh
     - ./tests/85_30_program_swe_plane_xbraid/test.sh
     - echo "TEST 27 SUCCESSFULLY FINISHED"
 
@@ -400,7 +456,9 @@ job-test-28:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_advection_semi_lagrangian/test.py
     - ./tests/50_test_plane_advection_semi_lagrangian/test.py
     - echo "TEST 28 SUCCESSFULLY FINISHED"
 
@@ -412,7 +470,9 @@ job-test-29:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sphere_sph_operators_complex/test.py
     - ./tests/50_test_sphere_sph_operators_complex/test.py
     - echo "TEST 29 SUCCESSFULLY FINISHED"
 
@@ -424,7 +484,9 @@ job-test-30:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_operators/test.py
     - ./tests/50_test_plane_operators/test.py
     - echo "TEST 30 SUCCESSFULLY FINISHED"
 
@@ -436,7 +498,9 @@ job-test-31:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_fftw_wisdom_import_export/test.py
     - ./tests/50_test_plane_fftw_wisdom_import_export/test.py
     - echo "TEST 31 SUCCESSFULLY FINISHED"
 
@@ -448,7 +512,9 @@ job-test-32:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_quadrature/test.py
     - ./tests/50_test_quadrature/test.py
     - echo "TEST 32 SUCCESSFULLY FINISHED"
 
@@ -460,7 +526,9 @@ job-test-33:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_diff_stencil_ops/test.py
     - ./tests/50_test_plane_diff_stencil_ops/test.py
     - echo "TEST 33 SUCCESSFULLY FINISHED"
 
@@ -472,7 +540,9 @@ job-test-34:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_sampler_interpolation_2/test.py
     - ./tests/50_test_plane_sampler_interpolation_2/test.py
     - echo "TEST 34 SUCCESSFULLY FINISHED"
 
@@ -484,7 +554,9 @@ job-test-35:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_convert_complex_to_from_real/test.py
     - ./tests/50_test_plane_convert_complex_to_from_real/test.py
     - echo "TEST 35 SUCCESSFULLY FINISHED"
 
@@ -496,7 +568,9 @@ job-test-36:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sphere_sph_solver_real_and_complex/test.py
     - ./tests/50_test_sphere_sph_solver_real_and_complex/test.py
     - echo "TEST 36 SUCCESSFULLY FINISHED"
 
@@ -508,7 +582,9 @@ job-test-37:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_exp_direct_precompute_phin/test.py
     - ./tests/50_test_plane_exp_direct_precompute_phin/test.py
     - echo "TEST 37 SUCCESSFULLY FINISHED"
 
@@ -520,7 +596,9 @@ job-test-38:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_normal_mode_conversion/test.py
     - ./tests/50_test_plane_normal_mode_conversion/test.py
     - echo "TEST 38 SUCCESSFULLY FINISHED"
 
@@ -532,7 +610,9 @@ job-test-39:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_operators_complex/test.py
     - ./tests/50_test_plane_operators_complex/test.py
     - echo "TEST 39 SUCCESSFULLY FINISHED"
 
@@ -544,7 +624,9 @@ job-test-40:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_sampler_interpolation/test.py
     - ./tests/50_test_plane_sampler_interpolation/test.py
     - echo "TEST 40 SUCCESSFULLY FINISHED"
 
@@ -556,7 +638,9 @@ job-test-41:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/35_test_exp_phi/test.py
     - ./tests/35_test_exp_phi/test.py
     - echo "TEST 41 SUCCESSFULLY FINISHED"
 
@@ -568,7 +652,9 @@ job-test-42:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sphere_advection_semi_lagrangian/test.py
     - ./tests/50_test_sphere_advection_semi_lagrangian/test.py
     - echo "TEST 42 SUCCESSFULLY FINISHED"
 
@@ -580,7 +666,9 @@ job-test-43:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/05_jobs_run_directly_parameter_error/test.py
     - ./tests/05_jobs_run_directly_parameter_error/test.py
     - echo "TEST 43 SUCCESSFULLY FINISHED"
 
@@ -592,7 +680,9 @@ job-test-44:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_geostrophic_balance_nonlinear/test.py
     - ./tests/70_60_program_swe_sphere_geostrophic_balance_nonlinear/test.py
     - echo "TEST 44 SUCCESSFULLY FINISHED"
 
@@ -604,7 +694,9 @@ job-test-45:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sphere_pint_spatial_coarsening/test.py
     - ./tests/50_test_sphere_pint_spatial_coarsening/test.py
     - echo "TEST 45 SUCCESSFULLY FINISHED"
 
@@ -616,7 +708,9 @@ job-test-46:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_modal_restriction_interpolation/test.py
     - ./tests/50_test_plane_modal_restriction_interpolation/test.py
     - echo "TEST 46 SUCCESSFULLY FINISHED"
 
@@ -628,7 +722,9 @@ job-test-47:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sphere_sph_operators/test.py
     - ./tests/50_test_sphere_sph_operators/test.py
     - echo "TEST 47 SUCCESSFULLY FINISHED"
 
@@ -640,7 +736,9 @@ job-test-48:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sph_quadrature_nodes/test.py
     - ./tests/50_test_sph_quadrature_nodes/test.py
     - echo "TEST 48 SUCCESSFULLY FINISHED"
 
@@ -652,7 +750,9 @@ job-test-49:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sphere_interpolation/test.py
     - ./tests/50_test_sphere_interpolation/test.py
     - echo "TEST 49 SUCCESSFULLY FINISHED"
 
@@ -664,7 +764,9 @@ job-test-50:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_basic_advection/test.py
     - ./tests/50_test_plane_basic_advection/test.py
     - echo "TEST 50 SUCCESSFULLY FINISHED"
 
@@ -676,7 +778,9 @@ job-test-51:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_sphere_coordinates/test.py
     - ./tests/50_test_sphere_coordinates/test.py
     - echo "TEST 51 SUCCESSFULLY FINISHED"
 
@@ -688,7 +792,9 @@ job-test-52:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/70_60_program_swe_sphere_geostrophic_balance_linear/test.py
     - ./tests/70_60_program_swe_sphere_geostrophic_balance_linear/test.py
     - echo "TEST 52 SUCCESSFULLY FINISHED"
 
@@ -700,7 +806,9 @@ job-test-53:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_timestepping_runge_kutta/test.py
     - ./tests/50_test_timestepping_runge_kutta/test.py
     - echo "TEST 53 SUCCESSFULLY FINISHED"
 
@@ -712,7 +820,9 @@ job-test-54:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/05_jobs_run_directly_compile_error/test.py
     - ./tests/05_jobs_run_directly_compile_error/test.py
     - echo "TEST 54 SUCCESSFULLY FINISHED"
 
@@ -724,7 +834,9 @@ job-test-55:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_antialiasing_frequencies/test.py
     - ./tests/50_test_plane_antialiasing_frequencies/test.py
     - echo "TEST 55 SUCCESSFULLY FINISHED"
 
@@ -736,7 +848,9 @@ job-test-56:   # This job runs in the test stage.
     - "setup-job"
   script:
     - cd sweet
+    - ls
     - source ./activate.sh
+    - ls ./tests/50_test_plane_antialiasing_patterns/test.py
     - ./tests/50_test_plane_antialiasing_patterns/test.py
     - echo "TEST 56 SUCCESSFULLY FINISHED"
 
