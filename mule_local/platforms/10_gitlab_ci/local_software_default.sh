@@ -1,8 +1,9 @@
 
 #PKGS+=("install_numactl.sh")
 PKGS+=("install_miniconda.sh")
-#PKGS+=("install_fftw3.sh")
 
+# Compilatino of FFTW3 required for Fortran interfaces
+PKGS+=("install_fftw3.sh")
 PKGS+=("install_shtns.sh")
 PKGS+=("install_shtns_python.sh")
 
