@@ -1,6 +1,6 @@
 
 #PKGS+=("install_numactl.sh")
-#PKGS+=("install_miniconda.sh")
+PKGS+=("install_miniconda.sh")
 #PKGS+=("install_fftw3.sh")
 
 PKGS+=("install_shtns.sh")

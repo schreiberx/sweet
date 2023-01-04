@@ -2,8 +2,10 @@
 
 source ./install_helpers.sh ""
 
-# Setup environment in case it has been missed
-#source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate"
+# Setup environment in case it has been missed (e.g. Conda was installed before)
+if [[ -e "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate" ]]; then
+	source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate" || exit 1
+fi
 
 PKG_NAME="SHTNS_python"
 
