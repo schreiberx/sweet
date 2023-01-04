@@ -40,7 +40,7 @@ jg.compile.rexi_thread_parallel_sum = 'disable'
 
 gen_reference_solution = True
 
-jg.runtime.max_simulation_time = 60*60*24*1    # 5 days
+jg.runtime.max_simulation_time = 60*60*24*8    # 8 days
 
 #params_timestep_sizes_explicit = [30]
 params_timestep_sizes_explicit = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360]
@@ -123,6 +123,9 @@ jg.parallelization.force_turbo_off = True
 
 
 def estimateWallclockTime(jg):
+
+    # 1 Hour max
+    return 60*60
 
     return 24*60*60*2
     if jg.reference_job:
@@ -265,8 +268,8 @@ timestep_size_reference = params_timestep_sizes_explicit[0]
 #
 
 #groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
-#groups = ['ln2']
 groups = ['l2']
+#groups = ['ln2']
 
 
 
@@ -562,8 +565,8 @@ if __name__ == "__main__":
 
                 jg.setup_parallelization([pspace, ptime])
 
-                # Use 12h per default to generate plans
-                jg.parallelization.max_wallclock_seconds = 60*60*12
+                # Use 1 hour per default to generate plans
+                jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
 
                 # Set simtime to 0
                 jg.runtime.max_simulation_time = 0
