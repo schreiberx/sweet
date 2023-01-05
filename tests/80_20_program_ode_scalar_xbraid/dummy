@@ -2,8 +2,6 @@ INFO [JobPlatforms] ************************************************************
 INFO [JobPlatforms] Platforms description path: /home/martin/repositories/sweet/mule/platforms
 INFO [JobPlatforms] Loading platform description for '10_gitlab_ci.JobPlatform'
 INFO [JobPlatforms]  + platform_id: 'gitlab_ci'
-INFO [JobPlatforms] Loading platform description for '10_jenkins.JobPlatform'
-INFO [JobPlatforms]  + platform_id: 'jenkins'
 INFO [JobPlatforms] Loading platform description for '10_travis_job.JobPlatform'
 INFO [JobPlatforms]  + platform_id: 'travis_job'
 INFO [JobPlatforms] Loading platform description for '50_cheyenne_gnu.JobPlatform'
@@ -38,7 +36,7 @@ INFO [JobPlatforms] Loading platform description for '90_default_intel.JobPlatfo
 INFO [JobPlatforms]  + platform_id: 'default_intel'
 INFO [JobPlatforms] Loading platform description for '99_fallback.JobPlatform'
 INFO [JobPlatforms]  + platform_id: 'fallback'
-INFO [JobPlatforms] Using platform 'default_gnu'
+INFO [JobPlatforms] Using platform 'gitlab_ci'
 INFO [JobPlatformResources] ************************************************************
 INFO [JobPlatformResources] num_cores_per_node: 8
 INFO [JobPlatformResources] num_nodes: 1
@@ -47,23 +45,9 @@ INFO [JobPlatformResources] num_cores_per_socket: 8
 INFO [JobPlatformResources] num_sockets_per_node: 1
 INFO [JobPlatformResources] num_oversubscribed_cores_per_socket: 8
 INFO [JobPlatformResources] max_wallclock_seconds: None
-INFO [JobParallelizationDimOptions.dummy] ************************************************************
-INFO [JobParallelizationDimOptions.dummy] ************************************************************
-INFO [JobParallelizationDimOptions.dummy] dim_name: dummy
-INFO [JobParallelizationDimOptions.dummy] num_cores: 8
-INFO [JobParallelizationDimOptions.dummy] num_cores_per_rank: 8
-INFO [JobParallelizationDimOptions.dummy] num_threads_per_rank: 8
-INFO [JobParallelizationDimOptions.dummy] num_ranks: 1
-INFO [JobParallelization] ************************************************************
-INFO [JobParallelization] ************************************************************
-INFO [JobParallelization] num_cores_per_rank: 8
-INFO [JobParallelization] num_threads_per_rank: 8
-INFO [JobParallelization] num_ranks_per_node: 1
-INFO [JobParallelization] num_cores_per_node: 8
-INFO [JobParallelization] num_ranks: 1
-INFO [JobParallelization] num_nodes: 1
-INFO [JobParallelization] num_cores: 8
-INFO [JobParallelization] max_wallclock_seconds: 3600
-INFO [JobParallelization] mpiexec_disabled: False
-INFO [JobParallelization] force_turbo_off: False
-INFO [JobGeneration] Writing job file '/home/martin/repositories/sweet/tests/80_20_program_ode_scalar_xbraid/job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_bunstablejet_g09.81_h010000.000_f1.45840_04228add3480b66e25032a6ddbf1c9f4/run.sh'
+INFO [JobGeneration] Writing job file '/home/martin/repositories/sweet/tests/80_20_program_ode_scalar_xbraid/job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_bunstablejet_g09.81_h010000.000_f1.45840_6c6e5f2f6d585419e24271ff15c62bba/run.sh'
+INFO [JobGeneration] Writing job file '/home/martin/repositories/sweet/tests/80_20_program_ode_scalar_xbraid/job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_bunstablejet_g09.81_h010000.000_f1.45840_2915f93c88b699b397972dc9bffaf29b/run.sh'
+INFO [JobGeneration] Writing job file '/home/martin/repositories/sweet/tests/80_20_program_ode_scalar_xbraid/job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_bunstablejet_g09.81_h010000.000_f1.45840_5bc10bb633b61c50d19577cc883cdd68/run.sh'
+INFO [JobGeneration] Writing job file '/home/martin/repositories/sweet/tests/80_20_program_ode_scalar_xbraid/job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_bunstablejet_g09.81_h010000.000_f1.45840_299cdcdd1b5a448f6e670433255c6053/run.sh'
+INFO [JobGeneration] Writing job file '/home/martin/repositories/sweet/tests/80_20_program_ode_scalar_xbraid/job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_bunstablejet_g09.81_h010000.000_f1.45840_13d4108e4d5d92886dbe3f8851176953/run.sh'
+INFO [JobGeneration] Writing job file '/home/martin/repositories/sweet/tests/80_20_program_ode_scalar_xbraid/job_bench_COMP_plspec_pldeal_spspec_spdeal_fft_gnu_mpi_thomp_debug_RT_bunstablejet_g09.81_h010000.000_f1.45840_66c77ce39aa975dda63922ff87973f91/run.sh'

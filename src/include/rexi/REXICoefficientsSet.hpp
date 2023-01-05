@@ -83,6 +83,7 @@ public:
 		}
 
 		SWEETError("Not found");
+		return 0;
 	}
 };
 

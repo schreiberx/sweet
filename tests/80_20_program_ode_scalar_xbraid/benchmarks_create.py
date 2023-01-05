@@ -149,7 +149,7 @@ if simulation_to_run == "xbraid":
         pspace.num_ranks = 1
 
         # Setup parallelization
-        jg.setup_parallelization([pspace, ptime])
+        jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
 
 
     if (itest == 0):

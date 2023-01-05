@@ -92,15 +92,15 @@ for ubuntu_version in ubuntu_version_:
         gen_ci_tests = False
         if ubuntu_version == 22 and gcc_version == 12:
             gen_ci_tests = True
-        #elif ubuntu_version == 20 and gcc_version == 10:
-        #    gen_ci_tests = True
-        #elif ubuntu_version == 18 and gcc_version == 8:
-        #    gen_ci_tests = True
+        elif ubuntu_version == 20 and gcc_version == 10:
+            gen_ci_tests = True
+        elif ubuntu_version == 20 and gcc_version == 8:
+            gen_ci_tests = True
         elif ubuntu_version == 18 and gcc_version == 6:
             gen_ci_tests = True
 
         test_environment_ += [{
-                    'id': f"ubuntu{ubuntu_version}-gcc{gcc_version}",
+                    'id': f"ubu{ubuntu_version}-gcc{gcc_version}",
                     'ubuntu_version': ubuntu_version,
                     'gcc_version': gcc_version,
                     'apt_get': f"apt-get install -y -qq {apt_get_packages} g++-{gcc_version} gcc-{gcc_version} gfortran-{gcc_version} {apt_get_graphics_pkgs}",
@@ -162,7 +162,8 @@ stages:          # List of stages for jobs, and their order of execution
 """
 
 for te in test_environment_:
-    content += f"""\
+    if te['gen_ci_tests']:
+        content += f"""\
   - stage_tests_{te['id']}
 """
 
@@ -243,7 +244,7 @@ setup-local-software-{te['id']}:       # This job runs in the build stage, which
 
             content += f"""\
 
-job-test-{te['id']}-{job_id}:
+test-{te['id']}-{job_id}:
   stage: stage_tests_{te['id']}
   image: {te['image_version']}
 {te['tags']}\

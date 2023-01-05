@@ -4,19 +4,13 @@
 
 stages:          # List of stages for jobs, and their order of execution
   - setup_local_software
-  - stage_tests_ubuntu18-gcc6
-  - stage_tests_ubuntu18-gcc7
-  - stage_tests_ubuntu18-gcc8
-  - stage_tests_ubuntu20-gcc8
-  - stage_tests_ubuntu20-gcc9
-  - stage_tests_ubuntu20-gcc10
-  - stage_tests_ubuntu22-gcc9
-  - stage_tests_ubuntu22-gcc10
-  - stage_tests_ubuntu22-gcc11
-  - stage_tests_ubuntu22-gcc12
+  - stage_tests_ubu18-gcc6
+  - stage_tests_ubu20-gcc8
+  - stage_tests_ubu20-gcc10
+  - stage_tests_ubu22-gcc12
 
 
-setup-local-software-ubuntu18-gcc6:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu18-gcc6:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:18.04
   tags:
@@ -63,17 +57,17 @@ setup-local-software-ubuntu18-gcc6:       # This job runs in the build stage, wh
     name: $CI_JOB_NAME
   
 
-job-test-ubuntu18-gcc6-05_jobs_run_directly_compile_error:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-05_jobs_run_directly_compile_error:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -94,17 +88,17 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_compile_error:
     - echo "TEST 05_jobs_run_directly_compile_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-05_jobs_run_directly_parameter_error:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-05_jobs_run_directly_parameter_error:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -125,17 +119,17 @@ job-test-ubuntu18-gcc6-05_jobs_run_directly_parameter_error:
     - echo "TEST 05_jobs_run_directly_parameter_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-10_compile:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-10_compile:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -156,17 +150,17 @@ job-test-ubuntu18-gcc6-10_compile:
     - echo "TEST 10_compile SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-20_platforms_job_generation:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-20_platforms_job_generation:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -187,17 +181,17 @@ job-test-ubuntu18-gcc6-20_platforms_job_generation:
     - echo "TEST 20_platforms_job_generation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-35_test_exp_phi:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-35_test_exp_phi:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -218,17 +212,17 @@ job-test-ubuntu18-gcc6-35_test_exp_phi:
     - echo "TEST 35_test_exp_phi SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_advection_semi_lagrangian:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -249,17 +243,17 @@ job-test-ubuntu18-gcc6-50_test_plane_advection_semi_lagrangian:
     - echo "TEST 50_test_plane_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_antialiasing_frequencies:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_antialiasing_frequencies:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -280,17 +274,17 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_frequencies:
     - echo "TEST 50_test_plane_antialiasing_frequencies SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_antialiasing_patterns:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_antialiasing_patterns:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -311,17 +305,17 @@ job-test-ubuntu18-gcc6-50_test_plane_antialiasing_patterns:
     - echo "TEST 50_test_plane_antialiasing_patterns SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_basic_advection:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_basic_advection:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -342,17 +336,17 @@ job-test-ubuntu18-gcc6-50_test_plane_basic_advection:
     - echo "TEST 50_test_plane_basic_advection SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_convert_complex_to_from_real:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_convert_complex_to_from_real:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -373,17 +367,17 @@ job-test-ubuntu18-gcc6-50_test_plane_convert_complex_to_from_real:
     - echo "TEST 50_test_plane_convert_complex_to_from_real SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_diff_stencil_ops:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_diff_stencil_ops:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -404,17 +398,17 @@ job-test-ubuntu18-gcc6-50_test_plane_diff_stencil_ops:
     - echo "TEST 50_test_plane_diff_stencil_ops SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_exp_direct_precompute_phin:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_exp_direct_precompute_phin:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -435,17 +429,17 @@ job-test-ubuntu18-gcc6-50_test_plane_exp_direct_precompute_phin:
     - echo "TEST 50_test_plane_exp_direct_precompute_phin SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_fftw_wisdom_import_export:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_fftw_wisdom_import_export:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -466,17 +460,17 @@ job-test-ubuntu18-gcc6-50_test_plane_fftw_wisdom_import_export:
     - echo "TEST 50_test_plane_fftw_wisdom_import_export SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_modal_restriction_interpolation:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_modal_restriction_interpolation:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -497,17 +491,17 @@ job-test-ubuntu18-gcc6-50_test_plane_modal_restriction_interpolation:
     - echo "TEST 50_test_plane_modal_restriction_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_normal_mode_conversion:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_normal_mode_conversion:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -528,17 +522,17 @@ job-test-ubuntu18-gcc6-50_test_plane_normal_mode_conversion:
     - echo "TEST 50_test_plane_normal_mode_conversion SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_operators:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_operators:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -559,17 +553,17 @@ job-test-ubuntu18-gcc6-50_test_plane_operators:
     - echo "TEST 50_test_plane_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_operators_complex:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_operators_complex:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -590,17 +584,17 @@ job-test-ubuntu18-gcc6-50_test_plane_operators_complex:
     - echo "TEST 50_test_plane_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_sampler_interpolation:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -621,17 +615,17 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation:
     - echo "TEST 50_test_plane_sampler_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation_2:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_plane_sampler_interpolation_2:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -652,17 +646,17 @@ job-test-ubuntu18-gcc6-50_test_plane_sampler_interpolation_2:
     - echo "TEST 50_test_plane_sampler_interpolation_2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_quadrature:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_quadrature:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -683,17 +677,17 @@ job-test-ubuntu18-gcc6-50_test_quadrature:
     - echo "TEST 50_test_quadrature SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sph_quadrature_nodes:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sph_quadrature_nodes:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -714,17 +708,17 @@ job-test-ubuntu18-gcc6-50_test_sph_quadrature_nodes:
     - echo "TEST 50_test_sph_quadrature_nodes SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sphere_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sphere_advection_semi_lagrangian:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -745,17 +739,17 @@ job-test-ubuntu18-gcc6-50_test_sphere_advection_semi_lagrangian:
     - echo "TEST 50_test_sphere_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sphere_coordinates:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sphere_coordinates:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -776,17 +770,17 @@ job-test-ubuntu18-gcc6-50_test_sphere_coordinates:
     - echo "TEST 50_test_sphere_coordinates SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sphere_interpolation:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sphere_interpolation:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -807,17 +801,17 @@ job-test-ubuntu18-gcc6-50_test_sphere_interpolation:
     - echo "TEST 50_test_sphere_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sphere_pint_spatial_coarsening:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sphere_pint_spatial_coarsening:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -838,17 +832,17 @@ job-test-ubuntu18-gcc6-50_test_sphere_pint_spatial_coarsening:
     - echo "TEST 50_test_sphere_pint_spatial_coarsening SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sphere_sph_operators:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sphere_sph_operators:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -869,17 +863,17 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators:
     - echo "TEST 50_test_sphere_sph_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sphere_sph_operators_complex:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sphere_sph_operators_complex:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -900,17 +894,17 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_operators_complex:
     - echo "TEST 50_test_sphere_sph_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_sphere_sph_solver_real_and_complex:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_sphere_sph_solver_real_and_complex:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -931,17 +925,17 @@ job-test-ubuntu18-gcc6-50_test_sphere_sph_solver_real_and_complex:
     - echo "TEST 50_test_sphere_sph_solver_real_and_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-50_test_timestepping_runge_kutta:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-50_test_timestepping_runge_kutta:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -962,17 +956,17 @@ job-test-ubuntu18-gcc6-50_test_timestepping_runge_kutta:
     - echo "TEST 50_test_timestepping_runge_kutta SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_20_program_burgers_plane_parareal:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_20_program_burgers_plane_parareal:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -993,17 +987,17 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_plane_parareal:
     - echo "TEST 70_20_program_burgers_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_20_program_burgers_timestepper_convergence:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_20_program_burgers_timestepper_convergence:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1024,17 +1018,17 @@ job-test-ubuntu18-gcc6-70_20_program_burgers_timestepper_convergence:
     - echo "TEST 70_20_program_burgers_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_40_program_swe_plane_spatial_convergence:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_40_program_swe_plane_spatial_convergence:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1055,17 +1049,17 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_spatial_convergence:
     - echo "TEST 70_40_program_swe_plane_spatial_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l1:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1086,17 +1080,17 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l2:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1117,17 +1111,17 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_l2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln1:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1148,17 +1142,17 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln2:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln2:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1179,17 +1173,17 @@ job-test-ubuntu18-gcc6-70_40_program_swe_plane_timestepper_convergence_ln2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_comparison_with_reference_implementation:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_comparison_with_reference_implementation:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1210,17 +1204,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_comparison_with_reference_implem
     - echo "TEST 70_60_program_swe_sphere_comparison_with_reference_implementation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_linear:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_linear:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1241,17 +1235,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_linear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_linear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1272,17 +1266,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_nonlinear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l1:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1303,17 +1297,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l2:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1334,17 +1328,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_l2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg1:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg1:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1365,17 +1359,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg2:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg2:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1396,17 +1390,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_lg2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln1:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1427,17 +1421,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1458,17 +1452,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_exp SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1489,17 +1483,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_spli
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_split SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1520,17 +1514,17 @@ job-test-ubuntu18-gcc6-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_std SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-80_10_program_ode_scalar_parareal:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-80_10_program_ode_scalar_parareal:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1551,17 +1545,17 @@ job-test-ubuntu18-gcc6-80_10_program_ode_scalar_parareal:
     - echo "TEST 80_10_program_ode_scalar_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-80_20_program_ode_scalar_xbraid:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-80_20_program_ode_scalar_xbraid:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1582,17 +1576,17 @@ job-test-ubuntu18-gcc6-80_20_program_ode_scalar_xbraid:
     - echo "TEST 80_20_program_ode_scalar_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-85_10_program_swe_plane_parareal:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-85_10_program_swe_plane_parareal:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1613,17 +1607,17 @@ job-test-ubuntu18-gcc6-85_10_program_swe_plane_parareal:
     - echo "TEST 85_10_program_swe_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-85_30_program_swe_plane_xbraid:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-85_30_program_swe_plane_xbraid:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1644,17 +1638,17 @@ job-test-ubuntu18-gcc6-85_30_program_swe_plane_xbraid:
     - echo "TEST 85_30_program_swe_plane_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-87_10_program_swe_sphere_parareal:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-87_10_program_swe_sphere_parareal:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1675,17 +1669,17 @@ job-test-ubuntu18-gcc6-87_10_program_swe_sphere_parareal:
     - echo "TEST 87_10_program_swe_sphere_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1706,17 +1700,17 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_c
     - echo "TEST 87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1737,17 +1731,17 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_c
     - echo "TEST 87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1768,17 +1762,17 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_one_step SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1799,17 +1793,17 @@ job-test-ubuntu18-gcc6-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_conv
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu18-gcc6-87_30_program_swe_sphere_xbraid:
-  stage: stage_tests_ubuntu18-gcc6
+test-ubu18-gcc6-87_30_program_swe_sphere_xbraid:
+  stage: stage_tests_ubu18-gcc6
   image: library/ubuntu:18.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu18-gcc6"]
+  needs: ["setup-local-software-ubu18-gcc6"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu18-gcc6"
+    - "setup-local-software-ubu18-gcc6"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -1830,7 +1824,7 @@ job-test-ubuntu18-gcc6-87_30_program_swe_sphere_xbraid:
     - echo "TEST 87_30_program_swe_sphere_xbraid SUCCESSFULLY FINISHED"
 
 
-setup-local-software-ubuntu18-gcc7:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu18-gcc7:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:18.04
   tags:
@@ -1877,7 +1871,7 @@ setup-local-software-ubuntu18-gcc7:       # This job runs in the build stage, wh
     name: $CI_JOB_NAME
   
 
-setup-local-software-ubuntu18-gcc8:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu18-gcc8:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:18.04
   tags:
@@ -1924,7 +1918,7 @@ setup-local-software-ubuntu18-gcc8:       # This job runs in the build stage, wh
     name: $CI_JOB_NAME
   
 
-setup-local-software-ubuntu20-gcc8:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu20-gcc8:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:20.04
   tags:
@@ -1971,17 +1965,17 @@ setup-local-software-ubuntu20-gcc8:       # This job runs in the build stage, wh
     name: $CI_JOB_NAME
   
 
-job-test-ubuntu20-gcc8-05_jobs_run_directly_compile_error:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-05_jobs_run_directly_compile_error:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2002,17 +1996,17 @@ job-test-ubuntu20-gcc8-05_jobs_run_directly_compile_error:
     - echo "TEST 05_jobs_run_directly_compile_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-05_jobs_run_directly_parameter_error:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-05_jobs_run_directly_parameter_error:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2033,17 +2027,17 @@ job-test-ubuntu20-gcc8-05_jobs_run_directly_parameter_error:
     - echo "TEST 05_jobs_run_directly_parameter_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-10_compile:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-10_compile:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2064,17 +2058,17 @@ job-test-ubuntu20-gcc8-10_compile:
     - echo "TEST 10_compile SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-20_platforms_job_generation:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-20_platforms_job_generation:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2095,17 +2089,17 @@ job-test-ubuntu20-gcc8-20_platforms_job_generation:
     - echo "TEST 20_platforms_job_generation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-35_test_exp_phi:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-35_test_exp_phi:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2126,17 +2120,17 @@ job-test-ubuntu20-gcc8-35_test_exp_phi:
     - echo "TEST 35_test_exp_phi SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_advection_semi_lagrangian:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2157,17 +2151,17 @@ job-test-ubuntu20-gcc8-50_test_plane_advection_semi_lagrangian:
     - echo "TEST 50_test_plane_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_antialiasing_frequencies:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_antialiasing_frequencies:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2188,17 +2182,17 @@ job-test-ubuntu20-gcc8-50_test_plane_antialiasing_frequencies:
     - echo "TEST 50_test_plane_antialiasing_frequencies SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_antialiasing_patterns:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_antialiasing_patterns:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2219,17 +2213,17 @@ job-test-ubuntu20-gcc8-50_test_plane_antialiasing_patterns:
     - echo "TEST 50_test_plane_antialiasing_patterns SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_basic_advection:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_basic_advection:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2250,17 +2244,17 @@ job-test-ubuntu20-gcc8-50_test_plane_basic_advection:
     - echo "TEST 50_test_plane_basic_advection SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_convert_complex_to_from_real:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_convert_complex_to_from_real:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2281,17 +2275,17 @@ job-test-ubuntu20-gcc8-50_test_plane_convert_complex_to_from_real:
     - echo "TEST 50_test_plane_convert_complex_to_from_real SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_diff_stencil_ops:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_diff_stencil_ops:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2312,17 +2306,17 @@ job-test-ubuntu20-gcc8-50_test_plane_diff_stencil_ops:
     - echo "TEST 50_test_plane_diff_stencil_ops SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_exp_direct_precompute_phin:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_exp_direct_precompute_phin:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2343,17 +2337,17 @@ job-test-ubuntu20-gcc8-50_test_plane_exp_direct_precompute_phin:
     - echo "TEST 50_test_plane_exp_direct_precompute_phin SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_fftw_wisdom_import_export:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_fftw_wisdom_import_export:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2374,17 +2368,17 @@ job-test-ubuntu20-gcc8-50_test_plane_fftw_wisdom_import_export:
     - echo "TEST 50_test_plane_fftw_wisdom_import_export SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_modal_restriction_interpolation:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_modal_restriction_interpolation:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2405,17 +2399,17 @@ job-test-ubuntu20-gcc8-50_test_plane_modal_restriction_interpolation:
     - echo "TEST 50_test_plane_modal_restriction_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_normal_mode_conversion:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_normal_mode_conversion:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2436,17 +2430,17 @@ job-test-ubuntu20-gcc8-50_test_plane_normal_mode_conversion:
     - echo "TEST 50_test_plane_normal_mode_conversion SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_operators:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_operators:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2467,17 +2461,17 @@ job-test-ubuntu20-gcc8-50_test_plane_operators:
     - echo "TEST 50_test_plane_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_operators_complex:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_operators_complex:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2498,17 +2492,17 @@ job-test-ubuntu20-gcc8-50_test_plane_operators_complex:
     - echo "TEST 50_test_plane_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_sampler_interpolation:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_sampler_interpolation:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2529,17 +2523,17 @@ job-test-ubuntu20-gcc8-50_test_plane_sampler_interpolation:
     - echo "TEST 50_test_plane_sampler_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_plane_sampler_interpolation_2:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_plane_sampler_interpolation_2:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2560,17 +2554,17 @@ job-test-ubuntu20-gcc8-50_test_plane_sampler_interpolation_2:
     - echo "TEST 50_test_plane_sampler_interpolation_2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_quadrature:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_quadrature:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2591,17 +2585,17 @@ job-test-ubuntu20-gcc8-50_test_quadrature:
     - echo "TEST 50_test_quadrature SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sph_quadrature_nodes:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sph_quadrature_nodes:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2622,17 +2616,17 @@ job-test-ubuntu20-gcc8-50_test_sph_quadrature_nodes:
     - echo "TEST 50_test_sph_quadrature_nodes SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sphere_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sphere_advection_semi_lagrangian:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2653,17 +2647,17 @@ job-test-ubuntu20-gcc8-50_test_sphere_advection_semi_lagrangian:
     - echo "TEST 50_test_sphere_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sphere_coordinates:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sphere_coordinates:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2684,17 +2678,17 @@ job-test-ubuntu20-gcc8-50_test_sphere_coordinates:
     - echo "TEST 50_test_sphere_coordinates SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sphere_interpolation:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sphere_interpolation:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2715,17 +2709,17 @@ job-test-ubuntu20-gcc8-50_test_sphere_interpolation:
     - echo "TEST 50_test_sphere_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sphere_pint_spatial_coarsening:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sphere_pint_spatial_coarsening:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2746,17 +2740,17 @@ job-test-ubuntu20-gcc8-50_test_sphere_pint_spatial_coarsening:
     - echo "TEST 50_test_sphere_pint_spatial_coarsening SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sphere_sph_operators:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sphere_sph_operators:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2777,17 +2771,17 @@ job-test-ubuntu20-gcc8-50_test_sphere_sph_operators:
     - echo "TEST 50_test_sphere_sph_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sphere_sph_operators_complex:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sphere_sph_operators_complex:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2808,17 +2802,17 @@ job-test-ubuntu20-gcc8-50_test_sphere_sph_operators_complex:
     - echo "TEST 50_test_sphere_sph_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_sphere_sph_solver_real_and_complex:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_sphere_sph_solver_real_and_complex:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2839,17 +2833,17 @@ job-test-ubuntu20-gcc8-50_test_sphere_sph_solver_real_and_complex:
     - echo "TEST 50_test_sphere_sph_solver_real_and_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-50_test_timestepping_runge_kutta:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-50_test_timestepping_runge_kutta:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2870,17 +2864,17 @@ job-test-ubuntu20-gcc8-50_test_timestepping_runge_kutta:
     - echo "TEST 50_test_timestepping_runge_kutta SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_20_program_burgers_plane_parareal:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_20_program_burgers_plane_parareal:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2901,17 +2895,17 @@ job-test-ubuntu20-gcc8-70_20_program_burgers_plane_parareal:
     - echo "TEST 70_20_program_burgers_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_20_program_burgers_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_20_program_burgers_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2932,17 +2926,17 @@ job-test-ubuntu20-gcc8-70_20_program_burgers_timestepper_convergence:
     - echo "TEST 70_20_program_burgers_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_40_program_swe_plane_spatial_convergence:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_40_program_swe_plane_spatial_convergence:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2963,17 +2957,17 @@ job-test-ubuntu20-gcc8-70_40_program_swe_plane_spatial_convergence:
     - echo "TEST 70_40_program_swe_plane_spatial_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_40_program_swe_plane_timestepper_convergence_l1:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -2994,17 +2988,17 @@ job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_l1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_40_program_swe_plane_timestepper_convergence_l2:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3025,17 +3019,17 @@ job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_l2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_40_program_swe_plane_timestepper_convergence_ln1:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3056,17 +3050,17 @@ job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_ln1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_ln2:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_40_program_swe_plane_timestepper_convergence_ln2:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3087,17 +3081,17 @@ job-test-ubuntu20-gcc8-70_40_program_swe_plane_timestepper_convergence_ln2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_comparison_with_reference_implementation:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_comparison_with_reference_implementation:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3118,17 +3112,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_comparison_with_reference_implem
     - echo "TEST 70_60_program_swe_sphere_comparison_with_reference_implementation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_geostrophic_balance_linear:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_geostrophic_balance_linear:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3149,17 +3143,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_geostrophic_balance_linear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_linear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3180,17 +3174,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_nonlinear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_l1:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3211,17 +3205,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_l1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_l2:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3242,17 +3236,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_l2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_lg1:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_lg1:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3273,17 +3267,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_lg1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_lg2:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_lg2:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3304,17 +3298,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_lg2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln1:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3335,17 +3329,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3366,17 +3360,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_exp SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3397,17 +3391,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_spli
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_split SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3428,17 +3422,17 @@ job-test-ubuntu20-gcc8-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_std SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-80_10_program_ode_scalar_parareal:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-80_10_program_ode_scalar_parareal:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3459,17 +3453,17 @@ job-test-ubuntu20-gcc8-80_10_program_ode_scalar_parareal:
     - echo "TEST 80_10_program_ode_scalar_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-80_20_program_ode_scalar_xbraid:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-80_20_program_ode_scalar_xbraid:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3490,17 +3484,17 @@ job-test-ubuntu20-gcc8-80_20_program_ode_scalar_xbraid:
     - echo "TEST 80_20_program_ode_scalar_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-85_10_program_swe_plane_parareal:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-85_10_program_swe_plane_parareal:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3521,17 +3515,17 @@ job-test-ubuntu20-gcc8-85_10_program_swe_plane_parareal:
     - echo "TEST 85_10_program_swe_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-85_30_program_swe_plane_xbraid:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-85_30_program_swe_plane_xbraid:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3552,17 +3546,17 @@ job-test-ubuntu20-gcc8-85_30_program_swe_plane_xbraid:
     - echo "TEST 85_30_program_swe_plane_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-87_10_program_swe_sphere_parareal:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-87_10_program_swe_sphere_parareal:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3583,17 +3577,17 @@ job-test-ubuntu20-gcc8-87_10_program_swe_sphere_parareal:
     - echo "TEST 87_10_program_swe_sphere_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3614,17 +3608,17 @@ job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_c
     - echo "TEST 87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3645,17 +3639,17 @@ job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_c
     - echo "TEST 87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3676,17 +3670,17 @@ job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_one_step SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3707,17 +3701,17 @@ job-test-ubuntu20-gcc8-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_conv
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc8-87_30_program_swe_sphere_xbraid:
-  stage: stage_tests_ubuntu20-gcc8
+test-ubu20-gcc8-87_30_program_swe_sphere_xbraid:
+  stage: stage_tests_ubu20-gcc8
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc8"]
+  needs: ["setup-local-software-ubu20-gcc8"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc8"
+    - "setup-local-software-ubu20-gcc8"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3738,7 +3732,7 @@ job-test-ubuntu20-gcc8-87_30_program_swe_sphere_xbraid:
     - echo "TEST 87_30_program_swe_sphere_xbraid SUCCESSFULLY FINISHED"
 
 
-setup-local-software-ubuntu20-gcc9:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu20-gcc9:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:20.04
   tags:
@@ -3785,7 +3779,7 @@ setup-local-software-ubuntu20-gcc9:       # This job runs in the build stage, wh
     name: $CI_JOB_NAME
   
 
-setup-local-software-ubuntu20-gcc10:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu20-gcc10:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:20.04
   tags:
@@ -3832,17 +3826,17 @@ setup-local-software-ubuntu20-gcc10:       # This job runs in the build stage, w
     name: $CI_JOB_NAME
   
 
-job-test-ubuntu20-gcc10-05_jobs_run_directly_compile_error:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-05_jobs_run_directly_compile_error:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3863,17 +3857,17 @@ job-test-ubuntu20-gcc10-05_jobs_run_directly_compile_error:
     - echo "TEST 05_jobs_run_directly_compile_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-05_jobs_run_directly_parameter_error:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-05_jobs_run_directly_parameter_error:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3894,17 +3888,17 @@ job-test-ubuntu20-gcc10-05_jobs_run_directly_parameter_error:
     - echo "TEST 05_jobs_run_directly_parameter_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-10_compile:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-10_compile:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3925,17 +3919,17 @@ job-test-ubuntu20-gcc10-10_compile:
     - echo "TEST 10_compile SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-20_platforms_job_generation:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-20_platforms_job_generation:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3956,17 +3950,17 @@ job-test-ubuntu20-gcc10-20_platforms_job_generation:
     - echo "TEST 20_platforms_job_generation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-35_test_exp_phi:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-35_test_exp_phi:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -3987,17 +3981,17 @@ job-test-ubuntu20-gcc10-35_test_exp_phi:
     - echo "TEST 35_test_exp_phi SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_advection_semi_lagrangian:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4018,17 +4012,17 @@ job-test-ubuntu20-gcc10-50_test_plane_advection_semi_lagrangian:
     - echo "TEST 50_test_plane_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_antialiasing_frequencies:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_antialiasing_frequencies:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4049,17 +4043,17 @@ job-test-ubuntu20-gcc10-50_test_plane_antialiasing_frequencies:
     - echo "TEST 50_test_plane_antialiasing_frequencies SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_antialiasing_patterns:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_antialiasing_patterns:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4080,17 +4074,17 @@ job-test-ubuntu20-gcc10-50_test_plane_antialiasing_patterns:
     - echo "TEST 50_test_plane_antialiasing_patterns SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_basic_advection:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_basic_advection:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4111,17 +4105,17 @@ job-test-ubuntu20-gcc10-50_test_plane_basic_advection:
     - echo "TEST 50_test_plane_basic_advection SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_convert_complex_to_from_real:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_convert_complex_to_from_real:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4142,17 +4136,17 @@ job-test-ubuntu20-gcc10-50_test_plane_convert_complex_to_from_real:
     - echo "TEST 50_test_plane_convert_complex_to_from_real SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_diff_stencil_ops:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_diff_stencil_ops:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4173,17 +4167,17 @@ job-test-ubuntu20-gcc10-50_test_plane_diff_stencil_ops:
     - echo "TEST 50_test_plane_diff_stencil_ops SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_exp_direct_precompute_phin:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_exp_direct_precompute_phin:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4204,17 +4198,17 @@ job-test-ubuntu20-gcc10-50_test_plane_exp_direct_precompute_phin:
     - echo "TEST 50_test_plane_exp_direct_precompute_phin SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_fftw_wisdom_import_export:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_fftw_wisdom_import_export:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4235,17 +4229,17 @@ job-test-ubuntu20-gcc10-50_test_plane_fftw_wisdom_import_export:
     - echo "TEST 50_test_plane_fftw_wisdom_import_export SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_modal_restriction_interpolation:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_modal_restriction_interpolation:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4266,17 +4260,17 @@ job-test-ubuntu20-gcc10-50_test_plane_modal_restriction_interpolation:
     - echo "TEST 50_test_plane_modal_restriction_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_normal_mode_conversion:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_normal_mode_conversion:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4297,17 +4291,17 @@ job-test-ubuntu20-gcc10-50_test_plane_normal_mode_conversion:
     - echo "TEST 50_test_plane_normal_mode_conversion SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_operators:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_operators:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4328,17 +4322,17 @@ job-test-ubuntu20-gcc10-50_test_plane_operators:
     - echo "TEST 50_test_plane_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_operators_complex:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_operators_complex:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4359,17 +4353,17 @@ job-test-ubuntu20-gcc10-50_test_plane_operators_complex:
     - echo "TEST 50_test_plane_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_sampler_interpolation:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_sampler_interpolation:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4390,17 +4384,17 @@ job-test-ubuntu20-gcc10-50_test_plane_sampler_interpolation:
     - echo "TEST 50_test_plane_sampler_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_plane_sampler_interpolation_2:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_plane_sampler_interpolation_2:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4421,17 +4415,17 @@ job-test-ubuntu20-gcc10-50_test_plane_sampler_interpolation_2:
     - echo "TEST 50_test_plane_sampler_interpolation_2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_quadrature:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_quadrature:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4452,17 +4446,17 @@ job-test-ubuntu20-gcc10-50_test_quadrature:
     - echo "TEST 50_test_quadrature SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sph_quadrature_nodes:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sph_quadrature_nodes:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4483,17 +4477,17 @@ job-test-ubuntu20-gcc10-50_test_sph_quadrature_nodes:
     - echo "TEST 50_test_sph_quadrature_nodes SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sphere_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sphere_advection_semi_lagrangian:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4514,17 +4508,17 @@ job-test-ubuntu20-gcc10-50_test_sphere_advection_semi_lagrangian:
     - echo "TEST 50_test_sphere_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sphere_coordinates:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sphere_coordinates:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4545,17 +4539,17 @@ job-test-ubuntu20-gcc10-50_test_sphere_coordinates:
     - echo "TEST 50_test_sphere_coordinates SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sphere_interpolation:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sphere_interpolation:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4576,17 +4570,17 @@ job-test-ubuntu20-gcc10-50_test_sphere_interpolation:
     - echo "TEST 50_test_sphere_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sphere_pint_spatial_coarsening:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sphere_pint_spatial_coarsening:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4607,17 +4601,17 @@ job-test-ubuntu20-gcc10-50_test_sphere_pint_spatial_coarsening:
     - echo "TEST 50_test_sphere_pint_spatial_coarsening SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sphere_sph_operators:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sphere_sph_operators:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4638,17 +4632,17 @@ job-test-ubuntu20-gcc10-50_test_sphere_sph_operators:
     - echo "TEST 50_test_sphere_sph_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sphere_sph_operators_complex:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sphere_sph_operators_complex:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4669,17 +4663,17 @@ job-test-ubuntu20-gcc10-50_test_sphere_sph_operators_complex:
     - echo "TEST 50_test_sphere_sph_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_sphere_sph_solver_real_and_complex:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_sphere_sph_solver_real_and_complex:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4700,17 +4694,17 @@ job-test-ubuntu20-gcc10-50_test_sphere_sph_solver_real_and_complex:
     - echo "TEST 50_test_sphere_sph_solver_real_and_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-50_test_timestepping_runge_kutta:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-50_test_timestepping_runge_kutta:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4731,17 +4725,17 @@ job-test-ubuntu20-gcc10-50_test_timestepping_runge_kutta:
     - echo "TEST 50_test_timestepping_runge_kutta SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_20_program_burgers_plane_parareal:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_20_program_burgers_plane_parareal:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4762,17 +4756,17 @@ job-test-ubuntu20-gcc10-70_20_program_burgers_plane_parareal:
     - echo "TEST 70_20_program_burgers_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_20_program_burgers_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_20_program_burgers_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4793,17 +4787,17 @@ job-test-ubuntu20-gcc10-70_20_program_burgers_timestepper_convergence:
     - echo "TEST 70_20_program_burgers_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_40_program_swe_plane_spatial_convergence:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_40_program_swe_plane_spatial_convergence:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4824,17 +4818,17 @@ job-test-ubuntu20-gcc10-70_40_program_swe_plane_spatial_convergence:
     - echo "TEST 70_40_program_swe_plane_spatial_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_40_program_swe_plane_timestepper_convergence_l1:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4855,17 +4849,17 @@ job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_l1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_40_program_swe_plane_timestepper_convergence_l2:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4886,17 +4880,17 @@ job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_l2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_40_program_swe_plane_timestepper_convergence_ln1:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4917,17 +4911,17 @@ job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_ln1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_ln2:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_40_program_swe_plane_timestepper_convergence_ln2:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4948,17 +4942,17 @@ job-test-ubuntu20-gcc10-70_40_program_swe_plane_timestepper_convergence_ln2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_comparison_with_reference_implementation:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_comparison_with_reference_implementation:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -4979,17 +4973,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_comparison_with_reference_imple
     - echo "TEST 70_60_program_swe_sphere_comparison_with_reference_implementation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_geostrophic_balance_linear:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_geostrophic_balance_linear:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5010,17 +5004,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_geostrophic_balance_linear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_linear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5041,17 +5035,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_nonlinear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_l1:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5072,17 +5066,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_l1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_l2:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5103,17 +5097,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_l2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_lg1:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_lg1:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5134,17 +5128,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_lg1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_lg2:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_lg2:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5165,17 +5159,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_lg2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln1:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5196,17 +5190,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5227,17 +5221,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_exp
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_exp SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5258,17 +5252,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_spl
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_split SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5289,17 +5283,17 @@ job-test-ubuntu20-gcc10-70_60_program_swe_sphere_timestepper_convergence_ln2_std
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_std SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-80_10_program_ode_scalar_parareal:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-80_10_program_ode_scalar_parareal:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5320,17 +5314,17 @@ job-test-ubuntu20-gcc10-80_10_program_ode_scalar_parareal:
     - echo "TEST 80_10_program_ode_scalar_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-80_20_program_ode_scalar_xbraid:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-80_20_program_ode_scalar_xbraid:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5351,17 +5345,17 @@ job-test-ubuntu20-gcc10-80_20_program_ode_scalar_xbraid:
     - echo "TEST 80_20_program_ode_scalar_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-85_10_program_swe_plane_parareal:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-85_10_program_swe_plane_parareal:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5382,17 +5376,17 @@ job-test-ubuntu20-gcc10-85_10_program_swe_plane_parareal:
     - echo "TEST 85_10_program_swe_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-85_30_program_swe_plane_xbraid:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-85_30_program_swe_plane_xbraid:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5413,17 +5407,17 @@ job-test-ubuntu20-gcc10-85_30_program_swe_plane_xbraid:
     - echo "TEST 85_30_program_swe_plane_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-87_10_program_swe_sphere_parareal:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-87_10_program_swe_sphere_parareal:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5444,17 +5438,17 @@ job-test-ubuntu20-gcc10-87_10_program_swe_sphere_parareal:
     - echo "TEST 87_10_program_swe_sphere_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5475,17 +5469,17 @@ job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_
     - echo "TEST 87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5506,17 +5500,17 @@ job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_
     - echo "TEST 87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5537,17 +5531,17 @@ job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_one_step SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5568,17 +5562,17 @@ job-test-ubuntu20-gcc10-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_con
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu20-gcc10-87_30_program_swe_sphere_xbraid:
-  stage: stage_tests_ubuntu20-gcc10
+test-ubu20-gcc10-87_30_program_swe_sphere_xbraid:
+  stage: stage_tests_ubu20-gcc10
   image: library/ubuntu:20.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu20-gcc10"]
+  needs: ["setup-local-software-ubu20-gcc10"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu20-gcc10"
+    - "setup-local-software-ubu20-gcc10"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5599,7 +5593,7 @@ job-test-ubuntu20-gcc10-87_30_program_swe_sphere_xbraid:
     - echo "TEST 87_30_program_swe_sphere_xbraid SUCCESSFULLY FINISHED"
 
 
-setup-local-software-ubuntu22-gcc9:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu22-gcc9:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
@@ -5646,7 +5640,7 @@ setup-local-software-ubuntu22-gcc9:       # This job runs in the build stage, wh
     name: $CI_JOB_NAME
   
 
-setup-local-software-ubuntu22-gcc10:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu22-gcc10:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
@@ -5693,7 +5687,7 @@ setup-local-software-ubuntu22-gcc10:       # This job runs in the build stage, w
     name: $CI_JOB_NAME
   
 
-setup-local-software-ubuntu22-gcc11:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu22-gcc11:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
@@ -5740,7 +5734,7 @@ setup-local-software-ubuntu22-gcc11:       # This job runs in the build stage, w
     name: $CI_JOB_NAME
   
 
-setup-local-software-ubuntu22-gcc12:       # This job runs in the build stage, which runs first.
+setup-local-software-ubu22-gcc12:       # This job runs in the build stage, which runs first.
   stage: setup_local_software
   image: library/ubuntu:22.04
   tags:
@@ -5787,17 +5781,17 @@ setup-local-software-ubuntu22-gcc12:       # This job runs in the build stage, w
     name: $CI_JOB_NAME
   
 
-job-test-ubuntu22-gcc12-05_jobs_run_directly_compile_error:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-05_jobs_run_directly_compile_error:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5818,17 +5812,17 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_compile_error:
     - echo "TEST 05_jobs_run_directly_compile_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-05_jobs_run_directly_parameter_error:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-05_jobs_run_directly_parameter_error:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5849,17 +5843,17 @@ job-test-ubuntu22-gcc12-05_jobs_run_directly_parameter_error:
     - echo "TEST 05_jobs_run_directly_parameter_error SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-10_compile:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-10_compile:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5880,17 +5874,17 @@ job-test-ubuntu22-gcc12-10_compile:
     - echo "TEST 10_compile SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-20_platforms_job_generation:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-20_platforms_job_generation:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5911,17 +5905,17 @@ job-test-ubuntu22-gcc12-20_platforms_job_generation:
     - echo "TEST 20_platforms_job_generation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-35_test_exp_phi:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-35_test_exp_phi:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5942,17 +5936,17 @@ job-test-ubuntu22-gcc12-35_test_exp_phi:
     - echo "TEST 35_test_exp_phi SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_advection_semi_lagrangian:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -5973,17 +5967,17 @@ job-test-ubuntu22-gcc12-50_test_plane_advection_semi_lagrangian:
     - echo "TEST 50_test_plane_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_antialiasing_frequencies:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_antialiasing_frequencies:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6004,17 +5998,17 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_frequencies:
     - echo "TEST 50_test_plane_antialiasing_frequencies SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_antialiasing_patterns:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_antialiasing_patterns:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6035,17 +6029,17 @@ job-test-ubuntu22-gcc12-50_test_plane_antialiasing_patterns:
     - echo "TEST 50_test_plane_antialiasing_patterns SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_basic_advection:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_basic_advection:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6066,17 +6060,17 @@ job-test-ubuntu22-gcc12-50_test_plane_basic_advection:
     - echo "TEST 50_test_plane_basic_advection SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_convert_complex_to_from_real:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_convert_complex_to_from_real:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6097,17 +6091,17 @@ job-test-ubuntu22-gcc12-50_test_plane_convert_complex_to_from_real:
     - echo "TEST 50_test_plane_convert_complex_to_from_real SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_diff_stencil_ops:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_diff_stencil_ops:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6128,17 +6122,17 @@ job-test-ubuntu22-gcc12-50_test_plane_diff_stencil_ops:
     - echo "TEST 50_test_plane_diff_stencil_ops SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_exp_direct_precompute_phin:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_exp_direct_precompute_phin:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6159,17 +6153,17 @@ job-test-ubuntu22-gcc12-50_test_plane_exp_direct_precompute_phin:
     - echo "TEST 50_test_plane_exp_direct_precompute_phin SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_fftw_wisdom_import_export:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_fftw_wisdom_import_export:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6190,17 +6184,17 @@ job-test-ubuntu22-gcc12-50_test_plane_fftw_wisdom_import_export:
     - echo "TEST 50_test_plane_fftw_wisdom_import_export SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_modal_restriction_interpolation:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_modal_restriction_interpolation:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6221,17 +6215,17 @@ job-test-ubuntu22-gcc12-50_test_plane_modal_restriction_interpolation:
     - echo "TEST 50_test_plane_modal_restriction_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_normal_mode_conversion:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_normal_mode_conversion:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6252,17 +6246,17 @@ job-test-ubuntu22-gcc12-50_test_plane_normal_mode_conversion:
     - echo "TEST 50_test_plane_normal_mode_conversion SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_operators:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_operators:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6283,17 +6277,17 @@ job-test-ubuntu22-gcc12-50_test_plane_operators:
     - echo "TEST 50_test_plane_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_operators_complex:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_operators_complex:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6314,17 +6308,17 @@ job-test-ubuntu22-gcc12-50_test_plane_operators_complex:
     - echo "TEST 50_test_plane_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_sampler_interpolation:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6345,17 +6339,17 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation:
     - echo "TEST 50_test_plane_sampler_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation_2:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_plane_sampler_interpolation_2:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6376,17 +6370,17 @@ job-test-ubuntu22-gcc12-50_test_plane_sampler_interpolation_2:
     - echo "TEST 50_test_plane_sampler_interpolation_2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_quadrature:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_quadrature:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6407,17 +6401,17 @@ job-test-ubuntu22-gcc12-50_test_quadrature:
     - echo "TEST 50_test_quadrature SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sph_quadrature_nodes:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sph_quadrature_nodes:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6438,17 +6432,17 @@ job-test-ubuntu22-gcc12-50_test_sph_quadrature_nodes:
     - echo "TEST 50_test_sph_quadrature_nodes SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sphere_advection_semi_lagrangian:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sphere_advection_semi_lagrangian:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6469,17 +6463,17 @@ job-test-ubuntu22-gcc12-50_test_sphere_advection_semi_lagrangian:
     - echo "TEST 50_test_sphere_advection_semi_lagrangian SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sphere_coordinates:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sphere_coordinates:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6500,17 +6494,17 @@ job-test-ubuntu22-gcc12-50_test_sphere_coordinates:
     - echo "TEST 50_test_sphere_coordinates SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sphere_interpolation:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sphere_interpolation:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6531,17 +6525,17 @@ job-test-ubuntu22-gcc12-50_test_sphere_interpolation:
     - echo "TEST 50_test_sphere_interpolation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sphere_pint_spatial_coarsening:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sphere_pint_spatial_coarsening:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6562,17 +6556,17 @@ job-test-ubuntu22-gcc12-50_test_sphere_pint_spatial_coarsening:
     - echo "TEST 50_test_sphere_pint_spatial_coarsening SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sphere_sph_operators:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sphere_sph_operators:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6593,17 +6587,17 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators:
     - echo "TEST 50_test_sphere_sph_operators SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sphere_sph_operators_complex:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sphere_sph_operators_complex:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6624,17 +6618,17 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_operators_complex:
     - echo "TEST 50_test_sphere_sph_operators_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_sphere_sph_solver_real_and_complex:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_sphere_sph_solver_real_and_complex:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6655,17 +6649,17 @@ job-test-ubuntu22-gcc12-50_test_sphere_sph_solver_real_and_complex:
     - echo "TEST 50_test_sphere_sph_solver_real_and_complex SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-50_test_timestepping_runge_kutta:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-50_test_timestepping_runge_kutta:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6686,17 +6680,17 @@ job-test-ubuntu22-gcc12-50_test_timestepping_runge_kutta:
     - echo "TEST 50_test_timestepping_runge_kutta SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_20_program_burgers_plane_parareal:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_20_program_burgers_plane_parareal:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6717,17 +6711,17 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_plane_parareal:
     - echo "TEST 70_20_program_burgers_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_20_program_burgers_timestepper_convergence:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_20_program_burgers_timestepper_convergence:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6748,17 +6742,17 @@ job-test-ubuntu22-gcc12-70_20_program_burgers_timestepper_convergence:
     - echo "TEST 70_20_program_burgers_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_40_program_swe_plane_spatial_convergence:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_40_program_swe_plane_spatial_convergence:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6779,17 +6773,17 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_spatial_convergence:
     - echo "TEST 70_40_program_swe_plane_spatial_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l1:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6810,17 +6804,17 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l2:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6841,17 +6835,17 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_l2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln1:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6872,17 +6866,17 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln1:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln2:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln2:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6903,17 +6897,17 @@ job-test-ubuntu22-gcc12-70_40_program_swe_plane_timestepper_convergence_ln2:
     - echo "TEST 70_40_program_swe_plane_timestepper_convergence_ln2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_comparison_with_reference_implementation:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_comparison_with_reference_implementation:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6934,17 +6928,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_comparison_with_reference_imple
     - echo "TEST 70_60_program_swe_sphere_comparison_with_reference_implementation SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_linear:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_linear:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6965,17 +6959,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_linear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_linear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -6996,17 +6990,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_geostrophic_balance_nonlinear:
     - echo "TEST 70_60_program_swe_sphere_geostrophic_balance_nonlinear SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l1:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l1:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7027,17 +7021,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l2:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l2:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7058,17 +7052,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_l2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_l2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg1:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg1:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7089,17 +7083,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg2:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg2:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7120,17 +7114,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_lg2:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_lg2 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln1:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln1:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7151,17 +7145,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln1:
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln1 SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_exp:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7182,17 +7176,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_exp
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_exp SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_split:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7213,17 +7207,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_spl
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_split SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_std:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7244,17 +7238,17 @@ job-test-ubuntu22-gcc12-70_60_program_swe_sphere_timestepper_convergence_ln2_std
     - echo "TEST 70_60_program_swe_sphere_timestepper_convergence_ln2_std SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-80_10_program_ode_scalar_parareal:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-80_10_program_ode_scalar_parareal:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7275,17 +7269,17 @@ job-test-ubuntu22-gcc12-80_10_program_ode_scalar_parareal:
     - echo "TEST 80_10_program_ode_scalar_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-80_20_program_ode_scalar_xbraid:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-80_20_program_ode_scalar_xbraid:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7306,17 +7300,17 @@ job-test-ubuntu22-gcc12-80_20_program_ode_scalar_xbraid:
     - echo "TEST 80_20_program_ode_scalar_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-85_10_program_swe_plane_parareal:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-85_10_program_swe_plane_parareal:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7337,17 +7331,17 @@ job-test-ubuntu22-gcc12-85_10_program_swe_plane_parareal:
     - echo "TEST 85_10_program_swe_plane_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-85_30_program_swe_plane_xbraid:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-85_30_program_swe_plane_xbraid:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7368,17 +7362,17 @@ job-test-ubuntu22-gcc12-85_30_program_swe_plane_xbraid:
     - echo "TEST 85_30_program_swe_plane_xbraid SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-87_10_program_swe_sphere_parareal:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-87_10_program_swe_sphere_parareal:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7399,17 +7393,17 @@ job-test-ubuntu22-gcc12-87_10_program_swe_sphere_parareal:
     - echo "TEST 87_10_program_swe_sphere_parareal SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7430,17 +7424,17 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_
     - echo "TEST 87_20_program_swe_sphere_libpfasst_expl_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7461,17 +7455,17 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_
     - echo "TEST 87_20_program_swe_sphere_libpfasst_imex_sdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7492,17 +7486,17 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_one_step:
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_one_step SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
@@ -7523,17 +7517,17 @@ job-test-ubuntu22-gcc12-87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_con
     - echo "TEST 87_20_program_swe_sphere_libpfasst_mlsdc_timestepper_convergence SUCCESSFULLY FINISHED"
 
 
-job-test-ubuntu22-gcc12-87_30_program_swe_sphere_xbraid:
-  stage: stage_tests_ubuntu22-gcc12
+test-ubu22-gcc12-87_30_program_swe_sphere_xbraid:
+  stage: stage_tests_ubu22-gcc12
   image: library/ubuntu:22.04
   tags:
     - ci.inria.fr
     - large
   # Job dependency
-  needs: ["setup-local-software-ubuntu22-gcc12"]
+  needs: ["setup-local-software-ubu22-gcc12"]
   # Download files from artifact of this build
   dependencies:
-    - "setup-local-software-ubuntu22-gcc12"
+    - "setup-local-software-ubu22-gcc12"
   script:
     # Avoid interaction by setting 
     - export DEBIAN_FRONTEND=noninteractive
