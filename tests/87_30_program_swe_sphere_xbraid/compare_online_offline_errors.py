@@ -57,7 +57,7 @@ def read_error_file(path):
         return err_Linf;
 
 path_simulations = sys.argv[1];
-fine_sim = sys.argv[2];
+tmp_fine_sim = sys.argv[2];
 test_spatial_coarsening = False;
 if len(sys.argv) > 3:
     test_spatial_coarsening = int(sys.argv[3]);
@@ -71,8 +71,8 @@ if test_spatial_coarsening:
 list_jobs = glob.glob(path_simulations + "/job_bench_*");
 list_jobs = [os.path.basename(job) for job in list_jobs];
 ## exclude fine simulation
-if fine_sim in list_jobs:
-    list_jobs.remove(fine_sim);
+if tmp_fine_sim in list_jobs:
+    list_jobs.remove(tmp_fine_sim);
 
 print("    ** {} jobs found.".format(len(list_jobs)));
 
@@ -81,7 +81,7 @@ jd = JobsData(path_simulations + '/job_bench_*', verbosity=0).get_flattened_data
 job_info = {};
 for key in jd.keys():
     path = os.path.basename(jd[key]["jobgeneration.p_job_dirpath"]);
-    if path == fine_sim:
+    if path == tmp_fine_sim:
         continue;
     job_info[path] = {};
     for s in list_vars:

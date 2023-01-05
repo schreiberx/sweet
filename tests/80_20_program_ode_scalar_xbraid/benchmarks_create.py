@@ -240,7 +240,7 @@ elif simulation_to_run == "ref":
     jg.compile.parareal = "none";
     jg.runtime.parareal_enabled = 0;
     jg.gen_jobscript_directory();
-    f = open("fine_sim", "w");
+    f = open("tmp_fine_sim.txt", "w");
     f.write(jg.job_dirpath);
     f.close();
 

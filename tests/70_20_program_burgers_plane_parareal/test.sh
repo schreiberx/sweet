@@ -62,7 +62,7 @@ for i in {0,1,2};do
 				## parareal tests without online error computation
 				echo_info "---> Running parareal simulations (offline error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 
-				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 0 $ref_sim $dirname2"/"$fine_sim > dummy || exit 1
+				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 0 $ref_sim $dirname2"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
 
 				mule.benchmark.jobs_run_directly || exit 1
                         fi;
@@ -72,7 +72,7 @@ for i in {0,1,2};do
 				## parareal tests without online error computation
 				echo_info "---> Running fine and ref simulations with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 
-				./benchmarks_create.py $tsm_fine $tsm_coarse ref 0 $ref_sim $dirname2"/"$fine_sim  > dummy || exit 1
+				./benchmarks_create.py $tsm_fine $tsm_coarse ref 0 $ref_sim $dirname2"/"$fine_sim  > tmp_job_benchmark_create_dummy.txt || exit 1
 
 				mule.benchmark.jobs_run_directly|| exit 1
 
@@ -103,7 +103,7 @@ for i in {0,1,2};do
 				fine_sim=$(cat $dirname2/fine_sim);
 
 
-				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 1 ../$dirname2"/"$ref_sim ../$dirname2"/"$fine_sim > dummy || exit 1
+				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 1 ../$dirname2"/"$ref_sim ../$dirname2"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
 
 				mv $ref_sim $dirname2/.
 
@@ -130,8 +130,8 @@ for i in {0,1,2};do
 done;
 
 mule.benchmark.cleanup_all || exit 1
-rm -r $dirname;
-rm dummy;
+rm -r $dirname
+rm -f tmp_job_benchmark_create_dummy.txt
 
 echo ""
 echo_info "Test successful!"

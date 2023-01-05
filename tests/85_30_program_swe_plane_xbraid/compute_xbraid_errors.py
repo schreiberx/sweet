@@ -172,16 +172,16 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
 
 
 ##ref_sim = sys.argv[1];
-fine_sim = sys.argv[1];
+tmp_fine_sim = sys.argv[1];
 
 ## get list of jobs in this directory
 list_jobs = glob("job_bench_*");
 ## exclude fine simulation
-list_jobs.remove(fine_sim);
+list_jobs.remove(tmp_fine_sim);
 
 ## read ref and fine solutions
 ###ref_sol = read_ref_solution(ref_sim);
-fine_sol = read_ref_solution(fine_sim);
+fine_sol = read_ref_solution(tmp_fine_sim);
 
 ## read parareal solutions
 for job in list_jobs:

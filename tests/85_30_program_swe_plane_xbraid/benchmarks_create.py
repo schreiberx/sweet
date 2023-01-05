@@ -39,11 +39,11 @@ orders["l_cn_na_sl_nd_settls"] = 2;
 
 ####tsm_ref = "ln_erk";
 
-simulation_to_run = sys.argv[1];
-itest = int(sys.argv[2]);
-tsm_fine = sys.argv[3];
-tsm_coarse = sys.argv[4];
-nb_pt = int(sys.argv[5]);
+simulation_to_run = sys.argv[1]
+itest = int(sys.argv[2])
+tsm_fine = sys.argv[3]
+tsm_coarse = sys.argv[4]
+nb_pt = int(sys.argv[5])
 
 if (itest >= 5):
     online_error = int(sys.argv[6])
@@ -106,7 +106,9 @@ jg.runtime.viscosity = 0.0
 #
 ###jg.runtime.max_simulation_time = 500.
 jg.runtime.max_simulation_time = 100.
-jg.runtime.output_timestep_size = 5.
+# Set output time step size to 25 to avoid "device out of memory"
+#jg.runtime.output_timestep_size = 5.
+jg.runtime.output_timestep_size = 25.
 timestep_size_reference = 2.5
 timestep_size_fine = 5.
 jg.runtime.timestep_size = timestep_size_fine
@@ -172,7 +174,7 @@ if simulation_to_run == "xbraid":
         pspace.num_ranks = 1
 
         # Setup parallelization
-        jg.setup_parallelization([pspace, ptime])
+        jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
 
 
     if (itest == 0):
@@ -282,7 +284,7 @@ elif simulation_to_run == "ref":
     jg.compile.parareal = "none";
     jg.runtime.parareal_enabled = 0;
     jg.gen_jobscript_directory();
-    f = open("fine_sim", "w");
+    f = open("tmp_fine_sim.txt", "w");
     f.write(jg.job_dirpath);
     f.close();
 

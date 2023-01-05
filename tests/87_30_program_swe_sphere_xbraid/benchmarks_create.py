@@ -22,10 +22,10 @@ from mule.JobParallelizationDimOptions import *
 
 ####tsm_ref = "ln_erk";
 
-simulation_to_run = sys.argv[1];
-itest = int(sys.argv[2]);
-tsm_fine = sys.argv[3];
-tsm_coarse = sys.argv[4];
+simulation_to_run = sys.argv[1]
+itest = int(sys.argv[2])
+tsm_fine = sys.argv[3]
+tsm_coarse = sys.argv[4]
 nb_pt = int(sys.argv[5])
 
 if (itest >= 5):
@@ -91,7 +91,9 @@ jg.runtime.output_file_mode = "bin"
 ###jg.runtime.max_simulation_time = 500.
 ##jg.runtime.max_simulation_time = 3600.
 jg.runtime.max_simulation_time = 720.
-jg.runtime.output_timestep_size = 36.
+# Only use 4x an output to avoid "device out of memory"
+#jg.runtime.output_timestep_size = 36.
+jg.runtime.output_timestep_size = 180.
 
 timestep_size_reference = 18
 timestep_size_fine = 36
@@ -167,7 +169,7 @@ if simulation_to_run == "xbraid":
         pspace.num_ranks = 1
 
         # Setup parallelization
-        jg.setup_parallelization([pspace, ptime])
+        jg.setup_parallelization([pspace, ptime], override_insufficient_resources=True)
 
 
     if (itest == 0):
@@ -274,6 +276,6 @@ elif simulation_to_run == "ref":
     jg.compile.parareal = "none";
     jg.runtime.parareal_enabled = 0;
     jg.gen_jobscript_directory();
-    f = open("fine_sim", "w");
+    f = open("tmp_fine_sim.txt", "w");
     f.write(jg.job_dirpath);
     f.close();

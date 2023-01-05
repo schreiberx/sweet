@@ -40,7 +40,7 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
 
     list_xbraid_files = glob(path + "/*" + type_file);
 
-    print(" ** Comparing solution at ", len(list_xbraid_files) ,"timestepts");
+    print(" ** Comparing solution at ", len(list_xbraid_files) ,"timesteps");
 
     eps = 1e-9;
     max_error = 0.;
@@ -102,18 +102,18 @@ def read_xbraid_solution_compare_to_fine(path, ref_sol, ref_type):
 
     return max_error;
 
-fine_sim = sys.argv[1];
+tmp_fine_sim = sys.argv[1];
 
 ## get list of jobs in this directory
 list_jobs = glob("job_bench_*");
 ## exclude fine simulation
-list_jobs.remove(fine_sim);
+list_jobs.remove(tmp_fine_sim);
 
 print(list_jobs)
 
 ## read ref and fine solutions
 ####ref_sol = read_ref_solution(ref_sim);
-fine_sol = read_ref_solution(fine_sim);
+fine_sol = read_ref_solution(tmp_fine_sim);
 
 ## read parareal solutions
 for job in list_jobs:
