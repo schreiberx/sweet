@@ -19,11 +19,9 @@ Since SWEET is still hosted at github.com, we need to do a few workarounds.
 
 Because SWEET is hosted at github.com, new CI test cases or a change of them have to be set up manually at INRIA Gitlab.
 
-This is done by calling ```mule.ci_gitlab.setup_ci_tests.py``` (from ```mule_local/bin```).
+This is done with the script ```./setup_ci_gitlab_yml.py``` in the CI repository within the ```ci_gitlab``` directory.
 
-Based on the content in ```./tests``` it generates the corresponding ```./.gitlab-ci.yml``` file in SWEET's root directory.
-
-The content of this file has to be copied manually to the INRIA Gitlab CI (ask Martin to do this!) into the CI Editor.
+This script searches for all tests in SWEET's ```tests``` folder and generates the corresponding ```.yml``` file in the CI repository.
 
 
 
