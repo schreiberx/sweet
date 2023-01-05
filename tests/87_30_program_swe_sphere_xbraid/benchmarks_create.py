@@ -84,6 +84,9 @@ jg = RuntimeSWEPlaneEarthParam(jg)
 
 jg.runtime.viscosity = 0.0
 
+# Deactivate threading
+jg.compile.threading = 'off'
+
 jg.runtime.output_file_mode = "bin"
 #
 # Time, Mode and Physical resolution
