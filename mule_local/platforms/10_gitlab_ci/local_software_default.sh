@@ -1,4 +1,9 @@
 
+# Use this environment variable to add further packages
+for i in $SWEET_LOCAL_SOFTWARE_PRE; do
+	PKGS+=($i)
+done
+
 PKGS+=("install_miniconda.sh")
 
 PKGS+=("install_fftw3.sh")
@@ -19,3 +24,9 @@ PKGS+=("install_libpfasst_debug.sh")
 PKGS+=("install_xbraid.sh")
 
 PKGS+=("install_sdl2.sh")
+
+
+# Use this environment variable to add further packages
+for i in $SWEET_LOCAL_SOFTWARE_POST; do
+	PKGS+=($i)
+done
