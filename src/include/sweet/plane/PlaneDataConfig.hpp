@@ -410,7 +410,6 @@ private:
 		// allow destroying input for faster transformations
 		//flags |= FFTW_DESTROY_INPUT;
 
-
 		if (i_reuse_spectral_transformation_plans & TransformationPlans::QUICK)
 		{
 			flags |= FFTW_ESTIMATE;
@@ -423,10 +422,11 @@ private:
 			if (cells < 32*32)
 				//flags |= FFTW_EXHAUSTIVE;
 				flags |= FFTW_MEASURE;
-			else if (cells < 128*128)
+			else if (cells < 256*256)
 				flags |= FFTW_MEASURE;
 			else
-				flags |= FFTW_PATIENT;
+				flags |= FFTW_MEASURE;
+				//flags |= FFTW_PATIENT;
 
 			if (i_reuse_spectral_transformation_plans & TransformationPlans::REQUIRE_LOAD)
 			{
