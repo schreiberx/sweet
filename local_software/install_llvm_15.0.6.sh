@@ -2,6 +2,11 @@
 
 source ./install_helpers.sh ""
 
+# Setup environment in case it has been missed (e.g. Conda was installed right before)
+if [[ -e "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate" ]]; then
+	source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate" || exit 1
+fi
+
 #
 # Package based on GIT release package
 # https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.6/clang-15.0.6.src.tar.xz
