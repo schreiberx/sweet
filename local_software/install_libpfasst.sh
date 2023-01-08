@@ -24,11 +24,12 @@ echo "FC = ${MULE_MPIF90}" >> Makefile.local
 #
 # Check if gfortran supports -fallow-argument-mismatch and enable it per default
 #
+
 TMPDIR="$(mktemp -d)"
 echo "" > "$TMPDIR/dummy.f90"
-$FC -c -fallow-argument-mismatch "$TMPDIR/dummy.f90" -o "$TMPDIR/dummy.o" 2> /dev/null
+$MULE_MPIF90 -c -fallow-argument-mismatch "$TMPDIR/dummy.f90" -o "$TMPDIR/dummy.o" 2> /dev/null
 if [[ $? -eq 0 ]]; then
-	echo "$FC seems to support -fallow-argument-mismatch, using this per default"
+	echo "$MULE_MPIF90 seems to support -fallow-argument-mismatch, using this per default"
 	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
 fi
 rm -rf "${TMPDIR}"
