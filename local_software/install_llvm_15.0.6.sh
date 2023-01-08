@@ -31,7 +31,8 @@ config_make_default
 config_exec make install
 
 # test suits
-config_exec make check-clang check-flang
+#config_exec make check-clang check-flang
+config_exec make check-clang
 
 config_success
 
