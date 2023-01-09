@@ -22,7 +22,7 @@ def _whoami(depth=1):
     Returns
     -------
     string
-    	Return function name
+        Return function name
     """
     return sys._getframe(depth).f_code.co_name
 
@@ -102,10 +102,19 @@ def jobscript_get_header(jg : JobGeneration):
     string
     	multiline text for scripts
     """
+
+    p = jg.parallelization
+
     content = """#! /bin/bash
 
 """+p_gen_script_info(jg)+"""
 
+"""
+
+    if jg.compile.threading != 'off':
+        content += """
+export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+export OMP_DISPLAY_ENV=VERBOSE
 """
 
     return content
