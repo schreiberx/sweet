@@ -33,12 +33,13 @@ public:
 		benchmark_name = i_benchmark_name;
 
 		return
-				i_benchmark_name == "gaussian_bump"	||
-				i_benchmark_name == "gaussian_bump_phi"	||
-				i_benchmark_name == "gaussian_bump_vrt"	||
-				i_benchmark_name == "gaussian_bump_div"	||
+				i_benchmark_name == "gaussian_bump"			||
+				i_benchmark_name == "gaussian_bump_phi"			||
+				i_benchmark_name == "gaussian_bump_phi_pint"		||
+				i_benchmark_name == "gaussian_bump_vrt"			||
+				i_benchmark_name == "gaussian_bump_div"			||
 
-				i_benchmark_name == "gaussian_bump_nosetparams"	||
+				i_benchmark_name == "gaussian_bump_nosetparams"		||
 				i_benchmark_name == "gaussian_bump_phi_nosetparams"	||
 				i_benchmark_name == "gaussian_bump_vrt_nosetparams"	||
 				i_benchmark_name == "gaussian_bump_div_nosetparams"	||

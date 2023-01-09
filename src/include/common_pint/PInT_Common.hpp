@@ -114,7 +114,8 @@ public:
 				 "l_irk_na_sl_settls_uv_only",
 				 "l_irk_na_sl_settls_vd_only",
 				 "ln_sl_exp_settls_uv",
-				 "ln_sl_exp_settls_vd"
+				 "ln_sl_exp_settls_vd",
+				 "lg_exp_na_sl_lc_nr_etdrk_uv"
 				};
 	#endif
 

@@ -136,6 +136,16 @@ struct XBraid_SimulationVariables
 	std::string xbraid_timestepping_order2;
 
 	/**
+	 * Viscosity order for all levels, separated by comma
+	 */
+	std::string xbraid_viscosity_order = "2";
+
+	/**
+	 * Diffusion coefficient for all levels, separated by comma
+	 */
+	std::string xbraid_viscosity_coefficient = "0";
+
+	/**
 	 * Verbosity of XBraid controller
 	 */
 	int xbraid_verbosity = 0;
@@ -198,6 +208,8 @@ struct XBraid_SimulationVariables
 		std::cout << " + xbraid_timestepping_method: "          << xbraid_timestepping_method          << std::endl;
 		std::cout << " + xbraid_timestepping_order: "           << xbraid_timestepping_order           << std::endl;
 		std::cout << " + xbraid_timestepping_order2: "          << xbraid_timestepping_order2          << std::endl;
+		std::cout << " + xbraid_viscosity_order: "              << xbraid_viscosity_order              << std::endl;
+		std::cout << " + xbraid_viscosity_coefficient: "        << xbraid_viscosity_coefficient        << std::endl;
 		std::cout << " + xbraid_verbosity: "                    << xbraid_verbosity                    << std::endl;
 		std::cout << " + xbraid_load_ref_csv_files: "           << xbraid_load_ref_csv_files           << std::endl;
 		std::cout << " + xbraid_path_ref_csv_files: "           << xbraid_path_ref_csv_files           << std::endl;
@@ -236,6 +248,8 @@ struct XBraid_SimulationVariables
 		std::cout << "	--xbraid-timestepping-method [string]        XBraid parameter timestepping-method, default: ''"         << std::endl;
 		std::cout << "	--xbraid-timestepping-order [string]         XBraid parameter timestepping-order, default: ''"          << std::endl;
 		std::cout << "	--xbraid-timestepping-order2 [string]        XBraid parameter timestepping-order2, default: ''"         << std::endl;
+		std::cout << "	--xbraid-viscosity-order [string]            XBraid parameter viscosity-order, default: '2'"            << std::endl;
+		std::cout << "	--xbraid-viscosity-coefficient [string]      XBraid parameter viscosity-coefficient, default: '0'"      << std::endl;
 		std::cout << "	--xbraid-verbosity [int]                     XBraid parameter verbosity, default: 0"                    << std::endl;
 		std::cout << "	--xbraid-load-ref-csv-files [0/1]            XBraid parameter load_ref_csv_files, default: 0"           << std::endl;
 		std::cout << "	--xbraid-path-ref-csv-files [string]         XBraid parameter path_ref_csv_files, default: ''"          << std::endl;
@@ -327,6 +341,12 @@ struct XBraid_SimulationVariables
 		io_long_options[io_next_free_program_option] = {"xbraid-timestepping-order2", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
+		io_long_options[io_next_free_program_option] = {"xbraid-viscosity-order", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
+		io_long_options[io_next_free_program_option] = {"xbraid-viscosity-coefficient", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 		io_long_options[io_next_free_program_option] = {"xbraid-verbosity", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
 
@@ -387,15 +407,17 @@ struct XBraid_SimulationVariables
 			case 22: xbraid_timestepping_method       = optarg;		return -1;
 			case 23: xbraid_timestepping_order        = optarg;		return -1;
 			case 24: xbraid_timestepping_order2       = optarg;		return -1;
-			case 25: xbraid_verbosity                 = atoi(optarg);	return -1;
-			case 26: xbraid_load_ref_csv_files        = atoi(optarg);	return -1;
-			case 27: xbraid_path_ref_csv_files        = optarg;		return -1;
-			case 28: xbraid_load_fine_csv_files       = atoi(optarg);	return -1;
-			case 29: xbraid_path_fine_csv_files       = optarg;		return -1;
-			case 30: xbraid_store_iterations          = atoi(optarg);	return -1;
-			case 31: xbraid_spatial_coarsening        = atoi(optarg);	return -1;
+			case 25: xbraid_viscosity_order           = optarg;		return -1;
+			case 26: xbraid_viscosity_coefficient     = optarg;		return -1;
+			case 27: xbraid_verbosity                 = atoi(optarg);	return -1;
+			case 28: xbraid_load_ref_csv_files        = atoi(optarg);	return -1;
+			case 29: xbraid_path_ref_csv_files        = optarg;		return -1;
+			case 30: xbraid_load_fine_csv_files       = atoi(optarg);	return -1;
+			case 31: xbraid_path_fine_csv_files       = optarg;		return -1;
+			case 32: xbraid_store_iterations          = atoi(optarg);	return -1;
+			case 33: xbraid_spatial_coarsening        = atoi(optarg);	return -1;
 		}
-		return 32;
+		return 34;
 	}
 
 };

@@ -182,6 +182,8 @@ class JobRuntimeOptions(InfoError):
         self.xbraid_timestepping_method = None;
         self.xbraid_timestepping_order = None;
         self.xbraid_timestepping_order2 = None;
+        self.xbraid_viscosity_order = "2";
+        self.xbraid_viscosity_coefficient = "0";
         self.xbraid_verbosity = None;
         self.xbraid_load_ref_csv_files = None;
         self.xbraid_path_ref_csv_files = None;
@@ -533,6 +535,10 @@ class JobRuntimeOptions(InfoError):
                     idstr += '_xb_tso'+str(self.xbraid_timestepping_order)
                 if self.xbraid_timestepping_order != None:
                     idstr += '_xb_tso2'+str(self.xbraid_timestepping_order2)
+                if self.xbraid_viscosity_order != None:
+                    idstr += '_xb_viscorder'+str(self.xbraid_viscosity_order)
+                if self.xbraid_viscosity_coefficient != None:
+                    idstr += '_xb_visccoeff'+str(self.xbraid_viscosity_coefficient)
                 if self.xbraid_verbosity != None:
                     idstr += '_xb_verb'+str(self.xbraid_verbosity)
                 if self.xbraid_load_ref_csv_files != None:
@@ -814,6 +820,8 @@ class JobRuntimeOptions(InfoError):
             retval += " --xbraid-timestepping-method="+str(self.xbraid_timestepping_method)
             retval += " --xbraid-timestepping-order="+str(self.xbraid_timestepping_order2)
             retval += " --xbraid-timestepping-order2="+str(self.xbraid_timestepping_order2)
+            retval += " --xbraid-viscosity-order="+str(self.xbraid_viscosity_order)
+            retval += " --xbraid-viscosity-coefficient="+str(self.xbraid_viscosity_coefficient)
             retval += " --xbraid-verbosity="+str(self.xbraid_verbosity)
             retval += " --xbraid-load-ref-csv-files="+str(self.xbraid_load_ref_csv_files)
             retval += " --xbraid-path-ref-csv-files="+str(self.xbraid_path_ref_csv_files)
