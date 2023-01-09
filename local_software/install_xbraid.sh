@@ -14,7 +14,7 @@ mkdir -p tmp_xbraid
 cd tmp_xbraid
 
 ## download package
-git clone $PKG_URL_SRC
+git clone --depth 1 $PKG_URL_SRC
 
 ## install
 cd xbraid

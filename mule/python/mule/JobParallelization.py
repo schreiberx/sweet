@@ -175,7 +175,7 @@ class JobParallelization(InfoError):
             self.print()
 
 
-    def setup(self, list_pardims, platform_resources : JobPlatformResources):
+    def setup(self, list_pardims, platform_resources : JobPlatformResources, override_insufficient_resources : bool = False):
         """
         Setup data which is required by the platform specific scripts to
         generate the job scripts
@@ -185,8 +185,12 @@ class JobParallelization(InfoError):
         list_pardims:    JobParallelizationDimOptions
             List with options for parallelization in each dimension
 
-        platform_resources
+        platform_resources:
             reference to jobgeneration class
+
+        override_insufficient_resources:
+            If True, insufficient resources will not lead to abortion of this test case.
+            This is useful for CI systems which have less cores than required.
 
         #mode : string
         #    'serial': No parallelization
@@ -216,9 +220,9 @@ class JobParallelization(InfoError):
         # Check if number of cores per rank exceeds the available number of cores per node
         if self.num_cores_per_rank > platform_resources.num_cores_per_node:
             self.print()
-            self.error("Invalid config for parallelization: self.num_cores_per_rank >= platform_resources.num_cores_per_node")
+            self.error("Invalid config for parallelization: self.num_cores_per_rank > platform_resources.num_cores_per_node")
 
-        # Number of ranks
+        # Number of total MPI ranks
         self.num_ranks = _prod(i.num_ranks for i in self.pardims)
         if self.num_ranks <= 0:
             self.error("self.num_ranks <= 0")
@@ -235,7 +239,7 @@ class JobParallelization(InfoError):
         # Compute number of cores per node
         if self.num_cores_per_node == None:
             self.num_cores_per_node = self.num_cores_per_rank*self.num_ranks_per_node
-            
+
         #
         # Compute raw numbers and compare to new number
         # The new number must be always \leq than the raw number
@@ -254,10 +258,24 @@ class JobParallelization(InfoError):
         if self.num_nodes <= 0:
             self.error("self.num_nodes <= 0")
 
+        # Enough computing nodes?
+        if self.num_nodes > platform_resources.num_nodes:
+            if not override_insufficient_resources:
+                self.print()
+                self.error("Invalid config for parallelization: self.num_nodes > platform_resources.num_nodes")
+            else:
+                self.num_nodes = platform_resources.num_nodes
+
+
         # VALIDATION for inconsistencies
         if self.num_nodes * self.num_ranks_per_node != self.num_ranks:
-            self.print()
-            self.error("Error: self.num_nodes * self.num_ranks_per_node != self.num_ranks\n******* Please change your job settings to avoid this *******")
+            if not override_insufficient_resources:
+                self.print()
+                self.error("Error: self.num_nodes * self.num_ranks_per_node != self.num_ranks\n******* Please change your job settings to avoid this *******")
+            else:
+                if self.num_nodes != 1:
+                    self.error("Error: override_insufficient_resources only works for one node")
+                self.num_ranks_per_node = self.num_ranks
 
         self.num_cores = self.num_nodes * platform_resources.num_cores_per_node
 
@@ -267,12 +285,18 @@ class JobParallelization(InfoError):
 
         # Enough computing cores?
         if self.num_ranks*self.num_cores_per_rank > platform_resources.num_cores:
-            self.print()
-            self.error("Invalid config for parallelization: self.num_ranks*self.num_cores_per_rank > platform_resources.num_cores")
+            if not override_insufficient_resources:
+                self.print()
+                self.error("Invalid config for parallelization: self.num_ranks*self.num_cores_per_rank > platform_resources.num_cores")
+            else:
+                print("Ignoring insufficient cores due to override_insufficient_resources=True")
 
         if self.num_cores > platform_resources.num_cores:
-            self.print()
-            self.error("Invalid config for parallelization: self.num_cores > platform_resources.num_cores")
+            if not override_insufficient_resources:
+                self.print()
+                self.error("Invalid config for parallelization: self.num_cores > platform_resources.num_cores")
+            else:
+                print("Ignoring insufficient cores due to override_insufficient_resources=True")
 
 
         #

@@ -87,20 +87,19 @@ public:
 		}
 		else
 		{
-			// estimation base don workload
-
-			if (num_cells < 32*32)
-				//flags |= FFTW_EXHAUSTIVE;
-				num_cells |= FFTW_MEASURE;
-			else if (num_cells < 128*128)
-				num_cells |= FFTW_MEASURE;
-			else
-				num_cells |= FFTW_PATIENT;
-
+			// estimation based on workload
 			if (i_reuse_spectral_transformation_plans == 2)
 			{
 				std::cout << "Enforcing to use Wisdom" << std::endl;
 				flags |= FFTW_WISDOM_ONLY;
+			}
+			else
+			{
+				if (num_cells < 64*64)
+					//flags |= FFTW_EXHAUSTIVE;
+					flags |= FFTW_MEASURE;
+				else
+					flags |= FFTW_PATIENT;
 			}
 		}
 

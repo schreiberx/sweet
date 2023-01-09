@@ -17,7 +17,7 @@ PKGS+=("install_numa.sh")
 PKGS+=("install_miniconda.sh")
 
 #PKGS+=("install_rdic.sh")
-PKGS+=("install_scons3.sh")
+PKGS+=("install_scons.sh")
 #PKGS+=("install_sdl2.sh")
 PKGS+=("install_shtns.sh")
 

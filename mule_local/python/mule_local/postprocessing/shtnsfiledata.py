@@ -75,7 +75,7 @@ class shtnsfiledata:
         self.ntrunc = ntrunc
         self.nlm = self._shtns.nlm
         self.degree = self._shtns.l
-        self.lap = -self.degree*(self.degree+1.0).astype(np.complex)
+        self.lap = -self.degree*(self.degree+1.0).astype(np.cdouble)
         self.invlap = np.zeros(self.lap.shape, self.lap.dtype)
         self.invlap[1:] = 1./self.lap[1:]
         self.lap = self.lap/self.rsphere**2
@@ -97,7 +97,7 @@ class shtnsfiledata:
         return self.lap*self.rsphere*vrtspec, self.lap*self.rsphere*divspec
 
     def getuv(self,divspec):
-        vrtspec = np.zeros(divspec.shape, dtype=np.complex)
+        vrtspec = np.zeros(divspec.shape, dtype=np.cdouble)
         u,v = self._shtns.synth(vrtspec,divspec)
         return u, v
 

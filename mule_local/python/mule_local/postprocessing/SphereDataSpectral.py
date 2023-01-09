@@ -87,7 +87,7 @@ class SphereDataSpectral:
 
         data = content[i:]
 
-        self.data_spectral = np.frombuffer(data, dtype=np.complex128)
+        self.data_spectral = np.frombuffer(data, dtype=np.cdouble)
 
         if setup_physical:
             from mule_local.postprocessing.SphereDataOperators import SphereDataOperators

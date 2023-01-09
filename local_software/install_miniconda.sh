@@ -26,6 +26,16 @@ sh "${INSTALLER}" -b -u -p ${PYTHON_VENV_DIR} || exit 1
 
 . ${PYTHON_VENV_DIR}/bin/activate || exit 1
 
+if [ "${MULE_PLATFORM_ID:0:9}" == "supermuc_" ]; then
+	echo_error ""
+	echo_error "Can't execute:"
+	echo_error "	pip3 install matplotlib numpy sympy scipy"
+	echo_error ""
+	echo_error "You need to install the pip packages manually since there's no internet!"
+	echo_error ""
+	exit 1
+fi
+
 pip3 install matplotlib numpy sympy scipy
 
 echo

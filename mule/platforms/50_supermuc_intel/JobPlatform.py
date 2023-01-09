@@ -96,23 +96,28 @@ def jobscript_get_header(jg : JobGeneration):
     config_file = os.environ["HOME"]+"/sweet_supermuc_per_user_config.py"
     config_per_user = {}
 
-    try:
-        with open(config_file, "rb") as f:
-            code = compile(f.read(), config_file, "exec")
-            exec(code, config_per_user)
+    # Special override for unit test
+    if "MULE_TEST_PLATFORMS" in os.environ:
+        config_per_user['project_id'] = 'dummy_project_id'
+        config_per_user['user_email'] = 'dummy_email'
+    else:
+        try:
+            with open(config_file, "rb") as f:
+                code = compile(f.read(), config_file, "exec")
+                exec(code, config_per_user)
 
-    except:
-        print("*"*80)
-        print("ERROR: Failed to parse '"+supermuc_config+"'")
-        print("*"*80)
-        print("""
+        except:
+            print("*"*80)
+            print("ERROR: Failed to parse '"+supermuc_config+"'")
+            print("*"*80)
+            print("""
 Make sure that it's in the following format:
 
 user_email = 'someemail@address.com'
 project_id = 'pro123abc'
 
 """)
-        raise Exception("ERROR - stopping here")
+            raise Exception("ERROR - stopping here")
 
     print("Project ID: "+config_per_user['project_id'])
     print("User Email: "+config_per_user['user_email'])
@@ -185,14 +190,10 @@ export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
     	raise Exception("Not supported with this script!")
 
     if p.core_affinity != None:
-    	
-    	content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
-    	if p.core_affinity == 'compact':
-    		content += "\nexport OMP_PROC_BIND=close\n"
-    	elif p.core_affinity == 'scatter':
-    		content += "\nexport OMP_PROC_BIND=spread\n"
-    	else:
-    		raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+        content += """
+export I_MPI_PIN_CELL=core
+export I_MPI_PIN_DOMAIN=omp:compact
+"""
 
     return content
 
@@ -237,15 +238,14 @@ def jobscript_get_exec_command(jg : JobGeneration):
     # We shouldn't use mpiexec for validation scripts
     #
     if not p.mpiexec_disabled:
-    	mpiexec = "mpiexec -n "+str(p.num_ranks)+" --perhost "+str(p.num_ranks_per_node)
-
+    	mpiexec = "mpiexec -n $SLURM_NTASKS"
 
     sweet_ld_library_path = os.getenv('MULE_LD_LIBRARY_PATH')
     if sweet_ld_library_path == None:
         raise Exception("Environment variable MULE_LD_LIBRARY_PATH not found!")
 
 
-    content = """
+    content = f"""
 
 # Output MPI version
 echo "**************************************************"
@@ -265,14 +265,15 @@ module list 2>&1
 echo "**************************************************"
 
 # Make sure that MULE library path is really known
-export LD_LIBRARY_PATH=\""""+sweet_ld_library_path+""":$LD_LIBRARY_PATH\"
+export LD_LIBRARY_PATH="{sweet_ld_library_path}:$LD_LIBRARY_PATH"
 # mpiexec ... would be here without a line break
-EXEC=\""""+jg.compile.getProgramPath()+"""\"
-PARAMS=\""""+jg.runtime.getRuntimeOptions()+"""\"
-echo \"${EXEC} ${PARAMS}\"
+EXEC="{jg.compile.getProgramPath()}"
+PARAMS="{jg.runtime.getRuntimeOptions()}"
+echo "EXEC: ${{EXEC}}"
+echo "PARAMS: ${{PARAMS}}"
+echo "SLURM_NTASKS: ${{SLURM_NTASKS}}"
 
-"""+mpiexec+""" $EXEC $PARAMS || exit 1
-
+{mpiexec} $EXEC $PARAMS || exit 1
 """
 
     return content

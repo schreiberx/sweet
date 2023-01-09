@@ -2,10 +2,10 @@
 
 echo "Hello! This is a .git/hooks/pre-commit hook"
 
-echo "Updating Travis files"
-./mule_local/bin/mule.travis.setup_tests.py 0 || exit 1
+echo "Updating Gitlab CI files"
+./mule_local/bin/mule.ci_gitlab.setup_ci_tests.py || exit 1
 
 echo "Adding potential travis updates"
-git add ./.travis.yml || exit 1
+git add ./.gitlab-ci.yml || exit 1
 
 exit 0

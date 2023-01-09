@@ -202,14 +202,16 @@ class Plotting(InfoError):
         if self.xlabel != None:
             plt.xlabel(self.xlabel)
         if self.xscale != None:
-            self.ax.set_xscale(self.xscale, nonposx='clip')
+            #self.ax.set_xscale(self.xscale, nonposx='clip')
+            self.ax.set_xscale(self.xscale)
         if self.xlim != None:
             self.ax.set_xlim(self.xlim[0], self.xlim[1])
 
         if self.ylabel != None:
             plt.ylabel(self.ylabel)
         if self.yscale != None:
-            self.ax.set_yscale(self.yscale, nonposy='clip')
+            #self.ax.set_yscale(self.yscale, nonposy='clip')
+            self.ax.set_yscale(self.yscale)
         if self.ylim != None:
             self.ax.set_ylim(self.ylim[0], self.ylim[1])
 

@@ -55,13 +55,14 @@ class sweet_BraidVector
 {
 public:
 	Parareal_GenericData*	data = nullptr;
-	int level;
 
 #if SWEET_XBRAID_PLANE
 	PlaneDataConfig* planeDataConfig;
 #elif SWEET_XBRAID_SPHERE
 	SphereData_Config* sphereDataConfig;
 #endif
+
+	int level;
 
 
 	sweet_BraidVector(

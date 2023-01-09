@@ -176,11 +176,21 @@ void SWE_Sphere_TimeSteppers::setup(const std::string &i_timestepping_method,
 		{
 			if (master != nullptr)
 			{
-				std::cout << "Processing " << i+1 << "th element" << std::endl;
+				std::cout << "Processing element " << i+1 << std::endl;
 				SWEETError(std::string("Duplicate implementation for method ") + i_timestepping_method);
 			}
 
-			std::cout << "Found match at " << i+1 << "th element" << std::endl;
+			std::cout << "Found match at " << i+1;
+
+			if ((i%10) == 1)
+				std::cout << "st";
+			else if ((i%10) == 2)
+				std::cout << "nd";
+			else if ((i%10) == 3)
+				std::cout << "rd";
+			else
+				std::cout << "th";
+			std::cout << " element" << std::endl;
 			ts->setup_auto();
 			master = ts;
 		}

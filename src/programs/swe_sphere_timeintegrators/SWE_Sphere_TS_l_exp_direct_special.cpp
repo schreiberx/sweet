@@ -401,18 +401,18 @@ SWE_Sphere_TS_l_exp_direct_special::SWE_Sphere_TS_l_exp_direct_special(
 		simVars(i_simVars),
 		op(i_op),
 
+		timestepping_order(-1),
+		use_coriolis(false),
+
 		timestepping_lg_exp_phi0(i_simVars, i_op),
 		timestepping_lg_exp_phi1(i_simVars, i_op),
 		timestepping_lg_exp_phi2(i_simVars, i_op),
-		//timestepping_lg_exp_phi3(i_simVars, i_op),
 
 		timestepping_lg_exp_ups1(i_simVars, i_op),
 		timestepping_lg_exp_ups2(i_simVars, i_op),
 		timestepping_lg_exp_ups3(i_simVars, i_op),
 
-		timestepping_lc_erk(i_simVars, i_op),
-
-		timestepping_order(-1)
+		timestepping_lc_erk(i_simVars, i_op)
 {
 }
 
