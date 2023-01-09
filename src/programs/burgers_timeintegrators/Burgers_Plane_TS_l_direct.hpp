@@ -24,11 +24,7 @@
 
 #if BURGERS_PLANE_TS_L_DIRECT_QUADPRECISION
 	#if SWEET_QUADMATH
-		#ifdef __clang__
-			// Nothing to do
-		#elif __GNUC__
-			#include <quadmath.h>
-		#endif
+		#include <quadmath.h>
 	#else
 		#error "Quad precision not activated"
 	#endif

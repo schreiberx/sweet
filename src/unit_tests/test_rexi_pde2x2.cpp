@@ -7,13 +7,7 @@
 
 #include <iostream>
 #include <sweet/SimulationVariables.hpp>
-
-#ifdef __clang__
-	// Nothing to do
-#elif __GNUC__
-	#include <quadmath.h>
-#endif
-
+#include <quadmath.h>
 #include <rexi/EXPFunctions.hpp>
 #include <rexi/REXI.hpp>
 #include <rexi/REXICoefficients.hpp>
