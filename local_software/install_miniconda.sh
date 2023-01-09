@@ -36,6 +36,7 @@ if [ "${MULE_PLATFORM_ID:0:9}" == "supermuc_" ]; then
 	exit 1
 fi
 
+
 pip3 install matplotlib numpy sympy scipy
 
 echo

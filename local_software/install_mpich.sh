@@ -41,6 +41,7 @@ config_package $@
 
 config_configure	\
 	--enable-shared \
+	--enable-cxx \
 	--enable-fast=O2 \
 
 config_make_default_install
