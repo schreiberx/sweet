@@ -40,14 +40,14 @@ config_make_default
 config_exec make install
 
 echo_info "Creating symlink for 'clang++-${VERSION}'"
-
-ln -s clang-${VERSION} "local/bin/clang++-${VERSION}" || exit 1
+ln -s clang-${VERSION} "$MULE_SOFTWARE_ROOT/local_software/local/bin/clang++-${VERSION}" || exit 1
 
 # test suits
 #config_exec make check-clang check-flang
 
 # Skip tests for debugging
 #config_exec make check-clang
+
 
 config_success
 
