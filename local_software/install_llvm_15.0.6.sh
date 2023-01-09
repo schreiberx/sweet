@@ -13,8 +13,8 @@ fi
 #
 
 PKG_NAME="llvm-15.0.6"
-#PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/llvmorg-9.0.1.tar.gz"
-PKG_URL_SRC="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-15.0.6.tar.gz"
+PKG_URL_SRC="https://www.martin-schreiber.info/pub/sweet_local_software/llvmorg-15.0.1.tar.gz"
+#PKG_URL_SRC="https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-15.0.6.tar.gz"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/clang-15"
 
 
