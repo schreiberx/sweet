@@ -41,7 +41,7 @@ config_exec make install
 
 echo_info "Creating symlink for 'clang++-${VERSION}'"
 
-ln -s clang "local/bin/clang++-${VERSION}" || exit 1
+ln -s clang-${VERSION} "local/bin/clang++-${VERSION}" || exit 1
 
 # test suits
 #config_exec make check-clang check-flang
