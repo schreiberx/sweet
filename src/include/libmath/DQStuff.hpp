@@ -9,7 +9,11 @@
 #define SRC_INCLUDE_REXI_DQSTUFF_HPP_
 
 #if SWEET_QUADMATH
-	#include <quadmath.h>
+	#ifdef __clang__
+		// Nothing to do
+	#elif __GNUC__
+		#include <quadmath.h>
+	#endif
 #endif
 
 #include <sweet/SWEETError.hpp>

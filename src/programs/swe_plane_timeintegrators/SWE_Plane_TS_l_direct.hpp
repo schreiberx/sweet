@@ -19,11 +19,6 @@
 
 #include "SWE_Plane_TS_interface.hpp"
 
-/*
-#if SWEET_QUADMATH
-	#include <quadmath.h>
-#endif
-*/
 
 class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 {

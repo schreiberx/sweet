@@ -10,7 +10,11 @@
 #include <libmath/DQStuff.hpp>
 #include <cmath>
 #if SWEET_QUADMATH
-	#include <quadmath.h>
+	#ifdef __clang__
+		// Nothing to do
+	#elif __GNUC__
+		#include <quadmath.h>
+	#endif
 #endif
 #include <rexi/REXI_Terry_GaussianApproximation.hpp>
 
