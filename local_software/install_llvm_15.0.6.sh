@@ -28,7 +28,7 @@ cd build
 
 # Project 'flang' is not yet included since 'flang' is not supported by MPICH, yet
 config_exec cmake \
-	-DLLVM_ENABLE_PROJECTS="clang;libcxx;openmp"	\
+	-DLLVM_ENABLE_PROJECTS="clang;openmp"	\
 	-DCMAKE_BUILD_TYPE=Release \
 	-DLLVM_TARGETS_TO_BUILD=Native	\
 	-DLLVM_BUILD_TOOLS=OFF \
