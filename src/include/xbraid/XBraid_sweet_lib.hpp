@@ -237,6 +237,10 @@ public:
 	std::vector<bool> is_SL;
 	bool contains_SL = false;
 
+	// Viscosity for each level
+	std::vector<int> viscosity_orders;
+	std::vector<double> viscosity_coefficients;
+
 	// Smaller spectral resolution among levels
 	int min_spectral_size = INT_MAX;
 
@@ -421,9 +425,14 @@ public:
 		////////////////////////////////////
 		// get tsm and tso for each level //
 		////////////////////////////////////
-		this->tsms = this->getTimeSteppingMethodFromParameters();
-		this->tsos = this->getTimeSteppingOrderFromParameters(1);
-		this->tsos2 = this->getTimeSteppingOrderFromParameters(2);
+		/////this->tsms = this->getTimeSteppingMethodFromParameters();
+		/////this->tsos = this->getTimeSteppingOrderFromParameters(1);
+		/////this->tsos2 = this->getTimeSteppingOrderFromParameters(2);
+		this->tsms = this->getLevelParameterFromParameters<std::string>("timestepping_method");
+		this->tsos = this->getLevelParameterFromParameters<int>("timestepping_order", 1);
+		this->tsos2 = this->getLevelParameterFromParameters<int>("timestepping_order", 2);
+		this->viscosity_orders = this->getLevelParameterFromParameters<int>("viscosity_order");
+		this->viscosity_coefficients = this->getLevelParameterFromParameters<double>("viscosity_coefficient");
 
 		// create a timeSteppers instance for each level
 		for (int level = 0; level < this->simVars->xbraid.xbraid_max_levels; level++)
@@ -565,82 +574,155 @@ public:
 	}
 
 
-private:
+///////////private:
+///////////	/*
+///////////	 * Get timestepping methods for each of the N levels
+///////////	 * Input string must contain 1, 2 or N tsm names separated by comma:
+///////////	 *  - 1 tsm name: same tsm for all levels;
+///////////	 *  - 2 tsm names: first one is for level 0 (finest); all coarse levels use the second one
+///////////	 *  - N tsm names: i-th level uses the i-th tsm.
+///////////	 */
+///////////	std::vector<std::string> getTimeSteppingMethodFromParameters()
+///////////	{
+///////////		std::vector<std::string> tsm = {};
+///////////		std::stringstream all_tsm = std::stringstream(this->simVars->xbraid.xbraid_timestepping_method);
+///////////
+///////////		while (all_tsm.good())
+///////////		{
+///////////			std::string str;
+///////////			getline(all_tsm, str, ',');
+///////////			tsm.push_back(str);
+///////////		}
+///////////
+///////////		if ( ! (tsm.size() == 1 || tsm.size() == 2 || tsm.size() == this->simVars->xbraid.xbraid_max_levels ) )
+///////////			SWEETError("xbraid_timestepping_method must contain 1, 2 or N timestepping names.");
+///////////
+///////////		// all levels use same tsm
+///////////		if (tsm.size() == 1)
+///////////			for (int level = 1; level < this->simVars->xbraid.xbraid_max_levels; level++)
+///////////				tsm.push_back(tsm[0]);
+///////////
+///////////		// all coarse levels use same tsm
+///////////		if (tsm.size() == 2)
+///////////			for (int level = 2; level < this->simVars->xbraid.xbraid_max_levels; level++)
+///////////				tsm.push_back(tsm[1]);
+///////////
+///////////
+///////////		return tsm;
+///////////	}
+///////////
+///////////	/*
+///////////	 * Get timestepping order for each of the N levels
+///////////	 * Input string must contain 1, 2 or N orders separated by comma:
+///////////	 *  - 1 tso: same tso for all levels;
+///////////	 *  - 2 tso: first one is for level 0 (finest); all coarse levels use the second one
+///////////	 *  - N tso: i-th level uses the i-th tso.
+///////////	 */
+///////////	std::vector<int> getTimeSteppingOrderFromParameters(int o)
+///////////	{
+///////////		std::vector<int> tso = {};
+///////////		std::stringstream all_tso;
+///////////		if (o == 1)
+///////////			all_tso = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order);
+///////////		else if (o == 2)
+///////////			all_tso = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order2);
+///////////		else
+///////////			SWEETError("Wrong parameter for getting timestepping order.");
+///////////
+///////////		while (all_tso.good())
+///////////		{
+///////////			std::string str;
+///////////			getline(all_tso, str, ',');
+///////////			tso.push_back(stoi(str));
+///////////		}
+///////////
+///////////		if ( ! (tso.size() == 1 || tso.size() == 2 || tso.size() == this->simVars->xbraid.xbraid_max_levels ) )
+///////////			SWEETError("xbraid_timestepping_order must contain 1, 2 or N timestepping orders.");
+///////////
+///////////		// all levels use same tso
+///////////		if (tso.size() == 1)
+///////////			for (int level = 1; level < this->simVars->xbraid.xbraid_max_levels; level++)
+///////////				tso.push_back(tso[0]);
+///////////
+///////////		// all coarse levels use same tso
+///////////		if (tso.size() == 2)
+///////////			for (int level = 2; level < this->simVars->xbraid.xbraid_max_levels; level++)
+///////////				tso.push_back(tso[1]);
+///////////
+///////////		return tso;
+///////////	}
+
 	/*
-	 * Get timestepping methods for each of the N levels
-	 * Input string must contain 1, 2 or N tsm names separated by comma:
-	 *  - 1 tsm name: same tsm for all levels;
-	 *  - 2 tsm names: first one is for level 0 (finest); all coarse levels use the second one
-	 *  - N tsm names: i-th level uses the i-th tsm.
-	 */
-	std::vector<std::string> getTimeSteppingMethodFromParameters()
-	{
-		std::vector<std::string> tsm = {};
-		std::stringstream all_tsm = std::stringstream(this->simVars->xbraid.xbraid_timestepping_method);
-
-		while (all_tsm.good())
-		{
-			std::string str;
-			getline(all_tsm, str, ',');
-			tsm.push_back(str);
-		}
-
-		if ( ! (tsm.size() == 1 || tsm.size() == 2 || tsm.size() == this->simVars->xbraid.xbraid_max_levels ) )
-			SWEETError("xbraid_timestepping_method must contain 1, 2 or N timestepping names.");
-
-		// all levels use same tsm
-		if (tsm.size() == 1)
-			for (int level = 1; level < this->simVars->xbraid.xbraid_max_levels; level++)
-				tsm.push_back(tsm[0]);
-
-		// all coarse levels use same tsm
-		if (tsm.size() == 2)
-			for (int level = 2; level < this->simVars->xbraid.xbraid_max_levels; level++)
-				tsm.push_back(tsm[1]);
-
-
-		return tsm;
-	}
-
-	/*
-	 * Get timestepping order for each of the N levels
+	 * Get specific parameters for each of the N levels
 	 * Input string must contain 1, 2 or N orders separated by comma:
 	 *  - 1 tso: same tso for all levels;
 	 *  - 2 tso: first one is for level 0 (finest); all coarse levels use the second one
 	 *  - N tso: i-th level uses the i-th tso.
 	 */
-	std::vector<int> getTimeSteppingOrderFromParameters(int o)
+	template<typename T>
+	std::vector<T> getLevelParameterFromParameters(std::string i_param_name, int i_order = 0)
 	{
-		std::vector<int> tso = {};
-		std::stringstream all_tso;
-		if (o == 1)
-			all_tso = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order);
-		else if (o == 2)
-			all_tso = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order2);
-		else
-			SWEETError("Wrong parameter for getting timestepping order.");
 
-		while (all_tso.good())
+		if ( ! (
+			i_param_name == "timestepping_method" ||
+			i_param_name == "timestepping_order" ||
+			i_param_name == "viscosity_order" ||
+			i_param_name == "viscosity_coefficient"
+			))
+			SWEETError("Wrong param_name " + i_param_name);
+
+		if (i_param_name == "timestepping_order")
+			assert(i_order == 1 || i_order == 2);
+
+		std::vector<T> out = {};
+		std::stringstream all_param;
+
+		if (i_param_name == "timestepping_method")
+			all_param = std::stringstream(this->simVars->xbraid.xbraid_timestepping_method);
+		else if (i_param_name == "timestepping_order")
+		{
+			if (i_order == 1)
+				all_param = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order);
+			else if (i_order == 2)
+				all_param = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order2);
+		}
+		else if (i_param_name == "viscosity_order")
+			all_param = std::stringstream(this->simVars->xbraid.xbraid_viscosity_order);
+		else if (i_param_name == "viscosity_coefficient")
+			all_param = std::stringstream(this->simVars->xbraid.xbraid_viscosity_coefficient);
+
+		while (all_param.good())
 		{
 			std::string str;
-			getline(all_tso, str, ',');
-			tso.push_back(stoi(str));
+			getline(all_param, str, ',');
+			std::stringstream ss(str);
+			T conv;
+			if (ss >> conv)
+				out.push_back(conv);
+			else
+				SWEETError("Unable to convert parameter: " + str);
+			////if (i_param_name == "timestepping_method")
+			////	out.push_back(str);
+			////else if (i_param_name == "timestepping_order" || i_param_name == "viscosity_order")
+			////	out.push_back(stoi(str));
+			////else if (i_param_name == "viscosity_coefficient")
+			////	out.push_back(stod(str));
 		}
 
-		if ( ! (tso.size() == 1 || tso.size() == 2 || tso.size() == this->simVars->xbraid.xbraid_max_levels ) )
-			SWEETError("xbraid_timestepping_order must contain 1, 2 or N timestepping orders.");
+		if ( ! (out.size() == 1 || out.size() == 2 || out.size() == this->simVars->xbraid.xbraid_max_levels ) )
+			SWEETError("xbraid_" + i_param_name +  "must contain 1, 2 or N timestepping orders.");
 
-		// all levels use same tso
-		if (tso.size() == 1)
+		// all levels use same param
+		if (out.size() == 1)
 			for (int level = 1; level < this->simVars->xbraid.xbraid_max_levels; level++)
-				tso.push_back(tso[0]);
+				out.push_back(out[0]);
 
 		// all coarse levels use same tso
-		if (tso.size() == 2)
+		if (out.size() == 2)
 			for (int level = 2; level < this->simVars->xbraid.xbraid_max_levels; level++)
-				tso.push_back(tso[1]);
+				out.push_back(out[1]);
 
-		return tso;
+		return out;
 	}
 
 
@@ -817,28 +899,30 @@ public:
 
 
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
-
-		if (simVars->sim.viscosity != 0 && simVars->misc.use_nonlinear_only_visc == 0)
+		///if (simVars->sim.viscosity != 0 && simVars->misc.use_nonlinear_only_visc == 0)
+		if (this->viscosity_coefficients[level] != 0 && simVars->misc.use_nonlinear_only_visc == 0)
 		{
 #if SWEET_XBRAID_PLANE
 			for (int i = 0; i < N; i++)
 			{
 				PlaneData_Spectral* field = U_level->data->get_pointer_to_data_PlaneData_Spectral()->simfields[i];
 				*field = this->op_plane[level]->implicit_diffusion(	*field,
-											(tstop - tstart) * this->simVars->sim.viscosity,
-											this->simVars->sim.viscosity_order);
+											(tstop - tstart) * this->viscosity_coefficients[level],
+											this->viscosity_orders[level]);
+											///(tstop - tstart) * this->simVars->sim.viscosity,
+											///this->simVars->sim.viscosity_order);
 			}
 #elif SWEET_XBRAID_SPHERE
 			for (int i = 0; i < N; i++)
 			{
 				SphereData_Spectral* field = U_level->data->get_pointer_to_data_SphereData_Spectral()->simfields[i];
 				*field = this->op_sphere[level]->implicit_diffusion(	*field,
-											(tstop - tstart) * this->simVars->sim.viscosity,
+											(tstop - tstart) * this->viscosity_coefficients[level],
+											///(tstop - tstart) * this->simVars->sim.viscosity,
 											this->simVars->sim.sphere_radius);
 			}
 #endif
 		}
-
 
 		// Interpolate to finest grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
