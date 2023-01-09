@@ -34,11 +34,13 @@ if [ "`uname`" == "Darwin" ]; then
 
 else
 	NPROCS="$(nproc)"
-	if [ "$NPROCS" -gt "10" ]; then
-		# We limit the number of parallel build processes
-		# This is important on architectures such as Cheyenne where this
-		# results in compilation errors due to a lack of resources
-		NPROCS=10
+	if false; then
+		if [ "$NPROCS" -gt "10" ]; then
+			# We limit the number of parallel build processes
+			# This is important on architectures such as Cheyenne where this
+			# results in compilation errors due to a lack of resources
+			NPROCS=10
+		fi
 	fi
 
 	MAKE_DEFAULT_OPTS=" -j ${NPROCS}"

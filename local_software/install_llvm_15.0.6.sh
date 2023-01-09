@@ -25,8 +25,18 @@ config_package $@
 # Compile
 mkdir -p build
 cd build
+
 # Project 'flang' is not yet included since 'flang' is not supported by MPICH, yet
-config_exec cmake -DLLVM_ENABLE_PROJECTS="clang;lld;polly;openmp" -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH=$SWEET_LOCAL_SOFTWARE_DST_DIR ../llvm
+config_exec cmake \
+	-DLLVM_ENABLE_PROJECTS="clang;libcxx;openmp"	\
+	-DCMAKE_BUILD_TYPE=Release \
+	-DLLVM_TARGETS_TO_BUILD=Native	\
+	-DLLVM_BUILD_TOOLS=OFF \
+	-DLLVM_BUILD_UTILS=OFF  \
+	-G "Unix Makefiles" \
+	-DCMAKE_INSTALL_PREFIX:PATH=$SWEET_LOCAL_SOFTWARE_DST_DIR \
+	../llvm
+
 config_make_default
 config_exec make install
 
