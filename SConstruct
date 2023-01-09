@@ -102,93 +102,92 @@ if p.libxml == 'enable':
 
 p.ld_flags = GetOption('ld_flags')
 
-env.Append(CXXFLAGS=' -DSWEET_SIMD_ENABLE='+('1' if p.simd=='enable' else '0'))
-env.Append(CXXFLAGS=' -DCONFIG_ENABLE_LIBXML='+('1' if p.libxml=='enable' else '0'))
-env.Append(CXXFLAGS = p.cxx_flags)
-env.Append(LINKFLAGS = p.ld_flags)
+env.Append(CXXFLAGS='-DSWEET_SIMD_ENABLE='+('1' if p.simd=='enable' else '0'))
+env.Append(CXXFLAGS='-DCONFIG_ENABLE_LIBXML='+('1' if p.libxml=='enable' else '0'))
+env.Append(CXXFLAGS = p.cxx_flags.split(" "))
+env.Append(LINKFLAGS = p.ld_flags.split(" "))
 
 
 
 
 if p.plane_spectral_space == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
+    env.Append(CXXFLAGS='-DSWEET_USE_PLANE_SPECTRAL_SPACE=1')
 else:
-    env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_SPACE=0')
+    env.Append(CXXFLAGS='-DSWEET_USE_PLANE_SPECTRAL_SPACE=0')
 
 
 
 if p.plane_spectral_dealiasing == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1')
+    env.Append(CXXFLAGS='-DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1')
 else:
-    env.Append(CXXFLAGS = ' -DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0')
-
+    env.Append(CXXFLAGS='-DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0')
 
 
 
 if p.sphere_spectral_space == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
+    env.Append(CXXFLAGS='-DSWEET_USE_SPHERE_SPECTRAL_SPACE=1')
 else:
-    env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')
+    env.Append(CXXFLAGS='-DSWEET_USE_SPHERE_SPECTRAL_SPACE=0')
 
 
 if p.sphere_spectral_dealiasing == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=1')
+    env.Append(CXXFLAGS='-DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=1')
 else:
     if p.sphere_spectral_space == 'enable':
         raise Exception("No anti-aliasing on sphere as compile option supported, please simply use command line options to specify lower physical resolution!")
 
-    env.Append(CXXFLAGS = ' -DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0')
+    env.Append(CXXFLAGS='-DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0')
 
 
 
 
 if p.parareal == 'none':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=0')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL=0')
 elif p.parareal == 'serial':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=1')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL=1')
 elif p.parareal == 'mpi':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL=2')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL=2')
 else:
     raise Exception("Invalid option '"+str(p.parareal)+"' for parareal method")
 
 
 if p.parareal_scalar == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_SCALAR=1')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL_SCALAR=1')
 if p.parareal_plane == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE=1')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL_PLANE=1')
 if p.parareal_sphere == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_SPHERE=1')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL_SPHERE=1')
 if p.parareal_plane_swe == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE_SWE=1')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL_PLANE_SWE=1')
 if p.parareal_plane_burgers == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_PARAREAL_PLANE_BURGERS=1')
+    env.Append(CXXFLAGS='-DSWEET_PARAREAL_PLANE_BURGERS=1')
 
 
 if p.xbraid == 'none':
-    env.Append(CXXFLAGS = ' -DSWEET_XBRAID=0')
+    env.Append(CXXFLAGS='-DSWEET_XBRAID=0')
 elif p.xbraid == 'mpi':
     env.Append(CXXFLAGS=['-Ilocal_software/local/include/xbraid'])
     env.Append(LIBS=['braid'])
-    env.Append(CXXFLAGS = ' -DSWEET_XBRAID=1')
+    env.Append(CXXFLAGS='-DSWEET_XBRAID=1')
 else:
     raise Exception("Invalid option '"+str(p.xbraid)+"' for XBraid")
 
 
 if p.xbraid_scalar == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_XBRAID_SCALAR=1')
+    env.Append(CXXFLAGS='-DSWEET_XBRAID_SCALAR=1')
 if p.xbraid_plane == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_XBRAID_PLANE=1')
+    env.Append(CXXFLAGS='-DSWEET_XBRAID_PLANE=1')
 if p.xbraid_sphere == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_XBRAID_SPHERE=1')
+    env.Append(CXXFLAGS='-DSWEET_XBRAID_SPHERE=1')
 if p.xbraid_plane_swe == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_XBRAID_PLANE_SWE=1')
+    env.Append(CXXFLAGS='-DSWEET_XBRAID_PLANE_SWE=1')
 if p.xbraid_plane_burgers == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_XBRAID_PLANE_BURGERS=1')
+    env.Append(CXXFLAGS='-DSWEET_XBRAID_PLANE_BURGERS=1')
 
 
 
 #
-# Override compiler settings from environment variable
+# Override compiler settings from environment variable if one of these variables is set
 #
 override_list = [
         'CC', 'CCFLAGS',
@@ -199,29 +198,24 @@ override_list = [
         'LIBS',
         #'LD'
         ]
+
 for i in override_list:
 
     if p.sweet_mpi == 'enable':
         mi = 'MULE_MPI'+i
         if mi in env['ENV']:
-            if 'FLAGS' in mi:
+            if 'FLAGS' in i or 'LIBS' in i:
                 print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
-                env[i].append(env['ENV'][mi])
-            elif 'LIBS'==i:
-                print("INFO: Appending to "+i+"+= "+env['ENV'][mi])
-                env.Append(LIBS=env['ENV'][mi])
+                env.Append(**{i: [env['ENV'][mi]]})
             else:
                 print("INFO: Using MULE_MPI* environment variable to set "+i+"="+env['ENV'][mi])
                 env[i] = env['ENV'][mi]
-            continue
 
     if i in env['ENV']:
-        if 'FLAGS' in i:
+        if 'FLAGS' in i or 'LIBS' in i:
             print("INFO: Appending to "+i+"+= "+env['ENV'][i])
-            env[i] = env[i]+' '+env['ENV'][i]
-        if 'LIBS' == i:
-            print("INFO: Appending to "+i+"+= "+env['ENV'][i])
-            env.Append(LIBS=env['ENV'][i])
+            env.Append(**{i: [env['ENV'][i]]})
+
         else:
             print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
             env[i] = env['ENV'][i]
@@ -238,7 +232,7 @@ compiler_to_use = p.compiler
 # Autodetect compiler for MPI
 #
 if p.sweet_mpi == 'enable':
-    env.Append(CXXFLAGS = ' -DSWEET_MPI=1')
+    env.Append(CXXFLAGS='-DSWEET_MPI=1')
     mpicc_version = exec_command(os.environ['MULE_MPICC']+' --version')
 
     if mpicc_version[0:3] == 'icc' or mpicc_version[0:4] == 'icpc':
@@ -252,7 +246,7 @@ if p.sweet_mpi == 'enable':
             compiler_to_use = 'gnu'
 
 else:
-    env.Append(CXXFLAGS = ' -DSWEET_MPI=0')
+    env.Append(CXXFLAGS='-DSWEET_MPI=0')
 
 
 if compiler_to_use == 'gnu':
@@ -313,16 +307,16 @@ if compiler_to_use == 'gnu':
                     Exit(1)
 
     # eclipse specific flag
-    env.Append(CXXFLAGS=' -fmessage-length=0')
+    env.Append(CXXFLAGS='-fmessage-length=0')
 
     # c++0x flag
-    env.Append(CXXFLAGS=' -std=c++0x')
+    env.Append(CXXFLAGS='-std=c++0x')
 
     # be pedantic to avoid stupid programming errors
-    #  env.Append(CXXFLAGS=' -pedantic')
+    #  env.Append(CXXFLAGS='-pedantic')
 
     # speedup compilation - remove this when compiler slows down or segfaults by running out of memory
-    #env.Append(CXXFLAGS=' -pipe')
+    #env.Append(CXXFLAGS='-pipe')
 
     if p.fortran_source == 'enable':
         #env.Replace(F90='gfortran')
@@ -332,8 +326,8 @@ if compiler_to_use == 'gnu':
 
 
 if p.libpfasst == 'enable':
-    env.Append(CXXFLAGS=['-Llibpfasst'])
-    env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
+    env.Append(CXXFLAGS='-Llibpfasst')
+    env.Append(CXXFLAGS='-DSWEET_LIBPFASST=1')
 
     env.Append(LIBS=['libpfasst'])
 
@@ -341,7 +335,7 @@ if p.libpfasst == 'enable':
     p.sweet_mpi = 'enable'
 
 else:
-    env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
+    env.Append(CXXFLAGS='-DSWEET_LIBPFASST=0')
 
 
 
@@ -395,25 +389,15 @@ if compiler_to_use == 'intel':
     env.Append(LINKFLAGS='-debug inline-debug-info')
 
     # eclipse specific flag
-    env.Append(CXXFLAGS=' -fmessage-length=0')
+    env.Append(CXXFLAGS='-fmessage-length=0')
 
     # c++0x flag
-    env.Append(CXXFLAGS=' -std=c++0x')
+    env.Append(CXXFLAGS='-std=c++0x')
 
     # output more warnings
-    env.Append(CXXFLAGS=' -w1')
+    env.Append(CXXFLAGS='-w1')
 
 
-    # compiler option which has to be appended for icpc 12.1 without update1
-#    env.Append(CXXFLAGS=' -U__GXX_EXPERIMENTAL_CXX0X__')
-
-
-    # UBUNTU FIX for i386 systems
-    lines = exec_command('uname -i').splitlines()
-
-    for i in lines:
-        if i == 'i386':
-            env.Append(CXXFLAGS=' -I/usr/include/i386-linux-gnu/')
 
     # SSE 4.2
     #env.Replace(CXX = 'icpc')
@@ -449,22 +433,22 @@ if compiler_to_use == 'llvm':
             Exit(1)
 
     #if p.gxx_toolchain != '':
-    #    env.Append(CXXFLAGS=' --gcc-toolchain='+p.gxx_toolchain)
+    #    env.Append(CXXFLAGS='--gcc-toolchain='+p.gxx_toolchain)
 
     # eclipse specific flag
-    env.Append(CXXFLAGS=' -fmessage-length=0')
+    env.Append(CXXFLAGS='-fmessage-length=0')
 
     # c++0x flag
-    env.Append(CXXFLAGS=' -std=c++0x')
+    env.Append(CXXFLAGS='-std=c++0x')
 
     # support __float128
-#    env.Append(CXXFLAGS=' -D__STRICT_ANSI__')
+#    env.Append(CXXFLAGS='-D__STRICT_ANSI__')
 
     # be pedantic to avoid stupid programming errors
-    env.Append(CXXFLAGS=' -pedantic')
+    env.Append(CXXFLAGS='-pedantic')
 
     # speedup compilation - remove this when compiler slows down or segfaults by running out of memory
-    env.Append(CXXFLAGS=' -pipe')
+    env.Append(CXXFLAGS='-pipe')
 
     env.Replace(CXX = 'clang++')
     env.Replace(LINK = 'clang++')
@@ -477,20 +461,20 @@ if compiler_to_use == 'llvm':
 
 
 if p.mode in ['debug', 'debug_thread', 'debug_leak']:
-    env.Append(CXXFLAGS=' -DSWEET_DEBUG=1')
+    env.Append(CXXFLAGS='-DSWEET_DEBUG=1')
 
     if compiler_to_use == 'gnu':
         env.Append(CXXFLAGS='-O0 -g3 -Wall')
 
         # integer overflow check
-        env.Append(CXXFLAGS=' -ftrapv')
+        env.Append(CXXFLAGS='-ftrapv')
 
     elif compiler_to_use == 'llvm':
         env.Append(CXXFLAGS='-O0 -g3 -Wall')
 
     elif compiler_to_use == 'intel':
         env.Append(CXXFLAGS='-O0 -g -traceback')
-#        env.Append(CXXFLAGS=' -fp-trap=common')
+#        env.Append(CXXFLAGS='-fp-trap=common')
 
     elif compiler_to_use == 'pgi':
         env.Append(CXXFLAGS='-O0 -g -traceback')
@@ -504,28 +488,28 @@ if p.mode in ['debug', 'debug_thread', 'debug_leak']:
 
 
 elif p.mode == 'release':
-    env.Append(CXXFLAGS=' -DSWEET_DEBUG=0')
+    env.Append(CXXFLAGS='-DSWEET_DEBUG=0')
 
     # deactivate assertion calls
-    env.Append(CXXFLAGS=' -DNDEBUG=1')
+    env.Append(CXXFLAGS='-DNDEBUG=1')
 
     if compiler_to_use == 'gnu':
-        env.Append(CXXFLAGS=' -O3 -mtune=native')
+        env.Append(CXXFLAGS='-O3 -mtune=native')
 
         # Ensure vectorization
-        env.Append(CXXFLAGS=' -ftree-vectorize')
+        env.Append(CXXFLAGS='-ftree-vectorize')
 
         # Let the compiler know about no aliasing of function arguments
-        env.Append(CXXFLAGS=' -fstrict-aliasing')
+        env.Append(CXXFLAGS='-fstrict-aliasing')
 
     elif compiler_to_use == 'llvm':
-        env.Append(CXXFLAGS=' -O3 -mtune=native')
+        env.Append(CXXFLAGS='-O3 -mtune=native')
 
     elif compiler_to_use == 'intel':
-        env.Append(CXXFLAGS=' -O2 -fno-alias')
+        env.Append(CXXFLAGS='-O2 -fno-alias')
 
         if p.mic != 'enable':
-            env.Append(CXXFLAGS=' -xHost')
+            env.Append(CXXFLAGS='-xHost')
 
     elif compiler_to_use == 'pgi':
         env.Append(CXXFLAGS='-O3 -fast -Mipa=fast,inline -Msmartalloc')
@@ -537,21 +521,21 @@ elif p.mode == 'release':
             env.Append(F90FLAGS=' -O2')
 
 if p.sanitize != '':
-    env.Append(CXXFLAGS=' -fsanitize='+p.sanitize)
+    env.Append(CXXFLAGS='-fsanitize='+p.sanitize)
 
 
 if p.quadmath == 'enable':
-    env.Append(CXXFLAGS=' -DSWEET_QUADMATH=1')
+    env.Append(CXXFLAGS='-DSWEET_QUADMATH=1')
     env.Append(LIBS=['quadmath'])
 else:
-    env.Append(CXXFLAGS=' -DSWEET_QUADMATH=0')
+    env.Append(CXXFLAGS='-DSWEET_QUADMATH=0')
 
 
 
 if p.gui == 'enable':
     # compile flags
-    env.Append(CXXFLAGS=' -I'+os.environ['HOME']+'/local/include')
-    env.Append(CXXFLAGS=' -DSWEET_GUI=1')
+    env.Append(CXXFLAGS='-I'+os.environ['HOME']+'/local/include')
+    env.Append(CXXFLAGS='-DSWEET_GUI=1')
 
 
     # linker flags
@@ -577,18 +561,18 @@ if p.gui == 'enable':
     env.ParseConfig("pkg-config --libs --cflags freetype2")
 
 else:
-    env.Append(CXXFLAGS=' -DSWEET_GUI=0')
+    env.Append(CXXFLAGS='-DSWEET_GUI=0')
 
   
 
 if p.fortran_source == 'enable':
-    env.Append(CXXFLAGS=' -DSWEET_FORTRAN=1')
+    env.Append(CXXFLAGS='-DSWEET_FORTRAN=1')
 else:
-    env.Append(CXXFLAGS=' -DSWEET_FORTRAN=0')
+    env.Append(CXXFLAGS='-DSWEET_FORTRAN=0')
 
 
 if exec_command('uname -s') == "Darwin":
-    env.Append(CXXFLAGS=' -DMEMBLOCKALLOC_ENABLE_NUMA_ALLOC=0')
+    env.Append(CXXFLAGS='-DMEMBLOCKALLOC_ENABLE_NUMA_ALLOC=0')
 else:
     env.Append(LIBS=['numa'])
 
@@ -597,9 +581,9 @@ if p.threading == 'omp':
     env.Append(CXXFLAGS=['-fopenmp'])
     env.Append(LINKFLAGS=['-fopenmp'])
 
-    env.Append(CXXFLAGS=' -DSWEET_THREADING_SPACE=1')
+    env.Append(CXXFLAGS='-DSWEET_THREADING_SPACE=1')
 else:
-    env.Append(CXXFLAGS=' -DSWEET_THREADING_SPACE=0')
+    env.Append(CXXFLAGS='-DSWEET_THREADING_SPACE=0')
 
 
 
@@ -637,7 +621,7 @@ if p.libsph == 'enable':
 
 if p.libfft == 'enable':
 
-    env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=1')
+    env.Append(CXXFLAGS='-DSWEET_USE_LIBFFT=1')
 
     if p.mkl == 'enable':
         print("INFO: Using Intel MKL instead of FFTW");
@@ -656,7 +640,7 @@ if p.libfft == 'enable':
             env.Append(LIBS=['fftw3_omp'])
 
 else:
-    env.Append(CXXFLAGS = ' -DSWEET_USE_LIBFFT=0')
+    env.Append(CXXFLAGS='-DSWEET_USE_LIBFFT=0')
 
 if p.mic == 'enable':
     env.Append(CXXFLAGS=['-mmic'])
@@ -693,31 +677,31 @@ if p.rexi_thread_parallel_sum == 'enable':
     #
 
     # Activate precompiler flag
-    env.Append(CXXFLAGS=' -DSWEET_THREADING_TIME_REXI=1')
+    env.Append(CXXFLAGS='-DSWEET_THREADING_TIME_REXI=1')
 else:
-    env.Append(CXXFLAGS=' -DSWEET_THREADING_TIME_REXI=0')
+    env.Append(CXXFLAGS='-DSWEET_THREADING_TIME_REXI=0')
 
 
 if p.benchmark_timings == 'enable':
-    env.Append(CXXFLAGS=' -DSWEET_BENCHMARK_TIMINGS=1')
+    env.Append(CXXFLAGS='-DSWEET_BENCHMARK_TIMINGS=1')
 else:
-    env.Append(CXXFLAGS=' -DSWEET_BENCHMARK_TIMINGS=0')
+    env.Append(CXXFLAGS='-DSWEET_BENCHMARK_TIMINGS=0')
 
 if p.rexi_timings_additional_barriers == 'enable':
-    env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=1')
+    env.Append(CXXFLAGS='-DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=1')
 else:
-    env.Append(CXXFLAGS=' -DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=0')
+    env.Append(CXXFLAGS='-DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=0')
 
 if p.rexi_allreduce == 'enable':
-    env.Append(CXXFLAGS=' -DSWEET_REXI_ALLREDUCE=1')
+    env.Append(CXXFLAGS='-DSWEET_REXI_ALLREDUCE=1')
 else:
-    env.Append(CXXFLAGS=' -DSWEET_REXI_ALLREDUCE=0')
+    env.Append(CXXFLAGS='-DSWEET_REXI_ALLREDUCE=0')
 
 
 if p.threading == 'omp' or p.rexi_thread_parallel_sum == 'enable':
-    env.Append(CXXFLAGS=' -DSWEET_THREADING=1')
+    env.Append(CXXFLAGS='-DSWEET_THREADING=1')
 else:
-    env.Append(CXXFLAGS=' -DSWEET_THREADING=0')
+    env.Append(CXXFLAGS='-DSWEET_THREADING=0')
 
 
 if p.debug_symbols == 'enable':
