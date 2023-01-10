@@ -6,6 +6,8 @@
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
+ * MULE_SCONS_OPTIONS: --fortran-source=enable
+ * MULE_SCONS_OPTIONS: --lapack=enable
  */
 
 #include <cmath>
