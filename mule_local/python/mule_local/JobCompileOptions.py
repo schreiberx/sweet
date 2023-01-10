@@ -52,8 +52,7 @@ class JobCompileOptions(InfoError):
         self.simd = 'enable'
 
         self.fortran_source = 'disable'
-
-        self.lapack = 'enable'
+        self.lapack = 'disable'
 
         self.program_binary_name = ''
 
