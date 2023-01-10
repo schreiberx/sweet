@@ -395,7 +395,7 @@ Different modes
 if p.mode in ['debug', 'debug_thread', 'debug_leak']:
     env.Append(CXXFLAGS=['-DSWEET_DEBUG=1'])
 
-    if compiler_cxx == 'gnu':
+    if compiler_cxx == 'gcc':
         env.Append(CXXFLAGS=["-O0", "-g3", "-Wall"])
 
         # integer overflow check
@@ -410,7 +410,7 @@ if p.mode in ['debug', 'debug_thread', 'debug_leak']:
 
 
     if p.fortran_source == 'enable':
-        if compiler_cxx == 'gnu':
+        if compiler_cxx == 'gcc':
             env.Append(F90FLAGS=["-g", "-O0"])
         elif compiler_cxx == 'intel':
             env.Append(F90FLAGS=["-g", "-O0", "-traceback"])
@@ -422,7 +422,7 @@ elif p.mode == 'release':
     # deactivate assertion calls
     env.Append(CXXFLAGS=['-DNDEBUG=1'])
 
-    if compiler_cxx == 'gnu':
+    if compiler_cxx == 'gcc':
         env.Append(CXXFLAGS=["-O3", "-mtune=native"])
 
         # Ensure vectorization
@@ -441,7 +441,7 @@ elif p.mode == 'release':
             env.Append(CXXFLAGS=['-xHost'])
 
     if p.fortran_source == 'enable':
-        if compiler_cxx == 'gnu':
+        if compiler_cxx == 'gcc':
             env.Append(F90FLAGS=["-O2"])
         elif compiler_cxx == 'intel':
             env.Append(F90FLAGS=["-O2"])
@@ -486,10 +486,28 @@ if p.gui == 'enable':
 else:
     env.Append(CXXFLAGS=['-DSWEET_GUI=0'])
 
+
+
+# Add LAPACK libraries
+if p.lapack == 'enable':
+    env.Append(LIBS=['lapack'])
+    env.Append(LIBS=['blas'])
+    env.Append(CXXFLAGS=['-DSWEET_LAPACK=1'])
+
+    assert p.fortran_source == 'enable', "Fortran source needs to be enabled for this"
+
+else:
+    env.Append(CXXFLAGS=['-DSWEET_LAPACK=0'])
+
+
   
 
 if p.fortran_source == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_FORTRAN=1'])
+
+    if compiler_cxx == 'gcc':
+        env.Append(LIBS=['gfortran'])
+
 else:
     env.Append(CXXFLAGS=['-DSWEET_FORTRAN=0'])
 
@@ -518,25 +536,11 @@ else:
 
 
 
-
-
-
 if p.libsph == 'enable':
     if p.threading == 'omp':
         env.Append(LIBS=['shtns_omp'])
     else:
         env.Append(LIBS=['shtns'])
-
-    # Add LAPACK libraries
-    if p.lapack == 'enable':
-        env.Append(LIBS=['lapack'])
-        env.Append(LIBS=['blas'])
-        env.Append(CXXFLAGS=['-DSWEET_LAPACK=1'])
-    else:
-        env.Append(CXXFLAGS=['-DSWEET_LAPACK=0'])
-
-    if compiler_cxx == 'gnu':
-        env.Append(LIBS=['gfortran'])
 
     p.libfft = 'enable'
 
