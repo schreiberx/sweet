@@ -2,19 +2,25 @@
 
 if true; then
 
+	echo "Sending request..."
+
 	curl		\
-	       -X POST	\
-	       --fail	\
+		-X POST	\
+		--fail	\
+		--no-progress-meter	\
 		-F token=glptt-0d66598d696a02da33fb65e2a039f607c68ea50d	\
 		-F ref=main					\
 		-F "variables[DOCKER_BUILD]=true"		\
 		-F "variables[RUN_TESTS]=false" 		\
-		https://gitlab.inria.fr/api/v4/projects/42631/trigger/pipeline
+		https://gitlab.inria.fr/api/v4/projects/42631/trigger/pipeline	\
+		> /dev/null
 
 	if [[ $? -eq 0 ]]; then
 		echo ""
 		echo ""
 		echo "CI pipeline triggered successfully"
+		echo ""
+		echo "Check out https://gitlab.inria.fr/mschreib/sweet-ci-tests/-/pipelines"
 		echo ""
 	else
 		echo ""

@@ -320,7 +320,7 @@ class JobCompileOptions(InfoError):
                 dest='lapack',
                 type='choice',
                 choices=['enable', 'disable'],
-                default='enable',
+                default='disable',
                 help="Enable lapack [default: %default]"
         )
         self.lapack = scons.GetOption('lapack')
@@ -758,19 +758,11 @@ class JobCompileOptions(InfoError):
 
             name = name[2:]
 
-            if name == 'sphere-spectral-space':
-                self.sphere_spectral_space = value
-                continue
+            varname = name.replace('-', '_')
+            if not varname in self.__dict__:
+                raise Exception(f"Can't use option '{name}'")
 
-            if name == 'plane-spectral-space':
-                self.plane_spectral_space = value
-                continue
-
-            if name == 'fortran-source':
-                self.fortran_source = value
-                continue
-
-            raise Exception("TODO: Process option '"+name+"'. Maybe you need to add it here!")
+            self.__dict__[varname] = value
 
 
     def getProgramPath(self, ignore_errors = False):

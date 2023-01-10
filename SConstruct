@@ -494,7 +494,7 @@ if p.lapack == 'enable':
     env.Append(LIBS=['blas'])
     env.Append(CXXFLAGS=['-DSWEET_LAPACK=1'])
 
-    assert p.fortran_source == 'enable', "Fortran source needs to be enabled for this"
+    assert p.fortran_source == 'enable', "LAPACK enabled, Fortran source needs to be enabled for lapack (--fortran-source=enbale) "
 
 else:
     env.Append(CXXFLAGS=['-DSWEET_LAPACK=0'])
