@@ -916,10 +916,15 @@ public:
 			for (int i = 0; i < N; i++)
 			{
 				SphereData_Spectral* field = U_level->data->get_pointer_to_data_SphereData_Spectral()->simfields[i];
-				*field = this->op_sphere[level]->implicit_diffusion(	*field,
-											(tstop - tstart) * this->viscosity_coefficients[level],
-											///(tstop - tstart) * this->simVars->sim.viscosity,
-											this->simVars->sim.sphere_radius);
+				///*field = this->op_sphere[level]->implicit_diffusion(	*field,
+				///							(tstop - tstart) * this->viscosity_coefficients[level],
+				///							///(tstop - tstart) * this->simVars->sim.viscosity,
+				///							this->simVars->sim.sphere_radius);
+				*field = this->op_sphere[level]->implicit_hyperdiffusion(	*field,
+												(tstop - tstart) * this->viscosity_coefficients[level],
+												///(tstop - tstart) * this->simVars->sim.viscosity,
+												this->viscosity_orders[level],
+												this->simVars->sim.sphere_radius);
 			}
 #endif
 		}
