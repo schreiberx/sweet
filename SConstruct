@@ -55,6 +55,7 @@ env['MULE_SOFTWARE_ROOT'] = os.environ['MULE_SOFTWARE_ROOT']
 p = JobCompileOptions()
 
 
+
 ###################################################################
 # Determine compiler to use
 ###################################################################
@@ -251,14 +252,16 @@ for i in override_list:
                 print("INFO: Using MULE_MPI* environment variable to set "+i+"="+env['ENV'][mi])
                 env[i] = env['ENV'][mi]
 
-    if i in env['ENV']:
-        if 'FLAGS' in i or 'LIBS' in i:
-            print("INFO: Appending to "+i+"+= "+env['ENV'][i])
-            env.Append(**{i: [env['ENV'][i]]})
 
-        else:
-            print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
-            env[i] = env['ENV'][i]
+    else:
+        if i in env['ENV']:
+            if 'FLAGS' in i or 'LIBS' in i:
+                print("INFO: Appending to "+i+"+= "+env['ENV'][i])
+                env.Append(**{i: [env['ENV'][i]]})
+
+            else:
+                print("INFO: Overriding environment variable "+i+"="+env['ENV'][i])
+                env[i] = env['ENV'][i]
 
 
 
@@ -636,7 +639,6 @@ elif compiler_cxx == 'intel':
     if p.fortran_source == 'enable':
         env.Append(LIBS=['gfortran'])
         env.Append(LIBS=['ifcore'])
-        #env.Replace(F90='ifort')
         env.Append(F90FLAGS=['-fpp'])
 
 elif compiler_cxx == 'llvm':
