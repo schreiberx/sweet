@@ -13,6 +13,8 @@ sys.path.append("./mule_local/python/mule_local")
 from JobCompileOptions import *
 sys.path.remove("./mule_local/python/mule_local")
 
+import mule.utils as utils
+
 #
 # Setup parallel compilation
 #
@@ -39,8 +41,7 @@ uname = exec_command('uname').replace("\n", "")
 #
 # determine hostname
 #
-hostname = exec_command('hostname')
-hostname = hostname.replace("\n", "")
+hostname = utils.hostname()
 
 env = Environment(ENV = os.environ)
 
@@ -85,6 +86,9 @@ p.sconsProcessOptions()
 # * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
 #
 pso_ = p.get_program_specific_options()
+if pso_ is None:
+    raise Exception("Error with program specific options. Did you specify a program with --program=... ?")
+
 p.process_scons_options(pso_['scons_options'])
 
 #
