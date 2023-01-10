@@ -27,8 +27,10 @@ if [ "#$TRAVIS" != "#" ]; then
 	CONFIGURE_EXTRA_FLAGS="--disable-mkl --disable-knl --disable-cuda --disable-simd"
 fi
 
-#CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
-#CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
+# Also use special kernel compiler if $CC env variable is set
+if [[ ! -z "$CC" ]]; then
+	CONFIGURE_EXTRA_FLAGS+=" --enable-kernel-compiler=$CC"
+fi
 
 if [ "`uname`" == "DarwinXXX" ]; then
 	echo_info_hline
