@@ -896,7 +896,43 @@ public:
 		return out;
 	}
 
+	/**
+	 * Calculates implicit hyperdiffusion (applies 1/(1-mu*dt*D^q) to spectrum)
+	 *  see "Numerical Techniques for Global Atmospheric Models", page 500
+	 *
+	 * i_order (q) needs to be even!!! (second or forth order usually)
+	 * i_coef is mu*dt
+	 *
+	 * Only works in spectral space
+	 *
+	 */
+	inline SphereData_Spectral implicit_hyperdiffusion(
+			const SphereData_Spectral &i_data,
+			double i_coef,
+			int i_order,
+			double i_r
+	)
+	{
+		SphereData_Spectral out = i_data;
 
+		const double r      = i_r;
+
+		std::array<double, 4> visc_factors;
+		if (i_order == 2)
+			visc_factors = {-i_coef, 0, 0, 0};
+		else if (i_order == 4)
+			visc_factors = {0, -i_coef, 0, 0};
+		else if (i_order == 6)
+			visc_factors = {0, 0, -i_coef, 0};
+		else if (i_order == 8)
+			visc_factors = {0, 0, 0, -i_coef};
+		else
+			SWEETError("This viscosity order is not supported: " + std::to_string(i_order));
+
+		out  = out.spectral_solve_helmholtz_higher_order(1.0, visc_factors, r);
+
+		return out;
+	}
 
 };
 
