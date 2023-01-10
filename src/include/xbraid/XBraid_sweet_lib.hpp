@@ -247,6 +247,8 @@ public:
 	// Custom time grid
 	std::vector<double> custom_time_steps = {};
 
+	// Effective number of levels
+	int nlevels = -1;
 
 public:
 
@@ -791,7 +793,8 @@ private:
 			prev_sol_exists = false;
 
 		// only store prev solution if it is not the first time step inside a coarse slice
-		if (i_time_id % this->simVars->xbraid.xbraid_cfactor == 0)
+		//if (i_time_id % this->simVars->xbraid.xbraid_cfactor == 0)
+		if (i_level < this->nlevels - 1)
 			prev_sol_exists = false;
 
 		if (prev_sol_exists)
@@ -833,6 +836,8 @@ public:
 			}
 
 			this->setup_timesteppers();
+
+			io_status.GetNLevels(&this->nlevels);
 		}
 
 
@@ -843,14 +848,12 @@ public:
 		double tstart;             /* current time */
 		double tstop;              /* evolve u to this time*/
 		int level;
-		int nlevels;
 		int time_id;
 		int iter;
 
 		/* Grab status of current time step */
 		io_status.GetTstartTstop(&tstart, &tstop);
 		io_status.GetLevel(&level);
-		io_status.GetNLevels(&nlevels);
 		io_status.GetTIndex(&time_id);
 		io_status.GetIter(&iter);
 
@@ -880,7 +883,8 @@ public:
 		}
 
 		// store solution for SL
-		this->store_prev_solution(U_level, time_id, level, iter);
+		if (time_id == 0)
+			this->store_prev_solution(U_level, time_id, level, iter);
 
 		// set prev solution for SL
 		this->set_prev_solution(U_level, time_id, level);
@@ -928,6 +932,8 @@ public:
 			}
 #endif
 		}
+
+		this->store_prev_solution(U_level, time_id + 1, level, iter);
 
 		// Interpolate to finest grid in space if necessary
 		if (this->simVars->xbraid.xbraid_spatial_coarsening && level > 0)
@@ -1390,7 +1396,8 @@ public:
 				this->simVars->iodata.output_each_sim_seconds < 0 ||
 				std::abs(t) < small ||
 				std::abs(t - this->simVars->timecontrol.max_simulation_time) < small ||
-				fmod(t, this->simVars->iodata.output_each_sim_seconds) == 0
+				fmod(t, this->simVars->iodata.output_each_sim_seconds) < small ||
+				std::abs(fmod(t, this->simVars->iodata.output_each_sim_seconds) - this->simVars->iodata.output_each_sim_seconds) < small
 			)
 				do_output = true;
 
