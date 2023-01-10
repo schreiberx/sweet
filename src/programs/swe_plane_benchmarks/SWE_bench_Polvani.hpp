@@ -11,7 +11,8 @@
 #include <stdlib.h>
 #include <cmath>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 
 #if SWEET_THREADING_SPACE
 	#include <omp.h>
@@ -48,7 +49,7 @@ class SWE_bench_Polvani
 
 
 	void setup_stream(
-			PlaneData &o_psi
+			PlaneData_Spectral &o_psi
 	)
 	{
 #if SWEET_THREADING_SPACE
@@ -83,7 +84,8 @@ class SWE_bench_Polvani
 
 		double scale = o_psi.planeDataConfig->spectral_data_size[0]*o_psi.planeDataConfig->spectral_data_size[1];
 
-		o_psi.spectral_update_lambda_modes(
+		//o_psi.spectral_update_lambda_modes(
+		o_psi.spectral_update_lambda(
 			[&](int k0, int k1, std::complex<double> &o_data)
 			{
 #if SWEET_DEBUG && SWEET_THREADING_SPACE
@@ -157,9 +159,9 @@ public:
 	double F;
 
 	void setup(
-			PlaneData &o_h,
-			PlaneData &o_u,
-			PlaneData &o_v
+			PlaneData_Spectral &o_h,
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v
 	)
 	{
 		/*
@@ -252,8 +254,8 @@ public:
 			double rms_0;
 			{
 				setup_inner_iter(o_h, o_u, o_v);
-				double rms_u = o_u.reduce_rms();
-				double rms_v = o_v.reduce_rms();
+				double rms_u = o_u.toPhys().physical_reduce_rms();
+				double rms_v = o_v.toPhys().physical_reduce_rms();
 				rms_0 = 0.5*(rms_u + rms_v);
 			}
 
@@ -267,8 +269,8 @@ public:
 			double rms_1;
 			{
 				setup_inner_iter(o_h, o_u, o_v);
-				double rms_u = o_u.reduce_rms();
-				double rms_v = o_v.reduce_rms();
+				double rms_u = o_u.toPhys().physical_reduce_rms();
+				double rms_v = o_v.toPhys().physical_reduce_rms();
 				rms_1 = 0.5*(rms_u + rms_v);
 			}
 
@@ -294,18 +296,18 @@ public:
 
 
 	void setup_inner_iter(
-			PlaneData &o_h,
-			PlaneData &o_u,
-			PlaneData &o_v
+			PlaneData_Spectral &o_h,
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v
 	)
 	{
 
-		PlaneData psi(o_h.planeDataConfig);
+		PlaneData_Spectral psi(o_h.planeDataConfig);
 
 		/*
 		 * Prepare laplace operator
 		 */
-		PlaneData laplace = op.diff2_c_x + op.diff2_c_y;
+		PlaneData_Spectral laplace = op.diff2_c_x + op.diff2_c_y;
 
 		/*
 		 * Setup stream function
@@ -321,16 +323,16 @@ public:
 		 * Solve equation (2.5b)
 		 */
 
-		PlaneData lap_h = op.diff2(psi) + 2.0*R*op.J(op.diff_c_x(psi), op.diff_c_y(psi));
-		PlaneData h = lap_h.spectral_div_element_wise(laplace);
+		PlaneData_Spectral lap_h = op.diff2(psi) + 2.0*R*op.J(op.diff_c_x(psi), op.diff_c_y(psi));
+		PlaneData_Spectral h = lap_h.spectral_div_element_wise(laplace);
 
 		/*
 		 * Setup chi
 		 */
-		PlaneData chi(o_h.planeDataConfig);
+		PlaneData_Spectral chi(o_h.planeDataConfig);
 		chi.spectral_set_zero();
 
-		PlaneData psi_t(o_h.planeDataConfig);
+		PlaneData_Spectral psi_t(o_h.planeDataConfig);
 
 		/*
 		 * Iteratively solve for chi
@@ -342,7 +344,7 @@ public:
 			/*
 			 * Solve equation (2.5a)
 			 */
-			PlaneData laplace_psi_t =
+			PlaneData_Spectral laplace_psi_t =
 					  op.J(psi, laplace(psi))
 					+ R_1*(laplace(chi))
 					+ op.div(	laplace(chi)*op.diff_c_x(chi),
@@ -350,12 +352,12 @@ public:
 						)
 					;
 
-			PlaneData psi_t = laplace_psi_t.spectral_div_element_wise(laplace);
+			PlaneData_Spectral psi_t = laplace_psi_t.spectral_div_element_wise(laplace);
 
 			/*
 			 * Solve equation (2.5c)
 			 */
-			PlaneData stuff_chi =
+			PlaneData_Spectral stuff_chi =
 					- op.J(psi, laplace(chi))
 					+ laplace(op.J(psi, h))
 					+ 2.0*R*op.J_t(psi, psi, op.diff_c_x(psi), op.diff_c_y(psi))
@@ -367,14 +369,14 @@ public:
 			/*
 			 * Setup identity operator for Helmholtz solver
 			 */
-			PlaneData I(o_h.planeDataConfig);
+			PlaneData_Spectral I(o_h.planeDataConfig);
 			I.spectral_set_zero();
 			I.spectral_addScalarAll(1.0);
 
-			PlaneData lhs = R_1*(I - laplace*B);
-			PlaneData new_chi = stuff_chi.spectral_div_element_wise(laplace).spectral_div_element_wise(lhs);
+			PlaneData_Spectral lhs = R_1*(I - laplace*B);
+			PlaneData_Spectral new_chi = stuff_chi.spectral_div_element_wise(laplace).spectral_div_element_wise(lhs);
 
-			diff = (new_chi-chi).reduce_maxAbs();
+			diff = (new_chi-chi).spectral_reduce_max_abs();
 			std::cout << i << ": chi update = " << diff << std::endl;
 
 			chi = new_chi;
@@ -411,8 +413,8 @@ public:
 		o_u = -op.diff_c_y(psi) + eps*op.diff_c_x(chi);
 		o_v = op.diff_c_x(psi) + eps*op.diff_c_y(chi);
 
-		double chi_rms = chi.reduce_rms();
-		double psi_rms = psi.reduce_rms();
+		double chi_rms = chi.toPhys().physical_reduce_rms();
+		double psi_rms = psi.toPhys().physical_reduce_rms();
 
 		std::cout << "POLVANI: chi_rms = " << chi_rms << std::endl;
 		std::cout << "POLVANI: psi_rms = " << psi_rms << std::endl;

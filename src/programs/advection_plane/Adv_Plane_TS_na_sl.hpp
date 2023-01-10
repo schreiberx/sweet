@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_SL_HPP_
 
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
@@ -29,7 +29,7 @@ class Adv_Plane_TS_na_sl	: public Adv_Plane_TS_interface
 	PlaneDataSampler sampler2D;
 	PlaneDataSemiLagrangian semiLagrangian;
 
-	PlaneData prog_u_prev, prog_v_prev;
+	PlaneData_Spectral prog_u_prev, prog_v_prev;
 
 
 	/**
@@ -48,9 +48,9 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_phi,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_phi,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

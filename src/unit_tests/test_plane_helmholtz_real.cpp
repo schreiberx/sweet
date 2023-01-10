@@ -8,7 +8,7 @@
 #endif
 
 #include <sweet/Stopwatch.hpp>
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #include <sweet/SimulationVariables.hpp>
 #include "../include/sweet/plane/PlaneOperators.hpp"
 
@@ -46,13 +46,6 @@ int main(int i_argc, char *i_argv[])
 
 	SimulationVariables simVars;
 	simVars.disc.space_use_spectral_basis_diffs = 1;
-
-	const char *bogus_var_names[] =
-	{
-			nullptr
-	};
-
-
 
 	if (simVars.disc.space_use_spectral_basis_diffs)
 		std::cout << "Using spectral diffs" << std::endl;
@@ -97,11 +90,15 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * keep u,v in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneData u_ana(planeDataConfig);
-		PlaneData v_ana(planeDataConfig);
-		PlaneData f(planeDataConfig);
-		PlaneData g(planeDataConfig);
+		PlaneData_Spectral u_ana(planeDataConfig);
+		PlaneData_Spectral v_ana(planeDataConfig);
+		PlaneData_Spectral f(planeDataConfig);
+		PlaneData_Spectral g(planeDataConfig);
 
+		PlaneData_Physical u_ana_phys(planeDataConfig);
+		PlaneData_Physical v_ana_phys(planeDataConfig);
+		PlaneData_Physical f_phys(planeDataConfig);
+		PlaneData_Physical g_phys(planeDataConfig);
 		/**
 		 * Test iterative solver for Helmholtz problem
 		 * u - u_xx + u_yy = u_x + u_y + f
@@ -120,46 +117,52 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 					// u and v to reconstruct
-					u_ana.p_physical_set(
+					u_ana_phys.physical_set_value(
 						j, i,
 						sin(2*M_PI*x)*cos(2*M_PI*y)
 					);
 
-					v_ana.p_physical_set(
+					v_ana_phys.physical_set_value(
 						j, i,
 						cos(2*M_PI*x)*sin(2*M_PI*y)
 					);
 
 					// sources for the right hand side to fulfill the equation system for given u and v
-					f.p_physical_set(
+					f_phys.physical_set_value(
 						j, i,
 						(1+8*M_PI*M_PI)*sin(2*M_PI*x)*cos(2*M_PI*y)-2*M_PI*cos(2*M_PI*x)*cos(2*M_PI*y)+2*M_PI*sin(2*M_PI*x)*sin(2*M_PI*y)
 					);
 
-					g.p_physical_set(
+					g_phys.physical_set_value(
 						j, i,
 						(1+8*M_PI*M_PI)*cos(2*M_PI*x)*sin(2*M_PI*y)-2*M_PI*cos(2*M_PI*x)*cos(2*M_PI*y)+2*M_PI*sin(2*M_PI*x)*sin(2*M_PI*y)
 					);
 				}
 			}
 
+			u_ana.loadPlaneDataPhysical(u_ana_phys);
+			v_ana.loadPlaneDataPhysical(v_ana_phys);
+			f.loadPlaneDataPhysical(f_phys);
+			g.loadPlaneDataPhysical(g_phys);
 
-			PlaneData u(planeDataConfig);
-			PlaneData v(planeDataConfig);
-			u.physical_set_all(0);
-			v.physical_set_all(0);
+			PlaneData_Spectral u(planeDataConfig);
+			PlaneData_Spectral v(planeDataConfig);
+			PlaneData_Physical u_phys(planeDataConfig);
+			PlaneData_Physical v_phys(planeDataConfig);
+			u_phys.physical_set_zero();
+			v_phys.physical_set_zero();
+			u.loadPlaneDataPhysical(u_phys);
+			v.loadPlaneDataPhysical(v_phys);
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
-			PlaneData rhs_u = u_ana;
-			PlaneData rhs_v = v_ana;
-			f.request_data_spectral();
-			g.request_data_spectral();
+			PlaneData_Spectral rhs_u = u_ana;
+			PlaneData_Spectral rhs_v = v_ana;
 			rhs_u = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_u);
 			rhs_u += f;
 			rhs_v = op.diff_c_x(rhs_v)+op.diff_c_y(rhs_v);
 			rhs_v += g;
-			PlaneData lhs = (-(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			PlaneData_Spectral lhs = (-(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 
 			Stopwatch watch;
 			watch.start();
@@ -170,8 +173,8 @@ int main(int i_argc, char *i_argv[])
 			watch.stop();
 
 			// compare with analytical solution
-			double error_analytical_u = (u-u_ana).reduce_rms();
-			double error_analytical_v = (v-v_ana).reduce_rms();
+			double error_analytical_u = (u-u_ana).spectral_reduce_rms();
+			double error_analytical_v = (v-v_ana).spectral_reduce_rms();
 
 			std::cout << "    Computed the solution in " << watch() << " seconds" << std::endl;
 			std::cout << "                           RMS error in u (analytical): " << error_analytical_u << std::endl;

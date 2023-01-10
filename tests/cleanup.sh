@@ -1,7 +1,5 @@
 #! /bin/bash
 
-cd "$(basename $0)"
-
 source ../local_software/env_vars.sh
 
 if [[ -z "$1" ]]; then

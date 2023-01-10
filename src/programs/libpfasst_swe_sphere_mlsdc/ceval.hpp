@@ -24,7 +24,7 @@ extern "C"
   void cinitial(
 		SphereDataCtx *i_ctx,
 		double i_t,
-		double i_dt, 
+		double i_dtq, 
 		SphereDataVars *o_Y
 		);
 
@@ -56,7 +56,7 @@ extern "C"
   void ccomp_f2 (
 		 SphereDataVars *io_Y, 
 		 double i_t, 
-		 double i_dt, 
+		 double i_dtq, 
 		 SphereDataVars *i_Rhs, 
 		 SphereDataCtx *i_ctx,
 		 SphereDataVars *o_F2 
@@ -73,18 +73,12 @@ extern "C"
   // solves the second implicit system
   void ccomp_f3 (SphereDataVars *io_Y, 
 		 double i_t, 
-		 double i_dt,
+		 double i_dtq,
 		 int i_level,
 		 SphereDataVars *i_Rhs,
 		 SphereDataCtx *i_ctx, 
 		 SphereDataVars *o_F3
 		 );
-
-  // applies artificial diffusion
-  void cfinalize (SphereDataVars *io_Y,
-		  double i_t,
-		  double i_dt,
-		  SphereDataCtx *i_ctx);
   
 }
 

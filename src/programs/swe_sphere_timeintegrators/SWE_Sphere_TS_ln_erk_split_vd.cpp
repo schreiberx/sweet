@@ -43,8 +43,7 @@ void SWE_Sphere_TS_ln_erk_split_vd::euler_timestep_update_lc(
 	SphereData_Physical U_u_phys, U_v_phys;
 	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
-	// dt calculation starts here
-
+	// Apply f term
 	SphereData_Physical fu_nl = op.fg*U_u_phys;
 	SphereData_Physical fv_nl = op.fg*U_v_phys;
 

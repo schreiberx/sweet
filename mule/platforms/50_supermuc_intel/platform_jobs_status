@@ -1,0 +1,16 @@
+#! /bin/bash
+
+#
+# Output the status of jobs submitted to the system
+#
+# One line for each job
+#
+
+# Avoid using $@ for this test since -z fails to compare arrays
+if [[ -z "$1" ]]; then
+	squeue -h --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" --user=$USER
+else
+	for i in $@; do
+		squeue -h -j "$i" --format="%.18i %.9P %j %.8u %.2t %.10M %.6D %R" --user=$USER 2>/dev/null
+	done
+fi

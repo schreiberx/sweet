@@ -15,6 +15,7 @@ for i in src/unit_tests/*.cpp; do
 	SCONS+=" --threading=omp"
 	SCONS+=" --eigen=enable"
 	SCONS+=" --parareal=serial"
+	SCONS+=" --parareal-sphere=enable"
 	SCONS+=" --unit-test=$UNIT_TEST"
 
 	echo "$SCONS"

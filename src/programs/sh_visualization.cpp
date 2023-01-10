@@ -11,9 +11,9 @@
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 	#include <sweet/plane/PlaneDataConfig.hpp>
-	#include <sweet/plane/PlaneData.hpp>
-	#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
-	#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+	#include <sweet/plane/PlaneData_Physical.hpp>
+	#include <sweet/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
+	#include <sweet/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 #endif
 
 #include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
@@ -55,7 +55,7 @@ public:
 	SphereData_Spectral *prog_div = nullptr;
 
 #if SWEET_GUI
-	PlaneData *viz_plane_data = nullptr;
+	PlaneData_Physical *viz_plane_data = nullptr;
 #endif
 
 	int render_primitive_id = 1;
@@ -236,7 +236,7 @@ public:
 		planeDataConfig = new PlaneDataConfig;
 		planeDataConfig->setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
-		viz_plane_data = new PlaneData(planeDataConfig);
+		viz_plane_data = new PlaneData_Physical(planeDataConfig);
 #endif
 
 		simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
@@ -356,7 +356,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -379,9 +379,9 @@ public:
 			{
 				SphereData_DebugContainer::DataContainer &d = SphereData_DebugContainer().container_data()[n];
 				if (d.is_spectral)
-					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(d.data_spectral, planeDataConfig);
+					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(d.data_spectral, planeDataConfig);
 				else
-					*viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(d.data_physical, planeDataConfig);
+					*viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(d.data_physical, planeDataConfig);
 
 				*o_dataArray = viz_plane_data;
 				*o_aspect_ratio = 0.5;
@@ -395,19 +395,19 @@ public:
 		{
 			default:
 			case 0:
-				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(*prog_phi_pert), planeDataConfig);
+				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(*prog_phi_pert), planeDataConfig);
 				break;
 
 			case 1:
-				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(*prog_vrt), planeDataConfig);
+				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(*prog_vrt), planeDataConfig);
 				break;
 
 			case 2:
-				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(*prog_div), planeDataConfig);
+				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(*prog_div), planeDataConfig);
 				break;
 
 			case 3:
-				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(simVars.sim.h0 + SphereData_Spectral(*prog_phi_pert)/simVars.sim.gravitation, planeDataConfig);
+				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(simVars.sim.h0 + SphereData_Spectral(*prog_phi_pert)/simVars.sim.gravitation, planeDataConfig);
 				break;
 
 			case 4:
@@ -417,7 +417,7 @@ public:
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
 				ops->vrtdiv_to_uv(*prog_vrt, *prog_div, u, v);
-				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(u, planeDataConfig);
+				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(u, planeDataConfig);
 				break;
 			}
 
@@ -428,7 +428,7 @@ public:
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
 				ops->vrtdiv_to_uv(*prog_vrt, *prog_div, u, v);
-				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(v, planeDataConfig);
+				*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(v, planeDataConfig);
 				break;
 			}
 
@@ -447,23 +447,23 @@ public:
 				switch (id)
 				{
 				case 6:
-					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prog_phi_pert - anal_solution_phi_pert, planeDataConfig);
+					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(*prog_phi_pert - anal_solution_phi_pert, planeDataConfig);
 					break;
 
 				case 7:
-					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prog_vrt - anal_solution_vort, planeDataConfig);
+					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(*prog_vrt - anal_solution_vort, planeDataConfig);
 					break;
 
 				case 8:
-					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(*prog_div - anal_solution_div, planeDataConfig);
+					*viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(*prog_div - anal_solution_div, planeDataConfig);
 					break;
 				}
 			}
 		}
 
 
-		double viz_min = viz_plane_data->reduce_min();
-		double viz_max = viz_plane_data->reduce_max();
+		double viz_min = viz_plane_data->physical_reduce_min();
+		double viz_max = viz_plane_data->physical_reduce_max();
 
 		viz_max = std::max(std::abs(viz_max), std::abs(viz_min));
 		viz_min = -viz_max;

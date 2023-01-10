@@ -15,7 +15,7 @@
 
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
@@ -35,7 +35,7 @@ class SWE_Plane_TS_l_cn_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	PlaneDataSemiLagrangian semiLagrangian;
 	PlaneDataSampler sampler2D;
 
-	PlaneData h_prev, u_prev, v_prev;
+	PlaneData_Spectral h_prev, u_prev, v_prev;
 
 	// Arrival points for semi-lag
 	ScalarDataArray posx_a, posy_a;
@@ -54,9 +54,9 @@ public:
 	);
 
 	void run_timestep(
-			PlaneData &io_h,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -67,13 +67,13 @@ public:
 	void helmholtz_spectral_solver(
 			double i_kappa,
 			double i_gh0,
-			const PlaneData &i_rhs,
-			PlaneData &io_x
+			const PlaneData_Spectral &i_rhs,
+			PlaneData_Spectral &io_x
 	)
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		PlaneData laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
-		PlaneData lhs = laplacian.spectral_addScalarAll(i_kappa);
+		PlaneData_Spectral laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
+		PlaneData_Spectral lhs = laplacian.spectral_addScalarAll(i_kappa);
 
 		io_x = i_rhs.spectral_div_element_wise(lhs);
 #else
@@ -81,6 +81,20 @@ public:
 #endif
 	}
 
+#if ( SWEET_PARAREAL && SWEET_PARAREAL_PLANE ) || ( SWEET_XBRAID && SWEET_XBRAID_PLANE )
+	void set_previous_solution(
+				PlaneData_Spectral &i_h_prev,
+				PlaneData_Spectral &i_u_prev,
+				PlaneData_Spectral &i_v_prev
+	) override
+	{
+		if (simVars.misc.verbosity > 5)
+			std::cout << "set_previous_solution()" << std::endl;
+		h_prev = i_h_prev;
+		u_prev = i_u_prev;
+		v_prev = i_v_prev;
+	}
+#endif
 
 	virtual ~SWE_Plane_TS_l_cn_na_sl_nd_settls();
 };

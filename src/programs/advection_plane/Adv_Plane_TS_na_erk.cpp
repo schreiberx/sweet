@@ -15,13 +15,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void Adv_Plane_TS_na_erk::euler_timestep_update(
-		const PlaneData &i_phi,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_phi,	///< prognostic variables
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_phi_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
+		PlaneData_Spectral &o_phi_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -36,8 +36,8 @@ void Adv_Plane_TS_na_erk::euler_timestep_update(
 
 	if (simVars.benchmark.getExternalForcesCallback != nullptr)
 	{
-		PlaneData u(i_phi.planeDataConfig);
-		PlaneData v(i_phi.planeDataConfig);
+		PlaneData_Spectral u(i_phi.planeDataConfig);
+		PlaneData_Spectral v(i_phi.planeDataConfig);
 
 		simVars.benchmark.getExternalForcesCallback(1, simVars.timecontrol.current_simulation_time, &u, simVars.benchmark.getExternalForcesUserData);
 		simVars.benchmark.getExternalForcesCallback(2, simVars.timecontrol.current_simulation_time, &v, simVars.benchmark.getExternalForcesUserData);
@@ -49,21 +49,21 @@ void Adv_Plane_TS_na_erk::euler_timestep_update(
 		o_phi_t = -op.diff_c_x(i_phi*i_u) - op.diff_c_y(i_phi*i_v);
 	}
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
+//#if SWEET_USE_PLANE_SPECTRAL_SPACE
 	o_u_t.spectral_set_zero();
 	o_v_t.spectral_set_zero();
-#else
-	o_u_t.physical_set_zero();
-	o_v_t.physical_set_zero();
-#endif
+///#else
+///	o_u_t.physical_set_zero();
+///	o_v_t.physical_set_zero();
+///#endif
 }
 
 
 
 void Adv_Plane_TS_na_erk::run_timestep(
-		PlaneData &io_phi,		///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,		///< prognostic variables
+		PlaneData_Spectral &io_phi,		///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,		///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp

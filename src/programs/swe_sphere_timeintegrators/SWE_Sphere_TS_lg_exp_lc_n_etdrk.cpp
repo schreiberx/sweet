@@ -5,8 +5,12 @@
 #include "SWE_Sphere_TS_lg_exp_lc_n_etdrk.hpp"
 
 
-bool SWE_Sphere_TS_lg_exp_lc_n_etdrk::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_lg_exp_lc_n_etdrk::implements_timestepping_method(const std::string &i_timestepping_method
+									)
 {
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
 	if (i_timestepping_method == "lg_exp_lc_n_etdrk")
 		return true;
 
@@ -25,8 +29,8 @@ void SWE_Sphere_TS_lg_exp_lc_n_etdrk::setup_auto()
 
 	setup(
 			simVars.rexi,
-			simVars.disc.timestepping_order,
-			simVars.disc.timestepping_order2,
+			timestepping_order,
+			timestepping_order2,
 			simVars.timecontrol.current_timestep_size
 		);
 }
@@ -380,26 +384,26 @@ void SWE_Sphere_TS_lg_exp_lc_n_etdrk::setup(
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
 	}
 	else if  (timestepping_order == 4)
 	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true);	/* NO Coriolis */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, true);
+		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true, timestepping_order);
+		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, true, timestepping_order);
 
 		// phi0, but with a full time step size
-		ts_ups0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);
-		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, false, true);
-		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, false, true);
-		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, false, true);
+		ts_ups0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);
+		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, false, true, timestepping_order);
+		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, false, true, timestepping_order);
+		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, false, true, timestepping_order);
 	}
 	else
 	{

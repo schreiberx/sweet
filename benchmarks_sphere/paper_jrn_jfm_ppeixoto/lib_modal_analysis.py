@@ -380,6 +380,40 @@ class mode_evol:
 
         plt.close()
 
+    def plot_total(self, df, var, title="", output_filename="out.pdf", pltfmt=None):
+
+        
+        fig, ax = plt.subplots(1, figsize=(6,4))#, sharex=True)
+        plt.rc('text', usetex=False)
+        
+        ax.set_title(title,fontsize=14, y=1.08)
+        
+        init_en = df['SpectralSum'].iloc[0]
+        df_percent = (df['SpectralSum']-init_en)/init_en
+        
+        df_percent.plot( ax=ax)
+
+        #ax.set_yscale("log", nonpositive='clip')
+        
+        ax.set(ylabel='$\% $ Var in '+var, xlabel="Time (days)")
+        #ax.set_ylim([10e-5, 1])
+        #ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0, 2, '%'))
+        
+        #ax.set(ylabel=var, xlabel="Time (days)")
+        #ax.legend(loc='upper left', bbox_to_anchor= (1.0, 1.0), fontsize=8)
+        ax.set_xscale("linear")
+        
+        #ylim=[self.scalesmin[0], self.scalesmax[0]]
+        #ax.set_ylim(ylim)        
+
+        #fig.subplots_adjust(right=0.7)
+        
+        print("    ", self.basedir+"/"+output_filename)
+        plt.tight_layout()
+        plt.savefig(self.basedir+"/"+output_filename, transparent=True, dpi=600) #, bbox_inches='tight') #, pad_inches=0.02)
+
+        plt.close()
+
     def plot_out(self, title="", output_filename="out.png"):
 
         fontsize=18

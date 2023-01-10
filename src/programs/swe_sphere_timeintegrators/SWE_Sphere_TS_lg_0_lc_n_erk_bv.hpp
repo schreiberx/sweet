@@ -23,8 +23,12 @@
 class SWE_Sphere_TS_lg_0_lc_n_erk_bv	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method)
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+					)
 	{
+		timestepping_method = i_timestepping_method;
+		timestepping_order = simVars.disc.timestepping_order;
+		timestepping_order2 = simVars.disc.timestepping_order2;
 		if (
 			i_timestepping_method == "lg_0_lc_n_erk_bv" 
 		)

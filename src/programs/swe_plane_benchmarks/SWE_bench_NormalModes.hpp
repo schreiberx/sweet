@@ -15,7 +15,7 @@
 
 #include <cmath>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
 #include <functional>
@@ -62,9 +62,9 @@ public:
 			double geo_mode,    //Coeficient multiplying geostrophic mode
 			double igwest_mode, //Coeficient multiplying west gravity mode
 			double igeast_mode, //Coeficient multiplying east gravity mode
-			PlaneData &io_h, // h: surface height (perturbation)
-			PlaneData &io_u, // u: velocity in x-direction
-			PlaneData &io_v, // v: velocity in y-direction
+			PlaneData_Spectral &io_h, // h: surface height (perturbation)
+			PlaneData_Spectral &io_u, // u: velocity in x-direction
+			PlaneData_Spectral &io_v, // v: velocity in y-direction
 			SimulationVariables &i_simVars // Simulation variables
 	)
 	{
@@ -78,9 +78,9 @@ public:
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
 
-		io_h.request_data_spectral();
-		io_u.request_data_spectral();
-		io_v.request_data_spectral();
+		////////////////io_h.request_data_spectral();
+		////////////////io_u.request_data_spectral();
+		////////////////io_v.request_data_spectral();
 
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
@@ -138,23 +138,23 @@ public:
 		//     since in the backwards transform a scale factor is also applied.
 		complex h_add, u_add, v_add;
 		double scale_factor = ((double)(planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1]));
-		h_add = io_h.p_spectral_get(ik1, ik0)+UEV[0]*scale_factor;
-		u_add = io_u.p_spectral_get(ik1, ik0)+UEV[1]*scale_factor;
-		v_add = io_v.p_spectral_get(ik1, ik0)+UEV[2]*scale_factor;
+		h_add = io_h.spectral_get(ik1, ik0)+UEV[0]*scale_factor;
+		u_add = io_u.spectral_get(ik1, ik0)+UEV[1]*scale_factor;
+		v_add = io_v.spectral_get(ik1, ik0)+UEV[2]*scale_factor;
 
 		/* Add normal mode to data */
-		io_h.p_spectral_set(ik1, ik0, h_add);
-		io_u.p_spectral_set(ik1, ik0, u_add);
-		io_v.p_spectral_set(ik1, ik0, v_add);
+		io_h.spectral_set(ik1, ik0, h_add);
+		io_u.spectral_set(ik1, ik0, u_add);
+		io_v.spectral_set(ik1, ik0, v_add);
 
 		io_h.spectral_zeroAliasingModes();
 		io_u.spectral_zeroAliasingModes();
 		io_v.spectral_zeroAliasingModes();
 
 		//Request physical data, to ensure that mirroring is well well balanced (it may fill in the mirror mode)
-		io_h.request_data_physical();
-		io_u.request_data_physical();
-		io_v.request_data_physical();
+		//////////////io_h.request_data_physical();
+		//////////////io_u.request_data_physical();
+		//////////////io_v.request_data_physical();
 
 	/*Debug output*/
 	#if 0
@@ -185,13 +185,13 @@ public:
 public:
 	static
 	void convert_allspectralmodes_to_normalmodes(
-			PlaneData &i_h, // h: surface height (perturbation)
-			PlaneData &i_u, // u: velocity in x-direction
-			PlaneData &i_v, // v: velocity in y-direction
+			PlaneData_Spectral &i_h, // h: surface height (perturbation)
+			PlaneData_Spectral &i_u, // u: velocity in x-direction
+			PlaneData_Spectral &i_v, // v: velocity in y-direction
 			SimulationVariables &i_simVars, // Simulation variables
-			PlaneData &o_geo_mode,    //Output: Coeficients multiplying geostrophic mode
-			PlaneData &o_igwest_mode, //Output: Coeficients multiplying west gravity mode
-			PlaneData &o_igeast_mode //Output: Coeficients multiplying east gravity mode
+			PlaneData_Spectral &o_geo_mode,    //Output: Coeficients multiplying geostrophic mode
+			PlaneData_Spectral &o_igwest_mode, //Output: Coeficients multiplying west gravity mode
+			PlaneData_Spectral &o_igeast_mode //Output: Coeficients multiplying east gravity mode
 	)
 	{
 		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
@@ -218,15 +218,15 @@ public:
 									igwest_mode_c,
 									igeast_mode_c
 							);
-				o_geo_mode.p_spectral_set(ik1, ik0, geo_mode_c);
-				o_igwest_mode.p_spectral_set(ik1, ik0, igwest_mode_c);
-				o_igeast_mode.p_spectral_set(ik1, ik0, igeast_mode_c);
+				o_geo_mode.spectral_set(ik1, ik0, geo_mode_c);
+				o_igwest_mode.spectral_set(ik1, ik0, igwest_mode_c);
+				o_igeast_mode.spectral_set(ik1, ik0, igeast_mode_c);
 
 			}
 		}
-		o_geo_mode.request_data_physical();	
-		o_igwest_mode.request_data_physical();	
-		o_igeast_mode.request_data_physical();	
+		/////o_geo_mode.request_data_physical();	
+		/////o_igwest_mode.request_data_physical();	
+		/////o_igeast_mode.request_data_physical();	
 		return;
 	}
 
@@ -236,9 +236,9 @@ public:
 	void convert_spectralmode_to_normalmode(
 			std::size_t ik0,				//wavenumber in x
 			std::size_t ik1,				// wavenumeber in y
-			PlaneData &i_h, // h: surface height (perturbation)
-			PlaneData &i_u, // u: velocity in x-direction
-			PlaneData &i_v, // v: velocity in y-direction
+			PlaneData_Spectral &i_h, // h: surface height (perturbation)
+			PlaneData_Spectral &i_u, // u: velocity in x-direction
+			PlaneData_Spectral &i_v, // v: velocity in y-direction
 			SimulationVariables &i_simVars, // Simulation variables
 			complex &o_geo_mode,    //Output: Coeficient multiplying geostrophic mode
 			complex &o_igwest_mode, //Output: Coeficient multiplying west gravity mode
@@ -255,9 +255,9 @@ public:
 		
 		//std::cout<<"Adding mode to fields"<<std::endl;
 
-		i_h.request_data_spectral();
-		i_u.request_data_spectral();
-		i_v.request_data_spectral();
+		//////i_h.request_data_spectral();
+		//////i_u.request_data_spectral();
+		//////i_v.request_data_spectral();
 
 		//Check if k0 is in correct sprectral area
 		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
@@ -290,9 +290,9 @@ public:
 		complex U[3];
 		// Set (h,u,v) spectral coeficients
 		// These are weights for the modes
-		U[0] = i_h.p_spectral_get(ik1, ik0);
-		U[1] = i_u.p_spectral_get(ik1, ik0);
-		U[2] = i_v.p_spectral_get(ik1, ik0);
+		U[0] = i_h.spectral_get(ik1, ik0);
+		U[1] = i_u.spectral_get(ik1, ik0);
+		U[2] = i_v.spectral_get(ik1, ik0);
 
 
 		//Apply inverse EV matrix to obtain data in EV space
@@ -640,7 +640,7 @@ public:
 	static
 	std::stringstream dump_normal_modes(
 			SimulationVariables &i_simVars, // Simulation variables
-			PlaneData &i_mode    //Coeficients multiplying  mode
+			PlaneData_Spectral &i_mode    //Coeficients multiplying  mode
 	)
 	{
 		const PlaneDataConfig *planeDataConfig = i_mode.planeDataConfig;
@@ -657,7 +657,7 @@ public:
 		{
 			for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
 			{
-				const std::complex<double> &value = i_mode.p_spectral_get(ik1, ik0);
+				const std::complex<double> &value = i_mode.spectral_get(ik1, ik0);
 				double norm = value.real()*value.real()+value.imag()*value.imag();
 				norm=std::sqrt(norm/scale_factor);
 				if (norm > 1.0e-15)
@@ -677,9 +677,9 @@ public:
 	static
 	void dump_all_normal_modes(
 			SimulationVariables &i_simVars, // Simulation variables
-			PlaneData &i_mode_geo,    //Coeficients multiplying  mode
-			PlaneData &i_mode_igwest,    //Coeficients multiplying  mode
-			PlaneData &i_mode_igeast    //Coeficients multiplying  mode
+			PlaneData_Spectral &i_mode_geo,    //Coeficients multiplying  mode
+			PlaneData_Spectral &i_mode_igwest,    //Coeficients multiplying  mode
+			PlaneData_Spectral &i_mode_igeast    //Coeficients multiplying  mode
 	)
 	{
 		const char* filename_geo = "output_nm_geo_evol.txt";
@@ -823,9 +823,9 @@ public:
 	}
 
 	void setup(
-			PlaneData &o_h,
-			PlaneData &o_u,
-			PlaneData &o_v
+			PlaneData_Spectral &o_h,
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v
 	)
 	{
 		std::cout<< "Generating Normal Modes Initial Conditions: ";
@@ -881,9 +881,9 @@ public:
 				}
 			}
 		};
-		std::cout<< "[MULE] benchmark_normal_modes.h_max:"<<o_h.reduce_maxAbs()<<std::endl;
-		std::cout<< "[MULE] benchmark_normal_modes.u_max:"<<o_u.reduce_maxAbs()<<std::endl;
-		std::cout<< "[MULE] benchmark_normal_modes.v_max:"<<o_v.reduce_maxAbs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.h_max:"<<o_h.spectral_reduce_max_abs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.u_max:"<<o_u.spectral_reduce_max_abs()<<std::endl;
+		std::cout<< "[MULE] benchmark_normal_modes.v_max:"<<o_v.spectral_reduce_max_abs()<<std::endl;
 		
 		//o_h.print_spectralData_zeroNumZero();
 		

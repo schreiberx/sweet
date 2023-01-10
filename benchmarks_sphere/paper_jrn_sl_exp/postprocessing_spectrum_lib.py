@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from mule.postprocessing.JobData import JobData
 from mule_local.postprocessing.SphereDataSpectral import SphereDataSpectral
-import mule_local.postprocessing.shtnsfiledata as shtnsfiledata
+import mule_local.postprocessing.SphereDataOperators as SphereDataOperators
 
 
 debug_active = False
@@ -54,11 +54,11 @@ class postprocessing_spectrum_lib:
         self.div_spec = SphereDataSpectral(self.div_file, setup_physical=False)
 
         # Setup transformations without anti-aliasing (lower physical resolution)
-        self.sh = shtnsfiledata.shtnsfiledata(rsphere=self.rsphere)
+        self.sh = SphereDataOperators.SphereDataOperators(rsphere=self.rsphere)
         self.sh.setup(self.phi_pert_spec.file_info, anti_aliasing=False)
 
         # Setup transformations *with* anti-aliasing
-        self.sh_aa = shtnsfiledata.shtnsfiledata(rsphere=self.rsphere)
+        self.sh_aa = SphereDataOperators.SphereDataOperators(rsphere=self.rsphere)
         self.sh_aa.setup(self.phi_pert_spec.file_info, anti_aliasing=True)
 
         u_phys_data, v_phys_data = self.sh_aa.vrtdiv2uv(self.vrt_spec.data_spectral, self.div_spec.data_spectral)

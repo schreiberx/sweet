@@ -21,7 +21,8 @@
 class SWE_Sphere_TS_l_exp_n_etdrk	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+					);
 	std::string string_id();
 	void setup_auto();
 
@@ -31,14 +32,14 @@ private:
 
 	SWE_Sphere_TS_l_erk_n_erk ts_l_erk_n_erk;
 
-	SWE_Sphere_TS_l_exp ts_phi0_rexi;
-	SWE_Sphere_TS_l_exp ts_phi1_rexi;
-	SWE_Sphere_TS_l_exp ts_phi2_rexi;
+	SWE_Sphere_TS_l_exp ts_phi0_exp;
+	SWE_Sphere_TS_l_exp ts_phi1_exp;
+	SWE_Sphere_TS_l_exp ts_phi2_exp;
 
-	SWE_Sphere_TS_l_exp ts_ups0_rexi;
-	SWE_Sphere_TS_l_exp ts_ups1_rexi;
-	SWE_Sphere_TS_l_exp ts_ups2_rexi;
-	SWE_Sphere_TS_l_exp ts_ups3_rexi;
+	SWE_Sphere_TS_l_exp ts_ups0_exp;
+	SWE_Sphere_TS_l_exp ts_ups1_exp;
+	SWE_Sphere_TS_l_exp ts_ups2_exp;
+	SWE_Sphere_TS_l_exp ts_ups3_exp;
 
 	int timestepping_order;
 	int timestepping_order2;

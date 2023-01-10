@@ -107,7 +107,7 @@ if [ -z "${MULE_PLATFORM_ID}" ]; then
 	echo_error_hline
 	echo_error "INTERNNAL ERROR: No platform detected!!!"
 	echo_error_hline
-	return
+	exit 1
 fi
 
 export MULE_PLATFORM_DIR="$(eval echo "${MULE_ROOT}/platforms/"??"_${MULE_PLATFORM_ID}/")"

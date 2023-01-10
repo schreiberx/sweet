@@ -1,6 +1,6 @@
 #! /bin/bash
 
-source ./local_software/env_vars.sh
+source activate.sh || exit 1
 
 cd tests
 

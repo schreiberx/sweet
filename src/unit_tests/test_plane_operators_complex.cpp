@@ -8,8 +8,8 @@
 #endif
 
 #include <sweet/Stopwatch.hpp>
-#include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 #include <sweet/SimulationVariables.hpp>
 
@@ -140,7 +140,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneDataComplex h_cart(planeDataConfig);
+		PlaneData_PhysicalComplex h_cart(planeDataConfig);
 
 
 		{
@@ -151,26 +151,26 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "error tol = " << eps << std::endl;
 			std::cout << "**********************************************" << std::endl;
 
-			PlaneDataComplex zero_cart(planeDataConfig);
-			PlaneDataComplex two_cart(planeDataConfig);
-			PlaneDataComplex five_cart(planeDataConfig);
+			PlaneData_PhysicalComplex zero_cart(planeDataConfig);
+			PlaneData_PhysicalComplex two_cart(planeDataConfig);
+			PlaneData_PhysicalComplex five_cart(planeDataConfig);
 
-			zero_cart.physical_set_all(0.0);
-			two_cart.physical_set_all(2.0, 0.0);
-			five_cart.physical_set_all(5.0, 0.0);
-			h_cart.physical_set_all(0.0, 0.0);
+			zero_cart.physical_set_all_value(0.0, 0.0);
+			two_cart.physical_set_all_value(2.0, 0.0);
+			five_cart.physical_set_all_value(5.0, 0.0);
+			h_cart.physical_set_all_value(0.0, 0.0);
 
 			double res2 = (double)(res[0]*res[1]);
 
-			double add_test_two = (zero_cart+two_cart).reduce_rms_quad();
-			double add_test_seven = (five_cart+two_cart).reduce_rms_quad();
+			double add_test_two = (zero_cart+two_cart).physical_reduce_rms_quad();
+			double add_test_seven = (five_cart+two_cart).physical_reduce_rms_quad();
 
-			double add_test_four = ((five_cart+two_cart)-complex(3.0,0.0)).reduce_rms_quad();
-			double add_test_four_spec = ((five_cart+two_cart)-complex(3.0,0.0)).reduce_rms_quad();
+			double add_test_four = ((five_cart+two_cart)-complex(3.0,0.0)).physical_reduce_rms_quad();
+			double add_test_four_spec = ((five_cart+two_cart)-complex(3.0,0.0)).physical_reduce_rms_quad();
 
-			double add_test_seven_spec = (five_cart+two_cart).reduce_rms_quad();
-			double add_test_ten = ((five_cart+two_cart)+complex(3.0, 0.0)).reduce_rms_quad();
-			double add_test_ten_spec = ((five_cart+two_cart)+complex(3.0, 0.0)).reduce_rms_quad();
+			double add_test_seven_spec = (five_cart+two_cart).physical_reduce_rms_quad();
+			double add_test_ten = ((five_cart+two_cart)+complex(3.0, 0.0)).physical_reduce_rms_quad();
+			double add_test_ten_spec = ((five_cart+two_cart)+complex(3.0, 0.0)).physical_reduce_rms_quad();
 			double error = 0;
 
 			error = std::abs(add_test_two-2.0);
@@ -229,7 +229,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double add_test_three_imaginary = ((five_cart+two_cart)+complex(-7.0, 3.0)).reduce_rms_quad();
+			double add_test_three_imaginary = ((five_cart+two_cart)+complex(-7.0, 3.0)).physical_reduce_rms_quad();
 			std::cout << "add_test_three_imaginary ||_2 = " << add_test_three_imaginary << std::endl;
 			error = std::abs(add_test_three_imaginary-3.0);
 			if (error > eps)
@@ -238,7 +238,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double add_test_two_two_spec = ((five_cart+two_cart)+complex(-7.0-3.0, 4.0)).reduce_rms_quad();
+			double add_test_two_two_spec = ((five_cart+two_cart)+complex(-7.0-3.0, 4.0)).physical_reduce_rms_quad();
 			std::cout << "add_test_two_two_spec ||_2 = " << add_test_two_two_spec << std::endl;
 			error = std::abs(add_test_two_two_spec-5.0);
 			if (error > eps)
@@ -247,7 +247,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double mul_test_two_times_two_spec = ((two_cart*complex(2.0, 0.0))).reduce_rms_quad();
+			double mul_test_two_times_two_spec = ((two_cart*complex(2.0, 0.0))).physical_reduce_rms_quad();
 			std::cout << "mul_test_two_times_two_spec ||_2 = " << mul_test_two_times_two_spec << std::endl;
 			error = std::abs(mul_test_two_times_two_spec-4.0);
 			if (error > eps)
@@ -267,13 +267,13 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i)/(double)res[0];
 					double y = ((double)j)/(double)res[1];
 
-					h_cart.p_physical_set(j, i, (double)(sin(2.0*M_PI*x)*cos(2.0*M_PI*y)), 0.0);
+					h_cart.physical_set_value(j, i, (double)(sin(2.0*M_PI*x)*cos(2.0*M_PI*y)), 0.0);
 				}
 			}
 
 			// TEST summation
 			// has to be zero, error threshold unknown
-			error = h_cart.reduce_sum_re_quad()/res2;
+			error = h_cart.physical_reduce_sum_re_quad()/res2;
 			std::cout << "Sin test zero ||_2 = " << error << std::endl;
 			if (error > eps)
 			{
@@ -282,7 +282,7 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double sin_test_six = (h_cart+complex(6.0,0.0)).reduce_sum_re_quad()/res2;
+			double sin_test_six = (h_cart+complex(6.0,0.0)).physical_reduce_sum_re_quad()/res2;
 			error = std::abs(sin_test_six-6.0);
 			std::cout << "Sin test add six ||_2 = " << error << std::endl;
 			if (error > eps)
@@ -292,10 +292,10 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			PlaneDataComplex h_spec = h_cart;
-			PlaneDataComplex two_spec = two_cart;
+			PlaneData_PhysicalComplex h_spec = h_cart;
+			PlaneData_PhysicalComplex two_spec = two_cart;
 
-			double sin_test_zero_mul = (h_spec*two_spec).reduce_sum_re_quad()/res2;
+			double sin_test_zero_mul = (h_spec*two_spec).physical_reduce_sum_re_quad()/res2;
 			error = sin_test_zero_mul;
 			std::cout << "Sin test times 2 ||_2 = " << error << std::endl;
 			if (error > eps)
@@ -312,8 +312,8 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for basic operators which are not amplifying the solution depending on the domain size
 		 */
 		{
-			PlaneDataComplex u(planeDataConfig);
-			PlaneDataComplex v(planeDataConfig);
+			PlaneData_PhysicalComplex u(planeDataConfig);
+			PlaneData_PhysicalComplex v(planeDataConfig);
 
 			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.plane_domain_size);
 
@@ -324,10 +324,10 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
-					u.p_physical_set(j, i, sin(freq_x*M_PI*x), 0.0);
-					v.p_physical_set(j, i, cos(freq_y*M_PI*y), 0.0);
+					u.physical_set_value(j, i, sin(freq_x*M_PI*x), 0.0);
+					v.physical_set_value(j, i, cos(freq_y*M_PI*y), 0.0);
 
-					h_cart.p_physical_set(
+					h_cart.physical_set_value(
 						j, i,
 						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y),
 						0.0
@@ -336,7 +336,7 @@ int main(int i_argc, char *i_argv[])
 			}
 
 			// force forward/backward conversion
-			double err_z = (u*v-h_cart).reduce_rms_quad();
+			double err_z = (u*v-h_cart).physical_reduce_rms_quad();
 
 			std::cout << "error (mul*mul-fun) = " << err_z << std::endl;
 
@@ -345,14 +345,17 @@ int main(int i_argc, char *i_argv[])
 				std::cerr << "SPEC: Error threshold exceeded for err_z!" << std::endl;
 				exit(-1);
 			}
+			PlaneData_SpectralComplex h_spec(h_cart.planeDataConfig);
+			h_spec.loadPlaneDataPhysical(h_cart);
 			double err3_laplace =
 				(
 						h_cart-
 							(
-								((op.diff2_c_x+op.diff2_c_y)(h_cart)).
-								spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
+								//((op.diff2_c_x+op.diff2_c_y)(h_spec)).
+								//spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
+								( ((op.diff2_c_x+op.diff2_c_y)(h_spec)).spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y) ).toPhys()
 							)
-				).reduce_rms_quad();
+				).physical_reduce_rms_quad();
 
 			std::cout << "SPEC: Error threshold for Laplace and its inverse: " << err3_laplace << std::endl;
 			if (err3_laplace > eps)
@@ -365,9 +368,11 @@ int main(int i_argc, char *i_argv[])
 			double err3_laplace_check =
 				(
 						h_cart-
-							((op.diff_c_x.spectral_mul_element_wise(op.diff_c_x)+op.diff_c_y.spectral_mul_element_wise(op.diff_c_y))(h_cart)).
-							spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
-				).reduce_rms_quad();
+							//((op.diff_c_x.spectral_mul_element_wise(op.diff_c_x)+op.diff_c_y.spectral_mul_element_wise(op.diff_c_y))(h_cart)).
+							//spectral_div_element_wise(op.diff2_c_x+op.diff2_c_y)
+							( ((op.diff_c_x * op.diff_c_x + op.diff_c_y * op.diff_c_y)(h_spec)) / 
+							(op.diff2_c_x+op.diff2_c_y) ).toPhys()
+				).physical_reduce_rms_quad();
 
 			std::cout << "Error for Laplace (diff*diff()) and its inverse (check): " << err3_laplace_check << std::endl;
 
@@ -387,10 +392,11 @@ int main(int i_argc, char *i_argv[])
 		{
 			PlaneOperatorsComplex op(planeDataConfig, simVars.sim.plane_domain_size);
 
-			PlaneDataComplex u(planeDataConfig);
-			PlaneDataComplex v(planeDataConfig);
-			PlaneDataComplex h_diff_x(planeDataConfig);
-			PlaneDataComplex h_diff_y(planeDataConfig);
+			PlaneData_PhysicalComplex u(planeDataConfig);
+			PlaneData_PhysicalComplex v(planeDataConfig);
+			PlaneData_PhysicalComplex h_diff_x(planeDataConfig);
+			PlaneData_PhysicalComplex h_diff_y(planeDataConfig);
+
 
 //			Operators2D op(parameters.discretization.res, parameters.sim.domain_size, parameters.disc.use_spectral_diffs);
 
@@ -403,22 +409,22 @@ int main(int i_argc, char *i_argv[])
 //					double x = ((double)i)/(double)parameters.discretization.res[0];
 //					double y = ((double)j)/(double)parameters.discretization.res[1];
 
-					u.p_physical_set(j, i, sin(freq_x*M_PI*x), 0);
-					v.p_physical_set(j, i, cos(freq_y*M_PI*y), 0);
+					u.physical_set_value(j, i, sin(freq_x*M_PI*x), 0);
+					v.physical_set_value(j, i, cos(freq_y*M_PI*y), 0);
 
-					h_cart.p_physical_set(
+					h_cart.physical_set_value(
 						j, i,
 						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y),
 						0
 					);
 
-					h_diff_x.p_physical_set(
+					h_diff_x.physical_set_value(
 						j, i,
 						freq_x*M_PI*cos(freq_x*M_PI*x)*cos(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[0],
 						0
 					);
 
-					h_diff_y.p_physical_set(
+					h_diff_y.physical_set_value(
 						j, i,
 						-sin(freq_x*M_PI*x)*freq_y*M_PI*sin(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[1],
 						0
@@ -430,26 +436,31 @@ int main(int i_argc, char *i_argv[])
 			double res_normalization = std::sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
 			// normalization for diff = 2 pi / L
-			double err_x = (op.diff_c_x(h_cart)-h_diff_x).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
-			double err_y = (op.diff_c_y(h_cart)-h_diff_y).reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
-			double err_z = (u*v-h_cart).reduce_norm2_quad()*res_normalization;
+			double err_x = (op.diff_c_x(h_cart).toPhys()-h_diff_x).physical_reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
+			double err_y = (op.diff_c_y(h_cart).toPhys()-h_diff_y).physical_reduce_norm2_quad()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
+			double err_z = (u*v-h_cart).physical_reduce_norm2_quad()*res_normalization;
 
 			std::cout << "error diff x = " << err_x << std::endl;
 			std::cout << "error diff y = " << err_y << std::endl;
 
-			PlaneDataComplex h_spec = h_cart;
-			PlaneDataComplex h_diff_xy_spec = op.diff_c_x(h_spec) + op.diff_c_y(h_spec);
-			PlaneDataComplex h_diff_xy_spec_split = (op.diff_c_x + op.diff_c_y)(h_spec);
+			PlaneData_SpectralComplex h_spec(h_cart.planeDataConfig);
+			h_spec.loadPlaneDataPhysical(h_cart);
+			PlaneData_SpectralComplex h_diff_xy_spec  = op.diff_c_x(h_spec) + op.diff_c_y(h_spec);
+			PlaneData_SpectralComplex h_diff_xy_spec_split  = (op.diff_c_x + op.diff_c_y)(h_spec);
+
+			///PlaneDataComplex h_spec = h_cart;
+			///PlaneDataComplex h_diff_xy_spec = op.diff_c_x(h_spec) + op.diff_c_y(h_spec);
+			///PlaneDataComplex h_diff_xy_spec_split = (op.diff_c_x + op.diff_c_y)(h_spec);
 
 			double err_xy = (
 								h_diff_xy_spec
 								-h_diff_x-h_diff_y
-						).reduce_norm2_quad()*res_normalization/(2.0*M_PI);
+						).toPhys().physical_reduce_norm2_quad()*res_normalization/(2.0*M_PI);
 
 			double err_xy_split = (
 								h_diff_xy_spec_split
 								-h_diff_x-h_diff_y
-						).reduce_norm2_quad()*res_normalization/(2.0*M_PI);
+						).toPhys().physical_reduce_norm2_quad()*res_normalization/(2.0*M_PI);
 
 			if (err_x > eps)
 			{
@@ -481,7 +492,10 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double err_int_x = (h_cart-h_diff_x.spectral_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
+			//double err_int_x = (h_cart-h_diff_x.spectral_div_element_wise(op.diff_c_x)).reduce_norm2_quad()*res_normalization;
+			PlaneData_SpectralComplex h_cart_spec(h_cart);
+			PlaneData_SpectralComplex h_diff_x_spec(h_diff_x);
+			double err_int_x = (h_cart_spec-h_diff_x_spec.spectral_div_element_wise(op.diff_c_x)).toPhys().physical_reduce_norm2_quad()*res_normalization;
 			std::cout << "Testing spectral inverse x " << err_int_x << std::endl;
 
 			if (err_int_x > eps)
@@ -491,7 +505,9 @@ int main(int i_argc, char *i_argv[])
 				exit(-1);
 			}
 
-			double err_int_y = (h_cart-h_diff_y.spectral_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*res_normalization;
+			//double err_int_y = (h_cart-h_diff_y.spectral_div_element_wise(op.diff_c_y)).reduce_norm2_quad()*res_normalization;
+			PlaneData_SpectralComplex h_diff_y_spec(h_diff_y);
+			double err_int_y = (h_cart_spec-h_diff_y_spec.spectral_div_element_wise(op.diff_c_y)).toPhys().physical_reduce_norm2_quad()*res_normalization;
 			std::cout << "Testing spectral inverse y " << err_int_y << std::endl;
 
 			if (err_int_y > eps)

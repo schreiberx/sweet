@@ -24,6 +24,9 @@
 #include "../swe_plane_timeintegrators/SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
 #include "../swe_plane_timeintegrators/SWE_Plane_TS_ln_erk.hpp"
 
+/////#if SWEET_PARAREAL
+/////#include <sweet/sphere/SphereOperators_SphereData.hpp>
+/////#endif
 //When adding a new scheme, remember to update the list of schemes for --help in the end of this hpp file
 
 
@@ -140,8 +143,6 @@ public:
 			l_irk_n_erk = nullptr;
 		}
 	}
-
-
 
 	void setup(
 			const std::string &i_timestepping_method,

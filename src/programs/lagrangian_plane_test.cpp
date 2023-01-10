@@ -6,7 +6,7 @@
 	#define SWEET_GUI 1
 #endif
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
@@ -31,17 +31,17 @@ double param_velocity_v;
 class SimulationSWE
 {
 public:
-	PlaneData prog_h_pert;
+	PlaneData_Spectral prog_h_pert;
 
-	PlaneData prog_h0_pert;	// at t0
+	PlaneData_Spectral prog_h0_pert;	// at t0
 
-	PlaneData prog_u, prog_v;
-	PlaneData prog_u_prev, prog_v_prev;
+	PlaneData_Spectral prog_u, prog_v;
+	PlaneData_Spectral prog_u_prev, prog_v_prev;
 
 	ScalarDataArray posx_a, posy_a;
 	ScalarDataArray *input_pos_arrival[2];
 
-	PlaneData h_t;
+	PlaneData_Spectral h_t;
 
 	PlaneOperators op;
 
@@ -146,8 +146,8 @@ public:
 		ScalarDataArray posy_d(planeDataConfig->physical_array_data_number_of_elements);
 
 		semiLagrangian.semi_lag_departure_points_settls(
-				prog_u_prev, prog_v_prev,
-				prog_u, prog_v,
+				prog_u_prev.toPhys(), prog_v_prev.toPhys(),
+				prog_u.toPhys(), prog_v.toPhys(),
 				posx_a, posy_a,
 				dt,
 				posx_d, posy_d,
@@ -162,7 +162,7 @@ public:
 		prog_u_prev = prog_u;
 		prog_v_prev = prog_v;
 
-		PlaneData new_prog_h(planeDataConfig);
+		PlaneData_Spectral new_prog_h(planeDataConfig);
 		sampler2D.bicubic_scalar(
 				prog_h_pert,
 				posx_d,
@@ -210,7 +210,7 @@ public:
 #endif
 		std::cerr << "TODO: This was removed due to removal of the benchmark_id parameter. A new benchmark must be generated for this" << std::endl;
 
-		std::cout << "Lmax Error: " << (prog_h_pert-prog_h0_pert).reduce_maxAbs() << std::endl;
+		std::cout << "Lmax Error: " << (prog_h_pert-prog_h0_pert).toPhys().physical_reduce_max_abs() << std::endl;
 	}
 
 
@@ -233,7 +233,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -244,17 +244,26 @@ public:
 	{
 		switch (simVars.misc.vis_id)
 		{
-		case 0:
-			*o_dataArray = &prog_h_pert;
-			break;
+			case 0:
+			{
+				PlaneData_Physical prog_h_pert_phys = prog_h_pert.toPhys();
+				*o_dataArray = &prog_h_pert_phys;
+				break;
+			}
 
-		case 1:
-			*o_dataArray = &prog_u;
-			break;
+			case 1:
+			{
+				PlaneData_Physical prog_u_phys = prog_u.toPhys();
+				*o_dataArray = &prog_u_phys;
+				break;
+			}
 
-		case 2:
-			*o_dataArray = &prog_v;
-			break;
+			case 2:
+			{
+				PlaneData_Physical prog_v_phys = prog_v.toPhys();
+				*o_dataArray = &prog_v_phys;
+				break;
+			}
 		}
 		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 	}

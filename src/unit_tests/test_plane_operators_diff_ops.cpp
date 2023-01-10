@@ -8,7 +8,8 @@
 #endif
 
 
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
@@ -140,7 +141,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * keep h in the outer regions to allocate it only once and avoid reinitialization of FFTW
 		 */
-		PlaneData h(planeDataConfig);
+		PlaneData_Physical h(planeDataConfig);
 
 		{
 			std::cout << "**********************************************" << std::endl;
@@ -155,8 +156,8 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for basic operators which are not amplifying the solution depending on the domain size
 		 */
 		{
-			PlaneData u(planeDataConfig);
-			PlaneData v(planeDataConfig);
+			PlaneData_Physical u(planeDataConfig);
+			PlaneData_Physical v(planeDataConfig);
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
@@ -188,14 +189,14 @@ int main(int i_argc, char *i_argv[])
 #define FUN_ID	1
 
 	#if FUN_ID==1
-					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
-					v.p_physical_set(j, i, cos(freq_y*M_PI*y));
+					u.physical_set_value(j, i, sin(freq_x*M_PI*x));
+					v.physical_set_value(j, i, cos(freq_y*M_PI*y));
 	#elif FUN_ID==2
-					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
-					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PI*y)+2.0));
+					u.physical_set_value(j, i, sin(freq_x*M_PI*x));
+					v.physical_set_value(j, i, 1.0/(cos(freq_y*M_PI*y)+2.0));
 	#endif
 
-					h.p_physical_set(
+					h.physical_set_value(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)
@@ -208,7 +209,10 @@ int main(int i_argc, char *i_argv[])
 				}
 			}
 
-			double err_z = (u*v-h).reduce_rms_quad();
+			//PlaneData_Spectral u_spec(u);
+			//PlaneData_Spectral v_spec(v);
+			//double err_z = (u_spec*v_spec-h).toPhys().physical_reduce_rms_quad();
+			double err_z = (u*v-h).physical_reduce_rms_quad();
 
 #if FUN_ID == 1
 			if (err_z > eps)
@@ -228,10 +232,10 @@ int main(int i_argc, char *i_argv[])
 		 * Tests for 1st order differential operator
 		 */
 		{
-			PlaneData u(planeDataConfig);
-			PlaneData v(planeDataConfig);
-			PlaneData h_diff_x(planeDataConfig);
-			PlaneData h_diff_y(planeDataConfig);
+			PlaneData_Physical u(planeDataConfig);
+			PlaneData_Physical v(planeDataConfig);
+			PlaneData_Physical h_diff_x(planeDataConfig);
+			PlaneData_Physical h_diff_y(planeDataConfig);
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
@@ -243,14 +247,14 @@ int main(int i_argc, char *i_argv[])
 					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
 	#if FUN_ID==1
-					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
-					v.p_physical_set(j, i, cos(freq_y*M_PI*y));
+					u.physical_set_value(j, i, sin(freq_x*M_PI*x));
+					v.physical_set_value(j, i, cos(freq_y*M_PI*y));
 	#elif FUN_ID==2
-					u.p_physical_set(j, i, sin(freq_x*M_PI*x));
-					v.p_physical_set(j, i, 1.0/(cos(freq_y*M_PI*y)+2.0));
+					u.physical_set_value(j, i, sin(freq_x*M_PI*x));
+					v.physical_set_value(j, i, 1.0/(cos(freq_y*M_PI*y)+2.0));
 	#endif
 
-					h.p_physical_set(
+					h.physical_set_value(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)
@@ -261,7 +265,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff_x.p_physical_set(
+					h_diff_x.physical_set_value(
 						j, i,
 	#if FUN_ID==1
 						freq_x*M_PI*cos(freq_x*M_PI*x)*cos(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[0]
@@ -272,7 +276,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff_y.p_physical_set(
+					h_diff_y.physical_set_value(
 						j, i,
 	#if FUN_ID==1
 						-sin(freq_x*M_PI*x)*freq_y*M_PI*sin(freq_y*M_PI*y)/(double)simVars.sim.plane_domain_size[1]
@@ -288,9 +292,12 @@ int main(int i_argc, char *i_argv[])
 
 			double res_normalization = sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
+			PlaneData_Spectral h_spec(h);
+//			h_spec.loadPlaneDataPhysical(h);
+
 			// normalization for diff = 2 pi / L
-			double err_x = (op.diff_c_x(h)-h_diff_x).reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
-			double err_y = (op.diff_c_y(h)-h_diff_y).reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
+			double err_x = (op.diff_c_x(h_spec)-h_diff_x).toPhys().physical_reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[0]/(2.0*M_PI);
+			double err_y = (op.diff_c_y(h_spec)-h_diff_y).toPhys().physical_reduce_norm2()*res_normalization*simVars.sim.plane_domain_size[1]/(2.0*M_PI);
 //			double err_z = (u*v-h).reduce_norm2()*res_normalization;
 
 			{
@@ -342,8 +349,8 @@ int main(int i_argc, char *i_argv[])
 		 * diff(sin(2 pi x / size), x, x) = 4.0 pi^2 sin(2 pi x / size) / size^2
 		 */
 		{
-			PlaneData h_diff2_x(planeDataConfig);
-			PlaneData h_diff2_y(planeDataConfig);
+			PlaneData_Physical h_diff2_x(planeDataConfig);
+			PlaneData_Physical h_diff2_y(planeDataConfig);
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
@@ -354,7 +361,7 @@ int main(int i_argc, char *i_argv[])
 					double x = ((double)i+0.5)/(double)simVars.disc.space_res_physical[0];
 					double y = ((double)j+0.5)/(double)simVars.disc.space_res_physical[1];
 
-					h.p_physical_set(
+					h.physical_set_value(
 						j, i,
 	#if FUN_ID==1
 						sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)
@@ -365,7 +372,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff2_x.p_physical_set(
+					h_diff2_x.physical_set_value(
 						j, i,
 	#if FUN_ID==1
 						freq_x*freq_x*M_PI*M_PI*(-1.0)*sin(freq_x*M_PI*x)*cos(freq_y*M_PI*y)/(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])
@@ -376,7 +383,7 @@ int main(int i_argc, char *i_argv[])
 	#endif
 					);
 
-					h_diff2_y.p_physical_set(
+					h_diff2_y.physical_set_value(
 						j, i,
 	#if FUN_ID==1
 						-sin(freq_x*M_PI*x)*freq_y*M_PI*freq_y*M_PI*cos(freq_y*M_PI*y)/(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])
@@ -391,9 +398,12 @@ int main(int i_argc, char *i_argv[])
 
 			double normalization = sqrt(1.0/(simVars.disc.space_res_physical[0]*simVars.disc.space_res_physical[1]));
 
+			PlaneData_Spectral h_spec(h.planeDataConfig);
+			h_spec.loadPlaneDataPhysical(h);
+
 			// diff2 normalization = 4.0 pi^2 / L^2
-			double err2_x = (op.diff2_c_x(h)-h_diff2_x).reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])/(4.0*M_PI*M_PI);
-			double err2_y = (op.diff2_c_y(h)-h_diff2_y).reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])/(4.0*M_PI*M_PI);
+			double err2_x = (op.diff2_c_x(h_spec) - h_diff2_x).toPhys().physical_reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0])/(4.0*M_PI*M_PI);
+			double err2_y = (op.diff2_c_y(h_spec) - h_diff2_y).toPhys().physical_reduce_norm2_quad()*normalization*(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1])/(4.0*M_PI*M_PI);
 
 			{
 				double conv2_x = prev_error_diff2_x/err2_x;

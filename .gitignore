@@ -44,3 +44,6 @@ tests/*/job_bench*
 # Exclude output files
 *.sweet
 *.csv
+
+# Exclude xbraid output files
+braid.out.cycle

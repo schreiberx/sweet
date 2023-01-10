@@ -8,8 +8,12 @@
 
 
 
-bool SWE_Sphere_TS_l_erk_na_erk_uv::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_l_erk_na_erk_uv::implements_timestepping_method(const std::string &i_timestepping_method
+									)
 {
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
 	return i_timestepping_method == "l_erk_na_erk_uv";
 }
 
@@ -101,7 +105,7 @@ void SWE_Sphere_TS_l_erk_na_erk_uv::setup(
 
 void SWE_Sphere_TS_l_erk_na_erk_uv::setup_auto()
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
+	setup(timestepping_order, timestepping_order2);
 }
 
 

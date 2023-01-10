@@ -8,7 +8,7 @@
 #define SRC_PROGRAMS_BURGERS_PLANE_TS_L_DIRECT_HPP_
 
 #include <limits>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
@@ -23,7 +23,11 @@
 
 
 #if BURGERS_PLANE_TS_L_DIRECT_QUADPRECISION
-	#include <quadmath.h>
+	#if SWEET_QUADMATH
+		#include <quadmath.h>
+	#else
+		#error "Quad precision not activated"
+	#endif
 #endif
 
 class Burgers_Plane_TS_l_direct	: public Burgers_Plane_TS_interface
@@ -114,10 +118,10 @@ public:
 
 
 	void run_timestep(
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
-			PlaneData &io_u_prev,	///< prognostic variables
-			PlaneData &io_v_prev,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
+			///PlaneData_Spectral &io_u_prev,	///< prognostic variables
+			///PlaneData_Spectral &io_v_prev,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -125,8 +129,8 @@ public:
 
 
 	void run_timestep_cgrid(
-			PlaneData &io_u,		///< prognostic variables
-			PlaneData &io_v,		///< prognostic variables
+			PlaneData_Spectral &io_u,		///< prognostic variables
+			PlaneData_Spectral &io_v,		///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -134,8 +138,8 @@ public:
 
 
 	void run_timestep_agrid(
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -143,8 +147,8 @@ public:
 
 
 	void run_timestep_agrid_planedata(
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
@@ -153,8 +157,8 @@ public:
 
 
 	void run_timestep_agrid_planedatacomplex(
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

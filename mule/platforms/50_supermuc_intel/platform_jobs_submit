@@ -1,0 +1,25 @@
+#! /bin/bash
+
+#
+# Submit jobs
+#
+# Return
+# ------
+# Job ID in each line
+#
+
+
+if [[ -z "$1" ]]; then
+	DIRS=job_bench*
+else
+	DIRS=$@
+fi
+
+for i in $DIRS; do
+	# From SLURM documentation:
+	#
+	# --parsable: outputs only the jobid and cluster name (if present), separated by semicolon, only on successful submission.
+
+	sbatch --parsable "$i/run.sh" | sed "s/;.*//"
+done
+

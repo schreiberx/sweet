@@ -25,7 +25,6 @@ struct EXP_SimulationVariables
 	 */
 	std::string exp_method = "direct";
 
-
 	/**
 	 * Use REXI preallocation
 	 */
@@ -131,6 +130,11 @@ struct EXP_SimulationVariables
 	 */
 	std::string rexi_files;
 
+	/***************************************************
+	 * Direct EXP
+	 */
+	int exp_direct_precompute_phin = 0;
+
 
 public:
 	class REXIFile
@@ -181,6 +185,8 @@ public:
 		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
 		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
 		std::cout << " + ci_mu: " << ci_mu << std::endl;
+		std::cout << " [EXP Direct]" << std::endl;
+		std::cout << " + exp_direct_precompute_phin: " << exp_direct_precompute_phin << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -213,6 +219,9 @@ public:
 		std::cout << "	--rexi-ci-sy [double]	Size of primitive in imag, default: 1" << std::endl;
 		std::cout << "	--rexi-ci-mu [double]	Shift, default: 0" << std::endl;
 		std::cout << "" << std::endl;
+		std::cout << "  EXP direct:" << std::endl;
+		std::cout << "	--exp_direct-precompute-phin [int]	Precompute phin in direct exp. solver (only available for SWE on the plane), default:0" << std::endl;
+		std::cout << std::endl;
 	}
 
 
@@ -242,7 +251,6 @@ public:
 
 //		io_long_options[io_next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+io_next_free_program_option};
 //		io_next_free_program_option++;
-
 
 		// Files
 		io_long_options[io_next_free_program_option] = {"rexi-files", required_argument, 0, 256+io_next_free_program_option};
@@ -287,6 +295,11 @@ public:
 
 		io_long_options[io_next_free_program_option] = {"rexi-ci-mu", required_argument, 0, 256+io_next_free_program_option};
 		io_next_free_program_option++;
+
+		// Exp direct
+		io_long_options[io_next_free_program_option] = {"exp-direct-precompute-phin", required_argument, 0, 256+io_next_free_program_option};
+		io_next_free_program_option++;
+
 	}
 
 
@@ -351,6 +364,7 @@ public:
 			case 14:	ci_s_real = atof(optarg);	return -1;
 			case 15:	ci_s_imag = atof(optarg);	return -1;
 			case 16:	ci_mu = atof(optarg);	return -1;
+			case 17:	exp_direct_precompute_phin = atoi(optarg);	return -1;
 		}
 
 		if (rexi_files_given)

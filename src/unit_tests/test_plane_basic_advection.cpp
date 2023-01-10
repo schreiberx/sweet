@@ -1,5 +1,5 @@
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
@@ -36,14 +36,16 @@ double vel1 = 0.0;
 class SimulationAdvection
 {
 public:
-	PlaneData prog_h;
-	PlaneData prog_u;
-	PlaneData prog_v;
+	PlaneDataConfig *planeDataConfig;
 
-	PlaneData hu;
-	PlaneData hv;
+	PlaneData_Spectral prog_h;
+	PlaneData_Spectral prog_u;
+	PlaneData_Spectral prog_v;
 
-	PlaneData tmp;
+	PlaneData_Spectral hu;
+	PlaneData_Spectral hv;
+
+	PlaneData_Spectral tmp;
 
 	PlaneOperators op;
 
@@ -53,8 +55,6 @@ public:
 	double freq_x = 4.0;
 	double freq_y = 4.0;
 #endif
-
-	PlaneDataConfig *planeDataConfig;
 
 
 public:
@@ -75,22 +75,25 @@ public:
 	}
 
 
-	PlaneData get_advected_solution(
+	PlaneData_Spectral get_advected_solution(
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(planeDataConfig);
+		PlaneData_Spectral ret_h(planeDataConfig);
+		PlaneData_Physical ret_h_phys(planeDataConfig);
 
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
 
+#if ADV_FUNCTION==0
 		double radius = simVars.benchmark.object_scale*
 			std::sqrt(
 				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
 				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
+#endif
 
-		ret_h.physical_update_lambda_array_indices(
+		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 
@@ -139,29 +142,34 @@ public:
 			}
 		);
 
+		ret_h.loadPlaneDataPhysical(ret_h_phys);
+
 		return ret_h;
 	}
 
 
 
-	PlaneData get_advected_solution_diffx(
+	PlaneData_Spectral get_advected_solution_diffx(
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(planeDataConfig);
+		PlaneData_Spectral ret_h(planeDataConfig);
+		PlaneData_Physical ret_h_phys(planeDataConfig);
 
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
 
+#if ADV_FUNCTION==0
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
 				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
 		double radius = simVars.benchmark.object_scale*radius_scale;
+#endif
 
 
-		ret_h.physical_update_lambda_array_indices(
+		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 #if ADV_FUNCTION==0
@@ -211,29 +219,33 @@ public:
 			}
 		);
 
+		ret_h.loadPlaneDataPhysical(ret_h_phys);
+
 		return ret_h;
 	}
 
 
 
-	PlaneData get_advected_solution_diffy(
+	PlaneData_Spectral get_advected_solution_diffy(
 		double i_timestamp
 	)
 	{
-		PlaneData ret_h(planeDataConfig);
+		PlaneData_Spectral ret_h(planeDataConfig);
+		PlaneData_Physical ret_h_phys(planeDataConfig);
 
 		double adv_x = -vel0*i_timestamp;
 		double adv_y = -vel1*i_timestamp;
 
+#if ADV_FUNCTION==0
 		double radius_scale = std::sqrt(
 				 (double)simVars.sim.plane_domain_size[0]*(double)simVars.sim.plane_domain_size[0]
 				+(double)simVars.sim.plane_domain_size[1]*(double)simVars.sim.plane_domain_size[1]
 			);
 
 		double radius = simVars.benchmark.object_scale*radius_scale;
+#endif
 
-
-		ret_h.physical_update_lambda_array_indices(
+		ret_h_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
 #if ADV_FUNCTION==0
@@ -282,6 +294,7 @@ public:
 #endif
 		});
 
+		ret_h.loadPlaneDataPhysical(ret_h_phys);
 		return ret_h;
 	}
 
@@ -292,8 +305,14 @@ public:
 		simVars.timecontrol.current_timestep_nr = 0;
 		simVars.timecontrol.current_simulation_time = 0;
 
-		prog_u.physical_set_all(vel0);
-		prog_v.physical_set_all(vel1);
+		PlaneData_Physical prog_u_phys(planeDataConfig);
+		PlaneData_Physical prog_v_phys(planeDataConfig);
+
+		prog_u_phys.physical_set_all_value(vel0);
+		prog_v_phys.physical_set_all_value(vel1);
+
+		prog_u.loadPlaneDataPhysical(prog_u_phys);
+		prog_v.loadPlaneDataPhysical(prog_v_phys);
 
 		prog_h = get_advected_solution(0);
 	}
@@ -301,13 +320,13 @@ public:
 
 
 	void p_run_euler_timestep_update(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_h,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_h_t,		///< time updates
-			PlaneData &o_u_t,		///< time updates
-			PlaneData &o_v_t,		///< time updates
+			PlaneData_Spectral &o_h_t,		///< time updates
+			PlaneData_Spectral &o_u_t,		///< time updates
+			PlaneData_Spectral &o_v_t,		///< time updates
 
 			double i_simulation_timestamp = -1
 	)
@@ -315,41 +334,49 @@ public:
 		double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 		double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
+
 		int asdf = atoi(simVars.bogus.var[2].c_str());
 		if (asdf == 0)
 		{
 			// UP/DOWNWINDING
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-			static bool output_given = false;
-			if (!output_given)
-			{
-				std::cout << "WARNING: upwinding in spectral space not working" << std::endl;
-				output_given = true;
-			}
-#endif
+////////#if SWEET_USE_PLANE_SPECTRAL_SPACE
+////////			static bool output_given = false;
+////////			if (!output_given)
+////////			{
+////////				std::cout << "WARNING: upwinding in spectral space not working" << std::endl;
+////////				output_given = true;
+////////			}
+////////#endif
 
-			o_h_t =
+			PlaneData_Physical o_h_t_phys = o_h_t.toPhys();
+			PlaneData_Physical i_h_phys = i_h.toPhys();
+			PlaneData_Physical i_u_phys = i_u.toPhys();
+			PlaneData_Physical i_v_phys = i_v.toPhys();
+
+			o_h_t_phys =
 				(
 					(
 						// u is positive
-						op.shift_right(i_h)*i_u.physical_query_return_value_if_positive()	// inflow
-						-i_h*op.shift_left(i_u.physical_query_return_value_if_positive())	// outflow
+						op.shift_right(i_h_phys)*i_u_phys.physical_query_return_value_if_positive()	// inflow
+						-i_h_phys*op.shift_left(i_u_phys.physical_query_return_value_if_positive())	// outflow
 
 						// u is negative
-						+(i_h*i_u.physical_query_return_value_if_negative())					// outflow
-						-op.shift_left(i_h*i_u.physical_query_return_value_if_negative())	// inflow
+						+(i_h_phys*i_u_phys.physical_query_return_value_if_negative())					// outflow
+						-op.shift_left(i_h_phys*i_u_phys.physical_query_return_value_if_negative())	// inflow
 					)*(1.0/cell_size_x)				// here we see a finite-difference-like formulation
 					+
 					(
 						// v is positive
-						op.shift_up(i_h)*i_v.physical_query_return_value_if_positive()		// inflow
-						-i_h*op.shift_down(i_v.physical_query_return_value_if_positive())	// outflow
+						op.shift_up(i_h_phys)*i_v_phys.physical_query_return_value_if_positive()		// inflow
+						-i_h_phys*op.shift_down(i_v_phys.physical_query_return_value_if_positive())	// outflow
 
 						// v is negative
-						+(i_h*i_v.physical_query_return_value_if_negative())					// outflow
-						-op.shift_down(i_h*i_v.physical_query_return_value_if_negative())	// inflow
+						+(i_h_phys*i_v_phys.physical_query_return_value_if_negative())					// outflow
+						-op.shift_down(i_h_phys*i_v_phys.physical_query_return_value_if_negative())	// inflow
 					)*(1.0/cell_size_y)
 				);
+
+			o_h_t.loadPlaneDataPhysical(o_h_t_phys);
 		}
 		else if (asdf == 1)
 		{
@@ -359,10 +386,14 @@ public:
 			// --v---------|-----------v-----------|-----------v-----------|
 			//   h-1       u0          h0          u1          h1          u2
 
+			PlaneData_Spectral avg_b_x_spec(o_h_t.planeDataConfig);
+			PlaneData_Spectral avg_b_y_spec(o_h_t.planeDataConfig);
+			avg_b_x_spec.loadPlaneDataPhysical(op.avg_b_x(i_h.toPhys()));
+			avg_b_y_spec.loadPlaneDataPhysical(op.avg_b_y(i_h.toPhys()));
 			// staggered
 			o_h_t = -(
-					op.diff_f_x(op.avg_b_x(i_h)*i_u) +
-					op.diff_f_y(op.avg_b_y(i_h)*i_v)
+					op.diff_f_x(avg_b_x_spec*i_u) +
+					op.diff_f_y(avg_b_y_spec*i_v)
 				);
 		}
 		else  if (asdf == 2)
@@ -396,7 +427,7 @@ public:
 		else  if (asdf == 3)
 		{
 			// NO H UPDATE
-			o_h_t.physical_set_all(0);
+			o_h_t.spectral_set_zero();
 		}
 		else
 		{
@@ -404,8 +435,8 @@ public:
 			exit(-1);
 		}
 
-		o_u_t.physical_set_all(0);
-		o_v_t.physical_set_all(0);
+		o_u_t.spectral_set_zero();
+		o_v_t.spectral_set_zero();
 
 		simVars.timecontrol.current_timestep_nr++;
 	}
@@ -456,7 +487,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -470,33 +501,51 @@ public:
 		switch (vis_id)
 		{
 		default:
-			*o_dataArray = &prog_h;
+		{
+			PlaneData_Physical prog_h_phys = prog_h.toPhys();
+			*o_dataArray = &prog_h_phys;
 			break;
+		}
 
 		case 1:
+		{
 			tmp = get_advected_solution(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 2:
+		{
 			tmp = op.diff_c_x(get_advected_solution(simVars.timecontrol.current_simulation_time));
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 3:
+		{
 			tmp = get_advected_solution_diffx(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 4:
+		{
 			tmp = op.diff_c_y(get_advected_solution(simVars.timecontrol.current_simulation_time));
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 
 		case 5:
+		{
 			tmp = get_advected_solution_diffy(simVars.timecontrol.current_simulation_time);
-			*o_dataArray = &tmp;
+			PlaneData_Physical tmp_phys = tmp.toPhys();
+			*o_dataArray = &tmp_phys;
 			break;
+		}
 		}
 
 		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
@@ -543,9 +592,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_boolean_all_finite() &&
-					prog_u.reduce_boolean_all_finite() &&
-					prog_v.reduce_boolean_all_finite()
+		return !(	prog_h.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 };
@@ -555,9 +604,10 @@ double compute_current_error(
 		SimulationAdvection *simulationAdvection
 )
 {
-	PlaneData benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
+	PlaneData_Spectral benchmark_h = simulationAdvection->get_advected_solution(simVars.timecontrol.current_simulation_time);
 
-	return (simulationAdvection->prog_h-benchmark_h).reduce_rms_quad();
+
+	return (simulationAdvection->prog_h-benchmark_h).toPhys().physical_reduce_rms();
 }
 
 
@@ -748,7 +798,7 @@ int main(
 				if (print_output)
 				{
 					double &this_error = computed_errors[res_iterator_id];
-					double &this_conv_rate_space = conv_rate[res_iterator_id];
+					//double &this_conv_rate_space = conv_rate[res_iterator_id];
 
 					/*
 					 * TODO: Something's not right here.
@@ -820,16 +870,14 @@ int main(
 		double *computed_errors = new double[1024];
 		double *conv_rate = new double[1024];
 
-		std::size_t res_x = simVars.disc.space_res_physical[0];
-		std::size_t res_y = simVars.disc.space_res_physical[1];
+		//std::size_t res_x = simVars.disc.space_res_physical[0];
+		//std::size_t res_y = simVars.disc.space_res_physical[1];
 
 		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 
-		double end_cfl = 0.0025;
 		for (	int cfl_iterator_id = 0;
 				cfl_iterator_id < 7;
-//				cfl_limitation > end_cfl || cfl_limitation < -end_cfl;
 				simVars.timecontrol.current_timestep_size *= 0.5, cfl_iterator_id++
 		)
 		{
@@ -869,7 +917,6 @@ int main(
 				if (print_output)
 				{
 					double &this_error = computed_errors[cfl_iterator_id];
-					double &this_conv_rate_space = conv_rate[cfl_iterator_id];
 
 					double error = compute_current_error(simulationAdvection);
 					std::cout << "Error in height: " << error << std::endl;
@@ -880,7 +927,7 @@ int main(
 					double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
 					double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
-					std::cout << "          dt = " << simVars.timecontrol.current_timestep_size << "    dx = " << cell_size_x << " x " << cell_size_x << std::endl;
+					std::cout << "          dt = " << simVars.timecontrol.current_timestep_size << "    dx = " << cell_size_x << " x " << cell_size_y << std::endl;
 
 					this_error = error;
 

@@ -20,7 +20,8 @@
 class SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+					);
 	std::string string_id();
 	void setup_auto();
 	void print_help();
@@ -31,6 +32,7 @@ private:
 
 	SWE_Sphere_TS_ln_erk_split_uv ts_ln_erk_split_uv;
 
+	std::string timestepping_method = "";
 
 private:
 	enum NLRemainderTreatment_enum{
@@ -85,6 +87,20 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+#if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
+	void set_previous_solution(
+				SphereData_Spectral &i_phi_prev,
+				SphereData_Spectral &i_vrt_prev,
+				SphereData_Spectral &i_div_prev
+	) override
+	{
+		if (simVars.misc.verbosity > 5)
+			std::cout << "set_previous_solution()" << std::endl;
+		U_phi_prev = i_phi_prev;
+		U_vrt_prev = i_vrt_prev;
+		U_div_prev = i_div_prev;
+	}
+#endif
 
 	virtual ~SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv();
 };

@@ -1,0 +1,487 @@
+#! /usr/bin/env python3
+
+import os
+import sys
+import math
+
+from itertools import product
+
+efloat_mode = "float"
+#efloat_mode = "mpfloat"
+
+
+from mule_local.JobGeneration import *
+from mule.JobParallelization import *
+from mule.JobParallelizationDimOptions import *
+jg = JobGeneration()
+
+verbose = False
+#verbose = True
+
+##################################################
+
+##################################################
+
+jg.compile.mode = 'release'
+
+# TODO
+jg.runtime.space_res_spectral = 128
+jg.runtime.space_res_spectral = 32
+#jg.runtime.reuse_plans = 2    # enforce using plans (todo, enforcing not yet implemented)!
+
+jg.parallelization.core_oversubscription = False
+jg.parallelization.core_affinity = 'compact'
+
+jg.compile.threading = 'omp'
+
+gen_reference_solution = True
+
+# TODO
+####jg.runtime.max_simulation_time = 60*60*24*5    # 5 days
+jg.runtime.max_simulation_time = 60*60    # 1 hour
+
+###params_timestep_sizes_explicit_fine = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360]
+###params_timestep_sizes_implicit_fine = [15/8, 15/4, 15/2, 15, 30, 60, 120, 180, 360, 480, 600, 720, 960]
+###params_timestep_sizes_exp_fine = [15, 30, 60, 120, 180, 240, 300, 360, 480, 600, 720, 960]
+params_timestep_sizes_explicit_fine = [15/8]
+params_timestep_sizes_implicit_fine = [15/8]
+params_timestep_sizes_exp_fine = [15]
+
+params_timestep_sizes_explicit_coarse = [30, 60, 120]
+params_timestep_sizes_implicit_coarse = [30, 60, 120]
+params_timestep_sizes_exp_coarse = [30, 60, 120]
+
+
+# Parallelization
+params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
+#params_pspace_num_threads_per_rank = [i for i in range(1, jg.platform_resources.num_cores_per_socket+1)]
+params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
+params_ptime_num_cores_per_rank = [1]
+
+unique_id_filter = []
+#unique_id_filter.append('simparams')
+unique_id_filter.append('compile')
+unique_id_filter.append('disc_space')
+unique_id_filter.append('timestep_order')
+#unique_id_filter.append('timestep_size')
+unique_id_filter.append('benchmark')
+
+jg.unique_id_filter = unique_id_filter
+
+
+jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
+jg.runtime.rexi_method = "direct"
+
+# No output
+#jg.runtime.output_filename = "-"
+jg.runtime.output_file_mode = "csv"
+
+##################################################
+
+
+#
+# Force deactivating Turbo mode
+#
+jg.parallelization.force_turbo_off = True
+
+
+def estimateWallclockTime(jg):
+
+    if jg.reference_job:
+        return 2*24*60*60
+
+
+    """
+    Return an estimated wallclock time
+    """
+
+
+    # This runtime is required for CN and explicit methods
+    if jg.parallelization.num_ranks > 1:
+        raise Exception("Shouldn't happen")
+
+    return 6*60*60
+
+
+
+    ref_wallclock_seconds = 60*4
+    ref_simtime = 432000
+    ref_timestep_size = 60
+    ref_mode_res = 128
+
+    # Use this scaling for additional wallclock time
+    safety_scaling = 10
+    # 5 Min additionaly
+    safety_add = 60*5
+
+    wallclock_seconds = ref_wallclock_seconds
+
+    # inv. linear with simulation time
+    wallclock_seconds *= jg.runtime.max_simulation_time/ref_simtime
+
+    # linear with time step size
+    wallclock_seconds *= ref_timestep_size/jg.runtime.timestep_size
+
+    # quadratic with resolution
+    wallclock_seconds *= pow(ref_mode_res/jg.runtime.space_res_spectral, 2.0)
+
+    if wallclock_seconds <= 0:
+        raise Exception("Estimated wallclock_seconds <= 0")
+
+    wallclock_seconds *= safety_scaling
+    wallclock_seconds += safety_add
+
+    if wallclock_seconds > jg.platform_resources.max_wallclock_seconds:
+        wallclock_seconds = jg.platform_resources.max_wallclock_seconds
+
+    return wallclock_seconds
+
+jg.compile.lapack = 'enable'
+jg.compile.mkl = 'disable'
+
+# Request dedicated compile script
+jg.compilecommand_in_jobscript = False
+
+
+#
+# Run simulation on plane or sphere
+#
+jg.compile.program = 'swe_sphere'
+
+jg.compile.plane_spectral_space = 'disable'
+jg.compile.plane_spectral_dealiasing = 'disable'
+jg.compile.sphere_spectral_space = 'enable'
+jg.compile.sphere_spectral_dealiasing = 'enable'
+
+jg.compile.benchmark_timings = 'enable'
+
+jg.compile.quadmath = 'enable'
+
+
+#
+# Activate Fortran source
+#
+jg.compile.fortran_source = 'enable'
+
+
+# Verbosity mode
+jg.runtime.verbosity = 0
+
+#
+# Mode and Physical resolution
+#
+jg.runtime.space_res_spectral = 128
+jg.runtime.space_res_physical = -1
+
+#
+# Benchmark
+#
+jg.runtime.benchmark_name = "galewsky_linearbalance"
+
+#
+# Compute error
+#
+jg.runtime.compute_error = 0
+
+# Leave instability checks activated
+# Don't activate them since they are pretty costly!!!
+jg.runtime.instability_checks = 0
+
+
+jg.runtime.viscosity = 0.0
+
+
+timestep_size_reference = params_timestep_sizes_explicit_fine[0]
+
+
+# Groups to execute, see below
+# l: linear
+# ln: linear and nonlinear
+#groups = ['l1', 'l2', 'ln1', 'ln2', 'ln4']
+groups = ['ln2']
+
+
+
+
+
+
+
+#
+# allow including this file
+#
+if __name__ == "__main__":
+
+    if len(sys.argv) > 1:
+        groups = [sys.argv[1]]
+
+    print("Groups: "+str(groups))
+
+    for group in groups:
+        # 1st order linear
+
+        # 2nd order nonlinear
+        if group == 'ln2':
+            ts_methods = [
+                ['l_erk',        4,    4,    0],    # reference solution
+
+                ###########
+                # Runge-Kutta
+                ###########
+                ['l_erk',        2,    2,    0],
+
+                ###########
+                # CN
+                ###########
+                ['lg_irk_lc_erk_ver0',    2,    2,    0],
+                #####['lg_irk_lc_erk_ver1',    2,    2,    0],
+
+                ['l_irk',    2,    2,    0],
+                #####['l_irk',    2,    2,    0],
+
+                ###########
+                # EXP
+                ###########
+                ['lg_exp_lc_erk_ver0',    2,    2,    0],
+                #####['lg_exp_lc_erk_ver1',    2,    2,    0],
+
+                ['l_exp_special',    1,    1,    0],
+                ['l_exp_special',    2,    2,    0],
+                ['l_exp_special',    4,    4,    0],
+
+                ###########
+                # ETDRK
+                ###########
+                ###['lg_exp_lc_etdrk',    2,    2,    0],
+            ]
+
+        #
+        # Reference solution
+        #
+        if gen_reference_solution:
+            tsm = ts_methods[0]
+            jg.runtime.timestep_size  = timestep_size_reference
+
+            jg.runtime.timestepping_method = tsm[0]
+            jg.runtime.timestepping_order = tsm[1]
+            jg.runtime.timestepping_order2 = tsm[2]
+
+            # Update TIME parallelization
+            ptime = JobParallelizationDimOptions('time')
+            ptime.num_cores_per_rank = 1
+            ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+            ptime.num_ranks = 1
+
+            pspace = JobParallelizationDimOptions('space')
+            pspace.num_cores_per_rank = 1
+            pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
+            pspace.num_ranks = 1
+
+            # Setup parallelization
+            jg.setup_parallelization([pspace, ptime])
+
+            if verbose:
+                pspace.print()
+                ptime.print()
+                jg.parallelization.print()
+
+            if len(tsm) > 4:
+                s = tsm[4]
+                jg.load_from_dict(tsm[4])
+
+            jg.reference_job = True
+            jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
+
+            jg.gen_jobscript_directory('job_benchref_'+jg.getUniqueID())
+            jg.reference_job = False
+
+            jg.reference_job_unique_id = jg.job_unique_id
+
+
+        ref_job = jg.p_job_dirpath;
+
+        ## Parareal parameters
+        jg.compile.parareal = "serial";
+        ###jg.compile.parareal = "mpi";
+        jg.runtime.parareal_enabled = 1
+        jg.runtime.parareal_convergence_threshold = -1
+        jg.runtime.parareal_verbosity = 6
+        jg.runtime.parareal_max_simulation_time = jg.runtime.max_simulation_time;
+        jg.runtime.parareal_store_iterations = 0;
+        jg.runtime.parareal_load_ref_csv_files = 1;
+        jg.runtime.parareal_path_ref_csv_files = ref_job;
+        parareal_coarse_slices = [5, 10];
+
+
+        #
+        # Create job scripts
+        #
+        for tsm in [ts_methods[0]]:
+
+            for tsm_coarse in ts_methods[1:]:
+
+
+                jg.runtime.timestepping_method = tsm[0]
+                jg.runtime.timestepping_order = tsm[1]
+                jg.runtime.timestepping_order2 = tsm[2]
+
+                jg.runtime.parareal_coarse_timestepping_method = tsm_coarse[0]
+                jg.runtime.parareal_coarse_timestepping_order = tsm_coarse[1]
+                jg.runtime.parareal_coarse_timestepping_order2 = tsm[2]
+
+                if len(tsm) > 4:
+                    s = tsm[4]
+                    jg.runtime.load_from_dict(tsm[4])
+
+                if len(tsm_coarse) > 4:
+                    s = tsm_coarse[4]
+                    jg.runtime.load_from_dict(tsm_coarse[4])
+
+                tsm_name = tsm[0]
+                if 'l_erk' in tsm_name:
+                    params_timestep_sizes_fine = params_timestep_sizes_explicit_fine
+                elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+                    params_timestep_sizes_fine = params_timestep_sizes_explicit_fine
+                elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
+                    params_timestep_sizes_fine = params_timestep_sizes_implicit_fine
+                elif 'l_exp' in tsm_name or 'lg_exp' in tsm_name:
+                    params_timestep_sizes_fine = params_timestep_sizes_exp_fine
+                else:
+                    print("Unable to identify time stepping method "+tsm_name)
+                    sys.exit(1)
+
+                tsm_name = tsm_coarse[0]
+                if 'l_erk' in tsm_name:
+                    params_timestep_sizes_coarse = params_timestep_sizes_explicit_coarse
+                elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+                    params_timestep_sizes_coarse = params_timestep_sizes_explicit_coarse
+                elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
+                    params_timestep_sizes_coarse = params_timestep_sizes_implicit_coarse
+                elif 'l_exp' in tsm_name or 'lg_exp' in tsm_name:
+                    params_timestep_sizes_coarse = params_timestep_sizes_exp_coarse
+                else:
+                    print("Unable to identify time stepping method "+tsm_name)
+                    sys.exit(1)
+
+
+                for pspace_num_cores_per_rank, pspace_num_threads_per_rank, jg.runtime.timestep_size, jg.runtime.parareal_coarse_timestep_size, jg.runtime.parareal_coarse_slices  in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, params_timestep_sizes_fine, params_timestep_sizes_coarse, parareal_coarse_slices):
+
+
+                    slice_size = jg.runtime.max_simulation_time / jg.runtime.parareal_coarse_slices;
+                    if math.fmod(slice_size, jg.runtime.parareal_coarse_timestep_size) or math.fmod(slice_size, jg.runtime.timestep_size):
+                        continue;
+
+
+                    pspace = JobParallelizationDimOptions('space')
+                    pspace.num_cores_per_rank = pspace_num_cores_per_rank
+                    pspace.num_threads_per_rank = pspace_num_threads_per_rank
+                    pspace.num_ranks = 1
+                    pspace.setup()
+
+                    # Update TIME parallelization
+                    ptime = JobParallelizationDimOptions('time')
+                    ptime.num_cores_per_rank = 1
+                    ptime.num_threads_per_rank = 1 #pspace.num_cores_per_rank
+                    ptime.num_ranks = 1
+                    ptime.setup()
+
+                    jg.setup_parallelization([pspace, ptime])
+
+                    if verbose:
+                        pspace.print()
+                        ptime.print()
+                        jg.parallelization.print()
+
+                    jg.parallelization.max_wallclock_seconds = estimateWallclockTime(jg)
+
+                    jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID())
+
+
+#####    #
+#####    # SHTNS plan generation scripts
+#####    #
+#####    #jg.runtime.reuse_plans = 1    # search for awesome plans and store them
+#####
+#####    #
+#####    # Create dummy scripts to be used for SHTNS script generation
+#####    #
+#####
+#####    # No parallelization in time
+#####    ptime = JobParallelizationDimOptions('time')
+#####    ptime.num_cores_per_rank = 1
+#####    ptime.num_threads_per_rank = 1
+#####    ptime.num_ranks = 1
+#####    ptime.setup()
+#####
+#####    for tsm in ts_methods[1:2]:
+#####
+#####        jg.runtime.timestepping_method = tsm[0]
+#####        jg.runtime.timestepping_order = tsm[1]
+#####        jg.runtime.timestepping_order2 = tsm[2]
+#####
+#####        jg.runtime.parareal_coarse_timestepping_method = tsm_coarse[0]
+#####        jg.runtime.parareal_coarse_timestepping_order = tsm_coarse[1]
+#####        jg.runtime.parareal_coarse_timestepping_order2 = tsm[2]
+#####
+#####        if len(tsm) > 4:
+#####            s = tsm[4]
+#####            jg.runtime.load_from_dict(tsm[4])
+#####
+#####        if len(tsm_coarse) > 4:
+#####            s = tsm_coarse[4]
+#####            jg.runtime.load_from_dict(tsm_coarse[4])
+#####
+#####        tsm_name = tsm[0]
+#####        if 'l_erk' in tsm_name:
+#####            params_timestep_sizes_fine = params_timestep_sizes_explicit_fine
+#####        elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+#####            params_timestep_sizes_fine = params_timestep_sizes_explicit_fine
+#####        elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
+#####            params_timestep_sizes_fine = params_timestep_sizes_implicit_fine
+#####        elif 'l_exp' in tsm_name or 'lg_exp' in tsm_name:
+#####            params_timestep_sizes_fine = params_timestep_sizes_exp_fine
+#####        else:
+#####            print("Unable to identify time stepping method "+tsm_name)
+#####            sys.exit(1)
+#####
+#####        tsm_name = tsm_coarse[0]
+#####        if 'l_erk' in tsm_name:
+#####            params_timestep_sizes_coarse = params_timestep_sizes_explicit_coarse
+#####        elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
+#####            params_timestep_sizes_coarse = params_timestep_sizes_explicit_coarse
+#####        elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
+#####            params_timestep_sizes_coarse = params_timestep_sizes_implicit_coarse
+#####        elif 'l_exp' in tsm_name or 'lg_exp' in tsm_name:
+#####            params_timestep_sizes_coarse = params_timestep_sizes_exp_coarse
+#####        else:
+#####            print("Unable to identify time stepping method "+tsm_name)
+#####            sys.exit(1)
+#####
+#####
+#####        for pspace_num_cores_per_rank, pspace_num_threads_per_rank, jg.runtime.timestep_size in product(params_pspace_num_cores_per_rank, params_pspace_num_threads_per_rank, [params_timestep_sizes_explicit[0]]):
+#####            pspace = JobParallelizationDimOptions('space')
+#####            pspace.num_cores_per_rank = pspace_num_cores_per_rank
+#####            pspace.num_threads_per_rank = pspace_num_threads_per_rank
+#####            pspace.num_ranks = 1
+#####            pspace.setup()
+#####
+#####            jg.setup_parallelization([pspace, ptime])
+#####
+#####            # Use 10 minutes per default to generate plans
+#####            jg.parallelization.max_wallclock_seconds = 60*10
+#####
+#####            # Set simtime to 0
+#####            #jg.runtime.max_simulation_time = 0
+#####
+#####            # No output
+#####            jg.runtime.output_timestep_size = -1
+#####            jg.runtime.output_filename = "-"
+#####
+#####            jobdir = 'job_plan_'+jg.getUniqueID()
+#####            jg.gen_jobscript_directory(jobdir)
+
+
+
+    # Write compile script
+    jg.write_compilecommands("./compile_platform_"+jg.platforms.platform_id+".sh")
+
+

@@ -7,7 +7,6 @@
 
 #include "SWE_Sphere_TS_interface.hpp"
 
-
 /**
  * SWE Plane time steppers
  */
@@ -34,7 +33,6 @@ public:
 			SphereOperators_SphereData &i_op,
 			SimulationVariables &i_simVars
 	);
-
 
 	~SWE_Sphere_TimeSteppers();
 };

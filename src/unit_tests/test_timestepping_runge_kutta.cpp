@@ -1,5 +1,5 @@
 
-#include "../include/sweet/plane/PlaneData.hpp"
+#include "../include/sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
@@ -27,9 +27,9 @@ int timestepping_runge_kutta_order = 0;
 class SimulationTestRK
 {
 public:
-	PlaneData prog_h;
-	PlaneData prog_u;
-	PlaneData prog_v;
+	PlaneData_Spectral prog_h;
+	PlaneData_Spectral prog_u;
+	PlaneData_Spectral prog_v;
 
 	PlaneDataTimesteppingExplicitRK timestepping;
 
@@ -120,27 +120,43 @@ public:
 	{
 		simVars.timecontrol.current_timestep_nr = 0;
 
-		prog_h.physical_set_all(test_function(time_test_function_order, 0));
-		prog_u.physical_set_all(0);
-		prog_v.physical_set_all(0);
+		PlaneData_Physical prog_h_phys(planeDataConfig);
+		PlaneData_Physical prog_u_phys(planeDataConfig);
+		PlaneData_Physical prog_v_phys(planeDataConfig);
+
+		prog_h_phys.physical_set_all_value(test_function(time_test_function_order, 0));
+		prog_u_phys.physical_set_all_value(0);
+		prog_v_phys.physical_set_all_value(0);
+
+		prog_h.loadPlaneDataPhysical(prog_h_phys);
+		prog_u.loadPlaneDataPhysical(prog_u_phys);
+		prog_v.loadPlaneDataPhysical(prog_v_phys);
 	}
 
 
 	void p_run_euler_timestep_update(
-			const PlaneData &i_h,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_h,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_h_t,	///< time updates
-			PlaneData &o_u_t,	///< time updates
-			PlaneData &o_v_t,	///< time updates
+			PlaneData_Spectral &o_h_t,	///< time updates
+			PlaneData_Spectral &o_u_t,	///< time updates
+			PlaneData_Spectral &o_v_t,	///< time updates
 
 			double i_current_timestamp = -1
 	)
 	{
-		o_h_t.physical_set_all(test_function_diff(time_test_function_order, i_current_timestamp));
-		o_u_t.physical_set_all(0);
-		o_v_t.physical_set_all(0);
+		PlaneData_Physical o_h_t_phys(planeDataConfig);
+		PlaneData_Physical o_u_t_phys(planeDataConfig);
+		PlaneData_Physical o_v_t_phys(planeDataConfig);
+
+		o_h_t_phys.physical_set_all_value(test_function_diff(time_test_function_order, i_current_timestamp));
+		o_u_t_phys.physical_set_all_value(0);
+		o_v_t_phys.physical_set_all_value(0);
+
+		o_h_t.loadPlaneDataPhysical(o_h_t_phys);
+		o_u_t.loadPlaneDataPhysical(o_u_t_phys);
+		o_v_t.loadPlaneDataPhysical(o_v_t_phys);
 
 		simVars.timecontrol.current_timestep_nr++;
 	}
@@ -195,7 +211,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -204,7 +220,8 @@ public:
 			bool *viz_reset
 	)
 	{
-		*o_dataArray = &prog_h;
+		PlaneData_Physical prog_h_phys = prog_h.toPhys();
+		*o_dataArray = &prog_h_phys;
 		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
 	}
 
@@ -242,9 +259,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	prog_h.reduce_boolean_all_finite() &&
-					prog_u.reduce_boolean_all_finite() &&
-					prog_v.reduce_boolean_all_finite()
+		return !(	prog_h.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					prog_v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 };
@@ -307,7 +324,7 @@ int main(
 			while(true)
 			{
 				if (simVars.misc.verbosity >= 10)
-					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.p_physical_get(0,0) << std::endl;
+					std::cout << simVars.timecontrol.current_simulation_time << ": " << simulationTestRK->prog_h.toPhys().physical_get(0,0) << std::endl;
 
 				simulationTestRK->run_timestep();
 
@@ -319,11 +336,11 @@ int main(
 
 				if (simVars.timecontrol.max_simulation_time < simVars.timecontrol.current_simulation_time)
 				{
-					PlaneData benchmark_h(planeDataConfig);
+					PlaneData_Physical benchmark_h_phys(planeDataConfig);
 
-					benchmark_h.physical_set_all(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
+					benchmark_h_phys.physical_set_all_value(simulationTestRK->test_function(time_test_function_order, simVars.timecontrol.current_simulation_time));
 
-					double error = (simulationTestRK->prog_h-benchmark_h).reduce_rms_quad();
+					double error = (simulationTestRK->prog_h.toPhys()-benchmark_h_phys).physical_reduce_rms_quad();
 					std::cout << "with function order " << fun_order << " with RK timestepping of order " << ts_order << " resulted in RMS error " << error << "\t\t" << std::flush;
 
 					if (fun_order <= ts_order)

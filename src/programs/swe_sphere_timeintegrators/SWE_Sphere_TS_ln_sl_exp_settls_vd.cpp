@@ -8,11 +8,15 @@
 #include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"
 
 
-bool SWE_Sphere_TS_ln_sl_exp_settls_vd::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_ln_sl_exp_settls_vd::implements_timestepping_method(const std::string &i_timestepping_method
+									)
 {
 	/*
 	 * Should contain _exp and _settls as well as _vd to indicate vorticity-divergence formulation
 	 */
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
 	return (
 		(i_timestepping_method.find("_exp") != std::string::npos)		&&
 		(i_timestepping_method.find("_settls") != std::string::npos)	&&
@@ -64,6 +68,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::run_timestep_2nd_order(
 
 	if (i_simulation_timestamp == 0)
 	{
+#if !SWEET_PARAREAL
 		/*
 		 * First time step:
 		 * Simply backup existing fields for multi-step parts of this algorithm.
@@ -71,6 +76,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::run_timestep_2nd_order(
 		U_phi_prev = U_phi;
 		U_vrt_prev = U_vrt;
 		U_div_prev = U_div;
+#endif
 	}
 
 	/*
@@ -251,21 +257,21 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup_auto()
 
 
 	// Search for Coriolis
-	if (simVars.disc.timestepping_method.find("l_irk") != std::string::npos || simVars.disc.timestepping_method.find("l_exp") != std::string::npos)
+	if (timestepping_method.find("l_irk") != std::string::npos || timestepping_method.find("l_exp") != std::string::npos)
 		linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_vd::CORIOLIS_LINEAR;
-	else if (simVars.disc.timestepping_method.find("lc_na_sl") != std::string::npos)
+	else if (timestepping_method.find("lc_na_sl") != std::string::npos)
 		linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_vd::CORIOLIS_SEMILAGRANGIAN;
-	else if (simVars.disc.timestepping_method.find("lc_") != std::string::npos)
+	else if (timestepping_method.find("lc_") != std::string::npos)
 		linear_coriolis_treatment = SWE_Sphere_TS_ln_sl_exp_settls_vd::CORIOLIS_NONLINEAR;
 
 
 	// Search for Nonlinear divergence
-	if (simVars.disc.timestepping_method.find("_nr_") != std::string::npos)
+	if (timestepping_method.find("_nr_") != std::string::npos)
 		nonlinear_divergence_treatment = SWE_Sphere_TS_ln_sl_exp_settls_vd::NL_REMAINDER_NONLINEAR;
 
-	if (simVars.disc.timestepping_method.find("_ver1") != std::string::npos)
+	if (timestepping_method.find("_ver1") != std::string::npos)
 		original_linear_operator_sl_treatment = false;
-	else if (simVars.disc.timestepping_method.find("_ver0") != std::string::npos)
+	else if (timestepping_method.find("_ver0") != std::string::npos)
 		original_linear_operator_sl_treatment = true;
 	else
 		original_linear_operator_sl_treatment = true;
@@ -300,20 +306,20 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup_auto()
 
 	std::string string_id_storage_ = string_id_storage + "_vd";
 
-	if (simVars.disc.timestepping_method != string_id_storage_)
+	if (timestepping_method != string_id_storage_)
 	{
 		if (!original_linear_operator_sl_treatment)
 		{
 			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
-			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
+			std::cerr << "Provided time stepping method: "+timestepping_method << std::endl;
 			SWEETError("Autodetection of parts of time stepping methods failed!");
 		}
 
 		std::string string_id_storage2 = string_id_storage+"_ver0"+"_vd";
-		if (simVars.disc.timestepping_method != string_id_storage2)
+		if (timestepping_method != string_id_storage2)
 		{
 			std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
-			std::cerr << "Provided time stepping method: "+simVars.disc.timestepping_method << std::endl;
+			std::cerr << "Provided time stepping method: "+timestepping_method << std::endl;
 			std::cerr << "Detected alternative time stepping method: "+string_id_storage2 << std::endl;
 			SWEETError("Autodetection of parts of time stepping methods failed!");
 		}
@@ -321,7 +327,7 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup_auto()
 #endif
 
 	setup(
-			simVars.disc.timestepping_order,
+			timestepping_order,
 			linear_coriolis_treatment,					// Coriolis treatment
 			nonlinear_divergence_treatment,		// Nonlinear divergence treatment
 			original_linear_operator_sl_treatment			// original SL linear operator treatment
@@ -377,9 +383,11 @@ void SWE_Sphere_TS_ln_sl_exp_settls_vd::setup(
 			"phi0",
 			simVars.timecontrol.current_timestep_size,
 			simVars.sim.sphere_use_fsphere,
-			!(coriolis_treatment == CORIOLIS_LINEAR)
+			!(coriolis_treatment == CORIOLIS_LINEAR),
+			timestepping_order
 		);
 }
+
 
 SWE_Sphere_TS_ln_sl_exp_settls_vd::SWE_Sphere_TS_ln_sl_exp_settls_vd(
 			SimulationVariables &i_simVars,
@@ -394,6 +402,7 @@ SWE_Sphere_TS_ln_sl_exp_settls_vd::SWE_Sphere_TS_ln_sl_exp_settls_vd(
 	if (i_setup_auto)
 		setup_auto();
 }
+
 
 SWE_Sphere_TS_ln_sl_exp_settls_vd::~SWE_Sphere_TS_ln_sl_exp_settls_vd()
 {

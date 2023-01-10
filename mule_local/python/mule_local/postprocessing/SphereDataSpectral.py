@@ -2,17 +2,17 @@
 
 
 import numpy as np
-import mule_local.postprocessing.shtnsfiledata as shtnsfiledata
 
 
 class SphereDataSpectral:
 
     def __init__(self, filename = None, setup_physical=True):
 
+        self.data_physical = None
+        self.data_spectral = None
+
         if filename != None:
             self.read_file(filename, setup_physical=setup_physical)
-
-        pass
 
 
     def read_file(self, filename, setup_physical=True):
@@ -87,10 +87,17 @@ class SphereDataSpectral:
 
         data = content[i:]
 
-        self.data_spectral = np.frombuffer(data, dtype=np.complex128)
+        self.data_spectral = np.frombuffer(data, dtype=np.cdouble)
 
         if setup_physical:
-            sfd = shtnsfiledata.shtnsfiledata()
-            sfd.setup(self.file_info)
+            from mule_local.postprocessing.SphereDataOperators import SphereDataOperators
 
-            self.data = sfd.spec2phys(self.data_spectral)
+            ops = SphereDataOperators(file_info=self.file_info)
+            self.data_physical = ops.spec2phys(self.data_spectral)
+
+            self.file_info['lats'] = ops.lats
+            self.file_info['lons'] = ops.lons
+
+            # Deprecated
+            self.data = self.data_physical
+

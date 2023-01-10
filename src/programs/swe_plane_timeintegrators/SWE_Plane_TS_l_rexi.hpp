@@ -12,8 +12,8 @@
 #include <string>
 #include <complex>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData.hpp>
-#include <sweet/plane/PlaneDataComplex.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
+#include <sweet/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/plane/PlaneOperatorsComplex.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
@@ -64,15 +64,15 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 	public:
 		PlaneOperatorsComplex op;
 
-		PlaneDataComplex eta;
+		PlaneData_SpectralComplex eta;
 
-		PlaneDataComplex eta0;
-		PlaneDataComplex u0;
-		PlaneDataComplex v0;
+		PlaneData_SpectralComplex eta0;
+		PlaneData_SpectralComplex u0;
+		PlaneData_SpectralComplex v0;
 
-		PlaneDataComplex h_sum;
-		PlaneDataComplex u_sum;
-		PlaneDataComplex v_sum;
+		PlaneData_SpectralComplex h_sum;
+		PlaneData_SpectralComplex u_sum;
+		PlaneData_SpectralComplex v_sum;
 	};
 
 	/// per-thread allocated variables to avoid NUMA domain effects
@@ -125,13 +125,13 @@ public:
 */
 
 	void run_timestep(
-			const PlaneData &i_h_pert,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_h_pert,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_h_pert,	///< prognostic variables
-			PlaneData &o_u,	///< prognostic variables
-			PlaneData &o_v,	///< prognostic variables
+			PlaneData_Spectral &o_h_pert,	///< prognostic variables
+			PlaneData_Spectral &o_u,	///< prognostic variables
+			PlaneData_Spectral &o_v,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp
@@ -139,22 +139,22 @@ public:
 
 
 	void run_timestep_real(
-			const PlaneData &i_h_pert,	///< prognostic variables
-			const PlaneData &i_u,	///< prognostic variables
-			const PlaneData &i_v,	///< prognostic variables
+			const PlaneData_Spectral &i_h_pert,	///< prognostic variables
+			const PlaneData_Spectral &i_u,	///< prognostic variables
+			const PlaneData_Spectral &i_v,	///< prognostic variables
 
-			PlaneData &o_h_pert,	///< prognostic variables
-			PlaneData &o_u,	///< prognostic variables
-			PlaneData &o_v,	///< prognostic variables
+			PlaneData_Spectral &o_h_pert,	///< prognostic variables
+			PlaneData_Spectral &o_u,	///< prognostic variables
+			PlaneData_Spectral &o_v,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp
 	);
 
 	void run_timestep(
-			PlaneData &io_h_pert,	///< prognostic variables
-			PlaneData &io_u,	///< prognostic variables
-			PlaneData &io_v,	///< prognostic variables
+			PlaneData_Spectral &io_h_pert,	///< prognostic variables
+			PlaneData_Spectral &io_u,	///< prognostic variables
+			PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

@@ -9,7 +9,7 @@
 #define SRC_INCLUDE_BENCHMARKS_SWE_PLANE_COMBINED_HPP
 
 #include <iostream>
-#include <sweet/plane/PlaneData.hpp>
+#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
@@ -36,9 +36,9 @@ public:
 
 public:
 	bool setupInitialConditions(
-			PlaneData &o_h_pert,
-			PlaneData &o_u,
-			PlaneData &o_v,
+			PlaneData_Spectral &o_h_pert,
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v,
 			SimulationVariables &io_simVars,	///< Make this IO, since benchmarks can change simulation parameters
 			PlaneOperators &io_op				///< Make this IO, since changes in the simulation parameters might require to also update the operators
 	)
@@ -192,7 +192,7 @@ public:
 			return true;
 		}
 #endif
-		else if (io_simVars.benchmark.benchmark_name == "gaussian_bump")
+		else if (io_simVars.benchmark.benchmark_name == "gaussian_bump" || io_simVars.benchmark.benchmark_name == "gaussian_bump_phi_pint")
 		{
 			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, io_op);
 
@@ -216,7 +216,8 @@ public:
 							void* o_data_user_void		/// user data (pointer to this class)
 			)
 			{
-				PlaneData* o_plane_data = (PlaneData*)o_data_void;
+				PlaneData_Spectral* o_plane_data = (PlaneData_Spectral*)o_data_void;
+				PlaneData_Physical plane_data_phys(o_plane_data->planeDataConfig);
 				SWEPlaneBenchmarksCombined* s = (SWEPlaneBenchmarksCombined*)o_data_user_void;
 
 				if (i_field_id >= 1 && i_field_id <= 2)
@@ -234,14 +235,16 @@ public:
 					{
 						// u-velocity
 						//*o_plane_data = std::cos(r)*u - std::sin(r)*v;
-						*o_plane_data = u*(1.0+std::sin(r));
+						plane_data_phys = u*(1.0+std::sin(r));
 					}
 					else if (i_field_id == 2)
 					{
 						// v-velocity
 						//*o_plane_data = std::sin(r)*u + std::cos(r)*v;
-						*o_plane_data = v*(1.0+std::cos(r));
+						plane_data_phys = v*(1.0+std::cos(r));
 					}
+
+					o_plane_data->loadPlaneDataPhysical(plane_data_phys);
 
 					return;
 				}
@@ -267,15 +270,22 @@ public:
 			}
 			else
 			{
-				o_u = simVars->sim.advection_velocity[0];
-				o_v = simVars->sim.advection_velocity[1];
+				PlaneData_Physical u_phys(o_u.planeDataConfig);
+				PlaneData_Physical v_phys(o_u.planeDataConfig);
+
+				u_phys = simVars->sim.advection_velocity[0];
+				v_phys = simVars->sim.advection_velocity[1];
+
+				o_u.loadPlaneDataPhysical(u_phys);
+				o_v.loadPlaneDataPhysical(v_phys);
 			}
 
 			double center_x = 0.5;
 			double center_y = 0.5;
 			double exp_fac = 50.0;
 
-			o_h_pert.physical_update_lambda_array_indices(
+			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
@@ -284,6 +294,8 @@ public:
 					io_data = callback_gaussian_bump(center_x, center_y, x, y, exp_fac);
 				}
 			);
+			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
+
 			return true;
 		}
 		else if (
@@ -295,8 +307,9 @@ public:
 			double sy = simVars->sim.plane_domain_size[1];
 
 
-			o_h_pert.physical_set_zero();
-			o_h_pert.physical_update_lambda_array_indices(
+			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			h_pert_phys.physical_set_zero();
+			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
@@ -314,8 +327,9 @@ public:
 				}
 			);
 
-			o_u.physical_set_zero();
-			o_v.physical_set_zero();
+			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
+			o_u.spectral_set_zero();
+			o_v.spectral_set_zero();
 
 			return true;
 		}
@@ -328,8 +342,9 @@ public:
 			double sy = simVars->sim.plane_domain_size[1];
 
 
-			o_h_pert.physical_set_zero();
-			o_h_pert.physical_update_lambda_array_indices(
+			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			h_pert_phys.physical_set_zero();
+			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(io_simVars.sim.plane_domain_size[0]/(double)io_simVars.disc.space_res_physical[0]);
@@ -347,8 +362,9 @@ public:
 				}
 			);
 
-			o_u.physical_set_zero();
-			o_v.physical_set_zero();
+			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
+			o_u.spectral_set_zero();
+			o_v.spectral_set_zero();
 
 			return true;
 		}
@@ -364,8 +380,9 @@ public:
 			if (io_simVars.sim.plane_rotating_f0 == 0)
 				SWEETError("Coriolis = 0!");
 
-			o_h_pert.physical_set_zero();
-			o_h_pert.physical_update_lambda_array_indices(
+			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			h_pert_phys.physical_set_zero();
+			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i/(double)simVars->disc.space_res_physical[0];
@@ -375,10 +392,13 @@ public:
 				}
 			);
 
-			o_u.physical_set_zero();
+			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
 
-			o_v.physical_set_zero();
-			o_v.physical_update_lambda_array_indices(
+			o_u.spectral_set_zero();
+
+			PlaneData_Physical v_phys(o_v.planeDataConfig);
+			v_phys.physical_set_zero();
+			v_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i/(double)simVars->disc.space_res_physical[0];
@@ -387,6 +407,8 @@ public:
 					io_data = simVars->sim.gravitation/f*2.0*M_PI*std::cos(2.0*M_PI*x)/sx;
 				}
 			);
+
+			o_v.loadPlaneDataPhysical(v_phys);
 
 			return true;
 		}
@@ -402,8 +424,9 @@ public:
 			if (io_simVars.sim.plane_rotating_f0 == 0)
 				SWEETError("Coriolis = 0!");
 
-			o_h_pert.physical_set_zero();
-			o_h_pert.physical_update_lambda_array_indices(
+			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			h_pert_phys.physical_set_zero();
+			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					//double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
@@ -413,8 +436,11 @@ public:
 				}
 			);
 
-			o_u.physical_set_zero();
-			o_u.physical_update_lambda_array_indices(
+			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
+
+			PlaneData_Physical u_phys(o_u.planeDataConfig);
+			u_phys.physical_set_zero();
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					//double x = (double)i*(simVars->sim.domain_size[0]/(double)simVars->disc.res_physical[0]);
@@ -424,7 +450,9 @@ public:
 				}
 			);
 
-			o_v.physical_set_zero();
+			o_u.loadPlaneDataPhysical(u_phys);
+
+			o_v.spectral_set_zero();
 
 			return true;
 		}
@@ -439,8 +467,9 @@ public:
 			if (io_simVars.sim.plane_rotating_f0 == 0)
 				SWEETError("Coriolis = 0!");
 
-			o_h_pert.physical_set_zero();
-			o_h_pert.physical_update_lambda_array_indices(
+			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			h_pert_phys.physical_set_zero();
+			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
@@ -454,8 +483,9 @@ public:
 				}
 			);
 
-			o_u.physical_set_zero();
-			o_v.physical_set_zero();
+			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
+			o_u.spectral_set_zero();
+			o_v.spectral_set_zero();
 
 			return true;
 		}
@@ -471,7 +501,9 @@ public:
 			double sx = simVars->sim.plane_domain_size[0];
 			double sy = simVars->sim.plane_domain_size[1];
 
-			o_h_pert.physical_update_lambda_array_indices(
+			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			h_pert_phys.physical_set_zero();
+			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
@@ -481,7 +513,9 @@ public:
 				}
 			);
 
-			o_u.physical_update_lambda_array_indices(
+			PlaneData_Physical u_phys(o_u.planeDataConfig);
+			u_phys.physical_set_zero();
+			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
@@ -492,7 +526,9 @@ public:
 				}
 			);
 
-			o_v.physical_update_lambda_array_indices(
+			PlaneData_Physical v_phys(o_v.planeDataConfig);
+			v_phys.physical_set_zero();
+			v_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
 					double x = (double)i*(simVars->sim.plane_domain_size[0]/(double)simVars->disc.space_res_physical[0]);
@@ -503,6 +539,9 @@ public:
 				}
 			);
 
+			o_h_pert.loadPlaneDataPhysical(h_pert_phys);
+			o_u.loadPlaneDataPhysical(u_phys);
+			o_v.loadPlaneDataPhysical(v_phys);
 			return true;
 		}
 

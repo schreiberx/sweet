@@ -30,7 +30,8 @@
 class SWE_Sphere_TS_ln_settls_vd	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+					);
 	std::string string_id();
 
 	std::string string_id_storage;

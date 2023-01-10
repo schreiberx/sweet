@@ -449,14 +449,14 @@ private:
 
 public:
 	void setup(
-			int nphi,	// physical
-			int nlat,
+		int nphi,	// physical
+		int nlat,
 
-			int mmax,	// spectral
-			int nmax,
+		int mmax,	// spectral
+		int nmax,
 
-			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
-			int i_verbosity = 0
+		TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
+		int i_verbosity = 0
 	)
 	{
 		mmax--;

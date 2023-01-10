@@ -149,7 +149,7 @@ SWE_Sphere_TS_ln_erk::SWE_Sphere_TS_ln_erk(
 		simVars(i_simVars),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
+	setup(timestepping_order);
 }
 
 

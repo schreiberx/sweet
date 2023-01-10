@@ -7,8 +7,12 @@
 #include "SWE_Sphere_TS_l_irk_na_erk_vd.hpp"
 
 
-bool SWE_Sphere_TS_l_irk_na_erk_vd::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_l_irk_na_erk_vd::implements_timestepping_method(const std::string &i_timestepping_method
+									)
 {
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
 	if (
 		i_timestepping_method == "l_irk_na_erk_vd" || i_timestepping_method == "l_irk_na_erk_vd_ver0" ||
 		i_timestepping_method == "l_irk_na_erk_vd_ver1"
@@ -23,14 +27,14 @@ bool SWE_Sphere_TS_l_irk_na_erk_vd::implements_timestepping_method(const std::st
 void SWE_Sphere_TS_l_irk_na_erk_vd::setup_auto()
 {
 	if (
-		simVars.disc.timestepping_method == "l_irk_na_erk_vd" ||
-		simVars.disc.timestepping_method == "l_irk_na_erk_vd_ver0"
+		timestepping_method == "l_irk_na_erk_vd" ||
+		timestepping_method == "l_irk_na_erk_vd_ver0"
 	)
-		setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, 0);
+		setup(timestepping_order, timestepping_order2, 0);
 	else if (
-			simVars.disc.timestepping_method == "l_irk_na_erk_vd_ver1"
+			timestepping_method == "l_irk_na_erk_vd_ver1"
 		)
-		setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, 1);
+		setup(timestepping_order, timestepping_order2, 1);
 	else
 		SWEETError("Not implemented");
 }

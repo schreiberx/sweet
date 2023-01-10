@@ -16,11 +16,20 @@ MULE_BACKDIR="$PWD"
 # We always try to activate the environemnt
 # This is important during the installation process
 #
-function activate_environment()
+function activate_miniconda_environment()
 {
-	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_anaconda/bin/activate" 2>/dev/null
+	if [[ ! -e "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" ]]; then
+		echo "Miniconda not found, skipping activation"
+		return
+	fi
+	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" 2>/dev/null
 }
-PROMPT_COMMAND='activate_environment'
+
+#
+# Bash provides an environment variable called PROMPT_COMMAND.
+# The contents of this variable are executed as a regular Bash command just before Bash displays a prompt.
+#
+PROMPT_COMMAND='activate_miniconda_environment'
 
 
 
@@ -185,8 +194,8 @@ cd "$SCRIPTDIR"
 SCRIPTDIR="$PWD"
 
 # Anaconda install directory
-#export PYTHON_VENV_DIR="$SCRIPTDIR/python_venv_anaconda__$(hostname)/"
-export PYTHON_VENV_DIR="$SCRIPTDIR/local/python_venv_anaconda/"
+#export PYTHON_VENV_DIR="$SCRIPTDIR/python_venv_miniconda__$(hostname)/"
+export PYTHON_VENV_DIR="$SCRIPTDIR/local/python_venv_miniconda/"
 
 
 # Get SOFTWARE root directory
@@ -239,7 +248,7 @@ export MULE_BACKUP_PS1="$PS1"
 #######################################################################
 
 # Back to local software
-cd "$SCRIPTDIR"
+cd "$SCRIPTDIR" || exit 1
 
 #echo_info " + Setting up platform independent environment variables..."
 
@@ -273,6 +282,9 @@ if [ -d "$SCRIPTDIR/local/lib64" ]; then
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 fi
 
+echo_success_hline
+echo_success " Setting up Python paths"
+echo_success_hline
 
 if false; then
 	# Determine installed SWEET-installed python version
@@ -307,7 +319,7 @@ export PYTHONPATH="$MULE_LOCAL_ROOT/python/:$PYTHONPATH"
 
 
 # Back to local software
-cd "$SCRIPTDIR"
+cd "$SCRIPTDIR" || exit 1
 
 # Test if 'realpath' exists
 type realpath >/dev/null 2>&1
@@ -326,7 +338,10 @@ fi
 #######################################################################
 #######################################################################
 
-cd "$MULE_BACKDIR"
+cd "$MULE_BACKDIR" || exit 1
+
+# Activate miniconda environment if available
+activate_miniconda_environment || exit 1
 
 echo_success_hline
 echo_success " MULE SOFTWARE environment setup successfully"

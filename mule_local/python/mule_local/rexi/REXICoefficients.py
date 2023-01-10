@@ -113,16 +113,41 @@ class REXICoefficients:
         Exploit a symmetry of the poles in case that they are complex conjugate symmetric
         """
         
-        print("WARNING: THIS IS JUST A DUMMY IMPLEMENTATION (symred)")
-        
-        new_alphas = []
-        new_betas = []
+        import numpy as np
+
+        def print_coeffs():
+            for i in range(len(self.alphas)):
+                print(f"alpha: {self.alphas[i]}\t\tbeta: {self.betas[i]}")
+            print("")
+
+        print_coeffs()
+        print("Number of coefficients before symmetric reduction: "+str(len(self.alphas)))
+
+        for i in range(len(self.alphas)):
+            if i >= len(self.alphas):
+                break
+
+            # Search for corresponding conjugate one
+            a1 = self.alphas[i]
+            for j in range(i+1, len(self.alphas)):
+                if j >= len(self.alphas):
+                    break
+
+                a2 = self.alphas[j]
+                if np.isclose(np.real(a1), np.real(a2)) and np.isclose(np.imag(a1), -np.imag(a2)):
+                    del self.alphas[j]
+                    self.betas[i] *= 2.0
+
+        print_coeffs()
+        print("Number of coefficients after symmetric reduction: "+str(len(self.alphas)))
         
         self.symmetric_reduction_applied = True
         if not '_symred' in self.unique_id_string:
                 self.unique_id_string += '_symred'
         
-        return
+        print("*"*80)
+        print("TODO: Not yet tested!")
+        print("*"*80)
 
 
     def beta_filter(

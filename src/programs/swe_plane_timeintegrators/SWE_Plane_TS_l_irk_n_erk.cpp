@@ -17,13 +17,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Plane_TS_l_irk_n_erk::euler_timestep_update_nonlinear(
-		const PlaneData &i_h,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_h,	///< prognostic variables
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t	///< time updates
+		PlaneData_Spectral &o_h_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t	///< time updates
 )
 {
 	/*
@@ -46,9 +46,9 @@ void SWE_Plane_TS_l_irk_n_erk::euler_timestep_update_nonlinear(
 
 
 void SWE_Plane_TS_l_irk_n_erk::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -57,9 +57,9 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 	if (i_dt <= 0)
 		SWEETError("SWE_Plane_TS_l_irk_n_erk: Only constant time step size allowed");
 
-	PlaneData h_linear_t1 = io_h;
-	PlaneData u_linear_t1 = io_u;
-	PlaneData v_linear_t1 = io_v;
+	PlaneData_Spectral h_linear_t1 = io_h;
+	PlaneData_Spectral u_linear_t1 = io_u;
+	PlaneData_Spectral v_linear_t1 = io_v;
 
 	ts_l_irk.run_timestep(
 			h_linear_t1, u_linear_t1, v_linear_t1,
@@ -68,9 +68,9 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 		);
 
 	// compute non-linear tendencies at half time step
-	PlaneData h_dt_nonlinear(op.planeDataConfig);
-	PlaneData u_dt_nonlinear(op.planeDataConfig);
-	PlaneData v_dt_nonlinear(op.planeDataConfig);
+	PlaneData_Spectral h_dt_nonlinear(op.planeDataConfig);
+	PlaneData_Spectral u_dt_nonlinear(op.planeDataConfig);
+	PlaneData_Spectral v_dt_nonlinear(op.planeDataConfig);
 
 	// standard time stepping
 	euler_timestep_update_nonlinear(
@@ -120,8 +120,10 @@ SWE_Plane_TS_l_irk_n_erk::SWE_Plane_TS_l_irk_n_erk(
 		op(i_op),
 		ts_l_irk(simVars, op)
 {
+/////#if !SWEET_PARAREAL
 	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, false);
 	ts_l_irk.setup(simVars.disc.timestepping_order);
+/////#endif
 }
 
 

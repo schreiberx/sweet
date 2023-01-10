@@ -136,7 +136,7 @@ class JobGeneration(InfoError):
 
 
 
-    def setup_parallelization(self, parallelization_dim_list):
+    def setup_parallelization(self, parallelization_dim_list, **kwargs):
         """
         Setup the parallelization configuration
 
@@ -146,7 +146,7 @@ class JobGeneration(InfoError):
             list with JobParallelizationDimOptions with parallelization
             print_information along each dimension
         """
-        self.parallelization.setup(parallelization_dim_list, self.platform_resources)
+        self.parallelization.setup(parallelization_dim_list, self.platform_resources, **kwargs)
 
 
 

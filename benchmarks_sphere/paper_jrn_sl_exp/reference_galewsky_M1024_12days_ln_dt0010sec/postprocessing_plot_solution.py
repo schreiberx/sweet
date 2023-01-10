@@ -5,7 +5,7 @@ import numpy as np
 
 from mule.postprocessing.JobData import JobData
 from mule_local.postprocessing.SphereDataSpectral import SphereDataSpectral
-import mule_local.postprocessing.shtnsfiledata as shtnsfiledata
+import mule_local.postprocessing.SphereDataOperators as SphereDataOperators
 from postprocessing_swe import postprocessing_swe
 
 debug_active = False

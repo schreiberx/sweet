@@ -19,6 +19,8 @@ jg.runtime.benchmark_name = "gaussian_bump_advection"
 jg.runtime.max_simulation_time = 20
 jg.runtime.verbosity = 5
 
+jg.runtime.reuse_plans = "save"
+
 params_domain_size_scales = [1, 2]
 params_domain_size_scales = [2]
 

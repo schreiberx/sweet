@@ -20,8 +20,20 @@ echo "" >> Makefile.local
 # Use SWEET's default Fortran compiler
 echo "FC = ${MULE_MPIF90}" >> Makefile.local
 
-# Add special flag for compilation with newer compilers
-echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
+
+#
+# Check if gfortran supports -fallow-argument-mismatch and enable it per default
+#
+
+TMPDIR="$(mktemp -d)"
+echo "" > "$TMPDIR/dummy.f90"
+$MULE_MPIF90 -c -fallow-argument-mismatch "$TMPDIR/dummy.f90" -o "$TMPDIR/dummy.o" 2> /dev/null
+if [[ $? -eq 0 ]]; then
+	echo "$MULE_MPIF90 seems to support -fallow-argument-mismatch, using this per default"
+	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
+fi
+rm -rf "${TMPDIR}"
+
 
 # Disable LTO since this doesn't work on all platforms
 echo "LDFLAGS += -fno-lto" >> Makefile.local
@@ -38,8 +50,15 @@ echo "FFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
 # Add LDFLAGS for FFTW
 echo "LDFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
 
-# Add DEBUG flag
-echo "DEBUG = TRUE" >> Makefile.local
+# Set to true to get Debug version
+if true; then
+	TMPFILE=$(mktemp)
+	cp Makefile.local "${TMPFILE}"
+	echo "DEBUG = TRUE" > Makefile.local
+	echo "" >> Makefile.local
+	cat "${TMPFILE}" >> Makefile.local
+fi
+
 
 echo_info "Executing 'make clean'..."
 config_exec make clean

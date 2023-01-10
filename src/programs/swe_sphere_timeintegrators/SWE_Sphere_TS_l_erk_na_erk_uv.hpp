@@ -21,7 +21,8 @@
 class SWE_Sphere_TS_l_erk_na_erk_uv	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+					);
 	std::string string_id();
 
 

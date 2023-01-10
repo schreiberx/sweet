@@ -5,11 +5,12 @@ source ./install_helpers.sh ""
 PKG_NAME="SHTNS"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns.a"
 
-PKG_URL_SRC="shtns-3.4.6.tar.gz"
+PKG_URL_SRC="shtns-3.5.2.tar.gz"
 
 config_setup
 
 config_package $@
+
 
 if [ "#$TRAVIS" != "#" ]; then
 	echo_info "Detected Travis"
@@ -17,8 +18,11 @@ if [ "#$TRAVIS" != "#" ]; then
 	CONFIGURE_EXTRA_FLAGS="--disable-mkl --disable-knl --disable-cuda --disable-simd"
 fi
 
-#CONFIGURE_EXTRA_FLAGS+=" --enable-ishioka"
-#CONFIGURE_EXTRA_FLAGS+=" --disable-ishioka"
+
+# Also use special kernel compiler if $CC env variable is set
+if [[ ! -z "$CC" ]]; then
+	CONFIGURE_EXTRA_FLAGS+=" --enable-kernel-compiler=$CC"
+fi
 
 
 echo_info_hline

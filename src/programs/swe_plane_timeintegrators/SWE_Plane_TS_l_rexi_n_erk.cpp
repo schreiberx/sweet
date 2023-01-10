@@ -20,13 +20,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
-		const PlaneData &i_h,	///< prognostic variables
-		const PlaneData &i_u,	///< prognostic variables
-		const PlaneData &i_v,	///< prognostic variables
+		const PlaneData_Spectral &i_h,	///< prognostic variables
+		const PlaneData_Spectral &i_u,	///< prognostic variables
+		const PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData &o_h_t,	///< time updates
-		PlaneData &o_u_t,	///< time updates
-		PlaneData &o_v_t,	///< time updates
+		PlaneData_Spectral &o_h_t,	///< time updates
+		PlaneData_Spectral &o_u_t,	///< time updates
+		PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_timestamp
 )
@@ -50,9 +50,9 @@ void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
 
 
 void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
-		PlaneData &io_h,	///< prognostic variables
-		PlaneData &io_u,	///< prognostic variables
-		PlaneData &io_v,	///< prognostic variables
+		PlaneData_Spectral &io_h,	///< prognostic variables
+		PlaneData_Spectral &io_u,	///< prognostic variables
+		PlaneData_Spectral &io_v,	///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp

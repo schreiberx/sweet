@@ -7,8 +7,12 @@
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
 
-bool SWE_Sphere_TS_l_erk_n_erk::implements_timestepping_method(const std::string &i_timestepping_method)
+bool SWE_Sphere_TS_l_erk_n_erk::implements_timestepping_method(const std::string &i_timestepping_method
+									)
 {
+	timestepping_method = i_timestepping_method;
+	timestepping_order = simVars.disc.timestepping_order;
+	timestepping_order2 = simVars.disc.timestepping_order2;
 	return i_timestepping_method == "l_erk_n_erk";
 }
 
@@ -279,7 +283,7 @@ void SWE_Sphere_TS_l_erk_n_erk::setup(
 
 void SWE_Sphere_TS_l_erk_n_erk::setup_auto()
 {
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2);
+	setup(timestepping_order, timestepping_order2);
 }
 
 

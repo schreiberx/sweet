@@ -10,7 +10,6 @@ import multiprocessing
 
 
 
-
 # Underscore defines symbols to be private
 _job_id = None
 
@@ -103,10 +102,19 @@ def jobscript_get_header(jg : JobGeneration):
     string
         multiline text for scripts
     """
+
+    p = jg.parallelization
+
     content = """#! /bin/bash
 
 """+p_gen_script_info(jg)+"""
 
+"""
+
+    if jg.compile.threading != 'off':
+        content += """
+export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+export OMP_DISPLAY_ENV=VERBOSE
 """
 
     return content
@@ -139,12 +147,23 @@ def jobscript_get_exec_command(jg : JobGeneration):
     string
         multiline text for scripts
     """
+
+    p = jg.parallelization
+
+    mpiprefix = ""
+    if not p.mpiexec_disabled:
+        if jg.compile.sweet_mpi == 'enable' and p.num_ranks > 1:
+            mpiprefix += "mpirun -n "+str(p.num_ranks)
+            mpiprefix += " "
+
+
+
     content = """
 
 """+p_gen_script_info(jg)+"""
 
 # mpiexec ... would be here without a line break
-EXEC=\""""+jg.get_program_exec()+"""\"
+EXEC=\""""+mpiprefix+jg.get_program_exec()+"""\"
 echo \"$EXEC\"
 $EXEC || exit 1
 

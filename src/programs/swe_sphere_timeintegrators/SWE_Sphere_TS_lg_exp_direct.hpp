@@ -44,7 +44,10 @@
 class SWE_Sphere_TS_lg_exp_direct	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(
+			const std::string &i_timestepping_method
+	);
+
 	std::string string_id();
 	void setup_auto();
 
@@ -95,6 +98,14 @@ public:
 			const std::string &i_function_name
 	);
 
+	void run_timestep_lg_exp(
+		SphereData_Spectral &io_prog_phi,
+		SphereData_Spectral &io_prog_vrt,
+		SphereData_Spectral &io_prog_div,
+
+		double i_dt,
+		double i_simulation_timestamp
+	);
 
 	void run_timestep(
 			SphereData_Spectral &io_phi,	///< prognostic variables

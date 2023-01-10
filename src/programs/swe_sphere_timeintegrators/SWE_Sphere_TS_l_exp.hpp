@@ -23,8 +23,8 @@
 #include <rexi/EXPFunctions.hpp>
 #include "helpers/SWERexiTerm_SPH.hpp"
 #include "SWE_Sphere_TS_interface.hpp"
-#include "SWE_Sphere_TS_lg_exp_direct.hpp"
-#include "SWE_Sphere_TS_lg_exp_lc_exp.hpp"
+#include "SWE_Sphere_TS_l_exp_direct_special.hpp"
+#include "SWE_Sphere_TS_lg_exp_lc_taylor.hpp"
 
 
 #ifndef SWEET_BENCHMARK_TIMINGS
@@ -50,7 +50,9 @@
 class SWE_Sphere_TS_l_exp	: public SWE_Sphere_TS_interface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool implements_timestepping_method(
+				const std::string &i_timestepping_method
+		);
 	std::string string_id();
 	void setup_auto();
 
@@ -80,7 +82,7 @@ public:
 
 	const SphereData_Config *sphereDataConfig;
 
-	/// This class is only setp and used in case of added modes
+	/// This class is only setup and used in case of added modes
 	SphereData_Config sphereDataConfigInstance;
 
 	EXPFunctions<double> expFunctions;
@@ -167,9 +169,9 @@ private:
 	int num_mpi_ranks;
 #endif
 
-	SWE_Sphere_TS_lg_exp_direct *timestepping_method_lg_exp_direct;
+	SWE_Sphere_TS_l_exp_direct_special *timestepping_method_l_exp_direct_special;
 
-	SWE_Sphere_TS_lg_exp_lc_exp *timestepping_method_lg_exp_lc_exp;
+	SWE_Sphere_TS_lg_exp_lc_taylor *timestepping_method_lg_exp_lc_exp;
 
 
 private:
@@ -201,7 +203,8 @@ public:
 			const std::string &i_function_name,
 			double i_timestep_size,
 			bool i_use_f_sphere,
-			bool i_no_coriolis
+			bool i_no_coriolis,
+			int i_timestepping_order
 	);
 
 

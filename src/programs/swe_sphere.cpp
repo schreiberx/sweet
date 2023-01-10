@@ -16,9 +16,9 @@
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 	#include <sweet/plane/PlaneDataConfig.hpp>
-	#include <sweet/plane/PlaneData.hpp>
-	#include <sweet/Convert_SphereDataSpectral_To_PlaneData.hpp>
-	#include <sweet/Convert_SphereDataPhysical_To_PlaneData.hpp>
+	#include <sweet/plane/PlaneData_Physical.hpp>
+	#include <sweet/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
+	#include <sweet/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 #endif
 
 #include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
@@ -39,6 +39,13 @@
 #include <sweet/SimulationBenchmarkTiming.hpp>
 #include <sweet/sphere/SphereData_DebugContainer.hpp>
 
+#if SWEET_PARAREAL
+	#include <parareal/Parareal.hpp>
+#endif
+
+#if SWEET_XBRAID
+	#include <xbraid/XBraid_sweet_lib.hpp>
+#endif
 
 SimulationVariables simVars;
 
@@ -69,6 +76,11 @@ public:
 
 	SWE_Sphere_TimeSteppers timeSteppers;
 
+#if SWEET_PARAREAL
+	// Implementation of different time steppers
+	SWE_Sphere_TimeSteppers timeSteppersCoarse;
+#endif
+
 
 	// Diagnostics measures
 	int last_timestep_nr_update_diagnostics = -1;
@@ -80,7 +92,7 @@ public:
 	Stopwatch stopwatch;
 
 #if SWEET_GUI
-	PlaneData viz_plane_data;
+	PlaneData_Physical viz_plane_data;
 #endif
 
 	int render_primitive_id = 1;
@@ -112,11 +124,15 @@ public:
 				simVars,
 				simVars.misc.verbosity
 		)
+
 	{
 #if SWEET_MPI
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 #endif
+
+
 		reset();
+
 	}
 
 
@@ -184,7 +200,8 @@ public:
 		/*
 		 * SETUP time steppers
 		 */
-		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
+		timeSteppers.setup(simVars.disc.timestepping_method,
+				op, simVars);
 
 		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;
 
@@ -206,6 +223,13 @@ public:
 		{
 			simVars.outputConfig();
 		}
+
+
+		/*
+		 * Output data for the first time step as well if output of datafiels is requested
+		 */
+		if (simVars.iodata.output_each_sim_seconds >= 0)
+			timestep_do_output();
 
 		stopwatch.start();
 	}
@@ -299,7 +323,6 @@ public:
 		if (simVars.iodata.output_file_name.length() == 0)
 			return;
 
-
 		std::cout << "Writing output files at simulation time: " << simVars.timecontrol.current_simulation_time << " secs" << std::endl;
 
 		if (simVars.iodata.output_file_mode == "csv")
@@ -316,6 +339,13 @@ public:
 			output_filename = write_file_csv(prog_phi_pert, "prog_phi_pert");
 			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << " (min: " << prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
+
+			SphereData_Physical phi_phys = h.toPhys() * simVars.sim.gravitation;
+			SphereData_Spectral phi(sphereDataConfig);
+			phi.loadSphereDataPhysical(phi_phys);
+			output_filename = write_file_csv(phi, "prog_phi");
+			output_reference_filenames = output_filename;
+			std::cout << " + " << output_filename << " (min: " << phi_phys.physical_reduce_min() << ", max: " << phi_phys.physical_reduce_max() << ")" << std::endl;
 
 			SphereData_Physical u(sphereDataConfig);
 			SphereData_Physical v(sphereDataConfig);
@@ -554,7 +584,6 @@ public:
 		if (simVars.misc.verbosity > 0)
 			std::cout << "." << std::flush;
 
-		// output each time step
 		if (simVars.iodata.output_each_sim_seconds < 0)
 			return false;
 
@@ -641,6 +670,17 @@ public:
 			);
 
 
+
+		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
+
+		if (simVars.sim.viscosity != 0 && simVars.misc.use_nonlinear_only_visc == 0)
+		{
+			prog_vrt = op.implicit_diffusion(prog_vrt, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
+			prog_div = op.implicit_diffusion(prog_div, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
+			prog_phi_pert = op.implicit_diffusion(prog_phi_pert, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
+		}
+
+
 		// advance time step and provide information to parameters
 		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
 		simVars.timecontrol.current_timestep_nr++;
@@ -685,7 +725,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData **o_dataArray,
+			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -705,9 +745,9 @@ public:
 			{
 				SphereData_DebugContainer::DataContainer &d = SphereData_DebugContainer().container_data()[n];
 				if (d.is_spectral)
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(d.data_spectral, planeDataConfig);
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(d.data_spectral, planeDataConfig);
 				else
-					viz_plane_data = Convert_SphereDataPhysical_To_PlaneData::physical_convert(d.data_physical, planeDataConfig);
+					viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(d.data_physical, planeDataConfig);
 
 				*o_dataArray = &viz_plane_data;
 				*o_aspect_ratio = 0.5;
@@ -722,19 +762,19 @@ public:
 			default:
 
 			case 0:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_phi_pert), planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(prog_phi_pert), planeDataConfig);
 				break;
 
 			case 1:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_vrt), planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(prog_vrt), planeDataConfig);
 				break;
 
 			case 2:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(SphereData_Spectral(prog_div), planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(prog_div), planeDataConfig);
 				break;
 
 			case 3:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(simVars.sim.h0 + SphereData_Spectral(prog_phi_pert)/simVars.sim.gravitation, planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(simVars.sim.h0 + SphereData_Spectral(prog_phi_pert)/simVars.sim.gravitation, planeDataConfig);
 				break;
 
 			case 4:
@@ -744,7 +784,7 @@ public:
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
 				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(u, planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(u, planeDataConfig);
 				break;
 			}
 
@@ -755,7 +795,7 @@ public:
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
 				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(v, planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(v, planeDataConfig);
 				break;
 			}
 
@@ -773,23 +813,23 @@ public:
 				switch (id)
 				{
 				case 6:
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_phi_pert - anal_solution_phi_pert, planeDataConfig);
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(prog_phi_pert - anal_solution_phi_pert, planeDataConfig);
 					break;
 
 				case 7:
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_vrt - anal_solution_vrt, planeDataConfig);
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(prog_vrt - anal_solution_vrt, planeDataConfig);
 					break;
 
 				case 8:
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneData::physical_convert(prog_div - anal_solution_div, planeDataConfig);
+					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(prog_div - anal_solution_div, planeDataConfig);
 					break;
 				}
 			}
 		}
 
 
-		double viz_min = viz_plane_data.reduce_min();
-		double viz_max = viz_plane_data.reduce_max();
+		double viz_min = viz_plane_data.physical_reduce_min();
+		double viz_max = viz_plane_data.physical_reduce_max();
 
 		viz_max = std::max(std::abs(viz_max), std::abs(viz_min));
 		viz_min = -viz_max;
@@ -899,8 +939,8 @@ public:
 #endif
 				simVars.misc.vis_id,
 				description.c_str(),
-				viz_plane_data.reduce_max(),
-				viz_plane_data.reduce_min(),
+				viz_plane_data.physical_reduce_max(),
+				viz_plane_data.physical_reduce_min(),
 
 				simVars.timecontrol.current_simulation_time,
 				simVars.timecontrol.current_simulation_time/(60.0*60.0),
@@ -948,12 +988,14 @@ public:
 		}
 	}
 #endif
-};
 
+
+};
 
 
 int main_real(int i_argc, char *i_argv[])
 {
+
 	// Time counter
 	SimulationBenchmarkTimings::getInstance().main.start();
 
@@ -990,7 +1032,12 @@ int main_real(int i_argc, char *i_argv[])
 
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	{
+#if SWEET_PARAREAL
+		simVars.parareal.printOptions();
+#endif
 		return -1;
+	}
 
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
@@ -1022,7 +1069,7 @@ int main_real(int i_argc, char *i_argv[])
 		std::cout << " + setup finished" << std::endl;
 
 #if SWEET_MPI
-	std::cout << "Helo from MPI rank: " << mpi_rank << std::endl;
+	std::cout << "Hello from MPI rank: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
 	if (mpi_rank > 0)
@@ -1031,7 +1078,9 @@ int main_real(int i_argc, char *i_argv[])
 		 * Deactivate all output for ranks larger than the current one
 		 */
 		simVars.misc.verbosity = 0;
+	#if !SWEET_XBRAID
 		simVars.iodata.output_each_sim_seconds = -1;
+	#endif
 	}
 #endif
 
@@ -1042,6 +1091,192 @@ int main_real(int i_argc, char *i_argv[])
 		{
 			std::cout << "SPH config string: " << sphereDataConfigInstance.getConfigInformationString() << std::endl;
 		}
+
+#if SWEET_PARAREAL
+		if (simVars.parareal.enabled)
+		{
+
+			simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
+
+			//SphereOperators op(sphereDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
+			SphereOperators_SphereData op_nodealiasing(sphereDataConfig_nodealiasing, &(simVars.sim));
+
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<SphereData_Config*> sphereDataConfigs;
+			std::vector<SphereOperators_SphereData*> ops;
+			std::vector<SphereOperators_SphereData*> ops_nodealiasing;
+
+			// fine
+			sphereDataConfigs.push_back(sphereDataConfig);
+			ops.push_back(&op);
+			ops_nodealiasing.push_back(&op_nodealiasing);
+
+			// coarse
+			if (simVars.parareal.spatial_coarsening)
+			{
+				///for (int j = 0; j < 2; j++)
+				///	assert(simVars.disc.space_res_physical[j] == -1);
+				int N_physical[2] = {-1, -1};
+				int N_spectral[2];
+
+				double frac;
+				if ( simVars.parareal.coarse_timestep_size > 0)
+					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				else
+					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
+				for (int j = 0; j < 2; j++)
+					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+
+				sphereDataConfigs.push_back(new SphereData_Config);
+				sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+
+				ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
+				// @TODO: nodealiasing case
+				ops_nodealiasing.push_back(ops.back());
+			}
+			else
+			{
+				sphereDataConfigs.push_back(sphereDataConfig);
+				ops.push_back(&op);
+				ops_nodealiasing.push_back(&op_nodealiasing);
+			}
+
+
+			SWE_Sphere_TimeSteppers* timeSteppersFine = new SWE_Sphere_TimeSteppers;
+			SWE_Sphere_TimeSteppers* timeSteppersCoarse = new SWE_Sphere_TimeSteppers;
+
+			/*
+			 * Allocate parareal controller and provide class
+			 * which implement the parareal features
+			 */
+			Parareal_Controller<SWE_Sphere_TimeSteppers, 3> parareal_Controller(	&simVars,
+												sphereDataConfigs,
+												ops,
+												ops_nodealiasing,
+												timeSteppersFine,
+												timeSteppersCoarse);
+
+			// setup controller. This initializes several simulation instances
+			parareal_Controller.setup();
+
+			// execute the simulation
+			parareal_Controller.run();
+
+			delete timeSteppersFine;
+			delete timeSteppersCoarse;
+
+			if (simVars.parareal.spatial_coarsening)
+			{
+				delete sphereDataConfigs[1];
+				delete ops[1];
+				sphereDataConfigs[1] = nullptr;
+				ops[1] = nullptr;
+			}
+
+		}
+		else
+#endif
+
+#if SWEET_XBRAID
+
+		if (simVars.xbraid.xbraid_enabled)
+		{
+
+			simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
+
+			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
+
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<SphereData_Config*> sphereDataConfigs;
+			std::vector<SphereOperators_SphereData*> ops;
+			for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			{
+				if (simVars.xbraid.xbraid_spatial_coarsening)
+				{
+					int N_physical[2] = {-1, -1};
+					int N_spectral[2];
+					for (int j = 0; j < 2; j++)
+					{
+						// proportional to time step
+						if (simVars.xbraid.xbraid_spatial_coarsening == 1)
+							N_spectral[j] = std::max(4,int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
+						else if (simVars.xbraid.xbraid_spatial_coarsening > 1)
+						{
+							if (i == 0)
+								N_spectral[j] = std::max(4, simVars.disc.space_res_spectral[j]);
+							else
+								N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+						}
+						else
+							SWEETError("Invalid parameter xbraid_spatial_coarsening");
+					}
+
+					sphereDataConfigs.push_back(new SphereData_Config);
+					sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+
+					ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
+
+					std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
+				}
+				else
+				{
+					sphereDataConfigs.push_back(sphereDataConfig);
+					ops.push_back(&op);
+				}
+			}
+
+
+
+
+
+
+			MPI_Comm comm = MPI_COMM_WORLD;
+			MPI_Comm comm_x, comm_t;
+
+			//////braid_Core core;
+			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
+			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+                        if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+				nt++;
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfigs, ops);
+
+
+			if( simVars.xbraid.xbraid_run_wrapper_tests)
+			{
+				app.setup();
+
+				BraidUtil braid_util;
+				int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
+				if (test == 0)
+					SWEETError("Tests failed!");
+				else
+					std::cout << "Tests successful!" << std::endl;
+
+			}
+			else
+			{
+				BraidCore core(MPI_COMM_WORLD, &app);
+				app.setup(core);
+				// Run Simulation
+				core.Drive();
+			}
+
+			if (simVars.xbraid.xbraid_spatial_coarsening)
+				for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+				{
+					delete sphereDataConfigs[i];
+					delete ops[i];
+					sphereDataConfigs[i] = nullptr;
+					ops[i] = nullptr;
+				}
+
+		}
+		else
+#endif
+
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
@@ -1063,7 +1298,6 @@ int main_real(int i_argc, char *i_argv[])
 			{
 				// Do first output before starting timer
 				simulationSWE->timestep_check_output();
-
 #if SWEET_MPI
 				// Start counting time
 				if (mpi_rank == 0)
@@ -1169,7 +1403,6 @@ int main_real(int i_argc, char *i_argv[])
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << std::endl;
 	}
-
 
 #if SWEET_MPI
 	MPI_Finalize();

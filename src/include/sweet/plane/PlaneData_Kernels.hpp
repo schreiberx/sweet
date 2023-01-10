@@ -12,11 +12,11 @@
 class PlaneData_Kernels
 {
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+//#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	int kernel_size = -1;
 	double *kernel_data = nullptr;
 	int kernel_id = -1;
-#endif
+//#endif
 
 
 
@@ -31,7 +31,7 @@ public:
 			double *o_physical_data
 	)
 	{
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+//#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 
 		kernel_size = S;
 		kernel_data = MemBlockAlloc::alloc<double>(sizeof(double)*S*S);
@@ -62,7 +62,7 @@ public:
 			kernel_id = -1;
 		}
 
-#else
+//#else
 
 #define KERNEL_physical_set(j, i, value)		\
 	o_physical_data[(j)*planeDataConfig->physical_data_size[0]+(i)] = (value);
@@ -158,7 +158,7 @@ public:
 
 #undef KERNEL_physical_set
 
-#endif
+//#endif
 	}
 
 public:
@@ -189,7 +189,7 @@ public:
 	}
 
 
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+///#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 
 public:
 	void kernel_apply(
@@ -421,16 +421,16 @@ public:
 			std::cerr << "Not yet implemented" << std::endl;
 		}
 	}
-#endif
+///#endif
 
 
 
 	~PlaneData_Kernels()
 	{
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+//#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 		if (kernel_data != nullptr)
 			MemBlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
-#endif
+//#endif
 	}
 };
 
