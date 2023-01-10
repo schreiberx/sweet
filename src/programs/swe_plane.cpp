@@ -3,7 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_benchmarks
- * //////MU//LE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
+ * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
 

@@ -25,23 +25,25 @@ config_package $@
 mkdir -p build
 cd build
 
-# Project 'flang' is not yet included since 'flang' is not supported by MPICH, yet
-config_exec cmake \
-	-DLLVM_ENABLE_PROJECTS="clang;openmp"	\
-	-DCMAKE_BUILD_TYPE=Release \
-	-DLLVM_TARGETS_TO_BUILD=Native	\
-	-DLLVM_BUILD_TOOLS=OFF \
-	-DLLVM_BUILD_UTILS=OFF  \
-	-G "Unix Makefiles" \
-	-DCMAKE_INSTALL_PREFIX:PATH=$SWEET_LOCAL_SOFTWARE_DST_DIR \
-	../llvm
+if true; then
+	# Project 'flang' is not yet included since 'flang' is not supported by MPICH, yet
+	config_exec cmake \
+		-DLLVM_ENABLE_PROJECTS="clang;openmp"	\
+		-DCMAKE_BUILD_TYPE=Release \
+		-DLLVM_TARGETS_TO_BUILD=Native	\
+		-DLLVM_BUILD_TOOLS=OFF \
+		-DLLVM_BUILD_UTILS=OFF  \
+		-G "Unix Makefiles" \
+		-DCMAKE_INSTALL_PREFIX:PATH=$SWEET_LOCAL_SOFTWARE_DST_DIR \
+		../llvm
 
-config_make_default
-config_exec make install
+	config_make_default
+	config_exec make install
+fi
 
 echo_info "Creating symlink for 'clang++-${VERSION}'"
 
-ln -s clang-${VERSION} "$MULE_SOFTWARE_ROOT/local_software/local/bin/clang++-${VERSION}" || exit 1
+ln -sf clang-${VERSION} "$MULE_SOFTWARE_ROOT/local_software/local/bin/clang++-${VERSION}" || exit 1
 
 # test suits
 #config_exec make check-clang check-flang
@@ -70,11 +72,13 @@ if true; then
 	echo_info "Assuming compiler '${LLVM_CXX_COMPILER}' with version '${LLVM_CXX_COMPILER_VERSION}'"
 
 	if [[ $LLVM_CXX_COMPILER == g++* ]]; then
-		echo_info "quadmath.h workaround which is not shipped with LLVM."
-		echo_info "We simply copy it to our default include path."
-
 		if [[ ! -z "$LLVM_CXX_COMPILER_VERSION" ]]; then
-			cp "/usr/lib/gcc/x86_64-linux-gnu/12/include/quadmath.h" "local/include/" || exit 1
+			echo_info "quadmath.h workaround which is not shipped with LLVM."
+			echo_info "We simply copy it to our default include path."
+
+			cp "/usr/lib/gcc/x86_64-linux-gnu/12/include/quadmath.h" "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" || exit 1
+		else
+			echo_error_exit "Unable to determine $LLVM_CXX_COMPILER compiler version"
 		fi
 	fi
 fi
