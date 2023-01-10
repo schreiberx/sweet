@@ -38,7 +38,6 @@ def CompileSWEPlane(p):
     p.compile.plane_spectral_dealiasing = 'disable'
     p.compile.sphere_spectral_space = 'disable'
     p.compile.sphere_spectral_dealiasing = 'disable'
-    p.compile.compiler = 'gcc'
     p.compile.threading = 'omp'
     p.compile.quadmath = 'disable'
     return p

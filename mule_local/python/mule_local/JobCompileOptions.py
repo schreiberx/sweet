@@ -111,7 +111,6 @@ class JobCompileOptions(InfoError):
         # GUI
         self.gui = 'disable'
 
-        #self.quadmath = 'enable'
         self.quadmath = 'disable'
 
         self.init_phase = False
