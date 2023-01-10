@@ -40,6 +40,7 @@ config_make_default
 config_exec make install
 
 echo_info "Creating symlink for 'clang++-${VERSION}'"
+
 ln -s clang-${VERSION} "$MULE_SOFTWARE_ROOT/local_software/local/bin/clang++-${VERSION}" || exit 1
 
 # test suits
@@ -47,6 +48,36 @@ ln -s clang-${VERSION} "$MULE_SOFTWARE_ROOT/local_software/local/bin/clang++-${V
 
 # Skip tests for debugging
 #config_exec make check-clang
+
+
+if true; then
+	#
+	# Special hack for quadmath.h
+	# We'll simply copy it over from GCC
+	#
+
+	# First, determine the GCC compiler (assuming we compile it with gcc)
+	LLVM_CXX_COMPILER=$CXX
+	if [[ -z "$LLVM_CXX_COMPILER" ]]; then
+		LLVM_CXX_COMPILER=g++
+	fi
+	LLVM_CXX_COMPILER_VERSION=$($LLVM_CXX_COMPILER -dumpfullversion | sed "s/\..*//")
+
+	if [[ -z "$LLVM_CXX_COMPILER_VERSION" ]]; then
+		echo_error_exit "Failed to determine GCC version"
+	fi
+
+	echo_info "Assuming compiler '${LLVM_CXX_COMPILER}' with version '${LLVM_CXX_COMPILER_VERSION}'"
+
+	if [[ $LLVM_CXX_COMPILER == g++* ]]; then
+		echo_info "quadmath.h workaround which is not shipped with LLVM."
+		echo_info "We simply copy it to our default include path."
+
+		if [[ ! -z "$LLVM_CXX_COMPILER_VERSION" ]]; then
+			cp "/usr/lib/gcc/x86_64-linux-gnu/12/include/quadmath.h" "local/include/" || exit 1
+		fi
+	fi
+fi
 
 
 config_success

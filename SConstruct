@@ -523,8 +523,10 @@ if p.threading == 'omp':
     env.Append(LINKFLAGS=['-fopenmp'])
 
     env.Append(CXXFLAGS=['-DSWEET_THREADING_SPACE=1'])
-else:
+elif p.threading == 'off':
     env.Append(CXXFLAGS=['-DSWEET_THREADING_SPACE=0'])
+else:
+    raise Exception("Internal error")
 
 
 
@@ -668,7 +670,7 @@ build_dir += 'scons_build_'+exec_name+'/'
 
 if p.libpfasst == 'enable':
     #env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
-    env.Append(F90FLAGS = ['-Ilocal_software/local/include'])
+    env.Append(F90FLAGS = ['-Ilocal_software/local/include/libpfasst'])
 #
 # USE build directory for Fortran module output
 #

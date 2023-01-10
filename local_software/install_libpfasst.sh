@@ -44,11 +44,14 @@ echo "USE_FFTW = TRUE" >> Makefile.local
 # Activate Verbose make
 echo "MKVERBOSE = TRUE" >> Makefile.local
 
+INCDIR="$SWEET_LOCAL_SOFTWARE_DST_DIR/include/libpfasst/"
+mkdir -p "${INCDIR}"
+
 # Add SWEET's include directory
-echo "FFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
+echo "FFLAGS += -I$INCDIR" >> Makefile.local
 
 # Add LDFLAGS for FFTW
-echo "LDFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
+echo "LDFLAGS += -I$INCDIR" >> Makefile.local
 
 
 echo_info "Executing 'make clean'..."
@@ -59,9 +62,8 @@ config_exec make
 echo_info "Installing..."
 
 # Copy modules
-mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-echo_info cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" || echo_error_exit "Failed to install .mod files"
+echo_info cp -v -f ./include/*mod "$INCDIR"
+cp -v -f ./include/*mod "$INCDIR" || echo_error_exit "Failed to install .mod files"
 
 # Copy static library
 mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"
