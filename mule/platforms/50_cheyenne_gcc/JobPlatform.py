@@ -54,7 +54,7 @@ def get_platform_id():
     	unique ID of platform
     """
 
-    return "cheyenne_gnu"
+    return "cheyenne_gcc"
 
 
 
@@ -252,7 +252,7 @@ def jobscript_get_exec_command(jg : JobGeneration):
     		mpiexec += " omplace "
     		#mpiexec += " -nt "+str(p.num_threads_per_rank)+" "
     		mpiexec += " -nt "+str(p.num_cores_per_rank)+" "
-    		# Don't know if intel mode really works with gnu
+    		# Don't know if intel mode really works with gcc
     		mpiexec += " -tm intel "
     		mpiexec += " -vv"
     		if mpiexec[-1] != ' ':

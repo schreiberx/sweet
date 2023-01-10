@@ -22,7 +22,7 @@ for i in $TESTS; do
 
 	rm -rf job_* || { echo "FAILED: $i"; exit 1; }
 	rm -f output_* || { echo "FAILED: $i"; exit 1; }
-	rm -f ./compile_platform_default_gnu.sh || { echo "FAILED: $i"; exit 1; }
+	rm -f ./compile_platform_default_gcc.sh || { echo "FAILED: $i"; exit 1; }
 
 	echo_success_hline
 	echo_success "Cleanup of test $i successful"

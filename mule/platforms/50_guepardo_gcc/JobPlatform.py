@@ -21,7 +21,7 @@ def _whoami(depth=1):
     Returns
     -------
     string
-        Return function name
+    	Return function name
     """
     return sys._getframe(depth).f_code.co_name
 
@@ -44,7 +44,7 @@ def get_platform_autodetect():
     Returns
     -------
     bool
-        True if current platform matches, otherwise False
+    	True if current platform matches, otherwise False
     """
 
     return JobPlatformAutodetect.autodetect()
@@ -58,10 +58,11 @@ def get_platform_id():
     Returns
     -------
     string
-        unique ID of platform
+    	unique ID of platform, should match the folder name of the platform description
     """
 
-    return "martinium_gnu"
+    return "guepardo_gcc"
+
 
 
 def get_platform_resources():
@@ -71,14 +72,7 @@ def get_platform_resources():
 
     h = JobPlatformResources()
 
-    #h.num_cores_per_node = multiprocessing.cpu_count()
-
-    # There are only 2 cores, not 4 !!!
-    #h.num_cores_per_node = 2
-
-    h.num_cores_per_node = multiprocessing.cpu_count()//2
-    h.num_cores_per_node = max(1, h.num_cores_per_node)
-
+    h.num_cores_per_node = multiprocessing.cpu_count()
     h.num_nodes = 1
 
     # TODO: So far, we only assume a single socket system as a fallback
@@ -106,13 +100,11 @@ def jobscript_get_header(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
-    p = jg.parallelization
-
     content = """#! /bin/bash
 
-export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+"""+p_gen_script_info(jg)+"""
 
 """
 
@@ -128,11 +120,36 @@ def jobscript_get_exec_prefix(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
+
+    p = jg.parallelization
+
     content = ""
 
     content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
+
+    if jg.compile.threading != 'off':
+    	content += """
+export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+export OMP_DISPLAY_ENV=VERBOSE
+"""
+
+    if p.core_oversubscription:
+    	raise Exception("Not supported with this script!")
+    else:
+    	if p.core_affinity != None:
+    		content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+    		if p.core_affinity == 'compact':
+    			content += "source $MULE_ROOT/platforms/bin/setup_omp_places.sh nooversubscription close\n"
+    			#content += "\nexport OMP_PROC_BIND=close\n"
+    		elif p.core_affinity == 'scatter':
+    			raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+    			content += "\nexport OMP_PROC_BIND=spread\n"
+    		else:
+    			raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+
+    		content += "\n"
 
     return content
 
@@ -145,12 +162,10 @@ def jobscript_get_exec_command(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
 
     p = jg.parallelization
-
-    limit_to_physical_cores = "$MULE_ROOT/platforms/bin/exec_on_physical_cores.sh "
 
     content = """
 
@@ -161,10 +176,13 @@ EXEC=\""""+jg.compile.getProgramPath()+"""\"
 PARAMS=\""""+jg.runtime.getRuntimeOptions()+"""\"
 echo \"${EXEC} ${PARAMS}\"
 
-# Ensure that program is only executed on physical cores!
-"""+limit_to_physical_cores+""" $EXEC $PARAMS || exit 1
-
 """
+    if jg.compile.sweet_mpi == 'enable':
+    	content += 'mpiexec -n '+str(p.num_ranks)+' '
+
+    content += "$EXEC $PARAMS || exit 1"
+    content += "\n"
+    content += "\n"
 
     return content
 
@@ -177,7 +195,7 @@ def jobscript_get_exec_suffix(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
 
     content = ""
@@ -194,7 +212,7 @@ def jobscript_get_footer(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
     content = """
 
@@ -218,7 +236,7 @@ def jobscript_get_compile_command(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text with compile command to generate executable
+    	multiline text with compile command to generate executable
     """
 
     content = """

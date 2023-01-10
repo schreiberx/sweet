@@ -61,7 +61,7 @@ def get_platform_id():
     	unique ID of platform
     """
 
-    return "pedrospenvy_gnu"
+    return "pedrospenvy_gcc"
 
 
 def get_platform_resources():

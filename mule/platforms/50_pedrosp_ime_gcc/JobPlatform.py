@@ -9,7 +9,6 @@ from . import JobPlatformAutodetect
 import multiprocessing
 
 
-
 # Underscore defines symbols to be private
 _job_id = None
 
@@ -22,7 +21,7 @@ def _whoami(depth=1):
     Returns
     -------
     string
-        Return function name
+    	Return function name
     """
     return sys._getframe(depth).f_code.co_name
 
@@ -45,7 +44,7 @@ def get_platform_autodetect():
     Returns
     -------
     bool
-        True if current platform matches, otherwise False
+    	True if current platform matches, otherwise False
     """
 
     return JobPlatformAutodetect.autodetect()
@@ -59,10 +58,10 @@ def get_platform_id():
     Returns
     -------
     string
-        unique ID of platform
+    	unique ID of platform
     """
 
-    return "default_gnu"
+    return "pedrosp_ime_gcc"
 
 
 def get_platform_resources():
@@ -100,21 +99,12 @@ def jobscript_get_header(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
-
-    p = jg.parallelization
-
     content = """#! /bin/bash
 
 """+p_gen_script_info(jg)+"""
 
-"""
-
-    if jg.compile.threading != 'off':
-        content += """
-export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
-export OMP_DISPLAY_ENV=VERBOSE
 """
 
     return content
@@ -129,10 +119,36 @@ def jobscript_get_exec_prefix(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
+
+    p = jg.parallelization
+
     content = ""
+
     content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
+
+    if jg.compile.threading != 'off':
+    	content += """
+export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
+export OMP_DISPLAY_ENV=VERBOSE
+"""
+
+    if p.core_oversubscription:
+    	raise Exception("Not supported with this script!")
+    else:
+    	if p.core_affinity != None:
+    		content += "\necho \"Affnity: "+str(p.core_affinity)+"\"\n"
+    		if p.core_affinity == 'compact':
+    			content += "source $MULE_ROOT/platforms/bin/setup_omp_places.sh nooversubscription close\n"
+    			#content += "\nexport OMP_PROC_BIND=close\n"
+    		elif p.core_affinity == 'scatter':
+    			raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+    			content += "\nexport OMP_PROC_BIND=spread\n"
+    		else:
+    			raise Exception("Affinity '"+str(p.core_affinity)+"' not supported")
+
+    		content += "\n"
 
     return content
 
@@ -145,29 +161,27 @@ def jobscript_get_exec_command(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
 
     p = jg.parallelization
-
-    mpiprefix = ""
-    if not p.mpiexec_disabled:
-        if jg.compile.sweet_mpi == 'enable' and p.num_ranks > 1:
-            mpiprefix += "mpirun -n "+str(p.num_ranks)
-            mpiprefix += " "
-
-
 
     content = """
 
 """+p_gen_script_info(jg)+"""
 
 # mpiexec ... would be here without a line break
-EXEC=\""""+mpiprefix+jg.get_program_exec()+"""\"
-echo \"$EXEC\"
-$EXEC || exit 1
+EXEC=\""""+jg.compile.getProgramPath()+"""\"
+PARAMS=\""""+jg.runtime.getRuntimeOptions()+"""\"
+echo \"${EXEC} ${PARAMS}\"
 
 """
+    if jg.compile.sweet_mpi == 'enable':
+    	content += 'mpiexec -n '+str(p.num_ranks)+' '
+
+    content += "$EXEC $PARAMS || exit 1"
+    content += "\n"
+    content += "\n"
 
     return content
 
@@ -180,8 +194,9 @@ def jobscript_get_exec_suffix(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
+
     content = ""
     content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
 
@@ -196,7 +211,7 @@ def jobscript_get_footer(jg : JobGeneration):
     Returns
     -------
     string
-        multiline text for scripts
+    	multiline text for scripts
     """
     content = """
 
@@ -208,8 +223,7 @@ def jobscript_get_footer(jg : JobGeneration):
 
 
 
-
-def jobscript_get_compile_command(jg, separate_file_output = False):
+def jobscript_get_compile_command(jg : JobGeneration):
     """
     Compile command(s)
 
@@ -221,7 +235,7 @@ def jobscript_get_compile_command(jg, separate_file_output = False):
     Returns
     -------
     string
-        multiline text with compile command to generate executable
+    	multiline text with compile command to generate executable
     """
 
     content = """

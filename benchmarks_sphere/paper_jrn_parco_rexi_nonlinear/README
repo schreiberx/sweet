@@ -9,7 +9,7 @@ compare_wt_dt_vs_accuracy_galewsky
 	wallclock time studies without REXI barriers
 	scale CI radius
 
-scalability_space_galewsky_cheyenne_gnu
+scalability_space_galewsky_cheyenne_gcc
 scalability_space_galewsky_cheyenne_intel
 	Scalability in space studies on a single node
 
