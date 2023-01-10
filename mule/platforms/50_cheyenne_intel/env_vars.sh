@@ -37,3 +37,7 @@ export MULE_MPICC=/opt/sgi/mpt/mpt-2.15/bin/mpicc
 export MULE_MPICXX=/opt/sgi/mpt/mpt-2.15/bin/mpicxx
 export MULE_MPIF90=/opt/sgi/mpt/mpt-2.15/bin/mpif90
 export MULE_MPILINK=$MULE_MPICXX
+
+export MULE_CC_COMPILER=intel
+export MULE_CXX_COMPILER=intel
+export MULE_F90_COMPILER=intel

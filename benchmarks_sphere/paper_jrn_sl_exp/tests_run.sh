@@ -22,7 +22,7 @@ for i in $TESTS; do
 
 	cd "$i" || exit
 	./benchmark_create_jobs.py || { echo "FAILED: $i"; exit 1; }
-	./compile_platform_default_gnu.sh || { echo "FAILED: $i"; exit 1; }
+	./compile_platform_default_gcc.sh || { echo "FAILED: $i"; exit 1; }
 	mule.benchmark.jobs_run_directly || { echo "FAILED: $i"; exit 1; }
 	./postprocessing.sh || { echo "FAILED: $i"; exit 1; }
 

@@ -29,8 +29,8 @@ verbose = False
 ##################################################
 
 jg.compile.mode = 'release'
-if '_gnu' in os.getenv('MULE_PLATFORM_ID'):
-    jg.compile.compiler = 'gnu'
+if '_gcc' in os.getenv('MULE_PLATFORM_ID'):
+    jg.compile.compiler = 'gcc'
 else:
     jg.compile.compiler = 'intel'
 jg.compile.sweet_mpi = 'enable'

@@ -22,8 +22,8 @@ verbose = False
 ##################################################
 
 p.compile.mode = 'release'
-if '_gnu' in os.getenv('MULE_PLATFORM_ID'):
-	p.compile.compiler = 'gnu'
+if '_gcc' in os.getenv('MULE_PLATFORM_ID'):
+	p.compile.compiler = 'gcc'
 else:
 	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'

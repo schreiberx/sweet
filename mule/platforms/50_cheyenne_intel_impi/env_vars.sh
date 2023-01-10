@@ -38,3 +38,7 @@ export MULE_MPICC=/glade/u/apps/opt/intel/2017u1/impi/2017.1.132/intel64/bin/mpi
 export MULE_MPICXX=/glade/u/apps/opt/intel/2017u1/impi/2017.1.132/intel64/bin/mpicxx
 export MULE_MPIF90=/glade/u/apps/opt/intel/2017u1/impi/2017.1.132/intel64/bin/mpif90
 export MULE_MPILINK=$MULE_MPICXX
+
+export MULE_CC_COMPILER=gcc
+export MULE_CXX_COMPILER=gcc
+export MULE_F90_COMPILER=gcc

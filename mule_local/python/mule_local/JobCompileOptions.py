@@ -47,17 +47,9 @@ class JobCompileOptions(InfoError):
 
         # Compile options
         self.mode = 'release'
-        self.compiler = 'gnu'
-
-        self.sanitize = ''
 
         self.debug_symbols = 'disable'
         self.simd = 'enable'
-        self.mic = 'disable'
-
-        self.gxx_toolchain = ''
-        self.cxx_flags = ''
-        self.ld_flags = ''
 
         self.fortran_source = 'disable'
 
@@ -140,18 +132,8 @@ class JobCompileOptions(InfoError):
     def getSConsParams(self):
         retval = ''
         retval += ' --mode='+self.mode
-        retval += ' --compiler='+self.compiler
-        retval += ' --sanitize='+self.sanitize
         retval += ' --debug-symbols='+("enable" if self.debug_symbols else "disable")
         retval += ' --simd='+self.simd
-        retval += ' --mic='+self.mic
-
-        if self.gxx_toolchain != '':
-            retval += ' --gxx-toolchain='+self.gxx_toolchain
-        if self.cxx_flags != '':
-            retval += ' --cxx-flags='+self.cxx_flags
-        if self.ld_flags:
-            retval += ' --ld-flags='+self.ld_flags
 
         retval += ' --fortran-source='+self.fortran_source
 
@@ -264,34 +246,6 @@ class JobCompileOptions(InfoError):
         )
         self.mode = scons.GetOption('mode')
 
-
-        scons.AddOption(    '--compiler',
-                dest='compiler',
-                type='choice',
-                choices=['gnu', 'intel', 'llvm', 'pgi'],
-                default='gnu',
-                help='specify compiler to use: gnu, intel, llvm, pgi [default: %default]'
-        )
-        self.compiler = scons.GetOption('compiler')
-
-        scons.AddOption(    '--sanitize',
-                dest='sanitize',
-                type='string',
-                default='',
-                help='specify sanitize to forward to the compiler'
-        )
-        self.sanitize = scons.GetOption('sanitize')
-
-
-        scons.AddOption(    '--gxx-toolchain',
-                dest='gxx-toolchain',
-                type='string',
-                default='',
-                help='specify gcc toolchain for intel and llvm compiler, e.g. g++-4.6, default: deactivated'
-        )
-        self.gxx_toolchain = scons.GetOption('gxx-toolchain')
-
-
         scons.AddOption(    '--simd',
                 dest='simd',
                 type='choice',
@@ -402,16 +356,6 @@ class JobCompileOptions(InfoError):
                 help="Enable Intel MKL [default: %default]"
         )
         self.mkl = scons.GetOption('mkl')
-
-
-        scons.AddOption(    '--mic',
-                dest='mic',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='disable',
-                help="Enable Intel MIC (XeonPhi) [default: %default]"
-        )
-        self.mic = scons.GetOption('mic')
 
 
         #
@@ -712,25 +656,6 @@ class JobCompileOptions(InfoError):
         self.threading = scons.GetOption('threading')
 
 
-        scons.AddOption(    '--cxx-flags',
-                dest='cxx_flags',
-                type='string',    
-                default='',
-                help='Additional cxx-flags, default: ""'
-        )
-
-        self.cxx_flags = scons.GetOption('cxx_flags')
-
-
-        scons.AddOption(    '--ld-flags',
-                dest='ld_flags',
-                type='string',    
-                default='',
-                help='Additional ld-flags, default: ""'
-        )
-
-
-
     def getProgramName(self, ignore_errors = False):
         self.makeOptionsConsistent()
 
@@ -887,10 +812,6 @@ class JobCompileOptions(InfoError):
             if self.libfft == 'enable':
                 retval+='_fft'
 
-            retval += '_'+self.compiler
-
-            if self.sanitize != '':
-                retval += '_'+self.sanitize.replace(',', '_')
 
         if self.benchmark_timings == 'enable':
             retval+='_benchtime'

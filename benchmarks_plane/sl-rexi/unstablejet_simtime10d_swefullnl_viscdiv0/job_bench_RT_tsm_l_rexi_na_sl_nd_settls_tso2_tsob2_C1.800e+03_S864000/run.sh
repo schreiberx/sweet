@@ -23,7 +23,7 @@ export OMP_NUM_THREADS=28
 
 # Loading Job environment variables for currently active platform
 cd "/home/hpc/pr63qi/di69fol/workspace/sweet"
-source ./local_software/env_vars.sh "coolmuc_mpp2_gnu" || exit 1
+source ./local_software/env_vars.sh "coolmuc_mpp2_gcc" || exit 1
 
 export MPICC=mpigcc
 export MPICXX=mpigxx
@@ -37,7 +37,7 @@ cd "/home/hpc/pr63qi/di69fol/workspace/sweet/benchmarks_plane/sl-rexi/unstableje
 
 
 # mpiexec ... would be here without a line break
-EXEC="/home/hpc/pr63qi/di69fol/workspace/sweet/build/swe_plane_COMP_plspec_pldeal_numa2_fft_gnu_thomp_release"
+EXEC="/home/hpc/pr63qi/di69fol/workspace/sweet/build/swe_plane_COMP_plspec_pldeal_numa2_fft_gcc_thomp_release"
 PARAMS=" -G 0 -g 9.80616 -H 10000 -f 0.00014584 -M 512 -N -1 --space-grid-use-c-staggering=0 -S 1 -X 40031555.89280872 -Y 40031555.89280872 --benchmark-name=unstablejet -v 3 --dt=1800.0 -o 864000 -u 0.0 -t 864000 --instability-checks=0 -d 12 --timestepping-method=l_rexi_na_sl_nd_settls --timestepping-order=2 --timestepping-order2=2 --rexi-method=direct --use-robert-functions=1 --compute-error=1 --reuse-plans=-1"
 echo "${EXEC} ${PARAMS}"
 

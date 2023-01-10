@@ -38,3 +38,7 @@ export MULE_MPICC=mpicc
 export MULE_MPICXX=mpicxx
 export MULE_MPIF90=mpif90
 export MULE_MPILINK=$MULE_MPICXX
+
+export MULE_CC_COMPILER=gcc
+export MULE_CXX_COMPILER=gcc
+export MULE_F90_COMPILER=gcc

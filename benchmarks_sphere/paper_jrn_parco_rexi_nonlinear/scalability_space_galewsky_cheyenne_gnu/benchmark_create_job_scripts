@@ -15,7 +15,7 @@ verbose = False
 
 ##################################################
 
-p.compile.compiler = 'gnu'
+p.compile.compiler = 'gcc'
 p.compile.sweet_mpi = 'disable'
 p.runtime.space_res_spectral = 128
 p.runtime.reuse_plans = 2	# enforce using plans (todo, enforcing not yet implemented)!
