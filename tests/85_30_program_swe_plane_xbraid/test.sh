@@ -79,7 +79,7 @@ for itest in {-1..7};do
 
 		# Get job directory name for this reference solution
 		# This will be reused throughout all other test cases
-		fine_sim=$(cat tmp_fine_sim.txt);
+		fine_sim1=$(cat tmp_fine_sim.txt);
 
 		mule.benchmark.cleanup_all || exit 1
 
@@ -91,8 +91,8 @@ for itest in {-1..7};do
 	elif [ "$itest" == 1 ] || [ "$itest" == 2 ]; then
 		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $itest > tmp_job_benchmark_create_dummy.txt || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
-		cp -r "$dirname_serial"/"$fine_sim" .
-		./compare_to_fine_solution.py $fine_sim;
+		cp -r "$dirname_serial"/"$fine_sim1" .
+		./compare_to_fine_solution.py $fine_sim1;
 		mule.benchmark.cleanup_all || exit 1
 
 	elif [ "$itest" == 3 ]; then
@@ -136,7 +136,7 @@ for itest in {-1..7};do
 			for i in {0,1,2}; do
 				##for tsm_fine in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
 				for tsm_fine in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_etdrk,l_rexi_na_sl_nd_etdrk}; do ## short version
-				##for tsm_fine in l_cn; do ## short version
+				##for tsm_fine in {l_cn,l_rexi_n_etdrk}; do ## short version
 
 					tsm_fine=$(get_tsm $tsm_fine);
 					if [ "$tsm_fine" = "interface" ]; then
@@ -145,7 +145,7 @@ for itest in {-1..7};do
 
 					##for tsm_coarse in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
 					for tsm_coarse in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_etdrk,l_rexi_na_sl_nd_etdrk}; do ## short version
-					##for tsm_coarse in l_cn; do ## short version
+					##for tsm_coarse in {l_cn,l_rexi_n_etdrk}; do ## short version
 
 						tsm_coarse=$(get_tsm $tsm_coarse);
 						if [ "$tsm_coarse" = "interface" ]; then
@@ -159,7 +159,7 @@ for itest in {-1..7};do
 							## xbraid tests without online error computation
 							echo_info "---> Running XBraid simulations (offline error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 
-							./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 0 $dirname2"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
+							./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 0 $dirname2"/"$fine_sim1 > tmp_job_benchmark_create_dummy.txt || exit 1
 
 							mule.benchmark.jobs_run_directly || exit 1
 						fi;
@@ -169,12 +169,9 @@ for itest in {-1..7};do
 							## parareal tests without online error computation
 							echo_info "---> Running fine and ref simulations with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 
-							./benchmarks_create.py ref $itest $tsm_fine $tsm_coarse 1 0 $dirname2"/"$fine_sim  > tmp_job_benchmark_create_dummy.txt || exit 1
+							./benchmarks_create.py ref $itest $tsm_fine $tsm_coarse 1 0 $dirname2"/"$fine_sim1  > tmp_job_benchmark_create_dummy.txt || exit 1
 
 							mule.benchmark.jobs_run_directly|| exit 1
-
-							##### identify ref simulation
-							###ref_sim=$(cat ref_sim);
 
 							## identify fine simulation
 							fine_sim2=$(cat tmp_fine_sim.txt);
@@ -184,28 +181,20 @@ for itest in {-1..7};do
 							echo_info "---> Computing errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 							./compute_xbraid_errors.py $fine_sim2 || exit 1
 
-							########mv ref_sim $dirname2/.;
 							mv tmp_fine_sim.txt $dirname2/.;
+
 						fi;
 
 						## only xbraid with online error computation
 						if [ $i == 2 ]; then
 							echo_info "---> Running XBraid simulations (online error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 
-							##### identify ref simulation
-							###ref_sim=$(cat $dirname2/ref_sim);
-
 							## identify fine simulation
-							#fine_sim=$(cat $dirname2/tmp_fine_sim.txt);
+							fine_sim2=$(cat $dirname2/tmp_fine_sim.txt);
 
-							./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname2"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
-
-
-							#####mv $ref_sim $dirname2/.
+							./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname2"/"$fine_sim2 > tmp_job_benchmark_create_dummy.txt || exit 1
 
 							mule.benchmark.jobs_run_directly || exit 1
-
-							#####mv $dirname2/$ref_sim .
 
 						fi;
 
@@ -217,7 +206,7 @@ for itest in {-1..7};do
 						fi;
 						if [ $i -eq 2 ]; then
 							echo_info "---> Comparing online and offline errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
-							./compare_online_offline_errors.py $dirname2 $fine_sim
+							./compare_online_offline_errors.py $dirname2 $fine_sim2
 						fi;
 						echo ""
 
@@ -235,10 +224,15 @@ for itest in {-1..7};do
 	elif [ "$itest" == 6 ]; then
 
 		for nproc in {1,2}; do
-			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
+
+			echo "  -------------";
+			echo "  -- nproc:" $nproc
+			echo "  -------------";
+
+			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim1 > tmp_job_benchmark_create_dummy.txt || exit 1
 
 			mule.benchmark.jobs_run_directly || exit 1
-			./compare_online_offline_errors.py . $fine_sim 1
+			./compare_online_offline_errors.py . $fine_sim1 1
 
 			mule.benchmark.cleanup_all || exit 1
 		done;
@@ -251,10 +245,10 @@ for itest in {-1..7};do
 			echo "  -- nproc:" $nproc
 			echo "  -------------";
 
-			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
+			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim1 > tmp_job_benchmark_create_dummy.txt || exit 1
 
 			mule.benchmark.jobs_run_directly || exit 1
-			./compare_parareal_xbraid_errors.py . $fine_sim 1
+			./compare_parareal_xbraid_errors.py . $fine_sim1 1
 
 			mule.benchmark.cleanup_all || exit 1
 		done;
