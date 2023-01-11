@@ -76,7 +76,7 @@ if true; then
 			echo_info "quadmath.h workaround which is not shipped with LLVM."
 			echo_info "We simply copy it to our default include path."
 
-			cp "/usr/lib/gcc/x86_64-linux-gnu/12/include/quadmath.h" "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" || exit 1
+			cp "/usr/lib/gcc/x86_64-linux-gnu/$LLVM_CXX_COMPILER_VERSION/include/quadmath.h" "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" || { echo "Failed to copy quadmath.h"; exit 1; }
 		else
 			echo_error_exit "Unable to determine $LLVM_CXX_COMPILER compiler version"
 		fi
