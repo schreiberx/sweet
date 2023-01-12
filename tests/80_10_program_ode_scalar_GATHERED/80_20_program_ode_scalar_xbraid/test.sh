@@ -24,7 +24,7 @@ get_tsm(){
 set -e
 
 dirname_serial="serial";
-dirname_offline_error="simulations_offline_error";
+dirname_offline_error="output_simulations_offline_error";
 
 cd "$(dirname $0)"
 

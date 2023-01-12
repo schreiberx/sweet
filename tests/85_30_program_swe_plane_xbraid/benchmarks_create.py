@@ -102,7 +102,7 @@ jg = RuntimeSWEPlaneEarthParam(jg)
 jg.runtime.viscosity = 0.0
 
 # Deactivate threading
-jg.compile.threading = 'off'
+jg.compile.threading = "omp"
 
 #
 # Time, Mode and Physical resolution
@@ -160,7 +160,8 @@ if simulation_to_run == "xbraid":
     jg.runtime.xbraid_spatial_coarsening = 0;
 
     jg.runtime.xbraid_pt = nb_pt;
-    if nb_pt > 1:
+    #if nb_pt > 1:
+    if True:
         params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
         params_pspace_num_threads_per_rank = [jg.platform_resources.num_cores_per_socket]
         params_ptime_num_cores_per_rank = [1]
@@ -173,7 +174,7 @@ if simulation_to_run == "xbraid":
 
         pspace = JobParallelizationDimOptions('space')
         pspace.num_cores_per_rank = 1
-        pspace.num_threads_per_rank = params_pspace_num_cores_per_rank[-1]
+        pspace.num_threads_per_rank = max(1, int(params_pspace_num_cores_per_rank[-1] / jg.runtime.xbraid_pt))
         pspace.num_ranks = 1
 
         # Setup parallelization

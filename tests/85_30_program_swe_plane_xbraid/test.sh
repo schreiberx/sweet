@@ -25,7 +25,7 @@ get_tsm(){
 set -e
 
 dirname_serial="serial";
-dirname_offline_error="simulations_offline_error";
+dirname_offline_error="output_simulations_offline_error";
 
 cd "$(dirname $0)"
 
@@ -162,7 +162,7 @@ for itest in {-1..7};do
 
 							./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 0 $dirname2"/"$fine_sim1 > tmp_job_benchmark_create_dummy.txt || exit 1
 
-							mule.benchmark.jobs_run_directly || exit 1
+							time mule.benchmark.jobs_run_directly || exit 1
 						fi;
 
 						## fine and ref
