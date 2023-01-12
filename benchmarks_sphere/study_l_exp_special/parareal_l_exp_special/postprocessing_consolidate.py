@@ -8,7 +8,7 @@ import math
 from mule.plotting.Plotting import *
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
-from mule_local.postprocessing.PInT_Errors import *
+from mule.postprocessing.PInT_Errors import *
 
 from matplotlib.ticker import MaxNLocator
 

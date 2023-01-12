@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from mule_local.postprocessing.pickle_PlaneData_Spectrum import *
+from mule.postprocessing.pickle_PlaneData_Spectrum import *
 from mule.exec_program import *
 
 # process only last file (likely the reference solution)

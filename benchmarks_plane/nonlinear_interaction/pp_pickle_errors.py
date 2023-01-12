@@ -2,7 +2,7 @@
 
 import sys
 
-from mule_local.postprocessing.pickle_PlaneDataPhysicalDiff import *
+from mule.postprocessing.pickle_PlaneDataPhysicalDiff import *
 from mule.exec_program import *
 
 

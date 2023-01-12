@@ -14,10 +14,10 @@ import math
 from glob import glob
 
 #Classes containing sweet compile/run basic option
-from mule_local.JobGeneration import *
-from mule_local.SWEETRuntimeParametersScenarios import *
+from mule.JobGeneration import *
+from mule.SWEETRuntimeParametersScenarios import *
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 from mule.exec_program import *
 from mule.InfoError import *
 

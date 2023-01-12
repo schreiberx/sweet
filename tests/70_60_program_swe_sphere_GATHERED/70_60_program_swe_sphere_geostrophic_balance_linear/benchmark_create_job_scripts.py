@@ -3,7 +3,7 @@
 import sys
 from itertools import product
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 from mule.exec_program import *
 from mule.InfoError import *
 

@@ -4,8 +4,8 @@ import sys
 import numpy as np
 
 from mule.postprocessing.JobData import JobData
-from mule_local.postprocessing.SphereDataSpectral import SphereDataSpectral
-import mule_local.postprocessing.SphereDataOperators as SphereDataOperators
+from mule.postprocessing.SphereDataSpectral import SphereDataSpectral
+import mule.postprocessing.SphereDataOperators as SphereDataOperators
 from postprocessing_spectrum_lib import postprocessing_spectrum_lib
 
 debug_active = False

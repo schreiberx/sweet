@@ -9,7 +9,7 @@ get_tsm(){
 
 set -e
 
-dirname="simulations_offline_error";
+dirname="output_simulations_offline_error";
 
 cd "$(dirname $0)"
 
@@ -42,7 +42,7 @@ for i in {0,1,2};do
 			  continue;
 			fi
 
-			dirname2=simulations_offline_error"/"${tsm_fine}"_"${tsm_coarse}
+			dirname2=output_simulations_offline_error"/"${tsm_fine}"_"${tsm_coarse}
 
 			## only parareal
 			if [ $i == 0 ]; then
@@ -120,6 +120,7 @@ mule.benchmark.cleanup_all || exit 1
 
 rm -r "$dirname"
 rm -r "$dirname2"
+rm -rf "output_simulations_offline_error"
 rm -f tmp_job_benchmark_create_dummy.txt
 
 echo ""

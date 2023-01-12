@@ -16,6 +16,8 @@ for i in $(ls -1 -d ??_*/ | sort); do
 	cd "$i"
 	OUTFILE="output_${i/\//}.out"
 
+	./test.* > "$OUTFILE" 2>&1
+
 	if [[ "$?" != "0" ]]; then
 		cat "$OUTFILE"
 		exit 1

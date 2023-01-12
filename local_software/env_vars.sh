@@ -309,12 +309,8 @@ fi
 
 
 # Add MULE python path
-# DO NOT INCLUDE THIS, SINCE ONLY ONE 'mule' MODULE WILL BE AVAILABLE!
-# We link from the SWEET module path to the MULE module path
-export PYTHONPATH="$MULE_ROOT/python/:$PYTHONPATH"
+export PYTHONPATH="$MULE_ROOT/env_pythonpath/:$PYTHONPATH"
 
-# Add MULE SWEET python path
-export PYTHONPATH="$MULE_LOCAL_ROOT/python/:$PYTHONPATH"
 
 
 

@@ -4,11 +4,11 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 from itertools import product
 from mule.exec_program import *
-from mule_local.JobGeneration import *
-from mule_local.SWEETRuntimeParametersScenarios import *
+from mule.JobGeneration import *
+from mule.SWEETRuntimeParametersScenarios import *
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 

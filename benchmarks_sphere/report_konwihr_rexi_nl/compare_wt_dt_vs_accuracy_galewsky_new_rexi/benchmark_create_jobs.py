@@ -9,7 +9,7 @@ from itertools import product
 # REXI
 import rexi_benchmarks
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 jg = JobGeneration()

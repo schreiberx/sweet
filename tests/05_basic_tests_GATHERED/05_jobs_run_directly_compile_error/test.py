@@ -6,7 +6,7 @@ os.chdir(os.path.dirname(sys.argv[0]))
 
 from itertools import product
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 from mule.exec_program import *
 
 ie = InfoError("test")

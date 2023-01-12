@@ -4,7 +4,7 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 from itertools import product
 from mule.exec_program import *
 

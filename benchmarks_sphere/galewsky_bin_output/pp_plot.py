@@ -9,10 +9,10 @@ import numpy as np
 
 def get_data_phys(filename):
     if filename.endswith(".sweet"):
-        from mule_local.postprocessing.SphereDataSpectral import SphereDataSpectral
+        from mule.postprocessing.SphereDataSpectral import SphereDataSpectral
 
         if 0:
-            from mule_local.postprocessing.SphereDataOperators import SphereDataOperators
+            from mule.postprocessing.SphereDataOperators import SphereDataOperators
 
             sphere_data = SphereDataSpectral(filename, setup_physical=False)
             ops = SphereDataOperators(file_info=sphere_data.file_info)

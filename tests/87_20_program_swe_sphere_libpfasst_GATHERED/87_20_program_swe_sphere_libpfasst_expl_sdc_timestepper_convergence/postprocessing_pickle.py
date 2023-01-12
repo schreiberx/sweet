@@ -4,7 +4,7 @@ import sys
 import math
 import glob
 
-from mule_local.postprocessing.pickle_SphereDataSpectralDiff import *
+from mule.postprocessing.pickle_SphereDataSpectralDiff import *
 from mule.exec_program import *
 
 pickle_SphereDataSpectralDiff()

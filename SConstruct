@@ -2,15 +2,9 @@ import os
 import subprocess
 import re
 import sys
-import platform
 
-
-# SCons doesn't inherit the python environment variables
-sys.path.append("./mule_local/python/mule_local")
-from JobCompileOptions import *
-sys.path.remove("./mule_local/python/mule_local")
-
-import mule.utils as utils
+from mule import utils
+from mule.JobCompileOptions import *
 
 #
 # Setup parallel compilation

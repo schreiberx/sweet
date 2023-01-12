@@ -7,7 +7,7 @@ import math
 from itertools import product
 
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobParallelizationDimOptions import *
 from mule.JobParallelization import *
 p = JobGeneration()

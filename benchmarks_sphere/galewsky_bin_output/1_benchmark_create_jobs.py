@@ -7,7 +7,7 @@ import numpy as np
 
 from itertools import product
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 

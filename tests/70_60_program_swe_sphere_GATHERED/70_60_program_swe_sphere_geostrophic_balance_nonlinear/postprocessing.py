@@ -4,7 +4,7 @@ import sys
 import math
 import copy
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 from mule.plotting.Plotting import *
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *

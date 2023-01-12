@@ -5,13 +5,13 @@ import sys
 import stat
 import math
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 jg = JobGeneration()
 
-from mule_local.rexi.REXICoefficients import *
-from mule_local.rexi.trexi.TREXI import *
-from mule_local.rexi.cirexi.CIREXI import *
-from mule_local.rexi.brexi.BREXI import *
+from mule.rexi.REXICoefficients import *
+from mule.rexi.trexi.TREXI import *
+from mule.rexi.cirexi.CIREXI import *
+from mule.rexi.brexi.BREXI import *
 
 
 

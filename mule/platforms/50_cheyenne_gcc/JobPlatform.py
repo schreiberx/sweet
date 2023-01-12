@@ -3,7 +3,7 @@ import socket
 import sys
 import os
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobPlatformResources import *
 from . import JobPlatformAutodetect
 

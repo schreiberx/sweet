@@ -4,17 +4,17 @@ import sys
 import os
 os.chdir(os.path.dirname(sys.argv[0]))
 
-from mule_local.JobMule import *
+from mule.JobMule import *
 from mule.exec_program import *
 
 
 #
 # REXI specific
 #
-from mule_local.rexi.REXICoefficients import *
-from mule_local.rexi.trexi.TREXI import *
-from mule_local.rexi.cirexi.CIREXI import *
-from mule_local.rexi.brexi.BREXI import *
+from mule.rexi.REXICoefficients import *
+from mule.rexi.trexi.TREXI import *
+from mule.rexi.cirexi.CIREXI import *
+from mule.rexi.brexi.BREXI import *
 
 
 #

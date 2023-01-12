@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from mule.postprocessing.JobData import JobData
-from mule_local.postprocessing.SphereDataSpectral import SphereDataSpectral
-import mule_local.postprocessing.SphereDataOperators as SphereDataOperators
+from mule.postprocessing.SphereDataSpectral import SphereDataSpectral
+import mule.postprocessing.SphereDataOperators as SphereDataOperators
 
 
 debug_active = False

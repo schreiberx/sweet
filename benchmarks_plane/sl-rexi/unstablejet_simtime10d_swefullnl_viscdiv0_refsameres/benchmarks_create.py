@@ -24,7 +24,7 @@ import stat
 import math
 
 #Classes containing sweet compile/run basic option
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.SWEETRuntimeParametersScenarios import *
 
 #Create main compile/run options

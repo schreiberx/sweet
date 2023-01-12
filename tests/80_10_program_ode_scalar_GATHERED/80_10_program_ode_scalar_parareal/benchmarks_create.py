@@ -14,8 +14,8 @@ import math
 from glob import glob
 
 #Classes containing sweet compile/run basic option
-from mule_local.JobGeneration import *
-from mule_local.SWEETRuntimeParametersScenarios import *
+from mule.JobGeneration import *
+from mule.SWEETRuntimeParametersScenarios import *
 
 
 ####tsm_ref = "ln_erk";

@@ -6,7 +6,7 @@ matplotlib.use('agg')
 import sys
 
 #from MULE import *
-from mule_local.JobGeneration import JobGeneration
+from mule.JobGeneration import JobGeneration
 p = JobGeneration()
 
 p.compile.compiler = 'intel'
@@ -81,7 +81,7 @@ for p.runtime.f_sphere in [1]:
             p.runtime.max_timesteps_nr = default_timesteps
 
             for rexi_m in [2**i for i in range(4, 13)]:
-                from mule_local.rexi.trexi.TREXI import *
+                from mule.rexi.trexi.TREXI import *
 
                 trexi = TREXI()
                 coeffs = trexi.setup(M=rexi_m, h=0.2).toFloat()
