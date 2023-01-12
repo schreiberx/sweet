@@ -9,7 +9,6 @@ from . import JobPlatformAutodetect
 import multiprocessing
 
 
-
 # Underscore defines symbols to be private
 _job_id = None
 
@@ -152,7 +151,7 @@ def jobscript_get_exec_command(jg : JobGeneration):
 
     mpiprefix = ""
     if not p.mpiexec_disabled:
-        if jg.compile.sweet_mpi == 'enable' and p.num_ranks > 1:
+        if jg.compile.sweet_mpi == 'enable':
             mpiprefix += "mpirun -n "+str(p.num_ranks)
             mpiprefix += " "
 
@@ -182,6 +181,7 @@ def jobscript_get_exec_suffix(jg : JobGeneration):
     string
         multiline text for scripts
     """
+
     content = ""
     content += jg.runtime.get_jobscript_plan_exec_suffix(jg.compile, jg.runtime)
 
