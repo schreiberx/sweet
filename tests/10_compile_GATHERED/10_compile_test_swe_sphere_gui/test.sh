@@ -18,6 +18,7 @@ for PLANE_SPECTRAL_SPACE in enable disable; do
 				echo "$SCONS"
 				$SCONS  || exit
 
+				mule.benchmark.cleanup_all || exit 1
 			done
 		done
 	done

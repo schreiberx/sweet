@@ -6,3 +6,4 @@ SCONS="scons --program=burgers --parareal=serial --plane-spectral-space=enable -
 echo $SCONS
 $SCONS || exit
 
+mule.benchmark.cleanup_all || exit 1

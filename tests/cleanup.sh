@@ -18,7 +18,7 @@ for i in $JOBDIRS; do
 
 	mule.benchmark.cleanup_all || exit 1
 
-	JOBDIRS2=$(ls -1 -d ??_*)
+	JOBDIRS2=$(ls -1 -d ??_* 2>/dev/null)
 
 	RETDIR2=$(pwd)
 	for i2 in $JOBDIRS2; do

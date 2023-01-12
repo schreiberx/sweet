@@ -29,3 +29,4 @@ if [ "$SWEET_MPICXX" != "" ]; then
 	$SCONS  || exit
 fi
 
+mule.benchmark.cleanup_all || exit 1

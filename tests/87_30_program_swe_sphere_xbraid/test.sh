@@ -258,6 +258,7 @@ done;
 
 
 mule.benchmark.cleanup_all || exit 1
+
 if [ -d $dirname_serial ]; then
 	rm -r $dirname_serial;
 fi

@@ -24,3 +24,5 @@ for i in src/programs/*.cpp; do
 	$SCONS  || exit
 
 done
+
+mule.benchmark.cleanup_all || exit 1

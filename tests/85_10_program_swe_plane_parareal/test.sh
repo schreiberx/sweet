@@ -112,13 +112,15 @@ for i in {0,1,2};do
 			fi;
 			echo ""
 
-		done;
-	done;
-done;
+		done
+	done
+done
 
 mule.benchmark.cleanup_all || exit 1
-rm -r $dirname;
-rm -f tmp_job_benchmark_create_dummy.txt;
+
+rm -r "$dirname"
+rm -r "$dirname2"
+rm -f tmp_job_benchmark_create_dummy.txt
 
 echo ""
 echo_info "Test successful!"

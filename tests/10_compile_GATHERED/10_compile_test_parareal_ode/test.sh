@@ -9,3 +9,4 @@ SCONS="scons --program=parareal_ode --parareal=serial --gui=disable --plane-spec
 echo "$SCONS"
 $SCONS || exit
 
+mule.benchmark.cleanup_all || exit 1

@@ -10,6 +10,20 @@ for i in $(ls -1 -d ??_*/ | sort); do
 	echo_info_hline
 	echo_info "Running compile tests for $i"
 	echo_info_hline
-	OUTFILE=output_"${i/\//}"".out"
-	./$i/test.* > $OUTFILE 2>&1 || { cat "$OUTFILE"; exit 1; }
+
+	PWD_BACKUP="$(pwd)"
+
+	cd "$i"
+	OUTFILE="output_${i/\//}.out"
+
+	if [[ "$?" != "0" ]]; then
+		cat "$OUTFILE"
+		exit 1
+	fi
+
+	# Cleanup subbenchmark
+	mule.benchmark.cleanup_all
+
+	cd "$PWD_BACKUP"
+
 done

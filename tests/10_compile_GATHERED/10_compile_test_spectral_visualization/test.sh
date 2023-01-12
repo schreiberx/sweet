@@ -11,3 +11,4 @@ if [ "x" != "x$DISPLAY" ]; then
 fi
 
 
+mule.benchmark.cleanup_all || exit 1

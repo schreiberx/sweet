@@ -117,7 +117,9 @@ for i in {0,1,2};do
 done;
 
 mule.benchmark.cleanup_all || exit 1
-rm -r $dirname;
+
+rm -r "$dirname"
+rm -r "$dirname2"
 rm -f tmp_job_benchmark_create_dummy.txt;
 
 echo ""

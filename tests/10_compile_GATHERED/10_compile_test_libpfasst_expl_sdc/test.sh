@@ -14,3 +14,5 @@ if [ -e "$MULE_LOCAL_ROOT/../local_software/local/lib/libpfasst.a" ]; then
 	$SCONS || exit
 
 fi
+
+mule.benchmark.cleanup_all || exit 1

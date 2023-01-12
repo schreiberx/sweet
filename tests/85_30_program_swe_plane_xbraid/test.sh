@@ -31,6 +31,7 @@ cd "$(dirname $0)"
 
 echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1
+
 if [ -d $dirname_serial ]; then
 	rm -r $dirname_serial;
 fi
@@ -262,6 +263,7 @@ done;
 
 
 mule.benchmark.cleanup_all || exit 1
+
 if [ -d $dirname_serial ]; then
 	rm -r $dirname_serial;
 fi
@@ -269,6 +271,7 @@ if [ -d $dirname_offline_error ]; then
 	rm -r $dirname_offline_error;
 fi
 
+rm -r "$dirname2"
 rm -f tmp_job_benchmark_create_dummy.txt
 
 echo ""

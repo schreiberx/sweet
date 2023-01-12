@@ -21,4 +21,5 @@ for i in src/unit_tests/*.cpp; do
 	echo "$SCONS"
 	$SCONS  || exit
 
+	mule.benchmark.cleanup_all || exit 1
 done
