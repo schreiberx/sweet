@@ -17,6 +17,17 @@ for i in $JOBDIRS; do
 	cd "$i"
 
 	mule.benchmark.cleanup_all || exit 1
+
+	JOBDIRS2=$(ls -1 -d ??_*)
+
+	RETDIR2=$(pwd)
+	for i2 in $JOBDIRS2; do
+		echo_info $i2
+		cd "$RETDIR2"
+		cd "$i2"
+
+		mule.benchmark.cleanup_all || exit 1
+	done
 done
 
 echo_success_hline

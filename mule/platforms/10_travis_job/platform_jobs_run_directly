@@ -27,8 +27,8 @@ for JOBDIR in $DIRS; do
 	EXIT_CODE=$?
 
 	if [[ 0 -ne $EXIT_CODE ]]; then
-		tail -n 100 "output.out"
-		tail -n 100 "output.err"
+		tail -n 1000 "output.out"
+		tail -n 1000 "output.err"
 		echo_error_hline
 		echo_error "ERROR during job execution (see above)"
 		echo_error " See output.out and output.err in job directory for full output"

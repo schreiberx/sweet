@@ -5,9 +5,6 @@ import sys
 import platform
 
 
-print(" ".join(sys.argv))
-
-
 # SCons doesn't inherit the python environment variables
 sys.path.append("./mule_local/python/mule_local")
 from JobCompileOptions import *
@@ -423,7 +420,7 @@ elif p.mode == 'release':
     env.Append(CXXFLAGS=['-DNDEBUG=1'])
 
     if compiler_cxx == 'gcc':
-        env.Append(CXXFLAGS=["-O3", "-mtune=native"])
+        env.Append(CXXFLAGS=["-O3", "-mtune=native", "-march=native"])
 
         # Ensure vectorization
         env.Append(CXXFLAGS=['-ftree-vectorize'])
@@ -432,7 +429,7 @@ elif p.mode == 'release':
         env.Append(CXXFLAGS=['-fstrict-aliasing'])
 
     elif compiler_cxx == 'llvm':
-        env.Append(CXXFLAGS=["-O3", "-mtune=native"])
+        env.Append(CXXFLAGS=["-O3", "-mtune=native", "-march=native"])
 
     elif compiler_cxx == 'intel':
         env.Append(CXXFLAGS=["-O2", "-fno-alias"])
