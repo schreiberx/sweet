@@ -75,7 +75,7 @@ for itest in {-1..7};do
 
 	if [ "$itest" == -1  ]; then
 		./benchmarks_create.py ref $itest $tsm_fine $tsm_coarse 1 > tmp_job_benchmark_create_dummy.txt || exit 1
-		mule.benchmark.jobs_run_directly || exit 1
+		time mule.benchmark.jobs_run_directly || exit 1
 		mv job_bench_* "$dirname_serial"/.
 
 		# Get job directory name for this reference solution
@@ -86,12 +86,12 @@ for itest in {-1..7};do
 
 	elif [ "$itest" == 0 ]; then
 		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse 1 > tmp_job_benchmark_create_dummy.txt || exit 1
-		mule.benchmark.jobs_run_directly || exit 1
+		time mule.benchmark.jobs_run_directly || exit 1
 		mule.benchmark.cleanup_all || exit 1
 
 	elif [ "$itest" == 1 ] || [ "$itest" == 2 ]; then
 		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $itest > tmp_job_benchmark_create_dummy.txt || exit 1
-		mule.benchmark.jobs_run_directly || exit 1
+		time mule.benchmark.jobs_run_directly || exit 1
 		cp -r "$dirname_serial"/"$fine_sim1" .
 		./compare_to_fine_solution.py $fine_sim1;
 		mule.benchmark.cleanup_all || exit 1
@@ -102,7 +102,7 @@ for itest in {-1..7};do
 			echo "  -- nproc:" $nproc
 			echo "  -------------";
 			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc > tmp_job_benchmark_create_dummy.txt || exit 1
-			mule.benchmark.jobs_run_directly || exit 1
+			time mule.benchmark.jobs_run_directly || exit 1
 			./check_residual.py iteration 1e-16
 			mule.benchmark.cleanup_all || exit 1
 			echo "";
@@ -114,7 +114,7 @@ for itest in {-1..7};do
 			echo "  -- nproc:" $nproc
 			echo "  -------------";
 			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc > tmp_job_benchmark_create_dummy.txt || exit 1
-			mule.benchmark.jobs_run_directly || exit 1
+			time mule.benchmark.jobs_run_directly || exit 1
 			./check_residual.py C-point 1e-16
 			mule.benchmark.cleanup_all || exit 1
 			echo "";
@@ -136,8 +136,9 @@ for itest in {-1..7};do
 
 			for i in {0,1,2}; do
 				##for tsm_fine in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
-				for tsm_fine in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_etdrk,l_rexi_na_sl_nd_etdrk}; do ## short version
-				##for tsm_fine in {l_cn,l_rexi_n_etdrk}; do ## short version
+				#for tsm_fine in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_etdrk,l_rexi_na_sl_nd_etdrk}; do ## short version
+				for tsm_fine in {l_cn,l_erk,l_cn_na_sl_nd_settls}; do ## other short version
+				#for tsm_fine in {l_cn,l_rexi_n_etdrk}; do ## short version
 
 					tsm_fine=$(get_tsm $tsm_fine);
 					if [ "$tsm_fine" = "interface" ]; then
@@ -145,8 +146,9 @@ for itest in {-1..7};do
 					fi
 
 					##for tsm_coarse in ../../src/programs/swe_plane_timeintegrators/SWE_Plane_TS*hpp; do ## full version
-					for tsm_coarse in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_etdrk,l_rexi_na_sl_nd_etdrk}; do ## short version
-					##for tsm_coarse in {l_cn,l_rexi_n_etdrk}; do ## short version
+					#for tsm_coarse in {l_cn,l_erk,l_cn_na_sl_nd_settls,l_rexi_n_etdrk,l_rexi_na_sl_nd_etdrk}; do ## short version
+					for tsm_coarse in {l_cn,l_erk,l_cn_na_sl_nd_settls}; do ## other short version
+					#for tsm_coarse in {l_cn,l_rexi_n_etdrk}; do ## short version
 
 						tsm_coarse=$(get_tsm $tsm_coarse);
 						if [ "$tsm_coarse" = "interface" ]; then
@@ -172,7 +174,7 @@ for itest in {-1..7};do
 
 							./benchmarks_create.py ref $itest $tsm_fine $tsm_coarse 1 0 $dirname2"/"$fine_sim1  > tmp_job_benchmark_create_dummy.txt || exit 1
 
-							mule.benchmark.jobs_run_directly|| exit 1
+							time mule.benchmark.jobs_run_directly|| exit 1
 
 							## identify fine simulation
 							fine_sim2=$(cat tmp_fine_sim.txt);
@@ -195,7 +197,7 @@ for itest in {-1..7};do
 
 							./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname2"/"$fine_sim2 > tmp_job_benchmark_create_dummy.txt || exit 1
 
-							mule.benchmark.jobs_run_directly || exit 1
+							time mule.benchmark.jobs_run_directly || exit 1
 
 						fi;
 
@@ -232,7 +234,7 @@ for itest in {-1..7};do
 
 			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim1 > tmp_job_benchmark_create_dummy.txt || exit 1
 
-			mule.benchmark.jobs_run_directly || exit 1
+			time mule.benchmark.jobs_run_directly || exit 1
 			./compare_online_offline_errors.py . $fine_sim1 1
 
 			mule.benchmark.cleanup_all || exit 1
@@ -248,7 +250,7 @@ for itest in {-1..7};do
 
 			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc 1 ../$dirname_serial"/"$fine_sim1 > tmp_job_benchmark_create_dummy.txt || exit 1
 
-			mule.benchmark.jobs_run_directly || exit 1
+			time mule.benchmark.jobs_run_directly || exit 1
 			./compare_parareal_xbraid_errors.py . $fine_sim1 1
 
 			mule.benchmark.cleanup_all || exit 1
