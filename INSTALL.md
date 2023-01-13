@@ -30,7 +30,7 @@ Before doing anything, you *must* setup your environment variable via
 $ source ./activate.sh
 ```
 
-### 2. Miniconda
+### 2. Miniconda (and other Python packages)
 
 DEACTIVATE ALL (ANA)CONDA ENVIRONMENTS!
 
@@ -40,7 +40,13 @@ $ cd local_software
 $ ./install_miniconda.sh
 ```
 This is not always required, but you're on the safer side to have a Python version and its modules in a particular version.
+In particular, the script also install the recommended python packages for SWEET.
 
+:warning: If you decide not to install Miniconda and use your own Python distribution (at your own risks), you can install the required python packages using :
+
+```bash
+$ pip3 install matplotlib numpy sympy scipy
+```
 
 ### 3. 3rd party libraries
 
@@ -65,12 +71,6 @@ Once going into the local_software directory
 $ cd ./local_software
 ```
 install the following packages if required:
-
-
-Use pip to install other packages:
-```
-$ pip3 install matplotlib sympy mpmath
-```
 
 If your compiler is older than gcc 5.3 (check with gcc --version), then
 ```
