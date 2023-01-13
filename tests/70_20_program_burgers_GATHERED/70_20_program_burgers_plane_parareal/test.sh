@@ -9,7 +9,7 @@ get_tsm(){
 
 set -e
 
-dirname="output_simulations_offline_error";
+dirname="simulations_offline_error";
 
 
 cd "$(dirname $0)"

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname $0)"
+
 get_tsm(){
 	tsm=$1
 	tsm=${tsm#*TS_};
@@ -10,16 +12,14 @@ get_tsm(){
 set -e
 
 
-dirname="output_simulations_offline_error";
-
-cd "$(dirname $0)"
+dirname_="output_simulations_offline_error";
 
 echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1
-if [ -d $dirname ]; then
-	rm -rf $dirname;
+if [ -d $dirname_ ]; then
+	rm -rf $dirname_;
 fi
-mkdir $dirname;
+mkdir $dirname_;
 
 
 echo ""
@@ -61,18 +61,18 @@ for i in {0,1,2};do
 				mule.benchmark.jobs_run_directly|| exit 1
 
 				## identify ref simulation
-				ref_sim=$(cat ref_sim);
+				ref_sim=$(cat tmp_ref_sim.txt);
 
 				## identify fine simulation
-				fine_sim=$(cat fine_sim);
+				fine_sim=$(cat tmp_fine_sim.txt);
 
 				mv $dirname2/job_bench* .;
 
 				echo_info "---> Computing errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 				./compute_parareal_errors.py $ref_sim $fine_sim || exit 1
 
-                                mv ref_sim $dirname2/.;
-                                mv fine_sim $dirname2/.;
+                                mv tmp_ref_sim.txt $dirname2/.;
+                                mv tmp_fine_sim.txt $dirname2/.;
                         fi;
 
 			## only parareal with online error computation
@@ -81,10 +81,10 @@ for i in {0,1,2};do
 				echo_info "---> Running parareal simulations (online error computation) with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 
 				## identify ref simulation
-				ref_sim=$(cat $dirname2/ref_sim);
+				ref_sim=$(cat $dirname2/tmp_ref_sim.txt)
 
 				## identify fine simulation
-				fine_sim=$(cat $dirname2/fine_sim);
+				fine_sim=$(cat $dirname2/tmp_fine_sim.txt)
 
 				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 1 ../$dirname2"/"$ref_sim ../$dirname2"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
 
@@ -112,10 +112,11 @@ for i in {0,1,2};do
 	done;
 done;
 
-mule.benchmark.cleanup_all || exit 1
-rm -rf $dirname
+rm -rf $dirname_
 rm -rf $dirname2
 rm -f tmp_job_benchmark_create_dummy.txt
+
+mule.benchmark.cleanup_all || exit 1
 
 echo ""
 echo_info "Test successful!"

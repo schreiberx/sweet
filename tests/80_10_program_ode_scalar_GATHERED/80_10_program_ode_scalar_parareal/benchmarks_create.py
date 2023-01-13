@@ -131,7 +131,7 @@ elif simulation_to_run == "ref":
         jg.compile.parareal = "none";
         jg.runtime.parareal_enabled = 0;
         jg.gen_jobscript_directory();
-        f = open("fine_sim", "w");
+        f = open("tmp_fine_sim.txt", "w");
         f.write(jg.job_dirpath);
         f.close();
 
@@ -145,10 +145,10 @@ elif simulation_to_run == "ref":
             jg.runtime.timestep_size = timestep_size_reference
             jg.reference_job = True;
             jg.gen_jobscript_directory();
-            f = open("ref_sim", "w");
+            f = open("tmp_ref_sim.txt", "w");
             f.write(jg.job_dirpath);
             f.close();
         else:
-            f = open("ref_sim", "w");
+            f = open("tmp_ref_sim.txt", "w");
             f.write(glob("job_benchref*")[0]);
             f.close();

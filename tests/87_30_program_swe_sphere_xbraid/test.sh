@@ -30,7 +30,7 @@ dirname_offline_error="output_simulations_offline_error";
 cd "$(dirname $0)"
 
 echo_info "Cleaning up..."
-mule.benchmark.cleanup_all || exit 1
+mule.benchmark.cleanup_job_dirs || exit 1
 if [ -d $dirname_serial ]; then
 	rm -r $dirname_serial;
 fi
@@ -81,19 +81,19 @@ for itest in {-1..7};do
 		# This will be reused throughout all other test cases
 		fine_sim1=$(cat tmp_fine_sim.txt);
 
-		mule.benchmark.cleanup_all || exit 1
+		mule.benchmark.cleanup_job_dirs || exit 1
 
 	elif [ "$itest" == 0 ]; then
 		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse 1 > tmp_job_benchmark_create_dummy.txt || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
-		mule.benchmark.cleanup_all || exit 1
+		mule.benchmark.cleanup_job_dirs || exit 1
 
 	elif [ "$itest" == 1 ] || [ "$itest" == 2 ]; then
 		./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse 1 > tmp_job_benchmark_create_dummy.txt || exit 1
 		mule.benchmark.jobs_run_directly || exit 1
 		cp -r "$dirname_serial"/"$fine_sim1" .
 		./compare_to_fine_solution.py $fine_sim1;
-		mule.benchmark.cleanup_all || exit 1
+		mule.benchmark.cleanup_job_dirs || exit 1
 	elif [ "$itest" == 3 ]; then
 		for nproc in {1,2}; do
 			echo "  -------------";
@@ -102,7 +102,7 @@ for itest in {-1..7};do
 			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc > tmp_job_benchmark_create_dummy.txt || exit 1
 			mule.benchmark.jobs_run_directly || exit 1
 			./check_residual.py iteration 1e-16
-			mule.benchmark.cleanup_all || exit 1
+			mule.benchmark.cleanup_job_dirs || exit 1
 			echo "";
 		done;
 	elif [ "$itest" == 4 ]; then
@@ -113,7 +113,7 @@ for itest in {-1..7};do
 			./benchmarks_create.py xbraid $itest $tsm_fine $tsm_coarse $nproc > tmp_job_benchmark_create_dummy.txt || exit 1
 			mule.benchmark.jobs_run_directly || exit 1
 			./check_residual.py C-point 1e-16
-			mule.benchmark.cleanup_all || exit 1
+			mule.benchmark.cleanup_job_dirs || exit 1
 			echo "";
 		done;
 	elif [ "$itest" == 5 ]; then
@@ -124,7 +124,7 @@ for itest in {-1..7};do
 			echo "  -- nproc:" $nproc
 			echo "  -------------";
 
-			mule.benchmark.cleanup_all || exit 1
+			mule.benchmark.cleanup_job_dirs || exit 1
 			if [ -d $dirname_offline_error ]; then
 				rm -r $dirname_offline_error;
 			fi
@@ -209,7 +209,7 @@ for itest in {-1..7};do
 					done;
 				done;
 
-			mule.benchmark.cleanup_all || exit 1
+			mule.benchmark.cleanup_job_dirs || exit 1
 
 			done;
 
@@ -230,7 +230,7 @@ for itest in {-1..7};do
 			mule.benchmark.jobs_run_directly || exit 1
 			./compare_online_offline_errors.py . $fine_sim1 1
 
-			mule.benchmark.cleanup_all || exit 1
+			mule.benchmark.cleanup_job_dirs || exit 1
 		done;
 
 	elif [ "$itest" == 7 ]; then
@@ -246,7 +246,7 @@ for itest in {-1..7};do
 			mule.benchmark.jobs_run_directly || exit 1
 			./compare_parareal_xbraid_errors.py . $fine_sim1 1
 
-			mule.benchmark.cleanup_all || exit 1
+			mule.benchmark.cleanup_job_dirs || exit 1
 		done;
 
 	fi;
