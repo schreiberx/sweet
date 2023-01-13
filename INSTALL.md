@@ -80,7 +80,7 @@ $ ./install_gcc8.2.sh	# GNU compiler
 The other librar(ies)/y can be installed via:
 ```
 $ ./install_scons.sh	# Makefile replacement
-$ ./install_numa.sh	# NUMA aware memory allocation
+$ ./install_numactl.sh	# NUMA aware memory allocation
 ```
 
 Packages required for simulations on the plane:
