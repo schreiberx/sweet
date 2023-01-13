@@ -214,7 +214,7 @@ if __name__ == "__main__":
     p.info("TEST - Using platform ID: "+p.platform_id)
 
     print()
-    platform_id_override = "coolmuc_mpp2"
+    platform_id_override = "linuxcluster_intel"
     p = JobPlatforms(platform_id_override)
     p.info("TEST - Using platform ID: "+p.platform_id)
 
