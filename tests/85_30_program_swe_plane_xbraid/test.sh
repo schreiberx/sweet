@@ -273,7 +273,6 @@ if [ -d $dirname_offline_error ]; then
 	rm -r $dirname_offline_error;
 fi
 
-rm -r "$dirname2"
 rm -f tmp_job_benchmark_create_dummy.txt
 
 echo ""
