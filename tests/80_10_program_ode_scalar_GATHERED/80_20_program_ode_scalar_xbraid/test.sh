@@ -31,12 +31,12 @@ cd "$(dirname $0)"
 echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1
 if [ -d $dirname_serial ]; then
-	rm -r $dirname_serial;
+	rm -rf $dirname_serial;
 fi
 mkdir $dirname_serial;
 
 if [ -d $dirname_offline_error ]; then
-	rm -r $dirname_offline_error;
+	rm -rf $dirname_offline_error;
 fi
 mkdir $dirname_offline_error;
 
@@ -129,7 +129,7 @@ for itest in {-1..6};do
 
 			mule.benchmark.cleanup_all || exit 1
 			if [ -d $dirname_offline_error ]; then
-				rm -r $dirname_offline_error;
+				rm -rf $dirname_offline_error;
 			fi
 			mkdir $dirname_offline_error;
 
@@ -254,10 +254,10 @@ done;
 
 mule.benchmark.cleanup_all || exit 1
 if [ -d $dirname_serial ]; then
-	rm -r $dirname_serial;
+	rm -rf $dirname_serial;
 fi
 if [ -d $dirname_offline_error ]; then
-	rm -r $dirname_offline_error;
+	rm -rf $dirname_offline_error;
 fi
 
 rm -f tmp_job_benchmark_create_dummy.txt

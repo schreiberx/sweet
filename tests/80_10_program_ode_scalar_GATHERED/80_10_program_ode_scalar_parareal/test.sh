@@ -9,6 +9,7 @@ get_tsm(){
 
 set -e
 
+
 dirname="output_simulations_offline_error";
 
 cd "$(dirname $0)"
@@ -16,7 +17,7 @@ cd "$(dirname $0)"
 echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1
 if [ -d $dirname ]; then
-	rm -r $dirname;
+	rm -rf $dirname;
 fi
 mkdir $dirname;
 
@@ -112,8 +113,8 @@ for i in {0,1,2};do
 done;
 
 mule.benchmark.cleanup_all || exit 1
-rm -r $dirname
-rm -r $dirname2
+rm -rf $dirname
+rm -rf $dirname2
 rm -f tmp_job_benchmark_create_dummy.txt
 
 echo ""
