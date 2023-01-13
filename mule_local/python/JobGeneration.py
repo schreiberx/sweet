@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
 import os
-import sys
 import stat
 
 import hashlib
@@ -353,7 +352,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
         # Don't allow more than 143 characters to support encrypted home directories
         max_length = 143
 
-        l = len(job_dirpath) 
+        l = len(job_dirpath)
 
         if l > max_length:
             m = hashlib.md5()
@@ -617,7 +616,7 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
         with open(filename, 'rb') as f:
             # Pickle the 'data' dictionary using the highest protocol available.
             return pickle.load(f)
-        
+
 
     def load_file(self, filename):
         def set_string_attributes(obj, attr_dict):
