@@ -145,6 +145,12 @@ class JobPlatforms(InfoError):
             if pattern.match(f) == None:
                 continue
 
+            # Check if this is a valid platform directory (there might be just a __pycache__ leftover in it)
+            job_platform_file = self.platforms_dir+"/"+f+"/JobPlatform.py"
+            if not os.path.isfile(job_platform_file):
+                print(f"WARNING: {job_platform_file} not found, but platform directory exists, skipping this platform")
+                continue
+
             sys.path.append(self.platforms_dir)
             module = importlib.import_module(f+'.JobPlatform')
             sys.path.remove(self.platforms_dir)
