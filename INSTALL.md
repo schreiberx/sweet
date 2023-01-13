@@ -40,7 +40,7 @@ $ cd local_software
 $ ./install_miniconda.sh
 ```
 This is not always required, but you're on the safer side to have a Python version and its modules in a particular version.
-In particular, the script also install the recommended python packages for SWEET.
+In particular, the script also installs the recommended Python packages for SWEET.
 
 :warning: If you decide not to install Miniconda and use your own Python distribution (at your own risks), you can install the required python packages using :
 
@@ -57,7 +57,7 @@ there are installation scripts named as follows:
 ```
 These are scripts which build and install the 3rd party software automatically.
 
-See next section for the recommended packages
+See next section for the recommended packages.
 
 
 ## Recommended packages
@@ -70,7 +70,6 @@ Once going into the local_software directory
 ```
 $ cd ./local_software
 ```
-install the following packages if required:
 
 If your compiler is older than gcc 5.3 (check with gcc --version), then
 ```
