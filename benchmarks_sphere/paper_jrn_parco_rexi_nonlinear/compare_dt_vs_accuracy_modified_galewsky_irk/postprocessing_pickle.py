@@ -5,6 +5,6 @@ import math
 import glob
 
 from sweet.postprocessing.pickle_SphereDataPhysicalDiff import *
-from mule.exec_program import *
+from mule.utils import exec_program
 
 p = pickle_SphereDataPhysicalDiff()

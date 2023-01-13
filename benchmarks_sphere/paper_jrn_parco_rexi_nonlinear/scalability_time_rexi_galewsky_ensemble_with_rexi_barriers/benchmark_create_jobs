@@ -6,7 +6,7 @@ import math
 
 from itertools import product
 
-from mule.exec_program import *
+from mule.utils import exec_program
 
 from SWEET import *
 p = JobGeneration()

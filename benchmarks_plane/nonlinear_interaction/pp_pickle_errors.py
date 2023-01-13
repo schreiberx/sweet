@@ -3,7 +3,7 @@
 import sys
 
 from mule.postprocessing.pickle_PlaneDataPhysicalDiff import *
-from mule.exec_program import *
+from mule.utils import exec_program
 
 
 if len(sys.argv) > 1:

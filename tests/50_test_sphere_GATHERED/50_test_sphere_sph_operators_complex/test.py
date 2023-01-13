@@ -6,7 +6,7 @@ os.chdir(os.path.dirname(sys.argv[0]))
 
 from mule.JobMule import *
 from itertools import product
-from mule.exec_program import *
+from mule.utils import exec_program
 
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 

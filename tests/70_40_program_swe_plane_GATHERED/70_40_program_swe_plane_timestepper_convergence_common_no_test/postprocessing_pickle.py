@@ -5,6 +5,6 @@ import math
 import glob
 
 from mule.postprocessing.pickle_PlaneDataPhysicalDiff import *
-from mule.exec_program import *
+from mule.utils import exec_program
 
 pickle_PlaneDataPhysicalDiff()

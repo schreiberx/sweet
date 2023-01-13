@@ -4,7 +4,7 @@ import sys
 
 #from mule import *
 from mule.JobMule import *
-from mule.exec_program import *
+from mule.utils import exec_program
 
 #
 # REXI specific

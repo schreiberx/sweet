@@ -20,6 +20,31 @@ def hostname():
     return hostname
 
 
+def exec_program(progparams, shell=False, catch_output=True):
+
+    if catch_output:
+        import subprocess
+        from subprocess import Popen, PIPE
+        if False:
+            p = Popen(progparams, stdout=PIPE, stderr=PIPE, shell=shell)
+        else:
+            p = subprocess.run(progparams, stdout=PIPE, stderr=PIPE, shell=shell)
+        output, error = p.communicate()
+
+        error = error.decode()
+        output = output.decode()
+
+        if error != '':
+            output += "\n"+error
+
+        return output, p.returncode
+
+    else:
+        import subprocess
+        retval = subprocess.run(progparams)
+        return retval.returncode
+
+
 def exec_command(command):
     process = subprocess.Popen(command.split(' '), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = process.communicate()

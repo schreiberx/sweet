@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+from mule.utils import exec_program
+
 import mule.rexi.tests.test_cirexi_coeffs
 
 import mule.rexi.tests.test_cirexi_coeffs_rescale_beta

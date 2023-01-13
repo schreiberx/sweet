@@ -18,7 +18,7 @@ from mule.JobGeneration import *
 from mule.SWEETRuntimeParametersScenarios import *
 
 from mule.JobMule import *
-from mule.exec_program import *
+from mule.utils import exec_program
 from mule.InfoError import *
 
 
