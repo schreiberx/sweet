@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 p = JobGeneration()
 
 p.runtime.floating_point_output_digits = 16

@@ -12,7 +12,7 @@ echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1
 
 echo_info "Generating benchmark job scripts..."
-./benchmark_create_job_scripts || exit 1
+./benchmark_create_job_scripts.py || exit 1
 
 echo_info "Generating reference solution..."
 ./benchmark_gen_swe_reference_solution.py 0 || exit 1

@@ -10,7 +10,7 @@ efloat_mode = "float"
 #efloat_mode = "mpfloat"
 
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 jg = JobGeneration()
