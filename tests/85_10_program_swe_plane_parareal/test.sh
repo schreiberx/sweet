@@ -118,10 +118,5 @@ done
 
 mule.benchmark.cleanup_all || exit 1
 
-rm -r "$dirname"
-rm -r "$dirname2"
-rm -rf "output_simulations_offline_error"
-rm -f tmp_job_benchmark_create_dummy.txt
-
 echo ""
 echo_info "Test successful!"
