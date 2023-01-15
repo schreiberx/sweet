@@ -16,10 +16,8 @@ cd "$(dirname $0)"
 
 echo_info "Cleaning up..."
 mule.benchmark.cleanup_all || exit 1
-if [ -d $dirname ]; then
-	rm -r $dirname;
-fi
-mkdir $dirname;
+
+mkdir "$dirname";
 
 
 echo ""
@@ -65,7 +63,7 @@ for i in {0,1,2};do
 				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 0 $ref_sim $dirname2"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
 
 				mule.benchmark.jobs_run_directly || exit 1
-                        fi;
+                        fi
 
 			## fine and ref
 			if [ $i == 1 ]; then
@@ -89,7 +87,7 @@ for i in {0,1,2};do
 
                                 mv ref_sim $dirname2/.;
                                 mv fine_sim $dirname2/.;
-                        fi;
+                        fi
 
 			## only parareal with online error computation
 			if [ $i == 2 ]; then
@@ -105,33 +103,31 @@ for i in {0,1,2};do
 
 				./benchmarks_create.py $tsm_fine $tsm_coarse parareal 1 ../$dirname2"/"$ref_sim ../$dirname2"/"$fine_sim > tmp_job_benchmark_create_dummy.txt || exit 1
 
-				mv $ref_sim $dirname2/.
+				mv $ref_sim $dirname2/
 
 				mule.benchmark.jobs_run_directly || exit 1
 
 				mv $dirname2/$ref_sim .
 
-                        fi;
+                        fi
 
 			if [ $i -eq 0 ]; then
-				mkdir $dirname2;
-			fi;
+				mkdir "$dirname2"
+			fi
 			if [ $i -le 2 ]; then
-				mv job_bench_* $dirname2;
-			fi;
+				mv job_bench_* "$dirname2"
+			fi
 			if [ $i -eq 2 ]; then
 				echo_info "---> Comparing online and offline errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
 				./compare_online_offline_errors.py $dirname2 $fine_sim
-			fi;
+			fi
 			echo ""
 
-		done;
-	done;
-done;
+		done
+	done
+done
 
 mule.benchmark.cleanup_all || exit 1
-rm -r $dirname
-rm -f tmp_job_benchmark_create_dummy.txt
 
 echo ""
 echo_info "Test successful!"
