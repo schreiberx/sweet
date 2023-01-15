@@ -252,15 +252,6 @@ for itest in {-1..6};do
 done;
 
 
-if [ -d $dirname_serial ]; then
-	rm -rf $dirname_serial;
-fi
-if [ -d $dirname_offline_error ]; then
-	rm -rf $dirname_offline_error;
-fi
-
-rm -f tmp_job_benchmark_create_dummy.txt
-
 mule.benchmark.cleanup_job_dirs || exit 1
 
 echo ""
