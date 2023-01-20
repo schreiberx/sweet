@@ -4,20 +4,14 @@ source ./install_helpers.sh ""
 
 PKG_NAME="git"
 PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/git"
-PKG_URL_SRC="git-2.19.0.tar.gz"
-
-if [ "${HOSTNAME:0:10}" != "mpp2-login" ]; then
-	echo_error_hline
-	echo_error "The git installer is only supported on MPP2"
-	echo_error "git pull/push results in empty output without doing anything"
-	echo_error_hline
-	exit 1
-fi
+PKG_URL_SRC="git-2.39.0.tar.gz"
 
 config_setup
 
 config_package $@
-config_configure_make_default
+
+# Use --with-curl to support https
+config_configure_make_default --with-curl
 
 config_exec make test
 

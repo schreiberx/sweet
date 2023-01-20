@@ -2,6 +2,7 @@
 
 
 function create_links () {
+	# create_links [level_id] [file1] [file2] [file3]
 	local LEVEL=$1
 	for i in ${@:2}; do
 		if [[ "$i" == *__pycache__ ]]; then
@@ -25,7 +26,7 @@ function create_links () {
 				mkdir -p "$NAME" || exit 1
 
 				cd "$NAME" || exit 1
-				create_links ../$i/* || exit 1
+				create_links $((LEVEL+1)) ../$i/* || exit 1
 
 				cd "../" || exit 1
 				continue

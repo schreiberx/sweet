@@ -16,6 +16,7 @@ class JobPlatformResources(InfoError):
 
     def __init__(self, dummy_init = False):
         self.init_phase = True
+        self.read_only_phase = False
 
         InfoError.__init__(self, "JobPlatformResources")
 
@@ -47,10 +48,13 @@ class JobPlatformResources(InfoError):
 
     def __setattr__(self, name, value):
 
-        if name != 'init_phase':
+        if name not in ['init_phase', 'read_only_phase']:
             if not self.init_phase:
                 if not name in self.__dict__:
                     raise Exception("Attribute '"+name+"' does not exist!")
+
+            if self.read_only_phase:
+                raise Exception("Read-only mode activated, you should be able to modify the variables since they are fixed!")
 
         self.__dict__[name] = value
 
@@ -101,6 +105,8 @@ class JobPlatformResources(InfoError):
         if self.num_oversubscribed_cores_per_socket == None:
             self.num_oversubscribed_cores_per_socket = self.num_cores_per_socket
 
+        # Activate read-only phase
+        self.read_only_phase = True
 
 
     def print(self):

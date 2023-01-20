@@ -30,7 +30,7 @@ Before doing anything, you *must* setup your environment variable via
 $ source ./activate.sh
 ```
 
-### 2. Miniconda
+### 2. Miniconda (and other Python packages)
 
 DEACTIVATE ALL (ANA)CONDA ENVIRONMENTS!
 
@@ -40,7 +40,13 @@ $ cd local_software
 $ ./install_miniconda.sh
 ```
 This is not always required, but you're on the safer side to have a Python version and its modules in a particular version.
+In particular, the script also installs the recommended Python packages for SWEET.
 
+:warning: If you decide not to install Miniconda and use your own Python distribution (at your own risks), you can install the required python packages using :
+
+```bash
+$ pip3 install matplotlib numpy sympy scipy
+```
 
 ### 3. 3rd party libraries
 
@@ -51,7 +57,7 @@ there are installation scripts named as follows:
 ```
 These are scripts which build and install the 3rd party software automatically.
 
-See next section for the recommended packages
+See next section for the recommended packages.
 
 
 ## Recommended packages
@@ -64,13 +70,6 @@ Once going into the local_software directory
 ```
 $ cd ./local_software
 ```
-install the following packages if required:
-
-
-Use pip to install other packages:
-```
-$ pip3 install matplotlib sympy mpmath
-```
 
 If your compiler is older than gcc 5.3 (check with gcc --version), then
 ```
@@ -80,7 +79,7 @@ $ ./install_gcc8.2.sh	# GNU compiler
 The other librar(ies)/y can be installed via:
 ```
 $ ./install_scons.sh	# Makefile replacement
-$ ./install_numa.sh	# NUMA aware memory allocation
+$ ./install_numactl.sh	# NUMA aware memory allocation
 ```
 
 Packages required for simulations on the plane:

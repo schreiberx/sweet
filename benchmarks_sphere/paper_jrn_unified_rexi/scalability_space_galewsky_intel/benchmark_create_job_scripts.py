@@ -17,7 +17,6 @@ verbose = False
 
 ##################################################
 
-jg.compile.compiler = 'intel'
 jg.compile.sweet_mpi = 'enable'
 jg.runtime.space_res_spectral = 256
 jg.runtime.reuse_plans = 'load' # Load (if it exists)
