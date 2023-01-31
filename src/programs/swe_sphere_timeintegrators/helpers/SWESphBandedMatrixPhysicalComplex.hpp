@@ -9,7 +9,8 @@
 #define SRC_INCLUDE_SPH_BANDED_MATRIX_COMPLEX_HPP_
 
 #include <libmath/BandedMatrixPhysicalComplex.hpp>
-#include <libmath/LapackBandedMatrixSolver.hpp>
+///#include <libmath/LapackBandedMatrixSolver.hpp>
+#include <libmath/BandedMatrixSolver.hpp>
 #include <sweet/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/sphere/SphereHelpers_SPHIdentities.hpp>
 
@@ -36,7 +37,8 @@ public:
 	/**
 	 * Solver for banded matrix
 	 */
-	LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
+	///LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
+	BandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
 
 	/**
 	 * Size of buffers
