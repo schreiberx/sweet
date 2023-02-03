@@ -10,6 +10,7 @@
 
 #include <sweet/MemBlockAlloc.hpp>
 #include <sweet/sphere/SphereData_Config.hpp>
+#include<random>
 
 
 
@@ -91,6 +92,30 @@ public:
 		data = MemBlockAlloc::alloc<T>(sizeof(T)*sphereDataConfig->spectral_array_data_number_of_elements*num_diagonals);
 
 		zeroAll();
+	}
+
+
+	/**
+	 * set elements to random values (testing purposes)
+	 */
+	void setRandomElements()
+	{
+
+		int max_random = 1;
+		std::random_device rd; // obtain a random number from hardware
+		std::mt19937 gen(rd()); // seed the generator
+		std::uniform_int_distribution<> distr(0, max_random); // define the range
+
+		for (int m = 0; m <= this->sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			for (int n = m; n <= this->sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				T *row = this->getMatrixRow(n, m);
+				for (int i = -this->halosize_off_diagonal; i < this->halosize_off_diagonal; i++)
+					this->rowElement_set(row, n, m, i, (T)distr(gen) / (T)max_random);
+			}
+		}
+
 	}
 
 

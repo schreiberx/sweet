@@ -13,7 +13,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <limits>
-
+#if SWEET_DEBUG
+#include <chrono>
+#endif
 
 template <typename T>
 class BandedMatrixSolverCommon
@@ -23,13 +25,13 @@ public:
 	int num_diagonals;
 	int num_halo_size_diagonals;
 
-	int LDAB;
+	////int LDAB;
 
-	std::complex<double>* AB;
+	///std::complex<double>* AB;
 	int *IPIV;
 
 	BandedMatrixSolverCommon()	:
-		AB(nullptr),
+		////AB(nullptr),
 		IPIV(nullptr)
 	{
 	}
@@ -52,9 +54,9 @@ public:
 
 		assert(2*num_halo_size_diagonals+1 == num_diagonals);
 
-		LDAB = 2*num_halo_size_diagonals + num_halo_size_diagonals + 1;
+		////LDAB = 2*num_halo_size_diagonals + num_halo_size_diagonals + 1;
 
-		AB = (std::complex<double>*)malloc(sizeof(std::complex<double>)*LDAB*i_max_N);
+		////AB = (std::complex<double>*)malloc(sizeof(std::complex<double>)*LDAB*i_max_N);
 		IPIV = (int*)malloc(sizeof(int)*i_max_N);
 	}
 
@@ -67,11 +69,11 @@ public:
 			IPIV = nullptr;
 		}
 
-		if (AB != nullptr)
-		{
-			free(AB);
-			AB = nullptr;
-		}
+		////if (AB != nullptr)
+		////{
+		////	free(AB);
+		////	AB = nullptr;
+		////}
 	}
 
 
@@ -122,25 +124,36 @@ class BandedMatrixSolver	:
 		public BandedMatrixSolverCommon<T>
 {
 public:
-	/**
-	 * Solve a diagonal banded matrix
-	 *
-	 * A*X = B
-	 */
-	void solve_diagBandedInverse_C(
-		const std::complex<double>* i_A,		///< Matrix for input and in-place transformations
-		const std::complex<double>* i_b,		///< RHS of equation and output of solution X
-		std::complex<double>* o_x,
-		int i_size
-	);
+	//////**
+	///// * Solve a diagonal banded matrix
+	///// *
+	///// * A*X = B
+	///// */
+	/////void solve_diagBandedInverse_C(
+	/////	const std::complex<double>* i_A,		///< Matrix for input and in-place transformations
+	/////	const std::complex<double>* i_b,		///< RHS of equation and output of solution X
+	/////	std::complex<double>* o_x,
+	/////	int i_size
+	/////);
 
 
-	void solve_diagBandedInverse_Fortran(
-		const std::complex<double>* i_A,		///< Matrix for input and in-place transformations
-		const std::complex<double>* i_b,		///< RHS of equation and output of solution X
-		std::complex<double>* o_x,
-		int i_size
-	);
+	/////void solve_diagBandedInverse_Fortran(
+	/////	const std::complex<double>* i_A,		///< Matrix for input and in-place transformations
+	/////	const std::complex<double>* i_b,		///< RHS of equation and output of solution X
+	/////	std::complex<double>* o_x,
+	/////	int i_size
+	/////);
+
+	void solve_diagBandedInverse(
+						int i_size,
+						T* i_A,
+						T* i_b,
+						T* o_x,
+						double i_small = 1e-15
+			);
+
+
+
 };
 
 
@@ -372,25 +385,26 @@ class BandedMatrixSolver<std::complex<double>>	:
 ///////////////////////	}
 
 
-private:
+public:
 
 	int getMatrixIndex(
 				int i_size,
 				int i_i,
 				int i_j
-			)
+			) const
 	{
 		///return i_i * i_size + i_j;
 		return (i_j - i_i + this->num_halo_size_diagonals) * this->num_diagonals + i_i;
 	}
 
+private:
 	void swapRows(
 			int i_size,
 			T* io_A,
 			T* io_b,
 			int i_row1,
 			int i_row2
-		)
+		) const
 	{
 		for (int j = 0; j < i_size; j++)
 			std::swap(io_A[getMatrixIndex(i_size, i_row1, j)], io_A[getMatrixIndex(i_size, i_row2, j)]);
@@ -405,7 +419,7 @@ private:
 				int i_row,
 				int i_ndiag_l = -1,
 				int i_ndiag_u = -1
-			)
+			) const
 	{
 
 		int col_min;
@@ -444,7 +458,7 @@ private:
 					int i_row,
 					int i_ndiag_l = -1,
 					int i_ndiag_u = -1
-				)
+				) const
 	{
 
 		int row_max;
@@ -491,14 +505,14 @@ private:
 	bool checkMatrixUpperTriangular(
 						int i_size,
 						T* i_A
-					)
+					) const
 	{
 		bool is_upper_triangular = true;
 		double small = 1e-15;
 
 		for (int i = 0; i < i_size; i++)
 		{
-			for (int j = 0; j < i; j++)
+			for (int j = std::max(0, i - this->num_halo_size_diagonals); j < i; j++)
 			{
 				if (std::abs(i_A[getMatrixIndex(i_size, i , j)]) > small)
 				{
@@ -518,7 +532,7 @@ private:
 						T* i_A,
 						T* i_b,
 						T* o_x
-	)
+					) const
 	{
 
 		for (int i = i_size - 1; i >= 0; i--)
@@ -531,21 +545,25 @@ private:
 
 	}
 
-	bool checkSystemSolution(
+public:
+	bool checkSolution(
 					int i_size,
 					T* i_A,
 					T* i_b,
 					T* i_x
-				)
+				) const
 	{
 		bool solution_ok = true;
 		double small = 1e-12;
+		double max_diff = 0;
 
 		for (int i = 0; i < i_size; i++)
 		{
 			T v = 0;
-			for (int j = 0; j < i_size; j++)
+			for (int j = std::max(0, i - this->num_halo_size_diagonals); j < std::max(i_size, i + this->num_halo_size_diagonals + 1); j++)
 				v += i_x[j] * i_A[getMatrixIndex(i_size, i, j)];
+			max_diff = std::max(max_diff, std::abs(v - i_b[i]));
+			std::cout << "v: " << v << std::endl;
 			if (std::abs(v - i_b[i]) > small)
 			{
 				std::cout << std::setprecision(15) << "DIFF: " << std::abs(v - i_b[i]) << std::endl;
@@ -554,28 +572,92 @@ private:
 			}
 		}
 
+		std::cout << "MAX DIFF: " << max_diff << std::endl;
+
+		if (!solution_ok)
+		{
+			this->printSolution(i_size, i_x);
+		}
+
 		return solution_ok;
 	}
 
+	void printAugmentedMatrix(
+					int i_size,
+					T* i_A,
+					T* i_b
+				) const
+	{
+		std::cout << "A | b" << std::endl;
+		for (int i = 0; i < i_size; i++)
+		{
+			for (int j = 0; j < i_size; j++)
+			{
+				if (j >= std::max(0, i - this->num_halo_size_diagonals) && j <= std::min(i_size, i + this->num_halo_size_diagonals))
+					std::cout << std::setprecision(3) << std::fixed << i_A[getMatrixIndex(i_size, i, j)] << "\t";
+				else
+					std::cout << std::setprecision(3) << std::fixed << (T)0. << "\t";
+			}
+			std::cout << "|\t" << i_b[i] << std::endl;
+		}
+	}
 
+	void printSolution(
+				int i_size,
+				T* i_x
+			) const
+	{
+		std::cout << "x = " << std::endl;
+		for (int i = 0; i < i_size; i++)
+			std::cout << i_x[i] << " ";
+		std::cout << std::endl;
+	}
+
+	void copySystem(
+				int i_size,
+				const T* i_A,
+				const T* i_b,
+				T* &o_A2,
+				T* &o_b2
+			) const
+	{
+		for (int i = 0; i < i_size; i++)
+		{
+			o_b2[i] = i_b[i];
+			for (int j = 0; j < i_size; j++)
+			{
+				int idx = getMatrixIndex(i_size, i, j);
+				o_A2[idx] = i_A[idx];
+			}
+		}
+	}
+
+public:
 	void solve_diagBandedInverse(
 						int i_size,
-						T* i_A,
-						T* i_b,
+						const T* i_A,
+						const T* i_b,
 						T* o_x,
-						int* io_pivoting,
 #if SWEET_DEBUG
-						double& o_time_pivoting,
-						double& o_time_solving,
+						double o_time_pivoting,
+						double o_time_solving,
 #endif
 						double i_small = 1e-15
-			)
+			) const
 	{
 
+		// copy A and b
+		T* A = nullptr;
+		T* b = nullptr;
+		A = MemBlockAlloc::alloc<T>(i_size * this->num_diagonals * sizeof(T));
+		b = MemBlockAlloc::alloc<T>(i_size * sizeof(T));
+		this->copySystem(i_size, i_A, i_b, A, b);
+
+
 #if SWEET_DEBUG
-		T* A2 = nullptr;
-		T* b2 = nullptr;
-		copySystem(i_size, i_A, i_b, A2, b2);
+		////T* A2 = nullptr;
+		////T* b2 = nullptr;
+		////copySystem(i_size, i_A, i_b, A2, b2);
 
 		auto time0 = std::chrono::high_resolution_clock::now();
 #endif
@@ -589,7 +671,7 @@ private:
 		{
 			// search for largest element in column
 			int i_row_max = i;
-			double val_max = std::abs(i_A[getMatrixIndex(i_size, i, i)]);
+			double val_max = std::abs(A[getMatrixIndex(i_size, i, i)]);
 			bool pivoted_column = true;
 			int lmax;
 			if (ndiag_l < 0)
@@ -600,12 +682,12 @@ private:
 			////for (int l = i + 1; l < i_size; l++)
 			{
 				int idx = getMatrixIndex(i_size, l, i);
-				if (std::abs(i_A[idx]) > val_max)
+				if (std::abs(A[idx]) > val_max)
 				{
-					val_max = std::abs(i_A[idx]);
+					val_max = std::abs(A[idx]);
 					i_row_max = l;
 				}
-				if (std::abs(i_A[idx]) > i_small)
+				if (std::abs(A[idx]) > i_small)
 					pivoted_column = false;
 			}
 
@@ -616,15 +698,15 @@ private:
 			// swap rows if needed
 			if (i_row_max != i)
 			{
-				swapRows(i_size, i_A, i_b, i, i_row_max);
-				std::swap(io_pivoting[i], io_pivoting[i_row_max]);
+				swapRows(i_size, A, b, i, i_row_max);
+				std::swap(IPIV[i], IPIV[i_row_max]);
 			}
 
 			// normalize row
-			////normalizeRow(i_size, i_A, i_b, io_pivoting, i, i_ndiag_l, i_ndiag_u);
+			normalizeRow(i_size, A, b, IPIV, i, ndiag_l, ndiag_u);
 
 			// elimination in all rows below
-			eliminateRowsBelow(i_size, i_A, i_b, io_pivoting, i, ndiag_l, ndiag_u);
+			eliminateRowsBelow(i_size, A, b, IPIV, i, ndiag_l, ndiag_u);
 
 		}
 #if SWEET_DEBUG
@@ -633,42 +715,38 @@ private:
 		o_time_pivoting = duration.count();
 
 		// check if matrix is upper triangular
-		if (!this->checkMatrixUpperTriangular(i_size, i_A))
+		if (!this->checkMatrixUpperTriangular(i_size, A))
 		{
-			std::cout << "Pivoted matrix is not upper triangular!" << std::endl;
-			exit(0);
+			this->printAugmentedMatrix(i_size, A, b);
+			SWEETError("Pivoted matrix is not upper triangular!");
 		}
 #endif
 
 		///for (int i = 0; i < i_size; i++)
-		///	std::cout << std::setprecision(15) << i_A[getMatrixIndex(i_size, i, i)] << std::endl;
+		///	std::cout << std::setprecision(15) << A[getMatrixIndex(i_size, i, i)] << std::endl;
 
 		// solve upper triangular system
 #if SWEET_DEBUG
 		time0 = std::chrono::high_resolution_clock::now();
 #endif
 
-		this->solveUpperTriangularSystem(i_size, i_A, i_b, o_x);
+		this->solveUpperTriangularSystem(i_size, A, b, o_x);
+
+
+		this->printAugmentedMatrix(i_size, A, b);
 
 #if SWEET_DEBUG
 		time1 = std::chrono::high_resolution_clock::now();
 		duration = std::chrono::duration_cast<std::chrono::microseconds>(time1 - time0);
 		o_time_solving = duration.count();
-
-		// check solution of linear system
-		if (!this->checkSystemSolution(i_size, A2, b2, o_x))
-		{
-			std::cout << "Computed solution does not satisfy the linear system!" << std::endl;
-			exit(0);
-		}
-
-		delete [] A2;
-		delete [] b2;
 #endif
 
+		delete [] A;
+		delete [] b;
+
+		MemBlockAlloc::free(A, i_size * this->num_diagonals * sizeof(T));
+		MemBlockAlloc::free(b, i_size * sizeof(T));
 	}
-
-
 
 };
 

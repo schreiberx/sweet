@@ -718,7 +718,7 @@ public:
 	SphereData_Spectral solve(
 			const SphereData_Spectral &i_rhs,
 			bool i_ignore_first_mode = false
-	)	const
+	) const
 	{
 		SphereData_Spectral out(sphereDataConfig);
 
@@ -730,14 +730,33 @@ public:
 		{
 			int idx = sphereDataConfig->getArrayIndexByModes(m,m);
 
-			bandedMatrixSolver.solve_diagBandedInverse_Carray(
-							&lhs.data[idx*lhs.num_diagonals],
-							&i_rhs.spectral_space_data[idx],
-							&out.spectral_space_data[idx],
-							sphereDataConfig->spectral_modes_n_max+1-m,	// size of block
-							m
+			//////bandedMatrixSolver.solve_diagBandedInverse_Carray(
+			//////				&lhs.data[idx*lhs.num_diagonals],
+			//////				&i_rhs.spectral_space_data[idx],
+			//////				&out.spectral_space_data[idx],
+			//////				sphereDataConfig->spectral_modes_n_max+1-m,	// size of block
+			//////				m
+			//////		);
+
+#if SWEET_DEBUG
+			double time_pivoting = 0;
+			double time_serial = 0;
+#endif
+			bandedMatrixSolver.solve_diagBandedInverse(
+								sphereDataConfig->spectral_modes_n_max+1-m,	// size of block
+								&lhs.data[idx*lhs.num_diagonals],		// A
+								&i_rhs.spectral_space_data[idx],		// b
+								&out.spectral_space_data[idx]			// x
+#if SWEET_DEBUG
+								,
+								time_pivoting,
+								time_serial
+#endif
 					);
 		}
+
+
+
 
 		return out;
 	}

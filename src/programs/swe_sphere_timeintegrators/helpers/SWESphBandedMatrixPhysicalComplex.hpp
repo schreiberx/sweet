@@ -773,13 +773,30 @@ public:
 				}
 			}
 
-			bandedMatrixSolver.solve_diagBandedInverse_Carray(
-							&lhs.data[idx*lhs.num_diagonals],
-							buffer_in,
-							buffer_out,
-							sphereDataConfig->spectral_modes_n_max+1-std::abs(m),	// size of block (same as for SPHSolver)
-							idx
+			/////bandedMatrixSolver.solve_diagBandedInverse_Carray(
+			/////				&lhs.data[idx*lhs.num_diagonals],
+			/////				buffer_in,
+			/////				buffer_out,
+			/////				sphereDataConfig->spectral_modes_n_max+1-std::abs(m),	// size of block (same as for SPHSolver)
+			/////				idx
+			/////		);
+
+#if SWEET_DEBUG
+			double time_pivoting = 0;
+			double time_solving = 0;
+#endif
+			bandedMatrixSolver.solve_diagBandedInverse(
+								sphereDataConfig->spectral_modes_n_max+1-std::abs(m),	// size of block (same as for SPHSolver)
+								&lhs.data[idx*lhs.num_diagonals],			// A
+								buffer_in,						// b
+								buffer_out						// x
+#if SWEET_DEBUG
+								,
+								time_pivoting,
+								time_solving
+#endif
 					);
+
 
 
 			/*
