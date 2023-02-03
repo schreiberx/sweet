@@ -150,226 +150,226 @@ class BandedMatrixSolver<std::complex<double>>	:
 {
 	typedef std::complex<double> T;
 
-	/**
-	 * Solve for input matrix
-	 *
-	 * i_A: cols: num_diagonals
-	 *      rows: i_size
-	 *
-	 * The Fortran array will be transposed and with a size of (rows: LDAB, cols: i_size)
-	 *
-	 * i_b: RHS of equation
-	 *
-	 * o_x: Solution
-	 */
-public:
-	void solve_diagBandedInverse_Carray(
-		const std::complex<double>* i_A,
-		const std::complex<double>* i_b,
-		std::complex<double>* o_x,
-		int i_size,
-		int i_debug_block
-	)	const
-	{
-		assert(max_N >= i_size);
-
-#if 0
-		/**
-		 * WARNING: LEAVE THIS BLOCK FOR DEBUGGING PURPOSE!!!
-		 *
-		 * 1) Decodes the compact stored matrix A into a full NxN matrix.
-		 * 2) Convert to Fortran storage format
-		 * 3) convert to LAPACK general band matrix format
-		 */
-		std::cout << "C ARRAY: A compactified" << std::endl;
-		print_array_c(i_A, num_diagonals, i_size);
-
-		T *fortran_A = new T[i_size*i_size];
-
-		for (int i = 0; i < i_size*i_size; i++)
-			fortran_A[i] = std::numeric_limits<double>::infinity();
-
-		// source c cols
-		for (int i = 0; i < num_diagonals; i++)
-		{
-			// source c rows
-			for (int j = 0; j < i_size; j++)
-			{
-				int di = j+i-num_halo_size_diagonals;
-
-				if (di < 0 || di >= i_size)
-					continue;
-
-				int dj = j;
-				fortran_A[di*i_size+dj] = i_A[j*num_diagonals+i];
-			}
-		}
-
-		std::cout << "FORTRAN ARRAY: A expanded" << std::endl;
-		print_array_fortran(fortran_A, i_size, i_size);
-
-		for (int i = 0; i < i_size*LDAB; i++)
-			AB[i] = std::numeric_limits<double>::infinity();
-
-		for (int i = 0; i < i_size; i++)
-		{
-			int fi = i+1;
-
-			// columns for output fortran array
-			for (int j = 0; j < i_size; j++)
-			{
-				int fj = j+1;
-
-				if (std::max(1, fj-num_halo_size_diagonals) <= fi && fi <= std::min(i_size, fj+num_halo_size_diagonals))
-					AB[(num_diagonals+fi-fj)-1 + (fj-1)*LDAB] = fortran_A[i+j*i_size];
-			}
-		}
-
-
-		std::cout << "FORTRAN ARRAY: A compactified" << std::endl;
-		print_array_fortran(AB, i_size, LDAB);
-
-
-#if 1
-		for (int i = 0; i < i_size*LDAB; i++)
-			AB[i] = std::numeric_limits<double>::infinity();
-
-		// columns for output fortran array
-		// rows for input c array
-		for (int j = 0; j < i_size; j++)
-		{
-			// rows for output fortran array
-			// columns for input c array
-			for (int i = 0; i < num_diagonals; i++)
-			{
-				// compute square matrix indices
-				int si = j+(num_halo_size_diagonals-i);
-				int sj = j;
-
-//				std::cout << sj << " " << si << std::endl;
-
-				if (si < 0 || si >= i_size)
-					continue;
-
-
-				// AB is LDAB large!
-				assert(LDAB*max_N > i*i_size+j);
-				assert(LDAB*max_N > i+j*num_diagonals);
-
-				AB[(num_diagonals+si-sj-1) + sj*LDAB] = i_A[(j-i+num_halo_size_diagonals)*num_diagonals + i];
-			}
-		}
-#endif
-
-		delete fortran_A;
-
-		std::cout << "FORTRAN ARRAY: A compactified (alternative, should match previous one)" << std::endl;
-		print_array_fortran(AB, i_size, LDAB);
-
-#else
-
-#ifndef NDEBUG
-		for (int i = 0; i < i_size*LDAB; i++)
-			AB[i] = std::numeric_limits<double>::infinity();
-#endif
-
-		// columns for output fortran array
-		// rows for input c array
-		for (int j = 0; j < i_size; j++)
-		{
-			// rows for output fortran array
-			// columns for input c array
-			for (int i = 0; i < num_diagonals; i++)
-			{
-				// compute square matrix indices
-				int si = j+(num_halo_size_diagonals-i);
-				int sj = j;
-
-				if (si < 0 || si >= i_size)
-					continue;
-
-
-				// AB is LDAB large!
-				assert(LDAB*max_N > i*i_size+j);
-				assert(LDAB*max_N > i+j*num_diagonals);
-
-				AB[(num_diagonals+si-sj-1) + sj*LDAB] = i_A[(j-i+num_halo_size_diagonals)*num_diagonals + i];
-			}
-		}
-#endif
-
-		solve_diagBandedInverse_FortranArray(AB, i_b, o_x, i_size, i_debug_block);
-	}
-
-
-
-public:
-	void solve_diagBandedInverse_FortranArray(
-		const std::complex<double>* i_A,	///< A of max size
-		const std::complex<double>* i_b,
-		std::complex<double>* o_x,
-		int i_size,
-		int i_debug_block
-	)	const
-	{
-		/*
-		 * Make a copy of the array data since this is a destructive function
-		 */
-		if (AB != i_A)
-			memcpy((void*)AB, (const void*)i_A, sizeof(std::complex<double>)*num_diagonals*LDAB);
-
-		memcpy((void*)o_x, (const void*)i_b, sizeof(std::complex<double>)*i_size);
-
-		solve_diagBandedInverse_FortranArray_inplace(AB, o_x, i_size, i_debug_block);
-	}
-
-
-
-public:
-	void solve_diagBandedInverse_FortranArray_inplace(
-		std::complex<double>* io_A,		///< A of max size
-		std::complex<double>* io_b_x,	///< rhs and solution x
-		int i_size,
-		int i_debug_block
-	)	const
-	{
-		assert((num_diagonals & 1) == 1);
-		assert(AB != nullptr);
-
-
+////////////////	/**
+////////////////	 * Solve for input matrix
+////////////////	 *
+////////////////	 * i_A: cols: num_diagonals
+////////////////	 *      rows: i_size
+////////////////	 *
+////////////////	 * The Fortran array will be transposed and with a size of (rows: LDAB, cols: i_size)
+////////////////	 *
+////////////////	 * i_b: RHS of equation
+////////////////	 *
+////////////////	 * o_x: Solution
+////////////////	 */
+////////////////public:
+////////////////	void solve_diagBandedInverse_Carray(
+////////////////		const std::complex<double>* i_A,
+////////////////		const std::complex<double>* i_b,
+////////////////		std::complex<double>* o_x,
+////////////////		int i_size,
+////////////////		int i_debug_block
+////////////////	)	const
+////////////////	{
+////////////////		assert(max_N >= i_size);
+////////////////
 ////////////////#if 0
-////////////////		std::cout << "************************************" << std::endl;
-////////////////		std::cout << "i_size: " << i_size << std::endl;
-////////////////		std::cout << "num_halo_size_diagonals: " << num_halo_size_diagonals << std::endl;
-////////////////		std::cout << "LDAB: " << LDAB << std::endl;
-////////////////#endif
+////////////////		/**
+////////////////		 * WARNING: LEAVE THIS BLOCK FOR DEBUGGING PURPOSE!!!
+////////////////		 *
+////////////////		 * 1) Decodes the compact stored matrix A into a full NxN matrix.
+////////////////		 * 2) Convert to Fortran storage format
+////////////////		 * 3) convert to LAPACK general band matrix format
+////////////////		 */
+////////////////		std::cout << "C ARRAY: A compactified" << std::endl;
+////////////////		print_array_c(i_A, num_diagonals, i_size);
 ////////////////
-////////////////#if SWEET_LAPACK
-////////////////		int info;
-////////////////		zgbsv_(
-////////////////				i_size,				// number of linear equations
-////////////////				num_halo_size_diagonals,	// number of subdiagonals
-////////////////				num_halo_size_diagonals,	// number of superdiagonals
-////////////////				1,				// number of columns of matrix B
-////////////////				io_A,				// array with matrix A to solve for
-////////////////				LDAB,				// leading dimension of matrix A
-////////////////				IPIV,				// integer array for pivoting
-////////////////				io_b_x,				// output array
-////////////////				i_size,				// leading dimension of array o_x
-////////////////				info
-////////////////			);
+////////////////		T *fortran_A = new T[i_size*i_size];
 ////////////////
-////////////////		if (info != 0)
+////////////////		for (int i = 0; i < i_size*i_size; i++)
+////////////////			fortran_A[i] = std::numeric_limits<double>::infinity();
+////////////////
+////////////////		// source c cols
+////////////////		for (int i = 0; i < num_diagonals; i++)
 ////////////////		{
-////////////////			std::cerr << "Block ID: " << i_debug_block << std::endl;
-////////////////			std::cerr << "zgbsv returned INFO != 0: " << info << std::endl;
-////////////////			assert(false);
-////////////////			exit(1);
+////////////////			// source c rows
+////////////////			for (int j = 0; j < i_size; j++)
+////////////////			{
+////////////////				int di = j+i-num_halo_size_diagonals;
+////////////////
+////////////////				if (di < 0 || di >= i_size)
+////////////////					continue;
+////////////////
+////////////////				int dj = j;
+////////////////				fortran_A[di*i_size+dj] = i_A[j*num_diagonals+i];
+////////////////			}
 ////////////////		}
-////////////////#else
-////////////////		SWEETError("SWEET compiled without LAPACK!!!");
+////////////////
+////////////////		std::cout << "FORTRAN ARRAY: A expanded" << std::endl;
+////////////////		print_array_fortran(fortran_A, i_size, i_size);
+////////////////
+////////////////		for (int i = 0; i < i_size*LDAB; i++)
+////////////////			AB[i] = std::numeric_limits<double>::infinity();
+////////////////
+////////////////		for (int i = 0; i < i_size; i++)
+////////////////		{
+////////////////			int fi = i+1;
+////////////////
+////////////////			// columns for output fortran array
+////////////////			for (int j = 0; j < i_size; j++)
+////////////////			{
+////////////////				int fj = j+1;
+////////////////
+////////////////				if (std::max(1, fj-num_halo_size_diagonals) <= fi && fi <= std::min(i_size, fj+num_halo_size_diagonals))
+////////////////					AB[(num_diagonals+fi-fj)-1 + (fj-1)*LDAB] = fortran_A[i+j*i_size];
+////////////////			}
+////////////////		}
+////////////////
+////////////////
+////////////////		std::cout << "FORTRAN ARRAY: A compactified" << std::endl;
+////////////////		print_array_fortran(AB, i_size, LDAB);
+////////////////
+////////////////
+////////////////#if 1
+////////////////		for (int i = 0; i < i_size*LDAB; i++)
+////////////////			AB[i] = std::numeric_limits<double>::infinity();
+////////////////
+////////////////		// columns for output fortran array
+////////////////		// rows for input c array
+////////////////		for (int j = 0; j < i_size; j++)
+////////////////		{
+////////////////			// rows for output fortran array
+////////////////			// columns for input c array
+////////////////			for (int i = 0; i < num_diagonals; i++)
+////////////////			{
+////////////////				// compute square matrix indices
+////////////////				int si = j+(num_halo_size_diagonals-i);
+////////////////				int sj = j;
+////////////////
+//////////////////				std::cout << sj << " " << si << std::endl;
+////////////////
+////////////////				if (si < 0 || si >= i_size)
+////////////////					continue;
+////////////////
+////////////////
+////////////////				// AB is LDAB large!
+////////////////				assert(LDAB*max_N > i*i_size+j);
+////////////////				assert(LDAB*max_N > i+j*num_diagonals);
+////////////////
+////////////////				AB[(num_diagonals+si-sj-1) + sj*LDAB] = i_A[(j-i+num_halo_size_diagonals)*num_diagonals + i];
+////////////////			}
+////////////////		}
 ////////////////#endif
-	}
+////////////////
+////////////////		delete fortran_A;
+////////////////
+////////////////		std::cout << "FORTRAN ARRAY: A compactified (alternative, should match previous one)" << std::endl;
+////////////////		print_array_fortran(AB, i_size, LDAB);
+////////////////
+////////////////#else
+////////////////
+////////////////#ifndef NDEBUG
+////////////////		for (int i = 0; i < i_size*LDAB; i++)
+////////////////			AB[i] = std::numeric_limits<double>::infinity();
+////////////////#endif
+////////////////
+////////////////		// columns for output fortran array
+////////////////		// rows for input c array
+////////////////		for (int j = 0; j < i_size; j++)
+////////////////		{
+////////////////			// rows for output fortran array
+////////////////			// columns for input c array
+////////////////			for (int i = 0; i < num_diagonals; i++)
+////////////////			{
+////////////////				// compute square matrix indices
+////////////////				int si = j+(num_halo_size_diagonals-i);
+////////////////				int sj = j;
+////////////////
+////////////////				if (si < 0 || si >= i_size)
+////////////////					continue;
+////////////////
+////////////////
+////////////////				// AB is LDAB large!
+////////////////				assert(LDAB*max_N > i*i_size+j);
+////////////////				assert(LDAB*max_N > i+j*num_diagonals);
+////////////////
+////////////////				AB[(num_diagonals+si-sj-1) + sj*LDAB] = i_A[(j-i+num_halo_size_diagonals)*num_diagonals + i];
+////////////////			}
+////////////////		}
+////////////////#endif
+////////////////
+////////////////		solve_diagBandedInverse_FortranArray(AB, i_b, o_x, i_size, i_debug_block);
+////////////////	}
+
+
+
+///////////////////////public:
+///////////////////////	void solve_diagBandedInverse_FortranArray(
+///////////////////////		const std::complex<double>* i_A,	///< A of max size
+///////////////////////		const std::complex<double>* i_b,
+///////////////////////		std::complex<double>* o_x,
+///////////////////////		int i_size,
+///////////////////////		int i_debug_block
+///////////////////////	)	const
+///////////////////////	{
+///////////////////////		/*
+///////////////////////		 * Make a copy of the array data since this is a destructive function
+///////////////////////		 */
+///////////////////////		if (AB != i_A)
+///////////////////////			memcpy((void*)AB, (const void*)i_A, sizeof(std::complex<double>)*num_diagonals*LDAB);
+///////////////////////
+///////////////////////		memcpy((void*)o_x, (const void*)i_b, sizeof(std::complex<double>)*i_size);
+///////////////////////
+///////////////////////		solve_diagBandedInverse_FortranArray_inplace(AB, o_x, i_size, i_debug_block);
+///////////////////////	}
+///////////////////////
+///////////////////////
+///////////////////////
+///////////////////////public:
+///////////////////////	void solve_diagBandedInverse_FortranArray_inplace(
+///////////////////////		std::complex<double>* io_A,		///< A of max size
+///////////////////////		std::complex<double>* io_b_x,	///< rhs and solution x
+///////////////////////		int i_size,
+///////////////////////		int i_debug_block
+///////////////////////	)	const
+///////////////////////	{
+///////////////////////		assert((num_diagonals & 1) == 1);
+///////////////////////		assert(AB != nullptr);
+///////////////////////
+///////////////////////
+///////////////////////////////////////#if 0
+///////////////////////////////////////		std::cout << "************************************" << std::endl;
+///////////////////////////////////////		std::cout << "i_size: " << i_size << std::endl;
+///////////////////////////////////////		std::cout << "num_halo_size_diagonals: " << num_halo_size_diagonals << std::endl;
+///////////////////////////////////////		std::cout << "LDAB: " << LDAB << std::endl;
+///////////////////////////////////////#endif
+///////////////////////////////////////
+///////////////////////////////////////#if SWEET_LAPACK
+///////////////////////////////////////		int info;
+///////////////////////////////////////		zgbsv_(
+///////////////////////////////////////				i_size,				// number of linear equations
+///////////////////////////////////////				num_halo_size_diagonals,	// number of subdiagonals
+///////////////////////////////////////				num_halo_size_diagonals,	// number of superdiagonals
+///////////////////////////////////////				1,				// number of columns of matrix B
+///////////////////////////////////////				io_A,				// array with matrix A to solve for
+///////////////////////////////////////				LDAB,				// leading dimension of matrix A
+///////////////////////////////////////				IPIV,				// integer array for pivoting
+///////////////////////////////////////				io_b_x,				// output array
+///////////////////////////////////////				i_size,				// leading dimension of array o_x
+///////////////////////////////////////				info
+///////////////////////////////////////			);
+///////////////////////////////////////
+///////////////////////////////////////		if (info != 0)
+///////////////////////////////////////		{
+///////////////////////////////////////			std::cerr << "Block ID: " << i_debug_block << std::endl;
+///////////////////////////////////////			std::cerr << "zgbsv returned INFO != 0: " << info << std::endl;
+///////////////////////////////////////			assert(false);
+///////////////////////////////////////			exit(1);
+///////////////////////////////////////		}
+///////////////////////////////////////#else
+///////////////////////////////////////		SWEETError("SWEET compiled without LAPACK!!!");
+///////////////////////////////////////#endif
+///////////////////////	}
 
 
 private:
@@ -633,7 +633,7 @@ private:
 		o_time_pivoting = duration.count();
 
 		// check if matrix is upper triangular
-		if (!checkMatrixUpperTriangular(i_size, i_A))
+		if (!this->checkMatrixUpperTriangular(i_size, i_A))
 		{
 			std::cout << "Pivoted matrix is not upper triangular!" << std::endl;
 			exit(0);
@@ -648,7 +648,7 @@ private:
 		time0 = std::chrono::high_resolution_clock::now();
 #endif
 
-		solveUpperTriangularSystem(i_size, i_A, i_b, o_x);
+		this->solveUpperTriangularSystem(i_size, i_A, i_b, o_x);
 
 #if SWEET_DEBUG
 		time1 = std::chrono::high_resolution_clock::now();
@@ -656,7 +656,7 @@ private:
 		o_time_solving = duration.count();
 
 		// check solution of linear system
-		if (!checkSystemSolution(i_size, A2, b2, o_x))
+		if (!this->checkSystemSolution(i_size, A2, b2, o_x))
 		{
 			std::cout << "Computed solution does not satisfy the linear system!" << std::endl;
 			exit(0);
