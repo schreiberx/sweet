@@ -113,7 +113,7 @@ void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereDat
 	/*
 	 * IMEX SDC
 	 */
-	registered_integrators.push_back(new SWE_Sphere_TS_ln_imex_sdc(i_simVars, i_op));
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_imex_sdc(i_simVars, i_op)));
 
 	/*
 	 * EXP SETTLS VERSION
