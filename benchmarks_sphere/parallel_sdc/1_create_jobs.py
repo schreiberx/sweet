@@ -130,9 +130,14 @@ if __name__ == "__main__":
         ['ln_erk',        4,    4],
 
         ###########
-        # IMEX Runge Kutta (implicit order, explicit order)
+        # IMEX Euler
         ###########
-        ['l_irk_n_erk',        1,    1],
+        # ['l_irk_n_erk',        1,    1],
+
+        ###########
+        # IMEX SDC
+        ###########
+        ['ln_imex_sdc',        1,    1],
     ]
 
 
