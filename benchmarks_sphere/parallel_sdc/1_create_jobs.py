@@ -42,12 +42,7 @@ params_timestep_size_reference = 30.0
 #params_timestep_sizes_explicit_ = [15*(2**i) for i in range(0, 4)]
 #params_timestep_sizes_explicit_ = [60]
 
-base_timestep_size = 128/p.runtime.space_res_spectral*300.0
-params_timestep_sizes_explicit_ = [base_timestep_size]
-
-params_timestep_sizes_implicit_ = [15*(2**i) for i in range(2, 6)]
-params_timestep_sizes_sl_ = [15*(2**i) for i in range(2, 6)]
-
+base_timestep_size = 128/p.runtime.space_res_spectral*50.0
 
 # Parallelization
 nSpacePar = int(sys.argv[1]) if len(sys.argv) > 1 else p.platform_resources.num_cores_per_socket
@@ -132,26 +127,12 @@ if __name__ == "__main__":
 
     ts_methods = [
         # REFERENCE METHOD, not computed by default
-        ['ln_erk',        4,    4,    0],
-
-
-        ###########
-        # Runge-Kutta
-        ###########
-        ['ln_erk',        4,    4,    0],
-        #['ln_erk',        2,    2,    0],
+        ['ln_erk',        4,    4],
 
         ###########
-        # CN
+        # IMEX Runge Kutta (implicit order, explicit order)
         ###########
-        #['lg_irk_lc_n_erk_ver0',    2,    2,    0],
-        #['lg_irk_lc_n_erk_ver1',    2,    2,    0],
-
-        #['l_irk_na_sl_nd_settls_ver1',    2,    2,    0],
-        #['l_irk_na_sl_nd_settls_ver2',    2,    2,    0],
-
-        #['lg_irk_na_sl_lc_nd_settls_ver1',    2,    2,    0],
-        #['lg_irk_na_sl_lc_nd_settls_ver2',    2,    2,    0],
+        ['l_irk_n_erk',        1,    1],
     ]
 
 
@@ -194,22 +175,8 @@ if __name__ == "__main__":
         p.runtime.timestepping_order = tsm[1]
         p.runtime.timestepping_order2 = tsm[2]
 
-        if len(tsm) > 4:
-            s = tsm[4]
-            p.runtime.load_from_dict(tsm[4])
-
         tsm_name = tsm[0]
-        if 'ln_erk' in tsm_name:
-            params_timestep_sizes = params_timestep_sizes_explicit_
-        elif 'l_erk' in tsm_name or 'lg_erk' in tsm_name:
-            params_timestep_sizes = params_timestep_sizes_explicit_
-        elif 'l_irk' in tsm_name or 'lg_irk' in tsm_name:
-            params_timestep_sizes = params_timestep_sizes_implicit_
-        elif '_sl' in tsm_name:
-            params_timestep_sizes = params_timestep_sizes_sl_
-        else:
-            print("Unable to identify time stepping method "+tsm_name)
-            sys.exit(1)
+        params_timestep_sizes = [base_timestep_size]
 
         for (
                 pspace_num_cores_per_rank,
@@ -234,6 +201,6 @@ if __name__ == "__main__":
 
             p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-            p.gen_jobscript_directory('job_bench_'+p.getUniqueID())
+            p.gen_jobscript_directory(f'job_bench_{tsm[0]}')
 
     p.write_compilecommands()
