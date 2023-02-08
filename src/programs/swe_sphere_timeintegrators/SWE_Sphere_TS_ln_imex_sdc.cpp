@@ -44,92 +44,142 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 )
 {
 	/*
-	Solves the following problem
+	Performe one step of IMEX SDC for
 	
 	du/dt = L(u) + NL(u)
 
 	with u = [io_phi, io_vrt, io_div], L the linear term
 	and NL the non linear term.
-	u_in is the initial value before any method call,
-	and u_out is the final value after.
+
+	It uses an implicit sweep for the L term,
+	and an explicit sweep for the NL term.
 	*/
 
-	// first order explicit for non-linear
-	// -- u_out = u_in + dt*NL(u_in,t)
-	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-			io_phi, io_vrt, io_div,
-			i_fixed_dt,
-			i_simulation_timestamp
-		);
+	// -- initialize step values
+	u0.setRef(io_phi, io_vrt, io_div);
+	t0 = i_simulation_timestamp;
+	dt = i_fixed_dt;
 
-	// first order IRK for linear
-	// -- u_out - dt*L(u_out, t) = u_in ... actually, not really ...
-	timestepping_l_irk.run_timestep(
-			io_phi, io_vrt, io_div,
-			i_fixed_dt,
-			i_simulation_timestamp
-		);
+	// -- initialize nodes values
+	initSweep();
 
-	// TODO : Implement IMEX SDC instead !
+	// -- perform sweeps
+	for (size_t i = 0; i < nIter; i++){
+		sweep();
+	}
+
+	// TODO : copy state values to io_phi, io_vrt and io_div
+
+	// TODO : add prolongation (later ...)
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(
-		SphereData_Spectral &phi_pert,	///< prognostic variables
-		SphereData_Spectral &vort,	    ///< prognostic variables
-		SphereData_Spectral &div,	    ///< prognostic variables
-		SphereData_Spectral &phi_pert_L,	///< evaluation
-		SphereData_Spectral &vort_L,	    ///< evaluation
-		SphereData_Spectral &div_L,	        ///< evaluation
-		double simulation_timestamp
-) {
+void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_linear(
-		phi_pert,
-		vort,
-		div,
-		// Variables where to store the linear terms evaluation
-		phi_pert_L,
-		vort_L,
-		div_L,
-		// Timestamp of the evaluation
-		simulation_timestamp
+		u.phi, u.vort, u.div,
+		eval.phi, eval.vort, eval.div,
+		t  // time-stamp
+	);
+}
+void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
+	timestepping_l_erk_n_erk.euler_timestep_update_linear(
+		*u.phi, *u.vort, *u.div,
+		eval.phi, eval.vort, eval.div,
+		t  // time-stamp
 	);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(
-		SphereData_Spectral &phi_pert,	///< prognostic variables
-		SphereData_Spectral &vort,	    ///< prognostic variables
-		SphereData_Spectral &div,	    ///< prognostic variables
-		SphereData_Spectral &phi_pert_N,	///< evaluation
-		SphereData_Spectral &vort_N,	    ///< evaluation
-		SphereData_Spectral &div_N,	    ///< evaluation
-		double simulation_timestamp
-) {
+void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-		phi_pert,
-		vort,
-		div,
-		// Variables where to store the non linear terms evaluation
-		phi_pert_N,
-		vort_N,
-		div_N,
-		// Timestamp of the evaluation
-		simulation_timestamp
+		u.phi, u.vort, u.div,
+		eval.phi, eval.vort, eval.div,
+		t  // time-stamp
+	);
+}
+void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
+	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
+		*u.phi, *u.vort, *u.div,
+		eval.phi, eval.vort, eval.div,
+		t  // time-stamp
 	);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(
-		SphereData_Spectral &rhs_phi,	///< rhs variables
-		SphereData_Spectral &rhs_vrt,	///< rhs variables
-		SphereData_Spectral &rhs_div,	///< rhs variables
-
-		double dt
-) {
+void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(SWE_Variables& rhs, double dt) {
 	timestepping_l_irk.solveImplicit(
-		rhs_phi,
-		rhs_vrt,
-		rhs_div,
+		rhs.phi, rhs.vort, rhs.div,
 		dt
 	);
+}
+
+void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, SWE_Variables& x, SWE_Variables& y) {
+	// TODO : optimize this if possible (check with Martin)
+	tmp = x.phi;
+	tmp *= a;
+	y.phi += tmp;
+
+	tmp = x.vort;
+	tmp *= a;
+	y.vort += tmp;
+
+	tmp = x.div;
+	tmp *= a;
+	y.div += tmp;
+}
+
+void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
+	// Evaluate linear and non-linear with initial solution, and copy to each node
+	evalLinearTerms(u0, lTerms.getK(0), t0);
+	evalNonLinearTerms(u0, nTerms.getK(0), t0);
+	for (size_t i = 1; i < nNodes; i++) {
+		lTerms.getK(i).copyValues(lTerms.getK(0));
+		nTerms.getK(i).copyValues(nTerms.getK(0));
+	}
+}
+
+void SWE_Sphere_TS_ln_imex_sdc::sweep() {
+
+	// Local convenient references
+	const Mat& q = qMat;
+	const Mat& qI = qDeltaI;
+	const Mat& qE = qDeltaI;
+
+	// Loop on nodes
+	for (size_t i = 0; i < nNodes; i++) {
+		
+		// Initialize with u0 value
+		rhs.copyValues(u0);
+
+		// Add quadrature terms
+		for (size_t j = 0; j < nNodes; j++) {
+			axpy(dt*q[i][j], nTerms.getK(j), rhs);
+			axpy(dt*q[i][j], lTerms.getK(j), rhs);
+		}
+
+		// Add non-linear and linear terms from iteration k+1
+		for (size_t j = 0; j < i; j++) {
+			axpy(dt*qE[i][j], nTerms.getK1(j), rhs);
+			axpy(dt*qI[i][j], lTerms.getK1(j), rhs);
+		}
+
+		// Substract non-linear and linear terms from iteration k
+		for (size_t j = 0; j < i; j++) {
+			axpy(-dt*qE[i][j], nTerms.getK(j), rhs);
+			axpy(-dt*qI[i][j], lTerms.getK(j), rhs);
+		}
+		axpy(-dt*qI[i][i], lTerms.getK(i), rhs);
+		
+		// Implicit solve
+		solveImplicit(rhs, dt*qI[i][i]);
+
+		// Evaluate and store linear term for k+1
+		evalLinearTerms(rhs, lTerms.getK1(i), t0+dt*tau[i]);
+
+		// Evaluate and store non linear term for k+1
+		evalNonLinearTerms(rhs, nTerms.getK1(i), t0+dt*tau[i]);
+	}
+
+	// Swap k+1 and k values for next iteration
+	nTerms.swapIterate();
+	lTerms.swapIterate();
 }
 
 /*
@@ -209,7 +259,12 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		timestepping_l_irk(simVars, op),
 		timestepping_l_erk_n_erk(simVars, op),
 		version_id(0),
-		timestepping_order(-1)
+		timestepping_order(-1),
+		lTerms(op.sphereDataConfig),
+		nTerms(op.sphereDataConfig),
+		rhs(op.sphereDataConfig),
+		tmp(op.sphereDataConfig),
+		u0()
 {
 
 }
