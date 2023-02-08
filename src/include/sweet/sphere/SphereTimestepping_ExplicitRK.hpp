@@ -171,9 +171,9 @@ public:
 					i_simulation_time
 			);
 
-			io_h += i_dt**RK_prog0_stage_t[0];
-			io_u += i_dt**RK_prog1_stage_t[0];
-			io_v += i_dt**RK_prog2_stage_t[0];
+			io_h += i_dt*(*RK_prog0_stage_t[0]);
+			io_u += i_dt*(*RK_prog1_stage_t[0]);
+			io_v += i_dt*(*RK_prog2_stage_t[0]);
 		}
 		else if (i_runge_kutta_order == 2)
 		{

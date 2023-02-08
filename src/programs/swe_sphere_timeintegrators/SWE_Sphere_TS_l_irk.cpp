@@ -85,12 +85,6 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 	 *
 	 * with q the CN damping facor with no damping for q=0.5
 	 */
-
-	SphereData_Spectral o_phi_t(sphereDataConfig);
-	SphereData_Spectral o_vrt_t(sphereDataConfig);
-	SphereData_Spectral o_div_t(sphereDataConfig);
-
-
 	if (timestepping_order == 2)
 	{
 		/*
@@ -133,6 +127,42 @@ void SWE_Sphere_TS_l_irk::run_timestep(
 	}
 }
 
+void SWE_Sphere_TS_l_irk::solveImplicit(
+		SphereData_Spectral &rhs_phi,	///< rhs variables
+		SphereData_Spectral &rhs_vrt,	///< rhs variables
+		SphereData_Spectral &rhs_div,	///< rhs variables
+
+		double dt
+)
+{
+	update_coefficients(dt);
+	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
+
+	if (no_coriolis)
+	{
+		SWEETError("Not supported yet");
+	}
+	else
+	{
+		double dt_two_omega = dt*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+
+		// Implicit update using explicit evaluation for implicit_FJinv and implicit_L (with or without NL update)
+		SphereData_Spectral rhs_div = rhs_phi + ops.implicit_FJinv(rhs_phi, dt_two_omega) + ops.implicit_L(rhs_phi, dt);
+		SphereData_Spectral div1 = sphSolverDiv.solve(rhs_div);
+
+		// Update for phi using implicit evaluation of div
+		SphereData_Spectral phi1 = rhs_phi - dt*gh0*div1;
+
+		// Decoupled implicit update, using the implicit update for div
+		SphereData_Spectral rhs_vrt = rhs_vrt - ops.implicit_F(div1, dt_two_omega);
+		SphereData_Spectral vrt1 = ops.implicit_Jinv(rhs_vrt, dt_two_omega);
+
+		rhs_phi = phi1;
+		rhs_vrt = vrt1;
+		rhs_div = div1;
+	}
+}
+
 
 
 void SWE_Sphere_TS_l_irk::update_coefficients(double i_timestep_size)
@@ -143,7 +173,7 @@ void SWE_Sphere_TS_l_irk::update_coefficients(double i_timestep_size)
 
 	if (timestepping_order == 1)
 	{
-		dt_explicit = -666.0;
+		dt_explicit = -666.0;  // Yeah !!!
 		dt_implicit = timestep_size;
 	}
 	else

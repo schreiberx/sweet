@@ -41,13 +41,57 @@ public:
 	 */
 	SWE_Sphere_TS_l_erk_n_erk timestepping_l_erk_n_erk;
 
-	SphereTimestepping_ExplicitRK timestepping_rk_nonlinear;
-
+	/*
+	 * To be specified ...
+ 	 */
 	int version_id;
 
 	int timestepping_order;
 	int timestepping_order2;
 
+private:
+	/*
+	 * SDC specific attributes
+ 	 */
+	
+	/*
+	 * SDC specific methods
+ 	 */
+
+	// Wrapper evaluating linear terms and storing them in separate variables
+	void evalLinearTerms(
+			SphereData_Spectral &phi_pert,	///< prognostic variables
+			SphereData_Spectral &vort,	    ///< prognostic variables
+			SphereData_Spectral &div,	    ///< prognostic variables
+			SphereData_Spectral &phi_pert_L,	///< evaluation
+			SphereData_Spectral &vort_L,	    ///< evaluation
+			SphereData_Spectral &div_L,	        ///< evaluation
+			double simulation_timestamp = -1
+	);
+
+	// Wrapper evaluating non-linear terms and storing them in separate variables
+	void evalNonLinearTerms(
+			SphereData_Spectral &phi_pert,	///< prognostic variables
+			SphereData_Spectral &vort,	    ///< prognostic variables
+			SphereData_Spectral &div,	    ///< prognostic variables
+			SphereData_Spectral &phi_pert_NL,	///< evaluation
+			SphereData_Spectral &vort_NL,	    ///< evaluation
+			SphereData_Spectral &div_NL,	    ///< evaluation
+			double simulation_timestamp = -1
+	);
+
+	/* Wrapper solving the implicit system built from the linear term :
+	 u - dt*L(u) = rhs
+	 LHS is always updated, independing on the dt value
+	 WARNING : rhs variables are overwritten with u 
+	*/ 
+	void solveImplicit(
+		SphereData_Spectral &rhs_phi,	///< rhs variables
+		SphereData_Spectral &rhs_vrt,	///< rhs variables
+		SphereData_Spectral &rhs_div,	///< rhs variables
+
+		double dt
+	);
 
 public:
 	SWE_Sphere_TS_ln_imex_sdc(

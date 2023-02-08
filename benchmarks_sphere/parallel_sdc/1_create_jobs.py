@@ -42,7 +42,7 @@ params_timestep_size_reference = 30.0
 #params_timestep_sizes_explicit_ = [15*(2**i) for i in range(0, 4)]
 #params_timestep_sizes_explicit_ = [60]
 
-base_timestep_size = 128/p.runtime.space_res_spectral*50.0
+base_timestep_size = 128/p.runtime.space_res_spectral*300.0
 
 # Parallelization
 nSpacePar = int(sys.argv[1]) if len(sys.argv) > 1 else p.platform_resources.num_cores_per_socket
@@ -132,12 +132,12 @@ if __name__ == "__main__":
         ###########
         # IMEX Euler
         ###########
-        # ['l_irk_n_erk',        1,    1],
+        ['l_irk_n_erk',        2,    2],
 
         ###########
         # IMEX SDC
         ###########
-        ['ln_imex_sdc',        1,    1],
+        # ['ln_imex_sdc',        1,    1],
     ]
 
 

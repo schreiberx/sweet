@@ -43,7 +43,19 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 		double i_simulation_timestamp
 )
 {
+	/*
+	Solves the following problem
+	
+	du/dt = L(u) + NL(u)
+
+	with u = [io_phi, io_vrt, io_div], L the linear term
+	and NL the non linear term.
+	u_in is the initial value before any method call,
+	and u_out is the final value after.
+	*/
+
 	// first order explicit for non-linear
+	// -- u_out = u_in + dt*NL(u_in,t)
 	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
 			io_phi, io_vrt, io_div,
 			i_fixed_dt,
@@ -51,14 +63,74 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 		);
 
 	// first order IRK for linear
+	// -- u_out - dt*L(u_out, t) = u_in ... actually, not really ...
 	timestepping_l_irk.run_timestep(
 			io_phi, io_vrt, io_div,
 			i_fixed_dt,
 			i_simulation_timestamp
 		);
+
+	// TODO : Implement IMEX SDC instead !
 }
 
+void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(
+		SphereData_Spectral &phi_pert,	///< prognostic variables
+		SphereData_Spectral &vort,	    ///< prognostic variables
+		SphereData_Spectral &div,	    ///< prognostic variables
+		SphereData_Spectral &phi_pert_L,	///< evaluation
+		SphereData_Spectral &vort_L,	    ///< evaluation
+		SphereData_Spectral &div_L,	        ///< evaluation
+		double simulation_timestamp
+) {
+	timestepping_l_erk_n_erk.euler_timestep_update_linear(
+		phi_pert,
+		vort,
+		div,
+		// Variables where to store the linear terms evaluation
+		phi_pert_L,
+		vort_L,
+		div_L,
+		// Timestamp of the evaluation
+		simulation_timestamp
+	);
+}
 
+void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(
+		SphereData_Spectral &phi_pert,	///< prognostic variables
+		SphereData_Spectral &vort,	    ///< prognostic variables
+		SphereData_Spectral &div,	    ///< prognostic variables
+		SphereData_Spectral &phi_pert_N,	///< evaluation
+		SphereData_Spectral &vort_N,	    ///< evaluation
+		SphereData_Spectral &div_N,	    ///< evaluation
+		double simulation_timestamp
+) {
+	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
+		phi_pert,
+		vort,
+		div,
+		// Variables where to store the non linear terms evaluation
+		phi_pert_N,
+		vort_N,
+		div_N,
+		// Timestamp of the evaluation
+		simulation_timestamp
+	);
+}
+
+void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(
+		SphereData_Spectral &rhs_phi,	///< rhs variables
+		SphereData_Spectral &rhs_vrt,	///< rhs variables
+		SphereData_Spectral &rhs_div,	///< rhs variables
+
+		double dt
+) {
+	timestepping_l_irk.solveImplicit(
+		rhs_phi,
+		rhs_vrt,
+		rhs_div,
+		dt
+	);
+}
 
 /*
  * Setup
