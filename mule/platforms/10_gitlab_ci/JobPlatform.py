@@ -2,7 +2,7 @@ import platform
 import socket
 import sys
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobPlatformResources import *
 from . import JobPlatformAutodetect
 
@@ -71,15 +71,10 @@ def get_platform_resources():
 
     h = JobPlatformResources()
 
-        # Python returned once a wrong number
     h.num_cores_per_node = multiprocessing.cpu_count()
-
-        # Travis CI runs on a 2-core machine
-    #h.num_cores_per_node = 2
-
     h.num_nodes = 1
 
-    # TODO: So far, we only assume a single socket system as a fallback
+    # We only assume a single socket system as a fallback
     h.num_cores_per_socket = h.num_cores_per_node
 
     return h
@@ -151,11 +146,23 @@ def jobscript_get_exec_command(jg : JobGeneration):
     string
         multiline text for scripts
     """
+
+    p = jg.parallelization
+
+    mpiprefix = ""
+    if not p.mpiexec_disabled:
+        if jg.compile.sweet_mpi == 'enable':
+            mpiprefix += "mpirun -n "+str(p.num_ranks)
+            mpiprefix += " "
+
+
+
     content = """
 
 """+p_gen_script_info(jg)+"""
 
-EXEC=\""""+jg.get_program_exec()+"""\"
+# mpiexec ... would be here without a line break
+EXEC=\""""+mpiprefix+jg.get_program_exec()+"""\"
 echo \"$EXEC\"
 $EXEC || exit 1
 

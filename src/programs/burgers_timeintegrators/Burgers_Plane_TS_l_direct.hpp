@@ -23,7 +23,11 @@
 
 
 #if BURGERS_PLANE_TS_L_DIRECT_QUADPRECISION
-	#include <quadmath.h>
+	#if SWEET_QUADMATH
+		#include <quadmath.h>
+	#else
+		#error "Quad precision not activated"
+	#endif
 #endif
 
 class Burgers_Plane_TS_l_direct	: public Burgers_Plane_TS_interface

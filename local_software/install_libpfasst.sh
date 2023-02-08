@@ -20,13 +20,19 @@ echo "" >> Makefile.local
 # Use SWEET's default Fortran compiler
 echo "FC = ${MULE_MPIF90}" >> Makefile.local
 
-# Add special flag for compilation with newer compilers
-# https://unix.stackexchange.com/questions/285924/how-to-compare-a-programs-version-in-a-shell-script
-currentver="$(${MULE_MPIF90} -dumpversion)"
-requiredver="10.0.0"
-if [ "$(printf '%s\n' "$requiredver" "$currentver" | sort -V | head -n1)" = "$requiredver" ]; then
+
+#
+# Check if gfortran supports -fallow-argument-mismatch and enable it per default
+#
+
+TMPDIR="$(mktemp -d)"
+echo "" > "$TMPDIR/dummy.f90"
+$MULE_MPIF90 -c -fallow-argument-mismatch "$TMPDIR/dummy.f90" -o "$TMPDIR/dummy.o" 2> /dev/null
+if [[ $? -eq 0 ]]; then
+	echo "$MULE_MPIF90 seems to support -fallow-argument-mismatch, using this per default"
 	echo "FFLAGS += -fallow-argument-mismatch" >> Makefile.local
 fi
+rm -rf "${TMPDIR}"
 
 
 # Disable LTO since this doesn't work on all platforms
@@ -38,11 +44,17 @@ echo "USE_FFTW = TRUE" >> Makefile.local
 # Activate Verbose make
 echo "MKVERBOSE = TRUE" >> Makefile.local
 
+INCDIR="$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
+mkdir -p "${INCDIR}"
+
+INCDIR_LIBPFASST="$SWEET_LOCAL_SOFTWARE_DST_DIR/include/libpfasst/"
+mkdir -p "${INCDIR_LIBPFASST}"
+
 # Add SWEET's include directory
-echo "FFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
+echo "FFLAGS += -I$INCDIR -I$INCDIR_LIBPFASST" >> Makefile.local
 
 # Add LDFLAGS for FFTW
-echo "LDFLAGS += -I$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" >> Makefile.local
+echo "LDFLAGS += -I$INCDIR -I$INCDIR_LIBPFASST" >> Makefile.local
 
 
 echo_info "Executing 'make clean'..."
@@ -53,9 +65,8 @@ config_exec make
 echo_info "Installing..."
 
 # Copy modules
-mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-echo_info cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/"
-cp -v -f ./include/*mod "$SWEET_LOCAL_SOFTWARE_DST_DIR/include/" || echo_error_exit "Failed to install .mod files"
+echo_info cp -v -f ./include/*mod "$INCDIR_LIBPFASST"
+cp -v -f ./include/*mod "$INCDIR_LIBPFASST" || echo_error_exit "Failed to install .mod files"
 
 # Copy static library
 mkdir -p "$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/"

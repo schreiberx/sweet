@@ -77,7 +77,7 @@ void SphereAdvectionTimeSteppers::setup(const std::string &i_timestepping_method
 				SWEETError(std::string("Duplicate implementation for method ") + i_timestepping_method);
 			}
 
-			std::cout << "Found match at " << i+1 << "th element" << std::endl;
+			std::cout << "Found matching time stepping method at " << i+1 << "th element" << std::endl;
 			ts->setup_auto();
 			master = ts;
 		}

@@ -9,10 +9,10 @@ import numpy as np
 
 def get_data_phys(filename):
     if filename.endswith(".sweet"):
-        from mule_local.postprocessing.SphereDataSpectral import SphereDataSpectral
+        from mule.postprocessing.SphereDataSpectral import SphereDataSpectral
 
         if 0:
-            from mule_local.postprocessing.SphereDataOperators import SphereDataOperators
+            from mule.postprocessing.SphereDataOperators import SphereDataOperators
 
             sphere_data = SphereDataSpectral(filename, setup_physical=False)
             ops = SphereDataOperators(file_info=sphere_data.file_info)
@@ -178,7 +178,7 @@ for input_filepath in sys.argv[1:]:
         ax.contour(data_phys, levels=np.arange(-e*50, 0, e), linestyles='dashed', linewidths=0.2, colors='black')
     else:
         e=2e-5
-        ax.contour(data, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
+        ax.contour(data_phys, colors="black", origin='lower', extent=extent, vmin=cmin, vmax=cmax, linewidths=0.5)
 
 
     # Fontsize

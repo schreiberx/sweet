@@ -38,7 +38,7 @@ template <class T> class PararealDataInherited	: public T {};
 #	include <parareal/Parareal_Controller.hpp>
 #	include <parareal/Parareal_GenericData.hpp>
 
-#	error "Parareal with MPI implemented but still requires a complete validation."
+/////#	error "Parareal with MPI implemented but still requires a complete validation."
 
 #endif
 

@@ -6,20 +6,11 @@
 
 
 bool SWE_Sphere_TS_lg_exp_lc_n_etd_vd::implements_timestepping_method(const std::string &i_timestepping_method
-#if SWEET_PARAREAL
-									,
-									int &i_timestepping_order,
-									int &i_timestepping_order2
-#endif
 									)
 {
 	timestepping_method = i_timestepping_method;
 	timestepping_order = simVars.disc.timestepping_order;
 	timestepping_order2 = simVars.disc.timestepping_order2;
-#if SWEET_PARAREAL
-	timestepping_order = i_timestepping_order;
-	timestepping_order2 = i_timestepping_order2;
-#endif
 	if (	i_timestepping_method == "lg_exp_lc_n_etd_vd"	||
 			i_timestepping_method == "lg_exp_lc_na_nr_etd_vd"	||
 			i_timestepping_method == "lg_exp_lc_na_etd_vd"	||
@@ -512,14 +503,14 @@ void SWE_Sphere_TS_lg_exp_lc_n_etd_vd::setup(
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
 	}
 	else if (timestepping_order == 2)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
 
 		NU_phi_prev.setup(ops.sphereDataConfig);
 		NU_vrt_prev.setup(ops.sphereDataConfig);
@@ -527,10 +518,10 @@ void SWE_Sphere_TS_lg_exp_lc_n_etd_vd::setup(
 	}
 	else if (timestepping_order == 3)
 	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true);
-		ts_phi3_exp.setup(i_rexiSimVars, "phi3", i_timestep_size, false, true);
+		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
+		ts_phi3_exp.setup(i_rexiSimVars, "phi3", i_timestep_size, false, true, timestepping_order);
 
 		NU_phi_prev.setup(ops.sphereDataConfig);
 		NU_vrt_prev.setup(ops.sphereDataConfig);

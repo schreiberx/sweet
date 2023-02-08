@@ -1,16 +1,16 @@
 #! /usr/bin/env python3
 
 #from mule import *
-from mule_local.JobMule import *
-from mule.exec_program import *
+from mule.JobMule import *
+from mule.utils import exec_program
 
 #
 # REXI specific
 #
-from mule_local.rexi.REXICoefficients import *
-from mule_local.rexi.trexi.TREXI import *
-from mule_local.rexi.cirexi.CIREXI import *
-from mule_local.rexi.brexi.BREXI import *
+from mule.rexi.REXICoefficients import *
+from mule.rexi.trexi.TREXI import *
+from mule.rexi.cirexi.CIREXI import *
+from mule.rexi.brexi.BREXI import *
 
 from itertools import product
 

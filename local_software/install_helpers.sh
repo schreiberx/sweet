@@ -33,12 +33,14 @@ if [ "`uname`" == "Darwin" ]; then
 	MAKE_DEFAULT_OPTS="-j"
 
 else
-	NPROCS="$(nproc --all)"
-	if [ "$NPROCS" -gt "10" ]; then
-		# We limit the number of parallel build processes
-		# This is important on architectures such as Cheyenne where this
-		# results in compilation errors due to a lack of resources
-		NPROCS=10
+	NPROCS="$(nproc)"
+	if false; then
+		if [ "$NPROCS" -gt "10" ]; then
+			# We limit the number of parallel build processes
+			# This is important on architectures such as Cheyenne where this
+			# results in compilation errors due to a lack of resources
+			NPROCS=10
+		fi
 	fi
 
 	MAKE_DEFAULT_OPTS=" -j ${NPROCS}"
@@ -173,7 +175,27 @@ function config_extract()
 function config_download_fun()
 {
 	PKG_FILENAME="$(basename ${1})"
-	wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
+
+	if [ "${MULE_PLATFORM_ID:0:9}" == "supermuc_" ]; then
+		echo_warning "Detected SUPERMUC platform, skipping download!" 1>&2
+
+		if [ ! -f "${PKG_FILENAME}" ]; then
+			echo_error "Skipped download on SUPERMUC, but source file '${PKG_FILENAME}' not found."
+			echo_error "Please copy it manually to the local_src folder!"
+			exit 1
+		fi
+
+		return
+	fi
+
+        if type wget >/dev/null 2>&1; then
+		echo_info "Using 'wget'" 1>&2
+		wget --continue --progress=bar "$1" -O "$PKG_FILENAME" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
+	else
+		echo_info "Using 'curl'" 1>&2
+		# Do not continue download since some curl versions seem to be buggy :-(
+		curl -o "$PKG_FILENAME" "$1" || config_error_exit "Download failed! Did you install the certificates via ./install_cacerts.sh"
+	fi
 }
 
 function config_download()

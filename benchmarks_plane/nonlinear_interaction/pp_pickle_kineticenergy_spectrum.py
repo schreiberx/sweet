@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from mule_local.postprocessing.pickle_PlaneData_KineticEnergy import *
+from mule.postprocessing.pickle_PlaneData_KineticEnergy import *
 
 
 # process all time frames

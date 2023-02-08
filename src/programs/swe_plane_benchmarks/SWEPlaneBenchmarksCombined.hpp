@@ -192,7 +192,7 @@ public:
 			return true;
 		}
 #endif
-		else if (io_simVars.benchmark.benchmark_name == "gaussian_bump")
+		else if (io_simVars.benchmark.benchmark_name == "gaussian_bump" || io_simVars.benchmark.benchmark_name == "gaussian_bump_phi_pint")
 		{
 			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, io_op);
 

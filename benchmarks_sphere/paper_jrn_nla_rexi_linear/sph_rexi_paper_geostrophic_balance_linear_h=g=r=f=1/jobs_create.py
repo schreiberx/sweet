@@ -70,7 +70,7 @@ cd "$BASEDIR"
 """
 
 		#content += 'EXEC="$SWEETROOT/build/swe_sph_and_rexi_*_release'
-		content += 'EXEC="$SWEETROOT/build/swe_sphere_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
+		content += 'EXEC="$SWEETROOT/build/swe_sphere_spherespectral_spheredealiasing_rexipar_libfft_gcc_release'
 
 		if self.gravitation>= 0:
 			content += ' -g '+str(self.g)

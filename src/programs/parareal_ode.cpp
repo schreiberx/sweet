@@ -9,16 +9,24 @@
 #include <limits>
 #include <stdlib.h>
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL || SWEET_XBRAID
 #include <parareal/Parareal.hpp>
 #include <parareal/Parareal_GenericData.hpp>
 #include <parareal/Parareal_GenericData_Scalar.hpp>
+#endif
+
+#if SWEET_PARAREAL
 #include <parareal/Parareal_Controller.hpp>
+#endif
+
+#if SWEET_XBRAID
+	#include <xbraid/XBraid_sweet_lib.hpp>
 #endif
 
 #include <cmath>
 #include <sweet/SimulationVariables.hpp>
 
+#include "ode_scalar_timeintegrators/ODE_Scalar_TimeSteppers.hpp"
 
 SimulationVariables simVars;
 
@@ -37,91 +45,91 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
  *
  */
 
-class ODE_Scalar_TS_interface
-{
-private:
-	double u_prev;
-
-public:
-	void run_timestep(
-			double &io_y,			///< prognostic variables
-
-			double i_dt,		///< time step size
-			double i_sim_timestamp
-	)
-	{
-		double a = param_parareal_function_a;
-		double b = param_parareal_function_b;
-
-		io_y += i_dt * (a * std::sin(io_y) + b * std::sin(i_sim_timestamp));
-	}
-
-#if SWEET_PARAREAL
-	void run_timestep(
-			Parareal_GenericData* io_data,
-
-			double i_dt,		///< time step size
-			double i_sim_timestamp
-	)
-	{
-		double y = io_data->get_pointer_to_data_Scalar()->simfields[0];
-
-		run_timestep(y,
-				i_dt,
-				i_sim_timestamp
-			);
-
-		io_data->get_pointer_to_data_Scalar()->simfields[0] = y;
-
-	}
-
-	// for parareal SL (not needed here)
-	void set_previous_solution(
-			Parareal_GenericData* i_data
-	)
-	{
-		u_prev = i_data->get_pointer_to_data_Scalar()->simfields[0];
-	};
-#endif
-};
-
-
-
-
-class ODE_Scalar_TimeSteppers
-{
-public:
-	ODE_Scalar_TS_interface *master = nullptr;
-
-	ODE_Scalar_TimeSteppers()
-	{
-	}
-
-	void reset()
-	{
-		if (master != nullptr)
-		{
-			delete master;
-			master = nullptr;
-		}
-	}
-
-	void setup(
-			const std::string &i_timestepping_method,
-			int &i_timestepping_order,
-
-			SimulationVariables &i_simVars
-	)
-	{
-		reset();
-		master = new ODE_Scalar_TS_interface;
-	}
-
-	~ODE_Scalar_TimeSteppers()
-	{
-		reset();
-	}
-};
+//////////class ODE_Scalar_TS_interface
+//////////{
+//////////private:
+//////////	double u_prev;
+//////////
+//////////public:
+//////////	void run_timestep(
+//////////			double &io_y,			///< prognostic variables
+//////////
+//////////			double i_dt,		///< time step size
+//////////			double i_sim_timestamp
+//////////	)
+//////////	{
+//////////		double a = param_parareal_function_a;
+//////////		double b = param_parareal_function_b;
+//////////
+//////////		io_y += i_dt * (a * std::sin(io_y) + b * std::sin(i_sim_timestamp));
+//////////	}
+//////////
+//////////#if (SWEET_PARAREAL && SWEET_PARAREAL_SCALAR) || (SWEET_XBRAID && SWEET_XBRAID_SCALAR)
+//////////	void run_timestep(
+//////////			Parareal_GenericData* io_data,
+//////////
+//////////			double i_dt,		///< time step size
+//////////			double i_sim_timestamp
+//////////	)
+//////////	{
+//////////		double y = io_data->get_pointer_to_data_Scalar()->simfields[0];
+//////////
+//////////		run_timestep(y,
+//////////				i_dt,
+//////////				i_sim_timestamp
+//////////			);
+//////////
+//////////		io_data->get_pointer_to_data_Scalar()->simfields[0] = y;
+//////////
+//////////	}
+//////////
+//////////	// for parareal SL (not needed here)
+//////////	void set_previous_solution(
+//////////			Parareal_GenericData* i_data
+//////////	)
+//////////	{
+//////////		u_prev = i_data->get_pointer_to_data_Scalar()->simfields[0];
+//////////	};
+//////////#endif
+//////////};
+//////////
+//////////
+//////////
+//////////
+//////////class ODE_Scalar_TimeSteppers
+//////////{
+//////////public:
+//////////	ODE_Scalar_TS_interface *master = nullptr;
+//////////
+//////////	ODE_Scalar_TimeSteppers()
+//////////	{
+//////////	}
+//////////
+//////////	void reset()
+//////////	{
+//////////		if (master != nullptr)
+//////////		{
+//////////			delete master;
+//////////			master = nullptr;
+//////////		}
+//////////	}
+//////////
+//////////	void setup(
+//////////			const std::string &i_timestepping_method,
+//////////			int &i_timestepping_order,
+//////////
+//////////			SimulationVariables &i_simVars
+//////////	)
+//////////	{
+//////////		reset();
+//////////		master = new ODE_Scalar_TS_interface;
+//////////	}
+//////////
+//////////	~ODE_Scalar_TimeSteppers()
+//////////	{
+//////////		reset();
+//////////	}
+//////////};
 
 
 
@@ -141,6 +149,7 @@ public:
 		: simVars(i_simVars)
 	{
 		timeSteppers = new ODE_Scalar_TimeSteppers;
+		timeSteppers->setup(*simVars);
 	}
 
 	~SimulationInstance()
@@ -160,6 +169,7 @@ public:
 		simVars->timecontrol.current_timestep_nr = 0;
 		this->prog_u = param_parareal_function_y0;
 
+		this->do_output();
 		while (true)
 		{
 			this->timeSteppers->master->run_timestep(this->prog_u,
@@ -181,21 +191,21 @@ public:
 
 public:
 
-	/**
-	 * ODE to simulate
-	 */
-	double f_dt(double y, double t)
-	{
-		double a = param_parareal_function_a;
-		double b = param_parareal_function_b;
-
-#if 0
-		double y0 = param_parareal_function_y0;
-		return b*sin(t) / (1 - a*sin(y0));
-#else
-		return a * std::sin(y) + b * std::sin(t);
-#endif
-	}
+///////////	/**
+///////////	 * ODE to simulate
+///////////	 */
+///////////	double f_dt(double y, double t)
+///////////	{
+///////////		double a = param_parareal_function_a;
+///////////		double b = param_parareal_function_b;
+///////////
+///////////#if 0
+///////////		double y0 = param_parareal_function_y0;
+///////////		return b*sin(t) / (1 - a*sin(y0));
+///////////#else
+///////////		return a * std::sin(y) + b * std::sin(t);
+///////////#endif
+///////////	}
 
 
 	bool should_quit()
@@ -245,8 +255,10 @@ int main(int i_argc, char *i_argv[])
 
 	MPI_Init(&i_argc, &i_argv);
 
-#endif
+	int mpi_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
+#endif
 
 	const char *bogus_var_names[] = {
 		"parareal-fine-dt",
@@ -277,10 +289,18 @@ int main(int i_argc, char *i_argv[])
 	//	param_parareal_fine_dt = atof(simVars.bogus.var[0].c_str());
 	if (simVars.bogus.var[1] != "")
 		param_parareal_function_y0 = atof(simVars.bogus.var[1].c_str());
+	else
+		simVars.bogus.var[1] = std::to_string(param_parareal_function_y0);
+
 	if (simVars.bogus.var[2] != "")
 		param_parareal_function_a = atof(simVars.bogus.var[2].c_str());
+	else
+		simVars.bogus.var[2] = std::to_string(param_parareal_function_a);
+
 	if (simVars.bogus.var[3] != "")
 		param_parareal_function_b = atof(simVars.bogus.var[3].c_str());
+	else
+		simVars.bogus.var[3] = std::to_string(param_parareal_function_b);
 
 	if (param_parareal_fine_dt <= 0)
 	{
@@ -288,7 +308,7 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-#if !SWEET_PARAREAL
+#if (!SWEET_PARAREAL && !SWEET_XBRAID)
 
 	SimulationInstance* sim = new SimulationInstance(&simVars);
 
@@ -337,6 +357,48 @@ int main(int i_argc, char *i_argv[])
 		delete timeSteppersFine;
 		delete timeSteppersCoarse;
 	}
+#elif SWEET_XBRAID
+
+	if (simVars.xbraid.xbraid_enabled)
+	{
+
+		MPI_Comm comm = MPI_COMM_WORLD;
+		MPI_Comm comm_x, comm_t;
+
+		int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+                if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+			nt++;
+		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
+
+		if( simVars.xbraid.xbraid_run_wrapper_tests)
+		{
+
+			app.setup();
+
+			BraidUtil braid_util;
+			int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+			if (test == 0)
+				SWEETError("Tests failed!");
+			else
+				std::cout << "Tests successful!" << std::endl;
+
+		}
+		else
+		{
+			BraidCore core(MPI_COMM_WORLD, &app);
+			app.setup(core);
+			// Run Simulation
+			core.Drive();
+		}
+
+	}
+
+
+
+#endif
+
+#if SWEET_MPI
+	MPI_Finalize();
 #endif
 
 

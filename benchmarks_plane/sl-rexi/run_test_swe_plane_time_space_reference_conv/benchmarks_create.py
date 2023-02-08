@@ -5,7 +5,7 @@ import sys
 import stat
 import math
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 jg = JobGeneration()
 
 

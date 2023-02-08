@@ -1,7 +1,5 @@
 #! /bin/bash
 
-cd "$(basename $0)"
-
 source ../local_software/env_vars.sh
 
 if [[ -z "$1" ]]; then
@@ -19,6 +17,17 @@ for i in $JOBDIRS; do
 	cd "$i"
 
 	mule.benchmark.cleanup_all || exit 1
+
+	JOBDIRS2=$(ls -1 -d ??_* 2>/dev/null)
+
+	RETDIR2=$(pwd)
+	for i2 in $JOBDIRS2; do
+		echo_info $i2
+		cd "$RETDIR2"
+		cd "$i2"
+
+		mule.benchmark.cleanup_all || exit 1
+	done
 done
 
 echo_success_hline

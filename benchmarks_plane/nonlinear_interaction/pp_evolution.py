@@ -15,7 +15,7 @@ from matplotlib.lines import Line2D
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
 
-from mule_local.postprocessing import *
+from mule.postprocessing import *
 
 
 

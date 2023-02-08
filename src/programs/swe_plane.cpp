@@ -3,7 +3,7 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_benchmarks
- * MUddddLE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
+ * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
 
@@ -69,6 +69,10 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 
 #if SWEET_PARAREAL
 	#include <parareal/Parareal.hpp>
+#endif
+
+#if SWEET_XBRAID
+	#include <xbraid/XBraid_sweet_lib.hpp>
 #endif
 
 /// general parameters
@@ -584,6 +588,12 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			output_filenames += ";" + write_file_spec(op.ke(t_u,t_v),"diag_ke_spec");
+
+			output_filenames += ";" + write_file_spec(t_h, "prog_h_pert_spec");
+			output_filenames += ";" + write_file_spec(t_u, "prog_u_spec");
+			output_filenames += ";" + write_file_spec(t_v, "prog_v_spec");
+
+			output_filenames += ";" + write_file_spec(op.ke(t_u,t_v).toPhys(), "diag_ke_spec");
 #endif
 
 			output_filenames += ";" + write_file(op.vort(t_u, t_v), "diag_vort");
@@ -1081,7 +1091,7 @@ int main(int i_argc, char *i_argv[])
 	int mpi_rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 
-	#if SWEET_PARAREAL != 2
+	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
 	// only start simulation and time stepping for first rank
 	if (mpi_rank == 0)
 	#endif
@@ -1099,6 +1109,40 @@ int main(int i_argc, char *i_argv[])
 
 			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
 
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<PlaneDataConfig*> planeDataConfigs;
+			std::vector<PlaneOperators*> ops;
+
+			// fine
+			planeDataConfigs.push_back(planeDataConfig);
+			ops.push_back(&op);
+
+			// coarse
+			if (simVars.parareal.spatial_coarsening)
+			{
+				///for (int j = 0; j < 2; j++)
+				///	assert(simVars.disc.space_res_physical[j] == -1);
+				int N_physical[2] = {-1, -1};
+				int N_spectral[2];
+				double frac;
+				if ( simVars.parareal.coarse_timestep_size > 0)
+					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				else
+					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
+				for (int j = 0; j < 2; j++)
+					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+				planeDataConfigs.push_back(new PlaneDataConfig);
+				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+
+				ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+			}
+			else
+			{
+				planeDataConfigs.push_back(planeDataConfig);
+				ops.push_back(&op);
+			}
+
+
 			SWE_Plane_TimeSteppers* timeSteppersFine = new SWE_Plane_TimeSteppers;
 			SWE_Plane_TimeSteppers* timeSteppersCoarse = new SWE_Plane_TimeSteppers;
 
@@ -1106,9 +1150,9 @@ int main(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(&simVars,
-												planeDataConfig,
-												op,
+			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(	&simVars,
+												planeDataConfigs,
+												ops,
 												timeSteppersFine,
 												timeSteppersCoarse);
 
@@ -1120,9 +1164,110 @@ int main(int i_argc, char *i_argv[])
 
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
+
+			if (simVars.parareal.spatial_coarsening)
+			{
+				delete planeDataConfigs[1];
+				delete ops[1];
+			}
 		}
 		else
 #endif
+
+
+#if SWEET_XBRAID
+
+		if (simVars.xbraid.xbraid_enabled)
+		{
+
+			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<PlaneDataConfig*> planeDataConfigs;
+			std::vector<PlaneOperators*> ops;
+			for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			{
+				if (simVars.xbraid.xbraid_spatial_coarsening)
+				{
+					int N_physical[2] = {-1, -1};
+					int N_spectral[2];
+					for (int j = 0; j < 2; j++)
+					{
+						// proportional to time step
+						if (simVars.xbraid.xbraid_spatial_coarsening == 1)
+							N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
+						else if (simVars.xbraid.xbraid_spatial_coarsening > 1)
+						{
+							if (i == 0)
+								N_spectral[j] = std::max(4, simVars.disc.space_res_spectral[j]);
+							else
+								N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+						}
+						else
+							SWEETError("Invalid parameter xbraid_spatial_coarsening");
+					}
+					planeDataConfigs.push_back(new PlaneDataConfig);
+					planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+
+					//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+					ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+
+					std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
+				}
+				else
+				{
+					planeDataConfigs.push_back(planeDataConfig);
+					ops.push_back(&op);
+				}
+			}
+
+			MPI_Comm comm = MPI_COMM_WORLD;
+			MPI_Comm comm_x, comm_t;
+
+			//////braid_Core core;
+			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
+			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+                        if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+				nt++;
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfigs, ops);
+
+
+			if( simVars.xbraid.xbraid_run_wrapper_tests)
+			{
+				app.setup();
+
+				BraidUtil braid_util;
+				int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
+				if (test == 0)
+					SWEETError("Tests failed!");
+				else
+					std::cout << "Tests successful!" << std::endl;
+
+			}
+			else
+			{
+				BraidCore core(MPI_COMM_WORLD, &app);
+				app.setup(core);
+				// Run Simulation
+				core.Drive();
+			}
+
+
+			if (simVars.xbraid.xbraid_spatial_coarsening)
+				for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+				{
+					delete planeDataConfigs[i];
+					delete ops[i];
+					planeDataConfigs[i] = nullptr;
+					ops[i] = nullptr;
+				}
+
+		}
+		else
+#endif
+
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)
@@ -1245,10 +1390,14 @@ int main(int i_argc, char *i_argv[])
 			SimulationBenchmarkTimings::getInstance().output();
 		}
 	}
-#if SWEET_MPI
-	#if SWEET_PARAREAL !=2
-	else	// mpi_rank != 0
-	#endif
+#if SWEET_MPI && (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
+	else
+///#if SWEET_MPI
+///	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
+///	else	// mpi_rank != 0
+///	#else
+///	if (mpi_rank != 0)
+///	#endif
 	{
 
 		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
@@ -1290,7 +1439,9 @@ int main(int i_argc, char *i_argv[])
 		if (mpi_rank == 0)
 			SWE_Plane_TS_l_rexi::MPI_quitWorkers(planeDataConfig);
 	}
+#endif
 
+#if SWEET_MPI
 	MPI_Finalize();
 #endif
 

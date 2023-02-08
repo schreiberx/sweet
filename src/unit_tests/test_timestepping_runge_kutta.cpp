@@ -1,5 +1,9 @@
+/*
+ * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
+ */
 
-#include "../include/sweet/plane/PlaneData_Spectral.hpp"
+
+#include "sweet/plane/PlaneData_Spectral.hpp"
 #if SWEET_GUI
 	#include <sweet/VisSweet.hpp>
 #endif
@@ -72,6 +76,7 @@ public:
 		}
 
 		SWEETError("Not supported (i_order)");
+		return 0;
 	}
 
 
@@ -103,6 +108,7 @@ public:
 					+1.0;
 		}
 		SWEETError("Not supported test_function_diff (i_order)");
+		return 0;
 	}
 
 

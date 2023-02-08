@@ -4,8 +4,8 @@ import sys
 import math
 import glob
 
-from mule_local.postprocessing.pickle_SphereDataPhysicalDiff import *
-from mule.exec_program import *
+from mule.postprocessing.pickle_SphereDataPhysicalDiff import *
+from mule.utils import exec_program
 
 # Ugly hack!
 #output, retval = exec_program('ls *benchref*/*prog_h* | sort | tail -n 1 | sed "s/.*prog_h//"')

@@ -10,7 +10,7 @@
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
 
-#if SWEET_PARAREAL
+#if SWEET_PARAREAL || SWEET_XBRAID
 #include <parareal/Parareal_GenericData.hpp>
 #endif
 
@@ -44,11 +44,6 @@ public:
 
 	virtual bool implements_timestepping_method(
 			const std::string &i_timestepping_method
-#if SWEET_PARAREAL
-			,
-			int & i_timestepping_order,
-			int & i_timestepping_order2
-#endif
 		) = 0;
 
 	virtual std::string string_id() = 0;
@@ -57,7 +52,7 @@ public:
 	{
 	}
 
-#if SWEET_PARAREAL && SWEET_PARAREAL_SPHERE
+#if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
 	void run_timestep(
 			Parareal_GenericData* io_data,
 

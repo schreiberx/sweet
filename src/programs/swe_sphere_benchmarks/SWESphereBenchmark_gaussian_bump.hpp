@@ -33,13 +33,14 @@ public:
 		benchmark_name = i_benchmark_name;
 
 		return
-				i_benchmark_name == "gaussian_bump"	||
-				i_benchmark_name == "gaussian_bump_phi"	||
+				i_benchmark_name == "gaussian_bump"			||
+				i_benchmark_name == "gaussian_bump_phi"			||
+				i_benchmark_name == "gaussian_bump_phi_pint"		||
 				i_benchmark_name == "sharp_gaussian_bump" ||
-				i_benchmark_name == "gaussian_bump_vrt"	||
-				i_benchmark_name == "gaussian_bump_div"	||
+				i_benchmark_name == "gaussian_bump_vrt"			||
+				i_benchmark_name == "gaussian_bump_div"			||
 
-				i_benchmark_name == "gaussian_bump_nosetparams"	||
+				i_benchmark_name == "gaussian_bump_nosetparams"		||
 				i_benchmark_name == "gaussian_bump_phi_nosetparams"	||
 				i_benchmark_name == "gaussian_bump_vrt_nosetparams"	||
 				i_benchmark_name == "gaussian_bump_div_nosetparams"	||
@@ -113,11 +114,15 @@ public:
 				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 				simVars->sim.gravitation = 9.80616;
 				simVars->sim.sphere_radius = 6.37122e6;
-				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
-
-				// Scale geopotential to make NL influencing the stiffness stronger
-				simVars->sim.h0 *= 0.2;
-				simVars->sim.gravitation *= 0.2;
+				if (benchmark_name == "gaussian_bump_phi_pint")
+					simVars->sim.h0 = 29400.0;
+				else
+				{
+					simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
+					// Scale geopotential to make NL influencing the stiffness stronger
+					simVars->sim.h0 *= 0.2;
+					simVars->sim.gravitation *= 0.2;
+				}
 
 				ops->setup(ops->sphereDataConfig, &(simVars->sim));
 			}
@@ -131,12 +136,18 @@ public:
 		 *
 		 * Vrt and div need to be of the same order of magnitude due to the stream formulation
 		 */
-		double phi_scale = 0.1*simVars->sim.h0;
+		double phi_scale;
+		if (benchmark_name == "gaussian_bump_phi_pint")
+			phi_scale = 6000 * simVars->sim.gravitation;
+		else
+			phi_scale = 0.1*simVars->sim.h0;
 		double vrt_scale = phi_scale/(simVars->sim.sphere_radius*simVars->sim.sphere_radius);
 		double div_scale = phi_scale/(simVars->sim.sphere_radius*simVars->sim.sphere_radius);
 
 		if (benchmark_name == "gaussian_bump" || benchmark_name == "gaussian_bump_phi")
 			o_phi_pert = get_gaussian_bump(M_PI, M_PI/3, 20.0)*phi_scale;
+		else if (benchmark_name == "gaussian_bump_phi_pint")
+			o_phi_pert = get_gaussian_bump(M_PI, M_PI/4., 20.)*phi_scale;
 		else if (benchmark_name == "sharp_gaussian_bump")
 			o_phi_pert = get_gaussian_bump(M_PI, M_PI/4, 40.0)*6000;
 		else

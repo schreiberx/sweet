@@ -3,7 +3,9 @@
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
- * MULE_SCONS_OPTIONS: --fortran-source=enable --sphere-spectral-space=enable
+ * MULE_SCONS_OPTIONS: --lapack=enable
+ * MULE_SCONS_OPTIONS: --fortran-source=enable
+ * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
 #ifndef SWEET_GUI
@@ -43,6 +45,9 @@
 	#include <parareal/Parareal.hpp>
 #endif
 
+#if SWEET_XBRAID
+	#include <xbraid/XBraid_sweet_lib.hpp>
+#endif
 
 SimulationVariables simVars;
 
@@ -198,9 +203,6 @@ public:
 		 * SETUP time steppers
 		 */
 		timeSteppers.setup(simVars.disc.timestepping_method,
-#if SWEET_PARAREAL
-		simVars.disc.timestepping_order, simVars.disc.timestepping_order2, // orders (this function is not called with parareal activated //TODO: clean this
-#endif
 				op, simVars);
 
 		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;
@@ -224,7 +226,12 @@ public:
 			simVars.outputConfig();
 		}
 
-		timestep_do_output();
+
+		/*
+		 * Output data for the first time step as well if output of datafiels is requested
+		 */
+		if (simVars.iodata.output_each_sim_seconds >= 0)
+			timestep_do_output();
 
 		stopwatch.start();
 	}
@@ -318,7 +325,6 @@ public:
 		if (simVars.iodata.output_file_name.length() == 0)
 			return;
 
-
 		std::cout << "Writing output files at simulation time: " << simVars.timecontrol.current_simulation_time << " secs" << std::endl;
 
 		if (simVars.iodata.output_file_mode == "csv")
@@ -335,6 +341,13 @@ public:
 			output_filename = write_file_csv(prog_phi_pert, "prog_phi_pert");
 			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << " (min: " << prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
+
+			SphereData_Physical phi_phys = h.toPhys() * simVars.sim.gravitation;
+			SphereData_Spectral phi(sphereDataConfig);
+			phi.loadSphereDataPhysical(phi_phys);
+			output_filename = write_file_csv(phi, "prog_phi");
+			output_reference_filenames = output_filename;
+			std::cout << " + " << output_filename << " (min: " << phi_phys.physical_reduce_min() << ", max: " << phi_phys.physical_reduce_max() << ")" << std::endl;
 
 			SphereData_Physical u(sphereDataConfig);
 			SphereData_Physical v(sphereDataConfig);
@@ -573,10 +586,6 @@ public:
 		if (simVars.misc.verbosity > 0)
 			std::cout << "." << std::flush;
 
-		// output each time step
-		//std::cout << "simVars.iodata.output_each_sim_seconds" << std::endl;
-		//std::cout << simVars.iodata.output_each_sim_seconds << std::endl;
-		//exit(1);
 		if (simVars.iodata.output_each_sim_seconds < 0)
 			return false;
 
@@ -661,6 +670,20 @@ public:
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time
 			);
+
+
+
+		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
+
+		if (simVars.sim.viscosity != 0 && simVars.misc.use_nonlinear_only_visc == 0)
+		{
+			///prog_vrt = op.implicit_diffusion(prog_vrt, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
+			///prog_div = op.implicit_diffusion(prog_div, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
+			///prog_phi_pert = op.implicit_diffusion(prog_phi_pert, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.sphere_radius);
+			prog_vrt = op.implicit_hyperdiffusion(prog_vrt, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order, simVars.sim.sphere_radius);
+			prog_div = op.implicit_hyperdiffusion(prog_div, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order, simVars.sim.sphere_radius);
+			prog_phi_pert = op.implicit_hyperdiffusion(prog_phi_pert, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order, simVars.sim.sphere_radius);
+		}
 
 
 		// advance time step and provide information to parameters
@@ -1051,7 +1074,7 @@ int main_real(int i_argc, char *i_argv[])
 		std::cout << " + setup finished" << std::endl;
 
 #if SWEET_MPI
-	std::cout << "Helo from MPI rank: " << mpi_rank << std::endl;
+	std::cout << "Hello from MPI rank: " << mpi_rank << std::endl;
 
 	// only start simulation and time stepping for first rank
 	if (mpi_rank > 0)
@@ -1060,7 +1083,9 @@ int main_real(int i_argc, char *i_argv[])
 		 * Deactivate all output for ranks larger than the current one
 		 */
 		simVars.misc.verbosity = 0;
+	#if !SWEET_XBRAID
 		simVars.iodata.output_each_sim_seconds = -1;
+	#endif
 	}
 #endif
 
@@ -1082,6 +1107,47 @@ int main_real(int i_argc, char *i_argv[])
 			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
 			SphereOperators_SphereData op_nodealiasing(sphereDataConfig_nodealiasing, &(simVars.sim));
 
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<SphereData_Config*> sphereDataConfigs;
+			std::vector<SphereOperators_SphereData*> ops;
+			std::vector<SphereOperators_SphereData*> ops_nodealiasing;
+
+			// fine
+			sphereDataConfigs.push_back(sphereDataConfig);
+			ops.push_back(&op);
+			ops_nodealiasing.push_back(&op_nodealiasing);
+
+			// coarse
+			if (simVars.parareal.spatial_coarsening)
+			{
+				///for (int j = 0; j < 2; j++)
+				///	assert(simVars.disc.space_res_physical[j] == -1);
+				int N_physical[2] = {-1, -1};
+				int N_spectral[2];
+
+				double frac;
+				if ( simVars.parareal.coarse_timestep_size > 0)
+					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				else
+					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
+				for (int j = 0; j < 2; j++)
+					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+
+				sphereDataConfigs.push_back(new SphereData_Config);
+				sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+
+				ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
+				// @TODO: nodealiasing case
+				ops_nodealiasing.push_back(ops.back());
+			}
+			else
+			{
+				sphereDataConfigs.push_back(sphereDataConfig);
+				ops.push_back(&op);
+				ops_nodealiasing.push_back(&op_nodealiasing);
+			}
+
+
 			SWE_Sphere_TimeSteppers* timeSteppersFine = new SWE_Sphere_TimeSteppers;
 			SWE_Sphere_TimeSteppers* timeSteppersCoarse = new SWE_Sphere_TimeSteppers;
 
@@ -1089,10 +1155,10 @@ int main_real(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<SWE_Sphere_TimeSteppers, 3> parareal_Controller(&simVars,
-												sphereDataConfig,
-												op,
-												op_nodealiasing,
+			Parareal_Controller<SWE_Sphere_TimeSteppers, 3> parareal_Controller(	&simVars,
+												sphereDataConfigs,
+												ops,
+												ops_nodealiasing,
 												timeSteppersFine,
 												timeSteppersCoarse);
 
@@ -1104,9 +1170,118 @@ int main_real(int i_argc, char *i_argv[])
 
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
+
+			if (simVars.parareal.spatial_coarsening)
+			{
+				delete sphereDataConfigs[1];
+				delete ops[1];
+				sphereDataConfigs[1] = nullptr;
+				ops[1] = nullptr;
+			}
+
 		}
 		else
 #endif
+
+#if SWEET_XBRAID
+
+		if (simVars.xbraid.xbraid_enabled)
+		{
+
+			simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
+
+			SphereOperators_SphereData op(sphereDataConfig, &(simVars.sim));
+
+			// Set planeDataConfig and planeOperators for each level
+			std::vector<SphereData_Config*> sphereDataConfigs;
+			std::vector<SphereOperators_SphereData*> ops;
+			for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			{
+				if (simVars.xbraid.xbraid_spatial_coarsening)
+				{
+					int N_physical[2] = {-1, -1};
+					int N_spectral[2];
+					for (int j = 0; j < 2; j++)
+					{
+						// proportional to time step
+						if (simVars.xbraid.xbraid_spatial_coarsening == 1)
+							N_spectral[j] = std::max(4,int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
+						else if (simVars.xbraid.xbraid_spatial_coarsening > 1)
+						{
+							if (i == 0)
+								N_spectral[j] = std::max(4, simVars.disc.space_res_spectral[j]);
+							else
+								N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+						}
+						else
+							SWEETError("Invalid parameter xbraid_spatial_coarsening");
+					}
+
+					sphereDataConfigs.push_back(new SphereData_Config);
+					sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+
+					ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
+
+					std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
+				}
+				else
+				{
+					sphereDataConfigs.push_back(sphereDataConfig);
+					ops.push_back(&op);
+				}
+			}
+
+
+
+
+
+
+			MPI_Comm comm = MPI_COMM_WORLD;
+			MPI_Comm comm_x, comm_t;
+
+			//////braid_Core core;
+			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
+			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
+                        if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+				nt++;
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfigs, ops);
+
+
+			if( simVars.xbraid.xbraid_run_wrapper_tests)
+			{
+				app.setup();
+
+				BraidUtil braid_util;
+				int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
+				if (test == 0)
+					SWEETError("Tests failed!");
+				else
+					std::cout << "Tests successful!" << std::endl;
+
+			}
+			else
+			{
+				BraidCore core(MPI_COMM_WORLD, &app);
+				app.setup(core);
+				// Run Simulation
+				core.Drive();
+			}
+
+			if (simVars.xbraid.xbraid_spatial_coarsening)
+				for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+				{
+					delete sphereDataConfigs[i];
+					delete ops[i];
+					sphereDataConfigs[i] = nullptr;
+					ops[i] = nullptr;
+				}
+
+		}
+		else
+#endif
+
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
 		if (simVars.misc.gui_enabled)

@@ -3,6 +3,8 @@
 mule.benchmark.cleanup_job_dirs || echo_error_exit "Failed to cleanup job dirs"
 mule.benchmark.cleanup_postprocessing || echo_error_exit "Failed to cleanup postprocessing files"
 mule.benchmark.cleanup_plans || echo_error_exit "Failed to cleanup plans"
+mule.benchmark.cleanup_output || echo_error_exit "Failed to cleanup output files"
+mule.benchmark.cleanup_temps || echo_error_exit "Failed to cleanup temporary files"
 
 # Cleanup pycache mess
 rm -rf __pycache__

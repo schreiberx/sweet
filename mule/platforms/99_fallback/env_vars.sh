@@ -26,3 +26,7 @@ export MULE_MPIF90=mpif90
 export MULE_MPILINK=mpif90
 # If we link with mpif90, we have to add stdc++ for C++
 export MULE_MPILIBS=stdc++
+
+export MULE_CC_COMPILER=gcc
+export MULE_CXX_COMPILER=gcc
+export MULE_F90_COMPILER=gcc

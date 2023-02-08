@@ -7,16 +7,16 @@ import math
 from itertools import product
 
 # REXI
-from mule_local.rexi.REXICoefficients import *
-from mule_local.rexi.trexi.TREXI import *
-from mule_local.rexi.cirexi.CIREXI import *
-from mule_local.rexi.brexi.BREXI import *
+from mule.rexi.REXICoefficients import *
+from mule.rexi.trexi.TREXI import *
+from mule.rexi.cirexi.CIREXI import *
+from mule.rexi.brexi.BREXI import *
 
 efloat_mode = "float"
 #efloat_mode = "mpfloat"
 
 
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 jg = JobGeneration()
@@ -29,10 +29,6 @@ verbose = False
 ##################################################
 
 jg.compile.mode = 'release'
-if '_gnu' in os.getenv('MULE_PLATFORM_ID'):
-    jg.compile.compiler = 'gnu'
-else:
-    jg.compile.compiler = 'intel'
 jg.compile.sweet_mpi = 'enable'
 
 jg.runtime.space_res_spectral = 128

@@ -78,7 +78,7 @@ $SCONS || exit 1
 cd "$BASEDIR"
 """
 
-		content += 'EXEC="$SWEETROOT/build/swe_sphere_spherespectral_spheredealiasing_rexipar_libfft_gnu_release'
+		content += 'EXEC="$SWEETROOT/build/swe_sphere_spherespectral_spheredealiasing_rexipar_libfft_gcc_release'
 		content += ' -g '+str(self.g)
 		content += ' -H '+str(self.h)
 		content += ' -f '+str(self.f)

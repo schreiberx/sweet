@@ -1,0 +1,590 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Exponential integration for linear geostrophic balance
+\end_layout
+
+\begin_layout Author
+Martin Schreiber
+\end_layout
+
+\begin_layout Date
+2022-08-01
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Subsection
+Nonlinear PDE
+\end_layout
+
+\begin_layout Standard
+We like to investigate an exponential time integration method for the linear
+ parts of the SWE on the rotating sphere which are given by
+\begin_inset Formula 
+\[
+\frac{\partial}{\partial t}\left(\begin{array}{c}
+\Phi\\
+\vec{V}
+\end{array}\right)=\underbrace{\left(\begin{array}{c}
+-\overline{\Phi}\nabla\cdot\vec{V}\\
+-\nabla\Phi
+\end{array}\right)}_{L_{g}=\text{linear gravity}}+\underbrace{\left(\begin{array}{c}
+\\
+-f\vec{k}\times\vec{V}
+\end{array}\right)}_{L_{c}=\text{linear Coriolis}}+\underbrace{\left(\begin{array}{c}
+-\vec{V}\cdot\nabla\Phi\\
+-\vec{V}\cdot\nabla\vec{V}
+\end{array}\right)}_{N_{a}=\text{nonlinear advection}}+\underbrace{\left(\begin{array}{c}
+-\Phi'\nabla\cdot\vec{V}\\
+0
+\end{array}\right)}_{N_{r}=\text{nonlinear remainder}}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We would like to treat 
+\begin_inset Formula $L=L_{g}+L_{c}$
+\end_inset
+
+ exponentially by computing
+\begin_inset Formula 
+\[
+\exp(\Delta tL)
+\]
+
+\end_inset
+
+in a computationally efficient way.
+ Using spherical harmonics, it turned out that we can compute 
+\begin_inset Formula $\exp(L_{g})$
+\end_inset
+
+ directly in spectral space (see doc/rexi/rexi_for_swe_on_nonrotating_sphere),
+ however, we need to incorporate the 
+\begin_inset Formula $L_{c}$
+\end_inset
+
+ part somehow and a direct solution in spectral space doesn't seem to feasible.
+\end_layout
+
+\begin_layout Standard
+In this document, we'll investigate a particular method to overcome this
+ problem.
+\end_layout
+
+\begin_layout Subsection
+Linear PDE
+\end_layout
+
+\begin_layout Standard
+We continue by only focusing on the linear parts, hence
+\begin_inset Formula 
+\[
+\left(\begin{array}{c}
+\Phi\\
+\vec{V}
+\end{array}\right)=\underbrace{\left(\begin{array}{c}
+-\overline{\Phi}\nabla\cdot\vec{V}\\
+-\nabla\Phi
+\end{array}\right)}_{L_{g}=\text{linear gravity}}+\underbrace{\left(\begin{array}{c}
+\\
+-f\vec{k}\times\vec{V}
+\end{array}\right)}_{L_{c}=\text{linear Coriolis}}.
+\]
+
+\end_inset
+
+In what follows, it's important to understand the stiffness of both terms
+ with respect to the time step size.
+ The 
+\begin_inset Formula $L_{g}$
+\end_inset
+
+ term is the most limiting part whereas the 
+\begin_inset Formula $L_{c}$
+\end_inset
+
+ term is quite the opposite of it.
+ Hence, we could think about taking a very large time step for the 
+\begin_inset Formula $L_{g}$
+\end_inset
+
+ term with linear exponential integration and incorporate the 
+\begin_inset Formula $L_{c}$
+\end_inset
+
+ effect with a quadrature rule over this large time step (since it only
+ moderately oscillates over this time step).
+ Taking the perspecitve of the standard exponential integration, for a PDE
+ of the form
+\begin_inset Formula 
+\[
+U_{t}=LU+N(U)
+\]
+
+\end_inset
+
+with
+\begin_inset Formula 
+\[
+U(t+\Delta t)=e^{\Delta tL}U(t)+\int_{0}^{\Delta t}e^{\left(\Delta t-\tau\right)L}N(U(t+\tau))d\tau.
+\]
+
+\end_inset
+
+and setting 
+\begin_inset Formula $L=L_{g}$
+\end_inset
+
+ and 
+\begin_inset Formula $N(U)=L_{c}$
+\end_inset
+
+, we can write this in exponential integration form as
+\begin_inset Formula 
+\[
+U(t+\Delta t)=e^{\Delta tL_{g}}U(t)+\int_{0}^{\Delta t}e^{\left(\Delta t-\tau\right)L}L_{c}(U(t+\tau))d\tau
+\]
+
+\end_inset
+
+where the integral finally only acts on a very slowly varying function.
+\end_layout
+
+\begin_layout Standard
+In what follows, we investigate different ways to approximate this integral
+ with known exponential integrator methods.
+\end_layout
+
+\begin_layout Subsection
+ETDnRK methods
+\end_layout
+
+\begin_layout Standard
+The particular exponential method which we use to approximate this equation
+ are known as the exponential time differentiating Runge-Kutta methods 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Cox2002"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+TODO
+\series default
+: Write more.
+\end_layout
+
+\begin_layout Section
+ODE form
+\end_layout
+
+\begin_layout Subsection
+Example
+\end_layout
+
+\begin_layout Standard
+We first need to investigate the stability of the method to see whether
+ the discretized exponential time integration method is feasible with the
+ given terms.
+ To do so, we use a simplified model given by
+\begin_inset Formula 
+\[
+\tfrac{d}{dt}u=\underbrace{\lambda_{1}u}_{L_{g}}+\underbrace{\lambda_{2}u}_{L_{c}}
+\]
+
+\end_inset
+
+where we relate each part to one linear term of the SWE on the rotating
+ sphere with 
+\begin_inset Formula $L_{g}$
+\end_inset
+
+ the fast (external) gravity modes and 
+\begin_inset Formula $L_{c}$
+\end_inset
+
+ the (linear) Coriolis effect.
+ Here, we assume that we can ignore the non-commutative property of both
+ operators.
+\end_layout
+
+\begin_layout Subsection
+Stability analysis
+\end_layout
+
+\begin_layout Standard
+We like to do stability plots where we would have a 4 dimensional space
+ (with complex valued 
+\begin_inset Formula $\lambda_{1/2}$
+\end_inset
+
+).
+ Therefore, we reduce it to a 2 dimensional plot with coordinates given
+ by 
+\begin_inset Formula $x$
+\end_inset
+
+ and 
+\begin_inset Formula $y$
+\end_inset
+
+ by only focusing on the properties we're interested in.
+ First, we fix 
+\begin_inset Formula $\lambda_{1}=1i$
+\end_inset
+
+ to represent a highly oscillatory problem.
+ Second, we choose 
+\begin_inset Formula $x=\Delta t$
+\end_inset
+
+ as the time step size and 
+\begin_inset Formula $\lambda_{2}=yi$
+\end_inset
+
+ to vary over the stiffness of the 2nd term with results now given in a
+ plot for the 
+\begin_inset Formula $(x,y)$
+\end_inset
+
+ coordinate.
+ We are mainly interested in studying the problem of 
+\begin_inset Formula $\lambda_{2}\ll\lambda_{1}$
+\end_inset
+
+, hence study choose 
+\begin_inset Formula $y\in[-10^{-1};10^{-1}]$
+\end_inset
+
+ and large time step sizes, hence 
+\begin_inset Formula $x\in[0;60]$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+This leads to studying the stability of the following ODE
+\begin_inset Formula 
+\[
+u(t+\Delta t)=e^{\Delta t\lambda_{1}}u(t)+\int_{0}^{\Delta t}e^{\left(\Delta t-\tau\right)\lambda_{1}}\lambda_{2}(u(t+\tau))d\tau
+\]
+
+\end_inset
+
+or
+\begin_inset Formula 
+\[
+u(t+\Delta t)=e^{\Delta t\lambda_{1}}\left(u(t)+\lambda_{2}\int_{0}^{\Delta t}e^{-\tau\lambda_{1}}u(t+\tau)d\tau\right)
+\]
+
+\end_inset
+
+which we don't use further, but which can provide a good basis of future
+ work on this since we factored out 
+\begin_inset Formula $\lambda_{2}$
+\end_inset
+
+, hence reduces likely the computational complexity.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename stability_l_exp_special/output_stability_plot_order_1-crop.pdf
+
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Graphics
+	filename stability_l_exp_special/output_errors_plot_order_1-crop.pdf
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename stability_l_exp_special/output_stability_plot_order_2-crop.pdf
+
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Graphics
+	filename stability_l_exp_special/output_errors_plot_order_2-crop.pdf
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename stability_l_exp_special/output_stability_plot_order_4-crop.pdf
+
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset Graphics
+	filename stability_l_exp_special/output_errors_plot_order_4-crop.pdf
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:stability_exponential_splitting"
+
+\end_inset
+
+Stability and errors of exponential integration method for different orders
+ of ETDnRK with a slow/fast oscillatory splitting.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+We can now investigate the stability and errors of this scheme with results
+ given in Fig.
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:stability_exponential_splitting"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+PDE investigation
+\end_layout
+
+\begin_layout Standard
+Next, we perform studies with a full PDE and the above given splitting method.
+ The benchmark we use is based on a standard test case for barotropic instabilit
+y 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Galewsky2004"
+literal "false"
+
+\end_inset
+
+.
+ We use the same parameters, however with a perfectly (with respect to spherical
+ harmonics) linear balanced initial conditions and the same perturbation
+ with a Gaussian bump.
+\end_layout
+
+\begin_layout Standard
+The reference solution is computed with a Runge-Kutta method
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "/home/martin/Documents/papers_mendeley_bib/library"
+options "plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

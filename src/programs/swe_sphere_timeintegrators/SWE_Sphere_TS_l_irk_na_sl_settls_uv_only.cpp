@@ -7,20 +7,11 @@
 
 
 bool SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::implements_timestepping_method(const std::string &i_timestepping_method
-#if SWEET_PARAREAL
-									,
-									int &i_timestepping_order,
-									int &i_timestepping_order2
-#endif
 									)
 {
 	timestepping_method = i_timestepping_method;
 	timestepping_order = simVars.disc.timestepping_order;
 	timestepping_order2 = simVars.disc.timestepping_order2;
-#if SWEET_PARAREAL
-	timestepping_order = i_timestepping_order;
-	timestepping_order2 = i_timestepping_order2;
-#endif
 	if (i_timestepping_method == "l_irk_na_sl_settls_uv_only")
 		return true;
 
@@ -82,7 +73,7 @@ void SWE_Sphere_TS_l_irk_na_sl_settls_uv_only::run_timestep_2nd_order_pert(
 
 	if (i_simulation_timestamp == 0)
 	{
-#if !SWEET_PARAREAL
+#if !SWEET_PARAREAL && !SWEET_XBRAID
 		/*
 		 * First time step:
 		 * Simply backup existing fields for multi-step parts of this algorithm.

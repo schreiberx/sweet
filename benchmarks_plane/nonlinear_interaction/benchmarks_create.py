@@ -10,7 +10,7 @@
 #
 # Usage on CoolMUC:
 # Change the Script
-# job_benchref_COMP_plspec_pldeal_numa2_fft_gnu_thomp_release_RT_bunstablejet_g09.81_h010000.000_f1.458400e-04_u0.0_tsm_ln_erk_tso4_tsob4_C2.000e+00_S864000_REXIDIR_M1024_N-001_X40031555.89280872_rob1_PAR_r00001_cpr028_tpr028_DIMS_dummy028_X
+# job_benchref_COMP_plspec_pldeal_numa2_fft_gcc_thomp_release_RT_bunstablejet_g09.81_h010000.000_f1.458400e-04_u0.0_tsm_ln_erk_tso4_tsob4_C2.000e+00_S864000_REXIDIR_M1024_N-001_X40031555.89280872_rob1_PAR_r00001_cpr028_tpr028_DIMS_dummy028_X
 # manually to this:
 #
 #SBATCH --clusters=serial
@@ -24,12 +24,12 @@ import stat
 import math
 
 from mule.SWEETRuntimeParametersScenarios import *
-from mule_local.JobGeneration import *
+from mule.JobGeneration import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 
 #Classes containing sweet compile/run basic option
-#from mule_local.JobGeneration import *
+#from mule.JobGeneration import *
 
 #Create main compile/run options
 jg = JobGeneration()

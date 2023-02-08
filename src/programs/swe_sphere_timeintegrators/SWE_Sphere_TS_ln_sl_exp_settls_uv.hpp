@@ -24,11 +24,6 @@ class SWE_Sphere_TS_ln_sl_exp_settls_uv	: public SWE_Sphere_TS_interface
 {
 public:
 	bool implements_timestepping_method(const std::string &i_timestepping_method
-#if SWEET_PARAREAL
-						,
-						int &i_timestepping_order,
-						int &i_timestepping_order2
-#endif
 					);
 	std::string string_id();
 	void setup_auto();
@@ -104,8 +99,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-
-#if SWEET_PARAREAL && SWEET_PARAREAL_SPHERE
+#if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
 	void set_previous_solution(
 				SphereData_Spectral &i_phi_prev,
 				SphereData_Spectral &i_vrt_prev,

@@ -42,3 +42,7 @@ export MULE_MPILINK=mpicxx
 #export MULE_MPILIBS=stdc++
 export MULE_MPILIBS=gfortran
 
+
+export MULE_CC_COMPILER=gcc
+export MULE_CXX_COMPILER=gcc
+export MULE_F90_COMPILER=gcc

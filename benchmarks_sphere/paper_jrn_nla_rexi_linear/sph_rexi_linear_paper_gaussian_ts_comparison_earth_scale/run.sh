@@ -15,7 +15,7 @@ SWEETDIR="`pwd`/../../"
 OUTPUT_TIME=10800
 SIMTIME=129600
 
-STDEXEC="$SWEETDIR/build/swe_sphere_spherespectral_spheredealiasing_omp_libfft_gnu_release -M 128 -s 9 --nonlinear=0 -o $OUTPUT_TIME -t $SIMTIME --rexi-sphere-preallocation 0 --use-robert-functions=1 -F 0"
+STDEXEC="$SWEETDIR/build/swe_sphere_spherespectral_spheredealiasing_omp_libfft_gcc_release -M 128 -s 9 --nonlinear=0 -o $OUTPUT_TIME -t $SIMTIME --rexi-sphere-preallocation 0 --use-robert-functions=1 -F 0"
 
 # RK for video
 if true; then

@@ -1,0 +1,43 @@
+#! /usr/bin/env bash
+
+#
+# Execute all jobs by directly running them from the current shell
+#
+
+
+if [[ -z "$1" ]]; then
+	DIRS=job_bench*
+else
+	DIRS=$@
+fi
+
+P="$(pwd)"
+for JOBDIR in $DIRS; do
+	cd "$JOBDIR" || exit 1
+
+	echo_info "Executing job in directory '$JOBDIR'"
+
+	./run.sh 2>"output.err" > "./output.out" &
+
+	SCRIPT_PID=$!
+
+        # Wait for finish
+        wait $SCRIPT_PID
+
+	EXIT_CODE=$?
+
+	if [[ 0 -ne $EXIT_CODE ]]; then
+		tail -n 1000 "output.out"
+		tail -n 1000 "output.err"
+		echo_error_hline
+		echo_error "ERROR during job execution (see above)"
+		echo_error " See output.out and output.err in job directory for full output"
+		echo_error_hline
+		echo_error " Job directory: '$JOBDIR'"
+		echo_error_hline
+		exit 1
+	fi
+
+	cd "$P"
+done
+

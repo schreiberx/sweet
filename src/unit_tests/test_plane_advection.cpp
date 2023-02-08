@@ -210,15 +210,15 @@ public:
 		switch (id)
 		{
 		case 0:
-			viz_plane_data = prog_h;
+			viz_plane_data = prog_h.toPhys();
 			break;
 
 		case 1:
-			viz_plane_data = prog_u;
+			viz_plane_data = prog_u.toPhys();
 			break;
 
 		case 2:
-			viz_plane_data = prog_v;
+			viz_plane_data = prog_v.toPhys();
 			break;
 		}
 

@@ -37,7 +37,7 @@ for D in "${PKGS[@]}"; do
 	./$D || exit 1
 
 	# Make sure that the python environment is loaded if installing python
-	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_anaconda/bin/activate" 2>/dev/null
+	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" 2>/dev/null
 	hash -r
 done
 

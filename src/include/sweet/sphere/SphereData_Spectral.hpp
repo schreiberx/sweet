@@ -1062,6 +1062,35 @@ public:
 		return error;
 	}
 
+
+	/**
+	 * Return the max abs value for the first rnorm spectral coefficients
+	 */
+	double spectral_reduce_max_abs(std::size_t rnorm)	const
+	{
+
+		assert ((int)rnorm <= sphereDataConfig->spectral_modes_m_max);
+		assert ((int)rnorm <= sphereDataConfig->spectral_modes_n_max);
+
+		double error = -std::numeric_limits<double>::infinity();
+		std::complex<double> w = {0,0};
+
+		for (std::size_t m = 0; m <= rnorm; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (std::size_t n = m; n <= rnorm; n++)
+			{
+				w = spectral_space_data[idx]*std::conj(spectral_space_data[idx]);
+				error = std::max(std::abs(w), error);
+				idx++;
+			}
+		}
+
+		return error;
+	}
+
+
+
 	/**
 	 * Return the minimum abs value
 	 */
@@ -1151,8 +1180,49 @@ public:
 		}
 	}
 
-  
-  	void spectrum_file_write(
+
+	/**
+	 * Write spectral data to ASCII file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
+	bool file_spectral_saveData_ascii(
+			const char *i_filename,		///< Name of file to store data to
+			char i_separator = '\t',	///< separator to use for each line
+			int i_precision = 12,		///< number of floating point digits
+			int dimension = 2			///< store 1D or 2D
+	)	const
+	{
+
+		std::ofstream file(i_filename, std::ios_base::trunc);
+		file << std::setprecision(i_precision);
+
+		file << "#SWEET_SPHERE_SPECTRAL_CPLX_DATA_ASCII" << std::endl;
+
+
+		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
+		{
+			std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
+			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
+			{
+				const std::complex<double> &value = spectral_space_data[idx];
+				file << "(" << value.real() << ", " << value.imag() << ")";
+				idx++;
+
+				if (n < sphereDataConfig->spectral_modes_n_max)
+					file << i_separator;
+				else
+					file << std::endl;
+
+			}
+		}
+
+		return true;
+	}
+
+
+ 	void spectrum_file_write(
 			const std::string &i_filename,
 			const char *i_title = "",
 			int i_precision = 20
@@ -1357,7 +1427,7 @@ public:
   		std::ifstream file(i_filename, std::ios_base::binary);
 
 		if (!file.is_open())
-			SWEETError("Error while opening file");
+			SWEETError("Error while opening file " + i_filename);
 
   		std::string magic;
   		std::getline(file, magic);
@@ -1368,7 +1438,8 @@ public:
   		std::string data_type;
   		int num_lon = -1;
   		int num_lat = -1;
-  		int size = -1;
+  		//int size = -1;
+                std::string grid_type = "";
 
   		while (true)
   		{
@@ -1382,31 +1453,43 @@ public:
   			{
   				// load data type
   	  			file >> data_type;
-  				std::cout << data_type << std::endl;
+  				///std::cout << data_type << std::endl;
   	  			continue;
   			}
 
-  			if (buf == "NUM_LON")
+  			//if (buf == "NUM_LON")
+  			if (buf == "MODES_M_MAX")
   			{
   				file >> buf;
   				num_lon = std::stoi(buf);
-  				std::cout << num_lon << std::endl;
+  				///std::cout << num_lon << std::endl;
   				continue;
   			}
 
-  			if (buf == "NUM_LAT")
+  			if (buf == "MODES_N_MAX")
+  			////if (buf == "NUM_LAT")
   			{
   				file >> buf;
   				num_lat = std::stoi(buf);
-  				std::cout << num_lat << std::endl;
+  				///std::cout << num_lat << std::endl;
   				continue;
   			}
 
-  			if (buf == "SIZE")
+  			if (buf == "GRID_TYPE")
+  			//if (buf == "SIZE")
   			{
   				file >> buf;
-  				size = std::stoi(buf);
-  				std::cout << size << std::endl;
+  				grid_type = buf;
+  				///std::cout << grid_type << std::endl;
+  				continue;
+  			}
+
+  			if (buf == "NUM_ELEMENTS")
+  			//if (buf == "SIZE")
+  			{
+  				file >> buf;
+  				//size = std::stoi(buf);
+  				//std::cout << size << std::endl;
   				continue;
   			}
 
@@ -1416,7 +1499,7 @@ public:
   		// read last newline
   		char nl;
   		file.read(&nl, 1);
-  		std::cout << file.tellg() << std::endl;
+  		///std::cout << file.tellg() << std::endl;
 
   		if (data_type != "SH_DATA")
   			SWEETError("Unknown data type '"+data_type+"'");
@@ -1469,6 +1552,94 @@ public:
 			SWEETError("Normalization not supported!");
 		}
 	}
+
+
+	/**
+	 * Interpolate from a finer mesh. Remove highest frequency modes.
+	 */
+	SphereData_Spectral restrict(
+			const SphereData_Spectral &i_array_data
+	)
+	{
+		SphereData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.sphereDataConfig);
+		///std::cout << "RESTRICT " << i_array_data.sphereDataConfig->spectral_modes_n_max << " " << out.sphereDataConfig->spectral_modes_n_max << std::endl;
+
+		//////////////std::cout << i_array_data.spectral_reduce_max_abs() << std::endl;
+		//////////////std::cout << out.spectral_reduce_max_abs() << std::endl;
+		//////////////std::cout << std::endl;
+
+		//////////////std::cout << i_array_data.spectral_reduce_sum_quad() << std::endl;
+		//////////////std::cout << out.spectral_reduce_sum_quad() << std::endl;
+		//////////////std::cout << std::endl;
+		//////////std::size_t M_fine = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		//////////std::size_t N_fine = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		//////////std::size_t M_coarse = out.sphereDataConfig->spectral_modes_m_max;
+		//////////std::size_t N_coarse = out.sphereDataConfig->spectral_modes_n_max;
+
+		//////////assert(M_fine >= M_coarse);
+		//////////assert(N_fine >= N_coarse);
+
+		//////////// just copy data
+		//////////if (M_fine == M_coarse && N_fine == N_coarse)
+		//////////	out = i_array_data;
+		//////////else
+		//////////{
+		//////////	out.spectral_set_zero();
+		//////////	for (std::size_t m = 0; m < M_coarse; m++)
+		//////////		for (std::size_t n = m; n < N_coarse; n++)
+		//////////		{
+		//////////			std::size_t idx_coarse = out.sphereDataConfig->getArrayIndexByModes(n, m);
+		//////////			std::size_t idx_fine = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
+		//////////			out.spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine];
+		//////////		}
+		//////////}
+
+		return out;
+
+	}
+
+
+	/**
+	 * Interpolate from a coarser mesh. Pad zeros corresponding to highest frequency modes.
+	 */
+	SphereData_Spectral pad_zeros(
+			const SphereData_Spectral &i_array_data
+	)
+	{
+
+		SphereData_Spectral out = *this;
+		out = i_array_data.spectral_returnWithDifferentModes(out.sphereDataConfig);
+		////std::cout << "PAD ZEROS " << i_array_data.sphereDataConfig->spectral_modes_n_max << " " << out.sphereDataConfig->spectral_modes_n_max << std::endl;
+
+		////////////std::size_t M_coarse = i_array_data.sphereDataConfig->spectral_modes_m_max;
+		////////////std::size_t N_coarse = i_array_data.sphereDataConfig->spectral_modes_n_max;
+		////////////std::size_t M_fine = out.sphereDataConfig->spectral_modes_m_max;
+		////////////std::size_t N_fine = out.sphereDataConfig->spectral_modes_n_max;
+
+		////////////assert(M_fine >= M_coarse);
+		////////////assert(N_fine >= N_coarse);
+
+		////////////// just copy data
+		////////////if (M_fine == M_coarse && N_fine == N_coarse)
+		////////////	out = i_array_data;
+		////////////else
+		////////////{
+		////////////	out.spectral_set_zero();
+		////////////	for (std::size_t m = 0; m < M_coarse; m++)
+		////////////		for (std::size_t n = m; n < N_coarse; n++)
+		////////////		{
+		////////////			std::size_t idx_coarse = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
+		////////////			std::size_t idx_fine = out.sphereDataConfig->getArrayIndexByModes(n, m);
+		////////////			out.spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse];
+		////////////		}
+		////////////}
+
+		return out;
+
+	}
+
+
 
 };
 

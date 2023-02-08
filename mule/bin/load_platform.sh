@@ -88,6 +88,12 @@ else
 	#
 	#echo "Testing debug output " $MULE_ROOT/platforms/??_*
 	for i in $MULE_ROOT/platforms/??_*; do
+		# Test whether it's really a proper platform directory and no leftover (including __pycache__)
+		if [[ ! -e "$i/JobPlatform.py" ]]; then
+			echo "$i/JobPlatform.py not found, but platform directory exists"
+			continue
+		fi
+
 		cd "$i"
 		load_this_platform
 		if [ $? -eq 0 ]; then
@@ -107,7 +113,7 @@ if [ -z "${MULE_PLATFORM_ID}" ]; then
 	echo_error_hline
 	echo_error "INTERNNAL ERROR: No platform detected!!!"
 	echo_error_hline
-	return
+	exit 1
 fi
 
 export MULE_PLATFORM_DIR="$(eval echo "${MULE_ROOT}/platforms/"??"_${MULE_PLATFORM_ID}/")"

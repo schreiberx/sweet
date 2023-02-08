@@ -6,7 +6,7 @@ import math
 
 from itertools import product
 
-from mule.exec_program import *
+from mule.utils import exec_program
 
 from SWEET import *
 p = JobGeneration()
@@ -23,8 +23,8 @@ testrun = False
 ##################################################
 
 p.compile.mode = 'release'
-if '_gnu' in os.getenv('SWEET_PLATFORM_ID'):
-	p.compile.compiler = 'gnu'
+if '_gcc' in os.getenv('SWEET_PLATFORM_ID'):
+	p.compile.compiler = 'gcc'
 else:
 	p.compile.compiler = 'intel'
 p.compile.sweet_mpi = 'enable'

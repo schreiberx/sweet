@@ -33,6 +33,7 @@ public:
 
 		return
 			i_benchmark_name == "galewsky" ||			///< Standard Galewsky benchmark
+			i_benchmark_name == "galewsky_linearbalance" ||	///< Standard Galewsky benchmark with linear balanced initial conditions
 			i_benchmark_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
 			i_benchmark_name == "galewsky_nosetparams"	///< Galewsky benchmark without overriding parameters
 		;
@@ -67,7 +68,22 @@ public:
 		SWESphereBenchmarks_helpers helpers(simVars, ops);
 		const SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
 
-		if (benchmark_name != "galewsky_nosetparams")
+		// Search for substrings
+		bool benchmark_nosetparams = benchmark_name.find("nosetparams") != std::string::npos;
+		bool benchmark_nobump = benchmark_name.find("nobump") != std::string::npos;
+		bool benchmark_linearbalance = benchmark_name.find("linearbalance") != std::string::npos;
+
+		// Use analytical geostrophic setup by default
+		bool use_analytical_geostrophic_setup = true;
+
+		if (simVars->misc.comma_separated_tags.find("galewsky_numerical_geostrophic_setup") != std::string::npos)
+			use_analytical_geostrophic_setup = false;
+
+		if (simVars->misc.comma_separated_tags.find("galewsky_analytical_geostrophic_setup") != std::string::npos)
+			use_analytical_geostrophic_setup = true;
+
+
+		if (!benchmark_nosetparams)
 		{
 			if (simVars->timecontrol.current_simulation_time == 0)
 			{
@@ -149,16 +165,28 @@ public:
 
 		ops->uv_to_vrtdiv(ug, vg, o_vrt, o_div);
 
-		bool use_analytical_geostrophic_setup = simVars->misc.comma_separated_tags.find("galewsky_analytical_geostrophic_setup") != std::string::npos;
-
 		if (use_analytical_geostrophic_setup)
 		{
 			std::cout << "[MULE] use_analytical_geostrophic_setup: 1" << std::endl;
-			helpers.computeGeostrophicBalance_nonlinear(
-					o_vrt,
-					o_div,
-					o_phi_pert
-			);
+
+			if (!benchmark_linearbalance)
+			{
+				// use nonlinear balanced initial conditions
+				helpers.computeGeostrophicBalance_nonlinear(
+						o_vrt,
+						o_div,
+						o_phi_pert
+				);
+			}
+			else
+			{
+				// use linearly balanced initial conditions
+				helpers.computeGeostrophicBalance_linear(
+						o_vrt,
+						o_div,
+						o_phi_pert
+				);
+			}
 
 			double h0_ = 10e3;
 			o_phi_pert = simVars->sim.gravitation * h0_ + o_phi_pert;
@@ -166,6 +194,11 @@ public:
 		}
 		else
 		{
+			if (benchmark_linearbalance)
+			{
+				SWEETError("Not supported");
+			}
+
 			std::cout << "[MULE] use_analytical_geostrophic_setup: 0" << std::endl;
 
 			/*
@@ -327,7 +360,7 @@ public:
 		simVars->sim.h0 = 10000;
 
 		SphereData_Physical hbump(o_phi_pert.sphereDataConfig);
-		if (benchmark_name == "galewsky")
+		if (!benchmark_nobump)
 		{
 			hbump.physical_update_lambda(
 				[&](double lon, double phi, double &o_data)
