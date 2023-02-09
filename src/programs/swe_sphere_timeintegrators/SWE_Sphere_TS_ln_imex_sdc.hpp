@@ -35,11 +35,11 @@ public:
 	SWE_Variables_Ref() : phi(nullptr), vort(nullptr), div(nullptr) {}
 
 	// Set pointers to solution data
-	void setRef(SphereData_Spectral& phi, SphereData_Spectral& vort, SphereData_Spectral& div) {
-		this->phi = &phi;
-		this->vort = &vort;
-		this->div = &div;
-	}
+	// void setRef(SphereData_Spectral& phi, SphereData_Spectral& vort, SphereData_Spectral& div) {
+	// 	this->phi = &phi;
+	// 	this->vort = &vort;
+	// 	this->div = &div;
+	// }
 };
 
 // Class to store solution data at one node
@@ -61,10 +61,10 @@ public:
 		this->vort = u.vort;
 		this->div = u.div;
 	}
-	void fillWith(const SWE_Variables_Ref& u) {
-		this->phi = *(u.phi);
-		this->vort = *(u.vort);
-		this->div = *(u.div);
+	void fillWith(const SphereData_Spectral& phi, const SphereData_Spectral& vort, const SphereData_Spectral& div) {
+		this->phi = phi;
+		this->vort = vort;
+		this->div = vort;
 	}
 };
 
@@ -190,13 +190,17 @@ private:
 	void axpy(double a, const SWE_Variables& x, SWE_Variables& y);
 
 	// Initialize nodes values
-	void initSweep();
+	void initSweep(SphereData_Spectral &io_phi,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div);
 
 	// Perform one sweep
 	void sweep(size_t k);
 
 	// Compute end-point solution and update step variables
-	void prolongate();
+	void prolongate(SphereData_Spectral &io_phi,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div);
 
 public:
 	SWE_Sphere_TS_ln_imex_sdc(

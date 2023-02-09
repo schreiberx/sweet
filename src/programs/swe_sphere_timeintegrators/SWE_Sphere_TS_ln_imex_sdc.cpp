@@ -56,12 +56,12 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	*/
 
 	// -- set-up step values container
-	u0.setRef(io_phi, io_vrt, io_div);
+	// u0.setRef(io_phi, io_vrt, io_div);
 	t0 = i_simulation_timestamp;
 	dt = i_fixed_dt;
 
 	// -- initialize nodes values and state
-	initSweep();
+	initSweep(io_phi, io_vrt, io_div);
 
 	// // -- perform sweeps
 	// for (size_t k = 0; k < nIter; k++){
@@ -69,7 +69,7 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	// }
 
 	// -- compute end-point solution and update step values
-	prolongate();
+	prolongate(io_phi, io_vrt, io_div);
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
@@ -110,9 +110,12 @@ void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, const SWE_Variables& x, SWE_Varia
 	y.div += tmp;
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
+void SWE_Sphere_TS_ln_imex_sdc::initSweep(
+		SphereData_Spectral &io_phi,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div) {
 	// Initialize state with step values
-	state.fillWith(u0);
+	state.fillWith(io_phi, io_vrt, io_div);
 
 	// Evaluate linear and non-linear with initial solution, and copy to each node
 	evalLinearTerms(state, lTerms.getK(0), t0);
@@ -135,7 +138,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		
 		// Initialize with u0 value (except just after initSweep)
 		if (k > 0 and i > 0) {
-			state.fillWith(u0);
+			state.fillWith(*u0.phi, *u0.vort, *u0.div);
 		}
 		
 		// Add quadrature terms
@@ -172,10 +175,10 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 	lTerms.swapIterate();
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::prolongate() {
-	*(u0.phi) = state.phi;
-	*(u0.vort) = state.vort;
-	*(u0.div) = state.div;
+void SWE_Sphere_TS_ln_imex_sdc::prolongate(SphereData_Spectral& phi, SphereData_Spectral& vort, SphereData_Spectral& div) {
+	phi = state.phi;
+	vort = state.vort;
+	div = state.div;
 	// TODO : implement quadrature prolongation
 }
 
