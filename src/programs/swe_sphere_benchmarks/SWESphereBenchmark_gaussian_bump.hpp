@@ -36,6 +36,7 @@ public:
 				i_benchmark_name == "gaussian_bump"			||
 				i_benchmark_name == "gaussian_bump_phi"			||
 				i_benchmark_name == "gaussian_bump_phi_pint"		||
+				i_benchmark_name == "sharp_gaussian_bump" ||
 				i_benchmark_name == "gaussian_bump_vrt"			||
 				i_benchmark_name == "gaussian_bump_div"			||
 
@@ -147,6 +148,8 @@ public:
 			o_phi_pert = get_gaussian_bump(M_PI, M_PI/3, 20.0)*phi_scale;
 		else if (benchmark_name == "gaussian_bump_phi_pint")
 			o_phi_pert = get_gaussian_bump(M_PI, M_PI/4., 20.)*phi_scale;
+		else if (benchmark_name == "sharp_gaussian_bump")
+			o_phi_pert = get_gaussian_bump(M_PI, M_PI/4, 40.0)*6000;
 		else
 			o_phi_pert.spectral_set_zero();
 
