@@ -209,5 +209,5 @@ for input_filepath in sys.argv[1:]:
     fig.tight_layout()
 
     print("Writing to "+str(output_filepath))
-    fig.savefig(output_filepath, dpi=300)
+    fig.savefig(output_filepath)
 

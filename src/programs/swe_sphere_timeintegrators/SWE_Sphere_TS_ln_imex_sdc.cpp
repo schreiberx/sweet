@@ -112,14 +112,14 @@ void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, const SWE_Variables& x, SWE_Varia
 
 void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
 	// Initialize state with step values
-	state.copyValues(u0);
+	state.fillWith(u0);
 
 	// Evaluate linear and non-linear with initial solution, and copy to each node
 	evalLinearTerms(state, lTerms.getK(0), t0);
 	// evalNonLinearTerms(state, nTerms.getK(0), t0);
 	// for (size_t i = 1; i < nNodes; i++) {
-	// 	lTerms.getK(i).copyValues(lTerms.getK(0));
-	// 	nTerms.getK(i).copyValues(nTerms.getK(0));
+	// 	lTerms.getK(i).fillWith(lTerms.getK(0));
+	// 	nTerms.getK(i).fillWith(nTerms.getK(0));
 	// }
 }
 
@@ -135,7 +135,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		
 		// Initialize with u0 value (except just after initSweep)
 		if (k > 0 and i > 0) {
-			state.copyValues(u0);
+			state.fillWith(u0);
 		}
 		
 		// Add quadrature terms
@@ -173,9 +173,9 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::prolongate() {
-	*(u0.phi) = std::move(state.phi);
-	*(u0.vort) = std::move(state.vort);
-	*(u0.div) = std::move(state.div);
+	*(u0.phi) = state.phi;
+	*(u0.vort) = state.vort;
+	*(u0.div) = state.div;
 	// TODO : implement quadrature prolongation
 }
 

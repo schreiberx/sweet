@@ -55,13 +55,13 @@ public:
 		vort(sphereDataConfig), 
 		div(sphereDataConfig) {}
 
-	// Copy values for phi, vort and div
-	void copyValues(const SWE_Variables& u) {
+	// Fill values for phi, vort and div
+	void fillWith(const SWE_Variables& u) {
 		this->phi = u.phi;
 		this->vort = u.vort;
 		this->div = u.div;
 	}
-	void copyValues(const SWE_Variables_Ref& u) {
+	void fillWith(const SWE_Variables_Ref& u) {
 		this->phi = *(u.phi);
 		this->vort = *(u.vort);
 		this->div = *(u.div);
