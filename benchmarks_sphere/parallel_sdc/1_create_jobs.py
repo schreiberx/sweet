@@ -6,16 +6,9 @@ from itertools import product
 from mule import JobGeneration, JobParallelizationDimOptions
 
 p = JobGeneration()
-
 verbose = True
 
-##################################################
-
-##################################################
-
 p.compile.mode = 'release'
-#p.compile.sweet_mpi = 'disable'
-
 
 #
 # Mode and Physical resolution
@@ -32,16 +25,12 @@ p.compile.rexi_thread_parallel_sum = 'disable'
 gen_reference_solution = False
 p.runtime.benchmark_name = "galewsky"
 
-p.runtime.max_simulation_time = 60*60*24*8    # 8 days
+p.runtime.max_simulation_time = 60*60*24*1    # 8 days
 
 p.runtime.output_timestep_size = 60*60  # Generate output every 1 hour
 p.runtime.output_file_mode = 'bin'
 
 params_timestep_size_reference = 30.0
-
-#params_timestep_sizes_explicit_ = [15*(2**i) for i in range(0, 4)]
-#params_timestep_sizes_explicit_ = [60]
-
 base_timestep_size = 128/p.runtime.space_res_spectral*300.0
 
 # Parallelization
@@ -58,20 +47,12 @@ unique_id_filter.append('runtime.max_simulation_time')
 
 p.unique_id_filter = unique_id_filter
 
-#p.runtime.output_timestep_size = p.runtime.max_simulation_time
-
-
-##########################################################################
-##########################################################################
-##########################################################################
-
 def estimateWallclockTime(p):
     return 12*60*60
 
 
 p.compile.lapack = 'enable'
 p.compile.mkl = 'disable'
-
 p.compilecommand_in_jobscript = False
 
 
@@ -86,30 +67,10 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 p.compile.benchmark_timings = 'enable'
-
 p.compile.quadmath = 'disable'
 
-
-#
-# Activate Fortran source
-#
-#p.compile.fortran_source = 'enable'
-
-
-# Verbosity mode
 p.runtime.verbosity = 0
-
-
-#
-# Compute error
-#
 p.runtime.compute_error = 0
-
-
-#
-# Preallocate the REXI matrices
-#
-#p.runtime.rexi_sphere_preallocation = 1
 
 # Leave instability checks activated
 p.runtime.instability_checks = 1
@@ -117,8 +78,6 @@ p.runtime.instability_checks = 1
 #p.runtime.instability_checks = 0
 
 p.runtime.viscosity = 0.0
-
-
 
 #
 # allow including this file
@@ -132,12 +91,12 @@ if __name__ == "__main__":
         ###########
         # IMEX Euler
         ###########
-        ['l_irk_n_erk',        2,    2],
+        # ['l_irk_n_erk',        2,    2],
 
         ###########
         # IMEX SDC
         ###########
-        # ['ln_imex_sdc',        1,    1],
+        ['ln_imex_sdc',        1,    1],
     ]
 
 

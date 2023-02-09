@@ -55,34 +55,26 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	and an explicit sweep for the NL term.
 	*/
 
-	// -- initialize step values
+	// -- set-up step values container
 	u0.setRef(io_phi, io_vrt, io_div);
 	t0 = i_simulation_timestamp;
 	dt = i_fixed_dt;
 
-	// -- initialize nodes values
+	// -- initialize nodes values and state
 	initSweep();
 
-	// -- perform sweeps
-	for (size_t i = 0; i < nIter; i++){
-		sweep();
-	}
+	// // -- perform sweeps
+	// for (size_t k = 0; k < nIter; k++){
+	// 	sweep(k);
+	// }
 
-	// TODO : copy state values to io_phi, io_vrt and io_div
-
-	// TODO : add prolongation (later ...)
+	// -- compute end-point solution and update step values
+	prolongate();
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_linear(
 		u.phi, u.vort, u.div,
-		eval.phi, eval.vort, eval.div,
-		t  // time-stamp
-	);
-}
-void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
-	timestepping_l_erk_n_erk.euler_timestep_update_linear(
-		*u.phi, *u.vort, *u.div,
 		eval.phi, eval.vort, eval.div,
 		t  // time-stamp
 	);
@@ -95,13 +87,6 @@ void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables& u, SWE_V
 		t  // time-stamp
 	);
 }
-void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
-	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-		*u.phi, *u.vort, *u.div,
-		eval.phi, eval.vort, eval.div,
-		t  // time-stamp
-	);
-}
 
 void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(SWE_Variables& rhs, double dt) {
 	timestepping_l_irk.solveImplicit(
@@ -110,7 +95,7 @@ void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(SWE_Variables& rhs, double dt) {
 	);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, SWE_Variables& x, SWE_Variables& y) {
+void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, const SWE_Variables& x, SWE_Variables& y) {
 	// TODO : optimize this if possible (check with Martin)
 	tmp = x.phi;
 	tmp *= a;
@@ -126,16 +111,19 @@ void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, SWE_Variables& x, SWE_Variables& 
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
+	// Initialize state with step values
+	state.copyValues(u0);
+
 	// Evaluate linear and non-linear with initial solution, and copy to each node
-	evalLinearTerms(u0, lTerms.getK(0), t0);
-	evalNonLinearTerms(u0, nTerms.getK(0), t0);
-	for (size_t i = 1; i < nNodes; i++) {
-		lTerms.getK(i).copyValues(lTerms.getK(0));
-		nTerms.getK(i).copyValues(nTerms.getK(0));
-	}
+	evalLinearTerms(state, lTerms.getK(0), t0);
+	// evalNonLinearTerms(state, nTerms.getK(0), t0);
+	// for (size_t i = 1; i < nNodes; i++) {
+	// 	lTerms.getK(i).copyValues(lTerms.getK(0));
+	// 	nTerms.getK(i).copyValues(nTerms.getK(0));
+	// }
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::sweep() {
+void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 
 	// Local convenient references
 	const Mat& q = qMat;
@@ -145,41 +133,50 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep() {
 	// Loop on nodes
 	for (size_t i = 0; i < nNodes; i++) {
 		
-		// Initialize with u0 value
-		rhs.copyValues(u0);
-
+		// Initialize with u0 value (except just after initSweep)
+		if (k > 0 and i > 0) {
+			state.copyValues(u0);
+		}
+		
 		// Add quadrature terms
 		for (size_t j = 0; j < nNodes; j++) {
-			axpy(dt*q[i][j], nTerms.getK(j), rhs);
-			axpy(dt*q[i][j], lTerms.getK(j), rhs);
+			axpy(dt*q[i][j], nTerms.getK(j), state);
+			axpy(dt*q[i][j], lTerms.getK(j), state);
 		}
 
 		// Add non-linear and linear terms from iteration k+1
 		for (size_t j = 0; j < i; j++) {
-			axpy(dt*qE[i][j], nTerms.getK1(j), rhs);
-			axpy(dt*qI[i][j], lTerms.getK1(j), rhs);
+			axpy(dt*qE[i][j], nTerms.getK1(j), state);
+			axpy(dt*qI[i][j], lTerms.getK1(j), state);
 		}
 
 		// Substract non-linear and linear terms from iteration k
 		for (size_t j = 0; j < i; j++) {
-			axpy(-dt*qE[i][j], nTerms.getK(j), rhs);
-			axpy(-dt*qI[i][j], lTerms.getK(j), rhs);
+			axpy(-dt*qE[i][j], nTerms.getK(j), state);
+			axpy(-dt*qI[i][j], lTerms.getK(j), state);
 		}
-		axpy(-dt*qI[i][i], lTerms.getK(i), rhs);
+		axpy(-dt*qI[i][i], lTerms.getK(i), state);
 		
 		// Implicit solve
-		solveImplicit(rhs, dt*qI[i][i]);
+		solveImplicit(state, dt*qI[i][i]);
 
 		// Evaluate and store linear term for k+1
-		evalLinearTerms(rhs, lTerms.getK1(i), t0+dt*tau[i]);
+		evalLinearTerms(state, lTerms.getK1(i), t0+dt*tau[i]);
 
 		// Evaluate and store non linear term for k+1
-		evalNonLinearTerms(rhs, nTerms.getK1(i), t0+dt*tau[i]);
+		evalNonLinearTerms(state, nTerms.getK1(i), t0+dt*tau[i]);
 	}
 
 	// Swap k+1 and k values for next iteration
 	nTerms.swapIterate();
 	lTerms.swapIterate();
+}
+
+void SWE_Sphere_TS_ln_imex_sdc::prolongate() {
+	*(u0.phi) = std::move(state.phi);
+	*(u0.vort) = std::move(state.vort);
+	*(u0.div) = std::move(state.div);
+	// TODO : implement quadrature prolongation
 }
 
 /*
@@ -262,7 +259,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		timestepping_order(-1),
 		lTerms(op.sphereDataConfig),
 		nTerms(op.sphereDataConfig),
-		rhs(op.sphereDataConfig),
+		state(op.sphereDataConfig),
 		tmp(op.sphereDataConfig),
 		u0()
 {

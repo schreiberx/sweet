@@ -5,7 +5,8 @@
  *      Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-# pragma once
+#ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_IMEX_SDC_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_IMEX_SDC_HPP_
 
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
@@ -23,12 +24,13 @@ using std::array;
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
 
-// Class to store a reference to the initial solution for each time steps
+// Class to store references (pointers) to the initial solution for each time steps
 class SWE_Variables_Ref {
 public:
 	SphereData_Spectral* phi;
 	SphereData_Spectral* vort;
 	SphereData_Spectral* div;
+	
 	// Default constructor
 	SWE_Variables_Ref() : phi(nullptr), vort(nullptr), div(nullptr) {}
 
@@ -38,9 +40,6 @@ public:
 		this->vort = &vort;
 		this->div = &div;
 	}
-	// Copy semantic OFF (just in case ...)
-	SWE_Variables_Ref(const SWE_Variables_Ref& other) = delete;
-	SWE_Variables_Ref& operator=(const SWE_Variables_Ref& other) = delete;
 };
 
 // Class to store solution data at one node
@@ -56,26 +55,17 @@ public:
 		vort(sphereDataConfig), 
 		div(sphereDataConfig) {}
 
-	// Copy semantic OFF
-	SWE_Variables(const SWE_Variables& other) = delete;
-	SWE_Variables& operator=(const SWE_Variables& other) = delete;
-
-	// Move semantic ON
-	SWE_Variables(SWE_Variables&& other) = default;
-	SWE_Variables& operator=(SWE_Variables&& other) = default;
-
 	// Copy values for phi, vort and div
-	void copyValues(SWE_Variables& u) {
+	void copyValues(const SWE_Variables& u) {
 		this->phi = u.phi;
 		this->vort = u.vort;
 		this->div = u.div;
 	}
-	void copyValues(SWE_Variables_Ref& u) {
-		this->phi = *u.phi;
-		this->vort = *u.vort;
-		this->div = *u.div;
+	void copyValues(const SWE_Variables_Ref& u) {
+		this->phi = *(u.phi);
+		this->vort = *(u.vort);
+		this->div = *(u.div);
 	}
-
 };
 
 // Class to store all the solution data to each nodes and two iterations
@@ -85,13 +75,13 @@ class SDC_NodeStorage {
 public:
 	SDC_NodeStorage(const SphereData_Config* sphereDataConfig){
 		vector<SWE_Variables> nodeValsK;
-		vector<SWE_Variables> nodeValsKp1;
+		vector<SWE_Variables> nodeValsK1;
 		for (size_t i = 0; i < nNodes; i++) {
 			nodeValsK.push_back(SWE_Variables(sphereDataConfig));
-			nodeValsKp1.push_back(SWE_Variables(sphereDataConfig));
+			nodeValsK1.push_back(SWE_Variables(sphereDataConfig));
 		}
-		v.push_back(std::move(nodeValsK));
-		v.push_back(std::move(nodeValsKp1));
+		v.push_back(nodeValsK);
+		v.push_back(nodeValsK1);
 	}
 
 	void swapIterate() {
@@ -142,33 +132,36 @@ private:
 	 * SDC specific attributes
  	 */
 	const static size_t nNodes = 3;
-	const static size_t nIter = 3;
+	const static size_t nIter = 0;
 	typedef array<double, nNodes> Vec;
 	typedef array<Vec, nNodes> Mat;
-	typedef array<array<double, nNodes>, 2> Storage;
 
 	// Nodes, Quadrature matrix and QDelta approximation
-	const Vec tau {0.0, 0.0, 0.0};
+	// -- 3 RADAU-RIGHT points, using LEGENDRE distribution
+	const Vec tau {0.15505103, 0.64494897, 1.0};
+	const Vec weights {0.37640306, 0.51248583, 0.11111111};
 	const Mat qMat {{
-		{0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0}}
+		{0.19681548, -0.06553543,  0.02377097},
+		{0.39442431,  0.29207341, -0.04154875},
+		{0.37640306,  0.51248583,  0.11111111}}
 	};
+	// -- BE for linear (implicit) part
 	const Mat qDeltaI {{
-		{0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0}}
+		{0.15505103, 0.        , 0.        },
+		{0.15505103, 0.48989795, 0.        },
+		{0.15505103, 0.48989795, 0.35505103}}
 	};
+	// -- FE for non linear (explicit) part
 	const Mat qDeltaE {{
-		{0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0},
-		{0.0, 0.0, 0.0}}
+		{0.        , 0.        , 0.        },
+		{0.48989795, 0.        , 0.        },
+		{0.48989795, 0.35505103, 0.        }}
 	};
 
 	// Variable storage required for SDC sweeps
 	SDC_NodeStorage<nNodes> lTerms;  	// linear term evaluations
 	SDC_NodeStorage<nNodes> nTerms;	// non-linear term evaluations
-	SWE_Variables rhs;
+	SWE_Variables state;  // solution state
 	SphereData_Spectral tmp;  // for axpy
 
 	// To store pointers to initial time steps
@@ -180,12 +173,10 @@ private:
 	 * SDC specific methods
  	 */
 
-	// Wrapper evaluating linear terms and storing them in separate variables
-	void evalLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t=-1);
+	// Wrapper evaluating linear terms and storing them in separate variables (eval)
 	void evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t=-1);
 
-	// Wrapper evaluating non-linear terms and storing them in separate variables
-	void evalNonLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t=-1);
+	// Wrapper evaluating non-linear terms and storing them in separate variables (eval)
 	void evalNonLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t=-1);
 
 	/* Wrapper solving the implicit system built from the linear term :
@@ -196,13 +187,16 @@ private:
 	void solveImplicit(SWE_Variables& rhs, double dt);
 
 	// Perform y <- a*x + y
-	void axpy(double a, SWE_Variables& x, SWE_Variables& y);
+	void axpy(double a, const SWE_Variables& x, SWE_Variables& y);
 
 	// Initialize nodes values
 	void initSweep();
 
 	// Perform one sweep
-	void sweep();
+	void sweep(size_t k);
+
+	// Compute end-point solution and update step variables
+	void prolongate();
 
 public:
 	SWE_Sphere_TS_ln_imex_sdc(
@@ -230,3 +224,5 @@ public:
 
 	virtual ~SWE_Sphere_TS_ln_imex_sdc();
 };
+
+#endif // SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_IMEX_SDC_HPP_
