@@ -364,10 +364,10 @@ void ceval_f3 (
 			double laplace_op_8 = laplace_op_4 * laplace_op_4;
 
 			io_data *= (
-				(-visc2) * laplace_op_2 + 
-				visc4 * laplace_op_4 +
-			    (-visc6) * laplace_op_6 +
-				visc8 * laplace_op_8);
+				visc2 * laplace_op_2 + 
+				(-visc4) * laplace_op_4 +
+			    visc6 * laplace_op_6 +
+				(-visc8) * laplace_op_8);
 		};
 	
 	// only do this for the fields that should get viscosity applied
@@ -432,7 +432,7 @@ void ccomp_f3 (
 	}
 	const double r      = simVars->sim.sphere_radius;
 
-	const std::array<double, 4> visc_factors {-visc2, visc4, -visc6, visc8};
+	const std::array<double, 4> visc_factors {visc2, -visc4, +visc6, -visc8};
 
 	// for all values where viscosity should get applied
 	// 1. solve (1-dt*visc*diff_op)*rhs = y
