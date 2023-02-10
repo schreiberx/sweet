@@ -35,11 +35,11 @@ public:
 	SWE_Variables_Ref() : phi(nullptr), vort(nullptr), div(nullptr) {}
 
 	// Set pointers to solution data
-	// void setRef(SphereData_Spectral& phi, SphereData_Spectral& vort, SphereData_Spectral& div) {
-	// 	this->phi = &phi;
-	// 	this->vort = &vort;
-	// 	this->div = &div;
-	// }
+	void setRef(SphereData_Spectral& phi, SphereData_Spectral& vort, SphereData_Spectral& div) {
+		this->phi = &phi;
+		this->vort = &vort;
+		this->div = &div;
+	}
 };
 
 // Class to store solution data at one node
@@ -61,10 +61,10 @@ public:
 		this->vort = u.vort;
 		this->div = u.div;
 	}
-	void fillWith(const SphereData_Spectral& phi, const SphereData_Spectral& vort, const SphereData_Spectral& div) {
-		this->phi = phi;
-		this->vort = vort;
-		this->div = vort;
+	void fillWith(const SWE_Variables_Ref& u) {
+		this->phi = *(u.phi);
+		this->vort = *(u.vort);
+		this->div = *(u.div);
 	}
 };
 
@@ -132,7 +132,7 @@ private:
 	 * SDC specific attributes
  	 */
 	const static size_t nNodes = 3;
-	const static size_t nIter = 0;
+	const static size_t nIter = 3;
 	typedef array<double, nNodes> Vec;
 	typedef array<Vec, nNodes> Mat;
 
@@ -147,15 +147,15 @@ private:
 	};
 	// -- BE for linear (implicit) part
 	const Mat qDeltaI {{
-		{0.15505103, 0.        , 0.        },
-		{0.15505103, 0.48989795, 0.        },
-		{0.15505103, 0.48989795, 0.35505103}}
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        }}
 	};
 	// -- FE for non linear (explicit) part
 	const Mat qDeltaE {{
 		{0.        , 0.        , 0.        },
-		{0.48989795, 0.        , 0.        },
-		{0.48989795, 0.35505103, 0.        }}
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        }}
 	};
 
 	// Variable storage required for SDC sweeps
@@ -190,17 +190,13 @@ private:
 	void axpy(double a, const SWE_Variables& x, SWE_Variables& y);
 
 	// Initialize nodes values
-	void initSweep(SphereData_Spectral &io_phi,
-		SphereData_Spectral &io_vrt,
-		SphereData_Spectral &io_div);
+	void initSweep();
 
 	// Perform one sweep
 	void sweep(size_t k);
 
 	// Compute end-point solution and update step variables
-	void prolongate(SphereData_Spectral &io_phi,
-		SphereData_Spectral &io_vrt,
-		SphereData_Spectral &io_div);
+	void prolongate();
 
 public:
 	SWE_Sphere_TS_ln_imex_sdc(
