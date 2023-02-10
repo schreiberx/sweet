@@ -65,6 +65,8 @@ def read_check_residuals_C_points(path):
                 print(" -- Checking C-points residuals at iter", niter);
                 for j in range(iline + 1, iline + 1 + 2 * niter):
                     spl = lines[j].split();
+                    if not (spl[4] == "rnorm:"):
+                        print(spl, spl2)
                     res = float(spl[5]);
                     print(res)
                     assert res == 0.;
