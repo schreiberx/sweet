@@ -111,9 +111,9 @@ public:
 	);
 
 	void solveImplicit(
-		SphereData_Spectral &rhs_phi,
-		SphereData_Spectral &rhs_vrt,
-		SphereData_Spectral &rhs_div,
+		SphereData_Spectral &io_phi,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div,
 
 		double dt
 	);
