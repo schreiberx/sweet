@@ -175,7 +175,7 @@ public:
 		if (i_plane_data.planeDataConfig == nullptr)
 			return;
 
-		std::swap(pysical_space_data, i_plane_data.physical_space_data);
+		std::swap(physical_space_data, i_plane_data.physical_space_data);
 	}
 
 
