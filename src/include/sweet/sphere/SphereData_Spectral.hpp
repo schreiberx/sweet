@@ -145,9 +145,7 @@ public:
 		if (i_sph_data.sphereDataConfig == nullptr)
 			return;
 
-		alloc_data();
-
-		spectral_space_data = i_sph_data.spectral_space_data;
+		std::swap(spectral_space_data, i_sph_data.spectral_space_data);
 	}
 
 
@@ -1563,38 +1561,6 @@ public:
 	{
 		SphereData_Spectral out = *this;
 		out = i_array_data.spectral_returnWithDifferentModes(out.sphereDataConfig);
-		///std::cout << "RESTRICT " << i_array_data.sphereDataConfig->spectral_modes_n_max << " " << out.sphereDataConfig->spectral_modes_n_max << std::endl;
-
-		//////////////std::cout << i_array_data.spectral_reduce_max_abs() << std::endl;
-		//////////////std::cout << out.spectral_reduce_max_abs() << std::endl;
-		//////////////std::cout << std::endl;
-
-		//////////////std::cout << i_array_data.spectral_reduce_sum_quad() << std::endl;
-		//////////////std::cout << out.spectral_reduce_sum_quad() << std::endl;
-		//////////////std::cout << std::endl;
-		//////////std::size_t M_fine = i_array_data.sphereDataConfig->spectral_modes_m_max;
-		//////////std::size_t N_fine = i_array_data.sphereDataConfig->spectral_modes_n_max;
-		//////////std::size_t M_coarse = out.sphereDataConfig->spectral_modes_m_max;
-		//////////std::size_t N_coarse = out.sphereDataConfig->spectral_modes_n_max;
-
-		//////////assert(M_fine >= M_coarse);
-		//////////assert(N_fine >= N_coarse);
-
-		//////////// just copy data
-		//////////if (M_fine == M_coarse && N_fine == N_coarse)
-		//////////	out = i_array_data;
-		//////////else
-		//////////{
-		//////////	out.spectral_set_zero();
-		//////////	for (std::size_t m = 0; m < M_coarse; m++)
-		//////////		for (std::size_t n = m; n < N_coarse; n++)
-		//////////		{
-		//////////			std::size_t idx_coarse = out.sphereDataConfig->getArrayIndexByModes(n, m);
-		//////////			std::size_t idx_fine = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
-		//////////			out.spectral_space_data[idx_coarse] = i_array_data.spectral_space_data[idx_fine];
-		//////////		}
-		//////////}
-
 		return out;
 
 	}
@@ -1610,31 +1576,6 @@ public:
 
 		SphereData_Spectral out = *this;
 		out = i_array_data.spectral_returnWithDifferentModes(out.sphereDataConfig);
-		////std::cout << "PAD ZEROS " << i_array_data.sphereDataConfig->spectral_modes_n_max << " " << out.sphereDataConfig->spectral_modes_n_max << std::endl;
-
-		////////////std::size_t M_coarse = i_array_data.sphereDataConfig->spectral_modes_m_max;
-		////////////std::size_t N_coarse = i_array_data.sphereDataConfig->spectral_modes_n_max;
-		////////////std::size_t M_fine = out.sphereDataConfig->spectral_modes_m_max;
-		////////////std::size_t N_fine = out.sphereDataConfig->spectral_modes_n_max;
-
-		////////////assert(M_fine >= M_coarse);
-		////////////assert(N_fine >= N_coarse);
-
-		////////////// just copy data
-		////////////if (M_fine == M_coarse && N_fine == N_coarse)
-		////////////	out = i_array_data;
-		////////////else
-		////////////{
-		////////////	out.spectral_set_zero();
-		////////////	for (std::size_t m = 0; m < M_coarse; m++)
-		////////////		for (std::size_t n = m; n < N_coarse; n++)
-		////////////		{
-		////////////			std::size_t idx_coarse = i_array_data.sphereDataConfig->getArrayIndexByModes(n, m);
-		////////////			std::size_t idx_fine = out.sphereDataConfig->getArrayIndexByModes(n, m);
-		////////////			out.spectral_space_data[idx_fine] = i_array_data.spectral_space_data[idx_coarse];
-		////////////		}
-		////////////}
-
 		return out;
 
 	}

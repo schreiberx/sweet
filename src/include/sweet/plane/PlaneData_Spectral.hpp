@@ -179,9 +179,7 @@ public:
 		if (i_plane_data.planeDataConfig == nullptr)
 			return;
 
-		alloc_data();
-
-		spectral_space_data = i_plane_data.spectral_space_data;
+		std::swap(spectral_space_data, i_plane_data.spectral_space_data);
 	}
 
 
