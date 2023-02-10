@@ -156,7 +156,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		axpy(-dt*qI[i][i], lTerms.getK(i), state);
 		
 		// Implicit solve
-		// solveImplicit(state, dt*qI[i][i]);
+		solveImplicit(state, dt*qI[i][i]);
 
 		// Evaluate and store linear term for k+1
 		evalLinearTerms(state, lTerms.getK1(i), t0+dt*tau[i]);

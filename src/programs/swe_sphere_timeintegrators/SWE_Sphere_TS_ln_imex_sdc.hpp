@@ -147,15 +147,15 @@ private:
 	};
 	// -- BE for linear (implicit) part
 	const Mat qDeltaI {{
-		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        }}
+		{0.15505103, 0.        , 0.        },
+		{0.15505103, 0.48989795, 0.        },
+		{0.15505103, 0.48989795, 0.35505103}}
 	};
 	// -- FE for non linear (explicit) part
 	const Mat qDeltaE {{
 		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        }}
+		{0.48989795, 0.        , 0.        },
+		{0.48989795, 0.35505103, 0.        }}
 	};
 
 	// Variable storage required for SDC sweeps
