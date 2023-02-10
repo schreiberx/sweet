@@ -116,7 +116,7 @@ LatexCommand tableofcontents
 
 \end_layout
 
-\begin_layout Standard
+\begin_layout Abstract
 These notes are taken from a final report for a KONWIHR funding from 2020
  and should serve the purpose to explain the current REXI and implicit time
  integrators which includes the Coriolis effect and requires solving a system
@@ -134,7 +134,7 @@ literal "false"
  in 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Temperton1995"
+key "Temperton_1995"
 literal "false"
 
 \end_inset
@@ -158,7 +158,7 @@ single-layer atmospheric model
  and performance properties in the horizontal dimension (see 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "WilliamsonDavidL.1992"
+key "Williamson_David_1992"
 literal "false"
 
 \end_inset
@@ -210,7 +210,7 @@ with
  refer to 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Hack1992,Schreiber2019"
+key "Schreiber_Schaeffer_Loft_2019,Hack_Jakob_1992"
 literal "false"
 
 \end_inset
@@ -311,17 +311,9 @@ Here,
 \end_layout
 
 \begin_layout Standard
-Similar to fast Helmholtz solvers in Fourier space (see e.g.
- 
-\begin_inset CommandInset citation
-LatexCommand cite
-key "Schreiber2018a"
-literal "false"
-
-\end_inset
-
- related to this work), we can use the Spherical Harmonics for directly
- solving equations of a particular form in spectral space due to, e.g.,
+Similar to fast Helmholtz solvers in Fourier space, we can use the Spherical
+ Harmonics for directly solving equations of a particular form in spectral
+ space due to, e.g.,
 \begin_inset Formula 
 \[
 \Delta P_{n}^{m}=\frac{-n(n+1)}{r^{2}}P_{n}^{m}
@@ -364,7 +356,7 @@ Efficient here refers to more efficient than iterative solvers by exploiting
  REXI solver using spherical harmonics has been developed (see 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Schreiber2018"
+key "Schreiber_Schaeffer_Loft_2019"
 literal "false"
 
 \end_inset
@@ -387,7 +379,7 @@ where REXI-like terms can be easily related to this structure.
 Hence, we adopted a formulation of 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Temperton1995"
+key "Temperton_1995"
 literal "false"
 
 \end_inset
@@ -446,7 +438,7 @@ name "subsec:Implicit-time-integration"
 In what follows, we will further investigate the steps from 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Temperton1995"
+key "Temperton_1995"
 literal "false"
 
 \end_inset
@@ -454,7 +446,7 @@ literal "false"
  and 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "BOURKE1972"
+key "BOURKE_1972"
 literal "false"
 
 \end_inset
@@ -483,7 +475,7 @@ Given the divergence
  we get (see 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Temperton1995"
+key "Temperton_1995"
 literal "false"
 
 \end_inset
@@ -491,7 +483,7 @@ literal "false"
  and 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "BOURKE1972"
+key "BOURKE_1972"
 literal "false"
 
 \end_inset
@@ -1213,7 +1205,7 @@ Solver for divergence
 We can use the previously derived equations (see also 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "Temperton1995"
+key "Temperton_1995"
 literal "false"
 
 \end_inset
