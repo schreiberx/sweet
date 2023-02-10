@@ -337,7 +337,7 @@ void ceval_f3 (
 	SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
 	SphereData_Spectral& div_F3  = o_F3->get_div();
 
-	// initialize F3 to zero in case no artificial viscosity
+	// initialize F3 to zero in case of no artificial viscosity
 	c_sweet_data_setval(o_F3, 0.0);
 
 	// get the simulation variables
@@ -358,19 +358,19 @@ void ceval_f3 (
 	// lambda for applying viscosity
 	auto viscosity_applier = [&](int n, int m, std::complex<double> &io_data) 
 	    {
-			double laplace_op_2 = (double)n*((double)n+1.0)/(r*r);
+			double laplace_op_2 = -(double)n*((double)n+1.0)/(r*r);
 			double laplace_op_4 = laplace_op_2 * laplace_op_2;
 			double laplace_op_6 = laplace_op_4 * laplace_op_2;
 			double laplace_op_8 = laplace_op_4 * laplace_op_4;
 
 			io_data *= (
-				(-visc2) * laplace_op_2 + 
+				visc2 * laplace_op_2 + 
 				(-visc4) * laplace_op_4 +
-			    (-visc6) * laplace_op_6 +
+			    visc6 * laplace_op_6 +
 				(-visc8) * laplace_op_8);
 		};
 	
-	// TODO only do this for the fields that should get viscosity applied
+	// only do this for the fields that should get viscosity applied
 	if (simVars->libpfasst.hyperviscosity_on_field.at("phi_pert"))
 	{
 		phi_pert_F3 = phi_pert_Y;
@@ -414,7 +414,7 @@ void ccomp_f3 (
 	vrt_Y = vrt_Rhs;
 	div_Y = div_Rhs;
 
-	// initialize F3 to zero in case no artificial viscosity
+	// initialize F3 to zero in case of no artificial viscosity
 	c_sweet_data_setval(o_F3, 0.0);
 
 	// get the simulation variables
@@ -432,7 +432,7 @@ void ccomp_f3 (
 	}
 	const double r      = simVars->sim.sphere_radius;
 
-	const std::array<double, 4> visc_factors {-visc2, -visc4, -visc6, -visc8};
+	const std::array<double, 4> visc_factors {visc2, -visc4, +visc6, -visc8};
 
 	// for all values where viscosity should get applied
 	// 1. solve (1-dt*visc*diff_op)*rhs = y
