@@ -147,7 +147,7 @@ public:
 
 		alloc_data();
 
-		spectral_space_data = i_sph_data.spectral_space_data;
+		std::swap(spectral_space_data, i_sph_data.spectral_space_data);
 	}
 
 
