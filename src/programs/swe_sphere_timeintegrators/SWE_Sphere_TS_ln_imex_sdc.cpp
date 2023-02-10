@@ -79,10 +79,24 @@ void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables& u, SWE_Vari
 		t  // time-stamp
 	);
 }
+void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
+	timestepping_l_erk_n_erk.euler_timestep_update_linear(
+		*(u.phi), *(u.vort), *(u.div),
+		eval.phi, eval.vort, eval.div,
+		t  // time-stamp
+	);
+}
 
 void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
 		u.phi, u.vort, u.div,
+		eval.phi, eval.vort, eval.div,
+		t  // time-stamp
+	);
+}
+void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
+	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
+		*(u.phi), *(u.vort), *(u.div),
 		eval.phi, eval.vort, eval.div,
 		t  // time-stamp
 	);
@@ -111,16 +125,50 @@ void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, const SWE_Variables& x, SWE_Varia
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
-	// Initialize state with step values
-	state.fillWith(u0);
+	
+	if (qDeltaInit) {
+		// Uses QDelta matrix to initialize node values
 
-	// Evaluate linear and non-linear with initial solution, and copy to each node
-	evalLinearTerms(state, lTerms.getK(0), t0);
-	evalNonLinearTerms(state, nTerms.getK(0), t0);
-	for (size_t i = 1; i < nNodes; i++) {
-		lTerms.getK(i).fillWith(lTerms.getK(0));
-		nTerms.getK(i).fillWith(nTerms.getK(0));
+		// Local convenient references
+		const Mat& q = qMat;
+		const Mat& qI = qDeltaI;
+		const Mat& qE = qDeltaI;
+
+		// Loop on nodes (can be parallelized if diagonal)
+		for (size_t i = 0; i < nNodes; i++) {
+
+			// Initialize with u0 value
+			state.fillWith(u0);
+
+			if (not diagonal) {
+				// Add non-linear and linear terms from iteration k (already computed)
+				for (size_t j = 0; j < i; j++) {
+					axpy(dt*qE[i][j], nTerms.getK(j), state);
+					axpy(dt*qI[i][j], lTerms.getK(j), state);
+				}
+			}
+
+			// Implicit solve
+			solveImplicit(state, dt*qI[i][i]);
+
+			// Evaluate and store linear term for k
+			evalLinearTerms(state, lTerms.getK(i), t0+dt*tau[i]);
+
+			// Evaluate and store non linear term for k
+			evalNonLinearTerms(state, nTerms.getK(i), t0+dt*tau[i]);
+		}
+
+		
+	} else {
+		// Evaluate linear and non-linear with initial solution, and copy to each node
+		evalLinearTerms(u0, lTerms.getK(0), t0);
+		evalNonLinearTerms(u0, nTerms.getK(0), t0);
+		for (size_t i = 1; i < nNodes; i++) {
+			lTerms.getK(i).fillWith(lTerms.getK(0));
+			nTerms.getK(i).fillWith(nTerms.getK(0));
+		}
 	}
+
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
@@ -130,7 +178,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 	const Mat& qI = qDeltaI;
 	const Mat& qE = qDeltaI;
 
-	// Loop on nodes
+	// Loop on nodes (can be parallelized if diagonal)
 	for (size_t i = 0; i < nNodes; i++) {
 		
 		// Initialize with u0 value
@@ -142,17 +190,21 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 			axpy(dt*q[i][j], lTerms.getK(j), state);
 		}
 
-		// // Add non-linear and linear terms from iteration k+1
-		for (size_t j = 0; j < i; j++) {
-			axpy(dt*qE[i][j], nTerms.getK1(j), state);
-			axpy(dt*qI[i][j], lTerms.getK1(j), state);
+		if (not diagonal) {
+			// Add non-linear and linear terms from iteration k+1
+			for (size_t j = 0; j < i; j++) {
+				axpy(dt*qE[i][j], nTerms.getK1(j), state);
+				axpy(dt*qI[i][j], lTerms.getK1(j), state);
+			}
+
+			// Substract non-linear and linear terms from iteration k
+			for (size_t j = 0; j < i; j++) {
+				axpy(-dt*qE[i][j], nTerms.getK(j), state);
+				axpy(-dt*qI[i][j], lTerms.getK(j), state);
+			}
 		}
 
-		// Substract non-linear and linear terms from iteration k
-		for (size_t j = 0; j < i; j++) {
-			axpy(-dt*qE[i][j], nTerms.getK(j), state);
-			axpy(-dt*qI[i][j], lTerms.getK(j), state);
-		}
+		// Last linear term from iteration k
 		axpy(-dt*qI[i][i], lTerms.getK(i), state);
 		
 		// Implicit solve

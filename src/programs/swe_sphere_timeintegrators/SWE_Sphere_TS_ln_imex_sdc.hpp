@@ -132,7 +132,7 @@ private:
 	 * SDC specific attributes
  	 */
 	const static size_t nNodes = 3;
-	const static size_t nIter = 3;
+	const static size_t nIter = 2;
 	typedef array<double, nNodes> Vec;
 	typedef array<Vec, nNodes> Mat;
 
@@ -146,17 +146,32 @@ private:
 		{0.37640306,  0.51248583,  0.11111111}}
 	};
 	// -- BE for linear (implicit) part
+	// const Mat qDeltaI {{
+	// 	{0.15505103, 0.        , 0.        },
+	// 	{0.15505103, 0.48989795, 0.        },
+	// 	{0.15505103, 0.48989795, 0.35505103}}
+	// };
+	// -- BEpar for linear (implicit) part
 	const Mat qDeltaI {{
 		{0.15505103, 0.        , 0.        },
-		{0.15505103, 0.48989795, 0.        },
-		{0.15505103, 0.48989795, 0.35505103}}
+		{0.        , 0.64494897, 0.        },
+		{0.        , 0.        , 1.        }}
 	};
 	// -- FE for non linear (explicit) part
+	// const Mat qDeltaE {{
+	// 	{0.        , 0.        , 0.        },
+	// 	{0.48989795, 0.        , 0.        },
+	// 	{0.48989795, 0.35505103, 0.        }}
+	// };
+	// -- Picard for non linear (explicit) part
 	const Mat qDeltaE {{
 		{0.        , 0.        , 0.        },
-		{0.48989795, 0.        , 0.        },
-		{0.48989795, 0.35505103, 0.        }}
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        }}
 	};
+	// Wether or not using the diagonal implementation
+	const bool diagonal = true;
+	const bool qDeltaInit = true;
 
 	// Variable storage required for SDC sweeps
 	SDC_NodeStorage<nNodes> lTerms;  	// linear term evaluations
@@ -175,9 +190,11 @@ private:
 
 	// Wrapper evaluating linear terms and storing them in separate variables (eval)
 	void evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t=-1);
+	void evalLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t=-1);
 
 	// Wrapper evaluating non-linear terms and storing them in separate variables (eval)
 	void evalNonLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t=-1);
+	void evalNonLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t=-1);
 
 	/* Wrapper solving the implicit system built from the linear term :
 	 u - dt*L(u) = rhs
