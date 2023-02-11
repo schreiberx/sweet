@@ -132,10 +132,13 @@ private:
 	 * SDC specific attributes
  	 */
 	const static size_t nNodes = 3;
-	const static size_t nIter = 2;
+	const static size_t nIter = 3;
+	
+	const bool diagonal = true;    // Wether or not using the diagonal implementation
+	const bool qDeltaInit = true;  // use qDelta for initial sweep
+
 	typedef array<double, nNodes> Vec;
 	typedef array<Vec, nNodes> Mat;
-
 	// Nodes, Quadrature matrix and QDelta approximation
 	// -- 3 RADAU-RIGHT points, using LEGENDRE distribution
 	const Vec tau {0.15505103, 0.64494897, 1.0};
@@ -169,9 +172,6 @@ private:
 		{0.        , 0.        , 0.        },
 		{0.        , 0.        , 0.        }}
 	};
-	// Wether or not using the diagonal implementation
-	const bool diagonal = true;
-	const bool qDeltaInit = true;
 
 	// Variable storage required for SDC sweeps
 	SDC_NodeStorage<nNodes> lTerms;  	// linear term evaluations
