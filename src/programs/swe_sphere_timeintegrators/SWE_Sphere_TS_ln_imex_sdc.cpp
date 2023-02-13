@@ -307,8 +307,8 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		timestepping_l_erk_n_erk(simVars, op),
 		version_id(0),
 		timestepping_order(-1),
-		lTerms(op.sphereDataConfig),
-		nTerms(op.sphereDataConfig),
+		lTerms(op.sphereDataConfig, nNodes),
+		nTerms(op.sphereDataConfig, nNodes),
 		state(op.sphereDataConfig),
 		tmp(op.sphereDataConfig),
 		u0()

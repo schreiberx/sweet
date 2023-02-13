@@ -69,11 +69,10 @@ public:
 };
 
 // Class to store all the solution data to each nodes and two iterations
-template<size_t nNodes>
 class SDC_NodeStorage {
 	vector<vector<SWE_Variables>> v;
 public:
-	SDC_NodeStorage(const SphereData_Config* sphereDataConfig){
+	SDC_NodeStorage(const SphereData_Config* sphereDataConfig, size_t nNodes){
 		vector<SWE_Variables> nodeValsK;
 		vector<SWE_Variables> nodeValsK1;
 		for (size_t i = 0; i < nNodes; i++) {
@@ -174,8 +173,8 @@ private:
 	};
 
 	// Variable storage required for SDC sweeps
-	SDC_NodeStorage<nNodes> lTerms;  	// linear term evaluations
-	SDC_NodeStorage<nNodes> nTerms;	// non-linear term evaluations
+	SDC_NodeStorage lTerms;  	// linear term evaluations
+	SDC_NodeStorage nTerms;	// non-linear term evaluations
 	SWE_Variables state;  // solution state
 	SphereData_Spectral tmp;  // for axpy
 
