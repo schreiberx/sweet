@@ -278,7 +278,7 @@ def genCollocation(M, distr, quadType):
     return nodes, weights, Q
 
 
-def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, nodeDistr:str='LEGENDRE'):
+def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, initSweep:str=None, nodeDistr:str='LEGENDRE'):
     """
     Generate given coefficient for one SDC setup
 
@@ -292,6 +292,9 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, nodeDistr:s
         Base (implicit) sweep for SDC. Can be 'BE', 'BEpar', 'LU', ... (see genQDelta doc)
     explSweep : str, optional
         Explicit sweep (when used for IMEX SDC). Can be 'FE', 'PIC', ... (see genQDelta doc)
+        If None, don't return the QDelta coefficients
+    initSweep : str, optional
+        QDelta matrix used for initial sweep. Can be 'BE', 'BEpar', ... (see genQDelta doc)
         If None, don't return the QDelta coefficients
     nodeDistr : str, optional
         Node distribution. The default is 'LEGENDRE'.
@@ -313,18 +316,24 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, nodeDistr:s
         Weight values.
     qMatrix : nd.2darray(M,M)
         Q matrix coefficients.
-    qDeltaImpl : nd.2darray(M,M)
+    qDeltaI : nd.2darray(M,M)
         QDelta (implicit) coefficients.
-    qDeltaExpl : nd.2darray(M,M), optional
+    qDeltaE : nd.2darray(M,M), optional
+        QDelta (explicit) coefficients. Return only if explSweep is not None.
+    qDelta0 : nd.2darray(M,M), optional
         QDelta (explicit) coefficients. Return only if explSweep is not None.
     """
     nodes, weights, qMatrix = genCollocation(M, nodeDistr, nodeType)
-    qDeltaImpl = genQDelta(nodes, implSweep, qMatrix)
+    qDeltaI = genQDelta(nodes, implSweep, qMatrix)
     idString = f'{M}_{nodeType}_{implSweep}'
-    out = idString, nodes, weights, qMatrix, qDeltaImpl
+    out = (nodes, weights, qMatrix, qDeltaI)
     if explSweep is not None:
-        qDeltaExpl = genQDelta(nodes, explSweep, qMatrix)
-        idString += '_{explSweep}'
-        out += (qDeltaExpl,)
-    return out
+        qDeltaE = genQDelta(nodes, explSweep, qMatrix)
+        idString += f'_{explSweep}'
+        out += (qDeltaE,)
+    if initSweep is not None:
+        qDelta0 = genQDelta(nodes, initSweep, qMatrix)
+        idString += f'_{initSweep}'
+        out += (qDelta0,)
+    return (idString, *out)
     

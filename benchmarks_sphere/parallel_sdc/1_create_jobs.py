@@ -9,10 +9,11 @@ from mule.sdc import getSDCSetup
 paramsSDC = [
     (3, 'RADAU-RIGHT', 'BE', 'FE'),  # Default IMEX SDC (Fast Wave Slow Wave)
     (3, 'RADAU-RIGHT', 'BEpar', 'PIC')  # Basic parallel SDC
+    (3, 'RADAU-RIGHT', 'OPT-QmQd-0', 'PIC', 'BEpar')  # Targeted optimal parallel SDC
 ]
 
 # Example of use ...
-getSDCSetup(*paramsSDC[0]) # => generate nodes, weights, qMat, qDeltaE, qDeltaI
+getSDCSetup(*paramsSDC[0]) # => generate idString, nodes, weights, qMat, qDeltaE, qDeltaI
 # Additional parameters
 # - nIter (int) : number of sweep (can be 0)
 # - diagonal (bool) : to use diagonal implementation
