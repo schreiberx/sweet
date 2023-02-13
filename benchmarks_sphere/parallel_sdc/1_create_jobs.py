@@ -8,8 +8,8 @@ from mule.sdc import getSDCSetup
 
 paramsSDC = [
     (3, 'RADAU-RIGHT', 'BE', 'FE'),  # Default IMEX SDC (Fast Wave Slow Wave)
-    (3, 'RADAU-RIGHT', 'BEpar', 'PIC')  # Basic parallel SDC
-    (3, 'RADAU-RIGHT', 'OPT-QmQd-0', 'PIC', 'BEpar')  # Targeted optimal parallel SDC
+    (3, 'RADAU-RIGHT', 'BEpar', 'PIC'),  # Basic parallel SDC
+    (3, 'RADAU-RIGHT', 'OPT-QmQd-0', 'PIC', 'BEpar')  # Targeted optimized parallel SDC
 ]
 
 # Example of use ...
