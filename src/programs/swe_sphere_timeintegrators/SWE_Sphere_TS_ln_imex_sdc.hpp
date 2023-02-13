@@ -131,10 +131,10 @@ private:
 	 * SDC specific attributes
  	 */
 	const static size_t nNodes = 3;
-	const static size_t nIter = 3;
+	const static size_t nIter = 4;
 	
 	const bool diagonal = true;       // Wether or not using the diagonal implementation
-	const bool qDeltaInit = true;     // Wether or not use qDelta for initial sweep
+	const bool qDeltaInit = false;     // Wether or not use qDelta for initial sweep
 	const bool useEndUpdate = false;  // Wether or not use collocation update for end point
 
 	typedef array<double, nNodes> Vec;
@@ -155,10 +155,16 @@ private:
 	// 	{0.15505103, 0.48989795, 0.35505103}}
 	// };
 	// -- BEpar for linear (implicit) part
+	// const Mat qDeltaI {{
+	// 	{0.15505103, 0.        , 0.        },
+	// 	{0.        , 0.64494897, 0.        },
+	// 	{0.        , 0.        , 1.        }}
+	// };
+	// -- Picars for implicit
 	const Mat qDeltaI {{
-		{0.15505103, 0.        , 0.        },
-		{0.        , 0.64494897, 0.        },
-		{0.        , 0.        , 1.        }}
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        }}
 	};
 	// -- FE for non linear (explicit) part
 	// const Mat qDeltaE {{

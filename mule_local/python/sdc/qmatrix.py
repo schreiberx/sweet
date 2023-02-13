@@ -304,7 +304,7 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, initSweep:s
     Returns
     -------
     out : dict
-        The SDC paramters and coefficients, with the following keys :
+        The SDC parameters and coefficients, with the following keys :
             
         - idString : str
             Unique string identifier.

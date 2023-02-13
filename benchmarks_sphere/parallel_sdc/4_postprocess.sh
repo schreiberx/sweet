@@ -1,6 +1,6 @@
 #! /bin/bash
 
-FIELD=vrt
+FIELD=div
 EXT=sweet
 for DIR in job_*/; do
 	echo "*****************************************************************************"
