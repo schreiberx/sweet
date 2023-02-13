@@ -4,6 +4,15 @@ import sys
 from itertools import product
 
 from mule import JobGeneration, JobParallelizationDimOptions
+from mule.sdc import getSDCSetup
+
+paramsSDC = [
+    (3, 'RADAU-RIGHT', 'BE', 'FE'),  # Default IMEX SDC (Fast Wave Slow Wave)
+    (3, 'RADAU-RIGHT', 'BEpar', 'PIC')  # Basic parallel SDC
+]
+
+# Example of use ...
+getSDCSetup(*paramsSDC[0])
 
 p = JobGeneration()
 verbose = True

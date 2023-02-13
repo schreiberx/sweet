@@ -287,11 +287,11 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, nodeDistr:s
     M : int
         Number of nodes.
     nodeType : str
-        DESCRIPTION.
+        Quadrature type for the nodes, can be 'GAUSS', 'LOBATTO', 'RADAU-RIGHT' or 'RADAU-LEFT'.
     implSweep : str
-        DESCRIPTION.
+        Base (implicit) sweep for SDC. Can be 'BE', 'BEpar', 'LU', ... (see genQDelta doc)
     explSweep : str, optional
-        Explicit sweep (when used for IMEX SDC). 
+        Explicit sweep (when used for IMEX SDC). Can be 'FE', 'PIC', ... (see genQDelta doc)
         If None, don't return the QDelta coefficients
     nodeDistr : str, optional
         Node distribution. The default is 'LEGENDRE'.
