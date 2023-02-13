@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 23 09:28:27 2022
-
-@author: cpf5546
-"""
 import numpy as np
 from scipy.special import roots_legendre
 

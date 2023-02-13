@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 23 09:27:58 2022
-
-@author: cpf5546
-"""
 import numpy as np
 from scipy.linalg import eigh_tridiagonal
 
