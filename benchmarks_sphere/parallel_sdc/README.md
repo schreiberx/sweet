@@ -23,6 +23,22 @@ $ ./install_shtns_python.sh
 $ ./install_lapack.sh
 ```
 
+### For GUI installation
+
+Need the following local installation in `local_software` :
+
+```bash
+$ cd local_software
+$ ./install_sdl2.sh
+$ ./install_libfreetype.sh
+```
+
+And additionaly
+
+```bash
+$ sudo apt install pkg-config libgl-dev
+```
+
 ## Main scripts
 
 - [1_create_jobs.py](./1_create_jobs.py) : create a running job and set all parameters using MULE. By default, it sets a parallel run using all available processors for space parallelization, but one can set the number of parallel processes like this (_e.g_ for 4 processes):

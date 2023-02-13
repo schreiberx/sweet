@@ -69,11 +69,10 @@ public:
 };
 
 // Class to store all the solution data to each nodes and two iterations
-template<size_t nNodes>
 class SDC_NodeStorage {
 	vector<vector<SWE_Variables>> v;
 public:
-	SDC_NodeStorage(const SphereData_Config* sphereDataConfig){
+	SDC_NodeStorage(const SphereData_Config* sphereDataConfig, size_t nNodes){
 		vector<SWE_Variables> nodeValsK;
 		vector<SWE_Variables> nodeValsK1;
 		for (size_t i = 0; i < nNodes; i++) {
@@ -132,10 +131,11 @@ private:
 	 * SDC specific attributes
  	 */
 	const static size_t nNodes = 3;
-	const static size_t nIter = 3;
+	const static size_t nIter = 4;
 	
-	const bool diagonal = true;    // Wether or not using the diagonal implementation
-	const bool qDeltaInit = true;  // use qDelta for initial sweep
+	const bool diagonal = true;       // Wether or not using the diagonal implementation
+	const bool qDeltaInit = false;     // Wether or not use qDelta for initial sweep
+	const bool useEndUpdate = false;  // Wether or not use collocation update for end point
 
 	typedef array<double, nNodes> Vec;
 	typedef array<Vec, nNodes> Mat;
@@ -155,10 +155,16 @@ private:
 	// 	{0.15505103, 0.48989795, 0.35505103}}
 	// };
 	// -- BEpar for linear (implicit) part
+	// const Mat qDeltaI {{
+	// 	{0.15505103, 0.        , 0.        },
+	// 	{0.        , 0.64494897, 0.        },
+	// 	{0.        , 0.        , 1.        }}
+	// };
+	// -- Picars for implicit
 	const Mat qDeltaI {{
-		{0.15505103, 0.        , 0.        },
-		{0.        , 0.64494897, 0.        },
-		{0.        , 0.        , 1.        }}
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        },
+		{0.        , 0.        , 0.        }}
 	};
 	// -- FE for non linear (explicit) part
 	// const Mat qDeltaE {{
@@ -166,16 +172,22 @@ private:
 	// 	{0.48989795, 0.        , 0.        },
 	// 	{0.48989795, 0.35505103, 0.        }}
 	// };
-	// -- Picard for non linear (explicit) part
+	// -- Picard (PIC) for non linear (explicit) part
 	const Mat qDeltaE {{
 		{0.        , 0.        , 0.        },
 		{0.        , 0.        , 0.        },
 		{0.        , 0.        , 0.        }}
 	};
+	// -- For initial sweep (is used ...)
+	const Mat qDelta0 {{
+		{0.15505103, 0.        , 0.        },
+		{0.        , 0.64494897, 0.        },
+		{0.        , 0.        , 1.        }}
+	};
 
 	// Variable storage required for SDC sweeps
-	SDC_NodeStorage<nNodes> lTerms;  	// linear term evaluations
-	SDC_NodeStorage<nNodes> nTerms;	// non-linear term evaluations
+	SDC_NodeStorage lTerms;  	// linear term evaluations
+	SDC_NodeStorage nTerms;	// non-linear term evaluations
 	SWE_Variables state;  // solution state
 	SphereData_Spectral tmp;  // for axpy
 
@@ -213,7 +225,7 @@ private:
 	void sweep(size_t k);
 
 	// Compute end-point solution and update step variables
-	void prolongate();
+	void computeEndPoint();
 
 public:
 	SWE_Sphere_TS_ln_imex_sdc(

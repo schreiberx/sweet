@@ -69,7 +69,7 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	}
 
 	// -- compute end-point solution and update step values
-	prolongate();
+	computeEndPoint();
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
@@ -133,6 +133,7 @@ void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
 		const Mat& q = qMat;
 		const Mat& qI = qDeltaI;
 		const Mat& qE = qDeltaI;
+		const Mat& q0 = qDelta0;
 
 		// Loop on nodes (can be parallelized if diagonal)
 		for (size_t i = 0; i < nNodes; i++) {
@@ -146,10 +147,12 @@ void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
 					axpy(dt*qE[i][j], nTerms.getK(j), state);
 					axpy(dt*qI[i][j], lTerms.getK(j), state);
 				}
+				// Implicit solve with qI
+				solveImplicit(state, dt*qI[i][i]);
+			} else {
+				// Implicit solve with q0
+				solveImplicit(state, dt*q0[i][i]);
 			}
-
-			// Implicit solve
-			solveImplicit(state, dt*qI[i][i]);
 
 			// Evaluate and store linear term for k
 			evalLinearTerms(state, lTerms.getK(i), t0+dt*tau[i]);
@@ -208,7 +211,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		axpy(-dt*qI[i][i], lTerms.getK(i), state);
 		
 		// Implicit solve
-		solveImplicit(state, dt*qI[i][i]);
+		// solveImplicit(state, dt*qI[i][i]);
 
 		// Evaluate and store linear term for k+1
 		evalLinearTerms(state, lTerms.getK1(i), t0+dt*tau[i]);
@@ -217,16 +220,26 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		evalNonLinearTerms(state, nTerms.getK1(i), t0+dt*tau[i]);
 	}
 
-	// Swap k+1 and k values for next iteration
+	// Swap k+1 and k values for next iteration (or end-point update)
 	nTerms.swapIterate();
 	lTerms.swapIterate();
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::prolongate() {
+void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint() {
+	if (useEndUpdate) {
+		// Compute collocation update
+		const Vec& w = weights;
+		state.fillWith(u0);
+		for (size_t j = 0; j < nNodes; j++) {
+			axpy(dt*w[j], nTerms.getK(j), state);
+			axpy(dt*w[j], lTerms.getK(j), state);
+		}
+	}{
+	// Time-step update using last state value
 	*(u0.phi) = state.phi;
 	*(u0.vort) = state.vort;
 	*(u0.div) = state.div;
-	// TODO : implement quadrature prolongation
+	}
 }
 
 /*
@@ -307,8 +320,8 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		timestepping_l_erk_n_erk(simVars, op),
 		version_id(0),
 		timestepping_order(-1),
-		lTerms(op.sphereDataConfig),
-		nTerms(op.sphereDataConfig),
+		lTerms(op.sphereDataConfig, nNodes),
+		nTerms(op.sphereDataConfig, nNodes),
 		state(op.sphereDataConfig),
 		tmp(op.sphereDataConfig),
 		u0()

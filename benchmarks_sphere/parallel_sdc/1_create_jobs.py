@@ -4,11 +4,30 @@ import sys
 from itertools import product
 
 from mule import JobGeneration, JobParallelizationDimOptions
+from mule.sdc import getSDCSetup
+
+paramsSDC = [
+    (3, 'RADAU-RIGHT', 'BE', 'FE'),  # Default IMEX SDC (Fast Wave Slow Wave)
+    (3, 'RADAU-RIGHT', 'BEpar', 'PIC'),  # Basic parallel SDC
+    (3, 'RADAU-RIGHT', 'OPT-QmQd-0', 'PIC', 'BEpar')  # Targeted optimized parallel SDC
+]
+
+# Example of use ...
+getSDCSetup(*paramsSDC[0]) # => generate idString, nodes, weights, qMat, qDeltaE, qDeltaI
+# Additional parameters
+# - nIter (int) : number of sweep (can be 0)
+# - diagonal (bool) : to use diagonal implementation
+# - qDeltaInit (bool) : to use qDeltaI for initial sweep
+# - useEndUpdate (bool) : to use collocation formula for end-update solution
+# Optional (but possibly usefull)
+# - qDelta0 : a specific qDelta matrix for the initial sweep (used if qDeltaInit=True), different to qDeltaI
 
 p = JobGeneration()
 verbose = True
 
 p.compile.mode = 'release'
+# p.compile.gui = 'enable'
+# p.runtime.gui = 1
 
 #
 # Mode and Physical resolution
@@ -31,7 +50,7 @@ p.runtime.output_timestep_size = 60*60  # Generate output every 1 hour
 p.runtime.output_file_mode = 'bin'
 
 params_timestep_size_reference = 30.0
-base_timestep_size = 128/p.runtime.space_res_spectral*600.0
+base_timestep_size = 128/p.runtime.space_res_spectral*300.0
 
 # Parallelization
 nSpacePar = int(sys.argv[1]) if len(sys.argv) > 1 else p.platform_resources.num_cores_per_socket
