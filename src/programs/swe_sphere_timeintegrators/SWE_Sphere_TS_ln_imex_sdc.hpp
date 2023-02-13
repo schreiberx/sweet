@@ -133,8 +133,9 @@ private:
 	const static size_t nNodes = 3;
 	const static size_t nIter = 3;
 	
-	const bool diagonal = true;    // Wether or not using the diagonal implementation
-	const bool qDeltaInit = true;  // use qDelta for initial sweep
+	const bool diagonal = true;       // Wether or not using the diagonal implementation
+	const bool qDeltaInit = true;     // Wether or not use qDelta for initial sweep
+	const bool useEndUpdate = false;  // Wether or not use collocation update for end point
 
 	typedef array<double, nNodes> Vec;
 	typedef array<Vec, nNodes> Mat;
@@ -212,7 +213,7 @@ private:
 	void sweep(size_t k);
 
 	// Compute end-point solution and update step variables
-	void prolongate();
+	void computeEndPoint();
 
 public:
 	SWE_Sphere_TS_ln_imex_sdc(

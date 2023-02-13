@@ -69,7 +69,7 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	}
 
 	// -- compute end-point solution and update step values
-	prolongate();
+	computeEndPoint();
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
@@ -217,16 +217,26 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		evalNonLinearTerms(state, nTerms.getK1(i), t0+dt*tau[i]);
 	}
 
-	// Swap k+1 and k values for next iteration
+	// Swap k+1 and k values for next iteration (or end-point update)
 	nTerms.swapIterate();
 	lTerms.swapIterate();
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::prolongate() {
+void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint() {
+	if (useEndUpdate) {
+		// Compute collocation update
+		const Vec& w = weights;
+		state.fillWith(u0);
+		for (size_t j = 0; j < nNodes; j++) {
+			axpy(dt*w[j], nTerms.getK(j), state);
+			axpy(dt*w[j], lTerms.getK(j), state);
+		}
+	}{
+	// Time-step update using last state value
 	*(u0.phi) = state.phi;
 	*(u0.vort) = state.vort;
 	*(u0.div) = state.div;
-	// TODO : implement quadrature prolongation
+	}
 }
 
 /*
