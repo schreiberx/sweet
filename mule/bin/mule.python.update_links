@@ -1,0 +1,7 @@
+#! /bin/bash
+
+set -e
+
+cd "${MULE_ROOT}/env_pythonpath/mule/"
+./update_links.sh
+
