@@ -133,6 +133,7 @@ void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
 		const Mat& q = qMat;
 		const Mat& qI = qDeltaI;
 		const Mat& qE = qDeltaI;
+		const Mat& q0 = qDelta0;
 
 		// Loop on nodes (can be parallelized if diagonal)
 		for (size_t i = 0; i < nNodes; i++) {
@@ -146,10 +147,12 @@ void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
 					axpy(dt*qE[i][j], nTerms.getK(j), state);
 					axpy(dt*qI[i][j], lTerms.getK(j), state);
 				}
+				// Implicit solve with qI
+				solveImplicit(state, dt*qI[i][i]);
+			} else {
+				// Implicit solve with q0
+				solveImplicit(state, dt*q0[i][i]);
 			}
-
-			// Implicit solve
-			solveImplicit(state, dt*qI[i][i]);
 
 			// Evaluate and store linear term for k
 			evalLinearTerms(state, lTerms.getK(i), t0+dt*tau[i]);

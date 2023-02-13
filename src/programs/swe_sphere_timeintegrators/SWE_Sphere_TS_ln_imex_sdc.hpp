@@ -172,6 +172,12 @@ private:
 		{0.        , 0.        , 0.        },
 		{0.        , 0.        , 0.        }}
 	};
+	// -- For initial sweep (is used ...)
+	const Mat qDelta0 {{
+		{0.15505103, 0.        , 0.        },
+		{0.        , 0.64494897, 0.        },
+		{0.        , 0.        , 1.        }}
+	};
 
 	// Variable storage required for SDC sweeps
 	SDC_NodeStorage lTerms;  	// linear term evaluations
