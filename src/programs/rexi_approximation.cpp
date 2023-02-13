@@ -153,7 +153,11 @@ int main(
 		};
 
 
-		SWEET_TIMELOOP
+
+		for (	simVars.timecontrol.current_simulation_time = 0;
+				simVars.timecontrol.current_simulation_time < simVars.timecontrol.max_simulation_time*(1.0-1e-12);
+				simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size
+		)
 		{
 			computeAndOutputError(U);
 
