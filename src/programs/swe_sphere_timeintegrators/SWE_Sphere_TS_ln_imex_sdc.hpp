@@ -166,7 +166,7 @@ private:
 	// 	{0.48989795, 0.        , 0.        },
 	// 	{0.48989795, 0.35505103, 0.        }}
 	// };
-	// -- Picard for non linear (explicit) part
+	// -- Picard (PIC) for non linear (explicit) part
 	const Mat qDeltaE {{
 		{0.        , 0.        , 0.        },
 		{0.        , 0.        , 0.        },

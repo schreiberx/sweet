@@ -12,7 +12,14 @@ paramsSDC = [
 ]
 
 # Example of use ...
-getSDCSetup(*paramsSDC[0])
+getSDCSetup(*paramsSDC[0]) # => generate nodes, weights, qMat, qDeltaE, qDeltaI
+# Additional parameters
+# - nIter (int) : number of sweep (can be 0)
+# - diagonal (bool) : to use diagonal implementation
+# - qDeltaInit (bool) : to use qDeltaI for initial sweep
+# - useEndUpdate (bool) : to use collocation formula for end-update solution
+# Optional (but possibly usefull)
+# - qDelta0 : a specific qDelta matrix for the initial sweep (used if qDeltaInit=True), different to qDeltaI
 
 p = JobGeneration()
 verbose = True
