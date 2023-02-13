@@ -5,7 +5,7 @@ source ./install_helpers.sh ""
 VERSION=4.0.3
 
 PKG_NAME="MPICH"
-PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/bin/mpicc"
+PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libmpich.so"
 #PKG_URL_SRC="mpich-3.3.2.tar.gz"
 PKG_URL_SRC="mpich-${VERSION}.tar.gz"
 

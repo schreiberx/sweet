@@ -109,8 +109,7 @@ public:
 		if (i_sph_data.sphereDataConfig == nullptr)
 			return;
 
-		physical_space_data = i_sph_data.physical_space_data;
-		i_sph_data.physical_space_data = nullptr;
+		std::swap(physical_space_data, i_sph_data.physical_space_data);
 	}
 
 

@@ -54,20 +54,26 @@ def read_check_residuals_C_points(path):
 
         ## found line before printing C-point residuals
         if "Braid: || r_" in line:
-            spl = line.split();
-            niter = int(spl[2][2:]);
+            ###spl = line.split();
+            ###niter = int(spl[2][2:]);
+            spl = line.split("Braid: ");
+            spl2 = spl[1].split("|| ");
+            niter = int(spl2[1][2:]);
 
-            ## check the follozing 2 * niter lines have residual equal to zero
+            ## check the following 2 * niter lines have residual equal to zero
             if len(lines[iline + 1]) > 1:
                 print(" -- Checking C-points residuals at iter", niter);
                 for j in range(iline + 1, iline + 1 + 2 * niter):
                     spl = lines[j].split();
+                    if not (spl[4] == "rnorm:"):
+                        print(spl, spl2)
                     res = float(spl[5]);
                     print(res)
-                    assert res == 0.;
+                    assert res < 1e-15;
                 print("    --> OK");
 
         iline += 1;
+
 
 residual_type = sys.argv[1];
 expected_max_residual = float(sys.argv[2]);

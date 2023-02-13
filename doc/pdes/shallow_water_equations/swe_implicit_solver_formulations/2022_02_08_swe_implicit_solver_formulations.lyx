@@ -1,0 +1,1586 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\begin_modules
+theorems-ams
+eqs-within-sections
+figs-within-sections
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref true
+\pdf_bookmarks true
+\pdf_bookmarksnumbered false
+\pdf_bookmarksopen false
+\pdf_bookmarksopenlevel 1
+\pdf_breaklinks false
+\pdf_pdfborder false
+\pdf_colorlinks false
+\pdf_backref false
+\pdf_pdfusetitle true
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 3cm
+\topmargin 3cm
+\rightmargin 3cm
+\bottommargin 3cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Implicit solver formulations for shallow-water equation
+\end_layout
+
+\begin_layout Author
+Martin Schreiber
+\end_layout
+
+\begin_layout Date
+2022-02-08
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Abstract
+These notes are taken from a final report for a KONWIHR funding from 2020
+ and should serve the purpose to explain the current REXI and implicit time
+ integrators which includes the Coriolis effect and requires solving a system
+ of equations.
+ This can be done in spherical harmonics space.
+ An original attempt for the REXI method was done 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber_Loft_2018,Schreiber_Schaeffer_Loft_2019"
+literal "false"
+
+\end_inset
+
+, but this version shows an optimized one which is based on the formulation
+ in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Temperton_1995"
+literal "false"
+
+\end_inset
+
+ (developed for implicit methods).
+\end_layout
+
+\begin_layout Section
+Application: SWE on rotating sphere
+\end_layout
+
+\begin_layout Standard
+For the development of atmospheric simulations, methods are first developed
+ with a 
+\series bold
+single-layer atmospheric model
+\series default
+.
+ Although this model first sounds inappropriate for weather simulations,
+ it is used in standard test cases of dynamical cores to assess numerical
+ and performance properties in the horizontal dimension (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Williamson_David_1992"
+literal "false"
+
+\end_inset
+
+).
+ These equations can be directly related to the shallow-water equations
+ on the rotating sphere 
+\begin_inset Formula 
+\[
+\left[\begin{array}{c}
+\frac{\partial\Phi}{\partial t}\\
+\frac{\partial{\mathbf{V}}}{\partial t}
+\end{array}\right]=\underbrace{\left[\begin{array}{c}
+-\overline{\Phi}\nabla\cdot{\mathbf{V}}\\
+-\nabla\Phi
+\end{array}\right]}_{L_{g}(U)}+\underbrace{\left[\begin{array}{c}
+0\\
+-f\boldsymbol{{k}}\times{\mathbf{V}}
+\end{array}\right]}_{L_{c}(U)}+\underbrace{\left[\begin{array}{c}
+-{\mathbf{V}}\cdot\nabla\Phi'\\
+-{\mathbf{V}}\cdot\nabla{\mathbf{V}}
+\end{array}\right]}_{N_{a}(U)}+\underbrace{\left[\begin{array}{c}
+-\nabla\Phi'\cdot{\mathbf{V}}\\
+\\
+\end{array}\right]}_{N_{d}(U)}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $\boldsymbol{V}$
+\end_inset
+
+ the velocity, 
+\begin_inset Formula $\Phi$
+\end_inset
+
+ the geopotential, 
+\begin_inset Formula $\boldsymbol{k}$
+\end_inset
+
+ the vector perpendicular to the earth's surface and 
+\begin_inset Formula $f$
+\end_inset
+
+ related to the Coriolis effect (a force induced on moving objects perpendicular
+ to the horizontal moving direction due to the rotation of the earth).
+ We will use these equations in their vorticity-divergence formulation and
+ refer to 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber_Schaeffer_Loft_2019,Hack_Jakob_1992"
+literal "false"
+
+\end_inset
+
+ for further information.
+\end_layout
+
+\begin_layout Section
+Discretization: Spherical harmonics
+\end_layout
+
+\begin_layout Standard
+We use spherical harmonics for the discretization in space.
+ This is also used by the European Centre for Medium-Range Weather Forecasts
+ (ECMWF) which belongs to one of the world's best quality weather forecasting
+ systems.
+\end_layout
+
+\begin_layout Standard
+To keep things short, we just want to introduce the most important terms
+ relevant for this work.
+ Spherical harmonics yield an efficient representation of a solution on
+ the sphere with orthogonal basis functions.
+ The continuous series of spherical harmonic functions are given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\xi(\lambda,\mu)=\sum_{m=-M}^{M}\sum_{n=|m|}^{N(m)}\xi_{n}^{m}P_{n}^{m}(\mu)e^{im\lambda}
+\]
+
+\end_inset
+
+with 
+\begin_inset Formula $N$
+\end_inset
+
+ the highest degree of the Legendre function and 
+\begin_inset Formula $M$
+\end_inset
+
+ different variants of the associated Legendre polynomial.
+ Using spherical coordinates, the coefficient 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ denotes the longitude and 
+\begin_inset Formula $\mu$
+\end_inset
+
+ is the Gaussian latitude (
+\begin_inset Formula $\mu(\phi)=\sin\phi$
+\end_inset
+
+).
+ The spectral representation 
+\begin_inset Formula $\xi_{n}^{m}$
+\end_inset
+
+ can be determined via
+\begin_inset Formula 
+\[
+\xi_{n}^{m}=\int_{-1}^{+1}\frac{1}{2\pi}\int_{0}^{2\pi}\xi(\lambda,\mu)e^{-im\lambda}d\lambda P_{n}^{m}(\mu)d\mu
+\]
+
+\end_inset
+
+ where the inner integral
+\begin_inset Formula 
+\[
+\xi^{m}(\mu)=\frac{1}{2\pi}\int_{0}^{2\pi}\xi(\lambda,\mu)e^{-im\lambda}d\lambda
+\]
+
+\end_inset
+
+is a Fourier transformation.
+ The outer integral of the Legendre polynomials can be evaluated using Gaussian
+ quadrature, hence accurate for sufficient number of quadrature points.
+ The associated Legendre polynomials (ALP) are given in their non-normalized
+ form by
+\begin_inset Formula 
+\begin{eqnarray*}
+P_{n}^{m}(x) & = & (-1)^{m}\frac{1}{2^{n}n!}\left(\sqrt{1-x^{2}}\right)^{m}\frac{d^{n+m}}{dx^{n+m}}\left(x^{2}-1\right)^{n+m}.
+\end{eqnarray*}
+
+\end_inset
+
+Here, 
+\begin_inset Formula $n$
+\end_inset
+
+ specifies the degree of the polynomial and 
+\begin_inset Formula $m$
+\end_inset
+
+ the variant of the function.
+\end_layout
+
+\begin_layout Standard
+Similar to fast Helmholtz solvers in Fourier space, we can use the Spherical
+ Harmonics for directly solving equations of a particular form in spectral
+ space due to, e.g.,
+\begin_inset Formula 
+\[
+\Delta P_{n}^{m}=\frac{-n(n+1)}{r^{2}}P_{n}^{m}
+\]
+
+\end_inset
+
+leading to a modal-wise treatment in spectral space.
+ This is, e.g., used in ECMWF's weather forecasting system.
+ We will exploit such a strategy also in this work, however resulting in
+ matrices which are not directly diagonal.
+ Nevertheless, due to a very low matrix bandwidth, this allows using direct
+ solvers.
+\end_layout
+
+\begin_layout Section
+Efficient REXI solver using spherical harmonics
+\end_layout
+
+\begin_layout Standard
+For REXI time integration we need to solve for terms of the form
+\begin_inset Formula 
+\[
+\left(\alpha_{i}I+\Delta tL\right)^{-1}U(t).
+\]
+
+\end_inset
+
+An efficient
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Efficient here refers to more efficient than iterative solvers by exploiting
+ properties of spectral space
+\end_layout
+
+\end_inset
+
+ REXI solver using spherical harmonics has been developed (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Schreiber_Schaeffer_Loft_2019"
+literal "false"
+
+\end_inset
+
+) which is, however, based on transformations from/to physical space.
+ In this work, we considered the interpretation of the REXI terms from the
+ implicit time integration point of view
+\begin_inset Formula 
+\begin{align*}
+\frac{U(t+\Delta t)-U(t)}{\Delta t} & =LU(t+\Delta t)\\
+U(t) & =\left(I-\Delta tL\right)U(t+\Delta t)
+\end{align*}
+
+\end_inset
+
+where REXI-like terms can be easily related to this structure.
+\end_layout
+
+\begin_layout Standard
+Hence, we adopted a formulation of 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Temperton_1995"
+literal "false"
+
+\end_inset
+
+ which describes an implicit time integration including the Coriolis effect
+ for spherical harmonics which does not require transformations from/to
+ physical space, but stays entirely in spectral space, hence overcomes the
+ computationally expensive spherical harmonics transformations.
+\end_layout
+
+\begin_layout Standard
+We can use this framework to embed REXI into the implicit time integration
+ by choosing e.g.
+ a complex-valued time step size.
+ Dividing both sides by 
+\begin_inset Formula $-\Delta t$
+\end_inset
+
+ we get
+\begin_inset Formula 
+\[
+\frac{U(t)}{-\Delta t}=\left(\frac{1}{-\Delta t}+L\right)U(t+\Delta t)
+\]
+
+\end_inset
+
+where we can find a REXI matching formulation by setting 
+\begin_inset Formula $\alpha=-\frac{1}{\Delta t}$
+\end_inset
+
+ or 
+\begin_inset Formula $\Delta t=-\alpha^{-1}$
+\end_inset
+
+.
+ Hence, we can rescale 
+\begin_inset Formula $\Delta t$
+\end_inset
+
+ with a possibly complex value to get a more efficient REXI solver based
+ on an implicit complex-valued time stepper.
+ This is briefly described next.
+\end_layout
+
+\begin_layout Section
+Implicit time integration with Spherical Harmonics
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Implicit-time-integration"
+
+\end_inset
+
+In what follows, we will further investigate the steps from 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Temperton_1995"
+literal "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "BOURKE_1972"
+literal "false"
+
+\end_inset
+
+ in detail.
+ For the implicit time integration, we then get
+\begin_inset Formula 
+\[
+\left[\begin{array}{ccc}
+I & \Delta t\overline{\Phi}\nabla^{i}\cdot & \Delta t\overline{\Phi}\nabla^{j}\cdot\\
+\Delta t\nabla^{i} & I & -\Delta tf\\
+\Delta t\nabla^{j} & \Delta tf & I
+\end{array}\right]U(t+\Delta t)=U(t).
+\]
+
+\end_inset
+
+Given the divergence 
+\begin_inset Formula $\delta(u,v)=\nabla^{i}\cdot u+\nabla^{j}\cdot v$
+\end_inset
+
+ and relative vorticity 
+\begin_inset Formula $\zeta(u,v)=\nabla^{i}\cdot v-\nabla^{j}\cdot u$
+\end_inset
+
+ we get (see 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Temperton_1995"
+literal "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "BOURKE_1972"
+literal "false"
+
+\end_inset
+
+)
+\begin_inset Formula 
+\begin{align*}
+\Phi+\Delta t\overline{\Phi}\delta & =\Phi^{0}\\
+u+\Delta t\nabla^{i}\Phi-\Delta tfv & =u^{0}\\
+v+\Delta t\nabla^{j}\Phi+\Delta tfu & =v^{0}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Velocity from vorticity/divergence
+\end_layout
+
+\begin_layout Standard
+We first derive an explicit formulation of the velocities based on the vorticity
+ and divergence via
+\begin_inset Formula 
+\[
+\mathbf{V}=\mathbf{k}\times\left(\nabla\psi\right)+\nabla\chi
+\]
+
+\end_inset
+
+with
+\begin_inset Formula 
+\begin{eqnarray*}
+\psi & = & \nabla^{\text{-2}}\zeta\\
+\chi & = & \nabla^{\text{-2}}\delta.
+\end{eqnarray*}
+
+\end_inset
+
+We can write
+\begin_inset Formula 
+\[
+\mathbf{V}=\mathbf{k}\times\left(\nabla\nabla^{\text{-2}}\zeta\right)+\nabla\nabla^{\text{-2}}\delta
+\]
+
+\end_inset
+
+to get
+\begin_inset Formula 
+\begin{align*}
+u & =-\nabla^{j}\nabla^{\text{-2}}\zeta+\nabla^{i}\nabla^{\text{-2}}\delta\\
+v & =\nabla^{i}\nabla^{\text{-2}}\zeta+\nabla^{j}\nabla^{\text{-2}}\delta.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Computing 
+\begin_inset Formula $F$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Later on we also need a spectral formulation for
+\begin_inset Formula 
+\[
+F=\Delta t2\Omega\left(\mu-\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\nabla^{\text{-2}}\right)
+\]
+
+\end_inset
+
+where we can use spherical harmonics representation to get
+\begin_inset Formula 
+\begin{align*}
+\mu-\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\nabla^{\text{-2}} & =\mu-\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\frac{r^{2}}{-n(n+1)}\\
+ & =\mu+\left(\left(1-\mu^{2}\right)\frac{d}{d\mu}\right)\frac{1}{n(n+1)}.
+\end{align*}
+
+\end_inset
+
+Computing the 
+\begin_inset Formula $P_{n}$
+\end_inset
+
+ output mode will be based on 
+\begin_inset Formula $P_{n-1}$
+\end_inset
+
+ and 
+\begin_inset Formula $P_{n+1}$
+\end_inset
+
+ input modes.
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $P_{n-1}$
+\end_inset
+
+ we get
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\mu$
+\end_inset
+
+ is represented by 
+\begin_inset Formula $\epsilon_{n}^{m}$
+\end_inset
+
+ in spectral space
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\left(1-\mu^{2}\right)\frac{d}{d\mu}$
+\end_inset
+
+ is represented by 
+\begin_inset Formula $\left(n+1\right)\epsilon_{n}^{m}$
+\end_inset
+
+ in spectral space
+\end_layout
+
+\begin_layout Standard
+We then get
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\mu+\left(\left(1-\mu^{2}\right)\frac{d}{d\mu}\right)\frac{1}{n(n+1)} & \Rightarrow\epsilon_{n}^{m}+\frac{n+1}{n(n+1)}\epsilon_{n}^{m}\\
+ & =\frac{n(n+1)}{n(n+1)}\epsilon_{n}^{m}+\frac{n+1}{n(n+1)}\epsilon_{n}^{m}\\
+ & =\frac{n(n+1)+n+1}{n(n+1)}\epsilon_{n}^{m}\\
+ & =\frac{n^{2}+2n+1}{n(n+1)}\epsilon_{n}^{m}\\
+ & =\frac{\left(n+1\right)^{2}}{n(n+1)}\epsilon_{n}^{m}\\
+ & =\frac{n+1}{n}\epsilon_{n}^{m}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\mu+\left(\left(1-\mu^{2}\right)\frac{d}{d\mu}\right)\frac{1}{n(n+1)} & \Rightarrow\epsilon_{n}^{m}+\frac{n+1}{n(n+1)}\epsilon_{n}^{m}\\
+ & =\frac{n+1}{n}\epsilon_{n}^{m}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For 
+\begin_inset Formula $P_{n+1}$
+\end_inset
+
+ we get
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\mu$
+\end_inset
+
+ is represented by 
+\begin_inset Formula $\epsilon_{n+1}^{m}$
+\end_inset
+
+ in spectral space
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\left(1-\mu^{2}\right)\frac{d}{d\mu}$
+\end_inset
+
+ is represented by 
+\begin_inset Formula $-n\epsilon_{n+1}^{m}$
+\end_inset
+
+ in spectral space.
+\end_layout
+
+\begin_layout Standard
+We get
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\mu+\left(\left(1-\mu^{2}\right)\frac{d}{d\mu}\right)\frac{1}{n(n+1)} & \Rightarrow\epsilon_{n+1}^{m}-\frac{n}{n(n+1)}\epsilon_{n+1}^{m}\\
+ & =\left(1-\frac{1}{(n+1)}\right)\epsilon_{n+1}^{m}\\
+ & =\frac{n+1-1}{n+1}\epsilon_{n+1}^{m}\\
+ & =\frac{n}{n+1}\epsilon_{n+1}^{m}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\mu+\left(\left(1-\mu^{2}\right)\frac{d}{d\mu}\right)\frac{1}{n(n+1)} & \Rightarrow\epsilon_{n+1}^{m}-\frac{n}{n(n+1)}\epsilon_{n+1}^{m}\\
+ & =\frac{n}{n+1}\epsilon_{n+1}^{m}
+\end{align*}
+
+\end_inset
+
+For matrix elements related to 
+\begin_inset Formula $P_{n+1}$
+\end_inset
+
+ we then get 
+\begin_inset Formula 
+\[
+\frac{n}{n+1}\epsilon_{n+1}^{m}.
+\]
+
+\end_inset
+
+To summarize, the upper and lower diagonal elements of the matrix 
+\begin_inset Formula $F$
+\end_inset
+
+ are then given by
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+F=\Delta t2\Omega\left(\mu-\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\nabla^{\text{-2}}\right)=\begin{cases}
+f_{n}^{-}=\frac{n+1}{n}\epsilon_{n}^{m} & \text{for }P_{n-1}\\
+f_{n}^{+}=\frac{n}{n+1}\epsilon_{n+1}^{m} & \text{for }P_{n+1}.
+\end{cases}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Geopotential
+\end_layout
+
+\begin_layout Standard
+For sake of completeness, we repeat the continuity equation
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\Phi+\Delta t\overline{\Phi}\delta=\Phi^{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+which can be directly written in matrix form.
+\end_layout
+
+\begin_layout Subsection
+Divergence
+\end_layout
+
+\begin_layout Standard
+Computing the divergence on the velocity equations yields
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\nabla^{i}\cdot\left(u+\Delta t\nabla^{i}\Phi-\Delta tfv\right)+\nabla^{j}\cdot\left(v+\Delta t\nabla^{j}\Phi+\Delta tfu\right) & =\nabla^{i}\cdot u^{0}+\nabla^{j}\cdot v^{0}\\
+\Delta t\nabla^{2}\Phi+\delta-\Delta t\nabla\cdot\left(f\left(v,-u\right)^{T}\right) & =\delta^{0}\\
+\Delta t\nabla^{2}\Phi+\delta-\Delta t\nabla f\cdot\left(v,-u\right)^{T}-\Delta tf\nabla\cdot\left(v,-u\right)^{T} & =\delta^{0}\\
+\Delta t\nabla^{2}\Phi+\delta-\Delta t\nabla f\cdot\left(v,-u\right)^{T}-\Delta tf\zeta & =\delta^{0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\nabla^{i}\cdot\left(u+\Delta t\nabla^{i}\Phi-\Delta tfv\right)+\nabla^{j}\cdot\left(v+\Delta t\nabla^{j}\Phi+\Delta tfu\right) & =\nabla^{i}\cdot u^{0}+\nabla^{j}\cdot v^{0}\\
+\Delta t\nabla^{2}\Phi+\delta-\Delta t\nabla f\cdot\left(v,-u\right)^{T}-\Delta tf\zeta & =\delta^{0}
+\end{align*}
+
+\end_inset
+
+where we used 
+\begin_inset Formula $\zeta=curl(V)=\nabla\cdot\left(v,-u\right)^{T}$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+Next, we search for a vort/div representation of
+\begin_inset Formula 
+\[
+\Delta t\nabla f\cdot\left(v,-u\right)^{T}=-\Delta t\nabla^{j}fu.
+\]
+
+\end_inset
+
+Using 
+\begin_inset Formula $\nabla^{j}f=2\Omega\nabla^{j}\mu$
+\end_inset
+
+ and 
+\begin_inset Formula $\mu=\sin\phi$
+\end_inset
+
+ we first get
+\begin_inset Formula 
+\[
+\nabla^{j}\mu=\nabla^{j}\mu=\frac{\sqrt{1-\mu^{2}}}{r}\frac{\partial\mu}{\partial\mu}=\frac{\sqrt{1-\mu^{2}}}{r}=\frac{\cos\phi}{r}
+\]
+
+\end_inset
+
+and therefore
+\begin_inset Formula 
+\[
+\Delta t\nabla f\cdot\left(v,-u\right)^{T}=-2\Omega\Delta t\frac{\cos\phi}{r}u.
+\]
+
+\end_inset
+
+Using also
+\begin_inset Formula 
+\[
+u=-\nabla^{j}\nabla^{\text{-2}}\zeta+\nabla^{i}\nabla^{\text{-2}}\delta
+\]
+
+\end_inset
+
+with the vort/div formulation, we get
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\Delta t\nabla f\cdot\left(v,-u\right)^{T}=-2\Omega\Delta t\frac{\cos\phi}{r}u & =-2\Omega\Delta t\frac{\cos\phi}{r}\left(-\nabla^{j}\nabla^{\text{-2}}\zeta+\nabla^{i}\nabla^{\text{-2}}\delta\right)\\
+ & =2\Omega\Delta t\frac{\cos\phi}{r}\left(\nabla^{j}\nabla^{\text{-2}}\zeta-\nabla^{i}\nabla^{\text{-2}}\delta\right)\\
+ & =2\Omega\Delta t\frac{\cos\phi}{r}\left(\frac{\cos\phi}{r}\frac{d}{d\mu}\left(\nabla^{\text{-2}}\zeta\right)-\frac{1}{r\cos\phi}\frac{d}{d\lambda}\left(\nabla^{\text{-2}}\delta\right)\right)\\
+ & =2\Omega\Delta t\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\left(\nabla^{\text{-2}}\zeta\right)-2\Omega\Delta t\frac{1}{r^{2}}\frac{d}{d\lambda}\left(\nabla^{\text{-2}}\delta\right).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\Delta t\nabla f\cdot\left(v,-u\right)^{T}=-2\Omega\Delta t\frac{\cos\phi}{r}u & =2\Omega\Delta t\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\left(\nabla^{\text{-2}}\zeta\right)-2\Omega\Delta t\frac{1}{r^{2}}\frac{d}{d\lambda}\left(\nabla^{\text{-2}}\delta\right).
+\end{align*}
+
+\end_inset
+
+Accumulating everything leads to
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\Delta t\nabla^{2}\Phi+\delta-\Delta t\nabla f\cdot\left(v,-u\right)^{T}-\Delta tf\zeta & =\delta^{0}\\
+\Delta t\nabla^{2}\Phi+\delta-2\Omega\Delta t\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\left(\nabla^{\text{-2}}\zeta\right)+2\Omega\Delta t\frac{1}{r^{2}}\frac{d}{d\lambda}\left(\nabla^{\text{-2}}\delta\right)-\Delta t2\Omega\mu\zeta & =\delta^{0}\\
+\left(1+\Delta t2\Omega\frac{d}{d\lambda}\nabla^{\text{-2}}\right)\delta-\Delta t2\Omega\left(\mu+(SIGN\,SHOULD\,BE\thinspace NEGATIVE)\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\nabla^{\text{-2}}\right)\zeta+\left(\Delta t\nabla^{2}\right)\Phi & =\delta^{0}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\Delta t\nabla^{2}\Phi+\delta-\Delta t\nabla f\cdot\left(v,-u\right)^{T}-\Delta tf\zeta & =\delta^{0}\\
+\left(1+\Delta t2\Omega\frac{d}{d\lambda}\nabla^{\text{-2}}\right)\delta-\Delta t2\Omega\left(\mu-\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\nabla^{\text{-2}}\right)\zeta+\left(\Delta t\nabla^{2}\right)\Phi & =\delta^{0}.
+\end{align*}
+
+\end_inset
+
+Using spherical harmonics representation we can write this in matrix form
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+J\delta-F\zeta-L\Phi=\delta^{0}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+with
+\begin_inset Formula 
+\begin{align*}
+J & =1+\Delta t2\Omega\frac{d}{d\lambda}\nabla^{\text{-2}}\\
+ & =1-\Delta t\frac{im2\Omega}{n(n+1)}.
+\end{align*}
+
+\end_inset
+
+Note, that 
+\begin_inset Formula $J_{0}^{-1}=1$
+\end_inset
+
+ for 
+\begin_inset Formula $n=0$
+\end_inset
+
+ and hence 
+\begin_inset Formula $m=0$
+\end_inset
+
+ (due to spherical harmonics properties).
+ Furthermore, we get
+\begin_inset Formula 
+\begin{align*}
+L & =-\left(\Delta t\nabla^{2}\right)\\
+ & =\Delta tn(n+1)/r^{2}
+\end{align*}
+
+\end_inset
+
+with 
+\begin_inset Formula $F$
+\end_inset
+
+ given by the formulation above.
+\end_layout
+
+\begin_layout Subsection
+Curl
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:rexi_curl"
+
+\end_inset
+
+Applying the curl operator 
+\begin_inset Formula $curl(V)=\nabla\cdot\left(v,-u\right)^{T}$
+\end_inset
+
+ on the velocity equations, we get
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\nabla^{i}\cdot\left(v+\Delta t\nabla^{j}\Phi+\Delta tfu\right)-\nabla^{j}\cdot\left(u+\Delta t\nabla^{i}\Phi-\Delta tfv\right) & =\nabla^{i}\cdot v^{0}-\nabla^{j}\cdot u^{0}\\
+\nabla^{i}\cdot v+\Delta t\nabla^{i}\cdot\nabla^{j}\Phi+\Delta t\nabla^{i}\cdot\left(fu\right)-\nabla^{j}\cdot u-\Delta t\nabla^{j}\cdot\nabla^{i}\Phi+\Delta t\nabla^{j}\cdot\left(fv\right)- & =\zeta^{0}\\
+\zeta+\Delta t\nabla\cdot\left(f\boldsymbol{V}\right) & =\zeta^{0}\\
+\zeta+\Delta tf\left(\nabla\cdot\boldsymbol{V}\right)+\Delta t\left(\nabla f\right)\cdot\boldsymbol{V} & =\zeta^{0}\\
+\zeta+\Delta tf\delta+\Delta t\nabla f\cdot\boldsymbol{V} & =\zeta^{0}.
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\nabla^{i}\cdot\left(v+\Delta t\nabla^{j}\Phi+\Delta tfu\right)-\nabla^{j}\cdot\left(u+\Delta t\nabla^{i}\Phi-\Delta tfv\right) & =\nabla^{i}\cdot v^{0}-\nabla^{j}\cdot u^{0}\\
+\zeta+\Delta tf\delta+\Delta t\nabla f\cdot\boldsymbol{V} & =\zeta^{0}.
+\end{align*}
+
+\end_inset
+
+We need to find a direct formulation for 
+\begin_inset Formula $\nabla f\cdot\boldsymbol{V}$
+\end_inset
+
+ only depending on the vorticity or divergence.
+ We get
+\begin_inset Formula 
+\[
+\nabla f\cdot\boldsymbol{V}=\nabla^{j}fv
+\]
+
+\end_inset
+
+where we next use 
+\begin_inset Formula $\nabla^{j}f=2\Omega\frac{\cos\phi}{r}$
+\end_inset
+
+.
+ Using also 
+\begin_inset Formula 
+\[
+v=\nabla^{i}\nabla^{\text{-2}}\zeta+\nabla^{j}\nabla^{\text{-2}}\delta
+\]
+
+\end_inset
+
+with the vort/div formulation, and bringing things together we get
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+we get
+\begin_inset Formula 
+\begin{align*}
+\Delta t\nabla^{j}fv & =\Delta t2\Omega\nabla^{j}fv\\
+ & =\Delta t2\Omega\frac{\cos\phi}{r}\left(\nabla^{i}\nabla^{\text{-2}}\zeta+\nabla^{j}\nabla^{\text{-2}}\delta\right)\\
+ & =\Delta t2\Omega\frac{\cos\phi}{r}\left(\frac{1}{r\cos\phi}\frac{d}{d\lambda}\left(\nabla^{\text{-2}}\zeta\right)+\frac{\cos\phi}{r}\frac{d}{d\mu}\left(\nabla^{\text{-2}}\delta\right)\right)\\
+ & =\Delta t2\Omega\frac{1}{r^{2}}\frac{d}{d\lambda}\left(\nabla^{\text{-2}}\zeta\right)+\Delta t2\Omega\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\left(\nabla^{\text{-2}}\delta\right).
+\end{align*}
+
+\end_inset
+
+Bringing things together, we get
+\begin_inset Formula 
+\begin{align*}
+\zeta+\Delta t2\Omega\mu\delta+\Delta t2\Omega\frac{1}{r^{2}}\frac{d}{d\lambda}\left(\nabla^{\text{-2}}\zeta\right)+\Delta t2\Omega\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\left(\nabla^{\text{-2}}\delta\right) & =\zeta^{0}\\
+\left(1+\Delta t2\Omega\frac{1}{r^{2}}\frac{d}{d\lambda}\nabla^{\text{-2}}\right)\zeta+\Delta t2\Omega\left(\mu+(\boldsymbol{SIGN\,SHOULD\,BE\thinspace NEGATIVE})\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\nabla^{\text{-2}}\right)\delta & =\zeta^{0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\left(1+\Delta t2\Omega\frac{1}{r^{2}}\frac{d}{d\lambda}\nabla^{\text{-2}}\right)\zeta+\Delta t2\Omega\left(\mu-\frac{1}{r^{2}}\left(1-\mu^{2}\right)\frac{d}{d\mu}\nabla^{\text{-2}}\right)\delta & =\zeta^{0}
+\end{align*}
+
+\end_inset
+
+
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+TODO: Check wrong sign
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and in matrix form
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+J\zeta+F\delta=\zeta^{0}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Regarding the vorticity, we get a trivial formulation for a spectral solver.
+\end_layout
+
+\begin_layout Subsection
+Solver for divergence
+\end_layout
+
+\begin_layout Standard
+We can use the previously derived equations (see also 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "Temperton_1995"
+literal "false"
+
+\end_inset
+
+)
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+\Phi+\Delta t\overline{\Phi}\delta & =\Phi^{0}\,\,\,\,\,(1)\\
+J\delta-F\zeta-L\Phi & =\delta^{0}\,\,\,\,\,(2)\\
+J\zeta+F\delta & =\zeta^{0}\,\,\,\,\,(3).
+\end{align*}
+
+\end_inset
+
+Rewriting (1) to
+\begin_inset Formula 
+\[
+\Phi=\Phi^{0}-\Delta t\overline{\Phi}\delta
+\]
+
+\end_inset
+
+and using this in (2) we get
+\begin_inset Formula 
+\[
+J\delta-F\zeta-L\left(\Phi^{0}-\Delta t\overline{\Phi}\delta\right)=\delta^{0}\,\,\,\,(4).
+\]
+
+\end_inset
+
+Rewriting (3) to
+\begin_inset Formula 
+\[
+\zeta=J^{-1}\zeta^{0}-J^{-1}F\delta\,\,\,\,\,(5)
+\]
+
+\end_inset
+
+and using this in (4) we get
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+J\delta-F\left(J^{-1}\zeta^{0}-J^{-1}F\delta\right)-L\left(\Phi^{0}-\Delta t\overline{\Phi}\delta\right) & =\delta^{0}\\
+J\delta-FJ^{-1}\zeta^{0}+FJ^{-1}F\delta-L\left(\Phi^{0}-\Delta t\overline{\Phi}\delta\right) & =\delta^{0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+J\delta-FJ^{-1}\zeta^{0}+FJ^{-1}F\delta-L\left(\Phi^{0}-\Delta t\overline{\Phi}\delta\right) & =\delta^{0}
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Boxed
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\[
+\left(J+FJ^{-1}F+\Delta t\overline{\Phi}LG\right)\delta=\delta^{0}+FJ^{-1}\zeta^{0}+L\Phi^{0}.
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Given the solution for the divergence 
+\begin_inset Formula $\delta$
+\end_inset
+
+, we can simply compute the vorticity and geopotential based on it.
+\end_layout
+
+\begin_layout Subsection
+Matrix example for 
+\begin_inset Formula $FJ^{-1}$
+\end_inset
+
+ and 
+\begin_inset Formula $FJ^{-1}$
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For each 
+\begin_inset Formula $m$
+\end_inset
+
+ partition, we need to compute 
+\begin_inset Formula $FJ^{-1}$
+\end_inset
+
+ which is given by
+\size scriptsize
+
+\begin_inset Formula 
+\[
+FJ^{-1}=2\Omega\Delta t\left[\begin{array}{ccccc}
+0 & f_{0}^{+}\\
+f_{1}^{-} & 0 & f_{1}^{+}\\
+ & f_{2}^{-} & 0 & f_{2}^{+}\\
+ &  & f_{3}^{-} & 0 & f_{3}^{+}\\
+ &  &  & f_{4}^{-} & 0
+\end{array}\right]\left[\begin{array}{ccccc}
+J_{0}^{-1}\\
+ & J_{1}^{-1}\\
+ &  & J_{2}^{-1}\\
+ &  &  & J_{3}^{-1}\\
+ &  &  &  & J_{4}^{-1}
+\end{array}\right]=\left[\begin{array}{ccccc}
+0 & f_{0}^{+}J_{1}^{-1}\\
+f_{1}^{-}J_{0}^{-1} & 0 & f_{1}^{+}J_{2}^{-1}\\
+ & f_{2}^{-}J_{1}^{-1} & 0 & f_{2}^{+}J_{3}^{-1}\\
+ &  & f_{3}^{-}J_{2}^{-1} & 0 & f_{3}^{+}J_{4}^{-1}\\
+ &  &  & f_{4}^{-}J_{3}^{-1} & 0
+\end{array}\right]
+\]
+
+\end_inset
+
+
+\size default
+and for 
+\begin_inset Formula $FJ^{-1}F$
+\end_inset
+
+ we get
+\size scriptsize
+
+\begin_inset Formula 
+\begin{align*}
+FJ^{-1}F & =\left(2\Omega\Delta t\right)^{2}\left[\begin{array}{ccccc}
+0 & f_{0}^{+}J_{1}^{-1}\\
+f_{1}^{-}J_{0}^{-1} & 0 & f_{1}^{+}J_{2}^{-1}\\
+ & f_{2}^{-}J_{1}^{-1} & 0 & f_{2}^{+}J_{3}^{-1}\\
+ &  & f_{3}^{-}J_{2}^{-1} & 0 & f_{3}^{+}J_{4}^{-1}\\
+ &  &  & f_{4}^{-}J_{3}^{-1} & 0
+\end{array}\right]\left[\begin{array}{ccccc}
+0 & f_{0}^{+}\\
+f_{1}^{-} & 0 & f_{1}^{+}\\
+ & f_{2}^{-} & 0 & f_{2}^{+}\\
+ &  & f_{3}^{-} & 0 & f_{3}^{+}\\
+ &  &  & f_{4}^{-} & 0
+\end{array}\right]\\
+ & =\left(2\Omega\Delta t\right)^{2}\left[\begin{array}{ccccc}
+0+f_{0}^{+}J_{1}^{-1}f_{1}^{-} &  & f_{0}^{+}J_{1}^{-1}f_{1}^{+}\\
+ & f_{1}^{-}J_{0}^{-1}f_{0}^{+}+f_{1}^{+}J_{2}^{-1}f_{2}^{-} &  & f_{1}^{+}J_{2}^{-1}f_{2}^{+}\\
+f_{2}^{-}J_{1}^{-1}f_{1}^{-} &  & f_{2}^{-}J_{1}^{-1}f_{1}^{+}+f_{2}^{+}J_{3}^{-1}f_{3}^{-} &  & f_{2}^{+}J_{3}^{-1}f_{3}^{+}\\
+ & f_{3}^{-}J_{2}^{-1}f_{2}^{-} &  & f_{3}^{-}J_{2}^{-1}f_{2}^{+}+f_{3}^{+}J_{4}^{-1}f_{4}^{-}\\
+ &  & f_{4}^{-}J_{3}^{-1}f_{3}^{-} &  & f_{4}^{-}J_{3}^{-1}f_{3}^{+}+0
+\end{array}\right].
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+From implicit solver to a REXI solver
+\end_layout
+
+\begin_layout Plain Layout
+Given an implicit time stepping solver
+\begin_inset Formula 
+\begin{align*}
+U(t+\Delta t) & =\left(I-\Delta tL\right)^{-1}U(t)\\
+\left(I-\Delta tL\right)U(t+\Delta t) & =U(t)
+\end{align*}
+
+\end_inset
+
+we want to use this structure for solving REXI terms like
+\begin_inset Formula 
+\[
+U(t+\Delta t)\approx\sum_{n}U_{n}(t+\Delta t)=\sum_{n}\beta\left(\alpha+\Delta rL\right)^{-1}U(t)
+\]
+
+\end_inset
+
+where use 
+\begin_inset Formula $\Delta r$
+\end_inset
+
+ to denote the time step size used in REXI.
+\end_layout
+
+\begin_layout Plain Layout
+We denote the solution of each individual REXI 
+\begin_inset Formula $U_{n}$
+\end_inset
+
+ term by
+\begin_inset Formula 
+\begin{align*}
+U_{n}(t+\Delta t) & =\beta\left(I\alpha+\Delta rL\right)^{-1}U(t)\\
+\left(I\alpha+\Delta rL\right)U_{n}(t+\Delta t) & =\beta U(t).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+To utilize the implicit time stepping solver framework, we interpret the
+ time step size from the implicit solver to be some complex variable and
+ we write 
+\begin_inset Formula $\Delta t=-\frac{\Delta t'}{\alpha}$
+\end_inset
+
+ yielding
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\left(I+\frac{\Delta r}{\alpha}L\right)U(t+\Delta t) & =U(t)\\
+\frac{1}{\alpha}\alpha\left(I+\frac{\Delta r}{\alpha}L\right)U(t+\Delta t) & =U(t)\\
+\left(I\alpha+\Delta t'L\right)U(t+\Delta t) & =\alpha U(t).
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\left(I\alpha+\Delta t'L\right)U(t+\Delta t) & =\alpha U(t).
+\end{align*}
+
+\end_inset
+
+Then, substituting 
+\begin_inset Formula $U(t)=U_{R}(t)\frac{\beta}{\alpha}$
+\end_inset
+
+ we get
+\begin_inset Formula 
+\[
+\left(I\alpha+\Delta rL\right)U(t+\Delta t)=\beta U_{R}.
+\]
+
+\end_inset
+
+Hence, the two steps to utilize the implicit solver framework is to
+\end_layout
+
+\begin_layout Enumerate
+use an implicit (complex-valued) time step size 
+\begin_inset Formula $\Delta t=-\frac{\Delta r}{\alpha}$
+\end_inset
+
+ and
+\end_layout
+
+\begin_layout Enumerate
+using 
+\begin_inset Formula $U(t)=U_{R}(t)\frac{\beta}{\alpha}$
+\end_inset
+
+ as the initial condition for the implicit time step
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Note Note
+status open
+
+\begin_layout Plain Layout
+\begin_inset Formula 
+\begin{align*}
+\left(I-\Delta tL\right)U(t+\Delta t) & =U(t)\\
+\left(I+\frac{1}{\alpha}L\right)U(t+\Delta t) & =U_{R}(t)\frac{\beta}{\alpha}\\
+\alpha\left(I+\frac{1}{\alpha}L\right)U(t+\Delta t) & =\beta U_{R}(t)\\
+\left(\alpha+L\right)U(t+\Delta t) & =\beta U_{R}(t)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Formula 
+\begin{align*}
+\left(I-\Delta tL\right)U(t+\Delta t) & =U(t)\\
+\left(\alpha+L\right)U(t+\Delta t) & =\beta U_{R}(t)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Comment on performance comparisons and scalability
+\end_layout
+
+\begin_layout Standard
+The runtime complexity of spherical harmonics transformations, which can
+ be entirely avoided with this formulation, shows that significant speedups
+ can be easily reached for large scale simulations.
+ We should also note, that this puts more pressure on an efficient collective
+ communication to solve for the REXI terms.
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+btprint "btPrintCited"
+bibfiles "references"
+options "bibtotoc,plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
