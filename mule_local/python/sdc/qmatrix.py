@@ -275,31 +275,65 @@ def genCollocation(M, distr, quadType):
     return nodes, weights, Q
 
 
-def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str='FE', initSweep:str='BEpar', nodeDistr:str='LEGENDRE')-> SWEETFileDict:
+def getSetup(
+    nNodes:int=3, nodeType:str='RADAU-RIGHT', nIter:int=3, 
+    qDeltaImplicit:str='BE', qDeltaExplicit:str='FE',
+    diagonal:bool=False, initSweepType:str='COPY', useEndUpdate:bool=False,
+    diagQDeltaInit:str='BEpar', nodeDistr:str='LEGENDRE'
+    )-> SWEETFileDict:
     """
-    Generate given coefficient for one SDC setup
+    Generate SWEETFileDict for one given SDC setup
 
     Parameters
     ----------
-    M : int
-        Number of nodes.
-    nodeType : str
-        Quadrature type for the nodes, can be 'GAUSS', 'LOBATTO', 'RADAU-RIGHT' or 'RADAU-LEFT'.
-    implSweep : str
-        Base (implicit) sweep for SDC. Can be 'BE', 'BEpar', 'LU', ... (see genQDelta doc)
-    explSweep : str, optional
-        Explicit sweep (when used for IMEX SDC). Can be 'FE', 'PIC', ... (see genQDelta doc)
-    initSweep : str, optional
-        QDelta matrix used for initial sweep. Can be 'BE', 'BEpar', ... (see genQDelta doc)
+    nNodes : int, optional
+        Number of nodes.. The default is 3.
+    nodeType : str, optional
+        Quadrature type for the nodes, can be 'GAUSS', 'LOBATTO', 'RADAU-RIGHT' or 'RADAU-LEFT'. 
+        The default is 'RADAU-RIGHT'.
+    nIter : int, optional
+        Number of iterations (sweeps). The default is 3.
+    qDeltaImplicit : str, optional
+        Base (implicit) sweep for SDC. Can be 'BE', 'BEpar', 'LU', ... (see genQDelta doc). 
+        The default is 'BE'.
+    qDeltaExplicit : str, optional
+        Explicit sweep (when used for IMEX SDC). Can be 'FE', 'PIC', ... (see genQDelta doc). 
+        The default is 'FE'.
+    diagonal : bool, optional
+        Wether or not use the diagonal implementation. Warning : should be used
+        with compatible QDelta matrices.
+        The default is False.
+    initSweepType : str, optional
+        The way the tendencies are initialized before the first sweep. Can be :
+
+        - COPY : use the time-step initial solution to evaluate the tendencies,
+          and copy those tendencies for each nodes.
+        - QDELTA : use the QDelta matrices (implicit and explicit) to compute
+          one IMEX update between the nodes and evaluate the tendencies from
+          those. If diagonal=True, then uses the values provided by the
+          diagQDeltaInit parameter.
+        - ZERO_SOLUTION : use zeros values for the solution, and evaluate 
+          tendencies from it.
+        - ZERO_TENDENCIES : uses zeros tendencies.
+        
+        The default is 'COPY'.
+    useEndUpdate : bool, optional
+        Wether or not compute the end update with the quadrature formula. 
+        The default is False.
+    diagQDeltaInit : str, optional
+        Diagonal sweep used if diagonal=True and initSweep=QDELTA, must
+        be a diagonal sweep. The default is 'BEpar'.
     nodeDistr : str, optional
         Node distribution. The default is 'LEGENDRE'.
         
     Example
     -------
-    >>> # Standard settings for Fast Wave Slow Wave SDC (IMEX)
-    >>> paramsSDC = genSetup(3, 'RADAU-RIGHT', 'BE', 'FE')
-    >>> # Standard settings for diagonal parallel IMEX SDC
-    >>> paramsSDC = genSetup(3, 'RADAU-RIGHT', 'BEpar', 'PIC')
+    >>> # Settings for Fast Wave Slow Wave IMEX SDC
+    >>> paramsSDC = genSetup()
+    >>> # Settings for Optimized Parallel SDC
+    >>> paramsSDC = genSetup(
+    >>>     qDeltaImplicit='OPT-QmQd-0', qDeltaExplicit='PIC', diagonal=True,
+    >>>     initSweep='QDELTA', diagQDeltaInit='BEpar')
 
     Returns
     -------
@@ -316,23 +350,40 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str='FE', initSweep:s
             Q matrix coefficients.
         - qDeltaI : nd.2darray(M,M)
             Implicit sweep coefficients.
-        - qDeltaE : nd.2darray(M,M), optional
-            Explicit sweep coefficients. Given only if explSweep is not None.
-        - qDelta0 : nd.2darray(M,M), optional
-            Initial sweep coefficients. Given only if initSweep is not None.
+        - qDeltaE : nd.2darray(M,M)
+            Explicit sweep coefficients.
+        - qDelta0 : nd.2darray(M,M)
+            Initial sweep coefficients.
+        - initSweepType : str
+            Type of initial sweep.
+        - diagonal : int
+            1 if use the diagonal implementation, 0 else.
+        - useEndUpdate : int
+            1 if use the end update, 0 else.
     """
-    nodes, weights, qMatrix = genCollocation(M, nodeDistr, nodeType)
-    qDeltaI = genQDelta(nodes, implSweep, qMatrix)[0]
-    qDeltaE = genQDelta(nodes, explSweep, qMatrix)[0]
-    qDelta0 = genQDelta(nodes, initSweep, qMatrix)[0]
+    nodes, weights, qMatrix = genCollocation(nNodes, nodeDistr, nodeType)
+    qDeltaI = genQDelta(nodes, qDeltaImplicit, qMatrix)[0]
+    qDeltaE = genQDelta(nodes, qDeltaExplicit, qMatrix)[0]
+    qDelta0 = genQDelta(nodes, diagQDeltaInit, qMatrix)[0]
+    idString = f'M{nNodes}_{nodeType}_K{nIter}_{qDeltaImplicit}_{qDeltaExplicit}_{initSweepType}'
     out = SWEETFileDict(initDict={
-        'id': f'{M}_{nodeType}_{implSweep}_{explSweep}_{initSweep}',
         'nodes': nodes,
         'weights': weights,
         'qMatrix': qMatrix,
         'qDeltaI': qDeltaI,
         'qDeltaE': qDeltaE,
-        'qDelta0': qDelta0
+        'qDelta0': qDelta0,
+        'initSweepType': initSweepType,
+        'nIter': nIter
     })
+    out['diagonal'] = int(diagonal)
+    if diagonal:
+        idString += '_diag'
+    if initSweepType == 'QDELTA' and diagonal:
+        idString += f'_{diagQDeltaInit}'
+    out['useEndUpdate'] = int(useEndUpdate)
+    if useEndUpdate:
+        idString += '_endUpdate'
+    out['id'] = idString
     return out
     
