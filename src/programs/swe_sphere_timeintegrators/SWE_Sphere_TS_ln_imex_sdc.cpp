@@ -7,8 +7,9 @@
 #include "SWE_Sphere_TS_ln_imex_sdc.hpp"
 
 
-bool SWE_Sphere_TS_ln_imex_sdc::implements_timestepping_method(const std::string &i_timestepping_method
-									)
+bool SWE_Sphere_TS_ln_imex_sdc::implements_timestepping_method(
+		const std::string &i_timestepping_method
+)
 {
 	timestepping_method = i_timestepping_method;
 	timestepping_order = simVars.disc.timestepping_order;
@@ -44,7 +45,7 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 )
 {
 	/*
-	Performe one step of IMEX SDC for
+	Perform one step of IMEX SDC for
 	
 	du/dt = L(u) + NL(u)
 
@@ -56,12 +57,16 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	*/
 
 	// -- set-up step values container
-	u0.setRef(io_phi, io_vrt, io_div);
+	ts_u0.phi.swapWithConfig(io_phi);
+	ts_u0.vrt.swapWithConfig(io_vrt);
+	ts_u0.div.swapWithConfig(io_div);
+
+	//u0.setPointer(io_phi, io_vrt, io_div);
 	t0 = i_simulation_timestamp;
 	dt = i_fixed_dt;
 
 	// -- initialize nodes values and state
-	initSweep();
+	init_sweep();
 
 	// -- perform sweeps
 	for (size_t k = 0; k < nIter; k++){
@@ -70,105 +75,98 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 
 	// -- compute end-point solution and update step values
 	computeEndPoint();
+
+	ts_u0.phi.swapWithConfig(io_phi);
+	ts_u0.vrt.swapWithConfig(io_vrt);
+	ts_u0.div.swapWithConfig(io_div);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
+void SWE_Sphere_TS_ln_imex_sdc::eval_linear(const SWE_VariableVector& u, SWE_VariableVector& eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_linear(
-		u.phi, u.vort, u.div,
-		eval.phi, eval.vort, eval.div,
+		u.phi, u.vrt, u.div,
+		eval.phi, eval.vrt, eval.div,
 		t  // time-stamp
 	);
 }
-void SWE_Sphere_TS_ln_imex_sdc::evalLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
-	timestepping_l_erk_n_erk.euler_timestep_update_linear(
-		*(u.phi), *(u.vort), *(u.div),
-		eval.phi, eval.vort, eval.div,
+void SWE_Sphere_TS_ln_imex_sdc::eval_nonlinear(const SWE_VariableVector& u, SWE_VariableVector& eval, double t) {
+	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
+		u.phi, u.vrt, u.div,
+		eval.phi, eval.vrt, eval.div,
 		t  // time-stamp
 	);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables& u, SWE_Variables& eval, double t) {
-	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-		u.phi, u.vort, u.div,
-		eval.phi, eval.vort, eval.div,
-		t  // time-stamp
-	);
-}
-void SWE_Sphere_TS_ln_imex_sdc::evalNonLinearTerms(const SWE_Variables_Ref& u, SWE_Variables& eval, double t) {
-	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-		*(u.phi), *(u.vort), *(u.div),
-		eval.phi, eval.vort, eval.div,
-		t  // time-stamp
-	);
-}
-
-void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(SWE_Variables& rhs, double dt) {
+void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(
+		SWE_VariableVector& rhs,
+		double dt
+)
+{
 	timestepping_l_irk.solveImplicit(
-		rhs.phi, rhs.vort, rhs.div,
+		rhs.phi, rhs.vrt, rhs.div,
 		dt
 	);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::axpy(double a, const SWE_Variables& x, SWE_Variables& y) {
-	// TODO : optimize this if possible (check with Martin)
-	tmp = x.phi;
-	tmp *= a;
-	y.phi += tmp;
-
-	tmp = x.vort;
-	tmp *= a;
-	y.vort += tmp;
-
-	tmp = x.div;
-	tmp *= a;
-	y.div += tmp;
+void SWE_Sphere_TS_ln_imex_sdc::axpy(
+		double a,
+		const SWE_VariableVector& i_x,
+		SWE_VariableVector& io_y
+)
+{
+	io_y.phi += a*i_x.phi;
+	io_y.vrt += a*i_x.vrt;
+	io_y.div += a*i_x.div;
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
+void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 	
-	if (qDeltaInit) {
+	if (use_qdelta_for_initialization)
+	{
 		// Uses QDelta matrix to initialize node values
 
 		// Local convenient references
 		Mat& q = qMat;
-		Mat& qI = qDeltaI;
-		Mat& qE = qDeltaI;
-		Mat& q0 = qDelta0;
+		Mat& qI = qMatDeltaI;
+		Mat& qE = qMatDeltaI;
+		Mat& q0 = qMatDelta0;
 
 		// Loop on nodes (can be parallelized if diagonal)
 		for (size_t i = 0; i < nNodes; i++) {
 
 			// Initialize with u0 value
-			state.fillWith(u0);
+			ts_tmp_state = ts_u0;
 
-			if (not diagonal) {
+			if (diagonal) {
+				// qMatDelta0 is diagonal-only
+				// Hence, Here, we only iterate over the diagonal
+				// Implicit solve with q0
+				solveImplicit(ts_tmp_state, dt*q0(i, i));
+			} else {
 				// Add non-linear and linear terms from iteration k (already computed)
 				for (size_t j = 0; j < i; j++) {
-					axpy(dt*qE(i, j), nTerms.getK(j), state);
-					axpy(dt*qI(i, j), lTerms.getK(j), state);
+					axpy(dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
+					axpy(dt*qI(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 				}
 				// Implicit solve with qI
-				solveImplicit(state, dt*qI(i, i));
-			} else {
-				// Implicit solve with q0
-				solveImplicit(state, dt*q0(i, i));
+				solveImplicit(ts_tmp_state, dt*qI(i, i));
 			}
 
 			// Evaluate and store linear term for k
-			evalLinearTerms(state, lTerms.getK(i), t0+dt*tau(i));
+			eval_linear(ts_tmp_state, ts_linear_tendencies_k0[i], t0+dt*tau(i));
 
 			// Evaluate and store non linear term for k
-			evalNonLinearTerms(state, nTerms.getK(i), t0+dt*tau(i));
+			eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k0[i], t0+dt*tau(i));
 		}
 
-		
 	} else {
-		// Evaluate linear and non-linear with initial solution, and copy to each node
-		evalLinearTerms(u0, lTerms.getK(0), t0);
-		evalNonLinearTerms(u0, nTerms.getK(0), t0);
-		for (size_t i = 1; i < nNodes; i++) {
-			lTerms.getK(i).fillWith(lTerms.getK(0));
-			nTerms.getK(i).fillWith(nTerms.getK(0));
+		// Evaluate linear and non-linear with initial solution
+		eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
+		eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
+
+		// Simply copy to each node as initial guess
+		for (int i = 1; i < nNodes; i++) {
+			ts_linear_tendencies_k0[i] = ts_linear_tendencies_k0[0];
+			ts_nonlinear_tendencies_k0[i] = ts_nonlinear_tendencies_k0[0];
 		}
 	}
 
@@ -178,68 +176,70 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 
 	// Local convenient references
 	const Mat& q = qMat;
-	const Mat& qI = qDeltaI;
-	const Mat& qE = qDeltaI;
+	const Mat& qDeltaImplicit = qMatDeltaI;
+	const Mat& qDeltaExplicit = qMatDeltaI;
 
 	// Loop on nodes (can be parallelized if diagonal)
 	for (size_t i = 0; i < nNodes; i++) {
 		
 		// Initialize with u0 value
-		state.fillWith(u0);
+		ts_tmp_state = ts_u0;
 		
 		// Add quadrature terms
 		for (size_t j = 0; j < nNodes; j++) {
-			axpy(dt*q(i, j), nTerms.getK(j), state);
-			axpy(dt*q(i, j), lTerms.getK(j), state);
+			axpy(dt*q(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
+			axpy(dt*q(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 		}
 
-		if (not diagonal) {
+		if (!diagonal) {
 			// Add non-linear and linear terms from iteration k+1
 			for (size_t j = 0; j < i; j++) {
-				axpy(dt*qE(i, j), nTerms.getK1(j), state);
-				axpy(dt*qI(i, j), lTerms.getK1(j), state);
+				axpy(dt*qDeltaExplicit(i, j), ts_nonlinear_tendencies_k1[j], ts_tmp_state);
+				axpy(dt*qDeltaImplicit(i, j), ts_linear_tendencies_k1[j], ts_tmp_state);
 			}
 
 			// Substract non-linear and linear terms from iteration k
 			for (size_t j = 0; j < i; j++) {
-				axpy(-dt*qE(i, j), nTerms.getK(j), state);
-				axpy(-dt*qI(i, j), lTerms.getK(j), state);
+				axpy(-dt*qDeltaExplicit(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
+				axpy(-dt*qDeltaImplicit(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 			}
 		}
 
 		// Last linear term from iteration k
-		axpy(-dt*qI(i, i), lTerms.getK(i), state);
+		axpy(-dt*qDeltaImplicit(i, i), ts_linear_tendencies_k0[i], ts_tmp_state);
 		
 		// Implicit solve
-		// solveImplicit(state, dt*qI[i][i]);
+		solveImplicit(ts_tmp_state, dt*qDeltaImplicit(i,i));
 
 		// Evaluate and store linear term for k+1
-		evalLinearTerms(state, lTerms.getK1(i), t0+dt*tau(i));
+		eval_linear(ts_tmp_state, ts_linear_tendencies_k1[i], t0+dt*tau(i));
 
 		// Evaluate and store non linear term for k+1
-		evalNonLinearTerms(state, nTerms.getK1(i), t0+dt*tau(i));
+		eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
 	}
 
 	// Swap k+1 and k values for next iteration (or end-point update)
-	nTerms.swapIterate();
-	lTerms.swapIterate();
+
+	ts_nonlinear_tendencies_k0.swap(ts_nonlinear_tendencies_k1);
+	ts_linear_tendencies_k0.swap(ts_linear_tendencies_k1);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint() {
+void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
+{
 	if (useEndUpdate) {
 		// Compute collocation update
 		const Vec& w = weights;
-		state.fillWith(u0);
+		ts_tmp_state = ts_u0;
 		for (size_t j = 0; j < nNodes; j++) {
-			axpy(dt*w(j), nTerms.getK(j), state);
-			axpy(dt*w(j), lTerms.getK(j), state);
+			axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
+			axpy(dt*w(j), ts_linear_tendencies_k0[j], ts_tmp_state);
 		}
-	}{
-	// Time-step update using last state value
-	*(u0.phi) = state.phi;
-	*(u0.vort) = state.vort;
-	*(u0.div) = state.div;
 	}
+
+	// Time-step update using last state value
+	ts_u0.phi = ts_tmp_state.phi;
+	ts_u0.vrt = ts_tmp_state.vrt;
+	ts_u0.div = ts_tmp_state.div;
 }
 
 /*
@@ -257,48 +257,14 @@ void SWE_Sphere_TS_ln_imex_sdc::setup(
 	if (i_order != i_order2)
 		SWEETError("Orders of 1st and 2nd one must match");
 
-	version_id = i_version_id;
-
 	timestepping_order = i_order;
 	timestepping_order2 = i_order2;
 	timestep_size = simVars.timecontrol.current_timestep_size;
 
-	if (timestepping_order == 1)
-	{
-		timestepping_l_irk.setup(
-			1,
-			timestep_size
-		);
-	}
-	else if (timestepping_order == 2)
-	{
-		if (version_id == 0)
-		{
-			timestepping_l_irk.setup(
-					2,
-					timestep_size*0.5,
-					simVars.disc.timestepping_crank_nicolson_filter,
-					false
-			);
-		}
-		else if (version_id == 1)
-		{
-			timestepping_l_irk.setup(
-					2,
-					timestep_size,
-					simVars.disc.timestepping_crank_nicolson_filter,
-					false
-			);
-		}
-		else
-		{
-			SWEETError("Invalid version");
-		}
-	}
-	else
-	{
-		SWEETError("Invalid timestepping order");
-	}
+	timestepping_l_irk.setup(
+		1,
+		timestep_size
+	);
 
 
 	//
@@ -318,27 +284,30 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		op(i_op),
 		timestepping_l_irk(simVars, op),
 		timestepping_l_erk_n_erk(simVars, op),
-		version_id(0),
 		timestepping_order(-1),
+
 		// SDC main parameters
 		nNodes(i_simVars.sdc.nNodes),
 		nIter(i_simVars.sdc.nIter),
 		diagonal(i_simVars.sdc.diagonal),
-		qDeltaInit(i_simVars.sdc.qDeltaInit),
+		use_qdelta_for_initialization(i_simVars.sdc.qDeltaInit),
+
 		// Nodes and weights
 		tau(i_simVars.sdc.nodes),
 		weights(i_simVars.sdc.weights),
+
 		// Quadrature matrices
 		qMat(i_simVars.sdc.qMatrix),
-		qDeltaI(i_simVars.sdc.qDeltaI),
+		qMatDeltaI(i_simVars.sdc.qDeltaI),
 		qDeltaE(i_simVars.sdc.qDeltaE),
-		qDelta0(i_simVars.sdc.qDelta0),
+		qMatDelta0(i_simVars.sdc.qDelta0),
+
 		// Storage and reference container (for u0)
-		lTerms(op.sphereDataConfig, i_simVars.sdc.nNodes),
-		nTerms(op.sphereDataConfig, i_simVars.sdc.nNodes),
-		state(op.sphereDataConfig),
-		tmp(op.sphereDataConfig),
-		u0()
+		ts_linear_tendencies_k0(op.sphereDataConfig, i_simVars.sdc.nNodes),
+		ts_nonlinear_tendencies_k0(op.sphereDataConfig, i_simVars.sdc.nNodes),
+		ts_linear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
+		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
+		ts_tmp_state(op.sphereDataConfig)
 {
 
 }

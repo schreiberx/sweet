@@ -17,14 +17,41 @@ listParamsSDC = [
     (3, 'RADAU-RIGHT', 'BEpar', 'PIC'),  # Basic parallel SDC
     (3, 'RADAU-RIGHT', 'OPT-QmQd-0', 'PIC', 'BEpar')  # Targeted optimized parallel SDC
 ]
-paramsSDC = getSDCSetup(*listParamsSDC[0]) # => returns associated SWEETFileDict
+#paramsSDC = getSDCSetup(*listParamsSDC[1]) # => returns associated SWEETFileDict
+
+"""
+param 1: Number of support points
+param 2: Typeof quadrature nodes
+param 3: Linear term: Implicit QDelta matrix
+param 4: Nonlinear term: Explicit QDelta matrix
+param 5: QDelta matrix for initial sweep
+
+
+QDelta options:
+'PIC': Forward Euler
+
+Standard IMEX SDC
+ * param 3: 'BE': Backward Euler
+ * param 4: 'FE': Forward Euler
+
+Parallel SDC
+ * param 3: 'BEpar': Backward Euler / parallel
+ * param 4: 'PIC': Picard
+
+"""
+
+paramsSDC = getSDCSetup(3, 'RADAU-RIGHT', 'BEpar', 'FE', 'BEpar') # => returns associated SWEETFileDict
+
 # Additional parameters
 # - nIter (int) : number of sweep (can be 0)
 paramsSDC['nIter'] = 3
+
 # - diagonal (bool) : to use diagonal implementation
 paramsSDC['diagonal'] = 0
+
 # - qDeltaInit (bool) : to use qDeltaI (and qDeltaE) for initial sweep
 paramsSDC['qDeltaInit'] = 1
+
 # - useEndUpdate (bool) : to use collocation formula for end-update solution
 paramsSDC['useEndUpdate'] = 0
 

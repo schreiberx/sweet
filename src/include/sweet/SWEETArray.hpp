@@ -92,6 +92,15 @@ public:
 		return get(i0, i1, i2);
 	}
 
+
+	inline
+	T operator[](int i0) const {
+		if (D != 1)
+			SWEETError("Only 1D supported");
+
+		return _data[i0];
+	}
+
 public:
 	friend
 	std::ostream& operator<<(std::ostream& os, const SWEETArray<D,T> &a){
