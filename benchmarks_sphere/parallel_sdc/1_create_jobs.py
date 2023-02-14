@@ -22,11 +22,11 @@ paramsSDC = getSDCSetup(*listParamsSDC[0]) # => returns associated SWEETFileDict
 # - nIter (int) : number of sweep (can be 0)
 paramsSDC['nIter'] = 3
 # - diagonal (bool) : to use diagonal implementation
-paramsSDC['diagonal'] = 1
+paramsSDC['diagonal'] = 0
 # - qDeltaInit (bool) : to use qDeltaI (and qDeltaE) for initial sweep
 paramsSDC['qDeltaInit'] = 1
 # - useEndUpdate (bool) : to use collocation formula for end-update solution
-paramsSDC['useEndUpdate'] = 1
+paramsSDC['useEndUpdate'] = 0
 
 p.runtime.paramsSDC = paramsSDC
 # -------------------------------------------------------------------------------------------------

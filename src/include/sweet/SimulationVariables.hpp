@@ -1241,16 +1241,16 @@ public:
 		SWEETArray<2, double> qDelta0;
 
 		// Number of iterations (sweeps)
-		int nIter;
+		SWEETFileDict::int64 nIter;
 
 		// Wether or not use the diagonal implementation
-		bool diagonal;
+		SWEETFileDict::int64 diagonal;
 
 		// Wether or not use qDelta for initial sweep
-		bool qDeltaInit;
+		SWEETFileDict::int64 qDeltaInit;
 
 		// Wether or not use collocation update for end point
-		bool useEndUpdate;
+		SWEETFileDict::int64 useEndUpdate;
 
 
 		void outputProgParams()
@@ -1765,7 +1765,7 @@ public:
 					}
 
 					{
-						int retval = sdc.setup_longOptionValue(i-timecontrol_start_option_index, optarg);
+						int retval = sdc.setup_longOptionValue(i-sdc_start_option_index, optarg);
 						if (retval == -1)
 							continue;
 						c += retval;
