@@ -363,9 +363,14 @@ public:
 		SWEETError(ss.str());
 	}
 
+
 public:
 	friend
-	std::ostream& operator<< (std::ostream& os, const SWEETFileDict &fd);
+	std::ostream& operator<<(std::ostream& os, const SWEETFileDict &fd)
+	{
+		fd.print(os);
+		return os;
+	}
 
 
 private:
@@ -415,12 +420,6 @@ private:
 	}
 };
 
-
-std::ostream& operator<<(std::ostream& os, const SWEETFileDict &fd)
-{
-	fd.print(os);
-	return os;
-}
 
 
 #endif
