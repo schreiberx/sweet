@@ -308,11 +308,7 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	const char *bogus_var_names[] = {
-			nullptr
-	};
-
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 	{
 		std::cout << std::endl;
 		return -1;

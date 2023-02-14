@@ -1026,7 +1026,7 @@ int main_real(int i_argc, char *i_argv[])
 #endif
 
 	// input parameter names (specific ones for this program)
-	const char *bogus_var_names[] = {
+	const char *user_defined_prog_params[] = {
 			nullptr
 	};
 
@@ -1036,7 +1036,7 @@ int main_real(int i_argc, char *i_argv[])
 #endif
 
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 #if SWEET_PARAREAL
 		simVars.parareal.printOptions();

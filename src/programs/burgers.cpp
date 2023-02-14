@@ -908,16 +908,8 @@ int main(int i_argc, char *i_argv[])
 #if __MIC__
 	std::cout << "Compiled for MIC" << std::endl;
 #endif
-
-	// program specific input parameter names
-	const char *bogus_var_names[] = {
-			nullptr
-	};
-
-	// default values for program specific parameter
-
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;

@@ -110,6 +110,14 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+	void solveImplicit(
+		SphereData_Spectral &io_phi,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div,
+
+		double dt
+	);
+
 
 	virtual ~SWE_Sphere_TS_l_irk();
 };

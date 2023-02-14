@@ -260,7 +260,7 @@ int main(int i_argc, char *i_argv[])
 
 #endif
 
-	const char *bogus_var_names[] = {
+	const char *user_defined_prog_params[] = {
 		"parareal-fine-dt",
 		"parareal-function-param-y0",
 		"parareal-function-param-a",
@@ -273,7 +273,7 @@ int main(int i_argc, char *i_argv[])
 	param_parareal_function_a = 1.0;
 	param_parareal_function_b = 0.1;
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		///std::cout << "	--parareal-fine-dt				Fine time stepping size" << std::endl;
 		std::cout << "	--parareal-function-param-y0	Parameter 'y0' (initial condition) for function y(t=0)" << std::endl;
@@ -287,20 +287,20 @@ int main(int i_argc, char *i_argv[])
 	param_parareal_fine_dt = simVars.timecontrol.current_timestep_size;
 	//if (simVars.bogus.var[0] != "")
 	//	param_parareal_fine_dt = atof(simVars.bogus.var[0].c_str());
-	if (simVars.bogus.var[1] != "")
-		param_parareal_function_y0 = atof(simVars.bogus.var[1].c_str());
+	if (simVars.user_defined.var[1] != "")
+		param_parareal_function_y0 = atof(simVars.user_defined.var[1].c_str());
 	else
-		simVars.bogus.var[1] = std::to_string(param_parareal_function_y0);
+		simVars.user_defined.var[1] = std::to_string(param_parareal_function_y0);
 
-	if (simVars.bogus.var[2] != "")
-		param_parareal_function_a = atof(simVars.bogus.var[2].c_str());
+	if (simVars.user_defined.var[2] != "")
+		param_parareal_function_a = atof(simVars.user_defined.var[2].c_str());
 	else
-		simVars.bogus.var[2] = std::to_string(param_parareal_function_a);
+		simVars.user_defined.var[2] = std::to_string(param_parareal_function_a);
 
-	if (simVars.bogus.var[3] != "")
-		param_parareal_function_b = atof(simVars.bogus.var[3].c_str());
+	if (simVars.user_defined.var[3] != "")
+		param_parareal_function_b = atof(simVars.user_defined.var[3].c_str());
 	else
-		simVars.bogus.var[3] = std::to_string(param_parareal_function_b);
+		simVars.user_defined.var[3] = std::to_string(param_parareal_function_b);
 
 	if (param_parareal_fine_dt <= 0)
 	{

@@ -225,7 +225,6 @@ public:
 	)
 	{
 		*o_render_primitive_id = render_primitive_id;
-//		*o_bogus_data = planeDataConfig;
 
 		int id = simVars.misc.vis_id % 1;
 		switch (id)

@@ -23,7 +23,7 @@ int main(
 )
 {
 	//input parameter names (specific ones for this program)
-	const char *bogus_var_names[] = {
+	const char *user_defined_prog_params[] = {
 			"function-name",		/// Frequency multipliers for special scenario setup
 			"lambda-real",			/// Real part of lambda
 			"lambda-imag",			/// Imaginary part of lambda
@@ -34,12 +34,12 @@ int main(
 
 	SimulationVariables simVars;
 
-	simVars.bogus.var[0] = "";
-	simVars.bogus.var[1] = "";
-	simVars.bogus.var[2] = "";
-	simVars.bogus.var[3] = "";
+	simVars.user_defined.var[0] = "";
+	simVars.user_defined.var[1] = "";
+	simVars.user_defined.var[2] = "";
+	simVars.user_defined.var[3] = "";
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names, false))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params, false))
 	{
 		std::cout << "User variables:" << std::endl;
 		std::cout << std::endl;
@@ -53,22 +53,22 @@ int main(
 	}
 
 	std::string function_name;
-	if (simVars.bogus.var[0] != "")
-		function_name = simVars.bogus.var[0];
+	if (simVars.user_defined.var[0] != "")
+		function_name = simVars.user_defined.var[0];
 
 	double lambda_real = std::numeric_limits<double>::infinity();
-	if (simVars.bogus.var[1] != "")
-		lambda_real = atof(simVars.bogus.var[1].c_str());
+	if (simVars.user_defined.var[1] != "")
+		lambda_real = atof(simVars.user_defined.var[1].c_str());
 
 	double lambda_imag = std::numeric_limits<double>::infinity();
-	if (simVars.bogus.var[2] != "")
-		lambda_imag = atof(simVars.bogus.var[2].c_str());
+	if (simVars.user_defined.var[2] != "")
+		lambda_imag = atof(simVars.user_defined.var[2].c_str());
 
 	std::complex<double> lambda(lambda_real, lambda_imag);
 
 	int test_mode = 0;
-	if (simVars.bogus.var[3] != "")
-		lambda_imag = atoi(simVars.bogus.var[3].c_str());
+	if (simVars.user_defined.var[3] != "")
+		lambda_imag = atoi(simVars.user_defined.var[3].c_str());
 
 	if (simVars.timecontrol.current_timestep_size <= 0)
 	{
@@ -153,7 +153,11 @@ int main(
 		};
 
 
-		SWEET_TIMELOOP
+
+		for (	simVars.timecontrol.current_simulation_time = 0;
+				simVars.timecontrol.current_simulation_time < simVars.timecontrol.max_simulation_time*(1.0-1e-12);
+				simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size
+		)
 		{
 			computeAndOutputError(U);
 

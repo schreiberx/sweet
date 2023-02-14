@@ -1041,7 +1041,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 	//input parameter names (specific ones for this program)
-	const char *bogus_var_names[] = {
+	const char *user_defined_prog_params[] = {
 			"initial-freq-x-mul",		/// frequency multipliers for special scenario setup
 			"initial-freq-y-mul",
 			nullptr
@@ -1052,7 +1052,7 @@ int main(int i_argc, char *i_argv[])
 	//simVars.bogus.var[1];  //frequency in y for waves test case
 
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;

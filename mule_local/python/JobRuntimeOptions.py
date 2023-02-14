@@ -558,7 +558,8 @@ class JobRuntimeOptions(InfoError):
             idstr = "RT"+idstr
 
         for key, param in self.user_defined_parameters.items():
-            idstr += '_'+param['id']+str(param['value'])
+            if param['id'] != '':
+                idstr += '_'+param['id']+str(param['value'])
 
         return idstr
 

@@ -44,6 +44,7 @@
 #include "SWE_Sphere_TS_lg_0_lc_n_erk_bv.hpp"
 #include "SWE_Sphere_TS_lg_exp_direct.hpp"
 #include "SWE_Sphere_TS_lg_exp_lc_taylor.hpp"
+#include "SWE_Sphere_TS_ln_imex_sdc.hpp"
 
 
 
@@ -109,6 +110,10 @@ void SWE_Sphere_TimeSteppers::integrators_register_all(SphereOperators_SphereDat
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp(i_simVars, i_op)));
 	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_l_exp_direct_special(i_simVars, i_op)));
 
+	/*
+	 * IMEX SDC
+	 */
+	registered_integrators.push_back(static_cast<SWE_Sphere_TS_interface*>(new SWE_Sphere_TS_ln_imex_sdc(i_simVars, i_op)));
 
 	/*
 	 * EXP SETTLS VERSION

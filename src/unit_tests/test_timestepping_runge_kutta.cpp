@@ -279,11 +279,7 @@ int main(
 		char *const i_argv[]
 )
 {
-	const char *bogus_var_names[] = {
-			nullptr
-	};
-
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names, false))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, nullptr, false))
 		return -1;
 
 	if (simVars.timecontrol.current_timestep_size <= 0)

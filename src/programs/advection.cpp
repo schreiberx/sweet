@@ -260,13 +260,13 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	const char *bogus_var_names[] = {
+	const char *user_defined_parameters[] = {
 			"velocity-u",
 			"velocity-v",
 			nullptr
 	};
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_parameters))
 	{
 		std::cout << std::endl;
 		std::cout << "Program-specific options:" << std::endl;
@@ -275,11 +275,11 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	if (std::isinf(atof(simVars.bogus.var[0].c_str()) != 0))
-		velx = atof(simVars.bogus.var[0].c_str());
+	if (std::isinf(atof(simVars.user_defined.var[0].c_str()) != 0))
+		velx = atof(simVars.user_defined.var[0].c_str());
 
-	if (std::isinf(atof(simVars.bogus.var[1].c_str()) != 0))
-		vely = atof(simVars.bogus.var[1].c_str());
+	if (std::isinf(atof(simVars.user_defined.var[1].c_str()) != 0))
+		vely = atof(simVars.user_defined.var[1].c_str());
 
 	if (velx == 0 && vely == 0)
 	{
