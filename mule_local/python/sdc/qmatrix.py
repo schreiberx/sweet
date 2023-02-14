@@ -319,7 +319,7 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str='FE', initSweep:s
         - qDeltaE : nd.2darray(M,M), optional
             Explicit sweep coefficients. Given only if explSweep is not None.
         - qDelta0 : nd.2darray(M,M), optional
-            Initial sweeo coefficients. Given only if initSweep is not None.
+            Initial sweep coefficients. Given only if initSweep is not None.
     """
     nodes, weights, qMatrix = genCollocation(M, nodeDistr, nodeType)
     qDeltaI = genQDelta(nodes, implSweep, qMatrix)[0]
