@@ -19,6 +19,7 @@
  * This is not intended for HPC, but just to have
  * some 2D container for arbitrary types.
  */
+
 template <int D, typename T>
 class SWEETArray
 {
@@ -86,77 +87,75 @@ public:
 		}
 	}
 
-public:
-	template <int D2, typename T2>
-	friend
-	std::ostream& operator<< (std::ostream& os, const SWEETArray<D2,T2> &a);
-};
-
-
-
-template <int D, typename T>
-std::ostream& operator<<(std::ostream& os, const SWEETArray<D,T> &a)
-{
-	if (D == 1)
-	{
-		std::cout << "[";
-		for (int i0 = 0; i0 < a._shape[0]; i0++)
-		{
-			os << a.get(i0);
-
-			if (i0 != a._shape[0]-1)
-				os << ",\t";
-		}
-		std::cout << "]";
-		os << std::endl;
+	inline
+	T operator()(int i0, int i1=-1, int i2=-1) const {
+		return get(i0, i1, i2);
 	}
-	else if (D == 2)
-	{
-		std::cout << "[" << std::endl;
-		for (int i0 = 0; i0 < a._shape[0]; i0++)
-		{
-			std::cout << "\t[";
-			for (int i1 = 0; i1 < a._shape[1]; i1++)
-			{
-				os << a.get(i0, i1);
 
-				if (i1 != a._shape[1]-1)
+public:
+	friend
+	std::ostream& operator<<(std::ostream& os, const SWEETArray<D,T> &a){
+		if (D == 1)
+		{
+			std::cout << "[";
+			for (int i0 = 0; i0 < a._shape[0]; i0++)
+			{
+				os << a.get(i0);
+
+				if (i0 != a._shape[0]-1)
 					os << ",\t";
 			}
 			std::cout << "]";
 			os << std::endl;
 		}
-		std::cout << "]";
-	}
-	else if (D == 3)
-	{
-		std::cout << "[" << std::endl;
-		for (int i0 = 0; i0 < a._shape[0]; i0++)
+		else if (D == 2)
 		{
-			std::cout << "\t[" << std::endl;
-			for (int i1 = 0; i1 < a._shape[1]; i1++)
+			std::cout << "[" << std::endl;
+			for (int i0 = 0; i0 < a._shape[0]; i0++)
 			{
-				std::cout << "\t\t[";
-				for (int i2 = 0; i2 < a._shape[2]; i2++)
+				std::cout << "\t[";
+				for (int i1 = 0; i1 < a._shape[1]; i1++)
 				{
-					os << a.get(i0, i1, i2);
+					os << a.get(i0, i1);
 
-					if (i2 != a._shape[2]-1)
+					if (i1 != a._shape[1]-1)
 						os << ",\t";
 				}
 				std::cout << "]";
 				os << std::endl;
 			}
-			std::cout << "\t]";
-			os << std::endl;
+			std::cout << "]";
 		}
-		std::cout << "]";
+		else if (D == 3)
+		{
+			std::cout << "[" << std::endl;
+			for (int i0 = 0; i0 < a._shape[0]; i0++)
+			{
+				std::cout << "\t[" << std::endl;
+				for (int i1 = 0; i1 < a._shape[1]; i1++)
+				{
+					std::cout << "\t\t[";
+					for (int i2 = 0; i2 < a._shape[2]; i2++)
+					{
+						os << a.get(i0, i1, i2);
+
+						if (i2 != a._shape[2]-1)
+							os << ",\t";
+					}
+					std::cout << "]";
+					os << std::endl;
+				}
+				std::cout << "\t]";
+				os << std::endl;
+			}
+			std::cout << "]";
+		}
+		else
+		{
+			SWEETError("Not supported!");
+		}
+		return os;
 	}
-	else
-	{
-		SWEETError("Not supported!");
-	}
-	return os;
-}
+};
 
 #endif /* SRC_INCLUDE_SWEET_SWEETARRAY_HPP_ */
