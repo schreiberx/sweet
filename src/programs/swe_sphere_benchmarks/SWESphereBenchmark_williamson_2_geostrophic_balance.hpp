@@ -47,7 +47,7 @@ public:
 				benchmark_name == "geostrophic_balance_128"	||
 				benchmark_name == "geostrophic_balance_256"	||
 				benchmark_name == "geostrophic_balance_512"	||
-				benchmark_name == "geostrophic_balance_nosetparams"
+				false
 		;
 	}
 
@@ -127,7 +127,7 @@ public:
 		 * "geostrophic_balance_N" means that N is the multiplier for the frequency
 		 * in the direction of the Latitude
 		 */
-		if (benchmark_name != "geostrophic_balance_nosetparams")
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
 			if (simVars->timecontrol.current_simulation_time == 0)
 			{

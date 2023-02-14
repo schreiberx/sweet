@@ -65,23 +65,26 @@ public:
 	)
 	{
 
-		if (simVars->timecontrol.current_simulation_time == 0)
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
-			std::cout << "!!! WARNING !!!" << std::endl;
-			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-			std::cout << "!!! WARNING !!!" << std::endl;
+			if (simVars->timecontrol.current_simulation_time == 0)
+			{
+				std::cout << "!!! WARNING !!!" << std::endl;
+				std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+				std::cout << "!!! WARNING !!!" << std::endl;
+			}
+
+			/// Setup Williamson's parameters
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
+			simVars->sim.gravitation = 9.80616;
+			simVars->sim.sphere_radius = 6.37122e6;
+			simVars->sim.h0 = 8000;
+
+			// update operator because we changed the simulation parameters
+			ops->setup(o_phi_pert.sphereDataConfig, &(simVars->sim));
 		}
 
-		/// Setup Williamson's parameters
-		simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
-		simVars->sim.gravitation = 9.80616;
-		simVars->sim.sphere_radius = 6.37122e6;
-		simVars->sim.h0 = 8000;
-
 		double gh0 = simVars->sim.gravitation*simVars->sim.h0;
-
-		// update operator because we changed the simulation parameters
-		ops->setup(o_phi_pert.sphereDataConfig, &(simVars->sim));
 
 		const double omega = 7.484e-6;
 		const double K = omega;

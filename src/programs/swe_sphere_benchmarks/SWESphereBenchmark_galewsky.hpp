@@ -35,7 +35,7 @@ public:
 			i_benchmark_name == "galewsky" ||			///< Standard Galewsky benchmark
 			i_benchmark_name == "galewsky_linearbalance" ||	///< Standard Galewsky benchmark with linear balanced initial conditions
 			i_benchmark_name == "galewsky_nobump" ||	///< Galewsky benchmark without bumps
-			i_benchmark_name == "galewsky_nosetparams"	///< Galewsky benchmark without overriding parameters
+			false
 		;
 	}
 
@@ -55,7 +55,6 @@ public:
 		std::ostringstream stream;
 		stream << "  'galewsky': Galwesky benchmark" << std::endl;
 		stream << "  'galewsky_nobump': Galwesky benchmark without any bump" << std::endl;
-		stream << "  'galewsky_nosetparams': Galwesky benchmark without setting parameters" << std::endl;
 		return stream.str();
 	}
 
@@ -69,7 +68,6 @@ public:
 		const SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
 
 		// Search for substrings
-		bool benchmark_nosetparams = benchmark_name.find("nosetparams") != std::string::npos;
 		bool benchmark_nobump = benchmark_name.find("nobump") != std::string::npos;
 		bool benchmark_linearbalance = benchmark_name.find("linearbalance") != std::string::npos;
 
@@ -83,7 +81,7 @@ public:
 			use_analytical_geostrophic_setup = true;
 
 
-		if (!benchmark_nosetparams)
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
 			if (simVars->timecontrol.current_simulation_time == 0)
 			{
