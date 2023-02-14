@@ -68,5 +68,5 @@ if exitcode != 0:
 
 print("Benchmarks successfully finished")
 
-#exec_program('mule.benchmark.cleanup_all', catch_output=False)
+exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
