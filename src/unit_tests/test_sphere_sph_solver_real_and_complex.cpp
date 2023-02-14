@@ -6,8 +6,9 @@
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
- * MULE_SCONS_OPTIONS: --fortran-source=enable
+ *
  * MULE_SCONS_OPTIONS: --lapack=enable
+ * MULE_SCONS_OPTIONS: --fortran-source=enable
  */
 
 #include <cmath>
@@ -61,7 +62,7 @@ class Test
 
 
 	static
-	void benchmark_setup_geostrophic_balance_nosetparams(
+	void benchmark_setup_geostrophic_balance(
 			SphereOperators_SphereData &ops,
 			SphereData_Spectral &o_phi,
 			SphereData_Spectral &o_vrt,
@@ -69,14 +70,14 @@ class Test
 	)
 	{
 		BenchmarksSphereSWE benchmarks;
-		benchmarks.setup(simVars, ops, "geostrophic_balance_linear_16_nosetparams");
+		benchmarks.setup(simVars, ops, "geostrophic_balance_linear_16");
 
 		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
 	}
 
 
 	static
-	void benchmark_setup_geostrophic_balance_nosetparams(
+	void benchmark_setup_geostrophic_balance(
 			SphereOperators_SphereData &ops,
 			SphereData_SpectralComplex &o_phi,
 			SphereData_SpectralComplex &o_vrt,
@@ -88,7 +89,7 @@ class Test
 		SphereData_Spectral vrt(ops.sphereDataConfig);
 		SphereData_Spectral div(ops.sphereDataConfig);
 
-		benchmark_setup_geostrophic_balance_nosetparams(ops, phi, vrt, div);
+		benchmark_setup_geostrophic_balance(ops, phi, vrt, div);
 
 		{
 			// complex
@@ -101,7 +102,7 @@ class Test
 
 
 	static
-	void benchmark_setup_pvd_nosetparams(
+	void benchmark_setup_pvd(
 			SphereOperators_SphereData &opsReal,
 			SphereData_Spectral &o_phi,
 			SphereData_Spectral &o_vrt,
@@ -109,14 +110,14 @@ class Test
 	)
 	{
 		BenchmarksSphereSWE benchmarks;
-		benchmarks.setup(simVars, opsReal, "gaussian_bumps_pvd_nosetparams");
+		benchmarks.setup(simVars, opsReal, "gaussian_bumps_pvd");
 
 		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
 	}
 
 
 	static
-	void benchmark_setup_pvd_nosetparams(
+	void benchmark_setup_pvd(
 			SphereOperators_SphereData &opsReal,
 			SphereData_SpectralComplex &o_phi,
 			SphereData_SpectralComplex &o_vrt,
@@ -128,7 +129,7 @@ class Test
 		SphereData_Spectral vrt(opsReal.sphereDataConfig);
 		SphereData_Spectral div(opsReal.sphereDataConfig);
 
-		benchmark_setup_pvd_nosetparams(opsReal, phi, vrt, div);
+		benchmark_setup_pvd(opsReal, phi, vrt, div);
 
 		{
 			// complex
@@ -213,7 +214,7 @@ public:
 			sphere_data_spec_type vrt(sphereDataConfig);
 			sphere_data_spec_type div(sphereDataConfig);
 
-			benchmark_setup_geostrophic_balance_nosetparams(opsReal, phi, vrt, div);
+			benchmark_setup_geostrophic_balance(opsReal, phi, vrt, div);
 
 			sphere_data_spec_type foo, rhs;
 			sph_banded_solver_type sphSolverTest;
@@ -420,7 +421,7 @@ public:
 			sphere_data_spec_type vrt(sphereDataConfig);
 			sphere_data_spec_type div(sphereDataConfig);
 
-			benchmark_setup_pvd_nosetparams(opsReal, phi, vrt, div);
+			benchmark_setup_pvd(opsReal, phi, vrt, div);
 
 			double phi_order = phi.toPhys().physical_reduce_max_abs();
 			double vrt_order = vrt.toPhys().physical_reduce_max_abs();
@@ -640,8 +641,7 @@ public:
 			std::cout << "*********************************************************" << std::endl;
 
 			BenchmarksSphereSWE benchmarks;
-			benchmarks.setup(simVars, ops, "gaussian_bumps_pvd_nosetparams");
-			//benchmarks.setup(simVars, ops, "gaussian_bumps_pv_nosetparams");
+			benchmarks.setup(simVars, ops, "gaussian_bumps_pvd");
 
 			SphereData_Spectral phi(sphereDataConfig);
 			SphereData_Spectral vrt(sphereDataConfig);
@@ -744,6 +744,9 @@ int main(
 {
 	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
+
+	// Stop overriding simulation variables for this test case
+	simVars.benchmark.benchmark_override_simvars = false;
 
 	if (simVars.disc.space_res_spectral[0] == 0)
 		SWEETError("Set number of spectral modes to use SPH!");

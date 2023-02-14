@@ -46,19 +46,6 @@ public:
 				benchmark_name == "geostrophic_balance_linear_128"	||
 				benchmark_name == "geostrophic_balance_linear_256"	||
 				benchmark_name == "geostrophic_balance_linear_512"	||
-
-
-				benchmark_name == "williamson2_linear_nosetparams"			||
-				benchmark_name == "geostrophic_balance_linear_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_2_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_4_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_8_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_16_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_32_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_64_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_128_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_256_nosetparams"	||
-				benchmark_name == "geostrophic_balance_linear_512_nosetparams"	||
 				false
 		;
 	}
@@ -132,7 +119,7 @@ public:
 		 *
 		 * The original version is for the non-linear case
 		 */
-		if (benchmark_name.find("nosetparams") == std::string::npos)
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
 			if (simVars->timecontrol.current_simulation_time == 0)
 			{
@@ -173,26 +160,6 @@ public:
 		else if (benchmark_name == "geostrophic_balance_linear_256")
 			freq_multiplier = 256.0;
 		else if (benchmark_name == "geostrophic_balance_linear_512")
-			freq_multiplier = 512.0;
-
-
-		else if (benchmark_name == "geostrophic_balance_linear_2_nosetparams")
-			freq_multiplier = 2.0;
-		else if (benchmark_name == "geostrophic_balance_linear_4_nosetparams")
-			freq_multiplier = 4.0;
-		else if (benchmark_name == "geostrophic_balance_linear_8_nosetparams")
-			freq_multiplier = 8.0;
-		else if (benchmark_name == "geostrophic_balance_linear_16_nosetparams")
-			freq_multiplier = 16.0;
-		else if (benchmark_name == "geostrophic_balance_linear_32_nosetparams")
-			freq_multiplier = 32.0;
-		else if (benchmark_name == "geostrophic_balance_linear_64_nosetparams")
-			freq_multiplier = 64.0;
-		else if (benchmark_name == "geostrophic_balance_linear_128_nosetparams")
-			freq_multiplier = 128.0;
-		else if (benchmark_name == "geostrophic_balance_linear_256_nosetparams")
-			freq_multiplier = 256.0;
-		else if (benchmark_name == "geostrophic_balance_linear_512_nosetparams")
 			freq_multiplier = 512.0;
 
 

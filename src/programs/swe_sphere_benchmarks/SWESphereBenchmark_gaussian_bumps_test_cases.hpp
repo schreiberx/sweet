@@ -91,10 +91,10 @@ public:
 		SphereData_Spectral &o_div
 	)
 	{
-		if (benchmark_name.find("nosetparams") == std::string::npos)
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
 			if (simVars->timecontrol.current_simulation_time == 0)
-		{
+			{
 				std::cout << "!!! WARNING !!!" << std::endl;
 				std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
 				std::cout << "!!! WARNING !!!" << std::endl;
@@ -105,8 +105,8 @@ public:
 				simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 
 				// Scale geopotential to make NL influencing the stiffness stronger
-				simVars->sim.h0 *= 0.2;
-				simVars->sim.gravitation *= 0.2;
+				//simVars->sim.h0 *= 0.2;
+				//simVars->sim.gravitation *= 0.2;
 			}
 		}
 

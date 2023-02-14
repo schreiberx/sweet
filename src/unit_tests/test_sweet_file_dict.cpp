@@ -25,7 +25,14 @@ int main(
 
 	SimulationVariables simVars;
 
-	const char *user_defined_prog_params[] = {{"sweet-file-dict"}, {"unit-test-sweet-file-dict"}, nullptr};
+	// Do not use this, since it's not supported by, e.g., gcc-8 compiler
+	// const char *user_defined_prog_params[] = {{"sweet-file-dict"}, {"unit-test-sweet-file-dict"}, nullptr};
+
+	const char *user_defined_prog_params[3];
+	user_defined_prog_params[0] = "sweet-file-dict";
+	user_defined_prog_params[1] = "unit-test-sweet-file-dict";
+	user_defined_prog_params[2] = nullptr;
+
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params, false))
 		return EXIT_FAILURE;
 

@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SHARED_PYTHON_SWEET_DICT_HPP__
-#define SRC_INCLUDE_SHARED_PYTHON_SWEET_DICT_HPP__
+#ifndef SRC_INCLUDE_SWEET_FILE_DICT_HPP__
+#define SRC_INCLUDE_SWEET_FILE_DICT_HPP__
 
 #include <string>
 #include <vector>
@@ -363,9 +363,14 @@ public:
 		SWEETError(ss.str());
 	}
 
+
 public:
 	friend
-	std::ostream& operator<< (std::ostream& os, const SWEETFileDict &fd);
+	std::ostream& operator<<(std::ostream& os, const SWEETFileDict &fd)
+	{
+		fd.print(os);
+		return os;
+	}
 
 
 private:
@@ -416,11 +421,5 @@ private:
 };
 
 
-std::ostream& operator<< (std::ostream& os, const SWEETFileDict &fd)
-{
-	fd.print(os);
-	return os;
-}
 
-
-#endif /* SRC_INCLUDE_REXI_REXICOEFFICIENTS_HPP_ */
+#endif

@@ -35,7 +35,6 @@ public:
 
 		return
 			i_benchmark_name == "gaussian_bumps_pvd" ||
-			i_benchmark_name == "gaussian_bumps_pvd_nosetparams" ||
 			false
 		;
 	}
@@ -95,7 +94,7 @@ public:
 		SphereData_Spectral &o_div
 	)
 	{
-		if (benchmark_name.find("nosetparams") == std::string::npos)
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
 			if (simVars->timecontrol.current_simulation_time == 0)
 			{

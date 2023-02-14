@@ -94,19 +94,22 @@ public:
 		 * This allows to test for L_inf convergence.
 		 */
 
-		if (simVars->timecontrol.current_simulation_time == 0)
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
-			std::cout << "!!! WARNING !!!" << std::endl;
-			std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-			std::cout << "!!! WARNING !!!" << std::endl;
+			if (simVars->timecontrol.current_simulation_time == 0)
+			{
+				std::cout << "!!! WARNING !!!" << std::endl;
+				std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+				std::cout << "!!! WARNING !!!" << std::endl;
+			}
+
+			simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
+			simVars->sim.gravitation = 9.80616;
+			simVars->sim.sphere_radius = 6.37122e6;
+			simVars->sim.h0 = 1000.0;
+
+			ops->setup(o_phi_pert.sphereDataConfig, &(simVars->sim));
 		}
-
-		simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
-		simVars->sim.gravitation = 9.80616;
-		simVars->sim.sphere_radius = 6.37122e6;
-		simVars->sim.h0 = 1000.0;
-
-		ops->setup(o_phi_pert.sphereDataConfig, &(simVars->sim));
 
 		double lambda_c = 3.0*M_PI/2.0;
 		double theta_c = 0.0;

@@ -289,6 +289,9 @@ public:
 		/// benchmark scenario
 		std::string benchmark_name = "";
 
+		/// May the benchmark setup overwrite the simulation variables
+		bool benchmark_override_simvars = true;
+
 		/// Use 2/3 rule in physical space for dealiasing
 		bool setup_dealiased = true;
 
@@ -353,6 +356,7 @@ public:
 			std::cout << "BENCHMARK:" << std::endl;
 			std::cout << " + random_seed: " << random_seed << std::endl;
 			std::cout << " + benchmark_name: " << benchmark_name << std::endl;
+			std::cout << " + benchmark_override_simvars: " << benchmark_override_simvars << std::endl;
 			std::cout << " + setup_dealiased: " << setup_dealiased << std::endl;
 			std::cout << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
 			std::cout << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;
@@ -373,6 +377,7 @@ public:
 			std::cout << "SIMULATION SETUP PARAMETERS:" << std::endl;
 			std::cout << "	--random-seed [int]		random seed for random number generator" << std::endl;
 			std::cout << "	--benchmark-name [string]	benchmark name" << std::endl;
+			std::cout << "	--benchmark-override-simvars [bool]	Allow overwriting simulation variables by benchmark (default: 1)" << std::endl;
 			std::cout << "	--benchmark-setup-dealiased [bool]	Use dealiasing for setup (default: 1)" << std::endl;
 			std::cout << "	-x [float]				x coordinate for setup \\in [0;1], default=0.5" << std::endl;
 			std::cout << "	-y [float]				y coordinate for setup \\in [0;1], default=0.5" << std::endl;
@@ -405,6 +410,9 @@ public:
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"benchmark-name", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
+
+	        long_options[next_free_program_option] = {"benchmark-override-simvars", required_argument, 0, 256+next_free_program_option};
 	        next_free_program_option++;
 
 	        long_options[next_free_program_option] = {"benchmark-setup-dealiased", required_argument, 0, 256+next_free_program_option};
@@ -461,27 +469,31 @@ public:
 				return -1;
 
 			case 5:
-				setup_dealiased = atof(i_value);
+				benchmark_override_simvars = atoi(i_value);
 				return -1;
 
 			case 6:
-				benchmark_galewsky_umax = atof(i_value);
+				setup_dealiased = atof(i_value);
 				return -1;
 
 			case 7:
-				benchmark_galewsky_hamp = atof(i_value);
+				benchmark_galewsky_umax = atof(i_value);
 				return -1;
 
 			case 8:
-				benchmark_galewsky_phi2 = atof(i_value);
+				benchmark_galewsky_hamp = atof(i_value);
 				return -1;
 
 			case 9:
+				benchmark_galewsky_phi2 = atof(i_value);
+				return -1;
+
+			case 10:
 				benchmark_normal_modes_case = i_value;
 				return -1;
 			}
 
-			return 10;
+			return 11;
 		}
 	} benchmark;
 

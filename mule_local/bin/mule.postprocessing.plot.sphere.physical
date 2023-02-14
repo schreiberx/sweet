@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from SphereDataPhysical import SphereDataPhysical
+from mule.postprocessing.SphereDataPhysical import SphereDataPhysical
 
 
 if len(sys.argv) <= 1:

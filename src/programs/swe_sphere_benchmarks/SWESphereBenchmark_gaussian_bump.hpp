@@ -39,11 +39,6 @@ public:
 				i_benchmark_name == "sharp_gaussian_bump" ||
 				i_benchmark_name == "gaussian_bump_vrt"			||
 				i_benchmark_name == "gaussian_bump_div"			||
-
-				i_benchmark_name == "gaussian_bump_nosetparams"		||
-				i_benchmark_name == "gaussian_bump_phi_nosetparams"	||
-				i_benchmark_name == "gaussian_bump_vrt_nosetparams"	||
-				i_benchmark_name == "gaussian_bump_div_nosetparams"	||
 				false
 		;
 	}
@@ -103,7 +98,7 @@ public:
 		SphereData_Spectral &o_div
 	)
 	{
-		if (benchmark_name.find("nosetparams") == std::string::npos)
+		if (simVars->benchmark.benchmark_override_simvars)
 		{
 			if (simVars->timecontrol.current_simulation_time == 0)
 			{
@@ -114,14 +109,17 @@ public:
 				simVars->sim.sphere_rotating_coriolis_omega = 7.292e-5;
 				simVars->sim.gravitation = 9.80616;
 				simVars->sim.sphere_radius = 6.37122e6;
+
 				if (benchmark_name == "gaussian_bump_phi_pint")
+				{
 					simVars->sim.h0 = 29400.0;
+				}
 				else
 				{
 					simVars->sim.h0 = 29400.0/simVars->sim.gravitation;
 					// Scale geopotential to make NL influencing the stiffness stronger
-					simVars->sim.h0 *= 0.2;
-					simVars->sim.gravitation *= 0.2;
+					//simVars->sim.h0 *= 0.2;
+					//simVars->sim.gravitation *= 0.2;
 				}
 
 				ops->setup(ops->sphereDataConfig, &(simVars->sim));
