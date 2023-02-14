@@ -65,47 +65,92 @@ private:
 
 		void getValue(std::string &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_STRING)
+				SWEETError("Type mismatch!");
+
 			o_value = value_str;
 		}
 
 		void getValue(int64 &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_INT64)
+				SWEETError("Type mismatch!");
+
 			o_value = value_scalar_int64;
 		}
 
 		void getValue(float64 &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_FLOAT64)
+				SWEETError("Type mismatch!");
+
 			o_value = value_scalar_float64;
 		}
 
 		void getValue(SWEETArray<1,float64> &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_ARRAY_1D_FLOAT64)
+				SWEETError("Type mismatch!");
+
 			o_value = value_array_1d_float64;
 		}
 
 		void getValue(SWEETArray<2,float64> &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_ARRAY_2D_FLOAT64)
+				SWEETError("Type mismatch!");
+
 			o_value = value_array_2d_float64;
 		}
 
 		void getValue(SWEETArray<3,float64> &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_ARRAY_3D_FLOAT64)
+				SWEETError("Type mismatch!");
+
 			o_value = value_array_3d_float64;
 		}
 
 		void getValue(SWEETArray<1,complex128> &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_ARRAY_1D_COMPLEX128)
+				SWEETError("Type mismatch!");
+
 			o_value = value_array_1d_complex128;
 		}
 
 		void getValue(SWEETArray<2,complex128> &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_ARRAY_2D_COMPLEX128)
+				SWEETError("Type mismatch!");
+
 			o_value = value_array_2d_complex128;
 		}
 
 		void getValue(SWEETArray<3,complex128> &o_value)
 		{
+			if (type_id != SWEET_FILE_DICT_ARRAY_3D_COMPLEX128)
+				SWEETError("Type mismatch!");
+
 			o_value = value_array_3d_complex128;
+		}
+
+		/*
+		 * Special handlers which automatically convert values
+		 */
+		void getValue(bool &o_value)
+		{
+			if (type_id != SWEET_FILE_DICT_INT64)
+				SWEETError("Type mismatch!");
+
+			o_value = (bool)value_scalar_int64;
+		}
+		void getValue(int &o_value)
+		{
+			if (type_id != SWEET_FILE_DICT_INT64)
+				SWEETError("Type mismatch!");
+
+			o_value = (bool)value_scalar_int64;
 		}
 	};
 
