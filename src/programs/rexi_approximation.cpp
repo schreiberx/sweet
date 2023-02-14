@@ -8,7 +8,6 @@
 #include <rexi/REXICoefficients.hpp>
 #include <rexi/REXICoefficientsSet.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/Timeloop.hpp>
 #include <stdlib.h>
 
 
@@ -176,28 +175,6 @@ int main(
 
 		std::cout << "[MULE] error: " << error << std::endl;
 	}
-
-/*
-	std::vector< std::complex<double> > alpha;
-	std::vector< std::complex<double> > beta;
-
-	if (simVars.rexi.exp_method == "ci")
-		if (simVars.timecontrol.current_timestep_size <= 0)
-			SWEETError("Please specify time step size with --dt=...");
-*/
-/*
-	std::cout << "Loading REXI coefficients..." << std::flush;
-	REXI rexi;
-	rexi.load(
-			&simVars.rexi,
-			function_name,
-			alpha,
-			beta,
-			simVars.timecontrol.current_timestep_size,
-			simVars.misc.verbosity
-		);
-	std::cout << "OK" << std::endl;
-*/
 
 	return 0;
 }
