@@ -59,13 +59,7 @@ int main(int i_argc, char *i_argv[])
 {
 	SimulationVariables simVars;
 
-	//input parameter names (specific ones for this program)
-	const char *bogus_var_names[] = {
-			nullptr
-	};
-
-	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
 	SphereData_Config sphereDataConfig;

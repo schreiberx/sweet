@@ -335,7 +335,7 @@ public:
 		double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
 
 
-		int asdf = atoi(simVars.bogus.var[2].c_str());
+		int asdf = atoi(simVars.user_defined.var[2].c_str());
 		if (asdf == 0)
 		{
 			// UP/DOWNWINDING
@@ -400,7 +400,7 @@ public:
 		{
 			// NON-STAGGERED
 
-			int a = atoi(simVars.bogus.var[3].c_str());
+			int a = atoi(simVars.user_defined.var[3].c_str());
 
 			if (a == 0)
 			{
@@ -617,7 +617,7 @@ int main(
 		char *i_argv[]
 )
 {
-	const char *bogus_var_names[] = {
+	const char *user_defined_prog_params[] = {
 			"velocity-u",
 			"velocity-v",
 			"advection-scheme",
@@ -626,7 +626,7 @@ int main(
 			nullptr
 	};
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		std::cout << std::endl;
 		std::cout << "Program-specific options:" << std::endl;
@@ -650,19 +650,19 @@ int main(
 		return -1;
 	}
 
-	std::cout << "X> " << simVars.bogus.var[0] << std::endl;
-	std::cout << "Y> " << simVars.bogus.var[1] << std::endl;
+	std::cout << "X> " << simVars.user_defined.var[0] << std::endl;
+	std::cout << "Y> " << simVars.user_defined.var[1] << std::endl;
 
 	double u, v;
-	if (simVars.bogus.var[0] == "")
+	if (simVars.user_defined.var[0] == "")
 		u = 0;
 	else
-		u = atof(simVars.bogus.var[0].c_str());
+		u = atof(simVars.user_defined.var[0].c_str());
 
-	if (simVars.bogus.var[1] == "")
+	if (simVars.user_defined.var[1] == "")
 		v = 0;
 	else
-		v = atof(simVars.bogus.var[1].c_str());
+		v = atof(simVars.user_defined.var[1].c_str());
 
 	vel0 = u;
 	vel1 = v;
@@ -725,7 +725,7 @@ int main(
 
 	bool error_detected = false;
 
-	int asdf = atoi(simVars.bogus.var[4].c_str());
+	int asdf = atoi(simVars.user_defined.var[4].c_str());
 	if (asdf == 0)
 	{
 		std::ostringstream output_string_conv;

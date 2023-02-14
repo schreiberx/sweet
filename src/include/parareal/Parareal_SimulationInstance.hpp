@@ -378,7 +378,7 @@ public:
 		///reset();
 
 #if SWEET_PARAREAL_SCALAR
-		double u0 = atof(simVars->bogus.var[1].c_str());
+		double u0 = atof(simVars->user_defined.var[1].c_str());
 		this->parareal_data_start->dataArrays_to_GenericData_Scalar(u0);
 
 #elif SWEET_PARAREAL_PLANE

@@ -892,10 +892,10 @@ public:
 	 * program parameters without specific association.
 	 * These variables can be used different for each program
 	 */
-	struct Bogus
+	struct UserDefined
 	{
 		std::string var[20];
-	} bogus;
+	} user_defined;
 
 	/**
 	 * Miscellaneous variables
@@ -1356,7 +1356,7 @@ public:
 	}
 
 
-	void print_params()
+	void print_params(const char *i_user_defined_program_parameters[])
 	{
 
 		sim.outputProgParams();
@@ -1390,6 +1390,17 @@ public:
 		xbraid.printOptions();
 #endif
 
+		if (i_user_defined_program_parameters != nullptr)
+		{
+			std::cout << "" << std::endl;
+			std::cout << "User defined program parameters:" << std::endl;
+
+			for (int i = 0; i_user_defined_program_parameters[i] != nullptr; i++)
+			{
+				std::cout << "	--" << i_user_defined_program_parameters[i] << "	\t(see program for description)" << std::endl;
+			}
+			std::cout << std::endl;
+		}
 
 		std::cout << std::endl;
 	}
@@ -1397,11 +1408,15 @@ public:
 
 	/**
 	 * setup the variables based on program parameters
+	 *
+	 *
+	 * Example for user_defined_program_parameters:
+	 * const char *user_defined_program_parameters[] = {{"sweet-file-dict"}, nullptr};
 	 */
 	bool setupFromMainParameters(
 			int i_argc,					///< argc from main()
 			char *const i_argv[],		///< argv from main()
-			const char *bogus_var_names[] = nullptr,			///< list of strings of simulation-specific variables, has to be terminated by nullptr
+			const char *user_defined_program_parameters[] = nullptr,			///< list of strings of simulation-specific program parameters (without --), has to be terminated by nullptr
 			bool i_run_prog_parameter_validation = true
 	)
 	{
@@ -1485,15 +1500,15 @@ public:
         long_options[next_free_program_option] = {"dummy", required_argument, 0, 256+next_free_program_option};
         next_free_program_option++;
 
-        if (bogus_var_names != nullptr)
+        if (user_defined_program_parameters != nullptr)
         {
 			int opt_nr;
 			for (opt_nr = next_free_program_option; opt_nr < max_options; opt_nr++)
 			{
-				if (bogus_var_names[opt_nr-next_free_program_option] == nullptr)
+				if (user_defined_program_parameters[opt_nr-next_free_program_option] == nullptr)
 					break;
 
-				long_options[opt_nr].name = bogus_var_names[opt_nr-next_free_program_option];
+				long_options[opt_nr].name = user_defined_program_parameters[opt_nr-next_free_program_option];
 				long_options[opt_nr].has_arg = required_argument;
 				long_options[opt_nr].flag = 0;
 				long_options[opt_nr].val = 256+opt_nr;
@@ -1642,27 +1657,26 @@ public:
 					if (c != next_free_program_option-1)
 					{
 						outputConfig();
-						std::cout << "TESTTEST" << std::endl;
+						std::cout << "TEST TEST" << std::endl;
 						std::cout << (int)c << std::endl;
 						std::cout << (int)next_free_program_option-1 << std::endl;
 						SWEETError("Inconsistent processing of arguments");
 					}
-
 				}
 				else
 				{
-					int bogus_id = i-next_free_program_option;
+					int user_defined_id = i-next_free_program_option;
 
-					if (bogus_id >= max_options)
+					if (user_defined_id >= max_options)
 					{
 						std::cout << std::endl;
 						std::cout << "SERIOUS ERROR" << std::endl;
 						std::cout << " + long option: " << i_argv[option_index] << std::endl;
-						std::cout << " + bogus id " << bogus_id << std::endl;
+						std::cout << " + user_defined_id " << user_defined_id << std::endl;
 						std::cout << std::endl;
 						exit(1);
 					}
-					bogus.var[i-next_free_program_option] = optarg;
+					user_defined.var[i-next_free_program_option] = optarg;
 				}
 				continue;
 			}
@@ -1805,11 +1819,11 @@ public:
 				break;
 
 			case 'h':
-				print_params();
+				print_params(user_defined_program_parameters);
 				return false;
 
 			default:
-				print_params();
+				print_params(user_defined_program_parameters);
 
 				std::cerr << "The option '-";
 				std::cerr << (char)opt;

@@ -42,8 +42,8 @@ public:
 		reset();
 		master = new ODE_Scalar_TS_interface;
 		master->setup(
-				atof(i_simVars.bogus.var[1].c_str()),
-				atof(i_simVars.bogus.var[2].c_str())
+				atof(i_simVars.user_defined.var[1].c_str()),
+				atof(i_simVars.user_defined.var[2].c_str())
 			);
 	}
 

@@ -51,7 +51,7 @@ int main(int i_argc, char *i_argv[])
 	LevelSingleton levelSingleton;
 
 	// input parameter names (specific ones for this program)
-	const char *bogus_var_names[] = {
+	const char *user_defined_prog_params[] = {
 			"compute-error",
 			nullptr
 	};
@@ -60,10 +60,10 @@ int main(int i_argc, char *i_argv[])
 	simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
 
 	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.bogus.var[0] = 1;
+	simVars.user_defined.var[0] = 1;
 
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, bogus_var_names))
+	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		std::cout << "--compute-error [0/1]Output errors (if available, default: 1)" << std::endl;
 		return -1;
