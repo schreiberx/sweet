@@ -102,7 +102,7 @@ class JobCompileOptions(InfoError):
         self.mkl = 'disable'
 
         # Features
-        self.plane_spectral_space = 'enable'
+        self.plane_spectral_space = 'disable'
         self.plane_spectral_dealiasing = 'enable'
         self.sphere_spectral_space = 'disable'
         self.sphere_spectral_dealiasing = 'enable'
