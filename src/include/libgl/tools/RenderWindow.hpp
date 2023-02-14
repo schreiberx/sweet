@@ -165,7 +165,6 @@ public:
 
 	void checkSDLError(int line = -1)
 	{
-#if SWEET_DEBUG
 		const char *error = SDL_GetError();
 		if (*error != '\0')
 		{
@@ -173,8 +172,8 @@ public:
 //			if (line != -1)
 //				printf(" + line: %i\n", line);
 			SDL_ClearError();
+			exit(1);
 		}
-#endif
 	}
 
 
