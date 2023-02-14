@@ -150,7 +150,7 @@ private:
 			if (type_id != SWEET_FILE_DICT_INT64)
 				SWEETError("Type mismatch!");
 
-			o_value = (bool)value_scalar_int64;
+			o_value = (int)value_scalar_int64;
 		}
 	};
 
