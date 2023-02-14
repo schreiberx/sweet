@@ -1223,7 +1223,7 @@ public:
 
 		// Nodes values (between 0 and 1)
 		SWEETArray<1, double> nodes;
-		size_t nNodes;
+		size_t nNodes=0;
 
 		// Quadrature weights
 		SWEETArray<1, double> weights;
@@ -1241,16 +1241,16 @@ public:
 		SWEETArray<2, double> qDelta0;
 
 		// Number of iterations (sweeps)
-		SWEETFileDict::int64 nIter;
+		SWEETFileDict::int64 nIter=0;
+
+		// Type of initial sweep to use
+		std::string initSweepType="COPY";
 
 		// Wether or not use the diagonal implementation
-		SWEETFileDict::int64 diagonal;
-
-		// Wether or not use qDelta for initial sweep
-		SWEETFileDict::int64 qDeltaInit;
+		SWEETFileDict::int64 diagonal=0;
 
 		// Wether or not use collocation update for end point
-		SWEETFileDict::int64 useEndUpdate;
+		SWEETFileDict::int64 useEndUpdate=0;
 
 
 		void outputProgParams()
@@ -1310,7 +1310,7 @@ public:
 				params.getValue("qDelta0", qDelta0);
 				params.getValue("nIter", nIter);
 				params.getValue("diagonal", diagonal);
-				params.getValue("qDeltaInit", qDeltaInit);
+				params.getValue("initSweepType", initSweepType);
 				params.getValue("useEndUpdate", useEndUpdate);
 				return -1;
 			}

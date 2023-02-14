@@ -40,17 +40,17 @@ Parallel SDC
 
 """
 
-paramsSDC = getSDCSetup(3, 'RADAU-RIGHT', 'BEpar', 'FE', 'BEpar') # => returns associated SWEETFileDict
+paramsSDC = getSDCSetup(3, 'RADAU-RIGHT', 'PIC', 'PIC', 'BEpar') # => returns associated SWEETFileDict
 
 # Additional parameters
 # - nIter (int) : number of sweep (can be 0)
-paramsSDC['nIter'] = 3
+paramsSDC['nIter'] = 4
 
 # - diagonal (bool) : to use diagonal implementation
-paramsSDC['diagonal'] = 0
+paramsSDC['diagonal'] = 1
 
 # - qDeltaInit (bool) : to use qDeltaI (and qDeltaE) for initial sweep
-paramsSDC['qDeltaInit'] = 1
+paramsSDC['qDeltaInit'] = 0
 
 # - useEndUpdate (bool) : to use collocation formula for end-update solution
 paramsSDC['useEndUpdate'] = 0
@@ -59,7 +59,7 @@ p.runtime.paramsSDC = paramsSDC
 # -------------------------------------------------------------------------------------------------
 
 p.compile.mode = 'release'
-# p.compile.gui = 'enable'
+p.compile.gui = 'enable'
 # p.runtime.gui = 1
 
 #

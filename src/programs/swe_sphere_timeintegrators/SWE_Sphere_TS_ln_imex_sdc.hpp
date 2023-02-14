@@ -189,10 +189,11 @@ private:
  	 */
 	int nNodes;
 	int nIter;
-	
-	bool diagonal = true;       // Whether or not using the diagonal implementation
-	bool use_qdelta_for_initialization = false;   	// Whether or not use qDelta for initial sweep
-	bool useEndUpdate = false;  // Whether or not use collocation update for end point
+
+	std::string initialSweepType;  // Type of initial sweep
+
+	bool diagonal;       // Whether or not using the diagonal implementation
+	bool useEndUpdate;  // Whether or not use collocation update for end point
 
 	typedef SWEETArray<1, double> Vec;
 	typedef SWEETArray<2, double> Mat;

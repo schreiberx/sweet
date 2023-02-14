@@ -56,6 +56,11 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	and an explicit sweep for the NL term.
 	*/
 
+	// Default behavior (no parameter set ...)
+	if (nNodes == 0) {
+		return;
+	}
+
 	// -- set-up step values container
 	ts_u0.phi.swapWithConfig(io_phi);
 	ts_u0.vrt.swapWithConfig(io_vrt);
@@ -120,7 +125,7 @@ void SWE_Sphere_TS_ln_imex_sdc::axpy(
 
 void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 	
-	if (use_qdelta_for_initialization)
+	if (initialSweepType == "QDELTA")
 	{
 		// Uses QDelta matrix to initialize node values
 
@@ -158,7 +163,7 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 			eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k0[i], t0+dt*tau(i));
 		}
 
-	} else {
+	} else if (initialSweepType == "COPY") {
 		// Evaluate linear and non-linear with initial solution
 		eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
 		eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
@@ -168,6 +173,8 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 			ts_linear_tendencies_k0[i] = ts_linear_tendencies_k0[0];
 			ts_nonlinear_tendencies_k0[i] = ts_nonlinear_tendencies_k0[0];
 		}
+	} else {
+		SWEETError(initialSweepType + " initial sweep type not implemented");
 	}
 
 }
@@ -290,7 +297,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		nNodes(i_simVars.sdc.nNodes),
 		nIter(i_simVars.sdc.nIter),
 		diagonal(i_simVars.sdc.diagonal),
-		use_qdelta_for_initialization(i_simVars.sdc.qDeltaInit),
+		initialSweepType(i_simVars.sdc.initSweepType),
 
 		// Nodes and weights
 		tau(i_simVars.sdc.nodes),
