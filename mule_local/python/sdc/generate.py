@@ -15,7 +15,8 @@ parser = argparse.ArgumentParser(
 setup = inspect.signature(getSetup)
 
 parser.add_argument(
-    f'--fileName', default="paramsSDC.sweet", help="Name of the SWEETFileDict file")
+    f'--fileName', default="paramsSDC.sweet", 
+    help="Name of the SWEETFileDict file (default: paramsSDC.sweet)")
 
 for name, val in setup.parameters.items(): 
     parser.add_argument(
