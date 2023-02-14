@@ -13,7 +13,7 @@ paramsSDC = [
 ]
 
 # Example of use ...
-getSDCSetup(*paramsSDC[0]) # => generate idString, nodes, weights, qMat, qDeltaE, qDeltaI
+getSDCSetup(*paramsSDC[0]) # => returns associated SWEETFileDict
 # Additional parameters
 # - nIter (int) : number of sweep (can be 0)
 # - diagonal (bool) : to use diagonal implementation

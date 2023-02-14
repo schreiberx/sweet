@@ -12,6 +12,8 @@ except ImportError:
     from nodes import NodesGenerator
     from lagrange import LagrangeApproximation
 
+from mule.SWEETFileDict import SWEETFileDict
+
 # Storage for diagonaly optimized QDelta matrices
 OPT_COEFFS = {
     "QmQd": {
@@ -303,7 +305,7 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, initSweep:s
 
     Returns
     -------
-    out : dict
+    out : SWEETFileDict
         The SDC parameters and coefficients, with the following keys :
             
         - idString : str
@@ -323,13 +325,13 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, initSweep:s
     """
     nodes, weights, qMatrix = genCollocation(M, nodeDistr, nodeType)
     qDeltaI = genQDelta(nodes, implSweep, qMatrix)
-    out = {
+    out = SWEETFileDict(initDict={
         'id': f'{M}_{nodeType}_{implSweep}',
         'nodes': nodes,
         'weights': weights,
         'qMatrix': qMatrix,
         'qDeltaI': qDeltaI
-    }
+    })
     if explSweep is not None:
         qDeltaE = genQDelta(nodes, explSweep, qMatrix)
         out['id'] += f'_{explSweep}'
