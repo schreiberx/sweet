@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
-
-import sys
+import os
 
 from mule.JobCompileOptions import *
 from mule.InfoError import *
+from mule.SWEETFileDict import SWEETFileDict
 
 __all__ = ['JobRuntimeOptions']
 
@@ -78,8 +78,11 @@ class JobRuntimeOptions(InfoError):
         self.rexi_ci_sy = None
         self.rexi_ci_mu = None
 
-        ## Parameters for direct exp. solver
-        self.exp_direct_precompute_phin = 0;
+        # SDC parameters
+        self.paramsSDC: SWEETFileDict = None 
+
+        # Parameters for direct exp. solver
+        self.exp_direct_precompute_phin = 0
 
         self.gui = None
 
@@ -723,6 +726,12 @@ class JobRuntimeOptions(InfoError):
                         if self.rexi_ci_mu != None:
                             retval += ' --rexi-ci-mu='+str(self.rexi_ci_mu)
 
+        # SDC parameters
+        if self.paramsSDC is not None:
+            # Write SWEETFileDict file in job folder
+            filePath = os.path.join(self.p_job_dirpath, 'params_SDC.sweet')
+            self.paramsSDC.writeToFile(filePath)
+            retval += f' --sdc-file={filePath}'
 
         if self.polvani_rossby != None:
             retval += ' --polvani-rossby='+str(self.polvani_rossby)

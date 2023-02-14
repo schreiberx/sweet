@@ -1,5 +1,3 @@
-
-import sys
 import struct
 import numpy as np
 
@@ -37,21 +35,32 @@ class SWEETFileDict:
     
     Final magic code: string "SWEETFileDict" with 0 terminal
     """
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, debug=False, initDict=None):
         self.dict = {}
+        if initDict is not None:
+            self.dict.update(initDict)
         
-        self.debug = True
-        self.debug = False
+        self.debug = debug
         
         if filename != None:
             self.readFromFile(filename)
 
+    def update(self, dict):
+        """Update the SWEETFileDict with a given Python dictionnary"""
+        self.dict.update(dict)
         
     def set(self, key, value):
+        """Update (or add) one entry of the SWEETFileDict"""
         self.dict[key] = value
         
     def delete(self, key):
         del self.dict[key]
+
+    def __setitem__(self, key, value):
+        self.set(key, value)
+
+    def __getitem__(self, key):
+        return self.dict[key]
     
     def __str__(self):
         retstr = ""

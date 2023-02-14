@@ -18,6 +18,7 @@
 #include <sweet/StringSplit.hpp>
 #include <sweet/SWEETError.hpp>
 #include <sweet/TransformationPlans.hpp>
+#include <sweet/SWEETFileDict.hpp>
 
 #if SWEET_THREADING
 #include <omp.h>
@@ -1213,6 +1214,110 @@ public:
 
 	} timecontrol;
 
+	/**
+	 * SDC parameters
+	 */
+	struct SDC {
+
+		std::string fileName;
+
+		// Nodes values (between 0 and 1)
+		SWEETArray<1, double> nodes;
+		size_t nNodes=0;
+
+		// Quadrature weights
+		SWEETArray<1, double> weights;
+
+		// Collocation matrix
+		SWEETArray<2, double> qMatrix;
+
+		// QDelta matrix for implicit sweep
+		SWEETArray<2, double> qDeltaI;
+
+		// QDelta matrix for explicit sweep
+		SWEETArray<2, double> qDeltaE;
+
+		// QDelta matrix for initial (implicit) sweep
+		SWEETArray<2, double> qDelta0;
+
+		// Number of iterations (sweeps)
+		SWEETFileDict::int64 nIter=0;
+
+		// Type of initial sweep to use
+		std::string initSweepType="COPY";
+
+		// Wether or not use the diagonal implementation
+		SWEETFileDict::int64 diagonal=0;
+
+		// Wether or not use collocation update for end point
+		SWEETFileDict::int64 useEndUpdate=0;
+
+
+		void outputProgParams()
+		{
+			std::cout << std::endl;
+			std::cout << "SDC option:" << std::endl;
+			std::cout << "	--sdc-file [path]   SDC parameters in SWEETFileDict format" << std::endl;
+			std::cout << std::endl;
+		}
+
+
+		void outputConfig()
+		{
+			std::cout << std::endl;
+			std::cout << "SDC:" << std::endl;
+			std::cout << " + M (number of nodes): " << nodes.size() << std::endl;
+			std::cout << " + nodes: " << nodes << std::endl;
+			std::cout << " + weights: " << weights << std::endl;
+			std::cout << " + qMatrix: " << qMatrix << std::endl;
+			std::cout << " + qDeltaI: " << qDeltaI << std::endl;
+			std::cout << " + qDeltaE: " << qDeltaE << std::endl;
+			std::cout << " + qDelta0: " << qDelta0 << std::endl;
+			std::cout << " + nIter: " << nIter << std::endl;
+			std::cout << " + diagonal: " << diagonal << std::endl;
+			std::cout << " + qDeltaInit: " << diagonal << std::endl;
+			std::cout << " + useEndUpdate: " << diagonal << std::endl;
+			std::cout << std::endl;
+		}
+
+
+		void setup_longOptionsList(
+				struct option *long_options,
+				int &next_free_program_option
+		)
+		{
+			long_options[next_free_program_option] = {"sdc-file", optional_argument, 0, 256+next_free_program_option};
+			next_free_program_option++;
+		}
+
+
+		int setup_longOptionValue(
+				int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
+				const char *i_value		///< Value in string format
+		)
+		{
+			switch(i_option_index)
+			{
+			case 0:
+				fileName = i_value;
+				SWEETFileDict params(fileName);
+				params.getValue("nodes", nodes);
+				nNodes = nodes.size();
+				params.getValue("weights", weights);
+				params.getValue("qMatrix", qMatrix);
+				params.getValue("qDeltaI", qDeltaI);
+				params.getValue("qDeltaE", qDeltaE);
+				params.getValue("qDelta0", qDelta0);
+				params.getValue("nIter", nIter);
+				params.getValue("diagonal", diagonal);
+				params.getValue("initSweepType", initSweepType);
+				params.getValue("useEndUpdate", useEndUpdate);
+				return -1;
+			}
+
+			return 2;
+		}
+	} sdc;
 
 
 	void outputConfig()
@@ -1224,6 +1329,7 @@ public:
 		timecontrol.outputConfig();
 
 		rexi.outputConfig();
+		sdc.outputConfig();
 		swe_polvani.outputConfig();
 		misc.outputConfig();
 		parallelization.outputConfig();
@@ -1376,7 +1482,7 @@ public:
 		disc.outputProgParams();
 		iodata.outputProgParams();
 
-
+		// TODO : cleanup ??
 		std::cout << "" << std::endl;
 		std::cout << "Control:" << std::endl;
 		std::cout << "	--dt [time]	timestep size, default=?" << std::endl;
@@ -1387,6 +1493,7 @@ public:
 
 		misc.outputProgParams();
 		rexi.outputProgParams();
+		sdc.outputProgParams();
 		swe_polvani.outputProgParams();
 
 
@@ -1500,6 +1607,9 @@ public:
 				next_free_program_option,	///< also updated (IO)
 				max_options
 			);
+
+		int sdc_start_option_index = next_free_program_option;
+		sdc.setup_longOptionsList(long_options, next_free_program_option);
 
         int swe_polvani_start_option_index = next_free_program_option;
         swe_polvani.setup_longOptionList(
@@ -1649,6 +1759,13 @@ public:
 
 					{
 						int retval = rexi.setup_longOptionValue(i-rexi_start_option_index, optarg);
+						if (retval == -1)
+							continue;
+						c += retval;
+					}
+
+					{
+						int retval = sdc.setup_longOptionValue(i-sdc_start_option_index, optarg);
 						if (retval == -1)
 							continue;
 						c += retval;

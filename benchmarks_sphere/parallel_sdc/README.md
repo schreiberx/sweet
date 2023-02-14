@@ -36,7 +36,7 @@ $ ./install_libfreetype.sh
 And additionaly
 
 ```bash
-$ sudo apt install pkg-config libgl-dev
+$ sudo apt install pkg-config libgl-dev libxext-dev
 ```
 
 ## Main scripts

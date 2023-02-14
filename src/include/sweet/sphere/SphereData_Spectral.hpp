@@ -63,6 +63,15 @@ public:
 		std::swap(spectral_space_data, i_sphereData.spectral_space_data);
 	}
 
+	void swapWithConfig(
+			SphereData_Spectral &i_sphereData
+	)
+	{
+		std::swap(sphereDataConfig, i_sphereData.sphereDataConfig);
+
+		std::swap(spectral_space_data, i_sphereData.spectral_space_data);
+	}
+
 
 public:
 	SphereData_Spectral(

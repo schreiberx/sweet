@@ -19,6 +19,7 @@
  * This is not intended for HPC, but just to have
  * some 2D container for arbitrary types.
  */
+
 template <int D, typename T>
 class SWEETArray
 {
@@ -86,10 +87,23 @@ public:
 		}
 	}
 
+	inline
+	T operator()(int i0, int i1=-1, int i2=-1) const {
+		return get(i0, i1, i2);
+	}
+
+
+	inline
+	T operator[](int i0) const {
+		if (D != 1)
+			SWEETError("Only 1D supported");
+
+		return _data[i0];
+	}
+
 public:
 	friend
-	std::ostream& operator<< (std::ostream& os, const SWEETArray<D,T> &a)
-	{
+	std::ostream& operator<<(std::ostream& os, const SWEETArray<D,T> &a){
 		if (D == 1)
 		{
 			std::cout << "[";
@@ -152,8 +166,5 @@ public:
 		return os;
 	}
 };
-
-
-
 
 #endif /* SRC_INCLUDE_SWEET_SWEETARRAY_HPP_ */
