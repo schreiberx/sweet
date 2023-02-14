@@ -13,6 +13,7 @@
 #include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
 #include <limits>
 #include <sweet/SimulationVariables.hpp>
+#include <sweet/SWEETArray.hpp>
 
 #include <vector>
 #include <array>
@@ -130,60 +131,21 @@ private:
 	/*
 	 * SDC specific attributes
  	 */
-	const static size_t nNodes = 3;
-	const static size_t nIter = 4;
+	size_t nNodes;
+	size_t nIter;
 	
-	const bool diagonal = true;       // Wether or not using the diagonal implementation
-	const bool qDeltaInit = false;     // Wether or not use qDelta for initial sweep
-	const bool useEndUpdate = false;  // Wether or not use collocation update for end point
+	bool diagonal = true;       // Wether or not using the diagonal implementation
+	bool qDeltaInit = false;     // Wether or not use qDelta for initial sweep
+	bool useEndUpdate = false;  // Wether or not use collocation update for end point
 
-	typedef array<double, nNodes> Vec;
-	typedef array<Vec, nNodes> Mat;
-	// Nodes, Quadrature matrix and QDelta approximation
-	// -- 3 RADAU-RIGHT points, using LEGENDRE distribution
-	const Vec tau {0.15505103, 0.64494897, 1.0};
-	const Vec weights {0.37640306, 0.51248583, 0.11111111};
-	const Mat qMat {{
-		{0.19681548, -0.06553543,  0.02377097},
-		{0.39442431,  0.29207341, -0.04154875},
-		{0.37640306,  0.51248583,  0.11111111}}
-	};
-	// -- BE for linear (implicit) part
-	// const Mat qDeltaI {{
-	// 	{0.15505103, 0.        , 0.        },
-	// 	{0.15505103, 0.48989795, 0.        },
-	// 	{0.15505103, 0.48989795, 0.35505103}}
-	// };
-	// -- BEpar for linear (implicit) part
-	// const Mat qDeltaI {{
-	// 	{0.15505103, 0.        , 0.        },
-	// 	{0.        , 0.64494897, 0.        },
-	// 	{0.        , 0.        , 1.        }}
-	// };
-	// -- Picars for implicit
-	const Mat qDeltaI {{
-		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        }}
-	};
-	// -- FE for non linear (explicit) part
-	// const Mat qDeltaE {{
-	// 	{0.        , 0.        , 0.        },
-	// 	{0.48989795, 0.        , 0.        },
-	// 	{0.48989795, 0.35505103, 0.        }}
-	// };
-	// -- Picard (PIC) for non linear (explicit) part
-	const Mat qDeltaE {{
-		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        },
-		{0.        , 0.        , 0.        }}
-	};
-	// -- For initial sweep (is used ...)
-	const Mat qDelta0 {{
-		{0.15505103, 0.        , 0.        },
-		{0.        , 0.64494897, 0.        },
-		{0.        , 0.        , 1.        }}
-	};
+	typedef SWEETArray<1, double> Vec;
+	typedef SWEETArray<2, double> Mat;
+	Vec tau;
+	Vec weights;
+	Mat qMat;
+	Mat qDeltaI;
+	Mat qDeltaE;
+	Mat qDelta0;
 
 	// Variable storage required for SDC sweeps
 	SDC_NodeStorage lTerms;  	// linear term evaluations

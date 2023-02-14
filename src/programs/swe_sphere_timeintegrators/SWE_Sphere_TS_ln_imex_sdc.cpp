@@ -130,10 +130,10 @@ void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
 		// Uses QDelta matrix to initialize node values
 
 		// Local convenient references
-		const Mat& q = qMat;
-		const Mat& qI = qDeltaI;
-		const Mat& qE = qDeltaI;
-		const Mat& q0 = qDelta0;
+		Mat& q = qMat;
+		Mat& qI = qDeltaI;
+		Mat& qE = qDeltaI;
+		Mat& q0 = qDelta0;
 
 		// Loop on nodes (can be parallelized if diagonal)
 		for (size_t i = 0; i < nNodes; i++) {
@@ -144,21 +144,21 @@ void SWE_Sphere_TS_ln_imex_sdc::initSweep() {
 			if (not diagonal) {
 				// Add non-linear and linear terms from iteration k (already computed)
 				for (size_t j = 0; j < i; j++) {
-					axpy(dt*qE[i][j], nTerms.getK(j), state);
-					axpy(dt*qI[i][j], lTerms.getK(j), state);
+					axpy(dt*qE(i, j), nTerms.getK(j), state);
+					axpy(dt*qI(i, j), lTerms.getK(j), state);
 				}
 				// Implicit solve with qI
-				solveImplicit(state, dt*qI[i][i]);
+				solveImplicit(state, dt*qI(i, i));
 			} else {
 				// Implicit solve with q0
-				solveImplicit(state, dt*q0[i][i]);
+				solveImplicit(state, dt*q0(i, i));
 			}
 
 			// Evaluate and store linear term for k
-			evalLinearTerms(state, lTerms.getK(i), t0+dt*tau[i]);
+			evalLinearTerms(state, lTerms.getK(i), t0+dt*tau(i));
 
 			// Evaluate and store non linear term for k
-			evalNonLinearTerms(state, nTerms.getK(i), t0+dt*tau[i]);
+			evalNonLinearTerms(state, nTerms.getK(i), t0+dt*tau(i));
 		}
 
 		
@@ -189,35 +189,35 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		
 		// Add quadrature terms
 		for (size_t j = 0; j < nNodes; j++) {
-			axpy(dt*q[i][j], nTerms.getK(j), state);
-			axpy(dt*q[i][j], lTerms.getK(j), state);
+			axpy(dt*q(i, j), nTerms.getK(j), state);
+			axpy(dt*q(i, j), lTerms.getK(j), state);
 		}
 
 		if (not diagonal) {
 			// Add non-linear and linear terms from iteration k+1
 			for (size_t j = 0; j < i; j++) {
-				axpy(dt*qE[i][j], nTerms.getK1(j), state);
-				axpy(dt*qI[i][j], lTerms.getK1(j), state);
+				axpy(dt*qE(i, j), nTerms.getK1(j), state);
+				axpy(dt*qI(i, j), lTerms.getK1(j), state);
 			}
 
 			// Substract non-linear and linear terms from iteration k
 			for (size_t j = 0; j < i; j++) {
-				axpy(-dt*qE[i][j], nTerms.getK(j), state);
-				axpy(-dt*qI[i][j], lTerms.getK(j), state);
+				axpy(-dt*qE(i, j), nTerms.getK(j), state);
+				axpy(-dt*qI(i, j), lTerms.getK(j), state);
 			}
 		}
 
 		// Last linear term from iteration k
-		axpy(-dt*qI[i][i], lTerms.getK(i), state);
+		axpy(-dt*qI(i, i), lTerms.getK(i), state);
 		
 		// Implicit solve
 		// solveImplicit(state, dt*qI[i][i]);
 
 		// Evaluate and store linear term for k+1
-		evalLinearTerms(state, lTerms.getK1(i), t0+dt*tau[i]);
+		evalLinearTerms(state, lTerms.getK1(i), t0+dt*tau(i));
 
 		// Evaluate and store non linear term for k+1
-		evalNonLinearTerms(state, nTerms.getK1(i), t0+dt*tau[i]);
+		evalNonLinearTerms(state, nTerms.getK1(i), t0+dt*tau(i));
 	}
 
 	// Swap k+1 and k values for next iteration (or end-point update)
@@ -231,8 +231,8 @@ void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint() {
 		const Vec& w = weights;
 		state.fillWith(u0);
 		for (size_t j = 0; j < nNodes; j++) {
-			axpy(dt*w[j], nTerms.getK(j), state);
-			axpy(dt*w[j], lTerms.getK(j), state);
+			axpy(dt*w(j), nTerms.getK(j), state);
+			axpy(dt*w(j), lTerms.getK(j), state);
 		}
 	}{
 	// Time-step update using last state value
@@ -320,8 +320,22 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		timestepping_l_erk_n_erk(simVars, op),
 		version_id(0),
 		timestepping_order(-1),
-		lTerms(op.sphereDataConfig, nNodes),
-		nTerms(op.sphereDataConfig, nNodes),
+		// SDC main parameters
+		nNodes(i_simVars.sdc.nNodes),
+		nIter(i_simVars.sdc.nIter),
+		diagonal(i_simVars.sdc.diagonal),
+		qDeltaInit(i_simVars.sdc.qDeltaInit),
+		// Nodes and weights
+		tau(i_simVars.sdc.nodes),
+		weights(i_simVars.sdc.weights),
+		// Quadrature matrices
+		qMat(i_simVars.sdc.qMatrix),
+		qDeltaI(i_simVars.sdc.qDeltaI),
+		qDeltaE(i_simVars.sdc.qDeltaE),
+		qDelta0(i_simVars.sdc.qDelta0),
+		// Storage and reference container (for u0)
+		lTerms(op.sphereDataConfig, i_simVars.sdc.nNodes),
+		nTerms(op.sphereDataConfig, i_simVars.sdc.nNodes),
 		state(op.sphereDataConfig),
 		tmp(op.sphereDataConfig),
 		u0()

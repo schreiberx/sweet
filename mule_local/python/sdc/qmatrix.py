@@ -275,7 +275,7 @@ def genCollocation(M, distr, quadType):
     return nodes, weights, Q
 
 
-def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, initSweep:str=None, nodeDistr:str='LEGENDRE'):
+def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str='FE', initSweep:str='BEpar', nodeDistr:str='LEGENDRE')-> SWEETFileDict:
     """
     Generate given coefficient for one SDC setup
 
@@ -289,19 +289,17 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, initSweep:s
         Base (implicit) sweep for SDC. Can be 'BE', 'BEpar', 'LU', ... (see genQDelta doc)
     explSweep : str, optional
         Explicit sweep (when used for IMEX SDC). Can be 'FE', 'PIC', ... (see genQDelta doc)
-        If None, don't return the QDelta coefficients
     initSweep : str, optional
         QDelta matrix used for initial sweep. Can be 'BE', 'BEpar', ... (see genQDelta doc)
-        If None, don't return the QDelta coefficients
     nodeDistr : str, optional
         Node distribution. The default is 'LEGENDRE'.
         
     Example
     -------
     >>> # Standard settings for Fast Wave Slow Wave SDC (IMEX)
-    >>> idStr, tau, w, qMat, qDeltaI, qDeltaE = genSetup(3, 'RADAU-RIGHT', 'BE', 'FE')
+    >>> paramsSDC = genSetup(3, 'RADAU-RIGHT', 'BE', 'FE')
     >>> # Standard settings for diagonal parallel IMEX SDC
-    >>> idStr, tau, w, qMat, qDeltaI, qDeltaE = genSetup(3, 'RADAU-RIGHT', 'BEpar', 'PIC')
+    >>> paramsSDC = genSetup(3, 'RADAU-RIGHT', 'BEpar', 'PIC')
 
     Returns
     -------
@@ -324,21 +322,17 @@ def getSetup(M:int, nodeType:str, implSweep:str, explSweep:str=None, initSweep:s
             Initial sweeo coefficients. Given only if initSweep is not None.
     """
     nodes, weights, qMatrix = genCollocation(M, nodeDistr, nodeType)
-    qDeltaI = genQDelta(nodes, implSweep, qMatrix)
+    qDeltaI = genQDelta(nodes, implSweep, qMatrix)[0]
+    qDeltaE = genQDelta(nodes, explSweep, qMatrix)[0]
+    qDelta0 = genQDelta(nodes, initSweep, qMatrix)[0]
     out = SWEETFileDict(initDict={
-        'id': f'{M}_{nodeType}_{implSweep}',
+        'id': f'{M}_{nodeType}_{implSweep}_{explSweep}_{initSweep}',
         'nodes': nodes,
         'weights': weights,
         'qMatrix': qMatrix,
-        'qDeltaI': qDeltaI
+        'qDeltaI': qDeltaI,
+        'qDeltaE': qDeltaE,
+        'qDelta0': qDelta0
     })
-    if explSweep is not None:
-        qDeltaE = genQDelta(nodes, explSweep, qMatrix)
-        out['id'] += f'_{explSweep}'
-        out['qDeltaE'] = qDeltaE
-    if initSweep is not None:
-        qDelta0 = genQDelta(nodes, initSweep, qMatrix)
-        out['id'] += f'_{initSweep}'
-        out['qDelta0'] = qDelta0
     return out
     

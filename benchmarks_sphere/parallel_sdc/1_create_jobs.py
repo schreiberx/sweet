@@ -6,24 +6,30 @@ from itertools import product
 from mule import JobGeneration, JobParallelizationDimOptions
 from mule.sdc import getSDCSetup
 
-paramsSDC = [
+p = JobGeneration()
+verbose = True
+
+# -------------------------------------------------------------------------------------------------
+# SDC specifics parameters
+# -------------------------------------------------------------------------------------------------
+listParamsSDC = [
     (3, 'RADAU-RIGHT', 'BE', 'FE'),  # Default IMEX SDC (Fast Wave Slow Wave)
     (3, 'RADAU-RIGHT', 'BEpar', 'PIC'),  # Basic parallel SDC
     (3, 'RADAU-RIGHT', 'OPT-QmQd-0', 'PIC', 'BEpar')  # Targeted optimized parallel SDC
 ]
-
-# Example of use ...
-getSDCSetup(*paramsSDC[0]) # => returns associated SWEETFileDict
+paramsSDC = getSDCSetup(*listParamsSDC[0]) # => returns associated SWEETFileDict
 # Additional parameters
 # - nIter (int) : number of sweep (can be 0)
+paramsSDC['nIter'] = 3
 # - diagonal (bool) : to use diagonal implementation
-# - qDeltaInit (bool) : to use qDeltaI for initial sweep
+paramsSDC['diagonal'] = 1
+# - qDeltaInit (bool) : to use qDeltaI (and qDeltaE) for initial sweep
+paramsSDC['qDeltaInit'] = 1
 # - useEndUpdate (bool) : to use collocation formula for end-update solution
-# Optional (but possibly usefull)
-# - qDelta0 : a specific qDelta matrix for the initial sweep (used if qDeltaInit=True), different to qDeltaI
+paramsSDC['useEndUpdate'] = 1
 
-p = JobGeneration()
-verbose = True
+p.runtime.paramsSDC = paramsSDC
+# -------------------------------------------------------------------------------------------------
 
 p.compile.mode = 'release'
 # p.compile.gui = 'enable'
@@ -59,9 +65,6 @@ params_pspace_num_threads_per_rank = [nSpacePar]
 
 unique_id_filter = []
 unique_id_filter.append('compile')
-#unique_id_filter.append('runtime.galewsky_params')
-unique_id_filter.append('runtime.rexi')
-unique_id_filter.append('runtime.benchmark')
 unique_id_filter.append('runtime.max_simulation_time')
 
 p.unique_id_filter = unique_id_filter
@@ -184,6 +187,6 @@ if __name__ == "__main__":
 
             p.parallelization.max_wallclock_seconds = estimateWallclockTime(p)
 
-            p.gen_jobscript_directory(f'job_bench_{tsm[0]}')
+            p.gen_jobscript_directory(f'job_bench_{p.getUniqueID()}')
 
     p.write_compilecommands()
