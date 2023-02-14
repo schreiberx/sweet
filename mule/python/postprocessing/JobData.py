@@ -133,11 +133,15 @@ class JobData(InfoError):
         Process 'jobgeneration.pickle'
         """
         # Ensure that 'jobgeneration.pickle' exists
-        jobgenerationfile = jobdir+'/jobgeneration.pickle'
+        jobgenerationpicklefile = jobdir+'/jobgeneration.pickle'
         if self.verbosity > 5:
             self.info("Loading 'jobgeneration.pickle'")
         j = JobGeneration(dummy_init=True)
-        self.__job_raw_data['jobgeneration'] = j.load_attributes_dict(jobgenerationfile)
+
+        if os.path.exists(jobgenerationpicklefile):
+            self.__job_raw_data['jobgeneration'] = j.load_attributes_dict(jobgenerationpicklefile)
+        else:
+            self.__job_raw_data['jobgeneration'] = None
 
         """
         Process other '*.pickle'
@@ -191,15 +195,18 @@ class JobData(InfoError):
                     self.__flattened_job_data[key] = data
 
             elif raw_key == 'jobgeneration':
-                for group_name, group_value in raw_value.items():
-                    if isinstance(group_value, dict):
-                        for key, attr in group_value.items():
-                            key = group_name+"."+key
-                            self.__flattened_job_data[key] = attr
-                    elif isinstance(group_value, (int, float, str)):
-                        self.__flattened_job_data[group_name] = group_value
-                    else:
-                        raise Exception("Unknown type in pickled data")
+                if raw_value != None:
+                    for group_name, group_value in raw_value.items():
+                        if isinstance(group_value, dict):
+                            for key, attr in group_value.items():
+                                key = group_name+"."+key
+                                self.__flattened_job_data[key] = attr
+                        elif isinstance(group_value, (int, float, str)):
+                            self.__flattened_job_data[group_name] = group_value
+                        else:
+                            raise Exception("Unknown type in pickled data")
+                else:
+                    print("No 'jobgeneration' data found")
 
             else:
                 for key, data in raw_value.items():
