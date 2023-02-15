@@ -11,10 +11,10 @@ verbose = True
 
 p.runtime.paramsSDC = getSDCSetup(
     nNodes=3,
-    nIter=2,
+    nIter=3,
     nodeType='RADAU-RIGHT', 
-    qDeltaImplicit='BE', 
-    qDeltaExplicit='FE', 
+    qDeltaImplicit='OPT-QmQd-0', 
+    qDeltaExplicit='PIC', 
     diagQDeltaInit='BEpar',
     diagonal=False,
     initSweepType="QDELTA",
@@ -110,6 +110,7 @@ if __name__ == "__main__":
         # IMEX SDC
         ###########
         ['ln_imex_sdc',        1,    1],
+        # ['ln_erk',        4,    4],
     ]
 
 

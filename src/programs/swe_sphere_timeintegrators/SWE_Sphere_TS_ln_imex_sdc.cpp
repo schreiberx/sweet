@@ -42,7 +42,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
 		ts_tmp_state(op.sphereDataConfig),
 
-		dt(0.0)
+		dt(i_simVars.timecontrol.current_timestep_size)
 {
 	if (i_simVars.sdc.fileName == "") {
 		// No parameter file given, use default SDC settings
@@ -214,7 +214,7 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	ts_u0.div.swapWithConfig(io_div);
 
 	if (TimeStepSizeChanged::is_changed(dt, i_fixed_dt, true)){
-		std::cout << "UPDATING LHS COEFFICIENTS" << std::endl;
+		std::cout << "SDC: UPDATING LHS COEFFICIENTS" << std::endl;
 		for (int i = 0; i < nNodes; i++)
 		{
 			timestepping_l_irk[i]->update_coefficients(i_fixed_dt*qMatDeltaI(i, i));
@@ -350,8 +350,9 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
 {
 	if (useEndUpdate) {
-		// Compute collocation update
 		const Vec& w = weights;
+		
+		// Compute collocation update
 		ts_tmp_state = ts_u0;
 		for (int j = 0; j < nNodes; j++) {
 			axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
