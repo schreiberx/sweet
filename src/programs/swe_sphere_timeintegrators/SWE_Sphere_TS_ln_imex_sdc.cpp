@@ -101,7 +101,7 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 		std::cout << "UPDATING LHS COEFFICIENTS" << std::endl;
 		for (int i = 0; i < nNodes; i++)
 		{
-			timestepping_l_irk[i]->update_coefficients(i_fixed_dt*tau[i]);
+			timestepping_l_irk[i]->update_coefficients(i_fixed_dt*qMatDeltaI(i, i));
 		}
 	}
 	t0 = i_simulation_timestamp;
@@ -258,7 +258,7 @@ void SWE_Sphere_TS_ln_imex_sdc::setup()
 	{
 		timestepping_l_irk[i]->setup(
 			1,
-			dt*tau[i]
+			dt*qMatDeltaI(i, i)
 		);
 	}
 
@@ -368,7 +368,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 	for (int i = 0; i < nNodes; i++)
 	{
 		timestepping_l_irk[i] = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
-		timestepping_l_irk[i]->setup(1, dt*tau[i]);
+		timestepping_l_irk[i]->setup(1, dt*qMatDeltaI(i, i));
 	}
 
 	// Print informations ...
