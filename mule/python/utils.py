@@ -54,3 +54,9 @@ def exec_command(command):
     out = out.replace("\r", "")
     return out
 
+
+def remove_file_ending(i_str):
+    import os
+    return os.path.splitext(i_str)[0]
+
+

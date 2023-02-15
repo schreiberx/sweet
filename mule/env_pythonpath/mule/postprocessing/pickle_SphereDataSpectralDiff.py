@@ -1,1 +1,0 @@
-../../../../mule_local/python/postprocessing/pickle_SphereDataSpectralDiff.py

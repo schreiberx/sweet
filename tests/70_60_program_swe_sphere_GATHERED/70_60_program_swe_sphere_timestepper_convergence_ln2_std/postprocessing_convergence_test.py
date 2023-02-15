@@ -12,15 +12,33 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 
-
+# Group together  similar time stepping methods
 groups = ['runtime.timestepping_method']
 
+# Create plots for these variables
+vars_ = ["phi_pert", "vrt", "div"]
 
-tagnames_y = [
-    'sphere_data_diff_prog_phi_pert.res_norm_linf',
-    'sphere_data_diff_prog_div.res_norm_linf',
-    'sphere_data_diff_prog_vrt.res_norm_linf',
-]
+
+###########################################################
+# User configuration ends here ############################
+###########################################################
+
+
+tagnames_y = []
+tag_cleanup_info = []
+
+for i in vars_:
+    tagnames_y += [
+        #f"sphere_data_diff_prog_{i}.res_norm_l1",
+        #f"sphere_data_diff_prog_{i}.res_norm_l2",
+        f"sphere_data_diff_prog_{i}.res_norm_linf",
+    ]
+
+    tag_cleanup_info += [
+        #{"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l1", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l1"},
+        #{"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l2", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l2"},
+        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_linf", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_linf"},
+    ]
 
 
 j = JobsData(verbosity=0)
@@ -31,6 +49,9 @@ print("Groups:")
 job_groups = c.create_groups(groups)
 for key, g in job_groups.items():
     print(" + "+key)
+
+# Cleanup postprocessed data
+JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="sphere_data_norms_physical_space_")
 
 
 for tagname_y in tagnames_y:

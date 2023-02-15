@@ -248,5 +248,8 @@ if __name__ == "__main__":
         d = j.get_flattened_data()
 
         for key, value in d.items():
-            print(key+" => "+str(value))
-    #            break
+            if isinstance(value, str):
+                print(f"{key} => '{value}'")
+            else:
+                print(f"{key} => {value}")
+

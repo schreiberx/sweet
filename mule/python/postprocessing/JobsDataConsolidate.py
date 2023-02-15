@@ -10,6 +10,8 @@ import re
 import sys
 import shutil
 import pickle
+import mule.utils
+import mule.postprocessing.utils
 
 
 
@@ -76,6 +78,53 @@ class JobsDataConsolidate(InfoError):
             groups[group_attributes_short_id][jobdir] = job_data
 
         return groups
+
+
+def JobsData_GroupsCleanupPostprocessed(
+        job_groups,         # from JobsDataConsolidate.create_groups()
+        tag_cleanup_info,
+        pickle_file_default_prefix,
+):
+    """
+    tag_cleanup_info: List of dictionary
+        ref_file_startswith:    Only if the reference output data file starts with this string
+        tag_src:    Tag to get value from
+        tag_dst:    Set this tag to this value
+    """
+
+    # Iterate over all groups
+    for key, group in job_groups.items():
+
+        # Iterate over each job in the group
+        for job_id, job_data in group.items():
+
+            # Get list of reference files
+            ref_output_files = mule.postprocessing.utils.get_job_output_files(job_data)
+
+            # Iterate over all reference files
+            for ref_output_file in ref_output_files:
+
+                for ci in tag_cleanup_info:
+                    ref_file_starts_with = ci['ref_file_starts_with']
+                    tag_src = ci['tag_src']
+                    tag_dst = ci['tag_dst']
+
+                    if ref_output_file.startswith(ref_file_starts_with):
+
+                        # Determine basename of reference file
+                        ref_basename = mule.utils.remove_file_ending(ref_output_file)
+
+                        # Basename of pickle file
+                        pickle_basename = f"{pickle_file_default_prefix}{ref_basename}"
+
+                        # index is created with [pickle basename of file].[tag in pickle file]
+                        jindex = f"{pickle_basename}.{tag_src}"
+
+                        value = job_data[jindex]
+                        job_data[tag_dst] = value
+
+                        print(f"{tag_dst}: value")
+
 
 
 
