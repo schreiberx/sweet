@@ -1219,11 +1219,11 @@ public:
 	 */
 	struct SDC {
 
-		std::string fileName;
+		std::string fileName = "";
+		int nNodes = 3;	
 
 		// Nodes values (between 0 and 1)
 		SWEETArray<1, double> nodes;
-		size_t nNodes=0;
 
 		// Quadrature weights
 		SWEETArray<1, double> weights;
@@ -1241,17 +1241,19 @@ public:
 		SWEETArray<2, double> qDelta0;
 
 		// Number of iterations (sweeps)
-		SWEETFileDict::int64 nIter=0;
+		SWEETFileDict::int64 nIter;
 
 		// Type of initial sweep to use
-		std::string initSweepType="COPY";
+		std::string initSweepType;
 
 		// Wether or not use the diagonal implementation
-		SWEETFileDict::int64 diagonal=0;
+		SWEETFileDict::int64 diagonal;
 
 		// Wether or not use collocation update for end point
-		SWEETFileDict::int64 useEndUpdate=0;
+		SWEETFileDict::int64 useEndUpdate;
 
+		// Unique string ID
+		std::string id;	
 
 		void outputProgParams()
 		{
@@ -1312,6 +1314,7 @@ public:
 				params.getValue("diagonal", diagonal);
 				params.getValue("initSweepType", initSweepType);
 				params.getValue("useEndUpdate", useEndUpdate);
+				params.getValue("id", id);
 				return -1;
 			}
 

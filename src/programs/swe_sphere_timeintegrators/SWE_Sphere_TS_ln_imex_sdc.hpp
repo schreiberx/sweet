@@ -202,7 +202,7 @@ private:
 	Vec weights;
 	Mat qMat;
 	Mat qMatDeltaI;
-	Mat qDeltaE;
+	Mat qMatDeltaE;
 	Mat qMatDelta0;
 
 	/*
@@ -261,11 +261,7 @@ public:
 			SphereOperators_SphereData &i_op
 		);
 
-	void setup(
-			int i_order,	///< order of RK time stepping method for linear parts
-			int i_order2,	///< order of RK time stepping method for non-linear parts
-			int i_version_id
-	);
+	void setup();
 
 	void setup_auto();
 

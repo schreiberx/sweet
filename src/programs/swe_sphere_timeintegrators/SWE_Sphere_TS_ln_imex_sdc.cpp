@@ -25,7 +25,7 @@ bool SWE_Sphere_TS_ln_imex_sdc::implements_timestepping_method(
 
 void SWE_Sphere_TS_ln_imex_sdc::setup_auto()
 {
-	setup(timestepping_order, timestepping_order2, 0);
+	setup();
 }
 
 
@@ -130,10 +130,10 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 		// Uses QDelta matrix to initialize node values
 
 		// Local convenient references
-		Mat& q = qMat;
-		Mat& qI = qMatDeltaI;
-		Mat& qE = qMatDeltaI;
-		Mat& q0 = qMatDelta0;
+		const Mat& q = qMat;
+		const Mat& qI = qMatDeltaI;
+		const Mat& qE = qMatDeltaE;
+		const Mat& q0 = qMatDelta0;
 
 		// Loop on nodes (can be parallelized if diagonal)
 		for (size_t i = 0; i < nNodes; i++) {
@@ -157,10 +157,10 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 			}
 
 			// Evaluate and store linear term for k
-			eval_linear(ts_tmp_state, ts_linear_tendencies_k0[i], t0+dt*tau(i));
+			eval_linear(ts_tmp_state, ts_linear_tendencies_k0[i], t0+dt*tau[i]);
 
 			// Evaluate and store non linear term for k
-			eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k0[i], t0+dt*tau(i));
+			eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k0[i], t0+dt*tau[i]);
 		}
 
 	} else if (initialSweepType == "COPY") {
@@ -183,43 +183,43 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 
 	// Local convenient references
 	const Mat& q = qMat;
-	const Mat& qDeltaImplicit = qMatDeltaI;
-	const Mat& qDeltaExplicit = qMatDeltaI;
+	const Mat& qI = qMatDeltaI;
+	const Mat& qE = qMatDeltaE;
 
 	// Loop on nodes (can be parallelized if diagonal)
-	for (size_t i = 0; i < nNodes; i++) {
+	for (int i = 0; i < nNodes; i++) {
 		
 		// Initialize with u0 value
 		ts_tmp_state = ts_u0;
 		
 		// Add quadrature terms
-		for (size_t j = 0; j < nNodes; j++) {
+		for (int j = 0; j < nNodes; j++) {
 			axpy(dt*q(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
 			axpy(dt*q(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 		}
 
 		if (!diagonal) {
 			// Add non-linear and linear terms from iteration k+1
-			for (size_t j = 0; j < i; j++) {
-				axpy(dt*qDeltaExplicit(i, j), ts_nonlinear_tendencies_k1[j], ts_tmp_state);
-				axpy(dt*qDeltaImplicit(i, j), ts_linear_tendencies_k1[j], ts_tmp_state);
+			for (int j = 0; j < i; j++) {
+				axpy(dt*qE(i, j), ts_nonlinear_tendencies_k1[j], ts_tmp_state);
+				axpy(dt*qI(i, j), ts_linear_tendencies_k1[j], ts_tmp_state);
 			}
 
 			// Substract non-linear and linear terms from iteration k
-			for (size_t j = 0; j < i; j++) {
-				axpy(-dt*qDeltaExplicit(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
-				axpy(-dt*qDeltaImplicit(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
+			for (int j = 0; j < i; j++) {
+				axpy(-dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
+				axpy(-dt*qI(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 			}
 		}
 
 		// Last linear term from iteration k
-		axpy(-dt*qDeltaImplicit(i, i), ts_linear_tendencies_k0[i], ts_tmp_state);
+		axpy(-dt*qI(i, i), ts_linear_tendencies_k0[i], ts_tmp_state);
 		
 		// Implicit solve
-		solveImplicit(ts_tmp_state, dt*qDeltaImplicit(i,i));
+		solveImplicit(ts_tmp_state, dt*qI(i,i));
 
 		// Evaluate and store linear term for k+1
-		eval_linear(ts_tmp_state, ts_linear_tendencies_k1[i], t0+dt*tau(i));
+		eval_linear(ts_tmp_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
 
 		// Evaluate and store non linear term for k+1
 		eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
@@ -252,22 +252,8 @@ void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
 /*
  * Setup
  */
-void SWE_Sphere_TS_ln_imex_sdc::setup(
-		int i_order,	///< order of RK time stepping method
-		int i_order2,	///< order of RK time stepping method for non-linear parts
-		int i_version_id
-)
+void SWE_Sphere_TS_ln_imex_sdc::setup()
 {
-	if (i_order2 < 0)
-		i_order2 = i_order;
-
-	if (i_order != i_order2)
-		SWEETError("Orders of 1st and 2nd one must match");
-
-	timestepping_order = i_order;
-	timestepping_order2 = i_order2;
-	timestep_size = simVars.timecontrol.current_timestep_size;
-
 	timestepping_l_irk.setup(
 		1,
 		timestep_size
@@ -298,6 +284,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		nIter(i_simVars.sdc.nIter),
 		diagonal(i_simVars.sdc.diagonal),
 		initialSweepType(i_simVars.sdc.initSweepType),
+		useEndUpdate(i_simVars.sdc.useEndUpdate),
 
 		// Nodes and weights
 		tau(i_simVars.sdc.nodes),
@@ -306,7 +293,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		// Quadrature matrices
 		qMat(i_simVars.sdc.qMatrix),
 		qMatDeltaI(i_simVars.sdc.qDeltaI),
-		qDeltaE(i_simVars.sdc.qDeltaE),
+		qMatDeltaE(i_simVars.sdc.qDeltaE),
 		qMatDelta0(i_simVars.sdc.qDelta0),
 
 		// Storage and reference container (for u0)
@@ -316,7 +303,63 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
 		ts_tmp_state(op.sphereDataConfig)
 {
+	if (i_simVars.sdc.fileName == "") {
+		// No parameter file given, use default SDC settings
+		// warning : nNodes default value defined in SimulationVariables.hpp
+		//           -> need this to instantiate the tendencies storage
+		nIter = 3;
+		diagonal = false;
+		initialSweepType = "COPY";
+		useEndUpdate = false;
 
+		// RADAU-RIGHT nodes, weights quadrature matrix
+		tau.setup({nNodes});
+		const double tau_default[] = {
+			0.15505103, 0.64494897, 1.
+		};
+		tau = tau_default;
+
+		weights.setup({nNodes});
+		const double weights_default[] = {
+			0.37640306, 0.51248583, 0.11111111
+		};
+		weights = weights_default;
+
+		qMat.setup({nNodes, nNodes});
+		const double qMat_default[] = {
+			0.19681548, -0.06553543, 0.02377097,
+			0.39442431,  0.29207341, -0.04154875,
+			0.37640306,  0.51248583,  0.11111111
+		};
+		qMat = qMat_default;
+
+		// BE for implicit sweep
+		qMatDeltaI.setup({nNodes, nNodes});
+		const double qMatDeltaI_default[] = {
+			0.15505103, 0.,         0.,
+ 			0.15505103, 0.48989795, 0.,
+			0.15505103, 0.48989795, 0.        
+		};
+		qMatDeltaI = qMatDeltaI_default;
+
+		// FE for explicit sweep
+		qMatDeltaE.setup({nNodes, nNodes});
+		const double qMatDeltaE_default[] = {
+			0.,         0.,         0.,
+ 			0.48989795, 0.,         0.,
+			0.48989795, 0.35505103, 0.        
+		};
+		qMatDeltaE = qMatDeltaE_default;
+
+		// BEpar for initial sweep
+		qMatDelta0.setup({nNodes, nNodes});
+		const double qMatDelta0_default[] = {
+			0.15505103, 0.		  , 0.,
+ 			0.		  , 0.64494897, 0.,
+			0.		  , 0.		  , 1.        
+		};
+		qMatDelta0 = qMatDelta0_default;
+	}
 }
 
 
