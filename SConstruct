@@ -266,7 +266,6 @@ else:
 
 
 if p.libpfasst == 'enable':
-    env.Append(CXXFLAGS=['-Llibpfasst'])
     env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
 
     env.Append(LIBS=['libpfasst'])
