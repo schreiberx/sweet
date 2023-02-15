@@ -272,5 +272,7 @@ int main(
 
 	run_assignment_test();
 
+	std::cout << "FIN" << std::endl;
+
 	return EXIT_SUCCESS;
 }

@@ -14,6 +14,9 @@ p.compile.plane_spectral_dealiasing = 'disable'
 p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
+# Request csv output for comparisons
+p.runtime.output_file_mode = 'csv'
+
 p.runtime.space_res_spectral = "66,66"
 p.runtime.space_res_physical = "196,100"
 p.runtime.instability_checks = 0
