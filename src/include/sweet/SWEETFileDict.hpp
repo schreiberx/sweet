@@ -61,9 +61,9 @@ private:
 //		};
 
 		template <typename T>
-		void getValue(T &o_value);
+		void getValue(T &o_value)	const;
 
-		void getValue(std::string &o_value)
+		void getValue(std::string &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_STRING)
 				SWEETError("Type mismatch!");
@@ -71,7 +71,7 @@ private:
 			o_value = value_str;
 		}
 
-		void getValue(int64 &o_value)
+		void getValue(int64 &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_INT64)
 				SWEETError("Type mismatch!");
@@ -79,7 +79,7 @@ private:
 			o_value = value_scalar_int64;
 		}
 
-		void getValue(float64 &o_value)
+		void getValue(float64 &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_FLOAT64)
 				SWEETError("Type mismatch!");
@@ -87,7 +87,7 @@ private:
 			o_value = value_scalar_float64;
 		}
 
-		void getValue(SWEETArray<1,float64> &o_value)
+		void getValue(SWEETArray<1,float64> &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_ARRAY_1D_FLOAT64)
 				SWEETError("Type mismatch!");
@@ -95,7 +95,7 @@ private:
 			o_value = value_array_1d_float64;
 		}
 
-		void getValue(SWEETArray<2,float64> &o_value)
+		void getValue(SWEETArray<2,float64> &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_ARRAY_2D_FLOAT64)
 				SWEETError("Type mismatch!");
@@ -103,7 +103,7 @@ private:
 			o_value = value_array_2d_float64;
 		}
 
-		void getValue(SWEETArray<3,float64> &o_value)
+		void getValue(SWEETArray<3,float64> &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_ARRAY_3D_FLOAT64)
 				SWEETError("Type mismatch!");
@@ -111,7 +111,7 @@ private:
 			o_value = value_array_3d_float64;
 		}
 
-		void getValue(SWEETArray<1,complex128> &o_value)
+		void getValue(SWEETArray<1,complex128> &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_ARRAY_1D_COMPLEX128)
 				SWEETError("Type mismatch!");
@@ -119,7 +119,7 @@ private:
 			o_value = value_array_1d_complex128;
 		}
 
-		void getValue(SWEETArray<2,complex128> &o_value)
+		void getValue(SWEETArray<2,complex128> &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_ARRAY_2D_COMPLEX128)
 				SWEETError("Type mismatch!");
@@ -127,7 +127,7 @@ private:
 			o_value = value_array_2d_complex128;
 		}
 
-		void getValue(SWEETArray<3,complex128> &o_value)
+		void getValue(SWEETArray<3,complex128> &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_ARRAY_3D_COMPLEX128)
 				SWEETError("Type mismatch!");
@@ -138,14 +138,14 @@ private:
 		/*
 		 * Special handlers which automatically convert values
 		 */
-		void getValue(bool &o_value)
+		void getValue(bool &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_INT64)
 				SWEETError("Type mismatch!");
 
 			o_value = (bool)value_scalar_int64;
 		}
-		void getValue(int &o_value)
+		void getValue(int &o_value)	const
 		{
 			if (type_id != SWEET_FILE_DICT_INT64)
 				SWEETError("Type mismatch!");
@@ -344,6 +344,10 @@ public:
 
 			switch(e.type_id)
 			{
+				default:
+					SWEETError("Unknown type");
+					break;
+
 				case SWEET_FILE_DICT_STRING:
 					os << "'" << e.value_str << "'" << std::endl;
 					break;
@@ -392,7 +396,7 @@ public:
 
 
 	template <typename T>
-	void getValue(const std::string &i_key, T &o_value)
+	void getValue(const std::string &i_key, T &o_value)	const
 	{
 		for (int i = 0; i < _dict.size(); i++)
 		{

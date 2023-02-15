@@ -1976,10 +1976,17 @@ public:
 
 			if (iodata.output_file_mode == "default")
 			{
+#if 1
+				iodata.output_file_mode = "bin";
+
+				if (iodata.output_file_name == "X")
+					iodata.output_file_name = "output_%s_t%020.8f.sweet";
+#else
 				iodata.output_file_mode = "csv";
 
 				if (iodata.output_file_name == "X")
 					iodata.output_file_name = "output_%s_t%020.8f.csv";
+#endif
 			}
 			else
 			{

@@ -28,16 +28,19 @@ class SWEETArray
 	std::vector<T> _data;
 
 public:
-	SWEETArray()
+	SWEETArray()	:
+		_size(0)
 	{
+		for (int i = 0; i < D; i++)
+			_shape[i] = 0;
 	}
 
-	SWEETArray(std::array<int,D> &i_shape)
+	SWEETArray(const std::array<int,D> &i_shape)
 	{
 		setup(i_shape);
 	}
 
-	void setup(std::array<int,D> &i_shape)
+	void setup(const std::array<int,D> &i_shape)
 	{
 		if (D < 1 || D > 3)
 			SWEETError("Only 1D, 2D or 3D are supported!");
@@ -101,9 +104,40 @@ public:
 		return _data[i0];
 	}
 
+	inline
+	SWEETArray<D,T>& operator=(const T *i_values_flat)
+	{
+
+		for (int i = 0; i < _size; i++)
+			_data[i] = i_values_flat[i];
+
+		return *this;
+	}
+
+
+	inline
+	SWEETArray<D,T>& operator=(const SWEETArray<D,T> &a)
+	{
+		for (int i = 0; i < D; i++)
+			if (_shape[i] != a._shape[i])
+				SWEETError("Shape mismatch!");
+
+		for (int i = 0; i < _size; i++)
+			_data[i] = a._data[i];
+
+		return *this;
+	}
+
 public:
 	friend
-	std::ostream& operator<<(std::ostream& os, const SWEETArray<D,T> &a){
+	std::ostream& operator<<(std::ostream& os, const SWEETArray<D,T> &a)
+	{
+		if (a._size == 0)
+		{
+			os << "(empty)";
+			return os;
+		}
+
 		if (D == 1)
 		{
 			std::cout << "[";
