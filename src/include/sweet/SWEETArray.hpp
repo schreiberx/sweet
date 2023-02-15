@@ -51,9 +51,6 @@ public:
 		for (int i = 0; i < D; i++)
 			_size *= _shape[i];
 
-		for (int i = 0; i < D; i++)
-			std::cout << "SHAPE " << i << ": " << _shape[i] << std::endl;
-
 		_data.resize(_size);
 	}
 
