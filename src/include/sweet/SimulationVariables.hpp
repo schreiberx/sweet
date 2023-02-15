@@ -1276,9 +1276,9 @@ public:
 			std::cout << " + qDeltaE: " << qDeltaE << std::endl;
 			std::cout << " + qDelta0: " << qDelta0 << std::endl;
 			std::cout << " + nIter: " << nIter << std::endl;
+			std::cout << " + initSweepType: " << initSweepType << std::endl;
 			std::cout << " + diagonal: " << diagonal << std::endl;
-			std::cout << " + qDeltaInit: " << diagonal << std::endl;
-			std::cout << " + useEndUpdate: " << diagonal << std::endl;
+			std::cout << " + useEndUpdate: " << useEndUpdate << std::endl;
 			std::cout << std::endl;
 		}
 
