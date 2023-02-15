@@ -7,7 +7,6 @@ import math
 from mule.postprocessing.SphereDataSpectral import *
 
 
-
 class SphereDataSpectralDiff:
 
     def __init__(self, filename_a = None, filename_b = None):
@@ -16,7 +15,6 @@ class SphereDataSpectralDiff:
             self.compute_diff(filename_a, filename_b)
 
         pass
-
 
 
     def compute_diff(
@@ -126,7 +124,7 @@ class SphereDataSpectralDiff:
                 tagname+'res_norm_rms' : self.norm_rms_value,    # Already normalized
             })
 
-            pickle_data['WARNING'] = "L1, L2 and RMS don't include scaling factors for differen cell spacings around the sphere!!!"
+            pickle_data['WARNING'] = "L1, L2 and RMS don't include scaling factors for different cell spacings around the sphere!!!"
 
             print(" + picklefile: "+str(picklefile))
 
@@ -152,10 +150,14 @@ if __name__ == "__main__":
         print("")
         print("    picklefile:")
         print("        If given, output is pickled into this file")
-        print("        diff.error_l1")
-        print("        diff.error_l2")
-        print("        diff.error_linf")
-        print("        diff.error_rms")
+        print("        .norm_l1")
+        print("        .norm_l2")
+        print("        .norm_linf")
+        print("        .norm_rms")
+        print("        .res_norm_l1")
+        print("        .res_norm_l2")
+        print("        .res_norm_linf")
+        print("        .res_norm_rms")
         print("")
         print(" reference tagname:")
         print("        How to name value in .pickle file")
