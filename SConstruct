@@ -111,25 +111,10 @@ if 'LD_LIBRARY_PATH' in os.environ:
 ###########################################
 
 
-p.sconsProcessOptions()
+p.sconsProcessCommandlineOptions()
 
-#
-# Process scons options provided within source file
-# e.g. 
-# * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/
-# * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere_swe/
-# * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
-#
-pso_ = p.get_program_specific_options()
-if pso_ is None:
-    raise Exception("Error with program specific options. Did you specify a program with --program=... ?")
-
-p.process_scons_options(pso_['scons_options'])
-
-#
 # Cleanup options
-#
-p.makeOptionsConsistent()
+p.postprocessOptions()
 
 
 
@@ -644,7 +629,7 @@ elif compiler_cxx == 'llvm':
 
 
 
-exec_name = p.getProgramName()
+exec_name = p.getProgramExec()
 
 
 #
@@ -659,8 +644,8 @@ if user != None:
 build_dir += 'scons_build_'+exec_name+'/'
 
 if p.libpfasst == 'enable':
-    #env.Append(F90FLAGS = ['-Ilocal_software/local_src/libpfasst/include'])
     env.Append(F90FLAGS = ['-Ilocal_software/local/include/libpfasst'])
+
 #
 # USE build directory for Fortran module output
 #

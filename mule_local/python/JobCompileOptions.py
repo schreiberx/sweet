@@ -197,7 +197,22 @@ class JobCompileOptions(InfoError):
 
 
 
-    def makeOptionsConsistent(self):
+    def postprocessOptions(self):
+
+        """
+        Handle program specific options
+
+        Process scons options provided within source file, e.g.,
+         * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere/
+         * MULE_COMPILE_FILES_AND_DIRS: src/include/benchmarks_sphere_swe/
+         * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
+        """
+        pso_ = self.get_program_specific_options()
+        if pso_ is None:
+            raise Exception("Error with program specific options. Did you specify a program with --program=... ?")
+
+        self.process_scons_options(pso_['scons_options'])
+
 
         if self.libpfasst == 'enable':
             self.fortran_source = 'enable'
@@ -219,20 +234,8 @@ class JobCompileOptions(InfoError):
         return
 
 
-    def sconsProcessOptions(self):
+    def sconsProcessCommandlineOptions(self):
         scons = import_module("SCons.Script")
-
-#        scons.AddOption(    '--xml-config',
-#                dest='xml_config',
-#                type='string',
-#                default='',
-#                help='xml configuration file with compile options'
-#        )
-#        env['xml_config'] = scons.GetOption('xml_config')
-#
-#        if env['xml_config'] != '':
-#            self.env = CompileXMLOptions.load(env['xml_config'], env)
-
 
 
         scons.AddOption(      '--mode',
@@ -654,8 +657,8 @@ class JobCompileOptions(InfoError):
         self.threading = scons.GetOption('threading')
 
 
-    def getProgramName(self, ignore_errors = False):
-        self.makeOptionsConsistent()
+    def getProgramExec(self, ignore_errors = False):
+        self.postprocessOptions()
 
         if self.program != '':
             self.program_name = self.program
@@ -673,9 +676,6 @@ class JobCompileOptions(InfoError):
             self.info("")
             if not ignore_errors:
                 sys.exit(1)
-
-        if self.program_binary_name != '':
-            return self.program_binary_name
 
         retval = self.program_name
         s = self.getUniqueID([])
@@ -765,7 +765,7 @@ class JobCompileOptions(InfoError):
 
 
     def getProgramPath(self, ignore_errors = False):
-        return os.environ['MULE_SOFTWARE_ROOT']+'/build/'+self.getProgramName(ignore_errors)
+        return os.environ['MULE_SOFTWARE_ROOT']+'/build/'+self.getProgramExec(ignore_errors)
 
 
 
@@ -773,7 +773,7 @@ class JobCompileOptions(InfoError):
         """
         Return a unique ID representing the compile parameters 
         """
-        self.makeOptionsConsistent()
+        self.postprocessOptions()
 
         retval = ''
 
@@ -845,7 +845,7 @@ if __name__ == "__main__":
     s = p.getSConsParams()
     p.info(s)
 
-    s = p.getProgramName(True)
+    s = p.getProgramExec(True)
     p.info(s)
 
     p.info("FIN")
