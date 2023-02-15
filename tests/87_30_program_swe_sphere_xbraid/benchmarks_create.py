@@ -50,6 +50,8 @@ jg.compile.mode = "debug"
 jg.compile.sweet_mpi = "enable"
 jg.compile.fortran_source = "disable"
 
+jg.runtime.output_file_mode = "csv"
+
 # Verbosity mode
 jg.runtime.verbosity = 3
 

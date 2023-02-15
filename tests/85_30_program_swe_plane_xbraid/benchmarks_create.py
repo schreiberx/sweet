@@ -66,6 +66,7 @@ jg = CompileSWEPlane(jg)
 jg.compile.mode = "debug"
 jg.compile.sweet_mpi = "enable"
 
+jg.runtime.output_file_mode = "csv"
 
 # Verbosity mode
 jg.runtime.verbosity = 3
