@@ -6,18 +6,16 @@
 
 #include "SWE_Sphere_TS_ln_imex_sdc.hpp"
 
+#include <sweet/TimeStepSizeChanged.hpp>
+
 
 bool SWE_Sphere_TS_ln_imex_sdc::implements_timestepping_method(
 		const std::string &i_timestepping_method
 )
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = simVars.disc.timestepping_order;
-	timestepping_order2 = simVars.disc.timestepping_order2;
-
 	if (i_timestepping_method == "ln_imex_sdc")
 		return true;
-
 	return false;
 }
 
@@ -52,10 +50,11 @@ void SWE_Sphere_TS_ln_imex_sdc::eval_nonlinear(const SWE_VariableVector& u, SWE_
 
 void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(
 		SWE_VariableVector& rhs,
-		double dt
+		double dt,
+		int iNode
 )
 {
-	timestepping_l_irk.solveImplicit(
+	timestepping_l_irk[iNode]->solveImplicit(
 		rhs.phi, rhs.vrt, rhs.div,
 		dt
 	);
@@ -98,9 +97,16 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	ts_u0.vrt.swapWithConfig(io_vrt);
 	ts_u0.div.swapWithConfig(io_div);
 
-	//u0.setPointer(io_phi, io_vrt, io_div);
+	if (TimeStepSizeChanged::is_changed(dt, i_fixed_dt, true)){
+		std::cout << "UPDATING LHS COEFFICIENTS" << std::endl;
+		for (int i = 0; i < nNodes; i++)
+		{
+			timestepping_l_irk[i]->update_coefficients(i_fixed_dt*tau[i]);
+		}
+	}
 	t0 = i_simulation_timestamp;
 	dt = i_fixed_dt;
+	
 
 	// -- initialize nodes values and state
 	init_sweep();
@@ -140,7 +146,7 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 				// qMatDelta0 is diagonal-only
 				// Hence, Here, we only iterate over the diagonal
 				// Implicit solve with q0
-				solveImplicit(ts_tmp_state, dt*q0(i, i));
+				solveImplicit(ts_tmp_state, dt*q0(i, i), i);
 			} else {
 				// Add non-linear and linear terms from iteration k (already computed)
 				for (size_t j = 0; j < i; j++) {
@@ -148,7 +154,7 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 					axpy(dt*qI(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 				}
 				// Implicit solve with qI
-				solveImplicit(ts_tmp_state, dt*qI(i, i));
+				solveImplicit(ts_tmp_state, dt*qI(i, i), i);
 			}
 
 			// Evaluate and store linear term for k
@@ -211,7 +217,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		axpy(-dt*qI(i, i), ts_linear_tendencies_k0[i], ts_tmp_state);
 		
 		// Implicit solve
-		solveImplicit(ts_tmp_state, dt*qI(i,i));
+		solveImplicit(ts_tmp_state, dt*qI(i,i), i);
 
 		// Evaluate and store linear term for k+1
 		eval_linear(ts_tmp_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
@@ -248,11 +254,13 @@ void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
  */
 void SWE_Sphere_TS_ln_imex_sdc::setup()
 {
-	timestepping_l_irk.setup(
-		1,
-		timestep_size
-	);
-
+	for (int i = 0; i < nNodes; i++)
+	{
+		timestepping_l_irk[i]->setup(
+			1,
+			dt*tau[i]
+		);
+	}
 
 	//
 	// Only request 1st order time stepping methods for irk and erk
@@ -269,9 +277,9 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 )	:
 		simVars(i_simVars),
 		op(i_op),
-		timestepping_l_irk(simVars, op),
 		timestepping_l_erk_n_erk(simVars, op),
 		timestepping_order(-1),
+		dt(0.0),
 
 		// SDC main parameters
 		nNodes(i_simVars.sdc.nNodes),
@@ -354,8 +362,28 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		};
 		qMatDelta0 = qMatDelta0_default;
 	}
-}
+	
+	// Initialize irk solver for each nodes
+	timestepping_l_irk.resize(nNodes);
+	for (int i = 0; i < nNodes; i++)
+	{
+		timestepping_l_irk[i] = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
+		timestepping_l_irk[i]->setup(1, dt*tau[i]);
+	}
 
+	// Print informations ...
+	std::cout << "SDC coefficients" << std::endl;
+	std::cout << tau << std::endl;
+	std::cout << weights << std::endl;
+	std::cout << qMat << std::endl;
+	std::cout << qMatDeltaE << std::endl;
+	std::cout << qMatDeltaI << std::endl;
+	std::cout << qMatDelta0 << std::endl;
+	std::cout << "nIter :" << nIter << std::endl;
+	std::cout << "diagonal : " << diagonal << std::endl;
+	std::cout << "useEndUpdate : " << useEndUpdate << std::endl;
+	std::cout << "initialSweepType : " << initialSweepType << std::endl;
+}
 
 
 SWE_Sphere_TS_ln_imex_sdc::~SWE_Sphere_TS_ln_imex_sdc()

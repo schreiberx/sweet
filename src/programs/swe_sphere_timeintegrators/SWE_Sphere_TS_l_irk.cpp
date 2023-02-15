@@ -135,7 +135,6 @@ void SWE_Sphere_TS_l_irk::solveImplicit(
 		double dt
 )
 {
-	update_coefficients(dt);
 	double gh0 = simVars.sim.gravitation*simVars.sim.h0;
 
 	if (no_coriolis)

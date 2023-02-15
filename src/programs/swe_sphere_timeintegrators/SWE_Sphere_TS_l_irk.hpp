@@ -79,7 +79,7 @@ public:
 			SphereOperators_SphereData &i_op
 	);
 
-private:
+public:
 	void update_coefficients(double i_timestep_size);
 
 

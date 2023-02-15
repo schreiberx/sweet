@@ -1268,7 +1268,7 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "SDC:" << std::endl;
-			std::cout << " + M (number of nodes): " << nodes.size() << std::endl;
+			std::cout << " + nNodes: " << nNodes << std::endl;
 			std::cout << " + nodes: " << nodes << std::endl;
 			std::cout << " + weights: " << weights << std::endl;
 			std::cout << " + qMatrix: " << qMatrix << std::endl;

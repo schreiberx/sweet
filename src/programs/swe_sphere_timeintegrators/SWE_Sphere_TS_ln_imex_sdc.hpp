@@ -169,15 +169,14 @@ public:
 	SimulationVariables& simVars;
 	SphereOperators_SphereData& op;
 
-	double timestep_size;
 
 	/*
-	 * Linear time steppers
+	 * Time-steppers for implicit solve (linear)
 	 */
-	SWE_Sphere_TS_l_irk timestepping_l_irk;
+	std::vector<SWE_Sphere_TS_l_irk*> timestepping_l_irk;
 
 	/*
-	 * Non-linear time steppers
+	 * Time-stepper for tendencies evaluation (linear and non linear)
 	 */
 	SWE_Sphere_TS_l_erk_n_erk timestepping_l_erk_n_erk;
 
@@ -192,7 +191,7 @@ private:
 
 	std::string initialSweepType;  // Type of initial sweep
 
-	bool diagonal;       // Whether or not using the diagonal implementation
+	bool diagonal;      // Whether or not using the diagonal implementation
 	bool useEndUpdate;  // Whether or not use collocation update for end point
 
 	typedef SWEETArray<1, double> Vec;
@@ -241,7 +240,7 @@ private:
 	 LHS is always updated, independently on the dt value
 	 WARNING : rhs variables are overwritten with u 
 	*/ 
-	void solveImplicit(SWE_VariableVector& rhs, double dt);
+	void solveImplicit(SWE_VariableVector& rhs, double dt, int iNode);
 
 	// Perform y <- a*x + y
 	void axpy(double a, const SWE_VariableVector& x, SWE_VariableVector& y);
