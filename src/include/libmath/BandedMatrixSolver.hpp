@@ -560,8 +560,11 @@ public:
 		for (int i = 0; i < i_size; i++)
 		{
 			T v = 0;
-			for (int j = std::max(0, i - this->num_halo_size_diagonals); j < std::max(i_size, i + this->num_halo_size_diagonals + 1); j++)
+			for (int j = std::max(0, i - this->num_halo_size_diagonals); j < std::min(i_size, i + this->num_halo_size_diagonals + 1); j++)
+			{
+				std::cout << "AAAA " << i << " " << j << " " << i_x[j] << " " << i_A[getMatrixIndex(i_size, i, j)] << std::endl;
 				v += i_x[j] * i_A[getMatrixIndex(i_size, i, j)];
+			}
 			max_diff = std::max(max_diff, std::abs(v - i_b[i]));
 			std::cout << "v: " << v << std::endl;
 			if (std::abs(v - i_b[i]) > small)

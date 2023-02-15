@@ -168,7 +168,7 @@ int main(
 							);
 
 			if (!ok)
-				SWEETError("Wrong system solution for N = " + std::to_string(n) + " and ndiag = " + std::to_string(ndiag));
+				SWEETError("Wrong system solution for N = " + std::to_string(size) + " and ndiag = " + std::to_string(ndiag));
 
 			MemBlockAlloc::free(lhs, size * ndiag * sizeof(T));
 			MemBlockAlloc::free(rhs, size * sizeof(T));
