@@ -46,7 +46,7 @@ p.runtime.output_timestep_size = 60*60  # Generate output every 1 hour
 p.runtime.output_file_mode = 'bin'
 
 params_timestep_size_reference = 30.0
-base_timestep_size = 128/p.runtime.space_res_spectral*300.0
+base_timestep_size = 128/p.runtime.space_res_spectral*1200.0
 
 # Parallelization
 nSpacePar = int(sys.argv[1]) if len(sys.argv) > 1 else p.platform_resources.num_cores_per_socket
