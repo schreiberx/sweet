@@ -56,6 +56,7 @@ from mule.InfoError import *
 
 
 jg = JobGeneration()
+jg.compile.mode = "debug"
 jg.compile.unit_test = 'test_sweet_file_dict'
 jg.runtime.user_defined_parameters['sweet-file-dict'] = {'id': '', 'value': "../"+shared_dict_filename, 'option': '--sweet-file-dict='}
 jg.runtime.user_defined_parameters['unit-test-sweet-file-dict'] = {'id': '', 'value': "1", 'option': '--run-unit-test-sweet-file-dict='}

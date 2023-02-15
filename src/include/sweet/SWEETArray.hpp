@@ -51,6 +51,9 @@ public:
 		for (int i = 0; i < D; i++)
 			_size *= _shape[i];
 
+		for (int i = 0; i < D; i++)
+			std::cout << "SHAPE " << i << ": " << _shape[i] << std::endl;
+
 		_data.resize(_size);
 	}
 
@@ -107,8 +110,12 @@ public:
 	inline
 	SWEETArray<D,T>& operator=(const T *i_values_flat)
 	{
+		for (int i = 0; i < D; i++)
+			if (_shape[i] == 0)
+				SWEETError("Shape is 0, you need to resize array before assigning raw data!");
 
-		for (int i = 0; i < _size; i++)
+		// We simply hope that the data is properly allocated
+		for (std::size_t i = 0; i < _size; i++)
 			_data[i] = i_values_flat[i];
 
 		return *this;
@@ -118,11 +125,9 @@ public:
 	inline
 	SWEETArray<D,T>& operator=(const SWEETArray<D,T> &a)
 	{
-		for (int i = 0; i < D; i++)
-			if (_shape[i] != a._shape[i])
-				SWEETError("Shape mismatch!");
+		this->setup(a._shape);
 
-		for (int i = 0; i < _size; i++)
+		for (std::size_t i = 0; i < _size; i++)
 			_data[i] = a._data[i];
 
 		return *this;

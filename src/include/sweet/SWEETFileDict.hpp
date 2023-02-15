@@ -203,7 +203,7 @@ public:
 			std::cout << "SWEETFileDict: Found " << num_entries << " dictionary entries" << std::endl;
 
 		_dict.resize(num_entries);
-		for (int i = 0; i < num_entries; i++)
+		for (std::size_t i = 0; i < num_entries; i++)
 		{
 			SWEETFileDict_Element &e = _dict[i];
 
@@ -335,7 +335,7 @@ public:
 
 	void print(std::ostream& os = std::cout)	const
 	{
-		for (int i = 0; i < _dict.size(); i++)
+		for (std::size_t i = 0; i < _dict.size(); i++)
 		{
 			const SWEETFileDict_Element &e = _dict[i];
 
@@ -398,7 +398,7 @@ public:
 	template <typename T>
 	void getValue(const std::string &i_key, T &o_value)	const
 	{
-		for (int i = 0; i < _dict.size(); i++)
+		for (std::size_t i = 0; i < _dict.size(); i++)
 		{
 			if (_dict[i].key == i_key)
 			{
@@ -432,7 +432,7 @@ private:
 		buffer.resize(1024);
 
 		bool found = false;
-		for (int i = 0; i < buffer.size()-1; i++)
+		for (std::size_t i = 0; i < buffer.size()-1; i++)
 		{
 			f.read((char*)&(buffer[i]), sizeof(char));
 			if (buffer[i] == 0)
@@ -464,7 +464,7 @@ private:
 			SWEETArray<D,T> &array
 	)
 	{
-		for (int i = 0; i < array.size(); i++)
+		for (std::size_t i = 0; i < array.size(); i++)
 			array.data()[i] = _read<T>(f);
 	}
 };
