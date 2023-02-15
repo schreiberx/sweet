@@ -11,20 +11,20 @@ verbose = True
 
 p.runtime.paramsSDC = getSDCSetup(
     nNodes=3,
-    nIter=3,
+    nIter=2,
     nodeType='RADAU-RIGHT', 
-    qDeltaImplicit='OPT-QmQd-0', 
-    qDeltaExplicit='PIC', 
+    qDeltaImplicit='BE', 
+    qDeltaExplicit='FE', 
     diagQDeltaInit='BEpar',
-    diagonal=1,
+    diagonal=False,
     initSweepType="QDELTA",
-    useEndUpdate=0
+    useEndUpdate=False
 )
 
 p.compile.mode = 'release'
 p.compile.gui = 'enable'
 # p.runtime.gui = 1
-p.compile.mode = 'debug'
+# p.compile.mode = 'debug'
 
 #
 # Mode and Physical resolution
@@ -47,7 +47,7 @@ p.runtime.output_timestep_size = 60*60  # Generate output every 1 hour
 p.runtime.output_file_mode = 'bin'
 
 params_timestep_size_reference = 30.0
-base_timestep_size = 128/p.runtime.space_res_spectral*1200.0
+base_timestep_size = 128/p.runtime.space_res_spectral*300.0
 
 # Parallelization
 nSpacePar = int(sys.argv[1]) if len(sys.argv) > 1 else p.platform_resources.num_cores_per_socket
