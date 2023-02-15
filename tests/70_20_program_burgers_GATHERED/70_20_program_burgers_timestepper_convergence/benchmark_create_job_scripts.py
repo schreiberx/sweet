@@ -30,6 +30,9 @@ jg.compile.mode = 'debug'
 # Verbosity mode
 jg.runtime.verbosity = 2
 
+# DEPRECATED to use .CSV output!!!
+jg.runtime.output_file_mode = 'csv'
+
 #
 # Mode and Physical resolution
 #
