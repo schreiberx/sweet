@@ -8,9 +8,9 @@ function create_links () {
 		if [[ "$i" == *__pycache__ ]]; then
 			continue
 		fi
-		if [[ "$i" == *__init__.py ]]; then
-			continue
-		fi
+		# if [[ "$i" == *__init__.py ]]; then
+		# 	continue
+		# fi
 
 		if [[ "$LEVEL" != "0" ]]; then
 			if [[ -e "$i" ]]; then
