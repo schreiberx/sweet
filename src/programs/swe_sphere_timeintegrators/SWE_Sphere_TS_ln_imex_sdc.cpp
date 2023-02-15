@@ -35,57 +35,6 @@ std::string SWE_Sphere_TS_ln_imex_sdc::string_id()
 	return "ln_imex_sdc";
 }
 
-
-void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
-		SphereData_Spectral &io_phi,
-		SphereData_Spectral &io_vrt,
-		SphereData_Spectral &io_div,
-		double i_fixed_dt,
-		double i_simulation_timestamp
-)
-{
-	/*
-	Perform one step of IMEX SDC for
-	
-	du/dt = L(u) + NL(u)
-
-	with u = [io_phi, io_vrt, io_div], L the linear term
-	and NL the non linear term.
-
-	It uses an implicit sweep for the L term,
-	and an explicit sweep for the NL term.
-	*/
-
-	// Default behavior (no parameter set ...)
-	if (nNodes == 0) {
-		return;
-	}
-
-	// -- set-up step values container
-	ts_u0.phi.swapWithConfig(io_phi);
-	ts_u0.vrt.swapWithConfig(io_vrt);
-	ts_u0.div.swapWithConfig(io_div);
-
-	//u0.setPointer(io_phi, io_vrt, io_div);
-	t0 = i_simulation_timestamp;
-	dt = i_fixed_dt;
-
-	// -- initialize nodes values and state
-	init_sweep();
-
-	// -- perform sweeps
-	for (size_t k = 0; k < nIter; k++){
-		sweep(k);
-	}
-
-	// -- compute end-point solution and update step values
-	computeEndPoint();
-
-	ts_u0.phi.swapWithConfig(io_phi);
-	ts_u0.vrt.swapWithConfig(io_vrt);
-	ts_u0.div.swapWithConfig(io_div);
-}
-
 void SWE_Sphere_TS_ln_imex_sdc::eval_linear(const SWE_VariableVector& u, SWE_VariableVector& eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_linear(
 		u.phi, u.vrt, u.div,
@@ -121,6 +70,52 @@ void SWE_Sphere_TS_ln_imex_sdc::axpy(
 	io_y.phi += a*i_x.phi;
 	io_y.vrt += a*i_x.vrt;
 	io_y.div += a*i_x.div;
+}
+
+
+void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
+		SphereData_Spectral &io_phi,
+		SphereData_Spectral &io_vrt,
+		SphereData_Spectral &io_div,
+		double i_fixed_dt,
+		double i_simulation_timestamp
+)
+{
+	/*
+	Perform one step of IMEX SDC for
+	
+	du/dt = L(u) + NL(u)
+
+	with u = [io_phi, io_vrt, io_div], L the linear term
+	and NL the non linear term.
+
+	It uses an implicit sweep for the L term,
+	and an explicit sweep for the NL term.
+	*/
+
+	// -- set-up step values container
+	ts_u0.phi.swapWithConfig(io_phi);
+	ts_u0.vrt.swapWithConfig(io_vrt);
+	ts_u0.div.swapWithConfig(io_div);
+
+	//u0.setPointer(io_phi, io_vrt, io_div);
+	t0 = i_simulation_timestamp;
+	dt = i_fixed_dt;
+
+	// -- initialize nodes values and state
+	init_sweep();
+
+	// -- perform sweeps
+	for (size_t k = 0; k < nIter; k++){
+		sweep(k);
+	}
+
+	// -- compute end-point solution and update step values
+	computeEndPoint();
+
+	ts_u0.phi.swapWithConfig(io_phi);
+	ts_u0.vrt.swapWithConfig(io_vrt);
+	ts_u0.div.swapWithConfig(io_div);
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
@@ -226,7 +221,6 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 	}
 
 	// Swap k+1 and k values for next iteration (or end-point update)
-
 	ts_nonlinear_tendencies_k0.swap(ts_nonlinear_tendencies_k1);
 	ts_linear_tendencies_k0.swap(ts_linear_tendencies_k1);
 }
