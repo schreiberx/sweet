@@ -451,7 +451,8 @@ public:
 			this->simVars_levels[level]->timecontrol.current_timestep_size = this->simVars->timecontrol.current_timestep_size *
 												std::pow(this->simVars->xbraid.xbraid_cfactor, level);
 
-			std::cout << "Timestep size at level " << level << " : " << this->simVars_levels[level]->timecontrol.current_timestep_size << std::endl;
+			if (rank == 0)
+				std::cout << "Timestep size at level " << level << " : " << this->simVars_levels[level]->timecontrol.current_timestep_size << std::endl;
 
 #if SWEET_XBRAID_SCALAR
 			ODE_Scalar_TimeSteppers* tsm = new ODE_Scalar_TimeSteppers;
