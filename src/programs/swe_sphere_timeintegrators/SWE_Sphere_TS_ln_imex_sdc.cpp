@@ -209,9 +209,9 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	*/
 
 	// -- set-up step values container
-	ts_u0.phi.swapWithConfig(io_phi);
-	ts_u0.vrt.swapWithConfig(io_vrt);
-	ts_u0.div.swapWithConfig(io_div);
+	ts_u0.phi = io_phi;
+	ts_u0.vrt = io_vrt;
+	ts_u0.div = io_div;
 
 	if (TimeStepSizeChanged::is_changed(dt, i_fixed_dt, true)){
 		std::cout << "UPDATING LHS COEFFICIENTS" << std::endl;
@@ -235,9 +235,9 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	// -- compute end-point solution and update step values
 	computeEndPoint();
 
-	ts_u0.phi.swapWithConfig(io_phi);
-	ts_u0.vrt.swapWithConfig(io_vrt);
-	ts_u0.div.swapWithConfig(io_div);
+	io_phi = ts_u0.phi;
+	io_vrt = ts_u0.vrt;
+	io_div = ts_u0.div;
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
@@ -387,5 +387,10 @@ void SWE_Sphere_TS_ln_imex_sdc::setup()
 
 SWE_Sphere_TS_ln_imex_sdc::~SWE_Sphere_TS_ln_imex_sdc()
 {
+	for (int i = 0; i < nNodes; i++)
+	{
+		delete timestepping_l_irk[i];
+	}
+	
 }
 
