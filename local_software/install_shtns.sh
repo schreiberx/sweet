@@ -14,9 +14,6 @@ if [ "$CC" == "gcc-6" ]; then
 	export CFLAGS="$CFLAGS -mtune=generic"
 fi
 
-export
-echo $CFLAGS
-
 config_setup
 
 config_package $@
