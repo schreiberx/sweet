@@ -5,28 +5,130 @@ import inspect
 
 from mule.sdc.qmatrix import getSetup
 
-descr = getSetup.__doc__
+# Extract parameter documentation from function docstring
+doc = getSetup.__doc__.splitlines()
+paramsDoc = {}
+for i in range(len(doc)):
+    if doc[i].strip().startswith('Parameters'):
+        break
+i += 2
+while i < len(doc):
+    if doc[i].strip().startswith('Example'):
+        break
+    if doc[i].strip().endswith('optional'):
+        name = doc[i].strip().split(":")[0].strip()
+        paramsDoc[name] = []
+        i += 1
+        while doc[i].startswith("        ") or doc[i].strip() == "":
+            if doc[i].strip() != "":
+                paramsDoc[name].append(doc[i])
+            i += 1
+        paramsDoc[name] = '\n'.join(paramsDoc[name])
 
+# Specific formater with a bit more width ...
+class HelpFormatter(argparse.RawTextHelpFormatter):
+    def __init__(
+        self, prog, indent_increment=2, max_help_position=36, width=None):
+        super().__init__(
+            prog, indent_increment, max_help_position, width)
+
+
+# Program parser
 parser = argparse.ArgumentParser(
     prog='generateSWEETFileDict_SDC',
-    description=descr,
-    formatter_class=argparse.RawDescriptionHelpFormatter)
+    description="Generate SWEETFileDict parameter file for SDC",
+    formatter_class=HelpFormatter)
 
 setup = inspect.signature(getSetup)
 
 parser.add_argument(
-    f'--fileName', default="params_SDC.sweet", 
-    help="Name of the SWEETFileDict file (default: params_SDC.sweet)")
+    f'--showDefault', action='store_true', help="show default configuration")
 
+parser.add_argument(
+    f'--fileName', default="params_SDC.sweet", 
+    help="name of the SWEETFileDict file (default: params_SDC.sweet)")
+
+parser.add_argument(
+    f'--preset', default=None, 
+    help="unique ID for preset parameters")
+
+parser.add_argument(
+    f'--showPreset', action='store_true', help="show preset configurations")
+
+PRESET_LIST = {
+    'P1' : {
+        'nNodes': 4,
+        'nodeType': 'RADAU-RIGHT',
+        'nIter': 3,
+        'qDeltaImplicit': 'BEpar',
+        'qDeltaExplicit': 'PIC',
+        'initSweepType': 'QDELTA',
+        'useEndUpdate': False,
+        'diagQDeltaInit': 'BEpar',
+        'diagonal': True,
+    },
+    'P2' : {
+        'nNodes': 3,
+        'nodeType': 'RADAU-RIGHT',
+        'nIter': 3,
+        'qDeltaImplicit': 'OPT-QmQd-0',
+        'qDeltaExplicit': 'PIC',
+        'initSweepType': 'QDELTA',
+        'useEndUpdate': False,
+        'diagQDeltaInit': 'BEpar',
+        'diagonal': True,
+    },
+}
+
+# Add parser argument for each function parameter
 for name, val in setup.parameters.items(): 
     parser.add_argument(
         f'--{name}', default=val.default, type=val.annotation,
-        help='see documentation above')
+        help=paramsDoc[name])
 
 args = parser.parse_args()
 
 params = {name: val for name, val in args._get_kwargs()}
 params.pop('fileName')
+params.pop('preset')
+params.pop('showPreset')
+params.pop('showDefault')
 
+if args.showDefault:
+    print('-'*80)
+    print('Preset configurations')
+    print('-'*80)
+    for name, val in setup.parameters.items(): 
+        print(f'--{name} {val.default}')
+    print('-'*80)
+    
+
+if args.showPreset:
+    print('-'*80)
+    print('Preset configurations')
+    print('-'*80)
+    for key, dico in PRESET_LIST.items():
+        print(f'{key} :')
+        for name, value in dico.items():
+            print(f'--{name} {value}')
+        print('-'*80)
+
+if args.showPreset or args.showDefault:
+    exit()
+
+params = {name: val for name, val in args._get_kwargs()}
+params.pop('fileName')
+params.pop('preset')
+params.pop('showPreset')
+params.pop('showDefault')
+
+if args.preset is not None:
+    name = args.preset
+    if name in PRESET_LIST.keys():
+        PRESET_LIST[name].update(params)
+        params = PRESET_LIST[name]
+    else:
+        raise ValueError(f'no {name} preset config found, choose between {list(PRESET_LIST.keys())}')
+    
 params = getSetup(**params)
-params.writeToFile('paramsSDC.sweet')
+params.writeToFile(args.fileName)

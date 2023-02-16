@@ -287,22 +287,18 @@ def getSetup(
     Parameters
     ----------
     nNodes : int, optional
-        Number of nodes.. The default is 3.
+        Number of nodes.
     nodeType : str, optional
         Quadrature type for the nodes, can be 'GAUSS', 'LOBATTO', 'RADAU-RIGHT' or 'RADAU-LEFT'. 
-        The default is 'RADAU-RIGHT'.
     nIter : int, optional
-        Number of iterations (sweeps). The default is 3.
+        Number of iterations (sweeps).
     qDeltaImplicit : str, optional
         Base (implicit) sweep for SDC. Can be 'BE', 'BEpar', 'LU', ... (see genQDelta doc). 
-        The default is 'BE'.
     qDeltaExplicit : str, optional
         Explicit sweep (when used for IMEX SDC). Can be 'FE', 'PIC', ... (see genQDelta doc). 
-        The default is 'FE'.
     diagonal : bool, optional
         Wether or not use the diagonal implementation. Warning : should be used
         with compatible QDelta matrices.
-        The default is False.
     initSweepType : str, optional
         The way the tendencies are initialized before the first sweep. Can be :
 
@@ -312,19 +308,13 @@ def getSetup(
           one IMEX update between the nodes and evaluate the tendencies from
           those. If diagonal=True, then uses the values provided by the
           diagQDeltaInit parameter.
-        - ZERO_SOLUTION : use zeros values for the solution, and evaluate 
-          tendencies from it.
-        - ZERO_TENDENCIES : uses zeros tendencies.
-        
-        The default is 'COPY'.
+
     useEndUpdate : bool, optional
-        Wether or not compute the end update with the quadrature formula. 
-        The default is False.
+        Wether or not compute the end update with the quadrature formula.
     diagQDeltaInit : str, optional
-        Diagonal sweep used if diagonal=True and initSweep=QDELTA, must
-        be a diagonal sweep. The default is 'BEpar'.
+        Diagonal sweep used if diagonal=True and initSweep=QDELTA, must be a diagonal sweep.
     nodeDistr : str, optional
-        Node distribution. The default is 'LEGENDRE'.
+        Node distribution.
         
     Example
     -------
