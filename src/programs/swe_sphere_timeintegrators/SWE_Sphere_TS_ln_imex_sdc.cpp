@@ -231,9 +231,6 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 		sweep(k);
 	}
 
-	// -- compute end-point solution and update step values
-	computeEndPoint();
-
 	// -- swap state and time-step
 	ts_u0.phi.swapWithConfig(io_phi);
 	ts_u0.vrt.swapWithConfig(io_vrt);
@@ -396,39 +393,6 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 			ts_u0.div = ts_state.div;
 		}
 	}
-}
-
-void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
-{
-	if (useEndUpdate)
-	{
-		/*
-		 * Use quadrature
-		 */
-		const Vec& w = weights;
-		
-		// Compute collocation update
-		SWE_VariableVector ts_state(ts_u0);
-
-		for (int j = 0; j < nNodes; j++) {
-			axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_state);
-			axpy(dt*w(j), ts_linear_tendencies_k0[j], ts_state);
-		}
-
-		// Time-step update using last state value
-		ts_u0.phi = ts_state.phi;
-		ts_u0.vrt = ts_state.vrt;
-		ts_u0.div = ts_state.div;
-		return;
-	}
-
-	SWEETError("TODO");
-#if 0
-	/*
-	 * Use final point in time
-	 */
-	ts_u0 = ts_nonlinear_tendencies_k0[nNodes-1];
-#endif
 }
 
 /*
