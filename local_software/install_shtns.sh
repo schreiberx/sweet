@@ -11,7 +11,7 @@ PKG_URL_SRC="shtns-3.5.2.tar.gz"
 if [ "$CC" == "gcc-6" ]; then
 	# Special workaround for gcc-6 compiler
 	# This is mainly for the continuous testing environment
-	export CFLAGS="$CFLAGS -mtune=generic"
+	export CFLAGS="$CFLAGS -mno-avx512f"
 fi
 
 config_setup
