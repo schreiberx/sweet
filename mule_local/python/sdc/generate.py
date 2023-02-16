@@ -81,10 +81,12 @@ PRESET_LIST = {
 }
 
 # Add parser argument for each function parameter
+defaults = {}
 for name, val in setup.parameters.items(): 
     parser.add_argument(
-        f'--{name}', default=val.default, type=val.annotation,
+        f'--{name}', default=None, type=val.annotation,
         help=paramsDoc[name])
+    defaults[name] = val.default
 
 args = parser.parse_args()
 
@@ -125,10 +127,11 @@ params.pop('showDefault')
 if args.preset is not None:
     name = args.preset
     if name in PRESET_LIST.keys():
-        PRESET_LIST[name].update(params)
         params = PRESET_LIST[name]
     else:
         raise ValueError(f'no {name} preset config found, choose between {list(PRESET_LIST.keys())}')
-    
+for name, val in params.items():
+    if val is None:
+        params[name] = defaults[name]
 params = getSetup(**params)
 params.writeToFile(args.fileName)
