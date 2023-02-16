@@ -40,7 +40,6 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		ts_nonlinear_tendencies_k0(op.sphereDataConfig, i_simVars.sdc.nNodes),
 		ts_linear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
 		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
-		ts_tmp_state(op.sphereDataConfig),
 
 		dt(i_simVars.timecontrol.current_timestep_size)
 {
@@ -149,17 +148,17 @@ std::string SWE_Sphere_TS_ln_imex_sdc::string_id()
 	return "ln_imex_sdc";
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::eval_linear(const SWE_VariableVector& u, SWE_VariableVector& eval, double t) {
+void SWE_Sphere_TS_ln_imex_sdc::eval_linear(const SWE_VariableVector& i_u, SWE_VariableVector& o_eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_linear(
-		u.phi, u.vrt, u.div,
-		eval.phi, eval.vrt, eval.div,
+		i_u.phi, i_u.vrt, i_u.div,
+		o_eval.phi, o_eval.vrt, o_eval.div,
 		t  // time-stamp
 	);
 }
-void SWE_Sphere_TS_ln_imex_sdc::eval_nonlinear(const SWE_VariableVector& u, SWE_VariableVector& eval, double t) {
+void SWE_Sphere_TS_ln_imex_sdc::eval_nonlinear(const SWE_VariableVector& i_u, SWE_VariableVector& o_eval, double t) {
 	timestepping_l_erk_n_erk.euler_timestep_update_nonlinear(
-		u.phi, u.vrt, u.div,
-		eval.phi, eval.vrt, eval.div,
+		i_u.phi, i_u.vrt, i_u.div,
+		o_eval.phi, o_eval.vrt, o_eval.div,
 		t  // time-stamp
 	);
 }
@@ -241,105 +240,117 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	ts_u0.div.swapWithConfig(io_div);
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
-	
+
+
+void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
+{
+	// Local convenient references
+	const Mat& q = qMat;
+	const Mat& qI = qMatDeltaI;
+	const Mat& qE = qMatDeltaE;
+
 	if (initialSweepType == "QDELTA")
 	{
-		// Uses QDelta matrix to initialize node values
-
-		// Local convenient references
-		const Mat& qI = qMatDeltaI;
-		const Mat& qE = qMatDeltaE;
-		const Mat& q0 = qMatDelta0;
-
 		// Loop on nodes (can be parallelized if diagonal)
+
+		//SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
 		for (int i = 0; i < nNodes; i++) {
 
 			// Initialize with u0 value
-			ts_tmp_state = ts_u0;
+			SWE_VariableVector ts_state(ts_u0);
 
-			if (diagonal) {
-				// qMatDelta0 is diagonal-only
-				// Hence, Here, we only iterate over the diagonal
-				// Implicit solve with q0
-				solveImplicit(ts_tmp_state, dt*q0(i, i), i);
-			} else {
+			if (!diagonal)
+			{
 				// Add non-linear and linear terms from iteration k (already computed)
 				for (int j = 0; j < i; j++) {
-					axpy(dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
-					axpy(dt*qI(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
+					axpy(dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
+					axpy(dt*qI(i, j), ts_linear_tendencies_k0[j], ts_state);
 				}
-				// Implicit solve with qI
-				solveImplicit(ts_tmp_state, dt*qI(i, i), i);
 			}
 
+			// Implicit solve with qI
+			solveImplicit(ts_state, dt*qI(i, i), i);
+
 			// Evaluate and store linear term for k
-			eval_linear(ts_tmp_state, ts_linear_tendencies_k0[i], t0+dt*tau[i]);
+			eval_linear(ts_state, ts_linear_tendencies_k0[i], t0+dt*tau[i]);
 
 			// Evaluate and store non linear term for k
-			eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k0[i], t0+dt*tau[i]);
+			eval_nonlinear(ts_state, ts_nonlinear_tendencies_k0[i], t0+dt*tau[i]);
 		}
-
-	} else if (initialSweepType == "COPY") {
-		// Evaluate linear and non-linear with initial solution
-		eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
-		eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
-
+	}
+	else if (initialSweepType == "COPY")
+	{
 		// Simply copy to each node as initial guess
-		for (int i = 1; i < nNodes; i++) {
-			ts_linear_tendencies_k0[i] = ts_linear_tendencies_k0[0];
-			ts_nonlinear_tendencies_k0[i] = ts_nonlinear_tendencies_k0[0];
+		//SWEET_OMP_PARALLEL_FOR
+		for (int i = 0; i < nNodes; i++)
+		{
+			if (i == 0)
+			{
+				// Evaluate linear and non-linear with initial solution
+				eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
+				eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
+			}
+			else
+			{
+				ts_linear_tendencies_k0[i] = ts_linear_tendencies_k0[0];
+				ts_nonlinear_tendencies_k0[i] = ts_nonlinear_tendencies_k0[0];
+			}
 		}
-	} else {
+	}
+	else
+	{
 		SWEETError(initialSweepType + " initial sweep type not implemented");
 	}
 
 }
 
-void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 
+void SWE_Sphere_TS_ln_imex_sdc::sweep(
+		size_t k	/// iteration number
+) {
 	// Local convenient references
 	const Mat& q = qMat;
 	const Mat& qI = qMatDeltaI;
 	const Mat& qE = qMatDeltaE;
 
 	// Loop on nodes (can be parallelized if diagonal)
+	//SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
 	for (int i = 0; i < nNodes; i++) {
-		
+
 		// Initialize with u0 value
-		ts_tmp_state = ts_u0;
-		
+		SWE_VariableVector ts_state(ts_u0);
+
 		// Add quadrature terms
 		for (int j = 0; j < nNodes; j++) {
-			axpy(dt*q(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
-			axpy(dt*q(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
+			axpy(dt*q(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
+			axpy(dt*q(i, j), ts_linear_tendencies_k0[j], ts_state);
 		}
 
 		if (!diagonal) {
 			// Add non-linear and linear terms from iteration k+1
 			for (int j = 0; j < i; j++) {
-				axpy(dt*qE(i, j), ts_nonlinear_tendencies_k1[j], ts_tmp_state);
-				axpy(dt*qI(i, j), ts_linear_tendencies_k1[j], ts_tmp_state);
+				axpy(dt*qE(i, j), ts_nonlinear_tendencies_k1[j], ts_state);
+				axpy(dt*qI(i, j), ts_linear_tendencies_k1[j], ts_state);
 			}
 
 			// Substract non-linear and linear terms from iteration k
 			for (int j = 0; j < i; j++) {
-				axpy(-dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
-				axpy(-dt*qI(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
+				axpy(-dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
+				axpy(-dt*qI(i, j), ts_linear_tendencies_k0[j], ts_state);
 			}
 		}
 
 		// Last linear term from iteration k
-		axpy(-dt*qI(i, i), ts_linear_tendencies_k0[i], ts_tmp_state);
-		
+		axpy(-dt*qI(i, i), ts_linear_tendencies_k0[i], ts_state);
+
 		// Implicit solve
-		solveImplicit(ts_tmp_state, dt*qI(i,i), i);
+		solveImplicit(ts_state, dt*qI(i,i), i);
 
 		// Evaluate and store linear term for k+1
-		eval_linear(ts_tmp_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
+		eval_linear(ts_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
 
 		// Evaluate and store non linear term for k+1
-		eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
+		eval_nonlinear(ts_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
 	}
 
 	// Swap k+1 and k values for next iteration (or end-point update)
@@ -349,21 +360,35 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 
 void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
 {
-	if (useEndUpdate) {
+	if (useEndUpdate)
+	{
+		/*
+		 * Use quadrature
+		 */
 		const Vec& w = weights;
 		
 		// Compute collocation update
-		ts_tmp_state = ts_u0;
+		SWE_VariableVector ts_state(ts_u0);
+
 		for (int j = 0; j < nNodes; j++) {
-			axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
-			axpy(dt*w(j), ts_linear_tendencies_k0[j], ts_tmp_state);
+			axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_state);
+			axpy(dt*w(j), ts_linear_tendencies_k0[j], ts_state);
 		}
+
+		// Time-step update using last state value
+		ts_u0.phi = ts_state.phi;
+		ts_u0.vrt = ts_state.vrt;
+		ts_u0.div = ts_state.div;
+		return;
 	}
 
-	// Time-step update using last state value
-	ts_u0.phi = ts_tmp_state.phi;
-	ts_u0.vrt = ts_tmp_state.vrt;
-	ts_u0.div = ts_tmp_state.div;
+	SWEETError("TODO");
+#if 0
+	/*
+	 * Use final point in time
+	 */
+	ts_u0 = ts_nonlinear_tendencies_k0[nNodes-1];
+#endif
 }
 
 /*

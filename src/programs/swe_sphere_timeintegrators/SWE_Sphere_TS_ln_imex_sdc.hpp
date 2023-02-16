@@ -46,7 +46,8 @@ public:
 /*
  * Class to store solution data at one node
  */
-class SWE_VariableVector {
+class SWE_VariableVector
+{
 public:
 	SphereData_Spectral phi;
 	SphereData_Spectral vrt;
@@ -60,6 +61,16 @@ public:
 		div(sphereDataConfig)
 	{
 
+	}
+
+	SWE_VariableVector(const SWE_VariableVector &i_value)	:
+		phi(i_value.phi.sphereDataConfig),
+		vrt(i_value.phi.sphereDataConfig),
+		div(i_value.phi.sphereDataConfig)
+	{
+		phi = i_value.phi;
+		vrt = i_value.vrt;
+		div = i_value.div;
 	}
 
 	// Empty constructor
@@ -216,8 +227,6 @@ private:
 	SDC_NodeStorage_ ts_linear_tendencies_k1;  		// linear term evaluations
 	SDC_NodeStorage_ ts_nonlinear_tendencies_k1;	// non-linear term evaluations
 
-	SWE_VariableVector ts_tmp_state;  // temporary variable
-
 
 	// start of current time step
 	double t0;
@@ -248,8 +257,10 @@ private:
 	// Initialize nodes values
 	void init_sweep();
 
+
 	// Perform one sweep
 	void sweep(size_t k);
+
 
 	// Compute end-point solution and update step variables
 	void computeEndPoint();
