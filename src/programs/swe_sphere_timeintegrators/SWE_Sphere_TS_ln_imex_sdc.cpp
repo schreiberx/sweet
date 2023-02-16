@@ -351,15 +351,19 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 			ts_u0.phi = ts_state.phi;
 			ts_u0.vrt = ts_state.vrt;
 			ts_u0.div = ts_state.div;
-			return;
 		} 
+		else
+		{
+			// Evaluate and store linear term for k+1
+			eval_linear(ts_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
 
-		// Evaluate and store linear term for k+1
-		eval_linear(ts_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
-
-		// Evaluate and store non linear term for k+1
-		eval_nonlinear(ts_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
+			// Evaluate and store non linear term for k+1
+			eval_nonlinear(ts_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
+		}
 	}
+
+	if (!useEndUpdate && (k == nIter-1))
+		return;
 
 	// Swap k+1 and k values for next iteration (or end-point update)
 	ts_nonlinear_tendencies_k0.swap(ts_nonlinear_tendencies_k1);
