@@ -257,13 +257,9 @@ private:
 	// Initialize nodes values
 	void init_sweep();
 
-
 	// Perform one sweep
 	void sweep(size_t k);
 
-
-	// Compute end-point solution and update step variables
-	void computeEndPoint();
 
 public:
 	SWE_Sphere_TS_ln_imex_sdc(
