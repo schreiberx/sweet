@@ -113,7 +113,7 @@ class JobCompileOptions(InfoError):
 
         # Which parallel sdc parallelizatino model to use
         # Only 'omp' supported so far
-        self.parallel_sdc_par_model = 'none'
+        self.parallel_sdc_par_model = 'off'
 
         self.quadmath = 'disable'
 
