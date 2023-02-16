@@ -103,6 +103,10 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 	
 	// Initialize irk solver for each nodes
 	timestepping_l_irk.resize(nNodes);
+
+#if SWEET_PARALLEL_SDC_OMP_MODEL
+	SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
+#endif
 	for (int i = 0; i < nNodes; i++)
 	{
 		timestepping_l_irk[i] = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
@@ -254,7 +258,7 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 		// Loop on nodes (can be parallelized if diagonal)
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-		SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
+		SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal) num_threads(nNodes)")
 #endif
 		for (int i = 0; i < nNodes; i++) {
 
@@ -288,7 +292,7 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 
 		// Simply copy to each node as initial guess
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-		SWEET_OMP_PARALLEL_FOR
+		SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
 #endif
 		for (int i = 0; i < nNodes; i++)
 		{
@@ -318,7 +322,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 
 	// Loop on nodes (can be parallelized if diagonal)
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-	SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
+	SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal) num_threads(nNodes)")
 #endif
 	for (int i = 0; i < nNodes; i++) {
 
