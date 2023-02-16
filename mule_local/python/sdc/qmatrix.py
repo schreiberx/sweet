@@ -16,40 +16,64 @@ from mule.SWEETFileDict import SWEETFileDict
 
 # Storage for diagonaly optimized QDelta matrices
 OPT_COEFFS = {
-    "QmQd": {
+    "QMQD": {
         2: {'GAUSS':
-                [(0.105662, 0.394338),
-                 (0.394338, 0.105662)],
+                [(0.105662, 0.394338),  # sum = 1/2
+                 (0.394338, 0.105662)], # sum = 1/2
             'RADAU-LEFT':
-                [(0.0, 0.333333)],
+                [(0.0, 0.333333)],      # sum = 1/3
             'RADAU-RIGHT':
-                [(0.166667, 0.5),
-                 (0.666667, 0.0)],
+                [(0.166667, 0.5),       # sum = 2/3
+                 (0.666667, 0.0)],      # sum = 2/3
             'LOBATTO':
-                [(0.0, 0.5)]
+                [(0.0, 0.5)]            # sum = 1/2
             },
         3: {'GAUSS':
-                [(0.037571, 0.16667, 0.29577),
-                 (0.156407, 0.076528, 0.267066),
-                 (0.267065, 0.076528, 0.156407),
-                 (0.295766, 0.166666, 0.037567)],
+                [(0.037571, 0.166670, 0.295770),   # sum = 1/2
+                 (0.156407, 0.076528, 0.267066),   # sum = 1/2
+                 (0.267065, 0.076528, 0.156407),   # sum = 1/2
+                 (0.295766, 0.166666, 0.037567)],  # sum = 1/2
+            'RADAU-LEFT':
+                [(0.0, 0.118350, 0.281650),        # sum = 2/5
+                 (0.0, 0.322474, 0.077526)],       # sum = 2/5
             'RADAU-RIGHT':
-                [(0.051684, 0.214984, 0.333334), # Winner for advection
-                 (0.233475, 0.080905, 0.285619),
-                 (0.390077, 0.094537, 0.115385),
-                 (0.422474, 0.177525, 0.0)],
+                [(0.051684, 0.214984, 0.333334),   # sum = 3/5, Winner for advection
+                 (0.233475, 0.080905, 0.285619),   # sum = 3/5
+                 (0.390077, 0.094537, 0.115385),   # sum = 3/5
+                 (0.422474, 0.177525, 0.0)],       # sum = 3/5
             'LOBATTO':
-                [(0.0, 0.166667, 0.333333),
-                 (0.0, 0.5, 0.0)],
+                [(0.0, 0.166667, 0.333333),        # sum = 1/2
+                 (0.0, 0.5, 0.0)],                 # sum = 1/2
+            },
+        4: {'GAUSS':
+                [(0.077743, 0.044737, 0.155099, 0.222721),  # sum = 1/2
+                 (0.131879, 0.039977, 0.121777, 0.204056),  # sum = 1/2
+                 (0.163870, 0.108119, 0.043928, 0.184203),  # sum = 1/2
+                 (0.204603, 0.122324, 0.040523, 0.132426)], # sum = 1/2
+            'RADAU-LEFT':
+                [(0.0, 0.053082, 0.147630, 0.227850),       # sum = 3/7,
+                 (0.0, 0.158930, 0.065439, 0.204202),       # sum = 3/7
+                 (0.0, 0.241626, 0.068757, 0.118188),       # sum = 3/7
+                 (0.0, 0.262554, 0.136489, 0.029530)],      # sum = 3/7
+            'RADAU-RIGHT':
+                [(0.179657, 0.047644, 0.134350, 0.209484),  # sum = 4/7,
+                 (0.243813, 0.054458, 0.117399, 0.156936),  # sum = 4/7
+                 (0.273342, 0.152240, 0.036186, 0.110861),  # sum = 4/7
+                 (0.303862, 0.196902, 0.070838, 0.0)],      # sum = 4/7
+            'LOBATTO':
+                [(0.0, 0.069096, 0.180900, 0.249998),       # sum = 1/2
+                 (0.0, 0.225168, 0.063361, 0.211471),       # sum = 1/2
+                 (0.0, 0.338774, 0.077899, 0.083337),       # sum = 1/2
+                 (0.0, 0.361804, 0.138197, 0.0)],           # sum = 1/2
             },
         5: {'RADAU-RIGHT':
-                [(0.193913, 0.141717, 0.071975, 0.018731, 0.119556),
-                 (0.205563, 0.143134, 0.036388, 0.073742, 0.10488),
-                 (0.176822, 0.124251, 0.031575, 0.084012, 0.142621)],
+                [(0.193913, 0.141717, 0.071975, 0.018731, 0.119556),  # sum = 5/9
+                 (0.205563, 0.143134, 0.036388, 0.073742, 0.10488),   # sum = 5/9
+                 (0.176822, 0.124251, 0.031575, 0.084012, 0.142621)], # sum = 5/9
             },
 
         },
-    "Speck": {
+    "SPECK": {
         2: {'GAUSS':
                 [(0.166667, 0.5),
              	 (0.5, 0.166667)],
@@ -217,7 +241,7 @@ def genQDelta(nodes, sweepType, Q):
         except (KeyError, IndexError):
             raise ValueError('no OPT diagonal coefficients for '
                              f'{oType}-{M}-{quadType}-{idx}')
-    elif sweepType == 'BEpar':
+    elif sweepType == 'BEPAR':
         QDelta[:] = np.diag(nodes)
     elif sweepType == 'WEIRD':
         try:
@@ -279,7 +303,7 @@ def getSetup(
     nNodes:int=3, nodeType:str='RADAU-RIGHT', nIter:int=3, 
     qDeltaImplicit:str='BE', qDeltaExplicit:str='FE',
     diagonal:bool=False, initSweepType:str='COPY', useEndUpdate:bool=False,
-    diagQDeltaInit:str='BEpar', nodeDistr:str='LEGENDRE'
+    diagQDeltaInit:str='BEPAR', nodeDistr:str='LEGENDRE'
     )-> SWEETFileDict:
     """
     Generate SWEETFileDict for one given SDC setup
@@ -367,13 +391,13 @@ def getSetup(
         'nIter': nIter
     })
     out['diagonal'] = int(diagonal)
-    if diagonal:
-        idString += '_diag'
     if initSweepType == 'QDELTA' and diagonal:
         idString += f'_{diagQDeltaInit}'
     out['useEndUpdate'] = int(useEndUpdate)
     if useEndUpdate:
         idString += '_endUpdate'
+    if diagonal:
+        idString += '_diag'
     out['id'] = idString
     return out
     

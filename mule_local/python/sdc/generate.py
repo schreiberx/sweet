@@ -60,22 +60,22 @@ PRESET_LIST = {
         'nNodes': 4,
         'nodeType': 'RADAU-RIGHT',
         'nIter': 3,
-        'qDeltaImplicit': 'BEpar',
+        'qDeltaImplicit': 'BEPAR',
         'qDeltaExplicit': 'PIC',
         'initSweepType': 'QDELTA',
         'useEndUpdate': False,
-        'diagQDeltaInit': 'BEpar',
+        'diagQDeltaInit': 'BEPAR',
         'diagonal': True,
     },
     'P2' : {
         'nNodes': 3,
         'nodeType': 'RADAU-RIGHT',
         'nIter': 3,
-        'qDeltaImplicit': 'OPT-QmQd-0',
+        'qDeltaImplicit': 'OPT-QMQD-0',
         'qDeltaExplicit': 'PIC',
         'initSweepType': 'QDELTA',
         'useEndUpdate': False,
-        'diagQDeltaInit': 'BEpar',
+        'diagQDeltaInit': 'BEPAR',
         'diagonal': True,
     },
 }
@@ -90,18 +90,12 @@ for name, val in setup.parameters.items():
 
 args = parser.parse_args()
 
-params = {name: val for name, val in args._get_kwargs()}
-params.pop('fileName')
-params.pop('preset')
-params.pop('showPreset')
-params.pop('showDefault')
-
 if args.showDefault:
     print('-'*80)
     print('Preset configurations')
     print('-'*80)
-    for name, val in setup.parameters.items(): 
-        print(f'--{name} {val.default}')
+    for name, val in defaults.items(): 
+        print(f'--{name} {val}')
     print('-'*80)
     
 
@@ -125,9 +119,12 @@ params.pop('showPreset')
 params.pop('showDefault')
 
 if args.preset is not None:
-    name = args.preset
-    if name in PRESET_LIST.keys():
-        params = PRESET_LIST[name]
+    preset = args.preset
+    if preset in PRESET_LIST.keys():
+        for name, val in params.items():
+            if val is not None:
+                PRESET_LIST[preset][name] = val
+        params = PRESET_LIST[preset]
     else:
         raise ValueError(f'no {name} preset config found, choose between {list(PRESET_LIST.keys())}')
 for name, val in params.items():
@@ -135,3 +132,4 @@ for name, val in params.items():
         params[name] = defaults[name]
 params = getSetup(**params)
 params.writeToFile(args.fileName)
+print(f'Written SDC parameter file : {args.fileName}')

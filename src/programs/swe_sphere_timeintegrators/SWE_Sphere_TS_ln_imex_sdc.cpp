@@ -125,6 +125,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 	std::cout << "diagonal : " << diagonal << std::endl;
 	std::cout << "useEndUpdate : " << useEndUpdate << std::endl;
 	std::cout << "initialSweepType : " << initialSweepType << std::endl;
+	std::cout << "idString : " << i_simVars.sdc.id << std::endl; 
 }
 
 
