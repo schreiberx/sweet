@@ -1301,17 +1301,17 @@ public:
 			case 0:
 				fileName = i_value;
 				SWEETFileDict params(fileName);
-				params.getValue("nodes", nodes);
+				params.get("nodes", nodes);
 				nNodes = nodes.size();
-				params.getValue("weights", weights);
-				params.getValue("qMatrix", qMatrix);
-				params.getValue("qDeltaI", qDeltaI);
-				params.getValue("qDeltaE", qDeltaE);
-				params.getValue("qDelta0", qDelta0);
-				params.getValue("nIter", nIter);
-				params.getValue("diagonal", diagonal);
-				params.getValue("initSweepType", initSweepType);
-				params.getValue("useEndUpdate", useEndUpdate);
+				params.get("weights", weights);
+				params.get("qMatrix", qMatrix);
+				params.get("qDeltaI", qDeltaI);
+				params.get("qDeltaE", qDeltaE);
+				params.get("qDelta0", qDelta0);
+				params.get("nIter", nIter);
+				params.get("diagonal", diagonal);
+				params.get("initSweepType", initSweepType);
+				params.get("useEndUpdate", useEndUpdate);
 				return -1;
 			}
 

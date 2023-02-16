@@ -1,6 +1,6 @@
 /*
- * SWEETArray.hpp
  *
+ * SWEETArray.hpp
  *  Created on: Feb 13, 2023
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
@@ -40,6 +40,13 @@ public:
 		setup(i_shape);
 	}
 
+
+	SWEETArray(const std::array<int,D> &i_shape, const T i_data[])
+	{
+		setup(i_shape);
+		operator=(i_data);
+	}
+
 	void setup(const std::array<int,D> &i_shape)
 	{
 		if (D < 1 || D > 3)
@@ -52,6 +59,12 @@ public:
 			_size *= _shape[i];
 
 		_data.resize(_size);
+	}
+
+	void setup(const std::array<int,D> &i_shape, T i_data[])
+	{
+		setup(i_shape);
+		operator=(i_data);
 	}
 
 	std::size_t size()
@@ -91,7 +104,35 @@ public:
 	}
 
 	inline
-	T operator()(int i0, int i1=-1, int i2=-1) const {
+	void set(int i0, const T &i_value)
+	{
+		if (D != 1)
+			SWEETError("Only for 1D");
+
+		_data[i0] = i_value;
+	}
+
+	inline
+	void set(int i0, int i1, const T &i_value)
+	{
+		if (D != 2)
+			SWEETError("Only for 2D");
+
+		_data[i0*_shape[1] + i1] = i_value;
+	}
+
+	inline
+	void set3(int i0, int i1, int i2, const T &i_value)
+	{
+		if (D != 3)
+			SWEETError("Only for 3D");
+
+		_data[i0*_shape[1]*_shape[2] + i1*_shape[2] + i2] = i_value;
+	}
+
+
+	inline
+	T& operator()(int i0, int i1=-1, int i2=-1) const {
 		return get(i0, i1, i2);
 	}
 

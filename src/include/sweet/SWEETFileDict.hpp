@@ -5,8 +5,8 @@
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_FILE_DICT_HPP__
-#define SRC_INCLUDE_SWEET_FILE_DICT_HPP__
+#ifndef SRC_INCLUDE_SWEET_FILE_DICTIONARY_HPP__
+#define SRC_INCLUDE_SWEET_FILE_DICTIONARY_HPP__
 
 #include <string>
 #include <vector>
@@ -22,138 +22,305 @@ public:
 	typedef double float64;
 	typedef std::complex<double> complex128;
 
-private:
-	enum SWEETFileDict_ElementTypes
-	{
-		SWEET_FILE_DICT_STRING = 100,
-		SWEET_FILE_DICT_INT64 = 230,
-		SWEET_FILE_DICT_FLOAT64 = 240,
-		SWEET_FILE_DICT_ARRAY_1D_FLOAT64 = 401,
-		SWEET_FILE_DICT_ARRAY_2D_FLOAT64 = 402,
-		SWEET_FILE_DICT_ARRAY_3D_FLOAT64 = 403,
-		SWEET_FILE_DICT_ARRAY_1D_COMPLEX128 = 501,
-		SWEET_FILE_DICT_ARRAY_2D_COMPLEX128 = 502,
-		SWEET_FILE_DICT_ARRAY_3D_COMPLEX128 = 503,
-	};
-
 
 	class SWEETFileDict_Element
 	{
 	public:
-		std::string key;
+		enum ElementTypes
+		{
+			SWEET_FILE_DICT_NONE = 0,
 
-		SWEETFileDict_ElementTypes type_id;
+			SWEET_FILE_DICT_STRING = 100,
+			SWEET_FILE_DICT_INT64 = 230,
+			SWEET_FILE_DICT_FLOAT64 = 240,
+			SWEET_FILE_DICT_ARRAY_1D_FLOAT64 = 401,
+			SWEET_FILE_DICT_ARRAY_2D_FLOAT64 = 402,
+			SWEET_FILE_DICT_ARRAY_3D_FLOAT64 = 403,
+			SWEET_FILE_DICT_ARRAY_1D_COMPLEX128 = 501,
+			SWEET_FILE_DICT_ARRAY_2D_COMPLEX128 = 502,
+			SWEET_FILE_DICT_ARRAY_3D_COMPLEX128 = 503,
+		};
+	private:
 
-// Union doesn't work with C++ classes :-(
-//		union
-//		{
-			std::string value_str;
-			int64 value_scalar_int64;
-			double value_scalar_float64;
+		std::string _key;
 
-			SWEETArray<1,double> value_array_1d_float64;
-			SWEETArray<2,double> value_array_2d_float64;
-			SWEETArray<3,double> value_array_3d_float64;
+		ElementTypes _type_id;
 
-			SWEETArray<1,complex128> value_array_1d_complex128;
-			SWEETArray<2,complex128> value_array_2d_complex128;
-			SWEETArray<3,complex128> value_array_3d_complex128;
-//		};
+		std::string _value_str;
+		int64 _value_scalar_int64;
+		double _value_scalar_float64;
+
+		SWEETArray<1,double> _value_array_1d_float64;
+		SWEETArray<2,double> _value_array_2d_float64;
+		SWEETArray<3,double> _value_array_3d_float64;
+
+		SWEETArray<1,complex128> _value_array_1d_complex128;
+		SWEETArray<2,complex128> _value_array_2d_complex128;
+		SWEETArray<3,complex128> _value_array_3d_complex128;
+
+public:
+		template <typename T>
+		SWEETFileDict_Element(
+				const std::string &i_key,
+				const T &i_value
+		)
+		{
+			set(i_key, i_value);
+		}
+
+
+		SWEETFileDict_Element()	:
+			_type_id(ElementTypes::SWEET_FILE_DICT_NONE)
+		{
+		}
 
 		template <typename T>
-		void getValue(T &o_value)	const;
+		void get(T &o_value)	const;
 
-		void getValue(std::string &o_value)	const
+		template <typename T>
+		void set(const std::string &i_key, const T &i_value);
+
+		void get(std::string &o_value)	const
 		{
-			if (type_id != SWEET_FILE_DICT_STRING)
+			if (_type_id != SWEET_FILE_DICT_STRING)
 				SWEETError("Type mismatch!");
 
-			o_value = value_str;
+			o_value = _value_str;
 		}
 
-		void getValue(int64 &o_value)	const
+		void set(const std::string &i_key, const std::string &i_value)
 		{
-			if (type_id != SWEET_FILE_DICT_INT64)
-				SWEETError("Type mismatch!");
-
-			o_value = value_scalar_int64;
+			_type_id = SWEET_FILE_DICT_STRING;
+			_key = i_key;
+			_value_str = i_value;
 		}
 
-		void getValue(float64 &o_value)	const
+		void get(int64 &o_value)	const
 		{
-			if (type_id != SWEET_FILE_DICT_FLOAT64)
+			if (_type_id != SWEET_FILE_DICT_INT64)
 				SWEETError("Type mismatch!");
 
-			o_value = value_scalar_float64;
+			o_value = _value_scalar_int64;
 		}
 
-		void getValue(SWEETArray<1,float64> &o_value)	const
+		void set(const std::string &i_key, const int64 &i_value)
 		{
-			if (type_id != SWEET_FILE_DICT_ARRAY_1D_FLOAT64)
-				SWEETError("Type mismatch!");
-
-			o_value = value_array_1d_float64;
+			_type_id = SWEET_FILE_DICT_INT64;
+			_key = i_key;
+			_value_scalar_int64 = i_value;
 		}
 
-		void getValue(SWEETArray<2,float64> &o_value)	const
+		void get(float64 &o_value)	const
 		{
-			if (type_id != SWEET_FILE_DICT_ARRAY_2D_FLOAT64)
+			if (_type_id != SWEET_FILE_DICT_FLOAT64)
 				SWEETError("Type mismatch!");
 
-			o_value = value_array_2d_float64;
+			o_value = _value_scalar_float64;
 		}
 
-		void getValue(SWEETArray<3,float64> &o_value)	const
+		void set(const std::string &i_key, const float64 &i_value)
 		{
-			if (type_id != SWEET_FILE_DICT_ARRAY_3D_FLOAT64)
-				SWEETError("Type mismatch!");
-
-			o_value = value_array_3d_float64;
+			_type_id = SWEET_FILE_DICT_FLOAT64;
+			_key = i_key;
+			_value_scalar_float64 = i_value;
 		}
 
-		void getValue(SWEETArray<1,complex128> &o_value)	const
+		void get(SWEETArray<1,float64> &o_value)	const
 		{
-			if (type_id != SWEET_FILE_DICT_ARRAY_1D_COMPLEX128)
+			if (_type_id != SWEET_FILE_DICT_ARRAY_1D_FLOAT64)
 				SWEETError("Type mismatch!");
 
-			o_value = value_array_1d_complex128;
+			o_value = _value_array_1d_float64;
 		}
 
-		void getValue(SWEETArray<2,complex128> &o_value)	const
+		void set(const std::string &i_key, const SWEETArray<1,float64> &i_value)
 		{
-			if (type_id != SWEET_FILE_DICT_ARRAY_2D_COMPLEX128)
-				SWEETError("Type mismatch!");
-
-			o_value = value_array_2d_complex128;
+			_type_id = SWEET_FILE_DICT_ARRAY_1D_FLOAT64;
+			_key = i_key;
+			_value_array_1d_float64 = i_value;
 		}
 
-		void getValue(SWEETArray<3,complex128> &o_value)	const
+		void get(SWEETArray<2,float64> &o_value)	const
 		{
-			if (type_id != SWEET_FILE_DICT_ARRAY_3D_COMPLEX128)
+			if (_type_id != SWEET_FILE_DICT_ARRAY_2D_FLOAT64)
 				SWEETError("Type mismatch!");
 
-			o_value = value_array_3d_complex128;
+			o_value = _value_array_2d_float64;
+		}
+
+		void set(const std::string &i_key, const SWEETArray<2,float64> &i_value)
+		{
+			_type_id = SWEET_FILE_DICT_ARRAY_2D_FLOAT64;
+			_key = i_key;
+			_value_array_2d_float64 = i_value;
+		}
+
+		void get(SWEETArray<3,float64> &o_value)	const
+		{
+			if (_type_id != SWEET_FILE_DICT_ARRAY_3D_FLOAT64)
+				SWEETError("Type mismatch!");
+
+			o_value = _value_array_3d_float64;
+		}
+
+		void set(const std::string &i_key, const SWEETArray<3,float64> &i_value)
+		{
+			_type_id = SWEET_FILE_DICT_ARRAY_3D_FLOAT64;
+			_key = i_key;
+			_value_array_3d_float64 = i_value;
+		}
+
+		void get(SWEETArray<1,complex128> &o_value)	const
+		{
+			if (_type_id != SWEET_FILE_DICT_ARRAY_1D_COMPLEX128)
+				SWEETError("Type mismatch!");
+
+			o_value = _value_array_1d_complex128;
+		}
+
+		void set(const std::string &i_key, const SWEETArray<1,complex128> &i_value)
+		{
+			_type_id = SWEET_FILE_DICT_ARRAY_1D_COMPLEX128;
+			_key = i_key;
+			_value_array_1d_complex128 = i_value;
+		}
+
+		void get(SWEETArray<2,complex128> &o_value)	const
+		{
+			if (_type_id != SWEET_FILE_DICT_ARRAY_2D_COMPLEX128)
+				SWEETError("Type mismatch!");
+
+			o_value = _value_array_2d_complex128;
+		}
+
+		void set(const std::string &i_key, const SWEETArray<2,complex128> &i_value)
+		{
+			_type_id = SWEET_FILE_DICT_ARRAY_2D_COMPLEX128;
+			_key = i_key;
+			_value_array_2d_complex128 = i_value;
+		}
+
+		void get(SWEETArray<3,complex128> &o_value)	const
+		{
+			if (_type_id != SWEET_FILE_DICT_ARRAY_3D_COMPLEX128)
+				SWEETError("Type mismatch!");
+
+			o_value = _value_array_3d_complex128;
+		}
+
+		void set(const std::string &i_key, const SWEETArray<3,complex128> &i_value)
+		{
+			_type_id = SWEET_FILE_DICT_ARRAY_3D_COMPLEX128;
+			_key = i_key;
+			_value_array_3d_complex128 = i_value;
 		}
 
 		/*
 		 * Special handlers which automatically convert values
 		 */
-		void getValue(bool &o_value)	const
-		{
-			if (type_id != SWEET_FILE_DICT_INT64)
-				SWEETError("Type mismatch!");
 
-			o_value = (bool)value_scalar_int64;
+		void set(const std::string &i_key, const char *i_value)
+		{
+			_type_id = SWEET_FILE_DICT_STRING;
+			_key = i_key;
+			_value_str = i_value;
 		}
-		void getValue(int &o_value)	const
+
+		void get(bool &o_value)	const
 		{
-			if (type_id != SWEET_FILE_DICT_INT64)
+			if (_type_id != SWEET_FILE_DICT_INT64)
 				SWEETError("Type mismatch!");
 
-			o_value = (int)value_scalar_int64;
+			o_value = (bool)_value_scalar_int64;
+		}
+
+#if 0
+		void set(const std::string &i_key, const bool &i_value)
+		{
+			_type_id = SWEET_FILE_DICT_INT64;
+			_key = i_key;
+			_value_scalar_int64 = (int64)i_value;
+		}
+#endif
+
+		void get(int &o_value)	const
+		{
+			if (_type_id != SWEET_FILE_DICT_INT64)
+				SWEETError("Type mismatch!");
+
+			o_value = (int)_value_scalar_int64;
+		}
+
+		void set(const std::string &i_key, const int &i_value)
+		{
+			_type_id = SWEET_FILE_DICT_INT64;
+			_key = i_key;
+			_value_scalar_int64 = (int64)i_value;
+		}
+
+
+		const std::string &getKey() const
+		{
+			return _key;
+		}
+
+		friend
+		std::ostream& operator<<(std::ostream& os, const SWEETFileDict_Element &e)
+		{
+			os << "'" << e._key << "' => ";
+
+			switch(e._type_id)
+			{
+				default:
+					SWEETError("Unknown type");
+					break;
+
+				case SWEET_FILE_DICT_STRING:
+					os << "'" << e._value_str << "'";
+					break;
+
+				case SWEET_FILE_DICT_INT64:
+					os << "'" << e._value_scalar_int64 << "'";
+					break;
+
+				case SWEET_FILE_DICT_FLOAT64:
+					os << "'" << e._value_scalar_float64 << "'";
+					break;
+
+				case SWEET_FILE_DICT_ARRAY_1D_FLOAT64:
+					os << std::endl;
+					os << e._value_array_1d_float64;
+					break;
+
+				case SWEET_FILE_DICT_ARRAY_2D_FLOAT64:
+					os << std::endl;
+					os << e._value_array_2d_float64;
+					break;
+
+				case SWEET_FILE_DICT_ARRAY_3D_FLOAT64:
+					os << std::endl;
+					os << e._value_array_3d_float64;
+					break;
+
+				case SWEET_FILE_DICT_ARRAY_1D_COMPLEX128:
+					os << std::endl;
+					os << e._value_array_1d_complex128;
+					break;
+
+				case SWEET_FILE_DICT_ARRAY_2D_COMPLEX128:
+					os << std::endl;
+					os << e._value_array_2d_complex128;
+					break;
+
+				case SWEET_FILE_DICT_ARRAY_3D_COMPLEX128:
+					os << std::endl;
+					os << e._value_array_3d_complex128;
+					break;
+			}
+
+			return os;
 		}
 	};
-
 
 	std::vector<SWEETFileDict_Element> _dict;
 
@@ -207,118 +374,106 @@ public:
 		{
 			SWEETFileDict_Element &e = _dict[i];
 
-			e.key = _read_str0(f);
+			std::string key = _read_str0(f);
 
-			e.type_id = (SWEETFileDict_ElementTypes)_read<int64>(f);
+			SWEETFileDict_Element::ElementTypes type_id = (SWEETFileDict_Element::ElementTypes)_read<int64>(f);
 
-			switch(e.type_id)
+			switch(type_id)
 			{
-				case SWEET_FILE_DICT_STRING:
-					e.value_str = _read_str0(f);
+				case SWEETFileDict_Element::SWEET_FILE_DICT_STRING:
+					e.set(key, _read_str0(f));
 					break;
 
-				case SWEET_FILE_DICT_INT64:
-					e.value_scalar_int64 = _read<int64>(f);
+				case SWEETFileDict_Element::SWEET_FILE_DICT_INT64:
+					e.set(key, _read<int64>(f));
 					break;
 
-				case SWEET_FILE_DICT_FLOAT64:
-					e.value_scalar_float64 = _read<double>(f);
+				case SWEETFileDict_Element::SWEET_FILE_DICT_FLOAT64:
+					e.set(key, _read<double>(f));
 					break;
 
-				case SWEET_FILE_DICT_ARRAY_1D_FLOAT64:
+				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_1D_FLOAT64:
 				{
 					std::array<int,1> shape;
 					shape[0] = _read<int64>(f);
+					SWEETArray<1, float64> array(shape);
 
-					e.value_array_1d_float64.setup(shape);
-					_read_array(
-							f,
-							e.value_array_1d_float64
-						);
+					_read_array(f, array);
+					e.set(key, array);
 				}
 					break;
 
-				case SWEET_FILE_DICT_ARRAY_2D_FLOAT64:
+				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_2D_FLOAT64:
 				{
 					std::array<int,2> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
+					SWEETArray<2, float64> array(shape);
 
-					e.value_array_2d_float64.setup(shape);
-					_read_array(
-							f,
-							e.value_array_2d_float64
-						);
+					_read_array(f, array);
+					e.set(key, array);
 				}
 					break;
 
-				case SWEET_FILE_DICT_ARRAY_3D_FLOAT64:
+				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_3D_FLOAT64:
 				{
 					std::array<int,3> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
 					shape[2] = _read<int64>(f);
+					SWEETArray<3, float64> array(shape);
 
-					e.value_array_3d_float64.setup(shape);
-					_read_array(
-							f,
-							e.value_array_3d_float64
-						);
+					_read_array(f, array);
+					e.set(key, array);
 				}
 					break;
 
-				case SWEET_FILE_DICT_ARRAY_1D_COMPLEX128:
+				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_1D_COMPLEX128:
 				{
 					std::array<int,1> shape;
 					shape[0] = _read<int64>(f);
+					SWEETArray<1, complex128> array(shape);
 
-					e.value_array_1d_complex128.setup(shape);
-					_read_array(
-							f,
-							e.value_array_1d_complex128
-						);
+					_read_array(f, array);
+					e.set(key, array);
 				}
 					break;
 
-				case SWEET_FILE_DICT_ARRAY_2D_COMPLEX128:
+				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_2D_COMPLEX128:
 				{
 					std::array<int,2> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
+					SWEETArray<2, complex128> array(shape);
 
-					e.value_array_2d_complex128.setup(shape);
-					_read_array(
-							f,
-							e.value_array_2d_complex128
-						);
+					_read_array(f, array);
+					e.set(key, array);
 				}
 					break;
 
-				case SWEET_FILE_DICT_ARRAY_3D_COMPLEX128:
+				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_3D_COMPLEX128:
 				{
 					std::array<int,3> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
 					shape[2] = _read<int64>(f);
+					SWEETArray<3, complex128> array(shape);
 
-					e.value_array_3d_complex128.setup(shape);
-					_read_array(
-							f,
-							e.value_array_3d_complex128
-						);
+					_read_array(f, array);
+					e.set(key, array);
 				}
 					break;
 
 				default:
 				{
 					std::ostringstream ss;
-					ss << "Unknown type id '" << e.type_id << "'";
+					ss << "Unknown type id '" << type_id << "'";
 					SWEETError(ss.str());
 				}
 			}
 
 			if (_debug)
-				std::cout << " + Processing key '" << e.key << "'" << std::endl;
+				std::cout << " + Processing key '" << key << "'" << std::endl;
 		}
 
 		std::string magic_end = _read_str0(f);
@@ -339,70 +494,20 @@ public:
 		{
 			const SWEETFileDict_Element &e = _dict[i];
 
-			os << " + key: '" << e.key << "'" << std::endl;
-			os << "   value: ";
-
-			switch(e.type_id)
-			{
-				default:
-					SWEETError("Unknown type");
-					break;
-
-				case SWEET_FILE_DICT_STRING:
-					os << "'" << e.value_str << "'" << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_INT64:
-					os << "'" << e.value_scalar_int64 << "'" << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_FLOAT64:
-					os << "'" << e.value_scalar_float64 << "'" << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_ARRAY_1D_FLOAT64:
-					os << std::endl;
-					os << e.value_array_1d_float64 << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_ARRAY_2D_FLOAT64:
-					os << std::endl;
-					os << e.value_array_2d_float64 << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_ARRAY_3D_FLOAT64:
-					os << std::endl;
-					os << e.value_array_3d_float64 << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_ARRAY_1D_COMPLEX128:
-					os << std::endl;
-					os << e.value_array_1d_complex128 << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_ARRAY_2D_COMPLEX128:
-					os << std::endl;
-					os << e.value_array_2d_complex128 << std::endl;
-					break;
-
-				case SWEET_FILE_DICT_ARRAY_3D_COMPLEX128:
-					os << std::endl;
-					os << e.value_array_3d_complex128 << std::endl;
-					break;
-			}
+			std::cout << " + " << e << std::endl;
 		}
 
 	}
 
 
 	template <typename T>
-	void getValue(const std::string &i_key, T &o_value)	const
+	void get(const std::string &i_key, T &o_value)	const
 	{
 		for (std::size_t i = 0; i < _dict.size(); i++)
 		{
-			if (_dict[i].key == i_key)
+			if (_dict[i].getKey() == i_key)
 			{
-				_dict[i].getValue(o_value);
+				_dict[i].get(o_value);
 				return;
 			}
 		}
@@ -410,6 +515,48 @@ public:
 		std::ostringstream ss;
 		ss << "Key '" << i_key << "' not found!";
 		SWEETError(ss.str());
+	}
+
+
+
+	bool keyExists(const std::string &i_key)	const
+	{
+		for (std::size_t i = 0; i < _dict.size(); i++)
+		{
+			if (_dict[i].getKey() == i_key)
+				return true;
+		}
+
+		return false;
+	}
+
+	int keyIndex(const std::string &i_key)	const
+	{
+		for (std::size_t i = 0; i < _dict.size(); i++)
+		{
+			if (_dict[i].getKey() == i_key)
+				return i;
+		}
+
+		return -1;
+	}
+
+
+	template <typename T>
+	void set(const std::string &i_key, const T &i_value, bool i_ignore_existing = true)
+	{
+		int idx = keyIndex(i_key);
+
+		if (idx < 0)
+		{
+			_dict.push_back(SWEETFileDict_Element(i_key, i_value));
+			return;
+		}
+
+		if (!i_ignore_existing)
+			SWEETError("Key already exists");
+
+		_dict[idx].set(i_key, i_value);
 	}
 
 
