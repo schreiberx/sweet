@@ -142,6 +142,11 @@ env.Append(CXXFLAGS=['-DCONFIG_ENABLE_LIBXML='+('1' if p.libxml=='enable' else '
 
 
 
+if p.parallel_sdc_par_model == "omp":
+    env.Append(CXXFLAGS=['-DSWEET_PARALLEL_SDC_OMP_MODEL=1'])
+else:
+    env.Append(CXXFLAGS=['-DSWEET_PARALLEL_SDC_OMP_MODEL=0'])
+
 if p.plane_spectral_space == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_SPACE=1'])
 else:

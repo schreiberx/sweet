@@ -253,7 +253,9 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 	{
 		// Loop on nodes (can be parallelized if diagonal)
 
-		//SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
+#if SWEET_PARALLEL_SDC_OMP_MODEL
+		SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
+#endif
 		for (int i = 0; i < nNodes; i++) {
 
 			// Initialize with u0 value
@@ -280,21 +282,22 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 	}
 	else if (initialSweepType == "COPY")
 	{
+		// Evaluate linear and non-linear with initial solution
+		eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
+		eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
+
 		// Simply copy to each node as initial guess
-		//SWEET_OMP_PARALLEL_FOR
+#if SWEET_PARALLEL_SDC_OMP_MODEL
+		SWEET_OMP_PARALLEL_FOR
+#endif
 		for (int i = 0; i < nNodes; i++)
 		{
+			// Include first node just to simulate same parallelization as for parallel updates
 			if (i == 0)
-			{
-				// Evaluate linear and non-linear with initial solution
-				eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
-				eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
-			}
-			else
-			{
-				ts_linear_tendencies_k0[i] = ts_linear_tendencies_k0[0];
-				ts_nonlinear_tendencies_k0[i] = ts_nonlinear_tendencies_k0[0];
-			}
+				continue;
+
+			ts_linear_tendencies_k0[i] = ts_linear_tendencies_k0[0];
+			ts_nonlinear_tendencies_k0[i] = ts_nonlinear_tendencies_k0[0];
 		}
 	}
 	else
@@ -314,7 +317,9 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 	const Mat& qE = qMatDeltaE;
 
 	// Loop on nodes (can be parallelized if diagonal)
-	//SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
+#if SWEET_PARALLEL_SDC_OMP_MODEL
+	SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal)")
+#endif
 	for (int i = 0; i < nNodes; i++) {
 
 		// Initialize with u0 value

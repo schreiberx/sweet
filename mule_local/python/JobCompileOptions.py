@@ -111,6 +111,10 @@ class JobCompileOptions(InfoError):
         # GUI
         self.gui = 'disable'
 
+        # Which parallel sdc parallelizatino model to use
+        # Only 'omp' supported so far
+        self.parallel_sdc_par_model = 'none'
+
         self.quadmath = 'disable'
 
         self.init_phase = False
@@ -189,6 +193,10 @@ class JobCompileOptions(InfoError):
 
         # GUI
         retval += ' --gui='+self.gui
+        
+        # Parallel SDC
+        retval += ' --parallel-sdc-par-model='+self.parallel_sdc_par_model
+        
 
         # Activate quadmath
         retval += ' --quadmath='+self.quadmath
@@ -410,6 +418,17 @@ class JobCompileOptions(InfoError):
                 help='gui: enable, disable [default: %default]'
         )
         self.gui = scons.GetOption('gui')
+
+
+
+        scons.AddOption(    '--parallel-sdc-par-model',
+                dest='parallel_sdc_par_model',
+                type='choice',
+                choices=['off','omp'],
+                default='off',
+                help='Which parallelization model to use for parallel SDC [default: %default]'
+        )
+        self.parallel_sdc_par_model = scons.GetOption('parallel_sdc_par_model')
 
 
 
@@ -795,6 +814,9 @@ class JobCompileOptions(InfoError):
 
             if self.gui == 'enable':
                 retval+='_gui'
+                
+            if self.parallel_sdc_par_model == 'omp':
+                retval+='_psdcpmomp'
 
             if self.quadmath == 'enable':
                 retval+='_quadmath'
