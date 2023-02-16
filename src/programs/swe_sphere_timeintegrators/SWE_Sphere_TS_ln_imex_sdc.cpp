@@ -346,6 +346,14 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 		// Implicit solve
 		solveImplicit(ts_state, dt*qI(i,i), i);
 
+		if (!useEndUpdate && (i == nNodes-1) && (k == nIter-1)) {
+			// Time-step update using last state value
+			ts_u0.phi = ts_state.phi;
+			ts_u0.vrt = ts_state.vrt;
+			ts_u0.div = ts_state.div;
+			return;
+		} 
+
 		// Evaluate and store linear term for k+1
 		eval_linear(ts_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
 
@@ -356,6 +364,29 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 	// Swap k+1 and k values for next iteration (or end-point update)
 	ts_nonlinear_tendencies_k0.swap(ts_nonlinear_tendencies_k1);
 	ts_linear_tendencies_k0.swap(ts_linear_tendencies_k1);
+
+	// Compute end point for last sweep
+	if (k+1 == nIter) 
+	{
+		if (useEndUpdate) {
+			/*
+			* Use quadrature
+			*/
+			const Vec& w = weights;
+			
+			// Compute collocation update
+			SWE_VariableVector ts_state(ts_u0);
+
+			for (int j = 0; j < nNodes; j++) {
+				axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_state);
+				axpy(dt*w(j), ts_linear_tendencies_k0[j], ts_state);
+			}
+			// Time-step update using last state value
+			ts_u0.phi = ts_state.phi;
+			ts_u0.vrt = ts_state.vrt;
+			ts_u0.div = ts_state.div;
+		}
+	}
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
