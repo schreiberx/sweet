@@ -1070,13 +1070,13 @@ public:
 	struct Parallelization
 	{
 		/// number of threads
-		int num_threads = -1;
+		int num_threads_space = -1;
 
 		void outputConfig()
 		{
 			std::cout << std::endl;
 			std::cout << "PARALLELIZATION:" << std::endl;
-			std::cout << " + num_threads: " << num_threads << std::endl;
+			std::cout << " + num_threads: " << num_threads_space << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -1087,13 +1087,8 @@ public:
 				int &next_free_program_option
 		)
 		{
-#if SWEET_THREADING
-//#pragma omp parallel master
-//			num_threads = omp_get_num_threads();
-			num_threads = omp_get_max_threads();
-#endif
-	        //long_options[next_free_program_option] = {"compute-errors", required_argument, 0, 256+next_free_program_option};
-	        //next_free_program_option++;
+			long_options[next_free_program_option] = {"num-threads-space", required_argument, 0, 256+next_free_program_option};
+	        next_free_program_option++;
 		}
 
 
@@ -1109,15 +1104,14 @@ public:
 				const char *i_value		///< Value in string format
 		)
 		{
-/*
 			switch(i_option_index)
 			{
 			case 0:
-				num_threads = atoi(i_value);
+				num_threads_space = atoi(i_value);
 				return -1;
 
 			}
-*/
+
 			return 0;
 		}
 

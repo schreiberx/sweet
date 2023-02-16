@@ -1,26 +1,17 @@
 /*
- * This script originates from Brian Dobbins (NCAR) who
- * might have got it from another person.
- *
- * It is not directly related to SWEET, but helps to identify affinities
- * if running it on supercomputers.
+ * Get information about OMP parallelization
  */
 
-/*
- * http://docs.cray.com/books/S-2496-4101/html-S-2496-4101/cnlexamples.html
- */
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <map>
+#include <atomic>
 
-#ifndef _GNU_SOURCE
-#	define _GNU_SOURCE
-#endif
-
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
 #include <sched.h>
 #include <omp.h>
 #include <time.h>
-#include <stdlib.h>     /* srand, rand */
+#include <unistd.h>
 
 #if SWEET_MPI
 	#include <mpi.h>
@@ -28,7 +19,11 @@
 
 
 
-#define SEED 35791246
+/*
+ * Partly based on this code snipped:
+ *
+ * https://web.archive.org/web/20150209010321/http://docs.cray.com/books/S-2496-4101/html-S-2496-4101/cnlexamples.html
+ */
 /* Borrowed from util-linux-2.13-pre7/schedutils/taskset.c */
 static char *cpuset_to_cstr(cpu_set_t *mask, char *str)
 {
@@ -58,54 +53,245 @@ static char *cpuset_to_cstr(cpu_set_t *mask, char *str)
 	*ptr = 0;
 	return(str);
 }
+
+
+
+void hline_star()
+{
+	std::cout << "********************************************************************************" << std::endl;
+}
+
+
+
+void hline_dash()
+{
+	std::cout << "--------------------------------------------------------------------------------" << std::endl;
+}
+
+
+
+void schedInfo(
+		std::vector<std::ostringstream> &ss,
+		std::map<int, int> &tid_to_worker_id
+)
+{
+	char hostname_buf[1024];
+	gethostname(hostname_buf, sizeof(hostname_buf));
+
+	int mpi_rank;
+
+	#if SWEET_MPI
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+	#else
+		mpi_rank = 0;
+	#endif
+
+	int thread_num = omp_get_thread_num();
+
+	pid_t tid = gettid();
+	int worker_id = tid_to_worker_id[tid];
+
+	cpu_set_t coremask;
+	sched_getaffinity(0, sizeof(coremask), &coremask);
+
+	char cores_buf[1024];
+	cpuset_to_cstr(&coremask, cores_buf);
+
+#pragma omp critical
+	{
+		ss[worker_id] << "host=" << hostname_buf;
+		ss[worker_id] << ", ";
+		ss[worker_id] << "rank=" << mpi_rank;
+		ss[worker_id] << ", ";
+		ss[worker_id] << "id=" << worker_id;
+		ss[worker_id] << ", ";
+		ss[worker_id] << "thread_num=" << thread_num;
+		ss[worker_id] << ", ";
+		ss[worker_id] << "cores=" << cores_buf;
+	}
+}
+
 int main(int argc, char *argv[])
 {
-	int rank, thread;
-	cpu_set_t coremask;
-	int niter = 100000;            //number of iterations per FOR loop
-	volatile double x,y;                     //x,y value for the random coordinate
-	int count=0;                //Count holds all the number of how many good coordinates
-	volatile double z;                       //Used to check if x^2+y^2<=1
-	char clbuf[7 * CPU_SETSIZE], hnbuf[64];
-	#if SWEET_MPI
-		MPI_Init(&argc, &argv);
-		MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	#else
-		rank = 0;
-	#endif
-	srand(SEED);
-	memset(clbuf, 0, sizeof(clbuf));
-	memset(hnbuf, 0, sizeof(hnbuf));
-	(void)gethostname(hnbuf, sizeof(hnbuf));
+#if SWEET_MPI
+	MPI_Init(&argc, &argv);
+#endif
 
-	#pragma omp parallel firstprivate(x, y, z) private(thread, coremask, clbuf)
+	int max_threads = omp_get_max_threads();
+
+	std::map<int, int> tid_to_worker_id;
+
+	#pragma omp parallel for
+	for (int j = 0; j < max_threads; j++)
 	{
-		thread = omp_get_thread_num();
-		clock_t t;
-		t= clock();
-		/* Borrowed from https://www.olcf.ornl.gov/tutorials/monte-carlo-pi/ By Jake Wynn */
-		//Let's do some work generating random nubmers to see if core affinity impacts execution time.
-		if((rank==0)||(rank==1)) // put this labor on ranks 0 and 1.
-		{
-			int i;
-			srandom((int)time(NULL) ^ omp_get_thread_num());    //Give random() a seed value
-			for (i=0; i<niter; ++i)              //main loop
-			{
-				x = (double)random()/1989.98;      //gets a random x coordinate
-				y = (double)random()/1974.9171;      //gets a random y coordinate
-				z = ((x*x)+(y*y));          //Checks to see if number is inside unit circle
-				++count;            //if it is, consider it a valid random point
-			}
-		}
-		(void)sched_getaffinity(0, sizeof(coremask), &coremask);
-		cpuset_to_cstr(&coremask, clbuf);
+		pid_t tid = gettid();
 
-		#pragma omp barrier
-
-		t = clock() - t;
-		printf("Rank %d, thread %d, on %s. core = %s,(%f seconds).\n",
-				rank, thread, hnbuf, clbuf,((float)t)/CLOCKS_PER_SEC);
+#pragma omp critical
+		tid_to_worker_id[tid] = j;
 	}
+
+
+	if (true)
+	{
+		std::vector<std::ostringstream> ss;
+		ss.resize(max_threads);
+
+		std::cout << "#pragma omp parallel" << std::endl;
+
+		std::atomic<int> counter(0);
+		#pragma omp parallel
+		{
+			schedInfo(ss, tid_to_worker_id);
+
+			counter++;
+
+			while (counter != max_threads);
+		}
+
+		for (int i = 0; i < max_threads; i++)
+			std::cout << " + worker " << i << ": " << ss[i].str() << std::endl;
+
+	}
+
+	hline_dash();
+
+	if (true)
+	{
+		std::vector<std::ostringstream> ss;
+		ss.resize(max_threads);
+
+		std::cout << "#pragma omp parallel num_threads(max_threads/2)" << std::endl;
+		hline_dash();
+
+		std::atomic<int> counter(0);
+		#pragma omp parallel num_threads(max_threads/2)
+		{
+			schedInfo(ss, tid_to_worker_id);
+
+			counter++;
+
+			while (counter != max_threads/2);
+		}
+
+		for (int i = 0; i < max_threads; i++)
+			std::cout << " + worker " << i << ": " << ss[i].str() << std::endl;
+
+	}
+	hline_dash();
+
+	if (true)
+	{
+		std::vector<std::ostringstream> ss;
+		ss.resize(max_threads);
+
+		std::cout << "#pragma omp parallel for" << std::endl;
+		hline_dash();
+
+		std::atomic<int> counter(0);
+
+		/*
+		 * VERY IMPORTANT:
+		 * Use num_threads only on "omp parallel!"
+		 */
+		#pragma omp parallel num_threads(max_threads/2)
+		/*
+		 * After setting num_threads, iterate over for loop as usual
+		 */
+		#pragma omp for schedule(static,1)
+		for (int i = 0; i < max_threads/2; i++)
+		{
+			schedInfo(ss, tid_to_worker_id);
+
+			counter++;
+
+			while (counter != max_threads/2);
+		}
+
+		for (int i = 0; i < max_threads; i++)
+			std::cout << " + worker " << i << ": " << ss[i].str() << std::endl;
+
+	}
+
+	hline_dash();
+
+	if (true)
+	{
+		std::vector<std::ostringstream> ss;
+		ss.resize(max_threads);
+
+		std::atomic<int> counter(0);
+
+		std::cout << "#pragma omp parallel num_threads(max_threads/2)" << std::endl;
+		std::cout << "	#pragma omp parallel num_threads(2)" << std::endl;
+		hline_dash();
+
+		#pragma omp parallel num_threads(max_threads/2)
+		{
+			std::atomic<int> counter2(0);
+
+			#pragma omp parallel num_threads(2)
+			{
+				schedInfo(ss, tid_to_worker_id);
+
+				counter2++;
+
+				while (counter2 != 2);
+			}
+
+			counter++;
+
+			while (counter != max_threads/2);
+		}
+
+		for (int i = 0; i < max_threads; i++)
+			std::cout << " + worker " << i << ": " << ss[i].str() << std::endl;
+
+	}
+
+	if (true)
+	{
+		std::vector<std::ostringstream> ss;
+		ss.resize(max_threads);
+
+		std::cout << "#pragma omp parallel num_threads(max_threads/2)" << std::endl;
+		std::cout << "#pragma omp for schedule(static,1)" << std::endl;
+		std::cout << "	#pragma omp parallel num_threads(2)" << std::endl;
+		std::cout << "	#pragma omp for schedule(static,1)" << std::endl;
+		hline_dash();
+
+		std::atomic<int> counter(0);
+
+		/*
+		 * VERY IMPORTANT:
+		 * Use num_threads only on "omp parallel!"
+		 */
+		#pragma omp parallel num_threads(max_threads/2)
+		#pragma omp for schedule(static,1)
+		for (int j = 0; j < max_threads/2; j++)
+		{
+			std::atomic<int> counter2(0);
+
+			#pragma omp parallel num_threads(2)
+			#pragma omp for schedule(static,1)
+			for (int k = 0; k < 2; k++)
+			{
+				schedInfo(ss, tid_to_worker_id);
+
+				counter2++;
+
+				while (counter2 != 2);
+			}
+
+			counter++;
+
+			while (counter != max_threads/2);
+		}
+
+		for (int i = 0; i < max_threads; i++)
+			std::cout << " + worker " << i << ": " << ss[i].str() << std::endl;
+
+	}
+
 #if SWEET_MPI
 	MPI_Finalize();
 #endif
