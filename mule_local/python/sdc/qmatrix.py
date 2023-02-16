@@ -16,6 +16,19 @@ from mule.SWEETFileDict import SWEETFileDict
 
 # Storage for diagonaly optimized QDelta matrices
 OPT_COEFFS = {
+    # Fun fact :
+    # the sum of the diagonal coefficients that minimize the spectral radius of Q-Q_Delta is equal to :
+    # 
+    #                            nCoeffs/order
+    # 
+    # - nCoeffs : number of non-zeros coefficients
+    # - order : collocation order
+    #
+    # In particular :
+    # - GAUSS :       nCoeffs(M) = M,   order(M) = 2M   => sum = 1/2
+    # - RADAU-LEFT :  nCoeffs(M) = M-1, order(M) = 2M-1 => sum = (M-1)/(2M-1)
+    # - RADAU-RIGHT : nCoeffs(M) = M,   order(M) = 2M-1 => sum = M/(2M-1)
+    # - LOBATTO :     nCoeffs(M) = M-1, order(M) = 2M-2 => sum = 1/2
     "QMQD": {
         2: {'GAUSS':
                 [(0.105662, 0.394338),  # sum = 1/2
