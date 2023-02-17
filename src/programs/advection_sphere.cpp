@@ -138,7 +138,9 @@ public:
 		sphereDataConfigInstance.setupAuto(
 				simVars.disc.space_res_physical,
 				simVars.disc.space_res_spectral,
-				simVars.misc.reuse_spectral_transformation_plans
+				simVars.misc.reuse_spectral_transformation_plans,
+				simVars.misc.verbosity,
+				simVars.parallelization.num_threads_space
 			);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
