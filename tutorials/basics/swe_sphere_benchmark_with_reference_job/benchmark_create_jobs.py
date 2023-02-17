@@ -41,11 +41,11 @@ params_timestep_sizes_ = [30, 60, 120, 180, 360, 720]
 # Time stepping methods
 # ["name", "order1", "order2"]
 ts_methods = [
-    ['ln_erk',        4,    4],    # Used as reference solution
     ['ln_erk',        2,    2],
     ['lg_irk_lc_n_erk_ver1',    2,    2],
     ['l_irk_n_erk_ver1',    2,    2],
 ]
+
 
 
 #
