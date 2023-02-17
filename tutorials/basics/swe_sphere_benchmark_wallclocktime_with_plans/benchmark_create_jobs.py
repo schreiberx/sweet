@@ -3,6 +3,7 @@
 import os
 import sys
 import math
+import copy
 
 from itertools import product
 
@@ -20,6 +21,7 @@ jg.compile.program = 'swe_sphere'
 #
 #jg.runtime.space_res_spectral = 256
 jg.runtime.space_res_spectral = 64
+
 #jg.runtime.max_simulation_time = 60*60*24*8    # 8 days
 jg.runtime.max_simulation_time = 60*60*24*1    # 1 day
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
@@ -28,9 +30,6 @@ jg.runtime.benchmark_name = "galewsky"
 # Saves us some time in case of unstable simulations
 jg.runtime.instability_checks = 1
 
-# We require the plans to be recreated
-# This allows better comparision of different runs since the plans could otherwise change between runs
-jg.runtime.reuse_plans = "require_load"
 
 
 #
@@ -63,27 +62,69 @@ timestep_size_reference = params_timestep_sizes_[0]
 
 
 
+
+#
+# SHTNS plan generation scripts
+#
+if True:
+    # Backup some parameters
+    _backup = (jg.runtime.max_simulation_time, jg.runtime.output_timestep_size, jg.runtime.output_filename)
+
+    # We require the plans to be recreated
+    # This allows better comparison of different runs since the plans could otherwise change between runs
+    jg.runtime.reuse_plans = "save"
+
+    # Just some dummy time step size to get things going
+
+    jg.runtime.timestepping_method = ref_ts_method[0]
+    jg.runtime.timestepping_order = ref_ts_method[1]
+    jg.runtime.timestepping_order2 = ref_ts_method[2]
+
+    jg.runtime.timestep_size = params_timestep_sizes_[0]
+
+    # Set simtime to 0
+    jg.runtime.max_simulation_time = 0
+
+    # No output
+    jg.runtime.output_timestep_size = -1
+    jg.runtime.output_filename = "-"
+
+    # We need to use a special prefix for this job
+    jobdir = 'job_plan'+jg.getUniqueID()
+
+    # Generate jobs
+    jg.gen_jobscript_directory(jobdir)
+
+    # Now we can reuse these plans
+    jg.runtime.reuse_plans = "require_load"
+
+    # Restore job generation
+    (jg.runtime.max_simulation_time, jg.runtime.output_timestep_size, jg.runtime.output_filename) = _backup
+
+
+
+
 #
 # Generate reference solution
 #
-jg.runtime.timestep_size  = timestep_size_reference
+if True:
+    jg.runtime.timestep_size  = timestep_size_reference
 
-jg.runtime.timestepping_method = ref_ts_method[0]
-jg.runtime.timestepping_order = ref_ts_method[1]
-jg.runtime.timestepping_order2 = ref_ts_method[2]
+    jg.runtime.timestepping_method = ref_ts_method[0]
+    jg.runtime.timestepping_order = ref_ts_method[1]
+    jg.runtime.timestepping_order2 = ref_ts_method[2]
 
-# Set this to true to say that this is one of the reference jobs
-jg.reference_job = True
+    # Set this to true to say that this is one of the reference jobs
+    jg.reference_job = True
 
-jg.gen_jobscript_directory('job_benchref_'+jg.getUniqueID())
-jg.reference_job = False
+    jg.gen_jobscript_directory('job_benchref_'+jg.getUniqueID())
+    jg.reference_job = False
 
-#
-# Create job scripts
-#
+    # We now reuse the unique job ID of the reference solution to tell the other jobs about their reference solution!
+    jg.reference_job_unique_id = jg.job_unique_id
 
-# We now reuse the unique job ID of the reference solution to tell the other jobs about their reference solution!
-jg.reference_job_unique_id = jg.job_unique_id
+
+
 
 
 #
@@ -97,35 +138,4 @@ for tsm in ts_methods:
 
     for jg.runtime.timestep_size in params_timestep_sizes_:
         jg.gen_jobscript_directory('job_bench_'+jg.getUniqueID())
-
-#
-# SHTNS plan generation scripts
-#
-
-#
-# Search for plans and store them
-# This is in particular important for running studies across several nodes
-# since they rely on using the same transformation plans in order to have no
-# load imbalances
-#
-jg.runtime.reuse_plans = "save"
-
-#
-# Create dummy scripts to be used for SHTNS script generation
-#
-for tsm in ts_methods:
-
-    jg.runtime.timestepping_method = tsm[0]
-    jg.runtime.timestepping_order = tsm[1]
-    jg.runtime.timestepping_order2 = tsm[2]
-
-    # Set simtime to 0
-    jg.runtime.max_simulation_time = 0
-
-    # No output
-    jg.runtime.output_timestep_size = -1
-    jg.runtime.output_filename = "-"
-
-    jobdir = 'job_plan'+jg.getUniqueID()
-    jg.gen_jobscript_directory(jobdir)
 
