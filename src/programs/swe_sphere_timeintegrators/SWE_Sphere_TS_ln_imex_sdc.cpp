@@ -256,7 +256,8 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 		// Loop on nodes (can be parallelized if diagonal)
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-		SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal) num_threads(nNodes)")
+		#pragma omp parallel num_threads(nNodes)
+		#pragma omp for schedule(static,1) if(diagonal)
 #endif
 		for (int i = 0; i < nNodes; i++) {
 
@@ -290,7 +291,8 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 
 		// Simply copy to each node as initial guess
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-		SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
+		#pragma omp parallel num_threads(nNodes)
+		#pragma omp for schedule(static,1)
 #endif
 		for (int i = 0; i < nNodes; i++)
 		{
@@ -320,7 +322,8 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 
 	// Loop on nodes (can be parallelized if diagonal)
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-	SWEET_OMP_PARALLEL_FOR _Pragma("if(diagonal) num_threads(nNodes)")
+	#pragma omp parallel num_threads(nNodes)
+	#pragma omp for schedule(static,1) if(diagonal)
 #endif
 	for (int i = 0; i < nNodes; i++) {
 
