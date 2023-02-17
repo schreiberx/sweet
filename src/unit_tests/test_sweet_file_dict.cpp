@@ -55,10 +55,10 @@ void run_compare_file_dict(
 		for (int i0 = 0; i0 < value.shape()[0]; i0++)
 		{
 			SWEETFileDict::float64 test_value = 1 + i0;
-			if (value.get(i0) != test_value)
+			if (value(i0) != test_value)
 			{
 				std::ostringstream ss;
-				ss << "array_float64_1d: value (" << i0 << ") mismatch: " << value.get(i0) << " vs. " << test_value;
+				ss << "array_float64_1d: value (" << i0 << ") mismatch: " << value(i0) << " vs. " << test_value;
 				SWEETError(ss.str());
 			}
 		}
@@ -76,10 +76,10 @@ void run_compare_file_dict(
 			for (int i1 = 0; i1 < value.shape()[1]; i1++)
 			{
 				SWEETFileDict::float64 test_value = 1 + i0*value.shape()[1] + i1;
-				if (value.get(i0, i1) != test_value)
+				if (value(i0, i1) != test_value)
 				{
 					std::ostringstream ss;
-					ss << "array_float64_2d: value (" << i0 << ", " << i1 << ") mismatch: " << value.get(i0, i1) << " vs. " << test_value;
+					ss << "array_float64_2d: value (" << i0 << ", " << i1 << ") mismatch: " << value(i0, i1) << " vs. " << test_value;
 					SWEETError(ss.str());
 				}
 			}
@@ -100,10 +100,10 @@ void run_compare_file_dict(
 				for (int i2 = 0; i2 < value.shape()[2]; i2++)
 				{
 					SWEETFileDict::float64 test_value = 1 + i0*value.shape()[1]*value.shape()[2] + i1*value.shape()[2] + i2;
-					if (value.get(i0, i1, i2) != test_value)
+					if (value(i0, i1, i2) != test_value)
 					{
 						std::ostringstream ss;
-						ss << "array_float64_3d: value (" << i0 << ", " << i1 <<  ", " << i2 << ") mismatch: " << value.get(i0, i1, i2) << " vs. " << test_value;
+						ss << "array_float64_3d: value (" << i0 << ", " << i1 <<  ", " << i2 << ") mismatch: " << value(i0, i1, i2) << " vs. " << test_value;
 						SWEETError(ss.str());
 					}
 				}
@@ -123,10 +123,10 @@ void run_compare_file_dict(
 		{
 			SWEETFileDict::complex128 test_value = 1 + i0;
 			test_value += SWEETFileDict::complex128(0, 101+test_value.real());
-			if (value.get(i0) != test_value)
+			if (value(i0) != test_value)
 			{
 				std::ostringstream ss;
-				ss << "array_complex128_1d: value (" << i0 << ") mismatch: " << value.get(i0) << " vs. " << test_value;
+				ss << "array_complex128_1d: value (" << i0 << ") mismatch: " << value(i0) << " vs. " << test_value;
 				SWEETError(ss.str());
 			}
 		}
@@ -145,10 +145,10 @@ void run_compare_file_dict(
 			{
 				SWEETFileDict::complex128 test_value = 1 + i0*value.shape()[1] + i1;
 				test_value += SWEETFileDict::complex128(0, 101+test_value.real());
-				if (value.get(i0, i1) != test_value)
+				if (value(i0, i1) != test_value)
 				{
 					std::ostringstream ss;
-					ss << "array_complex128_2d: value (" << i0 << ", " << i1 << ") mismatch: " << value.get(i0, i1) << " vs. " << test_value;
+					ss << "array_complex128_2d: value (" << i0 << ", " << i1 << ") mismatch: " << value(i0, i1) << " vs. " << test_value;
 					SWEETError(ss.str());
 				}
 			}
@@ -170,10 +170,10 @@ void run_compare_file_dict(
 				{
 					SWEETFileDict::complex128 test_value = 1 + i0*value.shape()[1]*value.shape()[2] + i1*value.shape()[2] + i2;
 					test_value += SWEETFileDict::complex128(0, 101+test_value.real());
-					if (value.get(i0, i1, i2) != test_value)
+					if (value(i0, i1, i2) != test_value)
 					{
 						std::ostringstream ss;
-						ss << "array_complex128_3d: value (" << i0 << ", " << i1 <<  ", " << i2 << ") mismatch: " << value.get(i0, i1, i2) << " vs. " << test_value;
+						ss << "array_complex128_3d: value (" << i0 << ", " << i1 <<  ", " << i2 << ") mismatch: " << value(i0, i1, i2) << " vs. " << test_value;
 						SWEETError(ss.str());
 					}
 				}
@@ -213,7 +213,7 @@ void run_sweet_array_assignment_test()
 		for (int i1 = 0; i1 < test_array.shape()[1]; i1++)
 		{
 			SWEETFileDict::float64 test_value = 1 + i0*test_array.shape()[1] + i1;
-			SWEETFileDict::float64 real_value = test_array.get(i0, i1);
+			SWEETFileDict::float64 real_value = test_array(i0, i1);
 			if (real_value != test_value)
 			{
 				std::ostringstream ss;
