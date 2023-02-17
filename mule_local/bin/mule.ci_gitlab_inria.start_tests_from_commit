@@ -3,7 +3,7 @@
 if [ -z "$1" ]; then
 	echo ""
 	echo "Usage:"
-	echo "	$0 [commit tag]"
+	echo "	$0 [commit]"
 	echo ""
 	exit 1
 fi
@@ -20,7 +20,7 @@ if true; then
 		-F ref=main					\
 		-F "variables[DOCKER_BUILD]=false"		\
 		-F "variables[RUN_TESTS]=true" 		\
-		-F "variables[GIT_COMMIT_TAG]=$1" 		\
+		-F "variables[GIT_COMMIT]=$1" 		\
 		https://gitlab.inria.fr/api/v4/projects/42631/trigger/pipeline	\
 		> /dev/null
 
