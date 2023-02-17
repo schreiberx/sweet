@@ -707,6 +707,12 @@ class JobCompileOptions(InfoError):
         #
         main_src = mainsrcadddir+'.cpp'
 
+
+        fad_dict = {
+            'compile_files_and_dirs': [],
+            'scons_options': [],
+        }
+
         #
         # Check for additional source files and directories which should be added
         # This can be specified in the main program/test source file via e.g.
@@ -717,13 +723,14 @@ class JobCompileOptions(InfoError):
         #
 
         sw_root = os.environ['MULE_SOFTWARE_ROOT']+'/'
-        f = open(sw_root+'/'+main_src, 'r')
-        lines = f.readlines()
+        try:
+            f = open(sw_root+'/'+main_src, 'r')
+        except IOError:
+            # Ignore 
+            return fad_dict
 
-        fad_dict = {
-            'compile_files_and_dirs': [],
-            'scons_options': [],
-        }
+
+        lines = f.readlines()
 
         tags_ = [
                     ['compile_files_and_dirs', 'MULE_COMPILE_FILES_AND_DIRS: '],
