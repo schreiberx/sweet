@@ -264,6 +264,7 @@ public:
 			return _key;
 		}
 
+
 		friend
 		std::ostream& operator<<(std::ostream& os, const SWEETFileDict_Element &e)
 		{
