@@ -137,12 +137,24 @@ int main(int argc, char *argv[])
 
 		std::cout << "This is a test program for OpenMP to test nested parallelism!" << std::endl;
 		std::cout << "If your OpenMP runtime doesn't support all features, it may deadlock!" << std::endl;
+		std::cout << "" << std::endl;
+		std::cout << "You need to activate OpenMP nesting" << std::endl;
+		std::cout << "	OMP_NESTED=true" << std::endl;
+		std::cout << "" << std::endl;
 
 		for (int j = 0; j < 10; j++)
 			std::cout << "WARNING ";
 		std::cout << std::endl;
 
 		std::cout << std::endl;
+	}
+
+	if (omp_get_nested() == 0)
+	{
+		std::cerr << "ERROR: Nesting is not active" << std::endl;
+		std::cerr << "You need to activate OpenMP nesting" << std::endl;
+		std::cerr << "	OMP_NESTED=true" << std::endl;
+		return EXIT_FAILURE;
 	}
 
 	if (max_threads % 2 != 0)
