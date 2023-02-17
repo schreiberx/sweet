@@ -44,7 +44,7 @@ test -z "$MULE_MPILINK" && export MULE_MPILINK=mpif90
 #test -z "MULE_MPILIBS" && export MULE_MPILIBS=stdc++
 
 
-test -z "$MULE_CC_COMPILER" && export MULE_CC_COMPILER=$CC
-test -z "$MULE_CXX_COMPILER" && export MULE_CXX_COMPILER=$CXX
-test -z "$MULE_F90_COMPILER" && export MULE_F90_COMPILER=$FC
+test -z "$MULE_CC_COMPILER" && export MULE_CC_COMPILER="llvm"
+test -z "$MULE_CXX_COMPILER" && export MULE_CXX_COMPILER="llvm"
+test -z "$MULE_F90_COMPILER" && export MULE_F90_COMPILER="gcc"
 
