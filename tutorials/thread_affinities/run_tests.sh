@@ -22,7 +22,6 @@ run_test() {
 }
 
 
-export OMP_NESTED=true
 export OMP_MAX_ACTIVE_LEVELS=2
 #export OMP_THREADING=4,2
 
@@ -32,16 +31,21 @@ export OMP_MAX_ACTIVE_LEVELS=2
 #
 # * socket: threads of a socket
 # * cores: sets of all threads of one core
+# P="cores"
 # * threads: all individual threads
+# P="threads"
 #
-P="cores"
-P="threads"
 
 
 P="{0},{1},{2},{3},{4},{5},{6},{7}"
 # Same as before:
-P="{0}:8"
 
+NPROC=$(nproc)
+
+NPROC=$((NPROC/2))
+P="{0}:$NPROC"
+
+export OMP_NUM_THREADS=$NPROC
 
 #run_test threads spread
 #run_test threads close
