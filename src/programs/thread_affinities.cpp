@@ -11,6 +11,8 @@
 #include <sched.h>
 #include <omp.h>
 #include <time.h>
+
+#include <sys/syscall.h>
 #include <unistd.h>
 
 #if SWEET_MPI
@@ -89,7 +91,12 @@ void schedInfo(
 
 	int thread_num = omp_get_thread_num();
 
+#if 0
+	// not supported on old systems
 	pid_t tid = gettid();
+#else
+	pid_t tid = syscall(SYS_gettid);
+#endif
 	int worker_id = tid_to_worker_id[tid];
 
 	cpu_set_t coremask;
