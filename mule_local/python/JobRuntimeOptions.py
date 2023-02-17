@@ -137,6 +137,7 @@ class JobRuntimeOptions(InfoError):
 
         self.compute_error = 0
 
+        self.num_threads_space = -1
         self.reuse_plans = "quick"
         self.comma_separated_tags = None
 
@@ -265,6 +266,9 @@ class JobRuntimeOptions(InfoError):
 
         if 'timestep_size' in d:
             self.timestep_size = float(d['timestep_size'])
+
+        if 'num_threads_space' in d:
+            self.num_threads_space = int(d['num_threads_space'])
 
         if 'reuse_plans' in d:
             self.reuse_plans = int(d['reuse_plans'])
@@ -461,6 +465,10 @@ class JobRuntimeOptions(InfoError):
 
             if self.space_use_spectral_basis_diffs != 1:
                 idstr += '_spd'+str(self.space_use_spectral_basis_diffs)
+
+        if not 'parallelization' in filter_list:
+            if self.num_threads_space > 0:
+                idstr += '_nts'+str(self.num_threads_space)
 
         if not 'runtime.reuse_plans' in filter_list:
             if self.reuse_plans != -1:
@@ -772,6 +780,8 @@ class JobRuntimeOptions(InfoError):
         retval += ' --semi-lagrangian-approximate-sphere-geometry='+str(self.semi_lagrangian_approximate_sphere_geometry)
 
         retval += ' --compute-error='+str(self.compute_error)
+
+        retval += ' --num-threads-space='+str(self.num_threads_space)
 
         retval += ' --reuse-plans='+str(self.reuse_plans)
 

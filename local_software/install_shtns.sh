@@ -7,6 +7,13 @@ PKG_INSTALLED_FILE="$SWEET_LOCAL_SOFTWARE_DST_DIR/lib/libshtns.a"
 
 PKG_URL_SRC="shtns-3.5.2.tar.gz"
 
+
+if [ "$CC" == "gcc-6" ]; then
+	# Special workaround for gcc-6 compiler
+	# This is mainly for the continuous testing environment
+	export CFLAGS="$CFLAGS -mno-avx512f"
+fi
+
 config_setup
 
 config_package $@
@@ -43,6 +50,7 @@ if [ "`uname`" == "DarwinXXX" ]; then
 	config_success
 	return
 fi
+
 
 
 echo_info_hline

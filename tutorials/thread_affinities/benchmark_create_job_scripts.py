@@ -2,7 +2,7 @@
 
 
 from mule import *
-from mule_local.JobMule import *
+from mule.JobMule import *
 j = JobGeneration()
 
 j.compile.program = 'thread_affinities'
@@ -16,7 +16,7 @@ j.compilecommand_in_jobscript = False
 j.parallelization.max_wallclock_seconds = "00:01:00"
 
 
-for i in range(j.platform_resources.num_cores_per_socket):
+for i in range(1, j.platform_resources.num_cores_per_socket):
 
 	pspace = JobParallelizationDimOptions()
 	pspace.num_cores_per_rank = j.platform_resources.num_cores_per_socket

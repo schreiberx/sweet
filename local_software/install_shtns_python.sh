@@ -7,6 +7,12 @@ if [[ -e "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate" ]]; 
 	source "$MULE_SOFTWARE_ROOT/local_software/local/python_env/bin/activate" || exit 1
 fi
 
+if [ "$CC" == "gcc-6" ]; then
+	# Special workaround for gcc-6 compiler
+	# This is mainly for the continuous testing environment
+	export CFLAGS="$CFLAGS -mno-avx512f"
+fi
+
 PKG_NAME="SHTNS_python"
 
 PYTHONVERSION=$(python3 -c "import sys;print(str(sys.version_info.major)+\".\"+str(sys.version_info.minor),end='')")
@@ -32,17 +38,10 @@ if [[ ! -z "$CC" ]]; then
 	CONFIGURE_EXTRA_FLAGS+=" --enable-kernel-compiler=$CC"
 fi
 
-if [ "`uname`" == "DarwinXXX" ]; then
-	echo_info_hline
-	echo_info "SHTNS Python without OpenMP:"
-	# Python, OpenMP
-	config_configure --enable-python --disable-openmp $CONFIGURE_EXTRA_FLAGS
-else
-	echo_info_hline
-	echo_info "SHTNS Python OpenMP:"
-	# Python, OpenMP
-	config_configure --enable-python --enable-openmp $CONFIGURE_EXTRA_FLAGS
-fi
+echo_info_hline
+echo_info "SHTNS Python OpenMP:"
+# Python, OpenMP
+config_configure --enable-python --enable-openmp $CONFIGURE_EXTRA_FLAGS
 
 config_make_clean
 config_make_default

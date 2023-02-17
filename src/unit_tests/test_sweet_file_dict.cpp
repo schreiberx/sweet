@@ -20,7 +20,7 @@ void run_compare_file_dict(
 
 	{
 		std::string value;
-		fd.getValue("str", value);
+		fd.get("str", value);
 
 		if (value != "hello world")
 			SWEETError("string mismatch");
@@ -30,7 +30,7 @@ void run_compare_file_dict(
 
 	{
 		long long value;
-		fd.getValue("int64", value);
+		fd.get("int64", value);
 
 		if (value != 123)
 			SWEETError("int64 mismatch");
@@ -40,7 +40,7 @@ void run_compare_file_dict(
 
 	{
 		double value;
-		fd.getValue("float64", value);
+		fd.get("float64", value);
 
 		if (value != 123.456)
 			SWEETError("float64 mismatch");
@@ -50,7 +50,7 @@ void run_compare_file_dict(
 
 	{
 		SWEETArray<1,SWEETFileDict::float64> value;
-		fd.getValue("array_float64_1d", value);
+		fd.get("array_float64_1d", value);
 
 		for (int i0 = 0; i0 < value.shape()[0]; i0++)
 		{
@@ -69,7 +69,7 @@ void run_compare_file_dict(
 
 	{
 		SWEETArray<2,SWEETFileDict::float64> value;
-		fd.getValue("array_float64_2d", value);
+		fd.get("array_float64_2d", value);
 
 		for (int i0 = 0; i0 < value.shape()[0]; i0++)
 		{
@@ -91,7 +91,7 @@ void run_compare_file_dict(
 
 	{
 		SWEETArray<3,SWEETFileDict::float64> value;
-		fd.getValue("array_float64_3d", value);
+		fd.get("array_float64_3d", value);
 
 		for (int i0 = 0; i0 < value.shape()[0]; i0++)
 		{
@@ -117,7 +117,7 @@ void run_compare_file_dict(
 
 	{
 		SWEETArray<1,SWEETFileDict::complex128> value;
-		fd.getValue("array_complex128_1d", value);
+		fd.get("array_complex128_1d", value);
 
 		for (int i0 = 0; i0 < value.shape()[0]; i0++)
 		{
@@ -137,7 +137,7 @@ void run_compare_file_dict(
 
 	{
 		SWEETArray<2,SWEETFileDict::complex128> value;
-		fd.getValue("array_complex128_2d", value);
+		fd.get("array_complex128_2d", value);
 
 		for (int i0 = 0; i0 < value.shape()[0]; i0++)
 		{
@@ -160,7 +160,7 @@ void run_compare_file_dict(
 
 	{
 		SWEETArray<3,SWEETFileDict::complex128> value;
-		fd.getValue("array_complex128_3d", value);
+		fd.get("array_complex128_3d", value);
 
 		for (int i0 = 0; i0 < value.shape()[0]; i0++)
 		{
@@ -185,8 +185,9 @@ void run_compare_file_dict(
 }
 
 
-void run_assignment_test()
+void run_sweet_array_assignment_test()
 {
+	std::cout << " + run_sweet_array_assignment_test()" << std::endl;
 	SWEETArray<2,double> test_array;
 
 #if 1
@@ -225,6 +226,282 @@ void run_assignment_test()
 	std::cout << " + flat array assignment: OK - " << test_array << std::endl;
 
 	std::cout << test_array << std::endl;
+}
+
+
+void _setup_dict_test_data(
+		int size_i0, int size_i1, int size_i2,
+		int version_id,
+		SWEETFileDict &io_fileDict
+)
+{
+	io_fileDict.set("str", "hello world");
+
+	io_fileDict.set("int64", 123);
+	io_fileDict.set("float64", 123.456);
+
+	std::array<int,1> shape1d({size_i2});
+	std::array<int,2> shape2d({size_i1, size_i2});
+	std::array<int,3> shape3d({size_i0, size_i1, size_i2});
+
+	int size1d = size_i2;
+	int size2d = size_i1*size_i2;
+	int size3d = size_i0*size_i1*size_i2;
+
+	{
+		SWEETFileDict::float64 data[3];
+		for (int i = 0; i < size1d; i++)
+			data[i] = i+1;
+
+		if (0)
+		{
+			SWEETArray<1,SWEETFileDict::float64> array(shape1d, data);
+
+			io_fileDict.set("array_float64_1d", array);
+		}
+
+		if (1)
+		{
+			SWEETArray<1,SWEETFileDict::float64> array;
+			array.setup(shape1d);
+			array = data;
+
+			io_fileDict.set("array_float64_1d", array);
+		}
+
+		if (2)
+		{
+			SWEETArray<1,SWEETFileDict::float64> array;
+			array.setup(shape1d);
+
+			int c = 0;
+			for (int i0 = 0; i0 < array.shape()[0]; i0++)
+			{
+				array.set(i0, data[c]);
+				c++;
+			}
+
+			io_fileDict.set("array_float64_1d", array);
+		}
+	}
+
+	{
+		// io_fileDict.set("array_float64_2d", np.array([[1., 2., 3.], [4., 5., 6.]]));
+
+		std::array<int,2> shape(shape2d);
+		SWEETFileDict::float64 data[size2d];
+
+		for (int i = 0; i < size2d; i++)
+			data[i] = i+1;
+
+		if (0)
+		{
+			SWEETArray<2,SWEETFileDict::float64> array(shape, data);
+
+			io_fileDict.set("array_float64_2d", array);
+		}
+
+		if (1)
+		{
+			SWEETArray<2,SWEETFileDict::float64> array;
+			array.setup(shape);
+			array = data;
+
+			io_fileDict.set("array_float64_2d", array);
+		}
+
+		if (2)
+		{
+			SWEETArray<2,SWEETFileDict::float64> array;
+			array.setup(shape);
+
+			int c = 0;
+			for (int i0 = 0; i0 < array.shape()[0]; i0++)
+				for (int i1 = 0; i1 < array.shape()[1]; i1++)
+				{
+					array.set(i0, i1, data[c]);
+					c++;
+				}
+
+			io_fileDict.set("array_float64_2d", array);
+		}
+	}
+
+	{
+		SWEETFileDict::float64 data[size3d];
+		for (int i = 0; i < sizeof(data)/sizeof(SWEETFileDict::float64); i++)
+			data[i] = i+1;
+
+		if (0)
+		{
+			SWEETArray<3,SWEETFileDict::float64> array(shape3d, data);
+
+			io_fileDict.set("array_float64_3d", array);
+		}
+
+		if (1)
+		{
+			SWEETArray<3,SWEETFileDict::float64> array;
+			array.setup(shape3d);
+			array = data;
+
+			io_fileDict.set("array_float64_3d", array);
+		}
+
+		if (2)
+		{
+			SWEETArray<3,SWEETFileDict::float64> array;
+			array.setup(shape3d);
+
+			int c = 0;
+			for (int i0 = 0; i0 < array.shape()[0]; i0++)
+				for (int i1 = 0; i1 < array.shape()[1]; i1++)
+					for (int i2 = 0; i2 < array.shape()[2]; i2++)
+					{
+						array.set3(i0, i1, i2, data[c]);
+						c++;
+					}
+
+			io_fileDict.set("array_float64_3d", array);
+		}
+	}
+
+
+	{
+		SWEETFileDict::complex128 data[size1d];
+		for (int i = 0; i < size1d; i++)
+			data[i] = SWEETFileDict::complex128(i+1, 100+i);
+
+		if (0)
+		{
+			SWEETArray<1,SWEETFileDict::complex128> array(shape1d, data);
+
+			io_fileDict.set("array_complex128_1d", array);
+		}
+
+		if (1)
+		{
+			SWEETArray<1,SWEETFileDict::complex128> array;
+			array.setup(shape1d);
+			array = data;
+
+			io_fileDict.set("array_complex128_1d", array);
+		}
+
+		if (2)
+		{
+			SWEETArray<1,SWEETFileDict::complex128> array;
+			array.setup(shape1d);
+
+			int c = 0;
+			for (int i0 = 0; i0 < array.shape()[0]; i0++)
+			{
+				array.set(i0, data[c]);
+				c++;
+			}
+
+			io_fileDict.set("array_complex128_1d", array);
+		}
+	}
+
+	{
+		// io_fileDict.set("array_complex128_2d", np.array([[1.+102j, 2.+103j, 3.+104j], [4.+105j, 5.+106j, 6.+107j]]))
+
+		SWEETFileDict::complex128 data[size2d];
+
+		for (int i = 0; i < size2d; i++)
+			data[i] = SWEETFileDict::complex128(i+1, 100+i);
+
+		if (0)
+		{
+			SWEETArray<2,SWEETFileDict::complex128> array(shape2d, data);
+
+			io_fileDict.set("array_complex128_2d", array);
+		}
+
+		if (1)
+		{
+			SWEETArray<2,SWEETFileDict::complex128> array;
+			array.setup(shape2d);
+			array = data;
+
+			io_fileDict.set("array_complex128_2d", array);
+		}
+
+		if (2)
+		{
+			SWEETArray<2,SWEETFileDict::complex128> array;
+			array.setup(shape2d);
+
+			int c = 0;
+			for (int i0 = 0; i0 < array.shape()[0]; i0++)
+				for (int i1 = 0; i1 < array.shape()[1]; i1++)
+				{
+					array.set(i0, i1, data[c]);
+					c++;
+				}
+
+			io_fileDict.set("array_complex128_2d", array);
+		}
+	}
+
+	{
+		// io_fileDict.set("array_complex128_3d", np.array([[[1.+102j, 2.+103j, 3.+104j], [4.+105j, 5.+106j, 6.+107j]], [[7.+108j, 8.+109j, 9.+110j], [10.+111j, 11.+112j, 12.+113j]]]))
+
+		SWEETFileDict::complex128 data[size3d];
+		for (int i = 0; i < size3d; i++)
+			data[i] = SWEETFileDict::complex128(i+1, 100+i);
+
+		if (0)
+		{
+			SWEETArray<3,SWEETFileDict::complex128> array(shape3d, data);
+
+			io_fileDict.set("array_complex128_3d", array);
+		}
+
+		if (1)
+		{
+			SWEETArray<3,SWEETFileDict::complex128> array;
+			array.setup(shape3d);
+			array = data;
+
+			io_fileDict.set("array_complex128_3d", array);
+		}
+
+		if (2)
+		{
+			SWEETArray<3,SWEETFileDict::complex128> array;
+			array.setup(shape3d);
+
+			int c = 0;
+			for (int i0 = 0; i0 < array.shape()[0]; i0++)
+				for (int i1 = 0; i1 < array.shape()[1]; i1++)
+					for (int i2 = 0; i2 < array.shape()[2]; i2++)
+					{
+						array.set3(i0, i1, i2, data[c]);
+						c++;
+					}
+
+			io_fileDict.set("array_complex128_3d", array);
+		}
+	}
+}
+
+void run_sweet_file_dict_creation_test()
+{
+	std::cout << " + run_sweet_file_dict_creation_test()" << std::endl;
+
+	SWEETFileDict fileDict;
+
+
+	for (int version_id = 0; version_id < 3; version_id++)
+	{
+
+		_setup_dict_test_data(2, 2, 3, version_id, fileDict);
+
+
+		std::cout << fileDict << std::endl;
+	}
 }
 
 
@@ -270,7 +547,9 @@ int main(
 		}
 	}
 
-	run_assignment_test();
+	run_sweet_array_assignment_test();
+
+	run_sweet_file_dict_creation_test();
 
 	std::cout << "FIN" << std::endl;
 

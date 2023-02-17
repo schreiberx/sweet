@@ -446,6 +446,31 @@ private:
 		return flags;
 	}
 
+	void setupSHTNSBoilerplateCode(
+			int i_numThreads,
+			int i_verbosity = 0
+	)
+	{
+		cleanup(false);
+
+		shtns_verbose(i_verbosity);
+
+#if SWEET_THREADING_SPACE
+		// enable multi-threaded transforms (if supported).
+		if (i_numThreads <= 0)
+		{
+			shtns_use_threads(0);
+		}
+		else
+		{
+			shtns_use_threads(i_numThreads);
+			std::cout << i_numThreads << std::endl;
+			exit(1);
+		}
+#else
+		shtns_use_threads(1);	// value of 1 disables threading
+#endif
+	}
 
 public:
 	void setup(
@@ -456,31 +481,15 @@ public:
 		int nmax,
 
 		TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
-		int i_verbosity = 0
+//		int i_verbosity = 0
+		int i_verbosity,
+		int i_numThreads
 	)
 	{
 		mmax--;
 		nmax--;
 
-		cleanup(false);
-
-#if SWEET_MPI
-		// only output information for 1st rank
-		int mpi_rank;
-		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-		if (mpi_rank == 0)
-#endif
-		shtns_verbose(0);			// displays informations during initialization.
-
-		// enable multi-threaded transforms (if supported).
-#if SWEET_THREADING_SPACE
-		shtns_use_threads(0);	// automatically choose number of threads
-#else
-		shtns_use_threads(1);	// value of 1 disables threading
-#endif
-
-		if (shtns != nullptr)
-			shtns_destroy(shtns);
+		setupSHTNSBoilerplateCode(i_numThreads, i_verbosity);
 
 		shtns = shtns_create(
 				nmax,
@@ -523,26 +532,15 @@ public:
 			int *o_nphi,	/// physical resolution along longitude
 			int *o_nlat,	/// physical resolution along latitude
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
-			int i_verbosity = 0
+//			int i_verbosity = 0
+			int i_verbosity,
+			int i_numThreads
 	)
 	{
 		i_mmax--;
 		i_nmax--;
 
-		cleanup(false);
-
-		shtns_verbose(1);			// displays informations during initialization.
-
-#if SWEET_THREADING_SPACE
-		shtns_use_threads(0);	// automatically choose number of threads based on omp_num_threads
-#else
-		shtns_use_threads(1);	// value of 1 disables threading
-#endif
-
-
-		if (shtns != nullptr)
-			shtns_destroy(shtns);
-
+		setupSHTNSBoilerplateCode(i_numThreads, i_verbosity);
 
 		shtns = shtns_create(
 				i_nmax,
@@ -589,24 +587,15 @@ public:
 			int i_mmax,		///< longitude modes
 			int i_nmax,		///< latitude modes
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
-			int i_verbosity = 0
+//			int i_verbosity = 0
+			int i_verbosity,
+			int i_numThreads
 	)
 	{
 		i_mmax--;
 		i_nmax--;
 
-		cleanup(false);
-
-		shtns_verbose(0);			// displays informations during initialization.
-#if SWEET_THREADING_SPACE
-		shtns_use_threads(0);	// automatically choose number of threads
-#else
-		shtns_use_threads(1);	// value of 1 disables threading
-#endif
-
-
-		if (shtns != nullptr)
-			shtns_destroy(shtns);
+		setupSHTNSBoilerplateCode(i_numThreads, i_verbosity);
 
 		shtns = shtns_create(
 				i_nmax,
@@ -649,11 +638,11 @@ public:
 			int io_physical_res[2],
 			int io_spectral_modes[2],
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE &i_reuse_transformation_plans,
-			int i_verbosity = 0
+//			int i_verbosity = 0
+			int i_verbosity,
+			int i_numThreads
 	)
 	{
-		cleanup(false);
-
 		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{
 			setup(	io_physical_res[0],
@@ -661,7 +650,8 @@ public:
 					io_spectral_modes[0],
 					io_spectral_modes[1],
 					i_reuse_transformation_plans,
-					i_verbosity
+					i_verbosity,
+					i_numThreads
 				);
 			return;
 		}
@@ -674,7 +664,8 @@ public:
 					io_spectral_modes[0],
 					io_spectral_modes[1],
 					i_reuse_transformation_plans,
-					i_verbosity
+					i_verbosity,
+					i_numThreads
 				);
 
 			io_physical_res[0] = physical_num_lon;
@@ -696,11 +687,11 @@ public:
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_plan_load_save,
-			int i_verbosity = 0
+//			int i_verbosity = 0
+			int i_verbosity,
+			int i_numThreads
 	)
 	{
-		cleanup(false);
-
 		assert(shtns == nullptr);
 
 		setupAutoPhysicalSpace(
@@ -709,7 +700,8 @@ public:
 				&physical_num_lon,
 				&physical_num_lat,
 				i_plan_load_save,
-				i_verbosity
+				i_verbosity,
+				i_numThreads
 		);
 	}
 

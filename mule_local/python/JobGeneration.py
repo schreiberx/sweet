@@ -155,7 +155,7 @@ class JobGeneration(InfoError):
 
         This is accessed by the platform specific scripts to get the executable
         """
-        return self.sweetroot+"/build/"""+self.compile.getProgramName()+""" """+self.runtime.getRuntimeOptions()
+        return self.sweetroot+"/build/"""+self.compile.getProgramExec()+""" """+self.runtime.getRuntimeOptions()
 
 
 
@@ -181,7 +181,7 @@ class JobGeneration(InfoError):
 
 
 
-        self.compile.makeOptionsConsistent()
+        self.compile.postprocessOptions()
 
         content = ""
 

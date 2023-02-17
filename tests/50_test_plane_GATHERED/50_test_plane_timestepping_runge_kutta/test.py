@@ -12,8 +12,8 @@ exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
 
-jg.compile.unit_test="test_timestepping_runge_kutta"
-jg.runtime.verbosity=5
+jg.compile.unit_test = "test_timestepping_runge_kutta"
+jg.runtime.verbosity = 5
 jg.runtime.max_simulation_time = 5
 jg.runtime.timestep_size = 0.01
 
