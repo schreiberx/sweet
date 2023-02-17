@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
 	std::cout << "max_threads: " << max_threads << std::endl;
 
-	for (int i = 0; i < 3; i++)
+	//for (int i = 0; i < 3; i++)
 	{
 		std::cout << std::endl;
 		for (int j = 0; j < 10; j++)
@@ -137,12 +137,24 @@ int main(int argc, char *argv[])
 
 		std::cout << "This is a test program for OpenMP to test nested parallelism!" << std::endl;
 		std::cout << "If your OpenMP runtime doesn't support all features, it may deadlock!" << std::endl;
+		std::cout << "" << std::endl;
+		std::cout << "You need to activate OpenMP nesting" << std::endl;
+		std::cout << "	OMP_MAX_ACTIVE_LEVELS=2" << std::endl;
+		std::cout << "" << std::endl;
 
 		for (int j = 0; j < 10; j++)
 			std::cout << "WARNING ";
 		std::cout << std::endl;
 
 		std::cout << std::endl;
+	}
+
+	if (omp_get_max_active_levels() == 0)
+	{
+		std::cerr << "ERROR: Nesting is not active" << std::endl;
+		std::cerr << "You need to activate OpenMP nesting" << std::endl;
+		std::cerr << "	OMP_NESTED=true" << std::endl;
+		return EXIT_FAILURE;
 	}
 
 	if (max_threads % 2 != 0)
@@ -275,7 +287,6 @@ int main(int argc, char *argv[])
 
 			int i = omp_get_thread_num();
 
-			std::atomic<int> counter2(0);
 			#pragma omp parallel num_threads(2)
 			{
 				int j = omp_get_thread_num();
@@ -284,12 +295,9 @@ int main(int argc, char *argv[])
 				ss_iter << "(i=" << i << ", j=" << j << ")";
 				schedInfo(ss, tid_to_worker_id, ss_iter.str());
 
-				counter2++;
-				while (counter2 != 2);
+				counter++;
+				while (counter != max_threads);
 			}
-
-			counter++;
-			while (counter != max_threads/2);
 		}
 
 		for (int i = 0; i < max_threads; i++)
@@ -318,8 +326,6 @@ int main(int argc, char *argv[])
 		#pragma omp for schedule(static,1)
 		for (int j = 0; j < max_threads/2; j++)
 		{
-			std::atomic<int> counter2(0);
-
 			#pragma omp parallel num_threads(2)
 			#pragma omp for schedule(static,1)
 			for (int k = 0; k < 2; k++)
@@ -328,14 +334,9 @@ int main(int argc, char *argv[])
 				ss_iter << "(j=" << j << ", k=" << k << ")";
 				schedInfo(ss, tid_to_worker_id, ss_iter.str());
 
-				counter2++;
-
-				while (counter2 != 2);
+				counter++;
+				while (counter != max_threads);
 			}
-
-			counter++;
-
-			while (counter != max_threads/2);
 		}
 
 		for (int i = 0; i < max_threads; i++)
