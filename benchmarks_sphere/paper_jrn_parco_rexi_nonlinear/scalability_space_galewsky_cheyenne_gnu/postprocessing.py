@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-from SWEET import *
+from mule import *
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
 from mule.plotting.Plotting import *
