@@ -17,10 +17,10 @@ if true; then
 	mkdir -p build
 	cd build
 
-	echo_info "Executing 'cmake'..."
+	echo_info "Executing 'cmake'.."
 	config_exec cmake ../
 
-	echo_info "Executing 'make'..."
+	echo_info "Executing 'make'.."
 	config_exec make $MAKE_DEFAULT_OPTS
 
 

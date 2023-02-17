@@ -61,7 +61,7 @@ def get_platform_id():
         unique ID of platform
     """
 
-    return "default_gcc"
+    return "timex_llvm15"
 
 
 def get_platform_resources():
