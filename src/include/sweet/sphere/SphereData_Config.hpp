@@ -464,8 +464,6 @@ private:
 		else
 		{
 			shtns_use_threads(i_numThreads);
-			std::cout << i_numThreads << std::endl;
-			exit(1);
 		}
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
