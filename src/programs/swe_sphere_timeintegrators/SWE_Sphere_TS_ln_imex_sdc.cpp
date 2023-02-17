@@ -194,6 +194,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		
 		// Add quadrature terms
 		for (size_t j = 0; j < nNodes; j++) {
+			double a = q(i, j);
 			axpy(dt*q(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
 			axpy(dt*q(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 		}
