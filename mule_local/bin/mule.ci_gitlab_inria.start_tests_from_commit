@@ -1,0 +1,41 @@
+#! /bin/bash
+
+if [ -z "$1" ]; then
+	echo ""
+	echo "Usage:"
+	echo "	$0 [commit tag]"
+	echo ""
+	exit 1
+fi
+
+if true; then
+
+	echo "Sending CT request for branch '$1'..."
+
+	curl		\
+		-X POST	\
+		--fail	\
+		--no-progress-meter	\
+		-F token=glptt-0d66598d696a02da33fb65e2a039f607c68ea50d	\
+		-F ref=main					\
+		-F "variables[DOCKER_BUILD]=false"		\
+		-F "variables[RUN_TESTS]=true" 		\
+		-F "variables[GIT_COMMIT_TAG]=$1" 		\
+		https://gitlab.inria.fr/api/v4/projects/42631/trigger/pipeline	\
+		> /dev/null
+
+	if [[ $? -eq 0 ]]; then
+		echo ""
+		echo ""
+		echo "CI pipeline triggered successfully"
+		echo ""
+		echo "Check out https://gitlab.inria.fr/mschreib/sweet-ci-tests/-/pipelines"
+		echo ""
+	else
+		echo ""
+		echo "ERROR"
+		echo "ERROR: Failed to trigger CI pipeline!"
+		echo "ERROR"
+	fi
+
+fi
