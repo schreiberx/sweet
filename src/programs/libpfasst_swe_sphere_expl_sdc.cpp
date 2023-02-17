@@ -82,7 +82,8 @@ int main(int i_argc, char *i_argv[])
 			simVars.disc.space_res_physical,
 			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans,
-			simVars.misc.verbosity
+			simVars.misc.verbosity,
+			simVars.parallelization.num_threads_space
 	);
 	std::cout << "SPH config string: " << levelSingleton.dataConfig.getConfigInformationString() << std::endl;
 
@@ -95,7 +96,8 @@ int main(int i_argc, char *i_argv[])
 			res_physical_nodealiasing,
 			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans,
-			simVars.misc.verbosity
+			simVars.misc.verbosity,
+			simVars.parallelization.num_threads_space
 	);
 
 	// setup data operators
