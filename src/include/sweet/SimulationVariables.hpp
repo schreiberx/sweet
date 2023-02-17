@@ -1091,7 +1091,12 @@ public:
 	        next_free_program_option++;
 		}
 
-
+		void outputProgParams()
+		{
+			std::cout << "" << std::endl;
+			std::cout << "Parallelization options:" << std::endl;
+			std::cout << "	--num-threads-space [int]			Specify how many threads to use for spatial parallelization (very useful for nested parallel regions)" << std::endl;
+		}
 
 		/*
 		 * This method is called to parse a particular
@@ -1476,6 +1481,7 @@ public:
 
 		sim.outputProgParams();
 		benchmark.outputProgParams();
+		parallelization.outputProgParams();
 		disc.outputProgParams();
 		iodata.outputProgParams();
 
