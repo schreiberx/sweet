@@ -16,7 +16,7 @@ j.compilecommand_in_jobscript = False
 j.parallelization.max_wallclock_seconds = "00:01:00"
 
 
-for i in range(1, j.platform_resources.num_cores_per_socket):
+for i in range(1, j.platform_resources.num_cores_per_socket+1):
 
 	pspace = JobParallelizationDimOptions()
 	pspace.num_cores_per_rank = j.platform_resources.num_cores_per_socket
