@@ -72,7 +72,8 @@ void hline_dash()
 
 void schedInfo(
 		std::vector<std::ostringstream> &ss,
-		std::map<int, int> &tid_to_worker_id
+		std::map<int, int> &tid_to_worker_id,
+		const std::string &i_str_iter
 )
 {
 	char hostname_buf[1024];
@@ -108,6 +109,12 @@ void schedInfo(
 		ss[worker_id] << "thread_num=" << thread_num;
 		ss[worker_id] << ", ";
 		ss[worker_id] << "cores=" << cores_buf;
+
+		if (i_str_iter != "")
+		{
+			ss[worker_id] << ", ";
+			ss[worker_id] << i_str_iter;
+		}
 	}
 }
 
@@ -121,7 +128,7 @@ int main(int argc, char *argv[])
 
 	std::map<int, int> tid_to_worker_id;
 
-	#pragma omp parallel for
+	#pragma omp parallel for schedule(static,1)
 	for (int j = 0; j < max_threads; j++)
 	{
 		pid_t tid = gettid();
@@ -141,10 +148,12 @@ int main(int argc, char *argv[])
 		std::atomic<int> counter(0);
 		#pragma omp parallel
 		{
-			schedInfo(ss, tid_to_worker_id);
+			int i = omp_get_thread_num();
+			std::ostringstream ss_iter;
+			ss_iter << "(i=" << i << ")";
+			schedInfo(ss, tid_to_worker_id, ss_iter.str());
 
 			counter++;
-
 			while (counter != max_threads);
 		}
 
@@ -166,7 +175,11 @@ int main(int argc, char *argv[])
 		std::atomic<int> counter(0);
 		#pragma omp parallel num_threads(max_threads/2)
 		{
-			schedInfo(ss, tid_to_worker_id);
+			int i = omp_get_thread_num();
+
+			std::ostringstream ss_iter;
+			ss_iter << "(i=" << i << ")";
+			schedInfo(ss, tid_to_worker_id, ss_iter.str());
 
 			counter++;
 
@@ -184,7 +197,8 @@ int main(int argc, char *argv[])
 		std::vector<std::ostringstream> ss;
 		ss.resize(max_threads);
 
-		std::cout << "#pragma omp parallel for" << std::endl;
+		std::cout << "#pragma omp parallel num_threads(max_threads/2)" << std::endl;
+		std::cout << "#pragma omp for schedule(static,1)" << std::endl;
 		hline_dash();
 
 		std::atomic<int> counter(0);
@@ -200,7 +214,9 @@ int main(int argc, char *argv[])
 		#pragma omp for schedule(static,1)
 		for (int i = 0; i < max_threads/2; i++)
 		{
-			schedInfo(ss, tid_to_worker_id);
+			std::ostringstream ss_iter;
+			ss_iter << "(i=" << i << ")";
+			schedInfo(ss, tid_to_worker_id, ss_iter.str());
 
 			counter++;
 
@@ -229,9 +245,15 @@ int main(int argc, char *argv[])
 		{
 			std::atomic<int> counter2(0);
 
+			int i = omp_get_thread_num();
+
 			#pragma omp parallel num_threads(2)
 			{
-				schedInfo(ss, tid_to_worker_id);
+				int j = omp_get_thread_num();
+
+				std::ostringstream ss_iter;
+				ss_iter << "(i=" << i << ", j=" << j << ")";
+				schedInfo(ss, tid_to_worker_id, ss_iter.str());
 
 				counter2++;
 
@@ -275,7 +297,9 @@ int main(int argc, char *argv[])
 			#pragma omp for schedule(static,1)
 			for (int k = 0; k < 2; k++)
 			{
-				schedInfo(ss, tid_to_worker_id);
+				std::ostringstream ss_iter;
+				ss_iter << "(j=" << j << ", k=" << k << ")";
+				schedInfo(ss, tid_to_worker_id, ss_iter.str());
 
 				counter2++;
 
