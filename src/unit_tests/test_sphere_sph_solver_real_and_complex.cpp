@@ -757,7 +757,10 @@ int main(
 					simVars.disc.space_res_spectral[1],
 					&simVars.disc.space_res_physical[0],
 					&simVars.disc.space_res_physical[1],
-					simVars.misc.reuse_spectral_transformation_plans
+					simVars.misc.reuse_spectral_transformation_plans,
+					0,
+					simVars.parallelization.num_threads_space
+
 			);
 
 #if 1
