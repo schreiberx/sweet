@@ -497,6 +497,7 @@ public:
 			);
 
 #if SWEET_MPI
+		int mpi_rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 		if (mpi_rank == 0 && i_reuse_transformation_plans)
 			MPI_Barrier(MPI_COMM_WORLD);
