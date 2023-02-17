@@ -113,7 +113,7 @@ public:
 		time_varying_fields = sphereBenchmarks.master->has_time_varying_state();
 
 		// setup sphereDataconfig instance again
-		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity, simVars.parallelization.num_threads_space);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
 	}
@@ -221,7 +221,7 @@ int main(int i_argc, char *i_argv[])
 		}
 
 
-		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity, simVars.parallelization.num_threads_space);
 
 		if (1)
 		{

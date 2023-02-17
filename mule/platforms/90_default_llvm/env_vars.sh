@@ -5,7 +5,7 @@
 # Start at version 30 and search downwards
 #
 
-CLANG_VERSIONS=`seq 30 -1 0`
+CLANG_VERSIONS=$(seq 30 -1 0)
 for i in $CLANG_VERSIONS; do
 	type "clang++-$i" 2> /dev/null 1>&2
 
@@ -16,8 +16,13 @@ for i in $CLANG_VERSIONS; do
 done
 
 if [[ "$i" == "0" ]]; then
-	echo "No clang++ compiler found (searched for versions $CLANG_VERSIONS)!"
-	exit 1
+	echo ""
+	echo "No clang++ compiler found!"
+	echo ""
+	echo "Not setting up any variables."
+	echo ""
+
+	exit 0
 fi
 
 test -z "$CC" && export CC=clang-$CLANG_VERSION

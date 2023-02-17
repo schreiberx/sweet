@@ -433,7 +433,9 @@ int main(int i_argc, char *i_argv[])
 					sphereDataConfigInstance.setupAuto(
 							simVars.disc.space_res_physical,
 							simVars.disc.space_res_spectral,
-							simVars.misc.reuse_spectral_transformation_plans
+							simVars.misc.reuse_spectral_transformation_plans,
+							simVars.misc.verbosity,
+							simVars.parallelization.num_threads_space
 						);
 
 					std::cout << "Testing with " << sphereDataConfigInstance.getUniqueIDString() << std::endl;
@@ -444,7 +446,9 @@ int main(int i_argc, char *i_argv[])
 					sphereDataConfigOversamplingInstance.setupAuto(
 							res_physical_overs,
 							res_spectral_overs,
-							simVars.misc.reuse_spectral_transformation_plans
+							simVars.misc.reuse_spectral_transformation_plans,
+							simVars.misc.verbosity,
+							simVars.parallelization.num_threads_space
 						);
 
 					{

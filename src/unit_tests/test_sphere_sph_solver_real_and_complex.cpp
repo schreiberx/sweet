@@ -758,7 +758,7 @@ int main(
 					&simVars.disc.space_res_physical[0],
 					&simVars.disc.space_res_physical[1],
 					simVars.misc.reuse_spectral_transformation_plans,
-					0,
+					simVars.misc.verbosity,
 					simVars.parallelization.num_threads_space
 
 			);
