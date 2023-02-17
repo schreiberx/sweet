@@ -52,15 +52,44 @@ p = JobCompileOptions()
 ###################################################################
 
 
-if not 'MULE_CXX_COMPILER' in os.environ:
-    raise Exception("Unknown C++ compiler type")
+compiler_type_cxx = None
+compiler_type_f90 = None
 
-compiler_type_cxx = os.environ['MULE_CXX_COMPILER']
+if 'MULE_CXX_COMPILER' in os.environ:
+    compiler_type_cxx = os.environ['MULE_CXX_COMPILER']
 
-if not 'MULE_F90_COMPILER' in os.environ:
-    raise Exception("Unknown Fortran compiler type")
+else:
+    print("MULE_CXX_COMPILER env not found, trying to autodetect compiler")
 
-compiler_type_f90 = os.environ['MULE_F90_COMPILER']
+    if p.sweet_mpi == 'enable':
+        raise Exception("Please specify MULE_CXX_COMPILER with MPI to ensure no compile problems")
+
+    if 'CXX' in os.environ:
+        cxx = os.environ['CXX']
+        if cxx.startswith("g++"):
+            compiler_type_cxx = 'gcc'
+        elif cxx.startswith("clang"):
+            compiler_type_cxx = 'llvm'
+
+
+if 'MULE_F90_COMPILER' in os.environ:
+    compiler_type_f90 = os.environ['MULE_F90_COMPILER']
+
+else:
+    print("MULE_F90_COMPILER env not found, trying to autodetect compiler")
+
+    if p.sweet_mpi == 'enable':
+        raise Exception("Please specify MULE_F90_COMPILER with MPI to ensure no compile problems")
+
+    if 'F90' in os.environ:
+        f90 = os.environ['F90']
+        if f90.startswith("gfortran"):
+            compiler_type_f90 = 'gcc'
+        elif f90.startswith("flang"):
+            compiler_type_f90 = 'llvm'
+
+if compiler_type_cxx is None:
+    raise Exception("Failed to automatically detect C++ compiler")
 
 print(f"Using CXX compiler '{compiler_type_cxx}'")
 print(f"Using F90 compiler '{compiler_type_f90}'")
