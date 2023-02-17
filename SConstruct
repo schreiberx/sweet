@@ -51,50 +51,19 @@ p = JobCompileOptions()
 # Determine compiler to use
 ###################################################################
 
-compiler_cxx = None
-compiler_f90 = None
 
-if 'MULE_CXX_COMPILER' in os.environ:
-    compiler_cxx = os.environ['MULE_CXX_COMPILER']
+if not 'MULE_CXX_COMPILER' in os.environ:
+    raise Exception("Unknown C++ compiler type")
 
-else:
-    print("MULE_CXX_COMPILER env not found, trying to autodetect compiler")
+compiler_type_cxx = os.environ['MULE_CXX_COMPILER']
 
-    if p.sweet_mpi == 'enable':
-        raise Exception("Please specify MULE_CXX_COMPILER with MPI to ensure no compile problems")
+if not 'MULE_F90_COMPILER' in os.environ:
+    raise Exception("Unknown Fortran compiler type")
 
-    if 'CXX' in os.environ:
-        cxx = os.environ['CXX']
-        if cxx.startswith("g++"):
-            compiler_cxx = 'gcc'
-        elif cxx.startswith("clang"):
-            compiler_cxx = 'llvm'
+compiler_type_f90 = os.environ['MULE_F90_COMPILER']
 
-
-if 'MULE_F90_COMPILER' in os.environ:
-    compiler_f90 = os.environ['MULE_F90_COMPILER']
-
-else:
-    print("MULE_F90_COMPILER env not found, trying to autodetect compiler")
-
-    if p.sweet_mpi == 'enable':
-        raise Exception("Please specify MULE_F90_COMPILER with MPI to ensure no compile problems")
-
-    if 'F90' in os.environ:
-        f90 = os.environ['F90']
-        if f90.startswith("gfortran"):
-            compiler_f90 = 'gcc'
-        elif f90.startswith("flang"):
-            compiler_f90 = 'llvm'
-
-if compiler_cxx is None:
-    raise Exception("Failed to automatically detect C++ compiler")
-
-if compiler_f90 is None:
-    raise Exception("Failed to automatically detect F90 compiler")
-
-print(f"Using CXX compiler {compiler_cxx}")
-print(f"Using F90 compiler {compiler_f90}")
+print(f"Using CXX compiler '{compiler_type_cxx}'")
+print(f"Using F90 compiler '{compiler_type_f90}'")
 
 
 
@@ -266,7 +235,7 @@ else:
 env.Append(LIBS=['m'])
 
 
-if compiler_cxx == 'gcc':
+if compiler_type_cxx == 'gcc':
 
     # eclipse specific flag
     env.Append(CXXFLAGS=['-fmessage-length=0'])
@@ -291,7 +260,7 @@ if compiler_cxx == 'gcc':
                 env.Append(LIBS=['mpi_cxx'])
 
 
-elif compiler_cxx == 'intel':
+elif compiler_type_cxx == 'intel':
     reqversion = [12,1]
     iccversion_line = exec_command('icpc -dumpversion -w').splitlines()[0]
 
@@ -323,11 +292,11 @@ elif compiler_cxx == 'intel':
             env.Append(LINKFLAGS=['-mt_mpi'])
 
 
-elif compiler_cxx == 'llvm':
+elif compiler_type_cxx == 'llvm':
     reqversion = [9,0]
     if p.threading == 'omp':
         reqversion = [9,0]
-    version_line = exec_command('clang++ --version').splitlines()[0]
+    version_line = exec_command(f"{os.environ['CXX']} --version").splitlines()[0]
 
     verpos = version_line.find(" version ")
     if verpos == -1:
@@ -370,24 +339,24 @@ Different modes
 if p.mode in ['debug', 'debug_thread', 'debug_leak']:
     env.Append(CXXFLAGS=['-DSWEET_DEBUG=1'])
 
-    if compiler_cxx == 'gcc':
+    if compiler_type_cxx == 'gcc':
         env.Append(CXXFLAGS=["-O0", "-g3", "-Wall"])
 
         # integer overflow check
         env.Append(CXXFLAGS=['-ftrapv'])
 
-    elif compiler_cxx == 'llvm':
+    elif compiler_type_cxx == 'llvm':
         env.Append(CXXFLAGS=["-O0", "-g3", "-Wall"])
 
-    elif compiler_cxx == 'intel':
+    elif compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=["-O0", "-g", "-traceback"])
 #        env.Append(CXXFLAGS='-fp-trap=common')
 
 
     if p.fortran_source == 'enable':
-        if compiler_cxx == 'gcc':
+        if compiler_type_cxx == 'gcc':
             env.Append(F90FLAGS=["-g", "-O0"])
-        elif compiler_cxx == 'intel':
+        elif compiler_type_cxx == 'intel':
             env.Append(F90FLAGS=["-g", "-O0", "-traceback"])
 
 
@@ -397,7 +366,7 @@ elif p.mode == 'release':
     # deactivate assertion calls
     env.Append(CXXFLAGS=['-DNDEBUG=1'])
 
-    if compiler_cxx == 'gcc':
+    if compiler_type_cxx == 'gcc':
         env.Append(CXXFLAGS=["-O3", "-mtune=native", "-march=native"])
 
         # Ensure vectorization
@@ -406,19 +375,19 @@ elif p.mode == 'release':
         # Let the compiler know about no aliasing of function arguments
         env.Append(CXXFLAGS=['-fstrict-aliasing'])
 
-    elif compiler_cxx == 'llvm':
+    elif compiler_type_cxx == 'llvm':
         env.Append(CXXFLAGS=["-O3", "-mtune=native", "-march=native"])
 
-    elif compiler_cxx == 'intel':
+    elif compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=["-O2", "-fno-alias"])
 
         if p.mic != 'enable':
             env.Append(CXXFLAGS=['-xHost'])
 
     if p.fortran_source == 'enable':
-        if compiler_cxx == 'gcc':
+        if compiler_type_cxx == 'gcc':
             env.Append(F90FLAGS=["-O2"])
-        elif compiler_cxx == 'intel':
+        elif compiler_type_cxx == 'intel':
             env.Append(F90FLAGS=["-O2"])
 
 
@@ -480,7 +449,7 @@ else:
 if p.fortran_source == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_FORTRAN=1'])
 
-    if compiler_cxx == 'gcc':
+    if compiler_type_cxx == 'gcc':
         env.Append(LIBS=['gfortran'])
 
 else:
@@ -603,7 +572,7 @@ if p.debug_symbols == 'enable':
     env.Append(CXXFLAGS=['-g'])
     env.Append(LINKFLAGS=['-g'])
 
-    if compiler_cxx == 'intel':
+    if compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=['-shared-intel', '-shared-libgcc', '-debug',  'inline-debug-info'])
         env.Append(LINKFLAGS=['-shared-intel', '-shared-libgcc', '-debug',  'inline-debug-info'])
 
@@ -611,18 +580,18 @@ if p.debug_symbols == 'enable':
 """
 Fortran related support at the very end here
 """
-if compiler_cxx == 'gcc':
+if compiler_type_cxx == 'gcc':
     if p.fortran_source == 'enable':
         env.Append(F90FLAGS=['-cpp'])
         env.Append(LIBS=['gfortran'])
 
-elif compiler_cxx == 'intel':
+elif compiler_type_cxx == 'intel':
     if p.fortran_source == 'enable':
         env.Append(LIBS=['gfortran'])
         env.Append(LIBS=['ifcore'])
         env.Append(F90FLAGS=['-fpp'])
 
-elif compiler_cxx == 'llvm':
+elif compiler_type_cxx == 'llvm':
     if p.fortran_source == 'enable':
         env.Append(F90FLAGS=['-cpp'])
         env.Append(LIBS=['gfortran'])
