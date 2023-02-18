@@ -24,30 +24,35 @@ namespace sweet
 {
 
 template <int D, typename T>
-class ArrayND
+class DictArrayND
 {
 	std::array<int,D> _shape;
 	std::size_t _size;
 	std::vector<T> _data;
 
 public:
-	ArrayND()	:
+	DictArrayND()	:
 		_size(0)
 	{
 		for (int i = 0; i < D; i++)
 			_shape[i] = 0;
 	}
 
-	ArrayND(const std::array<int,D> &i_shape)
+	DictArrayND(const std::array<int,D> &i_shape)
 	{
 		setup(i_shape);
 	}
 
 
-	ArrayND(const std::array<int,D> &i_shape, const T i_data[])
+	DictArrayND(const std::array<int,D> &i_shape, const T i_data[])
 	{
 		setup(i_shape);
 		operator=(i_data);
+	}
+
+	DictArrayND(int i_shape0, int i_shape1 = -1, int i_shape2 = -1)
+	{
+		setup(i_shape0, i_shape1, i_shape2);
 	}
 
 	void setup(const std::array<int,D> &i_shape)
@@ -64,13 +69,34 @@ public:
 		_data.resize(_size);
 	}
 
+
+	void setup(int i_shape0, int i_shape1 = -1, int i_shape2 = -1)
+	{
+		_shape[0] = i_shape0;
+
+		if (D >= 2)
+			_shape[1] = i_shape1;
+
+		if (D >= 3)
+			_shape[2] = i_shape2;
+
+		if (D > 3)
+			SWEETError("Only 1D, 2D or 3D are supported!");
+
+		_size = 1;
+		for (int i = 0; i < D; i++)
+			_size *= _shape[i];
+
+		_data.resize(_size);
+	}
+
 	void setup(const std::array<int,D> &i_shape, T i_data[])
 	{
 		setup(i_shape);
 		operator=(i_data);
 	}
 
-	std::size_t size()
+	std::size_t size()	const
 	{
 		return _size;
 	}
@@ -80,7 +106,12 @@ public:
 		return _data.data();
 	}
 
-	const std::array<int,D> &shape()
+	const T *data() const
+	{
+		return _data.data();
+	}
+
+	const std::array<int,D> &shape()	const
 	{
 		return _shape;
 	}
@@ -171,22 +202,14 @@ public:
 	{
 		return getConst(i0, i1, i2);
 	}
-
-#if 0
-	/*
-	 * 1D Array access
-	 */
 	inline
-	T operator[](int i0) const {
-		if (D != 1)
-			SWEETError("Only 1D supported");
-
-		return _data[i0];
+	T& operator()(int i0, int i1=-1, int i2=-1)
+	{
+		return get(i0, i1, i2);
 	}
-#endif
 
 	inline
-	ArrayND<D,T>& operator=(const T *i_values_flat)
+	DictArrayND<D,T>& operator=(const T *i_values_flat)
 	{
 		for (int i = 0; i < D; i++)
 			if (_shape[i] == 0)
@@ -199,9 +222,28 @@ public:
 		return *this;
 	}
 
+	inline
+	bool operator==(const DictArrayND<D,T> &i_a)	const
+	{
+		for (std::size_t d = 0; d < D; d++)
+			if (_shape[d] != i_a._shape[d])
+				return false;
+
+		for (std::size_t i = 0; i < _size; i++)
+			if (_data[i] != i_a._data[i])
+				return false;
+
+		return true;
+	}
 
 	inline
-	ArrayND<D,T>& operator=(const ArrayND<D,T> &a)
+	bool operator!=(const DictArrayND<D,T> &i_a)	const
+	{
+		return !operator==(i_a);
+	}
+
+	inline
+	DictArrayND<D,T>& operator=(const DictArrayND<D,T> &a)
 	{
 		this->setup(a._shape);
 
@@ -213,7 +255,7 @@ public:
 
 public:
 	friend
-	std::ostream& operator<<(std::ostream& os, const ArrayND<D,T> &a)
+	std::ostream& operator<<(std::ostream& os, const DictArrayND<D,T> &a)
 	{
 		if (a._size == 0)
 		{
@@ -223,7 +265,7 @@ public:
 
 		if (D == 1)
 		{
-			std::cout << "[";
+			os << "[";
 			for (int i0 = 0; i0 < a._shape[0]; i0++)
 			{
 				os << a.getConst(i0);
@@ -231,15 +273,15 @@ public:
 				if (i0 != a._shape[0]-1)
 					os << ",\t";
 			}
-			std::cout << "]";
+			os << "]";
 			os << std::endl;
 		}
 		else if (D == 2)
 		{
-			std::cout << "[" << std::endl;
+			os << "[" << std::endl;
 			for (int i0 = 0; i0 < a._shape[0]; i0++)
 			{
-				std::cout << "\t[";
+				os << "\t[";
 				for (int i1 = 0; i1 < a._shape[1]; i1++)
 				{
 					os << a.getConst(i0, i1);
@@ -247,20 +289,20 @@ public:
 					if (i1 != a._shape[1]-1)
 						os << ",\t";
 				}
-				std::cout << "]";
+				os << "]";
 				os << std::endl;
 			}
-			std::cout << "]";
+			os << "]";
 		}
 		else if (D == 3)
 		{
-			std::cout << "[" << std::endl;
+			os << "[" << std::endl;
 			for (int i0 = 0; i0 < a._shape[0]; i0++)
 			{
-				std::cout << "\t[" << std::endl;
+				os << "\t[" << std::endl;
 				for (int i1 = 0; i1 < a._shape[1]; i1++)
 				{
-					std::cout << "\t\t[";
+					os << "\t\t[";
 					for (int i2 = 0; i2 < a._shape[2]; i2++)
 					{
 						os << a.getConst(i0, i1, i2);
@@ -268,13 +310,13 @@ public:
 						if (i2 != a._shape[2]-1)
 							os << ",\t";
 					}
-					std::cout << "]";
+					os << "]";
 					os << std::endl;
 				}
-				std::cout << "\t]";
+				os << "\t]";
 				os << std::endl;
 			}
-			std::cout << "]";
+			os << "]";
 		}
 		else
 		{
@@ -284,6 +326,6 @@ public:
 	}
 };
 
-}
+}	// namespace
 
-#endif /* SRC_INCLUDE_SWEET_ArrayND_HPP_ */
+#endif

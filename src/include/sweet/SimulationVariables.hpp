@@ -18,7 +18,7 @@
 #include <sweet/StringSplit.hpp>
 #include <sweet/SWEETError.hpp>
 #include <sweet/TransformationPlans.hpp>
-#include <sweet/Dict.hpp>
+#include <sweet/dict/Dict.hpp>
 
 #if SWEET_THREADING
 #include <omp.h>
@@ -1221,23 +1221,23 @@ public:
 		std::string fileName;
 
 		// Nodes values (between 0 and 1)
-		sweet::ArrayND<1, double> nodes;
+		sweet::DictArrayND<1, double> nodes;
 		size_t nNodes=0;
 
 		// Quadrature weights
-		sweet::ArrayND<1, double> weights;
+		sweet::DictArrayND<1, double> weights;
 
 		// Collocation matrix
-		sweet::ArrayND<2, double> qMatrix;
+		sweet::DictArrayND<2, double> qMatrix;
 
 		// QDelta matrix for implicit sweep
-		sweet::ArrayND<2, double> qDeltaI;
+		sweet::DictArrayND<2, double> qDeltaI;
 
 		// QDelta matrix for explicit sweep
-		sweet::ArrayND<2, double> qDeltaE;
+		sweet::DictArrayND<2, double> qDeltaE;
 
 		// QDelta matrix for initial (implicit) sweep
-		sweet::ArrayND<2, double> qDelta0;
+		sweet::DictArrayND<2, double> qDelta0;
 
 		// Number of iterations (sweeps)
 		sweet::Dict::int64 nIter=0;

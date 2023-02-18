@@ -12,10 +12,9 @@
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/DictArrayND.hpp>
-
 #include <vector>
 
+#include <sweet/dict/DictArrayND.hpp>
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
@@ -190,8 +189,8 @@ private:
 	bool diagonal;       // Whether or not using the diagonal implementation
 	bool useEndUpdate;  // Whether or not use collocation update for end point
 
-	typedef sweet::ArrayND<1, double> Vec;
-	typedef sweet::ArrayND<2, double> Mat;
+	typedef sweet::DictArrayND<1, double> Vec;
+	typedef sweet::DictArrayND<2, double> Mat;
 
 	Vec tau;
 	Vec weights;
