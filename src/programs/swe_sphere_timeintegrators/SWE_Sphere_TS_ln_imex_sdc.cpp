@@ -46,26 +46,26 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 	if (i_simVars.sdc.fileName == "") {
 		// No parameter file given, use default SDC settings
 		// warning : nNodes default value defined in SimulationVariables.hpp
-		//           -> need this to instantiate the tendencies storage
+		// -> need this to instantiate the tendencies storage
 		nIter = 3;
 		diagonal = false;
 		initialSweepType = "COPY";
 		useEndUpdate = false;
 
 		// RADAU-RIGHT nodes, weights quadrature matrix
-		tau.setup({nNodes});
+		tau.setup(nNodes);
 		const double tau_default[] = {
 			0.15505103, 0.64494897, 1.
 		};
 		tau = tau_default;
 
-		weights.setup({nNodes});
+		weights.setup(nNodes);
 		const double weights_default[] = {
 			0.37640306, 0.51248583, 0.11111111
 		};
 		weights = weights_default;
 
-		qMat.setup({nNodes, nNodes});
+		qMat.setup(nNodes, nNodes);
 		const double qMat_default[] = {
 			0.19681548, -0.06553543, 0.02377097,
 			0.39442431,  0.29207341, -0.04154875,
@@ -74,7 +74,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		qMat = qMat_default;
 
 		// BE for implicit sweep
-		qMatDeltaI.setup({nNodes, nNodes});
+		qMatDeltaI.setup(nNodes, nNodes);
 		const double qMatDeltaI_default[] = {
 			0.15505103, 0.,         0.,
  			0.15505103, 0.48989795, 0.,
@@ -83,7 +83,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		qMatDeltaI = qMatDeltaI_default;
 
 		// FE for explicit sweep
-		qMatDeltaE.setup({nNodes, nNodes});
+		qMatDeltaE.setup(nNodes, nNodes);
 		const double qMatDeltaE_default[] = {
 			0.,         0.,         0.,
  			0.48989795, 0.,         0.,
@@ -92,7 +92,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		qMatDeltaE = qMatDeltaE_default;
 
 		// BEpar for initial sweep
-		qMatDelta0.setup({nNodes, nNodes});
+		qMatDelta0.setup(nNodes, nNodes);
 		const double qMatDelta0_default[] = {
 			0.15505103, 0.		  , 0.,
  			0.		  , 0.64494897, 0.,
