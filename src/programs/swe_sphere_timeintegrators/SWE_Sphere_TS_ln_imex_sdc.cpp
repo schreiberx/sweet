@@ -276,7 +276,7 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 			// Implicit solve with qI
 			solveImplicit(ts_state, dt*qI(i, i), i);
 
-			double tNode = t0+dt*tau[i];
+			double tNode = t0+dt*tau(i);
 
 			// Evaluate and store linear term for k
 			eval_linear(ts_state, ts_linear_tendencies_k0[i], tNode);
@@ -367,11 +367,14 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 		} 
 		else
 		{
+
+			double tNode = t0+dt*tau(i);
+
 			// Evaluate and store linear term for k+1
-			eval_linear(ts_state, ts_linear_tendencies_k1[i], t0+dt*tau[i]);
+			eval_linear(ts_state, ts_linear_tendencies_k1[i], tNode);
 
 			// Evaluate and store non linear term for k+1
-			eval_nonlinear(ts_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
+			eval_nonlinear(ts_state, ts_nonlinear_tendencies_k1[i], tNode);
 		}
 	}
 
@@ -395,8 +398,9 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 			SWE_VariableVector ts_state(ts_u0);
 
 			for (int j = 0; j < nNodes; j++) {
-				axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_state);
-				axpy(dt*w(j), ts_linear_tendencies_k0[j], ts_state);
+				double a = dt*w(j);
+				axpy(a, ts_nonlinear_tendencies_k0[j], ts_state);
+				axpy(a, ts_linear_tendencies_k0[j], ts_state);
 			}
 			// Time-step update using last state value
 			ts_u0.phi = ts_state.phi;
