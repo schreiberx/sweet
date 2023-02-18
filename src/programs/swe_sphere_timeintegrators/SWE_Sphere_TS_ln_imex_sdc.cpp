@@ -223,7 +223,7 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 		eval_linear(ts_tmp_state, ts_linear_tendencies_k1[i], t0+dt*tau(i));
 
 		// Evaluate and store non linear term for k+1
-		eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau[i]);
+		eval_nonlinear(ts_tmp_state, ts_nonlinear_tendencies_k1[i], t0+dt*tau(i));
 	}
 
 	// Swap k+1 and k values for next iteration (or end-point update)

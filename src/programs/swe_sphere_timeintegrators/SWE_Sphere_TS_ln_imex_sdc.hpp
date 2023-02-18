@@ -11,16 +11,10 @@
 #include <sweet/sphere/SphereData_Spectral.hpp>
 #include <sweet/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/sphere/SphereTimestepping_ExplicitRK.hpp>
-#include <limits>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/SWEETArray.hpp>
-
 #include <vector>
-#include <array>
-#include <algorithm>
-using std::vector;
-using std::array;
 
+#include <sweet/dict/DictArrayND.hpp>
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
@@ -100,14 +94,14 @@ public:
 
 // Class to store all the solution data to each nodes and two iterations
 class SDC_NodeStorage {
-	vector<vector<SWE_VariableVector>> v;
+	std::vector<std::vector<SWE_VariableVector>> v;
 public:
 	SDC_NodeStorage(
 			const SphereData_Config* sphereDataConfig,
 			size_t num_nodes
 	){
-		vector<SWE_VariableVector> nodeValsK;
-		vector<SWE_VariableVector> nodeValsK1;
+		std::vector<SWE_VariableVector> nodeValsK;
+		std::vector<SWE_VariableVector> nodeValsK1;
 		for (size_t i = 0; i < num_nodes; i++) {
 			nodeValsK.push_back(SWE_VariableVector(sphereDataConfig));
 			nodeValsK1.push_back(SWE_VariableVector(sphereDataConfig));
@@ -132,7 +126,7 @@ public:
 
 // Class to store all the solution data to each nodes and two iterations
 class SDC_NodeStorage_ {
-	vector<SWE_VariableVector> data;
+	std::vector<SWE_VariableVector> data;
 
 public:
 	SDC_NodeStorage_(
@@ -195,8 +189,8 @@ private:
 	bool diagonal;       // Whether or not using the diagonal implementation
 	bool useEndUpdate;  // Whether or not use collocation update for end point
 
-	typedef SWEETArray<1, double> Vec;
-	typedef SWEETArray<2, double> Mat;
+	typedef sweet::DictArrayND<1, double> Vec;
+	typedef sweet::DictArrayND<2, double> Mat;
 
 	Vec tau;
 	Vec weights;

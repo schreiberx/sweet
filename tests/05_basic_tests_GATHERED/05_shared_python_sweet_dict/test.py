@@ -12,6 +12,7 @@ shared_dict.set("str", "hello world")
 
 shared_dict.set("int64", 123)
 shared_dict.set("float64", 123.456)
+shared_dict.set("complex128", 123.456+(123.456+100)*1j)
 
 shared_dict.set("array_float64_1d", np.array([1., 2., 3.]))
 shared_dict.set("array_float64_2d", np.array([[1., 2., 3.], [4., 5., 6.]]))

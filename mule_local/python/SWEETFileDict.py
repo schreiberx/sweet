@@ -21,6 +21,7 @@ class SWEETFileDict:
             100: string which is 0 terminated
             230: scalar 64 bit integer (64 bit)
             240: scalar 64 bit double float (64 bit)
+            250: scalar 128 bit complex float (128 bit)
             401: 1D array with floating point numbers (each 64 bit)
             402: 2D array with floating point numbers (each 64 bit)
             403: 3D array with floating point numbers (each 64 bit)
@@ -94,6 +95,10 @@ class SWEETFileDict:
             elif isinstance(value, float):
                 self._write_int64(f, 240)
                 self._write_double(f, value)
+            
+            elif isinstance(value, complex) or isinstance(value, np.complex128):
+                self._write_int64(f, 250)
+                self._write_complex128(f, value)
 
             elif isinstance(value, np.ndarray):
                 if value.dtype == np.float64:
@@ -124,7 +129,7 @@ class SWEETFileDict:
                     for i in range(value.ndim):
                         self._write_int64(f, value.shape[i])
                     
-                    self._write_ndarray_complex(f, value)
+                    self._write_ndarray_complex128(f, value)
                     
                 else:
                     raise Exception(f"Key '{key}': Unsupported type {np.dtype} of ndarray")
@@ -159,15 +164,15 @@ class SWEETFileDict:
         for i in range(v.size):
             self._write_double(f, v[i])
 
-    def _write_complex(self, f, value):
+    def _write_complex128(self, f, value):
         self._write_double(f, value.real)
         self._write_double(f, value.imag)
         
 
-    def _write_ndarray_complex(self, f, value):
+    def _write_ndarray_complex128(self, f, value):
         v = value.flatten()
         for i in range(v.size):
-            self._write_complex(f, v[i])
+            self._write_complex128(f, v[i])
             
             
     def readFromFile(self, filename):
@@ -200,7 +205,10 @@ class SWEETFileDict:
                 self.dict[key] = self._read_int64(f)
 
             elif type_id == 240:
-                self.dict[key] = self._read_double(f)
+                self.dict[key] = self._read_float64(f)
+
+            elif type_id == 250:
+                self.dict[key] = self._read_complex128(f)
                 
             elif type_id == 401:
                 # 1D np.array of type double
@@ -258,7 +266,7 @@ class SWEETFileDict:
     def _read_int64(self, f):
         return struct.unpack('q', f.read(8))[0]
         
-    def _read_double(self, f):
+    def _read_float64(self, f):
         return struct.unpack('d', f.read(8))[0]
 
     def _read_ndarray_double(self, f, shape):    
@@ -266,11 +274,11 @@ class SWEETFileDict:
         fa = np.empty(dtype=np.float64, shape=size)
         
         for i in range(size):
-            fa[i] = self._read_double(f)
+            fa[i] = self._read_float64(f)
 
         return fa.reshape(shape)
     
-    def _read_complex(self, f):
+    def _read_complex128(self, f):
         return struct.unpack('d', f.read(8))[0]+struct.unpack('d', f.read(8))[0]*1j
         
 
@@ -279,7 +287,7 @@ class SWEETFileDict:
         fa = np.empty(dtype=np.complex128, shape=size)
         
         for i in range(size):
-            fa[i] = self._read_complex(f)
+            fa[i] = self._read_complex128(f)
 
         return fa.reshape(shape)
 
