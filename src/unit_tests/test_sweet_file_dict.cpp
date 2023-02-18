@@ -1,194 +1,293 @@
 #include <string>
 #include <iostream>
 #include <stdlib.h>
-#include <sweet/SWEETFileDict.hpp>
+#include <sweet/dict/Dict.hpp>
 #include <sweet/SimulationVariables.hpp>
 
+
+template <int D>
+void create_reference_array_float(
+		sweet::DictArrayND<D,sweet::Dict::float64> &io_array,
+		sweet::Dict::float64 i_offset = 0
+)
+{
+	std::array<int,3> shape_iter;
+
+	if (D == 1)
+	{
+		shape_iter[0] = io_array.shape()[0];
+		shape_iter[1] = 1;
+		shape_iter[2] = 1;
+	}
+	else if (D == 2)
+	{
+		shape_iter[0] = io_array.shape()[0];
+		shape_iter[1] = io_array.shape()[1];
+		shape_iter[2] = 1;
+	}
+	else if (D == 3)
+	{
+		shape_iter[0] = io_array.shape()[0];
+		shape_iter[1] = io_array.shape()[1];
+		shape_iter[2] = io_array.shape()[2];
+	}
+
+	int c = 0;
+	for (int i0 = 0; i0 < shape_iter[0]; i0++)
+	{
+		for (int i1 = 0; i1 < shape_iter[1]; i1++)
+		{
+			for (int i2 = 0; i2 < shape_iter[2]; i2++)
+			{
+				sweet::Dict::float64 test_value = i_offset + i0*shape_iter[1]*shape_iter[2] + i1*shape_iter[2] + i2;
+				io_array.data()[c] = test_value;
+
+				c++;
+			}
+		}
+	}
+}
+
+
+template <int D>
+void create_reference_array_complex(
+		sweet::DictArrayND<D,sweet::Dict::complex128> &io_array,
+		sweet::Dict::float64 i_offset = 0
+)
+{
+	std::array<int,3> shape_iter;
+
+	if (D == 1)
+	{
+		shape_iter[0] = io_array.shape()[0];
+		shape_iter[1] = 1;
+		shape_iter[2] = 1;
+	}
+	else if (D == 2)
+	{
+		shape_iter[0] = io_array.shape()[0];
+		shape_iter[1] = io_array.shape()[1];
+		shape_iter[2] = 1;
+	}
+	else if (D == 3)
+	{
+		shape_iter[0] = io_array.shape()[0];
+		shape_iter[1] = io_array.shape()[1];
+		shape_iter[2] = io_array.shape()[2];
+	}
+
+	int c = 0;
+	for (int i0 = 0; i0 < shape_iter[0]; i0++)
+	{
+		for (int i1 = 0; i1 < shape_iter[1]; i1++)
+		{
+			for (int i2 = 0; i2 < shape_iter[2]; i2++)
+			{
+				sweet::Dict::complex128 test_value = sweet::Dict::complex128(i_offset + c, 101+ i_offset + c);
+				io_array.data()[c] = test_value;
+				c++;
+			}
+		}
+	}
+}
+
+void create_reference_dict(
+	sweet::Dict &io_dict,
+	int i_offset = 0,
+	int i0 = 2,
+	int i1 = 2,
+	int i2 = 3
+)
+{
+	io_dict.set("str", "hello world");
+	io_dict.set<sweet::Dict::int64>("int64", 123);
+	io_dict.set<sweet::Dict::float64>("float64", 123.456);
+	io_dict.set<sweet::Dict::complex128>("complex128", std::complex<double>(123.456, 123.456+100));
+
+	sweet::DictArrayND<1,sweet::Dict::float64> array1dFloat64(i2);
+	create_reference_array_float(array1dFloat64, 1);
+	io_dict.set("array_float64_1d", array1dFloat64);
+
+	sweet::DictArrayND<2,sweet::Dict::float64> array2dFloat64(i1, i2);
+	create_reference_array_float(array2dFloat64, 1);
+	io_dict.set("array_float64_2d", array2dFloat64);
+
+	sweet::DictArrayND<3,sweet::Dict::float64> array3dFloat64(i0, i1, i2);
+	create_reference_array_float(array3dFloat64, 1);
+	io_dict.set("array_float64_3d", array3dFloat64);
+
+
+	sweet::DictArrayND<1,sweet::Dict::complex128> array1dComplex64(i2);
+	create_reference_array_complex(array1dComplex64, 1);
+	io_dict.set("array_complex128_1d", array1dComplex64);
+
+	sweet::DictArrayND<2,sweet::Dict::complex128> array2dComplex64(i1, i2);
+	create_reference_array_complex(array2dComplex64, 1);
+	io_dict.set("array_complex128_2d", array2dComplex64);
+
+	sweet::DictArrayND<3,sweet::Dict::complex128> array3dComplex64(i0, i1, i2);
+	create_reference_array_complex(array3dComplex64, 1);
+	io_dict.set("array_complex128_3d", array3dComplex64);
+}
+
+
+
+void compareDict1EntriesEqualDict2(
+		const sweet::Dict &i_dict1,
+		const sweet::Dict &i_dict2,
+		const std::string &i_prefix
+)
+{
+	for (int i = 0; i < i_dict1.size(); i++)
+	{
+		const sweet::_DictElement &e1 = i_dict1[i];
+
+		const sweet::_DictElementTypeEnum::Enum typeId = e1.getTypeID();
+
+		std::cout <<i_prefix << "Comparing '" << e1.getKey() << "'" << std::endl;
+		switch(typeId)
+		{
+			default:
+				SWEETError("Unknown type");
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_STRING:
+			{
+				typedef std::string T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_INT64:
+			{
+				typedef sweet::Dict::int64 T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_FLOAT64:
+			{
+				typedef sweet::Dict::float64 T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_COMPLEX128:
+			{
+				typedef sweet::Dict::complex128 T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_ARRAY_1D_FLOAT64:
+			{
+				typedef sweet::DictArrayND<1,sweet::Dict::float64> T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_ARRAY_2D_FLOAT64:
+			{
+				typedef sweet::DictArrayND<2,sweet::Dict::float64> T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_ARRAY_3D_FLOAT64:
+			{
+				typedef sweet::DictArrayND<3,sweet::Dict::float64> T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_ARRAY_1D_COMPLEX128:
+			{
+				typedef sweet::DictArrayND<1,sweet::Dict::complex128> T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_ARRAY_2D_COMPLEX128:
+			{
+				typedef sweet::DictArrayND<2,sweet::Dict::complex128> T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+
+			case sweet::_DictElementTypeEnum::SWEET_FILE_DICT_ARRAY_3D_COMPLEX128:
+			{
+				typedef sweet::DictArrayND<3,sweet::Dict::complex128> T;
+
+				T value1;	e1.get(value1);
+				T value2;	i_dict2.get(e1.getKey(), value2);
+				if (value1 != value2)
+					SWEETError("Values don't match");
+			}
+				break;
+		}
+	}
+}
 
 /*
  * Read the file given by the parameter and compare it to predefined values
  */
-void run_compare_file_dict(
-		const SWEETFileDict &fd
+void run_compare_file_dict_with_reference(
+		const sweet::Dict &i_dict
 )
 {
-	/*
-	 * Run unit tests
-	 */
+	sweet::Dict ref_dict;
+	create_reference_dict(ref_dict);
 
-	std::cout << "Validating:" << std::endl;
+	std::cout << " + Comparing dictionaries: dict with ref" << std::endl;
+	compareDict1EntriesEqualDict2(i_dict, ref_dict, "   + ");
+	std::cout << + "    + OK" << std::endl;
 
-	{
-		std::string value;
-		fd.get("str", value);
-
-		if (value != "hello world")
-			SWEETError("string mismatch");
-
-		std::cout << " + str: OK - " << value << std::endl;
-	}
-
-	{
-		long long value;
-		fd.get("int64", value);
-
-		if (value != 123)
-			SWEETError("int64 mismatch");
-
-		std::cout << " + int64: OK - " << value << std::endl;
-	}
-
-	{
-		double value;
-		fd.get("float64", value);
-
-		if (value != 123.456)
-			SWEETError("float64 mismatch");
-
-		std::cout << " + float64: OK - " << value << std::endl;
-	}
-
-	{
-		SWEETArray<1,SWEETFileDict::float64> value;
-		fd.get("array_float64_1d", value);
-
-		for (int i0 = 0; i0 < value.shape()[0]; i0++)
-		{
-			SWEETFileDict::float64 test_value = 1 + i0;
-			if (value.get(i0) != test_value)
-			{
-				std::ostringstream ss;
-				ss << "array_float64_1d: value (" << i0 << ") mismatch: " << value.get(i0) << " vs. " << test_value;
-				SWEETError(ss.str());
-			}
-		}
-
-		std::cout << " + array_1d_float64: OK - " << value << std::endl;
-	}
-
-
-	{
-		SWEETArray<2,SWEETFileDict::float64> value;
-		fd.get("array_float64_2d", value);
-
-		for (int i0 = 0; i0 < value.shape()[0]; i0++)
-		{
-			for (int i1 = 0; i1 < value.shape()[1]; i1++)
-			{
-				SWEETFileDict::float64 test_value = 1 + i0*value.shape()[1] + i1;
-				if (value.get(i0, i1) != test_value)
-				{
-					std::ostringstream ss;
-					ss << "array_float64_2d: value (" << i0 << ", " << i1 << ") mismatch: " << value.get(i0, i1) << " vs. " << test_value;
-					SWEETError(ss.str());
-				}
-			}
-		}
-
-		std::cout << " + array_2d_float64: OK - " << value << std::endl;
-	}
-
-
-	{
-		SWEETArray<3,SWEETFileDict::float64> value;
-		fd.get("array_float64_3d", value);
-
-		for (int i0 = 0; i0 < value.shape()[0]; i0++)
-		{
-			for (int i1 = 0; i1 < value.shape()[1]; i1++)
-			{
-				for (int i2 = 0; i2 < value.shape()[2]; i2++)
-				{
-					SWEETFileDict::float64 test_value = 1 + i0*value.shape()[1]*value.shape()[2] + i1*value.shape()[2] + i2;
-					if (value.get(i0, i1, i2) != test_value)
-					{
-						std::ostringstream ss;
-						ss << "array_float64_3d: value (" << i0 << ", " << i1 <<  ", " << i2 << ") mismatch: " << value.get(i0, i1, i2) << " vs. " << test_value;
-						SWEETError(ss.str());
-					}
-				}
-			}
-		}
-
-		std::cout << " + array_3d_float64: OK - " << value << std::endl;
-	}
-
-
-
-	{
-		SWEETArray<1,SWEETFileDict::complex128> value;
-		fd.get("array_complex128_1d", value);
-
-		for (int i0 = 0; i0 < value.shape()[0]; i0++)
-		{
-			SWEETFileDict::complex128 test_value = 1 + i0;
-			test_value += SWEETFileDict::complex128(0, 101+test_value.real());
-			if (value.get(i0) != test_value)
-			{
-				std::ostringstream ss;
-				ss << "array_complex128_1d: value (" << i0 << ") mismatch: " << value.get(i0) << " vs. " << test_value;
-				SWEETError(ss.str());
-			}
-		}
-
-		std::cout << " + array_1d_complex128: OK - " << value << std::endl;
-	}
-
-
-	{
-		SWEETArray<2,SWEETFileDict::complex128> value;
-		fd.get("array_complex128_2d", value);
-
-		for (int i0 = 0; i0 < value.shape()[0]; i0++)
-		{
-			for (int i1 = 0; i1 < value.shape()[1]; i1++)
-			{
-				SWEETFileDict::complex128 test_value = 1 + i0*value.shape()[1] + i1;
-				test_value += SWEETFileDict::complex128(0, 101+test_value.real());
-				if (value.get(i0, i1) != test_value)
-				{
-					std::ostringstream ss;
-					ss << "array_complex128_2d: value (" << i0 << ", " << i1 << ") mismatch: " << value.get(i0, i1) << " vs. " << test_value;
-					SWEETError(ss.str());
-				}
-			}
-		}
-
-		std::cout << " + array_2d_complex128: OK - " << value << std::endl;
-	}
-
-
-	{
-		SWEETArray<3,SWEETFileDict::complex128> value;
-		fd.get("array_complex128_3d", value);
-
-		for (int i0 = 0; i0 < value.shape()[0]; i0++)
-		{
-			for (int i1 = 0; i1 < value.shape()[1]; i1++)
-			{
-				for (int i2 = 0; i2 < value.shape()[2]; i2++)
-				{
-					SWEETFileDict::complex128 test_value = 1 + i0*value.shape()[1]*value.shape()[2] + i1*value.shape()[2] + i2;
-					test_value += SWEETFileDict::complex128(0, 101+test_value.real());
-					if (value.get(i0, i1, i2) != test_value)
-					{
-						std::ostringstream ss;
-						ss << "array_complex128_3d: value (" << i0 << ", " << i1 <<  ", " << i2 << ") mismatch: " << value.get(i0, i1, i2) << " vs. " << test_value;
-						SWEETError(ss.str());
-					}
-				}
-			}
-		}
-
-		std::cout << " + array_3d_complex128: OK - " << value << std::endl;
-	}
+	std::cout << " + Comparing dictionaries: ref with dict" << std::endl;
+	compareDict1EntriesEqualDict2(ref_dict, i_dict, "   + ");
+	std::cout << + "    + OK" << std::endl;
 }
 
 
 void run_sweet_array_assignment_test()
 {
 	std::cout << " + run_sweet_array_assignment_test()" << std::endl;
-	SWEETArray<2,double> test_array;
+	sweet::DictArrayND<2,double> test_array;
 
 #if 1
 	test_array.setup({2, 3});
@@ -212,8 +311,8 @@ void run_sweet_array_assignment_test()
 	{
 		for (int i1 = 0; i1 < test_array.shape()[1]; i1++)
 		{
-			SWEETFileDict::float64 test_value = 1 + i0*test_array.shape()[1] + i1;
-			SWEETFileDict::float64 real_value = test_array.get(i0, i1);
+			sweet::Dict::float64 test_value = 1 + i0*test_array.shape()[1] + i1;
+			sweet::Dict::float64 real_value = test_array.get(i0, i1);
 			if (real_value != test_value)
 			{
 				std::ostringstream ss;
@@ -224,21 +323,24 @@ void run_sweet_array_assignment_test()
 	}
 
 	std::cout << " + flat array assignment: OK - " << test_array << std::endl;
-
-	std::cout << test_array << std::endl;
 }
 
 
-void _setup_dict_test_data(
+
+/*
+ * Test different variants to set the data in a dictionary
+ */
+void _setup_dict_test_data_different_variants(
 		int size_i0, int size_i1, int size_i2,
 		int version_id,
-		SWEETFileDict &io_fileDict
+		sweet::Dict &io_fileDict
 )
 {
 	io_fileDict.set("str", "hello world");
 
 	io_fileDict.set("int64", 123);
 	io_fileDict.set("float64", 123.456);
+	io_fileDict.set("complex128", std::complex<double>(123.456, 123.456+100));
 
 	std::array<int,1> shape1d({size_i2});
 	std::array<int,2> shape2d({size_i1, size_i2});
@@ -249,29 +351,29 @@ void _setup_dict_test_data(
 	int size3d = size_i0*size_i1*size_i2;
 
 	{
-		SWEETFileDict::float64 data[3];
+		sweet::Dict::float64 data[3];
 		for (int i = 0; i < size1d; i++)
 			data[i] = i+1;
 
-		if (0)
+		if (version_id == 0)
 		{
-			SWEETArray<1,SWEETFileDict::float64> array(shape1d, data);
+			sweet::DictArrayND<1,sweet::Dict::float64> array(shape1d, data);
 
 			io_fileDict.set("array_float64_1d", array);
 		}
 
-		if (1)
+		if (version_id == 1)
 		{
-			SWEETArray<1,SWEETFileDict::float64> array;
+			sweet::DictArrayND<1,sweet::Dict::float64> array;
 			array.setup(shape1d);
 			array = data;
 
 			io_fileDict.set("array_float64_1d", array);
 		}
 
-		if (2)
+		if (version_id == 2)
 		{
-			SWEETArray<1,SWEETFileDict::float64> array;
+			sweet::DictArrayND<1,sweet::Dict::float64> array;
 			array.setup(shape1d);
 
 			int c = 0;
@@ -289,30 +391,30 @@ void _setup_dict_test_data(
 		// io_fileDict.set("array_float64_2d", np.array([[1., 2., 3.], [4., 5., 6.]]));
 
 		std::array<int,2> shape(shape2d);
-		SWEETFileDict::float64 data[size2d];
+		sweet::Dict::float64 data[size2d];
 
 		for (int i = 0; i < size2d; i++)
 			data[i] = i+1;
 
-		if (0)
+		if (version_id == 0)
 		{
-			SWEETArray<2,SWEETFileDict::float64> array(shape, data);
+			sweet::DictArrayND<2,sweet::Dict::float64> array(shape, data);
 
 			io_fileDict.set("array_float64_2d", array);
 		}
 
-		if (1)
+		if (version_id == 1)
 		{
-			SWEETArray<2,SWEETFileDict::float64> array;
+			sweet::DictArrayND<2,sweet::Dict::float64> array;
 			array.setup(shape);
 			array = data;
 
 			io_fileDict.set("array_float64_2d", array);
 		}
 
-		if (2)
+		if (version_id == 2)
 		{
-			SWEETArray<2,SWEETFileDict::float64> array;
+			sweet::DictArrayND<2,sweet::Dict::float64> array;
 			array.setup(shape);
 
 			int c = 0;
@@ -328,29 +430,29 @@ void _setup_dict_test_data(
 	}
 
 	{
-		SWEETFileDict::float64 data[size3d];
-		for (int i = 0; i < sizeof(data)/sizeof(SWEETFileDict::float64); i++)
+		sweet::Dict::float64 data[size3d];
+		for (std::size_t i = 0; i < sizeof(data)/sizeof(sweet::Dict::float64); i++)
 			data[i] = i+1;
 
-		if (0)
+		if (version_id == 0)
 		{
-			SWEETArray<3,SWEETFileDict::float64> array(shape3d, data);
+			sweet::DictArrayND<3,sweet::Dict::float64> array(shape3d, data);
 
 			io_fileDict.set("array_float64_3d", array);
 		}
 
-		if (1)
+		if (version_id == 1)
 		{
-			SWEETArray<3,SWEETFileDict::float64> array;
+			sweet::DictArrayND<3,sweet::Dict::float64> array;
 			array.setup(shape3d);
 			array = data;
 
 			io_fileDict.set("array_float64_3d", array);
 		}
 
-		if (2)
+		if (version_id == 2)
 		{
-			SWEETArray<3,SWEETFileDict::float64> array;
+			sweet::DictArrayND<3,sweet::Dict::float64> array;
 			array.setup(shape3d);
 
 			int c = 0;
@@ -368,29 +470,29 @@ void _setup_dict_test_data(
 
 
 	{
-		SWEETFileDict::complex128 data[size1d];
+		sweet::Dict::complex128 data[size1d];
 		for (int i = 0; i < size1d; i++)
-			data[i] = SWEETFileDict::complex128(i+1, 100+i);
+			data[i] = sweet::Dict::complex128(i+1, 100+i);
 
-		if (0)
+		if (version_id == 0)
 		{
-			SWEETArray<1,SWEETFileDict::complex128> array(shape1d, data);
+			sweet::DictArrayND<1,sweet::Dict::complex128> array(shape1d, data);
 
 			io_fileDict.set("array_complex128_1d", array);
 		}
 
-		if (1)
+		if (version_id == 1)
 		{
-			SWEETArray<1,SWEETFileDict::complex128> array;
+			sweet::DictArrayND<1,sweet::Dict::complex128> array;
 			array.setup(shape1d);
 			array = data;
 
 			io_fileDict.set("array_complex128_1d", array);
 		}
 
-		if (2)
+		if (version_id == 2)
 		{
-			SWEETArray<1,SWEETFileDict::complex128> array;
+			sweet::DictArrayND<1,sweet::Dict::complex128> array;
 			array.setup(shape1d);
 
 			int c = 0;
@@ -407,30 +509,30 @@ void _setup_dict_test_data(
 	{
 		// io_fileDict.set("array_complex128_2d", np.array([[1.+102j, 2.+103j, 3.+104j], [4.+105j, 5.+106j, 6.+107j]]))
 
-		SWEETFileDict::complex128 data[size2d];
+		sweet::Dict::complex128 data[size2d];
 
 		for (int i = 0; i < size2d; i++)
-			data[i] = SWEETFileDict::complex128(i+1, 100+i);
+			data[i] = sweet::Dict::complex128(i+1, 100+i);
 
-		if (0)
+		if (version_id == 0)
 		{
-			SWEETArray<2,SWEETFileDict::complex128> array(shape2d, data);
+			sweet::DictArrayND<2,sweet::Dict::complex128> array(shape2d, data);
 
 			io_fileDict.set("array_complex128_2d", array);
 		}
 
-		if (1)
+		if (version_id == 1)
 		{
-			SWEETArray<2,SWEETFileDict::complex128> array;
+			sweet::DictArrayND<2,sweet::Dict::complex128> array;
 			array.setup(shape2d);
 			array = data;
 
 			io_fileDict.set("array_complex128_2d", array);
 		}
 
-		if (2)
+		if (version_id == 2)
 		{
-			SWEETArray<2,SWEETFileDict::complex128> array;
+			sweet::DictArrayND<2,sweet::Dict::complex128> array;
 			array.setup(shape2d);
 
 			int c = 0;
@@ -448,29 +550,29 @@ void _setup_dict_test_data(
 	{
 		// io_fileDict.set("array_complex128_3d", np.array([[[1.+102j, 2.+103j, 3.+104j], [4.+105j, 5.+106j, 6.+107j]], [[7.+108j, 8.+109j, 9.+110j], [10.+111j, 11.+112j, 12.+113j]]]))
 
-		SWEETFileDict::complex128 data[size3d];
+		sweet::Dict::complex128 data[size3d];
 		for (int i = 0; i < size3d; i++)
-			data[i] = SWEETFileDict::complex128(i+1, 100+i);
+			data[i] = sweet::Dict::complex128(i+1, 100+i);
 
-		if (0)
+		if (version_id == 0)
 		{
-			SWEETArray<3,SWEETFileDict::complex128> array(shape3d, data);
+			sweet::DictArrayND<3,sweet::Dict::complex128> array(shape3d, data);
 
 			io_fileDict.set("array_complex128_3d", array);
 		}
 
-		if (1)
+		if (version_id == 1)
 		{
-			SWEETArray<3,SWEETFileDict::complex128> array;
+			sweet::DictArrayND<3,sweet::Dict::complex128> array;
 			array.setup(shape3d);
 			array = data;
 
 			io_fileDict.set("array_complex128_3d", array);
 		}
 
-		if (2)
+		if (version_id == 2)
 		{
-			SWEETArray<3,SWEETFileDict::complex128> array;
+			sweet::DictArrayND<3,sweet::Dict::complex128> array;
 			array.setup(shape3d);
 
 			int c = 0;
@@ -491,19 +593,54 @@ void run_sweet_file_dict_creation_test()
 {
 	std::cout << " + run_sweet_file_dict_creation_test()" << std::endl;
 
-	SWEETFileDict fileDict;
+	sweet::Dict fileDict0;
+	sweet::Dict fileDict1;
+	sweet::Dict fileDict2;
 
 
-	for (int version_id = 0; version_id < 3; version_id++)
-	{
+	_setup_dict_test_data_different_variants(2, 2, 3, 0, fileDict0);
+	_setup_dict_test_data_different_variants(2, 2, 3, 1, fileDict1);
+	_setup_dict_test_data_different_variants(2, 2, 3, 2, fileDict2);
 
-		_setup_dict_test_data(2, 2, 3, version_id, fileDict);
+	std::cout << "   + Comparing dictionaries: dict0 with dict1" << std::endl;
+	compareDict1EntriesEqualDict2(fileDict0, fileDict1, "   + ");
+	std::cout << "   + OK" << std::endl;
 
+	std::cout << "   + Comparing dictionaries: dict1 with dict2" << std::endl;
+	compareDict1EntriesEqualDict2(fileDict1, fileDict2, "   + ");
+	std::cout << "   + OK" << std::endl;
 
-		std::cout << fileDict << std::endl;
-	}
 }
 
+
+void run_sweet_file_dict_write_read()
+{
+	std::cout << " + run_sweet_file_dict_write_read()" << std::endl;
+
+	int verbosity = 10;
+	sweet::Dict save_dict(verbosity);
+	create_reference_dict(save_dict);
+
+	std::cout << "   + Writing dictionary" << std::endl;
+	save_dict.fileSave("output_test_write.sweet");
+
+	sweet::Dict load_dict(verbosity);
+	std::cout << "   + Loading dictionary" << std::endl;
+	load_dict.fileLoad("output_test_write.sweet");
+
+	std::cout << "   + Comparing dictionaries: dict with ref" << std::endl;
+	compareDict1EntriesEqualDict2(save_dict, load_dict, "   + ");
+	std::cout << "   + OK" << std::endl;
+
+	std::cout << "   + Comparing dictionaries: ref with dict" << std::endl;
+	compareDict1EntriesEqualDict2(load_dict, save_dict, "   + ");
+	std::cout << "   + OK" << std::endl;
+}
+
+void hline_star()
+{
+	std::cout << "********************************************************************************" << std::endl;
+}
 
 int main(
 		int i_argc,
@@ -535,21 +672,39 @@ int main(
 		/*
 		 * Simply read the file dictionary
 		 */
-		SWEETFileDict fd(sweet_file_dict_filename, true);
-		std::cout << fd << std::endl;
+		hline_star();
+		std::cout << "+ Loading from file '" << sweet_file_dict_filename << "'" << std::endl;
+		hline_star();
+
+		sweet::Dict fd(sweet_file_dict_filename, false);
+		//std::cout << fd << std::endl;
 
 		/*
 		 * Should we also run tests on it?
 		 */
 		if (run_unit_test)
 		{
-			run_compare_file_dict(sweet_file_dict_filename);
+			hline_star();
+			std::cout << " + Create reference dictionary and compare with data from file" << std::endl;
+			hline_star();
+			run_compare_file_dict_with_reference(sweet_file_dict_filename);
 		}
 	}
 
+	hline_star();
+	std::cout << " + Assignment tests" << std::endl;
+	hline_star();
 	run_sweet_array_assignment_test();
 
+	hline_star();
+	std::cout << " + Different dictionary creation tests" << std::endl;
+	hline_star();
 	run_sweet_file_dict_creation_test();
+
+	hline_star();
+	std::cout << " + File write / read tests" << std::endl;
+	hline_star();
+	run_sweet_file_dict_write_read();
 
 	std::cout << "FIN" << std::endl;
 
