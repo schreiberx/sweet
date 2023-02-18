@@ -10,7 +10,7 @@ fi
 
 if true; then
 
-	echo "Sending CT request for branch '$1'..."
+	echo "Sending CT request for commit '$1'..."
 
 	curl		\
 		-X POST	\
