@@ -277,7 +277,11 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(
+			simVars.disc.space_res_physical,
+			simVars.disc.space_res_spectral,
+			simVars.misc.reuse_spectral_transformation_plans
+		);
 
 	TestSpectral *testSpectral = new TestSpectral;
 

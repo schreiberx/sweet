@@ -149,13 +149,17 @@ int main(
 			sphereDataConfigInstance_H.setupAuto(
 								N_physical,
 								N_spectral_H,
-								simVars.misc.reuse_spectral_transformation_plans
+								simVars.misc.reuse_spectral_transformation_plans,
+								simVars.misc.verbosity,
+								simVars.parallelization.num_threads_space
 							);
 
 			sphereDataConfigInstance_L.setupAuto(
 								N_physical,
 								N_spectral_L,
-								simVars.misc.reuse_spectral_transformation_plans
+								simVars.misc.reuse_spectral_transformation_plans,
+								simVars.misc.verbosity,
+								simVars.parallelization.num_threads_space
 							);
 
 			SphereOperators_SphereData op_H(sphereDataConfig_H, &(simVars.sim));

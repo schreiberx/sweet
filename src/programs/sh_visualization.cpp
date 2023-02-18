@@ -222,7 +222,13 @@ public:
 		}
 
 		sphereDataConfig = new SphereData_Config;
-		sphereDataConfig->setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+		sphereDataConfig->setupAuto(
+				simVars.disc.space_res_physical,
+				simVars.disc.space_res_spectral,
+				simVars.misc.reuse_spectral_transformation_plans,
+				simVars.misc.verbosity,
+				simVars.parallelization.num_threads_space
+			);
 
 		std::cout << "SPH config string: " << sphereDataConfig->getConfigInformationString() << std::endl;
 

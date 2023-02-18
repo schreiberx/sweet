@@ -276,11 +276,13 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 			// Implicit solve with qI
 			solveImplicit(ts_state, dt*qI(i, i), i);
 
+			double tNode = t0+dt*tau[i];
+
 			// Evaluate and store linear term for k
-			eval_linear(ts_state, ts_linear_tendencies_k0[i], t0+dt*tau[i]);
+			eval_linear(ts_state, ts_linear_tendencies_k0[i], tNode);
 
 			// Evaluate and store non linear term for k
-			eval_nonlinear(ts_state, ts_nonlinear_tendencies_k0[i], t0+dt*tau[i]);
+			eval_nonlinear(ts_state, ts_nonlinear_tendencies_k0[i], tNode);
 		}
 	}
 	else if (initialSweepType == "COPY")
@@ -331,9 +333,10 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 		SWE_VariableVector ts_state(ts_u0);
 
 		// Add quadrature terms
-		for (int j = 0; j < nNodes; j++) {
-			axpy(dt*q(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
-			axpy(dt*q(i, j), ts_linear_tendencies_k0[j], ts_state);
+		for (size_t j = 0; j < nNodes; j++) {
+			double a = dt*q(i, j);
+			axpy(a, ts_nonlinear_tendencies_k0[j], ts_state);
+			axpy(a, ts_linear_tendencies_k0[j], ts_state);
 		}
 
 		if (!diagonal) {

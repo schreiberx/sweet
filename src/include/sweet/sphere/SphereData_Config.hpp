@@ -479,7 +479,6 @@ public:
 		int nmax,
 
 		TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
-//		int i_verbosity = 0
 		int i_verbosity,
 		int i_numThreads
 	)
@@ -497,6 +496,7 @@ public:
 			);
 
 #if SWEET_MPI
+		int mpi_rank;
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 		if (mpi_rank == 0 && i_reuse_transformation_plans)
 			MPI_Barrier(MPI_COMM_WORLD);
@@ -530,7 +530,6 @@ public:
 			int *o_nphi,	/// physical resolution along longitude
 			int *o_nlat,	/// physical resolution along latitude
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
-//			int i_verbosity = 0
 			int i_verbosity,
 			int i_numThreads
 	)
@@ -585,7 +584,6 @@ public:
 			int i_mmax,		///< longitude modes
 			int i_nmax,		///< latitude modes
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
-//			int i_verbosity = 0
 			int i_verbosity,
 			int i_numThreads
 	)
@@ -636,7 +634,6 @@ public:
 			int io_physical_res[2],
 			int io_spectral_modes[2],
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE &i_reuse_transformation_plans,
-//			int i_verbosity = 0
 			int i_verbosity,
 			int i_numThreads
 	)
@@ -685,7 +682,6 @@ public:
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_plan_load_save,
-//			int i_verbosity = 0
 			int i_verbosity,
 			int i_numThreads
 	)

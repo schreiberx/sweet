@@ -11,6 +11,8 @@
 #include <sched.h>
 #include <omp.h>
 #include <time.h>
+
+#include <sys/syscall.h>
 #include <unistd.h>
 
 #if SWEET_MPI
@@ -69,6 +71,15 @@ void hline_dash()
 }
 
 
+pid_t gettid_()
+{
+#if 0
+	// not supported on old systems
+	return gettid();
+#else
+	return syscall(SYS_gettid);
+#endif
+}
 
 void schedInfo(
 		std::vector<std::ostringstream> &ss,
@@ -89,7 +100,9 @@ void schedInfo(
 
 	int thread_num = omp_get_thread_num();
 
-	pid_t tid = gettid();
+	// not supported on old systems
+	pid_t tid = gettid_();
+
 	int worker_id = tid_to_worker_id[tid];
 
 	cpu_set_t coremask;
@@ -170,7 +183,7 @@ int main(int argc, char *argv[])
 	#pragma omp parallel for schedule(static,1)
 	for (int j = 0; j < max_threads; j++)
 	{
-		pid_t tid = gettid();
+		pid_t tid = gettid_();
 
 #pragma omp critical
 		tid_to_worker_id[tid] = j;

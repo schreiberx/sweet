@@ -7,6 +7,8 @@ echo_info "PFASST-EXPL-SDC"
 echo_info_hline
 
 
+make clean
+
 SCONS="scons --program=libpfasst_swe_sphere_mlsdc --quadmath=enable --libpfasst=enable --sweet-mpi=enable --libsph=enable --plane-spectral-space=disable --sphere-spectral-space=enable --threading=off --libfft=enable --mode=debug"
 echo "$SCONS"
 $SCONS || exit

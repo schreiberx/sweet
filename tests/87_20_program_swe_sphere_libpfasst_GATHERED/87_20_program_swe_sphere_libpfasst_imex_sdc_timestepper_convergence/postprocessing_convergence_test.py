@@ -3,16 +3,11 @@
 import sys
 import math
 
-from mule.JobMule import *
-from mule.plotting.Plotting import *
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *
+import mule.utils as utils
 
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
-
-
-
+# Group together  similar time stepping methods
 groups = [
     'runtime.libpfasst_nnodes',
     'runtime.libpfasst_niters',
@@ -20,7 +15,7 @@ groups = [
 ]
 
 
-# Create plots for these variables
+# Convergence tests for these variables
 vars_ = ["phi_pert", "vrt", "div"]
 
 
@@ -39,24 +34,40 @@ for i in vars_:
         f"sphere_data_diff_prog_{i}.res_norm_linf",
     ]
 
+    """
+    List of renaming information:
+        ref_file_starts_with:    Only if the reference output data file starts with this string
+        tag_src:    Tag to get value from
+        tag_dst:    Set this tag to this value
+    """
     tag_cleanup_info += [
         #{"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l1", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l1"},
         #{"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l2", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l2"},
         {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_linf", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_linf"},
     ]
 
+# Load all
+jobs_data = JobsData('./job_bench_*', verbosity=0)
 
-j = JobsData(verbosity=0)
-
-c = JobsDataConsolidate(j)
 print("")
 print("Groups:")
+
+c = JobsDataConsolidate(jobs_data)
 job_groups = c.create_groups(groups)
+
+"""
+Prepare job data for plotting:
+ * Iterate over all jobs
+ * For each job:
+   * Search for reference file job matching the tag 'ref_file_tag'
+   * Use this to lookup the error information
+   * Write back the particular error information to a particular job tag
+"""
+JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="sphere_data_norms_physical_space_")
+
+
 for key, g in job_groups.items():
     print(" + "+key)
-
-# Cleanup postprocessed data
-JobsData_GroupsCleanupPostprocessed(job_groups, tag_cleanup_info, pickle_file_default_prefix="sphere_data_norms_physical_space_")
 
 
 for tagname_y in tagnames_y:

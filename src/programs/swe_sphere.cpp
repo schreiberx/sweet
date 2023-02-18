@@ -1238,7 +1238,13 @@ int main_real(int i_argc, char *i_argv[])
 					}
 
 					sphereDataConfigs.push_back(new SphereData_Config);
-					sphereDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans, simVars.misc.verbosity);
+					sphereDataConfigs.back()->setupAuto(
+							N_physical,
+							N_spectral,
+							simVars.misc.reuse_spectral_transformation_plans,
+							simVars.misc.verbosity,
+							simVars.parallelization.num_threads_space
+						);
 
 					ops.push_back(new SphereOperators_SphereData(sphereDataConfigs.back(), &(simVars.sim)));
 

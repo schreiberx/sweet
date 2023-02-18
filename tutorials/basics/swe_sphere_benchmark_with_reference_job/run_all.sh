@@ -1,5 +1,7 @@
 #! /bin/bash
 
+# Stop on first error
+set -e
 
 # Create all job directories
 ./benchmark_create_jobs.py

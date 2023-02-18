@@ -252,7 +252,7 @@ private:
 	void solveImplicit(SWE_VariableVector& rhs, double dt, int iNode);
 
 	// Perform y <- a*x + y
-	void axpy(double a, const SWE_VariableVector& x, SWE_VariableVector& y);
+	void axpy(double a, const SWE_VariableVector& x, SWE_VariableVector& io_y);
 
 	// Initialize nodes values
 	void init_sweep();

@@ -138,7 +138,9 @@ public:
 		sphereDataConfigInstance.setupAuto(
 				simVars.disc.space_res_physical,
 				simVars.disc.space_res_spectral,
-				simVars.misc.reuse_spectral_transformation_plans
+				simVars.misc.reuse_spectral_transformation_plans,
+				simVars.misc.verbosity,
+				simVars.parallelization.num_threads_space
 			);
 
 		timeSteppers.setup(simVars.disc.timestepping_method, op, simVars);
@@ -452,14 +454,23 @@ int main(int i_argc, char *i_argv[])
 	if (simVars.timecontrol.current_timestep_size < 0)
 		SWEETError("Timestep size not set");
 
-	sphereDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	sphereDataConfigInstance.setupAuto(
+			simVars.disc.space_res_physical,
+			simVars.disc.space_res_spectral,
+			simVars.misc.reuse_spectral_transformation_plans,
+			simVars.misc.verbosity,
+			simVars.parallelization.num_threads_space
+		);
 
 	SimulationInstance *simulation = new SimulationInstance;
 
 #if SWEET_GUI
 	if (simVars.misc.gui_enabled)
 	{
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpace(
+				simVars.disc.space_res_physical,
+				simVars.misc.reuse_spectral_transformation_plans
+			);
 
 		VisSweet<SimulationInstance> visSweet(simulation);
 	}

@@ -145,7 +145,8 @@ int main(int i_argc, char *i_argv[])
 			simVars.disc.space_res_physical,
 			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans,
-			simVars.misc.verbosity
+			simVars.misc.verbosity,
+			simVars.parallelization.num_threads_space
 	);
 	std::cout << "SPH config string: " << levelSingletons[fineLevelId].dataConfig.getConfigInformationString() << std::endl;
 
@@ -158,7 +159,8 @@ int main(int i_argc, char *i_argv[])
 			res_physical_nodealiasing,
 			simVars.disc.space_res_spectral,
 			simVars.misc.reuse_spectral_transformation_plans,
-			simVars.misc.verbosity
+			simVars.misc.verbosity,
+			simVars.parallelization.num_threads_space
 	);
 
 	// setup data operators in fine level
@@ -188,7 +190,9 @@ int main(int i_argc, char *i_argv[])
 				&(levelSingletons[thisLevelId + 1].dataConfig),
 				additional_modes_lat,
 				additional_modes_lon,
-				simVars.misc.reuse_spectral_transformation_plans
+				simVars.misc.reuse_spectral_transformation_plans,
+				simVars.misc.verbosity,
+				simVars.parallelization.num_threads_space
 		);
 
 		// setup data operators at this level
