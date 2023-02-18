@@ -18,7 +18,7 @@
 #include <sweet/StringSplit.hpp>
 #include <sweet/SWEETError.hpp>
 #include <sweet/TransformationPlans.hpp>
-#include <sweet/SWEETFileDict.hpp>
+#include <sweet/dict/Dict.hpp>
 
 #if SWEET_THREADING
 #include <omp.h>
@@ -1222,34 +1222,35 @@ public:
 		int nNodes = 3;	
 
 		// Nodes values (between 0 and 1)
-		SWEETArray<1, double> nodes;
+		sweet::DictArrayND<1, double> nodes;
+		size_t nNodes=0;
 
 		// Quadrature weights
-		SWEETArray<1, double> weights;
+		sweet::DictArrayND<1, double> weights;
 
 		// Collocation matrix
-		SWEETArray<2, double> qMatrix;
+		sweet::DictArrayND<2, double> qMatrix;
 
 		// QDelta matrix for implicit sweep
-		SWEETArray<2, double> qDeltaI;
+		sweet::DictArrayND<2, double> qDeltaI;
 
 		// QDelta matrix for explicit sweep
-		SWEETArray<2, double> qDeltaE;
+		sweet::DictArrayND<2, double> qDeltaE;
 
 		// QDelta matrix for initial (implicit) sweep
-		SWEETArray<2, double> qDelta0;
+		sweet::DictArrayND<2, double> qDelta0;
 
 		// Number of iterations (sweeps)
-		SWEETFileDict::int64 nIter;
+		sweet::Dict::int64 nIter=0;
 
 		// Type of initial sweep to use
 		std::string initSweepType;
 
 		// Wether or not use the diagonal implementation
-		SWEETFileDict::int64 diagonal;
+		sweet::Dict::int64 diagonal=0;
 
 		// Wether or not use collocation update for end point
-		SWEETFileDict::int64 useEndUpdate;
+		sweet::Dict::int64 useEndUpdate=0;
 
 		// Unique string ID
 		std::string id;	
@@ -1258,7 +1259,7 @@ public:
 		{
 			std::cout << std::endl;
 			std::cout << "SDC option:" << std::endl;
-			std::cout << "	--sdc-file [path]   SDC parameters in SWEETFileDict format" << std::endl;
+			std::cout << "	--sdc-file [path]   SDC parameters in sweet::Dict format" << std::endl;
 			std::cout << std::endl;
 		}
 
@@ -1301,7 +1302,7 @@ public:
 			{
 			case 0:
 				fileName = i_value;
-				SWEETFileDict params(fileName);
+				sweet::Dict params(fileName);
 				params.get("nodes", nodes);
 				nNodes = nodes.size();
 				params.get("weights", weights);
