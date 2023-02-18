@@ -11,6 +11,12 @@
 #include <string>
 
 
+/**
+ * This is a class which helps to store and load transformation plans for
+ *
+ *  - PlaneData_Config
+ *  - SphereData_Config
+ */
 class TransformationPlans
 {
 public:

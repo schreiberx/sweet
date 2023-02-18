@@ -1,12 +1,12 @@
 /*
  *
- * SWEETArray.hpp
+ * ArrayND.hpp
  *  Created on: Feb 13, 2023
  *      Author: Martin Schreiber <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_SWEETARRAY_HPP_
-#define SRC_INCLUDE_SWEET_SWEETARRAY_HPP_
+#ifndef SRC_INCLUDE_SWEET_ARRAYND_HPP_
+#define SRC_INCLUDE_SWEET_ARRAYND_HPP_
 
 #include <array>
 #include <vector>
@@ -14,34 +14,37 @@
 
 
 /*
- * SWEET's 1D/2D/3D array data class.
+ * SWEET's 1D/2D/3D array data class for dictionaries.
  *
  * This is not intended for HPC, but just to have
- * some 2D container for arbitrary types.
+ * some D dimensional container for arbitrary types.
  */
 
+namespace sweet
+{
+
 template <int D, typename T>
-class SWEETArray
+class ArrayND
 {
 	std::array<int,D> _shape;
 	std::size_t _size;
 	std::vector<T> _data;
 
 public:
-	SWEETArray()	:
+	ArrayND()	:
 		_size(0)
 	{
 		for (int i = 0; i < D; i++)
 			_shape[i] = 0;
 	}
 
-	SWEETArray(const std::array<int,D> &i_shape)
+	ArrayND(const std::array<int,D> &i_shape)
 	{
 		setup(i_shape);
 	}
 
 
-	SWEETArray(const std::array<int,D> &i_shape, const T i_data[])
+	ArrayND(const std::array<int,D> &i_shape, const T i_data[])
 	{
 		setup(i_shape);
 		operator=(i_data);
@@ -156,12 +159,23 @@ public:
 	}
 
 
+	/*
+	 * This is just a convenience handler to use allow a very compact
+	 * access to this array rather than using .get(...)
+	 *
+	 * The array operator[] is no option for us since this only supports one
+	 * argument in C++11
+	 */
 	inline
 	const T& operator()(int i0, int i1=-1, int i2=-1)	const
 	{
 		return getConst(i0, i1, i2);
 	}
 
+#if 0
+	/*
+	 * 1D Array access
+	 */
 	inline
 	T operator[](int i0) const {
 		if (D != 1)
@@ -169,9 +183,10 @@ public:
 
 		return _data[i0];
 	}
+#endif
 
 	inline
-	SWEETArray<D,T>& operator=(const T *i_values_flat)
+	ArrayND<D,T>& operator=(const T *i_values_flat)
 	{
 		for (int i = 0; i < D; i++)
 			if (_shape[i] == 0)
@@ -186,7 +201,7 @@ public:
 
 
 	inline
-	SWEETArray<D,T>& operator=(const SWEETArray<D,T> &a)
+	ArrayND<D,T>& operator=(const ArrayND<D,T> &a)
 	{
 		this->setup(a._shape);
 
@@ -198,7 +213,7 @@ public:
 
 public:
 	friend
-	std::ostream& operator<<(std::ostream& os, const SWEETArray<D,T> &a)
+	std::ostream& operator<<(std::ostream& os, const ArrayND<D,T> &a)
 	{
 		if (a._size == 0)
 		{
@@ -269,4 +284,6 @@ public:
 	}
 };
 
-#endif /* SRC_INCLUDE_SWEET_SWEETARRAY_HPP_ */
+}
+
+#endif /* SRC_INCLUDE_SWEET_ArrayND_HPP_ */

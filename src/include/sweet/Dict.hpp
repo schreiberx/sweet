@@ -1,5 +1,5 @@
 /*
- * SWEETFileDict.hpp
+ * Dict.hpp
  *
  *  Created on: Feb 13, 2023
  *      Author: Martin Schreiber <schreiberx@gmail.com>
@@ -13,9 +13,12 @@
 #include <complex>
 #include <fstream>
 #include <sweet/SWEETError.hpp>
-#include <sweet/SWEETArray.hpp>
+#include <sweet/DictArrayND.hpp>
 
-class SWEETFileDict
+namespace sweet
+{
+
+class Dict
 {
 public:
 	typedef long long int64;
@@ -23,7 +26,7 @@ public:
 	typedef std::complex<double> complex128;
 
 
-	class SWEETFileDict_Element
+	class Dict_Element
 	{
 	public:
 		enum ElementTypes
@@ -50,17 +53,17 @@ public:
 		int64 _value_scalar_int64;
 		double _value_scalar_float64;
 
-		SWEETArray<1,double> _value_array_1d_float64;
-		SWEETArray<2,double> _value_array_2d_float64;
-		SWEETArray<3,double> _value_array_3d_float64;
+		sweet::ArrayND<1,double> _value_array_1d_float64;
+		sweet::ArrayND<2,double> _value_array_2d_float64;
+		sweet::ArrayND<3,double> _value_array_3d_float64;
 
-		SWEETArray<1,complex128> _value_array_1d_complex128;
-		SWEETArray<2,complex128> _value_array_2d_complex128;
-		SWEETArray<3,complex128> _value_array_3d_complex128;
+		sweet::ArrayND<1,complex128> _value_array_1d_complex128;
+		sweet::ArrayND<2,complex128> _value_array_2d_complex128;
+		sweet::ArrayND<3,complex128> _value_array_3d_complex128;
 
 public:
 		template <typename T>
-		SWEETFileDict_Element(
+		Dict_Element(
 				const std::string &i_key,
 				const T &i_value
 		)
@@ -69,7 +72,7 @@ public:
 		}
 
 
-		SWEETFileDict_Element()	:
+		Dict_Element()	:
 			_type_id(ElementTypes::SWEET_FILE_DICT_NONE)
 		{
 		}
@@ -125,7 +128,7 @@ public:
 			_value_scalar_float64 = i_value;
 		}
 
-		void get(SWEETArray<1,float64> &o_value)	const
+		void get(sweet::ArrayND<1,float64> &o_value)	const
 		{
 			if (_type_id != SWEET_FILE_DICT_ARRAY_1D_FLOAT64)
 				SWEETError("Type mismatch!");
@@ -133,14 +136,14 @@ public:
 			o_value = _value_array_1d_float64;
 		}
 
-		void set(const std::string &i_key, const SWEETArray<1,float64> &i_value)
+		void set(const std::string &i_key, const sweet::ArrayND<1,float64> &i_value)
 		{
 			_type_id = SWEET_FILE_DICT_ARRAY_1D_FLOAT64;
 			_key = i_key;
 			_value_array_1d_float64 = i_value;
 		}
 
-		void get(SWEETArray<2,float64> &o_value)	const
+		void get(sweet::ArrayND<2,float64> &o_value)	const
 		{
 			if (_type_id != SWEET_FILE_DICT_ARRAY_2D_FLOAT64)
 				SWEETError("Type mismatch!");
@@ -148,14 +151,14 @@ public:
 			o_value = _value_array_2d_float64;
 		}
 
-		void set(const std::string &i_key, const SWEETArray<2,float64> &i_value)
+		void set(const std::string &i_key, const sweet::ArrayND<2,float64> &i_value)
 		{
 			_type_id = SWEET_FILE_DICT_ARRAY_2D_FLOAT64;
 			_key = i_key;
 			_value_array_2d_float64 = i_value;
 		}
 
-		void get(SWEETArray<3,float64> &o_value)	const
+		void get(sweet::ArrayND<3,float64> &o_value)	const
 		{
 			if (_type_id != SWEET_FILE_DICT_ARRAY_3D_FLOAT64)
 				SWEETError("Type mismatch!");
@@ -163,14 +166,14 @@ public:
 			o_value = _value_array_3d_float64;
 		}
 
-		void set(const std::string &i_key, const SWEETArray<3,float64> &i_value)
+		void set(const std::string &i_key, const sweet::ArrayND<3,float64> &i_value)
 		{
 			_type_id = SWEET_FILE_DICT_ARRAY_3D_FLOAT64;
 			_key = i_key;
 			_value_array_3d_float64 = i_value;
 		}
 
-		void get(SWEETArray<1,complex128> &o_value)	const
+		void get(sweet::ArrayND<1,complex128> &o_value)	const
 		{
 			if (_type_id != SWEET_FILE_DICT_ARRAY_1D_COMPLEX128)
 				SWEETError("Type mismatch!");
@@ -178,14 +181,14 @@ public:
 			o_value = _value_array_1d_complex128;
 		}
 
-		void set(const std::string &i_key, const SWEETArray<1,complex128> &i_value)
+		void set(const std::string &i_key, const sweet::ArrayND<1,complex128> &i_value)
 		{
 			_type_id = SWEET_FILE_DICT_ARRAY_1D_COMPLEX128;
 			_key = i_key;
 			_value_array_1d_complex128 = i_value;
 		}
 
-		void get(SWEETArray<2,complex128> &o_value)	const
+		void get(sweet::ArrayND<2,complex128> &o_value)	const
 		{
 			if (_type_id != SWEET_FILE_DICT_ARRAY_2D_COMPLEX128)
 				SWEETError("Type mismatch!");
@@ -193,14 +196,14 @@ public:
 			o_value = _value_array_2d_complex128;
 		}
 
-		void set(const std::string &i_key, const SWEETArray<2,complex128> &i_value)
+		void set(const std::string &i_key, const sweet::ArrayND<2,complex128> &i_value)
 		{
 			_type_id = SWEET_FILE_DICT_ARRAY_2D_COMPLEX128;
 			_key = i_key;
 			_value_array_2d_complex128 = i_value;
 		}
 
-		void get(SWEETArray<3,complex128> &o_value)	const
+		void get(sweet::ArrayND<3,complex128> &o_value)	const
 		{
 			if (_type_id != SWEET_FILE_DICT_ARRAY_3D_COMPLEX128)
 				SWEETError("Type mismatch!");
@@ -208,7 +211,7 @@ public:
 			o_value = _value_array_3d_complex128;
 		}
 
-		void set(const std::string &i_key, const SWEETArray<3,complex128> &i_value)
+		void set(const std::string &i_key, const sweet::ArrayND<3,complex128> &i_value)
 		{
 			_type_id = SWEET_FILE_DICT_ARRAY_3D_COMPLEX128;
 			_key = i_key;
@@ -266,7 +269,7 @@ public:
 
 
 		friend
-		std::ostream& operator<<(std::ostream& os, const SWEETFileDict_Element &e)
+		std::ostream& operator<<(std::ostream& os, const Dict_Element &e)
 		{
 			os << "'" << e._key << "' => ";
 
@@ -323,17 +326,17 @@ public:
 		}
 	};
 
-	std::vector<SWEETFileDict_Element> _dict;
+	std::vector<Dict_Element> _dict;
 
 	bool _debug;
 
 public:
-	SWEETFileDict()	:
+	Dict()	:
 		_debug(false)
 	{
 	}
 
-	SWEETFileDict(const std::string &i_filename, bool i_debug = false)
+	Dict(const std::string &i_filename, bool i_debug = false)
 	{
 		_debug = i_debug;
 
@@ -342,7 +345,7 @@ public:
 
 
 	/*
-	 * Load from a SWEETFileDict
+	 * Load from a Dict
 	 *
 	 * See corresponding Python file for description of file format
 	 */
@@ -358,7 +361,7 @@ public:
 
 		std::string magic_start = _read_str0(f);
 
-		if (magic_start != "SWEETFileDict")
+		if (magic_start != "Dict")
 		{
 			std::ostringstream ss;
 			ss << "Invalid Magic code '" << magic_start << "' at beginning!";
@@ -368,97 +371,97 @@ public:
 		std::size_t num_entries = _read<int64>(f);
 
 		if (_debug)
-			std::cout << "SWEETFileDict: Found " << num_entries << " dictionary entries" << std::endl;
+			std::cout << "Dict: Found " << num_entries << " dictionary entries" << std::endl;
 
 		_dict.resize(num_entries);
 		for (std::size_t i = 0; i < num_entries; i++)
 		{
-			SWEETFileDict_Element &e = _dict[i];
+			Dict_Element &e = _dict[i];
 
 			std::string key = _read_str0(f);
 
-			SWEETFileDict_Element::ElementTypes type_id = (SWEETFileDict_Element::ElementTypes)_read<int64>(f);
+			Dict_Element::ElementTypes type_id = (Dict_Element::ElementTypes)_read<int64>(f);
 
 			switch(type_id)
 			{
-				case SWEETFileDict_Element::SWEET_FILE_DICT_STRING:
+				case Dict_Element::SWEET_FILE_DICT_STRING:
 					e.set(key, _read_str0(f));
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_INT64:
+				case Dict_Element::SWEET_FILE_DICT_INT64:
 					e.set(key, _read<int64>(f));
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_FLOAT64:
+				case Dict_Element::SWEET_FILE_DICT_FLOAT64:
 					e.set(key, _read<double>(f));
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_1D_FLOAT64:
+				case Dict_Element::SWEET_FILE_DICT_ARRAY_1D_FLOAT64:
 				{
 					std::array<int,1> shape;
 					shape[0] = _read<int64>(f);
-					SWEETArray<1, float64> array(shape);
+					sweet::ArrayND<1, float64> array(shape);
 
 					_read_array(f, array);
 					e.set(key, array);
 				}
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_2D_FLOAT64:
+				case Dict_Element::SWEET_FILE_DICT_ARRAY_2D_FLOAT64:
 				{
 					std::array<int,2> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
-					SWEETArray<2, float64> array(shape);
+					sweet::ArrayND<2, float64> array(shape);
 
 					_read_array(f, array);
 					e.set(key, array);
 				}
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_3D_FLOAT64:
+				case Dict_Element::SWEET_FILE_DICT_ARRAY_3D_FLOAT64:
 				{
 					std::array<int,3> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
 					shape[2] = _read<int64>(f);
-					SWEETArray<3, float64> array(shape);
+					sweet::ArrayND<3, float64> array(shape);
 
 					_read_array(f, array);
 					e.set(key, array);
 				}
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_1D_COMPLEX128:
+				case Dict_Element::SWEET_FILE_DICT_ARRAY_1D_COMPLEX128:
 				{
 					std::array<int,1> shape;
 					shape[0] = _read<int64>(f);
-					SWEETArray<1, complex128> array(shape);
+					sweet::ArrayND<1, complex128> array(shape);
 
 					_read_array(f, array);
 					e.set(key, array);
 				}
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_2D_COMPLEX128:
+				case Dict_Element::SWEET_FILE_DICT_ARRAY_2D_COMPLEX128:
 				{
 					std::array<int,2> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
-					SWEETArray<2, complex128> array(shape);
+					sweet::ArrayND<2, complex128> array(shape);
 
 					_read_array(f, array);
 					e.set(key, array);
 				}
 					break;
 
-				case SWEETFileDict_Element::SWEET_FILE_DICT_ARRAY_3D_COMPLEX128:
+				case Dict_Element::SWEET_FILE_DICT_ARRAY_3D_COMPLEX128:
 				{
 					std::array<int,3> shape;
 					shape[0] = _read<int64>(f);
 					shape[1] = _read<int64>(f);
 					shape[2] = _read<int64>(f);
-					SWEETArray<3, complex128> array(shape);
+					sweet::ArrayND<3, complex128> array(shape);
 
 					_read_array(f, array);
 					e.set(key, array);
@@ -479,7 +482,7 @@ public:
 
 		std::string magic_end = _read_str0(f);
 
-		if (magic_start != "SWEETFileDict")
+		if (magic_start != "Dict")
 		{
 			std::ostringstream ss;
 			ss << "Invalid Magic code '" << magic_end << "' at end!";
@@ -493,7 +496,7 @@ public:
 	{
 		for (std::size_t i = 0; i < _dict.size(); i++)
 		{
-			const SWEETFileDict_Element &e = _dict[i];
+			const Dict_Element &e = _dict[i];
 
 			std::cout << " + " << e << std::endl;
 		}
@@ -550,7 +553,7 @@ public:
 
 		if (idx < 0)
 		{
-			_dict.push_back(SWEETFileDict_Element(i_key, i_value));
+			_dict.push_back(Dict_Element(i_key, i_value));
 			return;
 		}
 
@@ -563,7 +566,7 @@ public:
 
 public:
 	friend
-	std::ostream& operator<<(std::ostream& os, const SWEETFileDict &fd)
+	std::ostream& operator<<(std::ostream& os, const Dict &fd)
 	{
 		fd.print(os);
 		return os;
@@ -609,7 +612,7 @@ private:
 	template <int D, typename T>
 	void _read_array(
 			std::ifstream &f,
-			SWEETArray<D,T> &array
+			sweet::ArrayND<D,T> &array
 	)
 	{
 		for (std::size_t i = 0; i < array.size(); i++)
@@ -617,6 +620,6 @@ private:
 	}
 };
 
-
+}
 
 #endif
