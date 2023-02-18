@@ -1223,7 +1223,6 @@ public:
 
 		// Nodes values (between 0 and 1)
 		sweet::DictArrayND<1, double> nodes;
-		size_t nNodes=0;
 
 		// Quadrature weights
 		sweet::DictArrayND<1, double> weights;
