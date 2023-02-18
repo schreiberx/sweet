@@ -78,6 +78,17 @@ PRESET_LIST = {
         'diagQDeltaInit': 'BEPAR',
         'diagonal': True,
     },
+    'P3' : {
+        'nNodes': 3,
+        'nodeType': 'RADAU-RIGHT',
+        'nIter': 3,
+        'qDeltaImplicit': 'BEPAR',
+        'qDeltaExplicit': 'PIC',
+        'initSweepType': 'QDELTA',
+        'useEndUpdate': True,
+        'diagQDeltaInit': 'BEPAR',
+        'diagonal': True,
+    },
 }
 
 # Add parser argument for each function parameter

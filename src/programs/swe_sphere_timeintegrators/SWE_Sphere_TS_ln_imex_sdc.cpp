@@ -64,7 +64,7 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 
 		weights.setup(nNodes);
 		const double weights_default[] = {
-			0.3764030627004656, 0.51248582618842650, 0.1111111111111079
+			0.3764030627004656, 0.51248582618842650, 0.1111111111111111
 		};
 		weights = weights_default;
 
