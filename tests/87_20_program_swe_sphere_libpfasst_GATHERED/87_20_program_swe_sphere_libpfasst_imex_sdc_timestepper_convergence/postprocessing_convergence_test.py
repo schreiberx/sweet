@@ -28,6 +28,22 @@ tagnames_y = []
 tag_cleanup_info = []
 
 for i in vars_:
+
+    #
+    # This test case doesn't output information about the reference output files
+    # Therefore, we need to determine the last output file
+
+    # Search reference job for output file names
+    ref_files = glob.glob(f"job_benchref_RT_*/output_prog_{i}_*.sweet")
+    ref_files.sort()
+
+    # Take last one
+    ref_file = ref_files[-1]
+    # Just the filename
+    ref_file = ref_file.split("/")[-1]
+    # Without file ending
+    ref_file = ref_file.replace(".sweet", "")
+
     tagnames_y += [
         #f"sphere_data_diff_prog_{i}.res_norm_l1",
         #f"sphere_data_diff_prog_{i}.res_norm_l2",
@@ -41,9 +57,9 @@ for i in vars_:
         tag_dst:    Set this tag to this value
     """
     tag_cleanup_info += [
-        #{"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l1", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l1"},
-        #{"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_l2", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l2"},
-        {"ref_file_starts_with": f"output_prog_{i}", "tag_src": "res_norm_linf", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_linf"},
+        {"ref_file_starts_with": ref_file, "tag_src": "res_norm_l1", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l1"},
+        {"ref_file_starts_with": ref_file, "tag_src": "res_norm_l2", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_l2"},
+        {"ref_file_starts_with": ref_file, "tag_src": "res_norm_linf", "tag_dst": f"sphere_data_diff_prog_{i}.res_norm_linf"},
     ]
 
 # Load all
