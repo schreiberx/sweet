@@ -17,6 +17,7 @@ For discretization, we use the double FFT for the plane and Spherical Harmonics
 on the sphere.
 
 
+
 ## Community
 
 There's a discord channel for the SWEET community.
