@@ -41,44 +41,47 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		ts_linear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
 		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
 
-		dt(i_simVars.timecontrol.current_timestep_size)
+		dt(i_simVars.timecontrol.current_timestep_size),
+		idString(i_simVars.sdc.idString)
 {
 	if (i_simVars.sdc.fileName == "") {
 		// No parameter file given, use default SDC settings
 		// warning : nNodes default value defined in SimulationVariables.hpp
 		// -> need this to instantiate the tendencies storage
+		std::cout << "[SDC] no parameter file given, using default configuration" << std::endl;
 		nIter = 3;
 		diagonal = false;
 		initialSweepType = "COPY";
 		useEndUpdate = false;
+		idString = "M3_RADAU-RIGHT_K3_BE_FE_COPY";
 
 		// RADAU-RIGHT nodes, weights quadrature matrix
 		tau.setup(nNodes);
 		const double tau_default[] = {
-			0.15505103, 0.64494897, 1.
+			0.15505102572168, 0.64494897427832, 1.
 		};
 		tau = tau_default;
 
 		weights.setup(nNodes);
 		const double weights_default[] = {
-			0.37640306, 0.51248583, 0.11111111
+			0.3764030627004656, 0.51248582618842650, 0.1111111111111079
 		};
 		weights = weights_default;
 
 		qMat.setup(nNodes, nNodes);
 		const double qMat_default[] = {
-			0.19681548, -0.06553543, 0.02377097,
-			0.39442431,  0.29207341, -0.04154875,
-			0.37640306,  0.51248583,  0.11111111
+			0.1968154772236567, -0.06553542585019642,  0.02377097434821968,
+			0.394424314739085,   0.2920734116652353,  -0.04154875212600038,
+			0.3764030627004656,  0.5124858261884265,   0.1111111111111079
 		};
 		qMat = qMat_default;
 
 		// BE for implicit sweep
 		qMatDeltaI.setup(nNodes, nNodes);
 		const double qMatDeltaI_default[] = {
-			0.15505103, 0.,         0.,
- 			0.15505103, 0.48989795, 0.,
-			0.15505103, 0.48989795, 0.        
+			0.15505102572168, 0.,         0.,
+ 			0.15505102572168, 0.48989794855664, 0.,
+			0.15505102572168, 0.48989794855664, 0.35505102572168        
 		};
 		qMatDeltaI = qMatDeltaI_default;
 
@@ -86,17 +89,17 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		qMatDeltaE.setup(nNodes, nNodes);
 		const double qMatDeltaE_default[] = {
 			0.,         0.,         0.,
- 			0.48989795, 0.,         0.,
-			0.48989795, 0.35505103, 0.        
+ 			0.48989794855664, 0.,         0.,
+			0.48989794855664, 0.35505102572168, 0.        
 		};
 		qMatDeltaE = qMatDeltaE_default;
 
 		// BEpar for initial sweep
 		qMatDelta0.setup(nNodes, nNodes);
 		const double qMatDelta0_default[] = {
-			0.15505103, 0.		  , 0.,
- 			0.		  , 0.64494897, 0.,
-			0.		  , 0.		  , 1.        
+			0.15505102572168, 0.		      , 0.,
+ 			0.		        , 0.64494897427832, 0.,
+			0.		        , 0.		      , 1.        
 		};
 		qMatDelta0 = qMatDelta0_default;
 	}
@@ -114,18 +117,18 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 	}
 
 	// Print informations ...
-	std::cout << "SDC coefficients" << std::endl;
-	std::cout << tau << std::endl;
-	std::cout << weights << std::endl;
-	std::cout << qMat << std::endl;
-	std::cout << qMatDeltaE << std::endl;
-	std::cout << qMatDeltaI << std::endl;
-	std::cout << qMatDelta0 << std::endl;
-	std::cout << "nIter :" << nIter << std::endl;
-	std::cout << "diagonal : " << diagonal << std::endl;
-	std::cout << "useEndUpdate : " << useEndUpdate << std::endl;
-	std::cout << "initialSweepType : " << initialSweepType << std::endl;
-	std::cout << "idString : " << i_simVars.sdc.id << std::endl; 
+	std::cout << "\nSDC class parameters" << std::endl;
+	std::cout << " + nodes : " << tau << std::endl;
+	std::cout << " + weights : " << weights << std::endl;
+	std::cout << " + qMat : " << qMat << std::endl;
+	std::cout << " + qDeltaE : " << qMatDeltaE << std::endl;
+	std::cout << " + qDeltaI : " << qMatDeltaI << std::endl;
+	std::cout << " + qDelta0 : " << qMatDelta0 << std::endl;
+	std::cout << " + nIter : " << nIter << std::endl;
+	std::cout << " + diagonal : " << diagonal << std::endl;
+	std::cout << " + useEndUpdate : " << useEndUpdate << std::endl;
+	std::cout << " + initialSweepType : " << initialSweepType << std::endl;
+	std::cout << " + idString : " << idString << std::endl; 
 }
 
 

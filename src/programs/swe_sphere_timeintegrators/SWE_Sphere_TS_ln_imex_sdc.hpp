@@ -228,6 +228,9 @@ private:
 	// timestep size
 	double dt;
 
+	// unique string id
+	std::string idString;
+
 	/*
 	 * SDC specific methods
  	 */

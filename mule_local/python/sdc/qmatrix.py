@@ -416,6 +416,6 @@ def getSetup(
         idString += '_endUpdate'
     if diagonal:
         idString += '_diag'
-    out['id'] = idString
+    out['idString'] = idString
     return out
     

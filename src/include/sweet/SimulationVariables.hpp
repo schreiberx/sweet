@@ -1252,7 +1252,7 @@ public:
 		sweet::Dict::int64 useEndUpdate=0;
 
 		// Unique string ID
-		std::string id;	
+		std::string idString;	
 
 		void outputProgParams()
 		{
@@ -1313,7 +1313,7 @@ public:
 				params.get("diagonal", diagonal);
 				params.get("initSweepType", initSweepType);
 				params.get("useEndUpdate", useEndUpdate);
-				params.get("id", id);
+				params.get("idString", idString);
 				return -1;
 			}
 
