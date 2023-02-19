@@ -19,12 +19,9 @@ class ErrorBase
 	bool _hasError;
 	std::string _errorMessage;
 
-	bool _errorProcessed;
-
 public:
 	ErrorBase()	:
-		_hasError(false),
-		_errorProcessed(true)
+		_hasError(false)
 	{
 	}
 
@@ -41,7 +38,6 @@ public:
 
 		_hasError = i_errorBase._hasError;
 		_errorMessage = i_errorBase._errorMessage;
-		_errorProcessed = i_errorBase._errorProcessed;
 
 		i_errorBase.errorReset();
 
@@ -66,25 +62,26 @@ public:
 	{
 		_hasError = false;
 		_errorMessage = "";
-		_errorProcessed = true;
 	}
 
-	const std::string& errorGet()
+	std::string errorGet()
 	{
 		if (!_hasError)
 		{
 			std::cerr << "Error message requested, but has no error!" << std::endl;
 			exit(1);
 		}
-		_errorProcessed = true;
-		return _errorMessage;
+
+		std::string tmp = _errorMessage;
+		errorReset();
+		return tmp;
 	}
 
 	~ErrorBase()
 	{
-		if (_hasError && !_errorProcessed)
+		if (_hasError)
 		{
-			std::cerr << "ERROR: Lack of processing error '" << _errorMessage << "'" << std::endl;
+			std::cerr << "ERROR was not processed! Error message: '" << _errorMessage << "'" << std::endl;
 			exit(1);
 		}
 	}

@@ -3,184 +3,165 @@
  */
 
 
+#include <list>
+#include <memory>
+#include <typeinfo>
+#include <sweet/SWEETError.hpp>
 #include <sweet/ProgramArguments.hpp>
-#include <sweet/ErrorBase.hpp>
-#include <iostream>
-
-class CoefficientsPDESWECommon
+#include <sweet/variables/VariablesClassInterface.hpp>
+class VariablesClassDictionary
 {
 public:
 	sweet::ErrorBase error;
 
-	/**
-	 * Average height
-	 */
-	double h0 = 10000.0;
+private:
+	std::list<VariablesClassDictionaryInterface*> _list;
 
-	/**
-	 * For more information on viscosity,
-	 * see 13.3.1 "Generic Form of the Explicit Diffusion Mechanism"
-	 * in "Numerical Techniques for Global Atmospheric Models"
-	 *
-	 * viscosity-term on velocities with 2nd order diff operator
-	 */
-
-	double viscosity = 0.0;
-
-	/**
-	 * order of viscosity
-	 */
-	int viscosity_order = 2;
-
-	/**
-	 * Gravitational constant
-	 */
-	double gravitation = 9.80616;
+	bool registerationClosed;
+	bool getVariableClassClosed;
 
 
-
-	void outputConfig()
-	{
-		std::cout << " + h0: " << h0 << std::endl;
-		std::cout << " + viscosity: " << viscosity << std::endl;
-		std::cout << " + viscosity_order: " << viscosity_order << std::endl;
-		std::cout << " + gravitation: " << gravitation << std::endl;
-	}
-
-	void outputProgParams()
-	{
-		std::cout << "Simulation parameters:" << std::endl;
-		CoefficientsPDESWECommon::outputProgParams();
-		std::cout << "	-H [float]	Average (initial) height of water" << std::endl;
-		std::cout << "	-u [visc]	Viscosity, , default=0" << std::endl;
-		std::cout << "	-U [visc]	Viscosity order, default=2" << std::endl;
-		std::cout << "	-g [float]	Gravitation" << std::endl;
-		std::cout << "" << std::endl;
-	}
-
-
-	bool processProgramArguments(sweet::ProgramArguments &i_pa)
-	{
-		if (!i_pa.getArgumentValueBy3Keys("pde-h0", "H", "h0", h0))
-		{
-			if (error.errorForward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueBy3Keys("pde-viscosity", "pde-mu", "mu", viscosity))
-		{
-			if (error.errorForward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueByKey("pde-viscosity-order", viscosity_order))
-		{
-			if (error.errorForward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueBy3Keys("pde-g", "g", "gravitation", gravitation))
-		{
-			if (error.errorForward(i_pa.error))
-				return false;
-		}
-
-		return true;
-	}
-};
-
-
-/**
- * SWE PDE on the sphere parameters
- */
-class CoefficientsPDESWESphere	:
-	public CoefficientsPDESWECommon
-{
 public:
-	/**
-	 * Earth radius for simulations on the sphere
-	 */
-	double sphere_radius = 6.37122e6;
-
-	/**
-	 * Simulation on f-sphere? (constant f0 term over entire sphere)
-	 */
-	bool sphere_use_fsphere = false;
-
-	/**
-	 * Coriolis effect
-	 * 7.2921 x 10^{-5}
-	 */
-	double sphere_coriolis_omega = 0.000072921;
-
-	/**
-	 * Rotational speed if f-sphere is used (cylindrical)
-	 */
-	double sphere_fsphere_f0 = 0.00007292*2;
-
-
-	void outputConfig()
+	void closeRegistration()
 	{
-		std::cout << std::endl;
-		std::cout << "SWE PDE on Sphere coefficients:" << std::endl;
-		CoefficientsPDESWECommon::outputConfig();
-		std::cout << " + radius: " << sphere_radius << std::endl;
-		std::cout << " + rotating_coriolis_omega: " << sphere_coriolis_omega << std::endl;
-		std::cout << " + use_fsphere: " << sphere_use_fsphere << std::endl;
-		std::cout << " + fsphere_f0: " << sphere_fsphere_f0 << std::endl;
+		registerationClosed = true;
+	}
 
-		std::cout << std::endl;
+public:
+	void closeGetVariableClass()
+	{
+		getVariableClassClosed = true;
 	}
 
 
-	void outputProgramArguments()
+public:
+	VariablesClassDictionary()	:
+		registerationClosed(false),
+		getVariableClassClosed(false)
 	{
-		std::cout << "Simulation parameters:" << std::endl;
-		CoefficientsPDESWECommon::outputProgParams();
-		std::cout << "	-a [float]	earth radius" << std::endl;
-		std::cout << "	-f [float]	f-parameter for f-plane or coriolis omega term, default=0" << std::endl;
-		std::cout << "	-F [bool]	Simulation on f-sphere, default=0" << std::endl;
-		std::cout << "" << std::endl;
 
 	}
-
-	bool processProgramArguments(sweet::ProgramArguments &i_pa)
+public:
+	~VariablesClassDictionary()
 	{
-		if (!i_pa.getArgumentValueBy2Keys("pde-sphere-radius", "a", sphere_radius))
+		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
-			if (error.errorForward(i_pa.error))
-				return false;
+			delete *i;
 		}
+	}
 
-		if (!i_pa.getArgumentValueBy2Keys("pde-use-fsphere", "F", sphere_use_fsphere))
+public:
+	template<typename T>
+	bool registerParameterClass()
+	{
+		if (registerationClosed)
 		{
-			if (error.errorForward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueByKey("pde-sphere-f0", sphere_fsphere_f0))
-		{
-			if (error.errorForward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueByKey("pde-coriolis-omega", sphere_coriolis_omega))
-		{
-			if (error.errorForward(i_pa.error))
-				return false;
-		}
-
-		if (!CoefficientsPDESWECommon::processProgramArguments(i_pa))
+			const std::string& tname = typeid(T).name();
+			error.errorSet("Registration already closed (type '"+tname+"')");
 			return false;
+		}
 
+		if (parameterClassExists<T>())
+		{
+			const std::string& tname = typeid(T).name();
+			error.errorSet("Class of type '"+tname+"' already exists");
+			return false;
+		}
+
+		T* newClass = new T();
+		_list.push_back(newClass);
 		return true;
 	}
+
+public:
+	template<typename T>
+	bool parameterClassExists()
+	{
+		for (auto i = _list.begin(); i != _list.end(); i++)
+		{
+			// check whether generic interface can be casted to type T
+			T* derived = dynamic_cast<T*>(*i);
+
+			if (derived != nullptr)
+				return true;
+		}
+
+		return false;
+	}
+
+public:
+	template<typename T>
+	T* getVariableClassClass()
+	{
+		if (getVariableClassClosed)
+		{
+			const std::string& tname = typeid(T).name();
+			error.errorSet("Getting a variable class already closed (type '"+tname+"')");
+			return nullptr;
+		}
+
+		for (auto i = _list.begin(); i != _list.end(); i++)
+		{
+			// check whether generic interface can be casted to type T
+			T* derived = dynamic_cast<T*>(*i);
+
+			if (derived != nullptr)
+				return derived;
+		}
+
+		const std::string& tname = typeid(T).name();
+		error.errorSet("Type '"+tname+"' not found in dictionary");
+		return nullptr;
+	}
+
+public:
+	void outputProgramArguments(std::string i_prefix = "")
+	{
+		for (auto i = _list.begin(); i != _list.end(); i++)
+		{
+			(*i)->outputProgramArguments(i_prefix);
+		}
+	}
+
+public:
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
+	{
+		for (auto i = _list.begin(); i != _list.end(); i++)
+		{
+			if (!(*i)->processProgramArguments(i_pa))
+			{
+				error.errorForward((*i)->getError());
+				return false;
+			}
+		}
+		return true;
+	}
+
+public:
+	void outputVariables(std::string i_prefix = "")
+	{
+		for (auto i = _list.begin(); i != _list.end(); i++)
+		{
+			(*i)->outputVariables(i_prefix);
+		}
+	}
+
 };
 
 
-int main(int i_argc, char *i_argv[])
-{
 
+#include <iostream>
+#include "swe_sphere_variables/PDESWESphereParameters.hpp"
+#include "swe_sphere_variables/IODataParameters.hpp"
+
+
+int
+main(int i_argc, char *i_argv[])
+{
+	/*
+	 * We start by setting up the class to parse the program arguments
+	 */
+	std::cout << " + ProgramArguments()" << std::endl;
 	sweet::ProgramArguments pa;
 	if (!pa.setup(i_argc, i_argv))
 	{
@@ -188,27 +169,94 @@ int main(int i_argc, char *i_argv[])
 		return 1;
 	}
 
-	CoefficientsPDESWESphere c;
 
-	if (pa.argumentWithKeyExists("h") || pa.argumentWithKeyExists("help"))
 	{
-		c.outputProgramArguments();
-		return EXIT_FAILURE;
-	}
+		/*
+		 * Now we warmup the dictionary which can be stored to store arbitrary
+		 * classes.
+		 *
+		 * This is specialized for processing our program arguments and using it
+		 * later on in the SWEET programs.
+		 */
+		std::cout << " + VariablesClassDictionary()" << std::endl;
+		VariablesClassDictionary varClassDict;
 
-	if (!c.processProgramArguments(pa))
-	{
-		std::cerr << "Error: " << c.error.errorGet() << std::endl;
-		return EXIT_FAILURE;
-	}
-	c.outputConfig();
 
-	std::cout << pa << std::endl;
+		/*
+		 * Register new classes
+		 */
+		std::cout << "   + registerParameterClass<PDESWEParametersSphere>()" << std::endl;
+		varClassDict.registerParameterClass<PDESWEParametersSphere>();
+		varClassDict.registerParameterClass<IODataParameters>();
 
-	if (!pa.checkAllArgumentsProcessed())
-	{
-		std::cerr << "Error: " << pa.error.errorGet() << std::endl;
-		return EXIT_FAILURE;
+		/*
+		 * Now we close the registration
+		 *
+		 * This will avoid performance bugs!
+		 */
+		varClassDict.closeRegistration();
+
+
+		/*
+		 * After registering all classes, we can check whether we should output the help information
+		 */
+		if (pa.argumentWithKeyExists("h") || pa.argumentWithKeyExists("help"))
+		{
+			varClassDict.outputProgramArguments();
+			return EXIT_FAILURE;
+		}
+
+		/*
+		 * Now its time to process all program arguments with all registered classes
+		 */
+		varClassDict.processProgramArguments(pa);
+
+		/*
+		 * Get handler to new class PDESWEParametersSphere
+		 */
+		PDESWEParametersSphere *sweParametersSphere = varClassDict.getVariableClassClass<PDESWEParametersSphere>();
+		if (sweParametersSphere == nullptr)
+		{
+			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
+			return EXIT_FAILURE;
+		}
+
+		/*
+		 * Get handler to new class PDESWEParametersSphere
+		 */
+		IODataParameters *ioDataParameters = varClassDict.getVariableClassClass<IODataParameters>();
+		if (ioDataParameters == nullptr)
+		{
+			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
+			return EXIT_FAILURE;
+		}
+
+		/*
+		 * Now we close getting the parameter class
+		 *
+		 * This will avoid performance bugs!
+		 */
+		varClassDict.closeGetVariableClass();
+
+
+		/*
+		 * Now its time to process all program arguments with all registered classes
+		 */
+		std::cout << " + varClassDict.outputVariables()" << std::endl;
+		varClassDict.outputVariables("    ");
+
+
+		/*
+		 * And we can also print them individually
+		 */
+		std::cout << " + sweParametersSphere->outputVariables()" << std::endl;
+		sweParametersSphere->outputVariables("    ");
+
+		/*
+		 * And we can also print them individually
+		 */
+		std::cout << " + ioDataParameters->outputVariables()" << std::endl;
+		ioDataParameters->outputVariables("    ");
 	}
 
 	return 0;

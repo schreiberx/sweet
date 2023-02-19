@@ -113,6 +113,13 @@ private:
 public:
 	bool setup(int argc, const char *const argv[])
 	{
+		if (argc == 0)
+		{
+			error.errorSet("No argument at all available!");
+			return false;
+		}
+
+		std::cout << argv[0] << std::endl;
 		_arg0 = argv[0];
 
 		/*
@@ -205,7 +212,7 @@ public:
 public:
 	bool argumentWithKeyExists(const std::string& i_key)
 	{
-		for (int i = 0; i < _arguments.size(); i++)
+		for (std::size_t i = 0; i < _arguments.size(); i++)
 		{
 			_ProgramArgument &a = _arguments[i];
 			if (a.key == i_key)
@@ -221,7 +228,7 @@ public:
 public:
 	bool checkAllArgumentsProcessed(bool i_create_error = true)
 	{
-		for (int i = 0; i < _arguments.size(); i++)
+		for (std::size_t i = 0; i < _arguments.size(); i++)
 		{
 			_ProgramArgument &a = _arguments[i];
 			if (!a.argumentParsedAndAccessed)
@@ -242,7 +249,7 @@ public:
 			bool i_no_error_if_key_is_missing = true
 	)
 	{
-		for (int i = 0; i < _arguments.size(); i++)
+		for (std::size_t i = 0; i < _arguments.size(); i++)
 		{
 			_ProgramArgument &a = _arguments[i];
 			if (a.key == i_key)
@@ -262,7 +269,6 @@ public:
 	bool checkAndAddDuplicateKeys(const std::string& i_key)
 	{
 		for (std::list<std::string>::iterator i = _keysInParsing.begin(); i != _keysInParsing.end(); i++)
-		//for (int i = 0; i < _keysInParsing.size(); i++)
 		{
 			if (i_key == *i)
 			{
@@ -273,6 +279,36 @@ public:
 
 		_keysInParsing.push_back(i_key);
 
+		return true;
+	}
+
+
+	/**
+	 * Get string value
+	 */
+public:
+	bool getArgumentValueByKey(
+			const std::string& i_key,
+			std::string &o_value,
+			bool i_no_error_if_key_is_missing = true
+	)
+	{
+		if (_errorForDuplicateKeysInParsing)
+			if (!checkAndAddDuplicateKeys(i_key))
+				return false;
+
+		_ProgramArgument *pa;
+		if (!_getFullArgumentByKey(i_key, &pa))
+		{
+			error.errorReset();
+			if (!_getFullArgumentByKey(i_key, &pa))
+			{
+				return false;
+			}
+		}
+
+		o_value = pa->value;
+		pa->argumentParsedAndAccessed = true;
 		return true;
 	}
 
@@ -321,6 +357,7 @@ public:
 
 		return true;
 	}
+
 
 	/**
 	 * Get integer value
@@ -389,7 +426,7 @@ public:
 
 		std::string val = pa->value;
 
-		for (int i = 0; i < val.length(); i++)
+		for (std::size_t i = 0; i < val.length(); i++)
 		{
 			if (val[i] >= 'A' && val[i] <= 'Z')
 				val[i] -= 'A'-'a';
@@ -471,7 +508,7 @@ public:
 	std::ostream&
 	operator<<(std::ostream &io_os, const ProgramArguments i_pa)
 	{
-		for (int i = 0; i < i_pa._arguments.size(); i++)
+		for (std::size_t i = 0; i < i_pa._arguments.size(); i++)
 		{
 			const _ProgramArgument &a = i_pa._arguments[i];
 			std::cout << "'" << a.key << "' => '" << a.value << "' (processed=" << a.argumentParsedAndAccessed << ")" << std::endl;
