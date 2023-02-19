@@ -16,7 +16,7 @@ p.runtime.paramsSDC = getSDCSetup(
     qDeltaImplicit='OPT-QMQD-0', 
     qDeltaExplicit='PIC', 
     diagQDeltaInit='BEPAR',
-    diagonal=False,
+    diagonal=True,
     initSweepType="QDELTA",
     useEndUpdate=False
 )

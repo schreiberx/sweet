@@ -106,14 +106,24 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 	
 	// Initialize irk solver for each nodes
 	timestepping_l_irk.resize(nNodes);
+	if (initialSweepType == "QDELTA") {
+		timestepping_l_irk_init.resize(nNodes);
+	}
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
 	SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
 #endif
 	for (int i = 0; i < nNodes; i++)
 	{
+		// Initialize LHS coefficients for sweeps
 		timestepping_l_irk[i] = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
 		timestepping_l_irk[i]->setup(1, dt*qMatDeltaI(i, i));
+		
+		if (initialSweepType == "QDELTA") {
+			// Initialize LHS coefficients for initial sweep with QDELTA
+			timestepping_l_irk_init[i] = new SWE_Sphere_TS_l_irk(i_simVars, i_op);
+			timestepping_l_irk_init[i]->setup(1, dt*qMatDelta0(i, i));
+		}
 	}
 
 	// Print informations ...
@@ -174,13 +184,22 @@ void SWE_Sphere_TS_ln_imex_sdc::eval_nonlinear(const SWE_VariableVector& i_u, SW
 void SWE_Sphere_TS_ln_imex_sdc::solveImplicit(
 		SWE_VariableVector& rhs,
 		double dt,
-		int iNode
+		int iNode,
+		bool initSweep
 )
 {
-	timestepping_l_irk[iNode]->solveImplicit(
-		rhs.phi, rhs.vrt, rhs.div,
-		dt
-	);
+	if (initSweep) 
+	{
+		timestepping_l_irk_init[iNode]->solveImplicit(
+			rhs.phi, rhs.vrt, rhs.div,
+			dt
+		);
+	} else {
+		timestepping_l_irk[iNode]->solveImplicit(
+			rhs.phi, rhs.vrt, rhs.div,
+			dt
+		);
+	}
 }
 
 void SWE_Sphere_TS_ln_imex_sdc::axpy(
@@ -224,7 +243,13 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 		std::cout << "SDC: UPDATING LHS COEFFICIENTS" << std::endl;
 		for (int i = 0; i < nNodes; i++)
 		{
+			// LHS coefficients for sweeps
 			timestepping_l_irk[i]->update_coefficients(i_fixed_dt*qMatDeltaI(i, i));
+
+			if (initialSweepType == "QDELTA") {
+				// LHS coefficients for initial sweep
+				timestepping_l_irk_init[i]->update_coefficients(i_fixed_dt*qMatDelta0(i, i));
+			}
 		}
 	}
 	t0 = i_simulation_timestamp;
@@ -251,11 +276,13 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 {
 	// Local convenient references
 	const Mat& q = qMat;
-	const Mat& qI = qMatDeltaI;
+	const Mat& q0 = qMatDelta0;
 	const Mat& qE = qMatDeltaE;
 
 	if (initialSweepType == "QDELTA")
 	{
+
+		std::cout << "[SDC] computing initial sweep with QDELTA" << std::endl;
 		// Loop on nodes (can be parallelized if diagonal)
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
@@ -269,15 +296,16 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 
 			if (!diagonal)
 			{
+				std::cout << "[SDC] adding non diagonal coefficients in init_sweep QDELTA" << std::endl;
 				// Add non-linear and linear terms from iteration k (already computed)
 				for (int j = 0; j < i; j++) {
 					axpy(dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
-					axpy(dt*qI(i, j), ts_linear_tendencies_k0[j], ts_state);
+					axpy(dt*q0(i, j), ts_linear_tendencies_k0[j], ts_state);
 				}
 			}
 
 			// Implicit solve with qI
-			solveImplicit(ts_state, dt*qI(i, i), i);
+			solveImplicit(ts_state, dt*q0(i, i), i, true);
 
 			double tNode = t0+dt*tau(i);
 
@@ -290,6 +318,8 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 	}
 	else if (initialSweepType == "COPY")
 	{
+
+		std::cout << "[SDC] computing initial sweep with COPY" << std::endl;
 		// Evaluate linear and non-linear with initial solution
 		eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
 		eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
@@ -320,6 +350,8 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 void SWE_Sphere_TS_ln_imex_sdc::sweep(
 		size_t k	/// iteration number
 ) {
+
+	std::cout << "[SDC] computing sweep" << std::endl;
 	// Local convenient references
 	const Mat& q = qMat;
 	const Mat& qI = qMatDeltaI;
@@ -343,6 +375,8 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 		}
 
 		if (!diagonal) {
+			std::cout << "[SDC] adding non-diagonal coefficient in sweep" << std::endl;
+
 			// Add non-linear and linear terms from iteration k+1
 			for (int j = 0; j < i; j++) {
 				axpy(dt*qE(i, j), ts_nonlinear_tendencies_k1[j], ts_state);
@@ -392,6 +426,8 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 	if (k+1 == nIter) 
 	{
 		if (useEndUpdate) {
+			std::cout << "[SDC] using end update after last sweep" << std::endl;
+
 			/*
 			* Use quadrature
 			*/
@@ -420,10 +456,11 @@ void SWE_Sphere_TS_ln_imex_sdc::setup()
 {
 	for (int i = 0; i < nNodes; i++)
 	{
-		timestepping_l_irk[i]->setup(
-			1,
-			dt*qMatDeltaI(i, i)
-		);
+		timestepping_l_irk[i]->setup(1, dt*qMatDeltaI(i, i));
+		if (initialSweepType == "QDELTA") {
+			timestepping_l_irk_init[i]->setup(1, dt*qMatDelta0(i, i));
+		}
+		
 	}
 
 	//
@@ -439,6 +476,9 @@ SWE_Sphere_TS_ln_imex_sdc::~SWE_Sphere_TS_ln_imex_sdc()
 	for (int i = 0; i < nNodes; i++)
 	{
 		delete timestepping_l_irk[i];
+		if (initialSweepType == "QDELTA") {
+			delete timestepping_l_irk_init[i];
+		}
 	}
 	
 }

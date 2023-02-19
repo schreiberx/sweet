@@ -176,9 +176,14 @@ public:
 
 
 	/*
-	 * Time-steppers for implicit solve (linear)
+	 * Time-steppers for implicit solve (linear) used during sweeps
 	 */
 	std::vector<SWE_Sphere_TS_l_irk*> timestepping_l_irk;
+
+	/*
+	 * Time-steppers for implicit solve (linear) used during eventual initial sweep
+	 */
+	std::vector<SWE_Sphere_TS_l_irk*> timestepping_l_irk_init;
 
 	/*
 	 * Time-stepper for tendencies evaluation (linear and non linear)
@@ -246,7 +251,7 @@ private:
 	 LHS is always updated, independently on the dt value
 	 WARNING : rhs variables are overwritten with u 
 	*/ 
-	void solveImplicit(SWE_VariableVector& rhs, double dt, int iNode);
+	void solveImplicit(SWE_VariableVector& rhs, double dt, int iNode, bool initSweep=false);
 
 	// Perform y <- a*x + y
 	void axpy(double a, const SWE_VariableVector& x, SWE_VariableVector& io_y);
