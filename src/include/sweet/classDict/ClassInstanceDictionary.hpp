@@ -5,8 +5,8 @@
  *      Author: martin
  */
 
-#ifndef SRC_INCLUDE_SWEET_CLASS_DICT_CLASSINSTANCEDICTIONARY_HPP_
-#define SRC_INCLUDE_SWEET_CLASS_DICT_CLASSINSTANCEDICTIONARY_HPP_
+#ifndef SRC_INCLUDE_SWEET_CLASSDICT_CLASSINSTANCEDICTIONARY_HPP_
+#define SRC_INCLUDE_SWEET_CLASSDICT_CLASSINSTANCEDICTIONARY_HPP_
 
 
 #include <list>
@@ -14,7 +14,7 @@
 #include <typeinfo>
 #include <sweet/ErrorBase.hpp>
 #include <sweet/ProgramArguments.hpp>
-#include <sweet/class_dict/ClassDictionaryInterface.hpp>
+#include "../classDict/ClassDictionaryInterface.hpp"
 
 
 /*
@@ -172,4 +172,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_CLASS_DICT_CLASSINSTANCEDICTIONARY_HPP_ */
+#endif /* SRC_INCLUDE_SWEET_CLASSDICT_CLASSINSTANCEDICTIONARY_HPP_ */

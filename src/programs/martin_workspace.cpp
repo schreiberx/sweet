@@ -2,8 +2,8 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
+#include <sweet/classDict/ClassInstanceDictionary.hpp>
 #include <iostream>
-#include <sweet/class_dict/ClassInstanceDictionary.hpp>
 #include "swe_sphere_variables/PDESWESphereParameters.hpp"
 #include "swe_sphere_variables/IODataParameters.hpp"
 
