@@ -1,4 +1,6 @@
 /*
+ * Author: Martin Schreiber <SchreiberX@gmail.com>
+ *
  * Get information about OMP parallelization
  */
 
