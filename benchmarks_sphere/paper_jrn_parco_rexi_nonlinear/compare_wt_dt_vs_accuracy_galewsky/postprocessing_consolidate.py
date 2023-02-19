@@ -3,7 +3,7 @@
 import sys
 import math
 
-from SWEET import *
+from mule import *
 from mule.plotting.Plotting import *
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *

@@ -5,7 +5,7 @@ matplotlib.use('agg')
 
 import sys
 
-from SWEET import *
+from mule import *
 p = JobGeneration()
 
 p.compile.compiler = 'intel'
