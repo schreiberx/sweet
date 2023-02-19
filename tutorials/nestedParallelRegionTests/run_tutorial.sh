@@ -3,7 +3,7 @@
 
 
 
-./benchmark_create_job_scripts.py
+./1_benchmark_create_job_scripts.py
 
 ./compile_platform_*.sh
 

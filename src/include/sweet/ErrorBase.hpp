@@ -31,15 +31,15 @@ public:
 		_errorMessage = i_errorMessage;
 	}
 
-	bool errorForward(ErrorBase &i_errorBase)
+	bool errorForwardFrom(ErrorBase &i_error)
 	{
-		if (!i_errorBase._hasError)
+		if (!i_error._hasError)
 			return false;
 
-		_hasError = i_errorBase._hasError;
-		_errorMessage = i_errorBase._errorMessage;
+		_hasError = i_error._hasError;
+		_errorMessage = i_error._errorMessage;
 
-		i_errorBase.errorReset();
+		i_error.errorReset();
 
 		return true;
 	}

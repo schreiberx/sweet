@@ -106,6 +106,13 @@ public:
 	template<typename T>
 	T* getClassInstance()
 	{
+		if (!_registerationOfClassInstanceFinished)
+		{
+			const std::string& tname = typeid(T).name();
+			error.errorSet("Registration of class instances needs to be finished first (type '"+tname+"')");
+			return nullptr;
+		}
+
 		if (_getClassInstanceFinished)
 		{
 			const std::string& tname = typeid(T).name();
@@ -143,7 +150,7 @@ public:
 		{
 			if (!(*i)->processProgramArguments(i_pa))
 			{
-				error.errorForward((*i)->getError());
+				error.errorForwardFrom((*i)->getError());
 				return false;
 			}
 		}

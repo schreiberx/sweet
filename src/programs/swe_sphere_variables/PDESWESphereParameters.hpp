@@ -81,25 +81,25 @@ public:
 	{
 		if (!i_pa.getArgumentValueBy2Keys("pde-sphere-radius", "a", sphere_radius))
 		{
-			if (error.errorForward(i_pa.error))
+			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueBy2Keys("pde-use-fsphere", "F", sphere_use_fsphere))
 		{
-			if (error.errorForward(i_pa.error))
+			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("pde-sphere-f0", sphere_fsphere_f0))
 		{
-			if (error.errorForward(i_pa.error))
+			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("pde-coriolis-omega", sphere_coriolis_omega))
 		{
-			if (error.errorForward(i_pa.error))
+			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 

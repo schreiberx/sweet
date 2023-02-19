@@ -36,7 +36,7 @@ namespace sweet
 class ProgramArguments
 {
 public:
-	ErrorBase error;
+	sweet::ErrorBase error;
 
 private:
 	class _ProgramArgument

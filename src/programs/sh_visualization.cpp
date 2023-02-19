@@ -122,17 +122,7 @@ public:
 		}
 
 
-#if 0
-		SphereData_Spectral &a = prog_phi_pert;
-
-		a.spectral_set(mode_n, mode_m, a.spectral_get(mode_n, mode_m)+std::complex<double>(1, 0));
-#elif 0
-		SphereData_Spectral a(sphereDataConfig);
-		a.spectral_set_zero();
-		a.spectral_set(mode_n, mode_m, 1);
-#else
 		SphereData_Spectral a = *prog_phi_pert;
-#endif
 
 		SphereData_DebugContainer::append(a, "a");
 
