@@ -46,7 +46,7 @@
 #endif
 
 #ifndef SWEET_XBRAID
-#	define SWEET_XVRAID 1
+#	define SWEET_XBRAID 1
 #endif
 
 #if SWEET_PARAREAL
