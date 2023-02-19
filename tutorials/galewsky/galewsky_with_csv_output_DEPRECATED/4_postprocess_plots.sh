@@ -1,7 +1,7 @@
 #! /bin/bash
 
 FIELD=vrt
-EXT=sweet
+EXT=csv
 for DIR in job_*/; do
 	echo "*****************************************************************************"
 	echo "* ${DIR}"
