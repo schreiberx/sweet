@@ -15,7 +15,7 @@
 
 #include <sweet/ProgramArguments.hpp>
 #include <sweet/ErrorBase.hpp>
-#include <sweet/class_dict/ClassDictionaryInterface.hpp>
+#include "../../include/sweet/classDict/ClassDictionaryInterface.hpp"
 
 /**
  * Parameters related to input and output data
