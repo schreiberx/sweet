@@ -4,7 +4,7 @@ import sys
 import math
 import copy
 
-from SWEET import *
+from mule import *
 from mule.plotting.Plotting import *
 from mule.postprocessing.JobsData import *
 from mule.postprocessing.JobsDataConsolidate import *

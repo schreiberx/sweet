@@ -5,7 +5,7 @@ import sys
 import stat
 import math
 
-from SWEET import *
+from mule import *
 p = JobGeneration()
 
 #

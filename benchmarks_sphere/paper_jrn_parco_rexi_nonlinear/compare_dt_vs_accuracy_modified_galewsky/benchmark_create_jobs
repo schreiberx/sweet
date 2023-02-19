@@ -8,7 +8,7 @@ import numpy as np
 from itertools import product
 
 
-from SWEET import *
+from mule import *
 p = JobGeneration()
 
 verbose = False

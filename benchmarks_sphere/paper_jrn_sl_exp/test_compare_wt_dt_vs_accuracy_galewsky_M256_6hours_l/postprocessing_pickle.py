@@ -5,5 +5,5 @@ if 1:
     p = pickle_SphereDataSpectralDiff()
 
 else:
-    from mule.postprocessing.pickle_SphereDataPhysicalDiff import *
+    from mule.postprocessing.pickle_SphereDataPhysicalDiff  # TODO : correct import import *
     p = pickle_SphereDataPhysicalDiff()
