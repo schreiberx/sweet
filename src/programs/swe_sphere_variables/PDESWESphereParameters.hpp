@@ -9,8 +9,8 @@
 #define SRC_PROGRAMS_SWE_SPHERE_VARIABLES_PDESWESPHEREPARAMETERS_HPP_
 
 #include <sweet/ProgramArguments.hpp>
-#include <sweet/variables/VariablesClassInterface.hpp>
 #include <sweet/ErrorBase.hpp>
+#include <sweet/class_dict/ClassDictionaryInterface.hpp>
 #include "../swe_common/PDESWEParametersCommon.hpp"
 
 
@@ -19,7 +19,7 @@
  */
 class PDESWEParametersSphere	:
 	public PDESWEParametersCommon,
-	public VariablesClassDictionaryInterface
+	public ClassDictionaryInterface
 {
 public:
 

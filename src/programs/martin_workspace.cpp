@@ -2,161 +2,12 @@
  * Author: Martin Schreiber <SchreiberX@gmail.com>
  */
 
-
-#include <list>
-#include <memory>
-#include <typeinfo>
-#include <sweet/SWEETError.hpp>
-#include <sweet/ProgramArguments.hpp>
-#include <sweet/variables/VariablesClassInterface.hpp>
-class VariablesClassDictionary
-{
-public:
-	sweet::ErrorBase error;
-
-private:
-	std::list<VariablesClassDictionaryInterface*> _list;
-
-	bool registerationClosed;
-	bool getVariableClassClosed;
-
-
-public:
-	void closeRegistration()
-	{
-		registerationClosed = true;
-	}
-
-public:
-	void closeGetVariableClass()
-	{
-		getVariableClassClosed = true;
-	}
-
-
-public:
-	VariablesClassDictionary()	:
-		registerationClosed(false),
-		getVariableClassClosed(false)
-	{
-
-	}
-public:
-	~VariablesClassDictionary()
-	{
-		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
-			delete *i;
-		}
-	}
-
-public:
-	template<typename T>
-	bool registerParameterClass()
-	{
-		if (registerationClosed)
-		{
-			const std::string& tname = typeid(T).name();
-			error.errorSet("Registration already closed (type '"+tname+"')");
-			return false;
-		}
-
-		if (parameterClassExists<T>())
-		{
-			const std::string& tname = typeid(T).name();
-			error.errorSet("Class of type '"+tname+"' already exists");
-			return false;
-		}
-
-		T* newClass = new T();
-		_list.push_back(newClass);
-		return true;
-	}
-
-public:
-	template<typename T>
-	bool parameterClassExists()
-	{
-		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
-			// check whether generic interface can be casted to type T
-			T* derived = dynamic_cast<T*>(*i);
-
-			if (derived != nullptr)
-				return true;
-		}
-
-		return false;
-	}
-
-public:
-	template<typename T>
-	T* getVariableClassClass()
-	{
-		if (getVariableClassClosed)
-		{
-			const std::string& tname = typeid(T).name();
-			error.errorSet("Getting a variable class already closed (type '"+tname+"')");
-			return nullptr;
-		}
-
-		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
-			// check whether generic interface can be casted to type T
-			T* derived = dynamic_cast<T*>(*i);
-
-			if (derived != nullptr)
-				return derived;
-		}
-
-		const std::string& tname = typeid(T).name();
-		error.errorSet("Type '"+tname+"' not found in dictionary");
-		return nullptr;
-	}
-
-public:
-	void outputProgramArguments(std::string i_prefix = "")
-	{
-		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
-			(*i)->outputProgramArguments(i_prefix);
-		}
-	}
-
-public:
-	bool processProgramArguments(sweet::ProgramArguments &i_pa)
-	{
-		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
-			if (!(*i)->processProgramArguments(i_pa))
-			{
-				error.errorForward((*i)->getError());
-				return false;
-			}
-		}
-		return true;
-	}
-
-public:
-	void outputVariables(std::string i_prefix = "")
-	{
-		for (auto i = _list.begin(); i != _list.end(); i++)
-		{
-			(*i)->outputVariables(i_prefix);
-		}
-	}
-
-};
-
-
-
 #include <iostream>
+#include <sweet/class_dict/ClassInstanceDictionary.hpp>
 #include "swe_sphere_variables/PDESWESphereParameters.hpp"
 #include "swe_sphere_variables/IODataParameters.hpp"
 
-
-int
-main(int i_argc, char *i_argv[])
+int main(int i_argc, char *i_argv[])
 {
 	/*
 	 * We start by setting up the class to parse the program arguments
@@ -179,23 +30,41 @@ main(int i_argc, char *i_argv[])
 		 * later on in the SWEET programs.
 		 */
 		std::cout << " + VariablesClassDictionary()" << std::endl;
-		VariablesClassDictionary varClassDict;
+		ClassInstanceDictionary varClassDict;
 
 
 		/*
 		 * Register new classes
 		 */
 		std::cout << "   + registerParameterClass<PDESWEParametersSphere>()" << std::endl;
-		varClassDict.registerParameterClass<PDESWEParametersSphere>();
-		varClassDict.registerParameterClass<IODataParameters>();
+		varClassDict.registerClassInstance<PDESWEParametersSphere>();
+		varClassDict.registerClassInstance<IODataParameters>();
 
 		/*
 		 * Now we close the registration
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.closeRegistration();
+		varClassDict.registrationOfClassInstancesFinished();
 
+
+		{
+			/*
+			 * If we now try to register a new class, this should raise an error!
+			 */
+			bool retval = varClassDict.registerClassInstance<IODataParameters>();
+
+			if (!retval)
+			{
+				// Just get the error (deleting it) and continue
+				varClassDict.error.errorGet();
+			}
+			else
+			{
+				std::cerr << "varClassDict.registerClassInstance<> should have raised an error!" << std::endl;
+				return EXIT_FAILURE;
+			}
+		}
 
 		/*
 		 * After registering all classes, we can check whether we should output the help information
@@ -206,6 +75,8 @@ main(int i_argc, char *i_argv[])
 			return EXIT_FAILURE;
 		}
 
+
+
 		/*
 		 * Now its time to process all program arguments with all registered classes
 		 */
@@ -214,7 +85,7 @@ main(int i_argc, char *i_argv[])
 		/*
 		 * Get handler to new class PDESWEParametersSphere
 		 */
-		PDESWEParametersSphere *sweParametersSphere = varClassDict.getVariableClassClass<PDESWEParametersSphere>();
+		PDESWEParametersSphere *sweParametersSphere = varClassDict.getClassInstance<PDESWEParametersSphere>();
 		if (sweParametersSphere == nullptr)
 		{
 			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
@@ -224,7 +95,7 @@ main(int i_argc, char *i_argv[])
 		/*
 		 * Get handler to new class PDESWEParametersSphere
 		 */
-		IODataParameters *ioDataParameters = varClassDict.getVariableClassClass<IODataParameters>();
+		IODataParameters *ioDataParameters = varClassDict.getClassInstance<IODataParameters>();
 		if (ioDataParameters == nullptr)
 		{
 			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
@@ -236,11 +107,29 @@ main(int i_argc, char *i_argv[])
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.closeGetVariableClass();
+		varClassDict.getClassInstancesFinished();
 
+
+		{
+			/*
+			 * If we now access a class instance, this should raise an error!
+			 */
+
+			IODataParameters *ioDataParameters = varClassDict.getClassInstance<IODataParameters>();
+			if (ioDataParameters == nullptr)
+			{
+				// Just get the error (deleting it) and continue
+				varClassDict.error.errorGet();
+			}
+			else
+			{
+				std::cerr << "This should have raised an error!" << std::endl;
+				return EXIT_FAILURE;
+			}
+		}
 
 		/*
-		 * Now its time to process all program arguments with all registered classes
+		 * Now its time to output all program arguments of all registered classes
 		 */
 		std::cout << " + varClassDict.outputVariables()" << std::endl;
 		varClassDict.outputVariables("    ");
@@ -252,11 +141,14 @@ main(int i_argc, char *i_argv[])
 		std::cout << " + sweParametersSphere->outputVariables()" << std::endl;
 		sweParametersSphere->outputVariables("    ");
 
-		/*
-		 * And we can also print them individually
-		 */
 		std::cout << " + ioDataParameters->outputVariables()" << std::endl;
 		ioDataParameters->outputVariables("    ");
+
+		/*
+		 * Of course, we can also access them directly
+		 */
+		std::cout << " + direct access:" << std::endl;
+		std::cout << "   h0: " << sweParametersSphere->h0 << std::endl;
 	}
 
 	return 0;

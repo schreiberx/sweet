@@ -14,14 +14,14 @@
 #include <limits>
 
 #include <sweet/ProgramArguments.hpp>
-#include <sweet/variables/VariablesClassInterface.hpp>
 #include <sweet/ErrorBase.hpp>
+#include <sweet/class_dict/ClassDictionaryInterface.hpp>
 
 /**
  * Parameters related to input and output data
  */
 struct IODataParameters	:
-	public VariablesClassDictionaryInterface
+	public ClassDictionaryInterface
 {
 public:
 	sweet::ErrorBase error;
