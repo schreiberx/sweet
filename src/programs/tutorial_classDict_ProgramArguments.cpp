@@ -25,6 +25,15 @@ int main(int i_argc, char *i_argv[])
 	 */
 	PDESWEParametersSphere sweParametersSphere;
 
+	/*
+	 * After registering all classes, we can check whether we should output the help information
+	 */
+	if (pa.argumentWithKeyExists("-h") || pa.argumentWithKeyExists("--help"))
+	{
+		sweParametersSphere.outputProgramArguments();
+		return EXIT_FAILURE;
+	}
+
 	sweParametersSphere.processProgramArguments(pa);
 
 	std::cout << " + sweParametersSphere->outputVariables()" << std::endl;

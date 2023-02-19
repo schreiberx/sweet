@@ -79,25 +79,25 @@ public:
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		if (!i_pa.getArgumentValueBy2Keys("pde-sphere-radius", "a", sphere_radius))
+		if (!i_pa.getArgumentValueBy2Keys("--pde-sphere-radius", "-a", sphere_radius))
 		{
 			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 
-		if (!i_pa.getArgumentValueBy2Keys("pde-use-fsphere", "F", sphere_use_fsphere))
+		if (!i_pa.getArgumentValueBy2Keys("--pde-use-fsphere", "-F", sphere_use_fsphere))
 		{
 			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 
-		if (!i_pa.getArgumentValueByKey("pde-sphere-f0", sphere_fsphere_f0))
+		if (!i_pa.getArgumentValueByKey("--pde-sphere-f0", sphere_fsphere_f0))
 		{
 			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 
-		if (!i_pa.getArgumentValueByKey("pde-coriolis-omega", sphere_coriolis_omega))
+		if (!i_pa.getArgumentValueByKey("--pde-coriolis-omega", sphere_coriolis_omega))
 		{
 			if (error.errorForwardFrom(i_pa.error))
 				return false;

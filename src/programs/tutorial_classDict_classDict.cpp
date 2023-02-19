@@ -68,7 +68,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * After registering all classes, we can check whether we should output the help information
 		 */
-		if (pa.argumentWithKeyExists("h") || pa.argumentWithKeyExists("help"))
+		if (pa.argumentWithKeyExists("-h") || pa.argumentWithKeyExists("--help"))
 		{
 			varClassDict.outputProgramArguments();
 			return EXIT_FAILURE;

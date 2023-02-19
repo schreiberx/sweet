@@ -157,13 +157,13 @@ public:
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		if (!i_pa.getArgumentValueByKey("output-file-name", output_file_name))
+		if (!i_pa.getArgumentValueByKey("--output-file-name", output_file_name))
 		{
 			if (error.errorForwardFrom(i_pa.error))
 				return false;
 		}
 
-		if (!i_pa.getArgumentValueByKey("output-file-mode", output_file_mode))
+		if (!i_pa.getArgumentValueByKey("--output-file-mode", output_file_mode))
 		{
 			if (error.errorForwardFrom(i_pa.error))
 				return false;

@@ -77,16 +77,20 @@ private:
 
 	bool _errorForDuplicateKeysInParsing;
 
+	bool _stripKeyDashes;
+
 	std::list<std::string> _keysInParsing;
 
 public:
 
 	ProgramArguments(
 			bool i_errorForDoubleParsing = true,	///< Trigger an error if an argument is parsed twice
-			bool i_errorForDuplicateKeysInParsing = true		///< Trigger an error if there are duplicate keys
+			bool i_errorForDuplicateKeysInParsing = true,		///< Trigger an error if there are duplicate keys
+			bool i_stripKeyDashes = false	///< Strip dashes at the keys (e.g., convert "--help" to "help")
 	)	:
 		_errorForDoubleParsing(i_errorForDoubleParsing),
-		_errorForDuplicateKeysInParsing(i_errorForDuplicateKeysInParsing)
+		_errorForDuplicateKeysInParsing(i_errorForDuplicateKeysInParsing),
+		_stripKeyDashes(i_stripKeyDashes)
 	{
 	}
 
@@ -137,7 +141,7 @@ public:
 			if (state == 0)
 			{
 				/*
-				 * Check for single or double dash
+				 * Basic sanity check
 				 */
 
 				if (arg.size() <= 1)
@@ -148,7 +152,11 @@ public:
 					return false;
 				}
 
+				/*
+				 * Check for single or double dash
+				 */
 				int num_dashes = 0;
+
 				if (arg[0] == '-')
 				{
 					if (arg[1] == '-')
@@ -168,6 +176,9 @@ public:
 					error.errorSet(ss.str());
 					return false;
 				}
+
+				if (!_stripKeyDashes)
+					num_dashes = 0;
 
 				/*
 				 * Search for "=" separator
