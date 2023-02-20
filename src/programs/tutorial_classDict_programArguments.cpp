@@ -3,7 +3,8 @@
  */
 
 #include <iostream>
-#include <sweet/class_dict/ClassInstanceDictionary.hpp>
+
+#include <sweet/classDict/ClassInstanceDictionary.hpp>
 #include "swe_sphere_variables/PDESWESphereParameters.hpp"
 #include "swe_sphere_variables/IODataParameters.hpp"
 
