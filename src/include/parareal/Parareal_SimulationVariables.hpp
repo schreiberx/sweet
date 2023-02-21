@@ -157,7 +157,7 @@ public:
 		if (max_simulation_time <= 0)
 			return error.set("You need to use --parareal-max-simulation-time with parareal");
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

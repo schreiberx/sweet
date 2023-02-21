@@ -126,7 +126,7 @@ public:
 		i_pa.getArgumentValueByKey("-g", gravitation);
 		i_pa.getArgumentValueByKey("-H", h0);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

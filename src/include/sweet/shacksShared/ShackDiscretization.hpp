@@ -167,7 +167,7 @@ std::cout << "0" << std::endl;
 
 
 		if (i_pa.error.exists())
-			return error.forwardFromWithPositiveReturn(i_pa.error);
+			return error.forwardWithPositiveReturn(i_pa.error);
 
 
 #pragma warning "TODO: Put this check somewhere else"

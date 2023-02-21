@@ -86,7 +86,7 @@ public:
 		return false;
 	}
 
-	bool forwardFrom(ErrorBase &i_error)
+	bool forward(ErrorBase &i_error)
 	{
 		if (!i_error._hasError)
 			return false;
@@ -104,7 +104,7 @@ public:
 	 *
 	 * \return **true** if there's no error
 	 */
-	bool forwardFromWithPositiveReturn(ErrorBase &i_error)
+	bool forwardWithPositiveReturn(ErrorBase &i_error)
 	{
 		if (!i_error._hasError)
 			return true;

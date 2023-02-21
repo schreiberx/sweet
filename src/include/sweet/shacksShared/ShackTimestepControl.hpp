@@ -83,7 +83,7 @@ public:
 		current_simulation_time = 0;
 		current_timestep_size = setup_timestep_size;
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

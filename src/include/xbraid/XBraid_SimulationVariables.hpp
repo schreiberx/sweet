@@ -261,7 +261,7 @@ struct XBraid_SimulationVariables	:
 		i_pa.getArgumentValueByKey("--xbraid-store-iterations", xbraid_store_iterations);
 		i_pa.getArgumentValueByKey("--xbraid-spatial-coarsening", xbraid_spatial_coarsening);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

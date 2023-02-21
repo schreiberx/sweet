@@ -117,12 +117,12 @@ public:
 
 
 		if (error.exists())
-			return error.forwardFromWithPositiveReturn(i_pa.error);
+			return error.forwardWithPositiveReturn(i_pa.error);
 
 		if (random_seed >= 0)
 			srandom(random_seed);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

@@ -93,10 +93,9 @@ public:
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		i_pa.getArgumentValueByKey("--output-file-mode", output_file_name);
 		i_pa.getArgumentValueByKey("--output-file-mode", output_file_mode);
+		i_pa.getArgumentValueBy2Keys("--output-file-name", "-O", output_file_name);
 		i_pa.getArgumentValueByKey("-d", output_floating_point_precision);
-		i_pa.getArgumentValueByKey("-O", output_file_name);
 		i_pa.getArgumentValueByKey("-o", output_each_sim_seconds);
 
 		std::string tmp;
@@ -104,7 +103,7 @@ public:
 			setup_initial_condition_filenames(optarg);
 
 		if (i_pa.error.exists())
-			return error.forwardFromWithPositiveReturn(i_pa.error);
+			return error.forwardWithPositiveReturn(i_pa.error);
 
 		if (output_file_mode == "default")
 		{

@@ -65,25 +65,25 @@ public:
 	{
 		if (!i_pa.getArgumentValueBy3Keys("pde-h0", "H", "h0", h0))
 		{
-			if (getError().forwardFrom(i_pa.error))
+			if (getError().forward(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueBy3Keys("pde-viscosity", "pde-mu", "mu", viscosity))
 		{
-			if (getError().forwardFrom(i_pa.error))
+			if (getError().forward(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("pde-viscosity-order", viscosity_order))
 		{
-			if (getError().forwardFrom(i_pa.error))
+			if (getError().forward(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueBy3Keys("pde-g", "g", "gravitation", gravitation))
 		{
-			if (getError().forwardFrom(i_pa.error))
+			if (getError().forward(i_pa.error))
 				return false;
 		}
 

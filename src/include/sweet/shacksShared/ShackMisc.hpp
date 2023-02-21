@@ -85,13 +85,21 @@ public:
 		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
 		i_pa.getArgumentValueByKey("--use-nonlinear-only-visc", use_nonlinear_only_visc);
-		i_pa.getArgumentValueByKey("--reuse-plans", *(int*)&reuse_spectral_transformation_plans);
+
+		std::string tmp;
+		if (i_pa.getArgumentValueByKey("--reuse-plans", tmp))
+		{
+			TransformationPlans tp;
+			tp.getEnumFromString(tmp, reuse_spectral_transformation_plans);
+			if (tp.error.exists())
+				return error.forwardWithPositiveReturn(tp.error);
+		}
 		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
 		i_pa.getArgumentValueByKey("--comma-separated-tags", comma_separated_tags);
 		i_pa.getArgumentValueByKey("-G", gui_enabled);
 		i_pa.getArgumentValueByKey("-v", verbosity);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(
@@ -106,7 +114,10 @@ public:
 		std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 		std::cout << " + vis_id: " << vis_id << std::endl;
 		std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
-		std::cout << " + reuse_spectral_transformation_plans: " << TransformationPlans::getStringFromEnum(reuse_spectral_transformation_plans) << std::endl;
+		std::string tmp;
+		TransformationPlans tp;
+		tp.getStringFromEnum(reuse_spectral_transformation_plans, tmp);
+		std::cout << " + reuse_spectral_transformation_plans: " << tmp << std::endl;
 		std::cout << std::endl;
 		std::cout << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 		std::cout << " + comma_separated_tags: " << comma_separated_tags << std::endl;

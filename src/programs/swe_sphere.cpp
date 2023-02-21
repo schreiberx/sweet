@@ -1041,7 +1041,7 @@ int main_real(int i_argc, char *i_argv[])
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 #if SWEET_PARAREAL
-		simVars.parareal.printOptions();
+		simVars.parareal.printProgramArguments();
 #endif
 		return -1;
 	}

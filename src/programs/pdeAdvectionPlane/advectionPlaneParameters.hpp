@@ -163,13 +163,13 @@ public:
 	{
 		if (!i_pa.getArgumentValueByKey("--output-file-name", output_file_name))
 		{
-			if (error.forwardFrom(i_pa.error))
+			if (error.forward(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("--output-file-mode", output_file_mode))
 		{
-			if (error.forwardFrom(i_pa.error))
+			if (error.forward(i_pa.error))
 				return false;
 		}
 

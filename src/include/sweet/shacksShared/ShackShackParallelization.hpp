@@ -36,7 +36,7 @@ public:
 	{
 		i_pa.getArgumentValueByKey("--num-threads-space", num_threads_space);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

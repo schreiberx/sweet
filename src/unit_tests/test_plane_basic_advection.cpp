@@ -75,7 +75,7 @@ public:
 		i_pa.getArgumentValueByKey("--staggered-use-analytical-solution", staggered_use_analytical_solution);
 		i_pa.getArgumentValueByKey("--test-mode", test_mode);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

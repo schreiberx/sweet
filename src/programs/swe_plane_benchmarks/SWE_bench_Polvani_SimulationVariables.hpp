@@ -39,7 +39,7 @@ struct SWEPolvani_SimulationVariables	:
 		i_pa.getArgumentValueByKey("--polvani-rossby", r);
 		i_pa.getArgumentValueByKey("--polvani-froude", f);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(

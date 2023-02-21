@@ -46,7 +46,7 @@ public:
 		i_pa.getArgumentValueByKey("--advection-x", advection_velocity[0]);
 		i_pa.getArgumentValueByKey("--advection-y", advection_velocity[1]);
 
-		return error.forwardFrom(i_pa.error);
+		return error.forward(i_pa.error);
 	}
 
 	void printProgramArguments(const std::string& i_prefix = "")
@@ -167,7 +167,7 @@ public:
 		 */
 		if (!programArguments.setup(argc, argv))
 		{
-			error.forwardFrom(programArguments.error);
+			error.forward(programArguments.error);
 			return false;
 		}
 
@@ -186,7 +186,7 @@ public:
 
 		if (classDict.error.exists())
 		{
-			error.forwardFrom(classDict.error);
+			error.forward(classDict.error);
 			return false;
 		}
 
@@ -203,7 +203,7 @@ public:
 
 		if (classDict.error.exists())
 		{
-			error.forwardFrom(classDict.error);
+			error.forward(classDict.error);
 			return false;
 		}
 
@@ -219,13 +219,13 @@ public:
 
 		if (!classDict.processProgramArguments(programArguments))
 		{
-			error.forwardFrom(programArguments.error);
+			error.forward(programArguments.error);
 			return false;
 		}
 
 		if (!programArguments.checkAllArgumentsProcessed())
 		{
-			error.forwardFrom(programArguments.error);
+			error.forward(programArguments.error);
 			return false;
 		}
 

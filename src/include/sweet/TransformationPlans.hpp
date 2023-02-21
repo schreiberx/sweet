@@ -9,6 +9,7 @@
 #define INCLUDE_SWEET_TRANSFORMATIONPLANS_HPP_
 
 #include <string>
+#include <sweet/ErrorBase.hpp>
 
 
 /**
@@ -20,6 +21,8 @@
 class TransformationPlans
 {
 public:
+	sweet::ErrorBase error;
+
 	enum TRANSFORMATION_PLAN_CACHE
 	{
 		QUICK = 1 << 1,			// quickly generate plans without caching. This is the default option.
@@ -31,50 +34,67 @@ public:
 	};
 
 
-	static
-	TRANSFORMATION_PLAN_CACHE getEnumFromString(const std::string &i_value)
+	bool getEnumFromString(const std::string &i_value, TRANSFORMATION_PLAN_CACHE& o_plan_cache)
 	{
 		if (i_value == "quick" || i_value == "-1")
-			return QUICK;
-
+		{
+			o_plan_cache = QUICK;
+			return true;
+		}
 		else if (i_value == "save" || i_value == "0")
-			return TransformationPlans::SAVE;
-
+		{
+			o_plan_cache = TransformationPlans::SAVE;
+			return true;
+		}
 		else if (i_value == "load" || i_value == "1")
-			return TransformationPlans::LOAD;
-
+		{
+			o_plan_cache = TransformationPlans::LOAD;
+			return true;
+		}
 		else if (i_value == "require_load" || i_value == "2")
-			return TransformationPlans::REQUIRE_LOAD;
-
+		{
+			o_plan_cache = TransformationPlans::REQUIRE_LOAD;
+			return true;
+		}
 		else if (i_value == "load_save")
-			return (TRANSFORMATION_PLAN_CACHE)(TransformationPlans::LOAD | TransformationPlans::SAVE);
+		{
+			o_plan_cache = (TRANSFORMATION_PLAN_CACHE)(TransformationPlans::LOAD | TransformationPlans::SAVE);
+			return true;
+		}
 
-		else
-			throw std::runtime_error(std::string("Unknown option for reuse_spectral_transformation_plans '")+i_value+"'");
+		return error.set("Unknown option for reuse_spectral_transformation_plans '"+i_value+"'");
 	}
 
 
-
-	static
-	std::string getStringFromEnum(TRANSFORMATION_PLAN_CACHE i_enum)
+	bool getStringFromEnum(TRANSFORMATION_PLAN_CACHE i_enum, std::string& o_plan_cache)
 	{
 		if (i_enum == TransformationPlans::QUICK)
-			return "quick";
-
+		{
+			o_plan_cache = "quick";
+			return true;
+		}
 		if (i_enum == TransformationPlans::LOAD)
-			return "load";
-
+		{
+			o_plan_cache = "load";
+			return true;
+		}
 		if (i_enum == TransformationPlans::SAVE)
-			return "save";
-
+		{
+			o_plan_cache = "save";
+			return true;
+		}
 		if (i_enum == (TransformationPlans::LOAD | TransformationPlans::SAVE))
-			return "load_save";
-
+		{
+			o_plan_cache = "load_save";
+			return true;
+		}
 		if (i_enum == TransformationPlans::REQUIRE_LOAD)
-			return "require_load";
+		{
+			o_plan_cache = "require_load";
+			return true;
+		}
 
-
-		throw std::runtime_error(std::string("Unknown enum for reuse_spectral_transformation_plans"));
+		return error.set("Unknown enum for reuse_spectral_transformation_plans");
 	}
 };
 

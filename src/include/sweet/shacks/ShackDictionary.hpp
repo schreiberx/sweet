@@ -173,7 +173,7 @@ public:
 		{
 			if (!((*i)->processProgramArguments(i_pa)))
 			{
-				error.forwardFrom((*i)->error);
+				error.forward((*i)->error);
 				return false;
 			}
 		}

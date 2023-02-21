@@ -196,7 +196,7 @@ public:
 		if (i_pa.getArgumentValueByKey("--libpfasst-u-fields", tmp))
 			_set_hyperviscosity_fields(tmp);
 
-		return error.forwardFromWithPositiveReturn(i_pa.error);
+		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
 	virtual void printClass(
