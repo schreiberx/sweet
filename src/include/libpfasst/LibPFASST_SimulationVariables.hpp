@@ -116,60 +116,6 @@ private:
     }
         
 public:
-    void outputConfig()
-    {
-    	printClass();
-    }
-
-    void printOptions()
-    {
-    	printProgramArguments();
-    }
-
-    void setup_longOptionList(
-            struct option io_long_options[],		///< string and meta information for long options
-            int &io_next_free_program_option,	///< number of free options, has to be increased for each new option
-            int i_max_options					///< maximum number of options
-    )
-    {
-        io_long_options[io_next_free_program_option] = {"libpfasst-nlevels", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-niters", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-nsweeps", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-nnodes", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-nodes-type", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-coarsening-multiplier", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-use-rk-stepper", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-u2", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-u4", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-u6", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-u8", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-
-        io_long_options[io_next_free_program_option] = {"libpfasst-u-fields", required_argument, 0, 256+io_next_free_program_option};
-        io_next_free_program_option++;
-    }
-
-
     /**
      * @brief finalize hyperviscosity values using loaded LibPFASST parameters
      * 
@@ -212,35 +158,6 @@ public:
             StringSplit::split_n_ints(nsweeps_str, nsweeps, delimiter);
         }
     }
-
-    /**
-     * Callback method to setup the values for the option with given index.
-     *
-     * \return Number of processed options or 0 in case of processed arguments
-     */
-    int setup_longOptionValue(
-            int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
-            const char *i_value		///< Value in string format
-    )
-    {
-        switch(i_option_index)
-        {
-            case 0:	 nlevels                 = atoi(optarg); return -1;
-            case 1:	 niters                  = atoi(optarg); return -1;
-            case 2:  nsweeps_str             = optarg; return -1;
-            case 3:	 nnodes                  = atoi(optarg); return -1;
-            case 4:	 nodes_type              = optarg; 	     return -1;
-            case 5:	 coarsening_multiplier   = atof(optarg); return -1;
-            case 6:  use_rk_stepper          = atoi(optarg); return -1;
-            case 7:  hyperviscosity_2_str    = optarg; return -1;
-            case 8:  hyperviscosity_4_str    = optarg; return -1;
-            case 9:  hyperviscosity_6_str    = optarg; return -1;
-            case 10: hyperviscosity_8_str    = optarg; return -1;
-            case 11: _set_hyperviscosity_fields(optarg); return -1;
-        }
-        return 12;
-    }
-
 
 	void printProgramArguments(const std::string& i_prefix = "")
 	{

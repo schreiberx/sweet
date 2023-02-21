@@ -81,49 +81,6 @@ public:
 		}
 	}
 
-	void outputConfig()
-	{
-		printClass();
-	}
-
-
-
-	void setup_longOptionsList(
-			struct option *long_options,
-			int &next_free_program_option
-	)
-	{
-		long_options[next_free_program_option] = {"output-file-name", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-
-		long_options[next_free_program_option] = {"output-file-mode", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-	}
-
-	void outputProgParams()
-	{
-		printProgramArguments();
-	}
-
-	int setup_longOptionValue(
-			int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
-			const char *i_value		///< Value in string format
-	)
-	{
-		switch(i_option_index)
-		{
-		case 0:
-			output_file_name = i_value;
-			return -1;
-
-		case 1:
-			output_file_mode = i_value;
-			return -1;
-		}
-
-		return 2;
-	}
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;

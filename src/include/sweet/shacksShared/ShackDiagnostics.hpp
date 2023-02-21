@@ -43,11 +43,6 @@ public:
 	double ref_total_energy = -1;
 	double ref_total_potential_enstrophy = -1;
 
-	void outputConfig()
-	{
-		printClass();
-	}
-
 	void backup_reference()
 	{
 		ref_total_mass = total_mass;

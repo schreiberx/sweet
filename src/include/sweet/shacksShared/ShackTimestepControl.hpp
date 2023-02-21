@@ -48,52 +48,6 @@ public:
 	double max_wallclock_time = -1;
 
 
-	void outputConfig()
-	{
-		printClass();
-	}
-
-
-	void setup_longOptionsList(
-			struct option *long_options,
-			int &next_free_program_option
-	)
-	{
-		long_options[next_free_program_option] = {"dt", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-
-		long_options[next_free_program_option] = {"max-wallclock-time", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-	}
-
-
-
-	/*
-	 * This method is called to parse a particular
-	 * long option related to some ID.
-	 *
-	 * \return: -1 if the option has been processed
-	 */
-	int setup_longOptionValue(
-			int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
-			const char *i_value		///< Value in string format
-	)
-	{
-		switch(i_option_index)
-		{
-		case 0:
-			current_timestep_size = atof(i_value);
-			setup_timestep_size = current_timestep_size;
-			return -1;
-
-		case 1:
-			max_wallclock_time = atof(i_value);
-			return -1;
-		}
-
-		return 2;
-	}
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << "" << std::endl;

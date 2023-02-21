@@ -55,55 +55,6 @@ public:
 	sweet::Dict::int64 useEndUpdate=0;
 
 
-	void outputProgParams()
-	{
-		printProgramArguments();
-	}
-
-
-	void outputConfig()
-	{
-		printClass();
-	}
-
-
-	void setup_longOptionsList(
-			struct option *long_options,
-			int &next_free_program_option
-	)
-	{
-		long_options[next_free_program_option] = {"sdc-file", optional_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-	}
-
-
-	int setup_longOptionValue(
-			int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
-			const char *i_value		///< Value in string format
-	)
-	{
-		switch(i_option_index)
-		{
-		case 0:
-			fileName = i_value;
-			sweet::Dict params(fileName);
-			params.get("nodes", nodes);
-			nNodes = nodes.size();
-			params.get("weights", weights);
-			params.get("qMatrix", qMatrix);
-			params.get("qDeltaI", qDeltaI);
-			params.get("qDeltaE", qDeltaE);
-			params.get("qDelta0", qDelta0);
-			params.get("nIter", nIter);
-			params.get("diagonal", diagonal);
-			params.get("initSweepType", initSweepType);
-			params.get("useEndUpdate", useEndUpdate);
-			return -1;
-		}
-
-		return 2;
-	}
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;

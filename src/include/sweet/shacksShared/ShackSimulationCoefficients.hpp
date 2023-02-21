@@ -83,50 +83,6 @@ public:
 	double advection_velocity[3] = {0, 0, 0};
 
 
-	void outputConfig()
-	{
-		printClass();
-	}
-
-
-	void outputProgParams()
-	{
-		printProgramArguments();
-	}
-
-
-	void setup_longOptionsList(
-			struct option *long_options,
-			int &next_free_program_option
-	)
-	{
-		// sim
-		long_options[next_free_program_option] = {"advection-velocity", required_argument, 0, 256+next_free_program_option};
-		next_free_program_option++;
-	}
-
-
-	/*
-	 * This method is called to parse a particular
-	 * long option related to some ID.
-	 *
-	 * \return: -1 if the option has been processed
-	 */
-	int setup_longOptionValue(
-			int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
-			const char *i_value		///< Value in string format
-	)
-	{
-		switch(i_option_index)
-		{
-		case 0:
-			StringSplit::split3double(i_value, &advection_velocity[0], &advection_velocity[1], &advection_velocity[2]);
-			return -1;
-		}
-
-		return 1;
-	}
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << "Simulation parameters:" << std::endl;

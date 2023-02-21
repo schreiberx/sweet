@@ -114,8 +114,6 @@ public:
 #endif
 
 				ops->setup(ops->sphereDataConfig, &(simVars->sim));
-
-				simVars->sim.outputConfig();
 			}
 		}
 
