@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include <sweet/shacks/ShackDictionary.hpp>
-#include <sweet/shacksShared/ShackShackIOData.hpp>
 #include <sweet/shacksShared/ShackShackParallelization.hpp>
+#include "../include/sweet/shacksShared/ShackIOData.hpp"
 
 
 int main(int i_argc, char *i_argv[])

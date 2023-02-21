@@ -67,11 +67,14 @@ public:
 
 		setup_timestep_size = current_timestep_size;
 
+#pragma warning "TODO: Put this check somewhere else"
+#if 0
 		if (max_simulation_time < 0)
 			return error.set("timecontrol.max_simulation_time < 0");
 
 		if (max_timesteps_nr < 0)
 			return error.set("timecontrol.max_timesteps_nr < 0");
+#endif
 
 		current_timestep_nr = 0;
 		current_simulation_time = 0;

@@ -169,12 +169,15 @@ std::cout << "0" << std::endl;
 		if (i_pa.error.exists())
 			return error.forwardFromWithPositiveReturn(i_pa.error);
 
+
+#pragma warning "TODO: Put this check somewhere else"
+#if 0
 		if (
 				(space_res_physical[0] == 0 || space_res_physical[1] == 0)	&&
 				(space_res_spectral[0] == 0 || space_res_spectral[1] == 0)
 		)
 			return error.set("Select physical resolution or spectral modes (use -N (or -n, -m) for physical and -M for spectral");
-
+#endif
 		return true;
 
 	}

@@ -226,7 +226,7 @@ public:
 		i_pa.getArgumentValueByKey("--taylor_num_expansions", taylor_num_expansions);
 		i_pa.getArgumentValueByKey("--rexi-sphere-preallocation", sphere_solver_preallocation);
 
-		if (i_pa.getArgumentValueByKey("--rexi-files", exp_method))
+		if (i_pa.getArgumentValueByKey("--rexi-files", rexi_files))
 			rexi_files_given = true;
 
 		/*

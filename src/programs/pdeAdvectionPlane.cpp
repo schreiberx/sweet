@@ -7,23 +7,24 @@
 #include <sweet/ErrorBase.hpp>
 #include <sweet/ProgramArguments.hpp>
 #include <sweet/plane/Plane.hpp>
+
 #include <sweet/shacks/ShackDictionary.hpp>
+#include <sweet/shacksShared/ShackIOData.hpp>
+#include <sweet/shacksShared/ShackDiagnostics.hpp>
+#include <sweet/shacksShared/ShackDiscretization.hpp>
+#include <sweet/shacksShared/ShackMisc.hpp>
 
 #include "pdeAdvectionPlane/Adv_Plane_TimeSteppers.hpp"
 #include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 
-//#include <sweet/SimulationVariables.hpp>
 
 
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 
-
-// Plane data config
-PlaneDataConfig planeDataConfigInstance;
-PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
+#pragma GCC warning "DEPRECATED! Try to avoid this!"
+#include <sweet/SimulationVariables.hpp>
 SimulationVariables _simVars;
 
 
@@ -120,6 +121,7 @@ public:
 	Discretization *disc;
 	Misc *misc;
 	TimestepControl *timestepControl;
+	ShackIOData *ioData;
 
 	sweet::ClassInstanceDictionary classDict;
 
@@ -197,6 +199,7 @@ public:
 		timestepControl = classDict.getClassInstance<TimestepControl>();
 		disc = classDict.getClassInstance<Discretization>();
 		misc = classDict.getClassInstance<Misc>();
+		ioData = classDict.getClassInstance<ShackIOData>();
 
 		if (classDict.error.exists())
 		{
@@ -303,7 +306,7 @@ public:
 
 #endif
 
-#if 0
+#if 1
 
 
 	void run_timestep()
@@ -323,7 +326,7 @@ public:
 		timestepControl->current_simulation_time += dt;
 		timestepControl->current_timestep_nr++;
 
-		if (ioParameters->verbosity > 2)
+		if (misc->verbosity > 2)
 			std::cout << timestepControl->current_timestep_nr << ": " << timestepControl->current_simulation_time/(60*60*24.0) << std::endl;
 
 		max_error_h0 = (simPlaneData->prog_h-simPlaneData->prog_h_t0).toPhys().physical_reduce_max_abs();
@@ -382,7 +385,7 @@ public:
 	{
 		*o_render_primitive_id = render_primitive_id;
 
-		int id = visualization->vis_id % 3;
+		int id = misc->vis_id % 3;
 		switch (id)
 		{
 		case 0:
@@ -407,7 +410,7 @@ public:
 	const char* vis_get_status_string()
 	{
 		const char* description = "";
-		int id = visualization->vis_id % 3;
+		int id = misc->vis_id % 3;
 
 		switch (id)
 		{
@@ -428,14 +431,13 @@ public:
 
 		static char title_string[2048];
 
-		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 		sprintf(title_string,
 #if SWEET_MPI
 				"Rank %i - "
 #endif
 				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
 #if SWEET_MPI
-				mpi_rank,
+				-1,	// TODO: mpi_rank,
 #endif
 				timestepControl->current_simulation_time,
 				timestepControl->current_simulation_time/(60.0*60.0*24.0),
@@ -463,11 +465,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			visualization->vis_id++;
+			misc->vis_id++;
 			break;
 
 		case 'V':
-			visualization->vis_id--;
+			misc->vis_id--;
 			break;
 
 		case 'b':

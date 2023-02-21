@@ -62,7 +62,7 @@
 #include "shacksShared/ShackBenchmark.hpp"
 #include "shacksShared/ShackDiagnostics.hpp"
 #include "shacksShared/ShackDiscretization.hpp"
-#include "shacksShared/ShackShackIOData.hpp"
+#include "shacksShared/ShackIOData.hpp"
 #include "shacksShared/ShackMisc.hpp"
 #include "shacksShared/ShackShackParallelization.hpp"
 #include "shacksShared/ShackSDC.hpp"
@@ -92,24 +92,8 @@ public:
  */
 class SimulationVariables
 {
-public:
-#if SWEET_PARAREAL
-	Parareal_SimulationVariables parareal;
-#endif
-
-#if SWEET_LIBPFASST
-	LibPFASST_SimulationVariables libpfasst;
-#endif
-
-#if SWEET_XBRAID
-	XBraid_SimulationVariables xbraid;
-#endif
-
 
 public:
-	EXP_SimulationVariables rexi;
-	SWEPolvani_SimulationVariables swe_polvani;
-
 
 	Diagnostics diag;
 	ShackIOData iodata;
@@ -122,6 +106,22 @@ public:
 	TimestepControl timecontrol;
 	SDC sdc;
 
+	EXP_SimulationVariables rexi;
+	SWEPolvani_SimulationVariables swe_polvani;
+
+
+public:
+#if SWEET_PARAREAL
+	Parareal_SimulationVariables parareal;
+#endif
+
+#if SWEET_LIBPFASST
+	LibPFASST_SimulationVariables libpfasst;
+#endif
+
+#if SWEET_XBRAID
+	XBraid_SimulationVariables xbraid;
+#endif
 
 
 	void outputConfig()
@@ -186,9 +186,11 @@ public:
 		parallelization.printProgramArguments();
 		disc.printProgramArguments();
 		iodata.printProgramArguments();
-
-
 		misc.printProgramArguments();
+		diag.printProgramArguments();
+		timecontrol.printProgramArguments();
+
+
 		rexi.printProgramArguments();
 		sdc.printProgramArguments();
 		swe_polvani.printProgramArguments();
@@ -249,9 +251,10 @@ public:
 		parallelization.processProgramArguments(programArguments);
 		disc.processProgramArguments(programArguments);
 		iodata.processProgramArguments(programArguments);
-
-
 		misc.processProgramArguments(programArguments);
+		diag.processProgramArguments(programArguments);
+		timecontrol.processProgramArguments(programArguments);
+
 		rexi.processProgramArguments(programArguments);
 		sdc.processProgramArguments(programArguments);
 		swe_polvani.processProgramArguments(programArguments);
