@@ -615,9 +615,6 @@ public:
 			update_diagnostics();
 			compute_errors();
 
-			if (simVars.timecontrol.current_timestep_nr == 0)
-				simVars.diag.outputConfig();
-
 			std::stringstream header;
 			std::stringstream rows;
 
