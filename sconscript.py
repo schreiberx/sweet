@@ -57,7 +57,6 @@ def add_source_files(env, p):
 
                 obj = env.Object(filerelpath)
                 env.src_files.append(obj)
-                #env.AddPostAction(obj, moveModFiles)
 
         elif os.path.isfile(abs_k):
             print("Processing additional file '"+abs_k+"'")
@@ -70,7 +69,8 @@ def add_source_files(env, p):
             env.src_files.append(obj)
 
         else:
-            raise Exception("Error file processing file or directory '"+abs_k+"'")
+            print("ERROR: File or directory '{abs_k}' doesn't exist!")
+            sys.exit(1)
 
 
 Import('env', 'p')

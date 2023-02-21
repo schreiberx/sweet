@@ -1,5 +1,5 @@
 /*
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_Sphere_TS_LG_EXP_DIRECT_HPP_

@@ -2,7 +2,7 @@
  * REXICoefficients.hpp
  *
  *  Created on: Dec 9, 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_REXI_REXI_COEFFICIENTS_HPP__

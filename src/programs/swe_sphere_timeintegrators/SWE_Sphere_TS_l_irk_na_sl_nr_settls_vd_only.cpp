@@ -1,5 +1,5 @@
 /*
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "SWE_Sphere_TS_l_irk_na_sl_nr_settls_vd_only.hpp"

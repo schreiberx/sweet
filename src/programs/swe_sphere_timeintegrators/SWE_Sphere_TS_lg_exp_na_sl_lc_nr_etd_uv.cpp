@@ -1,5 +1,5 @@
 /*
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv.hpp"

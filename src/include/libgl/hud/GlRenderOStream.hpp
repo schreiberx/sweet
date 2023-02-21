@@ -19,7 +19,7 @@
  * GlRenderOStream.hpp
  *
  *  Created on: Mar 22, 2010
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef CGLRENDEROSTREAM_HPP_

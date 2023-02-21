@@ -2,7 +2,7 @@
  * test_sphere_coordinates.cpp
  *
  *  Created on: 17 Apr 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <iostream>

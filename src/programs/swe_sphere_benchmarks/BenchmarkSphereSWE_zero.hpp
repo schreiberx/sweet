@@ -1,5 +1,5 @@
 /*
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@Gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_BENCHMARK_SPHERE_SWE_ZERO_HPP_

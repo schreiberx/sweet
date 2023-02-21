@@ -2,7 +2,7 @@
  * PlaneDiagnostics.hpp
  *
  *  Created on: 25 Feb 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDIAGNOSTICS_HPP_

@@ -2,7 +2,7 @@
  * DiagBandedMatrix.hpp
  *
  *  Created on: 24 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_LIBMATH_LAPACKBANDEDMATRIXSOLVER_HPP_

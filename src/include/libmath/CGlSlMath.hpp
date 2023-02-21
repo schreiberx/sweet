@@ -18,7 +18,7 @@
  * CGlSlMath.hpp
  *
  *  Created on: Mar 5, 2010
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef CGLSLMATH_HPP_

@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_l_phi0_n_edt.hpp
  *
  *  Created on: 29 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_Sphere_TS_l_rexi_n_etdrk_HPP_

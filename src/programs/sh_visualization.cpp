@@ -1,5 +1,5 @@
 /*
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
  */

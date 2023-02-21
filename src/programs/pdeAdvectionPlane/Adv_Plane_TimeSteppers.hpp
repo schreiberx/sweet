@@ -2,15 +2,15 @@
  * Adv_Plane_TimeSteppers.hpp
  *
  *  Created on: 4th April 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TIMESTEPPERS_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TIMESTEPPERS_HPP_
 
-#include "../advectionPlane/Adv_Plane_TS_interface.hpp"
-#include "../advectionPlane/Adv_Plane_TS_na_erk.hpp"
-#include "../advectionPlane/Adv_Plane_TS_na_sl.hpp"
+#include "../pdeAdvectionPlane/Adv_Plane_TS_interface.hpp"
+#include "../pdeAdvectionPlane/Adv_Plane_TS_na_erk.hpp"
+#include "../pdeAdvectionPlane/Adv_Plane_TS_na_sl.hpp"
 
 
 /**

@@ -2,7 +2,7 @@
  * Dict.hpp
  *
  *  Created on: Feb 18, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_DICT_FILE_HPP__

@@ -1,5 +1,5 @@
 /*
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/advectionPlane
  */
 
@@ -11,11 +11,11 @@
 
 #include <sweet/plane/Plane.hpp>
 #include <sweet/shacks/ShackDictionary.hpp>
+#include "pdeAdvectionPlane/Adv_Plane_TimeSteppers.hpp"
 
 #include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 //#include <sweet/SimulationVariables.hpp>
 
-#include "advectionPlane/Adv_Plane_TimeSteppers.hpp"
 
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"

@@ -1,7 +1,7 @@
 /*
  * Author: Pedor Peixoto <ppeixoto@usp.br>
  * based on stuff from:
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *         
  */
 

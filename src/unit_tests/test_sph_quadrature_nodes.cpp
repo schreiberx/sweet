@@ -2,7 +2,7 @@
  * test_sph_quadrature_nodes.hpp
  *
  *  Created on: 3 Feb 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_TESTSPH_QUADRATURE_NODES_HPP_

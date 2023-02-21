@@ -1,7 +1,7 @@
 /*
  * SWE_Sphere_TS_ln_imex_sdc.cpp
  *
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "SWE_Sphere_TS_ln_imex_sdc.hpp"

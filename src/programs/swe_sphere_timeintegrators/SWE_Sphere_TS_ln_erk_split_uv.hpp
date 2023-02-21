@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_split_lg_lc_na_nr_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LN_ERK_SPLIT_UV_HPP_

@@ -2,7 +2,7 @@
  * test_plane_interpolation.cpp
  *
  *  Created on: 2nd April 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SWEET_GUI

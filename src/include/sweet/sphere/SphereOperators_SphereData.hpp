@@ -2,7 +2,7 @@
  * SPHOperators.hpp
  *
  *  Created on: 12 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SPHOPERATORS_HPP_

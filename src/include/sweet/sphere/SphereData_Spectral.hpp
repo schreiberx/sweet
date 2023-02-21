@@ -2,7 +2,7 @@
  * SphereData.hpp
  *
  *  Created on: 9 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SWEET_SPHERE_DATA_SPECTRAL_HPP_

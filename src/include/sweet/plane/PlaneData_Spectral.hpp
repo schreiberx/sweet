@@ -1,5 +1,5 @@
 /*
- * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * Changelog:
  *  * 14 Mar 2022, Joao Steinstraesser <joao.steinstraesser@usp.br>

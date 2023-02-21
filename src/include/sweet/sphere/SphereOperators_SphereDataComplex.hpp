@@ -2,7 +2,7 @@
  * SPHOperatorsComplex.hpp
  *
  *  Created on: 31 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SPHEREOPERATORS_COMPLEX_HPP_

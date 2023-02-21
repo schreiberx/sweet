@@ -2,7 +2,7 @@
  * Engine.hpp
  *
  *  Created on: Dec 23, 2014
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_INCLUDE_LIBGL_VISUALIZATION_ENGINE_HPP_
 #define SRC_INCLUDE_LIBGL_VISUALIZATION_ENGINE_HPP_

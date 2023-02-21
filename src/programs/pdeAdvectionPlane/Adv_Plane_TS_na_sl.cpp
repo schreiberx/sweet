@@ -2,10 +2,10 @@
  * Adv_Plane_TS_na_sl.cpp
  *
  *  Created on: 29 Mar 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <programs/advectionPlane/Adv_Plane_TS_na_sl.hpp>
+#include <programs/pdeAdvectionPlane/Adv_Plane_TS_na_sl.hpp>
 
 
 
