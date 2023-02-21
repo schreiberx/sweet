@@ -9,7 +9,10 @@
 #include <unordered_map>
 #include <algorithm>
 
-struct LibPFASST_SimulationVariables
+#include "../sweet/shacks/ShackInterface.hpp"
+
+struct LibPFASST_SimulationVariables	:
+	public sweet::ClassDictionaryInterface
 {
 
     /**
@@ -61,9 +64,9 @@ struct LibPFASST_SimulationVariables
     std::vector<double> hyperviscosity_6;
     std::vector<double> hyperviscosity_8;
     std::unordered_map<std::string, bool> hyperviscosity_on_field = 
-        std::unordered_map<std::string, bool>({{"phi_pert", true},
-                                               {"div", true},
-                                               {"vrt", true}});
+	std::unordered_map<std::string, bool>({{"phi_pert", true},
+										   {"div", true},
+										   {"vrt", true}});
 
 private:
     template <typename T>
@@ -115,40 +118,12 @@ private:
 public:
     void outputConfig()
     {
-        std::cout << std::endl;
-        std::cout << "LibPFASST:" << std::endl;
-        std::cout << " + nlevels: "                 << nlevels                 << std::endl;
-        std::cout << " + niters: "                  << niters                  << std::endl;
-        std::cout << " + nsweeps: "                 << _print_vector<int>(nsweeps)       << std::endl;
-        std::cout << " + nnodes: "                  << nnodes                  << std::endl;
-        std::cout << " + nodes_type: "              << nodes_type              << std::endl;
-        std::cout << " + coarsening_multiplier: "   << coarsening_multiplier   << std::endl;
-        std::cout << " + use_rk_stepper: "          << use_rk_stepper          << std::endl;
-        std::cout << " + hyperviscosity order 2 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_2) << std::endl; 
-        std::cout << " + hyperviscosity order 4 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_4) << std::endl; 
-        std::cout << " + hyperviscosity order 6 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_6) << std::endl; 
-        std::cout << " + hyperviscosity order 8 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_8) << std::endl;
-        std::cout << " + apply hyperviscosity on field(s):              " << _print_hyperviscosity_fields() << std::endl;
-        std::cout << std::endl;
+    	printClass();
     }
 
     void printOptions()
     {
-        std::cout << ""                                                                                                                        << std::endl;
-        std::cout << "LibPFASST:"                                                                                                              << std::endl;
-        std::cout << "\t--libpfasst-nlevels [int]                       LibPFASST parameter nlevels, default: 1"                               << std::endl;
-        std::cout << "\t--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8"                                << std::endl;
-        std::cout << "\t--libpfasst-nsweeps [ints]                      LibPFASST parameter nsweeps, default: 1 on all levels"                 << std::endl;
-        std::cout << "\t--libpfasst-nnodes [int]                        LibPFASST parameter nnodes, default: 5"                                << std::endl;
-        std::cout << "\t--libpfasst-nodes-type [string]                 LibPFASST parameter nodes-type, default: SDC_GAUSS_LOBATTO"                << std::endl;
-        std::cout << "\t--libpfasst-coarsening-multiplier [float]       LibPFASST parameter coarsening-multiplier, default: 0.5"               << std::endl;
-        std::cout << "\t--libpfasst-use-rk-stepper [bool]               LibPFASST parameter use the Runge-Kutta stepper, default: false" << std::endl;
-        std::cout << "\t--libpfasst-u2 [floats]                         Hyperviscosity of order 2, default: 0 on all levels"             << std::endl;
-        std::cout << "\t--libpfasst-u4 [floats]                         Hyperviscosity of order 4, default: 0 on all levels"             << std::endl;
-        std::cout << "\t--libpfasst-u6 [floats]                         Hyperviscosity of order 6, default: 0 on all levels"             << std::endl;
-        std::cout << "\t--libpfasst-u8 [floats]                         Hyperviscosity of order 8, default: 0 on all levels"             << std::endl;
-        std::cout << "\t--libpfasst-u-fields [string]                   Set fields for hyperviscosity, default: all"                     << std::endl;
-        std::cout << std::endl;
+    	printProgramArguments();
     }
 
     void setup_longOptionList(
@@ -267,6 +242,66 @@ public:
     }
 
 
+	void printProgramArguments(const std::string& i_prefix = "")
+	{
+        std::cout << ""                                                                                                                        << std::endl;
+        std::cout << "LibPFASST:"                                                                                                              << std::endl;
+        std::cout << "\t--libpfasst-nlevels [int]                       LibPFASST parameter nlevels, default: 1"                               << std::endl;
+        std::cout << "\t--libpfasst-niters [int]                        LibPFASST parameter niters, default: 8"                                << std::endl;
+        std::cout << "\t--libpfasst-nsweeps [ints]                      LibPFASST parameter nsweeps, default: 1 on all levels"                 << std::endl;
+        std::cout << "\t--libpfasst-nnodes [int]                        LibPFASST parameter nnodes, default: 5"                                << std::endl;
+        std::cout << "\t--libpfasst-nodes-type [string]                 LibPFASST parameter nodes-type, default: SDC_GAUSS_LOBATTO"                << std::endl;
+        std::cout << "\t--libpfasst-coarsening-multiplier [float]       LibPFASST parameter coarsening-multiplier, default: 0.5"               << std::endl;
+        std::cout << "\t--libpfasst-use-rk-stepper [bool]               LibPFASST parameter use the Runge-Kutta stepper, default: false" << std::endl;
+        std::cout << "\t--libpfasst-u2 [floats]                         Hyperviscosity of order 2, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u4 [floats]                         Hyperviscosity of order 4, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u6 [floats]                         Hyperviscosity of order 6, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u8 [floats]                         Hyperviscosity of order 8, default: 0 on all levels"             << std::endl;
+        std::cout << "\t--libpfasst-u-fields [string]                   Set fields for hyperviscosity, default: all"                     << std::endl;
+        std::cout << std::endl;
+	}
+
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
+	{
+		i_pa.getArgumentValueByKey("--libpfasst-nlevels", nlevels);
+		i_pa.getArgumentValueByKey("--libpfasst-niters", niters);
+		i_pa.getArgumentValueByKey("--libpfasst-nsweeps", nsweeps_str);
+		i_pa.getArgumentValueByKey("--libpfasst-nnodes", nnodes);
+		i_pa.getArgumentValueByKey("--libpfasst-nodes-type", nodes_type);
+		i_pa.getArgumentValueByKey("--libpfasst-coarsening-multiplier", coarsening_multiplier);
+		i_pa.getArgumentValueByKey("--libpfasst-use-rk-stepper", use_rk_stepper);
+		i_pa.getArgumentValueByKey("--libpfasst-u2", hyperviscosity_2_str);
+		i_pa.getArgumentValueByKey("--libpfasst-u4", hyperviscosity_4_str);
+		i_pa.getArgumentValueByKey("--libpfasst-u6", hyperviscosity_6_str);
+		i_pa.getArgumentValueByKey("--libpfasst-u8", hyperviscosity_8_str);
+
+		std::string tmp;
+		i_pa.getArgumentValueByKey("--libpfasst-u-fields", tmp);
+		_set_hyperviscosity_fields(tmp);
+
+		return error.forwardFromWithPositiveReturn(i_pa.error);
+	}
+
+	virtual void printClass(
+		const std::string& i_prefix = ""
+	)
+	{
+        std::cout << std::endl;
+        std::cout << "LibPFASST:" << std::endl;
+        std::cout << " + nlevels: "                 << nlevels                 << std::endl;
+        std::cout << " + niters: "                  << niters                  << std::endl;
+        std::cout << " + nsweeps: "                 << _print_vector<int>(nsweeps)       << std::endl;
+        std::cout << " + nnodes: "                  << nnodes                  << std::endl;
+        std::cout << " + nodes_type: "              << nodes_type              << std::endl;
+        std::cout << " + coarsening_multiplier: "   << coarsening_multiplier   << std::endl;
+        std::cout << " + use_rk_stepper: "          << use_rk_stepper          << std::endl;
+        std::cout << " + hyperviscosity order 2 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_2) << std::endl;
+        std::cout << " + hyperviscosity order 4 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_4) << std::endl;
+        std::cout << " + hyperviscosity order 6 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_6) << std::endl;
+        std::cout << " + hyperviscosity order 8 [from coarse to fine]:  " << _print_vector<double>(hyperviscosity_8) << std::endl;
+        std::cout << " + apply hyperviscosity on field(s):              " << _print_hyperviscosity_fields() << std::endl;
+        std::cout << std::endl;
+	}
 };
 
 #endif /* SRC_SIMULATION_VARIABLES_HPP_ */

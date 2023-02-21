@@ -2,7 +2,7 @@
  * test_exp_phi_functions.cpp
  *
  *  Created on: Jul 30, 2022
- *      Author: Martin Schreiber
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber
  */
 
 #include <rexi/EXPFunctions.hpp>

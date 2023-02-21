@@ -2,7 +2,7 @@
  * interpolation.cpp
  *
  *  Created on: 18 March 2020
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 

@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SRC_SPHERE_DATA_PHYSICAL_COMPLEX_HPP_

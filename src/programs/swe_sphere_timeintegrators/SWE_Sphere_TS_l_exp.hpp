@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_EXP_HPP_
@@ -67,7 +67,7 @@ private:
 
 public:
 	// WARNING: Do NOT use a reference to this to get more flexibility by overriding certain things in here
-	SimulationVariables::SimulationCoefficients simCoeffs;
+	SimulationCoefficients simCoeffs;
 
 private:
 	/// Sphere operators

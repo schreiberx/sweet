@@ -1,10 +1,10 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #include <iostream>
 
-#include <sweet/classDict/ClassInstanceDictionary.hpp>
+#include "../include/sweet/shacks/ShackDictionary.hpp"
 #include "swe_sphere_variables/PDESWESphereParameters.hpp"
 #include "swe_sphere_variables/IODataParameters.hpp"
 
@@ -17,7 +17,7 @@ int main(int i_argc, char *i_argv[])
 	sweet::ProgramArguments pa;
 	if (!pa.setup(i_argc, i_argv))
 	{
-		std::cout << "Error: " << pa.error.errorGet() << std::endl;
+		std::cout << "Error: " << pa.error.get() << std::endl;
 		return 1;
 	}
 
@@ -31,20 +31,20 @@ int main(int i_argc, char *i_argv[])
 	 */
 	if (pa.argumentWithKeyExists("-h") || pa.argumentWithKeyExists("--help"))
 	{
-		sweParametersSphere.outputProgramArguments();
+		sweParametersSphere.printProgramArguments();
 		return EXIT_FAILURE;
 	}
 
 	sweParametersSphere.processProgramArguments(pa);
 
-	std::cout << " + sweParametersSphere->outputVariables()" << std::endl;
-	sweParametersSphere.outputVariables("    ");
+	std::cout << " + sweParametersSphere->printClass()" << std::endl;
+	sweParametersSphere.printClass("    ");
 
 #if 0
 	// TODO: Activate this if SWEET migrated entirely to this new interface
 	if (!pa.checkAllArgumentsProcessed())
 	{
-		std::cerr << pa.error.errorGet() << std::endl;
+		std::cerr << pa.error.get() << std::endl;
 		return EXIT_FAILURE;
 	}
 #endif

@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_lg_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 

@@ -1,12 +1,13 @@
 /*
- * PlaneDataSpectral.hpp
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
  *
- *  Created on: 14 Mar 2022
- *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Changelog:
+ *  * 14 Mar 2022, Joao Steinstraesser <joao.steinstraesser@usp.br>
+ *    Split into physical and spectral classes
  */
 
-#ifndef PLANE_DATA_SPECTRAL_HPP_
-#define PLANE_DATA_SPECTRAL_HPP_
+#ifndef SWEET_PLANE_DATA_SPECTRAL_HPP_
+#define SWEET_PLANE_DATA_SPECTRAL_HPP_
 
 #include <complex>
 #include <functional>
@@ -130,10 +131,9 @@ public:
 
 
 	/**
-	 * prohibit empty initialization by making this method private
+	 * Without setup where we need to call setup(...) later on
 	 */
-//public:
-private:
+public:
 	PlaneData_Spectral()	:
 		planeDataConfig(nullptr),
 		spectral_space_data(nullptr)
@@ -189,7 +189,7 @@ public:
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
 public:
-	inline void check(
+	inline void _validateRes(
 			const PlaneDataConfig *i_planeDataConfig
 	)	const
 	{
@@ -621,7 +621,7 @@ public:
 	 * Setup spectral sphere data based on data in physical space
 	 */
 	void loadPlaneDataPhysical(
-			const PlaneData_Physical &i_planeDataPhysical
+		const PlaneData_Physical &i_planeDataPhysical
 	)
 	{
 		/**
@@ -772,7 +772,7 @@ public:
 			const PlaneData_Spectral &i_plane_data
 	)	const
 	{
-		check(i_plane_data.planeDataConfig);
+		_validateRes(i_plane_data.planeDataConfig);
 
 		PlaneData_Spectral out(planeDataConfig);
 
@@ -791,7 +791,7 @@ public:
 			const PlaneData_Spectral &i_plane_data
 	)
 	{
-		check(i_plane_data.planeDataConfig);
+		_validateRes(i_plane_data.planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
@@ -807,7 +807,7 @@ public:
 			const PlaneData_Spectral &i_plane_data
 	)
 	{
-		check(i_plane_data.planeDataConfig);
+		_validateRes(i_plane_data.planeDataConfig);
 
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 		for (std::size_t idx = 0; idx < planeDataConfig->spectral_array_data_number_of_elements; idx++)
@@ -824,7 +824,7 @@ public:
 			const PlaneData_Spectral &i_plane_data
 	)	const
 	{
-		check(i_plane_data.planeDataConfig);
+		_validateRes(i_plane_data.planeDataConfig);
 
 		PlaneData_Spectral out(planeDataConfig);
 
@@ -842,7 +842,7 @@ public:
 			const PlaneData_Physical &i_plane_data_physical
 	)	const
 	{
-		check(i_plane_data_physical.planeDataConfig);
+		_validateRes(i_plane_data_physical.planeDataConfig);
 
 		PlaneData_Spectral i_plane_data_spectral(planeDataConfig);
 		PlaneData_Spectral out(planeDataConfig);
@@ -879,7 +879,7 @@ public:
 			const PlaneData_Spectral &i_plane_data
 	)	const
 	{
-		check(i_plane_data.planeDataConfig);
+		_validateRes(i_plane_data.planeDataConfig);
 
 		PlaneData_Physical a = this->toPhys();
 		PlaneData_Physical b = i_plane_data.toPhys();
@@ -904,8 +904,8 @@ public:
 				const PlaneData_Physical &i_b
 	) const
 	{
-		check(i_a.planeDataConfig);
-		check(i_b.planeDataConfig);
+		_validateRes(i_a.planeDataConfig);
+		_validateRes(i_b.planeDataConfig);
 
 		PlaneData_Physical mul(planeDataConfig);
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
@@ -923,7 +923,7 @@ public:
 			const PlaneData_Spectral &i_plane_data
 	)	const
 	{
-		check(i_plane_data.planeDataConfig);
+		_validateRes(i_plane_data.planeDataConfig);
 
 		PlaneData_Physical a = this->toPhys();
 		PlaneData_Physical b = i_plane_data.toPhys();

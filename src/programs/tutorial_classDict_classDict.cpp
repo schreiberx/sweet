@@ -1,10 +1,10 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #include <iostream>
 
-#include <sweet/classDict/ClassInstanceDictionary.hpp>
+#include "../include/sweet/shacks/ShackDictionary.hpp"
 #include "swe_sphere_variables/PDESWESphereParameters.hpp"
 #include "swe_sphere_variables/IODataParameters.hpp"
 
@@ -17,7 +17,7 @@ int main(int i_argc, char *i_argv[])
 	sweet::ProgramArguments pa;
 	if (!pa.setup(i_argc, i_argv))
 	{
-		std::cout << "Error: " << pa.error.errorGet() << std::endl;
+		std::cout << "Error: " << pa.error.get() << std::endl;
 		return 1;
 	}
 
@@ -31,7 +31,7 @@ int main(int i_argc, char *i_argv[])
 		 * later on in the SWEET programs.
 		 */
 		std::cout << " + VariablesClassDictionary()" << std::endl;
-		ClassInstanceDictionary varClassDict;
+		sweet::ClassInstanceDictionary varClassDict;
 
 
 		/*
@@ -57,7 +57,7 @@ int main(int i_argc, char *i_argv[])
 			if (!retval)
 			{
 				// Just get the error (deleting it) and continue
-				varClassDict.error.errorGet();
+				varClassDict.error.get();
 			}
 			else
 			{
@@ -71,7 +71,7 @@ int main(int i_argc, char *i_argv[])
 		 */
 		if (pa.argumentWithKeyExists("-h") || pa.argumentWithKeyExists("--help"))
 		{
-			varClassDict.outputProgramArguments();
+			varClassDict.printProgramArguments();
 			return EXIT_FAILURE;
 		}
 
@@ -86,7 +86,7 @@ int main(int i_argc, char *i_argv[])
 		PDESWEParametersSphere *sweParametersSphere = varClassDict.getClassInstance<PDESWEParametersSphere>();
 		if (sweParametersSphere == nullptr)
 		{
-			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
+			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
 			return EXIT_FAILURE;
 		}
 
@@ -96,7 +96,7 @@ int main(int i_argc, char *i_argv[])
 		IODataParameters *ioDataParameters = varClassDict.getClassInstance<IODataParameters>();
 		if (ioDataParameters == nullptr)
 		{
-			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
+			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
 			return EXIT_FAILURE;
 		}
 
@@ -116,7 +116,7 @@ int main(int i_argc, char *i_argv[])
 			if (ioDataParameters == nullptr)
 			{
 				// Just get the error (deleting it) and continue
-				varClassDict.error.errorGet();
+				varClassDict.error.get();
 			}
 			else
 			{
@@ -128,17 +128,17 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Now its time to output all program arguments of all registered classes
 		 */
-		std::cout << " + varClassDict.outputVariables()" << std::endl;
-		varClassDict.outputVariables("    ");
+		std::cout << " + varClassDict.printClass()" << std::endl;
+		varClassDict.printClass("    ");
 
 		/*
 		 * And we can also print them individually
 		 */
-		std::cout << " + sweParametersSphere->outputVariables()" << std::endl;
-		sweParametersSphere->outputVariables("    ");
+		std::cout << " + sweParametersSphere->printClass()" << std::endl;
+		sweParametersSphere->printClass("    ");
 
-		std::cout << " + ioDataParameters->outputVariables()" << std::endl;
-		ioDataParameters->outputVariables("    ");
+		std::cout << " + ioDataParameters->printClass()" << std::endl;
+		ioDataParameters->printClass("    ");
 
 		/*
 		 * Of course, we can also access them directly

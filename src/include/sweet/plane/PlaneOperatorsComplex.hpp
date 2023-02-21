@@ -2,7 +2,7 @@
  * PlaneOperatorsComplex.hpp
  *
  *  Created on: 30 Jun 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_INCLUDE_SWEET_PLANE_OPERATORS_COMPLEX_HPP_
 #define SRC_INCLUDE_SWEET_PLANE_OPERATORS_COMPLEX_HPP_

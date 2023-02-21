@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@Gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@Gmail.com>
  */
 
 #ifndef SRC_SWE_SPHERE_BENCHMARKS_GAUSSIAN_BUMPS_TEST_CASES_HPP_

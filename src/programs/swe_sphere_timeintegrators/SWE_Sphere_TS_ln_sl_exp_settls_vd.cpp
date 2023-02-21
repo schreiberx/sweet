@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_ln_exp_settls_vd.cpp
  *
  *  Created on: 31 Mar 2020
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #include "SWE_Sphere_TS_ln_sl_exp_settls_vd.hpp"

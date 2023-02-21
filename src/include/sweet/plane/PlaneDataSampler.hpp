@@ -2,7 +2,7 @@
  * Sampler2D.hpp
  *
  *  Created on: 4 Dec 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_
 #define SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_

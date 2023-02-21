@@ -2,7 +2,7 @@
  * Adv_Plane_TS_na_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_ERK_HPP_
@@ -14,7 +14,7 @@
 #include <sweet/plane/PlaneOperators.hpp>
 #include <sweet/SimulationVariables.hpp>
 
-#include "Adv_Plane_TS_interface.hpp"
+#include "../advectionPlane/Adv_Plane_TS_interface.hpp"
 
 
 

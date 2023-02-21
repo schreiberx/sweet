@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@Gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@Gmail.com>
  */
 
 #ifndef SRC_BENCHMARKS_SPHERE_VECTOR_3D_ADVECTION_VECTOR_3D_NORMAL_VECTORS_

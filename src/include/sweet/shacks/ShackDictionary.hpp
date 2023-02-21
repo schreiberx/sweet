@@ -2,11 +2,11 @@
  * ClassDictionary.hpp
  *
  *  Created on: Feb 19, 2023
- *      Author: martin
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_CLASSDICT_CLASSINSTANCEDICTIONARY_HPP_
-#define SRC_INCLUDE_SWEET_CLASSDICT_CLASSINSTANCEDICTIONARY_HPP_
+#ifndef SRC_INCLUDE_SWEET_SHACKS_SHACKDICTIONARY_HPP_
+#define SRC_INCLUDE_SWEET_SHACKS_SHACKDICTIONARY_HPP_
 
 
 #include <list>
@@ -14,8 +14,10 @@
 #include <typeinfo>
 #include <sweet/ErrorBase.hpp>
 #include <sweet/ProgramArguments.hpp>
-#include "../classDict/ClassDictionaryInterface.hpp"
+#include "../shacks/ShackInterface.hpp"
 
+namespace sweet
+{
 
 /*
  * A dictionary using class types as key.
@@ -40,6 +42,7 @@ public:
 		_registerationOfClassInstanceFinished = true;
 	}
 
+
 public:
 	void getClassInstancesFinished()
 	{
@@ -48,20 +51,40 @@ public:
 
 
 public:
-	ClassInstanceDictionary()	:
-		_registerationOfClassInstanceFinished(false),
-		_getClassInstanceFinished(false)
+	ClassInstanceDictionary()
 	{
-
+		reset();
 	}
+
 public:
-	~ClassInstanceDictionary()
+	void reset()
+	{
+		clear();
+
+		_registerationOfClassInstanceFinished = false;
+		_getClassInstanceFinished = false;
+
+		error.reset();
+	}
+
+
+public:
+	void clear()
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
 			delete *i;
 		}
+		_list.clear();
 	}
+
+
+public:
+	~ClassInstanceDictionary()
+	{
+		clear();
+	}
+
 
 public:
 	template<typename T>
@@ -70,14 +93,14 @@ public:
 		if (_registerationOfClassInstanceFinished)
 		{
 			const std::string& tname = typeid(T).name();
-			error.errorSet("Registration already finished (type '"+tname+"')");
+			error.set("Registration already finished (type '"+tname+"')");
 			return false;
 		}
 
 		if (classInstanceExists<T>())
 		{
 			const std::string& tname = typeid(T).name();
-			error.errorSet("Class of type '"+tname+"' already exists");
+			error.set("Class of type '"+tname+"' already exists");
 			return false;
 		}
 
@@ -109,14 +132,14 @@ public:
 		if (!_registerationOfClassInstanceFinished)
 		{
 			const std::string& tname = typeid(T).name();
-			error.errorSet("Registration of class instances needs to be finished first (type '"+tname+"')");
+			error.set("Registration of class instances needs to be finished first (type '"+tname+"')");
 			return nullptr;
 		}
 
 		if (_getClassInstanceFinished)
 		{
 			const std::string& tname = typeid(T).name();
-			error.errorSet("Getting an element class already finished (type '"+tname+"')");
+			error.set("Getting an element class already finished (type '"+tname+"')");
 			return nullptr;
 		}
 
@@ -130,16 +153,16 @@ public:
 		}
 
 		const std::string& tname = typeid(T).name();
-		error.errorSet("Type '"+tname+"' not found in dictionary");
+		error.set("Type '"+tname+"' not found in dictionary");
 		return nullptr;
 	}
 
 public:
-	void outputProgramArguments(std::string i_prefix = "")
+	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
-			(*i)->outputProgramArguments(i_prefix);
+			(*i)->printProgramArguments(i_prefix);
 		}
 	}
 
@@ -148,9 +171,9 @@ public:
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
-			if (!(*i)->processProgramArguments(i_pa))
+			if (!((*i)->processProgramArguments(i_pa)))
 			{
-				error.errorForwardFrom((*i)->getError());
+				error.forwardFrom((*i)->error);
 				return false;
 			}
 		}
@@ -158,18 +181,16 @@ public:
 	}
 
 public:
-	void outputVariables(std::string i_prefix = "")
+	void printClass(const std::string& i_prefix = "")
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
-			(*i)->outputVariables(i_prefix);
+			(*i)->printClass(i_prefix);
 		}
 	}
 
 };
 
+}
 
-
-
-
-#endif /* SRC_INCLUDE_SWEET_CLASSDICT_CLASSINSTANCEDICTIONARY_HPP_ */
+#endif

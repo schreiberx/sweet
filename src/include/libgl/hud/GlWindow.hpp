@@ -19,7 +19,7 @@
  * GlWindow.hpp
  *
  *  Created on: Mar 22, 2010
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef CGLWINDOW_HPP_

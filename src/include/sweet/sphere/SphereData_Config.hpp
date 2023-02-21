@@ -2,7 +2,7 @@
  * SPHSetup.hpp
  *
  *  Created on: 12 Aug 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SPHEREDATA_CONFIG_HPP_

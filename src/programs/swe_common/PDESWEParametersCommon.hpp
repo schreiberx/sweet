@@ -2,7 +2,7 @@
  * PDESWEParametersCommon.hpp
  *
  *  Created on: Feb 19, 2023
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_COMMON_PDESWEPARAMETERSCOMMON_HPP_
@@ -15,7 +15,7 @@
 class PDESWEParametersCommon
 {
 public:
-	sweet::ErrorBase error;
+	virtual sweet::ErrorBase& getError() = 0;
 
 	/**
 	 * Average height
@@ -43,7 +43,7 @@ public:
 	double gravitation = 9.80616;
 
 
-	void outputVariables(std::string i_prefix = "")
+	void printClass(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << " + h0: " << h0 << std::endl;
 		std::cout << i_prefix << " + viscosity: " << viscosity << std::endl;
@@ -52,7 +52,7 @@ public:
 	}
 
 
-	void outputProgArguments(std::string i_prefix = "")
+	void outputProgArguments(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "	-H [float]	Average (initial) height of water" << std::endl;
 		std::cout << i_prefix << "	-u [visc]	Viscosity, , default=0" << std::endl;
@@ -65,25 +65,25 @@ public:
 	{
 		if (!i_pa.getArgumentValueBy3Keys("pde-h0", "H", "h0", h0))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (getError().forwardFrom(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueBy3Keys("pde-viscosity", "pde-mu", "mu", viscosity))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (getError().forwardFrom(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("pde-viscosity-order", viscosity_order))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (getError().forwardFrom(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueBy3Keys("pde-g", "g", "gravitation", gravitation))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (getError().forwardFrom(i_pa.error))
 				return false;
 		}
 

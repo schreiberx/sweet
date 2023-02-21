@@ -2,7 +2,7 @@
  * Adv_Plane_TS_na_sl.cpp
  *
  *  Created on: 29 Mar 2018
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #include "Adv_Plane_TS_na_sl.hpp"

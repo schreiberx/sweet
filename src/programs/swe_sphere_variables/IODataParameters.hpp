@@ -2,7 +2,7 @@
  * IOParameters.hpp
  *
  *  Created on: Feb 19, 2023
- *      Author: martin
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_VARIABLES_IODATAPARAMETERS_HPP_
@@ -15,22 +15,15 @@
 
 #include <sweet/ProgramArguments.hpp>
 #include <sweet/ErrorBase.hpp>
-#include "../../include/sweet/classDict/ClassDictionaryInterface.hpp"
+#include "../../include/sweet/classDict/ShackInterface.hpp"
 
 /**
  * Parameters related to input and output data
  */
 struct IODataParameters	:
-	public ClassDictionaryInterface
+	public sweet::ClassDictionaryInterface
 {
 public:
-	sweet::ErrorBase error;
-
-	sweet::ErrorBase& getError()
-	{
-		return error;
-	}
-
 	/**
 	 * Filenames of input data for setup (this has to be setup by each application individually)
 	 */
@@ -129,7 +122,7 @@ public:
 	}
 
 
-	void outputVariables(std::string i_prefix = "")
+	void printClass(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
 		std::cout << i_prefix << "INPUT/OUTPUT:" << std::endl;
@@ -146,7 +139,7 @@ public:
 	}
 
 
-	void outputProgramArguments(std::string i_prefix = "")
+	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
 		std::cout << i_prefix << "IOData:" << std::endl;
@@ -159,13 +152,13 @@ public:
 	{
 		if (!i_pa.getArgumentValueByKey("--output-file-name", output_file_name))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (error.forwardFrom(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("--output-file-mode", output_file_mode))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (error.forwardFrom(i_pa.error))
 				return false;
 		}
 

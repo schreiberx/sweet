@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SRC_SWEREXI_SPH_NEW_HPP_

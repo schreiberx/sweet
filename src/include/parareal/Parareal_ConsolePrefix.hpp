@@ -2,7 +2,7 @@
  * Parareal_CoutPrefix.hpp
  *
  *  Created on: 18 Apr 2016
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_CONSOLEPREFIX_HPP_

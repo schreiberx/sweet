@@ -2,7 +2,7 @@
  * TransformationPlans.hpp
  *
  *  Created on: Dec 30, 2020
- *      Author: Martin Schreiber
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber
  */
 
 #ifndef INCLUDE_SWEET_TRANSFORMATIONPLANS_HPP_

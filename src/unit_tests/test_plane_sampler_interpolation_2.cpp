@@ -2,7 +2,7 @@
  * lagrangian_test.cpp
  *
  *  Created on: 5 Dec 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 

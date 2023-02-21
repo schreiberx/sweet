@@ -2,7 +2,7 @@
  * SphereDataSampler2D.hpp
  *
  *  Created on: 29 Mar 2018
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHEREDATASAMPLER_HPP_

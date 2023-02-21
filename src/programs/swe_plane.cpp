@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_benchmarks

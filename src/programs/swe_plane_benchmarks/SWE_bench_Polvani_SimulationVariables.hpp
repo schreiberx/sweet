@@ -2,7 +2,7 @@
  * SWEPolvani_SimulationVariables.hpp
  *
  *  Created on: 14 Oct 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <SchreiberX@gmail.com>
  */
 #ifndef SRC_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
 #define SRC_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
@@ -11,7 +11,8 @@
 #include <getopt.h>
 #include <sweet/SWEETError.hpp>
 
-struct SWEPolvani_SimulationVariables
+struct SWEPolvani_SimulationVariables	:
+	public sweet::ClassDictionaryInterface
 {
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	/**
@@ -28,28 +29,14 @@ struct SWEPolvani_SimulationVariables
 
 	void outputConfig()
 	{
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		std::cout << std::endl;
-		std::cout << "SWEPolvani:" << std::endl;
-		std::cout << " + Rossby number: " << r << std::endl;
-		std::cout << " + Froude number: " << f << std::endl;
-		std::cout << std::endl;
-#endif
+		printClass();
 	}
-
 
 
 	void outputProgParams()
 	{
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		std::cout << "" << std::endl;
-		std::cout << "Polvani benchmark settings (on the plane):" << std::endl;
-		std::cout << "	--polvani-rossby [float]	Choose Rossby number, default:0" << std::endl;
-		std::cout << "	--polvani-froude [float]	Choose Froude number, default:0" << std::endl;
-		std::cout << "" << std::endl;
-#endif
+		printProgramArguments();
 	}
-
 
 
 	void setup_longOptionList(
@@ -86,6 +73,42 @@ struct SWEPolvani_SimulationVariables
 #endif
 
 		return 2;
+	}
+
+
+
+	void printProgramArguments(const std::string& i_prefix = "")
+	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		std::cout << "" << std::endl;
+		std::cout << "Polvani benchmark settings (on the plane):" << std::endl;
+		std::cout << "	--polvani-rossby [float]	Choose Rossby number, default:0" << std::endl;
+		std::cout << "	--polvani-froude [float]	Choose Froude number, default:0" << std::endl;
+		std::cout << "" << std::endl;
+#endif
+	}
+
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
+	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		i_pa.getArgumentValueByKey("--polvani-rossby", r);
+		i_pa.getArgumentValueByKey("--polvani-froude", f);
+#endif
+
+		return error.forwardFromWithPositiveReturn(i_pa.error);
+	}
+
+	virtual void printClass(
+		const std::string& i_prefix = ""
+	)
+	{
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		std::cout << std::endl;
+		std::cout << "SWEPolvani:" << std::endl;
+		std::cout << " + Rossby number: " << r << std::endl;
+		std::cout << " + Froude number: " << f << std::endl;
+		std::cout << std::endl;
+#endif
 	}
 };
 

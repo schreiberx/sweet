@@ -918,9 +918,9 @@ public:
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
-
 			int resx_data;
 			int resy_data;
+
 			double err_L1; // physical space
 			double err_L2; // physical space
 			double err_Linf; // physical space

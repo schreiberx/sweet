@@ -2,7 +2,7 @@
  * SWEETVectorMath.hpp
  *
  *  Created on: Mar 27, 2020
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber <schreiberx@gmail.com>
  */
 
 #include <sweet/ScalarDataArray.hpp>
