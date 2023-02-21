@@ -62,9 +62,9 @@
 #include "shacksShared/ShackBenchmark.hpp"
 #include "shacksShared/ShackDiagnostics.hpp"
 #include "shacksShared/ShackDiscretization.hpp"
-#include "shacksShared/ShackIOData.hpp"
+#include "shacksShared/ShackShackIOData.hpp"
 #include "shacksShared/ShackMisc.hpp"
-#include "shacksShared/ShackParallelization.hpp"
+#include "shacksShared/ShackShackParallelization.hpp"
 #include "shacksShared/ShackSDC.hpp"
 #include "shacksShared/ShackSimulationCoefficients.hpp"
 #include "shacksShared/ShackTimestepControl.hpp"
@@ -110,13 +110,13 @@ public:
 
 
 	Diagnostics diag;
-	IOData iodata;
+	ShackIOData iodata;
 	Benchmark benchmark;
 	SimulationCoefficients sim;
 	Discretization disc;
 	UserDefined user_defined;
 	Misc misc;
-	Parallelization parallelization;
+	ShackParallelization parallelization;
 	TimestepControl timecontrol;
 	SDC sdc;
 

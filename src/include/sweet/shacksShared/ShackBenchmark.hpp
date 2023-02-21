@@ -11,7 +11,7 @@
 #include <string>
 #include <iostream>
 #include <sweet/ProgramArguments.hpp>
-#include "../shacks/ShackInterface.hpp"
+#include <sweet/shacks/ShackInterface.hpp>
 
 
 /**

@@ -11,14 +11,14 @@
 #include <string>
 #include <iostream>
 #include <sweet/ProgramArguments.hpp>
-#include "../shacks/ShackInterface.hpp"
+#include <sweet/shacks/ShackInterface.hpp>
 
 
 
 /**
  * Parallelization
  */
-class Parallelization	:
+class ShackParallelization	:
 		public sweet::ClassDictionaryInterface
 {
 public:

@@ -9,10 +9,13 @@
 #define SRC_INCLUDE_SWEET_SHACKS_SHACKIODATA_HPP_
 
 
+#include <getopt.h>
+#include <iomanip>
 #include <string>
 #include <iostream>
+#include <limits>
 #include <sweet/ProgramArguments.hpp>
-#include "../shacks/ShackInterface.hpp"
+#include <sweet/shacks/ShackInterface.hpp>
 
 
 
@@ -20,7 +23,7 @@
 /**
  * Input and output data
  */
-class IOData	:
+class ShackIOData	:
 		public sweet::ClassDictionaryInterface
 {
 public:

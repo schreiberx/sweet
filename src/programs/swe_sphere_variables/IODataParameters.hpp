@@ -15,7 +15,7 @@
 
 #include <sweet/ProgramArguments.hpp>
 #include <sweet/ErrorBase.hpp>
-#include "../../include/sweet/classDict/ShackInterface.hpp"
+#include <sweet/shacks/ShackInterface.hpp>
 
 /**
  * Parameters related to input and output data
