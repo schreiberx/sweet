@@ -164,7 +164,7 @@ public:
 
 	static
 	int split2int(
-			const char *i_str,
+			const std::string &i_str,
 			int *o_int0,
 			int *o_int1
 	)
@@ -195,7 +195,7 @@ public:
 
 	static
 	int split2double(
-			const char *i_str,
+			const std::string &i_str,
 			double *o_int0,
 			double *o_int1
 	)

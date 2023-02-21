@@ -70,6 +70,8 @@
 #include "shacksShared/ShackTimestepControl.hpp"
 
 
+#include <sweet/ProgramArguments.hpp>
+
 /**
  * program parameters without specific association.
  * These variables can be used differently for each program
@@ -124,29 +126,29 @@ public:
 
 	void outputConfig()
 	{
-		sim.outputConfig();
-		disc.outputConfig();
-		benchmark.outputConfig();
-		iodata.outputConfig();
-		timecontrol.outputConfig();
+		sim.printClass();
+		disc.printClass();
+		benchmark.printClass();
+		iodata.printClass();
+		timecontrol.printClass();
 
-		rexi.outputConfig();
-		sdc.outputConfig();
-		swe_polvani.outputConfig();
-		misc.outputConfig();
-		parallelization.outputConfig();
-		diag.outputConfig();
+		rexi.printClass();
+		sdc.printClass();
+		swe_polvani.printClass();
+		misc.printClass();
+		parallelization.printClass();
+		diag.printClass();
 
 #if SWEET_PARAREAL
-		parareal.outputConfig();
+		parareal.printClass();
 #endif
 
 #if SWEET_LIBPFASST
-		libpfasst.outputConfig();
+		libpfasst.printClass();
 #endif
 
 #if SWEET_XBRAID
-		xbraid.outputConfig();
+		xbraid.printClass();
 #endif
 
 	}
@@ -179,30 +181,29 @@ public:
 
 	void print_params(const char *i_user_defined_program_parameters[])
 	{
+		sim.printProgramArguments();
+		benchmark.printProgramArguments();
+		parallelization.printProgramArguments();
+		disc.printProgramArguments();
+		iodata.printProgramArguments();
 
-		sim.outputProgParams();
-		benchmark.outputProgParams();
-		parallelization.outputProgParams();
-		disc.outputProgParams();
-		iodata.outputProgParams();
 
-
-		misc.outputProgParams();
-		rexi.outputProgParams();
-		sdc.outputProgParams();
-		swe_polvani.outputProgParams();
+		misc.printProgramArguments();
+		rexi.printProgramArguments();
+		sdc.printProgramArguments();
+		swe_polvani.printProgramArguments();
 
 
 #if SWEET_PARAREAL
-		parareal.printOptions();
+		parareal.printProgramArguments();
 #endif
 
 #if SWEET_LIBPFASST
-		libpfasst.printOptions();
+		libpfasst.printProgramArguments();
 #endif
 
 #if SWEET_XBRAID
-		xbraid.printOptions();
+		xbraid.printProgramArguments();
 #endif
 
 		if (i_user_defined_program_parameters != nullptr)
@@ -235,6 +236,41 @@ public:
 			bool i_run_prog_parameter_validation = true
 	)
 	{
+#if 1
+		sweet::ProgramArguments programArguments;
+
+		/*
+		 * Parse program arguments
+		 */
+		if (!programArguments.setup(i_argc, i_argv))
+			SWEETError("ERROR: "+programArguments.error.get());
+
+		sim.processProgramArguments(programArguments);
+		benchmark.processProgramArguments(programArguments);
+		parallelization.processProgramArguments(programArguments);
+		disc.processProgramArguments(programArguments);
+		iodata.processProgramArguments(programArguments);
+
+
+		misc.processProgramArguments(programArguments);
+		rexi.processProgramArguments(programArguments);
+		sdc.processProgramArguments(programArguments);
+		swe_polvani.processProgramArguments(programArguments);
+
+
+#if SWEET_PARAREAL
+		parareal.processProgramArguments(programArguments);
+#endif
+
+#if SWEET_LIBPFASST
+		libpfasst.processProgramArguments(programArguments);
+#endif
+
+#if SWEET_XBRAID
+		xbraid.processProgramArguments(programArguments);
+#endif
+
+#else
 		const int max_options = 200;
 		struct option long_options[max_options+1];
 
@@ -726,7 +762,7 @@ public:
 		{
 			disc.timestepping_order2 = disc.timestepping_order;
 		}
-
+#endif
 		return true;
 	}
 };

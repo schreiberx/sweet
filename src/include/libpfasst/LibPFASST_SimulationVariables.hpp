@@ -276,8 +276,8 @@ public:
 		i_pa.getArgumentValueByKey("--libpfasst-u8", hyperviscosity_8_str);
 
 		std::string tmp;
-		i_pa.getArgumentValueByKey("--libpfasst-u-fields", tmp);
-		_set_hyperviscosity_fields(tmp);
+		if (i_pa.getArgumentValueByKey("--libpfasst-u-fields", tmp))
+			_set_hyperviscosity_fields(tmp);
 
 		return error.forwardFromWithPositiveReturn(i_pa.error);
 	}

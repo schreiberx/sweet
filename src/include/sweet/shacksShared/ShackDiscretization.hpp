@@ -275,7 +275,7 @@ std::cout << "0" << std::endl;
 		if (i_pa.getArgumentValueByKey("-N", tmp_N))
 		{
 
-			int c = StringSplit::split2int(optarg, &space_res_physical[0], &space_res_physical[1]);
+			int c = StringSplit::split2int(tmp_N, &space_res_physical[0], &space_res_physical[1]);
 			if (c == 1)
 				space_res_physical[1] = space_res_physical[0];
 		}
@@ -284,7 +284,7 @@ std::cout << "0" << std::endl;
 		if (i_pa.getArgumentValueByKey("-M", tmp_M))
 		{
 
-			int c = StringSplit::split2int(optarg, &space_res_spectral[0], &space_res_spectral[1]);
+			int c = StringSplit::split2int(tmp_M, &space_res_spectral[0], &space_res_spectral[1]);
 			if (c == 1)
 				space_res_spectral[1] = space_res_spectral[0];
 		}

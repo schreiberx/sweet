@@ -19,7 +19,6 @@
 
 namespace sweet
 {
-
 /*
  * Program argument parser
  *

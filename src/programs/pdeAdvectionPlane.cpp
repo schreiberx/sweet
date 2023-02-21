@@ -1,19 +1,17 @@
 /*
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/advectionPlane
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pdeAdvectionPlane/
  */
 
 #include <sweet/defaultPrecompilerValues.hpp>
-
 #include <sweet/ErrorBase.hpp>
-
 #include <sweet/ProgramArguments.hpp>
-
 #include <sweet/plane/Plane.hpp>
 #include <sweet/shacks/ShackDictionary.hpp>
-#include "pdeAdvectionPlane/Adv_Plane_TimeSteppers.hpp"
 
+#include "pdeAdvectionPlane/Adv_Plane_TimeSteppers.hpp"
 #include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
+
 //#include <sweet/SimulationVariables.hpp>
 
 
@@ -85,11 +83,22 @@ public:
 		PlaneData_Spectral prog_h_t0;	// at t0
 		PlaneData_Spectral prog_u;
 		PlaneData_Spectral prog_v;
+
+		SimPlaneData()
+		{
+		}
+
+		void setup(PlaneDataConfig *i_planeDataConfig)
+		{
+			prog_h.setup(i_planeDataConfig);
+			prog_h_t0.setup(i_planeDataConfig);
+			prog_u.setup(i_planeDataConfig);
+			prog_v.setup(i_planeDataConfig);
+		}
 	};
 
 	SimPlaneData *simPlaneData;
 
-#if 0
 	Adv_Plane_TimeSteppers timeSteppers;
 
 
@@ -104,9 +113,8 @@ public:
 	SWEPlaneBenchmarksCombined planeBenchmarkCombined;
 
 	double max_error_h0 = -1;
-#endif
 
-//	PDEAdvectionPlaneParameters *pdeAdvectionPlaneParameters;
+
 	SimulationCoefficients *sim;
 	Diagnostics *diagnostics;
 	Discretization *disc;
@@ -119,7 +127,12 @@ public:
 public:
 	SimulationInstance()	:
 		planeDataConfig(nullptr),
-		ops(nullptr)
+		ops(nullptr),
+		sim(nullptr),
+		diagnostics(nullptr),
+		disc(nullptr),
+		misc(nullptr),
+		timestepControl(nullptr)
 #if SWEET_GUI
 		,viz_plane_data(planeDataConfig)
 #endif
@@ -203,7 +216,6 @@ public:
 
 		if (!classDict.processProgramArguments(programArguments))
 		{
-			//classDict.printProgramArguments();
 			error.forwardFrom(programArguments.error);
 			return false;
 		}
@@ -237,13 +249,6 @@ public:
 
 		simPlaneData->prog_h_t0 = simPlaneData->prog_h;
 
-		// setup planeDataconfig instance again
-		planeDataConfigInstance.setupAuto(
-				pdePlaneDiscretization->space_res_physical,
-				pdePlaneDiscretization->space_res_spectral,
-				pdePlaneDiscretization->reuse_spectral_transformation_plans
-			);
-
 		timeSteppers.setup(
 				pdePlaneDiscretization->timestepping_method,
 				*ops,
@@ -268,7 +273,7 @@ public:
 			);
 
 		simPlaneData = new SimPlaneData;
-		simPlaneData->prog_h.setup(planeDataConfig);
+		simPlaneData->setup(planeDataConfig);
 
 		return true;
 	}
