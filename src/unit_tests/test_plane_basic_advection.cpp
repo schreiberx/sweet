@@ -913,8 +913,6 @@ int main(
 
 				simulationAdvection.run_timestep();
 
-				double error = compute_current_error(&simulationAdvection);
-				std::cout << "Error in height: " << error << std::endl;
 				if (simulationAdvection.instability_detected())
 				{
 					std::cout << "INSTABILITY DETECTED" << std::endl;
@@ -978,10 +976,11 @@ int main(
 						output_string_conv << "dx=" << cell_size_x << "." << cell_size_x;
 					}
 					break;
+
 				}
+
 			}	// while true
 
-			exit(1);
 			time.stop();
 
 			double seconds = time();

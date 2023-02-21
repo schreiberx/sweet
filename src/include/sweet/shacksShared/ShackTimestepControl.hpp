@@ -59,22 +59,25 @@ public:
 		std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
 	}
 
+	/*
+	 * Check arguments
+	 */
+	bool validateArguments()
+	{
+		if (std::isinf(max_simulation_time) && max_timesteps_nr == std::numeric_limits<int>::max())
+			return error.set("timecontrol.max_simulation_time == inf and timecontrol.max_simulation_nr == max");
+
+		return true;
+	}
+
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		i_pa.getArgumentValueByKey("--dt", current_timestep_size);
-		i_pa.getArgumentValueBy2Keys("--max-wallclock-time", "-t", max_wallclock_time);
+		i_pa.getArgumentValueByKey("--max-wallclock-time", max_wallclock_time);
+		i_pa.getArgumentValueByKey("-t", max_simulation_time);
 		i_pa.getArgumentValueByKey("--T", max_timesteps_nr);
 
 		setup_timestep_size = current_timestep_size;
-
-#pragma warning "TODO: Put this check somewhere else"
-#if 0
-		if (max_simulation_time < 0)
-			return error.set("timecontrol.max_simulation_time < 0");
-
-		if (max_timesteps_nr < 0)
-			return error.set("timecontrol.max_timesteps_nr < 0");
-#endif
 
 		current_timestep_nr = 0;
 		current_simulation_time = 0;
