@@ -188,4 +188,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONVARIABLES_HPP_ */
+#endif

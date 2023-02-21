@@ -1059,7 +1059,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_PARAREAL
-		simVars.parareal.processProgramArguments();
+		simVars.parareal.printProgramArguments();
 #endif
 		return -1;
 	}
