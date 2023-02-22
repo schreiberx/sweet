@@ -880,6 +880,8 @@ public:
 
 		int nvar = N;
 
+		std::cout << "ALSKDJASD" << std::endl;
+		exit(1);
 		PInT_Common::store_pint_error(
 						this->parareal_data_output,
 						parareal_data_ref,

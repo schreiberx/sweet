@@ -6,6 +6,8 @@
  *
  */
 
+#include <sweet/defaultPrecompilerValues.hpp>
+
 /*
  * Contains functions used by both Parareal and Xbraid (and possibly PFASST?) implementations in SWEET,
  * mostly error computation and file output functions.

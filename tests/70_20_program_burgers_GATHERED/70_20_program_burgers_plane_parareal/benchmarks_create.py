@@ -100,8 +100,7 @@ jg.runtime.compute_error = 0
 jg = DisableGUI(jg)
 
 
-# DEPRECATED to use .CSV output!!!
-jg.runtime.output_file_mode = 'csv'
+jg.runtime.output_file_mode = 'bin'
 
 
 
