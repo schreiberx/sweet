@@ -145,10 +145,10 @@ public:
 		std::cout << std::endl;
 		std::cout << "INPUT/OUTPUT:" << std::endl;
 		for (std::size_t i = 0; i < initial_condition_data_filenames.size(); i++)
-			std::cout << "    - filename " << i << " " << initial_condition_data_filenames[i] << std::endl;
+			std::cout << "    - filename: " << i << " " << initial_condition_data_filenames[i] << std::endl;
 		std::cout << " + input_data_binary: " << initial_condition_input_data_binary << std::endl;
-		std::cout << " + output_file_name " << output_file_name << std::endl;
-		std::cout << " + output_file_mode " << output_file_mode << std::endl;
+		std::cout << " + output_file_name: " << output_file_name << std::endl;
+		std::cout << " + output_file_mode: " << output_file_mode << std::endl;
 		std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
 		std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
 		std::cout << " + output_time_scale: " << output_time_scale << std::endl;

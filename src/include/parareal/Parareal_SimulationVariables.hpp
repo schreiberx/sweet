@@ -110,8 +110,8 @@ public:
 	 * Maximum number of parareal iterations
 	 */
 	int max_iter = -1;
-public:
 
+public:
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;

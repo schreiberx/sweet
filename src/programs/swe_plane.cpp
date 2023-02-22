@@ -291,7 +291,7 @@ public:
 				simVars
 			);
 
-		if (simVars.misc.compute_errors)
+		if (simVars.misc.compute_error)
 		{
 			//Compute difference to initial condition (makes more sense in steady state cases, but useful in others too)
 			compute_error_difference_to_initial_condition = true;
@@ -1077,7 +1077,7 @@ int main(int i_argc, char *i_argv[])
 	// Print header
 	std::cout << std::endl;
 	simVars.outputConfig();
-	std::cout << "Computing error: " << simVars.misc.compute_errors << std::endl;
+	std::cout << "Computing error: " << simVars.misc.compute_error << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -1346,7 +1346,7 @@ int main(int i_argc, char *i_argv[])
 					std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
 					std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_enstrophy_start)/simulationSWE->diagnostics_potential_enstrophy_start) << std::endl;
 
-					if (simVars.misc.compute_errors)
+					if (simVars.misc.compute_error)
 					{
 						std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
 						std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;

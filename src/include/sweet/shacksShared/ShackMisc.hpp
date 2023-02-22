@@ -26,7 +26,7 @@ public:
 	int verbosity = 0;
 
 	/// compute errors
-	int compute_errors = 0;
+	int compute_error = 0;
 
 	/// do instability checks for simulation
 	int instability_checks = 1;
@@ -69,7 +69,7 @@ public:
 		std::cout << "	-d [int]			accuracy of floating point output" << std::endl;
 		std::cout << "	-i [file0][;file1][;file3]...	string with filenames for initial conditions" << std::endl;
 		std::cout << "					specify BINARY; as first file name to read files as binary raw data" << std::endl;
-		std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
+		std::cout << "	--compute-error [int]          Compute errors when possible [1], default=0	" << std::endl;
 		std::cout << "	--use-local-visc [0/1]	Viscosity will be applied only on nonlinear divergence, default:0" << std::endl;
 		std::cout << "	--reuse-plans [0/1]	Save plans for fftw transformations and SH transformations" << std::endl;
 		std::cout << "					-1: use only estimated plans (no wisdom)" << std::endl;
@@ -82,7 +82,7 @@ public:
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
+		i_pa.getArgumentValueByKey("--compute-error", compute_error);
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
 		i_pa.getArgumentValueByKey("--use-nonlinear-only-visc", use_nonlinear_only_visc);
 
@@ -109,7 +109,7 @@ public:
 		std::cout << std::endl;
 		std::cout << "MISC:" << std::endl;
 		std::cout << " + verbosity: " << verbosity << std::endl;
-		std::cout << " + compute_errors " << compute_errors << std::endl;
+		std::cout << " + compute_errors " << compute_error << std::endl;
 		std::cout << " + instability_checks: " << instability_checks << std::endl;
 		std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 		std::cout << " + vis_id: " << vis_id << std::endl;
