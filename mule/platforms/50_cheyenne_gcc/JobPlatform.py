@@ -357,9 +357,9 @@ def jobscript_get_compile_command(jg : JobGeneration):
     	multiline text with compile command to generate executable
     """
 
-    content = """
+    content = f"""
 
-SCONS="scons """+jg.compile.getSConsParams()+"""
+SCONS="scons {jg.compile.getSConsParams()}"
 echo "$SCONS"
 $SCONS || exit 1
 """
