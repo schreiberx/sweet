@@ -206,7 +206,7 @@ def jobscript_get_compile_command(jg, separate_file_output = False):
 
     content = """
 
-SCONS="scons """+jg.compile.getSConsParams()+' -j 4"'+"""
+SCONS="scons """+jg.compile.getSConsParams()+"""
 echo "$SCONS"
 $SCONS || exit 1
 """
