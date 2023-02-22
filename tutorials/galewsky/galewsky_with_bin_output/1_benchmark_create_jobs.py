@@ -112,12 +112,6 @@ p.runtime.verbosity = 0
 
 
 #
-# Compute error
-#
-p.runtime.compute_error = 0
-
-
-#
 # Preallocate the REXI matrices
 #
 #p.runtime.rexi_sphere_preallocation = 1
