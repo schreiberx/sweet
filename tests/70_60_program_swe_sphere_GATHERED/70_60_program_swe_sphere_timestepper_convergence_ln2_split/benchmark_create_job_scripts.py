@@ -51,7 +51,7 @@ jg.runtime.benchmark_name = "gaussian_bump"
 #
 # Compute error
 #
-jg.runtime.compute_error = 0
+jg.runtime.compute_errors = 0
 
 #
 # Preallocate the REXI matrices

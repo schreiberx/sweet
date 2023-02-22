@@ -53,7 +53,7 @@ int main(int i_argc, char *i_argv[])
 
 	// input parameter names (specific ones for this program)
 	const char *user_defined_prog_params[] = {
-			"compute-error",
+			"compute-errors",
 			nullptr
 	};
 
@@ -66,7 +66,7 @@ int main(int i_argc, char *i_argv[])
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
-		std::cout << "--compute-error [0/1]Output errors (if available, default: 1)" << std::endl;
+		std::cout << "--compute-errors [0/1] Output errors (if available, default: 1)" << std::endl;
 		return -1;
 	}
 

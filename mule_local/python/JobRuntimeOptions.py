@@ -135,7 +135,7 @@ class JobRuntimeOptions(InfoError):
         self.max_simulation_time = 0.001
         self.max_wallclock_time = -1
 
-        self.compute_error = 0
+        self.compute_errors = 0
 
         self.num_threads_space = -1
         self.reuse_plans = "quick"
@@ -779,7 +779,7 @@ class JobRuntimeOptions(InfoError):
 
         retval += ' --semi-lagrangian-approximate-sphere-geometry='+str(self.semi_lagrangian_approximate_sphere_geometry)
 
-        retval += ' --compute-error='+str(self.compute_error)
+        retval += ' --compute-errors='+str(self.compute_errors)
 
         retval += ' --num-threads-space='+str(self.num_threads_space)
 

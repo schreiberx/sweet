@@ -38,7 +38,7 @@ jg.runtime.benchmark_name = 'geostrophic_balance_linear'
 jg.runtime.space_res_spectral = 128
 jg.runtime.space_res_physical = None
 
-jg.runtime.compute_error = 1
+jg.runtime.compute_errors = 1
 
 # run 10 time steps
 jg.runtime.max_simulation_time = 10*30

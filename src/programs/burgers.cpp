@@ -280,7 +280,7 @@ public:
 
 		timestep_output();
 
-      if (simVars.misc.compute_error)
+      if (simVars.misc.compute_errors)
       {
          bool foundl = (simVars.disc.timestepping_method.find("l_")==0) || (simVars.disc.timestepping_method.find("_l_")!=std::string::npos);
          bool foundn = (simVars.disc.timestepping_method.find("n_")==0) || (simVars.disc.timestepping_method.find("_n_")!=std::string::npos);
@@ -424,7 +424,7 @@ public:
 		if (simVars.misc.verbosity > 0)
 		{
 			update_diagnostics();
-			if (simVars.misc.compute_error)
+			if (simVars.misc.compute_errors)
 			{
 				PlaneData_Physical tmp(planeDataConfig);
 				tmp = compute_errors2(prog_u, prog_v).toPhys();
@@ -467,7 +467,7 @@ public:
 				header << "\tTOTAL_ENERGY";
 			rows << "\t" << simVars.diag.total_energy;
 
-			if (simVars.misc.compute_error)
+			if (simVars.misc.compute_errors)
 			{
 				if (simVars.timecontrol.current_timestep_nr == 0)
 					header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
@@ -517,7 +517,7 @@ public:
 		PlaneData_Physical ts_u_phys = ts_u.toPhys();
 		PlaneData_Physical ts_v_phys = ts_v.toPhys();
 
-		if (simVars.misc.compute_error)
+		if (simVars.misc.compute_errors)
 		{
 			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
 			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
@@ -620,7 +620,7 @@ public:
 		PlaneData_Physical ts_u_phys = ts_u.toPhys();
 		PlaneData_Physical ts_v_phys = ts_v.toPhys();
 
-		if (simVars.misc.compute_error)
+		if (simVars.misc.compute_errors)
 		{
 			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
 			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
@@ -926,7 +926,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << "---------------------------------" << std::endl;
 	simVars.outputConfig();
 	std::cout << "LOCAL PARAMETERS" << std::endl;
-	std::cout << "Computing error: " << simVars.misc.compute_error << std::endl;
+	std::cout << "Computing error: " << simVars.misc.compute_errors << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -1062,7 +1062,7 @@ int main(int i_argc, char *i_argv[])
 			{
 				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-simulationBurgers->diagnostics_energy_start) << std::endl;
 
-				if (simVars.misc.compute_error)
+				if (simVars.misc.compute_errors)
 				{
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark.benchmark_analytical_error_maxabs_u << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark.benchmark_analytical_error_maxabs_v << std::endl;

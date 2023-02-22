@@ -68,7 +68,7 @@ jg.runtime.benchmark_name = "rossby_haurwitz_wave"
 #
 # Compute error or difference to initial data
 #
-jg.runtime.compute_error = 0
+jg.runtime.compute_errors = 0
 
 # Enable/Disbale GUI
 #jg = EnableGUI(jg)

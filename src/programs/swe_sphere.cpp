@@ -455,7 +455,7 @@ public:
 
 	void timestep_do_output()
 	{
-		if (simVars.misc.compute_error)
+		if (simVars.misc.compute_errors)
 		{
 			/*
 			 * Check for stationary solutions

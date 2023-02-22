@@ -93,7 +93,7 @@ jg.runtime.max_simulation_time = 1.
 jg.runtime.output_timestep_size = 0.1
 
 # Compute error
-jg.runtime.compute_error = 0
+jg.runtime.compute_errors = 0
 
 # Enable/Disbale GUI
 #jg = EnableGUI(jg)
