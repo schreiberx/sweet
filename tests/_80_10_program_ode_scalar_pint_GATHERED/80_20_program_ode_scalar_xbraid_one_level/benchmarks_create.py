@@ -19,10 +19,8 @@ from mule.SWEETRuntimeParametersScenarios import *
 from mule.JobParallelization import *
 from mule.JobParallelizationDimOptions import *
 
-simulation_to_run = sys.argv[1];
-tsm_fine = sys.argv[2];
-tsm_coarse = sys.argv[3];
-nb_pt = int(sys.argv[4]);
+tsm_fine = "dummy";
+tsm_coarse = "dummy";
 
 #Create main compile/run options
 jg = JobGeneration()
@@ -91,42 +89,59 @@ cfactors = [2, 4, 8];
 nbs_levels = [2, 4];
 nb_pts = [1];
 
-if simulation_to_run == "xbraid":
 
-    jg.compile.xbraid = "mpi";
-    jg.runtime.xbraid_enabled = 1;
-    jg.runtime.xbraid_max_levels = 3
-    jg.runtime.xbraid_skip = 0
-    jg.runtime.xbraid_min_coarse = 2
-    jg.runtime.xbraid_nrelax = 1
-    jg.runtime.xbraid_nrelax0 = -1
-    jg.runtime.xbraid_tol = 1e-14
-    jg.runtime.xbraid_tnorm = 2
-    jg.runtime.xbraid_cfactor = 2
-    jg.runtime.xbraid_cfactor0 = -1
-    jg.runtime.xbraid_max_iter = 10
-    jg.runtime.xbraid_fmg = 0
-    jg.runtime.xbraid_res = 0
-    jg.runtime.xbraid_storage = 0
-    jg.runtime.xbraid_print_level = 2
-    jg.runtime.xbraid_access_level = 1
-    jg.runtime.xbraid_run_wrapper_tests = 0
-    jg.runtime.xbraid_fullrnorm = 2
-    jg.runtime.xbraid_use_seq_soln = 0
-    jg.runtime.xbraid_use_rand = 1
-    jg.runtime.xbraid_timestepping_method = "dummy"
-    jg.runtime.xbraid_timestepping_order = "2"
-    jg.runtime.xbraid_timestepping_order2 = "2"
-    jg.runtime.xbraid_verbosity = 0;
-    jg.runtime.xbraid_load_ref_csv_files = 0;
-    jg.runtime.xbraid_path_ref_csv_files = "";
-    jg.runtime.xbraid_load_fine_csv_files = 0;
-    jg.runtime.xbraid_path_fine_csv_files = "";
-    jg.runtime.xbraid_store_iterations = 0;
+## Reference job
+jg.reference_job = True
+
+jg.compile.xbraid = "none";
+jg.runtime.xbraid_enabled = 0;
+
+jg.compile.parareal = "none";
+jg.runtime.parareal_enabled = 0;
+jg.gen_jobscript_directory();
 
 
-    jg.runtime.xbraid_max_levels = 1
-    jg.runtime.xbraid_store_iterations = 1;
+## MGRIT jobs
+
+jg.reference_job = False
+jg.reference_job_unique_id = jg.job_unique_id
+
+jg.compile.xbraid = "mpi";
+jg.runtime.xbraid_enabled = 1;
+jg.runtime.xbraid_max_levels = 3
+jg.runtime.xbraid_skip = 0
+jg.runtime.xbraid_min_coarse = 2
+jg.runtime.xbraid_nrelax = 1
+jg.runtime.xbraid_nrelax0 = -1
+jg.runtime.xbraid_tol = 1e-14
+jg.runtime.xbraid_tnorm = 2
+jg.runtime.xbraid_cfactor = 2
+jg.runtime.xbraid_cfactor0 = -1
+jg.runtime.xbraid_max_iter = 10
+jg.runtime.xbraid_fmg = 0
+jg.runtime.xbraid_res = 0
+jg.runtime.xbraid_storage = 0
+jg.runtime.xbraid_print_level = 2
+jg.runtime.xbraid_access_level = 1
+jg.runtime.xbraid_run_wrapper_tests = 0
+jg.runtime.xbraid_fullrnorm = 2
+jg.runtime.xbraid_use_seq_soln = 0
+jg.runtime.xbraid_use_rand = 1
+jg.runtime.xbraid_timestepping_method = "dummy"
+jg.runtime.xbraid_timestepping_order = "2"
+jg.runtime.xbraid_timestepping_order2 = "2"
+jg.runtime.xbraid_verbosity = 0;
+jg.runtime.xbraid_load_ref_csv_files = 0;
+jg.runtime.xbraid_path_ref_csv_files = "";
+jg.runtime.xbraid_load_fine_csv_files = 0;
+jg.runtime.xbraid_path_fine_csv_files = "";
+jg.runtime.xbraid_store_iterations = 0;
+
+
+jg.runtime.xbraid_max_levels = 1
+jg.runtime.xbraid_store_iterations = 1;
+
+for nb_pt in range(1,4):
     jg.runtime.xbraid_pt = nb_pt;
     if nb_pt > 1:
         params_pspace_num_cores_per_rank = [jg.platform_resources.num_cores_per_socket]
@@ -150,15 +165,4 @@ if simulation_to_run == "xbraid":
 
     jg.gen_jobscript_directory();
 
-elif simulation_to_run == "ref":
 
-    jg.compile.xbraid = "none";
-    jg.runtime.xbraid_enabled = 0;
-
-    ## fine simulation
-    jg.compile.parareal = "none";
-    jg.runtime.parareal_enabled = 0;
-    jg.gen_jobscript_directory();
-    f = open("tmp_fine_sim.txt", "w");
-    f.write(jg.job_dirpath);
-    f.close();

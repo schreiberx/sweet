@@ -123,7 +123,7 @@ def JobsData_GroupsCleanupPostprocessed(
                         value = job_data[jindex]
                         job_data[tag_dst] = value
 
-                        print(f"{tag_dst}: value")
+                        print(f"{tag_dst}: {value}")
 
 
 

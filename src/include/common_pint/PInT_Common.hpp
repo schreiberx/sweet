@@ -50,6 +50,7 @@ protected:
 	// list of SL schemes
 	std::vector<std::string> SL_tsm = {};
 
+	std::string output_reference_filenames = "";
 
 #if SWEET_PARAREAL_PLANE_BURGERS
 	// required for computing analytical solution
@@ -154,6 +155,8 @@ public:
 			double t
 	)
 	{
+
+
 #if SWEET_PARAREAL_SCALAR || SWEET_XBRAID_SCALAR
 		double u_out;
 		i_data->GenericData_Scalar_to_dataArrays(u_out);
@@ -163,7 +166,15 @@ public:
 		{
 			std::string output_filenames = "";
 			output_filenames = write_file_pint_scalar(u_out, "prog_u", iteration_id, t);
+
+			if (std::abs(t - simVars->timecontrol.max_simulation_time) < 1e-14)
+			{
+				if (this->output_reference_filenames.size() > 0)
+					this->output_reference_filenames += ";";
+				this->output_reference_filenames += output_filenames;
+			}
 		}
+
 
 #elif SWEET_PARAREAL_PLANE || SWEET_XBRAID_PLANE
 	#if SWEET_PARAREAL_PLANE_BURGERS || SWEET_XBRAID_PLANE_BURGERS
@@ -392,6 +403,12 @@ public:
 
 
 #endif
+
+
+		if (std::abs(t - simVars->timecontrol.max_simulation_time) < 1e-14)
+			if (iteration_id == 0 && simVars->iodata.output_file_name.size() > 0)
+				std::cout << "[MULE] reference_filenames: " << this->output_reference_filenames << std::endl;
+
 	};
 
 
