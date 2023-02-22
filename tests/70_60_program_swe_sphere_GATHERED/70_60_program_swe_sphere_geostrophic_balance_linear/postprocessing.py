@@ -32,7 +32,9 @@ for key, g in job_groups.items():
 
 errors = []
 for key, jobs_data in job_groups.items():
+    print(f"group_key: {key}")
     for job_key, job_data in jobs_data.items():
+        print(f"job_key: {job_key}")
 
         # Get all output.errors.* lines
         error_line_keys = []
