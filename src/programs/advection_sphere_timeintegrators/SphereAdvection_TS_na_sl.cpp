@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "../advection_sphere_timeintegrators/SphereAdvection_TS_na_sl.hpp"

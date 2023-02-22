@@ -2,7 +2,7 @@
  * ProgramArguments.hpp
  *
  *  Created on: Feb 18, 2023
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_PROGRAMARGUMENTS_HPP_
@@ -19,7 +19,6 @@
 
 namespace sweet
 {
-
 /*
  * Program argument parser
  *
@@ -103,7 +102,7 @@ private:
 	{
 		if (argumentWithKeyExists(i_key))
 		{
-			error.errorSet("Argument with key '"+i_key+"' already exists - did you specify this twice?");
+			error.set("Argument with key '"+i_key+"' already exists - did you specify this twice?");
 			return;
 		}
 		_arguments.push_back(
@@ -119,11 +118,10 @@ public:
 	{
 		if (argc == 0)
 		{
-			error.errorSet("No argument at all available!");
+			error.set("No argument at all available!");
 			return false;
 		}
 
-		std::cout << argv[0] << std::endl;
 		_arg0 = argv[0];
 
 		/*
@@ -148,7 +146,7 @@ public:
 				{
 					std::stringstream ss;
 					ss << "Error parsing argument " << i << ": '" << arg << "' (too short)" << std::endl;
-					error.errorSet(ss.str());
+					error.set(ss.str());
 					return false;
 				}
 
@@ -173,7 +171,7 @@ public:
 				{
 					std::stringstream ss;
 					ss << "Error parsing argument " << i << ": '" << arg << "' (missing dashes)" << std::endl;
-					error.errorSet(ss.str());
+					error.set(ss.str());
 					return false;
 				}
 
@@ -187,6 +185,20 @@ public:
 
 				if (pos == std::string::npos)
 				{
+					/*
+					 * Special handling for
+					 * "--help", "-h"
+					 * which will be simply stored with an empty key
+					 */
+					if (arg == "--help" || arg == "-h")
+					{
+
+						_addArguments(
+								arg,
+								""
+							);
+						continue;
+					}
 					/*
 					 * Not found => continue
 					 */
@@ -213,7 +225,7 @@ public:
 
 		if (state == 1)
 		{
-			error.errorSet("Invalid format of program arguments (last one could not be parsed)");
+			error.set("Invalid format of program arguments (last one could not be parsed)");
 			return false;
 		}
 
@@ -245,7 +257,7 @@ public:
 			if (!a.argumentParsedAndAccessed)
 			{
 				if (i_create_error)
-					error.errorSet("Argument '"+a.key+"' not processed!");
+					error.set("Argument '"+a.key+"' not processed!");
 
 				return false;
 			}
@@ -271,7 +283,7 @@ public:
 		}
 
 		if (!i_no_error_if_key_is_missing)
-			error.errorSet(std::string("")+"Key '"+i_key+"' not found");
+			error.set(std::string("")+"Key '"+i_key+"' not found");
 
 		return false;
 	}
@@ -283,7 +295,7 @@ public:
 		{
 			if (i_key == *i)
 			{
-				error.errorSet("Key '"+i_key+"' parsed twice");
+				error.set("Key '"+i_key+"' parsed twice");
 				return false;
 			}
 		}
@@ -311,7 +323,7 @@ public:
 		_ProgramArgument *pa;
 		if (!_getFullArgumentByKey(i_key, &pa))
 		{
-			error.errorReset();
+			error.reset();
 			if (!_getFullArgumentByKey(i_key, &pa))
 			{
 				return false;
@@ -341,7 +353,7 @@ public:
 		_ProgramArgument *pa;
 		if (!_getFullArgumentByKey(i_key, &pa))
 		{
-			error.errorReset();
+			error.reset();
 			if (!_getFullArgumentByKey(i_key, &pa))
 			{
 				return false;
@@ -350,7 +362,7 @@ public:
 
 		if (_errorForDoubleParsing && pa->argumentParsedAndAccessed)
 		{
-			error.errorSet("Argument with key '"+i_key+"' already parsed");
+			error.set("Argument with key '"+i_key+"' already parsed");
 			return false;
 		}
 
@@ -360,7 +372,7 @@ public:
 		}
 		catch (const std::exception &e)
 		{
-			error.errorSet("Exception caught during conversion of value '"+pa->value+"' to double: "+e.what());
+			error.set("Exception caught during conversion of value '"+pa->value+"' to double: "+e.what());
 			return false;
 		}
 
@@ -382,7 +394,7 @@ public:
 		_ProgramArgument *pa;
 		if (!_getFullArgumentByKey(i_key, &pa))
 		{
-			error.errorReset();
+			error.reset();
 			if (!_getFullArgumentByKey(i_key, &pa))
 			{
 				return false;
@@ -391,7 +403,7 @@ public:
 
 		if (_errorForDoubleParsing && pa->argumentParsedAndAccessed)
 		{
-			error.errorSet("Argument with key '"+i_key+"' already parsed");
+			error.set("Argument with key '"+i_key+"' already parsed");
 			return false;
 		}
 
@@ -401,7 +413,7 @@ public:
 		}
 		catch (const std::exception &e)
 		{
-			error.errorSet("Exception caught during conversion of value '"+pa->value+"' to double: "+e.what());
+			error.set("Exception caught during conversion of value '"+pa->value+"' to double: "+e.what());
 			return false;
 		}
 
@@ -413,6 +425,7 @@ public:
 	/*
 	 * Get boolean value
 	 */
+public:
 	bool getArgumentValueByKey(
 			const std::string& i_key,
 			bool &o_value,
@@ -422,7 +435,7 @@ public:
 		_ProgramArgument* pa;
 		if (!_getFullArgumentByKey(i_key, &pa))
 		{
-			error.errorReset();
+			error.reset();
 			if (!_getFullArgumentByKey(i_key, &pa))
 			{
 				return false;
@@ -431,7 +444,7 @@ public:
 
 		if (_errorForDoubleParsing && pa->argumentParsedAndAccessed)
 		{
-			error.errorSet("Argument with key '"+i_key+"' already parsed");
+			error.set("Argument with key '"+i_key+"' already parsed");
 			return false;
 		}
 
@@ -457,7 +470,7 @@ public:
 			return true;
 		}
 
-		error.errorSet("Cannot parse value '" + val +"' as boolean type");
+		error.set("Cannot parse value '" + val +"' as boolean type");
 
 		return false;
 	}
@@ -472,11 +485,12 @@ public:
 	{
 		_ProgramArgument pa;
 
-		error.errorAssertNoError();
+		error.assertNoError();
+
 		if (getArgumentValueByKey(i_key1, o_value, i_no_error_if_key_is_missing))
 			return true;
 
-		if (error.errorExists())
+		if (error.exists())
 			return false;
 
 		if (getArgumentValueByKey(i_key2, o_value, i_no_error_if_key_is_missing))
@@ -496,17 +510,17 @@ public:
 	{
 		_ProgramArgument pa;
 
-		error.errorAssertNoError();
+		error.assertNoError();
 		if (getArgumentValueByKey(i_key1, o_value, i_no_error_if_key_is_missing))
 			return true;
 
-		if (error.errorExists())
+		if (error.exists())
 			return false;
 
 		if (getArgumentValueByKey(i_key2, o_value, i_no_error_if_key_is_missing))
 			return true;
 
-		if (error.errorExists())
+		if (error.exists())
 			return false;
 
 		if (getArgumentValueByKey(i_key3, o_value, i_no_error_if_key_is_missing))

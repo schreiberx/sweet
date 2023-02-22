@@ -2,7 +2,7 @@
  * SphereData_To_ScalarDataArray.cpp
  *
  *  Created on: 20 Oct 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_CONVERT_SPHEREDATAPHYSICALCOMPLEX_TO_SPHEREDATAPHYSICAL_HPP_

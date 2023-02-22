@@ -52,7 +52,7 @@ jg.runtime.max_simulation_time = 0.1
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
 # Compute error
-jg.runtime.compute_error = 0
+jg.runtime.compute_errors = 0
 
 
 # TODO: time step size

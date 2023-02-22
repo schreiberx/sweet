@@ -1,8 +1,9 @@
 /*
- * PlaneDataPhysical.hpp
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
- *  Created on: 14 Mar 2022
- *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Changelog:
+ *  * 14 Mar 2022, Joao Steinstraesser <joao.steinstraesser@usp.br>
+ *    Split into physical and spectral classes
  */
 
 #ifndef PLANE_DATA_PHYSICAL_HPP_
@@ -17,7 +18,6 @@
 #include <algorithm>
 #include <memory>
 #include <string.h>
-#include <stdlib.h>
 #include <string>
 #include <iostream>
 #include <utility>
@@ -38,7 +38,6 @@
 #include <sweet/SWEETError.hpp>
 #include <sweet/plane/PlaneData_Kernels.hpp>
 
-//#include <sweet/plane/PlaneData_Spectral.hpp>
 class PlaneData_Spectral;
 
 #if SWEET_THREADING_SPACE
@@ -710,14 +709,14 @@ public:
 	}
 
 
-	// Ugly fix to circular dependency between PlaneData_Physical and PlaneData_Spectral
-	// Implementation of basic features of PlaneData_Spectral allowing to convert to psectral space and dealiase
+	/*
+	 * Ugly fix to circular dependency between PlaneData_Physical and PlaneData_Spectral
+	 * Implementation of basic features of PlaneData_Spectral allowing to convert to spectral space and dealiasing
+	 */
 	void dealiasing(
 		PlaneData_Physical& io_data
 	) const
 	{
-		
-
 		// create spectral data container
 		std::complex<double> *spectral_space_data = nullptr;
 		spectral_space_data = MemBlockAlloc::alloc<std::complex<double>>(planeDataConfig->spectral_array_data_number_of_elements * sizeof(std::complex<double>));
@@ -1416,12 +1415,12 @@ public:
 	}
 
 
-/**
- * Write data to VTK file
- *
- * Each array row is stored to a line.
- * Per default, a tab separator is used in each line to separate the values.
- */
+	/**
+	 * Write data to VTK file
+	 *
+	 * Each array row is stored to a line.
+	 * Per default, a tab separator is used in each line to separate the values.
+	 */
 	bool file_physical_saveData_vtk(
 			const char *i_filename,		///< Name of file to store data to
 			const char *i_title,		///< Title of scalars
@@ -1559,6 +1558,8 @@ public:
 	 *
 	 * \return true if data was successfully read
 	 */
+
+#pragma GCC warning "DEPRECATED! Try to avoid this!"
 	bool file_physical_loadRefData_Parareal(
 			const char *i_filename,		///< Name of file to load data from
 			bool i_binary_data = false	///< load as binary data (disabled per default)

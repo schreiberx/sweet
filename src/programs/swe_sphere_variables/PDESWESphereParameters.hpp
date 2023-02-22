@@ -2,7 +2,7 @@
  * VariablesSWESphere.hpp
  *
  *  Created on: Feb 19, 2023
- *      Author: martin
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_VARIABLES_PDESWESPHEREPARAMETERS_HPP_
@@ -10,7 +10,7 @@
 
 #include <sweet/ProgramArguments.hpp>
 #include <sweet/ErrorBase.hpp>
-#include "../../include/sweet/classDict/ClassDictionaryInterface.hpp"
+#include <sweet/shacks/ShackDictionary.hpp>
 #include "../swe_common/PDESWEParametersCommon.hpp"
 
 
@@ -19,12 +19,9 @@
  */
 class PDESWEParametersSphere	:
 	public PDESWEParametersCommon,
-	public ClassDictionaryInterface
+	public sweet::ClassDictionaryInterface
 {
 public:
-
-	sweet::ErrorBase error;
-
 	sweet::ErrorBase& getError()
 	{
 		return error;
@@ -52,11 +49,11 @@ public:
 	double sphere_fsphere_f0 = 0.00007292*2;
 
 
-	void outputVariables(std::string i_prefix = "")
+	void printClass(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
 		std::cout << i_prefix << "SWE PDE on Sphere coefficients:" << std::endl;
-		PDESWEParametersCommon::outputVariables(i_prefix);
+		PDESWEParametersCommon::printClass(i_prefix);
 		std::cout << i_prefix << " + radius: " << sphere_radius << std::endl;
 		std::cout << i_prefix << " + rotating_coriolis_omega: " << sphere_coriolis_omega << std::endl;
 		std::cout << i_prefix << " + use_fsphere: " << sphere_use_fsphere << std::endl;
@@ -66,7 +63,7 @@ public:
 	}
 
 
-	void outputProgramArguments(std::string i_prefix = "")
+	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "Simulation parameters:" << std::endl;
 		PDESWEParametersCommon::outputProgArguments(i_prefix);
@@ -81,25 +78,25 @@ public:
 	{
 		if (!i_pa.getArgumentValueBy2Keys("--pde-sphere-radius", "-a", sphere_radius))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (error.forward(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueBy2Keys("--pde-use-fsphere", "-F", sphere_use_fsphere))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (error.forward(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("--pde-sphere-f0", sphere_fsphere_f0))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (error.forward(i_pa.error))
 				return false;
 		}
 
 		if (!i_pa.getArgumentValueByKey("--pde-coriolis-omega", sphere_coriolis_omega))
 		{
-			if (error.errorForwardFrom(i_pa.error))
+			if (error.forward(i_pa.error))
 				return false;
 		}
 

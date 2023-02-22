@@ -1,6 +1,7 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/advection_plane/
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ *
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pdeAdvectionPlane/
  */
 
 #ifndef SWEET_GUI

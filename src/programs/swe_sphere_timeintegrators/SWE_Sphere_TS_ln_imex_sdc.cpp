@@ -1,7 +1,7 @@
 /*
  * SWE_Sphere_TS_ln_imex_sdc.cpp
  *
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "SWE_Sphere_TS_ln_imex_sdc.hpp"
@@ -74,7 +74,7 @@ void SWE_Sphere_TS_ln_imex_sdc::run_timestep(
 	init_sweep();
 
 	// -- perform sweeps
-	for (size_t k = 0; k < nIter; k++){
+	for (int k = 0; k < nIter; k++){
 		sweep(k);
 	}
 
@@ -130,13 +130,13 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 		// Uses QDelta matrix to initialize node values
 
 		// Local convenient references
-		Mat& q = qMat;
+		//Mat& q = qMat;
 		Mat& qI = qMatDeltaI;
 		Mat& qE = qMatDeltaI;
 		Mat& q0 = qMatDelta0;
 
 		// Loop on nodes (can be parallelized if diagonal)
-		for (size_t i = 0; i < nNodes; i++) {
+		for (int i = 0; i < nNodes; i++) {
 
 			// Initialize with u0 value
 			ts_tmp_state = ts_u0;
@@ -148,7 +148,7 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep() {
 				solveImplicit(ts_tmp_state, dt*q0(i, i));
 			} else {
 				// Add non-linear and linear terms from iteration k (already computed)
-				for (size_t j = 0; j < i; j++) {
+				for (int j = 0; j < i; j++) {
 					axpy(dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
 					axpy(dt*qI(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 				}
@@ -187,27 +187,27 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(size_t k) {
 	const Mat& qDeltaExplicit = qMatDeltaI;
 
 	// Loop on nodes (can be parallelized if diagonal)
-	for (size_t i = 0; i < nNodes; i++) {
+	for (int i = 0; i < nNodes; i++) {
 		
 		// Initialize with u0 value
 		ts_tmp_state = ts_u0;
 		
 		// Add quadrature terms
-		for (size_t j = 0; j < nNodes; j++) {
-			double a = q(i, j);
+		for (int j = 0; j < nNodes; j++) {
+			//double a = q(i, j);
 			axpy(dt*q(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
 			axpy(dt*q(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 		}
 
 		if (!diagonal) {
 			// Add non-linear and linear terms from iteration k+1
-			for (size_t j = 0; j < i; j++) {
+			for (int j = 0; j < i; j++) {
 				axpy(dt*qDeltaExplicit(i, j), ts_nonlinear_tendencies_k1[j], ts_tmp_state);
 				axpy(dt*qDeltaImplicit(i, j), ts_linear_tendencies_k1[j], ts_tmp_state);
 			}
 
 			// Substract non-linear and linear terms from iteration k
-			for (size_t j = 0; j < i; j++) {
+			for (int j = 0; j < i; j++) {
 				axpy(-dt*qDeltaExplicit(i, j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
 				axpy(-dt*qDeltaImplicit(i, j), ts_linear_tendencies_k0[j], ts_tmp_state);
 			}
@@ -238,7 +238,7 @@ void SWE_Sphere_TS_ln_imex_sdc::computeEndPoint()
 		// Compute collocation update
 		const Vec& w = weights;
 		ts_tmp_state = ts_u0;
-		for (size_t j = 0; j < nNodes; j++) {
+		for (int j = 0; j < nNodes; j++) {
 			axpy(dt*w(j), ts_nonlinear_tendencies_k0[j], ts_tmp_state);
 			axpy(dt*w(j), ts_linear_tendencies_k0[j], ts_tmp_state);
 		}
@@ -297,8 +297,9 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		// SDC main parameters
 		nNodes(i_simVars.sdc.nNodes),
 		nIter(i_simVars.sdc.nIter),
-		diagonal(i_simVars.sdc.diagonal),
 		initialSweepType(i_simVars.sdc.initSweepType),
+		diagonal(i_simVars.sdc.diagonal),
+		useEndUpdate(i_simVars.sdc.useEndUpdate),
 
 		// Nodes and weights
 		tau(i_simVars.sdc.nodes),

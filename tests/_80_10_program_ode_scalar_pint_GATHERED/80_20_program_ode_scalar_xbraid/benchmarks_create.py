@@ -67,7 +67,7 @@ jg.runtime.benchmark_name = "unstablejet"
 #
 # Compute error or difference to initial data
 #
-jg.runtime.compute_error = 1
+jg.runtime.compute_errors = 1
 
 # Enable/Disbale GUI
 #jg = EnableGUI(jg)

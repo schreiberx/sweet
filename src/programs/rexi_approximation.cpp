@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <rexi/EXPFunctions.hpp>
@@ -120,7 +120,7 @@ int main(
 
 	std::cout << "+ test_mode: " << test_mode << std::endl;
 
-	simVars.rexi.outputConfig();
+	simVars.rexi.printClass();
 
 	for (std::size_t i = 0; i < rexiCoefficientsSet.rexiCoefficientVector.size(); i++)
 	{

@@ -41,12 +41,21 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
             continue;
         if "_spec_" in f:
             continue;
+
         ## identify variable, time and iteration
         ff = os.path.basename(f).split("_t0");
         var = ff[0];
-        fff = ff[1].split("_iter");
-        t = float(fff[0]);
-        it = int(fff[1].split(".csv")[0]);
+        if "_iter" in ff:
+            fff = ff[1].split("_iter");
+            t = float(fff[0]);
+            it = int(fff[1].split(".csv")[0]);
+        else:
+            foo = ff[1].split(".csv")
+            t = float(foo[0]);
+            it = -1
+
+        #print(f"t: {t}")
+        #print(f"it: {it}")
 
         ## check if csv file already contains computed errors
         if var[:14] == "parareal_error":
@@ -79,7 +88,10 @@ def read_parareal_solution_compute_store_errors(path, ref_sol, ref_type):
 
         dirname = f.split("/")[0];
 
-        error_file = open(dirname + "/parareal_error_" + ref_type + "_" + os.path.basename(f)[7:], "w");
+        errorfilepath = dirname + "/parareal_error_" + ref_type + "_" + os.path.basename(f)[7:]
+
+        print(f"Writing to error file '{errorfilepath}'")
+        error_file = open(errorfilepath, "w");
         error_file.write("errL1 {}\n".format(err_L1));
         error_file.write("errL2 {}\n".format(err_L2));
         error_file.write("errLinf {}".format(err_Linf));

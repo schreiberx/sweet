@@ -39,7 +39,7 @@ jg.runtime.benchmark_name = "rotated_steady_state"
 #
 # We have the real solution for these benchmarks
 #
-jg.runtime.compute_error = 1
+jg.runtime.compute_errors = 1
 
 #
 # Preallocate the REXI matrices

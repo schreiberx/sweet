@@ -83,6 +83,7 @@ for i in {0,1,2};do
 				mv $dirname2/job_bench* .;
 
 				echo_info "---> Computing errors with tsm_fine and tsm_coarse:" $tsm_fine $tsm_coarse
+				echo ./compute_parareal_errors.py $ref_sim $fine_sim
 				./compute_parareal_errors.py $ref_sim $fine_sim || exit 1
 
                                 mv ref_sim $dirname2/.;

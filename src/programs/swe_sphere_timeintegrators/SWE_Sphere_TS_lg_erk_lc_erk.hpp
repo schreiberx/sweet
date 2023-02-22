@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_lg_erk_lc_erk.hpp
  *
  *  Created on: 11 November 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_ERK_LC_ERK_HPP_

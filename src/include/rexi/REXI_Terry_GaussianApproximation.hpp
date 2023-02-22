@@ -2,7 +2,7 @@
  * GaussianApproximation.hpp
  *
  *  Created on: 2 Aug 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_INCLUDE_REXI_REXI_TERRY_GAUSSIANAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_REXI_TERRY_GAUSSIANAPPROXIMATION_HPP_

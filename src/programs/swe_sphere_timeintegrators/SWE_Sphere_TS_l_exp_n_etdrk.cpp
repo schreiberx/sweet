@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_ln_edtrk.cpp
  *
  *  Created on: 21 Aug 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "SWE_Sphere_TS_l_exp_n_etdrk.hpp"

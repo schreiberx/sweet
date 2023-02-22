@@ -2,7 +2,7 @@
  * ScalarDataArray.hpp
  *
  *  Created on: 28 Jun 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_SCALAR_DATA_ARRAY_HPP_
 #define SRC_SCALAR_DATA_ARRAY_HPP_

@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_ln_settls_uv.cpp
  *
  *  Created on: 24 Sep 2019
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Changelog:
  *  	2019-10-24: Partly based on plane version

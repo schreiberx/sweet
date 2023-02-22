@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_IRK_LC_ERK_HPP_

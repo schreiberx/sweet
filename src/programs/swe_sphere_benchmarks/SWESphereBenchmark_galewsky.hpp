@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@Gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_SWE_SPHERE_BENCHMARKS_GALEWSKY_HPP_
