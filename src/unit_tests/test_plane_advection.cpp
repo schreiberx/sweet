@@ -2,6 +2,8 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pdeAdvectionPlane/
+ *
+ * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
 #ifndef SWEET_GUI
@@ -323,18 +325,12 @@ int main(int i_argc, char *i_argv[])
 
 	int initial_spectral_modes = simVars.disc.space_res_spectral[0];
 	if (initial_spectral_modes <= 0)
-	{
 		SWEETError("Please specify the number of MODES");
-	}
 
 	if (simVars.timecontrol.current_timestep_size < 0)
 		SWEETError("Timestep size not set");
 
 	int max_modes = 256;
-
-	// double max modes if only 1st order
-	if (simVars.disc.timestepping_order == 1)
-		max_modes *= 2;
 
 	double dt = simVars.timecontrol.current_timestep_size;
 
@@ -377,7 +373,7 @@ int main(int i_argc, char *i_argv[])
 	#if SWEET_GUI
 		if (simVars.misc.gui_enabled)
 		{
-			planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+			planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 			VisSweet<SimulationInstance> visSweet(&simulation);
 			return 0;
 		}
@@ -389,7 +385,6 @@ int main(int i_argc, char *i_argv[])
 
 			std::cout << "Error compared to initial condition" << std::endl;
 			std::cout << "Lmax error: " << simulation.max_error_h0 << std::endl;
-			std::cout << "RMS error: " << simulation.rms_error_h0 << std::endl;
 
 			if (prev_max_error >= 0)
 			{
@@ -406,8 +401,8 @@ int main(int i_argc, char *i_argv[])
 
 				if (conv*0.9 > std::pow(2.0, (double)(simVars.disc.timestepping_order+1)))
 				{
-					std::cout<< "Convergence too high, might be still correct!" << std::endl;
-					//exit(1);
+					std::cerr << "Convergence too high, stopping here!" << std::endl;
+					exit(1);
 				}
 			}
 			prev_max_error = simulation.max_error_h0;

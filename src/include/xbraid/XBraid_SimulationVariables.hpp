@@ -9,7 +9,7 @@
 #include "../sweet/shacks/ShackInterface.hpp"
 
 struct XBraid_SimulationVariables	:
-	public sweet::ClassDictionaryInterface
+	public sweet::ShackInterface
 {
 
 	/**
@@ -264,7 +264,7 @@ struct XBraid_SimulationVariables	:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

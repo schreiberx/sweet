@@ -1078,7 +1078,7 @@ int main_real(int i_argc, char *i_argv[])
 	if (simVars.misc.verbosity > 3)
 		std::cout << " + setup FFT plane transformations..." << std::endl;
 
-	planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 #endif
 
 	std::ostringstream buf;

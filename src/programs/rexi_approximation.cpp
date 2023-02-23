@@ -120,7 +120,7 @@ int main(
 
 	std::cout << "+ test_mode: " << test_mode << std::endl;
 
-	simVars.rexi.printClass();
+	simVars.rexi.printShack();
 
 	for (std::size_t i = 0; i < rexiCoefficientsSet.rexiCoefficientVector.size(); i++)
 	{

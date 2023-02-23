@@ -468,7 +468,7 @@ int main(int i_argc, char *i_argv[])
 
 						if (simVars.misc.gui_enabled)
 						{
-							planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+							planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 							VisSweet<SimulationInstance> visSweet(&simulation);
 							return 0;

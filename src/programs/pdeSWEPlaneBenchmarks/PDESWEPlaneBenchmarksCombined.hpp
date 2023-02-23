@@ -1,6 +1,4 @@
 /*
- * SWEPlaneBenchmarksCombined.hpp
- *
  *  Created on: 30 Nov 2016
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -15,21 +13,25 @@
 #include <sweet/SimulationVariables.hpp>
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	#include "SWE_bench_Polvani.hpp"
+	#include "PDESWEPlaneBenchPolvani.hpp"
 	#include "SWE_bench_MergeVortex.hpp"
 	#include "SWE_bench_NormalModes.hpp"
 #endif
 
+#include "PDESWEPlaneBenchGaussianBump.hpp"
+
 #include "SWE_bench_UnstableJet.hpp"
 #include "SWE_bench_UnstableJetFast.hpp"
 #include "SWE_bench_UnstableJetAdv.hpp"
-#include "SWE_bench_GaussianBump.hpp"
 
+#include <sweet/shacks/ShackDictionary.hpp>
+#include "../pdeSWEPlane/ShackPDESWEPlaneCoefficients.hpp"
+#include "../pdeAdvectionPlane/ShackPDEAdvectionPlaneCoefficients.hpp"
 #include <sweet/shacksShared/ShackIOData.hpp>
 #include "../../include/sweet/shacksShared/ShackDiagnostics.hpp"
-#include <sweet/shacksShared/ShackDiscretization.hpp>
+#include <sweet/shacksShared/ShackPlaneDiscretization.hpp>
 #include <sweet/shacksShared/ShackMisc.hpp>
-#include "../../include/sweet/shacksShared/ShackBenchmark.hpp"
+#include <sweet/shacksShared/ShackSWEPlaneBenchmark.hpp>
 
 
 class SWEPlaneBenchmarksCombined
@@ -43,60 +45,62 @@ public:
 	// plane or sphere data config
 	const void* ext_forces_data_config;
 
-	SimulationCoefficients *shackSWECoeffs;
-	Discretization *shackDisc;
-	ShackBenchmark *shackBenchmark;
+	sweet::ShackDictionary *shackDict;
+
+	ShackPDESWEPlaneCoefficients *shackSWECoeffs;
+	ShackPDEAdvectionPlaneCoefficients *shackAdvectionCoeffs;
+	ShackPlaneDiscretization *shackDisc;
+	ShackSWEPlaneBenchmark *shackBenchmark;
 	ShackTimestepControl *shackTimestepControl;
 
 	PlaneOperators *op;
+	sweet::ProgramArguments *programArguments;
+
+	/*
+	 * Special function to register shacks for benchmarks.
+	 *
+	 * This is in particular important for the --help output function to include all benchmarks.
+	 */
+	void shackRegistration(
+			sweet::ShackDictionary &io_shackDict
+	)
+	{
+		io_shackDict.registerFirstTime<ShackPDESWEBenchPolvani>();
+	}
+
 
 public:
 	bool setupInitialConditions(
 			PlaneData_Spectral &o_h_pert,
 			PlaneData_Spectral &o_u,
 			PlaneData_Spectral &o_v,
-			SimulationVariables &io_xsimVars,	///< Make this IO, since benchmarks can change simulation parameters
-			PlaneOperators &io_op				///< Make this IO, since changes in the simulation parameters might require to also update the operators
+			sweet::ShackDictionary &io_shackDict,
+			PlaneOperators &io_op,				///< Make this IO, since changes in the simulation parameters might require to also update the operators
+			sweet::ProgramArguments &io_programArguments
 	)
 	{
-		shackSWECoeffs = &(io_xsimVars.sim);
-		shackDisc = &(io_xsimVars.disc);
-		shackBenchmark = &(io_xsimVars.benchmark);
-		shackTimestepControl = &(io_xsimVars.timecontrol);
-		shackBenchmark = &(io_xsimVars.benchmark);
+		shackDict = &io_shackDict;
+
+		shackSWECoeffs = io_shackDict.getAutoRegistration<ShackPDESWEPlaneCoefficients>();
+		shackAdvectionCoeffs = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneCoefficients>();
+		shackDisc = io_shackDict.getAutoRegistration<ShackPlaneDiscretization>();
+		shackBenchmark = io_shackDict.getAutoRegistration<ShackSWEPlaneBenchmark>();
+		shackTimestepControl = io_shackDict.getAutoRegistration<ShackTimestepControl>();
+
+		if (io_shackDict.error.exists())
+			return error.forwardWithPositiveReturn(io_shackDict.error);
 
 		op = &io_op;
 
-		_setupInitialConditions(
+		programArguments = &io_programArguments;
+
+		return _setupInitialConditions(
 				o_h_pert,
 				o_u,
 				o_v
 			);
 	}
 
-public:
-	bool setupInitialConditions(
-			PlaneData_Spectral &o_h_pert,
-			PlaneData_Spectral &o_u,
-			PlaneData_Spectral &o_v,
-			SimulationVariables &io_xsimVars,	///< Make this IO, since benchmarks can change simulation parameters
-			PlaneOperators &io_op				///< Make this IO, since changes in the simulation parameters might require to also update the operators
-	)
-	{
-		shackSWECoeffs = &(io_xsimVars.sim);
-		shackDisc = &(io_xsimVars.disc);
-		shackBenchmark = &(io_xsimVars.benchmark);
-		shackTimestepControl = &(io_xsimVars.timecontrol);
-		shackBenchmark = &(io_xsimVars.benchmark);
-
-		op = &io_op;
-
-		_setupInitialConditions(
-				o_h_pert,
-				o_u,
-				o_v
-			);
-	}
 public:
 	bool _setupInitialConditions(
 			PlaneData_Spectral &o_h_pert,
@@ -139,12 +143,18 @@ public:
 			return error.set("SWEPlaneBenchmarksCombined: Benchmark name not given, use --benchmark-name=[name]");
 
 
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		if (shackBenchmark->benchmark_name == "polvani")
+		if (0)
 		{
-			SWE_bench_Polvani swe_polvani(io_simVars, *op);
+		}
+#if SWEET_USE_PLANE_SPECTRAL_SPACE
+		else if (shackBenchmark->benchmark_name == "polvani")
+		{
+			SWEPlaneBenchPolvani swePolvani(*shackDict, *op, *programArguments);
 
-			swe_polvani.setup(
+			if (swePolvani.error.exists())
+				return error.forwardWithPositiveReturn(swePolvani.error);
+
+			swePolvani.setup(
 					o_h_pert,
 					o_u,
 					o_v
@@ -152,9 +162,10 @@ public:
 
 			return true;
 		}
+#if 0
 		else if (shackBenchmark->benchmark_name == "mergevortex")
 		{
-			SWE_bench_MergeVortex swe_mergevortex(io_simVars, *op);
+			SWE_bench_MergeVortex swe_mergevortex(shackDict, *op);
 
 			swe_mergevortex.setup(
 					o_h_pert,
@@ -176,7 +187,7 @@ public:
 			std::cout << "WARNING: OVERWRITING SIMULATION PARAMETERS FOR THIS BENCHMARK!" << std::endl;
 
 
-			SWE_bench_UnstableJet swe_unstablejet(io_simVars, *op);
+			SWE_bench_UnstableJet swe_unstablejet(shackDict, *op);
 
 			swe_unstablejet.setup(
 					o_h_pert,
@@ -198,7 +209,7 @@ public:
 			std::cout << "WARNING: OVERWRITING SIMULATION PARAMETERS FOR THIS BENCHMARK!" << std::endl;
 
 
-			SWE_bench_UnstableJet swe_unstablejet(io_simVars, *op);
+			SWE_bench_UnstableJet swe_unstablejet(shackDict, *op);
 
 			swe_unstablejet.setup(
 					o_h_pert,
@@ -211,7 +222,7 @@ public:
 		}
 		else if (shackBenchmark->benchmark_name == "unstablejetfast")
 			{
-				SWE_bench_UnstableJetFast swe_unstablejetfast(io_simVars, *op);
+				SWE_bench_UnstableJetFast swe_unstablejetfast(shackDict, *op);
 
 				swe_unstablejetfast.setup(
 						o_h_pert,
@@ -224,7 +235,7 @@ public:
 
 		else if (shackBenchmark->benchmark_name == "unstablejetadv")
 		{
-			SWE_bench_UnstableJetAdv swe_unstablejetadv(io_simVars, *op);
+			SWE_bench_UnstableJetAdv swe_unstablejetadv(shackDict, *op);
 
 			swe_unstablejetadv.setup(
 					o_h_pert,
@@ -238,7 +249,7 @@ public:
 		{
 			//PlaneDataConfig *planeDataConfig = o_h_pert.planeDataConfig;
 
-			SWE_bench_NormalModes swe_normalmodes(io_simVars, *op);
+			SWE_bench_NormalModes swe_normalmodes(shackDict, *op);
 
 			swe_normalmodes.setup(
 					o_h_pert,
@@ -249,9 +260,12 @@ public:
 			return true;
 		}
 #endif
+#endif
+
+#if 1
 		else if (shackBenchmark->benchmark_name == "gaussian_bump" || shackBenchmark->benchmark_name == "gaussian_bump_phi_pint")
 		{
-			SWE_bench_GaussianBump swe_gaussian_bump(io_simVars, *op);
+			PDESWEPlaneBenchGaussianBump swe_gaussian_bump(*shackDict, *op);
 
 			swe_gaussian_bump.setup(
 					o_h_pert,
@@ -261,7 +275,9 @@ public:
 
 			return true;
 		}
+#endif
 
+#if 0
 		else if (shackBenchmark->benchmark_name == "gaussian_bump_advection")
 		{
 
@@ -431,8 +447,8 @@ public:
 		)
 		{
 			double f = shackSWECoeffs->plane_rotating_f0;
-			double sx = shackSWECoeffs->plane_domain_size[0];
-			//double sy = shackSim->domain_size[1];
+			double sx = shackSim->plane_domain_size[0];
+			//double sy = sweCoeffs->domain_size[1];
 
 			if (shackSWECoeffs->plane_rotating_f0 == 0)
 				SWEETError("Coriolis = 0!");
@@ -474,8 +490,8 @@ public:
 				shackBenchmark->benchmark_name == "steady_state_zonal_flow"
 		)
 		{
-			double f = shackSWECoeffs->plane_rotating_f0;
-			//double sx = shackSim->domain_size[0];
+			double f = shackSim->plane_rotating_f0;
+			//double sx = sweCoeffs->domain_size[0];
 			double sy = shackSWECoeffs->plane_domain_size[1];
 
 			if (shackSWECoeffs->plane_rotating_f0 == 0)
@@ -513,6 +529,7 @@ public:
 
 			return true;
 		}
+#endif
 		else if (
 				shackBenchmark->benchmark_name == "benchmark_id_4" ||
 				shackBenchmark->benchmark_name == "yadda_yadda_whatever_this_is"
@@ -603,10 +620,8 @@ public:
 		}
 
 		printBenchmarkInformation();
-		SWEETError(std::string("Benchmark ")+shackBenchmark->benchmark_name+ " not found (or not available)");
 
-
-		return false;
+		return error.set(std::string("Benchmark ")+shackBenchmark->benchmark_name+ " not found (or not available)");
 	}
 
 	void printBenchmarkInformation()

@@ -414,7 +414,8 @@ public:
 	)
 	{
 		if (sphereDataConfig != nullptr)
-			return;
+			if (sphereDataConfig == i_sphereDataConfig)
+				return;
 
 		setup(i_sphereDataConfig);
 	}

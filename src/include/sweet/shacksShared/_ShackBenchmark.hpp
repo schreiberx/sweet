@@ -1,24 +1,25 @@
 /*
- * ShackBenchmark.hpp
- *
  *  Created on: Feb 21, 2023
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_SHACKS_SHACKBENCHMARK_HPP_
-#define SRC_INCLUDE_SWEET_SHACKS_SHACKBENCHMARK_HPP_
+#ifndef SRC_INCLUDE_SWEET_SHACKS_SHACKSWEPLANEBENCHMARK_HPP_
+#define SRC_INCLUDE_SWEET_SHACKS_SHACKSWEPLANEBENCHMARK_HPP_
 
 #include <string>
 #include <iostream>
 #include <sweet/ProgramArguments.hpp>
 #include <sweet/shacks/ShackInterface.hpp>
 
+#if SWEET_USE_SPHERE_SPECTRAL_SPACE
+	#include <sweet/sphere/SphereData_Spectral.hpp>
+#endif
 
 /**
  * Values and parameters to setup benchmarks simulations
  */
-class Benchmark	:
-		public sweet::ClassDictionaryInterface
+class ShackBenchmark	:
+		public sweet::ShackInterface
 {
 public:
 	/// seed for random number generator
@@ -105,7 +106,6 @@ public:
 		i_pa.getArgumentValueBy2Keys("--initial-coord-y", "-y", object_coord_y);
 		i_pa.getArgumentValueByKey("--advection-rotation-angle", sphere_advection_rotation_angle);
 		i_pa.getArgumentValueByKey("--benchmark-name", benchmark_name);
-		i_pa.getArgumentValueByKey("--benchmark-override-simvars", benchmark_override_simvars);
 
 		i_pa.getArgumentValueByKey("--benchmark-setup-dealiased", setup_dealiased);
 		i_pa.getArgumentValueByKey("--benchmark-galewsky-umax", benchmark_galewsky_umax);
@@ -125,7 +125,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

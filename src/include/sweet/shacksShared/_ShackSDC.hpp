@@ -18,7 +18,7 @@
  * SDC parameters
  */
 class SDC	:
-		public sweet::ClassDictionaryInterface
+		public sweet::ShackInterface
 {
 public:
 	std::string fileName;
@@ -84,7 +84,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

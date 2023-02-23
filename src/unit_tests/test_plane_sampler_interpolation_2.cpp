@@ -65,7 +65,7 @@ int main(
 		simVars.disc.space_res_spectral[1] = 0;
 
 		//simVars.reset();
-		planeDataConfigInstance3.setupAutoSpectralSpace(res3, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance3.setupAutoSpectralSpaceFromPhysical(res3, simVars.misc.reuse_spectral_transformation_plans);
 		PlaneData_Spectral prog_h3_pert(planeDataConfig3);
 
 		//PlaneData prog_test3(planeDataConfig3);
@@ -94,7 +94,7 @@ int main(
 		simVars.disc.space_res_spectral[1] = 0;
 
 		//simVars.reset();
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 		PlaneData_Spectral prog_h_pert(planeDataConfig);
 
 		{

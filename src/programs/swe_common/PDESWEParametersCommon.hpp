@@ -43,7 +43,7 @@ public:
 	double gravitation = 9.80616;
 
 
-	void printClass(const std::string& i_prefix = "")
+	void printShack(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << " + h0: " << h0 << std::endl;
 		std::cout << i_prefix << " + viscosity: " << viscosity << std::endl;

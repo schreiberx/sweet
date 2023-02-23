@@ -1,17 +1,19 @@
 /*
- * SWEPolvani_SimulationVariables.hpp
- *
  *  Created on: 14 Oct 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
-#ifndef SRC_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
-#define SRC_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
+#ifndef SRC_SHACK_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
+#define SRC_SHACK_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
 
 
 #include <getopt.h>
 #include <sweet/SWEETError.hpp>
 
-struct SWEPolvani_SimulationVariables	:
+#include <sweet/shacks/ShackInterface.hpp>
+
+
+
+struct ShackPDESWEBenchPolvani	:
 	public sweet::ShackInterface
 {
 	/**

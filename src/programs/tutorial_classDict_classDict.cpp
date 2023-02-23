@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include <sweet/shacks/ShackDictionary.hpp>
-#include <sweet/shacksShared/ShackShackParallelization.hpp>
 #include "../include/sweet/shacksShared/ShackIOData.hpp"
+#include "../include/sweet/shacksShared/ShackParallelization.hpp"
 
 
 int main(int i_argc, char *i_argv[])
@@ -32,28 +32,28 @@ int main(int i_argc, char *i_argv[])
 		 * later on in the SWEET programs.
 		 */
 		std::cout << " + VariablesClassDictionary()" << std::endl;
-		sweet::ClassInstanceDictionary varClassDict;
+		sweet::ShackDictionary varClassDict;
 
 
 		/*
 		 * Register new classes
 		 */
 		std::cout << "   + registerParameterClass<ShackIOData>()" << std::endl;
-		varClassDict.registerClassInstance<ShackIOData>();
-		varClassDict.registerClassInstance<ShackParallelization>();
+		varClassDict.registerFirstTime<ShackIOData>();
+		varClassDict.registerFirstTime<ShackParallelization>();
 
 		/*
 		 * Now we close the registration
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.registrationOfClassInstancesFinished();
+		varClassDict.registrationFinished();
 
 		{
 			/*
 			 * If we now try to register a new class, this should raise an error!
 			 */
-			bool retval = varClassDict.registerClassInstance<ShackParallelization>();
+			bool retval = varClassDict.registerFirstTime<ShackParallelization>();
 
 			if (!retval)
 			{
@@ -62,7 +62,7 @@ int main(int i_argc, char *i_argv[])
 			}
 			else
 			{
-				std::cerr << "varClassDict.registerClassInstance<> should have raised an error!" << std::endl;
+				std::cerr << "varClassDict.registerFirstTime<> should have raised an error!" << std::endl;
 				return EXIT_FAILURE;
 			}
 		}
@@ -84,7 +84,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Get handler to new class ShackIOData
 		 */
-		ShackIOData *shackIOData = varClassDict.getClassInstance<ShackIOData>();
+		ShackIOData *shackIOData = varClassDict.get<ShackIOData>();
 		if (shackIOData == nullptr)
 		{
 			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
@@ -94,7 +94,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Get handler to new class ShackIOData
 		 */
-		ShackParallelization *shackParallelization = varClassDict.getClassInstance<ShackParallelization>();
+		ShackParallelization *shackParallelization = varClassDict.get<ShackParallelization>();
 		if (shackParallelization == nullptr)
 		{
 			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
@@ -106,14 +106,14 @@ int main(int i_argc, char *i_argv[])
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.getClassInstancesFinished();
+		varClassDict.getFinished();
 
 		{
 			/*
 			 * If we now access a class instance, this should raise an error!
 			 */
 
-			ShackParallelization *ioDataParameters = varClassDict.getClassInstance<ShackParallelization>();
+			ShackParallelization *ioDataParameters = varClassDict.get<ShackParallelization>();
 			if (ioDataParameters == nullptr)
 			{
 				// Just get the error (deleting it) and continue
@@ -129,17 +129,17 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Now its time to output all program arguments of all registered classes
 		 */
-		std::cout << " + varClassDict.printClass()" << std::endl;
-		varClassDict.printClass("    ");
+		std::cout << " + varClassDict.printShack()" << std::endl;
+		varClassDict.printShackData("    ");
 
 		/*
 		 * And we can also print them individually
 		 */
-		std::cout << " + sweParametersSphere->printClass()" << std::endl;
-		shackIOData->printClass("    ");
+		std::cout << " + sweParametersSphere->printShack()" << std::endl;
+		shackIOData->printShack("    ");
 
-		std::cout << " + ioDataParameters->printClass()" << std::endl;
-		shackParallelization->printClass("    ");
+		std::cout << " + ioDataParameters->printShack()" << std::endl;
+		shackParallelization->printShack("    ");
 
 		/*
 		 * Of course, we can also access them directly

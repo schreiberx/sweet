@@ -1,6 +1,4 @@
 /*
- * PlaneDataPhysical_To_ScalarDataArray.cpp
- *
  *  Created on: 20 Oct 2016
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -22,13 +20,6 @@ public:
 	{
 		ScalarDataArray out(i_planeData.planeDataConfig->physical_array_data_number_of_elements);
 
-////#if SWEET_USE_PLANE_SPECTRAL_SPACE
-////		if (i_planeData.spectral_space_data_valid && i_raise_error_if_spectral)
-////			SWEETError("This data should be typically never converted to spectral space");
-////#endif
-
-////		i_planeData.request_data_physical();
-
 		for (std::size_t i = 0; i < out.number_of_elements; i++)
 			out.scalar_data[i] = i_planeData.physical_space_data[i];
 
@@ -38,4 +29,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_CONVERT_PLANEDATAPHYSICAL_TO_SCALARDATAARRAY_HPP_ */
+#endif

@@ -1,70 +1,40 @@
 /*
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pdeAdvectionPlane/
+ * MULE_COMPILE_FILES_AND_DIRS: src/include/sweet/plane/
+ *
+ * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
 #include <sweet/defaultPrecompilerValues.hpp>
+
 #include <sweet/ErrorBase.hpp>
 #include <sweet/ProgramArguments.hpp>
+
 #include <sweet/plane/Plane.hpp>
 
 #include <sweet/shacks/ShackDictionary.hpp>
-#include <sweet/shacksShared/ShackIOData.hpp>
-#include <sweet/shacksShared/ShackDiagnostics.hpp>
-#include <sweet/shacksShared/ShackDiscretization.hpp>
+//#include <sweet/shacksShared/ShackDiagnostics.hpp>
+
+#include <sweet/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/shacksShared/ShackMisc.hpp>
 
-#include "pdeAdvectionPlane/Adv_Plane_TimeSteppers.hpp"
-#include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
+#include "pdeAdvectionPlane/ShackPDEAdvectionPlane.hpp"
+#include "pdeAdvectionPlaneBenchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
 
+// Benchmarks
+#include "pdeAdvectionPlaneBenchmarks/PDEAdvectionPlaneBenchmarksCombined.hpp"
+
+// Time steppers
+#include "pdeAdvectionPlane/PDEAdvPlaneTimeSteppers.hpp"
 
 
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 
-#pragma GCC warning "DEPRECATED! Try to avoid this!"
-#include <sweet/SimulationVariables.hpp>
-SimulationVariables _simVars;
 
-
-#if 0
-class PDEAdvectionPlaneParameters	:
-		public sweet::ClassDictionaryInterface
-{
-public:
-	sweet::ErrorBase error;
-
-	/**
-	 * Velocity and additional parameter for advection test cases
-	 */
-	double advection_velocity[2] = {0, 0};
-
-
-	bool processProgramArguments(sweet::ProgramArguments &i_pa)
-	{
-		i_pa.getArgumentValueByKey("--advection-x", advection_velocity[0]);
-		i_pa.getArgumentValueByKey("--advection-y", advection_velocity[1]);
-
-		return error.forward(i_pa.error);
-	}
-
-	void printProgramArguments(const std::string& i_prefix = "")
-	{
-
-	}
-
-	virtual void printClass(
-		const std::string& i_prefix = ""
-	)
-	{
-		std::cout << std::endl;
-		std::cout << "PDEAdvection:" << std::endl;
-		std::cout << " + advection_velocity: " << advection_velocity[0] << ", " << advection_velocity[1] << std::endl;
-	}
-
-};
-#endif
 
 class SimulationInstance
 {
@@ -73,9 +43,9 @@ public:
 
 	sweet::ProgramArguments programArguments;
 
-	PlaneDataConfig *planeDataConfig;
+	PlaneDataConfig planeDataConfig;
 
-	PlaneOperators *ops;
+	PlaneOperators ops;
 
 	class SimPlaneData
 	{
@@ -85,22 +55,27 @@ public:
 		PlaneData_Spectral prog_u;
 		PlaneData_Spectral prog_v;
 
-		SimPlaneData()
-		{
-		}
 
-		void setup(PlaneDataConfig *i_planeDataConfig)
+		void setup(PlaneDataConfig &i_planeDataConfig)
 		{
 			prog_h.setup(i_planeDataConfig);
 			prog_h_t0.setup(i_planeDataConfig);
 			prog_u.setup(i_planeDataConfig);
 			prog_v.setup(i_planeDataConfig);
 		}
+
+		void clear()
+		{
+			prog_h.clear();
+			prog_h_t0.clear();
+			prog_u.clear();
+			prog_v.clear();
+		}
 	};
 
-	SimPlaneData *simPlaneData;
+	SimPlaneData simPlaneData;
 
-	Adv_Plane_TimeSteppers timeSteppers;
+	PDEAdvPlaneTimeSteppers timeSteppers;
 
 
 #if SWEET_GUI
@@ -111,101 +86,102 @@ public:
 	bool gui_active = false;
 #endif
 
-	SWEPlaneBenchmarksCombined planeBenchmarkCombined;
+	PDEAdvectionPlaneBenchmarksCombined planeBenchmarksCombined;
 
 	double max_error_h0 = -1;
 
+	ShackPlaneDataOps *shackPlaneDataOps;
 
-	SimulationCoefficients *sim;
-	Diagnostics *diagnostics;
-	Discretization *disc;
+	ShackPDEAdvectionPlane *pdeAdvectionPlane;
+	ShackPDEAdvectionPlaneBenchmarks *pdeAdvectionPlaneBenchmarks;
+
+//	ShackDiagnostics *diagnostics;
 	Misc *misc;
-	TimestepControl *timestepControl;
-	ShackIOData *ioData;
+	ShackTimestepControl *timestepControl;
 
-	sweet::ClassInstanceDictionary classDict;
+	sweet::ShackDictionary shackDict;
+
 
 
 public:
 	SimulationInstance()	:
-		planeDataConfig(nullptr),
-		ops(nullptr),
-		sim(nullptr),
-		diagnostics(nullptr),
-		disc(nullptr),
+		shackPlaneDataOps(nullptr),
+		pdeAdvectionPlane(nullptr),
+//		diagnostics(nullptr),
 		misc(nullptr),
-		timestepControl(nullptr)
-#if SWEET_GUI
-		,viz_plane_data(planeDataConfig)
-#endif
+		timestepControl(nullptr),
+		prog_argc(0),
+		prog_argv(nullptr)
 	{
 	}
 
-#if 1
+
+	void clear()
+	{
+		programArguments.clear();
+		shackDict.clear();
+
+		simPlaneData.clear();
+		ops.clear();
+
+#if SWEET_GUI
+		viz_plane_data.clear();
+#endif
+	}
+
+	/*
+	 * Chekc if help should be printed a do so
+	 */
+	void checkAndPrintHelp()
+	{
+		/*
+		 * First, check for --help or -h
+		 */
+		if (programArguments.argumentWithKeyExists("-h") || programArguments.argumentWithKeyExists("--help"))
+		{
+			std::cout << "Printing help:" << std::endl;
+			shackDict.printProgramArguments();
+		}
+	}
 
 	/*
 	 * Setup main
 	 */
-	int argc;
-	const char *const * argv;
-	bool setup(int i_argc, char * i_argv[])
+	int prog_argc;
+	const char *const * prog_argv;
+
+	bool setup(int i_argc, const char *const * i_argv)
 	{
-		argc = i_argc;
-		argv = i_argv;
-
-		bool retval = reset();
-
-		return retval;
-	}
-
-	bool reset()
-	{
-		clear();
+		prog_argc = i_argc;
+		prog_argv = i_argv;
 
 		/*
 		 * Parse program arguments
 		 */
-		if (!programArguments.setup(argc, argv))
-		{
-			error.forward(programArguments.error);
-			return false;
-		}
+		if (!programArguments.setup(prog_argc, prog_argv))
+			return error.forwardWithPositiveReturn(programArguments.error);
 
-#if 1
 		/*
-		 * Register classes
+		 * SHACK: Register classes which we require
 		 */
-		classDict.reset();
+		pdeAdvectionPlane = shackDict.getAutoRegistration<ShackPDEAdvectionPlane>();
+		shackPlaneDataOps = shackDict.getAutoRegistration<ShackPlaneDataOps>();
+		//diagnostics = shackDict.getAutoRegistration<ShackDiagnostics>();
+		timestepControl = shackDict.getAutoRegistration<ShackTimestepControl>();
+		misc = shackDict.getAutoRegistration<Misc>();
 
-//		classDict.registerClassInstance<PDEAdvectionPlaneParameters>();
-		classDict.registerClassInstance<SimulationCoefficients>();
-		classDict.registerClassInstance<Diagnostics>();
-		classDict.registerClassInstance<TimestepControl>();
-		classDict.registerClassInstance<Discretization>();
-		classDict.registerClassInstance<Misc>();
+		if (shackDict.error.exists())
+			return error.forwardWithPositiveReturn(shackDict.error);
 
-		if (classDict.error.exists())
-		{
-			error.forward(classDict.error);
-			return false;
-		}
+		/*
+		 * SHACK: Register other things before parsing program arguments
+		 */
+		if (!planeBenchmarksCombined.shackRegistration(shackDict))
+			return error.forwardWithPositiveReturn(planeBenchmarksCombined.error);
 
-		classDict.registrationOfClassInstancesFinished();
+		if (!timeSteppers.shackRegistration(shackDict))
+			return error.forwardWithPositiveReturn(timeSteppers.error);
 
-
-//		pdeAdvectionPlaneParameters = classDict.getClassInstance<PDEAdvectionPlaneParameters>();
-		sim = classDict.getClassInstance<SimulationCoefficients>();
-		diagnostics = classDict.getClassInstance<Diagnostics>();
-		timestepControl = classDict.getClassInstance<TimestepControl>();
-		disc = classDict.getClassInstance<Discretization>();
-		misc = classDict.getClassInstance<Misc>();
-		ioData = classDict.getClassInstance<ShackIOData>();
-
-		if (classDict.error.exists())
-		{
-			error.forward(classDict.error);
-			return false;
-		}
 
 		/*
 		 * First, check for --help or -h
@@ -213,101 +189,104 @@ public:
 		if (programArguments.argumentWithKeyExists("-h") || programArguments.argumentWithKeyExists("--help"))
 		{
 			std::cout << "Printing help:" << std::endl;
-			classDict.printProgramArguments();
+			shackDict.printProgramArguments();
 			return false;
 		}
 
-		if (!classDict.processProgramArguments(programArguments))
-		{
-			error.forward(programArguments.error);
-			return false;
-		}
+		/*
+		 * SHACK: Process arguments
+		 */
+		if (!shackDict.processProgramArguments(programArguments))
+			return error.forwardWithPositiveReturn(shackDict.error);
 
-		if (!programArguments.checkAllArgumentsProcessed())
-		{
-			error.forward(programArguments.error);
-			return false;
-		}
+		shackDict.printShackData();
 
-		if (timestepControl->current_timestep_size <= 0)
-		{
-			error.set("Timestep size not set");
-			return false;
-		}
-
-		std::cout << "Printing class content:" << std::endl;
-		classDict.printClass();
-
-		_simVars.reset();
+#if SWEET_GUI
+		/*
+		 * Forward information about GUI whether it's enabled
+		 */
+		gui_active = misc->gui_enabled;
 #endif
 
-#if 0
-		planeBenchmarkCombined.setupInitialConditions(
-				simPlaneData->prog_h,
-				simPlaneData->prog_u,
-				simPlaneData->prog_v,
-				_simVars,
-				*ops
-			);
+		/*
+		 * Do some validation
+		 */
+		if (!timestepControl->validateTimestepSize())
+			return error.forwardWithPositiveReturn(timestepControl->error);
 
-		simPlaneData->prog_h_t0 = simPlaneData->prog_h;
+		simPlaneData.prog_h_t0 = simPlaneData.prog_h;
 
-		timeSteppers.setup(
-				pdePlaneDiscretization->timestepping_method,
-				*ops,
-				_simVars
-			);
+		if (!timeSteppers.setup(ops, shackDict))
+			return error.forwardWithPositiveReturn(timeSteppers.error);
 
-		_simVars.outputConfig();
-#endif
-
-
-		planeDataConfig = new PlaneDataConfig;
-		planeDataConfig->setupAuto(
-				disc->space_res_physical,
-				disc->space_res_spectral,
+		/*
+		 * Setup Plane Data Config & Operators
+		 */
+		if (!planeDataConfig.setupAuto(
+				shackPlaneDataOps->space_res_physical,
+				shackPlaneDataOps->space_res_spectral,
 				misc->reuse_spectral_transformation_plans
-			);
+			))
+			return error.forwardWithPositiveReturn(planeDataConfig.error);
 
-		ops = new PlaneOperators;
-		ops->setup(
-				planeDataConfig,
-				sim->plane_domain_size
-			);
+		if (!ops.setup(
+				&planeDataConfig,
+				shackPlaneDataOps
+			))
+			return error.forwardWithPositiveReturn(ops.error);
 
-		simPlaneData = new SimPlaneData;
-		simPlaneData->setup(planeDataConfig);
+		simPlaneData.setup(planeDataConfig);
+
+#if SWEET_GUI
+		viz_plane_data.setup(planeDataConfig);
+#endif
+
+		std::cout << "Printing shack information:" << std::endl;
+		shackDict.printShackData();
+
+		if (!planeBenchmarksCombined.setupInitialConditions(
+				simPlaneData.prog_h,
+				simPlaneData.prog_u,
+				simPlaneData.prog_v,
+				ops,
+				shackDict,
+				programArguments
+			))
+			return error.forwardWithPositiveReturn(planeBenchmarksCombined.error);
+
+		/*
+		 * Finish registration & getting class interfaces so that nobody can do some
+		 * strange things with this anymore
+		 */
+		shackDict.registrationFinished();
+		shackDict.getFinished();
+
+		/*
+		 * Now we should check that all program arguments have really been parsed
+		 */
+		if (!programArguments.checkAllArgumentsProcessed())
+			return error.forwardWithPositiveReturn(programArguments.error);
 
 		return true;
 	}
 
-
-	void clear()
+	bool reset()
 	{
-		delete simPlaneData;
-		delete ops;
-		delete planeDataConfig;
+		clear();
+
+		return setup(prog_argc, prog_argv);
 	}
 
+	void printErrors()
+	{
+		std::cout << "Error compared to initial condition" << std::endl;
+		std::cout << "Lmax error: " << (simPlaneData.prog_h_t0-simPlaneData.prog_h).toPhys().physical_reduce_max_abs() << std::endl;
+		std::cout << "RMS error: " << (simPlaneData.prog_h_t0-simPlaneData.prog_h).toPhys().physical_reduce_rms() << std::endl;
+	}
 
 	~SimulationInstance()
 	{
-		if (simPlaneData != nullptr)
-		{
-			std::cout << "Error compared to initial condition" << std::endl;
-			std::cout << "Lmax error: " << (simPlaneData->prog_h_t0-simPlaneData->prog_h).toPhys().physical_reduce_max_abs() << std::endl;
-			std::cout << "RMS error: " << (simPlaneData->prog_h_t0-simPlaneData->prog_h).toPhys().physical_reduce_rms() << std::endl;
-		}
-
-		clear();
 	}
-
-
-
-#endif
-
-#if 1
-
 
 	void run_timestep()
 	{
@@ -315,7 +294,7 @@ public:
 			timestepControl->current_timestep_size = timestepControl->max_simulation_time - timestepControl->current_simulation_time;
 
 		timeSteppers.master->run_timestep(
-				simPlaneData->prog_h, simPlaneData->prog_u, simPlaneData->prog_v,
+				simPlaneData.prog_h, simPlaneData.prog_u, simPlaneData.prog_v,
 				timestepControl->current_timestep_size,
 				timestepControl->current_simulation_time
 			);
@@ -327,9 +306,9 @@ public:
 		timestepControl->current_timestep_nr++;
 
 		if (misc->verbosity > 2)
-			std::cout << timestepControl->current_timestep_nr << ": " << timestepControl->current_simulation_time/(60*60*24.0) << std::endl;
+			std::cout << "timestep: " << timestepControl->current_timestep_nr << ": t=" << timestepControl->current_simulation_time << std::endl;
 
-		max_error_h0 = (simPlaneData->prog_h-simPlaneData->prog_h_t0).toPhys().physical_reduce_max_abs();
+		max_error_h0 = (simPlaneData.prog_h-simPlaneData.prog_h_t0).toPhys().physical_reduce_max_abs();
 	}
 
 
@@ -372,7 +351,6 @@ public:
 		compute_error();
 	}
 
-
 	void vis_get_vis_data_array(
 			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
@@ -389,22 +367,21 @@ public:
 		switch (id)
 		{
 		case 0:
-			sweet::convert(simPlaneData->prog_h, viz_plane_data);
+			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(simPlaneData.prog_h, viz_plane_data);
 			break;
 
 		case 1:
-			sweet::convert(simPlaneData->prog_u, viz_plane_data);
+			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(simPlaneData.prog_u, viz_plane_data);
 			break;
 
 		case 2:
-			sweet::convert(simPlaneData->prog_v, viz_plane_data);
+			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(simPlaneData.prog_v, viz_plane_data);
 			break;
 		}
 
 		*o_dataArray = &viz_plane_data;
 		*o_aspect_ratio = 1;
 	}
-
 
 
 	const char* vis_get_status_string()
@@ -428,14 +405,13 @@ public:
 			break;
 		}
 
-
 		static char title_string[2048];
 
 		sprintf(title_string,
 #if SWEET_MPI
 				"Rank %i - "
 #endif
-				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
+				"Time: %f (%.2f d), k: %i, dt: %.3e, Vis: %s, MaxVal: %.6e, MinVal: %.6e ",
 #if SWEET_MPI
 				-1,	// TODO: mpi_rank,
 #endif
@@ -444,15 +420,13 @@ public:
 				timestepControl->current_timestep_nr,
 				timestepControl->current_timestep_size,
 				description,
-				diagnostics->total_mass,
-				diagnostics->total_energy,
-				diagnostics->total_potential_enstrophy,
 				viz_plane_data.physical_reduce_max(),
 				viz_plane_data.physical_reduce_min()
 		);
 
 		return title_string;
 	}
+
 
 	void vis_pause()
 	{
@@ -478,8 +452,6 @@ public:
 		}
 	}
 #endif
-
-#endif
 };
 
 
@@ -493,10 +465,10 @@ int main(int i_argc, char *i_argv[])
 		return EXIT_FAILURE;
 	}
 
-	simulation.setup(i_argc, i_argv);
-	if (simulation.error.exists())
+	if (!simulation.setup(i_argc, i_argv))
 	{
-		std::cerr << "ERROR: " << simulation.error.get() << std::endl;
+		if (simulation.error.exists())
+			std::cerr << "ERROR: " << simulation.error.get() << std::endl;
 		return EXIT_FAILURE;
 	}
 
@@ -505,7 +477,6 @@ int main(int i_argc, char *i_argv[])
 	if (simulation.gui_active)
 	{
 		std::cout << "GUI" << std::endl;
-		//planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		VisSweet<SimulationInstance> visSweet(&simulation);
 		std::cout << "Max error h0: "<< simulation.max_error_h0 << std::endl;
@@ -513,12 +484,16 @@ int main(int i_argc, char *i_argv[])
 	else
 #endif
 	{
-#if 0
-		while (!simulation.should_quit())
+		if (!simulation.timestepControl->validateMaxSimulationTime())
 		{
-			simulation.run_timestep();
+			simulation.timestepControl->error.print();
+			exit(1);
 		}
-#endif
+
+		while (!simulation.should_quit())
+			simulation.run_timestep();
+
+		simulation.printErrors();
 	}
 
 	std::cout << "FIN" << std::endl;

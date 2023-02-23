@@ -21,7 +21,7 @@
  * Parameters related to input and output data
  */
 struct IODataParameters	:
-	public sweet::ClassDictionaryInterface
+	public sweet::ShackInterface
 {
 public:
 	/**
@@ -122,7 +122,7 @@ public:
 	}
 
 
-	void printClass(const std::string& i_prefix = "")
+	void printShack(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
 		std::cout << i_prefix << "INPUT/OUTPUT:" << std::endl;

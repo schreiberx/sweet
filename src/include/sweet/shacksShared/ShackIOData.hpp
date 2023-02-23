@@ -24,7 +24,7 @@
  * Input and output data
  */
 class ShackIOData	:
-		public sweet::ClassDictionaryInterface
+		public sweet::ShackInterface
 {
 public:
 	/// filenames of input data for setup (this has to be setup by each application individually)
@@ -138,7 +138,7 @@ public:
 		return true;
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

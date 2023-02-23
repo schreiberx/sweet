@@ -19,7 +19,7 @@
  * Miscellaneous variables
  */
 class Misc	:
-		public sweet::ClassDictionaryInterface
+		public sweet::ShackInterface
 {
 public:
 	/// set verbosity of simulation
@@ -102,7 +102,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

@@ -12,16 +12,19 @@
 //	#include <sweet/plane/PlaneDataComplex.hpp>
 #endif
 
+#include <sweet/ErrorBase.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataConfig.hpp>
+#include <sweet/shacksShared/ShackPlaneDataOps.hpp>
 
 
 class PlaneOperators
 {
 public:
+	sweet::ErrorBase error;
+
 	PlaneDataConfig *planeDataConfig;
 
-public:
 	// differential operators (central / forward / backward)
 	PlaneData_Spectral diff_c_x, diff_c_y;
 	PlaneData_Spectral diff_f_x, diff_f_y;
@@ -296,7 +299,46 @@ public:
 	}
 
 
-	void setup(
+	bool setup(
+
+		PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+		const double i_domain_size[2],			///< domain size
+		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
+	)
+	{
+		return setup(
+				&i_planeDataConfig,
+				i_domain_size,
+				i_use_spectral_basis_diffs
+			);
+	}
+
+	void clear()
+	{
+		diff_c_x.clear();
+		diff_c_y.clear();
+
+		diff_f_x.clear();
+		diff_f_y.clear();
+		diff_b_x.clear();
+		diff_b_y.clear();
+
+		diff2_c_x.clear();
+		diff2_c_y.clear();
+
+		avg_f_x.clear();
+		avg_f_y.clear();
+		avg_b_x.clear();
+		avg_b_y.clear();
+
+		shift_left.clear();
+		shift_right.clear();
+		shift_up.clear();
+		shift_down.clear();
+	}
+
+
+	bool setup(
 		PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
 		const double i_domain_size[2],			///< domain size
 		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
@@ -325,11 +367,21 @@ public:
 		shift_up.setup(i_planeDataConfig);
 		shift_down.setup(i_planeDataConfig);
 
-		setup(i_domain_size, i_use_spectral_basis_diffs);
+		return setup(i_domain_size, i_use_spectral_basis_diffs);
 	}
 
+	bool setup(
+			PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+			ShackPlaneDataOps *i_shackPlaneDataOps
+	)
+	{
+		return setup(
+				i_planeDataConfig,
+				i_shackPlaneDataOps->plane_domain_size
+		);
+	}
 
-	void setup(
+	bool setup(
 			const double i_domain_size[2],
 			bool i_use_spectral_basis_diffs
 	)
@@ -339,8 +391,6 @@ public:
 				(double)i_domain_size[0] / (double)planeDataConfig->physical_res[0],
 				(double)i_domain_size[1] / (double)planeDataConfig->physical_res[1]
 		};
-
-/////////////////////////////////////////////////////////////////////
 
 		double avg_f_x_kernel[3][3] = {
 				{0,0,0},
@@ -606,6 +656,8 @@ public:
 			tmp.kernel_stencil_setup(diff2_y_kernel, 1.0/(h[1]*h[1]));
 			diff2_c_y.loadPlaneDataPhysical(tmp);
 		}
+
+		return true;
 	}
 
 	PlaneOperators(

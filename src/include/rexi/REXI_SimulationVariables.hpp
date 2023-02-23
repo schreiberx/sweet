@@ -20,7 +20,7 @@
  * Exponential integration
  */
 struct EXP_SimulationVariables	:
-	public sweet::ClassDictionaryInterface
+	public sweet::ShackInterface
 {
 	/**
 	 * Choose EXP solver method
@@ -296,7 +296,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

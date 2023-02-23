@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <cmath>
 #include <sweet/SWEETError.hpp>
+#include <sweet/ErrorBase.hpp>
 #include <sweet/TransformationPlans.hpp>
 
 
@@ -70,6 +71,7 @@ class PlaneDataConfig
 
 
 public:
+	sweet::ErrorBase error;
 
 	/// Physical resolution: Number of cells in each dimension
 	std::size_t physical_res[2];
@@ -309,7 +311,7 @@ public:
 
 
 private:
-	void setup_internal_data(
+	bool setup_internal_data(
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
@@ -320,7 +322,7 @@ private:
 			//
 			// refCounter()--;
 			// is inside cleanup!
-			cleanup_data();
+			_clear_data();
 		}
 		else
 		{
@@ -338,12 +340,11 @@ private:
 		physical_array_data_number_of_elements = physical_res[0]*physical_res[1];
 
 #if SWEET_USE_LIBFFT
-		if (	physical_res[0] < spectral_modes[0]	||
-				physical_res[1] < spectral_modes[1]
+		if (
+			physical_res[0] < spectral_modes[0]	||
+			physical_res[1] < spectral_modes[1]
 		)
-		{
-			SWEETError("Lower physical resolution than spectral resolution not supported!");
-		}
+			return error.set("Lower physical resolution than spectral resolution not supported!");
 
 		assert(physical_res[0] > 0);
 		assert(physical_res[1] > 0);
@@ -363,14 +364,10 @@ private:
 		// Is this the first instance?
 		if (refCounterFftwPlans() == 1)
 		{
-//			std::cout << "FFTW THREADING" << std::endl;
 			// initialise FFTW with spatial parallelization
 			int retval = fftw_init_threads();
 			if (retval == 0)
-			{
-				std::cerr << "ERROR: fftw_init_threads()" << std::endl;
-				exit(1);
-			}
+				return error.set("fftw_init_threads() failed");
 
 			int nthreads = 1;
 #if 0
@@ -444,10 +441,10 @@ private:
 			spectral_data_size[1] = physical_data_size[1];
 
 			if ((physical_data_size[0] & 1) == 1)
-				SWEETError("Unsupported odd resolution in x-direction");
+				return error.set("Unsupported odd resolution in x-direction");
 
 			if ((physical_data_size[1] & 1) == 1)
-				SWEETError("Unsupported odd resolution in y-direction");
+				return error.set("Unsupported odd resolution in y-direction");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
@@ -459,7 +456,7 @@ private:
 			if (	spectral_modes[0] == physical_res[0] ||
 					spectral_modes[1] == physical_res[1]
 			)
-				SWEETError("Aliasing doesn't make sense since physical resolution is identical to spectral");
+				return error.set("Aliasing doesn't make sense since physical resolution is identical to spectral");
 
 			spectral_data_iteration_ranges[0][0][0] = 0;
 			spectral_data_iteration_ranges[0][0][1] = (physical_data_size[0]-1)/3;
@@ -675,6 +672,7 @@ private:
 			MemBlockAlloc::free(data_spectral, spectral_complex_array_data_number_of_elements*sizeof(std::complex<double>));
 		}
 #endif
+		return true;
 	}
 
 
@@ -713,6 +711,10 @@ public:
 			double *o_physical_data
 	)	const
 	{
+		assert(fftw_plan_backward != nullptr);
+		assert(i_spectral_data != nullptr);
+		assert(o_physical_data != nullptr);
+
 		fftw_execute_dft_c2r(
 				fftw_plan_backward,
 				(fftw_complex*)i_spectral_data,
@@ -757,8 +759,11 @@ public:
 	}
 #endif
 
+	/*
+	 * Setup PlaneDataConfig with concretely given data
+	 */
 public:
-	void setup(
+	bool setup(
 			int i_physical_res_x,
 			int i_physical_res_y,
 
@@ -768,6 +773,9 @@ public:
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
+		// we always clear the data - just in case
+		clear();
+
 		physical_res[0] = i_physical_res_x;
 		physical_res[1] = i_physical_res_y;
 
@@ -776,49 +784,51 @@ public:
 		spectral_modes[1] = i_spectral_modes_y;
 #endif
 
-		setup_internal_data(i_reuse_spectral_transformation_plans);
+		return setup_internal_data(i_reuse_spectral_transformation_plans);
 	}
 
 
 
+	/*
+	 * Just a convenience function
+	 */
 public:
-	void setupAuto(
+	bool setupAuto(
 			int io_physical_res[2],
 			int io_spectral_modes[2],
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
-
 		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{
-			setup(	io_physical_res[0],
+			return setup(	io_physical_res[0],
 					io_physical_res[1],
 					io_spectral_modes[0],
 					io_spectral_modes[1],
 					i_reuse_spectral_transformation_plans
 				);
-			return;
 		}
 
 		if (io_physical_res[0] > 0)
 		{
-			setupAutoSpectralSpace(
+			if (!setupAutoSpectralSpaceFromPhysical(
 					io_physical_res[0],
 					io_physical_res[1],
 					i_reuse_spectral_transformation_plans
-				);
+				))
+				return false;
 
 #if SWEET_USE_LIBFFT
 			io_spectral_modes[0] = spectral_modes[0];
 			io_spectral_modes[1] = spectral_modes[1];
 #endif
-			return;
+			return true;
 		}
 
 		if (io_spectral_modes[0] > 0)
 		{
 #if SWEET_USE_LIBFFT
-			setupAutoPhysicalSpace(
+			setupAutoPhysicalSpaceFromSpectral(
 					io_spectral_modes[0],
 					io_spectral_modes[1],
 					i_reuse_spectral_transformation_plans
@@ -826,24 +836,27 @@ public:
 
 			io_physical_res[0] = physical_res[0];
 			io_physical_res[1] = physical_res[1];
+			return true;
 #else
-			SWEETError("Setup with spectral modes not enabled");
+			return error.set("Setup with spectral modes not enabled");
 #endif
-			return;
 		}
 
-		SWEETError("No resolution/modes selected");
+		return error.set("No resolution/modes selected");
 	}
 
 
 
+	/*
+	 * Just a convenience function
+	 */
 public:
-	void setupAutoSpectralSpace(
+	bool setupAutoSpectralSpaceFromPhysical(
 			int i_physical_res[2],
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
-		setupAutoSpectralSpace(
+		return setupAutoSpectralSpaceFromPhysical(
 				i_physical_res[0],
 				i_physical_res[1],
 				i_reuse_spectral_transformation_plans
@@ -853,36 +866,35 @@ public:
 
 
 public:
-	void setupAutoSpectralSpace(
+	bool setupAutoSpectralSpaceFromPhysical(
 			int i_physical_res_x,
 			int i_physical_res_y,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
-		physical_res[0] = i_physical_res_x;
-		physical_res[1] = i_physical_res_y;
+		return setup(
+				i_physical_res_x,
+				i_physical_res_y,
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-
-		// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
-		spectral_modes[0] = (physical_res[0]*2)/3;
-		spectral_modes[1] = (physical_res[1]*2)/3;
-
-
+				// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
+				(i_physical_res_x*2)/3,
+				(i_physical_res_y*2)/3,
 #else
-
 	#if SWEET_USE_LIBFFT
-		spectral_modes[0] = physical_res[0];
-		spectral_modes[1] = physical_res[1];
+				i_physical_res_x,
+				i_physical_res_y,
+	#else
+				0,
+				0,
 	#endif
-
 #endif
-
-		setup_internal_data(i_reuse_spectral_transformation_plans);
+				i_reuse_spectral_transformation_plans
+		);
 	}
 
 
-	void setupAutoSpectralSpace(
+	bool setupAutoSpectralSpaceFromPhysical(
 			int i_physical_res_x,
 			int i_physical_res_y,
 			int *o_spectral_res_x,
@@ -890,13 +902,21 @@ public:
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
-		setupAutoSpectralSpace(i_physical_res_x, i_physical_res_y, i_reuse_spectral_transformation_plans);
-
+		if (!setupAutoSpectralSpaceFromPhysical(
+				i_physical_res_x,
+				i_physical_res_y,
+				i_reuse_spectral_transformation_plans
+			))
+			return false;
 
 #if SWEET_USE_LIBFFT
 		*o_spectral_res_x = spectral_modes[0];
 		*o_spectral_res_y = spectral_modes[1];
+#else
+		*o_spectral_res_x = 0;
+		*o_spectral_res_y = 0;
 #endif
+		return true;
 	}
 
 
@@ -904,33 +924,33 @@ public:
 #if SWEET_USE_LIBFFT
 
 public:
-	void setupAutoPhysicalSpace(
+	bool setupAutoPhysicalSpaceFromSpectral(
 			int i_spectral_res_x,
 			int i_spectral_res_y,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
-		spectral_modes[0] = i_spectral_res_x;
-		spectral_modes[1] = i_spectral_res_y;
-
+		return setup(
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 
-		// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
-		physical_res[0] = (spectral_modes[0]*3+1)/2;
-		physical_res[1] = (spectral_modes[1]*3+1)/2;
+				// REDUCTION IN EFFECTIVE SPECTRAL MODE RESOLUTION TO CUT OFF ANTI-ALIASED MODES
+				(i_spectral_res_x*3+1)/2,
+				(i_spectral_res_y*3+1)/2,
 #else
-
-		physical_res[0] = spectral_modes[0];
-		physical_res[1] = spectral_modes[1];
-
+				i_spectral_res_x,
+				i_spectral_res_y,
 #endif
 
-		setup_internal_data(i_reuse_spectral_transformation_plans);
+				i_spectral_res_x,
+				i_spectral_res_y,
+
+				i_reuse_spectral_transformation_plans
+		);
 	}
 
 
 public:
-	void setupAutoPhysicalSpace(
+	bool setupAutoPhysicalSpaceFromSpectral(
 			int i_spectral_res_x,
 			int i_spectral_res_y,
 			int *o_physical_res_x,
@@ -938,24 +958,27 @@ public:
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
-		setupAutoPhysicalSpace(
+		if (!setupAutoPhysicalSpaceFromSpectral(
 				i_spectral_res_x,
 				i_spectral_res_y,
 				i_reuse_spectral_transformation_plans
-		);
+		))
+			return false;
 
 		*o_physical_res_x = physical_res[0];
 		*o_physical_res_y = physical_res[1];
+
+		return true;
 	}
 
-	void setupAdditionalModes(
+	bool setupAdditionalModes(
 			PlaneDataConfig *i_planeConfig,
 			int i_additional_modes_x,
 			int i_additional_modes_y,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
 	)
 	{
-		setupAutoPhysicalSpace(
+		return setupAutoPhysicalSpaceFromSpectral(
 				i_planeConfig->spectral_modes[0] + i_additional_modes_x,
 				i_planeConfig->spectral_modes[1] + i_additional_modes_y,
 				i_reuse_spectral_transformation_plans
@@ -994,58 +1017,55 @@ public:
 
 
 
-	void cleanup_data()
+	void _clear_data()
 	{
-		if (fftw_initialized)
-		{
-#if SWEET_USE_LIBFFT
-			fftw_destroy_plan(fftw_plan_forward);
-			fftw_destroy_plan(fftw_plan_backward);
-
-			fftw_destroy_plan(fftw_plan_complex_forward);
-			fftw_destroy_plan(fftw_plan_complex_backward);
-
-			refCounterFftwPlans()--;
-			assert(refCounterFftwPlans() >= 0);
-
-			if (refCounterFftwPlans() == 0)
-			{
-				// backup wisdom
-				if (reuse_spectral_transformation_plans == 1)
-					storeWisdom();
-
-#if SWEET_THREADING_SPACE
-				fftw_cleanup_threads();
-#endif
-				fftw_cleanup();
-			}
-#endif
-			fftw_initialized = false;
-		}
 	}
 
 
-	void cleanup()
+	void clear()
 	{
-		if (fftw_initialized)
+		if (!fftw_initialized)
+			return;
+
+#if SWEET_USE_LIBFFT
+		fftw_destroy_plan(fftw_plan_forward);
+		fftw_destroy_plan(fftw_plan_backward);
+
+		fftw_destroy_plan(fftw_plan_complex_forward);
+		fftw_destroy_plan(fftw_plan_complex_backward);
+
+		refCounterFftwPlans()--;
+		assert(refCounterFftwPlans() >= 0);
+
+		if (refCounterFftwPlans() == 0)
 		{
-			cleanup_data();
+			// backup wisdom
+			if (reuse_spectral_transformation_plans == 1)
+				storeWisdom();
 
-			physical_res[0] = 0;
-			physical_res[1] = 0;
-
-	#if SWEET_USE_LIBFFT
-			spectral_modes[0] = 0;
-			spectral_modes[1] = 0;
-	#endif
+#if SWEET_THREADING_SPACE
+			fftw_cleanup_threads();
+#endif
+			fftw_cleanup();
 		}
+#endif
+
+		physical_res[0] = 0;
+		physical_res[1] = 0;
+
+#if SWEET_USE_LIBFFT
+		spectral_modes[0] = 0;
+		spectral_modes[1] = 0;
+#endif
+
+		fftw_initialized = false;
 	}
 
 
 
 	~PlaneDataConfig()
 	{
-		cleanup();
+		clear();
 	}
 };
 

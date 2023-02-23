@@ -30,29 +30,29 @@ int main(int i_argc, char *i_argv[])
 		 * later on in the SWEET programs.
 		 */
 		std::cout << " + VariablesClassDictionary()" << std::endl;
-		sweet::ClassInstanceDictionary varClassDict;
+		sweet::ShackDictionary varClassDict;
 
 
 		/*
 		 * Register new classes
 		 */
 		std::cout << "   + registerParameterClass<PDESWEParametersSphere>()" << std::endl;
-		varClassDict.registerClassInstance<PDESWEParametersSphere>();
-		varClassDict.registerClassInstance<IODataParameters>();
+		varClassDict.registerFirstTime<PDESWEParametersSphere>();
+		varClassDict.registerFirstTime<IODataParameters>();
 
 		/*
 		 * Now we close the registration
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.registrationOfClassInstancesFinished();
+		varClassDict.registrationFinished();
 
 
 		{
 			/*
 			 * If we now try to register a new class, this should raise an error!
 			 */
-			bool retval = varClassDict.registerClassInstance<IODataParameters>();
+			bool retval = varClassDict.registerFirstTime<IODataParameters>();
 
 			if (!retval)
 			{
@@ -61,7 +61,7 @@ int main(int i_argc, char *i_argv[])
 			}
 			else
 			{
-				std::cerr << "varClassDict.registerClassInstance<> should have raised an error!" << std::endl;
+				std::cerr << "varClassDict.registerFirstTime<> should have raised an error!" << std::endl;
 				return EXIT_FAILURE;
 			}
 		}
@@ -85,7 +85,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Get handler to new class PDESWEParametersSphere
 		 */
-		PDESWEParametersSphere *sweParametersSphere = varClassDict.getClassInstance<PDESWEParametersSphere>();
+		PDESWEParametersSphere *sweParametersSphere = varClassDict.get<PDESWEParametersSphere>();
 		if (sweParametersSphere == nullptr)
 		{
 			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
@@ -95,7 +95,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Get handler to new class PDESWEParametersSphere
 		 */
-		IODataParameters *ioDataParameters = varClassDict.getClassInstance<IODataParameters>();
+		IODataParameters *ioDataParameters = varClassDict.get<IODataParameters>();
 		if (ioDataParameters == nullptr)
 		{
 			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
@@ -107,7 +107,7 @@ int main(int i_argc, char *i_argv[])
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.getClassInstancesFinished();
+		varClassDict.getFinished();
 
 
 		{
@@ -115,7 +115,7 @@ int main(int i_argc, char *i_argv[])
 			 * If we now access a class instance, this should raise an error!
 			 */
 
-			IODataParameters *ioDataParameters = varClassDict.getClassInstance<IODataParameters>();
+			IODataParameters *ioDataParameters = varClassDict.get<IODataParameters>();
 			if (ioDataParameters == nullptr)
 			{
 				// Just get the error (deleting it) and continue
@@ -131,18 +131,18 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Now its time to output all program arguments of all registered classes
 		 */
-		std::cout << " + varClassDict.printClass()" << std::endl;
-		varClassDict.printClass("    ");
+		std::cout << " + varClassDict.printShack()" << std::endl;
+		varClassDict.printShackData("    ");
 
 
 		/*
 		 * And we can also print them individually
 		 */
-		std::cout << " + sweParametersSphere->printClass()" << std::endl;
-		sweParametersSphere->printClass("    ");
+		std::cout << " + sweParametersSphere->printShack()" << std::endl;
+		sweParametersSphere->printShack("    ");
 
-		std::cout << " + ioDataParameters->printClass()" << std::endl;
-		ioDataParameters->printClass("    ");
+		std::cout << " + ioDataParameters->printShack()" << std::endl;
+		ioDataParameters->printShack("    ");
 
 		/*
 		 * Of course, we can also access them directly

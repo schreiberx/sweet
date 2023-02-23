@@ -1,6 +1,4 @@
 /*
- * ClassDictionary.hpp
- *
  *  Created on: Feb 19, 2023
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -24,47 +22,36 @@ namespace sweet
  *
  * It also integrates parsing of program arguments.
  */
-class ClassInstanceDictionary
+class ShackDictionary
 {
 public:
 	sweet::ErrorBase error;
 
 private:
-	std::list<ClassDictionaryInterface*> _list;
+	std::list<ShackInterface*> _list;
 
 	bool _registerationOfClassInstanceFinished;
-	bool _getClassInstanceFinished;
+	bool _getFinished;
 
 
 public:
-	void registrationOfClassInstancesFinished()
+	void registrationFinished()
 	{
 		_registerationOfClassInstanceFinished = true;
 	}
 
 
 public:
-	void getClassInstancesFinished()
+	void getFinished()
 	{
-		_getClassInstanceFinished = true;
+		_getFinished = true;
 	}
 
 
 public:
-	ClassInstanceDictionary()
-	{
-		reset();
-	}
-
-public:
-	void reset()
+	ShackDictionary()
 	{
 		clear();
-
-		_registerationOfClassInstanceFinished = false;
-		_getClassInstanceFinished = false;
-
-		error.reset();
 	}
 
 
@@ -76,11 +63,16 @@ public:
 			delete *i;
 		}
 		_list.clear();
+
+		error.reset();
+
+		_registerationOfClassInstanceFinished = false;
+		_getFinished = false;
 	}
 
 
 public:
-	~ClassInstanceDictionary()
+	~ShackDictionary()
 	{
 		clear();
 	}
@@ -88,7 +80,7 @@ public:
 
 public:
 	template<typename T>
-	bool registerClassInstance()
+	bool registerFirstTime()
 	{
 		if (_registerationOfClassInstanceFinished)
 		{
@@ -97,7 +89,7 @@ public:
 			return false;
 		}
 
-		if (classInstanceExists<T>())
+		if (exists<T>())
 		{
 			const std::string& tname = typeid(T).name();
 			error.set("Class of type '"+tname+"' already exists");
@@ -111,7 +103,7 @@ public:
 
 public:
 	template<typename T>
-	bool classInstanceExists()
+	bool exists()
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
@@ -127,16 +119,19 @@ public:
 
 public:
 	template<typename T>
-	T* getClassInstance()
+	T* get(bool i_auto_registration = false)
 	{
-		if (!_registerationOfClassInstanceFinished)
+		if (!i_auto_registration)
 		{
-			const std::string& tname = typeid(T).name();
-			error.set("Registration of class instances needs to be finished first (type '"+tname+"')");
-			return nullptr;
+			if (!_registerationOfClassInstanceFinished)
+			{
+				const std::string& tname = typeid(T).name();
+				error.set("Registration of class instances needs to be finished first (type '"+tname+"')");
+				return nullptr;
+			}
 		}
 
-		if (_getClassInstanceFinished)
+		if (_getFinished)
 		{
 			const std::string& tname = typeid(T).name();
 			error.set("Getting an element class already finished (type '"+tname+"')");
@@ -156,6 +151,20 @@ public:
 		error.set("Type '"+tname+"' not found in dictionary");
 		return nullptr;
 	}
+
+	/*
+	 * Auto registrate this particular class if it doesn't exist and return an instance
+	 */
+public:
+	template<typename T>
+	T* getAutoRegistration()
+	{
+		if (!exists<T>())
+			registerFirstTime<T>();
+
+		return get<T>(true);
+	}
+
 
 public:
 	void printProgramArguments(const std::string& i_prefix = "")
@@ -181,11 +190,11 @@ public:
 	}
 
 public:
-	void printClass(const std::string& i_prefix = "")
+	void printShackData(const std::string& i_prefix = "")
 	{
 		for (auto i = _list.begin(); i != _list.end(); i++)
 		{
-			(*i)->printClass(i_prefix);
+			(*i)->printShack(i_prefix);
 		}
 	}
 

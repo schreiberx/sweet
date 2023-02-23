@@ -12,22 +12,26 @@
 
 namespace sweet{
 
-void convert(
-		const PlaneData_Spectral& i_planeDataSpectral,
-		PlaneData_Physical& o_planeDataPhysical
-)
+class Convert_PlaneDataSpectral_To_PlaneDataPhysical
 {
-	const PlaneDataConfig* planeDataConfig = i_planeDataSpectral.planeDataConfig;
-	PlaneData_Physical o_data(planeDataConfig);
+public:
+	static
+	void convert(
+			const PlaneData_Spectral& i_planeDataSpectral,
+			PlaneData_Physical& o_planeDataPhysical
+	)
+	{
+		const PlaneDataConfig* planeDataConfig = i_planeDataSpectral.planeDataConfig;
 
-	/**
-	 * Warning: The fftw functions are in-situ operations.
-	 * Therefore, the data in the source array will be destroyed.
-	 * Hence, we create a copy
-	 */
-	PlaneData_Physical tmp(planeDataConfig);
-	planeDataConfig->fft_spectral_to_physical(i_planeDataSpectral.spectral_space_data, o_planeDataPhysical.physical_space_data);
-}
+		/**
+		 * Warning: The fftw functions are in-situ operations.
+		 * Therefore, the data in the source array will be destroyed.
+		 * Hence, we create a copy
+		 */
+		PlaneData_Spectral tmp(i_planeDataSpectral);
+		planeDataConfig->fft_spectral_to_physical(tmp.spectral_space_data, o_planeDataPhysical.physical_space_data);
+	}
+};
 
 }
 

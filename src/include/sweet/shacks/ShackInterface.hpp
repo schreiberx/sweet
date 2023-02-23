@@ -17,7 +17,7 @@
 namespace sweet
 {
 
-class ClassDictionaryInterface
+class ShackInterface
 {
 public:
 	sweet::ErrorBase error;
@@ -30,12 +30,12 @@ public:
 	= 0;
 	//{	return true;}
 
-	virtual void printClass(const std::string &i_prefix = "")
+	virtual void printShack(const std::string &i_prefix = "")
 	= 0;
 	//{	std::cout << "[TODO]" << std::endl; }
 
 
-	virtual ~ClassDictionaryInterface()
+	virtual ~ShackInterface()
 	{}
 };
 

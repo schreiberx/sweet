@@ -37,8 +37,19 @@ int main(int i_argc, char *i_argv[])
 
 	sweParametersSphere.processProgramArguments(pa);
 
-	std::cout << " + sweParametersSphere->printClass()" << std::endl;
-	sweParametersSphere.printClass("    ");
+	std::cout << " + sweParametersSphere->printShack()" << std::endl;
+	sweParametersSphere.printShack("    ");
+
+#if 1
+	{
+		bool dummy;
+		if (!pa.getArgumentValueByKey("-doesntexist", dummy, true))
+		{
+			std::cout << "NOT FOUND" << std::endl;
+			//std::cout << pa.error.get() << std::endl;
+		}
+	}
+#endif
 
 #if 0
 	// TODO: Activate this if SWEET migrated entirely to this new interface

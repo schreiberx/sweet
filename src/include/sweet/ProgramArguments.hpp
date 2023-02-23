@@ -85,12 +85,19 @@ public:
 	ProgramArguments(
 			bool i_errorForDoubleParsing = true,	///< Trigger an error if an argument is parsed twice
 			bool i_errorForDuplicateKeysInParsing = true,		///< Trigger an error if there are duplicate keys
-			bool i_stripKeyDashes = false	///< Strip dashes at the keys (e.g., convert "--help" to "help")
+			bool i_stripKeyDashes = false		///< Strip dashes at the keys (e.g., will convert "--help" to "help" so that only "help" needs to be provided as a key	)
 	)	:
 		_errorForDoubleParsing(i_errorForDoubleParsing),
 		_errorForDuplicateKeysInParsing(i_errorForDuplicateKeysInParsing),
 		_stripKeyDashes(i_stripKeyDashes)
 	{
+	}
+
+	void clear()
+	{
+		_arg0 = "";
+		_arguments.clear();
+		_keysInParsing.clear();
 	}
 
 
@@ -269,20 +276,37 @@ public:
 	bool _getFullArgumentByKey(
 			const std::string& i_key,
 			_ProgramArgument** o_pa,
-			bool i_no_error_if_key_is_missing = true
+			bool i_error_if_key_is_missing
 	)
 	{
+		/*
+		 * Check whether key has been already processed
+		 */
+		if (_errorForDuplicateKeysInParsing)
+			if (!checkAndAddDuplicateKeys(i_key))
+				return false;
+
 		for (std::size_t i = 0; i < _arguments.size(); i++)
 		{
 			_ProgramArgument &a = _arguments[i];
 			if (a.key == i_key)
 			{
 				*o_pa = &a;
+
+				/*
+				 * Check whether argument was already parsed
+				 */
+				if (_errorForDoubleParsing && a.argumentParsedAndAccessed)
+				{
+					error.set("Argument with key '"+i_key+"' already parsed");
+					return false;
+				}
+
 				return true;
 			}
 		}
 
-		if (!i_no_error_if_key_is_missing)
+		if (i_error_if_key_is_missing)
 			error.set(std::string("")+"Key '"+i_key+"' not found");
 
 		return false;
@@ -305,7 +329,6 @@ public:
 		return true;
 	}
 
-
 	/**
 	 * Get string value
 	 */
@@ -313,22 +336,12 @@ public:
 	bool getArgumentValueByKey(
 			const std::string& i_key,
 			std::string &o_value,
-			bool i_no_error_if_key_is_missing = true
+			bool i_error_if_key_is_missing = false
 	)
 	{
-		if (_errorForDuplicateKeysInParsing)
-			if (!checkAndAddDuplicateKeys(i_key))
-				return false;
-
 		_ProgramArgument *pa;
-		if (!_getFullArgumentByKey(i_key, &pa))
-		{
-			error.reset();
-			if (!_getFullArgumentByKey(i_key, &pa))
-			{
-				return false;
-			}
-		}
+		if (!_getFullArgumentByKey(i_key, &pa, i_error_if_key_is_missing))
+			return false;
 
 		o_value = pa->value;
 		pa->argumentParsedAndAccessed = true;
@@ -343,28 +356,12 @@ public:
 	bool getArgumentValueByKey(
 			const std::string& i_key,
 			double &o_value,
-			bool i_no_error_if_key_is_missing = true
+			bool i_error_if_key_is_missing = false
 	)
 	{
-		if (_errorForDuplicateKeysInParsing)
-			if (!checkAndAddDuplicateKeys(i_key))
-				return false;
-
 		_ProgramArgument *pa;
-		if (!_getFullArgumentByKey(i_key, &pa))
-		{
-			error.reset();
-			if (!_getFullArgumentByKey(i_key, &pa))
-			{
-				return false;
-			}
-		}
-
-		if (_errorForDoubleParsing && pa->argumentParsedAndAccessed)
-		{
-			error.set("Argument with key '"+i_key+"' already parsed");
+		if (!_getFullArgumentByKey(i_key, &pa, i_error_if_key_is_missing))
 			return false;
-		}
 
 		try
 		{
@@ -388,24 +385,13 @@ public:
 	bool getArgumentValueByKey(
 			const std::string& i_key,
 			int &o_value,
-			bool i_no_error_if_key_is_missing = true
+			bool i_error_if_key_is_missing = false
 	)
 	{
 		_ProgramArgument *pa;
-		if (!_getFullArgumentByKey(i_key, &pa))
-		{
-			error.reset();
-			if (!_getFullArgumentByKey(i_key, &pa))
-			{
-				return false;
-			}
-		}
-
-		if (_errorForDoubleParsing && pa->argumentParsedAndAccessed)
-		{
-			error.set("Argument with key '"+i_key+"' already parsed");
+		if (!_getFullArgumentByKey(i_key, &pa, i_error_if_key_is_missing))
 			return false;
-		}
+
 
 		try
 		{
@@ -429,24 +415,12 @@ public:
 	bool getArgumentValueByKey(
 			const std::string& i_key,
 			bool &o_value,
-			bool i_no_error_if_key_is_missing = true
+			bool i_error_if_key_is_missing = false
 	)
 	{
 		_ProgramArgument* pa;
-		if (!_getFullArgumentByKey(i_key, &pa))
-		{
-			error.reset();
-			if (!_getFullArgumentByKey(i_key, &pa))
-			{
-				return false;
-			}
-		}
-
-		if (_errorForDoubleParsing && pa->argumentParsedAndAccessed)
-		{
-			error.set("Argument with key '"+i_key+"' already parsed");
+		if (!_getFullArgumentByKey(i_key, &pa, i_error_if_key_is_missing))
 			return false;
-		}
 
 		std::string val = pa->value;
 
@@ -480,20 +454,20 @@ public:
 			const std::string& i_key1,
 			const std::string& i_key2,
 			T &o_value,
-			bool i_no_error_if_key_is_missing = true
+			bool i_error_if_key_is_missing = false
 	)
 	{
 		_ProgramArgument pa;
 
 		error.assertNoError();
 
-		if (getArgumentValueByKey(i_key1, o_value, i_no_error_if_key_is_missing))
+		if (getArgumentValueByKey(i_key1, o_value, i_error_if_key_is_missing))
 			return true;
 
 		if (error.exists())
 			return false;
 
-		if (getArgumentValueByKey(i_key2, o_value, i_no_error_if_key_is_missing))
+		if (getArgumentValueByKey(i_key2, o_value, i_error_if_key_is_missing))
 			return true;
 
 		return false;
@@ -505,25 +479,25 @@ public:
 			const std::string& i_key2,
 			const std::string& i_key3,
 			T &o_value,
-			bool i_no_error_if_key_is_missing = true
+			bool i_error_if_key_is_missing = false
 	)
 	{
 		_ProgramArgument pa;
 
 		error.assertNoError();
-		if (getArgumentValueByKey(i_key1, o_value, i_no_error_if_key_is_missing))
+		if (getArgumentValueByKey(i_key1, o_value, i_error_if_key_is_missing))
 			return true;
 
 		if (error.exists())
 			return false;
 
-		if (getArgumentValueByKey(i_key2, o_value, i_no_error_if_key_is_missing))
+		if (getArgumentValueByKey(i_key2, o_value, i_error_if_key_is_missing))
 			return true;
 
 		if (error.exists())
 			return false;
 
-		if (getArgumentValueByKey(i_key3, o_value, i_no_error_if_key_is_missing))
+		if (getArgumentValueByKey(i_key3, o_value, i_error_if_key_is_missing))
 			return true;
 
 		return false;

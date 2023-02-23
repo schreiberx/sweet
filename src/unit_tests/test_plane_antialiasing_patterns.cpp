@@ -58,7 +58,7 @@ int main(int i_argc, char *i_argv[])
 		simVars.disc.space_res_physical[1] = res[1];
 		simVars.reset();
 
-		planeDataConfigInstance.setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		planeDataConfigInstance.printInformation();
 

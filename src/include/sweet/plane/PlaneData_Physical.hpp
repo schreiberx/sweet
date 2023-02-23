@@ -255,6 +255,16 @@ public:
 
 
 
+
+public:
+	void setup(
+			const PlaneDataConfig &i_planeDataConfig
+	)
+	{
+		setup(&i_planeDataConfig);
+	}
+
+
 public:
 	void setup(
 			const PlaneDataConfig *i_planeDataConfig
@@ -291,12 +301,12 @@ public:
 public:
 	~PlaneData_Physical()
 	{
-		free();
+		clear();
 	}
 
 
 public:
-	void free()
+	void clear()
 	{
 		if (physical_space_data != nullptr)
 		{

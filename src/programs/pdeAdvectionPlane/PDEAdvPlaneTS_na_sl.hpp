@@ -1,9 +1,8 @@
 /*
- * Adv_Plane_TS_na_sl.hpp
- *
  *  Created on: 30 May 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
+#if 0
 
 #ifndef SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_SL_HPP_
 #define SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_SL_HPP_
@@ -16,10 +15,10 @@
 #include <sweet/plane/PlaneDataSampler.hpp>
 #include <sweet/plane/PlaneDataSemiLagrangian.hpp>
 
-#include "Adv_Plane_TS_interface.hpp"
+#include "PDEAdvPlaneTS_interface.hpp"
 
 
-class Adv_Plane_TS_na_sl	: public Adv_Plane_TS_interface
+class PDEAdvPlaneTS_na_sl	: public PDEAdvPlaneTS_interface
 {
 	SimulationVariables &simVars;
 	PlaneOperators &op;
@@ -38,7 +37,7 @@ class Adv_Plane_TS_na_sl	: public Adv_Plane_TS_interface
 	ScalarDataArray posx_a, posy_a;
 
 public:
-	Adv_Plane_TS_na_sl(
+	PDEAdvPlaneTS_na_sl(
 			SimulationVariables &i_simVars,
 			PlaneOperators &i_op
 		);
@@ -58,7 +57,9 @@ public:
 
 
 
-	virtual ~Adv_Plane_TS_na_sl();
+	virtual ~PDEAdvPlaneTS_na_sl();
 };
+
+#endif
 
 #endif

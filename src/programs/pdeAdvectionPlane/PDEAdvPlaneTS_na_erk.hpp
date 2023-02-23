@@ -1,26 +1,28 @@
 /*
- * Adv_Plane_TS_na_erk.hpp
- *
  *  Created on: 30 May 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_ERK_HPP_
-#define SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_ERK_HPP_
+#ifndef SRC_PDE_ADV_PLANE_TS_NA_ERK_HPP_
+#define SRC_PDE_ADV_PLANE_TS_NA_ERK_HPP_
 
 #include <limits>
-#include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneDataTimesteppingExplicitRK.hpp>
-#include <sweet/plane/PlaneOperators.hpp>
-#include <sweet/SimulationVariables.hpp>
+#include <sweet/plane/Plane.hpp>
 
-#include "Adv_Plane_TS_interface.hpp"
+#include "PDEAdvPlaneTS_interface.hpp"
+
+#include <sweet/shacks/ShackDictionary.hpp>
+
+#include <sweet/shacksShared/ShackTimestepControl.hpp>
+
+#include "ShackPDEAdvectionPlane.hpp"
+#include "ShackPDEAdvectionPlaneTimeDiscretization.hpp"
+#include "../pdeAdvectionPlaneBenchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
 
 
-
-class Adv_Plane_TS_na_erk	: public Adv_Plane_TS_interface
+class PDEAdvPlaneTS_na_erk	: public PDEAdvPlaneTS_interface
 {
-	SimulationVariables &simVars;
 	PlaneOperators &op;
 
 	int timestepping_order;
@@ -28,6 +30,9 @@ class Adv_Plane_TS_na_erk	: public Adv_Plane_TS_interface
 	// Sampler
 	PlaneDataTimesteppingExplicitRK timestepping_rk;
 
+	ShackPDEAdvectionPlaneTimeDiscretization *shackTimeDisc;
+	ShackTimestepControl *shackTimestepControl;
+	ShackPDEAdvectionPlaneBenchmarks *shackBenchmark;
 
 private:
 	void euler_timestep_update(
@@ -43,8 +48,8 @@ private:
 	);
 
 public:
-	Adv_Plane_TS_na_erk(
-			SimulationVariables &i_simVars,
+	PDEAdvPlaneTS_na_erk(
+			sweet::ShackDictionary &io_shackDict,
 			PlaneOperators &i_op
 		);
 
@@ -63,7 +68,7 @@ public:
 
 
 
-	virtual ~Adv_Plane_TS_na_erk();
+	virtual ~PDEAdvPlaneTS_na_erk();
 };
 
 #endif /* SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_LN_ERK_HPP_ */

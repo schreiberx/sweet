@@ -1,16 +1,15 @@
 /*
- * Adv_Plane_TS_na_sl.cpp
- *
  *  Created on: 29 Mar 2018
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <programs/pdeAdvectionPlane/Adv_Plane_TS_na_sl.hpp>
+#if 0
+#include <programs/pdeAdvectionPlane/PDEAdvPlaneTS_na_sl.hpp>
 
 
 
 
-void Adv_Plane_TS_na_sl::run_timestep(
+void PDEAdvPlaneTS_na_sl::run_timestep(
 		PlaneData_Spectral &io_phi,		///< prognostic variables
 		PlaneData_Spectral &io_u,	///< prognostic variables
 		PlaneData_Spectral &io_v,		///< prognostic variables
@@ -91,7 +90,7 @@ void Adv_Plane_TS_na_sl::run_timestep(
 /*
  * Setup
  */
-void Adv_Plane_TS_na_sl::setup(
+void PDEAdvPlaneTS_na_sl::setup(
 		int i_order	///< order of RK time stepping method
 )
 {
@@ -136,7 +135,7 @@ void Adv_Plane_TS_na_sl::setup(
 }
 
 
-Adv_Plane_TS_na_sl::Adv_Plane_TS_na_sl(
+PDEAdvPlaneTS_na_sl::PDEAdvPlaneTS_na_sl(
 		SimulationVariables &i_simVars,
 		PlaneOperators &i_op
 )	:
@@ -151,7 +150,7 @@ Adv_Plane_TS_na_sl::Adv_Plane_TS_na_sl(
 
 
 
-Adv_Plane_TS_na_sl::~Adv_Plane_TS_na_sl()
+PDEAdvPlaneTS_na_sl::~PDEAdvPlaneTS_na_sl()
 {
 }
-
+#endif

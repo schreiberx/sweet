@@ -1,6 +1,4 @@
 /*
- * SWEPolvani.hpp
- *
  *  Created on: 14 Oct 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -11,25 +9,36 @@
 #include <stdlib.h>
 #include <cmath>
 #include <sweet/SimulationVariables.hpp>
-#include <sweet/plane/PlaneData_Spectral.hpp>
-#include <sweet/plane/PlaneData_Physical.hpp>
+#include <sweet/plane/Plane.hpp>
+#include <sweet/ErrorBase.hpp>
 
-#if SWEET_THREADING_SPACE
-	#include <omp.h>
-#endif
+#include <sweet/shacks/ShackDictionary.hpp>
+
+#include "../pdeSWEPlaneBenchmarks/ShackPDESWEBenchPolvani.hpp"
+
+#include "../pdeSWEPlane/ShackPDESWEPlaneCoefficients.hpp"
+#include <sweet/shacksShared/ShackPlaneDiscretization.hpp>
+#include <sweet/shacksShared/ShackSWEPlaneBenchmark.hpp>
+
 
 
 /**
  * Implement initial conditions of Polvani benchmark
  * "Coherent structures of shallow-water turbulence"
  */
-class SWE_bench_Polvani
+class SWEPlaneBenchPolvani
 {
-	SimulationVariables &simVars;
+public:
+	sweet::ErrorBase error;
 
+private:
 	PlaneOperators &op;
 
+	ShackPDESWEBenchPolvani *shackPolvani;
 
+	ShackPDESWEPlaneCoefficients *shackSimCoeffs;
+	ShackPlaneDiscretization *shackDisc;
+	ShackSWEPlaneBenchmark *shackBenchmark;
 
 	/*
 	 * Start with default parameters
@@ -40,6 +49,165 @@ class SWE_bench_Polvani
 	double m = 25;
 
 	double normalize_ek = 1.0;
+
+
+public:
+	SWEPlaneBenchPolvani(
+		sweet::ShackDictionary &io_shackDict,
+		PlaneOperators &io_op,
+		sweet::ProgramArguments &io_programArguments
+	)	:
+		op(io_op)
+	{
+		shackPolvani = io_shackDict.getAutoRegistration<ShackPDESWEBenchPolvani>();
+		shackPolvani->processProgramArguments(io_programArguments);
+
+		shackSimCoeffs = io_shackDict.getAutoRegistration<ShackPDESWEPlaneCoefficients>();
+		shackDisc = io_shackDict.getAutoRegistration<ShackPlaneDiscretization>();
+		shackBenchmark = io_shackDict.getAutoRegistration<ShackSWEPlaneBenchmark>();
+
+		if (shackDisc->space_res_spectral[0] < 512 || shackDisc->space_res_spectral[1] < 512)
+		{
+			error.set("You need at least a resolution of 512 for the Polvani benchmark");
+			return;
+		}
+
+		error.forward(io_shackDict.error);
+	}
+
+	double R;
+	double B;
+	double F;
+
+	bool setup(
+			PlaneData_Spectral &o_h,
+			PlaneData_Spectral &o_u,
+			PlaneData_Spectral &o_v
+	)
+	{
+		shackPolvani->printShack();
+		/*
+		 * Prepare other values
+		 */
+		// Rossby number
+		R = shackPolvani->r;
+
+		// Froude number
+		F = shackPolvani->f;
+
+		// Burger number
+		// Equation (2.2)
+		B = (R*R)/(F*F);
+
+
+		/*
+		 * Overwrite domain size
+		 * Page 179, right column
+		 */
+		shackSimCoeffs->plane_domain_size[0] = 2.0*M_PI*k0;
+		shackSimCoeffs->plane_domain_size[1] = shackSimCoeffs->plane_domain_size[0];
+
+
+		/*
+		 * Equation (2.3.a)
+		 * => Infer f0 and gravitation
+		 */
+		shackSimCoeffs->plane_rotating_f0 = 1.0/R;
+		shackSimCoeffs->gravitation = 1.0/(F*F);
+
+		shackSimCoeffs->h0 = 1.0;
+
+		std::cout << "******************* WARNING ***********************" << std::endl;
+		std::cout << "POLVANI Benchmark setup:" << std::endl;
+		std::cout << "Updated benchmark parameters!" << std::endl;
+		shackSimCoeffs->printShack();
+
+		std::cout << "Reinitializing operators" << std::endl;
+		op.setup(shackSimCoeffs->plane_domain_size, shackDisc->space_use_spectral_basis_diffs);
+
+		std::cout << "******************* WARNING ***********************" << std::endl;
+
+
+		normalize_ek = 1.59373326082e+21;
+
+		double target_rms = 1.0/sqrt(2.0);
+
+		/*
+		 * Use a shitty zero-crossing finder here
+		 *
+		 * TODO: Use Newton solver
+		 */
+		for (int k = 0; k < 1000; k++)
+		{
+			/*
+			 * Manually reset the seed
+			 */
+			if (shackBenchmark->random_seed >= 0)
+				srandom(shackBenchmark->random_seed);
+
+			std::cout << "POLVANI **********************************************"<< std::endl;
+			std::cout << "POLVANI ITERATION " << k << std::endl;
+			std::cout << "POLVANI NORMALIZE_EK = " << normalize_ek << std::endl;
+
+			/*
+			 * We first compute the slope numerically
+			 */
+
+			/*
+			 * This is the distance between two sampling points to determine the slope
+			 */
+			double d_rms = normalize_ek * 1e-8;
+
+			/*
+			 * First sample at x_0
+			 */
+			double x_0 = normalize_ek;
+			double rms_0;
+			{
+				if (!setup_inner_iter(o_h, o_u, o_v))
+					return false;
+
+				double rms_u = o_u.toPhys().physical_reduce_rms();
+				double rms_v = o_v.toPhys().physical_reduce_rms();
+				rms_0 = 0.5*(rms_u + rms_v);
+			}
+
+			std::cout << "POLVANI x0 = " << x_0 << "\tRMS = " << rms_0 << std::endl;
+
+			/*
+			 * Second sample at x_1
+			 */
+			double x_1 = x_0+d_rms;
+			normalize_ek = x_1;
+			double rms_1;
+			{
+				setup_inner_iter(o_h, o_u, o_v);
+				double rms_u = o_u.toPhys().physical_reduce_rms();
+				double rms_v = o_v.toPhys().physical_reduce_rms();
+				rms_1 = 0.5*(rms_u + rms_v);
+			}
+
+			std::cout << "POLVANI x1 = " << x_1 << "\tRMS = " << rms_1 << std::endl;
+
+			double diff = (rms_1 - rms_0) / d_rms;
+
+			std::cout << "POLVANI dy/dx = " << diff << std::endl;
+
+			double omega = 100.0;
+
+			normalize_ek = normalize_ek - omega*(rms_0 - target_rms)/diff;
+
+			double error = std::abs(rms_0 - target_rms);
+			std::cout << "POLVANI " << k << ": " << rms_0 << "\tERROR: " << error << std::endl;
+			std::cout << std::endl;
+
+			if (error < 1e-2)
+				break;
+		}
+
+		return true;
+	}
+
 
 	double Ek(int ka[2])
 	{
@@ -144,156 +312,7 @@ class SWE_bench_Polvani
 	}
 
 
-public:
-	SWE_bench_Polvani(
-		SimulationVariables &io_simVars,
-		PlaneOperators &io_op
-	)	:
-		simVars(io_simVars),
-		op(io_op)
-	{
-	}
-
-	double R;
-	double B;
-	double F;
-
-	void setup(
-			PlaneData_Spectral &o_h,
-			PlaneData_Spectral &o_u,
-			PlaneData_Spectral &o_v
-	)
-	{
-		/*
-		 * Prepare other values
-		 */
-		// Rossby number
-		R = simVars.swe_polvani.r;
-
-		// Froude number
-		F = simVars.swe_polvani.f;
-
-		// Burger number
-		// Equation (2.2)
-		B = (R*R)/(F*F);
-
-#if 0
-		std::cout << R << std::endl;
-		std::cout << F << std::endl;
-		std::cout << B << std::endl;
-#endif
-
-
-		/*
-		 * Overwrite domain size
-		 * Page 179, right column
-		 */
-		simVars.sim.plane_domain_size[0] = 2.0*M_PI*k0;
-		simVars.sim.plane_domain_size[1] = simVars.sim.plane_domain_size[0];
-
-
-		/*
-		 * Equation (2.3.a)
-		 * => Infer f0 and gravitation
-		 */
-		simVars.sim.plane_rotating_f0 = 1.0/R;
-		//simVars.sim.gravitation = 1.0/R;
-		simVars.sim.gravitation = 1.0/(F*F);
-
-		//simVars.sim.h0 = 1.0/R*B;
-		simVars.sim.h0 = 1.0;
-
-		std::cout << "******************* WARNING ***********************" << std::endl;
-		std::cout << "POLVANI Benchmark setup:" << std::endl;
-		std::cout << "Updated domain size!" << std::endl;
-		std::cout << "******************* WARNING ***********************" << std::endl;
-
-		/*
-		 * update domain size
-		 */
-		op.setup(simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
-
-
-//		normalize_ek = 1.5967e+21;
-		normalize_ek = 1.59373326082e+21;
-
-		double target_rms = 1.0/sqrt(2.0);
-
-		/*
-		 * Use a shitty zero-crossing finder here
-		 *
-		 * TODO: Use Newton solver
-		 */
-		for (int k = 0; k < 1000; k++)
-		{
-			/*
-			 * Manually reset the seed
-			 */
-			if (simVars.benchmark.random_seed >= 0)
-				srandom(simVars.benchmark.random_seed);
-
-			std::cout << "POLVANI"<< std::endl;
-			std::cout << "POLVANI ITERATION " << k << std::endl;
-			std::cout << "POLVANI NORMALIZE_EK = " << normalize_ek << std::endl;
-
-			/*
-			 * We first compute the slope numerically
-			 */
-
-			/*
-			 * This is the distance between two sampling points to determine the slope
-			 */
-			double d_rms = normalize_ek * 1e-8;
-
-			/*
-			 * First sample at x_0
-			 */
-			double x_0 = normalize_ek;
-			double rms_0;
-			{
-				setup_inner_iter(o_h, o_u, o_v);
-				double rms_u = o_u.toPhys().physical_reduce_rms();
-				double rms_v = o_v.toPhys().physical_reduce_rms();
-				rms_0 = 0.5*(rms_u + rms_v);
-			}
-
-			std::cout << "POLVANI x0 = " << x_0 << "\tRMS = " << rms_0 << std::endl;
-
-			/*
-			 * Second sample at x_1
-			 */
-			double x_1 = x_0+d_rms;
-			normalize_ek = x_1;
-			double rms_1;
-			{
-				setup_inner_iter(o_h, o_u, o_v);
-				double rms_u = o_u.toPhys().physical_reduce_rms();
-				double rms_v = o_v.toPhys().physical_reduce_rms();
-				rms_1 = 0.5*(rms_u + rms_v);
-			}
-
-			std::cout << "POLVANI x1 = " << x_1 << "\tRMS = " << rms_1 << std::endl;
-
-			double diff = (rms_1 - rms_0) / d_rms;
-
-			std::cout << "POLVANI dy/dx = " << diff << std::endl;
-
-			double omega = 100.0;
-
-			normalize_ek = normalize_ek - omega*(rms_0 - target_rms)/diff;
-
-			double error = std::abs(rms_0 - target_rms);
-			std::cout << "POLVANI " << k << ": " << rms_0 << "\tERROR: " << error << std::endl;
-			std::cout << std::endl;
-
-			if (error < 1e-2)
-				break;
-		}
-	}
-
-
-
-	void setup_inner_iter(
+	bool setup_inner_iter(
 			PlaneData_Spectral &o_h,
 			PlaneData_Spectral &o_u,
 			PlaneData_Spectral &o_v
@@ -312,9 +331,6 @@ public:
 		 * Equation (2.6)
 		 */
 		setup_stream(psi);
-
-//		psi.print_physicalArrayData();
-//		std::cout << lap_h.reduce_maxAbs() << std::endl;
 
 		/*
 		 * Compute height
@@ -384,9 +400,7 @@ public:
 		}
 
 		if (diff >= 1e-10)
-		{
-			SWEETError("No convergence for Polvani initial conditions reached");
-		}
+			return error.set("No convergence for Polvani initial conditions reached");
 
 
 		/*
@@ -394,10 +408,10 @@ public:
 		 * See page 178, h* = H(1+RB^-1 h)
 		 */
 		// total height
-		h = simVars.sim.h0*(1.0+R/B*h);
+		h = shackSimCoeffs->h0*(1.0+R/B*h);
 
 		// perturbation
-		h = h-simVars.sim.h0;
+		h = h-shackSimCoeffs->h0;
 
 		o_h = h;
 
@@ -418,6 +432,8 @@ public:
 		std::cout << "POLVANI: psi_rms = " << psi_rms << std::endl;
 		double chi_rms_psi_rms = chi_rms / psi_rms;
 		std::cout << "POLVANI: chi_rms / psi_rms = " << chi_rms_psi_rms << std::endl;
+
+		return true;
 	}
 };
 

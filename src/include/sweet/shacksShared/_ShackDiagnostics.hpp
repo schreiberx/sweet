@@ -18,8 +18,8 @@
 /**
  * Diagnostic variables
  */
-class Diagnostics	:
-	public sweet::ClassDictionaryInterface
+class ShackDiagnostics	:
+	public sweet::ShackInterface
 {
 public:
 	/// total mass
@@ -67,7 +67,7 @@ public:
 		return true;
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

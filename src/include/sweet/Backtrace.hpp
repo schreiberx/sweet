@@ -13,6 +13,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <sys/prctl.h>
+#include <errno.h>	// for errno()
+#include <string.h>	// for strerror()
 
 namespace sweet
 {
@@ -24,34 +26,6 @@ public:
 	 * We avoid using ErrorBase to avoid circular dependency
 	 */
 	std::string error;
-
-	/*
-	 * Source: https://stackoverflow.com/questions/4636456/how-to-get-a-stack-trace-for-c-using-gcc-with-line-number-information
-	 *
-	 * Get stacktrace
-	 */
-public:
-	static
-	void printGDBTrace()
-	{
-	    char pid_buf[30];
-	    sprintf(pid_buf, "%d", getpid());
-
-		// get name to program executable (which we want to debug)
-		char program_exec_buf[512];
-		std::size_t len = readlink("/proc/self/exe", program_exec_buf, 511);
-		program_exec_buf[len] = '\0';
-
-		prctl(PR_SET_PTRACER, PR_SET_PTRACER_ANY, 0, 0, 0);
-		int child_pid = fork();
-		if (!child_pid) {
-			//dup2(2,1); // redirect output to stderr - edit: unnecessary?
-			execl("/usr/bin/gdb", "gdb", "--batch", "-n", "-ex", "thread", "-ex", "bt", program_exec_buf, pid_buf, NULL);
-			abort(); /* If gdb failed to start */
-		} else {
-			waitpid(child_pid,NULL,0);
-		}
-	}
 
 
 	/*
@@ -120,10 +94,11 @@ public:
 		    close(pipefd_cerr[0]);
 
 			/*
-			 * Run GDB
+			 * Run GDB (and wipe out this current process)
 			 */
 			execl(
-					"/usr/bin/gdb",
+					"/usr/bin/env",
+					"gdb",
 					"gdb",
 					"--batch",
 					"-n",
@@ -136,11 +111,11 @@ public:
 					NULL
 				);
 
-			/*
-			 * Close writing ends
-			 */
-		    close(pipefd_cout[1]);
-		    close(pipefd_cerr[1]);
+			// execl should never return on success
+			//assert(retval == -1);
+
+			std::cerr << "Failed to execute '/usr/bin/env gdb ...'" << std::endl;
+			std::cerr << "ERROR: " << strerror(errno) << std::endl;
 
 			abort();	// directly stop program without calling any atexit functions
 		}
@@ -195,7 +170,6 @@ public:
 		     */
 		    close(pipefd_cout[0]);
 		    close(pipefd_cerr[0]);
-
 		}
 
 		waitpid(child_pid, nullptr, 0);

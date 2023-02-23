@@ -19,7 +19,7 @@
  */
 class PDESWEParametersSphere	:
 	public PDESWEParametersCommon,
-	public sweet::ClassDictionaryInterface
+	public sweet::ShackInterface
 {
 public:
 	sweet::ErrorBase& getError()
@@ -49,11 +49,11 @@ public:
 	double sphere_fsphere_f0 = 0.00007292*2;
 
 
-	void printClass(const std::string& i_prefix = "")
+	void printShack(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
 		std::cout << i_prefix << "SWE PDE on Sphere coefficients:" << std::endl;
-		PDESWEParametersCommon::printClass(i_prefix);
+		PDESWEParametersCommon::printShack(i_prefix);
 		std::cout << i_prefix << " + radius: " << sphere_radius << std::endl;
 		std::cout << i_prefix << " + rotating_coriolis_omega: " << sphere_coriolis_omega << std::endl;
 		std::cout << i_prefix << " + use_fsphere: " << sphere_use_fsphere << std::endl;

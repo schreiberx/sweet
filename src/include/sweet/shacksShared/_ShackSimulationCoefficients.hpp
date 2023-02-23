@@ -19,7 +19,7 @@
  * simulation coefficients
  */
 class SimulationCoefficients	:
-		public sweet::ClassDictionaryInterface
+		public sweet::ShackInterface
 {
 public:
 	/// average height for initialization
@@ -129,7 +129,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

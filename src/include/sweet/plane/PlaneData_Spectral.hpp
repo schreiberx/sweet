@@ -89,7 +89,6 @@ public:
 	PlaneData_Spectral(
 			const PlaneDataConfig *i_planeDataConfig
 	)	:
-		planeDataConfig(i_planeDataConfig),
 		spectral_space_data(nullptr)
 	{
 		assert(i_planeDataConfig != 0);
@@ -703,6 +702,17 @@ public:
 
 
 
+private:
+	void _main_setup(
+		const PlaneDataConfig *i_planeDataConfig
+	)
+	{
+		assert(planeDataConfig == nullptr);
+
+		planeDataConfig = i_planeDataConfig;
+		alloc_data();
+	}
+
 
 
 public:
@@ -710,10 +720,21 @@ public:
 		const PlaneDataConfig *i_planeDataConfig
 	)
 	{
-		planeDataConfig = i_planeDataConfig;
-		alloc_data();
+		_main_setup(i_planeDataConfig);
 	}
 
+
+
+	/*
+	 * Wrapper for main setup
+	 */
+public:
+	void setup(
+		const PlaneDataConfig &i_planeDataConfig
+	)
+	{
+		_main_setup(&i_planeDataConfig);
+	}
 
 public:
 	void setup(
@@ -721,8 +742,8 @@ public:
 		double i_value
 	)
 	{
-		planeDataConfig = i_planeDataConfig;
-		alloc_data();
+		_main_setup(i_planeDataConfig);
+
 		spectral_set_value(i_value);
 	}
 
@@ -743,18 +764,18 @@ public:
 		if (planeDataConfig != nullptr)
 			return;
 
-		setup(i_planeDataConfig);
+		_main_setup(i_planeDataConfig);
 	}
 
 
 public:
-	void free()
+	void clear()
 	{
 		if (spectral_space_data != nullptr)
 		{
 			MemBlockAlloc::free(spectral_space_data, planeDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
-			spectral_space_data = nullptr;
 
+			spectral_space_data = nullptr;
 			planeDataConfig = nullptr;
 		}
 	}
@@ -763,7 +784,7 @@ public:
 public:
 	~PlaneData_Spectral()
 	{
-		free();
+		clear();
 	}
 
 

@@ -230,7 +230,7 @@ public:
 
 #if SWEET_GUI
 		planeDataConfig = new PlaneDataConfig;
-		planeDataConfig->setupAutoSpectralSpace(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfig->setupAutoSpectralSpaceFromPhysical(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
 
 		viz_plane_data = new PlaneData_Physical(planeDataConfig);
 #endif

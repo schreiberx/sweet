@@ -9,12 +9,11 @@
 #define SRC_PROGRAMS_ADV_PLANE_TS_INTERFACE_HPP_
 
 #include <limits>
-#include <sweet/SimulationVariables.hpp>
 #include <sweet/plane/PlaneData_Spectral.hpp>
 #include <sweet/plane/PlaneOperators.hpp>
 
 
-class Adv_Plane_TS_interface
+class PDEAdvPlaneTS_interface
 {
 public:
 	virtual void run_timestep(

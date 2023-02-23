@@ -64,7 +64,7 @@
 #include "shacksShared/ShackDiscretization.hpp"
 #include "shacksShared/ShackIOData.hpp"
 #include "shacksShared/ShackMisc.hpp"
-#include "shacksShared/ShackShackParallelization.hpp"
+#include "shacksShared/ShackParallelization.hpp"
 #include "shacksShared/ShackSDC.hpp"
 #include "shacksShared/ShackSimulationCoefficients.hpp"
 #include "shacksShared/ShackTimestepControl.hpp"
@@ -90,20 +90,21 @@ public:
  *
  * It offers a common structure for the used variables.
  */
-class SimulationVariables
+class SimulationVariables	:
+	public sweet::ShackInterface
 {
 
 public:
 
-	Diagnostics diag;
+	ShackDiagnostics diag;
 	ShackIOData iodata;
-	Benchmark benchmark;
+	ShackBenchmark benchmark;
 	SimulationCoefficients sim;
 	Discretization disc;
 	UserDefined user_defined;
 	Misc misc;
 	ShackParallelization parallelization;
-	TimestepControl timecontrol;
+	ShackTimestepControl timecontrol;
 	SDC sdc;
 
 	EXP_SimulationVariables rexi;
@@ -126,29 +127,29 @@ public:
 
 	void outputConfig()
 	{
-		sim.printClass();
-		disc.printClass();
-		benchmark.printClass();
-		iodata.printClass();
-		timecontrol.printClass();
+		sim.printShack();
+		disc.printShack();
+		benchmark.printShack();
+		iodata.printShack();
+		timecontrol.printShack();
 
-		rexi.printClass();
-		sdc.printClass();
-		swe_polvani.printClass();
-		misc.printClass();
-		parallelization.printClass();
-		diag.printClass();
+		rexi.printShack();
+		sdc.printShack();
+		swe_polvani.printShack();
+		misc.printShack();
+		parallelization.printShack();
+		diag.printShack();
 
 #if SWEET_PARAREAL
-		parareal.printClass();
+		parareal.printShack();
 #endif
 
 #if SWEET_LIBPFASST
-		libpfasst.printClass();
+		libpfasst.printShack();
 #endif
 
 #if SWEET_XBRAID
-		xbraid.printClass();
+		xbraid.printShack();
 #endif
 
 	}

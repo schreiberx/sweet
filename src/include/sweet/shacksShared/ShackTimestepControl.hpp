@@ -18,8 +18,8 @@
 /**
  * Timestepping
  */
-class TimestepControl	:
-		public sweet::ClassDictionaryInterface
+class ShackTimestepControl	:
+		public sweet::ShackInterface
 {
 public:
 	/// Continue running simulation timestepping.
@@ -52,30 +52,47 @@ public:
 	{
 		std::cout << "" << std::endl;
 		std::cout << "Timecontrol:" << std::endl;
-		std::cout << "	--dt [time]	timestep size, default=?" << std::endl;
-		std::cout << "	--max-wallclock-time [time]	wallclock time limitation, default=-1" << std::endl;
-		std::cout << "	-t [time]	maximum simulation time, default=-1 (infinity)" << std::endl;
-		std::cout << "	-T [stepnr]	maximum number of time steps, default=-1 (infinity)" << std::endl;
-		std::cout << "	-o [time]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
+		std::cout << "	--dt [float]	timestep size, default=?" << std::endl;
+		std::cout << "	--max-wallclock-time [float]	wallclock time limitation, default=-1" << std::endl;
+		std::cout << "	-t [float]	maximum simulation time, default=-1 (infinity)" << std::endl;
+		std::cout << "	-T [int]	maximum number of time steps, default=-1 (infinity)" << std::endl;
+		std::cout << "	-o [float]	time interval at which output should be written, (set to 0 for output at every time step), default=-1 (no output) " << std::endl;
 	}
 
 	/*
 	 * Check arguments
 	 */
-	bool validateArguments()
+	bool validateMaxSimulationTime()
 	{
-		if (std::isinf(max_simulation_time) && max_timesteps_nr == std::numeric_limits<int>::max())
-			return error.set("timecontrol.max_simulation_time == inf and timecontrol.max_simulation_nr == max");
+		if (std::isinf(max_simulation_time))
+			return error.set("You need to set the maximum simulation time using -t [float]");
 
 		return true;
 	}
+
+	bool validateMaxTimestepNr()
+	{
+		if (max_timesteps_nr == std::numeric_limits<int>::max())
+			return error.set("You need to set the maximal number of time steps");
+
+		return true;
+	}
+
+	bool validateTimestepSize()
+	{
+		if (current_timestep_size <= 0)
+			return error.set("Timestep size not set, use --dt=[float]");
+
+		return true;
+	}
+
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		i_pa.getArgumentValueByKey("--dt", current_timestep_size);
 		i_pa.getArgumentValueByKey("--max-wallclock-time", max_wallclock_time);
 		i_pa.getArgumentValueByKey("-t", max_simulation_time);
-		i_pa.getArgumentValueByKey("--T", max_timesteps_nr);
+		i_pa.getArgumentValueByKey("-T", max_timesteps_nr);
 
 		setup_timestep_size = current_timestep_size;
 
@@ -86,7 +103,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

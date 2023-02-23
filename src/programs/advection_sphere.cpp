@@ -467,7 +467,7 @@ int main(int i_argc, char *i_argv[])
 #if SWEET_GUI
 	if (simVars.misc.gui_enabled)
 	{
-		planeDataConfigInstance.setupAutoSpectralSpace(
+		planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(
 				simVars.disc.space_res_physical,
 				simVars.misc.reuse_spectral_transformation_plans
 			);

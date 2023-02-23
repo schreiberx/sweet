@@ -35,7 +35,7 @@ SimulationVariables _simVars;
  * resolution / timestepping
  */
 class ShackProgramSpecific	:
-		public sweet::ClassDictionaryInterface
+		public sweet::ShackInterface
 {
 public:
 	double velocity_u = 0;
@@ -78,7 +78,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printClass(
+	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{
@@ -683,7 +683,7 @@ int main(
 	}
 
 	_simVars.outputConfig();
-	_shackProgramSpecific.printClass();
+	_shackProgramSpecific.printShack();
 
 	double u = _shackProgramSpecific.velocity_u;
 	double v = _shackProgramSpecific.velocity_v;
@@ -784,7 +784,7 @@ int main(
 
 			_simVars.reset();
 
-			planeDataConfigInstance.setupAutoSpectralSpace(_simVars.disc.space_res_physical, _simVars.misc.reuse_spectral_transformation_plans);
+			planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(_simVars.disc.space_res_physical, _simVars.misc.reuse_spectral_transformation_plans);
 
 			SimulationAdvection *simulationAdvection = new SimulationAdvection(planeDataConfig);
 
@@ -887,7 +887,7 @@ int main(
 		double *computed_errors = new double[1024];
 		double *conv_rate = new double[1024];
 
-		planeDataConfigInstance.setupAutoSpectralSpace(_simVars.disc.space_res_physical, _simVars.misc.reuse_spectral_transformation_plans);
+		planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(_simVars.disc.space_res_physical, _simVars.misc.reuse_spectral_transformation_plans);
 
 
 		for (	int cfl_iterator_id = 0;
