@@ -17,6 +17,8 @@
 #include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/shacksShared/ShackPlaneDataOps.hpp>
 
+namespace sweet
+{
 
 class PlaneOperators
 {
@@ -381,6 +383,18 @@ public:
 		);
 	}
 
+
+	bool setup(
+			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			ShackPlaneDataOps &i_shackPlaneDataOps
+	)
+	{
+		return setup(
+				&i_planeDataConfig,
+				i_shackPlaneDataOps.plane_domain_size
+		);
+	}
+
 	bool setup(
 			const double i_domain_size[2],
 			bool i_use_spectral_basis_diffs
@@ -692,6 +706,6 @@ public:
 	}
 };
 
+}
 
-
-#endif /* SRC_INCLUDE_SWEET_PLANEOPERATORS_HPP_ */
+#endif

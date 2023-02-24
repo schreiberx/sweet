@@ -15,6 +15,9 @@
 #include <sweet/ScalarDataArray.hpp>
 #include <sweet/SimulationBenchmarkTiming.hpp>
 
+namespace sweet
+{
+
 class PlaneDataSemiLagrangian
 {
 	PlaneDataSampler sample2D;
@@ -175,5 +178,7 @@ public:
 
 	}
 };
+
+}
 
 #endif /* SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_ */

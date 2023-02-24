@@ -29,18 +29,18 @@ public:
 	// plane or sphere data config
 	const void* ext_forces_data_config;
 
-	ShackPlaneDataOps *shackPlaneDataOps;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps;
+	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackPDEAdvectionPlaneBenchmarks *shackBenchmarks;
-	ShackTimestepControl *shackTimestepControl;
 
-	PlaneOperators *op;
+	sweet::PlaneOperators *op;
 	sweet::ProgramArguments *programArguments;
 
 	PDEAdvectionPlaneBenchmarksCombined()	:
 		ext_forces_data_config(nullptr),
 		shackPlaneDataOps(nullptr),
-		shackBenchmarks(nullptr),
 		shackTimestepControl(nullptr),
+		shackBenchmarks(nullptr),
 		op(nullptr),
 		programArguments(nullptr)
 	{
@@ -57,9 +57,9 @@ public:
 			sweet::ShackDictionary &io_shackDict
 	)
 	{
-		shackPlaneDataOps = io_shackDict.getAutoRegistration<ShackPlaneDataOps>();
+		shackPlaneDataOps = io_shackDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
+		shackTimestepControl = io_shackDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackBenchmarks = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneBenchmarks>();
-		shackTimestepControl = io_shackDict.getAutoRegistration<ShackTimestepControl>();
 
 		return error.forwardWithPositiveReturn(io_shackDict.error);
 	}
@@ -67,10 +67,10 @@ public:
 
 public:
 	bool setupInitialConditions(
-			PlaneData_Spectral &o_h_pert,
-			PlaneData_Spectral &o_u,
-			PlaneData_Spectral &o_v,
-			PlaneOperators &io_op,				///< Make this IO, since changes in the simulation parameters might require to also update the operators
+			sweet::PlaneData_Spectral &o_h_pert,
+			sweet::PlaneData_Spectral &o_u,
+			sweet::PlaneData_Spectral &o_v,
+			sweet::PlaneOperators &io_op,				///< Make this IO, since changes in the simulation parameters might require to also update the operators
 			sweet::ShackDictionary &io_shackDict,
 			sweet::ProgramArguments &io_programArguments
 	)
@@ -88,9 +88,9 @@ public:
 
 public:
 	bool _setupInitialConditions(
-			PlaneData_Spectral &o_h_pert,
-			PlaneData_Spectral &o_u,
-			PlaneData_Spectral &o_v,
+			sweet::PlaneData_Spectral &o_h_pert,
+			sweet::PlaneData_Spectral &o_u,
+			sweet::PlaneData_Spectral &o_v,
 			sweet::ShackDictionary &io_shackDict
 	)
 	{
@@ -131,10 +131,7 @@ public:
 			return error.set("SWEPlaneBenchmarksCombined: Benchmark name not given, use --benchmark-name=[name]");
 
 
-		if (0)
-		{
-		}
-		else if (shackBenchmarks->benchmark_name == "gaussian_bump" || shackBenchmarks->benchmark_name == "gaussian_bump_phi_pint")
+		if (shackBenchmarks->benchmark_name == "gaussian_bump" || shackBenchmarks->benchmark_name == "gaussian_bump_phi_pint")
 		{
 			PDEAdvectionPlaneBenchGaussianBump gaussian_bump(io_shackDict, *op);
 
@@ -153,11 +150,11 @@ public:
 					[](
 							int i_field_id,
 							double i_simulation_timestamp,
-							PlaneData_Spectral* o_plane_data,			/// planedata or spheredata
+							sweet::PlaneData_Spectral* o_plane_data,			/// planedata or spheredata
 							ShackPDEAdvectionPlaneBenchmarks* o_data_user_void		/// user data (pointer to this class)
 			)
 			{
-				PlaneData_Physical plane_data_phys(o_plane_data->planeDataConfig);
+				sweet::PlaneData_Physical plane_data_phys(o_plane_data->planeDataConfig);
 				ShackPDEAdvectionPlaneBenchmarks* shackBenchmarks = (ShackPDEAdvectionPlaneBenchmarks*)o_data_user_void;
 
 				if (i_field_id >= 1 && i_field_id <= 2)
@@ -221,8 +218,8 @@ public:
 			}
 			else
 			{
-				PlaneData_Physical u_phys(o_u.planeDataConfig);
-				PlaneData_Physical v_phys(o_u.planeDataConfig);
+				sweet::PlaneData_Physical u_phys(o_u.planeDataConfig);
+				sweet::PlaneData_Physical v_phys(o_u.planeDataConfig);
 
 				u_phys = shackBenchmarks->advection_velocity[0];
 				v_phys = shackBenchmarks->advection_velocity[1];
@@ -235,7 +232,7 @@ public:
 			double center_y = 0.5;
 			double exp_fac = 50.0;
 
-			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			sweet::PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
 			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
@@ -258,7 +255,7 @@ public:
 			double sy = shackPlaneDataOps->plane_domain_size[1];
 
 
-			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			sweet::PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
 			h_pert_phys.physical_set_zero();
 			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
@@ -293,7 +290,7 @@ public:
 			double sy = shackPlaneDataOps->plane_domain_size[1];
 
 
-			PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+			sweet::PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
 			h_pert_phys.physical_set_zero();
 			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)

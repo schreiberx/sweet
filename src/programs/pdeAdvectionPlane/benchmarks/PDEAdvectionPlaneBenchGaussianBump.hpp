@@ -10,55 +10,50 @@
 #include <cmath>
 #include <sweet/plane/Plane.hpp>
 
-#include "../pdeAdvectionPlane/ShackPDEAdvectionPlane.hpp"
 #include <sweet/shacksShared/ShackPlaneDataOps.hpp>
 #include "ShackPDEAdvectionPlaneBenchmarks.hpp"
 
 /**
  * Setup Gaussian Bump
- *
- * (Formerly -s 1)
  **/
 class PDEAdvectionPlaneBenchGaussianBump
 {
-	PlaneOperators &op;
+	sweet::PlaneOperators &op;
 
-	ShackPDEAdvectionPlane *shackPDEAdvectionPlane;
-	ShackPlaneDataOps *shackDisc;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	ShackPDEAdvectionPlaneBenchmarks *shackBenchmark;
 
 
 public:
 	PDEAdvectionPlaneBenchGaussianBump(
 		sweet::ShackDictionary &io_shackDict,
-		PlaneOperators &io_op
+		sweet::PlaneOperators &io_op
 	)	:
 		op(io_op)
 	{
-		shackPDEAdvectionPlane = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlane>();
-		shackDisc = io_shackDict.getAutoRegistration<ShackPlaneDataOps>();
+		shackPlaneDataOps = io_shackDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
 		shackBenchmark = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneBenchmarks>();
 	}
 
 	void setup(
-			PlaneData_Spectral &o_h_pert,
-			PlaneData_Spectral &o_u,
-			PlaneData_Spectral &o_v
+			sweet::PlaneData_Spectral &o_h_pert,
+			sweet::PlaneData_Spectral &o_u,
+			sweet::PlaneData_Spectral &o_v
 	)
 	{
 
-		PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
-		PlaneData_Physical u_phys(o_u.planeDataConfig);
-		PlaneData_Physical v_phys(o_v.planeDataConfig);
+		sweet::PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
+		sweet::PlaneData_Physical u_phys(o_u.planeDataConfig);
+		sweet::PlaneData_Physical v_phys(o_v.planeDataConfig);
 
-		double sx = shackDisc->plane_domain_size[0];
-		double sy = shackDisc->plane_domain_size[1];
+		double sx = shackPlaneDataOps->plane_domain_size[0];
+		double sy = shackPlaneDataOps->plane_domain_size[1];
 
 		h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 			{
-				double x = (double)i*(shackDisc->plane_domain_size[0]/(double)shackDisc->space_res_physical[0]);
-				double y = (double)j*(shackDisc->plane_domain_size[1]/(double)shackDisc->space_res_physical[1]);
+				double x = (double)i*(shackPlaneDataOps->plane_domain_size[0]/(double)shackPlaneDataOps->space_res_physical[0]);
+				double y = (double)j*(shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1]);
 
 				// Gaussian
 				double dx = x-shackBenchmark->object_coord_x*sx;

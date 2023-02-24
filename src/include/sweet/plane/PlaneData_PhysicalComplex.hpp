@@ -62,6 +62,8 @@
 
 #endif
 
+namespace sweet
+{
 
 class PlaneData_PhysicalComplex
 {
@@ -741,6 +743,8 @@ public:
 
 };
 
+}	// namespace sweet
+
 /**
  * operator to support operations such as:
  *
@@ -751,66 +755,25 @@ public:
  */
 inline
 static
-PlaneData_PhysicalComplex operator*(
+sweet::PlaneData_PhysicalComplex operator*(
 		const double i_value,
-		const PlaneData_PhysicalComplex &i_array_data
+		const sweet::PlaneData_PhysicalComplex &i_array_data
 )
 {
-	return ((PlaneData_PhysicalComplex&)i_array_data)*i_value;
+	return ((sweet::PlaneData_PhysicalComplex&)i_array_data)*i_value;
 }
 
 
 inline
 static
-PlaneData_PhysicalComplex operator*(
+sweet::PlaneData_PhysicalComplex operator*(
 		const std::complex<double> &i_value,
-		const PlaneData_PhysicalComplex &i_array_data
+		const sweet::PlaneData_PhysicalComplex &i_array_data
 )
 {
-	return ((PlaneData_PhysicalComplex&)i_array_data)*i_value;
+	return ((sweet::PlaneData_PhysicalComplex&)i_array_data)*i_value;
 }
 
 
-/**
- * operator to support operations such as:
- *
- * 1.5 - arrayData;
- *
- * Otherwise, we'd have to write it as arrayData-1.5
- *
- */
-#if 0
-inline
-static
-PlaneData_PhysicalComplex operator-(
-		const double i_value,
-		const PlaneData_PhysicalComplex &i_array_data
-)
-{
-	return ((PlaneData_PhysicalComplex&)i_array_data).valueMinusThis(i_value);
-//	return -(((SPHData&)i_array_data).operator-(i_value));
-}
-#endif
-/**
- * operator to support operations such as:
- *
- * 1.5 + arrayData;
- *
- * Otherwise, we'd have to write it as arrayData+1.5
- *
- */
-
-#if 0
-inline
-static
-PlaneData_PhysicalComplex operator+(
-		const double i_value,
-		const PlaneData_PhysicalComplex &i_array_data
-)
-{
-	i_array_data.checkConsistency();
-	return ((PlaneData_PhysicalComplex&)i_array_data)+i_value;
-}
-#endif
 
 #endif /* PLANEDATA_HPP_ */

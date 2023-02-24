@@ -5,7 +5,7 @@
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <programs/pdeAdvectionPlane/PDEAdvPlaneTS_na_erk.hpp>
+#include <programs/pdeAdvectionPlane/time/PDEAdvPlaneTS_na_erk.hpp>
 
 
 
@@ -13,13 +13,13 @@
  * Main routine for method to be used in case of finite differences
  */
 void PDEAdvPlaneTS_na_erk::euler_timestep_update(
-		const PlaneData_Spectral &i_phi,	///< prognostic variables
-		const PlaneData_Spectral &i_u,	///< prognostic variables
-		const PlaneData_Spectral &i_v,	///< prognostic variables
+		const sweet::PlaneData_Spectral &i_phi,	///< prognostic variables
+		const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
+		const sweet::PlaneData_Spectral &i_v,	///< prognostic variables
 
-		PlaneData_Spectral &o_phi_t,	///< time updates
-		PlaneData_Spectral &o_u_t,	///< time updates
-		PlaneData_Spectral &o_v_t,	///< time updates
+		sweet::PlaneData_Spectral &o_phi_t,	///< time updates
+		sweet::PlaneData_Spectral &o_u_t,	///< time updates
+		sweet::PlaneData_Spectral &o_v_t,	///< time updates
 
 		double i_simulation_timestamp
 )
@@ -34,8 +34,8 @@ void PDEAdvPlaneTS_na_erk::euler_timestep_update(
 
 	if (shackBenchmark->getExternalForcesCallback != nullptr)
 	{
-		PlaneData_Spectral u(i_phi.planeDataConfig);
-		PlaneData_Spectral v(i_phi.planeDataConfig);
+		sweet::PlaneData_Spectral u(i_phi.planeDataConfig);
+		sweet::PlaneData_Spectral v(i_phi.planeDataConfig);
 
 		shackBenchmark->getExternalForcesCallback(
 				1,
@@ -63,9 +63,9 @@ void PDEAdvPlaneTS_na_erk::euler_timestep_update(
 
 
 void PDEAdvPlaneTS_na_erk::run_timestep(
-		PlaneData_Spectral &io_phi,		///< prognostic variables
-		PlaneData_Spectral &io_u,	///< prognostic variables
-		PlaneData_Spectral &io_v,		///< prognostic variables
+		sweet::PlaneData_Spectral &io_phi,		///< prognostic variables
+		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
+		sweet::PlaneData_Spectral &io_v,		///< prognostic variables
 
 		double i_dt,
 		double i_simulation_timestamp
@@ -107,7 +107,7 @@ void PDEAdvPlaneTS_na_erk::run_timestep(
 /*
  * Setup
  */
-void PDEAdvPlaneTS_na_erk::setup(
+void PDEAdvPlaneTS_na_erk::_setup(
 		int i_order	///< order of RK time stepping method
 )
 {
@@ -117,15 +117,15 @@ void PDEAdvPlaneTS_na_erk::setup(
 
 PDEAdvPlaneTS_na_erk::PDEAdvPlaneTS_na_erk(
 		sweet::ShackDictionary &io_shackDict,
-		PlaneOperators &i_op
+		sweet::PlaneOperators &i_op
 )	:
 		op(i_op)
 {
+	shackTimestepControl = io_shackDict.getAutoRegistration<sweet::ShackTimestepControl>();
 	shackTimeDisc = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneTimeDiscretization>();
-	shackTimestepControl = io_shackDict.getAutoRegistration<ShackTimestepControl>();
 	shackBenchmark = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneBenchmarks>();
 
-	setup(shackTimeDisc->timestepping_order);
+	ERROR_CHECK_WITH_RETURN(io_shackDict);
 }
 
 

@@ -4,6 +4,9 @@
 
 #include "PlaneData_Spectral.hpp"
 
+namespace sweet
+{
+
 class PlaneDataTimesteppingExplicitRK
 {
 	// runge kutta data storages
@@ -296,5 +299,7 @@ public:
 		}
 	}
 };
+
+}
 
 #endif

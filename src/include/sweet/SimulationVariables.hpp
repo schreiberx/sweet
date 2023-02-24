@@ -63,7 +63,7 @@
 #include "shacksShared/ShackDiagnostics.hpp"
 #include "shacksShared/ShackDiscretization.hpp"
 #include "shacksShared/ShackIOData.hpp"
-#include "shacksShared/ShackMisc.hpp"
+#include "shacksShared/ShackShackMisc.hpp"
 #include "shacksShared/ShackParallelization.hpp"
 #include "shacksShared/ShackSDC.hpp"
 #include "shacksShared/ShackSimulationCoefficients.hpp"
@@ -102,7 +102,7 @@ public:
 	SimulationCoefficients sim;
 	Discretization disc;
 	UserDefined user_defined;
-	Misc misc;
+	ShackMisc misc;
 	ShackParallelization parallelization;
 	ShackTimestepControl timecontrol;
 	SDC sdc;

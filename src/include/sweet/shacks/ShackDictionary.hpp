@@ -35,14 +35,14 @@ private:
 
 
 public:
-	void registrationFinished()
+	void closeRegistration()
 	{
 		_registerationOfClassInstanceFinished = true;
 	}
 
 
 public:
-	void getFinished()
+	void closeGet()
 	{
 		_getFinished = true;
 	}
@@ -160,7 +160,8 @@ public:
 	T* getAutoRegistration()
 	{
 		if (!exists<T>())
-			registerFirstTime<T>();
+			if (!registerFirstTime<T>())
+				return nullptr;
 
 		return get<T>(true);
 	}

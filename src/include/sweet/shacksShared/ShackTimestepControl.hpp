@@ -10,10 +10,15 @@
 
 
 #include <string>
+#include <cmath>
+#include <cassert>
 #include <iostream>
 #include <sweet/ProgramArguments.hpp>
 #include <sweet/shacks/ShackInterface.hpp>
 
+
+namespace sweet
+{
 
 /**
  * Timestepping
@@ -39,10 +44,10 @@ public:
 	double current_simulation_time = 0;
 
 	/// Maximum number of time steps to simulate
-	int max_timesteps_nr = std::numeric_limits<int>::max();
+	int max_timesteps_nr = -1;
 
 	/// Maximum simulation time to execute the simulation for
-	double max_simulation_time = std::numeric_limits<double>::infinity();
+	double max_simulation_time = -1;
 
 	/// Maximum wallclock time to execute the simulation for
 	double max_wallclock_time = -1;
@@ -64,7 +69,7 @@ public:
 	 */
 	bool validateMaxSimulationTime()
 	{
-		if (std::isinf(max_simulation_time))
+		if (!(max_simulation_time >= 0))
 			return error.set("You need to set the maximum simulation time using -t [float]");
 
 		return true;
@@ -72,7 +77,7 @@ public:
 
 	bool validateMaxTimestepNr()
 	{
-		if (max_timesteps_nr == std::numeric_limits<int>::max())
+		if (!(max_timesteps_nr >= 0))
 			return error.set("You need to set the maximal number of time steps");
 
 		return true;
@@ -80,12 +85,85 @@ public:
 
 	bool validateTimestepSize()
 	{
-		if (current_timestep_size <= 0)
+		if (!(current_timestep_size > 0))
 			return error.set("Timestep size not set, use --dt=[float]");
 
 		return true;
 	}
 
+	/*
+	 * Code which we require again and again to be executed before each time step.
+	 *
+	 * We have a special function for this since we need to keep round-off errors in mind.
+	 *
+	 * \return true if the current time step size was modified
+	 */
+	bool timestepHelperStart()
+	{
+		// If we didn't set max_simulation_time we just continue
+		if (std::isinf(max_simulation_time))
+			return false;
+
+		// Check whether there might be some numerical issues of round-off errors in the last time step
+		double diff = max_simulation_time - (current_simulation_time + current_timestep_size);
+
+		/*
+		 * Check if we're close to the maximum simulation time
+		 */
+		if (diff > 1e-15*(current_timestep_nr+1))
+		if (diff > 1e-15*(current_timestep_nr+1))
+			return false;
+
+		/*
+		 *
+		 * This might also change the time step size if it's not necessary,
+		 * but we avoid yet another if condition.
+		 */
+		current_timestep_size = max_simulation_time - current_simulation_time;
+		return true;
+	}
+
+	bool timestepHelperEnd()
+	{
+		// advance in time
+		current_simulation_time += current_timestep_size;
+		current_timestep_nr++;
+
+		return false;
+	}
+
+	bool isFinalTimestepReached()
+	{
+		if (max_timesteps_nr >= 0)
+		{
+			assert(max_timesteps_nr >= 0);
+			assert(current_timestep_nr <= max_timesteps_nr);
+
+			if (max_timesteps_nr == current_timestep_nr)
+				return true;
+		}
+
+		if (max_simulation_time >= 0)
+		{
+			double diff = max_simulation_time - current_simulation_time;
+
+			if (diff < 0)
+				SWEETError("Internal error: This should never happen (diff < 0)");
+
+			if (diff == 0)
+			{
+				assert(max_simulation_time == current_simulation_time);
+				return true;
+			}
+
+#if SWEET_DEBUG
+			if (diff < 1e-15*(current_timestep_nr+1))
+				SWEETError("Internal error: This should never happen (diff > epsilon)");
+#endif
+		}
+
+		return false;
+	}
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
@@ -100,7 +178,7 @@ public:
 		current_simulation_time = 0;
 		current_timestep_size = setup_timestep_size;
 
-		return error.forwardWithPositiveReturn(i_pa.error);
+		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
 	}
 
 	virtual void printShack(
@@ -121,7 +199,6 @@ public:
 	}
 };
 
+}
 
-
-
-#endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKTIMESTEPCONTROL_HPP_ */
+#endif

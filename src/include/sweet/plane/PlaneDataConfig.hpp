@@ -22,11 +22,12 @@
 #include <complex>
 #include <iomanip>
 #include <cmath>
+#include <sweet/defaultPrecompilerValues.hpp>
 #include <sweet/SWEETError.hpp>
 #include <sweet/ErrorBase.hpp>
 #include <sweet/TransformationPlans.hpp>
 
-
+#include <sweet/shacksShared/ShackPlaneDataOps.hpp>
 
 #if SWEET_THREADING_SPACE
 #	include <omp.h>
@@ -34,33 +35,8 @@
 
 
 
-/*
- * This precompiler directive should !!! NEVER !!! be used
- */
-#ifndef SWEET_USE_PLANE_SPECTRAL_SPACE
-	#define SWEET_USE_PLANE_SPECTRAL_SPACE	1
-#endif
-
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		#error "Dealiasing only available with plane-spectral-space enabled"
-	#endif
-#endif
-
-/*
- * Activating this option via the precompiler also activates the FFTW library
- */
-#ifndef SWEET_USE_LIBFFT
-	#define SWEET_USE_LIBFFT	1
-#endif
-
-/*
- * Activating the dealiasing creates plans and additional information for dealiasing strategies
- */
-#ifndef SWEET_USE_PLANE_SPECTRAL_DEALIASING
-	#define SWEET_USE_PLANE_SPECTRAL_DEALIASING 1
-#endif
-
+namespace sweet
+{
 
 class PlaneDataConfig
 {
@@ -846,6 +822,14 @@ public:
 	}
 
 
+	bool setupAuto(ShackPlaneDataOps &i_shackPlaneDataOps)
+	{
+		return setupAuto(
+				i_shackPlaneDataOps.space_res_physical,
+				i_shackPlaneDataOps.space_res_spectral,
+				i_shackPlaneDataOps.reuse_spectral_transformation_plans
+			);
+	}
 
 	/*
 	 * Just a convenience function
@@ -1069,6 +1053,6 @@ public:
 	}
 };
 
-
+}
 
 #endif

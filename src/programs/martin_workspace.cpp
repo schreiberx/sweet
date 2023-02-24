@@ -45,7 +45,7 @@ int main(int i_argc, char *i_argv[])
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.registrationFinished();
+		varClassDict.closeRegistration();
 
 
 		{
@@ -107,7 +107,7 @@ int main(int i_argc, char *i_argv[])
 		 *
 		 * This will avoid performance bugs!
 		 */
-		varClassDict.getFinished();
+		varClassDict.closeGet();
 
 
 		{

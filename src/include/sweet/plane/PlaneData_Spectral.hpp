@@ -54,6 +54,8 @@
 #	include <omp.h>
 #endif
 
+namespace sweet
+{
 
 class PlaneData_Spectral
 {
@@ -2394,6 +2396,6 @@ PlaneData_Spectral operator-(
 	return - (i_array_data - i_plane_data_physical);
 }
 
-
+}
 
 #endif

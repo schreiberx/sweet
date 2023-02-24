@@ -17,9 +17,9 @@ class PDEAdvPlaneTS_interface
 {
 public:
 	virtual void run_timestep(
-			PlaneData_Spectral &io_h,	///< prognostic variables
-			PlaneData_Spectral &io_u,	///< prognostic variables
-			PlaneData_Spectral &io_v,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
+			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 
 			double i_dt,
 			double i_simulation_timestamp

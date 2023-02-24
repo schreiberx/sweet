@@ -11,6 +11,9 @@
 //#include "PlaneDataComplex.hpp"
 
 
+namespace sweet
+{
+
 /**
  * this is a sampler class which provides method to provide
  * interpolated sampled values on 2D physical data which
@@ -556,18 +559,13 @@ public:
 		bicubic_scalar(tmp, i_pos_x, i_pos_y, o_data_phys.physical_space_data, i_shift_x, i_shift_y);
 
 		o_data.loadPlaneDataPhysical(o_data_phys);
-
-///#if SWEET_USE_PLANE_SPECTRAL_SPACE
-///		o_data.physical_space_data_valid = true;
-///		o_data.spectral_space_data_valid = false;
-///#endif
 	}
 
 
 
 };
 
-
+}
 
 
 #endif /* SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_ */

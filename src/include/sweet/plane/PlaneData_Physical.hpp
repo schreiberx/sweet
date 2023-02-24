@@ -38,8 +38,6 @@
 #include <sweet/SWEETError.hpp>
 #include <sweet/plane/PlaneData_Kernels.hpp>
 
-class PlaneData_Spectral;
-
 #if SWEET_THREADING_SPACE
 #define PLANE_DATA_PHYSICAL_FOR_IDX(CORE)				\
 		SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD			\
@@ -84,6 +82,10 @@ class PlaneData_Spectral;
 #	include <omp.h>
 #endif
 
+namespace sweet
+{
+
+class PlaneData_Spectral;
 
 class PlaneData_Physical
 			:	private PlaneData_Kernels
@@ -1719,6 +1721,8 @@ public:
 };
 
 
+}
+
 
 
 /**
@@ -1731,9 +1735,9 @@ public:
  */
 inline
 static
-PlaneData_Physical operator*(
+sweet::PlaneData_Physical operator*(
 		const double i_value,
-		const PlaneData_Physical &i_array_data
+		const sweet::PlaneData_Physical &i_array_data
 )
 {
 	return i_array_data*i_value;
@@ -1747,9 +1751,9 @@ PlaneData_Physical operator*(
  */
 inline
 static
-PlaneData_Physical operator-(
+sweet::PlaneData_Physical operator-(
 		const double i_value,
-		const PlaneData_Physical &i_array_data
+		const sweet::PlaneData_Physical &i_array_data
 )
 {
 	return i_array_data.operator_scalar_sub_this(i_value);
@@ -1763,16 +1767,13 @@ PlaneData_Physical operator-(
  */
 inline
 static
-PlaneData_Physical operator+(
+sweet::PlaneData_Physical operator+(
 		const double i_value,
-		const PlaneData_Physical &i_array_data
+		const sweet::PlaneData_Physical &i_array_data
 )
 {
 	return i_array_data+i_value;
 }
-
-
-
 
 
 #endif

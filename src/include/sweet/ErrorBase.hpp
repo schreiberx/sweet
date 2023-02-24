@@ -19,6 +19,32 @@
 
 #include <sweet/Backtrace.hpp>
 
+/*
+ * Do an error check.
+ * If there's an error: forward error and return false
+ */
+#define ERROR_CHECK_WITH_RETURN_BOOLEAN(classWithError)	\
+	{ if ((classWithError).error.exists()) return error.forwardWithPositiveReturn((classWithError).error); }
+
+
+/*
+ * Do an error check.
+ * If there's an error: forward error and return
+ * If there's no error: continue
+ */
+#define ERROR_CHECK_WITH_RETURN(classWithError) \
+	{ if ((classWithError).error.exists()) { error.forward((classWithError).error); return; } }
+
+
+/*
+ * If there's an error: forward error and return false
+ * If there's no error: return true
+ */
+#define ERROR_FORWARD_WITH_RETURN_BOOLEAN(classWithError)	\
+	{ return error.forwardWithPositiveReturn((classWithError).error); }
+
+
+
 namespace sweet
 {
 

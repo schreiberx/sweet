@@ -20,16 +20,58 @@
 #endif
 #include "../libgl/hud/GlFreeType.hpp"
 #include "../libgl/hud/GlRenderOStream.hpp"
-#include <sweet/plane/PlaneData_Physical.hpp>
-#include <sweet/plane/PlaneData_Spectral.hpp>
 
+#include <sweet/plane/PlaneData_Physical.hpp>
+
+
+class SimulationGUICallbacks
+{
+public:
+	/**
+	 * postprocessing of frame: do time stepping
+	 */
+	virtual
+	void vis_post_frame_processing(int i_num_iterations) = 0;
+
+	virtual
+	void vis_get_vis_data_array(
+			const sweet::PlaneData_Physical **o_dataArray,
+			double *o_aspect_ratio,
+			int *o_render_primitive_id,
+			void **o_bogus_data,
+			double *o_viz_min,
+			double *o_viz_max,
+			bool *viz_reset
+	) = 0;
+
+	virtual
+	const char* vis_get_status_string() = 0;
+
+
+	virtual
+	void vis_pause() = 0;
+
+
+	virtual
+	void vis_keypress(int i_key) = 0;
+
+	virtual
+	bool should_quit() = 0;
+
+	virtual
+	bool run_timestep() = 0;
+
+	virtual
+	bool reset() = 0;
+
+	~SimulationGUICallbacks() {}
+};
 
 
 
 /**
  * A visualization class specifically designed for SWEET applications
  */
-template <typename SimT>
 class VisSweet	:
 		public VisualizationEngine::ProgramCallbacks
 {
@@ -38,7 +80,7 @@ class VisSweet	:
 	 *
 	 * Certain interfaces have to be implemented, see other programs for these interfaces
 	 */
-	SimT *simulation;
+	SimulationGUICallbacks *simCallbacks;
 
 	GlDrawQuad *glDrawQuad;
 
@@ -91,14 +133,14 @@ class VisSweet	:
 
 	bool should_quit()
 	{
-		return simulation->should_quit();
+		return simCallbacks->should_quit();
 	}
 
 
 
 	void vis_render()
 	{
-		const PlaneData_Physical *ro_visPlaneData;
+		const sweet::PlaneData_Physical *ro_visPlaneData;
 		double aspect_ratio = 0;
 		int render_primitive = 0;
 		void *bogus_data;
@@ -108,7 +150,7 @@ class VisSweet	:
 		bool reset = false;
 
 
-		simulation->vis_get_vis_data_array(
+		simCallbacks->vis_get_vis_data_array(
 				&ro_visPlaneData,
 				&aspect_ratio,
 				&render_primitive,
@@ -118,9 +160,7 @@ class VisSweet	:
 				&reset
 		);
 
-		PlaneData_Physical &visData = (PlaneData_Physical&)*ro_visPlaneData;
-
-//		visData.request_data_physical();
+		sweet::PlaneData_Physical &visData = (sweet::PlaneData_Physical&)*ro_visPlaneData;
 
 		if (std::isinf(viz_min))
 		{
@@ -220,7 +260,7 @@ class VisSweet	:
 		{
 			glFreeType->viewportChanged(visualizationEngine->renderWindow->window_width, visualizationEngine->renderWindow->window_height);
 
-			std::string status_string = simulation->vis_get_status_string();
+			std::string status_string = simCallbacks->vis_get_status_string();
 			std::replace(status_string.begin(), status_string.end(), ',', '\n');
 
 			glFreeType->setPosition(10, visualizationEngine->renderWindow->window_height-font_size-10);
@@ -231,7 +271,7 @@ class VisSweet	:
 
 
 		// execute simulation time step
-		simulation->vis_post_frame_processing(sim_runs_per_frame);
+		simCallbacks->vis_post_frame_processing(sim_runs_per_frame);
 	}
 
 
@@ -239,7 +279,7 @@ class VisSweet	:
 	const char* vis_getStatusString()
 	{
 		static char title_string[4096];
-		sprintf(title_string, "%s, viz min/max: %.12e/%.12e", simulation->vis_get_status_string(), viz_min, viz_max);
+		sprintf(title_string, "%s, viz min/max: %.12e/%.12e", simCallbacks->vis_get_status_string(), viz_min, viz_max);
 		return title_string;
 	}
 
@@ -290,11 +330,11 @@ class VisSweet	:
 		switch(i_key)
 		{
 		case 'r':
-			simulation->reset();
+			simCallbacks->reset();
 			break;
 
 		case ' ':
-			simulation->vis_pause();
+			simCallbacks->vis_pause();
 			break;
 
 		case SDLK_BACKSPACE:
@@ -303,11 +343,11 @@ class VisSweet	:
 			break;
 
 		case 'j':
-			simulation->run_timestep();
+			simCallbacks->run_timestep();
 			break;
 
 		default:
-			simulation->vis_keypress(i_key);
+			simCallbacks->vis_keypress(i_key);
 			break;
 		}
 	}
@@ -331,7 +371,7 @@ class VisSweet	:
 
 
 public:
-	VisSweet(SimT *i_simulation)	:
+	VisSweet(SimulationGUICallbacks &i_simCallbacks)	:
 		glDrawQuad(nullptr),
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
 		glDrawSphereSph(nullptr),
@@ -341,7 +381,7 @@ public:
 		glFreeType(0),
 		glRenderOStream(nullptr)
 	{
-		simulation = i_simulation;
+		simCallbacks = &i_simCallbacks;
 
 		VisualizationEngine(this, "SWEET");
 

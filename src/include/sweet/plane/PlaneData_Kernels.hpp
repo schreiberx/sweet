@@ -8,6 +8,8 @@
 #ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDATA_KERNELS_HPP_
 #define SRC_INCLUDE_SWEET_PLANE_PLANEDATA_KERNELS_HPP_
 
+namespace sweet
+{
 
 class PlaneData_Kernels
 {
@@ -421,18 +423,15 @@ public:
 			std::cerr << "Not yet implemented" << std::endl;
 		}
 	}
-///#endif
-
 
 
 	~PlaneData_Kernels()
 	{
-//#if !SWEET_USE_PLANE_SPECTRAL_SPACE
 		if (kernel_data != nullptr)
 			MemBlockAlloc::free(kernel_data, sizeof(double)*kernel_size*kernel_size);
-//#endif
 	}
 };
 
+}
 
 #endif /* SRC_INCLUDE_SWEET_PLANE_PLANEDATA_KERNELS_HPP_ */

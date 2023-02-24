@@ -60,7 +60,7 @@ public:
 
 
 	/// load external forces if available from benchmark scenario
-	void (*getExternalForcesCallback)(int, double, PlaneData_Spectral*, ShackPDEAdvectionPlaneBenchmarks*) = nullptr;
+	void (*getExternalForcesCallback)(int, double, sweet::PlaneData_Spectral*, ShackPDEAdvectionPlaneBenchmarks*) = nullptr;
 	void *getExternalForcesUserData = nullptr;
 
 

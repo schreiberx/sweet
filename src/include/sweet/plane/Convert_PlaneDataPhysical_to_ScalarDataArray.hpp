@@ -9,6 +9,9 @@
 #include <sweet/plane/PlaneData_Physical.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
+namespace sweet
+{
+
 class Convert_PlaneDataPhysical_To_ScalarDataArray
 {
 public:
@@ -27,6 +30,6 @@ public:
 	}
 };
 
-
+}
 
 #endif

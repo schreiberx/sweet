@@ -18,7 +18,8 @@
 #include <sweet/shacks/ShackInterface.hpp>
 
 
-
+namespace sweet
+{
 
 /**
  * Input and output data
@@ -54,6 +55,16 @@ public:
 	int output_floating_point_precision = std::numeric_limits<double>::digits10 + 1;
 
 
+	/// set verbosity of simulation
+	int verbosity = 0;
+
+	/// compute errors
+	int compute_errors = 0;
+
+	/// activate GUI mode?
+	bool gui_enabled = (SWEET_GUI == 0 ? false : true);
+
+
 
 	void setup_initial_condition_filenames(
 			const std::string i_string
@@ -87,6 +98,9 @@ public:
 		std::cout << "IOData:" << std::endl;
 		std::cout << "	--output-file-name [string]		String specifying the name of the output file" << std::endl;
 		std::cout << "	--output-file-mode [string]		Format of output file, default: default" << std::endl;
+		std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
+		std::cout << "	-v [int]			verbosity level" << std::endl;
+		std::cout << "	-G [0/1]			graphical user interface" << std::endl;
 
 		std::cout << "" << std::endl;
 	}
@@ -135,7 +149,12 @@ public:
 			std::cout << std::setprecision(output_floating_point_precision);
 			std::cerr << std::setprecision(output_floating_point_precision);
 		}
-		return true;
+
+		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
+		i_pa.getArgumentValueByKey("-G", gui_enabled);
+		i_pa.getArgumentValueByKey("-v", verbosity);
+
+		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
 	}
 
 	virtual void printShack(
@@ -153,10 +172,15 @@ public:
 		std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
 		std::cout << " + output_time_scale: " << output_time_scale << std::endl;
 		std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
+
+		std::cout << " + verbosity: " << verbosity << std::endl;
+		std::cout << " + compute_errors " << compute_errors << std::endl;
+		std::cout << " + gui_enabled: " << gui_enabled << std::endl;
+
 		std::cout << std::endl;
 	}
 };
 
-
+}
 
 #endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKIODATA_HPP_ */

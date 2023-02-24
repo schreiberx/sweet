@@ -46,7 +46,8 @@
 #endif
 
 
-
+namespace sweet
+{
 
 class ScalarDataArray
 {
@@ -130,7 +131,7 @@ public:
 	 * Duplicate all data
 	 */
 	ScalarDataArray(
-			const PlaneDataConfig *i_planeDataConfig
+			const sweet::PlaneDataConfig *i_planeDataConfig
 	)	:
 		scalar_data(nullptr)
 	{
@@ -1267,5 +1268,6 @@ namespace ScalarDataArray_ops
 
 };
 
+}
 
 #endif /* SRC_DATAARRAY_HPP_ */

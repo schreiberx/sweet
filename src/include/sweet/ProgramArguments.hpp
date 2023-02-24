@@ -276,13 +276,14 @@ public:
 	bool _getFullArgumentByKey(
 			const std::string& i_key,
 			_ProgramArgument** o_pa,
-			bool i_error_if_key_is_missing
+			bool i_error_if_key_is_missing,
+			bool i_error_if_duplicated_processing = true
 	)
 	{
 		/*
 		 * Check whether key has been already processed
 		 */
-		if (_errorForDuplicateKeysInParsing)
+		if (_errorForDuplicateKeysInParsing && i_error_if_duplicated_processing)
 			if (!checkAndAddDuplicateKeys(i_key))
 				return false;
 
@@ -336,11 +337,12 @@ public:
 	bool getArgumentValueByKey(
 			const std::string& i_key,
 			std::string &o_value,
-			bool i_error_if_key_is_missing = false
+			bool i_error_if_key_is_missing = false,
+			bool i_error_if_duplicated_processing = true
 	)
 	{
 		_ProgramArgument *pa;
-		if (!_getFullArgumentByKey(i_key, &pa, i_error_if_key_is_missing))
+		if (!_getFullArgumentByKey(i_key, &pa, i_error_if_key_is_missing, i_error_if_duplicated_processing))
 			return false;
 
 		o_value = pa->value;

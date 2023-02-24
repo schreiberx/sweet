@@ -10,7 +10,7 @@
 
 #include "PDEAdvPlaneTS_interface.hpp"
 #include "PDEAdvPlaneTS_na_erk.hpp"
-//#include "PDEAdvPlaneTS_na_sl.hpp"
+#include "PDEAdvPlaneTS_na_sl.hpp"
 
 #include <sweet/ErrorBase.hpp>
 #include <sweet/shacks/ShackDictionary.hpp>
@@ -25,13 +25,14 @@ public:
 	sweet::ErrorBase error;
 
 	PDEAdvPlaneTS_na_erk *na_erk;
-//	PDEAdvPlaneTS_na_sl *na_sl = nullptr;
+	PDEAdvPlaneTS_na_sl *na_sl;
 	PDEAdvPlaneTS_interface *master;
 
-	ShackPDEAdvectionPlaneTimeDiscretization *timeDisc;
+	ShackPDEAdvectionPlaneTimeDiscretization *shackTimeDisc;
 
 	PDEAdvPlaneTimeSteppers()	:
 		na_erk(nullptr),
+		na_sl(nullptr),
 		master(nullptr)
 	{
 	}
@@ -43,13 +44,12 @@ public:
 			delete na_erk;
 			na_erk = nullptr;
 		}
-#if 0
+
 		if (na_sl != nullptr)
 		{
 			delete na_sl;
 			na_sl = nullptr;
 		}
-#endif
 	}
 
 
@@ -57,38 +57,37 @@ public:
 			sweet::ShackDictionary &io_shackDict
 	)
 	{
-		timeDisc = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneTimeDiscretization>();
+		shackTimeDisc = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneTimeDiscretization>();
 
 		return error.forwardWithPositiveReturn(io_shackDict.error);
 	}
 
 
 	bool setup(
-			PlaneOperators &i_op,
-			sweet::ShackDictionary &io_shackDict
+			sweet::ShackDictionary &io_shackDict,
+			sweet::PlaneOperators &i_op
 	)
 	{
-		std::cout << timeDisc->timestepping_method << std::endl;
+		std::cout << "Setting up time stepping method '" << shackTimeDisc->timestepping_method << "'" << std::endl;
 
-		if (timeDisc->timestepping_method == "na_erk")
+
+		if (shackTimeDisc->timestepping_method == "na_erk")
 		{
 			na_erk = new PDEAdvPlaneTS_na_erk(io_shackDict, i_op);
-			na_erk->setup(timeDisc->timestepping_order);
+			ERROR_CHECK_WITH_RETURN_BOOLEAN(*na_erk);
 
 			master = &(PDEAdvPlaneTS_interface&)*na_erk;
 			return true;
 		}
-#if 0
-		else if (i_timestepping_method == "na_sl")
+		else if (shackTimeDisc->timestepping_method == "na_sl")
 		{
-			na_sl = new Adv_Plane_TS_na_sl(i_simVars, i_op);
-			na_sl->setup(i_simVars.disc.timestepping_order);
+			na_sl = new PDEAdvPlaneTS_na_sl(io_shackDict, i_op);
 
-			master = &(Adv_Plane_TS_interface&)*na_sl;
+			master = &(PDEAdvPlaneTS_interface&)*na_sl;
 			return true;
 		}
-#endif
-		return error.set("No valid --timestepping-method provided");
+
+		return error.set("No valid --timestepping-method provided ("+shackTimeDisc->timestepping_method+")");
 	}
 
 

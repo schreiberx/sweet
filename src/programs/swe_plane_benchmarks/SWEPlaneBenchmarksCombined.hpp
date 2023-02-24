@@ -28,7 +28,7 @@
 #include <sweet/shacksShared/ShackIOData.hpp>
 #include "../../include/sweet/shacksShared/ShackDiagnostics.hpp"
 #include <sweet/shacksShared/ShackDiscretization.hpp>
-#include <sweet/shacksShared/ShackMisc.hpp>
+#include "../../include/sweet/shacksShared/ShackShackMisc.hpp"
 #include "../../include/sweet/shacksShared/ShackBenchmark.hpp"
 
 

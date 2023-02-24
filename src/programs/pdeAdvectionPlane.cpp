@@ -2,66 +2,88 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pdeAdvectionPlane/
- * MULE_COMPILE_FILES_AND_DIRS: src/include/sweet/plane/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pdeAdvectionPlane/time/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pdeAdvectionPlane/benchmarks/
  *
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
+// This is just for the editor to show code as used within precompiler #if ... directives
 #include <sweet/defaultPrecompilerValues.hpp>
 
+// Error handling
 #include <sweet/ErrorBase.hpp>
+
+// Parse program arguments
 #include <sweet/ProgramArguments.hpp>
 
+// Include everything we need for simulations on the plane
 #include <sweet/plane/Plane.hpp>
 
+// Our shack directory to store different objects and get them back later on
 #include <sweet/shacks/ShackDictionary.hpp>
-//#include <sweet/shacksShared/ShackDiagnostics.hpp>
 
+// Different shacks we need in this file
 #include <sweet/shacksShared/ShackPlaneDataOps.hpp>
-#include <sweet/shacksShared/ShackMisc.hpp>
-
-#include "pdeAdvectionPlane/ShackPDEAdvectionPlane.hpp"
-#include "pdeAdvectionPlaneBenchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
+#include <sweet/shacksShared/ShackIOData.hpp>
 
 // Benchmarks
-#include "pdeAdvectionPlaneBenchmarks/PDEAdvectionPlaneBenchmarksCombined.hpp"
+#include "pdeAdvectionPlane/benchmarks/PDEAdvectionPlaneBenchmarksCombined.hpp"
 
 // Time steppers
-#include "pdeAdvectionPlane/PDEAdvPlaneTimeSteppers.hpp"
-
+#include "pdeAdvectionPlane/time/PDEAdvPlaneTimeSteppers.hpp"
 
 #if SWEET_GUI
 	#include "sweet/VisSweet.hpp"
 #endif
 
 
-
-class SimulationInstance
+class SimulationPDEAdvectionPlane
+#if SWEET_GUI
+		:	public SimulationGUICallbacks
+#endif
 {
 public:
 	sweet::ErrorBase error;
-
 	sweet::ProgramArguments programArguments;
 
-	PlaneDataConfig planeDataConfig;
-
-	PlaneOperators ops;
-
+	/*
+	 * Just a class to store simulation data all together
+	 */
 	class SimPlaneData
 	{
 	public:
-		PlaneData_Spectral prog_h;
-		PlaneData_Spectral prog_h_t0;	// at t0
-		PlaneData_Spectral prog_u;
-		PlaneData_Spectral prog_v;
+		sweet::ErrorBase error;
+
+		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneOperators ops;
+
+		sweet::PlaneData_Spectral prog_h;
+		sweet::PlaneData_Spectral prog_h_t0;	// at t0
+		sweet::PlaneData_Spectral prog_u;
+		sweet::PlaneData_Spectral prog_v;
 
 
-		void setup(PlaneDataConfig &i_planeDataConfig)
+		bool setup(sweet::ShackPlaneDataOps *i_shackPlaneDataOps)
 		{
-			prog_h.setup(i_planeDataConfig);
-			prog_h_t0.setup(i_planeDataConfig);
-			prog_u.setup(i_planeDataConfig);
-			prog_v.setup(i_planeDataConfig);
+			/*
+			 * Setup Plane Data Config & Operators
+			 */
+			if (!planeDataConfig.setupAuto(*i_shackPlaneDataOps))
+				return error.forwardWithPositiveReturn(planeDataConfig.error);
+
+			if (!ops.setup(
+					planeDataConfig,
+					*i_shackPlaneDataOps
+				))
+				return error.forwardWithPositiveReturn(ops.error);
+
+			prog_h.setup(planeDataConfig);
+			prog_h_t0.setup(planeDataConfig);
+			prog_u.setup(planeDataConfig);
+			prog_v.setup(planeDataConfig);
+
+			return true;
 		}
 
 		void clear()
@@ -70,59 +92,63 @@ public:
 			prog_h_t0.clear();
 			prog_u.clear();
 			prog_v.clear();
+
+			ops.clear();
+			planeDataConfig.clear();
 		}
 	};
 
+	// Simulation data
 	SimPlaneData simPlaneData;
 
+	// time integrators
 	PDEAdvPlaneTimeSteppers timeSteppers;
 
 
-#if SWEET_GUI
-	PlaneData_Physical viz_plane_data;
-
-	int render_primitive_id = 0;
-
-	bool gui_active = false;
-#endif
-
+	// Handler to all benchmarks
 	PDEAdvectionPlaneBenchmarksCombined planeBenchmarksCombined;
 
-	double max_error_h0 = -1;
-
-	ShackPlaneDataOps *shackPlaneDataOps;
-
-	ShackPDEAdvectionPlane *pdeAdvectionPlane;
-	ShackPDEAdvectionPlaneBenchmarks *pdeAdvectionPlaneBenchmarks;
-
-//	ShackDiagnostics *diagnostics;
-	Misc *misc;
-	ShackTimestepControl *timestepControl;
-
+	/*
+	 * Shack directory and shacks to work with
+	 */
 	sweet::ShackDictionary shackDict;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps;
+	sweet::ShackIOData *shackIOData;
+	sweet::ShackTimestepControl *shackTimestepControl;
 
 
+#if SWEET_GUI
+	// Data to visualize is stored to this variable
+	sweet::PlaneData_Physical viz_plane_data;
+
+	// Which primitive to use for rendering
+	int viz_render_type_of_primitive_id = 0;
+
+	// Which primitive to use for rendering
+	int viz_data_id = 0;
+
+#endif
 
 public:
-	SimulationInstance()	:
+	SimulationPDEAdvectionPlane()	:
 		shackPlaneDataOps(nullptr),
-		pdeAdvectionPlane(nullptr),
-//		diagnostics(nullptr),
-		misc(nullptr),
-		timestepControl(nullptr),
+		shackIOData(nullptr),
+		shackTimestepControl(nullptr),
 		prog_argc(0),
 		prog_argv(nullptr)
 	{
 	}
 
 
+	/*
+	 * Clear all data
+	 */
 	void clear()
 	{
 		programArguments.clear();
 		shackDict.clear();
 
 		simPlaneData.clear();
-		ops.clear();
 
 #if SWEET_GUI
 		viz_plane_data.clear();
@@ -144,6 +170,7 @@ public:
 		}
 	}
 
+
 	/*
 	 * Setup main
 	 */
@@ -158,30 +185,25 @@ public:
 		/*
 		 * Parse program arguments
 		 */
-		if (!programArguments.setup(prog_argc, prog_argv))
-			return error.forwardWithPositiveReturn(programArguments.error);
+		programArguments.setup(prog_argc, prog_argv);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(programArguments);
 
 		/*
 		 * SHACK: Register classes which we require
 		 */
-		pdeAdvectionPlane = shackDict.getAutoRegistration<ShackPDEAdvectionPlane>();
-		shackPlaneDataOps = shackDict.getAutoRegistration<ShackPlaneDataOps>();
-		//diagnostics = shackDict.getAutoRegistration<ShackDiagnostics>();
-		timestepControl = shackDict.getAutoRegistration<ShackTimestepControl>();
-		misc = shackDict.getAutoRegistration<Misc>();
-
-		if (shackDict.error.exists())
-			return error.forwardWithPositiveReturn(shackDict.error);
+		shackPlaneDataOps = shackDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
+		shackTimestepControl = shackDict.getAutoRegistration<sweet::ShackTimestepControl>();
+		shackIOData = shackDict.getAutoRegistration<sweet::ShackIOData>();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackDict);
 
 		/*
 		 * SHACK: Register other things before parsing program arguments
 		 */
-		if (!planeBenchmarksCombined.shackRegistration(shackDict))
-			return error.forwardWithPositiveReturn(planeBenchmarksCombined.error);
+		planeBenchmarksCombined.shackRegistration(shackDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
 
-		if (!timeSteppers.shackRegistration(shackDict))
-			return error.forwardWithPositiveReturn(timeSteppers.error);
-
+		timeSteppers.shackRegistration(shackDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
 
 		/*
 		 * First, check for --help or -h
@@ -196,76 +218,58 @@ public:
 		/*
 		 * SHACK: Process arguments
 		 */
-		if (!shackDict.processProgramArguments(programArguments))
-			return error.forwardWithPositiveReturn(shackDict.error);
+		shackDict.processProgramArguments(programArguments);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackDict);
 
-		shackDict.printShackData();
-
-#if SWEET_GUI
-		/*
-		 * Forward information about GUI whether it's enabled
-		 */
-		gui_active = misc->gui_enabled;
-#endif
 
 		/*
-		 * Do some validation
+		 * Do some validation of program arguments
 		 */
-		if (!timestepControl->validateTimestepSize())
-			return error.forwardWithPositiveReturn(timestepControl->error);
-
-		simPlaneData.prog_h_t0 = simPlaneData.prog_h;
-
-		if (!timeSteppers.setup(ops, shackDict))
-			return error.forwardWithPositiveReturn(timeSteppers.error);
+		shackTimestepControl->validateTimestepSize();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(*shackTimestepControl);
 
 		/*
 		 * Setup Plane Data Config & Operators
 		 */
-		if (!planeDataConfig.setupAuto(
-				shackPlaneDataOps->space_res_physical,
-				shackPlaneDataOps->space_res_spectral,
-				misc->reuse_spectral_transformation_plans
-			))
-			return error.forwardWithPositiveReturn(planeDataConfig.error);
+		simPlaneData.setup(shackPlaneDataOps);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(simPlaneData);
 
-		if (!ops.setup(
-				&planeDataConfig,
-				shackPlaneDataOps
-			))
-			return error.forwardWithPositiveReturn(ops.error);
 
-		simPlaneData.setup(planeDataConfig);
+		timeSteppers.setup(shackDict, simPlaneData.ops);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+
 
 #if SWEET_GUI
-		viz_plane_data.setup(planeDataConfig);
+		viz_plane_data.setup(simPlaneData.planeDataConfig);
 #endif
 
 		std::cout << "Printing shack information:" << std::endl;
 		shackDict.printShackData();
 
-		if (!planeBenchmarksCombined.setupInitialConditions(
+		planeBenchmarksCombined.setupInitialConditions(
 				simPlaneData.prog_h,
 				simPlaneData.prog_u,
 				simPlaneData.prog_v,
-				ops,
+				simPlaneData.ops,
 				shackDict,
 				programArguments
-			))
-			return error.forwardWithPositiveReturn(planeBenchmarksCombined.error);
+			);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
+
+		simPlaneData.prog_h_t0 = simPlaneData.prog_h;
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
 		 * strange things with this anymore
 		 */
-		shackDict.registrationFinished();
-		shackDict.getFinished();
+		shackDict.closeRegistration();
+		shackDict.closeGet();
 
 		/*
 		 * Now we should check that all program arguments have really been parsed
 		 */
-		if (!programArguments.checkAllArgumentsProcessed())
-			return error.forwardWithPositiveReturn(programArguments.error);
+		programArguments.checkAllArgumentsProcessed();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(programArguments);
 
 		return true;
 	}
@@ -274,67 +278,45 @@ public:
 	{
 		clear();
 
-		return setup(prog_argc, prog_argv);
+		setup(prog_argc, prog_argv);
+
+		return !error.exists();
 	}
 
-	void printErrors()
+	void printSimulationErrors()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
 		std::cout << "Lmax error: " << (simPlaneData.prog_h_t0-simPlaneData.prog_h).toPhys().physical_reduce_max_abs() << std::endl;
 		std::cout << "RMS error: " << (simPlaneData.prog_h_t0-simPlaneData.prog_h).toPhys().physical_reduce_rms() << std::endl;
 	}
 
-	~SimulationInstance()
+	~SimulationPDEAdvectionPlane()
 	{
+		clear();
 	}
 
-	void run_timestep()
+	bool run_timestep()
 	{
-		if (timestepControl->current_simulation_time + timestepControl->current_timestep_size > timestepControl->max_simulation_time)
-			timestepControl->current_timestep_size = timestepControl->max_simulation_time - timestepControl->current_simulation_time;
+		shackTimestepControl->timestepHelperStart();
 
 		timeSteppers.master->run_timestep(
 				simPlaneData.prog_h, simPlaneData.prog_u, simPlaneData.prog_v,
-				timestepControl->current_timestep_size,
-				timestepControl->current_simulation_time
+				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_simulation_time
 			);
 
-		double dt = timestepControl->current_timestep_size;
+		shackTimestepControl->timestepHelperEnd();
 
-		// advance in time
-		timestepControl->current_simulation_time += dt;
-		timestepControl->current_timestep_nr++;
+		if (shackIOData->verbosity > 2)
+			std::cout << "timestep: " << shackTimestepControl->current_timestep_nr << ": dt=" << shackTimestepControl->current_timestep_size << ": t=" << shackTimestepControl->current_simulation_time << std::endl;
 
-		if (misc->verbosity > 2)
-			std::cout << "timestep: " << timestepControl->current_timestep_nr << ": t=" << timestepControl->current_simulation_time << std::endl;
-
-		max_error_h0 = (simPlaneData.prog_h-simPlaneData.prog_h_t0).toPhys().physical_reduce_max_abs();
+		return true;
 	}
-
-
-
-	void compute_error()
-	{
-	}
-
 
 
 	bool should_quit()
 	{
-		if (timestepControl->max_timesteps_nr != -1 && timestepControl->max_timesteps_nr <= timestepControl->current_timestep_nr)
-			return true;
-
-		double diff = std::abs(timestepControl->max_simulation_time - timestepControl->current_simulation_time);
-
-		if (	timestepControl->max_simulation_time != -1 &&
-				(
-						timestepControl->max_simulation_time <= timestepControl->current_simulation_time	||
-						diff/timestepControl->max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
-				)
-			)
-			return true;
-
-		return false;
+		return shackTimestepControl->isFinalTimestepReached();
 	}
 
 
@@ -344,15 +326,13 @@ public:
 	 */
 	void vis_post_frame_processing(int i_num_iterations)
 	{
-		if (timestepControl->run_simulation_timesteps)
+		if (shackTimestepControl->run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				run_timestep();
-
-		compute_error();
 	}
 
 	void vis_get_vis_data_array(
-			const PlaneData_Physical **o_dataArray,
+			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -361,9 +341,9 @@ public:
 			bool *viz_reset
 	)
 	{
-		*o_render_primitive_id = render_primitive_id;
+		*o_render_primitive_id = viz_render_type_of_primitive_id;
 
-		int id = misc->vis_id % 3;
+		int id = viz_data_id % 3;
 		switch (id)
 		{
 		case 0:
@@ -387,7 +367,7 @@ public:
 	const char* vis_get_status_string()
 	{
 		const char* description = "";
-		int id = misc->vis_id % 3;
+		int id = viz_data_id % 3;
 
 		switch (id)
 		{
@@ -415,10 +395,10 @@ public:
 #if SWEET_MPI
 				-1,	// TODO: mpi_rank,
 #endif
-				timestepControl->current_simulation_time,
-				timestepControl->current_simulation_time/(60.0*60.0*24.0),
-				timestepControl->current_timestep_nr,
-				timestepControl->current_timestep_size,
+				shackTimestepControl->current_simulation_time,
+				shackTimestepControl->current_simulation_time/(60.0*60.0*24.0),
+				shackTimestepControl->current_timestep_nr,
+				shackTimestepControl->current_timestep_size,
 				description,
 				viz_plane_data.physical_reduce_max(),
 				viz_plane_data.physical_reduce_min()
@@ -430,7 +410,7 @@ public:
 
 	void vis_pause()
 	{
-		timestepControl->run_simulation_timesteps = !timestepControl->run_simulation_timesteps;
+		shackTimestepControl->run_simulation_timesteps = !shackTimestepControl->run_simulation_timesteps;
 	}
 
 
@@ -439,15 +419,15 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			misc->vis_id++;
+			viz_data_id++;
 			break;
 
 		case 'V':
-			misc->vis_id--;
+			viz_data_id--;
 			break;
 
 		case 'b':
-			render_primitive_id = (render_primitive_id + 1) % 2;
+			viz_render_type_of_primitive_id = (viz_render_type_of_primitive_id + 1) % 2;
 			break;
 		}
 	}
@@ -456,9 +436,10 @@ public:
 
 
 
+
 int main(int i_argc, char *i_argv[])
 {
-	SimulationInstance simulation;
+	SimulationPDEAdvectionPlane simulation;
 	if (simulation.error.exists())
 	{
 		std::cerr << "ERROR: " << simulation.error.get() << std::endl;
@@ -474,27 +455,26 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_GUI
-	if (simulation.gui_active)
+	if (simulation.shackIOData->gui_enabled)
 	{
-		std::cout << "GUI" << std::endl;
-
-		VisSweet<SimulationInstance> visSweet(&simulation);
-		std::cout << "Max error h0: "<< simulation.max_error_h0 << std::endl;
+		VisSweet visSweet(simulation);
 	}
 	else
 #endif
 	{
-		if (!simulation.timestepControl->validateMaxSimulationTime())
+		if (!(	simulation.shackTimestepControl->validateMaxSimulationTime() ||
+				simulation.shackTimestepControl->validateMaxTimestepNr()
+		))
 		{
-			simulation.timestepControl->error.print();
-			exit(1);
+			simulation.shackTimestepControl->error.print();
+			return EXIT_FAILURE;
 		}
 
 		while (!simulation.should_quit())
 			simulation.run_timestep();
-
-		simulation.printErrors();
 	}
+
+	simulation.printSimulationErrors();
 
 	std::cout << "FIN" << std::endl;
 	return 0;

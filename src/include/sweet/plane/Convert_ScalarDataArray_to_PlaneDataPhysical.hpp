@@ -12,6 +12,9 @@
 #include <sweet/plane/PlaneDataConfig.hpp>
 #include <sweet/ScalarDataArray.hpp>
 
+namespace sweet
+{
+
 class Convert_ScalarDataArray_to_PlaneDataPhysical
 {
 public:
@@ -26,14 +29,10 @@ public:
 		for (std::size_t i = 0; i < out.planeDataConfig->physical_array_data_number_of_elements; i++)
 			out.physical_space_data[i] = i_scalarDataArray.scalar_data[i];
 
-////////#if SWEET_USE_PLANE_SPECTRAL_SPACE
-////////		out.physical_space_data_valid = true;
-////////		out.spectral_space_data_valid = false;
-////////#endif
 		return out;
 	}
 };
 
-
+}
 
 #endif /* SRC_INCLUDE_SWEET_PLANE_PLANEDATAPHYSICAL_TO_SCALARDATAARRAY_HPP_ */
