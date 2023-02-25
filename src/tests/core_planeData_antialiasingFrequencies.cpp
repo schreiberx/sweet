@@ -2,7 +2,7 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-
+#include <sweet/core/defaultPrecompilerValues.hpp>
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	#error "Spectral space not activated"
@@ -13,20 +13,13 @@
 #endif
 
 
-#include <sweet/core/plane/PlaneData_Spectral.hpp>
-#include <sweet/core/plane/PlaneData_Physical.hpp>
-#include <sweet/core/SimulationVariables.hpp>
-#include <sweet/core/plane/PlaneOperators.hpp>
+#include <sweet/core/plane/Plane.hpp>
+#include <sweet/core/shacks/ShackProgArgDictionary.hpp>
+#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
+#include <sweet/core/ProgramArguments.hpp>
 
 #include <ostream>
 #include <cmath>
-
-
-sweet::PlaneDataConfig planeDataConfigInstance;
-sweet::PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
-SimulationVariables simVars;
-
 
 
 int main(
@@ -34,66 +27,67 @@ int main(
 		char *i_argv[]
 )
 {
-	// override flag
-	SimulationVariables simVars;
+	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
+	shackProgArgDict.setup();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
-		return -1;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+
+	shackProgArgDict.processProgramArguments();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.space_res_physical[0];
-	std::size_t res_y = simVars.disc.space_res_physical[1];
+	std::size_t res_x = shackPlaneDataOps->space_res_physical[0];
+	std::size_t res_y = shackPlaneDataOps->space_res_physical[1];
 
 	std::cout << "*************************************************************" << std::endl;
 	std::cout << "Testing aliasing pattern with resolution " << res_x << " x " << res_y << std::endl;
 	std::cout << "*************************************************************" << std::endl;
 	std::size_t res[2] = {res_x, res_y};
 
-	simVars.disc.space_res_physical[0] = res[0];
-	simVars.disc.space_res_physical[1] = res[1];
-	simVars.reset();
+	shackPlaneDataOps->space_res_physical[0] = res[0];
+	shackPlaneDataOps->space_res_physical[1] = res[1];
 
-	planeDataConfigInstance.setupAuto(
-			simVars.disc.space_res_physical,
-			simVars.disc.space_res_spectral,
-			simVars.misc.reuse_spectral_transformation_plans
-		);
 
-	std::size_t test_max_freqx = planeDataConfig->spectral_real_modes[0];
-	std::size_t test_max_freqy = planeDataConfig->spectral_real_modes[1];
+	sweet::PlaneDataConfig planeDataConfigInstance;
+	planeDataConfigInstance.setupAuto(*shackPlaneDataOps);
+
+	std::size_t test_max_freqx = planeDataConfigInstance.spectral_real_modes[0];
+	std::size_t test_max_freqy = planeDataConfigInstance.spectral_real_modes[1];
 
 	std::cout << "*************************************************************" << std::endl;
-	planeDataConfig->printInformation();
+	planeDataConfigInstance.printInformation();
 	std::cout << "*************************************************************" << std::endl;
 	std::cout << std::endl;
 
-	sweet::PlaneData_Physical h1_x(planeDataConfig);
-	sweet::PlaneData_Physical h2_x(planeDataConfig);
+	sweet::PlaneData_Physical h1_x(planeDataConfigInstance);
+	sweet::PlaneData_Physical h2_x(planeDataConfigInstance);
 
-	sweet::PlaneData_Physical h1_y(planeDataConfig);
-	sweet::PlaneData_Physical h2_y(planeDataConfig);
+	sweet::PlaneData_Physical h1_y(planeDataConfigInstance);
+	sweet::PlaneData_Physical h2_y(planeDataConfigInstance);
 
-	sweet::PlaneData_Physical h1h2_numerical_x(planeDataConfig);
-	sweet::PlaneData_Physical h1h2_numerical(planeDataConfig);
-	sweet::PlaneData_Physical h1h2_numerical_y(planeDataConfig);
+	sweet::PlaneData_Physical h1h2_numerical_x(planeDataConfigInstance);
+	sweet::PlaneData_Physical h1h2_numerical(planeDataConfigInstance);
+	sweet::PlaneData_Physical h1h2_numerical_y(planeDataConfigInstance);
 
-	sweet::PlaneData_Physical h1h2_analytical_x_high(planeDataConfig);
-	sweet::PlaneData_Physical h1h2_analytical_x_low(planeDataConfig);
-	sweet::PlaneData_Physical h1h2_analytical_x(planeDataConfig);
+	sweet::PlaneData_Physical h1h2_analytical_x_high(planeDataConfigInstance);
+	sweet::PlaneData_Physical h1h2_analytical_x_low(planeDataConfigInstance);
+	sweet::PlaneData_Physical h1h2_analytical_x(planeDataConfigInstance);
 
 
-	sweet::PlaneData_Physical h1h2_analytical_y_high(planeDataConfig);
-	sweet::PlaneData_Physical h1h2_analytical_y_low(planeDataConfig);
-	sweet::PlaneData_Physical h1h2_analytical_y(planeDataConfig);
+	sweet::PlaneData_Physical h1h2_analytical_y_high(planeDataConfigInstance);
+	sweet::PlaneData_Physical h1h2_analytical_y_low(planeDataConfigInstance);
+	sweet::PlaneData_Physical h1h2_analytical_y(planeDataConfigInstance);
 
-	sweet::PlaneData_Physical h1h2_analytical(planeDataConfig);
+	sweet::PlaneData_Physical h1h2_analytical(planeDataConfigInstance);
 
 	double epsilon = 1e-10;
 
-	std::size_t max_modes_x = planeDataConfig->spectral_real_modes[0];
-	std::size_t max_modes_y = planeDataConfig->spectral_real_modes[1];
+	std::size_t max_modes_x = planeDataConfigInstance.spectral_real_modes[0];
+	std::size_t max_modes_y = planeDataConfigInstance.spectral_real_modes[1];
 
 	/*
 	 * Use cos(x)*cos(x) instead of sin*sin?
@@ -198,8 +192,8 @@ int main(
 					//for (std::size_t freq_x2 = 0; freq_x2 < test_max_freqx; freq_x2++)
 					{
 						std::cout << "***********************************************************" << std::endl;
-						std::cout << "Resolution physical space: (" << planeDataConfig->physical_res[0] << ", " << planeDataConfig->physical_res[1] << ")" << std::endl;
-						std::cout << "           spectral space: (" << planeDataConfig->spectral_real_modes[0] << ", " << planeDataConfig->spectral_real_modes[1] << ")" << std::endl;
+						std::cout << "Resolution physical space: (" << planeDataConfigInstance.physical_res[0] << ", " << planeDataConfigInstance.physical_res[1] << ")" << std::endl;
+						std::cout << "           spectral space: (" << planeDataConfigInstance.spectral_real_modes[0] << ", " << planeDataConfigInstance.spectral_real_modes[1] << ")" << std::endl;
 						std::cout << "Testing for frequency fx1=" << freq1_x << " and fx2=" << freq2_x << ", max frequency x=" << test_max_freqx << std::endl;
 						std::cout << "                      fy1=" << freq1_y << " and fy2=" << freq2_y << ", max frequency y=" << test_max_freqy << std::endl;
 						std::cout << "                      Test functions: " << (coscos_x ? "coscos_x" : "sinsin_x") << ", " << (coscos_y ? "coscos_y" : "sinsin_y") << std::endl;

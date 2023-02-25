@@ -207,7 +207,10 @@ public:
 	{
 		if (_hasError)
 		{
-			std::cerr << "ERROR was not processed! Error message: '" << _errorMessage << "'" << std::endl;
+			std::cerr << "ERROR was not processed!" << std::endl;
+			std::cerr << "************************************************************" << std::endl;
+			std::cerr << _errorMessage << std::endl;
+			std::cerr << "************************************************************" << std::endl;
 			exit(1);
 		}
 	}

@@ -1,46 +1,47 @@
+/*
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ */
+
+#include <sweet/core/defaultPrecompilerValues.hpp>
+
+#if !SWEET_USE_PLANE_SPECTRAL_SPACE
+	#error "Spectral space not activated"
+#endif
 
 #if SWEET_GUI
 #	error	"GUI not supported"
 #endif
 
 
-#include <sweet/core/plane/PlaneData_Physical.hpp>
-#include <sweet/core/SimulationVariables.hpp>
-#include <sweet/core/plane/PlaneOperators.hpp>
+#include <sweet/core/plane/Plane.hpp>
+#include <sweet/core/shacks/ShackProgArgDictionary.hpp>
+#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
+#include <sweet/core/ProgramArguments.hpp>
 
-#include <math.h>
 #include <ostream>
-#include <sstream>
-#include <unistd.h>
-#include <iomanip>
-#include <stdio.h>
+#include <cmath>
 
 
-// Plane data config
-sweet::PlaneDataConfig planeDataConfigInstance;
-sweet::PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
-SimulationVariables simVars;
-
-
-int main(int i_argc, char *i_argv[])
+int main(
+		int i_argc,
+		char *i_argv[]
+)
 {
-	// override flag
-	SimulationVariables simVars;
+	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
+	shackProgArgDict.setup();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
-		return -1;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-	if (simVars.disc.space_use_spectral_basis_diffs)
-		std::cout << "Using spectral diffs" << std::endl;
-	else
-		std::cout << "Using kernel-based diffs" << std::endl;
+	shackProgArgDict.processProgramArguments();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
 	/*
 	 * iterate over resolutions, starting by res[0] given e.g. by program parameter -n
 	 */
-	std::size_t res_x = simVars.disc.space_res_physical[0];
-	std::size_t res_y = simVars.disc.space_res_physical[1];
+	std::size_t res_x = shackPlaneDataOps->space_res_physical[0];
+	std::size_t res_y = shackPlaneDataOps->space_res_physical[1];
 
 	std::size_t max_res = 64;
 
@@ -54,18 +55,18 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "*************************************************************" << std::endl;
 		std::size_t res[2] = {res_x, res_y};
 
-		simVars.disc.space_res_physical[0] = res[0];
-		simVars.disc.space_res_physical[1] = res[1];
-		simVars.reset();
+		shackPlaneDataOps->space_res_physical[0] = res[0];
+		shackPlaneDataOps->space_res_physical[1] = res[1];
 
-		planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(simVars.disc.space_res_physical, simVars.misc.reuse_spectral_transformation_plans);
+		sweet::PlaneDataConfig planeDataConfig;
+		planeDataConfig.setupAuto(*shackPlaneDataOps);
 
-		planeDataConfigInstance.printInformation();
+		planeDataConfig.printInformation();
 
-		std::cout << "PHYS RES: " << planeDataConfig->physical_res[0] << " x " << planeDataConfig->physical_res[1] << std::endl;
-		std::cout << "PHYS SIZE: " << planeDataConfig->physical_data_size[0] << " x " << planeDataConfig->physical_data_size[1] << std::endl;
-		std::cout << "SPEC MODES: " << planeDataConfig->spectral_modes[0] << " x " << planeDataConfig->spectral_modes[1] << std::endl;
-		std::cout << "SPEC SIZE: " << planeDataConfig->spectral_data_size[0] << " x " << planeDataConfig->spectral_data_size[1] << std::endl;
+		std::cout << "PHYS RES: " << planeDataConfig.physical_res[0] << " x " << planeDataConfig.physical_res[1] << std::endl;
+		std::cout << "PHYS SIZE: " << planeDataConfig.physical_data_size[0] << " x " << planeDataConfig.physical_data_size[1] << std::endl;
+		std::cout << "SPEC MODES: " << planeDataConfig.spectral_modes[0] << " x " << planeDataConfig.spectral_modes[1] << std::endl;
+		std::cout << "SPEC SIZE: " << planeDataConfig.spectral_data_size[0] << " x " << planeDataConfig.spectral_data_size[1] << std::endl;
 		std::cout << std::endl;
 
 #define PRINT_SPECTRUM	1
@@ -76,10 +77,6 @@ int main(int i_argc, char *i_argv[])
 
 
 		sweet::PlaneData_Spectral h(planeDataConfig);
-
-		/////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////
-		/////////////////////////////////////////////////////////
 
 		h.spectral_set_zero();
 
@@ -95,7 +92,7 @@ int main(int i_argc, char *i_argv[])
 		}
 #endif
 
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < planeDataConfig.spectral_array_data_number_of_elements; i++)
 			h.spectral_space_data[i] = {1.0,0.0};
 
 
@@ -134,7 +131,7 @@ int main(int i_argc, char *i_argv[])
 		}
 #endif
 
-		for (std::size_t i = 0; i < planeDataConfig->spectral_array_data_number_of_elements; i++)
+		for (std::size_t i = 0; i < planeDataConfig.spectral_array_data_number_of_elements; i++)
 		{
 			if (h.spectral_space_data[i] != 2.0 && h.spectral_space_data[i] != 0.0)
 			{

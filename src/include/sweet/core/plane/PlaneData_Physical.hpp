@@ -121,6 +121,18 @@ public:
 
 public:
 	PlaneData_Physical(
+			const PlaneDataConfig &i_planeDataConfig
+	)	:
+		/// important: set this to nullptr, since a check for this will be performed by setup(...)
+		planeDataConfig(&i_planeDataConfig),
+		physical_space_data(nullptr)
+	{
+		alloc_data();
+	}
+
+
+public:
+	PlaneData_Physical(
 			const PlaneDataConfig *i_planeDataConfig,
 			double i_value
 	)	:

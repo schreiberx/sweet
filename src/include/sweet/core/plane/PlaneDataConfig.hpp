@@ -830,6 +830,14 @@ public:
 				i_shackPlaneDataOps.reuse_spectral_transformation_plans
 			);
 	}
+	bool setupAuto(ShackPlaneDataOps *i_shackPlaneDataOps)
+	{
+		return setupAuto(
+				i_shackPlaneDataOps->space_res_physical,
+				i_shackPlaneDataOps->space_res_spectral,
+				i_shackPlaneDataOps->reuse_spectral_transformation_plans
+			);
+	}
 
 	/*
 	 * Just a convenience function
