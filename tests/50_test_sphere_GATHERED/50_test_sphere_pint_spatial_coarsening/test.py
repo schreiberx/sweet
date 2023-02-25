@@ -13,7 +13,7 @@ exec_program('mule.benchmark.cleanup_all', catch_output=False)
 jg = JobGeneration()
 jg.compile.mode = "debug"
 jg.compile.parareal_sphere = "enable"
-jg.compile.unit_test="test_sphere_pint_spatial_coarsening"
+jg.compile.program="tests/sphere_pint_spatial_coarsening"
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
 

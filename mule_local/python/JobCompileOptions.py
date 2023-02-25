@@ -10,8 +10,10 @@
 
 import sys
 import os
+import glob
 from importlib import import_module
 from mule.InfoError import *
+import mule.utils
 
 import subprocess
 
@@ -43,7 +45,6 @@ class JobCompileOptions(InfoError):
         # Program or unit test
         self.program = ""
         self.program_name = ""
-        self.unit_test = ""
 
         # Compile options
         self.mode = 'release'
@@ -72,7 +73,6 @@ class JobCompileOptions(InfoError):
 
         # Program / Unit test
         self.program = ''
-        self.unit_test = ''
 
         # Parareal
         self.parareal = 'none'
@@ -150,8 +150,6 @@ class JobCompileOptions(InfoError):
         # Program / Unit test
         if self.program != '':
             retval += ' --program='+self.program
-        if self.unit_test != '':
-            retval += ' --unit-test='+self.unit_test
 
         # Parareal
         retval += ' --parareal='+self.parareal
@@ -576,21 +574,40 @@ class JobCompileOptions(InfoError):
 
 
 
-        files = os.listdir('src/programs/')
-        files = sorted(files)
-        example_programs = []
-        for f in files:
-            if os.path.isfile('src/programs/'+f):
-                example_programs.append(f[0:-4])
+        program_files = glob.glob('src/programs/*.cpp')
+        tutorial_files = glob.glob('src/tutorials/*.cpp')
+        tests_files = glob.glob('src/tests/*.cpp')
+
+        example_programs = program_files + tutorial_files + tests_files
+        example_programs = [mule.utils.remove_file_ending(_)[4:] for _ in example_programs]
 
         scons.AddOption(      '--program',
                 dest='program',
-                type='choice',
-                choices=example_programs,
-                default='',
+                type='string',
+                default="",
                 help='Specify program to compile: '+', '.join(example_programs)+' '*80+' [default: %default]'
         )
         self.program = scons.GetOption('program')
+
+        # Be a little bit more tolerant to users
+
+        # Remove "src/" at the beginning
+        if self.program.startswith("src/"):
+            self.program = self.program[4:]
+
+        # Remove .cpp at the end
+        if self.program.endswith(".cpp"):
+            self.program = self.program[:-4]
+
+        if self.program not in example_programs:
+            print(f"Program {self.program} not found")
+            print("")
+            print(f"The following options are possible:")
+            for i in example_programs:
+                print(f" + {i}")
+            print("")
+            sys.exit(1)
+
 
 
         if not self.parareal == 'none':
@@ -629,23 +646,6 @@ class JobCompileOptions(InfoError):
 
 
 
-        files = os.listdir('src/unit_tests/')
-        files = sorted(files)
-        unit_tests_programs = []
-        for f in files:
-            unit_tests_programs.append(f[0:-4])
-
-
-        scons.AddOption(      '--unit-test',
-                dest='unit_test',
-                type='choice',
-                choices=unit_tests_programs,
-                default='',
-                help='Specify unit tests to compile: '+', '.join(unit_tests_programs)+' '*80+' [default: %default]'
-        )
-        self.unit_test = scons.GetOption('unit_test')
-
-
         threading_constraints = ['off', 'omp']
         scons.AddOption(    '--threading',
                 dest='threading',
@@ -662,9 +662,6 @@ class JobCompileOptions(InfoError):
 
         if self.program != '':
             self.program_name = self.program
-
-        elif self.unit_test != '':
-            self.program_name = self.unit_test
 
         else:
             self.program_name = 'DUMMY'
@@ -695,9 +692,7 @@ class JobCompileOptions(InfoError):
         mainsrcadddir = ''
 
         if self.program != '':
-            mainsrcadddir = 'src/programs/'+self.program
-        elif self.unit_test != '':
-            mainsrcadddir = 'src/unit_tests/'+self.unit_test
+            mainsrcadddir = 'src/'+self.program
         else:
             return None
 

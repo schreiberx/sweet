@@ -5,7 +5,7 @@ from mule import *
 from mule.JobMule import *
 j = JobGeneration()
 
-j.compile.program = 'tutorialNestedParallelRegionTests'
+j.compile.program = 'tutorials/nestedParallelRegions'
 j.unique_id_filter = ['runtime', 'compile']
 j.unique_id_filter +=  ['simparams', 'benchmark', 'timestep_order', 'timestep_size', 'disc_space', 'compile']
 

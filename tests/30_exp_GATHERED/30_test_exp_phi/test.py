@@ -11,7 +11,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test="test_exp_phi_functions"
+jg.compile.program="tests/exp_phi_functions"
 
 jg.gen_jobscript_directory()
 

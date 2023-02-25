@@ -1,0 +1,1 @@
+../../../../mule_local/python/shacksShared/_Template.py

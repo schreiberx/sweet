@@ -11,7 +11,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test="test_plane_basic_advection"
+jg.compile.program="tests/plane_basic_advection"
 
 jg.compile.plane_spectral_space="enable"
 jg.runtime.benchmark_name = "gaussian_bump_advection"

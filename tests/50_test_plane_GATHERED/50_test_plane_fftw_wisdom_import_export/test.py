@@ -10,7 +10,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test="test_plane_fftw_wisdom_import_export"
+jg.compile.program="tests/plane_fftw_wisdom_import_export"
 jg.compile.plane_spectral_space="enable"
 jg.compile.plane_spectral_dealiasing="enable"
 jg.compile.mode="debug"

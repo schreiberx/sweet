@@ -13,7 +13,7 @@ from mule.SWEETRuntimeParametersScenarios import *
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test="test_plane_exp_direct_precompute_phin"
+jg.compile.program="tests/plane_exp_direct_precompute_phin"
 
 earth = EarthMKSDimensions()
 jg.runtime.verbosity = 6

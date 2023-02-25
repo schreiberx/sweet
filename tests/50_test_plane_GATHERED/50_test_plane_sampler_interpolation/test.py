@@ -11,7 +11,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test="test_plane_sampler_interpolation"
+jg.compile.program="tests/plane_sampler_interpolation"
 
 jg.compile.plane_spectral_space="enable"
 

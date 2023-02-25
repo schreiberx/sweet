@@ -12,7 +12,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test="test_plane_modal_restriction_interpolation"
+jg.compile.program="tests/plane_modal_restriction_interpolation"
 
 jg.compile.plane_spectral_space="enable"
 

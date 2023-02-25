@@ -11,7 +11,7 @@ from mule.InfoError import *
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test="test_plane_sw_normal_modes"
+jg.compile.program="tests/plane_sw_normal_modes"
 jg.compile.plane_spectral_space="enable"
 jg.compile.plane_spectral_dealiasing="enable"
 jg.compile.mode="release"
