@@ -14,6 +14,9 @@
 #include <sweet/core/plane/PlaneData_PhysicalComplex.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
 
+namespace sweet
+{
+
 class Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral
 {
 public:
@@ -78,6 +81,6 @@ public:
 
 };
 
-
+}
 
 #endif /* SRC_INCLUDE_SWEET_PLANE_CONVERT_PLANEDATASPECTRALCOMPLEX_TO_PLANEDATASPECTRAL_HPP_ */

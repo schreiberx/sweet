@@ -695,7 +695,9 @@ public:
 
 	PlaneData_Spectral(
 			const PlaneData_Physical &i_plane_data_physical
-	)
+	)	:
+		planeDataConfig(nullptr),
+		spectral_space_data(nullptr)
 	{
 		setup(i_plane_data_physical.planeDataConfig);
 

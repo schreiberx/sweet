@@ -153,52 +153,10 @@ else:
 
     env.Append(CXXFLAGS=['-DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0'])
 
-
-
-
-if p.parareal == 'none':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL=0'])
-elif p.parareal == 'serial':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL=1'])
-elif p.parareal == 'mpi':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL=2'])
-else:
-    raise Exception("Invalid option '"+str(p.parareal)+"' for parareal method")
-
-
-if p.parareal_scalar == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_SCALAR=1'])
-if p.parareal_plane == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_PLANE=1'])
-if p.parareal_sphere == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_SPHERE=1'])
-if p.parareal_plane_swe == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_PLANE_SWE=1'])
-if p.parareal_plane_burgers == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_PLANE_BURGERS=1'])
-
-
-if p.xbraid == 'none':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID=0'])
-elif p.xbraid == 'mpi':
-    env.Append(CXXFLAGS=['-Ilocal_software/local/include/xbraid'])
-    env.Append(LIBS=['braid'])
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID=1'])
-else:
-    raise Exception("Invalid option '"+str(p.xbraid)+"' for XBraid")
-
-
-if p.xbraid_scalar == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_SCALAR=1'])
-if p.xbraid_plane == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_PLANE=1'])
-if p.xbraid_sphere == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_SPHERE=1'])
-if p.xbraid_plane_swe == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_PLANE_SWE=1'])
-if p.xbraid_plane_burgers == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_PLANE_BURGERS=1'])
-
+#
+# Add other flags, potentially from shacks
+#
+p.sconsAddFlags(env)
 
 
 #

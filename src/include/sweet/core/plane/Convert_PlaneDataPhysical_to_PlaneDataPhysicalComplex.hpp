@@ -1,6 +1,4 @@
 /*
- * PlaneData_To_ScalarDataArray.cpp
- *
  *  Created on: 20 Oct 2016
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -11,6 +9,9 @@
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/core/plane/PlaneData_PhysicalComplex.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
+
+namespace sweet
+{
 
 class Convert_PlaneDataPhysical_To_PlaneDataPhysicalComplex
 {
@@ -32,5 +33,6 @@ public:
 	}
 };
 
+}
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_CONVERT_PLANEDATA_TO_SCALARDATAARRAY_HPP_ */
+#endif

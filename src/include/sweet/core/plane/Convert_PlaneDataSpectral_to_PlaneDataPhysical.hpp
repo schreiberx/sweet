@@ -10,7 +10,8 @@
 #include "PlaneData_Physical.hpp"
 #include "PlaneData_Spectral.hpp"
 
-namespace sweet{
+namespace sweet
+{
 
 class Convert_PlaneDataSpectral_To_PlaneDataPhysical
 {

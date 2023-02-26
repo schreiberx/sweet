@@ -14,6 +14,7 @@ import glob
 from importlib import import_module
 from mule.InfoError import *
 import mule.utils
+import mule.Shacks
 
 import subprocess
 
@@ -42,6 +43,8 @@ class JobCompileOptions(InfoError):
 
         InfoError.__init__(self, "JobCompileOptions")
 
+        self.shacksCompile = mule.Shacks.getShacksDict("shacksCompile").values()
+        
         # Program or unit test
         self.program = ""
         self.program_name = ""
@@ -74,21 +77,6 @@ class JobCompileOptions(InfoError):
         # Program / Unit test
         self.program = ''
 
-        # Parareal
-        self.parareal = 'none'
-        self.parareal_scalar = 'disable'
-        self.parareal_plane = 'disable'
-        self.parareal_sphere = 'disable'
-        self.parareal_plane_swe = 'disable'
-        self.parareal_plane_burgers = 'disable'
-
-        # XBraid
-        self.xbraid = 'none'
-        self.xbraid_scalar = 'disable'
-        self.xbraid_plane = 'disable'
-        self.xbraid_sphere = 'disable'
-        self.xbraid_plane_swe = 'disable'
-        self.xbraid_plane_burgers = 'disable'
 
         #LibPFASST
         self.libpfasst = 'disable'
@@ -129,6 +117,11 @@ class JobCompileOptions(InfoError):
 
     def getSConsParams(self):
         retval = ''
+
+        # Program / Unit test
+        if self.program != '':
+            retval += ' --program='+self.program
+
         retval += ' --mode='+self.mode
         retval += ' --debug-symbols='+("enable" if self.debug_symbols else "disable")
         retval += ' --simd='+self.simd
@@ -147,25 +140,10 @@ class JobCompileOptions(InfoError):
         retval += ' --rexi-timings-additional-barriers='+self.rexi_timings_additional_barriers
         retval += ' --rexi-allreduce='+self.rexi_allreduce
 
-        # Program / Unit test
-        if self.program != '':
-            retval += ' --program='+self.program
 
-        # Parareal
-        retval += ' --parareal='+self.parareal
-        retval += ' --parareal-scalar='+self.parareal_scalar
-        retval += ' --parareal-plane='+self.parareal_plane
-        retval += ' --parareal-sphere='+self.parareal_sphere
-        retval += ' --parareal-plane-swe='+self.parareal_plane_swe
-        retval += ' --parareal-plane-burgers='+self.parareal_plane_burgers
 
-        # XBraid
-        retval += ' --xbraid='+self.xbraid
-        retval += ' --xbraid-scalar='+self.xbraid_scalar
-        retval += ' --xbraid-plane='+self.xbraid_plane
-        retval += ' --xbraid-sphere='+self.xbraid_sphere
-        retval += ' --xbraid-plane-swe='+self.xbraid_plane_swe
-        retval += ' --xbraid-plane-burgers='+self.xbraid_plane_burgers
+        for _ in self.shacksCompile:
+            retval += _.getSConsParams()
 
 
         # LibPFASST
@@ -234,7 +212,12 @@ class JobCompileOptions(InfoError):
 
     def sconsProcessCommandlineOptions(self):
         scons = import_module("SCons.Script")
+        
+        self.sconsAddOptions(scons)
+        self.sconsValidateOptions()
 
+
+    def sconsAddOptions(self, scons):
 
         scons.AddOption(      '--mode',
                 dest='mode',
@@ -463,114 +446,8 @@ class JobCompileOptions(InfoError):
         self.sweet_mpi = scons.GetOption('sweet_mpi')
 
 
-
-        scons.AddOption(    '--parareal',
-                dest='parareal',
-                type='choice',
-                choices=['none', 'serial','mpi'],
-                default='none',
-                help='Enable Parareal (none, serial, mpi) [default: %default]\nOnly works, if Parareal is supported by the simulation'
-        )
-        self.parareal = scons.GetOption('parareal')
-
-        scons.AddOption(    '--parareal-scalar',
-                dest='parareal_scalar',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable Parareal for scalar problems (enable, disable) [default: %default]'
-        )
-        self.parareal_scalar = scons.GetOption('parareal_scalar')
-
-        scons.AddOption(    '--parareal-plane',
-                dest='parareal_plane',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable Parareal on the plane (enable, disable) [default: %default]'
-        )
-        self.parareal_plane = scons.GetOption('parareal_plane')
-
-        scons.AddOption(    '--parareal-sphere',
-                dest='parareal_sphere',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable Parareal on the sphere (enable, disable) [default: %default]'
-        )
-        self.parareal_sphere = scons.GetOption('parareal_sphere')
-
-        scons.AddOption(    '--parareal-plane-swe',
-                dest='parareal_plane_swe',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable Parareal for SWE on the plane (enable, disable) [default: %default]'
-        )
-        self.parareal_plane_swe = scons.GetOption('parareal_plane_swe')
-
-        scons.AddOption(    '--parareal-plane-burgers',
-                dest='parareal_plane_burgers',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable Parareal for Burgers on the plane (enable, disable) [default: %default]'
-        )
-        self.parareal_plane_burgers = scons.GetOption('parareal_plane_burgers')
-
-        scons.AddOption(    '--xbraid',
-                dest='xbraid',
-                type='choice',
-                choices=['none', 'mpi'],
-                default='none',
-                help='Enable XBBraid (none,  mpi) [default: %default]\nOnly works, if XBraid is supported by the simulation'
-        )
-        self.xbraid = scons.GetOption('xbraid')
-
-        scons.AddOption(    '--xbraid-scalar',
-                dest='xbraid_scalar',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable XBraid for scalar problems (enable, disable) [default: %default]'
-        )
-        self.xbraid_scalar = scons.GetOption('xbraid_scalar')
-
-        scons.AddOption(    '--xbraid-plane',
-                dest='xbraid_plane',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable XBraid on the plane (enable, disable) [default: %default]'
-        )
-        self.xbraid_plane = scons.GetOption('xbraid_plane')
-
-        scons.AddOption(    '--xbraid-sphere',
-                dest='xbraid_sphere',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable XBraid on the sphere (enable, disable) [default: %default]'
-        )
-        self.xbraid_sphere = scons.GetOption('xbraid_sphere')
-
-        scons.AddOption(    '--xbraid-plane-swe',
-                dest='xbraid_plane_swe',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable XBraid for SWE on the plane (enable, disable) [default: %default]'
-        )
-        self.xbraid_plane_swe = scons.GetOption('xbraid_plane_swe')
-
-        scons.AddOption(    '--xbraid-plane-burgers',
-                dest='xbraid_plane_burgers',
-                type='choice',
-                choices=['enable', 'disable'],
-                default='0',
-                help='Enable XBraid for Burgers on the plane (enable, disable) [default: %default]'
-        )
-        self.xbraid_plane_burgers = scons.GetOption('xbraid_plane_burgers')
+        for _ in self.shacksCompile:
+            _.sconsAddOptions(scons)
 
 
 
@@ -588,6 +465,7 @@ class JobCompileOptions(InfoError):
                 help='Specify program to compile: '+', '.join(example_programs)+' '*80+' [default: %default]'
         )
         self.program = scons.GetOption('program')
+
 
         # Be a little bit more tolerant to users
 
@@ -608,33 +486,6 @@ class JobCompileOptions(InfoError):
             print("")
             sys.exit(1)
 
-
-
-        if not self.parareal == 'none':
-            if self.program == "parareal_ode":
-                self.parareal_scalar = 'enable';
-            elif self.program == 'swe_plane' or self.program == 'burgers':
-                self.parareal_plane = 'enable';
-                if self.program == 'swe_plane':
-                    self.parareal_plane_swe = 'enable';
-                elif self.program == 'burgers':
-                    self.parareal_plane_burgers = 'enable';
-            elif self.program == 'swe_sphere':
-                self.parareal_sphere = 'enable';
-
-        if not self.xbraid == 'none':
-            if self.program == "parareal_ode":
-                self.xbraid_scalar = 'enable';
-            elif self.program == 'swe_plane' or self.program == 'burgers':
-                self.xbraid_plane = 'enable';
-                if self.program == 'swe_plane':
-                    self.xbraid_plane_swe = 'enable';
-                elif self.program == 'burgers':
-                    self.xbraid_plane_burgers = 'enable';
-            elif self.program == 'swe_sphere':
-                self.xbraid_sphere = 'enable';
-
-
         scons.AddOption(      '--program-binary-name',
                 dest='program_binary_name',
                 type='string',
@@ -643,8 +494,6 @@ class JobCompileOptions(InfoError):
                 default=''
         )
         self.program_binary_name = scons.GetOption('program_binary_name')
-
-
 
         threading_constraints = ['off', 'omp']
         scons.AddOption(    '--threading',
@@ -655,6 +504,18 @@ class JobCompileOptions(InfoError):
                 help='Threading to use '+' / '.join(threading_constraints)+', default: off'
         )
         self.threading = scons.GetOption('threading')
+
+
+    def sconsValidateOptions(self):
+
+        for _ in self.shacksCompile:
+            _.sconsValidateOptions()
+
+
+    def sconsAddFlags(self, env):
+        for _ in self.shacksCompile:
+            _.sconsAddFlags(env)
+
 
 
     def getProgramExec(self, ignore_errors = False):

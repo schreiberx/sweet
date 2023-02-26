@@ -1,39 +1,24 @@
 #! /usr/bin/env python3
-import os
+import os, sys
 
 from mule.JobCompileOptions import *
 from mule.InfoError import *
 from mule.SWEETFileDict import SWEETFileDict
+import mule.Shacks
 
 __all__ = ['JobRuntimeOptions']
 
-from mule.shacksShared.ExpIntegrators import *
-from mule.shacksShared.SphereSemiLagrangian import *
-from mule.shacksShared.LibPFASST import *
-from mule.shacksShared.Parallelization import *
-from mule.shacksShared.Parareal import *
-from mule.shacksShared.XBraid import *
-from mule.shacksShared.Polvani import *
 
-
-class JobRuntimeOptions(InfoError, ExpIntegrators):
-
+class JobRuntimeOptions(InfoError):
 
     def __init__(self, dummy_init = False):
 
         self.init_phase = True
-
+        
         InfoError.__init__(self, "JobRuntimeOptions")
         
-        self.shacks = []
-        self.shacks.append(ExpIntegrators())
-        self.shacks.append(SphereSemiLagrangian())
-        self.shacks.append(LibPFASST())
-        self.shacks.append(Parallelization())
-        self.shacks.append(Parareal())
-        self.shacks.append(XBraid())
-        self.shacks.append(Polvani())
-
+        self.shacksRuntime = mule.Shacks.getShacksDict("shacksRuntime").values()
+        
         # String to job directory.
         self.p_job_dirpath = None
 
@@ -45,23 +30,39 @@ class JobRuntimeOptions(InfoError, ExpIntegrators):
         self.output_filename = ''
         self.output_file_mode = ''
 
-        self.f_sphere = None
         self.verbosity = 0
 
-        self.instability_checks = None
+        self.gui = None
 
         # Use 14 digits per default
         self.floating_point_output_digits = 12
 
+        self.sphere_radius = None
+
+        self.plane_domain_size = None    # Plane: Domain size
+
+        self.space_grid_use_c_staggering = 0
+        self.space_use_spectral_basis_diffs = 1
+        
+        self.max_simulation_time = 0.001
+        self.max_wallclock_time = -1
+        self.reuse_plans = "quick"
+
+
+
+
         self.timestepping_method = None
         self.timestepping_order = 1
         self.timestepping_order2 = 1
+        self.timestep_size = None
+        self.max_timesteps_nr = -1
 
+        self.instability_checks = None
+
+        self.f_sphere = None
         self.semi_lagrangian_max_iterations = None
         self.semi_lagrangian_convergence_threshold = None
 
-        self.timestep_size = None
-        self.max_timesteps_nr = -1
 
         self.normal_mode_analysis = None
 
@@ -69,39 +70,28 @@ class JobRuntimeOptions(InfoError, ExpIntegrators):
         # SDC parameters
         self.paramsSDC: SWEETFileDict = None 
 
-        self.gui = None
 
         self.gravitation= None
         self.h0 = None
         self.sphere_rotating_coriolis_omega = None
-        self.sphere_radius = None
-
-        self.plane_domain_size = None    # Plane: Domain size
-
-        # Specify benchmark name
-        self.benchmark_name = None
-
-        self.benchmark_galewsky_umax = -1
-        self.benchmark_galewsky_hamp = -1
-        self.benchmark_galewsky_phi2 = -1
-
-        self.benchmark_normal_modes_case = None
-
-        self.space_grid_use_c_staggering = 0
-        self.space_use_spectral_basis_diffs = 1
         self.viscosity = None
         self.viscosity_order = None
 
-        #self.uselineardiv = None
-        self.use_nonlinear_only_visc = None
+        # Specify benchmark name
+        self.benchmark_name = None
+        self.benchmark_galewsky_umax = -1
+        self.benchmark_galewsky_hamp = -1
+        self.benchmark_galewsky_phi2 = -1
+        self.benchmark_normal_modes_case = None
+
         self.advection_rotation_angle = None
         self.advection_velocity = None
-        self.max_simulation_time = 0.001
-        self.max_wallclock_time = -1
+
+        #self.uselineardiv = None
+        self.use_nonlinear_only_visc = None
 
         self.compute_errors = 0
 
-        self.reuse_plans = "quick"
         self.comma_separated_tags = None
 
         #
@@ -133,7 +123,7 @@ class JobRuntimeOptions(InfoError, ExpIntegrators):
 
     def load_from_dict(self, d):
         
-        for _ in self.shacks:
+        for _ in self.shacksRuntime:
             _.load_from_dict(self, d)
         
         if 'timestep_size' in d:
@@ -228,7 +218,7 @@ class JobRuntimeOptions(InfoError, ExpIntegrators):
                 uniqueIDStr += '_W'+str(self.max_wallclock_time).zfill(6)
 
 
-        for _ in self.shacks:
+        for _ in self.shacksRuntime:
             uniqueIDStr += _.getUniqueID(compileOptions, filter_list)
 
         
@@ -388,7 +378,7 @@ class JobRuntimeOptions(InfoError, ExpIntegrators):
 
 
 
-        for _ in self.shacks:
+        for _ in self.shacksRuntime:
             retRuntimeOptionsStr += _.getRuntimeOptions()
 
 

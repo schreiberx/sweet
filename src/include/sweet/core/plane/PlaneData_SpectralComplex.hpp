@@ -8,17 +8,6 @@
 #ifndef SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
 #define SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
 
-///#include <complex>
-///#include <functional>
-///#include <array>
-///#include <string.h>
-///#include <iostream>
-///#include <fstream>
-///#include <iomanip>
-///#include <cassert>
-///#include <utility>
-///#include <functional>
-
 #include <complex>
 #include <cassert>
 #include <cstddef>
@@ -89,6 +78,8 @@
 
 	#endif
 
+namespace sweet
+{
 
 class PlaneData_SpectralComplex
 {
@@ -129,6 +120,17 @@ public:
 		assert(i_planeDataConfig != 0);
 
 		setup(i_planeDataConfig);
+	}
+
+
+public:
+	PlaneData_SpectralComplex(
+			const PlaneDataConfig &i_planeDataConfig
+	)	:
+		planeDataConfig(nullptr),
+		spectral_space_data(nullptr)
+	{
+		setup(&i_planeDataConfig);
 	}
 
 
@@ -1074,13 +1076,14 @@ public:
 
 };
 
+}
 
 
 inline
 static
-PlaneData_SpectralComplex operator*(
+sweet::PlaneData_SpectralComplex operator*(
 		const double i_value,
-		const PlaneData_SpectralComplex &i_array_data
+		const sweet::PlaneData_SpectralComplex &i_array_data
 )
 {
 	return i_array_data*i_value;
@@ -1089,9 +1092,9 @@ PlaneData_SpectralComplex operator*(
 
 inline
 static
-PlaneData_SpectralComplex operator*(
+sweet::PlaneData_SpectralComplex operator*(
 		const std::complex<double> &i_value,
-		const PlaneData_SpectralComplex &i_array_data
+		const sweet::PlaneData_SpectralComplex &i_array_data
 )
 {
 	return i_array_data*i_value;
@@ -1109,19 +1112,19 @@ PlaneData_SpectralComplex operator*(
 
 inline
 static
-PlaneData_SpectralComplex operator+(
+sweet::PlaneData_SpectralComplex operator+(
 		const double i_value,
-		const PlaneData_SpectralComplex &i_array_data
+		const sweet::PlaneData_SpectralComplex &i_array_data
 )
 {
-	return ((PlaneData_SpectralComplex&)i_array_data)+i_value;
+	return ((sweet::PlaneData_SpectralComplex&)i_array_data)+i_value;
 }
 
 inline
 static
-PlaneData_SpectralComplex operator+(
+sweet::PlaneData_SpectralComplex operator+(
 		const std::complex<double> &i_value,
-		const PlaneData_SpectralComplex &i_array_data
+		const sweet::PlaneData_SpectralComplex &i_array_data
 )
 {
 	return i_array_data+i_value;
@@ -1129,12 +1132,12 @@ PlaneData_SpectralComplex operator+(
 
 inline
 static
-PlaneData_SpectralComplex operator-(
+sweet::PlaneData_SpectralComplex operator-(
 		const std::complex<double> &i_value,
-		const PlaneData_SpectralComplex &i_array_data
+		const sweet::PlaneData_SpectralComplex &i_array_data
 )
 {
-	PlaneData_SpectralComplex out_plane_data(i_array_data.planeDataConfig);
+	sweet::PlaneData_SpectralComplex out_plane_data(i_array_data.planeDataConfig);
 
 
 	SWEET_THREADING_SPACE_PARALLEL_FOR
