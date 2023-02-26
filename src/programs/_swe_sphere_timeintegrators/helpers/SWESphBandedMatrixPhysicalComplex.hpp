@@ -798,4 +798,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SPH_SPHSOLVER_HPP_ */
+#endif

@@ -92,4 +92,4 @@ public:
 	}
 };
 
-#endif /* CGLSTATE_HPP_ */
+#endif

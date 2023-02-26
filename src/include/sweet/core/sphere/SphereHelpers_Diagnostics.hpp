@@ -250,4 +250,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_SPHEREDIAGNOSTICS_HPP_ */
+#endif

@@ -23,4 +23,4 @@
 #include <shtns.h>
 
 
-#endif /* SRC_INCLUDE_LIBMATH_SHTNS_INC_HPP_ */
+#endif

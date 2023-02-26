@@ -93,4 +93,4 @@ int main(int i_argc, char *i_argv[])
 }
 
 
-#endif /* SRC_OUTPUTSPHERICALHARMONICS_HPP_ */
+#endif

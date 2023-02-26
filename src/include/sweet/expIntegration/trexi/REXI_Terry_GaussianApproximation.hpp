@@ -296,4 +296,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_REXI_REXI_TERRY_GAUSSIANAPPROXIMATION_HPP_ */
+#endif

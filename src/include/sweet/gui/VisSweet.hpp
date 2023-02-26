@@ -393,4 +393,4 @@ public:
 
 
 
-#endif /* SRC_EXAMPLES_VISSWEET_HPP_ */
+#endif

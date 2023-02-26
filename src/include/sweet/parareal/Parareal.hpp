@@ -44,4 +44,4 @@ template <class T> class PararealDataInherited	: public T {};
 
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_HPP_ */
+#endif

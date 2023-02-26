@@ -1274,7 +1274,7 @@ int main_real(int i_argc, char *i_argv[])
 			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, sphereDataConfigs, ops);
 
 
-			if( simVars.xbraid.xbraid_run_wrapper_tests)
+			if ( simVars.xbraid.xbraid_run_wrapper_tests)
 			{
 				app.setup();
 

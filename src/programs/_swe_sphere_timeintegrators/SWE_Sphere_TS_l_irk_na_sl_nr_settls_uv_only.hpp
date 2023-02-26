@@ -96,4 +96,4 @@ public:
 	virtual ~SWE_Sphere_TS_l_irk_na_sl_nr_settls_uv_only();
 };
 
-#endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */
+#endif

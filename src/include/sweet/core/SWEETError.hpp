@@ -156,4 +156,4 @@ public:
 #define SWEETAssert(assertion, msg)	SWEETAssert_(assertion, msg, __FILE__, __LINE__, __func__)
 
 
-#endif /* SRC_INCLUDE_SWEET_SWEETERROR_HPP_ */
+#endif

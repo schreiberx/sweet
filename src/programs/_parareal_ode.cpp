@@ -370,7 +370,7 @@ int main(int i_argc, char *i_argv[])
 			nt++;
 		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
 
-		if( simVars.xbraid.xbraid_run_wrapper_tests)
+		if ( simVars.xbraid.xbraid_run_wrapper_tests)
 		{
 
 			app.setup();

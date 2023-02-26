@@ -53,4 +53,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKPARALLELIZATION_HPP_ */
+#endif

@@ -105,4 +105,4 @@ public:
 	virtual ~SWE_Sphere_TS_lg_exp_na_sl_lc_nr_etd_uv();
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_ERK_HPP_ */
+#endif

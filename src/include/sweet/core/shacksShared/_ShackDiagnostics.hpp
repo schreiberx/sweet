@@ -85,4 +85,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKDIAGNOSTICS_HPP_ */
+#endif

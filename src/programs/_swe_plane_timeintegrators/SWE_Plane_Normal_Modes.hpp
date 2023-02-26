@@ -11,7 +11,7 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
 
-#include <rexi/EXPFunctions.hpp>
+#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_SpectralComplex.hpp>
@@ -24,7 +24,7 @@
 /**
  * SWE Plane normal mode
  */
-class SWE_Plane_Normal_Modes
+class SWEPlaneNormalModes
 {
 public:
 
@@ -155,7 +155,7 @@ public:
 				for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
 				{
 					//This is the mode to be analysed
-					//std::cout << "Mode (i,j)= (" << i << " , " << j <<")"<< std::endl;
+					//std::cout << "Mode (i,j)= (" << i << " , " << j << ")" << std::endl;
 
 
 					for (int outer_prog_id = 0; outer_prog_id < number_of_prognostic_variables; outer_prog_id++)
@@ -203,12 +203,12 @@ public:
 					//std::cout << "Lik matrix" << std::endl;
 					//std::cout << A << std::endl;
 
-					//std::cout<<"Normal modes" << std::endl;
+					//std::cout << "Normal modes" << std::endl;
 					ces.compute(A);
 					for(int i=0; i<3; i++)
 					{
 						eval[i]=ces.eigenvalues()[i];
-						//std::cout << "Eigenvalue "<< i << " : " << eval[i].real() <<" "<<eval[i].imag() << std::endl;
+						//std::cout << "Eigenvalue " << i << " : " << eval[i].real() << " " <<eval[i].imag() << std::endl;
 
 					}
 					/* We will try to separate the modes in 3 types:
@@ -221,25 +221,25 @@ public:
 					int count_geo=0;
 					for(int i=0; i<3; i++)
 					{
-						if(eval[i].imag() > 0.5 * i_simVars.sim.plane_rotating_f0)
+						if (eval[i].imag() > 0.5 * i_simVars.sim.plane_rotating_f0)
 						{
-							//std::cout<< "IG pos mode: " << eval[i].imag() << std::endl;
+							//std::cout << "IG pos mode: " << eval[i].imag() << std::endl;
 							//file_igpos << eval[i].imag();
 							file_igpos << eval[i].real()<< "\t" << eval[i].imag();
 							file_igpos << "\t";
 							count_igpos++;
 						}
-						if(eval[i].imag() < - 0.5 * i_simVars.sim.plane_rotating_f0)
+						if (eval[i].imag() < - 0.5 * i_simVars.sim.plane_rotating_f0)
 						{
-							//std::cout<< "IG neg mode: " << eval[i].imag() << std::endl;
+							//std::cout << "IG neg mode: " << eval[i].imag() << std::endl;
 							//file_igneg << eval[i].imag();
 							file_igneg << eval[i].real()<< "\t" << eval[i].imag();
 							file_igneg << "\t";
 							count_igneg++;
 						}
-						if(eval[i].imag() >= - 0.5 * i_simVars.sim.plane_rotating_f0 && eval[i].imag() <=  0.5 * i_simVars.sim.plane_rotating_f0 )
+						if (eval[i].imag() >= - 0.5 * i_simVars.sim.plane_rotating_f0 && eval[i].imag() <=  0.5 * i_simVars.sim.plane_rotating_f0 )
 						{
-							//std::cout<< "IG geo mode: " << eval[i].imag() << std::endl;
+							//std::cout << "IG geo mode: " << eval[i].imag() << std::endl;
 							//file_geo << eval[i].imag();
 							file_geo << eval[i].real()<< "\t" << eval[i].imag();
 							file_geo << "\t";
@@ -258,7 +258,7 @@ public:
 						SWEETError("SWE_Plane_Normal_Modes: Could not separate modes!!");
 					}
 
-					//std::cout<<"-------------------------" << std::endl;
+					//std::cout << "-------------------------" << std::endl;
 				}
 				file_igpos << std::endl;
 				file_igneg << std::endl;
@@ -266,7 +266,7 @@ public:
 			}
 
 			//}
-			//std::cout<<"-------------------------" << std::endl;
+			//std::cout << "-------------------------" << std::endl;
 			//SWEETError("still needs work...");
 #else
 			SWEETError("SWE_Plane_Normal_Modes: Cannot test this without Eigen library. Please compile with --eigen=enable");
@@ -636,10 +636,10 @@ public:
 	}
 
 
-	~SWE_Plane_Normal_Modes()
+	~SWEPlaneNormalModes()
 	{
 
 	}
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_ */
+#endif

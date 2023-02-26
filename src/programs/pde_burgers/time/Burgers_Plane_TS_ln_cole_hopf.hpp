@@ -52,4 +52,4 @@ public:
 	virtual ~Burgers_Plane_TS_ln_cole_hopf();
 };
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_LN_COLE_HOPF_HPP_ */
+#endif

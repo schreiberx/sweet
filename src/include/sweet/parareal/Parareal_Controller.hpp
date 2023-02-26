@@ -872,4 +872,4 @@ converged:
 
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_CONTROLLER_HPP_ */
+#endif

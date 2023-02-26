@@ -11,6 +11,8 @@
 #include <iostream>
 #include <sweet/core/ProgramArguments.hpp>
 #include <sweet/core/shacks/ShackInterface.hpp>
+#include <sweet/core/TransformationPlans.hpp>
+#include <sweet/core/StringSplit.hpp>
 
 
 namespace sweet

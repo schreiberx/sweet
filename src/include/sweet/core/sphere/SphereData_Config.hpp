@@ -744,4 +744,4 @@ public:
 
 }
 
-#endif /* SPHSETUP_HPP_ */
+#endif

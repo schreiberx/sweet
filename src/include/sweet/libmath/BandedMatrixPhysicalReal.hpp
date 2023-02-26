@@ -402,4 +402,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SPH_BANDEDMATRIX_HPP_ */
+#endif

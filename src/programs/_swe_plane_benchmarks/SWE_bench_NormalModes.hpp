@@ -7,7 +7,7 @@
 #ifndef SWE_BENCH_NORMAL_MODES_HPP_
 #define SWE_BENCH_NORMAL_MODES_HPP_
 
-#include <rexi/EXPFunctions.hpp>
+#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -69,25 +69,25 @@ public:
 	)
 	{
 
-		EXPFunctions<T> rexiFunctions;
+		ExpFunctions<T> rexiFunctions;
 
 		const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
 		
-		//std::cout<<"Adding mode to fields"<<std::endl;
+		//std::cout << "Adding mode to fields" <<std::endl;
 
 		////////////////io_h.request_data_spectral();
 		////////////////io_u.request_data_spectral();
 		////////////////io_v.request_data_spectral();
 
 		//Check if k0 is in correct sprectral area
-		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
-		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
+		//std::cout << io_h.planeDataConfig->spectral_data_size[1] << std::endl;
+		if ( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
 			SWEETError("Normal_mode: mode not within reach");
 
-		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
+		if ( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
 			SWEETError("Normal_mode: mode not within reach");
 
 		//Check for mirror effects
@@ -109,10 +109,10 @@ public:
 				v , // EV matrix
 				lambda // output eigen values */
 		);
-		//std::cout<<"Eigen-values"<<std::endl;
-		//std::cout<<lambda[0]<<std::endl;
-		//std::cout<<lambda[1]<<std::endl;
-		//std::cout<<lambda[2]<<std::endl;
+		//std::cout << "Eigen-values" <<std::endl;
+		//std::cout <<lambda[0]<<std::endl;
+		//std::cout <<lambda[1]<<std::endl;
+		//std::cout <<lambda[2]<<std::endl;
 
 		complex U[3];
 		// Set normal mode acording to desired wave type
@@ -121,16 +121,16 @@ public:
 		U[0] = geo_mode;
 		U[1] = igwest_mode;
 		U[2] = igeast_mode;
-		//std::cout<<U[0]<<std::endl;
-		//std::cout<<U[1]<<std::endl;
-		//std::cout<<U[2]<<std::endl;
+		//std::cout <<U[0]<<std::endl;
+		//std::cout <<U[1]<<std::endl;
+		//std::cout <<U[2]<<std::endl;
 		//Define normal mode as combination of eigen vectors
 		complex UEV[3] = {0.0, 0.0, 0.0};
 		for (int k = 0; k < 3; k++)
 			for (int j = 0; j < 3; j++)
 				UEV[k] += v[k][j] * U[j];
 
-		//std::cout<<"spectral before"<< std::endl;
+		//std::cout << "spectral before" << std::endl;
 		//io_v.print_spectralIndex();
 
 		//Add normal mode to spectral space of variables
@@ -159,22 +159,22 @@ public:
 	/*Debug output*/
 	#if 0
 
-		std::cout<<"EV matrix"<<std::endl;
+		std::cout << "EV matrix" <<std::endl;
 		for (int j = 0; j < 3; j++)	{
 			for (int i = 0; i < 3; i++)
-				std::cout<< v[j][i]<<" "; 
-			std::cout<<std::endl;
+				std::cout << v[j][i]<< " "; 
+			std::cout <<std::endl;
 		}
 
-		std::cout<<"Eigen values"<<std::endl;
+		std::cout << "Eigen values" <<std::endl;
 		for (int j = 0; j < 3; j++)
-			std::cout<< lambda[j]<<" "; 
-		std::cout<<std::endl;
+			std::cout << lambda[j]<< " "; 
+		std::cout <<std::endl;
 		
-		std::cout<<"Adding normal mode to wavenumber : ("<<ik0<<","<<ik1<<")"<<std::endl;
-		std::cout<< "h: " << UEV[0]<<std::endl; 
-		std::cout<< "u: " << UEV[1]<<std::endl; 
-		std::cout<< "v: " << UEV[2]<<std::endl; 
+		std::cout << "Adding normal mode to wavenumber : (" <<ik0<< "," <<ik1<< ")" <<std::endl;
+		std::cout << "h: " << UEV[0]<<std::endl; 
+		std::cout << "u: " << UEV[1]<<std::endl; 
+		std::cout << "v: " << UEV[2]<<std::endl; 
 		
 
 	#endif
@@ -246,25 +246,25 @@ public:
 	)
 	{
 
-		EXPFunctions<T> rexiFunctions;
+		ExpFunctions<T> rexiFunctions;
 
 		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
 		
-		//std::cout<<"Adding mode to fields"<<std::endl;
+		//std::cout << "Adding mode to fields" <<std::endl;
 
 		//////i_h.request_data_spectral();
 		//////i_u.request_data_spectral();
 		//////i_v.request_data_spectral();
 
 		//Check if k0 is in correct sprectral area
-		//std::cout<< io_h.planeDataConfig->spectral_data_size[1] << std::endl;
-		if( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
+		//std::cout << io_h.planeDataConfig->spectral_data_size[1] << std::endl;
+		if ( ik1<0 || ik1 >= planeDataConfig->spectral_data_size[1]) 
 			SWEETError("Normal_mode: mode not within reach");
 
-		if( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
+		if ( ik0<0 || ik0 >= planeDataConfig->spectral_data_size[0]) 
 			SWEETError("Normal_mode: mode not within reach");
 
 		//Check for mirror effects
@@ -305,9 +305,9 @@ public:
 		o_geo_mode=UEV[0];
 		o_igwest_mode=UEV[1];
 		o_igeast_mode=UEV[2];
-		//std::cout<< " Geost: "<< o_geo_mode<<std::endl;
-		//std::cout<< " IGWest: "<< o_igwest_mode<<std::endl;
-		//std::cout<< " IGEast: "<< o_igeast_mode<<std::endl;
+		//std::cout << " Geost: " << o_geo_mode<<std::endl;
+		//std::cout << " IGWest: " << o_igwest_mode<<std::endl;
+		//std::cout << " IGEast: " << o_igeast_mode<<std::endl;
 
 		return;		
 	}
@@ -325,24 +325,24 @@ public:
 			complex o_evalues[3] =  0 // output eigen values (optional)
 	)
 	{
-		EXPFunctions<T> rexiFunctions;
+		ExpFunctions<T> rexiFunctions;
 		bool i_evalues = false;
 		if (o_evalues){
 			i_evalues = true;
-			//std::cout<<i_evalues<<" "<< o_evalues[0]   << std::endl;
+			//std::cout <<i_evalues<< " " << o_evalues[0]   << std::endl;
 		}
 		else{
 			i_evalues = false;
 		}
-		//std::cout<<o_evalues[1]<<std::endl;
-		//std::cout<<i_inverse<<std::endl;
+		//std::cout <<o_evalues[1]<<std::endl;
+		//std::cout <<i_inverse<<std::endl;
 
 		if (i_simVars.disc.space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
 		
 		complex I(0.0, 1.0);
-		//std::cout<<"Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
-		//std::cout<<"hi"<< std::endl;
+		//std::cout << "Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
+		//std::cout << "hi" << std::endl;
 		T s0 = i_simVars.sim.plane_domain_size[0];
 		T s1 = i_simVars.sim.plane_domain_size[1];
 
@@ -567,11 +567,11 @@ public:
 				}
 		}
 		/*
-		std::cout<<"EV matrix"<<std::endl;
+		std::cout << "EV matrix" <<std::endl;
 		for (int j = 0; j < 3; j++)	{
 			for (int i = 0; i < 3; i++)
-				std::cout<< v[j][i]<<" "; 
-			std::cout<<std::endl;
+				std::cout << v[j][i]<< " "; 
+			std::cout <<std::endl;
 		}
 		*/
 
@@ -581,7 +581,7 @@ public:
 			//Calculate EV norms
 			evnorm[j]=0;
 			for (int i = 0; i < 3; i++){
-					//std::cout<< j << ":" << evnorm[j] << std::endl;
+					//std::cout << j << ":" << evnorm[j] << std::endl;
 					evnorm[j] += v[i][j]*std::conj(v[i][j]);
 			}
 		}
@@ -726,11 +726,11 @@ public:
 						k1 = (T)((int)ik1-(int)planeDataConfig->spectral_data_size[1]);
 
 					//Geo modes
-					buffer0 << "\t("<< k0 <<","<<k1<<")";
+					buffer0 << "\t(" << k0 << "," <<k1<< ")";
 					//West modes (adjust y_mode index)
-					buffer1 << "\t("<< k0 <<","<<k1<<")";
+					buffer1 << "\t(" << k0 << "," <<k1<< ")";
 					//East mode (adjust x_mode index)
-					buffer2 << "\t("<< (k0 == 0 ? std::abs(k0) : -k0)  <<","<< (k1 == 0 ? std::abs(k1) : -k1) <<")";
+					buffer2 << "\t(" << (k0 == 0 ? std::abs(k0) : -k0)  << "," << (k1 == 0 ? std::abs(k1) : -k1) << ")";
 
 				}
 			}
@@ -762,27 +762,27 @@ public:
 	void extract_bench_info(const std::string &bcase)
 	{
 		
-		if(bcase==""){
+		if (bcase==""){
 			SWEETError("SWE_bench_NormalModes: please choose the normal mode case with --benchmark-normal-mode-case [string] (see SWE_bench_NormalModes.hpp file)");
 		};
-		std::cout<< bcase <<std::endl;
+		std::cout << bcase <<std::endl;
 
 		//Convert parameter to words
 		std::string str = bcase;
 		std::replace( str.begin(), str.end(), '_', ' ');
-		//std::cout<< str<<std::endl;
+		//std::cout << str<<std::endl;
 
 		std::stringstream iss(str);
 		iss >> bcasename;
-		std::cout<< "[MULE] benchmark_normal_modes.case:"<< bcasename << std::endl;
-		if(bcasename=="waves"){
+		std::cout << "[MULE] benchmark_normal_modes.case:" << bcasename << std::endl;
+		if (bcasename=="waves"){
 			iss >> nwaves;
-			if(nwaves>maxwaves){
-				std::cout<< "Waves:"<<nwaves<<" , maxwaves hardcoded:"<<maxwaves<<std::endl;
+			if (nwaves>maxwaves){
+				std::cout << "Waves:" <<nwaves<< " , maxwaves hardcoded:" <<maxwaves<<std::endl;
 				SWEETError("SWE_bench_NormalModes: Adjust maximun number of waves");	
 			}
-			std::cout<< "[MULE] simulation_benchmark_normal_modes.case: "<<bcasename<< std::endl;
-			std::cout<< "[MULE] simulation_benchmark_normal_modes.nwaves: " << nwaves << std::endl;
+			std::cout << "[MULE] simulation_benchmark_normal_modes.case: " <<bcasename<< std::endl;
+			std::cout << "[MULE] simulation_benchmark_normal_modes.nwaves: " << nwaves << std::endl;
 			
 			//loop over waves
 			for (int n = 0; n < (int)nwaves; n++){
@@ -792,11 +792,11 @@ public:
 				iss >> d0[n];
 				iss >> dwest[n];
 				iss >> deast[n];
-				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".k0: "<< k0[n] << std::endl;
-				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".k1: "<< k1[n] << std::endl;
-				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".d0: "<< d0[n] << std::endl;
-				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".dwest: "<< dwest[n] << std::endl;
-				std::cout<< "[MULE] simulation_benchmark_normal_modes.w"<<n<<".deast: "<< deast[n] << std::endl;
+				std::cout << "[MULE] simulation_benchmark_normal_modes.w" <<n<< ".k0: " << k0[n] << std::endl;
+				std::cout << "[MULE] simulation_benchmark_normal_modes.w" <<n<< ".k1: " << k1[n] << std::endl;
+				std::cout << "[MULE] simulation_benchmark_normal_modes.w" <<n<< ".d0: " << d0[n] << std::endl;
+				std::cout << "[MULE] simulation_benchmark_normal_modes.w" <<n<< ".dwest: " << dwest[n] << std::endl;
+				std::cout << "[MULE] simulation_benchmark_normal_modes.w" <<n<< ".deast: " << deast[n] << std::endl;
 				//SWEETError("SWE_bench_NormalModes: Adjust maximun number of waves");	
 			}
 		}
@@ -828,7 +828,7 @@ public:
 			PlaneData_Spectral &o_v
 	)
 	{
-		std::cout<< "Generating Normal Modes Initial Conditions: ";
+		std::cout << "Generating Normal Modes Initial Conditions: ";
 
 		extract_bench_info(simVars.benchmark.benchmark_normal_modes_case);
 		
@@ -847,12 +847,12 @@ public:
 		o_u.spectral_set_zero();
 		o_v.spectral_set_zero();
 
-		if(bcasename=="waves")
+		if (bcasename=="waves")
 		{
 			for (int n = 0; n<(int)nwaves; n++){
 				//Set a single wavenumber with appropriate modes
-				if(k0[n]<0 && k1[n] <0 ){
-					std::cout<<"Adding normal modes to all wavenumbers"<<std::endl;
+				if (k0[n]<0 && k1[n] <0 ){
+					std::cout << "Adding normal modes to all wavenumbers" <<std::endl;
 					for (std::size_t ik1 = 0; ik1 < planeDataConfig->spectral_data_size[1]; ik1++)
 					{
 						for (std::size_t ik0 = 0; ik0 < planeDataConfig->spectral_data_size[0]; ik0++)
@@ -866,7 +866,7 @@ public:
 						}
 					}
 				}
-				else if(k0[n]>=0 && k1[n] >=0 ){
+				else if (k0[n]>=0 && k1[n] >=0 ){
 						add_normal_mode(
 									k0[n], k1[n],
 									d0[n], dwest[n], deast[n],
@@ -881,13 +881,13 @@ public:
 				}
 			}
 		};
-		std::cout<< "[MULE] benchmark_normal_modes.h_max:"<<o_h.spectral_reduce_max_abs()<<std::endl;
-		std::cout<< "[MULE] benchmark_normal_modes.u_max:"<<o_u.spectral_reduce_max_abs()<<std::endl;
-		std::cout<< "[MULE] benchmark_normal_modes.v_max:"<<o_v.spectral_reduce_max_abs()<<std::endl;
+		std::cout << "[MULE] benchmark_normal_modes.h_max:" <<o_h.spectral_reduce_max_abs()<<std::endl;
+		std::cout << "[MULE] benchmark_normal_modes.u_max:" <<o_u.spectral_reduce_max_abs()<<std::endl;
+		std::cout << "[MULE] benchmark_normal_modes.v_max:" <<o_v.spectral_reduce_max_abs()<<std::endl;
 		
 		//o_h.print_spectralData_zeroNumZero();
 		
-		std::cout<< "Normal mode initial conditions generated successfully! " << std::endl;
+		std::cout << "Normal mode initial conditions generated successfully! " << std::endl;
 
 	}
 

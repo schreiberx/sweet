@@ -1181,7 +1181,7 @@ public:
 			//std::size_t idx = sphereDataConfig->getArrayIndexByModes(m, m);
 			for (int n = m; n <= sphereDataConfig->spectral_modes_n_max; n++)
 			{
-				std::cout << "(" << m <<"," << n <<")" << "\t";
+				std::cout << "(" << m << "," << n << ")" << "\t";
 			}
 			std::cout << std::endl;
 		}
@@ -1285,13 +1285,13 @@ public:
 
 		std::ofstream file;
 
-		if(i_time == 0.0){
+		if (i_time == 0.0){
 			file.open(i_filename, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
 			file << "#SWEET_SPHERE_SPECTRAL_ABS_EVOL_ASCII" << std::endl;
   			file << "#TI " << i_title << std::endl;
-			file << "0\t"<< std::endl; // Use 0 to make it processable by python
-			file << "(n_max="<<sphereDataConfig->spectral_modes_n_max << " m_max="
+			file << "0\t" << std::endl; // Use 0 to make it processable by python
+			file << "(n_max=" <<sphereDataConfig->spectral_modes_n_max << " m_max="
 					<< sphereDataConfig->spectral_modes_n_max << ")" << std::endl;
 			file << "timestamp\t" ; 
 			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
@@ -1325,11 +1325,11 @@ public:
 				else sum += wabs;      // term appears only once
   				
 				if ( wabs < i_abs_threshold){
-					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					//file << "(" << n << "," << m << ")\t" <<std::endl;
 					file <<  0 << "\t"; //<<std::endl;
 				}
 				else{
-					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					//file << "(" << n << "," << m << ")\t" <<std::endl;
 					file <<  wabs << "\t"; //<<std::endl;;
 					//std::cout << n << " " << m << " " << wabs <<std::endl;
 				}
@@ -1353,13 +1353,13 @@ public:
 
 		std::ofstream file;
 
-		if(i_time == 0.0){
+		if (i_time == 0.0){
 			file.open(i_filename, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
 			file << "#SWEET_SPHERE_SPECTRAL_PHASE_EVOL_ASCII" << std::endl;
   			file << "#TI " << i_title << std::endl;
-			file << "0\t"<< std::endl; // Use 0 to make it processable by python
-			file << "(n_max="<<sphereDataConfig->spectral_modes_n_max << " m_max="
+			file << "0\t" << std::endl; // Use 0 to make it processable by python
+			file << "(n_max=" <<sphereDataConfig->spectral_modes_n_max << " m_max="
 					<< sphereDataConfig->spectral_modes_n_max << ")" << std::endl;
 			file << "timestamp\t" ; 
 			for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max/i_reduce_mode_factor; m++)
@@ -1390,7 +1390,7 @@ public:
   				w = spectral_space_data[idx];
 				wphase = std::arg(w); // std::abs(w * std::conj(w));
 				
-				//file << "(" << n << "," << m << ")\t"<<std::endl;
+				//file << "(" << n << "," << m << ")\t" <<std::endl;
 				file <<  wphase << "\t"; //<<std::endl;;
 				//std::cout << n << " " << m << " " << wabs <<std::endl;
 				
@@ -1657,4 +1657,4 @@ SphereData_Spectral operator-(
 
 
 
-#endif /* SWEET_SPHERE_DATA_HPP_ */
+#endif

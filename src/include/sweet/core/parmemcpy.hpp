@@ -92,4 +92,4 @@ inline void parmemcpy(
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PARMEMCPY_HPP_ */
+#endif

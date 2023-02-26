@@ -56,4 +56,4 @@ public:
 
 
 
-#endif /* SPHHELPER_HPP_ */
+#endif

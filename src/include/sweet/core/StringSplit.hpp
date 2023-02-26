@@ -228,4 +228,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_STRINGSPLIT_HPP_ */
+#endif

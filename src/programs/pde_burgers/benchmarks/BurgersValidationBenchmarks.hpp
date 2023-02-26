@@ -434,4 +434,4 @@ public:
 
 };
 
-#endif /* SRC_INCLUDE_SWEET_BURGERSVALIDATIONBENCHMARKS_HPP_ */
+#endif

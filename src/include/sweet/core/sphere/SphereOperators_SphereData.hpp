@@ -137,7 +137,7 @@ public:
 
 				if (errora > 1e-12 || errorb > 1e-12)
 				{
-					std::cout << idx << ": n=" << n << ", m=" << m << " | "<< errora << "\t" << errorb << std::endl;
+					std::cout << idx << ": n=" << n << ", m=" << m << " | " << errora << "\t" << errorb << std::endl;
 					SWEETError("SAFETY CHECK NOT SUCCESSFUL");
 				}
 
@@ -938,4 +938,4 @@ public:
 
 
 
-#endif /* SPHOPERATORS_HPP_ */
+#endif

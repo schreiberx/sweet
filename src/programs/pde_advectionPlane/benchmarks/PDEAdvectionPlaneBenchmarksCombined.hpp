@@ -335,4 +335,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_benchmarks_swe_plane_COMBINED_HPP_ */
+#endif

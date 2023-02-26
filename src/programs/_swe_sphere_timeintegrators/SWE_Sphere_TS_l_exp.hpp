@@ -20,7 +20,7 @@
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/core/sphere/SphereOperators_SphereData.hpp>
 #include <sweet/core/sphere/SphereOperators_SphereDataComplex.hpp>
-#include <rexi/EXPFunctions.hpp>
+#include <sweet/expIntegration/ExpFunctions.hpp>
 #include "helpers/SWERexiTerm_SPH.hpp"
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_exp_direct_special.hpp"
@@ -85,7 +85,7 @@ public:
 	/// This class is only setup and used in case of added modes
 	sweet::SphereData_Config sphereDataConfigInstance;
 
-	EXPFunctions<double> expFunctions;
+	ExpFunctions<double> expFunctions;
 
 
 private:
@@ -255,4 +255,4 @@ public:
 };
 
 
-#endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_REXI_HPP_ */
+#endif

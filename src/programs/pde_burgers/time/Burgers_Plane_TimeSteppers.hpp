@@ -276,4 +276,4 @@ public:
 
 
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TIMESTEPPERS_HPP_ */
+#endif

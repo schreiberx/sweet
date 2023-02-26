@@ -237,4 +237,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_GENERICDATA_HPP_ */
+#endif

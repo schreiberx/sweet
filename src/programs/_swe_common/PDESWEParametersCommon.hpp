@@ -93,4 +93,4 @@ public:
 
 
 
-#endif /* SRC_PROGRAMS_SWE_COMMON_PDESWEPARAMETERSCOMMON_HPP_ */
+#endif

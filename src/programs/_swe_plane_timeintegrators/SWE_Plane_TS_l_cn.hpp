@@ -67,4 +67,4 @@ public:
 	virtual ~SWE_Plane_TS_l_cn();
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_LN_CN_HPP_ */
+#endif

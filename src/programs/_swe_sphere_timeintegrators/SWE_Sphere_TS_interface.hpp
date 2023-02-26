@@ -107,4 +107,4 @@ public:
 
 };
 
-#endif /*  */
+#endif

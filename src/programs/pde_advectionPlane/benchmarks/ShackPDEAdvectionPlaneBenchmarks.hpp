@@ -135,4 +135,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKBENCHMARK_HPP_ */
+#endif

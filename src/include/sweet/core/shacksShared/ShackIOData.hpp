@@ -183,4 +183,4 @@ public:
 
 }
 
-#endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKIODATA_HPP_ */
+#endif

@@ -210,4 +210,4 @@ public:
 
 
 
-#endif /* GlUniform_HPP_ */
+#endif

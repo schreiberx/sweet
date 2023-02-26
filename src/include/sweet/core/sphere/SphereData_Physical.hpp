@@ -1427,4 +1427,4 @@ SphereData_Physical operator+(
 
 
 
-#endif /* SPHDATA_HPP_ */
+#endif

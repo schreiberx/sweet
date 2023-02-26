@@ -447,4 +447,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_LIBMATH_LAPACKBANDEDMATRIXSOLVER_HPP_ */
+#endif

@@ -102,4 +102,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_PLANESTAGGERING_HPP_ */
+#endif

@@ -125,4 +125,4 @@ public:
 	}
 };
 
-#endif /* CGLWINDOW_HPP_ */
+#endif

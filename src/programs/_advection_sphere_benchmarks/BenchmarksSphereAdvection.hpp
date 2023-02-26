@@ -50,4 +50,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_benchmarks_swe_sphere_SWESPHEREBENCHMARKS_HPP_ */
+#endif

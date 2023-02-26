@@ -51,4 +51,4 @@ public:
 	virtual ~Burgers_Plane_TS_l_irk();
 };
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_HPP_ */
+#endif

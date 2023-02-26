@@ -163,4 +163,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SPHTESTSOLUTIONSGAUSSIAN_HPP_ */
+#endif

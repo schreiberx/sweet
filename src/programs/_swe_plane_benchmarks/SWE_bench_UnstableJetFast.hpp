@@ -191,7 +191,7 @@ public:
 			PlaneData_Spectral &o_v
 	)
 	{
-		std::cout<< "Generating Unstable Jet initial conditions.";
+		std::cout << "Generating Unstable Jet initial conditions.";
 		/*
 		 * Setup velocities
 		 */
@@ -208,7 +208,7 @@ public:
 		/*
 		 * Add perturbation to depth
 		 */
-		std::cout<< "   Done! " << std::endl;
+		std::cout << "   Done! " << std::endl;
 	}
 
 

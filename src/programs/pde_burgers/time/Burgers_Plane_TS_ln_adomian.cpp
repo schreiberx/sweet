@@ -72,7 +72,7 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 
 		io_u=io_u+u[kk+1];
 
-		if(u[kk+1].toPhys().physical_reduce_rms() < 1e-12)
+		if (u[kk+1].toPhys().physical_reduce_rms() < 1e-12)
 			break;
 	}
 }

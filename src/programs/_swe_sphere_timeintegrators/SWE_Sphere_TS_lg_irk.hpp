@@ -100,4 +100,4 @@ public:
 };
 
 
-#endif /* SRC_SWEREXI_SPHROBERT_HPP_ */
+#endif

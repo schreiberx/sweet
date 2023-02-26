@@ -1205,4 +1205,4 @@ public:
 	}
 };
 
-#endif /* CGLHUDCONFIG_HPP_ */
+#endif

@@ -91,4 +91,4 @@ public:
 	}
 };
 
-#endif /* CGLMATERIAL_HPP_ */
+#endif

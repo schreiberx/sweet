@@ -1270,4 +1270,4 @@ namespace ScalarDataArray_ops
 
 }
 
-#endif /* SRC_DATAARRAY_HPP_ */
+#endif

@@ -111,4 +111,4 @@ public:
 	virtual ~SWE_Plane_TS_l_rexi_na_sl_nd_etdrk();
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_l_rexi_na_sl_nd_etdrk_HPP_ */
+#endif

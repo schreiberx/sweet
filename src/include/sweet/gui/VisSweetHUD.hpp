@@ -591,4 +591,4 @@ public:
 };
 
 
-#endif /* CCONFIG_HPP_ */
+#endif

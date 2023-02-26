@@ -85,7 +85,7 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::euler_timestep_update(
 	 * Calculate absolute vorticity in physical space (vrt+f)
 	 */
 	sweet::SphereData_Physical abs_vrtg = i_vrt.toPhys()+op.fg;
-	//std::cout<< "Vort" << std::endl;
+	//std::cout << "Vort" << std::endl;
 	//i_vrt.spectral_print(6);
 
 	// Nonlinear product (velocity * abs_vort)
@@ -97,7 +97,7 @@ void SWE_Sphere_TS_lg_0_lc_n_erk_bv::euler_timestep_update(
 	op.uv_to_vrtdiv(u_nl, v_nl, vrt, div);
 
 	o_vrt_t -= div; //This is basically the tendency in the Barotropic Vorticity Eq.
-	//std::cout<< "Vort tendency" << std::endl;
+	//std::cout << "Vort tendency" << std::endl;
 	//o_vrt_t.spectral_print(6);
 	
 	//Keep div constant

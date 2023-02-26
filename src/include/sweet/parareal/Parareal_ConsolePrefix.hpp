@@ -136,4 +136,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_CONSOLEPREFIX_HPP_ */
+#endif

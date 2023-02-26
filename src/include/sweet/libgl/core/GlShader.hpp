@@ -242,4 +242,4 @@ public:
 };
 
 
-#endif /* CGLSHADER_HPP_ */
+#endif

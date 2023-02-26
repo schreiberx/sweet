@@ -56,4 +56,4 @@ public:
 
 };
 
-#endif /* CGLLIGHT_HPP_ */
+#endif

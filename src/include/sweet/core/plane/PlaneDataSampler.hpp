@@ -372,7 +372,7 @@ public:
 				q[kj] = p[0] + x*(p[1]-p[0]);
 
 				idx_j = wrapPeriodic(idx_j+1, res[1]);
-				//std::cout<< p[0] << p[1] << x << std::endl;
+				//std::cout << p[0] << p[1] << x << std::endl;
 			}
 
 			double value = q[0] + y*(q[1]-q[0]);
@@ -568,4 +568,4 @@ public:
 }
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANEDATASAMPLER_HPP_ */
+#endif

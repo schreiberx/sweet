@@ -5,14 +5,13 @@
  *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  */
 
-#ifndef SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
-#define SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
+#ifndef _SWEET_SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
+#define _SWEET_SRC_PLANE_DATA_SPECTRAL_COMPLEX_HPP_
 
 #include <complex>
 #include <cassert>
 #include <cstddef>
 #include <cassert>
-#include <algorithm>
 #include <memory>
 #include <stdlib.h>
 #include <string>

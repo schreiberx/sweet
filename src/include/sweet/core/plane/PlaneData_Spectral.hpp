@@ -46,9 +46,11 @@
 			}				\
 		}
 
-#if SWEET_USE_LIBFFT
-#	include <fftw3.h>
+#if !SWEET_USE_LIBFFT
+#error "LIBFFT not activated, but spectral plane data compiled in"
 #endif
+
+#include <fftw3.h>
 
 #if SWEET_THREADING_SPACE
 #	include <omp.h>
@@ -368,6 +370,13 @@ public:
 		return *this;
 	}
 
+
+	PlaneData_Spectral spectral_returnWithDifferentModes(
+			const PlaneDataConfig &i_planeDataConfig
+	)	const
+	{
+		return spectral_returnWithDifferentModes(&i_planeDataConfig);
+	}
 
 public:
 	PlaneData_Spectral spectral_returnWithDifferentModes(
@@ -1432,7 +1441,7 @@ public:
 
 		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
 
-		if(sum.imag()>DBL_EPSILON)
+		if (sum.imag()>DBL_EPSILON)
 			SWEETError("Reduce operation of complex values (rms) error");
 
 		rms = sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements); 
@@ -1556,7 +1565,7 @@ public:
 
 		//sum = std::__complex_sqrt (sum/(double)(planeDataConfig->spectral_array_data_number_of_elements));
 
-		if(sum.imag()>DBL_EPSILON)
+		if (sum.imag()>DBL_EPSILON)
 			SWEETError("Reduce operation of complex values (rms) error");
 
 		rms = std::sqrt(sum.real()/(double)(planeDataConfig->spectral_array_data_number_of_elements)); 
@@ -1691,7 +1700,7 @@ public:
 			for (std::size_t x = 0; x < planeDataConfig->spectral_data_size[0]; x++)
 			{
 				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
-				std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")\t";
+				std::cout << "(" << x << ", " << y << ", " << value.real() << ", " << value.imag() << ")\t";
 			}
 			std::cout << std::endl;
 		}
@@ -1710,7 +1719,7 @@ public:
 			{
 				const std::complex<double> &value = rw_array_data.spectral_get(y, x);
 				if (value.real()*value.real()+value.imag()*value.imag() > 1.0e-13)
-					std::cout << "(" << x << ", "<< y << ", "<< value.real() << ", " << value.imag() << ")" <<std::endl;;
+					std::cout << "(" << x << ", " << y << ", " << value.real() << ", " << value.imag() << ")" <<std::endl;;
 			}
 		}
 	}
@@ -1729,7 +1738,7 @@ public:
 			//std::size_t idx = planeDataConfig->getArrayIndexByModes(m, m);
 			for (std::size_t n = 0; n < planeDataConfig->spectral_data_size[1]; n++)
 			{
-				std::cout << "(" << m <<"," << n <<")" << "\t";
+				std::cout << "(" << m << "," << n << ")" << "\t";
 			}
 			std::cout << std::endl;
 		}
@@ -1793,13 +1802,13 @@ public:
 
 		std::ofstream file;
 
-		if(i_time == 0.0){
+		if (i_time == 0.0){
 			file.open(i_filename, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
 			file << "#SWEET_PLANE_SPECTRAL_ABS_EVOL_ASCII" << std::endl;
   			file << "#TI " << i_title << std::endl;
-			file << "0\t"<< std::endl; // Use 0 to make it processable by python
-			file << "(n_max="<<planeDataConfig->spectral_data_size[1] << " m_max="
+			file << "0\t" << std::endl; // Use 0 to make it processable by python
+			file << "(n_max=" <<planeDataConfig->spectral_data_size[1] << " m_max="
 					<< planeDataConfig->spectral_data_size[1] << ")" << std::endl;
 			file << "timestamp\t" ; 
 			for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
@@ -1834,11 +1843,11 @@ public:
 				else sum += wabs;      // term appears only once
   				
 				if ( wabs < i_abs_threshold){
-					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					//file << "(" << n << "," << m << ")\t" <<std::endl;
 					file <<  0 << "\t"; //<<std::endl;
 				}
 				else{
-					//file << "(" << n << "," << m << ")\t"<<std::endl;
+					//file << "(" << n << "," << m << ")\t" <<std::endl;
 					file <<  wabs << "\t"; //<<std::endl;;
 					//std::cout << n << " " << m << " " << wabs <<std::endl;
 				}
@@ -1862,13 +1871,13 @@ public:
 
 		std::ofstream file;
 
-		if(i_time == 0.0){
+		if (i_time == 0.0){
 			file.open(i_filename, std::ios_base::trunc);
 			file << std::setprecision(i_precision);
 			file << "#SWEET_PLANE_SPECTRAL_PHASE_EVOL_ASCII" << std::endl;
   			file << "#TI " << i_title << std::endl;
-			file << "0\t"<< std::endl; // Use 0 to make it processable by python
-			file << "(n_max="<<planeDataConfig->spectral_data_size[1] << " m_max="
+			file << "0\t" << std::endl; // Use 0 to make it processable by python
+			file << "(n_max=" <<planeDataConfig->spectral_data_size[1] << " m_max="
 					<< planeDataConfig->spectral_data_size[1] << ")" << std::endl;
 			file << "timestamp\t" ; 
 			for (std::size_t m = 0; m < planeDataConfig->spectral_data_size[0]/i_reduce_mode_factor; m++)
@@ -2318,9 +2327,9 @@ public:
 		return out;
 	}
 
-
 };
 
+}
 
 
 
@@ -2334,12 +2343,12 @@ public:
  */
 inline
 static
-PlaneData_Spectral operator*(
+sweet::PlaneData_Spectral operator*(
 		double i_value,
-		const PlaneData_Spectral &i_array_data
+		const sweet::PlaneData_Spectral &i_array_data
 )
 {
-	return ((PlaneData_Spectral&)i_array_data)*i_value;
+	return ((sweet::PlaneData_Spectral&)i_array_data)*i_value;
 }
 
 
@@ -2355,12 +2364,12 @@ PlaneData_Spectral operator*(
  */
 inline
 static
-PlaneData_Spectral operator+(
+sweet::PlaneData_Spectral operator+(
 		double i_value,
-		const PlaneData_Spectral &i_array_data
+		const sweet::PlaneData_Spectral &i_array_data
 )
 {
-	return ((PlaneData_Spectral&)i_array_data)+i_value;
+	return ((sweet::PlaneData_Spectral&)i_array_data)+i_value;
 }
 
 
@@ -2373,9 +2382,9 @@ PlaneData_Spectral operator+(
  */
 inline
 static
-PlaneData_Spectral operator-(
+sweet::PlaneData_Spectral operator-(
 		double i_value,
-		const PlaneData_Spectral &i_array_data
+		const sweet::PlaneData_Spectral &i_array_data
 )
 {
 	return i_array_data.operator_scalar_sub_this(i_value);
@@ -2390,14 +2399,12 @@ PlaneData_Spectral operator-(
  */
 inline
 static
-PlaneData_Spectral operator-(
-		const PlaneData_Physical &i_plane_data_physical,
-		const PlaneData_Spectral &i_array_data
+sweet::PlaneData_Spectral operator-(
+		const sweet::PlaneData_Physical &i_plane_data_physical,
+		const sweet::PlaneData_Spectral &i_array_data
 )
 {
 	return - (i_array_data - i_plane_data_physical);
-}
-
 }
 
 #endif

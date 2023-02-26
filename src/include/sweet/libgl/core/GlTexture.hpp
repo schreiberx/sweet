@@ -322,7 +322,7 @@ public:
 		// could not load filename
 		if (!surface)
 		{
-			std::cerr << "Cannot load image \"" << filename << "\""<< SDL_GetError() << std::endl;
+			std::cerr << "Cannot load image \"" << filename << "\"" << SDL_GetError() << std::endl;
 			return false;
 		}
 
@@ -340,7 +340,7 @@ public:
 		else
 		{
 			SDL_FreeSurface(surface);
-			std::cerr << "Image has to be 3 or 4 bytes per pixel \"" << filename << "\""<< std::endl;
+			std::cerr << "Image has to be 3 or 4 bytes per pixel \"" << filename << "\"" << std::endl;
 			return false;
 		}
 

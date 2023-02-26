@@ -80,4 +80,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKDISCRETIZATION_HPP_ */
+#endif

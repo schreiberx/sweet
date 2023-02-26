@@ -12,4 +12,4 @@
 #include "GL3/gl3.h"
 #undef GL3_PROTOTYPES
 
-#endif /* INCGL3_H_ */
+#endif

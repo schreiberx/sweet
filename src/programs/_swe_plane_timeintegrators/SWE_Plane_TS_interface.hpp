@@ -76,4 +76,4 @@ public:
 
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_INTERFACE_HPP_ */
+#endif

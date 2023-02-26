@@ -217,4 +217,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_GAUSSQUADRATURE_HPP_ */
+#endif

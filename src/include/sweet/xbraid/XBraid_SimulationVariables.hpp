@@ -307,6 +307,6 @@ struct XBraid_SimulationVariables	:
 	}
 };
 
-#endif /* SRC_XBRAID_SIMULATION_VARIABLES_HPP_ */
+#endif
 
 

@@ -65,4 +65,4 @@ public:
 	virtual ~Burgers_Plane_TS_ln_erk_forcing();
 };
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_LN_ERK_FORCING_HPP_ */
+#endif

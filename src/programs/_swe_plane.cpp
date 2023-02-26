@@ -349,7 +349,7 @@ public:
 
 			normalmodes.norm_spec=std::sqrt(normalmodes.norm_spec);
 
-			if(normalmodes.norm_spec < 10e-14 ){
+			if (normalmodes.norm_spec < 10e-14 ){
 				normalmodes.norm_spec = 1.0;
 				return;
 			}
@@ -372,7 +372,7 @@ public:
 
 		SWE_bench_NormalModes::dump_all_normal_modes(simVars, normalmodes.geo, normalmodes.igwest, normalmodes.igeast);
 		//normalmodes.geo.print_spectralIndex();
-		//std::cout<<SWE_bench_NormalModes::bcasename <<std::endl;
+		//std::cout <<SWE_bench_NormalModes::bcasename <<std::endl;
 #endif
 		
 		return;
@@ -414,7 +414,7 @@ public:
 
 	void normal_mode_analysis()
 	{
-		SWE_Plane_Normal_Modes::normal_mode_analysis(
+		SWEPlaneNormalModes::normal_mode_analysis(
 								prog_h_pert,
 								prog_u,
 								prog_v,
@@ -572,7 +572,7 @@ public:
 
 		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
 
-		if(compute_normal_modes)
+		if (compute_normal_modes)
 			update_normal_modes();
 
 		// Dump  data in csv, if output filename is not empty
@@ -600,7 +600,7 @@ public:
 			output_filenames += ";" + write_file(op.div(t_u, t_v), "diag_div");
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-			if(compute_normal_modes){
+			if (compute_normal_modes){
 				output_filenames += ";" + write_file_spec(normalmodes.geo, "nm_geo");
 				output_filenames += ";" + write_file_spec(normalmodes.igwest, "nm_igwest");
 				output_filenames += ";" + write_file_spec(normalmodes.igeast, "nm_igeast");
@@ -828,7 +828,7 @@ public:
 			PlaneData_Physical ts_u = t0_prog_u;
 			PlaneData_Physical ts_v = t0_prog_v;
 
-			if(simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
+			if (simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
 			{
 				//Missing to setup REXIFunctions, so invalid phi function set
 				
@@ -1230,7 +1230,7 @@ int main(int i_argc, char *i_argv[])
 			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfigs, ops);
 
 
-			if( simVars.xbraid.xbraid_run_wrapper_tests)
+			if ( simVars.xbraid.xbraid_run_wrapper_tests)
 			{
 				app.setup();
 

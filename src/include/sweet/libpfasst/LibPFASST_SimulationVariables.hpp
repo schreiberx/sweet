@@ -221,4 +221,4 @@ public:
 	}
 };
 
-#endif /* SRC_SIMULATION_VARIABLES_HPP_ */
+#endif

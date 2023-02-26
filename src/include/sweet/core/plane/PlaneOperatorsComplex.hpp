@@ -11,12 +11,16 @@
 #include <sweet/core/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/core/plane/PlaneDataConfig.hpp>
 
+namespace sweet
+{
 
 class PlaneOperatorsComplex
 {
+public:
+	ErrorBase error;
+	
 	PlaneDataConfig *planeDataConfig;
 
-public:
 	// differential operators
 	PlaneData_SpectralComplex diff_c_x, diff_c_y;
 	PlaneData_SpectralComplex diff2_c_x, diff2_c_y;
@@ -150,6 +154,9 @@ public:
 	{
 		PlaneData_SpectralComplex out=i_data;
 
+
+		PlaneData_SpectralComplex asdf = operator*(1.3, out);
+
 		// Get diffusion coefficients (these are the -mu*dt*D^q, where q is the order
 		PlaneData_SpectralComplex diff = -i_coef*diffusion_coefficient(i_order);
 
@@ -165,19 +172,53 @@ public:
 #endif
 
 
-	void setup(
+	bool setup(
+			PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+			ShackPlaneDataOps *i_shackPlaneDataOps
+	)
+	{
+		return setup(
+				i_planeDataConfig,
+				i_shackPlaneDataOps->plane_domain_size
+		);
+	}
+
+
+	bool setup(
+			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			ShackPlaneDataOps &i_shackPlaneDataOps
+	)
+	{
+		return setup(
+				&i_planeDataConfig,
+				i_shackPlaneDataOps.plane_domain_size
+		);
+	}
+
+	bool setup(
+			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			ShackPlaneDataOps *i_shackPlaneDataOps
+	)
+	{
+		return setup(
+				&i_planeDataConfig,
+				i_shackPlaneDataOps->plane_domain_size
+		);
+	}
+
+	bool setup(
 			PlaneDataConfig *i_planeDataConfig,
 			const double i_domain_size[2]
 	)
 	{
+		assert(planeDataConfig == nullptr);
 		planeDataConfig = i_planeDataConfig;
-		
+
 
 		/*
-		 * setup spectral differential operators
+		 * Setup spectral differential operators
 		 * 		diff(e(ix), x)
 		 */
-
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 		std::cerr << "Activate spectral space during compile time to use spectral diffs. Otherwise, the convolution would be freakingly expensive" << std::endl;
 		assert(false);
@@ -187,10 +228,10 @@ public:
 		 * DIFF X
 		 */
 		{
+			diff_c_x.setup(planeDataConfig);
 			diff_c_x.spectral_set_zero();
 			double scale_x = 2.0*M_PI/i_domain_size[0];
 
-#if 1
 			/*
 			 * left bottom
 			 */
@@ -198,10 +239,7 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[0][0][0]; i < planeDataConfig->spectral_complex_ranges[0][0][1]; i++)
 					diff_c_x.spectral_set(j, i, 0, (double)i*scale_x);
-#endif
 
-
-#if 1
 			/*
 			 * left top
 			 */
@@ -209,9 +247,7 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[1][1][0]; j < planeDataConfig->spectral_complex_ranges[1][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[1][0][0]; i < planeDataConfig->spectral_complex_ranges[1][0][1]; i++)
 					diff_c_x.spectral_set(j, i, 0, (double)i*scale_x);
-#endif
 
-#if 1
 			/*
 			 * right bottom
 			 */
@@ -219,9 +255,7 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[2][0][0]; i < planeDataConfig->spectral_complex_ranges[2][0][1]; i++)
 					diff_c_x.spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[2][0][1]-i)*scale_x);
-#endif
 
-#if 1
 			/*
 			 * right top
 			 */
@@ -229,21 +263,18 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[3][0][0]; i < planeDataConfig->spectral_complex_ranges[3][0][1]; i++)
 					diff_c_x.spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[3][0][1]-i)*scale_x);
-#endif
-
-			//diff_c_x.physical_space_data_valid = false;
-			//diff_c_x.spectral_space_data_valid = true;
 		}
 
 		/*
 		 * DIFF Y
 		 */
 		{
+			diff_c_y.setup(planeDataConfig);
+
 			diff_c_y.spectral_set_zero();
 			double scale_y = 2.0*M_PI/i_domain_size[1];
 
 
-#if 1
 			/*
 			 * left bottom
 			 */
@@ -251,10 +282,8 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[0][1][0]; j < planeDataConfig->spectral_complex_ranges[0][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[0][0][0]; i < planeDataConfig->spectral_complex_ranges[0][0][1]; i++)
 					diff_c_y.spectral_set(j, i, 0, (double)j*scale_y);
-#endif
 
 
-#if 1
 			/*
 			 * left top
 			 */
@@ -262,9 +291,7 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[1][1][0]; j < planeDataConfig->spectral_complex_ranges[1][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[1][0][0]; i < planeDataConfig->spectral_complex_ranges[1][0][1]; i++)
 					diff_c_y.spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[1][1][1]-j)*scale_y);
-#endif
 
-#if 1
 			/*
 			 * right bottom
 			 */
@@ -272,10 +299,7 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[2][1][0]; j < planeDataConfig->spectral_complex_ranges[2][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[2][0][0]; i < planeDataConfig->spectral_complex_ranges[2][0][1]; i++)
 					diff_c_y.spectral_set(j, i, 0, (double)(j)*scale_y);
-#endif
 
-
-#if 1
 			/*
 			 * right top
 			 */
@@ -283,7 +307,6 @@ public:
 			for (std::size_t j = planeDataConfig->spectral_complex_ranges[3][1][0]; j < planeDataConfig->spectral_complex_ranges[3][1][1]; j++)
 				for (std::size_t i = planeDataConfig->spectral_complex_ranges[3][0][0]; i < planeDataConfig->spectral_complex_ranges[3][0][1]; i++)
 					diff_c_y.spectral_set(j, i, 0, -(double)(planeDataConfig->spectral_complex_ranges[3][1][1]-j)*scale_y);
-#endif
 		}
 
 		/*
@@ -293,6 +316,8 @@ public:
 		 * DIFF2 X
 		 */
 		{
+			diff2_c_x.setup(planeDataConfig);
+
 			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < planeDataConfig->spectral_complex_array_data_number_of_elements; i++)
 				diff2_c_x.spectral_space_data[i] = diff_c_x.spectral_space_data[i]*diff_c_x.spectral_space_data[i];
@@ -303,16 +328,21 @@ public:
 		 * DIFF2 X
 		 */
 		{
+			diff2_c_y.setup(planeDataConfig);
+
 			SWEET_THREADING_SPACE_PARALLEL_FOR_SIMD
 			for (std::size_t i = 0; i < planeDataConfig->spectral_complex_array_data_number_of_elements; i++)
 				diff2_c_y.spectral_space_data[i] = diff_c_y.spectral_space_data[i]*diff_c_y.spectral_space_data[i];
 		}
+
+		return true;
 	}
 
 
 
 public:
-	PlaneOperatorsComplex()
+	PlaneOperatorsComplex()	:
+		planeDataConfig(nullptr)
 	{
 	}
 
@@ -334,6 +364,6 @@ public:
 	}
 };
 
-
+}
 
 #endif

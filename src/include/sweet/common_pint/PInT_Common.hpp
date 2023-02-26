@@ -281,7 +281,7 @@ public:
 			output_filenames += ";" + write_file_pint_plane(op_plane[0]->vort(t_u, t_v).toPhys(), "diag_vort", iteration_id, t);
 			output_filenames += ";" + write_file_pint_plane(op_plane[0]->div(t_u, t_v).toPhys(), "diag_div", iteration_id, t);
 
-			/////////if(this->compute_normal_modes){
+			/////////if (this->compute_normal_modes){
 			/////////	SWEETError("TODO");
 			/////////	///output_filenames += ";" + write_file_spec_parareal(normalmodes.geo, "nm_geo", iteration_id, output_initial_data);
 			/////////	///output_filenames += ";" + write_file_spec_parareal(normalmodes.igwest, "nm_igwest", iteration_id, output_initial_data);

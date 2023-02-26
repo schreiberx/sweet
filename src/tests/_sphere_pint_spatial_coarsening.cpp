@@ -35,7 +35,7 @@ void printTest(std::string test_name)
 
 void printError(double val, std::string msg = "")
 {
-	std::cout << "    ----> ERROR "<< msg << " : " << val << std::endl << std::endl;
+	std::cout << "    ----> ERROR " << msg << " : " << val << std::endl << std::endl;
 }
 
 

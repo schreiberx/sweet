@@ -72,4 +72,4 @@ public:
 	}
 };
 
-#endif /* CGLRENDEROSTREAM_HPP_ */
+#endif

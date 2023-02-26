@@ -51,4 +51,4 @@ public:
 	virtual ~Burgers_Plane_TS_ln_imex();
 };
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_LN_IMEX_HPP_ */
+#endif

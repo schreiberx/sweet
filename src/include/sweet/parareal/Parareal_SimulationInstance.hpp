@@ -953,4 +953,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONINSTANCE_HPP_ */
+#endif

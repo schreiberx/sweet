@@ -80,4 +80,4 @@
 
 
 
-#endif /* SRC_EXAMPLES_OPENMP_HELPER_HPP_ */
+#endif

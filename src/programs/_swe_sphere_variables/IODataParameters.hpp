@@ -170,4 +170,4 @@ public:
 
 
 
-#endif /* SRC_PROGRAMS_SWE_SPHERE_VARIABLES_IODATAPARAMETERS_HPP_ */
+#endif

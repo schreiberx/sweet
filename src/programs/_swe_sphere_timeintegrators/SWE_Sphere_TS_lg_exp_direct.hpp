@@ -7,7 +7,7 @@
 
 
 
-#include <rexi/EXPFunctions.hpp>
+#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <complex>
 #include <sweet/core/SimulationVariables.hpp>
 #include <string.h>
@@ -70,7 +70,7 @@ private:
 
 	const sweet::SphereData_Config *sphereDataConfig;
 
-	EXPFunctions<double> rexiFunctions;
+	ExpFunctions<double> rexiFunctions;
 
 
 private:

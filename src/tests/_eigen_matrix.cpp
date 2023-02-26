@@ -22,12 +22,12 @@ int main(
 #endif
 
 	Eigen::MatrixXcf A(3,3) ;
-	std::cout<<std::endl;
-	std::cout<<"Eigenvalue solver tests"<<std::endl;
-	std::cout<<std::endl;
-	std::cout<<"----------------------------------------------------------"<<std::endl;
-	std::cout<<std::endl;
-	std::cout<<"Testing real matrix with complex evals 1,-i,i"<<std::endl;
+	std::cout <<std::endl;
+	std::cout << "Eigenvalue solver tests" <<std::endl;
+	std::cout <<std::endl;
+	std::cout << "----------------------------------------------------------" <<std::endl;
+	std::cout <<std::endl;
+	std::cout << "Testing real matrix with complex evals 1,-i,i" <<std::endl;
 
 	//Define matrix with ev 1,-i,i
 	A(0,0)=1;
@@ -51,7 +51,7 @@ int main(
 	for(int i=0; i<3; i++)
 	{
 		eval[i]=ces.eigenvalues()[i];
-		std::cout << "Eigenvalue "<< i << " : " << eval[i] << std::endl;
+		std::cout << "Eigenvalue " << i << " : " << eval[i] << std::endl;
 
 	}
 	std::cout << "The matrix of eigenvectors, V, is:" << std::endl << ces.eigenvectors() << std::endl << std::endl;
@@ -65,16 +65,16 @@ int main(
 	//std::cout << "Finally, V * D * V^(-1) = " << std::endl
 	//     << ces.eigenvectors() * ces.eigenvalues().asDiagonal() * ces.eigenvectors().inverse() << std::endl;
 
-	std::cout<<std::endl;
-	std::cout<<std::endl;
-	std::cout<<"----------------------------------------------------------"<<std::endl;
-	std::cout<<std::endl;
-	std::cout<<"Testing complex matrix with complex evals 1,-i,i"<<std::endl;
+	std::cout <<std::endl;
+	std::cout <<std::endl;
+	std::cout << "----------------------------------------------------------" <<std::endl;
+	std::cout <<std::endl;
+	std::cout << "Testing complex matrix with complex evals 1,-i,i" <<std::endl;
 
 	std::complex<double> I;;
 	I=-1.0;
 	I=std::sqrt(I);
-	std::cout<<I<<std::endl;
+	std::cout <<I<<std::endl;
 	//Define matrix with ev 1,-i,i
 	A(0,0)=1;
 	A(0,1)=0;
@@ -94,7 +94,7 @@ int main(
 	for(int i=0; i<3; i++)
 	{
 		eval[i]=ces.eigenvalues()[i];
-		std::cout << "Eigenvalue "<< i << " : " << eval[i] << std::endl;
+		std::cout << "Eigenvalue " << i << " : " << eval[i] << std::endl;
 
 	}
 	std::cout << "The matrix of eigenvectors, V, is:" << std::endl << ces.eigenvectors() << std::endl << std::endl;
@@ -112,5 +112,5 @@ int main(
 	//std::cout << "Finally, V * D * V^(-1) = " << std::endl
 	//     << ces.eigenvectors() * ces.eigenvalues().asDiagonal() * ces.eigenvectors().inverse() << std::endl;
 
-	std::cout<< "Done!"<<std::endl;
+	std::cout << "Done!" <<std::endl;
 }

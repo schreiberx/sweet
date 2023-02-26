@@ -40,4 +40,4 @@ public:
 	}
 };
 
-#endif /* CDEFAULTSHADERDIR_HPP_ */
+#endif

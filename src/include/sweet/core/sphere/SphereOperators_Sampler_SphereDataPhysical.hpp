@@ -805,4 +805,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SPHEREDATASAMPLER_HPP_ */
+#endif

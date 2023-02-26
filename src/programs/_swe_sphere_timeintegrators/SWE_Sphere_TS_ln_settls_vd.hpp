@@ -123,4 +123,4 @@ public:
 	virtual ~SWE_Sphere_TS_ln_settls_vd();
 };
 
-#endif /* SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */
+#endif

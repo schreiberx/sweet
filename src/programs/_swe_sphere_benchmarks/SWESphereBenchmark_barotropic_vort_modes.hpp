@@ -90,8 +90,8 @@ public:
 
 		i_ops->vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
-		std::cout<< "[MULE] benchmark_barotropic_vort_modes.umax: "<< ug.physical_reduce_max_abs() << std::endl;
-		std::cout<< "[MULE] benchmark_barotropic_vort_modes.vmax: "<< vg.physical_reduce_max_abs() << std::endl;
+		std::cout << "[MULE] benchmark_barotropic_vort_modes.umax: " << ug.physical_reduce_max_abs() << std::endl;
+		std::cout << "[MULE] benchmark_barotropic_vort_modes.vmax: " << vg.physical_reduce_max_abs() << std::endl;
 		
 		sweet::SphereData_Physical vrtg = i_vort.toPhys();
 
@@ -168,13 +168,13 @@ public:
 
 		//Add mode values
 		for (int n = 0; n < (int)maxmodes; n++){			
-			if(nmode[n] < mmode[n]){
-				std::cout<< "Modes: n="<<nmode[n]<<" , m="<<mmode[n]<<std::endl;
+			if (nmode[n] < mmode[n]){
+				std::cout << "Modes: n=" <<nmode[n]<< " , m=" <<mmode[n]<<std::endl;
 				SWEETError("SWESphereBenchmark_barotropic_vort_modes: n cannot be smaller than m");	
 			}
 			// Only real part of amplitude is considered, so ampl[] is a vector of real values
 			o_vrt.spectral_set(nmode[n],mmode[n],ampl[n]/a);	
-			//std::cout << nmode[n] <<", "<< mmode[n] <<", "<< ampl[n] << std::endl;
+			//std::cout << nmode[n] << ", " << mmode[n] << ", " << ampl[n] << std::endl;
 		}
 		
 
@@ -203,11 +203,11 @@ public:
 
 		bcase_code.replace(benchmark_name.find(basic_name),basic_name.length()+1,"");
 
-		if(bcase_code==""){
+		if (bcase_code==""){
 			SWEETError("SWESphereBenchmark_barotropic_vort_modes: please choose the normal mode case appending to benchmark name the code _[N]_[n1]_[m1]_[v1]_...[nN]_[mN]_[vN]");
 		};
 
-		std::cout<< "[MULE] benchmark_barotropic_vort_modes.case:"<< benchmark_name << std::endl;
+		std::cout << "[MULE] benchmark_barotropic_vort_modes.case:" << benchmark_name << std::endl;
 
 		//Convert parameter to words
 		std::string str = bcase_code;
@@ -216,12 +216,12 @@ public:
 		std::stringstream iss(str);
 		
 		iss >> maxmodes;
-		if(maxmodes>maxmodeslimit){
-			std::cout<< "Modes:"<<maxmodes<<" , maxmodes hardcoded:"<<maxmodeslimit<<std::endl;
+		if (maxmodes>maxmodeslimit){
+			std::cout << "Modes:" <<maxmodes<< " , maxmodes hardcoded:" <<maxmodeslimit<<std::endl;
 			SWEETError("SWESphereBenchmark_barotropic_vort_modes: Adjust maximun number of waves");	
 		}
-		std::cout<< "[MULE] benchmark_barotropic_vort_modes.code: "<<bcase_code<< std::endl;
-		std::cout<< "[MULE] benchmark_barotropic_vort_modes.maxmodes: " << maxmodes << std::endl;
+		std::cout << "[MULE] benchmark_barotropic_vort_modes.code: " <<bcase_code<< std::endl;
+		std::cout << "[MULE] benchmark_barotropic_vort_modes.maxmodes: " << maxmodes << std::endl;
 		
 		//loop over waves
 		for (int n = 0; n < (int)maxmodes; n++){
@@ -229,9 +229,9 @@ public:
 			iss >> nmode[n];
 			iss >> mmode[n];
 			iss >> ampl[n];
-			std::cout<< "[MULE] benchmark_barotropic_vort_modes."<<n<<".nmode: "<< nmode[n] << std::endl;
-			std::cout<< "[MULE] benchmark_barotropic_vort_modes."<<n<<".mmode: "<< mmode[n] << std::endl;
-			std::cout<< "[MULE] benchmark_barotropic_vort_modes."<<n<<".ampl: "<< ampl[n] << std::endl;
+			std::cout << "[MULE] benchmark_barotropic_vort_modes." <<n<< ".nmode: " << nmode[n] << std::endl;
+			std::cout << "[MULE] benchmark_barotropic_vort_modes." <<n<< ".mmode: " << mmode[n] << std::endl;
+			std::cout << "[MULE] benchmark_barotropic_vort_modes." <<n<< ".ampl: " << ampl[n] << std::endl;
 		}
 		
 		return;

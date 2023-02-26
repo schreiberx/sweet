@@ -434,4 +434,4 @@ public:
 
 }
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_PLANEDATA_KERNELS_HPP_ */
+#endif

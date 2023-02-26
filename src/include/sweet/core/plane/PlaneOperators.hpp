@@ -369,7 +369,7 @@ public:
 		shift_up.setup(i_planeDataConfig);
 		shift_down.setup(i_planeDataConfig);
 
-		return setup(i_domain_size, i_use_spectral_basis_diffs);
+		return _setup(i_domain_size, i_use_spectral_basis_diffs);
 	}
 
 	bool setup(
@@ -379,7 +379,8 @@ public:
 	{
 		return setup(
 				i_planeDataConfig,
-				i_shackPlaneDataOps->plane_domain_size
+				i_shackPlaneDataOps->plane_domain_size,
+				i_shackPlaneDataOps->space_use_spectral_basis_diffs
 		);
 	}
 
@@ -391,11 +392,24 @@ public:
 	{
 		return setup(
 				&i_planeDataConfig,
-				i_shackPlaneDataOps.plane_domain_size
+				i_shackPlaneDataOps.plane_domain_size,
+				i_shackPlaneDataOps.space_use_spectral_basis_diffs
 		);
 	}
 
 	bool setup(
+			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			ShackPlaneDataOps *i_shackPlaneDataOps
+	)
+	{
+		return setup(
+				&i_planeDataConfig,
+				i_shackPlaneDataOps->plane_domain_size,
+				i_shackPlaneDataOps->space_use_spectral_basis_diffs
+		);
+	}
+
+	bool _setup(
 			const double i_domain_size[2],
 			bool i_use_spectral_basis_diffs
 	)
@@ -702,7 +716,7 @@ public:
 		shift_up(i_planeDataConfig),
 		shift_down(i_planeDataConfig)
 	{
-		setup(i_domain_size, i_use_spectral_basis_diffs);
+		_setup(i_domain_size, i_use_spectral_basis_diffs);
 	}
 };
 

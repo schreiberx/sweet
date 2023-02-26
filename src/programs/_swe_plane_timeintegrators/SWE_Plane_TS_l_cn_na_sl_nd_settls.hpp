@@ -99,4 +99,4 @@ public:
 	virtual ~SWE_Plane_TS_l_cn_na_sl_nd_settls();
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_CN_NA_SL_ND_SETTLS_HPP_ */
+#endif

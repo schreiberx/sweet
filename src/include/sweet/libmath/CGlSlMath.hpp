@@ -405,4 +405,4 @@ namespace GLSL
 	}
 }
 
-#endif /* CGLSLMATH_HPP_ */
+#endif

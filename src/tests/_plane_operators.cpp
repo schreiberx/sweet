@@ -258,7 +258,7 @@ int main(int i_argc, char *i_argv[])
 
 #if 0
 						// THESE TESTS ARE NOW DEACTIVATED
-						if(k==0)
+						if (k==0)
 						{
 							double conv_x = prev_error_diff_x/err_x;
 							double conv_y = prev_error_diff_y/err_y;

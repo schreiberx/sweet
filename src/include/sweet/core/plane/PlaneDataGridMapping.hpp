@@ -173,4 +173,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_ */
+#endif

@@ -399,4 +399,4 @@ public:
 };
 
 
-#endif /* SRC_INCLUDE_SPH_SPHMATRIX_HPP_ */
+#endif

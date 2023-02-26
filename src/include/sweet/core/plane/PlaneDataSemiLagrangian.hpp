@@ -181,4 +181,4 @@ public:
 
 }
 
-#endif /* SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_ */
+#endif

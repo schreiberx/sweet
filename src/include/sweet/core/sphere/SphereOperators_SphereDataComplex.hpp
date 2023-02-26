@@ -861,4 +861,4 @@ public:
 
 
 
-#endif /* SPHOPERATORS_HPP_ */
+#endif

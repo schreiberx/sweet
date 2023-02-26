@@ -155,4 +155,4 @@ public:
 
 };
 
-#endif /* SRC_INCLUDE_EIGENMATRIX3_HPP_ */
+#endif

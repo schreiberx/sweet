@@ -1030,7 +1030,7 @@ public:
 	#endif
 
 
-		if( i_t == this->tstart )
+		if ( i_t == this->tstart )
 		{
 			////std::cout << "Setting initial solution " << std::endl;
 	#if SWEET_XBRAID_SCALAR
@@ -1380,7 +1380,7 @@ public:
 
 		////std::cout << "ACCESS " << rank << " " << level << " " << t << std::endl;
 
-		if(level == 0 /*&& rank == 0*/)
+		if (level == 0 /*&& rank == 0*/)
 		{
 
 

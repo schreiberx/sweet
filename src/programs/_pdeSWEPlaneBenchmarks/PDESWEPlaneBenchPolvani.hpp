@@ -145,7 +145,7 @@ public:
 			if (shackBenchmark->random_seed >= 0)
 				srandom(shackBenchmark->random_seed);
 
-			std::cout << "POLVANI **********************************************"<< std::endl;
+			std::cout << "POLVANI **********************************************" << std::endl;
 			std::cout << "POLVANI ITERATION " << k << std::endl;
 			std::cout << "POLVANI NORMALIZE_EK = " << normalize_ek << std::endl;
 

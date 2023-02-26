@@ -64,14 +64,11 @@ public:
 			/*
 			 * Setup Plane Data Config & Operators
 			 */
-			if (!planeDataConfig.setupAuto(*i_shackPlaneDataOps))
-				return error.forwardWithPositiveReturn(planeDataConfig.error);
+			planeDataConfig.setupAuto(*i_shackPlaneDataOps);
+			ERROR_CHECK_WITH_RETURN_BOOLEAN(planeDataConfig);
 
-			if (!ops.setup(
-					planeDataConfig,
-					*i_shackPlaneDataOps
-				))
-				return error.forwardWithPositiveReturn(ops.error);
+			ops.setup(planeDataConfig, *i_shackPlaneDataOps);
+			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
 
 			prog_h.setup(planeDataConfig);
 			prog_h_t0.setup(planeDataConfig);
@@ -98,7 +95,6 @@ public:
 
 	// time integrators
 	PDEAdvPlaneTimeSteppers timeSteppers;
-
 
 	// Handler to all benchmarks
 	PDEAdvectionPlaneBenchmarksCombined planeBenchmarksCombined;

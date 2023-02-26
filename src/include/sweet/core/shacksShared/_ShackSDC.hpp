@@ -109,4 +109,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SHACKS_SHACKSDC_HPP_ */
+#endif

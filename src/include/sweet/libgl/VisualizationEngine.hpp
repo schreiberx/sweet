@@ -477,4 +477,4 @@ public:
 
 };
 
-#endif /* SRC_INCLUDE_LIBGL_ENGINE_ENGINE_HPP_ */
+#endif

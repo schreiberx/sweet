@@ -97,4 +97,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_PLANEDIAGNOSTICS_HPP_ */
+#endif

@@ -978,8 +978,6 @@ public:
 	}
 
 
-#endif
-
 
 	// TODO: CHECK THIS
 	inline
@@ -1006,6 +1004,8 @@ public:
 		int idx =  n * spectral_complex_data_size[0] + m;
 		return idx;
 	}
+
+#endif
 
 
 

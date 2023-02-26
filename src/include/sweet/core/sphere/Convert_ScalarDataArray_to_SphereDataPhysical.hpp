@@ -35,4 +35,4 @@ public:
 
 
 
-#endif /* SRC_INCLUDE_SWEET_SPHERE_SPHEREDATA_TO_SCALARDATAARRAY_HPP_ */
+#endif

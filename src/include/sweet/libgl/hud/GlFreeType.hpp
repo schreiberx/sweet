@@ -445,4 +445,4 @@ public:
 };
 
 
-#endif /* CGLFREETYPE_HPP_ */
+#endif

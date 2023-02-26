@@ -5,7 +5,7 @@
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <rexi/EXPFunctions.hpp>
+#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -25,13 +25,13 @@ int main()
 	typedef double T;
 	typedef std::complex<T> CT;
 
-	EXPFunctions<T> phi0("phi0");
-	EXPFunctions<T> phi1("phi1");
-	EXPFunctions<T> phi2("phi2");
+	ExpFunctions<T> phi0("phi0");
+	ExpFunctions<T> phi1("phi1");
+	ExpFunctions<T> phi2("phi2");
 
-	EXPFunctions<T> ups1("ups1");
-	EXPFunctions<T> ups2("ups2");
-	EXPFunctions<T> ups3("ups3");
+	ExpFunctions<T> ups1("ups1");
+	ExpFunctions<T> ups2("ups2");
+	ExpFunctions<T> ups3("ups3");
 
 	CT lambda1 = CT(0, 1);
 

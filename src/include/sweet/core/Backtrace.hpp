@@ -205,4 +205,4 @@ public:
 
 }
 
-#endif /* SRC_INCLUDE_SWEET_BACKTRACE_HPP_ */
+#endif

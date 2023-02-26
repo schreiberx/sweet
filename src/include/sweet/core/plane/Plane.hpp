@@ -12,4 +12,4 @@
 #include <sweet/core/plane/Convert_PlaneDataSpectral_to_PlaneDataPhysical.hpp>
 
 
-#endif /* SRC_INCLUDE_SWEET_PLANE_PLANE_HPP_ */
+#endif

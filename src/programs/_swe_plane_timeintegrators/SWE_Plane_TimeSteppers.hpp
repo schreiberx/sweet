@@ -433,9 +433,9 @@ public:
 			std::cout << "      l_erk          : Linear:     Explicit RK scheme (supports FD-C staggering)"  << std::endl;
 			std::cout << "      l_erk_n_erk    : Non-linear: Linear RK, Non-linear RK, Strang-split"  << std::endl;
 			std::cout << "      l_cn           : Linear:     Crank-Nicolson (CN) scheme"  << std::endl;
-			std::cout << "      l_cn_n_erk     : Non-linear: Linear CN, Non-linear RK, Strang-split"<< std::endl;
-			std::cout << "      l_rexi         : Linear:     Pure REXI, our little dog."<< std::endl;
-			std::cout << "      l_rexi_n_erk   : Non-linear: Linear REXI, Non-linear RK, Strang-split"<< std::endl;
+			std::cout << "      l_cn_n_erk     : Non-linear: Linear CN, Non-linear RK, Strang-split" << std::endl;
+			std::cout << "      l_rexi         : Linear:     Pure REXI, our little dog." << std::endl;
+			std::cout << "      l_rexi_n_erk   : Non-linear: Linear REXI, Non-linear RK, Strang-split" << std::endl;
 			std::cout << "      l_irk          : Linear:     Implicit Euler"  << std::endl;
 			std::cout << "      l_irk_n_erk    : Non-linear: Linear Implicit Euler, Non-linear RK, Strang-split"  << std::endl;
 			std::cout << "      ln_erk         : Non-linear: Linear and nonlinear solved jointly with erk (supports FD-C staggering)"  << std::endl;
@@ -459,4 +459,4 @@ public:
 
 
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TIMESTEPPERS_HPP_ */
+#endif

@@ -126,4 +126,4 @@ public:
 	}
 };
 
-#endif /* CGLDRAWFBOQUAD_HPP_ */
+#endif

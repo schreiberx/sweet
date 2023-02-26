@@ -1,12 +1,10 @@
 /*
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ *
+ * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
 #include <sweet/core/defaultPrecompilerValues.hpp>
-
-#if !SWEET_USE_PLANE_SPECTRAL_SPACE
-	#error "Spectral space not activated"
-#endif
 
 #if SWEET_GUI
 #	error	"GUI not supported"
@@ -59,7 +57,7 @@ int main(
 		shackPlaneDataOps->space_res_physical[1] = res[1];
 
 		sweet::PlaneDataConfig planeDataConfig;
-		planeDataConfig.setupAuto(*shackPlaneDataOps);
+		planeDataConfig.setupAuto(shackPlaneDataOps);
 
 		planeDataConfig.printInformation();
 

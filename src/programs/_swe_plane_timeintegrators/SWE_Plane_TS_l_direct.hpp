@@ -8,7 +8,7 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_DIRECT_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_DIRECT_HPP_
 
-#include <rexi/EXPFunctions.hpp>
+#include <sweet/expIntegration/ExpFunctions.hpp>
 #include <limits>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
@@ -33,7 +33,7 @@ class SWE_Plane_TS_l_direct	: public SWE_Plane_TS_interface
 	typedef double T;
 #endif
 
-	EXPFunctions<T> rexiFunctions;
+	ExpFunctions<T> rexiFunctions;
 
 	PlaneDataGridMapping planeDataGridMapping;
 
@@ -202,4 +202,4 @@ public:
 	virtual ~SWE_Plane_TS_l_direct();
 };
 
-#endif /* SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_DIRECT_HPP_ */
+#endif

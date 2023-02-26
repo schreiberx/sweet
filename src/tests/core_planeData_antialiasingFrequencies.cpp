@@ -1,5 +1,7 @@
 /*
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ *
+ * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
 #include <sweet/core/defaultPrecompilerValues.hpp>

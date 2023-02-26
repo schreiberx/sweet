@@ -151,4 +151,4 @@ public:
 };
 
 
-#endif /* CSHADERBLINNSKELETON_HPP_ */
+#endif

@@ -1182,4 +1182,4 @@ SphereData_PhysicalComplex operator+(
 }
 #endif
 
-#endif /* SPHDATA_HPP_ */
+#endif

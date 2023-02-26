@@ -50,4 +50,4 @@ public:
 	virtual ~Burgers_Plane_TS_ln_adomian();
 };
 
-#endif /* SRC_PROGRAMS_BURGERS_PLANE_TS_LN_ADOMIAN_HPP_ */
+#endif

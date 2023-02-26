@@ -142,7 +142,7 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		// Extrapolation
 		PlaneData_Spectral hdiv = 2.0 * io_h * div - h_prev * div_prev;
 		PlaneData_Spectral nonlin(io_h.planeDataConfig);
-		if(simVars.misc.use_nonlinear_only_visc != 0)
+		if (simVars.misc.use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");

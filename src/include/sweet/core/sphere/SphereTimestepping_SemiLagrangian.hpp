@@ -994,4 +994,4 @@ public:
 
 };
 
-#endif /* SRC_INCLUDE_SWEET_SPHEREDATASEMILAGRANGIAN_HPP_ */
+#endif
