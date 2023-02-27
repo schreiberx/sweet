@@ -20,6 +20,11 @@
 	#define SWEET_GUI 1
 #endif
 
+#ifndef SWEET_EIGEN
+	#error "SWEET_EIGEN not set"
+	#define SWEET_EIGEN 1
+#endif
+
 #ifndef SWEET_PARAREAL
 	#error "SWEET_PARAREAL not set"
 	#define SWEET_PARAREAL 1

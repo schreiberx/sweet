@@ -123,11 +123,9 @@ public:
 					i_simulation_time
 			);
 
-
 			io_var0 += i_dt**RK_h_t[0];
 			io_var1 += i_dt**RK_u_t[0];
 			io_var2 += i_dt**RK_v_t[0];
-
 		}
 		else if (i_runge_kutta_order == 2)
 		{
@@ -286,7 +284,6 @@ public:
 					*RK_v_t[3],
 					i_simulation_time + c[2]*i_dt
 			);
-
 
 			io_var0 += i_dt*( (b[0]*(*RK_h_t[0])) + (b[1]*(*RK_h_t[1]))  + (b[2]*(*RK_h_t[2])) + (b[3]*(*RK_h_t[3])) );
 			io_var1 += i_dt*( (b[0]*(*RK_u_t[0])) + (b[1]*(*RK_u_t[1]))  + (b[2]*(*RK_u_t[2])) + (b[3]*(*RK_u_t[3])) );

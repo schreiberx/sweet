@@ -8,12 +8,15 @@
 #ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_
 #define SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_
 
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
 #include <sweet/core/plane/PlaneStaggering.hpp>
+
+namespace sweet
+{
 
 class PlaneDataGridMapping
 {
@@ -34,7 +37,7 @@ public:
 
 
 	void setup(
-			SimulationVariables i_simVars,
+			ShackPlaneDataOps *io_planeDataOps,
 			PlaneDataConfig *i_planeDataConfig
 	)
 	{
@@ -47,16 +50,16 @@ public:
 		{
 			for (std::size_t i = 0; i < i_planeDataConfig->physical_res[0]; i++)
 			{
-				pos_ll_x.scalar_data[idx] = ((double)i)*i_simVars.sim.plane_domain_size[0]/(double)i_simVars.disc.space_res_physical[0];
-				pos_ll_y.scalar_data[idx] = ((double)j)*i_simVars.sim.plane_domain_size[1]/(double)i_simVars.disc.space_res_physical[1];
+				pos_ll_x.scalar_data[idx] = ((double)i)*io_planeDataOps->plane_domain_size[0]/(double)io_planeDataOps->space_res_physical[0];
+				pos_ll_y.scalar_data[idx] = ((double)j)*io_planeDataOps->plane_domain_size[1]/(double)io_planeDataOps->space_res_physical[1];
 				idx++;
 			}
 		}
 
 		// Setup sampler for future interpolations
-		sampler2D.setup(i_simVars.sim.plane_domain_size, i_planeDataConfig);
+		sampler2D.setup(io_planeDataOps->plane_domain_size, i_planeDataConfig);
 
-		if (i_simVars.disc.space_grid_use_c_staggering)
+		if (io_planeDataOps->space_grid_use_c_staggering)
 			staggering.setup_c_staggering();
 		else
 			staggering.setup_a_staggering();
@@ -69,7 +72,14 @@ public:
 	)
 	{
 		// remap solution to A grid
-		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, staggering.u[0], staggering.u[1]);
+		sampler2D.bicubic_scalar(
+				i_src,
+				pos_ll_x,
+				pos_ll_y,
+				o_dst,
+				staggering.u[0],
+				staggering.u[1]
+			);
 	}
 
 
@@ -79,7 +89,14 @@ public:
 	)
 	{
 		// remap solution to A grid
-		sampler2D.bicubic_scalar(i_src, pos_ll_x, pos_ll_y, o_dst, staggering.v[0], staggering.v[1]);
+		sampler2D.bicubic_scalar(
+				i_src,
+				pos_ll_x,
+				pos_ll_y,
+				o_dst,
+				staggering.v[0],
+				staggering.v[1]
+			);
 	}
 
 
@@ -171,6 +188,6 @@ public:
 
 };
 
-
+}
 
 #endif

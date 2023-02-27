@@ -1,5 +1,6 @@
 /*
  * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators/
  */
 

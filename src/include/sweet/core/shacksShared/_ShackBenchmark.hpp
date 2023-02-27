@@ -19,7 +19,7 @@
  * Values and parameters to setup benchmarks simulations
  */
 class ShackBenchmark	:
-		public ShackInterface
+		public sweet::ShackInterface
 {
 public:
 	/// seed for random number generator

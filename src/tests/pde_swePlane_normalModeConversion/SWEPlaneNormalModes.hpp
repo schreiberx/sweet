@@ -15,7 +15,7 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <functional>
 #if SWEET_EIGEN
-#include <Eigen/Eigenvalues>
+#	include <Eigen/Eigenvalues>
 #endif
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
@@ -23,7 +23,7 @@
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 #include <sweet/core/shacksShared/ShackNormalModeAnalysis.hpp>
-#include "../../programs/pde_swePlane/ShackSWEPlane.hpp"
+#include <pde_swePlane/ShackPDESWEPlane.hpp>
 
 
 
@@ -43,7 +43,7 @@ public:
 	sweet::ShackIOData *shackIOData;
 	sweet::ShackNormalModeAnalysis *shackNormalModeAnalysis;
 
-	ShackSWEPlane *shackSWEPlane;
+	ShackPDESWEPlane *shackSWEPlane;
 
 	bool shackRegistration(sweet::ShackDictionary &io_dict)
 	{
@@ -59,7 +59,7 @@ public:
 		shackNormalModeAnalysis = io_dict.getAutoRegistration<sweet::ShackNormalModeAnalysis>();
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
 
-		shackSWEPlane = io_dict.getAutoRegistration<ShackSWEPlane>();
+		shackSWEPlane = io_dict.getAutoRegistration<ShackPDESWEPlane>();
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
 
 		return true;

@@ -797,7 +797,6 @@ public:
 		}
 	}
 
-
 public:
 	~MemBlockAlloc()
 	{

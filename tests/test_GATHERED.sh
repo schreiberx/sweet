@@ -2,7 +2,7 @@
 
 cd "$(dirname $0)"
 
-for i in $(ls -1 -d ??_*/ | sort); do
+for i in $(ls -1 -d */ | sort); do
 	i=$(basename "$i")
 	if [[ $i == *_no_test ]]; then
 		continue

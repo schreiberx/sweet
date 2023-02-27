@@ -6,8 +6,8 @@
  *    Split into physical and spectral classes
  */
 
-#ifndef SWEET_PLANE_DATA_SPECTRAL_HPP_
-#define SWEET_PLANE_DATA_SPECTRAL_HPP_
+#ifndef SWEET_CORE_PLANE_DATA_SPECTRAL_HPP_
+#define SWEET_CORE_PLANE_DATA_SPECTRAL_HPP_
 
 #include <complex>
 #include <functional>
@@ -2329,82 +2329,10 @@ public:
 
 };
 
+#include "PlaneData_Spectral_Operators.hpp"
+
 }
 
-
-
-/**
- * operator to support operations such as:
- *
- * 1.5 * arrayData;
- *
- * Otherwise, we'd have to write it as arrayData*1.5
- *
- */
-inline
-static
-sweet::PlaneData_Spectral operator*(
-		double i_value,
-		const sweet::PlaneData_Spectral &i_array_data
-)
-{
-	return ((sweet::PlaneData_Spectral&)i_array_data)*i_value;
-}
-
-
-
-
-
-
-/**
- * operator to support operations such as:
- *
- * 1.5 + arrayData
- *
- */
-inline
-static
-sweet::PlaneData_Spectral operator+(
-		double i_value,
-		const sweet::PlaneData_Spectral &i_array_data
-)
-{
-	return ((sweet::PlaneData_Spectral&)i_array_data)+i_value;
-}
-
-
-
-/**
- * operator to support operations such as:
- *
- * 1.5 - arrayData
- *
- */
-inline
-static
-sweet::PlaneData_Spectral operator-(
-		double i_value,
-		const sweet::PlaneData_Spectral &i_array_data
-)
-{
-	return i_array_data.operator_scalar_sub_this(i_value);
-}
-
-
-/**
- * operator to support operations such as:
- *
- * array_data_physical - arrayData
- *
- */
-inline
-static
-sweet::PlaneData_Spectral operator-(
-		const sweet::PlaneData_Physical &i_plane_data_physical,
-		const sweet::PlaneData_Spectral &i_array_data
-)
-{
-	return - (i_array_data - i_plane_data_physical);
-}
+#include "PlaneData_Spectral_Operators.hpp"
 
 #endif

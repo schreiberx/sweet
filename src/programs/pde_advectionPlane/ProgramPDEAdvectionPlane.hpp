@@ -24,10 +24,10 @@
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 
 // Benchmarks
-#include "benchmarks/PDEAdvectionPlaneBenchmarksCombined.hpp"
+#include "PDEAdvectionPlaneBenchmarksCombined.hpp"
 
 // Time steppers
-#include "time/PDEAdvPlaneTimeSteppers.hpp"
+#include "PDEAdvPlaneTimeSteppers.hpp"
 
 #if SWEET_GUI
 	#include <sweet/gui/VisSweet.hpp>
