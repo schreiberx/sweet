@@ -134,6 +134,7 @@ public:
 		 * but we avoid yet another if condition.
 		 */
 		current_timestep_size = max_simulation_time - current_simulation_time;
+
 		return true;
 	}
 

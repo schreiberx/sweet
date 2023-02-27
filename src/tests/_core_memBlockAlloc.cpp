@@ -1,7 +1,7 @@
 #include <omp.h>
 #include <vector>
 #include <iostream>
-#include "../include/sweet/MemBlockAlloc.hpp"
+#include <sweet/core/MemBlockAlloc.hpp>
 
 
 

@@ -19,6 +19,9 @@ class JobRuntimeOptions(InfoError):
         
         self.shacksRuntime = mule.Shacks.getShacksDict("shacksRuntime").values()
         
+        for _ in self.shacksRuntime:
+            _.__init__(self)
+
         # String to job directory.
         self.p_job_dirpath = None
 
@@ -219,7 +222,7 @@ class JobRuntimeOptions(InfoError):
 
 
         for _ in self.shacksRuntime:
-            uniqueIDStr += _.getUniqueID(compileOptions, filter_list)
+            uniqueIDStr += _.getUniqueID(self, compileOptions, filter_list)
 
         
         if not 'runtime.disc_space' in filter_list:
@@ -379,7 +382,7 @@ class JobRuntimeOptions(InfoError):
 
 
         for _ in self.shacksRuntime:
-            retRuntimeOptionsStr += _.getRuntimeOptions()
+            retRuntimeOptionsStr += _.getRuntimeOptions(self)
 
 
         # SDC parameters

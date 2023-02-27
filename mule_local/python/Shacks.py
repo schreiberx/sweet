@@ -23,6 +23,6 @@ def getShacksDict(i_directory: str):
         while shackName[0] in "0123456789_":
             shackName = shackName[1:]
         
-        shacks[shackFile] = module.__dict__[shackName]()
+        shacks[shackFile] = module.__dict__[shackName]
 
     return shacks

@@ -15,7 +15,7 @@ namespace sweet
 {
 
 /**
- * this is a sampler class which provides method to provide
+ * This is a sampler class which provides method to provide
  * interpolated sampled values on 2D physical data which
  * is provided by PlaneData
  */
@@ -323,9 +323,6 @@ public:
 		 *  and this shift has to be removed for the interpolation
 		 */
 
-
-//		i_data.request_data_physical();
-
 		std::size_t size = i_pos_x.number_of_elements;
 
 		assert(size != 0);
@@ -372,7 +369,6 @@ public:
 				q[kj] = p[0] + x*(p[1]-p[0]);
 
 				idx_j = wrapPeriodic(idx_j+1, res[1]);
-				//std::cout << p[0] << p[1] << x << std::endl;
 			}
 
 			double value = q[0] + y*(q[1]-q[0]);

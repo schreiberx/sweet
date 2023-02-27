@@ -44,6 +44,9 @@ class JobCompileOptions(InfoError):
         InfoError.__init__(self, "JobCompileOptions")
 
         self.shacksCompile = mule.Shacks.getShacksDict("shacksCompile").values()
+
+        for _ in self.shacksCompile:
+            _.__init__(self)
         
         # Program or unit test
         self.program = ""
@@ -143,7 +146,7 @@ class JobCompileOptions(InfoError):
 
 
         for _ in self.shacksCompile:
-            retval += _.getSConsParams()
+            retval += _.getSConsParams(self)
 
 
         # LibPFASST
@@ -447,7 +450,7 @@ class JobCompileOptions(InfoError):
 
 
         for _ in self.shacksCompile:
-            _.sconsAddOptions(scons)
+            _.sconsAddOptions(self, scons)
 
 
 
@@ -509,12 +512,12 @@ class JobCompileOptions(InfoError):
     def sconsValidateOptions(self):
 
         for _ in self.shacksCompile:
-            _.sconsValidateOptions()
+            _.sconsValidateOptions(self)
 
 
     def sconsAddFlags(self, env):
         for _ in self.shacksCompile:
-            _.sconsAddFlags(env)
+            _.sconsAddFlags(self, env)
 
 
 

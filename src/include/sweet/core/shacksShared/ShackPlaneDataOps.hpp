@@ -145,25 +145,25 @@ std::cout << "0" << std::endl;
 		const std::string& i_prefix = ""
 	)
 	{
-		std::cout << std::endl;
-		std::cout << "DISCRETIZATION:" << std::endl;
-		std::cout << " + space_res_physical: " << space_res_physical[0] << " x " << space_res_physical[1] << std::endl;
-		std::cout << " + space_res_spectral: " << space_res_spectral[0] << " x " << space_res_spectral[1] << std::endl;
-		std::cout << " + space_use_spectral_basis_diffs: " << space_use_spectral_basis_diffs << std::endl;
-		std::cout << " + space_grid_use_c_staggering: " << space_grid_use_c_staggering << std::endl;
-		std::cout << " + plane_dealiasing (compile time): " <<
+		std::cout << i_prefix << std::endl;
+		std::cout << i_prefix << "DISCRETIZATION:" << std::endl;
+		std::cout << i_prefix << " + space_res_physical: " << space_res_physical[0] << " x " << space_res_physical[1] << std::endl;
+		std::cout << i_prefix << " + space_res_spectral: " << space_res_spectral[0] << " x " << space_res_spectral[1] << std::endl;
+		std::cout << i_prefix << " + space_use_spectral_basis_diffs: " << space_use_spectral_basis_diffs << std::endl;
+		std::cout << i_prefix << " + space_grid_use_c_staggering: " << space_grid_use_c_staggering << std::endl;
+		std::cout << i_prefix << " + plane_dealiasing (compile time): " <<
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 		1
 #else
 		0
 #endif
 		<< std::endl;
-		std::cout << " + domain_size: " << plane_domain_size[0] << " x " << plane_domain_size[1] << std::endl;
+		std::cout << i_prefix << " + domain_size: " << plane_domain_size[0] << " x " << plane_domain_size[1] << std::endl;
 		std::string tmp;
 		TransformationPlans tp;
 		tp.getStringFromEnum(reuse_spectral_transformation_plans, tmp);
-		std::cout << " + reuse_spectral_transformation_plans: " << tmp << std::endl;
-		std::cout << std::endl;
+		std::cout << i_prefix << " + reuse_spectral_transformation_plans: " << tmp << std::endl;
+		std::cout << i_prefix << std::endl;
 	}
 };
 

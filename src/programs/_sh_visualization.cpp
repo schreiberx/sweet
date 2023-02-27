@@ -2,6 +2,8 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
+ *
+ * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  */
 
 #ifndef SWEET_GUI

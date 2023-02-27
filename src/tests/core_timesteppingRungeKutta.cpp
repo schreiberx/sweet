@@ -16,6 +16,7 @@
 #include <sweet/core/shacks/ShackProgArgDictionary.hpp>
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
+#include <sweet/core/shacksShared/ShackIOData.hpp>
 #include <sweet/core/ProgramArguments.hpp>
 
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
@@ -99,6 +100,7 @@ public:
 	sweet::ShackProgArgDictionary shackProgArgDict;
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackTimestepControl *shackTimestepControl;
+	sweet::ShackIOData *shackIOData;
 
 	int function_order = -1;
 	int timestepping_order = -1;
@@ -129,6 +131,9 @@ public:
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+
+		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.processProgramArguments();
@@ -240,14 +245,6 @@ public:
 		return 0;
 	}
 
-#if 0
-	void reset()
-	{
-		clear();
-		setup();
-	}
-#endif
-
 	void p_run_euler_timestep_update(
 			const sweet::PlaneData_Spectral &i_h,	///< prognostic variables
 			const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
@@ -276,18 +273,13 @@ public:
 	}
 
 
-
-	void run()
-	{
-	}
-
-
-
 	void run_timestep()
 	{
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
 		assert(shackTimestepControl->current_timestep_size > 0);
+
+		shackTimestepControl->timestepHelperStart();
 
 		timestepping.run_timestep(
 				this,
@@ -298,19 +290,14 @@ public:
 				shackTimestepControl->current_simulation_time
 			);
 
-		// provide information to parameters
-		shackTimestepControl->current_simulation_time += shackTimestepControl->current_timestep_size;
-		shackTimestepControl->current_timestep_nr++;
+		shackTimestepControl->timestepHelperEnd();
 	}
-
 
 
 	bool should_quit()
 	{
 		return false;
 	}
-
-
 };
 
 
@@ -335,9 +322,8 @@ int main(
 				if (simulation.shackTimestepControl->isFinalTimestepReached())
 					break;
 
-				simulation.shackTimestepControl->timestepHelperStart();
 				simulation.run_timestep();
-				simulation.shackTimestepControl->timestepHelperEnd();
+
 
 				double value_numerical = simulation.data.prog_h.toPhys().physical_get(0,0);
 				double value_exact = simulation.test_function(simulation.function_order, simulation.shackTimestepControl->current_simulation_time);
@@ -348,8 +334,6 @@ int main(
 				std::cout << ", ";
 				std::cout << "exact=" << value_exact;
 				std::cout << std::endl;
-
-
 			}
 
 			double value_numerical = simulation.data.prog_h.toPhys().physical_get(0,0);
