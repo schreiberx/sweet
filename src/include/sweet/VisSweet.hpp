@@ -2,7 +2,7 @@
  * VisSweet.hpp
  *
  *  Created on: 30 Jun 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_EXAMPLES_VISSWEET_HPP_
 #define SRC_EXAMPLES_VISSWEET_HPP_

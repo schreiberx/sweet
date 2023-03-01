@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_l_rexi_n_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SWE_SPHERE_TS_L_REXI_N_ERK_HPP_

@@ -1,12 +1,13 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <iostream>
 
-#include <sweet/classDict/ClassInstanceDictionary.hpp>
-#include "swe_sphere_variables/PDESWESphereParameters.hpp"
-#include "swe_sphere_variables/IODataParameters.hpp"
+#include <sweet/shacks/ShackDictionary.hpp>
+#include <sweet/shacksShared/ShackShackParallelization.hpp>
+#include "../include/sweet/shacksShared/ShackIOData.hpp"
+
 
 int main(int i_argc, char *i_argv[])
 {
@@ -17,7 +18,7 @@ int main(int i_argc, char *i_argv[])
 	sweet::ProgramArguments pa;
 	if (!pa.setup(i_argc, i_argv))
 	{
-		std::cout << "Error: " << pa.error.errorGet() << std::endl;
+		std::cout << "Error: " << pa.error.get() << std::endl;
 		return 1;
 	}
 
@@ -31,15 +32,15 @@ int main(int i_argc, char *i_argv[])
 		 * later on in the SWEET programs.
 		 */
 		std::cout << " + VariablesClassDictionary()" << std::endl;
-		ClassInstanceDictionary varClassDict;
+		sweet::ClassInstanceDictionary varClassDict;
 
 
 		/*
 		 * Register new classes
 		 */
-		std::cout << "   + registerParameterClass<PDESWEParametersSphere>()" << std::endl;
-		varClassDict.registerClassInstance<PDESWEParametersSphere>();
-		varClassDict.registerClassInstance<IODataParameters>();
+		std::cout << "   + registerParameterClass<ShackIOData>()" << std::endl;
+		varClassDict.registerClassInstance<ShackIOData>();
+		varClassDict.registerClassInstance<ShackParallelization>();
 
 		/*
 		 * Now we close the registration
@@ -52,12 +53,12 @@ int main(int i_argc, char *i_argv[])
 			/*
 			 * If we now try to register a new class, this should raise an error!
 			 */
-			bool retval = varClassDict.registerClassInstance<IODataParameters>();
+			bool retval = varClassDict.registerClassInstance<ShackParallelization>();
 
 			if (!retval)
 			{
 				// Just get the error (deleting it) and continue
-				varClassDict.error.errorGet();
+				varClassDict.error.get();
 			}
 			else
 			{
@@ -71,7 +72,7 @@ int main(int i_argc, char *i_argv[])
 		 */
 		if (pa.argumentWithKeyExists("-h") || pa.argumentWithKeyExists("--help"))
 		{
-			varClassDict.outputProgramArguments();
+			varClassDict.printProgramArguments();
 			return EXIT_FAILURE;
 		}
 
@@ -81,22 +82,22 @@ int main(int i_argc, char *i_argv[])
 		varClassDict.processProgramArguments(pa);
 
 		/*
-		 * Get handler to new class PDESWEParametersSphere
+		 * Get handler to new class ShackIOData
 		 */
-		PDESWEParametersSphere *sweParametersSphere = varClassDict.getClassInstance<PDESWEParametersSphere>();
-		if (sweParametersSphere == nullptr)
+		ShackIOData *shackIOData = varClassDict.getClassInstance<ShackIOData>();
+		if (shackIOData == nullptr)
 		{
-			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
+			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
 			return EXIT_FAILURE;
 		}
 
 		/*
-		 * Get handler to new class PDESWEParametersSphere
+		 * Get handler to new class ShackIOData
 		 */
-		IODataParameters *ioDataParameters = varClassDict.getClassInstance<IODataParameters>();
-		if (ioDataParameters == nullptr)
+		ShackParallelization *shackParallelization = varClassDict.getClassInstance<ShackParallelization>();
+		if (shackParallelization == nullptr)
 		{
-			std::cerr << "Not a SWEET error: " << varClassDict.error.errorGet() << std::endl;
+			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
 			return EXIT_FAILURE;
 		}
 
@@ -112,11 +113,11 @@ int main(int i_argc, char *i_argv[])
 			 * If we now access a class instance, this should raise an error!
 			 */
 
-			IODataParameters *ioDataParameters = varClassDict.getClassInstance<IODataParameters>();
+			ShackParallelization *ioDataParameters = varClassDict.getClassInstance<ShackParallelization>();
 			if (ioDataParameters == nullptr)
 			{
 				// Just get the error (deleting it) and continue
-				varClassDict.error.errorGet();
+				varClassDict.error.get();
 			}
 			else
 			{
@@ -128,23 +129,23 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Now its time to output all program arguments of all registered classes
 		 */
-		std::cout << " + varClassDict.outputVariables()" << std::endl;
-		varClassDict.outputVariables("    ");
+		std::cout << " + varClassDict.printClass()" << std::endl;
+		varClassDict.printClass("    ");
 
 		/*
 		 * And we can also print them individually
 		 */
-		std::cout << " + sweParametersSphere->outputVariables()" << std::endl;
-		sweParametersSphere->outputVariables("    ");
+		std::cout << " + sweParametersSphere->printClass()" << std::endl;
+		shackIOData->printClass("    ");
 
-		std::cout << " + ioDataParameters->outputVariables()" << std::endl;
-		ioDataParameters->outputVariables("    ");
+		std::cout << " + ioDataParameters->printClass()" << std::endl;
+		shackParallelization->printClass("    ");
 
 		/*
 		 * Of course, we can also access them directly
 		 */
 		std::cout << " + direct access:" << std::endl;
-		std::cout << "   h0: " << sweParametersSphere->h0 << std::endl;
+		std::cout << "   output_file_name: " << shackIOData->output_file_name << std::endl;
 	}
 
 	return 0;

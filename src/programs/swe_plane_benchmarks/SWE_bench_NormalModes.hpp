@@ -8,7 +8,7 @@
 #define SWE_BENCH_NORMAL_MODES_HPP_
 
 #include <rexi/EXPFunctions.hpp>
-#include <stdlib.h>
+#include <cmath>
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -730,7 +730,7 @@ public:
 					//West modes (adjust y_mode index)
 					buffer1 << "\t("<< k0 <<","<<k1<<")";
 					//East mode (adjust x_mode index)
-					buffer2 << "\t("<< (k0 == 0 ? abs(k0) : -k0)  <<","<< (k1 == 0 ? abs(k1) : -k1) <<")";
+					buffer2 << "\t("<< (k0 == 0 ? std::abs(k0) : -k0)  <<","<< (k1 == 0 ? std::abs(k1) : -k1) <<")";
 
 				}
 			}

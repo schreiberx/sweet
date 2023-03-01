@@ -27,9 +27,9 @@ def add_source_files(env, p):
     #
     # Load and iterate over all source code files and directories
     #
-    fad_list = co['compile_files_and_dirs']
-    for k in fad_list:
-        abs_k = sweet_root+'/'+k
+    file_and_directory_list = co['compile_files_and_dirs']
+    for fad in file_and_directory_list:
+        abs_k = sweet_root+'/'+fad
         if os.path.isdir(abs_k):
             print("Processing additional directory '"+abs_k+"'")
 
@@ -57,7 +57,6 @@ def add_source_files(env, p):
 
                 obj = env.Object(filerelpath)
                 env.src_files.append(obj)
-                #env.AddPostAction(obj, moveModFiles)
 
         elif os.path.isfile(abs_k):
             print("Processing additional file '"+abs_k+"'")
@@ -70,7 +69,9 @@ def add_source_files(env, p):
             env.src_files.append(obj)
 
         else:
-            raise Exception("Error file processing file or directory '"+abs_k+"'")
+            print(f"ERROR: Tried get information from '{fad}'")
+            print(f"ERROR: File or directory '{abs_k}' doesn't exist!")
+            sys.exit(1)
 
 
 Import('env', 'p')

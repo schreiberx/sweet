@@ -2,7 +2,7 @@
  * SWE_Plane_TS_l_erk.cpp
  *
  *  Created on: 29 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Changelog:
  *  	2017-05-29: Based on source swe_plane.cpp

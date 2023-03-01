@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_SPHERE_HELPERS_SPH_IDENTITIES_HPP_

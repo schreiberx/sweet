@@ -2,7 +2,7 @@
  * Adv_Plane_TS_ln_erk.cpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "Adv_Plane_TS_na_erk.hpp"

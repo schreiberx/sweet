@@ -2,7 +2,7 @@
  * REXI_SimulationVariables.hpp
  *
  *  Created on: 30 Jun 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_REXI_SIMULATION_VARIABLES_HPP_
 #define SRC_REXI_SIMULATION_VARIABLES_HPP_
@@ -13,12 +13,14 @@
 #include <getopt.h>
 #include <sweet/SWEETError.hpp>
 
+#include <sweet/shacks/ShackInterface.hpp>
 
 
 /**
  * Exponential integration
  */
-struct EXP_SimulationVariables
+struct EXP_SimulationVariables	:
+	public sweet::ClassDictionaryInterface
 {
 	/**
 	 * Choose EXP solver method
@@ -157,43 +159,33 @@ public:
 	std::vector<REXIFile> p_rexi_files_processed;
 
 
-	void outputConfig()
+
+	/*
+	 * Source: https://www.techiedelight.com/split-string-cpp-using-delimiter/
+	 */
+	static
+	void split_string(
+			std::string const &i_string,
+			const char needle,
+			std::vector<std::string> &o_split_string
+	)
 	{
-		std::cout << std::endl;
-		std::cout << "EXP:" << std::endl;
-		std::cout << " + exp_method: " << exp_method << std::endl;
-		std::cout << " [EXP Taylor]" << std::endl;
-		std::cout << " + taylor_num_expansions: " << taylor_num_expansions << std::endl;
-		std::cout << "REXI generic parameters:" << std::endl;
-		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
+		std::size_t start;
+		std::size_t end = 0;
 
-		std::cout << " [REXI Files]" << std::endl;
-		std::cout << " + rexi_files: " << rexi_files << std::endl;
-
-		for (std::vector<REXIFile>::iterator iter = p_rexi_files_processed.begin(); iter != p_rexi_files_processed.end(); iter++)
-			std::cout << "     \"" << iter->function_name << "\" : \"" << iter->filename << "\"" << std::endl;
-
-		std::cout << " [REXI Terry]" << std::endl;
-		std::cout << " + h: " << terry_h << std::endl;
-		std::cout << " + M: " << terry_M << std::endl;
-		std::cout << " + L: " << terry_L << std::endl;
-		std::cout << " [REXI CI]" << std::endl;
-		std::cout << " + ci_n: " << ci_n << std::endl;
-		std::cout << " + ci_primitive: " << ci_primitive << std::endl;
-		std::cout << " + ci_max_real: " << ci_max_real << std::endl;
-		std::cout << " + ci_max_imag: " << ci_max_imag << std::endl;
-		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
-		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
-		std::cout << " + ci_mu: " << ci_mu << std::endl;
-		std::cout << " [EXP Direct]" << std::endl;
-		std::cout << " + exp_direct_precompute_phin: " << exp_direct_precompute_phin << std::endl;
-		std::cout << std::endl;
+		while ((start = i_string.find_first_not_of(needle, end)) != std::string::npos)
+		{
+			end = i_string.find(needle, start);
+			o_split_string.push_back(i_string.substr(start, end - start));
+		}
 	}
 
 
 
-	void outputProgParams()
+
+	void printProgramArguments(const std::string& i_prefix = "")
 	{
+
 		std::cout << "" << std::endl;
 		std::cout << "REXI:" << std::endl;
 		std::cout << "	--rexi-method [str]	Choose REXI method ('terry', 'file', 'direct'), default:0" << std::endl;
@@ -224,148 +216,37 @@ public:
 		std::cout << std::endl;
 	}
 
-
-
-	void setup_longOptionList(
-			struct option io_long_options[],		///< string and meta information for long options
-			int &io_next_free_program_option,	///< number of free options, has to be increased for each new option
-			int i_max_options					///< maximum number of options
-	)
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		io_long_options[io_next_free_program_option] = {"rexi-method", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
+		bool rexi_files_given;
 
-		io_long_options[io_next_free_program_option] = {"exp-method", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
+		i_pa.getArgumentValueByKey("--rexi-method", exp_method);	// depreated
+		i_pa.getArgumentValueByKey("--exp-method", exp_method);
 
-		io_long_options[io_next_free_program_option] = {"exp-taylor-num-expansions", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
+		i_pa.getArgumentValueByKey("--taylor_num_expansions", taylor_num_expansions);
+		i_pa.getArgumentValueByKey("--rexi-sphere-preallocation", sphere_solver_preallocation);
 
+		if (i_pa.getArgumentValueByKey("--rexi-files", rexi_files))
+			rexi_files_given = true;
 
-		// Generic REXI options
-//		io_long_options[io_next_free_program_option] = {"rexi-use-direct-solution", required_argument, 0, 256+io_next_free_program_option};
-//		io_next_free_program_option++;
+		/*
+		 * T-REXI implemented in SWEET (deprecated!!!)
+		 */
+		i_pa.getArgumentValueByKey("--rexi-terry-h", terry_h);
+		i_pa.getArgumentValueByKey("--rexi-terry-m", terry_M);
+		i_pa.getArgumentValueByKey("--rexi-terry-l", terry_L);
+		i_pa.getArgumentValueByKey("--rexi-terry-reduce-to-half", terry_reduce_to_half);
+		i_pa.getArgumentValueByKey("--rexi-terry-normalization", terry_normalization);
 
-		io_long_options[io_next_free_program_option] = {"rexi-sphere-preallocation", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
+		i_pa.getArgumentValueByKey("--rexi-ci-n", ci_n);
+		i_pa.getArgumentValueByKey("--rexi-ci-primitive", ci_primitive);
+		i_pa.getArgumentValueByKey("--rexi-ci-max-real", ci_max_real);
+		i_pa.getArgumentValueByKey("--rexi-ci-max-imag", ci_max_imag);
+		i_pa.getArgumentValueByKey("--rexi-ci-sx", ci_s_real);
+		i_pa.getArgumentValueByKey("--rexi-ci-sy", ci_s_imag);
+		i_pa.getArgumentValueByKey("--rexi-ci-mu", ci_mu);
 
-//		io_long_options[io_next_free_program_option] = {"rexi-ext-modes", required_argument, 0, 256+io_next_free_program_option};
-//		io_next_free_program_option++;
-
-		// Files
-		io_long_options[io_next_free_program_option] = {"rexi-files", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-
-		// Terry
-		io_long_options[io_next_free_program_option] = {"rexi-terry-h", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-terry-m", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-terry-l", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-terry-reduce-to-half", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-terry-normalization", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-
-		// Cauchy
-		io_long_options[io_next_free_program_option] = {"rexi-ci-n", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-ci-primitive", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-ci-max-real", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-ci-max-imag", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-ci-sx", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-ci-sy", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"rexi-ci-mu", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		// Exp direct
-		io_long_options[io_next_free_program_option] = {"exp-direct-precompute-phin", required_argument, 0, 256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-	}
-
-
-
-	/*
-	 * Source: https://www.techiedelight.com/split-string-cpp-using-delimiter/
-	 */
-	static
-	void split_string(
-			std::string const &i_string,
-			const char needle,
-			std::vector<std::string> &o_split_string
-	)
-	{
-		std::size_t start;
-		std::size_t end = 0;
-
-		while ((start = i_string.find_first_not_of(needle, end)) != std::string::npos)
-		{
-			end = i_string.find(needle, start);
-			o_split_string.push_back(i_string.substr(start, end - start));
-		}
-	}
-
-
-
-	/**
-	 * Callback method to setup the values for the option with given index.
-	 *
-	 * \return Number of processed options or 0 in case of no processed arguments
-	 */
-	int setup_longOptionValue(
-			int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
-			const char *i_value		///< Value in string format
-	)
-	{
-		bool rexi_files_given = false;
-		switch(i_option_index)
-		{
-			case 0:
-			case 1:
-					exp_method = optarg;	return -1;
-
-			case 2:
-					taylor_num_expansions = atoi(optarg);	return -1;
-
-			case 3:		sphere_solver_preallocation = atoi(optarg);	return -1;
-
-			// Use a break here to process the rexi files below
-			case 4:		rexi_files = optarg;	rexi_files_given = true; break;
-
-			case 5:		terry_h = atof(optarg);	return -1;
-			case 6:		terry_M = atoi(optarg);	return -1;
-			case 7:		terry_L = atoi(optarg);	return -1;
-			case 8:		terry_reduce_to_half = atoi(optarg);	return -1;
-			case 9:		terry_normalization = atoi(optarg);	return -1;
-
-			case 10:	ci_n = atoi(optarg);	return -1;
-			case 11:	ci_primitive = optarg;	return -1;
-			case 12:	ci_max_real = atof(optarg);	return -1;
-			case 13:	ci_max_imag = atof(optarg);	return -1;
-			case 14:	ci_s_real = atof(optarg);	return -1;
-			case 15:	ci_s_imag = atof(optarg);	return -1;
-			case 16:	ci_mu = atof(optarg);	return -1;
-			case 17:	exp_direct_precompute_phin = atoi(optarg);	return -1;
-		}
+		i_pa.getArgumentValueByKey("--exp-direct-precompute-phin", exp_direct_precompute_phin);
 
 		if (rexi_files_given)
 		{
@@ -410,7 +291,44 @@ public:
 		if (exp_method != "" && exp_method == "terry" && exp_method == "file")
 			SWEETError("Invalid argument for '--rexi-method='");
 
-		return 15;
+
+
+		return error.forwardWithPositiveReturn(i_pa.error);
+	}
+
+	virtual void printClass(
+		const std::string& i_prefix = ""
+	)
+	{
+		std::cout << std::endl;
+		std::cout << "EXP:" << std::endl;
+		std::cout << " + exp_method: " << exp_method << std::endl;
+		std::cout << " [EXP Taylor]" << std::endl;
+		std::cout << " + taylor_num_expansions: " << taylor_num_expansions << std::endl;
+		std::cout << "REXI generic parameters:" << std::endl;
+		std::cout << " + rexi_sphere_solver_preallocation: " << sphere_solver_preallocation << std::endl;
+
+		std::cout << " [REXI Files]" << std::endl;
+		std::cout << " + rexi_files: " << rexi_files << std::endl;
+
+		for (std::vector<REXIFile>::iterator iter = p_rexi_files_processed.begin(); iter != p_rexi_files_processed.end(); iter++)
+			std::cout << "     \"" << iter->function_name << "\" : \"" << iter->filename << "\"" << std::endl;
+
+		std::cout << " [REXI Terry]" << std::endl;
+		std::cout << " + h: " << terry_h << std::endl;
+		std::cout << " + M: " << terry_M << std::endl;
+		std::cout << " + L: " << terry_L << std::endl;
+		std::cout << " [REXI CI]" << std::endl;
+		std::cout << " + ci_n: " << ci_n << std::endl;
+		std::cout << " + ci_primitive: " << ci_primitive << std::endl;
+		std::cout << " + ci_max_real: " << ci_max_real << std::endl;
+		std::cout << " + ci_max_imag: " << ci_max_imag << std::endl;
+		std::cout << " + ci_s_real: " << ci_s_real << std::endl;
+		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
+		std::cout << " + ci_mu: " << ci_mu << std::endl;
+		std::cout << " [EXP Direct]" << std::endl;
+		std::cout << " + exp_direct_precompute_phin: " << exp_direct_precompute_phin << std::endl;
+		std::cout << std::endl;
 	}
 };
 

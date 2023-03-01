@@ -2,7 +2,7 @@
  * StringSplit.hpp
  *
  *  Created on: 12 Feb 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_STRINGSPLIT_HPP_
@@ -121,6 +121,109 @@ public:
             o_ints.at(iter) = atoi(substrings.at(iter).c_str());
         }
 	}
+
+
+	static
+	int split3double(
+			const std::string &i_str,
+			double *o_int0,
+			double *o_int1,
+			double *o_int2
+	)
+	{
+		std::vector<std::string> res = StringSplit::split(i_str, ",");
+
+		int c = res.size();
+
+		if (c == 0)
+			SWEETError("Invalid format for modes");
+
+		if (c == 1)
+		{
+			*o_int0 = atof(res[0].c_str());
+			return 1;
+		}
+		else if (c == 2)
+		{
+			*o_int0 = atof(res[0].c_str());
+			*o_int1 = atof(res[1].c_str());
+			return 2;
+		}
+		else if (c == 3)
+		{
+			*o_int0 = atof(res[0].c_str());
+			*o_int1 = atof(res[1].c_str());
+			*o_int2 = atof(res[2].c_str());
+			return 3;
+		}
+
+		SWEETError("More than 3 values given");
+		return -1;
+	}
+
+
+	static
+	int split2int(
+			const std::string &i_str,
+			int *o_int0,
+			int *o_int1
+	)
+	{
+		std::vector<std::string> res = StringSplit::split(i_str, ",");
+
+		int c = res.size();
+
+		if (c == 0)
+			SWEETError("Invalid format for modes");
+
+		if (c == 1)
+		{
+			*o_int0 = atoi(res[0].c_str());
+			return 1;
+		}
+		else if (c == 2)
+		{
+			*o_int0 = atoi(res[0].c_str());
+			*o_int1 = atoi(res[1].c_str());
+			return 2;
+		}
+
+		SWEETError("More than 2 values given");
+		return -1;
+	}
+
+
+	static
+	int split2double(
+			const std::string &i_str,
+			double *o_int0,
+			double *o_int1
+	)
+	{
+		std::vector<std::string> res = StringSplit::split(i_str, ",");
+
+		int c = res.size();
+
+		if (c == 0)
+			SWEETError("Invalid format for modes");
+
+		if (c == 1)
+		{
+			*o_int0 = atof(res[0].c_str());
+			return 1;
+		}
+		else if (c == 2)
+		{
+			*o_int0 = atof(res[0].c_str());
+			*o_int1 = atof(res[1].c_str());
+			return 2;
+		}
+
+		SWEETError("More than 2 values given");
+		return -1;
+	}
+
+
 };
 
 

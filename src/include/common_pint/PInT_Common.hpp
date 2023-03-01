@@ -6,6 +6,8 @@
  *
  */
 
+#include <sweet/defaultPrecompilerValues.hpp>
+
 /*
  * Contains functions used by both Parareal and Xbraid (and possibly PFASST?) implementations in SWEET,
  * mostly error computation and file output functions.
@@ -935,9 +937,9 @@ public:
 		// COMPUTE AND STORE ERRORS
 		for (int ivar = 0; ivar < nvar; ivar++)
 		{
-
 			int resx_data;
 			int resy_data;
+
 			double err_L1; // physical space
 			double err_L2; // physical space
 			double err_Linf; // physical space

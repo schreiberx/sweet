@@ -2,7 +2,7 @@
  * PararealSimulationVariables.hpp
  *
  *  Created on: 18 Apr 2016
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONVARIABLES_HPP_
@@ -16,12 +16,16 @@
 #include <unistd.h>
 #include <getopt.h>
 
+#include <iostream>
+#include <sweet/ProgramArguments.hpp>
+#include <sweet/shacks/ShackInterface.hpp>
 
 
 /**
  * Simulation variables which are specific to Parareal
  */
-class Parareal_SimulationVariables
+class Parareal_SimulationVariables	:
+	public sweet::ClassDictionaryInterface
 {
 public:
 	/**
@@ -107,76 +111,8 @@ public:
 	 */
 	int max_iter = -1;
 
-	/**
-	 * setup long options for program arguments
-	 */
 public:
-	void setup_longOptionList(
-			struct option io_long_options[],		///< string and meta information for long options
-			int &io_next_free_program_option,	///< number of free options, has to be increased for each new option
-			int i_max_options					///< maximum number of options
-	)
-	{
-		if (io_next_free_program_option+8 > i_max_options)
-		{
-			std::cerr << "Max number of program options exceeded" << std::endl;
-			exit(-1);
-		}
-
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-slices", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-convergence-threshold", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-verbosity", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-enabled", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-max-simulation-time", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-method", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-order", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestepping-order2", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-coarse-timestep-size", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-load-ref-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-path-ref-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-load-fine-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-path-fine-csv-files", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-store-iterations", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-spatial-coarsening", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-
-		io_long_options[io_next_free_program_option] = {"parareal-max-iter", required_argument, 0, (int)256+io_next_free_program_option};
-		io_next_free_program_option++;
-	}
-
-
-	/**
-	 * Callback method to setup the values for the option with given index.
-	 */
-	void printOptions()
+	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << std::endl;
 		std::cout << "Parareal options:" << std::endl;
@@ -199,9 +135,34 @@ public:
 		std::cout << std::endl;
 	}
 
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
+	{
+		i_pa.getArgumentValueByKey("--parareal-coarse-slices", coarse_slices);
+		i_pa.getArgumentValueByKey("--parareal-convergence-threshold", convergence_error_threshold);
+		i_pa.getArgumentValueByKey("--parareal-verbosity", verbosity);
+		i_pa.getArgumentValueByKey("--parareal-enabled", enabled);
+		i_pa.getArgumentValueByKey("--parareal-max-simulation-time", max_simulation_time);
+		i_pa.getArgumentValueByKey("--parareal-coarse-timestepping-method", coarse_timestepping_method);
+		i_pa.getArgumentValueByKey("--parareal-coarse-timestepping-order", coarse_timestepping_order);
+		i_pa.getArgumentValueByKey("--parareal-coarse-timestepping-order2", coarse_timestepping_order2);
+		i_pa.getArgumentValueByKey("--parareal-coarse-timestep-size", coarse_timestep_size);
+		i_pa.getArgumentValueByKey("--parareal-load-ref-csv-files", load_ref_csv_files);
+		i_pa.getArgumentValueByKey("--parareal-path-ref-csv-files", path_ref_csv_files);
+		i_pa.getArgumentValueByKey("--parareal-load-fine-csv-files", load_fine_csv_files);
+		i_pa.getArgumentValueByKey("--parareal-path-fine-csv-files", path_fine_csv_files);
+		i_pa.getArgumentValueByKey("--parareal-store-iterations", store_iterations);
+		i_pa.getArgumentValueByKey("--parareal-spatial-coarsening", spatial_coarsening);
+		i_pa.getArgumentValueByKey("--parareal-max-iter", max_iter);
 
+		if (max_simulation_time <= 0)
+			return error.set("You need to use --parareal-max-simulation-time with parareal");
 
-	void outputConfig()
+		return error.forwardWithPositiveReturn(i_pa.error);
+	}
+
+	virtual void printClass(
+		const std::string& i_prefix = ""
+	)
 	{
 		std::cout << std::endl;
 		std::cout << "Parareal" << std::endl;
@@ -224,91 +185,7 @@ public:
 		std::cout << " + max_iter: " << max_iter << std::endl;
 		std::cout << std::endl;
 	}
-
-
-
-	/**
-	 * Callback method to setup the values for the option with given index.
-	 *
-	 * \return Number of processed options if nothing was found or 0 in case of a found option
-	 */
-	int setup_longOptionValue(
-			int i_option_index,		///< Index relative to the parameters setup in this class only, starts with 0
-			const char *i_value		///< Value in string format
-	)
-	{
-		switch(i_option_index)
-		{
-		case 0:
-			coarse_slices = atoi(i_value);
-			return -1;
-
-		case 1:
-			convergence_error_threshold = atof(i_value);
-			return -1;
-
-		case 2:
-			verbosity = atoi(i_value);
-			return -1;
-
-		case 3:
-			enabled = atoi(i_value);
-			return -1;
-
-		case 4:
-			max_simulation_time = atof(i_value);
-			return -1;
-
-		case 5:
-			coarse_timestepping_method = i_value;
-			return -1;
-
-		case 6:
-			coarse_timestepping_order = atoi(i_value);
-			return -1;
-
-		case 7:
-			coarse_timestepping_order2 = atoi(i_value);
-			return -1;
-
-		case 8:
-			coarse_timestep_size = atof(i_value);
-			return -1;
-
-		case 9:
-			load_ref_csv_files = atoi(i_value);
-			return -1;
-
-		case 10:
-			path_ref_csv_files = i_value;
-			return -1;
-
-		case 11:
-			load_fine_csv_files = atoi(i_value);
-			return -1;
-
-		case 12:
-			path_fine_csv_files = i_value;
-			return -1;
-
-		case 13:
-			store_iterations = atoi(i_value);
-			return -1;
-
-		case 14:
-			spatial_coarsening = atoi(i_value);
-			return -1;
-
-		case 15:
-			max_iter = atoi(i_value);
-			return -1;
-		}
-
-		return 16;
-	}
-
-
 };
 
 
-#endif /* SRC_INCLUDE_PARAREAL_PARAREAL_SIMULATIONVARIABLES_HPP_ */
+#endif

@@ -1,7 +1,7 @@
 /*
  * SWE_Sphere_TS_l_irk_na_erk_vd.cpp
  *
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "SWE_Sphere_TS_l_irk_na_erk_vd.hpp"

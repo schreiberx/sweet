@@ -2,7 +2,7 @@
  * REXI.hpp
  *
  *  Created on: 3 Aug 2015
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_INCLUDE_REXI_REXI_HPP_
 #define SRC_INCLUDE_REXI_REXI_HPP_
