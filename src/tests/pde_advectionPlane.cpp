@@ -10,11 +10,6 @@
 
 #include "../programs/pde_advectionPlane/ProgramPDEAdvectionPlane.hpp"
 
-// Plane data config
-sweet::PlaneDataConfig planeDataConfigInstance;
-sweet::PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
-
-
 int main(int i_argc, char *i_argv[])
 {
 	ProgramPDEAdvectionPlane sim(i_argc, i_argv);
@@ -51,13 +46,25 @@ int main(int i_argc, char *i_argv[])
 		 */
 		sim.shackTimestepControl->current_timestep_size = dt/std::pow(2.0, loop_counter);
 
-		if (sim.shackTimeDisc->timestepping_method == "na_sl")
+		/*
+		 * We need higher resolution for
+		 * - SL methods or if using
+		 * - finite differences in space
+		 */
+		int expected_order;
+
+		if (
+				sim.shackTimeDisc->timestepping_method == "na_sl" ||
+				sim.shackPlaneDataOps->space_use_spectral_basis_diffs == false
+		)
 		{
 			sim.shackPlaneDataOps->space_res_spectral[0] = i;
 			sim.shackPlaneDataOps->space_res_spectral[1] = i;
 
 			sim.shackPlaneDataOps->space_res_physical[0] = 0;
 			sim.shackPlaneDataOps->space_res_physical[1] = 0;
+
+			expected_order = 2;
 		}
 		else
 		{
@@ -66,13 +73,14 @@ int main(int i_argc, char *i_argv[])
 
 			sim.shackPlaneDataOps->space_res_physical[0] = 0;
 			sim.shackPlaneDataOps->space_res_physical[1] = 0;
-		}
 
+			expected_order = sim.shackTimeDisc->timestepping_order;
+		}
 
 		// setup 3rd part
 		sim.setup_3_data();
 
-		std::cout << "Testing with " << planeDataConfigInstance.getUniqueIDString() << std::endl;
+		std::cout << "Testing with " << sim.data.planeDataConfig.getUniqueIDString() << std::endl;
 		std::cout << "Testing with dt=" << sim.shackTimestepControl->current_timestep_size << std::endl;
 
 		{
@@ -89,14 +97,13 @@ int main(int i_argc, char *i_argv[])
 				double conv = prev_max_error / max_error;
 				std::cout << "Convergence: " << conv << std::endl;
 
-				if (conv*1.1 < std::pow(2.0, (double)sim.shackTimeDisc->timestepping_order))
+				if (conv*1.1 < std::pow(2.0, (double)expected_order))
 				{
 					std::cerr << "Convergence too low!" << std::endl;
 					exit(1);
 				}
 
-
-				if (conv*0.9 > std::pow(2.0, (double)(sim.shackTimeDisc->timestepping_order+1)))
+				if (conv*0.9 > std::pow(2.0, (double)(expected_order+1)))
 				{
 					std::cerr << "Convergence too high, stopping here!" << std::endl;
 					exit(1);

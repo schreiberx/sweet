@@ -15,7 +15,7 @@
 
 /**
  * Setup Gaussian Bump
- **/
+ */
 class PDEAdvectionPlaneBenchGaussianBump
 {
 	sweet::PlaneOperators &op;

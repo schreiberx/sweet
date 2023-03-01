@@ -321,9 +321,10 @@ public:
 		shackTimestepControl->timestepHelperEnd();
 
 		if (shackIOData->verbosity > 2)
+		{
 			std::cout << "timestep: " << shackTimestepControl->current_timestep_nr << ": dt=" << shackTimestepControl->current_timestep_size << ": t=" << shackTimestepControl->current_simulation_time << std::endl;
-
-		std::cout << "error :" << getLMaxError() << std::endl;
+			std::cout << "error:" << getLMaxError() << std::endl;
+		}
 		return true;
 	}
 

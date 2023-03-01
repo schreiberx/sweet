@@ -40,7 +40,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << " + sweParametersSphere->printShack()" << std::endl;
 	sweParametersSphere.printShack("    ");
 
-#if 0
+#if 1
 	/*
 	 * If you activate this, this should indeed trigger an error
 	 */

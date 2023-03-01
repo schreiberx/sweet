@@ -25,7 +25,7 @@ def exec_program(progparams, shell=False, catch_output=True):
     if catch_output:
         import subprocess
         from subprocess import Popen, PIPE
-        if False:
+        if True:
             p = Popen(progparams, stdout=PIPE, stderr=PIPE, shell=shell)
         else:
             p = subprocess.run(progparams, stdout=PIPE, stderr=PIPE, shell=shell)

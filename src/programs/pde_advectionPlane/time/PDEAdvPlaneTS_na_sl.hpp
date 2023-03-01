@@ -10,29 +10,20 @@
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/plane/Plane.hpp>
 
-#include "PDEAdvPlaneTS_interface.hpp"
+#include "PDEAdvPlaneTS_baseInterface.hpp"
 
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
-#include <sweet/core/shacksShared/ShackTimestepControl.hpp>
-#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
-#include "ShackPDEAdvectionPlaneTimeDiscretization.hpp"
 #include "../benchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
 
 #include <sweet/core/plane/PlaneDataSampler.hpp>
 #include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
 
 
-class PDEAdvPlaneTS_na_sl	: public PDEAdvPlaneTS_interface
+class PDEAdvPlaneTS_na_sl	:
+		public PDEAdvPlaneTS_baseInterface
 {
-	sweet::ErrorBase error;
-
-	sweet::ShackTimestepControl *shackTimestepControl;
-	sweet::ShackPlaneDataOps *shackPlaneDataOps;
-	ShackPDEAdvectionPlaneTimeDiscretization *shackTimeDisc;
-	ShackPDEAdvectionPlaneBenchmarks *shackBenchmark;
-
-	sweet::PlaneOperators &op;
+	sweet::PlaneOperators *ops;
 
 	int timestepping_order;
 
@@ -48,15 +39,16 @@ class PDEAdvPlaneTS_na_sl	: public PDEAdvPlaneTS_interface
 	sweet::ScalarDataArray posx_a, posy_a;
 
 public:
-	PDEAdvPlaneTS_na_sl(
-			sweet::ShackDictionary &io_shackDict,
-			sweet::PlaneOperators &i_op
+	PDEAdvPlaneTS_na_sl();
+
+	~PDEAdvPlaneTS_na_sl();
+
+	void setup(
+			sweet::PlaneOperators *io_ops
 		);
 
 private:
-	void _setup(
-			int i_order	///< order of RK time stepping method
-	);
+	void _setup();
 
 public:
 	void run_timestep(
@@ -67,10 +59,6 @@ public:
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
 	);
-
-
-
-	virtual ~PDEAdvPlaneTS_na_sl();
 };
 
 #endif

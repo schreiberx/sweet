@@ -11,10 +11,10 @@
 #include <sweet/core/plane/Plane.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#include "ShackPDEAdvectionPlaneBenchmarks.hpp"
+#include "benchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 
-#include "PDEAdvectionPlaneBenchGaussianBump.hpp"
+#include "benchmarks/PDEAdvectionPlaneBenchGaussianBump.hpp"
 
 
 

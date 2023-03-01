@@ -21,6 +21,9 @@ jg.runtime.verbosity = 5
 
 jg.runtime.reuse_plans = "save"
 
+jg.unique_id_filter = ['compile', 'parallelization', 'runtime.benchmark']
+
+
 params_domain_size_scales = [1, 2]
 params_domain_size_scales = [2]
 
@@ -31,6 +34,7 @@ params_compile_mode = ['release']
 params_compile_plane_spectral_dealiasing = ['enable']
 
 params_runtime_spectral_derivs = [0, 1]
+#params_runtime_spectral_derivs = [1]
 
 #params_runtime_mode_res_x = [64, 128]
 #params_runtime_mode_res_y = [64, 128]

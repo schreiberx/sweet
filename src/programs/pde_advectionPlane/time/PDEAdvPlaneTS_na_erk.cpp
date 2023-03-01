@@ -8,6 +8,26 @@
 #include "PDEAdvPlaneTS_na_erk.hpp"
 
 
+PDEAdvPlaneTS_na_erk::PDEAdvPlaneTS_na_erk()
+{
+}
+
+
+
+PDEAdvPlaneTS_na_erk::~PDEAdvPlaneTS_na_erk()
+{
+}
+
+
+/*
+ * Setup
+ */
+void PDEAdvPlaneTS_na_erk::setup(sweet::PlaneOperators *io_ops)
+{
+	ops = io_ops;
+	timestepping_order = shackPDEAdvTimeDisc->timestepping_order;
+}
+
 
 /*
  * Main routine for method to be used in case of finite differences
@@ -32,29 +52,29 @@ void PDEAdvPlaneTS_na_erk::euler_timestep_update(
 	 * This is the case because the velocity field is divergence free!!!
 	 */
 
-	if (shackBenchmark->getExternalForcesCallback != nullptr)
+	if (shackPDEAdvBenchmark->getExternalForcesCallback != nullptr)
 	{
 		sweet::PlaneData_Spectral u(i_phi.planeDataConfig);
 		sweet::PlaneData_Spectral v(i_phi.planeDataConfig);
 
-		shackBenchmark->getExternalForcesCallback(
+		shackPDEAdvBenchmark->getExternalForcesCallback(
 				1,
 				shackTimestepControl->current_simulation_time,
 				&u,
-				shackBenchmark
+				shackPDEAdvBenchmark
 			);
-		shackBenchmark->getExternalForcesCallback(
+		shackPDEAdvBenchmark->getExternalForcesCallback(
 				2,
 				shackTimestepControl->current_simulation_time,
 				&v,
-				shackBenchmark
+				shackPDEAdvBenchmark
 			);
 
-		o_phi_t = -op.diff_c_x(i_phi*u) - op.diff_c_y(i_phi*v);
+		o_phi_t = -ops->diff_c_x(i_phi*u) - ops->diff_c_y(i_phi*v);
 	}
 	else
 	{
-		o_phi_t = -op.diff_c_x(i_phi*i_u) - op.diff_c_y(i_phi*i_v);
+		o_phi_t = -ops->diff_c_x(i_phi*i_u) - ops->diff_c_y(i_phi*i_v);
 	}
 
 	o_u_t.spectral_set_zero();
@@ -83,55 +103,22 @@ void PDEAdvPlaneTS_na_erk::run_timestep(
 			i_simulation_timestamp
 		);
 
-	if (shackBenchmark->getExternalForcesCallback != nullptr)
+	if (shackPDEAdvBenchmark->getExternalForcesCallback != nullptr)
 	{
 		// this is just called for cosmetic reasons to update the velocity field
-		shackBenchmark->getExternalForcesCallback(
+		shackPDEAdvBenchmark->getExternalForcesCallback(
 				1,
 				shackTimestepControl->current_simulation_time+i_dt,
 				&io_u,
-				shackBenchmark
+				shackPDEAdvBenchmark
 			);
-		shackBenchmark->getExternalForcesCallback(
+		shackPDEAdvBenchmark->getExternalForcesCallback(
 				2,
 				shackTimestepControl->current_simulation_time+i_dt,
 				&io_v,
-				shackBenchmark
+				shackPDEAdvBenchmark
 			);
 	}
 }
 
-
-
-/*
- * Setup
- */
-void PDEAdvPlaneTS_na_erk::_setup(
-		int i_order	///< order of RK time stepping method
-)
-{
-	timestepping_order = i_order;
-}
-
-
-PDEAdvPlaneTS_na_erk::PDEAdvPlaneTS_na_erk(
-		sweet::ShackDictionary &io_shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		op(i_op)
-{
-	shackTimestepControl = io_shackDict.getAutoRegistration<sweet::ShackTimestepControl>();
-	shackTimeDisc = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneTimeDiscretization>();
-	shackBenchmark = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneBenchmarks>();
-
-	_setup(shackTimeDisc->timestepping_order);
-
-	ERROR_CHECK_WITH_RETURN(io_shackDict);
-}
-
-
-
-PDEAdvPlaneTS_na_erk::~PDEAdvPlaneTS_na_erk()
-{
-}
 

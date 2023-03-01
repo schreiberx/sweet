@@ -6,10 +6,10 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <sweet/core/ProgramArguments.hpp>
-#include "../sweet/shacks/ShackInterface.hpp"
+#include <sweet/shacks/ShackInterface.hpp>
 
 struct XBraid_SimulationVariables	:
-	public ShackInterface
+	public sweet::ShackInterface
 {
 
 	/**
@@ -224,7 +224,7 @@ struct XBraid_SimulationVariables	:
 		std::cout << "" << std::endl;
 	}
 
-	bool processProgramArguments(ProgramArguments &i_pa)
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		i_pa.getArgumentValueByKey("--xbraid-enabled", xbraid_enabled);
 		i_pa.getArgumentValueByKey("--xbraid-max-levels", xbraid_max_levels);

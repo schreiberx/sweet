@@ -8,13 +8,13 @@
 #ifndef SRC_PROGRAMS_PDE_ADVECTION_PLANE_TIMESTEPPERS_HPP_
 #define SRC_PROGRAMS_PDE_ADVECTION_PLANE_TIMESTEPPERS_HPP_
 
-#include "PDEAdvPlaneTS_interface.hpp"
-#include "PDEAdvPlaneTS_na_erk.hpp"
-#include "PDEAdvPlaneTS_na_sl.hpp"
-
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
-#include "ShackPDEAdvectionPlaneTimeDiscretization.hpp"
+
+#include "time/PDEAdvPlaneTS_baseInterface.hpp"
+#include "time/PDEAdvPlaneTS_na_erk.hpp"
+#include "time/PDEAdvPlaneTS_na_sl.hpp"
+#include "time/ShackPDEAdvectionPlaneTimeDiscretization.hpp"
 
 /**
  * Advection for the plane time integrators
@@ -26,7 +26,7 @@ public:
 
 	PDEAdvPlaneTS_na_erk *na_erk;
 	PDEAdvPlaneTS_na_sl *na_sl;
-	PDEAdvPlaneTS_interface *master;
+	PDEAdvPlaneTS_baseInterface *master;
 
 	ShackPDEAdvectionPlaneTimeDiscretization *shackTimeDisc;
 
@@ -73,25 +73,30 @@ public:
 			sweet::PlaneOperators &i_op
 	)
 	{
-		// Get this shack back again in case a clear() followed a setup() without the shackRegistration()
-		shackTimeDisc = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneTimeDiscretization>();
+		assert(shackTimeDisc != nullptr);
 
-		std::cout << "Setting up time stepping method '" << shackTimeDisc << "'" << std::endl;
 		std::cout << "Setting up time stepping method '" << shackTimeDisc->timestepping_method << "'" << std::endl;
 
 		if (shackTimeDisc->timestepping_method == "na_erk")
 		{
-			na_erk = new PDEAdvPlaneTS_na_erk(io_shackDict, i_op);
+			na_erk = new PDEAdvPlaneTS_na_erk;
+			na_erk->registerShacks(&io_shackDict);
+			na_erk->setup(&i_op);
+
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(*na_erk);
 
-			master = &(PDEAdvPlaneTS_interface&)*na_erk;
+			master = static_cast<PDEAdvPlaneTS_baseInterface*>(na_erk);
 			return true;
 		}
 		else if (shackTimeDisc->timestepping_method == "na_sl")
 		{
-			na_sl = new PDEAdvPlaneTS_na_sl(io_shackDict, i_op);
+			na_sl = new PDEAdvPlaneTS_na_sl;
+			na_sl->registerShacks(&io_shackDict);
+			na_sl->setup(&i_op);
 
-			master = &(PDEAdvPlaneTS_interface&)*na_sl;
+			ERROR_CHECK_WITH_RETURN_BOOLEAN(*na_sl);
+
+			master = static_cast<PDEAdvPlaneTS_baseInterface*>(na_sl);
 			return true;
 		}
 
