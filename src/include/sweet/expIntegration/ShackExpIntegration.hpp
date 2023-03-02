@@ -220,7 +220,7 @@ public:
 	{
 		bool rexi_files_given;
 
-		i_pa.getArgumentValueByKey("--rexi-method", exp_method);	// depreated
+		i_pa.getArgumentValueByKey("--rexi-method", exp_method);	// deprecated
 		i_pa.getArgumentValueByKey("--exp-method", exp_method);
 
 		i_pa.getArgumentValueByKey("--taylor_num_expansions", taylor_num_expansions);

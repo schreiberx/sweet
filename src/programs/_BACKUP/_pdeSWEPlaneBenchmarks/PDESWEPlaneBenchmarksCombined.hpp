@@ -34,7 +34,7 @@
 #include <sweet/core/shacksShared/ShackSWEPlaneBenchmark.hpp>
 
 
-class PDESWEPlaneBenchmarksCombined
+class _PDESWEPlaneBenchmarksCombined
 {
 public:
 	sweet::ErrorBase error;

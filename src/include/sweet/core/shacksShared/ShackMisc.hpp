@@ -27,9 +27,6 @@ public:
 	/// do instability checks for simulation
 	int instability_checks = 1;
 
-	/// Diffusion applied only on nonlinear divergence
-	int use_nonlinear_only_visc = 0;
-
 	/*
 	 * Some flexible variable where one can just add options like
 	 * --comma-separated-tags=galewsky_analytical_geostrophic_setup
@@ -47,7 +44,6 @@ public:
 	bool processProgramArguments(ProgramArguments &i_pa)
 	{
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
-		i_pa.getArgumentValueByKey("--use-nonlinear-only-visc", use_nonlinear_only_visc);
 		i_pa.getArgumentValueByKey("--comma-separated-tags", comma_separated_tags);
 
 		return error.forwardWithPositiveReturn(i_pa.error);
@@ -61,7 +57,6 @@ public:
 		std::cout << std::endl;
 		std::cout << "MISC:" << std::endl;
 		std::cout << " + instability_checks: " << instability_checks << std::endl;
-		std::cout << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
 		std::cout << " + comma_separated_tags: " << comma_separated_tags << std::endl;
 		std::cout << std::endl;
 	}

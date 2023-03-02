@@ -10,21 +10,18 @@
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/plane/Plane.hpp>
 
-#include "PDEAdvPlaneTS_baseInterface.hpp"
+#include "PDEAdvPlaneTS_BaseInterface.hpp"
 
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
-#include "../benchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
-
 #include <sweet/core/plane/PlaneDataSampler.hpp>
 #include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
+#include "../benchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
 
 
 class PDEAdvPlaneTS_na_sl	:
-		public PDEAdvPlaneTS_baseInterface
+		public PDEAdvPlaneTS_BaseInterface
 {
-	sweet::PlaneOperators *ops;
-
 	int timestepping_order;
 
 	sweet::PlaneDataSampler sampler2D;
@@ -43,9 +40,7 @@ public:
 
 	~PDEAdvPlaneTS_na_sl();
 
-	void setup(
-			sweet::PlaneOperators *io_ops
-		);
+	bool setup(sweet::PlaneOperators *io_ops);
 
 private:
 	void _setup();

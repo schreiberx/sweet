@@ -19,15 +19,12 @@
 #include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
 
 
-class SWE_Plane_TS_l_rexi_na_sl_nd_etdrk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_rexi_na_sl_nr_etdrk	: public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
-
 	SWE_Plane_TS_l_rexi ts_phi0_rexi;
 	SWE_Plane_TS_l_rexi ts_phi1_rexi;
 	SWE_Plane_TS_l_rexi ts_phi2_rexi;
@@ -58,17 +55,13 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_etdrk	: public SWE_Plane_TS_interface
 
 
 public:
-	SWE_Plane_TS_l_rexi_na_sl_nd_etdrk(
-			sweet::ShackDictionary *shackDict,
-			sweet::PlaneOperators &i_op
-		);
-
-
-	void setup(
-		int i_timestepping_order,
-		bool i_use_only_linear_divergence
+	bool setup(
+			sweet::PlaneOperators *io_ops
 	);
 
+	bool registerShacks(
+			sweet::ShackDictionary *io_shackDict
+	);
 
 	void euler_timestep_update_nonlinear(
 			const sweet::PlaneData_Spectral &i_h,	///< prognostic variables
@@ -107,8 +100,7 @@ public:
 	}
 #endif
 
-
-	virtual ~SWE_Plane_TS_l_rexi_na_sl_nd_etdrk();
+	virtual ~SWE_Plane_TS_l_rexi_na_sl_nr_etdrk() {}
 };
 
 #endif

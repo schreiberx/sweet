@@ -1,6 +1,4 @@
 /*
- * SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp
- *
  *  Created on: 09 Oct 2017
  *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
@@ -8,12 +6,12 @@
  *      based on Martin Schreiber ETD timestepper
  */
 
-#include "SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp"
+#include "SWE_Plane_TS_l_rexi_na_sl_nr_etdrk.hpp"
 
 /*
  * Main routine for method to be used in case of finite differences
  */
-void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
+void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::euler_timestep_update_nonlinear(
 		const sweet::PlaneData_Spectral &i_h,	///< prognostic variables
 		const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
 		const sweet::PlaneData_Spectral &i_v,	///< prognostic variables
@@ -33,30 +31,30 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
 	/*
-	 * o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	 * o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	 * o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	 * o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
+	 * o_u_t = -i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
+	 * o_v_t = -i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 	 */
 	// In lagrangian form, the only nonlinearity is the nonlinear divergence
-	o_u_t.spectral_set_zero(); //-i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t.spectral_set_zero(); // = 0.0; //-i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	o_u_t.spectral_set_zero(); //-i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
+	o_v_t.spectral_set_zero(); // = 0.0; //-i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 
 	// linear div only
 	if (use_only_linear_divergence)
 	{
-		o_h_t.spectral_set_zero(); // = 0.0; //-op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_t.spectral_set_zero(); // = 0.0; //-ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
 	}
 	else
 	{
 		// nonlinear div
-		o_h_t = -i_h*(op.diff_c_x(i_u) + op.diff_c_y(i_v));
+		o_h_t = -i_h*(ops->diff_c_x(i_u) + ops->diff_c_y(i_v));
 		// Smooth spectrum to avoid instability
-		if (simVars.misc.use_nonlinear_only_visc != 0)
+		if (shackPDESWEPlane->use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
-			o_h_t= op.implicit_diffusion(o_h_t, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			o_h_t= ops->implicit_diffusion(o_h_t, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 
@@ -65,7 +63,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::euler_timestep_update_nonlinear(
 
 
 
-void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
+void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -78,7 +76,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_etdrk: Only constant time step size allowed (Please set --dt)");
 
 
-	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+	const sweet::PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 	// Tmp vars
 	//h, u, v tmp
@@ -124,12 +122,12 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 			posx_a,		posy_a,
 			i_dt,
 			posx_d,	posy_d,			// output
-			simVars.sim.plane_domain_size,
+			shackPlaneDataOps->plane_domain_size,
 			&staggering,
 			2, //simVars.disc.timestepping_order,
 
-			simVars.disc.semi_lagrangian_max_iterations,
-			simVars.disc.semi_lagrangian_convergence_threshold
+			shackPDESWETimeDisc->semi_lagrangian_max_iterations,
+			shackPDESWETimeDisc->semi_lagrangian_convergence_threshold
 	);
 
 	if (timestepping_order == 1 || timestepping_order == 2)
@@ -318,74 +316,114 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::run_timestep(
 
 
 
+
+bool SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::registerShacks(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+
+	ts_phi0_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi0_rexi);
+
+	ts_phi1_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi1_rexi);
+
+	ts_phi2_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi2_rexi);
+
+
+	ts_ups0_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups0_rexi);
+
+	ts_ups1_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups1_rexi);
+
+	ts_ups2_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups2_rexi);
+
+	ts_ups3_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups3_rexi);
+
+
+	ts_psi1_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi1_rexi);
+
+	ts_psi2_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi2_rexi);
+
+	ts_psi3_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi3_rexi);
+
+	return true;
+}
+
+
 /**
  * Setup
  */
-void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
-	int i_timestepping_order,
-	bool i_use_only_linear_divergence
+bool SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::setup(
+		sweet::PlaneOperators *io_ops
 )
 {
-	timestepping_order = i_timestepping_order;
-	use_only_linear_divergence = i_use_only_linear_divergence;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
-	ts_phi0_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
+
+	ts_phi0_rexi.setup(io_ops, "phi0");
 
 	if (timestepping_order == 1 && !use_only_linear_divergence)
 	{
-		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size);
-		ts_psi1_rexi.setup(simVars.rexi, "psi1", simVars.timecontrol.current_timestep_size);
+		ts_phi1_rexi.setup(io_ops, "phi1");
+		ts_psi1_rexi.setup(io_ops, "psi1");
 	}
 	else if (timestepping_order == 2 && !use_only_linear_divergence)
 	{
-		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size);
-		ts_phi2_rexi.setup(simVars.rexi, "phi2", simVars.timecontrol.current_timestep_size);
+		ts_phi1_rexi.setup(io_ops, "phi1");
+		ts_phi2_rexi.setup(io_ops, "phi2");
 
-		ts_psi1_rexi.setup(simVars.rexi, "psi1", simVars.timecontrol.current_timestep_size);
-		ts_psi2_rexi.setup(simVars.rexi, "psi2", simVars.timecontrol.current_timestep_size);
-
+		ts_psi1_rexi.setup(io_ops, "psi1");
+		ts_psi2_rexi.setup(io_ops, "psi2");
 	}
 	else if (timestepping_order == 4 && !use_only_linear_divergence)
 	{
-		ts_phi1_rexi.setup(simVars.rexi, "phi1", simVars.timecontrol.current_timestep_size*0.5);
-		ts_phi2_rexi.setup(simVars.rexi, "phi2", simVars.timecontrol.current_timestep_size*0.5);
+		ts_phi1_rexi.setup(io_ops, "phi1");
+		ts_phi2_rexi.setup(io_ops, "phi2");
 
-		ts_psi1_rexi.setup(simVars.rexi, "psi1", simVars.timecontrol.current_timestep_size*0.5);
-		ts_psi2_rexi.setup(simVars.rexi, "psi2", simVars.timecontrol.current_timestep_size*0.5);
-		ts_psi3_rexi.setup(simVars.rexi, "psi3", simVars.timecontrol.current_timestep_size*0.5);
+		ts_psi1_rexi.setup(io_ops, "psi1");
+		ts_psi2_rexi.setup(io_ops, "psi2");
+		ts_psi3_rexi.setup(io_ops, "psi3");
 
-		ts_ups0_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
-		ts_ups1_rexi.setup(simVars.rexi, "ups1", simVars.timecontrol.current_timestep_size);
-		ts_ups2_rexi.setup(simVars.rexi, "ups2", simVars.timecontrol.current_timestep_size);
-		ts_ups3_rexi.setup(simVars.rexi, "ups3", simVars.timecontrol.current_timestep_size);
+		ts_ups0_rexi.setup(io_ops, "phi0");
+		ts_ups1_rexi.setup(io_ops, "ups1");
+		ts_ups2_rexi.setup(io_ops, "ups2");
+		ts_ups3_rexi.setup(io_ops, "ups3");
 	}
 
-	if (simVars.disc.space_grid_use_c_staggering)
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_etdrk: Staggering not supported for l_rexi_na_sl_nd_etdrk");
 
-	//with_linear_div_only = i_use_linear_div;
-
 	// Setup sampler for future interpolations
-	sampler2D.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	sampler2D.setup(shackPlaneDataOps->plane_domain_size, ops->planeDataConfig);
 
 	// Setup semi-lag
-	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	semiLagrangian.setup(shackPlaneDataOps->plane_domain_size, ops->planeDataConfig);
 
 
-	sweet::PlaneData_Physical tmp_x(op.planeDataConfig);
+	sweet::PlaneData_Physical tmp_x(ops->planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)i)*simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+		io_data = ((double)i)*shackPlaneDataOps->plane_domain_size[0]/(double)shackPlaneDataOps->space_res_physical[0];
 			},
 			false
 	);
 
-	sweet::PlaneData_Physical tmp_y(op.planeDataConfig);
+	sweet::PlaneData_Physical tmp_y(ops->planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)j)*simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+		io_data = ((double)j)*shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1];
 			},
 			false
 	);
@@ -395,50 +433,24 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::setup(
 	sweet::ScalarDataArray pos_y = sweet::Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 
-	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
-	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+	double cell_size_x = shackPlaneDataOps->plane_domain_size[0]/(double)shackPlaneDataOps->space_res_physical[0];
+	double cell_size_y = shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1];
 
 	// Initialize arrival points with h position
 	posx_a = pos_x+0.5*cell_size_x;
 	posy_a = pos_y+0.5*cell_size_y;
 
-}
 
+	h_prev.setup(ops->planeDataConfig);
+	u_prev.setup(ops->planeDataConfig);
+	v_prev.setup(ops->planeDataConfig);
 
-SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::SWE_Plane_TS_l_rexi_na_sl_nd_etdrk(
-		sweet::ShackDictionary *shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-				shackDict(io_shackDict),
-				op(i_op),
-				ts_phi0_rexi(simVars, op),
-				ts_phi1_rexi(simVars, op),
-				ts_phi2_rexi(simVars, op),
+	posx_a.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
+	posy_a.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
 
-				ts_ups0_rexi(simVars, op),
-				ts_ups1_rexi(simVars, op),
-				ts_ups2_rexi(simVars, op),
-				ts_ups3_rexi(simVars, op),
+	posx_d.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
+	posy_d.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
 
-				ts_psi1_rexi(simVars, op),
-				ts_psi2_rexi(simVars, op),
-				ts_psi3_rexi(simVars, op),
-
-				h_prev(i_op.planeDataConfig),
-				u_prev(i_op.planeDataConfig),
-				v_prev(i_op.planeDataConfig),
-
-				posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-				posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-
-				posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-				posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
-{
-}
-
-
-
-SWE_Plane_TS_l_rexi_na_sl_nd_etdrk::~SWE_Plane_TS_l_rexi_na_sl_nd_etdrk()
-{
+	return true;
 }
 

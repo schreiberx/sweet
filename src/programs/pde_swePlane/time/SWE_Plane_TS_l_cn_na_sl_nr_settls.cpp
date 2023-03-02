@@ -9,7 +9,7 @@
  *					which was also written by Pedro Peixoto
  */
 
-#include "SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp"
+#include "SWE_Plane_TS_l_cn_na_sl_nr_settls.hpp"
 
 /**
  * Solve  SWE with Crank-Nicolson implicit time stepping
@@ -42,7 +42,7 @@
  * http://onlinelibrary.wiley.com/doi/10.1002/qj.200212858314/pdf
  *
  */
-void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
+void SWE_Plane_TS_l_cn_na_sl_nr_settls::run_timestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -76,9 +76,9 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	sweet::ScalarDataArray posy_d = posy_a;
 
 	// Parameters
-	double h_bar = simVars.sim.h0;
-	double g = simVars.sim.gravitation;
-	double f0 = simVars.sim.plane_rotating_f0;
+	double h_bar = shackPDESWEPlane->h0;
+	double g = shackPDESWEPlane->gravitation;
+	double f0 = shackPDESWEPlane->plane_rotating_f0;
 	double dt = i_dt;
 	double alpha = 2.0/dt;
 	double kappa = alpha*alpha;
@@ -96,21 +96,21 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 			posx_a,	posy_a,
 			dt,
 			posx_d,	posy_d,
-			simVars.sim.plane_domain_size,
+			shackPlaneDataOps->plane_domain_size,
 			&staggering,
-			simVars.disc.timestepping_order,
+			shackPDESWETimeDisc->timestepping_order,
 
-			simVars.disc.semi_lagrangian_max_iterations,
-			simVars.disc.semi_lagrangian_convergence_threshold
+			shackPDESWETimeDisc->semi_lagrangian_max_iterations,
+			shackPDESWETimeDisc->semi_lagrangian_convergence_threshold
 
 	);
 
 
 	// Calculate Divergence and vorticity spectrally
-	sweet::PlaneData_Spectral div = op.diff_c_x(io_u) + op.diff_c_y(io_v);
+	sweet::PlaneData_Spectral div = ops->diff_c_x(io_u) + ops->diff_c_y(io_v);
 
 	// This could be pre-stored
-	sweet::PlaneData_Spectral div_prev = op.diff_c_x(u_prev) + op.diff_c_y(v_prev);
+	sweet::PlaneData_Spectral div_prev = ops->diff_c_x(u_prev) + ops->diff_c_y(v_prev);
 
 	/**
 	 * Calculate the RHS
@@ -123,8 +123,8 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	 * 
 	 *    = 1/2 * dt (2.0/dt U + L U + 2.0 * N(U))
 	 */
-	sweet::PlaneData_Spectral rhs_u = alpha * io_u + f0 * io_v    - g * op.diff_c_x(io_h);
-	sweet::PlaneData_Spectral rhs_v =  - f0 * io_u + alpha * io_v - g * op.diff_c_y(io_h);
+	sweet::PlaneData_Spectral rhs_u = alpha * io_u + f0 * io_v    - g * ops->diff_c_x(io_h);
+	sweet::PlaneData_Spectral rhs_v =  - f0 * io_u + alpha * io_v - g * ops->diff_c_y(io_h);
 	sweet::PlaneData_Spectral rhs_h = alpha * io_h - h_bar * div;
 
 	// All the RHS are to be evaluated at the departure points
@@ -142,17 +142,17 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 		// Extrapolation
 		sweet::PlaneData_Spectral hdiv = 2.0 * io_h * div - h_prev * div_prev;
 		sweet::PlaneData_Spectral nonlin(io_h.planeDataConfig);
-		if (simVars.misc.use_nonlinear_only_visc != 0)
+		if (shackPDESWEPlane->use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
 			// Add diffusion (stabilisation)
-			hdiv = op.implicit_diffusion(hdiv, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			hdiv = ops->implicit_diffusion(hdiv, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 		// Average
-	        PlaneData_Physical hdiv_phys = hdiv.toPhys();
+	    sweet::PlaneData_Physical hdiv_phys = hdiv.toPhys();
 		nonlin = 0.5*(io_h*div) + 0.5*sampler2D.bicubic_scalar(hdiv_phys, posx_d, posy_d, -0.5, -0.5);
 
 		// Add to RHS h (TODO (2020-03-16): No clue why there's a -2.0)
@@ -162,8 +162,8 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 
 	// Build Helmholtz eq.
-	sweet::PlaneData_Spectral rhs_div = op.diff_c_x(rhs_u)+op.diff_c_y(rhs_v);
-	sweet::PlaneData_Spectral rhs_vort = op.diff_c_x(rhs_v)-op.diff_c_y(rhs_u);
+	sweet::PlaneData_Spectral rhs_div = ops->diff_c_x(rhs_u)+ops->diff_c_y(rhs_v);
+	sweet::PlaneData_Spectral rhs_vort = ops->diff_c_x(rhs_v)-ops->diff_c_y(rhs_u);
 	sweet::PlaneData_Spectral rhs     = kappa* rhs_h / alpha - h_bar * rhs_div - f0 * h_bar * rhs_vort / alpha;
 
 	// Helmholtz solver
@@ -172,14 +172,14 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 	// Update u and v
 	u = (1/kappa)*
 			( alpha *rhs_u + f0 * rhs_v
-					- g * alpha * op.diff_c_x(h)
-					- g * f0 * op.diff_c_y(h))
+					- g * alpha * ops->diff_c_x(h)
+					- g * f0 * ops->diff_c_y(h))
 					;
 
 	v = (1/kappa)*
 			( alpha *rhs_v - f0 * rhs_u
-					+ g * f0 * op.diff_c_x(h)
-					- g * alpha * op.diff_c_y(h))
+					+ g * f0 * ops->diff_c_x(h)
+					- g * alpha * ops->diff_c_y(h))
 					;
 
 	// Set time (n) as time (n-1)
@@ -195,38 +195,48 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::run_timestep(
 
 
 
-/*
- * Setup
- */
-void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
-		bool i_use_only_linear_divergence
+bool SWE_Plane_TS_l_cn_na_sl_nr_settls::setup(
+		sweet::PlaneOperators *io_ops
 )
 {
-	use_only_linear_divergence = i_use_only_linear_divergence;
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
 
-	if (simVars.disc.space_grid_use_c_staggering)
+	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
+
+	h_prev.setup(io_ops->planeDataConfig);
+	u_prev.setup(io_ops->planeDataConfig);
+	v_prev.setup(io_ops->planeDataConfig);
+
+	posx_a.setup(io_ops->planeDataConfig->physical_array_data_number_of_elements);
+	posy_a.setup(io_ops->planeDataConfig->physical_array_data_number_of_elements);
+
+	posx_d.setup(io_ops->planeDataConfig->physical_array_data_number_of_elements);
+	posy_d.setup(io_ops->planeDataConfig->physical_array_data_number_of_elements);
+
+
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("SWE_Plane_TS_l_cn_na_sl_nd_settls: Staggering not supported for l_cn_na_sl_nd_settls");
 
 	// Setup sampler for future interpolations
-	sampler2D.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	sampler2D.setup(shackPlaneDataOps->plane_domain_size, ops->planeDataConfig);
 
 	// Setup semi-lag
-	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	semiLagrangian.setup(shackPlaneDataOps->plane_domain_size, ops->planeDataConfig);
 
 
-	sweet::PlaneData_Physical tmp_x(op.planeDataConfig);
+	sweet::PlaneData_Physical tmp_x(ops->planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)i)*simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+		io_data = ((double)i)*shackPlaneDataOps->plane_domain_size[0]/(double)shackPlaneDataOps->space_res_physical[0];
 			},
 			false
 	);
-	sweet::PlaneData_Physical tmp_y(op.planeDataConfig);
+	sweet::PlaneData_Physical tmp_y(ops->planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)j)*simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+		io_data = ((double)j)*shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1];
 			},
 			false
 	);
@@ -235,37 +245,19 @@ void SWE_Plane_TS_l_cn_na_sl_nd_settls::setup(
 	sweet::ScalarDataArray pos_x = sweet::Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
 	sweet::ScalarDataArray pos_y = sweet::Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
-	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
-	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+	double cell_size_x = shackPlaneDataOps->plane_domain_size[0]/(double)shackPlaneDataOps->space_res_physical[0];
+	double cell_size_y = shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1];
 
 	// Initialize arrival points with h position
 	posx_a = pos_x+0.5*cell_size_x;
 	posy_a = pos_y+0.5*cell_size_y;
-}
 
-
-SWE_Plane_TS_l_cn_na_sl_nd_settls::SWE_Plane_TS_l_cn_na_sl_nd_settls(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op),
-
-		h_prev(i_op.planeDataConfig),
-		u_prev(i_op.planeDataConfig),
-		v_prev(i_op.planeDataConfig),
-
-		posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-
-		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
-{
+	return true;
 }
 
 
 
-SWE_Plane_TS_l_cn_na_sl_nd_settls::~SWE_Plane_TS_l_cn_na_sl_nd_settls()
+SWE_Plane_TS_l_cn_na_sl_nr_settls::~SWE_Plane_TS_l_cn_na_sl_nr_settls()
 {
 }
 

@@ -18,7 +18,7 @@
 /**
  * Diagnostic variables
  */
-class ShackDiagnostics	:
+class _ShackDiagnostics	:
 	public ShackInterface
 {
 public:

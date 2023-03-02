@@ -13,15 +13,13 @@
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
 
 
-class SWE_Plane_TS_l_rexi_n_etdrk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_rexi_n_etdrk	:
+		public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
-
 	SWE_Plane_TS_l_rexi ts_phi0_rexi;
 	SWE_Plane_TS_l_rexi ts_phi1_rexi;
 	SWE_Plane_TS_l_rexi ts_phi2_rexi;
@@ -36,15 +34,12 @@ class SWE_Plane_TS_l_rexi_n_etdrk	: public SWE_Plane_TS_interface
 
 
 public:
-	SWE_Plane_TS_l_rexi_n_etdrk(
-			sweet::ShackDictionary *shackDict,
-			sweet::PlaneOperators &i_op
-		);
+	bool setup(
+			sweet::PlaneOperators *io_ops
+	);
 
-	void setup(
-			EXP_SimulationVariables &i_rexi,
-			int i_timestepping_order,
-			bool i_use_only_linear_divergence
+	bool registerShacks(
+			sweet::ShackDictionary *io_shackDict
 	);
 
 	void euler_timestep_update_nonlinear(

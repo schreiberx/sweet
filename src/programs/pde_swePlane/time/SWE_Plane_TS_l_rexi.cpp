@@ -7,7 +7,7 @@
 
 #include "SWE_Plane_TS_l_rexi.hpp"
 
-#include <rexi/REXI.hpp>
+#include <sweet/expIntegration/REXI.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/core/plane/PlaneOperatorsComplex.hpp>
@@ -18,38 +18,79 @@
 #include <sweet/core/SimulationBenchmarkTiming.hpp>
 
 #if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-#include <omp.h>
+	#include <omp.h>
 #endif
 
 
-
-void SWE_Plane_TS_l_rexi::setup(
-	EXP_SimulationVariables &i_rexi,
-	const std::string &i_function_name,
-	double i_timestep_size
+bool SWE_Plane_TS_l_rexi::setup(
+	sweet::PlaneOperators *io_ops
 )
 {
-	assert(i_timestep_size >= 0);
+	return setup(io_ops, "phi0");
+}
 
-	rexiSimVars = &i_rexi;
 
-	domain_size[0] = simVars.sim.plane_domain_size[0];
-	domain_size[1] = simVars.sim.plane_domain_size[1];
+bool SWE_Plane_TS_l_rexi::setup(
+	sweet::PlaneOperators *io_ops,
+	const std::string &i_function_name
+)
+{
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
+		SWEETError("Staggering not supported for l_rexi");
 
-	rexi_use_direct_solution = (rexiSimVars->exp_method == "direct");
+#if !SWEET_USE_LIBFFT
+	std::cerr << "Spectral space required for solvers, use compile option --libfft=enable" << std::endl;
+	exit(-1);
+#endif
+
+
+#if SWEET_THREADING_TIME_REXI
+
+	num_local_rexi_par_threads = omp_get_max_threads();
+
+	if (num_local_rexi_par_threads == 0)
+	{
+		std::cerr << "FATAL ERROR: omp_get_max_threads == 0" << std::endl;
+		exit(-1);
+	}
+#else
+	num_local_rexi_par_threads = 1;
+#endif
+
+#if SWEET_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &num_mpi_ranks);
+#else
+	mpi_rank = 0;
+	num_mpi_ranks = 1;
+#endif
+
+	num_global_threads = num_local_rexi_par_threads * num_mpi_ranks;
+
+
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
+//	assert(i_timestep_size >= 0);
+
+	shackExpIntegration = shackExpIntegration;
+
+	domain_size[0] = shackPlaneDataOps->plane_domain_size[0];
+	domain_size[1] = shackPlaneDataOps->plane_domain_size[1];
+
+	rexi_use_direct_solution = (shackExpIntegration->exp_method == "direct");
 
 	if (rexi_use_direct_solution)
 	{
-		ts_l_direct.setup(i_function_name);
-		return;
+		ts_l_direct.setup(io_ops, i_function_name);
+		return true;
 	}
-	REXICoefficients<double> rexiCoefficients;
+	sweet::REXICoefficients<double> rexiCoefficients;
 
-	bool retval = REXI<>::load(
-			rexiSimVars,
+	bool retval = sweet::REXI<>::load(
+			shackExpIntegration,
 			i_function_name,
 			rexiCoefficients,
-			simVars.misc.verbosity
+			shackIOData->verbosity
 	);
 
 	rexi_alphas = rexiCoefficients.alphas;
@@ -92,7 +133,7 @@ void SWE_Plane_TS_l_rexi::setup(
 	}
 #endif
 
-	sweet::PlaneDataConfig *planeDataConfig_local = this->planeDataConfig;
+	sweet::PlaneDataConfig *planeDataConfig_local = ops->planeDataConfig;
 
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
@@ -116,7 +157,7 @@ void SWE_Plane_TS_l_rexi::setup(
 
 			perThreadVars[i] = new PerThreadVars;
 
-			perThreadVars[i]->op.setup(planeDataConfig_local, domain_size);
+			perThreadVars[i]->ops.setup(planeDataConfig_local, domain_size);
 
 			perThreadVars[i]->eta.setup(planeDataConfig_local);
 			perThreadVars[i]->eta0.setup(planeDataConfig_local);
@@ -136,7 +177,7 @@ void SWE_Plane_TS_l_rexi::setup(
 
 	for (int i = 0; i < num_local_rexi_par_threads; i++)
 	{
-		if (perThreadVars[i]->op.diff_c_x.spectral_space_data == nullptr)
+		if (perThreadVars[i]->ops.diff_c_x.spectral_space_data == nullptr)
 		{
 			std::cerr << "ARRAY NOT INITIALIZED!!!!" << std::endl;
 			exit(-1);
@@ -165,7 +206,7 @@ void SWE_Plane_TS_l_rexi::setup(
 			exit(-1);
 		}
 
-		perThreadVars[i]->op.setup(planeDataConfig_local, domain_size);
+		perThreadVars[i]->ops.setup(planeDataConfig_local, domain_size);
 
 		// initialize all values to account for first touch policy reason
 		perThreadVars[i]->eta.spectral_set_zero();
@@ -187,6 +228,8 @@ void SWE_Plane_TS_l_rexi::setup(
 	stopwatch_reduce.reset();
 	stopwatch_solve_rexi_terms.reset();
 #endif
+
+	return true;
 }
 
 
@@ -318,10 +361,10 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 			stopwatch_preprocessing.start();
 #endif
 
-		double eta_bar = simVars.sim.h0;
-		double g = simVars.sim.gravitation;
+		double eta_bar = shackPDESWEPlane->h0;
+		double g = shackPDESWEPlane->gravitation;
 
-		sweet::PlaneOperatorsComplex &opc = perThreadVars[i]->op;
+		sweet::PlaneOperatorsComplex &opc = perThreadVars[i]->ops;
 
 		sweet::PlaneData_SpectralComplex &eta0 = perThreadVars[i]->eta0;
 		sweet::PlaneData_SpectralComplex &u0 = perThreadVars[i]->u0;
@@ -405,7 +448,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		sweet::PlaneData_SpectralComplex rhs_a = eta_bar*(opc.diff_c_x(u0) + opc.diff_c_y(v0));
 		sweet::PlaneData_SpectralComplex rhs_b = (opc.diff_c_x(v0) - opc.diff_c_y(u0));
 
-		sweet::PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
+		sweet::PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->ops.diff2_c_x + perThreadVars[i]->ops.diff2_c_y);
 
 #if SWEET_BENCHMARK_TIMINGS
 		if (stopwatch_measure)
@@ -423,7 +466,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 			complex alpha = -rexi_alphas[n]/i_dt;
 			complex beta = rexi_betas[n];
 
-			if (simVars.sim.plane_rotating_f0 == 0)
+			if (shackPDESWEPlane->plane_rotating_f0 == 0)
 			{
 				/*
 				 * TODO: we can even get more performance out of this operations
@@ -434,7 +477,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 						+ eta_bar*(opc.diff_c_x(u0) + opc.diff_c_y(v0))
 					;
 
-				sweet::PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->op.diff2_c_x + perThreadVars[i]->op.diff2_c_y);
+				sweet::PlaneData_SpectralComplex lhs_a = (-g*eta_bar)*(perThreadVars[i]->ops.diff2_c_x + perThreadVars[i]->ops.diff2_c_y);
 				sweet::PlaneData_SpectralComplex lhs = lhs_a.spectral_addScalarAll(alpha*alpha);
 				eta = rhs.spectral_div_element_wise(lhs);
 
@@ -448,7 +491,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 			else
 			{
 				// load kappa (k)
-				complex kappa = alpha*alpha + simVars.sim.plane_rotating_f0*simVars.sim.plane_rotating_f0;
+				complex kappa = alpha*alpha + shackPDESWEPlane->plane_rotating_f0*shackPDESWEPlane->plane_rotating_f0;
 
 				/*
 				 * TODO: we can even get more performance out of this operations
@@ -456,7 +499,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				 */
 				sweet::PlaneData_SpectralComplex rhs =
 						(kappa/alpha) * eta0
-						+ (-simVars.sim.plane_rotating_f0*eta_bar/alpha) * rhs_b
+						+ (-shackPDESWEPlane->plane_rotating_f0*eta_bar/alpha) * rhs_b
 						+ rhs_a
 					;
 
@@ -466,8 +509,8 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 				sweet::PlaneData_SpectralComplex uh = u0 + g*opc.diff_c_x(eta);
 				sweet::PlaneData_SpectralComplex vh = v0 + g*opc.diff_c_y(eta);
 
-				sweet::PlaneData_SpectralComplex u1 = (alpha/kappa) * uh     - (simVars.sim.plane_rotating_f0/kappa) * vh;
-				sweet::PlaneData_SpectralComplex v1 = (simVars.sim.plane_rotating_f0/kappa) * uh + (alpha/kappa) * vh;
+				sweet::PlaneData_SpectralComplex u1 = (alpha/kappa) * uh     - (shackPDESWEPlane->plane_rotating_f0/kappa) * vh;
+				sweet::PlaneData_SpectralComplex v1 = (shackPDESWEPlane->plane_rotating_f0/kappa) * uh + (alpha/kappa) * vh;
 
 				sweet::PlaneData_Spectral tmp(h_sum.planeDataConfig);
 
@@ -648,48 +691,6 @@ void SWE_Plane_TS_l_rexi::cleanup()
 	}
 
 	perThreadVars.resize(0);
-}
-
-
-
-
-SWE_Plane_TS_l_rexi::SWE_Plane_TS_l_rexi(
-		sweet::ShackDictionary *shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op),
-		planeDataConfig(op.planeDataConfig),
-		ts_l_direct(i_simVars, i_op)
-{
-#if !SWEET_USE_LIBFFT
-	std::cerr << "Spectral space required for solvers, use compile option --libfft=enable" << std::endl;
-	exit(-1);
-#endif
-
-
-#if SWEET_THREADING_TIME_REXI
-
-	num_local_rexi_par_threads = omp_get_max_threads();
-
-	if (num_local_rexi_par_threads == 0)
-	{
-		std::cerr << "FATAL ERROR: omp_get_max_threads == 0" << std::endl;
-		exit(-1);
-	}
-#else
-	num_local_rexi_par_threads = 1;
-#endif
-
-#if SWEET_MPI
-	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &num_mpi_ranks);
-#else
-	mpi_rank = 0;
-	num_mpi_ranks = 1;
-#endif
-
-	num_global_threads = num_local_rexi_par_threads * num_mpi_ranks;
 }
 
 

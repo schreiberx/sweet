@@ -14,15 +14,13 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 
 
 
-class SWE_Plane_TS_l_erk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_erk	:
+		public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
-
 	int timestepping_order;
 
 	// Sampler
@@ -42,14 +40,10 @@ public:
 	);
 
 public:
-	SWE_Plane_TS_l_erk(
-			sweet::ShackDictionary *shackDict,
-			sweet::PlaneOperators &i_op
+	bool setup(
+			sweet::PlaneOperators *io_ops,
+			int i_order = -1
 		);
-
-	void setup(
-			int i_order	///< order of RK time stepping method
-	);
 
 	void run_timestep(
 			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
@@ -60,9 +54,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-
-
-	virtual ~SWE_Plane_TS_l_erk();
+	virtual ~SWE_Plane_TS_l_erk() {}
 };
 
 #endif

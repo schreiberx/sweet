@@ -18,16 +18,13 @@ PDEAdvPlaneTS_na_sl::~PDEAdvPlaneTS_na_sl()
 /*
  * Setup
  */
-void PDEAdvPlaneTS_na_sl::setup(sweet::PlaneOperators *io_ops)
+bool PDEAdvPlaneTS_na_sl::setup(sweet::PlaneOperators *io_ops)
 {
-	ops = io_ops;
+	PDEAdvPlaneTS_BaseInterface::setup(io_ops);
+
 	timestepping_order = shackPDEAdvTimeDisc->timestepping_order;
 
-	_setup();
-}
 
-void PDEAdvPlaneTS_na_sl::_setup()
-{
 	prog_u_prev.setup(ops->planeDataConfig);
 	prog_v_prev.setup(ops->planeDataConfig);
 
@@ -67,6 +64,8 @@ void PDEAdvPlaneTS_na_sl::_setup()
 
 	//PXT- This just calls sampler2D.setup, so any reason for having it?
 	semiLagrangian.setup(shackPlaneDataOps->plane_domain_size, planeDataConfig);
+
+	return true;
 }
 
 

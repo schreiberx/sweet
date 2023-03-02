@@ -11,7 +11,7 @@
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#include "time/PDEAdvPlaneTS_baseInterface.hpp"
+#include "time/PDEAdvPlaneTS_BaseInterface.hpp"
 #include "time/PDEAdvPlaneTS_na_erk.hpp"
 #include "time/PDEAdvPlaneTS_na_sl.hpp"
 #include "time/ShackPDEAdvectionPlaneTimeDiscretization.hpp"
@@ -26,7 +26,7 @@ public:
 
 	PDEAdvPlaneTS_na_erk *na_erk;
 	PDEAdvPlaneTS_na_sl *na_sl;
-	PDEAdvPlaneTS_baseInterface *master;
+	PDEAdvPlaneTS_BaseInterface *master;
 
 	ShackPDEAdvectionPlaneTimeDiscretization *shackTimeDisc;
 
@@ -85,7 +85,7 @@ public:
 
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(*na_erk);
 
-			master = static_cast<PDEAdvPlaneTS_baseInterface*>(na_erk);
+			master = static_cast<PDEAdvPlaneTS_BaseInterface*>(na_erk);
 			return true;
 		}
 		else if (shackTimeDisc->timestepping_method == "na_sl")
@@ -96,7 +96,7 @@ public:
 
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(*na_sl);
 
-			master = static_cast<PDEAdvPlaneTS_baseInterface*>(na_sl);
+			master = static_cast<PDEAdvPlaneTS_BaseInterface*>(na_sl);
 			return true;
 		}
 

@@ -1,6 +1,4 @@
 /*
- * SWEPlaneBenchmarksCombined.hpp
- *
  *  Created on: 30 Nov 2016
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -14,21 +12,22 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#if 1
+#include "benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
+#include "benchmarks/ShackPDESWEPlaneBench_PolvaniBench.hpp"
+
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-	#include "PDESWEPlaneBenchPolvani.hpp"
-	#include "PDESWEPlaneBenchMergeVortex.hpp"
-	#include "PDESWEPlaneBenchNormalModes.hpp"
+	#include "benchmarks/PDESWEPlaneBench_Polvani.hpp"
+	#include "benchmarks/PDESWEPlaneBench_MergeVortex.hpp"
+	#include "benchmarks/PDESWEPlaneBench_NormalModes.hpp"
 #endif
 
-#include "PDESWEPlaneBenchUnstableJet.hpp"
-#include "PDESWEPlaneBenchUnstableJetFast.hpp"
-#include "PDESWEPlaneBenchUnstableJetAdv.hpp"
-#include "PDESWEPlaneBenchGaussianBump.hpp"
-#endif
+#include "benchmarks/PDESWEPlaneBench_UnstableJet.hpp"
+#include "benchmarks/PDESWEPlaneBench_UnstableJetFast.hpp"
+#include "benchmarks/PDESWEPlaneBench_UnstableJetAdv.hpp"
+#include "benchmarks/PDESWEPlaneBench_GaussianBump.hpp"
 
-#include <pde_swePlane/ShackPDESWEPlane.hpp>
-#include "ShackPDESWEPlaneBenchmarks.hpp"
+
+#include "ShackPDESWEPlane.hpp"
 
 
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
@@ -44,11 +43,11 @@ public:
 	const void* ext_forces_data_config;
 
 	sweet::ShackDictionary *shackDict;
-
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackPDESWEPlane *shackPDESWEPlane;
 	ShackPDESWEPlaneBenchmarks *shackPDESWEPlaneBenchmarks;
+	ShackPDESWEPlaneBench_PolvaniBench *shackPDESWEPlaneBench_polvaniBenchmark;
 
 	PDESWEPlaneBenchmarksCombined()	:
 		shackDict(nullptr),
@@ -59,14 +58,37 @@ public:
 	{
 	}
 
+
 	bool shackRegistration(
-			sweet::ShackDictionary *io_shackDict,
+			sweet::ShackDictionary *io_shackDict
 	)
 	{
-		shackPlaneDataOps = io_shackDict->getAutoRegistration<sweet::ShackPlaneDataOps>;
-		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>;
-		shackPDESWEPlane = io_shackDict->getAutoRegistration<ShackPDESWEPlane>;
-		shackPDESWEPlaneBenchmarks = io_shackDict->getAutoRegistration<ShackPDESWEPlaneBenchmarks>;
+		shackDict = io_shackDict;
+
+		shackPlaneDataOps = shackDict->getAutoRegistration<sweet::ShackPlaneDataOps>();
+		shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		shackPDESWEPlane = shackDict->getAutoRegistration<ShackPDESWEPlane>();
+		shackPDESWEPlaneBenchmarks = shackDict->getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
+		shackPDESWEPlaneBench_polvaniBenchmark = shackDict->getAutoRegistration<ShackPDESWEPlaneBench_PolvaniBench>();
+
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(*io_shackDict);
+
+		return true;
+	}
+
+
+	bool shackRegistration(
+			sweet::ShackDictionary &io_shackDict
+	)
+	{
+		return shackRegistration(&io_shackDict);
+	}
+
+
+	bool clear()
+	{
+		// TODO
+		return true;
 	}
 
 
@@ -75,11 +97,12 @@ public:
 			sweet::PlaneData_Spectral &o_h_pert,
 			sweet::PlaneData_Spectral &o_u,
 			sweet::PlaneData_Spectral &o_v,
-			sweet::PlaneOperators *io_op,				///< Make this IO, since changes in the simulation parameters might require to also update the operators
-			sweet::PlaneDataConfig *i_planeDataConfig
+			sweet::PlaneOperators *io_ops,				///< Make this IO, since changes in the simulation parameters might require to also update the operators
+			sweet::PlaneDataConfig *io_planeDataConfig
 	)
 	{
-		sweet::PlaneOperators *op = io_op;
+		assert(io_ops != nullptr);
+		assert(io_planeDataConfig != nullptr);
 
 		auto callback_gaussian_bump =
 				[&](
@@ -114,13 +137,13 @@ public:
 		if (shackPDESWEPlaneBenchmarks->benchmark_name == "")
 			return error.set("SWEPlaneBenchmarksCombined: Benchmark name not given, use --benchmark-name=[name]");
 
-
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		if (shackPDESWEPlaneBenchmarks->benchmark_name == "polvani")
 		{
-			SWE_bench_Polvani swe_polvani(shackDict, op);
-
-			swe_polvani.setup(
+			PDESWEPlaneBench_Polvani swe_polvani;
+			swe_polvani.shackRegistration(shackDict);
+			swe_polvani.setup(io_ops, io_planeDataConfig);
+			swe_polvani.setupBenchmark(
 					o_h_pert,
 					o_u,
 					o_v
@@ -130,9 +153,10 @@ public:
 		}
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "mergevortex")
 		{
-			SWE_bench_MergeVortex swe_mergevortex(shackDict, op);
-
-			swe_mergevortex.setup(
+			PDESWEPlaneBench_MergeVortex swe_mergevortex;
+			swe_mergevortex.shackRegistration(shackDict);
+			swe_mergevortex.setup(io_ops, io_planeDataConfig);
+			swe_mergevortex.setupBenchmark(
 					o_h_pert,
 					o_u,
 					o_v
@@ -148,13 +172,16 @@ public:
 			shackPDESWEPlane->plane_rotating_f0 = 0.00014584;
 			shackPDESWEPlane->gravitation = 9.80616;
 			shackPDESWEPlane->h0 = 10000;
-			op->setup(i_planeDataConfig, shackPlaneDataOps);
+
 			std::cout << "WARNING: OVERWRITING SIMULATION PARAMETERS FOR THIS BENCHMARK!" << std::endl;
+			io_ops->clear();
+			io_ops->setup(io_planeDataConfig, shackPlaneDataOps);
 
 
-			SWE_bench_UnstableJet swe_unstablejet(shackDict, op);
-
-			swe_unstablejet.setup(
+			PDESWEPlaneBench_UnstableJet swe_unstablejet;
+			swe_unstablejet.shackRegistration(shackDict);
+			swe_unstablejet.setup(io_ops, io_planeDataConfig);
+			swe_unstablejet.setupBenchmark(
 					o_h_pert,
 					o_u,
 					o_v
@@ -170,39 +197,40 @@ public:
 			shackPDESWEPlane->plane_rotating_f0 = 0.00014584;
 			shackPDESWEPlane->gravitation = 9.80616;
 			shackPDESWEPlane->h0 = 10000;
-			op->setup(i_planeDataConfig, shackPlaneDataOps);
+			io_ops->setup(io_planeDataConfig, shackPlaneDataOps);
 			std::cout << "WARNING: OVERWRITING SIMULATION PARAMETERS FOR THIS BENCHMARK!" << std::endl;
 
 
-			SWE_bench_UnstableJet swe_unstablejet(shackDict, op);
-
-			swe_unstablejet.setup(
+			PDESWEPlaneBench_UnstableJet swe_unstablejet(false);
+			swe_unstablejet.shackRegistration(shackDict);
+			swe_unstablejet.setup(io_ops, io_planeDataConfig);
+			swe_unstablejet.setupBenchmark(
 					o_h_pert,
 					o_u,
-					o_v,
-					false
+					o_v
 			);
 
 			return true;
 		}
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejetfast")
-			{
-				SWE_bench_UnstableJetFast swe_unstablejetfast(shackDict, op);
+		{
+			PDESWEPlaneBench_UnstableJetFast swe_unstablejetfast;
+			swe_unstablejetfast.shackRegistration(shackDict);
+			swe_unstablejetfast.setup(io_ops, io_planeDataConfig);
+			swe_unstablejetfast.setupBenchmark(
+					o_h_pert,
+					o_u,
+					o_v
+			);
 
-				swe_unstablejetfast.setup(
-						o_h_pert,
-						o_u,
-						o_v
-				);
-
-				return true;
-			}
-
+			return true;
+		}
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "unstablejetadv")
 		{
-			SWE_bench_UnstableJetAdv swe_unstablejetadv(shackDict, op);
-
-			swe_unstablejetadv.setup(
+			PDESWEPlaneBench_UnstableJetAdv swe_unstablejetadv;
+			swe_unstablejetadv.shackRegistration(shackDict);
+			swe_unstablejetadv.setup(io_ops, io_planeDataConfig);
+			swe_unstablejetadv.setupBenchmark(
 					o_h_pert,
 					o_u,
 					o_v
@@ -212,11 +240,10 @@ public:
 		}
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "normalmodes")
 		{
-			//PlaneDataConfig *planeDataConfig = o_h_pert.planeDataConfig;
-
-			SWE_bench_NormalModes swe_normalmodes(shackDict, op);
-
-			swe_normalmodes.setup(
+			PDESWEPlaneBench_NormalModes swe_normalmodes;
+			swe_normalmodes.shackRegistration(shackDict);
+			swe_normalmodes.setup(io_ops, io_planeDataConfig);
+			swe_normalmodes.setupBenchmark(
 					o_h_pert,
 					o_u,
 					o_v
@@ -227,9 +254,10 @@ public:
 #endif
 		else if (shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump" || shackPDESWEPlaneBenchmarks->benchmark_name == "gaussian_bump_phi_pint")
 		{
-			SWE_bench_GaussianBump swe_gaussian_bump(shackDict, op);
-
-			swe_gaussian_bump.setup(
+			PDESWEPlaneBench_GaussianBump swe_gaussian_bump;
+			swe_gaussian_bump.shackRegistration(shackDict);
+			swe_gaussian_bump.setup(io_ops, io_planeDataConfig);
+			swe_gaussian_bump.setupBenchmark(
 					o_h_pert,
 					o_u,
 					o_v
@@ -293,7 +321,7 @@ public:
 				shackPDESWEPlaneBenchmarks->getExternalForcesCallback = callback_external_forces_advection_field;
 
 				// set user data to this class
-				shackPDESWEPlaneBenchmarks->getExternalForcesUserData = this;
+				shackPDESWEPlaneBenchmarks->getExternalForcesUserData = shackPDESWEPlaneBenchmarks;
 
 				// setup velocities with initial time stamp
 				callback_external_forces_advection_field(1, shackTimestepControl->current_simulation_time, &o_u, shackPDESWEPlaneBenchmarks->getExternalForcesUserData);
@@ -460,7 +488,6 @@ public:
 			h_pert_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					//double x = (double)i*(shackSim->domain_size[0]/(double)disc->res_physical[0]);
 					double y = (double)j*(shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1]);
 
 					io_data = std::sin(2.0*M_PI*y/sy);
@@ -474,7 +501,6 @@ public:
 			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					//double x = (double)i*(shackSim->domain_size[0]/(double)disc->res_physical[0]);
 					double y = (double)j*(shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1]);
 
 					io_data = -shackPDESWEPlane->gravitation*2.0*M_PI*std::cos(2.0*M_PI*y/sy)/(f*sy);

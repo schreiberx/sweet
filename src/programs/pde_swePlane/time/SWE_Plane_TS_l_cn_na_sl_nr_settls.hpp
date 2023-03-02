@@ -21,15 +21,11 @@
 #include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
-#include "SWE_Plane_TS_interface.hpp"
 
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 
-
-class SWE_Plane_TS_l_cn_na_sl_nd_settls	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_cn_na_sl_nr_settls	: public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
-
 	bool use_only_linear_divergence;
 
 	sweet::PlaneDataSemiLagrangian semiLagrangian;
@@ -44,13 +40,8 @@ class SWE_Plane_TS_l_cn_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	sweet::ScalarDataArray posx_d, posy_d;
 
 public:
-	SWE_Plane_TS_l_cn_na_sl_nd_settls(
-			sweet::ShackDictionary *shackDict,
-			sweet::PlaneOperators &i_op
-		);
-
-	void setup(
-			bool i_use_only_linear_divergence
+	bool setup(
+			sweet::PlaneOperators *io_ops
 	);
 
 	void run_timestep(
@@ -72,7 +63,7 @@ public:
 	)
 	{
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-		sweet::PlaneData_Spectral laplacian = -i_gh0*op.diff2_c_x -i_gh0*op.diff2_c_y;
+		sweet::PlaneData_Spectral laplacian = -i_gh0*ops->diff2_c_x -i_gh0*ops->diff2_c_y;
 		sweet::PlaneData_Spectral lhs = laplacian.spectral_addScalarAll(i_kappa);
 
 		io_x = i_rhs.spectral_div_element_wise(lhs);
@@ -96,7 +87,7 @@ public:
 	}
 #endif
 
-	virtual ~SWE_Plane_TS_l_cn_na_sl_nd_settls();
+	virtual ~SWE_Plane_TS_l_cn_na_sl_nr_settls();
 };
 
 #endif

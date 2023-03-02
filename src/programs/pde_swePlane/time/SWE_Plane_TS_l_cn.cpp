@@ -12,8 +12,6 @@
 
 #include "SWE_Plane_TS_l_cn.hpp"
 
-///#include <sweet/core/plane/Convert_PlaneData_to_PlaneDataComplex.hpp>
-
 /*
  * This is a Crank-Nicolson scheme for linear equation
  *
@@ -74,35 +72,19 @@ void SWE_Plane_TS_l_cn::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_cn::setup(
-		//int i_l_order,
-		double i_crank_nicolson_damping_factor
+bool SWE_Plane_TS_l_cn::setup(
+		sweet::PlaneOperators *io_ops
 )
 {
-	if (simVars.disc.space_grid_use_c_staggering)
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("Staggering not supported for l_cn");
 
-	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
+	crank_nicolson_damping_factor = 0.5;
+
+	ts_l_irk.setup(io_ops, 1);
+	ts_l_erk.setup(io_ops, 1);
+
+	return true;
 }
-
-
-SWE_Plane_TS_l_cn::SWE_Plane_TS_l_cn(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op),
-		ts_l_erk(simVars, op),
-		ts_l_irk(simVars, op)
-{
-	//Force 1st order implicit and explicit schemes to achieve the 2nd order CN
-	ts_l_irk.setup(1);
-	ts_l_erk.setup(1);
-}
-
-
-
-SWE_Plane_TS_l_cn::~SWE_Plane_TS_l_cn()
-{
-}
-

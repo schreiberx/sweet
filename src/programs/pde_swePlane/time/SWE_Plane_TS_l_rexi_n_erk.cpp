@@ -38,13 +38,13 @@ void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
-	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	//o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
+	o_u_t = -i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
+	o_v_t = -i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 	if (use_only_linear_divergence) //only nonlinear advection left to solve
-		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+		o_h_t = - (i_u*ops->diff_c_x(i_h) + i_v*ops->diff_c_y(i_h));
 	else //full nonlinear equation on h
-		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
 
 }
 
@@ -114,40 +114,22 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_rexi_n_erk::setup(
-		EXP_SimulationVariables &i_rexi,
-
-		int i_nonlinear_order,
-
-		bool i_use_only_linear_divergence
+bool SWE_Plane_TS_l_rexi_n_erk::setup(
+	sweet::PlaneOperators *io_ops
 )
 {
-	use_only_linear_divergence = i_use_only_linear_divergence;
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
 
-	ts_l_rexi.setup(i_rexi, "phi0", simVars.timecontrol.current_timestep_size);
+	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
-	timestepping_order_nonlinear = i_nonlinear_order;
-	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
+	ts_l_rexi.setup(io_ops, "phi0");
 
-	if (simVars.disc.space_grid_use_c_staggering)
+	timestepping_order_nonlinear = shackPDESWETimeDisc->timestepping_order;
+	timestepping_rk.setupBuffers(ops->planeDataConfig, timestepping_order_nonlinear);
+
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("Staggering not supported for l_rexi_n_erk");
 
-}
-
-
-SWE_Plane_TS_l_rexi_n_erk::SWE_Plane_TS_l_rexi_n_erk(
-		sweet::ShackDictionary *shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op),
-		ts_l_rexi(simVars, op)
-{
-}
-
-
-
-SWE_Plane_TS_l_rexi_n_erk::~SWE_Plane_TS_l_rexi_n_erk()
-{
+	return true;
 }
 

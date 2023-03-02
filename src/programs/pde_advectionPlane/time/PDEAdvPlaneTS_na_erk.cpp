@@ -13,7 +13,6 @@ PDEAdvPlaneTS_na_erk::PDEAdvPlaneTS_na_erk()
 }
 
 
-
 PDEAdvPlaneTS_na_erk::~PDEAdvPlaneTS_na_erk()
 {
 }
@@ -22,10 +21,11 @@ PDEAdvPlaneTS_na_erk::~PDEAdvPlaneTS_na_erk()
 /*
  * Setup
  */
-void PDEAdvPlaneTS_na_erk::setup(sweet::PlaneOperators *io_ops)
+bool PDEAdvPlaneTS_na_erk::setup(sweet::PlaneOperators *io_ops)
 {
-	ops = io_ops;
+	PDEAdvPlaneTS_BaseInterface::setup(io_ops);
 	timestepping_order = shackPDEAdvTimeDisc->timestepping_order;
+	return true;
 }
 
 

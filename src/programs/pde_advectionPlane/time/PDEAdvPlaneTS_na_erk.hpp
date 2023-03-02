@@ -10,7 +10,7 @@
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/core/plane/Plane.hpp>
 
-#include "PDEAdvPlaneTS_baseInterface.hpp"
+#include "PDEAdvPlaneTS_BaseInterface.hpp"
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
@@ -19,11 +19,9 @@
 
 
 class PDEAdvPlaneTS_na_erk	:
-		public PDEAdvPlaneTS_baseInterface
+		public PDEAdvPlaneTS_BaseInterface
 {
 public:
-	sweet::PlaneOperators *ops;
-
 	int timestepping_order;
 
 	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk;
@@ -34,9 +32,7 @@ public:
 
 	~PDEAdvPlaneTS_na_erk();
 
-	void setup(
-			sweet::PlaneOperators *io_ops
-		);
+	bool setup(sweet::PlaneOperators *io_ops);
 
 public:
 	void euler_timestep_update(

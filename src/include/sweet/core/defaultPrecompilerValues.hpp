@@ -80,5 +80,8 @@
 #endif
 
 
+#ifndef SWEET_BENCHMARK_TIMINGS
+	#define SWEET_BENCHMARK_TIMINGS 1
+#endif
 
 #endif

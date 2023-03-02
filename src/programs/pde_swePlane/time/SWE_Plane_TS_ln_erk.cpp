@@ -34,7 +34,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 )
 {
 	// A-grid method
-	if (!simVars.disc.space_grid_use_c_staggering)
+	if (!shackPlaneDataOps->space_grid_use_c_staggering)
 	{
 		/*
 		 * non-conservative (advective) formulation:
@@ -44,13 +44,13 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 		 */
 
-		sweet::PlaneData_Spectral total_h = i_h + simVars.sim.h0;
+		sweet::PlaneData_Spectral total_h = i_h + shackPDESWEPlane->h0;
 
-		o_u_t = -simVars.sim.gravitation*op.diff_c_x(total_h) - i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-		o_v_t = -simVars.sim.gravitation*op.diff_c_y(total_h) - i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+		o_u_t = -shackPDESWEPlane->gravitation*ops->diff_c_x(total_h) - i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
+		o_v_t = -shackPDESWEPlane->gravitation*ops->diff_c_y(total_h) - i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 
-		o_u_t += simVars.sim.plane_rotating_f0*i_v;
-		o_v_t -= simVars.sim.plane_rotating_f0*i_u;
+		o_u_t += shackPDESWEPlane->plane_rotating_f0*i_v;
+		o_v_t -= shackPDESWEPlane->plane_rotating_f0*i_u;
 
 		// standard update
 		/*
@@ -58,14 +58,14 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 */
 		if (!use_only_linear_divergence){ //full nonlinear divergence
 			// standard update
-			//o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
-			o_h_t = -op.diff_c_x(i_u*total_h) - op.diff_c_y(i_v*total_h);
+			//o_h_t = -ops->diff_f_x(U) - ops->diff_f_y(V);
+			o_h_t = -ops->diff_c_x(i_u*total_h) - ops->diff_c_y(i_v*total_h);
 		}
 		else // use linear divergence
 		{
-			//o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
-			o_h_t = -i_u*op.diff_c_x(total_h) - i_v*op.diff_c_y(total_h) + //nonlinear adv
-					-op.diff_c_x(i_u*simVars.sim.h0) - op.diff_c_y(i_v*simVars.sim.h0); //linear div
+			//o_h_t = -ops->diff_f_x(shackPDESWEPlane->h0*i_u) - ops->diff_f_y(shackPDESWEPlane->h0*i_v);
+			o_h_t = -i_u*ops->diff_c_x(total_h) - i_v*ops->diff_c_y(total_h) + //nonlinear adv
+					-ops->diff_c_x(i_u*shackPDESWEPlane->h0) - ops->diff_c_y(i_v*shackPDESWEPlane->h0); //linear div
 		}
 
 	}
@@ -84,7 +84,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		sweet::PlaneData_Physical i_u_phys = i_u.toPhys();
 		sweet::PlaneData_Physical i_v_phys = i_v.toPhys();
 
-		sweet::PlaneData_Physical total_h_phys = i_h.toPhys() + simVars.sim.h0;
+		sweet::PlaneData_Physical total_h_phys = i_h.toPhys() + shackPDESWEPlane->h0;
 		sweet::PlaneData_Spectral total_h(i_h.planeDataConfig);
 		total_h.loadPlaneDataPhysical(total_h_phys);
 
@@ -116,9 +116,9 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 */
 
 
-		U_phys = op.avg_b_x(total_h_phys)*i_u_phys;
-		V_phys = op.avg_b_y(total_h_phys)*i_v_phys;
-		H_phys = simVars.sim.gravitation*total_h_phys + 0.5*(op.avg_f_x(i_u_phys*i_u_phys) + op.avg_f_y(i_v_phys*i_v_phys));
+		U_phys = ops->avg_b_x(total_h_phys)*i_u_phys;
+		V_phys = ops->avg_b_y(total_h_phys)*i_v_phys;
+		H_phys = shackPDESWEPlane->gravitation*total_h_phys + 0.5*(ops->avg_f_x(i_u_phys*i_u_phys) + ops->avg_f_y(i_v_phys*i_v_phys));
 
 		U.loadPlaneDataPhysical(U_phys);
 		V.loadPlaneDataPhysical(V_phys);
@@ -128,7 +128,7 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		// Potential vorticity
 		sweet::PlaneData_Physical total_h_pv_phys = total_h_phys;
 		sweet::PlaneData_Spectral total_h_pv = total_h_phys(i_h.planeDataConfig);
-		total_h_pv_phys = op.avg_b_x(op.avg_b_y(total_h_phys));
+		total_h_pv_phys = ops->avg_b_x(ops->avg_b_y(total_h_phys));
 		total_h_pv.loadPlaneDataPhysical(total_h_pv_phys);
 
 #if 0
@@ -142,13 +142,13 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		}
 #endif
 
-		sweet::PlaneData_Spectral q = (op.diff_b_x(i_v) - op.diff_b_y(i_u) + simVars.sim.plane_rotating_f0) / total_h_pv;
+		sweet::PlaneData_Spectral q = (ops->diff_b_x(i_v) - ops->diff_b_y(i_u) + shackPDESWEPlane->plane_rotating_f0) / total_h_pv;
 		sweet::PlaneData_Physical q_phys = q.toPhys();
 
 		// u, v tendencies
 		// Energy conserving scheme
-		sweet::PlaneData_Physical o_u_t_phys = op.avg_f_y(q_phys*op.avg_b_x(V_phys)) - op.diff_b_x(H).toPhys();
-		sweet::PlaneData_Physical o_v_t_phys = -op.avg_f_x(q_phys*op.avg_b_y(U_phys)) - op.diff_b_y(H).toPhys();
+		sweet::PlaneData_Physical o_u_t_phys = ops->avg_f_y(q_phys*ops->avg_b_x(V_phys)) - ops->diff_b_x(H).toPhys();
+		sweet::PlaneData_Physical o_v_t_phys = -ops->avg_f_x(q_phys*ops->avg_b_y(U_phys)) - ops->diff_b_y(H).toPhys();
 		o_u_t.loadPlaneDataPhysical(o_u_t_phys);
 		o_v_t.loadPlaneDataPhysical(o_v_t_phys);
 
@@ -157,13 +157,13 @@ void SWE_Plane_TS_ln_erk::euler_timestep_update(
 		 */
 		if (!use_only_linear_divergence){ //full nonlinear divergence
 			// standard update
-			o_h_t = -op.diff_f_x(U) - op.diff_f_y(V);
+			o_h_t = -ops->diff_f_x(U) - ops->diff_f_y(V);
 		}
 		else // use linear divergence
 		{
-			o_h_t = -i_u*op.diff_f_x(total_h) - i_v*op.diff_f_y(total_h) + //nonlinear adv
-					-op.diff_f_x(i_u*simVars.sim.h0) - op.diff_f_y(i_v*simVars.sim.h0); //linear div
-			//o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
+			o_h_t = -i_u*ops->diff_f_x(total_h) - i_v*ops->diff_f_y(total_h) + //nonlinear adv
+					-ops->diff_f_x(i_u*shackPDESWEPlane->h0) - ops->diff_f_y(i_v*shackPDESWEPlane->h0); //linear div
+			//o_h_t = -ops->diff_f_x(shackPDESWEPlane->h0*i_u) - ops->diff_f_y(shackPDESWEPlane->h0*i_v);
 		}
 	}
 }
@@ -198,29 +198,14 @@ void SWE_Plane_TS_ln_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_ln_erk::setup(
-		int i_order,	///< order of RK time stepping method
-		bool i_use_only_linear_divergence
+bool SWE_Plane_TS_ln_erk::setup(
+		sweet::PlaneOperators *io_ops
 )
 {
-	timestepping_order = i_order;
-	use_only_linear_divergence = i_use_only_linear_divergence;
-}
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
-
-SWE_Plane_TS_ln_erk::SWE_Plane_TS_ln_erk(
-		sweet::ShackDictionary *shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op)
-{
-	setup(simVars.disc.timestepping_order, false);
-}
-
-
-
-SWE_Plane_TS_ln_erk::~SWE_Plane_TS_ln_erk()
-{
+	return true;
 }
 

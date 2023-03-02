@@ -1,6 +1,4 @@
 /*
- * ADV_Plane_TS_ln_erk.hpp
- *
  *  Created on: 29 May 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -17,16 +15,32 @@
 #include "../benchmarks/ShackPDEAdvectionPlaneBenchmarks.hpp"
 
 
-class PDEAdvPlaneTS_baseInterface
+class PDEAdvPlaneTS_BaseInterface
 {
 public:
 	sweet::ErrorBase error;
 
+	/*
+	 * These are just some default shacks we provide to each time stepping method
+	 */
 	sweet::ShackDictionary *shackDict;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	ShackPDEAdvectionPlaneTimeDiscretization *shackPDEAdvTimeDisc;
 	ShackPDEAdvectionPlaneBenchmarks *shackPDEAdvBenchmark;
+
+	sweet::PlaneOperators *ops;
+
+	PDEAdvPlaneTS_BaseInterface()	:
+		shackDict(nullptr),
+		shackTimestepControl(nullptr),
+		shackPlaneDataOps(nullptr),
+		shackPDEAdvTimeDisc(nullptr),
+		shackPDEAdvBenchmark(nullptr),
+		ops(nullptr)
+	{
+
+	}
 
 	bool registerShacks(
 			sweet::ShackDictionary *io_shackDict
@@ -43,6 +57,15 @@ public:
 		return true;
 	}
 
+	virtual bool setup(
+			sweet::PlaneOperators *io_ops
+	)
+	{
+		ops = io_ops;
+		return true;
+	}
+
+
 public:
 	virtual void run_timestep(
 			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
@@ -53,13 +76,7 @@ public:
 			double i_simulation_timestamp
 	) = 0;
 
-#if 0
-	virtual bool registerShacks(
-			sweet::ShackDictionary *io_shackDict
-	) = 0;
-#endif
-
-	~PDEAdvPlaneTS_baseInterface() {}
+	~PDEAdvPlaneTS_BaseInterface() {}
 };
 
 

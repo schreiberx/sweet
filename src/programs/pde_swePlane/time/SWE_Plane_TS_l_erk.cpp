@@ -28,7 +28,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 )
 {
 	// A- grid method
-	if (!simVars.disc.space_grid_use_c_staggering)
+	if (!shackPlaneDataOps->space_grid_use_c_staggering)
 	{
 		/*
 		 * linearized non-conservative (advective) formulation:
@@ -39,30 +39,30 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		 */
 
 #if 1
-		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.plane_rotating_f0*i_v;
-		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.plane_rotating_f0*i_u;
+		o_u_t = -shackPDESWEPlane->gravitation*ops->diff_c_x(i_h) + shackPDESWEPlane->plane_rotating_f0*i_v;
+		o_v_t = -shackPDESWEPlane->gravitation*ops->diff_c_y(i_h) - shackPDESWEPlane->plane_rotating_f0*i_u;
 
 		// standard update
-		o_h_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
+		o_h_t = -(ops->diff_c_x(i_u) + ops->diff_c_y(i_v))*shackPDESWEPlane->h0;
 #else
 
 	#if 0
 		// U-only
-		o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h) + simVars.sim.plane_rotating_f0*i_v;
+		o_u_t = -shackPDESWEPlane->gravitation*ops->diff_c_x(i_h) + shackPDESWEPlane->plane_rotating_f0*i_v;
 		//o_v_t.physical_set_zero();
-		o_v_t = - simVars.sim.plane_rotating_f0*i_u;
+		o_v_t = - shackPDESWEPlane->plane_rotating_f0*i_u;
 
 		// standard update
-		o_h_t = -(op.diff_c_x(i_u))*simVars.sim.h0;
+		o_h_t = -(ops->diff_c_x(i_u))*shackPDESWEPlane->h0;
 
 	#else
 		// V-only
 		//o_u_t.spectral_set_zero();
-		o_u_t = +simVars.sim.plane_rotating_f0*i_v;
-		o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h) - simVars.sim.plane_rotating_f0*i_u;// - simVars.sim.f0*i_u;
+		o_u_t = +shackPDESWEPlane->plane_rotating_f0*i_v;
+		o_v_t = -shackPDESWEPlane->gravitation*ops->diff_c_y(i_h) - shackPDESWEPlane->plane_rotating_f0*i_u;// - simVars.sim.f0*i_u;
 
 		// standard update
-		o_h_t = -(op.diff_c_y(i_v))*simVars.sim.h0;
+		o_h_t = -(ops->diff_c_y(i_v))*shackPDESWEPlane->h0;
 	#endif
 
 #endif
@@ -94,19 +94,19 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		 * P_t + div(P V) = 0
 		 */
 
-		sweet::PlaneData_Spectral H = simVars.sim.gravitation*i_h;// + 0.5*(op.avg_f_x(i_u*i_u) + op.avg_f_y(i_v*i_v));
+		sweet::PlaneData_Spectral H = shackPDESWEPlane->gravitation*i_h;// + 0.5*(ops->avg_f_x(i_u*i_u) + ops->avg_f_y(i_v*i_v));
 
 		sweet::PlaneData_Physical o_u_t_phys(o_u_t.planeDataConfig);
 		sweet::PlaneData_Physical o_v_t_phys(o_v_t.planeDataConfig);
-		o_u_t_phys = op.avg_f_y(simVars.sim.plane_rotating_f0*op.avg_b_x(i_v.toPhys())) - op.diff_b_x(H).toPhys();
-		o_v_t_phys = -op.avg_f_x(simVars.sim.plane_rotating_f0*op.avg_b_y(i_u.toPhys())) - op.diff_b_y(H).toPhys();
+		o_u_t_phys = ops->avg_f_y(shackPDESWEPlane->plane_rotating_f0*ops->avg_b_x(i_v.toPhys())) - ops->diff_b_x(H).toPhys();
+		o_v_t_phys = -ops->avg_f_x(shackPDESWEPlane->plane_rotating_f0*ops->avg_b_y(i_u.toPhys())) - ops->diff_b_y(H).toPhys();
 		o_u_t.loadPlaneDataPhysical(o_u_t_phys);
 		o_v_t.loadPlaneDataPhysical(o_v_t_phys);
 
 		/*
 		 * P UPDATE
 		 */
-		o_h_t = -op.diff_f_x(simVars.sim.h0*i_u) - op.diff_f_y(simVars.sim.h0*i_v);
+		o_h_t = -ops->diff_f_x(shackPDESWEPlane->h0*i_u) - ops->diff_f_y(shackPDESWEPlane->h0*i_v);
 	}
 }
 
@@ -140,33 +140,22 @@ void SWE_Plane_TS_l_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_erk::setup(
-		int i_order	///< order of RK time stepping method
+bool SWE_Plane_TS_l_erk::setup(
+		sweet::PlaneOperators *io_ops,
+		int i_order
 )
 {
-	timestepping_order = i_order;
-	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order);
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
+	if (i_order > 0)
+		timestepping_order = i_order;
+	else
+		timestepping_order = shackPDESWETimeDisc->timestepping_order;
+
+	timestepping_rk.setupBuffers(ops->planeDataConfig, timestepping_order);
 
 	//if (simVars.disc.use_staggering)
 	//	SWEETError("Staggering not supported for l_erk");
-}
-
-
-SWE_Plane_TS_l_erk::SWE_Plane_TS_l_erk(
-		sweet::ShackDictionary *shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op)
-{
-/////#if !SWEET_PARAREAL
-	setup(simVars.disc.timestepping_order);
-/////#endif
-}
-
-
-
-SWE_Plane_TS_l_erk::~SWE_Plane_TS_l_erk()
-{
+	return true;
 }
 

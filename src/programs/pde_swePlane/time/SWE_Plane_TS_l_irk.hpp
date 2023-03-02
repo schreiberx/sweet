@@ -14,18 +14,15 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	#include <sweet/core/plane/PlaneOperatorsComplex.hpp>
 #endif
 
 
-class SWE_Plane_TS_l_irk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_irk	: public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
-
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 	sweet::PlaneOperatorsComplex opComplex;
 #endif
@@ -33,13 +30,9 @@ class SWE_Plane_TS_l_irk	: public SWE_Plane_TS_interface
 	int timestepping_order;
 
 public:
-	SWE_Plane_TS_l_irk(
-			sweet::ShackDictionary *io_shackDict,
-			sweet::PlaneOperators &i_op
-		);
-
-	void setup(
-			int i_order	///< order of RK time stepping method
+	bool setup(
+			sweet::PlaneOperators *io_ops,
+			int i_order = -1
 	);
 
 	void run_timestep(
@@ -51,8 +44,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-
-	virtual ~SWE_Plane_TS_l_irk();
+	virtual ~SWE_Plane_TS_l_irk() {}
 };
 
 #endif

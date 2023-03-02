@@ -33,13 +33,13 @@ void SWE_Plane_TS_l_irk_n_erk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
-	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	//o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
+	o_u_t = -i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
+	o_v_t = -i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 	if (use_only_linear_divergence) //only nonlinear advection left to solve
-		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+		o_h_t = - (i_u*ops->diff_c_x(i_h) + i_v*ops->diff_c_y(i_h));
 	else //full nonlinear equation on h
-		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
 
 
 }
@@ -68,9 +68,9 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 		);
 
 	// compute non-linear tendencies at half time step
-	sweet::PlaneData_Spectral h_dt_nonlinear(op.planeDataConfig);
-	sweet::PlaneData_Spectral u_dt_nonlinear(op.planeDataConfig);
-	sweet::PlaneData_Spectral v_dt_nonlinear(op.planeDataConfig);
+	sweet::PlaneData_Spectral h_dt_nonlinear(ops->planeDataConfig);
+	sweet::PlaneData_Spectral u_dt_nonlinear(ops->planeDataConfig);
+	sweet::PlaneData_Spectral v_dt_nonlinear(ops->planeDataConfig);
 
 	// standard time stepping
 	euler_timestep_update_nonlinear(
@@ -88,47 +88,24 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_irk_n_erk::setup(
-		int i_l_order,
-		int i_n_order,
-
-		bool i_use_only_linear_divergence
+bool SWE_Plane_TS_l_irk_n_erk::setup(
+	sweet::PlaneOperators *io_ops
 )
 {
-	timestepping_order_linear = i_l_order;
-	use_only_linear_divergence = i_use_only_linear_divergence;
+	timestepping_order_linear = shackPDESWETimeDisc->timestepping_order;
+	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 
-	ts_l_irk.setup(timestepping_order_linear);
+	ts_l_irk.setup(io_ops, timestepping_order_linear);
 
-	if (simVars.disc.space_grid_use_c_staggering)
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("Staggering not supported for l_irk_n_erk");
 
 
 	if (timestepping_order_linear != 1)
 		SWEETError("SWE_Plane_TS_l_irk_n_erk: Only 1st order TS supported with this implementation. Please set --timestepping-order 1.");
 
-	timestepping_order_nonlinear = i_l_order;
-	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
-}
-
-
-SWE_Plane_TS_l_irk_n_erk::SWE_Plane_TS_l_irk_n_erk(
-		sweet::ShackDictionary *shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op),
-		ts_l_irk(simVars, op)
-{
-/////#if !SWEET_PARAREAL
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, false);
-	ts_l_irk.setup(simVars.disc.timestepping_order);
-/////#endif
-}
-
-
-
-SWE_Plane_TS_l_irk_n_erk::~SWE_Plane_TS_l_irk_n_erk()
-{
+	timestepping_order_nonlinear = timestepping_order_linear;
+	timestepping_rk.setupBuffers(ops->planeDataConfig, timestepping_order_nonlinear);
+	return true;
 }
 

@@ -15,24 +15,24 @@
 class SimulationBenchmarkTimings
 {
 public:
-	Stopwatch main;
-	Stopwatch main_setup;
-	Stopwatch main_timestepping;
+	sweet::Stopwatch main;
+	sweet::Stopwatch main_setup;
+	sweet::Stopwatch main_timestepping;
 
 #if SWEET_BENCHMARK_TIMINGS
-	Stopwatch main_timestepping_nonlinearities;
+	sweet::Stopwatch main_timestepping_nonlinearities;
 
-	Stopwatch rexi;
-	Stopwatch rexi_setup;
-	Stopwatch rexi_shutdown;
-	Stopwatch rexi_timestepping;
-	Stopwatch rexi_timestepping_solver;
-	Stopwatch rexi_timestepping_broadcast;
-	Stopwatch rexi_timestepping_reduce;
-	Stopwatch rexi_timestepping_miscprocessing;
+	sweet::Stopwatch rexi;
+	sweet::Stopwatch rexi_setup;
+	sweet::Stopwatch rexi_shutdown;
+	sweet::Stopwatch rexi_timestepping;
+	sweet::Stopwatch rexi_timestepping_solver;
+	sweet::Stopwatch rexi_timestepping_broadcast;
+	sweet::Stopwatch rexi_timestepping_reduce;
+	sweet::Stopwatch rexi_timestepping_miscprocessing;
 
 
-	Stopwatch main_timestepping_semi_lagrangian;
+	sweet::Stopwatch main_timestepping_semi_lagrangian;
 #endif
 
 

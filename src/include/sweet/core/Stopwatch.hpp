@@ -16,8 +16,8 @@
 
 
 
-#ifndef STOPWATCH_HPP
-#define STOPWATCH_HPP
+#ifndef SWEET_STOPWATCH_HPP__
+#define SWEET_STOPWATCH_HPP__
 
 #include <cstddef>
 #include <cassert>
@@ -31,6 +31,10 @@
 #	include <sys/time.h>
 #endif
 
+
+namespace sweet
+{
+
 /**
  * \brief start, stop, continue and restart a virtual stopwatch
  */
@@ -42,12 +46,15 @@ class Stopwatch
 private:
 
 #if SWEET_TIMER_CHRONO
+
 	std::chrono::time_point<std::chrono::system_clock> timevalue_start;	///< time value of last start
 	std::chrono::time_point<std::chrono::system_clock> timevalue_stop;	///< time value of last stop
+
 #else
 
 	struct timeval timevalue_start;	///< time value of last start
 	struct timeval timevalue_stop;	///< time value of last stop
+
 #endif
 
 	int recursive_counter;	/// count recursions to support nested calls
@@ -161,5 +168,7 @@ public:
 		return time;
 	}
 };
+
+}
 
 #endif

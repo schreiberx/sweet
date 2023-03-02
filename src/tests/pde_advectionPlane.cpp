@@ -64,7 +64,8 @@ int main(int i_argc, char *i_argv[])
 			sim.shackPlaneDataOps->space_res_physical[0] = 0;
 			sim.shackPlaneDataOps->space_res_physical[1] = 0;
 
-			expected_order = 2;
+			// order is limited by the spatial interpolation order
+			expected_order = std::min(sim.shackTimeDisc->timestepping_order, 2);
 		}
 		else
 		{
@@ -74,6 +75,7 @@ int main(int i_argc, char *i_argv[])
 			sim.shackPlaneDataOps->space_res_physical[0] = 0;
 			sim.shackPlaneDataOps->space_res_physical[1] = 0;
 
+			// order is directly the time discretization order
 			expected_order = sim.shackTimeDisc->timestepping_order;
 		}
 
@@ -95,15 +97,18 @@ int main(int i_argc, char *i_argv[])
 			{
 				//double conv = (prev_max_error - simulation.max_error) / simulation.max_error;
 				double conv = prev_max_error / max_error;
+				std::cout << "prev_max_error: " << prev_max_error << std::endl;
+				std::cout << "max_error: " << max_error << std::endl;
 				std::cout << "Convergence: " << conv << std::endl;
+				std::cout << "expected_order: " << expected_order << std::endl;
 
-				if (conv*1.1 < std::pow(2.0, (double)expected_order))
+				if (conv < std::pow(2.0, (double)expected_order)*0.9)
 				{
 					std::cerr << "Convergence too low!" << std::endl;
 					exit(1);
 				}
 
-				if (conv*0.9 > std::pow(2.0, (double)(expected_order+1)))
+				if (conv > std::pow(2.0, (double)(expected_order))*1.1)
 				{
 					std::cerr << "Convergence too high, stopping here!" << std::endl;
 					exit(1);

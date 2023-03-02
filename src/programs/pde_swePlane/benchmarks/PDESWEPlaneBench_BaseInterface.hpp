@@ -1,0 +1,68 @@
+/*
+ *  Created on: Mar 1, 2023
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ */
+
+#ifndef SRC_PROGRAMS_PDE_SWE_PLANE_BENCHMARKS_BASEINTERFACE_HPP_
+#define SRC_PROGRAMS_PDE_SWE_PLANE_BENCHMARKS_BASEINTERFACE_HPP_
+
+
+#include <sweet/core/shacks/ShackDictionary.hpp>
+#include <sweet/core/plane/Plane.hpp>
+#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
+#include <sweet/core/shacksShared/ShackTimestepControl.hpp>
+#include "ShackPDESWEPlaneBenchmarks.hpp"
+#include "ShackPDESWEPlaneBench_PolvaniBench.hpp"
+#include "../ShackPDESWEPlane.hpp"
+
+class PDESWEPlaneBench_BaseInterface
+{
+public:
+	sweet::ErrorBase error;
+
+	sweet::ShackDictionary *shackDict;
+	sweet::ShackPlaneDataOps *shackPlaneDataOps;
+	sweet::ShackTimestepControl *shackTimestepControl;
+	ShackPDESWEPlaneBenchmarks *shackBenchmarks;
+	ShackPDESWEPlane *shackPDESWEPlane;
+	ShackPDESWEPlaneBench_PolvaniBench *shackPDESWEPlaneBench_PolvaniBench;
+
+	sweet::PlaneOperators *ops;
+	sweet::PlaneDataConfig *planeDataConfig;
+
+
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		shackDict = io_shackDict;
+
+		shackPlaneDataOps = io_shackDict->getAutoRegistration<sweet::ShackPlaneDataOps>();
+		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		shackBenchmarks = io_shackDict->getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
+		shackPDESWEPlane = io_shackDict->getAutoRegistration<ShackPDESWEPlane>();
+		shackPDESWEPlaneBench_PolvaniBench = io_shackDict->getAutoRegistration<ShackPDESWEPlaneBench_PolvaniBench>();
+
+		ERROR_FORWARD_WITH_RETURN_BOOLEAN(*io_shackDict);
+	}
+
+	virtual bool setup(
+		sweet::PlaneOperators *io_ops,
+		sweet::PlaneDataConfig *i_planeDataConfig
+	)
+	{
+		ops = io_ops;
+		planeDataConfig = i_planeDataConfig;
+
+		return true;
+	}
+
+	virtual bool setupBenchmark(
+			sweet::PlaneData_Spectral &o_h_pert,
+			sweet::PlaneData_Spectral &o_u,
+			sweet::PlaneData_Spectral &o_v
+	) = 0;
+};
+
+
+#endif

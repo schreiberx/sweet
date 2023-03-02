@@ -8,6 +8,7 @@
 #include <iostream>
 #include <complex>
 #include <typeinfo>
+#include <sweet/core/ErrorBase.hpp>
 #include <sweet/libmath/DQStuff.hpp>
 
 #define EXP_FUNCTIONS_MAX_ITERS_DEFAULT 20
@@ -32,13 +33,17 @@ namespace sweet
 template <typename T = double>
 class ExpFunctions
 {
+public:
+	ErrorBase error;
+
+private:
 	typedef std::complex<T> CT;
 
 	enum fun_id_enum
 	{
-		INVALID,
+		INVALID = 0,
 
-		PHI0,
+		PHI0 = 1,
 		PHI1,
 		PHI2,
 		PHI3,
@@ -54,6 +59,7 @@ class ExpFunctions
 		PSI3
 	};
 
+public:
 	fun_id_enum function_id;
 
 
@@ -99,15 +105,7 @@ public:
 
 
 public:
-	ExpFunctions(const std::string &i_function_name)	:
-		function_id(INVALID)
-	{
-		setup_constvars();
-		setup(i_function_name);
-	}
-
-public:
-	void setup(
+	bool setup(
 			const std::string &i_function_name
 	)
 	{
@@ -146,8 +144,11 @@ public:
 		{
 			std::ostringstream ss;
 			ss << "The function '" << i_function_name << "' is not supported!";
-			SWEETError(ss.str().c_str());
+			error.set(ss.str());
+			return false;
 		}
+
+		return true;
 	}
 
 
@@ -508,7 +509,12 @@ public:
 			return psiN(3, i_K);
 
 		default:
-			SWEETError("This phi is not yet supported");
+			{
+				std::ostringstream ss;
+				ss << "The phi function with id '" << function_id << "' is not supported!";
+				error.set(ss.str());
+				SWEETError(ss.str().c_str());
+			}
 		}
 
 		return K;

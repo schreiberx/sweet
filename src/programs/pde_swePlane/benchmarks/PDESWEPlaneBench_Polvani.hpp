@@ -1,6 +1,4 @@
 /*
- * SWEPolvani.hpp
- *
  *  Created on: 14 Oct 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
@@ -13,6 +11,7 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
+#include "PDESWEPlaneBench_BaseInterface.hpp"
 
 #if SWEET_THREADING_SPACE
 	#include <omp.h>
@@ -23,14 +22,9 @@
  * Implement initial conditions of Polvani benchmark
  * "Coherent structures of shallow-water turbulence"
  */
-class SWE_bench_Polvani
+class PDESWEPlaneBench_Polvani	:
+		public PDESWEPlaneBench_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-
-	sweet::PlaneOperators *op;
-
-
-
 	/*
 	 * Start with default parameters
 	 */
@@ -143,22 +137,12 @@ class SWE_bench_Polvani
 #endif
 	}
 
-
 public:
-	SWE_bench_Polvani(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators *io_op
-	)	:
-		shackDict(io_shackDict),
-		op(io_op)
-	{
-	}
-
 	double R;
 	double B;
 	double F;
 
-	void setup(
+	bool setupBenchmark(
 			sweet::PlaneData_Spectral &o_h,
 			sweet::PlaneData_Spectral &o_u,
 			sweet::PlaneData_Spectral &o_v
@@ -168,10 +152,10 @@ public:
 		 * Prepare other values
 		 */
 		// Rossby number
-		R = simVars.swe_polvani.r;
+		R = shackPDESWEPlaneBench_PolvaniBench->r;
 
 		// Froude number
-		F = simVars.swe_polvani.f;
+		F = shackPDESWEPlaneBench_PolvaniBench->f;
 
 		// Burger number
 		// Equation (2.2)
@@ -188,20 +172,20 @@ public:
 		 * Overwrite domain size
 		 * Page 179, right column
 		 */
-		simVars.sim.plane_domain_size[0] = 2.0*M_PI*k0;
-		simVars.sim.plane_domain_size[1] = simVars.sim.plane_domain_size[0];
+		shackPlaneDataOps->plane_domain_size[0] = 2.0*M_PI*k0;
+		shackPlaneDataOps->plane_domain_size[1] = shackPlaneDataOps->plane_domain_size[0];
 
 
 		/*
 		 * Equation (2.3.a)
 		 * => Infer f0 and gravitation
 		 */
-		simVars.sim.plane_rotating_f0 = 1.0/R;
-		//simVars.sim.gravitation = 1.0/R;
-		simVars.sim.gravitation = 1.0/(F*F);
+		shackPDESWEPlane->plane_rotating_f0 = 1.0/R;
+		//shackPDESWEPlane->gravitation = 1.0/R;
+		shackPDESWEPlane->gravitation = 1.0/(F*F);
 
-		//simVars.sim.h0 = 1.0/R*B;
-		simVars.sim.h0 = 1.0;
+		//shackPDESWEPlane->h0 = 1.0/R*B;
+		shackPDESWEPlane->h0 = 1.0;
 
 		std::cout << "******************* WARNING ***********************" << std::endl;
 		std::cout << "POLVANI Benchmark setup:" << std::endl;
@@ -211,7 +195,7 @@ public:
 		/*
 		 * update domain size
 		 */
-		op.setup(simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+		ops->setup(planeDataConfig, shackPlaneDataOps);
 
 
 //		normalize_ek = 1.5967e+21;
@@ -229,8 +213,8 @@ public:
 			/*
 			 * Manually reset the seed
 			 */
-			if (simVars.benchmark.random_seed >= 0)
-				srandom(simVars.benchmark.random_seed);
+			if (shackBenchmarks->random_seed >= 0)
+				srandom(shackBenchmarks->random_seed);
 
 			std::cout << "POLVANI" << std::endl;
 			std::cout << "POLVANI ITERATION " << k << std::endl;
@@ -289,6 +273,8 @@ public:
 			if (error < 1e-2)
 				break;
 		}
+
+		return true;
 	}
 
 
@@ -305,7 +291,7 @@ public:
 		/*
 		 * Prepare laplace operator
 		 */
-		sweet::PlaneData_Spectral laplace = op.diff2_c_x + op.diff2_c_y;
+		sweet::PlaneData_Spectral laplace = ops->diff2_c_x + ops->diff2_c_y;
 
 		/*
 		 * Setup stream function
@@ -321,7 +307,7 @@ public:
 		 * Solve equation (2.5b)
 		 */
 
-		sweet::PlaneData_Spectral lap_h = op.diff2(psi) + 2.0*R*op.J(op.diff_c_x(psi), op.diff_c_y(psi));
+		sweet::PlaneData_Spectral lap_h = ops->diff2(psi) + 2.0*R*ops->J(ops->diff_c_x(psi), ops->diff_c_y(psi));
 		sweet::PlaneData_Spectral h = lap_h.spectral_div_element_wise(laplace);
 
 		/*
@@ -343,10 +329,10 @@ public:
 			 * Solve equation (2.5a)
 			 */
 			sweet::PlaneData_Spectral laplace_psi_t =
-					  op.J(psi, laplace(psi))
+					  ops->J(psi, laplace(psi))
 					+ R_1*(laplace(chi))
-					+ op.div(	laplace(chi)*op.diff_c_x(chi),
-								laplace(chi)*op.diff_c_y(chi)
+					+ ops->div(	laplace(chi)*ops->diff_c_x(chi),
+								laplace(chi)*ops->diff_c_y(chi)
 						)
 					;
 
@@ -356,13 +342,13 @@ public:
 			 * Solve equation (2.5c)
 			 */
 			sweet::PlaneData_Spectral stuff_chi =
-					- op.J(psi, laplace(chi))
-					+ laplace(op.J(psi, h))
-					+ 2.0*R*op.J_t(psi, psi, op.diff_c_x(psi), op.diff_c_y(psi))
-					- op.div(	laplace(chi)*op.diff_c_x(chi),
-								laplace(chi)*op.diff_c_y(chi)
+					- ops->J(psi, laplace(chi))
+					+ laplace(ops->J(psi, h))
+					+ 2.0*R*ops->J_t(psi, psi, ops->diff_c_x(psi), ops->diff_c_y(psi))
+					- ops->div(	laplace(chi)*ops->diff_c_x(chi),
+								laplace(chi)*ops->diff_c_y(chi)
 						)
-					+ laplace(op.diff_c_x(h*op.diff_c_x(chi)) + op.diff_c_y(h*op.diff_c_y(chi)));
+					+ laplace(ops->diff_c_x(h*ops->diff_c_x(chi)) + ops->diff_c_y(h*ops->diff_c_y(chi)));
 
 			/*
 			 * Setup identity operator for Helmholtz solver
@@ -394,10 +380,10 @@ public:
 		 * See page 178, h* = H(1+RB^-1 h)
 		 */
 		// total height
-		h = simVars.sim.h0*(1.0+R/B*h);
+		h = shackPDESWEPlane->h0*(1.0+R/B*h);
 
 		// perturbation
-		h = h-simVars.sim.h0;
+		h = h-shackPDESWEPlane->h0;
 
 		o_h = h;
 
@@ -408,8 +394,8 @@ public:
 		double eps = R*std::max(1.0, R)/std::max(1.0, B);
 
 		// Equation (2.4)
-		o_u = -op.diff_c_y(psi) + eps*op.diff_c_x(chi);
-		o_v = op.diff_c_x(psi) + eps*op.diff_c_y(chi);
+		o_u = -ops->diff_c_y(psi) + eps*ops->diff_c_x(chi);
+		o_v = ops->diff_c_x(psi) + eps*ops->diff_c_y(chi);
 
 		double chi_rms = chi.toPhys().physical_reduce_rms();
 		double psi_rms = psi.toPhys().physical_reduce_rms();

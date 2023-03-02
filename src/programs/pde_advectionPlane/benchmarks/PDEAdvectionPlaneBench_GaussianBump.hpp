@@ -12,36 +12,22 @@
 
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include "ShackPDEAdvectionPlaneBenchmarks.hpp"
+#include "PDEAdvectionPlaneBench_BaseInterface.hpp"
 
 /**
  * Setup Gaussian Bump
  */
-class PDEAdvectionPlaneBenchGaussianBump
+class PDEAdvectionPlaneBenchGaussianBump	:
+		public PDEAdvectionPlaneBench_BaseInterface
 {
-	sweet::PlaneOperators &op;
-
-	sweet::ShackPlaneDataOps *shackPlaneDataOps;
-	ShackPDEAdvectionPlaneBenchmarks *shackBenchmark;
-
 
 public:
-	PDEAdvectionPlaneBenchGaussianBump(
-		sweet::ShackDictionary &io_shackDict,
-		sweet::PlaneOperators &io_op
-	)	:
-		op(io_op)
-	{
-		shackPlaneDataOps = io_shackDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-		shackBenchmark = io_shackDict.getAutoRegistration<ShackPDEAdvectionPlaneBenchmarks>();
-	}
-
-	void setup(
+	bool setupBenchmark(
 			sweet::PlaneData_Spectral &o_h_pert,
 			sweet::PlaneData_Spectral &o_u,
 			sweet::PlaneData_Spectral &o_v
 	)
 	{
-
 		sweet::PlaneData_Physical h_pert_phys(o_h_pert.planeDataConfig);
 		sweet::PlaneData_Physical u_phys(o_u.planeDataConfig);
 		sweet::PlaneData_Physical v_phys(o_v.planeDataConfig);
@@ -56,11 +42,11 @@ public:
 				double y = (double)j*(shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1]);
 
 				// Gaussian
-				double dx = x-shackBenchmark->object_coord_x*sx;
-				double dy = y-shackBenchmark->object_coord_y*sy;
+				double dx = x-shackBenchmarks->object_coord_x*sx;
+				double dy = y-shackBenchmarks->object_coord_y*sy;
 
 
-				double radius = shackBenchmark->object_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+				double radius = shackBenchmarks->object_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 				dx /= radius;
 				dy /= radius;
 
@@ -71,14 +57,14 @@ public:
 		u_phys.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-				io_data = shackBenchmark->advection_velocity[0];
+				io_data = shackBenchmarks->advection_velocity[0];
 			}
 		);
 
 		v_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 			{
-				io_data = shackBenchmark->advection_velocity[1];
+				io_data = shackBenchmarks->advection_velocity[1];
 			}
 		);
 
@@ -86,6 +72,7 @@ public:
 		o_u.loadPlaneDataPhysical(u_phys);
 		o_v.loadPlaneDataPhysical(v_phys);
 
+		return true;
 	}
 };
 

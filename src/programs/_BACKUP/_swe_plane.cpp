@@ -28,7 +28,7 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
 #include <sweet/core/plane/PlaneDataGridMapping.hpp>
-#include <sweet/core/plane/PlaneDiagnostics.hpp>
+#include <sweet/core/plane/ShackPDESWEPlaneDiagnostics.hpp>
 #include <sweet/core/Stopwatch.hpp>
 #include <sweet/core/SWEETError.hpp>
 #include <ostream>

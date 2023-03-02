@@ -48,9 +48,9 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear(
 	 * u_t = -g * h_x + f*v
 	 * v_t = -g * h_y - f*u
 	 */
-	o_h_pert_t = -(op.diff_c_x(i_u) + op.diff_c_y(i_v))*simVars.sim.h0;
-	o_u_t = -simVars.sim.gravitation*op.diff_c_x(i_h_pert) + simVars.sim.plane_rotating_f0*i_v;
-	o_v_t = -simVars.sim.gravitation*op.diff_c_y(i_h_pert) - simVars.sim.plane_rotating_f0*i_u;
+	o_h_pert_t = -(ops->diff_c_x(i_u) + ops->diff_c_y(i_v))*shackPDESWEPlane->h0;
+	o_u_t = -shackPDESWEPlane->gravitation*ops->diff_c_x(i_h_pert) + shackPDESWEPlane->plane_rotating_f0*i_v;
+	o_v_t = -shackPDESWEPlane->gravitation*ops->diff_c_y(i_h_pert) - shackPDESWEPlane->plane_rotating_f0*i_u;
 
 }
 
@@ -75,14 +75,14 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
-	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	//o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
+	o_u_t = -i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
+	o_v_t = -i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 
 	if (use_only_linear_divergence) //only nonlinear advection left to solve
-		o_h_pert_t = - (i_u*op.diff_c_x(i_h_pert) + i_v*op.diff_c_y(i_h_pert));
+		o_h_pert_t = - (i_u*ops->diff_c_x(i_h_pert) + i_v*ops->diff_c_y(i_h_pert));
 	else //full nonlinear equation on h
-		o_h_pert_t = -op.diff_c_x(i_u*i_h_pert) - op.diff_c_y(i_v*i_h_pert);
+		o_h_pert_t = -ops->diff_c_x(i_u*i_h_pert) - ops->diff_c_y(i_v*i_h_pert);
 }
 
 
@@ -164,43 +164,28 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_erk_n_erk::setup(
-		int i_order,	///< order of RK time stepping method
-		int i_order2,	///< order of RK time stepping method
-		bool i_use_only_linear_divergence
+bool SWE_Plane_TS_l_erk_n_erk::setup(
+	sweet::PlaneOperators *io_ops
 )
 {
-	timestepping_order = i_order;
-	timestepping_order2 = i_order2;
-	use_only_linear_divergence = i_use_only_linear_divergence;
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
+
+	if (shackPDESWETimeDisc->timestepping_method == "l_erk_na_ld2_erk")
+		use_only_linear_divergence = true;
+	else
+		use_only_linear_divergence = false;
 
 	if (timestepping_order != timestepping_order2)
 		SWEETError("TODO: Currently, both time stepping orders (1 and 2) have to match!");
 
-	timestepping_rk_linear.setupBuffers(op.planeDataConfig, timestepping_order);
-	timestepping_rk_nonlinear.setupBuffers(op.planeDataConfig, timestepping_order2);
+	timestepping_rk_linear.setupBuffers(ops->planeDataConfig, timestepping_order);
+	timestepping_rk_nonlinear.setupBuffers(ops->planeDataConfig, timestepping_order2);
 
-	if (simVars.disc.space_grid_use_c_staggering)
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("SWE_Plane_TS_l_erk_n_erk: Staggering not supported");
-}
 
-
-
-SWE_Plane_TS_l_erk_n_erk::SWE_Plane_TS_l_erk_n_erk(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op)
-{
-/////#if !SWEET_PARAREAL
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, false);
-/////#endif
-}
-
-
-
-SWE_Plane_TS_l_erk_n_erk::~SWE_Plane_TS_l_erk_n_erk()
-{
+	return true;
 }
 

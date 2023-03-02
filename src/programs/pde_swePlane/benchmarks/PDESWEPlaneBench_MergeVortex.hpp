@@ -13,6 +13,7 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
+#include "PDESWEPlaneBench_BaseInterface.hpp"
 
 
 /**
@@ -29,17 +30,13 @@
  * h0 = 1
  * [0,1]x[0,1
  **/
-class SWE_bench_MergeVortex
+class PDESWEPlaneBench_MergeVortex	:
+		public PDESWEPlaneBench_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-
-	sweet::PlaneOperators *op;
-
 	double f;
 	double g;
 	double sx;
 	double sy;
-
 
 	double stream(
 			double x,
@@ -91,13 +88,13 @@ class SWE_bench_MergeVortex
 
 		sweet::PlaneData_Physical psi_phys(o_psi.planeDataConfig);
 
-		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
+		for (int j = 0; j < shackPlaneDataOps->space_res_physical[1]; j++)
 		{
-			for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
+			for (int i = 0; i < shackPlaneDataOps->space_res_physical[0]; i++)
 			{
 				// h - lives in the center of the cell
-				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0])*shackPlaneDataOps->plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1])*shackPlaneDataOps->plane_domain_size[1];
 
 				psi_phys.physical_set_value(j, i, stream(x, y));
 			}
@@ -109,32 +106,23 @@ class SWE_bench_MergeVortex
 
 
 public:
-	SWE_bench_MergeVortex(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators *io_op
-	)	:
-		shackDict(io_shackDict),
-		op(io_op)
-	{
-		f = simVars.sim.plane_rotating_f0;
-		g = simVars.sim.gravitation;
-		sx = simVars.sim.plane_domain_size[0];
-		sy = simVars.sim.plane_domain_size[1];
-	}
-
-	void setup(
+	bool setupBenchmark(
 			sweet::PlaneData_Spectral &o_h,
 			sweet::PlaneData_Spectral &o_u,
 			sweet::PlaneData_Spectral &o_v
 	)
 	{
+		f = shackPDESWEPlane->plane_rotating_f0;
+		g = shackPDESWEPlane->gravitation;
+		sx = shackPlaneDataOps->plane_domain_size[0];
+		sy = shackPlaneDataOps->plane_domain_size[1];
 
 		sweet::PlaneData_Spectral psi(o_h.planeDataConfig);
 
 		/*
 		 * Prepare laplace operator
 		 */
-		sweet::PlaneData_Spectral laplace = op.diff2_c_x + op.diff2_c_y;
+		sweet::PlaneData_Spectral laplace = ops->diff2_c_x + ops->diff2_c_y;
 
 
 		/*
@@ -144,16 +132,17 @@ public:
 		//psi.file_physical_saveData_ascii("ouput_stream");
 
 		//Calculate Velocities
-		o_u = op.diff_c_y(psi);
-		o_v = -op.diff_c_x(psi);
+		o_u = ops->diff_c_y(psi);
+		o_v = -ops->diff_c_x(psi);
 
 		//Calculate vorticity
-		sweet::PlaneData_Spectral vort = op.vort(o_u, o_v);
+		sweet::PlaneData_Spectral vort = ops->vort(o_u, o_v);
 
 		//Solve Poisson equation for height to get balance initial condition
 		sweet::PlaneData_Spectral lap_h = (f/g)*vort;
 		o_h = lap_h.spectral_div_element_wise(laplace);
 
+		return true;
 	}
 
 

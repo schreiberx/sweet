@@ -108,7 +108,8 @@ public:
 		alpha_eval.resize(N);
 		beta_eval.resize(N);
 
-		ExpFunctions<T> fun(i_function_name);
+		ExpFunctions<T> fun;
+		fun.setup(i_function_name);
 
 		if (i_primitive_name == "circle")
 		{

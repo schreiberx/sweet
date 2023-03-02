@@ -10,10 +10,10 @@
  */
 
 
-#include "SWE_Plane_TS_l_rexi_na_sl_nd_settls.hpp"
+#include "SWE_Plane_TS_l_rexi_na_sl_nr_settls.hpp"
 
 
-void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
+void SWE_Plane_TS_l_rexi_na_sl_nr_settls::run_timestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables - perturbation of height!
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables - zonal velocity
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables - meridional velocity
@@ -25,7 +25,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	if (i_dt <= 0)
 		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
 
-	const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+	const sweet::PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
 	//Out vars
 	sweet::PlaneData_Spectral h(io_h.planeDataConfig);
@@ -75,12 +75,12 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 			posx_a,		posy_a,
 			dt,
 			posx_d,	posy_d,			// output
-			simVars.sim.plane_domain_size,
+			shackPlaneDataOps->plane_domain_size,
 			&staggering,
 			2, //simVars.disc.timestepping_order
 
-			simVars.disc.semi_lagrangian_max_iterations,
-			simVars.disc.semi_lagrangian_convergence_threshold
+			shackPDESWETimeDisc->semi_lagrangian_max_iterations,
+			shackPDESWETimeDisc->semi_lagrangian_convergence_threshold
 	);
 
 	N_u.spectral_set_zero();
@@ -96,14 +96,14 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 	if (!use_only_linear_divergence) // Full nonlinear case
 	{
 		// Calculate nonlinear term for the previous time step
-		N_h = -h_prev * (op.diff_c_x(u_prev) + op.diff_c_y(v_prev));
+		N_h = -h_prev * (ops->diff_c_x(u_prev) + ops->diff_c_y(v_prev));
 
-		if (simVars.misc.use_nonlinear_only_visc != 0)
+		if (shackPDESWEPlane->use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
-			N_h = op.implicit_diffusion(N_h, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			N_h = ops->implicit_diffusion(N_h, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 
@@ -114,13 +114,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 		//Update the nonlinear terms with the constants relative to dt
 		// N=dtN^n-0.5dt exp(dtL)N^n-1 from paper
 		// N=-h*div is calculate in cartesian space (pseudo-spectrally)
-		hdiv =  - h * (op.diff_c_x(io_u) + op.diff_c_y(io_v));
-		if (simVars.misc.use_nonlinear_only_visc != 0)
+		hdiv =  - h * (ops->diff_c_x(io_u) + ops->diff_c_y(io_v));
+		if (shackPDESWEPlane->use_nonlinear_only_visc != 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 			SWEETError("Implicit diffusion only supported with spectral space activated");
 #else
-			hdiv = op.implicit_diffusion(hdiv, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			hdiv = ops->implicit_diffusion(hdiv, shackTimestepControl->current_timestep_size*shackPDESWEPlane->viscosity, shackPDESWEPlane->viscosity_order);
 #endif
 		}
 
@@ -182,40 +182,53 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
-		bool i_use_only_linear_divergence
+bool SWE_Plane_TS_l_rexi_na_sl_nr_settls::setup(
+		sweet::PlaneOperators *io_ops
 )
 {
-	use_only_linear_divergence = i_use_only_linear_divergence;
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
 
-	ts_l_rexi.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
+	h_prev.setup(ops->planeDataConfig);
+	u_prev.setup(ops->planeDataConfig);
+	v_prev.setup(ops->planeDataConfig);
 
-	if (simVars.disc.space_grid_use_c_staggering)
+	posx_a.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
+	posy_a.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
+
+	posx_d.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
+	posy_d.setup(ops->planeDataConfig->physical_array_data_number_of_elements);
+
+
+	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
+
+	ts_l_rexi.setup(io_ops, "phi0");
+
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Staggering not supported for l_rexi_na_sl_nd_settls");
 
 	//with_linear_div_only = i_use_linear_div;
 
 	// Setup sampler for future interpolations
-	sampler2D.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	sampler2D.setup(shackPlaneDataOps->plane_domain_size, ops->planeDataConfig);
 
 	// Setup semi-lag
-	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	semiLagrangian.setup(shackPlaneDataOps->plane_domain_size, ops->planeDataConfig);
 
 
-	sweet::PlaneData_Physical tmp_x(op.planeDataConfig);
+	sweet::PlaneData_Physical tmp_x(ops->planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)i)*simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+		io_data = ((double)i)*shackPlaneDataOps->plane_domain_size[0]/(double)shackPlaneDataOps->space_res_physical[0];
 			},
 			false
 	);
 
-	sweet::PlaneData_Physical tmp_y(op.planeDataConfig);
+	sweet::PlaneData_Physical tmp_y(ops->planeDataConfig);
 	tmp_y.physical_update_lambda_array_indices(
 			[&](int i, int j, double &io_data)
 			{
-		io_data = ((double)j)*simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+		io_data = ((double)j)*shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1];
 			},
 			false
 	);
@@ -225,41 +238,13 @@ void SWE_Plane_TS_l_rexi_na_sl_nd_settls::setup(
 	sweet::ScalarDataArray pos_y = sweet::Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
 
-	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
-	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+	double cell_size_x = shackPlaneDataOps->plane_domain_size[0]/(double)shackPlaneDataOps->space_res_physical[0];
+	double cell_size_y = shackPlaneDataOps->plane_domain_size[1]/(double)shackPlaneDataOps->space_res_physical[1];
 
 	// Initialize arrival points with h position
 	posx_a = pos_x+0.5*cell_size_x;
 	posy_a = pos_y+0.5*cell_size_y;
 
-
-}
-
-
-SWE_Plane_TS_l_rexi_na_sl_nd_settls::SWE_Plane_TS_l_rexi_na_sl_nd_settls(
-		sweet::ShackDictionary *shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-								shackDict(io_shackDict),
-								op(i_op),
-
-								ts_l_rexi(i_simVars, i_op),
-
-								h_prev(i_op.planeDataConfig),
-								u_prev(i_op.planeDataConfig),
-								v_prev(i_op.planeDataConfig),
-
-								posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-								posy_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
-
-								posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
-								posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements)
-{
-}
-
-
-
-SWE_Plane_TS_l_rexi_na_sl_nd_settls::~SWE_Plane_TS_l_rexi_na_sl_nd_settls()
-{
+	return true;
 }
 

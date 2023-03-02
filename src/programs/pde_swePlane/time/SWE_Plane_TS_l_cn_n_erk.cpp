@@ -47,13 +47,13 @@ void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 	 *	u_t = -g * h_x - u * u_x - v * u_y + f*v
 	 *	v_t = -g * h_y - u * v_x - v * v_y - f*u
 	 */
-	//o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
-	o_u_t = -i_u*op.diff_c_x(i_u) - i_v*op.diff_c_y(i_u);
-	o_v_t = -i_u*op.diff_c_x(i_v) - i_v*op.diff_c_y(i_v);
+	//o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
+	o_u_t = -i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
+	o_v_t = -i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 	if (use_only_linear_divergence) //only nonlinear advection left to solve
-		o_h_t = - (i_u*op.diff_c_x(i_h) + i_v*op.diff_c_y(i_h));
+		o_h_t = - (i_u*ops->diff_c_x(i_h) + i_v*ops->diff_c_y(i_h));
 	else //full nonlinear equation on h
-		o_h_t = -op.diff_c_x(i_u*i_h) - op.diff_c_y(i_v*i_h);
+		o_h_t = -ops->diff_c_x(i_u*i_h) - ops->diff_c_y(i_v*i_h);
 
 }
 
@@ -100,19 +100,18 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 /*
  * Setup
  */
-void SWE_Plane_TS_l_cn_n_erk::setup(
-		int i_l_order,
-		int i_n_order,
-		double i_crank_nicolson_damping_factor,
-		bool i_use_only_linear_divergence
+bool SWE_Plane_TS_l_cn_n_erk::setup(
+		sweet::PlaneOperators *io_ops
 )
 {
-	timestepping_order_linear = i_l_order;
-	timestepping_order_nonlinear = i_n_order;
-	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
-	use_only_linear_divergence = i_use_only_linear_divergence;
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
 
-	if (simVars.disc.space_grid_use_c_staggering)
+	timestepping_order_linear = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order_nonlinear = shackPDESWETimeDisc->timestepping_order2;
+	crank_nicolson_damping_factor = 0.5;
+	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
+
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("SWE_Plane_TS_l_cn_n_erk: Staggering not supported for l_cn_n_erk");
 
 	if (timestepping_order_linear > 0 && timestepping_order_linear != 2)
@@ -122,28 +121,9 @@ void SWE_Plane_TS_l_cn_n_erk::setup(
 		SWEETError("SWE_Plane_TS_l_cn_n_erk: Please set --timestepping-order2 to define the order of the nonlinear time integration");
 
 	//ts_l_cn.setup(2, i_crank_nicolson_damping_factor);
-	ts_l_cn.setup(i_crank_nicolson_damping_factor);
+	ts_l_cn.setup(io_ops);
 
-	timestepping_rk.setupBuffers(op.planeDataConfig, timestepping_order_nonlinear);
-}
-
-
-SWE_Plane_TS_l_cn_n_erk::SWE_Plane_TS_l_cn_n_erk(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op),
-		ts_l_cn(simVars, op)
-{
-////#if !SWEET_PARAREAL
-	setup(simVars.disc.timestepping_order, simVars.disc.timestepping_order2, simVars.disc.timestepping_crank_nicolson_filter, false);
-////#endif
-}
-
-
-
-SWE_Plane_TS_l_cn_n_erk::~SWE_Plane_TS_l_cn_n_erk()
-{
+	timestepping_rk.setupBuffers(ops->planeDataConfig, timestepping_order_nonlinear);
+	return true;
 }
 

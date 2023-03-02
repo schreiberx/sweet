@@ -13,16 +13,14 @@
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_irk.hpp"
 #include "SWE_Plane_TS_l_irk.hpp"
 
 
-class SWE_Plane_TS_l_irk_n_erk	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_irk_n_erk	:
+		public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
-
 	int timestepping_order_linear;
 	int timestepping_order_nonlinear;
 
@@ -45,16 +43,8 @@ public:
 
 
 public:
-	SWE_Plane_TS_l_irk_n_erk(
-			sweet::ShackDictionary *shackDict,
-			sweet::PlaneOperators &i_op
-		);
-
-	void setup(
-			int i_l_order,
-			int i_n_order,
-
-			bool i_use_only_linear_divergence
+	bool setup(
+			sweet::PlaneOperators *io_ops
 	);
 
 	void run_timestep(
@@ -66,9 +56,9 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-        SWE_Plane_TS_l_irk& get_implicit_timestepper() {return ts_l_irk;}
+	SWE_Plane_TS_l_irk& get_implicit_timestepper() {return ts_l_irk;}
 
-	virtual ~SWE_Plane_TS_l_irk_n_erk();
+	virtual ~SWE_Plane_TS_l_irk_n_erk() {}
 };
 
 #endif

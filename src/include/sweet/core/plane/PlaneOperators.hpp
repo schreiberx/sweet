@@ -400,6 +400,8 @@ public:
 		shift_right.clear();
 		shift_up.clear();
 		shift_down.clear();
+
+		planeDataConfig = nullptr;
 	}
 
 
@@ -409,28 +411,29 @@ public:
 		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
 	)
 	{
+		assert(planeDataConfig == nullptr);
 		planeDataConfig = i_planeDataConfig;
 
-		diff_c_x.setup(i_planeDataConfig);
-		diff_c_y.setup(i_planeDataConfig);
+		diff_c_x.setup(planeDataConfig);
+		diff_c_y.setup(planeDataConfig);
 
-		diff_f_x.setup(i_planeDataConfig);
-		diff_f_y.setup(i_planeDataConfig);
-		diff_b_x.setup(i_planeDataConfig);
-		diff_b_y.setup(i_planeDataConfig);
+		diff_f_x.setup(planeDataConfig);
+		diff_f_y.setup(planeDataConfig);
+		diff_b_x.setup(planeDataConfig);
+		diff_b_y.setup(planeDataConfig);
 
-		diff2_c_x.setup(i_planeDataConfig);
-		diff2_c_y.setup(i_planeDataConfig);
+		diff2_c_x.setup(planeDataConfig);
+		diff2_c_y.setup(planeDataConfig);
 
-		avg_f_x.setup(i_planeDataConfig);
-		avg_f_y.setup(i_planeDataConfig);
-		avg_b_x.setup(i_planeDataConfig);
-		avg_b_y.setup(i_planeDataConfig);
+		avg_f_x.setup(planeDataConfig);
+		avg_f_y.setup(planeDataConfig);
+		avg_b_x.setup(planeDataConfig);
+		avg_b_y.setup(planeDataConfig);
 
-		shift_left.setup(i_planeDataConfig);
-		shift_right.setup(i_planeDataConfig);
-		shift_up.setup(i_planeDataConfig);
-		shift_down.setup(i_planeDataConfig);
+		shift_left.setup(planeDataConfig);
+		shift_right.setup(planeDataConfig);
+		shift_up.setup(planeDataConfig);
+		shift_down.setup(planeDataConfig);
 
 		return _setup(i_domain_size, i_use_spectral_basis_diffs);
 	}

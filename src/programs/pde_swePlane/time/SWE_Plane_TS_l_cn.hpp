@@ -15,18 +15,15 @@
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include "SWE_Plane_TS_l_erk.hpp"
 
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_erk.hpp"
 #include "SWE_Plane_TS_l_irk.hpp"
 
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 
-class SWE_Plane_TS_l_cn	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_cn	: public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
-
 	double crank_nicolson_damping_factor = 0.5;
-	//int timestepping_order_linear = 1;
 
 	SWE_Plane_TS_l_erk ts_l_erk;
 	SWE_Plane_TS_l_irk ts_l_irk;
@@ -43,15 +40,8 @@ private:
 
 
 public:
-	SWE_Plane_TS_l_cn(
-			sweet::ShackDictionary *io_shackDict,
-			sweet::PlaneOperators &i_op
-		);
 
-	void setup(
-			//int i_l_order,
-			double i_crank_nicolson_damping_factor
-	);
+	bool setup(sweet::PlaneOperators *io_ops);
 
 	void run_timestep(
 			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
@@ -62,9 +52,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-
-
-	virtual ~SWE_Plane_TS_l_cn();
+	virtual ~SWE_Plane_TS_l_cn() {}
 };
 
 #endif

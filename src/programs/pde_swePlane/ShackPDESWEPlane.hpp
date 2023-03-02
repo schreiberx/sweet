@@ -56,6 +56,24 @@ public:
 	 */
 	double gravitation = 9.80616;
 
+	/**
+	 * Avoid nonlinear divergence and only solve linear one
+	 */
+	bool use_only_linear_divergence = false;
+
+
+	/**
+	 * Diffusion applied only on nonlinear divergence
+	 */
+	int use_nonlinear_only_visc = 0;
+
+	/*
+	 * Do a normal mode analysis, see
+	 * Hillary Weller, John Thuburn, Collin J. Cotter,
+	 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+	 */
+	int normal_mode_analysis_generation = 0;
+
 
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
@@ -65,6 +83,9 @@ public:
 		std::cout << "	-f [float]	f-parameter for f-plane, default=0" << std::endl;
 		std::cout << "	-g [float]	gravity" << std::endl;
 		std::cout << "	-H [float]	average (initial) height of water" << std::endl;
+		std::cout << "	--use-only-linear-divergence [bool]	Use only linear divergence" << std::endl;
+		std::cout << "	--use-nonlinear-only-visc [bool]	Use only viscosity on nonlinear part" << std::endl;
+		std::cout << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
 		std::cout << "" << std::endl;
 	}
 
@@ -78,20 +99,29 @@ public:
 		i_pa.getArgumentValueByKey("-g", gravitation);
 		i_pa.getArgumentValueByKey("-H", h0);
 
+		i_pa.getArgumentValueByKey("--use-only-linear-divergence", use_only_linear_divergence);
+		i_pa.getArgumentValueByKey("--use-nonlinear-only-visc", use_nonlinear_only_visc);
+
+		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
+
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
+
 
 	virtual void printShack(
 		const std::string& i_prefix = ""
 	)
 	{
 		std::cout << std::endl;
-		std::cout << "SIMULATION SWE PLANE:" << std::endl;
-		std::cout << " + h0: " << h0 << std::endl;
-		std::cout << " + viscosity: " << viscosity << std::endl;
-		std::cout << " + viscosity_order: " << viscosity_order << std::endl;
-		std::cout << " + gravitation: " << gravitation << std::endl;
-		std::cout << " + plane_rotating_f0: " << plane_rotating_f0 << std::endl;
+		std::cout << i_prefix << "SIMULATION SWE PLANE:" << std::endl;
+		std::cout << i_prefix << " + h0: " << h0 << std::endl;
+		std::cout << i_prefix << " + viscosity: " << viscosity << std::endl;
+		std::cout << i_prefix << " + viscosity_order: " << viscosity_order << std::endl;
+		std::cout << i_prefix << " + gravitation: " << gravitation << std::endl;
+		std::cout << i_prefix << " + plane_rotating_f0: " << plane_rotating_f0 << std::endl;
+		std::cout << i_prefix << " + use_only_linear_divergence: " << use_only_linear_divergence << std::endl;
+		std::cout << i_prefix << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
+		std::cout << i_prefix << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 		std::cout << std::endl;
 	}
 };

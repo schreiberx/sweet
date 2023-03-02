@@ -17,13 +17,31 @@
 
 
 
-void SWE_Plane_TS_l_direct::setup(
+bool SWE_Plane_TS_l_direct::setup(
+		sweet::PlaneOperators *io_ops,
 		const std::string &i_function_name
 )
 {
-	rexiFunctions.setup(i_function_name);
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
+	assert(shackPlaneDataOps != nullptr);
+
+	if (shackPlaneDataOps->space_grid_use_c_staggering)
+		planeDataGridMapping.setup(shackPlaneDataOps, ops->planeDataConfig);
+
+	expFunctions.setup(i_function_name);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(expFunctions);
+
+	return true;
 }
 
+
+bool SWE_Plane_TS_l_direct::setup(
+		sweet::PlaneOperators *io_ops
+)
+{
+	return setup(io_ops, "phi0");
+}
 
 
 void SWE_Plane_TS_l_direct::run_timestep(
@@ -149,8 +167,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	T h = shackPDESWEPlane->h0;
 	T g = shackPDESWEPlane->gravitation;
 
-	T sqrt_h = rexiFunctions.l_sqrt(h);
-	T sqrt_g = rexiFunctions.l_sqrt(g);
+	T sqrt_h = expFunctions.l_sqrt(h);
+	T sqrt_g = expFunctions.l_sqrt(g);
 
 
 	// The phin functions (Q * exp(Lambda) * Q^{-1}) are computed in three situations):
@@ -195,7 +213,6 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	{
 		for (std::size_t ik0 = 0; ik0 < io_h_pert.planeDataConfig->spectral_data_size[0]; ik0++)
 		{
-
 			// Light alternative
 			std::array<std::array<std::complex<T>, 3>, 3> Z_single_wavenumber_pair;  // to avoid too much memory allocation in very large simulations;
 
@@ -217,8 +234,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 			complex c = -k1*I;
 
-			b = b*rexiFunctions.pi2/s0;
-			c = c*rexiFunctions.pi2/s1;
+			b = b*expFunctions.pi2/s0;
+			c = c*expFunctions.pi2/s1;
 			
 			if (compute_phin)
 			{
@@ -301,17 +318,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						v[1][0] = -c/b;
 						v[2][0] = 1.0;
 
-						v[0][1] = -(sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[0][1] = -(sqrt_h*expFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
 						v[1][1] = b/c;
 						v[2][1] = 1.0;
 
-						v[0][2] = (sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[0][2] = (sqrt_h*expFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
 						v[1][2] = b/c;
 						v[2][2] = 1.0;
 
 						lambda[0] = 0.0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
-						lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+						lambda[1] = -expFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+						lambda[2] = expFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
 					}
 				}
 				else
@@ -346,17 +363,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						v[1][0] = 1;
 						v[2][0] = 0;
 
-						v[0][1] = -(c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-						v[1][1] =  -f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[0][1] = -(c*h)/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][1] =  -f/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
 						v[2][1] = 1;
 
-						v[0][2] = (c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-						v[1][2] = f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[0][2] = (c*h)/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][2] = f/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
 						v[2][2] = 1;
 
 						lambda[0] = 0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
-						lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+						lambda[1] = -expFunctions.l_sqrtcplx(c*c*g*h-f*f);
+						lambda[2] = expFunctions.l_sqrtcplx(c*c*g*h-f*f);
 					}
 					else if (k1 == 0)
 					{
@@ -368,16 +385,16 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						v[2][0] = 1;
 
 						v[0][1] = -(b*h)/f;
-						v[1][1] = rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[1][1] = expFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
 						v[2][1] = 1;
 
 						v[0][2] = -(b*h)/f;
-						v[1][2] = -rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[1][2] = -expFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
 						v[2][2] = 1;
 
 						lambda[0] = 0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
-						lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+						lambda[1] = -expFunctions.l_sqrtcplx(b*b*g*h-f*f);
+						lambda[2] = expFunctions.l_sqrtcplx(b*b*g*h-f*f);
 					}
 					else
 					{
@@ -396,17 +413,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						v[1][0] = -c/b;
 						v[2][0] = 1.0;
 
-						v[0][1] = -(c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-						v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[0][1] = -(c*f*h + b*h*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
 						v[2][1] = 1.0;
 
-						v[0][2] = -(-c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-						v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[0][2] = -(-c*f*h + b*h*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
 						v[2][2] = 1.0;
 
 						lambda[0] = 0.0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
-						lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+						lambda[1] = -expFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+						lambda[2] =  expFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
 					}
 				}
 
@@ -433,15 +450,13 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 					for (int i = 0; i < 3; i++)
 						v_inv[j][i] /= s;
 
-                                complex v_lambda[3][3];
-
+				complex v_lambda[3][3];
 
 				for (int i = 0; i < 3; i++)
 				{
-
 					std::complex<T> &lam = lambda[i];
 
-					std::complex<T> K = rexiFunctions.eval(lam*dt);
+					std::complex<T> K = expFunctions.eval(lam*dt);
 					for (int j = 0; j < 3; j++)
 						v_lambda[j][i] = v[j][i] * K;
 				}
@@ -559,8 +574,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	T h = shackPDESWEPlane->h0;
 	T g = shackPDESWEPlane->gravitation;
 
-	T sqrt_h = rexiFunctions.l_sqrt(h);
-	T sqrt_g = rexiFunctions.l_sqrt(g);
+	T sqrt_h = expFunctions.l_sqrt(h);
+	T sqrt_g = expFunctions.l_sqrt(g);
 
 
 	// The phin functions (Q * exp(Lambda) * Q^{-1}) are computed in three situations):
@@ -630,8 +645,8 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			complex b = -k0*I;	// d/dx exp(I*k0*x) = I*k0 exp(I*k0*x)
 			complex c = -k1*I;
 
-			b = b*rexiFunctions.pi2/s0;
-			c = c*rexiFunctions.pi2/s1;
+			b = b*expFunctions.pi2/s0;
+			c = c*expFunctions.pi2/s1;
 
 
                         if (compute_phin)
@@ -715,17 +730,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 						v[1][0] = -c/b;
 						v[2][0] = 1.0;
 	
-						v[0][1] = -(sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[0][1] = -(sqrt_h*expFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
 						v[1][1] = b/c;
 						v[2][1] = 1.0;
 	
-						v[0][2] = (sqrt_h*rexiFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
+						v[0][2] = (sqrt_h*expFunctions.l_sqrtcplx(b*b + c*c))/(c*sqrt_g);
 						v[1][2] = b/c;
 						v[2][2] = 1.0;
 	
 						lambda[0] = 0.0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
-						lambda[2] = rexiFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+						lambda[1] = -expFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
+						lambda[2] = expFunctions.l_sqrtcplx(b*b + c*c)*sqrt_h*sqrt_g;
 					}
 				}
 				else
@@ -760,17 +775,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 						v[1][0] = 1;
 						v[2][0] = 0;
 	
-						v[0][1] = -(c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-						v[1][1] =  -f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[0][1] = -(c*h)/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][1] =  -f/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
 						v[2][1] = 1;
 	
-						v[0][2] = (c*h)/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
-						v[1][2] = f/rexiFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[0][2] = (c*h)/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
+						v[1][2] = f/expFunctions.l_sqrtcplx(-f*f + c*c*g*h);
 						v[2][2] = 1;
 	
 						lambda[0] = 0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
-						lambda[2] = rexiFunctions.l_sqrtcplx(c*c*g*h-f*f);
+						lambda[1] = -expFunctions.l_sqrtcplx(c*c*g*h-f*f);
+						lambda[2] = expFunctions.l_sqrtcplx(c*c*g*h-f*f);
 					}
 					else if (k1 == 0)
 					{
@@ -782,16 +797,16 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 						v[2][0] = 1;
 	
 						v[0][1] = -(b*h)/f;
-						v[1][1] = rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[1][1] = expFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
 						v[2][1] = 1;
 	
 						v[0][2] = -(b*h)/f;
-						v[1][2] = -rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
+						v[1][2] = -expFunctions.l_sqrtcplx(-f*f + b*b*g*h)/f;
 						v[2][2] = 1;
 	
 						lambda[0] = 0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
-						lambda[2] = rexiFunctions.l_sqrtcplx(b*b*g*h-f*f);
+						lambda[1] = -expFunctions.l_sqrtcplx(b*b*g*h-f*f);
+						lambda[2] = expFunctions.l_sqrtcplx(b*b*g*h-f*f);
 					}
 					else
 					{
@@ -810,17 +825,17 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 						v[1][0] = -c/b;
 						v[2][0] = 1.0;
 	
-						v[0][1] = -(c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-						v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[0][1] = -(c*f*h + b*h*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][1] = -(f*f - b*b*g*h)/(b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
 						v[2][1] = 1.0;
 	
-						v[0][2] = -(-c*f*h + b*h*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
-						v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*rexiFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[0][2] = -(-c*f*h + b*h*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h))/(-b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
+						v[1][2] =  -(-f*f + b*b*g*h)/(-b*c*g*h + f*expFunctions.l_sqrtcplx(-f*f + b*b*g*h + c*c*g*h));
 						v[2][2] = 1.0;
 	
 						lambda[0] = 0.0;
-						lambda[1] = -rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
-						lambda[2] =  rexiFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+						lambda[1] = -expFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
+						lambda[2] =  expFunctions.l_sqrtcplx(b*b*g*h + c*c*g*h - f*f);
 					}
 				}
 
@@ -856,7 +871,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 					std::complex<T> &lam = lambda[i];
 
-					std::complex<T> K = rexiFunctions.eval(lam*dt);
+					std::complex<T> K = expFunctions.eval(lam*dt);
 					for (int j = 0; j < 3; j++)
 						v_lambda[j][i] = v[j][i] * K;
 				}
@@ -941,28 +956,5 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	io_h_pert = sweet::Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_h_pert);
 	io_u = sweet::Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_u);
 	io_v = sweet::Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(o_v);
-}
-
-
-SWE_Plane_TS_l_direct::SWE_Plane_TS_l_direct(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators &i_op
-)	:
-		shackDict(io_shackDict),
-		op(i_op)
-{
-	shackPlaneDataOps = io_shackDict->getAutoRegistration<sweet::ShackPlaneDataOps>();
-	shackExpIntegration = io_shackDict->getAutoRegistration<sweet::ShackExpIntegration>();
-	shackTimeDisc = io_shackDict->getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
-	shackPDESWEPlane = io_shackDict->getAutoRegistration<ShackPDESWEPlane>();
-
-	if (shackPlaneDataOps->space_grid_use_c_staggering)
-		planeDataGridMapping.setup(shackPlaneDataOps, op.planeDataConfig);
-}
-
-
-
-SWE_Plane_TS_l_direct::~SWE_Plane_TS_l_direct()
-{
 }
 

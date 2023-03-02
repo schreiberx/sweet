@@ -15,6 +15,7 @@
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/libmath/GaussQuadrature.hpp>
+#include "PDESWEPlaneBench_BaseInterface.hpp"
 
 
 /**
@@ -24,16 +25,23 @@
  *
  *
  **/
-class SWE_bench_UnstableJet
+class PDESWEPlaneBench_UnstableJet	:
+		public PDESWEPlaneBench_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
+	double f;
+	double g;
+	double sx;
+	double sy;
 
-	sweet::PlaneOperators *op;
+	bool with_gaussian_bumgaussian_p;
 
-	double f = simVars.sim.plane_rotating_f0;
-	double g = simVars.sim.gravitation;
-	double sx = simVars.sim.plane_domain_size[0];
-	double sy = simVars.sim.plane_domain_size[1];
+public:
+	PDESWEPlaneBench_UnstableJet(
+			bool i_with_gaussian_bump = true
+	)	:
+		with_gaussian_bumgaussian_p(i_with_gaussian_bump)
+	{
+	}
 
 
 	/*
@@ -105,7 +113,7 @@ class SWE_bench_UnstableJet
 
 		double exp2 = std::exp(-factor*(dx*dx + dy*dy));
 
-		double pert = 0.01*simVars.sim.h0;
+		double pert = 0.01*shackPDESWEPlane->h0;
 
 		return pert*(exp1+exp2);
 
@@ -120,25 +128,25 @@ class SWE_bench_UnstableJet
 
 		sweet::PlaneData_Physical depth_phys(o_depth.planeDataConfig);
 
-		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
+		for (int j = 0; j < shackPlaneDataOps->space_res_physical[1]; j++)
 		{
 			int i = 0;
-			double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
-			double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
+			double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*simVars.sim.domain_size[0];
+			double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*simVars.sim.domain_size[1];
 
 			depth_phys.physical_set_value(j, i, depth(x, y));
 		}
 
 		//Now set for other "x" and add bump
-		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
+		for (int j = 0; j < shackPlaneDataOps->space_res_physical[1]; j++)
 		{
-			for (int i = 1; i < simVars.disc.space_res_physical[0]; i++)
+			for (int i = 1; i < shackPlaneDataOps->space_res_physical[0]; i++)
 			{
 
 				// h - lives in the center of the cell
 				// (x,y) \in [0,1]x[0,1]
-				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*simVars.sim.domain_size[1];
 
 				if (i_with_bump)
 					depth_phys.physical_set_value(j, i, depth_phys.physical_get(j, 0) + bump(x,y));
@@ -160,14 +168,14 @@ class SWE_bench_UnstableJet
 
 		sweet::PlaneData_Physical u_phys(o_u.planeDataConfig);
 
-		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
+		for (int j = 0; j < shackPlaneDataOps->space_res_physical[1]; j++)
 		{
-			for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
+			for (int i = 0; i < shackPlaneDataOps->space_res_physical[0]; i++)
 			{
 
 				// (u,v) - lives in the center of the cell
-				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0]); //*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1]); //*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*simVars.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*simVars.sim.domain_size[1];
 				// (x,y) \in [0,1]x[0,1]
 				u_phys.physical_set_value(j, i, u(x, y));
 			}
@@ -177,22 +185,18 @@ class SWE_bench_UnstableJet
 	}
 
 public:
-	SWE_bench_UnstableJet(
-		sweet::ShackDictionary *io_shackDict,
-		sweet::PlaneOperators *io_op
-	)	:
-		shackDict(io_shackDict),
-		op(io_op)
-	{
-	}
-
-	void setup(
+	bool setupBenchmark(
 			sweet::PlaneData_Spectral &o_h,
 			sweet::PlaneData_Spectral &o_u,
-			sweet::PlaneData_Spectral &o_v,
-			bool i_with_bump = true
+			sweet::PlaneData_Spectral &o_v
 	)
 	{
+		f = shackPDESWEPlane->plane_rotating_f0;
+		g = shackPDESWEPlane->gravitation;
+		sx = shackPlaneDataOps->plane_domain_size[0];
+		sy = shackPlaneDataOps->plane_domain_size[1];
+
+
 		std::cout << "Generating Unstable Jet initial conditions.";
 		/*
 		 * Setup velocities
@@ -204,13 +208,15 @@ public:
 		 * Setup depth function
 		 * based on velocities
 		 */
-		setup_depth(o_h, i_with_bump);
+		setup_depth(o_h, with_gaussian_bumgaussian_p);
 		//o_h.file_physical_saveData_ascii("ouput_depth");
 
 		/*
 		 * Add perturbation to depth
 		 */
 		std::cout << "   Done! " << std::endl;
+
+		return true;
 	}
 
 

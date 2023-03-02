@@ -8,6 +8,7 @@
 #ifndef SRC_PROGRAMS_SWE_PLANE_TS_L_REXI_HPP_
 #define SRC_PROGRAMS_SWE_PLANE_TS_L_REXI_HPP_
 
+#include <sweet/core/defaultPrecompilerValues.hpp>
 #include <limits>
 #include <string>
 #include <complex>
@@ -16,14 +17,11 @@
 #include <sweet/core/plane/PlaneData_SpectralComplex.hpp>
 #include <sweet/core/plane/PlaneOperatorsComplex.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
+#include <sweet/expIntegration/ShackExpIntegration.hpp>
 
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_direct.hpp"
 
-
-#ifndef SWEET_BENCHMARK_TIMINGS
-	#define SWEET_BENCHMARK_TIMINGS	0
-#endif
 
 #if SWEET_BENCHMARK_TIMINGS
 #	include <sweet/core/Stopwatch.hpp>
@@ -34,13 +32,9 @@
 #	include <mpi.h>
 #endif
 
-class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_rexi	:
+		public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	EXP_SimulationVariables *rexiSimVars;
-
-	sweet::PlaneOperators &op;
-
 	std::vector<std::complex<double>> rexi_alphas;
 	std::vector<std::complex<double>> rexi_betas;
 	std::complex<double> rexi_gamma;
@@ -50,19 +44,17 @@ class SWE_Plane_TS_l_rexi	: public SWE_Plane_TS_interface
 
 	std::size_t block_size;
 
-	sweet::PlaneDataConfig *planeDataConfig;
-
 #if SWEET_BENCHMARK_TIMINGS
-	Stopwatch stopwatch_preprocessing;
-	Stopwatch stopwatch_broadcast;
-	Stopwatch stopwatch_reduce;
-	Stopwatch stopwatch_solve_rexi_terms;
+	sweet::Stopwatch stopwatch_preprocessing;
+	sweet::Stopwatch stopwatch_broadcast;
+	sweet::Stopwatch stopwatch_reduce;
+	sweet::Stopwatch stopwatch_solve_rexi_terms;
 #endif
 
 	class PerThreadVars
 	{
 	public:
-		sweet::PlaneOperatorsComplex op;
+		sweet::PlaneOperatorsComplex ops;
 
 		sweet::PlaneData_SpectralComplex eta;
 
@@ -101,28 +93,14 @@ public:
 	SWE_Plane_TS_l_direct ts_l_direct;
 
 public:
-	SWE_Plane_TS_l_rexi(
-			sweet::ShackDictionary *shackDict,
-			sweet::PlaneOperators &i_op
-		);
-
-	void setup(
-			EXP_SimulationVariables &i_rexi,
-			const std::string &i_function_name,
-			double i_timestep_size
+	bool setup(
+			sweet::PlaneOperators *io_ops,
+			const std::string &i_function_name
 	);
-/*
-	void setup_REXI(
-			double i_h,						///< sampling size
-			int i_M,						///< number of sampling points
-			int i_L,						///< number of sampling points for Gaussian approximation
-											///< set to 0 for auto detection
 
-			bool i_rexi_half,				///< use half-pole reduction
-			bool i_rexi_normalization,		///< REXI normalization
-			bool i_rexi_next_generation
+	bool setup(
+			sweet::PlaneOperators *io_ops
 	);
-*/
 
 	void run_timestep(
 			const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables

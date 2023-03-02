@@ -20,16 +20,16 @@
 #include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
-#include "SWE_Plane_TS_interface.hpp"
+#include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_direct.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
 
 
 
-class SWE_Plane_TS_l_rexi_na_sl_nd_settls	: public SWE_Plane_TS_interface
+class SWE_Plane_TS_l_rexi_na_sl_nr_settls	: public PDESWEPlaneTS_BaseInterface
 {
-	sweet::ShackDictionary *shackDict;
-	sweet::PlaneOperators &op;
+
+
 
 	SWE_Plane_TS_l_rexi ts_l_rexi;
 
@@ -50,15 +50,8 @@ class SWE_Plane_TS_l_rexi_na_sl_nd_settls	: public SWE_Plane_TS_interface
 	bool use_only_linear_divergence;
 
 public:
-	SWE_Plane_TS_l_rexi_na_sl_nd_settls(
-			sweet::ShackDictionary *shackDict,
-			sweet::PlaneOperators &i_op
-		);
-
-	void setup(
-			//REXI_SimulationVariables &i_rexi,
-			//int i_with_nonlinear
-			bool use_only_linear_divergence
+	bool setup(
+			sweet::PlaneOperators *io_ops
 	);
 
 	void run_timestep(
@@ -85,9 +78,7 @@ public:
 	}
 #endif
 
-
-
-	virtual ~SWE_Plane_TS_l_rexi_na_sl_nd_settls();
+	virtual ~SWE_Plane_TS_l_rexi_na_sl_nr_settls() {}
 };
 
 #endif

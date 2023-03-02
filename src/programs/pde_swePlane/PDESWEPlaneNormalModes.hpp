@@ -1,8 +1,11 @@
 /*
- * Created on: 17 Nov 2019
+ * SWE_Plane_Normal_Modes.hpp
+ *
+ *  Created on: 17 Nov 2019
  *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
- * Based on previous normal mode implementation by Martin Schreiber in swe_plane.cpp
+ *      based on previous implementation by Martin Schreiber in swe_plane.cpp
+ *
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_NORMAL_MODES_HPP_
@@ -10,29 +13,31 @@
 
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/expIntegration/ExpFunctions.hpp>
+#include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_SpectralComplex.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <functional>
+
 #if SWEET_EIGEN
-#	include <Eigen/Eigenvalues>
+#include <Eigen/Eigenvalues>
 #endif
+
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/core/shacksShared/ShackNormalModeAnalysis.hpp>
-#include <pde_swePlane/ShackPDESWEPlane.hpp>
-
-
+#include "ShackPDESWEPlane.hpp"
 
 /**
  * SWE Plane normal mode
  */
-class SWEPlaneNormalModes
+class PDESWEPlaneNormalModes
 {
 public:
+
 	sweet::ErrorBase error;
 
 	typedef double T;
@@ -41,7 +46,6 @@ public:
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	sweet::ShackIOData *shackIOData;
-	sweet::ShackNormalModeAnalysis *shackNormalModeAnalysis;
 
 	ShackPDESWEPlane *shackPDESWEPlane;
 
@@ -54,9 +58,6 @@ public:
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
 
 		shackIOData = io_dict.getAutoRegistration<sweet::ShackIOData>();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
-
-		shackNormalModeAnalysis = io_dict.getAutoRegistration<sweet::ShackNormalModeAnalysis>();
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
 
 		shackPDESWEPlane = io_dict.getAutoRegistration<ShackPDESWEPlane>();
@@ -251,7 +252,7 @@ public:
 		complex v[3][3];
 		complex lambda[3];
 
-		SWEPlaneNormalModes::sw_eigen_decomp(
+		sw_eigen_decomp(
 				k0,				//wavenumber in x
 				k1,				// wavenumeber in y
 				true, // Inverse ev matrix
@@ -578,16 +579,19 @@ public:
 }
 
 
+
 	template <typename TCallbackClass>
 	void normal_mode_analysis(
 			sweet::PlaneData_Spectral &io_prog_h_pert, // h: surface height (perturbation)
 			sweet::PlaneData_Spectral &io_prog_u, // u: velocity in x-direction
 			sweet::PlaneData_Spectral &io_prog_v, // v: velocity in y-direction
 			int number_of_prognostic_variables,
+			sweet::ShackDictionary *shackDict, // Simulation variables
 			TCallbackClass *i_class,
 			void(TCallbackClass::* const i_run_timestep_method)(void)
 	)
 	{
+
 		const sweet::PlaneDataConfig *planeDataConfig = io_prog_h_pert.planeDataConfig;
 
 		// dummy time step to get time step size
@@ -601,7 +605,7 @@ public:
 		 *
 		 */
 
-		if (shackNormalModeAnalysis->normal_mode_analysis_generation == 4)
+		if (shackPDESWEPlane->normal_mode_analysis_generation == 4)
 		{
 #if SWEET_EIGEN
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -615,25 +619,25 @@ public:
 			const char* filename; //general filename
 			char buffer_real[1024];
 
-			if (i_simVars.iodata.output_file_name == "")
+			if (shackIOData->output_file_name == "")
 				filename = "output_%s_t%020.8f.csv";
 			else
-				filename = i_simVars.iodata.output_file_name.c_str();
+				filename = shackIOData->output_file_name.c_str();
 
-			sprintf(buffer_real, filename, "normal_modes_plane", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
 			std::cout << "Writing normal mode analysis to files of the form '" << buffer_real << "'" << std::endl;
 
 			//Positive inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igpos", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igpos", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file_igpos(buffer_real, std::ios_base::trunc);
 
 			//Negative inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igneg", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igneg", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file_igneg(buffer_real, std::ios_base::trunc);
 
 			//Geostrophic modes
-			sprintf(buffer_real, filename, "normal_modes_plane_geo", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_geo", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file_geo(buffer_real, std::ios_base::trunc);
 
 			//std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
@@ -647,8 +651,7 @@ public:
 			file << "# dt " << shackTimestepControl->current_timestep_size << std::endl;
 			file << "# g " << shackPDESWEPlane->gravitation << std::endl;
 			file << "# h " << shackPDESWEPlane->h0 << std::endl;
-			file << "# r " << shackPDESWEPlane->sphere_radius << std::endl;
-			file << "# f " << shackPlaneDataOps->plane_rotating_f0 << std::endl;
+			file << "# f " << shackPDESWEPlane->plane_rotating_f0 << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
@@ -659,7 +662,7 @@ public:
 
 			file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 			file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
-			file << "# normalmodegeneration " << shackNormalModeAnalysis->normal_mode_analysis_generation << std::endl;
+			file << "# normalmodegeneration " << shackPDESWEPlane->normal_mode_analysis_generation << std::endl;
 			file << "# antialiasing ";
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 			file << 1;
@@ -724,12 +727,14 @@ public:
 						/*
 						 * RUN timestep
 						 */
+						////prog[outer_prog_id]->request_data_physical();
 						(i_class->*i_run_timestep_method)();
 
 						/*
 						 * compute
 						 * 1/dt * (U(t+1) - U(t))
 						 */
+						///////prog[outer_prog_id]->request_data_spectral();
 
 						std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 						val = val - 1.0; //subtract U(0) from mode
@@ -766,7 +771,7 @@ public:
 					int count_geo=0;
 					for(int i=0; i<3; i++)
 					{
-						if (eval[i].imag() > 0.5 * shackPlaneDataOps->plane_rotating_f0)
+						if (eval[i].imag() > 0.5 * shackPDESWEPlane->plane_rotating_f0)
 						{
 							//std::cout << "IG pos mode: " << eval[i].imag() << std::endl;
 							//file_igpos << eval[i].imag();
@@ -774,7 +779,7 @@ public:
 							file_igpos << "\t";
 							count_igpos++;
 						}
-						if (eval[i].imag() < - 0.5 * shackPlaneDataOps->plane_rotating_f0)
+						if (eval[i].imag() < - 0.5 * shackPDESWEPlane->plane_rotating_f0)
 						{
 							//std::cout << "IG neg mode: " << eval[i].imag() << std::endl;
 							//file_igneg << eval[i].imag();
@@ -782,7 +787,7 @@ public:
 							file_igneg << "\t";
 							count_igneg++;
 						}
-						if (eval[i].imag() >= - 0.5 * shackPlaneDataOps->plane_rotating_f0 && eval[i].imag() <=  0.5 * shackPlaneDataOps->plane_rotating_f0 )
+						if (eval[i].imag() >= - 0.5 * shackPDESWEPlane->plane_rotating_f0 && eval[i].imag() <=  0.5 * shackPDESWEPlane->plane_rotating_f0 )
 						{
 							//std::cout << "IG geo mode: " << eval[i].imag() << std::endl;
 							//file_geo << eval[i].imag();
@@ -835,12 +840,7 @@ public:
 				filename = shackIOData->output_file_name.c_str();
 
 
-			sprintf(
-					buffer_real,
-					filename,
-					"normal_modes_physical",
-					shackTimestepControl->current_timestep_size*shackIOData->output_time_scale
-				);
+			sprintf(buffer_real, filename, "normal_modes_physical", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
 			std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
 
@@ -875,20 +875,20 @@ public:
 			}
 
 #if 0
-			if (shackPlaneDataOps->timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+			if (i_simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
 			{
 				SWEETError("Not yet tested and supported");
 				std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 				std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 				std::cout << "Therefore, we also halve the time step size here" << std::endl;
 
-				shackTimestepControl->current_timestep_size = 0.5*shackPDESWEPlane->CFL;
-				shackPDESWEPlane->CFL = -shackTimestepControl->current_timestep_size;
+				shackTimestepControl->current_timestep_size = 0.5*i_simVars.sim.CFL;
+				i_simVars.sim.CFL = -shackTimestepControl->current_timestep_size;
 			}
 #endif
 
 			int num_timesteps = 1;
-			if (shackNormalModeAnalysis->normal_mode_analysis_generation >= 10)
+			if (shackPDESWEPlane->normal_mode_analysis_generation >= 10)
 			{
 				if (shackTimestepControl->max_timesteps_nr > 0)
 					num_timesteps = shackTimestepControl->max_timesteps_nr;
@@ -913,7 +913,7 @@ public:
 
 			file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 			file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
-			file << "# normalmodegeneration " << shackNormalModeAnalysis->normal_mode_analysis_generation << std::endl;
+			file << "# normalmodegeneration " << shackPDESWEPlane->normal_mode_analysis_generation << std::endl;
 			file << "# antialiasing ";
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -928,7 +928,7 @@ public:
 			// iterate over all prognostic variables
 			for (int outer_prog_id = 0; outer_prog_id < number_of_prognostic_variables; outer_prog_id++)
 			{
-				if (shackNormalModeAnalysis->normal_mode_analysis_generation == 1 || shackNormalModeAnalysis->normal_mode_analysis_generation == 11)
+				if (shackPDESWEPlane->normal_mode_analysis_generation == 1 || shackPDESWEPlane->normal_mode_analysis_generation == 11)
 				{
 					// iterate over physical space
 					for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
@@ -943,6 +943,8 @@ public:
 							prog[inner_prog_id]->spectral_set_zero();
 
 						// activate mode
+						///prog[outer_prog_id]->request_data_physical();
+						///prog[outer_prog_id]->physical_space_data[outer_i] = 1;
 						sweet::PlaneData_Physical tmp = prog[outer_prog_id]->toPhys();
 						tmp.physical_space_data[outer_i] = 1;
 						prog[outer_prog_id]->loadPlaneDataPhysical(tmp);
@@ -953,7 +955,7 @@ public:
 
 						(i_class->*i_run_timestep_method)();
 
-						if (shackNormalModeAnalysis->normal_mode_analysis_generation == 1)
+						if (shackPDESWEPlane->normal_mode_analysis_generation == 1)
 						{
 							/*
 							 * compute
@@ -982,7 +984,7 @@ public:
 					}
 				}
 #if 1
-				else if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3 || shackNormalModeAnalysis->normal_mode_analysis_generation == 13)
+				else if (shackPDESWEPlane->normal_mode_analysis_generation == 3 || shackPDESWEPlane->normal_mode_analysis_generation == 13)
 				{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 					SWEETError("Only available with if plane spectral space is activated during compile time!");
@@ -1014,12 +1016,13 @@ public:
 								(i_class->*i_run_timestep_method)();
 
 
-								if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3)
+								if (shackPDESWEPlane->normal_mode_analysis_generation == 3)
 								{
 									/*
 									 * compute
 									 * 1/dt * (U(t+1) - U(t))
 									 */
+									///prog[outer_prog_id]->request_data_spectral();
 
 									std::complex<double> val = prog[outer_prog_id]->spectral_get(j, i);
 									val = val - 1.0;
@@ -1032,6 +1035,7 @@ public:
 
 								for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 								{
+									///prog[inner_prog_id]->request_data_spectral();
 
 									/*
 									 * REAL
@@ -1081,11 +1085,11 @@ public:
 #endif
 				}
 #else
-				else if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3 || shackNormalModeAnalysis->normal_mode_analysis_generation == 13)
+				else if (shackPDESWEPlane->normal_mode_analysis_generation == 3 || shackPDESWEPlane->normal_mode_analysis_generation == 13)
 				{
-					PlaneDataComplex t1(planeDataConfig);
-					PlaneDataComplex t2(planeDataConfig);
-					PlaneDataComplex t3(planeDataConfig);
+					sweet::PlaneData_SpectralComplex t1(planeDataConfig);
+					sweet::PlaneData_SpectralComplex t2(planeDataConfig);
+					sweet::PlaneData_SpectralComplex t3(planeDataConfig);
 					PlaneDataComplex* prog_cplx[3] = {&t1, &t2, &t3};
 
 					// iterate over spectral space
@@ -1104,10 +1108,10 @@ public:
 						prog_cplx[outer_prog_id]->request_data_spectral();
 						prog_cplx[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
-						// convert PlaneDataComplex to PlaneData
+						// convert sweet::PlaneData_SpectralComplex to PlaneData
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
-							*prog[inner_prog_id] = Convert_PlaneDataComplex_To_PlaneData::physical_convert(*prog_cplx[inner_prog_id]);
+							*prog[inner_prog_id] = sweet::Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert(*prog_cplx[inner_prog_id]);
 							prog[inner_prog_id]->spectral_zeroAliasingModes();
 						}
 
@@ -1127,7 +1131,7 @@ public:
 							prog_cplx[inner_prog_id]->request_data_spectral();
 						}
 
-						if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3)
+						if (shackPDESWEPlane->normal_mode_analysis_generation == 3)
 						{
 							/*
 							 * compute
@@ -1141,7 +1145,7 @@ public:
 						}
 
 
-						// convert PlaneDataComplex to PlaneData
+						// convert PlaneData_SpectralComplex to PlaneData
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 						{
 							prog_cplx[inner_prog_id]->request_data_spectral();
@@ -1173,12 +1177,6 @@ public:
 #endif
 			}
 		}
-	}
-
-
-	~SWEPlaneNormalModes()
-	{
-
 	}
 };
 
