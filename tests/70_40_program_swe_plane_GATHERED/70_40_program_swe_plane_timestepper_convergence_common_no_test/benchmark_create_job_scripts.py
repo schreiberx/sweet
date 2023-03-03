@@ -12,7 +12,7 @@ jg = JobGeneration()
 #
 # Run simulation on plane or sphere
 #
-jg.compile.program = 'swe_plane'
+jg.compile.program = 'programs/pde_swePlane'
 
 jg.compile.plane_spectral_space = 'enable'
 jg.compile.plane_spectral_dealiasing = 'enable'

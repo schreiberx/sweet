@@ -15,6 +15,16 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 
+bool SWE_Plane_TS_l_rexi_n_erk::registerShacks(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+
+	ts_l_rexi.registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+
+	return true;
+}
 
 /*
  * Main routine for method to be used in case of finite differences

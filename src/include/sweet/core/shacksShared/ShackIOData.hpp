@@ -58,9 +58,6 @@ public:
 	/// set verbosity of simulation
 	int verbosity = 0;
 
-	/// compute errors
-	int compute_errors = 0;
-
 	/// activate GUI mode?
 	bool gui_enabled = (SWEET_GUI == 0 ? false : true);
 
@@ -98,7 +95,6 @@ public:
 		std::cout << "IOData:" << std::endl;
 		std::cout << "	--output-file-name [string]		String specifying the name of the output file" << std::endl;
 		std::cout << "	--output-file-mode [string]		Format of output file, default: default" << std::endl;
-		std::cout << "	--compute-errors [int]          Compute errors when possible [1], default=0	" << std::endl;
 		std::cout << "	-v [int]			verbosity level" << std::endl;
 		std::cout << "	-G [0/1]			graphical user interface" << std::endl;
 
@@ -150,7 +146,6 @@ public:
 			std::cerr << std::setprecision(output_floating_point_precision);
 		}
 
-		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 		i_pa.getArgumentValueByKey("-G", gui_enabled);
 		i_pa.getArgumentValueByKey("-v", verbosity);
 
@@ -174,7 +169,6 @@ public:
 		std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 
 		std::cout << " + verbosity: " << verbosity << std::endl;
-		std::cout << " + compute_errors " << compute_errors << std::endl;
 		std::cout << " + gui_enabled: " << gui_enabled << std::endl;
 
 		std::cout << std::endl;

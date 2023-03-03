@@ -13,6 +13,17 @@
 #include "SWE_Plane_TS_l_irk_n_erk.hpp"
 
 
+
+bool SWE_Plane_TS_l_irk_n_erk::registerShacks(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+	ts_l_irk.registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+
+	return true;
+}
+
 /*
  * Main routine for method to be used in case of finite differences
  */
@@ -92,6 +103,12 @@ bool SWE_Plane_TS_l_irk_n_erk::setup(
 	sweet::PlaneOperators *io_ops
 )
 {
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
+	assert(io_ops != nullptr);
+	assert(shackPDESWETimeDisc != nullptr);
+	assert(shackPDESWEPlane != nullptr);
+
 	timestepping_order_linear = shackPDESWETimeDisc->timestepping_order;
 	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 

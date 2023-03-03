@@ -29,6 +29,11 @@ class SWE_Plane_TS_l_cn_n_erk	: public PDESWEPlaneTS_BaseInterface
 	SWE_Plane_TS_l_cn ts_l_cn;
 
 
+public:
+	bool registerShacks(
+			sweet::ShackDictionary *io_shackDict
+	);
+
 private:
 	void euler_timestep_update_nonlinear(
 			const sweet::PlaneData_Spectral &i_h,	///< prognostic variables

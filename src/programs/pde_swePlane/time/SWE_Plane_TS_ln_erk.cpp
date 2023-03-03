@@ -203,6 +203,7 @@ bool SWE_Plane_TS_ln_erk::setup(
 )
 {
 	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;
 	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 

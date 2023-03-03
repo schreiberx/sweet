@@ -169,6 +169,7 @@ bool SWE_Plane_TS_l_erk_n_erk::setup(
 )
 {
 	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;
 	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 

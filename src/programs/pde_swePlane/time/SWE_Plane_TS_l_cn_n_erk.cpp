@@ -13,6 +13,18 @@
 
 #include <sweet/core/plane/PlaneOperatorsComplex.hpp>
 
+
+bool SWE_Plane_TS_l_cn_n_erk::registerShacks(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+
+	ts_l_cn.registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+
+	return true;
+}
+
 /*
  *
  * U_t=LU+N(U)

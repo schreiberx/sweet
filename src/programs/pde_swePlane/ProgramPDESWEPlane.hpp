@@ -20,6 +20,7 @@
 // Different shacks we need in this file
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
+#include <sweet/core/shacksShared/ShackMisc.hpp>
 #include "ShackPDESWEPlaneDiagnostics.hpp"
 #include "benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
 
@@ -115,6 +116,9 @@ public:
 
 			last_timestep_nr_update_diagnostics = -1;
 			
+			if (i_shackPlaneDataOps->space_grid_use_c_staggering)
+				gridMapping.setup(i_shackPlaneDataOps, &planeDataConfig);
+
 			return true;
 		}
 
@@ -158,6 +162,7 @@ public:
 	sweet::ShackProgArgDictionary shackProgArgDict;
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackIOData *shackIOData;
+	sweet::ShackMisc *shackMisc;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackPDESWEPlane *shackPDESWEPlane;
 	ShackPDESWEPlaneTimeDiscretization *shackTimeDisc;
@@ -180,9 +185,9 @@ public:
 	{
 	public:
 		//Max difference to initial conditions
-		double t0_error_max_abs_h_pert;
-		double t0_error_max_abs_u;
-		double t0_error_max_abs_v;
+		double t0_diff_error_max_abs_h_pert;
+		double t0_diff_error_max_abs_u;
+		double t0_diff_error_max_abs_v;
 
 		// Error measures L2 norm
 		double analytical_error_rms_h;
@@ -193,9 +198,24 @@ public:
 		double analytical_error_maxabs_h;
 		double analytical_error_maxabs_u;
 		double analytical_error_maxabs_v;
+
+		void setup()
+		{
+			t0_diff_error_max_abs_h_pert = -1;
+			t0_diff_error_max_abs_u = -1;
+			t0_diff_error_max_abs_v = -1;
+
+			analytical_error_rms_h = -1;
+			analytical_error_rms_u = -1;
+			analytical_error_rms_v = -1;
+
+			analytical_error_maxabs_h = -1;
+			analytical_error_maxabs_u = -1;
+			analytical_error_maxabs_v = -1;
+		}
 	};
 
-	BenchmarkErrors benchmark;
+	BenchmarkErrors benchmarkErrors;
 
 	class NormalModesData
 	{
@@ -263,6 +283,7 @@ public:
 		shackProgArgDict(i_argc, i_argv),
 		shackPlaneDataOps(nullptr),
 		shackIOData(nullptr),
+		shackMisc(nullptr),
 		shackTimestepControl(nullptr),
 		shackPDESWEPlane(nullptr),
 		shackTimeDisc(nullptr),
@@ -282,6 +303,7 @@ public:
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackPDESWEPlane = shackProgArgDict.getAutoRegistration<ShackPDESWEPlane>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
+		shackMisc = shackProgArgDict.getAutoRegistration<sweet::ShackMisc>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
 		shackPDESWEPlaneBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
 		shackPDESWEPlaneDiagnostics = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneDiagnostics>();
@@ -316,6 +338,7 @@ public:
 		shackPlaneDataOps = nullptr;
 		shackTimestepControl = nullptr;
 		shackIOData = nullptr;
+		shackMisc = nullptr;
 		shackTimeDisc = nullptr;
 
 		planeBenchmarksCombined.clear();
@@ -351,7 +374,7 @@ public:
 	}
 	
 	
-	bool setup_3_data()
+	bool setup_3_main()
 	{
 		/*
 		 * Setup Plane Data Config & Operators
@@ -396,6 +419,7 @@ public:
 		shackProgArgDict.closeRegistration();
 		shackProgArgDict.closeGet();
 
+		benchmarkErrors.setup();
 		/*
 		 * Now we should check that all program arguments have really been parsed
 		 */
@@ -408,9 +432,53 @@ public:
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(*normalmodes);
 		}
 
+		if (shackPDESWEPlane->compute_errors)
+		{
+			//Compute difference to initial condition (makes more sense in steady state cases, but useful in others too)
+			compute_error_difference_to_initial_condition = true;
+
+			//Compute difference to analytical solution (makes more sense in linear cases, but might be useful in others too)
+			compute_error_to_analytical_solution = pdeSWEPlaneTimeSteppers.linear_only;
+		}
+		else
+		{
+			compute_error_difference_to_initial_condition = false;
+			compute_error_to_analytical_solution = false;
+		}
+
+
+
+		/*
+		 * Load initial conditions from file if required
+		 */
+		if (shackIOData->initial_condition_data_filenames.size() > 0)
+			data.prog_h_pert.file_physical_loadData(shackIOData->initial_condition_data_filenames[0].c_str(), shackIOData->initial_condition_input_data_binary);
+
+		if (shackIOData->initial_condition_data_filenames.size() > 1)
+			data.prog_u.file_physical_loadData(shackIOData->initial_condition_data_filenames[1].c_str(), shackIOData->initial_condition_input_data_binary);
+
+		if (shackIOData->initial_condition_data_filenames.size() > 2)
+			data.prog_v.file_physical_loadData(shackIOData->initial_condition_data_filenames[2].c_str(), shackIOData->initial_condition_input_data_binary);
+
+
+		if (shackPDESWEPlaneBenchmarks->benchmark_name == "normalmodes" )
+			compute_normal_modes = true;
+
+		if (compute_normal_modes)
+		{
+			update_normal_modes();
+			update_diagnostics();
+		}
+
+		diagnostics_energy_start = shackPDESWEPlaneDiagnostics->total_energy;
+		diagnostics_mass_start = shackPDESWEPlaneDiagnostics->total_mass;
+		diagnostics_potential_enstrophy_start = shackPDESWEPlaneDiagnostics->total_potential_enstrophy;
+
 		return true;
 	}
-	void clear_3_data()
+
+
+	void clear_3_main()
 	{
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
@@ -437,7 +505,7 @@ public:
 		if (!setup_2_processArguments())
 			return false;
 
-		if (!setup_3_data())
+		if (!setup_3_main())
 			return false;
 
 		std::cout << "SETUP FINISHED" << std::endl;
@@ -445,7 +513,7 @@ public:
 	}
 	void clear()
 	{
-		clear_3_data();
+		clear_3_main();
 		clear_2_process_arguments();
 		clear_1_shackRegistration();
 	}
@@ -462,122 +530,7 @@ public:
 
 		return !error.exists();
 	}
-#if 0
-	void reset()
-	{
-		SimulationBenchmarkTimings::getInstance().main_setup.start();
 
-		simVars.reset();
-
-		if (simVars.benchmark.benchmark_name == "")
-		{
-			std::cout << "Benchmark scenario not selected (option --benchmark-name [string])" << std::endl;
-			swePlaneBenchmarks.printBenchmarkInformation();
-			SWEETError("Benchmark name not given");
-		}
-
-
-		// Initialise planeDiagnostics
-		last_timestep_nr_update_diagnostics = -1;
-
-		benchmark.t0_error_max_abs_h_pert = -1;
-		benchmark.t0_error_max_abs_u = -1;
-		benchmark.t0_error_max_abs_v = -1;
-
-		benchmark.analytical_error_rms_h = -1;
-		benchmark.analytical_error_rms_u = -1;
-		benchmark.analytical_error_rms_v = -1;
-
-		benchmark.analytical_error_maxabs_h = -1;
-		benchmark.analytical_error_maxabs_u = -1;
-		benchmark.analytical_error_maxabs_v = -1;
-
-		shackTimestepControl->current_timestep_nr = 0;
-		shackTimestepControl->current_simulation_time = 0;
-
-		// set to some values for first touch NUMA policy (HPC stuff)
-#if SWEET_USE_PLANE_SPECTRAL_SPACE
-		prog_h_pert.spectral_set_value(std::complex<double>(0, 0));
-		prog_u.spectral_set_value(std::complex<double>(0, 0));
-		prog_v.spectral_set_value(std::complex<double>(0, 0));
-#endif
-
-///		// Setup prog vars
-///		prog_h_pert.physical_set_value(shackPDESWEPlane->h0);
-///		prog_u.physical_set_value(0);
-///		prog_v.physical_set_value(0);
-
-		// Check if input parameters are adequate for this simulation
-		if (shackPlaneDataOps->space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
-			SWEETError("Staggering and spectral basis not supported!");
-
-#if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		if (shackPlaneDataOps->space_grid_use_c_staggering ||  !simVars.disc.space_use_spectral_basis_diffs)
-			SWEETError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
-#endif
-
-
-		if (shackPlaneDataOps->space_grid_use_c_staggering)
-			gridMapping.setup(simVars, planeDataConfig);
-
-		swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, ops);
-
-		prog_h_pert = t0_prog_h_pert;
-		prog_u = t0_prog_u;
-		prog_v = t0_prog_v;
-
-		// Load data, if requested
-		if (shackIOData->initial_condition_data_filenames.size() > 0)
-			prog_h_pert.file_physical_loadData(shackIOData->initial_condition_data_filenames[0].c_str(), shackIOData->initial_condition_input_data_binary);
-
-		if (shackIOData->initial_condition_data_filenames.size() > 1)
-			prog_u.file_physical_loadData(shackIOData->initial_condition_data_filenames[1].c_str(), shackIOData->initial_condition_input_data_binary);
-
-		if (shackIOData->initial_condition_data_filenames.size() > 2)
-			prog_v.file_physical_loadData(shackIOData->initial_condition_data_filenames[2].c_str(), shackIOData->initial_condition_input_data_binary);
-
-
-		pdeSWEPlaneTimeSteppers.setup(
-				simVars.disc.timestepping_method,
-				simVars.disc.timestepping_order,
-				simVars.disc.timestepping_order2,
-				ops,
-				simVars
-			);
-
-		if (simVars.misc.compute_errors)
-		{
-			//Compute difference to initial condition (makes more sense in steady state cases, but useful in others too)
-			compute_error_difference_to_initial_condition = true;
-					//simVars.setup.benchmark_id == 2 ||
-					//simVars.setup.benchmark_id == 3 ||
-					//simVars.setup.benchmark_id == 14;
-
-			//Compute difference to analytical solution (makes more sense in linear cases, but might be useful in others too)
-			compute_error_to_analytical_solution = pdeSWEPlaneTimeSteppers.linear_only;
-		}
-		else
-		{
-			compute_error_difference_to_initial_condition = false;
-			compute_error_to_analytical_solution = false;
-		}
-
-		if (simVars.benchmark.benchmark_name == "normalmodes" )
-			compute_normal_modes = true;
-
-		update_normal_modes();
-		update_diagnostics();
-
-		diagnostics_energy_start = shackPDESWEPlaneDiagnostics->total_energy;
-		diagnostics_mass_start = shackPDESWEPlaneDiagnostics->total_mass;
-		diagnostics_potential_enstrophy_start = shackPDESWEPlaneDiagnostics->total_potential_enstrophy;
-
-		timestep_do_output();
-
-		SimulationBenchmarkTimings::getInstance().main_setup.stop();
-
-	}
-#endif
 	// Update diagnostic variables related to normal modes
 	void update_normal_modes()
 	{
@@ -804,10 +757,7 @@ public:
 			t_v = data.prog_v.toPhys();
 		}
 
-		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << shackTimestepControl->current_simulation_time << std::endl;
-
-		if (compute_normal_modes)
-			update_normal_modes();
+		update_normal_modes();
 
 		// Dump  data in csv, if output filename is not empty
 		if (shackIOData->output_file_name.size() > 0)
@@ -845,7 +795,7 @@ public:
 		if (shackIOData->verbosity > 0)
 		{
 			update_diagnostics();
-			compute_errors();
+			computeErrors();
 
 			std::stringstream header;
 			std::stringstream rows;
@@ -883,7 +833,7 @@ public:
 				if (shackTimestepControl->current_timestep_nr == 0)
 					header << "\tDIFF_MAXABS_H0\tDIFF_MAXABS_U0\tDIFF_MAXABS_V0";
 
-				rows << "\t" << benchmark.t0_error_max_abs_h_pert << "\t" << benchmark.t0_error_max_abs_u << "\t" << benchmark.t0_error_max_abs_v;
+				rows << "\t" << benchmarkErrors.t0_diff_error_max_abs_h_pert << "\t" << benchmarkErrors.t0_diff_error_max_abs_u << "\t" << benchmarkErrors.t0_diff_error_max_abs_v;
 			}
 #endif
 
@@ -893,7 +843,7 @@ public:
 				if (shackTimestepControl->current_timestep_nr == 0)
 					header << "\tREF_DIFF_MAX_H\tREF_DIFF_MAX_U\tREF_DIFF_MAX_V";
 
-				rows << "\t" << benchmark.analytical_error_maxabs_h << "\t" << benchmark.analytical_error_maxabs_u << "\t" << benchmark.analytical_error_maxabs_v;
+				rows << "\t" << benchmarkErrors.analytical_error_maxabs_h << "\t" << benchmarkErrors.analytical_error_maxabs_u << "\t" << benchmarkErrors.analytical_error_maxabs_v;
 			}
 #endif
 
@@ -954,7 +904,7 @@ public:
 
 
 public:
-	void compute_errors()
+	void computeErrors()
 	{
 		if (compute_error_difference_to_initial_condition || compute_error_to_analytical_solution)
 		{
@@ -963,9 +913,9 @@ public:
 			 */
 			if (compute_error_difference_to_initial_condition)
 			{
-				benchmark.t0_error_max_abs_h_pert = (data.prog_h_pert -data. t0_prog_h_pert).toPhys().physical_reduce_max_abs();
-				benchmark.t0_error_max_abs_u = (data.prog_u - data.t0_prog_u).toPhys().physical_reduce_max_abs();
-				benchmark.t0_error_max_abs_v = (data.prog_v - data.t0_prog_v).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.t0_diff_error_max_abs_h_pert = (data.prog_h_pert - data.t0_prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.t0_diff_error_max_abs_u = (data.prog_u - data.t0_prog_u).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.t0_diff_error_max_abs_v = (data.prog_v - data.t0_prog_v).toPhys().physical_reduce_max_abs();
 			}
 
 			// Calculate linear exact solution, if compute error requests
@@ -982,23 +932,59 @@ public:
 					std::cerr << "Direct solution not available" << std::endl;
 					exit(1);
 				}
+
 				pdeSWEPlaneTimeSteppers.l_direct->run_timestep(
 						ts_h_pert, ts_u, ts_v,
 						shackTimestepControl->current_simulation_time,	// time step size
 						0				// initial condition given at time 0
 				);
 
-				benchmark.analytical_error_rms_h = (ts_h_pert-data.prog_h_pert).toPhys().physical_reduce_rms();
-				benchmark.analytical_error_rms_u = (ts_u-data.prog_u).toPhys().physical_reduce_rms();
-				benchmark.analytical_error_rms_v = (ts_v-data.prog_v).toPhys().physical_reduce_rms();
+				benchmarkErrors.analytical_error_rms_h = (ts_h_pert-data.prog_h_pert).toPhys().physical_reduce_rms();
+				benchmarkErrors.analytical_error_rms_u = (ts_u-data.prog_u).toPhys().physical_reduce_rms();
+				benchmarkErrors.analytical_error_rms_v = (ts_v-data.prog_v).toPhys().physical_reduce_rms();
 
-				benchmark.analytical_error_maxabs_h = (ts_h_pert-data.prog_h_pert).toPhys().physical_reduce_max_abs();
-				benchmark.analytical_error_maxabs_u = (ts_u-data.prog_u).toPhys().physical_reduce_max_abs();
-				benchmark.analytical_error_maxabs_v = (ts_v-data.prog_v).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.analytical_error_maxabs_h = (ts_h_pert-data.prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.analytical_error_maxabs_u = (ts_u-data.prog_u).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.analytical_error_maxabs_v = (ts_v-data.prog_v).toPhys().physical_reduce_max_abs();
 			}
 		}
 	}
 
+
+public:
+	void printErrors()
+	{
+
+		if (1)
+		{
+			update_diagnostics();
+
+			std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((shackPDESWEPlaneDiagnostics->total_energy-diagnostics_energy_start)/diagnostics_energy_start) << std::endl;
+			std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((shackPDESWEPlaneDiagnostics->total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+			std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((shackPDESWEPlaneDiagnostics->total_potential_enstrophy-diagnostics_potential_enstrophy_start)/diagnostics_potential_enstrophy_start) << std::endl;
+
+		}
+
+		if (shackPDESWEPlane->compute_errors)
+		{
+			std::cout << "BENCHMARK DIFF H(t=0):\t" << benchmarkErrors.t0_diff_error_max_abs_h_pert << std::endl;
+			std::cout << "BENCHMARK DIFF U(t=0):\t" << benchmarkErrors.t0_diff_error_max_abs_u << std::endl;
+			std::cout << "BENCHMARK DIFF V(t=0):\t" << benchmarkErrors.t0_diff_error_max_abs_v << std::endl;
+
+			std::cout << "[MULE] error_end_linf_h_pert: " << benchmarkErrors.t0_diff_error_max_abs_h_pert << std::endl;
+			std::cout << "[MULE] error_end_linf_u: " << benchmarkErrors.t0_diff_error_max_abs_u << std::endl;
+			std::cout << "[MULE] error_end_linf_v: " << benchmarkErrors.t0_diff_error_max_abs_v << std::endl;
+			std::cout << std::endl;
+
+			std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << benchmarkErrors.analytical_error_rms_h << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << benchmarkErrors.analytical_error_rms_u << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << benchmarkErrors.analytical_error_rms_v << std::endl;
+
+			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << benchmarkErrors.analytical_error_maxabs_h << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << benchmarkErrors.analytical_error_maxabs_u << std::endl;
+			std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << benchmarkErrors.analytical_error_maxabs_v << std::endl;
+		}
+	}
 
 
 public:

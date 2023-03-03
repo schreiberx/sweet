@@ -77,7 +77,7 @@ int main(int i_argc, char *i_argv[])
 	// Print header
 	std::cout << std::endl;
 	simVars.outputConfig();
-	std::cout << "Computing error: " << simVars.misc.compute_errors << std::endl;
+	std::cout << "Computing error: " << simVars.misc.computeErrors << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -265,195 +265,28 @@ int main(int i_argc, char *i_argv[])
 		else
 #endif
 
-
-#if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
-		if (simVars.misc.gui_enabled)
-		{
-			ProgramPDESWEPlane *simulationSWE = new ProgramPDESWEPlane;
-
-			SimulationBenchmarkTimings::getInstance().main_timestepping.start();
-
-			VisSweet<ProgramPDESWEPlane> visSweet(simulationSWE);
-
-			SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
-
-			delete simulationSWE;
-		}
-		else
-#endif
-		{
-			ProgramPDESWEPlane *simulationSWE = new ProgramPDESWEPlane;
-			//Setting initial conditions and workspace - in case there is no GUI
-
-			// also initializes diagnostics
-			// already called in constructor
-			//simulationSWE->reset();
-
-#if SWEET_MPI
-			MPI_Barrier(MPI_COMM_WORLD);
-#endif
-
-
-			if (simVars.misc.normal_mode_analysis_generation > 0)
-			{
-				simulationSWE->normal_mode_analysis();
-			}
-			else
-			{
-				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
-
-				// Main time loop
-				while (true)
-				{
-					// Stop simulation if requested
-					if (simulationSWE->should_quit())
-						break;
-
-					// Main call for timestep run
-					simulationSWE->run_timestep();
-
-					// Instability
-					if (simVars.misc.instability_checks)
-					{
-						if (simulationSWE->instability_detected())
-							SWEETError("INSTABILITY DETECTED");
-					}
-				}
-
-				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
-			}
-
-
-			if (simVars.iodata.output_file_name.size() > 0)
-				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_filenames << std::endl;
-
-			// End of run output results
-			std::cout << "***************************************************" << std::endl;
-			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-			std::cout << "Time per time step: " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
-
-			simulationSWE->compute_errors();
-
-
-#if SWEET_MPI
-			if (mpi_rank == 0)
-#endif
-			{
-				if (simVars.misc.verbosity > 0)
-				{
-					std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
-					std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
-					std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_enstrophy_start)/simulationSWE->diagnostics_potential_enstrophy_start) << std::endl;
-
-					if (simVars.misc.compute_errors)
-					{
-						std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
-						std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
-						std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
-					}
-
-					std::cout << "[MULE] error_end_linf_h_pert: " << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
-					std::cout << "[MULE] error_end_linf_u: " << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
-					std::cout << "[MULE] error_end_linf_v: " << simulationSWE->benchmark.t0_error_max_abs_v << std::endl;
-					std::cout << std::endl;
-				}
-
-				if (simulationSWE->compute_error_to_analytical_solution)
-				{
-					std::cout << "DIAGNOSTICS ANALYTICAL RMS H:\t" << simulationSWE->benchmark.analytical_error_rms_h << std::endl;
-					std::cout << "DIAGNOSTICS ANALYTICAL RMS U:\t" << simulationSWE->benchmark.analytical_error_rms_u << std::endl;
-					std::cout << "DIAGNOSTICS ANALYTICAL RMS V:\t" << simulationSWE->benchmark.analytical_error_rms_v << std::endl;
-
-					std::cout << "DIAGNOSTICS ANALYTICAL MAXABS H:\t" << simulationSWE->benchmark.analytical_error_maxabs_h << std::endl;
-					std::cout << "DIAGNOSTICS ANALYTICAL MAXABS U:\t" << simulationSWE->benchmark.analytical_error_maxabs_u << std::endl;
-					std::cout << "DIAGNOSTICS ANALYTICAL MAXABS V:\t" << simulationSWE->benchmark.analytical_error_maxabs_v << std::endl;
-				}
-			}
-
-			std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
-
-
-			delete simulationSWE;
-		} // end of gui not enabled
-
-		SimulationBenchmarkTimings::getInstance().main.stop();
-
-#if SWEET_MPI
-		if (mpi_rank == 0)
-#endif
-		{
-			std::cout << std::endl;
-			SimulationBenchmarkTimings::getInstance().output();
-		}
-	}
-#if SWEET_MPI && (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
-	else
-///#if SWEET_MPI
-///	#if (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
-///	else	// mpi_rank != 0
-///	#else
-///	if (mpi_rank != 0)
-///	#endif
-	{
-
-		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
-		{
-			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
-
-			SWE_Plane_TS_l_rexi rexiSWE(simVars, op);
-
-			/*
-			 * Setup our little dog REXI
-			 */
-			rexiSWE.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
-
-			sweet::PlaneData_Spectral prog_h_pert(planeDataConfig);
-			sweet::PlaneData_Spectral prog_u(planeDataConfig);
-			sweet::PlaneData_Spectral prog_v(planeDataConfig);
-
-			MPI_Barrier(MPI_COMM_WORLD);
-
-			do
-			{
-				// REXI time stepping
-				rexiSWE.run_timestep(
-						prog_h_pert,
-						prog_u,
-						prog_v,
-						simVars.timecontrol.current_timestep_size,
-						simVars.timecontrol.current_simulation_time
-
-				);
-			}
-			while(!rexiSWE.final_timestep);
-		}
-	}
-
-	if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
-	{
-		// synchronize REXI
-		if (mpi_rank == 0)
-			SWE_Plane_TS_l_rexi::MPI_quitWorkers(planeDataConfig);
-	}
-#endif
-
-#if SWEET_MPI
-	MPI_Finalize();
-#endif
-
-	return 0;
 }
 
 #endif
 
-int main(int i_argc, char *i_argv[])
+
+
+
+
+int main_mpi(int i_argc, char *i_argv[])
 {
+	SimulationBenchmarkTimings::getInstance().main.start();
+
 	ProgramPDESWEPlane simulation(i_argc, i_argv);
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
 
 	simulation.setup();
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+
+#if SWEET_MPI
+	int mpi_rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
 
 #if SWEET_GUI
 	if (simulation.shackIOData->gui_enabled)
@@ -463,16 +296,78 @@ int main(int i_argc, char *i_argv[])
 	else
 #endif
 	{
+
+#if SWEET_MPI
+		MPI_Barrier(MPI_COMM_WORLD);
+#endif
+
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
-		while (!simulation.should_quit())
-			simulation.run_timestep();
+		if (simulation.shackPDESWEPlane->normal_mode_analysis_generation > 0)
+		{
+			simulation.normal_mode_analysis();
+		}
+		else
+		{
+			SimulationBenchmarkTimings::getInstance().main_timestepping.start();
+
+			while (!simulation.should_quit())
+			{
+				simulation.run_timestep();
+
+				// Instability
+				if (simulation.shackMisc->instability_checks)
+				{
+					if (simulation.instability_detected())
+						SWEETError("INSTABILITY DETECTED");
+				}
+			}
+
+			SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
+		}
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
 	}
 
-	//simulation.printSimulationErrors();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	if (simulation.shackIOData->output_file_name.size() > 0)
+		std::cout << "[MULE] reference_filenames: " << simulation.output_filenames << std::endl;
 
-	std::cout << "FIN" << std::endl;
+	// End of run output results
+	std::cout << "***************************************************" << std::endl;
+	std::cout << "Number of time steps: " << simulation.shackTimestepControl->current_timestep_nr << std::endl;
+	std::cout << "Time per time step: " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simulation.shackTimestepControl->current_timestep_nr << " sec/ts" << std::endl;
+	std::cout << "Last time step size: " << simulation.shackTimestepControl->current_timestep_size << std::endl;
+
+
+#if SWEET_MPI
+	if (mpi_rank == 0)
+#endif
+	{
+
+		simulation.computeErrors();
+
+		simulation.printErrors();
+	}
+
+	std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
+
+	SimulationBenchmarkTimings::getInstance().main.stop();
+
+#if SWEET_MPI
+	if (mpi_rank == 0)
+#endif
+	{
+		std::cout << std::endl;
+		SimulationBenchmarkTimings::getInstance().output();
+	}
+
+	std::cout << "MIN FIN" << std::endl;
 	return 0;
+}
+
+
+
+int main(int i_argc, char *i_argv[])
+{
+	main_mpi(i_argc, i_argv);
 }

@@ -35,7 +35,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::euler_timestep_update_nonlinear(
 	 * o_u_t = -i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
 	 * o_v_t = -i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 	 */
-	// In lagrangian form, the only nonlinearity is the nonlinear divergence
+	// In Lagrangian form, the only nonlinearity is the nonlinear divergence
 	o_u_t.spectral_set_zero(); //-i_u*ops->diff_c_x(i_u) - i_v*ops->diff_c_y(i_u);
 	o_v_t.spectral_set_zero(); // = 0.0; //-i_u*ops->diff_c_x(i_v) - i_v*ops->diff_c_y(i_v);
 
@@ -366,6 +366,8 @@ bool SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::setup(
 		sweet::PlaneOperators *io_ops
 )
 {
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;
 	use_only_linear_divergence = shackPDESWEPlane->use_only_linear_divergence;
 

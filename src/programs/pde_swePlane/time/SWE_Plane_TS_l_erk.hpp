@@ -42,7 +42,12 @@ public:
 public:
 	bool setup(
 			sweet::PlaneOperators *io_ops,
-			int i_order = -1
+			int i_order
+		);
+
+
+	bool setup(
+			sweet::PlaneOperators *io_ops
 		);
 
 	void run_timestep(

@@ -35,6 +35,8 @@ bool SWE_Plane_TS_l_rexi::setup(
 	const std::string &i_function_name
 )
 {
+	PDESWEPlaneTS_BaseInterface::setup(io_ops);
+
 	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("Staggering not supported for l_rexi");
 
@@ -70,9 +72,8 @@ bool SWE_Plane_TS_l_rexi::setup(
 
 	PDESWEPlaneTS_BaseInterface::setup(io_ops);
 
-//	assert(i_timestep_size >= 0);
-
-	shackExpIntegration = shackExpIntegration;
+	assert(shackPlaneDataOps != nullptr);
+	assert(shackExpIntegration != nullptr);
 
 	domain_size[0] = shackPlaneDataOps->plane_domain_size[0];
 	domain_size[1] = shackPlaneDataOps->plane_domain_size[1];
@@ -252,6 +253,16 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 }
 
 
+
+bool SWE_Plane_TS_l_rexi::registerShacks(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+	ts_l_direct.registerShacks(io_shackDict);
+
+	return error.exists();
+}
 
 void SWE_Plane_TS_l_rexi::run_timestep_real(
 		const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables

@@ -102,6 +102,10 @@ public:
 			sweet::PlaneOperators *io_ops
 	);
 
+	bool registerShacks(
+			sweet::ShackDictionary *io_shackDict
+	);
+
 	void run_timestep(
 			const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables
 			const sweet::PlaneData_Spectral &i_u,	///< prognostic variables

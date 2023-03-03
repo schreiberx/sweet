@@ -6,10 +6,11 @@ EXEC="gdb -d ./"
 EXEC+=" -ex run"
 
 # Get backtrace
-EXEC+=" -ex bt"
+EXEC+=" -ex backtrace"
 
-# Quit debugger if program finishes
-EXEC+=" -ex q"
+# Deactivate quit confirmation
+EXEC+=" -ex stop"
+
 
 # Program arguments
 EXEC+=" --args $@"

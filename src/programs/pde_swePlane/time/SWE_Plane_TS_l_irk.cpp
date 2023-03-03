@@ -119,8 +119,8 @@ void SWE_Plane_TS_l_irk::run_timestep(
  * Setup
  */
 bool SWE_Plane_TS_l_irk::setup(
-		sweet::PlaneOperators *io_ops,
-		int i_order
+	sweet::PlaneOperators *io_ops,
+	int i_order
 )
 {
 	PDESWEPlaneTS_BaseInterface::setup(io_ops);
@@ -128,10 +128,8 @@ bool SWE_Plane_TS_l_irk::setup(
 	if (shackPlaneDataOps->space_grid_use_c_staggering)
 		SWEETError("Staggering not supported for l_irk");
 
-	if (i_order > 0)
-		timestepping_order = i_order;
-	else
-		timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	assert(i_order > 0);
+	timestepping_order = i_order;
 
 	if (timestepping_order != 1)
 		SWEETError("SWE_Plane_TS_l_irk: Only 1st order IRK is supported. Please set --timestepping-order 1.");
@@ -139,3 +137,15 @@ bool SWE_Plane_TS_l_irk::setup(
 	return true;
 }
 
+
+
+
+/*
+ * Setup
+ */
+bool SWE_Plane_TS_l_irk::setup(
+	sweet::PlaneOperators *io_ops
+)
+{
+	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
+}

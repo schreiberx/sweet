@@ -12,6 +12,21 @@
 
 #include "SWE_Plane_TS_l_cn.hpp"
 
+
+
+bool SWE_Plane_TS_l_cn::registerShacks(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+	ts_l_erk.registerShacks(io_shackDict);
+	ts_l_irk.registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+
+	return true;
+}
+
+
+
 /*
  * This is a Crank-Nicolson scheme for linear equation
  *

@@ -74,6 +74,11 @@ public:
 	 */
 	int normal_mode_analysis_generation = 0;
 
+	/*
+	 * Compute errors compared to analytical solution
+	 */
+	bool compute_errors = false;
+
 
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
@@ -85,6 +90,7 @@ public:
 		std::cout << "	-H [float]	average (initial) height of water" << std::endl;
 		std::cout << "	--use-only-linear-divergence [bool]	Use only linear divergence" << std::endl;
 		std::cout << "	--use-nonlinear-only-visc [bool]	Use only viscosity on nonlinear part" << std::endl;
+		std::cout << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
 		std::cout << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
 		std::cout << "" << std::endl;
 	}
@@ -103,6 +109,7 @@ public:
 		i_pa.getArgumentValueByKey("--use-nonlinear-only-visc", use_nonlinear_only_visc);
 
 		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
+		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
@@ -121,6 +128,7 @@ public:
 		std::cout << i_prefix << " + plane_rotating_f0: " << plane_rotating_f0 << std::endl;
 		std::cout << i_prefix << " + use_only_linear_divergence: " << use_only_linear_divergence << std::endl;
 		std::cout << i_prefix << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
+		std::cout << i_prefix << " + compute_errors: " << compute_errors << std::endl;
 		std::cout << i_prefix << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
 		std::cout << std::endl;
 	}

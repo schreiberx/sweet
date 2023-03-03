@@ -29,6 +29,10 @@ class SWE_Plane_TS_l_irk_n_erk	:
 	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk;
 	SWE_Plane_TS_l_irk ts_l_irk;
 
+public:
+	bool registerShacks(
+			sweet::ShackDictionary *io_shackDict
+	);
 
 public:
 	void euler_timestep_update_nonlinear(

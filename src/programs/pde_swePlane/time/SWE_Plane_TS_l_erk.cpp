@@ -147,10 +147,8 @@ bool SWE_Plane_TS_l_erk::setup(
 {
 	PDESWEPlaneTS_BaseInterface::setup(io_ops);
 
-	if (i_order > 0)
-		timestepping_order = i_order;
-	else
-		timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	assert(i_order > 0);
+	timestepping_order = i_order;
 
 	timestepping_rk.setupBuffers(ops->planeDataConfig, timestepping_order);
 
@@ -159,3 +157,9 @@ bool SWE_Plane_TS_l_erk::setup(
 	return true;
 }
 
+bool SWE_Plane_TS_l_erk::setup(
+		sweet::PlaneOperators *io_ops
+)
+{
+	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
+}

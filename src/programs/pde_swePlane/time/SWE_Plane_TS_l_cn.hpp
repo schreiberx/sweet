@@ -28,6 +28,10 @@ class SWE_Plane_TS_l_cn	: public PDESWEPlaneTS_BaseInterface
 	SWE_Plane_TS_l_erk ts_l_erk;
 	SWE_Plane_TS_l_irk ts_l_irk;
 
+public:
+	bool registerShacks(
+			sweet::ShackDictionary *io_shackDict
+	);
 
 private:
 	void backward_euler_timestep_linear(

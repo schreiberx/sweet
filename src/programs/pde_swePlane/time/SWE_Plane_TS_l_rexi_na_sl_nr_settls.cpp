@@ -248,3 +248,15 @@ bool SWE_Plane_TS_l_rexi_na_sl_nr_settls::setup(
 	return true;
 }
 
+
+
+bool SWE_Plane_TS_l_rexi_na_sl_nr_settls::registerShacks(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+
+	ts_l_rexi.registerShacks(io_shackDict);
+	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_l_rexi);
+	return true;
+}
