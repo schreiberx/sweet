@@ -135,7 +135,7 @@ public:
 	/***************************************************
 	 * Direct EXP
 	 */
-	int exp_direct_precompute_phin = 0;
+	bool exp_direct_precompute_phin = false;
 
 
 public:

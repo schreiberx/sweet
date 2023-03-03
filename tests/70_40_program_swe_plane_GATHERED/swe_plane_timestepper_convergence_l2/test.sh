@@ -5,7 +5,7 @@ cd "$(dirname $0)"
 
 TIMESTEPPING_GROUP="l2"
 
-COMMON="../70_40_program_swe_plane_timestepper_convergence_common_no_test/"
+COMMON="../swe_plane_timestepper_convergence_common_no_test/"
 
 mule.benchmark.cleanup_all || exit 1
 

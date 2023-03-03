@@ -109,6 +109,11 @@ if len(sys.argv) <= 1:
 
 group = sys.argv[1]
 
+if len(sys.argv) > 2:
+    exp_direct_precompute_phin = bool(sys.argv[2])
+else:
+    exp_direct_precompute_phin = False
+
 
 #
 # allow including this file
@@ -205,6 +210,8 @@ jg.reference_job = False
 # Use this one as the reference solution!
 jg.reference_job_unique_id = jg.job_unique_id
 
+# Precompute some rexi terms for sph solver
+jg.runtime.exp_direct_precompute_phin = exp_direct_precompute_phin
 
 
 #
@@ -216,6 +223,6 @@ jg.runtime.timestepping_order2 = ts_order
 
 for tsm in ts_methods:
     for jg.runtime.timestep_size in timestep_sizes:
-    	jg.runtime.timestepping_method = tsm
+        jg.runtime.timestepping_method = tsm
+        jg.gen_jobscript_directory()
 
-    	jg.gen_jobscript_directory()

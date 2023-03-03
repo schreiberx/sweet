@@ -3,13 +3,15 @@
 cd "$(dirname $0)"
 
 
-TIMESTEPPING_GROUP="ln2"
+TIMESTEPPING_GROUP="l1"
+REXI_PHI_PRECOMP="1"
 
-COMMON="../70_40_program_swe_plane_timestepper_convergence_common_no_test/"
+COMMON="../swe_plane_timestepper_convergence_common_no_test/"
+
 
 mule.benchmark.cleanup_all || exit 1
 
-$COMMON/benchmark_create_job_scripts.py $TIMESTEPPING_GROUP || exit 1
+$COMMON/benchmark_create_job_scripts.py $TIMESTEPPING_GROUP $REXI_PHI_PRECOMP || exit 1
 
 mule.benchmark.jobs_run_directly || exit 1
 
