@@ -7,12 +7,14 @@
 
 
 
-bool PDEAdvectionSphereTS_na_erk::implements_timestepping_method(const std::string &i_timestepping_method)
+bool PDEAdvectionSphereTS_na_erk::testImplementsTimesteppingMethod(
+		const std::string &i_timestepping_method
+)
 {
 	return i_timestepping_method == "na_erk";
 }
 
-std::string PDEAdvectionSphereTS_na_erk::string_id()
+std::string PDEAdvectionSphereTS_na_erk::getStringId()
 {
 	return "na_erk";
 }
@@ -97,13 +99,13 @@ bool PDEAdvectionSphereTS_na_erk::setup(
 }
 
 
-std::string PDEAdvectionSphereTS_na_erk::get_help()
+void PDEAdvectionSphereTS_na_erk::printImplementedTimesteppingMethods(
+		std::ostream &o_ostream,
+		const std::string &i_prefix
+)
 {
-	std::ostringstream stream;
-	stream << " + SphereAdvection_TS_na_erk:" << std::endl;
-	stream << "    * 'na_erk'" << std::endl;
-
-	return stream.str();
+	o_ostream << i_prefix << " + PDEAdvectionSphereTS_na_erk:" << std::endl;
+	o_ostream << i_prefix << "    * 'na_erk'" << std::endl;
 }
 
 

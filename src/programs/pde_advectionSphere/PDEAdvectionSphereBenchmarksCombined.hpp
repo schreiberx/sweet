@@ -36,7 +36,12 @@ public:
 
 	PDEAdvectionSphereBenchmarksCombined();
 
-	bool setup(
+	bool setup_registerBenchmark(
+			std::ostream &o_ostream = std::cout,
+			const std::string &i_prefix = ""
+	);
+
+	bool setup_benchmark(
 			sweet::SphereOperators *io_ops
 	);
 
@@ -59,7 +64,10 @@ public:
 	);
 
 public:
-	void printAvailableBenchmarks();
+	void printAvailableBenchmarks(
+		std::ostream &o_ostream = std::cout,
+		const std::string &i_prefix = ""
+	);
 };
 
 

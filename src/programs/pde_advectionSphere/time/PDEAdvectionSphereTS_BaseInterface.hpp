@@ -83,14 +83,16 @@ public:
 		SWEETError("TODO: Implement single prognostic variable time integration for this time integrator");
 	}
 
-
-	virtual bool implements_timestepping_method(
+	virtual bool testImplementsTimesteppingMethod(
 			const std::string &i_timestepping_method
 		) = 0;
 
-	virtual std::string string_id() = 0;
+	virtual std::string getStringId() = 0;
 
-	virtual std::string get_help() = 0;
+	virtual void printImplementedTimesteppingMethods(
+			std::ostream &o_ostream = std::cout,
+			const std::string &i_prefix = ""
+		) = 0;
 
 	virtual ~PDEAdvectionSphereTS_BaseInterface()
 	{

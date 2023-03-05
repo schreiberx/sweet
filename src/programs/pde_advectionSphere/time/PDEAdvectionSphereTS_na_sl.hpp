@@ -28,11 +28,14 @@ class PDEAdvectionSphereTS_na_sl	:
 	sweet::SphereData_Physical U_u_prev, U_v_prev;
 
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
+	bool testImplementsTimesteppingMethod(const std::string &i_timestepping_method);
 
-	std::string string_id();
+	std::string getStringId();
 
-	std::string get_help();
+	void printImplementedTimesteppingMethods(
+			std::ostream &o_ostream,
+			const std::string &i_prefix
+	);
 
 
 public:

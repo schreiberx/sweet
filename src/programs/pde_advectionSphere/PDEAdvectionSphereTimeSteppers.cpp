@@ -47,6 +47,27 @@ void PDEAdvectionSphereTimeSteppers::_integratorsFreeAll(PDEAdvectionSphereTS_Ba
 }
 
 
+void PDEAdvectionSphereTimeSteppers::printImplementedTimesteppingMethods(
+	std::ostream &o_ostream,
+	const std::string &i_prefix
+)
+{
+	o_ostream << "********************************************************************************" << std::endl;
+	o_ostream << "Timestepping methods (START)" << std::endl;
+	o_ostream << "********************************************************************************" << std::endl;
+
+	std::string prefix = i_prefix+"  ";
+	for (std::size_t i = 0; i < _registered_integrators.size(); i++)
+	{
+		_registered_integrators[i]->printImplementedTimesteppingMethods(o_ostream, prefix);
+	}
+
+	o_ostream << "********************************************************************************" << std::endl;
+	o_ostream << "Timestepping methods (END)" << std::endl;
+	o_ostream << "********************************************************************************" << std::endl;
+	o_ostream << std::endl;
+}
+
 
 bool PDEAdvectionSphereTimeSteppers::setup(
 		const std::string &i_timestepping_method,
@@ -56,6 +77,11 @@ bool PDEAdvectionSphereTimeSteppers::setup(
 {
 	_integratorsRegisterAll(io_shackDict, io_ops);
 
+	if (i_timestepping_method == "")
+	{
+		printImplementedTimesteppingMethods();
+		return error.set("Please set time stepping method using --timestepping-method=...");
+	}
 	/*
 	 * Find right one
 	 */
@@ -65,22 +91,23 @@ bool PDEAdvectionSphereTimeSteppers::setup(
 	{
 		PDEAdvectionSphereTS_BaseInterface *ts = _registered_integrators[i];
 
-		if (ts->implements_timestepping_method(i_timestepping_method))
+		if (ts->testImplementsTimesteppingMethod(i_timestepping_method))
 		{
 			if (master != nullptr)
 			{
-				std::cout << "Processing " << i+1 << "th element" << std::endl;
-				SWEETError(std::string("Duplicate implementation for method ") + i_timestepping_method);
+				//std::cout << "Processing " << i+1 << "th element" << std::endl;
+				return error.set("Duplicate implementation for method "+i_timestepping_method);
 			}
 
-			std::cout << "Found matching time stepping method at " << i+1 << "th element" << std::endl;
+
+			//std::cout << "Found matching time stepping method at " << i+1 << "th element" << std::endl;
 			ts->setup(io_ops);
 			master = ts;
 		}
 	}
 
 	if (master == nullptr)
-		SWEETError(std::string("No valid --timestepping-method '") + i_timestepping_method + std::string("' provided"));
+		return error.set("No valid --timestepping-method '"+i_timestepping_method+"' provided");
 
 	// Found integrator, freeing others
 	_integratorsFreeAll(master);

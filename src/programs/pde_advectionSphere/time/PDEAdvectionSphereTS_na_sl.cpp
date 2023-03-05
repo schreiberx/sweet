@@ -5,12 +5,12 @@
 #include "PDEAdvectionSphereTS_na_sl.hpp"
 
 
-bool PDEAdvectionSphereTS_na_sl::implements_timestepping_method(const std::string &i_timestepping_method)
+bool PDEAdvectionSphereTS_na_sl::testImplementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	return i_timestepping_method == "na_sl";
 }
 
-std::string PDEAdvectionSphereTS_na_sl::string_id()
+std::string PDEAdvectionSphereTS_na_sl::getStringId()
 {
 	return "na_sl";
 }
@@ -38,14 +38,13 @@ bool PDEAdvectionSphereTS_na_sl::setup(
 }
 
 
-
-std::string PDEAdvectionSphereTS_na_sl::get_help()
+void PDEAdvectionSphereTS_na_sl::printImplementedTimesteppingMethods(
+		std::ostream &o_ostream,
+		const std::string &i_prefix
+)
 {
-	std::ostringstream stream;
-	stream << " + SphereAdvection_TS_na_sl:" << std::endl;
-	stream << "    * 'na_sl'" << std::endl;
-
-	return stream.str();
+	o_ostream << " + SphereAdvection_TS_na_sl:" << std::endl;
+	o_ostream << "    * 'na_sl'" << std::endl;
 }
 
 

@@ -25,22 +25,18 @@ PDEAdvectionSphereBenchmarksCombined::PDEAdvectionSphereBenchmarksCombined()	:
 
 
 
-bool PDEAdvectionSphereBenchmarksCombined::setup(
-		sweet::SphereOperators* io_ops
+bool PDEAdvectionSphereBenchmarksCombined::setup_registerBenchmark(
+		std::ostream &o_ostream,
+		const std::string &i_prefix
 )
 {
-	ops = io_ops;
-
-	std::string benchmark_name;
+	benchmarks_register_all();
 
 	if (shackBenchmarks->benchmark_name == "")
 	{
 		printAvailableBenchmarks();
-		std::cout << std::endl;
-		SWEETError("Please choose benchmark");
+		return error.set("Please choose benchmark with --benchmark-name=...");
 	}
-
-	benchmarks_register_all();
 
 	/*
 	 * Find right one
@@ -52,15 +48,15 @@ bool PDEAdvectionSphereBenchmarksCombined::setup(
 	{
 		PDEAdvectionSphere_Benchmark_BaseInterface *ts = _registered_benchmarks[i];
 
-		if (ts->implements_benchmark(benchmark_name))
+		if (ts->implements_benchmark(shackBenchmarks->benchmark_name))
 		{
 			if (master != nullptr)
 			{
 				std::cout << "Processing " << i+1 << "th element" << std::endl;
-				SWEETError(std::string("Duplicate implementation for benchmark ") + benchmark_name);
+				error.set("Duplicate implementation for benchmark "+shackBenchmarks->benchmark_name);
 			}
 
-			std::cout << "Benchmark detection: found match with benchmark id " << i+1 << std::endl;
+			//std::cout << "Benchmark detection: found match with benchmark id " << i+1 << std::endl;
 			ts->setup(shackDict, ops);
 			master = ts;
 		}
@@ -72,9 +68,21 @@ bool PDEAdvectionSphereBenchmarksCombined::setup(
 	if (master == nullptr)
 	{
 		printAvailableBenchmarks();
-		std::cout << std::endl;
-		SWEETError(std::string("No valid --benchmark-name '") + benchmark_name + std::string("' provided"));
+		return error.set("No valid --benchmark-name '"+shackBenchmarks->benchmark_name+"' provided");
 	}
+
+	return true;
+}
+
+
+
+bool PDEAdvectionSphereBenchmarksCombined::setup_benchmark(
+		sweet::SphereOperators* io_ops
+)
+{
+	assert(master != nullptr);
+
+	ops = io_ops;
 
 	return true;
 }
@@ -136,14 +144,24 @@ void PDEAdvectionSphereBenchmarksCombined::benchmarks_free_all(
 }
 
 
-void PDEAdvectionSphereBenchmarksCombined::printAvailableBenchmarks()
+void PDEAdvectionSphereBenchmarksCombined::printAvailableBenchmarks(
+		std::ostream &o_ostream,
+		const std::string &i_prefix
+)
 {
-	benchmarks_register_all();
+	o_ostream << "********************************************************************************" << std::endl;
+	o_ostream << "Benchmarks (START)" << std::endl;
+	o_ostream << "********************************************************************************" << std::endl;
+
 	for (std::size_t i = 0; i < _registered_benchmarks.size(); i++)
 	{
 		std::cout << _registered_benchmarks[i]->get_help();
 		std::cout << std::endl;
 	}
-	benchmarks_free_all();
+
+	o_ostream << "********************************************************************************" << std::endl;
+	o_ostream << "Benchmarks (END)" << std::endl;
+	o_ostream << "********************************************************************************" << std::endl;
+
 }
 

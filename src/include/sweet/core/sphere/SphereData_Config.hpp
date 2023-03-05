@@ -47,6 +47,16 @@ public:
 	ErrorBase error;
 	shtns_cfg shtns;
 
+	/*
+	 * Verbosity of outputs
+	 */
+	int verbosity;
+
+	/*
+	 * Number of threads
+	 */
+	int numThreads;
+
 	/**
 	 * Number of longitudes
 	 */
@@ -206,9 +216,8 @@ public:
 private:
 	bool setup_data()
 	{
-#if SWEET_DEBUG
-		shtns_print_cfg(shtns);
-#endif
+		if (verbosity > 0)
+			shtns_print_cfg(shtns);
 
 		physical_num_lat = shtns->nlat;
 		physical_num_lon = shtns->nphi;
@@ -387,8 +396,7 @@ private:
 
 
 	int getFlags(
-			int i_reuse_spectral_transformation_plans,
-			int i_verbosity = 0
+			int i_reuse_spectral_transformation_plans
 	)
 	{
 		std::string cache_filename = "shtns_cfg";
@@ -409,7 +417,7 @@ private:
 
 		if (i_reuse_spectral_transformation_plans & TransformationPlans::LOAD)
 		{
-			if (i_verbosity > 0)
+			if (verbosity > 0)
 				std::cout << " + Trying to load plans" << std::endl;
 
 			bool plans_exist = true;
@@ -434,7 +442,7 @@ private:
 
 			if (!plans_exist)
 			{
-				if (i_verbosity > 0)
+				if (verbosity > 0)
 					std::cout << " + WARNING: No existing plan found" << std::endl;
 			}
 			else
@@ -444,7 +452,7 @@ private:
 		}
 		else if (i_reuse_spectral_transformation_plans & TransformationPlans::SAVE)
 		{
-			if (i_verbosity > 0)
+			if (verbosity > 0)
 				std::cout << " + Generating and storing SH transformation plans" << std::endl;
 
 			flags |= SHT_LOAD_SAVE_CFG;
@@ -454,24 +462,21 @@ private:
 		return flags;
 	}
 
-	void setupSHTNSBoilerplateCode(
-			int i_numThreads,
-			int i_verbosity = 0
-	)
+	void setupSHTNSBoilerplateCode()
 	{
 		cleanup(false);
 
-		shtns_verbose(i_verbosity);
+		shtns_verbose(verbosity);
 
 #if SWEET_THREADING_SPACE
 		// enable multi-threaded transforms (if supported).
-		if (i_numThreads <= 0)
+		if (numThreads <= 0)
 		{
 			shtns_use_threads(0);
 		}
 		else
 		{
-			shtns_use_threads(i_numThreads);
+			shtns_use_threads(numThreads);
 		}
 #else
 		shtns_use_threads(1);	// value of 1 disables threading
@@ -491,10 +496,13 @@ public:
 		int i_numThreads
 	)
 	{
+		verbosity = i_verbosity;
+		numThreads = i_numThreads;
+
 		mmax--;
 		nmax--;
 
-		setupSHTNSBoilerplateCode(i_numThreads, i_verbosity);
+		setupSHTNSBoilerplateCode();
 
 		shtns = shtns_create(
 				nmax,
@@ -512,7 +520,7 @@ public:
 
 		shtns_set_grid(
 				shtns,
-				(shtns_type)getFlags(i_reuse_transformation_plans, i_verbosity),
+				(shtns_type)getFlags(i_reuse_transformation_plans),
 				shtns_error,
 				nlat,		// number of latitude grid points
 				nphi		// number of longitude grid points
@@ -542,10 +550,13 @@ public:
 			int i_numThreads
 	)
 	{
+		verbosity = i_verbosity;
+		numThreads = i_numThreads;
+
 		i_mmax--;
 		i_nmax--;
 
-		setupSHTNSBoilerplateCode(i_numThreads, i_verbosity);
+		setupSHTNSBoilerplateCode();
 
 		shtns = shtns_create(
 				i_nmax,
@@ -566,7 +577,7 @@ public:
 
 		shtns_set_grid_auto(
 				shtns,
-				(shtns_type)getFlags(i_reuse_transformation_plans, i_verbosity),
+				(shtns_type)getFlags(i_reuse_transformation_plans),
 				shtns_error,
 				2,		// use order 2
 				o_nlat,
@@ -596,10 +607,13 @@ public:
 			int i_numThreads
 	)
 	{
+		verbosity = i_verbosity;
+		numThreads = i_numThreads;
+
 		i_mmax--;
 		i_nmax--;
 
-		setupSHTNSBoilerplateCode(i_numThreads, i_verbosity);
+		setupSHTNSBoilerplateCode();
 
 		shtns = shtns_create(
 				i_nmax,
@@ -620,7 +634,7 @@ public:
 
 		shtns_set_grid_auto(
 				shtns,
-				(shtns_type)getFlags(i_reuse_transformation_plans, i_verbosity),
+				(shtns_type)getFlags(i_reuse_transformation_plans),
 				shtns_error,
 				2,		// use order 2
 				&physical_num_lat,

@@ -107,6 +107,8 @@ public:
 			vel_u.setup(sphereDataConfig);
 			vel_v.setup(sphereDataConfig);
 
+			prog_vec.resize(i_num_vec_elements);
+			prog_vec_t0.resize(i_num_vec_elements);
 			for (int i = 0; i < i_num_vec_elements; i++)
 			{
 				prog_vec[i].setup(sphereDataConfig);
@@ -151,7 +153,7 @@ public:
 	PDEAdvectionSphereTimeSteppers timeSteppers;
 
 	// Handler to all benchmarks
-	PDEAdvectionSphereBenchmarksCombined planeBenchmarksCombined;
+	PDEAdvectionSphereBenchmarksCombined benchmarksCombined;
 
 	/*
 	 * Shack directory and shacks to work with
@@ -205,8 +207,13 @@ public:
 	}
 
 
-	bool setup_1_registration()
+	bool setup_1_shackRegistration()
 	{
+		/*
+		 * Setup argument parsing
+		 */
+		shackProgArgDict.setup();
+
 		/*
 		 * SHACK: Register classes which we require
 		 */
@@ -221,11 +228,13 @@ public:
 		/*
 		 * SHACK: Register other things before parsing program arguments
 		 */
-		planeBenchmarksCombined.shackRegistration(shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
+		benchmarksCombined.shackRegistration(shackProgArgDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
 
 		timeSteppers.shackRegistration(&shackProgArgDict);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+
+		shackProgArgDict.closeRegistration();
 
 		shackProgArgDict.processHelpArguments();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
@@ -240,15 +249,13 @@ public:
 		shackIOData = nullptr;
 		shackTimeDisc = nullptr;
 
-		planeBenchmarksCombined.clear();
+		benchmarksCombined.clear();
 		timeSteppers.clear();
 		shackProgArgDict.clear();
 	}
 
 	bool setup_2_processArguments()
 	{
-		shackProgArgDict.setup();
-
 		/*
 		 * SHACK: Process arguments
 		 */
@@ -264,7 +271,7 @@ public:
 		return true;
 	}
 
-	void clear_2_process_arguments()
+	void clear_2_processArguments()
 	{
 		shackProgArgDict.clear();
 	}
@@ -272,13 +279,25 @@ public:
 	bool setup_3_data()
 	{
 		/*
-		 * Setup Sphere Data Config & Operators
+		 * We first setup the particular benchmark
 		 */
-		data.setup(shackSphereDataOps, planeBenchmarksCombined.master->getNumPrognosticFields());
+		benchmarksCombined.setup_registerBenchmark();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
+
+		/*
+		 * Setup the data fields
+		 */
+		data.setup(shackSphereDataOps, benchmarksCombined.master->getNumPrognosticFields());
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
 
 		/*
-		 * After we setup the plane, we can setup the time steppers and their buffers
+		 * After the data is setup, we can also setup the benchmark itself
+		 */
+		benchmarksCombined.setup_benchmark(&data.ops);
+
+
+		/*
+		 * Now we're ready to setup the time steppers
 		 */
 		timeSteppers.setup(
 				shackTimeDisc->timestepping_method,
@@ -287,20 +306,21 @@ public:
 			);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
 
-#if SWEET_GUI
-		data.vis_plane_data.setup(data.planeDataConfig);
-#endif
 
-		std::cout << "Printing shack information:" << std::endl;
-		shackProgArgDict.printShackData();
-
-		planeBenchmarksCombined.master->getInitialState(
+		/*
+		 * Load initial state of benchmark
+		 */
+		benchmarksCombined.master->getInitialState(
 				data.prog_vec,
 				data.vel_u,
 				data.vel_v
 			);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
 
+
+		/*
+		 * Backup data at t=0
+		 */
 		data.prog_vec_t0 = data.prog_vec;
 
 		/*
@@ -331,7 +351,7 @@ public:
 
 	bool setup()
 	{
-		if (!setup_1_registration())
+		if (!setup_1_shackRegistration())
 			return false;
 
 		if (!setup_2_processArguments())
@@ -340,13 +360,16 @@ public:
 		if (!setup_3_data())
 			return false;
 
+		std::cout << "Printing shack information:" << std::endl;
+		shackProgArgDict.printShackData();
+
 		std::cout << "SETUP FINISHED" << std::endl;
 		return true;
 	}
 	void clear()
 	{
 		clear_3_data();
-		clear_2_process_arguments();
+		clear_2_processArguments();
 		clear_1_shackRegistration();
 	}
 

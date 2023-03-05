@@ -8,24 +8,24 @@
 
 
 
-bool PDEAdvectionSphereTS_na_trajectories::implements_timestepping_method(const std::string &i_timestepping_method)
+bool PDEAdvectionSphereTS_na_trajectories::testImplementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	return i_timestepping_method == "na_trajectories";
 }
 
-std::string PDEAdvectionSphereTS_na_trajectories::string_id()
+std::string PDEAdvectionSphereTS_na_trajectories::getStringId()
 {
 	return "na_trajectories";
 }
 
 
-std::string PDEAdvectionSphereTS_na_trajectories::get_help()
+void PDEAdvectionSphereTS_na_trajectories::printImplementedTimesteppingMethods(
+		std::ostream &o_ostream,
+		const std::string &i_prefix
+)
 {
-	std::ostringstream stream;
-	stream << " + SphereAdvection_TS_na_trajectories:" << std::endl;
-	stream << "    * 'na_trajectories'" << std::endl;
-
-	return stream.str();
+	o_ostream << i_prefix << " + SphereAdvection_TS_na_trajectories:" << std::endl;
+	o_ostream << i_prefix << "    * 'na_trajectories'" << std::endl;
 }
 
 

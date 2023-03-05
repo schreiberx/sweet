@@ -72,6 +72,8 @@ private:
 	std::string _arg0;
 	std::vector<_ProgramArgument> _arguments;
 
+	bool _setupFinished;
+
 	bool _errorForDoubleParsing;
 
 	bool _errorForDuplicateKeysInParsing;
@@ -87,6 +89,7 @@ public:
 			bool i_errorForDuplicateKeysInParsing = true,		///< Trigger an error if there are duplicate keys
 			bool i_stripKeyDashes = false		///< Strip dashes at the keys (e.g., will convert "--help" to "help" so that only "help" needs to be provided as a key	)
 	)	:
+		_setupFinished(false),
 		_errorForDoubleParsing(i_errorForDoubleParsing),
 		_errorForDuplicateKeysInParsing(i_errorForDuplicateKeysInParsing),
 		_stripKeyDashes(i_stripKeyDashes)
@@ -99,6 +102,8 @@ public:
 		_arguments.clear();
 
 		_keysInParsing.clear();
+
+		_setupFinished = false;
 	}
 
 
@@ -113,6 +118,7 @@ private:
 			error.set("Argument with key '"+i_key+"' already exists - did you specify this twice?");
 			return;
 		}
+
 		_arguments.push_back(
 			_ProgramArgument(
 					i_key,
@@ -203,7 +209,6 @@ public:
 					 */
 					if (arg == "--help" || arg == "-h")
 					{
-
 						_addArguments(
 								arg,
 								""
@@ -240,6 +245,8 @@ public:
 			return false;
 		}
 
+		_setupFinished = true;
+
 		return true;
 	}
 
@@ -262,6 +269,9 @@ public:
 public:
 	bool checkAllArgumentsProcessed(bool i_create_error = true)
 	{
+		if (!_setupFinished)
+			error.set("You need to call setup() before searching for arguments!");
+
 		for (std::size_t i = 0; i < _arguments.size(); i++)
 		{
 			_ProgramArgument &a = _arguments[i];
@@ -284,6 +294,9 @@ public:
 			bool i_error_if_duplicated_processing = true
 	)
 	{
+		if (!_setupFinished)
+			error.set("You need to call setup() before searching for arguments!");
+
 		/*
 		 * Check whether key has been already processed
 		 */
@@ -508,6 +521,7 @@ public:
 
 		return false;
 	}
+
 
 	friend
 	std::ostream&

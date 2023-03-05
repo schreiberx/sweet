@@ -35,6 +35,11 @@ private:
 public:
 	PDEAdvectionSphereTimeSteppers();
 
+	void printImplementedTimesteppingMethods(
+		std::ostream &o_ostream = std::cout,
+		const std::string &i_prefix = ""
+	);
+
 	bool setup(
 			const std::string &i_timestepping_method,
 			sweet::ShackDictionary *i_shackDict,
