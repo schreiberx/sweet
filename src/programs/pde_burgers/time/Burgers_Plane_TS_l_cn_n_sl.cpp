@@ -47,12 +47,12 @@ void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
 			posx_a, posy_a,
 			dt,
 			posx_d, posy_d,
-			simVars.sim.plane_domain_size,
+			shackDict.sim.plane_domain_size,
 			&staggering,
 			2,
 
-			simVars.disc.semi_lagrangian_max_iterations,
-			simVars.disc.semi_lagrangian_convergence_threshold
+			shackDict.disc.semi_lagrangian_max_iterations,
+			shackDict.disc.semi_lagrangian_convergence_threshold
 			);
 
 	// Save old velocities
@@ -105,17 +105,17 @@ void Burgers_Plane_TS_l_cn_n_sl::setup()
 	ts_l_cn.setup();
 
 	// Setup sampler for future interpolations
-	sampler2D.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	sampler2D.setup(shackDict.sim.plane_domain_size, op.planeDataConfig);
 
 	// Setup semi-lag
-	semiLagrangian.setup(simVars.sim.plane_domain_size, op.planeDataConfig);
+	semiLagrangian.setup(shackDict.sim.plane_domain_size, op.planeDataConfig);
 
 
 	sweet::PlaneData_Physical tmp_x(op.planeDataConfig);
 	tmp_x.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
-			io_data = ((double)i)*simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
+			io_data = ((double)i)*shackDict.sim.plane_domain_size[0]/(double)shackDict.disc.space_res_physical[0];
 		},
 		false
 	);
@@ -124,7 +124,7 @@ void Burgers_Plane_TS_l_cn_n_sl::setup()
 	tmp_y.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
-			io_data = ((double)j)*simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+			io_data = ((double)j)*shackDict.sim.plane_domain_size[1]/(double)shackDict.disc.space_res_physical[1];
 		},
 		false
 	);
@@ -133,8 +133,8 @@ void Burgers_Plane_TS_l_cn_n_sl::setup()
 	ScalarDataArray pos_x = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_x);
 	ScalarDataArray pos_y = Convert_PlaneDataPhysical_To_ScalarDataArray::physical_convert(tmp_y);
 
-	double cell_size_x = simVars.sim.plane_domain_size[0]/(double)simVars.disc.space_res_physical[0];
-	double cell_size_y = simVars.sim.plane_domain_size[1]/(double)simVars.disc.space_res_physical[1];
+	double cell_size_x = shackDict.sim.plane_domain_size[0]/(double)shackDict.disc.space_res_physical[0];
+	double cell_size_y = shackDict.sim.plane_domain_size[1]/(double)shackDict.disc.space_res_physical[1];
 
 	// Initialize arrival points with h position
 	posx_a = pos_x+0.5*cell_size_x;
@@ -144,10 +144,10 @@ void Burgers_Plane_TS_l_cn_n_sl::setup()
 
 
 Burgers_Plane_TS_l_cn_n_sl::Burgers_Plane_TS_l_cn_n_sl(
-		SimulationVariables &i_simVars,
+		sweet::ShackDictionary &i_shackDict,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
+		shackDict(i_shackDict),
 		op(i_op),
 
 		posx_a(i_op.planeDataConfig->physical_array_data_number_of_elements),
@@ -156,7 +156,7 @@ Burgers_Plane_TS_l_cn_n_sl::Burgers_Plane_TS_l_cn_n_sl(
 		posx_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 		posy_d(i_op.planeDataConfig->physical_array_data_number_of_elements),
 
-		ts_l_cn(simVars, op),
+		ts_l_cn(shackDict, op),
 
 		u_prev(i_op.planeDataConfig),
 		v_prev(i_op.planeDataConfig)

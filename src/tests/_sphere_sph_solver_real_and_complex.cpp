@@ -21,8 +21,8 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereDataComplex.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
+#include <sweet/core/sphere/SphereOperatorsComplex.hpp>
 
 #include <sweet/core/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
@@ -41,7 +41,7 @@ template<
 	typename phys_value_type = double,
 	typename sphere_data_spec_type = SphereData_Spectral,
 	typename sphere_data_phys_type = SphereData_Physical,
-	typename sphere_operators_type = SphereOperators_SphereData,
+	typename sphere_operators_type = SphereOperators,
 	typename sph_banded_solver_type = SphBandedMatrixPhysicalReal<std::complex<double>>
 >
 class Test
@@ -63,7 +63,7 @@ class Test
 
 	static
 	void benchmark_setup_geostrophic_balance(
-			SphereOperators_SphereData &ops,
+			SphereOperators &ops,
 			SphereData_Spectral &o_phi,
 			SphereData_Spectral &o_vrt,
 			SphereData_Spectral &o_div
@@ -78,7 +78,7 @@ class Test
 
 	static
 	void benchmark_setup_geostrophic_balance(
-			SphereOperators_SphereData &ops,
+			SphereOperators &ops,
 			sweet::SphereData_SpectralComplex &o_phi,
 			sweet::SphereData_SpectralComplex &o_vrt,
 			sweet::SphereData_SpectralComplex &o_div
@@ -103,7 +103,7 @@ class Test
 
 	static
 	void benchmark_setup_pvd(
-			SphereOperators_SphereData &opsReal,
+			SphereOperators &opsReal,
 			SphereData_Spectral &o_phi,
 			SphereData_Spectral &o_vrt,
 			SphereData_Spectral &o_div
@@ -118,7 +118,7 @@ class Test
 
 	static
 	void benchmark_setup_pvd(
-			SphereOperators_SphereData &opsReal,
+			SphereOperators &opsReal,
 			sweet::SphereData_SpectralComplex &o_phi,
 			sweet::SphereData_SpectralComplex &o_vrt,
 			sweet::SphereData_SpectralComplex &o_div
@@ -143,7 +143,7 @@ class Test
 
 public:
 	void run_tests(
-			sweet::SphereData_Config *sphereDataConfig,
+			sweet::SphereDataConfig *sphereDataConfig,
 			phys_value_type &alpha
 	)
 	{
@@ -161,7 +161,7 @@ public:
 		/*
 		 * Operators
 		 */
-		SphereOperators_SphereData opsReal(sphereDataConfig, &(simVars.sim));
+		SphereOperators opsReal(sphereDataConfig, &(simVars.sim));
 		sphere_operators_type ops(sphereDataConfig, &(simVars.sim));
 
 		/*
@@ -570,7 +570,7 @@ template<
 	typename phys_value_type = double,
 	typename sphere_data_spec_type = SphereData_Spectral,
 	typename sphere_data_phys_type = SphereData_Physical,
-	typename sphere_operators_type = SphereOperators_SphereData,
+	typename sphere_operators_type = SphereOperators,
 	typename sph_banded_solver_type = double
 >
 class TestFB
@@ -591,7 +591,7 @@ class TestFB
 
 public:
 	void run_tests(
-			sweet::SphereData_Config *sphereDataConfig,
+			sweet::SphereDataConfig *sphereDataConfig,
 			phys_value_type &alpha
 	)
 	{
@@ -602,7 +602,7 @@ public:
 		/*
 		 * Operators
 		 */
-		SphereOperators_SphereData ops(sphereDataConfig, &(simVars.sim));
+		SphereOperators ops(sphereDataConfig, &(simVars.sim));
 
 		/*
 		 * Setup local simulation variables
@@ -751,7 +751,7 @@ int main(
 	if (simVars.disc.space_res_spectral[0] == 0)
 		SWEETError("Set number of spectral modes to use SPH!");
 
-	sweet::SphereData_Config sphereDataConfig;
+	sweet::SphereDataConfig sphereDataConfig;
 	sphereDataConfig.setupAutoPhysicalSpace(
 					simVars.disc.space_res_spectral[0],
 					simVars.disc.space_res_spectral[1],
@@ -783,7 +783,7 @@ int main(
 			double,
 			SphereData_Spectral,
 			SphereData_Physical,
-			SphereOperators_SphereData,
+			SphereOperators,
 			SphBandedMatrixPhysicalReal<std::complex<double>>
 		>t_real;
 
@@ -800,7 +800,7 @@ int main(
 			double,
 			SphereData_Spectral,
 			SphereData_Physical,
-			SphereOperators_SphereData,
+			SphereOperators,
 			SphBandedMatrixPhysicalReal<std::complex<double>>
 		>t_real_fb;
 
@@ -829,7 +829,7 @@ int main(
 			std::complex<double>,
 			SphereData_SpectralComplex,
 			SphereData_PhysicalComplex,
-			SphereOperators_SphereDataComplex,
+			SphereOperatorsComplex,
 			SphBandedMatrixPhysicalComplex<std::complex<double>>
 		>t_complex;
 

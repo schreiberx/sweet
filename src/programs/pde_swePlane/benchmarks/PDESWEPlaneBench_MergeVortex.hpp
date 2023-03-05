@@ -44,8 +44,8 @@ class PDESWEPlaneBench_MergeVortex	:
 			)
 	{
 
-		//double radius = simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
-		double radius = 1; //simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		//double radius = shackDict.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		double radius = 1; //shackDict.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 		double factor = 500.0;
 
 		//Andrew's parameters

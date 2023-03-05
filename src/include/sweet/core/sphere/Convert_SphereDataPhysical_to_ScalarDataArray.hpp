@@ -11,6 +11,10 @@
 #include <sweet/core/sphere/SphereData_Physical.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
 
+
+namespace sweet
+{
+
 class Convert_SphereDataPhysical_to_ScalarDataArray
 {
 public:
@@ -28,6 +32,6 @@ public:
 	}
 };
 
-
+}
 
 #endif

@@ -20,7 +20,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 )
 {
 #if SWEET_PARAREAL
-	if (simVars.parareal.enabled)
+	if (shackDict.parareal.enabled)
 		SWEETError("Cole-Hopf solution is not usable in combination with Parareal");
 #endif
 	if (io_u.get_average() > 1e-12)
@@ -51,7 +51,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 	phi_phys.physical_update_lambda_array_indices(
 		[&](int i, int j, double &io_data)
 		{
-			io_data = exp(-io_data/(2*simVars.sim.viscosity));
+			io_data = exp(-io_data/(2*shackDict.sim.viscosity));
 		}
 	);
 
@@ -70,7 +70,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 
 	phi.loadPlaneDataPhysical(phi_phys);
 
-	io_u = -2*simVars.sim.viscosity*op.diff_c_x(phi);
+	io_u = -2*shackDict.sim.viscosity*op.diff_c_x(phi);
 
 }
 
@@ -86,12 +86,12 @@ void Burgers_Plane_TS_ln_cole_hopf::setup()
 
 
 Burgers_Plane_TS_ln_cole_hopf::Burgers_Plane_TS_ln_cole_hopf(
-		SimulationVariables &i_simVars,
+		sweet::ShackDictionary &i_shackDict,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
+		shackDict(i_shackDict),
 		op(i_op),
-		ts_l_direct(i_simVars, i_op)
+		ts_l_direct(i_shackDict, i_op)
 {
 	setup();
 }

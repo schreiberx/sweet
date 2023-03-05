@@ -12,7 +12,7 @@ public:
 
   // Constructor
   SphereDataVars(
-                sweet::SphereData_Config *sphereDataConfig,
+                sweet::SphereDataConfig *sphereDataConfig,
 		int i_level
 		)
 

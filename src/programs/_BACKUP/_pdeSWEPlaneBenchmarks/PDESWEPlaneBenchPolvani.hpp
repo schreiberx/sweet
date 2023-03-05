@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <cmath>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/Plane.hpp>
 #include <sweet/core/ErrorBase.hpp>
 

@@ -3,7 +3,7 @@
 #include <string>
 #include <utility>
 
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.hpp"
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
 #include "ceval.hpp"
@@ -13,7 +13,7 @@
 #include "cencap.hpp"
 
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
 
 
@@ -29,17 +29,17 @@ std::string write_file(
 	char buffer[1024];
 
 	// get the pointer to the Simulation Variables object
-	SimulationVariables* simVars = i_ctx.get_simulation_variables();
+	sweet::ShackDictionary* shackDict = i_ctx.get_simulation_variables();
 
 	// create copy
-	SphereData_Spectral sphereData(i_sphereData);
+	sweet::SphereData_Spectral sphereData(i_sphereData);
 
 	// Write the data into the file
-	const char* filename_template = simVars->iodata.output_file_name.c_str();
+	const char* filename_template = shackDict->iodata.output_file_name.c_str();
 	sprintf(buffer,
 			filename_template,
 			i_name,
-			simVars->timecontrol.current_simulation_time*simVars->iodata.output_time_scale);
+			shackDict->timecontrol.current_simulation_time*shackDict->iodata.output_time_scale);
     sphereData.file_write_binary_spectral(buffer);
 
 	return buffer;
@@ -59,21 +59,21 @@ void cinitial(
 	int rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-	SphereData_Spectral& phi_pert_Y  = o_Y->get_phi_pert();
-	SphereData_Spectral& vrt_Y = o_Y->get_vrt();
-	SphereData_Spectral& div_Y  = o_Y->get_div();
+	sweet::SphereData_Spectral& phi_pert_Y  = o_Y->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_Y = o_Y->get_vrt();
+	sweet::SphereData_Spectral& div_Y  = o_Y->get_div();
 
-	// get the SimulationVariables object from context
-	SimulationVariables* simVars(i_ctx->get_simulation_variables());
+	// get the sweet::ShackDictionary object from context
+	sweet::ShackDictionary* shackDict(i_ctx->get_simulation_variables());
 	
 	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
-	if (simVars->benchmark.setup_dealiased)
+	if (shackDict->benchmark.setup_dealiased)
 	{
 		// use dealiased physical space for setup
 		// get operator for this level
-		SphereOperators_SphereData* op = i_ctx->get_sphere_operators(i_ctx->get_number_of_levels() - 1);
-		benchmarks->setup(*simVars, *op);
+		sweet::SphereOperators* op = i_ctx->get_sphere_operators(i_ctx->get_number_of_levels() - 1);
+		benchmarks->setup(*shackDict, *op);
 		benchmarks->master->get_initial_state(phi_pert_Y, vrt_Y, div_Y);
 	}
 	else
@@ -83,13 +83,13 @@ void cinitial(
 
 		// get the configuration for this level
 		SphereData_Config* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
-		SphereData_Spectral phi_pert_Y_nodealiasing(data_config_nodealiasing);
-		SphereData_Spectral vrt_Y_nodealiasing(data_config_nodealiasing);
-		SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
+		sweet::SphereData_Spectral phi_pert_Y_nodealiasing(data_config_nodealiasing);
+		sweet::SphereData_Spectral vrt_Y_nodealiasing(data_config_nodealiasing);
+		sweet::SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
 
-		SphereOperators_SphereData* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
+		sweet::SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
 
-		benchmarks->setup(*simVars, *op_nodealiasing);
+		benchmarks->setup(*shackDict, *op_nodealiasing);
 		benchmarks->master->get_initial_state(phi_pert_Y_nodealiasing, vrt_Y_nodealiasing, div_Y_nodealiasing);
 
 		phi_pert_Y.load_nodealiasing(phi_pert_Y_nodealiasing);
@@ -98,40 +98,40 @@ void cinitial(
 	}
 
 	// output the configuration
-	simVars->outputConfig();
+	shackDict->outputConfig();
 
 	if (rank == 0)
 	{
-		if (simVars->iodata.output_each_sim_seconds >= 0) {
+		if (shackDict->iodata.output_each_sim_seconds >= 0) {
 			write_file(*i_ctx, phi_pert_Y, "prog_phi_pert");
 			write_file(*i_ctx, vrt_Y, "prog_vrt");
 			write_file(*i_ctx, div_Y, "prog_div");
 		}
-		if (simVars->iodata.output_each_sim_seconds < 0) {
+		if (shackDict->iodata.output_each_sim_seconds < 0) {
 		    // do not write output
-		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.max_simulation_time;
+		    shackDict->iodata.output_next_sim_seconds = shackDict->timecontrol.max_simulation_time;
 		}
-		else if (simVars->iodata.output_each_sim_seconds > 0) {
+		else if (shackDict->iodata.output_each_sim_seconds > 0) {
 		    // write output every output_each_sim_seconds
 		    // next output time is thus equal to output_each_sim_seconds
-		    simVars->iodata.output_next_sim_seconds = simVars->iodata.output_each_sim_seconds;
+		    shackDict->iodata.output_next_sim_seconds = shackDict->iodata.output_each_sim_seconds;
 		}
 		else {
 		    // output at every time step
-		    simVars->iodata.output_next_sim_seconds = simVars->timecontrol.current_timestep_size;
+		    shackDict->iodata.output_next_sim_seconds = shackDict->timecontrol.current_timestep_size;
 		}
 	}
 
-	SphereData_Spectral phi_pert_Y_init(phi_pert_Y);
-	SphereData_Spectral phi_pert_Y_final(phi_pert_Y);
+	sweet::SphereData_Spectral phi_pert_Y_init(phi_pert_Y);
+	sweet::SphereData_Spectral phi_pert_Y_final(phi_pert_Y);
 	phi_pert_Y_init -= phi_pert_Y_final;
 
-	SphereData_Spectral div_Y_init(div_Y);
-	SphereData_Spectral div_Y_final(div_Y);
+	sweet::SphereData_Spectral div_Y_init(div_Y);
+	sweet::SphereData_Spectral div_Y_final(div_Y);
 	div_Y_init -= div_Y_final;
 
-	SphereData_Spectral vrt_Y_init(vrt_Y);
-	SphereData_Spectral vrt_Y_final(vrt_Y);
+	sweet::SphereData_Spectral vrt_Y_init(vrt_Y);
+	sweet::SphereData_Spectral vrt_Y_final(vrt_Y);
 	vrt_Y_init -= vrt_Y_final;
 
 }
@@ -156,27 +156,27 @@ void cfinal(
 
 	const int& level_id = i_Y->get_level();
 
-	// get the SimulationVariables object from context
-	SimulationVariables* simVars(i_ctx->get_simulation_variables());
+	// get the sweet::ShackDictionary object from context
+	sweet::ShackDictionary* shackDict(i_ctx->get_simulation_variables());
 
-	SphereData_Spectral phi_pert_Y_init(phi_pert_Y);
-	SphereData_Spectral phi_pert_Y_final(phi_pert_Y);
+	sweet::SphereData_Spectral phi_pert_Y_init(phi_pert_Y);
+	sweet::SphereData_Spectral phi_pert_Y_final(phi_pert_Y);
 	phi_pert_Y_init -= phi_pert_Y_final;
 	
-	SphereData_Spectral div_Y_init(div_Y);
-	SphereData_Spectral div_Y_final(div_Y);
+	sweet::SphereData_Spectral div_Y_init(div_Y);
+	sweet::SphereData_Spectral div_Y_final(div_Y);
 	div_Y_init -= div_Y_final;
 
-	SphereData_Spectral vrt_Y_init(vrt_Y);
-	SphereData_Spectral vrt_Y_final(vrt_Y);
+	sweet::SphereData_Spectral vrt_Y_init(vrt_Y);
+	sweet::SphereData_Spectral vrt_Y_final(vrt_Y);
 	vrt_Y_init -= vrt_Y_final;
 
-	if (simVars->iodata.output_each_sim_seconds < 0) {
+	if (shackDict->iodata.output_each_sim_seconds < 0) {
 		// do not write output
 		return;
 	}
 
-	if (level_id == simVars->libpfasst.nlevels-1) 
+	if (level_id == shackDict->libpfasst.nlevels-1) 
 	{
 		if (rank == 0)
 		{
@@ -206,12 +206,12 @@ void ceval_f1(SphereDataVars *i_Y,
 
 	int level = i_Y->get_level();
 
-	SphereData_Spectral& phi_pert_F1  = o_F1->get_phi_pert();
-	SphereData_Spectral& vrt_F1 = o_F1->get_vrt();
-	SphereData_Spectral& div_F1  = o_F1->get_div();
+	sweet::SphereData_Spectral& phi_pert_F1  = o_F1->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_F1 = o_F1->get_vrt();
+	sweet::SphereData_Spectral& div_F1  = o_F1->get_div();
 
 	// get the time step parameters
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
 	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(level);
 	// compute the explicit nonlinear right-hand side
@@ -222,7 +222,7 @@ void ceval_f1(SphereDataVars *i_Y,
 			phi_pert_F1,
 			vrt_F1,
 			div_F1,
-			simVars->timecontrol.current_simulation_time
+			shackDict->timecontrol.current_simulation_time
 	);
 }
 
@@ -240,12 +240,12 @@ void ceval_f2(SphereDataVars *i_Y,
 
 	int level = i_Y->get_level();
 
-	SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
-	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
-	SphereData_Spectral& div_F2  = o_F2->get_div();
+	sweet::SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
+	sweet::SphereData_Spectral& div_F2  = o_F2->get_div();
 
 	// get the time step parameters
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
 	SWE_Sphere_TS_lg_erk_lc_n_erk* timestepper = i_ctx->get_lg_erk_lc_n_erk_timestepper(level);
 	// compute the linear right-hand side
@@ -256,7 +256,7 @@ void ceval_f2(SphereDataVars *i_Y,
 			phi_pert_F2,
 			vrt_F2,
 			div_F2,
-			simVars->timecontrol.current_simulation_time
+			shackDict->timecontrol.current_simulation_time
 	);
 }
 
@@ -272,11 +272,11 @@ void ccomp_f2(
 )
 {
 	// get the time step parameters
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
-	SphereData_Spectral& phi_pert_Y = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	SphereData_Spectral& div_Y = io_Y->get_div();
+	sweet::SphereData_Spectral& phi_pert_Y = io_Y->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_Y = io_Y->get_vrt();
+	sweet::SphereData_Spectral& div_Y = io_Y->get_div();
 
 	const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
 	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
@@ -305,12 +305,12 @@ void ccomp_f2(
 					vrt_Y,
 					div_Y,
 					i_dtq,
-					simVars->timecontrol.max_simulation_time
+					shackDict->timecontrol.max_simulation_time
 					);
 
-	SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
-	SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
-	SphereData_Spectral& div_F2  = o_F2->get_div();
+	sweet::SphereData_Spectral& phi_pert_F2  = o_F2->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_F2 = o_F2->get_vrt();
+	sweet::SphereData_Spectral& div_F2  = o_F2->get_div();
 	
 	phi_pert_F2 = (phi_pert_Y - phi_pert_Rhs) / i_dtq;
 	vrt_F2      = (vrt_Y - vrt_Rhs) / i_dtq;
@@ -333,27 +333,27 @@ void ceval_f3 (
 	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
 	const SphereData_Spectral& div_Y  = i_Y->get_div();
 
-	SphereData_Spectral& phi_pert_F3  = o_F3->get_phi_pert();
-	SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
-	SphereData_Spectral& div_F3  = o_F3->get_div();
+	sweet::SphereData_Spectral& phi_pert_F3  = o_F3->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
+	sweet::SphereData_Spectral& div_F3  = o_F3->get_div();
 
 	// initialize F3 to zero in case of no artificial viscosity
 	c_sweet_data_setval(o_F3, 0.0);
 
 	// get the simulation variables
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
 	// get the parameters used to apply diffusion
-	const double visc2 = simVars->libpfasst.hyperviscosity_2[i_level];
-	const double visc4 = simVars->libpfasst.hyperviscosity_4[i_level];
-	const double visc6 = simVars->libpfasst.hyperviscosity_6[i_level];
-	const double visc8 = simVars->libpfasst.hyperviscosity_8[i_level];
+	const double visc2 = shackDict->libpfasst.hyperviscosity_2[i_level];
+	const double visc4 = shackDict->libpfasst.hyperviscosity_4[i_level];
+	const double visc6 = shackDict->libpfasst.hyperviscosity_6[i_level];
+	const double visc8 = shackDict->libpfasst.hyperviscosity_8[i_level];
 	// no need to do anything if no artificial viscosity
 	if (!(visc2 || visc4 || visc6 || visc8))
 	{
 		return;
 	}
-	const double r    = simVars->sim.sphere_radius;
+	const double r    = shackDict->sim.sphere_radius;
 
 	// lambda for applying viscosity
 	auto viscosity_applier = [&](int n, int m, std::complex<double> &io_data) 
@@ -371,17 +371,17 @@ void ceval_f3 (
 		};
 	
 	// only do this for the fields that should get viscosity applied
-	if (simVars->libpfasst.hyperviscosity_on_field.at("phi_pert"))
+	if (shackDict->libpfasst.hyperviscosity_on_field.at("phi_pert"))
 	{
 		phi_pert_F3 = phi_pert_Y;
 		phi_pert_F3.spectral_update_lambda(viscosity_applier);
 	}
-	if (simVars->libpfasst.hyperviscosity_on_field.at("vrt"))
+	if (shackDict->libpfasst.hyperviscosity_on_field.at("vrt"))
 	{
 		vrt_F3 = vrt_Y;
 		vrt_F3.spectral_update_lambda(viscosity_applier);
 	}
-	if (simVars->libpfasst.hyperviscosity_on_field.at("div"))
+	if (shackDict->libpfasst.hyperviscosity_on_field.at("div"))
 	{
 		div_F3 = div_Y;
 		div_F3.spectral_update_lambda(viscosity_applier);
@@ -402,13 +402,13 @@ void ccomp_f3 (
 )
 {
 	// set y = rhs, f = 0.0
-	SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt_Y = io_Y->get_vrt();
-	SphereData_Spectral& div_Y  = io_Y->get_div();
+	sweet::SphereData_Spectral& phi_pert_Y  = io_Y->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_Y = io_Y->get_vrt();
+	sweet::SphereData_Spectral& div_Y  = io_Y->get_div();
 
-	SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
-	SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
-	SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
+	sweet::SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
+	sweet::SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
+	sweet::SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
 
 	phi_pert_Y = phi_pert_Rhs;
 	vrt_Y = vrt_Rhs;
@@ -418,41 +418,41 @@ void ccomp_f3 (
 	c_sweet_data_setval(o_F3, 0.0);
 
 	// get the simulation variables
-	SimulationVariables* simVars = i_ctx->get_simulation_variables();
+	sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
 	// get the parameters used to apply diffusion
-	const double visc2  = simVars->libpfasst.hyperviscosity_2[i_level] * i_dtq;
-	const double visc4  = simVars->libpfasst.hyperviscosity_4[i_level] * i_dtq;
-	const double visc6  = simVars->libpfasst.hyperviscosity_6[i_level] * i_dtq;
-	const double visc8  = simVars->libpfasst.hyperviscosity_8[i_level] * i_dtq;
+	const double visc2  = shackDict->libpfasst.hyperviscosity_2[i_level] * i_dtq;
+	const double visc4  = shackDict->libpfasst.hyperviscosity_4[i_level] * i_dtq;
+	const double visc6  = shackDict->libpfasst.hyperviscosity_6[i_level] * i_dtq;
+	const double visc8  = shackDict->libpfasst.hyperviscosity_8[i_level] * i_dtq;
 	// no need to do anything if no artificial viscosity
 	if (!(visc2 || visc4 || visc6 || visc8))
 	{
 		return;
 	}
-	const double r      = simVars->sim.sphere_radius;
+	const double r      = shackDict->sim.sphere_radius;
 
 	const std::array<double, 4> visc_factors {visc2, -visc4, +visc6, -visc8};
 
 	// for all values where viscosity should get applied
 	// 1. solve (1-dt*visc*diff_op)*rhs = y
 	// 2. recompute F3 with the new value of Y
-	if (simVars->libpfasst.hyperviscosity_on_field.at("phi_pert"))
+	if (shackDict->libpfasst.hyperviscosity_on_field.at("phi_pert"))
 	{
 		phi_pert_Y  = phi_pert_Rhs.spectral_solve_helmholtz_higher_order(1.0, visc_factors, r);
-		SphereData_Spectral& phi_pert_F3 = o_F3->get_phi_pert();
+		sweet::SphereData_Spectral& phi_pert_F3 = o_F3->get_phi_pert();
 		phi_pert_F3 = (phi_pert_Y - phi_pert_Rhs) / i_dtq;
 	}
-	if (simVars->libpfasst.hyperviscosity_on_field.at("vrt"))
+	if (shackDict->libpfasst.hyperviscosity_on_field.at("vrt"))
 	{
 		vrt_Y = vrt_Rhs.spectral_solve_helmholtz_higher_order(1.0, visc_factors, r);
-		SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
+		sweet::SphereData_Spectral& vrt_F3 = o_F3->get_vrt();
 		vrt_F3 = (vrt_Y - vrt_Rhs) / i_dtq;
 	}
-	if (simVars->libpfasst.hyperviscosity_on_field.at("div"))
+	if (shackDict->libpfasst.hyperviscosity_on_field.at("div"))
 	{
 		div_Y  = div_Rhs.spectral_solve_helmholtz_higher_order(1.0, visc_factors, r);
-		SphereData_Spectral& div_F3 = o_F3->get_div();
+		sweet::SphereData_Spectral& div_F3 = o_F3->get_div();
 		div_F3 = (div_Y - div_Rhs) / i_dtq;
 	}
 }

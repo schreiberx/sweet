@@ -8,6 +8,7 @@
 
 
 // This is just for the editor to show code as used within precompiler #if ... directives
+#include <pde_advectionPlane/PDEAdvectionPlaneTimeSteppers.hpp>
 #include <sweet/core/defaultPrecompilerValues.hpp>
 
 // Error handling
@@ -27,7 +28,6 @@
 #include "PDEAdvectionPlaneBenchmarksCombined.hpp"
 
 // Time steppers
-#include "PDEAdvPlaneTimeSteppers.hpp"
 
 #if SWEET_GUI
 	#include <sweet/gui/VisSweet.hpp>
@@ -94,7 +94,7 @@ public:
 	Data data;
 
 	// time integrators
-	PDEAdvPlaneTimeSteppers timeSteppers;
+	PDEAdvectionPlaneTimeSteppers timeSteppers;
 
 	// Handler to all benchmarks
 	PDEAdvectionPlaneBenchmarksCombined planeBenchmarksCombined;
@@ -298,11 +298,6 @@ public:
 		std::cout << "RMS error: " << (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_rms() << std::endl;
 	}
 
-	double getLMaxError()
-	{
-		return (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_max_abs();
-	}
-
 	~ProgramPDEAdvectionPlane()
 	{
 		clear();
@@ -322,8 +317,9 @@ public:
 
 		if (shackIOData->verbosity > 2)
 		{
+			double lmax_error = (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_max_abs();
 			std::cout << "timestep: " << shackTimestepControl->current_timestep_nr << ": dt=" << shackTimestepControl->current_timestep_size << ": t=" << shackTimestepControl->current_simulation_time << std::endl;
-			std::cout << "error:" << getLMaxError() << std::endl;
+			std::cout << "error:" << lmax_error << std::endl;
 		}
 		return true;
 	}

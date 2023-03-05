@@ -17,14 +17,14 @@
 
 
 #if SWEET_GUI
-	#include "sweet/VisSweet.hpp"
+	#include <sweet/gui/VisSweet.hpp>
 #endif
 
 #include <sweet/core/Stopwatch.hpp>
 #include <sweet/core/SWEETError.hpp>
 
 
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/Plane.hpp>
 #include <sweet/core/plane/Convert_ScalarDataArray_to_PlaneDataPhysical.hpp>
 
@@ -133,7 +133,7 @@ public:
 		t0_prog_v(planeDataConfig),
 
 		// Initialise operators
-		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
+		op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs)
 	{
 		// Calls initialization of the run (e.g. sets u, v)
 		reset();
@@ -150,7 +150,7 @@ public:
 	void reset()
 	{
 #if 0
-		if (simVars.benchmark.benchmark_id <0)
+		if (shackDict.benchmark.benchmark_id <0)
 		{
 			std::cout << std::endl;
 			std::cout << "Benchmark scenario not selected (option -s [id])" << std::endl;
@@ -169,7 +169,7 @@ public:
 		benchmark.benchmark_analytical_error_maxabs_v = 0;
 
 		//TODO: is there a reason, why this is not called in swe_rexi
-		simVars.reset();
+		shackDict.reset();
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 //#if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -184,11 +184,11 @@ public:
 ////		prog_v_prev.physical_set_all(0);
 
 		//Check if input parameters are adequate for this simulation
-		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
+		if (shackDict.disc.space_grid_use_c_staggering && shackDict.disc.space_use_spectral_basis_diffs)
 			SWEETError("Staggering and spectral basis not supported!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		if (simVars.disc.space_grid_use_c_staggering ||  !simVars.disc.space_use_spectral_basis_diffs)
+		if (shackDict.disc.space_grid_use_c_staggering ||  !shackDict.disc.space_use_spectral_basis_diffs)
 			SWEETError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
@@ -196,14 +196,14 @@ public:
 		sweet::PlaneData_Physical v_phys(planeDataConfig);
 
 		// Set initial conditions given from BurgersValidationBenchmarks
-		if (simVars.disc.space_grid_use_c_staggering)
+		if (shackDict.disc.space_grid_use_c_staggering)
 		{
 			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+					double x = (((double)i)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_u(shackDict, x, y);
 				}
 			);
 			v_phys.physical_update_lambda_array_indices(
@@ -211,9 +211,9 @@ public:
 				{
 				io_data = 0.0;
 #if 0
-					double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-					double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+					double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+					double y = (((double)j)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_v(shackDict, x, y);
 #endif
 				}
 			);
@@ -223,9 +223,9 @@ public:
 			u_phys.physical_update_lambda_array_indices(
 				[&](int i, int j, double &io_data)
 				{
-					double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-					io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+					double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_u(shackDict, x, y);
 				}
 			);
 
@@ -234,9 +234,9 @@ public:
 				{
 				io_data = 0.0;
 #if 0
-					double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-					double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-					io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+					double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+					double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+					io_data = BurgersValidationBenchmarks::return_v(shackDict, x, y);
 #endif
 				}
 			);
@@ -253,31 +253,31 @@ public:
 		t0_prog_v = prog_v;
 
 		// Load data, if requested
-		if (simVars.iodata.initial_condition_data_filenames.size() > 0)
-			prog_u.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[0].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		if (shackDict.iodata.initial_condition_data_filenames.size() > 0)
+			prog_u.file_physical_loadData(shackDict.iodata.initial_condition_data_filenames[0].c_str(), shackDict.iodata.initial_condition_input_data_binary);
 
-		if (simVars.iodata.initial_condition_data_filenames.size() > 1)
-			prog_v.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[1].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		if (shackDict.iodata.initial_condition_data_filenames.size() > 1)
+			prog_v.file_physical_loadData(shackDict.iodata.initial_condition_data_filenames[1].c_str(), shackDict.iodata.initial_condition_input_data_binary);
 
 
 		timeSteppers.setup(
-			simVars.disc.timestepping_method,
-			simVars.disc.timestepping_order,
-			simVars.disc.timestepping_order2,
+			shackDict.disc.timestepping_method,
+			shackDict.disc.timestepping_order,
+			shackDict.disc.timestepping_order2,
 			op,
-			simVars
+			shackDict
 		);
 
 		update_diagnostics();
-		diagnostics_energy_start = simVars.diag.total_energy;
+		diagnostics_energy_start = shackDict.diag.total_energy;
 
 		timestep_output();
 
-      if (simVars.misc.compute_errors)
+      if (shackDict.misc.compute_errors)
       {
-         bool foundl = (simVars.disc.timestepping_method.find("l_")==0) || (simVars.disc.timestepping_method.find("_l_")!=std::string::npos);
-         bool foundn = (simVars.disc.timestepping_method.find("n_")==0) || (simVars.disc.timestepping_method.find("_n_")!=std::string::npos);
-         bool foundnl = (simVars.disc.timestepping_method.find("ln_")==0) || (foundl && foundn);
+         bool foundl = (shackDict.disc.timestepping_method.find("l_")==0) || (shackDict.disc.timestepping_method.find("_l_")!=std::string::npos);
+         bool foundn = (shackDict.disc.timestepping_method.find("n_")==0) || (shackDict.disc.timestepping_method.find("_n_")!=std::string::npos);
+         bool foundnl = (shackDict.disc.timestepping_method.find("ln_")==0) || (foundl && foundn);
 
          if (foundnl)
             analytic_solution = 1;
@@ -293,20 +293,20 @@ public:
 	void update_diagnostics()
 	{
 		// Assure, that the diagnostics are only updated for new time steps
-		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
+		if (last_timestep_nr_update_diagnostics == shackDict.timecontrol.current_timestep_nr)
 			return;
 
-		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
+		last_timestep_nr_update_diagnostics = shackDict.timecontrol.current_timestep_nr;
 
-		double normalization = (simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[1]) /
-								((double)simVars.disc.space_res_physical[0]*(double)simVars.disc.space_res_physical[1]);
+		double normalization = (shackDict.sim.plane_domain_size[0]*shackDict.sim.plane_domain_size[1]) /
+								((double)shackDict.disc.space_res_physical[0]*(double)shackDict.disc.space_res_physical[1]);
 
 		// Reduce amount of possible FFTs to minimize numerical error
 		sweet::PlaneData_Physical tmp_u = prog_u.toPhys();
 		sweet::PlaneData_Physical tmp_v = prog_v.toPhys();
 
 		// Energy
-		simVars.diag.total_energy =
+		shackDict.diag.total_energy =
 			0.5*((
 					tmp_u*tmp_u +
 					tmp_v*tmp_v
@@ -319,18 +319,18 @@ public:
 	 */
 	void run_timestep()
 	{
-		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
-			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
+		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestep_size > shackDict.timecontrol.max_simulation_time)
+			shackDict.timecontrol.current_timestep_size = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
 
-		if (simVars.disc.timestepping_method == "ln_cole_hopf" || simVars.disc.timestepping_method == "l_direct")
+		if (shackDict.disc.timestepping_method == "ln_cole_hopf" || shackDict.disc.timestepping_method == "l_direct")
 		{
 			prog_u = t0_prog_u;
 			prog_v = t0_prog_v;
 			timeSteppers.master->run_timestep(
 				prog_u, prog_v,
 				///prog_u_prev, prog_v_prev,
-				simVars.timecontrol.current_timestep_size+simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.current_simulation_time
+				shackDict.timecontrol.current_timestep_size+shackDict.timecontrol.current_simulation_time,
+				shackDict.timecontrol.current_simulation_time
 			);
 		}
 		else
@@ -338,16 +338,16 @@ public:
 			timeSteppers.master->run_timestep(
 				prog_u, prog_v,
 				///prog_u_prev, prog_v_prev,
-				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time
+				shackDict.timecontrol.current_timestep_size,
+				shackDict.timecontrol.current_simulation_time
 			);
 		}
 
 		// Advance time step and provide information to parameters
-		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
-		simVars.timecontrol.current_timestep_nr++;
+		shackDict.timecontrol.current_simulation_time += shackDict.timecontrol.current_timestep_size;
+		shackDict.timecontrol.current_timestep_nr++;
 
-		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+		if (shackDict.timecontrol.current_simulation_time > shackDict.timecontrol.max_simulation_time)
 			SWEETError("Max simulation time exceeded!");
 
 		timestep_output();
@@ -364,8 +364,8 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.iodata.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+		const char* filename_template = shackDict.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale);
 		//i_planeData.file_physical_saveData_ascii(buffer, '\n', 12, 1);
 		i_planeData.file_physical_saveData_ascii(buffer);
 
@@ -382,17 +382,17 @@ public:
 	)
 	{
 		// output each time step
-		if (simVars.iodata.output_each_sim_seconds < 0)
+		if (shackDict.iodata.output_each_sim_seconds < 0)
 			return false;
 
-		if (simVars.iodata.output_next_sim_seconds-simVars.iodata.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
+		if (shackDict.iodata.output_next_sim_seconds-shackDict.iodata.output_next_sim_seconds*(1e-12) > shackDict.timecontrol.current_simulation_time)
 			return false;
 
 		sweet::PlaneData_Physical u_phys = prog_u.toPhys();
 		sweet::PlaneData_Physical v_phys = prog_v.toPhys();
 
 		// Dump data in csv, if requested
-		if (simVars.iodata.output_file_name.size() > 0)
+		if (shackDict.iodata.output_file_name.size() > 0)
 		{
 			output_filenames = "";
 			output_filenames += write_file(u_phys, "prog_u");
@@ -401,8 +401,8 @@ public:
 			//write_file(tmp_v, "prog_v");
 
 			char buffer[1024];
-			const char* filename_template = simVars.iodata.output_file_name.c_str();
-			sprintf(buffer,filename_template,"prog_u_amp_phase",simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+			const char* filename_template = shackDict.iodata.output_file_name.c_str();
+			sprintf(buffer,filename_template,"prog_u_amp_phase",shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale);
 
 			std::ofstream file(buffer, std::ios_base::trunc);
 			file << std::setprecision(12);
@@ -414,10 +414,10 @@ public:
 			file.close();
 		}
 
-		if (simVars.misc.verbosity > 0)
+		if (shackDict.misc.verbosity > 0)
 		{
 			update_diagnostics();
-			if (simVars.misc.compute_errors)
+			if (shackDict.misc.compute_errors)
 			{
 				sweet::PlaneData_Physical tmp(planeDataConfig);
 				tmp = compute_errors2(prog_u, prog_v).toPhys();
@@ -428,8 +428,8 @@ public:
 				tmp_spec.loadPlaneDataPhysical(tmp);
 
 				char buffer[1024];
-				const char* filename_template = simVars.iodata.output_file_name.c_str();
-				sprintf(buffer,filename_template,"analytical_amp_phase",simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+				const char* filename_template = shackDict.iodata.output_file_name.c_str();
+				sprintf(buffer,filename_template,"analytical_amp_phase",shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale);
 
 				std::ofstream file(buffer, std::ios_base::trunc);
 				file << std::setprecision(12);
@@ -446,46 +446,46 @@ public:
 			rows << std::setprecision(12);
 
 			// Prefix
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				header << "DATA";
 			rows << "DATA";
 
 			// Time
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				header << "\tT";
-			rows << "\t" << simVars.timecontrol.current_simulation_time;
+			rows << "\t" << shackDict.timecontrol.current_simulation_time;
 
 			// Energy
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				header << "\tTOTAL_ENERGY";
-			rows << "\t" << simVars.diag.total_energy;
+			rows << "\t" << shackDict.diag.total_energy;
 
-			if (simVars.misc.compute_errors)
+			if (shackDict.misc.compute_errors)
 			{
-				if (simVars.timecontrol.current_timestep_nr == 0)
+				if (shackDict.timecontrol.current_timestep_nr == 0)
 					header << "\tMAX_ABS_U\tMAX_RMS_U\tMAX_U";
 				rows << "\t" << benchmark.benchmark_analytical_error_maxabs_u << "\t" << benchmark.benchmark_analytical_error_rms_u << "\t" << prog_u.spectral_reduce_max_abs();
 			}
 
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				o_ostream << header.str() << std::endl;
 
 			o_ostream << rows.str() << std::endl;
 		}
 
-		if (simVars.iodata.output_each_sim_seconds > 0)
+		if (shackDict.iodata.output_each_sim_seconds > 0)
 		{
-			if (simVars.iodata.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
+			if (shackDict.iodata.output_next_sim_seconds == shackDict.timecontrol.max_simulation_time)
 			{
-				simVars.iodata.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+				shackDict.iodata.output_next_sim_seconds = std::numeric_limits<double>::infinity();
 			}
 			else
 			{
-				while (simVars.iodata.output_next_sim_seconds <= simVars.timecontrol.current_simulation_time)
-					simVars.iodata.output_next_sim_seconds += simVars.iodata.output_each_sim_seconds;
+				while (shackDict.iodata.output_next_sim_seconds <= shackDict.timecontrol.current_simulation_time)
+					shackDict.iodata.output_next_sim_seconds += shackDict.iodata.output_each_sim_seconds;
 
-				if (simVars.iodata.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
-					simVars.iodata.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
+				if (shackDict.iodata.output_next_sim_seconds > shackDict.timecontrol.max_simulation_time)
+					shackDict.iodata.output_next_sim_seconds = shackDict.timecontrol.max_simulation_time;
 			}
 		}
 
@@ -510,19 +510,19 @@ public:
 		sweet::PlaneData_Physical ts_u_phys = ts_u.toPhys();
 		sweet::PlaneData_Physical ts_v_phys = ts_v.toPhys();
 
-		if (simVars.misc.compute_errors)
+		if (shackDict.misc.compute_errors)
 		{
-			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
-			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
+			//if (shackDict.setup.benchmark_id > 51 && shackDict.setup.benchmark_id < 65)
+			if (shackDict.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
-				if (simVars.disc.space_grid_use_c_staggering)
+				if (shackDict.disc.space_grid_use_c_staggering)
 				{
 					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+							double x = (((double)i)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_u(shackDict, x, y);
 						}
 					);
 
@@ -531,9 +531,9 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+							double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_v(shackDict, x, y);
 #endif
 						}
 					);
@@ -543,10 +543,10 @@ public:
 					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+							double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
 
-							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+							io_data = BurgersValidationBenchmarks::return_u(shackDict, x, y);
 						}
 					);
 
@@ -555,10 +555,10 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+							double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
 
-							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+							io_data = BurgersValidationBenchmarks::return_v(shackDict, x, y);
 #endif
 						}
 					);
@@ -566,14 +566,14 @@ public:
 				ts_u.loadPlaneDataPhysical(ts_u_phys);
 				ts_v.loadPlaneDataPhysical(ts_v_phys);
 			}
-			else //if (simVars.setup.benchmark_id == 70)
+			else //if (shackDict.setup.benchmark_id == 70)
 			{
 				if (analytic_solution == 1)
 				{
 				   timeSteppers.ln_cole_hopf->run_timestep(
 						 ts_u, ts_v,
 						 ////ts_u, ts_v,
-						 simVars.timecontrol.current_simulation_time,
+						 shackDict.timecontrol.current_simulation_time,
 						 0
 				   );
 				}
@@ -582,7 +582,7 @@ public:
 				   timeSteppers.l_direct->run_timestep(
 						 ts_u, ts_v,
 						 ////ts_u, ts_v,
-						 simVars.timecontrol.current_simulation_time,
+						 shackDict.timecontrol.current_simulation_time,
 						 0
 				   );
 				}
@@ -613,19 +613,19 @@ public:
 		sweet::PlaneData_Physical ts_u_phys = ts_u.toPhys();
 		sweet::PlaneData_Physical ts_v_phys = ts_v.toPhys();
 
-		if (simVars.misc.compute_errors)
+		if (shackDict.misc.compute_errors)
 		{
-			//if (simVars.setup.benchmark_id > 51 && simVars.setup.benchmark_id < 65)
-			if (simVars.disc.timestepping_method.find("forcing")!=std::string::npos)
+			//if (shackDict.setup.benchmark_id > 51 && shackDict.setup.benchmark_id < 65)
+			if (shackDict.disc.timestepping_method.find("forcing")!=std::string::npos)
 			{
-				if (simVars.disc.space_grid_use_c_staggering)
+				if (shackDict.disc.space_grid_use_c_staggering)
 				{
 					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+							double x = (((double)i)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_u(shackDict, x, y);
 						}
 					);
 
@@ -634,9 +634,9 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
-							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+							double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
+							io_data = BurgersValidationBenchmarks::return_v(shackDict, x, y);
 #endif
 						}
 					);
@@ -646,10 +646,10 @@ public:
 					ts_u_phys.physical_update_lambda_array_indices(
 						[&](int i, int j, double &io_data)
 						{
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+							double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
 
-							io_data = BurgersValidationBenchmarks::return_u(simVars, x, y);
+							io_data = BurgersValidationBenchmarks::return_u(shackDict, x, y);
 						}
 					);
 
@@ -658,10 +658,10 @@ public:
 						{
 							io_data = 0.0;
 #if 0
-							double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-							double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+							double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+							double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
 
-							io_data = BurgersValidationBenchmarks::return_v(simVars, x, y);
+							io_data = BurgersValidationBenchmarks::return_v(shackDict, x, y);
 #endif
 						}
 					);
@@ -669,14 +669,14 @@ public:
 				ts_u.loadPlaneDataPhysical(ts_u_phys);
 				ts_v.loadPlaneDataPhysical(ts_v_phys);
 			}
-			else //if (simVars.setup.benchmark_id == 70)
+			else //if (shackDict.setup.benchmark_id == 70)
 			{
 				if (analytic_solution == 1)
 				{
 				   timeSteppers.ln_cole_hopf->run_timestep(
 						 ts_u, ts_v,
 						 /////ts_u, ts_v,
-						 simVars.timecontrol.current_simulation_time,
+						 shackDict.timecontrol.current_simulation_time,
 						 0
 				   );
 				}
@@ -685,7 +685,7 @@ public:
 				   timeSteppers.l_direct->run_timestep(
 						 ts_u, ts_v,
 						 /////ts_u, ts_v,
-						 simVars.timecontrol.current_simulation_time,
+						 shackDict.timecontrol.current_simulation_time,
 						 0
 				   );
 				}
@@ -707,11 +707,11 @@ public:
 	 */
 	bool should_quit()
 	{
-		if (simVars.timecontrol.max_timesteps_nr != -1 && simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr)
+		if (shackDict.timecontrol.max_timesteps_nr != -1 && shackDict.timecontrol.max_timesteps_nr <= shackDict.timecontrol.current_timestep_nr)
 			return true;
 
-		if (!std::isinf(simVars.timecontrol.max_simulation_time))
-			if (simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time+simVars.timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
+		if (!std::isinf(shackDict.timecontrol.max_simulation_time))
+			if (shackDict.timecontrol.max_simulation_time <= shackDict.timecontrol.current_simulation_time+shackDict.timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
 				return true;
 
 		return false;
@@ -726,7 +726,7 @@ public:
 			int i_num_iterations
 	)
 	{
-		if (simVars.timecontrol.run_simulation_timesteps)
+		if (shackDict.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
 				run_timestep();
 	}
@@ -766,11 +766,11 @@ public:
 		timeSteppers.ln_cole_hopf->run_timestep(
 				ts_u, ts_v,
 				ts_u, ts_v,
-				simVars.timecontrol.current_simulation_time,
+				shackDict.timecontrol.current_simulation_time,
 				0
 		);
 
-		switch(simVars.misc.vis_id)
+		switch(shackDict.misc.vis_id)
 		{
 		case -1:
 			vis = ts_u;
@@ -786,7 +786,7 @@ public:
 		}
 
 		*o_dataArray = &vis;
-		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
+		*o_aspect_ratio = shackDict.sim.plane_domain_size[1] / shackDict.sim.plane_domain_size[0];
 		return;
 	}
 
@@ -800,14 +800,14 @@ public:
 		update_diagnostics();
 
 		const char* description = "";
-		if (simVars.misc.vis_id >= 0)
+		if (shackDict.misc.vis_id >= 0)
 		{
-			int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+			int id = shackDict.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 			description = vis_arrays[id].description;
 		}
 		else
 		{
-			switch (simVars.misc.vis_id)
+			switch (shackDict.misc.vis_id)
 			{
 			case -1:
 				description = "Cole-Hopf solution for u";
@@ -825,11 +825,11 @@ public:
 
 		static char title_string[1024];
 		sprintf(title_string, "Time: %f, k: %i, dt: %.3e, Vis: %s, TEnergy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
-				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.current_timestep_nr,
-				simVars.timecontrol.current_timestep_size,
+				shackDict.timecontrol.current_simulation_time,
+				shackDict.timecontrol.current_timestep_nr,
+				shackDict.timecontrol.current_timestep_size,
 				description,
-				simVars.diag.total_energy,
+				shackDict.diag.total_energy,
 				vis.physical_reduce_max(),
 				vis.physical_reduce_min() );
 		return title_string;
@@ -838,7 +838,7 @@ public:
 
 	void vis_pause()
 	{
-		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
+		shackDict.timecontrol.run_simulation_timesteps = !shackDict.timecontrol.run_simulation_timesteps;
 	}
 
 
@@ -847,11 +847,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			simVars.misc.vis_id++;
+			shackDict.misc.vis_id++;
 			break;
 
 		case 'V':
-			simVars.misc.vis_id--;
+			shackDict.misc.vis_id--;
 			break;
 
 		case 'c':
@@ -869,8 +869,8 @@ public:
 #if 0
 		case 'l':
 			// load data arrays
-			prog_u.file_physical_loadData("burgers_dump_u.csv", simVars.benchmark.initial_condition_input_data_binary);
-			prog_v.file_physical_loadData("burgers_dump_v.csv", simVars.benchmark.initial_condition_input_data_binary);
+			prog_u.file_physical_loadData("burgers_dump_u.csv", shackDict.benchmark.initial_condition_input_data_binary);
+			prog_v.file_physical_loadData("burgers_dump_v.csv", shackDict.benchmark.initial_condition_input_data_binary);
 #endif
 
 			break;
@@ -899,7 +899,7 @@ public:
 int main(int i_argc, char *i_argv[])
 {
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	if (!shackDict.setupFromMainParameters(i_argc, i_argv))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
@@ -908,15 +908,15 @@ int main(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(shackDict.disc.space_res_physical, shackDict.disc.space_res_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
 	// Print header
 	std::cout << "---------------------------------" << std::endl;
 	std::cout << "Solving viscous Burgers' equation" << std::endl;
 	std::cout << "---------------------------------" << std::endl;
-	simVars.outputConfig();
+	shackDict.outputConfig();
 	std::cout << "LOCAL PARAMETERS" << std::endl;
-	std::cout << "Computing error: " << simVars.misc.compute_errors << std::endl;
+	std::cout << "Computing error: " << shackDict.misc.compute_errors << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -925,10 +925,10 @@ int main(int i_argc, char *i_argv[])
 	{
 
 #if SWEET_PARAREAL
-		if (simVars.parareal.enabled)
+		if (shackDict.parareal.enabled)
 		{
 
-			sweet::PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			sweet::PlaneOperators op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 
 			// Set planeDataConfig and planeOperators for each level
 			std::vector<PlaneDataConfig*> planeDataConfigs;
@@ -939,23 +939,23 @@ int main(int i_argc, char *i_argv[])
 			ops.push_back(&op);
 
 			// coarse
-			if (simVars.parareal.spatial_coarsening)
+			if (shackDict.parareal.spatial_coarsening)
 			{
 				///for (int j = 0; j < 2; j++)
-				///	assert(simVars.disc.space_res_physical[j] == -1);
+				///	assert(shackDict.disc.space_res_physical[j] == -1);
 				int N_physical[2] = {-1, -1};
 				int N_spectral[2];
 				double frac;
-				if ( simVars.parareal.coarse_timestep_size > 0)
-					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				if ( shackDict.parareal.coarse_timestep_size > 0)
+					frac = shackDict.timecontrol.current_timestep_size / shackDict.parareal.coarse_timestep_size;
 				else
-					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
+					frac = shackDict.timecontrol.current_timestep_size / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
-					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 				planeDataConfigs.push_back(new PlaneDataConfig);
-				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
-				ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+				ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs));
 			}
 			else
 			{
@@ -970,7 +970,7 @@ int main(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<Burgers_Plane_TimeSteppers, 2> parareal_Controller(&simVars,
+			Parareal_Controller<Burgers_Plane_TimeSteppers, 2> parareal_Controller(&shackDict,
 												planeDataConfigs,
 												ops,
 												timeSteppersFine,
@@ -985,7 +985,7 @@ int main(int i_argc, char *i_argv[])
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
 
-			if (simVars.parareal.spatial_coarsening)
+			if (shackDict.parareal.spatial_coarsening)
 			{
 				delete planeDataConfigs[1];
 				delete ops[1];
@@ -996,7 +996,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_GUI
-		if (simVars.misc.gui_enabled)
+		if (shackDict.misc.gui_enabled)
 		{
 			SimulationInstance *simulationBurgers = new SimulationInstance;
 			VisSweet<SimulationInstance> visSweet(simulationBurgers);
@@ -1039,20 +1039,20 @@ int main(int i_argc, char *i_argv[])
 
 			double seconds = time();
 
-			if (simVars.iodata.output_file_name.size() > 0)
+			if (shackDict.iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << simulationBurgers->output_filenames << std::endl;
 
 			//End of output results
 			std::cout << "Simulation time (seconds): " << seconds << std::endl;
-			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-			std::cout << "Time per time step: " << seconds/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+			std::cout << "Number of time steps: " << shackDict.timecontrol.current_timestep_nr << std::endl;
+			std::cout << "Time per time step: " << seconds/(double)shackDict.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+			std::cout << "Last time step size: " << shackDict.timecontrol.current_timestep_size << std::endl;
 
-			if (simVars.misc.verbosity > 0)
+			if (shackDict.misc.verbosity > 0)
 			{
-				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(simVars.diag.total_energy-simulationBurgers->diagnostics_energy_start) << std::endl;
+				std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs(shackDict.diag.total_energy-simulationBurgers->diagnostics_energy_start) << std::endl;
 
-				if (simVars.misc.compute_errors)
+				if (shackDict.misc.compute_errors)
 				{
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationBurgers->benchmark.benchmark_analytical_error_maxabs_u << std::endl;
 					std::cout << "DIAGNOSTICS BENCHMARK DIFF V:\t" << simulationBurgers->benchmark.benchmark_analytical_error_maxabs_v << std::endl;

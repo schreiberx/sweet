@@ -857,7 +857,7 @@ public:
 			 * Advection e.g. has only one
 			 */
 			if (number_of_prognostic_variables <= 0)
-				SWEETError("simVars.pde.number_of_prognostic_variables must be set!");
+				SWEETError("shackDict.pde.number_of_prognostic_variables must be set!");
 
 			if (number_of_prognostic_variables == 3)
 			{
@@ -875,15 +875,15 @@ public:
 			}
 
 #if 0
-			if (i_simVars.disc.timestepping_method == SimulationVariables::Discretization::LEAPFROG_EXPLICIT)
+			if (i_shackDict.disc.timestepping_method == sweet::ShackDictionary::Discretization::LEAPFROG_EXPLICIT)
 			{
 				SWEETError("Not yet tested and supported");
 				std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
 				std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
 				std::cout << "Therefore, we also halve the time step size here" << std::endl;
 
-				shackTimestepControl->current_timestep_size = 0.5*i_simVars.sim.CFL;
-				i_simVars.sim.CFL = -shackTimestepControl->current_timestep_size;
+				shackTimestepControl->current_timestep_size = 0.5*i_shackDict.sim.CFL;
+				i_shackDict.sim.CFL = -shackTimestepControl->current_timestep_size;
 			}
 #endif
 

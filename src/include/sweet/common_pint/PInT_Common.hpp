@@ -44,8 +44,8 @@ protected:
 	std::vector<PlaneOperators*> op_plane;
 	std::vector<PlaneDataConfig*> planeDataConfig;
 #elif SWEET_PARAREAL_SPHERE || SWEET_XBRAID_SPHERE
-	std::vector<SphereOperators_SphereData*> op_sphere;
-	std::vector<SphereOperators_SphereData*> op_sphere_nodealiasing;
+	std::vector<SphereOperators*> op_sphere;
+	std::vector<SphereOperators*> op_sphere_nodealiasing;
 	std::vector<SphereData_Config*> sphereDataConfig;
 #endif
 

@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/core/plane/sweet::PlaneData_Spectral.hpp>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 
 #include "../burgers_benchmarks/BurgersValidationBenchmarks.hpp"
@@ -20,13 +20,13 @@
 
 class Burgers_Plane_TS_l_cn	: public Burgers_Plane_TS_interface
 {
-	SimulationVariables &simVars;
+	sweet::ShackDictionary &shackDict;
 	PlaneOperators &op;
 
 
 public:
 	Burgers_Plane_TS_l_cn(
-			SimulationVariables &i_simVars,
+			sweet::ShackDictionary &i_shackDict,
 			PlaneOperators &i_op
 		);
 

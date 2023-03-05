@@ -30,12 +30,15 @@
 
 
 
+namespace sweet
+{
+
 class SphereData_Physical
 {
 	friend class SphereData_SpectralComplex;
 
 public:
-	const SphereData_Config *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 public:
 	double *physical_space_data;
@@ -52,7 +55,7 @@ public:
 
 public:
 	SphereData_Physical(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)
 		sphereDataConfig(i_sphereDataConfig),
@@ -64,7 +67,7 @@ public:
 
 public:
 	SphereData_Physical(
-			const SphereData_Config *i_sphereDataConfig,
+			const SphereDataConfig *i_sphereDataConfig,
 			double i_value
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)
@@ -119,7 +122,7 @@ public:
 	 */
 public:
 	inline void check(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
@@ -385,24 +388,34 @@ public:
 
 
 public:
-	void setup(
-			const SphereData_Config *i_sphereDataConfig
+	bool setup(
+		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)
 			SWEETError("Setup called twice!");
 
 		sphereDataConfig = i_sphereDataConfig;
-		alloc_data();
+		return alloc_data();
+	}
+
+
+public:
+	bool setup(
+		const SphereDataConfig &i_sphereDataConfig
+	)
+	{
+		return setup(&i_sphereDataConfig);
 	}
 
 
 
 private:
-	void alloc_data()
+	bool alloc_data()
 	{
 		assert(physical_space_data == nullptr);
 		physical_space_data = MemBlockAlloc::alloc<double>(sphereDataConfig->physical_array_data_number_of_elements * sizeof(double));
+		return true;
 	}
 
 
@@ -410,7 +423,7 @@ private:
 
 public:
 	void setup_if_required(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)
@@ -425,12 +438,12 @@ public:
 public:
 	~SphereData_Physical()
 	{
-		free();
+		clear();
 	}
 
 
 public:
-	void free()
+	void clear()
 	{
 		if (physical_space_data != nullptr)
 		{
@@ -1424,7 +1437,7 @@ SphereData_Physical operator+(
 	return i_array_data+i_value;
 }
 
-
+}
 
 
 #endif

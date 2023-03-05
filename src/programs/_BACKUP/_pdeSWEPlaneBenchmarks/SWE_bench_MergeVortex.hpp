@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 #include <cmath>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 
@@ -31,14 +31,14 @@
  **/
 class SWE_bench_MergeVortex
 {
-	SimulationVariables &simVars;
+	sweet::ShackDictionary &shackDict;
 
 	PlaneOperators &op;
 
-	double f = simVars.sim.plane_rotating_f0;
-	double g = simVars.sim.gravitation;
-	double sx = simVars.sim.plane_domain_size[0];
-	double sy = simVars.sim.plane_domain_size[1];
+	double f = shackDict.sim.plane_rotating_f0;
+	double g = shackDict.sim.gravitation;
+	double sx = shackDict.sim.plane_domain_size[0];
+	double sy = shackDict.sim.plane_domain_size[1];
 
 
 	double stream(
@@ -47,8 +47,8 @@ class SWE_bench_MergeVortex
 			)
 	{
 
-		//double radius = simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
-		double radius = 1; //simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		//double radius = shackDict.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		double radius = 1; //shackDict.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 		double factor = 500.0;
 
 		//Andrew's parameters
@@ -91,14 +91,14 @@ class SWE_bench_MergeVortex
 
 		PlaneData_Physical psi_phys(o_psi.planeDataConfig);
 
-		for (int j = 0; j < simVars.disc.space_res_physical[1]; j++)
+		for (int j = 0; j < shackDict.disc.space_res_physical[1]; j++)
 		{
-			for (int i = 0; i < simVars.disc.space_res_physical[0]; i++)
+			for (int i = 0; i < shackDict.disc.space_res_physical[0]; i++)
 			{
 
 				// h - lives in the center of the cell
-				double x = (((double)i+0.5)/(double)simVars.disc.space_res_physical[0])*simVars.sim.plane_domain_size[0];
-				double y = (((double)j+0.5)/(double)simVars.disc.space_res_physical[1])*simVars.sim.plane_domain_size[1];
+				double x = (((double)i+0.5)/(double)shackDict.disc.space_res_physical[0])*shackDict.sim.plane_domain_size[0];
+				double y = (((double)j+0.5)/(double)shackDict.disc.space_res_physical[1])*shackDict.sim.plane_domain_size[1];
 
 				psi_phys.physical_set_value(j, i, stream(x, y));
 			}
@@ -111,10 +111,10 @@ class SWE_bench_MergeVortex
 
 public:
 	SWE_bench_MergeVortex(
-		SimulationVariables &io_simVars,
+		sweet::ShackDictionary &io_shackDict,
 		PlaneOperators &io_op
 	)	:
-		simVars(io_simVars),
+		shackDict(io_shackDict),
 		op(io_op)
 	{
 	}

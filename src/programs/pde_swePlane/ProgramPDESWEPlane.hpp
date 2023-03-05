@@ -1046,14 +1046,14 @@ public:
 			bool *viz_reset
 	)
 	{
-		if (simVars.misc.vis_id < 0)
+		if (shackDict.misc.vis_id < 0)
 		{
 			// Analytical solution at specific time on A-grid
 			sweet::PlaneData_Physical ts_h_pert = t0_prog_h_pert;
 			sweet::PlaneData_Physical ts_u = t0_prog_u;
 			sweet::PlaneData_Physical ts_v = t0_prog_v;
 
-			if (simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
+			if (shackDict.misc.vis_id == -1 || shackDict.misc.vis_id == -2 )
 			{
 				//Missing to setup REXIFunctions, so invalid phi function set
 
@@ -1066,7 +1066,7 @@ public:
 
 			}
 
-			switch(simVars.misc.vis_id)
+			switch(shackDict.misc.vis_id)
 			{
 			case -1:
 				vis = ts_h_pert+shackPDESWEPlane->h0;			//Exact linear solution
@@ -1102,7 +1102,7 @@ public:
 			return;
 		}
 
-		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		int id = shackDict.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 
 		if (id == 0)
 		{
@@ -1128,14 +1128,14 @@ public:
 		update_diagnostics();
 
 		const char* description = "";
-		if (simVars.misc.vis_id >= 0)
+		if (shackDict.misc.vis_id >= 0)
 		{
-			int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+			int id = shackDict.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 			description = vis_arrays[id].description;
 		}
 		else
 		{
-			switch (simVars.misc.vis_id)
+			switch (shackDict.misc.vis_id)
 			{
 			case -1:
 				description = "Direct solution for h (linear only)";
@@ -1198,11 +1198,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			simVars.misc.vis_id++;
+			shackDict.misc.vis_id++;
 			break;
 
 		case 'V':
-			simVars.misc.vis_id--;
+			shackDict.misc.vis_id--;
 			break;
 
 		case 'c':

@@ -29,7 +29,7 @@ class SWE_Plane_TS_l_cn	: public PDESWEPlaneTS_BaseInterface
 	SWE_Plane_TS_l_irk ts_l_irk;
 
 public:
-	bool registerShacks(
+	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	);
 

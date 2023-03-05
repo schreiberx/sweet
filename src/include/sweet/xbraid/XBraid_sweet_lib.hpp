@@ -268,9 +268,9 @@ public:
 #elif SWEET_XBRAID_SPHERE
 			,
 			///SphereData_Config* i_sphereDataConfig,
-			///SphereOperators_SphereData* i_op_sphere
+			///SphereOperators* i_op_sphere
 			std::vector<SphereData_Config*> i_sphereDataConfig,
-			std::vector<SphereOperators_SphereData*> i_op_sphere
+			std::vector<SphereOperators*> i_op_sphere
 #endif
 			)
 		:

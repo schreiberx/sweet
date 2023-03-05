@@ -38,7 +38,7 @@ public:
 			sweet::PlaneOperators *io_ops
 	);
 
-	bool registerShacks(
+	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	);
 

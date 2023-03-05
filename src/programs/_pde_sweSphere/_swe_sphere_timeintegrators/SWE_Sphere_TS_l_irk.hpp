@@ -1,0 +1,126 @@
+/*
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ */
+
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_L_IRK_HPP_
+
+
+#include <complex>
+#include <sweet/core/sphere/SphereData_Spectral.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
+
+#include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "SWE_Sphere_TS_interface.hpp"
+#include "SWE_Sphere_TS_l_erk.hpp"
+#include "SWE_Sphere_TS_lg_erk.hpp"
+
+
+
+/**
+ * Implicit solver
+ */
+class SWE_Sphere_TS_l_irk	: public SWE_Sphere_TS_interface
+{
+public:
+	bool implements_timestepping_method(const std::string &i_timestepping_method
+					);
+	std::string string_id();
+	void setup_auto();
+
+	std::string timestepping_method;
+
+private:
+	/// Simulation variables
+	sweet::ShackDictionary &shackDict;
+
+	/// Operators for sphere
+	sweet::SphereOperators &ops;
+
+	/// SPH configuration
+	const sweet::SphereDataConfig *sphereDataConfig;
+
+	SWE_Sphere_TS_lg_erk *lg_erk = nullptr;
+	SWE_Sphere_TS_l_erk *l_erk = nullptr;
+
+	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverDiv;
+
+	// Order of time stepping.
+	int timestepping_order;
+
+	double crank_nicolson_damping_factor;
+
+	/// timestep size
+	double timestep_size;
+
+	/// individual time step size
+	double dt_explicit = -1;
+	double dt_implicit = -1;
+
+	/// earth radius
+	double sphere_radius;
+
+	bool use_f_sphere;
+
+	bool no_coriolis;
+
+	/// f0
+	double f0;
+
+	/// Coriolis effect
+	double two_coriolis;
+
+	sweet::SphereData_Physical mug;
+
+public:
+	SWE_Sphere_TS_l_irk(
+			sweet::ShackDictionary &i_shackDict,
+			sweet::SphereOperators &i_op
+	);
+
+private:
+	void update_coefficients(double i_timestep_size);
+
+
+public:
+	void setup(
+			int i_timestep_order,
+			double i_timestep_size,
+			double i_crank_nicolson_damping_factor,
+			bool i_no_coriolis
+	);
+
+public:
+	void setup(
+			int i_timestep_order,
+			double i_timestep_size
+	);
+
+public:
+	void free();
+
+public:
+	void run_timestep(
+			sweet::SphereData_Spectral &io_phi,
+			sweet::SphereData_Spectral &io_vrt,
+			sweet::SphereData_Spectral &io_div,
+
+			double i_fixed_dt = 0,
+			double i_simulation_timestamp = -1
+	);
+
+	void solveImplicit(
+		sweet::SphereData_Spectral &io_phi,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
+
+		double dt
+	);
+
+
+	virtual ~SWE_Sphere_TS_l_irk();
+};
+
+
+#endif

@@ -14,12 +14,12 @@
 
 
 
-bool SWE_Plane_TS_l_irk_n_erk::registerShacks(
+bool SWE_Plane_TS_l_irk_n_erk::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	ts_l_irk.registerShacks(io_shackDict);
-	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+	ts_l_irk.shackRegistration(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
 
 	return true;
 }

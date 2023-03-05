@@ -35,22 +35,22 @@ void Burgers_Plane_TS_l_irk::run_timestep(
 	sweet::PlaneData_Spectral rhs_u = io_u;
 	sweet::PlaneData_Spectral rhs_v = io_v;
 
-	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
+	if (shackDict.disc.space_use_spectral_basis_diffs) //spectral
 	{
 		sweet::PlaneData_Spectral lhs = io_u;
 
 		if (timestepping_order == 1)
 		{
-			lhs = ((-i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			lhs = ((-i_fixed_dt)*shackDict.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 
 			io_u = rhs_u.spectral_div_element_wise(lhs);
 			io_v = rhs_v.spectral_div_element_wise(lhs);
 		}
 		else if (timestepping_order ==2)
 		{
-			rhs_u = simVars.sim.viscosity*(op.diff2_c_x(rhs_u) + op.diff2_c_y(rhs_u));
-			rhs_v = simVars.sim.viscosity*(op.diff2_c_x(rhs_v) + op.diff2_c_y(rhs_v));
-			lhs = ((-0.5*i_fixed_dt)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			rhs_u = shackDict.sim.viscosity*(op.diff2_c_x(rhs_u) + op.diff2_c_y(rhs_u));
+			rhs_v = shackDict.sim.viscosity*(op.diff2_c_x(rhs_v) + op.diff2_c_y(rhs_v));
+			lhs = ((-0.5*i_fixed_dt)*shackDict.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 
 			sweet::PlaneData_Spectral k1_u = rhs_u.spectral_div_element_wise(lhs);
 			sweet::PlaneData_Spectral k1_v = rhs_v.spectral_div_element_wise(lhs);
@@ -81,13 +81,13 @@ void Burgers_Plane_TS_l_irk::setup(
 
 
 Burgers_Plane_TS_l_irk::Burgers_Plane_TS_l_irk(
-		SimulationVariables &i_simVars,
+		sweet::ShackDictionary &i_shackDict,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
+		shackDict(i_shackDict),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
+	setup(shackDict.disc.timestepping_order);
 }
 
 

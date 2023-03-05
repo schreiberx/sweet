@@ -9,7 +9,7 @@
 #define SRC_PROGRAMS_BURGERS_PLANE_TS_L_IRK_N_SL_HPP_
 
 #include <limits>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/sweet::PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
@@ -23,7 +23,7 @@
 
 class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
 {
-	SimulationVariables &simVars;
+	sweet::ShackDictionary &shackDict;
 	PlaneOperators &op;
 
 	// Arrival points for semi-lag
@@ -42,7 +42,7 @@ class Burgers_Plane_TS_l_irk_n_sl	: public Burgers_Plane_TS_interface
 
 public:
 	Burgers_Plane_TS_l_irk_n_sl(
-			SimulationVariables &i_simVars,
+			sweet::ShackDictionary &i_shackDict,
 			PlaneOperators &i_op
 		);
 
@@ -64,7 +64,7 @@ public:
 				sweet::PlaneData_Spectral &i_v_prev
 	) override
 	{
-		if (simVars.misc.verbosity > 5)
+		if (shackDict.misc.verbosity > 5)
 			std::cout << "set_previous_solution()" << std::endl;
 		u_prev = i_u_prev;
 		v_prev = i_v_prev;

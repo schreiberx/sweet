@@ -10,7 +10,7 @@
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 	#include "PDESWEPlaneBenchPolvani.hpp"
@@ -40,7 +40,7 @@ public:
 	sweet::ErrorBase error;
 
 	// Simulation variables
-	//SimulationVariables *simVars;
+	//sweet::ShackDictionary *shackDict;
 
 	// plane or sphere data config
 	const void* ext_forces_data_config;

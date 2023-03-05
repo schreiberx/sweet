@@ -16,7 +16,7 @@ void c_sweet_data_create(
 		int            *o_size
 )
 {
-	sweet::SphereData_Config *Y_config = i_ctx->get_sphere_data_config();
+	sweet::SphereDataConfig *Y_config = i_ctx->get_sphere_data_config();
 
 	// create the SphereDataVars object
 	*o_Y  = new SphereDataVars(
@@ -24,9 +24,9 @@ void c_sweet_data_create(
 			i_level
 	);
 
-	SphereData_Spectral& phi_pert  = (*o_Y)->get_phi_pert();
-	SphereData_Spectral& vrt = (*o_Y)->get_vrt();
-	SphereData_Spectral& div  = (*o_Y)->get_div();
+	sweet::SphereData_Spectral& phi_pert  = (*o_Y)->get_phi_pert();
+	sweet::SphereData_Spectral& vrt = (*o_Y)->get_vrt();
+	sweet::SphereData_Spectral& div  = (*o_Y)->get_div();
 
 	// initialize the SphereDataSpectral vectors
 	phi_pert.spectral_set_zero();
@@ -53,9 +53,9 @@ void c_sweet_data_setval(
 		double i_val
 )
 {
-	SphereData_Spectral& phi_pert  = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt = io_Y->get_vrt();
-	SphereData_Spectral& div  = io_Y->get_div();
+	sweet::SphereData_Spectral& phi_pert  = io_Y->get_phi_pert();
+	sweet::SphereData_Spectral& vrt = io_Y->get_vrt();
+	sweet::SphereData_Spectral& div  = io_Y->get_div();
 
 
 	phi_pert.spectral_set_zero();
@@ -84,9 +84,9 @@ void c_sweet_data_copy(SphereDataVars *i_src,
 	const SphereData_Spectral& vrt_src  = i_src->get_vrt();
 	const SphereData_Spectral& div_src  = i_src->get_div();
 
-	SphereData_Spectral&       phi_pert_dst  = o_dst->get_phi_pert();
-	SphereData_Spectral&       vrt_dst  = o_dst->get_vrt();
-	SphereData_Spectral&       div_dst  = o_dst->get_div();
+	sweet::SphereData_Spectral&       phi_pert_dst  = o_dst->get_phi_pert();
+	sweet::SphereData_Spectral&       vrt_dst  = o_dst->get_vrt();
+	sweet::SphereData_Spectral&       div_dst  = o_dst->get_div();
 
 	phi_pert_dst  = phi_pert_src;
 	vrt_dst = vrt_src;
@@ -110,9 +110,9 @@ void c_sweet_data_pack(
 		double **o_flat_data_ptr
 )
 {
-	SphereData_Spectral& phi_pert  = io_Y->get_phi_pert();
-	SphereData_Spectral& vrt  = io_Y->get_vrt();
-	SphereData_Spectral& div  = io_Y->get_div();
+	sweet::SphereData_Spectral& phi_pert  = io_Y->get_phi_pert();
+	sweet::SphereData_Spectral& vrt  = io_Y->get_vrt();
+	sweet::SphereData_Spectral& div  = io_Y->get_div();
 
 
 	// allocate the flat data array
@@ -163,7 +163,7 @@ void c_sweet_data_unpack(
 	// copy the values into physical_space_data array
 
 	// phi_pert
-	SphereData_Spectral& phi_pert = o_Y->get_phi_pert();
+	sweet::SphereData_Spectral& phi_pert = o_Y->get_phi_pert();
 	for (int i = 0; i < phi_pert.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
 		phi_pert.spectral_space_data[i] = std::complex<double>(
@@ -174,7 +174,7 @@ void c_sweet_data_unpack(
 	}
 
 	// vrt
-	SphereData_Spectral& vrt = o_Y->get_vrt();
+	sweet::SphereData_Spectral& vrt = o_Y->get_vrt();
 	for (int i = 0; i < vrt.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
 		vrt.spectral_space_data[i] = std::complex<double>(
@@ -185,7 +185,7 @@ void c_sweet_data_unpack(
 	}
 
 	// div
-	SphereData_Spectral& div = o_Y->get_div();
+	sweet::SphereData_Spectral& div = o_Y->get_div();
 	for (int i = 0; i < div.sphereDataConfig->spectral_array_data_number_of_elements; ++i)
 	{
 		div.spectral_space_data[i] = std::complex<double>(
@@ -208,9 +208,9 @@ void c_sweet_data_saxpy(
 	const SphereData_Spectral& vrt_x = i_X->get_vrt();
 	const SphereData_Spectral& div_x  = i_X->get_div();
 
-	SphereData_Spectral&       phi_pert_y  = io_Y->get_phi_pert();
-	SphereData_Spectral&       vrt_y = io_Y->get_vrt();
-	SphereData_Spectral&       div_y  = io_Y->get_div();
+	sweet::SphereData_Spectral&       phi_pert_y  = io_Y->get_phi_pert();
+	sweet::SphereData_Spectral&       vrt_y = io_Y->get_vrt();
+	sweet::SphereData_Spectral&       div_y  = io_Y->get_div();
 
 	phi_pert_y  = i_a * phi_pert_x  + phi_pert_y;
 	vrt_y = i_a * vrt_x + vrt_y;

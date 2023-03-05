@@ -3,26 +3,26 @@
 
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereHelpers_Diagnostics.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 #include <vector>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include "../libpfasst_interface/LevelSingleton.hpp"
 
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk_lc_n_erk.hpp"
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_lg_irk.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
-// Currently only contains a pointer to the level singletons and the SimulationVariables object
+// Currently only contains a pointer to the level singletons and the sweet::ShackDictionary object
 
 class SphereDataCtx {
 
 public:
 
     // Constructor
-    SphereDataCtx(SimulationVariables *i_simVars,
+    SphereDataCtx(sweet::ShackDictionary *i_shackDict,
                   std::vector<LevelSingleton> *i_singletons,
                   int* i_nnodes) : 
-                  simVars(i_simVars),
+                  shackDict(i_shackDict),
                   levelSingletons(i_singletons)
     {
         int rank   = 0;
@@ -31,9 +31,9 @@ public:
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-        if (!simVars) 
+        if (!shackDict) 
         {
-            SWEETError("SphereDataCtx: simVars pointer is NULL!");
+            SWEETError("SphereDataCtx: shackDict pointer is NULL!");
         }
 
         if (!levelSingletons) 
@@ -42,7 +42,7 @@ public:
         }
         
         // use first order integration in time for all pieces (only order supported)
-        if (simVars->disc.timestepping_order != -1)
+        if (shackDict->disc.timestepping_order != -1)
         {
             std::cout << "WARNING: Supplying the timestepping order manually is not supported!" << std::endl;
         }
@@ -58,11 +58,11 @@ public:
         // initialize timesteppers for each level
         for (unsigned int level = 0; level < levelSingletons->size(); ++level) 
         {
-            timestepper_lg_erk_lc_n_erk[level] = new SWE_Sphere_TS_lg_erk_lc_n_erk(*simVars, levelSingletons->at(level).op);
+            timestepper_lg_erk_lc_n_erk[level] = new SWE_Sphere_TS_lg_erk_lc_n_erk(*shackDict, levelSingletons->at(level).op);
             timestepper_lg_erk_lc_n_erk[level]->setup(timestepping_order, version_id);
                 
-            timestepper_lg_irk[level] = new SWE_Sphere_TS_lg_irk(*simVars, levelSingletons->at(level).op);
-            timestepper_lg_irk[level]->setup(timestepping_order, simVars->timecontrol.current_timestep_size);
+            timestepper_lg_irk[level] = new SWE_Sphere_TS_lg_irk(*shackDict, levelSingletons->at(level).op);
+            timestepper_lg_irk[level]->setup(timestepping_order, shackDict->timecontrol.current_timestep_size);
         }
         
         // initialize the residuals
@@ -71,7 +71,7 @@ public:
         // initialize the diagnostics object
         sphereDiagnostics = new SphereHelpers_Diagnostics(
                                 &(levelSingletons->back().dataConfig),
-                                *simVars,
+                                *shackDict,
                                 0);
     }
 
@@ -108,13 +108,13 @@ public:
     }
 
     // Getter for the sphere data operators at level i_level
-    SphereOperators_SphereData* get_sphere_operators(int i_level) const
+    SphereOperators* get_sphere_operators(int i_level) const
     {
         return &(levelSingletons->at(i_level).op);
     }
 
     // Getter for the sphere data operators with no dealiasing at the fine level
-    SphereOperators_SphereData* get_sphere_operators_nodealiasing() const
+    SphereOperators* get_sphere_operators_nodealiasing() const
     {
         return &(levelSingletons->back().opNoDealiasing);
     }
@@ -138,9 +138,9 @@ public:
     }
 
     // Getter for the simulationVariables object
-    SimulationVariables* get_simulation_variables() const 
+    sweet::ShackDictionary* get_simulation_variables() const 
     { 
-        return simVars;
+        return shackDict;
     }
 
     // Getter for the number of levels
@@ -152,10 +152,10 @@ public:
     // Save the physical invariants
     void save_physical_invariants(int i_niter) 
     {
-        time.push_back(simVars->timecontrol.current_timestep_size * i_niter);
-        mass.push_back(simVars->diag.total_mass);
-        energy.push_back(simVars->diag.total_energy);
-        potentialEnstrophy.push_back(simVars->diag.total_potential_enstrophy);
+        time.push_back(shackDict->timecontrol.current_timestep_size * i_niter);
+        mass.push_back(shackDict->diag.total_mass);
+        energy.push_back(shackDict->diag.total_energy);
+        potentialEnstrophy.push_back(shackDict->diag.total_potential_enstrophy);
     }
 
     // Getters for the time and invariants vectors
@@ -170,8 +170,8 @@ public:
     
 protected:
 
-    // Pointer to the SimulationVariables object
-    SimulationVariables *simVars;
+    // Pointer to the sweet::ShackDictionary object
+    sweet::ShackDictionary *shackDict;
 
     // Pointer to the LevelSingletons vector
     std::vector<LevelSingleton> *levelSingletons;

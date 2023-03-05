@@ -48,7 +48,7 @@ public:
 	 * initialize OpenGL buffers to render a sphere with the given parameters
 	 */
 	void initBuffers(
-			sweet::SphereData_Config *i_sphereDataConfig
+			sweet::SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		int hsegments = i_sphereDataConfig->physical_num_lon;
@@ -189,7 +189,7 @@ public:
 	 * initialize buffers to render sphere with given parameters
 	 */
 	void initSphere(
-			sweet::SphereData_Config *i_sphereDataConfig
+			sweet::SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		initBuffers(i_sphereDataConfig);

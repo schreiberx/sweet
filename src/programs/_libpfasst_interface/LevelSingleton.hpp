@@ -3,7 +3,7 @@
 
 #include "../swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 
 // Class to store the configurations and operators at each level
 
@@ -13,10 +13,10 @@ class LevelSingleton
 public:
   
   int              level;
-  sweet::SphereData_Config dataConfig;
-  sweet::SphereData_Config dataConfigNoDealiasing;
-  SphereOperators_SphereData  op;
-  SphereOperators_SphereData  opNoDealiasing;
+  sweet::SphereDataConfig dataConfig;
+  sweet::SphereDataConfig dataConfigNoDealiasing;
+  SphereOperators  op;
+  SphereOperators  opNoDealiasing;
 
   BenchmarksSphereSWE benchmarks;
 };

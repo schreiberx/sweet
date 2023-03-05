@@ -8,7 +8,7 @@
 
 #include <sweet/core/SimulationVariables.hpp>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
 #include <sweet/core/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 
@@ -19,8 +19,8 @@
 
 
 // Sphere data config
-sweet::SphereData_Config sphereDataConfigInstance;
-sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
+sweet::SphereDataConfig sphereDataConfigInstance;
+sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
 
 
 SimulationVariables simVars;
@@ -37,7 +37,7 @@ public:
 
 	SphereAdvectionTimeSteppers timeSteppers;
 
-	SphereOperators_SphereData op;
+	SphereOperators op;
 
 	bool time_varying_fields;
 
@@ -98,7 +98,7 @@ public:
 
 		sphereBenchmarks.setup(simVars, op);
 
-		int num_field_variables = sphereBenchmarks.master->get_num_prognostic_fields();
+		int num_field_variables = sphereBenchmarks.master->getNumPrognosticFields();
 
 		free_prognostic_variables();
 		alloc_prognostic_variables(num_field_variables);

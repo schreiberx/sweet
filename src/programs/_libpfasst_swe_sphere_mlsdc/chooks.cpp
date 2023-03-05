@@ -13,24 +13,24 @@ bool timestep_check_output(SphereDataCtx *i_ctx,
     }
 
     // get the simulation variables
-    SimulationVariables* simVars = i_ctx->get_simulation_variables();
+    sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
-    if (simVars->iodata.output_each_sim_seconds < 0) {
+    if (shackDict->iodata.output_each_sim_seconds < 0) {
         // write no output between start and end of simulation
         return false;
     }
 
-    if (simVars->iodata.output_each_sim_seconds == 0) {
+    if (shackDict->iodata.output_each_sim_seconds == 0) {
         // write output at every time step
         return true;
     }
 
-    if (simVars->timecontrol.current_simulation_time < simVars->iodata.output_next_sim_seconds) {
+    if (shackDict->timecontrol.current_simulation_time < shackDict->iodata.output_next_sim_seconds) {
         // we have not reached the next output time step
         return false;
     }
 
-    if (simVars->timecontrol.max_simulation_time - simVars->timecontrol.current_simulation_time < 1e-3) {
+    if (shackDict->timecontrol.max_simulation_time - shackDict->timecontrol.current_simulation_time < 1e-3) {
         // do not write output if final time step is reached
         // (output will be written in cfinal anyways)
         return false;
@@ -76,13 +76,13 @@ extern "C"
         const int level = i_Y->get_level();
 
         // get the simulation variables
-        SimulationVariables* simVars         = i_ctx->get_simulation_variables();
+        sweet::ShackDictionary* shackDict         = i_ctx->get_simulation_variables();
 
         // get the SphereDiagnostics object from context
         SphereHelpers_Diagnostics* sphereDiagnostics = i_ctx->get_sphere_diagnostics();
 
         // get the SphereOperators object from context
-        SphereOperators_SphereData* sphereOperators     = i_ctx->get_sphere_operators(level);
+        SphereOperators* sphereOperators     = i_ctx->get_sphere_operators(level);
 
         // compute the invariants
         sphereDiagnostics->update_phi_vrt_div_2_mass_energy_enstrophy(
@@ -90,15 +90,15 @@ extern "C"
                                        phi_pert_Y,
                                        vrt_Y,
                                        div_Y,
-                                       *simVars
+                                       *shackDict
                                        );
 
         std::cout << "[MULE] libpfasst.mass_s" << std::setfill('0') << std::setw(5) << i_current_step;
-        std::cout <<  " = " << std::setprecision(20) << simVars->diag.total_mass << std::endl;
+        std::cout <<  " = " << std::setprecision(20) << shackDict->diag.total_mass << std::endl;
         std::cout << "[MULE] libpfasst.energy_s" << std::setfill('0') << std::setw(5) << i_current_step;
-        std::cout << " = " << std::setprecision(20) << simVars->diag.total_energy << std::endl;
+        std::cout << " = " << std::setprecision(20) << shackDict->diag.total_energy << std::endl;
         std::cout << "[MULE] libpfasst.potential_enstrophy_s" << std::setfill('0') << std::setw(5) << i_current_step;
-        std::cout << " = " << std::setprecision(20) << simVars->diag.total_potential_enstrophy << std::endl;
+        std::cout << " = " << std::setprecision(20) << shackDict->diag.total_potential_enstrophy << std::endl;
 
         // save the invariants for plotting at the end
         i_ctx->save_physical_invariants(i_current_step);
@@ -115,12 +115,12 @@ extern "C"
                                )
     {
         // get the pointer to the Simulation Variables object
-        SimulationVariables* simVars = i_ctx->get_simulation_variables();
+        sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
         // update timecontrol information
-        simVars->timecontrol.current_timestep_nr = i_current_step + 1;
-        auto current_dt = simVars->timecontrol.current_timestep_size;
-        simVars->timecontrol.current_simulation_time = (i_current_step + 1) * current_dt;
+        shackDict->timecontrol.current_timestep_nr = i_current_step + 1;
+        auto current_dt = shackDict->timecontrol.current_timestep_size;
+        shackDict->timecontrol.current_simulation_time = (i_current_step + 1) * current_dt;
 
         // check if we should write output
         if (!timestep_check_output(i_ctx, i_current_iter, i_niters)) {
@@ -128,7 +128,7 @@ extern "C"
         }
 
         // update when to write output the next time
-        simVars->iodata.output_next_sim_seconds += simVars->iodata.output_each_sim_seconds;
+        shackDict->iodata.output_next_sim_seconds += shackDict->iodata.output_each_sim_seconds;
 
         const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
         const SphereData_Spectral& vrt_Y = i_Y->get_vrt();

@@ -36,13 +36,13 @@ extern "C"
         const SphereData_Spectral& div_Y  = i_Y->get_div();
 
         // get the simulation variables
-        SimulationVariables* simVars         = i_ctx->get_simulation_variables();
+        sweet::ShackDictionary* shackDict         = i_ctx->get_simulation_variables();
 
         // get the SphereDiagnostics object from context
         SphereHelpers_Diagnostics* sphereDiagnostics = i_ctx->get_sphere_diagnostics();
 
         // get the SphereOperators object from context
-        SphereOperators_SphereData* sphereOperators     = i_ctx->get_sphere_operators();
+        SphereOperators* sphereOperators     = i_ctx->get_sphere_operators();
 
         // compute the invariants
         sphereDiagnostics->update_phi_vrt_div_2_mass_energy_enstrophy(
@@ -50,15 +50,15 @@ extern "C"
                                        phi_pert_Y,
                                        vrt_Y,
                                        div_Y,
-                                       *simVars
+                                       *shackDict
                                        );
 
         std::cout << "[MULE] libpfasst.mass_s" << std::setfill('0') << std::setw(5) << i_current_step;
-        std::cout <<  " = " << std::setprecision(20) << simVars->diag.total_mass << std::endl;
+        std::cout <<  " = " << std::setprecision(20) << shackDict->diag.total_mass << std::endl;
         std::cout << "[MULE] libpfasst.energy_s" << std::setfill('0') << std::setw(5) << i_current_step;
-        std::cout << " = " << std::setprecision(20) << simVars->diag.total_energy << std::endl;
+        std::cout << " = " << std::setprecision(20) << shackDict->diag.total_energy << std::endl;
         std::cout << "[MULE] libpfasst.potential_enstrophy_s" << std::setfill('0') << std::setw(5) << i_current_step;
-        std::cout << " = " << std::setprecision(20) << simVars->diag.total_potential_enstrophy << std::endl;
+        std::cout << " = " << std::setprecision(20) << shackDict->diag.total_potential_enstrophy << std::endl;
 
         // save the invariants for plotting at the end
         i_ctx->save_physical_invariants(i_current_step);
@@ -74,12 +74,12 @@ extern "C"
                                )
     {
         // get the pointer to the Simulation Variables object
-        SimulationVariables* simVars = i_ctx->get_simulation_variables();
+        sweet::ShackDictionary* shackDict = i_ctx->get_simulation_variables();
 
         // update timecontrol information
-        simVars->timecontrol.current_timestep_nr = i_current_step + 1;
-        auto current_dt = simVars->timecontrol.current_timestep_size;
-        simVars->timecontrol.current_simulation_time = (i_current_step + 1) * current_dt;
+        shackDict->timecontrol.current_timestep_nr = i_current_step + 1;
+        auto current_dt = shackDict->timecontrol.current_timestep_size;
+        shackDict->timecontrol.current_simulation_time = (i_current_step + 1) * current_dt;
 
         // check if we should write output
         if (!timestep_check_output(i_ctx, i_current_iter, i_niters)) {
@@ -87,7 +87,7 @@ extern "C"
         }
 
         // update when to write output the next time
-        simVars->iodata.output_next_sim_seconds += simVars->iodata.output_each_sim_seconds;
+        shackDict->iodata.output_next_sim_seconds += shackDict->iodata.output_each_sim_seconds;
 
         const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
         const SphereData_Spectral& vrt_Y = i_Y->get_vrt();

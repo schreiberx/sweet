@@ -124,7 +124,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 			posx_d,	posy_d,			// output
 			shackPlaneDataOps->plane_domain_size,
 			&staggering,
-			2, //simVars.disc.timestepping_order,
+			2, //shackDict.disc.timestepping_order,
 
 			shackPDESWETimeDisc->semi_lagrangian_max_iterations,
 			shackPDESWETimeDisc->semi_lagrangian_convergence_threshold
@@ -317,42 +317,42 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 
 
 
-bool SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::registerShacks(
+bool SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
 
-	ts_phi0_rexi.registerShacks(io_shackDict);
+	ts_phi0_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi0_rexi);
 
-	ts_phi1_rexi.registerShacks(io_shackDict);
+	ts_phi1_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi1_rexi);
 
-	ts_phi2_rexi.registerShacks(io_shackDict);
+	ts_phi2_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi2_rexi);
 
 
-	ts_ups0_rexi.registerShacks(io_shackDict);
+	ts_ups0_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups0_rexi);
 
-	ts_ups1_rexi.registerShacks(io_shackDict);
+	ts_ups1_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups1_rexi);
 
-	ts_ups2_rexi.registerShacks(io_shackDict);
+	ts_ups2_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups2_rexi);
 
-	ts_ups3_rexi.registerShacks(io_shackDict);
+	ts_ups3_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups3_rexi);
 
 
-	ts_psi1_rexi.registerShacks(io_shackDict);
+	ts_psi1_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi1_rexi);
 
-	ts_psi2_rexi.registerShacks(io_shackDict);
+	ts_psi2_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi2_rexi);
 
-	ts_psi3_rexi.registerShacks(io_shackDict);
+	ts_psi3_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi3_rexi);
 
 	return true;

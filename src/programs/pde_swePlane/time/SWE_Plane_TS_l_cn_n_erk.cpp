@@ -14,13 +14,13 @@
 #include <sweet/core/plane/PlaneOperatorsComplex.hpp>
 
 
-bool SWE_Plane_TS_l_cn_n_erk::registerShacks(
+bool SWE_Plane_TS_l_cn_n_erk::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
 
-	ts_l_cn.registerShacks(io_shackDict);
-	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+	ts_l_cn.shackRegistration(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
 
 	return true;
 }

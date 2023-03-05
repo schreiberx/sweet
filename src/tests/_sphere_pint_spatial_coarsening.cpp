@@ -18,11 +18,11 @@
 
 SimulationVariables simVars;
 
-sweet::SphereData_Config sphereDataConfigInstance_H;
-sweet::SphereData_Config *sphereDataConfig_H = &sphereDataConfigInstance_H;
+sweet::SphereDataConfig sphereDataConfigInstance_H;
+sweet::SphereDataConfig *sphereDataConfig_H = &sphereDataConfigInstance_H;
 
-sweet::SphereData_Config sphereDataConfigInstance_L;
-sweet::SphereData_Config *sphereDataConfig_L = &sphereDataConfigInstance_L;
+sweet::SphereDataConfig sphereDataConfigInstance_L;
+sweet::SphereDataConfig *sphereDataConfig_L = &sphereDataConfigInstance_L;
 
 
 void printTest(std::string test_name)
@@ -43,15 +43,15 @@ class Data
 {
 
 public:
-	SphereData_Config* sphereDataConfig;
-	SphereOperators_SphereData* op;
+	SphereDataConfig* sphereDataConfig;
+	SphereOperators* op;
 	BenchmarksSphereSWE sphereBenchmarks;
 	Parareal_GenericData* data = nullptr;
 
 public:
 	Data(
-		SphereData_Config* i_sphereDataConfig,
-		SphereOperators_SphereData* i_op
+		SphereDataConfig* i_sphereDataConfig,
+		SphereOperators* i_op
 		)
 		:
 			sphereDataConfig(i_sphereDataConfig),
@@ -162,8 +162,8 @@ int main(
 								simVars.parallelization.num_threads_space
 							);
 
-			SphereOperators_SphereData op_H(sphereDataConfig_H, &(simVars.sim));
-			SphereOperators_SphereData op_L(sphereDataConfig_L, &(simVars.sim));
+			SphereOperators op_H(sphereDataConfig_H, &(simVars.sim));
+			SphereOperators op_L(sphereDataConfig_L, &(simVars.sim));
 
 			Data* data_H = new Data(sphereDataConfig_H, &op_H);
 			data_H->setup();

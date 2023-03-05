@@ -404,22 +404,22 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 }
 
 
-bool SWE_Plane_TS_l_rexi_n_etdrk::registerShacks(
+bool SWE_Plane_TS_l_rexi_n_etdrk::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
 
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(*io_shackDict);
 
-	ts_phi0_rexi.registerShacks(io_shackDict);
-	ts_phi1_rexi.registerShacks(io_shackDict);
-	ts_phi2_rexi.registerShacks(io_shackDict);
+	ts_phi0_rexi.shackRegistration(io_shackDict);
+	ts_phi1_rexi.shackRegistration(io_shackDict);
+	ts_phi2_rexi.shackRegistration(io_shackDict);
 
-	ts_ups0_rexi.registerShacks(io_shackDict);
-	ts_ups1_rexi.registerShacks(io_shackDict);
-	ts_ups2_rexi.registerShacks(io_shackDict);
-	ts_ups3_rexi.registerShacks(io_shackDict);
+	ts_ups0_rexi.shackRegistration(io_shackDict);
+	ts_ups1_rexi.shackRegistration(io_shackDict);
+	ts_ups2_rexi.shackRegistration(io_shackDict);
+	ts_ups3_rexi.shackRegistration(io_shackDict);
 
 	return true;
 }

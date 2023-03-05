@@ -14,8 +14,8 @@
 #include <mpi.h>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereHelpers_Diagnostics.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include "libpfasst_interface/LevelSingleton.hpp"
 #include "libpfasst_swe_sphere_expl_sdc/SphereDataCtxSDC.hpp"
 #include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
@@ -47,7 +47,7 @@ int main(int i_argc, char *i_argv[])
 {
 	MPI_Init(&i_argc, &i_argv);
 
-	SimulationVariables simVars;
+	sweet::ShackDictionary shackDict;
 	LevelSingleton levelSingleton;
 
 	// input parameter names (specific ones for this program)
@@ -57,57 +57,57 @@ int main(int i_argc, char *i_argv[])
 	};
 
 	// set output time scale to hours
-	simVars.iodata.output_time_scale = 1.0/(60.0*60.0);
+	shackDict.iodata.output_time_scale = 1.0/(60.0*60.0);
 
-	// default values for specific input (for general input see SimulationVariables.hpp)
-	simVars.user_defined.var[0] = 1;
+	// default values for specific input (for general input see shacks/ShackDictionary.hpp)
+	shackDict.user_defined.var[0] = 1;
 
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
+	if (!shackDict.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		std::cout << "--compute-errors [0/1]Output errors (if available, default: 1)" << std::endl;
 		return -1;
 	}
 
-	if (simVars.libpfasst.nlevels != 1)
+	if (shackDict.libpfasst.nlevels != 1)
 	{
 		SWEETError("For SDC, nlevels has to be equal to 1");
 	}
 
-	simVars.libpfasst.postprocess_nsweeps();
+	shackDict.libpfasst.postprocess_nsweeps();
 
 	// set up LevelSingleton
 	levelSingleton.level = 0;
 	levelSingleton.dataConfig.setupAuto(
-			simVars.disc.space_res_physical,
-			simVars.disc.space_res_spectral,
-			simVars.misc.reuse_spectral_transformation_plans,
-			simVars.misc.verbosity,
-			simVars.parallelization.num_threads_space
+			shackDict.disc.space_res_physical,
+			shackDict.disc.space_res_spectral,
+			shackDict.misc.reuse_spectral_transformation_plans,
+			shackDict.misc.verbosity,
+			shackDict.parallelization.num_threads_space
 	);
 	std::cout << "SPH config string: " << levelSingleton.dataConfig.getConfigInformationString() << std::endl;
 
 	int res_physical_nodealiasing[2] = {
-			2*(simVars.disc.space_res_spectral[0]+1),
-			simVars.disc.space_res_spectral[1]+2
+			2*(shackDict.disc.space_res_spectral[0]+1),
+			shackDict.disc.space_res_spectral[1]+2
 	};
 
 	levelSingleton.dataConfigNoDealiasing.setupAuto(
 			res_physical_nodealiasing,
-			simVars.disc.space_res_spectral,
-			simVars.misc.reuse_spectral_transformation_plans,
-			simVars.misc.verbosity,
-			simVars.parallelization.num_threads_space
+			shackDict.disc.space_res_spectral,
+			shackDict.misc.reuse_spectral_transformation_plans,
+			shackDict.misc.verbosity,
+			shackDict.parallelization.num_threads_space
 	);
 
 	// setup data operators
 	levelSingleton.op.setup(
 			&(levelSingleton.dataConfig),
-			&(simVars.sim)
+			&(shackDict.sim)
 	);
 	levelSingleton.opNoDealiasing.setup(
 			&(levelSingleton.dataConfigNoDealiasing),
-			&(simVars.sim)
+			&(shackDict.sim)
 	);
 
 
@@ -117,10 +117,10 @@ int main(int i_argc, char *i_argv[])
 	nvars_per_field = 2 * levelSingleton.dataConfig.spectral_array_data_number_of_elements;  // number of degrees of freedom per vector field
 
 	// initialize the topography before instantiating the SphereDataCtxSDC object
-	if (simVars.benchmark.benchmark_name == "flow_over_mountain")
+	if (shackDict.benchmark.benchmark_name == "flow_over_mountain")
 	{
 		// create h_topo with the configuration at the finest level
-		simVars.benchmark.h_topo = SphereData_Physical(&(levelSingleton.dataConfig));
+		shackDict.benchmark.h_topo = SphereData_Physical(&(levelSingleton.dataConfig));
 
 		// initialize the topography
 		levelSingleton.benchmarks.master->setup_topography();
@@ -128,32 +128,32 @@ int main(int i_argc, char *i_argv[])
 
 	// instantiate the SphereDataCtxSDC object
 	int nnodes[1];
-	nnodes[0] = simVars.libpfasst.nnodes;
+	nnodes[0] = shackDict.libpfasst.nnodes;
 	SphereDataCtxSDC* pd_ctx = new SphereDataCtxSDC(
-			&simVars,
+			&shackDict,
 			&levelSingleton,
 			nnodes
 	);
 
 	// get the C string length (needed by Fortran...)
-	int string_length = simVars.libpfasst.nodes_type.size();
+	int string_length = shackDict.libpfasst.nodes_type.size();
 
 	// flag for the RK stepper
-	const int rk_stepper_flag = (simVars.libpfasst.use_rk_stepper) ? 1 : 0;
+	const int rk_stepper_flag = (shackDict.libpfasst.use_rk_stepper) ? 1 : 0;
 
 	// call LibPFASST to advance in time
 	fmain(
 			pd_ctx,                                       // user defined context
-			&simVars.libpfasst.niters,                    // number of SDC iterations
-			&simVars.libpfasst.nsweeps[0],            // number of SDC sweeps on coarse level
+			&shackDict.libpfasst.niters,                    // number of SDC iterations
+			&shackDict.libpfasst.nsweeps[0],            // number of SDC sweeps on coarse level
 			&nnodes[0],                                       // number of SDC nodes
-			(simVars.libpfasst.nodes_type).c_str(),       // type of nodes
-			&string_length,                               // length of (simVars.libpfasst.nodes_type).c_str()
+			(shackDict.libpfasst.nodes_type).c_str(),       // type of nodes
+			&string_length,                               // length of (shackDict.libpfasst.nodes_type).c_str()
 			&rk_stepper_flag,                             // flag for the RK stepper => 1 means true, 0 means false
 			&nfields,                                     // number of vector fields
 			&nvars_per_field,                              // number of dofs per vector field
-			&(simVars.timecontrol.max_simulation_time),   // simulation time
-			&(simVars.timecontrol.current_timestep_size)  // time step size
+			&(shackDict.timecontrol.max_simulation_time),   // simulation time
+			&(shackDict.timecontrol.current_timestep_size)  // time step size
 	);
 
 	// release the memory

@@ -50,7 +50,7 @@
 
 #elif SWEET_PARAREAL_SPHERE
 #include <sweet/parareal/Parareal_GenericData_SphereData_Spectral.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 #endif
 
 #include <iostream>
@@ -85,8 +85,8 @@ class Parareal_Controller
 	std::vector<PlaneOperators*> op_plane;
 #elif SWEET_PARAREAL_SPHERE
 	std::vector<SphereData_Config*> sphereDataConfig;
-	std::vector<SphereOperators_SphereData*> op_sphere;
-	std::vector<SphereOperators_SphereData*> op_sphere_nodealiasing;
+	std::vector<SphereOperators*> op_sphere;
+	std::vector<SphereOperators*> op_sphere_nodealiasing;
 #endif
 
 
@@ -223,8 +223,8 @@ public:
 	// Sphere
 	Parareal_Controller(SimulationVariables* i_simVars,
 						std::vector<SphereData_Config*> i_sphereDataConfig,
-						std::vector<SphereOperators_SphereData*> &i_op_sphere,
-						std::vector<SphereOperators_SphereData*> &i_op_sphere_nodealiasing,
+						std::vector<SphereOperators*> &i_op_sphere,
+						std::vector<SphereOperators*> &i_op_sphere_nodealiasing,
 						t_tsmType* i_timeSteppersFine,
 						t_tsmType* i_timeSteppersCoarse):
 		simVars(i_simVars),

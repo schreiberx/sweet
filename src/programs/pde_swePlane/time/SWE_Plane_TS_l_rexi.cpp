@@ -15,7 +15,7 @@
 #include <sweet/core/plane/Convert_PlaneDataSpectral_to_PlaneDataSpectralComplex.hpp>
 #include <sweet/core/plane/Convert_PlaneDataSpectralComplex_to_PlaneDataSpectral.hpp>
 
-#include <sweet/core/SimulationBenchmarkTiming.hpp>
+#include <sweet/core/StopwatchBox.hpp>
 
 #if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 	#include <omp.h>
@@ -254,12 +254,12 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 
 
 
-bool SWE_Plane_TS_l_rexi::registerShacks(
+bool SWE_Plane_TS_l_rexi::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
-	ts_l_direct.registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
+	ts_l_direct.shackRegistration(io_shackDict);
 
 	return error.exists();
 }
@@ -278,7 +278,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 )
 {
 #if SWEET_BENCHMARK_TIMINGS
-	SimulationBenchmarkTimings::getInstance().rexi_timestepping.start();
+	StopwatchBox::getInstance().rexi_timestepping.start();
 #endif
 
 	final_timestep = false;
@@ -292,7 +292,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		ts_l_direct.run_timestep(o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
 
 #if SWEET_BENCHMARK_TIMINGS
-	SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+	StopwatchBox::getInstance().rexi_timestepping.stop();
 #endif
 
 		return;
@@ -335,7 +335,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		final_timestep = true;
 
 #if SWEET_BENCHMARK_TIMINGS
-	SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+	StopwatchBox::getInstance().rexi_timestepping.stop();
 #endif
 		return;
 	}
@@ -400,7 +400,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #else
 
 // TODO: find a nice solution for this
-//		if (simVars.rexi.use_half_poles)
+//		if (shackDict.rexi.use_half_poles)
 		if (true)
 		{
 			eta0 = sweet::Convert_PlaneDataSpectral_To_PlaneDataSpectralComplex::physical_convert(i_h_pert);
@@ -603,7 +603,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #else
 
 // TODO: find a nice solution for this
-//		if (simVars.rexi.use_half_poles)
+//		if (shackDict.rexi.use_half_poles)
 	if (true)
 	{
 		o_h_pert = sweet::Convert_PlaneDataSpectralComplex_To_PlaneDataSpectral::physical_convert_real(perThreadVars[0]->h_sum);
@@ -668,7 +668,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 #endif
 
 #if SWEET_BENCHMARK_TIMINGS
-	SimulationBenchmarkTimings::getInstance().rexi_timestepping.stop();
+	StopwatchBox::getInstance().rexi_timestepping.stop();
 #endif
 }
 

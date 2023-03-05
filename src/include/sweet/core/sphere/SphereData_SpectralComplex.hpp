@@ -23,11 +23,14 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 
 
+namespace sweet
+{
+
 
 class SphereData_SpectralComplex
 {
 public:
-	const SphereData_Config *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	typedef std::complex<double> Tcomplex;
 
@@ -55,7 +58,7 @@ public:
 
 public:
 	SphereData_SpectralComplex(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	:
 		sphereDataConfig(nullptr),
 		spectral_space_data(nullptr)
@@ -124,7 +127,7 @@ public:
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
 public:
-	inline void check_sphereDataConfig_identical_res(const SphereData_Config *i_sphereDataConfig)	const
+	inline void check_sphereDataConfig_identical_res(const SphereDataConfig *i_sphereDataConfig)	const
 	{
 		assert(sphereDataConfig->spectral_modes_m_max == i_sphereDataConfig->spectral_modes_m_max);
 		assert(sphereDataConfig->spectral_modes_n_max == i_sphereDataConfig->spectral_modes_n_max);
@@ -168,7 +171,7 @@ public:
 
 
 	SphereData_SpectralComplex spectral_returnWithTruncatedModes(
-			const SphereData_Config *i_sphereDataConfigTargetTruncation
+			const SphereDataConfig *i_sphereDataConfigTargetTruncation
 	)	const
 	{
 		return spectral_returnWithDifferentModes(i_sphereDataConfigTargetTruncation).spectral_returnWithDifferentModes(sphereDataConfig);
@@ -177,7 +180,7 @@ public:
 
 public:
 	SphereData_SpectralComplex spectral_returnWithDifferentModes(
-			const SphereData_Config *i_sphereDataConfigNew
+			const SphereDataConfig *i_sphereDataConfigNew
 	)	const
 	{
 		SphereData_SpectralComplex out(i_sphereDataConfigNew);
@@ -530,7 +533,7 @@ public:
 
 public:
 	void setup_if_required(
-		const SphereData_Config *i_sphereDataConfig
+		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)
@@ -542,7 +545,7 @@ public:
 
 public:
 	void setup(
-			const SphereData_Config *i_sphereConfig
+			const SphereDataConfig *i_sphereConfig
 	)
 	{
 		// assure that the initialization is not done twice!
@@ -773,6 +776,8 @@ SphereData_SpectralComplex operator-(
 	out_sph_data.spectral_space_data[0] += i_value*std::sqrt(4.0*M_PI);
 
 	return out_sph_data;
+
+}
 
 }
 

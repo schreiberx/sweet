@@ -11,8 +11,23 @@
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/core/sphere/SphereData_Physical.hpp>
 
+
+
+namespace sweet
+{
+
 class Convert_SphereDataPhysical_To_PlaneDataPhysical
 {
+public:
+	static
+	PlaneData_Physical physical_convert(
+			const SphereData_Physical &i_sphereData,
+			PlaneDataConfig &i_planeDataConfig
+	)
+	{
+		return physical_convert(i_sphereData, &i_planeDataConfig);
+	}
+
 public:
 	static
 	PlaneData_Physical physical_convert(
@@ -45,6 +60,6 @@ public:
 	}
 };
 
-
+}
 
 #endif

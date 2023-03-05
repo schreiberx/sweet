@@ -8,7 +8,7 @@
 #define SRC_INCLUDE_SWEET_BURGERSVALIDATIONBENCHMARKS_HPP_
 
 #include <cmath>
-//#include <sweet/core/SimulationVariables.hpp>
+//#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 
@@ -30,7 +30,7 @@ class BurgersValidationBenchmarks
 public:
 	static
 	double return_u(
-			SimulationVariables &i_parameters,
+			sweet::ShackDictionary &i_parameters,
 			double x,
 			double y
 	)
@@ -132,7 +132,7 @@ public:
 	static
 	void set_source(
 			double i_simulation_time,
-			const SimulationVariables &i_parameters,
+			const sweet::ShackDictionary &i_parameters,
 			bool i_use_staggering,
 			sweet::PlaneData_Spectral &io_u_t
 	)

@@ -23,8 +23,8 @@ class SWE_Plane_TS_l_erk_n_erk	: public PDESWEPlaneTS_BaseInterface
 	int timestepping_order2;
 	bool use_only_linear_divergence;
 
-	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk_linear;
-	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk_nonlinear;
+	sweet::TimesteppingExplicitRKPlaneData timestepping_rk_linear;
+	sweet::TimesteppingExplicitRKPlaneData timestepping_rk_nonlinear;
 
 private:
 	void euler_timestep_update_linear(

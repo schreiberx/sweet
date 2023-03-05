@@ -12,6 +12,9 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_Physical.hpp>
 
+namespace sweet
+{
+
 class SphereData_DebugContainer
 {
 public:
@@ -101,5 +104,7 @@ public:
 		set(container_data().size(), i_data_physical, i_description);
 	}
 };
+
+}
 
 #endif

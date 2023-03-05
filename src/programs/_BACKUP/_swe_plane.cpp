@@ -21,7 +21,7 @@
 #endif
 
 
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 
@@ -38,7 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <sweet/core/SimulationBenchmarkTiming.hpp>
+#include <sweet/core/StopwatchBox.hpp>
 
 #include "swe_plane_benchmarks/SWEPlaneBenchmarksCombined.hpp"
 #include "swe_plane_timeintegrators/SWE_Plane_TimeSteppers.hpp"
@@ -76,7 +76,7 @@ PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
 #endif
 
 /// general parameters
-SimulationVariables simVars;
+sweet::ShackDictionary shackDict;
 
 class SimulationInstance
 {
@@ -198,7 +198,7 @@ public:
 		normalmodes(planeDataConfig),
 
 		// Initialises operators
-		op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs)
+		op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs)
 	{
 		// Calls initialisation of the run (e.g. sets u, v, h)
 		reset();
@@ -211,11 +211,11 @@ public:
 
 	void reset()
 	{
-		SimulationBenchmarkTimings::getInstance().main_setup.start();
+		StopwatchBox::getInstance().main_setup.start();
 
-		simVars.reset();
+		shackDict.reset();
 
-		if (simVars.benchmark.benchmark_name == "")
+		if (shackDict.benchmark.benchmark_name == "")
 		{
 			std::cout << "Benchmark scenario not selected (option --benchmark-name [string])" << std::endl;
 			swePlaneBenchmarks.printBenchmarkInformation();
@@ -238,8 +238,8 @@ public:
 		benchmark.analytical_error_maxabs_u = -1;
 		benchmark.analytical_error_maxabs_v = -1;
 
-		simVars.timecontrol.current_timestep_nr = 0;
-		simVars.timecontrol.current_simulation_time = 0;
+		shackDict.timecontrol.current_timestep_nr = 0;
+		shackDict.timecontrol.current_simulation_time = 0;
 
 		// set to some values for first touch NUMA policy (HPC stuff)
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
@@ -249,55 +249,55 @@ public:
 #endif
 
 ///		// Setup prog vars
-///		prog_h_pert.physical_set_value(simVars.sim.h0);
+///		prog_h_pert.physical_set_value(shackDict.sim.h0);
 ///		prog_u.physical_set_value(0);
 ///		prog_v.physical_set_value(0);
 
 		// Check if input parameters are adequate for this simulation
-		if (simVars.disc.space_grid_use_c_staggering && simVars.disc.space_use_spectral_basis_diffs)
+		if (shackDict.disc.space_grid_use_c_staggering && shackDict.disc.space_use_spectral_basis_diffs)
 			SWEETError("Staggering and spectral basis not supported!");
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
-		if (simVars.disc.space_grid_use_c_staggering ||  !simVars.disc.space_use_spectral_basis_diffs)
+		if (shackDict.disc.space_grid_use_c_staggering ||  !shackDict.disc.space_use_spectral_basis_diffs)
 			SWEETError("Finite differences and spectral dealisiang should not be used together! Please compile without dealiasing.");
 #endif
 
 
-		if (simVars.disc.space_grid_use_c_staggering)
-			gridMapping.setup(simVars, planeDataConfig);
+		if (shackDict.disc.space_grid_use_c_staggering)
+			gridMapping.setup(shackDict, planeDataConfig);
 
-		swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, simVars, op);
+		swePlaneBenchmarks.setupInitialConditions(t0_prog_h_pert, t0_prog_u, t0_prog_v, shackDict, op);
 
 		prog_h_pert = t0_prog_h_pert;
 		prog_u = t0_prog_u;
 		prog_v = t0_prog_v;
 		
 		// Load data, if requested
-		if (simVars.iodata.initial_condition_data_filenames.size() > 0)
-			prog_h_pert.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[0].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		if (shackDict.iodata.initial_condition_data_filenames.size() > 0)
+			prog_h_pert.file_physical_loadData(shackDict.iodata.initial_condition_data_filenames[0].c_str(), shackDict.iodata.initial_condition_input_data_binary);
 
-		if (simVars.iodata.initial_condition_data_filenames.size() > 1)
-			prog_u.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[1].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		if (shackDict.iodata.initial_condition_data_filenames.size() > 1)
+			prog_u.file_physical_loadData(shackDict.iodata.initial_condition_data_filenames[1].c_str(), shackDict.iodata.initial_condition_input_data_binary);
 
-		if (simVars.iodata.initial_condition_data_filenames.size() > 2)
-			prog_v.file_physical_loadData(simVars.iodata.initial_condition_data_filenames[2].c_str(), simVars.iodata.initial_condition_input_data_binary);
+		if (shackDict.iodata.initial_condition_data_filenames.size() > 2)
+			prog_v.file_physical_loadData(shackDict.iodata.initial_condition_data_filenames[2].c_str(), shackDict.iodata.initial_condition_input_data_binary);
 
 
 		timeSteppers.setup(
-				simVars.disc.timestepping_method,
-				simVars.disc.timestepping_order,
-				simVars.disc.timestepping_order2,
+				shackDict.disc.timestepping_method,
+				shackDict.disc.timestepping_order,
+				shackDict.disc.timestepping_order2,
 				op,
-				simVars
+				shackDict
 			);
 
-		if (simVars.misc.compute_errors)
+		if (shackDict.misc.compute_errors)
 		{
 			//Compute difference to initial condition (makes more sense in steady state cases, but useful in others too)
 			compute_error_difference_to_initial_condition = true;
-					//simVars.setup.benchmark_id == 2 ||
-					//simVars.setup.benchmark_id == 3 ||
-					//simVars.setup.benchmark_id == 14;
+					//shackDict.setup.benchmark_id == 2 ||
+					//shackDict.setup.benchmark_id == 3 ||
+					//shackDict.setup.benchmark_id == 14;
 
 			//Compute difference to analytical solution (makes more sense in linear cases, but might be useful in others too)
 			compute_error_to_analytical_solution = timeSteppers.linear_only;
@@ -308,19 +308,19 @@ public:
 			compute_error_to_analytical_solution = false;
 		}
 
-		if (simVars.benchmark.benchmark_name == "normalmodes" )
+		if (shackDict.benchmark.benchmark_name == "normalmodes" )
 			compute_normal_modes = true;
 
 		update_normal_modes();
 		update_diagnostics();
 		
-		diagnostics_energy_start = simVars.diag.total_energy;
-		diagnostics_mass_start = simVars.diag.total_mass;
-		diagnostics_potential_enstrophy_start = simVars.diag.total_potential_enstrophy;
+		diagnostics_energy_start = shackDict.diag.total_energy;
+		diagnostics_mass_start = shackDict.diag.total_mass;
+		diagnostics_potential_enstrophy_start = shackDict.diag.total_potential_enstrophy;
 
 		timestep_do_output();
 
-		SimulationBenchmarkTimings::getInstance().main_setup.stop();
+		StopwatchBox::getInstance().main_setup.stop();
 
 	}
 
@@ -333,11 +333,11 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		//Setup diagnostics for normal mode projection
 		SWE_bench_NormalModes::convert_allspectralmodes_to_normalmodes(
-			prog_h_pert, prog_u, prog_v, simVars, // Input fields
+			prog_h_pert, prog_u, prog_v, shackDict, // Input fields
 			normalmodes.geo, normalmodes.igwest, normalmodes.igeast//Projected normal modes
 		);
 		
-		if (simVars.timecontrol.current_timestep_nr == 0){
+		if (shackDict.timecontrol.current_timestep_nr == 0){
 			//save the reference normalization parameter
 			std::cout << normalmodes.geo.spectral_reduce_rms() << std::endl;
 			std::cout << normalmodes.igwest.spectral_reduce_rms() << std::endl;
@@ -370,7 +370,7 @@ public:
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 
-		SWE_bench_NormalModes::dump_all_normal_modes(simVars, normalmodes.geo, normalmodes.igwest, normalmodes.igeast);
+		SWE_bench_NormalModes::dump_all_normal_modes(shackDict, normalmodes.geo, normalmodes.igwest, normalmodes.igeast);
 		//normalmodes.geo.print_spectralIndex();
 		//std::cout <<SWE_bench_NormalModes::bcasename <<std::endl;
 #endif
@@ -382,20 +382,20 @@ public:
 	void update_diagnostics()
 	{
 		// assure, that the diagnostics are only updated for new time steps
-		if (last_timestep_nr_update_diagnostics == simVars.timecontrol.current_timestep_nr)
+		if (last_timestep_nr_update_diagnostics == shackDict.timecontrol.current_timestep_nr)
 			return;
 
-		last_timestep_nr_update_diagnostics = simVars.timecontrol.current_timestep_nr;
+		last_timestep_nr_update_diagnostics = shackDict.timecontrol.current_timestep_nr;
 
 
-		if (simVars.disc.space_grid_use_c_staggering)
+		if (shackDict.disc.space_grid_use_c_staggering)
 		{
 			PlaneDiagnostics::update_staggered_huv_to_mass_energy_enstrophy(
 					op,
 					prog_h_pert,
 					prog_u,
 					prog_v,
-					simVars
+					shackDict
 			);
 		}
 		else
@@ -405,7 +405,7 @@ public:
 					prog_h_pert,
 					prog_u,
 					prog_v,
-					simVars
+					shackDict
 			);
 		}
 	}
@@ -419,7 +419,7 @@ public:
 								prog_u,
 								prog_v,
 								3,
-								simVars,
+								shackDict,
 								this,
 								&SimulationInstance::run_timestep
 						);
@@ -433,41 +433,41 @@ public:
 	 */
 	void run_timestep()
 	{
-		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
-			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
+		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestep_size > shackDict.timecontrol.max_simulation_time)
+			shackDict.timecontrol.current_timestep_size = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
 
 		timeSteppers.master->run_timestep(
 				prog_h_pert, prog_u, prog_v,
-				simVars.timecontrol.current_timestep_size,
-				simVars.timecontrol.current_simulation_time
+				shackDict.timecontrol.current_timestep_size,
+				shackDict.timecontrol.current_simulation_time
 			);
 
 		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
 
-		if (simVars.sim.viscosity != 0 && simVars.misc.use_nonlinear_only_visc == 0)
+		if (shackDict.sim.viscosity != 0 && shackDict.misc.use_nonlinear_only_visc == 0)
 		{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE //TODO: this needs checking
 
-			double dt = simVars.timecontrol.current_timestep_size;
+			double dt = shackDict.timecontrol.current_timestep_size;
 
-			prog_u = prog_u + pow(-1,simVars.sim.viscosity_order/2)* dt*op.diffN_x(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+ pow(-1,simVars.sim.viscosity_order/2)*dt*op.diffN_y(prog_u, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			prog_v = prog_v + pow(-1,simVars.sim.viscosity_order/2)* dt*op.diffN_x(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+ pow(-1,simVars.sim.viscosity_order/2)*dt*op.diffN_y(prog_v, simVars.sim.viscosity_order)*simVars.sim.viscosity;
-			prog_h_pert = prog_h_pert + pow(-1,simVars.sim.viscosity_order/2)* dt*op.diffN_x(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity
-					+ pow(-1,simVars.sim.viscosity_order/2)*dt*op.diffN_y(prog_h_pert, simVars.sim.viscosity_order)*simVars.sim.viscosity;
+			prog_u = prog_u + pow(-1,shackDict.sim.viscosity_order/2)* dt*op.diffN_x(prog_u, shackDict.sim.viscosity_order)*shackDict.sim.viscosity
+					+ pow(-1,shackDict.sim.viscosity_order/2)*dt*op.diffN_y(prog_u, shackDict.sim.viscosity_order)*shackDict.sim.viscosity;
+			prog_v = prog_v + pow(-1,shackDict.sim.viscosity_order/2)* dt*op.diffN_x(prog_v, shackDict.sim.viscosity_order)*shackDict.sim.viscosity
+					+ pow(-1,shackDict.sim.viscosity_order/2)*dt*op.diffN_y(prog_v, shackDict.sim.viscosity_order)*shackDict.sim.viscosity;
+			prog_h_pert = prog_h_pert + pow(-1,shackDict.sim.viscosity_order/2)* dt*op.diffN_x(prog_h_pert, shackDict.sim.viscosity_order)*shackDict.sim.viscosity
+					+ pow(-1,shackDict.sim.viscosity_order/2)*dt*op.diffN_y(prog_h_pert, shackDict.sim.viscosity_order)*shackDict.sim.viscosity;
 #else
-			prog_u = op.implicit_diffusion(prog_u, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
-			prog_v = op.implicit_diffusion(prog_v, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
-			prog_h_pert = op.implicit_diffusion(prog_h_pert, simVars.timecontrol.current_timestep_size*simVars.sim.viscosity, simVars.sim.viscosity_order);
+			prog_u = op.implicit_diffusion(prog_u, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.viscosity_order);
+			prog_v = op.implicit_diffusion(prog_v, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.viscosity_order);
+			prog_h_pert = op.implicit_diffusion(prog_h_pert, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.viscosity_order);
 #endif
 		}
 
 		// advance time step and provide information to parameters
-		simVars.timecontrol.current_simulation_time += simVars.timecontrol.current_timestep_size;
-		simVars.timecontrol.current_timestep_nr++;
+		shackDict.timecontrol.current_simulation_time += shackDict.timecontrol.current_timestep_size;
+		shackDict.timecontrol.current_timestep_nr++;
 
-		if (simVars.timecontrol.current_simulation_time > simVars.timecontrol.max_simulation_time)
+		if (shackDict.timecontrol.current_simulation_time > shackDict.timecontrol.max_simulation_time)
 			SWEETError("Max simulation time exceeded!");
 
 #if !SWEET_PARAREAL
@@ -488,8 +488,8 @@ public:
 
 		// TODO: convert spectral datato physical
 
-		const char* filename_template = simVars.iodata.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+		const char* filename_template = shackDict.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale);
 		i_planeData.toPhys().file_physical_saveData_ascii(buffer);
 		return buffer;
 	}
@@ -522,8 +522,8 @@ public:
 	{
 		char buffer[1024];
 
-		const char* filename_template = simVars.iodata.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, simVars.timecontrol.current_simulation_time*simVars.iodata.output_time_scale);
+		const char* filename_template = shackDict.iodata.output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale);
 		i_planeData.file_spectral_abs_saveData_ascii(buffer);
 		//i_planeData.file_spectral_saveData_ascii(buffer);
 		return buffer;
@@ -537,14 +537,14 @@ public:
 			std::ostream &o_ostream = std::cout
 	)
 	{
-		if (simVars.misc.normal_mode_analysis_generation > 0)
+		if (shackDict.misc.normal_mode_analysis_generation > 0)
 			return false;
 
 		// output each time step
-		if (simVars.iodata.output_each_sim_seconds < 0)
+		if (shackDict.iodata.output_each_sim_seconds < 0)
 			return false;
 
-		if (simVars.iodata.output_next_sim_seconds-simVars.iodata.output_next_sim_seconds*(1e-12) > simVars.timecontrol.current_simulation_time)
+		if (shackDict.iodata.output_next_sim_seconds-shackDict.iodata.output_next_sim_seconds*(1e-12) > shackDict.timecontrol.current_simulation_time)
 			return false;
 
 		/*
@@ -557,7 +557,7 @@ public:
 		PlaneData_Physical t_u(planeDataConfig);
 		PlaneData_Physical t_v(planeDataConfig);
 
-		if (simVars.disc.space_grid_use_c_staggering) // Remap in case of C-grid
+		if (shackDict.disc.space_grid_use_c_staggering) // Remap in case of C-grid
 		{
 			t_h = prog_h_pert.toPhys();
 			gridMapping.mapCtoA_u(prog_u.toPhys(), t_u);
@@ -570,13 +570,13 @@ public:
 			t_v = prog_v.toPhys();
 		}
 
-		//std::cout << simVars.inputoutput.output_next_sim_seconds << "\t" << simVars.timecontrol.current_simulation_time << std::endl;
+		//std::cout << shackDict.inputoutput.output_next_sim_seconds << "\t" << shackDict.timecontrol.current_simulation_time << std::endl;
 
 		if (compute_normal_modes)
 			update_normal_modes();
 
 		// Dump  data in csv, if output filename is not empty
-		if (simVars.iodata.output_file_name.size() > 0)
+		if (shackDict.iodata.output_file_name.size() > 0)
 		{
 			output_filenames = "";
 
@@ -610,7 +610,7 @@ public:
 
 		}
 
-		if (simVars.misc.verbosity > 0)
+		if (shackDict.misc.verbosity > 0)
 		{
 			update_diagnostics();
 			compute_errors();
@@ -621,34 +621,34 @@ public:
 			rows << std::setprecision(16);
 
 			// Prefix
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				header << "DATA";
 			rows << "DATA";
 
 			// Time
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				header << "\tT";
-			rows << "\t" << simVars.timecontrol.current_simulation_time;
+			rows << "\t" << shackDict.timecontrol.current_simulation_time;
 
 #if 1
 			// Mass, Energy, Enstrophy
 			header << "\tTOTAL_MASS\tTOTAL_ENERGY\tPOT_ENSTROPHY";
-			rows << "\t" << simVars.diag.total_mass;
-			rows << "\t" << simVars.diag.total_energy;
-			rows << "\t" << simVars.diag.total_potential_enstrophy;
+			rows << "\t" << shackDict.diag.total_mass;
+			rows << "\t" << shackDict.diag.total_energy;
+			rows << "\t" << shackDict.diag.total_potential_enstrophy;
 
 			// Mass, Energy, Enstrophy
 			header << "\tTOTAL_MASS_REL_ERROR\tTOTAL_ENERGY_REL_ERROR\tPOT_ENSTROPHY_REL_ERROR";
-			rows << "\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start);
-			rows << "\t" << std::abs((simVars.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) ;
-			rows << "\t" << std::abs((simVars.diag.total_potential_enstrophy-diagnostics_potential_enstrophy_start)/diagnostics_potential_enstrophy_start);
+			rows << "\t" << std::abs((shackDict.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start);
+			rows << "\t" << std::abs((shackDict.diag.total_energy-diagnostics_energy_start)/diagnostics_energy_start) ;
+			rows << "\t" << std::abs((shackDict.diag.total_potential_enstrophy-diagnostics_potential_enstrophy_start)/diagnostics_potential_enstrophy_start);
 #endif
 
 #if 1
 			if (compute_error_difference_to_initial_condition)
 			{
 				// Difference to initial condition
-				if (simVars.timecontrol.current_timestep_nr == 0)
+				if (shackDict.timecontrol.current_timestep_nr == 0)
 					header << "\tDIFF_MAXABS_H0\tDIFF_MAXABS_U0\tDIFF_MAXABS_V0";
 
 				rows << "\t" << benchmark.t0_error_max_abs_h_pert << "\t" << benchmark.t0_error_max_abs_u << "\t" << benchmark.t0_error_max_abs_v;
@@ -658,7 +658,7 @@ public:
 #if 1
 			if (compute_error_to_analytical_solution)
 			{
-				if (simVars.timecontrol.current_timestep_nr == 0)
+				if (shackDict.timecontrol.current_timestep_nr == 0)
 					header << "\tREF_DIFF_MAX_H\tREF_DIFF_MAX_U\tREF_DIFF_MAX_V";
 
 				rows << "\t" << benchmark.analytical_error_maxabs_h << "\t" << benchmark.analytical_error_maxabs_u << "\t" << benchmark.analytical_error_maxabs_v;
@@ -670,7 +670,7 @@ public:
 			if (compute_normal_modes)
 			{
 				// normal modes energy
-				if (simVars.timecontrol.current_timestep_nr == 0)
+				if (shackDict.timecontrol.current_timestep_nr == 0)
 					header << "\tNM_GEO_RMS\tNM_IGWEST_RMS\tNM_IGEAST_RMS";
 
 				rows << "\t" << normalmodes.geo.spectral_reduce_rms() << "\t" << normalmodes.igwest.spectral_reduce_rms() << "\t" << normalmodes.igeast.spectral_reduce_rms();
@@ -681,38 +681,38 @@ public:
 #endif
 
 			// screen output
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				o_ostream << header.str() << std::endl;
 
 			o_ostream << rows.str() << std::endl;
 
 #if 1
 			// output to file
-			if (simVars.timecontrol.current_timestep_nr == 0)
+			if (shackDict.timecontrol.current_timestep_nr == 0)
 				write_output_file(header);
 			write_output_file(rows);
 #endif
 
 #if 1
-			if (diagnostics_mass_start > 0.00001 && std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000000.0)
+			if (diagnostics_mass_start > 0.00001 && std::abs((shackDict.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) > 10000000.0)
 			{
-				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((simVars.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
+				std::cerr << "\n DIAGNOSTICS MASS DIFF TOO LARGE:\t" << std::abs((shackDict.diag.total_mass-diagnostics_mass_start)/diagnostics_mass_start) << std::endl;
 			}
 #endif
 
 		}
 
-		if (simVars.iodata.output_next_sim_seconds == simVars.timecontrol.max_simulation_time)
+		if (shackDict.iodata.output_next_sim_seconds == shackDict.timecontrol.max_simulation_time)
 		{
-			simVars.iodata.output_next_sim_seconds = std::numeric_limits<double>::infinity();
+			shackDict.iodata.output_next_sim_seconds = std::numeric_limits<double>::infinity();
 		}
 		else
 		{
-			while (simVars.iodata.output_next_sim_seconds-simVars.iodata.output_next_sim_seconds*(1e-12) <= simVars.timecontrol.current_simulation_time)
-				simVars.iodata.output_next_sim_seconds += simVars.iodata.output_each_sim_seconds;
+			while (shackDict.iodata.output_next_sim_seconds-shackDict.iodata.output_next_sim_seconds*(1e-12) <= shackDict.timecontrol.current_simulation_time)
+				shackDict.iodata.output_next_sim_seconds += shackDict.iodata.output_each_sim_seconds;
 
-			if (simVars.iodata.output_next_sim_seconds > simVars.timecontrol.max_simulation_time)
-				simVars.iodata.output_next_sim_seconds = simVars.timecontrol.max_simulation_time;
+			if (shackDict.iodata.output_next_sim_seconds > shackDict.timecontrol.max_simulation_time)
+				shackDict.iodata.output_next_sim_seconds = shackDict.timecontrol.max_simulation_time;
 		}
 
 		return true;
@@ -745,7 +745,7 @@ public:
 				// Run exact solution for linear case
 				timeSteppers.l_direct->run_timestep(
 						ts_h_pert, ts_u, ts_v,
-						simVars.timecontrol.current_simulation_time,	// time step size
+						shackDict.timecontrol.current_simulation_time,	// time step size
 						0				// initial condition given at time 0
 				);
 
@@ -766,13 +766,13 @@ public:
 	bool should_quit()
 	{
 		if (
-				simVars.timecontrol.max_timesteps_nr != -1 &&
-				simVars.timecontrol.max_timesteps_nr <= simVars.timecontrol.current_timestep_nr
+				shackDict.timecontrol.max_timesteps_nr != -1 &&
+				shackDict.timecontrol.max_timesteps_nr <= shackDict.timecontrol.current_timestep_nr
 		)
 			return true;
 
-		if (!std::isinf(simVars.timecontrol.max_simulation_time))
-			if (simVars.timecontrol.max_simulation_time <= simVars.timecontrol.current_simulation_time+simVars.timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
+		if (!std::isinf(shackDict.timecontrol.max_simulation_time))
+			if (shackDict.timecontrol.max_simulation_time <= shackDict.timecontrol.current_simulation_time+shackDict.timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
 				return true;
 
 		return false;
@@ -788,7 +788,7 @@ public:
 			int i_num_iterations
 	)
 	{
-		if (simVars.timecontrol.run_simulation_timesteps)
+		if (shackDict.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				run_timestep();
 	}
@@ -821,30 +821,30 @@ public:
 			bool *viz_reset
 	)
 	{
-		if (simVars.misc.vis_id < 0)
+		if (shackDict.misc.vis_id < 0)
 		{
 			// Analytical solution at specific time on A-grid
 			PlaneData_Physical ts_h_pert = t0_prog_h_pert;
 			PlaneData_Physical ts_u = t0_prog_u;
 			PlaneData_Physical ts_v = t0_prog_v;
 
-			if (simVars.misc.vis_id == -1 || simVars.misc.vis_id == -2 )
+			if (shackDict.misc.vis_id == -1 || shackDict.misc.vis_id == -2 )
 			{
 				//Missing to setup REXIFunctions, so invalid phi function set
 				
 				// Run exact solution for linear case				
 				timeSteppers.l_direct->run_timestep(
 						ts_h_pert, ts_u, ts_v,
-						simVars.timecontrol.current_simulation_time,
+						shackDict.timecontrol.current_simulation_time,
 						0			// initial condition given at time 0
 				);
 				
 			}
 
-			switch(simVars.misc.vis_id)
+			switch(shackDict.misc.vis_id)
 			{
 			case -1:
-				vis = ts_h_pert+simVars.sim.h0;			//Exact linear solution
+				vis = ts_h_pert+shackDict.sim.h0;			//Exact linear solution
 				break;
 
 			case -2:
@@ -873,22 +873,22 @@ public:
 			}
 
 			*o_dataArray = &vis;
-			*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
+			*o_aspect_ratio = shackDict.sim.plane_domain_size[1] / shackDict.sim.plane_domain_size[0];
 			return;
 		}
 
-		int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		int id = shackDict.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 
 		if (id == 0)
 		{
-			vis = *vis_arrays[id].data+simVars.sim.h0;
+			vis = *vis_arrays[id].data+shackDict.sim.h0;
 			*o_dataArray = &vis;
 		}
 		else
 			*o_dataArray = vis_arrays[id].data;
 
 		vis=**o_dataArray;
-		*o_aspect_ratio = simVars.sim.plane_domain_size[1] / simVars.sim.plane_domain_size[0];
+		*o_aspect_ratio = shackDict.sim.plane_domain_size[1] / shackDict.sim.plane_domain_size[0];
 	}
 
 
@@ -903,14 +903,14 @@ public:
 		update_diagnostics();
 
 		const char* description = "";
-		if (simVars.misc.vis_id >= 0)
+		if (shackDict.misc.vis_id >= 0)
 		{
-			int id = simVars.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+			int id = shackDict.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 			description = vis_arrays[id].description;
 		}
 		else
 		{
-			switch (simVars.misc.vis_id)
+			switch (shackDict.misc.vis_id)
 			{
 			case -1:
 				description = "Direct solution for h (linear only)";
@@ -945,14 +945,14 @@ public:
 
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
 		sprintf(title_string, "Time (days): %f (%.2f d), k: %i, dt: %.3e, Vis: %s, TMass: %.6e, TEnergy: %.6e, PotEnstrophy: %.6e, MaxVal: %.6e, MinVal: %.6e ",
-				simVars.timecontrol.current_simulation_time,
-				simVars.timecontrol.current_simulation_time/(60.0*60.0*24.0),
-				simVars.timecontrol.current_timestep_nr,
-				simVars.timecontrol.current_timestep_size,
+				shackDict.timecontrol.current_simulation_time,
+				shackDict.timecontrol.current_simulation_time/(60.0*60.0*24.0),
+				shackDict.timecontrol.current_timestep_nr,
+				shackDict.timecontrol.current_timestep_size,
 				description,
-				simVars.diag.total_mass,
-				simVars.diag.total_energy,
-				simVars.diag.total_potential_enstrophy,
+				shackDict.diag.total_mass,
+				shackDict.diag.total_energy,
+				shackDict.diag.total_potential_enstrophy,
 				vis.physical_reduce_max(),
 				vis.physical_reduce_min() );
 
@@ -963,7 +963,7 @@ public:
 
 	void vis_pause()
 	{
-		simVars.timecontrol.run_simulation_timesteps = !simVars.timecontrol.run_simulation_timesteps;
+		shackDict.timecontrol.run_simulation_timesteps = !shackDict.timecontrol.run_simulation_timesteps;
 	}
 
 
@@ -973,11 +973,11 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			simVars.misc.vis_id++;
+			shackDict.misc.vis_id++;
 			break;
 
 		case 'V':
-			simVars.misc.vis_id--;
+			shackDict.misc.vis_id--;
 			break;
 
 		case 'c':
@@ -996,9 +996,9 @@ public:
 
 		case 'l':
 			// load data arrays
-			prog_h_pert.file_physical_loadData("swe_plane_dump_h.csv", simVars.iodata.initial_condition_input_data_binary);
-			prog_u.file_physical_loadData("swe_plane_dump_u.csv", simVars.iodata.initial_condition_input_data_binary);
-			prog_v.file_physical_loadData("swe_plane_dump_v.csv", simVars.iodata.initial_condition_input_data_binary);
+			prog_h_pert.file_physical_loadData("swe_plane_dump_h.csv", shackDict.iodata.initial_condition_input_data_binary);
+			prog_u.file_physical_loadData("swe_plane_dump_u.csv", shackDict.iodata.initial_condition_input_data_binary);
+			prog_v.file_physical_loadData("swe_plane_dump_v.csv", shackDict.iodata.initial_condition_input_data_binary);
 			break;
 		}
 	}
@@ -1044,12 +1044,12 @@ int main(int i_argc, char *i_argv[])
 			nullptr
 	};
 
-	// default values for specific input (for general input see SimulationVariables.hpp)
-	//simVars.bogus.var[0];  //frequency in x for waves test case
-	//simVars.bogus.var[1];  //frequency in y for waves test case
+	// default values for specific input (for general input see shacks/ShackDictionary.hpp)
+	//shackDict.bogus.var[0];  //frequency in x for waves test case
+	//shackDict.bogus.var[1];  //frequency in y for waves test case
 
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
+	if (!shackDict.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
@@ -1059,25 +1059,25 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_PARAREAL
-		simVars.parareal.printProgramArguments();
+		shackDict.parareal.printProgramArguments();
 #endif
 		return -1;
 	}
 	
-	if (simVars.misc.verbosity > 5)
+	if (shackDict.misc.verbosity > 5)
 		std::cout << " + Setting up FFT plans..." << std::flush;
 
-	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(shackDict.disc.space_res_physical, shackDict.disc.space_res_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
-	if (simVars.misc.verbosity > 5)
+	if (shackDict.misc.verbosity > 5)
 		std::cout << " done" << std::endl;
 
 	planeDataConfig->printInformation();
 
 	// Print header
 	std::cout << std::endl;
-	simVars.outputConfig();
-	std::cout << "Computing error: " << simVars.misc.compute_errors << std::endl;
+	shackDict.outputConfig();
+	std::cout << "Computing error: " << shackDict.misc.compute_errors << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -1098,13 +1098,13 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "MPI_RANK: " << mpi_rank << std::endl;
 #endif
 
-		SimulationBenchmarkTimings::getInstance().main.start();
+		StopwatchBox::getInstance().main.start();
 
 #if SWEET_PARAREAL
-		if (simVars.parareal.enabled)
+		if (shackDict.parareal.enabled)
 		{
 
-			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 
 			// Set planeDataConfig and planeOperators for each level
 			std::vector<PlaneDataConfig*> planeDataConfigs;
@@ -1115,23 +1115,23 @@ int main(int i_argc, char *i_argv[])
 			ops.push_back(&op);
 
 			// coarse
-			if (simVars.parareal.spatial_coarsening)
+			if (shackDict.parareal.spatial_coarsening)
 			{
 				///for (int j = 0; j < 2; j++)
-				///	assert(simVars.disc.space_res_physical[j] == -1);
+				///	assert(shackDict.disc.space_res_physical[j] == -1);
 				int N_physical[2] = {-1, -1};
 				int N_spectral[2];
 				double frac;
-				if ( simVars.parareal.coarse_timestep_size > 0)
-					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				if ( shackDict.parareal.coarse_timestep_size > 0)
+					frac = shackDict.timecontrol.current_timestep_size / shackDict.parareal.coarse_timestep_size;
 				else
-					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
+					frac = shackDict.timecontrol.current_timestep_size / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
-					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 				planeDataConfigs.push_back(new PlaneDataConfig);
-				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
-				ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+				ops.push_back(new PlaneOperators(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs));
 			}
 			else
 			{
@@ -1147,7 +1147,7 @@ int main(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(	&simVars,
+			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(	&shackDict,
 												planeDataConfigs,
 												ops,
 												timeSteppersFine,
@@ -1162,7 +1162,7 @@ int main(int i_argc, char *i_argv[])
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
 
-			if (simVars.parareal.spatial_coarsening)
+			if (shackDict.parareal.spatial_coarsening)
 			{
 				delete planeDataConfigs[1];
 				delete ops[1];
@@ -1174,40 +1174,40 @@ int main(int i_argc, char *i_argv[])
 
 #if SWEET_XBRAID
 
-		if (simVars.xbraid.xbraid_enabled)
+		if (shackDict.xbraid.xbraid_enabled)
 		{
 
-			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 
 			// Set planeDataConfig and planeOperators for each level
 			std::vector<PlaneDataConfig*> planeDataConfigs;
 			std::vector<PlaneOperators*> ops;
-			for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			for (int i = 0; i < shackDict.xbraid.xbraid_max_levels; i++)
 			{
-				if (simVars.xbraid.xbraid_spatial_coarsening)
+				if (shackDict.xbraid.xbraid_spatial_coarsening)
 				{
 					int N_physical[2] = {-1, -1};
 					int N_spectral[2];
 					for (int j = 0; j < 2; j++)
 					{
 						// proportional to time step
-						if (simVars.xbraid.xbraid_spatial_coarsening == 1)
-							N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
-						else if (simVars.xbraid.xbraid_spatial_coarsening > 1)
+						if (shackDict.xbraid.xbraid_spatial_coarsening == 1)
+							N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] / std::pow(shackDict.xbraid.xbraid_cfactor, i)));
+						else if (shackDict.xbraid.xbraid_spatial_coarsening > 1)
 						{
 							if (i == 0)
-								N_spectral[j] = std::max(4, simVars.disc.space_res_spectral[j]);
+								N_spectral[j] = std::max(4, shackDict.disc.space_res_spectral[j]);
 							else
-								N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+								N_spectral[j] = std::max(4, shackDict.xbraid.xbraid_spatial_coarsening);
 						}
 						else
 							SWEETError("Invalid parameter xbraid_spatial_coarsening");
 					}
 					planeDataConfigs.push_back(new PlaneDataConfig);
-					planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+					planeDataConfigs.back()->setupAuto(N_physical, N_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
-					//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
-					ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+					//PlaneOperators op_level(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
+					ops.push_back(new PlaneOperators(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs));
 
 					std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
 				}
@@ -1223,19 +1223,19 @@ int main(int i_argc, char *i_argv[])
 
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
-			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
-                        if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+			int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
+                        if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
 				nt++;
-			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfig, &op);
-			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfigs, ops);
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, planeDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, planeDataConfigs, ops);
 
 
-			if ( simVars.xbraid.xbraid_run_wrapper_tests)
+			if ( shackDict.xbraid.xbraid_run_wrapper_tests)
 			{
 				app.setup();
 
 				BraidUtil braid_util;
-				int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+				int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
 				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
 				if (test == 0)
 					SWEETError("Tests failed!");
@@ -1252,8 +1252,8 @@ int main(int i_argc, char *i_argv[])
 			}
 
 
-			if (simVars.xbraid.xbraid_spatial_coarsening)
-				for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			if (shackDict.xbraid.xbraid_spatial_coarsening)
+				for (int i = 0; i < shackDict.xbraid.xbraid_max_levels; i++)
 				{
 					delete planeDataConfigs[i];
 					delete ops[i];
@@ -1267,15 +1267,15 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_GUI // The VisSweet directly calls simulationSWE->reset() and output stuff
-		if (simVars.misc.gui_enabled)
+		if (shackDict.misc.gui_enabled)
 		{
 			SimulationInstance *simulationSWE = new SimulationInstance;
 
-			SimulationBenchmarkTimings::getInstance().main_timestepping.start();
+			StopwatchBox::getInstance().main_timestepping.start();
 
 			VisSweet<SimulationInstance> visSweet(simulationSWE);
 
-			SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
+			StopwatchBox::getInstance().main_timestepping.stop();
 
 			delete simulationSWE;
 		}
@@ -1294,13 +1294,13 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 
-			if (simVars.misc.normal_mode_analysis_generation > 0)
+			if (shackDict.misc.normal_mode_analysis_generation > 0)
 			{
 				simulationSWE->normal_mode_analysis();
 			}
 			else
 			{
-				SimulationBenchmarkTimings::getInstance().main_timestepping.start();
+				StopwatchBox::getInstance().main_timestepping.start();
 
 				// Main time loop
 				while (true)
@@ -1313,25 +1313,25 @@ int main(int i_argc, char *i_argv[])
 					simulationSWE->run_timestep();
 
 					// Instability
-					if (simVars.misc.instability_checks)
+					if (shackDict.misc.instability_checks)
 					{
 						if (simulationSWE->instability_detected())
 							SWEETError("INSTABILITY DETECTED");
 					}
 				}
 
-				SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
+				StopwatchBox::getInstance().main_timestepping.stop();
 			}
 
 
-			if (simVars.iodata.output_file_name.size() > 0)
+			if (shackDict.iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << simulationSWE->output_filenames << std::endl;
 
 			// End of run output results
 			std::cout << "***************************************************" << std::endl;
-			std::cout << "Number of time steps: " << simVars.timecontrol.current_timestep_nr << std::endl;
-			std::cout << "Time per time step: " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simVars.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
-			std::cout << "Last time step size: " << simVars.timecontrol.current_timestep_size << std::endl;
+			std::cout << "Number of time steps: " << shackDict.timecontrol.current_timestep_nr << std::endl;
+			std::cout << "Time per time step: " << StopwatchBox::getInstance().main_timestepping()/(double)shackDict.timecontrol.current_timestep_nr << " sec/ts" << std::endl;
+			std::cout << "Last time step size: " << shackDict.timecontrol.current_timestep_size << std::endl;
 
 			simulationSWE->compute_errors();
 
@@ -1340,13 +1340,13 @@ int main(int i_argc, char *i_argv[])
 			if (mpi_rank == 0)
 #endif
 			{
-				if (simVars.misc.verbosity > 0)
+				if (shackDict.misc.verbosity > 0)
 				{
-					std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((simVars.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
-					std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((simVars.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
-					std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((simVars.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_enstrophy_start)/simulationSWE->diagnostics_potential_enstrophy_start) << std::endl;
+					std::cout << "DIAGNOSTICS ENERGY DIFF:\t" << std::abs((shackDict.diag.total_energy-simulationSWE->diagnostics_energy_start)/simulationSWE->diagnostics_energy_start) << std::endl;
+					std::cout << "DIAGNOSTICS MASS DIFF:\t" << std::abs((shackDict.diag.total_mass-simulationSWE->diagnostics_mass_start)/simulationSWE->diagnostics_mass_start) << std::endl;
+					std::cout << "DIAGNOSTICS POTENTIAL ENSTROPHY DIFF:\t" << std::abs((shackDict.diag.total_potential_enstrophy-simulationSWE->diagnostics_potential_enstrophy_start)/simulationSWE->diagnostics_potential_enstrophy_start) << std::endl;
 
-					if (simVars.misc.compute_errors)
+					if (shackDict.misc.compute_errors)
 					{
 						std::cout << "DIAGNOSTICS BENCHMARK DIFF H:\t" << simulationSWE->benchmark.t0_error_max_abs_h_pert << std::endl;
 						std::cout << "DIAGNOSTICS BENCHMARK DIFF U:\t" << simulationSWE->benchmark.t0_error_max_abs_u << std::endl;
@@ -1377,14 +1377,14 @@ int main(int i_argc, char *i_argv[])
 			delete simulationSWE;
 		} // end of gui not enabled
 
-		SimulationBenchmarkTimings::getInstance().main.stop();
+		StopwatchBox::getInstance().main.stop();
 
 #if SWEET_MPI
 		if (mpi_rank == 0)
 #endif
 		{
 			std::cout << std::endl;
-			SimulationBenchmarkTimings::getInstance().output();
+			StopwatchBox::getInstance().output();
 		}
 	}
 #if SWEET_MPI && (SWEET_PARAREAL != 2) && (!SWEET_XBRAID)
@@ -1397,16 +1397,16 @@ int main(int i_argc, char *i_argv[])
 ///	#endif
 	{
 
-		if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
+		if (shackDict.disc.timestepping_method.find("rexi") != std::string::npos)
 		{
-			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 
-			SWE_Plane_TS_l_rexi rexiSWE(simVars, op);
+			SWE_Plane_TS_l_rexi rexiSWE(shackDict, op);
 
 			/*
 			 * Setup our little dog REXI
 			 */
-			rexiSWE.setup(simVars.rexi, "phi0", simVars.timecontrol.current_timestep_size);
+			rexiSWE.setup(shackDict.rexi, "phi0", shackDict.timecontrol.current_timestep_size);
 
 			PlaneData_Spectral prog_h_pert(planeDataConfig);
 			PlaneData_Spectral prog_u(planeDataConfig);
@@ -1421,8 +1421,8 @@ int main(int i_argc, char *i_argv[])
 						prog_h_pert,
 						prog_u,
 						prog_v,
-						simVars.timecontrol.current_timestep_size,
-						simVars.timecontrol.current_simulation_time
+						shackDict.timecontrol.current_timestep_size,
+						shackDict.timecontrol.current_simulation_time
 
 				);
 			}
@@ -1430,7 +1430,7 @@ int main(int i_argc, char *i_argv[])
 		}
 	}
 
-	if (simVars.disc.timestepping_method.find("rexi") != std::string::npos)
+	if (shackDict.disc.timestepping_method.find("rexi") != std::string::npos)
 	{
 		// synchronize REXI
 		if (mpi_rank == 0)

@@ -33,7 +33,7 @@ void Burgers_Plane_TS_l_direct::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	if (simVars.disc.space_grid_use_c_staggering)
+	if (shackDict.disc.space_grid_use_c_staggering)
 		run_timestep_cgrid(io_u, io_v, i_dt, i_simulation_timestamp);
 	else
 		run_timestep_agrid(io_u, io_v, i_dt, i_simulation_timestamp);
@@ -57,20 +57,20 @@ void Burgers_Plane_TS_l_direct::run_timestep_cgrid(
 	sweet::PlaneData_Spectral t_u(io_u.planeDataConfig);
 	sweet::PlaneData_Spectral t_v(io_u.planeDataConfig);
 
-	if (!simVars.disc.space_grid_use_c_staggering)
+	if (!shackDict.disc.space_grid_use_c_staggering)
 		SWEETError("Expected staggering");
 
 	planeDataGridMapping.mapCtoA_u(io_u, t_u);
 	planeDataGridMapping.mapCtoA_v(io_v, t_v);
 
-	simVars.disc.space_grid_use_c_staggering = false;
+	shackDict.disc.space_grid_use_c_staggering = false;
 
 	run_timestep_agrid(
 			t_u, t_v,
 			i_dt, i_simulation_timestamp
 	);
 
-	simVars.disc.space_grid_use_c_staggering = true;
+	shackDict.disc.space_grid_use_c_staggering = true;
 
 	planeDataGridMapping.mapAtoC_u(t_u, io_u);
 	planeDataGridMapping.mapAtoC_v(t_v, io_v);
@@ -105,7 +105,7 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
 		double i_simulation_timestamp
 )
 {
-	if (simVars.disc.space_grid_use_c_staggering)
+	if (shackDict.disc.space_grid_use_c_staggering)
 		SWEETError("Staggering not supported");
 
 	if (i_dt < 0)
@@ -141,9 +141,9 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedata(
 			 */
 			complex lambda;
 
-			T a = pi2()*pi2()/(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0]);
-			T b = pi2()*pi2()/(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1]);
-			lambda = -simVars.sim.viscosity*(k0*k0*a+k1*k1*b);
+			T a = pi2()*pi2()/(shackDict.sim.plane_domain_size[0]*shackDict.sim.plane_domain_size[0]);
+			T b = pi2()*pi2()/(shackDict.sim.plane_domain_size[1]*shackDict.sim.plane_domain_size[1]);
+			lambda = -shackDict.sim.viscosity*(k0*k0*a+k1*k1*b);
 
 			for (int k = 0; k < 2; k++)
 			{
@@ -236,9 +236,9 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 			 * Eigenvalues
 			 */
 			complex lambda;
-			T a = pi2()*pi2()/(simVars.sim.plane_domain_size[0]*simVars.sim.plane_domain_size[0]);
-			T b = pi2()*pi2()/(simVars.sim.plane_domain_size[1]*simVars.sim.plane_domain_size[1]);
-			lambda = -simVars.sim.viscosity*(k0*k0*a+k1*k1*b);
+			T a = pi2()*pi2()/(shackDict.sim.plane_domain_size[0]*shackDict.sim.plane_domain_size[0]);
+			T b = pi2()*pi2()/(shackDict.sim.plane_domain_size[1]*shackDict.sim.plane_domain_size[1]);
+			lambda = -shackDict.sim.viscosity*(k0*k0*a+k1*k1*b);
 
 			for (int k = 0; k < 2; k++)
 			{
@@ -285,14 +285,14 @@ void Burgers_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 
 
 Burgers_Plane_TS_l_direct::Burgers_Plane_TS_l_direct(
-		SimulationVariables &i_simVars,
+		sweet::ShackDictionary &i_shackDict,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
+		shackDict(i_shackDict),
 		op(i_op)
 {
-	if (simVars.disc.space_grid_use_c_staggering)
-		planeDataGridMapping.setup(i_simVars, op.planeDataConfig);
+	if (shackDict.disc.space_grid_use_c_staggering)
+		planeDataGridMapping.setup(i_shackDict, op.planeDataConfig);
 }
 
 

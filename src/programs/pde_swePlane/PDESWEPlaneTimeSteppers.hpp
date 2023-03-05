@@ -164,7 +164,7 @@ public:
 		shackPDESWEPlaneTimeDiscretization = io_shackDict.getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
 
 		SWE_Plane_TS_l_direct dummy;
-		dummy.registerShacks(&io_shackDict);
+		dummy.shackRegistration(&io_shackDict);
 
 		ERROR_FORWARD_WITH_RETURN_BOOLEAN(io_shackDict);
 		return true;
@@ -288,7 +288,7 @@ public:
 			SWEETError("No valid --timestepping-method provided");
 		}
 
-		master->registerShacks(io_shackDict);
+		master->shackRegistration(io_shackDict);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(*master);
 
 		master->setup(io_ops);
@@ -303,7 +303,7 @@ public:
 #if 0
 			l_direct = new SWE_Plane_TS_l_direct;
 
-			l_direct->registerShacks(io_shackDict);
+			l_direct->shackRegistration(io_shackDict);
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(*l_direct);
 
 			l_direct->setup(io_ops);

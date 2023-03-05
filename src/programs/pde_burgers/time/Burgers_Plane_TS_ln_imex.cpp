@@ -20,7 +20,7 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	if (simVars.misc.verbosity > 2)
+	if (shackDict.misc.verbosity > 2)
 		std::cout << "Burgers_Plane::run_timestep_imex()" << std::endl;
 
 	sweet::PlaneData_Spectral u=io_u;
@@ -44,24 +44,24 @@ void Burgers_Plane_TS_ln_imex::run_timestep(
 	else
 		SWEETError("The chosen timestepping-order is not possible with IMEX");
 
-	if (simVars.disc.space_use_spectral_basis_diffs) //spectral
+	if (shackDict.disc.space_use_spectral_basis_diffs) //spectral
 	{
 
 		sweet::PlaneData_Spectral lhs = u;
 		if (timestepping_order == 1)
 		{
-			lhs = ((-t)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			lhs = ((-t)*shackDict.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 		}
 		else
 		{
-			lhs = ((-t*0.5)*simVars.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
+			lhs = ((-t*0.5)*shackDict.sim.viscosity*(op.diff2_c_x + op.diff2_c_y)).spectral_addScalarAll(1.0);
 		}
 		sweet::PlaneData_Spectral u1 = rhs_u.spectral_div_element_wise(lhs);
 		sweet::PlaneData_Spectral v1 = rhs_v.spectral_div_element_wise(lhs);
 
-		io_u = u + t*simVars.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
+		io_u = u + t*shackDict.sim.viscosity*(op.diff2_c_x(u1)+op.diff2_c_y(u1))
 			  - t*(u1*op.diff_c_x(u1)+v1*op.diff_c_y(u1));
-		io_v = v + t*simVars.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
+		io_v = v + t*shackDict.sim.viscosity*(op.diff2_c_x(v1)+op.diff2_c_y(v1))
 			  - t*(u1*op.diff_c_x(v1)+v1*op.diff_c_y(v1));
 
 	} else { //Jacobi
@@ -83,13 +83,13 @@ void Burgers_Plane_TS_ln_imex::setup(
 
 
 Burgers_Plane_TS_ln_imex::Burgers_Plane_TS_ln_imex(
-		SimulationVariables &i_simVars,
+		sweet::ShackDictionary &i_shackDict,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
+		shackDict(i_shackDict),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
+	setup(shackDict.disc.timestepping_order);
 }
 
 

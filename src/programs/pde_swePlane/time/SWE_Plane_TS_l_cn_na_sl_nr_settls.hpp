@@ -28,7 +28,7 @@ class SWE_Plane_TS_l_cn_na_sl_nr_settls	: public PDESWEPlaneTS_BaseInterface
 {
 	bool use_only_linear_divergence;
 
-	sweet::PlaneDataSemiLagrangian semiLagrangian;
+	sweet::SemiLagrangianPlaneData semiLagrangian;
 	sweet::PlaneDataSampler sampler2D;
 
 	sweet::PlaneData_Spectral h_prev, u_prev, v_prev;
@@ -79,7 +79,7 @@ public:
 				sweet::PlaneData_Spectral &i_v_prev
 	) override
 	{
-		if (simVars.misc.verbosity > 5)
+		if (shackDict.misc.verbosity > 5)
 			std::cout << "set_previous_solution()" << std::endl;
 		h_prev = i_h_prev;
 		u_prev = i_u_prev;

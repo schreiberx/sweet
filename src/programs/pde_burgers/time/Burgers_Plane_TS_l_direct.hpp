@@ -10,7 +10,7 @@
 #include <limits>
 #include <sweet/core/plane/sweet::PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/plane/PlaneDataGridMapping.hpp>
 #include <sweet/core/plane/PlaneStaggering.hpp>
@@ -32,7 +32,7 @@
 
 class Burgers_Plane_TS_l_direct	: public Burgers_Plane_TS_interface
 {
-	SimulationVariables &simVars;
+	sweet::ShackDictionary &shackDict;
 	PlaneOperators &op;
 
 	PlaneDataGridMapping planeDataGridMapping;
@@ -112,7 +112,7 @@ class Burgers_Plane_TS_l_direct	: public Burgers_Plane_TS_interface
 
 public:
 	Burgers_Plane_TS_l_direct(
-			SimulationVariables &i_simVars,
+			sweet::ShackDictionary &i_shackDict,
 			PlaneOperators &i_op
 		);
 

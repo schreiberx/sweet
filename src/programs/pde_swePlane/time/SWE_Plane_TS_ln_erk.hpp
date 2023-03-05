@@ -21,7 +21,7 @@
 class SWE_Plane_TS_ln_erk	: public PDESWEPlaneTS_BaseInterface
 {
 	int timestepping_order;
-	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk;
+	sweet::TimesteppingExplicitRKPlaneData timestepping_rk;
 
 	bool use_only_linear_divergence;
 

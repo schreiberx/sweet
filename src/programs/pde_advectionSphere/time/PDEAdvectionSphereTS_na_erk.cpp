@@ -1,0 +1,113 @@
+/*
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ */
+
+#include "PDEAdvectionSphereTS_na_erk.hpp"
+
+
+
+
+bool PDEAdvectionSphereTS_na_erk::implements_timestepping_method(const std::string &i_timestepping_method)
+{
+	return i_timestepping_method == "na_erk";
+}
+
+std::string PDEAdvectionSphereTS_na_erk::string_id()
+{
+	return "na_erk";
+}
+
+
+/*
+ * Main routine for method to be used in case of finite differences
+ */
+void PDEAdvectionSphereTS_na_erk::euler_timestep_update(
+		const sweet::SphereData_Spectral &i_prognostic_field,	///< prognostic variables
+		sweet::SphereData_Physical &io_u,
+		sweet::SphereData_Physical &io_v,
+
+		sweet::SphereData_Spectral &o_prognostic_field,	///< time updates
+
+		double i_simulation_timestamp
+)
+{
+
+	/**
+	 * We simply compute
+	 * 	-DIV(rho*U) = -rho DIV(U) - U.GRAD(rho) = - U.GRAD(rho)
+	 * which is the Lagrangian contribution only.
+	 *
+	 * This is the case because the velocity field is divergence free!!!
+	 */
+	sweet::SphereData_Spectral phi = i_prognostic_field;
+
+	/*
+	 * For time-varying fields, update the vrt/div field based on the given simulation timestamp
+	 */
+	if (shackPDEAdvBenchmark->getVelocities)
+	{
+		shackPDEAdvBenchmark->getVelocities(io_u, io_v, i_simulation_timestamp, shackPDEAdvBenchmark->getVelocitiesUserData);
+
+		sweet::SphereData_Spectral vrt(phi.sphereDataConfig);
+		sweet::SphereData_Spectral div(phi.sphereDataConfig);
+		ops->uv_to_vrtdiv(io_u, io_v, vrt, div);
+	}
+
+	sweet::SphereData_Physical phig = phi.toPhys();
+
+	sweet::SphereData_Physical tmpg1 = io_u*phig;
+	sweet::SphereData_Physical tmpg2 = io_v*phig;
+
+	o_prognostic_field = -ops->uv_to_div(tmpg1, tmpg2);
+}
+
+
+
+void PDEAdvectionSphereTS_na_erk::run_timestep(
+		sweet::SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+		sweet::SphereData_Physical &io_u,
+		sweet::SphereData_Physical &io_v,
+
+		double i_fixed_dt,
+		double i_simulation_timestamp,
+
+		// for varying velocity fields
+		const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+)
+{
+	// standard time stepping
+	timestepping_rk.run_timestep_na(
+			this,
+			&PDEAdvectionSphereTS_na_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
+			io_prognostic_field, io_u, io_v,
+			i_fixed_dt,
+			timestepping_order,
+			i_simulation_timestamp
+		);
+}
+
+
+bool PDEAdvectionSphereTS_na_erk::setup(
+	sweet::SphereOperators *io_ops
+)
+{
+	PDEAdvectionSphereTS_BaseInterface::setup(io_ops);
+	timestepping_order = shackPDEAdvTimeDisc->timestepping_order;
+	return true;
+}
+
+
+std::string PDEAdvectionSphereTS_na_erk::get_help()
+{
+	std::ostringstream stream;
+	stream << " + SphereAdvection_TS_na_erk:" << std::endl;
+	stream << "    * 'na_erk'" << std::endl;
+
+	return stream.str();
+}
+
+
+PDEAdvectionSphereTS_na_erk::~PDEAdvectionSphereTS_na_erk()
+{
+}
+

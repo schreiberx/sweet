@@ -24,7 +24,7 @@ void Burgers_Plane_TS_l_erk::euler_timestep_update(
 		double i_simulation_timestamp
 )
 {
-	if (simVars.misc.verbosity > 2)
+	if (shackDict.misc.verbosity > 2)
 		std::cout << "p_run_euler_timestep_update()" << std::endl;
 
 	//TODO: staggering vs. non staggering
@@ -39,9 +39,9 @@ void Burgers_Plane_TS_l_erk::euler_timestep_update(
 ////   o_v_t.physical_set_all(0);
 
 	// u and v updates
-	o_u_t = simVars.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
+	o_u_t = shackDict.sim.viscosity*(op.diff2_c_x(i_u)+op.diff2_c_y(i_u));
 
-	o_v_t = simVars.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
+	o_v_t = shackDict.sim.viscosity*(op.diff2_c_x(i_v)+op.diff2_c_y(i_v));
 
 	o_tmp_t.spectral_set_zero();
 }
@@ -95,13 +95,13 @@ void Burgers_Plane_TS_l_erk::setup(
 
 
 Burgers_Plane_TS_l_erk::Burgers_Plane_TS_l_erk(
-		SimulationVariables &i_simVars,
+		sweet::ShackDictionary &i_shackDict,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
+		shackDict(i_shackDict),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
+	setup(shackDict.disc.timestepping_order);
 }
 
 

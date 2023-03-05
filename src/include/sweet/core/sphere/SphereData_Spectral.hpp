@@ -31,6 +31,9 @@
 
 
 
+namespace sweet
+{
+
 class SphereData_Spectral
 {
 	friend class SphereData_SpectralComplex;
@@ -39,7 +42,7 @@ class SphereData_Spectral
 
 
 public:
-	const SphereData_Config *sphereDataConfig = nullptr;
+	const SphereDataConfig *sphereDataConfig = nullptr;
 
 public:
 	std::complex<double> *spectral_space_data = nullptr;
@@ -75,7 +78,7 @@ public:
 
 public:
 	SphereData_Spectral(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
 		spectral_space_data(nullptr)
@@ -88,7 +91,7 @@ public:
 
 public:
 	SphereData_Spectral(
-			const SphereData_Config *i_sphereDataConfig,
+			const SphereDataConfig *i_sphereDataConfig,
 			const std::complex<double> &i_value
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
@@ -104,7 +107,7 @@ public:
 
 public:
 	SphereData_Spectral(
-			const SphereData_Config *i_sphereDataConfig,
+			const SphereDataConfig *i_sphereDataConfig,
 			double &i_value
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
@@ -165,7 +168,7 @@ public:
 	 */
 public:
 	inline void check(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
@@ -232,7 +235,7 @@ public:
 
 public:
 	SphereData_Spectral spectral_returnWithDifferentModes(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	const
 	{
 		SphereData_Spectral out(i_sphereDataConfig);
@@ -646,38 +649,50 @@ public:
 
 
 public:
-	void setup(
-		const SphereData_Config *i_sphereDataConfig
+	bool setup(
+		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
-		alloc_data();
+		return alloc_data();
 	}
 
 
 public:
-	void setup(
-		const SphereData_Config *i_sphereDataConfig,
+	bool setup(
+		const SphereDataConfig &i_sphereDataConfig
+	)
+	{
+		return setup(&i_sphereDataConfig);
+	}
+
+
+public:
+	bool setup(
+		const SphereDataConfig *i_sphereDataConfig,
 		double i_value
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
-		alloc_data();
+		bool retval = alloc_data();
 		spectral_set_value(i_value);
+
+		return retval;
 	}
 
 
 private:
-	void alloc_data()
+	bool alloc_data()
 	{
 		assert(spectral_space_data == nullptr);
 		spectral_space_data = MemBlockAlloc::alloc<Tcomplex>(sphereDataConfig->spectral_array_data_number_of_elements * sizeof(Tcomplex));
+		return true;
 	}
 
 
 public:
 	void setup_if_required(
-		const SphereData_Config *i_sphereDataConfig
+		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)
@@ -689,7 +704,7 @@ public:
 
 
 public:
-	void free()
+	void clear()
 	{
 		if (spectral_space_data != nullptr)
 		{
@@ -705,7 +720,7 @@ public:
 public:
 	~SphereData_Spectral()
 	{
-		free();
+		clear();
 	}
 
 
@@ -1654,7 +1669,7 @@ SphereData_Spectral operator-(
 	return i_array_data.operator_scalar_sub_this(i_value);
 }
 
-
+}
 
 
 #endif

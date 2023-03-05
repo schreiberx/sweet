@@ -65,7 +65,7 @@ void Burgers_Plane_TS_ln_adomian::run_timestep(
 			}
 		}
 
-		u[kk+1] = simVars.sim.viscosity*op.diff2_c_x(u[kk])-A[kk];
+		u[kk+1] = shackDict.sim.viscosity*op.diff2_c_x(u[kk])-A[kk];
 		// Integration by time, works like this, since u0 is independent of t.
 		// Therefore, each integration goes from 1 to 1*t, to t*t/2, to t^2*t/3 etc.
 		u[kk+1] = u[kk+1] * time / (kk+1);
@@ -91,13 +91,13 @@ void Burgers_Plane_TS_ln_adomian::setup(
 
 
 Burgers_Plane_TS_ln_adomian::Burgers_Plane_TS_ln_adomian(
-		SimulationVariables &i_simVars,
+		sweet::ShackDictionary &i_shackDict,
 		PlaneOperators &i_op
 )	:
-		simVars(i_simVars),
+		shackDict(i_shackDict),
 		op(i_op)
 {
-	setup(simVars.disc.timestepping_order);
+	setup(shackDict.disc.timestepping_order);
 }
 
 

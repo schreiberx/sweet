@@ -17,7 +17,7 @@
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 
 #include "../programs/swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
-//#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+//#include <sweet/core/sphere/SphereOperators.hpp>
 
 
 
@@ -150,7 +150,7 @@ public:
 	bool checkTruncated(
 			const SphereData_Spectral &i_lhs,
 			const SphereData_Spectral &i_rhs,
-			const sweet::SphereData_Config *i_sphereDataConfig,
+			const sweet::SphereDataConfig *i_sphereDataConfig,
 			const std::string &i_id,
 			double i_error_threshold,	// = 1.0,
 			double i_ignore_error,		// = false,
@@ -204,7 +204,7 @@ public:
 	bool checkTruncated(
 			const sweet::SphereData_SpectralComplex &i_lhs,
 			const sweet::SphereData_SpectralComplex &i_rhs,
-			const sweet::SphereData_Config *i_sphereDataConfig,
+			const sweet::SphereDataConfig *i_sphereDataConfig,
 			const std::string &i_id,
 			double i_error_threshold = 1.0,
 			bool i_ignore_error = false,
@@ -275,7 +275,7 @@ public:
 	bool checkTruncatedSpectral(
 			const sweet::SphereData_SpectralComplex &i_lhs,
 			const sweet::SphereData_SpectralComplex &i_rhs,
-			const sweet::SphereData_Config *i_sphereDataConfig,
+			const sweet::SphereDataConfig *i_sphereDataConfig,
 			const std::string &i_id,
 			double i_error_threshold = 1.0,
 			bool i_ignore_error = false,
@@ -340,7 +340,7 @@ public:
 SimulationVariables simVars;
 
 void run_tests(
-		sweet::SphereData_Config *sphereDataConfig
+		sweet::SphereDataConfig *sphereDataConfig
 )
 {
 	double epsilon = 1e-12;
@@ -460,7 +460,7 @@ int main(
 	if (simVars.disc.space_res_spectral[0] == 0)
 		SWEETError("Set number of spectral modes to use SPH!");
 
-	sweet::SphereData_Config sphereDataConfig;
+	sweet::SphereDataConfig sphereDataConfig;
 	sphereDataConfig.setupAutoPhysicalSpace(
 					simVars.disc.space_res_spectral[0],
 					simVars.disc.space_res_spectral[1],

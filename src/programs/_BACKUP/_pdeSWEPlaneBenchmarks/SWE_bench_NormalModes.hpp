@@ -14,7 +14,7 @@
 #include <sstream>
 
 #include <cmath>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 
@@ -29,12 +29,12 @@
 class SWE_bench_NormalModes
 {
 
-	SimulationVariables &simVars;
+	sweet::ShackDictionary &shackDict;
 
-	double f = simVars.sim.plane_rotating_f0;
-	double g = simVars.sim.gravitation;
-	double sx = simVars.sim.plane_domain_size[0];
-	double sy = simVars.sim.plane_domain_size[1];
+	double f = shackDict.sim.plane_rotating_f0;
+	double g = shackDict.sim.gravitation;
+	double sx = shackDict.sim.plane_domain_size[0];
+	double sy = shackDict.sim.plane_domain_size[1];
 
 	public:
 	std::string bcasename; //Benchmark case name
@@ -65,7 +65,7 @@ public:
 			PlaneData_Spectral &io_h, // h: surface height (perturbation)
 			PlaneData_Spectral &io_u, // u: velocity in x-direction
 			PlaneData_Spectral &io_v, // v: velocity in y-direction
-			SimulationVariables &i_simVars // Simulation variables
+			sweet::ShackDictionary &i_shackDict // Simulation variables
 	)
 	{
 
@@ -73,7 +73,7 @@ public:
 
 		const PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
 
-		if (i_simVars.disc.space_grid_use_c_staggering)
+		if (i_shackDict.disc.space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
 		
 		//std::cout << "Adding mode to fields" <<std::endl;
@@ -104,7 +104,7 @@ public:
 		sw_eigen_decomp(
 				k0,				//wavenumber in x
 				k1,				// wavenumeber in y
-				i_simVars,  // Input Simulation variables
+				i_shackDict,  // Input Simulation variables
 				false, // Direct EV matrix (not inverse)
 				v , // EV matrix
 				lambda // output eigen values */
@@ -188,7 +188,7 @@ public:
 			PlaneData_Spectral &i_h, // h: surface height (perturbation)
 			PlaneData_Spectral &i_u, // u: velocity in x-direction
 			PlaneData_Spectral &i_v, // v: velocity in y-direction
-			SimulationVariables &i_simVars, // Simulation variables
+			sweet::ShackDictionary &i_shackDict, // Simulation variables
 			PlaneData_Spectral &o_geo_mode,    //Output: Coeficients multiplying geostrophic mode
 			PlaneData_Spectral &o_igwest_mode, //Output: Coeficients multiplying west gravity mode
 			PlaneData_Spectral &o_igeast_mode //Output: Coeficients multiplying east gravity mode
@@ -213,7 +213,7 @@ public:
 									i_h,
 									i_u,
 									i_v,
-									i_simVars,
+									i_shackDict,
 									geo_mode_c,
 									igwest_mode_c,
 									igeast_mode_c
@@ -239,7 +239,7 @@ public:
 			PlaneData_Spectral &i_h, // h: surface height (perturbation)
 			PlaneData_Spectral &i_u, // u: velocity in x-direction
 			PlaneData_Spectral &i_v, // v: velocity in y-direction
-			SimulationVariables &i_simVars, // Simulation variables
+			sweet::ShackDictionary &i_shackDict, // Simulation variables
 			complex &o_geo_mode,    //Output: Coeficient multiplying geostrophic mode
 			complex &o_igwest_mode, //Output: Coeficient multiplying west gravity mode
 			complex &o_igeast_mode //Output: Coeficient multiplying east gravity mode
@@ -250,7 +250,7 @@ public:
 
 		const PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
 
-		if (i_simVars.disc.space_grid_use_c_staggering)
+		if (i_shackDict.disc.space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
 		
 		//std::cout << "Adding mode to fields" <<std::endl;
@@ -281,7 +281,7 @@ public:
 		sw_eigen_decomp(
 				k0,				//wavenumber in x
 				k1,				// wavenumeber in y
-				i_simVars,  // Input Simulation variables
+				i_shackDict,  // Input Simulation variables
 				true, // Inverse ev matrix
 				v , // inverse EV matrix
 				lambda // output eigen values */
@@ -319,7 +319,7 @@ public:
 	void sw_eigen_decomp(
 			T k0,				//wavenumber in x
 			T k1,				// wavenumeber in y
-			SimulationVariables &i_simVars, // Input Simulation variables
+			sweet::ShackDictionary &i_shackDict, // Input Simulation variables
 			bool i_inverse = false, // Input true, returns inverse matriz, false: returns direct
 			complex o_v[3][3] = {0}, // output eigen vector (direct or inverse)
 			complex o_evalues[3] =  0 // output eigen values (optional)
@@ -337,18 +337,18 @@ public:
 		//std::cout <<o_evalues[1]<<std::endl;
 		//std::cout <<i_inverse<<std::endl;
 
-		if (i_simVars.disc.space_grid_use_c_staggering)
+		if (i_shackDict.disc.space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
 		
 		complex I(0.0, 1.0);
 		//std::cout << "Calculating EV for mode (" << k0 << ", " << k1 << ")" << std::endl;
 		//std::cout << "hi" << std::endl;
-		T s0 = i_simVars.sim.plane_domain_size[0];
-		T s1 = i_simVars.sim.plane_domain_size[1];
+		T s0 = i_shackDict.sim.plane_domain_size[0];
+		T s1 = i_shackDict.sim.plane_domain_size[1];
 
-		T f = i_simVars.sim.plane_rotating_f0;
-		T h = i_simVars.sim.h0;
-		T g = i_simVars.sim.gravitation;
+		T f = i_shackDict.sim.plane_rotating_f0;
+		T h = i_shackDict.sim.h0;
+		T g = i_shackDict.sim.gravitation;
 
 		T sqrt_h = rexiFunctions.l_sqrt(h);
 		T sqrt_g = rexiFunctions.l_sqrt(g);
@@ -371,7 +371,7 @@ public:
 		complex lambda[3];
 
 		
-		if (i_simVars.sim.plane_rotating_f0 == 0)
+		if (i_shackDict.sim.plane_rotating_f0 == 0)
 		{
 			/*
 				* http://www.wolframalpha.com/input/?i=eigenvector%7B%7B0,h*b,h*c%7D,%7Bg*b,0,0%7D,%7Bg*c,0,0%7D%7D
@@ -639,7 +639,7 @@ public:
 public:
 	static
 	std::stringstream dump_normal_modes(
-			SimulationVariables &i_simVars, // Simulation variables
+			sweet::ShackDictionary &i_shackDict, // Simulation variables
 			PlaneData_Spectral &i_mode    //Coeficients multiplying  mode
 	)
 	{
@@ -648,8 +648,8 @@ public:
 		std::stringstream buffer;
 		buffer << std::setprecision(8);
 
-		buffer << i_simVars.timecontrol.current_timestep_nr;
-		buffer << "\t" << i_simVars.timecontrol.current_simulation_time;
+		buffer << i_shackDict.timecontrol.current_timestep_nr;
+		buffer << "\t" << i_shackDict.timecontrol.current_simulation_time;
 		const double zero=0.0;
 		const double scale_factor =((double)(planeDataConfig->spectral_array_data_number_of_elements)); 
 		//planeDataConfig->physical_data_size[0]*planeDataConfig->physical_data_size[1]));
@@ -676,7 +676,7 @@ public:
 public:
 	static
 	void dump_all_normal_modes(
-			SimulationVariables &i_simVars, // Simulation variables
+			sweet::ShackDictionary &i_shackDict, // Simulation variables
 			PlaneData_Spectral &i_mode_geo,    //Coeficients multiplying  mode
 			PlaneData_Spectral &i_mode_igwest,    //Coeficients multiplying  mode
 			PlaneData_Spectral &i_mode_igeast    //Coeficients multiplying  mode
@@ -691,7 +691,7 @@ public:
 		std::ofstream file0;	
 		std::ofstream file1;	
 		std::ofstream file2;	
-		if (i_simVars.timecontrol.current_timestep_nr == 0){
+		if (i_shackDict.timecontrol.current_timestep_nr == 0){
 			file0.open(filename_geo, std::ofstream::out | std::ofstream::trunc);	
 			file1.open(filename_igwest, std::ofstream::out | std::ofstream::trunc);	
 			file2.open(filename_igeast, std::ofstream::out | std::ofstream::trunc);	
@@ -709,7 +709,7 @@ public:
 		buffer2 << std::setprecision(8);
 
 		//Headers
-		if (i_simVars.timecontrol.current_timestep_nr == 0){
+		if (i_shackDict.timecontrol.current_timestep_nr == 0){
 			//header
 			buffer0 << "n\t time";
 			buffer1 << "n\t time";
@@ -739,15 +739,15 @@ public:
 			file2 << buffer2.str() << std::endl;
 		}
 
-		buffer0 = dump_normal_modes(i_simVars, i_mode_geo);
+		buffer0 = dump_normal_modes(i_shackDict, i_mode_geo);
 		file0 << buffer0.str() << std::endl;
 		buffer0.str(std::string());
 
-		buffer1 = dump_normal_modes(i_simVars, i_mode_igwest);
+		buffer1 = dump_normal_modes(i_shackDict, i_mode_igwest);
 		file1 << buffer1.str() << std::endl;
 		buffer1.str(std::string());
 
-		buffer2 = dump_normal_modes(i_simVars, i_mode_igeast);
+		buffer2 = dump_normal_modes(i_shackDict, i_mode_igeast);
 		file2 << buffer2.str() << std::endl;
 		buffer2.str(std::string());
 
@@ -815,10 +815,10 @@ public:
  **/
 	public:
 	SWE_bench_NormalModes(
-		SimulationVariables &io_simVars,
+		sweet::ShackDictionary &io_shackDict,
 		PlaneOperators &io_op
 	)	:
-		simVars(io_simVars)
+		shackDict(io_shackDict)
 	{
 	}
 
@@ -830,7 +830,7 @@ public:
 	{
 		std::cout << "Generating Normal Modes Initial Conditions: ";
 
-		extract_bench_info(simVars.benchmark.benchmark_normal_modes_case);
+		extract_bench_info(shackDict.benchmark.benchmark_normal_modes_case);
 		
 		//Naming convention for normal_mode_cases (for arbitraty use):
 		//  name_k0_k1_d0_deast_dwest
@@ -861,7 +861,7 @@ public:
 										ik0, ik1,
 										d0[n], dwest[n], deast[n],
 										o_h, o_u, o_v,
-										simVars
+										shackDict
 									);
 						}
 					}
@@ -871,7 +871,7 @@ public:
 									k0[n], k1[n],
 									d0[n], dwest[n], deast[n],
 									o_h, o_u, o_v,
-									simVars
+									shackDict
 							);
 				}
 				else

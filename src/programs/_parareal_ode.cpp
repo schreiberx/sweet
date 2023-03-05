@@ -24,11 +24,11 @@
 #endif
 
 #include <cmath>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 
 #include "ode_scalar_timeintegrators/ODE_Scalar_TimeSteppers.hpp"
 
-SimulationVariables simVars;
+sweet::ShackDictionary shackDict;
 
 double param_parareal_fine_dt = -1;
 double param_parareal_function_y0 = 0.123;
@@ -118,7 +118,7 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
 //////////			const std::string &i_timestepping_method,
 //////////			int &i_timestepping_order,
 //////////
-//////////			SimulationVariables &i_simVars
+//////////			sweet::ShackDictionary &i_shackDict
 //////////	)
 //////////	{
 //////////		reset();
@@ -139,17 +139,17 @@ class SimulationInstance
 
 private:
 	double prog_u;
-	SimulationVariables* simVars;
+	sweet::ShackDictionary* shackDict;
 
 public:
 	ODE_Scalar_TimeSteppers* timeSteppers = nullptr;
 
 public:
-	SimulationInstance(SimulationVariables* i_simVars)
-		: simVars(i_simVars)
+	SimulationInstance(sweet::ShackDictionary* i_shackDict)
+		: shackDict(i_shackDict)
 	{
 		timeSteppers = new ODE_Scalar_TimeSteppers;
-		timeSteppers->setup(*simVars);
+		timeSteppers->setup(*shackDict);
 	}
 
 	~SimulationInstance()
@@ -165,20 +165,20 @@ public:
 	void run()
 	{
 		// reset simulation time
-		simVars->timecontrol.current_simulation_time = 0;
-		simVars->timecontrol.current_timestep_nr = 0;
+		shackDict->timecontrol.current_simulation_time = 0;
+		shackDict->timecontrol.current_timestep_nr = 0;
 		this->prog_u = param_parareal_function_y0;
 
 		this->do_output();
 		while (true)
 		{
 			this->timeSteppers->master->run_timestep(this->prog_u,
-					simVars->timecontrol.current_timestep_size,
-					simVars->timecontrol.current_simulation_time
+					shackDict->timecontrol.current_timestep_size,
+					shackDict->timecontrol.current_simulation_time
 				);
 
-			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestep_size;
-			simVars->timecontrol.current_timestep_nr++;
+			shackDict->timecontrol.current_simulation_time += shackDict->timecontrol.current_timestep_size;
+			shackDict->timecontrol.current_timestep_nr++;
 
 			this->do_output();
 
@@ -211,13 +211,13 @@ public:
 	bool should_quit()
 	{
 		if (
-				simVars->timecontrol.max_timesteps_nr != -1 &&
-				simVars->timecontrol.max_timesteps_nr <= simVars->timecontrol.current_timestep_nr
+				shackDict->timecontrol.max_timesteps_nr != -1 &&
+				shackDict->timecontrol.max_timesteps_nr <= shackDict->timecontrol.current_timestep_nr
 		)
 			return true;
 
-		if (!std::isinf(simVars->timecontrol.max_simulation_time))
-			if (simVars->timecontrol.max_simulation_time <= simVars->timecontrol.current_simulation_time+simVars->timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
+		if (!std::isinf(shackDict->timecontrol.max_simulation_time))
+			if (shackDict->timecontrol.max_simulation_time <= shackDict->timecontrol.current_simulation_time+shackDict->timecontrol.max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
 				return true;
 
 		return false;
@@ -229,7 +229,7 @@ public:
 		char buffer[1024];
 
 		const char* filename_template = "output_%s_t%020.8f.csv";
-		sprintf(buffer, filename_template, "prog_u", simVars->timecontrol.current_simulation_time);
+		sprintf(buffer, filename_template, "prog_u", shackDict->timecontrol.current_simulation_time);
 
 		std::ofstream file(buffer, std::ios_base::trunc);
 		file << std::setprecision(16);
@@ -273,7 +273,7 @@ int main(int i_argc, char *i_argv[])
 	param_parareal_function_a = 1.0;
 	param_parareal_function_b = 0.1;
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
+	if (!shackDict.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		///std::cout << "	--parareal-fine-dt				Fine time stepping size" << std::endl;
 		std::cout << "	--parareal-function-param-y0	Parameter 'y0' (initial condition) for function y(t=0)" << std::endl;
@@ -284,23 +284,23 @@ int main(int i_argc, char *i_argv[])
 	}
 
 
-	param_parareal_fine_dt = simVars.timecontrol.current_timestep_size;
-	//if (simVars.bogus.var[0] != "")
-	//	param_parareal_fine_dt = atof(simVars.bogus.var[0].c_str());
-	if (simVars.user_defined.var[1] != "")
-		param_parareal_function_y0 = atof(simVars.user_defined.var[1].c_str());
+	param_parareal_fine_dt = shackDict.timecontrol.current_timestep_size;
+	//if (shackDict.bogus.var[0] != "")
+	//	param_parareal_fine_dt = atof(shackDict.bogus.var[0].c_str());
+	if (shackDict.user_defined.var[1] != "")
+		param_parareal_function_y0 = atof(shackDict.user_defined.var[1].c_str());
 	else
-		simVars.user_defined.var[1] = std::to_string(param_parareal_function_y0);
+		shackDict.user_defined.var[1] = std::to_string(param_parareal_function_y0);
 
-	if (simVars.user_defined.var[2] != "")
-		param_parareal_function_a = atof(simVars.user_defined.var[2].c_str());
+	if (shackDict.user_defined.var[2] != "")
+		param_parareal_function_a = atof(shackDict.user_defined.var[2].c_str());
 	else
-		simVars.user_defined.var[2] = std::to_string(param_parareal_function_a);
+		shackDict.user_defined.var[2] = std::to_string(param_parareal_function_a);
 
-	if (simVars.user_defined.var[3] != "")
-		param_parareal_function_b = atof(simVars.user_defined.var[3].c_str());
+	if (shackDict.user_defined.var[3] != "")
+		param_parareal_function_b = atof(shackDict.user_defined.var[3].c_str());
 	else
-		simVars.user_defined.var[3] = std::to_string(param_parareal_function_b);
+		shackDict.user_defined.var[3] = std::to_string(param_parareal_function_b);
 
 	if (param_parareal_fine_dt <= 0)
 	{
@@ -310,7 +310,7 @@ int main(int i_argc, char *i_argv[])
 
 #if (!SWEET_PARAREAL && !SWEET_XBRAID)
 
-	SimulationInstance* sim = new SimulationInstance(&simVars);
+	SimulationInstance* sim = new SimulationInstance(&shackDict);
 
 	sim->run();
 
@@ -319,7 +319,7 @@ int main(int i_argc, char *i_argv[])
 #endif
 
 #if SWEET_PARAREAL
-	if (!simVars.parareal.enabled)
+	if (!shackDict.parareal.enabled)
 	{
 		std::cout << "Activate parareal mode via --parareal0enable=1" << std::endl;
 		return -1;
@@ -330,7 +330,7 @@ int main(int i_argc, char *i_argv[])
 	std::cout << " + initial condition: y0=" << param_parareal_function_y0 << std::endl;
 	std::cout << " + function df(y,t)/dt = " << param_parareal_function_a << "*sin(y) + " << param_parareal_function_b << "*sin(t)" << std::endl;
 
-	if (simVars.parareal.enabled)
+	if (shackDict.parareal.enabled)
 	{
 
 		ODE_Scalar_TimeSteppers* timeSteppersFine = new ODE_Scalar_TimeSteppers;
@@ -340,14 +340,14 @@ int main(int i_argc, char *i_argv[])
 		 * Allocate parareal controller and provide class
 		 * which implement the parareal features
 		 */
-		Parareal_Controller<ODE_Scalar_TimeSteppers, 1> parareal_Controller(&simVars,
+		Parareal_Controller<ODE_Scalar_TimeSteppers, 1> parareal_Controller(&shackDict,
 											timeSteppersFine,
 											timeSteppersCoarse);
 
-		std::cout << simVars.parareal.path_ref_csv_files << std::endl;
-		std::cout << &simVars.parareal.path_ref_csv_files << std::endl;
-		std::cout << &simVars.parareal << std::endl;
-		std::cout << &simVars << std::endl;
+		std::cout << shackDict.parareal.path_ref_csv_files << std::endl;
+		std::cout << &shackDict.parareal.path_ref_csv_files << std::endl;
+		std::cout << &shackDict.parareal << std::endl;
+		std::cout << &shackDict << std::endl;
 		// setup controller. This initializes several simulation instances
 		parareal_Controller.setup();
 
@@ -359,24 +359,24 @@ int main(int i_argc, char *i_argv[])
 	}
 #elif SWEET_XBRAID
 
-	if (simVars.xbraid.xbraid_enabled)
+	if (shackDict.xbraid.xbraid_enabled)
 	{
 
 		MPI_Comm comm = MPI_COMM_WORLD;
 		MPI_Comm comm_x, comm_t;
 
-		int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
-                if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+		int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
+                if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
 			nt++;
-		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars);
+		sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict);
 
-		if ( simVars.xbraid.xbraid_run_wrapper_tests)
+		if ( shackDict.xbraid.xbraid_run_wrapper_tests)
 		{
 
 			app.setup();
 
 			BraidUtil braid_util;
-			int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+			int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
 			if (test == 0)
 				SWEETError("Tests failed!");
 			else

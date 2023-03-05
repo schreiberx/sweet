@@ -7,14 +7,14 @@
 #include <sweet/core/MemBlockAlloc.hpp>
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereDataComplex.hpp>
+#include <sweet/core/sphere/SphereOperatorsComplex.hpp>
 #include <sweet/core/SWEETError.hpp>
 
 
 SimulationVariables simVars;
 
-sweet::SphereData_Config sphereDataConfigInstance;
-sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
+sweet::SphereDataConfig sphereDataConfigInstance;
+sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
 
 
 void test_header(const std::string &i_str)
@@ -35,7 +35,7 @@ void run_tests()
 
 	// Use earth radius of 1
 	simVars.sim.sphere_radius = 1.0;
-	SphereOperators_SphereDataComplex op(sphereDataConfig, &(simVars.sim));
+	SphereOperatorsComplex op(sphereDataConfig, &(simVars.sim));
 
 
 	if (true)

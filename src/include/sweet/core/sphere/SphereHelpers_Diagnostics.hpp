@@ -10,12 +10,15 @@
 
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/SimulationVariables.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 
+
+namespace sweet
+{
 
 class SphereHelpers_Diagnostics
 {
-	SphereData_Config *sphereDataConfig;
+	SphereDataConfig *sphereDataConfig;
 	SphereData_Spectral modeIntegralValues;
 
 	/*
@@ -26,7 +29,7 @@ class SphereHelpers_Diagnostics
 
 public:
 	SphereHelpers_Diagnostics(
-			SphereData_Config *i_sphereDataConfig,
+			SphereDataConfig *i_sphereDataConfig,
 			SimulationVariables &i_simVars,
 			int i_verbose = 1
 	)	:
@@ -195,7 +198,7 @@ public:
 
 public:
 	void update_phi_vrt_div_2_mass_energy_enstrophy(
-			const SphereOperators_SphereData &op,
+			const SphereOperators &op,
 			const SphereData_Spectral &i_prog_phi,
 			const SphereData_Spectral &i_prog_vort,
 			const SphereData_Spectral &i_prog_div,
@@ -248,6 +251,6 @@ public:
 
 };
 
-
+}
 
 #endif

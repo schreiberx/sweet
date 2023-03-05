@@ -57,7 +57,7 @@ public:
 
 	}
 
-	virtual bool registerShacks(
+	virtual bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	)
 	{

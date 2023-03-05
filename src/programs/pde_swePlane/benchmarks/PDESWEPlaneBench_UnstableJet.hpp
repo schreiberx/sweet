@@ -90,8 +90,8 @@ public:
 			double y
 	)
 	{
-		//double radius = simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
-		double radius = 1.0; //simVars.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		//double radius = shackDict.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
+		double radius = 1.0; //shackDict.setup.radius_scale*sqrt((double)sx*(double)sx+(double)sy*(double)sy);
 		double factor = 1000.0;
 
 
@@ -131,8 +131,8 @@ public:
 		for (int j = 0; j < shackPlaneDataOps->space_res_physical[1]; j++)
 		{
 			int i = 0;
-			double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*simVars.sim.domain_size[0];
-			double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*simVars.sim.domain_size[1];
+			double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*shackDict.sim.domain_size[0];
+			double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*shackDict.sim.domain_size[1];
 
 			depth_phys.physical_set_value(j, i, depth(x, y));
 		}
@@ -145,8 +145,8 @@ public:
 
 				// h - lives in the center of the cell
 				// (x,y) \in [0,1]x[0,1]
-				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*shackDict.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*shackDict.sim.domain_size[1];
 
 				if (i_with_bump)
 					depth_phys.physical_set_value(j, i, depth_phys.physical_get(j, 0) + bump(x,y));
@@ -174,8 +174,8 @@ public:
 			{
 
 				// (u,v) - lives in the center of the cell
-				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*simVars.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*simVars.sim.domain_size[1];
+				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*shackDict.sim.domain_size[0];
+				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*shackDict.sim.domain_size[1];
 				// (x,y) \in [0,1]x[0,1]
 				u_phys.physical_set_value(j, i, u(x, y));
 			}

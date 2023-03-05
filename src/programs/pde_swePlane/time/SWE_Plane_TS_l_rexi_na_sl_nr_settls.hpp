@@ -35,7 +35,7 @@ class SWE_Plane_TS_l_rexi_na_sl_nr_settls	: public PDESWEPlaneTS_BaseInterface
 
 	int with_linear_div_only;
 
-	sweet::PlaneDataSemiLagrangian semiLagrangian;
+	sweet::SemiLagrangianPlaneData semiLagrangian;
 	sweet::PlaneDataSampler sampler2D;
 
 	//Previous values (t_n-1)
@@ -54,7 +54,7 @@ public:
 			sweet::PlaneOperators *io_ops
 	);
 
-	bool registerShacks(
+	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	);
 
@@ -74,7 +74,7 @@ public:
 				sweet::PlaneData_Spectral &i_v_prev
 	) override
 	{
-		if (simVars.misc.verbosity > 5)
+		if (shackDict.misc.verbosity > 5)
 			std::cout << "set_previous_solution()" << std::endl;
 		h_prev = i_h_prev;
 		u_prev = i_u_prev;

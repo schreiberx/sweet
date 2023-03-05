@@ -12,6 +12,10 @@
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
 
+
+namespace sweet
+{
+
 class Convert_SphereDataSpectralComplex_To_SphereDataSpectral
 {
 public:
@@ -49,6 +53,6 @@ public:
 	}
 };
 
-
+}
 
 #endif

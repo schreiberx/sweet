@@ -14,6 +14,11 @@
 #include <sweet/libmath/interpolation.hpp>
 
 
+
+namespace sweet
+{
+
+
 /**
  * this is a sampler class which provides method to provide
  * interpolated sampled values on 2D physical sphere data which
@@ -23,7 +28,7 @@ class SphereOperators_Sampler_SphereDataPhysical
 {
 public:
 	int res[2];						/// resolution of domain
-	const SphereData_Config *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 	std::vector<double> sampling_data;
 
@@ -49,7 +54,7 @@ private:
 
 public:
 	SphereOperators_Sampler_SphereDataPhysical(
-		SphereData_Config *i_sphereDataConfig
+		SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		assert(i_sphereDataConfig != nullptr);
@@ -87,7 +92,7 @@ public:
 
 public:
 	void setup(
-		const SphereData_Config *i_sphereDataConfig
+		const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		if (i_sphereDataConfig == nullptr)
@@ -802,7 +807,6 @@ public:
 
 };
 
-
-
+}
 
 #endif

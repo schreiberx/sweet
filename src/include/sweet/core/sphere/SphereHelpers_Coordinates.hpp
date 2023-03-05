@@ -10,6 +10,11 @@
 
 #include <array>
 
+
+namespace sweet
+{
+
+
 class SphereHelpers_Coordinates
 {
 public:
@@ -52,8 +57,6 @@ public:
 	}
 };
 
-
-
-
+}
 
 #endif

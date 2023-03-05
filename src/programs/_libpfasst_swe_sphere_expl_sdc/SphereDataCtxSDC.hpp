@@ -3,15 +3,15 @@
 
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereHelpers_Diagnostics.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 #include <vector>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include "../libpfasst_interface/LevelSingleton.hpp"
 
 #include "../swe_sphere_timeintegrators/SWE_Sphere_TS_ln_erk.hpp"
 
 // Class containing the context necessary to evaluate the right-hand sides
-// Currently only contains a pointer to the LevelSingleton and the SimulationVariables object
+// Currently only contains a pointer to the LevelSingleton and the sweet::ShackDictionary object
 
 class SphereDataCtxSDC {
 
@@ -19,11 +19,11 @@ public:
 
     // Constructor
     SphereDataCtxSDC(
-        SimulationVariables *i_simVars,
+        sweet::ShackDictionary *i_shackDict,
         LevelSingleton *i_singleton,
         int* i_nnodes
         ) 
-        : simVars(i_simVars), levelSingleton(i_singleton)
+        : shackDict(i_shackDict), levelSingleton(i_singleton)
     {
         int rank   = 0;
         int nprocs = 0;
@@ -31,9 +31,9 @@ public:
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
         MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
         
-        if (!simVars)
+        if (!shackDict)
         {
-            SWEETError("SphereDataCtx: simVars pointer is NULL!");
+            SWEETError("SphereDataCtx: shackDict pointer is NULL!");
         }
         
         if (!levelSingleton)
@@ -42,7 +42,7 @@ public:
         }
         
         // initialize the ln_erk time stepper
-        timestepper_ln_erk = new SWE_Sphere_TS_ln_erk(*simVars, levelSingleton->op);
+        timestepper_ln_erk = new SWE_Sphere_TS_ln_erk(*shackDict, levelSingleton->op);
 
         // this is never used but this makes clear that with niters=1,
         // we're actually just calling ERK1
@@ -54,7 +54,7 @@ public:
         // initialize the diagnostics object
         sphereDiagnostics = new SphereHelpers_Diagnostics(
                             &(levelSingleton->dataConfig),
-                            *simVars,
+                            *shackDict,
                             0
                             );
     }
@@ -85,13 +85,13 @@ public:
     }
 
     // Getter for the sphere data operators
-    SphereOperators_SphereData* get_sphere_operators() const
+    SphereOperators* get_sphere_operators() const
     {
         return &(levelSingleton->op);
     }
 
     // Getter for the sphere data operators with no dealiasing
-    SphereOperators_SphereData* get_sphere_operators_nodealiasing() const
+    SphereOperators* get_sphere_operators_nodealiasing() const
     {
         return &(levelSingleton->opNoDealiasing);
     }
@@ -109,9 +109,9 @@ public:
     }
 
     // Getter for the simulationVariables object
-    SimulationVariables* get_simulation_variables() const 
+    sweet::ShackDictionary* get_simulation_variables() const 
     { 
-        return simVars;
+        return shackDict;
     }
 
     // Getter for the number of levels
@@ -125,10 +125,10 @@ public:
                     int i_niter
                     ) 
     {
-        time.push_back(simVars->timecontrol.current_timestep_size * i_niter);
-        mass.push_back(simVars->diag.total_mass);
-        energy.push_back(simVars->diag.total_energy);
-        potentialEnstrophy.push_back(simVars->diag.total_potential_enstrophy);
+        time.push_back(shackDict->timecontrol.current_timestep_size * i_niter);
+        mass.push_back(shackDict->diag.total_mass);
+        energy.push_back(shackDict->diag.total_energy);
+        potentialEnstrophy.push_back(shackDict->diag.total_potential_enstrophy);
     }
 
     // Getters for the time and invariants vectors
@@ -143,8 +143,8 @@ public:
     
 protected:
 
-    // Pointer to the SimulationVariables object
-    SimulationVariables *simVars;
+    // Pointer to the sweet::ShackDictionary object
+    sweet::ShackDictionary *shackDict;
 
     // Pointer to the LevelSingleton object
     LevelSingleton *levelSingleton;

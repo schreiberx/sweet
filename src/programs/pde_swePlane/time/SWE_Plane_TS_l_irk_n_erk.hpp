@@ -26,11 +26,11 @@ class SWE_Plane_TS_l_irk_n_erk	:
 
 	bool use_only_linear_divergence;
 
-	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk;
+	sweet::TimesteppingExplicitRKPlaneData timestepping_rk;
 	SWE_Plane_TS_l_irk ts_l_irk;
 
 public:
-	bool registerShacks(
+	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	);
 

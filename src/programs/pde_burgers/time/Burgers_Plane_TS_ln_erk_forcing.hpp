@@ -11,7 +11,7 @@
 
 #include <limits>
 #include <sweet/core/plane/sweet::PlaneData_Spectral.hpp>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
 
@@ -21,7 +21,7 @@
 
 class Burgers_Plane_TS_ln_erk_forcing	: public Burgers_Plane_TS_interface
 {
-	SimulationVariables &simVars;
+	sweet::ShackDictionary &shackDict;
 	PlaneOperators &op;
 
 	int timestepping_order;
@@ -42,7 +42,7 @@ private:
 
 public:
 	Burgers_Plane_TS_ln_erk_forcing(
-			SimulationVariables &i_simVars,
+			sweet::ShackDictionary &i_shackDict,
 			PlaneOperators &i_op
 		);
 

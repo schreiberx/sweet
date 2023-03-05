@@ -25,12 +25,12 @@ class SWE_Plane_TS_l_cn_n_erk	: public PDESWEPlaneTS_BaseInterface
 
 	bool use_only_linear_divergence;
 
-	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk;
+	sweet::TimesteppingExplicitRKPlaneData timestepping_rk;
 	SWE_Plane_TS_l_cn ts_l_cn;
 
 
 public:
-	bool registerShacks(
+	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	);
 

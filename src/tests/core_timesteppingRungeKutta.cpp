@@ -29,7 +29,7 @@ class SimulationTestRK
 public:
 	sweet::ErrorBase error;
 
-	sweet::PlaneDataTimesteppingExplicitRK timestepping;
+	sweet::TimesteppingExplicitRKPlaneData timestepping;
 
 	/*
 	 * Just a class to store simulation data all together

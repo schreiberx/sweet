@@ -9,7 +9,7 @@
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <cassert>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 
 
 
@@ -17,9 +17,9 @@
 class AppOutputSphericalHarmonics
 {
 public:
-	void run(sweet::SphereData_Config *sphereConfig)
+	void run(sweet::SphereDataConfig *sphereConfig)
 	{
-		SphereData_Spectral h(sphereConfig);
+		sweet::SphereData_Spectral h(sphereConfig);
 
 		int counter = 0;
 		// iterate over modes
@@ -57,31 +57,31 @@ public:
 
 int main(int i_argc, char *i_argv[])
 {
-	SimulationVariables simVars;
+	sweet::ShackDictionary shackDict;
 
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
+	if (!shackDict.setupFromMainParameters(i_argc, i_argv))
 		return -1;
 
-	sweet::SphereData_Config sphereDataConfig;
+	sweet::SphereDataConfig sphereDataConfig;
 
-	if (simVars.disc.space_res_physical[0] <= 0)
+	if (shackDict.disc.space_res_physical[0] <= 0)
 	{
 		sphereDataConfig.setupAutoPhysicalSpace(
-				simVars.disc.space_res_spectral[0], simVars.disc.space_res_spectral[1],		// spectral (lon/lat)
-				&simVars.disc.space_res_physical[0], &simVars.disc.space_res_physical[1],	// physical (lon/lat)
-				simVars.misc.reuse_spectral_transformation_plans,
-				simVars.misc.verbosity,
-				simVars.parallelization.num_threads_space
+				shackDict.disc.space_res_spectral[0], shackDict.disc.space_res_spectral[1],		// spectral (lon/lat)
+				&shackDict.disc.space_res_physical[0], &shackDict.disc.space_res_physical[1],	// physical (lon/lat)
+				shackDict.misc.reuse_spectral_transformation_plans,
+				shackDict.misc.verbosity,
+				shackDict.parallelization.num_threads_space
 		);
 	}
 	else
 	{
 		sphereDataConfig.setup(
-				simVars.disc.space_res_spectral[0], simVars.disc.space_res_spectral[1],		// spectral (lon/lat)
-				simVars.disc.space_res_physical[0], simVars.disc.space_res_physical[1],	// physical (lon/lat)
-				simVars.misc.reuse_spectral_transformation_plans,
-				simVars.misc.verbosity,
-				simVars.parallelization.num_threads_space
+				shackDict.disc.space_res_spectral[0], shackDict.disc.space_res_spectral[1],		// spectral (lon/lat)
+				shackDict.disc.space_res_physical[0], shackDict.disc.space_res_physical[1],	// physical (lon/lat)
+				shackDict.misc.reuse_spectral_transformation_plans,
+				shackDict.misc.verbosity,
+				shackDict.parallelization.num_threads_space
 			);
 	}
 

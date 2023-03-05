@@ -11,23 +11,23 @@
 
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #if SWEET_GUI
-	#include "sweet/VisSweet.hpp"
+	#include <sweet/gui/VisSweet.hpp>
 #endif
 #include <sweet/core/SimulationVariables.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
 #include <sweet/core/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
 #include <sweet/core/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
-#include <sweet/core/SWEETVectorMath.hpp>
+#include <sweet/core/VectorMath.hpp>
 
 
 
 // Sphere data config
-sweet::SphereData_Config sphereDataConfigInstance;
-sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
+sweet::SphereDataConfig sphereDataConfigInstance;
+sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
 
-sweet::SphereData_Config sphereDataConfigOversamplingInstance;
-sweet::SphereData_Config *sphereDataConfigOversampling = &sphereDataConfigOversamplingInstance;
+sweet::SphereDataConfig sphereDataConfigOversamplingInstance;
+sweet::SphereDataConfig *sphereDataConfigOversampling = &sphereDataConfigOversamplingInstance;
 
 
 #if SWEET_GUI
@@ -43,7 +43,7 @@ class SimulationInstance
 public:
 	SphereData_Spectral prog_h;
 
-	SphereOperators_SphereData op;
+	SphereOperators op;
 
 #if SWEET_GUI
 	sweet::PlaneData_Physical viz_plane_data;

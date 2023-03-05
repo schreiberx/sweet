@@ -77,7 +77,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_settls::run_timestep(
 			posx_d,	posy_d,			// output
 			shackPlaneDataOps->plane_domain_size,
 			&staggering,
-			2, //simVars.disc.timestepping_order
+			2, //shackDict.disc.timestepping_order
 
 			shackPDESWETimeDisc->semi_lagrangian_max_iterations,
 			shackPDESWETimeDisc->semi_lagrangian_convergence_threshold
@@ -250,13 +250,13 @@ bool SWE_Plane_TS_l_rexi_na_sl_nr_settls::setup(
 
 
 
-bool SWE_Plane_TS_l_rexi_na_sl_nr_settls::registerShacks(
+bool SWE_Plane_TS_l_rexi_na_sl_nr_settls::shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
-	PDESWEPlaneTS_BaseInterface::registerShacks(io_shackDict);
+	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
 
-	ts_l_rexi.registerShacks(io_shackDict);
+	ts_l_rexi.shackRegistration(io_shackDict);
 	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_l_rexi);
 	return true;
 }

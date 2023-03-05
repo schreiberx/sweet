@@ -15,6 +15,8 @@
 #include <sweet/core/SWEETError.hpp>
 #include <sweet/core/FileOperations.hpp>
 #include <sweet/core/TransformationPlans.hpp>
+#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
+#include <sweet/core/ErrorBase.hpp>
 #include <stdexcept>
 
 #if SWEET_MPI
@@ -29,19 +31,20 @@
 //#define SPHERE_DATA_GRID_LAYOUT	SPHERE_DATA_LAT_CONTINUOUS
 
 // SHTNS shallow water example
-#define SPHERE_DATA_GRID_LAYOUT	SPHERE_DATA_LON_CONTINUOUS
+#define SPHERE_DATA_GRID_LAYOUT		SPHERE_DATA_LON_CONTINUOUS
 
 namespace sweet
 {
 
-class SphereData_Config
+class SphereDataConfig
 {
-	friend class SphereOperators_SphereData;
-	friend class SphereOperators_SphereDataComplex;
+	friend class SphereOperators;
+	friend class SphereOperatorsComplex;
 	friend class SphereData;
 	friend class SphereData_SpectralComplex;
 
 public:
+	ErrorBase error;
 	shtns_cfg shtns;
 
 	/**
@@ -111,7 +114,7 @@ public:
 
 
 public:
-	SphereData_Config()	:
+	SphereDataConfig()	:
 		shtns(nullptr),
 		physical_num_lon(-1),
 		physical_num_lat(-1),
@@ -201,7 +204,7 @@ public:
 
 
 private:
-	void setup_data()
+	bool setup_data()
 	{
 #if SWEET_DEBUG
 		shtns_print_cfg(shtns);
@@ -378,6 +381,8 @@ private:
 		for (int i = 0; i < physical_num_lat; i++)
 			std::cout << i << ": " << asin(lat_gaussian[i]) << std::endl;
 #endif
+
+		return true;
 	}
 
 
@@ -474,7 +479,7 @@ private:
 	}
 
 public:
-	void setup(
+	bool setup(
 		int nphi,	// physical
 		int nlat,
 
@@ -518,7 +523,7 @@ public:
 			MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-		setup_data();
+		return setup_data();
 	}
 
 
@@ -527,7 +532,7 @@ public:
 	 * Setup with given modes.
 	 * Spatial resolution will be determined automatically
 	 */
-	void setupAutoPhysicalSpace(
+	bool setupAutoPhysicalSpace(
 			int i_mmax,		/// longitude modes
 			int i_nmax,		/// latitude modes
 			int *o_nphi,	/// physical resolution along longitude
@@ -573,7 +578,7 @@ public:
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-		setup_data();
+		return setup_data();
 	}
 
 
@@ -583,7 +588,7 @@ public:
 	 * Setup with given modes.
 	 * Spatial resolution will be determined automatically
 	 */
-	void setupAutoPhysicalSpace(
+	bool setupAutoPhysicalSpace(
 			int i_mmax,		///< longitude modes
 			int i_nmax,		///< latitude modes
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_transformation_plans,
@@ -627,13 +632,12 @@ public:
 		MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-		setup_data();
+		return setup_data();
 	}
 
 
-
 public:
-	void setupAuto(
+	bool setupAuto(
 			int io_physical_res[2],
 			int io_spectral_modes[2],
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE &i_reuse_transformation_plans,
@@ -643,7 +647,7 @@ public:
 	{
 		if (io_physical_res[0] > 0 && io_spectral_modes[0] > 0)
 		{
-			setup(	io_physical_res[0],
+			return setup(	io_physical_res[0],
 					io_physical_res[1],
 					io_spectral_modes[0],
 					io_spectral_modes[1],
@@ -651,14 +655,11 @@ public:
 					i_verbosity,
 					i_numThreads
 				);
-			return;
 		}
 
 		if (io_spectral_modes[0] > 0)
 		{
-#if SWEET_USE_LIBFFT
-
-			setupAutoPhysicalSpace(
+			bool retval = setupAutoPhysicalSpace(
 					io_spectral_modes[0],
 					io_spectral_modes[1],
 					i_reuse_transformation_plans,
@@ -668,20 +669,19 @@ public:
 
 			io_physical_res[0] = physical_num_lon;
 			io_physical_res[1] = physical_num_lat;
-#else
-			SWEETError("Setup with spectral modes not enabled");
-#endif
 
-			return;
+			return retval;
 		}
 
-		SWEETError("No resolution/modes selected");
+		error.set("No resolution/modes selected");
+		return false;
 	}
 
 
 
-	void setupAdditionalModes(
-			const SphereData_Config *i_sphereDataConfig,
+public:
+	bool setupAdditionalModes(
+			const SphereDataConfig *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_plan_load_save,
@@ -691,7 +691,7 @@ public:
 	{
 		assert(shtns == nullptr);
 
-		setupAutoPhysicalSpace(
+		return setupAutoPhysicalSpace(
 				i_sphereDataConfig->spectral_modes_m_max + i_additional_modes_longitude,
 				i_sphereDataConfig->spectral_modes_n_max + i_additional_modes_latitude,
 				&physical_num_lon,
@@ -703,6 +703,24 @@ public:
 	}
 
 
+
+public:
+	bool setupAuto(sweet::ShackSphereDataOps *i_shackSphereDataOps)
+	{
+		return setupAuto(
+				i_shackSphereDataOps->space_res_physical,
+				i_shackSphereDataOps->space_res_spectral,
+				i_shackSphereDataOps->reuse_spectral_transformation_plans,
+				i_shackSphereDataOps->sh_setup_verbosity,
+				i_shackSphereDataOps->sh_setup_num_threads
+			);
+	}
+
+
+	void clear()
+	{
+		cleanup(false);
+	}
 
 	void cleanup(
 		bool i_full_reset = true
@@ -736,7 +754,7 @@ public:
 
 
 
-	~SphereData_Config()
+	~SphereDataConfig()
 	{
 		cleanup();
 	}

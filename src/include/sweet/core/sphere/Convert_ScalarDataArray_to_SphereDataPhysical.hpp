@@ -12,13 +12,16 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
 
+namespace sweet
+{
+
 class Convert_ScalarDataArray_to_SphereDataPhysical
 {
 public:
 	static
 	SphereData_Physical convert(
 			const ScalarDataArray &i_scalarDataArray,
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		SphereData_Physical out(i_sphereDataConfig);
@@ -33,6 +36,6 @@ public:
 	}
 };
 
-
+}
 
 #endif

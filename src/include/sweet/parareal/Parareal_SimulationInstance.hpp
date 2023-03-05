@@ -35,7 +35,7 @@
 #elif SWEET_PARAREAL_SPHERE
 #include <sweet/parareal/Parareal_GenericData_SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
-#include <sweet/core/sphere/SphereOperators_SphereData.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
 #include "../../programs/swe_sphere_timeintegrators/SWE_Sphere_TimeSteppers.hpp"
 #include "../../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
 #endif
@@ -172,8 +172,8 @@ public:
 	// Sphere
 	void setup(	SimulationVariables* i_simVars,
 			std::vector<SphereData_Config*> i_sphereDataConfig,
-			std::vector<SphereOperators_SphereData*> i_op_sphere,
-			std::vector<SphereOperators_SphereData*> i_op_sphere_nodealiasing,
+			std::vector<SphereOperators*> i_op_sphere,
+			std::vector<SphereOperators*> i_op_sphere_nodealiasing,
 			t_tsmType* i_timeSteppersFine,
 			t_tsmType* i_timeSteppersCoarse)
 	{

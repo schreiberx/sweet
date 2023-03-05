@@ -11,7 +11,7 @@
 #include <limits>
 #include <sweet/core/plane/sweet::PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 
 #if SWEET_PARAREAL || SWEET_XBRAID
 #include <sweet/parareal/Parareal_GenericData.hpp>

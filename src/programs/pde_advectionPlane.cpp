@@ -8,6 +8,9 @@
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */
 
+#ifndef SWEET_GUI
+	#define SWEET_GUI 1
+#endif
 
 #include "pde_advectionPlane/ProgramPDEAdvectionPlane.hpp"
 

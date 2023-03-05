@@ -44,12 +44,12 @@ int main(int i_argc, char *i_argv[])
 			nullptr
 	};
 
-	// default values for specific input (for general input see SimulationVariables.hpp)
-	//simVars.bogus.var[0];  //frequency in x for waves test case
-	//simVars.bogus.var[1];  //frequency in y for waves test case
+	// default values for specific input (for general input see shacks/ShackDictionary.hpp)
+	//shackDict.bogus.var[0];  //frequency in x for waves test case
+	//shackDict.bogus.var[1];  //frequency in y for waves test case
 
 	// Help menu
-	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
+	if (!shackDict.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
 		std::cout << std::endl;
 		std::cout << "Special parameters:" << std::endl;
@@ -59,25 +59,25 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_PARAREAL
-		simVars.parareal.printProgramArguments();
+		shackDict.parareal.printProgramArguments();
 #endif
 		return -1;
 	}
 
-	if (simVars.misc.verbosity > 5)
+	if (shackDict.misc.verbosity > 5)
 		std::cout << " + Setting up FFT plans..." << std::flush;
 
-	planeDataConfigInstance.setupAuto(simVars.disc.space_res_physical, simVars.disc.space_res_spectral, simVars.misc.reuse_spectral_transformation_plans);
+	planeDataConfigInstance.setupAuto(shackDict.disc.space_res_physical, shackDict.disc.space_res_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
-	if (simVars.misc.verbosity > 5)
+	if (shackDict.misc.verbosity > 5)
 		std::cout << " done" << std::endl;
 
 	planeDataConfig->printInformation();
 
 	// Print header
 	std::cout << std::endl;
-	simVars.outputConfig();
-	std::cout << "Computing error: " << simVars.misc.computeErrors << std::endl;
+	shackDict.outputConfig();
+	std::cout << "Computing error: " << shackDict.misc.computeErrors << std::endl;
 	std::cout << std::endl;
 
 	std::ostringstream buf;
@@ -98,13 +98,13 @@ int main(int i_argc, char *i_argv[])
 		std::cout << "MPI_RANK: " << mpi_rank << std::endl;
 #endif
 
-		SimulationBenchmarkTimings::getInstance().main.start();
+		StopwatchBox::getInstance().main.start();
 
 #if SWEET_PARAREAL
-		if (simVars.parareal.enabled)
+		if (shackDict.parareal.enabled)
 		{
 
-			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 
 			// Set planeDataConfig and planeOperators for each level
 			std::vector<PlaneDataConfig*> planeDataConfigs;
@@ -115,23 +115,23 @@ int main(int i_argc, char *i_argv[])
 			ops.push_back(&op);
 
 			// coarse
-			if (simVars.parareal.spatial_coarsening)
+			if (shackDict.parareal.spatial_coarsening)
 			{
 				///for (int j = 0; j < 2; j++)
-				///	assert(simVars.disc.space_res_physical[j] == -1);
+				///	assert(shackDict.disc.space_res_physical[j] == -1);
 				int N_physical[2] = {-1, -1};
 				int N_spectral[2];
 				double frac;
-				if ( simVars.parareal.coarse_timestep_size > 0)
-					frac = simVars.timecontrol.current_timestep_size / simVars.parareal.coarse_timestep_size;
+				if ( shackDict.parareal.coarse_timestep_size > 0)
+					frac = shackDict.timecontrol.current_timestep_size / shackDict.parareal.coarse_timestep_size;
 				else
-					frac = simVars.timecontrol.current_timestep_size / (simVars.timecontrol.max_simulation_time / simVars.parareal.coarse_slices );
+					frac = shackDict.timecontrol.current_timestep_size / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
-					N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] * frac));
+					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 				planeDataConfigs.push_back(new PlaneDataConfig);
-				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
-				ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+				ops.push_back(new PlaneOperators(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs));
 			}
 			else
 			{
@@ -147,7 +147,7 @@ int main(int i_argc, char *i_argv[])
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(	&simVars,
+			Parareal_Controller<SWE_Plane_TimeSteppers, 3> parareal_Controller(	&shackDict,
 												planeDataConfigs,
 												ops,
 												timeSteppersFine,
@@ -162,7 +162,7 @@ int main(int i_argc, char *i_argv[])
 			delete timeSteppersFine;
 			delete timeSteppersCoarse;
 
-			if (simVars.parareal.spatial_coarsening)
+			if (shackDict.parareal.spatial_coarsening)
 			{
 				delete planeDataConfigs[1];
 				delete ops[1];
@@ -174,40 +174,40 @@ int main(int i_argc, char *i_argv[])
 
 #if SWEET_XBRAID
 
-		if (simVars.xbraid.xbraid_enabled)
+		if (shackDict.xbraid.xbraid_enabled)
 		{
 
-			PlaneOperators op(planeDataConfig, simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
+			PlaneOperators op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 
 			// Set planeDataConfig and planeOperators for each level
 			std::vector<PlaneDataConfig*> planeDataConfigs;
 			std::vector<PlaneOperators*> ops;
-			for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			for (int i = 0; i < shackDict.xbraid.xbraid_max_levels; i++)
 			{
-				if (simVars.xbraid.xbraid_spatial_coarsening)
+				if (shackDict.xbraid.xbraid_spatial_coarsening)
 				{
 					int N_physical[2] = {-1, -1};
 					int N_spectral[2];
 					for (int j = 0; j < 2; j++)
 					{
 						// proportional to time step
-						if (simVars.xbraid.xbraid_spatial_coarsening == 1)
-							N_spectral[j] = std::max(4, int(simVars.disc.space_res_spectral[j] / std::pow(simVars.xbraid.xbraid_cfactor, i)));
-						else if (simVars.xbraid.xbraid_spatial_coarsening > 1)
+						if (shackDict.xbraid.xbraid_spatial_coarsening == 1)
+							N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] / std::pow(shackDict.xbraid.xbraid_cfactor, i)));
+						else if (shackDict.xbraid.xbraid_spatial_coarsening > 1)
 						{
 							if (i == 0)
-								N_spectral[j] = std::max(4, simVars.disc.space_res_spectral[j]);
+								N_spectral[j] = std::max(4, shackDict.disc.space_res_spectral[j]);
 							else
-								N_spectral[j] = std::max(4, simVars.xbraid.xbraid_spatial_coarsening);
+								N_spectral[j] = std::max(4, shackDict.xbraid.xbraid_spatial_coarsening);
 						}
 						else
 							SWEETError("Invalid parameter xbraid_spatial_coarsening");
 					}
 					planeDataConfigs.push_back(new PlaneDataConfig);
-					planeDataConfigs.back()->setupAuto(N_physical, N_spectral, simVars.misc.reuse_spectral_transformation_plans);
+					planeDataConfigs.back()->setupAuto(N_physical, N_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
-					//PlaneOperators op_level(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs);
-					ops.push_back(new PlaneOperators(planeDataConfigs.back(), simVars.sim.plane_domain_size, simVars.disc.space_use_spectral_basis_diffs));
+					//PlaneOperators op_level(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
+					ops.push_back(new PlaneOperators(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs));
 
 					std::cout << "Spectral resolution at level " << i << " : " << N_spectral[0] << " " << N_spectral[1] << std::endl;
 				}
@@ -223,19 +223,19 @@ int main(int i_argc, char *i_argv[])
 
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
-			int nt = (int) (simVars.timecontrol.max_simulation_time / simVars.timecontrol.current_timestep_size);
-                        if (nt * simVars.timecontrol.current_timestep_size < simVars.timecontrol.max_simulation_time - 1e-10)
+			int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
+                        if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
 				nt++;
-			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfig, &op);
-			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., simVars.timecontrol.max_simulation_time, nt, &simVars, planeDataConfigs, ops);
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, planeDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, planeDataConfigs, ops);
 
 
-			if ( simVars.xbraid.xbraid_run_wrapper_tests)
+			if ( shackDict.xbraid.xbraid_run_wrapper_tests)
 			{
 				app.setup();
 
 				BraidUtil braid_util;
-				int test = braid_util.TestAll(&app, comm, stdout, 0., simVars.timecontrol.current_timestep_size, simVars.timecontrol.current_timestep_size * 2);
+				int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
 				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
 				if (test == 0)
 					SWEETError("Tests failed!");
@@ -252,8 +252,8 @@ int main(int i_argc, char *i_argv[])
 			}
 
 
-			if (simVars.xbraid.xbraid_spatial_coarsening)
-				for (int i = 0; i < simVars.xbraid.xbraid_max_levels; i++)
+			if (shackDict.xbraid.xbraid_spatial_coarsening)
+				for (int i = 0; i < shackDict.xbraid.xbraid_max_levels; i++)
 				{
 					delete planeDataConfigs[i];
 					delete ops[i];
@@ -275,7 +275,7 @@ int main(int i_argc, char *i_argv[])
 
 int main_mpi(int i_argc, char *i_argv[])
 {
-	SimulationBenchmarkTimings::getInstance().main.start();
+	StopwatchBox::getInstance().main.start();
 
 	ProgramPDESWEPlane simulation(i_argc, i_argv);
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
@@ -310,7 +310,7 @@ int main_mpi(int i_argc, char *i_argv[])
 		}
 		else
 		{
-			SimulationBenchmarkTimings::getInstance().main_timestepping.start();
+			StopwatchBox::getInstance().main_timestepping.start();
 
 			while (!simulation.should_quit())
 			{
@@ -324,7 +324,7 @@ int main_mpi(int i_argc, char *i_argv[])
 				}
 			}
 
-			SimulationBenchmarkTimings::getInstance().main_timestepping.stop();
+			StopwatchBox::getInstance().main_timestepping.stop();
 		}
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
 	}
@@ -335,7 +335,7 @@ int main_mpi(int i_argc, char *i_argv[])
 	// End of run output results
 	std::cout << "***************************************************" << std::endl;
 	std::cout << "Number of time steps: " << simulation.shackTimestepControl->current_timestep_nr << std::endl;
-	std::cout << "Time per time step: " << SimulationBenchmarkTimings::getInstance().main_timestepping()/(double)simulation.shackTimestepControl->current_timestep_nr << " sec/ts" << std::endl;
+	std::cout << "Time per time step: " << StopwatchBox::getInstance().main_timestepping()/(double)simulation.shackTimestepControl->current_timestep_nr << " sec/ts" << std::endl;
 	std::cout << "Last time step size: " << simulation.shackTimestepControl->current_timestep_size << std::endl;
 
 
@@ -351,14 +351,14 @@ int main_mpi(int i_argc, char *i_argv[])
 
 	std::cout << "[MULE] simulation_successfully_finished: 1" << std::endl;
 
-	SimulationBenchmarkTimings::getInstance().main.stop();
+	StopwatchBox::getInstance().main.stop();
 
 #if SWEET_MPI
 	if (mpi_rank == 0)
 #endif
 	{
 		std::cout << std::endl;
-		SimulationBenchmarkTimings::getInstance().output();
+		StopwatchBox::getInstance().output();
 	}
 
 	std::cout << "MIN FIN" << std::endl;

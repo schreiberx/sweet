@@ -7,6 +7,10 @@
 
 #include <cassert>
 
+
+namespace sweet
+{
+
 class SphereHelpers_SPHIdentities
 {
 public:
@@ -182,5 +186,6 @@ public:
 	}
 };
 
+}
 
 #endif

@@ -24,13 +24,16 @@
 #include <sweet/core/SWEETError.hpp>
 
 
+namespace sweet
+{
+
 
 class SphereData_PhysicalComplex
 {
 	friend class SphereData_SpectralComplex;
 
 public:
-	const SphereData_Config *sphereDataConfig;
+	const SphereDataConfig *sphereDataConfig;
 
 public:
 	std::complex<double> *physical_space_data;
@@ -47,7 +50,7 @@ public:
 
 public:
 	SphereData_PhysicalComplex(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
 		physical_space_data(nullptr)
@@ -118,7 +121,7 @@ public:
 	 */
 public:
 	inline void check(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
@@ -373,7 +376,7 @@ public:
 
 public:
 	void setup(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -385,7 +388,7 @@ public:
 
 public:
 	void setup_if_required(
-			const SphereData_Config *i_sphereDataConfig
+			const SphereDataConfig *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)
@@ -1181,5 +1184,7 @@ SphereData_PhysicalComplex operator+(
 	return ((SphereData_PhysicalComplex&)i_array_data)+i_value;
 }
 #endif
+
+}
 
 #endif

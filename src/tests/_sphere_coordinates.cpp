@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sweet/core/ScalarDataArray.hpp>
 #include <sweet/core/SWEETError.hpp>
-#include <sweet/core/SWEETVectorMath.hpp>
+#include <sweet/core/VectorMath.hpp>
 
 
 void check_error(

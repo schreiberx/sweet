@@ -59,7 +59,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 		// V-only
 		//o_u_t.spectral_set_zero();
 		o_u_t = +shackPDESWEPlane->plane_rotating_f0*i_v;
-		o_v_t = -shackPDESWEPlane->gravitation*ops->diff_c_y(i_h) - shackPDESWEPlane->plane_rotating_f0*i_u;// - simVars.sim.f0*i_u;
+		o_v_t = -shackPDESWEPlane->gravitation*ops->diff_c_y(i_h) - shackPDESWEPlane->plane_rotating_f0*i_u;// - shackDict.sim.f0*i_u;
 
 		// standard update
 		o_h_t = -(ops->diff_c_y(i_v))*shackPDESWEPlane->h0;
@@ -67,7 +67,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 
 #endif
 	}
-	else // simVars.disc.use_staggering = true
+	else // shackDict.disc.use_staggering = true
 	{
 		// STAGGERED GRID
 
@@ -152,7 +152,7 @@ bool SWE_Plane_TS_l_erk::setup(
 
 	timestepping_rk.setupBuffers(ops->planeDataConfig, timestepping_order);
 
-	//if (simVars.disc.use_staggering)
+	//if (shackDict.disc.use_staggering)
 	//	SWEETError("Staggering not supported for l_erk");
 	return true;
 }

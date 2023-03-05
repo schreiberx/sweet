@@ -12,7 +12,7 @@
 
 #include "../ode_scalar_timeintegrators/ODE_Scalar_TS_interface.hpp"
 
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 
 class ODE_Scalar_TimeSteppers
 {
@@ -36,14 +36,14 @@ public:
 			//const std::string &i_timestepping_method,
 			///int &i_timestepping_order,
 
-			SimulationVariables &i_simVars
+			sweet::ShackDictionary &i_shackDict
 	)
 	{
 		reset();
 		master = new ODE_Scalar_TS_interface;
 		master->setup(
-				atof(i_simVars.user_defined.var[1].c_str()),
-				atof(i_simVars.user_defined.var[2].c_str())
+				atof(i_shackDict.user_defined.var[1].c_str()),
+				atof(i_shackDict.user_defined.var[2].c_str())
 			);
 	}
 

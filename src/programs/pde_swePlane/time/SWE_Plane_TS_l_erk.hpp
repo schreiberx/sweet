@@ -24,7 +24,7 @@ class SWE_Plane_TS_l_erk	:
 	int timestepping_order;
 
 	// Sampler
-	sweet::PlaneDataTimesteppingExplicitRK timestepping_rk;
+	sweet::TimesteppingExplicitRKPlaneData timestepping_rk;
 
 public:
 	void euler_timestep_update(

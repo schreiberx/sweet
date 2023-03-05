@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/core/plane/sweet::PlaneData_Spectral.hpp>
-#include <sweet/core/SimulationVariables.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 
 #include "Burgers_Plane_TS_l_direct.hpp"
@@ -21,7 +21,7 @@
 
 class Burgers_Plane_TS_ln_cole_hopf	: public Burgers_Plane_TS_interface
 {
-	SimulationVariables &simVars;
+	sweet::ShackDictionary &shackDict;
 	PlaneOperators &op;
 
 	int timestepping_order;
@@ -31,7 +31,7 @@ public:
 
 public:
 	Burgers_Plane_TS_ln_cole_hopf(
-			SimulationVariables &i_simVars,
+			sweet::ShackDictionary &i_shackDict,
 			PlaneOperators &i_op
 		);
 
