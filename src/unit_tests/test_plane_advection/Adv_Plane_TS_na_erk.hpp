@@ -2,7 +2,7 @@
  * Adv_Plane_TS_na_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_ERK_HPP_

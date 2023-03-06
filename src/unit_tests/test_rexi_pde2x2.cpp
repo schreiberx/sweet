@@ -2,7 +2,7 @@
  * test_rexi_file.cpp
  *
  *  Created on: 25 Dec 2018
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <iostream>

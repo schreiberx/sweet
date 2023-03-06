@@ -2,7 +2,7 @@
  * PhiApproximation.hpp
  *
  *  Created on: 10 Nov 2016
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_INCLUDE_REXI_REXI_TERRY_FUNAPPROXIMATION_HPP_
 #define SRC_INCLUDE_REXI_REXI_TERRY_FUNAPPROXIMATION_HPP_

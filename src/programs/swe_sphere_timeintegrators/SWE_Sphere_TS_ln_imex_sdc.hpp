@@ -1,8 +1,8 @@
 /*
  * SWE_Sphere_TS_l_irk_n_erk.hpp
  *
- *  Created on: 30 May 2017
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *  Created on: 7 March 2023
+ *      Author: Thibaut LUNET <thibaut.lunet@tuhh.de>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_IMEX_SDC_HPP_
@@ -18,24 +18,6 @@
 #include "SWE_Sphere_TS_interface.hpp"
 #include "SWE_Sphere_TS_l_erk_n_erk.hpp"
 #include "SWE_Sphere_TS_l_irk.hpp"
-
-// Class to store references (pointers) to the initial solution for each time steps
-class SWE_Variables_Pointers {
-public:
-	SphereData_Spectral* phi;
-	SphereData_Spectral* vort;
-	SphereData_Spectral* div;
-	
-	// Default constructor
-	SWE_Variables_Pointers() : phi(nullptr), vort(nullptr), div(nullptr) {}
-
-	// Set pointers to solution data
-	void setPointer(SphereData_Spectral& phi, SphereData_Spectral& vort, SphereData_Spectral& div) {
-		this->phi = &phi;
-		this->vort = &vort;
-		this->div = &div;
-	}
-};
 
 /*
  * Class to store solution data at one node
@@ -77,13 +59,6 @@ public:
 		phi = u.phi;
 		vrt = u.vrt;
 		div = u.div;
-		return *this;
-	}
-
-	SWE_VariableVector& operator=(const SWE_Variables_Pointers& u) {
-		phi = *(u.phi);
-		vrt = *(u.vort);
-		div = *(u.div);
 		return *this;
 	}
 
@@ -248,7 +223,6 @@ private:
 
 	/* Wrapper solving the implicit system built from the linear term :
 	 u - dt*L(u) = rhs
-	 LHS is always updated, independently on the dt value
 	 WARNING : rhs variables are overwritten with u 
 	*/ 
 	void solveImplicit(SWE_VariableVector& rhs, double dt, int iNode, bool initSweep=false);

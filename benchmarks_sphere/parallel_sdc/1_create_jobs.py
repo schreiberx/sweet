@@ -15,9 +15,9 @@ p.runtime.paramsSDC = getSDCSetup(
     nodeType='RADAU-RIGHT', 
     qDeltaImplicit='OPT-QMQD-0', 
     qDeltaExplicit='PIC', 
-    diagQDeltaInit='BEPAR',
+    qDeltaInitial='BEPAR',
     diagonal=True,
-    initSweepType="QDELTA",
+    initialSweepType="QDELTA",
     useEndUpdate=False
 )
 
@@ -83,7 +83,6 @@ p.compile.benchmark_timings = 'enable'
 p.compile.quadmath = 'disable'
 
 p.runtime.verbosity = 0
-p.runtime.compute_error = 0
 
 # Leave instability checks activated
 p.runtime.instability_checks = 0

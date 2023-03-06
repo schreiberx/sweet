@@ -47,7 +47,7 @@ jg.runtime.space_res_physical = None
 jg.runtime.benchmark_name = "galewsky"
 
 # Compute error
-jg.runtime.compute_error = 0
+jg.runtime.compute_errors = 0
 
 jg.runtime.f_sphere = 0
 

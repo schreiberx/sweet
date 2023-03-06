@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@Gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_BENCHMARKS_SPHERE_ADVECTION_NAIR_LAURITZEN_HPP_

@@ -125,8 +125,8 @@ sdcBaseParameters = {
     'nIter': 3,
     'qDeltaImplicit': 'BE',
     'qDeltaExplicit': 'FE',
-    'diagQDeltaInit': 'BEPAR',
-    'initSweepType': 'COPY',
+    'qDeltaInitial': 'BEPAR',
+    'initialSweepType': 'COPY',
     'diagonal': False,
     'useEndUpdate': False,
 }

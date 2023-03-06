@@ -2,7 +2,7 @@
  * GaussQuadrature.hpp
  *
  *  Created on: 17 Aug 2016
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_GAUSSQUADRATURE_HPP_

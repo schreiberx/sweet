@@ -1,7 +1,7 @@
 /*
  * SWE_Sphere_TS_ln_imex_sdc.cpp
  *
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Thibaut LUNET <thibaut.lunet@tuhh.de>
  */
 
 #include "SWE_Sphere_TS_ln_imex_sdc.hpp"
@@ -19,9 +19,9 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		timestepping_order(-1),
 
 		// SDC main parameters
-		nNodes(i_simVars.sdc.nNodes),
+		nNodes(i_simVars.sdc.nodes.size()),
 		nIter(i_simVars.sdc.nIter),
-		initialSweepType(i_simVars.sdc.initSweepType),
+		initialSweepType(i_simVars.sdc.initialSweepType),
 		diagonal(i_simVars.sdc.diagonal),
 		useEndUpdate(i_simVars.sdc.useEndUpdate),
 
@@ -36,73 +36,14 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		qMatDelta0(i_simVars.sdc.qDelta0),
 
 		// Storage and reference container (for u0)
-		ts_linear_tendencies_k0(op.sphereDataConfig, i_simVars.sdc.nNodes),
-		ts_nonlinear_tendencies_k0(op.sphereDataConfig, i_simVars.sdc.nNodes),
-		ts_linear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
-		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nNodes),
+		ts_linear_tendencies_k0(op.sphereDataConfig, i_simVars.sdc.nodes.size()),
+		ts_nonlinear_tendencies_k0(op.sphereDataConfig, i_simVars.sdc.nodes.size()),
+		ts_linear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nodes.size()),
+		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_simVars.sdc.nodes.size()),
 
 		dt(i_simVars.timecontrol.current_timestep_size),
 		idString(i_simVars.sdc.idString)
 {
-	if (i_simVars.sdc.fileName == "") {
-		// No parameter file given, use default SDC settings
-		// warning : nNodes default value defined in SimulationVariables.hpp
-		// -> need this to instantiate the tendencies storage
-		std::cout << "[SDC] no parameter file given, using default configuration" << std::endl;
-		nIter = 3;
-		diagonal = false;
-		initialSweepType = "COPY";
-		useEndUpdate = false;
-		idString = "M3_RADAU-RIGHT_K3_BE_FE_COPY";
-
-		// RADAU-RIGHT nodes, weights quadrature matrix
-		tau.setup(nNodes);
-		const double tau_default[] = {
-			0.15505102572168, 0.64494897427832, 1.
-		};
-		tau = tau_default;
-
-		weights.setup(nNodes);
-		const double weights_default[] = {
-			0.3764030627004656, 0.51248582618842650, 0.1111111111111111
-		};
-		weights = weights_default;
-
-		qMat.setup(nNodes, nNodes);
-		const double qMat_default[] = {
-			0.1968154772236567, -0.06553542585019642,  0.02377097434821968,
-			0.394424314739085,   0.2920734116652353,  -0.04154875212600038,
-			0.3764030627004656,  0.5124858261884265,   0.1111111111111079
-		};
-		qMat = qMat_default;
-
-		// BE for implicit sweep
-		qMatDeltaI.setup(nNodes, nNodes);
-		const double qMatDeltaI_default[] = {
-			0.15505102572168, 0.,         0.,
- 			0.15505102572168, 0.48989794855664, 0.,
-			0.15505102572168, 0.48989794855664, 0.35505102572168        
-		};
-		qMatDeltaI = qMatDeltaI_default;
-
-		// FE for explicit sweep
-		qMatDeltaE.setup(nNodes, nNodes);
-		const double qMatDeltaE_default[] = {
-			0.,         0.,         0.,
- 			0.48989794855664, 0.,         0.,
-			0.48989794855664, 0.35505102572168, 0.        
-		};
-		qMatDeltaE = qMatDeltaE_default;
-
-		// BEpar for initial sweep
-		qMatDelta0.setup(nNodes, nNodes);
-		const double qMatDelta0_default[] = {
-			0.15505102572168, 0.		      , 0.,
- 			0.		        , 0.64494897427832, 0.,
-			0.		        , 0.		      , 1.        
-		};
-		qMatDelta0 = qMatDelta0_default;
-	}
 	
 	// Initialize irk solver for each nodes
 	timestepping_l_irk.resize(nNodes);
@@ -126,19 +67,6 @@ SWE_Sphere_TS_ln_imex_sdc::SWE_Sphere_TS_ln_imex_sdc(
 		}
 	}
 
-	// Print informations ...
-	std::cout << "\nSDC class parameters" << std::endl;
-	std::cout << " + nodes : " << tau << std::endl;
-	std::cout << " + weights : " << weights << std::endl;
-	std::cout << " + qMat : " << qMat << std::endl;
-	std::cout << " + qDeltaE : " << qMatDeltaE << std::endl;
-	std::cout << " + qDeltaI : " << qMatDeltaI << std::endl;
-	std::cout << " + qDelta0 : " << qMatDelta0 << std::endl;
-	std::cout << " + nIter : " << nIter << std::endl;
-	std::cout << " + diagonal : " << diagonal << std::endl;
-	std::cout << " + useEndUpdate : " << useEndUpdate << std::endl;
-	std::cout << " + initialSweepType : " << initialSweepType << std::endl;
-	std::cout << " + idString : " << idString << std::endl; 
 }
 
 
@@ -282,7 +210,6 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 	if (initialSweepType == "QDELTA")
 	{
 
-		std::cout << "[SDC] computing initial sweep with QDELTA" << std::endl;
 		// Loop on nodes (can be parallelized if diagonal)
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
@@ -296,7 +223,6 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 
 			if (!diagonal)
 			{
-				std::cout << "[SDC] adding non diagonal coefficients in init_sweep QDELTA" << std::endl;
 				// Add non-linear and linear terms from iteration k (already computed)
 				for (int j = 0; j < i; j++) {
 					axpy(dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
@@ -318,8 +244,6 @@ void SWE_Sphere_TS_ln_imex_sdc::init_sweep()
 	}
 	else if (initialSweepType == "COPY")
 	{
-
-		std::cout << "[SDC] computing initial sweep with COPY" << std::endl;
 		// Evaluate linear and non-linear with initial solution
 		eval_linear(ts_u0, ts_linear_tendencies_k0[0], t0);
 		eval_nonlinear(ts_u0, ts_nonlinear_tendencies_k0[0], t0);
@@ -351,7 +275,6 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 		size_t k	/// iteration number
 ) {
 
-	std::cout << "[SDC] computing sweep" << std::endl;
 	// Local convenient references
 	const Mat& q = qMat;
 	const Mat& qI = qMatDeltaI;
@@ -375,7 +298,6 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 		}
 
 		if (!diagonal) {
-			std::cout << "[SDC] adding non-diagonal coefficient in sweep" << std::endl;
 
 			// Add non-linear and linear terms from iteration k+1
 			for (int j = 0; j < i; j++) {
@@ -426,7 +348,6 @@ void SWE_Sphere_TS_ln_imex_sdc::sweep(
 	if (k+1 == nIter) 
 	{
 		if (useEndUpdate) {
-			std::cout << "[SDC] using end update after last sweep" << std::endl;
 
 			/*
 			* Use quadrature

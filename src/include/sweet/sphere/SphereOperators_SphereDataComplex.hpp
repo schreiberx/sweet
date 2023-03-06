@@ -2,7 +2,7 @@
  * SPHOperatorsComplex.hpp
  *
  *  Created on: 31 Aug 2016
- *      Author: Martin Schreiber <schreiberx@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SPHEREOPERATORS_COMPLEX_HPP_
@@ -35,7 +35,7 @@ private:
 public:
 	SphereOperators_SphereDataComplex(
 			SphereData_Config *i_sphereDataConfig,
-			const SimulationVariables::SimulationCoefficients *i_simCoeffs
+			const SimulationCoefficients *i_simCoeffs
 	)
 	{
 		setup(i_sphereDataConfig, i_simCoeffs);
@@ -53,7 +53,7 @@ public:
 public:
 	void setup(
 			const SphereData_Config *i_sphereDataConfig,
-			const SimulationVariables::SimulationCoefficients *i_simCoeffs
+			const SimulationCoefficients *i_simCoeffs
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;

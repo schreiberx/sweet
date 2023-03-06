@@ -17,7 +17,7 @@
  * GlCommonShaderPrograms.hpp
  *
  *  Created on: Mar 22, 2010
- *      Author: Martin Schreiber (schreiberx@gmail.com)
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com> Schreiber (schreiberx@gmail.com)
  */
 
 #ifndef CCOMMON_SHADERPROGRAMS_HPP_

@@ -190,7 +190,7 @@ def genQDelta(nodes, sweepType, Q):
     - LU : uses the LU trick
     - TRAP : sweep based on Trapezoidal rule (second order)
     - EXACT : don't bother and just use Q
-    - PIC : Picard iteration => zeros coefficient (cannot be used for initSweep)
+    - PIC : Picard iteration => zeros coefficient
     - OPT-[...] : Diagonaly precomputed coefficients, for which one has to
       provide different parameters. For instance, [...]='QmQd-2' uses the
       diagonal coefficients using the optimization method QmQd with the index 2
@@ -320,8 +320,8 @@ def genCollocation(M, distr, quadType):
 def getSetup(
     nNodes:int=3, nodeType:str='RADAU-RIGHT', nIter:int=3, 
     qDeltaImplicit:str='BE', qDeltaExplicit:str='FE',
-    diagonal:bool=False, initSweepType:str='COPY', useEndUpdate:bool=False,
-    diagQDeltaInit:str='BEPAR', nodeDistr:str='LEGENDRE'
+    diagonal:bool=False, initialSweepType:str='COPY', useEndUpdate:bool=False,
+    qDeltaInitial:str='BEPAR', nodeDistr:str='LEGENDRE'
     )-> SWEETFileDict:
     """
     Generate SWEETFileDict for one given SDC setup
@@ -341,7 +341,7 @@ def getSetup(
     diagonal : bool, optional
         Wether or not use the diagonal implementation. Warning : should be used
         with compatible QDelta matrices.
-    initSweepType : str, optional
+    initialSweepType : str, optional
         The way the tendencies are initialized before the first sweep. Can be :
 
         - COPY : use the time-step initial solution to evaluate the tendencies,
@@ -349,12 +349,12 @@ def getSetup(
         - QDELTA : use the QDelta matrices (implicit and explicit) to compute
           one IMEX update between the nodes and evaluate the tendencies from
           those. If diagonal=True, then uses the values provided by the
-          diagQDeltaInit parameter.
+          qDeltaInitial parameter.
 
     useEndUpdate : bool, optional
         Wether or not compute the end update with the quadrature formula.
-    diagQDeltaInit : str, optional
-        Diagonal sweep used if diagonal=True and initSweep=QDELTA, must be a diagonal sweep.
+    qDeltaInitial : str, optional
+        Diagonal sweep used if diagonal=True and initialSweepType=QDELTA, must be a diagonal sweep.
     nodeDistr : str, optional
         Node distribution.
         
@@ -365,7 +365,7 @@ def getSetup(
     >>> # Settings for Optimized Parallel SDC
     >>> paramsSDC = genSetup(
     >>>     qDeltaImplicit='OPT-QmQd-0', qDeltaExplicit='PIC', diagonal=True,
-    >>>     initSweep='QDELTA', diagQDeltaInit='BEpar')
+    >>>     initialSweepType='QDELTA', qDeltaInitial='BEpar')
 
     Returns
     -------
@@ -386,7 +386,7 @@ def getSetup(
             Explicit sweep coefficients.
         - qDelta0 : nd.2darray(M,M)
             Initial sweep coefficients.
-        - initSweepType : str
+        - initialSweepType : str
             Type of initial sweep.
         - diagonal : int
             1 if use the diagonal implementation, 0 else.
@@ -396,8 +396,8 @@ def getSetup(
     nodes, weights, qMatrix = genCollocation(nNodes, nodeDistr, nodeType)
     qDeltaI = genQDelta(nodes, qDeltaImplicit, qMatrix)[0]
     qDeltaE = genQDelta(nodes, qDeltaExplicit, qMatrix)[0]
-    qDelta0 = genQDelta(nodes, diagQDeltaInit, qMatrix)[0]
-    idString = f'M{nNodes}_{nodeType}_K{nIter}_{qDeltaImplicit}_{qDeltaExplicit}_{initSweepType}'
+    qDelta0 = genQDelta(nodes, qDeltaInitial, qMatrix)[0]
+    idString = f'M{nNodes}_{nodeType}_K{nIter}_{qDeltaImplicit}_{qDeltaExplicit}_{initialSweepType}'
     out = SWEETFileDict(initDict={
         'nodes': nodes,
         'weights': weights,
@@ -405,12 +405,12 @@ def getSetup(
         'qDeltaI': qDeltaI,
         'qDeltaE': qDeltaE,
         'qDelta0': qDelta0,
-        'initSweepType': initSweepType,
+        'initialSweepType': initialSweepType,
         'nIter': nIter
     })
     out['diagonal'] = int(diagonal)
-    if initSweepType == 'QDELTA' and diagonal:
-        idString += f'_{diagQDeltaInit}'
+    if initialSweepType == 'QDELTA' and diagonal:
+        idString += f'_{qDeltaInitial}'
     out['useEndUpdate'] = int(useEndUpdate)
     if useEndUpdate:
         idString += '_endUpdate'

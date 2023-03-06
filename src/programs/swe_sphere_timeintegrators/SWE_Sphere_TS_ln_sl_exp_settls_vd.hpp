@@ -2,7 +2,7 @@
  * SWE_Sphere_TS_ln_settls.hpp
  *
  *  Created on: 24 Sep 2019
- *      Author: Martin Schreiber <SchreiberX@gmail.com>
+ *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_VD_HPP_

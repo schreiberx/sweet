@@ -1,7 +1,7 @@
 /*
  * Author: Pedor Peixoto <ppeixoto@usp.br>
  * based on stuff from:
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *         
  */
 #include "SWE_Sphere_TS_lg_0_lc_n_erk_bv.hpp"

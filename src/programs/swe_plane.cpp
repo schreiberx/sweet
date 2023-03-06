@@ -1,5 +1,5 @@
 /*
- * Author: Martin Schreiber <SchreiberX@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_timeintegrators
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_plane_benchmarks
@@ -615,9 +615,6 @@ public:
 			update_diagnostics();
 			compute_errors();
 
-			if (simVars.timecontrol.current_timestep_nr == 0)
-				simVars.diag.outputConfig();
-
 			std::stringstream header;
 			std::stringstream rows;
 
@@ -1062,7 +1059,7 @@ int main(int i_argc, char *i_argv[])
 
 
 #if SWEET_PARAREAL
-		simVars.parareal.printOptions();
+		simVars.parareal.printProgramArguments();
 #endif
 		return -1;
 	}
