@@ -1040,6 +1040,8 @@ int main_real(int i_argc, char *i_argv[])
 	// Help menu
 	if (!simVars.setupFromMainParameters(i_argc, i_argv, user_defined_prog_params))
 	{
+		std::cout << "-- SWEET Help Menu (Suessigkeiten) --" << std::endl;
+		simVars.print_params(user_defined_prog_params);
 #if SWEET_PARAREAL
 		simVars.parareal.printProgramArguments();
 #endif

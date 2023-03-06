@@ -243,7 +243,13 @@ public:
 		/*
 		 * Parse program arguments
 		 */
-		if (!programArguments.setup(i_argc, i_argv))
+		
+		bool argsOK = programArguments.setup(i_argc, i_argv);
+
+		if (programArguments.argumentWithKeyExists("-h") || programArguments.argumentWithKeyExists("--help"))
+			return false;
+		
+		if (!argsOK)
 			SWEETError("ERROR: "+programArguments.error.get());
 
 		sim.processProgramArguments(programArguments);
