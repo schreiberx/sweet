@@ -23,6 +23,6 @@ mule.benchmark.jobs_run_directly || exit 1
 
 mule.postprocessing.pickle.alljobs.scalar_data_norms_physical_space_pint
 
-###./postprocessing_check_errors.py
+./postprocessing_check_errors.py
 
-###mule.benchmark.cleanup_job_dirs || exit 1
+mule.benchmark.cleanup_job_dirs || exit 1
