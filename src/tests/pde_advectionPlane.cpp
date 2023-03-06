@@ -38,7 +38,7 @@ int main(int i_argc, char *i_argv[])
 		sim.clear();
 
 		// setup stage 1 + 2
-		sim.setup_1_registration();
+		sim.setup_1_shackRegistration();
 		sim.setup_2_processArguments();
 
 		/*
