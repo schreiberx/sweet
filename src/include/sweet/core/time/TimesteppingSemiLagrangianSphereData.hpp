@@ -24,7 +24,7 @@ namespace sweet
 class SphereTimestepping_SemiLagrangian
 {
 	const SphereDataConfig *sphereDataConfig;
-	sweet::ShackTimesteppingSemiLagrangianSphereData *slData;
+	sweet::ShackTimesteppingSemiLagrangianSphereData *shackSLData;
 
 	SphereData_Physical sl_coriolis;
 
@@ -61,50 +61,53 @@ public:
 			ShackTimesteppingSemiLagrangianSphereData *i_slData
 	)	:
 		sphereDataConfig(nullptr),
-		slData(i_slData)
+		shackSLData(i_slData)
 	{
 	}
 
 
 	SphereTimestepping_SemiLagrangian()	:
 		sphereDataConfig(nullptr),
-		slData(nullptr)
+		shackSLData(nullptr)
 	{
 	}
 
 
 	void setup(
 			const SphereDataConfig *i_sphereDataConfig,
-			ShackTimesteppingSemiLagrangianSphereData *i_slData,
+			ShackTimesteppingSemiLagrangianSphereData *i_shackSLData,
 			int i_timestepping_order
 	)
 	{
+		shackSLData = i_shackSLData;
 		sphereDataConfig = i_sphereDataConfig;
+		timestepping_order = i_timestepping_order;
+
 		sphereSampler.setup(sphereDataConfig);
 
-		if (slData->semi_lagrangian_departure_point_method == "settls")
+		if (shackSLData->semi_lagrangian_departure_point_method == "settls")
 		{
 			trajectory_method = E_TRAJECTORY_METHOD_SETTLS_HORTAL;
 		}
-		else if (slData->semi_lagrangian_departure_point_method == "canonical")
+		else if (shackSLData->semi_lagrangian_departure_point_method == "canonical")
 		{
 			trajectory_method = E_TRAJECTORY_METHOD_CANONICAL;
 		}
-		else if (slData->semi_lagrangian_departure_point_method == "midpoint")
+		else if (shackSLData->semi_lagrangian_departure_point_method == "midpoint")
 		{
 			trajectory_method = E_TRAJECTORY_METHOD_MIDPOINT_RITCHIE;
 		}
 		else
 		{
-			SWEETError(std::string("Trajectory method '")+slData->semi_lagrangian_departure_point_method+"' not supported");
+			SWEETError(std::string("Trajectory method '")+shackSLData->semi_lagrangian_departure_point_method+"' not supported");
 		}
 
 
 		timestepping_order = i_timestepping_order;
-		semi_lagrangian_max_iterations = slData->semi_lagrangian_max_iterations;
-		semi_lagrangian_convergence_threshold = slData->semi_lagrangian_convergence_threshold;
-		semi_lagrangian_approximate_sphere_geometry = slData->semi_lagrangian_approximate_sphere_geometry;
-		semi_lagrangian_interpolation_limiter = slData->semi_lagrangian_interpolation_limiter;
+		semi_lagrangian_max_iterations = shackSLData->semi_lagrangian_max_iterations;
+		semi_lagrangian_convergence_threshold = shackSLData->semi_lagrangian_convergence_threshold;
+		semi_lagrangian_approximate_sphere_geometry = shackSLData->semi_lagrangian_approximate_sphere_geometry;
+		semi_lagrangian_interpolation_limiter = shackSLData->semi_lagrangian_interpolation_limiter;
 
 
 
@@ -425,8 +428,8 @@ public:
 							pos_lon_mid, pos_lat_mid
 						);
 
-					ScalarDataArray vel_u_mid = sphereSampler.bilinear_scalar(vel_lon, pos_lon_mid, pos_lat_mid, true, slData->semi_lagrangian_sampler_use_pole_pseudo_points);
-					ScalarDataArray vel_v_mid = sphereSampler.bilinear_scalar(vel_lat, pos_lon_mid, pos_lat_mid, true, slData->semi_lagrangian_sampler_use_pole_pseudo_points);
+					ScalarDataArray vel_u_mid = sphereSampler.bilinear_scalar(vel_lon, pos_lon_mid, pos_lat_mid, true, shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points);
+					ScalarDataArray vel_v_mid = sphereSampler.bilinear_scalar(vel_lat, pos_lon_mid, pos_lat_mid, true, shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points);
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_mid(num_elements), vel_y_mid(num_elements), vel_z_mid(num_elements);
@@ -546,8 +549,8 @@ public:
 							o_pos_lon_D, o_pos_lat_D
 						);
 
-					ScalarDataArray u_D = sphereSampler.bilinear_scalar(i_dt_u_lon, o_pos_lon_D, o_pos_lat_D, true, slData->semi_lagrangian_sampler_use_pole_pseudo_points);
-					ScalarDataArray v_D = sphereSampler.bilinear_scalar(i_dt_v_lat, o_pos_lon_D, o_pos_lat_D, true, slData->semi_lagrangian_sampler_use_pole_pseudo_points);
+					ScalarDataArray u_D = sphereSampler.bilinear_scalar(i_dt_u_lon, o_pos_lon_D, o_pos_lat_D, true, shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points);
+					ScalarDataArray v_D = sphereSampler.bilinear_scalar(i_dt_v_lat, o_pos_lon_D, o_pos_lat_D, true, shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points);
 
 					// convert extrapolated velocities to Cartesian velocities
 					ScalarDataArray vel_x_D(num_elements), vel_y_D(num_elements), vel_z_D(num_elements);
@@ -685,13 +688,13 @@ public:
 							u_extrapol,
 							o_pos_lon_D, o_pos_lat_D,
 							true,
-							slData->semi_lagrangian_sampler_use_pole_pseudo_points
+							shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points
 						);
 					ScalarDataArray vel_lat_extrapol_D = sphereSampler.bilinear_scalar(
 							v_extrapol,
 							o_pos_lon_D, o_pos_lat_D,
 							true,
-							slData->semi_lagrangian_sampler_use_pole_pseudo_points
+							shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points
 						);
 
 					// convert extrapolated velocities to Cartesian velocities
@@ -797,24 +800,24 @@ public:
 				i_phi.toPhys(),
 				i_pos_lon_d, i_pos_lat_d,
 				false,
-				slData->semi_lagrangian_sampler_use_pole_pseudo_points,
-				slData->semi_lagrangian_interpolation_limiter
+				shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSLData->semi_lagrangian_interpolation_limiter
 			);
 
 		o_vrt = sphereSampler.bicubic_scalar_ret_phys(
 				i_vrt.toPhys(),
 				i_pos_lon_d, i_pos_lat_d,
 				false,
-				slData->semi_lagrangian_sampler_use_pole_pseudo_points,
-				slData->semi_lagrangian_interpolation_limiter
+				shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSLData->semi_lagrangian_interpolation_limiter
 			);
 
 		o_div = sphereSampler.bicubic_scalar_ret_phys(
 				i_div.toPhys(),
 				i_pos_lon_d, i_pos_lat_d,
 				false,
-				slData->semi_lagrangian_sampler_use_pole_pseudo_points,
-				slData->semi_lagrangian_interpolation_limiter
+				shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSLData->semi_lagrangian_interpolation_limiter
 			);
 	}
 
@@ -852,8 +855,8 @@ public:
 				i_phi.toPhys(),
 				i_pos_lon_D, i_pos_lat_D,
 				false,
-				slData->semi_lagrangian_sampler_use_pole_pseudo_points,
-				slData->semi_lagrangian_interpolation_limiter
+				shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSLData->semi_lagrangian_interpolation_limiter
 			);
 
 
@@ -913,16 +916,16 @@ public:
 				u_tmp,
 				i_pos_lon_D, i_pos_lat_D,
 				true,
-				slData->semi_lagrangian_sampler_use_pole_pseudo_points,
-				slData->semi_lagrangian_interpolation_limiter
+				shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSLData->semi_lagrangian_interpolation_limiter
 			);
 
 		SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
 				v_tmp,
 				i_pos_lon_D, i_pos_lat_D,
 				true,
-				slData->semi_lagrangian_sampler_use_pole_pseudo_points,
-				slData->semi_lagrangian_interpolation_limiter
+				shackSLData->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSLData->semi_lagrangian_interpolation_limiter
 			);
 
 		/*

@@ -88,9 +88,6 @@ bool PDEAdvectionSphereBenchmarksCombined::setup_3_benchmarkDetection()
 		}
 	}
 
-	// Found integrator, freeing others
-	_benchmarksFreeAll(benchmark);
-
 	if (benchmark == nullptr)
 	{
 		printAvailableBenchmarks();
@@ -167,3 +164,8 @@ void PDEAdvectionSphereBenchmarksCombined::printAvailableBenchmarks(
 
 }
 
+
+PDEAdvectionSphereBenchmarksCombined::~PDEAdvectionSphereBenchmarksCombined()
+{
+	_benchmarksFreeAll();
+}

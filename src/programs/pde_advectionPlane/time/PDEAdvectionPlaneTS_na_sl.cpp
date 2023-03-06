@@ -3,7 +3,7 @@
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <pde_advectionPlane/time/PDEAdvectionPlaneTS_na_sl.hpp>
+#include "PDEAdvectionPlaneTS_na_sl.hpp"
 
 
 PDEAdvectionPlaneTS_na_sl::PDEAdvectionPlaneTS_na_sl()

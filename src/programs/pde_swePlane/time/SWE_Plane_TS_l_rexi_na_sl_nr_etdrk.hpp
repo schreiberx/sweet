@@ -16,8 +16,8 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
-#include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
-#include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
+#include <sweet/core/time/TimesteppingSemiLagrangianPlaneData.hpp>
+#include <sweet/core/time/TimesteppingExplicitRKPlaneData.hpp>
 
 #include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_rexi.hpp"
@@ -38,7 +38,7 @@ class SWE_Plane_TS_l_rexi_na_sl_nr_etdrk	: public PDESWEPlaneTS_BaseInterface
 	SWE_Plane_TS_l_rexi ts_psi2_rexi;
 	SWE_Plane_TS_l_rexi ts_psi3_rexi;
 
-	sweet::SemiLagrangianPlaneData semiLagrangian;
+	sweet::TimesteppingSemiLagrangianPlaneData semiLagrangian;
 	sweet::PlaneDataSampler sampler2D;
 
 	//Previous values (t_n-1)

@@ -18,8 +18,8 @@
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
-#include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
-#include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
+#include <sweet/core/time/TimesteppingExplicitRKPlaneData.hpp>
+#include <sweet/core/time/TimesteppingSemiLagrangianPlaneData.hpp>
 
 
 #include "PDESWEPlaneTS_BaseInterface.hpp"
@@ -28,7 +28,7 @@ class SWE_Plane_TS_l_cn_na_sl_nr_settls	: public PDESWEPlaneTS_BaseInterface
 {
 	bool use_only_linear_divergence;
 
-	sweet::SemiLagrangianPlaneData semiLagrangian;
+	sweet::TimesteppingSemiLagrangianPlaneData semiLagrangian;
 	sweet::PlaneDataSampler sampler2D;
 
 	sweet::PlaneData_Spectral h_prev, u_prev, v_prev;

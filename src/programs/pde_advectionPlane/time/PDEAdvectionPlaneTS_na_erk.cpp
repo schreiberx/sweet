@@ -1,11 +1,9 @@
 /*
- * Adv_Plane_TS_ln_erk.cpp
- *
  *  Created on: 30 May 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include <pde_advectionPlane/time/PDEAdvectionPlaneTS_na_erk.hpp>
+#include "PDEAdvectionPlaneTS_na_erk.hpp"
 
 
 PDEAdvectionPlaneTS_na_erk::PDEAdvectionPlaneTS_na_erk()

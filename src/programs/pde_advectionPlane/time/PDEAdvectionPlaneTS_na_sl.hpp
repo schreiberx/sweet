@@ -6,7 +6,7 @@
 #ifndef SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_SL_HPP_
 #define SRC_PROGRAMS_ADV_PLANE_REXI_ADV_PLANE_TS_NA_SL_HPP_
 
-#include <pde_advectionPlane/time/PDEAdvectionPlaneTS_BaseInterface.hpp>
+#include "PDEAdvectionPlaneTS_BaseInterface.hpp"
 #include <limits>
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/plane/Plane.hpp>

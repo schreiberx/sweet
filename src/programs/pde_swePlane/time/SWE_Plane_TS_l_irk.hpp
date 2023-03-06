@@ -10,7 +10,7 @@
 
 #include <limits>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
-#include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
+#include <sweet/core/time/TimesteppingExplicitRKPlaneData.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 

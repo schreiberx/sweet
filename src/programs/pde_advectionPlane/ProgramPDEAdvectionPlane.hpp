@@ -8,7 +8,7 @@
 
 
 // This is just for the editor to show code as used within precompiler #if ... directives
-#include <pde_advectionPlane/PDEAdvectionPlaneTimeSteppers.hpp>
+#include "PDEAdvectionPlaneTimeSteppers.hpp"
 #include <sweet/core/defaultPrecompilerValues.hpp>
 
 // Error handling

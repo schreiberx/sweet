@@ -10,8 +10,8 @@
 #include <sweet/core/plane/Convert_PlaneDataPhysical_to_ScalarDataArray.hpp>
 #include <sweet/core/plane/Convert_ScalarDataArray_to_PlaneDataPhysical.hpp>
 #include <sweet/core/plane/PlaneStaggering.hpp>
-#include "PlaneData_Physical.hpp"
-#include "PlaneDataSampler.hpp"
+#include <sweet/core/plane/PlaneData_Physical.hpp>
+#include <sweet/core/plane/PlaneDataSampler.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
 #include <sweet/core/StopwatchBox.hpp>
 

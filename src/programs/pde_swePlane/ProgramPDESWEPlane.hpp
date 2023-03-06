@@ -727,11 +727,8 @@ public:
 		if (shackPDESWEPlane->normal_mode_analysis_generation > 0)
 			return false;
 
-		// output each time step
-		if (shackIOData->output_each_sim_seconds < 0)
-			return false;
 
-		if (shackIOData->output_next_sim_seconds-shackIOData->output_next_sim_seconds*(1e-12) > shackTimestepControl->current_simulation_time)
+		if (!shackIOData->checkDoOutput(shackTimestepControl->current_simulation_time))
 			return false;
 
 		/*
@@ -886,19 +883,7 @@ public:
 
 		}
 
-		if (shackIOData->output_next_sim_seconds == shackTimestepControl->max_simulation_time)
-		{
-			shackIOData->output_next_sim_seconds = std::numeric_limits<double>::infinity();
-		}
-		else
-		{
-			while (shackIOData->output_next_sim_seconds-shackIOData->output_next_sim_seconds*(1e-12) <= shackTimestepControl->current_simulation_time)
-				shackIOData->output_next_sim_seconds += shackIOData->output_each_sim_seconds;
-
-			if (shackIOData->output_next_sim_seconds > shackTimestepControl->max_simulation_time)
-				shackIOData->output_next_sim_seconds = shackTimestepControl->max_simulation_time;
-		}
-
+		shackIOData->advanceNextOutput(shackTimestepControl->current_simulation_time, shackTimestepControl->max_simulation_time);
 		return true;
 	}
 

@@ -27,8 +27,10 @@ bool PDEAdvectionSphereTS_na_sl::setup(
 	if (timestepping_order > 2 || timestepping_order <= 0)
 		error.set("Only 1st and 2nd order for SL integration supported");
 
+	assert(shackSemiLagrangian != nullptr);
+
 	semiLagrangian.setup(
-			io_ops->sphereDataConfig,
+			ops->sphereDataConfig,
 			shackSemiLagrangian,
 			timestepping_order
 		);

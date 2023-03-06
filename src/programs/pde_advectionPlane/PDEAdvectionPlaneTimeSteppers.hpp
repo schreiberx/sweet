@@ -8,9 +8,9 @@
 #ifndef SRC_PROGRAMS_PDE_ADVECTION_PLANE_TIMESTEPPERS_HPP_
 #define SRC_PROGRAMS_PDE_ADVECTION_PLANE_TIMESTEPPERS_HPP_
 
-#include <pde_advectionPlane/time/PDEAdvectionPlaneTS_BaseInterface.hpp>
-#include <pde_advectionPlane/time/PDEAdvectionPlaneTS_na_erk.hpp>
-#include <pde_advectionPlane/time/PDEAdvectionPlaneTS_na_sl.hpp>
+#include "time/PDEAdvectionPlaneTS_BaseInterface.hpp"
+#include "time/PDEAdvectionPlaneTS_na_erk.hpp"
+#include "time/PDEAdvectionPlaneTS_na_sl.hpp"
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 

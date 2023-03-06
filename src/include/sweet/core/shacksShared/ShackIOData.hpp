@@ -173,6 +173,41 @@ public:
 
 		std::cout << std::endl;
 	}
+
+	bool checkDoOutput(
+			double i_current_simulation_time
+	)
+	{
+		// output each time step
+		if (output_each_sim_seconds < 0)
+			return false;
+
+		if (output_next_sim_seconds-output_next_sim_seconds*(1e-12) > i_current_simulation_time)
+			return false;
+
+		return true;
+	}
+
+	void advanceNextOutput(
+			double i_current_simulation_time,
+			double i_max_simulation_time
+	)
+	{
+		if (output_next_sim_seconds == i_max_simulation_time)
+		{
+			output_next_sim_seconds = std::numeric_limits<double>::infinity();
+		}
+		else
+		{
+			while (output_next_sim_seconds-output_next_sim_seconds*(1e-12) <= i_current_simulation_time)
+				output_next_sim_seconds += output_each_sim_seconds;
+
+			if (output_next_sim_seconds > i_max_simulation_time)
+				output_next_sim_seconds = i_max_simulation_time;
+		}
+
+		return;
+	}
 };
 
 }

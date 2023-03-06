@@ -5,12 +5,12 @@
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_ERK_HPP_
-#define SRC_PROGRAMS_SWE_PLANE_REXI_SWE_PLANE_TS_L_ERK_HPP_
+#ifndef SRC_PROGRAMS_SWE_PLANE_TS_L_ERK_HPP_
+#define SRC_PROGRAMS_SWE_PLANE_TS_L_ERK_HPP_
 
 #include <limits>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
-#include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
+#include <sweet/core/time/TimesteppingExplicitRKPlaneData.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 

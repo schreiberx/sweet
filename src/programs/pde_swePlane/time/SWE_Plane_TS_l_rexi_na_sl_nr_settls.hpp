@@ -17,8 +17,8 @@
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/plane/PlaneOperators.hpp>
 #include <sweet/core/plane/PlaneDataSampler.hpp>
-#include <sweet/core/plane/PlaneDataSemiLagrangian.hpp>
-#include <sweet/core/plane/PlaneDataTimesteppingExplicitRK.hpp>
+#include <sweet/core/time/TimesteppingSemiLagrangianPlaneData.hpp>
+#include <sweet/core/time/TimesteppingExplicitRKPlaneData.hpp>
 
 #include "PDESWEPlaneTS_BaseInterface.hpp"
 #include "SWE_Plane_TS_l_direct.hpp"
@@ -35,7 +35,7 @@ class SWE_Plane_TS_l_rexi_na_sl_nr_settls	: public PDESWEPlaneTS_BaseInterface
 
 	int with_linear_div_only;
 
-	sweet::SemiLagrangianPlaneData semiLagrangian;
+	sweet::TimesteppingSemiLagrangianPlaneData semiLagrangian;
 	sweet::PlaneDataSampler sampler2D;
 
 	//Previous values (t_n-1)

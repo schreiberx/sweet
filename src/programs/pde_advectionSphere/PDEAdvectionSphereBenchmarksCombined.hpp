@@ -60,8 +60,10 @@ public:
 		std::ostream &o_ostream = std::cout,
 		const std::string &i_prefix = ""
 	);
-};
 
+public:
+	~PDEAdvectionSphereBenchmarksCombined();
+};
 
 
 #endif

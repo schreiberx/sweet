@@ -6,7 +6,7 @@
 #ifndef SRC_PDE_ADV_PLANE_TS_NA_ERK_HPP_
 #define SRC_PDE_ADV_PLANE_TS_NA_ERK_HPP_
 
-#include <pde_advectionPlane/time/PDEAdvectionPlaneTS_BaseInterface.hpp>
+#include "PDEAdvectionPlaneTS_BaseInterface.hpp"
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/time/TimesteppingExplicitRKPlaneData.hpp>
 #include <sweet/core/plane/Plane.hpp>

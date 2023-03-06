@@ -2,7 +2,7 @@
 #ifndef PLANEDATA_TIMESTEPPING_EXPLICIT_RK_HPP__
 #define PLANEDATA_TIMESTEPPING_EXPLICIT_RK_HPP__
 
-#include "PlaneData_Spectral.hpp"
+#include "../plane/PlaneData_Spectral.hpp"
 
 namespace sweet
 {
