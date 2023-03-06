@@ -11,7 +11,7 @@ mule.benchmark.cleanup_job_dirs || exit 1
 
 ./benchmarks_create.py || exit 1
 
-## force ref job to be run first!
+## force ref job to run first!
 mkdir tmp
 mv job_bench_* tmp/.
 mule.benchmark.jobs_run_directly || exit 1
