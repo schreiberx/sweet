@@ -44,12 +44,21 @@ public:
 	}
 
 
-	void setup(
+	void setup_1_withoutOps(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDEAdvectionSphere_Benchmark_BaseInterface::setup_1_shackBenchmarkData(
+				io_shackDict
+			);
+	}
+
+	void setup_2_withOps(
 			sweet::ShackDictionary *io_shackDict,
 			sweet::SphereOperators *io_ops
 	)
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup(
+		PDEAdvectionSphere_Benchmark_BaseInterface::setup_2_withOps(
 				io_shackDict,
 				io_ops
 			);

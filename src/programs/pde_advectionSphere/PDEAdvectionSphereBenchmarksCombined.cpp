@@ -98,21 +98,26 @@ bool PDEAdvectionSphereBenchmarksCombined::setup_3_benchmarkDetection()
 }
 
 
-bool PDEAdvectionSphereBenchmarksCombined::setup_4_benchmarkSetup(
-		sweet::SphereOperators* io_ops
-)
+bool PDEAdvectionSphereBenchmarksCombined::setup_4_benchmarkSetup_1_withoutOps()
 {
 	assert(benchmark != nullptr);
 
-	ops = io_ops;
-
-	benchmark->setup(shackDict, ops);
+	benchmark->setup_1_shackBenchmarkData(shackDict);
 	ERROR_FORWARD_WITH_RETURN_BOOLEAN(*benchmark);
 
 	return true;
 }
 
 
+bool PDEAdvectionSphereBenchmarksCombined::setup_5_benchmarkSetup_2_withOps(
+		sweet::SphereOperators* io_ops
+)
+{
+	ops = io_ops;
+
+	benchmark->setup_2_withOps(shackDict, ops);
+	ERROR_FORWARD_WITH_RETURN_BOOLEAN(*benchmark);
+}
 
 void PDEAdvectionSphereBenchmarksCombined::clear()
 {

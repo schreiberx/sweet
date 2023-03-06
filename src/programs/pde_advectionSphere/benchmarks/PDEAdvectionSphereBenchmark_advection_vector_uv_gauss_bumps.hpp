@@ -38,15 +38,28 @@ public:
 	}
 
 
-	void setup(
-			sweet::ShackDictionary *i_shackDict,
-			sweet::SphereOperators *i_ops
+	void setup_1_shackBenchmarkData(
+			sweet::ShackDictionary *io_shackDict
 	)
 	{
-		shackDict = i_shackDict;
-		ops = i_ops;
+		PDEAdvectionSphere_Benchmark_BaseInterface::setup_1_shackBenchmarkData(
+				io_shackDict
+			);
 
-		benchmark.setup(i_shackDict, i_ops);
+		benchmark.setup_1_shackBenchmarkData(io_shackDict);
+	}
+
+	void setup_2_withOps(
+			sweet::ShackDictionary *io_shackDict,
+			sweet::SphereOperators *io_ops
+	)
+	{
+		PDEAdvectionSphere_Benchmark_BaseInterface::setup_2_withOps(
+				io_shackDict,
+				io_ops
+			);
+
+		benchmark.setup_2_withOps(io_shackDict, io_ops);
 	}
 
 

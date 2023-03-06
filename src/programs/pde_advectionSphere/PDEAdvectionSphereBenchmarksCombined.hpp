@@ -44,7 +44,9 @@ public:
 
 	bool setup_3_benchmarkDetection();
 
-	bool setup_4_benchmarkSetup(
+	bool setup_4_benchmarkSetup_1_withoutOps();
+
+	bool setup_5_benchmarkSetup_2_withOps(
 			sweet::SphereOperators *io_ops
 	);
 

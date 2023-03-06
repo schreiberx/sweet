@@ -137,7 +137,7 @@ public:
 
 
 
-	bool setup_1_registration()
+	bool setup_1_shackRegistration()
 	{
 		/*
 		 * SHACK: Register classes which we require
@@ -259,7 +259,7 @@ public:
 
 	bool setup()
 	{
-		if (!setup_1_registration())
+		if (!setup_1_shackRegistration())
 			return false;
 
 		if (!setup_2_processArguments())

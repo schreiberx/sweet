@@ -139,7 +139,7 @@ public:
 	};
 
 	// Simulation data
-	Data data;
+	Data dataConfigOps;
 
 	// time integrators
 	PDEAdvectionSphereTimeSteppers timeSteppers;
@@ -189,7 +189,6 @@ public:
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionSphereTimeDiscretization>();
 		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionSphereBenchmarks>();
-
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
@@ -273,15 +272,20 @@ public:
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
 
 		/*
+		 * Setup benchmark itself
+		 */
+		benchmarksCombined.setup_4_benchmarkSetup_1_withoutOps();
+
+		/*
 		 * Setup the data fields
 		 */
-		data.setup(shackSphereDataOps, benchmarksCombined.benchmark->getNumPrognosticFields());
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
+		dataConfigOps.setup(shackSphereDataOps, benchmarksCombined.benchmark->getNumPrognosticFields());
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataConfigOps);
 
 		/*
 		 * Setup benchmark itself
 		 */
-		benchmarksCombined.setup_4_benchmarkSetup(&data.ops);
+		benchmarksCombined.setup_5_benchmarkSetup_2_withOps(&dataConfigOps.ops);
 
 		/*
 		 * Now we're ready to setup the time steppers
@@ -289,7 +293,7 @@ public:
 		timeSteppers.setup_3_timestepper(
 				shackTimeDisc->timestepping_method,
 				&shackProgArgDict,
-				&data.ops
+				&dataConfigOps.ops
 			);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
 
@@ -298,9 +302,9 @@ public:
 		 * Load initial state of benchmark
 		 */
 		benchmarksCombined.benchmark->getInitialState(
-				data.prog_vec,
-				data.vel_u,
-				data.vel_v
+				dataConfigOps.prog_vec,
+				dataConfigOps.vel_u,
+				dataConfigOps.vel_v
 			);
 
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
@@ -309,7 +313,7 @@ public:
 		/*
 		 * Backup data at t=0
 		 */
-		data.prog_vec_t0 = data.prog_vec;
+		dataConfigOps.prog_vec_t0 = dataConfigOps.prog_vec;
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -329,12 +333,12 @@ public:
 	void clear_3_data()
 	{
 #if SWEET_GUI
-		data.vis_plane_data.clear();
+		dataConfigOps.vis_plane_data.clear();
 #endif
 
 		timeSteppers.clear();
 
-		data.clear();
+		dataConfigOps.clear();
 	}
 
 	bool setup()
@@ -377,8 +381,8 @@ public:
 	void printSimulationErrors()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (data.prog_vec_t0[0]-data.prog_vec[0]).toPhys().physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << (data.prog_vec_t0[0]-data.prog_vec[0]).toPhys().physical_reduce_rms() << std::endl;
+		std::cout << "Lmax error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_max_abs() << std::endl;
+		std::cout << "RMS error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms() << std::endl;
 	}
 
 	~ProgramPDEAdvectionSphere()
@@ -395,7 +399,7 @@ public:
 
 
 		timeSteppers.timestepper->run_timestep(
-				data.prog_vec, data.vel_u, data.vel_v,
+				dataConfigOps.prog_vec, dataConfigOps.vel_u, dataConfigOps.vel_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
@@ -406,8 +410,8 @@ public:
 			 * Update velocities just for sake of the correction visualization
 			 */
 			shackBenchmarks->getVelocities(
-					data.vel_u,
-					data.vel_v,
+					dataConfigOps.vel_u,
+					dataConfigOps.vel_v,
 					shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestep_size,
 					shackBenchmarks->getVelocitiesUserData
 				);
@@ -452,12 +456,12 @@ public:
 			bool *viz_reset
 	)
 	{
-		*o_vis_render_type_of_primitive_id = data.vis_render_type_of_primitive_id;
-		*o_bogus_data = &data.sphereDataConfig;
+		*o_vis_render_type_of_primitive_id = dataConfigOps.vis_render_type_of_primitive_id;
+		*o_bogus_data = &dataConfigOps.sphereDataConfig;
 
-		if (data.vis_data_id < 0)
+		if (dataConfigOps.vis_data_id < 0)
 		{
-			int id = -data.vis_data_id-1;
+			int id = -dataConfigOps.vis_data_id-1;
 
 #if 0
 			if (id <  (int)SphereData_DebugContainer().size())
@@ -473,67 +477,67 @@ public:
 				return;
 			}
 #else
-			if (id <  (int)data.prog_vec.size())
+			if (id <  (int)dataConfigOps.prog_vec.size())
 			{
-				data.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(
-							data.prog_vec[id] - data.prog_vec_t0[id],
-							data.planeDataConfig
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(
+							dataConfigOps.prog_vec[id] - dataConfigOps.prog_vec_t0[id],
+							dataConfigOps.planeDataConfig
 						);
 
-				*o_dataArray = &data.vis_plane_data;
+				*o_dataArray = &dataConfigOps.vis_plane_data;
 				*o_aspect_ratio = 0.5;
 				return;
 			}
 #endif
 		}
 
-		std::size_t id = data.vis_data_id;
+		std::size_t id = dataConfigOps.vis_data_id;
 
-		if (id >= 0 && id < data.prog_vec.size())
+		if (id >= 0 && id < dataConfigOps.prog_vec.size())
 		{
-			data.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(data.prog_vec[id], data.planeDataConfig);
+			dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog_vec[id], dataConfigOps.planeDataConfig);
 		}
-		else if (id >= data.prog_vec.size() && id < data.prog_vec.size() + 2)
+		else if (id >= dataConfigOps.prog_vec.size() && id < dataConfigOps.prog_vec.size() + 2)
 		{
-			switch (id - data.prog_vec.size())
+			switch (id - dataConfigOps.prog_vec.size())
 			{
 			case 0:
-				data.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(data.vel_u, data.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(dataConfigOps.vel_u, dataConfigOps.planeDataConfig);
 				break;
 
 			case 1:
-				data.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(data.vel_v, data.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(dataConfigOps.vel_v, dataConfigOps.planeDataConfig);
 				break;
 			}
 		}
 		else if (
-			data.prog_vec.size() == 2		&&
-			id >= data.prog_vec.size() + 2	&&
-			id < data.prog_vec.size() + 4
+			dataConfigOps.prog_vec.size() == 2		&&
+			id >= dataConfigOps.prog_vec.size() + 2	&&
+			id < dataConfigOps.prog_vec.size() + 4
 		)
 		{
 			sweet::SphereData_Physical u, v;
-			data.ops.vrtdiv_to_uv(data.prog_vec[0], data.prog_vec[1], u, v);
+			dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog_vec[0], dataConfigOps.prog_vec[1], u, v);
 
-			switch (id - data.prog_vec.size() - 2)
+			switch (id - dataConfigOps.prog_vec.size() - 2)
 			{
 			case 0:
-				data.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(u, data.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(u, dataConfigOps.planeDataConfig);
 				break;
 
 			case 1:
-				data.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(v, data.planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(v, dataConfigOps.planeDataConfig);
 				break;
 			}
 		}
 		else
 		{
-			SWEETDebugAssert(data.vis_plane_data.physical_space_data != nullptr);
-			SWEETDebugAssert(data.vis_plane_data.planeDataConfig != nullptr);
-			data.vis_plane_data.physical_set_zero();
+			SWEETDebugAssert(dataConfigOps.vis_plane_data.physical_space_data != nullptr);
+			SWEETDebugAssert(dataConfigOps.vis_plane_data.planeDataConfig != nullptr);
+			dataConfigOps.vis_plane_data.physical_set_zero();
 		}
 
-		*o_dataArray = &data.vis_plane_data;
+		*o_dataArray = &dataConfigOps.vis_plane_data;
 		*o_aspect_ratio = 0.5;
 	}
 
@@ -544,9 +548,9 @@ public:
 		std::string description = "";
 
 		bool found = false;
-		if (data.vis_data_id < 0)
+		if (dataConfigOps.vis_data_id < 0)
 		{
-			int id = -data.vis_data_id-1;
+			int id = -dataConfigOps.vis_data_id-1;
 
 #if 0
 			if (id < (int)SphereData_DebugContainer().size())
@@ -555,7 +559,7 @@ public:
 				found = true;
 			}
 #else
-			if (id <  (int)data.prog_vec.size())
+			if (id <  (int)dataConfigOps.prog_vec.size())
 			{
 				std::ostringstream msg;
 				msg << "DIFF prog. field " << id;
@@ -566,17 +570,17 @@ public:
 
 		if (!found)
 		{
-			std::size_t id = data.vis_data_id;
+			std::size_t id = dataConfigOps.vis_data_id;
 
-			if (id >= 0 && id < data.prog_vec.size())
+			if (id >= 0 && id < dataConfigOps.prog_vec.size())
 			{
 				std::ostringstream msg;
 				msg << "Prog. field " << id;
 				description = msg.str();
 			}
-			else if (id >= data.prog_vec.size() && id < data.prog_vec.size() + 2)
+			else if (id >= dataConfigOps.prog_vec.size() && id < dataConfigOps.prog_vec.size() + 2)
 			{
-				switch (id - data.prog_vec.size())
+				switch (id - dataConfigOps.prog_vec.size())
 				{
 				case 0:
 					description = "u velocity";
@@ -588,12 +592,12 @@ public:
 				}
 			}
 			else if (
-					data.prog_vec.size() == 2		&&
-					id >= data.prog_vec.size() + 2	&&
-					id < data.prog_vec.size() + 4
+					dataConfigOps.prog_vec.size() == 2		&&
+					id >= dataConfigOps.prog_vec.size() + 2	&&
+					id < dataConfigOps.prog_vec.size() + 4
 			)
 			{
-				switch (id - data.prog_vec.size() - 2)
+				switch (id - dataConfigOps.prog_vec.size() - 2)
 				{
 				case 0:
 					description = "prognostic field: u velocity";
@@ -622,8 +626,8 @@ public:
 				shackTimestepControl->current_timestep_nr,
 				shackTimestepControl->current_timestep_size,
 				description.c_str(),
-				data.vis_plane_data.physical_reduce_max(),
-				data.vis_plane_data.physical_reduce_min()
+				dataConfigOps.vis_plane_data.physical_reduce_max(),
+				dataConfigOps.vis_plane_data.physical_reduce_min()
 		);
 
 		return title_string;
@@ -640,16 +644,16 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			data.vis_data_id++;
+			dataConfigOps.vis_data_id++;
 			break;
 
 		case 'V':
-			data.vis_data_id--;
+			dataConfigOps.vis_data_id--;
 			break;
 
 		case 'b':
 		case 'B':
-			data.vis_render_type_of_primitive_id = (data.vis_render_type_of_primitive_id + 1) % 2;
+			dataConfigOps.vis_render_type_of_primitive_id = (dataConfigOps.vis_render_type_of_primitive_id + 1) % 2;
 			break;
 		}
 	}

@@ -15,6 +15,8 @@
 class PDEAdvectionSphereBenchmark_williamson_1_advection_cos_bell	:
 	public PDEAdvectionSphere_Benchmark_BaseInterface
 {
+	double _default_sphere_radius = 6.37122e6;
+
 public:
 	PDEAdvectionSphereBenchmark_williamson_1_advection_cos_bell()
 	{
@@ -37,13 +39,30 @@ public:
 	}
 
 
-	void setup(
-			sweet::ShackDictionary *i_shackDict,
-			sweet::SphereOperators *i_ops
+	void setup_1_withoutOps(
+			sweet::ShackDictionary *io_shackDict
 	)
 	{
-		shackDict = i_shackDict;
-		ops = i_ops;
+		PDEAdvectionSphere_Benchmark_BaseInterface::setup_1_shackBenchmarkData(
+				io_shackDict
+			);
+
+		std::cout << "!!! WARNING !!!" << std::endl;
+		std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
+		std::cout << "!!! WARNING !!!" << std::endl;
+
+		shackSphereDataOps->sphere_radius = _default_sphere_radius;
+	}
+
+	void setup_2_withOps(
+			sweet::ShackDictionary *io_shackDict,
+			sweet::SphereOperators *io_ops
+	)
+	{
+		PDEAdvectionSphere_Benchmark_BaseInterface::setup_2_withOps(
+				io_shackDict,
+				io_ops
+			);
 	}
 
 
@@ -88,26 +107,11 @@ public:
 		 */
 		double gravitation = 9.80616;
 		double h0 = 1000.0;
-		double sphere_radius = 6.37122e6;		
 		double gh0 = gravitation * h0;
 		
-
-		if (shackPDEAdvBenchmark->benchmark_override_simvars)
-		{
-			if (shackTimestepControl->current_simulation_time == 0)
-			{
-				std::cout << "!!! WARNING !!!" << std::endl;
-				std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
-				std::cout << "!!! WARNING !!!" << std::endl;
-			}
-
-			shackSphereDataOps->sphere_radius = sphere_radius;
-
-			ops->setup(o_phi_pert.sphereDataConfig, shackSphereDataOps);
-		}
-
 		double lambda_c = 3.0*M_PI/2.0;
 		double theta_c = 0.0;
+
 		//theta_c = M_PI*0.5*0.8;
 		double a = shackSphereDataOps->sphere_radius;
 

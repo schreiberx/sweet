@@ -57,12 +57,19 @@ public:
 
 
 public:
-	virtual void setup(
+	virtual void setup_1_shackBenchmarkData(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		shackDict = io_shackDict;
+	}
+
+public:
+	virtual void setup_2_withOps(
 			sweet::ShackDictionary *io_shackDict,
 			sweet::SphereOperators *io_ops
 	)
 	{
-		shackDict = io_shackDict;
 		ops = io_ops;
 	}
 

@@ -25,22 +25,6 @@ public:
 	/// benchmark scenario
 	std::string benchmark_name = "";
 
-	/// May the benchmark setup overwrite the simulation variables
-	bool benchmark_override_simvars = true;
-
-	/// Use 2/3 rule in physical space for dealiasing
-	bool setup_dealiased = true;
-
-
-	/// radius
-	double object_scale = 1;
-
-	/// setup coordinate of e.g. radial breaking dam, x-placement \in [0;1]
-	double object_coord_x = 0.5;
-
-	/// setup coordinate of e.g. radial breaking dam, y-placement \in [0;1]
-	double object_coord_y = 0.5;
-
 	/// rotation angle for advection equation
 	double sphere_advection_rotation_angle = 0;
 
@@ -116,13 +100,6 @@ public:
 		if (i_pa.getArgumentValueByKey("--advection-velocity", tmp))
 			StringSplit::split3double(tmp, &advection_velocity[0], &advection_velocity[1], &advection_velocity[2]);
 
-		i_pa.getArgumentValueBy2Keys("--initial-coord-x", "-x", object_coord_x);
-		i_pa.getArgumentValueBy2Keys("--initial-coord-y", "-y", object_coord_y);
-
-		i_pa.getArgumentValueByKey("--benchmark-setup-dealiased", setup_dealiased);
-		i_pa.getArgumentValueByKey("--benchmark-override-simvars", benchmark_override_simvars);
-		i_pa.getArgumentValueByKey("-r", object_scale);
-
 		i_pa.getArgumentValueByKey("--advection-rotation-angle", sphere_advection_rotation_angle);
 
 		if (error.exists())
@@ -143,11 +120,6 @@ public:
 		std::cout << i_prefix << " + random_seed: " << random_seed << std::endl;
 		std::cout << i_prefix << " + benchmark_name: " << benchmark_name << std::endl;
 		std::cout << i_prefix << " + advection_velocity (x, y, rotation speed): " << advection_velocity[0] << ", " << advection_velocity[1] << ", " << advection_velocity[2] << std::endl;
-		std::cout << i_prefix << " + benchmark_override_simvars: " << benchmark_override_simvars << std::endl;
-		std::cout << i_prefix << " + setup_dealiased: " << setup_dealiased << std::endl;
-		std::cout << i_prefix << " + object_scale: " << object_scale << std::endl;
-		std::cout << i_prefix << " + object_coord_x: " << object_coord_x << std::endl;
-		std::cout << i_prefix << " + object_coord_y: " << object_coord_y << std::endl;
 		std::cout << i_prefix << " + sphere_advection_rotation_angle: " << sphere_advection_rotation_angle << std::endl;
 		std::cout << i_prefix << " + input_data_filenames:" << std::endl;
 		std::cout << i_prefix << std::endl;
