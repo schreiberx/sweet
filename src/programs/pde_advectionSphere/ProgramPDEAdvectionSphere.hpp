@@ -1,6 +1,5 @@
 /*
- *  Created on: Mar 4, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_PDE_ADVECTIONSPHERE_PROGRAMPDEADVECTIONSPHERE_HPP_
@@ -22,7 +21,9 @@
 // Different shacks we need in this file
 #include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
+#include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include "benchmarks/ShackPDEAdvectionSphereBenchmarks.hpp"
+#include "ShackPDEAdvectionSphere.hpp"
 
 // Benchmarks
 #include "PDEAdvectionSphereBenchmarksCombined.hpp"
@@ -156,6 +157,7 @@ public:
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackPDEAdvectionSphereTimeDiscretization *shackTimeDisc;
 	ShackPDEAdvectionSphereBenchmarks *shackBenchmarks;
+	ShackPDEAdvectionSphere *shackPDEAdvectionSphere;
 
 
 
@@ -168,7 +170,9 @@ public:
 		shackSphereDataOps(nullptr),
 		shackIOData(nullptr),
 		shackTimestepControl(nullptr),
-		shackTimeDisc(nullptr)
+		shackTimeDisc(nullptr),
+		shackBenchmarks(nullptr),
+		shackPDEAdvectionSphere(nullptr)
 	{
 		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
 	}
@@ -189,6 +193,7 @@ public:
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionSphereTimeDiscretization>();
 		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionSphereBenchmarks>();
+		shackPDEAdvectionSphere = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionSphere>();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*

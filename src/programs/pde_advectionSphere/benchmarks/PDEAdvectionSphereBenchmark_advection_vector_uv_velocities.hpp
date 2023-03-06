@@ -5,7 +5,7 @@
 #ifndef SRC_BENCHMARKS_SPHERE_ADVECTION_VECTOR_UV_VELOCITIES_HPP_
 #define SRC_BENCHMARKS_SPHERE_ADVECTION_VECTOR_UV_VELOCITIES_HPP_
 
-#include "PDEAdvectionSphere_Benchmark_BaseInterface.hpp"
+#include "PDEAdvectionSphereBenchmarks_BaseInterface.hpp"
 #include <ostream>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
@@ -15,7 +15,7 @@
 
 
 class PDEAdvectionSphereBenchmark_advection_vector_uv_velocities	:
-	public PDEAdvectionSphere_Benchmark_BaseInterface
+	public PDEAdvectionSphereBenchmarks_BaseInterface
 {
 	PDEAdvectionSphereBenchmark_williamson_1_advection_gauss_bump benchmark;
 
@@ -35,33 +35,34 @@ public:
 	}
 
 
-	void setup_1_withoutOps(
+
+	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	)
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_1_shackBenchmarkData(
-				io_shackDict
-			);
+		PDEAdvectionSphereBenchmarks_BaseInterface::shackRegistration(io_shackDict);
+		benchmark.shackRegistration(io_shackDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmark);
+		return true;
+	}
 
-		benchmark.setup_1_shackBenchmarkData(shackDict);
+	void setup_1_shackData()
+	{
+		benchmark.setup_1_shackData();
 	}
 
 	void setup_2_withOps(
-			sweet::ShackDictionary *io_shackDict,
 			sweet::SphereOperators *io_ops
 	)
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_2_withOps(
-				io_shackDict,
-				io_ops
-			);
+		ops = io_ops;
 
-		benchmark.setup_2_withOps(shackDict, ops);
+		benchmark.setup_2_withOps(ops);
 	}
 
 
 
-	std::string get_help()
+	std::string printHelp()
 	{
 		std::ostringstream stream;
 

@@ -1,0 +1,157 @@
+/*
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
+ */
+
+#ifndef SRC_PROGRAMS_PDESWESphereTS_LG_EXP_DIRECT_HPP_
+#define SRC_PROGRAMS_PDESWESphereTS_LG_EXP_DIRECT_HPP_
+
+
+
+#include <sweet/expIntegration/ExpFunctions.hpp>
+#include <complex>
+#include <sweet/core/shacks/ShackDictionary.hpp>
+#include <string.h>
+#include <sweet/core/sphere/SphereData_Config.hpp>
+#include <sweet/core/sphere/SphereData_Spectral.hpp>
+#include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
+#include <sweet/core/sphere/SphereOperators.hpp>
+#include <sweet/core/sphere/SphereOperatorsComplex.hpp>
+#include "helpers/SWERexiTerm_SPH.hpp"
+
+#include "PDESWESphereTS_BaseInterface.hpp"
+
+
+#ifndef SWEET_BENCHMARK_TIMINGS
+	#define SWEET_BENCHMARK_TIMINGS 1
+#endif
+
+#ifndef SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS
+	#define SWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS 1
+#endif
+
+
+
+#if SWEET_BENCHMARK_TIMINGS
+#include <sweet/core/Stopwatch.hpp>
+#endif
+
+#if SWEET_MPI
+	#include <mpi.h>
+#endif
+
+
+
+class PDESWESphereTS_lg_exp_direct	: public PDESWESphereTS_BaseInterface
+{
+public:
+	bool implements_timestepping_method(
+			const std::string &i_timestepping_method
+	);
+
+	std::string string_id();
+	void setup_auto();
+
+
+private:
+	typedef std::complex<double> complex;
+
+
+	/// Simulation variables
+	sweet::ShackDictionary &shackDict;
+
+public:
+	// WARNING: Do NOT use a reference to this to get more flexibility by overriding certain things in here
+	SimulationCoefficients simCoeffs;
+
+private:
+	/// Sphere operators
+	sweet::SphereOperators &op;
+
+
+	const sweet::SphereDataConfig *sphereDataConfig;
+
+	ExpFunctions<double> rexiFunctions;
+
+
+private:
+	/*
+	 * Function name to be used by REXI
+	 */
+	std::string function_name;
+
+
+private:
+	void reset();
+
+
+public:
+	PDESWESphereTS_lg_exp_direct(
+			sweet::ShackDictionary &i_shackDict,
+			sweet::SphereOperators &i_op
+		);
+
+	/**
+	 * setup the REXI
+	 */
+public:
+	void setup(
+			const std::string &i_function_name
+	);
+
+	void run_timestep_lg_exp(
+		sweet::SphereData_Spectral &io_prog_phi,
+		sweet::SphereData_Spectral &io_prog_vrt,
+		sweet::SphereData_Spectral &io_prog_div,
+
+		double i_dt,
+		double i_simulation_timestamp
+	);
+
+	void run_timestep(
+			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
+			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
+			sweet::SphereData_Spectral &io_div,	///< prognostic variables
+
+			double i_fixed_dt = 0,
+			double i_simulation_timestamp = -1
+	);
+
+
+	void run_timestep(
+			const sweet::SphereData_Spectral &i_h,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_u,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_v,	///< prognostic variables
+
+			sweet::SphereData_Spectral &o_h,	///< prognostic variables
+			sweet::SphereData_Spectral &o_u,	///< prognostic variables
+			sweet::SphereData_Spectral &o_v,	///< prognostic variables
+
+			double i_fixed_dt,
+			double i_simulation_timestamp
+	);
+
+
+	/**
+	 * Solve the REXI of \f$ U(t) = exp(L*t) \f$
+	 *
+	 * See
+	 * 		doc/rexi/understanding_rexi.pdf
+	 * for further information
+	 */
+public:
+	bool run_timestep_rexi_vectorinvariant_progphivortdiv(
+		sweet::SphereData_Spectral &io_phi0,
+		sweet::SphereData_Spectral &io_u0,
+		sweet::SphereData_Spectral &io_v0,
+
+		double i_timestep_size,	///< timestep size
+
+		const sweet::ShackDictionary &i_parameters
+	);
+
+
+	virtual ~PDESWESphereTS_lg_exp_direct();
+};
+
+
+#endif

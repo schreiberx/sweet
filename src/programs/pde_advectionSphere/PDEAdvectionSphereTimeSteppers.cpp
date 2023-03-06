@@ -14,7 +14,6 @@ PDEAdvectionSphereTimeSteppers::PDEAdvectionSphereTimeSteppers()
 {
 }
 
-
 void PDEAdvectionSphereTimeSteppers::setup_1_registerAllTimesteppers()
 {
 	/*

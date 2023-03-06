@@ -5,7 +5,7 @@
 #ifndef SRC_SWE_SPHERE_BENCHMARKS_WILLIAMSON_1_HPP_
 #define SRC_SWE_SPHERE_BENCHMARKS_WILLIAMSON_1_HPP_
 
-#include "PDEAdvectionSphere_Benchmark_BaseInterface.hpp"
+#include "PDEAdvectionSphereBenchmarks_BaseInterface.hpp"
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereData_Config.hpp>
@@ -13,7 +13,7 @@
 
 
 class PDEAdvectionSphereBenchmark_williamson_1_advection_cos_bell	:
-	public PDEAdvectionSphere_Benchmark_BaseInterface
+	public PDEAdvectionSphereBenchmarks_BaseInterface
 {
 	double _default_sphere_radius = 6.37122e6;
 
@@ -39,14 +39,8 @@ public:
 	}
 
 
-	void setup_1_withoutOps(
-			sweet::ShackDictionary *io_shackDict
-	)
+	void setup_1_shackData()
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_1_shackBenchmarkData(
-				io_shackDict
-			);
-
 		std::cout << "!!! WARNING !!!" << std::endl;
 		std::cout << "!!! WARNING: Overriding simulation parameters for this benchmark !!!" << std::endl;
 		std::cout << "!!! WARNING !!!" << std::endl;
@@ -55,18 +49,14 @@ public:
 	}
 
 	void setup_2_withOps(
-			sweet::ShackDictionary *io_shackDict,
 			sweet::SphereOperators *io_ops
 	)
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_2_withOps(
-				io_shackDict,
-				io_ops
-			);
+		ops = io_ops;
 	}
 
 
-	std::string get_help()
+	std::string printHelp()
 	{
 		std::ostringstream stream;
 		stream << "  WILLIAMSON #1:" << std::endl;

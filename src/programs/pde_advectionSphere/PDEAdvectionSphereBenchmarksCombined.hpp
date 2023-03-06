@@ -12,7 +12,7 @@
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
 #include "benchmarks/ShackPDEAdvectionSphereBenchmarks.hpp"
-#include "benchmarks/PDEAdvectionSphere_Benchmark_BaseInterface.hpp"
+#include "benchmarks/PDEAdvectionSphereBenchmarks_BaseInterface.hpp"
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 
 #include <sweet/core/sphere/Sphere.hpp>
@@ -21,7 +21,7 @@
 
 class PDEAdvectionSphereBenchmarksCombined
 {
-	std::vector<PDEAdvectionSphere_Benchmark_BaseInterface*> _registered_benchmarks;
+	std::vector<PDEAdvectionSphereBenchmarks_BaseInterface*> _registered_benchmarks;
 
 	sweet::ShackDictionary *shackDict;
 	ShackPDEAdvectionSphereBenchmarks *shackBenchmarks;
@@ -32,7 +32,7 @@ public:
 	// Sphere operators
 	sweet::SphereOperators *ops;
 
-	PDEAdvectionSphere_Benchmark_BaseInterface *benchmark = nullptr;
+	PDEAdvectionSphereBenchmarks_BaseInterface *benchmark = nullptr;
 
 	PDEAdvectionSphereBenchmarksCombined();
 
@@ -54,7 +54,7 @@ public:
 
 private:
 	void _benchmarksFreeAll(
-			PDEAdvectionSphere_Benchmark_BaseInterface *skip_this = nullptr
+			PDEAdvectionSphereBenchmarks_BaseInterface *skip_this = nullptr
 	);
 
 public:

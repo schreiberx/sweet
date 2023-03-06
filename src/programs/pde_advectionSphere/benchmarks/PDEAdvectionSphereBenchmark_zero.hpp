@@ -6,14 +6,14 @@
 #define SRC_BENCHMARKS_SPHERE_ADVECTION_ZERO_HPP_
 
 
-#include "PDEAdvectionSphere_Benchmark_BaseInterface.hpp"
+#include "PDEAdvectionSphereBenchmarks_BaseInterface.hpp"
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 
 
 
 class PDEAdvectionSphereBenchmark_zero	:
-	public PDEAdvectionSphere_Benchmark_BaseInterface
+	public PDEAdvectionSphereBenchmarks_BaseInterface
 {
 public:
 	PDEAdvectionSphereBenchmark_zero()
@@ -33,28 +33,19 @@ public:
 		;
 	}
 
-	void setup_1_withoutOps(
-			sweet::ShackDictionary *io_shackDict
-	)
+	void setup_1_shackData()
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_1_shackBenchmarkData(
-				io_shackDict
-			);
 	}
 
 	void setup_2_withOps(
-			sweet::ShackDictionary *io_shackDict,
 			sweet::SphereOperators *io_ops
 	)
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_2_withOps(
-				io_shackDict,
-				io_ops
-			);
+		ops = io_ops;
 	}
 
 
-	std::string get_help()
+	std::string printHelp()
 	{
 		std::ostringstream stream;
 		stream << " * ZERO FIELD TEST CASES:" << std::endl;

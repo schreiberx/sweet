@@ -28,11 +28,6 @@ public:
 	/// rotation angle for advection equation
 	double sphere_advection_rotation_angle = 0;
 
-	/**
-	 * Flag to indicate the presence of topography
-	 */
-	bool use_topography = false;
-
 
 	/*
 	 * Get updated velocities for particular point in time
@@ -60,19 +55,6 @@ public:
 	void *slComputeDeparture3rdOrderUserData = nullptr;
 
 
-	/**
-	 * Velocity and additional parameter for advection test cases
-	 */
-	double advection_velocity[3] = {0, 0, 0};
-
-	bool validateNonzeroAdvection()
-	{
-		if (advection_velocity[0] == 0 && advection_velocity[1] == 0)
-			return error.set("Both advection velocities are 0, use --advection-velocity=...");
-
-		return true;
-	}
-
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << std::endl;
@@ -96,10 +78,6 @@ public:
 		i_pa.getArgumentValueByKey("--random-seed", random_seed);
 		i_pa.getArgumentValueByKey("--benchmark-name", benchmark_name);
 
-		std::string tmp;
-		if (i_pa.getArgumentValueByKey("--advection-velocity", tmp))
-			StringSplit::split3double(tmp, &advection_velocity[0], &advection_velocity[1], &advection_velocity[2]);
-
 		i_pa.getArgumentValueByKey("--advection-rotation-angle", sphere_advection_rotation_angle);
 
 		if (error.exists())
@@ -119,7 +97,6 @@ public:
 		std::cout << i_prefix << "BENCHMARK:" << std::endl;
 		std::cout << i_prefix << " + random_seed: " << random_seed << std::endl;
 		std::cout << i_prefix << " + benchmark_name: " << benchmark_name << std::endl;
-		std::cout << i_prefix << " + advection_velocity (x, y, rotation speed): " << advection_velocity[0] << ", " << advection_velocity[1] << ", " << advection_velocity[2] << std::endl;
 		std::cout << i_prefix << " + sphere_advection_rotation_angle: " << sphere_advection_rotation_angle << std::endl;
 		std::cout << i_prefix << " + input_data_filenames:" << std::endl;
 		std::cout << i_prefix << std::endl;

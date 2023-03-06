@@ -38,8 +38,13 @@ int main(int i_argc, char *i_argv[])
 			simulation.run_timestep();
 	}
 
-	simulation.printSimulationErrors();
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+
+	if (simulation.shackPDEAdvectionSphere->compute_errors)
+	{
+		simulation.printSimulationErrors();
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	}
 
 	std::cout << "FIN" << std::endl;
 	return 0;

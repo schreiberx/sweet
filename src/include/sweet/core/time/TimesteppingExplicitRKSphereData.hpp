@@ -3,6 +3,7 @@
 #define SPHEREDATA_TIMESTEPPING_EXPLICITRK_HPP__
 
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
+#include <vector>
 #include <limits>
 
 namespace sweet

@@ -30,12 +30,13 @@ public:
 
 	const SphereDataConfig *sphereDataConfig;
 
+#if 0
 	// Coriolis effect in physical space
 	SphereData_Physical fg;
 
 	// Solely the rotational effect without anything else
 	SphereData_Physical mug;
-
+#endif
 
 private:
 	double r;		// radius
@@ -62,6 +63,40 @@ public:
 	}
 
 
+	SphereData_Physical getFG_fSphere(
+			double i_fsphere_f0
+	)
+	{
+		SphereData_Physical fg;
+		fg.setup(sphereDataConfig);
+
+		fg.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data = i_fsphere_f0;
+			}
+		);
+
+		return fg;
+	}
+
+
+	SphereData_Physical getFG_rotatingSphere(
+			double i_sphere_rotating_coriolis_omega
+	)
+	{
+		SphereData_Physical fg;
+		fg.setup(sphereDataConfig);
+
+		fg.physical_update_lambda_gaussian_grid(
+			[&](double lon, double mu, double &o_data)
+			{
+				o_data = mu*2.0*i_sphere_rotating_coriolis_omega;
+			}
+		);
+		return fg;
+	}
+
 
 public:
 	void setup(
@@ -77,6 +112,7 @@ public:
 		ir = 1.0/r;
 		ir2 = ir*ir;
 
+#if 0
 		fg.setup(i_sphereDataConfig);
 		if (i_shackSphereDataOps->sphere_use_fsphere)
 		{
@@ -116,6 +152,7 @@ public:
 				}
 			);
 		}
+#endif
 
 #if 1
 		std::vector<double> mx;
@@ -154,8 +191,10 @@ public:
 
 	void clear()
 	{
+#if 0
 		mug.clear();
 		fg.clear();
+#endif
 	}
 
 

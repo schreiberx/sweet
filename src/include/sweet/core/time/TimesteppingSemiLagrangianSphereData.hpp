@@ -239,11 +239,6 @@ public:
 			if (asdf == 1)
 			{
 				std::cout << "TODO: REPLACE ME" << std::endl;
-				std::cout << "TODO: REPLACE ME" << std::endl;
-				std::cout << "TODO: REPLACE ME" << std::endl;
-				std::cout << "TODO: REPLACE ME" << std::endl;
-				std::cout << "TODO: REPLACE ME" << std::endl;
-				std::cout << "TODO: REPLACE ME" << std::endl;
 				asdf = 0;
 			}
 

@@ -69,10 +69,10 @@ class Test
 			SphereData_Spectral &o_div
 	)
 	{
-		BenchmarksSphereSWE benchmarks;
+		PDESWESphereBenchmarksCombined benchmarks;
 		benchmarks.setup(simVars, ops, "geostrophic_balance_linear_16");
 
-		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
+		benchmarks.benchmark->get_initial_state(o_phi, o_vrt, o_div);
 	}
 
 
@@ -109,10 +109,10 @@ class Test
 			SphereData_Spectral &o_div
 	)
 	{
-		BenchmarksSphereSWE benchmarks;
+		PDESWESphereBenchmarksCombined benchmarks;
 		benchmarks.setup(simVars, opsReal, "gaussian_bumps_pvd");
 
-		benchmarks.master->get_initial_state(o_phi, o_vrt, o_div);
+		benchmarks.benchmark->get_initial_state(o_phi, o_vrt, o_div);
 	}
 
 
@@ -640,14 +640,14 @@ public:
 			std::cout << "* FORWARD / BACKWARD TIME INTEGRATION" << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 
-			BenchmarksSphereSWE benchmarks;
+			PDESWESphereBenchmarksCombined benchmarks;
 			benchmarks.setup(simVars, ops, "gaussian_bumps_pvd");
 
 			SphereData_Spectral phi(sphereDataConfig);
 			SphereData_Spectral vrt(sphereDataConfig);
 			SphereData_Spectral div(sphereDataConfig);
 
-			benchmarks.master->get_initial_state(phi, vrt, div);
+			benchmarks.benchmark->get_initial_state(phi, vrt, div);
 
 			//phi.spectral_set_zero();
 			vrt.spectral_set_zero();

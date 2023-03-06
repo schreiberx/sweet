@@ -5,7 +5,7 @@
 #ifndef SRC_BENCHMARKS_SPHERE_ADVECTION_NAIR_LAURITZEN_HPP_
 #define SRC_BENCHMARKS_SPHERE_ADVECTION_NAIR_LAURITZEN_HPP_
 
-#include "PDEAdvectionSphere_Benchmark_BaseInterface.hpp"
+#include "PDEAdvectionSphereBenchmarks_BaseInterface.hpp"
 #include <ostream>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
@@ -15,7 +15,7 @@
 
 
 class PDEAdvectionSphereBenchmark_nair_lauritzen_sl	:
-		public PDEAdvectionSphere_Benchmark_BaseInterface
+		public PDEAdvectionSphereBenchmarks_BaseInterface
 {
 public:
 	PDEAdvectionSphereBenchmark_nair_lauritzen_sl()
@@ -44,24 +44,15 @@ public:
 	}
 
 
-	void setup_1_withoutOps(
-			sweet::ShackDictionary *io_shackDict
-	)
+	void setup_1_shackData()
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_1_shackBenchmarkData(
-				io_shackDict
-			);
 	}
 
 	void setup_2_withOps(
-			sweet::ShackDictionary *io_shackDict,
 			sweet::SphereOperators *io_ops
 	)
 	{
-		PDEAdvectionSphere_Benchmark_BaseInterface::setup_2_withOps(
-				io_shackDict,
-				io_ops
-			);
+		ops = io_ops;
 
 		shackPDEAdvBenchmark->callback_slComputeDeparture3rdOrder = callback_sl_compute_departure_3rd_order;
 		shackPDEAdvBenchmark->slComputeDeparture3rdOrderUserData = this;
@@ -74,7 +65,7 @@ public:
 	}
 
 
-	std::string get_help()
+	std::string printHelp()
 	{
 		std::ostringstream stream;
 		stream << " * NAIR LAURITZEN SL TEST CASES:" << std::endl;

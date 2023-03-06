@@ -43,18 +43,6 @@ public:
 	 */
 	double sphere_radius = 6.37122e6;
 
-	/**
-	 * Simulation on f-sphere? (constant f0 term over entire sphere)
-	 */
-	bool sphere_use_fsphere = false;
-
-	/**
-	 * Coriolis effect
-	 * 7.2921 x 10^{-5}
-	 */
-	double sphere_rotating_coriolis_omega = 0.000072921;
-
-	double sphere_fsphere_f0 = 0.00007292*2; //Sphere
 
 	/*
 	 * Verbosity level for SH setup
@@ -124,9 +112,6 @@ public:
 		 * Sphere
 		 */
 		i_pa.getArgumentValueByKey("-a", sphere_radius);
-		i_pa.getArgumentValueByKey("-F", sphere_use_fsphere);
-		if (i_pa.getArgumentValueByKey("-f", sphere_rotating_coriolis_omega))
-			sphere_fsphere_f0 = sphere_rotating_coriolis_omega;
 
 
 		i_pa.getArgumentValueByKey("--sh-setup-num-threads", sh_setup_num_threads);
@@ -160,10 +145,6 @@ public:
 		tp.getStringFromEnum(reuse_spectral_transformation_plans, tmp);
 		std::cout << i_prefix << " + reuse_spectral_transformation_plans: " << tmp << std::endl;
 		std::cout << i_prefix << " + sphere_radius: " << sphere_radius << std::endl;
-		std::cout << i_prefix << " + sphere_rotating_coriolis_omega: " << sphere_rotating_coriolis_omega << std::endl;
-		std::cout << i_prefix << " + sphere_use_fsphere: " << sphere_use_fsphere << std::endl;
-		std::cout << i_prefix << " + sphere_fsphere_f0: " << sphere_fsphere_f0 << std::endl;
-
 		std::cout << i_prefix << " + sh_setup_num_threads: " << sh_setup_num_threads << std::endl;
 		std::cout << i_prefix << " + sh_setup_verbosity: " << sh_setup_verbosity << std::endl;
 
