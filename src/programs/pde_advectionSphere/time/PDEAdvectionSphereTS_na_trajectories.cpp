@@ -31,15 +31,33 @@ void PDEAdvectionSphereTS_na_trajectories::printImplementedTimesteppingMethods(
 
 
 void PDEAdvectionSphereTS_na_trajectories::run_timestep(
+		std::vector<sweet::SphereData_Spectral> &io_U_phi,		///< prognostic variables
+		sweet::SphereData_Physical &io_U_u,
+		sweet::SphereData_Physical &io_U_v,
+
+		double i_fixed_dt,
+		double i_simulation_timestamp
+)
+{
+	for (std::size_t i = 0; i < io_U_phi.size(); i++)
+	{
+		run_timestep_1(
+				io_U_phi[i],
+				io_U_u,
+				io_U_v,
+				i_fixed_dt,
+				i_simulation_timestamp
+			);
+	}
+}
+
+void PDEAdvectionSphereTS_na_trajectories::run_timestep_1(
 		sweet::SphereData_Spectral &io_U_phi,		///< prognostic variables
 		sweet::SphereData_Physical &io_U_u,
 		sweet::SphereData_Physical &io_U_v,
 
 		double i_fixed_dt,
-		double i_simulation_timestamp,
-
-		// for varying velocity fields
-		const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+		double i_simulation_timestamp
 )
 {
 	const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
@@ -106,7 +124,7 @@ bool PDEAdvectionSphereTS_na_trajectories::setup(
 )
 {
 	PDEAdvectionSphereTS_BaseInterface::setup(io_ops);
-	timestepping_order = shackPDEAdvTimeDisc->timestepping_order;
+	timestepping_order = shackPDEAdvectionTimeDisc->timestepping_order;
 
 	if (timestepping_order > 2 || timestepping_order <= 0)
 		error.set("Only 1st and 2nd order for SL integration supported");

@@ -462,10 +462,9 @@ private:
 		return flags;
 	}
 
+
 	void setupSHTNSBoilerplateCode()
 	{
-		cleanup(false);
-
 		shtns_verbose(verbosity);
 
 #if SWEET_THREADING_SPACE
@@ -482,6 +481,7 @@ private:
 		shtns_use_threads(1);	// value of 1 disables threading
 #endif
 	}
+
 
 public:
 	bool setup(
@@ -533,7 +533,6 @@ public:
 
 		return setup_data();
 	}
-
 
 
 	/**
@@ -591,8 +590,6 @@ public:
 
 		return setup_data();
 	}
-
-
 
 
 	/**
@@ -692,7 +689,6 @@ public:
 	}
 
 
-
 public:
 	bool setupAdditionalModes(
 			const SphereDataConfig *i_sphereDataConfig,
@@ -717,7 +713,6 @@ public:
 	}
 
 
-
 public:
 	bool setupAuto(sweet::ShackSphereDataOps *i_shackSphereDataOps)
 	{
@@ -736,13 +731,12 @@ public:
 		cleanup(false);
 	}
 
+
 	void cleanup(
 		bool i_full_reset = true
 	)
 	{
-		// check if sphereDataConfig was initialized
-		if (shtns == nullptr)
-			return;
+		assert(shtns != nullptr);
 
 		fftw_free(lat);
 		lat = nullptr;
@@ -767,10 +761,10 @@ public:
 	}
 
 
-
 	~SphereDataConfig()
 	{
-		cleanup();
+		if (shtns != nullptr)
+			cleanup();
 	}
 };
 

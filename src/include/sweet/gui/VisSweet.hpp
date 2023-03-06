@@ -35,7 +35,7 @@ public:
 	void vis_post_frame_processing(int i_num_iterations) = 0;
 
 	virtual
-	void vis_get_vis_data_array(
+	void vis_getDataArray(
 			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
@@ -151,7 +151,7 @@ class VisSweet	:
 		bool reset = false;
 
 
-		simCallbacks->vis_get_vis_data_array(
+		simCallbacks->vis_getDataArray(
 				&ro_visPlaneData,
 				&aspect_ratio,
 				&render_primitive,
@@ -207,7 +207,6 @@ class VisSweet	:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 			visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.use();
-//			visualizationEngine->engineState->commonShaderPrograms.shaderBlinn.use();
 
 			if (render_primitive == 0)
 			{
@@ -224,22 +223,19 @@ class VisSweet	:
 						visualizationEngine->engineState->matrices.pvm*GLSL::scale((float)scale_x, (float)scale_y, (float)1.0)
 				);
 
-//				visualizationEngine->engineState->commonShaderPrograms.shaderBlinn.pvm_matrix_uniform.set(
-//						visualizationEngine->engineState->matrices.pvm*GLSL::scale((float)scale_x, (float)scale_y, (float)1.0)
-//				);
-
 				glDrawQuad->renderWithoutProgram();
 			}
 			else
 			{
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
-
-
 				VisualizationEngine::EngineState::Matrices &m = visualizationEngine->engineState->matrices;
 				visualizationEngine->engineState->commonShaderPrograms.shaderTexturizeRainbowmap.pvm_matrix_uniform.set(
 						m.pvm
 				);
 
+				/*
+				 * Initialize on the first time we do this
+				 */
 				if (glDrawSphereSph == nullptr)
 				{
 					sweet::SphereDataConfig *sphereDataConfig = (sweet::SphereDataConfig*)bogus_data;
@@ -249,7 +245,6 @@ class VisSweet	:
 				}
 
 				glDrawSphereSph->renderWithoutProgram();
-
 #endif
 			}
 

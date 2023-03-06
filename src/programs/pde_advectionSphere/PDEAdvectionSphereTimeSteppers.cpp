@@ -15,10 +15,7 @@ PDEAdvectionSphereTimeSteppers::PDEAdvectionSphereTimeSteppers()
 }
 
 
-void PDEAdvectionSphereTimeSteppers::_integratorsRegisterAll(
-		sweet::ShackDictionary *i_shackDict,
-		sweet::SphereOperators *i_op
-)
+void PDEAdvectionSphereTimeSteppers::setup_1_registerAllTimesteppers()
 {
 	/*
 	 * Register time integrators
@@ -30,21 +27,17 @@ void PDEAdvectionSphereTimeSteppers::_integratorsRegisterAll(
 
 
 
-void PDEAdvectionSphereTimeSteppers::_integratorsFreeAll(PDEAdvectionSphereTS_BaseInterface *skip_this)
+bool PDEAdvectionSphereTimeSteppers::setup_2_shackRegistration(
+		sweet::ShackDictionary *io_shackDict
+)
 {
-
 	for (std::size_t i = 0; i < _registered_integrators.size(); i++)
 	{
-		PDEAdvectionSphereTS_BaseInterface *ts = _registered_integrators[i];
-
-		if (ts == skip_this)
-			continue;
-
-		delete ts;
+		_registered_integrators[i]->shackRegistration(io_shackDict);
 	}
-
-	_registered_integrators.clear();
+	return true;
 }
+
 
 
 void PDEAdvectionSphereTimeSteppers::printImplementedTimesteppingMethods(
@@ -69,14 +62,12 @@ void PDEAdvectionSphereTimeSteppers::printImplementedTimesteppingMethods(
 }
 
 
-bool PDEAdvectionSphereTimeSteppers::setup(
+bool PDEAdvectionSphereTimeSteppers::setup_3_timestepper(
 		const std::string &i_timestepping_method,
 		sweet::ShackDictionary *io_shackDict,
 		sweet::SphereOperators *io_ops
 )
 {
-	_integratorsRegisterAll(io_shackDict, io_ops);
-
 	if (i_timestepping_method == "")
 	{
 		printImplementedTimesteppingMethods();
@@ -85,7 +76,7 @@ bool PDEAdvectionSphereTimeSteppers::setup(
 	/*
 	 * Find right one
 	 */
-	master = nullptr;
+	timestepper = nullptr;
 
 	for (std::size_t i = 0; i < _registered_integrators.size(); i++)
 	{
@@ -93,45 +84,54 @@ bool PDEAdvectionSphereTimeSteppers::setup(
 
 		if (ts->testImplementsTimesteppingMethod(i_timestepping_method))
 		{
-			if (master != nullptr)
+			if (timestepper != nullptr)
 			{
 				//std::cout << "Processing " << i+1 << "th element" << std::endl;
 				return error.set("Duplicate implementation for method "+i_timestepping_method);
 			}
 
-
 			//std::cout << "Found matching time stepping method at " << i+1 << "th element" << std::endl;
 			ts->setup(io_ops);
-			master = ts;
+			ERROR_CHECK_WITH_RETURN_BOOLEAN(*ts);
+			timestepper = ts;
 		}
 	}
 
-	if (master == nullptr)
+	if (timestepper == nullptr)
 		return error.set("No valid --timestepping-method '"+i_timestepping_method+"' provided");
 
 	// Found integrator, freeing others
-	_integratorsFreeAll(master);
+	_timesteppersFreeAll(timestepper);
 
 	return true;
 }
+
+
+void PDEAdvectionSphereTimeSteppers::_timesteppersFreeAll(
+		PDEAdvectionSphereTS_BaseInterface *i_skip_this_timestepper
+)
+{
+
+	for (std::size_t i = 0; i < _registered_integrators.size(); i++)
+	{
+		PDEAdvectionSphereTS_BaseInterface *ts = _registered_integrators[i];
+
+		if (ts == i_skip_this_timestepper)
+			continue;
+
+		delete ts;
+	}
+
+	_registered_integrators.clear();
+}
+
 
 void PDEAdvectionSphereTimeSteppers::clear()
 {
-	delete master;
-	master = nullptr;
+	delete timestepper;
+	timestepper = nullptr;
 
-	_integratorsFreeAll();
-}
-
-bool PDEAdvectionSphereTimeSteppers::shackRegistration(
-	sweet::ShackDictionary *io_shackDict
-)
-{
-	PDEAdvectionSphereTS_na_erk a;
-	a.shackRegistration(io_shackDict);
-
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(a);
-	return true;
+	_timesteppersFreeAll();
 }
 
 

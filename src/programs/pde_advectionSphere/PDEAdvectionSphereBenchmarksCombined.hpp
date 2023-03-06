@@ -32,34 +32,26 @@ public:
 	// Sphere operators
 	sweet::SphereOperators *ops;
 
-	PDEAdvectionSphere_Benchmark_BaseInterface *master = nullptr;
+	PDEAdvectionSphere_Benchmark_BaseInterface *benchmark = nullptr;
 
 	PDEAdvectionSphereBenchmarksCombined();
 
-	bool setup_registerBenchmark(
-			std::ostream &o_ostream = std::cout,
-			const std::string &i_prefix = ""
+	bool setup_1_registerAllBenchmark();
+
+	bool setup_2_shackRegistration(
+		sweet::ShackDictionary *io_shackDict
 	);
 
-	bool setup_benchmark(
+	bool setup_3_benchmarkDetection();
+
+	bool setup_4_benchmarkSetup(
 			sweet::SphereOperators *io_ops
 	);
 
 	void clear();
 
-
-	/*
-	 * Special function to register shacks for benchmarks.
-	 *
-	 * This is in particular important for the --help output function to include all benchmarks.
-	 */
-	bool shackRegistration(
-		sweet::ShackDictionary &io_shackDict
-	);
-
-	void benchmarks_register_all();
-
-	void benchmarks_free_all(
+private:
+	void _benchmarksFreeAll(
 			PDEAdvectionSphere_Benchmark_BaseInterface *skip_this = nullptr
 	);
 

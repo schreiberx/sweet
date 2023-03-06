@@ -43,13 +43,6 @@
 
 
 
-
-// Sphere data config
-sweet::SphereDataConfig sphereDataConfigInstance;
-sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
-
-
-
 class ProgramPDEAdvectionSphere
 #if SWEET_GUI
 		:	public SimulationGUICallbacks
@@ -82,7 +75,7 @@ public:
 	sweet::PlaneData_Physical vis_plane_data;
 
 	// Which primitive to use for rendering
-	int vis_render_type_of_primitive_id = 0;
+	int vis_render_type_of_primitive_id = 1;
 
 	// Which primitive to use for rendering
 	int vis_data_id = 0;
@@ -140,7 +133,6 @@ public:
 			vel_u.clear();
 			vel_v.clear();
 
-
 			ops.clear();
 			sphereDataConfig.clear();
 		}
@@ -165,31 +157,6 @@ public:
 	ShackPDEAdvectionSphereTimeDiscretization *shackTimeDisc;
 	ShackPDEAdvectionSphereBenchmarks *shackBenchmarks;
 
-
-
-#if 0
-public:
-	std::vector<sweet::SphereData_Spectral*> data.prog_vec;
-	std::vector<sweet::SphereData_Spectral*> data.prog_vec_t0;
-
-	//SphereData_Spectral prog_vort, prog_div;
-	sweet::SphereData_Physical velocity_field_u, velocity_field_v;
-
-	PDEAdvectionSphereTimeSteppers timeSteppers;
-
-
-	sweet::SphereOperators op;
-
-	bool time_varying_fields;
-
-#if SWEET_GUI
-	sweet::PlaneData_Physical vis_plane_data;
-
-	int data.vis_render_type_of_primitive_id = 1;
-#endif
-
-	PDEAdvectionSphereBenchmarksCombined sphereBenchmarks;
-#endif
 
 
 public:
@@ -228,16 +195,37 @@ public:
 		/*
 		 * SHACK: Register other things before parsing program arguments
 		 */
-		benchmarksCombined.shackRegistration(shackProgArgDict);
+
+		/*
+		 * Setup benchmarks
+		 */
+		benchmarksCombined.setup_1_registerAllBenchmark();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
 
-		timeSteppers.shackRegistration(&shackProgArgDict);
+		benchmarksCombined.setup_2_shackRegistration(&shackProgArgDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
+
+
+		/*
+		 * Setup time steppers
+		 */
+		timeSteppers.setup_1_registerAllTimesteppers();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
 
-		shackProgArgDict.closeRegistration();
+		timeSteppers.setup_2_shackRegistration(&shackProgArgDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
 
+		/*
+		 * Process HELP arguments
+		 */
 		shackProgArgDict.processHelpArguments();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+
+		/*
+		 * Close shack registration & getting shacks
+		 */
+		shackProgArgDict.closeRegistration();
+		shackProgArgDict.closeGet();
 
 		return true;
 	}
@@ -279,27 +267,26 @@ public:
 	bool setup_3_data()
 	{
 		/*
-		 * We first setup the particular benchmark
+		 * BENCHMARK: Detect particular benchmark to use
 		 */
-		benchmarksCombined.setup_registerBenchmark();
+		benchmarksCombined.setup_3_benchmarkDetection();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
 
 		/*
 		 * Setup the data fields
 		 */
-		data.setup(shackSphereDataOps, benchmarksCombined.master->getNumPrognosticFields());
+		data.setup(shackSphereDataOps, benchmarksCombined.benchmark->getNumPrognosticFields());
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
 
 		/*
-		 * After the data is setup, we can also setup the benchmark itself
+		 * Setup benchmark itself
 		 */
-		benchmarksCombined.setup_benchmark(&data.ops);
-
+		benchmarksCombined.setup_4_benchmarkSetup(&data.ops);
 
 		/*
 		 * Now we're ready to setup the time steppers
 		 */
-		timeSteppers.setup(
+		timeSteppers.setup_3_timestepper(
 				shackTimeDisc->timestepping_method,
 				&shackProgArgDict,
 				&data.ops
@@ -310,11 +297,12 @@ public:
 		/*
 		 * Load initial state of benchmark
 		 */
-		benchmarksCombined.master->getInitialState(
+		benchmarksCombined.benchmark->getInitialState(
 				data.prog_vec,
 				data.vel_u,
 				data.vel_v
 			);
+
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
 
 
@@ -406,7 +394,7 @@ public:
 		shackTimestepControl->timestepHelperStart();
 
 
-		timeSteppers.master->run_timestep(
+		timeSteppers.timestepper->run_timestep(
 				data.prog_vec, data.vel_u, data.vel_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
@@ -454,7 +442,7 @@ public:
 	}
 
 
-	void vis_get_vis_data_array(
+	void vis_getDataArray(
 			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_vis_render_type_of_primitive_id,
@@ -465,7 +453,7 @@ public:
 	)
 	{
 		*o_vis_render_type_of_primitive_id = data.vis_render_type_of_primitive_id;
-		*o_bogus_data = sphereDataConfig;
+		*o_bogus_data = &data.sphereDataConfig;
 
 		if (data.vis_data_id < 0)
 		{
@@ -622,7 +610,6 @@ public:
 			}
 		}
 
-
 		static char title_string[2048];
 
 		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
@@ -661,6 +648,7 @@ public:
 			break;
 
 		case 'b':
+		case 'B':
 			data.vis_render_type_of_primitive_id = (data.vis_render_type_of_primitive_id + 1) % 2;
 			break;
 		}

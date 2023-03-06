@@ -26,7 +26,7 @@ public:
 	sweet::ShackDictionary *shackDict;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	sweet::ShackSphereDataOps *shackSphereDataOps;
-	ShackPDEAdvectionSphereTimeDiscretization *shackPDEAdvTimeDisc;
+	ShackPDEAdvectionSphereTimeDiscretization *shackPDEAdvectionTimeDisc;
 	ShackPDEAdvectionSphereBenchmarks *shackPDEAdvBenchmark;
 	sweet::ShackTimesteppingSemiLagrangianSphereData *shackSemiLagrangian;
 
@@ -36,7 +36,7 @@ public:
 		shackDict(nullptr),
 		shackTimestepControl(nullptr),
 		shackSphereDataOps(nullptr),
-		shackPDEAdvTimeDisc(nullptr),
+		shackPDEAdvectionTimeDisc(nullptr),
 		shackPDEAdvBenchmark(nullptr),
 		ops(nullptr)
 	{
@@ -51,7 +51,7 @@ public:
 
 		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
 		shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
-		shackPDEAdvTimeDisc = io_shackDict->getAutoRegistration<ShackPDEAdvectionSphereTimeDiscretization>();
+		shackPDEAdvectionTimeDisc = io_shackDict->getAutoRegistration<ShackPDEAdvectionSphereTimeDiscretization>();
 		shackPDEAdvBenchmark = io_shackDict->getAutoRegistration<ShackPDEAdvectionSphereBenchmarks>();
 		shackSemiLagrangian = io_shackDict->getAutoRegistration<sweet::ShackTimesteppingSemiLagrangianSphereData>();
 
@@ -72,16 +72,13 @@ public:
 	 * Timestepping interface used by main timestepping loop
 	 */
 	virtual void run_timestep(
-			std::vector<sweet::SphereData_Spectral> &io_prognostic_field,	///< prognostic variables
+			std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 			sweet::SphereData_Physical &io_u,
 			sweet::SphereData_Physical &io_v,
 
 			double i_fixed_dt,
 			double i_simulation_timestamp
-	)
-	{
-		SWEETError("TODO: Implement single prognostic variable time integration for this time integrator");
-	}
+	) = 0;
 
 	virtual bool testImplementsTimesteppingMethod(
 			const std::string &i_timestepping_method

@@ -69,15 +69,12 @@ private:
 	);
 
 	void run_timestep(
-			std::vector<sweet::SphereData_Spectral*> &io_prog_fields,	///< prognostic variables
+			std::vector<sweet::SphereData_Spectral> &io_prog_fields,	///< prognostic variables
 			sweet::SphereData_Physical &io_u,
 			sweet::SphereData_Physical &io_v,
 
 			double i_fixed_dt,
-			double i_simulation_timestamp,
-
-			// for varying velocity fields
-			const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+			double i_simulation_timestamp
 	);
 
 
@@ -87,37 +84,28 @@ private:
 			sweet::SphereData_Physical &io_v,
 
 			double i_fixed_dt,
-			double i_simulation_timestamp,
-
-			// for varying velocity fields
-			const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+			double i_simulation_timestamp
 	);
 
 
 	void run_timestep_2(
-			std::vector<sweet::SphereData_Spectral*> &io_prog_fields,	///< prognostic variables
+			std::vector<sweet::SphereData_Spectral> &io_prog_fields,	///< prognostic variables
 			sweet::SphereData_Physical &io_u,
 			sweet::SphereData_Physical &io_v,
 
 			double i_fixed_dt,
-			double i_simulation_timestamp,
-
-			// for varying velocity fields
-			const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+			double i_simulation_timestamp
 	);
 
 
 
 	void run_timestep_3(
-			std::vector<sweet::SphereData_Spectral*> &io_prog_fields,	///< prognostic variables
+			std::vector<sweet::SphereData_Spectral> &io_prog_fields,	///< prognostic variables
 			sweet::SphereData_Physical &io_u,
 			sweet::SphereData_Physical &io_v,
 
 			double i_fixed_dt,
-			double i_simulation_timestamp,
-
-			// for varying velocity fields
-			const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+			double i_simulation_timestamp
 	);
 
 

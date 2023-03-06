@@ -40,8 +40,7 @@ public:
 	{
 	}
 
-
-	bool shackRegistration(
+	virtual bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
 	)
 	{
@@ -61,12 +60,11 @@ public:
 	virtual void setup(
 			sweet::ShackDictionary *io_shackDict,
 			sweet::SphereOperators *io_ops
-		)
+	)
 	{
 		shackDict = io_shackDict;
 		ops = io_ops;
 	}
-
 
 	virtual bool implements_benchmark(
 			const std::string &i_benchmark_name

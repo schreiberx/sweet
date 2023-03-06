@@ -22,7 +22,7 @@ bool PDEAdvectionSphereTS_na_sl::setup(
 )
 {
 	PDEAdvectionSphereTS_BaseInterface::setup(io_ops);
-	timestepping_order = shackPDEAdvTimeDisc->timestepping_order;
+	timestepping_order = shackPDEAdvectionTimeDisc->timestepping_order;
 
 	if (timestepping_order > 2 || timestepping_order <= 0)
 		error.set("Only 1st and 2nd order for SL integration supported");
@@ -367,10 +367,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_1(
 		sweet::SphereData_Physical &io_U_v,
 
 		double i_dt,
-		double i_simulation_timestamp,
-
-		// for varying velocity fields
-		const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+		double i_simulation_timestamp
 )
 {
 	const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
@@ -422,18 +419,15 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_1(
 
 
 void PDEAdvectionSphereTS_na_sl::run_timestep_2(
-		std::vector<sweet::SphereData_Spectral*> &io_prognostic_fields,	///< prognostic variables
+		std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 		sweet::SphereData_Physical &io_U_u,
 		sweet::SphereData_Physical &io_U_v,
 
 		double i_dt,
-		double i_simulation_timestamp,
-
-		// for varying velocity fields
-		const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_prognostic_fields[0]->sphereDataConfig;
+	const sweet::SphereDataConfig *sphereDataConfig = io_prognostic_fields[0].sphereDataConfig;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -466,7 +460,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_2(
 
 	sweet::SphereData_Physical u, v;
 	ops->vrtdiv_to_uv(
-			*io_prognostic_fields[0], *io_prognostic_fields[1],
+			io_prognostic_fields[0], io_prognostic_fields[1],
 			u, v
 		);
 
@@ -482,7 +476,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_2(
 
 	ops->uv_to_vrtdiv(
 			new_u, new_v,
-			*io_prognostic_fields[0], *io_prognostic_fields[1]
+			io_prognostic_fields[0], io_prognostic_fields[1]
 		);
 
 }
@@ -490,18 +484,15 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_2(
 
 
 void PDEAdvectionSphereTS_na_sl::run_timestep_3(
-		std::vector<sweet::SphereData_Spectral*> &io_prognostic_fields,	///< prognostic variables
+		std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 		sweet::SphereData_Physical &io_U_u,
 		sweet::SphereData_Physical &io_U_v,
 
 		double i_dt,
-		double i_simulation_timestamp,
-
-		// for varying velocity fields
-		const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_prognostic_fields[0]->sphereDataConfig;
+	const sweet::SphereDataConfig *sphereDataConfig = io_prognostic_fields[0].sphereDataConfig;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -534,42 +525,38 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_3(
 
 
 	interpolate_departure_point_vec_3d(
-			*io_prognostic_fields[0],
-			*io_prognostic_fields[1],
-			*io_prognostic_fields[2],
+			io_prognostic_fields[0],
+			io_prognostic_fields[1],
+			io_prognostic_fields[2],
 
 			pos_lon_d,
 			pos_lat_d,
 
-			*io_prognostic_fields[0],
-			*io_prognostic_fields[1],
-			*io_prognostic_fields[2]
+			io_prognostic_fields[0],
+			io_prognostic_fields[1],
+			io_prognostic_fields[2]
 	);
 }
 
 
 
 void PDEAdvectionSphereTS_na_sl::run_timestep(
-		std::vector<sweet::SphereData_Spectral*> &io_prognostic_fields,	///< prognostic variables
+		std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 		sweet::SphereData_Physical &io_U_u,
 		sweet::SphereData_Physical &io_U_v,
 
 		double i_dt,
-		double i_simulation_timestamp,
-
-		// for varying velocity fields
-		const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+		double i_simulation_timestamp
 )
 {
 	if (io_prognostic_fields.size() == 1)
 	{
 		run_timestep_1(
-				*io_prognostic_fields[0],
+				io_prognostic_fields[0],
 				io_U_u,
 				io_U_v,
 				i_dt,
-				i_simulation_timestamp,
-				i_sphereBenchmarks
+				i_simulation_timestamp
 			);
 		return;
 	}
@@ -581,8 +568,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep(
 				io_U_u,
 				io_U_v,
 				i_dt,
-				i_simulation_timestamp,
-				i_sphereBenchmarks
+				i_simulation_timestamp
 			);
 		return;
 	}
@@ -595,8 +581,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep(
 				io_U_u,
 				io_U_v,
 				i_dt,
-				i_simulation_timestamp,
-				i_sphereBenchmarks
+				i_simulation_timestamp
 			);
 		return;
 	}

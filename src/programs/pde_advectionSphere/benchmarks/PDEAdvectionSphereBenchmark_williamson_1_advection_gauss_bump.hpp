@@ -104,6 +104,7 @@ public:
 
 			shackSphereDataOps->sphere_radius = sphere_radius;
 
+			ops->clear();
 			ops->setup(o_phi_pert.sphereDataConfig, shackSphereDataOps);
 		}
 

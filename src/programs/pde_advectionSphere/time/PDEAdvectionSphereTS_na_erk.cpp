@@ -66,26 +66,26 @@ void PDEAdvectionSphereTS_na_erk::euler_timestep_update(
 
 
 void PDEAdvectionSphereTS_na_erk::run_timestep(
-		sweet::SphereData_Spectral &io_prognostic_field,	///< prognostic variables
+		std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 		sweet::SphereData_Physical &io_u,
 		sweet::SphereData_Physical &io_v,
 
 		double i_fixed_dt,
-		double i_simulation_timestamp,
-
-		// for varying velocity fields
-		const PDEAdvectionSphereBenchmarksCombined *i_sphereBenchmarks
+		double i_simulation_timestamp
 )
 {
-	// standard time stepping
-	timestepping_rk.run_timestep_na(
-			this,
-			&PDEAdvectionSphereTS_na_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
-			io_prognostic_field, io_u, io_v,
-			i_fixed_dt,
-			timestepping_order,
-			i_simulation_timestamp
-		);
+	for (std::size_t i = 0; i < io_prognostic_fields.size(); i++)
+	{
+		// standard time stepping
+		timestepping_rk.run_timestep_na(
+				this,
+				&PDEAdvectionSphereTS_na_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
+				io_prognostic_fields[i], io_u, io_v,
+				i_fixed_dt,
+				timestepping_order,
+				i_simulation_timestamp
+			);
+	}
 }
 
 
@@ -94,7 +94,13 @@ bool PDEAdvectionSphereTS_na_erk::setup(
 )
 {
 	PDEAdvectionSphereTS_BaseInterface::setup(io_ops);
-	timestepping_order = shackPDEAdvTimeDisc->timestepping_order;
+
+	assert(shackPDEAdvectionTimeDisc != nullptr);
+	timestepping_order = shackPDEAdvectionTimeDisc->timestepping_order;
+
+	if (timestepping_order < 1 || timestepping_order > 4)
+		return error.set("Invalid time stepping order");
+
 	return true;
 }
 
