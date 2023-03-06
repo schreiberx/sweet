@@ -44,8 +44,8 @@ class JobRuntimeOptions(InfoError):
 
         self.plane_domain_size = None    # Plane: Domain size
 
-        self.space_grid_use_c_staggering = 0
-        self.space_use_spectral_basis_diffs = 1
+        self.space_grid_use_c_staggering = None
+        self.space_use_spectral_basis_diffs = None
         
         self.max_simulation_time = 0.001
         self.max_wallclock_time = -1
@@ -93,7 +93,7 @@ class JobRuntimeOptions(InfoError):
         #self.uselineardiv = None
         self.use_nonlinear_only_visc = None
 
-        self.compute_errors = 0
+        self.compute_errors = None
 
         self.comma_separated_tags = None
 
@@ -299,8 +299,11 @@ class JobRuntimeOptions(InfoError):
             else:
                 retRuntimeOptionsStr += ' -N '+str(self.space_res_physical)
 
-        retRuntimeOptionsStr += ' --space-grid-use-c-staggering='+str(self.space_grid_use_c_staggering)
-        retRuntimeOptionsStr += ' -S '+str(self.space_use_spectral_basis_diffs)
+        if self.space_grid_use_c_staggering != None:
+            retRuntimeOptionsStr += ' --space-grid-use-c-staggering='+str(self.space_grid_use_c_staggering)
+
+        if self.space_use_spectral_basis_diffs != None:
+            retRuntimeOptionsStr += ' -S '+str(self.space_use_spectral_basis_diffs)
 
         if self.plane_domain_size != None:
             if isinstance(self.plane_domain_size, (int, float)):
@@ -392,9 +395,11 @@ class JobRuntimeOptions(InfoError):
             self.paramsSDC.writeToFile(filePath)
             retRuntimeOptionsStr += f' --sdc-file={filePath}'
 
-        retRuntimeOptionsStr += ' --compute-errors='+str(self.compute_errors)
+        if self.compute_errors != None:
+            retRuntimeOptionsStr += ' --compute-errors='+str(self.compute_errors)
 
-        retRuntimeOptionsStr += ' --reuse-plans='+str(self.reuse_plans)
+        if self.reuse_plans != None:
+            retRuntimeOptionsStr += ' --reuse-plans='+str(self.reuse_plans)
 
         if self.comma_separated_tags != None:
             retRuntimeOptionsStr += ' --comma-separated-tags='+str(self.comma_separated_tags)
