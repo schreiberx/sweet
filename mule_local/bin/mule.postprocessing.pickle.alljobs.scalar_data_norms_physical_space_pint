@@ -78,6 +78,10 @@ def _process_job(job_id, job_data):
 
         if ref_output_file.startswith("residual"):
             continue
+        if ref_output_file.startswith("parareal_error"):
+            continue
+        if ref_output_file.startswith("xbraid_error"):
+            continue
 
         print(f"  + diff for: {ref_output_file}")
 
@@ -86,6 +90,11 @@ def _process_job(job_id, job_data):
         ref_output_file_ref = ref_output_file[:idx] + ref_output_file[idx + 8:]
 
         s = None
+
+        print(ref_job_data['jobgeneration.job_dirpath']+'/'+ref_output_file_ref, os.path.exists(ref_job_data['jobgeneration.job_dirpath']+'/'+ref_output_file_ref))
+        if not(os.path.exists(ref_job_data['jobgeneration.job_dirpath']+'/'+ref_output_file_ref)):
+            continue
+
         try:
             s = ScalarDataNormsPhysicalSpace(
                     ref_job_data['jobgeneration.job_dirpath']+'/'+ref_output_file_ref,

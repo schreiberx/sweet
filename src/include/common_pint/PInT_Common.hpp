@@ -408,7 +408,7 @@ public:
 
 
 		if (std::abs(t - simVars->timecontrol.max_simulation_time) < 1e-14)
-			if (iteration_id == 0 && simVars->iodata.output_file_name.size() > 0)
+			if (simVars->iodata.output_file_name.size() > 0)
 				std::cout << "[MULE] reference_filenames: " << this->output_reference_filenames << std::endl;
 
 	};
