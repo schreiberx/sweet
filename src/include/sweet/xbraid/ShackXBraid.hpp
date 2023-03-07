@@ -202,6 +202,95 @@ public:
 	 */
 	int xbraid_spatial_coarsening = 0;
 
+
+	/*
+	 * Check arguments
+	 */
+	bool validateNumberOfLevels()
+	{
+		if (!(xbraid_max_levels >= 1))
+			return error.set("You need to set the maximum number of levels -xbraid-max-levels [int] to a positive integer");
+
+		return true;
+	}
+
+	/*
+	 * Check arguments
+	 */
+	bool validateCoarseningFactor()
+	{
+		if (!(xbraid_cfactor > 0))
+			return error.set("You need to set the coarsening factor -xbraid-cfactor [float] to a positive number (in general larger than 1)");
+
+		return true;
+	}
+
+	/*
+	 * Check arguments
+	 */
+	bool validateNRelax()
+	{
+		if (!(xbraid_max_levels >= 0))
+			return error.set("You need to set the relaxation -xbraid-nrelax [int] to a non-negative integer");
+
+		return true;
+	}
+
+
+	/*
+	 * Check arguments
+	 * Generic function to validate level defined parameters: 
+	 * Timestepping method, timestepping order (1,2), viscosity_order, viscosity_coefficient
+	 * Parameters are of the form val1,val2,val3,...,valN
+	 * where
+	 * N = 1: same value for every level
+	 * or
+	 * N = 2: a value for the finest level and a second one for all coarse levels
+	 * or
+	 * N = xbraid_max_levels: a different value for each level
+	 */
+	template<typename T>
+	bool validateLevelsParameters(
+					std::string i_param_name
+					)
+	{
+		std::vector<T> out = {};
+		std::stringstream all_param;
+
+		if (i_param_name == "timestepping_method")
+			all_param = std::stringstream(this->xbraid_timestepping_method);
+		else if (i_param_name == "timestepping_order")
+			all_param = std::stringstream(this->xbraid_timestepping_order);
+		else if (i_param_name == "timestepping_order2")
+			all_param = std::stringstream(this->xbraid_timestepping_order2);
+		else if (i_param_name == "viscosity_order")
+			all_param = std::stringstream(this->xbraid_viscosity_order);
+		else if (i_param_name == "viscosity_coefficient")
+			all_param = std::stringstream(this->xbraid_viscosity_coefficient);
+		else
+			return error.set("Wrong parameter name: " + i_param_name);
+
+		// split and convert parameter
+		while (all_param.good())
+		{
+			std::string str;
+			getline(all_param, str, ',');
+			std::stringstream ss(str);
+			T conv;
+			if (ss >> conv)
+				out.push_back(conv);
+			else
+				return error.set("Unable to convert parameter: " + str);
+		}
+
+		if ( ! (out.size() == 1 || out.size() == 2 || out.size() == this->xbraid_max_levels ) )
+			return error.set("xbraid_" + i_param_name +  "must contain 1, 2 or N timestepping orders.");
+
+		return true;
+	}
+
+
+
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << ""                                                                                                         << std::endl;

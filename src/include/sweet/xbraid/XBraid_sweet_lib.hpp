@@ -704,12 +704,6 @@ public:
 				out.push_back(conv);
 			else
 				SWEETError("Unable to convert parameter: " + str);
-			////if (i_param_name == "timestepping_method")
-			////	out.push_back(str);
-			////else if (i_param_name == "timestepping_order" || i_param_name == "viscosity_order")
-			////	out.push_back(stoi(str));
-			////else if (i_param_name == "viscosity_coefficient")
-			////	out.push_back(stod(str));
 		}
 
 		if ( ! (out.size() == 1 || out.size() == 2 || out.size() == this->simVars->xbraid.xbraid_max_levels ) )
