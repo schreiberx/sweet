@@ -18,8 +18,9 @@ fi
 
 export GUIX_PROFILE="$MULE_SOFTWARE_ROOT/local_software/local/guix"
 
-if [ -d "/var/guix/profiles/per-user/$USER" ] && [ ! -d $GUIX_PROFILE ]; then
-  ln -sf /var/guix/profiles/per-user/$USER/sweet_llvm $GUIX_PROFILE
+if [ -d "/var/guix/profiles/per-user/$USER" ]; then
+  rm $GUIX_PROFILE
+  ln -s /var/guix/profiles/per-user/$USER/sweet_llvm $GUIX_PROFILE
 fi
 
 guix install -p $GUIX_USER_PROFILE_DIR/sweet_llvm llvm@15 clang@15 libomp@15 mpich@3.3.2 cmake@3.25.1 gfortran-toolchain@10.3.0 lapack@3.9.0 glibc@2.32
