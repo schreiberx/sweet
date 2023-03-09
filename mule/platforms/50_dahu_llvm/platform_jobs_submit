@@ -1,0 +1,21 @@
+#! /bin/bash
+
+#
+# Submit jobs
+#
+# Return
+# ------
+# Job ID in each line
+#
+
+
+if [[ -z "$1" ]]; then
+	DIRS=job_bench*
+else
+	DIRS=$@
+fi
+
+for i in $DIRS; do
+	oarsub -S "$i/run.sh" | sed "s/;.*//"
+done
+
