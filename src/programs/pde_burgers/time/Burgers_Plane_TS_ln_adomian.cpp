@@ -9,7 +9,7 @@
 #include "../burgers_timeintegrators/Burgers_Plane_TS_ln_adomian.hpp"
 
 
-void Burgers_Plane_TS_ln_adomian::run_timestep(
+void Burgers_Plane_TS_ln_adomian::runTimestep(
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 		///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables

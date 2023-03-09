@@ -76,7 +76,7 @@ public:
 	);
 
 
-	void run_timestep(
+	void runTimestep(
 			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_v,	///< prognostic variables

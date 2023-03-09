@@ -68,7 +68,7 @@ void PDEAdvectionSphereTS_na_sl::interpolate_departure_point_vec_3d(
 		sweet::SphereData_Spectral &o_vec2
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = i_vec0.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = i_vec0.sphereDataConfig;
 
 	o_vec0.setup_if_required(i_vec0.sphereDataConfig);
 	o_vec1.setup_if_required(i_vec1.sphereDataConfig);
@@ -221,7 +221,7 @@ void PDEAdvectionSphereTS_na_sl::interpolate_departure_point_vec_uv(
 		sweet::SphereData_Physical &o_v
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = i_u.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = i_u.sphereDataConfig;
 
 	o_u.setup_if_required(i_u.sphereDataConfig);
 	o_v.setup_if_required(i_v.sphereDataConfig);
@@ -372,7 +372,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_1(
 		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -429,7 +429,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_2(
 		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_prognostic_fields[0].sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_prognostic_fields[0].sphereDataConfig;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -494,7 +494,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_3(
 		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_prognostic_fields[0].sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_prognostic_fields[0].sphereDataConfig;
 
 	if (i_simulation_timestamp == 0)
 	{
@@ -542,7 +542,7 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_3(
 
 
 
-void PDEAdvectionSphereTS_na_sl::run_timestep(
+void PDEAdvectionSphereTS_na_sl::runTimestep(
 		std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 		sweet::SphereData_Physical &io_U_u,
 		sweet::SphereData_Physical &io_U_v,

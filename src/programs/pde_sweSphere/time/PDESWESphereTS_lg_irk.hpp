@@ -20,21 +20,31 @@
 class PDESWESphereTS_lg_irk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
-	std::string string_id();
-	void setup_auto();
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+public:
+	bool setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestep_order,
+		double i_timestep_size
+	);
+
+public:
+	bool setup_main(
+		sweet::SphereOperators *io_ops,
+		int i_timestep_order,
+		double i_timestep_size,
+		double i_crank_nicolson_damping_factor
+	);
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
 
 
 private:
-	/// Simulation variables
-	sweet::ShackDictionary &shackDict;
-
-	/// Operators for sphere
-	sweet::SphereOperators &op;
-
 	/// SPH configuration
-	const sweet::SphereDataConfig *sphereDataConfig;
+	//const sweet::SphereData_Config *sphereDataConfig;
 
 	PDESWESphereTS_lg_erk *lg_erk = nullptr;
 
@@ -44,9 +54,6 @@ private:
 
 	/// Crank-Nicolson damping factor
 	double crank_nicolson_damping_factor = 0.5;
-
-	// Order of time stepping.
-	int timestepping_order;
 
 	/// timestep size
 	double timestep_size;
@@ -61,33 +68,16 @@ private:
 	double gh;
 
 public:
-	PDESWESphereTS_lg_irk(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-	);
+	PDESWESphereTS_lg_irk();
 
 
 public:
 	void update_coefficients();
 
 
-public:
-	void setup(
-		int i_timestep_order,
-		double i_timestep_size
-	);
-
 
 public:
-	void setup(
-		int i_timestep_order,
-		double i_timestep_size,
-		double i_crank_nicolson_damping_factor
-	);
-
-
-public:
-	void run_timestep(
+	void runTimestep(
 		sweet::SphereData_Spectral &io_phi,		///< prognostic variables
 		sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,		///< prognostic variables

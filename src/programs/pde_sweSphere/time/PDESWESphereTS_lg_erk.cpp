@@ -9,7 +9,29 @@
 
 
 
-void PDESWESphereTS_lg_erk::run_timestep(
+
+bool PDESWESphereTS_lg_erk::setup_auto(
+		sweet::SphereOperators *io_ops
+)
+{
+	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
+}
+
+
+bool PDESWESphereTS_lg_erk::setup(
+		sweet::SphereOperators *io_ops,
+		int i_order	///< order of RK time stepping method
+)
+{
+	ops = io_ops;
+	timestepping_order = i_order;
+	return true;
+}
+
+
+
+
+void PDESWESphereTS_lg_erk::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -19,7 +41,7 @@ void PDESWESphereTS_lg_erk::run_timestep(
 )
 {
 	// standard time stepping
-	timestepping_rk.run_timestep(
+	timestepping_rk.runTimestep(
 			this,
 			&PDESWESphereTS_lg_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_phi_pert, io_vrt, io_div,
@@ -47,36 +69,11 @@ void PDESWESphereTS_lg_erk::euler_timestep_update(
 	/*
 	 * LINEAR
 	 */
-	double gh = shackDict.sim.gravitation * shackDict.sim.h0;
+	double gh = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 	o_phi_t = -gh*i_div;
-	o_div_t = -op.laplace(i_phi);
+	o_div_t = -ops->laplace(i_phi);
 	o_vort_t.spectral_set_zero();
-}
-
-
-
-
-
-/*
- * Setup
- */
-void PDESWESphereTS_lg_erk::setup(
-		int i_order	///< order of RK time stepping method
-)
-{
-	timestepping_order = i_order;
-}
-
-
-PDESWESphereTS_lg_erk::PDESWESphereTS_lg_erk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op)
-{
-	setup(timestepping_order);
 }
 
 

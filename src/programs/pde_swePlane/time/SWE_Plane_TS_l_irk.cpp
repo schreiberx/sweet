@@ -29,7 +29,7 @@
  *
  * <=> (1/tau - L) U(tau) = U(0)/tau
  */
-void SWE_Plane_TS_l_irk::run_timestep(
+void SWE_Plane_TS_l_irk::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables

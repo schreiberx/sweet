@@ -18,7 +18,7 @@
 #include <cmath>
 #include <sweet/core/openmp_helper.hpp>
 #include <sweet/core/MemBlockAlloc.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/SWEETError.hpp>
 
 /*
@@ -131,7 +131,7 @@ public:
 	 * Duplicate all data
 	 */
 	ScalarDataArray(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	:
 		scalar_data(nullptr)
 	{

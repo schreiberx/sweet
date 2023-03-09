@@ -87,7 +87,7 @@ int main(int i_argc, char *i_argv[])
 
 		{
 			while (!sim.should_quit())
-				sim.run_timestep();
+				sim.runTimestep();
 
 			double max_error = sim.getLMaxError();
 

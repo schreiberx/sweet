@@ -13,8 +13,8 @@
 
 SimulationVariables simVars;
 
-sweet::SphereDataConfig sphereDataConfigInstance;
-sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+sweet::SphereData_Config sphereDataConfigInstance;
+sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
 
 void test_header(const std::string &i_str)

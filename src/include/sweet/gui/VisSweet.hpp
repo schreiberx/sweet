@@ -60,7 +60,7 @@ public:
 	bool should_quit() = 0;
 
 	virtual
-	bool run_timestep() = 0;
+	bool runTimestep() = 0;
 
 	virtual
 	bool reset() = 0;
@@ -238,7 +238,7 @@ class VisSweet	:
 				 */
 				if (glDrawSphereSph == nullptr)
 				{
-					sweet::SphereDataConfig *sphereDataConfig = (sweet::SphereDataConfig*)bogus_data;
+					sweet::SphereData_Config *sphereDataConfig = (sweet::SphereData_Config*)bogus_data;
 
 					glDrawSphereSph = new GlDrawSphereSph;
 					glDrawSphereSph->initSphere(sphereDataConfig);
@@ -340,7 +340,7 @@ class VisSweet	:
 			break;
 
 		case 'j':
-			simCallbacks->run_timestep();
+			simCallbacks->runTimestep();
 			break;
 
 		default:

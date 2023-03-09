@@ -38,7 +38,7 @@ class SphereData_Physical
 	friend class SphereData_SpectralComplex;
 
 public:
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 public:
 	double *physical_space_data;
@@ -55,7 +55,7 @@ public:
 
 public:
 	SphereData_Physical(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)
 		sphereDataConfig(i_sphereDataConfig),
@@ -67,7 +67,7 @@ public:
 
 public:
 	SphereData_Physical(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			double i_value
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)
@@ -122,7 +122,7 @@ public:
 	 */
 public:
 	inline void check(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
@@ -389,7 +389,7 @@ public:
 
 public:
 	bool setup(
-		const SphereDataConfig *i_sphereDataConfig
+		const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)
@@ -402,7 +402,7 @@ public:
 
 public:
 	bool setup(
-		const SphereDataConfig &i_sphereDataConfig
+		const SphereData_Config &i_sphereDataConfig
 	)
 	{
 		return setup(&i_sphereDataConfig);
@@ -423,7 +423,7 @@ private:
 
 public:
 	void setup_if_required(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)

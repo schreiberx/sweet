@@ -5,38 +5,90 @@
 #include "PDESWESphereTS_lg_exp_lc_n_etdrk.hpp"
 
 
-bool PDESWESphereTS_lg_exp_lc_n_etdrk::implements_timestepping_method(const std::string &i_timestepping_method
+bool PDESWESphereTS_lg_exp_lc_n_etdrk::implementsTimesteppingMethod(const std::string &i_timestepping_method
 									)
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	if (i_timestepping_method == "lg_exp_lc_n_etdrk")
 		return true;
 
 	return false;
 }
 
-std::string PDESWESphereTS_lg_exp_lc_n_etdrk::string_id()
+bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup_auto(
+		sweet::SphereOperators *io_ops
+)
 {
-	return "lg_exp_lc_n_etdrk";
-}
-
-void PDESWESphereTS_lg_exp_lc_n_etdrk::setup_auto()
-{
-	if (shackDict.sim.sphere_use_fsphere)
+	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
-	setup(
-			shackDict.rexi,
+	return setup(
+			io_ops,
+			shackExpIntegration,
 			timestepping_order,
 			timestepping_order2,
-			shackDict.timecontrol.current_timestep_size
+			shackTimestepControl->current_timestep_size
 		);
 }
 
 
-void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
+bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup(
+		sweet::SphereOperators *io_ops,
+		sweet::ShackExpIntegration *i_shackExpIntegration,
+		int i_timestepping_order,
+		int i_timestepping_order2,
+		double i_timestep_size
+)
+{
+	ops = io_ops;
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+
+	ts_lg_erk_lc_n_erk.setup(ops, i_timestepping_order, -1);
+
+	if (timestepping_order != timestepping_order2)
+		SWEETError("Mismatch of orders, should be equal");
+
+	if (timestepping_order == 0 || timestepping_order == 1)
+	{
+		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+	}
+	else if (timestepping_order == 2)
+	{
+		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
+	}
+	else if  (timestepping_order == 4)
+	{
+		ts_phi0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size*0.5, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size*0.5, false, true, timestepping_order);
+		ts_phi2_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size*0.5, false, true, timestepping_order);
+
+		// phi0, but with a full time step size
+		ts_ups0_rexi.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);
+		ts_ups1_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups1", i_timestep_size, false, true, timestepping_order);
+		ts_ups2_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups2", i_timestep_size, false, true, timestepping_order);
+		ts_ups3_rexi.setup_variant_50(ops, i_shackExpIntegration, "ups3", i_timestep_size, false, true, timestepping_order);
+	}
+	else
+	{
+		SWEETError("TODO: This order is not implemented, yet!");
+	}
+
+	return true;
+}
+
+
+std::string PDESWESphereTS_lg_exp_lc_n_etdrk::getIDString()
+{
+	return "lg_exp_lc_n_etdrk";
+}
+
+void PDESWESphereTS_lg_exp_lc_n_etdrk::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -45,7 +97,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_phi_pert.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_phi_pert.sphereDataConfig;
 
 	if (timestepping_order == 0 || timestepping_order == 1)
 	{
@@ -57,7 +109,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		sweet::SphereData_Spectral phi0_Un_h(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_Un_u(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_Un_v(sphereDataConfig);
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_fixed_dt,
@@ -78,7 +130,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		sweet::SphereData_Spectral phi1_FUn_u(sphereDataConfig);
 		sweet::SphereData_Spectral phi1_FUn_v(sphereDataConfig);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_fixed_dt,
@@ -99,7 +151,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		sweet::SphereData_Spectral phi0_Un_u(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_Un_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_fixed_dt,
@@ -120,7 +172,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		sweet::SphereData_Spectral phi1_FUn_u(sphereDataConfig);
 		sweet::SphereData_Spectral phi1_FUn_v(sphereDataConfig);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_fixed_dt,
@@ -151,7 +203,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		sweet::SphereData_Spectral phi2_X_u(sphereDataConfig);
 		sweet::SphereData_Spectral phi2_X_v(sphereDataConfig);
 
-		ts_phi2_rexi.run_timestep(
+		ts_phi2_rexi.runTimestep(
 				FAn_h - FUn_h,
 				FAn_u - FUn_u,
 				FAn_v - FUn_v,
@@ -180,7 +232,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		sweet::SphereData_Spectral phi0_Un_u(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_Un_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				dt_half,
@@ -211,7 +263,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		/*
 		 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + \Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
 		 */
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -238,7 +290,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FAn_h, FAn_u, FAn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -259,7 +311,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		sweet::SphereData_Spectral phi0_An_u(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_An_v(sphereDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				A_h, A_u, A_v,
 				phi0_An_h, phi0_An_u, phi0_An_v,
 				dt_half,
@@ -277,7 +329,7 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				2.0*FBn_h - FUn_h,
 				2.0*FBn_u - FUn_u,
 				2.0*FBn_v - FUn_v,
@@ -332,22 +384,22 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 		 * 				  \upsilon_{3}(\Delta tL) R_{3}
 		 * 			)
 		 */
-		ts_ups0_rexi.run_timestep(
+		ts_ups0_rexi.runTimestep(
 				R0_h, R0_u, R0_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups1_rexi.run_timestep(
+		ts_ups1_rexi.runTimestep(
 				R1_h, R1_u, R1_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups2_rexi.run_timestep(
+		ts_ups2_rexi.runTimestep(
 				R2_h, R2_u, R2_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups3_rexi.run_timestep(
+		ts_ups3_rexi.runTimestep(
 				R3_h, R3_u, R3_v,
 				dt,		i_simulation_timestamp
 			);
@@ -364,71 +416,8 @@ void PDESWESphereTS_lg_exp_lc_n_etdrk::run_timestep(
 
 
 
-/*
- * Setup
- */
-void PDESWESphereTS_lg_exp_lc_n_etdrk::setup(
-		EXP_sweet::ShackDictionary &i_rexiSimVars,
-		int i_timestepping_order,
-		int i_timestepping_order2,
-		double i_timestep_size
-)
-{
-	timestepping_order = i_timestepping_order;
-	timestepping_order2 = i_timestepping_order2;
 
-	ts_lg_erk_lc_n_erk.setup(i_timestepping_order, -1);
-
-	if (timestepping_order != timestepping_order2)
-		SWEETError("Mismatch of orders, should be equal");
-
-	if (timestepping_order == 0 || timestepping_order == 1)
-	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
-	}
-	else if (timestepping_order == 2)
-	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
-	}
-	else if  (timestepping_order == 4)
-	{
-		ts_phi0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size*0.5, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_rexi.setup(i_rexiSimVars, "phi1", i_timestep_size*0.5, false, true, timestepping_order);
-		ts_phi2_rexi.setup(i_rexiSimVars, "phi2", i_timestep_size*0.5, false, true, timestepping_order);
-
-		// phi0, but with a full time step size
-		ts_ups0_rexi.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);
-		ts_ups1_rexi.setup(i_rexiSimVars, "ups1", i_timestep_size, false, true, timestepping_order);
-		ts_ups2_rexi.setup(i_rexiSimVars, "ups2", i_timestep_size, false, true, timestepping_order);
-		ts_ups3_rexi.setup(i_rexiSimVars, "ups3", i_timestep_size, false, true, timestepping_order);
-	}
-	else
-	{
-		SWEETError("TODO: This order is not implemented, yet!");
-	}
-}
-
-
-PDESWESphereTS_lg_exp_lc_n_etdrk::PDESWESphereTS_lg_exp_lc_n_etdrk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-
-		ts_lg_erk_lc_n_erk(shackDict, op),
-
-		ts_phi0_rexi(shackDict, op),
-		ts_phi1_rexi(shackDict, op),
-		ts_phi2_rexi(shackDict, op),
-
-		ts_ups0_rexi(shackDict, op),
-		ts_ups1_rexi(shackDict, op),
-		ts_ups2_rexi(shackDict, op),
-		ts_ups3_rexi(shackDict, op)
+PDESWESphereTS_lg_exp_lc_n_etdrk::PDESWESphereTS_lg_exp_lc_n_etdrk()
 {
 }
 

@@ -36,7 +36,7 @@ public:
 			int i_order	///< order of RK time stepping method
 	);
 
-	void run_timestep(
+	void runTimestep(
 			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 			///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables

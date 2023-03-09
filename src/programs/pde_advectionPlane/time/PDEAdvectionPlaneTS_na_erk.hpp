@@ -47,7 +47,7 @@ public:
 	);
 
 public:
-	void run_timestep(
+	void runTimestep(
 			sweet::PlaneData_Spectral &io_phi,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_vort,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_div,	///< prognostic variables

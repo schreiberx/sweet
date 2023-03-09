@@ -59,7 +59,7 @@ void SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear(
 }
 
 
-void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
+void SWE_Plane_TS_l_rexi_n_erk::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -73,14 +73,14 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 
 	if (timestepping_order_nonlinear == 1)
 	{
-		ts_l_rexi.run_timestep(
+		ts_l_rexi.runTimestep(
 				io_h, io_u, io_v,
 				i_dt,
 				i_simulation_timestamp
 			);
 
 		// standard time stepping
-		timestepping_rk.run_timestep(
+		timestepping_rk.runTimestep(
 				this,
 				&SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
@@ -91,14 +91,14 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 	}
 	else if (timestepping_order_nonlinear == 2)
 	{
-		ts_l_rexi.run_timestep(
+		ts_l_rexi.runTimestep(
 				io_h, io_u, io_v,
 				i_dt*0.5,
 				i_simulation_timestamp
 			);
 
 		// standard time stepping
-		timestepping_rk.run_timestep(
+		timestepping_rk.runTimestep(
 				this,
 				&SWE_Plane_TS_l_rexi_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_h, io_u, io_v,
@@ -107,7 +107,7 @@ void SWE_Plane_TS_l_rexi_n_erk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		ts_l_rexi.run_timestep(
+		ts_l_rexi.runTimestep(
 				io_h, io_u, io_v,
 				i_dt*0.5,
 				i_simulation_timestamp

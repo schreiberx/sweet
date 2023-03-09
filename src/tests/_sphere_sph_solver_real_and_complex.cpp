@@ -143,7 +143,7 @@ class Test
 
 public:
 	void run_tests(
-			sweet::SphereDataConfig *sphereDataConfig,
+			sweet::SphereData_Config *sphereDataConfig,
 			phys_value_type &alpha
 	)
 	{
@@ -472,7 +472,7 @@ public:
 				// Run one forward Euler timestep just to get some valid div field
 				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
 				l_erk.setup(1);
-				l_erk.run_timestep(phi, vrt, div, dt_implicit);
+				l_erk.runTimestep(phi, vrt, div, dt_implicit);
 			}
 #endif
 
@@ -591,7 +591,7 @@ class TestFB
 
 public:
 	void run_tests(
-			sweet::SphereDataConfig *sphereDataConfig,
+			sweet::SphereData_Config *sphereDataConfig,
 			phys_value_type &alpha
 	)
 	{
@@ -662,7 +662,7 @@ public:
 				// Run one forward Euler timestep just to get some valid div field
 				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
 				l_erk.setup(1);
-				l_erk.run_timestep(phi, vrt, div, dt_implicit);
+				l_erk.runTimestep(phi, vrt, div, dt_implicit);
 			}
 
 			double phi_max = phi.toPhys().physical_reduce_max_abs();
@@ -694,11 +694,11 @@ public:
 
 				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
 				l_erk.setup(1);
-				l_erk.run_timestep(test_phi, test_vrt, test_div, dt_explicit);
+				l_erk.runTimestep(test_phi, test_vrt, test_div, dt_explicit);
 
 				SWE_Sphere_TS_l_irk l_irk(simVars, ops);
 				l_irk.setup(1, dt_implicit);
-				l_irk.run_timestep(test_phi, test_vrt, test_div, dt_implicit);
+				l_irk.runTimestep(test_phi, test_vrt, test_div, dt_implicit);
 
 				double err_phi = (test_phi-phi).toPhys().physical_reduce_max_abs();
 				double err_vrt = (test_vrt-vrt).toPhys().physical_reduce_max_abs();
@@ -751,7 +751,7 @@ int main(
 	if (simVars.disc.space_res_spectral[0] == 0)
 		SWEETError("Set number of spectral modes to use SPH!");
 
-	sweet::SphereDataConfig sphereDataConfig;
+	sweet::SphereData_Config sphereDataConfig;
 	sphereDataConfig.setupAutoPhysicalSpace(
 					simVars.disc.space_res_spectral[0],
 					simVars.disc.space_res_spectral[1],

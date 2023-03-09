@@ -67,7 +67,7 @@ public:
 
 
 public:
-	virtual void run_timestep(
+	virtual void runTimestep(
 			sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_v,	///< prognostic variables

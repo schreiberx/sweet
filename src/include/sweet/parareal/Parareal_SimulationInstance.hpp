@@ -597,20 +597,20 @@ public:
 	};
 
 
-	void run_timestep(
+	void runTimestep(
 			Parareal_GenericData* io_data,
 			std::string tsm_level
 	)
 	{
 
 		if (tsm_level == "fine")
-			timeSteppersFine->master->run_timestep(
+			timeSteppersFine->master->runTimestep(
 						io_data,
 						simVars->timecontrol.current_timestep_size,
 						simVars->timecontrol.current_simulation_time
 					);
 		else if (tsm_level == "coarse")
-			timeSteppersCoarse->master->run_timestep(
+			timeSteppersCoarse->master->runTimestep(
 						io_data,
 						simVars_coarse->timecontrol.current_timestep_size,
 						simVars_coarse->timecontrol.current_simulation_time
@@ -654,7 +654,7 @@ public:
 			// to be used as n-1 in SL in the next time slice
 			*(this->parareal_data_fine_previous_timestep) = *(this->parareal_data_fine);
 
-			this->run_timestep(this->parareal_data_fine, "fine");
+			this->runTimestep(this->parareal_data_fine, "fine");
 
 			simVars->timecontrol.current_simulation_time += simVars->timecontrol.current_timestep_size;
 			assert(simVars->timecontrol.current_simulation_time <= timeframe_end + 1e-14);
@@ -707,7 +707,7 @@ public:
 			// to be used as n-1 in SL in the next time slice
 			*(this->parareal_data_coarse_previous_timestep) = *(this->parareal_data_coarse_coarse_mesh);
 
-			this->run_timestep(this->parareal_data_coarse_coarse_mesh, "coarse");
+			this->runTimestep(this->parareal_data_coarse_coarse_mesh, "coarse");
 			simVars_coarse->timecontrol.current_simulation_time += simVars_coarse->timecontrol.current_timestep_size;
 			assert(simVars_coarse->timecontrol.current_simulation_time <= timeframe_end +  1e-14);
 			nb_timesteps++;

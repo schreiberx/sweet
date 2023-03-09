@@ -6,7 +6,7 @@
 #ifndef SRC_INCLUDE_SWEET_PLANE_CONVERT_PLANEDATASPECTRAL_TO_PLANEDATAPHYSICAL_HPP_
 #define SRC_INCLUDE_SWEET_PLANE_CONVERT_PLANEDATASPECTRAL_TO_PLANEDATAPHYSICAL_HPP_
 
-#include "PlaneDataConfig.hpp"
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include "PlaneData_Physical.hpp"
 #include "PlaneData_Spectral.hpp"
 
@@ -22,7 +22,7 @@ public:
 			PlaneData_Physical& o_planeDataPhysical
 	)
 	{
-		const PlaneDataConfig* planeDataConfig = i_planeDataSpectral.planeDataConfig;
+		const PlaneData_Config* planeDataConfig = i_planeDataSpectral.planeDataConfig;
 
 		/**
 		 * Warning: The fftw functions are in-situ operations.

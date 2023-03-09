@@ -34,7 +34,7 @@
 
 #include <sweet/core/MemBlockAlloc.hpp>
 #include <sweet/core/openmp_helper.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/SWEETError.hpp>
 #include <sweet/core/plane/PlaneData_Kernels.hpp>
 
@@ -92,7 +92,7 @@ class PlaneData_Physical
 {
 
 public:
-	const PlaneDataConfig *planeDataConfig;
+	const PlaneData_Config *planeDataConfig;
 
 public:
 	double *physical_space_data;
@@ -109,7 +109,7 @@ public:
 
 public:
 	PlaneData_Physical(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)
 		planeDataConfig(i_planeDataConfig),
@@ -121,7 +121,7 @@ public:
 
 public:
 	PlaneData_Physical(
-			const PlaneDataConfig &i_planeDataConfig
+			const PlaneData_Config &i_planeDataConfig
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)
 		planeDataConfig(&i_planeDataConfig),
@@ -133,7 +133,7 @@ public:
 
 public:
 	PlaneData_Physical(
-			const PlaneDataConfig *i_planeDataConfig,
+			const PlaneData_Config *i_planeDataConfig,
 			double i_value
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)
@@ -198,7 +198,7 @@ public:
 	 */
 public:
 	inline void check(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	const
 	{
 		assert(planeDataConfig->physical_res[0] == i_planeDataConfig->physical_res[0]);
@@ -272,7 +272,7 @@ public:
 
 public:
 	void setup(
-			const PlaneDataConfig &i_planeDataConfig
+			const PlaneData_Config &i_planeDataConfig
 	)
 	{
 		setup(&i_planeDataConfig);
@@ -281,7 +281,7 @@ public:
 
 public:
 	void setup(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		if (planeDataConfig != nullptr)
@@ -302,7 +302,7 @@ private:
 
 public:
 	void setup_if_required(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		if (planeDataConfig != nullptr)
@@ -1590,7 +1590,7 @@ public:
 	)
 	{
 
-		PlaneDataConfig planeDataConfig_ref;
+		PlaneData_Config planeDataConfig_ref;
 
 		std::cout << "loading DATA from " << i_filename << std::endl;
 

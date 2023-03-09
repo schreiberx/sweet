@@ -495,7 +495,7 @@ public:
 			{
 				if (analytic_solution == 1)
 				{
-				   timeSteppersFineBurgers->ln_cole_hopf->run_timestep(
+				   timeSteppersFineBurgers->ln_cole_hopf->runTimestep(
 						 ts_u, ts_v,
 						 //ts_u, ts_v,
 						 simVars->timecontrol.current_simulation_time,
@@ -504,7 +504,7 @@ public:
 				}
 				else if (analytic_solution == 2)
 				{
-				   timeSteppersFineBurgers->l_direct->run_timestep(
+				   timeSteppersFineBurgers->l_direct->runTimestep(
 						 ts_u, ts_v,
 						 //ts_u, ts_v,
 						 simVars->timecontrol.current_simulation_time,

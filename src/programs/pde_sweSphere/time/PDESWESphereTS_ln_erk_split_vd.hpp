@@ -20,12 +20,24 @@
 class PDESWESphereTS_ln_erk_split_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					)
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_order,	///< order of RK time stepping method
+			bool i_lg,
+			bool i_lc,
+			bool i_na,
+			bool i_nr,
+			bool i_antialiasing_for_each_term
+	);
+
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method)
 	{
 		timestepping_method = i_timestepping_method;
-		timestepping_order = shackDict.disc.timestepping_order;
-		//timestepping_order2 = shackDict.disc.timestepping_order2;
+
 		if (
 				i_timestepping_method == "l_na_erk_split_vd"	||
 				i_timestepping_method == "l_na_erk_split_aa_vd"	||
@@ -39,68 +51,17 @@ public:
 		return false;
 	}
 
-	std::string string_id()
+	std::string getIDString()
 	{
 		return "ln_erk_split_vd";
 	}
 
-	void setup_auto()
-	{
-		/*
-		 * l_na
-		 */
-		if (timestepping_method == "l_na_erk_split_vd")
-		{
-			setup(timestepping_order, true, true, true, false, false);
-			return;
-		}
+public:
+	PDESWESphereTS_ln_erk_split_vd();
 
-		if (timestepping_method == "l_na_erk_split_aa_vd")
-		{
-			setup(timestepping_order, true, true, true, false, true);
-			return;
-		}
-
-		/*
-		 * l
-		 */
-		if (timestepping_method == "l_erk_split_vd")
-		{
-			setup(timestepping_order, true, true, false, false, false);
-			return;
-		}
-
-		if (timestepping_method == "l_erk_split_aa_vd")
-		{
-			setup(timestepping_order, true, true, false, false, true);
-			return;
-		}
-
-		/*
-		 * ln
-		 */
-		if (timestepping_method == "ln_erk_split_vd")
-		{
-			setup(timestepping_order, true, true, true, true, false);
-			return;
-		}
-
-		if (timestepping_method == "ln_erk_split_aa_vd")
-		{
-			setup(timestepping_order, true, true, true, true, true);
-			return;
-		}
-
-		SWEETError("Should never happen");
-	}
+	virtual ~PDESWESphereTS_ln_erk_split_vd();
 
 private:
-	sweet::ShackDictionary &shackDict;
-	
-	sweet::SphereOperators &op;
-
-	int timestepping_order;
-
 	bool use_lg = false;
 	bool use_lc = false;
 	bool use_na = false;
@@ -110,7 +71,7 @@ private:
 
 
 	// Sampler
-	SphereTimestepping_ExplicitRK timestepping_rk;
+	sweet::TimesteppingExplicitRKSphereData timestepping_rk;
 
 
 public:
@@ -215,22 +176,7 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-public:
-	PDESWESphereTS_ln_erk_split_vd(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
-
-	void setup(
-			int i_order,	///< order of RK time stepping method
-			bool i_lg,
-			bool i_lc,
-			bool i_na,
-			bool i_nr,
-			bool i_antialiasing_for_each_term
-	);
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_U_phi,
 			sweet::SphereData_Spectral &io_U_vrt,
 			sweet::SphereData_Spectral &io_U_div,
@@ -249,10 +195,6 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
-
-
-
-	virtual ~PDESWESphereTS_ln_erk_split_vd();
 };
 
 #endif

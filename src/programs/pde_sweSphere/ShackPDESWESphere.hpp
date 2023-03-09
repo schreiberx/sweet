@@ -8,15 +8,15 @@
 #ifndef SRC_PROGRAMS_SWE_COMMON_PDESWEPARAMETERSCOMMON_HPP_
 #define SRC_PROGRAMS_SWE_COMMON_PDESWEPARAMETERSCOMMON_HPP_
 
+#include <sweet/core/shacks/ShackInterface.hpp>
 #include <sweet/core/ProgramArguments.hpp>
 #include <sweet/core/ErrorBase.hpp>
 
 
-class ShackPDESWESphere
+class ShackPDESWESphere	:
+		public sweet::ShackInterface
 {
 public:
-	virtual sweet::ErrorBase& getError() = 0;
-
 	/**
 	 * Average height
 	 */
@@ -68,7 +68,7 @@ public:
 	}
 
 
-	void outputProgArguments(const std::string& i_prefix = "")
+	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "	-H [float]	Average (initial) height of water" << std::endl;
 		std::cout << i_prefix << "	-u [visc]	Viscosity, , default=0" << std::endl;
@@ -79,33 +79,16 @@ public:
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		if (!i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0))
-		{
-			if (getError().forward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueBy3Keys("--pde-viscosity", "--pde-mu", "--mu", viscosity))
-		{
-			if (getError().forward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueByKey("--pde-viscosity-order", viscosity_order))
-		{
-			if (getError().forward(i_pa.error))
-				return false;
-		}
-
-		if (!i_pa.getArgumentValueBy3Keys("--pde-g", "-g", "--gravitation", gravitation))
-		{
-			if (getError().forward(i_pa.error))
-				return false;
-		}
-
+		i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0);
+		i_pa.getArgumentValueBy3Keys("--pde-viscosity", "--pde-mu", "--mu", viscosity);
+		i_pa.getArgumentValueByKey("--pde-viscosity-order", viscosity_order);
+		i_pa.getArgumentValueBy3Keys("--pde-g", "-g", "--gravitation", gravitation);
 		i_pa.getArgumentValueByKey("-F", sphere_use_fsphere);
+
 		if (i_pa.getArgumentValueByKey("-f", sphere_rotating_coriolis_omega))
 			sphere_fsphere_f0 = sphere_rotating_coriolis_omega;
+
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
 
 		return true;
 	}

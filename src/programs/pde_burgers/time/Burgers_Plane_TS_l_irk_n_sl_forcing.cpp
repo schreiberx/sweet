@@ -9,7 +9,7 @@
 #include "../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl_forcing.hpp"
 
 
-void Burgers_Plane_TS_l_irk_n_sl_forcing::run_timestep(
+void Burgers_Plane_TS_l_irk_n_sl_forcing::runTimestep(
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 		///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables

@@ -21,8 +21,8 @@
 #include <cmath>
 #include <sweet/core/MemBlockAlloc.hpp>
 #include <sweet/core/openmp_helper.hpp>
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
 #include <sweet/core/SWEETError.hpp>
 
 #if SWEET_THREADING_SPACE
@@ -67,7 +67,7 @@ class PlaneData_PhysicalComplex
 {
 
 public:
-	const PlaneDataConfig *planeDataConfig;
+	const PlaneData_Config *planeDataConfig;
 
 public:
 	std::complex<double> *physical_space_data;
@@ -84,7 +84,7 @@ public:
 
 public:
 	PlaneData_PhysicalComplex(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	:
 		planeDataConfig(i_planeDataConfig),
 		physical_space_data(nullptr)
@@ -155,7 +155,7 @@ public:
 	 */
 public:
 	inline void check(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	const
 	{
 		assert(planeDataConfig->physical_res[0] == i_planeDataConfig->physical_res[0]);
@@ -213,7 +213,7 @@ public:
 
 public:
 	void setup(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		planeDataConfig = i_planeDataConfig;
@@ -225,7 +225,7 @@ public:
 
 public:
 	void setup_if_required(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		if (planeDataConfig != nullptr)

@@ -41,7 +41,7 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		sweet::PlaneOperators ops;
 
 		sweet::PlaneData_Spectral prog_h;

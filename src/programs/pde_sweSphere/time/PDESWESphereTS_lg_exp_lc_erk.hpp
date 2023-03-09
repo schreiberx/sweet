@@ -20,12 +20,25 @@
 class PDESWESphereTS_lg_exp_lc_erk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					)
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			sweet::ShackExpIntegration *i_shackExpIntegration,
+			const std::string &i_exp_method,
+			int i_timestepping_order,
+			int i_timestepping_order2,
+			double i_timestep_size,
+			int i_version_id,
+			bool i_use_rexi_sphere_solver_preallocation
+	);
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method)
 	{
 		timestepping_method = i_timestepping_method;
-		timestepping_order = shackDict.disc.timestepping_order;
-		timestepping_order2 = shackDict.disc.timestepping_order2;
+		timestepping_order = shackPDESWETimeDisc->timestepping_order;
+		timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 		if (
 			i_timestepping_method == "lg_exp_lc_erk" || i_timestepping_method == "lg_exp_lc_erk_ver0" ||
 			i_timestepping_method == "lg_exp_lc_erk_ver1"
@@ -35,7 +48,7 @@ public:
 		return false;
 	}
 
-	std::string string_id()
+	std::string getIDString()
 	{
 		std::string s = "lg_exp_lc_erk_ver";
 
@@ -49,30 +62,10 @@ public:
 		return s;
 	}
 
-	void setup_auto()
-	{
-		int version = 0;
-		if (timestepping_method == "lg_exp_lc_erk_ver1")
-			version = 1;
-
-		setup(
-				shackDict.rexi,
-				timestepping_order,
-				timestepping_order2,
-				shackDict.timecontrol.current_timestep_size,
-				version
-			);
-	}
 
 
 private:
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &op;
-
 	int version_id;
-
-	int timestepping_order;
-	int timestepping_order2;
 
 	double timestep_size;
 
@@ -86,24 +79,13 @@ private:
 	 */
 	PDESWESphereTS_lg_erk_lc_erk timestepping_lg_erk_lc_erk;
 
-	SphereTimestepping_ExplicitRK timestepping_rk_nonlinear;
+	sweet::TimesteppingExplicitRKSphereData timestepping_rk_nonlinear;
 
 
 public:
-	PDESWESphereTS_lg_exp_lc_erk(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	PDESWESphereTS_lg_exp_lc_erk();
 
-	void setup(
-			EXP_sweet::ShackDictionary &i_rexiSimVars,
-			int i_timestepping_order,
-			int i_timestepping_order2,
-			double i_timestep_size,
-			int i_version_id
-	);
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,		///< prognostic variables
 			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,		///< prognostic variables

@@ -56,7 +56,7 @@ int main(
 		shackPlaneDataOps->space_res_physical[0] = res[0];
 		shackPlaneDataOps->space_res_physical[1] = res[1];
 
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		planeDataConfig.setupAuto(shackPlaneDataOps);
 
 		planeDataConfig.printInformation();

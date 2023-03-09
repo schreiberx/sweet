@@ -12,15 +12,14 @@
 
 
 
-bool PDESWESphereTS_ln_settls_vd::implements_timestepping_method(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_ln_settls_vd::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	/*
 	 * Should contain _exp and _settls
 	 */
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	return (
 		!(i_timestepping_method.find("_exp") != std::string::npos)		&&
 		(i_timestepping_method.find("_settls") != std::string::npos)	&&
@@ -31,13 +30,205 @@ bool PDESWESphereTS_ln_settls_vd::implements_timestepping_method(const std::stri
 }
 
 
-std::string PDESWESphereTS_ln_settls_vd::string_id()
+
+bool PDESWESphereTS_ln_settls_vd::setup_auto(sweet::SphereOperators *io_ops)
+{
+	PDESWESphereTS_ln_settls_vd::LinearCoriolisTreatment_enum _linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_IGNORE;
+	PDESWESphereTS_ln_settls_vd::NLRemainderTreatment_enum _nonlinear_divergence_treatment = PDESWESphereTS_ln_settls_vd::NL_REMAINDER_IGNORE;
+	bool _original_linear_operator_sl_treatment = true;
+
+	if (timestepping_method == "ln_settls")
+	{
+		_linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_LINEAR;
+		_nonlinear_divergence_treatment = PDESWESphereTS_ln_settls_vd::NL_REMAINDER_NONLINEAR;
+		_original_linear_operator_sl_treatment = true;
+	}
+	else
+	{
+		// Search for Coriolis
+		if (timestepping_method.find("l_irk") != std::string::npos || timestepping_method.find("l_exp") != std::string::npos)
+			_linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_LINEAR;
+		else if (timestepping_method.find("lc_na_sl") != std::string::npos)
+			_linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_SEMILAGRANGIAN;
+		else if (timestepping_method.find("lc_") != std::string::npos)
+			_linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_NONLINEAR;
+
+		// Search for Nonlinear divergence
+		if (timestepping_method.find("_nr_") != std::string::npos)
+			_nonlinear_divergence_treatment = PDESWESphereTS_ln_settls_vd::NL_REMAINDER_NONLINEAR;
+
+		if (timestepping_method.find("_ver1") != std::string::npos)
+			_original_linear_operator_sl_treatment = false;
+		else if (timestepping_method.find("_ver0") != std::string::npos)
+			_original_linear_operator_sl_treatment = true;
+		else
+			_original_linear_operator_sl_treatment = true;
+
+#if 1
+		string_id_storage = "";
+
+		if (_linear_coriolis_treatment == PDESWESphereTS_ln_settls_vd::CORIOLIS_LINEAR)
+			string_id_storage += "l";
+		else
+			string_id_storage += "lg";
+
+		string_id_storage += "_irk";
+
+		if (_linear_coriolis_treatment == PDESWESphereTS_ln_settls_vd::CORIOLIS_SEMILAGRANGIAN)
+			string_id_storage += "_lc";
+
+		string_id_storage += "_na";
+
+		string_id_storage += "_sl";
+
+		if (_linear_coriolis_treatment == PDESWESphereTS_ln_settls_vd::CORIOLIS_NONLINEAR)
+			string_id_storage += "_lc";
+
+		if (_nonlinear_divergence_treatment == PDESWESphereTS_ln_settls_vd::NL_REMAINDER_NONLINEAR)
+			string_id_storage += "_nr";
+
+		string_id_storage += "_settls";
+
+		if (!_original_linear_operator_sl_treatment)
+			string_id_storage += "_ver1";
+
+		std::string string_id_storage_ = string_id_storage + "_vd";
+
+		if (timestepping_method == string_id_storage_)
+		{
+			string_id_storage = string_id_storage_;
+		}
+		else
+		{
+			if (!_original_linear_operator_sl_treatment)
+			{
+				// there must be a ver1 which is likely missing
+				std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
+				std::cerr << "Provided time stepping method: "+timestepping_method << std::endl;
+				SWEETError("Autodetection of parts of time stepping methods failed!");
+			}
+
+			std::string string_id_storage2 = string_id_storage+"_ver0"+"_vd";
+			if (timestepping_method == string_id_storage2)
+			{
+				string_id_storage = string_id_storage2;
+			}
+			else
+			{
+				std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
+				std::cerr << "Provided time stepping method: "+timestepping_method << std::endl;
+				std::cerr << "Detected alternative time stepping method: "+string_id_storage2 << std::endl;
+				SWEETError("Autodetection of parts of time stepping methods failed!");
+			}
+		}
+	}
+#endif
+
+	return setup(
+			io_ops,
+			timestepping_order,
+			_linear_coriolis_treatment,				// Coriolis treatment
+			_nonlinear_divergence_treatment,			// Nonlinear divergence treatment
+			_original_linear_operator_sl_treatment	// original SL linear operator treatment
+		);
+}
+
+
+bool PDESWESphereTS_ln_settls_vd::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order,
+		LinearCoriolisTreatment_enum i_coriolis_treatment,
+		NLRemainderTreatment_enum i_nonlinear_divergence_treatment,
+		bool i_original_linear_operator_sl_treatment
+)
+{
+	ops = io_ops;
+
+	coriolis_treatment = i_coriolis_treatment;
+	nonlinear_remainder_treatment = i_nonlinear_divergence_treatment;
+	timestepping_order = i_timestepping_order;
+	original_linear_operator_sl_treatment = i_original_linear_operator_sl_treatment;
+
+
+	if (timestepping_order != 1 && timestepping_order != 2)
+		SWEETError("Invalid time stepping order, must be 1 or 2");
+
+	// Setup sampler for future interpolations
+	sphereSampler.setup(ops->sphereDataConfig);
+
+	// Setup semi-lag
+	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);
+
+	swe_sphere_ts_ln_erk_split_vd = nullptr;
+	swe_sphere_ts_l_irk = nullptr;
+	swe_sphere_ts_lg_irk = nullptr;
+
+	swe_sphere_ts_ln_erk_split_vd = new PDESWESphereTS_ln_erk_split_vd;
+	swe_sphere_ts_ln_erk_split_vd->setup(ops, 1, true, true, true, true, false);
+
+
+	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
+	{
+		setupFG();
+		coriolis_arrival_spectral = fg;
+	}
+
+	if (coriolis_treatment == CORIOLIS_LINEAR)
+	{
+		swe_sphere_ts_l_irk = new PDESWESphereTS_l_irk;
+		if (timestepping_order == 1)
+		{
+			swe_sphere_ts_l_irk->setup(
+					ops,
+					1,
+					shackTimestepControl->current_timestep_size
+				);
+		}
+		else
+		{
+			// initialize with 1st order and half time step size
+			swe_sphere_ts_l_irk->setup(
+					ops,
+					1,
+					0.5 * shackTimestepControl->current_timestep_size
+				);
+		}
+	}
+	else
+	{
+		swe_sphere_ts_lg_irk = new PDESWESphereTS_lg_irk;
+		if (timestepping_order == 1)
+		{
+			swe_sphere_ts_lg_irk->setup(
+					ops,
+					1,
+					shackTimestepControl->current_timestep_size
+				);
+		}
+		else
+		{
+			// initialize with 1st order and half time step size
+			swe_sphere_ts_lg_irk->setup(
+					ops,
+					1,
+					0.5 * shackTimestepControl->current_timestep_size
+				);
+		}
+	}
+
+	return true;
+}
+
+
+
+
+std::string PDESWESphereTS_ln_settls_vd::getIDString()
 {
 	return string_id_storage;
 }
 
 
-void PDESWESphereTS_ln_settls_vd::run_timestep(
+void PDESWESphereTS_ln_settls_vd::runTimestep(
 		sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -89,15 +280,15 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 	 * See Hortal's paper for equation.
 	 */
 	sweet::SphereData_Physical U_u_lon_prev, U_v_lat_prev;
-	ops.vrtdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
+	ops->vrtdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
 
 	sweet::SphereData_Physical U_u_lon, U_v_lat;
-	ops.vrtdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
+	ops->vrtdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
 
-	double dt_div_radius = i_dt / shackDict.sim.sphere_radius;
+	double dt_div_radius = i_dt / shackSphereDataOps->sphere_radius;
 
 	// Calculate departure points
-	ScalarDataArray pos_lon_d, pos_lat_d;
+	sweet::ScalarDataArray pos_lon_d, pos_lat_d;
 	semiLagrangian.semi_lag_departure_points_settls_specialized(
 			dt_div_radius*U_u_lon_prev, dt_div_radius*U_v_lat_prev,
 			dt_div_radius*U_u_lon, dt_div_radius*U_v_lat,
@@ -133,15 +324,15 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 		 * Compute Coriolis effect at the departure points
 		 */
 
-		SWEETDebugAssert(!shackDict.sim.sphere_use_fsphere);
+		SWEETDebugAssert(!shackPDESWESphere->sphere_use_fsphere);
 
-		sweet::SphereData_Physical coriolis_depature_lat = Convert_ScalarDataArray_to_SphereDataPhysical::convert(pos_lon_d, ops.sphereDataConfig);
+		sweet::SphereData_Physical coriolis_depature_lat = sweet::Convert_ScalarDataArray_to_SphereDataPhysical::convert(pos_lon_d, ops->sphereDataConfig);
 
-		sweet::SphereData_Physical coriolis_departure_physical(ops.sphereDataConfig);
+		sweet::SphereData_Physical coriolis_departure_physical(ops->sphereDataConfig);
 		coriolis_departure_physical.physical_update_lambda_array_idx(
 			[&](int i_index, double &o_data)
 			{
-				o_data = 2.0*shackDict.sim.sphere_rotating_coriolis_omega*std::sin(coriolis_depature_lat.physical_space_data[i_index]);
+				o_data = 2.0*shackPDESWESphere->sphere_rotating_coriolis_omega*std::sin(coriolis_depature_lat.physical_space_data[i_index]);
 			}
 		);
 
@@ -159,8 +350,10 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 		/*
 		 * Method 1) First evaluate L, then sample result at departure point
 		 */
-		const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
-		sweet::SphereData_Spectral L_U_phi(sphereDataConfig, 0), L_U_vrt(sphereDataConfig, 0), L_U_div(sphereDataConfig, 0);
+		const sweet::SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
+		sweet::SphereData_Spectral L_U_phi(sphereDataConfig, 0);
+		sweet::SphereData_Spectral L_U_vrt(sphereDataConfig, 0);
+		sweet::SphereData_Spectral L_U_div(sphereDataConfig, 0);
 
 		/*
 		 * L_g(U): Linear gravity modes
@@ -235,7 +428,7 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 				);
 		}
 
-		const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
+		const sweet::SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
 		L_U_phi_D.setup(sphereDataConfig, 0);
 		L_U_vrt_D.setup(sphereDataConfig, 0);
 		L_U_div_D.setup(sphereDataConfig, 0);
@@ -288,8 +481,10 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 		/*
 		 * N(t-dt)
 		 */
-		const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
-		sweet::SphereData_Spectral N_U_phi_prev_nr(sphereDataConfig, 0), N_U_vrt_prev_nr(sphereDataConfig, 0), N_U_div_prev_nr(sphereDataConfig, 0);
+		const sweet::SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
+		sweet::SphereData_Spectral N_U_phi_prev_nr(sphereDataConfig, 0);
+		sweet::SphereData_Spectral N_U_vrt_prev_nr(sphereDataConfig, 0);
+		sweet::SphereData_Spectral N_U_div_prev_nr(sphereDataConfig, 0);
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
 		{
@@ -364,7 +559,7 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 
 	if (coriolis_treatment == CORIOLIS_LINEAR)
 	{
-		swe_sphere_ts_l_irk->run_timestep(
+		swe_sphere_ts_l_irk->runTimestep(
 				R_phi, R_vrt, R_div,
 				0.5 * i_dt,
 				i_simulation_timestamp
@@ -372,7 +567,7 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 	}
 	else
 	{
-		swe_sphere_ts_lg_irk->run_timestep(
+		swe_sphere_ts_lg_irk->runTimestep(
 				R_phi, R_vrt, R_div,
 				0.5 * i_dt,
 				i_simulation_timestamp
@@ -397,201 +592,9 @@ void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
 
 
 
-void PDESWESphereTS_ln_settls_vd::setup(
-		int i_timestepping_order,
-		LinearCoriolisTreatment_enum i_coriolis_treatment,
-		NLRemainderTreatment_enum i_nonlinear_divergence_treatment,
-		bool i_original_linear_operator_sl_treatment
-)
+
+PDESWESphereTS_ln_settls_vd::PDESWESphereTS_ln_settls_vd()
 {
-	coriolis_treatment = i_coriolis_treatment;
-	nonlinear_remainder_treatment = i_nonlinear_divergence_treatment;
-	timestepping_order = i_timestepping_order;
-	original_linear_operator_sl_treatment = i_original_linear_operator_sl_treatment;
-
-
-	if (timestepping_order != 1 && timestepping_order != 2)
-		SWEETError("Invalid time stepping order, must be 1 or 2");
-
-	// Setup sampler for future interpolations
-	sphereSampler.setup(ops.sphereDataConfig);
-
-	// Setup semi-lag
-	semiLagrangian.setup(ops.sphereDataConfig);
-
-	swe_sphere_ts_ln_erk_split_vd = nullptr;
-	swe_sphere_ts_l_irk = nullptr;
-	swe_sphere_ts_lg_irk = nullptr;
-
-	swe_sphere_ts_ln_erk_split_vd = new PDESWESphereTS_ln_erk_split_vd(shackDict, ops);
-	swe_sphere_ts_ln_erk_split_vd->setup(1, true, true, true, true, false);
-
-
-	if (coriolis_treatment == CORIOLIS_SEMILAGRANGIAN)
-	{
-		coriolis_arrival_spectral = ops.fg;
-	}
-
-	if (coriolis_treatment == CORIOLIS_LINEAR)
-	{
-		swe_sphere_ts_l_irk = new PDESWESphereTS_l_irk(shackDict, ops);
-		if (timestepping_order == 1)
-		{
-			swe_sphere_ts_l_irk->setup(
-					1,
-					shackDict.timecontrol.current_timestep_size
-				);
-		}
-		else
-		{
-			// initialize with 1st order and half time step size
-			swe_sphere_ts_l_irk->setup(
-					1,
-					0.5 * shackDict.timecontrol.current_timestep_size
-				);
-		}
-	}
-	else
-	{
-		swe_sphere_ts_lg_irk = new PDESWESphereTS_lg_irk(shackDict, ops);
-		if (timestepping_order == 1)
-		{
-			swe_sphere_ts_lg_irk->setup(
-					1,
-					shackDict.timecontrol.current_timestep_size
-				);
-		}
-		else
-		{
-			// initialize with 1st order and half time step size
-			swe_sphere_ts_lg_irk->setup(
-					1,
-					0.5 * shackDict.timecontrol.current_timestep_size
-				);
-		}
-	}
-}
-
-
-
-void PDESWESphereTS_ln_settls_vd::setup_auto()
-{
-	PDESWESphereTS_ln_settls_vd::LinearCoriolisTreatment_enum linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_IGNORE;
-	PDESWESphereTS_ln_settls_vd::NLRemainderTreatment_enum nonlinear_divergence_treatment = PDESWESphereTS_ln_settls_vd::NL_REMAINDER_IGNORE;
-	bool original_linear_operator_sl_treatment = true;
-
-	if (timestepping_method == "ln_settls")
-	{
-		linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_LINEAR;
-		nonlinear_divergence_treatment = PDESWESphereTS_ln_settls_vd::NL_REMAINDER_NONLINEAR;
-		original_linear_operator_sl_treatment = true;
-	}
-	else
-	{
-		// Search for Coriolis
-		if (timestepping_method.find("l_irk") != std::string::npos || timestepping_method.find("l_exp") != std::string::npos)
-			linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_LINEAR;
-		else if (timestepping_method.find("lc_na_sl") != std::string::npos)
-			linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_SEMILAGRANGIAN;
-		else if (timestepping_method.find("lc_") != std::string::npos)
-			linear_coriolis_treatment = PDESWESphereTS_ln_settls_vd::CORIOLIS_NONLINEAR;
-
-		// Search for Nonlinear divergence
-		if (timestepping_method.find("_nr_") != std::string::npos)
-			nonlinear_divergence_treatment = PDESWESphereTS_ln_settls_vd::NL_REMAINDER_NONLINEAR;
-
-		if (timestepping_method.find("_ver1") != std::string::npos)
-			original_linear_operator_sl_treatment = false;
-		else if (timestepping_method.find("_ver0") != std::string::npos)
-			original_linear_operator_sl_treatment = true;
-		else
-			original_linear_operator_sl_treatment = true;
-
-#if 1
-		string_id_storage = "";
-
-		if (linear_coriolis_treatment == PDESWESphereTS_ln_settls_vd::CORIOLIS_LINEAR)
-			string_id_storage += "l";
-		else
-			string_id_storage += "lg";
-
-		string_id_storage += "_irk";
-
-		if (linear_coriolis_treatment == PDESWESphereTS_ln_settls_vd::CORIOLIS_SEMILAGRANGIAN)
-			string_id_storage += "_lc";
-
-		string_id_storage += "_na";
-
-		string_id_storage += "_sl";
-
-		if (linear_coriolis_treatment == PDESWESphereTS_ln_settls_vd::CORIOLIS_NONLINEAR)
-			string_id_storage += "_lc";
-
-		if (nonlinear_divergence_treatment == PDESWESphereTS_ln_settls_vd::NL_REMAINDER_NONLINEAR)
-			string_id_storage += "_nr";
-
-		string_id_storage += "_settls";
-
-		if (!original_linear_operator_sl_treatment)
-			string_id_storage += "_ver1";
-
-		std::string string_id_storage_ = string_id_storage + "_vd";
-
-		if (timestepping_method == string_id_storage_)
-		{
-			string_id_storage = string_id_storage_;
-		}
-		else
-		{
-			if (!original_linear_operator_sl_treatment)
-			{
-				// there must be a ver1 which is likely missing
-				std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
-				std::cerr << "Provided time stepping method: "+timestepping_method << std::endl;
-				SWEETError("Autodetection of parts of time stepping methods failed!");
-			}
-
-			std::string string_id_storage2 = string_id_storage+"_ver0"+"_vd";
-			if (timestepping_method == string_id_storage2)
-			{
-				string_id_storage = string_id_storage2;
-			}
-			else
-			{
-				std::cerr << "Detected time stepping method: "+string_id_storage_ << std::endl;
-				std::cerr << "Provided time stepping method: "+timestepping_method << std::endl;
-				std::cerr << "Detected alternative time stepping method: "+string_id_storage2 << std::endl;
-				SWEETError("Autodetection of parts of time stepping methods failed!");
-			}
-		}
-	}
-#endif
-
-	setup(
-			timestepping_order,
-			linear_coriolis_treatment,				// Coriolis treatment
-			nonlinear_divergence_treatment,			// Nonlinear divergence treatment
-			original_linear_operator_sl_treatment	// original SL linear operator treatment
-		);
-}
-
-
-
-PDESWESphereTS_ln_settls_vd::PDESWESphereTS_ln_settls_vd(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op,
-			bool i_setup_auto
-		) :
-		shackDict(i_shackDict),
-		ops(i_op),
-		semiLagrangian(shackDict),
-
-		coriolis_treatment(CORIOLIS_LINEAR),
-		nonlinear_remainder_treatment(NL_REMAINDER_NONLINEAR),
-		original_linear_operator_sl_treatment(true)
-{
-	if (i_setup_auto)
-		setup_auto();
 }
 
 PDESWESphereTS_ln_settls_vd::~PDESWESphereTS_ln_settls_vd()

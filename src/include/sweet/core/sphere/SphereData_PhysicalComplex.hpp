@@ -33,7 +33,7 @@ class SphereData_PhysicalComplex
 	friend class SphereData_SpectralComplex;
 
 public:
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 public:
 	std::complex<double> *physical_space_data;
@@ -50,7 +50,7 @@ public:
 
 public:
 	SphereData_PhysicalComplex(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
 		physical_space_data(nullptr)
@@ -121,7 +121,7 @@ public:
 	 */
 public:
 	inline void check(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
@@ -376,7 +376,7 @@ public:
 
 public:
 	void setup(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -388,7 +388,7 @@ public:
 
 public:
 	void setup_if_required(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)

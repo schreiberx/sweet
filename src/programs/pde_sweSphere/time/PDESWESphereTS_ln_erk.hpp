@@ -20,37 +20,35 @@
 class PDESWESphereTS_ln_erk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					)
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_order	///< order of RK time stepping method
+	);
+
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method)
 	{
 		timestepping_method = i_timestepping_method;
-		timestepping_order = shackDict.disc.timestepping_order;
-		timestepping_order2 = shackDict.disc.timestepping_order2;
+		timestepping_order = shackPDESWETimeDisc->timestepping_order;
+		timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 		if (i_timestepping_method == "ln_erk")
 			return true;
 
 		return false;
 	}
 
-	std::string string_id()
+	std::string getIDString()
 	{
 		return "ln_erk";
 	}
 
-	void setup_auto()
-	{
-		setup(timestepping_order);
-	}
-
 
 private:
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &op;
-
-	int timestepping_order;
-
 	// Sampler
-	SphereTimestepping_ExplicitRK timestepping_rk;
+	sweet::TimesteppingExplicitRKSphereData timestepping_rk;
 
 
 public:
@@ -67,16 +65,9 @@ public:
 	);
 
 public:
-	PDESWESphereTS_ln_erk(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	PDESWESphereTS_ln_erk();
 
-	void setup(
-			int i_order	///< order of RK time stepping method
-	);
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

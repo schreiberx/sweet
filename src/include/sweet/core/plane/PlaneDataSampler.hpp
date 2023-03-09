@@ -24,7 +24,7 @@ class PlaneDataSampler
 public:
 	double domain_size[2];			/// real physical size of the domain
 	int res[2];						/// resolution of domain
-	const PlaneDataConfig *planeDataConfig;
+	const PlaneData_Config *planeDataConfig;
 
 private:
 	double cached_scale_factor[2];			/// cached parameters for sampling
@@ -33,7 +33,7 @@ private:
 public:
 	PlaneDataSampler(
 		double i_domain_size[2],	/// real physical size of the domain
-		const PlaneDataConfig *i_planeDataConfig
+		const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		assert(i_planeDataConfig != nullptr);
@@ -62,7 +62,7 @@ public:
 public:
 	void setup(
 		double i_domain_size[2],	/// real physical size of the domain
-		const PlaneDataConfig *i_planeDataConfig
+		const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		assert(i_planeDataConfig != nullptr);

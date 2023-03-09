@@ -20,7 +20,7 @@
 class Burgers_Plane_TS_interface
 {
 public:
-	virtual void run_timestep(
+	virtual void runTimestep(
 			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 			///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables
@@ -31,7 +31,7 @@ public:
 	) = 0;
 
 #if (SWEET_PARAREAL && SWEET_PARAREAL_PLANE) || (SWEET_XBRAID && SWEET_XBRAID_PLANE)
-	void run_timestep(
+	void runTimestep(
 			Parareal_GenericData* io_data,
 
 			double i_dt,		///< time step size
@@ -41,7 +41,7 @@ public:
 		sweet::PlaneData_Spectral u = *(io_data->get_pointer_to_data_sweet::PlaneData_Spectral()->simfields[0]);
 		sweet::PlaneData_Spectral v = *(io_data->get_pointer_to_data_sweet::PlaneData_Spectral()->simfields[1]);
 
-		run_timestep(u, v,
+		runTimestep(u, v,
 				i_dt,
 				i_sim_timestamp
 			);

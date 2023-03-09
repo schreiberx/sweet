@@ -28,7 +28,7 @@ public:
 
 
 	void setupBuffers(
-			const PlaneDataConfig *i_planeDataConfig,
+			const PlaneData_Config *i_planeDataConfig,
 			int i_rk_order			///< Order of Runge-Kutta method
 	)
 	{
@@ -85,7 +85,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_timestep(
+	void runTimestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const PlaneData_Spectral &i_P,	///< prognostic variables

@@ -22,7 +22,7 @@ class PDEAdvectionSphereTS_na_sl	:
 {
 	int timestepping_order;
 
-	sweet::SphereTimestepping_SemiLagrangian semiLagrangian;
+	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
 	sweet::SphereOperators_Sampler_SphereDataPhysical sphereSampler;
 
 	sweet::SphereData_Physical U_u_prev, U_v_prev;
@@ -68,7 +68,7 @@ private:
 			sweet::SphereData_Physical &o_v
 	);
 
-	void run_timestep(
+	void runTimestep(
 			std::vector<sweet::SphereData_Spectral> &io_prog_fields,	///< prognostic variables
 			sweet::SphereData_Physical &io_u,
 			sweet::SphereData_Physical &io_v,

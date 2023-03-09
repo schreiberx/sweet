@@ -59,7 +59,7 @@ void Burgers_Plane_TS_ln_erk_forcing::euler_timestep_update(
 
 
 
-void Burgers_Plane_TS_ln_erk_forcing::run_timestep(
+void Burgers_Plane_TS_ln_erk_forcing::runTimestep(
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 		///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables
@@ -86,7 +86,7 @@ void Burgers_Plane_TS_ln_erk_forcing::run_timestep(
 		tmp.spectral_set_zero();
 
 		// run standard Runge Kutta
-		timestepping_rk.run_timestep(
+		timestepping_rk.runTimestep(
 			this,
 			&Burgers_Plane_TS_ln_erk_forcing::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			tmp, io_u, io_v,

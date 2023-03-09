@@ -28,7 +28,7 @@ bool PDEAdvectionPlaneTS_na_sl::setup(sweet::PlaneOperators *io_ops)
 	prog_u_prev.setup(ops->planeDataConfig);
 	prog_v_prev.setup(ops->planeDataConfig);
 
-	const sweet::PlaneDataConfig *planeDataConfig = ops->planeDataConfig;
+	const sweet::PlaneData_Config *planeDataConfig = ops->planeDataConfig;
 
 	posx_a.setup(planeDataConfig->physical_array_data_number_of_elements);
 	posy_a.setup(planeDataConfig->physical_array_data_number_of_elements);
@@ -70,7 +70,7 @@ bool PDEAdvectionPlaneTS_na_sl::setup(sweet::PlaneOperators *io_ops)
 
 
 
-void PDEAdvectionPlaneTS_na_sl::run_timestep(
+void PDEAdvectionPlaneTS_na_sl::runTimestep(
 		sweet::PlaneData_Spectral &io_phi,		///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,		///< prognostic variables

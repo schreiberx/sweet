@@ -61,17 +61,20 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::SphereDataConfig sphereDataConfig;
+		sweet::SphereData_Config sphereDataConfig;
 		sweet::SphereOperators ops;
 
-		std::vector<sweet::SphereData_Spectral> prog_vec;
-		sweet::SphereData_Physical vel_u;
-		sweet::SphereData_Physical vel_v;
+		sweet::SphereData_Spectral prog_phi_pert;
+		sweet::SphereData_Spectral prog_div;
+		sweet::SphereData_Spectral prog_vrt;
 
-		std::vector<sweet::SphereData_Spectral> prog_vec_t0;
+
+		sweet::SphereData_Spectral t0_prog_phi_pert;
+		sweet::SphereData_Spectral t0_prog_div;
+		sweet::SphereData_Spectral t0_prog_vrt;
 
 #if SWEET_GUI
-	sweet::PlaneDataConfig planeDataConfig;
+	sweet::PlaneData_Config planeDataConfig;
 
 	// Data to visualize is stored to this variable
 	sweet::PlaneData_Physical vis_plane_data;
@@ -86,8 +89,7 @@ public:
 
 
 		bool setup(
-				sweet::ShackSphereDataOps *i_shackSphereDataOps,
-				int i_num_vec_elements
+				sweet::ShackSphereDataOps *i_shackSphereDataOps
 		)
 		{
 			/*
@@ -99,16 +101,9 @@ public:
 			ops.setup(&sphereDataConfig, i_shackSphereDataOps);
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
 
-			vel_u.setup(sphereDataConfig);
-			vel_v.setup(sphereDataConfig);
-
-			prog_vec.resize(i_num_vec_elements);
-			prog_vec_t0.resize(i_num_vec_elements);
-			for (int i = 0; i < i_num_vec_elements; i++)
-			{
-				prog_vec[i].setup(sphereDataConfig);
-				prog_vec_t0[i].setup(sphereDataConfig);
-			}
+			prog_phi_pert.setup(sphereDataConfig);
+			prog_div.setup(sphereDataConfig);
+			prog_vrt.setup(sphereDataConfig);
 
 #if SWEET_GUI
 			sweet::ShackPlaneDataOps shackPlaneDataOps;
@@ -123,17 +118,13 @@ public:
 
 		void clear()
 		{
-			for (std::size_t i = 0; i < prog_vec.size(); i++)
-			{
-				prog_vec[i].clear();
-				prog_vec_t0[i].clear();
-			}
+			prog_phi_pert.clear();
+			prog_div.clear();
+			prog_vrt.clear();
 
-			prog_vec.clear();
-			prog_vec_t0.clear();
-
-			vel_u.clear();
-			vel_v.clear();
+			t0_prog_phi_pert.clear();
+			t0_prog_div.clear();
+			t0_prog_vrt.clear();
 
 			ops.clear();
 			sphereDataConfig.clear();
@@ -285,7 +276,7 @@ public:
 		/*
 		 * Setup the data fields
 		 */
-		dataConfigOps.setup(shackSphereDataOps, benchmarksCombined.benchmark->getNumPrognosticFields());
+		dataConfigOps.setup(shackSphereDataOps);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataConfigOps);
 
 		/*
@@ -308,9 +299,9 @@ public:
 		 * Load initial state of benchmark
 		 */
 		benchmarksCombined.benchmark->getInitialState(
-				dataConfigOps.prog_vec,
-				dataConfigOps.vel_u,
-				dataConfigOps.vel_v
+				dataConfigOps.prog_phi_pert,
+				dataConfigOps.prog_vrt,
+				dataConfigOps.prog_div
 			);
 
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
@@ -319,7 +310,9 @@ public:
 		/*
 		 * Backup data at t=0
 		 */
-		dataConfigOps.prog_vec_t0 = dataConfigOps.prog_vec;
+		dataConfigOps.t0_prog_phi_pert = dataConfigOps.prog_phi_pert;
+		dataConfigOps.t0_prog_vrt = dataConfigOps.prog_vrt;
+		dataConfigOps.t0_prog_div = dataConfigOps.prog_div;
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -386,9 +379,11 @@ public:
 
 	void printSimulationErrors()
 	{
+		sweet::SphereData_Spectral diff = dataConfigOps.t0_prog_phi_pert-dataConfigOps.prog_phi_pert;
+
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms() << std::endl;
+		std::cout << "Lmax error: " << diff.toPhys().physical_reduce_max_abs() << std::endl;
+		std::cout << "RMS error: " << diff.toPhys().physical_reduce_rms() << std::endl;
 	}
 
 	~ProgramPDESWESphere()
@@ -397,22 +392,25 @@ public:
 	}
 
 
-	bool run_timestep()
+	bool runTimestep()
 	{
 		sweet::SphereData_DebugContainer::clear();
 
 		shackTimestepControl->timestepHelperStart();
 
 
-		timeSteppers.timestepper->run_timestep(
-				dataConfigOps.prog_vec, dataConfigOps.vel_u, dataConfigOps.vel_v,
+		timeSteppers.timestepper->runTimestep(
+				dataConfigOps.prog_phi_pert, dataConfigOps.prog_vrt, dataConfigOps.prog_div,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
 
+#if 0
 		if (shackBenchmarks->getVelocities)
 		{
 			/*
+			 * From advection test case
+			 *
 			 * Update velocities just for sake of the correction visualization
 			 */
 			shackBenchmarks->getVelocities(
@@ -422,6 +420,7 @@ public:
 					shackBenchmarks->getVelocitiesUserData
 				);
 		}
+#endif
 
 		shackTimestepControl->timestepHelperEnd();
 
@@ -456,13 +455,13 @@ public:
 
 #if SWEET_GUI
 	#include <sweet/gui/VisSweet.hpp>
-	#include <sweet/core/plane/PlaneDataConfig.hpp>
+	#include <sweet/core/plane/PlaneData_Config.hpp>
 	#include <sweet/core/plane/PlaneData_Physical.hpp>
 	#include <sweet/core/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
 	#include <sweet/core/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 #endif
 
-#include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
+#include "PDESWESphereBenchmarksCombined.hpp"
 
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_Physical.hpp>
@@ -474,8 +473,8 @@ public:
 #include <sweet/core/Stopwatch.hpp>
 #include <sweet/core/SWEETError.hpp>
 
-#include "swe_sphere_timeintegrators/PDESWESphereTimeSteppers.hpp"
-#include "swe_sphere_timeintegrators/SWE_Sphere_NormalModeAnalysis.hpp"
+#include "PDESWESphereTimeSteppers.hpp"
+#include "PDESWESphereNormalModeAnalysis.hpp"
 
 #include <sweet/core/StopwatchBox.hpp>
 #include <sweet/core/sphere/SphereData_DebugContainer.hpp>
@@ -491,15 +490,15 @@ public:
 sweet::ShackDictionary shackDict;
 
 // Plane data config
-sweet::SphereDataConfig sphereDataConfigInstance;
-sweet::SphereDataConfig sphereDataConfigInstance_nodealiasing;
-sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
-sweet::SphereDataConfig *sphereDataConfig_nodealiasing = &sphereDataConfigInstance_nodealiasing;
+sweet::SphereData_Config sphereDataConfigInstance;
+sweet::SphereData_Config sphereDataConfigInstance_nodealiasing;
+sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
+sweet::SphereData_Config *sphereDataConfig_nodealiasing = &sphereDataConfigInstance_nodealiasing;
 
 
 #if SWEET_GUI
-	PlaneDataConfig planeDataConfigInstance;
-	PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+	sweet::PlaneData_Config planeDataConfigInstance;
+	sweet::PlaneData_Config *planeDataConfig = &planeDataConfigInstance;
 #endif
 
 
@@ -533,12 +532,12 @@ public:
 	Stopwatch stopwatch;
 
 #if SWEET_GUI
-	PlaneData_Physical viz_plane_data;
+	sweet::PlaneData_Physical viz_plane_data;
 #endif
 
 	int render_primitive_id = 1;
 
-	SphereHelpers_Diagnostics sphereDiagnostics;
+	sweet::SphereHelpers_Diagnostics sphereDiagnostics;
 
 #if SWEET_MPI
 	int mpi_rank;
@@ -547,7 +546,7 @@ public:
 	// was the output of the time step already done for this simulation state?
 	double timestep_last_output_simtime;
 
-	BenchmarksSphereSWE sphereBenchmarks;
+	PDESWESphereBenchmarksCombined sphereBenchmarks;
 
 public:
 	ProgramPDESWESphere]()	:
@@ -617,7 +616,7 @@ public:
 			//exit(1);
 			// use dealiased physical space for setup
 			sphereBenchmarks.setup(shackDict, op);
-			sphereBenchmarks.master->getInitialState(prog_phi_pert, prog_vrt, prog_div);
+			sphereBenchmarks.timestepper->getInitialState(prog_phi_pert, prog_vrt, prog_div);
 		}
 		else
 		{
@@ -631,7 +630,7 @@ public:
 			sweet::SphereData_Spectral prog_div_nodealiasing(sphereDataConfig_nodealiasing);
 
 			sphereBenchmarks.setup(shackDict, op_nodealiasing);
-			sphereBenchmarks.master->getInitialState(prog_phi_pert_nodealiasing, prog_vrt_nodealiasing, prog_div_nodealiasing);
+			sphereBenchmarks.timestepper->getInitialState(prog_phi_pert_nodealiasing, prog_vrt_nodealiasing, prog_div_nodealiasing);
 
 			prog_phi_pert.load_nodealiasing(prog_phi_pert_nodealiasing);
 			prog_vrt.load_nodealiasing(prog_vrt_nodealiasing);
@@ -644,7 +643,7 @@ public:
 		timeSteppers.setup(shackDict.disc.timestepping_method,
 				op, shackDict);
 
-		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.master->string_id() << std::endl;
+		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.timestepper->string_id() << std::endl;
 
 		update_diagnostics();
 
@@ -793,11 +792,11 @@ public:
 
 			op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
 
-			output_filename = write_file_csv(u, "prog_u");
+			output_filename = write_file_csv(u, "prog_div");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_csv(v, "prog_v");
+			output_filename = write_file_csv(v, "prog_vrt");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
@@ -924,7 +923,7 @@ public:
 			sweet::SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 			sphereBenchmarks.setup(shackDict, op);
-			sphereBenchmarks.master->getInitialState(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
+			sphereBenchmarks.timestepper->getInitialState(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
 
 			/*
 			 * Compute difference
@@ -1094,7 +1093,7 @@ public:
 
 
 
-	void run_timestep()
+	void runTimestep()
 	{
 #if SWEET_GUI
 		if (shackDict.misc.gui_enabled && shackDict.misc.normal_mode_analysis_generation == 0)
@@ -1104,7 +1103,7 @@ public:
 		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestep_size > shackDict.timecontrol.max_simulation_time)
 			shackDict.timecontrol.current_timestep_size = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
 
-		timeSteppers.master->run_timestep(
+		timeSteppers.timestepper->runTimestep(
 				prog_phi_pert, prog_vrt, prog_div,
 				shackDict.timecontrol.current_timestep_size,
 				shackDict.timecontrol.current_simulation_time
@@ -1161,7 +1160,7 @@ public:
 	{
 		if (shackDict.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
-				run_timestep();
+				runTimestep();
 	}
 
 
@@ -1169,7 +1168,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData_Physical **o_dataArray,
+			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -1252,7 +1251,7 @@ public:
 				sweet::SphereData_Spectral anal_solution_div(sphereDataConfig);
 
 				sphereBenchmarks.setup(shackDict, op);
-				sphereBenchmarks.master->getInitialState(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
+				sphereBenchmarks.timestepper->getInitialState(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
 
 				switch (id)
 				{
@@ -1559,7 +1558,7 @@ int main_real(int i_argc, char *i_argv[])
 			sweet::SphereOperators op_nodealiasing(sphereDataConfig_nodealiasing, &(shackDict.sim));
 
 			// Set planeDataConfig and planeOperators for each level
-			std::vector<SphereDataConfig*> sphereDataConfigs;
+			std::vector<SphereData_Config*> sphereDataConfigs;
 			std::vector<SphereOperators*> ops;
 			std::vector<SphereOperators*> ops_nodealiasing;
 
@@ -1584,7 +1583,7 @@ int main_real(int i_argc, char *i_argv[])
 				for (int j = 0; j < 2; j++)
 					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 
-				sphereDataConfigs.push_back(new SphereDataConfig);
+				sphereDataConfigs.push_back(new sweet::SphereData_Config);
 				sphereDataConfigs.back()->setupAuto(
 						N_physical,
 						N_spectral,
@@ -1650,7 +1649,7 @@ int main_real(int i_argc, char *i_argv[])
 			sweet::SphereOperators op(sphereDataConfig, &(shackDict.sim));
 
 			// Set planeDataConfig and planeOperators for each level
-			std::vector<SphereDataConfig*> sphereDataConfigs;
+			std::vector<SphereData_Config*> sphereDataConfigs;
 			std::vector<SphereOperators*> ops;
 			for (int i = 0; i < shackDict.xbraid.xbraid_max_levels; i++)
 			{
@@ -1674,7 +1673,7 @@ int main_real(int i_argc, char *i_argv[])
 							SWEETError("Invalid parameter xbraid_spatial_coarsening");
 					}
 
-					sphereDataConfigs.push_back(new SphereDataConfig);
+					sphereDataConfigs.push_back(new sweet::SphereData_Config);
 					sphereDataConfigs.back()->setupAuto(
 							N_physical,
 							N_spectral,
@@ -1790,7 +1789,7 @@ int main_real(int i_argc, char *i_argv[])
 					simulationSWE->timestep_check_output();
 
 					// Main call for timestep run
-					simulationSWE->run_timestep();
+					simulationSWE->runTimestep();
 
 					// Instability
 					if (shackDict.misc.instability_checks)
@@ -1878,3 +1877,5 @@ int main_real(int i_argc, char *i_argv[])
 
 	return 0;
 }
+
+#endif

@@ -21,9 +21,9 @@
 namespace sweet
 {
 
-class SphereTimestepping_SemiLagrangian
+class TimesteppingSemiLagrangianSphereData
 {
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 	sweet::ShackTimesteppingSemiLagrangianSphereData *shackSLData;
 
 	SphereData_Physical sl_coriolis;
@@ -57,16 +57,7 @@ public:
 	EnumTrajectories trajectory_method;
 
 
-	SphereTimestepping_SemiLagrangian(
-			ShackTimesteppingSemiLagrangianSphereData *i_slData
-	)	:
-		sphereDataConfig(nullptr),
-		shackSLData(i_slData)
-	{
-	}
-
-
-	SphereTimestepping_SemiLagrangian()	:
+	TimesteppingSemiLagrangianSphereData()	:
 		sphereDataConfig(nullptr),
 		shackSLData(nullptr)
 	{
@@ -74,7 +65,7 @@ public:
 
 
 	void setup(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			ShackTimesteppingSemiLagrangianSphereData *i_shackSLData,
 			int i_timestepping_order
 	)
@@ -773,7 +764,7 @@ public:
 	 * We assume the velocity U-V to be the SL advected field!
 	 */
 	void apply_sl_timeintegration_vd(
-			const SphereOperators &i_ops,
+			const SphereOperators *i_ops,
 
 			const SphereData_Spectral &i_phi,
 			const SphereData_Spectral &i_vrt,
@@ -823,7 +814,7 @@ public:
 	 * We assume the velocity U-V to be the SL advected field!
 	 */
 	void apply_sl_timeintegration_uv(
-			const SphereOperators &i_ops,
+			const SphereOperators *i_ops,
 
 			const SphereData_Spectral &i_phi,
 			const SphereData_Spectral &i_vrt,
@@ -905,7 +896,7 @@ public:
 		 */
 
 		SphereData_Physical u_tmp, v_tmp;
-		i_ops.vrtdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
+		i_ops->vrtdiv_to_uv(i_vrt, i_div, u_tmp, v_tmp);
 
 		SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
 				u_tmp,
@@ -966,7 +957,7 @@ public:
 				V_lon_A, V_lat_A
 		);
 
-		i_ops.uv_to_vrtdiv(
+		i_ops->uv_to_vrtdiv(
 				Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lon_A, i_vrt.sphereDataConfig),
 				Convert_ScalarDataArray_to_SphereDataPhysical::convert(V_lat_A, i_vrt.sphereDataConfig),
 				o_vrt, o_div

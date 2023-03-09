@@ -22,30 +22,30 @@
  */
 template <typename T = std::complex<double> >
 class SphBandedMatrixPhysicalReal	:
-		SphereHelpers_SPHIdentities
+		sweet::SphereHelpers_SPHIdentities
 {
 public:
 	/**
 	 * Matrix on left-hand side
 	 */
-	BandedMatrixPhysicalReal<T> lhs;
+	sweet::BandedMatrixPhysicalReal<T> lhs;
 
 	/**
 	 * SPH configuration
 	 */
-	const sweet::SphereDataConfig *sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig;
 
 	/**
 	 * Solver for banded matrix
 	 */
-	LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
+	sweet::LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
 
 	/**
 	 * Setup the SPH solver
 	 */
 public:
-	void setup(
-			const sweet::SphereDataConfig *i_sphereConfig,		///< Handler to sphereDataConfig
+	bool setup(
+			const sweet::SphereData_Config *i_sphereConfig,		///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
@@ -54,6 +54,8 @@ public:
 		lhs.setup(sphereDataConfig, i_halosize_offdiagonal);
 
 		bandedMatrixSolver.setup(i_sphereConfig->spectral_modes_n_max+1, i_halosize_offdiagonal);
+
+		return true;
 	}
 
 

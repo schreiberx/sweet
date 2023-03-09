@@ -7,6 +7,116 @@
 
 
 
+bool PDESWESphereTS_l_exp_direct_special::setup_auto(sweet::SphereOperators *io_ops)
+{
+	if (timestepping_method == "lg_exp_special")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, false, "phi0");
+	else if (timestepping_method == "l_exp_special")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, "phi0");
+
+	return false;
+}
+
+
+
+
+bool PDESWESphereTS_l_exp_direct_special::setup(
+	sweet::SphereOperators *io_ops,
+	int i_order,
+	bool i_use_coriolis,	///< Include Coriolis term
+	const std::string i_function_name
+)
+{
+	timestepping_order = i_order;
+	use_coriolis = i_use_coriolis;
+
+	if (use_coriolis)
+		timestepping_method = "l_exp_special";
+	else
+		timestepping_method = "lg_exp_special";
+
+
+	if (timestepping_order != 1 && timestepping_order != 2 && timestepping_order != 4)
+	{
+		std::ostringstream ss;
+		ss << "Time stepping order " << i_order << " requested";
+		SWEETError_nostop(ss.str());
+		SWEETError("Only 1st and 2nd order time stepping order supported");
+	}
+
+	if (use_coriolis)
+	{
+		if (i_function_name != "phi0")
+		{
+			SWEETError("Only phi0 functions supported for the ETDnRK lg/lc scheme");
+		}
+
+		timestepping_lg_exp_phi0.setup(io_ops, "phi0");
+		timestepping_lg_exp_phi1.setup(io_ops, "phi1");
+
+		if (timestepping_order >= 2)
+		{
+			timestepping_lg_exp_phi2.setup(io_ops, "phi2");
+
+			if (timestepping_order >= 4)
+			{
+				timestepping_lg_exp_ups1.setup(io_ops, "ups1");
+				timestepping_lg_exp_ups2.setup(io_ops, "ups2");
+				timestepping_lg_exp_ups3.setup(io_ops, "ups3");
+			}
+		}
+	}
+	else
+	{
+		timestepping_lg_exp_phi0.setup(io_ops, i_function_name);
+	}
+
+	return true;
+}
+
+
+bool PDESWESphereTS_l_exp_direct_special::implementsTimesteppingMethod(
+	const std::string &i_timestepping_method
+)
+{
+	timestepping_method = i_timestepping_method;
+
+	if (timestepping_method == "l_exp_special")
+		return true;
+
+	if (timestepping_method == "lg_exp_special")
+		return true;
+
+	return false;
+}
+
+
+bool PDESWESphereTS_l_exp_direct_special::shackRegistration(
+		sweet::ShackDictionary *io_shackDict
+)
+{
+	PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+	timestepping_lg_exp_phi0.shackRegistration(io_shackDict);
+	timestepping_lg_exp_phi1.shackRegistration(io_shackDict);
+	timestepping_lg_exp_phi2.shackRegistration(io_shackDict);
+
+	timestepping_lg_exp_ups1.shackRegistration(io_shackDict);
+	timestepping_lg_exp_ups2.shackRegistration(io_shackDict);
+	timestepping_lg_exp_ups3.shackRegistration(io_shackDict);
+
+	timestepping_lc_erk.shackRegistration(io_shackDict);
+	return true;
+}
+
+
+PDESWESphereTS_l_exp_direct_special::PDESWESphereTS_l_exp_direct_special()	:
+		use_coriolis(false)
+{
+}
+
+
+
 void PDESWESphereTS_l_exp_direct_special::euler_timestep_store_update_lc(
 		const sweet::SphereData_Spectral &i_phi_pert,
 		const sweet::SphereData_Spectral &i_vrt,
@@ -36,7 +146,7 @@ void PDESWESphereTS_l_exp_direct_special::euler_timestep_store_update_lc(
 
 
 
-void PDESWESphereTS_l_exp_direct_special::run_timestep(
+void PDESWESphereTS_l_exp_direct_special::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -45,11 +155,11 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_phi_pert.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_phi_pert.sphereDataConfig;
 
 	if (!use_coriolis)
 	{
-		timestepping_lg_exp_phi0.run_timestep(
+		timestepping_lg_exp_phi0.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt,
 				i_simulation_timestamp
@@ -66,7 +176,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 		 */
 
 		sweet::SphereData_Spectral phi0_Un_phi_pert(sphereDataConfig), phi0_Un_vrt(sphereDataConfig), phi0_Un_div(sphereDataConfig);
-		timestepping_lg_exp_phi0.run_timestep(
+		timestepping_lg_exp_phi0.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				phi0_Un_phi_pert, phi0_Un_vrt, phi0_Un_div,
 				i_fixed_dt,
@@ -81,7 +191,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 			);
 
 		sweet::SphereData_Spectral phi1_FUn_phi_pert(sphereDataConfig), phi1_FUn_vrt(sphereDataConfig), phi1_FUn_div(sphereDataConfig);
-		timestepping_lg_exp_phi1.run_timestep(
+		timestepping_lg_exp_phi1.runTimestep(
 				FUn_phi_pert, FUn_vrt, FUn_div,
 				phi1_FUn_phi_pert, phi1_FUn_vrt, phi1_FUn_div,
 				i_fixed_dt,
@@ -102,7 +212,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 
 		sweet::SphereData_Spectral phi0_Un_h(sphereDataConfig), phi0_Un_u(sphereDataConfig), phi0_Un_v(sphereDataConfig);
 
-		timestepping_lg_exp_phi0.run_timestep(
+		timestepping_lg_exp_phi0.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_fixed_dt,
@@ -119,7 +229,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 
 		sweet::SphereData_Spectral phi1_FUn_h(sphereDataConfig), phi1_FUn_u(sphereDataConfig), phi1_FUn_v(sphereDataConfig);
 
-		timestepping_lg_exp_phi1.run_timestep(
+		timestepping_lg_exp_phi1.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_fixed_dt,
@@ -146,7 +256,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 
 		sweet::SphereData_Spectral phi2_X_h(sphereDataConfig), phi2_X_u(sphereDataConfig), phi2_X_v(sphereDataConfig);
 
-		timestepping_lg_exp_phi2.run_timestep(
+		timestepping_lg_exp_phi2.runTimestep(
 				FAn_h - FUn_h,
 				FAn_u - FUn_u,
 				FAn_v - FUn_v,
@@ -175,7 +285,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 		 */
 		sweet::SphereData_Spectral phi0_Un_half_phi_pert(sphereDataConfig), phi0_Un_half_vrt(sphereDataConfig), phi0_Un_half_div(sphereDataConfig);
 
-		timestepping_lg_exp_phi0.run_timestep(
+		timestepping_lg_exp_phi0.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				phi0_Un_half_phi_pert, phi0_Un_half_vrt, phi0_Un_half_div,
 				dt_half,
@@ -193,7 +303,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 		 * A_{n} = \phi_{0}\left(0.5\Delta tL\right)U_{n}+0.5\Delta t\phi_{1}\left(0.5\Delta tL\right)F(U_{n},t_{n})
 		 */
 		sweet::SphereData_Spectral phi1_phi_pert(sphereDataConfig), phi1_vrt(sphereDataConfig), phi1_div(sphereDataConfig);
-		timestepping_lg_exp_phi1.run_timestep(
+		timestepping_lg_exp_phi1.runTimestep(
 				FUn_phi_pert, FUn_vrt, FUn_div,
 				phi1_phi_pert, phi1_vrt, phi1_div,
 				dt_half,
@@ -216,7 +326,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		timestepping_lg_exp_phi1.run_timestep(
+		timestepping_lg_exp_phi1.runTimestep(
 				FAn_phi_pert, FAn_vrt, FAn_div,
 				phi1_phi_pert, phi1_vrt, phi1_div,
 				dt_half,
@@ -239,7 +349,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		timestepping_lg_exp_phi1.run_timestep(
+		timestepping_lg_exp_phi1.runTimestep(
 				2.0*FBn_phi_pert - FUn_phi_pert,
 				2.0*FBn_vrt - FUn_vrt,
 				2.0*FBn_div - FUn_div,
@@ -249,7 +359,7 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 			);
 
 		sweet::SphereData_Spectral phi0_An_phi_pert(sphereDataConfig), phi0_An_vrt(sphereDataConfig), phi0_An_div(sphereDataConfig);
-		timestepping_lg_exp_phi0.run_timestep(
+		timestepping_lg_exp_phi0.runTimestep(
 				A_phi_pert, A_vrt, A_div,
 				phi0_An_phi_pert, phi0_An_vrt, phi0_An_div,
 				dt_half,
@@ -300,22 +410,22 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 		 * 				  \upsilon_{3}(\Delta tL) R_{3}
 		 * 			)
 		 */
-		timestepping_lg_exp_phi0.run_timestep(
+		timestepping_lg_exp_phi0.runTimestep(
 				R0_phi_pert, R0_vrt, R0_div,
 				dt,		i_simulation_timestamp
 			);
 
-		timestepping_lg_exp_ups1.run_timestep(
+		timestepping_lg_exp_ups1.runTimestep(
 				R1_phi_pert, R1_vrt, R1_div,
 				dt,		i_simulation_timestamp
 			);
 
-		timestepping_lg_exp_ups2.run_timestep(
+		timestepping_lg_exp_ups2.runTimestep(
 				R2_phi_pert, R2_vrt, R2_div,
 				dt,		i_simulation_timestamp
 			);
 
-		timestepping_lg_exp_ups3.run_timestep(
+		timestepping_lg_exp_ups3.runTimestep(
 				R3_phi_pert, R3_vrt, R3_div,
 				dt,		i_simulation_timestamp
 			);
@@ -329,92 +439,6 @@ void PDESWESphereTS_l_exp_direct_special::run_timestep(
 	SWEETError("This time stepping order is not yet supported!");
 }
 
-
-
-void PDESWESphereTS_l_exp_direct_special::setup(
-	int i_order,
-	bool i_use_coriolis,	///< Include Coriolis term
-	const std::string i_function_name
-)
-{
-	timestepping_order = i_order;
-	use_coriolis = i_use_coriolis;
-
-	if (use_coriolis)
-		timestepping_method = "l_exp_special";
-	else
-		timestepping_method = "lg_exp_special";
-
-
-	if (timestepping_order != 1 && timestepping_order != 2 && timestepping_order != 4)
-	{
-		std::ostringstream ss;
-		ss << "Time stepping order " << i_order << " requested";
-		SWEETError_nostop(ss.str());
-		SWEETError("Only 1st and 2nd order time stepping order supported");
-	}
-
-	if (use_coriolis)
-	{
-		if (i_function_name != "phi0")
-		{
-			SWEETError("Only phi0 functions supported for the ETDnRK lg/lc scheme");
-		}
-
-		timestepping_lg_exp_phi0.setup("phi0");
-		timestepping_lg_exp_phi1.setup("phi1");
-
-		if (timestepping_order >= 2)
-		{
-			timestepping_lg_exp_phi2.setup("phi2");
-
-			if (timestepping_order >= 4)
-			{
-				timestepping_lg_exp_ups1.setup("ups1");
-				timestepping_lg_exp_ups2.setup("ups2");
-				timestepping_lg_exp_ups3.setup("ups3");
-			}
-		}
-	}
-	else
-	{
-		timestepping_lg_exp_phi0.setup(i_function_name);
-	}
-}
-
-
-
-void PDESWESphereTS_l_exp_direct_special::setup_auto()
-{
-	if (shackDict.disc.timestepping_method == "lg_exp_special")
-		setup(shackDict.disc.timestepping_order, false, "phi0");
-	else if (shackDict.disc.timestepping_method == "l_exp_special")
-		setup(shackDict.disc.timestepping_order, true, "phi0");
-}
-
-
-
-PDESWESphereTS_l_exp_direct_special::PDESWESphereTS_l_exp_direct_special(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-
-		timestepping_order(-1),
-		use_coriolis(false),
-
-		timestepping_lg_exp_phi0(i_shackDict, i_op),
-		timestepping_lg_exp_phi1(i_shackDict, i_op),
-		timestepping_lg_exp_phi2(i_shackDict, i_op),
-
-		timestepping_lg_exp_ups1(i_shackDict, i_op),
-		timestepping_lg_exp_ups2(i_shackDict, i_op),
-		timestepping_lg_exp_ups3(i_shackDict, i_op),
-
-		timestepping_lc_erk(i_shackDict, i_op)
-{
-}
 
 
 

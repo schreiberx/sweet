@@ -105,7 +105,7 @@ public:
 			sweet::SphereData_Spectral &o_phi
 	)
 	{
-		const sweet::SphereDataConfig *sphereDataConfig = o_phi.sphereDataConfig;
+		const sweet::SphereData_Config *sphereDataConfig = o_phi.sphereDataConfig;
 
 		/*
 		 * Compute vorticity and divergence from velocities

@@ -107,7 +107,7 @@ int main(int i_argc, char *i_argv[])
 		/**
 		 * Here we enforce the same physical and spectral resolution
 		 */
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		planeDataConfig.setupAuto(shackPlaneDataOps);
 		planeDataConfig.printInformation();
 		std::cout << std::endl;
@@ -130,7 +130,7 @@ int main(int i_argc, char *i_argv[])
 
 			int dst_res_spectral[2] = {0, 0};
 
-			sweet::PlaneDataConfig planeDataConfigDst;
+			sweet::PlaneData_Config planeDataConfigDst;
 			planeDataConfigDst.setupAuto(dst_res_physical, dst_res_spectral, shackPlaneDataOps->reuse_spectral_transformation_plans);
 
 			/*

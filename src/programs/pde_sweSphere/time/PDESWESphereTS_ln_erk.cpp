@@ -8,6 +8,28 @@
 #include "PDESWESphereTS_ln_erk.hpp"
 
 
+bool PDESWESphereTS_ln_erk::setup_auto(
+		sweet::SphereOperators *io_ops
+)
+{
+	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
+
+}
+
+
+bool PDESWESphereTS_ln_erk::setup(
+		sweet::SphereOperators *io_ops,
+		int i_order	///< order of RK time stepping method
+)
+{
+	ops = io_ops,
+	timestepping_order = i_order;
+
+	setupFG();
+
+	return true;
+}
+
 
 /*
  * Main routine for method to be used in case of finite differences
@@ -24,7 +46,7 @@ void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = shackDict.sim.gravitation * shackDict.sim.h0;
+	double gh0 = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 	/*
 	 * NON-LINEAR SWE
@@ -46,7 +68,7 @@ void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
 	 * Step 1a
 	 */
 	sweet::SphereData_Physical ug, vg;
-	op.vrtdiv_to_uv(i_vrt, i_div, ug, vg);
+	ops->vrtdiv_to_uv(i_vrt, i_div, ug, vg);
 
 	/*
 	 * Step 1b
@@ -56,17 +78,20 @@ void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
 	/*
 	 * Step 1c
 	 */
+
+	using namespace sweet;
+
 	// left part of eq. (19)
-	sweet::SphereData_Physical u_nl = ug*(vrtg+op.fg);
+	sweet::SphereData_Physical u_nl = ug*(vrtg+fg);
 
 	// left part of eq. (20)
-	sweet::SphereData_Physical v_nl = vg*(vrtg+op.fg);
+	sweet::SphereData_Physical v_nl = vg*(vrtg+fg);
 
 	/*
 	 * Step 1d
 	 */
 	// Eq. (21) & left part of Eq. (22)
-	op.uv_to_vrtdiv(u_nl, v_nl, o_div_t, o_vrt_t);
+	ops->uv_to_vrtdiv(u_nl, v_nl, o_div_t, o_vrt_t);
 
 
 	/*
@@ -85,7 +110,7 @@ void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
 	/*
 	 * Step 1g
 	 */
-	o_div_t -= op.laplace(e);
+	o_div_t -= ops->laplace(e);
 
 	/*
 	 * Compute Phi geopotential tendencies
@@ -97,7 +122,7 @@ void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
 	u_nl = ug*(phi_pert_phys + gh0);
 	v_nl = vg*(phi_pert_phys + gh0);
 
-	op.uv_to_vrtdiv(u_nl,v_nl, e, o_phi_pert_t);
+	ops->uv_to_vrtdiv(u_nl,v_nl, e, o_phi_pert_t);
 
 	o_phi_pert_t *= -1.0;
 
@@ -106,7 +131,7 @@ void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
 
 
 
-void PDESWESphereTS_ln_erk::run_timestep(
+void PDESWESphereTS_ln_erk::runTimestep(
 		sweet::SphereData_Spectral &io_phi,		///< prognostic variables
 		sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,		///< prognostic variables
@@ -119,7 +144,7 @@ void PDESWESphereTS_ln_erk::run_timestep(
 		SWEETError("Only constant time step size allowed");
 
 	// standard time stepping
-	timestepping_rk.run_timestep(
+	timestepping_rk.runTimestep(
 			this,
 			&PDESWESphereTS_ln_erk::euler_timestep_update_pert,	///< pointer to function to compute euler time step updates
 			io_phi, io_vort, io_div,
@@ -130,26 +155,8 @@ void PDESWESphereTS_ln_erk::run_timestep(
 }
 
 
-
-/*
- * Setup
- */
-void PDESWESphereTS_ln_erk::setup(
-		int i_order	///< order of RK time stepping method
-)
+PDESWESphereTS_ln_erk::PDESWESphereTS_ln_erk()
 {
-	timestepping_order = i_order;
-}
-
-
-PDESWESphereTS_ln_erk::PDESWESphereTS_ln_erk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op)
-{
-	setup(timestepping_order);
 }
 
 

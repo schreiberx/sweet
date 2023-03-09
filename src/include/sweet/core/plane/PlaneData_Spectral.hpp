@@ -25,7 +25,7 @@
 #include <sweet/core/parmemcpy.hpp>
 #include <sweet/core/MemBlockAlloc.hpp>
 #include <sweet/core/openmp_helper.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
 #include <sweet/core/plane/PlaneData_PhysicalComplex.hpp>
 #include <sweet/core/SWEETError.hpp>
@@ -64,7 +64,7 @@ class PlaneData_Spectral
 	typedef std::complex<double> Tcomplex;
 
 public:
-	const PlaneDataConfig *planeDataConfig = nullptr;
+	const PlaneData_Config *planeDataConfig = nullptr;
 
 public:
 	std::complex<double> *spectral_space_data = nullptr;
@@ -91,7 +91,7 @@ public:
 
 public:
 	PlaneData_Spectral(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	:
 		spectral_space_data(nullptr)
 	{
@@ -103,7 +103,7 @@ public:
 
 public:
 	PlaneData_Spectral(
-			const PlaneDataConfig *i_planeDataConfig,
+			const PlaneData_Config *i_planeDataConfig,
 			const std::complex<double> &i_value
 	)	:
 		planeDataConfig(i_planeDataConfig),
@@ -119,7 +119,7 @@ public:
 
 public:
 	PlaneData_Spectral(
-			const PlaneDataConfig *i_planeDataConfig,
+			const PlaneData_Config *i_planeDataConfig,
 			double &i_value
 	)	:
 		planeDataConfig(i_planeDataConfig),
@@ -193,7 +193,7 @@ public:
 	 */
 public:
 	inline void _validateRes(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	const
 	{
 		assert(planeDataConfig->physical_res[0] == i_planeDataConfig->physical_res[0]);
@@ -372,7 +372,7 @@ public:
 
 
 	PlaneData_Spectral spectral_returnWithDifferentModes(
-			const PlaneDataConfig &i_planeDataConfig
+			const PlaneData_Config &i_planeDataConfig
 	)	const
 	{
 		return spectral_returnWithDifferentModes(&i_planeDataConfig);
@@ -380,7 +380,7 @@ public:
 
 public:
 	PlaneData_Spectral spectral_returnWithDifferentModes(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	const
 	{
 		PlaneData_Spectral out(i_planeDataConfig);
@@ -717,7 +717,7 @@ public:
 
 private:
 	void _main_setup(
-		const PlaneDataConfig *i_planeDataConfig
+		const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		assert(planeDataConfig == nullptr);
@@ -730,7 +730,7 @@ private:
 
 public:
 	void setup(
-		const PlaneDataConfig *i_planeDataConfig
+		const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		_main_setup(i_planeDataConfig);
@@ -743,7 +743,7 @@ public:
 	 */
 public:
 	void setup(
-		const PlaneDataConfig &i_planeDataConfig
+		const PlaneData_Config &i_planeDataConfig
 	)
 	{
 		_main_setup(&i_planeDataConfig);
@@ -751,7 +751,7 @@ public:
 
 public:
 	void setup(
-		const PlaneDataConfig *i_planeDataConfig,
+		const PlaneData_Config *i_planeDataConfig,
 		double i_value
 	)
 	{
@@ -771,7 +771,7 @@ private:
 
 public:
 	void setup_if_required(
-		const PlaneDataConfig *i_planeDataConfig
+		const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		if (planeDataConfig != nullptr)

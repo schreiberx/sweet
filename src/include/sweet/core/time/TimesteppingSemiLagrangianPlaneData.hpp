@@ -21,7 +21,7 @@ namespace sweet
 class TimesteppingSemiLagrangianPlaneData
 {
 	PlaneDataSampler sample2D;
-	const PlaneDataConfig *planeDataConfig;
+	const PlaneData_Config *planeDataConfig;
 
 public:
 	TimesteppingSemiLagrangianPlaneData()	:
@@ -32,7 +32,7 @@ public:
 
 	void setup(
 		double i_domain_size[2],
-		const PlaneDataConfig *i_planeDataConfig
+		const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		planeDataConfig = i_planeDataConfig;

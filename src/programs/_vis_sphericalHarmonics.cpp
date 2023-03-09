@@ -60,10 +60,10 @@ class ProgramVisSphericalHarmonics
 public:
 	sweet::SphereOperators *ops;
 
-	sweet::SphereDataConfig *sphereDataConfig;
+	sweet::SphereData_Config *sphereDataConfig;
 #if SWEET_GUI
 
-	sweet::PlaneDataConfig *planeDataConfig;
+	sweet::PlaneData_Config *planeDataConfig;
 #endif
 
 	// Diagnostics measures
@@ -207,7 +207,7 @@ public:
 
 #if SWEET_GUI
 		delete planeDataConfig;
-		sweet::PlaneDataConfig = nullptr;
+		sweet::PlaneData_Config = nullptr;
 #endif
 
 		SphereData_DebugContainer::clear();
@@ -230,7 +230,7 @@ public:
 			shackDict.reset();
 		}
 
-		sphereDataConfig = new SphereDataConfig;
+		sphereDataConfig = new SphereData_Config;
 		sphereDataConfig->setupAuto(
 				shackDict.disc.space_res_physical,
 				shackDict.disc.space_res_spectral,
@@ -248,8 +248,8 @@ public:
 
 
 #if SWEET_GUI
-		sweet::PlaneDataConfig = new PlaneDataConfig;
-		sweet::PlaneDataConfig->setupAutoSpectralSpaceFromPhysical(shackDict.disc.space_res_physical, shackDict.misc.reuse_spectral_transformation_plans);
+		sweet::PlaneData_Config = new PlaneData_Config;
+		sweet::PlaneData_Config->setupAutoSpectralSpaceFromPhysical(shackDict.disc.space_res_physical, shackDict.misc.reuse_spectral_transformation_plans);
 
 		viz_plane_data = new PlaneData_Physical(planeDataConfig);
 #endif
@@ -347,7 +347,7 @@ public:
 	}
 
 
-	void run_timestep()
+	void runTimestep()
 	{
 	}
 
@@ -363,7 +363,7 @@ public:
 	{
 		if (shackDict.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
-				run_timestep();
+				runTimestep();
 	}
 
 
@@ -710,7 +710,7 @@ int main(int i_argc, char *i_argv[])
 						break;
 
 					// Main call for timestep run
-					sim->run_timestep();
+					sim->runTimestep();
 				}
 
 
@@ -749,7 +749,7 @@ int main(int i_argc, char *i_argv[])
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
 		while (!simulation.should_quit())
-			simulation.run_timestep();
+			simulation.runTimestep();
 	}
 
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);

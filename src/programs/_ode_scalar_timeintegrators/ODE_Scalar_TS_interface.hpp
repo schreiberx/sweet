@@ -19,7 +19,7 @@ private:
 
 
 public:
-	void run_timestep(
+	void runTimestep(
 			double &io_y,			///< prognostic variables
 
 			double i_dt,		///< time step size
@@ -33,7 +33,7 @@ public:
 	}
 
 #if (SWEET_PARAREAL && SWEET_PARAREAL_SCALAR) || (SWEET_XBRAID && SWEET_XBRAID_SCALAR)
-	void run_timestep(
+	void runTimestep(
 			Parareal_GenericData* io_data,
 
 			double i_dt,		///< time step size
@@ -42,7 +42,7 @@ public:
 	{
 		double y = io_data->get_pointer_to_data_Scalar()->simfields[0];
 
-		run_timestep(y,
+		runTimestep(y,
 				i_dt,
 				i_sim_timestamp
 			);

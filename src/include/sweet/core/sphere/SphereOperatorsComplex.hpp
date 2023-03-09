@@ -13,6 +13,7 @@
 #include <sweet/core/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 #include <sweet/core/sphere/SphereHelpers_SPHIdentities.hpp>
+#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 
 
 
@@ -22,9 +23,9 @@ namespace sweet
 class SphereOperatorsComplex	:
 		public SphereHelpers_SPHIdentities
 {
-	friend SphereDataConfig;
+	friend SphereData_Config;
 
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 private:
 	double r;
@@ -36,11 +37,11 @@ private:
 	 */
 public:
 	SphereOperatorsComplex(
-			SphereDataConfig *i_sphereDataConfig,
-			const SimulationCoefficients *i_simCoeffs
+			SphereData_Config *i_sphereDataConfig,
+			const ShackSphereDataOps *i_shackSphereDataOps
 	)
 	{
-		setup(i_sphereDataConfig, i_simCoeffs);
+		setup(i_sphereDataConfig, i_shackSphereDataOps);
 	}
 
 
@@ -54,13 +55,13 @@ public:
 
 public:
 	void setup(
-			const SphereDataConfig *i_sphereDataConfig,
-			const SimulationCoefficients *i_simCoeffs
+			const SphereData_Config *i_sphereDataConfig,
+			const ShackSphereDataOps *i_shackSphereDataOps
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
 
-		r = i_simCoeffs->sphere_radius;
+		r = i_shackSphereDataOps->sphere_radius;
 		ir = 1.0/r;
 	}
 
@@ -274,7 +275,7 @@ public:
 			int idx = i_sphere_data.sphereDataConfig->getArrayIndexByModes_Complex(n, -n);
 			for (int m = -n; m <= n; m++)
 			{
-				out_sph_data[idx] = i_dt*ir*ir*Tcomplex(n*(n+1)) * i_sphere_data[idx];
+				out_sph_data[idx] = (i_dt*ir*ir*(double)(n*(n+1))) * i_sphere_data[idx];
 				idx++;
 			}
 		}
@@ -348,7 +349,7 @@ public:
 			const SphereData_SpectralComplex &i_sph_data
 	)
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
 		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
 
@@ -381,7 +382,7 @@ public:
 			const SphereData_SpectralComplex &i_sph_data
 	)	const
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
 		SphereData_SpectralComplex out = SphereData_SpectralComplex(sphereDataConfig);
 
@@ -490,7 +491,7 @@ public:
 	)
 	{
 		i_sph_data.request_data_spectral();
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
 		SphereData_SpectralComplex out(sphereDataConfig);
 

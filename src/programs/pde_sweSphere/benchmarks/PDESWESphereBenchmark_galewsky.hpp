@@ -99,7 +99,7 @@ public:
 		sweet::SphereData_Spectral &o_div
 	)
 	{
-		const sweet::SphereDataConfig *sphereDataConfig = o_phi_pert.sphereDataConfig;
+		const sweet::SphereData_Config *sphereDataConfig = o_phi_pert.sphereDataConfig;
 
 		// Search for substrings
 		bool benchmark_nobump = benchmark_name.find("nobump") != std::string::npos;

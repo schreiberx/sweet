@@ -30,7 +30,7 @@ void PDEAdvectionSphereTS_na_trajectories::printImplementedTimesteppingMethods(
 
 
 
-void PDEAdvectionSphereTS_na_trajectories::run_timestep(
+void PDEAdvectionSphereTS_na_trajectories::runTimestep(
 		std::vector<sweet::SphereData_Spectral> &io_U_phi,		///< prognostic variables
 		sweet::SphereData_Physical &io_U_u,
 		sweet::SphereData_Physical &io_U_v,
@@ -60,7 +60,7 @@ void PDEAdvectionSphereTS_na_trajectories::run_timestep_1(
 		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
 	std::size_t N = sphereDataConfig->physical_array_data_number_of_elements;
 
 

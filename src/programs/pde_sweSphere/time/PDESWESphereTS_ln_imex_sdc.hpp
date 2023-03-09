@@ -30,7 +30,11 @@ public:
 	SWE_Variables_Pointers() : phi(nullptr), vort(nullptr), div(nullptr) {}
 
 	// Set pointers to solution data
-	void setPointer(SphereData_Spectral& phi, sweet::SphereData_Spectral& vort, sweet::SphereData_Spectral& div) {
+	void setPointer(
+			sweet::SphereData_Spectral& phi,
+			sweet::SphereData_Spectral& vort,
+			sweet::SphereData_Spectral& div)
+	{
 		this->phi = &phi;
 		this->vort = &vort;
 		this->div = &div;
@@ -48,7 +52,7 @@ public:
 
 public:
 	// Only constructor
-	SWE_VariableVector(const SphereDataConfig* sphereDataConfig):
+	SWE_VariableVector(const sweet::SphereData_Config* sphereDataConfig):
 		phi(sphereDataConfig), 
 		vrt(sphereDataConfig), 
 		div(sphereDataConfig)
@@ -76,11 +80,13 @@ public:
 		return *this;
 	}
 
-	void setup(const sweet::SphereDataConfig *sphere_data_config)
+	bool setup(const sweet::SphereData_Config *sphere_data_config)
 	{
 		phi.setup(sphere_data_config);
 		vrt.setup(sphere_data_config);
 		div.setup(sphere_data_config);
+
+		return true;
 	}
 
 	void swap(SWE_VariableVector &io_value)
@@ -97,7 +103,7 @@ class SDC_NodeStorage {
 	std::vector<std::vector<SWE_VariableVector>> v;
 public:
 	SDC_NodeStorage(
-			const SphereDataConfig* sphereDataConfig,
+			const sweet::SphereData_Config* sphereDataConfig,
 			size_t num_nodes
 	){
 		std::vector<SWE_VariableVector> nodeValsK;
@@ -128,9 +134,15 @@ public:
 class SDC_NodeStorage_ {
 	std::vector<SWE_VariableVector> data;
 
+
+public:
+	SDC_NodeStorage_()
+	{
+	}
+
 public:
 	SDC_NodeStorage_(
-			const SphereDataConfig* sphereDataConfig,
+			const sweet::SphereData_Config* sphereDataConfig,
 			size_t num_nodes
 	){
 		data.resize(num_nodes);
@@ -157,11 +169,18 @@ public:
 class PDESWESphereTS_ln_imex_sdc	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
-	std::string string_id();
+	bool setup_auto(sweet::SphereOperators *io_ops);
 
-	sweet::ShackDictionary& shackDict;
-	sweet::SphereOperators& op;
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_order,	///< order of RK time stepping method for linear parts
+			int i_order2,	///< order of RK time stepping method for non-linear parts
+			int i_version_id
+	);
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
 
 	double timestep_size;
 
@@ -250,20 +269,10 @@ private:
 	void computeEndPoint();
 
 public:
-	PDESWESphereTS_ln_imex_sdc(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	PDESWESphereTS_ln_imex_sdc();
 
-	void setup(
-			int i_order,	///< order of RK time stepping method for linear parts
-			int i_order2,	///< order of RK time stepping method for non-linear parts
-			int i_version_id
-	);
 
-	void setup_auto();
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

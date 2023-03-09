@@ -7,7 +7,7 @@
 #include "Burgers_Plane_TS_l_cn_n_sl.hpp"
 
 
-void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
+void Burgers_Plane_TS_l_cn_n_sl::runTimestep(
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 		///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables
@@ -60,7 +60,7 @@ void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
 	v_prev = io_v;
 
 	// Run implicit Runge-Kutta on Burgers' equation in SL form
-	ts_l_cn.run_timestep(
+	ts_l_cn.runTimestep(
 			io_u, io_v,
 			///io_u_prev, io_v_prev,
 			0.5*dt,
@@ -86,7 +86,7 @@ void Burgers_Plane_TS_l_cn_n_sl::run_timestep(
 	);
 
 	// Run implicit Runge-Kutta on Burgers' equation in SL form
-	ts_l_cn.run_timestep(
+	ts_l_cn.runTimestep(
 			io_u, io_v,
 			///io_u_prev, io_v_prev,
 			0.5*dt,

@@ -35,16 +35,18 @@ int main(int i_argc, char *i_argv[])
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
 		while (!simulation.should_quit())
-			simulation.run_timestep();
+			simulation.runTimestep();
 	}
 
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
 
-	if (simulation.shackPDEAdvectionSphere->compute_errors)
+#if 0
+	if (simulation.shackPDESWESphere->compute_errors)
 	{
 		simulation.printSimulationErrors();
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
 	}
+#endif
 
 	std::cout << "FIN" << std::endl;
 	return 0;

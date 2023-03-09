@@ -38,7 +38,7 @@
 namespace sweet
 {
 
-class PlaneDataConfig
+class PlaneData_Config
 {
 	friend class PlaneOperators;
 	friend class PlaneOperatorsComplex;
@@ -271,7 +271,7 @@ public:
 
 
 public:
-	PlaneDataConfig()
+	PlaneData_Config()
 	{
 		physical_res[0] = 0;
 		physical_res[1] = 0;
@@ -964,7 +964,7 @@ public:
 	}
 
 	bool setupAdditionalModes(
-			PlaneDataConfig *i_planeConfig,
+			PlaneData_Config *i_planeConfig,
 			int i_additional_modes_x,
 			int i_additional_modes_y,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_reuse_spectral_transformation_plans
@@ -1055,7 +1055,7 @@ public:
 
 
 
-	~PlaneDataConfig()
+	~PlaneData_Config()
 	{
 		clear();
 	}

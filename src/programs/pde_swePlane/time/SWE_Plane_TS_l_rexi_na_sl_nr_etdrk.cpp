@@ -63,7 +63,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::euler_timestep_update_nonlinear(
 
 
 
-void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
+void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -76,7 +76,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_etdrk: Only constant time step size allowed (Please set --dt)");
 
 
-	const sweet::PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+	const sweet::PlaneData_Config *planeDataConfig = io_h.planeDataConfig;
 
 	// Tmp vars
 	//h, u, v tmp
@@ -160,7 +160,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 			sweet::PlaneData_Spectral psi1_FUn_u(planeDataConfig);
 			sweet::PlaneData_Spectral psi1_FUn_v(planeDataConfig);
 
-			ts_psi1_rexi.run_timestep(
+			ts_psi1_rexi.runTimestep(
 					FUn_h, FUn_u, FUn_v,
 					psi1_FUn_h, psi1_FUn_u, psi1_FUn_v,
 					i_dt,
@@ -185,7 +185,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi0_Un_h(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_Un_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_Un_v(planeDataConfig);
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				h, u, v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
@@ -243,7 +243,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 		sweet::PlaneData_Spectral psi2_FU1_h(planeDataConfig);
 		sweet::PlaneData_Spectral psi2_FU1_u(planeDataConfig);
 		sweet::PlaneData_Spectral psi2_FU1_v(planeDataConfig);
-		ts_psi2_rexi.run_timestep(
+		ts_psi2_rexi.runTimestep(
 				FU1_h, FU1_u, FU1_v,
 				psi2_FU1_h, psi2_FU1_u, psi2_FU1_v,
 				i_dt,
@@ -255,7 +255,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 		sweet::PlaneData_Spectral psi2_FUn_u(planeDataConfig);
 		sweet::PlaneData_Spectral psi2_FUn_v(planeDataConfig);
 
-		ts_psi2_rexi.run_timestep(
+		ts_psi2_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				psi2_FUn_h, psi2_FUn_u, psi2_FUn_v,
 				i_dt,
@@ -287,7 +287,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi0_dif2_h(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_dif2_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_dif2_v(planeDataConfig);
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				dif2_h, dif2_u, dif2_v,
 				phi0_dif2_h, phi0_dif2_u, phi0_dif2_v,
 				i_dt,

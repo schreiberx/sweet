@@ -24,30 +24,37 @@
 class PDESWESphereTS_l_irk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
-	std::string string_id();
-	void setup_auto();
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_timestep_order,
+			double i_timestep_size
+	);
+
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_timestep_order,
+			double i_timestep_size,
+			double i_crank_nicolson_damping_factor,
+			bool i_no_coriolis
+	);
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
 
 	std::string timestepping_method;
 
 private:
-	/// Simulation variables
-	sweet::ShackDictionary &shackDict;
-
-	/// Operators for sphere
-	sweet::SphereOperators &ops;
 
 	/// SPH configuration
-	const sweet::SphereDataConfig *sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig;
 
 	PDESWESphereTS_lg_erk *lg_erk = nullptr;
 	PDESWESphereTS_l_erk *l_erk = nullptr;
 
 	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverDiv;
-
-	// Order of time stepping.
-	int timestepping_order;
 
 	double crank_nicolson_damping_factor;
 
@@ -74,34 +81,16 @@ private:
 	sweet::SphereData_Physical mug;
 
 public:
-	PDESWESphereTS_l_irk(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-	);
+	PDESWESphereTS_l_irk();
 
 private:
 	void update_coefficients(double i_timestep_size);
 
+public:
+	void clear();
 
 public:
-	void setup(
-			int i_timestep_order,
-			double i_timestep_size,
-			double i_crank_nicolson_damping_factor,
-			bool i_no_coriolis
-	);
-
-public:
-	void setup(
-			int i_timestep_order,
-			double i_timestep_size
-	);
-
-public:
-	void free();
-
-public:
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,
 			sweet::SphereData_Spectral &io_vrt,
 			sweet::SphereData_Spectral &io_div,

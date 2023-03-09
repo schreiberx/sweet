@@ -12,6 +12,8 @@
 #include <sweet/core/sphere/SphereData_Config.hpp>
 
 
+namespace sweet
+{
 
 /**
  * Matrix to store coefficients related to Spherical Harmonics
@@ -401,5 +403,6 @@ public:
 	}
 };
 
+}
 
 #endif

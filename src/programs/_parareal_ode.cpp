@@ -51,7 +51,7 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
 //////////	double u_prev;
 //////////
 //////////public:
-//////////	void run_timestep(
+//////////	void runTimestep(
 //////////			double &io_y,			///< prognostic variables
 //////////
 //////////			double i_dt,		///< time step size
@@ -65,7 +65,7 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
 //////////	}
 //////////
 //////////#if (SWEET_PARAREAL && SWEET_PARAREAL_SCALAR) || (SWEET_XBRAID && SWEET_XBRAID_SCALAR)
-//////////	void run_timestep(
+//////////	void runTimestep(
 //////////			Parareal_GenericData* io_data,
 //////////
 //////////			double i_dt,		///< time step size
@@ -74,7 +74,7 @@ double param_fine_timestepping_solution = std::numeric_limits<double>::infinity(
 //////////	{
 //////////		double y = io_data->get_pointer_to_data_Scalar()->simfields[0];
 //////////
-//////////		run_timestep(y,
+//////////		runTimestep(y,
 //////////				i_dt,
 //////////				i_sim_timestamp
 //////////			);
@@ -172,7 +172,7 @@ public:
 		this->do_output();
 		while (true)
 		{
-			this->timeSteppers->master->run_timestep(this->prog_u,
+			this->timeSteppers->master->runTimestep(this->prog_u,
 					shackDict->timecontrol.current_timestep_size,
 					shackDict->timecontrol.current_simulation_time
 				);

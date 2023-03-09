@@ -112,7 +112,7 @@ void SWE_Plane_TS_l_erk::euler_timestep_update(
 
 
 
-void SWE_Plane_TS_l_erk::run_timestep(
+void SWE_Plane_TS_l_erk::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -125,7 +125,7 @@ void SWE_Plane_TS_l_erk::run_timestep(
 		SWEETError("SWE_Plane_TS_l_erk: Only constant time step size allowed (please set --dt)");
 
 	// standard time stepping
-	timestepping_rk.run_timestep(
+	timestepping_rk.runTimestep(
 			this,
 			&SWE_Plane_TS_l_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_h, io_u, io_v,

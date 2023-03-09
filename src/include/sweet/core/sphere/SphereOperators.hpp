@@ -21,14 +21,14 @@ namespace sweet
 class SphereOperators	:
 	public SphereHelpers_SPHIdentities
 {
-	friend SphereDataConfig;
+	friend SphereData_Config;
 	typedef std::complex<double> Tcomplex;
 	typedef double Treal;
 
 public:
 	ErrorBase error;
 
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 #if 0
 	// Coriolis effect in physical space
@@ -48,7 +48,7 @@ private:
 
 public:
 	SphereOperators(
-		SphereDataConfig *i_sphereDataConfig,
+		SphereData_Config *i_sphereDataConfig,
 		sweet::ShackSphereDataOps *i_shackSphereDataOps
 	)
 	{
@@ -100,7 +100,7 @@ public:
 
 public:
 	void setup(
-		const SphereDataConfig *i_sphereDataConfig,
+		const SphereData_Config *i_sphereDataConfig,
 		sweet::ShackSphereDataOps *i_shackSphereDataOps
 	)
 	{
@@ -484,7 +484,7 @@ public:
 			const SphereData_Spectral &i_sph_data
 	)	const
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
 		SphereData_Spectral out_sph_data(sphereDataConfig);
 
@@ -804,7 +804,7 @@ public:
 			const SphereData_Spectral &i_sph_data
 	)	const
 	{
-		const SphereDataConfig *sphereDataConfig = i_sph_data.sphereDataConfig;
+		const SphereData_Config *sphereDataConfig = i_sph_data.sphereDataConfig;
 
 		SphereData_Spectral out_sph_data = SphereData_Spectral(sphereDataConfig);
 

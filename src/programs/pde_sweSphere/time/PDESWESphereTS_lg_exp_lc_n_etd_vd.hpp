@@ -18,16 +18,22 @@
 class PDESWESphereTS_lg_exp_lc_n_etd_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
-	std::string string_id();
-	void setup_auto();
-	void print_help();
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			sweet::ShackExpIntegration *shackExpIntegration,
+			int i_timestepping_order,
+			int i_timestepping_order2,
+			double i_timestep_size
+	);
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
+	void printHelp();
 
 private:
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &ops;
-
 	PDESWESphereTS_ln_erk_split_vd ts_ln_erk_split_vd;
 
 	sweet::SphereData_Spectral NU_phi_prev, NU_vrt_prev, NU_div_prev;
@@ -40,8 +46,6 @@ private:
 	PDESWESphereTS_l_exp ts_phi1_exp;
 	PDESWESphereTS_l_exp ts_phi2_exp;
 	PDESWESphereTS_l_exp ts_phi3_exp;
-
-	int timestepping_order;
 
 private:
 	void euler_timestep_update_linear(
@@ -73,19 +77,9 @@ private:
 
 
 public:
-	PDESWESphereTS_lg_exp_lc_n_etd_vd(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	PDESWESphereTS_lg_exp_lc_n_etd_vd();
 
-	void setup(
-			EXP_sweet::ShackDictionary &i_rexi,
-			int i_timestepping_order,
-			int i_timestepping_order2,
-			double i_timestep_size
-	);
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

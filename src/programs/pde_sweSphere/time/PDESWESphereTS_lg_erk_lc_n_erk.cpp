@@ -11,7 +11,7 @@
 
 
 
-void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
+void PDESWESphereTS_lg_erk_lc_n_erk::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,
 		sweet::SphereData_Spectral &io_vrt,
 		sweet::SphereData_Spectral &io_div,
@@ -22,7 +22,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 {
 	if (timestepping_order == 1)
 	{
-		timestepping_rk_linear.run_timestep(
+		timestepping_rk_linear.runTimestep(
 				this,
 				&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
@@ -31,7 +31,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		timestepping_rk_nonlinear.run_timestep(
+		timestepping_rk_nonlinear.runTimestep(
 				this,
 				&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
@@ -46,7 +46,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_rk_linear.run_timestep(
+			timestepping_rk_linear.runTimestep(
 					this,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -56,7 +56,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 				);
 
 			// FULL time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
+			timestepping_rk_nonlinear.runTimestep(
 					this,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -66,7 +66,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 				);
 
 			// HALF time step for linear part
-			timestepping_rk_linear.run_timestep(
+			timestepping_rk_linear.runTimestep(
 					this,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -78,7 +78,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 		else if (version_id == 1)
 		{
 			// HALF time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
+			timestepping_rk_nonlinear.runTimestep(
 					this,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -89,7 +89,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 
 
 			// FULL time step for linear part
-			timestepping_rk_linear.run_timestep(
+			timestepping_rk_linear.runTimestep(
 					this,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -99,7 +99,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::run_timestep(
 				);
 
 			// HALF time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
+			timestepping_rk_nonlinear.runTimestep(
 					this,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -136,10 +136,10 @@ void PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_linear(
 	/*
 	 * LINEAR
 	 */
-	double gh = shackDict.sim.gravitation * shackDict.sim.h0;
+	double gh = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 	o_phi_t = -gh*i_div;
-	o_div_t = -op.laplace(i_phi);
+	o_div_t = -ops->laplace(i_phi);
 	o_vrt_t.spectral_set_zero();
 }
 
@@ -171,14 +171,15 @@ void PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 
 	sweet::SphereData_Physical vrtg = i_vort.toPhys();
 	sweet::SphereData_Physical divg = i_div.toPhys();
-	op.vrtdiv_to_uv(i_vort, i_div, ug, vg);
+	ops->vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
 	sweet::SphereData_Physical phig = i_phi.toPhys();
 
-	sweet::SphereData_Physical tmpg1 = ug*(vrtg+op.fg);
-	sweet::SphereData_Physical tmpg2 = vg*(vrtg+op.fg);
+	using namespace sweet;
+	sweet::SphereData_Physical tmpg1 = ug*(vrtg+fg);
+	sweet::SphereData_Physical tmpg2 = vg*(vrtg+fg);
 
-	op.uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+	ops->uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 	o_vort_t *= -1.0;
 
@@ -186,7 +187,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 	tmpg2 = vg*phig;
 
 	sweet::SphereData_Spectral tmpspec(i_phi.sphereDataConfig);
-	op.uv_to_vrtdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
+	ops->uv_to_vrtdiv(tmpg1,tmpg2, tmpspec, o_phi_t);
 
 	o_phi_t *= -1.0;
 
@@ -194,7 +195,7 @@ void PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 	tmpg = 0.5*(ug*ug+vg*vg);
 
 	tmpspec = tmpg;
-	o_div_t += -op.laplace(tmpspec);
+	o_div_t += -ops->laplace(tmpspec);
 
 
 #if SWEET_BENCHMARK_TIMINGS
@@ -241,10 +242,23 @@ void PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 
 
 
-/*
- * Setup
- */
-void PDESWESphereTS_lg_erk_lc_n_erk::setup(
+bool PDESWESphereTS_lg_erk_lc_n_erk::setup_auto(
+		sweet::SphereOperators *io_ops
+)
+{
+	int version_id = 0;
+	if (timestepping_method == "lg_exp_lc_n_erk_ver1")
+		version_id = 1;
+
+	return setup(
+			io_ops,
+			timestepping_order,
+			version_id
+		);
+}
+
+bool PDESWESphereTS_lg_erk_lc_n_erk::setup(
+		sweet::SphereOperators *io_ops,
 		int i_order,	///< order of RK time stepping method
 		int i_version_id
 )
@@ -252,16 +266,14 @@ void PDESWESphereTS_lg_erk_lc_n_erk::setup(
 	timestepping_order = i_order;
 
 	version_id = i_version_id;
+
+	setupFG();
+	return true;
 }
 
 
-PDESWESphereTS_lg_erk_lc_n_erk::PDESWESphereTS_lg_erk_lc_n_erk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-		timestepping_order(-1)
+
+PDESWESphereTS_lg_erk_lc_n_erk::PDESWESphereTS_lg_erk_lc_n_erk()
 {
 }
 

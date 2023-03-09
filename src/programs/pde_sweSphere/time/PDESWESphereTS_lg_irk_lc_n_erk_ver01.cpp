@@ -6,7 +6,87 @@
 
 
 
-void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
+bool PDESWESphereTS_lg_irk_lc_n_erk::setup_main(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order,	///< order of RK time stepping method
+		int i_timestepping_order2,
+		int i_version_id
+)
+{
+	ops = io_ops;
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+	version_id = i_version_id;
+
+	timestep_size = shackTimestepControl->current_timestep_size;
+
+	if (timestepping_order == 1)
+	{
+		timestepping_lg_irk.setup(
+				ops,
+				1,
+				timestep_size*0.5
+		);
+	}
+	else if (timestepping_order == 2)
+	{
+		if (version_id == 0)
+		{
+			timestepping_lg_irk.setup(
+					ops,
+					2,
+					timestep_size*0.5
+			);
+		}
+		else if (version_id == 1)
+		{
+			timestepping_lg_irk.setup(
+					ops,
+					2,
+					timestep_size
+			);
+		}
+		else
+		{
+			SWEETError("Invalid version id");
+		}
+	}
+	else
+	{
+		SWEETError("Invalid time stepping order");
+	}
+
+
+	//
+	// Only request 1st order time stepping methods for irk and erk
+	// These 1st order methods will be combined to higher-order methods in this class
+	//
+	timestepping_lg_erk_lc_n_erk.setup(ops, 1, -1);
+
+	return true;
+}
+
+
+
+bool PDESWESphereTS_lg_irk_lc_n_erk::setup_auto(
+		sweet::SphereOperators *io_ops
+)
+{
+	int version = 0;
+	if (timestepping_method == "lg_irk_lc_n_erk_ver1")
+		version = 1;
+
+	return setup_main(
+			io_ops,
+			timestepping_order,
+			timestepping_order2,
+			version
+		);
+}
+
+
+
+void PDESWESphereTS_lg_irk_lc_n_erk::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -20,13 +100,15 @@ void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
 		if (version_id == 0)
 		{
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
 				);
 
-			sweet::SphereData_Spectral phi_fixed_dt(io_phi_pert.sphereDataConfig), vrt_dt(io_vrt.sphereDataConfig), div_dt(io_div.sphereDataConfig);
+			sweet::SphereData_Spectral phi_fixed_dt(io_phi_pert.sphereDataConfig);
+			sweet::SphereData_Spectral vrt_dt(io_vrt.sphereDataConfig);
+			sweet::SphereData_Spectral div_dt(io_div.sphereDataConfig);
 
 			// first order explicit for non-linear
 			timestepping_lg_erk_lc_n_erk.euler_timestep_update_lc_n(
@@ -56,7 +138,7 @@ void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
 			io_div += i_fixed_dt*div_dt;
 
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
@@ -68,14 +150,14 @@ void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt*0.5,
 					i_simulation_timestamp
 				);
 
 			// FULL time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
+			timestepping_rk_nonlinear.runTimestep(
 					&timestepping_lg_erk_lc_n_erk,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -85,7 +167,7 @@ void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
 				);
 
 			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt*0.5,
 					i_simulation_timestamp+i_fixed_dt*0.5	/* TODO: CHECK THIS, THIS MIGHT BE WRONG!!! */
@@ -94,7 +176,7 @@ void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
 		else if (version_id == 1)
 		{
 			// HALF time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
+			timestepping_rk_nonlinear.runTimestep(
 					&timestepping_lg_erk_lc_n_erk,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -104,14 +186,14 @@ void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
 				);
 
 			// FULL time step for linear part
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_fixed_dt,
 					i_simulation_timestamp
 				);
 
 			// HALF time step for non-linear part
-			timestepping_rk_nonlinear.run_timestep(
+			timestepping_rk_nonlinear.runTimestep(
 					&timestepping_lg_erk_lc_n_erk,
 					&PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n,	///< pointer to function to compute euler time step updates
 					io_phi_pert, io_vrt, io_div,
@@ -133,88 +215,8 @@ void PDESWESphereTS_lg_irk_lc_n_erk::run_timestep(
 
 
 
-/*
- * Setup
- */
-void PDESWESphereTS_lg_irk_lc_n_erk::setup(
-		int i_timestepping_order,	///< order of RK time stepping method
-		int i_timestepping_order2,
-		int i_version_id
-)
-{
-	version_id = i_version_id;
 
-	timestepping_order = i_timestepping_order;
-	timestepping_order2 = i_timestepping_order2;
-	timestep_size = shackDict.timecontrol.current_timestep_size;
-
-	if (timestepping_order == 1)
-	{
-		timestepping_lg_irk.setup(
-				1,
-				timestep_size*0.5
-		);
-	}
-	else if (timestepping_order == 2)
-	{
-		if (version_id == 0)
-		{
-			timestepping_lg_irk.setup(
-					2,
-					timestep_size*0.5
-			);
-		}
-		else if (version_id == 1)
-		{
-			timestepping_lg_irk.setup(
-					2,
-					timestep_size
-			);
-		}
-		else
-		{
-			SWEETError("Invalid version id");
-		}
-	}
-	else
-	{
-		SWEETError("Invalid time stepping order");
-	}
-
-
-	//
-	// Only request 1st order time stepping methods for irk and erk
-	// These 1st order methods will be combined to higher-order methods in this class
-	//
-	timestepping_lg_erk_lc_n_erk.setup(1, -1);
-}
-
-
-
-void PDESWESphereTS_lg_irk_lc_n_erk::setup_auto()
-{
-	int version = 0;
-	if (timestepping_method == "lg_irk_lc_n_erk_ver1")
-		version = 1;
-
-	setup(
-			timestepping_order,
-			timestepping_order2,
-			version
-		);
-}
-
-
-
-PDESWESphereTS_lg_irk_lc_n_erk::PDESWESphereTS_lg_irk_lc_n_erk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-		timestepping_order(-1),
-		timestepping_lg_irk(shackDict, op),
-		timestepping_lg_erk_lc_n_erk(shackDict, op)
+PDESWESphereTS_lg_irk_lc_n_erk::PDESWESphereTS_lg_irk_lc_n_erk()
 {
 }
 

@@ -9,7 +9,7 @@
 #include "../burgers_timeintegrators/Burgers_Plane_TS_l_irk_n_sl.hpp"
 
 
-void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
+void Burgers_Plane_TS_l_irk_n_sl::runTimestep(
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 		///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables
@@ -64,7 +64,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	if (shackDict.disc.timestepping_order == 2)
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
-		ts_l_irk.run_timestep(
+		ts_l_irk.runTimestep(
 				io_u, io_v,
 				///io_u_prev, io_v_prev,
 				0.5*dt,
@@ -93,7 +93,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	if (shackDict.disc.timestepping_order == 2)
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
-		ts_l_irk.run_timestep(
+		ts_l_irk.runTimestep(
 				io_u, io_v,
 				///io_u_prev, io_v_prev,
 				0.5*dt,
@@ -103,7 +103,7 @@ void Burgers_Plane_TS_l_irk_n_sl::run_timestep(
 	else
 	{
 		// Run implicit Runge-Kutta on Burgers' equation in SL form
-		ts_l_irk.run_timestep(
+		ts_l_irk.runTimestep(
 				io_u, io_v,
 				////io_u_prev, io_v_prev,
 				dt,

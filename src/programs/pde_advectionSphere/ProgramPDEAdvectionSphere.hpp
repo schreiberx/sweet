@@ -60,7 +60,7 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::SphereDataConfig sphereDataConfig;
+		sweet::SphereData_Config sphereDataConfig;
 		sweet::SphereOperators ops;
 
 		std::vector<sweet::SphereData_Spectral> prog_vec;
@@ -70,7 +70,7 @@ public:
 		std::vector<sweet::SphereData_Spectral> prog_vec_t0;
 
 #if SWEET_GUI
-	sweet::PlaneDataConfig planeDataConfig;
+	sweet::PlaneData_Config planeDataConfig;
 
 	// Data to visualize is stored to this variable
 	sweet::PlaneData_Physical vis_plane_data;
@@ -396,14 +396,14 @@ public:
 	}
 
 
-	bool run_timestep()
+	bool runTimestep()
 	{
 		sweet::SphereData_DebugContainer::clear();
 
 		shackTimestepControl->timestepHelperStart();
 
 
-		timeSteppers.timestepper->run_timestep(
+		timeSteppers.timestepper->runTimestep(
 				dataConfigOps.prog_vec, dataConfigOps.vel_u, dataConfigOps.vel_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
@@ -447,7 +447,7 @@ public:
 	{
 		if (shackTimestepControl->run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
-				run_timestep();
+				runTimestep();
 	}
 
 

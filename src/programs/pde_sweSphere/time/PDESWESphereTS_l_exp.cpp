@@ -7,7 +7,8 @@
 #include <iostream>
 #include <cassert>
 #include <utility>
-#include <rexi/REXI.hpp>
+#include <sweet/expIntegration/ExpFunctions.hpp>
+#include <sweet/expIntegration/REXI.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/core/StopwatchBox.hpp>
@@ -22,7 +23,7 @@
 /*
  * Compute the REXI sum massively parallel *without* a parallelization with parfor in space
  */
-#if SWEET_THREADING_TIME_REXI
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
 #	include <omp.h>
 #endif
 
@@ -38,12 +39,12 @@
 
 
 
-bool PDESWESphereTS_l_exp::implements_timestepping_method(const std::string &i_timestepping_method
+bool PDESWESphereTS_l_exp::implementsTimesteppingMethod(const std::string &i_timestepping_method
 									)
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	if (i_timestepping_method == "l_exp" || i_timestepping_method == "lg_exp")
 		return true;
 
@@ -51,32 +52,308 @@ bool PDESWESphereTS_l_exp::implements_timestepping_method(const std::string &i_t
 }
 
 
-std::string PDESWESphereTS_l_exp::string_id()
+std::string PDESWESphereTS_l_exp::getIDString()
 {
 	return "l_exp";
 }
 
 
-void PDESWESphereTS_l_exp::setup_auto()
+bool PDESWESphereTS_l_exp::setup_auto(
+		sweet::SphereOperators *io_ops
+)
 {
 	bool no_coriolis = false;
 
 	if (timestepping_method == "lg_exp")
 		no_coriolis = true;
 
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
-
-	setup(
-		shackDict.rexi,
+	return setup_variant_100(
+		io_ops,
+		shackExpIntegration,
 		"phi0",
-		shackDict.timecontrol.current_timestep_size,
-		shackDict.sim.sphere_use_fsphere,
+		shackExpIntegration->exp_method,
+		shackTimestepControl->current_timestep_size,
+		shackPDESWESphere->sphere_use_fsphere,
 		no_coriolis,
-		timestepping_order
+		shackPDESWETimeDisc->timestepping_order,
+		shackExpIntegration->sphere_solver_preallocation
 	);
 
+}
 
+bool PDESWESphereTS_l_exp::setup_variant_10(
+		sweet::SphereOperators *io_ops,
+		sweet::ShackExpIntegration *i_shackExpIntegration,
+		const std::string &i_function_name,
+		double i_timestep_size,
+		bool i_use_f_sphere,
+		bool i_no_coriolis
+)
+{
+	return setup_variant_100(
+		io_ops,
+		shackExpIntegration,
+		"phi0",
+		shackExpIntegration->exp_method,
+		i_timestep_size,
+		i_use_f_sphere,
+		i_no_coriolis,
+		-1,
+		shackExpIntegration->sphere_solver_preallocation
+	);
+}
+
+bool PDESWESphereTS_l_exp::setup_variant_50(
+		sweet::SphereOperators *io_ops,
+		sweet::ShackExpIntegration *i_shackExpIntegration,
+		const std::string &i_function_name,
+		double i_timestep_size,
+		bool i_use_f_sphere,
+		bool i_no_coriolis,
+		int i_timestepping_order
+)
+{
+	return setup_variant_100(
+		io_ops,
+		i_shackExpIntegration,
+		i_function_name,
+		shackExpIntegration->exp_method,
+		i_timestep_size,
+		i_use_f_sphere,
+		i_no_coriolis,
+		i_timestepping_order,
+		shackExpIntegration->sphere_solver_preallocation
+	);
+}
+
+
+bool PDESWESphereTS_l_exp::setup_variant_100(
+		sweet::SphereOperators *io_ops,
+		sweet::ShackExpIntegration *i_shackExpIntegration,
+		const std::string &i_function_name,
+		const std::string &i_exp_method,
+		double i_timestep_size,
+		bool i_use_f_sphere,
+		bool i_no_coriolis,
+		int i_timestepping_order,
+		bool i_use_rexi_sphere_solver_preallocation
+)
+{
+	ops = io_ops;
+
+	function_name = i_function_name;
+	exp_method = i_exp_method;
+	timestep_size = i_timestep_size;
+
+	use_f_sphere = i_use_f_sphere;
+	no_coriolis = i_no_coriolis;
+
+	timestepping_order = i_timestepping_order;
+
+	use_rexi_sphere_solver_preallocation = i_use_rexi_sphere_solver_preallocation;
+
+
+	/*
+	 * Print some useful information
+	 */
+	if (	exp_method != "direct" &&
+			exp_method != "ss_taylor"
+	)
+	{
+		if (!sweet::REXI<>::is_rexi_method_supported(exp_method))
+		{
+			std::cerr << std::endl;
+			std::cerr << "Available EXP methods (--exp-method=...):" << std::endl;
+			std::cerr << "        'direct': Analytical solution" << std::endl;
+			std::cerr << "        'ss_taylor': Strang-Split Taylor of exp(L) \approx exp(L_g) taylor(L_c)" << std::endl;
+
+			std::stringstream ss;
+			sweet::REXI<>::get_available_rexi_methods(ss);
+			std::cerr << ss.str() << std::endl;
+
+			if (exp_method == "help")
+				SWEETError("See above for available REXI methods");
+			else
+				SWEETError("Unknown EXP method");
+		}
+	}
+
+
+	#if SWEET_MPI
+		if (mpi_rank == 0)
+		{
+			#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
+				int rexi_communication_size = ops->sphereDataConfig->spectral_array_data_number_of_elements*2*sizeof(double);
+			#else
+				int rexi_communication_size = ops->sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
+			#endif
+			std::cout << "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
+		}
+	#endif
+
+	reset();
+
+	#if SWEET_BENCHMARK_TIMINGS
+		StopwatchBox::getInstance().rexi.start();
+		StopwatchBox::getInstance().rexi_setup.start();
+	#endif
+
+
+	/*
+	 * Setup REXI function evaluations
+	 */
+	expFunctions.setup(i_function_name);
+
+
+	use_exp_method_direct_solution = false;
+	use_exp_method_strang_split_taylor = false;
+	use_exp_method_rexi = false;
+
+	if (exp_method == "direct")
+	{
+		if (use_f_sphere)
+			SWEETError("f-sphere solution not implemented");
+
+		use_exp_method_direct_solution = true;
+
+		if (timestepping_method_l_exp_direct_special == nullptr)
+			timestepping_method_l_exp_direct_special = new PDESWESphereTS_l_exp_direct_special;
+
+		timestepping_method_l_exp_direct_special->setup(ops, timestepping_order, !no_coriolis, function_name);
+	}
+	else if (exp_method == "ss_taylor")
+	{
+		if (no_coriolis)
+			SWEETError("'ss_taylor' intended to include Coriolis effect!");
+
+		use_exp_method_strang_split_taylor = true;
+
+		assert(timestepping_method_lg_exp_lc_exp == nullptr);
+
+		timestepping_method_lg_exp_lc_exp = new PDESWESphereTS_lg_exp_lc_taylor;
+		timestepping_method_lg_exp_lc_exp->setup(ops, timestepping_order);
+	}
+	else
+	{
+		use_exp_method_rexi = true;
+
+		SWEETAssert(use_exp_method_rexi, "should be true");
+
+		sweet::REXICoefficients<double> rexiCoefficients;
+		bool retval = sweet::REXI<>::load(
+				i_shackExpIntegration,
+				function_name,
+				rexiCoefficients,
+				shackExpIntegration->verbosity
+		);
+
+		if (!retval)
+			SWEETError(std::string("Phi function '")+function_name+std::string("' not provided or not supported"));
+
+		rexi_alphas = rexiCoefficients.alphas;
+		for (std::size_t n = 0; n < rexi_alphas.size(); n++)
+			rexi_alphas[n] = -rexi_alphas[n];
+
+		rexi_betas = rexiCoefficients.betas;
+		rexi_gamma = rexiCoefficients.gamma;
+
+		std::size_t N = rexi_alphas.size();
+		block_size = N/num_global_threads;
+		if (block_size*num_global_threads != N)
+			block_size++;
+
+		perThreadVars.resize(num_local_rexi_par_threads);
+
+
+		/**
+		 * We split the setup from the utilization here.
+		 *
+		 * This is necessary, since it has to be assured that
+		 * the FFTW plans are initialized before using them.
+		 */
+		if (num_local_rexi_par_threads == 0)
+		{
+			std::cerr << "FATAL ERROR B: omp_get_max_threads == 0" << std::endl;
+			exit(-1);
+		}
+
+#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
+		if (omp_in_parallel())
+		{
+			std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
+			exit(-1);
+		}
+#endif
+
+		// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
+		for (int j = 0; j < num_local_rexi_par_threads; j++)
+		{
+			#if SWEET_THREADING_TIME_REXI
+			#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,std::cerr,j)
+			#endif
+			for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
+			{
+				if (local_thread_id != j)
+					continue;
+
+				#if SWEET_DEBUG && SWEET_THREADING_TIME_REXI
+					if (omp_get_thread_num() != local_thread_id)
+					{
+						// leave this dummy std::cout in it to avoid the intel compiler removing this part
+						std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << local_thread_id << std::endl;
+						exit(-1);
+					}
+				#endif
+
+				perThreadVars[local_thread_id] = new PerThreadVars;
+
+				std::size_t start, end;
+				p_get_workload_start_end(start, end, local_thread_id);
+				int local_size = (int)end-(int)start;
+
+				#if SWEET_DEBUG
+					if (local_size < 0)
+					{
+						std::cerr << "local_size < 0" << std::endl;
+						exit(-1);
+					}
+				#endif
+
+				perThreadVars[local_thread_id]->alpha.resize(local_size);
+				perThreadVars[local_thread_id]->beta.resize(local_size);
+
+				perThreadVars[local_thread_id]->accum_phi.setup(ops->sphereDataConfig);
+				perThreadVars[local_thread_id]->accum_vrt.setup(ops->sphereDataConfig);
+				perThreadVars[local_thread_id]->accum_div.setup(ops->sphereDataConfig);
+
+				for (std::size_t n = start; n < end; n++)
+				{
+					int thread_local_idx = n-start;
+
+					perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alphas[n];
+					perThreadVars[local_thread_id]->beta[thread_local_idx] = rexi_betas[n];
+				}
+			}
+		}
+
+		//p_update_coefficients(false);
+		p_update_coefficients();
+
+		if (num_local_rexi_par_threads == 0)
+		{
+			std::cerr << "FATAL ERROR C: omp_get_max_threads == 0" << std::endl;
+			exit(-1);
+		}
+
+	}
+
+	#if SWEET_BENCHMARK_TIMINGS
+		StopwatchBox::getInstance().rexi_setup.stop();
+		StopwatchBox::getInstance().rexi.stop();
+	#endif
+
+
+#if 0
 	if (shackDict.misc.verbosity > 2)
 	{
 		if (shackDict.rexi.exp_method != "direct")
@@ -93,12 +370,15 @@ void PDESWESphereTS_l_exp::setup_auto()
 			std::cout << rexi_gamma << std::endl;
 		}
 	}
+#endif
 
+	return true;
 }
 
 
 
-void PDESWESphereTS_l_exp::run_timestep(
+
+void PDESWESphereTS_l_exp::runTimestep(
 	const sweet::SphereData_Spectral &i_prog_phi0,
 	const sweet::SphereData_Spectral &i_prog_vrt0,
 	const sweet::SphereData_Spectral &i_prog_div0,
@@ -115,20 +395,12 @@ void PDESWESphereTS_l_exp::run_timestep(
 	o_prog_vrt0 = i_prog_vrt0;
 	o_prog_div0 = i_prog_div0;
 
-	run_timestep(o_prog_phi0, o_prog_vrt0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
+	runTimestep(o_prog_phi0, o_prog_vrt0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
 }
 
 
 
-PDESWESphereTS_l_exp::PDESWESphereTS_l_exp(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-	shackDict(i_shackDict),
-	simCoeffs(shackDict.sim),
-	ops(i_op),
-	sphereDataConfig(i_op.sphereDataConfig),
-	rexiSimVars(nullptr),
+PDESWESphereTS_l_exp::PDESWESphereTS_l_exp()	:
 	use_rexi_sphere_solver_preallocation(false),
 	use_exp_method_direct_solution(false),
 	use_exp_method_strang_split_taylor(false),
@@ -308,250 +580,9 @@ void PDESWESphereTS_l_exp::p_get_workload_start_end(
 
 
 
-/**
- * setup the REXI
- */
-void PDESWESphereTS_l_exp::setup(
-		EXP_sweet::ShackDictionary &i_rexi,
-		const std::string &i_function_name,
-		double i_timestep_size,
-		bool i_use_f_sphere,
-		bool i_no_coriolis,
-		int i_timestepping_order
-)
+
+void PDESWESphereTS_l_exp::p_update_coefficients()
 {
-	no_coriolis = i_no_coriolis;
-
-	rexiSimVars = &i_rexi;
-
-	timestepping_order = i_timestepping_order;
-
-	/*
-	 * Print some useful information
-	 */
-	if (	i_rexi.exp_method != "direct" &&
-			i_rexi.exp_method != "ss_taylor"
-	)
-	{
-		if (!REXI<>::is_rexi_method_supported(i_rexi.exp_method))
-		{
-			std::cerr << std::endl;
-			std::cerr << "Available EXP methods (--exp-method=...):" << std::endl;
-			std::cerr << "        'direct': Analytical solution" << std::endl;
-			std::cerr << "        'ss_taylor': Strang-Split Taylor of exp(L) \approx exp(L_g) taylor(L_c)" << std::endl;
-
-			std::stringstream ss;
-			REXI<>::get_available_rexi_methods(ss);
-			std::cerr << ss.str() << std::endl;
-
-			if (i_rexi.exp_method == "help")
-				SWEETError("See above for available REXI methods");
-			else
-				SWEETError("Unknown EXP method");
-		}
-	}
-
-
-	#if SWEET_MPI
-		if (mpi_rank == 0)
-		{
-			#if SWEET_REXI_SPECTRAL_SPACE_REDUCTION
-				int rexi_communication_size = ops.sphereDataConfig->spectral_array_data_number_of_elements*2*sizeof(double);
-			#else
-				int rexi_communication_size = ops.sphereDataConfig->physical_array_data_number_of_elements*sizeof(double);
-			#endif
-			std::cout << "[MULE] rexi.communication_size: " << rexi_communication_size << std::endl;
-		}
-	#endif
-
-	reset();
-
-	#if SWEET_BENCHMARK_TIMINGS
-		StopwatchBox::getInstance().rexi.start();
-		StopwatchBox::getInstance().rexi_setup.start();
-	#endif
-
-
-	timestep_size = i_timestep_size;
-	function_name = i_function_name;
-
-	/*
-	 * Setup REXI function evaluations
-	 */
-	expFunctions.setup(i_function_name);
-
-	use_f_sphere = i_use_f_sphere;
-	use_rexi_sphere_solver_preallocation = rexiSimVars->sphere_solver_preallocation;
-
-
-	use_exp_method_direct_solution = false;
-	use_exp_method_strang_split_taylor = false;
-	use_exp_method_rexi = false;
-
-	if (rexiSimVars->exp_method == "direct")
-	{
-		if (use_f_sphere)
-			SWEETError("f-sphere solution not implemented");
-
-		use_exp_method_direct_solution = true;
-
-		if (timestepping_method_l_exp_direct_special == nullptr)
-			timestepping_method_l_exp_direct_special = new PDESWESphereTS_l_exp_direct_special(shackDict, ops);
-
-		timestepping_method_l_exp_direct_special->setup(timestepping_order, !no_coriolis, function_name);
-	}
-	else if (rexiSimVars->exp_method == "ss_taylor")
-	{
-		if (no_coriolis)
-			SWEETError("'ss_taylor' intended to include Coriolis effect!");
-
-		use_exp_method_strang_split_taylor = true;
-
-		if (timestepping_method_lg_exp_lc_exp == nullptr)
-			timestepping_method_lg_exp_lc_exp = new PDESWESphereTS_lg_exp_lc_taylor(shackDict, ops);
-
-		timestepping_method_lg_exp_lc_exp->setup(timestepping_order);
-	}
-	else
-	{
-		use_exp_method_rexi = true;
-
-		SWEETAssert(use_exp_method_rexi, "should be true");
-
-		REXICoefficients<double> rexiCoefficients;
-		bool retval = REXI<>::load(
-				rexiSimVars,
-				function_name,
-				rexiCoefficients,
-				shackDict.misc.verbosity
-		);
-
-		if (!retval)
-			SWEETError(std::string("Phi function '")+function_name+std::string("' not provided or not supported"));
-
-		rexi_alphas = rexiCoefficients.alphas;
-		for (std::size_t n = 0; n < rexi_alphas.size(); n++)
-			rexi_alphas[n] = -rexi_alphas[n];
-
-		rexi_betas = rexiCoefficients.betas;
-		rexi_gamma = rexiCoefficients.gamma;
-
-		std::size_t N = rexi_alphas.size();
-		block_size = N/num_global_threads;
-		if (block_size*num_global_threads != N)
-			block_size++;
-
-		perThreadVars.resize(num_local_rexi_par_threads);
-
-
-		/**
-		 * We split the setup from the utilization here.
-		 *
-		 * This is necessary, since it has to be assured that
-		 * the FFTW plans are initialized before using them.
-		 */
-		if (num_local_rexi_par_threads == 0)
-		{
-			std::cerr << "FATAL ERROR B: omp_get_max_threads == 0" << std::endl;
-			exit(-1);
-		}
-
-		#if SWEET_THREADING_SPACE || SWEET_THREADING_TIME_REXI
-		if (omp_in_parallel())
-		{
-			std::cerr << "FATAL ERROR X: in parallel region" << std::endl;
-			exit(-1);
-		}
-		#endif
-
-		// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
-		for (int j = 0; j < num_local_rexi_par_threads; j++)
-		{
-			#if SWEET_THREADING_TIME_REXI
-			#pragma omp parallel for schedule(static,1) default(none) shared(std::cout,std::cerr,j)
-			#endif
-			for (int local_thread_id = 0; local_thread_id < num_local_rexi_par_threads; local_thread_id++)
-			{
-				if (local_thread_id != j)
-					continue;
-
-				#if SWEET_DEBUG && SWEET_THREADING_TIME_REXI
-					if (omp_get_thread_num() != local_thread_id)
-					{
-						// leave this dummy std::cout in it to avoid the intel compiler removing this part
-						std::cout << "ERROR: thread " << omp_get_thread_num() << " number mismatch " << local_thread_id << std::endl;
-						exit(-1);
-					}
-				#endif
-
-				perThreadVars[local_thread_id] = new PerThreadVars;
-
-				std::size_t start, end;
-				p_get_workload_start_end(start, end, local_thread_id);
-				int local_size = (int)end-(int)start;
-
-				#if SWEET_DEBUG
-					if (local_size < 0)
-					{
-						std::cerr << "local_size < 0" << std::endl;
-						exit(-1);
-					}
-				#endif
-
-				perThreadVars[local_thread_id]->alpha.resize(local_size);
-				perThreadVars[local_thread_id]->beta.resize(local_size);
-
-				perThreadVars[local_thread_id]->accum_phi.setup(sphereDataConfig);
-				perThreadVars[local_thread_id]->accum_vrt.setup(sphereDataConfig);
-				perThreadVars[local_thread_id]->accum_div.setup(sphereDataConfig);
-
-				for (std::size_t n = start; n < end; n++)
-				{
-					int thread_local_idx = n-start;
-
-					perThreadVars[local_thread_id]->alpha[thread_local_idx] = rexi_alphas[n];
-					perThreadVars[local_thread_id]->beta[thread_local_idx] = rexi_betas[n];
-				}
-			}
-		}
-
-		//p_update_coefficients(false);
-		p_update_coefficients();
-
-		if (num_local_rexi_par_threads == 0)
-		{
-			std::cerr << "FATAL ERROR C: omp_get_max_threads == 0" << std::endl;
-			exit(-1);
-		}
-
-	}
-
-	#if SWEET_BENCHMARK_TIMINGS
-		StopwatchBox::getInstance().rexi_setup.stop();
-		StopwatchBox::getInstance().rexi.stop();
-	#endif
-}
-
-
-
-void PDESWESphereTS_l_exp::p_update_coefficients(
-//		bool i_update_rexi
-)
-{
-#if 0
-	if (i_update_rexi)
-	{
-		REXI<>::load(
-				rexiSimVars,
-				function_name,
-				rexi_alphas,
-				rexi_betas,
-				rexi_gamma,
-				shackDict.misc.verbosity
-		);
-	}
-#endif
-
 	#if SWEET_THREADING_TIME_REXI
 	#pragma omp parallel for schedule(static,1) default(none) shared(std::cout)
 	#endif
@@ -570,15 +601,15 @@ void PDESWESphereTS_l_exp::p_update_coefficients(
 				int thread_local_idx = n-start;
 
 				perThreadVars[local_thread_id]->rexiTermSolvers[thread_local_idx].setup_vectorinvariant_progphivortdiv(
-						sphereDataConfig,
-						&shackDict,
+						ops->sphereDataConfig,
+						shackSphereDataOps,
 
 						perThreadVars[local_thread_id]->alpha[thread_local_idx],
 						perThreadVars[local_thread_id]->beta[thread_local_idx],
-						simCoeffs.sphere_radius,
-						simCoeffs.sphere_rotating_coriolis_omega,
-						simCoeffs.sphere_fsphere_f0,
-						simCoeffs.h0 * simCoeffs.gravitation,
+						shackSphereDataOps->sphere_radius,
+						shackPDESWESphere->sphere_rotating_coriolis_omega,
+						shackPDESWESphere->sphere_fsphere_f0,
+						shackPDESWESphere->h0 * shackPDESWESphere->gravitation,
 						timestep_size,
 						use_f_sphere,
 						no_coriolis
@@ -599,7 +630,7 @@ void PDESWESphereTS_l_exp::p_update_coefficients(
  *
  * for further information
  */
-void PDESWESphereTS_l_exp::run_timestep(
+void PDESWESphereTS_l_exp::runTimestep(
 	sweet::SphereData_Spectral &io_prog_phi,
 	sweet::SphereData_Spectral &io_prog_vrt,
 	sweet::SphereData_Spectral &io_prog_div,
@@ -615,7 +646,7 @@ void PDESWESphereTS_l_exp::run_timestep(
 			StopwatchBox::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_l_exp_direct_special->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_l_exp_direct_special->runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 #if 0
 		// no Coriolis force active
 
@@ -623,7 +654,7 @@ void PDESWESphereTS_l_exp::run_timestep(
 		 * Using exponential integrators, we must compute an
 		 */
 
-		double ir = 1.0/shackDict.sim.sphere_radius;
+		double ir = 1.0/shackSphereDataOps->sphere_radius;
 		// avg. geopotential
 
 		double G = -simCoeffs.h0*simCoeffs.gravitation;
@@ -686,7 +717,7 @@ void PDESWESphereTS_l_exp::run_timestep(
 			StopwatchBox::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_lg_exp_lc_exp->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_lg_exp_lc_exp->runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 
 		#if SWEET_BENCHMARK_TIMINGS
 			StopwatchBox::getInstance().rexi_timestepping.stop();
@@ -703,7 +734,7 @@ void PDESWESphereTS_l_exp::run_timestep(
 			StopwatchBox::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_l_exp_direct_special->run_timestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_l_exp_direct_special->runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 #if 0
 		// no Coriolis force active
 
@@ -711,7 +742,7 @@ void PDESWESphereTS_l_exp::run_timestep(
 		 * Using exponential integrators, we must compute an
 		 */
 
-		double ir = 1.0/shackDict.sim.sphere_radius;
+		double ir = 1.0/shackSphereDataOps->sphere_radius;
 		// avg. geopotential
 
 		double G = -simCoeffs.h0*simCoeffs.gravitation;
@@ -869,9 +900,9 @@ void PDESWESphereTS_l_exp::run_timestep(
 				 * -> No threading
 				 */
 
-				sweet::SphereData_Spectral tmp_prog_phi(sphereDataConfig);
-				sweet::SphereData_Spectral tmp_prog_vort(sphereDataConfig);
-				sweet::SphereData_Spectral tmp_prog_div(sphereDataConfig);
+				sweet::SphereData_Spectral tmp_prog_phi(ops->sphereDataConfig);
+				sweet::SphereData_Spectral tmp_prog_vort(ops->sphereDataConfig);
+				sweet::SphereData_Spectral tmp_prog_div(ops->sphereDataConfig);
 
 				for (std::size_t workload_idx = start; workload_idx < end; workload_idx++)
 				{
@@ -892,16 +923,16 @@ void PDESWESphereTS_l_exp::run_timestep(
 						std::complex<double> &beta = perThreadVars[0]->beta[local_idx];
 
 						rexiSPH.setup_vectorinvariant_progphivortdiv(
-								sphereDataConfig,	///< sphere data for input data
-								&shackDict,
+								ops->sphereDataConfig,
+								shackSphereDataOps,
 
 								alpha,
 								beta,
 
-								simCoeffs.sphere_radius,
-								simCoeffs.sphere_rotating_coriolis_omega,
-								simCoeffs.sphere_fsphere_f0,
-								simCoeffs.h0*simCoeffs.gravitation,
+								shackSphereDataOps->sphere_radius,
+								shackPDESWESphere->sphere_rotating_coriolis_omega,
+								shackPDESWESphere->sphere_fsphere_f0,
+								shackPDESWESphere->h0 * shackPDESWESphere->gravitation,
 								i_fixed_dt,
 
 								use_f_sphere,

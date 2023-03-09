@@ -14,7 +14,7 @@
 
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 
 namespace sweet
@@ -25,7 +25,7 @@ class PlaneOperators
 public:
 	ErrorBase error;
 
-	PlaneDataConfig *planeDataConfig;
+	PlaneData_Config *planeDataConfig;
 
 	// differential operators (central / forward / backward)
 	PlaneData_Spectral diff_c_x, diff_c_y;
@@ -73,7 +73,7 @@ public:
 
 
 	PlaneOperators(
-		PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+		PlaneData_Config *i_planeDataConfig,		///< data config setup for spectral transformations
 		const double i_domain_size[2],			///< domain size
 		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
 	)	 __attribute__ ((deprecated)):
@@ -104,7 +104,7 @@ public:
 	}
 
 	PlaneOperators(
-		PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+		PlaneData_Config *i_planeDataConfig,		///< data config setup for spectral transformations
 		ShackPlaneDataOps *i_planeDataOps
 	)	:
 		planeDataConfig(i_planeDataConfig),
@@ -366,7 +366,7 @@ public:
 
 	bool setup(
 
-		PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+		PlaneData_Config &i_planeDataConfig,		///< data config setup for spectral transformations
 		const double i_domain_size[2],			///< domain size
 		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
 	)
@@ -406,7 +406,7 @@ public:
 
 
 	bool setup(
-		PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+		PlaneData_Config *i_planeDataConfig,		///< data config setup for spectral transformations
 		const double i_domain_size[2],			///< domain size
 		bool i_use_spectral_basis_diffs = true	///< use spectral differentiation (d/dx e^ix)
 	)
@@ -439,7 +439,7 @@ public:
 	}
 
 	bool setup(
-			PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+			PlaneData_Config *i_planeDataConfig,		///< data config setup for spectral transformations
 			ShackPlaneDataOps *i_shackPlaneDataOps
 	)
 	{
@@ -452,7 +452,7 @@ public:
 
 
 	bool setup(
-			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			PlaneData_Config &i_planeDataConfig,		///< data config setup for spectral transformations
 			ShackPlaneDataOps &i_shackPlaneDataOps
 	)
 	{
@@ -464,7 +464,7 @@ public:
 	}
 
 	bool setup(
-			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			PlaneData_Config &i_planeDataConfig,		///< data config setup for spectral transformations
 			ShackPlaneDataOps *i_shackPlaneDataOps
 	)
 	{

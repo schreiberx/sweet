@@ -42,11 +42,13 @@ class SphereData_Spectral
 
 
 public:
-	const SphereDataConfig *sphereDataConfig = nullptr;
+	const SphereData_Config *sphereDataConfig = nullptr;
 
 public:
 	std::complex<double> *spectral_space_data = nullptr;
 
+
+public:
 	std::complex<double>& operator[](std::size_t i)
 	{
 		return spectral_space_data[i];
@@ -57,6 +59,7 @@ public:
 		return spectral_space_data[i];
 	}
 
+public:
 	void swap(
 			SphereData_Spectral &i_sphereData
 	)
@@ -78,7 +81,7 @@ public:
 
 public:
 	SphereData_Spectral(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
 		spectral_space_data(nullptr)
@@ -89,9 +92,10 @@ public:
 	}
 
 
+#if 0
 public:
 	SphereData_Spectral(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			const std::complex<double> &i_value
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
@@ -102,13 +106,13 @@ public:
 		setup(i_sphereDataConfig);
 		spectral_set_value(i_value);
 	}
+#endif
 
-
-
+#if 1
 public:
 	SphereData_Spectral(
-			const SphereDataConfig *i_sphereDataConfig,
-			double &i_value
+			const SphereData_Config *i_sphereDataConfig,
+			const double &i_value
 	)	:
 		sphereDataConfig(i_sphereDataConfig),
 		spectral_space_data(nullptr)
@@ -118,7 +122,7 @@ public:
 		setup(i_sphereDataConfig);
 		spectral_set_value(i_value);
 	}
-
+#endif
 
 
 public:
@@ -168,7 +172,7 @@ public:
 	 */
 public:
 	inline void check(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	const
 	{
 		assert(sphereDataConfig->physical_num_lat == i_sphereDataConfig->physical_num_lat);
@@ -235,7 +239,7 @@ public:
 
 public:
 	SphereData_Spectral spectral_returnWithDifferentModes(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	const
 	{
 		SphereData_Spectral out(i_sphereDataConfig);
@@ -650,7 +654,7 @@ public:
 
 public:
 	bool setup(
-		const SphereDataConfig *i_sphereDataConfig
+		const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;
@@ -660,7 +664,7 @@ public:
 
 public:
 	bool setup(
-		const SphereDataConfig &i_sphereDataConfig
+		const SphereData_Config &i_sphereDataConfig
 	)
 	{
 		return setup(&i_sphereDataConfig);
@@ -669,7 +673,7 @@ public:
 
 public:
 	bool setup(
-		const SphereDataConfig *i_sphereDataConfig,
+		const SphereData_Config *i_sphereDataConfig,
 		double i_value
 	)
 	{
@@ -692,7 +696,7 @@ private:
 
 public:
 	void setup_if_required(
-		const SphereDataConfig *i_sphereDataConfig
+		const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)

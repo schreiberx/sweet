@@ -22,7 +22,7 @@ public:
 	static
 	PlaneData_Physical physical_convert(
 			const SphereData_Spectral &i_sphereDataSpectral,
-			PlaneDataConfig &i_planeDataConfig
+			PlaneData_Config &i_planeDataConfig
 	)
 	{
 		return physical_convert(i_sphereDataSpectral, &i_planeDataConfig);
@@ -33,7 +33,7 @@ public:
 	static
 	PlaneData_Physical physical_convert(
 			const SphereData_Spectral &i_sphereDataSpectral,
-			PlaneDataConfig *i_planeDataConfig
+			PlaneData_Config *i_planeDataConfig
 	)
 	{
 		assert(i_sphereDataSpectral.sphereDataConfig->physical_num_lon == (int)i_planeDataConfig->physical_res[0]);

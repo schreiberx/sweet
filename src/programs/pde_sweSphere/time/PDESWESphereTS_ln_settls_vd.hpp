@@ -17,8 +17,9 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
-#include <sweet/core/sphere/SphereTimestepping_SemiLagrangian.hpp>
+#include <sweet/core/time/ShackTimesteppingSemiLagrangianSphereData.hpp>
 #include <sweet/core/time/TimesteppingExplicitRKSphereData.hpp>
+#include <sweet/core/time/TimesteppingSemiLagrangianSphereData.hpp>
 
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_l_irk.hpp"
@@ -30,20 +31,13 @@
 class PDESWESphereTS_ln_settls_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
-	std::string string_id();
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
 
 	std::string string_id_storage;
 
-	void setup_auto();
-
-
 private:
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &ops;
-
-	SphereTimestepping_SemiLagrangian semiLagrangian;
+	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
 	sweet::SphereOperators_Sampler_SphereDataPhysical sphereSampler;
 
 public:
@@ -64,7 +58,6 @@ private:
 	LinearCoriolisTreatment_enum coriolis_treatment;
 	NLRemainderTreatment_enum nonlinear_remainder_treatment;
 
-	int timestepping_order;
 	bool original_linear_operator_sl_treatment;
 
 	sweet::SphereData_Spectral coriolis_arrival_spectral;
@@ -75,16 +68,11 @@ private:
 	PDESWESphereTS_lg_irk* swe_sphere_ts_lg_irk = nullptr;
 
 
-
 public:
-	PDESWESphereTS_ln_settls_vd(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op,
-			bool i_setup_auto = false
-		);
+	bool setup_auto(sweet::SphereOperators *io_ops);
 
-
-	void setup(
+	bool setup(
+			sweet::SphereOperators *io_ops,
 			int i_timestepping_order,
 			LinearCoriolisTreatment_enum i_coriolis_treatment,// = PDESWESphereTS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"
 			NLRemainderTreatment_enum i_nonlinear_divergence_treatment,// = PDESWESphereTS_ln_settls::NL_DIV_NONLINEAR,	// "ignore", "nonlinear"
@@ -92,7 +80,12 @@ public:
 	);
 
 
-	void run_timestep(
+public:
+	PDESWESphereTS_ln_settls_vd();
+
+
+
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

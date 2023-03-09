@@ -23,7 +23,7 @@
  *  - Diagnostic variables: u, v (obtained from psi and chi)
  */
 
-void PDESWESphereTS_lg_0_lc_n_erk_bv::run_timestep(
+void PDESWESphereTS_lg_0_lc_n_erk_bv::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -40,15 +40,15 @@ void PDESWESphereTS_lg_0_lc_n_erk_bv::run_timestep(
 	//sweet::SphereData_Physical vrtg = io_vrt.toPhys();
 	//sweet::SphereData_Physical divg = io_div.toPhys(); /* this should be zero! */
 
-	//SphereData_Spectral psi = op.inv_laplace(io_vrt);
-	//SphereData_Spectral chi = op.inv_laplace(io_div); /*this should be zero! */
+	//SphereData_Spectral psi = ops->inv_laplace(io_vrt);
+	//SphereData_Spectral chi = ops->inv_laplace(io_div); /*this should be zero! */
 
-	//op.vrtdiv_to_uv(io_vrt, io_div, ug, vg);
+	//ops->vrtdiv_to_uv(io_vrt, io_div, ug, vg);
 
-	//op.uv_to_vort(ug, vg);
+	//ops->uv_to_vort(ug, vg);
 
 	// standard time stepping RK
-	timestepping_rk.run_timestep(
+	timestepping_rk.runTimestep(
 			this,
 			&PDESWESphereTS_lg_0_lc_n_erk_bv::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_phi_pert, io_vrt, io_div,
@@ -79,12 +79,12 @@ void PDESWESphereTS_lg_0_lc_n_erk_bv::euler_timestep_update(
 
 	// Calculate velocities in physical space
 	sweet::SphereData_Physical u_phys, v_phys;
-	op.vrtdiv_to_uv(i_vrt, i_div, u_phys, v_phys);
+	ops->vrtdiv_to_uv(i_vrt, i_div, u_phys, v_phys);
 
 	/*
 	 * Calculate absolute vorticity in physical space (vrt+f)
 	 */
-	sweet::SphereData_Physical abs_vrtg = i_vrt.toPhys()+op.fg;
+	sweet::SphereData_Physical abs_vrtg = i_vrt.toPhys()+fg;
 	//std::cout << "Vort" << std::endl;
 	//i_vrt.spectral_print(6);
 
@@ -94,7 +94,7 @@ void PDESWESphereTS_lg_0_lc_n_erk_bv::euler_timestep_update(
 
 	//nonlinear vort and divergence of (velocity * abs_vort)
 	sweet::SphereData_Spectral vrt, div; 
-	op.uv_to_vrtdiv(u_nl, v_nl, vrt, div);
+	ops->uv_to_vrtdiv(u_nl, v_nl, vrt, div);
 
 	o_vrt_t -= div; //This is basically the tendency in the Barotropic Vorticity Eq.
 	//std::cout << "Vort tendency" << std::endl;
@@ -108,40 +108,41 @@ void PDESWESphereTS_lg_0_lc_n_erk_bv::euler_timestep_update(
 
 }
 
-/*
- * Setup
- */
-void PDESWESphereTS_lg_0_lc_n_erk_bv::setup(
-		int i_timestepping_order	///< order of RK time stepping method
+
+
+bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup_auto(
+		sweet::SphereOperators *io_ops
 )
 {
-	timestepping_order = i_timestepping_order;
-	timestep_size = shackDict.timecontrol.current_timestep_size;
-}
-
-
-
-void PDESWESphereTS_lg_0_lc_n_erk_bv::setup_auto()
-{
-	setup(
+	return setup(
+		io_ops,
 		timestepping_order
 		);
 }
 
-void PDESWESphereTS_lg_0_lc_n_erk_bv::print_help()
+bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order	///< order of RK time stepping method
+)
+{
+	ops = io_ops;
+
+	timestepping_order = i_timestepping_order;
+	timestep_size = shackTimestepControl->current_timestep_size;
+
+	setupFG();
+
+	return true;
+}
+
+void PDESWESphereTS_lg_0_lc_n_erk_bv::printHelp()
 {
 	std::cout << "	Barotropic Vorticity Equation:" << std::endl;
 	std::cout << "		+ lg_0_lc_n_erk_bv" << std::endl;
 }
 
-PDESWESphereTS_lg_0_lc_n_erk_bv::PDESWESphereTS_lg_0_lc_n_erk_bv(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-		timestepping_order(4)
-		
+PDESWESphereTS_lg_0_lc_n_erk_bv::PDESWESphereTS_lg_0_lc_n_erk_bv()	:
+		timestepping_order(-1)
 {
 }
 

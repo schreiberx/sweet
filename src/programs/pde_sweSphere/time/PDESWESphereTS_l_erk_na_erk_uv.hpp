@@ -1,7 +1,4 @@
 /*
- * PDESWESphereTS_l_erk_na_erk_uv.hpp
- *
- *  Created on: 30 May 2017
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
@@ -21,35 +18,23 @@
 class PDESWESphereTS_l_erk_na_erk_uv	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
-	std::string string_id();
-
-
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &ops;
-
-	int timestepping_order;
-	int timestepping_order2;
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
 
 	PDESWESphereTS_ln_erk_split_uv *l_erk_split_uv = nullptr;
 	PDESWESphereTS_ln_erk_split_uv *na_erk_split_uv = nullptr;
 
 public:
-	PDESWESphereTS_l_erk_na_erk_uv(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	bool setup_auto(sweet::SphereOperators *io_ops);
 
-	void setup(
+	bool setup(
+			sweet::SphereOperators *io_ops,
 			int i_order,	///< order of RK time stepping method
 			int i_order2
 	);
 
-
-	void setup_auto();
-
-	void run_timestep(
+public:
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,
 			sweet::SphereData_Spectral &io_vrt,
 			sweet::SphereData_Spectral &io_div,
@@ -58,6 +43,9 @@ public:
 			double i_simulation_timestamp = -1
 	);
 
+	void clear();
+
+	PDESWESphereTS_l_erk_na_erk_uv();
 
 	virtual ~PDESWESphereTS_l_erk_na_erk_uv();
 };

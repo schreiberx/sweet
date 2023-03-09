@@ -9,33 +9,59 @@
 
 
 
-bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::implements_timestepping_method(const std::string &i_timestepping_method
+bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::implementsTimesteppingMethod(const std::string &i_timestepping_method
 									)
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+
 	if (i_timestepping_method == "l_irk_na_sl_nr_settls_uv_only")
 		return true;
 
 	return false;
 }
 
-std::string PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::string_id()
+std::string PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::getIDString()
 {
 	return "l_irk_na_sl_nr_settls_uv_only";
 }
 
 
-void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_auto()
+bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_auto(sweet::SphereOperators *io_ops)
 {
-	setup(
-		timestepping_order
+	return setup(
+		io_ops,
+		shackPDESWETimeDisc->timestepping_order
 	);
 }
 
+bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order
+)
+{
+	ops = io_ops;
+	timestepping_order = i_timestepping_order;
 
-void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep(
+	if (timestepping_order != 1 && timestepping_order != 2)
+		SWEETError("Invalid time stepping order, must be 1 or 2");
+
+	// Setup semi-lag
+	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);
+
+	// Initialize with 1st order
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order = new PDESWESphereTS_ln_erk_split_uv;
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->setup(ops, 1, true, true, false, false, false);
+
+	// Initialize with 1st order and half time step size
+	swe_sphere_ts_l_irk = new PDESWESphereTS_l_irk;
+	swe_sphere_ts_l_irk->setup(ops, 1, 0.5 * shackTimestepControl->current_timestep_size, shackPDESWETimeDisc->timestepping_crank_nicolson_filter, false);
+
+	return true;
+}
+
+
+
+void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -98,15 +124,15 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	 * See Hortal's paper for equation.
 	 */
 	sweet::SphereData_Physical U_u_lon_prev, U_v_lat_prev;
-	ops.vrtdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
+	ops->vrtdiv_to_uv(U_vrt_prev, U_div_prev, U_u_lon_prev, U_v_lat_prev);
 
 	sweet::SphereData_Physical U_u_lon, U_v_lat;
-	ops.vrtdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
+	ops->vrtdiv_to_uv(U_vrt, U_div, U_u_lon, U_v_lat);
 
-	double dt_div_radius = i_dt / shackDict.sim.sphere_radius;
+	double dt_div_radius = i_dt / shackSphereDataOps->sphere_radius;
 
 	// Calculate departure points
-	ScalarDataArray pos_lon_d, pos_lat_d;
+	sweet::ScalarDataArray pos_lon_d, pos_lat_d;
 	semiLagrangian.semi_lag_departure_points_settls_specialized(
 			dt_div_radius*U_u_lon_prev, dt_div_radius*U_v_lat_prev,
 			dt_div_radius*U_u_lon, dt_div_radius*U_v_lat,
@@ -138,7 +164,7 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	/*
 	 * Compute L_D
 	 */
-	const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
 
 	/*
 	 * Method 1) First evaluate L, then sample result at departure point
@@ -249,7 +275,7 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	 * Step 2b) Solve Helmholtz problem
 	 * X - 1/2 dt LX = R
 	 */
-	swe_sphere_ts_l_irk->run_timestep(
+	swe_sphere_ts_l_irk->runTimestep(
 			R_phi, R_vrt, R_div,
 			0.5 * i_dt,
 			i_simulation_timestamp
@@ -273,41 +299,10 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 
 
 
-void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup(
-		int i_timestepping_order
-)
+
+
+PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only()
 {
-	timestepping_order = i_timestepping_order;
-
-	if (timestepping_order != 1 && timestepping_order != 2)
-		SWEETError("Invalid time stepping order, must be 1 or 2");
-
-	// Setup semi-lag
-	semiLagrangian.setup(ops.sphereDataConfig);
-
-	// Initialize with 1st order
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order = new PDESWESphereTS_ln_erk_split_uv(shackDict, ops);
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->setup(1, true, true, false, false, false);
-
-	// Initialize with 1st order and half time step size
-	swe_sphere_ts_l_irk = new PDESWESphereTS_l_irk(shackDict, ops);
-	swe_sphere_ts_l_irk->setup(1, 0.5 * shackDict.timecontrol.current_timestep_size, shackDict.disc.timestepping_crank_nicolson_filter, false);
-}
-
-
-
-PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op,
-			bool i_setup_auto
-		) :
-		shackDict(i_shackDict),
-		ops(i_op),
-		semiLagrangian(shackDict),
-		sphereSampler(semiLagrangian.sphereSampler)
-{
-	if (i_setup_auto)
-		setup_auto();
 }
 
 

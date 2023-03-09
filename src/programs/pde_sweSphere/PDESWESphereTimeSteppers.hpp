@@ -16,7 +16,7 @@ class PDESWESphereTimeSteppers
 {
 public:
 	sweet::ErrorBase error;
-	PDESWESphereTS_BaseInterface *master = nullptr;
+	PDESWESphereTS_BaseInterface *timestepper = nullptr;
 
 private:
 	std::vector<PDESWESphereTS_BaseInterface*> _registered_integrators;

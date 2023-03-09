@@ -42,8 +42,8 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::PlaneDataConfig planeDataConfig;
-		sweet::PlaneDataConfig planeDataConfigOversampling;
+		sweet::PlaneData_Config planeDataConfig;
+		sweet::PlaneData_Config planeDataConfigOversampling;
 		sweet::PlaneOperators ops;
 
 		sweet::PlaneData_Spectral prog_h;

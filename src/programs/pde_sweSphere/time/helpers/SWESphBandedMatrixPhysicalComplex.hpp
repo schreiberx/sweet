@@ -31,12 +31,12 @@ public:
 	/**
 	 * SPH configuration
 	 */
-	const sweet::SphereDataConfig *sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig;
 
 	/**
 	 * Solver for banded matrix
 	 */
-	LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
+	sweet::LapackBandedMatrixSolver< std::complex<double> > bandedMatrixSolver;
 
 	/**
 	 * Size of buffers
@@ -52,8 +52,8 @@ public:
 	 * Setup the SPH solver
 	 */
 public:
-	void setup(
-			const sweet::SphereDataConfig *i_sphereDataConfig,		///< Handler to sphereDataConfig
+	bool setup(
+			const sweet::SphereData_Config *i_sphereDataConfig,		///< Handler to sphereDataConfig
 			int i_halosize_offdiagonal	///< Size of the halo around. A value of 2 allocates data for 5 diagonals.
 	)
 	{
@@ -67,6 +67,8 @@ public:
 
 		buffer_in = MemBlockAlloc::alloc< std::complex<double> >(buffer_size);
 		buffer_out = MemBlockAlloc::alloc< std::complex<double> >(buffer_size);
+
+		return true;
 	}
 
 

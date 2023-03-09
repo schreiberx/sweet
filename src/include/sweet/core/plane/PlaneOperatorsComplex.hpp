@@ -8,8 +8,8 @@
 #define SRC_INCLUDE_SWEET_PLANE_OPERATORS_COMPLEX_HPP_
 
 
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/plane/PlaneData_SpectralComplex.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
 
 namespace sweet
 {
@@ -19,7 +19,7 @@ class PlaneOperatorsComplex
 public:
 	ErrorBase error;
 	
-	PlaneDataConfig *planeDataConfig;
+	PlaneData_Config *planeDataConfig;
 
 	// differential operators
 	PlaneData_SpectralComplex diff_c_x, diff_c_y;
@@ -173,7 +173,7 @@ public:
 
 
 	bool setup(
-			PlaneDataConfig *i_planeDataConfig,		///< data config setup for spectral transformations
+			PlaneData_Config *i_planeDataConfig,		///< data config setup for spectral transformations
 			ShackPlaneDataOps *i_shackPlaneDataOps
 	)
 	{
@@ -185,7 +185,7 @@ public:
 
 
 	bool setup(
-			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			PlaneData_Config &i_planeDataConfig,		///< data config setup for spectral transformations
 			ShackPlaneDataOps &i_shackPlaneDataOps
 	)
 	{
@@ -196,7 +196,7 @@ public:
 	}
 
 	bool setup(
-			PlaneDataConfig &i_planeDataConfig,		///< data config setup for spectral transformations
+			PlaneData_Config &i_planeDataConfig,		///< data config setup for spectral transformations
 			ShackPlaneDataOps *i_shackPlaneDataOps
 	)
 	{
@@ -207,7 +207,7 @@ public:
 	}
 
 	bool setup(
-			PlaneDataConfig *i_planeDataConfig,
+			PlaneData_Config *i_planeDataConfig,
 			const double i_domain_size[2]
 	)
 	{
@@ -350,7 +350,7 @@ public:
 
 public:
 	PlaneOperatorsComplex(
-		PlaneDataConfig *i_planeDataConfig,
+		PlaneData_Config *i_planeDataConfig,
 		const double i_domain_size[2]	///< domain size
 	)	:
 		planeDataConfig(i_planeDataConfig),

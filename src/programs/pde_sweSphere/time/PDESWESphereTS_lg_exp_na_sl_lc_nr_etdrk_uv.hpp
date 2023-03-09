@@ -14,7 +14,8 @@
 #include <limits>
 #include <sweet/core/shacks/ShackDictionary.hpp>
 
-#include <sweet/core/sphere/SphereTimestepping_SemiLagrangian.hpp>
+#include <sweet/core/time/ShackTimesteppingSemiLagrangianSphereData.hpp>
+#include <sweet/core/time/TimesteppingSemiLagrangianSphereData.hpp>
 
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_l_exp.hpp"
@@ -24,15 +25,11 @@
 class PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method);
-	std::string string_id();
-	void setup_auto();
-	void print_help();
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
+	void printHelp();
 
 private:
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &ops;
-
 	PDESWESphereTS_ln_erk_split_uv ts_ln_erk_split_uv;
 
 
@@ -53,21 +50,15 @@ public:
 	PDESWESphereTS_l_exp ts_psi1_exp;
 	PDESWESphereTS_l_exp ts_psi2_exp;
 
-	SphereTimestepping_SemiLagrangian semiLagrangian;
-	sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
-
-	int timestepping_order;
-	int timestepping_order2;
-
+	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
+	//sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
 public:
-	PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	bool setup_auto(sweet::SphereOperators *io_ops);
 
-	void setup(
-			EXP_sweet::ShackDictionary &i_rexi,
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			sweet::ShackExpIntegration *i_shackExpIntegration,
 			int i_timestepping_order,
 			int i_timestepping_order2,
 			double i_timestep_size,
@@ -75,7 +66,11 @@ public:
 			NLRemainderTreatment_enum i_nonlinear_remainder_treatment
 	);
 
-	void run_timestep(
+
+public:
+	PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv();
+
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

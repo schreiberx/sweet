@@ -39,7 +39,7 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		sweet::PlaneOperators ops;
 
 		sweet::PlaneData_Spectral prog_h;
@@ -273,7 +273,7 @@ public:
 	}
 
 
-	void run_timestep()
+	void runTimestep()
 	{
 		// either set time step size to 0 for autodetection or to
 		// a positive value to use a fixed time step size
@@ -281,7 +281,7 @@ public:
 
 		shackTimestepControl->timestepHelperStart();
 
-		timestepping.run_timestep(
+		timestepping.runTimestep(
 				this,
 				&SimulationTestRK::p_run_euler_timestep_update,	///< pointer to function to compute euler time step updates
 				data.prog_h, data.prog_u, data.prog_v,
@@ -322,7 +322,7 @@ int main(
 				if (simulation.shackTimestepControl->isFinalTimestepReached())
 					break;
 
-				simulation.run_timestep();
+				simulation.runTimestep();
 
 
 				double value_numerical = simulation.data.prog_h.toPhys().physical_get(0,0);

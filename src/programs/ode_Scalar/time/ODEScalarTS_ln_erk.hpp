@@ -30,7 +30,7 @@ public:
 
 
 public:
-	void run_timestep(
+	void runTimestep(
 			double &io_u,	///< prognostic variables
 
 			double i_dt = 0,

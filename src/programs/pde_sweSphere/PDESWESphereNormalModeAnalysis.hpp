@@ -6,11 +6,15 @@
 #define SRC_PROGRAMS_SWE_SPHERE_TIMEINTEGRATORS_SWE_SPHERE_NORMALMODEANALYSIS_HPP_
 
 #include <sweet/core/sphere/SphereData_Config.hpp>
+#include <sweet/core/sphere/SphereData_Spectral.hpp>
+#include <sweet/core/shacks/ShackDictionary.hpp>
 
 
 
 class NormalModeAnalysisSphere
 {
+public:
+	bool setup(sweet::SphereOperators *io_ops);
 
 public:
 	template <typename TCallbackClass>
@@ -26,7 +30,7 @@ public:
 			void(TCallbackClass::* const i_run_timestep_method)(void)
 	)
 	{
-		const sweet::SphereDataConfig *sphereDataConfig = io_prog_phi.sphereDataConfig;
+		const sweet::SphereData_Config *sphereDataConfig = io_prog_phi.sphereDataConfig;
 
 		/*
 		 * Do a normal mode analysis, see

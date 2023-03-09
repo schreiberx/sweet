@@ -12,6 +12,71 @@
 
 
 
+bool PDESWESphereTS_ln_erk_split_uv::setup_auto(sweet::SphereOperators *io_ops)
+{
+	setupFG();
+
+	/*
+	 * l_na
+	 */
+	if (timestepping_method == "l_na_erk_split_uv")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, true, true, false, false);
+
+	if (timestepping_method == "l_na_erk_split_aa_uv")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, true, true, false, true);
+
+	/*
+	 * l
+	 */
+	if (timestepping_method == "l_erk_split_uv")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, true, false, false, false);
+
+	if (timestepping_method == "l_erk_split_aa_uv")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, true, false, false, true);
+
+	/*
+	 * ln
+	 */
+	if (timestepping_method == "ln_erk_split_uv")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, true, true, true, false);
+
+	if (timestepping_method == "ln_erk_split_aa_uv")
+		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, true, true, true, true);
+
+	SWEETError("Should never happen");
+	return false;
+}
+
+
+/*
+ * Setup
+ */
+bool PDESWESphereTS_ln_erk_split_uv::setup(
+		sweet::SphereOperators *io_ops,
+		int i_order,	///< order of RK time stepping method
+		bool i_use_lg,
+		bool i_use_lc,
+		bool i_use_na,
+		bool i_use_nr,
+
+		bool i_antialiasing_for_each_term
+)
+{
+	timestepping_method = i_order;
+
+
+	use_lg = i_use_lg;
+	use_lc = i_use_lc;
+	use_na = i_use_na;
+	use_nr = i_use_nr;
+
+	anti_aliasing_for_each_term = i_antialiasing_for_each_term;
+
+	timestepping_order = i_order;
+	return true;
+}
+
+
 /*
  * Main routine for method to be used in case of finite differences
  */
@@ -27,19 +92,17 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_update_lg(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = shackDict.sim.gravitation * shackDict.sim.h0;
-
+	double gh0 = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 	const sweet::SphereData_Spectral &U_phi_pert = i_U_phi_pert;
-	//const sweet::SphereData_Spectral &U_vrt = i_U_vrt;
 	const sweet::SphereData_Spectral &U_div = i_U_div;
 
 
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	ops->vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 	o_phi_pert_t -= gh0*U_div;
-	o_div_t -= op.laplace(U_phi_pert);
+	o_div_t -= ops->laplace(U_phi_pert);
 }
 
 
@@ -59,7 +122,7 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_update_lc(
 		double i_simulation_timestamp
 )
 {
-//	double gh0 = shackDict.sim.gravitation * shackDict.sim.h0;
+//	double gh0 = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 
 //	const sweet::SphereData_Spectral &U_phi_pert = i_U_phi;
@@ -68,14 +131,14 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_update_lc(
 
 
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	ops->vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 
-	sweet::SphereData_Physical fu_nl = op.fg*U_u_phys;
-	sweet::SphereData_Physical fv_nl = op.fg*U_v_phys;
+	sweet::SphereData_Physical fu_nl = fg*U_u_phys;
+	sweet::SphereData_Physical fv_nl = fg*U_v_phys;
 
 	sweet::SphereData_Spectral div, vrt;
-	op.uv_to_vrtdiv(fu_nl, fv_nl, vrt, div);
+	ops->uv_to_vrtdiv(fu_nl, fv_nl, vrt, div);
 
 	o_vrt_t -= div;
 	o_div_t += vrt;
@@ -98,7 +161,7 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_update_na(
 		double i_simulation_timestamp
 )
 {
-//	double gh0 = shackDict.sim.gravitation * shackDict.sim.h0;
+//	double gh0 = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 
 	const sweet::SphereData_Spectral &U_phi_pert = i_U_phi;
@@ -107,12 +170,12 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_update_na(
 
 
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	ops->vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 
 
 	sweet::SphereData_Physical U_div_phys = U_div.toPhys();
-	o_phi_t -= op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
+	o_phi_t -= ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_phi_pert.toPhys());
 
 	/*
 	 * Velocity
@@ -123,11 +186,11 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_update_na(
 	sweet::SphereData_Physical v_nl = U_v_phys*vrtg;
 
 	sweet::SphereData_Spectral vrt, div;
-	op.uv_to_vrtdiv(u_nl, v_nl, vrt, div);
+	ops->uv_to_vrtdiv(u_nl, v_nl, vrt, div);
 	o_vrt_t -= div;
 	o_div_t += vrt;
 
-	o_div_t -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
+	o_div_t -= ops->laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
 }
 
 
@@ -168,7 +231,7 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_set_tendencies(
 )
 {
 	sweet::SphereData_Physical U_u_phys, U_v_phys;
-	op.vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
+	ops->vrtdiv_to_uv(i_U_vrt, i_U_div, U_u_phys, U_v_phys);
 
 	o_phi_t.spectral_set_zero();
 	o_vrt_t.spectral_set_zero();
@@ -309,10 +372,10 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_set_tendencies(
 		sweet::SphereData_Physical vrtg = i_U_vrt.toPhys();
 
 		sweet::SphereData_Spectral vrt, div;
-		op.uv_to_vrtdiv(U_u_phys*vrtg, U_v_phys*vrtg, vrt, div);
+		ops->uv_to_vrtdiv(U_u_phys*vrtg, U_v_phys*vrtg, vrt, div);
 		reg_vrt = -div;
 		reg_div = vrt;
-		reg_div -= op.laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
+		reg_div -= ops->laplace(0.5*(U_u_phys*U_u_phys+U_v_phys*U_v_phys));
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////
@@ -329,10 +392,10 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_set_tendencies(
 
 		sweet::SphereData_Physical U_div_phys = U_div.toPhys();
 
-		sweet::SphereData_Spectral u_t = -op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_u_phys);
-		sweet::SphereData_Spectral v_t = -op.V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_v_phys);
+		sweet::SphereData_Spectral u_t = -ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_u_phys);
+		sweet::SphereData_Spectral v_t = -ops->V_dot_grad_scalar(U_u_phys, U_v_phys, U_div_phys, U_v_phys);
 
-		op.uv_to_vrtdiv(u_t.toPhys(), v_t.toPhys(), vrt, div);
+		ops->uv_to_vrtdiv(u_t.toPhys(), v_t.toPhys(), vrt, div);
 
 		new_vrt = vrt;
 		new_div = div;
@@ -351,7 +414,7 @@ void PDESWESphereTS_ln_erk_split_uv::euler_timestep_set_tendencies(
 
 
 
-void PDESWESphereTS_ln_erk_split_uv::run_timestep(
+void PDESWESphereTS_ln_erk_split_uv::runTimestep(
 		sweet::SphereData_Spectral &io_phi,
 		sweet::SphereData_Spectral &io_vrt,
 		sweet::SphereData_Spectral &io_div,
@@ -364,7 +427,7 @@ void PDESWESphereTS_ln_erk_split_uv::run_timestep(
 		SWEETError("Only constant time step size allowed");
 
 	// standard time stepping
-	timestepping_rk.run_timestep(
+	timestepping_rk.runTimestep(
 			this,
 			&PDESWESphereTS_ln_erk_split_uv::euler_timestep_set_tendencies,	///< pointer to function to compute euler time step updates
 			io_phi, io_vrt, io_div,
@@ -376,37 +439,9 @@ void PDESWESphereTS_ln_erk_split_uv::run_timestep(
 
 
 
-/*
- * Setup
- */
-void PDESWESphereTS_ln_erk_split_uv::setup(
-		int i_order,	///< order of RK time stepping method
-		bool i_use_lg,
-		bool i_use_lc,
-		bool i_use_na,
-		bool i_use_nr,
-
-		bool i_antialiasing_for_each_term
-)
-{
-	use_lg = i_use_lg;
-	use_lc = i_use_lc;
-	use_na = i_use_na;
-	use_nr = i_use_nr;
-
-	anti_aliasing_for_each_term = i_antialiasing_for_each_term;
-
-	timestepping_order = i_order;
-}
 
 
-
-PDESWESphereTS_ln_erk_split_uv::PDESWESphereTS_ln_erk_split_uv(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op)
+PDESWESphereTS_ln_erk_split_uv::PDESWESphereTS_ln_erk_split_uv()
 {
 }
 

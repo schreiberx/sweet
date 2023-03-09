@@ -50,7 +50,7 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		sweet::PlaneOperators ops;
 
 		sweet::PlaneData_Spectral prog_h;
@@ -303,11 +303,11 @@ public:
 		clear();
 	}
 
-	bool run_timestep()
+	bool runTimestep()
 	{
 		shackTimestepControl->timestepHelperStart();
 
-		timeSteppers.master->run_timestep(
+		timeSteppers.master->runTimestep(
 				data.prog_h, data.prog_u, data.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
@@ -341,7 +341,7 @@ public:
 	{
 		if (shackTimestepControl->run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
-				run_timestep();
+				runTimestep();
 	}
 
 	void vis_get_vis_data_array(

@@ -44,7 +44,7 @@ bool SWE_Plane_TS_l_direct::setup(
 }
 
 
-void SWE_Plane_TS_l_direct::run_timestep(
+void SWE_Plane_TS_l_direct::runTimestep(
 		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -177,14 +177,14 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 	// - If the time step has changed
 
 	bool compute_phin = false;
-	if ( (! shackExpIntegration->exp_direct_precompute_phin) ||
+	if ( (! shackExpIntegration->direct_precompute_phin) ||
 	      i_simulation_timestamp == 0                ||
 	      this->dt_precompute_phin != dt       )
 		compute_phin = true;
 
 	if (compute_phin)
 	{
-		if (shackExpIntegration->exp_direct_precompute_phin)
+		if (shackExpIntegration->direct_precompute_phin)
 		{
 			for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
 			{
@@ -468,7 +468,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 						for (int k = 0; k < 3; k++)
 							d += v_lambda[j][k] * v_inv[k][i];
 
-						if (shackExpIntegration->exp_direct_precompute_phin)
+						if (shackExpIntegration->direct_precompute_phin)
 							Z[ik1][ik0][j][i] = d;
 						else // light version
 							Z_single_wavenumber_pair[j][i] = d;
@@ -484,7 +484,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedata(
 				U[k] = 0.0;
 			}
 
-			if (shackExpIntegration->exp_direct_precompute_phin)
+			if (shackExpIntegration->direct_precompute_phin)
 			{
 				for (int k = 0; k < 3; k++)
 					for (int j = 0; j < 3; j++)
@@ -584,14 +584,14 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 	// - If the time step has changed
 
 	bool compute_phin = false;
-	if ( (! shackExpIntegration->exp_direct_precompute_phin) ||
+	if ( (! shackExpIntegration->direct_precompute_phin) ||
 	      i_simulation_timestamp == 0                ||
 	      this->dt_precompute_phin != dt       )
 		compute_phin = true;
 
 	if (compute_phin)
 	{
-		if (shackExpIntegration->exp_direct_precompute_phin)
+		if (shackExpIntegration->direct_precompute_phin)
 		{
 			for (std::size_t ik1 = 0; ik1 < io_h_pert.planeDataConfig->spectral_data_size[1]; ik1++)
 			{
@@ -883,7 +883,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 						for (int k = 0; k < 3; k++)
 							d += v_lambda[j][k] * v_inv[k][i];
 
-						if (shackExpIntegration->exp_direct_precompute_phin)
+						if (shackExpIntegration->direct_precompute_phin)
 							Z[ik1][ik0][j][i] = d;
 						else // light version
 							Z_single_wavenumber_pair[j][i] = d;
@@ -899,7 +899,7 @@ void SWE_Plane_TS_l_direct::run_timestep_agrid_planedatacomplex(
 				U[k] = 0.0;
 			}
 
-			if (shackExpIntegration->exp_direct_precompute_phin)
+			if (shackExpIntegration->direct_precompute_phin)
 			{
 				for (int k = 0; k < 3; k++)
 					for (int j = 0; j < 3; j++)

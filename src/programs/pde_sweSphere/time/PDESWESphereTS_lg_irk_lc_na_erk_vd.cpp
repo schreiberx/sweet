@@ -6,12 +6,11 @@
 
 
 
-bool PDESWESphereTS_lg_irk_lc_na_erk_vd::implements_timestepping_method(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_lg_irk_lc_na_erk_vd::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	if (
 		i_timestepping_method == "lg_irk_lc_na_erk_vd" || i_timestepping_method == "lg_irk_lc_na_erk_vd_ver0" ||
 		i_timestepping_method == "lg_irk_lc_na_erk_vd_ver1"
@@ -23,22 +22,105 @@ bool PDESWESphereTS_lg_irk_lc_na_erk_vd::implements_timestepping_method(const st
 
 
 
-void PDESWESphereTS_lg_irk_lc_na_erk_vd::setup_auto()
+bool PDESWESphereTS_lg_irk_lc_na_erk_vd::setup_auto(
+		sweet::SphereOperators *io_ops
+)
 {
 	if (
 		timestepping_method == "lg_irk_lc_na_erk_vd" ||
 		timestepping_method == "lg_irk_lc_na_erk_vd_ver0"
 	)
-		setup(timestepping_order, timestepping_order2, 0);
+	{
+		return setup(io_ops, timestepping_order, timestepping_order2, 0);
+	}
 	else if (
 			timestepping_method == "lg_irk_lc_na_erk_vd_ver1"
 		)
-		setup(timestepping_order,timestepping_order2, 1);
+	{
+		return setup(io_ops, timestepping_order,timestepping_order2, 1);
+	}
 	else
+	{
 		SWEETError("Not implemented");
+	}
+
+	return false;
 }
 
-std::string PDESWESphereTS_lg_irk_lc_na_erk_vd::string_id()
+
+bool PDESWESphereTS_lg_irk_lc_na_erk_vd::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order,	///< order of RK time stepping method
+		int i_timestepping_order2,	///< order of RK time stepping method for non-linear parts
+		int i_version_id
+)
+{
+	ops = io_ops;
+
+	version_id = i_version_id;
+
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+
+	if (i_timestepping_order2 < 0)
+		i_timestepping_order2 = i_timestepping_order;
+
+	if (i_timestepping_order != i_timestepping_order2)
+		SWEETError("Orders of 1st and 2nd one must match");
+
+	timestep_size = shackTimestepControl->current_timestep_size;
+
+	if (timestepping_order == 1)
+	{
+		timestepping_lg_irk.setup(
+			ops,
+			1,
+			timestep_size
+		);
+	}
+	else if (timestepping_order == 2)
+	{
+		if (version_id == 0)
+		{
+			timestepping_lg_irk.setup(
+				ops,
+				2,
+				timestep_size*0.5
+			);
+		}
+		else if (version_id == 1)
+		{
+			timestepping_lg_irk.setup(
+				ops,
+				2,
+				timestep_size
+			);
+		}
+		else
+		{
+			SWEETError("Invalid version");
+		}
+	}
+	else
+	{
+		SWEETError("Invalid timestepping order");
+	}
+
+
+	// Only NA part!
+	timestepping_ln_erk_split_vd.setup(
+			ops,
+			i_timestepping_order2,
+			false, true, true, false, false
+		);
+
+	return true;
+}
+
+
+
+
+std::string PDESWESphereTS_lg_irk_lc_na_erk_vd::getIDString()
 {
 	std::string s = "l_irk_n_erk_ver";
 
@@ -54,7 +136,7 @@ std::string PDESWESphereTS_lg_irk_lc_na_erk_vd::string_id()
 
 
 
-void PDESWESphereTS_lg_irk_lc_na_erk_vd::run_timestep(
+void PDESWESphereTS_lg_irk_lc_na_erk_vd::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,		///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,		///< prognostic variables
@@ -68,14 +150,14 @@ void PDESWESphereTS_lg_irk_lc_na_erk_vd::run_timestep(
 		if (version_id == 0)
 		{
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt,
 					i_simulation_timestamp
 				);
 
 			// first order explicit for non-linear
-			timestepping_ln_erk_split_vd.run_timestep(
+			timestepping_ln_erk_split_vd.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -84,14 +166,14 @@ void PDESWESphereTS_lg_irk_lc_na_erk_vd::run_timestep(
 		else
 		{
 			// first order explicit for non-linear
-			timestepping_ln_erk_split_vd.run_timestep(
+			timestepping_ln_erk_split_vd.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt,
 					i_simulation_timestamp
 				);
 
 			// first order IRK for linear
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt,
 					i_simulation_timestamp
@@ -103,21 +185,21 @@ void PDESWESphereTS_lg_irk_lc_na_erk_vd::run_timestep(
 		if (version_id == 0)
 		{
 			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
 				);
 
 			// FULL time step for non-linear part
-			timestepping_ln_erk_split_vd.run_timestep(
+			timestepping_ln_erk_split_vd.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt,
 					i_simulation_timestamp
 				);
 
 			// HALF time step for linear part
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp+i_dt*0.5
@@ -126,21 +208,21 @@ void PDESWESphereTS_lg_irk_lc_na_erk_vd::run_timestep(
 		else if (version_id == 1)
 		{
 			// HALF time step for non-linear part
-			timestepping_ln_erk_split_vd.run_timestep(
+			timestepping_ln_erk_split_vd.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
 				);
 
 			// FULL time step for linear part
-			timestepping_lg_irk.run_timestep(
+			timestepping_lg_irk.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt,
 					i_simulation_timestamp
 				);
 
 			// HALF time step for non-linear part
-			timestepping_ln_erk_split_vd.run_timestep(
+			timestepping_ln_erk_split_vd.runTimestep(
 					io_phi_pert, io_vrt, io_div,
 					i_dt*0.5,
 					i_simulation_timestamp
@@ -159,77 +241,8 @@ void PDESWESphereTS_lg_irk_lc_na_erk_vd::run_timestep(
 
 
 
-/*
- * Setup
- */
-void PDESWESphereTS_lg_irk_lc_na_erk_vd::setup(
-		int i_order,	///< order of RK time stepping method
-		int i_order2,	///< order of RK time stepping method for non-linear parts
-		int i_version_id
-)
-{
-	if (i_order2 < 0)
-		i_order2 = i_order;
 
-	if (i_order != i_order2)
-		SWEETError("Orders of 1st and 2nd one must match");
-
-	version_id = i_version_id;
-
-	timestepping_order = i_order;
-	timestepping_order2 = i_order2;
-	timestep_size = shackDict.timecontrol.current_timestep_size;
-
-	if (timestepping_order == 1)
-	{
-		timestepping_lg_irk.setup(
-			1,
-			timestep_size
-		);
-	}
-	else if (timestepping_order == 2)
-	{
-		if (version_id == 0)
-		{
-			timestepping_lg_irk.setup(
-				2,
-				timestep_size*0.5
-			);
-		}
-		else if (version_id == 1)
-		{
-			timestepping_lg_irk.setup(
-				2,
-				timestep_size
-			);
-		}
-		else
-		{
-			SWEETError("Invalid version");
-		}
-	}
-	else
-	{
-		SWEETError("Invalid timestepping order");
-	}
-
-
-	// Only NA part!
-	timestepping_ln_erk_split_vd.setup(i_order2, false, true, true, false, false);
-}
-
-
-
-PDESWESphereTS_lg_irk_lc_na_erk_vd::PDESWESphereTS_lg_irk_lc_na_erk_vd(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-		timestepping_lg_irk(shackDict, op),
-		timestepping_ln_erk_split_vd(shackDict, op),
-		version_id(0),
-		timestepping_order(-1)
+PDESWESphereTS_lg_irk_lc_na_erk_vd::PDESWESphereTS_lg_irk_lc_na_erk_vd()
 {
 
 }

@@ -17,8 +17,9 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
-#include <sweet/core/sphere/SphereTimestepping_SemiLagrangian.hpp>
+#include <sweet/core/time/ShackTimesteppingSemiLagrangianSphereData.hpp>
 #include <sweet/core/time/TimesteppingExplicitRKSphereData.hpp>
+#include <sweet/core/time/TimesteppingSemiLagrangianSphereData.hpp>
 
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_l_irk.hpp"
@@ -30,22 +31,15 @@
 class PDESWESphereTS_ln_settls_uv	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
 
 	std::string string_id_storage;
 
-	std::string string_id();
-
-	void setup_auto();
-
+	std::string getIDString();
 
 private:
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &ops;
-
-	SphereTimestepping_SemiLagrangian semiLagrangian;
-	sweet::SphereOperators_Sampler_SphereDataPhysical sphereSampler;
+	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
+	//sweet::SphereOperators_Sampler_SphereDataPhysical sphereSampler;
 
 public:
 	enum LinearCoriolisTreatment_enum {
@@ -76,16 +70,11 @@ private:
 	PDESWESphereTS_lg_irk* swe_sphere_ts_lg_irk = nullptr;
 
 
-
 public:
-	PDESWESphereTS_ln_settls_uv(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op,
-			bool i_setup_auto = false
-		);
+	bool setup_auto(sweet::SphereOperators *io_ops);
 
-
-	void setup(
+	bool setup(
+			sweet::SphereOperators *io_ops,
 			int i_timestepping_order,
 			LinearCoriolisTreatment_enum i_coriolis_treatment,// = PDESWESphereTS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"
 			NLRemainderTreatment_enum i_nonlinear_divergence_treatment,// = PDESWESphereTS_ln_settls::NL_DIV_NONLINEAR,	// "ignore", "nonlinear"
@@ -93,7 +82,11 @@ public:
 	);
 
 
-	void run_timestep(
+
+public:
+	PDESWESphereTS_ln_settls_uv();
+
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

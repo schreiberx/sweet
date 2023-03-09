@@ -234,11 +234,11 @@ public:
 		clear();
 	}
 
-	bool run_timestep()
+	bool runTimestep()
 	{
 		shackTimestepControl->timestepHelperStart();
 
-		timeSteppers.master->run_timestep(
+		timeSteppers.master->runTimestep(
 				data.prog_u,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time

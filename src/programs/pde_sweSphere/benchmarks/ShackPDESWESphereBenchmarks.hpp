@@ -1,5 +1,4 @@
 /*
- *  Created on: Feb 21, 2023
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
@@ -132,7 +131,7 @@ public:
 		return error.forwardWithPositiveReturn(i_pa.error);
 	}
 
-	virtual void printShack(
+	void printShack(
 		const std::string& i_prefix = ""
 	)
 	{

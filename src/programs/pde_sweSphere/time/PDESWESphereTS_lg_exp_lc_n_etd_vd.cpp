@@ -5,12 +5,13 @@
 #include "PDESWESphereTS_lg_exp_lc_n_etd_vd.hpp"
 
 
-bool PDESWESphereTS_lg_exp_lc_n_etd_vd::implements_timestepping_method(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_lg_exp_lc_n_etd_vd::implementsTimesteppingMethod(
+		const std::string &i_timestepping_method
+)
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	if (	i_timestepping_method == "lg_exp_lc_n_etd_vd"	||
 			i_timestepping_method == "lg_exp_lc_na_nr_etd_vd"	||
 			i_timestepping_method == "lg_exp_lc_na_etd_vd"	||
@@ -24,54 +25,118 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_vd::implements_timestepping_method(const std
 }
 
 
-std::string PDESWESphereTS_lg_exp_lc_n_etd_vd::string_id()
-{
-	return "lg_exp_lc_n_etd";
-}
 
-
-void PDESWESphereTS_lg_exp_lc_n_etd_vd::setup_auto()
+bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup_auto(
+	sweet::SphereOperators *io_ops
+)
 {
-	if (shackDict.sim.sphere_use_fsphere)
+	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
+
+	bool _with_na;
+	bool _with_nr;
 
 	if (	timestepping_method == "lg_exp_lc_n_etd_vd"	||
 			timestepping_method == "lg_exp_lc_na_nr_etd_vd")
 	{
-		with_na = true;
-		with_nr = true;
+		_with_na = true;
+		_with_nr = true;
 	}
 	else if (timestepping_method == "lg_exp_lc_na_etd_vd")
 	{
-		with_na = true;
-		with_nr = false;
+		_with_na = true;
+		_with_nr = false;
 	}
 	else if (timestepping_method == "lg_exp_lc_nr_etd_vd")
 	{
-		with_na = false;
-		with_nr = true;
+		_with_na = false;
+		_with_nr = true;
 	}
 	else if (timestepping_method == "lg_exp_lc_etd_vd")
 	{
-		with_na = false;
-		with_nr = false;
+		_with_na = false;
+		_with_nr = false;
 	}
 	else
 	{
 		SWEETError("Unknown TM");
 	}
 
-	setup(
-			shackDict.rexi,
+	return setup(
+			io_ops,
+			shackExpIntegration,
 			timestepping_order,
 			timestepping_order2,
-			shackDict.timecontrol.current_timestep_size
+			shackTimestepControl->current_timestep_size
 		);
 }
 
 
 
-void PDESWESphereTS_lg_exp_lc_n_etd_vd::print_help()
+bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup(
+		sweet::SphereOperators *io_ops,
+		sweet::ShackExpIntegration *i_shackExpIntegration,
+		int i_timestepping_order,
+		int i_timestepping_order2,
+		double i_timestep_size
+)
+{
+	ops = io_ops;
+	timestepping_order = i_timestepping_order;
+
+	ts_ln_erk_split_vd.setup(ops, i_timestepping_order, true, true, true, true, false);
+
+	if (timestepping_order != i_timestepping_order2)
+		SWEETError("Mismatch of orders, should be equal");
+
+	if (timestepping_order == 0 || timestepping_order == 1)
+	{
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+	}
+	else if (timestepping_order == 2)
+	{
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
+
+		NU_phi_prev.setup(ops->sphereDataConfig);
+		NU_vrt_prev.setup(ops->sphereDataConfig);
+		NU_div_prev.setup(ops->sphereDataConfig);
+	}
+	else if (timestepping_order == 3)
+	{
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
+		ts_phi3_exp.setup_variant_50(ops, i_shackExpIntegration, "phi3", i_timestep_size, false, true, timestepping_order);
+
+		NU_phi_prev.setup(ops->sphereDataConfig);
+		NU_vrt_prev.setup(ops->sphereDataConfig);
+		NU_div_prev.setup(ops->sphereDataConfig);
+
+		NU_phi_prev_2.setup(ops->sphereDataConfig);
+		NU_vrt_prev_2.setup(ops->sphereDataConfig);
+		NU_div_prev_2.setup(ops->sphereDataConfig);
+	}
+	else
+	{
+		SWEETError("TODO: This order is not implemented, yet!");
+	}
+
+	return true;
+}
+
+
+
+std::string PDESWESphereTS_lg_exp_lc_n_etd_vd::getIDString()
+{
+	return "lg_exp_lc_n_etd";
+}
+
+
+
+void PDESWESphereTS_lg_exp_lc_n_etd_vd::printHelp()
 {
 	std::cout << "	Exponential ETD:" << std::endl;
 	std::cout << "		+ lg_exp_lc_n_etd_vd" << std::endl;
@@ -84,7 +149,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::print_help()
 
 
 
-void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
+void PDESWESphereTS_lg_exp_lc_n_etd_vd::runTimestep(
 		sweet::SphereData_Spectral &io_U_phi,	///< prognostic variables
 		sweet::SphereData_Spectral &io_U_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_U_div,	///< prognostic variables
@@ -93,7 +158,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	const sweet::SphereDataConfig *sphereDataConfig = io_U_phi.sphereDataConfig;
+	const sweet::SphereData_Config *sphereDataConfig = io_U_phi.sphereDataConfig;
 
 	if (timestepping_order == 1)
 	{
@@ -106,7 +171,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi0_Un_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_Un_div(sphereDataConfig);
 
-		ts_phi0_exp.run_timestep(
+		ts_phi0_exp.runTimestep(
 				io_U_phi, io_U_vrt, io_U_div,
 				phi0_Un_phi, phi0_Un_vrt, phi0_Un_div,
 				i_fixed_dt,
@@ -147,7 +212,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi1_FUn_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi1_FUn_div(sphereDataConfig);
 
-		ts_phi1_exp.run_timestep(
+		ts_phi1_exp.runTimestep(
 				F_phi, F_vrt, F_div,
 				phi1_FUn_phi, phi1_FUn_vrt, phi1_FUn_div,
 				i_fixed_dt,
@@ -217,7 +282,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi0_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_div(sphereDataConfig);
 
-		ts_phi0_exp.run_timestep(
+		ts_phi0_exp.runTimestep(
 				U_phi, U_vrt, U_div,
 				phi0_phi, phi0_vrt, phi0_div,
 				i_fixed_dt,
@@ -259,7 +324,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi1_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi1_div(sphereDataConfig);
 
-		ts_phi1_exp.run_timestep(
+		ts_phi1_exp.runTimestep(
 				F_phi, F_vrt, F_div,
 				phi1_phi, phi1_vrt, phi1_div,
 				i_fixed_dt,
@@ -274,7 +339,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi2_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi2_div(sphereDataConfig);
 
-		ts_phi2_exp.run_timestep(
+		ts_phi2_exp.runTimestep(
 				F_phi - NU_phi_prev,
 				F_vrt - NU_vrt_prev,
 				F_div - NU_div_prev,
@@ -394,7 +459,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi0_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi0_div(sphereDataConfig);
 
-		ts_phi0_exp.run_timestep(
+		ts_phi0_exp.runTimestep(
 				U_phi, U_vrt, U_div,
 				phi0_phi, phi0_vrt, phi0_div,
 				i_fixed_dt,
@@ -408,7 +473,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi1_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi1_div(sphereDataConfig);
 
-		ts_phi1_exp.run_timestep(
+		ts_phi1_exp.runTimestep(
 				NU_phi, NU_vrt, NU_div,
 				phi1_phi, phi1_vrt, phi1_div,
 				i_fixed_dt,
@@ -422,7 +487,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi2_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi2_div(sphereDataConfig);
 
-		ts_phi2_exp.run_timestep(
+		ts_phi2_exp.runTimestep(
 				3.0/2.0*NU_phi - 2.0*NU_phi_prev + 1.0/2.0*NU_phi_prev_2,
 				3.0/2.0*NU_vrt - 2.0*NU_vrt_prev + 1.0/2.0*NU_vrt_prev_2,
 				3.0/2.0*NU_div - 2.0*NU_div_prev + 1.0/2.0*NU_div_prev_2,
@@ -443,7 +508,7 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 		sweet::SphereData_Spectral phi3_vrt(sphereDataConfig);
 		sweet::SphereData_Spectral phi3_div(sphereDataConfig);
 
-		ts_phi3_exp.run_timestep(
+		ts_phi3_exp.runTimestep(
 				1.0/2.0*NU_phi - NU_phi_prev + 1.0/2.0*NU_phi_prev_2,
 				1.0/2.0*NU_vrt - NU_vrt_prev + 1.0/2.0*NU_vrt_prev_2,
 				1.0/2.0*NU_div - NU_div_prev + 1.0/2.0*NU_div_prev_2,
@@ -484,76 +549,8 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::run_timestep(
 
 
 
-/*
- * Setup
- */
-void PDESWESphereTS_lg_exp_lc_n_etd_vd::setup(
-		EXP_sweet::ShackDictionary &i_rexiSimVars,
-		int i_timestepping_order,
-		int i_timestepping_order2,
-		double i_timestep_size
-)
-{
-	timestepping_order = i_timestepping_order;
 
-	ts_ln_erk_split_vd.setup(i_timestepping_order, true, true, true, true, false);
-
-	if (timestepping_order != i_timestepping_order2)
-		SWEETError("Mismatch of orders, should be equal");
-
-	if (timestepping_order == 0 || timestepping_order == 1)
-	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
-	}
-	else if (timestepping_order == 2)
-	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
-
-		NU_phi_prev.setup(ops.sphereDataConfig);
-		NU_vrt_prev.setup(ops.sphereDataConfig);
-		NU_div_prev.setup(ops.sphereDataConfig);
-	}
-	else if (timestepping_order == 3)
-	{
-		ts_phi0_exp.setup(i_rexiSimVars, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup(i_rexiSimVars, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_exp.setup(i_rexiSimVars, "phi2", i_timestep_size, false, true, timestepping_order);
-		ts_phi3_exp.setup(i_rexiSimVars, "phi3", i_timestep_size, false, true, timestepping_order);
-
-		NU_phi_prev.setup(ops.sphereDataConfig);
-		NU_vrt_prev.setup(ops.sphereDataConfig);
-		NU_div_prev.setup(ops.sphereDataConfig);
-
-		NU_phi_prev_2.setup(ops.sphereDataConfig);
-		NU_vrt_prev_2.setup(ops.sphereDataConfig);
-		NU_div_prev_2.setup(ops.sphereDataConfig);
-	}
-	else
-	{
-		SWEETError("TODO: This order is not implemented, yet!");
-	}
-}
-
-
-PDESWESphereTS_lg_exp_lc_n_etd_vd::PDESWESphereTS_lg_exp_lc_n_etd_vd(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		ops(i_op),
-
-		ts_ln_erk_split_vd(shackDict, ops),
-
-		with_na(true),
-		with_nr(true),
-
-		ts_phi0_exp(shackDict, ops),
-		ts_phi1_exp(shackDict, ops),
-		ts_phi2_exp(shackDict, ops),
-		ts_phi3_exp(shackDict, ops)
+PDESWESphereTS_lg_exp_lc_n_etd_vd::PDESWESphereTS_lg_exp_lc_n_etd_vd()
 {
 }
 

@@ -78,7 +78,7 @@ public:
 	{
 		sweet::ExpFunctions<T> rexiFunctions;
 
-		const sweet::PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = io_h.planeDataConfig;
 
 		if (shackPlaneDataOps->space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
@@ -179,7 +179,7 @@ public:
 			sweet::PlaneData_Spectral &o_igeast_mode //Output: Coeficients multiplying east gravity mode
 	)
 	{
-		const sweet::PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = i_h.planeDataConfig;
 
 		o_geo_mode.spectral_set_zero();
 		o_igwest_mode.spectral_set_zero();
@@ -225,7 +225,7 @@ public:
 
 		sweet::ExpFunctions<T> rexiFunctions;
 
-		const sweet::PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = i_h.planeDataConfig;
 
 		if (shackPlaneDataOps->space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
@@ -588,7 +588,7 @@ public:
 			void(TCallbackClass::* const i_run_timestep_method)(void)
 	)
 	{
-		const sweet::PlaneDataConfig *planeDataConfig = io_prog_h_pert.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = io_prog_h_pert.planeDataConfig;
 
 		// dummy time step to get time step size
 		if (shackTimestepControl->current_timestep_size <= 0)
@@ -673,7 +673,7 @@ public:
 			int number_of_prognostic_variables = 3;
 			//The basic state is with zero in all variables
 			// The only non zero variable in the basic state is the total height
-			//    for which the constant is added within run_timestep()
+			//    for which the constant is added within runTimestep()
 			io_prog_h_pert.spectral_set_zero();
 			io_prog_u.spectral_set_zero();
 			io_prog_v.spectral_set_zero();
@@ -825,7 +825,7 @@ public:
 		else
 		{
 
-			//run_timestep();
+			//runTimestep();
 			const char* filename;
 			char buffer_real[1024];
 

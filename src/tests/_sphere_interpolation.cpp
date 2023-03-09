@@ -23,16 +23,16 @@
 
 
 // Sphere data config
-sweet::SphereDataConfig sphereDataConfigInstance;
-sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+sweet::SphereData_Config sphereDataConfigInstance;
+sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
-sweet::SphereDataConfig sphereDataConfigOversamplingInstance;
-sweet::SphereDataConfig *sphereDataConfigOversampling = &sphereDataConfigOversamplingInstance;
+sweet::SphereData_Config sphereDataConfigOversamplingInstance;
+sweet::SphereData_Config *sphereDataConfigOversampling = &sphereDataConfigOversamplingInstance;
 
 
 #if SWEET_GUI
-	sweet::PlaneDataConfig planeDataConfigInstance;
-	sweet::PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+	sweet::PlaneData_Config planeDataConfigInstance;
+	sweet::PlaneData_Config *planeDataConfig = &planeDataConfigInstance;
 #endif
 
 SimulationVariables simVars;
@@ -223,7 +223,7 @@ public:
 
 
 
-	void run_timestep()
+	void runTimestep()
 	{
 		ScalarDataArray out_data(posx_a.number_of_elements);
 
@@ -279,7 +279,7 @@ public:
 		if (simVars.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 			{
-				run_timestep();
+				runTimestep();
 				std::cout << max_error << std::endl;
 			}
 	}
@@ -476,7 +476,7 @@ int main(int i_argc, char *i_argv[])
 						else
 			#endif
 						{
-							simulation.run_timestep();
+							simulation.runTimestep();
 							std::cout << "Lmax error: " << simulation.max_error << std::endl;
 
 							if (prev_max_error >= 0)

@@ -135,8 +135,13 @@ public:
 	/***************************************************
 	 * Direct EXP
 	 */
-	bool exp_direct_precompute_phin = false;
+	bool direct_precompute_phin = false;
 
+
+	/*
+	 * Verbosity level for exponential integration
+	 */
+	int verbosity = 0;
 
 public:
 	class REXIFile
@@ -187,9 +192,11 @@ public:
 	{
 
 		std::cout << "" << std::endl;
-		std::cout << "REXI:" << std::endl;
-		std::cout << "	--rexi-method [str]	Choose REXI method ('terry', 'file', 'direct'), default:0" << std::endl;
+		std::cout << "EXP Integration:" << std::endl;
+		std::cout << "	--exp-method [str]	Choose REXI method ('terry', 'file', 'direct'), default:0" << std::endl;
+		std::cout << "	--exp-verbosity [int]	Verbosity level for exponential integration, default:0" << std::endl;
 		std::cout << std::endl;
+		std::cout << "REXI solver related:" << std::endl;
 		std::cout << "	--rexi-sphere-preallocation [bool]	Use preallocation of SPH-REXI solver coefficients, default:1" << std::endl;
 		std::cout << std::endl;
 		std::cout << "  REXI file interface:" << std::endl;
@@ -212,7 +219,7 @@ public:
 		std::cout << "	--rexi-ci-mu [double]	Shift, default: 0" << std::endl;
 		std::cout << "" << std::endl;
 		std::cout << "  EXP direct:" << std::endl;
-		std::cout << "	--exp_direct-precompute-phin [int]	Precompute phin in direct exp. solver (only available for SWE on the plane), default:0" << std::endl;
+		std::cout << "	--exp-direct-precompute-phin [int]	Precompute phin in direct exp. solver (only available for SWE on the plane), default:0" << std::endl;
 		std::cout << std::endl;
 	}
 
@@ -246,7 +253,8 @@ public:
 		i_pa.getArgumentValueByKey("--rexi-ci-sy", ci_s_imag);
 		i_pa.getArgumentValueByKey("--rexi-ci-mu", ci_mu);
 
-		i_pa.getArgumentValueByKey("--exp-direct-precompute-phin", exp_direct_precompute_phin);
+		i_pa.getArgumentValueByKey("--exp-direct-precompute-phin", direct_precompute_phin);
+		i_pa.getArgumentValueByKey("--exp-verbosity", verbosity);
 
 		if (rexi_files_given)
 		{
@@ -303,6 +311,7 @@ public:
 		std::cout << std::endl;
 		std::cout << "EXP:" << std::endl;
 		std::cout << " + exp_method: " << exp_method << std::endl;
+		std::cout << " + exp_verbosity: " << verbosity << std::endl;
 		std::cout << " [EXP Taylor]" << std::endl;
 		std::cout << " + taylor_num_expansions: " << taylor_num_expansions << std::endl;
 		std::cout << "REXI generic parameters:" << std::endl;
@@ -327,7 +336,7 @@ public:
 		std::cout << " + ci_s_imag: " << ci_s_imag << std::endl;
 		std::cout << " + ci_mu: " << ci_mu << std::endl;
 		std::cout << " [EXP Direct]" << std::endl;
-		std::cout << " + exp_direct_precompute_phin: " << exp_direct_precompute_phin << std::endl;
+		std::cout << " + exp_direct_precompute_phin: " << direct_precompute_phin << std::endl;
 		std::cout << std::endl;
 	}
 };

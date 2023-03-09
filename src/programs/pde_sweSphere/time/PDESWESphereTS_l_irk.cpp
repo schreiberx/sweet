@@ -11,12 +11,12 @@
 #include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
-bool PDESWESphereTS_l_irk::implements_timestepping_method(const std::string &i_timestepping_method
+bool PDESWESphereTS_l_irk::implementsTimesteppingMethod(const std::string &i_timestepping_method
 									)
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	if (
 			i_timestepping_method == "l_irk"	||
 			i_timestepping_method == "lg_irk"	||
@@ -31,29 +31,35 @@ bool PDESWESphereTS_l_irk::implements_timestepping_method(const std::string &i_t
 }
 
 
-std::string PDESWESphereTS_l_irk::string_id()
+std::string PDESWESphereTS_l_irk::getIDString()
 {
 	return timestepping_method;
 }
 
 
-void PDESWESphereTS_l_irk::setup_auto()
+bool PDESWESphereTS_l_irk::setup_auto(
+		sweet::SphereOperators *io_ops
+)
 {
-	if (shackDict.sim.sphere_use_fsphere)
+	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
 	if (timestepping_method == "l_irk")
 	{
-		setup(timestepping_order,
-				shackDict.timecontrol.current_timestep_size,
+		return setup(
+				io_ops,
+				timestepping_order,
+				shackTimestepControl->current_timestep_size,
 				0.5,
 				false
 			);
 	}
 	else if (timestepping_method == "lg_irk")
 	{
-		setup(timestepping_order,
-				shackDict.timecontrol.current_timestep_size,
+		return setup(
+				io_ops,
+				timestepping_order,
+				shackTimestepControl->current_timestep_size,
 				0.5,
 				true
 			);
@@ -62,10 +68,78 @@ void PDESWESphereTS_l_irk::setup_auto()
 	{
 		SWEETError("ERROR");
 	}
+	return false;
+}
+
+bool PDESWESphereTS_l_irk::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestep_order,
+		double i_timestep_size
+)
+{
+	return setup(
+			io_ops,
+			i_timestep_order,
+			i_timestep_size,
+			shackPDESWETimeDisc->timestepping_crank_nicolson_filter,
+			false
+		);
 }
 
 
-void PDESWESphereTS_l_irk::run_timestep(
+bool PDESWESphereTS_l_irk::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order,
+		double i_timestep_size,
+		double i_crank_nicolson_damping_factor,
+		bool i_no_coriolis
+)
+{
+	ops = io_ops;
+
+	timestepping_order = i_timestepping_order;
+	timestep_size = i_timestep_size;
+	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
+
+	use_f_sphere = shackPDESWESphere->sphere_use_fsphere;
+	no_coriolis = i_no_coriolis;
+
+	if (timestepping_order != 1 && timestepping_order != 2)
+		SWEETError("Only 1st and 2nd order supported!");
+
+	clear();
+
+	if (no_coriolis)
+	{
+		lg_erk = new PDESWESphereTS_lg_erk;
+		lg_erk->setup(ops, 1);
+	}
+	else
+	{
+		if (use_f_sphere)
+		{
+			f0 = shackPDESWESphere->sphere_fsphere_f0;
+			two_coriolis = 0.0;
+		}
+		else
+		{
+			f0 = 0.0;
+			two_coriolis = 2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
+		}
+
+		l_erk = new PDESWESphereTS_l_erk;
+		l_erk->setup(ops, 1);
+	}
+
+
+	sphere_radius = shackSphereDataOps->sphere_radius;
+
+	update_coefficients(i_timestep_size);
+	return true;
+}
+
+
+void PDESWESphereTS_l_irk::runTimestep(
 		sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -91,18 +165,18 @@ void PDESWESphereTS_l_irk::run_timestep(
 		 * Explicit Euler
 		 */
 		if (no_coriolis)
-			lg_erk->run_timestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
+			lg_erk->runTimestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
 		else
-			l_erk->run_timestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
+			l_erk->runTimestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
 	}
 
 
-	double gh0 = shackDict.sim.gravitation*shackDict.sim.h0;
+	double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
 
 	if (no_coriolis)
 	{
-		sweet::SphereData_Spectral rhs = io_div + ops.implicit_L(io_phi, dt_implicit);
-		sweet::SphereData_Spectral div1 = ops.implicit_helmholtz(rhs, -gh0*dt_implicit*dt_implicit, sphere_radius);
+		sweet::SphereData_Spectral rhs = io_div + ops->implicit_L(io_phi, dt_implicit);
+		sweet::SphereData_Spectral div1 = ops->implicit_helmholtz(rhs, -gh0*dt_implicit*dt_implicit, sphere_radius);
 		sweet::SphereData_Spectral phi1 = io_phi - dt_implicit*gh0*div1;
 		sweet::SphereData_Spectral vrt1 = io_vrt;
 
@@ -112,13 +186,13 @@ void PDESWESphereTS_l_irk::run_timestep(
 	}
 	else
 	{
-		double dt_two_omega = dt_implicit*2.0*shackDict.sim.sphere_rotating_coriolis_omega;
+		double dt_two_omega = dt_implicit*2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 
-		sweet::SphereData_Spectral rhs = io_div + ops.implicit_FJinv(io_vrt, dt_two_omega) + ops.implicit_L(io_phi, dt_implicit);
+		sweet::SphereData_Spectral rhs = io_div + ops->implicit_FJinv(io_vrt, dt_two_omega) + ops->implicit_L(io_phi, dt_implicit);
 		sweet::SphereData_Spectral div1 = sphSolverDiv.solve(rhs);
 
 		sweet::SphereData_Spectral phi1 = io_phi - dt_implicit*gh0*div1;
-		sweet::SphereData_Spectral vrt1 = ops.implicit_Jinv(io_vrt - ops.implicit_F(div1, dt_two_omega), dt_two_omega);
+		sweet::SphereData_Spectral vrt1 = ops->implicit_Jinv(io_vrt - ops->implicit_F(div1, dt_two_omega), dt_two_omega);
 
 
 		io_phi = phi1;
@@ -136,7 +210,7 @@ void PDESWESphereTS_l_irk::solveImplicit(
 )
 {
 	update_coefficients(dt);
-	double gh0 = shackDict.sim.gravitation*shackDict.sim.h0;
+	double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
 
 	if (no_coriolis)
 	{
@@ -144,17 +218,17 @@ void PDESWESphereTS_l_irk::solveImplicit(
 	}
 	else
 	{
-		double dt_two_omega = dt*2.0*shackDict.sim.sphere_rotating_coriolis_omega;
+		double dt_two_omega = dt*2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 
 		// Implicit update using explicit evaluation for implicit_FJinv and implicit_L (with or without NL update)
-		sweet::SphereData_Spectral rhs_div = io_div + ops.implicit_FJinv(io_vrt, dt_two_omega) + ops.implicit_L(io_phi, dt);
+		sweet::SphereData_Spectral rhs_div = io_div + ops->implicit_FJinv(io_vrt, dt_two_omega) + ops->implicit_L(io_phi, dt);
 		sweet::SphereData_Spectral div1 = sphSolverDiv.solve(rhs_div);
 
 		// Update for phi using implicit update for div
 		sweet::SphereData_Spectral phi1 = io_phi - dt*gh0*div1;
 
 		// Decoupled implicit update, using the implicit update for div 
-		sweet::SphereData_Spectral vrt1 = ops.implicit_Jinv(io_vrt - ops.implicit_F(div1, dt_two_omega), dt_two_omega);
+		sweet::SphereData_Spectral vrt1 = ops->implicit_Jinv(io_vrt - ops->implicit_F(div1, dt_two_omega), dt_two_omega);
 
 		io_phi = phi1;
 		io_vrt = vrt1;
@@ -168,7 +242,7 @@ void PDESWESphereTS_l_irk::update_coefficients(double i_timestep_size)
 {
 	timestep_size = i_timestep_size;
 
-	double 	gh0 = shackDict.sim.gravitation*shackDict.sim.h0;
+	double 	gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
 
 	if (timestepping_order == 1)
 	{
@@ -197,67 +271,12 @@ void PDESWESphereTS_l_irk::update_coefficients(double i_timestep_size)
 
 
 
-PDESWESphereTS_l_irk::PDESWESphereTS_l_irk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-	shackDict(i_shackDict),
-	ops(i_op),
-	sphereDataConfig(ops.sphereDataConfig)
+PDESWESphereTS_l_irk::PDESWESphereTS_l_irk()
 {
 }
 
 
-void PDESWESphereTS_l_irk::setup(
-		int i_timestepping_order,
-		double i_timestep_size,
-		double i_crank_nicolson_damping_factor,
-		bool i_no_coriolis
-)
-{
-	timestepping_order = i_timestepping_order;
-	timestep_size = i_timestep_size;
-	crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
-
-	use_f_sphere = shackDict.sim.sphere_use_fsphere;
-	no_coriolis = i_no_coriolis;
-
-	if (timestepping_order != 1 && timestepping_order != 2)
-		SWEETError("Only 1st and 2nd order supported!");
-
-	free();
-
-	if (no_coriolis)
-	{
-		lg_erk = new PDESWESphereTS_lg_erk(shackDict, ops);
-		lg_erk->setup(1);
-	}
-	else
-	{
-		if (use_f_sphere)
-		{
-			f0 = shackDict.sim.sphere_fsphere_f0;
-			two_coriolis = 0.0;
-		}
-		else
-		{
-			f0 = 0.0;
-			two_coriolis = 2.0*shackDict.sim.sphere_rotating_coriolis_omega;
-		}
-
-		l_erk = new PDESWESphereTS_l_erk(shackDict, ops);
-		l_erk->setup(1);
-	}
-
-
-	sphere_radius = shackDict.sim.sphere_radius;
-
-	update_coefficients(i_timestep_size);
-}
-
-
-
-void PDESWESphereTS_l_irk::free()
+void PDESWESphereTS_l_irk::clear()
 {
 	if (lg_erk != nullptr)
 	{
@@ -274,17 +293,8 @@ void PDESWESphereTS_l_irk::free()
 
 
 
-void PDESWESphereTS_l_irk::setup(
-		int i_timestep_order,
-		double i_timestep_size
-)
-{
-	setup(i_timestep_order, i_timestep_size, shackDict.disc.timestepping_crank_nicolson_filter, false);
-}
-
-
 
 PDESWESphereTS_l_irk::~PDESWESphereTS_l_irk()
 {
-	free();
+	clear();
 }

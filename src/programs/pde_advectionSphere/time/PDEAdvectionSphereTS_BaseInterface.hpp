@@ -71,7 +71,7 @@ public:
 	/*
 	 * Timestepping interface used by main timestepping loop
 	 */
-	virtual void run_timestep(
+	virtual void runTimestep(
 			std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 			sweet::SphereData_Physical &io_u,
 			sweet::SphereData_Physical &io_v,

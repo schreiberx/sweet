@@ -67,7 +67,7 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		sweet::PlaneOperators ops;
 
 		sweet::PlaneData_Spectral prog_h_pert;
@@ -242,7 +242,7 @@ public:
 
 	public:
 		bool setup(
-			sweet::PlaneDataConfig *planeDataConfig
+			sweet::PlaneData_Config *planeDataConfig
 		)
 		{
 			geo.setup(planeDataConfig);
@@ -388,11 +388,13 @@ public:
 		pdeSWEPlaneTimeSteppers.setup(&data.ops, &shackProgArgDict);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(pdeSWEPlaneTimeSteppers);
 
-		pdeSWEPlaneTimeSteppers.master->run_timestep(
+#if 0
+		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
 				data.prog_h_pert, data.prog_u, data.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
+#endif
 
 #if SWEET_GUI
 		vis_plane_data.setup(data.planeDataConfig);
@@ -420,6 +422,7 @@ public:
 		shackProgArgDict.closeGet();
 
 		benchmarkErrors.setup();
+
 		/*
 		 * Now we should check that all program arguments have really been parsed
 		 */
@@ -638,24 +641,17 @@ public:
 	/**
 	 * Execute a single simulation time step
 	 */
-	void run_timestep()
+	void runTimestep()
 	{
-		if (shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestep_size > shackTimestepControl->max_simulation_time)
-			shackTimestepControl->current_timestep_size = shackTimestepControl->max_simulation_time - shackTimestepControl->current_simulation_time;
+		shackTimestepControl->timestepHelperStart();
 
-		pdeSWEPlaneTimeSteppers.master->run_timestep(
+		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
 				data.prog_h_pert, data.prog_u, data.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
 
-
-		// advance time step and provide information to parameters
-		shackTimestepControl->current_simulation_time += shackTimestepControl->current_timestep_size;
-		shackTimestepControl->current_timestep_nr++;
-
-		if (shackTimestepControl->current_simulation_time > shackTimestepControl->max_simulation_time)
-			SWEETError("Max simulation time exceeded!");
+		shackTimestepControl->timestepHelperEnd();
 
 #if !SWEET_PARAREAL
 		timestep_do_output();
@@ -918,7 +914,7 @@ public:
 					exit(1);
 				}
 
-				pdeSWEPlaneTimeSteppers.l_direct->run_timestep(
+				pdeSWEPlaneTimeSteppers.l_direct->runTimestep(
 						ts_h_pert, ts_u, ts_v,
 						shackTimestepControl->current_simulation_time,	// time step size
 						0				// initial condition given at time 0
@@ -1000,7 +996,7 @@ public:
 	{
 		if (shackTimestepControl->run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
-				run_timestep();
+				runTimestep();
 	}
 
 
@@ -1043,7 +1039,7 @@ public:
 				//Missing to setup REXIFunctions, so invalid phi function set
 
 				// Run exact solution for linear case
-				pdeSWEPlaneTimeSteppers.l_direct->run_timestep(
+				pdeSWEPlaneTimeSteppers.l_direct->runTimestep(
 						ts_h_pert, ts_u, ts_v,
 						shackTimestepControl->current_simulation_time,
 						0			// initial condition given at time 0

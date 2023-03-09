@@ -7,46 +7,56 @@
 #include <iostream>
 #include <cassert>
 #include <utility>
-#include <rexi/REXI.hpp>
+#include <sweet/expIntegration/REXI.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/core/StopwatchBox.hpp>
 
 
 
-bool PDESWESphereTS_lg_exp_direct::implements_timestepping_method(
+bool PDESWESphereTS_lg_exp_direct::implementsTimesteppingMethod(
 		const std::string &i_timestepping_method
 )
 {
 	timestepping_method = i_timestepping_method;
 
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	if (i_timestepping_method == "lg_exp_direct")
-		return true;
-
-	if (i_timestepping_method == "l_exp_direct")
 		return true;
 
 	return false;
 }
 
 
-std::string PDESWESphereTS_lg_exp_direct::string_id()
+bool PDESWESphereTS_lg_exp_direct::setup_auto(
+		sweet::SphereOperators *io_ops
+)
+{
+	return setup(ops, "phi0");
+}
+
+
+bool PDESWESphereTS_lg_exp_direct::setup(
+		sweet::SphereOperators *io_ops,
+		const std::string &i_function_name
+)
+{
+	ops = io_ops;
+	function_name = i_function_name;
+	expFunctions.setup(i_function_name);
+
+	return true;
+}
+
+
+std::string PDESWESphereTS_lg_exp_direct::getIDString()
 {
 	return "l_exp_direct";
 }
 
 
-void PDESWESphereTS_lg_exp_direct::setup_auto()
-{
-	timestepping_method = shackDict.disc.timestepping_method;
-
-	setup("phi0");
-}
-
-
-void PDESWESphereTS_lg_exp_direct::run_timestep(
+void PDESWESphereTS_lg_exp_direct::runTimestep(
 	const sweet::SphereData_Spectral &i_prog_phi0,
 	const sweet::SphereData_Spectral &i_prog_vrt0,
 	const sweet::SphereData_Spectral &i_prog_div0,
@@ -63,19 +73,12 @@ void PDESWESphereTS_lg_exp_direct::run_timestep(
 	o_prog_vrt0 = i_prog_vrt0;
 	o_prog_div0 = i_prog_div0;
 
-	run_timestep(o_prog_phi0, o_prog_vrt0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
+	runTimestep(o_prog_phi0, o_prog_vrt0, o_prog_div0, i_fixed_dt, i_simulation_timestamp);
 }
 
 
 
-PDESWESphereTS_lg_exp_direct::PDESWESphereTS_lg_exp_direct(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-	shackDict(i_shackDict),
-	simCoeffs(shackDict.sim),
-	op(i_op),
-	sphereDataConfig(i_op.sphereDataConfig)
+PDESWESphereTS_lg_exp_direct::PDESWESphereTS_lg_exp_direct()
 {
 }
 
@@ -85,22 +88,7 @@ PDESWESphereTS_lg_exp_direct::~PDESWESphereTS_lg_exp_direct()
 }
 
 
-/**
- * Setup the REXI
- */
-void PDESWESphereTS_lg_exp_direct::setup(
-		const std::string &i_function_name
-)
-{
-	timestepping_method = "lg_exp";
-	function_name = i_function_name;
-
-	rexiFunctions.setup(i_function_name);
-}
-
-
-
-void PDESWESphereTS_lg_exp_direct::run_timestep(
+void PDESWESphereTS_lg_exp_direct::runTimestep(
 	sweet::SphereData_Spectral &io_prog_phi,
 	sweet::SphereData_Spectral &io_prog_vrt,
 	sweet::SphereData_Spectral &io_prog_div,
@@ -119,10 +107,10 @@ void PDESWESphereTS_lg_exp_direct::run_timestep(
 	 * Using exponential integrators, we must compute an
 	 */
 
-	double ir = 1.0/shackDict.sim.sphere_radius;
+	double ir = 1.0/shackSphereDataOps->sphere_radius;
 	// avg. geopotential
 
-	double G = -simCoeffs.h0*simCoeffs.gravitation;
+	double G = -shackPDESWESphere->h0*shackPDESWESphere->gravitation;
 
 	/*
 	 * See doc/rexi/rexi_for_swe_on_nonrotating_sphere.pdf
@@ -152,8 +140,8 @@ void PDESWESphereTS_lg_exp_direct::run_timestep(
 			std::complex<double> l0 = -sqrt_DG/(2*G) * phi0 + 0.5*div0;
 			std::complex<double> l1 = +sqrt_DG/(2*G) * phi0 + 0.5*div0;
 
-			l0 = rexiFunctions.eval(i_dt*(-sqrt_DG))*l0;
-			l1 = rexiFunctions.eval(i_dt*sqrt_DG)*l1;
+			l0 = expFunctions.eval(i_dt*(-sqrt_DG))*l0;
+			l1 = expFunctions.eval(i_dt*sqrt_DG)*l1;
 
 			phi0 = -G/sqrt_DG * l0 + G/sqrt_DG* l1;
 			div0 = l0 + l1;

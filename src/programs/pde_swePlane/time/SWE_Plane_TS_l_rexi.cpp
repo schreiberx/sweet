@@ -134,7 +134,7 @@ bool SWE_Plane_TS_l_rexi::setup(
 	}
 #endif
 
-	sweet::PlaneDataConfig *planeDataConfig_local = ops->planeDataConfig;
+	sweet::PlaneData_Config *planeDataConfig_local = ops->planeDataConfig;
 
 	// use a kind of serialization of the input to avoid threading conflicts in the ComplexFFT generation
 	for (int j = 0; j < num_local_rexi_par_threads; j++)
@@ -235,7 +235,7 @@ bool SWE_Plane_TS_l_rexi::setup(
 
 
 
-void SWE_Plane_TS_l_rexi::run_timestep(
+void SWE_Plane_TS_l_rexi::runTimestep(
 		const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables
 		const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
 		const sweet::PlaneData_Spectral &i_v,	///< prognostic variables
@@ -289,7 +289,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 		o_h_pert = i_h_pert;
 		o_u = i_u;
 		o_v = i_v;
-		ts_l_direct.run_timestep(o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
+		ts_l_direct.runTimestep(o_h_pert, o_u, o_v, i_dt, i_simulation_timestamp);
 
 #if SWEET_BENCHMARK_TIMINGS
 	StopwatchBox::getInstance().rexi_timestepping.stop();
@@ -674,7 +674,7 @@ void SWE_Plane_TS_l_rexi::run_timestep_real(
 
 
 
-void SWE_Plane_TS_l_rexi::run_timestep(
+void SWE_Plane_TS_l_rexi::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -683,7 +683,7 @@ void SWE_Plane_TS_l_rexi::run_timestep(
 		double i_simulation_timestamp
 )
 {
-	run_timestep(
+	runTimestep(
 			io_h, io_u, io_v,
 			io_h, io_u, io_v,
 			i_dt,
@@ -707,7 +707,7 @@ void SWE_Plane_TS_l_rexi::cleanup()
 
 
 void SWE_Plane_TS_l_rexi::MPI_quitWorkers(
-		sweet::PlaneDataConfig *i_planeDataConfig
+		sweet::PlaneData_Config *i_planeDataConfig
 )
 {
 #if SWEET_MPI

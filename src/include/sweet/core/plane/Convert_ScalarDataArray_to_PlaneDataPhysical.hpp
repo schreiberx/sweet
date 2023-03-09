@@ -8,8 +8,8 @@
 #ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDATAPHYSICAL_TO_SCALARDATAARRAY_HPP_
 #define SRC_INCLUDE_SWEET_PLANE_PLANEDATAPHYSICAL_TO_SCALARDATAARRAY_HPP_
 
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/plane/PlaneData_Physical.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
 #include <sweet/core/ScalarDataArray.hpp>
 
 namespace sweet
@@ -21,7 +21,7 @@ public:
 	static
 	PlaneData_Physical convert(
 			const ScalarDataArray &i_scalarDataArray,
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		PlaneData_Physical out(i_planeDataConfig);

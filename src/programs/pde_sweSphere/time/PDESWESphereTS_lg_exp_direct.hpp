@@ -44,33 +44,30 @@
 class PDESWESphereTS_lg_exp_direct	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+public:
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			const std::string &i_function_name
+	);
+
+public:
+	bool implementsTimesteppingMethod(
 			const std::string &i_timestepping_method
 	);
 
-	std::string string_id();
-	void setup_auto();
+	std::string getIDString();
 
 
 private:
 	typedef std::complex<double> complex;
 
-
-	/// Simulation variables
-	sweet::ShackDictionary &shackDict;
-
-public:
-	// WARNING: Do NOT use a reference to this to get more flexibility by overriding certain things in here
-	SimulationCoefficients simCoeffs;
-
 private:
-	/// Sphere operators
-	sweet::SphereOperators &op;
 
+	const sweet::SphereData_Config *sphereDataConfig;
 
-	const sweet::SphereDataConfig *sphereDataConfig;
-
-	ExpFunctions<double> rexiFunctions;
+	sweet::ExpFunctions<double> expFunctions;
 
 
 private:
@@ -85,18 +82,6 @@ private:
 
 
 public:
-	PDESWESphereTS_lg_exp_direct(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
-
-	/**
-	 * setup the REXI
-	 */
-public:
-	void setup(
-			const std::string &i_function_name
-	);
 
 	void run_timestep_lg_exp(
 		sweet::SphereData_Spectral &io_prog_phi,
@@ -107,7 +92,7 @@ public:
 		double i_simulation_timestamp
 	);
 
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -117,7 +102,7 @@ public:
 	);
 
 
-	void run_timestep(
+	void runTimestep(
 			const sweet::SphereData_Spectral &i_h,	///< prognostic variables
 			const sweet::SphereData_Spectral &i_u,	///< prognostic variables
 			const sweet::SphereData_Spectral &i_v,	///< prognostic variables
@@ -149,6 +134,7 @@ public:
 		const sweet::ShackDictionary &i_parameters
 	);
 
+	PDESWESphereTS_lg_exp_direct();
 
 	virtual ~PDESWESphereTS_lg_exp_direct();
 };

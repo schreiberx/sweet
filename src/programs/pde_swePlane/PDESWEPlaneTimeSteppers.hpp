@@ -54,7 +54,7 @@ public:
 	SWE_Plane_TS_l_irk_n_erk *l_irk_n_erk = nullptr;
 #endif
 
-	PDESWEPlaneTS_BaseInterface *master = nullptr;
+	PDESWEPlaneTS_BaseInterface *timestepper = nullptr;
 
 	ShackPDESWEPlaneTimeDiscretization *shackPDESWEPlaneTimeDiscretization;
 
@@ -66,10 +66,10 @@ public:
 
 	void clear()
 	{
-		if (master != nullptr)
+		if (timestepper != nullptr)
 		{
-			delete master;
-			master = nullptr;
+			delete timestepper;
+			timestepper = nullptr;
 		}
 
 		if (l_direct != nullptr)
@@ -184,25 +184,25 @@ public:
 
 		if (timestepping_method == "ln_erk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_ln_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_ln_erk);
 
 			linear_only = false;
 		}
 		else if (timestepping_method == "l_rexi_n_etdrk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_n_etdrk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_n_etdrk);
 
 			linear_only = false;
 		}
 		else if (timestepping_method == "l_cn")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn);
 
 			linear_only = true;
 		}
 		else if (timestepping_method == "l_erk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_erk);
 
 			linear_only = true;
 		}
@@ -211,59 +211,59 @@ public:
 			/*
 			 * Special case which treats div(u*h) as u.div(h)
 			 */
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_erk_n_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_erk_n_erk);
 		}
 		else if (timestepping_method == "l_erk_n_erk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_erk_n_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_erk_n_erk);
 		}
 		else if (timestepping_method == "l_cn_na_nd2_erk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_n_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_n_erk);
 		}
 		else if (timestepping_method == "l_cn_n_erk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_n_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_n_erk);
 		}
 		else if (timestepping_method == "l_rexi_n_erk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_n_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_n_erk);
 		}
 		else if (timestepping_method == "l_irk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_irk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_irk);
 
 			linear_only = true;
 		}
 		else if (timestepping_method == "l_rexi")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi);
 
 			linear_only = true;
 		}
 		else if (timestepping_method == "l_rexi_na_sl_nd_settls")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_na_sl_nr_settls);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_na_sl_nr_settls);
 		}
 		else if (timestepping_method == "l_rexi_na_sl_nd_etdrk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_na_sl_nr_etdrk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_rexi_na_sl_nr_etdrk);
 		}
 		else if (timestepping_method == "l_cn_na_sl_ld2_settls")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_na_sl_nr_settls);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_na_sl_nr_settls);
 		}
 		else if (timestepping_method == "l_cn_na_sl_nd_settls")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_na_sl_nr_settls);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_cn_na_sl_nr_settls);
 		}
 		else if (timestepping_method == "l_irk_n_erk")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_irk_n_erk);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_irk_n_erk);
 		}
 		else if (timestepping_method == "l_direct")
 		{
-			master = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_direct);
+			timestepper = static_cast<PDESWEPlaneTS_BaseInterface*>(new SWE_Plane_TS_l_direct);
 			linear_only = true;
 		}
 		else //Help menu with list of schemes
@@ -288,11 +288,11 @@ public:
 			SWEETError("No valid --timestepping-method provided");
 		}
 
-		master->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*master);
+		timestepper->shackRegistration(io_shackDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(*timestepper);
 
-		master->setup(io_ops);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*master);
+		timestepper->setup(io_ops);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(*timestepper);
 
 
 		/*

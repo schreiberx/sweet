@@ -23,12 +23,18 @@
 class PDESWESphereTS_l_irk_n_erk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
-	std::string string_id();
+	bool setup_auto(sweet::SphereOperators *io_ops);
 
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &op;
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_order,	///< order of RK time stepping method for linear parts
+			int i_order2,	///< order of RK time stepping method for non-linear parts
+			int i_version_id
+	);
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
 
 	double timestep_size;
 
@@ -42,7 +48,7 @@ public:
 	 */
 	PDESWESphereTS_l_erk_n_erk timestepping_l_erk_n_erk;
 
-	SphereTimestepping_ExplicitRK timestepping_rk_nonlinear;
+	sweet::TimesteppingExplicitRKSphereData timestepping_rk_nonlinear;
 
 	int version_id;
 
@@ -51,20 +57,9 @@ public:
 
 
 public:
-	PDESWESphereTS_l_irk_n_erk(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	PDESWESphereTS_l_irk_n_erk();
 
-	void setup(
-			int i_order,	///< order of RK time stepping method for linear parts
-			int i_order2,	///< order of RK time stepping method for non-linear parts
-			int i_version_id
-	);
-
-	void setup_auto();
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

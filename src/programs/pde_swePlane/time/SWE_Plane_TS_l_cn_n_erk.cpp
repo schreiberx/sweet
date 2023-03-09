@@ -70,7 +70,7 @@ void SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear(
 }
 
 
-void SWE_Plane_TS_l_cn_n_erk::run_timestep(
+void SWE_Plane_TS_l_cn_n_erk::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -83,14 +83,14 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 		SWEETError("SWE_Plane_TS_l_cn_n_erk: Only constant time step size allowed (set --dt)");
 
 	// Half one for linear parts
-	ts_l_cn.run_timestep(
+	ts_l_cn.runTimestep(
 			io_h, io_u, io_v,
 			i_dt*0.5,
 			i_simulation_timestamp
 		);
 
 	// standard time stepping for nonlinear parts
-	timestepping_rk.run_timestep(
+	timestepping_rk.runTimestep(
 			this,
 			&SWE_Plane_TS_l_cn_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 			io_h, io_u, io_v,
@@ -100,7 +100,7 @@ void SWE_Plane_TS_l_cn_n_erk::run_timestep(
 		);
 
 	// Half one for linear parts
-	ts_l_cn.run_timestep(
+	ts_l_cn.runTimestep(
 			io_h, io_u, io_v,
 			i_dt*0.5,
 			i_simulation_timestamp

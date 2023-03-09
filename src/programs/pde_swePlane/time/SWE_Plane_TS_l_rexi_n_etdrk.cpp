@@ -71,7 +71,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::euler_timestep_update_nonlinear(
 
 
 
-void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
+void SWE_Plane_TS_l_rexi_n_etdrk::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -84,7 +84,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		SWEETError("SWE_Plane_TS_l_phi0_n_edt: Only constant time step size allowed");
 
 
-	const sweet::PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+	const sweet::PlaneData_Config *planeDataConfig = io_h.planeDataConfig;
 
 	if (timestepping_order == 1)
 	{
@@ -96,7 +96,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi0_Un_h(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_Un_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_Un_v(planeDataConfig);
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				io_h, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
@@ -116,7 +116,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi1_FUn_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi1_FUn_v(planeDataConfig);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_dt,
@@ -138,7 +138,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi0_Un_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_Un_v(planeDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				io_h, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				i_dt,
@@ -159,7 +159,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi1_FUn_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi1_FUn_v(planeDataConfig);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_FUn_h, phi1_FUn_u, phi1_FUn_v,
 				i_dt,
@@ -190,7 +190,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi2_X_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi2_X_v(planeDataConfig);
 
-		ts_phi2_rexi.run_timestep(
+		ts_phi2_rexi.runTimestep(
 				FAn_h - FUn_h,
 				FAn_u - FUn_u,
 				FAn_v - FUn_v,
@@ -221,7 +221,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi0_Un_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_Un_v(planeDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				io_h, io_u, io_v,
 				phi0_Un_h, phi0_Un_u, phi0_Un_v,
 				dt_half,
@@ -252,7 +252,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		/*
 		 * A_{n} = \psi_{0}(0.5*\Delta tL)U_{n} + \Delta t\psi_{1}(0.5*\Delta tL) F(U_{n})
 		 */
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FUn_h, FUn_u, FUn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -279,7 +279,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				FAn_h, FAn_u, FAn_v,
 				phi1_h, phi1_u, phi1_v,
 				dt_half,
@@ -300,7 +300,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		sweet::PlaneData_Spectral phi0_An_u(planeDataConfig);
 		sweet::PlaneData_Spectral phi0_An_v(planeDataConfig);
 
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				A_h, A_u, A_v,
 				phi0_An_h, phi0_An_u, phi0_An_v,
 				dt_half,
@@ -318,7 +318,7 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 				i_simulation_timestamp + dt_half
 		);
 
-		ts_phi1_rexi.run_timestep(
+		ts_phi1_rexi.runTimestep(
 				2.0*FBn_h - FUn_h,
 				2.0*FBn_u - FUn_u,
 				2.0*FBn_v - FUn_v,
@@ -373,22 +373,22 @@ void SWE_Plane_TS_l_rexi_n_etdrk::run_timestep(
 		 * 				  \upsilon_{3}(\Delta tL) R_{3}
 		 * 			)
 		 */
-		ts_phi0_rexi.run_timestep(
+		ts_phi0_rexi.runTimestep(
 				R0_h, R0_u, R0_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups1_rexi.run_timestep(
+		ts_ups1_rexi.runTimestep(
 				R1_h, R1_u, R1_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups2_rexi.run_timestep(
+		ts_ups2_rexi.runTimestep(
 				R2_h, R2_u, R2_v,
 				dt,		i_simulation_timestamp
 			);
 
-		ts_ups3_rexi.run_timestep(
+		ts_ups3_rexi.runTimestep(
 				R3_h, R3_u, R3_v,
 				dt,		i_simulation_timestamp
 			);

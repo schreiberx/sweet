@@ -9,7 +9,6 @@
 #define SRC_INCLUDE_SWEET_PLANE_SPHEREDIAGNOSTICS_HPP_
 
 #include <sweet/core/sphere/SphereData_Config.hpp>
-#include <sweet/core/SimulationVariables.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 
 
@@ -18,7 +17,7 @@ namespace sweet
 
 class SphereHelpers_Diagnostics
 {
-	SphereDataConfig *sphereDataConfig;
+	SphereData_Config *sphereDataConfig;
 	SphereData_Spectral modeIntegralValues;
 
 	/*
@@ -29,7 +28,7 @@ class SphereHelpers_Diagnostics
 
 public:
 	SphereHelpers_Diagnostics(
-			SphereDataConfig *i_sphereDataConfig,
+			SphereData_Config *i_sphereDataConfig,
 			SimulationVariables &i_simVars,
 			int i_verbose = 1
 	)	:

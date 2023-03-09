@@ -56,7 +56,7 @@ public:
 
 
 public:
-	virtual void run_timestep(
+	virtual void runTimestep(
 			double &io_u,	///< prognostic variables
 
 			double i_dt,

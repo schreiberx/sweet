@@ -98,7 +98,7 @@ public:
 			sweet::PlaneData_Spectral &o_u,
 			sweet::PlaneData_Spectral &o_v,
 			sweet::PlaneOperators *io_ops,				///< Make this IO, since changes in the simulation parameters might require to also update the operators
-			sweet::PlaneDataConfig *io_planeDataConfig
+			sweet::PlaneData_Config *io_planeDataConfig
 	)
 	{
 		assert(io_ops != nullptr);

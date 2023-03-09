@@ -11,8 +11,9 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
 #include <sweet/core/sphere/SphereOperators_Sampler_SphereDataPhysical.hpp>
-#include <sweet/core/sphere/SphereTimestepping_SemiLagrangian.hpp>
+#include <sweet/core/time/ShackTimesteppingSemiLagrangianSphereData.hpp>
 #include <sweet/core/time/TimesteppingExplicitRKSphereData.hpp>
+#include <sweet/core/time/TimesteppingSemiLagrangianSphereData.hpp>
 
 #include "PDESWESphereTS_BaseInterface.hpp"
 #include "PDESWESphereTS_l_exp.hpp"
@@ -22,17 +23,6 @@
 
 class PDESWESphereTS_ln_sl_exp_settls_uv	: public PDESWESphereTS_BaseInterface
 {
-public:
-	bool implements_timestepping_method(const std::string &i_timestepping_method
-					);
-	std::string string_id();
-	void setup_auto();
-
-	std::string string_id_storage;
-
-private:
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &ops;
 
 public:
 	enum LinearCoriolisTreatment_enum {
@@ -47,15 +37,32 @@ public:
 		NL_REMAINDER_NONLINEAR,
 	};
 
+public:
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_timestepping_order,
+			LinearCoriolisTreatment_enum i_coriolis_treatment,
+			NLRemainderTreatment_enum i_nonlinear_divergence_treatment,
+			bool original_linear_operator_sl_treatment
+	);
+
+
+public:
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
+	std::string getIDString();
+
+	std::string string_id_storage;
+
 private:
 	LinearCoriolisTreatment_enum coriolis_treatment;
 	NLRemainderTreatment_enum nonlinear_remainder_treatment;
 
-	int timestepping_order;
 	bool original_linear_operator_sl_treatment;
 
-	SphereTimestepping_SemiLagrangian semiLagrangian;
-	sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
+	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
+	//sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
 	sweet::SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
@@ -64,23 +71,11 @@ private:
 
 
 public:
-	PDESWESphereTS_ln_sl_exp_settls_uv(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op,
-			bool i_setup_auto = false
-		);
+	PDESWESphereTS_ln_sl_exp_settls_uv();
 
-	void print_help();
+	void printHelp();
 
-	void setup(
-			int i_timestepping_order,
-			LinearCoriolisTreatment_enum i_coriolis_treatment,
-			NLRemainderTreatment_enum i_nonlinear_divergence_treatment,
-			bool original_linear_operator_sl_treatment
-	);
-
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables

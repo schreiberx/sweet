@@ -46,8 +46,8 @@
 const int NUM_OF_UNKNOWNS=2;
 
 // Plane data config
-sweet::PlaneDataConfig planeDataConfigInstance;
-sweet::PlaneDataConfig *planeDataConfig = &planeDataConfigInstance;
+sweet::PlaneData_Config planeDataConfigInstance;
+sweet::PlaneData_Config *planeDataConfig = &planeDataConfigInstance;
 
 
 
@@ -317,7 +317,7 @@ public:
 	/*
 	 * Execute a single simulation time step
 	 */
-	void run_timestep()
+	void runTimestep()
 	{
 		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestep_size > shackDict.timecontrol.max_simulation_time)
 			shackDict.timecontrol.current_timestep_size = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
@@ -326,7 +326,7 @@ public:
 		{
 			prog_u = t0_prog_u;
 			prog_v = t0_prog_v;
-			timeSteppers.master->run_timestep(
+			timeSteppers.master->runTimestep(
 				prog_u, prog_v,
 				///prog_u_prev, prog_v_prev,
 				shackDict.timecontrol.current_timestep_size+shackDict.timecontrol.current_simulation_time,
@@ -335,7 +335,7 @@ public:
 		}
 		else
 		{
-			timeSteppers.master->run_timestep(
+			timeSteppers.master->runTimestep(
 				prog_u, prog_v,
 				///prog_u_prev, prog_v_prev,
 				shackDict.timecontrol.current_timestep_size,
@@ -570,7 +570,7 @@ public:
 			{
 				if (analytic_solution == 1)
 				{
-				   timeSteppers.ln_cole_hopf->run_timestep(
+				   timeSteppers.ln_cole_hopf->runTimestep(
 						 ts_u, ts_v,
 						 ////ts_u, ts_v,
 						 shackDict.timecontrol.current_simulation_time,
@@ -579,7 +579,7 @@ public:
 				}
 				else if (analytic_solution == 2)
 				{
-				   timeSteppers.l_direct->run_timestep(
+				   timeSteppers.l_direct->runTimestep(
 						 ts_u, ts_v,
 						 ////ts_u, ts_v,
 						 shackDict.timecontrol.current_simulation_time,
@@ -673,7 +673,7 @@ public:
 			{
 				if (analytic_solution == 1)
 				{
-				   timeSteppers.ln_cole_hopf->run_timestep(
+				   timeSteppers.ln_cole_hopf->runTimestep(
 						 ts_u, ts_v,
 						 /////ts_u, ts_v,
 						 shackDict.timecontrol.current_simulation_time,
@@ -682,7 +682,7 @@ public:
 				}
 				else if (analytic_solution == 2)
 				{
-				   timeSteppers.l_direct->run_timestep(
+				   timeSteppers.l_direct->runTimestep(
 						 ts_u, ts_v,
 						 /////ts_u, ts_v,
 						 shackDict.timecontrol.current_simulation_time,
@@ -728,7 +728,7 @@ public:
 	{
 		if (shackDict.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations; i++)
-				run_timestep();
+				runTimestep();
 	}
 
 
@@ -763,7 +763,7 @@ public:
 		sweet::PlaneData_Physical ts_u = t0_prog_u.toPhys();
 		sweet::PlaneData_Physical ts_v = t0_prog_v.toPhys();
 
-		timeSteppers.ln_cole_hopf->run_timestep(
+		timeSteppers.ln_cole_hopf->runTimestep(
 				ts_u, ts_v,
 				ts_u, ts_v,
 				shackDict.timecontrol.current_simulation_time,
@@ -931,7 +931,7 @@ int main(int i_argc, char *i_argv[])
 			sweet::PlaneOperators op(planeDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 
 			// Set planeDataConfig and planeOperators for each level
-			std::vector<PlaneDataConfig*> planeDataConfigs;
+			std::vector<PlaneData_Config*> planeDataConfigs;
 			std::vector<sweet::PlaneOperators*> ops;
 
 			// fine
@@ -952,7 +952,7 @@ int main(int i_argc, char *i_argv[])
 					frac = shackDict.timecontrol.current_timestep_size / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
 					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
-				planeDataConfigs.push_back(new PlaneDataConfig);
+				planeDataConfigs.push_back(new PlaneData_Config);
 				planeDataConfigs.back()->setupAuto(N_physical, N_spectral, shackDict.misc.reuse_spectral_transformation_plans);
 
 				ops.push_back(new sweet::PlaneOperators(planeDataConfigs.back(), shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs));
@@ -1024,7 +1024,7 @@ int main(int i_argc, char *i_argv[])
 					break;
 
 				//Main call for timestep run
-				simulationBurgers->run_timestep();
+				simulationBurgers->runTimestep();
 
 				//Instability
 				if (simulationBurgers->instability_detected())

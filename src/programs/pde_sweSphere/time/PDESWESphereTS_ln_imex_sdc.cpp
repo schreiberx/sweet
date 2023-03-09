@@ -7,14 +7,11 @@
 #include "PDESWESphereTS_ln_imex_sdc.hpp"
 
 
-bool PDESWESphereTS_ln_imex_sdc::implements_timestepping_method(
+bool PDESWESphereTS_ln_imex_sdc::implementsTimesteppingMethod(
 		const std::string &i_timestepping_method
 )
 {
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
-
 	if (i_timestepping_method == "ln_imex_sdc")
 		return true;
 
@@ -23,20 +20,93 @@ bool PDESWESphereTS_ln_imex_sdc::implements_timestepping_method(
 
 
 
-void PDESWESphereTS_ln_imex_sdc::setup_auto()
+bool PDESWESphereTS_ln_imex_sdc::setup_auto(
+		sweet::SphereOperators *io_ops
+)
 {
-	setup(timestepping_order, timestepping_order2, 0);
+	return setup(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 0);
+}
+
+
+/*
+ * Setup
+ */
+bool PDESWESphereTS_ln_imex_sdc::setup(
+		sweet::SphereOperators *io_ops,
+		int i_order,	///< order of RK time stepping method
+		int i_order2,	///< order of RK time stepping method for non-linear parts
+		int i_version_id
+)
+{
+	ops = io_ops;
+	timestepping_order = i_order;
+	timestepping_order2 = i_order2;
+	timestep_size = shackTimestepControl->current_timestep_size;
+
+
+	if (timestepping_order2 < 0)
+		timestepping_order2 = timestepping_order;
+
+	if (timestepping_order != timestepping_order2)
+		SWEETError("Orders of 1st and 2nd one must match");
+
+#if 0
+	/*
+	 * TODO
+	 */
+
+	// SDC main parameters
+	nNodes = i_shackDict.sdc.nNodes;
+	nIter(i_shackDict.sdc.nIter),
+	initialSweepType(i_shackDict.sdc.initSweepType),
+	diagonal(i_shackDict.sdc.diagonal),
+	useEndUpdate(i_shackDict.sdc.useEndUpdate),
+
+	// Nodes and weights
+	tau(i_shackDict.sdc.nodes),
+	weights(i_shackDict.sdc.weights),
+
+	// Quadrature matrices
+	qMat(i_shackDict.sdc.qMatrix),
+	qMatDeltaI(i_shackDict.sdc.qDeltaI),
+	qDeltaE(i_shackDict.sdc.qDeltaE),
+	qMatDelta0(i_shackDict.sdc.qDelta0),
+
+	// Storage and reference container (for u0)
+	ts_linear_tendencies_k0(ops->sphereDataConfig, i_shackDict.sdc.nNodes),
+	ts_nonlinear_tendencies_k0(ops->sphereDataConfig, i_shackDict.sdc.nNodes),
+	ts_linear_tendencies_k1(ops->sphereDataConfig, i_shackDict.sdc.nNodes),
+	ts_nonlinear_tendencies_k1(ops->sphereDataConfig, i_shackDict.sdc.nNodes),
+	ts_tmp_state(ops->sphereDataConfig)
+#endif
+
+
+	timestepping_l_irk.setup(
+		ops,
+		1,
+		timestep_size
+	);
+
+
+	//
+	// Only request 1st order time stepping methods for irk and erk
+	// These 1st order methods will be combined to higher-order methods in this class
+	//
+	timestepping_l_erk_n_erk.setup(ops, 1, 1);
+
+	return true;
 }
 
 
 
-std::string PDESWESphereTS_ln_imex_sdc::string_id()
+
+std::string PDESWESphereTS_ln_imex_sdc::getIDString()
 {
 	return "ln_imex_sdc";
 }
 
 
-void PDESWESphereTS_ln_imex_sdc::run_timestep(
+void PDESWESphereTS_ln_imex_sdc::runTimestep(
 		sweet::SphereData_Spectral &io_phi,
 		sweet::SphereData_Spectral &io_vrt,
 		sweet::SphereData_Spectral &io_div,
@@ -250,75 +320,10 @@ void PDESWESphereTS_ln_imex_sdc::computeEndPoint()
 	ts_u0.div = ts_tmp_state.div;
 }
 
-/*
- * Setup
- */
-void PDESWESphereTS_ln_imex_sdc::setup(
-		int i_order,	///< order of RK time stepping method
-		int i_order2,	///< order of RK time stepping method for non-linear parts
-		int i_version_id
-)
+
+
+PDESWESphereTS_ln_imex_sdc::PDESWESphereTS_ln_imex_sdc()
 {
-	if (i_order2 < 0)
-		i_order2 = i_order;
-
-	if (i_order != i_order2)
-		SWEETError("Orders of 1st and 2nd one must match");
-
-	timestepping_order = i_order;
-	timestepping_order2 = i_order2;
-	timestep_size = shackDict.timecontrol.current_timestep_size;
-
-	timestepping_l_irk.setup(
-		1,
-		timestep_size
-	);
-
-
-	//
-	// Only request 1st order time stepping methods for irk and erk
-	// These 1st order methods will be combined to higher-order methods in this class
-	//
-	timestepping_l_erk_n_erk.setup(1, 1);
-}
-
-
-
-PDESWESphereTS_ln_imex_sdc::PDESWESphereTS_ln_imex_sdc(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-		timestepping_l_irk(shackDict, op),
-		timestepping_l_erk_n_erk(shackDict, op),
-		timestepping_order(-1),
-
-		// SDC main parameters
-		nNodes(i_shackDict.sdc.nNodes),
-		nIter(i_shackDict.sdc.nIter),
-		initialSweepType(i_shackDict.sdc.initSweepType),
-		diagonal(i_shackDict.sdc.diagonal),
-		useEndUpdate(i_shackDict.sdc.useEndUpdate),
-
-		// Nodes and weights
-		tau(i_shackDict.sdc.nodes),
-		weights(i_shackDict.sdc.weights),
-
-		// Quadrature matrices
-		qMat(i_shackDict.sdc.qMatrix),
-		qMatDeltaI(i_shackDict.sdc.qDeltaI),
-		qDeltaE(i_shackDict.sdc.qDeltaE),
-		qMatDelta0(i_shackDict.sdc.qDelta0),
-
-		// Storage and reference container (for u0)
-		ts_linear_tendencies_k0(op.sphereDataConfig, i_shackDict.sdc.nNodes),
-		ts_nonlinear_tendencies_k0(op.sphereDataConfig, i_shackDict.sdc.nNodes),
-		ts_linear_tendencies_k1(op.sphereDataConfig, i_shackDict.sdc.nNodes),
-		ts_nonlinear_tendencies_k1(op.sphereDataConfig, i_shackDict.sdc.nNodes),
-		ts_tmp_state(op.sphereDataConfig)
-{
-
 }
 
 

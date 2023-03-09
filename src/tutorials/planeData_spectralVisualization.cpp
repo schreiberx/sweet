@@ -46,7 +46,7 @@ public:
 	public:
 		sweet::ErrorBase error;
 
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		sweet::PlaneOperators ops;
 
 		sweet::PlaneData_Spectral tmp;
@@ -217,7 +217,7 @@ public:
 	}
 
 
-	bool run_timestep()
+	bool runTimestep()
 	{
 		return true;
 	}

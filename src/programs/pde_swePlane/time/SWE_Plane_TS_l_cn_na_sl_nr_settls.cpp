@@ -42,7 +42,7 @@
  * http://onlinelibrary.wiley.com/doi/10.1002/qj.200212858314/pdf
  *
  */
-void SWE_Plane_TS_l_cn_na_sl_nr_settls::run_timestep(
+void SWE_Plane_TS_l_cn_na_sl_nr_settls::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables

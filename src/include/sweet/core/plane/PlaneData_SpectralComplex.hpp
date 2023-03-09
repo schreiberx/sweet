@@ -25,7 +25,7 @@
 
 #include <sweet/core/MemBlockAlloc.hpp>
 #include <sweet/core/parmemcpy.hpp>
-#include <sweet/core/plane/PlaneDataConfig.hpp>
+#include <sweet/core/plane/PlaneData_Config.hpp>
 #include <sweet/core/plane/PlaneData_PhysicalComplex.hpp>
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 
@@ -83,7 +83,7 @@ namespace sweet
 class PlaneData_SpectralComplex
 {
 public:
-	const PlaneDataConfig *planeDataConfig;
+	const PlaneData_Config *planeDataConfig;
 
 	typedef std::complex<double> Tcomplex;
 
@@ -111,7 +111,7 @@ public:
 
 public:
 	PlaneData_SpectralComplex(
-			const PlaneDataConfig *i_planeDataConfig
+			const PlaneData_Config *i_planeDataConfig
 	)	:
 		planeDataConfig(nullptr),
 		spectral_space_data(nullptr)
@@ -124,7 +124,7 @@ public:
 
 public:
 	PlaneData_SpectralComplex(
-			const PlaneDataConfig &i_planeDataConfig
+			const PlaneData_Config &i_planeDataConfig
 	)	:
 		planeDataConfig(nullptr),
 		spectral_space_data(nullptr)
@@ -189,7 +189,7 @@ public:
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
 public:
-	inline void check_planeDataConfig_identical_res(const PlaneDataConfig *i_planeDataConfig)	const
+	inline void check_planeDataConfig_identical_res(const PlaneData_Config *i_planeDataConfig)	const
 	{
 		assert(planeDataConfig->spectral_complex_data_size[0] == i_planeDataConfig->spectral_complex_data_size[0]);
 		assert(planeDataConfig->spectral_complex_data_size[1] == i_planeDataConfig->spectral_complex_data_size[1]);
@@ -628,7 +628,7 @@ public:
 
 public:
 	void setup_if_required(
-		const PlaneDataConfig *i_planeDataConfig
+		const PlaneData_Config *i_planeDataConfig
 	)
 	{
 		if (planeDataConfig != nullptr)
@@ -640,7 +640,7 @@ public:
 
 public:
 	void setup(
-			const PlaneDataConfig *i_planeConfig
+			const PlaneData_Config *i_planeConfig
 	)
 	{
 		// assure that the initialization is not done twice!

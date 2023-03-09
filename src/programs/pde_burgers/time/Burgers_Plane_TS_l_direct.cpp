@@ -23,7 +23,7 @@ void Burgers_Plane_TS_l_direct:: setup()
 
 
 
-void Burgers_Plane_TS_l_direct::run_timestep(
+void Burgers_Plane_TS_l_direct::runTimestep(
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 		///sweet::PlaneData_Spectral &io_prev_u,	///< prognostic variables

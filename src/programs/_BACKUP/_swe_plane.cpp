@@ -431,12 +431,12 @@ public:
 	/**
 	 * Execute a single simulation time step
 	 */
-	void run_timestep()
+	void runTimestep()
 	{
 		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestep_size > shackDict.timecontrol.max_simulation_time)
 			shackDict.timecontrol.current_timestep_size = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
 
-		timeSteppers.master->run_timestep(
+		timeSteppers.master->runTimestep(
 				prog_h_pert, prog_u, prog_v,
 				shackDict.timecontrol.current_timestep_size,
 				shackDict.timecontrol.current_simulation_time
@@ -743,7 +743,7 @@ public:
 				PlaneData_Spectral ts_v = t0_prog_v;
 
 				// Run exact solution for linear case
-				timeSteppers.l_direct->run_timestep(
+				timeSteppers.l_direct->runTimestep(
 						ts_h_pert, ts_u, ts_v,
 						shackDict.timecontrol.current_simulation_time,	// time step size
 						0				// initial condition given at time 0
@@ -790,7 +790,7 @@ public:
 	{
 		if (shackDict.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
-				run_timestep();
+				runTimestep();
 	}
 
 
@@ -833,7 +833,7 @@ public:
 				//Missing to setup REXIFunctions, so invalid phi function set
 				
 				// Run exact solution for linear case				
-				timeSteppers.l_direct->run_timestep(
+				timeSteppers.l_direct->runTimestep(
 						ts_h_pert, ts_u, ts_v,
 						shackDict.timecontrol.current_simulation_time,
 						0			// initial condition given at time 0
@@ -1310,7 +1310,7 @@ int main(int i_argc, char *i_argv[])
 						break;
 
 					// Main call for timestep run
-					simulationSWE->run_timestep();
+					simulationSWE->runTimestep();
 
 					// Instability
 					if (shackDict.misc.instability_checks)
@@ -1417,7 +1417,7 @@ int main(int i_argc, char *i_argv[])
 			do
 			{
 				// REXI time stepping
-				rexiSWE.run_timestep(
+				rexiSWE.runTimestep(
 						prog_h_pert,
 						prog_u,
 						prog_v,

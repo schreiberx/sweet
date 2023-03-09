@@ -18,11 +18,11 @@
 
 SimulationVariables simVars;
 
-sweet::SphereDataConfig sphereDataConfigInstance_H;
-sweet::SphereDataConfig *sphereDataConfig_H = &sphereDataConfigInstance_H;
+sweet::SphereData_Config sphereDataConfigInstance_H;
+sweet::SphereData_Config *sphereDataConfig_H = &sphereDataConfigInstance_H;
 
-sweet::SphereDataConfig sphereDataConfigInstance_L;
-sweet::SphereDataConfig *sphereDataConfig_L = &sphereDataConfigInstance_L;
+sweet::SphereData_Config sphereDataConfigInstance_L;
+sweet::SphereData_Config *sphereDataConfig_L = &sphereDataConfigInstance_L;
 
 
 void printTest(std::string test_name)
@@ -43,14 +43,14 @@ class Data
 {
 
 public:
-	SphereDataConfig* sphereDataConfig;
+	SphereData_Config* sphereDataConfig;
 	SphereOperators* op;
 	BenchmarksSphereSWE sphereBenchmarks;
 	Parareal_GenericData* data = nullptr;
 
 public:
 	Data(
-		SphereDataConfig* i_sphereDataConfig,
+		SphereData_Config* i_sphereDataConfig,
 		SphereOperators* i_op
 		)
 		:

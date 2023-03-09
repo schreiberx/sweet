@@ -13,7 +13,7 @@
 #include "SWE_Plane_TS_l_rexi_na_sl_nr_settls.hpp"
 
 
-void SWE_Plane_TS_l_rexi_na_sl_nr_settls::run_timestep(
+void SWE_Plane_TS_l_rexi_na_sl_nr_settls::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables - perturbation of height!
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables - zonal velocity
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables - meridional velocity
@@ -25,7 +25,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_settls::run_timestep(
 	if (i_dt <= 0)
 		SWEETError("SWE_Plane_TS_l_rexi_na_sl_nd_settls: Only constant time step size allowed (Please set --dt)");
 
-	const sweet::PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+	const sweet::PlaneData_Config *planeDataConfig = io_h.planeDataConfig;
 
 	//Out vars
 	sweet::PlaneData_Spectral h(io_h.planeDataConfig);
@@ -108,7 +108,7 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_settls::run_timestep(
 		}
 
 		//Calculate exp(Ldt)N(n-1), relative to previous timestep
-		ts_l_rexi.run_timestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
+		ts_l_rexi.runTimestep(N_h, N_u, N_v, i_dt, i_simulation_timestamp);
 
 		//Use N_h to store now the nonlinearity of the current time (prev will not be required anymore)
 		//Update the nonlinear terms with the constants relative to dt
@@ -154,8 +154,8 @@ void SWE_Plane_TS_l_rexi_na_sl_nr_settls::run_timestep(
 	sweet::PlaneData_Spectral phi0_Un_h(planeDataConfig);
 	sweet::PlaneData_Spectral phi0_Un_u(planeDataConfig);
 	sweet::PlaneData_Spectral phi0_Un_v(planeDataConfig);
-	//ts_l_rexi.run_timestep(h, u, v, i_dt, i_simulation_timestamp);
-	ts_l_rexi.run_timestep(
+	//ts_l_rexi.runTimestep(h, u, v, i_dt, i_simulation_timestamp);
+	ts_l_rexi.runTimestep(
 			h, u, v,
 			phi0_Un_h, phi0_Un_u, phi0_Un_v,
 			i_dt,

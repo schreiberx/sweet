@@ -90,7 +90,7 @@ public:
 	{
 		SWEETAssert(o_prognostic_fields.size() == 3, "Only a vectorial field (3 elements) supported for this benchmark!");
 
-		const sweet::SphereDataConfig *sphereDataConfig = o_prognostic_fields[0].sphereDataConfig;
+		const sweet::SphereData_Config *sphereDataConfig = o_prognostic_fields[0].sphereDataConfig;
 
 		sweet::SphereData_Spectral tmp(sphereDataConfig);
 		sweet::SphereData_Spectral vrt(sphereDataConfig);

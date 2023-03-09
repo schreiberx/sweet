@@ -16,7 +16,7 @@ void c_sweet_data_create(
 		int            *o_size
 )
 {
-	sweet::SphereDataConfig *Y_config = i_ctx->get_sphere_data_config(i_level);
+	sweet::SphereData_Config *Y_config = i_ctx->get_sphere_data_config(i_level);
 
 	// create the SphereDataVars object
 	*o_Y  = new SphereDataVars(

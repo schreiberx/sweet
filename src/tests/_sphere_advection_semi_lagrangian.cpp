@@ -19,8 +19,8 @@
 
 
 // Sphere data config
-sweet::SphereDataConfig sphereDataConfigInstance;
-sweet::SphereDataConfig *sphereDataConfig = &sphereDataConfigInstance;
+sweet::SphereData_Config sphereDataConfigInstance;
+sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 
 
 SimulationVariables simVars;
@@ -120,13 +120,13 @@ public:
 
 
 
-	void run_timestep()
+	void runTimestep()
 	{
 		if (simVars.timecontrol.current_simulation_time + simVars.timecontrol.current_timestep_size > simVars.timecontrol.max_simulation_time)
 			simVars.timecontrol.current_timestep_size = simVars.timecontrol.max_simulation_time - simVars.timecontrol.current_simulation_time;
 
 
-		timeSteppers.master->run_timestep(
+		timeSteppers.master->runTimestep(
 				prognostic_variables, velocity_field_u, velocity_field_v,
 				simVars.timecontrol.current_timestep_size,
 				simVars.timecontrol.current_simulation_time,
@@ -282,7 +282,7 @@ int main(int i_argc, char *i_argv[])
 
 		{
 			while (!simulation.should_quit())
-				simulation.run_timestep();
+				simulation.runTimestep();
 
 			std::cout << "Error compared to initial condition" << std::endl;
 			std::cout << "Lmax error: " << simulation.max_error_h0 << std::endl;

@@ -9,7 +9,7 @@
 #include "../burgers_timeintegrators/Burgers_Plane_TS_ln_cole_hopf.hpp"
 
 
-void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
+void Burgers_Plane_TS_ln_cole_hopf::runTimestep(
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
 		///sweet::PlaneData_Spectral &io_u_prev,	///< prognostic variables
@@ -57,7 +57,7 @@ void Burgers_Plane_TS_ln_cole_hopf::run_timestep(
 
 	phi.loadPlaneDataPhysical(phi_phys);
 
-	ts_l_direct.run_timestep(phi, io_v, /*io_u, io_v,*/ i_fixed_dt, i_simulation_timestamp);
+	ts_l_direct.runTimestep(phi, io_v, /*io_u, io_v,*/ i_fixed_dt, i_simulation_timestamp);
 
 	phi_phys = phi.toPhys();
 

@@ -80,7 +80,7 @@ void PDEAdvectionPlaneTS_na_erk::euler_timestep_update(
 }
 
 
-void PDEAdvectionPlaneTS_na_erk::run_timestep(
+void PDEAdvectionPlaneTS_na_erk::runTimestep(
 		sweet::PlaneData_Spectral &io_phi,		///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,		///< prognostic variables
@@ -92,7 +92,7 @@ void PDEAdvectionPlaneTS_na_erk::run_timestep(
 	assert(i_dt > 0);
 
 	// standard time stepping
-	timestepping_rk.run_timestep(
+	timestepping_rk.runTimestep(
 			this,
 			&PDEAdvectionPlaneTS_na_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 			io_phi, io_u, io_v,

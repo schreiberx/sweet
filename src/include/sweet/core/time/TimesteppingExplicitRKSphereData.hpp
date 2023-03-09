@@ -30,7 +30,7 @@ public:
 
 
 	void resetAndSetup(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			int i_rk_stages			///< Order of Runge-Kutta method
 	)
 	{
@@ -58,7 +58,7 @@ public:
 
 
 	void resetAndSetup_na(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			int i_rk_stages			///< Number of stages
 	)
 	{
@@ -133,7 +133,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_timestep(
+	void runTimestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData_Spectral &i_P,	///< prognostic variables
@@ -359,7 +359,7 @@ public:
 	 * Special version for Nonlinear Advection term
 	 */
 	template <class BaseClass>
-	void run_timestep_na(
+	void runTimestep_na(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData_Spectral &i_P,	///< prognostic variables
@@ -554,7 +554,7 @@ public:
 	 * This routine is used for the Burgers equation.
 	 */
 	template <class BaseClass>
-	void run_timestep(
+	void runTimestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData_Spectral &i_u,	///< prognostic variables
@@ -748,7 +748,7 @@ public:
 	 * specified in the simulation variables.
 	 */
 	template <class BaseClass>
-	void run_timestep(
+	void runTimestep(
 			BaseClass *i_baseClass,
 			void (BaseClass::*i_compute_euler_timestep_update)(
 					const SphereData_Spectral &i_h,		///< prognostic variables

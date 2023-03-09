@@ -28,7 +28,7 @@ public:
 	ShackPDESWEPlaneBench_PolvaniBench *shackPDESWEPlaneBench_PolvaniBench;
 
 	sweet::PlaneOperators *ops;
-	sweet::PlaneDataConfig *planeDataConfig;
+	sweet::PlaneData_Config *planeDataConfig;
 
 
 	bool shackRegistration(
@@ -48,7 +48,7 @@ public:
 
 	virtual bool setup(
 		sweet::PlaneOperators *io_ops,
-		sweet::PlaneDataConfig *i_planeDataConfig
+		sweet::PlaneData_Config *i_planeDataConfig
 	)
 	{
 		ops = io_ops;

@@ -26,12 +26,17 @@ public:
 	/// Order of 2nd time stepping which might be used
 	int timestepping_order2 = -1;
 
+	/// Crank-Nicolson filter
+	double timestepping_crank_nicolson_filter = 0.5;
+
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << "Time Discretization:" << std::endl;
 		std::cout << "	--timestepping-method [string]	String of time stepping method" << std::endl;
 		std::cout << "	--timestepping-order [int]			Specify the order of the time stepping" << std::endl;
 		std::cout << "	--timestepping-order2 [int]			Specify the order of the time stepping" << std::endl;
+		std::cout << "	--crank-nicolson-filter [float]		Crank-Nicolson filter (default=0.5)" << std::endl;
+
 	}
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
@@ -40,6 +45,7 @@ public:
 		i_pa.getArgumentValueByKey("-R", timestepping_order);
 		i_pa.getArgumentValueByKey("--timestepping-order", timestepping_order);
 		i_pa.getArgumentValueByKey("--timestepping-order2", timestepping_order2);
+		i_pa.getArgumentValueByKey("--crank-nicolson-filter", timestepping_crank_nicolson_filter);
 
 		if (i_pa.error.exists())
 			return error.forwardWithPositiveReturn(i_pa.error);
@@ -57,6 +63,7 @@ public:
 		std::cout << " + timestepping_method: " << timestepping_method << std::endl;
 		std::cout << " + timestepping_order: " << timestepping_order << std::endl;
 		std::cout << " + timestepping_order2: " << timestepping_order2 << std::endl;
+		std::cout << " + timestepping_crank_nicolson_filter: " << timestepping_crank_nicolson_filter << std::endl;
 		std::cout << std::endl;
 	}
 };

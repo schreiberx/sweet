@@ -13,8 +13,8 @@ class LevelSingleton
 public:
   
   int              level;
-  sweet::SphereDataConfig dataConfig;
-  sweet::SphereDataConfig dataConfigNoDealiasing;
+  sweet::SphereData_Config dataConfig;
+  sweet::SphereData_Config dataConfigNoDealiasing;
   SphereOperators  op;
   SphereOperators  opNoDealiasing;
 

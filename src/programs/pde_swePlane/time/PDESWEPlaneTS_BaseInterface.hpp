@@ -86,7 +86,7 @@ public:
 
 
 public:
-	virtual void run_timestep(
+	virtual void runTimestep(
 			sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -96,7 +96,7 @@ public:
 	) = 0;
 
 #if (SWEET_PARAREAL && SWEET_PARAREAL_PLANE) || (SWEET_XBRAID && SWEET_XBRAID_PLANE)
-	void run_timestep(
+	void runTimestep(
 			Parareal_GenericData* io_data,
 
 			double i_dt,		///< time step size
@@ -107,7 +107,7 @@ public:
 		sweet::PlaneData_Spectral u = *(io_data->get_pointer_to_data_PlaneData_Spectral()->simfields[1]);
 		sweet::PlaneData_Spectral v = *(io_data->get_pointer_to_data_PlaneData_Spectral()->simfields[2]);
 
-		run_timestep(h_pert, u, v,
+		runTimestep(h_pert, u, v,
 				i_dt,
 				i_sim_timestamp
 			);

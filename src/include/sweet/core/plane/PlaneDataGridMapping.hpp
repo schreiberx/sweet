@@ -38,7 +38,7 @@ public:
 
 	void setup(
 			ShackPlaneDataOps *io_planeDataOps,
-			PlaneDataConfig *i_planeDataConfig
+			PlaneData_Config *i_planeDataConfig
 	)
 	{
 		// ll  refers to lower left corner of the cell.

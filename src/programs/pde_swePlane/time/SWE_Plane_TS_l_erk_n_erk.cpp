@@ -87,7 +87,7 @@ void SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear(
 
 
 
-void SWE_Plane_TS_l_erk_n_erk::run_timestep(
+void SWE_Plane_TS_l_erk_n_erk::runTimestep(
 		sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -101,7 +101,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 
 	if (timestepping_order == 1)
 	{
-		timestepping_rk_linear.run_timestep(
+		timestepping_rk_linear.runTimestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_h_pert, io_u, io_v,
@@ -110,7 +110,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		timestepping_rk_nonlinear.run_timestep(
+		timestepping_rk_nonlinear.runTimestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_h_pert, io_u, io_v,
@@ -122,7 +122,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 	else if (timestepping_order == 2)
 	{
 		// HALF time step for linear part
-		timestepping_rk_linear.run_timestep(
+		timestepping_rk_linear.runTimestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_h_pert, io_u, io_v,
@@ -132,7 +132,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 			);
 
 		// FULL time step for non-linear part
-		timestepping_rk_nonlinear.run_timestep(
+		timestepping_rk_nonlinear.runTimestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_nonlinear,	///< pointer to function to compute euler time step updates
 				io_h_pert, io_u, io_v,
@@ -142,7 +142,7 @@ void SWE_Plane_TS_l_erk_n_erk::run_timestep(
 			);
 
 		// HALF time step for linear part
-		timestepping_rk_linear.run_timestep(
+		timestepping_rk_linear.runTimestep(
 				this,
 				&SWE_Plane_TS_l_erk_n_erk::euler_timestep_update_linear,	///< pointer to function to compute euler time step updates
 				io_h_pert, io_u, io_v,

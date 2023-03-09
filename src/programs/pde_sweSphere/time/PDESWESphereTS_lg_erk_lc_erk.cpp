@@ -9,7 +9,7 @@
 
 
 
-void PDESWESphereTS_lg_erk_lc_erk::run_timestep(
+void PDESWESphereTS_lg_erk_lc_erk::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -20,7 +20,7 @@ void PDESWESphereTS_lg_erk_lc_erk::run_timestep(
 {
 	if (timestepping_order == 1)
 	{
-		timestepping_rk_linear.run_timestep(
+		timestepping_rk_linear.runTimestep(
 				this,
 				&PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lg,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
@@ -29,7 +29,7 @@ void PDESWESphereTS_lg_erk_lc_erk::run_timestep(
 				i_simulation_timestamp
 			);
 
-		timestepping_rk_nonlinear.run_timestep(
+		timestepping_rk_nonlinear.runTimestep(
 				this,
 				&PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
@@ -41,7 +41,7 @@ void PDESWESphereTS_lg_erk_lc_erk::run_timestep(
 	else if (timestepping_order == 2)
 	{
 		// HALF time step for linear part
-		timestepping_rk_linear.run_timestep(
+		timestepping_rk_linear.runTimestep(
 				this,
 				&PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lg,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
@@ -51,7 +51,7 @@ void PDESWESphereTS_lg_erk_lc_erk::run_timestep(
 			);
 
 		// FULL time step for non-linear part
-		timestepping_rk_nonlinear.run_timestep(
+		timestepping_rk_nonlinear.runTimestep(
 				this,
 				&PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lc,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
@@ -61,7 +61,7 @@ void PDESWESphereTS_lg_erk_lc_erk::run_timestep(
 			);
 
 		// HALF time step for linear part
-		timestepping_rk_linear.run_timestep(
+		timestepping_rk_linear.runTimestep(
 				this,
 				&PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lg,	///< pointer to function to compute euler time step updates
 				io_phi_pert, io_vrt, io_div,
@@ -95,23 +95,23 @@ void PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update(
 		double i_simulation_timestamp
 )
 {
-	if (shackDict.sim.sphere_use_fsphere)
+	if (shackPDESWESphere->sphere_use_fsphere)
 	{
-		double gh0 = shackDict.sim.gravitation * shackDict.sim.h0;
+		double gh0 = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 		o_phi_t = -gh0*i_div;
-		o_div_t = -op.laplace(i_phi);
+		o_div_t = -ops->laplace(i_phi);
 
-		o_vort_t = -shackDict.sim.sphere_fsphere_f0*i_div;
-		o_div_t += shackDict.sim.sphere_fsphere_f0*i_vort;
+		o_vort_t = -shackPDESWESphere->sphere_fsphere_f0*i_div;
+		o_div_t += shackPDESWESphere->sphere_fsphere_f0*i_vort;
 	}
 	else
 	{
 #if 0
-		double gh = shackDict.sim.gravitation * shackDict.sim.h0;
+		double gh = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 		o_phi_t = -gh*i_div;
-		o_div_t = -op.laplace(i_phi);
+		o_div_t = -ops->laplace(i_phi);
 
 		/*
 		 * This doesn't converge to the reference solution
@@ -122,22 +122,22 @@ void PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update(
 
 #else
 
-		double gh = shackDict.sim.gravitation * shackDict.sim.h0;
+		double gh = shackPDESWESphere->gravitation * shackPDESWESphere->h0;
 
 		/*
 		 * Apply Coriolis Effect in physical VELOCITY space
 		 */
 		sweet::SphereData_Physical ug(i_phi.sphereDataConfig);
 		sweet::SphereData_Physical vg(i_phi.sphereDataConfig);
-		op.vrtdiv_to_uv(i_vort, i_div, ug, vg);
+		ops->vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
-		sweet::SphereData_Physical tmpg1 = ug*op.fg;
-		sweet::SphereData_Physical tmpg2 = vg*op.fg;
+		sweet::SphereData_Physical tmpg1 = ug*fg;
+		sweet::SphereData_Physical tmpg2 = vg*fg;
 
-		op.uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
+		ops->uv_to_vrtdiv(tmpg1, tmpg2, o_div_t, o_vort_t);
 
 		o_vort_t *= -1.0;
-		o_div_t += -op.laplace(i_phi);
+		o_div_t += -ops->laplace(i_phi);
 
 		/*
 		 * DIV on velocity field
@@ -162,7 +162,7 @@ void PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lg(
 		double i_simulation_timestamp
 )
 {
-	double gh0 = shackDict.sim.gravitation*shackDict.sim.h0;
+	double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
 
 
 	/*
@@ -179,7 +179,7 @@ void PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lg(
 	/*
 	 * step 1b
 	 */
-	o_div_t = -op.laplace(i_phi);
+	o_div_t = -ops->laplace(i_phi);
 
 	/*
 	 * step 2a
@@ -211,18 +211,18 @@ void PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lc(
 	 */
 	sweet::SphereData_Physical ug(i_phi.sphereDataConfig);
 	sweet::SphereData_Physical vg(i_phi.sphereDataConfig);
-	op.vrtdiv_to_uv(i_vort, i_div, ug, vg);
+	ops->vrtdiv_to_uv(i_vort, i_div, ug, vg);
 
 	/*
 	 * step 1b
 	 */
-	sweet::SphereData_Physical tmp_u = ug*op.fg;
-	sweet::SphereData_Physical tmp_v = vg*op.fg;
+	sweet::SphereData_Physical tmp_u = ug*fg;
+	sweet::SphereData_Physical tmp_v = vg*fg;
 
 	/*
 	 * step 1c
 	 */
-	op.uv_to_vrtdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
+	ops->uv_to_vrtdiv(tmp_u, tmp_v, o_div_t, o_vort_t);
 
 	/*
 	 * step 1d
@@ -283,26 +283,26 @@ void PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lc(
 /*
  * Setup
  */
-void PDESWESphereTS_lg_erk_lc_erk::setup(
+bool PDESWESphereTS_lg_erk_lc_erk::setup_main(
+		sweet::SphereOperators *io_ops,
 		int i_order	///< order of RK time stepping method
 )
 {
+	ops = io_ops;
 	timestepping_order = i_order;
+	setupFG();
+
+	return true;
 }
 
 
-void PDESWESphereTS_lg_erk_lc_erk::setup_auto()
+bool PDESWESphereTS_lg_erk_lc_erk::setup_auto(sweet::SphereOperators *io_ops)
 {
-	setup(timestepping_order);
+	return setup_main(io_ops, timestepping_order);
 }
 
 
-PDESWESphereTS_lg_erk_lc_erk::PDESWESphereTS_lg_erk_lc_erk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op)
+PDESWESphereTS_lg_erk_lc_erk::PDESWESphereTS_lg_erk_lc_erk()
 {
 }
 

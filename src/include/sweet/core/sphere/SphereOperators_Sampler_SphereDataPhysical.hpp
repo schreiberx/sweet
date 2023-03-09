@@ -28,7 +28,7 @@ class SphereOperators_Sampler_SphereDataPhysical
 {
 public:
 	int res[2];						/// resolution of domain
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 	std::vector<double> sampling_data;
 
@@ -54,7 +54,7 @@ private:
 
 public:
 	SphereOperators_Sampler_SphereDataPhysical(
-		SphereDataConfig *i_sphereDataConfig
+		SphereData_Config *i_sphereDataConfig
 	)
 	{
 		assert(i_sphereDataConfig != nullptr);
@@ -92,7 +92,7 @@ public:
 
 public:
 	void setup(
-		const SphereDataConfig *i_sphereDataConfig
+		const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		if (i_sphereDataConfig == nullptr)

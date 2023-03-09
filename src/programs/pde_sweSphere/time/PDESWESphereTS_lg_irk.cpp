@@ -13,15 +13,15 @@
 
 
 
-bool PDESWESphereTS_lg_irk::implements_timestepping_method(const std::string &i_timestepping_method
+bool PDESWESphereTS_lg_irk::implementsTimesteppingMethod(const std::string &i_timestepping_method
 									)
 {
 	/*
 	 * Supported directly in l_irk, not in this class anymore
 	 */
 	timestepping_method = i_timestepping_method;
-	timestepping_order = shackDict.disc.timestepping_order;
-	timestepping_order2 = shackDict.disc.timestepping_order2;
+	timestepping_order = shackPDESWETimeDisc->timestepping_order;
+	timestepping_order2 = shackPDESWETimeDisc->timestepping_order2;
 	if (i_timestepping_method == "lg_irk_DEPRECATED")
 		return true;
 
@@ -30,28 +30,88 @@ bool PDESWESphereTS_lg_irk::implements_timestepping_method(const std::string &i_
 
 
 
-std::string PDESWESphereTS_lg_irk::string_id()
+std::string PDESWESphereTS_lg_irk::getIDString()
 {
 	return "lg_irk_DEPRECATED";
 }
 
 
 
-void PDESWESphereTS_lg_irk::setup_auto()
+bool PDESWESphereTS_lg_irk::setup_auto(
+		sweet::SphereOperators *io_ops
+)
 {
-	if (shackDict.sim.sphere_use_fsphere)
+	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
-	setup(
+	return setup_main(
+			io_ops,
 			timestepping_order,
-			shackDict.timecontrol.current_timestep_size,
-			shackDict.disc.timestepping_crank_nicolson_filter
+			shackTimestepControl->current_timestep_size,
+			shackPDESWETimeDisc->timestepping_crank_nicolson_filter
+		);
+}
+
+
+bool PDESWESphereTS_lg_irk::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestep_order,
+		double i_timestep_size
+)
+{
+	return setup_main(
+			io_ops,
+			i_timestep_order,
+			i_timestep_size,
+			shackPDESWETimeDisc->timestepping_crank_nicolson_filter
 		);
 }
 
 
 
-void PDESWESphereTS_lg_irk::run_timestep(
+bool PDESWESphereTS_lg_irk::setup_main(
+		sweet::SphereOperators *io_ops,
+		int i_timestep_order,
+		double i_timestep_size,
+		double i_crank_nicolson_damping_factor
+)
+{
+	ops = io_ops;
+
+	timestepping_order = i_timestep_order;
+	timestep_size = i_timestep_size;
+
+	if (i_timestep_order == 1)
+	{
+		// set this to 1 to ignore it
+		crank_nicolson_damping_factor = 1.0;
+	}
+	else if (i_timestep_order == 2)
+	{
+		crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
+		lg_erk = new PDESWESphereTS_lg_erk;
+		lg_erk->setup(ops, 1);
+	}
+	else
+	{
+		SWEETError("Only 1st and 2nd order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
+	}
+
+
+	update_coefficients();
+
+	r = shackSphereDataOps->sphere_radius;
+	inv_r = 1.0/r;
+
+	gh = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
+
+	return true;
+}
+
+
+
+
+void PDESWESphereTS_lg_irk::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,
 		sweet::SphereData_Spectral &io_vrt,
 		sweet::SphereData_Spectral &io_div,
@@ -76,23 +136,23 @@ void PDESWESphereTS_lg_irk::run_timestep(
 		/*
 		 * Execute a half ERK time step first for 2nd order
 		 */
-		lg_erk->run_timestep(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
+		lg_erk->runTimestep(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
 	}
 
 	sweet::SphereData_Spectral phi0 = io_phi_pert;
 	sweet::SphereData_Spectral vrt0 = io_vrt;
 	sweet::SphereData_Spectral div0 = io_div;
 
-	sweet::SphereData_Spectral phi(sphereDataConfig);
-	sweet::SphereData_Spectral vort(sphereDataConfig);
-	sweet::SphereData_Spectral div(sphereDataConfig);
+	sweet::SphereData_Spectral phi(ops->sphereDataConfig);
+	sweet::SphereData_Spectral vort(ops->sphereDataConfig);
+	sweet::SphereData_Spectral div(ops->sphereDataConfig);
 
 	{
 		sweet::SphereData_Spectral rhs = gh*div0 + alpha*phi0;
 		phi = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 		io_phi_pert = phi*beta;
 
-		rhs = alpha*div0 + op.laplace(phi0);
+		rhs = alpha*div0 + ops->laplace(phi0);
 		div = rhs.spectral_solve_helmholtz(alpha*alpha, -gh, r);
 		io_div = div*beta;
 
@@ -102,13 +162,7 @@ void PDESWESphereTS_lg_irk::run_timestep(
 
 
 
-PDESWESphereTS_lg_irk::PDESWESphereTS_lg_irk(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-	shackDict(i_shackDict),
-	op(i_op),
-	sphereDataConfig(op.sphereDataConfig)
+PDESWESphereTS_lg_irk::PDESWESphereTS_lg_irk()
 {
 }
 
@@ -132,54 +186,6 @@ void PDESWESphereTS_lg_irk::update_coefficients()
 		alpha /= crank_nicolson_damping_factor;
 		beta /= crank_nicolson_damping_factor;
 	}
-}
-
-
-
-void PDESWESphereTS_lg_irk::setup(
-		int i_timestep_order,
-		double i_timestep_size
-)
-{
-	setup(i_timestep_order, i_timestep_size, shackDict.disc.timestepping_crank_nicolson_filter);
-}
-
-
-
-void PDESWESphereTS_lg_irk::setup(
-		int i_timestep_order,
-		double i_timestep_size,
-		double i_crank_nicolson_damping_factor
-)
-{
-	timestepping_order = i_timestep_order;
-	timestep_size = i_timestep_size;
-
-	if (i_timestep_order == 1)
-	{
-		// set this to 1 to ignore it
-		crank_nicolson_damping_factor = 1.0;
-	}
-	else if (i_timestep_order == 2)
-	{
-		crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
-		lg_erk = new PDESWESphereTS_lg_erk(shackDict, op);
-		lg_erk->setup(1);
-	}
-	else
-	{
-		SWEETError("Only 1st and 2nd order IRK supported so far with this implementation! Use l_cn if you want to have 2nd order Crank-Nicolson!");
-	}
-
-
-	update_coefficients();
-
-	r = shackDict.sim.sphere_radius;
-	inv_r = 1.0/r;
-
-	gh = shackDict.sim.gravitation*shackDict.sim.h0;
-
-
 }
 
 

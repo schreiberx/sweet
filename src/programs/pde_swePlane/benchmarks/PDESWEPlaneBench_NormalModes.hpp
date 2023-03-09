@@ -68,7 +68,7 @@ public:
 
 		sweet::ExpFunctions<T> rexiFunctions;
 
-		const sweet::PlaneDataConfig *planeDataConfig = io_h.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = io_h.planeDataConfig;
 
 		if (shackPlaneDataOps->space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
@@ -188,7 +188,7 @@ public:
 			sweet::PlaneData_Spectral &o_igeast_mode //Output: Coeficients multiplying east gravity mode
 	)
 	{
-		const sweet::PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = i_h.planeDataConfig;
 
 		o_geo_mode.spectral_set_zero();
 		o_igwest_mode.spectral_set_zero();
@@ -239,7 +239,7 @@ public:
 
 		sweet::ExpFunctions<T> rexiFunctions;
 
-		const sweet::PlaneDataConfig *planeDataConfig = i_h.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = i_h.planeDataConfig;
 
 		if (shackPlaneDataOps->space_grid_use_c_staggering)
 			SWEETError("Staggering not supported");
@@ -629,7 +629,7 @@ public:
 			sweet::PlaneData_Spectral &i_mode    //Coeficients multiplying  mode
 	)
 	{
-		const sweet::PlaneDataConfig *planeDataConfig = i_mode.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = i_mode.planeDataConfig;
 
 		std::stringstream buffer;
 		buffer << std::setprecision(8);
@@ -670,7 +670,7 @@ public:
 		const char* filename_igwest = "output_nm_igwest_evol.txt";
 		const char* filename_igeast = "output_nm_igeast_evol.txt";
 
-		const sweet::PlaneDataConfig *planeDataConfig = i_mode_geo.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = i_mode_geo.planeDataConfig;
 
 		std::ofstream file0;	
 		std::ofstream file1;	
@@ -811,7 +811,7 @@ public:
 		// waves_N_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest_k0_k1_d0_deast_dwest
 
 		//zero initial conditions
-		const sweet::PlaneDataConfig *planeDataConfig = o_h.planeDataConfig;
+		const sweet::PlaneData_Config *planeDataConfig = o_h.planeDataConfig;
 
 		o_h.spectral_set_zero();
 		o_u.spectral_set_zero();

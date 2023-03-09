@@ -30,7 +30,7 @@ namespace sweet
 class SphereData_SpectralComplex
 {
 public:
-	const SphereDataConfig *sphereDataConfig;
+	const SphereData_Config *sphereDataConfig;
 
 	typedef std::complex<double> Tcomplex;
 
@@ -58,7 +58,7 @@ public:
 
 public:
 	SphereData_SpectralComplex(
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)	:
 		sphereDataConfig(nullptr),
 		spectral_space_data(nullptr)
@@ -127,7 +127,7 @@ public:
 	 * Run validation checks to make sure that the physical and spectral spaces match in size
 	 */
 public:
-	inline void check_sphereDataConfig_identical_res(const SphereDataConfig *i_sphereDataConfig)	const
+	inline void check_sphereDataConfig_identical_res(const SphereData_Config *i_sphereDataConfig)	const
 	{
 		assert(sphereDataConfig->spectral_modes_m_max == i_sphereDataConfig->spectral_modes_m_max);
 		assert(sphereDataConfig->spectral_modes_n_max == i_sphereDataConfig->spectral_modes_n_max);
@@ -171,7 +171,7 @@ public:
 
 
 	SphereData_SpectralComplex spectral_returnWithTruncatedModes(
-			const SphereDataConfig *i_sphereDataConfigTargetTruncation
+			const SphereData_Config *i_sphereDataConfigTargetTruncation
 	)	const
 	{
 		return spectral_returnWithDifferentModes(i_sphereDataConfigTargetTruncation).spectral_returnWithDifferentModes(sphereDataConfig);
@@ -180,7 +180,7 @@ public:
 
 public:
 	SphereData_SpectralComplex spectral_returnWithDifferentModes(
-			const SphereDataConfig *i_sphereDataConfigNew
+			const SphereData_Config *i_sphereDataConfigNew
 	)	const
 	{
 		SphereData_SpectralComplex out(i_sphereDataConfigNew);
@@ -533,7 +533,7 @@ public:
 
 public:
 	void setup_if_required(
-		const SphereDataConfig *i_sphereDataConfig
+		const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		if (sphereDataConfig != nullptr)
@@ -545,7 +545,7 @@ public:
 
 public:
 	void setup(
-			const SphereDataConfig *i_sphereConfig
+			const SphereData_Config *i_sphereConfig
 	)
 	{
 		// assure that the initialization is not done twice!

@@ -26,7 +26,7 @@ bool ODEScalarTS_ln_erk::setup()
 	return true;
 }
 
-void ODEScalarTS_ln_erk::run_timestep(
+void ODEScalarTS_ln_erk::runTimestep(
 		double &io_u,		///< prognostic variables
 
 		double i_dt,

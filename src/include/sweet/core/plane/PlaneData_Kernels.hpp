@@ -29,7 +29,7 @@ public:
 			const double i_kernel_array[S][S],
 			double i_scale,
 
-			const PlaneDataConfig *planeDataConfig,
+			const PlaneData_Config *planeDataConfig,
 			double *o_physical_data
 	)
 	{

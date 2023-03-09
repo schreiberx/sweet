@@ -328,7 +328,7 @@ void ccomp_f2(
 
 	SWE_Sphere_TS_lg_irk* timestepper = i_ctx->get_lg_irk_timestepper();
 	// solve the implicit system using the Helmholtz solver
-	timestepper->run_timestep(
+	timestepper->runTimestep(
 					phi_pert_Y,
 					vrt_Y,
 					div_Y,

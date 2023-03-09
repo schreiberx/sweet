@@ -2,13 +2,24 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_NEW_HPP_
-#define SRC_PROGRAMS_SWE_SPHERE_TS_INTERFACE_NEW_HPP_
+#ifndef SRC_PROGRAMS_SWE_SPHERE_TS_BASE_INTERFACE_NEW_HPP_
+#define SRC_PROGRAMS_SWE_SPHERE_TS_BASE_INTERFACE_NEW_HPP_
 
-#include <sweet/core/sphere/SphereData_Spectral.hpp>
-#include <sweet/core/sphere/SphereOperators.hpp>
-#include <limits>
+
+#include <sweet/core/ErrorBase.hpp>
+#include <sweet/core/sphere/Sphere.hpp>
+
 #include <sweet/core/shacks/ShackDictionary.hpp>
+#include <sweet/core/shacksShared/ShackTimestepControl.hpp>
+#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
+#include <sweet/core/shacksShared/ShackIOData.hpp>
+#include <sweet/expIntegration/ShackExpIntegration.hpp>
+#include <sweet/core/time/ShackTimesteppingSemiLagrangianSphereData.hpp>
+#include "ShackPDESWESphereTimeDiscretization.hpp"
+#include "../benchmarks/ShackPDESWESphereBenchmarks.hpp"
+#include "../ShackPDESWESphere.hpp"
+
+
 
 #if SWEET_PARAREAL || SWEET_XBRAID
 #include <sweet/parareal/Parareal_GenericData.hpp>
@@ -17,7 +28,126 @@
 
 class PDESWESphereTS_BaseInterface
 {
-// needed for parareal (instead of using directily shackDict.disc.timestepping_method)
+public:
+	sweet::ErrorBase error;
+
+	/*
+	 * These are just some default shacks we provide to each time stepping method
+	 */
+
+	sweet::ShackDictionary *shackDict;
+	sweet::ShackTimestepControl *shackTimestepControl;
+	sweet::ShackSphereDataOps *shackSphereDataOps;
+	sweet::ShackIOData *shackIOData;
+	sweet::ShackExpIntegration *shackExpIntegration;
+	sweet::ShackTimesteppingSemiLagrangianSphereData *shackTimesteppingSemiLagrangianSphereData;
+
+	ShackPDESWESphereTimeDiscretization *shackPDESWETimeDisc;
+	ShackPDESWESphereBenchmarks *shackPDESWEBenchmark;
+	ShackPDESWESphere *shackPDESWESphere;
+
+	sweet::SphereOperators *ops;
+
+	std::string timestepping_method;
+	int timestepping_order;
+	int timestepping_order2;
+
+	sweet::SphereData_Physical fg;
+
+	PDESWESphereTS_BaseInterface()	:
+		shackDict(nullptr),
+		shackTimestepControl(nullptr),
+		shackSphereDataOps(nullptr),
+		shackIOData(nullptr),
+		shackExpIntegration(nullptr),
+		shackPDESWETimeDisc(nullptr),
+		shackPDESWEBenchmark(nullptr),
+		shackPDESWESphere(nullptr),
+		ops(nullptr),
+		timestepping_order(-1),
+		timestepping_order2(-1)
+	{
+
+	}
+
+
+	bool setupFG()
+	{
+		if (shackPDESWESphere->sphere_use_fsphere)
+			fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
+		else
+			fg = ops->getFG_rotatingSphere(shackPDESWESphere->sphere_rotating_coriolis_omega);
+
+		return true;
+	}
+
+
+	virtual bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		shackDict = io_shackDict;
+
+		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
+		shackIOData = io_shackDict->getAutoRegistration<sweet::ShackIOData>();
+		shackExpIntegration = io_shackDict->getAutoRegistration<sweet::ShackExpIntegration>();
+		shackTimesteppingSemiLagrangianSphereData = io_shackDict->getAutoRegistration<sweet::ShackTimesteppingSemiLagrangianSphereData>();
+
+		shackPDESWETimeDisc = io_shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
+		shackPDESWEBenchmark = io_shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();
+		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(*io_shackDict);
+
+		return true;
+	}
+
+
+	virtual bool setup_auto(
+		sweet::SphereOperators *io_ops
+	)
+	{
+		ops = io_ops;
+		return true;
+	}
+
+
+public:
+	virtual void runTimestep(
+			sweet::SphereData_Spectral &io_h_pert,	///< prognostic variables
+			sweet::SphereData_Spectral &io_u,	///< prognostic variables
+			sweet::SphereData_Spectral &io_v,	///< prognostic variables
+
+			double i_dt,		///< time step size
+			double i_sim_timestamp
+	) = 0;
+
+
+	virtual bool implementsTimesteppingMethod(
+			const std::string &i_timestepping_method
+		) = 0;
+
+	virtual std::string getIDString() = 0;
+
+	virtual void printHelp()
+	{
+	}
+
+
+	virtual void printImplementedTimesteppingMethods(
+		std::ostream &o_ostream,
+		const std::string &i_prefix
+	)
+	{
+		o_ostream << i_prefix << "TODO" << std::endl;
+	}
+
+#if 0
+
+/*
+ * Martin@Joao Please let's discuss this.
+ */
+// needed for parareal (instead of using directly shackDict.disc.timestepping_method)
 protected:
 	std::string timestepping_method;
 	int timestepping_order;
@@ -26,14 +156,9 @@ protected:
 public:
 
 	/*
-	 * Automatic setup based on shackDict and operator
-	 */
-	virtual void setup_auto() = 0;
-
-	/*
 	 * Timestepping interface used by main timestepping loop
 	 */
-	virtual void run_timestep(
+	virtual void runTimestep(
 			sweet::SphereData_Spectral &io_h,	///< prognostic variables
 			sweet::SphereData_Spectral &io_u,	///< prognostic variables
 			sweet::SphereData_Spectral &io_v,	///< prognostic variables
@@ -42,18 +167,10 @@ public:
 			double i_simulation_timestamp
 	) = 0;
 
-	virtual bool implements_timestepping_method(
-			const std::string &i_timestepping_method
-		) = 0;
-
-	virtual std::string string_id() = 0;
-
-	virtual void print_help()
-	{
-	}
+	virtual ~PDESWESphereTS_BaseInterface() {}
 
 #if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
-	void run_timestep(
+	void runTimestep(
 			Parareal_GenericData* io_data,
 
 			double i_dt,		///< time step size
@@ -64,7 +181,7 @@ public:
 		sweet::SphereData_Spectral u = *(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[1]);
 		sweet::SphereData_Spectral v = *(io_data->get_pointer_to_data_SphereData_Spectral()->simfields[2]);
 
-		run_timestep(h, u, v,
+		runTimestep(h, u, v,
 				i_dt,
 				i_sim_timestamp
 			);
@@ -99,12 +216,7 @@ public:
 	};
 #endif
 
-
-
-	virtual ~PDESWESphereTS_BaseInterface()
-	{
-	}
-
+#endif
 };
 
 #endif

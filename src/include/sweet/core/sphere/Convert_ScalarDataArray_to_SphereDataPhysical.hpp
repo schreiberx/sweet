@@ -21,7 +21,7 @@ public:
 	static
 	SphereData_Physical convert(
 			const ScalarDataArray &i_scalarDataArray,
-			const SphereDataConfig *i_sphereDataConfig
+			const SphereData_Config *i_sphereDataConfig
 	)
 	{
 		SphereData_Physical out(i_sphereDataConfig);

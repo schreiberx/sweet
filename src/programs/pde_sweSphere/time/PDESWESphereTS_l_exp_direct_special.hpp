@@ -20,32 +20,33 @@ class PDESWESphereTS_l_exp_direct_special	: public PDESWESphereTS_BaseInterface
 	 *
 	 * Note, that the lc ETD method is actually not a direct method.
 	 */
+
 public:
-	bool implements_timestepping_method(
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+	bool setup(
+			sweet::SphereOperators *io_ops,
+			int i_order,	///< order of RK time stepping method
+			bool i_use_coriolis,		///< Include Coriolis term
+			const std::string i_function_name	///< phi/ups function
+	);
+
+public:
+	bool implementsTimesteppingMethod(
 		const std::string &i_timestepping_method
-	)
-	{
-		if (i_timestepping_method == "l_exp_special")
-			return true;
+	);
 
-		if (i_timestepping_method == "lg_exp_special")
-			return true;
-
-		return false;
-	}
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	);
 
 public:
 
-	std::string string_id()
+	std::string getIDString()
 	{
 		return "l_exp_special";
 	}
 
-	sweet::ShackDictionary &shackDict;
-	sweet::SphereOperators &op;
-	std::string timestepping_method;
-
-	int timestepping_order;
 	bool use_coriolis;
 
 	PDESWESphereTS_lg_exp_direct timestepping_lg_exp_phi0;
@@ -58,20 +59,7 @@ public:
 
 	PDESWESphereTS_ln_erk_split_vd timestepping_lc_erk;
 
-	PDESWESphereTS_l_exp_direct_special(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
-
-	void setup(
-			int i_order,				///< Order of RK time stepping method
-			bool i_use_coriolis,		///< Include Coriolis term
-			const std::string i_function_name	///< phi/ups function
-	);
-
-	void setup_auto();
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -89,6 +77,8 @@ public:
 			sweet::SphereData_Spectral &o_div,
 			double i_simulation_timestamp
 	);
+
+	PDESWESphereTS_l_exp_direct_special();
 
 	virtual ~PDESWESphereTS_l_exp_direct_special();
 };

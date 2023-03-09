@@ -55,6 +55,10 @@ subroutine zgbsv
 	)
 */
 
+
+namespace sweet
+{
+
 /*
  * We create the interface to this function here
  */
@@ -445,6 +449,6 @@ public:
 
 };
 
-
+}
 
 #endif

@@ -314,7 +314,7 @@ int main_mpi(int i_argc, char *i_argv[])
 
 			while (!simulation.should_quit())
 			{
-				simulation.run_timestep();
+				simulation.runTimestep();
 
 				// Instability
 				if (simulation.shackMisc->instability_checks)

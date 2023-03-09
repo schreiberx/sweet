@@ -119,7 +119,7 @@ int main(
 		shackPlaneDataOps->space_res_spectral[0] = -1;
 		shackPlaneDataOps->space_res_spectral[1] = -1;
 
-		sweet::PlaneDataConfig planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 		planeDataConfig.setupAuto(shackPlaneDataOps);
 
 		sweet::PlaneOperators ops;

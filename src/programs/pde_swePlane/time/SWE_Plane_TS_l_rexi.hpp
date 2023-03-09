@@ -106,7 +106,7 @@ public:
 			sweet::ShackDictionary *io_shackDict
 	);
 
-	void run_timestep(
+	void runTimestep(
 			const sweet::PlaneData_Spectral &i_h_pert,	///< prognostic variables
 			const sweet::PlaneData_Spectral &i_u,	///< prognostic variables
 			const sweet::PlaneData_Spectral &i_v,	///< prognostic variables
@@ -133,7 +133,7 @@ public:
 			double i_simulation_timestamp
 	);
 
-	void run_timestep(
+	void runTimestep(
 			sweet::PlaneData_Spectral &io_h_pert,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 			sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -151,7 +151,7 @@ public:
 public:
 	static
 	void MPI_quitWorkers(
-			sweet::PlaneDataConfig *i_planeDataConfig
+			sweet::PlaneData_Config *i_planeDataConfig
 	);
 
 

@@ -54,7 +54,7 @@ int main(
 	shackPlaneDataOps->space_res_physical[1] = res[1];
 
 
-	sweet::PlaneDataConfig planeDataConfigInstance;
+	sweet::PlaneData_Config planeDataConfigInstance;
 	planeDataConfigInstance.setupAuto(*shackPlaneDataOps);
 
 	std::size_t test_max_freqx = planeDataConfigInstance.spectral_real_modes[0];

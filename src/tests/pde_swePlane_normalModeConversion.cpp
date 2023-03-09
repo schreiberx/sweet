@@ -48,7 +48,7 @@ int main(
 
 	shackProgArgDict.printShackData();
 
-	sweet::PlaneDataConfig planeDataConfig;
+	sweet::PlaneData_Config planeDataConfig;
 	planeDataConfig.setupAuto(shackPlaneDataOps);
 
 	sweet::PlaneOperators ops;

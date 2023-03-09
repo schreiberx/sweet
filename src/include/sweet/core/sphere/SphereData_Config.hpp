@@ -36,7 +36,7 @@
 namespace sweet
 {
 
-class SphereDataConfig
+class SphereData_Config
 {
 	friend class SphereOperators;
 	friend class SphereOperatorsComplex;
@@ -124,7 +124,7 @@ public:
 
 
 public:
-	SphereDataConfig()	:
+	SphereData_Config()	:
 		shtns(nullptr),
 		physical_num_lon(-1),
 		physical_num_lat(-1),
@@ -691,7 +691,7 @@ public:
 
 public:
 	bool setupAdditionalModes(
-			const SphereDataConfig *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			int i_additional_modes_longitude,
 			int i_additional_modes_latitude,
 			TransformationPlans::TRANSFORMATION_PLAN_CACHE i_plan_load_save,
@@ -761,7 +761,7 @@ public:
 	}
 
 
-	~SphereDataConfig()
+	~SphereData_Config()
 	{
 		if (shtns != nullptr)
 			cleanup();

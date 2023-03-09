@@ -65,7 +65,7 @@ void PDEAdvectionSphereTS_na_erk::euler_timestep_update(
 
 
 
-void PDEAdvectionSphereTS_na_erk::run_timestep(
+void PDEAdvectionSphereTS_na_erk::runTimestep(
 		std::vector<sweet::SphereData_Spectral> &io_prognostic_fields,	///< prognostic variables
 		sweet::SphereData_Physical &io_u,
 		sweet::SphereData_Physical &io_v,
@@ -77,7 +77,7 @@ void PDEAdvectionSphereTS_na_erk::run_timestep(
 	for (std::size_t i = 0; i < io_prognostic_fields.size(); i++)
 	{
 		// standard time stepping
-		timestepping_rk.run_timestep_na(
+		timestepping_rk.runTimestep_na(
 				this,
 				&PDEAdvectionSphereTS_na_erk::euler_timestep_update,	///< pointer to function to compute euler time step updates
 				io_prognostic_fields[i], io_u, io_v,

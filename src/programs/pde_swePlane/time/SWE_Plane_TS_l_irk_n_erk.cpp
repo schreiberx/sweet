@@ -56,7 +56,7 @@ void SWE_Plane_TS_l_irk_n_erk::euler_timestep_update_nonlinear(
 }
 
 
-void SWE_Plane_TS_l_irk_n_erk::run_timestep(
+void SWE_Plane_TS_l_irk_n_erk::runTimestep(
 		sweet::PlaneData_Spectral &io_h,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_u,	///< prognostic variables
 		sweet::PlaneData_Spectral &io_v,	///< prognostic variables
@@ -72,7 +72,7 @@ void SWE_Plane_TS_l_irk_n_erk::run_timestep(
 	sweet::PlaneData_Spectral u_linear_t1 = io_u;
 	sweet::PlaneData_Spectral v_linear_t1 = io_v;
 
-	ts_l_irk.run_timestep(
+	ts_l_irk.runTimestep(
 			h_linear_t1, u_linear_t1, v_linear_t1,
 			i_dt,
 			i_simulation_timestamp

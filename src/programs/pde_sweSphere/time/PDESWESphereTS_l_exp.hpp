@@ -50,28 +50,52 @@
 class PDESWESphereTS_l_exp	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implements_timestepping_method(
+	bool setup_auto(sweet::SphereOperators *io_ops);
+
+public:
+	bool setup_variant_10(
+			sweet::SphereOperators *io_ops,
+			sweet::ShackExpIntegration *i_shackExpIntegration,
+			const std::string &i_function_name,
+			double i_timestep_size,
+			bool i_use_f_sphere,
+			bool i_no_coriolis
+	);
+
+public:
+	bool setup_variant_50(
+			sweet::SphereOperators *io_ops,
+			sweet::ShackExpIntegration *i_shackExpIntegration,
+			const std::string &i_function_name,
+			double i_timestep_size,
+			bool i_use_f_sphere,
+			bool i_no_coriolis,
+			int i_timestepping_order
+	);
+
+public:
+	bool setup_variant_100(
+			sweet::SphereOperators *io_ops,
+			sweet::ShackExpIntegration *i_shackExpIntegration,
+			const std::string &i_function_name,
+			const std::string &i_exp_method,
+			double i_timestep_size,
+			bool i_use_f_sphere,
+			bool i_no_coriolis,
+			int i_timestepping_order,
+			bool i_use_rexi_sphere_solver_preallocation
+	);
+
+
+public:
+	bool implementsTimesteppingMethod(
 				const std::string &i_timestepping_method
 		);
-	std::string string_id();
-	void setup_auto();
+	std::string getIDString();
 
 
 private:
 	typedef std::complex<double> complex;
-
-
-
-	/// Simulation variables
-	sweet::ShackDictionary &shackDict;
-
-public:
-	// WARNING: Do NOT use a reference to this to get more flexibility by overriding certain things in here
-	SimulationCoefficients simCoeffs;
-
-private:
-	/// Sphere operators
-	sweet::SphereOperators &ops;
 
 
 public:
@@ -80,17 +104,10 @@ public:
 	std::complex<double> rexi_gamma;
 
 
-	const sweet::SphereDataConfig *sphereDataConfig;
-
-	/// This class is only setup and used in case of added modes
-	sweet::SphereDataConfig sphereDataConfigInstance;
-
 	sweet::ExpFunctions<double> expFunctions;
 
 
 private:
-
-	sweet::ShackDictionary *rexiSimVars;
 
 	/*
 	 * Time step size of REXI
@@ -101,6 +118,11 @@ private:
 	 * Function name to be used by REXI
 	 */
 	std::string function_name;
+
+	/*
+	 * Exponential integration method to use
+	 */
+	std::string exp_method;
 
 	/*
 	 * Don't use any Coriolis effect (reduction to very simple Helmholtz problem)
@@ -179,10 +201,7 @@ private:
 
 
 public:
-	PDESWESphereTS_l_exp(
-			sweet::ShackDictionary &i_shackDict,
-			sweet::SphereOperators &i_op
-		);
+	PDESWESphereTS_l_exp();
 
 private:
 	void p_update_coefficients();
@@ -193,22 +212,8 @@ private:
 			int i_local_thread_id
 	);
 
-
-	/**
-	 * setup the REXI
-	 */
 public:
-	void setup(
-			EXP_sweet::ShackDictionary &i_rexi,
-			const std::string &i_function_name,
-			double i_timestep_size,
-			bool i_use_f_sphere,
-			bool i_no_coriolis,
-			int i_timestepping_order
-	);
-
-
-	void run_timestep(
+	void runTimestep(
 			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
 			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
 			sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -218,7 +223,7 @@ public:
 	);
 
 
-	void run_timestep(
+	void runTimestep(
 			const sweet::SphereData_Spectral &i_h,	///< prognostic variables
 			const sweet::SphereData_Spectral &i_u,	///< prognostic variables
 			const sweet::SphereData_Spectral &i_v,	///< prognostic variables

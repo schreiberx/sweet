@@ -7,7 +7,7 @@
 #include "PDESWESphereTS_lg_exp_lc_taylor.hpp"
 
 
-void PDESWESphereTS_lg_exp_lc_taylor::run_timestep(
+void PDESWESphereTS_lg_exp_lc_taylor::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
 		sweet::SphereData_Spectral &io_div,	///< prognostic variables
@@ -45,7 +45,7 @@ void PDESWESphereTS_lg_exp_lc_taylor::run_timestep_lg(
 		double i_simulation_timestamp
 )
 {
-	timestepping_lg_exp.run_timestep(
+	timestepping_lg_exp.runTimestep(
 			io_phi_pert,
 			io_vrt,
 			io_div,
@@ -77,7 +77,7 @@ void PDESWESphereTS_lg_exp_lc_taylor::run_timestep_lc(
 
 	double taylor_coeff = 1.0;
 
-	for (int i = 1; i <= shackDict.rexi.taylor_num_expansions; i++)
+	for (int i = 1; i <= shackExpIntegration->taylor_num_expansions; i++)
 	{
 		// Dummy output variables
 		sweet::SphereData_Spectral phi_Lc_pow_i(io_phi.sphereDataConfig, 0);
@@ -106,11 +106,12 @@ void PDESWESphereTS_lg_exp_lc_taylor::run_timestep_lc(
 
 
 
-void PDESWESphereTS_lg_exp_lc_taylor::setup(
+bool PDESWESphereTS_lg_exp_lc_taylor::setup(
+		sweet::SphereOperators *io_ops,
 		int i_order
 )
 {
-	if (shackDict.rexi.taylor_num_expansions <= 0)
+	if (shackExpIntegration->taylor_num_expansions <= 0)
 		SWEETError("This time stepping method requires setting the number of Taylor expansions");
 
 	timestepping_order = i_order;
@@ -118,29 +119,26 @@ void PDESWESphereTS_lg_exp_lc_taylor::setup(
 	if (timestepping_order != 1 && timestepping_order != 2)
 		SWEETError("Only 1st and 2nd order time stepping order supported");
 
-	timestepping_lg_exp.setup("phi0");
+	timestepping_lg_exp.setup(io_ops, "phi0");
 
-	if (shackDict.rexi.exp_method != "ss_taylor")
-		SWEETError("Use --exp-method=ss_taylor to use this time stepper");
+	if (shackExpIntegration->exp_method != "ss_taylor")
+		SWEETError("Use --exp-method=ss_taylor to use this time stepper [TODO: This might not make sense after some internal changes]");
+
+	return true;
 }
 
 
 
-void PDESWESphereTS_lg_exp_lc_taylor::setup_auto()
+bool PDESWESphereTS_lg_exp_lc_taylor::setup_auto(
+		sweet::SphereOperators *io_ops
+)
 {
-	setup(timestepping_order);
+	return setup(io_ops, timestepping_order);
 }
 
 
 
-PDESWESphereTS_lg_exp_lc_taylor::PDESWESphereTS_lg_exp_lc_taylor(
-		sweet::ShackDictionary &i_shackDict,
-		sweet::SphereOperators &i_op
-)	:
-		shackDict(i_shackDict),
-		op(i_op),
-		timestepping_lg_exp(i_shackDict, i_op),
-		timestepping_lc_erk(i_shackDict, i_op)
+PDESWESphereTS_lg_exp_lc_taylor::PDESWESphereTS_lg_exp_lc_taylor()
 {
 }
 
