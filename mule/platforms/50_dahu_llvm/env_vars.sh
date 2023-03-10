@@ -25,6 +25,7 @@ fi
 
 guix install -p $GUIX_USER_PROFILE_DIR/sweet_llvm llvm@15 clang@15 libomp@15 mpich@3.3.2 cmake@3.25.1 gfortran-toolchain@10.3.0 lapack@3.9.0 glibc@2.32
 
+export PATH=$GUIX_PROFILE/bin:$PATH
 
 ##############
 ## END GUIX ##
