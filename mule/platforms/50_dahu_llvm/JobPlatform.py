@@ -34,7 +34,7 @@ def get_platform_id():
     	unique ID of platform
     """
 
-    return "dahu"
+    return "dahu_llvm"
 
 
 
