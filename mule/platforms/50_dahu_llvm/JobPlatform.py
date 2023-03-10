@@ -45,11 +45,12 @@ def get_platform_resources():
 
     h = JobPlatformResources()
 
-    h.num_cores_per_node = ## TODO
+    ## dahu34 - dahu72 (Gold6130)
+    h.num_cores_per_node = 32 ## TODO
     # Number of nodes per job are limited
-    h.num_nodes = ## TODO
-    h.num_cores_per_socket = ## TODO
-    h.max_wallclock_seconds = ## TODO
+    h.num_nodes = 39 ## TODO
+    h.num_cores_per_socket = 16## TODO
+    h.max_wallclock_seconds = 2*24*60*60## TODO
     return h
 
 
