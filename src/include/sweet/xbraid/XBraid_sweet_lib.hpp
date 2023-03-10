@@ -216,6 +216,11 @@ public:
 	std::vector<t_tsmType*>		timeSteppers;
 	std::vector<SimulationVariables*> simVars_levels;
 
+
+	// single vector to replace vectors above
+	std::vector<SimulationGuiCallBacks*> levels_simulations;
+
+
 	int			size_buffer;		// overestimated
 
 	int rank;
@@ -351,6 +356,17 @@ public:
 				delete *it;
 				*it = nullptr;
 			}
+
+
+		for (std::vector<SimulationGuiCallbacks*>::iterator it = this->levels_simulations.begin();
+									it != this->levels_simulations.end();
+									it++)
+			if (*it)
+			{
+				delete *it;
+				*it = nullptr;
+			}
+
 
 	}
 
@@ -576,84 +592,6 @@ public:
 
 	}
 
-
-///////////private:
-///////////	/*
-///////////	 * Get timestepping methods for each of the N levels
-///////////	 * Input string must contain 1, 2 or N tsm names separated by comma:
-///////////	 *  - 1 tsm name: same tsm for all levels;
-///////////	 *  - 2 tsm names: first one is for level 0 (finest); all coarse levels use the second one
-///////////	 *  - N tsm names: i-th level uses the i-th tsm.
-///////////	 */
-///////////	std::vector<std::string> getTimeSteppingMethodFromParameters()
-///////////	{
-///////////		std::vector<std::string> tsm = {};
-///////////		std::stringstream all_tsm = std::stringstream(this->simVars->xbraid.xbraid_timestepping_method);
-///////////
-///////////		while (all_tsm.good())
-///////////		{
-///////////			std::string str;
-///////////			getline(all_tsm, str, ',');
-///////////			tsm.push_back(str);
-///////////		}
-///////////
-///////////		if ( ! (tsm.size() == 1 || tsm.size() == 2 || tsm.size() == this->simVars->xbraid.xbraid_max_levels ) )
-///////////			SWEETError("xbraid_timestepping_method must contain 1, 2 or N timestepping names.");
-///////////
-///////////		// all levels use same tsm
-///////////		if (tsm.size() == 1)
-///////////			for (int level = 1; level < this->simVars->xbraid.xbraid_max_levels; level++)
-///////////				tsm.push_back(tsm[0]);
-///////////
-///////////		// all coarse levels use same tsm
-///////////		if (tsm.size() == 2)
-///////////			for (int level = 2; level < this->simVars->xbraid.xbraid_max_levels; level++)
-///////////				tsm.push_back(tsm[1]);
-///////////
-///////////
-///////////		return tsm;
-///////////	}
-///////////
-///////////	/*
-///////////	 * Get timestepping order for each of the N levels
-///////////	 * Input string must contain 1, 2 or N orders separated by comma:
-///////////	 *  - 1 tso: same tso for all levels;
-///////////	 *  - 2 tso: first one is for level 0 (finest); all coarse levels use the second one
-///////////	 *  - N tso: i-th level uses the i-th tso.
-///////////	 */
-///////////	std::vector<int> getTimeSteppingOrderFromParameters(int o)
-///////////	{
-///////////		std::vector<int> tso = {};
-///////////		std::stringstream all_tso;
-///////////		if (o == 1)
-///////////			all_tso = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order);
-///////////		else if (o == 2)
-///////////			all_tso = std::stringstream(this->simVars->xbraid.xbraid_timestepping_order2);
-///////////		else
-///////////			SWEETError("Wrong parameter for getting timestepping order.");
-///////////
-///////////		while (all_tso.good())
-///////////		{
-///////////			std::string str;
-///////////			getline(all_tso, str, ',');
-///////////			tso.push_back(stoi(str));
-///////////		}
-///////////
-///////////		if ( ! (tso.size() == 1 || tso.size() == 2 || tso.size() == this->simVars->xbraid.xbraid_max_levels ) )
-///////////			SWEETError("xbraid_timestepping_order must contain 1, 2 or N timestepping orders.");
-///////////
-///////////		// all levels use same tso
-///////////		if (tso.size() == 1)
-///////////			for (int level = 1; level < this->simVars->xbraid.xbraid_max_levels; level++)
-///////////				tso.push_back(tso[0]);
-///////////
-///////////		// all coarse levels use same tso
-///////////		if (tso.size() == 2)
-///////////			for (int level = 2; level < this->simVars->xbraid.xbraid_max_levels; level++)
-///////////				tso.push_back(tso[1]);
-///////////
-///////////		return tso;
-///////////	}
 
 	/*
 	 * Get specific parameters for each of the N levels

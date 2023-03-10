@@ -84,8 +84,9 @@ def jobscript_get_header(jg : JobGeneration):
     # See https://gricad-doc.univ-grenoble-alpes.fr/hpc/joblaunch/job_management/#soumettre-un-job-à-laide-dun-script-de-soumission
     #
     content = """#! /bin/bash
-#OAR -n sweet_job\n
-#OAR -l /nodes="""+str(p.num_nodes)+ """/core="""+str(p.num_ranks_per_node)+""",walltime="""+time_str+""" -p "cpumodel = 'Gold 6130'
+#OAR -n sweet_job
+#OAR -l /nodes="""+str(p.num_nodes)+ """/core="""+str(p.num_ranks_per_node)+""",walltime="""+time_str+"""
+#OAR -p cpumodel='Gold 6130'
 #OAR --stdout """+jg.p_job_stdout_filepath+"""
 #OAR --stderr """+jg.p_job_stderr_filepath+"""
 #OAR --project pr-parallel-in-time\n
