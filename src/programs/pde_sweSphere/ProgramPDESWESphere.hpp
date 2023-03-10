@@ -49,6 +49,9 @@
 // Normal mode analysis
 #include "PDESWESphereNormalModeAnalysis.hpp"
 
+// File writer
+#include "PDESWESphereFileOutput.hpp"
+
 
 class ProgramPDESWESphere
 #if SWEET_GUI
@@ -93,14 +96,18 @@ public:
 
 
 		bool setup(
-				sweet::ShackSphereDataOps *i_shackSphereDataOps
+				sweet::ShackSphereDataOps *i_shackSphereDataOps,
+				bool i_setup_spectral_transforms = true		// for reset()
 		)
 		{
 			/*
 			 * Setup Sphere Data Config & Operators
 			 */
-			sphereDataConfig.setupAuto(i_shackSphereDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereDataConfig);
+			if (i_setup_spectral_transforms)
+			{
+				sphereDataConfig.setupAuto(i_shackSphereDataOps);
+				ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereDataConfig);
+			}
 
 			ops.setup(&sphereDataConfig, i_shackSphereDataOps);
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
@@ -120,7 +127,7 @@ public:
 			return true;
 		}
 
-		void clear()
+		void clear(bool i_clear_spectral_transforms = true)
 		{
 			prog_phi_pert.clear();
 			prog_div.clear();
@@ -131,7 +138,9 @@ public:
 			t0_prog_vrt.clear();
 
 			ops.clear();
-			sphereDataConfig.clear();
+
+			if (i_clear_spectral_transforms)
+				sphereDataConfig.clear();
 		}
 	};
 
@@ -143,6 +152,8 @@ public:
 
 	// Handler to all benchmarks
 	PDESWESphereBenchmarksCombined sphereBenchmarks;
+
+	PDESWESphereFileOutput fileOutput;
 
 	/*
 	 * Shack directory and shacks to work with
@@ -159,8 +170,6 @@ public:
 	int mpi_rank;
 #endif
 
-	// Diagnostics measures
-	int timestep_nr_last_update_diagnostics = -1;
 	int timestep_nr_last_output_simtime = -1;
 
 	PDESWESphereDiagnostics diagnostics;
@@ -278,7 +287,7 @@ public:
 		shackProgArgDict.clear();
 	}
 
-	bool setup_3_data()
+	bool setup_3_dataAndOps(bool i_setup_spectral_transforms = true)
 	{
 		/*
 		 * BENCHMARK: Detect particular benchmark to use
@@ -294,7 +303,7 @@ public:
 		/*
 		 * Setup the data fields
 		 */
-		dataConfigOps.setup(shackSphereDataOps);
+		dataConfigOps.setup(shackSphereDataOps, i_setup_spectral_transforms);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataConfigOps);
 
 		/*
@@ -345,20 +354,27 @@ public:
 		shackProgArgDict.checkAllArgumentsProcessed();
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
 
+		if (shackPDESWESphere->compute_diagnostics)
+			diagnostics.setup(&(dataConfigOps.ops), shackPDESWESphere, 0);
+
+		fileOutput.setup(shackIOData, shackTimestepControl, shackPDESWESphere);
+
 		return true;
 	}
-	void clear_3_data()
+	void clear_3_data(bool i_clear_spectral_transforms = true)
 	{
+		fileOutput.clear();
+
 #if SWEET_GUI
 		dataConfigOps.vis_plane_data.clear();
 #endif
 
 		timeSteppers.clear();
 
-		dataConfigOps.clear();
+		dataConfigOps.clear(i_clear_spectral_transforms);
 	}
 
-	bool setup()
+	bool setup(bool i_setup_spectral_transforms = true)
 	{
 		StopwatchBox::getInstance().main_setup.start();
 
@@ -368,7 +384,7 @@ public:
 		if (!setup_2_processArguments())
 			return false;
 
-		if (!setup_3_data())
+		if (!setup_3_dataAndOps(i_setup_spectral_transforms))
 			return false;
 
 		std::cout << "Printing shack information:" << std::endl;
@@ -390,22 +406,27 @@ public:
 			timestep_do_output();
 		return true;
 	}
-	void clear()
+	void clear(bool i_clear_spectral_transforms = true)
 	{
-		clear_3_data();
+		clear_3_data(i_clear_spectral_transforms);
 		clear_2_processArguments();
 		clear_1_shackRegistration();
 	}
 
 	bool reset()
 	{
-		clear();
+		// keep pausing simulation
+		bool run_simulation_timesteps = shackTimestepControl->run_simulation_timesteps;
 
-		if (!setup())
+		clear(false);
+
+		if (!setup(false))
 		{
 			error.print();
 			return false;
 		}
+
+		shackTimestepControl->run_simulation_timesteps = run_simulation_timesteps;
 
 		return !error.exists();
 	}
@@ -436,27 +457,13 @@ public:
 				shackTimestepControl->current_simulation_time
 			);
 
-#if 0
-		if (shackBenchmarks->getVelocities)
-		{
-			/*
-			 * From advection test case
-			 *
-			 * Update velocities just for sake of the correction visualization
-			 */
-			shackBenchmarks->getVelocities(
-					dataConfigOps.vel_u,
-					dataConfigOps.vel_v,
-					shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestep_size,
-					shackBenchmarks->getVelocitiesUserData
-				);
-		}
-#endif
-
 		shackTimestepControl->timestepHelperEnd();
 
 		if (shackIOData->verbosity > 2)
 			std::cout << shackTimestepControl->current_timestep_nr << ": " << shackTimestepControl->current_simulation_time/(60*60*24.0) << std::endl;
+
+		if (shackPDESWESphere->compute_diagnostics)
+			update_diagnostics();
 
 		return true;
 	}
@@ -472,9 +479,10 @@ public:
 
 	void update_diagnostics()
 	{
-		// assure, that the diagnostics are only updated for new time steps
-		if (timestep_nr_last_update_diagnostics == shackTimestepControl->current_timestep_nr)
+		if (diagnostics.last_update_timestep_nr == shackTimestepControl->current_timestep_nr)
 			return;
+
+		assert(shackPDESWESphere->compute_diagnostics);
 
 		diagnostics.update_phi_vrt_div_2_mass_energy_enstrophy(
 				&dataConfigOps.ops,
@@ -485,227 +493,27 @@ public:
 				shackSphereDataOps->sphere_radius,
 				shackPDESWESphere->gravitation
 		);
-
-		timestep_nr_last_update_diagnostics = shackTimestepControl->current_timestep_nr;
 	}
-
-
-	/**
-	 * Write file to data and return string of file name
-	 */
-	std::string write_file_csv_spec_evol(
-			const sweet::SphereData_Spectral &i_sphereData,
-			const char* i_name		///< name of output variable
-	)
-	{
-		char buffer[1024];
-		std::string phase = "_arg";
-		std::string ampl = "_amp"; 
-
-		const char* filename_template_ampl = "output_spec_ampl_%s.txt"; //.c_str();
-		const char* filename_template_arg = "output_spec_arg_%s.txt"; //.c_str();
-		int reduce_mode_factor = 4;
-
-		sprintf(buffer, filename_template_arg, i_name);
-		i_sphereData.spectrum_phase_file_write_line(buffer, 
-			i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale,
-			20, 10e-20, reduce_mode_factor);
-
-		sprintf(buffer, filename_template_ampl, i_name);
-		i_sphereData.spectrum_abs_file_write_line(buffer, 
-			i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale,
-			20, 10e-20, reduce_mode_factor);
-
-		return buffer;
-	}
-
-
-	/**
-	 * Write file to data and return string of file name
-	 */
-	std::string write_file_csv(
-			const sweet::SphereData_Spectral &i_sphereData,
-			const char* i_name,		///< name of output variable
-			bool i_phi_shifted = false
-	)
-	{
-		char buffer[1024];
-
-		// create copy
-		sweet::SphereData_Physical sphereData = i_sphereData.toPhys();
-
-		const char* filename_template = shackIOData->output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
-
-		if (i_phi_shifted)
-			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
-		else
-			sphereData.physical_file_write(buffer);
-
-		return buffer;
-	}
-
-
-
-	/**
-	 * Write file to data and return string of file name
-	 */
-	std::string write_file_bin(
-			const sweet::SphereData_Spectral &i_sphereData,
-			const char* i_name
-	)
-	{
-		char buffer[1024];
-
-		sweet::SphereData_Spectral sphereData(i_sphereData);
-		const char* filename_template = shackIOData->output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
-		sphereData.file_write_binary_spectral(buffer);
-
-		return buffer;
-	}
-
-
-	std::string output_reference_filenames;
-
-	void write_file_output()
-	{
-#if SWEET_MPI
-		if (mpi_rank > 0)
-			return;
-#endif
-
-		if (shackIOData->output_file_name.length() == 0)
-			return;
-
-		std::cout << "Writing output files at simulation time: " << shackTimestepControl->current_simulation_time << " secs" << std::endl;
-
-		if (shackIOData->output_file_mode == "csv")
-		{
-			std::string output_filename;
-
-			sweet::SphereData_Spectral h = dataConfigOps.prog_phi_pert*(1.0/shackPDESWESphere->gravitation);
-			h += shackPDESWESphere->h0;
-
-			output_filename = write_file_csv(h, "prog_h");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
-
-			output_filename = write_file_csv(dataConfigOps.prog_phi_pert, "prog_phi_pert");
-			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << " (min: " << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
-
-			sweet::SphereData_Physical phi_phys = h.toPhys() * shackPDESWESphere->gravitation;
-			sweet::SphereData_Spectral phi(dataConfigOps.sphereDataConfig);
-			phi.loadSphereDataPhysical(phi_phys);
-			output_filename = write_file_csv(phi, "prog_phi");
-			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << " (min: " << phi_phys.physical_reduce_min() << ", max: " << phi_phys.physical_reduce_max() << ")" << std::endl;
-
-			sweet::SphereData_Physical u(dataConfigOps.sphereDataConfig);
-			sweet::SphereData_Physical v(dataConfigOps.sphereDataConfig);
-
-			dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog_vrt, dataConfigOps.prog_div, u, v);
-
-			output_filename = write_file_csv(u, "prog_div");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << std::endl;
-
-			output_filename = write_file_csv(v, "prog_vrt");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << std::endl;
-
-			output_filename = write_file_csv(dataConfigOps.prog_vrt, "prog_vrt");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << std::endl;
-
-			output_filename = write_file_csv(dataConfigOps.prog_div, "prog_div");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << std::endl;
-
-			sweet::SphereData_Spectral potvrt = (dataConfigOps.prog_phi_pert/shackPDESWESphere->gravitation)*dataConfigOps.prog_vrt;
-
-			output_filename = write_file_csv(potvrt, "prog_potvrt");
-			output_reference_filenames += ";"+output_filename;
-			std::cout << " + " << output_filename << std::endl;
-		}
-		else if (shackIOData->output_file_mode == "bin")
-		{
-			std::string output_filename;
-
-			{
-				output_filename = write_file_bin(dataConfigOps.prog_phi_pert, "prog_phi_pert");
-				output_reference_filenames = output_filename;
-				sweet::SphereData_Physical prog_phys = dataConfigOps.prog_phi_pert.toPhys();
-
-				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
-			}
-
-			{
-				output_filename = write_file_bin(dataConfigOps.prog_vrt, "prog_vrt");
-				output_reference_filenames += ";"+output_filename;
-				sweet::SphereData_Physical prog_phys = dataConfigOps.prog_vrt.toPhys();
-
-				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
-			}
-
-			{
-				output_filename = write_file_bin(dataConfigOps.prog_div, "prog_div");
-				output_reference_filenames += ";"+output_filename;
-				sweet::SphereData_Physical prog_phys = dataConfigOps.prog_div.toPhys();
-
-				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
-			}
-		}
-		else if (shackIOData->output_file_mode == "csv_spec_evol"){
-
-			std::string output_filename;
-
-			{ 
-				/*
-				* Spectral kinetic energy and potential enstrophy calculation and output
-				*
-				* Details in Jakob-Chien, Ruediger, James J. Hack, and David L. Williamson. 
-				* "Spectral transform solutions to the shallow water test set." Journal of Computational Physics 119, no. 1 (1995): 164-187.
-				*/
-				// Kinetic energy is given in spectral space as
-				// KE per mode = a^2/((n(n+1)))*(vrt*conj(vrt))+a^2/((n(n+1)))*(div*conj(div))
-				// r = a/(sqrt(n(n+1))) (root_laplace)
-				// KE per mode = (r*vrt*conj(r*vrt))+(r*div*conj(r*div))
-				sweet::SphereData_Spectral rlap_vrt = dataConfigOps.ops.inv_root_laplace(dataConfigOps.prog_vrt);
-				sweet::SphereData_Spectral rlap_div = dataConfigOps.ops.inv_root_laplace(dataConfigOps.prog_div);
-				sweet::SphereData_Spectral kin_en = rlap_vrt + rlap_div ;
-
-				output_filename = write_file_csv_spec_evol(kin_en, "kin_en"); 
-				std::cout << " + " << output_filename << " (Total Kin Energy : " << 0.25*kin_en.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
-
-				// For Barotropic vort eq: See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
-				// Kinetic energy is given in spectral space as
-				// Vortical energy per mode is (0.5 n*(n+1) / a^2) *psi*conj(psi) in spectral space
-				//SphereData_Spectral psi = op.inv_laplace(prog_vrt); // 
-				// multiply psi by sqrt( n * (n+1))/a (apply root laplacian)
-				//SphereData_Spectral psi_root = op.root_laplace(psi);
-				//output_filename = write_file_csv_spec_evol(psi_root*std::sqrt(0.5), "spec_energy"); 
-				//std::cout << " + " << output_filename << " (Kinetic energy : " << (0.5)*psi_root.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
-
-				// See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
-				// enstrophy per mode is 0.5 vrt*conj(vrt) in spectral space
-				// Total enstrophy is the sum of these (counting twice modes with m>0 and once when m=0)
-				output_filename = write_file_csv_spec_evol(dataConfigOps.prog_vrt, "enstrophy");
-				std::cout << " + " << output_filename << " (Total Enstrophy : " << dataConfigOps.prog_vrt.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
-
-			}
-		}
-		else
-		{
-			SWEETError("Unknown output file mode '"+shackIOData->output_file_mode+"'");
-		}
-	}
-
 
 
 	void timestep_do_output()
 	{
+		if (shackPDESWESphere->compute_diagnostics)
+		{
+			update_diagnostics();
+
+#if SWEET_MPI
+			if (mpi_rank == 0)
+#endif
+			{
+				// Print header
+				if (shackTimestepControl->current_timestep_nr == 0)
+					diagnostics.printTabularHeader();
+
+				diagnostics.printTabularRow(shackTimestepControl->current_simulation_time);
+			}
+		}
+
 		if (shackPDESWESphere->compute_errors)
 		{
 			/*
@@ -768,45 +576,13 @@ public:
 			}
 		}
 
-		write_file_output();
+		fileOutput.write_file_output(
+				dataConfigOps.ops,
+				dataConfigOps.prog_phi_pert,
+				dataConfigOps.prog_div,
+				dataConfigOps.prog_vrt
+		);
 
-		update_diagnostics();
-
-		if (shackIOData->verbosity > 1)
-		{
-
-#if SWEET_MPI
-			if (mpi_rank == 0)
-#endif
-			{
-				update_diagnostics();
-
-				// Print header
-				if (shackTimestepControl->current_timestep_nr == 0)
-				{
-					std::cout << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
-					std::cout << std::endl;
-				}
-
-				// Print simulation time, energy and pot enstrophy
-				std::cout << shackTimestepControl->current_simulation_time << "\t";
-				std::cout << diagnostics.total_mass << "\t";
-				std::cout << diagnostics.potential_energy << "\t";
-				std::cout << diagnostics.kinetic_energy << "\t";
-				std::cout << diagnostics.total_energy << "\t";
-				std::cout << diagnostics.total_potential_enstrophy << "\t";
-
-				std::cout << (diagnostics.total_mass-diagnostics.ref_total_mass)/diagnostics.total_mass << "\t";
-				std::cout << (diagnostics.potential_energy-diagnostics.ref_potential_energy)/diagnostics.potential_energy << "\t";
-				std::cout << (diagnostics.kinetic_energy-diagnostics.ref_kinetic_energy)/diagnostics.kinetic_energy << "\t";
-				std::cout << (diagnostics.total_energy-diagnostics.total_energy)/diagnostics.total_energy << "\t";
-				std::cout << (diagnostics.total_potential_enstrophy-diagnostics.total_potential_enstrophy)/diagnostics.total_potential_enstrophy << std::endl;
-
-				static double start_tot_energy = -1;
-				if (start_tot_energy == -1)
-					start_tot_energy = diagnostics.total_energy;
-			}
-		}
 
 
 		if (shackIOData->verbosity > 0)
@@ -832,15 +608,6 @@ public:
 		if (mpi_rank > 0)
 			return false;
 #endif
-
-#if 0
-		if (shackPDEDict.misc.gui_enabled)
-			update_diagnostics();
-#endif
-
-
-		if (shackIOData->verbosity > 0)
-			std::cout << "." << std::flush;
 
 		if (shackIOData->output_each_sim_seconds < 0)
 			return false;
@@ -912,13 +679,13 @@ public:
 	}
 
 
-	int max_viz_types = 9;
+	int max_vis_types = 9;
 
 
 	void vis_getDataArray(
 			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
-			int *o_render_primitive_id,
+			int *o_vis_render_type_of_primitive_id,
 			void **o_bogus_data,
 			double *o_viz_min,
 			double *o_viz_max,
@@ -926,67 +693,50 @@ public:
 	)
 	{
 		// request rendering of sphere
-		*o_render_primitive_id = render_primitive_id;
-		*o_bogus_data = sphereDataConfig;
+		*o_vis_render_type_of_primitive_id = dataConfigOps.vis_render_type_of_primitive_id;
+		*o_bogus_data = &dataConfigOps.sphereDataConfig;
 
-		if (shackDict.misc.vis_id < 0)
-		{
-			int n = -shackDict.misc.vis_id-1;
-			if (n <  (int)SphereData_DebugContainer().size())
-			{
-				SphereData_DebugContainer::DataContainer &d = sweet::SphereData_DebugContainer().container_data()[n];
-				if (d.is_spectral)
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(d.data_spectral, planeDataConfig);
-				else
-					viz_plane_data = Convert_SphereDataPhysical_To_PlaneDataPhysical::physical_convert(d.data_physical, planeDataConfig);
-
-				*o_dataArray = &viz_plane_data;
-				*o_aspect_ratio = 0.5;
-				return;
-			}
-		}
-
-		int id = shackDict.misc.vis_id % max_viz_types;
+		int id = dataConfigOps.vis_data_id % max_vis_types;
 
 		switch (id)
 		{
 			default:
 
 			case 0:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(prog_phi_pert), planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog_phi_pert), dataConfigOps.planeDataConfig);
 				break;
 
 			case 1:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(prog_vrt), planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog_vrt), dataConfigOps.planeDataConfig);
 				break;
 
 			case 2:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(SphereData_Spectral(prog_div), planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(sweet::SphereData_Spectral(dataConfigOps.prog_div), dataConfigOps.planeDataConfig);
 				break;
 
 			case 3:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(shackPDESWESphere->h0 + sweet::SphereData_Spectral(prog_phi_pert)/shackPDESWESphere->gravitation, planeDataConfig);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(shackPDESWESphere->h0 + sweet::SphereData_Spectral(dataConfigOps.prog_phi_pert)/shackPDESWESphere->gravitation, dataConfigOps.planeDataConfig);
 				break;
 
 			case 4:
 			{
-				sweet::SphereData_Physical u(prog_vrt.sphereDataConfig);
-				sweet::SphereData_Physical v(prog_vrt.sphereDataConfig);
+				sweet::SphereData_Physical u(dataConfigOps.sphereDataConfig);
+				sweet::SphereData_Physical v(dataConfigOps.sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(u, planeDataConfig);
+				dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog_vrt, dataConfigOps.prog_div, u, v);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(u, dataConfigOps.planeDataConfig);
 				break;
 			}
 
 			case 5:
 			{
-				sweet::SphereData_Physical u(prog_vrt.sphereDataConfig);
-				sweet::SphereData_Physical v(prog_vrt.sphereDataConfig);
+				sweet::SphereData_Physical u(dataConfigOps.prog_vrt.sphereDataConfig);
+				sweet::SphereData_Physical v(dataConfigOps.prog_vrt.sphereDataConfig);
 
 				// Don't use Robert, since we're not interested in the Robert formulation here
-				op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(v, planeDataConfig);
+				dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog_vrt, dataConfigOps.prog_div, u, v);
+				dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(v, dataConfigOps.planeDataConfig);
 				break;
 			}
 
@@ -994,33 +744,35 @@ public:
 			case 7:
 			case 8:
 			{
-				sweet::SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);
-				sweet::SphereData_Spectral anal_solution_vrt(sphereDataConfig);
-				sweet::SphereData_Spectral anal_solution_div(sphereDataConfig);
+				sweet::SphereData_Spectral anal_solution_phi_pert(dataConfigOps.sphereDataConfig);
+				sweet::SphereData_Spectral anal_solution_vrt(dataConfigOps.sphereDataConfig);
+				sweet::SphereData_Spectral anal_solution_div(dataConfigOps.sphereDataConfig);
 
-				sphereBenchmarks.setup(shackDict, op);
-				sphereBenchmarks.timestepper->getInitialState(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
+				sphereBenchmarks.benchmark->getInitialState(
+						anal_solution_phi_pert,
+						anal_solution_vrt,
+						anal_solution_div
+					);
 
 				switch (id)
 				{
 				case 6:
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(prog_phi_pert - anal_solution_phi_pert, planeDataConfig);
+					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog_phi_pert - anal_solution_phi_pert, dataConfigOps.planeDataConfig);
 					break;
 
 				case 7:
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(prog_vrt - anal_solution_vrt, planeDataConfig);
+					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog_vrt - anal_solution_vrt, dataConfigOps.planeDataConfig);
 					break;
 
 				case 8:
-					viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(prog_div - anal_solution_div, planeDataConfig);
+					dataConfigOps.vis_plane_data = sweet::Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(dataConfigOps.prog_div - anal_solution_div, dataConfigOps.planeDataConfig);
 					break;
 				}
 			}
 		}
 
-
-		double viz_min = viz_plane_data.physical_reduce_min();
-		double viz_max = viz_plane_data.physical_reduce_max();
+		double viz_min = dataConfigOps.vis_plane_data.physical_reduce_min();
+		double viz_max = dataConfigOps.vis_plane_data.physical_reduce_max();
 
 		viz_max = std::max(std::abs(viz_max), std::abs(viz_min));
 		viz_min = -viz_max;
@@ -1029,7 +781,7 @@ public:
 		*o_viz_max = viz_max;
 
 
-		*o_dataArray = &viz_plane_data;
+		*o_dataArray = &dataConfigOps.vis_plane_data;
 		*o_aspect_ratio = 0.5;
 	}
 
@@ -1038,114 +790,68 @@ public:
 	/**
 	 * return status string for window title
 	 */
-	const char* vis_getStatusString()
+	const std::string vis_getStatusString(bool &o_replace_commas_with_newline)
 	{
-		std::string description = "";
+		std::ostringstream ss;
+		std::string sep = ",  ";
 
+		o_replace_commas_with_newline = true;
 
-		bool found = false;
-		if (shackDict.misc.vis_id < 0)
-		{
-			int n = -shackDict.misc.vis_id-1;
-
-			if (n <  (int)SphereData_DebugContainer().size())
-			{
-				description = std::string("DEBUG_")+SphereData_DebugContainer().container_data()[n].description;
-				found = true;
-			}
-		}
-
-		int id = shackDict.misc.vis_id % max_viz_types;
-
-		if (!found)
-		{
-			switch (id)
-			{
-			default:
-			case 0:
-				description = "phi_pert";
-				break;
-
-			case 1:
-				description = "vrt";
-				break;
-
-			case 2:
-				description = "div";
-				break;
-
-			case 3:
-				description = "h";
-				break;
-
-			case 4:
-				description = "u";
-				break;
-
-			case 5:
-				description = "v";
-				break;
-
-			case 6:
-				description = "phi diff t0";
-				break;
-
-			case 7:
-				description = "vrt diff t0";
-				break;
-
-			case 8:
-				description = "div diff t0";
-				break;
-			}
-		}
-
-
-		static char title_string[2048];
-
-		//sprintf(title_string, "Time (days): %f (%.2f d), Timestep: %i, timestep size: %.14e, Vis: %s, Mass: %.14e, Energy: %.14e, Potential Entrophy: %.14e",
-		sprintf(title_string,
 #if SWEET_MPI
-				"Rank %i,"
-				","
+		ss << "Rank=" << mpi_rank;
+		ss << ",";
 #endif
-				"Visualization %i: %s,"
-				"MaxVal: %.12e,"
-				"MinVal: %.12e,"
-				","
-				"Time: %f secs,"
-				"Time: %f hours,"
-				"Time: %f days,"
-				"timestep nr.: %i,"
-				"timestep size: %f,"
-				","
-				"TMass: %.12e,"
-				"TEnergy: %.12e,"
-				"PotEnstrophy: %.12e,"
-				","
-				"Colorscale: lowest [Blue... green ... red] highest"
-				,
-#if SWEET_MPI
-				mpi_rank,
-#endif
-				shackDict.misc.vis_id,
-				description.c_str(),
-				viz_plane_data.physical_reduce_max(),
-				viz_plane_data.physical_reduce_min(),
 
-				shackTimestepControl->current_simulation_time,
-				shackTimestepControl->current_simulation_time/(60.0*60.0),
-				shackTimestepControl->current_simulation_time/(60.0*60.0*24.0),
-				shackTimestepControl->current_timestep_nr,
-				shackTimestepControl->current_timestep_size,
+		const char *fields_array[] = {
+				"phi_pert",
+				"vrt",
+				"div",
+				"h",
+				"u",
+				"v",
+				"phi diff t0",
+				"u diff t0",
+				"v diff t0",
+		};
 
-				diagnostics.total_mass,
-				diagnostics.total_energy,
-				diagnostics.total_potential_enstrophy
+		int days = ((int)(shackTimestepControl->current_simulation_time/(60.0*60.0*24.0)));
+		int hours = ((int)(shackTimestepControl->current_simulation_time/(60.0*60.0)))%60;
+		int minutes = ((int)(shackTimestepControl->current_simulation_time/(60.0)))%60;
+		int seconds = ((int)shackTimestepControl->current_simulation_time) % 60;
 
-		);
+		ss << "time="
+				<< days
+				<< "d-"
+				<< (hours < 10 ? "0" : "") << hours
+				<< "h:"
+				<< (minutes < 10 ? "0" : "") << minutes
+				<< "m:"
+				<< (seconds < 10 ? "0" : "") << seconds
+				<< "s"
+				<< sep;
 
-		return title_string;
+
+		int id = dataConfigOps.vis_data_id % max_vis_types;
+		ss << "id=" << dataConfigOps.vis_data_id << sep;
+		ss << "field=" << fields_array[id] << sep;
+		ss << "max=" << dataConfigOps.vis_plane_data.physical_reduce_max() << sep;
+		ss << "min=" << dataConfigOps.vis_plane_data.physical_reduce_min() << sep;
+
+		ss << "time.step.nr="	<< shackTimestepControl->current_timestep_nr << sep;
+		ss << "time.step.size="	<< shackTimestepControl->current_timestep_size << sep;
+
+		if (shackPDESWESphere->compute_diagnostics)
+		{
+			update_diagnostics();
+
+			ss << "diag.total_mass="	<< diagnostics.total_mass << sep;
+			ss << "diag.total_energy="	<< diagnostics.total_energy << sep;
+			ss << "diag.total_potential_enstrophy="	<< diagnostics.total_potential_enstrophy;
+			ss << ",  ";
+		}
+		ss << "FIN";
+
+		return ss.str();
 	}
 
 
@@ -1162,19 +868,19 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			shackDict.misc.vis_id++;
+			dataConfigOps.vis_data_id++;
 			break;
 
 		case 'V':
-			shackDict.misc.vis_id--;
+			dataConfigOps.vis_data_id--;
 			break;
 
 		case 'b':
-			render_primitive_id = (render_primitive_id + 1) % 2;
+			dataConfigOps.vis_render_type_of_primitive_id = (dataConfigOps.vis_render_type_of_primitive_id + 1) % 2;
 			break;
 
-		case 'c':
-			write_file_output();
+		case 'B':
+			dataConfigOps.vis_render_type_of_primitive_id = (dataConfigOps.vis_render_type_of_primitive_id - 1) % 2;
 			break;
 		}
 	}
@@ -1207,10 +913,10 @@ public:
 	sweet::SphereData_Spectral prog_div;
 
 #if SWEET_GUI
-	sweet::PlaneData_Physical viz_plane_data;
+	sweet::PlaneData_Physical vis_plane_data;
 #endif
 
-	int render_primitive_id = 1;
+	int vis_render_type_of_primitive_id = 1;
 
 	// was the output of the time step already done for this simulation state?
 	double timestep_nr_last_output_simtime;
@@ -1222,9 +928,6 @@ public:
 
 		shackDict.reset();
 		shackIOData->output_time_scale = 1.0/(60.0*60.0);
-
-		// Diagnostics measures
-		timestep_nr_last_update_diagnostics = -1;
 
 		shackIOData->output_next_sim_seconds = 0;
 

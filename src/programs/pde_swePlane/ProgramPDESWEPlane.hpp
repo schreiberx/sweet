@@ -523,6 +523,9 @@ public:
 
 	bool reset()
 	{
+		// keep pause state if in GUI mode
+		bool run_simulation_timesteps = shackTimestepControl->run_simulation_timesteps;
+
 		clear();
 
 		if (!setup())
@@ -530,6 +533,8 @@ public:
 			error.print();
 			return false;
 		}
+
+		shackTimestepControl->run_simulation_timesteps = run_simulation_timesteps;
 
 		return !error.exists();
 	}
@@ -972,13 +977,11 @@ public:
 public:
 	bool should_quit()
 	{
-		if (
-				shackTimestepControl->max_timesteps_nr != -1 &&
-				shackTimestepControl->max_timesteps_nr <= shackTimestepControl->current_timestep_nr
-		)
-			return true;
+		if (shackTimestepControl->max_timesteps_nr != -1)
+			if (shackTimestepControl->max_timesteps_nr <= shackTimestepControl->current_timestep_nr)
+				return true;
 
-		if (!std::isinf(shackTimestepControl->max_simulation_time))
+		if (shackTimestepControl->max_simulation_time != -1)
 			if (shackTimestepControl->max_simulation_time <= shackTimestepControl->current_simulation_time+shackTimestepControl->max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
 				return true;
 

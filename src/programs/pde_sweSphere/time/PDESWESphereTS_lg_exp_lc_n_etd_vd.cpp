@@ -67,7 +67,9 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup_auto(
 			shackExpIntegration,
 			timestepping_order,
 			timestepping_order2,
-			shackTimestepControl->current_timestep_size
+			shackTimestepControl->current_timestep_size,
+			_with_na,
+			_with_nr
 		);
 }
 
@@ -78,11 +80,17 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup(
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,
 		int i_timestepping_order2,
-		double i_timestep_size
+		double i_timestep_size,
+
+		bool i_with_na,
+		bool i_with_nr
 )
 {
 	ops = io_ops;
 	timestepping_order = i_timestepping_order;
+
+	with_na = i_with_na;
+	with_nr = i_with_nr;
 
 	ts_ln_erk_split_vd.setup(ops, i_timestepping_order, true, true, true, true, false);
 

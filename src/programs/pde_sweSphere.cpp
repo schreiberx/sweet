@@ -34,19 +34,18 @@ int main(int i_argc, char *i_argv[])
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
-		while (!simulation.should_quit())
-			simulation.runTimestep();
+		if (simulation.shackPDESWESphere->normal_mode_analysis_generation > 0)
+		{
+			simulation.normalmode_analysis();
+		}
+		else
+		{
+			while (!simulation.should_quit())
+				simulation.runTimestep();
+		}
 	}
 
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
-
-#if 0
-	if (simulation.shackPDESWESphere->compute_errors)
-	{
-		simulation.printSimulationErrors();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
-	}
-#endif
 
 	std::cout << "FIN" << std::endl;
 	return 0;

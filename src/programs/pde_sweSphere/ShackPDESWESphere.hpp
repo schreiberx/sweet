@@ -71,6 +71,12 @@ public:
 	 */
 	bool compute_errors = false;
 
+	/*
+	 * Compute diagnostics
+	 */
+	bool compute_diagnostics = false;
+
+
 	void printShack(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "PDESWESphere parameters:" << std::endl;
@@ -82,6 +88,7 @@ public:
 		std::cout << i_prefix << " + sphere_use_fsphere: " << sphere_use_fsphere << std::endl;
 		std::cout << i_prefix << " + sphere_fsphere_f0: " << sphere_fsphere_f0 << std::endl;
 		std::cout << i_prefix << " + compute_errors: " << compute_errors << std::endl;
+		std::cout << i_prefix << " + compute_diagnostics: " << compute_diagnostics << std::endl;
 	}
 
 
@@ -92,6 +99,7 @@ public:
 		std::cout << i_prefix << "	-U [visc]	Viscosity order, default=2" << std::endl;
 		std::cout << i_prefix << "	-g [float]	Gravitation" << std::endl;
 		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
+		std::cout << i_prefix << "	--compute-diagnostics [bool]	Compute diagnostics" << std::endl;
 		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
 	}
 
@@ -108,7 +116,9 @@ public:
 			sphere_fsphere_f0 = sphere_rotating_coriolis_omega;
 
 		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
+
 		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
+		i_pa.getArgumentValueByKey("--compute-diagnostics", compute_diagnostics);
 
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
 

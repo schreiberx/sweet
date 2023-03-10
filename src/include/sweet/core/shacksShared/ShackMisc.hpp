@@ -25,7 +25,7 @@ class ShackMisc	:
 {
 public:
 	/// do instability checks for simulation
-	int instability_checks = 1;
+	bool instability_checks = false;
 
 	/*
 	 * Some flexible variable where one can just add options like

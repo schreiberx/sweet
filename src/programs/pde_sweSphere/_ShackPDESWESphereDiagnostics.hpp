@@ -43,6 +43,11 @@ public:
 	double ref_total_energy = -1;
 	double ref_total_potential_enstrophy = -1;
 
+	/*
+	 * Compute errors compared to analytical solution
+	 */
+	bool compute_diagnostics = false;
+
 	void backup_reference()
 	{
 		ref_total_mass = total_mass;
@@ -54,9 +59,7 @@ public:
 
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
-		/*
-		 * Doesn't exist
-		 */
+		std::cout << i_prefix << " + compute_diagnostics: " << compute_diagnostics << std::endl;
 	}
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)

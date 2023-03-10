@@ -70,6 +70,10 @@ public:
 
 	}
 
+	virtual ~PDESWESphereTS_BaseInterface()
+	{
+	}
+
 
 	bool setupFG()
 	{

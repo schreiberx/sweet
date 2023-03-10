@@ -25,7 +25,10 @@ public:
 			sweet::ShackExpIntegration *shackExpIntegration,
 			int i_timestepping_order,
 			int i_timestepping_order2,
-			double i_timestep_size
+			double i_timestep_size,
+
+			bool i_with_na,
+			bool i_with_nr
 	);
 
 public:

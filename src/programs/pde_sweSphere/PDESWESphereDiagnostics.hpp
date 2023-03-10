@@ -18,7 +18,6 @@ class PDESWESphereDiagnostics
 	ShackPDESWESphere *shackPDESWESphere;
 
 	sweet::SphereHelpers_Integral sphereHelpers_integral;
-
 	sweet::SphereData_Physical fg;
 
 public:
@@ -31,6 +30,9 @@ public:
 	double ref_total_mass;
 	double ref_potential_energy;
 	double ref_kinetic_energy;
+
+	int last_update_timestep_nr;
+
 public:
 	PDESWESphereDiagnostics()	:
 		sphereOperators(nullptr),
@@ -47,6 +49,7 @@ public:
 	{
 	}
 
+
 	void setup(
 			sweet::SphereOperators *i_sphereOperators,
 			ShackPDESWESphere *i_shackPDESWESphere,
@@ -59,7 +62,10 @@ public:
 		sphereHelpers_integral.setup(sphereOperators->sphereDataConfig, i_verbose);
 
 		setupFG();
+
+		last_update_timestep_nr = -1;
 	}
+
 
 	bool setupFG()
 	{
@@ -70,6 +76,8 @@ public:
 
 		return true;
 	}
+
+
 public:
 	void update_phi_vrt_div_2_mass_energy_enstrophy(
 			const sweet::SphereOperators *i_ops,
@@ -81,6 +89,8 @@ public:
 			double i_gravitation
 	)
 	{
+		assert(sphereOperators != nullptr);
+
 		sweet::SphereData_Physical h(sphereOperators->sphereDataConfig);
 		sweet::SphereData_Physical u(sphereOperators->sphereDataConfig);
 		sweet::SphereData_Physical v(sphereOperators->sphereDataConfig);
@@ -89,7 +99,6 @@ public:
 		i_ops->vrtdiv_to_uv(i_prog_vort, i_prog_div, u, v);
 
 		double normalization = i_sphere_radius*i_sphere_radius;
-
 
 		// mass
 		total_mass = sphereHelpers_integral.compute_zylinder_integral(h) * normalization;
@@ -122,6 +131,51 @@ public:
 
 		// enstrophy (Williamson paper, equation 138)
 		total_potential_enstrophy = 0.5*sphereHelpers_integral.compute_zylinder_integral(eta*eta/h) * normalization;
+	}
+
+
+	void print(
+		const std::string& i_prefix = ""
+	)
+	{
+		std::cout << std::endl;
+		std::cout << i_prefix << "DIAGNOSTICS:" << std::endl;
+		std::cout << i_prefix << " + total_mass: " << total_mass << std::endl;
+		std::cout << i_prefix << " + total_energy: " << total_energy << std::endl;
+		std::cout << i_prefix << " + kinetic_energy: " << kinetic_energy << std::endl;
+		std::cout << i_prefix << " + potential_energy: " << potential_energy << std::endl;
+		std::cout << i_prefix << " + total_potential_enstrophy: " << total_potential_enstrophy << std::endl;
+		std::cout << std::endl;
+	}
+
+	void printTabularHeader(
+		const std::string& i_prefix = ""
+	)
+	{
+		std::cout << i_prefix << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
+	}
+
+	void printTabularRow(
+		double i_current_simulation_time,
+		const std::string& i_prefix = ""
+	)
+	{
+		std::cout << i_prefix;
+
+		// Print simulation time, energy and pot enstrophy
+		std::cout << i_current_simulation_time << "\t";
+		std::cout << total_mass << "\t";
+		std::cout << potential_energy << "\t";
+		std::cout << kinetic_energy << "\t";
+		std::cout << total_energy << "\t";
+		std::cout << total_potential_enstrophy << "\t";
+
+		std::cout << (total_mass-ref_total_mass)/total_mass << "\t";
+		std::cout << (potential_energy-ref_potential_energy)/potential_energy << "\t";
+		std::cout << (kinetic_energy-ref_kinetic_energy)/kinetic_energy << "\t";
+		std::cout << (total_energy-total_energy)/total_energy << "\t";
+		std::cout << (total_potential_enstrophy-total_potential_enstrophy)/total_potential_enstrophy;
+		std::cout << std::endl;
 	}
 };
 

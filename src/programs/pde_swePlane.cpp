@@ -361,7 +361,7 @@ int main_mpi(int i_argc, char *i_argv[])
 		StopwatchBox::getInstance().output();
 	}
 
-	std::cout << "MIN FIN" << std::endl;
+	std::cout << "FIN" << std::endl;
 	return 0;
 }
 
