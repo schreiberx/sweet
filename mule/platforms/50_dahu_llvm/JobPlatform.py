@@ -34,7 +34,7 @@ def get_platform_id():
     	unique ID of platform
     """
 
-    return "linuxcluster_intel"
+    return "dahu"
 
 
 
