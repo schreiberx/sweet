@@ -39,8 +39,7 @@
 
 
 
-bool PDESWESphereTS_l_exp::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_l_exp::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;

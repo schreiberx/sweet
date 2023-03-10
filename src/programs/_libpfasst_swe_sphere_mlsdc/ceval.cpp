@@ -68,34 +68,12 @@ void cinitial(
 	
 	BenchmarksSphereSWE *benchmarks = i_ctx->get_swe_benchmark(o_Y->get_level());
 
-	if (shackDict->benchmark.setup_dealiased)
-	{
-		// use dealiased physical space for setup
-		// get operator for this level
-		sweet::SphereOperators* op = i_ctx->get_sphere_operators(i_ctx->get_number_of_levels() - 1);
-		benchmarks->setup(*shackDict, *op);
-		benchmarks->master->get_initial_state(phi_pert_Y, vrt_Y, div_Y);
-	}
-	else
-	{
-		// this is not the default since noone uses it
-		// use reduced physical space for setup to avoid spurious modes
+	// use dealiased physical space for setup
+	// get operator for this level
+	sweet::SphereOperators* op = i_ctx->get_sphere_operators(i_ctx->get_number_of_levels() - 1);
+	benchmarks->setup(*shackDict, *op);
+	benchmarks->master->get_initial_state(phi_pert_Y, vrt_Y, div_Y);
 
-		// get the configuration for this level
-		SphereData_Config* data_config_nodealiasing = i_ctx->get_sphere_data_config_nodealiasing();
-		sweet::SphereData_Spectral phi_pert_Y_nodealiasing(data_config_nodealiasing);
-		sweet::SphereData_Spectral vrt_Y_nodealiasing(data_config_nodealiasing);
-		sweet::SphereData_Spectral div_Y_nodealiasing(data_config_nodealiasing);
-
-		sweet::SphereOperators* op_nodealiasing = i_ctx->get_sphere_operators_nodealiasing();
-
-		benchmarks->setup(*shackDict, *op_nodealiasing);
-		benchmarks->master->get_initial_state(phi_pert_Y_nodealiasing, vrt_Y_nodealiasing, div_Y_nodealiasing);
-
-		phi_pert_Y.load_nodealiasing(phi_pert_Y_nodealiasing);
-		vrt_Y.load_nodealiasing(vrt_Y_nodealiasing);
-		div_Y.load_nodealiasing(div_Y_nodealiasing);
-	}
 
 	// output the configuration
 	shackDict->outputConfig();

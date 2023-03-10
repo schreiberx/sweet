@@ -92,21 +92,9 @@ int main(int i_argc, char *i_argv[])
 			shackDict.disc.space_res_spectral[1]+2
 	};
 
-	levelSingleton.dataConfigNoDealiasing.setupAuto(
-			res_physical_nodealiasing,
-			shackDict.disc.space_res_spectral,
-			shackDict.misc.reuse_spectral_transformation_plans,
-			shackDict.misc.verbosity,
-			shackDict.parallelization.num_threads_space
-	);
-
 	// setup data operators
 	levelSingleton.op.setup(
 			&(levelSingleton.dataConfig),
-			&(shackDict.sim)
-	);
-	levelSingleton.opNoDealiasing.setup(
-			&(levelSingleton.dataConfigNoDealiasing),
 			&(shackDict.sim)
 	);
 

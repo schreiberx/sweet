@@ -50,7 +50,11 @@ public:
 
 public:
 	SphereOperators()	:
-		sphereDataConfig(nullptr)
+		sphereDataConfig(nullptr),
+		r(-1),
+		r2(-1),
+		ir(-1),
+		ir2(-1)
 	{
 	}
 

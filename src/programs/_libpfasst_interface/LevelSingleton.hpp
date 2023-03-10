@@ -14,9 +14,7 @@ public:
   
   int              level;
   sweet::SphereData_Config dataConfig;
-  sweet::SphereData_Config dataConfigNoDealiasing;
   SphereOperators  op;
-  SphereOperators  opNoDealiasing;
 
   BenchmarksSphereSWE benchmarks;
 };

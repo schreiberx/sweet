@@ -6,8 +6,7 @@
 
 
 
-bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;

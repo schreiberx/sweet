@@ -5,8 +5,8 @@
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_INCLUDE_SWEET_SHACKS_SHACKDIAGNOSTICS_HPP_
-#define SRC_INCLUDE_SWEET_SHACKS_SHACKDIAGNOSTICS_HPP_
+#ifndef SRC_INCLUDE_SWEET_SHACKS_PDE_SWE_SPHERE_SHACKDIAGNOSTICS_HPP_
+#define SRC_INCLUDE_SWEET_SHACKS_PDE_SWE_SPHERE_SHACKDIAGNOSTICS_HPP_
 
 #include <string>
 #include <iostream>
@@ -18,8 +18,8 @@
 /**
  * Diagnostic variables
  */
-class _ShackDiagnostics	:
-	public ShackInterface
+class ShackPDESWESphereDiagnostics	:
+	public sweet::ShackInterface
 {
 public:
 	/// total mass
@@ -59,7 +59,7 @@ public:
 		 */
 	}
 
-	bool processProgramArguments(ProgramArguments &i_pa)
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		/*
 		 * Doesn't exist

@@ -55,6 +55,14 @@ public:
 
 public:
 	SphereData_Physical(
+			const SphereData_Config &i_sphereDataConfig
+	)	:
+		SphereData_Physical(&i_sphereDataConfig)
+	{
+	}
+
+public:
+	SphereData_Physical(
 			const SphereData_Config *i_sphereDataConfig
 	)	:
 		/// important: set this to nullptr, since a check for this will be performed by setup(...)

@@ -11,8 +11,7 @@
 #include "helpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
-bool PDESWESphereTS_l_irk::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_l_irk::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;

@@ -15,10 +15,9 @@
 namespace sweet
 {
 
-class SphereHelpers_Diagnostics
+class SphereHelpers_Integral
 {
-	SphereData_Config *sphereDataConfig;
-	SphereData_Spectral modeIntegralValues;
+	const SphereData_Config *sphereDataConfig;
 
 	/*
 	 * Gaussian quadrature weights
@@ -27,14 +26,19 @@ class SphereHelpers_Diagnostics
 
 
 public:
-	SphereHelpers_Diagnostics(
-			SphereData_Config *i_sphereDataConfig,
-			SimulationVariables &i_simVars,
-			int i_verbose = 1
-	)	:
-		sphereDataConfig(i_sphereDataConfig),
-		modeIntegralValues(sphereDataConfig)
+	SphereHelpers_Integral()	:
+		sphereDataConfig(nullptr)
 	{
+
+	}
+
+	void setup(
+			const SphereData_Config *i_sphereDataConfig,
+			int i_verbose = 1
+	)
+	{
+		sphereDataConfig = i_sphereDataConfig;
+
 		gauss_weights.resize(sphereDataConfig->physical_num_lat);
 
 		SphereData_Spectral modeSelector(sphereDataConfig);
@@ -54,6 +58,7 @@ public:
 		for (int i = 0; i < sphereDataConfig->physical_num_lat/2; i++)
 			gauss_weights[sphereDataConfig->physical_num_lat-i-1] = gauss_weights[i];
 
+		SphereData_Spectral modeIntegralValues(sphereDataConfig);
 
 #if 0
 		for (int m = 0; m <= sphereDataConfig->spectral_modes_m_max; m++)
@@ -186,67 +191,10 @@ public:
 #endif
 		sum /= (double)sphereDataConfig->physical_num_lon;
 
-//		sum *= 0.5;
-//		sum *= M_PI*4.0;
 		sum *= 2.0*M_PI;
 
 		return sum;
 	}
-
-
-
-public:
-	void update_phi_vrt_div_2_mass_energy_enstrophy(
-			const SphereOperators &op,
-			const SphereData_Spectral &i_prog_phi,
-			const SphereData_Spectral &i_prog_vort,
-			const SphereData_Spectral &i_prog_div,
-
-			SimulationVariables &io_simVars
-	)
-	{
-		SphereData_Physical h(sphereDataConfig);
-		SphereData_Physical u(sphereDataConfig);
-		SphereData_Physical v(sphereDataConfig);
-
-		h = i_prog_phi.toPhys()*(1.0/io_simVars.sim.gravitation);
-		op.vrtdiv_to_uv(i_prog_vort, i_prog_div, u, v);
-
-		double normalization = (io_simVars.sim.sphere_radius*io_simVars.sim.sphere_radius);
-
-		// mass
-		io_simVars.diag.total_mass = compute_zylinder_integral(h) * normalization;
-
-		// energy
-		//SphereDataPhysical pot_energy = h*(io_simVars.sim.gravitation*normalization);
-		SphereData_Physical pot_energy = h*h*0.5*normalization;
-		SphereData_Physical kin_energy = h*(u*u+v*v)*(0.5*normalization);
-
-		io_simVars.diag.potential_energy = compute_zylinder_integral(pot_energy);
-		io_simVars.diag.kinetic_energy = compute_zylinder_integral(kin_energy);
-
-		/*
-		 * We follow the Williamson et al. equation (137) here
-		 */
-//		double dummy_energy = compute_zylinder_integral(h*h*(0.5*normalization));
-//		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + dummy_energy;//io_simVars.diag.potential_energy;
-
-		/*
-		 * We follow pot/kin energy here
-		 */
-		io_simVars.diag.total_energy = io_simVars.diag.kinetic_energy + io_simVars.diag.potential_energy;
-
-		// total vorticity
-		// TODO: maybe replace this with the i_vort parameter
-		SphereData_Physical eta(h.sphereDataConfig);
-		eta = op.uv_to_vort(u, v).toPhys();
-
-		eta += op.fg;
-
-		// enstrophy (Williamson paper, equation 138)
-		io_simVars.diag.total_potential_enstrophy = 0.5*compute_zylinder_integral(eta*eta/h) * normalization;
-	}
-
 
 };
 

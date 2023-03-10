@@ -26,8 +26,7 @@ bool PDESWESphereTS_l_exp_n_etdrk::shackRegistration(sweet::ShackDictionary *io_
 }
 
 
-bool PDESWESphereTS_l_exp_n_etdrk::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_l_exp_n_etdrk::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
 

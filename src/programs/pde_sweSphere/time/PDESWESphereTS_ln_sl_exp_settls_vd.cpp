@@ -8,8 +8,7 @@
 #include "PDESWESphereTS_ln_sl_exp_settls_vd.hpp"
 
 
-bool PDESWESphereTS_ln_sl_exp_settls_vd::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_ln_sl_exp_settls_vd::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	/*
 	 * Should contain _exp and _settls as well as _vd to indicate vorticity-divergence formulation

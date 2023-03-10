@@ -39,8 +39,7 @@ bool PDESWESphereTS_l_erk_na_erk_vd::setup(
 
 
 
-bool PDESWESphereTS_l_erk_na_erk_vd::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_l_erk_na_erk_vd::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
 	return i_timestepping_method == "l_erk_na_erk_vd";

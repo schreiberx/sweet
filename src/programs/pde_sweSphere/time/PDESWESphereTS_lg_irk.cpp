@@ -13,8 +13,7 @@
 
 
 
-bool PDESWESphereTS_lg_irk::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_lg_irk::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	/*
 	 * Supported directly in l_irk, not in this class anymore
