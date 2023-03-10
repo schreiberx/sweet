@@ -94,6 +94,8 @@ bool PDESWESphereTS_l_irk_n_erk::setup(
 	// These 1st order methods will be combined to higher-order methods in this class
 	//
 	timestepping_l_erk_n_erk.setup(ops, 1, 1);
+
+	return true;
 }
 
 

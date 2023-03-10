@@ -1,7 +1,7 @@
 /*
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
- * M ULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/benchmarks
  *
  * MULE_SCONS_OPTIONS: --sphere-spectral-space=enable
  * MULE_SCONS_OPTIONS: --gui=enable
@@ -43,8 +43,7 @@
 
 #include <sweet/core/sphere/SphereData_DebugContainer.hpp>
 
-
-#include "swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
+#include "pde_sweSphere/PDESWESphereBenchmarksCombined.hpp"
 
 #include <sweet/core/SWEETError.hpp>
 #include <sweet/core/sphere/SphereData_DebugContainer.hpp>
@@ -100,7 +99,7 @@ public:
 		reset();
 	}
 
-	~SimulationVisualizationInstance()
+	~ProgramVisSphericalHarmonics()
 	{
 		cleanup();
 	}
@@ -361,7 +360,7 @@ public:
 			int i_num_iterations
 	)
 	{
-		if (shackDict.timecontrol.run_simulation_timesteps)
+		if (shackTimeDict.timecontrol.run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				runTimestep();
 	}
@@ -371,7 +370,7 @@ public:
 
 
 	void vis_get_vis_data_array(
-			const PlaneData_Physical **o_dataArray,
+			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
 			void **o_bogus_data,
@@ -496,7 +495,7 @@ public:
 	/**
 	 * return status string for window title
 	 */
-	const char* vis_getStatusString()
+	const std::string vis_getStatusString(bool &o_replace_commas_with_newline)
 	{
 		std::string description = "";
 

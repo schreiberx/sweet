@@ -62,7 +62,7 @@ public:
 	/*
 	 * Just a class to store simulation data all together
 	 */
-	class Data
+	class SimDataAndOps
 	{
 	public:
 		sweet::ErrorBase error;
@@ -142,7 +142,7 @@ public:
 	};
 
 	// Simulation data
-	Data data;
+	SimDataAndOps dataAndOps;
 
 
 	// time integrators
@@ -379,40 +379,40 @@ public:
 		/*
 		 * Setup Plane Data Config & Operators
 		 */
-		data.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
+		dataAndOps.setup(shackPlaneDataOps);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataAndOps);
 
 		/*
 		 * After we setup the plane, we can setup the time steppers and their buffers
 		 */
-		pdeSWEPlaneTimeSteppers.setup(&data.ops, &shackProgArgDict);
+		pdeSWEPlaneTimeSteppers.setup(&dataAndOps.ops, &shackProgArgDict);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(pdeSWEPlaneTimeSteppers);
 
 #if 0
 		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
-				data.prog_h_pert, data.prog_u, data.prog_v,
+				dataAndOps.prog_h_pert, dataAndOps.prog_u, dataAndOps.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
 #endif
 
 #if SWEET_GUI
-		vis_plane_data.setup(data.planeDataConfig);
+		vis_plane_data.setup(dataAndOps.planeDataConfig);
 #endif
 
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
 
 		planeBenchmarksCombined.setupInitialConditions(
-				data.prog_h_pert,
-				data.prog_u,
-				data.prog_v,
-				&data.ops,
-				&data.planeDataConfig
+				dataAndOps.prog_h_pert,
+				dataAndOps.prog_u,
+				dataAndOps.prog_v,
+				&dataAndOps.ops,
+				&dataAndOps.planeDataConfig
 			);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
 
-		data.t0_prog_h_pert = data.prog_h_pert;
+		dataAndOps.t0_prog_h_pert = dataAndOps.prog_h_pert;
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -431,7 +431,7 @@ public:
 
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
-			normalmodes->setup(&data.planeDataConfig);
+			normalmodes->setup(&dataAndOps.planeDataConfig);
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(*normalmodes);
 		}
 
@@ -455,13 +455,13 @@ public:
 		 * Load initial conditions from file if required
 		 */
 		if (shackIOData->initial_condition_data_filenames.size() > 0)
-			data.prog_h_pert.file_physical_loadData(shackIOData->initial_condition_data_filenames[0].c_str(), shackIOData->initial_condition_input_data_binary);
+			dataAndOps.prog_h_pert.file_physical_loadData(shackIOData->initial_condition_data_filenames[0].c_str(), shackIOData->initial_condition_input_data_binary);
 
 		if (shackIOData->initial_condition_data_filenames.size() > 1)
-			data.prog_u.file_physical_loadData(shackIOData->initial_condition_data_filenames[1].c_str(), shackIOData->initial_condition_input_data_binary);
+			dataAndOps.prog_u.file_physical_loadData(shackIOData->initial_condition_data_filenames[1].c_str(), shackIOData->initial_condition_input_data_binary);
 
 		if (shackIOData->initial_condition_data_filenames.size() > 2)
-			data.prog_v.file_physical_loadData(shackIOData->initial_condition_data_filenames[2].c_str(), shackIOData->initial_condition_input_data_binary);
+			dataAndOps.prog_v.file_physical_loadData(shackIOData->initial_condition_data_filenames[2].c_str(), shackIOData->initial_condition_input_data_binary);
 
 
 		if (shackPDESWEPlaneBenchmarks->benchmark_name == "normalmodes" )
@@ -496,7 +496,7 @@ public:
 
 		pdeSWEPlaneTimeSteppers.clear();
 
-		data.clear();
+		dataAndOps.clear();
 	}
 	
 
@@ -543,7 +543,7 @@ public:
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 		// Setup planeDiagnostics for normal mode projection
 		normalmodes->pdeSWEPlaneNormalModes.convert_allspectralmodes_to_normalmodes(
-			data.prog_h_pert, data.prog_u, data.prog_v,
+			dataAndOps.prog_h_pert, dataAndOps.prog_u, dataAndOps.prog_v,
 			normalmodes->geo, normalmodes->igwest, normalmodes->igeast
 		);
 
@@ -590,32 +590,32 @@ public:
 	void update_diagnostics()
 	{
 		// assure, that the planeDiagnostics are only updated for new time steps
-		if (data.last_timestep_nr_update_diagnostics == shackTimestepControl->current_timestep_nr)
+		if (dataAndOps.last_timestep_nr_update_diagnostics == shackTimestepControl->current_timestep_nr)
 			return;
 
-		data.last_timestep_nr_update_diagnostics = shackTimestepControl->current_timestep_nr;
+		dataAndOps.last_timestep_nr_update_diagnostics = shackTimestepControl->current_timestep_nr;
 
 
 		if (shackPlaneDataOps->space_grid_use_c_staggering)
 		{
 			shackPDESWEPlaneDiagnostics->update_staggered_huv_to_mass_energy_enstrophy(
-					data.ops,
+					dataAndOps.ops,
 					shackPlaneDataOps,
 					shackPDESWEPlane,
-					data.prog_h_pert,
-					data.prog_u,
-					data.prog_v
+					dataAndOps.prog_h_pert,
+					dataAndOps.prog_u,
+					dataAndOps.prog_v
 			);
 		}
 		else
 		{
 			shackPDESWEPlaneDiagnostics->update_nonstaggered_huv_to_mass_energy_enstrophy(
-					data.ops,
+					dataAndOps.ops,
 					shackPlaneDataOps,
 					shackPDESWEPlane,
-					data.prog_h_pert,
-					data.prog_u,
-					data.prog_v
+					dataAndOps.prog_h_pert,
+					dataAndOps.prog_u,
+					dataAndOps.prog_v
 			);
 		}
 	}
@@ -625,13 +625,13 @@ public:
 	void normal_mode_analysis()
 	{
 		normalmodes->pdeSWEPlaneNormalModes.normal_mode_analysis(
-								data.prog_h_pert,
-								data.prog_u,
-								data.prog_v,
+								dataAndOps.prog_h_pert,
+								dataAndOps.prog_u,
+								dataAndOps.prog_v,
 								3,
 								&shackProgArgDict,
 								this,
-								&ProgramPDESWEPlane::run_timestep
+								&ProgramPDESWEPlane::runTimestep
 						);
 
 		std::cout << "\n Done normal mode analysis in separate class" << std::endl;
@@ -641,12 +641,12 @@ public:
 	/**
 	 * Execute a single simulation time step
 	 */
-	void runTimestep()
+	bool runTimestep()
 	{
 		shackTimestepControl->timestepHelperStart();
 
 		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
-				data.prog_h_pert, data.prog_u, data.prog_v,
+				dataAndOps.prog_h_pert, dataAndOps.prog_u, dataAndOps.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
@@ -656,6 +656,7 @@ public:
 #if !SWEET_PARAREAL
 		timestep_do_output();
 #endif
+		return true;
 	}
 
 
@@ -733,21 +734,21 @@ public:
 		 * We write everything in non-staggered output
 		 */
 		// For output, variables need to be on unstaggered A-grid
-		sweet::PlaneData_Physical t_h(data.planeDataConfig);
-		sweet::PlaneData_Physical t_u(data.planeDataConfig);
-		sweet::PlaneData_Physical t_v(data.planeDataConfig);
+		sweet::PlaneData_Physical t_h(dataAndOps.planeDataConfig);
+		sweet::PlaneData_Physical t_u(dataAndOps.planeDataConfig);
+		sweet::PlaneData_Physical t_v(dataAndOps.planeDataConfig);
 
 		if (shackPlaneDataOps->space_grid_use_c_staggering) // Remap in case of C-grid
 		{
-			t_h = data.prog_h_pert.toPhys();
-			data.gridMapping.mapCtoA_u(data.prog_u.toPhys(), t_u);
-			data.gridMapping.mapCtoA_v(data.prog_v.toPhys(), t_v);
+			t_h = dataAndOps.prog_h_pert.toPhys();
+			dataAndOps.gridMapping.mapCtoA_u(dataAndOps.prog_u.toPhys(), t_u);
+			dataAndOps.gridMapping.mapCtoA_v(dataAndOps.prog_v.toPhys(), t_v);
 		}
 		else
 		{
-			t_h = data.prog_h_pert.toPhys();
-			t_u = data.prog_u.toPhys();
-			t_v = data.prog_v.toPhys();
+			t_h = dataAndOps.prog_h_pert.toPhys();
+			t_u = dataAndOps.prog_u.toPhys();
+			t_v = dataAndOps.prog_v.toPhys();
 		}
 
 		update_normal_modes();
@@ -761,20 +762,20 @@ public:
 			output_filenames += ";" + write_file(t_u, "prog_u");
 			output_filenames += ";" + write_file(t_v, "prog_v");
 
-			output_filenames += ";" + write_file(data.ops.ke(t_u,t_v),"diag_ke");
+			output_filenames += ";" + write_file(dataAndOps.ops.ke(t_u,t_v),"diag_ke");
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
-			output_filenames += ";" + write_file_spec(data.ops.ke(t_u,t_v),"diag_ke_spec");
+			output_filenames += ";" + write_file_spec(dataAndOps.ops.ke(t_u,t_v),"diag_ke_spec");
 
 			output_filenames += ";" + write_file_spec(t_h, "prog_h_pert_spec");
 			output_filenames += ";" + write_file_spec(t_u, "prog_u_spec");
 			output_filenames += ";" + write_file_spec(t_v, "prog_v_spec");
 
-			output_filenames += ";" + write_file_spec(data.ops.ke(t_u,t_v).toPhys(), "diag_ke_spec");
+			output_filenames += ";" + write_file_spec(dataAndOps.ops.ke(t_u,t_v).toPhys(), "diag_ke_spec");
 #endif
 
-			output_filenames += ";" + write_file(data.ops.vort(t_u, t_v), "diag_vort");
-			output_filenames += ";" + write_file(data.ops.div(t_u, t_v), "diag_div");
+			output_filenames += ";" + write_file(dataAndOps.ops.vort(t_u, t_v), "diag_vort");
+			output_filenames += ";" + write_file(dataAndOps.ops.div(t_u, t_v), "diag_div");
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			if (compute_normal_modes){
@@ -894,18 +895,18 @@ public:
 			 */
 			if (compute_error_difference_to_initial_condition)
 			{
-				benchmarkErrors.t0_diff_error_max_abs_h_pert = (data.prog_h_pert - data.t0_prog_h_pert).toPhys().physical_reduce_max_abs();
-				benchmarkErrors.t0_diff_error_max_abs_u = (data.prog_u - data.t0_prog_u).toPhys().physical_reduce_max_abs();
-				benchmarkErrors.t0_diff_error_max_abs_v = (data.prog_v - data.t0_prog_v).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.t0_diff_error_max_abs_h_pert = (dataAndOps.prog_h_pert - dataAndOps.t0_prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.t0_diff_error_max_abs_u = (dataAndOps.prog_u - dataAndOps.t0_prog_u).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.t0_diff_error_max_abs_v = (dataAndOps.prog_v - dataAndOps.t0_prog_v).toPhys().physical_reduce_max_abs();
 			}
 
 			// Calculate linear exact solution, if compute error requests
 			if (compute_error_to_analytical_solution)
 			{
 				// Analytical solution at specific time on A-grid
-				sweet::PlaneData_Spectral ts_h_pert = data.t0_prog_h_pert;
-				sweet::PlaneData_Spectral ts_u = data.t0_prog_u;
-				sweet::PlaneData_Spectral ts_v = data.t0_prog_v;
+				sweet::PlaneData_Spectral ts_h_pert = dataAndOps.t0_prog_h_pert;
+				sweet::PlaneData_Spectral ts_u = dataAndOps.t0_prog_u;
+				sweet::PlaneData_Spectral ts_v = dataAndOps.t0_prog_v;
 
 				// Run exact solution for linear case
 				if (pdeSWEPlaneTimeSteppers.l_direct == nullptr)
@@ -920,13 +921,13 @@ public:
 						0				// initial condition given at time 0
 				);
 
-				benchmarkErrors.analytical_error_rms_h = (ts_h_pert-data.prog_h_pert).toPhys().physical_reduce_rms();
-				benchmarkErrors.analytical_error_rms_u = (ts_u-data.prog_u).toPhys().physical_reduce_rms();
-				benchmarkErrors.analytical_error_rms_v = (ts_v-data.prog_v).toPhys().physical_reduce_rms();
+				benchmarkErrors.analytical_error_rms_h = (ts_h_pert-dataAndOps.prog_h_pert).toPhys().physical_reduce_rms();
+				benchmarkErrors.analytical_error_rms_u = (ts_u-dataAndOps.prog_u).toPhys().physical_reduce_rms();
+				benchmarkErrors.analytical_error_rms_v = (ts_v-dataAndOps.prog_v).toPhys().physical_reduce_rms();
 
-				benchmarkErrors.analytical_error_maxabs_h = (ts_h_pert-data.prog_h_pert).toPhys().physical_reduce_max_abs();
-				benchmarkErrors.analytical_error_maxabs_u = (ts_u-data.prog_u).toPhys().physical_reduce_max_abs();
-				benchmarkErrors.analytical_error_maxabs_v = (ts_v-data.prog_v).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.analytical_error_maxabs_h = (ts_h_pert-dataAndOps.prog_h_pert).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.analytical_error_maxabs_u = (ts_u-dataAndOps.prog_u).toPhys().physical_reduce_max_abs();
+				benchmarkErrors.analytical_error_maxabs_v = (ts_v-dataAndOps.prog_v).toPhys().physical_reduce_max_abs();
 			}
 		}
 	}
@@ -1002,7 +1003,7 @@ public:
 
 	struct VisStuff
 	{
-		const PlaneData_Physical* data;
+		const sweet::PlaneData_Spectral* data;
 		const char *description;
 	};
 
@@ -1011,14 +1012,14 @@ public:
 	 */
 	VisStuff vis_arrays[3] =
 	{
-			{&prog_h_pert,	"h"},
-			{&prog_u,	"u"},
-			{&prog_v,	"v"},
+			{&dataAndOps.prog_h_pert,	"h"},
+			{&dataAndOps.prog_u,	"u"},
+			{&dataAndOps.prog_v,	"v"},
 	};
 
 
-	void vis_get_vis_data_array(
-			const PlaneData_Physical **o_dataArray,
+	void vis_getDataArray(
+			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,
 			void **o_bogus_data,
@@ -1027,73 +1028,85 @@ public:
 			bool *viz_reset
 	)
 	{
-		if (shackDict.misc.vis_id < 0)
+		if (vis_data_id < 0)
 		{
 			// Analytical solution at specific time on A-grid
-			sweet::PlaneData_Physical ts_h_pert = t0_prog_h_pert;
-			sweet::PlaneData_Physical ts_u = t0_prog_u;
-			sweet::PlaneData_Physical ts_v = t0_prog_v;
+			sweet::PlaneData_Spectral ts_h_pert = dataAndOps.t0_prog_h_pert;
+			sweet::PlaneData_Spectral ts_u = dataAndOps.t0_prog_u;
+			sweet::PlaneData_Spectral ts_v = dataAndOps.t0_prog_v;
 
-			if (shackDict.misc.vis_id == -1 || shackDict.misc.vis_id == -2 )
+			if (vis_data_id == -1 || vis_data_id == -2 )
 			{
-				//Missing to setup REXIFunctions, so invalid phi function set
+				// Missing to setup REXIFunctions, so invalid phi function set
 
-				// Run exact solution for linear case
-				pdeSWEPlaneTimeSteppers.l_direct->runTimestep(
-						ts_h_pert, ts_u, ts_v,
-						shackTimestepControl->current_simulation_time,
-						0			// initial condition given at time 0
-				);
-
+				if (pdeSWEPlaneTimeSteppers.l_direct)
+				{
+					// Run exact solution for linear case
+					pdeSWEPlaneTimeSteppers.l_direct->runTimestep(
+							ts_h_pert, ts_u, ts_v,
+							shackTimestepControl->current_simulation_time,
+							0			// initial condition given at time 0
+					);
+				}
+				else
+				{
+					SWEETError("Direct solution not available");
+				}
 			}
 
-			switch(shackDict.misc.vis_id)
+			sweet::PlaneData_Spectral vis_tmp;
+			switch(vis_data_id)
 			{
 			case -1:
-				vis = ts_h_pert+shackPDESWEPlane->h0;			//Exact linear solution
+				vis_tmp = ts_h_pert+shackPDESWEPlane->h0;			// Exact linear solution
 				break;
 
 			case -2:
-				vis = ts_h_pert-prog_h_pert;	// difference to exact linear solution
+				vis_tmp = ts_h_pert-dataAndOps.prog_h_pert;			// difference to exact linear solution
 				break;
 
 			case -3:
-				vis = t0_prog_h_pert-prog_h_pert;	// difference to initial condition
+				vis_tmp = dataAndOps.t0_prog_h_pert-dataAndOps.prog_h_pert;	// difference to initial condition
 				break;
 
 			case -4:
-				vis = ops.diff_c_x(prog_v) - ops.diff_c_y(prog_u);	// relative vorticity
+				vis_tmp = dataAndOps.ops.diff_c_x(dataAndOps.prog_v) - dataAndOps.ops.diff_c_y(dataAndOps.prog_u);	// relative vorticity
 				break;
 			case -5:
-				vis = prog_h_pert;			//Perturbation of depth
+				vis_tmp = dataAndOps.prog_h_pert;			//Perturbation of depth
 				break;
 			case -6:
-				vis = normalmodes->geo ;	// geostrophic mode
+				vis_tmp = normalmodes->geo ;	// geostrophic mode
 				break;
 			case -7:
-				vis = normalmodes->igwest;	// inertia grav mode west
+				vis_tmp = normalmodes->igwest;	// inertia grav mode west
 				break;
 			case -8:
-				vis = normalmodes->igeast;	// inertia grav mode east
+				vis_tmp = normalmodes->igeast;	// inertia grav mode east
 				break;
 			}
 
-			*o_dataArray = &vis;
+			vis_plane_data = vis_tmp.toPhys();
+			*o_dataArray = &vis_plane_data;
 			*o_aspect_ratio = shackPlaneDataOps->plane_domain_size[1] / shackPlaneDataOps->plane_domain_size[0];
 			return;
 		}
 
-		int id = shackDict.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+		int id = vis_data_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 
+		sweet::PlaneData_Spectral vis_tmp;
 		if (id == 0)
 		{
-			vis = *vis_arrays[id].data+shackPDESWEPlane->h0;
-			*o_dataArray = &vis;
+			vis_tmp = *vis_arrays[id].data+shackPDESWEPlane->h0;
 		}
 		else
-			*o_dataArray = vis_arrays[id].data;
+		{
+			vis_tmp = *(vis_arrays[id].data);
+		}
 
-		vis=**o_dataArray;
+		vis_plane_data = vis_tmp.toPhys();
+		*o_dataArray = &vis_plane_data;
+
 		*o_aspect_ratio = shackPlaneDataOps->plane_domain_size[1] / shackPlaneDataOps->plane_domain_size[0];
 	}
 
@@ -1102,21 +1115,21 @@ public:
 	/**
 	 * return status string for window title
 	 */
-	const char* vis_getStatusString()
+	const std::string vis_getStatusString(bool &o_replace_commas_with_newline)
 	{
 		// first, update planeDiagnostics if required
 		update_normal_modes();
 		update_diagnostics();
 
 		const char* description = "";
-		if (shackDict.misc.vis_id >= 0)
+		if (vis_data_id >= 0)
 		{
-			int id = shackDict.misc.vis_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
+			int id = vis_data_id % (sizeof(vis_arrays)/sizeof(*vis_arrays));
 			description = vis_arrays[id].description;
 		}
 		else
 		{
-			switch (shackDict.misc.vis_id)
+			switch (vis_data_id)
 			{
 			case -1:
 				description = "Direct solution for h (linear only)";
@@ -1159,8 +1172,9 @@ public:
 				shackPDESWEPlaneDiagnostics->total_mass,
 				shackPDESWEPlaneDiagnostics->total_energy,
 				shackPDESWEPlaneDiagnostics->total_potential_enstrophy,
-				vis.physical_reduce_max(),
-				vis.physical_reduce_min() );
+				vis_plane_data.physical_reduce_max(),
+				vis_plane_data.physical_reduce_min()
+			);
 
 		return title_string;
 	}
@@ -1179,13 +1193,14 @@ public:
 		switch(i_key)
 		{
 		case 'v':
-			shackDict.misc.vis_id++;
+			vis_data_id++;
 			break;
 
 		case 'V':
-			shackDict.misc.vis_id--;
+			vis_data_id--;
 			break;
 
+#if 0
 		case 'c':
 			// dump data arrays
 			prog_h_pert.file_physical_saveData_ascii("swe_plane_dump_h.csv");
@@ -1206,6 +1221,7 @@ public:
 			prog_u.file_physical_loadData("swe_plane_dump_u.csv", shackIOData->initial_condition_input_data_binary);
 			prog_v.file_physical_loadData("swe_plane_dump_v.csv", shackIOData->initial_condition_input_data_binary);
 			break;
+#endif
 		}
 	}
 #endif
@@ -1213,9 +1229,9 @@ public:
 
 	bool instability_detected()
 	{
-		return !(	data.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
-					data.prog_u.toPhys().physical_reduce_boolean_all_finite() &&
-					data.prog_v.toPhys().physical_reduce_boolean_all_finite()
+		return !(	dataAndOps.prog_h_pert.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps.prog_u.toPhys().physical_reduce_boolean_all_finite() &&
+					dataAndOps.prog_v.toPhys().physical_reduce_boolean_all_finite()
 				);
 	}
 

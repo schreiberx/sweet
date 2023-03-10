@@ -588,7 +588,7 @@ public:
 			int number_of_prognostic_variables,
 			sweet::ShackDictionary *shackDict, // Simulation variables
 			TCallbackClass *i_class,
-			void(TCallbackClass::* const i_run_timestep_method)(void)
+			bool(TCallbackClass::* const i_run_timestep_method)(void)
 	)
 	{
 

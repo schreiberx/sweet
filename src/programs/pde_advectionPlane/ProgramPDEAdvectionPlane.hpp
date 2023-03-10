@@ -298,7 +298,7 @@ public:
 		std::cout << "RMS error: " << (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_rms() << std::endl;
 	}
 
-	~ProgramPDEAdvectionPlane()
+	virtual ~ProgramPDEAdvectionPlane()
 	{
 		clear();
 	}
