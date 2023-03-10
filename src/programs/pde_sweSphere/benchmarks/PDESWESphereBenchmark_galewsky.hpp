@@ -105,8 +105,20 @@ public:
 		bool benchmark_nobump = benchmark_name.find("nobump") != std::string::npos;
 		bool benchmark_linearbalance = benchmark_name.find("linearbalance") != std::string::npos;
 
-		// Use analytical geostrophic setup by default
-		bool use_analytical_geostrophic_setup = true;
+		bool use_analytical_geostrophic_setup;
+		if (shackPDESWEBenchmark->benchmark_galewsky_geostrophic_setup == "analytical")
+		{
+			use_analytical_geostrophic_setup = true;
+		}
+		else if (shackPDESWEBenchmark->benchmark_galewsky_geostrophic_setup == "numerical")
+		{
+			use_analytical_geostrophic_setup = false;
+		}
+		else
+		{
+			SWEETError("Invalid geostropic setup choosen");
+		}
+
 
 
 		/*

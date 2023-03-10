@@ -30,7 +30,7 @@
 
 
 
-class PDESWESphereBenchmarksCombined
+class PDESWESphere_BenchmarksCombined
 {
 	std::vector<PDESWESphereBenchmarks_BaseInterface*> _registered_benchmarks;
 
@@ -45,7 +45,7 @@ public:
 
 	PDESWESphereBenchmarks_BaseInterface *benchmark = nullptr;
 
-	PDESWESphereBenchmarksCombined();
+	PDESWESphere_BenchmarksCombined();
 
 	bool setup_1_registerAllBenchmark();
 
@@ -75,7 +75,7 @@ public:
 	);
 
 public:
-	~PDESWESphereBenchmarksCombined();
+	~PDESWESphere_BenchmarksCombined();
 };
 
 

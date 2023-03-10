@@ -27,9 +27,12 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_vd::implementsTimesteppingMethod(
 
 
 bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup_auto(
+	const std::string &i_timestepping_method,
 	sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
@@ -62,7 +65,7 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup_auto(
 		SWEETError("Unknown TM");
 	}
 
-	return setup(
+	return setup_main(
 			io_ops,
 			shackExpIntegration,
 			timestepping_order,
@@ -75,7 +78,7 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup_auto(
 
 
 
-bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup(
+bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup_main(
 		sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,
@@ -92,7 +95,7 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_vd::setup(
 	with_na = i_with_na;
 	with_nr = i_with_nr;
 
-	ts_ln_erk_split_vd.setup(ops, i_timestepping_order, true, true, true, true, false);
+	ts_ln_erk_split_vd.setup_main(ops, i_timestepping_order, true, true, true, true, false);
 
 	if (timestepping_order != i_timestepping_order2)
 		SWEETError("Mismatch of orders, should be equal");

@@ -9,6 +9,31 @@
 
 
 
+bool PDESWESphereTS_lg_erk_lc_erk::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
+{
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(io_ops, timestepping_order);
+}
+
+
+bool PDESWESphereTS_lg_erk_lc_erk::setup_main(
+		sweet::SphereOperators *io_ops,
+		int i_order	///< order of RK time stepping method
+)
+{
+	ops = io_ops;
+
+	timestepping_order = i_order;
+	setupFG();
+
+	return true;
+}
+
+
 void PDESWESphereTS_lg_erk_lc_erk::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
@@ -278,28 +303,6 @@ void PDESWESphereTS_lg_erk_lc_erk::euler_timestep_update_lc(
 	io_div += i_dt*tmp_div;
 }
 
-
-
-/*
- * Setup
- */
-bool PDESWESphereTS_lg_erk_lc_erk::setup_main(
-		sweet::SphereOperators *io_ops,
-		int i_order	///< order of RK time stepping method
-)
-{
-	ops = io_ops;
-	timestepping_order = i_order;
-	setupFG();
-
-	return true;
-}
-
-
-bool PDESWESphereTS_lg_erk_lc_erk::setup_auto(sweet::SphereOperators *io_ops)
-{
-	return setup_main(io_ops, timestepping_order);
-}
 
 
 PDESWESphereTS_lg_erk_lc_erk::PDESWESphereTS_lg_erk_lc_erk()

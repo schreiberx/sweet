@@ -1,5 +1,4 @@
 /*
- *  Created on: Feb 21, 2023
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
@@ -80,6 +79,12 @@ public:
 	bool compute_errors = false;
 
 
+	/*
+	 * Check for instabilities and stop
+	 */
+	bool instability_checks = false;
+
+
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "PDESWEPlane parameters:" << std::endl;
@@ -92,6 +97,7 @@ public:
 		std::cout << i_prefix << "	--use-nonlinear-only-visc [bool]	Use only viscosity on nonlinear part" << std::endl;
 		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
 		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
+		std::cout << i_prefix << "	--instability-checks=[bool]			Check for instabilities (default: 0)" << std::endl;
 		std::cout << i_prefix << "" << std::endl;
 	}
 
@@ -111,7 +117,10 @@ public:
 		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
 		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 
-		return error.forwardWithPositiveReturn(i_pa.error);
+		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
+
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
+		return true;
 	}
 
 
@@ -130,6 +139,7 @@ public:
 		std::cout << i_prefix << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
 		std::cout << i_prefix << " + compute_errors: " << compute_errors << std::endl;
 		std::cout << i_prefix << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
+		std::cout << i_prefix << " + instability_checks: " << instability_checks << std::endl;
 		std::cout << std::endl;
 	}
 };

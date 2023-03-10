@@ -26,7 +26,7 @@
 #include "ShackPDESWESphere.hpp"
 
 
-class PDESWESphereFileOutput
+class PDESWESphere_FileOutput
 {
 public:
 	sweet::ErrorBase error;
@@ -138,11 +138,6 @@ public:
 			sweet::SphereData_Spectral &i_prog_vrt
 	)
 	{
-#if SWEET_MPI
-		if (mpi_rank > 0)
-			return;
-#endif
-
 		if (shackIOData->output_file_name.length() == 0)
 			return;
 

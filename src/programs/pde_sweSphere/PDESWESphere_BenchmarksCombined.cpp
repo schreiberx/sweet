@@ -2,7 +2,7 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include "PDESWESphereBenchmarksCombined.hpp"
+#include "PDESWESphere_BenchmarksCombined.hpp"
 #include "benchmarks/PDESWESphereBenchmark_zero.hpp"
 #include "benchmarks/PDESWESphereBenchmark_galewsky.hpp"
 #include "benchmarks/PDESWESphereBenchmark_gaussian_bump.hpp"
@@ -19,7 +19,7 @@
 
 
 
-PDESWESphereBenchmarksCombined::PDESWESphereBenchmarksCombined()	:
+PDESWESphere_BenchmarksCombined::PDESWESphere_BenchmarksCombined()	:
 	shackDict(nullptr),
 	ops(nullptr),
 	benchmark(nullptr)
@@ -27,7 +27,7 @@ PDESWESphereBenchmarksCombined::PDESWESphereBenchmarksCombined()	:
 }
 
 
-bool PDESWESphereBenchmarksCombined::setup_1_registerAllBenchmark()
+bool PDESWESphere_BenchmarksCombined::setup_1_registerAllBenchmark()
 {
 	_registered_benchmarks.push_back(static_cast<PDESWESphereBenchmarks_BaseInterface*>(new PDESWESphereBenchmark_gaussian_bumps_test_cases));
 	_registered_benchmarks.push_back(static_cast<PDESWESphereBenchmarks_BaseInterface*>(new PDESWESphereBenchmark_gaussian_bump));
@@ -48,7 +48,7 @@ bool PDESWESphereBenchmarksCombined::setup_1_registerAllBenchmark()
 
 
 
-bool PDESWESphereBenchmarksCombined::setup_2_shackRegistration(
+bool PDESWESphere_BenchmarksCombined::setup_2_shackRegistration(
 	sweet::ShackDictionary *io_shackDict
 )
 {
@@ -67,7 +67,7 @@ bool PDESWESphereBenchmarksCombined::setup_2_shackRegistration(
 
 
 
-bool PDESWESphereBenchmarksCombined::setup_3_benchmarkDetection()
+bool PDESWESphere_BenchmarksCombined::setup_3_benchmarkDetection()
 {
 	assert(benchmark == nullptr);
 
@@ -107,7 +107,7 @@ bool PDESWESphereBenchmarksCombined::setup_3_benchmarkDetection()
 }
 
 
-bool PDESWESphereBenchmarksCombined::setup_4_benchmarkSetup_1_withoutOps()
+bool PDESWESphere_BenchmarksCombined::setup_4_benchmarkSetup_1_withoutOps()
 {
 	assert(benchmark != nullptr);
 
@@ -118,7 +118,7 @@ bool PDESWESphereBenchmarksCombined::setup_4_benchmarkSetup_1_withoutOps()
 }
 
 
-bool PDESWESphereBenchmarksCombined::setup_5_benchmarkSetup_2_withOps(
+bool PDESWESphere_BenchmarksCombined::setup_5_benchmarkSetup_2_withOps(
 		sweet::SphereOperators* io_ops
 )
 {
@@ -128,7 +128,7 @@ bool PDESWESphereBenchmarksCombined::setup_5_benchmarkSetup_2_withOps(
 	ERROR_FORWARD_WITH_RETURN_BOOLEAN(*benchmark);
 }
 
-void PDESWESphereBenchmarksCombined::clear()
+void PDESWESphere_BenchmarksCombined::clear()
 {
 	benchmark = nullptr;
 	shackDict = nullptr;
@@ -139,7 +139,7 @@ void PDESWESphereBenchmarksCombined::clear()
 
 
 
-void PDESWESphereBenchmarksCombined::_benchmarksFreeAll(
+void PDESWESphere_BenchmarksCombined::_benchmarksFreeAll(
 		PDESWESphereBenchmarks_BaseInterface *skip_this
 )
 {
@@ -157,7 +157,7 @@ void PDESWESphereBenchmarksCombined::_benchmarksFreeAll(
 }
 
 
-void PDESWESphereBenchmarksCombined::printAvailableBenchmarks(
+void PDESWESphere_BenchmarksCombined::printAvailableBenchmarks(
 		std::ostream &o_ostream,
 		const std::string &i_prefix
 )
@@ -179,7 +179,7 @@ void PDESWESphereBenchmarksCombined::printAvailableBenchmarks(
 }
 
 
-PDESWESphereBenchmarksCombined::~PDESWESphereBenchmarksCombined()
+PDESWESphere_BenchmarksCombined::~PDESWESphere_BenchmarksCombined()
 {
 	clear();
 }

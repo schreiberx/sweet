@@ -24,15 +24,18 @@
 class PDESWESphereTS_l_irk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_timestep_order,
 			double i_timestep_size
 	);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_timestep_order,
 			double i_timestep_size,
@@ -47,12 +50,8 @@ public:
 	std::string timestepping_method;
 
 private:
-
-	/// SPH configuration
-	const sweet::SphereData_Config *sphereDataConfig;
-
-	PDESWESphereTS_lg_erk *lg_erk = nullptr;
-	PDESWESphereTS_l_erk *l_erk = nullptr;
+	PDESWESphereTS_lg_erk swe_sphere_ts_lg_erk;
+	PDESWESphereTS_l_erk swe_sphere_ts_l_erk;
 
 	SphBandedMatrixPhysicalReal< std::complex<double> > sphSolverDiv;
 
@@ -79,6 +78,20 @@ private:
 	double two_coriolis;
 
 	sweet::SphereData_Physical mug;
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		swe_sphere_ts_lg_erk.shackRegistration(io_shackDict);
+		swe_sphere_ts_l_erk.shackRegistration(io_shackDict);
+		return true;
+	}
+
+
 
 public:
 	PDESWESphereTS_l_irk();

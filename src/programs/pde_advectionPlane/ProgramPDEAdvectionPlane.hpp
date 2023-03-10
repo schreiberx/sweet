@@ -298,6 +298,11 @@ public:
 		std::cout << "RMS error: " << (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_rms() << std::endl;
 	}
 
+	double getLMaxErrorOnH()
+	{
+		return (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_max_abs();
+	}
+
 	virtual ~ProgramPDEAdvectionPlane()
 	{
 		clear();

@@ -64,7 +64,7 @@ public:
 		stream << "     'advection_cosine_bell'" << std::endl;
 		stream << "     'adv_cosine_bell': Advection test case of cosine bell" << std::endl;
 		stream << "         OPTION:" << std::endl;
-		stream << "         --advection-rotation-angle=[angle]" << std::endl;
+		stream << "         --benchmark-advection-rotation-angle=[angle]" << std::endl;
 		return stream.str();
 	}
 

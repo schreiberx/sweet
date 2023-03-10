@@ -20,7 +20,12 @@
 class PDESWESphereTS_ln_erk_split_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup(
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
+
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_order,	///< order of RK time stepping method
 			bool i_lg,
@@ -29,8 +34,6 @@ public:
 			bool i_nr,
 			bool i_antialiasing_for_each_term
 	);
-
-	bool setup_auto(sweet::SphereOperators *io_ops);
 
 
 public:

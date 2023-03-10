@@ -317,7 +317,7 @@ int main_mpi(int i_argc, char *i_argv[])
 				simulation.runTimestep();
 
 				// Instability
-				if (simulation.shackMisc->instability_checks)
+				if (simulation.shackPDESWEPlane->instability_checks)
 				{
 					if (simulation.instability_detected())
 						SWEETError("INSTABILITY DETECTED");

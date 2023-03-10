@@ -12,7 +12,7 @@
 /**
  * SWE Plane time steppers
  */
-class PDESWESphereTimeSteppers
+class PDESWESphere_TimeSteppers
 {
 public:
 	sweet::ErrorBase error;
@@ -30,7 +30,7 @@ private:
 		);
 
 public:
-	PDESWESphereTimeSteppers();
+	PDESWESphere_TimeSteppers();
 
 	void printImplementedTimesteppingMethods(
 		std::ostream &o_ostream = std::cout,
@@ -50,7 +50,7 @@ public:
 	void clear();
 
 
-	~PDESWESphereTimeSteppers();
+	~PDESWESphere_TimeSteppers();
 };
 
 

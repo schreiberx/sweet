@@ -11,9 +11,12 @@
 
 
 bool PDESWESphereTS_lg_erk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
 }
 
@@ -24,6 +27,7 @@ bool PDESWESphereTS_lg_erk::setup(
 )
 {
 	ops = io_ops;
+
 	timestepping_order = i_order;
 	return true;
 }

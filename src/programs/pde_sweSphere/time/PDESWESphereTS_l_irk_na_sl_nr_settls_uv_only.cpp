@@ -25,15 +25,20 @@ std::string PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::getIDString()
 }
 
 
-bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_auto(sweet::SphereOperators *io_ops)
+bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
 {
-	return setup(
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(
 		io_ops,
 		shackPDESWETimeDisc->timestepping_order
 	);
 }
 
-bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup(
+bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_timestepping_order
 )
@@ -48,12 +53,10 @@ bool PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::setup(
 	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);
 
 	// Initialize with 1st order
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order = new PDESWESphereTS_ln_erk_split_uv;
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->setup(ops, 1, true, true, false, false, false);
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order.setup_main(ops, 1, true, true, false, false, false);
 
 	// Initialize with 1st order and half time step size
-	swe_sphere_ts_l_irk = new PDESWESphereTS_l_irk;
-	swe_sphere_ts_l_irk->setup(ops, 1, 0.5 * shackTimestepControl->current_timestep_size, shackPDESWETimeDisc->timestepping_crank_nicolson_filter, false);
+	swe_sphere_ts_l_irk.setup_main(ops, 1, 0.5 * shackTimestepControl->current_timestep_size, shackPDESWETimeDisc->timestepping_crank_nicolson_filter, false);
 
 	return true;
 }
@@ -173,7 +176,7 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	/*
 	 * L_g(U): Linear gravity modes
 	 */
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_lg(
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order.euler_timestep_update_lg(
 			U_phi, U_vrt, U_div,
 			L_U_phi, L_U_vrt, L_U_div,
 			i_simulation_timestamp
@@ -182,7 +185,7 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	/*
 	 * L_c(U): Linear Coriolis effect
 	 */
-	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_lc(
+	swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order.euler_timestep_update_lc(
 			U_phi, U_vrt, U_div,
 			L_U_phi, L_U_vrt, L_U_div,
 			i_simulation_timestamp
@@ -227,7 +230,7 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 		sweet::SphereData_Spectral N_U_vrt_prev_nr(sphereDataConfig, 0);
 		sweet::SphereData_Spectral N_U_div_prev_nr(sphereDataConfig, 0);
 
-		swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_nr(
+		swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order.euler_timestep_update_nr(
 				U_phi_prev, U_vrt_prev, U_div_prev,
 				N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 				i_simulation_timestamp-i_dt
@@ -240,7 +243,7 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 		sweet::SphereData_Spectral N_U_vrt_nr(sphereDataConfig, 0);
 		sweet::SphereData_Spectral N_U_div_nr(sphereDataConfig, 0);
 
-		swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order->euler_timestep_update_nr(
+		swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order.euler_timestep_update_nr(
 				U_phi, U_vrt, U_div,
 				N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 				i_simulation_timestamp
@@ -274,7 +277,7 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 	 * Step 2b) Solve Helmholtz problem
 	 * X - 1/2 dt LX = R
 	 */
-	swe_sphere_ts_l_irk->runTimestep(
+	swe_sphere_ts_l_irk.runTimestep(
 			R_phi, R_vrt, R_div,
 			0.5 * i_dt,
 			i_simulation_timestamp
@@ -296,10 +299,6 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::run_timestep_2nd_order_pert(
 }
 
 
-
-
-
-
 PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only()
 {
 }
@@ -308,7 +307,5 @@ PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::PDESWESphereTS_l_irk_na_sl_nr_sett
 
 PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only::~PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only()
 {
-	delete swe_sphere_ts_ln_erk_split_uv__l_erk_1st_order;
-	delete swe_sphere_ts_l_irk;
 }
 

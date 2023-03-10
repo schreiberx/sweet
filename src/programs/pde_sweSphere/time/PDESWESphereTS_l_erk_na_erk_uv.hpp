@@ -21,13 +21,30 @@ public:
 	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
 	std::string getIDString();
 
-	PDESWESphereTS_ln_erk_split_uv *l_erk_split_uv = nullptr;
-	PDESWESphereTS_ln_erk_split_uv *na_erk_split_uv = nullptr;
+	PDESWESphereTS_ln_erk_split_uv l_erk_split_uv;
+	PDESWESphereTS_ln_erk_split_uv na_erk_split_uv;
+
 
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
-	bool setup(
+		l_erk_split_uv.shackRegistration(io_shackDict);
+		na_erk_split_uv.shackRegistration(io_shackDict);
+		return true;
+	}
+
+
+public:
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
+
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_order,	///< order of RK time stepping method
 			int i_order2

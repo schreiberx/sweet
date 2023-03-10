@@ -2,7 +2,7 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#include "PDESWESphereTimeSteppers.hpp"
+#include "PDESWESphere_TimeSteppers.hpp"
 
 #include "time/PDESWESphereTS_l_erk.hpp"
 #include "time/PDESWESphereTS_l_erk_n_erk.hpp"
@@ -50,14 +50,14 @@
 
 
 
-PDESWESphereTimeSteppers::PDESWESphereTimeSteppers()
+PDESWESphere_TimeSteppers::PDESWESphere_TimeSteppers()
 {
 }
 
 
 
 
-void PDESWESphereTimeSteppers::setup_1_registerAllTimesteppers()
+void PDESWESphere_TimeSteppers::setup_1_registerAllTimesteppers()
 {
 	/*
 	 * Register time integrators
@@ -135,7 +135,7 @@ void PDESWESphereTimeSteppers::setup_1_registerAllTimesteppers()
 
 
 
-bool PDESWESphereTimeSteppers::setup_2_shackRegistration(
+bool PDESWESphere_TimeSteppers::setup_2_shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 )
 {
@@ -148,7 +148,7 @@ bool PDESWESphereTimeSteppers::setup_2_shackRegistration(
 
 
 
-void PDESWESphereTimeSteppers::printImplementedTimesteppingMethods(
+void PDESWESphere_TimeSteppers::printImplementedTimesteppingMethods(
 	std::ostream &o_ostream,
 	const std::string &i_prefix
 )
@@ -170,7 +170,7 @@ void PDESWESphereTimeSteppers::printImplementedTimesteppingMethods(
 }
 
 
-bool PDESWESphereTimeSteppers::setup_3_timestepper(
+bool PDESWESphere_TimeSteppers::setup_3_timestepper(
 		const std::string &i_timestepping_method,
 		sweet::ShackDictionary *io_shackDict,
 		sweet::SphereOperators *io_ops
@@ -181,6 +181,7 @@ bool PDESWESphereTimeSteppers::setup_3_timestepper(
 		printImplementedTimesteppingMethods();
 		return error.set("Please set time stepping method using --timestepping-method=...");
 	}
+
 	/*
 	 * Find right one
 	 */
@@ -194,12 +195,10 @@ bool PDESWESphereTimeSteppers::setup_3_timestepper(
 		{
 			if (timestepper != nullptr)
 			{
-				//std::cout << "Processing " << i+1 << "th element" << std::endl;
 				return error.set("Duplicate implementation for method "+i_timestepping_method);
 			}
 
-			//std::cout << "Found matching time stepping method at " << i+1 << "th element" << std::endl;
-			ts->setup_auto(io_ops);
+			ts->setup_auto(i_timestepping_method, io_ops);
 			ERROR_CHECK_WITH_RETURN_BOOLEAN(*ts);
 			timestepper = ts;
 		}
@@ -215,7 +214,7 @@ bool PDESWESphereTimeSteppers::setup_3_timestepper(
 }
 
 
-void PDESWESphereTimeSteppers::_timesteppersFreeAll(
+void PDESWESphere_TimeSteppers::_timesteppersFreeAll(
 		PDESWESphereTS_BaseInterface *i_skip_this_timestepper
 )
 {
@@ -234,7 +233,7 @@ void PDESWESphereTimeSteppers::_timesteppersFreeAll(
 }
 
 
-void PDESWESphereTimeSteppers::clear()
+void PDESWESphere_TimeSteppers::clear()
 {
 	delete timestepper;
 	timestepper = nullptr;
@@ -243,7 +242,7 @@ void PDESWESphereTimeSteppers::clear()
 }
 
 
-PDESWESphereTimeSteppers::~PDESWESphereTimeSteppers()
+PDESWESphere_TimeSteppers::~PDESWESphere_TimeSteppers()
 {
 	clear();
 }

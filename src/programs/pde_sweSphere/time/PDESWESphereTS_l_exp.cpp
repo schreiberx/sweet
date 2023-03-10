@@ -58,9 +58,12 @@ std::string PDESWESphereTS_l_exp::getIDString()
 
 
 bool PDESWESphereTS_l_exp::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	bool no_coriolis = false;
 
 	if (timestepping_method == "lg_exp")
@@ -215,10 +218,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 
 		use_exp_method_direct_solution = true;
 
-		if (timestepping_method_l_exp_direct_special == nullptr)
-			timestepping_method_l_exp_direct_special = new PDESWESphereTS_l_exp_direct_special;
-
-		timestepping_method_l_exp_direct_special->setup(ops, timestepping_order, !no_coriolis, function_name);
+		timestepping_method_l_exp_direct_special.setup_main(ops, timestepping_order, !no_coriolis, function_name);
 	}
 	else if (exp_method == "ss_taylor")
 	{
@@ -227,10 +227,7 @@ bool PDESWESphereTS_l_exp::setup_variant_100(
 
 		use_exp_method_strang_split_taylor = true;
 
-		assert(timestepping_method_lg_exp_lc_exp == nullptr);
-
-		timestepping_method_lg_exp_lc_exp = new PDESWESphereTS_lg_exp_lc_taylor;
-		timestepping_method_lg_exp_lc_exp->setup(ops, timestepping_order);
+		timestepping_method_lg_exp_lc_exp.setup_main(ops, timestepping_order);
 	}
 	else
 	{
@@ -403,9 +400,7 @@ PDESWESphereTS_l_exp::PDESWESphereTS_l_exp()	:
 	use_rexi_sphere_solver_preallocation(false),
 	use_exp_method_direct_solution(false),
 	use_exp_method_strang_split_taylor(false),
-	use_exp_method_rexi(false),
-	timestepping_method_l_exp_direct_special(nullptr),
-	timestepping_method_lg_exp_lc_exp(nullptr)
+	use_exp_method_rexi(false)
 {
 	#if SWEET_BENCHMARK_TIMINGS
 		StopwatchBox::getInstance().rexi.start();
@@ -470,18 +465,6 @@ void PDESWESphereTS_l_exp::reset()
 		StopwatchBox::getInstance().rexi_setup.stop();
 		StopwatchBox::getInstance().rexi.stop();
 	#endif
-
-	if (timestepping_method_l_exp_direct_special)
-	{
-		delete timestepping_method_l_exp_direct_special;
-		timestepping_method_l_exp_direct_special = nullptr;
-	}
-
-	if (timestepping_method_lg_exp_lc_exp)
-	{
-		delete timestepping_method_lg_exp_lc_exp;
-		timestepping_method_lg_exp_lc_exp = nullptr;
-	}
 }
 
 
@@ -531,18 +514,6 @@ PDESWESphereTS_l_exp::~PDESWESphereTS_l_exp()
 		StopwatchBox::getInstance().rexi_shutdown.stop();
 		StopwatchBox::getInstance().rexi.stop();
 	#endif
-
-	if (timestepping_method_l_exp_direct_special)
-	{
-		delete timestepping_method_l_exp_direct_special;
-		timestepping_method_l_exp_direct_special = nullptr;
-	}
-
-	if (timestepping_method_lg_exp_lc_exp)
-	{
-		delete timestepping_method_lg_exp_lc_exp;
-		timestepping_method_lg_exp_lc_exp = nullptr;
-	}
 }
 
 
@@ -645,7 +616,7 @@ void PDESWESphereTS_l_exp::runTimestep(
 			StopwatchBox::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_l_exp_direct_special->runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_l_exp_direct_special.runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 #if 0
 		// no Coriolis force active
 
@@ -716,7 +687,7 @@ void PDESWESphereTS_l_exp::runTimestep(
 			StopwatchBox::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_lg_exp_lc_exp->runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_lg_exp_lc_exp.runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 
 		#if SWEET_BENCHMARK_TIMINGS
 			StopwatchBox::getInstance().rexi_timestepping.stop();
@@ -733,7 +704,7 @@ void PDESWESphereTS_l_exp::runTimestep(
 			StopwatchBox::getInstance().rexi_timestepping.start();
 		#endif
 
-		timestepping_method_l_exp_direct_special->runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
+		timestepping_method_l_exp_direct_special.runTimestep(io_prog_phi, io_prog_vrt, io_prog_div, i_fixed_dt, i_simulation_timestamp);
 #if 0
 		// no Coriolis force active
 
@@ -991,9 +962,9 @@ void PDESWESphereTS_l_exp::runTimestep(
 					sweet::SphereData_Spectral thread_io_prog_vrt0 = io_prog_vrt;
 					sweet::SphereData_Spectral thread_io_prog_div0 = io_prog_div;
 
-					sweet::SphereData_Spectral tmp_prog_phi(sphereDataConfig);
-					sweet::SphereData_Spectral tmp_prog_vort(sphereDataConfig);
-					sweet::SphereData_Spectral tmp_prog_div(sphereDataConfig);
+					sweet::SphereData_Spectral tmp_prog_phi(ops->sphereDataConfig);
+					sweet::SphereData_Spectral tmp_prog_vort(ops->sphereDataConfig);
+					sweet::SphereData_Spectral tmp_prog_div(ops->sphereDataConfig);
 
 					perThreadVars[local_thread_id]->accum_phi.spectral_set_zero();
 					perThreadVars[local_thread_id]->accum_vrt.spectral_set_zero();
@@ -1018,16 +989,16 @@ void PDESWESphereTS_l_exp::runTimestep(
 							const std::complex<double> &alpha = perThreadVars[local_thread_id]->alpha[local_idx];
 							const std::complex<double> &beta = perThreadVars[local_thread_id]->beta[local_idx];
 							rexiSPH.setup_vectorinvariant_progphivortdiv(
-									sphereDataConfig,	///< sphere data for input data
-									&shackDict,
+									ops->sphereDataConfig,	///< sphere data for input data
+									shackSphereDataOps,
 
 									alpha,
 									beta,
 
-									simCoeffs.sphere_radius,
-									simCoeffs.sphere_rotating_coriolis_omega,
-									simCoeffs.sphere_fsphere_f0,
-									simCoeffs.h0*simCoeffs.gravitation,
+									shackSphereDataOps->sphere_radius,
+									shackPDESWESphere->sphere_rotating_coriolis_omega,
+									shackPDESWESphere->sphere_fsphere_f0,
+									shackPDESWESphere->h0*shackPDESWESphere->gravitation,
 									i_fixed_dt,
 
 									use_f_sphere,
@@ -1135,7 +1106,7 @@ void PDESWESphereTS_l_exp::runTimestep(
 			 * However, eventually, it seems to work also in spectral space.
 			 */
 
-			sweet::SphereData_Spectral tmp(sphereDataConfig);
+			sweet::SphereData_Spectral tmp(ops->sphereDataConfig);
 
 // already setup
 //			std::size_t spectral_data_num_doubles = io_prog_phi0.sphereDataConfig->spectral_array_data_number_of_elements*2;

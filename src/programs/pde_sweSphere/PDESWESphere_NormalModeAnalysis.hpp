@@ -13,7 +13,7 @@
 
 
 
-class NormalModeAnalysisSphere
+class PDESWESphere_NormalModeAnalysis
 {
 public:
 	template <typename TCallbackClass>

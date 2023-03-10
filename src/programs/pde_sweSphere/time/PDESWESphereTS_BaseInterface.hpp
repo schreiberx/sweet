@@ -108,9 +108,11 @@ public:
 
 
 	virtual bool setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 	)
 	{
+		timestepping_method = i_timestepping_method;
 		ops = io_ops;
 		return true;
 	}

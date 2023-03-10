@@ -12,7 +12,7 @@
 #include <sweet/core/sphere/SphereHelpers_Integral.hpp>
 #include "ShackPDESWESphere.hpp"
 
-class PDESWESphereDiagnostics
+class PDESWESphere_Diagnostics
 {
 	sweet::SphereOperators *sphereOperators;
 	ShackPDESWESphere *shackPDESWESphere;
@@ -34,7 +34,7 @@ public:
 	int last_update_timestep_nr;
 
 public:
-	PDESWESphereDiagnostics()	:
+	PDESWESphere_Diagnostics()	:
 		sphereOperators(nullptr),
 		shackPDESWESphere(nullptr),
 		total_mass(0),

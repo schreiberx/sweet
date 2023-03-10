@@ -6,7 +6,7 @@
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/core/shacksShared/ShackMisc.hpp>
+#include <sweet/core/shacksShared/compile.program = 'programs/pde_sweSphere'.hpp>
 
 int main(int i_argc, char *i_argv[])
 {

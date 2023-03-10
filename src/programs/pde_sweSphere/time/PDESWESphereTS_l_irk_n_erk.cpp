@@ -10,18 +10,21 @@
 
 
 bool PDESWESphereTS_l_irk_n_erk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (
 		timestepping_method == "l_irk_n_erk" ||
 		timestepping_method == "l_irk_n_erk_ver0" ||
 		timestepping_method == "l_cn_n_erk" ||
 		timestepping_method == "l_cn_n_erk_ver0"
 	)
-		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 0);
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 0);
 	else
-		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 1);
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 1);
 }
 
 
@@ -29,13 +32,15 @@ bool PDESWESphereTS_l_irk_n_erk::setup_auto(
 /*
  * Setup
  */
-bool PDESWESphereTS_l_irk_n_erk::setup(
+bool PDESWESphereTS_l_irk_n_erk::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_order,	///< order of RK time stepping method
 		int i_order2,	///< order of RK time stepping method for non-linear parts
 		int i_version_id
 )
 {
+	ops = io_ops;
+
 	if (i_order2 < 0)
 		i_order2 = i_order;
 
@@ -50,7 +55,7 @@ bool PDESWESphereTS_l_irk_n_erk::setup(
 
 	if (timestepping_order == 1)
 	{
-		timestepping_l_irk.setup(
+		timestepping_l_irk.setup_main(
 			ops,
 			1,
 			timestep_size
@@ -60,7 +65,7 @@ bool PDESWESphereTS_l_irk_n_erk::setup(
 	{
 		if (version_id == 0)
 		{
-			timestepping_l_irk.setup(
+			timestepping_l_irk.setup_main(
 					ops,
 					2,
 					timestep_size*0.5,
@@ -70,7 +75,7 @@ bool PDESWESphereTS_l_irk_n_erk::setup(
 		}
 		else if (version_id == 1)
 		{
-			timestepping_l_irk.setup(
+			timestepping_l_irk.setup_main(
 					ops,
 					2,
 					timestep_size,
@@ -93,7 +98,7 @@ bool PDESWESphereTS_l_irk_n_erk::setup(
 	// Only request 1st order time stepping methods for irk and erk
 	// These 1st order methods will be combined to higher-order methods in this class
 	//
-	timestepping_l_erk_n_erk.setup(ops, 1, 1);
+	timestepping_l_erk_n_erk.setup_main(ops, 1, 1);
 
 	return true;
 }

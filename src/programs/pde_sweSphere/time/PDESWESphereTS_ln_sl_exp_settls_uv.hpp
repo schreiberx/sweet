@@ -38,9 +38,12 @@ public:
 	};
 
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_timestepping_order,
 			LinearCoriolisTreatment_enum i_coriolis_treatment,
@@ -62,12 +65,25 @@ private:
 	bool original_linear_operator_sl_treatment;
 
 	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
-	//sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
 	sweet::SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	PDESWESphereTS_ln_erk_split_uv* swe_sphere_ts_ln_erk_split_uv = nullptr;
-	PDESWESphereTS_l_exp *swe_sphere_ts_l_rexi = nullptr;
+	PDESWESphereTS_ln_erk_split_uv swe_sphere_ts_ln_erk_split_uv;
+	PDESWESphereTS_l_exp swe_sphere_ts_l_rexi;
+
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		swe_sphere_ts_ln_erk_split_uv.shackRegistration(io_shackDict);
+		swe_sphere_ts_l_rexi.shackRegistration(io_shackDict);
+		return true;
+	}
+
 
 
 public:

@@ -8,9 +8,11 @@
 
 
 bool PDESWESphereTS_ln_erk_split_vd::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
 
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;
 
@@ -18,35 +20,35 @@ bool PDESWESphereTS_ln_erk_split_vd::setup_auto(
 	 * l_na
 	 */
 	if (timestepping_method == "l_na_erk_split_vd")
-		return setup(io_ops, timestepping_order, true, true, true, false, false);
+		return setup_main(io_ops, timestepping_order, true, true, true, false, false);
 
 	if (timestepping_method == "l_na_erk_split_aa_vd")
-		return setup(io_ops, timestepping_order, true, true, true, false, true);
+		return setup_main(io_ops, timestepping_order, true, true, true, false, true);
 
 	/*
 	 * l
 	 */
 	if (timestepping_method == "l_erk_split_vd")
-		return setup(io_ops, timestepping_order, true, true, false, false, false);
+		return setup_main(io_ops, timestepping_order, true, true, false, false, false);
 
 	if (timestepping_method == "l_erk_split_aa_vd")
-		return setup(io_ops, timestepping_order, true, true, false, false, true);
+		return setup_main(io_ops, timestepping_order, true, true, false, false, true);
 
 	/*
 	 * ln
 	 */
 	if (timestepping_method == "ln_erk_split_vd")
-		return setup(io_ops, timestepping_order, true, true, true, true, false);
+		return setup_main(io_ops, timestepping_order, true, true, true, true, false);
 
 	if (timestepping_method == "ln_erk_split_aa_vd")
-		return setup(io_ops, timestepping_order, true, true, true, true, true);
+		return setup_main(io_ops, timestepping_order, true, true, true, true, true);
 
 	SWEETError("Should never happen");
 	return false;
 }
 
 
-bool PDESWESphereTS_ln_erk_split_vd::setup(
+bool PDESWESphereTS_ln_erk_split_vd::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_order,		///< order of RK time stepping method
 		bool i_use_lg,
@@ -57,6 +59,8 @@ bool PDESWESphereTS_ln_erk_split_vd::setup(
 		bool i_antialiasing_for_each_term
 )
 {
+	ops = io_ops;
+
 	setupFG();
 
 	timestepping_order = i_order;

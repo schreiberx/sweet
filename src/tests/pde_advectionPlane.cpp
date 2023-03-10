@@ -12,22 +12,22 @@
 
 int main(int i_argc, char *i_argv[])
 {
-	ProgramPDEAdvectionPlane sim(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(sim);
+	ProgramPDEAdvectionPlane progPDEAdvPlane(i_argc, i_argv);
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvPlane);
 
-	sim.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(sim);
+	progPDEAdvPlane.setup();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvPlane);
 
 	// Simply test whether the clear and setup works properly
-	sim.clear();
-	sim.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(sim);
+	progPDEAdvPlane.clear();
+	progPDEAdvPlane.setup();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvPlane);
 
 
 	int max_modes = 256;
 
-	double dt = sim.shackTimestepControl->current_timestep_size;
-	int initial_spectral_modes = sim.shackPlaneDataOps->space_res_spectral[0];
+	double dt = progPDEAdvPlane.shackTimestepControl->current_timestep_size;
+	int initial_spectral_modes = progPDEAdvPlane.shackPlaneDataOps->space_res_spectral[0];
 
 	int loop_counter = 0;
 
@@ -35,16 +35,16 @@ int main(int i_argc, char *i_argv[])
 	for (int i = initial_spectral_modes; i <= max_modes; i *= 2)
 	{
 		// only clear and setup the spatial parts
-		sim.clear();
+		progPDEAdvPlane.clear();
 
 		// setup stage 1 + 2
-		sim.setup_1_shackRegistration();
-		sim.setup_2_processArguments();
+		progPDEAdvPlane.setup_1_shackRegistration();
+		progPDEAdvPlane.setup_2_processArguments();
 
 		/*
 		 * Overwrite parameters
 		 */
-		sim.shackTimestepControl->current_timestep_size = dt/std::pow(2.0, loop_counter);
+		progPDEAdvPlane.shackTimestepControl->current_timestep_size = dt/std::pow(2.0, loop_counter);
 
 		/*
 		 * We need higher resolution for
@@ -54,42 +54,42 @@ int main(int i_argc, char *i_argv[])
 		int expected_order;
 
 		if (
-				sim.shackTimeDisc->timestepping_method == "na_sl" ||
-				sim.shackPlaneDataOps->space_use_spectral_basis_diffs == false
+				progPDEAdvPlane.shackTimeDisc->timestepping_method == "na_sl" ||
+				progPDEAdvPlane.shackPlaneDataOps->space_use_spectral_basis_diffs == false
 		)
 		{
-			sim.shackPlaneDataOps->space_res_spectral[0] = i;
-			sim.shackPlaneDataOps->space_res_spectral[1] = i;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_spectral[0] = i;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_spectral[1] = i;
 
-			sim.shackPlaneDataOps->space_res_physical[0] = 0;
-			sim.shackPlaneDataOps->space_res_physical[1] = 0;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_physical[0] = 0;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_physical[1] = 0;
 
 			// order is limited by the spatial interpolation order
-			expected_order = std::min(sim.shackTimeDisc->timestepping_order, 2);
+			expected_order = std::min(progPDEAdvPlane.shackTimeDisc->timestepping_order, 2);
 		}
 		else
 		{
-			sim.shackPlaneDataOps->space_res_spectral[0] = initial_spectral_modes;
-			sim.shackPlaneDataOps->space_res_spectral[1] = initial_spectral_modes;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_spectral[0] = initial_spectral_modes;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_spectral[1] = initial_spectral_modes;
 
-			sim.shackPlaneDataOps->space_res_physical[0] = 0;
-			sim.shackPlaneDataOps->space_res_physical[1] = 0;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_physical[0] = 0;
+			progPDEAdvPlane.shackPlaneDataOps->space_res_physical[1] = 0;
 
 			// order is directly the time discretization order
-			expected_order = sim.shackTimeDisc->timestepping_order;
+			expected_order = progPDEAdvPlane.shackTimeDisc->timestepping_order;
 		}
 
 		// setup 3rd part
-		sim.setup_3_data();
+		progPDEAdvPlane.setup_3_data();
 
-		std::cout << "Testing with " << sim.data.planeDataConfig.getUniqueIDString() << std::endl;
-		std::cout << "Testing with dt=" << sim.shackTimestepControl->current_timestep_size << std::endl;
+		std::cout << "Testing with " << progPDEAdvPlane.data.planeDataConfig.getUniqueIDString() << std::endl;
+		std::cout << "Testing with dt=" << progPDEAdvPlane.shackTimestepControl->current_timestep_size << std::endl;
 
 		{
-			while (!sim.should_quit())
-				sim.runTimestep();
+			while (!progPDEAdvPlane.should_quit())
+				progPDEAdvPlane.runTimestep();
 
-			double max_error = sim.getLMaxError();
+			double max_error = progPDEAdvPlane.getLMaxErrorOnH();
 
 			std::cout << "Lmax error compared to initial condition: " << max_error << std::endl;
 

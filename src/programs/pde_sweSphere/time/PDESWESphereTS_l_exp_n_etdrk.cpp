@@ -22,6 +22,7 @@ bool PDESWESphereTS_l_exp_n_etdrk::shackRegistration(sweet::ShackDictionary *io_
 	ts_ups1_exp.shackRegistration(shackDict);
 	ts_ups2_exp.shackRegistration(shackDict);
 	ts_ups3_exp.shackRegistration(shackDict);
+
 	return true;
 }
 
@@ -42,13 +43,16 @@ std::string PDESWESphereTS_l_exp_n_etdrk::getIDString()
 }
 
 bool PDESWESphereTS_l_exp_n_etdrk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
-	return setup(
+	return setup_main(
 			io_ops,
 			shackExpIntegration,
 			shackExpIntegration->exp_method,
@@ -63,7 +67,7 @@ bool PDESWESphereTS_l_exp_n_etdrk::setup_auto(
 /*
  * Setup
  */
-bool PDESWESphereTS_l_exp_n_etdrk::setup(
+bool PDESWESphereTS_l_exp_n_etdrk::setup_main(
 		sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		const std::string &i_exp_method,
@@ -81,7 +85,7 @@ bool PDESWESphereTS_l_exp_n_etdrk::setup(
 	if (timestepping_order != timestepping_order2)
 		SWEETError("Mismatch of orders, should be equal");
 
-	ts_l_erk_n_erk.setup(ops, timestepping_order, timestepping_order2);
+	ts_l_erk_n_erk.setup_main(ops, timestepping_order, timestepping_order2);
 
 	if (timestepping_order == 1)
 	{

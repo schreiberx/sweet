@@ -38,19 +38,19 @@
 #include <sweet/core/StopwatchBox.hpp>
 
 // Benchmarks
-#include "PDESWESphereBenchmarksCombined.hpp"
+#include "PDESWESphere_BenchmarksCombined.hpp"
 
 // Time steppers
-#include "PDESWESphereTimeSteppers.hpp"
+#include "PDESWESphere_TimeSteppers.hpp"
 
 // Diagnostics
-#include "PDESWESphereDiagnostics.hpp"
+#include "PDESWESphere_Diagnostics.hpp"
 
 // Normal mode analysis
-#include "PDESWESphereNormalModeAnalysis.hpp"
+#include "PDESWESphere_NormalModeAnalysis.hpp"
 
 // File writer
-#include "PDESWESphereFileOutput.hpp"
+#include "PDESWESphere_FileOutput.hpp"
 
 
 class ProgramPDESWESphere
@@ -148,12 +148,12 @@ public:
 	DataConfigOps dataConfigOps;
 
 	// time integrators
-	PDESWESphereTimeSteppers timeSteppers;
+	PDESWESphere_TimeSteppers timeSteppers;
 
 	// Handler to all benchmarks
-	PDESWESphereBenchmarksCombined sphereBenchmarks;
+	PDESWESphere_BenchmarksCombined sphereBenchmarks;
 
-	PDESWESphereFileOutput fileOutput;
+	PDESWESphere_FileOutput fileOutput;
 
 	/*
 	 * Shack directory and shacks to work with
@@ -172,7 +172,7 @@ public:
 
 	int timestep_nr_last_output_simtime = -1;
 
-	PDESWESphereDiagnostics diagnostics;
+	PDESWESphere_Diagnostics diagnostics;
 
 
 
@@ -403,7 +403,7 @@ public:
 		 * Output data for the first time step as well if output of datafiels is requested
 		 */
 		if (shackIOData->output_each_sim_seconds >= 0)
-			timestep_do_output();
+			_timestepDoOutput();
 		return true;
 	}
 	void clear(bool i_clear_spectral_transforms = true)
@@ -496,7 +496,7 @@ public:
 	}
 
 
-	void timestep_do_output()
+	void _timestepDoOutput()
 	{
 		if (shackPDESWESphere->compute_diagnostics)
 		{
@@ -520,21 +520,21 @@ public:
 			 * Check for stationary solutions
 			 */
 			if (
-					shackBenchmarks->benchmark_name != "williamson2"					&&
-					shackBenchmarks->benchmark_name != "williamson2_linear"			&&
-					shackBenchmarks->benchmark_name != "galewsky_nobump"			&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance"			&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_linear"	&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_1"			&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_2"			&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_4"			&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_8"			&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_16"		&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_32"		&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_64"		&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_128"		&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_256"		&&
-					shackBenchmarks->benchmark_name != "geostrophic_balance_512"
+				shackBenchmarks->benchmark_name != "williamson2"				&&
+				shackBenchmarks->benchmark_name != "williamson2_linear"			&&
+				shackBenchmarks->benchmark_name != "galewsky_nobump"			&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_linear"	&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_1"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_2"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_4"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_8"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_16"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_32"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_64"		&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_128"	&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_256"	&&
+				shackBenchmarks->benchmark_name != "geostrophic_balance_512"
 			)
 			{
 				std::cout << "Benchmark name: " << shackBenchmarks->benchmark_name << std::endl;
@@ -583,8 +583,6 @@ public:
 				dataConfigOps.prog_vrt
 		);
 
-
-
 		if (shackIOData->verbosity > 0)
 		{
 #if SWEET_MPI
@@ -600,9 +598,8 @@ public:
 
 
 
-
 public:
-	bool timestep_check_output()
+	bool timestepHandleOutput()
 	{
 #if SWEET_MPI
 		if (mpi_rank > 0)
@@ -626,7 +623,7 @@ public:
 		if (shackIOData->verbosity > 0)
 			std::cout << std::endl;
 
-		timestep_do_output();
+		_timestepDoOutput();
 
 		return true;
 	}
@@ -647,7 +644,7 @@ public:
 
 	void normalmode_analysis()
 	{
-		NormalModeAnalysisSphere::normal_mode_analysis(
+		PDESWESphere_NormalModeAnalysis::normal_mode_analysis(
 				dataConfigOps.prog_phi_pert,
 				dataConfigOps.prog_vrt,
 				dataConfigOps.prog_div,
@@ -906,7 +903,7 @@ public:
 	sweet::SphereOperators op;
 	sweet::SphereOperators op_nodealiasing;
 
-	PDESWESphereTimeSteppers timeSteppers;
+	PDESWESphere_TimeSteppers timeSteppers;
 
 	sweet::SphereData_Spectral prog_phi_pert;
 	sweet::SphereData_Spectral prog_vrt;
@@ -970,7 +967,7 @@ public:
 		 * Output data for the first time step as well if output of datafiels is requested
 		 */
 		if (shackIOData->output_each_sim_seconds >= 0)
-			timestep_do_output();
+			_timestepDoOutput();
 	}
 
 
@@ -1000,7 +997,7 @@ public:
 	{
 #if SWEET_GUI
 		if (shackDict.misc.gui_enabled && shackDict.misc.normal_mode_analysis_generation == 0)
-			timestep_check_output();
+			timestepHandleOutput();
 #endif
 
 		if (shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestep_size > shackTimestepControl->max_simulation_time)
@@ -1032,7 +1029,7 @@ public:
 		shackTimestepControl->current_timestep_nr++;
 
 #if SWEET_GUI
-		timestep_check_output();
+		timestepHandleOutput();
 #endif
 	}
 };
@@ -1210,14 +1207,14 @@ int main_real(int i_argc, char *i_argv[])
 			}
 
 
-			PDESWESphereTimeSteppers* timeSteppersFine = new PDESWESphereTimeSteppers;
-			PDESWESphereTimeSteppers* timeSteppersCoarse = new PDESWESphereTimeSteppers;
+			PDESWESphere_TimeSteppers* timeSteppersFine = new PDESWESphere_TimeSteppers;
+			PDESWESphere_TimeSteppers* timeSteppersCoarse = new PDESWESphere_TimeSteppers;
 
 			/*
 			 * Allocate parareal controller and provide class
 			 * which implement the parareal features
 			 */
-			Parareal_Controller<PDESWESphereTimeSteppers, 3> parareal_Controller(	&shackDict,
+			Parareal_Controller<PDESWESphere_TimeSteppers, 3> parareal_Controller(	&shackDict,
 												sphereDataConfigs,
 												ops,
 												ops_nodealiasing,
@@ -1300,10 +1297,6 @@ int main_real(int i_argc, char *i_argv[])
 			}
 
 
-
-
-
-
 			MPI_Comm comm = MPI_COMM_WORLD;
 			MPI_Comm comm_x, comm_t;
 
@@ -1370,7 +1363,7 @@ int main_real(int i_argc, char *i_argv[])
 			else
 			{
 				// Do first output before starting timer
-				simulationSWE->timestep_check_output();
+				simulationSWE->timestepHandleOutput();
 #if SWEET_MPI
 				// Start counting time
 				if (mpi_rank == 0)
@@ -1392,7 +1385,7 @@ int main_real(int i_argc, char *i_argv[])
 						break;
 
 					// Test for some output to be done
-					simulationSWE->timestep_check_output();
+					simulationSWE->timestepHandleOutput();
 
 					// Main call for timestep run
 					simulationSWE->runTimestep();
@@ -1436,7 +1429,7 @@ int main_real(int i_argc, char *i_argv[])
 #endif
 
 				// Do some output after the time loop
-				simulationSWE->timestep_check_output();
+				simulationSWE->timestepHandleOutput();
 			}
 
 #if SWEET_MPI

@@ -63,6 +63,8 @@ public:
 			double i_fsphere_f0
 	)
 	{
+		assert(sphereDataConfig != nullptr);
+
 		SphereData_Physical fg;
 		fg.setup(sphereDataConfig);
 
@@ -81,6 +83,8 @@ public:
 			double i_sphere_rotating_coriolis_omega
 	)
 	{
+		assert(sphereDataConfig != nullptr);
+
 		SphereData_Physical fg;
 		fg.setup(sphereDataConfig);
 

@@ -50,7 +50,10 @@
 class PDESWESphereTS_l_exp	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 public:
 	bool setup_variant_10(
@@ -191,9 +194,9 @@ private:
 	int num_mpi_ranks;
 #endif
 
-	PDESWESphereTS_l_exp_direct_special *timestepping_method_l_exp_direct_special;
+	PDESWESphereTS_l_exp_direct_special timestepping_method_l_exp_direct_special;
 
-	PDESWESphereTS_lg_exp_lc_taylor *timestepping_method_lg_exp_lc_exp;
+	PDESWESphereTS_lg_exp_lc_taylor timestepping_method_lg_exp_lc_exp;
 
 
 private:

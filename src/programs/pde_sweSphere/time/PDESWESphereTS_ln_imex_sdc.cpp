@@ -7,23 +7,15 @@
 #include "PDESWESphereTS_ln_imex_sdc.hpp"
 
 
-bool PDESWESphereTS_ln_imex_sdc::implementsTimesteppingMethod(
-		const std::string &i_timestepping_method
-)
-{
-	timestepping_method = i_timestepping_method;
-	if (i_timestepping_method == "ln_imex_sdc")
-		return true;
-
-	return false;
-}
-
 
 
 bool PDESWESphereTS_ln_imex_sdc::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	return setup(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 0);
 }
 
@@ -81,7 +73,7 @@ bool PDESWESphereTS_ln_imex_sdc::setup(
 #endif
 
 
-	timestepping_l_irk.setup(
+	timestepping_l_irk.setup_main(
 		ops,
 		1,
 		timestep_size
@@ -92,9 +84,22 @@ bool PDESWESphereTS_ln_imex_sdc::setup(
 	// Only request 1st order time stepping methods for irk and erk
 	// These 1st order methods will be combined to higher-order methods in this class
 	//
-	timestepping_l_erk_n_erk.setup(ops, 1, 1);
+	timestepping_l_erk_n_erk.setup_main(ops, 1, 1);
 
 	return true;
+}
+
+
+
+bool PDESWESphereTS_ln_imex_sdc::implementsTimesteppingMethod(
+		const std::string &i_timestepping_method
+)
+{
+	timestepping_method = i_timestepping_method;
+	if (i_timestepping_method == "ln_imex_sdc")
+		return true;
+
+	return false;
 }
 
 

@@ -21,10 +21,13 @@ bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::implementsTimesteppingMethod(con
 
 
 bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup_auto(
+	const std::string &i_timestepping_method,
 	sweet::SphereOperators *io_ops
 )
 {
-	return setup(
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(
 			io_ops,
 		timestepping_order
 	);
@@ -33,12 +36,13 @@ bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup_auto(
 
 
 
-bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup(
+bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup_main(
 	sweet::SphereOperators *io_ops,
 	int i_timestepping_order
 )
 {
 	ops = io_ops;
+
 	timestepping_order = i_timestepping_order;
 
 	if (timestepping_order != 1 && timestepping_order != 2)
@@ -48,12 +52,10 @@ bool PDESWESphereTS_l_irk_na_sl_settls_vd_only::setup(
 	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);
 
 	// Initialize with 1st order
-	swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order = new PDESWESphereTS_ln_erk_split_vd;
-	swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order->setup(ops, 1, true, true, false, false, false);
+	swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order.setup_main(ops, 1, true, true, false, false, false);
 
 	// Initialize with 1st order and half time step size
-	swe_sphere_ts_l_irk = new PDESWESphereTS_l_irk;
-	swe_sphere_ts_l_irk->setup(
+	swe_sphere_ts_l_irk.setup_main(
 			ops,
 			1,
 			0.5 * shackTimestepControl->current_timestep_size,
@@ -184,7 +186,7 @@ void PDESWESphereTS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 	/*
 	 * L_g(U): Linear gravity modes
 	 */
-	swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order->euler_timestep_update_lg(
+	swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order.euler_timestep_update_lg(
 			U_phi, U_vrt, U_div,
 			L_U_phi, L_U_vrt, L_U_div,
 			i_simulation_timestamp
@@ -193,7 +195,7 @@ void PDESWESphereTS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 	/*
 	 * L_c(U): Linear Coriolis effect
 	 */
-	swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order->euler_timestep_update_lc(
+	swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order.euler_timestep_update_lc(
 			U_phi, U_vrt, U_div,
 			L_U_phi, L_U_vrt, L_U_div,
 			i_simulation_timestamp
@@ -236,7 +238,7 @@ void PDESWESphereTS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 		 */
 		sweet::SphereData_Spectral N_U_phi_prev_nr(sphereDataConfig, 0), N_U_vrt_prev_nr(sphereDataConfig, 0), N_U_div_prev_nr(sphereDataConfig, 0);
 
-		swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order->euler_timestep_update_nr(
+		swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order.euler_timestep_update_nr(
 				U_phi_prev, U_vrt_prev, U_div_prev,
 				N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 				i_simulation_timestamp-i_dt
@@ -247,7 +249,7 @@ void PDESWESphereTS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 		 */
 		sweet::SphereData_Spectral N_U_phi(sphereDataConfig, 0), N_U_vrt(sphereDataConfig, 0), N_U_div(sphereDataConfig, 0);
 
-		swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order->euler_timestep_update_nr(
+		swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order.euler_timestep_update_nr(
 				U_phi, U_vrt, U_div,
 				N_U_phi, N_U_vrt, N_U_div,
 				i_simulation_timestamp
@@ -281,7 +283,7 @@ void PDESWESphereTS_l_irk_na_sl_settls_vd_only::run_timestep_2nd_order(
 	 * Step 2b) Solve Helmholtz problem
 	 * X - 1/2 dt LX = R
 	 */
-	swe_sphere_ts_l_irk->runTimestep(
+	swe_sphere_ts_l_irk.runTimestep(
 			R_phi, R_vrt, R_div,
 			0.5 * i_dt,
 			i_simulation_timestamp
@@ -312,7 +314,5 @@ PDESWESphereTS_l_irk_na_sl_settls_vd_only::PDESWESphereTS_l_irk_na_sl_settls_vd_
 
 PDESWESphereTS_l_irk_na_sl_settls_vd_only::~PDESWESphereTS_l_irk_na_sl_settls_vd_only()
 {
-	delete swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order;
-	delete swe_sphere_ts_l_irk;
 }
 

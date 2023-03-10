@@ -180,7 +180,6 @@ public:
 		double div_zero = o_div.toPhys().physical_reduce_max_abs();
 		if (div_zero > 1e-12)
 		{
-
 			std::cout << "Divergence: " << div_zero << std::endl;
 			SWEETError("Divergence should be close to 0, maybe there are some numerical round-off errors?");
 		}
@@ -216,10 +215,19 @@ public:
 			}
 		}
 
-
-		//bool use_analytical_geostrophic_setup = shackDict->misc.comma_separated_tags.find("geostrophic_balance_analytical_setup") != std::string::npos;
-		bool use_analytical_geostrophic_setup = true;
-
+		bool use_analytical_geostrophic_setup;
+		if (shackPDESWEBenchmark->benchmark_galewsky_geostrophic_setup == "analytical")
+		{
+			use_analytical_geostrophic_setup = true;
+		}
+		else if (shackPDESWEBenchmark->benchmark_galewsky_geostrophic_setup == "numerical")
+		{
+			use_analytical_geostrophic_setup = false;
+		}
+		else
+		{
+			SWEETError("Invalid geostropic setup choosen");
+		}
 
 		if (use_analytical_geostrophic_setup)
 		{

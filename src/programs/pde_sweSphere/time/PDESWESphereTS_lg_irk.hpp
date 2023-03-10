@@ -20,7 +20,10 @@
 class PDESWESphereTS_lg_irk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 public:
 	bool setup(
@@ -43,10 +46,7 @@ public:
 
 
 private:
-	/// SPH configuration
-	//const sweet::SphereData_Config *sphereDataConfig;
-
-	PDESWESphereTS_lg_erk *lg_erk = nullptr;
+	PDESWESphereTS_lg_erk lg_erk;
 
 	/// alpha/beta (time step related component for implicit solver)
 	double alpha;
@@ -67,13 +67,25 @@ private:
 	/// Average geopotential
 	double gh;
 
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		lg_erk.shackRegistration(io_shackDict);
+		return true;
+	}
+
+
 public:
 	PDESWESphereTS_lg_irk();
 
 
 public:
 	void update_coefficients();
-
 
 
 public:

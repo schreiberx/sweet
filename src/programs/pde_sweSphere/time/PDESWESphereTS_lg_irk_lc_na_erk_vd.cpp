@@ -23,9 +23,12 @@ bool PDESWESphereTS_lg_irk_lc_na_erk_vd::implementsTimesteppingMethod(const std:
 
 
 bool PDESWESphereTS_lg_irk_lc_na_erk_vd::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (
 		timestepping_method == "lg_irk_lc_na_erk_vd" ||
 		timestepping_method == "lg_irk_lc_na_erk_vd_ver0"
@@ -108,7 +111,7 @@ bool PDESWESphereTS_lg_irk_lc_na_erk_vd::setup(
 
 
 	// Only NA part!
-	timestepping_ln_erk_split_vd.setup(
+	timestepping_ln_erk_split_vd.setup_main(
 			ops,
 			i_timestepping_order2,
 			false, true, true, false, false

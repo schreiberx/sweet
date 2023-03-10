@@ -10,18 +10,21 @@
 
 
 bool PDESWESphereTS_l_irk_na_erk_uv::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (
 		timestepping_method == "l_irk_na_erk_uv" ||
 		timestepping_method == "l_irk_na_erk_uv_ver0"
 	)
-		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 0);
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 0);
 	else if (
 			timestepping_method == "l_irk_na_erk_uv_ver1"
 		)
-		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 1);
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2, 1);
 	else
 		SWEETError("Not implemented");
 
@@ -32,7 +35,7 @@ bool PDESWESphereTS_l_irk_na_erk_uv::setup_auto(
 /*
  * Setup
  */
-bool PDESWESphereTS_l_irk_na_erk_uv::setup(
+bool PDESWESphereTS_l_irk_na_erk_uv::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_order,	///< order of RK time stepping method
 		int i_order2,	///< order of RK time stepping method for non-linear parts
@@ -57,7 +60,7 @@ bool PDESWESphereTS_l_irk_na_erk_uv::setup(
 
 	if (timestepping_order == 1)
 	{
-		timestepping_l_irk.setup(
+		timestepping_l_irk.setup_main(
 				ops,
 				1,
 				timestep_size
@@ -67,13 +70,13 @@ bool PDESWESphereTS_l_irk_na_erk_uv::setup(
 		// Only request 1st order time stepping methods for irk and erk
 		// These 1st order methods will be combined to higher-order methods in this class
 		//
-		timestepping_na_erk_split_uv.setup(ops, 1, false, false, true, false, false);
+		timestepping_na_erk_split_uv.setup_main(ops, 1, false, false, true, false, false);
 	}
 	else if (timestepping_order == 2)
 	{
 		if (version_id == 0)
 		{
-			timestepping_l_irk.setup(
+			timestepping_l_irk.setup_main(
 					ops,
 					2,
 					timestep_size*0.5,
@@ -83,7 +86,7 @@ bool PDESWESphereTS_l_irk_na_erk_uv::setup(
 		}
 		else if (version_id == 1)
 		{
-			timestepping_l_irk.setup(
+			timestepping_l_irk.setup_main(
 					ops,
 					2,
 					timestep_size,
@@ -100,7 +103,7 @@ bool PDESWESphereTS_l_irk_na_erk_uv::setup(
 		// Only request 1st order time stepping methods for irk and erk
 		// These 1st order methods will be combined to higher-order methods in this class
 		//
-		timestepping_na_erk_split_uv.setup(ops, 2, false, false, true, false, false);
+		timestepping_na_erk_split_uv.setup_main(ops, 2, false, false, true, false, false);
 	}
 	else
 	{

@@ -7,6 +7,45 @@
 #include "PDESWESphereTS_lg_exp_lc_taylor.hpp"
 
 
+
+bool PDESWESphereTS_lg_exp_lc_taylor::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
+{
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(io_ops, timestepping_order);
+}
+
+
+
+
+bool PDESWESphereTS_lg_exp_lc_taylor::setup_main(
+		sweet::SphereOperators *io_ops,
+		int i_order
+)
+{
+	ops = io_ops;
+
+	if (shackExpIntegration->taylor_num_expansions <= 0)
+		SWEETError("This time stepping method requires setting the number of Taylor expansions");
+
+	timestepping_order = i_order;
+
+	if (timestepping_order != 1 && timestepping_order != 2)
+		SWEETError("Only 1st and 2nd order time stepping order supported");
+
+	timestepping_lg_exp.setup_main(io_ops, "phi0");
+
+	if (shackExpIntegration->exp_method != "ss_taylor")
+		SWEETError("Use --exp-method=ss_taylor to use this time stepper [TODO: This might not make sense after some internal changes]");
+
+	return true;
+}
+
+
+
 void PDESWESphereTS_lg_exp_lc_taylor::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
 		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
@@ -102,38 +141,6 @@ void PDESWESphereTS_lg_exp_lc_taylor::run_timestep_lc(
 		vrt_Lc_pow_i_prev.swap(vrt_Lc_pow_i);
 		div_Lc_pow_i_prev.swap(div_Lc_pow_i);
 	}
-}
-
-
-
-bool PDESWESphereTS_lg_exp_lc_taylor::setup(
-		sweet::SphereOperators *io_ops,
-		int i_order
-)
-{
-	if (shackExpIntegration->taylor_num_expansions <= 0)
-		SWEETError("This time stepping method requires setting the number of Taylor expansions");
-
-	timestepping_order = i_order;
-
-	if (timestepping_order != 1 && timestepping_order != 2)
-		SWEETError("Only 1st and 2nd order time stepping order supported");
-
-	timestepping_lg_exp.setup(io_ops, "phi0");
-
-	if (shackExpIntegration->exp_method != "ss_taylor")
-		SWEETError("Use --exp-method=ss_taylor to use this time stepper [TODO: This might not make sense after some internal changes]");
-
-	return true;
-}
-
-
-
-bool PDESWESphereTS_lg_exp_lc_taylor::setup_auto(
-		sweet::SphereOperators *io_ops
-)
-{
-	return setup(io_ops, timestepping_order);
 }
 
 

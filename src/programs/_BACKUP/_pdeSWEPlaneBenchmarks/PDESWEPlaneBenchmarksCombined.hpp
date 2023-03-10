@@ -30,7 +30,7 @@
 #include <sweet/core/shacksShared/ShackIOData.hpp>
 #include "../../include/sweet/shacksShared/ShackDiagnostics.hpp"
 #include <sweet/core/shacksShared/ShackPlaneDiscretization.hpp>
-#include "../../include/sweet/shacksShared/ShackShackMisc.hpp"
+#include "../../include/sweet/shacksShared/Shackcompile.program = 'programs/pde_sweSphere'.hpp"
 #include <sweet/core/shacksShared/ShackSWEPlaneBenchmark.hpp>
 
 

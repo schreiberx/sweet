@@ -51,6 +51,10 @@ public:
 	/// e.g. use scaling by 1.0/(60*60) to output days instead of seconds
 	double output_time_scale = 1.0;
 
+	/// inverse time scaling for outputConfig
+	/// If this is set, the output_time_scale is overwritten with its inverse
+	double output_time_scale_inv = 1.0;
+
 	/// precision for floating point outputConfig to std::cout and std::endl
 	int output_floating_point_precision = std::numeric_limits<double>::digits10 + 1;
 
@@ -95,6 +99,8 @@ public:
 		std::cout << "IOData:" << std::endl;
 		std::cout << "	--output-file-name [string]		String specifying the name of the output file" << std::endl;
 		std::cout << "	--output-file-mode [string]		Format of output file, default: default" << std::endl;
+		std::cout << "	--output-time-scale [float]		Output time scale, default: 1" << std::endl;
+		std::cout << "	--output-time-scale-inv [float]		Inverse of output time scale, default: 1" << std::endl;
 		std::cout << "	-v [int]			verbosity level" << std::endl;
 		std::cout << "	-G [0/1]			graphical user interface" << std::endl;
 
@@ -105,6 +111,13 @@ public:
 	{
 		i_pa.getArgumentValueByKey("--output-file-mode", output_file_mode);
 		i_pa.getArgumentValueBy2Keys("--output-file-name", "-O", output_file_name);
+
+		if (i_pa.getArgumentValueByKey("--output-time-scale", output_time_scale))
+			output_time_scale_inv = 1.0/output_time_scale;
+
+		if (i_pa.getArgumentValueByKey("--output-time-scale-inv", output_time_scale_inv))
+			output_time_scale = 1.0/output_time_scale_inv;
+
 		i_pa.getArgumentValueByKey("-d", output_floating_point_precision);
 		i_pa.getArgumentValueByKey("-o", output_each_sim_seconds);
 
@@ -166,6 +179,7 @@ public:
 		std::cout << " + output_each_sim_seconds: " << output_each_sim_seconds << std::endl;
 		std::cout << " + output_next_sim_seconds: " << output_next_sim_seconds << std::endl;
 		std::cout << " + output_time_scale: " << output_time_scale << std::endl;
+		std::cout << " + output_time_scale_inv: " << output_time_scale_inv << std::endl;
 		std::cout << " + output_floating_point_precision: " << output_floating_point_precision << std::endl;
 
 		std::cout << " + verbosity: " << verbosity << std::endl;

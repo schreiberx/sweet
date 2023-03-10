@@ -7,21 +7,24 @@
 
 #include "PDESWESphereTS_l_erk.hpp"
 
-
-
 bool PDESWESphereTS_l_erk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
-	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order);
 }
 
 
-bool PDESWESphereTS_l_erk::setup(
+bool PDESWESphereTS_l_erk::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_order	///< order of RK time stepping method
 )
 {
+	ops = io_ops;
+
 	setupFG();
 
 	timestepping_order = i_order;

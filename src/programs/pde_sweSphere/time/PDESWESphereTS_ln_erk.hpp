@@ -20,7 +20,10 @@
 class PDESWESphereTS_ln_erk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup(
 			sweet::SphereOperators *io_ops,

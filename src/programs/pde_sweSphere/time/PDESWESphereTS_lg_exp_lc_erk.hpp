@@ -20,9 +20,12 @@
 class PDESWESphereTS_lg_exp_lc_erk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *i_shackExpIntegration,
 			const std::string &i_exp_method,
@@ -80,6 +83,18 @@ private:
 	PDESWESphereTS_lg_erk_lc_erk timestepping_lg_erk_lc_erk;
 
 	sweet::TimesteppingExplicitRKSphereData timestepping_rk_nonlinear;
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		timestepping_l_exp.shackRegistration(io_shackDict);
+		timestepping_lg_erk_lc_erk.shackRegistration(io_shackDict);
+		return true;
+	}
 
 
 public:

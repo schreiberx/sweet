@@ -1,7 +1,4 @@
 /*
- * PDESWEParametersCommon.hpp
- *
- *  Created on: Feb 19, 2023
  *      Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
@@ -77,6 +74,12 @@ public:
 	bool compute_diagnostics = false;
 
 
+	/*
+	 * Check for instabilities and stop
+	 */
+	bool instability_checks = false;
+
+
 	void printShack(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "PDESWESphere parameters:" << std::endl;
@@ -89,6 +92,7 @@ public:
 		std::cout << i_prefix << " + sphere_fsphere_f0: " << sphere_fsphere_f0 << std::endl;
 		std::cout << i_prefix << " + compute_errors: " << compute_errors << std::endl;
 		std::cout << i_prefix << " + compute_diagnostics: " << compute_diagnostics << std::endl;
+		std::cout << i_prefix << " + instability_checks: " << instability_checks << std::endl;
 	}
 
 
@@ -101,6 +105,7 @@ public:
 		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
 		std::cout << i_prefix << "	--compute-diagnostics [bool]	Compute diagnostics" << std::endl;
 		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
+		std::cout << i_prefix << "	--instability-checks=[bool]			Check for instabilities (default: 0)" << std::endl;
 	}
 
 
@@ -120,8 +125,9 @@ public:
 		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 		i_pa.getArgumentValueByKey("--compute-diagnostics", compute_diagnostics);
 
+		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
+		
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
-
 		return true;
 	}
 };

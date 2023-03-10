@@ -12,47 +12,48 @@
 #include <iostream>
 #include <sweet/core/ProgramArguments.hpp>
 #include <sweet/core/shacks/ShackInterface.hpp>
+#include <sweet/core/dict/Dict.hpp>
 
 
 /**
  * SDC parameters
  */
 class SDC	:
-		public ShackInterface
+		public sweet::ShackInterface
 {
 public:
 	std::string fileName;
 
 	// Nodes values (between 0 and 1)
-	DictArrayND<1, double> nodes;
+	sweet::DictArrayND<1, double> nodes;
 	size_t nNodes=0;
 
 	// Quadrature weights
-	DictArrayND<1, double> weights;
+	sweet::DictArrayND<1, double> weights;
 
 	// Collocation matrix
-	DictArrayND<2, double> qMatrix;
+	sweet::DictArrayND<2, double> qMatrix;
 
 	// QDelta matrix for implicit sweep
-	DictArrayND<2, double> qDeltaI;
+	sweet::DictArrayND<2, double> qDeltaI;
 
 	// QDelta matrix for explicit sweep
-	DictArrayND<2, double> qDeltaE;
+	sweet::DictArrayND<2, double> qDeltaE;
 
 	// QDelta matrix for initial (implicit) sweep
-	DictArrayND<2, double> qDelta0;
+	sweet::DictArrayND<2, double> qDelta0;
 
 	// Number of iterations (sweeps)
-	Dict::int64 nIter=0;
+	sweet::Dict::int64 nIter = 0;
 
 	// Type of initial sweep to use
-	std::string initSweepType="COPY";
+	std::string initSweepType = "COPY";
 
 	// Wether or not use the diagonal implementation
-	Dict::int64 diagonal=0;
+	sweet::Dict::int64 diagonal = 0;
 
 	// Wether or not use collocation update for end point
-	Dict::int64 useEndUpdate=0;
+	sweet::Dict::int64 useEndUpdate = 0;
 
 
 	void printProgramArguments(const std::string& i_prefix = "")
@@ -63,11 +64,11 @@ public:
 		std::cout << std::endl;
 	}
 
-	bool processProgramArguments(ProgramArguments &i_pa)
+	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		if (i_pa.getArgumentValueByKey("--sdc-file", fileName))
 		{
-			Dict params(fileName);
+			sweet::Dict params(fileName);
 			params.get("nodes", nodes);
 			nNodes = nodes.size();
 			params.get("weights", weights);

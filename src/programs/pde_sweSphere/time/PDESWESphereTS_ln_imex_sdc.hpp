@@ -169,7 +169,10 @@ public:
 class PDESWESphereTS_ln_imex_sdc	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup(
 			sweet::SphereOperators *io_ops,
@@ -195,6 +198,19 @@ public:
 	PDESWESphereTS_l_erk_n_erk timestepping_l_erk_n_erk;
 
 	int timestepping_order;
+
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		timestepping_l_irk.shackRegistration(io_shackDict);
+		timestepping_l_erk_n_erk.shackRegistration(io_shackDict);
+		return true;
+	}
 
 private:
 	/*

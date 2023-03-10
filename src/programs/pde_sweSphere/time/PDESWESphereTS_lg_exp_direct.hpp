@@ -44,10 +44,13 @@
 class PDESWESphereTS_lg_exp_direct	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 public:
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			const std::string &i_function_name
 	);

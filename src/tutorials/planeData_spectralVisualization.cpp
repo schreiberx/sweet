@@ -2,6 +2,7 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  * 
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
+ * MULE_SCONS_OPTIONS: --gui=enable
  */
 
 #include <ostream>
@@ -98,7 +99,7 @@ public:
 	std::string vis_description;
 
 
-	Stopwatch stopwatch;
+	sweet::Stopwatch stopwatch;
 
 	/*
 	 * Setup main
@@ -250,7 +251,7 @@ public:
 
 
 
-	void vis_get_vis_data_array(
+	void vis_getDataArray(
 			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
