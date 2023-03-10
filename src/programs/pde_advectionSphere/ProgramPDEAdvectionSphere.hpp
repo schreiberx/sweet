@@ -55,7 +55,7 @@ public:
 	/*
 	 * Just a class to store simulation data all together
 	 */
-	class Data
+	class DataConfigOps
 	{
 	public:
 		sweet::ErrorBase error;
@@ -70,17 +70,16 @@ public:
 		std::vector<sweet::SphereData_Spectral> prog_vec_t0;
 
 #if SWEET_GUI
-	sweet::PlaneData_Config planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 
-	// Data to visualize is stored to this variable
-	sweet::PlaneData_Physical vis_plane_data;
+		// Data to visualize is stored to this variable
+		sweet::PlaneData_Physical vis_plane_data;
 
-	// Which primitive to use for rendering
-	int vis_render_type_of_primitive_id = 1;
+		// Which primitive to use for rendering
+		int vis_render_type_of_primitive_id = 1;
 
-	// Which primitive to use for rendering
-	int vis_data_id = 0;
-
+		// Which primitive to use for rendering
+		int vis_data_id = 0;
 #endif
 
 
@@ -140,7 +139,7 @@ public:
 	};
 
 	// Simulation data
-	Data dataConfigOps;
+	DataConfigOps dataConfigOps;
 
 	// time integrators
 	PDEAdvectionSphereTimeSteppers timeSteppers;
@@ -390,7 +389,7 @@ public:
 		std::cout << "RMS error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms() << std::endl;
 	}
 
-	~ProgramPDEAdvectionSphere()
+	virtual ~ProgramPDEAdvectionSphere()
 	{
 		clear();
 	}

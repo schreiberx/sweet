@@ -726,17 +726,13 @@ public:
 	}
 
 
-	void clear()
-	{
-		cleanup(false);
-	}
 
-
-	void cleanup(
-		bool i_full_reset = true
+	void clear(
+		bool i_full_reset
 	)
 	{
-		assert(shtns != nullptr);
+		if (shtns == nullptr)
+			return;
 
 		fftw_free(lat);
 		lat = nullptr;
@@ -760,11 +756,16 @@ public:
 		}
 	}
 
+	void clear()
+	{
+		clear(false);
+	}
+
 
 	~SphereData_Config()
 	{
 		if (shtns != nullptr)
-			cleanup();
+			clear();
 	}
 };
 

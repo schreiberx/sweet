@@ -56,7 +56,7 @@ public:
 	/*
 	 * Just a class to store simulation data all together
 	 */
-	class Data
+	class DataConfigOps
 	{
 	public:
 		sweet::ErrorBase error;
@@ -74,17 +74,16 @@ public:
 		sweet::SphereData_Spectral t0_prog_vrt;
 
 #if SWEET_GUI
-	sweet::PlaneData_Config planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 
-	// Data to visualize is stored to this variable
-	sweet::PlaneData_Physical vis_plane_data;
+		// Data to visualize is stored to this variable
+		sweet::PlaneData_Physical vis_plane_data;
 
-	// Which primitive to use for rendering
-	int vis_render_type_of_primitive_id = 1;
+		// Which primitive to use for rendering
+		int vis_render_type_of_primitive_id = 1;
 
-	// Which primitive to use for rendering
-	int vis_data_id = 0;
-
+		// Which primitive to use for rendering
+		int vis_data_id = 0;
 #endif
 
 
@@ -132,7 +131,7 @@ public:
 	};
 
 	// Simulation data
-	Data dataConfigOps;
+	DataConfigOps dataConfigOps;
 
 	// time integrators
 	PDESWESphereTimeSteppers timeSteppers;
@@ -529,8 +528,6 @@ public:
 	sweet::SphereData_Spectral prog_vrt;
 	sweet::SphereData_Spectral prog_div;
 
-	Stopwatch stopwatch;
-
 #if SWEET_GUI
 	sweet::PlaneData_Physical viz_plane_data;
 #endif
@@ -670,8 +667,6 @@ public:
 		 */
 		if (shackDict.iodata.output_each_sim_seconds >= 0)
 			timestep_do_output();
-
-		stopwatch.start();
 	}
 
 
@@ -1054,16 +1049,6 @@ public:
 		if (shackDict.timecontrol.max_timesteps_nr != -1 && shackDict.timecontrol.max_timesteps_nr <= shackDict.timecontrol.current_timestep_nr)
 			return true;
 
-		if (shackDict.timecontrol.max_wallclock_time >= 0)
-		{
-			double t = stopwatch.getTimeSinceStart();
-			if (shackDict.timecontrol.max_wallclock_time <= t)
-			{
-				std::cout << "[MULE] max_wallclock_time: exceeded (" << t << ")" << std::endl;
-				return true;
-			}
-		}
-
 		double diff = std::abs(shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time);
 
 		if (	shackDict.timecontrol.max_simulation_time != -1 &&
@@ -1167,7 +1152,7 @@ public:
 	int max_viz_types = 9;
 
 
-	void vis_get_vis_data_array(
+	void vis_getDataArray(
 			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
