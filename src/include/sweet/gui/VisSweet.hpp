@@ -9,6 +9,7 @@
 
 #include <limits>
 #include <string>
+#include <cmath>
 #include <sweet/gui/VisSweetHUD.hpp>
 #include "../libgl/draw/GlDrawCube.hpp"
 #include "../libgl/shaders/shader_blinn/CShaderBlinn.hpp"

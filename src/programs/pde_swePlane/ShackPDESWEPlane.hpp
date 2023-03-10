@@ -82,17 +82,17 @@ public:
 
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
-		std::cout << "Simulation parameters:" << std::endl;
-		std::cout << "	-u [visc]	viscosity, , default=0" << std::endl;
-		std::cout << "	-U [visc]	viscosity order, default=2" << std::endl;
-		std::cout << "	-f [float]	f-parameter for f-plane, default=0" << std::endl;
-		std::cout << "	-g [float]	gravity" << std::endl;
-		std::cout << "	-H [float]	average (initial) height of water" << std::endl;
-		std::cout << "	--use-only-linear-divergence [bool]	Use only linear divergence" << std::endl;
-		std::cout << "	--use-nonlinear-only-visc [bool]	Use only viscosity on nonlinear part" << std::endl;
-		std::cout << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
-		std::cout << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
-		std::cout << "" << std::endl;
+		std::cout << i_prefix << "PDESWEPlane parameters:" << std::endl;
+		std::cout << i_prefix << "	-u [visc]	viscosity, , default=0" << std::endl;
+		std::cout << i_prefix << "	-U [visc]	viscosity order, default=2" << std::endl;
+		std::cout << i_prefix << "	-f [float]	f-parameter for f-plane, default=0" << std::endl;
+		std::cout << i_prefix << "	-g [float]	gravity" << std::endl;
+		std::cout << i_prefix << "	-H [float]	average (initial) height of water" << std::endl;
+		std::cout << i_prefix << "	--use-only-linear-divergence [bool]	Use only linear divergence" << std::endl;
+		std::cout << i_prefix << "	--use-nonlinear-only-visc [bool]	Use only viscosity on nonlinear part" << std::endl;
+		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
+		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
+		std::cout << i_prefix << "" << std::endl;
 	}
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)

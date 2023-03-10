@@ -91,6 +91,14 @@ public:
 		setup(i_sphereDataConfig);
 	}
 
+public:
+	SphereData_Spectral(
+			const SphereData_Config &i_sphereDataConfig
+	)	:
+		SphereData_Spectral(&i_sphereDataConfig)
+	{
+	}
+
 
 #if 0
 public:

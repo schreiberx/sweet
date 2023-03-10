@@ -17,6 +17,8 @@ class ShackPDESWESphere	:
 		public sweet::ShackInterface
 {
 public:
+
+
 	/**
 	 * Average height
 	 */
@@ -56,8 +58,22 @@ public:
 
 	double sphere_fsphere_f0 = 0.00007292*2; //Sphere
 
+
+	/*
+	 * Do a normal mode analysis, see
+	 * Hillary Weller, John Thuburn, Collin J. Cotter,
+	 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
+	 */
+	int normal_mode_analysis_generation = 0;
+
+	/*
+	 * Compute errors compared to analytical solution
+	 */
+	bool compute_errors = false;
+
 	void printShack(const std::string& i_prefix = "")
 	{
+		std::cout << i_prefix << "PDESWESphere parameters:" << std::endl;
 		std::cout << i_prefix << " + h0: " << h0 << std::endl;
 		std::cout << i_prefix << " + viscosity: " << viscosity << std::endl;
 		std::cout << i_prefix << " + viscosity_order: " << viscosity_order << std::endl;
@@ -65,6 +81,7 @@ public:
 		std::cout << i_prefix << " + sphere_rotating_coriolis_omega: " << sphere_rotating_coriolis_omega << std::endl;
 		std::cout << i_prefix << " + sphere_use_fsphere: " << sphere_use_fsphere << std::endl;
 		std::cout << i_prefix << " + sphere_fsphere_f0: " << sphere_fsphere_f0 << std::endl;
+		std::cout << i_prefix << " + compute_errors: " << compute_errors << std::endl;
 	}
 
 
@@ -74,6 +91,8 @@ public:
 		std::cout << i_prefix << "	-u [visc]	Viscosity, , default=0" << std::endl;
 		std::cout << i_prefix << "	-U [visc]	Viscosity order, default=2" << std::endl;
 		std::cout << i_prefix << "	-g [float]	Gravitation" << std::endl;
+		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
+		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
 	}
 
 
@@ -87,6 +106,9 @@ public:
 
 		if (i_pa.getArgumentValueByKey("-f", sphere_rotating_coriolis_omega))
 			sphere_fsphere_f0 = sphere_rotating_coriolis_omega;
+
+		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
+		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
 

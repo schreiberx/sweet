@@ -177,3 +177,9 @@ void PDESWESphereBenchmarksCombined::printAvailableBenchmarks(
 	o_ostream << "********************************************************************************" << std::endl;
 
 }
+
+
+PDESWESphereBenchmarksCombined::~PDESWESphereBenchmarksCombined()
+{
+	clear();
+}

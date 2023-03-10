@@ -5,8 +5,7 @@
 #include "PDESWESphereTS_lg_exp_lc_n_etd_uv.hpp"
 
 
-bool PDESWESphereTS_lg_exp_lc_n_etd_uv::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_lg_exp_lc_n_etd_uv::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
 
@@ -546,6 +545,10 @@ void PDESWESphereTS_lg_exp_lc_n_etd_uv::runTimestep(
 }
 
 
+
+PDESWESphereTS_lg_exp_lc_n_etd_uv::PDESWESphereTS_lg_exp_lc_n_etd_uv()
+{
+}
 
 PDESWESphereTS_lg_exp_lc_n_etd_uv::~PDESWESphereTS_lg_exp_lc_n_etd_uv()
 {

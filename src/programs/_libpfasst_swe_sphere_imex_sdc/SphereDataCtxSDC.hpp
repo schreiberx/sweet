@@ -92,12 +92,6 @@ public:
         return &(levelSingleton->benchmarks);
     }
 
-    // Getter for the sphere data configuration with no dealiasing
-    SphereData_Config* get_sphere_data_config_nodealiasing() const 
-    {
-        return &(levelSingleton->dataConfigNoDealiasing);
-    }
-
     // Getter for the sphere data operators
     SphereOperators* get_sphere_operators() const
     {

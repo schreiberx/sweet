@@ -30,14 +30,6 @@ public:
 
 	const SphereData_Config *sphereDataConfig;
 
-#if 0
-	// Coriolis effect in physical space
-	SphereData_Physical fg;
-
-	// Solely the rotational effect without anything else
-	SphereData_Physical mug;
-#endif
-
 private:
 	double r;		// radius
 	double r2;		// radius^2
@@ -58,7 +50,11 @@ public:
 
 public:
 	SphereOperators()	:
-		sphereDataConfig(nullptr)
+		sphereDataConfig(nullptr),
+		r(-1),
+		r2(-1),
+		ir(-1),
+		ir2(-1)
 	{
 	}
 
@@ -191,10 +187,10 @@ public:
 
 	void clear()
 	{
-#if 0
-		mug.clear();
-		fg.clear();
-#endif
+		if (sphereDataConfig == nullptr)
+			return;
+
+		sphereDataConfig = nullptr;
 	}
 
 

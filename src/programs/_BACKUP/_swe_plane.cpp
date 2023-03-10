@@ -811,7 +811,7 @@ public:
 	};
 
 
-	void vis_get_vis_data_array(
+	void vis_getDataArray(
 			const PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive,

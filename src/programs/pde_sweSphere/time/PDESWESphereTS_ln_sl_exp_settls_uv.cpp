@@ -5,8 +5,7 @@
 #include "PDESWESphereTS_ln_sl_exp_settls_uv.hpp"
 
 
-bool PDESWESphereTS_ln_sl_exp_settls_uv::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_ln_sl_exp_settls_uv::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	/*
 	 * Should contain _exp and _settls as well as _uv to indicate vorticity-divergence formulation

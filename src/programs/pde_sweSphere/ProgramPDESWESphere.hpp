@@ -25,11 +25,6 @@
 #include "benchmarks/ShackPDESWESphereBenchmarks.hpp"
 #include "ShackPDESWESphere.hpp"
 
-// Benchmarks
-#include "PDESWESphereBenchmarksCombined.hpp"
-
-// Time steppers
-#include "PDESWESphereTimeSteppers.hpp"
 
 #if SWEET_GUI
 	#include <sweet/gui/VisSweet.hpp>
@@ -40,9 +35,19 @@
 #include <sweet/core/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
 #include <sweet/core/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
 
-#include <sweet/core/sphere/SphereData_DebugContainer.hpp>
+#include <sweet/core/StopwatchBox.hpp>
 
+// Benchmarks
+#include "PDESWESphereBenchmarksCombined.hpp"
 
+// Time steppers
+#include "PDESWESphereTimeSteppers.hpp"
+
+// Diagnostics
+#include "PDESWESphereDiagnostics.hpp"
+
+// Normal mode analysis
+#include "PDESWESphereNormalModeAnalysis.hpp"
 
 
 class ProgramPDESWESphere
@@ -56,7 +61,7 @@ public:
 	/*
 	 * Just a class to store simulation data all together
 	 */
-	class Data
+	class DataConfigOps
 	{
 	public:
 		sweet::ErrorBase error;
@@ -74,17 +79,16 @@ public:
 		sweet::SphereData_Spectral t0_prog_vrt;
 
 #if SWEET_GUI
-	sweet::PlaneData_Config planeDataConfig;
+		sweet::PlaneData_Config planeDataConfig;
 
-	// Data to visualize is stored to this variable
-	sweet::PlaneData_Physical vis_plane_data;
+		// Data to visualize is stored to this variable
+		sweet::PlaneData_Physical vis_plane_data;
 
-	// Which primitive to use for rendering
-	int vis_render_type_of_primitive_id = 1;
+		// Which primitive to use for rendering
+		int vis_render_type_of_primitive_id = 1;
 
-	// Which primitive to use for rendering
-	int vis_data_id = 0;
-
+		// Which primitive to use for rendering
+		int vis_data_id = 0;
 #endif
 
 
@@ -132,13 +136,13 @@ public:
 	};
 
 	// Simulation data
-	Data dataConfigOps;
+	DataConfigOps dataConfigOps;
 
 	// time integrators
 	PDESWESphereTimeSteppers timeSteppers;
 
 	// Handler to all benchmarks
-	PDESWESphereBenchmarksCombined benchmarksCombined;
+	PDESWESphereBenchmarksCombined sphereBenchmarks;
 
 	/*
 	 * Shack directory and shacks to work with
@@ -150,6 +154,16 @@ public:
 	ShackPDESWESphereTimeDiscretization *shackTimeDisc;
 	ShackPDESWESphereBenchmarks *shackBenchmarks;
 	ShackPDESWESphere *shackPDESWESphere;
+
+#if SWEET_MPI
+	int mpi_rank;
+#endif
+
+	// Diagnostics measures
+	int timestep_nr_last_update_diagnostics = -1;
+	int timestep_nr_last_output_simtime = -1;
+
+	PDESWESphereDiagnostics diagnostics;
 
 
 
@@ -166,6 +180,10 @@ public:
 		shackBenchmarks(nullptr),
 		shackPDESWESphere(nullptr)
 	{
+#if SWEET_MPI
+		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
+
 		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
 	}
 
@@ -195,11 +213,11 @@ public:
 		/*
 		 * Setup benchmarks
 		 */
-		benchmarksCombined.setup_1_registerAllBenchmark();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
+		sphereBenchmarks.setup_1_registerAllBenchmark();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
 
-		benchmarksCombined.setup_2_shackRegistration(&shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
+		sphereBenchmarks.setup_2_shackRegistration(&shackProgArgDict);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
 
 
 		/*
@@ -233,7 +251,7 @@ public:
 		shackIOData = nullptr;
 		shackTimeDisc = nullptr;
 
-		benchmarksCombined.clear();
+		sphereBenchmarks.clear();
 		timeSteppers.clear();
 		shackProgArgDict.clear();
 	}
@@ -265,13 +283,13 @@ public:
 		/*
 		 * BENCHMARK: Detect particular benchmark to use
 		 */
-		benchmarksCombined.setup_3_benchmarkDetection();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
+		sphereBenchmarks.setup_3_benchmarkDetection();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
 
 		/*
 		 * Setup benchmark itself
 		 */
-		benchmarksCombined.setup_4_benchmarkSetup_1_withoutOps();
+		sphereBenchmarks.setup_4_benchmarkSetup_1_withoutOps();
 
 		/*
 		 * Setup the data fields
@@ -282,7 +300,7 @@ public:
 		/*
 		 * Setup benchmark itself
 		 */
-		benchmarksCombined.setup_5_benchmarkSetup_2_withOps(&dataConfigOps.ops);
+		sphereBenchmarks.setup_5_benchmarkSetup_2_withOps(&dataConfigOps.ops);
 
 		/*
 		 * Now we're ready to setup the time steppers
@@ -298,13 +316,13 @@ public:
 		/*
 		 * Load initial state of benchmark
 		 */
-		benchmarksCombined.benchmark->getInitialState(
+		sphereBenchmarks.benchmark->getInitialState(
 				dataConfigOps.prog_phi_pert,
 				dataConfigOps.prog_vrt,
 				dataConfigOps.prog_div
 			);
 
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarksCombined);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
 
 
 		/*
@@ -342,6 +360,8 @@ public:
 
 	bool setup()
 	{
+		StopwatchBox::getInstance().main_setup.start();
+
 		if (!setup_1_shackRegistration())
 			return false;
 
@@ -352,9 +372,22 @@ public:
 			return false;
 
 		std::cout << "Printing shack information:" << std::endl;
-		shackProgArgDict.printShackData();
+#if SWEET_MPI
+		if (mpi_rank == 0)
+#endif
+		{
+			shackProgArgDict.printShackData();
+		}
 
 		std::cout << "SETUP FINISHED" << std::endl;
+
+		StopwatchBox::getInstance().main_setup.stop();
+
+		/*
+		 * Output data for the first time step as well if output of datafiels is requested
+		 */
+		if (shackIOData->output_each_sim_seconds >= 0)
+			timestep_do_output();
 		return true;
 	}
 	void clear()
@@ -394,8 +427,6 @@ public:
 
 	bool runTimestep()
 	{
-		sweet::SphereData_DebugContainer::clear();
-
 		shackTimestepControl->timestepHelperStart();
 
 
@@ -437,241 +468,25 @@ public:
 		return shackTimestepControl->isFinalTimestepReached();
 	}
 
-};
-
-
-
-
-
-
-
-////////////////////////////////////////////////
-#ifndef SWEET_GUI
-	#define SWEET_GUI 1
-#endif
-
-
-#include <stdexcept>
-
-#if SWEET_GUI
-	#include <sweet/gui/VisSweet.hpp>
-	#include <sweet/core/plane/PlaneData_Config.hpp>
-	#include <sweet/core/plane/PlaneData_Physical.hpp>
-	#include <sweet/core/Convert_SphereDataSpectral_To_PlaneDataPhysical.hpp>
-	#include <sweet/core/Convert_SphereDataPhysical_To_PlaneDataPhysical.hpp>
-#endif
-
-#include "PDESWESphereBenchmarksCombined.hpp"
-
-#include <sweet/core/sphere/SphereData_Spectral.hpp>
-#include <sweet/core/sphere/SphereData_Physical.hpp>
-#include <sweet/core/sphere/SphereHelpers_Diagnostics.hpp>
-#include <sweet/core/sphere/SphereOperators.hpp>
-#include <sweet/core/sphere/SphereOperatorsComplex.hpp>
-#include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
-
-#include <sweet/core/Stopwatch.hpp>
-#include <sweet/core/SWEETError.hpp>
-
-#include "PDESWESphereTimeSteppers.hpp"
-#include "PDESWESphereNormalModeAnalysis.hpp"
-
-#include <sweet/core/StopwatchBox.hpp>
-#include <sweet/core/sphere/SphereData_DebugContainer.hpp>
-
-#if SWEET_PARAREAL
-	#include <sweet/parareal/Parareal.hpp>
-#endif
-
-#if SWEET_XBRAID
-	#include <sweet/xbraid/XBraid_sweet_lib.hpp>
-#endif
-
-sweet::ShackDictionary shackDict;
-
-// Plane data config
-sweet::SphereData_Config sphereDataConfigInstance;
-sweet::SphereData_Config sphereDataConfigInstance_nodealiasing;
-sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
-sweet::SphereData_Config *sphereDataConfig_nodealiasing = &sphereDataConfigInstance_nodealiasing;
-
-
-#if SWEET_GUI
-	sweet::PlaneData_Config planeDataConfigInstance;
-	sweet::PlaneData_Config *planeDataConfig = &planeDataConfigInstance;
-#endif
-
-
-
-/*
- * This allows running REXI including Coriolis-related terms but just by setting f to 0
- */
-
-
-class ProgramPDESWESphereXXX
-{
-public:
-	sweet::SphereOperators op;
-	sweet::SphereOperators op_nodealiasing;
-
-	PDESWESphereTimeSteppers timeSteppers;
-
-#if SWEET_PARAREAL
-	// Implementation of different time steppers
-	PDESWESphereTimeSteppers timeSteppersCoarse;
-#endif
-
-
-	// Diagnostics measures
-	int last_timestep_nr_update_diagnostics = -1;
-
-	sweet::SphereData_Spectral prog_phi_pert;
-	sweet::SphereData_Spectral prog_vrt;
-	sweet::SphereData_Spectral prog_div;
-
-	Stopwatch stopwatch;
-
-#if SWEET_GUI
-	sweet::PlaneData_Physical viz_plane_data;
-#endif
-
-	int render_primitive_id = 1;
-
-	sweet::SphereHelpers_Diagnostics sphereDiagnostics;
-
-#if SWEET_MPI
-	int mpi_rank;
-#endif
-
-	// was the output of the time step already done for this simulation state?
-	double timestep_last_output_simtime;
-
-	PDESWESphereBenchmarksCombined sphereBenchmarks;
-
-public:
-	ProgramPDESWESphere]()	:
-		op(sphereDataConfig, &(shackDict.sim)),
-		op_nodealiasing(sphereDataConfig_nodealiasing, &(shackDict.sim)),
-		prog_phi_pert(sphereDataConfig),
-		prog_vrt(sphereDataConfig),
-		prog_div(sphereDataConfig),
-
-#if SWEET_GUI
-		viz_plane_data(planeDataConfig),
-#endif
-		sphereDiagnostics(
-				sphereDataConfig,
-				shackDict,
-				shackDict.misc.verbosity
-		)
-
-	{
-#if SWEET_MPI
-		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-#endif
-
-
-		reset();
-
-	}
-
 
 
 	void update_diagnostics()
 	{
 		// assure, that the diagnostics are only updated for new time steps
-		if (last_timestep_nr_update_diagnostics == shackDict.timecontrol.current_timestep_nr)
+		if (timestep_nr_last_update_diagnostics == shackTimestepControl->current_timestep_nr)
 			return;
 
-		sphereDiagnostics.update_phi_vrt_div_2_mass_energy_enstrophy(
-				op,
-				prog_phi_pert,
-				prog_vrt,
-				prog_div,
-				shackDict
+		diagnostics.update_phi_vrt_div_2_mass_energy_enstrophy(
+				&dataConfigOps.ops,
+				dataConfigOps.prog_phi_pert,
+				dataConfigOps.prog_vrt,
+				dataConfigOps.prog_div,
+
+				shackSphereDataOps->sphere_radius,
+				shackPDESWESphere->gravitation
 		);
-	}
 
-
-
-	void reset()
-	{
-		StopwatchBox::getInstance().main_setup.start();
-
-		shackDict.reset();
-		shackDict.iodata.output_time_scale = 1.0/(60.0*60.0);
-
-		// Diagnostics measures
-		last_timestep_nr_update_diagnostics = -1;
-
-		shackDict.iodata.output_next_sim_seconds = 0;
-
-		if (shackDict.timecontrol.current_timestep_size <= 0)
-			SWEETError("Only fixed time step size supported");
-
-		if (shackDict.benchmark.setup_dealiased)
-		{
-			//std::cout << "A" << std::endl;
-			//std::cout << sphereDataConfig->getConfigInformationString() << std::endl;
-			//exit(1);
-			// use dealiased physical space for setup
-			sphereBenchmarks.setup(shackDict, op);
-			sphereBenchmarks.timestepper->getInitialState(prog_phi_pert, prog_vrt, prog_div);
-		}
-		else
-		{
-			//std::cout << "B" << std::endl;
-			//std::cout << sphereDataConfig_nodealiasing->getConfigInformationString() << std::endl;
-			//exit(1);
-			// this is not the default since noone uses it
-			// use reduced physical space for setup to avoid spurious modes
-			sweet::SphereData_Spectral prog_phi_pert_nodealiasing(sphereDataConfig_nodealiasing);
-			sweet::SphereData_Spectral prog_vrt_nodealiasing(sphereDataConfig_nodealiasing);
-			sweet::SphereData_Spectral prog_div_nodealiasing(sphereDataConfig_nodealiasing);
-
-			sphereBenchmarks.setup(shackDict, op_nodealiasing);
-			sphereBenchmarks.timestepper->getInitialState(prog_phi_pert_nodealiasing, prog_vrt_nodealiasing, prog_div_nodealiasing);
-
-			prog_phi_pert.load_nodealiasing(prog_phi_pert_nodealiasing);
-			prog_vrt.load_nodealiasing(prog_vrt_nodealiasing);
-			prog_div.load_nodealiasing(prog_div_nodealiasing);
-		}
-
-		/*
-		 * SETUP time steppers
-		 */
-		timeSteppers.setup(shackDict.disc.timestepping_method,
-				op, shackDict);
-
-		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.timestepper->string_id() << std::endl;
-
-		update_diagnostics();
-
-		shackDict.diag.backup_reference();
-
-		StopwatchBox::getInstance().main_setup.stop();
-
-		// start at one second in the past to ensure output at t=0
-		timestep_last_output_simtime = shackDict.timecontrol.current_simulation_time-1.0;
-
-		/*
-		 * Output configuration here to ensure that updated variables are included in this output
-		 */
-#if SWEET_MPI
-		if (mpi_rank == 0)
-#endif
-		{
-			shackDict.outputConfig();
-		}
-
-
-		/*
-		 * Output data for the first time step as well if output of datafiels is requested
-		 */
-		if (shackDict.iodata.output_each_sim_seconds >= 0)
-			timestep_do_output();
-
-		stopwatch.start();
+		timestep_nr_last_update_diagnostics = shackTimestepControl->current_timestep_nr;
 	}
 
 
@@ -693,12 +508,12 @@ public:
 
 		sprintf(buffer, filename_template_arg, i_name);
 		i_sphereData.spectrum_phase_file_write_line(buffer, 
-			i_name, shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale,
+			i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale,
 			20, 10e-20, reduce_mode_factor);
 
 		sprintf(buffer, filename_template_ampl, i_name);
 		i_sphereData.spectrum_abs_file_write_line(buffer, 
-			i_name, shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale,
+			i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale,
 			20, 10e-20, reduce_mode_factor);
 
 		return buffer;
@@ -719,8 +534,8 @@ public:
 		// create copy
 		sweet::SphereData_Physical sphereData = i_sphereData.toPhys();
 
-		const char* filename_template = shackDict.iodata.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale);
+		const char* filename_template = shackIOData->output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
 
 		if (i_phi_shifted)
 			sphereData.physical_file_write_lon_pi_shifted(buffer, "vorticity, lon pi shifted");
@@ -743,8 +558,8 @@ public:
 		char buffer[1024];
 
 		sweet::SphereData_Spectral sphereData(i_sphereData);
-		const char* filename_template = shackDict.iodata.output_file_name.c_str();
-		sprintf(buffer, filename_template, i_name, shackDict.timecontrol.current_simulation_time*shackDict.iodata.output_time_scale);
+		const char* filename_template = shackIOData->output_file_name.c_str();
+		sprintf(buffer, filename_template, i_name, shackTimestepControl->current_simulation_time*shackIOData->output_time_scale);
 		sphereData.file_write_binary_spectral(buffer);
 
 		return buffer;
@@ -760,37 +575,37 @@ public:
 			return;
 #endif
 
-		if (shackDict.iodata.output_file_name.length() == 0)
+		if (shackIOData->output_file_name.length() == 0)
 			return;
 
-		std::cout << "Writing output files at simulation time: " << shackDict.timecontrol.current_simulation_time << " secs" << std::endl;
+		std::cout << "Writing output files at simulation time: " << shackTimestepControl->current_simulation_time << " secs" << std::endl;
 
-		if (shackDict.iodata.output_file_mode == "csv")
+		if (shackIOData->output_file_mode == "csv")
 		{
 			std::string output_filename;
 
-			sweet::SphereData_Spectral h = prog_phi_pert*(1.0/shackDict.sim.gravitation);
-			h += shackDict.sim.h0;
+			sweet::SphereData_Spectral h = dataConfigOps.prog_phi_pert*(1.0/shackPDESWESphere->gravitation);
+			h += shackPDESWESphere->h0;
 
 			output_filename = write_file_csv(h, "prog_h");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << " (min: " << h.toPhys().physical_reduce_min() << ", max: " << h.toPhys().physical_reduce_max() << ")" << std::endl;
 
-			output_filename = write_file_csv(prog_phi_pert, "prog_phi_pert");
+			output_filename = write_file_csv(dataConfigOps.prog_phi_pert, "prog_phi_pert");
 			output_reference_filenames = output_filename;
-			std::cout << " + " << output_filename << " (min: " << prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
+			std::cout << " + " << output_filename << " (min: " << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min() << ", max: " << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max() << ")" << std::endl;
 
-			sweet::SphereData_Physical phi_phys = h.toPhys() * shackDict.sim.gravitation;
-			sweet::SphereData_Spectral phi(sphereDataConfig);
+			sweet::SphereData_Physical phi_phys = h.toPhys() * shackPDESWESphere->gravitation;
+			sweet::SphereData_Spectral phi(dataConfigOps.sphereDataConfig);
 			phi.loadSphereDataPhysical(phi_phys);
 			output_filename = write_file_csv(phi, "prog_phi");
 			output_reference_filenames = output_filename;
 			std::cout << " + " << output_filename << " (min: " << phi_phys.physical_reduce_min() << ", max: " << phi_phys.physical_reduce_max() << ")" << std::endl;
 
-			sweet::SphereData_Physical u(sphereDataConfig);
-			sweet::SphereData_Physical v(sphereDataConfig);
+			sweet::SphereData_Physical u(dataConfigOps.sphereDataConfig);
+			sweet::SphereData_Physical v(dataConfigOps.sphereDataConfig);
 
-			op.vrtdiv_to_uv(prog_vrt, prog_div, u, v);
+			dataConfigOps.ops.vrtdiv_to_uv(dataConfigOps.prog_vrt, dataConfigOps.prog_div, u, v);
 
 			output_filename = write_file_csv(u, "prog_div");
 			output_reference_filenames += ";"+output_filename;
@@ -800,49 +615,49 @@ public:
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_csv(prog_vrt, "prog_vrt");
+			output_filename = write_file_csv(dataConfigOps.prog_vrt, "prog_vrt");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			output_filename = write_file_csv(prog_div, "prog_div");
+			output_filename = write_file_csv(dataConfigOps.prog_div, "prog_div");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 
-			sweet::SphereData_Spectral potvrt = (prog_phi_pert/shackDict.sim.gravitation)*prog_vrt;
+			sweet::SphereData_Spectral potvrt = (dataConfigOps.prog_phi_pert/shackPDESWESphere->gravitation)*dataConfigOps.prog_vrt;
 
 			output_filename = write_file_csv(potvrt, "prog_potvrt");
 			output_reference_filenames += ";"+output_filename;
 			std::cout << " + " << output_filename << std::endl;
 		}
-		else if (shackDict.iodata.output_file_mode == "bin")
+		else if (shackIOData->output_file_mode == "bin")
 		{
 			std::string output_filename;
 
 			{
-				output_filename = write_file_bin(prog_phi_pert, "prog_phi_pert");
+				output_filename = write_file_bin(dataConfigOps.prog_phi_pert, "prog_phi_pert");
 				output_reference_filenames = output_filename;
-				sweet::SphereData_Physical prog_phys = prog_phi_pert.toPhys();
+				sweet::SphereData_Physical prog_phys = dataConfigOps.prog_phi_pert.toPhys();
 
 				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 			}
 
 			{
-				output_filename = write_file_bin(prog_vrt, "prog_vrt");
+				output_filename = write_file_bin(dataConfigOps.prog_vrt, "prog_vrt");
 				output_reference_filenames += ";"+output_filename;
-				sweet::SphereData_Physical prog_phys = prog_vrt.toPhys();
+				sweet::SphereData_Physical prog_phys = dataConfigOps.prog_vrt.toPhys();
 
 				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 			}
 
 			{
-				output_filename = write_file_bin(prog_div, "prog_div");
+				output_filename = write_file_bin(dataConfigOps.prog_div, "prog_div");
 				output_reference_filenames += ";"+output_filename;
-				sweet::SphereData_Physical prog_phys = prog_div.toPhys();
+				sweet::SphereData_Physical prog_phys = dataConfigOps.prog_div.toPhys();
 
 				std::cout << " + " << output_filename << " (min: " << prog_phys.physical_reduce_min() << ", max: " << prog_phys.physical_reduce_max() << ")" << std::endl;
 			}
 		}
-		else if (shackDict.iodata.output_file_mode == "csv_spec_evol"){
+		else if (shackIOData->output_file_mode == "csv_spec_evol"){
 
 			std::string output_filename;
 
@@ -857,8 +672,8 @@ public:
 				// KE per mode = a^2/((n(n+1)))*(vrt*conj(vrt))+a^2/((n(n+1)))*(div*conj(div))
 				// r = a/(sqrt(n(n+1))) (root_laplace)
 				// KE per mode = (r*vrt*conj(r*vrt))+(r*div*conj(r*div))
-				sweet::SphereData_Spectral rlap_vrt = op.inv_root_laplace(prog_vrt); 
-				sweet::SphereData_Spectral rlap_div = op.inv_root_laplace(prog_div); 
+				sweet::SphereData_Spectral rlap_vrt = dataConfigOps.ops.inv_root_laplace(dataConfigOps.prog_vrt);
+				sweet::SphereData_Spectral rlap_div = dataConfigOps.ops.inv_root_laplace(dataConfigOps.prog_div);
 				sweet::SphereData_Spectral kin_en = rlap_vrt + rlap_div ;
 
 				output_filename = write_file_csv_spec_evol(kin_en, "kin_en"); 
@@ -876,14 +691,14 @@ public:
 				// See Schubert Shallow Water Quasi-Geostrophic Theory on the Sphere (2009) for eps=0
 				// enstrophy per mode is 0.5 vrt*conj(vrt) in spectral space
 				// Total enstrophy is the sum of these (counting twice modes with m>0 and once when m=0)
-				output_filename = write_file_csv_spec_evol(prog_vrt, "enstrophy"); 
-				std::cout << " + " << output_filename << " (Total Enstrophy : " << prog_vrt.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
+				output_filename = write_file_csv_spec_evol(dataConfigOps.prog_vrt, "enstrophy");
+				std::cout << " + " << output_filename << " (Total Enstrophy : " << dataConfigOps.prog_vrt.spectral_reduce_sum_sqr_quad() << ")" << std::endl;
 
 			}
 		}
 		else
 		{
-			SWEETError("Unknown output file mode '"+shackDict.iodata.output_file_mode+"'");
+			SWEETError("Unknown output file mode '"+shackIOData->output_file_mode+"'");
 		}
 	}
 
@@ -891,46 +706,45 @@ public:
 
 	void timestep_do_output()
 	{
-		if (shackDict.misc.compute_errors)
+		if (shackPDESWESphere->compute_errors)
 		{
 			/*
 			 * Check for stationary solutions
 			 */
 			if (
-					shackDict.benchmark.benchmark_name != "williamson2"					&&
-					shackDict.benchmark.benchmark_name != "williamson2_linear"			&&
-					shackDict.benchmark.benchmark_name != "galewsky_nobump"			&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance"			&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_linear"	&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_1"			&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_2"			&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_4"			&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_8"			&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_16"		&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_32"		&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_64"		&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_128"		&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_256"		&&
-					shackDict.benchmark.benchmark_name != "geostrophic_balance_512"
+					shackBenchmarks->benchmark_name != "williamson2"					&&
+					shackBenchmarks->benchmark_name != "williamson2_linear"			&&
+					shackBenchmarks->benchmark_name != "galewsky_nobump"			&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance"			&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_linear"	&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_1"			&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_2"			&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_4"			&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_8"			&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_16"		&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_32"		&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_64"		&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_128"		&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_256"		&&
+					shackBenchmarks->benchmark_name != "geostrophic_balance_512"
 			)
 			{
-				std::cout << "Benchmark name: " << shackDict.benchmark.benchmark_name << std::endl;
+				std::cout << "Benchmark name: " << shackBenchmarks->benchmark_name << std::endl;
 				SWEETError("Analytical solution not available for this benchmark");
 			}
 
-			sweet::SphereData_Spectral anal_solution_phi_pert(sphereDataConfig);
-			sweet::SphereData_Spectral anal_solution_vrt(sphereDataConfig);
-			sweet::SphereData_Spectral anal_solution_div(sphereDataConfig);
+			sweet::SphereData_Spectral anal_solution_phi_pert(dataConfigOps.sphereDataConfig);
+			sweet::SphereData_Spectral anal_solution_vrt(dataConfigOps.sphereDataConfig);
+			sweet::SphereData_Spectral anal_solution_div(dataConfigOps.sphereDataConfig);
 
-			sphereBenchmarks.setup(shackDict, op);
-			sphereBenchmarks.timestepper->getInitialState(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
+			sphereBenchmarks.benchmark->getInitialState(anal_solution_phi_pert, anal_solution_vrt, anal_solution_div);
 
 			/*
 			 * Compute difference
 			 */
-			sweet::SphereData_Spectral diff_phi = prog_phi_pert - anal_solution_phi_pert;
-			sweet::SphereData_Spectral diff_vrt = prog_vrt - anal_solution_vrt;
-			sweet::SphereData_Spectral diff_div = prog_div - anal_solution_div;
+			sweet::SphereData_Spectral diff_phi = dataConfigOps.prog_phi_pert - anal_solution_phi_pert;
+			sweet::SphereData_Spectral diff_vrt = dataConfigOps.prog_vrt - anal_solution_vrt;
+			sweet::SphereData_Spectral diff_div = dataConfigOps.prog_div - anal_solution_div;
 
 #if SWEET_MPI
 			if (mpi_rank == 0)
@@ -943,10 +757,10 @@ public:
 				
 				std::ios init(NULL);
 				init.copyfmt(std::cout);
-				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << shackDict.timecontrol.current_timestep_nr << ": ";
+				std::cout << "[MULE] errors." << std::setw(8) << std::setfill('0') << shackTimestepControl->current_timestep_nr << ": ";
 				std::cout.copyfmt(init);
 
-				std::cout << "simtime=" << shackDict.timecontrol.current_simulation_time;
+				std::cout << "simtime=" << shackTimestepControl->current_simulation_time;
 				std::cout << "\terror_linf_phi=" << error_phi;
 				std::cout << "\terror_linf_vrt=" << error_vrt;
 				std::cout << "\terror_linf_div=" << error_div;
@@ -958,7 +772,7 @@ public:
 
 		update_diagnostics();
 
-		if (shackDict.misc.verbosity > 1)
+		if (shackIOData->verbosity > 1)
 		{
 
 #if SWEET_MPI
@@ -968,44 +782,44 @@ public:
 				update_diagnostics();
 
 				// Print header
-				if (shackDict.timecontrol.current_timestep_nr == 0)
+				if (shackTimestepControl->current_timestep_nr == 0)
 				{
 					std::cout << "T\tTOTAL_MASS\tPOT_ENERGY\tKIN_ENERGY\tTOT_ENERGY\tPOT_ENSTROPHY\tREL_TOTAL_MASS\tREL_POT_ENERGY\tREL_KIN_ENERGY\tREL_TOT_ENERGY\tREL_POT_ENSTROPHY";
 					std::cout << std::endl;
 				}
 
 				// Print simulation time, energy and pot enstrophy
-				std::cout << shackDict.timecontrol.current_simulation_time << "\t";
-				std::cout << shackDict.diag.total_mass << "\t";
-				std::cout << shackDict.diag.potential_energy << "\t";
-				std::cout << shackDict.diag.kinetic_energy << "\t";
-				std::cout << shackDict.diag.total_energy << "\t";
-				std::cout << shackDict.diag.total_potential_enstrophy << "\t";
+				std::cout << shackTimestepControl->current_simulation_time << "\t";
+				std::cout << diagnostics.total_mass << "\t";
+				std::cout << diagnostics.potential_energy << "\t";
+				std::cout << diagnostics.kinetic_energy << "\t";
+				std::cout << diagnostics.total_energy << "\t";
+				std::cout << diagnostics.total_potential_enstrophy << "\t";
 
-				std::cout << (shackDict.diag.total_mass-shackDict.diag.ref_total_mass)/shackDict.diag.total_mass << "\t";
-				std::cout << (shackDict.diag.potential_energy-shackDict.diag.ref_potential_energy)/shackDict.diag.potential_energy << "\t";
-				std::cout << (shackDict.diag.kinetic_energy-shackDict.diag.ref_kinetic_energy)/shackDict.diag.kinetic_energy << "\t";
-				std::cout << (shackDict.diag.total_energy-shackDict.diag.total_energy)/shackDict.diag.total_energy << "\t";
-				std::cout << (shackDict.diag.total_potential_enstrophy-shackDict.diag.total_potential_enstrophy)/shackDict.diag.total_potential_enstrophy << std::endl;
+				std::cout << (diagnostics.total_mass-diagnostics.ref_total_mass)/diagnostics.total_mass << "\t";
+				std::cout << (diagnostics.potential_energy-diagnostics.ref_potential_energy)/diagnostics.potential_energy << "\t";
+				std::cout << (diagnostics.kinetic_energy-diagnostics.ref_kinetic_energy)/diagnostics.kinetic_energy << "\t";
+				std::cout << (diagnostics.total_energy-diagnostics.total_energy)/diagnostics.total_energy << "\t";
+				std::cout << (diagnostics.total_potential_enstrophy-diagnostics.total_potential_enstrophy)/diagnostics.total_potential_enstrophy << std::endl;
 
 				static double start_tot_energy = -1;
 				if (start_tot_energy == -1)
-					start_tot_energy = shackDict.diag.total_energy;
+					start_tot_energy = diagnostics.total_energy;
 			}
 		}
 
 
-		if (shackDict.misc.verbosity > 0)
+		if (shackIOData->verbosity > 0)
 		{
 #if SWEET_MPI
 			if (mpi_rank == 0)
 #endif
-				std::cout << "prog_phi min/max:\t" << prog_phi_pert.toPhys().physical_reduce_min() << ", " << prog_phi_pert.toPhys().physical_reduce_max() << std::endl;
+				std::cout << "prog_phi min/max:\t" << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_min() << ", " << dataConfigOps.prog_phi_pert.toPhys().physical_reduce_max() << std::endl;
 		}
 
-		if (shackDict.iodata.output_each_sim_seconds > 0)
-			while (shackDict.iodata.output_next_sim_seconds <= shackDict.timecontrol.current_simulation_time)
-				shackDict.iodata.output_next_sim_seconds += shackDict.iodata.output_each_sim_seconds;
+		if (shackIOData->output_each_sim_seconds > 0)
+			while (shackIOData->output_next_sim_seconds <= shackTimestepControl->current_simulation_time)
+				shackIOData->output_next_sim_seconds += shackIOData->output_each_sim_seconds;
 	}
 
 
@@ -1018,27 +832,31 @@ public:
 		if (mpi_rank > 0)
 			return false;
 #endif
-		if (shackDict.misc.gui_enabled)
-			update_diagnostics();
 
-		if (shackDict.misc.verbosity > 0)
+#if 0
+		if (shackPDEDict.misc.gui_enabled)
+			update_diagnostics();
+#endif
+
+
+		if (shackIOData->verbosity > 0)
 			std::cout << "." << std::flush;
 
-		if (shackDict.iodata.output_each_sim_seconds < 0)
+		if (shackIOData->output_each_sim_seconds < 0)
 			return false;
 
-		if (shackDict.timecontrol.current_simulation_time == timestep_last_output_simtime)
+		if (shackTimestepControl->current_simulation_time == timestep_nr_last_output_simtime)
 			return false;
 
-		timestep_last_output_simtime = shackDict.timecontrol.current_simulation_time;
+		timestep_nr_last_output_simtime = shackTimestepControl->current_simulation_time;
 
-		if (shackDict.timecontrol.current_simulation_time < shackDict.timecontrol.max_simulation_time - shackDict.iodata.output_each_sim_seconds*1e-10)
+		if (shackTimestepControl->current_simulation_time < shackTimestepControl->max_simulation_time - shackIOData->output_each_sim_seconds*1e-10)
 		{
-			if (shackDict.iodata.output_next_sim_seconds > shackDict.timecontrol.current_simulation_time)
+			if (shackIOData->output_next_sim_seconds > shackTimestepControl->current_simulation_time)
 				return false;
 		}
 
-		if (shackDict.misc.verbosity > 0)
+		if (shackIOData->verbosity > 0)
 			std::cout << std::endl;
 
 		timestep_do_output();
@@ -1048,40 +866,9 @@ public:
 
 
 
-public:
-	bool should_quit()
-	{
-		if (shackDict.timecontrol.max_timesteps_nr != -1 && shackDict.timecontrol.max_timesteps_nr <= shackDict.timecontrol.current_timestep_nr)
-			return true;
-
-		if (shackDict.timecontrol.max_wallclock_time >= 0)
-		{
-			double t = stopwatch.getTimeSinceStart();
-			if (shackDict.timecontrol.max_wallclock_time <= t)
-			{
-				std::cout << "[MULE] max_wallclock_time: exceeded (" << t << ")" << std::endl;
-				return true;
-			}
-		}
-
-		double diff = std::abs(shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time);
-
-		if (	shackDict.timecontrol.max_simulation_time != -1 &&
-				(
-						shackDict.timecontrol.max_simulation_time <= shackDict.timecontrol.current_simulation_time	||
-						diff/shackDict.timecontrol.max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
-				)
-			)
-			return true;
-
-		return false;
-	}
-
-
-
 	bool detect_instability()
 	{
-		if (prog_phi_pert.spectral_is_first_nan_or_inf())
+		if (dataConfigOps.prog_phi_pert.spectral_is_first_nan_or_inf())
 		{
 			std::cout << "Infinity value detected" << std::endl;
 			std::cerr << "Infinity value detected" << std::endl;
@@ -1091,59 +878,20 @@ public:
 		return false;
 	}
 
-
-
-	void runTimestep()
-	{
-#if SWEET_GUI
-		if (shackDict.misc.gui_enabled && shackDict.misc.normal_mode_analysis_generation == 0)
-			timestep_check_output();
-#endif
-
-		if (shackDict.timecontrol.current_simulation_time + shackDict.timecontrol.current_timestep_size > shackDict.timecontrol.max_simulation_time)
-			shackDict.timecontrol.current_timestep_size = shackDict.timecontrol.max_simulation_time - shackDict.timecontrol.current_simulation_time;
-
-		timeSteppers.timestepper->runTimestep(
-				prog_phi_pert, prog_vrt, prog_div,
-				shackDict.timecontrol.current_timestep_size,
-				shackDict.timecontrol.current_simulation_time
-			);
-
-
-
-		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
-
-		if (shackDict.sim.viscosity != 0 && shackDict.misc.use_nonlinear_only_visc == 0)
-		{
-			///prog_vrt = op.implicit_diffusion(prog_vrt, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.sphere_radius);
-			///prog_div = op.implicit_diffusion(prog_div, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.sphere_radius);
-			///prog_phi_pert = op.implicit_diffusion(prog_phi_pert, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.sphere_radius);
-			prog_vrt = op.implicit_hyperdiffusion(prog_vrt, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.viscosity_order, shackDict.sim.sphere_radius);
-			prog_div = op.implicit_hyperdiffusion(prog_div, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.viscosity_order, shackDict.sim.sphere_radius);
-			prog_phi_pert = op.implicit_hyperdiffusion(prog_phi_pert, shackDict.timecontrol.current_timestep_size*shackDict.sim.viscosity, shackDict.sim.viscosity_order, shackDict.sim.sphere_radius);
-		}
-
-
-		// advance time step and provide information to parameters
-		shackDict.timecontrol.current_simulation_time += shackDict.timecontrol.current_timestep_size;
-		shackDict.timecontrol.current_timestep_nr++;
-
-#if SWEET_GUI
-		timestep_check_output();
-#endif
-	}
-
-
-
 	void normalmode_analysis()
 	{
 		NormalModeAnalysisSphere::normal_mode_analysis(
-				prog_phi_pert,
-				prog_vrt,
-				prog_div,
-				shackDict,
+				dataConfigOps.prog_phi_pert,
+				dataConfigOps.prog_vrt,
+				dataConfigOps.prog_div,
+
+				shackIOData,
+				shackTimestepControl,
+
+				shackPDESWESphere->normal_mode_analysis_generation,
+
 				this,
-				&ProgramPDESWESphere]::run_timestep
+				&ProgramPDESWESphere::runTimestep
 			);
 	}
 
@@ -1158,7 +906,7 @@ public:
 			int i_num_iterations
 	)
 	{
-		if (shackDict.timecontrol.run_simulation_timesteps)
+		if (shackTimestepControl->run_simulation_timesteps)
 			for (int i = 0; i < i_num_iterations && !should_quit(); i++)
 				runTimestep();
 	}
@@ -1167,7 +915,7 @@ public:
 	int max_viz_types = 9;
 
 
-	void vis_get_vis_data_array(
+	void vis_getDataArray(
 			const sweet::PlaneData_Physical **o_dataArray,
 			double *o_aspect_ratio,
 			int *o_render_primitive_id,
@@ -1217,7 +965,7 @@ public:
 				break;
 
 			case 3:
-				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(shackDict.sim.h0 + sweet::SphereData_Spectral(prog_phi_pert)/shackDict.sim.gravitation, planeDataConfig);
+				viz_plane_data = Convert_SphereDataSpectral_To_PlaneDataPhysical::physical_convert(shackPDESWESphere->h0 + sweet::SphereData_Spectral(prog_phi_pert)/shackPDESWESphere->gravitation, planeDataConfig);
 				break;
 
 			case 4:
@@ -1385,15 +1133,15 @@ public:
 				viz_plane_data.physical_reduce_max(),
 				viz_plane_data.physical_reduce_min(),
 
-				shackDict.timecontrol.current_simulation_time,
-				shackDict.timecontrol.current_simulation_time/(60.0*60.0),
-				shackDict.timecontrol.current_simulation_time/(60.0*60.0*24.0),
-				shackDict.timecontrol.current_timestep_nr,
-				shackDict.timecontrol.current_timestep_size,
+				shackTimestepControl->current_simulation_time,
+				shackTimestepControl->current_simulation_time/(60.0*60.0),
+				shackTimestepControl->current_simulation_time/(60.0*60.0*24.0),
+				shackTimestepControl->current_timestep_nr,
+				shackTimestepControl->current_timestep_size,
 
-				shackDict.diag.total_mass,
-				shackDict.diag.total_energy,
-				shackDict.diag.total_potential_enstrophy
+				diagnostics.total_mass,
+				diagnostics.total_energy,
+				diagnostics.total_potential_enstrophy
 
 		);
 
@@ -1404,7 +1152,7 @@ public:
 
 	void vis_pause()
 	{
-		shackDict.timecontrol.run_simulation_timesteps = !shackDict.timecontrol.run_simulation_timesteps;
+		shackTimestepControl->run_simulation_timesteps = !shackTimestepControl->run_simulation_timesteps;
 	}
 
 
@@ -1431,10 +1179,165 @@ public:
 		}
 	}
 #endif
-
-
 };
 
+
+
+
+
+#if 0
+
+////////////////////////////////////////////////
+
+/*
+ * This allows running REXI including Coriolis-related terms but just by setting f to 0
+ */
+
+
+class ProgramPDESWESphereXXX
+{
+public:
+	sweet::SphereOperators op;
+	sweet::SphereOperators op_nodealiasing;
+
+	PDESWESphereTimeSteppers timeSteppers;
+
+	sweet::SphereData_Spectral prog_phi_pert;
+	sweet::SphereData_Spectral prog_vrt;
+	sweet::SphereData_Spectral prog_div;
+
+#if SWEET_GUI
+	sweet::PlaneData_Physical viz_plane_data;
+#endif
+
+	int render_primitive_id = 1;
+
+	// was the output of the time step already done for this simulation state?
+	double timestep_nr_last_output_simtime;
+
+
+	void reset()
+	{
+		StopwatchBox::getInstance().main_setup.start();
+
+		shackDict.reset();
+		shackIOData->output_time_scale = 1.0/(60.0*60.0);
+
+		// Diagnostics measures
+		timestep_nr_last_update_diagnostics = -1;
+
+		shackIOData->output_next_sim_seconds = 0;
+
+		if (shackTimestepControl->current_timestep_size <= 0)
+			SWEETError("Only fixed time step size supported");
+
+		// use dealiased physical space for setup
+		sphereBenchmarks.setup(shackDict, op);
+		sphereBenchmarks.timestepper->getInitialState(prog_phi_pert, prog_vrt, prog_div);
+
+		/*
+		 * SETUP time steppers
+		 */
+		timeSteppers.setup(shackDict.disc.timestepping_method,
+				op, shackDict);
+
+		std::cout << "[MULE] timestepper_string_id: " << timeSteppers.timestepper->string_id() << std::endl;
+
+		update_diagnostics();
+
+		diagnostics.backup_reference();
+
+		StopwatchBox::getInstance().main_setup.stop();
+
+		// start at one second in the past to ensure output at t=0
+		timestep_nr_last_output_simtime = shackTimestepControl->current_simulation_time-1.0;
+
+		/*
+		 * Output configuration here to ensure that updated variables are included in this output
+		 */
+#if SWEET_MPI
+		if (mpi_rank == 0)
+#endif
+		{
+			shackDict.outputConfig();
+		}
+
+
+		/*
+		 * Output data for the first time step as well if output of datafiels is requested
+		 */
+		if (shackIOData->output_each_sim_seconds >= 0)
+			timestep_do_output();
+	}
+
+
+
+public:
+	bool should_quit()
+	{
+		if (shackTimestepControl->max_timesteps_nr != -1 && shackTimestepControl->max_timesteps_nr <= shackTimestepControl->current_timestep_nr)
+			return true;
+
+		double diff = std::abs(shackTimestepControl->max_simulation_time - shackTimestepControl->current_simulation_time);
+
+		if (	shackTimestepControl->max_simulation_time != -1 &&
+				(
+						shackTimestepControl->max_simulation_time <= shackTimestepControl->current_simulation_time	||
+						diff/shackTimestepControl->max_simulation_time < 1e-11	// avoid numerical issues in time stepping if current time step is 1e-14 smaller than max time step
+				)
+			)
+			return true;
+
+		return false;
+	}
+
+
+
+	void runTimestep()
+	{
+#if SWEET_GUI
+		if (shackDict.misc.gui_enabled && shackDict.misc.normal_mode_analysis_generation == 0)
+			timestep_check_output();
+#endif
+
+		if (shackTimestepControl->current_simulation_time + shackTimestepControl->current_timestep_size > shackTimestepControl->max_simulation_time)
+			shackTimestepControl->current_timestep_size = shackTimestepControl->max_simulation_time - shackTimestepControl->current_simulation_time;
+
+		timeSteppers.timestepper->runTimestep(
+				prog_phi_pert, prog_vrt, prog_div,
+				shackTimestepControl->current_timestep_size,
+				shackTimestepControl->current_simulation_time
+			);
+
+
+
+		// Apply viscosity at posteriori, for all methods explicit diffusion for non spectral schemes and implicit for spectral
+
+		if (shackPDESWESphere->viscosity != 0 && shackDict.misc.use_nonlinear_only_visc == 0)
+		{
+			///prog_vrt = op.implicit_diffusion(prog_vrt, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
+			///prog_div = op.implicit_diffusion(prog_div, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
+			///prog_phi_pert = op.implicit_diffusion(prog_phi_pert, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->sphere_radius);
+			prog_vrt = op.implicit_hyperdiffusion(prog_vrt, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
+			prog_div = op.implicit_hyperdiffusion(prog_div, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
+			prog_phi_pert = op.implicit_hyperdiffusion(prog_phi_pert, shackTimestepControl->current_timestep_size*shackPDESWESphere->viscosity, shackPDESWESphere->viscosity_order, shackPDESWESphere->sphere_radius);
+		}
+
+
+		// advance time step and provide information to parameters
+		shackTimestepControl->current_simulation_time += shackTimestepControl->current_timestep_size;
+		shackTimestepControl->current_timestep_nr++;
+
+#if SWEET_GUI
+		timestep_check_output();
+#endif
+	}
+};
+
+#endif
+
+
+#if 0
 
 int main_real(int i_argc, char *i_argv[])
 {
@@ -1482,14 +1385,14 @@ int main_real(int i_argc, char *i_argv[])
 		return -1;
 	}
 
-	if (shackDict.misc.verbosity > 3)
+	if (shackIOData->verbosity > 3)
 		std::cout << " + setup SH sphere transformations..." << std::endl;
 
 	sphereDataConfigInstance.setupAuto(
 			shackDict.disc.space_res_physical,
 			shackDict.disc.space_res_spectral,
 			shackDict.misc.reuse_spectral_transformation_plans,
-			shackDict.misc.verbosity,
+			shackIOData->verbosity,
 			shackDict.parallelization.num_threads_space
 		);
 
@@ -1498,20 +1401,20 @@ int main_real(int i_argc, char *i_argv[])
 			shackDict.disc.space_res_spectral[1]
 		};
 
-	if (shackDict.misc.verbosity > 3)
+	if (shackIOData->verbosity > 3)
 		std::cout << " + setup SH sphere transformations (nodealiasing)..." << std::endl;
 
 	sphereDataConfigInstance_nodealiasing.setupAuto(
 			res_physical_nodealias,
 			shackDict.disc.space_res_spectral,
 			shackDict.misc.reuse_spectral_transformation_plans,
-			shackDict.misc.verbosity,
+			shackIOData->verbosity,
 			shackDict.parallelization.num_threads_space
 		);
 
 
 #if SWEET_GUI
-	if (shackDict.misc.verbosity > 3)
+	if (shackIOData->verbosity > 3)
 		std::cout << " + setup FFT plane transformations..." << std::endl;
 
 	planeDataConfigInstance.setupAutoSpectralSpaceFromPhysical(shackDict.disc.space_res_physical, shackDict.misc.reuse_spectral_transformation_plans);
@@ -1520,7 +1423,7 @@ int main_real(int i_argc, char *i_argv[])
 	std::ostringstream buf;
 	buf << std::setprecision(14);
 
-	if (shackDict.misc.verbosity > 3)
+	if (shackIOData->verbosity > 3)
 		std::cout << " + setup finished" << std::endl;
 
 #if SWEET_MPI
@@ -1532,9 +1435,9 @@ int main_real(int i_argc, char *i_argv[])
 		/*
 		 * Deactivate all output for ranks larger than the current one
 		 */
-		shackDict.misc.verbosity = 0;
+		shackIOData->verbosity = 0;
 	#if !SWEET_XBRAID
-		shackDict.iodata.output_each_sim_seconds = -1;
+		shackIOData->output_each_sim_seconds = -1;
 	#endif
 	}
 #endif
@@ -1551,9 +1454,9 @@ int main_real(int i_argc, char *i_argv[])
 		if (shackDict.parareal.enabled)
 		{
 
-			shackDict.iodata.output_time_scale = 1.0/(60.0*60.0);
+			shackIOData->output_time_scale = 1.0/(60.0*60.0);
 
-			//SphereOperators op(sphereDataConfig, shackDict.sim.plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
+			//SphereOperators op(sphereDataConfig, shackPDESWESphere->plane_domain_size, shackDict.disc.space_use_spectral_basis_diffs);
 			sweet::SphereOperators op(sphereDataConfig, &(shackDict.sim));
 			sweet::SphereOperators op_nodealiasing(sphereDataConfig_nodealiasing, &(shackDict.sim));
 
@@ -1577,9 +1480,9 @@ int main_real(int i_argc, char *i_argv[])
 
 				double frac;
 				if ( shackDict.parareal.coarse_timestep_size > 0)
-					frac = shackDict.timecontrol.current_timestep_size / shackDict.parareal.coarse_timestep_size;
+					frac = shackTimestepControl->current_timestep_size / shackDict.parareal.coarse_timestep_size;
 				else
-					frac = shackDict.timecontrol.current_timestep_size / (shackDict.timecontrol.max_simulation_time / shackDict.parareal.coarse_slices );
+					frac = shackTimestepControl->current_timestep_size / (shackTimestepControl->max_simulation_time / shackDict.parareal.coarse_slices );
 				for (int j = 0; j < 2; j++)
 					N_spectral[j] = std::max(4, int(shackDict.disc.space_res_spectral[j] * frac));
 
@@ -1588,7 +1491,7 @@ int main_real(int i_argc, char *i_argv[])
 						N_physical,
 						N_spectral,
 						shackDict.misc.reuse_spectral_transformation_plans,
-						shackDict.misc.verbosity,
+						shackIOData->verbosity,
 						shackDict.parallelization.num_threads_space
 					);
 
@@ -1644,7 +1547,7 @@ int main_real(int i_argc, char *i_argv[])
 		if (shackDict.xbraid.xbraid_enabled)
 		{
 
-			shackDict.iodata.output_time_scale = 1.0/(60.0*60.0);
+			shackIOData->output_time_scale = 1.0/(60.0*60.0);
 
 			sweet::SphereOperators op(sphereDataConfig, &(shackDict.sim));
 
@@ -1678,7 +1581,7 @@ int main_real(int i_argc, char *i_argv[])
 							N_physical,
 							N_spectral,
 							shackDict.misc.reuse_spectral_transformation_plans,
-							shackDict.misc.verbosity,
+							shackIOData->verbosity,
 							shackDict.parallelization.num_threads_space
 						);
 
@@ -1703,11 +1606,11 @@ int main_real(int i_argc, char *i_argv[])
 
 			//////braid_Core core;
 			///sweet_App* app = (sweet_App *) malloc(sizeof(sweet_App))
-			int nt = (int) (shackDict.timecontrol.max_simulation_time / shackDict.timecontrol.current_timestep_size);
-                        if (nt * shackDict.timecontrol.current_timestep_size < shackDict.timecontrol.max_simulation_time - 1e-10)
+			int nt = (int) (shackTimestepControl->max_simulation_time / shackTimestepControl->current_timestep_size);
+                        if (nt * shackTimestepControl->current_timestep_size < shackTimestepControl->max_simulation_time - 1e-10)
 				nt++;
-			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, sphereDataConfig, &op);
-			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackDict.timecontrol.max_simulation_time, nt, &shackDict, sphereDataConfigs, ops);
+			///sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &shackDict, sphereDataConfig, &op);
+			sweet_BraidApp app(MPI_COMM_WORLD, mpi_rank, 0., shackTimestepControl->max_simulation_time, nt, &shackDict, sphereDataConfigs, ops);
 
 
 			if ( shackDict.xbraid.xbraid_run_wrapper_tests)
@@ -1715,7 +1618,7 @@ int main_real(int i_argc, char *i_argv[])
 				app.setup();
 
 				BraidUtil braid_util;
-				int test = braid_util.TestAll(&app, comm, stdout, 0., shackDict.timecontrol.current_timestep_size, shackDict.timecontrol.current_timestep_size * 2);
+				int test = braid_util.TestAll(&app, comm, stdout, 0., shackTimestepControl->current_timestep_size, shackTimestepControl->current_timestep_size * 2);
 				////int test = braid_util.TestBuf(app, comm, stdout, 0.);
 				if (test == 0)
 					SWEETError("Tests failed!");
@@ -1817,7 +1720,7 @@ int main_real(int i_argc, char *i_argv[])
 				MPI_Barrier(MPI_COMM_WORLD);
 #endif
 
-				if (shackDict.misc.verbosity > 0)
+				if (shackIOData->verbosity > 0)
 					std::cout << std::endl;
 #if SWEET_MPI
 				// Start counting time
@@ -1838,7 +1741,7 @@ int main_real(int i_argc, char *i_argv[])
 			if (mpi_rank == 0)
 #endif
 			{
-				if (shackDict.iodata.output_file_name.size() > 0)
+				if (shackIOData->output_file_name.size() > 0)
 					std::cout << "[MULE] reference_filenames: " << simulationSWE->output_reference_filenames << std::endl;
 			}
 
@@ -1862,13 +1765,13 @@ int main_real(int i_argc, char *i_argv[])
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (direct)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
-		std::cout << "[MULE] shackDict.timecontrol.current_timestep_nr: " << shackDict.timecontrol.current_timestep_nr << std::endl;
-		std::cout << "[MULE] shackDict.timecontrol.current_timestep_size: " << shackDict.timecontrol.current_timestep_size << std::endl;
+		std::cout << "[MULE] shackTimestepControl->current_timestep_nr: " << shackTimestepControl->current_timestep_nr << std::endl;
+		std::cout << "[MULE] shackTimestepControl->current_timestep_size: " << shackTimestepControl->current_timestep_size << std::endl;
 		std::cout << std::endl;
 		std::cout << "***************************************************" << std::endl;
 		std::cout << "* Other timing information (derived)" << std::endl;
 		std::cout << "***************************************************" << std::endl;
-		std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << StopwatchBox::getInstance().main_timestepping()/(double)shackDict.timecontrol.current_timestep_nr << std::endl;
+		std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << StopwatchBox::getInstance().main_timestepping()/(double)shackTimestepControl->current_timestep_nr << std::endl;
 	}
 
 #if SWEET_MPI
@@ -1877,5 +1780,6 @@ int main_real(int i_argc, char *i_argv[])
 
 	return 0;
 }
+#endif
 
 #endif

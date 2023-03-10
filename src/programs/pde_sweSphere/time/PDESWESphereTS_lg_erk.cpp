@@ -78,6 +78,11 @@ void PDESWESphereTS_lg_erk::euler_timestep_update(
 
 
 
+PDESWESphereTS_lg_erk::PDESWESphereTS_lg_erk()
+{
+}
+
+
 PDESWESphereTS_lg_erk::~PDESWESphereTS_lg_erk()
 {
 }

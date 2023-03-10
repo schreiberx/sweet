@@ -5,8 +5,7 @@
 #include "PDESWESphereTS_lg_exp_lc_n_etdrk.hpp"
 
 
-bool PDESWESphereTS_lg_exp_lc_n_etdrk::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_lg_exp_lc_n_etdrk::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	timestepping_method = i_timestepping_method;
 	timestepping_order = shackPDESWETimeDisc->timestepping_order;

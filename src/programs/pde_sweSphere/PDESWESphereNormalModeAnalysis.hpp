@@ -8,14 +8,13 @@
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/shacks/ShackDictionary.hpp>
+#include <sweet/core/shacksShared/ShackIOData.hpp>
+#include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 
 
 
 class NormalModeAnalysisSphere
 {
-public:
-	bool setup(sweet::SphereOperators *io_ops);
-
 public:
 	template <typename TCallbackClass>
 	static
@@ -24,10 +23,14 @@ public:
 			sweet::SphereData_Spectral &io_prog_vort,
 			sweet::SphereData_Spectral &io_prog_div,
 
-			sweet::ShackDictionary &i_shackDict,
+			sweet::ShackIOData *i_shackIOData,
+			sweet::ShackTimestepControl *i_shackTimestepControl,
+
+			int mode,
+
 
 			TCallbackClass *i_class,
-			void(TCallbackClass::* const i_run_timestep_method)(void)
+			bool(TCallbackClass::* const i_run_timestep_method)(void)
 	)
 	{
 		const sweet::SphereData_Config *sphereDataConfig = io_prog_phi.sphereDataConfig;
@@ -38,12 +41,12 @@ public:
 		 * "Computational Modes and Grid Imprinting on Five Quasi-Uniform Spherical C Grids"
 		 */
 		char buffer_real[1024];
-		const char* filename = i_shackDict.iodata.output_file_name.c_str();
+		const char* filename = i_shackIOData->output_file_name.c_str();
 
-		if (i_shackDict.timecontrol.max_timesteps_nr > 0)
-			sprintf(buffer_real, filename, "normal_modes_physical", i_shackDict.timecontrol.current_timestep_size*i_shackDict.timecontrol.max_timesteps_nr*i_shackDict.iodata.output_time_scale);
+		if (i_shackTimestepControl->max_timesteps_nr > 0)
+			sprintf(buffer_real, filename, "normal_modes_physical", i_shackTimestepControl->current_timestep_size*i_shackTimestepControl->max_timesteps_nr*i_shackIOData->output_time_scale);
 		else
-			sprintf(buffer_real, filename, "normal_modes_physical", i_shackDict.timecontrol.current_timestep_size*i_shackDict.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_physical", i_shackTimestepControl->current_timestep_size*i_shackIOData->output_time_scale);
 
 		std::ofstream file(buffer_real, std::ios_base::trunc);
 		std::cout << "Writing normal mode analysis to file '" << buffer_real << "'" << std::endl;
@@ -60,50 +63,31 @@ public:
 		prog[1]->spectral_set_zero();
 		prog[2]->spectral_set_zero();
 
-		int leapfrog_start_num_timesteps = 16;
-		double leapfrog_start_timesteps_size;
-		double leapfrog_end_timestep_size;
-		double leapfrog_original_timestep_size;
-
-		if (i_shackDict.disc.timestepping_method.find("_lf") != std::string::npos)
-		{
-			SWEETError("TODO: Get this Leapfrog running");
-
-			std::cout << "WARNING: Leapfrog time stepping doesn't make real sense since 1st step is based on RK-like method" << std::endl;
-			std::cout << "We'll do two Leapfrog time steps here to take the LF errors into account!" << std::endl;
-			std::cout << "Therefore, we also halve the time step size here" << std::endl;
-
-			leapfrog_original_timestep_size = i_shackDict.timecontrol.current_timestep_size;
-			// do 2 leapfrog time steps -> half time step size
-			i_shackDict.timecontrol.current_timestep_size *= 0.5;
-
-			leapfrog_start_timesteps_size = i_shackDict.timecontrol.current_timestep_size/(double)leapfrog_start_num_timesteps;
-			leapfrog_end_timestep_size = i_shackDict.timecontrol.current_timestep_size;
-		}
-
 		int num_timesteps = 1;
-		if (i_shackDict.misc.normal_mode_analysis_generation >= 10)
+		if (mode >= 10)
 		{
-			if (i_shackDict.timecontrol.max_timesteps_nr > 0)
-				num_timesteps = i_shackDict.timecontrol.max_timesteps_nr;
+			if (i_shackTimestepControl->max_timesteps_nr > 0)
+				num_timesteps = i_shackTimestepControl->max_timesteps_nr;
 		}
 
-		if (i_shackDict.timecontrol.max_simulation_time > 0)
-			file << "# t " << i_shackDict.timecontrol.max_simulation_time << std::endl;
+		if (i_shackTimestepControl->max_simulation_time > 0)
+			file << "# t " << i_shackTimestepControl->max_simulation_time << std::endl;
 		else
-			file << "# t " << (num_timesteps*i_shackDict.timecontrol.current_timestep_size) << std::endl;
+			file << "# t " << (num_timesteps*i_shackTimestepControl->current_timestep_size) << std::endl;
 
+#if 0
 		file << "# g " << i_shackDict.sim.gravitation << std::endl;
 		file << "# h " << i_shackDict.sim.h0 << std::endl;
 		file << "# r " << i_shackDict.sim.sphere_radius << std::endl;
 		file << "# f " << i_shackDict.sim.sphere_rotating_coriolis_omega << std::endl;
+#endif
 
 		// iterate over all prognostic variables
 		for (int outer_prog_id = 0; outer_prog_id < max_prog_id; outer_prog_id++)
 		{
 			std::cout << "normal mode analysis for prog " << outer_prog_id << std::endl;
 
-			if (i_shackDict.misc.normal_mode_analysis_generation == 1 || i_shackDict.misc.normal_mode_analysis_generation == 11)
+			if (mode == 1 || mode == 11)
 			{
 				SWEETError("Not supported anymore");
 #if 0
@@ -111,8 +95,8 @@ public:
 				for (int outer_i = 0; outer_i < sphereDataConfig->physical_array_data_number_of_elements; outer_i++)
 				{
 					// reset time control
-					i_shackDict.timecontrol.current_timestep_nr = 0;
-					i_shackDict.timecontrol.current_simulation_time = 0;
+					i_shackTimestepControl->current_timestep_nr = 0;
+					i_shackTimestepControl->current_simulation_time = 0;
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 						prog[inner_prog_id]->spectral_set_zero();
@@ -131,16 +115,16 @@ public:
 						SWEETError("TODO 01943934");
 						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_shackDict.disc.timestepping_order, i_shackDict.disc.leapfrog_robert_asselin_filter);
 
-						i_shackDict.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
+						i_shackTimestepControl->current_timestep_size = leapfrog_start_timesteps_size;
 
 						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
 							(i_class->*i_run_timestep_method)();
 
-						i_shackDict.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
+						i_shackTimestepControl->current_timestep_size = leapfrog_end_timestep_size;
 
 						(i_class->*i_run_timestep_method)();
 
-						i_shackDict.timecontrol.current_timestep_size = leapfrog_original_timestep_size;
+						i_shackTimestepControl->current_timestep_size = leapfrog_original_timestep_size;
 					}
 					else
 					{
@@ -153,7 +137,7 @@ public:
 					}
 
 
-					if (i_shackDict.misc.normal_mode_analysis_generation == 1)
+					if (mode == 1)
 					{
 						/*
 						 * compute
@@ -163,7 +147,7 @@ public:
 						prog[outer_prog_id]->physical_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/i_shackDict.timecontrol.current_timestep_size);
+							prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestep_size);
 					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -181,7 +165,7 @@ public:
 				}
 #endif
 			}
-			else if (i_shackDict.misc.normal_mode_analysis_generation == 2 || i_shackDict.misc.normal_mode_analysis_generation == 12)
+			else if (mode == 2 || mode == 12)
 			{
 
 				// iterate over physical space
@@ -190,8 +174,8 @@ public:
 					for (int imag_i = 0; imag_i < 2; imag_i++)
 					{
 						// reset time control
-						i_shackDict.timecontrol.current_timestep_nr = 0;
-						i_shackDict.timecontrol.current_simulation_time = 0;
+						i_shackTimestepControl->current_timestep_nr = 0;
+						i_shackTimestepControl->current_simulation_time = 0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
 							prog[inner_prog_id]->spectral_set_zero();
@@ -202,34 +186,11 @@ public:
 						else
 							prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
-						// In case of a multi-step scheme, reset it!
-						if (i_shackDict.disc.timestepping_method.find("_lf") != std::string::npos)
-						{
-							SWEETError("TODO 01943934");
-							//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_shackDict.disc.timestepping_order, i_shackDict.disc.leapfrog_robert_asselin_filter);
-
-							i_shackDict.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
-
-							for (int i = 0; i < leapfrog_start_num_timesteps; i++)
-								(i_class->*i_run_timestep_method)();
-
-							i_shackDict.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
-
-							(i_class->*i_run_timestep_method)();
-
-							i_shackDict.timecontrol.current_timestep_size = leapfrog_original_timestep_size;
-						}
-						else
-						{
-							(i_class->*i_run_timestep_method)();
-						}
-
-						for (int i = 1; i < num_timesteps; i++)
+						for (int i = 0; i < num_timesteps; i++)
 							(i_class->*i_run_timestep_method)();
 
 
-
-						if (i_shackDict.misc.normal_mode_analysis_generation == 2)
+						if (mode == 2)
 						{
 							/*
 							 * compute
@@ -238,7 +199,7 @@ public:
 							prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 							for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-								prog[inner_prog_id]->operator*=(1.0/i_shackDict.timecontrol.current_timestep_size);
+								prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestep_size);
 						}
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
@@ -264,14 +225,14 @@ public:
 					}
 				}
 			}
-			else if (i_shackDict.misc.normal_mode_analysis_generation == 3 || i_shackDict.misc.normal_mode_analysis_generation == 13)
+			else if (mode == 3 || mode == 13)
 			{
 				// iterate over spectral space
 				for (int outer_i = 0; outer_i < sphereDataConfig->spectral_array_data_number_of_elements; outer_i++)
 				{
 					// reset time control
-					i_shackDict.timecontrol.current_timestep_nr = 0;
-					i_shackDict.timecontrol.current_simulation_time = 0;
+					i_shackTimestepControl->current_timestep_nr = 0;
+					i_shackTimestepControl->current_simulation_time = 0;
 
 					std::cout << "." << std::flush;
 
@@ -282,37 +243,14 @@ public:
 					prog[outer_prog_id]->spectral_space_data[outer_i].real(1);
 
 
-					// In case of a multi-step scheme, reset it!
-					if (i_shackDict.disc.timestepping_method.find("_lf") != std::string::npos)
-					{
-						SWEETError("TODO 01839471");
-						//spheredata_timestepping_explicit_leapfrog.resetAndSetup(prog_h, i_shackDict.disc.timestepping_order, i_shackDict.disc.leapfrog_robert_asselin_filter);
+					(i_class->*i_run_timestep_method)();
 
-						i_shackDict.timecontrol.current_timestep_size = leapfrog_start_timesteps_size;
-
-						for (int i = 0; i < leapfrog_start_num_timesteps; i++)
-							(i_class->*i_run_timestep_method)();
-
-						i_shackDict.timecontrol.current_timestep_size = leapfrog_end_timestep_size;
-
-						(i_class->*i_run_timestep_method)();
-
-						i_shackDict.timecontrol.current_timestep_size = leapfrog_original_timestep_size;
-
-						if (num_timesteps > 1)
-							SWEETError("Doesn't make sense because the previous time step is half the time step size in advance");
-					}
-					else
+					for (int i = 0; i < num_timesteps; i++)
 					{
 						(i_class->*i_run_timestep_method)();
 					}
 
-					for (int i = 1; i < num_timesteps; i++)
-					{
-						(i_class->*i_run_timestep_method)();
-					}
-
-					if (i_shackDict.misc.normal_mode_analysis_generation == 3)
+					if (mode == 3)
 					{
 						/*
 						 * Compute
@@ -322,7 +260,7 @@ public:
 						prog[outer_prog_id]->spectral_space_data[outer_i] -= 1.0;
 
 						for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)
-							prog[inner_prog_id]->operator*=(1.0/i_shackDict.timecontrol.current_timestep_size);
+							prog[inner_prog_id]->operator*=(1.0/i_shackTimestepControl->current_timestep_size);
 					}
 
 					for (int inner_prog_id = 0; inner_prog_id < max_prog_id; inner_prog_id++)

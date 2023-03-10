@@ -11,8 +11,7 @@
 #include "PDESWESphereTS_ln_settls_uv.hpp"
 
 
-bool PDESWESphereTS_ln_settls_uv::implementsTimesteppingMethod(const std::string &i_timestepping_method
-									)
+bool PDESWESphereTS_ln_settls_uv::implementsTimesteppingMethod(const std::string &i_timestepping_method)
 {
 	/*
 	 * Should contain _exp and _settls
