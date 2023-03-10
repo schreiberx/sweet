@@ -34,7 +34,7 @@ def get_platform_id():
     	unique ID of platform
     """
 
-    return "dahu"
+    return "dahu_llvm"
 
 
 
@@ -85,7 +85,7 @@ def jobscript_get_header(jg : JobGeneration):
     #
     content = """#! /bin/bash
 #OAR -n sweet_job\n
-#OAR -l /nodes="""+str(p.num_nodes)+ """/core="""+str(p.num_ranks_per_node)+""",walltime="""+time_str+"""
+#OAR -l /nodes="""+str(p.num_nodes)+ """/core="""+str(p.num_ranks_per_node)+""",walltime="""+time_str+""" -p "cpumodel = 'Gold 6130'
 #OAR --stdout """+jg.p_job_stdout_filepath+"""
 #OAR --stderr """+jg.p_job_stderr_filepath+"""
 #OAR --project pr-parallel-in-time\n
@@ -95,7 +95,7 @@ def jobscript_get_header(jg : JobGeneration):
 
     content += """
 source /etc/profile.d/modules.sh
-
+source $HOME/sweet/activate.sh 50_dahu_llvm
 """
 
     if jg.compile.threading != 'off':
@@ -119,10 +119,6 @@ export OMP_NUM_THREADS="""+str(p.num_threads_per_rank)+"""
     return content
 
 
-
-
-
-
 def jobscript_get_exec_prefix(jg : JobGeneration):
     """
     Prefix before executable
@@ -137,8 +133,6 @@ def jobscript_get_exec_prefix(jg : JobGeneration):
     content += jg.runtime.get_jobscript_plan_exec_prefix(jg.compile, jg.runtime)
 
     return content
-
-
 
 def jobscript_get_exec_command(jg : JobGeneration):
     """
