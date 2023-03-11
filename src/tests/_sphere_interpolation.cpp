@@ -41,9 +41,9 @@ SimulationVariables simVars;
 class SimulationInstance
 {
 public:
-	SphereData_Spectral prog_h;
+	sweet::SphereData_Spectral prog_h;
 
-	SphereOperators op;
+	sweet::SphereOperators op;
 
 #if SWEET_GUI
 	sweet::PlaneData_Physical viz_plane_data;
@@ -78,7 +78,7 @@ public:
 	//double center_lat = 0;
 	double exp_fac = 20.0;
 
-	SphereOperators_Sampler_SphereDataPhysical sphereDataSampler;
+	sweet::SphereOperators_Sampler_SphereDataPhysical sphereDataSampler;
 
 	double max_error;
 
@@ -176,8 +176,8 @@ public:
 	{
 		simVars.reset();
 
-		SphereData_Spectral tmp_vort(sphereDataConfig);
-		SphereData_Spectral tmp_div(sphereDataConfig);
+		sweet::SphereData_Spectral tmp_vort(sphereDataConfig);
+		sweet::SphereData_Spectral tmp_div(sphereDataConfig);
 
 		sweet::SphereData_Physical prog_h_phys(sphereDataConfig);
 

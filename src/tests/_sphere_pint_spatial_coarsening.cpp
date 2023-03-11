@@ -44,14 +44,14 @@ class Data
 
 public:
 	SphereData_Config* sphereDataConfig;
-	SphereOperators* op;
+	sweet::SphereOperators* op;
 	BenchmarksSphereSWE sphereBenchmarks;
 	Parareal_GenericData* data = nullptr;
 
 public:
 	Data(
 		SphereData_Config* i_sphereDataConfig,
-		SphereOperators* i_op
+		sweet::SphereOperators* i_op
 		)
 		:
 			sphereDataConfig(i_sphereDataConfig),
@@ -74,9 +74,9 @@ public:
 		this->data = new Parareal_GenericData_SphereData_Spectral<3>;
 		this->data->setup_data_config(this->sphereDataConfig);
 		this->data->allocate_data();
-		SphereData_Spectral* phi_pert = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[0];
-		SphereData_Spectral* vrt = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[1];
-		SphereData_Spectral* div = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[2];
+		sweet::SphereData_Spectral* phi_pert = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[0];
+		sweet::SphereData_Spectral* vrt = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[1];
+		sweet::SphereData_Spectral* div = this->data->get_pointer_to_data_SphereData_Spectral()->simfields[2];
 
 		// To avoid warning message in benchmark
 		simVars.timecontrol.current_simulation_time = 1;
@@ -162,8 +162,8 @@ int main(
 								simVars.parallelization.num_threads_space
 							);
 
-			SphereOperators op_H(sphereDataConfig_H, &(simVars.sim));
-			SphereOperators op_L(sphereDataConfig_L, &(simVars.sim));
+			sweet::SphereOperators op_H(sphereDataConfig_H, &(simVars.sim));
+			sweet::SphereOperators op_L(sphereDataConfig_L, &(simVars.sim));
 
 			Data* data_H = new Data(sphereDataConfig_H, &op_H);
 			data_H->setup();

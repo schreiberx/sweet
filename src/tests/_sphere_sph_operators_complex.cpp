@@ -35,7 +35,7 @@ void run_tests()
 
 	// Use earth radius of 1
 	simVars.sim.sphere_radius = 1.0;
-	SphereOperatorsComplex op(sphereDataConfig, &(simVars.sim));
+	sweet::SphereOperatorsComplex op(sphereDataConfig, &(simVars.sim));
 
 
 	if (true)

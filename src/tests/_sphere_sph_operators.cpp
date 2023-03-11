@@ -36,7 +36,7 @@ void run_tests()
 
 	// Use earth radius of 1
 	simVars.sim.sphere_radius = 1.0;
-	SphereOperators op(sphereDataConfig, &(simVars.sim));
+	sweet::SphereOperators op(sphereDataConfig, &(simVars.sim));
 
 
 	if (true)
@@ -86,8 +86,8 @@ void run_tests()
 					}
 				);
 
-				SphereData_Spectral vort(sphereDataConfig);
-				SphereData_Spectral div(sphereDataConfig);
+				sweet::SphereData_Spectral vort(sphereDataConfig);
+				sweet::SphereData_Spectral div(sphereDataConfig);
 				op.uv_to_vrtdiv(u, v, vort, div);
 
 				double div_max_error = div.toPhys().physical_reduce_max_abs();
@@ -109,7 +109,7 @@ void run_tests()
 		{
 			test_header("Testing Multiplication (a*b) with b=123.0");
 
-			SphereData_Spectral data(sphereDataConfig);
+			sweet::SphereData_Spectral data(sphereDataConfig);
 			sweet::SphereData_Physical data_phys(sphereDataConfig);
 
 			data_phys.physical_update_lambda(
@@ -122,7 +122,7 @@ void run_tests()
 			data.loadSphereDataPhysical(data_phys);
 			data = data*123.0;
 
-			SphereData_Spectral data2(sphereDataConfig);
+			sweet::SphereData_Spectral data2(sphereDataConfig);
 			sweet::SphereData_Physical data2_phys(sphereDataConfig);
 			data2_phys.physical_update_lambda(
 				[&](double x, double y, double &io_data)
@@ -148,7 +148,7 @@ void run_tests()
 			{
 				test_header("Testing Multiplication (a *= b) with b=123.0");
 
-				SphereData_Spectral data(sphereDataConfig);
+				sweet::SphereData_Spectral data(sphereDataConfig);
 				sweet::SphereData_Physical data_phys(sphereDataConfig);
 				data_phys.physical_update_lambda(
 						[&](double x, double y, double &io_data)
@@ -160,7 +160,7 @@ void run_tests()
 
 				data *= 123.0;
 
-				SphereData_Spectral data2(sphereDataConfig);
+				sweet::SphereData_Spectral data2(sphereDataConfig);
 				sweet::SphereData_Physical data2_phys(sphereDataConfig);
 				data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
@@ -182,7 +182,7 @@ void run_tests()
 		{
 			test_header("Testing add (a+b) operation with 123.0");
 
-			SphereData_Spectral data(sphereDataConfig);
+			sweet::SphereData_Spectral data(sphereDataConfig);
 			sweet::SphereData_Physical data_phys(sphereDataConfig);
 			data_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
@@ -194,7 +194,7 @@ void run_tests()
 			data.loadSphereDataPhysical(data_phys);
 			data = data + 123.0;
 
-			SphereData_Spectral data2(sphereDataConfig);
+			sweet::SphereData_Spectral data2(sphereDataConfig);
 			sweet::SphereData_Physical data2_phys(sphereDataConfig);
 			data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
@@ -216,7 +216,7 @@ void run_tests()
 		{
 			test_header("Testing add (a+=b) operation with 123.0");
 
-			SphereData_Spectral data(sphereDataConfig);
+			sweet::SphereData_Spectral data(sphereDataConfig);
 			sweet::SphereData_Physical data_phys(sphereDataConfig);
 			data_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
@@ -228,7 +228,7 @@ void run_tests()
 
 			data += 123.0;
 
-			SphereData_Spectral data2(sphereDataConfig);
+			sweet::SphereData_Spectral data2(sphereDataConfig);
 			sweet::SphereData_Physical data2_phys(sphereDataConfig);
 			data2_phys.physical_update_lambda(
 					[&](double x, double y, double &io_data)
@@ -249,7 +249,7 @@ void run_tests()
 		{
 			test_header("Testing Gaussian latitude coordinates");
 
-			SphereData_Spectral h(sphereDataConfig);
+			sweet::SphereData_Spectral h(sphereDataConfig);
 			sweet::SphereData_Physical h_phys(sphereDataConfig);
 			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c)
@@ -259,7 +259,7 @@ void run_tests()
 			);
 			h.loadSphereDataPhysical(h_phys);
 
-			SphereData_Spectral hphi(sphereDataConfig);
+			sweet::SphereData_Spectral hphi(sphereDataConfig);
 			sweet::SphereData_Physical hphi_phys(sphereDataConfig);
 			hphi_phys.physical_update_lambda(
 					[&](double a, double b, double &c){testSolutions.test_function_phi__grid_phi(a,b,c);}
@@ -279,7 +279,7 @@ void run_tests()
 			test_header("Testing multiplication with Gaussian latitude");
 
 			// mu*F(\lambda,\mu)
-			SphereData_Spectral h(sphereDataConfig);
+			sweet::SphereData_Spectral h(sphereDataConfig);
 			sweet::SphereData_Physical h_phys(sphereDataConfig);
 			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
@@ -287,7 +287,7 @@ void run_tests()
 			h.loadSphereDataPhysical(h_phys);
 			h = op.mu(h);
 
-			SphereData_Spectral result(sphereDataConfig);
+			sweet::SphereData_Spectral result(sphereDataConfig);
 			sweet::SphereData_Physical result_phys(sphereDataConfig);
 			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.correct_result_mu__grid_gaussian(a,b,c);}
@@ -306,7 +306,7 @@ void run_tests()
 			test_header("Testing multiplication with pow2 of Gaussian latitude");
 
 			// mu*mu*F(\lambda,\mu)
-			SphereData_Spectral h(sphereDataConfig);
+			sweet::SphereData_Spectral h(sphereDataConfig);
 			sweet::SphereData_Physical h_phys(sphereDataConfig);
 			h_phys.physical_update_lambda_gaussian_grid(
 					[&](double a, double b, double &c){testSolutions.test_function__grid_gaussian(a,b,c);}
@@ -314,7 +314,7 @@ void run_tests()
 			h.loadSphereDataPhysical(h_phys);
 			h = op.mu2(h);
 
-			SphereData_Spectral result(sphereDataConfig);
+			sweet::SphereData_Spectral result(sphereDataConfig);
 			sweet::SphereData_Physical result_phys(sphereDataConfig);
 			result_phys.physical_update_lambda_gaussian_grid(
 					[&](double lat, double mu, double &i_data){

@@ -34,13 +34,10 @@ int main(
 	shackProgArgDict.setup();
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-
-	SWEPlaneNormalModes swePlaneNormalModes;
-
-
 	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
+	SWEPlaneNormalModes swePlaneNormalModes;
 	swePlaneNormalModes.shackRegistration(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();

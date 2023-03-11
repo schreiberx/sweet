@@ -2,21 +2,22 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * Include these files and directory for compilation
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_lg_erk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/time/PDESWESphereTS_l_erk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/time/PDESWESphereTS_l_irk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/
  *
- * MULE_SCONS_OPTIONS: --lapack=enable
  * MULE_SCONS_OPTIONS: --fortran-source=enable
+ * MULE_SCONS_OPTIONS: --lapack=enable
  */
 
 #include <cmath>
 
-#include "../programs/swe_sphere_benchmarks/BenchmarksSphereSWE.hpp"
+#include "../programs/pde_sweSphere/PDESWESphere_BenchmarksCombined.hpp"
 
-#include <sweet/core/SimulationVariables.hpp>
 #include <sweet/core/sphere/SphereData_Config.hpp>
+
+#include <sweet/core/shacks/ShackProgArgDictionary.hpp>
+#include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
@@ -27,26 +28,57 @@
 #include <sweet/core/sphere/Convert_SphereDataSpectral_to_SphereDataSpectralComplex.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 
+#include "../programs/pde_sweSphere/time/helpers/SWESphBandedMatrixPhysicalComplex.hpp"
+#include "../programs/pde_sweSphere/time/helpers/SWESphBandedMatrixPhysicalReal.hpp"
+#include "../programs/pde_sweSphere/time/PDESWESphereTS_l_erk.hpp"
+#include "../programs/pde_sweSphere/time/PDESWESphereTS_l_irk.hpp"
 
-#include "../programs/swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalComplex.hpp"
-#include "../programs/swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
-#include "../programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_erk.hpp"
-#include "../programs/swe_sphere_timeintegrators/SWE_Sphere_TS_l_irk.hpp"
-
-
-SimulationVariables simVars;
+#include "../programs/pde_sweSphere/ShackPDESWESphere.hpp"
 
 
 template<
 	typename phys_value_type = double,
-	typename sphere_data_spec_type = SphereData_Spectral,
-	typename sphere_data_phys_type = SphereData_Physical,
-	typename sphere_operators_type = SphereOperators,
+	typename sphere_data_spec_type = sweet::SphereData_Spectral,
+	typename sphere_data_phys_type = sweet::SphereData_Physical,
+	typename sphere_operators_type = sweet::SphereOperators,
 	typename sph_banded_solver_type = SphBandedMatrixPhysicalReal<std::complex<double>>
 >
 class Test
 {
 	double double_precision_digits = -1.0;
+
+	sweet::SphereOperators *ops;
+
+	ShackPDESWESphere *shackPDESWESphere;
+	sweet::ShackSphereDataOps *shackSphereDataOps;
+
+	PDESWESphere_BenchmarksCombined benchmarks;
+
+public:
+	bool shackRegistration(
+		sweet::ShackDictionary *io_shackDict
+	)
+	{
+		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+		shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
+		//shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		//shackPDESWETimeDisc = shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
+		//shackPDESWEBenchmark = shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();
+
+		benchmarks.setup_1_registerAllBenchmark();
+		benchmarks.setup_2_shackRegistration(io_shackDict);
+
+		return true;
+	}
+
+	void setup(sweet::SphereOperators *i_sphereOps)
+	{
+		ops = i_sphereOps;
+
+		benchmarks.setup_3_benchmarkDetection();
+		benchmarks.setup_4_benchmarkSetup_1_withoutOps();
+		benchmarks.setup_5_benchmarkSetup_2_withOps(ops);
+	}
 
 	void check_error(double err, double rel_value)
 	{
@@ -61,41 +93,38 @@ class Test
 	};
 
 
-	static
 	void benchmark_setup_geostrophic_balance(
-			SphereOperators &ops,
-			SphereData_Spectral &o_phi,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div
+			sweet::SphereData_Spectral &o_phi,
+			sweet::SphereData_Spectral &o_vrt,
+			sweet::SphereData_Spectral &o_div
 	)
 	{
-		PDESWESphere_BenchmarksCombined benchmarks;
-		benchmarks.setup(simVars, ops, "geostrophic_balance_linear_16");
+		benchmarks.setup_3_benchmarkDetection("geostrophic_balance_linear_16");
+		benchmarks.setup_4_benchmarkSetup_1_withoutOps();
+		benchmarks.setup_5_benchmarkSetup_2_withOps(ops);
 
-		benchmarks.benchmark->get_initial_state(o_phi, o_vrt, o_div);
+		benchmarks.benchmark->getInitialState(o_phi, o_vrt, o_div);
 	}
 
 
-	static
 	void benchmark_setup_geostrophic_balance(
-			SphereOperators &ops,
 			sweet::SphereData_SpectralComplex &o_phi,
 			sweet::SphereData_SpectralComplex &o_vrt,
 			sweet::SphereData_SpectralComplex &o_div
 	)
 	{
 
-		SphereData_Spectral phi(ops.sphereDataConfig);
-		SphereData_Spectral vrt(ops.sphereDataConfig);
-		SphereData_Spectral div(ops.sphereDataConfig);
+		sweet::SphereData_Spectral phi(ops.sphereDataConfig);
+		sweet::SphereData_Spectral vrt(ops.sphereDataConfig);
+		sweet::SphereData_Spectral div(ops.sphereDataConfig);
 
-		benchmark_setup_geostrophic_balance(ops, phi, vrt, div);
+		benchmark_setup_geostrophic_balance(phi, vrt, div);
 
 		{
 			// complex
-			o_phi = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(phi);
-			o_vrt = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(vrt);
-			o_div = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(div);
+			o_phi = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(phi);
+			o_vrt = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(vrt);
+			o_div = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(div);
 		}
 
 	}
@@ -103,10 +132,10 @@ class Test
 
 	static
 	void benchmark_setup_pvd(
-			SphereOperators &opsReal,
-			SphereData_Spectral &o_phi,
-			SphereData_Spectral &o_vrt,
-			SphereData_Spectral &o_div
+			sweet::SphereOperators &opsReal,
+			sweet::SphereData_Spectral &o_phi,
+			sweet::SphereData_Spectral &o_vrt,
+			sweet::SphereData_Spectral &o_div
 	)
 	{
 		PDESWESphere_BenchmarksCombined benchmarks;
@@ -118,24 +147,24 @@ class Test
 
 	static
 	void benchmark_setup_pvd(
-			SphereOperators &opsReal,
+			sweet::SphereOperators &opsReal,
 			sweet::SphereData_SpectralComplex &o_phi,
 			sweet::SphereData_SpectralComplex &o_vrt,
 			sweet::SphereData_SpectralComplex &o_div
 	)
 	{
 
-		SphereData_Spectral phi(opsReal.sphereDataConfig);
-		SphereData_Spectral vrt(opsReal.sphereDataConfig);
-		SphereData_Spectral div(opsReal.sphereDataConfig);
+		sweet::SphereData_Spectral phi(opsReal.sphereDataConfig);
+		sweet::SphereData_Spectral vrt(opsReal.sphereDataConfig);
+		sweet::SphereData_Spectral div(opsReal.sphereDataConfig);
 
 		benchmark_setup_pvd(opsReal, phi, vrt, div);
 
 		{
 			// complex
-			o_phi = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(phi);
-			o_vrt = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(vrt);
-			o_div = Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(div);
+			o_phi = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(phi);
+			o_vrt = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(vrt);
+			o_div = sweet::Convert_SphereDataSpectral_To_SphereDataSpectralComplex::physical_convert(div);
 		}
 	}
 
@@ -161,14 +190,14 @@ public:
 		/*
 		 * Operators
 		 */
-		SphereOperators opsReal(sphereDataConfig, &(simVars.sim));
+		sweet::SphereOperators opsReal(sphereDataConfig, &(simVars.sim));
 		sphere_operators_type ops(sphereDataConfig, &(simVars.sim));
 
 		/*
 		 * Setup local simulation variables
 		 */
-		double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-		double sphere_radius = simVars.sim.sphere_radius;
+		double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
+		double sphere_radius = shackPDESWESphere->sphere_radius;
 
 		double dt_implicit;
 
@@ -179,23 +208,23 @@ public:
 
 		dt_implicit /= 4.0*2.0*sphereDataConfig->spectral_modes_n_max;
 
-		double dt_two_omega = dt_implicit*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+		double dt_two_omega = dt_implicit*2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 
 		std::cout << "*********************************************************" << std::endl;
 		std::cout << "* COMMON PARAMTERS" << std::endl;
 		std::cout << "*********************************************************" << std::endl;
 		std::cout << "dt_implicit: " << dt_implicit << std::endl;
-		std::cout << "h0: " << simVars.sim.h0 << std::endl;
+		std::cout << "h0: " << shackPDESWESphere->h0 << std::endl;
 		std::cout << "gh0: " << gh0 << std::endl;
-		std::cout << "gravitation: " << simVars.sim.gravitation << std::endl;
-		std::cout << "sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
-		std::cout << "sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+		std::cout << "gravitation: " << shackPDESWESphere->gravitation << std::endl;
+		std::cout << "sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
+		std::cout << "sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
 
 
 		/*
 		 * Tests for stationary solution
 		 */
-		if (simVars.sim.sphere_rotating_coriolis_omega == 0.0)
+		if (shackPDESWESphere->sphere_rotating_coriolis_omega == 0.0)
 		{
 			std::cout << std::endl;
 			std::cout << "*********************************************************" << std::endl;
@@ -230,10 +259,10 @@ public:
 				phi_max = 1;
 
 			if (vrt_max == 0)
-				vrt_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				vrt_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
 
 			if (div_max == 0)
-				div_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				div_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
 
 			std::cout << std::endl;
 			std::cout << "phi_max: " << phi_max << std::endl;
@@ -441,7 +470,7 @@ public:
 			if ((i & 2) == 0)
 			{
 				vrt.spectral_set_zero();
-				vrt_order = phi_order/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				vrt_order = phi_order/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
 				std::cout << " + vrt: set to zero" << std::endl;
 			}
 			else
@@ -452,7 +481,7 @@ public:
 			if ((i & 4) == 0)
 			{
 				div.spectral_set_zero();
-				div_order = phi_order/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				div_order = phi_order/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
 				std::cout << " + div: set to zero" << std::endl;
 			}
 			else
@@ -467,20 +496,10 @@ public:
 			std::cout << "div_order: " << div_order << std::endl;
 
 
-#if 0
-			{
-				// Run one forward Euler timestep just to get some valid div field
-				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
-				l_erk.setup(1);
-				l_erk.runTimestep(phi, vrt, div, dt_implicit);
-			}
-#endif
+			double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
+			double sphere_radius = shackPDESWESphere->sphere_radius;
 
-
-			double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-			double sphere_radius = simVars.sim.sphere_radius;
-
-			double dt_two_omega = dt_implicit*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+			double dt_two_omega = dt_implicit*2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 
 			sph_banded_solver_type sphSolverTest;
 
@@ -504,8 +523,8 @@ public:
 			 * Testcase for correct solver
 			 */
 			{
-				double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-				double dt_two_omega = dt_implicit*2.0*simVars.sim.sphere_rotating_coriolis_omega;
+				double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
+				double dt_two_omega = dt_implicit*2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 
 				sphere_data_spec_type foo, rhs;
 				sph_banded_solver_type sphSolverTest;
@@ -549,11 +568,11 @@ public:
 		std::cout << "* COMMON PARAMTERS" << std::endl;
 		std::cout << "*********************************************************" << std::endl;
 		std::cout << " + dt_implicit: " << dt_implicit << std::endl;
-		std::cout << " + h0: " << simVars.sim.h0 << std::endl;
+		std::cout << " + h0: " << shackPDESWESphere->h0 << std::endl;
 		std::cout << " + gh0: " << gh0 << std::endl;
-		std::cout << " + gravitation: " << simVars.sim.gravitation << std::endl;
-		std::cout << " + sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
-		std::cout << " + sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+		std::cout << " + gravitation: " << shackPDESWESphere->gravitation << std::endl;
+		std::cout << " + sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
+		std::cout << " + sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
 		std::cout << std::endl;
 
 
@@ -568,14 +587,31 @@ public:
 
 template<
 	typename phys_value_type = double,
-	typename sphere_data_spec_type = SphereData_Spectral,
-	typename sphere_data_phys_type = SphereData_Physical,
-	typename sphere_operators_type = SphereOperators,
+	typename sphere_data_spec_type = sweet::SphereData_Spectral,
+	typename sphere_data_phys_type = sweet::SphereData_Physical,
+	typename sphere_operators_type = sweet::SphereOperators,
 	typename sph_banded_solver_type = double
 >
 class TestFB
 {
 	double double_precision_digits = -1.0;
+
+	ShackPDESWESphere *shackPDESWESphere;
+	sweet::ShackSphereDataOps *shackSphereDataOps;
+
+public:
+	bool shackRegistration(
+		sweet::ShackDictionary *io_shackDict
+	)
+	{
+		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
+		shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
+		//shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
+		//shackSphereDataOps = shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
+		//shackPDESWETimeDisc = shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
+		//shackPDESWEBenchmark = shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();
+		return true;
+	}
 
 	void check_error(double err, double rel_value)
 	{
@@ -602,13 +638,13 @@ public:
 		/*
 		 * Operators
 		 */
-		SphereOperators ops(sphereDataConfig, &(simVars.sim));
+		sweet::SphereOperators ops(sphereDataConfig, &(simVars.sim));
 
 		/*
 		 * Setup local simulation variables
 		 */
-		double gh0 = simVars.sim.gravitation*simVars.sim.h0;
-		double sphere_radius = simVars.sim.sphere_radius;
+		double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
+		double sphere_radius = shackPDESWESphere->sphere_radius;
 
 		double dt_implicit;
 
@@ -623,11 +659,11 @@ public:
 		std::cout << "* COMMON PARAMTERS" << std::endl;
 		std::cout << "*********************************************************" << std::endl;
 		std::cout << "dt_implicit: " << dt_implicit << std::endl;
-		std::cout << "h0: " << simVars.sim.h0 << std::endl;
+		std::cout << "h0: " << shackPDESWESphere->h0 << std::endl;
 		std::cout << "gh0: " << gh0 << std::endl;
-		std::cout << "gravitation: " << simVars.sim.gravitation << std::endl;
-		std::cout << "sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
-		std::cout << "sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+		std::cout << "gravitation: " << shackPDESWESphere->gravitation << std::endl;
+		std::cout << "sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
+		std::cout << "sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
 
 		/*
 		 * Test forward/backward time stepping
@@ -643,9 +679,9 @@ public:
 			PDESWESphere_BenchmarksCombined benchmarks;
 			benchmarks.setup(simVars, ops, "gaussian_bumps_pvd");
 
-			SphereData_Spectral phi(sphereDataConfig);
-			SphereData_Spectral vrt(sphereDataConfig);
-			SphereData_Spectral div(sphereDataConfig);
+			sweet::SphereData_Spectral phi(sphereDataConfig);
+			sweet::SphereData_Spectral vrt(sphereDataConfig);
+			sweet::SphereData_Spectral div(sphereDataConfig);
 
 			benchmarks.benchmark->get_initial_state(phi, vrt, div);
 
@@ -657,14 +693,6 @@ public:
 			dt_implicit = 0.5*sphereDataConfig->spectral_modes_n_max;
 			std::cout << "dt_implicit: " << dt_implicit << std::endl;
 
-			if (0)
-			{
-				// Run one forward Euler timestep just to get some valid div field
-				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
-				l_erk.setup(1);
-				l_erk.runTimestep(phi, vrt, div, dt_implicit);
-			}
-
 			double phi_max = phi.toPhys().physical_reduce_max_abs();
 			double vrt_max = vrt.toPhys().physical_reduce_max_abs();
 			double div_max = div.toPhys().physical_reduce_max_abs();
@@ -673,10 +701,10 @@ public:
 				phi_max = 1;
 
 			if (vrt_max == 0)
-				vrt_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				vrt_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
 
 			if (div_max == 0)
-				div_max = phi_max/(simVars.sim.sphere_radius*simVars.sim.sphere_radius);
+				div_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
 
 			std::cout << std::endl;
 			std::cout << "phi_max: " << phi_max << std::endl;
@@ -685,9 +713,9 @@ public:
 			std::cout << std::endl;
 
 			{
-				SphereData_Spectral test_phi = phi;
-				SphereData_Spectral test_vrt = vrt;
-				SphereData_Spectral test_div = div;
+				sweet::SphereData_Spectral test_phi = phi;
+				sweet::SphereData_Spectral test_vrt = vrt;
+				sweet::SphereData_Spectral test_div = div;
 
 				double dt_explicit = dt_implicit;
 				double dt_implicit = -dt_explicit;		// Backward with flipped minus sigh
@@ -712,7 +740,6 @@ public:
 
 				std::cout << "err_div: " << err_div << std::endl;
 				check_error(err_div, div_max);
-
 			}
 		}
 
@@ -720,11 +747,11 @@ public:
 		std::cout << "* COMMON PARAMTERS" << std::endl;
 		std::cout << "*********************************************************" << std::endl;
 		std::cout << " + dt_implicit: " << dt_implicit << std::endl;
-		std::cout << " + h0: " << simVars.sim.h0 << std::endl;
+		std::cout << " + h0: " << shackPDESWESphere->h0 << std::endl;
 		std::cout << " + gh0: " << gh0 << std::endl;
-		std::cout << " + gravitation: " << simVars.sim.gravitation << std::endl;
-		std::cout << " + sphere_rotating_coriolis_omega: " << simVars.sim.sphere_rotating_coriolis_omega << std::endl;
-		std::cout << " + sphere_radius: " << simVars.sim.sphere_radius << std::endl;
+		std::cout << " + gravitation: " << shackPDESWESphere->gravitation << std::endl;
+		std::cout << " + sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
+		std::cout << " + sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
 		std::cout << std::endl;
 
 
@@ -736,106 +763,106 @@ public:
 
 
 
-
 int main(
 		int i_argc,
 		char *const i_argv[]
 )
 {
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
-		return -1;
-
-	// Stop overriding simulation variables for this test case
-	simVars.benchmark.benchmark_override_simvars = false;
-
-	if (simVars.disc.space_res_spectral[0] == 0)
-		SWEETError("Set number of spectral modes to use SPH!");
-
-	sweet::SphereData_Config sphereDataConfig;
-	sphereDataConfig.setupAutoPhysicalSpace(
-					simVars.disc.space_res_spectral[0],
-					simVars.disc.space_res_spectral[1],
-					&simVars.disc.space_res_physical[0],
-					&simVars.disc.space_res_physical[1],
-					simVars.misc.reuse_spectral_transformation_plans,
-					simVars.misc.verbosity,
-					simVars.parallelization.num_threads_space
-
-			);
-
-#if 1
+	for (int i = 0; i < 2; i++)
 	{
-		/*
-		 * Real-valued solver
-		 *
-		 * E.g. used for backward Euler
-		 */
-		double alpha_real = 3.0;
+		sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
+		shackProgArgDict.setup();
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "* REAL" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		Test<
-			double,
-			SphereData_Spectral,
-			SphereData_Physical,
-			SphereOperators,
-			SphBandedMatrixPhysicalReal<std::complex<double>>
-		>t_real;
+		sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-		t_real.run_tests(&sphereDataConfig, alpha_real);
+		shackProgArgDict.processProgramArguments();
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "* REAL FB" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		TestFB<
-			double,
-			SphereData_Spectral,
-			SphereData_Physical,
-			SphereOperators,
-			SphBandedMatrixPhysicalReal<std::complex<double>>
-		>t_real_fb;
+		shackProgArgDict.printShackData();
 
-		t_real_fb.run_tests(&sphereDataConfig, alpha_real);
+		sweet::SphereData_Config sphereDataConfig;
+		sphereDataConfig.setupAuto(shackSphereDataOps);
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(sphereDataConfig);
+
+		sweet::SphereOperators ops;
+		ops.setup(&sphereDataConfig, shackSphereDataOps);
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(ops);
+
+		// Stop overriding simulation variables for this test case
+		//simVars.benchmark.benchmark_override_simvars = false;
+
+		shackSphereDataOps->validateResolution();
+		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*shackSphereDataOps);
+
+
+		if (i == 0)
+		{
+			/*
+			 * Real-valued solver
+			 *
+			 * E.g. used for backward Euler
+			 */
+			double alpha_real = 3.0;
+
+			std::cout << "***********************************************************" << std::endl;
+			std::cout << "* REAL" << std::endl;
+			std::cout << "***********************************************************" << std::endl;
+			Test<
+				double,
+				sweet::SphereData_Spectral,
+				sweet::SphereData_Physical,
+				sweet::SphereOperators,
+				SphBandedMatrixPhysicalReal<std::complex<double>>
+			>t_real;
+
+			t_real.shackRegistration(&shackProgArgDict);
+
+			t_real.run_tests(&sphereDataConfig, alpha_real);
+
+			std::cout << "***********************************************************" << std::endl;
+			std::cout << "* REAL FB" << std::endl;
+			std::cout << "***********************************************************" << std::endl;
+			TestFB<
+				double,
+				sweet::SphereData_Spectral,
+				sweet::SphereData_Physical,
+				sweet::SphereOperators,
+				SphBandedMatrixPhysicalReal<std::complex<double>>
+			>t_real_fb;
+
+			t_real_fb.shackRegistration(&shackProgArgDict);
+
+			t_real_fb.run_tests(&sphereDataConfig, alpha_real);
+		}
+
+		if (i == 1)
+		{
+			/*
+			 * Complex-valued solver
+			 *
+			 * E.g. used for REXI
+			 */
+			std::cout << "***********************************************************" << std::endl;
+			std::cout << "* COMPLEX" << std::endl;
+			std::cout << "***********************************************************" << std::endl;
+
+			std::complex<double> alpha_complex(1.0, 3.0);
+
+			Test<
+				std::complex<double>,
+				sweet::SphereData_SpectralComplex,
+				sweet::SphereData_PhysicalComplex,
+				sweet::SphereOperatorsComplex,
+				SphBandedMatrixPhysicalComplex<std::complex<double>>
+			>t_complex;
+
+			t_complex.shackRegistration(&shackProgArgDict);
+
+			t_complex.run_tests(&sphereDataConfig, alpha_complex);
+		}
 	}
-#endif
-
-#if 1
-	{
-		/*
-		 * Complex-valued solver
-		 *
-		 * E.g. used for REXI
-		 */
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "* COMPLEX" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-		std::cout << "***********************************************************" << std::endl;
-
-		std::complex<double> alpha_complex(1.0, 3.0);
-
-		Test<
-			std::complex<double>,
-			SphereData_SpectralComplex,
-			SphereData_PhysicalComplex,
-			SphereOperatorsComplex,
-			SphBandedMatrixPhysicalComplex<std::complex<double>>
-		>t_complex;
-
-		t_complex.run_tests(&sphereDataConfig, alpha_complex);
-	}
-#endif
 
 }
 

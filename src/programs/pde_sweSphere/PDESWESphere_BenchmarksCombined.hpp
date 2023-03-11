@@ -53,7 +53,9 @@ public:
 		sweet::ShackDictionary *io_shackDict
 	);
 
-	bool setup_3_benchmarkDetection();
+	bool setup_3_benchmarkDetection(
+			const std::string &i_benchmark_name = ""
+	);
 
 	bool setup_4_benchmarkSetup_1_withoutOps();
 

@@ -28,16 +28,16 @@ class SphereDataErrorCheck
 public:
 	static
 	bool check(
-			const SphereData_Spectral &i_lhs,
-			const SphereData_Spectral &i_rhs,
+			const sweet::SphereData_Spectral &i_lhs,
+			const sweet::SphereData_Spectral &i_rhs,
 			const std::string &i_id,
 			double i_error_threshold = 1.0,
 			bool i_ignore_error = false,
 			bool i_normalization = true
 	)
 	{
-		const SphereData_Spectral lhs = i_lhs;
-		const SphereData_Spectral rhs = i_rhs;
+		const sweet::SphereData_Spectral lhs = i_lhs;
+		const sweet::SphereData_Spectral rhs = i_rhs;
 
 		sweet::SphereData_Physical diff = i_lhs.toPhys()-rhs.toPhys();
 
@@ -101,8 +101,8 @@ public:
 //				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs)
 //				- Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_rhs);
 
-		double lhs_maxabs = SphereData_SpectralComplex(i_lhs).toPhys().physical_reduce_max_abs();
-		double rhs_maxabs = SphereData_SpectralComplex(i_rhs).toPhys().physical_reduce_max_abs();
+		double lhs_maxabs = sweet::SphereData_SpectralComplex(i_lhs).toPhys().physical_reduce_max_abs();
+		double rhs_maxabs = sweet::SphereData_SpectralComplex(i_rhs).toPhys().physical_reduce_max_abs();
 
 		double normalize_fac = 1.0;
 
@@ -148,8 +148,8 @@ public:
 public:
 	static
 	bool checkTruncated(
-			const SphereData_Spectral &i_lhs,
-			const SphereData_Spectral &i_rhs,
+			const sweet::SphereData_Spectral &i_lhs,
+			const sweet::SphereData_Spectral &i_rhs,
 			const sweet::SphereData_Config *i_sphereDataConfig,
 			const std::string &i_id,
 			double i_error_threshold,	// = 1.0,
@@ -157,13 +157,13 @@ public:
 			bool i_normalization		// = true
 	)
 	{
-		SphereData_Spectral lhsr = SphereData_Spectral(i_lhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
-		SphereData_Spectral rhsr = SphereData_Spectral(i_rhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
+		sweet::SphereData_Spectral lhsr = sweet::SphereData_Spectral(i_lhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
+		sweet::SphereData_Spectral rhsr = sweet::SphereData_Spectral(i_rhs).spectral_returnWithDifferentModes(i_sphereDataConfig);
 
 		sweet::SphereData_Physical diff = lhsr.toPhys()-rhsr.toPhys();
 
-		double lhs_maxabs = SphereData_Spectral(lhsr).toPhys().physical_reduce_max_abs();
-		double rhs_maxabs = SphereData_Spectral(rhsr).toPhys().physical_reduce_max_abs();
+		double lhs_maxabs = sweet::SphereData_Spectral(lhsr).toPhys().physical_reduce_max_abs();
+		double rhs_maxabs = sweet::SphereData_Spectral(rhsr).toPhys().physical_reduce_max_abs();
 
 		double normalize_fac = std::min(lhs_maxabs, rhs_maxabs);
 
@@ -358,7 +358,7 @@ void run_tests(
 			}
 		);
 
-		SphereData_Spectral spectral(sphereDataConfig);
+		sweet::SphereData_Spectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{
@@ -381,7 +381,7 @@ void run_tests(
 			}
 		);
 
-		SphereData_Spectral spectral(sphereDataConfig);
+		sweet::SphereData_Spectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{
@@ -392,7 +392,7 @@ void run_tests(
 			}
 		);
 
-		SphereData_Spectral(physical).spectral_print();
+		sweet::SphereData_Spectral(physical).spectral_print();
 		spectral.spectral_print();
 
 		SphereDataErrorCheck::check(SphereData_Spectral(physical), spectral, "n=1, m=0", epsilon, false, true);
@@ -407,7 +407,7 @@ void run_tests(
 			}
 		);
 
-		SphereData_Spectral spectral(sphereDataConfig);
+		sweet::SphereData_Spectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{
@@ -431,7 +431,7 @@ void run_tests(
 			}
 		);
 
-		SphereData_Spectral spectral(sphereDataConfig);
+		sweet::SphereData_Spectral spectral(sphereDataConfig);
 		spectral.spectral_update_lambda(
 			[&](int n, int m, std::complex<double> &io_data)
 			{

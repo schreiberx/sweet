@@ -37,7 +37,7 @@ public:
 
 	SphereAdvectionTimeSteppers timeSteppers;
 
-	SphereOperators op;
+	sweet::SphereOperators op;
 
 	bool time_varying_fields;
 
@@ -72,11 +72,11 @@ public:
 	{
 		prognostic_variables.resize(i_size);
 		for (std::size_t i = 0; i < prognostic_variables.size(); i++)
-			prognostic_variables[i] = new SphereData_Spectral(sphereDataConfig);
+			prognostic_variables[i] = new sweet::SphereData_Spectral(sphereDataConfig);
 
 		prognostic_variables_t0.resize(i_size);
 		for (std::size_t i = 0; i < prognostic_variables_t0.size(); i++)
-			prognostic_variables_t0[i] = new SphereData_Spectral(sphereDataConfig);
+			prognostic_variables_t0[i] = new sweet::SphereData_Spectral(sphereDataConfig);
 	}
 
 

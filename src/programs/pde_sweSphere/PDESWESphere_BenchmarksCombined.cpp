@@ -46,7 +46,7 @@ bool PDESWESphere_BenchmarksCombined::setup_1_registerAllBenchmark()
 	return true;
 }
 
-
+a
 
 bool PDESWESphere_BenchmarksCombined::setup_2_shackRegistration(
 	sweet::ShackDictionary *io_shackDict
@@ -67,15 +67,29 @@ bool PDESWESphere_BenchmarksCombined::setup_2_shackRegistration(
 
 
 
-bool PDESWESphere_BenchmarksCombined::setup_3_benchmarkDetection()
+bool PDESWESphere_BenchmarksCombined::setup_3_benchmarkDetection(
+		const std::string &i_benchmark_name = ""
+)
 {
 	assert(benchmark == nullptr);
 
-	if (shackBenchmarks->benchmark_name == "")
+	std::string benchmark_name;
+
+	if (i_benchmark_name != "")
 	{
-		printAvailableBenchmarks();
-		return error.set("Please choose benchmark with --benchmark-name=...");
+		benchmark_name = i_benchmark_name;
 	}
+	else
+	{
+		if (shackBenchmarks->benchmark_name == "")
+		{
+			printAvailableBenchmarks();
+			return error.set("Please choose benchmark with --benchmark-name=...");
+		}
+
+		benchmark_name = shackBenchmarks->benchmark_name;
+	}
+
 
 	/*
 	 * Find right one
@@ -84,12 +98,12 @@ bool PDESWESphere_BenchmarksCombined::setup_3_benchmarkDetection()
 	{
 		PDESWESphereBenchmarks_BaseInterface *ts = _registered_benchmarks[i];
 
-		if (ts->implements_benchmark(shackBenchmarks->benchmark_name))
+		if (ts->implements_benchmark(benchmark_name))
 		{
 			if (benchmark != nullptr)
 			{
 				//std::cout << "Processing " << i+1 << "th element" << std::endl;
-				error.set("Duplicate implementation for benchmark "+shackBenchmarks->benchmark_name);
+				error.set("Duplicate implementation for benchmark "+benchmark_name);
 			}
 
 			//std::cout << "Benchmark detection: found match with benchmark id " << i+1 << std::endl;
@@ -100,7 +114,7 @@ bool PDESWESphere_BenchmarksCombined::setup_3_benchmarkDetection()
 	if (benchmark == nullptr)
 	{
 		printAvailableBenchmarks();
-		return error.set("No valid --benchmark-name '"+shackBenchmarks->benchmark_name+"' provided");
+		return error.set("No valid --benchmark-name '"+benchmark_name+"' provided");
 	}
 
 	return true;
