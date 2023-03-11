@@ -123,10 +123,8 @@ public:
 			sphere_fsphere_f0 = sphere_rotating_coriolis_omega;
 
 		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
-
 		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 		i_pa.getArgumentValueByKey("--compute-diagnostics", compute_diagnostics);
-
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
 		
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
