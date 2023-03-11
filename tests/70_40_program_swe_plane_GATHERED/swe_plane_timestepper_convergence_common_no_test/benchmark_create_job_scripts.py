@@ -69,7 +69,7 @@ jg.runtime.rexi_ci_mu = 0
 jg.runtime.rexi_ci_primitive = 'circle'
 
 # Activate, since sometimes we need the numerical solution
-jg.compile.quadmath = 'enable'
+#jg.compile.quadmath = 'enable'
 
 
 jg.runtime.gravitation= 1

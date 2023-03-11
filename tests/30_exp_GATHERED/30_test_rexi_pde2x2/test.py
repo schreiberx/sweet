@@ -37,7 +37,6 @@ jg.compile.program = "tests/exp_rexiPDE2x2"
 # Use file-based REXI method
 #
 jg.runtime.rexi_method = "file"
-jg.compile.quadmath = "disable"
 jg.runtime.verbosity = 20
 
 

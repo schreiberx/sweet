@@ -32,7 +32,7 @@ jg.compile.threading = 'off'
 jg.compile.libfft = 'enable'
 
 # Enable quad math per default for CI REXI method
-jg.compile.quadmath = 'enable'
+#jg.compile.quadmath = 'enable'
 
 jg.runtime.output_file_mode = 'bin'
 

@@ -30,7 +30,7 @@ jg.compile.sweet_mpi = 'enable'
 jg.compile.libsph = 'enable'
 jg.compile.threading = 'off'
 jg.compile.libfft = 'enable'
-jg.compile.quadmath = 'enable'
+#jg.compile.quadmath = 'enable'
 
 ###############################################
 # Runtime Settings for reference & tests jobs #

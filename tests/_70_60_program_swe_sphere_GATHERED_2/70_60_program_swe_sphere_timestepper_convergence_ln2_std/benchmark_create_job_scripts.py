@@ -27,7 +27,7 @@ jg.compile.sphere_spectral_dealiasing = 'enable'
 
 
 # Enable quad math per default for CI REXI method
-jg.compile.quadmath = 'enable'
+#jg.compile.quadmath = 'enable'
 
 
 # Verbosity mode
