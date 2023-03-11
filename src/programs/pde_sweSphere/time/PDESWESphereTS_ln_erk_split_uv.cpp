@@ -19,8 +19,6 @@ bool PDESWESphereTS_ln_erk_split_uv::setup_auto(
 {
 	timestepping_method = i_timestepping_method;
 
-	setupFG();
-
 	/*
 	 * l_na
 	 */
@@ -68,6 +66,8 @@ bool PDESWESphereTS_ln_erk_split_uv::setup_main(
 )
 {
 	ops = io_ops;
+
+	setupFG();
 
 	timestepping_method = i_order;
 
