@@ -6,7 +6,7 @@
 #include <sweet/core/defaultPrecompilerValues.hpp>
 
 #include <iostream>
-#include <quadmath.h>
+//#include <quadmath.h>
 #include <sweet/expIntegration/ExpFunctions.hpp>
 #include <sweet/expIntegration/REXI.hpp>
 #include <sweet/expIntegration/REXICoefficients.hpp>
