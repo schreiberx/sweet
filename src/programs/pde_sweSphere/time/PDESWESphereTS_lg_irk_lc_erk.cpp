@@ -14,9 +14,9 @@ bool PDESWESphereTS_lg_irk_lc_erk::setup_auto(
 	timestepping_method = i_timestepping_method;
 
 	if (timestepping_method == "lg_irk_lc_erk_ver1")
-		return setup_main(io_ops, timestepping_order, 1);
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, 1);
 	else
-		return setup_main(io_ops, timestepping_order, 0);
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, 0);
 }
 
 

@@ -73,7 +73,7 @@ bool PDESWESphereTS_l_irk_na_erk_vd::setup(
 
 	if (timestepping_order == 1)
 	{
-		timestepping_l_irk.setup_main(
+		timestepping_l_irk.setup(
 			ops,
 			1,
 			timestep_size

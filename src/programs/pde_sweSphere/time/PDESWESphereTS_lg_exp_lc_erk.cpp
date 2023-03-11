@@ -20,8 +20,8 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_auto(
 			ops,
 			shackExpIntegration,
 			shackExpIntegration->exp_method,
-			timestepping_order,
-			timestepping_order2,
+			shackPDESWETimeDisc->timestepping_order,
+			shackPDESWETimeDisc->timestepping_order2,
 			shackTimestepControl->current_timestep_size,
 			version,
 			shackExpIntegration->sphere_solver_preallocation

@@ -29,8 +29,8 @@ bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup_auto(
 	return setup_main(
 			io_ops,
 			shackExpIntegration,
-			timestepping_order,
-			timestepping_order2,
+			shackPDESWETimeDisc->timestepping_order,
+			shackPDESWETimeDisc->timestepping_order2,
 			shackTimestepControl->current_timestep_size
 		);
 }

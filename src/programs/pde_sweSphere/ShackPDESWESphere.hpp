@@ -14,12 +14,11 @@ class ShackPDESWESphere	:
 		public sweet::ShackInterface
 {
 public:
-
-
 	/**
 	 * Average height
 	 */
 	double h0 = 10000.0;
+
 
 	/**
 	 * For more information on viscosity,
@@ -28,13 +27,13 @@ public:
 	 *
 	 * viscosity-term on velocities with 2nd order diff operator
 	 */
-
 	double viscosity = 0.0;
 
 	/**
 	 * Order of viscosity
 	 */
 	int viscosity_order = 2;
+
 
 	/**
 	 * Gravitational constant
@@ -46,6 +45,7 @@ public:
 	 * Simulation on f-sphere? (constant f0 term over entire sphere)
 	 */
 	bool sphere_use_fsphere = false;
+
 
 	/**
 	 * Coriolis effect
@@ -63,10 +63,12 @@ public:
 	 */
 	int normal_mode_analysis_generation = 0;
 
+
 	/*
 	 * Compute errors compared to analytical solution
 	 */
 	bool compute_errors = false;
+
 
 	/*
 	 * Compute diagnostics
@@ -112,9 +114,9 @@ public:
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0);
-		i_pa.getArgumentValueBy3Keys("--pde-viscosity", "--pde-mu", "--mu", viscosity);
+		i_pa.getArgumentValueBy2Keys("--pde-viscosity", "-u", viscosity);
 		i_pa.getArgumentValueByKey("--pde-viscosity-order", viscosity_order);
-		i_pa.getArgumentValueBy3Keys("--pde-g", "-g", "--gravitation", gravitation);
+		i_pa.getArgumentValueBy3Keys("--pde-g", "-g", "--pde-gravitation", gravitation);
 		i_pa.getArgumentValueByKey("-F", sphere_use_fsphere);
 
 		if (i_pa.getArgumentValueByKey("-f", sphere_rotating_coriolis_omega))

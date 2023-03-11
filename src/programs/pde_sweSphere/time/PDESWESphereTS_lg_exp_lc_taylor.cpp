@@ -15,7 +15,7 @@ bool PDESWESphereTS_lg_exp_lc_taylor::setup_auto(
 {
 	timestepping_method = i_timestepping_method;
 
-	return setup_main(io_ops, timestepping_order);
+	return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order);
 }
 
 

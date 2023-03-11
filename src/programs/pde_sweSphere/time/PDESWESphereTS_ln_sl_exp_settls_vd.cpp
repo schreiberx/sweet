@@ -112,7 +112,7 @@ bool PDESWESphereTS_ln_sl_exp_settls_vd::setup_auto(
 
 	return setup_main(
 			io_ops,
-			timestepping_order,
+			shackPDESWETimeDisc->timestepping_order,
 			_linear_coriolis_treatment,					// Coriolis treatment
 			_nonlinear_divergence_treatment,		// Nonlinear divergence treatment
 			_original_linear_operator_sl_treatment			// original SL linear operator treatment

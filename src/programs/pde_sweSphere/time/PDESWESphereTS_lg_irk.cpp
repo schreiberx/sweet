@@ -48,7 +48,7 @@ bool PDESWESphereTS_lg_irk::setup_auto(
 
 	return setup_main(
 			io_ops,
-			timestepping_order,
+			shackPDESWETimeDisc->timestepping_order,
 			shackTimestepControl->current_timestep_size,
 			shackPDESWETimeDisc->timestepping_crank_nicolson_filter
 		);

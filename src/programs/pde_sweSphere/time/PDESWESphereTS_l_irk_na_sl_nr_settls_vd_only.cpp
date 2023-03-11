@@ -32,7 +32,7 @@ bool PDESWESphereTS_l_irk_na_sl_nr_settls_vd_only::setup_auto(
 
 	return setup_main(
 		io_ops,
-		timestepping_order
+		shackPDESWETimeDisc->timestepping_order
 	);
 }
 

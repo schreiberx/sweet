@@ -73,7 +73,7 @@ bool PDESWESphereTS_ln_imex_sdc::setup(
 #endif
 
 
-	timestepping_l_irk.setup_main(
+	timestepping_l_irk.setup(
 		ops,
 		1,
 		timestep_size

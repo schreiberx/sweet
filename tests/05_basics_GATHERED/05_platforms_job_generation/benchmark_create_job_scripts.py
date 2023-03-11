@@ -17,7 +17,7 @@ params_compile_sweet_mpi = ['enable', 'disable']
 params_compile_threading = ['omp', 'off']
 params_compile_thread_parallel_sum = ['enable', 'disable']
 
-jg.compile.program = 'swe_sphere'
+jg.compile.program = 'programs/pde_sweSphere'
 
 jg.compile.plane_spectral_space = 'disable'
 jg.compile.plane_spectral_dealiasing = 'disable'

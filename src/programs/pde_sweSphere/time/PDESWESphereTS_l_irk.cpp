@@ -50,7 +50,7 @@ bool PDESWESphereTS_l_irk::setup_auto(
 	{
 		return setup_main(
 				io_ops,
-				timestepping_order,
+				shackPDESWETimeDisc->timestepping_order,
 				shackTimestepControl->current_timestep_size,
 				0.5,
 				false
@@ -60,7 +60,7 @@ bool PDESWESphereTS_l_irk::setup_auto(
 	{
 		return setup_main(
 				io_ops,
-				timestepping_order,
+				shackPDESWETimeDisc->timestepping_order,
 				shackTimestepControl->current_timestep_size,
 				0.5,
 				true
@@ -73,7 +73,7 @@ bool PDESWESphereTS_l_irk::setup_auto(
 	return false;
 }
 
-bool PDESWESphereTS_l_irk::setup_main(
+bool PDESWESphereTS_l_irk::setup(
 		sweet::SphereOperators *io_ops,
 		int i_timestep_order,
 		double i_timestep_size

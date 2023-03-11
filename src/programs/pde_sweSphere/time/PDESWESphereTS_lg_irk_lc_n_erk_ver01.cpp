@@ -20,8 +20,8 @@ bool PDESWESphereTS_lg_irk_lc_n_erk::setup_auto(
 
 	return setup_main(
 			io_ops,
-			timestepping_order,
-			timestepping_order2,
+			shackPDESWETimeDisc->timestepping_order,
+			shackPDESWETimeDisc->timestepping_order2,
 			version
 		);
 }

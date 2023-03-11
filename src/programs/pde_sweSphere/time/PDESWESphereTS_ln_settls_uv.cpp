@@ -113,7 +113,7 @@ bool PDESWESphereTS_ln_settls_uv::setup_auto(
 
 	return setup_main(
 			io_ops,
-			timestepping_order,
+			shackPDESWETimeDisc->timestepping_order,
 			_linear_coriolis_treatment,				// Coriolis treatment
 			_nonlinear_divergence_treatment,			// Nonlinear divergence treatment
 			_original_linear_operator_sl_treatment	// original SL linear operator treatment
@@ -162,7 +162,7 @@ bool PDESWESphereTS_ln_settls_uv::setup_main(
 	{
 		if (timestepping_order == 1)
 		{
-			swe_sphere_ts_l_irk.setup_main(
+			swe_sphere_ts_l_irk.setup(
 					ops,
 					1,
 					shackTimestepControl->current_timestep_size
@@ -171,7 +171,7 @@ bool PDESWESphereTS_ln_settls_uv::setup_main(
 		else
 		{
 			// initialize with 1st order and half time step size
-			swe_sphere_ts_l_irk.setup_main(
+			swe_sphere_ts_l_irk.setup(
 					ops,
 					1,
 					0.5 * shackTimestepControl->current_timestep_size

@@ -34,8 +34,8 @@ bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup_auto(
 	timestepping_method = i_timestepping_method;
 
 	return setup_main(
-		io_ops,
-		timestepping_order
+			io_ops,
+			shackPDESWETimeDisc->timestepping_order
 		);
 }
 

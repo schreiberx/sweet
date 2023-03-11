@@ -29,7 +29,7 @@ public:
 			sweet::SphereOperators *io_ops
 		);
 
-	bool setup_main(
+	bool setup(
 			sweet::SphereOperators *io_ops,
 			int i_timestep_order,
 			double i_timestep_size
