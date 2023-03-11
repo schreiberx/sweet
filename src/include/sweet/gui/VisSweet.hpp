@@ -17,6 +17,10 @@
 #include "../libgl/core/GlTexture.hpp"
 #include "../libgl/draw/GlDrawQuad.hpp"
 
+#ifndef SWEET_USE_SPHERE_SPECTRAL_SPACE
+#define SWEET_USE_SPHERE_SPECTRAL_SPACE 1
+#endif
+
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
 	#include "../libgl/draw/GlDrawSphereSph.hpp"
 #endif
