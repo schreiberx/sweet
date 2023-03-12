@@ -2,6 +2,7 @@
  * Author: Pedro Peixoto <ppeixoto@usp.br>
  *
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
+ * MULE_SCONS_OPTIONS: --eigen=enable
  */
 
 #include <sweet/core/defaultPrecompilerValues.hpp>
