@@ -94,7 +94,6 @@ public:
 		}
 
 
-		timestepping_order = i_timestepping_order;
 		semi_lagrangian_max_iterations = shackSLData->semi_lagrangian_max_iterations;
 		semi_lagrangian_convergence_threshold = shackSLData->semi_lagrangian_convergence_threshold;
 		semi_lagrangian_approximate_sphere_geometry = shackSLData->semi_lagrangian_approximate_sphere_geometry;

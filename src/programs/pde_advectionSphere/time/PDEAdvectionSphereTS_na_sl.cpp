@@ -77,56 +77,62 @@ void PDEAdvectionSphereTS_na_sl::interpolate_departure_point_vec_3d(
 	/*
 	 * First we sample the field at the departure point
 	 */
-#if 1
 
-	sweet::SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			o_vec0.toPhys(),
-			i_pos_lon_D, i_pos_lat_D,
-			false,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
-			shackSemiLagrangian->semi_lagrangian_interpolation_limiter
-		);
+	bool velocity_sampling = false;
 
-	sweet::SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			o_vec1.toPhys(),
-			i_pos_lon_D, i_pos_lat_D,
-			false,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
-			shackSemiLagrangian->semi_lagrangian_interpolation_limiter
-		);
+	sweet::SphereData_Physical u_tmp_D;
+	sweet::SphereData_Physical v_tmp_D;
+	sweet::SphereData_Physical w_tmp_D;
 
-	sweet::SphereData_Physical w_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			o_vec2.toPhys(),
-			i_pos_lon_D, i_pos_lat_D,
-			false,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
-			shackSemiLagrangian->semi_lagrangian_interpolation_limiter
-		);
+	if (timestepping_order == 1 && false)
+	{
+		u_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
+				o_vec0.toPhys(),
+				i_pos_lon_D, i_pos_lat_D,
+				velocity_sampling,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
+			);
 
-#else
+		v_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
+				o_vec1.toPhys(),
+				i_pos_lon_D, i_pos_lat_D,
+				velocity_sampling,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
+			);
 
-	sweet::SphereData_Physical u_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
-			o_vec0.toPhys(),
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
-		);
+		w_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
+				o_vec2.toPhys(),
+				i_pos_lon_D, i_pos_lat_D,
+				velocity_sampling,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
+			);
+	}
+	else
+	{
+		u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+				o_vec0.toPhys(),
+				i_pos_lon_D, i_pos_lat_D,
+				velocity_sampling,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSemiLagrangian->semi_lagrangian_interpolation_limiter
+			);
 
-	sweet::SphereData_Physical v_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
-			o_vec1.toPhys(),
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
-		);
+		v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+				o_vec1.toPhys(),
+				i_pos_lon_D, i_pos_lat_D,
+				velocity_sampling,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSemiLagrangian->semi_lagrangian_interpolation_limiter
+			);
 
-	sweet::SphereData_Physical w_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
-			o_vec2.toPhys(),
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
-		);
-
-#endif
+		w_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+				o_vec2.toPhys(),
+				i_pos_lon_D, i_pos_lat_D,
+				velocity_sampling,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSemiLagrangian->semi_lagrangian_interpolation_limiter
+			);
+	}
 
 	/*
 	 * Convert to scalar data arrays
@@ -235,21 +241,44 @@ void PDEAdvectionSphereTS_na_sl::interpolate_departure_point_vec_uv(
 	/*
 	 * First we sample the field at the departure point
 	 */
-	sweet::SphereData_Physical u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			i_u,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
-			shackSemiLagrangian->semi_lagrangian_interpolation_limiter
-		);
 
-	sweet::SphereData_Physical v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
-			i_v,
-			i_pos_lon_D, i_pos_lat_D,
-			true,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
-			shackSemiLagrangian->semi_lagrangian_interpolation_limiter
-		);
+	sweet::SphereData_Physical u_tmp_D;
+	sweet::SphereData_Physical v_tmp_D;
+
+	if (timestepping_order == 1 && false)
+	{
+		u_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
+				i_u,
+				i_pos_lon_D, i_pos_lat_D,
+				true,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
+			);
+
+		v_tmp_D = sphereSampler.bilinear_scalar_ret_phys(
+				i_v,
+				i_pos_lon_D, i_pos_lat_D,
+				true,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
+			);
+	}
+	else
+	{
+		u_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+				i_u,
+				i_pos_lon_D, i_pos_lat_D,
+				true,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSemiLagrangian->semi_lagrangian_interpolation_limiter
+			);
+
+		v_tmp_D = sphereSampler.bicubic_scalar_ret_phys(
+				i_v,
+				i_pos_lon_D, i_pos_lat_D,
+				true,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSemiLagrangian->semi_lagrangian_interpolation_limiter
+			);
+	}
 
 	/*
 	 * Convert to Cartesian space
@@ -406,15 +435,31 @@ void PDEAdvectionSphereTS_na_sl::run_timestep_1(
 	U_u_prev = io_U_u;
 	U_v_prev = io_U_v;
 
-	sweet::SphereData_Physical new_prog_phi_phys =
-		sphereSampler.bicubic_scalar_ret_phys(
-			io_U_phi.toPhys(),
-			pos_lon_D,
-			pos_lat_D,
-			false,
-			shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
-			shackSemiLagrangian->semi_lagrangian_interpolation_limiter
-	);
+	sweet::SphereData_Physical new_prog_phi_phys;
+
+	if (timestepping_order == 1 && false)
+	{
+		new_prog_phi_phys =
+			sphereSampler.bilinear_scalar_ret_phys(
+				io_U_phi.toPhys(),
+				pos_lon_D,
+				pos_lat_D,
+				false,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points
+		);
+	}
+	else
+	{
+		new_prog_phi_phys =
+			sphereSampler.bicubic_scalar_ret_phys(
+				io_U_phi.toPhys(),
+				pos_lon_D,
+				pos_lat_D,
+				false,
+				shackSemiLagrangian->semi_lagrangian_sampler_use_pole_pseudo_points,
+				shackSemiLagrangian->semi_lagrangian_interpolation_limiter
+		);
+	}
 
 	io_U_phi = new_prog_phi_phys;
 }

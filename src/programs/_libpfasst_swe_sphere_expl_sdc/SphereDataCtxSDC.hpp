@@ -79,13 +79,13 @@ public:
     }
 
     // Getter for the sphere data operators
-    SphereOperators* get_sphere_operators() const
+    sweet::SphereOperators* get_sphere_operators() const
     {
         return &(levelSingleton->op);
     }
 
     // Getter for the sphere data operators with no dealiasing
-    SphereOperators* get_sphere_operators_nodealiasing() const
+    sweet::SphereOperators* get_sphere_operators_nodealiasing() const
     {
         return &(levelSingleton->opNoDealiasing);
     }

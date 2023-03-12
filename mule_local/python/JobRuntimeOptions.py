@@ -85,8 +85,8 @@ class JobRuntimeOptions(InfoError):
         self.benchmark_galewsky_geostropic_setup = None
         self.benchmark_normal_modes_case = None
 
-        self.advection_rotation_angle = None
-        self.advection_velocity = None
+        self.benchmark_advection_rotation_angle = None
+        self.benchmark_advection_velocity = None
 
         #self.uselineardiv = None
         self.use_nonlinear_only_visc = None
@@ -180,11 +180,11 @@ class JobRuntimeOptions(InfoError):
             if self.viscosity_order != None:
                 uniqueIDStr += '_U'+str(self.viscosity_order)
 
-            if self.advection_rotation_angle != None:
-                uniqueIDStr += '_ar'+str(self.advection_rotation_angle)
+            if self.benchmark_advection_rotation_angle != None:
+                uniqueIDStr += '_ar'+str(self.benchmark_advection_rotation_angle)
 
-            if self.advection_velocity != None:
-                uniqueIDStr += '_av'+str(self.advection_velocity).replace(",", "_")
+            if self.benchmark_advection_velocity != None:
+                uniqueIDStr += '_av'+str(self.benchmark_advection_velocity).replace(",", "_")
 
         if 'timestep' in filter_list:
             raise Exception("Deprecated")
@@ -354,11 +354,11 @@ class JobRuntimeOptions(InfoError):
         if self.use_nonlinear_only_visc != None:
             retRuntimeOptionsStr += ' --use-nonlinear-only-visc='+str(self.use_nonlinear_only_visc)
 
-        if self.advection_rotation_angle != None:
-            retRuntimeOptionsStr += ' --benchmark-advection-rotation-angle='+str(self.advection_rotation_angle)
+        if self.benchmark_advection_rotation_angle != None:
+            retRuntimeOptionsStr += ' --benchmark-advection-rotation-angle='+str(self.benchmark_advection_rotation_angle)
 
-        if self.advection_velocity != None:
-            retRuntimeOptionsStr += ' --benchmark-advection-velocity='+str(self.advection_velocity)
+        if self.benchmark_advection_velocity != None:
+            retRuntimeOptionsStr += ' --benchmark-advection-velocity='+str(self.benchmark_advection_velocity)
 
         if self.timestepping_method != None:
             retRuntimeOptionsStr += ' --timestepping-method='+self.timestepping_method

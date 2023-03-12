@@ -15,6 +15,9 @@ jg.compile.program="tests/pde_advectionSphere"
 
 jg.runtime.benchmark_name = "williamson1b"
 
+
+benchmark_advection_rotation_angle_ = [1.5708, 0, -0.7]
+
 jg.runtime.max_simulation_time = 12*24*60*60
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
@@ -43,24 +46,26 @@ params_runtime_mode_res_y = [128]
 
 params_runtime_ts_methods = [
         # [ method_id, order, timestep size]
-        ["na_sl", 1, 400],
-        ["na_sl", 2, 400],
         ["na_erk", 2, 100],
         ["na_erk", 4, 100],
+        ["na_sl", 1, 800],
+        ["na_sl", 2, 800],
     ]
 
 
 for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res_y):
     jg.runtime.space_res_spectral = (res_x, res_y)
 
-    # Iterate over time stepping methods and the order
-    for ts_method in params_runtime_ts_methods:
-        jg.runtime.timestepping_method = ts_method[0]
-        jg.runtime.timestepping_order = ts_method[1]
+    for jg.runtime.benchmark_advection_rotation_angle in benchmark_advection_rotation_angle_:
 
-        for jg.compile.mode in params_compile_mode:
-            jg.runtime.timestep_size = ts_method[2]
-            jg.gen_jobscript_directory()
+        # Iterate over time stepping methods and the order
+        for ts_method in params_runtime_ts_methods:
+            jg.runtime.timestepping_method = ts_method[0]
+            jg.runtime.timestepping_order = ts_method[1]
+
+            for jg.compile.mode in params_compile_mode:
+                jg.runtime.timestep_size = ts_method[2]
+                jg.gen_jobscript_directory()
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)
 if exitcode != 0:
