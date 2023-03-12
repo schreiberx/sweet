@@ -15,16 +15,21 @@ class ShackPDESWESphere	:
 {
 public:
 	/**
-	 * Average height
+	 * Average height for perturbed formulation
+	 *
+	 * We use a default value similar to the Galewski benchmark
 	 */
 	double h0 = 10000.0;
 
 
-	/**
+	/*
 	 * For more information on viscosity,
+	 *
 	 * see 13.3.1 "Generic Form of the Explicit Diffusion Mechanism"
 	 * in "Numerical Techniques for Global Atmospheric Models"
-	 *
+	 */
+
+	/*
 	 * viscosity-term on velocities with 2nd order diff operator
 	 */
 	double viscosity = 0.0;
@@ -63,7 +68,6 @@ public:
 	 */
 	int normal_mode_analysis_generation = 0;
 
-
 	/*
 	 * Compute errors compared to analytical solution
 	 */
@@ -82,6 +86,20 @@ public:
 	bool instability_checks = false;
 
 
+	void printProgramArguments(const std::string& i_prefix = "")
+	{
+		std::cout << i_prefix << "PDESWEPlane parameters:" << std::endl;
+		std::cout << i_prefix << "	--pde-h0 [float]	average (initial) height of water" << std::endl;
+		std::cout << i_prefix << "	--pde-viscosity [visc]	Viscosity, , default=0" << std::endl;
+		std::cout << i_prefix << "	--pde-viscosity-order [visc]	Viscosity order, default=2" << std::endl;
+		std::cout << i_prefix << "	--pde-gravitation [float]	Gravitation" << std::endl;
+		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
+		std::cout << i_prefix << "	--compute-diagnostics [bool]	Compute diagnostics" << std::endl;
+		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
+		std::cout << i_prefix << "	--instability-checks=[bool]			Check for instabilities (default: 0)" << std::endl;
+	}
+
+
 	void printShack(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "PDESWESphere parameters:" << std::endl;
@@ -98,24 +116,12 @@ public:
 	}
 
 
-	void printProgramArguments(const std::string& i_prefix = "")
-	{
-		std::cout << i_prefix << "	-H [float]	Average (initial) height of water" << std::endl;
-		std::cout << i_prefix << "	-u [visc]	Viscosity, , default=0" << std::endl;
-		std::cout << i_prefix << "	-U [visc]	Viscosity order, default=2" << std::endl;
-		std::cout << i_prefix << "	-g [float]	Gravitation" << std::endl;
-		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
-		std::cout << i_prefix << "	--compute-diagnostics [bool]	Compute diagnostics" << std::endl;
-		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
-		std::cout << i_prefix << "	--instability-checks=[bool]			Check for instabilities (default: 0)" << std::endl;
-	}
-
 
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
 		i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0);
 		i_pa.getArgumentValueBy2Keys("--pde-viscosity", "-u", viscosity);
-		i_pa.getArgumentValueByKey("--pde-viscosity-order", viscosity_order);
+		i_pa.getArgumentValueBy2Keys("--pde-viscosity-order", "-U", viscosity_order);
 		i_pa.getArgumentValueBy3Keys("--pde-g", "-g", "--pde-gravitation", gravitation);
 		i_pa.getArgumentValueByKey("-F", sphere_use_fsphere);
 

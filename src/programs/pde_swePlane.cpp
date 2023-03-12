@@ -272,7 +272,6 @@ int main(int i_argc, char *i_argv[])
 
 
 
-
 int main_mpi(int i_argc, char *i_argv[])
 {
 	StopwatchBox::getInstance().main.start();
@@ -369,5 +368,5 @@ int main_mpi(int i_argc, char *i_argv[])
 
 int main(int i_argc, char *i_argv[])
 {
-	main_mpi(i_argc, i_argv);
+	return main_mpi(i_argc, i_argv);
 }

@@ -19,8 +19,8 @@ class ShackPDESWEPlane	:
 		public sweet::ShackInterface
 {
 public:
-	/*
-	 * Average height for initialization
+	/**
+	 * Average height for perturbed formulation
 	 *
 	 * We use a default value similar to the Galewski benchmark
 	 */
@@ -39,21 +39,21 @@ public:
 	 */
 	double viscosity = 0.0;
 
-	/*
-	 * hyper viscosity-term on velocities with 4th order diff operator
+	/**
+	 * Order of viscosity
 	 */
 	int viscosity_order = 2;
 
 
 	/**
-	 * Plane with f-Coriolis rotation
-	 */
-	double plane_rotating_f0 = 1.0; //Plane
-
-	/**
 	 * Gravitational constant
 	 */
 	double gravitation = 9.80616;
+
+	/**
+	 * Plane with f-Coriolis rotation
+	 */
+	double plane_rotating_f0 = 1.0; //Plane
 
 	/**
 	 * Avoid nonlinear divergence and only solve linear one
@@ -88,11 +88,11 @@ public:
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "PDESWEPlane parameters:" << std::endl;
-		std::cout << i_prefix << "	-u [visc]	viscosity, , default=0" << std::endl;
-		std::cout << i_prefix << "	-U [visc]	viscosity order, default=2" << std::endl;
+		std::cout << i_prefix << "	--pde-h0 [float]	average (initial) height of water" << std::endl;
+		std::cout << i_prefix << "	--pde-viscosity [visc]	viscosity, , default=0" << std::endl;
+		std::cout << i_prefix << "	--pde-viscosity-order [visc]	viscosity order, default=2" << std::endl;
+		std::cout << i_prefix << "	--pde-gravitation [float]	gravity" << std::endl;
 		std::cout << i_prefix << "	-f [float]	f-parameter for f-plane, default=0" << std::endl;
-		std::cout << i_prefix << "	-g [float]	gravity" << std::endl;
-		std::cout << i_prefix << "	-H [float]	average (initial) height of water" << std::endl;
 		std::cout << i_prefix << "	--use-only-linear-divergence [bool]	Use only linear divergence" << std::endl;
 		std::cout << i_prefix << "	--use-nonlinear-only-visc [bool]	Use only viscosity on nonlinear part" << std::endl;
 		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
@@ -101,15 +101,15 @@ public:
 		std::cout << i_prefix << "" << std::endl;
 	}
 
+
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		i_pa.getArgumentValueByKey("-u", viscosity);
-		i_pa.getArgumentValueByKey("-U", viscosity_order);
+		i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0);
+		i_pa.getArgumentValueBy2Keys("--pde-viscosity", "-u", viscosity);
+		i_pa.getArgumentValueBy2Keys("--pde-viscosity-order", "-U", viscosity_order);
+		i_pa.getArgumentValueBy3Keys("--pde-g", "-g", "--pde-gravitation", gravitation);
 
 		i_pa.getArgumentValueByKey("-f", plane_rotating_f0);
-
-		i_pa.getArgumentValueByKey("-g", gravitation);
-		i_pa.getArgumentValueByKey("-H", h0);
 
 		i_pa.getArgumentValueByKey("--use-only-linear-divergence", use_only_linear_divergence);
 		i_pa.getArgumentValueByKey("--use-nonlinear-only-visc", use_nonlinear_only_visc);
