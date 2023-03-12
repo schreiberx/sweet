@@ -2,7 +2,7 @@
  * CDefaultShaderDir.hpp
  *
  *  Created on: Aug 4, 2011
- *      Author: schreibm
+ * Author: schreibm
  */
 
 #ifndef CDEFAULTSHADERDIR_HPP_

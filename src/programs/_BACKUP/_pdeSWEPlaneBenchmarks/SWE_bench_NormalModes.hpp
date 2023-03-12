@@ -2,7 +2,7 @@
  * SWE_bench_NormalModes.hpp
  *
  *  Created on: 03 Nov 2019
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
 #ifndef SWE_BENCH_NORMAL_MODES_HPP_
 #define SWE_BENCH_NORMAL_MODES_HPP_

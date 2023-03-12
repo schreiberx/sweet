@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_ln_settls_uv.cpp
- *
- *  Created on: 24 Sep 2019
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Changelog:
  *  	2019-10-24: Partly based on plane version

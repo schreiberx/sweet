@@ -89,7 +89,7 @@ p.compilecommand_in_jobscript = False
 #
 # Run simulation on plane or sphere
 #
-p.compile.program = 'swe_sphere'
+p.compile.program = 'programs/pde_sweSphere'
 
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'

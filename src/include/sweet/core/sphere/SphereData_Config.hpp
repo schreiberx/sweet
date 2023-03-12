@@ -2,7 +2,7 @@
  * SPHSetup.hpp
  *
  *  Created on: 12 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SPHEREDATA_CONFIG_HPP_
@@ -723,6 +723,13 @@ public:
 				i_shackSphereDataOps->sh_setup_verbosity,
 				i_shackSphereDataOps->sh_setup_num_threads
 			);
+	}
+
+
+public:
+	bool setupAuto(sweet::ShackSphereDataOps &i_shackSphereDataOps)
+	{
+		return setupAuto(&i_shackSphereDataOps);
 	}
 
 

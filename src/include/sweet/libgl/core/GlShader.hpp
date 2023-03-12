@@ -2,7 +2,7 @@
  * CGlShader.hpp
  *
  *  Created on: Sep 6, 2011
- *      Author: schreibm
+ * Author: schreibm
  */
 
 #ifndef CGLSHADER_HPP_

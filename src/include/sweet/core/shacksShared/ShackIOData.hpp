@@ -2,7 +2,7 @@
  * ShackIOData.hpp
  *
  *  Created on: Feb 21, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACKS_SHACKIODATA_HPP_

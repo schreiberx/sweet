@@ -1,6 +1,5 @@
 /*
- *  Created on: 30 Nov 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_BENCHMARKS_SWE_PLANE_COMBINED_HPP

@@ -1,6 +1,5 @@
 /*
- *  Created on: 14 June 2017
- *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  *
  */
 

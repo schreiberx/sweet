@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_split_lg_lc_na_nr_erk.cpp
- *
- *  Created on: 24 Apr 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 

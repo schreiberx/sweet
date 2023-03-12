@@ -63,6 +63,7 @@ public:
 			sweet::SphereOperators *io_ops
 	);
 
+	void clear_3_benchmarkDetection();
 	void clear();
 
 private:

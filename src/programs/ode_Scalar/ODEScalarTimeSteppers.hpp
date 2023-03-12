@@ -2,7 +2,7 @@
  * OdeScalarTimeSteppers.hpp
  *
  *  Created on: 7th March 2023
- *      Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
+ * Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 
 #ifndef SRC_PROGRAMS_ODE_SCALAR_TIMESTEPPERS_HPP_

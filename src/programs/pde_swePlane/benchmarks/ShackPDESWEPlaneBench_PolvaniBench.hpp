@@ -1,6 +1,5 @@
 /*
- *  Created on: 14 Oct 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_PDE_SWE_PLANE_POLVANI_BENCH_HPP_
 #define SRC_PDE_SWE_PLANE_POLVANI_BENCH_HPP_

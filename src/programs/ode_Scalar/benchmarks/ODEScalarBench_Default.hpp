@@ -1,6 +1,5 @@
 /*
- *  Created on: 07 Mar 2023
- *      Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
+ * Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 #ifndef ODE_SCALAR_BENCH_DEFAULT_BUMP_HPP__
 #define ODE_SCALAR_BENCH_DEFAULT_BUMP_HPP__

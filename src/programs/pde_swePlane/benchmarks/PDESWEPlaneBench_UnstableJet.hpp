@@ -2,7 +2,7 @@
  * SWEUnstableJet.hpp
  *
  *  Created on: 03 Nov 2017
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
 #ifndef SWE_PLANE_UNSTABLEJET_HPP_
 #define SWE_PLANE_UNSTABLEJET_HPP_

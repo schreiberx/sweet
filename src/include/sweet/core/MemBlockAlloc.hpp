@@ -2,7 +2,7 @@
  * MemBlockAlloc.hpp
  *
  *  Created on: 14 Sep 2015
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  * Changelog:
  *   - 2021-12-23: Made fully configurable via environment variable

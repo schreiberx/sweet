@@ -2,7 +2,7 @@
  * PDESWESphereTS_l_irk_n_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_L_IRK_N_ERK_HPP_

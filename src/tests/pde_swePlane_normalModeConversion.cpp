@@ -1,6 +1,5 @@
 /*
- *  Created on: 14 Nov 2019
- *      Author: Pedro Peixoto <ppeixoto@usp.br>
+ * Author: Pedro Peixoto <ppeixoto@usp.br>
  *
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */

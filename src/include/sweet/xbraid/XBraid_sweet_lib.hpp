@@ -2,7 +2,7 @@
  * Xbraid_sweet_lib.hpp
  *
  *  Created on: 10 Jun 2022
- *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
  */
 

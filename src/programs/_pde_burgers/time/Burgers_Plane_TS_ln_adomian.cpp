@@ -1,8 +1,5 @@
 /*
- * Burgers_Plane_TS_ln_adomian.cpp
- *
- *  Created on: 03 August 2017
- *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  *
  */
 

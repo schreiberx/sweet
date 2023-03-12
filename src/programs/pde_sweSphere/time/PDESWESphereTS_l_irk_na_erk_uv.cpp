@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_l_irk_na_erk_uv_ver01.cpp
- *
- *  Created on: 19 Mai 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_l_irk_na_erk_uv.hpp"

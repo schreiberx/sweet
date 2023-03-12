@@ -2,7 +2,7 @@
  * SWEMergeVortex.hpp
  *
  *  Created on: 01 Nov 2017
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
 #ifndef SWE_PLANE_MERGEVORTEX_HPP_
 #define SWE_PLANE_MERGEVORTEX_HPP_

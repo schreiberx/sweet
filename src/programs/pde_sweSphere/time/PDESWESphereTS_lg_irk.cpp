@@ -91,7 +91,7 @@ bool PDESWESphereTS_lg_irk::setup_main(
 	else if (i_timestep_order == 2)
 	{
 		crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
-		lg_erk.setup(ops, 1);
+		lg_erk.setup_main(ops, 1);
 	}
 	else
 	{

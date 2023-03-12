@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_lg_erk.cpp
- *
- *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_lg_erk.hpp"
@@ -17,11 +14,11 @@ bool PDESWESphereTS_lg_erk::setup_auto(
 {
 	timestepping_method = i_timestepping_method;
 
-	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
+	return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order);
 }
 
 
-bool PDESWESphereTS_lg_erk::setup(
+bool PDESWESphereTS_lg_erk::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_order	///< order of RK time stepping method
 )

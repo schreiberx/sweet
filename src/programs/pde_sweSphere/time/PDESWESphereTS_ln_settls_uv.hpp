@@ -2,7 +2,7 @@
  * PDESWESphereTS_ln_settls_uv.hpp
  *
  *  Created on: 24 Sep 2019
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Based on plane code
  */

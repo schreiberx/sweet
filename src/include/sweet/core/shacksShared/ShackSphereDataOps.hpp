@@ -1,5 +1,5 @@
 /*
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACKS_PLANE_SHACK_SPHERE_DATA_OPS_HPP_

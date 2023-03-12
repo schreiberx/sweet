@@ -1,8 +1,5 @@
 /*
- * test_sphere_coordinates.cpp
- *
- *  Created on: 17 Apr 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <iostream>
@@ -80,10 +77,10 @@ int main(int i_argc, char *i_argv[])
 			double a_lat = 0;
 
 			double a_x, a_y, a_z;
-			SWEETVectorMath::point_latlon_to_cartesian__scalar(a_lon, a_lat, a_x, a_y, a_z);
+			sweet::VectorMath::point_latlon_to_cartesian__scalar(a_lon, a_lat, a_x, a_y, a_z);
 
 			double o_lon, o_lat;
-			SWEETVectorMath::point_cartesian_to_latlon__scalar(a_x, a_y, a_z, o_lon, o_lat);
+			sweet::VectorMath::point_cartesian_to_latlon__scalar(a_x, a_y, a_z, o_lon, o_lat);
 
 			std::cout << "lat/lon: " << a_lon << ", " << a_lat;
 			std::cout << "\t=> Cartesian: " << a_x << ", " << a_y << ", " << a_z;
@@ -108,7 +105,7 @@ int main(int i_argc, char *i_argv[])
 				double a_lat = 0;
 
 				double vel_x, vel_y, vel_z;
-				SWEETVectorMath::velocity_latlon_to_cartesian__scalar(a_lon, a_lat, vel_u, vel_v, vel_x, vel_y, vel_z);
+				sweet::VectorMath::velocity_latlon_to_cartesian__scalar(a_lon, a_lat, vel_u, vel_v, vel_x, vel_y, vel_z);
 
 				std::cout << "lat/lon: " << a_lon << ", " << a_lat;
 				std::cout << "\t=> u,v velocity: " << vel_u << ", " << vel_v;
@@ -134,7 +131,7 @@ int main(int i_argc, char *i_argv[])
 				double a_lat = 0.5*M_PI*0.5;
 
 				double vel_x, vel_y, vel_z;
-				SWEETVectorMath::velocity_latlon_to_cartesian__scalar(a_lon, a_lat, vel_u, vel_v, vel_x, vel_y, vel_z);
+				sweet::VectorMath::velocity_latlon_to_cartesian__scalar(a_lon, a_lat, vel_u, vel_v, vel_x, vel_y, vel_z);
 
 				std::cout << "lat/lon: " << a_lon << ", " << a_lat;
 				std::cout << "\t=> u,v velocity: " << vel_u << ", " << vel_v;
@@ -156,7 +153,7 @@ int main(int i_argc, char *i_argv[])
 			double a_lon = -2.0;
 			double a_lat = 0;
 
-			SWEETVectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
+			sweet::VectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
 
 			double o_lon = -2.0+M_PI*2.0;
 			double o_lat = 0;
@@ -167,7 +164,7 @@ int main(int i_argc, char *i_argv[])
 			double a_lon = 8.0;
 			double a_lat = 0;
 
-			SWEETVectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
+			sweet::VectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
 
 			double o_lon = 8.0-M_PI*2.0;
 			double o_lat = 0;
@@ -178,7 +175,7 @@ int main(int i_argc, char *i_argv[])
 			double a_lon = 8.0;
 			double a_lat = 0;
 
-			SWEETVectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
+			sweet::VectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
 
 			double o_lon = 8.0-M_PI*2.0;
 			double o_lat = 0;
@@ -189,7 +186,7 @@ int main(int i_argc, char *i_argv[])
 			double a_lon = 2.0;
 			double a_lat = M_PI*0.5+0.3;
 
-			SWEETVectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
+			sweet::VectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
 
 			double o_lon = 2.0+M_PI;
 			double o_lat = M_PI*0.5-0.3;
@@ -200,7 +197,7 @@ int main(int i_argc, char *i_argv[])
 			double a_lon = -2.0;
 			double a_lat = -M_PI*0.5-0.3;
 
-			SWEETVectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
+			sweet::VectorMath::point_latlon_normalize__scalar(a_lon, a_lat);
 
 			double o_lon = -2.0+M_PI;
 			double o_lat = -M_PI*0.5+0.3;
@@ -223,8 +220,8 @@ int main(int i_argc, char *i_argv[])
 			{
 				double o_lon, o_lat;
 				double a_x, a_y, a_z;
-				SWEETVectorMath::point_latlon_to_cartesian__scalar(a_lon, a_lat, a_x, a_y, a_z);
-				SWEETVectorMath::point_cartesian_to_latlon__scalar(a_x, a_y, a_z, o_lon, o_lat);
+				sweet::VectorMath::point_latlon_to_cartesian__scalar(a_lon, a_lat, a_x, a_y, a_z);
+				sweet::VectorMath::point_cartesian_to_latlon__scalar(a_x, a_y, a_z, o_lon, o_lat);
 
 				check_error(o_lon, o_lat, a_lon, a_lat);
 			}
@@ -249,10 +246,10 @@ int main(int i_argc, char *i_argv[])
 					for (double a_v = -2.0; a_v <= 2.0; a_v += 0.25)
 					{
 						double a_V_x, a_V_y, a_V_z;
-						SWEETVectorMath::velocity_latlon_to_cartesian__scalar(a_lon, a_lat, a_u, a_v, a_V_x, a_V_y, a_V_z);
+						sweet::VectorMath::velocity_latlon_to_cartesian__scalar(a_lon, a_lat, a_u, a_v, a_V_x, a_V_y, a_V_z);
 
 						double o_u, o_v;
-						SWEETVectorMath::velocity_cartesian_to_latlon__scalar(a_lon, a_lat, a_V_x, a_V_y, a_V_z, o_u, o_v);
+						sweet::VectorMath::velocity_cartesian_to_latlon__scalar(a_lon, a_lat, a_V_x, a_V_y, a_V_z, o_u, o_v);
 
 						check_error(a_u, a_v, o_u, o_v);
 					}
@@ -339,7 +336,7 @@ int main(int i_argc, char *i_argv[])
 			std::cout << "Testcase " << i << std::endl;
 
 			double o_P_x, o_P_y, o_P_z;
-			SWEETVectorMath::point_rotate_3d__scalar(
+			sweet::VectorMath::point_rotate_3d__scalar(
 					testcases[i][0],	// start
 					testcases[i][1],
 					testcases[i][2],

@@ -1,6 +1,5 @@
 /*
- *  Created on: Feb 23, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACKS_PLANE_SHACKPLANE_DATA_OPS_HPP_

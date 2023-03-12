@@ -11,7 +11,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.program="tests/sphere_advection_semi_lagrangian"
+jg.compile.program="tests/core_sphere_advectionSemiLagrangian"
 
 jg.compile.plane_spectral_space="disable"
 jg.compile.sphere_spectral_space="enable"
@@ -31,7 +31,7 @@ params_runtime_mode_res_x = [64]
 params_runtime_mode_res_y = [64]
 
 params_advection_rotation_angles = [1.5708, 0, -0.7]
-params_rotation_velocity = [0, 60*60*24*12]
+#params_advection_velocity = [0, 60*60*24*12]
 
 params_runtime_ts_methods = [
         # [ method_id, order ]
@@ -52,10 +52,10 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
 
         for vel in product(
             params_advection_rotation_angles,
-            params_rotation_velocity,
+            #params_advection_velocity,
         ):
             jg.runtime.advection_rotation_angle = vel[0]
-            jg.runtime.advection_velocity = ",".join(str(x) for x in vel)
+            #jg.runtime.advection_velocity = ",".join(str(x) for x in vel)
 
             jg.runtime.semi_lagrangian_max_iterations = 10
 

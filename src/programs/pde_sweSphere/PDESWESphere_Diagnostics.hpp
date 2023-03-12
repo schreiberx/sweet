@@ -2,7 +2,7 @@
  * PDESWESphereDiagnostics.hpp
  *
  *  Created on: Mar 10, 2023
- *      Author: martin
+ * Author: martin
  */
 
 #ifndef SRC_PROGRAMS_PDE_SWESPHERE_PDESWESPHEREDIAGNOSTICS_HPP_

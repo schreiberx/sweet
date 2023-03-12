@@ -3,14 +3,17 @@
  *
  * Include these files and directory for compilation
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/time/PDESWESphereTS_l_erk.cpp
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/time/PDESWESphereTS_lg_erk.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/time/PDESWESphereTS_l_irk.cpp
- * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/
+ * MULE_COMPILE_FILES_AND_DIRS: src/programs/pde_sweSphere/PDESWESphere_BenchmarksCombined.cpp
  *
  * MULE_SCONS_OPTIONS: --fortran-source=enable
  * MULE_SCONS_OPTIONS: --lapack=enable
  */
 
 #include <cmath>
+
+#include <sweet/core/ErrorBase.hpp>
 
 #include "../programs/pde_sweSphere/PDESWESphere_BenchmarksCombined.hpp"
 
@@ -47,20 +50,36 @@ class Test
 {
 	double double_precision_digits = -1.0;
 
-	sweet::SphereOperators *ops;
+	sweet::SphereOperators *opsReal;
+	sphere_operators_type *ops;
 
+	sweet::ShackDictionary *shackDict;
 	ShackPDESWESphere *shackPDESWESphere;
 	sweet::ShackSphereDataOps *shackSphereDataOps;
 
 	PDESWESphere_BenchmarksCombined benchmarks;
 
 public:
+	sweet::ErrorBase error;
+
+	Test()	:
+		ops(nullptr)
+	{
+	}
+
+	~Test()
+	{
+		delete ops;
+	}
+
+public:
 	bool shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 	)
 	{
-		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
-		shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
+		shackDict = io_shackDict;
+		shackPDESWESphere = shackDict->getAutoRegistration<ShackPDESWESphere>();
+		shackSphereDataOps = shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
 		//shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
 		//shackPDESWETimeDisc = shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
 		//shackPDESWEBenchmark = shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();
@@ -71,13 +90,24 @@ public:
 		return true;
 	}
 
-	void setup(sweet::SphereOperators *i_sphereOps)
+	bool setup(sweet::SphereOperators *i_sphereOps)
 	{
-		ops = i_sphereOps;
+		opsReal = i_sphereOps;
 
+#if 0
+		benchmarks.clear_3_benchmarkDetection();
 		benchmarks.setup_3_benchmarkDetection();
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarks);
+
 		benchmarks.setup_4_benchmarkSetup_1_withoutOps();
-		benchmarks.setup_5_benchmarkSetup_2_withOps(ops);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarks);
+
+		benchmarks.setup_5_benchmarkSetup_2_withOps(opsReal);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarks);
+#endif
+
+		ops = new sphere_operators_type(i_sphereOps->sphereDataConfig, shackSphereDataOps);
+		return true;
 	}
 
 	void check_error(double err, double rel_value)
@@ -99,13 +129,13 @@ public:
 			sweet::SphereData_Spectral &o_div
 	)
 	{
+		benchmarks.clear_3_benchmarkDetection();
 		benchmarks.setup_3_benchmarkDetection("geostrophic_balance_linear_16");
-		benchmarks.setup_4_benchmarkSetup_1_withoutOps();
-		benchmarks.setup_5_benchmarkSetup_2_withOps(ops);
+		//benchmarks.setup_4_benchmarkSetup_1_withoutOps();
+		benchmarks.setup_5_benchmarkSetup_2_withOps(opsReal);
 
 		benchmarks.benchmark->getInitialState(o_phi, o_vrt, o_div);
 	}
-
 
 	void benchmark_setup_geostrophic_balance(
 			sweet::SphereData_SpectralComplex &o_phi,
@@ -114,9 +144,9 @@ public:
 	)
 	{
 
-		sweet::SphereData_Spectral phi(ops.sphereDataConfig);
-		sweet::SphereData_Spectral vrt(ops.sphereDataConfig);
-		sweet::SphereData_Spectral div(ops.sphereDataConfig);
+		sweet::SphereData_Spectral phi(opsReal->sphereDataConfig);
+		sweet::SphereData_Spectral vrt(opsReal->sphereDataConfig);
+		sweet::SphereData_Spectral div(opsReal->sphereDataConfig);
 
 		benchmark_setup_geostrophic_balance(phi, vrt, div);
 
@@ -130,35 +160,34 @@ public:
 	}
 
 
-	static
 	void benchmark_setup_pvd(
-			sweet::SphereOperators &opsReal,
 			sweet::SphereData_Spectral &o_phi,
 			sweet::SphereData_Spectral &o_vrt,
 			sweet::SphereData_Spectral &o_div
 	)
 	{
-		PDESWESphere_BenchmarksCombined benchmarks;
-		benchmarks.setup(simVars, opsReal, "gaussian_bumps_pvd");
+		benchmarks.clear_3_benchmarkDetection();
+		benchmarks.setup_3_benchmarkDetection("gaussian_bumps_pvd");
+		//benchmarks.setup_4_benchmarkSetup_1_withoutOps();
+		benchmarks.setup_5_benchmarkSetup_2_withOps(opsReal);
 
-		benchmarks.benchmark->get_initial_state(o_phi, o_vrt, o_div);
+
+		benchmarks.benchmark->getInitialState(o_phi, o_vrt, o_div);
 	}
 
 
-	static
 	void benchmark_setup_pvd(
-			sweet::SphereOperators &opsReal,
 			sweet::SphereData_SpectralComplex &o_phi,
 			sweet::SphereData_SpectralComplex &o_vrt,
 			sweet::SphereData_SpectralComplex &o_div
 	)
 	{
 
-		sweet::SphereData_Spectral phi(opsReal.sphereDataConfig);
-		sweet::SphereData_Spectral vrt(opsReal.sphereDataConfig);
-		sweet::SphereData_Spectral div(opsReal.sphereDataConfig);
+		sweet::SphereData_Spectral phi(opsReal->sphereDataConfig);
+		sweet::SphereData_Spectral vrt(opsReal->sphereDataConfig);
+		sweet::SphereData_Spectral div(opsReal->sphereDataConfig);
 
-		benchmark_setup_pvd(opsReal, phi, vrt, div);
+		benchmark_setup_pvd(phi, vrt, div);
 
 		{
 			// complex
@@ -176,7 +205,7 @@ public:
 			phys_value_type &alpha
 	)
 	{
-		simVars.outputConfig();
+		shackDict->printProgramArguments();
 
 		if (sizeof(phys_value_type) == sizeof(double))
 		{
@@ -188,16 +217,10 @@ public:
 		}
 
 		/*
-		 * Operators
-		 */
-		sweet::SphereOperators opsReal(sphereDataConfig, &(simVars.sim));
-		sphere_operators_type ops(sphereDataConfig, &(simVars.sim));
-
-		/*
 		 * Setup local simulation variables
 		 */
 		double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
-		double sphere_radius = shackPDESWESphere->sphere_radius;
+		double sphere_radius = shackSphereDataOps->sphere_radius;
 
 		double dt_implicit;
 
@@ -218,7 +241,7 @@ public:
 		std::cout << "gh0: " << gh0 << std::endl;
 		std::cout << "gravitation: " << shackPDESWESphere->gravitation << std::endl;
 		std::cout << "sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
-		std::cout << "sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
+		std::cout << "sphere_radius: " << shackSphereDataOps->sphere_radius << std::endl;
 
 
 		/*
@@ -243,7 +266,7 @@ public:
 			sphere_data_spec_type vrt(sphereDataConfig);
 			sphere_data_spec_type div(sphereDataConfig);
 
-			benchmark_setup_geostrophic_balance(opsReal, phi, vrt, div);
+			benchmark_setup_geostrophic_balance(phi, vrt, div);
 
 			sphere_data_spec_type foo, rhs;
 			sph_banded_solver_type sphSolverTest;
@@ -259,10 +282,10 @@ public:
 				phi_max = 1;
 
 			if (vrt_max == 0)
-				vrt_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
+				vrt_max = phi_max/(shackSphereDataOps->sphere_radius*shackSphereDataOps->sphere_radius);
 
 			if (div_max == 0)
-				div_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
+				div_max = phi_max/(shackSphereDataOps->sphere_radius*shackSphereDataOps->sphere_radius);
 
 			std::cout << std::endl;
 			std::cout << "phi_max: " << phi_max << std::endl;
@@ -272,12 +295,12 @@ public:
 			std::cout << "============================================" << std::endl;
 			std::cout << " J(x)-x" << std::endl;
 			{
-				foo = ops.implicit_J(vrt, dt_two_omega) - vrt;
+				foo = ops->implicit_J(vrt, dt_two_omega) - vrt;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + vrt: 0 = " << err << std::endl;
 				check_error(err, vrt_max);
 
-				foo = ops.implicit_J(phi, dt_two_omega) -phi;
+				foo = ops->implicit_J(phi, dt_two_omega) -phi;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + phi: 0 = " << err << std::endl;
 				check_error(err, phi_max);
@@ -287,12 +310,12 @@ public:
 			std::cout << "============================================" << std::endl;
 			std::cout << " x-Jinv(x)" << std::endl;
 			{
-				foo =vrt - ops.implicit_Jinv(vrt, dt_two_omega);
+				foo =vrt - ops->implicit_Jinv(vrt, dt_two_omega);
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << "vrt - Jinv(vrt) = 0 = " << err << std::endl;
 				check_error(err, vrt_max);
 
-				foo =phi - ops.implicit_Jinv(phi, dt_two_omega);
+				foo =phi - ops->implicit_Jinv(phi, dt_two_omega);
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << "phi - Jinv(phi) = 0 = " << err << std::endl;
 				check_error(err, phi_max);
@@ -302,12 +325,12 @@ public:
 			std::cout << "============================================" << std::endl;
 			std::cout << " FJinv(x)-F(Jinv(x))" << std::endl;
 			{
-				foo = ops.implicit_FJinv(vrt, dt_two_omega) - ops.implicit_F(ops.implicit_Jinv(vrt, dt_two_omega), dt_two_omega);
+				foo = ops->implicit_FJinv(vrt, dt_two_omega) - ops->implicit_F(ops->implicit_Jinv(vrt, dt_two_omega), dt_two_omega);
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << "FJinv(vrt) - F(Jinv(vrt)) = 0 = " << err << std::endl;
 				check_error(err, vrt_max);
 
-				foo = ops.implicit_FJinv(phi, dt_two_omega) - ops.implicit_F(ops.implicit_Jinv(phi, dt_two_omega), dt_two_omega);
+				foo = ops->implicit_FJinv(phi, dt_two_omega) - ops->implicit_F(ops->implicit_Jinv(phi, dt_two_omega), dt_two_omega);
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << "FJinv(phi) - F(Jinv(phi)) = 0 = " << err << std::endl;
 				check_error(err, phi_max);
@@ -317,7 +340,7 @@ public:
 			std::cout << "============================================" << std::endl;
 			std::cout << " -Linv(F(vrt)) - phi = 0" << std::endl;
 			{
-				foo = -ops.implicit_Linv(ops.implicit_F(vrt, dt_two_omega), dt) - phi;
+				foo = -ops->implicit_Linv(ops->implicit_F(vrt, dt_two_omega), dt) - phi;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << "-Linv(F*vrt) - phi = 0 = " << err << std::endl;
 				check_error(err, phi_max);
@@ -327,7 +350,7 @@ public:
 			std::cout << "============================================" << std::endl;
 			std::cout << " -F(vrt) - L(phi) = 0" << std::endl;
 			{
-				foo = -ops.implicit_F(vrt, dt_two_omega) - ops.implicit_L(phi, dt);
+				foo = -ops->implicit_F(vrt, dt_two_omega) - ops->implicit_L(phi, dt);
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << "-F*vrt - L*phi = 0 = " << err << std::endl;
 				check_error(err, div_max);
@@ -340,13 +363,13 @@ public:
 				sphSolverTest.setup(sphereDataConfig, 1);
 				sphSolverTest.solver_component_implicit_J(dt_two_omega);
 
-				rhs = ops.implicit_J(vrt, dt_two_omega);
+				rhs = ops->implicit_J(vrt, dt_two_omega);
 				foo = sphSolverTest.solve(rhs) -vrt;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + vrt: 0 = " << err << std::endl;
 				check_error(err, vrt_max);
 
-				rhs = ops.implicit_J(phi, dt_two_omega);
+				rhs = ops->implicit_J(phi, dt_two_omega);
 				foo = sphSolverTest.solve(rhs) -phi;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + phi: 0 = " << err << std::endl;
@@ -361,13 +384,13 @@ public:
 				sphSolverTest.solver_component_implicit_F(dt_two_omega);
 				sphSolverTest.solver_component_implicit_I(scalar);
 
-				rhs = ops.implicit_F(vrt, dt_two_omega) + scalar*vrt;
+				rhs = ops->implicit_F(vrt, dt_two_omega) + scalar*vrt;
 				foo = sphSolverTest.solve(rhs) -vrt;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + vrt: 0 = " << err << std::endl;
 				check_error(err, vrt_max);
 
-				rhs = ops.implicit_F(phi, dt_two_omega) + scalar*phi;
+				rhs = ops->implicit_F(phi, dt_two_omega) + scalar*phi;
 				foo = sphSolverTest.solve(rhs) -phi;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + phi: 0 = " << err << std::endl;
@@ -392,8 +415,8 @@ public:
 				sphSolverTestFJinv_J.solver_component_implicit_J(dt_two_omega);
 
 				sphere_data_spec_type a = vrt;
-				sphere_data_spec_type b = ops.implicit_F(a, dt_two_omega) + ops.implicit_J(a, dt_two_omega);
-				sphere_data_spec_type c = ops.implicit_FJinv(b, dt_two_omega) + ops.implicit_J(b, dt_two_omega);
+				sphere_data_spec_type b = ops->implicit_F(a, dt_two_omega) + ops->implicit_J(a, dt_two_omega);
+				sphere_data_spec_type c = ops->implicit_FJinv(b, dt_two_omega) + ops->implicit_J(b, dt_two_omega);
 				sphere_data_spec_type b_ = sphSolverTestFJinv_J.solve(c);
 				sphere_data_spec_type a_ = sphSolverTestF_J.solve(b_);
 
@@ -413,14 +436,14 @@ public:
 				sphSolverTest.solver_component_implicit_FJinvF(dt_two_omega);
 				sphSolverTest.solver_component_implicit_J(dt_two_omega);
 
-				rhs = ops.implicit_FJinv(ops.implicit_F(vrt, dt_two_omega), dt_two_omega) + ops.implicit_J(vrt, dt_two_omega);
+				rhs = ops->implicit_FJinv(ops->implicit_F(vrt, dt_two_omega), dt_two_omega) + ops->implicit_J(vrt, dt_two_omega);
 				foo = sphSolverTest.solve(rhs) - vrt;
 
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + vrt: 0 = " << err << std::endl;
 				check_error(err, vrt_max);
 
-				rhs = ops.implicit_FJinv(ops.implicit_F(phi, dt_two_omega), dt_two_omega) + ops.implicit_J(phi, dt_two_omega);
+				rhs = ops->implicit_FJinv(ops->implicit_F(phi, dt_two_omega), dt_two_omega) + ops->implicit_J(phi, dt_two_omega);
 				foo = sphSolverTest.solve(rhs) - phi;
 				err = foo.toPhys().physical_reduce_max_abs();
 				std::cout << " + phi: 0 = " << err << std::endl;
@@ -450,7 +473,7 @@ public:
 			sphere_data_spec_type vrt(sphereDataConfig);
 			sphere_data_spec_type div(sphereDataConfig);
 
-			benchmark_setup_pvd(opsReal, phi, vrt, div);
+			benchmark_setup_pvd(phi, vrt, div);
 
 			double phi_order = phi.toPhys().physical_reduce_max_abs();
 			double vrt_order = vrt.toPhys().physical_reduce_max_abs();
@@ -470,7 +493,7 @@ public:
 			if ((i & 2) == 0)
 			{
 				vrt.spectral_set_zero();
-				vrt_order = phi_order/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
+				vrt_order = phi_order/(shackSphereDataOps->sphere_radius*shackSphereDataOps->sphere_radius);
 				std::cout << " + vrt: set to zero" << std::endl;
 			}
 			else
@@ -481,7 +504,7 @@ public:
 			if ((i & 4) == 0)
 			{
 				div.spectral_set_zero();
-				div_order = phi_order/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
+				div_order = phi_order/(shackSphereDataOps->sphere_radius*shackSphereDataOps->sphere_radius);
 				std::cout << " + div: set to zero" << std::endl;
 			}
 			else
@@ -497,7 +520,7 @@ public:
 
 
 			double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
-			double sphere_radius = shackPDESWESphere->sphere_radius;
+			double sphere_radius = shackSphereDataOps->sphere_radius;
 
 			double dt_two_omega = dt_implicit*2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 
@@ -513,11 +536,11 @@ public:
 			sphSolverDiv.solver_component_implicit_FJinvF(dt_two_omega);
 			sphSolverDiv.solver_component_implicit_L(gh0*dt_implicit, dt_implicit, sphere_radius);
 
-			sphere_data_spec_type rhs = S2 + ops.implicit_FJinv(S1, dt_two_omega) + ops.implicit_L(S3, dt_implicit);
+			sphere_data_spec_type rhs = S2 + ops->implicit_FJinv(S1, dt_two_omega) + ops->implicit_L(S3, dt_implicit);
 			sphere_data_spec_type div1 = sphSolverDiv.solve(rhs);
 
 			sphere_data_spec_type phi1 = S3 - dt_implicit*gh0*div1;
-			sphere_data_spec_type vrt1 = ops.implicit_Jinv(S1 - ops.implicit_F(div1, dt_two_omega), dt_two_omega);
+			sphere_data_spec_type vrt1 = ops->implicit_Jinv(S1 - ops->implicit_F(div1, dt_two_omega), dt_two_omega);
 
 			/*
 			 * Testcase for correct solver
@@ -533,7 +556,7 @@ public:
 				std::cout << "============================================" << std::endl;
 				std::cout << " CURL equation" << std::endl;
 				{
-					foo = ops.implicit_J(vrt1, dt_two_omega) + ops.implicit_F(div1, dt_two_omega) - S1;
+					foo = ops->implicit_J(vrt1, dt_two_omega) + ops->implicit_F(div1, dt_two_omega) - S1;
 					err = foo.toPhys().physical_reduce_max_abs();
 					std::cout << " + err: 0 = " << err << std::endl;
 					check_error(err, vrt_order);
@@ -542,7 +565,7 @@ public:
 				std::cout << "============================================" << std::endl;
 				std::cout << " DIV equation" << std::endl;
 				{
-					foo = ops.implicit_J(div1, dt_two_omega) - ops.implicit_F(vrt1, dt_two_omega) - ops.implicit_L(phi1, dt_implicit) - S2;
+					foo = ops->implicit_J(div1, dt_two_omega) - ops->implicit_F(vrt1, dt_two_omega) - ops->implicit_L(phi1, dt_implicit) - S2;
 					err = foo.toPhys().physical_reduce_max_abs();
 					std::cout << " + err: 0 = " << err << std::endl;
 					check_error(err, div_order);
@@ -572,7 +595,7 @@ public:
 		std::cout << " + gh0: " << gh0 << std::endl;
 		std::cout << " + gravitation: " << shackPDESWESphere->gravitation << std::endl;
 		std::cout << " + sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
-		std::cout << " + sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
+		std::cout << " + sphere_radius: " << shackSphereDataOps->sphere_radius << std::endl;
 		std::cout << std::endl;
 
 
@@ -596,20 +619,70 @@ class TestFB
 {
 	double double_precision_digits = -1.0;
 
+	sweet::ShackDictionary *shackDict;
 	ShackPDESWESphere *shackPDESWESphere;
 	sweet::ShackSphereDataOps *shackSphereDataOps;
 
+	sweet::SphereOperators *opsReal;
+	sphere_operators_type *ops;
+
+	PDESWESphereTS_l_erk l_erk;
+	PDESWESphereTS_l_irk l_irk;
+
+	PDESWESphere_BenchmarksCombined benchmarks;
+
 public:
+	sweet::ErrorBase error;
+
+	TestFB()	:
+		ops(nullptr)
+	{
+	}
+
+	~TestFB()
+	{
+		delete ops;
+	}
+
 	bool shackRegistration(
 		sweet::ShackDictionary *io_shackDict
 	)
 	{
+		shackDict = io_shackDict;
+
 		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 		shackSphereDataOps = io_shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
 		//shackTimestepControl = shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
 		//shackSphereDataOps = shackDict->getAutoRegistration<sweet::ShackSphereDataOps>();
 		//shackPDESWETimeDisc = shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
 		//shackPDESWEBenchmark = shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();
+
+		benchmarks.setup_1_registerAllBenchmark();
+		benchmarks.setup_2_shackRegistration(io_shackDict);
+
+		l_erk.shackRegistration(shackDict);
+		l_irk.shackRegistration(shackDict);
+		return true;
+	}
+
+
+	bool setup(sweet::SphereOperators *i_sphereOps)
+	{
+		opsReal = i_sphereOps;
+
+#if 1
+		benchmarks.clear_3_benchmarkDetection();
+		benchmarks.setup_3_benchmarkDetection("gaussian_bumps_pvd");
+		//benchmarks.setup_4_benchmarkSetup_1_withoutOps();
+		benchmarks.setup_5_benchmarkSetup_2_withOps(opsReal);
+#endif
+
+		//l_irk.setup(opsReal, 1, dt_implicit);
+		l_irk.setup(opsReal, 1, 1.0);
+		l_erk.setup_main(opsReal, 1);
+
+		ops = new sphere_operators_type(i_sphereOps->sphereDataConfig, shackSphereDataOps);
+
 		return true;
 	}
 
@@ -627,24 +700,19 @@ public:
 
 public:
 	void run_tests(
-			sweet::SphereData_Config *sphereDataConfig,
-			phys_value_type &alpha
+			sweet::SphereData_Config *i_sphereDataConfig,
+			phys_value_type &i_alpha
 	)
 	{
-		simVars.outputConfig();
+		shackDict->printProgramArguments();
 
-		double_precision_digits = 1e-10*2.0*sphereDataConfig->spectral_modes_m_max;
-
-		/*
-		 * Operators
-		 */
-		sweet::SphereOperators ops(sphereDataConfig, &(simVars.sim));
+		double_precision_digits = 1e-10*2.0*i_sphereDataConfig->spectral_modes_m_max;
 
 		/*
 		 * Setup local simulation variables
 		 */
 		double gh0 = shackPDESWESphere->gravitation*shackPDESWESphere->h0;
-		double sphere_radius = shackPDESWESphere->sphere_radius;
+		double sphere_radius = shackSphereDataOps->sphere_radius;
 
 		double dt_implicit;
 
@@ -653,7 +721,7 @@ public:
 		else
 			dt_implicit = 1.0/std::sqrt(gh0)*sphere_radius;
 
-		dt_implicit /= 4.0*2.0*sphereDataConfig->spectral_modes_n_max;
+		dt_implicit /= 4.0*2.0*i_sphereDataConfig->spectral_modes_n_max;
 
 		std::cout << "*********************************************************" << std::endl;
 		std::cout << "* COMMON PARAMTERS" << std::endl;
@@ -663,7 +731,7 @@ public:
 		std::cout << "gh0: " << gh0 << std::endl;
 		std::cout << "gravitation: " << shackPDESWESphere->gravitation << std::endl;
 		std::cout << "sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
-		std::cout << "sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
+		std::cout << "sphere_radius: " << shackSphereDataOps->sphere_radius << std::endl;
 
 		/*
 		 * Test forward/backward time stepping
@@ -676,21 +744,18 @@ public:
 			std::cout << "* FORWARD / BACKWARD TIME INTEGRATION" << std::endl;
 			std::cout << "*********************************************************" << std::endl;
 
-			PDESWESphere_BenchmarksCombined benchmarks;
-			benchmarks.setup(simVars, ops, "gaussian_bumps_pvd");
+			sweet::SphereData_Spectral phi(i_sphereDataConfig);
+			sweet::SphereData_Spectral vrt(i_sphereDataConfig);
+			sweet::SphereData_Spectral div(i_sphereDataConfig);
 
-			sweet::SphereData_Spectral phi(sphereDataConfig);
-			sweet::SphereData_Spectral vrt(sphereDataConfig);
-			sweet::SphereData_Spectral div(sphereDataConfig);
-
-			benchmarks.benchmark->get_initial_state(phi, vrt, div);
+			benchmarks.benchmark->getInitialState(phi, vrt, div);
 
 			//phi.spectral_set_zero();
 			vrt.spectral_set_zero();
 			div.spectral_set_zero();
 
 			double dt_implicit = 1.0/std::sqrt(gh0)*sphere_radius;
-			dt_implicit = 0.5*sphereDataConfig->spectral_modes_n_max;
+			dt_implicit = 0.5*i_sphereDataConfig->spectral_modes_n_max;
 			std::cout << "dt_implicit: " << dt_implicit << std::endl;
 
 			double phi_max = phi.toPhys().physical_reduce_max_abs();
@@ -701,10 +766,10 @@ public:
 				phi_max = 1;
 
 			if (vrt_max == 0)
-				vrt_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
+				vrt_max = phi_max/(shackSphereDataOps->sphere_radius*shackSphereDataOps->sphere_radius);
 
 			if (div_max == 0)
-				div_max = phi_max/(shackPDESWESphere->sphere_radius*shackPDESWESphere->sphere_radius);
+				div_max = phi_max/(shackSphereDataOps->sphere_radius*shackSphereDataOps->sphere_radius);
 
 			std::cout << std::endl;
 			std::cout << "phi_max: " << phi_max << std::endl;
@@ -720,12 +785,8 @@ public:
 				double dt_explicit = dt_implicit;
 				double dt_implicit = -dt_explicit;		// Backward with flipped minus sigh
 
-				SWE_Sphere_TS_l_erk l_erk(simVars, ops);
-				l_erk.setup(1);
 				l_erk.runTimestep(test_phi, test_vrt, test_div, dt_explicit);
 
-				SWE_Sphere_TS_l_irk l_irk(simVars, ops);
-				l_irk.setup(1, dt_implicit);
 				l_irk.runTimestep(test_phi, test_vrt, test_div, dt_implicit);
 
 				double err_phi = (test_phi-phi).toPhys().physical_reduce_max_abs();
@@ -751,7 +812,7 @@ public:
 		std::cout << " + gh0: " << gh0 << std::endl;
 		std::cout << " + gravitation: " << shackPDESWESphere->gravitation << std::endl;
 		std::cout << " + sphere_rotating_coriolis_omega: " << shackPDESWESphere->sphere_rotating_coriolis_omega << std::endl;
-		std::cout << " + sphere_radius: " << shackPDESWESphere->sphere_radius << std::endl;
+		std::cout << " + sphere_radius: " << shackSphereDataOps->sphere_radius << std::endl;
 		std::cout << std::endl;
 
 
@@ -816,10 +877,16 @@ int main(
 				sweet::SphereOperators,
 				SphBandedMatrixPhysicalReal<std::complex<double>>
 			>t_real;
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
 
 			t_real.shackRegistration(&shackProgArgDict);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
+
+			t_real.setup(&ops);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
 
 			t_real.run_tests(&sphereDataConfig, alpha_real);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
 
 			std::cout << "***********************************************************" << std::endl;
 			std::cout << "* REAL FB" << std::endl;
@@ -831,10 +898,16 @@ int main(
 				sweet::SphereOperators,
 				SphBandedMatrixPhysicalReal<std::complex<double>>
 			>t_real_fb;
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
 
 			t_real_fb.shackRegistration(&shackProgArgDict);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
+
+			t_real_fb.setup(&ops);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
 
 			t_real_fb.run_tests(&sphereDataConfig, alpha_real);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
 		}
 
 		if (i == 1)
@@ -857,10 +930,16 @@ int main(
 				sweet::SphereOperatorsComplex,
 				SphBandedMatrixPhysicalComplex<std::complex<double>>
 			>t_complex;
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
 
 			t_complex.shackRegistration(&shackProgArgDict);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
+
+			t_complex.setup(&ops);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
 
 			t_complex.run_tests(&sphereDataConfig, alpha_complex);
+			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
 		}
 	}
 

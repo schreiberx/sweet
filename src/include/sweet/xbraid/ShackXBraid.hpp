@@ -2,7 +2,7 @@
  * ShackXBraid.hpp
  *
  *  Created on: Mar 06, 2023
- *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  */
 
 #ifndef SRC_INCLUDE_XBRAID_SHACKS_SHACKXBRAID_HPP_

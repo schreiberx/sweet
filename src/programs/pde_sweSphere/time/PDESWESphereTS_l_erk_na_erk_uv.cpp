@@ -1,7 +1,5 @@
 /*
- * PDESWESphereTS_l_erk_na_erk_uv.cpp
- *
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_l_erk_na_erk_uv.hpp"

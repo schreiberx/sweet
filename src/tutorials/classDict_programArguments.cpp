@@ -6,7 +6,7 @@
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/core/shacksShared/compile.program = 'programs/pde_sweSphere'.hpp>
+#include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 
 int main(int i_argc, char *i_argv[])
 {
@@ -40,7 +40,6 @@ int main(int i_argc, char *i_argv[])
 	std::cout << " + sweParametersSphere->printShack()" << std::endl;
 	sweParametersSphere.printShack("    ");
 
-#if 1
 	/*
 	 * If you activate this, this should indeed trigger an error
 	 */
@@ -48,10 +47,16 @@ int main(int i_argc, char *i_argv[])
 		bool dummy;
 		if (!pa.getArgumentValueByKey("-doesntexist", dummy, true))
 		{
-			std::cout << "NOT FOUND" << std::endl;
+			std::cout << "Key not found, but this is on purpose" << std::endl;
+			pa.error.print();
+		}
+		else
+		{
+			std::cerr << "This should have triggered an error, but it didn't. Stopping here." << std::endl;
+			return EXIT_FAILURE;
 		}
 	}
-#endif
+
 
 #if 0
 	// TODO: Activate this if SWEET migrated entirely to this new interface

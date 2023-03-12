@@ -2,7 +2,7 @@
  * SPHOperators.hpp
  *
  *  Created on: 12 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SPHOPERATORS_HPP_
@@ -40,8 +40,8 @@ private:
 
 public:
 	SphereOperators(
-		SphereData_Config *i_sphereDataConfig,
-		sweet::ShackSphereDataOps *i_shackSphereDataOps
+		const SphereData_Config *i_sphereDataConfig,
+		const sweet::ShackSphereDataOps *i_shackSphereDataOps
 	)
 	{
 		setup(i_sphereDataConfig, i_shackSphereDataOps);
@@ -101,7 +101,7 @@ public:
 public:
 	void setup(
 		const SphereData_Config *i_sphereDataConfig,
-		sweet::ShackSphereDataOps *i_shackSphereDataOps
+		const sweet::ShackSphereDataOps *i_shackSphereDataOps
 	)
 	{
 		sphereDataConfig = i_sphereDataConfig;

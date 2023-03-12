@@ -1,8 +1,5 @@
 /*
- * SphereDataSpectral_To_ScalarDataArray.cpp
- *
- *  Created on: 20 Oct 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SPHERE_SPHEREDATA_TO_SCALARDATAARRAY_HPP_

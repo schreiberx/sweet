@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_ln_exp_settls_vd.cpp
- *
- *  Created on: 31 Mar 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_ln_sl_exp_settls_vd.hpp"

@@ -1,6 +1,5 @@
 /*
- *  Created on: Dec 30, 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef INCLUDE_SWEET_TRANSFORMATIONPLANS_HPP_

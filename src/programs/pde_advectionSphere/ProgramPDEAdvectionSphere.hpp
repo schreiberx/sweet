@@ -267,7 +267,7 @@ public:
 		shackProgArgDict.clear();
 	}
 
-	bool setup_3_data()
+	bool setup_3_dataOpsEtc()
 	{
 		/*
 		 * BENCHMARK: Detect particular benchmark to use
@@ -353,7 +353,7 @@ public:
 		if (!setup_2_processArguments())
 			return false;
 
-		if (!setup_3_data())
+		if (!setup_3_dataOpsEtc())
 			return false;
 
 		std::cout << "Printing shack information:" << std::endl;
@@ -382,11 +382,21 @@ public:
 		return !error.exists();
 	}
 
+	double getErrorLmax()
+	{
+		return (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_max_abs();
+	}
+
+	double getErrorRMS()
+	{
+		return (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms();
+	}
+
 	void printSimulationErrors()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms() << std::endl;
+		std::cout << "Lmax error: " << getErrorLmax() << std::endl;
+		std::cout << "RMS error: " << getErrorRMS() << std::endl;
 	}
 
 	virtual ~ProgramPDEAdvectionSphere()

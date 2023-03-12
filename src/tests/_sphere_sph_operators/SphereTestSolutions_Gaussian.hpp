@@ -2,7 +2,7 @@
  * SPHTestSolutions.hpp
  *
  *  Created on: 24 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SPHTESTSOLUTIONSGAUSSIAN_HPP_

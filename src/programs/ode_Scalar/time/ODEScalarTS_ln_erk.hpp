@@ -1,6 +1,5 @@
 /*
- *  Created on: 07 Mar 2023
- *      Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
+ * Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 
 #ifndef SRC_PDE_ODE_SCALAR_TS_LN_ERK_HPP_

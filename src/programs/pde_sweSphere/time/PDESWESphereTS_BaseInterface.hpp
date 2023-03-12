@@ -9,12 +9,13 @@
 #include <sweet/core/ErrorBase.hpp>
 #include <sweet/core/sphere/Sphere.hpp>
 
+// Shacks
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include <sweet/core/shacksShared/ShackSphereDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/expIntegration/ShackExpIntegration.hpp>
 #include <sweet/core/time/ShackTimesteppingSemiLagrangianSphereData.hpp>
+#include <sweet/expIntegration/ShackExpIntegration.hpp>
 #include "ShackPDESWESphereTimeDiscretization.hpp"
 #include "../benchmarks/ShackPDESWESphereBenchmarks.hpp"
 #include "../ShackPDESWESphere.hpp"

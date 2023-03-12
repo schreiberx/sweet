@@ -1,6 +1,5 @@
 /*
- *  Created on: 16 Dec 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef PDE_SWE_PLANE_BENCH_GAUSSIAN_BUMP_HPP__
 #define PDE_SWE_PLANE_BENCH_GAUSSIAN_BUMP_HPP__

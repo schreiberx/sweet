@@ -1,5 +1,5 @@
 /*
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACKS_SHACK_PDE_SWE_SPHERE_BENCHMARK_HPP_
@@ -77,18 +77,6 @@ public:
 	void *slComputeDeparture3rdOrderUserData = nullptr;
 
 
-	/**
-	 * Velocity and additional parameter for advection test cases
-	 */
-	double benchmark_advection_velocity[3] = {0, 0, 0};
-
-	bool validateNonzeroSWE()
-	{
-		if (benchmark_advection_velocity[0] == 0 && benchmark_advection_velocity[1] == 0)
-			return error.set("Both advection velocities are 0, use --benchmark-advection-velocity=...");
-
-		return true;
-	}
 
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
@@ -96,7 +84,6 @@ public:
 		std::cout << i_prefix << "SIMULATION SETUP PARAMETERS:" << std::endl;
 		std::cout << i_prefix << "	--benchmark-random-seed [int]		random seed for random number generator" << std::endl;
 		std::cout << i_prefix << "	--benchmark-name [string]	benchmark name" << std::endl;
-		std::cout << i_prefix << "	--benchmark-advection-velocity=[float],[float],[float]	advection velocity components (x, y, rotational)" << std::endl;
 		std::cout << i_prefix << "	--benchmark-override-simvars [bool]	Allow overwriting simulation variables by benchmark (default: 1)" << std::endl;
 		std::cout << i_prefix << "	--benchmark-setup-dealiased [bool]	Use dealiasing for setup (default: 1)" << std::endl;
 		std::cout << i_prefix << "	--benchmark-advection-rotation-angle [float]	Rotation angle for e.g. advection test case" << std::endl;
@@ -109,16 +96,11 @@ public:
 		i_pa.getArgumentValueByKey("--benchmark-random-seed", random_seed);
 		i_pa.getArgumentValueByKey("--benchmark-name", benchmark_name);
 
-		std::string tmp;
-		if (i_pa.getArgumentValueByKey("--benchmark-advection-velocity", tmp))
-			StringSplit::split3double(tmp, &benchmark_advection_velocity[0], &benchmark_advection_velocity[1], &benchmark_advection_velocity[2]);
-
 		i_pa.getArgumentValueByKey("--benchmark-advection-rotation-angle", benchmark_sphere_advection_rotation_angle);
 
 		i_pa.getArgumentValueByKey("--benchmark-galewsky-umax", benchmark_galewsky_umax);
 		i_pa.getArgumentValueByKey("--benchmark-galewsky-hamp", benchmark_galewsky_hamp);
 		i_pa.getArgumentValueByKey("--benchmark-galewsky-phi2", benchmark_galewsky_phi2);
-
 		i_pa.getArgumentValueByKey("--benchmark-galewsky-geostropic-setup", benchmark_galewsky_geostrophic_setup);
 
 		if (error.exists())
@@ -138,7 +120,6 @@ public:
 		std::cout << i_prefix << "BENCHMARK:" << std::endl;
 		std::cout << i_prefix << " + benchmark_name: " << benchmark_name << std::endl;
 		std::cout << i_prefix << " + benchmark_random_seed: " << random_seed << std::endl;
-		std::cout << i_prefix << " + benchmark_advection_velocity (x, y, rotation speed): " << benchmark_advection_velocity[0] << ", " << benchmark_advection_velocity[1] << ", " << benchmark_advection_velocity[2] << std::endl;
 		std::cout << i_prefix << " + benchmark_sphere_advection_rotation_angle: " << benchmark_sphere_advection_rotation_angle << std::endl;
 		std::cout << i_prefix << " + benchmark_galewsky_umax: " << benchmark_galewsky_umax << std::endl;
 		std::cout << i_prefix << " + benchmark_galewsky_hamp: " << benchmark_galewsky_hamp << std::endl;

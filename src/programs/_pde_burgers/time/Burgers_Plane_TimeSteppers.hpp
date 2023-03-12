@@ -2,7 +2,7 @@
  * Burgers_Plane_TimeSteppers.hpp
  *
  *  Created on: 15 June 2017
- *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
 #ifndef SRC_PROGRAMS_BURGERS_PLANE_TIMESTEPPERS_HPP_

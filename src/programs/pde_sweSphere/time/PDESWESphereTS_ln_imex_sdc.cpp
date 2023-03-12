@@ -1,7 +1,5 @@
 /*
- * PDESWESphereTS_ln_imex_sdc.cpp
- *
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_ln_imex_sdc.hpp"

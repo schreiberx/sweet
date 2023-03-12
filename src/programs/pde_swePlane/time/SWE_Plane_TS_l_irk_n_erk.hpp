@@ -2,7 +2,7 @@
  * SWE_Plane_TS_l_irk_n_erk.hpp
  *
  *  Created on: 29 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_PLANE_TIMEINTEGRATORS_SWE_PLANE_TS_L_IRK_N_ERK_HPP_

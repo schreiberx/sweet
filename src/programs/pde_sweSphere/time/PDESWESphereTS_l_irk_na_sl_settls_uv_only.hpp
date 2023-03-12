@@ -2,7 +2,7 @@
  * PDESWESphereTS_l_irk_na_sl_settls_uv_only.hpp
  *
  *  Created on: 01 Apr 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Based on plane code
  */

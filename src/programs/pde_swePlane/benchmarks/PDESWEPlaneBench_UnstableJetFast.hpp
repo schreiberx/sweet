@@ -2,7 +2,7 @@
  * SWEUnstableJetFast.hpp
  *
  *  Created on: 05 Mar 2018
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  */
 #ifndef SWE_PLANE_UNSTABLEJETFAST_HPP_
 #define SWE_PLANE_UNSTABLEJETFAST_HPP_

@@ -1,6 +1,5 @@
 /*
- *  Created on: 14 Mar 2022
- *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  */
 
 #ifndef SRC_PLANE_DATA_PHYSICAL_COMPLEX_HPP_

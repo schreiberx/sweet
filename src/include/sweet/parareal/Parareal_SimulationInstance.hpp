@@ -2,7 +2,7 @@
  * PararealSimulation.hpp
  *
  *  Created on: 25 Feb 2022
- *      Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/BenchmarksSphereSWE.cpp
  * MULE_COMPILE_FILES_AND_DIRS: src/programs/swe_sphere_benchmarks/

@@ -2,7 +2,7 @@
  * PDESWESphereTS_lg_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 
@@ -27,7 +27,7 @@ public:
 			sweet::SphereOperators *io_ops
 		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_timestepping_order
 		);

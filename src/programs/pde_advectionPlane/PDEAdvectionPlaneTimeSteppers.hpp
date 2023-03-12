@@ -2,7 +2,7 @@
  * Adv_Plane_TimeSteppers.hpp
  *
  *  Created on: 4th April 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_PDE_ADVECTION_PLANE_TIMESTEPPERS_HPP_

@@ -2,7 +2,7 @@
  * PlaneDataGridMapping.hpp
  *
  *  Created on: 18 Jul 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_PLANE_PLANEDATAGRIDMAPPING_HPP_

@@ -17,6 +17,9 @@
 #include <sweet/core/plane/PlaneData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 
+namespace sweet
+{
+
 class Parareal_GenericData
 {
 
@@ -74,7 +77,7 @@ public:
 
 public:
 
-	PlaneDataConfig* planeDataConfig = nullptr;
+	PlaneData_Config* planeDataConfig = nullptr;
 	SphereData_Config* sphereDataConfig = nullptr;
 
 public:
@@ -157,7 +160,7 @@ public:
 
 #endif
 
-	void setup_data_config(PlaneDataConfig* i_planeDataConfig)
+	void setup_data_config(PlaneData_Config* i_planeDataConfig)
 	{
 		this->planeDataConfig = i_planeDataConfig;
 	};
@@ -236,5 +239,6 @@ public:
 
 };
 
+}
 
 #endif

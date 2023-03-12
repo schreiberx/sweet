@@ -2,7 +2,7 @@
  * SemiLangrangian.hpp
  *
  *  Created on: 5 Dec 2015
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_
 #define SRC_INCLUDE_SWEET_PLANEDATASEMILAGRANGIAN_HPP_

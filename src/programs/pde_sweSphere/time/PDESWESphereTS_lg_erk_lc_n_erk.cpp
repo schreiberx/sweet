@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_lg_erk_lf_n_erk.cpp
- *
- *  Created on: 21 Aug 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <sweet/core/StopwatchBox.hpp>

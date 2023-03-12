@@ -2,7 +2,7 @@
  * SWE_Plane_TS_l_rexi_na_sl_nd_etdrk.hpp
  *
  *  Created on: 09 Oct 2017
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
  *  Changelog:
  *      based on Martin Schreiber ETD timestepper

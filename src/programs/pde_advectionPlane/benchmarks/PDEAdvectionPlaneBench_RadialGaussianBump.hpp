@@ -1,6 +1,5 @@
 /*
- *  Created on: 16 Dec 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef PDE_Advection_PLANE_BENCH_RADIAL_GAUSSIAN_BUMP_HPP__
 #define PDE_Advection_PLANE_BENCH_RADIAL_GAUSSIAN_BUMP_HPP__

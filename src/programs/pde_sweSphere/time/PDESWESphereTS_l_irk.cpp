@@ -115,7 +115,7 @@ bool PDESWESphereTS_l_irk::setup_main(
 
 	if (no_coriolis)
 	{
-		swe_sphere_ts_lg_erk.setup(ops, 1);
+		swe_sphere_ts_lg_erk.setup_main(ops, 1);
 	}
 	else
 	{

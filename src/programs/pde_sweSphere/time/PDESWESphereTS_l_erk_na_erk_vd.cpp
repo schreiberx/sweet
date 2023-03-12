@@ -1,5 +1,5 @@
 /*
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_l_erk_na_erk_vd.hpp"

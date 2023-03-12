@@ -1,8 +1,5 @@
 /*
- * interpolation.cpp
- *
- *  Created on: 18 March 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 

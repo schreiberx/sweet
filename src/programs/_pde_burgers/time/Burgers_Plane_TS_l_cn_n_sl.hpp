@@ -2,7 +2,7 @@
  * Burgers_Plane_TS_l_cn_n_sl.hpp
  *
  *  Created on: 14 June 2017
- *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
 #ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_L_CN_N_SL_HPP_

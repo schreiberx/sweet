@@ -1,6 +1,5 @@
 /*
- *  Created on: 14 Oct 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_SHACK_SWE_POLVANI_SIMULATION_VARIABLES_HPP_
 #define SRC_SHACK_SWE_POLVANI_SIMULATION_VARIABLES_HPP_

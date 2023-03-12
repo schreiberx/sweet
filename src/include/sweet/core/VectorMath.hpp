@@ -1,8 +1,8 @@
 /*
- * SWEETVectorMath.hpp
+ * sweet::VectorMath.hpp
  *
  *  Created on: Mar 27, 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <sweet/core/ScalarDataArray.hpp>

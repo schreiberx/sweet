@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_ln_erk.cpp
- *
- *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_ln_erk.hpp"

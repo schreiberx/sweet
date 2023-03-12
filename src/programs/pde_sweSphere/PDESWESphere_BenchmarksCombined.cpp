@@ -46,7 +46,7 @@ bool PDESWESphere_BenchmarksCombined::setup_1_registerAllBenchmark()
 	return true;
 }
 
-a
+
 
 bool PDESWESphere_BenchmarksCombined::setup_2_shackRegistration(
 	sweet::ShackDictionary *io_shackDict
@@ -68,7 +68,7 @@ bool PDESWESphere_BenchmarksCombined::setup_2_shackRegistration(
 
 
 bool PDESWESphere_BenchmarksCombined::setup_3_benchmarkDetection(
-		const std::string &i_benchmark_name = ""
+		const std::string &i_benchmark_name
 )
 {
 	assert(benchmark == nullptr);
@@ -142,9 +142,16 @@ bool PDESWESphere_BenchmarksCombined::setup_5_benchmarkSetup_2_withOps(
 	ERROR_FORWARD_WITH_RETURN_BOOLEAN(*benchmark);
 }
 
-void PDESWESphere_BenchmarksCombined::clear()
+void PDESWESphere_BenchmarksCombined::clear_3_benchmarkDetection()
 {
 	benchmark = nullptr;
+}
+
+
+void PDESWESphere_BenchmarksCombined::clear()
+{
+	clear_3_benchmarkDetection();
+
 	shackDict = nullptr;
 	ops = nullptr;
 

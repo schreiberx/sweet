@@ -2,7 +2,7 @@
  * Parareal.hpp
  *
  *  Created on: 11 Apr 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_PARAREAL_PARAREAL_HPP_

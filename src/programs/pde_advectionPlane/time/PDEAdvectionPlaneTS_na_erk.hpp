@@ -1,6 +1,5 @@
 /*
- *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PDE_ADV_PLANE_TS_NA_ERK_HPP_

@@ -1,6 +1,5 @@
 /*
- *  Created on: 29 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_ADV_PLANE_TS_INTERFACE_HPP_

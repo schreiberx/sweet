@@ -2,7 +2,7 @@
  * PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv
  *
  * Created on: 24 Mar 2022
- *     Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
  */
 

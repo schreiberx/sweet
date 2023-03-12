@@ -2,7 +2,7 @@
  * SWE_Plane_Normal_Modes.hpp
  *
  *  Created on: 17 Nov 2019
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
  *      based on previous implementation by Martin Schreiber in swe_plane.cpp
  *

@@ -1,8 +1,5 @@
 /*
- * Burgers_Plane_TS_ln_imex.cpp
- *
- *  Created on: 17 June 2017
- *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  *
  */
 

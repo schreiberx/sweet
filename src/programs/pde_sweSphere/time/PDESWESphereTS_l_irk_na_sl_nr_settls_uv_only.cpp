@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only.cpp
- *
- *  Created on: 2020-04-29
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_l_irk_na_sl_nr_settls_uv_only.hpp"

@@ -1,6 +1,5 @@
 /*
- *  Created on: 18 July 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *      
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
  */

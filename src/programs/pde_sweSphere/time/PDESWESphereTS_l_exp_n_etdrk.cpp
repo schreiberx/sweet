@@ -1,8 +1,5 @@
 /*
- * PDESWESphereTS_ln_edtrk.cpp
- *
- *  Created on: 21 Aug 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_l_exp_n_etdrk.hpp"
