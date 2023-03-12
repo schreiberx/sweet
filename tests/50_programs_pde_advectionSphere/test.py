@@ -11,14 +11,14 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.program="programs/pde_advectionSphere"
+jg.compile.program="tests/pde_advectionSphere"
 
 jg.runtime.benchmark_name = "williamson1b"
 
 jg.runtime.max_simulation_time = 12*24*60*60
 jg.runtime.output_timestep_size = jg.runtime.max_simulation_time
 
-jg.runtime.verbosity = 5
+#jg.runtime.verbosity = 5
 
 #jg.runtime.reuse_plans = "save"
 
@@ -42,16 +42,13 @@ params_runtime_mode_res_y = [128]
 #params_advection_velocity_v = [0.2]
 
 params_runtime_ts_methods = [
-        # [ method_id, order ]
-        ["na_sl", 1],
-        ["na_sl", 2],
-        ["na_erk", 2],
-        ["na_erk", 4],
+        # [ method_id, order, timestep size]
+        ["na_sl", 1, 400],
+        ["na_sl", 2, 400],
+        ["na_erk", 2, 100],
+        ["na_erk", 4, 100],
     ]
 
-
-params_runtime_timestep_sizes_ = [2**i for i in range(5, 10)]
-print(params_runtime_timestep_sizes_)
 
 for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res_y):
     jg.runtime.space_res_spectral = (res_x, res_y)
@@ -61,13 +58,8 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
         jg.runtime.timestepping_method = ts_method[0]
         jg.runtime.timestepping_order = ts_method[1]
 
-        for (
-            jg.compile.mode,
-            jg.runtime.timestep_size,
-        ) in product(
-            params_compile_mode,
-            params_runtime_timestep_sizes_,
-        ):
+        for jg.compile.mode in params_compile_mode:
+            jg.runtime.timestep_size = ts_method[2]
             jg.gen_jobscript_directory()
 
 exitcode = exec_program('mule.benchmark.jobs_run_directly', catch_output=False)

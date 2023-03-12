@@ -8,7 +8,6 @@
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_Physical.hpp>
 #include <sweet/core/sphere/SphereOperators.hpp>
-//#include <sweet/core/sphere/Convert_SphereDataSpectral_to_SphereDataPhysical.hpp>
 
 
 #endif

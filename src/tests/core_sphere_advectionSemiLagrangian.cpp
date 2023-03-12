@@ -176,8 +176,8 @@ int main(int i_argc, char *i_argv[])
 			while (!simulation.should_quit())
 				simulation.runTimestep();
 
-			double error_lmax = simulation.getErrorLmax();
-			double error_rms = simulation.getErrorRMS();
+			double error_lmax = simulation.getErrorLMaxOnH();
+			double error_rms = simulation.getErrorRMSOnH();
 
 			std::cout << "Error compared to initial condition" << std::endl;
 			std::cout << "Lmax error: " << error_lmax << std::endl;

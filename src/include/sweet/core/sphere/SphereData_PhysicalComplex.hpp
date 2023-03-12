@@ -23,6 +23,7 @@
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/SWEETError.hpp>
 
+#include <sweet/core/sphere/SphereData_Physical.hpp>
 
 namespace sweet
 {

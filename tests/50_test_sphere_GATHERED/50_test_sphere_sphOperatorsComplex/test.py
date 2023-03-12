@@ -11,10 +11,11 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.program="tests/sphere_sph_operators_complex"
-jg.compile.plane_spectral_space="disable"
-jg.compile.sphere_spectral_space="enable"
-jg.compile.mode = 'debug'
+jg.compile.program = "tests/core_sphere_sphOperatorsComplex"
+jg.compile.plane_spectral_space = "disable"
+jg.compile.sphere_spectral_space = "enable"
+jg.compile.mode = "debug"
+
 
 params_runtime_mode_res = [64, 128, 256, 512, 1024, 2048]
 jg.runtime.verbosity = 5

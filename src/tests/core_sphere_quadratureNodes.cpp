@@ -8,16 +8,15 @@
 #ifndef SRC_TESTSPH_QUADRATURE_NODES_HPP_
 #define SRC_TESTSPH_QUADRATURE_NODES_HPP_
 
+#include <sweet/core/shacks/ShackProgArgDictionary.hpp>
 
-#include <sweet/core/SimulationVariables.hpp>
 #include <sweet/libmath/BandedMatrixPhysicalReal.hpp>
 #include <sweet/core/sphere/Convert_SphereDataSpectralComplex_to_SphereDataSpectral.hpp>
 #include <sweet/core/sphere/SphereData_Config.hpp>
 #include <sweet/core/sphere/SphereData_Spectral.hpp>
 #include <sweet/core/sphere/SphereData_SpectralComplex.hpp>
 
-#include "../programs/swe_sphere_timeintegrators/helpers/SWESphBandedMatrixPhysicalReal.hpp"
-//#include <sweet/core/sphere/SphereOperators.hpp>
+#include "../programs/pde_sweSphere/time/helpers/SWESphBandedMatrixPhysicalReal.hpp"
 
 
 
@@ -130,10 +129,10 @@ public:
 			}
 			else
 			{
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs).toPhys().physical_file_write("o_error_lhs_values.csv");
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_rhs).toPhys().physical_file_write("o_error_rhs_values.csv");
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs-i_rhs).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-				Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+				sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs).toPhys().physical_file_write("o_error_lhs_values.csv");
+				sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_rhs).toPhys().physical_file_write("o_error_rhs_values.csv");
+				sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(i_lhs-i_rhs).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+				sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 				SWEETError("Error too high");
 			}
@@ -257,10 +256,10 @@ public:
 				return false;
 			}
 
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).toPhys().physical_file_write("o_error_lhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).toPhys().physical_file_write("o_error_rhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).toPhys().physical_file_write("o_error_lhs.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).toPhys().physical_file_write("o_error_rhs.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			SWEETError("Error too high");
 			return true;
@@ -322,10 +321,10 @@ public:
 				return false;
 			}
 
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).toPhys().physical_file_write("o_error_lhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).toPhys().physical_file_write("o_error_rhs.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
-			Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr).toPhys().physical_file_write("o_error_lhs.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(rhsr).toPhys().physical_file_write("o_error_rhs.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(lhsr-rhsr).toPhys().physical_file_write("o_error_lhs_rhs_diff_spectral.csv");
+			sweet::Convert_SphereDataSpectralComplex_To_SphereDataSpectral::physical_convert_real(diff).toPhys().physical_file_write("o_error_lhs_rhs_diff_physical.csv");
 
 			SWEETError("Error too high");
 			return true;
@@ -335,9 +334,6 @@ public:
 
 };
 
-
-
-SimulationVariables simVars;
 
 void run_tests(
 		sweet::SphereData_Config *sphereDataConfig
@@ -369,7 +365,7 @@ void run_tests(
 			}
 		);
 
-		SphereDataErrorCheck::check(SphereData_Spectral(physical), spectral, "n=0, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(sweet::SphereData_Spectral(physical), spectral, "n=0, m=0", epsilon, false, true);
 	}
 
 	{
@@ -395,7 +391,7 @@ void run_tests(
 		sweet::SphereData_Spectral(physical).spectral_print();
 		spectral.spectral_print();
 
-		SphereDataErrorCheck::check(SphereData_Spectral(physical), spectral, "n=1, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(sweet::SphereData_Spectral(physical), spectral, "n=1, m=0", epsilon, false, true);
 	}
 
 	{
@@ -418,7 +414,7 @@ void run_tests(
 			}
 		);
 
-		SphereDataErrorCheck::check(SphereData_Spectral(physical), spectral, "n=2, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(sweet::SphereData_Spectral(physical), spectral, "n=2, m=0", epsilon, false, true);
 	}
 
 
@@ -442,7 +438,7 @@ void run_tests(
 			}
 		);
 
-		SphereDataErrorCheck::check(SphereData_Spectral(physical), spectral, "n=3, m=0", epsilon, false, true);
+		SphereDataErrorCheck::check(sweet::SphereData_Spectral(physical), spectral, "n=3, m=0", epsilon, false, true);
 	}
 }
 
@@ -454,22 +450,24 @@ int main(
 		char *const i_argv[]
 )
 {
-	if (!simVars.setupFromMainParameters(i_argc, i_argv))
-		return -1;
 
-	if (simVars.disc.space_res_spectral[0] == 0)
+	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
+	shackProgArgDict.setup();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+
+	sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+
+	shackProgArgDict.processProgramArguments();
+	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+
+	shackProgArgDict.printShackData();
+
+	if (shackSphereDataOps->space_res_spectral[0] == 0)
 		SWEETError("Set number of spectral modes to use SPH!");
 
 	sweet::SphereData_Config sphereDataConfig;
-	sphereDataConfig.setupAutoPhysicalSpace(
-					simVars.disc.space_res_spectral[0],
-					simVars.disc.space_res_spectral[1],
-					&simVars.disc.space_res_physical[0],
-					&simVars.disc.space_res_physical[1],
-					simVars.misc.reuse_spectral_transformation_plans,
-					0,
-					simVars.parallelization.num_threads_space
-			);
+	sphereDataConfig.setupAuto(shackSphereDataOps);
 
 	run_tests(&sphereDataConfig);
 }

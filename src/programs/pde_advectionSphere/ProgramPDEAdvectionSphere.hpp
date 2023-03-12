@@ -382,12 +382,12 @@ public:
 		return !error.exists();
 	}
 
-	double getErrorLmax()
+	double getErrorLMaxOnH()
 	{
 		return (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_max_abs();
 	}
 
-	double getErrorRMS()
+	double getErrorRMSOnH()
 	{
 		return (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms();
 	}
@@ -395,8 +395,8 @@ public:
 	void printSimulationErrors()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << getErrorLmax() << std::endl;
-		std::cout << "RMS error: " << getErrorRMS() << std::endl;
+		std::cout << "Lmax error: " << getErrorLMaxOnH() << std::endl;
+		std::cout << "RMS error: " << getErrorRMSOnH() << std::endl;
 	}
 
 	virtual ~ProgramPDEAdvectionSphere()
@@ -433,8 +433,11 @@ public:
 
 		shackTimestepControl->timestepHelperEnd();
 
-		if (shackIOData->verbosity > 2)
-			std::cout << shackTimestepControl->current_timestep_nr << ": " << shackTimestepControl->current_simulation_time/(60*60*24.0) << std::endl;
+		if (shackIOData->verbosity > 10)
+		{
+			std::cout << "ts_nr=" << shackTimestepControl->current_timestep_nr << ", t=" << shackTimestepControl->current_simulation_time*shackIOData->output_time_scale_inv << std::endl;
+			std::cout << "error:" << getErrorLMaxOnH() << std::endl;
+		}
 
 		return true;
 	}

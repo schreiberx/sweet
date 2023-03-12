@@ -11,7 +11,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test = "test_sphere_sph_operators"
+jg.compile.program = "tests/core_sphere_sphOperators"
 jg.compile.plane_spectral_space = "disable"
 jg.compile.sphere_spectral_space = "enable"
 jg.compile.mode = "debug"

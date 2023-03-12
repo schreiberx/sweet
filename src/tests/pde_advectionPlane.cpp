@@ -80,16 +80,16 @@ int main(int i_argc, char *i_argv[])
 		}
 
 		// setup 3rd part
-		progPDEAdvPlane.setup_3_data();
+		progPDEAdvPlane.setup_3_dataOpsEtc();
 
-		std::cout << "Testing with " << progPDEAdvPlane.data.planeDataConfig.getUniqueIDString() << std::endl;
+		std::cout << "Testing with " << progPDEAdvPlane.dataConfigOps.planeDataConfig.getUniqueIDString() << std::endl;
 		std::cout << "Testing with dt=" << progPDEAdvPlane.shackTimestepControl->current_timestep_size << std::endl;
 
 		{
 			while (!progPDEAdvPlane.should_quit())
 				progPDEAdvPlane.runTimestep();
 
-			double max_error = progPDEAdvPlane.getLMaxErrorOnH();
+			double max_error = progPDEAdvPlane.getErrorLMaxOnH();
 
 			std::cout << "Lmax error compared to initial condition: " << max_error << std::endl;
 

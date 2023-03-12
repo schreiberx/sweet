@@ -44,7 +44,7 @@ public:
 	/*
 	 * Just a class to store simulation data all together
 	 */
-	class Data
+	class DataConfigOps
 	{
 	public:
 		sweet::ErrorBase error;
@@ -90,7 +90,7 @@ public:
 	};
 
 	// Simulation data
-	Data data;
+	DataConfigOps dataConfigOps;
 
 	// time integrators
 	PDEAdvectionPlaneTimeSteppers timeSteppers;
@@ -198,37 +198,37 @@ public:
 		shackProgArgDict.clear();
 	}
 
-	bool setup_3_data()
+	bool setup_3_dataOpsEtc()
 	{
 		/*
 		 * Setup Plane Data Config & Operators
 		 */
-		data.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
+		dataConfigOps.setup(shackPlaneDataOps);
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataConfigOps);
 
 		/*
 		 * After we setup the plane, we can setup the time steppers and their buffers
 		 */
-		timeSteppers.setup(shackProgArgDict, data.ops);
+		timeSteppers.setup(shackProgArgDict, dataConfigOps.ops);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
 
 #if SWEET_GUI
-		vis_plane_data.setup(data.planeDataConfig);
+		vis_plane_data.setup(dataConfigOps.planeDataConfig);
 #endif
 
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
 
 		planeBenchmarksCombined.setupInitialConditions(
-				data.prog_h,
-				data.prog_u,
-				data.prog_v,
-				data.ops,
+				dataConfigOps.prog_h,
+				dataConfigOps.prog_u,
+				dataConfigOps.prog_v,
+				dataConfigOps.ops,
 				shackProgArgDict
 			);
 		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
 
-		data.prog_h_t0 = data.prog_h;
+		dataConfigOps.prog_h_t0 = dataConfigOps.prog_h;
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -253,7 +253,7 @@ public:
 
 		timeSteppers.clear();
 
-		data.clear();
+		dataConfigOps.clear();
 	}
 
 	bool setup()
@@ -264,7 +264,7 @@ public:
 		if (!setup_2_processArguments())
 			return false;
 
-		if (!setup_3_data())
+		if (!setup_3_dataOpsEtc())
 			return false;
 
 		std::cout << "SETUP FINISHED" << std::endl;
@@ -293,13 +293,13 @@ public:
 	void printSimulationErrors()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_rms() << std::endl;
+		std::cout << "Lmax error: " << (dataConfigOps.prog_h_t0-dataConfigOps.prog_h).toPhys().physical_reduce_max_abs() << std::endl;
+		std::cout << "RMS error: " << (dataConfigOps.prog_h_t0-dataConfigOps.prog_h).toPhys().physical_reduce_rms() << std::endl;
 	}
 
-	double getLMaxErrorOnH()
+	double getErrorLMaxOnH()
 	{
-		return (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_max_abs();
+		return (dataConfigOps.prog_h_t0-dataConfigOps.prog_h).toPhys().physical_reduce_max_abs();
 	}
 
 	virtual ~ProgramPDEAdvectionPlane()
@@ -312,18 +312,17 @@ public:
 		shackTimestepControl->timestepHelperStart();
 
 		timeSteppers.master->runTimestep(
-				data.prog_h, data.prog_u, data.prog_v,
+				dataConfigOps.prog_h, dataConfigOps.prog_u, dataConfigOps.prog_v,
 				shackTimestepControl->current_timestep_size,
 				shackTimestepControl->current_simulation_time
 			);
 
 		shackTimestepControl->timestepHelperEnd();
 
-		if (shackIOData->verbosity > 2)
+		if (shackIOData->verbosity > 10)
 		{
-			double lmax_error = (data.prog_h_t0-data.prog_h).toPhys().physical_reduce_max_abs();
-			std::cout << "timestep: " << shackTimestepControl->current_timestep_nr << ": dt=" << shackTimestepControl->current_timestep_size << ": t=" << shackTimestepControl->current_simulation_time << std::endl;
-			std::cout << "error:" << lmax_error << std::endl;
+			std::cout << "ts_nr=" << shackTimestepControl->current_timestep_nr << ", t=" << shackTimestepControl->current_simulation_time*shackIOData->output_time_scale_inv << std::endl;
+			std::cout << "error:" << getErrorLMaxOnH() << std::endl;
 		}
 		return true;
 	}
@@ -364,15 +363,15 @@ public:
 		switch (id)
 		{
 		case 0:
-			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(data.prog_h, vis_plane_data);
+			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(dataConfigOps.prog_h, vis_plane_data);
 			break;
 
 		case 1:
-			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(data.prog_u, vis_plane_data);
+			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(dataConfigOps.prog_u, vis_plane_data);
 			break;
 
 		case 2:
-			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(data.prog_v, vis_plane_data);
+			sweet::Convert_PlaneDataSpectral_To_PlaneDataPhysical::convert(dataConfigOps.prog_v, vis_plane_data);
 			break;
 		}
 
