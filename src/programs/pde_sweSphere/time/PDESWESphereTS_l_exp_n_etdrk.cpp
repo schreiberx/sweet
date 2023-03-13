@@ -118,9 +118,9 @@ bool PDESWESphereTS_l_exp_n_etdrk::setup_main(
 
 
 void PDESWESphereTS_l_exp_n_etdrk::runTimestep(
-		sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_phi,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp

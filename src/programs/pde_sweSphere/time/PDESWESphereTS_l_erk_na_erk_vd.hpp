@@ -21,8 +21,8 @@
 class PDESWESphereTS_l_erk_na_erk_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
-	std::string getIDString();
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
+	std::string getIDString() override;
 
 	PDESWESphereTS_ln_erk_split_vd l_erk_split_vd;
 	PDESWESphereTS_ln_erk_split_vd na_erk_split_vd;
@@ -30,7 +30,7 @@ public:
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
-	)
+	) override
 	{
 		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
@@ -43,7 +43,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,
@@ -59,7 +59,7 @@ public:
 
 			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 	PDESWESphereTS_l_erk_na_erk_vd();
 

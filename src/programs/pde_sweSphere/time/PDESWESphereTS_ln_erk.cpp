@@ -34,9 +34,9 @@ bool PDESWESphereTS_ln_erk::setup(
  * Main routine for method to be used in case of finite differences
  */
 void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
-		const sweet::SphereData_Spectral &i_phi_pert,	///< prognostic variables
-		const sweet::SphereData_Spectral &i_vrt,	///< prognostic variables
-		const sweet::SphereData_Spectral &i_div,	///< prognostic variables
+		const sweet::SphereData_Spectral &i_phi_pert,
+		const sweet::SphereData_Spectral &i_vrt,
+		const sweet::SphereData_Spectral &i_div,
 
 		sweet::SphereData_Spectral &o_phi_pert_t,	///< time updates
 		sweet::SphereData_Spectral &o_vrt_t,	///< time updates
@@ -131,9 +131,9 @@ void PDESWESphereTS_ln_erk::euler_timestep_update_pert(
 
 
 void PDESWESphereTS_ln_erk::runTimestep(
-		sweet::SphereData_Spectral &io_phi,		///< prognostic variables
-		sweet::SphereData_Spectral &io_vort,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,		///< prognostic variables
+		sweet::SphereData_Spectral &io_phi,
+		sweet::SphereData_Spectral &io_vort,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp

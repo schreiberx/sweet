@@ -33,7 +33,7 @@ class SWE_Plane_TS_l_rexi_na_sl_nr_settls	: public PDESWEPlaneTS_BaseInterface
 
 	SWE_Plane_TS_l_rexi ts_l_rexi;
 
-	int with_linear_div_only;
+	//int with_linear_div_only;
 
 	sweet::TimesteppingSemiLagrangianPlaneData semiLagrangian;
 	sweet::PlaneDataSampler sampler2D;

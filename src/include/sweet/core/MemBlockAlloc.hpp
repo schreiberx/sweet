@@ -440,15 +440,18 @@ public:
 			/*
 			 * Thread granularity, use this also per default
 			 */
+			{
 			#if MEMBLOCKALLOC_ENABLE_OMP
 				_num_block_chain_domains = omp_get_max_threads();
 			#else
 				_num_block_chain_domains = 1;
 			#endif
+			}
 
 			if (verbosity_level > 0)
 				std::cout << MEMBLOCKALLOC_PREFIX "num_block_chain_domains: " << _num_block_chain_domains << std::endl;
 
+			{
 			#if MEMBLOCKALLOC_ENABLE_OMP
 				getThreadLocalDomainIdRef() = omp_get_thread_num();
 
@@ -459,7 +462,7 @@ public:
 			#else
 				getThreadLocalDomainIdRef() = 0;
 			#endif
-
+			}
 		}
 		else if (mem_block_allocation_mode == MEMBLOCKALLOC_MODE__PERNUMA)
 		{

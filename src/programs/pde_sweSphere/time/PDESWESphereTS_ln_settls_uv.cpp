@@ -226,9 +226,9 @@ std::string PDESWESphereTS_ln_settls_uv::getIDString()
 
 
 void PDESWESphereTS_ln_settls_uv::runTimestep(
-		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
-		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_phi_pert,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp

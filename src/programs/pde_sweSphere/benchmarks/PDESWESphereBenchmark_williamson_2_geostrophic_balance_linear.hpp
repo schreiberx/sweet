@@ -17,9 +17,6 @@
 class PDESWESphereBenchmark_williamson_2_geostrophic_balance_linear	:
 		public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
 	sweet::SphereData_Physical fg;
 
 public:

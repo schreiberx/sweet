@@ -47,9 +47,9 @@ bool PDESWESphereTS_lg_exp_lc_taylor::setup_main(
 
 
 void PDESWESphereTS_lg_exp_lc_taylor::runTimestep(
-		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
-		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_phi_pert,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -76,9 +76,9 @@ void PDESWESphereTS_lg_exp_lc_taylor::runTimestep(
 
 
 void PDESWESphereTS_lg_exp_lc_taylor::run_timestep_lg(
-		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
-		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_phi_pert,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -96,9 +96,9 @@ void PDESWESphereTS_lg_exp_lc_taylor::run_timestep_lg(
 
 
 void PDESWESphereTS_lg_exp_lc_taylor::run_timestep_lc(
-		sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_phi,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_dt,
 		double i_simulation_timestamp

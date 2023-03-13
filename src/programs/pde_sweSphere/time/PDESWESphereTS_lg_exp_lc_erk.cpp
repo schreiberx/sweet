@@ -111,9 +111,9 @@ bool PDESWESphereTS_lg_exp_lc_erk::setup_main(
 
 
 void PDESWESphereTS_lg_exp_lc_erk::runTimestep(
-		sweet::SphereData_Spectral &io_phi,		///< prognostic variables
-		sweet::SphereData_Spectral &io_vort,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,		///< prognostic variables
+		sweet::SphereData_Spectral &io_phi,
+		sweet::SphereData_Spectral &io_vort,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_dt,
 		double i_simulation_timestamp

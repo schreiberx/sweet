@@ -23,7 +23,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 public:
 	bool setup(
@@ -41,8 +41,8 @@ public:
 	);
 
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
-	std::string getIDString();
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
+	std::string getIDString() override;
 
 
 private:
@@ -71,7 +71,7 @@ private:
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
-	)
+	) override
 	{
 		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
@@ -90,13 +90,13 @@ public:
 
 public:
 	void runTimestep(
-		sweet::SphereData_Spectral &io_phi,		///< prognostic variables
-		sweet::SphereData_Spectral &io_vort,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,		///< prognostic variables
+		sweet::SphereData_Spectral &io_phi,
+		sweet::SphereData_Spectral &io_vort,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt = 0,
 		double i_simulation_timestamp = -1
-	);
+	) override;
 
 	virtual ~PDESWESphereTS_lg_irk();
 };

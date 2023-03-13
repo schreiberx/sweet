@@ -16,9 +16,6 @@
 class PDESWESphereBenchmark_williamson_2_geostrophic_balance	:
 		public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
 	PDESWESphereBenchmarks_HelperGeostropicBalance helperGeostropicBalance;
 
 public:
@@ -215,7 +212,7 @@ public:
 			}
 		}
 
-		bool use_analytical_geostrophic_setup;
+		bool use_analytical_geostrophic_setup = true;
 		if (shackPDESWEBenchmark->benchmark_galewsky_geostrophic_setup == "analytical")
 		{
 			use_analytical_geostrophic_setup = true;

@@ -104,6 +104,7 @@ public:
 	};
 
 	Parareal_GenericData_SphereData_Spectral& operator=(const Parareal_GenericData &i_data)
+	override
 	{
 		*(data) = *(i_data.get_pointer_to_data_SphereData_Spectral());
 		for (int i = 0; i < N; i++)
@@ -119,11 +120,13 @@ public:
 	};
 
 	void allocate_data()
+	override
 	{
 		data = new DataContainer_SphereData_Spectral(sphereDataConfig);
 	}
 
 	void free_data()
+	override
 	{
 		if (data)
 		{
@@ -133,6 +136,10 @@ public:
 		
 	}
 
+#if 0
+	/*
+	 * M@J: This assignment from double to double* doesn't make sense :-)
+	 */
 	/**
 	 * Setup data
 	 */
@@ -142,6 +149,7 @@ public:
 	{
 		data = i_data;
 	}
+#endif
 
 ////#if SWEET_MPI
 #if SWEET_PARAREAL==2 || SWEET_XBRAID
@@ -170,11 +178,13 @@ public:
 
 
 	void set_time(double i_time)
+	override
 	{
 		data->set_time(i_time);
 	}
 
 	double spectral_reduce_maxAbs()
+	override
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
@@ -184,6 +194,7 @@ public:
 	}
 
 	double spectral_reduce_maxAbs(std::size_t rnorm)
+	override
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
@@ -193,6 +204,7 @@ public:
 	}
 
 	double physical_reduce_maxAbs()
+	override
 	{
 		double e = -1;
 		for (int k = 0; k < N; k++)
@@ -203,6 +215,7 @@ public:
 
 
 	double physical_reduce_norm1()
+	override
 	{
 		double e = 0;
 		for (int k = 0; k < N; k++)
@@ -211,6 +224,7 @@ public:
 	}
 
 	double physical_reduce_norm2()
+	override
 	{
 		double e = 0;
 		for (int k = 0; k < N; k++)
@@ -222,6 +236,7 @@ public:
 	}
 
 	bool check_for_nan()
+	override
 	{
 		bool found_nan = false;
 
@@ -251,6 +266,7 @@ public:
 
 
 	Parareal_GenericData& operator+=(const Parareal_GenericData &i_data)
+	override
 	{
 #if SWEET_PARAREAL
 		assert(data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
@@ -264,6 +280,7 @@ public:
 
 
 	Parareal_GenericData& operator-=(const Parareal_GenericData &i_data)
+	override
 	{
 #if SWEET_PARAREAL
 		assert(data->time == i_data.get_pointer_to_data_SphereData_Spectral()->time);
@@ -276,6 +293,7 @@ public:
 	}
 
 	Parareal_GenericData& operator*=(const double v)
+	override
 	{
 
 		for (int i = 0; i < N; i++)
@@ -286,6 +304,7 @@ public:
 
 
 	void physical_print()
+	override
 	{
 		for (int i = 0; i < N; i++)
 		{
@@ -295,6 +314,7 @@ public:
 	}
 
 	void spectral_print()
+	override
 	{
 		for (int i = 0; i < N; i++)
 		{
@@ -326,12 +346,14 @@ public:
 	}
 
 	void restrict(const Parareal_GenericData& i_data)
+	override
 	{
 		for (int i = 0; i < N; i++)
 			*data->simfields[i] = data->simfields[i]->restrict( *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]) );
 	}
 
 	void pad_zeros(const Parareal_GenericData& i_data)
+	override
 	{
 		for (int i = 0; i < N; i++)
 			*data->simfields[i] = data->simfields[i]->pad_zeros( *(i_data.get_pointer_to_data_SphereData_Spectral()->simfields[i]) );

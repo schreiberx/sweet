@@ -21,7 +21,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,
@@ -33,9 +33,9 @@ public:
 	);
 
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
-	std::string getIDString();
-	void printHelp();
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
+	std::string getIDString() override;
+	void printHelp() override;
 
 
 	PDESWESphereTS_ln_erk_split_uv ts_ln_erk_split_uv;
@@ -54,7 +54,7 @@ public:
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
-	)
+	) override
 	{
 		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
@@ -68,9 +68,9 @@ public:
 
 private:
 	void euler_timestep_update_linear(
-			const sweet::SphereData_Spectral &i_h,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_u,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_v,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_h,
+			const sweet::SphereData_Spectral &i_u,
+			const sweet::SphereData_Spectral &i_v,
 
 			sweet::SphereData_Spectral &o_h_t,	///< time updates
 			sweet::SphereData_Spectral &o_u_t,	///< time updates
@@ -83,9 +83,9 @@ private:
 
 private:
 	void euler_timestep_update_nonlinear(
-			const sweet::SphereData_Spectral &i_h,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_u,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_v,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_h,
+			const sweet::SphereData_Spectral &i_u,
+			const sweet::SphereData_Spectral &i_v,
 
 			sweet::SphereData_Spectral &o_h_t,	///< time updates
 			sweet::SphereData_Spectral &o_u_t,	///< time updates
@@ -100,13 +100,13 @@ public:
 
 
 	void runTimestep(
-			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-			sweet::SphereData_Spectral &io_div,	///< prognostic variables
+			sweet::SphereData_Spectral &io_phi,
+			sweet::SphereData_Spectral &io_vrt,
+			sweet::SphereData_Spectral &io_div,
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 
 	virtual ~PDESWESphereTS_lg_exp_lc_n_etd_uv();

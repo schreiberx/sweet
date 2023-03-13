@@ -224,14 +224,13 @@ public:
 
 	bool processProgramArguments(ProgramArguments &i_pa)
 	{
-		bool rexi_files_given;
-
 		i_pa.getArgumentValueByKey("--rexi-method", exp_method);	// deprecated
 		i_pa.getArgumentValueByKey("--exp-method", exp_method);
 
 		i_pa.getArgumentValueByKey("--taylor_num_expansions", taylor_num_expansions);
 		i_pa.getArgumentValueByKey("--rexi-sphere-preallocation", sphere_solver_preallocation);
 
+		bool rexi_files_given = false;
 		if (i_pa.getArgumentValueByKey("--rexi-files", rexi_files))
 			rexi_files_given = true;
 

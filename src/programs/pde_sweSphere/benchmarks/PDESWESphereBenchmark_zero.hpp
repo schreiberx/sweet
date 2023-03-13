@@ -14,10 +14,6 @@
 
 class PDESWESphereBenchmark_zero	: public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
-
 public:
 	PDESWESphereBenchmark_zero()
 	{

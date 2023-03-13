@@ -38,8 +38,8 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_uv::setup_auto(
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
-	bool _with_na;
-	bool _with_nr;
+	bool _with_na = false;
+	bool _with_nr = false;
 
 	if (	timestepping_method == "lg_exp_lc_n_etd_uv"	||
 			timestepping_method == "lg_exp_lc_na_nr_etd_uv")
@@ -150,9 +150,9 @@ void PDESWESphereTS_lg_exp_lc_n_etd_uv::printHelp()
 
 
 void PDESWESphereTS_lg_exp_lc_n_etd_uv::runTimestep(
-		sweet::SphereData_Spectral &io_U_phi,	///< prognostic variables
-		sweet::SphereData_Spectral &io_U_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_U_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_U_phi,
+		sweet::SphereData_Spectral &io_U_vrt,
+		sweet::SphereData_Spectral &io_U_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp

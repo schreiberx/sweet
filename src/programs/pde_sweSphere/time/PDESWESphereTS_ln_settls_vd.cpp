@@ -226,9 +226,9 @@ std::string PDESWESphereTS_ln_settls_vd::getIDString()
 
 
 void PDESWESphereTS_ln_settls_vd::runTimestep(
-		sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_phi,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -245,9 +245,9 @@ void PDESWESphereTS_ln_settls_vd::runTimestep(
 
 
 void PDESWESphereTS_ln_settls_vd::run_timestep_2nd_order(
-	sweet::SphereData_Spectral &io_U_phi,		///< prognostic variables
-	sweet::SphereData_Spectral &io_U_vrt,		///< prognostic variables
-	sweet::SphereData_Spectral &io_U_div,		///< prognostic variables
+	sweet::SphereData_Spectral &io_U_phi,
+	sweet::SphereData_Spectral &io_U_vrt,
+	sweet::SphereData_Spectral &io_U_div,
 
 	double i_dt,		
 	double i_simulation_timestamp

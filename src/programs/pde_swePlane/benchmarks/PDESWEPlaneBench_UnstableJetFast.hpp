@@ -30,7 +30,6 @@ class PDESWEPlaneBench_UnstableJetFast	:
 {
 	double f = shackPDESWEPlane->plane_rotating_f0;
 	double g = shackPDESWEPlane->gravitation;
-	double sx = shackPlaneDataOps->plane_domain_size[0];
 	double sy = shackPlaneDataOps->plane_domain_size[1];
 
 	bool with_bump;
@@ -140,18 +139,21 @@ public:
 		}
 
 		//Now set for other "x" and add bump
-		for (int j = 0; j < shackPlaneDataOps->space_res_physical[1]; j++)
+		if (with_bump)
 		{
-			for (int i = 1; i < shackPlaneDataOps->space_res_physical[0]; i++)
+			for (int j = 0; j < shackPlaneDataOps->space_res_physical[1]; j++)
 			{
+				for (int i = 1; i < shackPlaneDataOps->space_res_physical[0]; i++)
+				{
 
-				// h - lives in the center of the cell
-				// (x,y) \in [0,1]x[0,1]
-				double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*shackDict.sim.domain_size[0];
-				double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*shackDict.sim.domain_size[1];
+					// h - lives in the center of the cell
+					// (x,y) \in [0,1]x[0,1]
+					double x = (((double)i+0.5)/(double)shackPlaneDataOps->space_res_physical[0]); //*shackDict.sim.domain_size[0];
+					double y = (((double)j+0.5)/(double)shackPlaneDataOps->space_res_physical[1]); //*shackDict.sim.domain_size[1];
 
-				depth_phys.physical_set_value(j, i, depth_phys.physical_get(j, 0) + bump(x,y));
+					depth_phys.physical_set_value(j, i, depth_phys.physical_get(j, 0) + bump(x,y));
 
+				}
 			}
 		}
 

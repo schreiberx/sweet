@@ -15,10 +15,6 @@
 class PDESWESphereBenchmark_three_gaussian_bumps	:
 		public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
-
 public:
 	PDESWESphereBenchmark_three_gaussian_bumps()
 	{
