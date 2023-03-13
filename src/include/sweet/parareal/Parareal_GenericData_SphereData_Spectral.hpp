@@ -152,18 +152,18 @@ public:
 		return N * data->simfields[0]->sphereDataConfig->spectral_array_data_number_of_elements;
 	}
 
-	void serialize(std::complex<double> *data)
+	void serialize(std::complex<double> *i_data)
 	{
-		int s = data->simfields[0]->sphereDataConfig->spectral_array_data_number_of_elements;
+		int s = this->data->simfields[0]->sphereDataConfig->spectral_array_data_number_of_elements;
 		for (int i = 0; i < N; i++)
-			std::copy(&data->simfields[i]->spectral_space_data[0], &data->simfields[i]->spectral_space_data[s], &data[i * s]);
+			std::copy(&this->data->simfields[i]->spectral_space_data[0], &this->data->simfields[i]->spectral_space_data[s], &i_data[i * s]);
 	};
 
-	void deserialize(std::complex<double> *data)
+	void deserialize(std::complex<double> *i_data)
 	{
-		int s = data->simfields[0]->sphereDataConfig->spectral_array_data_number_of_elements;
+		int s = this->data->simfields[0]->sphereDataConfig->spectral_array_data_number_of_elements;
 		for (int i = 0; i < N; i++)
-			std::copy(&data[i * s], &data[(i + 1) * s], &data->simfields[i]->spectral_space_data[0]);
+			std::copy(&i_data[i * s], &i_data[(i + 1) * s], &this->data->simfields[i]->spectral_space_data[0]);
 	};
 
 #endif

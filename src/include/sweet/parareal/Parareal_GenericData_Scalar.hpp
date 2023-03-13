@@ -161,21 +161,21 @@ public:
 		return 1;
 	}
 
-	void serialize(double *data)
+	void serialize(double *i_data)
 	{
 		for (int i = 0; i < N; i++)
 		{
 			///std::memcpy(data + i, &this->data->simfields[i], 1);
-			std::copy(&this->data->simfields[i], &this->data->simfields[i + 1], data);
+			std::copy(&this->data->simfields[i], &this->data->simfields[i + 1], i_data);
 		}
 	};
 
-	void deserialize(double *data)
+	void deserialize(double *i_data)
 	{
 		for (int i = 0; i < N; i++)
 		{
 			///std::memcpy(&this->data->simfields[i], data + i, 1);
-			std::copy(&data[i], &data[i + 1], &this->data->simfields[i]);
+			std::copy(&i_data[i], &i_data[i + 1], &this->data->simfields[i]);
 		}
 	};
 #endif
