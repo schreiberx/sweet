@@ -54,8 +54,8 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
             params_advection_rotation_angles,
             #params_advection_velocity,
         ):
-            jg.runtime.advection_rotation_angle = vel[0]
-            #jg.runtime.advection_velocity = ",".join(str(x) for x in vel)
+            jg.runtime.benchmark_advection_rotation_angle = vel[0]
+            #jg.runtime.benchmark_advection_velocity = ",".join(str(x) for x in vel)
 
             jg.runtime.semi_lagrangian_max_iterations = 10
 

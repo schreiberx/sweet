@@ -75,7 +75,7 @@ for (res_x, res_y) in product(params_runtime_mode_res_x, params_runtime_mode_res
                 params_advection_velocity_v,
                 params_rotation_velocity,
             ):
-                jg.runtime.advection_velocity = ",".join(str(x) for x in vel)
+                jg.runtime.benchmark_advection_velocity = ",".join(str(x) for x in vel)
 
                 if jg.runtime.timestepping_method == "na_sl":
                     if jg.runtime.timestepping_order == 1:
