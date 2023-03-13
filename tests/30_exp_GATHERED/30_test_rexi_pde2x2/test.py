@@ -31,13 +31,12 @@ from itertools import product
 jg = JobGeneration()
 
 
-jg.compile.unit_test = "test_rexi_pde2x2"
+jg.compile.program = "tests/exp_rexiPDE2x2"
 
 #
 # Use file-based REXI method
 #
 jg.runtime.rexi_method = "file"
-jg.compile.quadmath = "disable"
 jg.runtime.verbosity = 20
 
 

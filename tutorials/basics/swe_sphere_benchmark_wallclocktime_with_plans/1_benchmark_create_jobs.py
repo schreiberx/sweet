@@ -14,7 +14,7 @@ jg = JobGeneration()
 #
 # Compile options
 #
-jg.compile.program = 'swe_sphere'
+jg.compile.program = 'programs/pde_sweSphere'
 
 #
 # Runtime options

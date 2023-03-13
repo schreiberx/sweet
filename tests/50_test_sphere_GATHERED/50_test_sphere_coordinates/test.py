@@ -11,7 +11,7 @@ from mule.utils import exec_program
 exec_program('mule.benchmark.cleanup_all', catch_output=False)
 
 jg = JobGeneration()
-jg.compile.unit_test = "test_sphere_coordinates"
+jg.compile.program = "tests/core_sphere_coordinates"
 jg.compile.sphere_spectral_space = "enable"
 jg.runtime.verbosity = 5
 jg.compile.mode = 'debug'

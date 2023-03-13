@@ -17,14 +17,14 @@ params_compile_sweet_mpi = ['enable', 'disable']
 params_compile_threading = ['omp', 'off']
 params_compile_thread_parallel_sum = ['enable', 'disable']
 
-jg.compile.program = 'swe_sphere'
+jg.compile.program = 'programs/pde_sweSphere'
 
 jg.compile.plane_spectral_space = 'disable'
 jg.compile.plane_spectral_dealiasing = 'disable'
 jg.compile.sphere_spectral_space = 'enable'
 jg.compile.sphere_spectral_dealiasing = 'enable'
 
-jg.compile.quadmath = 'enable'
+#jg.compile.quadmath = 'enable'
 jg.unique_id_filter = ['runtime.simparams', 'parallelization', 'benchmark', 'runtime.rexi_params']
 
 

@@ -43,7 +43,7 @@ if 'MULE_SOFTWARE_ROOT' not in os.environ:
 
 env['MULE_SOFTWARE_ROOT'] = os.environ['MULE_SOFTWARE_ROOT']
 
-p = JobCompileOptions()
+jg = JobCompileOptions()
 
 
 
@@ -61,7 +61,7 @@ if 'MULE_CXX_COMPILER' in os.environ:
 else:
     print("MULE_CXX_COMPILER env not found, trying to autodetect compiler")
 
-    if p.sweet_mpi == 'enable':
+    if jg.sweet_mpi == 'enable':
         raise Exception("Please specify MULE_CXX_COMPILER with MPI to ensure no compile problems")
 
     if 'CXX' in os.environ:
@@ -78,7 +78,7 @@ if 'MULE_F90_COMPILER' in os.environ:
 else:
     print("MULE_F90_COMPILER env not found, trying to autodetect compiler")
 
-    if p.sweet_mpi == 'enable':
+    if jg.sweet_mpi == 'enable':
         raise Exception("Please specify MULE_F90_COMPILER with MPI to ensure no compile problems")
 
     if 'F90' in os.environ:
@@ -109,96 +109,54 @@ if 'LD_LIBRARY_PATH' in os.environ:
 ###########################################
 
 
-p.sconsProcessCommandlineOptions()
+jg.sconsProcessCommandlineOptions()
 
 # Cleanup options
-p.postprocessOptions()
+jg.postprocessOptions()
 
 
 
-if p.libxml == 'enable':
+if jg.libxml == 'enable':
     env.ParseConfig("xml2-config --cflags --libs")
 
 
-env.Append(CXXFLAGS=['-DSWEET_SIMD_ENABLE='+('1' if p.simd=='enable' else '0')])
-env.Append(CXXFLAGS=['-DCONFIG_ENABLE_LIBXML='+('1' if p.libxml=='enable' else '0')])
+env.Append(CXXFLAGS=['-DSWEET_SIMD_ENABLE='+('1' if jg.simd=='enable' else '0')])
+env.Append(CXXFLAGS=['-DCONFIG_ENABLE_LIBXML='+('1' if jg.libxml=='enable' else '0')])
 
 
 
-if p.plane_spectral_space == 'enable':
+if jg.plane_spectral_space == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_SPACE=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_SPACE=0'])
 
 
 
-if p.plane_spectral_dealiasing == 'enable':
+if jg.plane_spectral_dealiasing == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_DEALIASING=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_USE_PLANE_SPECTRAL_DEALIASING=0'])
 
 
 
-if p.sphere_spectral_space == 'enable':
+if jg.sphere_spectral_space == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_USE_SPHERE_SPECTRAL_SPACE=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_USE_SPHERE_SPECTRAL_SPACE=0'])
 
 
-if p.sphere_spectral_dealiasing == 'enable':
+if jg.sphere_spectral_dealiasing == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=1'])
 else:
-    if p.sphere_spectral_space == 'enable':
+    if jg.sphere_spectral_space == 'enable':
         raise Exception("No anti-aliasing on sphere as compile option supported, please simply use command line options to specify lower physical resolution!")
 
     env.Append(CXXFLAGS=['-DSWEET_USE_SPHERE_SPECTRAL_DEALIASING=0'])
 
-
-
-
-if p.parareal == 'none':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL=0'])
-elif p.parareal == 'serial':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL=1'])
-elif p.parareal == 'mpi':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL=2'])
-else:
-    raise Exception("Invalid option '"+str(p.parareal)+"' for parareal method")
-
-
-if p.parareal_scalar == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_SCALAR=1'])
-if p.parareal_plane == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_PLANE=1'])
-if p.parareal_sphere == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_SPHERE=1'])
-if p.parareal_plane_swe == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_PLANE_SWE=1'])
-if p.parareal_plane_burgers == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_PARAREAL_PLANE_BURGERS=1'])
-
-
-if p.xbraid == 'none':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID=0'])
-elif p.xbraid == 'mpi':
-    env.Append(CXXFLAGS=['-Ilocal_software/local/include/xbraid'])
-    env.Append(LIBS=['braid'])
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID=1'])
-else:
-    raise Exception("Invalid option '"+str(p.xbraid)+"' for XBraid")
-
-
-if p.xbraid_scalar == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_SCALAR=1'])
-if p.xbraid_plane == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_PLANE=1'])
-if p.xbraid_sphere == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_SPHERE=1'])
-if p.xbraid_plane_swe == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_PLANE_SWE=1'])
-if p.xbraid_plane_burgers == 'enable':
-    env.Append(CXXFLAGS=['-DSWEET_XBRAID_PLANE_BURGERS=1'])
-
+#
+# Add other flags, potentially from shacks
+#
+jg.sconsAddFlags(env)
 
 
 #
@@ -216,7 +174,7 @@ override_list = [
 
 for i in override_list:
 
-    if p.sweet_mpi == 'enable':
+    if jg.sweet_mpi == 'enable':
         mi = 'MULE_MPI'+i
         if mi in env['ENV']:
             if 'FLAGS' in i or 'LIBS' in i:
@@ -242,19 +200,19 @@ for i in override_list:
 #
 # MPI
 #
-if p.sweet_mpi == 'enable':
+if jg.sweet_mpi == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_MPI=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_MPI=0'])
 
 
-if p.libpfasst == 'enable':
+if jg.libpfasst == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=1'])
 
     env.Append(LIBS=['libpfasst'])
 
     # enable MPI per default for libpfasst
-    p.sweet_mpi = 'enable'
+    jg.sweet_mpi = 'enable'
 
 else:
     env.Append(CXXFLAGS=['-DSWEET_LIBPFASST=0'])
@@ -273,7 +231,7 @@ if compiler_type_cxx == 'gcc':
     env.Append(CXXFLAGS=['-std=c++0x'])
 
 
-    if p.sweet_mpi == 'enable':
+    if jg.sweet_mpi == 'enable':
         # GNU compiler needs special treatment!
         # Linking with Fortran MPI requires
         # for OpenMPI: -lmpi_mpifh
@@ -281,11 +239,11 @@ if compiler_type_cxx == 'gcc':
 
         output = exec_command(env['CC']+' -v')
         if 'MPICH' in output:
-            if p.fortran_source == 'enable':
+            if jg.fortran_source == 'enable':
                 env.Append(LIBS=['mpifort'])
         else:
             # Assume OpenMPI
-            if p.fortran_source == 'enable':
+            if jg.fortran_source == 'enable':
                 env.Append(LIBS=['mpi_cxx'])
 
 
@@ -315,15 +273,15 @@ elif compiler_type_cxx == 'intel':
     # output more warnings
     env.Append(CXXFLAGS=['-w1'])
 
-    if p.sweet_mpi == 'enable':
-        if p.threading != 'off':
+    if jg.sweet_mpi == 'enable':
+        if jg.threading != 'off':
             env.Append(CXXFLAGS=['-mt_mpi'])
             env.Append(LINKFLAGS=['-mt_mpi'])
 
 
 elif compiler_type_cxx == 'llvm':
     reqversion = [9,0]
-    if p.threading == 'omp':
+    if jg.threading == 'omp':
         reqversion = [9,0]
     version_line = exec_command(f"{os.environ['CXX']} --version").splitlines()[0]
 
@@ -365,7 +323,7 @@ else:
 Different modes
 """
 
-if p.mode in ['debug', 'debug_thread', 'debug_leak']:
+if jg.mode in ['debug', 'debug_thread', 'debug_leak']:
     env.Append(CXXFLAGS=['-DSWEET_DEBUG=1'])
 
     if compiler_type_cxx == 'gcc':
@@ -382,14 +340,14 @@ if p.mode in ['debug', 'debug_thread', 'debug_leak']:
 #        env.Append(CXXFLAGS='-fp-trap=common')
 
 
-    if p.fortran_source == 'enable':
+    if jg.fortran_source == 'enable':
         if compiler_type_cxx == 'gcc':
             env.Append(F90FLAGS=["-g", "-O0"])
         elif compiler_type_cxx == 'intel':
             env.Append(F90FLAGS=["-g", "-O0", "-traceback"])
 
 
-elif p.mode == 'release':
+elif jg.mode == 'release':
     env.Append(CXXFLAGS=['-DSWEET_DEBUG=0'])
 
     # deactivate assertion calls
@@ -410,17 +368,17 @@ elif p.mode == 'release':
     elif compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=["-O2", "-fno-alias"])
 
-        if p.mic != 'enable':
+        if jg.mic != 'enable':
             env.Append(CXXFLAGS=['-xHost'])
 
-    if p.fortran_source == 'enable':
+    if jg.fortran_source == 'enable':
         if compiler_type_cxx == 'gcc':
             env.Append(F90FLAGS=["-O2"])
         elif compiler_type_cxx == 'intel':
             env.Append(F90FLAGS=["-O2"])
 
 
-if p.quadmath == 'enable':
+if jg.quadmath == 'enable':
     env.Append(CXXFLAGS=["-DSWEET_QUADMATH=1"])
     env.Append(LIBS=['quadmath'])
 else:
@@ -428,7 +386,7 @@ else:
 
 
 
-if p.gui == 'enable':
+if jg.gui == 'enable':
     # compile flags
     env.Append(CXXFLAGS=['-I'+os.environ['HOME']+'/local/include'])
     env.Append(CXXFLAGS=['-DSWEET_GUI=1'])
@@ -462,12 +420,12 @@ else:
 
 
 # Add LAPACK libraries
-if p.lapack == 'enable':
+if jg.lapack == 'enable':
     env.Append(LIBS=['lapack'])
     env.Append(LIBS=['blas'])
     env.Append(CXXFLAGS=['-DSWEET_LAPACK=1'])
 
-    assert p.fortran_source == 'enable', "LAPACK enabled, Fortran source needs to be enabled for lapack (--fortran-source=enbale) "
+    assert jg.fortran_source == 'enable', "LAPACK enabled, Fortran source needs to be enabled for lapack (--fortran-source=enbale) "
 
 else:
     env.Append(CXXFLAGS=['-DSWEET_LAPACK=0'])
@@ -475,7 +433,7 @@ else:
 
   
 
-if p.fortran_source == 'enable':
+if jg.fortran_source == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_FORTRAN=1'])
 
     if compiler_type_cxx == 'gcc':
@@ -491,19 +449,19 @@ else:
     env.Append(LIBS=['numa'])
 
 
-if p.threading == 'omp':
+if jg.threading == 'omp':
     env.Append(CXXFLAGS=['-fopenmp'])
     env.Append(LINKFLAGS=['-fopenmp'])
 
     env.Append(CXXFLAGS=['-DSWEET_THREADING_SPACE=1'])
-elif p.threading == 'off':
+elif jg.threading == 'off':
     env.Append(CXXFLAGS=['-DSWEET_THREADING_SPACE=0'])
 else:
     raise Exception("Internal error")
 
 
 
-if p.eigen == 'enable':
+if jg.eigen == 'enable':
     env.Append(CXXFLAGS=['-Ilocal_software/local/include/eigen3'])
     env.Append(CXXFLAGS=['-DSWEET_EIGEN=1'])
 else:
@@ -511,24 +469,24 @@ else:
 
 
 
-if p.libsph == 'enable':
-    if p.threading == 'omp':
+if jg.libsph == 'enable':
+    if jg.threading == 'omp':
         env.Append(LIBS=['shtns_omp'])
     else:
         env.Append(LIBS=['shtns'])
 
-    p.libfft = 'enable'
+    jg.libfft = 'enable'
 
 
 
-if p.libfft == 'enable':
+if jg.libfft == 'enable':
 
     env.Append(CXXFLAGS='-DSWEET_USE_LIBFFT=1')
 
-    if p.mkl == 'enable':
+    if jg.mkl == 'enable':
         print("INFO: Using Intel MKL instead of FFTW");
 
-        if p.threading != 'omp':
+        if jg.threading != 'omp':
             env.Append(CXXFLAGS=['-mkl=sequential'])
             env.Append(LINKFLAGS=['-mkl=sequential'])
         else:
@@ -538,7 +496,7 @@ if p.libfft == 'enable':
     else:
         env.Append(LIBS=['fftw3'])
 
-        if p.threading == 'omp' or p.rexi_thread_parallel_sum == 'enable':
+        if jg.threading == 'omp' or jg.rexi_thread_parallel_sum == 'enable':
             env.Append(LIBS=['fftw3_omp'])
 
 else:
@@ -549,7 +507,7 @@ else:
 # If SWEET_THREADING_TIME_REXI is activated, the REXI sum is computed
 # with parallel for over the sum terms
 #
-if p.rexi_thread_parallel_sum == 'enable':
+if jg.rexi_thread_parallel_sum == 'enable':
     # Same for gcc/icpc
     env.Append(LINKFLAGS=['-fopenmp'])
 
@@ -575,29 +533,29 @@ else:
     env.Append(CXXFLAGS=['-DSWEET_THREADING_TIME_REXI=0'])
 
 
-if p.benchmark_timings == 'enable':
+if jg.benchmark_timings == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_BENCHMARK_TIMINGS=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_BENCHMARK_TIMINGS=0'])
 
-if p.rexi_timings_additional_barriers == 'enable':
+if jg.rexi_timings_additional_barriers == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_REXI_TIMINGS_ADDITIONAL_BARRIERS=0'])
 
-if p.rexi_allreduce == 'enable':
+if jg.rexi_allreduce == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_REXI_ALLREDUCE=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_REXI_ALLREDUCE=0'])
 
 
-if p.threading == 'omp' or p.rexi_thread_parallel_sum == 'enable':
+if jg.threading == 'omp' or jg.rexi_thread_parallel_sum == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_THREADING=1'])
 else:
     env.Append(CXXFLAGS=['-DSWEET_THREADING=0'])
 
 
-if p.debug_symbols == 'enable':
+if jg.debug_symbols == 'enable':
     env.Append(CXXFLAGS=['-g'])
     env.Append(LINKFLAGS=['-g'])
 
@@ -610,24 +568,24 @@ if p.debug_symbols == 'enable':
 Fortran related support at the very end here
 """
 if compiler_type_cxx == 'gcc':
-    if p.fortran_source == 'enable':
+    if jg.fortran_source == 'enable':
         env.Append(F90FLAGS=['-cpp'])
         env.Append(LIBS=['gfortran'])
 
 elif compiler_type_cxx == 'intel':
-    if p.fortran_source == 'enable':
+    if jg.fortran_source == 'enable':
         env.Append(LIBS=['gfortran'])
         env.Append(LIBS=['ifcore'])
         env.Append(F90FLAGS=['-fpp'])
 
 elif compiler_type_cxx == 'llvm':
-    if p.fortran_source == 'enable':
+    if jg.fortran_source == 'enable':
         env.Append(F90FLAGS=['-cpp'])
         env.Append(LIBS=['gfortran'])
 
 
 
-exec_name = p.getProgramExec()
+exec_name = jg.getProgramExec()
 
 
 #
@@ -641,7 +599,7 @@ if user != None:
 
 build_dir += 'scons_build_'+exec_name+'/'
 
-if p.libpfasst == 'enable':
+if jg.libpfasst == 'enable':
     env.Append(F90FLAGS = ['-Ilocal_software/local/include/libpfasst'])
 
 #
@@ -678,12 +636,12 @@ env.Append(LINKFLAGS=['-L./local_software/local/lib'])
 env.Append(CPPPATH=['./local_software/local/include'])
 
 
-if p.program_name != 'DUMMY':
+if jg.program_name != 'DUMMY':
 
-    env.SConscript('sconscript.py', variant_dir=build_dir, duplicate=0, exports=['env', 'p'])
+    env.SConscript('sconscript.py', variant_dir=build_dir, duplicate=0, exports=['env', 'jg'])
 
     print('')
-    print('            Program: '+p.program_name)
+    print('            Program: '+jg.program_name)
     print('Building executable: '+exec_name)
     print('')
 
