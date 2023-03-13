@@ -23,9 +23,12 @@ bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::implementsTimesteppingMethod(cons
 
 
 bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
@@ -55,6 +58,54 @@ bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup_auto(
 		);
 }
 
+
+bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup(
+		sweet::SphereOperators *io_ops,
+		sweet::ShackExpIntegration *i_shackExpIntegration,
+		int i_timestepping_order,
+		int i_timestepping_order2,
+		double i_timestep_size,
+
+		NLRemainderTreatment_enum i_nonlinear_remainder_treatment
+)
+{
+	ops = io_ops;
+
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+
+	nonlinear_remainder_treatment = i_nonlinear_remainder_treatment;
+
+	ts_ln_erk_split_uv.setup_main(ops, i_timestepping_order, true, true, true, true, false);
+
+	// Setup semi-lag
+	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);
+
+	if (timestepping_order != timestepping_order2)
+		SWEETError("Mismatch of orders, should be equal");
+
+	if (timestepping_order == 0 || timestepping_order == 1)
+	{
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+	}
+	else if (timestepping_order == 2)
+	{
+		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
+		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
+		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
+	}
+	else if  (timestepping_order == 4)
+	{
+		SWEETError("4th order method not (yet) supported");
+	}
+	else
+	{
+		SWEETError("TODO: This order is not implemented, yet!");
+	}
+
+	return true;
+}
 
 
 std::string PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::getIDString()
@@ -278,57 +329,6 @@ void PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::runTimestep(
 }
 
 
-
-/*
- * Setup
- */
-bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::setup(
-		sweet::SphereOperators *io_ops,
-		sweet::ShackExpIntegration *i_shackExpIntegration,
-		int i_timestepping_order,
-		int i_timestepping_order2,
-		double i_timestep_size,
-
-		NLRemainderTreatment_enum i_nonlinear_remainder_treatment
-)
-{
-	ops = io_ops;
-
-	timestepping_order = i_timestepping_order;
-	timestepping_order2 = i_timestepping_order2;
-
-	nonlinear_remainder_treatment = i_nonlinear_remainder_treatment;
-
-	ts_ln_erk_split_uv.setup(ops, i_timestepping_order, true, true, true, true, false);
-
-	// Setup semi-lag
-	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);
-
-	if (timestepping_order != timestepping_order2)
-		SWEETError("Mismatch of orders, should be equal");
-
-	if (timestepping_order == 0 || timestepping_order == 1)
-	{
-		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
-	}
-	else if (timestepping_order == 2)
-	{
-		ts_phi0_exp.setup_variant_50(ops, i_shackExpIntegration, "phi0", i_timestep_size, false, true, timestepping_order);	/* NO Coriolis */
-		ts_phi1_exp.setup_variant_50(ops, i_shackExpIntegration, "phi1", i_timestep_size, false, true, timestepping_order);
-		ts_phi2_exp.setup_variant_50(ops, i_shackExpIntegration, "phi2", i_timestep_size, false, true, timestepping_order);
-	}
-	else if  (timestepping_order == 4)
-	{
-		SWEETError("4th order method not (yet) supported");
-	}
-	else
-	{
-		SWEETError("TODO: This order is not implemented, yet!");
-	}
-
-	return true;
-}
 
 
 PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv::PDESWESphereTS_lg_exp_na_sl_lc_nr_etd_uv()

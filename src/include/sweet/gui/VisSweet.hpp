@@ -2,7 +2,7 @@
  * VisSweet.hpp
  *
  *  Created on: 30 Jun 2015
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_EXAMPLES_VISSWEET_HPP_
 #define SRC_EXAMPLES_VISSWEET_HPP_
@@ -16,6 +16,10 @@
 #include "../libgl/VisualizationEngine.hpp"
 #include "../libgl/core/GlTexture.hpp"
 #include "../libgl/draw/GlDrawQuad.hpp"
+
+#ifndef SWEET_USE_SPHERE_SPECTRAL_SPACE
+#define SWEET_USE_SPHERE_SPECTRAL_SPACE 1
+#endif
 
 #if SWEET_USE_SPHERE_SPECTRAL_SPACE
 	#include "../libgl/draw/GlDrawSphereSph.hpp"

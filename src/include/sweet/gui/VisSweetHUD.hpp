@@ -18,7 +18,7 @@
  * CConfig.hpp
  *
  *  Created on: Mar 22, 2010
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> (schreiberx@gmail.com)
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> (schreiberx@gmail.com)
  */
 
 //#include "simulations/hyperbolic_common/CTsunamiConfig.hpp"

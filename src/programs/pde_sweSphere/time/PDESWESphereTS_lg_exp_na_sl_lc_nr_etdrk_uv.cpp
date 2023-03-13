@@ -2,7 +2,7 @@
  * PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv
  *
  * Created on: 24 Mar 2022
- *     Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
  */
 
@@ -29,9 +29,12 @@ std::string PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv::getIDString()
 
 
 bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
@@ -76,12 +79,14 @@ bool PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv::setup(
 		NLRemainderTreatment_enum i_nonlinear_remainder_treatment
 )
 {
+	ops = io_ops;
+
 	timestepping_order = i_timestepping_order;
 	timestepping_order2 = i_timestepping_order2;
 
 	nonlinear_remainder_treatment = i_nonlinear_remainder_treatment;
 
-	ts_ln_erk_split_uv.setup(ops, i_timestepping_order, true, true, true, true, false);
+	ts_ln_erk_split_uv.setup_main(ops, i_timestepping_order, true, true, true, true, false);
 
 	// Setup semi-lag
 	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);

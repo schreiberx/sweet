@@ -24,9 +24,12 @@ public:
 	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
 	std::string getIDString();
 
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_order,	///< order of RK time stepping method
 			int i_order2

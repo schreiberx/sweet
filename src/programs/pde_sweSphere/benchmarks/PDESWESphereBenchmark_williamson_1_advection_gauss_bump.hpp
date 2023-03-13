@@ -78,7 +78,7 @@ public:
 		stream << "     'adv_gauss_bump'/" << std::endl;
 		stream << "     'adv_gauss_bump': Advection test case of gaussian bump" << std::endl;
 		stream << "         OPTION:" << std::endl;
-		stream << "         --advection-rotation-angle=[angle]" << std::endl;
+		stream << "         --benchmark-advection-rotation-angle=[angle]" << std::endl;
 		return stream.str();
 	}
 
@@ -150,7 +150,7 @@ public:
 			{
 				double i_theta = i_lat;
 				double i_lambda = i_lon;
-				double alpha = shackPDESWEBenchmark->sphere_advection_rotation_angle;
+				double alpha = shackPDESWEBenchmark->benchmark_sphere_advection_rotation_angle;
 
 				io_data = -a*u0*(std::sin(i_theta)*std::cos(alpha) - std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha));
 			}
@@ -165,7 +165,7 @@ public:
 			{
 				double i_theta = i_lat;
 				double i_lambda = i_lon;
-				double alpha = shackPDESWEBenchmark->sphere_advection_rotation_angle;
+				double alpha = shackPDESWEBenchmark->benchmark_sphere_advection_rotation_angle;
 
 				io_data = 2.0*u0/a*(-std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha) + std::sin(i_theta)*std::cos(alpha));
 			}

@@ -2,7 +2,7 @@
  * Burgers_Plane_TS_ln_imex_forcing.hpp
  *
  *  Created on: 17 June 2017
- *  Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
 #ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_LN_IMEX_FORCING_HPP_

@@ -7,6 +7,7 @@
 #include "PDESWESphereTS_lg_0_lc_n_erk_bv.hpp"
 
 
+
 /*
  * Barotropic vorticity equation implementation
  * Details from here: https://www.gfdl.noaa.gov/wp-content/uploads/files/user_files/pjp/barotropic.pdf
@@ -14,7 +15,7 @@
  *  The main prognostic variable will be vorticity (vrt)
  *  We are basically solving only the vorticity equation of the SWE equation written in vort-div formulation
  *  The flow is non-divergent, so div=0 everywhere, therefore, also, we don't need phi (fuild depth)
- *  We only need the streamfunction $\psi$, 
+ *  We only need the streamfunction $\psi$,
  *  but not the the velocity potential (which is zero for this equation).
  * In summary:
  *  - Main prognostic: vrt
@@ -22,6 +23,37 @@
  *  - Constant variables: phi_pert
  *  - Diagnostic variables: u, v (obtained from psi and chi)
  */
+
+
+
+bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
+{
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(
+			io_ops,
+			shackPDESWETimeDisc->timestepping_order
+		);
+}
+
+bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup_main(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order	///< order of RK time stepping method
+)
+{
+	ops = io_ops;
+
+	timestepping_order = i_timestepping_order;
+	timestep_size = shackTimestepControl->current_timestep_size;
+
+	setupFG();
+
+	return true;
+}
+
 
 void PDESWESphereTS_lg_0_lc_n_erk_bv::runTimestep(
 		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
@@ -108,32 +140,6 @@ void PDESWESphereTS_lg_0_lc_n_erk_bv::euler_timestep_update(
 
 }
 
-
-
-bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup_auto(
-		sweet::SphereOperators *io_ops
-)
-{
-	return setup(
-		io_ops,
-		timestepping_order
-		);
-}
-
-bool PDESWESphereTS_lg_0_lc_n_erk_bv::setup(
-		sweet::SphereOperators *io_ops,
-		int i_timestepping_order	///< order of RK time stepping method
-)
-{
-	ops = io_ops;
-
-	timestepping_order = i_timestepping_order;
-	timestep_size = shackTimestepControl->current_timestep_size;
-
-	setupFG();
-
-	return true;
-}
 
 void PDESWESphereTS_lg_0_lc_n_erk_bv::printHelp()
 {

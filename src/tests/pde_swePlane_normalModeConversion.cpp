@@ -1,8 +1,8 @@
 /*
- *  Created on: 14 Nov 2019
- *      Author: Pedro Peixoto <ppeixoto@usp.br>
+ * Author: Pedro Peixoto <ppeixoto@usp.br>
  *
  * MULE_SCONS_OPTIONS: --plane-spectral-space=enable
+ * MULE_SCONS_OPTIONS: --eigen=enable
  */
 
 #include <sweet/core/defaultPrecompilerValues.hpp>
@@ -34,13 +34,10 @@ int main(
 	shackProgArgDict.setup();
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
-
-	SWEPlaneNormalModes swePlaneNormalModes;
-
-
 	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
 	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
 
+	SWEPlaneNormalModes swePlaneNormalModes;
 	swePlaneNormalModes.shackRegistration(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();

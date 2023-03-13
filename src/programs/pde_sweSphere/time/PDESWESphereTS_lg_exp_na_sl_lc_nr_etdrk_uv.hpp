@@ -2,7 +2,7 @@
  * PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv
  *
  * Created on: 24 Mar 2022
- *     Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraesser <joao.steinstraesser@usp.br>
  *
  */
 
@@ -51,10 +51,30 @@ public:
 	PDESWESphereTS_l_exp ts_psi2_exp;
 
 	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
-	//sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
+
 
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		ts_phi0_exp.shackRegistration(io_shackDict);
+		ts_phi2_exp.shackRegistration(io_shackDict);
+
+		ts_psi1_exp.shackRegistration(io_shackDict);
+		ts_psi2_exp.shackRegistration(io_shackDict);
+		return true;
+	}
+
+
+
+public:
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup(
 			sweet::SphereOperators *io_ops,

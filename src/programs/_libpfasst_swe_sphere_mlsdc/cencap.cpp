@@ -80,9 +80,9 @@ void c_sweet_data_setval(
 void c_sweet_data_copy(SphereDataVars *i_src,
 		SphereDataVars *o_dst)
 {
-	const SphereData_Spectral& phi_pert_src  = i_src->get_phi_pert();
-	const SphereData_Spectral& vrt_src  = i_src->get_vrt();
-	const SphereData_Spectral& div_src  = i_src->get_div();
+	const sweet::SphereData_Spectral& phi_pert_src  = i_src->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt_src  = i_src->get_vrt();
+	const sweet::SphereData_Spectral& div_src  = i_src->get_div();
 
 	sweet::SphereData_Spectral&       phi_pert_dst  = o_dst->get_phi_pert();
 	sweet::SphereData_Spectral&       vrt_dst  = o_dst->get_vrt();
@@ -99,9 +99,9 @@ void c_sweet_data_norm(
 		double *o_val
 )
 {
-	const SphereData_Spectral& phi_pert  = i_Y->get_phi_pert();
-//	const SphereData_Spectral& vrt = i_Y->get_vrt();
-//	const SphereData_Spectral& div  = i_Y->get_div();
+	const sweet::SphereData_Spectral& phi_pert  = i_Y->get_phi_pert();
+//	const sweet::SphereData_Spectral& vrt = i_Y->get_vrt();
+//	const sweet::SphereData_Spectral& div  = i_Y->get_div();
 
 	*o_val = phi_pert.toPhys().physical_reduce_max_abs();
 //	const double vrt_max = vrt.toPhys().physical_reduce_max_abs();
@@ -214,9 +214,9 @@ void c_sweet_data_saxpy(
 		SphereDataVars *io_Y
 )
 {
-	const SphereData_Spectral& phi_pert_x  = i_X->get_phi_pert();
-	const SphereData_Spectral& vrt_x = i_X->get_vrt();
-	const SphereData_Spectral& div_x  = i_X->get_div();
+	const sweet::SphereData_Spectral& phi_pert_x  = i_X->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt_x = i_X->get_vrt();
+	const sweet::SphereData_Spectral& div_x  = i_X->get_div();
 
 	sweet::SphereData_Spectral&       phi_pert_y  = io_Y->get_phi_pert();
 	sweet::SphereData_Spectral&       vrt_y = io_Y->get_vrt();
@@ -233,9 +233,9 @@ void c_sweet_data_eprint(
 		SphereDataVars *i_Y
 )
 {
-	const SphereData_Spectral& phi_pert  = i_Y->get_phi_pert();
-	const SphereData_Spectral& vrt = i_Y->get_vrt();
-	const SphereData_Spectral& div  = i_Y->get_div();
+	const sweet::SphereData_Spectral& phi_pert  = i_Y->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt = i_Y->get_vrt();
+	const sweet::SphereData_Spectral& div  = i_Y->get_div();
 
 	phi_pert.toPhys().physical_print();
 	vrt.toPhys().physical_print();

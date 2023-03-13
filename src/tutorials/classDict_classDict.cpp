@@ -6,7 +6,7 @@
 
 #include <sweet/core/shacks/ShackDictionary.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/core/shacksShared/ShackMisc.hpp>
+#include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 
 
 int main(int i_argc, char *i_argv[])
@@ -40,7 +40,7 @@ int main(int i_argc, char *i_argv[])
 		 */
 		std::cout << "   + registerParameterClass<ShackIOData>()" << std::endl;
 		varClassDict.registerFirstTime<sweet::ShackIOData>();
-		varClassDict.registerFirstTime<sweet::ShackMisc>();
+		varClassDict.registerFirstTime<sweet::ShackTimestepControl>();
 
 		/*
 		 * Now we close the registration
@@ -53,7 +53,7 @@ int main(int i_argc, char *i_argv[])
 			/*
 			 * If we now try to register a new class, this should raise an error!
 			 */
-			bool retval = varClassDict.registerFirstTime<sweet::ShackMisc>();
+			bool retval = varClassDict.registerFirstTime<sweet::ShackTimestepControl>();
 
 			if (!retval)
 			{
@@ -94,7 +94,7 @@ int main(int i_argc, char *i_argv[])
 		/*
 		 * Get handler to new class ShackIOData
 		 */
-		sweet::ShackMisc *shackParallelization = varClassDict.get<sweet::ShackMisc>();
+		sweet::ShackTimestepControl *shackParallelization = varClassDict.get<sweet::ShackTimestepControl>();
 		if (shackParallelization == nullptr)
 		{
 			std::cerr << "Not a SWEET error: " << varClassDict.error.get() << std::endl;
@@ -113,7 +113,7 @@ int main(int i_argc, char *i_argv[])
 			 * If we now access a class instance, this should raise an error!
 			 */
 
-			sweet::ShackMisc *ioDataParameters = varClassDict.get<sweet::ShackMisc>();
+			sweet::ShackTimestepControl *ioDataParameters = varClassDict.get<sweet::ShackTimestepControl>();
 			if (ioDataParameters == nullptr)
 			{
 				// Just get the error (deleting it) and continue

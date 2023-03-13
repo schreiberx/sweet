@@ -114,18 +114,21 @@ void PDESWESphereTS_lg_exp_lc_n_erk::runTimestep(
 
 
 bool PDESWESphereTS_lg_exp_lc_n_erk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	int version = 0;
 	if (timestepping_method == "lg_exp_lc_n_erk_ver1")
 		version = 1;
 
-	return setup(
+	return setup_main(
 			io_ops,
 			shackExpIntegration,
-			timestepping_order,
-			timestepping_order2,
+			shackPDESWETimeDisc->timestepping_order,
+			shackPDESWETimeDisc->timestepping_order2,
 			shackTimestepControl->current_timestep_size,
 			version
 		);
@@ -135,7 +138,7 @@ bool PDESWESphereTS_lg_exp_lc_n_erk::setup_auto(
 /*
  * Setup
  */
-bool PDESWESphereTS_lg_exp_lc_n_erk::setup(
+bool PDESWESphereTS_lg_exp_lc_n_erk::setup_main(
 		sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,

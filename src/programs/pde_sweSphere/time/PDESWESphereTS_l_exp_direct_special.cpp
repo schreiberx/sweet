@@ -7,12 +7,17 @@
 
 
 
-bool PDESWESphereTS_l_exp_direct_special::setup_auto(sweet::SphereOperators *io_ops)
+bool PDESWESphereTS_l_exp_direct_special::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
 {
+	timestepping_method = i_timestepping_method;
+
 	if (timestepping_method == "lg_exp_special")
-		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, false, "phi0");
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, false, "phi0");
 	else if (timestepping_method == "l_exp_special")
-		return setup(io_ops, shackPDESWETimeDisc->timestepping_order, true, "phi0");
+		return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, true, "phi0");
 
 	return false;
 }
@@ -20,13 +25,15 @@ bool PDESWESphereTS_l_exp_direct_special::setup_auto(sweet::SphereOperators *io_
 
 
 
-bool PDESWESphereTS_l_exp_direct_special::setup(
+bool PDESWESphereTS_l_exp_direct_special::setup_main(
 	sweet::SphereOperators *io_ops,
 	int i_order,
 	bool i_use_coriolis,	///< Include Coriolis term
 	const std::string i_function_name
 )
 {
+	ops = io_ops;
+
 	timestepping_order = i_order;
 	use_coriolis = i_use_coriolis;
 
@@ -51,24 +58,24 @@ bool PDESWESphereTS_l_exp_direct_special::setup(
 			SWEETError("Only phi0 functions supported for the ETDnRK lg/lc scheme");
 		}
 
-		timestepping_lg_exp_phi0.setup(io_ops, "phi0");
-		timestepping_lg_exp_phi1.setup(io_ops, "phi1");
+		timestepping_lg_exp_phi0.setup_main(io_ops, "phi0");
+		timestepping_lg_exp_phi1.setup_main(io_ops, "phi1");
 
 		if (timestepping_order >= 2)
 		{
-			timestepping_lg_exp_phi2.setup(io_ops, "phi2");
+			timestepping_lg_exp_phi2.setup_main(io_ops, "phi2");
 
 			if (timestepping_order >= 4)
 			{
-				timestepping_lg_exp_ups1.setup(io_ops, "ups1");
-				timestepping_lg_exp_ups2.setup(io_ops, "ups2");
-				timestepping_lg_exp_ups3.setup(io_ops, "ups3");
+				timestepping_lg_exp_ups1.setup_main(io_ops, "ups1");
+				timestepping_lg_exp_ups2.setup_main(io_ops, "ups2");
+				timestepping_lg_exp_ups3.setup_main(io_ops, "ups3");
 			}
 		}
 	}
 	else
 	{
-		timestepping_lg_exp_phi0.setup(io_ops, i_function_name);
+		timestepping_lg_exp_phi0.setup_main(io_ops, i_function_name);
 	}
 
 	return true;

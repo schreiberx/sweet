@@ -1,8 +1,5 @@
 /*
- * SWE_Plane_TS_l_direct.cpp
- *
- *  Created on: 29 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "../burgers_timeintegrators/Burgers_Plane_TS_l_direct.hpp"

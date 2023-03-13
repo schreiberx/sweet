@@ -1,6 +1,5 @@
 /*
- *  Created on: 09 Oct 2017
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
  *  Changelog:
  *      based on Martin Schreiber ETD timestepper

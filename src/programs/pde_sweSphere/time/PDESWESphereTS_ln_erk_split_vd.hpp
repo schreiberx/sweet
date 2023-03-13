@@ -2,7 +2,7 @@
  * PDESWESphereTS_split_lg_lc_na_nr_erk.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LN_ERK_SPLIT_VD_HPP_
@@ -20,7 +20,12 @@
 class PDESWESphereTS_ln_erk_split_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup(
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
+
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_order,	///< order of RK time stepping method
 			bool i_lg,
@@ -29,8 +34,6 @@ public:
 			bool i_nr,
 			bool i_antialiasing_for_each_term
 	);
-
-	bool setup_auto(sweet::SphereOperators *io_ops);
 
 
 public:

@@ -1,6 +1,5 @@
 /*
- *  Created on: 07 Mar 2023
- *      Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
+ * Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 
 #ifndef SRC_INCLUDE_BENCHMARKS_ODE_SCALAR_COMBINED_HPP

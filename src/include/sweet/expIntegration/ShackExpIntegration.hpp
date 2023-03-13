@@ -1,6 +1,5 @@
 /*
- *  Created on: 30 Jun 2015
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 #ifndef SRC_SHACK_REXI_SIMULATION_HPP_
 #define SRC_SHACK_REXI_SIMULATION_HPP_

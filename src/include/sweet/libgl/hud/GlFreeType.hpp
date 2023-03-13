@@ -19,7 +19,7 @@
  * GlFreeType.hpp
  *
  *  Created on: Mar 21, 2010
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef CGLFREETYPE_HPP_
@@ -415,7 +415,7 @@ public:
 		vao.bind();
 
 			buffer.bind();
-			buffer.subData(0, attrib_counter*4*sizeof(GLint), vertex_attrib);
+			buffer.subData((GLintptr)0, (GLsizeiptr)(attrib_counter*4*sizeof(GLint)), (void*)vertex_attrib);
 			glVertexAttribIPointer(0, 4, GL_INT, 0, 0);
 			glEnableVertexAttribArray(0);
 

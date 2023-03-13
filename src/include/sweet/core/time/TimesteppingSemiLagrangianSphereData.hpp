@@ -2,7 +2,7 @@
  * SphereDataSemiLangrangian.hpp
  *
  *  Created on: 5 Dec 2015
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Updated to sphere on 28th March 2018
  */
@@ -94,7 +94,6 @@ public:
 		}
 
 
-		timestepping_order = i_timestepping_order;
 		semi_lagrangian_max_iterations = shackSLData->semi_lagrangian_max_iterations;
 		semi_lagrangian_convergence_threshold = shackSLData->semi_lagrangian_convergence_threshold;
 		semi_lagrangian_approximate_sphere_geometry = shackSLData->semi_lagrangian_approximate_sphere_geometry;
@@ -184,7 +183,7 @@ public:
 	{
 		if (i_approximate_sphere_geometry)
 		{
-			std::cout << "i_approximate_sphere_geometry" << std::endl;
+//			std::cout << "i_approximate_sphere_geometry" << std::endl;
 			/*
 			 * This just uses an approximation of the sphere geometry.
 			 */

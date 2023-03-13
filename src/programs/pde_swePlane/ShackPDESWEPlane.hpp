@@ -1,6 +1,5 @@
 /*
- *  Created on: Feb 21, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACKS_SWE_PLANE_HPP_
@@ -20,8 +19,8 @@ class ShackPDESWEPlane	:
 		public sweet::ShackInterface
 {
 public:
-	/*
-	 * Average height for initialization
+	/**
+	 * Average height for perturbed formulation
 	 *
 	 * We use a default value similar to the Galewski benchmark
 	 */
@@ -40,21 +39,21 @@ public:
 	 */
 	double viscosity = 0.0;
 
-	/*
-	 * hyper viscosity-term on velocities with 4th order diff operator
+	/**
+	 * Order of viscosity
 	 */
 	int viscosity_order = 2;
 
 
 	/**
-	 * Plane with f-Coriolis rotation
-	 */
-	double plane_rotating_f0 = 1.0; //Plane
-
-	/**
 	 * Gravitational constant
 	 */
 	double gravitation = 9.80616;
+
+	/**
+	 * Plane with f-Coriolis rotation
+	 */
+	double plane_rotating_f0 = 1.0; //Plane
 
 	/**
 	 * Avoid nonlinear divergence and only solve linear one
@@ -80,30 +79,37 @@ public:
 	bool compute_errors = false;
 
 
+	/*
+	 * Check for instabilities and stop
+	 */
+	bool instability_checks = false;
+
+
 	void printProgramArguments(const std::string& i_prefix = "")
 	{
 		std::cout << i_prefix << "PDESWEPlane parameters:" << std::endl;
-		std::cout << i_prefix << "	-u [visc]	viscosity, , default=0" << std::endl;
-		std::cout << i_prefix << "	-U [visc]	viscosity order, default=2" << std::endl;
+		std::cout << i_prefix << "	--pde-h0 [float]	average (initial) height of water" << std::endl;
+		std::cout << i_prefix << "	--pde-viscosity [visc]	viscosity, , default=0" << std::endl;
+		std::cout << i_prefix << "	--pde-viscosity-order [visc]	viscosity order, default=2" << std::endl;
+		std::cout << i_prefix << "	--pde-gravitation [float]	gravity" << std::endl;
 		std::cout << i_prefix << "	-f [float]	f-parameter for f-plane, default=0" << std::endl;
-		std::cout << i_prefix << "	-g [float]	gravity" << std::endl;
-		std::cout << i_prefix << "	-H [float]	average (initial) height of water" << std::endl;
 		std::cout << i_prefix << "	--use-only-linear-divergence [bool]	Use only linear divergence" << std::endl;
 		std::cout << i_prefix << "	--use-nonlinear-only-visc [bool]	Use only viscosity on nonlinear part" << std::endl;
 		std::cout << i_prefix << "	--compute-errors [bool]	Compute errors to analytical solution (if available)" << std::endl;
 		std::cout << i_prefix << "	--normal-mode-analysis-generation=[int]			Control generation of normal mode analysis (default: 0)" << std::endl;
+		std::cout << i_prefix << "	--instability-checks=[bool]			Check for instabilities (default: 0)" << std::endl;
 		std::cout << i_prefix << "" << std::endl;
 	}
 
+
 	bool processProgramArguments(sweet::ProgramArguments &i_pa)
 	{
-		i_pa.getArgumentValueByKey("-u", viscosity);
-		i_pa.getArgumentValueByKey("-U", viscosity_order);
+		i_pa.getArgumentValueBy3Keys("--pde-h0", "-H", "--h0", h0);
+		i_pa.getArgumentValueBy2Keys("--pde-viscosity", "-u", viscosity);
+		i_pa.getArgumentValueBy2Keys("--pde-viscosity-order", "-U", viscosity_order);
+		i_pa.getArgumentValueBy3Keys("--pde-g", "-g", "--pde-gravitation", gravitation);
 
 		i_pa.getArgumentValueByKey("-f", plane_rotating_f0);
-
-		i_pa.getArgumentValueByKey("-g", gravitation);
-		i_pa.getArgumentValueByKey("-H", h0);
 
 		i_pa.getArgumentValueByKey("--use-only-linear-divergence", use_only_linear_divergence);
 		i_pa.getArgumentValueByKey("--use-nonlinear-only-visc", use_nonlinear_only_visc);
@@ -111,7 +117,10 @@ public:
 		i_pa.getArgumentValueByKey("--normal-mode-analysis-generation", normal_mode_analysis_generation);
 		i_pa.getArgumentValueByKey("--compute-errors", compute_errors);
 
-		return error.forwardWithPositiveReturn(i_pa.error);
+		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
+
+		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
+		return true;
 	}
 
 
@@ -130,6 +139,7 @@ public:
 		std::cout << i_prefix << " + use_nonlinear_only_visc: " << use_nonlinear_only_visc << std::endl;
 		std::cout << i_prefix << " + compute_errors: " << compute_errors << std::endl;
 		std::cout << i_prefix << " + normal_mode_analysis_generation: " << normal_mode_analysis_generation << std::endl;
+		std::cout << i_prefix << " + instability_checks: " << instability_checks << std::endl;
 		std::cout << std::endl;
 	}
 };

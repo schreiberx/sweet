@@ -2,7 +2,7 @@
  * parmemcpy.hpp
  *
  *  Created on: 11 Oct 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_PARMEMCPY_HPP_

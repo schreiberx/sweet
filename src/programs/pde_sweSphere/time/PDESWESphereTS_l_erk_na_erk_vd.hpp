@@ -2,7 +2,7 @@
  * PDESWESphereTS_l_erk_na_erk_vd.hpp
  *
  *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TS_L_ERK_NA_ERK_VD_HPP_
@@ -24,13 +24,28 @@ public:
 	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
 	std::string getIDString();
 
-	PDESWESphereTS_ln_erk_split_vd *l_erk_split_vd = nullptr;
-	PDESWESphereTS_ln_erk_split_vd *na_erk_split_vd = nullptr;
+	PDESWESphereTS_ln_erk_split_vd l_erk_split_vd;
+	PDESWESphereTS_ln_erk_split_vd na_erk_split_vd;
 
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
-	bool setup(
+		l_erk_split_vd.shackRegistration(io_shackDict);
+		na_erk_split_vd.shackRegistration(io_shackDict);
+		return true;
+	}
+
+public:
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
+
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_order,	///< order of RK time stepping method
 			int i_order2

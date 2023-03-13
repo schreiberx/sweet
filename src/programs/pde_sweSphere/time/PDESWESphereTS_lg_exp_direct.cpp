@@ -30,19 +30,23 @@ bool PDESWESphereTS_lg_exp_direct::implementsTimesteppingMethod(
 
 
 bool PDESWESphereTS_lg_exp_direct::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
-	return setup(ops, "phi0");
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(ops, "phi0");
 }
 
 
-bool PDESWESphereTS_lg_exp_direct::setup(
+bool PDESWESphereTS_lg_exp_direct::setup_main(
 		sweet::SphereOperators *io_ops,
 		const std::string &i_function_name
 )
 {
 	ops = io_ops;
+
 	function_name = i_function_name;
 	expFunctions.setup(i_function_name);
 

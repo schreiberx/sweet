@@ -46,11 +46,28 @@ public:
 	PDESWESphereTS_l_exp ts_phi2_exp;
 
 
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		ts_phi0_exp.shackRegistration(io_shackDict);
+		ts_phi1_exp.shackRegistration(io_shackDict);
+		ts_phi2_exp.shackRegistration(io_shackDict);
+		return true;
+	}
+
+
+
 	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
-	//sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup(
 			sweet::SphereOperators *io_ops,

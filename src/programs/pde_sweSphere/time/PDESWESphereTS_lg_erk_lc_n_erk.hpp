@@ -18,7 +18,10 @@
 class PDESWESphereTS_lg_erk_lc_n_erk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup(
 			sweet::SphereOperators *io_ops,
@@ -62,6 +65,8 @@ private:
 
 	sweet::TimesteppingExplicitRKSphereData timestepping_rk_linear;
 	sweet::TimesteppingExplicitRKSphereData timestepping_rk_nonlinear;
+
+
 
 public:
 	void euler_timestep_update_linear(

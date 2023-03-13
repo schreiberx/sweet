@@ -6,12 +6,14 @@
 #include "PDESWESphereTS_l_erk_n_erk.hpp"
 
 
-
 bool PDESWESphereTS_l_erk_n_erk::setup_auto(
+	const std::string &i_timestepping_method,
 	sweet::SphereOperators *io_ops
 )
 {
-	setup(	io_ops,
+	timestepping_method = i_timestepping_method;
+
+	setup_main(	io_ops,
 			shackPDESWETimeDisc->timestepping_order,
 			shackPDESWETimeDisc->timestepping_order2
 		);
@@ -20,7 +22,7 @@ bool PDESWESphereTS_l_erk_n_erk::setup_auto(
 }
 
 
-bool PDESWESphereTS_l_erk_n_erk::setup(
+bool PDESWESphereTS_l_erk_n_erk::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_order,	///< order of RK time stepping method for non-linear parts
 		int i_order2	///< order of RK time stepping method for non-linear parts

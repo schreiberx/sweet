@@ -1,12 +1,11 @@
 /*
- *  Created on: 25 Dec 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <sweet/core/defaultPrecompilerValues.hpp>
 
 #include <iostream>
-#include <quadmath.h>
+//#include <quadmath.h>
 #include <sweet/expIntegration/ExpFunctions.hpp>
 #include <sweet/expIntegration/REXI.hpp>
 #include <sweet/expIntegration/REXICoefficients.hpp>

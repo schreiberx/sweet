@@ -1,6 +1,5 @@
 /*
- *  Created on: Mar 1, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_PDE_ADVECTIONPLANE_BENCHMARKS_PDEADVECTIONPLANEBENCH_BASEINTERFACE_HPP_

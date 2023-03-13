@@ -18,7 +18,7 @@ bool timestep_check_output(SphereDataCtxSDC *i_ctx,
 
 std::string write_file(
 		       SphereDataCtxSDC  &i_ctx,
-		       const SphereData_Spectral &i_sphereData,
+		       const sweet::SphereData_Spectral &i_sphereData,
 		       const char* i_name	///< name of output variable
 		       );
 

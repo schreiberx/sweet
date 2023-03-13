@@ -2,7 +2,7 @@
  * SWE_Plane_TS_l_cn_na_sl_nd_settls.hpp
  *
  *  Created on: 29 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Modif on: 11 July 2017
  *  	Author: Pedro Peixoto <pedrosp@ime.usp.br>

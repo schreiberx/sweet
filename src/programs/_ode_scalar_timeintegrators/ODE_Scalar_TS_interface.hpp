@@ -2,7 +2,7 @@
  * ODE_Scalar_TS_interface.hpp
  *
  *  Created on: 08 Jun 2022
- *      Author: Joao Steinstraessrt <joao.steinstraesser@usp.br>
+ * Author: Joao Steinstraessrt <joao.steinstraesser@usp.br>
  */
 
 #ifndef SRC_PROGRAMS_ODE_SCALAR_TS_INTERFACE_HPP_

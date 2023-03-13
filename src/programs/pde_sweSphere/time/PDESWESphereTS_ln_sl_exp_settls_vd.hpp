@@ -2,7 +2,7 @@
  * PDESWESphereTS_ln_settls.hpp
  *
  *  Created on: 24 Sep 2019
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_TS_LN_SL_EXP_SETTLS_VD_HPP_
@@ -40,7 +40,10 @@ public:
 	};
 
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,
@@ -64,12 +67,25 @@ private:
 	bool original_linear_operator_sl_treatment;
 
 	sweet::TimesteppingSemiLagrangianSphereData semiLagrangian;
-	//sweet::SphereOperators_Sampler_SphereDataPhysical &sphereSampler;
 
 	sweet::SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	PDESWESphereTS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd = nullptr;
-	PDESWESphereTS_l_exp *swe_sphere_ts_l_exp = nullptr;
+	PDESWESphereTS_ln_erk_split_vd swe_sphere_ts_ln_erk_split_vd;
+	PDESWESphereTS_l_exp swe_sphere_ts_l_exp;
+
+
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		swe_sphere_ts_ln_erk_split_vd.shackRegistration(io_shackDict);
+		swe_sphere_ts_l_exp.shackRegistration(io_shackDict);
+		return true;
+	}
 
 
 public:

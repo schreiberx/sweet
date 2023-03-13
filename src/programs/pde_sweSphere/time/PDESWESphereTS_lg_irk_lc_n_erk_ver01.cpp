@@ -6,6 +6,28 @@
 
 
 
+
+bool PDESWESphereTS_lg_irk_lc_n_erk::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
+{
+	timestepping_method = i_timestepping_method;
+
+	int version = 0;
+	if (timestepping_method == "lg_irk_lc_n_erk_ver1")
+		version = 1;
+
+	return setup_main(
+			io_ops,
+			shackPDESWETimeDisc->timestepping_order,
+			shackPDESWETimeDisc->timestepping_order2,
+			version
+		);
+}
+
+
+
 bool PDESWESphereTS_lg_irk_lc_n_erk::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_timestepping_order,	///< order of RK time stepping method
@@ -64,24 +86,6 @@ bool PDESWESphereTS_lg_irk_lc_n_erk::setup_main(
 	timestepping_lg_erk_lc_n_erk.setup(ops, 1, -1);
 
 	return true;
-}
-
-
-
-bool PDESWESphereTS_lg_irk_lc_n_erk::setup_auto(
-		sweet::SphereOperators *io_ops
-)
-{
-	int version = 0;
-	if (timestepping_method == "lg_irk_lc_n_erk_ver1")
-		version = 1;
-
-	return setup_main(
-			io_ops,
-			timestepping_order,
-			timestepping_order2,
-			version
-		);
 }
 
 

@@ -1,6 +1,5 @@
 /*
- *  Created on: Feb 23, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACK_PDE_SWE_PLANE_TIME_DISCRETIZATION_HPP_

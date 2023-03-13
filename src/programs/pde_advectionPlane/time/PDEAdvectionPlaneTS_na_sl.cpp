@@ -1,6 +1,5 @@
 /*
- *  Created on: 29 Mar 2018
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDEAdvectionPlaneTS_na_sl.hpp"

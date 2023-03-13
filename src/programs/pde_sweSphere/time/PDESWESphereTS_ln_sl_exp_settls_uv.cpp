@@ -27,9 +27,12 @@ bool PDESWESphereTS_ln_sl_exp_settls_uv::implementsTimesteppingMethod(const std:
 
 
 bool PDESWESphereTS_ln_sl_exp_settls_uv::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	PDESWESphereTS_ln_sl_exp_settls_uv::LinearCoriolisTreatment_enum _linear_coriolis_treatment = PDESWESphereTS_ln_sl_exp_settls_uv::CORIOLIS_IGNORE;
 	PDESWESphereTS_ln_sl_exp_settls_uv::NLRemainderTreatment_enum _nonlinear_remainder_treatment = PDESWESphereTS_ln_sl_exp_settls_uv::NL_REMAINDER_IGNORE;
 
@@ -106,16 +109,16 @@ bool PDESWESphereTS_ln_sl_exp_settls_uv::setup_auto(
 	}
 #endif
 
-	return setup(
+	return setup_main(
 			io_ops,
-			timestepping_order,
+			shackPDESWETimeDisc->timestepping_order,
 			_linear_coriolis_treatment,					// Coriolis treatment
 			_nonlinear_remainder_treatment,		// Nonlinear divergence treatment
 			_original_linear_operator_sl_treatment			// original SL linear operator treatment
 		);
 }
 
-bool PDESWESphereTS_ln_sl_exp_settls_uv::setup(
+bool PDESWESphereTS_ln_sl_exp_settls_uv::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_timestepping_order,
 		LinearCoriolisTreatment_enum i_coriolis_treatment,
@@ -137,11 +140,9 @@ bool PDESWESphereTS_ln_sl_exp_settls_uv::setup(
 	// Setup semi-Lagrangian
 	semiLagrangian.setup(ops->sphereDataConfig, shackTimesteppingSemiLagrangianSphereData, timestepping_order);
 
-	swe_sphere_ts_ln_erk_split_uv = new PDESWESphereTS_ln_erk_split_uv;
-	swe_sphere_ts_ln_erk_split_uv->setup(ops, 1, true, true, true, true, false);
+	swe_sphere_ts_ln_erk_split_uv.setup_main(ops, 1, true, true, true, true, false);
 
-	swe_sphere_ts_l_rexi = new PDESWESphereTS_l_exp;
-	swe_sphere_ts_l_rexi->setup_variant_50(
+	swe_sphere_ts_l_rexi.setup_variant_50(
 			io_ops,
 			shackExpIntegration,
 			"phi0",
@@ -276,7 +277,7 @@ void PDESWESphereTS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_nr(
+			swe_sphere_ts_ln_erk_split_uv.euler_timestep_update_nr(
 					U_phi_prev, U_vrt_prev, U_div_prev,
 					N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 					i_simulation_timestamp-i_dt
@@ -285,7 +286,7 @@ void PDESWESphereTS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (coriolis_treatment == CORIOLIS_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
+			swe_sphere_ts_ln_erk_split_uv.euler_timestep_update_lc(
 					U_phi_prev, U_vrt_prev, U_div_prev,
 					N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 					i_simulation_timestamp-i_dt
@@ -295,7 +296,7 @@ void PDESWESphereTS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 		/*
 		 * exp(dtL) N(t-dt)
 		 */
-		swe_sphere_ts_l_rexi->runTimestep(
+		swe_sphere_ts_l_rexi.runTimestep(
 			N_U_phi_prev_nr, N_U_vrt_prev_nr, N_U_div_prev_nr,
 			i_dt,
 			i_simulation_timestamp
@@ -311,7 +312,7 @@ void PDESWESphereTS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (nonlinear_remainder_treatment == NL_REMAINDER_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_nr(
+			swe_sphere_ts_ln_erk_split_uv.euler_timestep_update_nr(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 					i_simulation_timestamp
@@ -320,7 +321,7 @@ void PDESWESphereTS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 
 		if (coriolis_treatment == CORIOLIS_NONLINEAR)
 		{
-			swe_sphere_ts_ln_erk_split_uv->euler_timestep_update_lc(
+			swe_sphere_ts_ln_erk_split_uv.euler_timestep_update_lc(
 					U_phi, U_vrt, U_div,
 					N_U_phi_nr, N_U_vrt_nr, N_U_div_nr,
 					i_simulation_timestamp
@@ -358,7 +359,7 @@ void PDESWESphereTS_ln_sl_exp_settls_uv::run_timestep_2nd_order(
 	 * Step 4) Compute update U(t+dt) = exp(dt L)(U_D + dt * N*(t+0.5dt))
 	 *************************************************************************************************
 	 */
-	swe_sphere_ts_l_rexi->runTimestep(
+	swe_sphere_ts_l_rexi.runTimestep(
 		U_phi_D, U_vrt_D, U_div_D,
 		i_dt,
 		i_simulation_timestamp
@@ -407,7 +408,5 @@ PDESWESphereTS_ln_sl_exp_settls_uv::PDESWESphereTS_ln_sl_exp_settls_uv()
 
 PDESWESphereTS_ln_sl_exp_settls_uv::~PDESWESphereTS_ln_sl_exp_settls_uv()
 {
-	delete swe_sphere_ts_ln_erk_split_uv;
-	delete swe_sphere_ts_l_rexi;
 }
 

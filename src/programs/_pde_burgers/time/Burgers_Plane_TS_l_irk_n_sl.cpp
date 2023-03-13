@@ -1,8 +1,5 @@
 /*
- * Burgers_Plane_TS_l_irk_n_sl.cpp
- *
- *  Created on: 14 June 2017
- *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  *
  */
 

@@ -272,7 +272,6 @@ int main(int i_argc, char *i_argv[])
 
 
 
-
 int main_mpi(int i_argc, char *i_argv[])
 {
 	StopwatchBox::getInstance().main.start();
@@ -317,7 +316,7 @@ int main_mpi(int i_argc, char *i_argv[])
 				simulation.runTimestep();
 
 				// Instability
-				if (simulation.shackMisc->instability_checks)
+				if (simulation.shackPDESWEPlane->instability_checks)
 				{
 					if (simulation.instability_detected())
 						SWEETError("INSTABILITY DETECTED");
@@ -361,7 +360,7 @@ int main_mpi(int i_argc, char *i_argv[])
 		StopwatchBox::getInstance().output();
 	}
 
-	std::cout << "MIN FIN" << std::endl;
+	std::cout << "FIN" << std::endl;
 	return 0;
 }
 
@@ -369,5 +368,5 @@ int main_mpi(int i_argc, char *i_argv[])
 
 int main(int i_argc, char *i_argv[])
 {
-	main_mpi(i_argc, i_argv);
+	return main_mpi(i_argc, i_argv);
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- *      Author: Martin SCHREIBER <schreiberx@gmail.com> (schreiberx@gmail.com)
+ * Author: Martin SCHREIBER <schreiberx@gmail.com> (schreiberx@gmail.com)
  */
 
 #ifndef __CQUATERNION_HPP__

@@ -14,9 +14,12 @@
 class PDESWESphereTS_lg_exp_lc_taylor	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_order	///< order of RK time stepping method
 	);
@@ -39,6 +42,18 @@ public:
 	PDESWESphereTS_lg_exp_direct timestepping_lg_exp;
 	PDESWESphereTS_ln_erk_split_vd timestepping_lc_erk;
 
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		timestepping_lg_exp.shackRegistration(io_shackDict);
+		timestepping_lc_erk.shackRegistration(io_shackDict);
+		return true;
+	}
 
 
 public:

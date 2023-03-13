@@ -1,7 +1,5 @@
 /*
- * PDESWESphereTS_l_irk_na_erk_vd.cpp
- *
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_l_irk_na_erk_vd.hpp"
@@ -26,9 +24,12 @@ bool PDESWESphereTS_l_irk_na_erk_vd::implementsTimesteppingMethod(
 
 
 bool PDESWESphereTS_l_irk_na_erk_vd::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (
 		timestepping_method == "l_irk_na_erk_vd" ||
 		timestepping_method == "l_irk_na_erk_vd_ver0"
@@ -44,6 +45,75 @@ bool PDESWESphereTS_l_irk_na_erk_vd::setup_auto(
 	return false;
 }
 
+
+
+bool PDESWESphereTS_l_irk_na_erk_vd::setup(
+		sweet::SphereOperators *io_ops,
+		int i_timestepping_order,	///< order of RK time stepping method
+		int i_timestepping_order2,	///< order of RK time stepping method for non-linear parts
+		int i_version_id
+)
+{
+	ops = io_ops;
+
+	timestep_size = shackTimestepControl->current_timestep_size;
+	version_id = i_version_id;
+
+	timestepping_order = i_timestepping_order;
+	timestepping_order2 = i_timestepping_order2;
+
+	if (timestepping_order2 < 0)
+		timestepping_order2 = timestepping_order;
+
+	if (timestepping_order != timestepping_order2)
+		SWEETError("Orders of 1st and 2nd one must match");
+
+
+	if (timestepping_order == 1)
+	{
+		timestepping_l_irk.setup(
+			ops,
+			1,
+			timestep_size
+		);
+
+		timestepping_na_erk_split_vd.setup_main(ops, 1, false, false, true, false, false);
+	}
+	else if (timestepping_order == 2)
+	{
+		if (version_id == 0)
+		{
+			timestepping_l_irk.setup_main(
+					ops,
+					2,
+					timestep_size*0.5,
+					shackPDESWETimeDisc->timestepping_crank_nicolson_filter,
+					false
+			);
+		}
+		else if (version_id == 1)
+		{
+			timestepping_l_irk.setup_main(
+					ops,
+					2,
+					timestep_size,
+					shackPDESWETimeDisc->timestepping_crank_nicolson_filter,
+					false
+			);
+		}
+		else
+		{
+			SWEETError("Invalid version");
+		}
+
+		timestepping_na_erk_split_vd.setup_main(ops, 2, false, false, true, false, false);
+	}
+	else
+	{
+		SWEETError("Invalid timestepping order");
+	}
+	return true;
+}
 
 
 std::string PDESWESphereTS_l_irk_na_erk_vd::getIDString()
@@ -166,77 +236,6 @@ void PDESWESphereTS_l_irk_na_erk_vd::runTimestep(
 }
 
 
-
-/*
- * Setup
- */
-bool PDESWESphereTS_l_irk_na_erk_vd::setup(
-		sweet::SphereOperators *io_ops,
-		int i_timestepping_order,	///< order of RK time stepping method
-		int i_timestepping_order2,	///< order of RK time stepping method for non-linear parts
-		int i_version_id
-)
-{
-	ops = io_ops;
-
-	timestep_size = shackTimestepControl->current_timestep_size;
-	version_id = i_version_id;
-
-	timestepping_order = i_timestepping_order;
-	timestepping_order2 = i_timestepping_order2;
-
-	if (timestepping_order2 < 0)
-		timestepping_order2 = timestepping_order;
-
-	if (timestepping_order != timestepping_order2)
-		SWEETError("Orders of 1st and 2nd one must match");
-
-
-	if (timestepping_order == 1)
-	{
-		timestepping_l_irk.setup(
-			ops,
-			1,
-			timestep_size
-		);
-
-		timestepping_na_erk_split_vd.setup(ops, 1, false, false, true, false, false);
-	}
-	else if (timestepping_order == 2)
-	{
-		if (version_id == 0)
-		{
-			timestepping_l_irk.setup(
-					ops,
-					2,
-					timestep_size*0.5,
-					shackPDESWETimeDisc->timestepping_crank_nicolson_filter,
-					false
-			);
-		}
-		else if (version_id == 1)
-		{
-			timestepping_l_irk.setup(
-					ops,
-					2,
-					timestep_size,
-					shackPDESWETimeDisc->timestepping_crank_nicolson_filter,
-					false
-			);
-		}
-		else
-		{
-			SWEETError("Invalid version");
-		}
-
-		timestepping_na_erk_split_vd.setup(ops, 2, false, false, true, false, false);
-	}
-	else
-	{
-		SWEETError("Invalid timestepping order");
-	}
-	return true;
-}
 
 
 

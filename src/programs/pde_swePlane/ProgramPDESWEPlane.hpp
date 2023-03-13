@@ -20,18 +20,18 @@
 // Different shacks we need in this file
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/core/shacksShared/ShackMisc.hpp>
-#include "ShackPDESWEPlaneDiagnostics.hpp"
+#include <sweet/core/plane/PlaneDataGridMapping.hpp>
+#include "ShackPDESWEPlane_Diagnostics.hpp"
 #include "benchmarks/ShackPDESWEPlaneBenchmarks.hpp"
 
 // Benchmarks
-#include "PDESWEPlaneBenchmarksCombined.hpp"
+#include "PDESWEPlane_BenchmarksCombined.hpp"
 
 // Time steppers
-#include "PDESWEPlaneTimeSteppers.hpp"
+#include "PDESWEPlane_TimeSteppers.hpp"
 
 // If doing normal mode analysis
-#include "PDESWEPlaneNormalModes.hpp"
+#include "PDESWEPlane_NormalModes.hpp"
 
 #if SWEET_GUI
 	#include <sweet/gui/VisSweet.hpp>
@@ -162,7 +162,6 @@ public:
 	sweet::ShackProgArgDictionary shackProgArgDict;
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackIOData *shackIOData;
-	sweet::ShackMisc *shackMisc;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	ShackPDESWEPlane *shackPDESWEPlane;
 	ShackPDESWEPlaneTimeDiscretization *shackTimeDisc;
@@ -283,7 +282,6 @@ public:
 		shackProgArgDict(i_argc, i_argv),
 		shackPlaneDataOps(nullptr),
 		shackIOData(nullptr),
-		shackMisc(nullptr),
 		shackTimestepControl(nullptr),
 		shackPDESWEPlane(nullptr),
 		shackTimeDisc(nullptr),
@@ -303,7 +301,6 @@ public:
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackPDESWEPlane = shackProgArgDict.getAutoRegistration<ShackPDESWEPlane>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
-		shackMisc = shackProgArgDict.getAutoRegistration<sweet::ShackMisc>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
 		shackPDESWEPlaneBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
 		shackPDESWEPlaneDiagnostics = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneDiagnostics>();
@@ -338,7 +335,6 @@ public:
 		shackPlaneDataOps = nullptr;
 		shackTimestepControl = nullptr;
 		shackIOData = nullptr;
-		shackMisc = nullptr;
 		shackTimeDisc = nullptr;
 
 		planeBenchmarksCombined.clear();
@@ -523,6 +519,9 @@ public:
 
 	bool reset()
 	{
+		// keep pause state if in GUI mode
+		bool run_simulation_timesteps = shackTimestepControl->run_simulation_timesteps;
+
 		clear();
 
 		if (!setup())
@@ -530,6 +529,8 @@ public:
 			error.print();
 			return false;
 		}
+
+		shackTimestepControl->run_simulation_timesteps = run_simulation_timesteps;
 
 		return !error.exists();
 	}
@@ -972,13 +973,11 @@ public:
 public:
 	bool should_quit()
 	{
-		if (
-				shackTimestepControl->max_timesteps_nr != -1 &&
-				shackTimestepControl->max_timesteps_nr <= shackTimestepControl->current_timestep_nr
-		)
-			return true;
+		if (shackTimestepControl->max_timesteps_nr != -1)
+			if (shackTimestepControl->max_timesteps_nr <= shackTimestepControl->current_timestep_nr)
+				return true;
 
-		if (!std::isinf(shackTimestepControl->max_simulation_time))
+		if (shackTimestepControl->max_simulation_time != -1)
 			if (shackTimestepControl->max_simulation_time <= shackTimestepControl->current_simulation_time+shackTimestepControl->max_simulation_time*1e-10)	// care about roundoff errors with 1e-10
 				return true;
 

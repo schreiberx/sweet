@@ -19,7 +19,7 @@
  * CGlMaterial.hpp
  *
  *  Created on: Mar 27, 2010
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef CGLMATERIAL_HPP_

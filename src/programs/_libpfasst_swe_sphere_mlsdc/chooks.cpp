@@ -68,9 +68,9 @@ extern "C"
                                  int i_niters
                                  )
     {
-        const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-        const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-        const SphereData_Spectral& div_Y  = i_Y->get_div();
+        const sweet::SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
+        const sweet::SphereData_Spectral& vrt_Y = i_Y->get_vrt();
+        const sweet::SphereData_Spectral& div_Y  = i_Y->get_div();
 
         // get the current space-time level
         const int level = i_Y->get_level();
@@ -81,8 +81,8 @@ extern "C"
         // get the SphereDiagnostics object from context
         SphereHelpers_Diagnostics* sphereDiagnostics = i_ctx->get_sphere_diagnostics();
 
-        // get the SphereOperators object from context
-        SphereOperators* sphereOperators     = i_ctx->get_sphere_operators(level);
+        // get the sweet::SphereOperators object from context
+        sweet::SphereOperators* sphereOperators     = i_ctx->get_sphere_operators(level);
 
         // compute the invariants
         sphereDiagnostics->update_phi_vrt_div_2_mass_energy_enstrophy(
@@ -130,9 +130,9 @@ extern "C"
         // update when to write output the next time
         shackDict->iodata.output_next_sim_seconds += shackDict->iodata.output_each_sim_seconds;
 
-        const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-        const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-        const SphereData_Spectral& div_Y  = i_Y->get_div();
+        const sweet::SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
+        const sweet::SphereData_Spectral& vrt_Y = i_Y->get_vrt();
+        const sweet::SphereData_Spectral& div_Y  = i_Y->get_div();
 
         // write the data to file
         int rank = 0;

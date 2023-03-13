@@ -1,37 +1,36 @@
 /*
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_l_erk_na_erk_vd.hpp"
 
 
 bool PDESWESphereTS_l_erk_na_erk_vd::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
-	return setup(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2);
+	timestepping_method = i_timestepping_method;
+
+	return setup_main(io_ops, shackPDESWETimeDisc->timestepping_order, shackPDESWETimeDisc->timestepping_order2);
 }
 
-bool PDESWESphereTS_l_erk_na_erk_vd::setup(
+bool PDESWESphereTS_l_erk_na_erk_vd::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_order,	///< order of RK time stepping method for non-linear parts
 		int i_order2	///< order of RK time stepping method for non-linear parts
 )
 {
+	ops = io_ops;
+
 	timestepping_order = i_order;
 	timestepping_order2 = i_order2;
 
 	if (timestepping_order != timestepping_order2)
 		SWEETError("Timestepping orders must match");
 
-	if (l_erk_split_vd == nullptr)
-	{
-		l_erk_split_vd = new PDESWESphereTS_ln_erk_split_vd;
-		na_erk_split_vd = new PDESWESphereTS_ln_erk_split_vd;
-	}
-
-	l_erk_split_vd->setup(io_ops, timestepping_order, true, true, false, false, false);
-	na_erk_split_vd->setup(io_ops, timestepping_order, false, false, true, false, false);
+	l_erk_split_vd.setup_main(io_ops, timestepping_order, true, true, false, false, false);
+	na_erk_split_vd.setup_main(io_ops, timestepping_order, false, false, true, false, false);
 
 	return true;
 }
@@ -63,13 +62,13 @@ void PDESWESphereTS_l_erk_na_erk_vd::runTimestep(
 {
 	if (timestepping_order == 1)
 	{
-		l_erk_split_vd->runTimestep(
+		l_erk_split_vd.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt,
 				i_simulation_timestamp
 			);
 
-		na_erk_split_vd->runTimestep(
+		na_erk_split_vd.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt,
 				i_simulation_timestamp
@@ -78,19 +77,19 @@ void PDESWESphereTS_l_erk_na_erk_vd::runTimestep(
 	else if (timestepping_order == 2)
 	{
 
-		na_erk_split_vd->runTimestep(
+		na_erk_split_vd.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt*0.5,
 				i_simulation_timestamp
 			);
 
-		l_erk_split_vd->runTimestep(
+		l_erk_split_vd.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt,
 				i_simulation_timestamp
 			);
 
-		na_erk_split_vd->runTimestep(
+		na_erk_split_vd.runTimestep(
 				io_phi_pert, io_vrt, io_div,
 				i_fixed_dt*0.5,
 				i_simulation_timestamp
@@ -104,8 +103,6 @@ void PDESWESphereTS_l_erk_na_erk_vd::runTimestep(
 
 
 
-
-
 PDESWESphereTS_l_erk_na_erk_vd::PDESWESphereTS_l_erk_na_erk_vd()
 {
 }
@@ -114,7 +111,5 @@ PDESWESphereTS_l_erk_na_erk_vd::PDESWESphereTS_l_erk_na_erk_vd()
 
 PDESWESphereTS_l_erk_na_erk_vd::~PDESWESphereTS_l_erk_na_erk_vd()
 {
-	delete l_erk_split_vd;
-	delete na_erk_split_vd;
 }
 

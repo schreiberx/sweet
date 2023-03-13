@@ -37,15 +37,18 @@ std::string PDESWESphereTS_lg_irk::getIDString()
 
 
 bool PDESWESphereTS_lg_irk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
 	return setup_main(
 			io_ops,
-			timestepping_order,
+			shackPDESWETimeDisc->timestepping_order,
 			shackTimestepControl->current_timestep_size,
 			shackPDESWETimeDisc->timestepping_crank_nicolson_filter
 		);
@@ -88,8 +91,7 @@ bool PDESWESphereTS_lg_irk::setup_main(
 	else if (i_timestep_order == 2)
 	{
 		crank_nicolson_damping_factor = i_crank_nicolson_damping_factor;
-		lg_erk = new PDESWESphereTS_lg_erk;
-		lg_erk->setup(ops, 1);
+		lg_erk.setup_main(ops, 1);
 	}
 	else
 	{
@@ -135,7 +137,7 @@ void PDESWESphereTS_lg_irk::runTimestep(
 		/*
 		 * Execute a half ERK time step first for 2nd order
 		 */
-		lg_erk->runTimestep(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
+		lg_erk.runTimestep(io_phi_pert, io_vrt, io_div, i_fixed_dt*(1.0-crank_nicolson_damping_factor), i_simulation_timestamp);
 	}
 
 	sweet::SphereData_Spectral phi0 = io_phi_pert;
@@ -191,6 +193,4 @@ void PDESWESphereTS_lg_irk::update_coefficients()
 
 PDESWESphereTS_lg_irk::~PDESWESphereTS_lg_irk()
 {
-	delete lg_erk;
-	lg_erk = nullptr;
 }

@@ -1,13 +1,46 @@
 /*
- * PDESWESphereTS_lg_erk_lf_n_erk.cpp
- *
- *  Created on: 21 Aug 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <sweet/core/StopwatchBox.hpp>
 #include "PDESWESphereTS_lg_erk_lc_n_erk.hpp"
 
+
+
+
+bool PDESWESphereTS_lg_erk_lc_n_erk::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
+{
+	timestepping_method = i_timestepping_method;
+
+	int version_id = 0;
+	if (timestepping_method == "lg_exp_lc_n_erk_ver1")
+		version_id = 1;
+
+	return setup(
+			io_ops,
+			timestepping_order,
+			version_id
+		);
+}
+
+bool PDESWESphereTS_lg_erk_lc_n_erk::setup(
+		sweet::SphereOperators *io_ops,
+		int i_order,	///< order of RK time stepping method
+		int i_version_id
+)
+{
+	ops = io_ops;
+
+	timestepping_order = i_order;
+
+	version_id = i_version_id;
+
+	setupFG();
+	return true;
+}
 
 
 
@@ -239,37 +272,6 @@ void PDESWESphereTS_lg_erk_lc_n_erk::euler_timestep_update_lc_n(
 }
 
 
-
-
-
-bool PDESWESphereTS_lg_erk_lc_n_erk::setup_auto(
-		sweet::SphereOperators *io_ops
-)
-{
-	int version_id = 0;
-	if (timestepping_method == "lg_exp_lc_n_erk_ver1")
-		version_id = 1;
-
-	return setup(
-			io_ops,
-			timestepping_order,
-			version_id
-		);
-}
-
-bool PDESWESphereTS_lg_erk_lc_n_erk::setup(
-		sweet::SphereOperators *io_ops,
-		int i_order,	///< order of RK time stepping method
-		int i_version_id
-)
-{
-	timestepping_order = i_order;
-
-	version_id = i_version_id;
-
-	setupFG();
-	return true;
-}
 
 
 

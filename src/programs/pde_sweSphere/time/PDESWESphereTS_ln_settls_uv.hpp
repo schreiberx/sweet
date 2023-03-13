@@ -2,7 +2,7 @@
  * PDESWESphereTS_ln_settls_uv.hpp
  *
  *  Created on: 24 Sep 2019
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Based on plane code
  */
@@ -65,15 +65,31 @@ private:
 	sweet::SphereData_Spectral coriolis_arrival_spectral;
 	sweet::SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	PDESWESphereTS_ln_erk_split_uv* swe_sphere_ts_ln_erk_split_uv = nullptr;
-	PDESWESphereTS_l_irk* swe_sphere_ts_l_irk = nullptr;
-	PDESWESphereTS_lg_irk* swe_sphere_ts_lg_irk = nullptr;
+	PDESWESphereTS_ln_erk_split_uv swe_sphere_ts_ln_erk_split_uv;
+	PDESWESphereTS_l_irk swe_sphere_ts_l_irk;
+	PDESWESphereTS_lg_irk swe_sphere_ts_lg_irk;
 
 
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
-	bool setup(
+		swe_sphere_ts_ln_erk_split_uv.shackRegistration(io_shackDict);
+		swe_sphere_ts_l_irk.shackRegistration(io_shackDict);
+		swe_sphere_ts_lg_irk.shackRegistration(io_shackDict);
+		return true;
+	}
+
+public:
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
+
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_timestepping_order,
 			LinearCoriolisTreatment_enum i_coriolis_treatment,// = PDESWESphereTS_ln_settls::CORIOLIS_LINEAR,		// "ignore", "linear", "nonlinear", "semi-lagrangian"

@@ -2,7 +2,7 @@
  * ShackTimestepControl.hpp
  *
  *  Created on: Feb 21, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACKS_SHACKTIMESTEPCONTROL_HPP_
@@ -37,7 +37,7 @@ public:
 	int current_timestep_nr = 0;
 
 	/// Time step size used during setup
-	double setup_timestep_size = -1;
+	//double setup_timestep_size = -1;
 
 	/// Current time step size
 	double current_timestep_size = -1;
@@ -187,11 +187,11 @@ public:
 		i_pa.getArgumentValueByKey("-t", max_simulation_time);
 		i_pa.getArgumentValueByKey("-T", max_timesteps_nr);
 
-		setup_timestep_size = current_timestep_size;
+		//setup_timestep_size = current_timestep_size;
 
 		current_timestep_nr = 0;
 		current_simulation_time = 0;
-		current_timestep_size = setup_timestep_size;
+		//current_timestep_size = setup_timestep_size;
 
 		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
 	}
@@ -204,7 +204,7 @@ public:
 		std::cout << "TIMECONTROL:" << std::endl;
 		std::cout << " + run_simulation_timesteps: " << run_simulation_timesteps << std::endl;
 		std::cout << " + current_timestep_nr: " << current_timestep_nr << std::endl;
-		std::cout << " + setup_timestep_size: " << setup_timestep_size << std::endl;
+		//std::cout << " + setup_timestep_size: " << setup_timestep_size << std::endl;
 		std::cout << " + current_timestep_size: " << current_timestep_size << std::endl;
 		std::cout << " + current_simulation_time: " << current_simulation_time << std::endl;
 		std::cout << " + max_timesteps_nr: " << max_timesteps_nr << std::endl;

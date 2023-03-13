@@ -2,7 +2,7 @@
  * SPHOperatorsComplex.hpp
  *
  *  Created on: 31 Aug 2016
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SPHEREOPERATORS_COMPLEX_HPP_
@@ -25,6 +25,7 @@ class SphereOperatorsComplex	:
 {
 	friend SphereData_Config;
 
+public:
 	const SphereData_Config *sphereDataConfig;
 
 private:
@@ -37,7 +38,7 @@ private:
 	 */
 public:
 	SphereOperatorsComplex(
-			SphereData_Config *i_sphereDataConfig,
+			const SphereData_Config *i_sphereDataConfig,
 			const ShackSphereDataOps *i_shackSphereDataOps
 	)
 	{

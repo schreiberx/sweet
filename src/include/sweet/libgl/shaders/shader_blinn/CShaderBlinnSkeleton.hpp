@@ -2,7 +2,7 @@
  * CShaderBlinnSkeleton.hpp
  *
  *  Created on: Jan 6, 2010
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 /**
  * skeleton for classes including a blinn shader

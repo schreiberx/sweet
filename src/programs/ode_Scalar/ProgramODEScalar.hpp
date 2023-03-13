@@ -1,5 +1,4 @@
 /*
- *  Created on: Mar 07, 2023
  * 		Author: Joao STEINSTRAESSER <joao.steinstraesser@usp.br>
  */
 

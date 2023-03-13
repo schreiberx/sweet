@@ -1,8 +1,5 @@
 /*
- * test_exp_phi_functions.cpp
- *
- *  Created on: Jul 30, 2022
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <sweet/expIntegration/ExpFunctions.hpp>

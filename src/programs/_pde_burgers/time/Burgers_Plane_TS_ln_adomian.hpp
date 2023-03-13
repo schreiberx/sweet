@@ -2,7 +2,7 @@
  * Burgers_Plane_TS_ln_adomian.hpp
  *
  *  Created on: 03 August 2017
- *  Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 
 #ifndef SRC_PROGRAMS_BURGERS_PLANE_TS_LN_ADOMIAN_HPP_

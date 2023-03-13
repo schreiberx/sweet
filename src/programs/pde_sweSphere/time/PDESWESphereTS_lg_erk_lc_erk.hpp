@@ -2,7 +2,7 @@
  * PDESWESphereTS_lg_erk_lc_erk.hpp
  *
  *  Created on: 11 November 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_PROGRAMS_SWE_SPHERE_REXI_SWE_SPHERE_TS_LG_ERK_LC_ERK_HPP_
@@ -21,7 +21,10 @@
 class PDESWESphereTS_lg_erk_lc_erk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,

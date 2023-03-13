@@ -76,7 +76,7 @@ public:
 		stream << "     'advection_cosine_bell'" << std::endl;
 		stream << "     'adv_cosine_bell': Advection test case of cosine bell" << std::endl;
 		stream << "         OPTION:" << std::endl;
-		stream << "         --advection-rotation-angle=[angle]" << std::endl;
+		stream << "         --benchmark-advection-rotation-angle=[angle]" << std::endl;
 		return stream.str();
 	}
 
@@ -130,7 +130,7 @@ public:
 			{
 				double i_theta = i_lat;
 				double i_lambda = i_lon;
-				double alpha = shackPDESWEBenchmark->sphere_advection_rotation_angle;
+				double alpha = shackPDESWEBenchmark->benchmark_sphere_advection_rotation_angle;
 
 				io_data = -a*u0*(std::sin(i_theta)*std::cos(alpha) - std::cos(i_lambda)*std::cos(i_theta)*std::sin(alpha));
 			}

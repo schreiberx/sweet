@@ -37,17 +37,20 @@ std::string PDESWESphereTS_l_irk::getIDString()
 
 
 bool PDESWESphereTS_l_irk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
 	if (timestepping_method == "l_irk")
 	{
-		return setup(
+		return setup_main(
 				io_ops,
-				timestepping_order,
+				shackPDESWETimeDisc->timestepping_order,
 				shackTimestepControl->current_timestep_size,
 				0.5,
 				false
@@ -55,9 +58,9 @@ bool PDESWESphereTS_l_irk::setup_auto(
 	}
 	else if (timestepping_method == "lg_irk")
 	{
-		return setup(
+		return setup_main(
 				io_ops,
-				timestepping_order,
+				shackPDESWETimeDisc->timestepping_order,
 				shackTimestepControl->current_timestep_size,
 				0.5,
 				true
@@ -76,7 +79,9 @@ bool PDESWESphereTS_l_irk::setup(
 		double i_timestep_size
 )
 {
-	return setup(
+	ops = io_ops;
+
+	return setup_main(
 			io_ops,
 			i_timestep_order,
 			i_timestep_size,
@@ -86,7 +91,7 @@ bool PDESWESphereTS_l_irk::setup(
 }
 
 
-bool PDESWESphereTS_l_irk::setup(
+bool PDESWESphereTS_l_irk::setup_main(
 		sweet::SphereOperators *io_ops,
 		int i_timestepping_order,
 		double i_timestep_size,
@@ -110,8 +115,7 @@ bool PDESWESphereTS_l_irk::setup(
 
 	if (no_coriolis)
 	{
-		lg_erk = new PDESWESphereTS_lg_erk;
-		lg_erk->setup(ops, 1);
+		swe_sphere_ts_lg_erk.setup_main(ops, 1);
 	}
 	else
 	{
@@ -126,8 +130,7 @@ bool PDESWESphereTS_l_irk::setup(
 			two_coriolis = 2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 		}
 
-		l_erk = new PDESWESphereTS_l_erk;
-		l_erk->setup(ops, 1);
+		swe_sphere_ts_l_erk.setup_main(ops, 1);
 	}
 
 
@@ -164,9 +167,9 @@ void PDESWESphereTS_l_irk::runTimestep(
 		 * Explicit Euler
 		 */
 		if (no_coriolis)
-			lg_erk->runTimestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
+			swe_sphere_ts_lg_erk.runTimestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
 		else
-			l_erk->runTimestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
+			swe_sphere_ts_l_erk.runTimestep(io_phi, io_vrt, io_div, dt_explicit, i_simulation_timestamp);
 	}
 
 
@@ -260,7 +263,7 @@ void PDESWESphereTS_l_irk::update_coefficients(double i_timestep_size)
 		{
 			double dt_two_omega = dt_implicit*two_coriolis;
 
-			sphSolverDiv.setup(sphereDataConfig, 4);
+			sphSolverDiv.setup(ops->sphereDataConfig, 4);
 			sphSolverDiv.solver_component_implicit_J(dt_two_omega);
 			sphSolverDiv.solver_component_implicit_FJinvF(dt_two_omega);
 			sphSolverDiv.solver_component_implicit_L(gh0*dt_implicit, dt_implicit, sphere_radius);
@@ -277,17 +280,6 @@ PDESWESphereTS_l_irk::PDESWESphereTS_l_irk()
 
 void PDESWESphereTS_l_irk::clear()
 {
-	if (lg_erk != nullptr)
-	{
-		delete lg_erk;
-		lg_erk = nullptr;
-	}
-
-	if (l_erk != nullptr)
-	{
-		delete l_erk;
-		l_erk = nullptr;
-	}
 }
 
 

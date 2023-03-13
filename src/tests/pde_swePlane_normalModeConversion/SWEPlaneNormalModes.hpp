@@ -1,6 +1,6 @@
 /*
  * Created on: 17 Nov 2019
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
  * Based on previous normal mode implementation by Martin Schreiber in swe_plane.cpp
  */
@@ -22,8 +22,7 @@
 #include <sweet/core/shacksShared/ShackPlaneDataOps.hpp>
 #include <sweet/core/shacksShared/ShackTimestepControl.hpp>
 #include <sweet/core/shacksShared/ShackIOData.hpp>
-#include <sweet/core/shacksShared/ShackNormalModeAnalysis.hpp>
-#include <pde_swePlane/ShackPDESWEPlane.hpp>
+#include "../../programs/pde_swePlane/ShackPDESWEPlane.hpp"
 
 
 
@@ -41,7 +40,6 @@ public:
 	sweet::ShackPlaneDataOps *shackPlaneDataOps;
 	sweet::ShackTimestepControl *shackTimestepControl;
 	sweet::ShackIOData *shackIOData;
-	sweet::ShackNormalModeAnalysis *shackNormalModeAnalysis;
 
 	ShackPDESWEPlane *shackPDESWEPlane;
 
@@ -54,9 +52,6 @@ public:
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
 
 		shackIOData = io_dict.getAutoRegistration<sweet::ShackIOData>();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
-
-		shackNormalModeAnalysis = io_dict.getAutoRegistration<sweet::ShackNormalModeAnalysis>();
 		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
 
 		shackPDESWEPlane = io_dict.getAutoRegistration<ShackPDESWEPlane>();
@@ -601,7 +596,7 @@ public:
 		 *
 		 */
 
-		if (shackNormalModeAnalysis->normal_mode_analysis_generation == 4)
+		if (shackPDESWEPlane->normal_mode_analysis_generation == 4)
 		{
 #if SWEET_EIGEN
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -615,25 +610,25 @@ public:
 			const char* filename; //general filename
 			char buffer_real[1024];
 
-			if (i_simVars.iodata.output_file_name == "")
+			if (shackIOData->output_file_name == "")
 				filename = "output_%s_t%020.8f.csv";
 			else
-				filename = i_simVars.iodata.output_file_name.c_str();
+				filename = shackIOData->output_file_name.c_str();
 
-			sprintf(buffer_real, filename, "normal_modes_plane", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file(buffer_real, std::ios_base::trunc);
 			std::cout << "Writing normal mode analysis to files of the form '" << buffer_real << "'" << std::endl;
 
 			//Positive inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igpos", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igpos", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file_igpos(buffer_real, std::ios_base::trunc);
 
 			//Negative inertia-gravity modes
-			sprintf(buffer_real, filename, "normal_modes_plane_igneg", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_igneg", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file_igneg(buffer_real, std::ios_base::trunc);
 
 			//Geostrophic modes
-			sprintf(buffer_real, filename, "normal_modes_plane_geo", shackTimestepControl->current_timestep_size*i_simVars.iodata.output_time_scale);
+			sprintf(buffer_real, filename, "normal_modes_plane_geo", shackTimestepControl->current_timestep_size*shackIOData->output_time_scale);
 			std::ofstream file_geo(buffer_real, std::ios_base::trunc);
 
 			//std::cout << "WARNING: OUTPUT IS TRANSPOSED!" << std::endl;
@@ -647,8 +642,7 @@ public:
 			file << "# dt " << shackTimestepControl->current_timestep_size << std::endl;
 			file << "# g " << shackPDESWEPlane->gravitation << std::endl;
 			file << "# h " << shackPDESWEPlane->h0 << std::endl;
-			file << "# r " << shackPDESWEPlane->sphere_radius << std::endl;
-			file << "# f " << shackPlaneDataOps->plane_rotating_f0 << std::endl;
+			file << "# f " << shackPDESWEPlane->plane_rotating_f0 << std::endl;
 
 #if SWEET_USE_PLANE_SPECTRAL_SPACE
 			int specmodes = planeDataConfig->get_spectral_iteration_range_area(0)+planeDataConfig->get_spectral_iteration_range_area(1);
@@ -659,7 +653,7 @@ public:
 
 			file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 			file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
-			file << "# normalmodegeneration " << shackNormalModeAnalysis->normal_mode_analysis_generation << std::endl;
+			file << "# normalmodegeneration " << shackPDESWEPlane->normal_mode_analysis_generation << std::endl;
 			file << "# antialiasing ";
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
 			file << 1;
@@ -701,10 +695,6 @@ public:
 				std::cout << "." << std::flush;
 				for (std::size_t j = planeDataConfig->spectral_data_iteration_ranges[r][1][0]; j < planeDataConfig->spectral_data_iteration_ranges[r][1][1]; j++)
 				{
-					//This is the mode to be analysed
-					//std::cout << "Mode (i,j)= (" << i << " , " << j << ")" << std::endl;
-
-
 					for (int outer_prog_id = 0; outer_prog_id < number_of_prognostic_variables; outer_prog_id++)
 					{
 
@@ -715,9 +705,10 @@ public:
 						for (int inner_prog_id = 0; inner_prog_id < number_of_prognostic_variables; inner_prog_id++)
 							prog[inner_prog_id]->spectral_set_zero();
 
-						// activate mode via real coefficient
+						// Activate mode via real coefficient
 						prog[outer_prog_id]->spectral_set(j, i, 1.0);
-						//Activate the symetric couterpart of the mode (only needed if j>0 )
+
+						// Activate the symetric couterpart of the mode (only needed if j>0 )
 						if (j > 0)
 							prog[outer_prog_id]->spectral_set(planeDataConfig->spectral_data_size[1]-j, i, 1.0);
 
@@ -745,18 +736,15 @@ public:
 
 					}
 
-					//std::cout << "Lik matrix" << std::endl;
-					//std::cout << A << std::endl;
 
-					//std::cout << "Normal modes" << std::endl;
 					ces.compute(A);
-					for(int i=0; i<3; i++)
+					for (int i=0; i<3; i++)
 					{
 						eval[i]=ces.eigenvalues()[i];
-						//std::cout << "Eigenvalue " << i << " : " << eval[i].real() << " " <<eval[i].imag() << std::endl;
-
 					}
-					/* We will try to separate the modes in 3 types:
+
+					/*
+					 * We will try to separate the modes in 3 types:
 					 * -positive inertia-gravity (imag>f) - we will adopt coriolis f to test as if > zero, since the exact freq is sqrt(f^2+cK*K)
 					 * -negative inertia-gravity (imag<-f)
 					 * -negative inertia-gravity (imag aprox 0) - we will fit all other modes here
@@ -766,7 +754,7 @@ public:
 					int count_geo=0;
 					for(int i=0; i<3; i++)
 					{
-						if (eval[i].imag() > 0.5 * shackPlaneDataOps->plane_rotating_f0)
+						if (eval[i].imag() > 0.5 * shackPDESWEPlane->plane_rotating_f0)
 						{
 							//std::cout << "IG pos mode: " << eval[i].imag() << std::endl;
 							//file_igpos << eval[i].imag();
@@ -774,7 +762,7 @@ public:
 							file_igpos << "\t";
 							count_igpos++;
 						}
-						if (eval[i].imag() < - 0.5 * shackPlaneDataOps->plane_rotating_f0)
+						if (eval[i].imag() < - 0.5 * shackPDESWEPlane->plane_rotating_f0)
 						{
 							//std::cout << "IG neg mode: " << eval[i].imag() << std::endl;
 							//file_igneg << eval[i].imag();
@@ -782,7 +770,7 @@ public:
 							file_igneg << "\t";
 							count_igneg++;
 						}
-						if (eval[i].imag() >= - 0.5 * shackPlaneDataOps->plane_rotating_f0 && eval[i].imag() <=  0.5 * shackPlaneDataOps->plane_rotating_f0 )
+						if (eval[i].imag() >= - 0.5 * shackPDESWEPlane->plane_rotating_f0 && eval[i].imag() <=  0.5 * shackPDESWEPlane->plane_rotating_f0 )
 						{
 							//std::cout << "IG geo mode: " << eval[i].imag() << std::endl;
 							//file_geo << eval[i].imag();
@@ -888,7 +876,7 @@ public:
 #endif
 
 			int num_timesteps = 1;
-			if (shackNormalModeAnalysis->normal_mode_analysis_generation >= 10)
+			if (shackPDESWEPlane->normal_mode_analysis_generation >= 10)
 			{
 				if (shackTimestepControl->max_timesteps_nr > 0)
 					num_timesteps = shackTimestepControl->max_timesteps_nr;
@@ -913,7 +901,7 @@ public:
 
 			file << "# physresx " << planeDataConfig->physical_res[0] << std::endl;
 			file << "# physresy " << planeDataConfig->physical_res[1] << std::endl;
-			file << "# normalmodegeneration " << shackNormalModeAnalysis->normal_mode_analysis_generation << std::endl;
+			file << "# normalmodegeneration " << shackPDESWEPlane->normal_mode_analysis_generation << std::endl;
 			file << "# antialiasing ";
 
 #if SWEET_USE_PLANE_SPECTRAL_DEALIASING
@@ -928,7 +916,7 @@ public:
 			// iterate over all prognostic variables
 			for (int outer_prog_id = 0; outer_prog_id < number_of_prognostic_variables; outer_prog_id++)
 			{
-				if (shackNormalModeAnalysis->normal_mode_analysis_generation == 1 || shackNormalModeAnalysis->normal_mode_analysis_generation == 11)
+				if (shackPDESWEPlane->normal_mode_analysis_generation == 1 || shackPDESWEPlane->normal_mode_analysis_generation == 11)
 				{
 					// iterate over physical space
 					for (std::size_t outer_i = 0; outer_i < planeDataConfig->physical_array_data_number_of_elements; outer_i++)
@@ -953,7 +941,7 @@ public:
 
 						(i_class->*i_run_timestep_method)();
 
-						if (shackNormalModeAnalysis->normal_mode_analysis_generation == 1)
+						if (shackPDESWEPlane->normal_mode_analysis_generation == 1)
 						{
 							/*
 							 * compute
@@ -982,7 +970,7 @@ public:
 					}
 				}
 #if 1
-				else if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3 || shackNormalModeAnalysis->normal_mode_analysis_generation == 13)
+				else if (shackPDESWEPlane->normal_mode_analysis_generation == 3 || shackPDESWEPlane->normal_mode_analysis_generation == 13)
 				{
 #if !SWEET_USE_PLANE_SPECTRAL_SPACE
 					SWEETError("Only available with if plane spectral space is activated during compile time!");
@@ -1014,7 +1002,7 @@ public:
 								(i_class->*i_run_timestep_method)();
 
 
-								if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3)
+								if (shackPDESWEPlane->normal_mode_analysis_generation == 3)
 								{
 									/*
 									 * compute
@@ -1081,7 +1069,7 @@ public:
 #endif
 				}
 #else
-				else if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3 || shackNormalModeAnalysis->normal_mode_analysis_generation == 13)
+				else if (shackPDESWEPlane->normal_mode_analysis_generation == 3 || shackPDESWEPlane->normal_mode_analysis_generation == 13)
 				{
 					PlaneDataComplex t1(planeDataConfig);
 					PlaneDataComplex t2(planeDataConfig);
@@ -1127,7 +1115,7 @@ public:
 							prog_cplx[inner_prog_id]->request_data_spectral();
 						}
 
-						if (shackNormalModeAnalysis->normal_mode_analysis_generation == 3)
+						if (shackPDESWEPlane->normal_mode_analysis_generation == 3)
 						{
 							/*
 							 * compute

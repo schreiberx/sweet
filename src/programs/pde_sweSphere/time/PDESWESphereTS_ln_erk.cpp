@@ -1,19 +1,18 @@
 /*
- * PDESWESphereTS_ln_erk.cpp
- *
- *  Created on: 30 May 2017
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include "PDESWESphereTS_ln_erk.hpp"
 
 
 bool PDESWESphereTS_ln_erk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
-	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
+	timestepping_method = i_timestepping_method;
 
+	return setup(io_ops, shackPDESWETimeDisc->timestepping_order);
 }
 
 

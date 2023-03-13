@@ -17,23 +17,26 @@ bool PDESWESphereTS_lg_exp_lc_n_etdrk::implementsTimesteppingMethod(const std::s
 }
 
 bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup_auto(
+		const std::string &i_timestepping_method,
 		sweet::SphereOperators *io_ops
 )
 {
+	timestepping_method = i_timestepping_method;
+
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
-	return setup(
+	return setup_main(
 			io_ops,
 			shackExpIntegration,
-			timestepping_order,
-			timestepping_order2,
+			shackPDESWETimeDisc->timestepping_order,
+			shackPDESWETimeDisc->timestepping_order2,
 			shackTimestepControl->current_timestep_size
 		);
 }
 
 
-bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup(
+bool PDESWESphereTS_lg_exp_lc_n_etdrk::setup_main(
 		sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,

@@ -2,7 +2,7 @@
  * EigenMatrix3.hpp
  *
  *  Created on: 21 Nov 2017
- *      Author: Pedro Peixoto <pedrosp@ime.usp.br>
+ * Author: Pedro Peixoto <pedrosp@ime.usp.br>
  *
  *      Calculates the eigenvalues of a real or std::complex 3x3 matrices
  *

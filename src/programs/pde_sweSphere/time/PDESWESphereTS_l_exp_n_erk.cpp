@@ -5,7 +5,34 @@
 #include "PDESWESphereTS_l_exp_n_erk.hpp"
 
 
-bool PDESWESphereTS_l_exp_n_erk::setup(
+
+bool PDESWESphereTS_l_exp_n_erk::setup_auto(
+		const std::string &i_timestepping_method,
+		sweet::SphereOperators *io_ops
+)
+{
+	timestepping_method = i_timestepping_method;
+
+	int _version_id = 0;
+
+	if (timestepping_method == "l_exp_n_erk_ver1")
+		_version_id = 1;
+
+	return setup_main(
+			io_ops,
+			shackExpIntegration,
+			shackExpIntegration->exp_method,
+			shackPDESWETimeDisc->timestepping_order,
+			shackPDESWETimeDisc->timestepping_order2,
+			shackTimestepControl->current_timestep_size,
+			shackPDESWESphere->sphere_use_fsphere,
+			_version_id,
+			shackExpIntegration->sphere_solver_preallocation
+		);
+}
+
+
+bool PDESWESphereTS_l_exp_n_erk::setup_main(
 		sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		const std::string &i_exp_method,
@@ -17,6 +44,8 @@ bool PDESWESphereTS_l_exp_n_erk::setup(
 		bool i_use_rexi_sphere_solver_preallocation
 )
 {
+	ops = io_ops;
+
 	timestepping_order = i_order;
 	timestepping_order2 = i_order2;
 
@@ -87,32 +116,8 @@ bool PDESWESphereTS_l_exp_n_erk::setup(
 	// Only request 1st order time stepping methods for irk and erk
 	// These 1st order methods will be combined to higher-order methods in this class
 	//
-	timestepping_l_erk_n_erk.setup(io_ops, 1, 1);
+	timestepping_l_erk_n_erk.setup_main(io_ops, 1, 1);
 	return true;
-}
-
-
-
-bool PDESWESphereTS_l_exp_n_erk::setup_auto(
-		sweet::SphereOperators *io_ops
-)
-{
-	int _version_id = 0;
-
-	if (timestepping_method == "l_exp_n_erk_ver1")
-		_version_id = 1;
-
-	return setup(
-			io_ops,
-			shackExpIntegration,
-			shackExpIntegration->exp_method,
-			timestepping_order,
-			timestepping_order2,
-			shackTimestepControl->current_timestep_size,
-			shackPDESWESphere->sphere_use_fsphere,
-			_version_id,
-			shackExpIntegration->sphere_solver_preallocation
-		);
 }
 
 

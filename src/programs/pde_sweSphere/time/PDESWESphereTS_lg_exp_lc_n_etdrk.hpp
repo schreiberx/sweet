@@ -18,9 +18,12 @@
 class PDESWESphereTS_lg_exp_lc_n_etdrk	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 		sweet::SphereOperators *io_ops,
 		sweet::ShackExpIntegration *i_shackExpIntegration,
 		int i_timestepping_order,
@@ -44,6 +47,27 @@ private:
 	PDESWESphereTS_l_exp ts_ups1_rexi;
 	PDESWESphereTS_l_exp ts_ups2_rexi;
 	PDESWESphereTS_l_exp ts_ups3_rexi;
+
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		ts_lg_erk_lc_n_erk.shackRegistration(io_shackDict);
+
+		ts_phi0_rexi.shackRegistration(io_shackDict);
+		ts_phi1_rexi.shackRegistration(io_shackDict);
+		ts_phi2_rexi.shackRegistration(io_shackDict);
+
+		ts_ups0_rexi.shackRegistration(io_shackDict);
+		ts_ups1_rexi.shackRegistration(io_shackDict);
+		ts_ups2_rexi.shackRegistration(io_shackDict);
+		ts_ups3_rexi.shackRegistration(io_shackDict);
+		return true;
+	}
 
 
 private:

@@ -1,6 +1,5 @@
 /*
- *  Created on: Jul 30, 2022
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #include <sweet/expIntegration/ExpFunctions.hpp>

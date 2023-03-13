@@ -22,7 +22,7 @@
  */
 std::string write_file(
 		SphereDataCtx  &i_ctx,
-		const SphereData_Spectral &i_sphereData,
+		const sweet::SphereData_Spectral &i_sphereData,
 		const char* i_name	///< name of output variable
 )
 {
@@ -128,9 +128,9 @@ void cfinal(
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-	const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-	const SphereData_Spectral& div_Y  = i_Y->get_div();
+	const sweet::SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt_Y = i_Y->get_vrt();
+	const sweet::SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	const int& level_id = i_Y->get_level();
 
@@ -178,9 +178,9 @@ void ceval_f1(SphereDataVars *i_Y,
 		SphereDataVars *o_F1
 )
 {
-	const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-	const SphereData_Spectral& div_Y  = i_Y->get_div();
+	const sweet::SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt_Y = i_Y->get_vrt();
+	const sweet::SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	int level = i_Y->get_level();
 
@@ -212,9 +212,9 @@ void ceval_f2(SphereDataVars *i_Y,
 		SphereDataVars *o_F2
 )
 {
-	const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-	const SphereData_Spectral& div_Y  = i_Y->get_div();
+	const sweet::SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt_Y = i_Y->get_vrt();
+	const sweet::SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	int level = i_Y->get_level();
 
@@ -256,9 +256,9 @@ void ccomp_f2(
 	sweet::SphereData_Spectral& vrt_Y = io_Y->get_vrt();
 	sweet::SphereData_Spectral& div_Y = io_Y->get_div();
 
-	const SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
-	const SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
-	const SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
+	const sweet::SphereData_Spectral& phi_pert_Rhs  = i_Rhs->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt_Rhs = i_Rhs->get_vrt();
+	const sweet::SphereData_Spectral& div_Rhs  = i_Rhs->get_div();
 
 	int level = io_Y->get_level();
 
@@ -307,9 +307,9 @@ void ceval_f3 (
 		SphereDataVars *o_F3
 )
 {
-	const SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
-	const SphereData_Spectral& vrt_Y = i_Y->get_vrt();
-	const SphereData_Spectral& div_Y  = i_Y->get_div();
+	const sweet::SphereData_Spectral& phi_pert_Y  = i_Y->get_phi_pert();
+	const sweet::SphereData_Spectral& vrt_Y = i_Y->get_vrt();
+	const sweet::SphereData_Spectral& div_Y  = i_Y->get_div();
 
 	sweet::SphereData_Spectral& phi_pert_F3  = o_F3->get_phi_pert();
 	sweet::SphereData_Spectral& vrt_F3 = o_F3->get_vrt();

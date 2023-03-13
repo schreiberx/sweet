@@ -18,14 +18,20 @@
 class PDESWESphereTS_lg_exp_lc_n_etd_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			sweet::ShackExpIntegration *shackExpIntegration,
 			int i_timestepping_order,
 			int i_timestepping_order2,
-			double i_timestep_size
+			double i_timestep_size,
+
+			bool i_with_na,
+			bool i_with_nr
 	);
 
 public:
@@ -46,6 +52,21 @@ private:
 	PDESWESphereTS_l_exp ts_phi1_exp;
 	PDESWESphereTS_l_exp ts_phi2_exp;
 	PDESWESphereTS_l_exp ts_phi3_exp;
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		ts_phi0_exp.shackRegistration(io_shackDict);
+		ts_phi1_exp.shackRegistration(io_shackDict);
+		ts_phi2_exp.shackRegistration(io_shackDict);
+		ts_phi3_exp.shackRegistration(io_shackDict);
+		return true;
+	}
+
 
 private:
 	void euler_timestep_update_linear(

@@ -1,6 +1,5 @@
 /*
- *  Created on: Feb 21, 2023
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
 #ifndef SRC_INCLUDE_SWEET_SHACKS_SHACK_PDE_ADVECTION_SPHERE_BENCHMARK_HPP_
@@ -69,7 +68,7 @@ public:
 		std::cout << i_prefix << "	-r [radius]				scale factor of radius for initial condition, default=1" << std::endl;
 		std::cout << i_prefix << "	--initial-coord-x [float]		Same as -x" << std::endl;
 		std::cout << i_prefix << "	--initial-coord-y [float]		Same as -y" << std::endl;
-		std::cout << i_prefix << "	--advection-rotation-angle [float]	Rotation angle for e.g. advection test case" << std::endl;
+		std::cout << i_prefix << "	--benchmark-advection-rotation-angle [float]	Rotation angle for e.g. advection test case" << std::endl;
 		std::cout << i_prefix << std::endl;
 	}
 
@@ -78,7 +77,7 @@ public:
 		i_pa.getArgumentValueByKey("--random-seed", random_seed);
 		i_pa.getArgumentValueByKey("--benchmark-name", benchmark_name);
 
-		i_pa.getArgumentValueByKey("--advection-rotation-angle", sphere_advection_rotation_angle);
+		i_pa.getArgumentValueByKey("--benchmark-advection-rotation-angle", sphere_advection_rotation_angle);
 
 		if (error.exists())
 			return error.forwardWithPositiveReturn(i_pa.error);

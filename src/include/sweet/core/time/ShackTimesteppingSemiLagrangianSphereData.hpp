@@ -33,7 +33,7 @@ public:
 	bool semi_lagrangian_sampler_use_pole_pseudo_points = false;
 
 	/// Use accurate spherical geometry (???) or approximation (Ritchie 1995)
-	double semi_lagrangian_approximate_sphere_geometry = 0;
+	bool semi_lagrangian_approximate_sphere_geometry = true;
 
 
 

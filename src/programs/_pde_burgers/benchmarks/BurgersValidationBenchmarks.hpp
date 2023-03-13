@@ -2,7 +2,7 @@
  * BurgersValidationBenchmarks.hpp
  *
  *  Created on: 29 Jun 2016
- *      Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
+ * Author: Andreas Schmitt <aschmitt@fnb.tu-darmstadt.de>
  */
 #ifndef SRC_INCLUDE_SWEET_BURGERSVALIDATIONBENCHMARKS_HPP_
 #define SRC_INCLUDE_SWEET_BURGERSVALIDATIONBENCHMARKS_HPP_

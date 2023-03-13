@@ -29,9 +29,6 @@ class JobRuntimeOptions(InfoError):
         self.space_res_spectral = None
         self.space_res_physical = None
 
-        self.output_timestep_size = None
-        self.output_filename = ''
-        self.output_file_mode = ''
 
         self.verbosity = 0
 
@@ -85,10 +82,11 @@ class JobRuntimeOptions(InfoError):
         self.benchmark_galewsky_umax = -1
         self.benchmark_galewsky_hamp = -1
         self.benchmark_galewsky_phi2 = -1
+        self.benchmark_galewsky_geostropic_setup = None
         self.benchmark_normal_modes_case = None
 
-        self.advection_rotation_angle = None
-        self.advection_velocity = None
+        self.benchmark_advection_rotation_angle = None
+        self.benchmark_advection_velocity = None
 
         #self.uselineardiv = None
         self.use_nonlinear_only_visc = None
@@ -147,14 +145,17 @@ class JobRuntimeOptions(InfoError):
                 uniqueIDStr += '_b'+str(self.benchmark_name)
 
         if not 'runtime.galewsky_params' in filter_list:
-            if self.benchmark_galewsky_umax > 0:
+            if self.benchmark_galewsky_umax != None:
                 uniqueIDStr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
 
-            if self.benchmark_galewsky_hamp > 0:
+            if self.benchmark_galewsky_hamp != None:
                 uniqueIDStr += '_bgh'+str("{:.4E}".format(self.benchmark_galewsky_hamp))
 
-            if self.benchmark_galewsky_phi2 > 0:
+            if self.benchmark_galewsky_phi2 != None:
                 uniqueIDStr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
+
+            if self.benchmark_galewsky_geostropic_setup != None:
+                uniqueIDStr += '_bgs'+self.benchmark_galewsky_geostropic_setup
 
         if not 'runtime.normal_modes_params' in filter_list:
             if self.benchmark_normal_modes_case != None:
@@ -179,11 +180,11 @@ class JobRuntimeOptions(InfoError):
             if self.viscosity_order != None:
                 uniqueIDStr += '_U'+str(self.viscosity_order)
 
-            if self.advection_rotation_angle != None:
-                uniqueIDStr += '_ar'+str(self.advection_rotation_angle)
+            if self.benchmark_advection_rotation_angle != None:
+                uniqueIDStr += '_ar'+str(self.benchmark_advection_rotation_angle)
 
-            if self.advection_velocity != None:
-                uniqueIDStr += '_av'+str(self.advection_velocity).replace(",", "_")
+            if self.benchmark_advection_velocity != None:
+                uniqueIDStr += '_av'+str(self.benchmark_advection_velocity).replace(",", "_")
 
         if 'timestep' in filter_list:
             raise Exception("Deprecated")
@@ -277,13 +278,17 @@ class JobRuntimeOptions(InfoError):
             retRuntimeOptionsStr += ' -G '+str(self.gui)
 
         if self.gravitation!= None:
-            retRuntimeOptionsStr += ' -g '+str(self.gravitation)
+            retRuntimeOptionsStr += ' --pde-gravitation='+str(self.gravitation)
+            
         if self.h0 != None:
-            retRuntimeOptionsStr += ' -H '+str(self.h0)
+            retRuntimeOptionsStr += ' --pde-h0='+str(self.h0)
+            
         if self.sphere_rotating_coriolis_omega != None:
             retRuntimeOptionsStr += ' -f '+str(self.sphere_rotating_coriolis_omega)
+            
         if self.sphere_radius != None:
             retRuntimeOptionsStr += ' -a '+str(self.sphere_radius)
+            
         if self.f_sphere != None:
             retRuntimeOptionsStr += ' -F '+str(self.f_sphere)
 
@@ -327,23 +332,11 @@ class JobRuntimeOptions(InfoError):
         if self.max_timesteps_nr != -1:
             retRuntimeOptionsStr += ' -T '+str(self.max_timesteps_nr)
 
-        if self.output_timestep_size != None:
-            retRuntimeOptionsStr += ' -o '+str(self.output_timestep_size)
-
-        if self.output_filename != '':
-            retRuntimeOptionsStr += ' --output-file-name='+self.output_filename
-        elif self.output_timestep_size == None:
-            retRuntimeOptionsStr += ' --output-file-name=-'
-
-        if self.output_file_mode != '':
-            retRuntimeOptionsStr += ' --output-file-mode='+self.output_file_mode
-
-
         if self.viscosity != None:
-            retRuntimeOptionsStr += ' -u '+str(self.viscosity)
+            retRuntimeOptionsStr += ' --pde-viscosity='+str(self.viscosity)
 
         if self.viscosity_order != None:
-            retRuntimeOptionsStr += ' -U '+str(self.viscosity_order)
+            retRuntimeOptionsStr += ' --pde-viscosity-order='+str(self.viscosity_order)
 
         retRuntimeOptionsStr += ' -t '+str(self.max_simulation_time)
 
@@ -355,17 +348,17 @@ class JobRuntimeOptions(InfoError):
         if self.floating_point_output_digits >= 0:
             retRuntimeOptionsStr += ' -d '+str(self.floating_point_output_digits)
 
-        #if self.uselineardiv != None:
-        #    retRuntimeOptionsStr += ' --use-only-linear-div='+str(self.uselineardiv)
+        if self.benchmark_galewsky_geostropic_setup != None:
+            retRuntimeOptionsStr += ' --benchmark-galewsky-geostropic-setup='+str(self.benchmark_galewsky_geostropic_setup)
 
         if self.use_nonlinear_only_visc != None:
             retRuntimeOptionsStr += ' --use-nonlinear-only-visc='+str(self.use_nonlinear_only_visc)
 
-        if self.advection_rotation_angle != None:
-            retRuntimeOptionsStr += ' --advection-rotation-angle='+str(self.advection_rotation_angle)
+        if self.benchmark_advection_rotation_angle != None:
+            retRuntimeOptionsStr += ' --benchmark-advection-rotation-angle='+str(self.benchmark_advection_rotation_angle)
 
-        if self.advection_velocity != None:
-            retRuntimeOptionsStr += ' --advection-velocity='+str(self.advection_velocity)
+        if self.benchmark_advection_velocity != None:
+            retRuntimeOptionsStr += ' --benchmark-advection-velocity='+str(self.benchmark_advection_velocity)
 
         if self.timestepping_method != None:
             retRuntimeOptionsStr += ' --timestepping-method='+self.timestepping_method

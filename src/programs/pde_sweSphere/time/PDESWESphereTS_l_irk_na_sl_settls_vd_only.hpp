@@ -2,7 +2,7 @@
  * PDESWESphereTS_l_irk_na_sl_settls_vd_only.hpp
  *
  *  Created on: 01 Apr 2020
- *      Author: Martin SCHREIBER <schreiberx@gmail.com>
+ * Author: Martin SCHREIBER <schreiberx@gmail.com>
  *
  *  Based on plane code
  */
@@ -29,9 +29,12 @@
 class PDESWESphereTS_l_irk_na_sl_settls_vd_only	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
-	bool setup(
+	bool setup_main(
 			sweet::SphereOperators *io_ops,
 			int i_timestepping_order
 		);
@@ -45,8 +48,22 @@ private:
 
 	sweet::SphereData_Spectral U_phi_prev, U_vrt_prev, U_div_prev;
 
-	PDESWESphereTS_ln_erk_split_vd* swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order = nullptr;
-	PDESWESphereTS_l_irk* swe_sphere_ts_l_irk = nullptr;
+	PDESWESphereTS_ln_erk_split_vd swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order;
+	PDESWESphereTS_l_irk swe_sphere_ts_l_irk;
+
+
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		swe_sphere_ts_ln_erk_split_vd__l_erk_1st_order.shackRegistration(io_shackDict);
+		swe_sphere_ts_l_irk.shackRegistration(io_shackDict);
+		return true;
+	}
 
 
 

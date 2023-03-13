@@ -267,7 +267,7 @@ public:
 		shackProgArgDict.clear();
 	}
 
-	bool setup_3_data()
+	bool setup_3_dataOpsEtc()
 	{
 		/*
 		 * BENCHMARK: Detect particular benchmark to use
@@ -353,7 +353,7 @@ public:
 		if (!setup_2_processArguments())
 			return false;
 
-		if (!setup_3_data())
+		if (!setup_3_dataOpsEtc())
 			return false;
 
 		std::cout << "Printing shack information:" << std::endl;
@@ -382,11 +382,21 @@ public:
 		return !error.exists();
 	}
 
+	double getErrorLMaxOnH()
+	{
+		return (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_max_abs();
+	}
+
+	double getErrorRMSOnH()
+	{
+		return (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms();
+	}
+
 	void printSimulationErrors()
 	{
 		std::cout << "Error compared to initial condition" << std::endl;
-		std::cout << "Lmax error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_max_abs() << std::endl;
-		std::cout << "RMS error: " << (dataConfigOps.prog_vec_t0[0]-dataConfigOps.prog_vec[0]).toPhys().physical_reduce_rms() << std::endl;
+		std::cout << "Lmax error: " << getErrorLMaxOnH() << std::endl;
+		std::cout << "RMS error: " << getErrorRMSOnH() << std::endl;
 	}
 
 	virtual ~ProgramPDEAdvectionSphere()
@@ -423,8 +433,11 @@ public:
 
 		shackTimestepControl->timestepHelperEnd();
 
-		if (shackIOData->verbosity > 2)
-			std::cout << shackTimestepControl->current_timestep_nr << ": " << shackTimestepControl->current_simulation_time/(60*60*24.0) << std::endl;
+		if (shackIOData->verbosity > 10)
+		{
+			std::cout << "ts_nr=" << shackTimestepControl->current_timestep_nr << ", t=" << shackTimestepControl->current_simulation_time*shackIOData->output_time_scale_inv << std::endl;
+			std::cout << "error:" << getErrorLMaxOnH() << std::endl;
+		}
 
 		return true;
 	}

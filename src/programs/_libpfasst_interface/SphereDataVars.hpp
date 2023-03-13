@@ -50,12 +50,12 @@ public:
   }
   
   // getters for the SphereDataSpectral variables
-  const SphereData_Spectral& get_phi_pert() const  {return prog_phi_pert;}
-  SphereData_Spectral&       get_phi_pert()        {return prog_phi_pert;}
-  const SphereData_Spectral& get_vrt() const {return prog_vrt;}
-  SphereData_Spectral&       get_vrt()       {return prog_vrt;}
-  const SphereData_Spectral& get_div() const  {return prog_div;}
-  SphereData_Spectral&       get_div()        {return prog_div;}
+  const sweet::SphereData_Spectral& get_phi_pert() const  {return prog_phi_pert;}
+  sweet::SphereData_Spectral&       get_phi_pert()        {return prog_phi_pert;}
+  const sweet::SphereData_Spectral& get_vrt() const {return prog_vrt;}
+  sweet::SphereData_Spectral&       get_vrt()       {return prog_vrt;}
+  const sweet::SphereData_Spectral& get_div() const  {return prog_div;}
+  sweet::SphereData_Spectral&       get_div()        {return prog_div;}
 
   // getters for the flat data array
   double*&         get_flat_data_array()            {return flat_data_array;}
@@ -67,9 +67,9 @@ public:
 
 protected:
   
-  SphereData_Spectral prog_phi_pert;
-  SphereData_Spectral prog_vrt;
-  SphereData_Spectral prog_div;
+  sweet::SphereData_Spectral prog_phi_pert;
+  sweet::SphereData_Spectral prog_vrt;
+  sweet::SphereData_Spectral prog_div;
 
   // flat data array vector (currently used to pack and unpack)
   double *flat_data_array;

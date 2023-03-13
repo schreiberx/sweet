@@ -64,7 +64,7 @@ public:
 		stream << "     'adv_gauss_bump'/" << std::endl;
 		stream << "     'adv_gauss_bump': Advection test case of gaussian bump" << std::endl;
 		stream << "         OPTION:" << std::endl;
-		stream << "         --advection-rotation-angle=[angle]" << std::endl;
+		stream << "         --benchmark-advection-rotation-angle=[angle]" << std::endl;
 		return stream.str();
 	}
 

@@ -20,7 +20,10 @@
 class PDESWESphereTS_lg_irk_lc_na_erk_vd	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool setup_auto(sweet::SphereOperators *io_ops);
+	bool setup_auto(
+			const std::string &i_timestepping_method,
+			sweet::SphereOperators *io_ops
+		);
 
 	bool setup(
 			sweet::SphereOperators *io_ops,
@@ -48,6 +51,19 @@ public:
 	sweet::TimesteppingExplicitRKSphereData timestepping_rk_nonlinear;
 
 	int version_id;
+
+
+public:
+	bool shackRegistration(
+			sweet::ShackDictionary *io_shackDict
+	)
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
+
+		timestepping_lg_irk.shackRegistration(io_shackDict);
+		timestepping_ln_erk_split_vd.shackRegistration(io_shackDict);
+		return true;
+	}
 
 
 public:
