@@ -12,7 +12,7 @@ jg = JobGeneration()
 # Compilation Settings for reference & tests jobs #
 ###################################################
 
-jg.compile.program = 'libpfasst_swe_sphere_mlsdc'
+jg.compile.program = 'programs/libpfasst/pde_sweSphere_mlsdc'
 
 # enable libpfasst
 jg.compile.libpfasst = 'enable'
