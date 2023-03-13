@@ -118,35 +118,35 @@ public:
 		function_order(i_function_order),
 		timestepping_order(i_timestepping_order)
 	{
-		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
+		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
 
 	bool setup()
 	{
 		shackProgArgDict.setup();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.printShackData();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*shackTimestepControl);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackTimestepControl);
 
 		data.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(data);
 
 		data.prog_h_phys.physical_set_all_value(test_function(function_order, 0));
 		data.prog_u_phys.physical_set_all_value(0);
@@ -312,10 +312,10 @@ int main(
 		for (int timestepping_order = 1; timestepping_order <= 4; timestepping_order++)
 		{
 			SimulationTestRK simulation(i_argc, i_argv, fun_order, timestepping_order);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 			simulation.setup();
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 			while(true)
 			{

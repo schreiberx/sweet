@@ -30,13 +30,13 @@ int main(
 {
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.printShackData();
 
@@ -109,11 +109,11 @@ int main(
 
 		sweet::PlaneData_Config planeDataConfig;
 		planeDataConfig.setupAuto(shackPlaneDataOps);
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(planeDataConfig);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(planeDataConfig);
 
 		sweet::PlaneOperatorsComplex ops;
 		ops.setup(planeDataConfig, shackPlaneDataOps);
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(ops);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(ops);
 
 
 		/*

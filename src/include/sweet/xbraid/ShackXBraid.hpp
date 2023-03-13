@@ -370,7 +370,7 @@ public:
 		i_pa.getArgumentValueByKey("--xbraid-store-iterations", xbraid_store_iterations);
 		i_pa.getArgumentValueByKey("--xbraid-spatial-coarsening", xbraid_spatial_coarsening);
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
 
 	virtual void printShack(

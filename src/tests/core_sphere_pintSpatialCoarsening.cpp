@@ -74,14 +74,14 @@ public:
 	{
 		sphereBenchmarks.setup_1_registerAllBenchmark();
 		sphereBenchmarks.setup_2_shackRegistration(io_shackDict);
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(sphereBenchmarks);
 		return true;
 	}
 
 	bool setup_2_benchmarkDetection()
 	{
 		sphereBenchmarks.setup_3_benchmarkDetection();
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(sphereBenchmarks);
 		return true;
 	}
 
@@ -101,13 +101,13 @@ public:
 		sweet::SphereData_Spectral* div = data->get_pointer_to_data_SphereData_Spectral()->simfields[2];
 
 		sphereBenchmarks.setup_4_benchmarkSetup_1_withoutOps();
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(sphereBenchmarks);
 
 		sphereBenchmarks.setup_5_benchmarkSetup_2_withOps(ops);
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(sphereBenchmarks);
 
 		sphereBenchmarks.benchmark->getInitialState(*phi_pert, *vrt, *div);
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(sphereBenchmarks);
 
 		return true;
 	}
@@ -175,10 +175,10 @@ int main(int i_argc, char *i_argv[])
 
 			sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 			shackProgArgDict.setup();
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 			sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 
 			Data data_H;
@@ -190,7 +190,7 @@ int main(int i_argc, char *i_argv[])
 			Data data_L_to_H_to_L;
 
 			data_H.setup_1_shackRegister(&shackProgArgDict);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(data_H);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(data_H);
 			data_L.setup_1_shackRegister(&shackProgArgDict);
 			data_H_to_H.setup_1_shackRegister(&shackProgArgDict);
 			data_H_to_L.setup_1_shackRegister(&shackProgArgDict);
@@ -200,11 +200,11 @@ int main(int i_argc, char *i_argv[])
 
 
 			shackProgArgDict.processProgramArguments();
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 
 			data_H.setup_2_benchmarkDetection();
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(data_H);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(data_H);
 			data_L.setup_2_benchmarkDetection();
 			data_H_to_H.setup_2_benchmarkDetection();
 			data_H_to_L.setup_2_benchmarkDetection();
@@ -238,7 +238,7 @@ int main(int i_argc, char *i_argv[])
 			sweet::SphereOperators ops_L(&sphereDataConfig_L, &shackSphereDataOps_L);
 
 			data_H.setup_3_data(&sphereDataConfig_H, &ops_H);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(data_H);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(data_H);
 			data_L.setup_3_data(&sphereDataConfig_L, &ops_L);
 			data_H_to_H.setup_3_data(&sphereDataConfig_H, &ops_H);
 			data_H_to_L.setup_3_data(&sphereDataConfig_L, &ops_L);

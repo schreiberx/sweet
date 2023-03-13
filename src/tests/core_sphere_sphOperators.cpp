@@ -336,13 +336,13 @@ int main(
 
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.printShackData();
 

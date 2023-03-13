@@ -277,10 +277,10 @@ int main_mpi(int i_argc, char *i_argv[])
 	StopwatchBox::getInstance().main.start();
 
 	ProgramPDESWEPlane simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 #if SWEET_MPI
 	int mpi_rank;
@@ -301,7 +301,7 @@ int main_mpi(int i_argc, char *i_argv[])
 #endif
 
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*(simulation.shackTimestepControl));
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
 		if (simulation.shackPDESWEPlane->normal_mode_analysis_generation > 0)
 		{
@@ -325,7 +325,7 @@ int main_mpi(int i_argc, char *i_argv[])
 
 			StopwatchBox::getInstance().main_timestepping.stop();
 		}
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 	}
 
 	if (simulation.shackIOData->output_file_name.size() > 0)

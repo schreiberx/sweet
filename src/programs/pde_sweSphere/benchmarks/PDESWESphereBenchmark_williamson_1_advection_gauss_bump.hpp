@@ -79,7 +79,7 @@ public:
 	}
 
 
-	void get_reference_state(
+	void getReferenceState(
 		sweet::SphereData_Spectral &o_phi_pert,
 		sweet::SphereData_Spectral &o_vrt,
 		sweet::SphereData_Spectral &o_div,

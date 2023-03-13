@@ -91,7 +91,7 @@ bool PDEAdvectionSphereTimeSteppers::setup_3_timestepper(
 
 			//std::cout << "Found matching time stepping method at " << i+1 << "th element" << std::endl;
 			ts->setup(io_ops);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*ts);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*ts);
 			timestepper = ts;
 		}
 	}

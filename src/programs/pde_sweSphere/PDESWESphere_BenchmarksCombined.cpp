@@ -59,7 +59,7 @@ bool PDESWESphere_BenchmarksCombined::setup_2_shackRegistration(
 	for (std::size_t i = 0; i < _registered_benchmarks.size(); i++)
 	{
 		_registered_benchmarks[i]->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*_registered_benchmarks[i]);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*_registered_benchmarks[i]);
 	}
 
 	return true;
@@ -126,7 +126,7 @@ bool PDESWESphere_BenchmarksCombined::setup_4_benchmarkSetup_1_withoutOps()
 	assert(benchmark != nullptr);
 
 	benchmark->setup_1_shackData();
-	ERROR_FORWARD_WITH_RETURN_BOOLEAN(*benchmark);
+	ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(*benchmark);
 
 	return true;
 }
@@ -139,7 +139,7 @@ bool PDESWESphere_BenchmarksCombined::setup_5_benchmarkSetup_2_withOps(
 	ops = io_ops;
 
 	benchmark->setup_2_withOps(ops);
-	ERROR_FORWARD_WITH_RETURN_BOOLEAN(*benchmark);
+	ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(*benchmark);
 }
 
 void PDESWESphere_BenchmarksCombined::clear_3_benchmarkDetection()

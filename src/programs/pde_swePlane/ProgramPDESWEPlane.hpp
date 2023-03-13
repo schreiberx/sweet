@@ -97,10 +97,10 @@ public:
 			 * Setup Plane Data Config & Operators
 			 */
 			planeDataConfig.setupAuto(*i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(planeDataConfig);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfig);
 
 			ops.setup(planeDataConfig, *i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
 			prog_h_pert.setup(planeDataConfig);
 			prog_u.setup(planeDataConfig);
@@ -235,7 +235,7 @@ public:
 		bool shackRegistration(sweet::ShackDictionary &io_dict)
 		{
 			pdeSWEPlaneNormalModes.shackRegistration(io_dict);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(pdeSWEPlaneNormalModes);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneNormalModes);
 			return true;
 		}
 
@@ -288,7 +288,7 @@ public:
 		shackPDESWEPlaneBenchmarks(nullptr),
 		shackPDESWEPlaneDiagnostics(nullptr)
 	{
-		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
+		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -304,16 +304,16 @@ public:
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
 		shackPDESWEPlaneBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
 		shackPDESWEPlaneDiagnostics = shackProgArgDict.getAutoRegistration<ShackPDESWEPlaneDiagnostics>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * SHACK: Register other things before parsing program arguments
 		 */
 		planeBenchmarksCombined.shackRegistration(shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
 		pdeSWEPlaneTimeSteppers.shackRegistration(shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(pdeSWEPlaneTimeSteppers);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneTimeSteppers);
 
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
@@ -350,16 +350,16 @@ public:
 		 * SHACK: Process arguments
 		 */
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.processHelpArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * Do some validation of program arguments
 		 */
 		shackTimestepControl->validateTimestepSize();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*shackTimestepControl);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackTimestepControl);
 
 		return true;
 	}
@@ -376,13 +376,13 @@ public:
 		 * Setup Plane Data Config & Operators
 		 */
 		dataAndOps.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataAndOps);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataAndOps);
 
 		/*
 		 * After we setup the plane, we can setup the time steppers and their buffers
 		 */
 		pdeSWEPlaneTimeSteppers.setup(&dataAndOps.ops, &shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(pdeSWEPlaneTimeSteppers);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(pdeSWEPlaneTimeSteppers);
 
 #if 0
 		pdeSWEPlaneTimeSteppers.timestepper->runTimestep(
@@ -406,7 +406,7 @@ public:
 				&dataAndOps.ops,
 				&dataAndOps.planeDataConfig
 			);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
 		dataAndOps.t0_prog_h_pert = dataAndOps.prog_h_pert;
 
@@ -423,12 +423,12 @@ public:
 		 * Now we should check that all program arguments have really been parsed
 		 */
 		shackProgArgDict.checkAllArgumentsProcessed();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		if (shackPDESWEPlane->normal_mode_analysis_generation)
 		{
 			normalmodes->setup(&dataAndOps.planeDataConfig);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*normalmodes);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*normalmodes);
 		}
 
 		if (shackPDESWEPlane->compute_errors)

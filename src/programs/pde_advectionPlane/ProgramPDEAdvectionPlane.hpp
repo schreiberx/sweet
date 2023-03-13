@@ -64,10 +64,10 @@ public:
 			 * Setup Plane Data Config & Operators
 			 */
 			planeDataConfig.setupAuto(*i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(planeDataConfig);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfig);
 
 			ops.setup(planeDataConfig, *i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
 			prog_h.setup(planeDataConfig);
 			prog_h_t0.setup(planeDataConfig);
@@ -131,7 +131,7 @@ public:
 		shackTimestepControl(nullptr),
 		shackTimeDisc(nullptr)
 	{
-		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
+		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -145,19 +145,19 @@ public:
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionPlaneTimeDiscretization>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * SHACK: Register other things before parsing program arguments
 		 */
 		planeBenchmarksCombined.shackRegistration(shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
 		timeSteppers.shackRegistration(shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
 		shackProgArgDict.processHelpArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		return true;
 	}
@@ -182,13 +182,13 @@ public:
 		 * SHACK: Process arguments
 		 */
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * Do some validation of program arguments
 		 */
 		shackTimestepControl->validateTimestepSize();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*shackTimestepControl);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackTimestepControl);
 
 		return true;
 	}
@@ -204,13 +204,13 @@ public:
 		 * Setup Plane Data Config & Operators
 		 */
 		dataConfigOps.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataConfigOps);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataConfigOps);
 
 		/*
 		 * After we setup the plane, we can setup the time steppers and their buffers
 		 */
 		timeSteppers.setup(shackProgArgDict, dataConfigOps.ops);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
 #if SWEET_GUI
 		vis_plane_data.setup(dataConfigOps.planeDataConfig);
@@ -226,7 +226,7 @@ public:
 				dataConfigOps.ops,
 				shackProgArgDict
 			);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(planeBenchmarksCombined);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeBenchmarksCombined);
 
 		dataConfigOps.prog_h_t0 = dataConfigOps.prog_h;
 
@@ -241,7 +241,7 @@ public:
 		 * Now we should check that all program arguments have really been parsed
 		 */
 		shackProgArgDict.checkAllArgumentsProcessed();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		return true;
 	}

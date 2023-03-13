@@ -36,7 +36,7 @@ public:
 		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
 		shackBenchmarks = io_shackDict->getAutoRegistration<ShackPDEAdvectionPlaneBenchmarks>();
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(*io_shackDict);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(*io_shackDict);
 	}
 
 	virtual bool setup(

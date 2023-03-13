@@ -52,16 +52,16 @@ public:
 	bool shackRegistration(sweet::ShackDictionary &io_dict)
 	{
 		shackPlaneDataOps = io_dict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
 
 		shackTimestepControl = io_dict.getAutoRegistration<sweet::ShackTimestepControl>();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
 
 		shackIOData = io_dict.getAutoRegistration<sweet::ShackIOData>();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
 
 		shackPDESWEPlane = io_dict.getAutoRegistration<ShackPDESWEPlane>();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(io_dict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(io_dict);
 
 		return true;
 	}

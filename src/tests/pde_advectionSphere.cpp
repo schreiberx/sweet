@@ -13,15 +13,15 @@
 int main(int i_argc, char *i_argv[])
 {
 	ProgramPDEAdvectionSphere progPDEAdvSphere(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvSphere);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvSphere);
 
 	progPDEAdvSphere.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvSphere);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvSphere);
 
 	// Simply test whether the clear and setup works properly
 	progPDEAdvSphere.clear();
 	progPDEAdvSphere.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvSphere);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvSphere);
 
 
 	int max_modes = 256;

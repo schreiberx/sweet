@@ -407,7 +407,7 @@ bool SWE_Plane_TS_l_rexi_n_etdrk::shackRegistration(
 {
 	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
 
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(*io_shackDict);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 	ts_phi0_rexi.shackRegistration(io_shackDict);
 	ts_phi1_rexi.shackRegistration(io_shackDict);

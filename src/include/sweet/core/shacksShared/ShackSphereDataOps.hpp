@@ -105,7 +105,7 @@ public:
 		{
 			TransformationPlans tp;
 			tp.getEnumFromString(tmp, reuse_spectral_transformation_plans);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(tp);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(tp);
 		}
 
 		/*
@@ -117,7 +117,7 @@ public:
 		i_pa.getArgumentValueByKey("--sh-setup-num-threads", sh_setup_num_threads);
 		i_pa.getArgumentValueByKey("--sh-setup-verbosity", sh_setup_verbosity);
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
 
 	bool validateResolution()

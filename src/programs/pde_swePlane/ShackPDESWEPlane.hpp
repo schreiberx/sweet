@@ -119,7 +119,7 @@ public:
 
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
 
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_pa);
 		return true;
 	}
 

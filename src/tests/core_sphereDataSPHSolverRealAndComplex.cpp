@@ -97,13 +97,13 @@ public:
 #if 0
 		benchmarks.clear_3_benchmarkDetection();
 		benchmarks.setup_3_benchmarkDetection();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarks);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(benchmarks);
 
 		benchmarks.setup_4_benchmarkSetup_1_withoutOps();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarks);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(benchmarks);
 
 		benchmarks.setup_5_benchmarkSetup_2_withOps(opsReal);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmarks);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(benchmarks);
 #endif
 
 		ops = new sphere_operators_type(i_sphereOps->sphereDataConfig, shackSphereDataOps);
@@ -833,29 +833,29 @@ int main(
 	{
 		sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 		shackProgArgDict.setup();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 		sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 		shackProgArgDict.printShackData();
 
 		sweet::SphereData_Config sphereDataConfig;
 		sphereDataConfig.setupAuto(shackSphereDataOps);
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(sphereDataConfig);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(sphereDataConfig);
 
 		sweet::SphereOperators ops;
 		ops.setup(&sphereDataConfig, shackSphereDataOps);
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(ops);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(ops);
 
 		// Stop overriding simulation variables for this test case
 		//simVars.benchmark.benchmark_override_simvars = false;
 
 		shackSphereDataOps->validateResolution();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*shackSphereDataOps);
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackSphereDataOps);
 
 
 		if (i == 0)
@@ -877,16 +877,16 @@ int main(
 				sweet::SphereOperators,
 				SphBandedMatrixPhysicalReal<std::complex<double>>
 			>t_real;
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real);
 
 			t_real.shackRegistration(&shackProgArgDict);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real);
 
 			t_real.setup(&ops);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real);
 
 			t_real.run_tests(&sphereDataConfig, alpha_real);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real);
 
 			std::cout << "***********************************************************" << std::endl;
 			std::cout << "* REAL FB" << std::endl;
@@ -898,16 +898,16 @@ int main(
 				sweet::SphereOperators,
 				SphBandedMatrixPhysicalReal<std::complex<double>>
 			>t_real_fb;
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real_fb);
 
 			t_real_fb.shackRegistration(&shackProgArgDict);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real_fb);
 
 			t_real_fb.setup(&ops);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real_fb);
 
 			t_real_fb.run_tests(&sphereDataConfig, alpha_real);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_real_fb);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_real_fb);
 		}
 
 		if (i == 1)
@@ -930,16 +930,16 @@ int main(
 				sweet::SphereOperatorsComplex,
 				SphBandedMatrixPhysicalComplex<std::complex<double>>
 			>t_complex;
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_complex);
 
 			t_complex.shackRegistration(&shackProgArgDict);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_complex);
 
 			t_complex.setup(&ops);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_complex);
 
 			t_complex.run_tests(&sphereDataConfig, alpha_complex);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(t_complex);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(t_complex);
 		}
 	}
 

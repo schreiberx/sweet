@@ -689,6 +689,23 @@ public:
 	}
 
 
+	bool setupAdditionalModes(
+			const SphereData_Config *i_sphereDataConfig,
+			int i_additional_modes_longitude,
+			int i_additional_modes_latitude,
+			ShackSphereDataOps *shackSphereDataOps
+	)
+	{
+		return setupAdditionalModes(
+				i_sphereDataConfig,
+				i_additional_modes_longitude,
+				i_additional_modes_latitude,
+				shackSphereDataOps->reuse_spectral_transformation_plans,
+				shackSphereDataOps->sh_setup_verbosity,
+				shackSphereDataOps->sh_setup_num_threads
+			);
+	}
+
 public:
 	bool setupAdditionalModes(
 			const SphereData_Config *i_sphereDataConfig,

@@ -392,8 +392,6 @@ if jg.gui == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_GUI=1'])
 
 
-    # linker flags
-
     if exec_command('uname -s') == "Darwin":
         # ASSUME MACOSX SYSTEM
         env.Append(LINKFLAGS=['-framework OpenGL'])
