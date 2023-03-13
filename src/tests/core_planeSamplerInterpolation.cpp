@@ -67,13 +67,13 @@ public:
 			 * Setup Plane Data Config & Operators
 			 */
 			planeDataConfig.setupAuto(*i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(planeDataConfig);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfig);
 
 			ops.setup(planeDataConfig, *i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
 			planeDataConfigOversampling.setupAuto(*i_shackPlaneDataOpsOversampling);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(planeDataConfigOversampling);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfigOversampling);
 
 			prog_h.setup(planeDataConfig);
 
@@ -162,7 +162,7 @@ public:
 		shackProgArgDict(i_argc, i_argv),
 		shackPlaneDataOps(nullptr)
 	{
-		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
+		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
 	bool setup(
@@ -176,17 +176,17 @@ public:
 		 * SHACK: Register classes which we require
 		 */
 		shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.setup();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 #if 0
 		shackProgArgDict.printShackData();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 #endif
 
 		shackPlaneDataOps->space_res_spectral[0] = i_specModes[0];
@@ -209,7 +209,7 @@ public:
 				&shackPlaneDataOpsOversampling,
 				i_gaussianCenter
 		);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(data);
 
 		return true;
 	}
@@ -321,13 +321,13 @@ int main(int i_argc, char *i_argv[])
 
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	sweet::ShackPlaneDataOps *shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 
 	int initialSpectralModes = shackPlaneDataOps->space_res_spectral[0];
@@ -362,7 +362,7 @@ int main(int i_argc, char *i_argv[])
 			{
 
 				Core_planeSamplerInterpolation simulation(i_argc, i_argv);
-				ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 				int specModes_[2] = {specModes, specModes};
 				int specModesOversampled_[2] = {specModes*oversamplingFactor, specModes*oversamplingFactor};
@@ -373,10 +373,10 @@ int main(int i_argc, char *i_argv[])
 						specModes_,
 						specModesOversampled_
 					);
-				ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 				simulation.run_tests();
-				ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 				std::cout << "Error: " << simulation.max_error << std::endl;
 				if (prev_max_error >= 0)
@@ -394,7 +394,7 @@ int main(int i_argc, char *i_argv[])
 				prev_max_error = simulation.max_error;
 
 				simulation.clear();
-				ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+				ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 			}
 		}

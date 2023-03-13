@@ -54,7 +54,7 @@ public:
 		shackPDESWETimeDisc = shackDict->getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
 		shackPDESWEBenchmark = shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();
 		shackPDESWESphere = shackDict->getAutoRegistration<ShackPDESWESphere>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackDict);
 
 		return true;
 	}
@@ -81,7 +81,7 @@ public:
 	) = 0;
 
 
-	virtual void get_reference_state(
+	virtual void getReferenceState(
 		sweet::SphereData_Spectral &o_phi_pert,
 		sweet::SphereData_Spectral &o_vrt,
 		sweet::SphereData_Spectral &o_div,

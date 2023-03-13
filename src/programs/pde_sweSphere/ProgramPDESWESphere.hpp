@@ -106,11 +106,11 @@ public:
 			if (i_setup_spectral_transforms)
 			{
 				sphereDataConfig.setupAuto(i_shackSphereDataOps);
-				ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereDataConfig);
+				ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereDataConfig);
 			}
 
 			ops.setup(&sphereDataConfig, i_shackSphereDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
 			prog_phi_pert.setup(sphereDataConfig);
 			prog_div.setup(sphereDataConfig);
@@ -193,7 +193,7 @@ public:
 		MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 #endif
 
-		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
+		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -213,7 +213,7 @@ public:
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDESWESphereTimeDiscretization>();
 		shackBenchmarks = shackProgArgDict.getAutoRegistration<ShackPDESWESphereBenchmarks>();
 		shackPDESWESphere = shackProgArgDict.getAutoRegistration<ShackPDESWESphere>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * SHACK: Register other things before parsing program arguments
@@ -223,26 +223,26 @@ public:
 		 * Setup benchmarks
 		 */
 		sphereBenchmarks.setup_1_registerAllBenchmark();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
 
 		sphereBenchmarks.setup_2_shackRegistration(&shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
 
 
 		/*
 		 * Setup time steppers
 		 */
 		timeSteppers.setup_1_registerAllTimesteppers();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
 		timeSteppers.setup_2_shackRegistration(&shackProgArgDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
 		/*
 		 * Process HELP arguments
 		 */
 		shackProgArgDict.processHelpArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * Close shack registration & getting shacks
@@ -271,13 +271,13 @@ public:
 		 * SHACK: Process arguments
 		 */
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * Do some validation of program arguments
 		 */
 		shackTimestepControl->validateTimestepSize();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*shackTimestepControl);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackTimestepControl);
 
 		return true;
 	}
@@ -293,7 +293,7 @@ public:
 		 * BENCHMARK: Detect particular benchmark to use
 		 */
 		sphereBenchmarks.setup_3_benchmarkDetection();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
 
 		/*
 		 * Setup benchmark itself
@@ -304,7 +304,7 @@ public:
 		 * Setup the data fields
 		 */
 		dataConfigOps.setup(shackSphereDataOps, i_setup_spectral_transforms);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataConfigOps);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataConfigOps);
 
 		/*
 		 * Setup benchmark itself
@@ -319,7 +319,7 @@ public:
 				&shackProgArgDict,
 				&dataConfigOps.ops
 			);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
 
 		/*
@@ -331,7 +331,7 @@ public:
 				dataConfigOps.prog_div
 			);
 
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereBenchmarks);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereBenchmarks);
 
 
 		/*
@@ -352,7 +352,7 @@ public:
 		 * Now we should check that all program arguments have really been parsed
 		 */
 		shackProgArgDict.checkAllArgumentsProcessed();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		if (shackPDESWESphere->compute_diagnostics)
 			diagnostics.setup(&(dataConfigOps.ops), shackPDESWESphere, 0);

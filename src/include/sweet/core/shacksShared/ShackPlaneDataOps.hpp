@@ -123,10 +123,10 @@ std::cout << "0" << std::endl;
 		{
 			TransformationPlans tp;
 			tp.getEnumFromString(tmp, reuse_spectral_transformation_plans);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(tp);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(tp);
 		}
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
 
 	bool validateResolution()

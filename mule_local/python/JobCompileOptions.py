@@ -475,19 +475,34 @@ class JobCompileOptions(InfoError):
         # Remove "src/" at the beginning
         if self.program.startswith("src/"):
             self.program = self.program[4:]
+        if self.program.startswith("./src/"):
+            self.program = self.program[6:]
 
         # Remove .cpp at the end
         if self.program.endswith(".cpp"):
             self.program = self.program[:-4]
 
         if self.program not in example_programs:
-            print(f"Program {self.program} not found")
-            print("")
-            print(f"The following options are possible:")
-            for i in example_programs:
-                print(f" + {i}")
-            print("")
-            sys.exit(1)
+            #
+            # If it doesn't exist, maybe it's in a subfolder, e.g.
+            # programs/libpfasst/foo.cpp
+            #
+            prog = self.program[:]
+            if not prog.endswith(".cpp"):
+                prog = prog+".cpp"
+
+            if not prog.startswith("src/") and not prog.startswith("./src/"):
+                prog = "src/"+prog
+
+
+            if not os.path.exists(prog):
+                print(f"Program {self.program} not found")
+                print("")
+                print(f"The following options are possible:")
+                for i in example_programs:
+                    print(f" + {i}")
+                print("")
+                sys.exit(1)
 
         scons.AddOption(      '--program-binary-name',
                 dest='program_binary_name',

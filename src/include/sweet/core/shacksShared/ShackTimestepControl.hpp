@@ -193,7 +193,7 @@ public:
 		current_simulation_time = 0;
 		//current_timestep_size = setup_timestep_size;
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
 
 	virtual void printShack(

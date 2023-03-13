@@ -69,7 +69,7 @@ public:
 		shackPDESWETimeDisc = io_shackDict->getAutoRegistration<ShackPDESWEPlaneTimeDiscretization>();
 		shackPDESWEBenchmark = io_shackDict->getAutoRegistration<ShackPDESWEPlaneBenchmarks>();
 		shackPDESWEPlane = io_shackDict->getAutoRegistration<ShackPDESWEPlane>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*io_shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 		return true;
 	}

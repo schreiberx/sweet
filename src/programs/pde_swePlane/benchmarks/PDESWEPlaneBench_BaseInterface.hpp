@@ -42,7 +42,7 @@ public:
 		shackPDESWEPlane = io_shackDict->getAutoRegistration<ShackPDESWEPlane>();
 		shackPDESWEPlaneBench_PolvaniBench = io_shackDict->getAutoRegistration<ShackPDESWEPlaneBench_PolvaniBench>();
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(*io_shackDict);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(*io_shackDict);
 	}
 
 	virtual bool setup(

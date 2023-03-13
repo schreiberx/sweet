@@ -32,22 +32,22 @@ int main(int i_argc, char *i_argv[])
 {
 	sweet::ShackProgArgDictionary shackProgArgDict(i_argc, i_argv);
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	sweet::ShackSphereDataOps *shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	sweet::ShackTimestepControl *shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	sweet::ShackTimesteppingSemiLagrangianSphereData *shackTimesteppingSemiLagrangianSphereData = shackProgArgDict.getAutoRegistration<sweet::ShackTimesteppingSemiLagrangianSphereData>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	ShackPDEAdvectionSphereTimeDiscretization *shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackPDEAdvectionSphereTimeDiscretization>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.printShackData();
 
@@ -93,7 +93,7 @@ int main(int i_argc, char *i_argv[])
 			sphereDataConfigInstance.setupAuto(
 					shackSphereDataOps
 			);
-			ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(sphereDataConfigInstance);
+			ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(sphereDataConfigInstance);
 
 			sweet::SphereData_Config *sphereDataConfig = &sphereDataConfigInstance;
 

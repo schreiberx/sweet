@@ -27,7 +27,7 @@ bool SWE_Plane_TS_l_direct::setup(
 		planeDataGridMapping.setup(shackPlaneDataOps, ops->planeDataConfig);
 
 	expFunctions.setup(i_function_name);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(expFunctions);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(expFunctions);
 
 	return true;
 }

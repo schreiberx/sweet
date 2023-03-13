@@ -199,7 +199,7 @@ bool PDESWESphere_TimeSteppers::setup_3_timestepper(
 			}
 
 			ts->setup_auto(i_timestepping_method, io_ops);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*ts);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*ts);
 			timestepper = ts;
 		}
 	}

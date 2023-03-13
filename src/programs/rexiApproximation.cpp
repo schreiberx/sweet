@@ -95,16 +95,16 @@ int main(
 	sweet::ShackTimestepControl *shackTimestepControl = shackDict.getAutoRegistration<sweet::ShackTimestepControl>();
 	ShackREXITest *shackREXITest = shackDict.getAutoRegistration<ShackREXITest>();
 	sweet::ShackExpIntegration *shackExpIntegration =  shackDict.getAutoRegistration<sweet::ShackExpIntegration>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackDict);
 
 	shackDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackDict);
 
 	shackTimestepControl->validateTimestepSize();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*shackTimestepControl);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackTimestepControl);
 
 	shackREXITest->validateLambda();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*shackREXITest);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*shackREXITest);
 
 	/*
 	 * Load analytical function

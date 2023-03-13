@@ -73,7 +73,7 @@ public:
 			ln_erk->shackRegistration(&io_shackDict);
 			ln_erk->setup();
 
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*ln_erk);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*ln_erk);
 
 			master = static_cast<ODEScalarTS_BaseInterface*>(ln_erk);
 			return true;

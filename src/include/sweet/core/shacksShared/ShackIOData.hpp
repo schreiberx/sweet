@@ -162,7 +162,7 @@ public:
 		i_pa.getArgumentValueByKey("-G", gui_enabled);
 		i_pa.getArgumentValueByKey("-v", verbosity);
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
 
 	virtual void printShack(

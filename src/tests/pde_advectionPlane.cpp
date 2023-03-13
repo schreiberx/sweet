@@ -13,15 +13,15 @@
 int main(int i_argc, char *i_argv[])
 {
 	ProgramPDEAdvectionPlane progPDEAdvPlane(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvPlane);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvPlane);
 
 	progPDEAdvPlane.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvPlane);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvPlane);
 
 	// Simply test whether the clear and setup works properly
 	progPDEAdvPlane.clear();
 	progPDEAdvPlane.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(progPDEAdvPlane);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(progPDEAdvPlane);
 
 
 	int max_modes = 256;

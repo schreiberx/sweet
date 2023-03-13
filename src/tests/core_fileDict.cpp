@@ -671,7 +671,7 @@ public:
 		i_pa.getArgumentValueByKey("--sweet-file-dict", fileDict);
 		i_pa.getArgumentValueByKey("--run-unit-test-sweet-file-dict", runUnitTest);
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(i_pa);
 	}
 
 
@@ -700,16 +700,16 @@ int main(
 	ShackUserDefined *shackUserDefined;
 
 	shackUserDefined = shackProgArgDict.getAutoRegistration<ShackUserDefined>();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.processProgramArguments();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 	shackProgArgDict.printShackData();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(shackProgArgDict);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(shackProgArgDict);
 
 
 	if (shackUserDefined->fileDict != "")

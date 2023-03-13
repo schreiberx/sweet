@@ -91,7 +91,7 @@ public:
 		mpi_comm(i_mpi_comm),
 		mpi_rank(i_mpi_rank)
 	{
-		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
+		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -104,19 +104,19 @@ public:
 		shackTimestepControl = shackProgArgDict.getAutoRegistration<sweet::ShackTimestepControl>();
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
 		shackTimeDisc = shackProgArgDict.getAutoRegistration<ShackODEScalarTimeDiscretization>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * SHACK: Register other things before parsing program arguments
 		 */
 		////////scalarBenchmarksCombined.shackRegistration(shackProgArgDict);
-		////////ERROR_CHECK_WITH_RETURN_BOOLEAN(scalarBenchmarksCombined);
+		////////ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(scalarBenchmarksCombined);
 
 		////////timeSteppers.shackRegistration(shackProgArgDict);
-		////////ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+		////////ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
 		shackProgArgDict.processHelpArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		return true;
 	}
@@ -140,13 +140,13 @@ public:
 		 * SHACK: Process arguments
 		 */
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * Do some validation of program arguments
 		 */
 		shackTimestepControl->validateTimestepSize();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*shackTimestepControl);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*shackTimestepControl);
 
 		return true;
 	}
@@ -163,7 +163,7 @@ public:
 		//////// * Setup the time steppers and their buffers
 		//////// */
 		////////timeSteppers.setup(shackProgArgDict);
-		////////ERROR_CHECK_WITH_RETURN_BOOLEAN(timeSteppers);
+		////////ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(timeSteppers);
 
 		std::cout << "Printing shack information:" << std::endl;
 		shackProgArgDict.printShackData();
@@ -172,7 +172,7 @@ public:
 		//////////		data.prog_u,
 		//////////		shackProgArgDict
 		//////////	);
-		//////////ERROR_CHECK_WITH_RETURN_BOOLEAN(scalarBenchmarksCombined);
+		//////////ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(scalarBenchmarksCombined);
 
 		//////////////data.prog_u_t0 = data.prog_u;
 
@@ -187,7 +187,7 @@ public:
 		 * Now we should check that all program arguments have really been parsed
 		 */
 		shackProgArgDict.checkAllArgumentsProcessed();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		return true;
 	}

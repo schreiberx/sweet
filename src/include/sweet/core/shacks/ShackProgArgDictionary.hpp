@@ -83,7 +83,7 @@ public:
 	bool checkAllArgumentsProcessed(bool i_create_error = true)
 	{
 		_programArguments.checkAllArgumentsProcessed(i_create_error);
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(_programArguments);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(_programArguments);
 	}
 
 public:

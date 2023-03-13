@@ -155,13 +155,13 @@ public:
 		 * Parse program arguments
 		 */
 		programArguments.setup(prog_argc, prog_argv);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(programArguments);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(programArguments);
 
 		/*
 		 * SHACK: Register classes which we require
 		 */
 		shackPlaneDataOps = shackDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackDict);
 
 		/*
 		 * First, check for --help or -h
@@ -177,13 +177,13 @@ public:
 		 * SHACK: Process arguments
 		 */
 		shackDict.processProgramArguments(programArguments);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackDict);
 
 		/*
 		 * Setup Plane Data Config & Operators
 		 */
 		data.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(data);
 
 
 #if SWEET_GUI
@@ -204,7 +204,7 @@ public:
 		 * Now we should check that all program arguments have really been parsed
 		 */
 		programArguments.checkAllArgumentsProcessed();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(programArguments);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(programArguments);
 
 		return true;
 	}
@@ -369,14 +369,14 @@ public:
 int main(int i_argc, char *i_argv[])
 {
 	ProgramPlaneSpectralVisualization simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 
 	VisSweet visSweet(simulation);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	std::cout << "FIN" << std::endl;
 	return 0;

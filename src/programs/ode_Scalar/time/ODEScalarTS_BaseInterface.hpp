@@ -42,7 +42,7 @@ public:
 		shackTimestepControl = io_shackDict->getAutoRegistration<sweet::ShackTimestepControl>();
 		shackODEScalarTimeDisc = io_shackDict->getAutoRegistration<ShackODEScalarTimeDiscretization>();
 		shackODEScalarBenchmark = io_shackDict->getAutoRegistration<ShackODEScalarBenchmarks>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*io_shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
 		return true;
 	}

@@ -2,8 +2,8 @@
  * Author: Martin SCHREIBER <schreiberx@gmail.com>
  */
 
-#ifndef SRC_PROGRAMS_SWE_COMMON_PDESWEPARAMETERSCOMMON_HPP_
-#define SRC_PROGRAMS_SWE_COMMON_PDESWEPARAMETERSCOMMON_HPP_
+#ifndef SRC_PROGRAMS_SWE_COMMON_SHACK_PDESWEPARAMETERSCOMMON_HPP_
+#define SRC_PROGRAMS_SWE_COMMON_SHACK_PDESWEPARAMETERSCOMMON_HPP_
 
 #include <sweet/core/shacks/ShackInterface.hpp>
 #include <sweet/core/ProgramArguments.hpp>
@@ -133,7 +133,7 @@ public:
 		i_pa.getArgumentValueByKey("--compute-diagnostics", compute_diagnostics);
 		i_pa.getArgumentValueByKey("--instability-checks", instability_checks);
 		
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(i_pa);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(i_pa);
 		return true;
 	}
 };

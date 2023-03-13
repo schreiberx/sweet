@@ -166,7 +166,7 @@ public:
 		SWE_Plane_TS_l_direct dummy;
 		dummy.shackRegistration(&io_shackDict);
 
-		ERROR_FORWARD_WITH_RETURN_BOOLEAN(io_shackDict);
+		ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(io_shackDict);
 		return true;
 	}
 
@@ -289,10 +289,10 @@ public:
 		}
 
 		timestepper->shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*timestepper);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timestepper);
 
 		timestepper->setup(io_ops);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(*timestepper);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timestepper);
 
 
 		/*
@@ -304,10 +304,10 @@ public:
 			l_direct = new SWE_Plane_TS_l_direct;
 
 			l_direct->shackRegistration(io_shackDict);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*l_direct);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*l_direct);
 
 			l_direct->setup(io_ops);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*l_direct);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*l_direct);
 #endif
 		}
 

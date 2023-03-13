@@ -83,7 +83,7 @@ public:
 			na_erk->shackRegistration(&io_shackDict);
 			na_erk->setup(&i_op);
 
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*na_erk);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*na_erk);
 
 			master = static_cast<PDEAdvectionPlaneTS_BaseInterface*>(na_erk);
 			return true;
@@ -94,7 +94,7 @@ public:
 			na_sl->shackRegistration(&io_shackDict);
 			na_sl->setup(&i_op);
 
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(*na_sl);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*na_sl);
 
 			master = static_cast<PDEAdvectionPlaneTS_BaseInterface*>(na_sl);
 			return true;

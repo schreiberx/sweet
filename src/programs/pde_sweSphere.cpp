@@ -29,10 +29,10 @@ int main_mpi(int i_argc, char *i_argv[])
 #endif
 
 	ProgramPDESWESphere simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 
 #if SWEET_GUI
@@ -44,7 +44,7 @@ int main_mpi(int i_argc, char *i_argv[])
 #endif
 	{
 		simulation.shackTimestepControl->validateMaxSimulationTimeOrTimestepNr();
-		ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(*(simulation.shackTimestepControl));
+		ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(*(simulation.shackTimestepControl));
 
 		if (simulation.shackPDESWESphere->normal_mode_analysis_generation > 0)
 		{
@@ -86,7 +86,7 @@ int main_mpi(int i_argc, char *i_argv[])
 			std::cout << "[MULE] reference_filenames: " << simulation.fileOutput.output_reference_filenames << std::endl;
 	}
 
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	std::cout << "FIN" << std::endl;
 

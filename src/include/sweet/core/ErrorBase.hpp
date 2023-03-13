@@ -14,14 +14,14 @@
  * Do an error check.
  * If there's an error: forward error and return false
  */
-#define ERROR_CHECK_WITH_RETURN_BOOLEAN(classWithError)	\
+#define ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(classWithError)	\
 	{ if ((classWithError).error.exists()) return error.forwardWithPositiveReturn((classWithError).error); }
 
 /*
  * Do an error check.
  * If there's an error: forward error and return with EXIT_FAILURE
  */
-#define ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(classWithError)	\
+#define ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(classWithError)	\
 	{ if ((classWithError).error.exists()) { (classWithError).error.print(); return EXIT_FAILURE; } }
 
 
@@ -30,7 +30,7 @@
  * If there's an error: forward error and return
  * If there's no error: continue
  */
-#define ERROR_CHECK_WITH_RETURN(classWithError) \
+#define ERROR_CHECK_COND_RETURN(classWithError) \
 	{ if ((classWithError).error.exists()) { error.forward((classWithError).error); return; } }
 
 
@@ -38,7 +38,7 @@
  * If there's an error: forward error and return false
  * If there's no error: return true
  */
-#define ERROR_FORWARD_WITH_RETURN_BOOLEAN(classWithError)	\
+#define ERROR_FORWARD_ALWAYS_RETURN_BOOLEAN(classWithError)	\
 	{ return error.forwardWithPositiveReturn((classWithError).error); }
 
 /*

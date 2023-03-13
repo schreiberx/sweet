@@ -323,36 +323,36 @@ bool SWE_Plane_TS_l_rexi_na_sl_nr_etdrk::shackRegistration(
 	PDESWEPlaneTS_BaseInterface::shackRegistration(io_shackDict);
 
 	ts_phi0_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi0_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_phi0_rexi);
 
 	ts_phi1_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi1_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_phi1_rexi);
 
 	ts_phi2_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_phi2_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_phi2_rexi);
 
 
 	ts_ups0_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups0_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_ups0_rexi);
 
 	ts_ups1_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups1_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_ups1_rexi);
 
 	ts_ups2_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups2_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_ups2_rexi);
 
 	ts_ups3_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_ups3_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_ups3_rexi);
 
 
 	ts_psi1_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi1_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_psi1_rexi);
 
 	ts_psi2_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi2_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_psi2_rexi);
 
 	ts_psi3_rexi.shackRegistration(io_shackDict);
-	ERROR_CHECK_WITH_RETURN_BOOLEAN(ts_psi3_rexi);
+	ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ts_psi3_rexi);
 
 	return true;
 }

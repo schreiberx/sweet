@@ -52,10 +52,10 @@ public:
 			 * Setup Plane Data Config & Operators
 			 */
 			planeDataConfig.setupAuto(*i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(planeDataConfig);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(planeDataConfig);
 
 			ops.setup(planeDataConfig, *i_shackPlaneDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
 			prog_h.setup(planeDataConfig);
 
@@ -88,7 +88,7 @@ public:
 		shackProgArgDict(i_argc, i_argv),
 		shackPlaneDataOps(nullptr)
 	{
-		ERROR_CHECK_WITH_RETURN(shackProgArgDict);
+		ERROR_CHECK_COND_RETURN(shackProgArgDict);
 	}
 
 
@@ -98,19 +98,19 @@ public:
 		 * SHACK: Register classes which we require
 		 */
 		shackPlaneDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackPlaneDataOps>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.setup();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		shackProgArgDict.printShackData();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		data.setup(shackPlaneDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(data);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(data);
 
 		return true;
 	}
@@ -611,16 +611,16 @@ public:
 int main(int i_argc, char *i_argv[])
 {
 	TestPlaneDataModes simulation(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	simulation.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	simulation.run_tests();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 	simulation.clear();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(simulation);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 
 
 

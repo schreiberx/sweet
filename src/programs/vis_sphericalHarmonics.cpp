@@ -89,10 +89,10 @@ public:
 			 * Setup Sphere Data Config & Operators
 			 */
 			sphereDataConfig.setupAuto(i_shackSphereDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(sphereDataConfig);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(sphereDataConfig);
 
 			ops.setup(&sphereDataConfig, i_shackSphereDataOps);
-			ERROR_CHECK_WITH_RETURN_BOOLEAN(ops);
+			ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(ops);
 
 			sphereDataForVisualization.setup(sphereDataConfig);
 
@@ -176,21 +176,21 @@ public:
 		 * Setup argument parsing
 		 */
 		shackProgArgDict.setup();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * SHACK: Register classes which we require
 		 */
 		shackSphereDataOps = shackProgArgDict.getAutoRegistration<sweet::ShackSphereDataOps>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 		shackIOData = shackProgArgDict.getAutoRegistration<sweet::ShackIOData>();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * Process HELP arguments
 		 */
 		shackProgArgDict.processHelpArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		/*
 		 * Close shack registration & getting shacks
@@ -215,7 +215,7 @@ public:
 		 * SHACK: Process arguments
 		 */
 		shackProgArgDict.processProgramArguments();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		return true;
 	}
@@ -231,7 +231,7 @@ public:
 		 * Setup the data fields
 		 */
 		dataConfigOps.setup(shackSphereDataOps);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(dataConfigOps);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(dataConfigOps);
 
 		/*
 		 * Finish registration & getting class interfaces so that nobody can do some
@@ -244,7 +244,7 @@ public:
 		 * Now we should check that all program arguments have really been parsed
 		 */
 		shackProgArgDict.checkAllArgumentsProcessed();
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(shackProgArgDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(shackProgArgDict);
 
 		return true;
 	}
@@ -466,10 +466,10 @@ public:
 int main(int i_argc, char *i_argv[])
 {
 	ProgramVisSphericalHarmonics visSphericalHarmonics(i_argc, i_argv);
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(visSphericalHarmonics);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(visSphericalHarmonics);
 
 	visSphericalHarmonics.setup();
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(visSphericalHarmonics);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(visSphericalHarmonics);
 
 #if SWEET_GUI
 	if (visSphericalHarmonics.shackIOData->gui_enabled)
@@ -483,7 +483,7 @@ int main(int i_argc, char *i_argv[])
 			visSphericalHarmonics.runTimestep();
 	}
 
-	ERROR_CHECK_WITH_PRINT_AND_RETURN_EXIT(visSphericalHarmonics);
+	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(visSphericalHarmonics);
 
 
 	std::cout << "FIN" << std::endl;

@@ -44,7 +44,7 @@ public:
 	{
 		PDEAdvectionSphereBenchmarks_BaseInterface::shackRegistration(io_shackDict);
 		benchmark.shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_RETURN_BOOLEAN(benchmark);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(benchmark);
 		return true;
 	}
 
