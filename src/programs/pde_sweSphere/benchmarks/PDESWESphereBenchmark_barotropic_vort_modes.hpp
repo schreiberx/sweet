@@ -16,9 +16,6 @@
 class PDESWESphereBenchmark_barotropic_vort_modes	:
 		public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
 	PDESWESphereBenchmarks_HelperGeostropicBalance helperGeostropicBalance;
 
 	// Mode setup

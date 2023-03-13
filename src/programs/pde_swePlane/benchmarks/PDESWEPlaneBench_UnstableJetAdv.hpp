@@ -28,13 +28,9 @@
 class PDESWEPlaneBench_UnstableJetAdv	:
 		public PDESWEPlaneBench_BaseInterface
 {
-	
-
-
 
 	double f = shackPDESWEPlane->plane_rotating_f0;
 	double g = shackPDESWEPlane->gravitation;
-	double sx = shackPlaneDataOps->plane_domain_size[0];
 	double sy = shackPlaneDataOps->plane_domain_size[1];
 
 

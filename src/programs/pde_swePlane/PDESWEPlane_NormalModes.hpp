@@ -289,9 +289,9 @@ public:
 	void sw_eigen_decomp(
 			T k0,				//wavenumber in x
 			T k1,				// wavenumeber in y
-			bool i_inverse = false, // Input true, returns inverse matriz, false: returns direct
-			complex o_v[3][3] = {0}, // output eigen vector (direct or inverse)
-			complex o_evalues[3] =  0 // output eigen values (optional)
+			bool i_inverse,		// Input true, returns inverse matriz, false: returns direct
+			complex o_v[3][3],	// output eigen vector (direct or inverse)
+			complex o_evalues[3]	// output eigen values (optional)
 	)
 	{
 		sweet::ExpFunctions<T> rexiFunctions;

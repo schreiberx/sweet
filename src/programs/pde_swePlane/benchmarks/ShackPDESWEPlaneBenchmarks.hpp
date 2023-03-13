@@ -46,7 +46,7 @@ public:
 	/**
 	 * Velocity and additional parameter for advection test cases
 	 */
-	double advection_velocity[2] = {0, 0};
+	double advection_velocity[3] = {0, 0};
 
 
 	void printProgramArguments(const std::string& i_prefix = "")
@@ -75,7 +75,7 @@ public:
 
 		std::string tmp;
 		if (i_pa.getArgumentValueByKey("--advection-velocity", tmp))
-			StringSplit::split2double(tmp, &advection_velocity[0], &advection_velocity[1]);
+			StringSplit::split3double(tmp, &advection_velocity[0], &advection_velocity[1], &advection_velocity[2]);
 
 
 		if (error.exists())

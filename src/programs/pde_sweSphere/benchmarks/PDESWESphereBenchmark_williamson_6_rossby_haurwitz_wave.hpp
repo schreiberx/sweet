@@ -16,9 +16,6 @@
 class PDESWESphereBenchmark_williamson_6_rossby_haurwitz_wave	:
 		public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
 	PDESWESphereBenchmarks_HelperGeostropicBalance helperGeostropicBalance;
 
 public:

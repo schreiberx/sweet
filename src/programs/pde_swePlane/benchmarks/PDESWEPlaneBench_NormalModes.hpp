@@ -30,12 +30,7 @@
 class PDESWEPlaneBench_NormalModes	:
 		public PDESWEPlaneBench_BaseInterface
 {
-	double f = shackPDESWEPlane->plane_rotating_f0;
-	double g = shackPDESWEPlane->gravitation;
-	double sx = shackPlaneDataOps->plane_domain_size[0];
-	double sy = shackPlaneDataOps->plane_domain_size[1];
-
-	public:
+public:
 	std::string bcasename; //Benchmark case name
 	std::size_t nwaves;   //number of waves to be added
 	static const int maxwaves=10; //max number of waves
@@ -308,9 +303,9 @@ public:
 	void sw_eigen_decomp(
 			T k0,				//wavenumber in x
 			T k1,				// wavenumeber in y4
-			bool i_inverse = false, // Input true, returns inverse matriz, false: returns direct
-			complex o_v[3][3] = {0}, // output eigen vector (direct or inverse)
-			complex o_evalues[3] =  0 // output eigen values (optional)
+			bool i_inverse,		// Input true, returns inverse matriz, false: returns direct
+			complex o_v[3][3],	// output eigen vector (direct or inverse)
+			complex o_evalues[3]	// output eigen values (optional)
 	)
 	{
 		sweet::ExpFunctions<T> rexiFunctions;

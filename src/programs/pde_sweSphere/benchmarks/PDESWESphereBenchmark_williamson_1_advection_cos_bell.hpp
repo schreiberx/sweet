@@ -16,10 +16,6 @@
 class PDESWESphereBenchmark_williamson_1_advection_cos_bell	:
 		public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
-
 public:
 	PDESWESphereBenchmark_williamson_1_advection_cos_bell()
 	{

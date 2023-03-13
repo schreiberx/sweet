@@ -45,7 +45,7 @@ class SWERexiTerm_SPH
 	double sphere_radius;
 
 	/// inverse of earth radius
-	double ir;
+	//double ir;
 
 	/// Coriolis omega
 	double two_coriolis_omega;

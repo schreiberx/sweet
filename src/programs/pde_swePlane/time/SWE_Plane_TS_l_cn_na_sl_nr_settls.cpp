@@ -79,9 +79,7 @@ void SWE_Plane_TS_l_cn_na_sl_nr_settls::runTimestep(
 	double dt = i_dt;
 	double alpha = 2.0/dt;
 	double kappa = alpha*alpha;
-	double kappa_bar = kappa;
 	kappa += f0*f0;
-	kappa_bar -= f0*f0;
 
 	Staggering staggering;
 	assert(staggering.staggering_type == 'a');

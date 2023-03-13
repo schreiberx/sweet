@@ -38,8 +38,8 @@ bool PDESWESphereTS_lg_exp_lc_n_etd_uv::setup_auto(
 	if (shackPDESWESphere->sphere_use_fsphere)
 		SWEETError("TODO: Not yet supported");
 
-	bool _with_na;
-	bool _with_nr;
+	bool _with_na = false;
+	bool _with_nr = false;
 
 	if (	timestepping_method == "lg_exp_lc_n_etd_uv"	||
 			timestepping_method == "lg_exp_lc_na_nr_etd_uv")

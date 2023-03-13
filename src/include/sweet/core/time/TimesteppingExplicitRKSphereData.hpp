@@ -879,7 +879,7 @@ public:
 			double b[4] = {1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0};
 			double c[3] = {0.5, 0.5, 1.0};
 
-			double dummy_dt;
+			//double dummy_dt;
 
 			// STAGE 1
 			(i_baseClass->*i_compute_euler_timestep_update)(

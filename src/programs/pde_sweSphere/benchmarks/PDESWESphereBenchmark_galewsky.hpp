@@ -15,9 +15,6 @@
 class PDESWESphereBenchmark_galewsky	:
 		public PDESWESphereBenchmarks_BaseInterface
 {
-	sweet::ShackDictionary *shackDict = nullptr;
-	sweet::SphereOperators *ops = nullptr;
-
 	PDESWESphereBenchmarks_HelperGeostropicBalance helperGeostropicBalance;
 
 public:
@@ -117,6 +114,7 @@ public:
 		else
 		{
 			SWEETError("Invalid geostropic setup choosen");
+			use_analytical_geostrophic_setup = false;	// Make compiler happy
 		}
 
 
@@ -226,7 +224,7 @@ public:
 			hg_cached.resize(nlat);
 
 			double h_metric_area = 0;
-			double hg_sum = 0;
+			//double hg_sum = 0;
 			double int_start, int_end, int_delta;
 
 			int j = sphereDataConfig->physical_num_lat-1;
@@ -263,7 +261,7 @@ public:
 				double mterm = std::cos(sphereDataConfig->lat[j])*2.0*M_PI;
 				assert(mterm > 0);
 
-				hg_sum += hg*mterm;
+				//hg_sum += hg*mterm;
 				h_metric_area += mterm;
 
 				int_start = int_end;
@@ -285,7 +283,7 @@ public:
 				//double mterm = (std::sin(int_end)-std::sin(int_start))*2.0*M_PI;
 				double mterm = std::cos(sphereDataConfig->lat[j])*2.0*M_PI;
 
-				hg_sum += hg*mterm;
+				//hg_sum += hg*mterm;
 				h_metric_area += mterm;
 
 				// continue at the end of the last integration interval
@@ -304,9 +302,9 @@ public:
 				//double mterm = (std::sin(int_end)-std::sin(int_start))*2.0*M_PI;
 				double mterm = std::cos(sphereDataConfig->lat[0])*2.0*M_PI;
 
-				double hg = hg_cached[0] + GaussQuadrature::integrate5_intervals<double>(int_start, int_end, lambda_f, 20);
+				//double hg = hg_cached[0] + GaussQuadrature::integrate5_intervals<double>(int_start, int_end, lambda_f, 20);
 				//hg = (int_end+int_start)*0.5;
-				hg_sum += hg*mterm;
+				//hg_sum += hg*mterm;
 				h_metric_area += mterm;
 			}
 
