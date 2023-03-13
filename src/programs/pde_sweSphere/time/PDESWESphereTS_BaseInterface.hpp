@@ -121,9 +121,9 @@ public:
 
 public:
 	virtual void runTimestep(
-			sweet::SphereData_Spectral &io_h_pert,	///< prognostic variables
-			sweet::SphereData_Spectral &io_u,	///< prognostic variables
-			sweet::SphereData_Spectral &io_v,	///< prognostic variables
+			sweet::SphereData_Spectral &io_h_pert,
+			sweet::SphereData_Spectral &io_u,
+			sweet::SphereData_Spectral &io_v,
 
 			double i_dt,		///< time step size
 			double i_sim_timestamp
@@ -166,9 +166,9 @@ public:
 	 * Timestepping interface used by main timestepping loop
 	 */
 	virtual void runTimestep(
-			sweet::SphereData_Spectral &io_h,	///< prognostic variables
-			sweet::SphereData_Spectral &io_u,	///< prognostic variables
-			sweet::SphereData_Spectral &io_v,	///< prognostic variables
+			sweet::SphereData_Spectral &io_h,
+			sweet::SphereData_Spectral &io_u,
+			sweet::SphereData_Spectral &io_v,
 
 			double i_fixed_dt,
 			double i_simulation_timestamp

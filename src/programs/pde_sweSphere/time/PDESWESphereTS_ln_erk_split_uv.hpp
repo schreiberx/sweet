@@ -23,7 +23,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,
@@ -44,7 +44,7 @@ public:
 
 			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 	void run_timestep_na(
 			sweet::SphereData_Spectral &io_U_phi,
@@ -61,7 +61,7 @@ public:
 	virtual ~PDESWESphereTS_ln_erk_split_uv();
 
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method)
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override
 	{
 		if (
 				i_timestepping_method == "l_na_erk_split_uv"	||
@@ -76,7 +76,7 @@ public:
 		return false;
 	}
 
-	std::string getIDString()
+	std::string getIDString() override
 	{
 		return "ln_erk_split_uv";
 	}

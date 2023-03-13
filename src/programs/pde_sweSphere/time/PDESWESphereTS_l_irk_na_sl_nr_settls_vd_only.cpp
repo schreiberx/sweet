@@ -73,9 +73,9 @@ bool PDESWESphereTS_l_irk_na_sl_nr_settls_vd_only::setup_main(
 
 
 void PDESWESphereTS_l_irk_na_sl_nr_settls_vd_only::runTimestep(
-		sweet::SphereData_Spectral &io_phi_pert,	///< prognostic variables
-		sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_phi_pert,
+		sweet::SphereData_Spectral &io_vrt,
+		sweet::SphereData_Spectral &io_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp
@@ -99,9 +99,9 @@ void PDESWESphereTS_l_irk_na_sl_nr_settls_vd_only::runTimestep(
 
 
 void PDESWESphereTS_l_irk_na_sl_nr_settls_vd_only::run_timestep_2nd_order(
-	sweet::SphereData_Spectral &io_U_phi,		///< prognostic variables
-	sweet::SphereData_Spectral &io_U_vrt,		///< prognostic variables
-	sweet::SphereData_Spectral &io_U_div,		///< prognostic variables
+	sweet::SphereData_Spectral &io_U_phi,
+	sweet::SphereData_Spectral &io_U_vrt,
+	sweet::SphereData_Spectral &io_U_div,
 
 	double i_dt,		
 	double i_simulation_timestamp

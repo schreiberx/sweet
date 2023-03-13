@@ -47,7 +47,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 public:
 	bool setup_main(
@@ -56,11 +56,9 @@ public:
 	);
 
 public:
-	bool implementsTimesteppingMethod(
-			const std::string &i_timestepping_method
-	);
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
 
-	std::string getIDString();
+	std::string getIDString() override;
 
 
 private:
@@ -96,23 +94,23 @@ public:
 	);
 
 	void runTimestep(
-			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
-			sweet::SphereData_Spectral &io_div,	///< prognostic variables
+			sweet::SphereData_Spectral &io_phi,
+			sweet::SphereData_Spectral &io_vort,
+			sweet::SphereData_Spectral &io_div,
 
 			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 
 	void runTimestep(
-			const sweet::SphereData_Spectral &i_h,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_u,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_v,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_h,
+			const sweet::SphereData_Spectral &i_u,
+			const sweet::SphereData_Spectral &i_v,
 
-			sweet::SphereData_Spectral &o_h,	///< prognostic variables
-			sweet::SphereData_Spectral &o_u,	///< prognostic variables
-			sweet::SphereData_Spectral &o_v,	///< prognostic variables
+			sweet::SphereData_Spectral &o_h,
+			sweet::SphereData_Spectral &o_u,
+			sweet::SphereData_Spectral &o_v,
 
 			double i_fixed_dt,
 			double i_simulation_timestamp

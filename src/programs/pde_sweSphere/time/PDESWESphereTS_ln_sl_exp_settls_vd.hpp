@@ -43,7 +43,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,
@@ -54,9 +54,9 @@ public:
 	);
 
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
-	std::string getIDString();
-	void printHelp();
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
+	std::string getIDString() override;
+	void printHelp() override;
 
 	std::string string_id_storage;
 
@@ -78,7 +78,7 @@ private:
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
-	)
+	) override
 	{
 		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
@@ -93,19 +93,19 @@ public:
 
 
 	void runTimestep(
-			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-			sweet::SphereData_Spectral &io_div,	///< prognostic variables
+			sweet::SphereData_Spectral &io_phi,
+			sweet::SphereData_Spectral &io_vrt,
+			sweet::SphereData_Spectral &io_div,
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 
 	void run_timestep_2nd_order(
-			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-			sweet::SphereData_Spectral &io_div,	///< prognostic variables
+			sweet::SphereData_Spectral &io_phi,
+			sweet::SphereData_Spectral &io_vrt,
+			sweet::SphereData_Spectral &io_div,
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1

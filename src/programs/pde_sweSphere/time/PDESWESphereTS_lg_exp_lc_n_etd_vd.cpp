@@ -161,9 +161,9 @@ void PDESWESphereTS_lg_exp_lc_n_etd_vd::printHelp()
 
 
 void PDESWESphereTS_lg_exp_lc_n_etd_vd::runTimestep(
-		sweet::SphereData_Spectral &io_U_phi,	///< prognostic variables
-		sweet::SphereData_Spectral &io_U_vrt,	///< prognostic variables
-		sweet::SphereData_Spectral &io_U_div,	///< prognostic variables
+		sweet::SphereData_Spectral &io_U_phi,
+		sweet::SphereData_Spectral &io_U_vrt,
+		sweet::SphereData_Spectral &io_U_div,
 
 		double i_fixed_dt,
 		double i_simulation_timestamp

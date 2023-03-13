@@ -26,7 +26,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,
@@ -34,7 +34,7 @@ public:
 	);
 
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method)
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override
 	{
 		timestepping_method = i_timestepping_method;
 		timestepping_order = shackPDESWETimeDisc->timestepping_order;
@@ -47,13 +47,13 @@ public:
 		return false;
 	}
 
-	std::string getIDString()
+	std::string getIDString() override
 	{
 		std::string s = "lg_0_lc_n_erk_bv";
 		return s;
 	}
 
-	void printHelp();
+	void printHelp() override;
 
 
 private:
@@ -70,13 +70,13 @@ public:
 	PDESWESphereTS_lg_0_lc_n_erk_bv();
 
 	void runTimestep(
-			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-			sweet::SphereData_Spectral &io_vort,	///< prognostic variables
-			sweet::SphereData_Spectral &io_div,	///< prognostic variables
+			sweet::SphereData_Spectral &io_phi,
+			sweet::SphereData_Spectral &io_vort,
+			sweet::SphereData_Spectral &io_div,
 
 			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 	void euler_timestep_update(
 		const sweet::SphereData_Spectral &i_phi, //prog

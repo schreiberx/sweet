@@ -23,7 +23,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 	bool setup_main(
 			sweet::SphereOperators *io_ops,
@@ -37,7 +37,7 @@ public:
 
 
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method)
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override
 	{
 		timestepping_method = i_timestepping_method;
 
@@ -54,7 +54,7 @@ public:
 		return false;
 	}
 
-	std::string getIDString()
+	std::string getIDString() override
 	{
 		return "ln_erk_split_vd";
 	}
@@ -79,9 +79,9 @@ private:
 
 public:
 	void euler_timestep_update_lg(
-			const sweet::SphereData_Spectral &i_U_phi,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_vrt,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_div,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
 
 			sweet::SphereData_Spectral &o_U_phi_pert_t,	///< time updates
 			sweet::SphereData_Spectral &o_U_vrt_t,	///< time updates
@@ -94,9 +94,9 @@ public:
 
 public:
 	void euler_timestep_update_lc(
-			const sweet::SphereData_Spectral &i_U_phi,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_vrt,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_div,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
 
 			sweet::SphereData_Spectral &o_U_phi_t,	///< time updates
 			sweet::SphereData_Spectral &o_U_vrt_t,	///< time updates
@@ -109,9 +109,9 @@ public:
 
 public:
 	void euler_timestep_update_lc_spectral_only(
-			const sweet::SphereData_Spectral &i_U_phi,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_vrt,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_div,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
 
 			sweet::SphereData_Spectral &o_U_phi_t,	///< time updates
 			sweet::SphereData_Spectral &o_U_vrt_t,	///< time updates
@@ -124,9 +124,9 @@ public:
 
 public:
 	void euler_timestep_update_na(
-			const sweet::SphereData_Spectral &i_U_phi,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_vrt,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_div,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
 
 			sweet::SphereData_Spectral &o_U_phi_t,	///< time updates
 			sweet::SphereData_Spectral &o_U_vrt_t,	///< time updates
@@ -139,9 +139,9 @@ public:
 
 public:
 	void euler_timestep_update_nr(
-			const sweet::SphereData_Spectral &i_U_phi,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_vrt,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_div,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
 
 			sweet::SphereData_Spectral &o_U_phi_t,	///< time updates
 			sweet::SphereData_Spectral &o_U_vrt_t,	///< time updates
@@ -154,9 +154,9 @@ public:
 
 public:
 	void euler_timestep_set_tendencies(
-			const sweet::SphereData_Spectral &i_U_phi,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_vrt,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_div,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
 
 			sweet::SphereData_Spectral &o_U_phi_t,	///< time updates
 			sweet::SphereData_Spectral &o_U_vrt_t,	///< time updates
@@ -168,9 +168,9 @@ public:
 
 public:
 	void euler_timestep_set_tendencies_na_only(
-			const sweet::SphereData_Spectral &i_U_phi,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_vrt,	///< prognostic variables
-			const sweet::SphereData_Spectral &i_U_div,	///< prognostic variables
+			const sweet::SphereData_Spectral &i_U_phi,
+			const sweet::SphereData_Spectral &i_U_vrt,
+			const sweet::SphereData_Spectral &i_U_div,
 
 			sweet::SphereData_Spectral &o_U_phi_t,	///< time updates
 			sweet::SphereData_Spectral &o_U_vrt_t,	///< time updates
@@ -186,7 +186,7 @@ public:
 
 			double i_fixed_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 
 	void run_timestep_na(

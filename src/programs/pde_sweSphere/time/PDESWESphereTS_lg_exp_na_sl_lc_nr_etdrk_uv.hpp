@@ -25,9 +25,9 @@
 class PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv	: public PDESWESphereTS_BaseInterface
 {
 public:
-	bool implementsTimesteppingMethod(const std::string &i_timestepping_method);
-	std::string getIDString();
-	void printHelp();
+	bool implementsTimesteppingMethod(const std::string &i_timestepping_method) override;
+	std::string getIDString() override;
+	void printHelp() override;
 
 private:
 	PDESWESphereTS_ln_erk_split_uv ts_ln_erk_split_uv;
@@ -56,7 +56,7 @@ public:
 public:
 	bool shackRegistration(
 			sweet::ShackDictionary *io_shackDict
-	)
+	) override
 	{
 		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
@@ -74,7 +74,7 @@ public:
 	bool setup_auto(
 			const std::string &i_timestepping_method,
 			sweet::SphereOperators *io_ops
-		);
+		) override;
 
 	bool setup(
 			sweet::SphereOperators *io_ops,
@@ -91,13 +91,13 @@ public:
 	PDESWESphereTS_lg_exp_na_sl_lc_nr_etdrk_uv();
 
 	void runTimestep(
-			sweet::SphereData_Spectral &io_phi,	///< prognostic variables
-			sweet::SphereData_Spectral &io_vrt,	///< prognostic variables
-			sweet::SphereData_Spectral &io_div,	///< prognostic variables
+			sweet::SphereData_Spectral &io_phi,
+			sweet::SphereData_Spectral &io_vrt,
+			sweet::SphereData_Spectral &io_div,
 
 			double i_dt = 0,
 			double i_simulation_timestamp = -1
-	);
+	) override;
 
 #if (SWEET_PARAREAL && SWEET_PARAREAL_SPHERE) || (SWEET_XBRAID && SWEET_XBRAID_SPHERE)
 	void set_previous_solution(
