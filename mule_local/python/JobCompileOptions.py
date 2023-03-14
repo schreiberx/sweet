@@ -104,7 +104,7 @@ class JobCompileOptions(InfoError):
 
         # Which parallel sdc parallelizatino model to use
         # Only 'omp' supported so far
-        self.parallel_sdc_par_model = 'off'
+        self.parallel_sdc_par_model = None
 
         self.quadmath = 'disable'
 
@@ -174,7 +174,8 @@ class JobCompileOptions(InfoError):
         retval += ' --gui='+self.gui
         
         # Parallel SDC
-        retval += ' --parallel-sdc-par-model='+self.parallel_sdc_par_model
+        if self.parallel_sdc_par_model is not None:
+            retval += ' --parallel-sdc-par-model='+self.parallel_sdc_par_model
         
 
         # Activate quadmath
