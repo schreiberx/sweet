@@ -332,8 +332,14 @@ if jg.mode in ['debug', 'debug_thread', 'debug_leak']:
         # integer overflow check
         env.Append(CXXFLAGS=['-ftrapv'])
 
+        #env.Append(CXXFLAGS=['-fsanitize=address', '-fsanitize=undefined', '-fno-sanitize-recover=all', '-fsanitize=float-divide-by-zero', '-fsanitize=float-cast-overflow', '-fno-sanitize=null', '-fno-sanitize=alignment'])
+
     elif compiler_type_cxx == 'llvm':
         env.Append(CXXFLAGS=["-O0", "-g3", "-Wall"])
+
+        # Memory sanitizer
+        #env.Append(CXXFLAGS=['-fsanitize=memory'])
+        #env.Append(CXXFLAGS=['-fsanitize=address', '-fsanitize=undefined', '-fno-sanitize-recover=all', '-fsanitize=float-divide-by-zero', '-fsanitize=float-cast-overflow', '-fno-sanitize=null', '-fno-sanitize=alignment'])
 
     elif compiler_type_cxx == 'intel':
         env.Append(CXXFLAGS=["-O0", "-g", "-traceback"])
@@ -605,8 +611,9 @@ if jg.libpfasst == 'enable':
 #
 env.Append(F90FLAGS = ['-J'+build_dir])
 
-# We should leave this commented out
-#env.Append(CPPPATH = ['/usr/local/include'])
+
+# Leave this deactivated!
+# env.Append(CPPPATH = ['/usr/local/include'])
 
 
 

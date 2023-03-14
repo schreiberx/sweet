@@ -13,9 +13,9 @@ export MULE_MPICC=mpicc
 export MULE_MPICXX=mpic++
 export MULE_MPIF90=mpif90
 
-if false; then
+if true; then
 	# If we link with mpif90, we have to add stdc++ for C++
-	#export MULE_MPILINK=mpif90
+	export MULE_MPILINK=mpif90
 	export MULE_MPILIBS=stdc++
 else
 	export MULE_MPILINK=mpic++
