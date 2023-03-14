@@ -86,23 +86,22 @@ public:
 	{
 		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
-		swe_sphere_ts_lg_erk.shackRegistration(io_shackDict);
-		swe_sphere_ts_l_erk.shackRegistration(io_shackDict);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
+		swe_sphere_ts_lg_erk.shackRegistration(this);
+		swe_sphere_ts_l_erk.shackRegistration(this);
 
 		return true;
 	}
 
 	bool shackRegistration(
-			PDESWESphereTS_BaseInterface* timeStepper
+			PDESWESphereTS_BaseInterface* i_baseInterface
 	) override
 	{
-		PDESWESphereTS_BaseInterface::shackRegistration(timeStepper);
+		PDESWESphereTS_BaseInterface::shackRegistration(i_baseInterface);
 
-		swe_sphere_ts_lg_erk.shackRegistration(timeStepper);
-		swe_sphere_ts_l_erk.shackRegistration(timeStepper);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeStepper);
-		
+		swe_sphere_ts_lg_erk.shackRegistration(i_baseInterface);
+		swe_sphere_ts_l_erk.shackRegistration(i_baseInterface);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
+
 		return true;
 	}
 

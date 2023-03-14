@@ -109,21 +109,11 @@ public:
 	}
 
 	virtual bool shackRegistration(
-			PDESWESphereTS_BaseInterface* timeStepper
+			PDESWESphereTS_BaseInterface* i_baseInterface
 	) 
 	{
-		shackDict = timeStepper->shackDict;
-
-		shackTimestepControl = timeStepper->shackTimestepControl;
-		shackSphereDataOps = timeStepper->shackSphereDataOps;
-		shackIOData = timeStepper->shackIOData;
-		shackExpIntegration = timeStepper->shackExpIntegration;
-		shackTimesteppingSemiLagrangianSphereData = timeStepper->shackTimesteppingSemiLagrangianSphereData;
-
-		shackPDESWETimeDisc = timeStepper->shackPDESWETimeDisc;
-		shackPDESWEBenchmark = timeStepper->shackPDESWEBenchmark;
-		shackPDESWESphere = timeStepper->shackPDESWESphere;
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeStepper);
+		*this = *i_baseInterface;
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
 
 		return true;
 	}
