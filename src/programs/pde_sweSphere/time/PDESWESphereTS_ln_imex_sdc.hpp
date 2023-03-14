@@ -70,20 +70,10 @@ public:
 	{
 		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
 
+		// SDC shack registration
 		shackSDC = io_shackDict->getAutoRegistration<sweet::ShackSDC>();
-		timestepping_l_erk_n_erk.shackRegistration(io_shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
 
-		int nNodesMax = 10;
-		timestepping_l_irk.resize(nNodesMax);
-		timestepping_l_irk_init.resize(nNodesMax);
-		for (size_t i = 0; i < nNodesMax; i++)
-		{
-			timestepping_l_irk[i] = new PDESWESphereTS_l_irk();
-			timestepping_l_irk[i]->shackRegistration(io_shackDict);
-			timestepping_l_irk_init[i] = new PDESWESphereTS_l_irk();
-			timestepping_l_irk_init[i]->shackRegistration(io_shackDict);
-		}
-		
 		return true;
 	}
 
