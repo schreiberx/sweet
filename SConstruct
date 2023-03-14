@@ -605,7 +605,8 @@ if jg.libpfasst == 'enable':
 #
 env.Append(F90FLAGS = ['-J'+build_dir])
 
-env.Append(CPPPATH = ['/usr/local/include', '/usr/include'])
+# We should leave this commented out
+#env.Append(CPPPATH = ['/usr/local/include'])
 
 
 
