@@ -108,6 +108,26 @@ public:
 		return true;
 	}
 
+	virtual bool shackRegistration(
+			PDESWESphereTS_BaseInterface* timeStepper
+	) 
+	{
+		shackDict = timeStepper->shackDict;
+
+		shackTimestepControl = timeStepper->shackTimestepControl;
+		shackSphereDataOps = timeStepper->shackSphereDataOps;
+		shackIOData = timeStepper->shackIOData;
+		shackExpIntegration = timeStepper->shackExpIntegration;
+		shackTimesteppingSemiLagrangianSphereData = timeStepper->shackTimesteppingSemiLagrangianSphereData;
+
+		shackPDESWETimeDisc = timeStepper->shackPDESWETimeDisc;
+		shackPDESWEBenchmark = timeStepper->shackPDESWEBenchmark;
+		shackPDESWESphere = timeStepper->shackPDESWESphere;
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeStepper);
+
+		return true;
+	}
+
 
 	virtual bool setup_auto(
 		const std::string &i_timestepping_method,

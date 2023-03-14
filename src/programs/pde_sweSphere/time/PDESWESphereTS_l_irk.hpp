@@ -91,6 +91,17 @@ public:
 		return true;
 	}
 
+	bool shackRegistration(
+			PDESWESphereTS_BaseInterface* timeStepper
+	) override
+	{
+		PDESWESphereTS_BaseInterface::shackRegistration(timeStepper);
+
+		swe_sphere_ts_lg_erk.shackRegistration(timeStepper);
+		swe_sphere_ts_l_erk.shackRegistration(timeStepper);
+		return true;
+	}
+
 
 
 public:

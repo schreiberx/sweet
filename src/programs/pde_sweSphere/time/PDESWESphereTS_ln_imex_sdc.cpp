@@ -50,11 +50,11 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 	timestepping_l_erk_n_erk.setup_main(ops, 1, 1);
 
 	// Resize list of irk solvers depending on nNodes
-	// std::cout << "[SDC] Registering and setting up l_irk" << std::endl;
-	// timestepping_l_irk.resize(nNodes);
-	// if (initialSweepType == "QDELTA") {
-	// 	timestepping_l_irk_init.resize(nNodes);
-	// }
+	std::cout << "[SDC] Registering and setting up l_irk" << std::endl;
+	timestepping_l_irk.resize(nNodes);
+	if (initialSweepType == "QDELTA") {
+		timestepping_l_irk_init.resize(nNodes);
+	}
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
 	SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
@@ -62,15 +62,15 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 	for (int i = 0; i < nNodes; i++)
 	{
 		// Initialize LHS coefficients for sweeps
-		// timestepping_l_irk[i] = new PDESWESphereTS_l_irk();
-		// timestepping_l_irk[i]->shackRegistration(shackDict);
+		timestepping_l_irk[i] = new PDESWESphereTS_l_irk();
+		timestepping_l_irk[i]->shackRegistration(this);
 		std::cout << "[SDC] Registering and setting up l_irk for node " << i << std::endl;
 		timestepping_l_irk[i]->setup(ops, 1, dt*qMatDeltaI(i,i));
 		
 		if (initialSweepType == "QDELTA") {
 			// Initialize LHS coefficients for initial sweep with QDELTA
-			// timestepping_l_irk_init[i] = new PDESWESphereTS_l_irk();
-			// timestepping_l_irk_init[i]->shackRegistration(shackDict);
+			timestepping_l_irk_init[i] = new PDESWESphereTS_l_irk();
+			timestepping_l_irk_init[i]->shackRegistration(shackDict);
 			std::cout << "[SDC] Registering and setting up l_irk_init for node " << i << std::endl;
 			timestepping_l_irk_init[i]->setup(ops, 1, dt*qMatDelta0(i,i));
 		}
