@@ -115,6 +115,7 @@ bool PDESWESphereTS_l_irk::setup_main(
 
 	if (no_coriolis)
 	{
+		swe_sphere_ts_lg_erk.shackRegistration(this);
 		swe_sphere_ts_lg_erk.setup_main(ops, 1);
 	}
 	else
@@ -130,6 +131,7 @@ bool PDESWESphereTS_l_irk::setup_main(
 			two_coriolis = 2.0*shackPDESWESphere->sphere_rotating_coriolis_omega;
 		}
 
+		swe_sphere_ts_l_erk.shackRegistration(this);
 		swe_sphere_ts_l_erk.setup_main(ops, 1);
 	}
 

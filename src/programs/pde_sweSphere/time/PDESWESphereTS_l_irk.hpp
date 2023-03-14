@@ -80,34 +80,6 @@ private:
 	sweet::SphereData_Physical mug;
 
 public:
-	bool shackRegistration(
-			sweet::ShackDictionary *io_shackDict
-	) override
-	{
-		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
-
-		swe_sphere_ts_lg_erk.shackRegistration(this);
-		swe_sphere_ts_l_erk.shackRegistration(this);
-
-		return true;
-	}
-
-	bool shackRegistration(
-			PDESWESphereTS_BaseInterface* i_baseInterface
-	) override
-	{
-		PDESWESphereTS_BaseInterface::shackRegistration(i_baseInterface);
-
-		swe_sphere_ts_lg_erk.shackRegistration(i_baseInterface);
-		swe_sphere_ts_l_erk.shackRegistration(i_baseInterface);
-		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
-
-		return true;
-	}
-
-
-
-public:
 	PDESWESphereTS_l_irk();
 
 public:
