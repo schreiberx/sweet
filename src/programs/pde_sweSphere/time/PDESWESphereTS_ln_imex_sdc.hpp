@@ -81,7 +81,7 @@ private:
 	/*
 	 * SDC specific attributes
  	 */
-	int nNodes;
+	int nNodes=0;  // default value should be 0 for destructor ...
 	int nIter;
 
 	std::string initialSweepType;  // Type of initial sweep
