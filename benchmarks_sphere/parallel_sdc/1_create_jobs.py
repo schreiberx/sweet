@@ -11,10 +11,10 @@ p = JobGeneration()
 verbose = True
 
 p.runtime.paramsSDC = getSDCSetup(
-    nNodes=4,
+    nNodes=3,
     nIter=3,
     nodeType='RADAU-RIGHT', 
-    qDeltaImplicit='BEPAR', 
+    qDeltaImplicit='OPT-QMQD-0', 
     qDeltaExplicit='PIC', 
     qDeltaInitial='BEPAR',
     diagonal=True,
