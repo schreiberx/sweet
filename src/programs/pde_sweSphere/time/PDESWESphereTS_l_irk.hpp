@@ -88,6 +88,8 @@ public:
 
 		swe_sphere_ts_lg_erk.shackRegistration(io_shackDict);
 		swe_sphere_ts_l_erk.shackRegistration(io_shackDict);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
+
 		return true;
 	}
 
@@ -99,6 +101,8 @@ public:
 
 		swe_sphere_ts_lg_erk.shackRegistration(timeStepper);
 		swe_sphere_ts_l_erk.shackRegistration(timeStepper);
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*timeStepper);
+		
 		return true;
 	}
 

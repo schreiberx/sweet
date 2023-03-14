@@ -46,7 +46,8 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 
 
 	// Setup erk solver for non-linear and linear term evaluation
-	std::cout << "[SDC] Setting up l_erk_n_erk" << std::endl;
+	std::cout << "[SDC] Registering and setting up l_erk_n_erk" << std::endl;
+	timestepping_l_erk_n_erk.shackRegistration(this);
 	timestepping_l_erk_n_erk.setup_main(ops, 1, 1);
 
 	// Resize list of irk solvers depending on nNodes
@@ -70,7 +71,7 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 		if (initialSweepType == "QDELTA") {
 			// Initialize LHS coefficients for initial sweep with QDELTA
 			timestepping_l_irk_init[i] = new PDESWESphereTS_l_irk();
-			timestepping_l_irk_init[i]->shackRegistration(shackDict);
+			timestepping_l_irk_init[i]->shackRegistration(this);
 			std::cout << "[SDC] Registering and setting up l_irk_init for node " << i << std::endl;
 			timestepping_l_irk_init[i]->setup(ops, 1, dt*qMatDelta0(i,i));
 		}
