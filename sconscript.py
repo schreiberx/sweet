@@ -6,7 +6,7 @@ import glob
 
 
 
-def add_source_files(env, p):
+def add_source_files(env, jg):
     #
     # Add an action to move any module files
     #
@@ -17,7 +17,7 @@ def add_source_files(env, p):
             if t.name[-4:] == '.mod':
                 os.rename(t.name,os.path.join(str(targetdir),t.name))
 
-    co = p.get_program_specific_options()
+    co = jg.get_program_specific_options()
 
     if co == None:
         return
@@ -41,7 +41,7 @@ def add_source_files(env, p):
                 # SWE REXI special file handling for threaded parallelization over the REXI sum
                 filetmp = os.path.basename(filerelpath)
                 if 'l_rexi' in filetmp or 'lg_rexi' in filetmp or 'lc_rexi' in filetmp:
-                    if p.rexi_thread_parallel_sum=='enable':
+                    if jg.rexi_thread_parallel_sum=='enable':
                         env_omp = env.Clone()
                         env_omp.Append(CXXFLAGS = ' -fopenmp')
                         env_omp.src_files.append(env_omp.Object(filerelpath))
@@ -74,7 +74,7 @@ def add_source_files(env, p):
             sys.exit(1)
 
 
-Import('env', 'p')
-add_source_files(env, p)
-Export('env', 'p')
+Import('env', 'jg')
+add_source_files(env, jg)
+Export('env', 'jg')
 

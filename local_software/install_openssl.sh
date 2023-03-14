@@ -16,7 +16,7 @@ if [ "${HOSTNAME:0:10}" != "mpp2-login" ]; then
 	# exclude mpp2-login:
 	#	Exclude CoolMUC where one test fails :-(
 
-	config_exec make test
+	config_exec make test -j
 fi
 config_make_install
 config_success

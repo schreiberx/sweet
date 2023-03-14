@@ -3,17 +3,18 @@
 import sys
 from itertools import product
 
-from mule import JobGeneration, JobParallelizationDimOptions
+from mule.JobGeneration import JobGeneration
+from mule.JobParallelizationDimOptions import JobParallelizationDimOptions
 from mule.sdc import getSDCSetup
 
 p = JobGeneration()
 verbose = True
 
 p.runtime.paramsSDC = getSDCSetup(
-    nNodes=3,
+    nNodes=4,
     nIter=3,
     nodeType='RADAU-RIGHT', 
-    qDeltaImplicit='OPT-QMQD-0', 
+    qDeltaImplicit='BEPAR', 
     qDeltaExplicit='PIC', 
     qDeltaInitial='BEPAR',
     diagonal=True,
@@ -24,7 +25,7 @@ p.runtime.paramsSDC = getSDCSetup(
 p.compile.mode = 'release'
 p.compile.gui = 'enable'
 # p.runtime.gui = 1
-# p.compile.mode = 'debug'
+p.compile.mode = 'debug'
 
 #
 # Mode and Physical resolution
@@ -72,7 +73,7 @@ p.compilecommand_in_jobscript = False
 #
 # Run simulation on plane or sphere
 #
-p.compile.program = 'swe_sphere'
+p.compile.program = 'programs/pde_sweSphere'
 
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'

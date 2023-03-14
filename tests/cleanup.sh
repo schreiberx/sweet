@@ -3,7 +3,7 @@
 source ../local_software/env_vars.sh
 
 if [[ -z "$1" ]]; then
-	JOBDIRS=$(ls -1 -d ??_*)
+	JOBDIRS="$(ls -1 -d ??_* 2>/dev/null) $(ls -1 -d _??_* 2>/dev/null)"
 else
 	JOBDIRS=$@
 fi
@@ -18,9 +18,9 @@ for i in $JOBDIRS; do
 
 	mule.benchmark.cleanup_all || exit 1
 
-	JOBDIRS2=$(ls -1 -d ??_* 2>/dev/null)
+	JOBDIRS2=$(ls -1 -d ??_* 2>/dev/null) $(ls -1 -d _??_* 2>/dev/null)
 
-	RETDIR2=$(pwd)
+	RETDIR2="$(pwd)"
 	for i2 in $JOBDIRS2; do
 		echo_info $i2
 		cd "$RETDIR2"

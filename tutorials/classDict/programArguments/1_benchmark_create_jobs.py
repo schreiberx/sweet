@@ -7,7 +7,7 @@ jg = JobGeneration()
 #
 # Compile options
 #
-jg.compile.program = 'tutorial_classDict_programArguments'
+jg.compile.program = 'tutorials/classDict_programArguments'
 
 # Set some user parameter - just because we can
 jg.runtime.user_defined_parameters['grav_param'] = {'id': '', "option": "--gravitation=", "value": 666}

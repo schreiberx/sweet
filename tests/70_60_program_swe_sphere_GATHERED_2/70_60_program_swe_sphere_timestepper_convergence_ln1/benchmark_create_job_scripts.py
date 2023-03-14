@@ -18,7 +18,7 @@ from mule.rexi.brexi.BREXI import *
 #
 # Run simulation on plane or sphere
 #
-jg.compile.program = 'swe_sphere'
+jg.compile.program = 'programs/pde_sweSphere'
 
 jg.compile.plane_spectral_space = 'disable'
 jg.compile.plane_spectral_dealiasing = 'disable'
@@ -27,7 +27,7 @@ jg.compile.sphere_spectral_dealiasing = 'enable'
 
 
 # Enable quad math per default for CI REXI method
-jg.compile.quadmath = 'enable'
+#jg.compile.quadmath = 'enable'
 
 
 # Verbosity mode
