@@ -5,28 +5,36 @@
 # Start at version 30 and search downwards
 #
 
-CLANG_VERSIONS=$(seq 30 -1 0)
-for i in $CLANG_VERSIONS; do
-	type "clang++-$i" 2> /dev/null 1>&2
+type "clang++" 2> /dev/null 1>&2
+if [[ "$?" == "0" ]]; then
+	CLANG_POSTFIX=""
+else
 
-	if [[ "$?" == "0" ]]; then
-		CLANG_VERSION=$i
-		break
+	CLANG_VERSIONS=$(seq 30 -1 0)
+	for i in $CLANG_VERSIONS; do
+		type "clang++-$i" 2> /dev/null 1>&2
+
+		if [[ "$?" == "0" ]]; then
+			CLANG_VERSION=$i
+			CLANG_POSTFIX="-$CLANG_VERSION"
+			break
+		fi
+	done
+
+	if [[ "$i" == "0" ]]; then
+		echo ""
+		echo "No clang++ compiler found!"
+		echo ""
+		echo "Not setting up any variables."
+		echo ""
+
+		exit 0
 	fi
-done
 
-if [[ "$i" == "0" ]]; then
-	echo ""
-	echo "No clang++ compiler found!"
-	echo ""
-	echo "Not setting up any variables."
-	echo ""
-
-	exit 0
 fi
 
-test -z "$CC" && export CC=clang-$CLANG_VERSION
-test -z "$CXX" && export CXX=clang++-$CLANG_VERSION
+test -z "$CC" && export CC=clang$CLANG_POSTFIX
+test -z "$CXX" && export CXX=clang++$CLANG_POSTFIX
 
 # We still use gfortran
 test -z "$F90" && export F90=gfortran
