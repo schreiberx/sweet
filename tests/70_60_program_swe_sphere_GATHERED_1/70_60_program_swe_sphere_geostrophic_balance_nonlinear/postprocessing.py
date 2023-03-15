@@ -45,7 +45,9 @@ for key, jobs_data in job_groups.items():
         error_line_keys.sort()
         last_error_line_key = error_line_keys[-1]
 
-        assert last_error_line_key == tag+"00000010"
+        if last_error_line_key != tag+"00000010":
+            print(f"Error with last key: '{last_error_line_key}' compared to value '{tag+"00000010"}'")
+            assert last_error_line_key == tag+"00000010"
 
         error_split = job_data[last_error_line_key].split("\t")
         if len(error_split) != 4:
