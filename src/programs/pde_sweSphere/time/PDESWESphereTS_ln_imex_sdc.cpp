@@ -60,7 +60,7 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 #if SWEET_PARALLEL_SDC_OMP_MODEL
 	SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
 #endif
-	for (int i = 0; i < nNodes; i++)
+	for (size_t i = 0; i < nNodes; i++)
 	{
 		// Initialize LHS coefficients for sweeps
 		timestepping_l_irk[i] = new PDESWESphereTS_l_irk();
@@ -172,7 +172,7 @@ void PDESWESphereTS_ln_imex_sdc::runTimestep(
 
 	if (TimeStepSizeChanged::is_changed(dt, i_fixed_dt, true)){
 		std::cout << "SDC: UPDATING LHS COEFFICIENTS" << std::endl;
-		for (int i = 0; i < nNodes; i++)
+		for (size_t i = 0; i < nNodes; i++)
 		{
 			// LHS coefficients for sweeps
 			timestepping_l_irk[i]->update_coefficients(i_fixed_dt*qMatDeltaI(i, i));
@@ -191,7 +191,7 @@ void PDESWESphereTS_ln_imex_sdc::runTimestep(
 	init_sweep();
 
 	// -- perform sweeps
-	for (int k = 0; k < nIter; k++){
+	for (size_t k = 0; k < nIter; k++){
 		sweep(k);
 	}
 
@@ -217,7 +217,7 @@ void PDESWESphereTS_ln_imex_sdc::init_sweep()
 		#pragma omp parallel num_threads(nNodes) if(diagonal)
 		#pragma omp for schedule(static,1)
 #endif
-		for (int i = 0; i < nNodes; i++) {
+		for (size_t i = 0; i < nNodes; i++) {
 
 			// Initialize with u0 value
 			SWE_VariableVector ts_state(ts_u0);
@@ -225,7 +225,7 @@ void PDESWESphereTS_ln_imex_sdc::init_sweep()
 			if (!diagonal)
 			{
 				// Add non-linear and linear terms from iteration k (already computed)
-				for (int j = 0; j < i; j++) {
+				for (size_t j = 0; j < i; j++) {
 					axpy(dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
 					axpy(dt*q0(i, j), ts_linear_tendencies_k0[j], ts_state);
 				}
@@ -254,7 +254,7 @@ void PDESWESphereTS_ln_imex_sdc::init_sweep()
 		#pragma omp parallel num_threads(nNodes)
 		#pragma omp for schedule(static,1)
 #endif
-		for (int i = 0; i < nNodes; i++)
+		for (size_t i = 0; i < nNodes; i++)
 		{
 			// Include first node just to simulate same parallelization as for parallel updates
 			if (i == 0)
@@ -286,7 +286,7 @@ void PDESWESphereTS_ln_imex_sdc::sweep(
 	#pragma omp parallel num_threads(nNodes) if(diagonal)
 	#pragma omp for schedule(static,1)
 #endif
-	for (int i = 0; i < nNodes; i++) {
+	for (size_t i = 0; i < nNodes; i++) {
 
 		// Initialize with u0 value
 		SWE_VariableVector ts_state(ts_u0);
@@ -301,13 +301,13 @@ void PDESWESphereTS_ln_imex_sdc::sweep(
 		if (!diagonal) {
 
 			// Add non-linear and linear terms from iteration k+1
-			for (int j = 0; j < i; j++) {
+			for (size_t j = 0; j < i; j++) {
 				axpy(dt*qE(i, j), ts_nonlinear_tendencies_k1[j], ts_state);
 				axpy(dt*qI(i, j), ts_linear_tendencies_k1[j], ts_state);
 			}
 
 			// Substract non-linear and linear terms from iteration k
-			for (int j = 0; j < i; j++) {
+			for (size_t j = 0; j < i; j++) {
 				axpy(-dt*qE(i, j), ts_nonlinear_tendencies_k0[j], ts_state);
 				axpy(-dt*qI(i, j), ts_linear_tendencies_k0[j], ts_state);
 			}
@@ -358,7 +358,7 @@ void PDESWESphereTS_ln_imex_sdc::sweep(
 			// Compute collocation update
 			SWE_VariableVector ts_state(ts_u0);
 
-			for (int j = 0; j < nNodes; j++) {
+			for (size_t j = 0; j < nNodes; j++) {
 				double a = dt*w(j);
 				axpy(a, ts_nonlinear_tendencies_k0[j], ts_state);
 				axpy(a, ts_linear_tendencies_k0[j], ts_state);
@@ -372,15 +372,30 @@ void PDESWESphereTS_ln_imex_sdc::sweep(
 }
 
 
+bool PDESWESphereTS_ln_imex_sdc::clear() 
+{
+
+	for (size_t i = 0; i < nNodes; i++)
+	{
+
+		delete timestepping_l_irk[i];
+		timestepping_l_irk[i] = nullptr;
+
+		if (initialSweepType == "QDELTA") {
+
+			delete timestepping_l_irk_init[i];
+			timestepping_l_irk_init[i] = nullptr;
+
+		}
+
+	}
+
+	return true;
+}
+
+
 PDESWESphereTS_ln_imex_sdc::~PDESWESphereTS_ln_imex_sdc()
 {
-	for (int i = 0; i < nNodes; i++)
-	{
-		delete timestepping_l_irk[i];
-		if (initialSweepType == "QDELTA") {
-			delete timestepping_l_irk_init[i];
-		}
-	}
-	
+	clear();
 }
 

@@ -81,8 +81,8 @@ private:
 	/*
 	 * SDC specific attributes
  	 */
-	int nNodes;
-	int nIter;
+	size_t nNodes=0;  // default value should be 0 for clear and destructor
+	size_t nIter;
 
 	std::string initialSweepType;  // Type of initial sweep
 
@@ -159,6 +159,7 @@ public:
 			double i_simulation_timestamp = -1
 	) override;
 
+	bool clear();
 
 	virtual ~PDESWESphereTS_ln_imex_sdc();
 };
