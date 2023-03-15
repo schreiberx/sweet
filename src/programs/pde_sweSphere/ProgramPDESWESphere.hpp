@@ -659,6 +659,28 @@ public:
 			);
 	}
 
+	void output_timings()
+	{
+		#if SWEET_MPI
+	if (mpi_rank == 0)
+#endif
+	{
+		std::cout << std::endl;
+		StopwatchBox::getInstance().output();
+
+		std::cout << "***************************************************" << std::endl;
+		std::cout << "* Other timing information (direct)" << std::endl;
+		std::cout << "***************************************************" << std::endl;
+		std::cout << "[MULE] shackTimestepControl->current_timestep_nr: " << shackTimestepControl->current_timestep_nr << std::endl;
+		std::cout << "[MULE] shackTimestepControl->current_timestep_size: " << shackTimestepControl->current_timestep_size << std::endl;
+		std::cout << std::endl;
+		std::cout << "***************************************************" << std::endl;
+		std::cout << "* Other timing information (derived)" << std::endl;
+		std::cout << "***************************************************" << std::endl;
+		std::cout << "[MULE] simulation_benchmark_timings.time_per_time_step (secs/ts): " << StopwatchBox::getInstance().main_timestepping()/(double)shackTimestepControl->current_timestep_nr << std::endl;
+	}
+	}
+
 
 
 #if SWEET_GUI

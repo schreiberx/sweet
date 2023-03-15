@@ -54,6 +54,8 @@ int main_mpi(int i_argc, char *i_argv[])
 		{
 			simulation.timestepHandleOutput();
 
+			StopwatchBox::getInstance().main_timestepping.start();
+
 			while (!simulation.should_quit())
 			{
 				simulation.runTimestep();
@@ -80,11 +82,18 @@ int main_mpi(int i_argc, char *i_argv[])
 					simulation.timestepHandleOutput();
 				}
 			}
+
+			std::cout << "TIMESTEPPING FINISHED" << std::endl;
+			StopwatchBox::getInstance().main_timestepping.stop();
+		
 		}
 
 		if (simulation.fileOutput.output_reference_filenames.size() > 0)
 			std::cout << "[MULE] reference_filenames: " << simulation.fileOutput.output_reference_filenames << std::endl;
 	}
+
+	// End of run output results
+	simulation.output_timings();
 
 	ERROR_CHECK_WITH_PRINT_AND_COND_RETURN_EXIT(simulation);
 

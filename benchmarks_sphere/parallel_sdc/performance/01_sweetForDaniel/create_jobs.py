@@ -18,8 +18,8 @@ p.unique_id_filter = [
     'runtime']
 
 # Main parameters
-nSpacePoints = 256
-dt = 128/nSpacePoints*300.0
+nPointsSpace = 256
+dt = 128/nPointsSpace*300.0
 nSteps = 100
 nProcSpace = [1, 2, 4, 8, 16, 32]
 nProcTime = [1, 4]
@@ -33,7 +33,6 @@ p.compile.program = 'programs/pde_sweSphere'
 p.compile.mode = 'release'
 p.compile.lapack = 'enable'
 p.compile.mkl = 'disable'
-p.compile.benchmark_timings = 'enable'
 
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'
@@ -60,7 +59,7 @@ p.runtime.paramsSDC = getSDCSetup(
     useEndUpdate=False
 )
 
-p.runtime.space_res_spectral = nSpacePoints
+p.runtime.space_res_spectral = nPointsSpace
 p.runtime.space_res_physical = -1
 
 p.runtime.benchmark_name = "galewsky"

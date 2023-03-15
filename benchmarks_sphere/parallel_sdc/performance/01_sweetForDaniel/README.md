@@ -12,8 +12,5 @@ _First strong scaling tests of Parallel SDC implementation_
 ## Running benchmark
 
 ```bash
-mule.benchmark.cleanup_job_dirs
-./create_jobs.py
-./compile_platform*.sh
-mule.benchmark.jobs_run_directly
+mule.benchmark.cleanup_job_dirs; ./create_jobs.py; ./compile_platform*.sh; mule.benchmark.jobs_run_directly
 ```
