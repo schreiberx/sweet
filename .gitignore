@@ -44,6 +44,7 @@
 .sconsign.dblite
 .settings/
 .vscode/
+*.spyproject
 
 
 # Exclude output files

@@ -78,6 +78,7 @@ public:
 
 	bool setupFG()
 	{
+		assert(shackPDESWESphere != nullptr);
 		if (shackPDESWESphere->sphere_use_fsphere)
 			fg = ops->getFG_fSphere(shackPDESWESphere->sphere_fsphere_f0);
 		else
@@ -103,6 +104,16 @@ public:
 		shackPDESWEBenchmark = io_shackDict->getAutoRegistration<ShackPDESWESphereBenchmarks>();
 		shackPDESWESphere = io_shackDict->getAutoRegistration<ShackPDESWESphere>();
 		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*io_shackDict);
+
+		return true;
+	}
+
+	virtual bool shackRegistration(
+			PDESWESphereTS_BaseInterface* i_baseInterface
+	) 
+	{
+		*this = *i_baseInterface;
+		ERROR_CHECK_WITH_FORWARD_AND_COND_RETURN_BOOLEAN(*this);
 
 		return true;
 	}

@@ -532,12 +532,12 @@ source ./local_software/env_vars.sh \""""+os.path.normpath(self.platforms.platfo
                 for key, aval in a.items():
 
                     if isinstance(aval, (float, int, str)):
-                        attr_dict[attr+"."+str(key)] = value
+                        attr_dict[key+"."+str(key)] = value
                     else:
                         nattr = self.__get_sub_attributes_dict(aval, maxdepth-1)
 
                         for key2, value in nattr.items():
-                            attr_dict[attr+"."+str(key)+"."+str(key2)] = value
+                            attr_dict[key+"."+str(key)+"."+str(key2)] = value
 
         return attr_dict
 

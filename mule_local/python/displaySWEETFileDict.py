@@ -20,5 +20,9 @@ params = SWEETFileDict(args.file)
 print(f'Content of SWEETFileDict : {args.file}')
 for key, val in params.dict.items():
     print('-'*80)
-    print(f' -- {key}:')
-    print(f'    {val}')
+    val = str(val)
+    if '\n' in val:
+        print(f' -- {key}:\n{val}')
+    else:
+        print(f' -- {key}: {val}')
+print('-'*80)

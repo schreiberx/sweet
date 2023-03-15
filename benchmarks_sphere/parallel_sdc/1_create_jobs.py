@@ -3,64 +3,29 @@
 import sys
 from itertools import product
 
-from mule import JobGeneration, JobParallelizationDimOptions
+from mule.JobGeneration import JobGeneration
+from mule.JobParallelizationDimOptions import JobParallelizationDimOptions
 from mule.sdc import getSDCSetup
 
 p = JobGeneration()
 verbose = True
 
-# -------------------------------------------------------------------------------------------------
-# SDC specifics parameters
-# -------------------------------------------------------------------------------------------------
-listParamsSDC = [
-    (3, 'RADAU-RIGHT', 'BE', 'FE'),  # Default IMEX SDC (Fast Wave Slow Wave)
-    (3, 'RADAU-RIGHT', 'BEpar', 'PIC'),  # Basic parallel SDC
-    (3, 'RADAU-RIGHT', 'OPT-QmQd-0', 'PIC', 'BEpar')  # Targeted optimized parallel SDC
-]
-#paramsSDC = getSDCSetup(*listParamsSDC[1]) # => returns associated SWEETFileDict
-
-"""
-param 1: Number of support points
-param 2: Typeof quadrature nodes
-param 3: Linear term: Implicit QDelta matrix
-param 4: Nonlinear term: Explicit QDelta matrix
-param 5: QDelta matrix for initial sweep
-
-
-QDelta options:
-'PIC': Forward Euler
-
-Standard IMEX SDC
- * param 3: 'BE': Backward Euler
- * param 4: 'FE': Forward Euler
-
-Parallel SDC
- * param 3: 'BEpar': Backward Euler / parallel
- * param 4: 'PIC': Picard
-
-"""
-
-paramsSDC = getSDCSetup(3, 'RADAU-RIGHT', 'PIC', 'PIC', 'BEpar') # => returns associated SWEETFileDict
-
-# Additional parameters
-# - nIter (int) : number of sweep (can be 0)
-paramsSDC['nIter'] = 4
-
-# - diagonal (bool) : to use diagonal implementation
-paramsSDC['diagonal'] = 1
-
-# - qDeltaInit (bool) : to use qDeltaI (and qDeltaE) for initial sweep
-paramsSDC['qDeltaInit'] = 0
-
-# - useEndUpdate (bool) : to use collocation formula for end-update solution
-paramsSDC['useEndUpdate'] = 0
-
-p.runtime.paramsSDC = paramsSDC
-# -------------------------------------------------------------------------------------------------
+p.runtime.paramsSDC = getSDCSetup(
+    nNodes=3,
+    nIter=3,
+    nodeType='RADAU-RIGHT', 
+    qDeltaImplicit='OPT-QMQD-0', 
+    qDeltaExplicit='PIC', 
+    qDeltaInitial='BEPAR',
+    diagonal=True,
+    initialSweepType="QDELTA",
+    useEndUpdate=False
+)
 
 p.compile.mode = 'release'
 p.compile.gui = 'enable'
 # p.runtime.gui = 1
+p.compile.mode = 'debug'
 
 #
 # Mode and Physical resolution
@@ -83,7 +48,7 @@ p.runtime.output_timestep_size = 60*60  # Generate output every 1 hour
 p.runtime.output_file_mode = 'bin'
 
 params_timestep_size_reference = 30.0
-base_timestep_size = 128/p.runtime.space_res_spectral*300.0
+base_timestep_size = 128/p.runtime.space_res_spectral*1200.0
 
 # Parallelization
 nSpacePar = int(sys.argv[1]) if len(sys.argv) > 1 else p.platform_resources.num_cores_per_socket
@@ -108,7 +73,7 @@ p.compilecommand_in_jobscript = False
 #
 # Run simulation on plane or sphere
 #
-p.compile.program = 'swe_sphere'
+p.compile.program = 'programs/pde_sweSphere'
 
 p.compile.plane_spectral_space = 'disable'
 p.compile.plane_spectral_dealiasing = 'disable'
@@ -119,10 +84,9 @@ p.compile.benchmark_timings = 'enable'
 p.compile.quadmath = 'disable'
 
 p.runtime.verbosity = 0
-p.runtime.compute_error = 0
 
 # Leave instability checks activated
-p.runtime.instability_checks = 1
+p.runtime.instability_checks = 0
 # Don't activate them for wallclock time studies since they are pretty costly!!!
 #p.runtime.instability_checks = 0
 
@@ -146,6 +110,7 @@ if __name__ == "__main__":
         # IMEX SDC
         ###########
         ['ln_imex_sdc',        1,    1],
+        # ['ln_erk',        4,    4],
     ]
 
 
