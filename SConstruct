@@ -536,6 +536,14 @@ if jg.rexi_thread_parallel_sum == 'enable':
 else:
     env.Append(CXXFLAGS=['-DSWEET_THREADING_TIME_REXI=0'])
 
+if jg.parallel_sdc_par_model == 'omp':
+    # Same for gcc/icpc
+    env.Append(LINKFLAGS=['-fopenmp'])
+    env.Append(CXXFLAGS=['-fopenmp'])
+
+    # Activate precompiler flag
+    env.Append(CXXFLAGS=['-DSWEET_PARALLEL_SDC_OMP_MODEL=1'])
+
 
 if jg.benchmark_timings == 'enable':
     env.Append(CXXFLAGS=['-DSWEET_BENCHMARK_TIMINGS=1'])
