@@ -49,6 +49,7 @@ for key, jobs_data in job_groups.items():
 
         error_split = job_data[last_error_line_key].split("\t")
         if len(error_split) != 4:
+            print(f"Trying to split value with mule key '{last_error_line_key}' by 4 with tab separation, but it's not possible")
             raise Exception("Inconsistent number of elements in error output")
 
         # Avoid including unstable results
