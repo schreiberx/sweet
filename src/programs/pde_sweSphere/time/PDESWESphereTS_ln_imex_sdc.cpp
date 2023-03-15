@@ -25,6 +25,18 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 	nIter = shackSDC->nIter;
 	initialSweepType = shackSDC->initialSweepType;
 	diagonal = shackSDC->diagonal;
+	parallel = shackSDC->parallel;
+	if (parallel && !diagonal) 
+	{
+		parallel = false;
+		std::cout << "[SDC] Warning, diagonal implementation not activated, deactivating parallel sweep" << std::endl;
+	}
+	if (parallel) {
+		std::cout << "[SDC] Parallel sweep activated" << std::endl;
+	} else {
+		std::cout << "[SDC] Parallel sweep not activated" << std::endl;
+	}
+
 	useEndUpdate = shackSDC->useEndUpdate;
 
 	// Nodes and weights
@@ -46,33 +58,36 @@ bool PDESWESphereTS_ln_imex_sdc::setup_auto(
 
 
 	// Setup erk solver for non-linear and linear term evaluation
-	std::cout << "[SDC] Registering and setting up l_erk_n_erk" << std::endl;
+	std::cout << "[SDC] Setting up l_erk_n_erk" << std::endl;
 	timestepping_l_erk_n_erk.shackRegistration(this);
 	timestepping_l_erk_n_erk.setup_main(ops, 1, 1);
 
 	// Resize list of irk solvers depending on nNodes
-	std::cout << "[SDC] Registering and setting up l_irk" << std::endl;
+	std::cout << "[SDC] Setting up l_irk ..." << std::endl;
 	timestepping_l_irk.resize(nNodes);
 	if (initialSweepType == "QDELTA") {
 		timestepping_l_irk_init.resize(nNodes);
 	}
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-	SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
+	// SWEET_OMP_PARALLEL_FOR _Pragma("num_threads(nNodes)")
+	// @martin: the lines below are the correct ones, right ?
+	#pragma omp parallel num_threads(nNodes) if(parallel)
+	#pragma omp for schedule(static,1)
 #endif
 	for (size_t i = 0; i < nNodes; i++)
 	{
 		// Initialize LHS coefficients for sweeps
 		timestepping_l_irk[i] = new PDESWESphereTS_l_irk();
 		timestepping_l_irk[i]->shackRegistration(this);
-		std::cout << "[SDC] Registering and setting up l_irk for node " << i << std::endl;
+		std::cout << "[SDC] -- setting up l_irk for node " << i << std::endl;
 		timestepping_l_irk[i]->setup(ops, 1, dt*qMatDeltaI(i,i));
 		
 		if (initialSweepType == "QDELTA") {
 			// Initialize LHS coefficients for initial sweep with QDELTA
 			timestepping_l_irk_init[i] = new PDESWESphereTS_l_irk();
 			timestepping_l_irk_init[i]->shackRegistration(this);
-			std::cout << "[SDC] Registering and setting up l_irk_init for node " << i << std::endl;
+			std::cout << "[SDC] -- setting up l_irk_init for node " << i << std::endl;
 			timestepping_l_irk_init[i]->setup(ops, 1, dt*qMatDelta0(i,i));
 		}
 	}
@@ -214,7 +229,7 @@ void PDESWESphereTS_ln_imex_sdc::init_sweep()
 		// Loop on nodes (can be parallelized if diagonal)
 
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-		#pragma omp parallel num_threads(nNodes) if(diagonal)
+		#pragma omp parallel num_threads(nNodes) if(parallel)
 		#pragma omp for schedule(static,1)
 #endif
 		for (size_t i = 0; i < nNodes; i++) {
@@ -251,7 +266,7 @@ void PDESWESphereTS_ln_imex_sdc::init_sweep()
 
 		// Simply copy to each node as initial guess
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-		#pragma omp parallel num_threads(nNodes)
+		#pragma omp parallel num_threads(nNodes) if(parallel)
 		#pragma omp for schedule(static,1)
 #endif
 		for (size_t i = 0; i < nNodes; i++)
@@ -283,7 +298,7 @@ void PDESWESphereTS_ln_imex_sdc::sweep(
 
 	// Loop on nodes (can be parallelized if diagonal)
 #if SWEET_PARALLEL_SDC_OMP_MODEL
-	#pragma omp parallel num_threads(nNodes) if(diagonal)
+	#pragma omp parallel num_threads(nNodes) if(parallel)
 	#pragma omp for schedule(static,1)
 #endif
 	for (size_t i = 0; i < nNodes; i++) {

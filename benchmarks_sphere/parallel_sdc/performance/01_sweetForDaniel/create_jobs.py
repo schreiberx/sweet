@@ -18,9 +18,9 @@ p.unique_id_filter = [
     'runtime']
 
 # Main parameters
-nPointsSpace = 256
+nPointsSpace = 1024
 dt = 128/nPointsSpace*300.0
-nSteps = 100
+nSteps = 10
 nProcSpace = [1, 2, 4, 8, 16, 32]
 nProcTime = [1, 4]
 spaceTimePar = {
@@ -40,7 +40,6 @@ p.compile.sphere_spectral_space = 'enable'
 p.compile.sphere_spectral_dealiasing = 'enable'
 
 p.compile.threading = 'omp'
-p.compile.rexi_thread_parallel_sum = 'disable'
 p.compile.parallel_sdc_par_model = 'omp'
 
 p.compilecommand_in_jobscript = False
@@ -90,6 +89,10 @@ if __name__ == "__main__":
             pspace.num_threads_per_rank = nS
             pspace.num_ranks = 1
 
+            # Temporary solution
+            p.runtime.sh_setup_num_threads = nS
+            p.runtime.sdcParallel = 1 if nT > 1 else None
+
             # Setup parallelization
             p.setup_parallelization([pspace, ptime])
 
@@ -98,6 +101,11 @@ if __name__ == "__main__":
                 p.parallelization.print()
 
             p.parallelization.max_wallclock_seconds = 60*60*2
+
+            p.parallelization.init_phase = True
+            p.parallelization.pType = 'Space Parallel' if nT < 2 else 'Space-Time Parallel'
+            p.parallelization.init_phase = False
+            
 
             p.gen_jobscript_directory()
 

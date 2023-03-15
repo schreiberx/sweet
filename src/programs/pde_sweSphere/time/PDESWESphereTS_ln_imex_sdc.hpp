@@ -99,6 +99,9 @@ private:
 	Mat qMatDeltaE;
 	Mat qMatDelta0;
 
+	// Wether or not activate parallel computation for diagonal sweeps
+	bool parallel=false;
+
 	/*
 	 * Variables used as temporary storage locations during the time step
 	 */

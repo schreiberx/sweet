@@ -90,22 +90,22 @@ class JobParallelization(InfoError):
         self.num_cores_per_rank : int = None 
 
         # Number of threads per rank
-        self.num_threads_per_rank = None
+        self.num_threads_per_rank : int = None
 
         # Number of ranks per node
-        self.num_ranks_per_node = None
+        self.num_ranks_per_node : int = None
 
         # Number of cores per node
         self.num_cores_per_node : int = None 
 
         # Number of total ranks
-        self.num_ranks = None
+        self.num_ranks : int = None
 
         # Number of total nodes
-        self.num_nodes = None
+        self.num_nodes : int = None
 
         # Number of total cores
-        self.num_cores = None
+        self.num_cores : int = None
 
 
         # List with parallelization information in each dimension
