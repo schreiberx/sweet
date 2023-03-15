@@ -144,18 +144,18 @@ class JobRuntimeOptions(InfoError):
             if self.benchmark_name != None:
                 uniqueIDStr += '_b'+str(self.benchmark_name)
 
-        if not 'runtime.galewsky_params' in filter_list:
-            if self.benchmark_galewsky_umax != None:
-                uniqueIDStr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
+            if not 'runtime.benchmark.galewsky_params' in filter_list:
+                if self.benchmark_galewsky_umax != None:
+                    uniqueIDStr += '_bgu'+str("{:.4E}".format(self.benchmark_galewsky_umax))
 
-            if self.benchmark_galewsky_hamp != None:
-                uniqueIDStr += '_bgh'+str("{:.4E}".format(self.benchmark_galewsky_hamp))
+                if self.benchmark_galewsky_hamp != None:
+                    uniqueIDStr += '_bgh'+str("{:.4E}".format(self.benchmark_galewsky_hamp))
 
-            if self.benchmark_galewsky_phi2 != None:
-                uniqueIDStr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
+                if self.benchmark_galewsky_phi2 != None:
+                    uniqueIDStr += '_bgp'+str("{:.4E}".format(self.benchmark_galewsky_phi2))
 
-            if self.benchmark_galewsky_geostropic_setup != None:
-                uniqueIDStr += '_bgs'+self.benchmark_galewsky_geostropic_setup
+                if self.benchmark_galewsky_geostropic_setup != None:
+                    uniqueIDStr += '_bgs'+self.benchmark_galewsky_geostropic_setup
 
         if not 'runtime.normal_modes_params' in filter_list:
             if self.benchmark_normal_modes_case != None:
