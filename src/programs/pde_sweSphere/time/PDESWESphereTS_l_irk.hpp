@@ -80,23 +80,9 @@ private:
 	sweet::SphereData_Physical mug;
 
 public:
-	bool shackRegistration(
-			sweet::ShackDictionary *io_shackDict
-	) override
-	{
-		PDESWESphereTS_BaseInterface::shackRegistration(io_shackDict);
-
-		swe_sphere_ts_lg_erk.shackRegistration(io_shackDict);
-		swe_sphere_ts_l_erk.shackRegistration(io_shackDict);
-		return true;
-	}
-
-
-
-public:
 	PDESWESphereTS_l_irk();
 
-private:
+public:
 	void update_coefficients(double i_timestep_size);
 
 public:

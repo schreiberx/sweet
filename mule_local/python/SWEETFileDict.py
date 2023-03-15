@@ -292,6 +292,9 @@ class SWEETFileDict:
         return fa.reshape(shape)
 
     def __eq__(self, other):
+        if not isinstance(other, SWEETFileDict):
+            return False
+
         if len(self.dict) != len(other.dict):
             return False
         

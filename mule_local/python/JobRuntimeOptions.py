@@ -188,6 +188,10 @@ class JobRuntimeOptions(InfoError):
 
         if 'timestep' in filter_list:
             raise Exception("Deprecated")
+        
+        if not 'runtime.paramSDC' in filter_list:
+            if self.paramsSDC != None:
+                uniqueIDStr += f"_{self.paramsSDC['idString']}"
 
         if not 'runtime.timestepping' in filter_list:
             if self.timestepping_method != None:
@@ -256,8 +260,6 @@ class JobRuntimeOptions(InfoError):
         if not 'runtime.comma_separated_tags' in filter_list:
             if self.comma_separated_tags != None:
                 uniqueIDStr += '_tags'+str(self.comma_separated_tags)
-
-
 
         if uniqueIDStr != '':
             uniqueIDStr = "RT"+uniqueIDStr
