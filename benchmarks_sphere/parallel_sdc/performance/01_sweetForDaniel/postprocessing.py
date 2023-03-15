@@ -67,17 +67,17 @@ for group, data in data_plotting.items():
 	plt.loglog(nProc, tComp, s+'-', label=group)
 	if group == 'Space Parallel':
 		plt.loglog(nProc, tBase/nProc, '--', c='gray')
-	plt.ylabel('wallclock')
 
 	plt.figure('speedup')
 	plt.plot(nProc, tBase/tComp, s+'-', label=group)
 	if group == 'Space Parallel':
 		plt.plot(nProc, nProc, '--', c='gray')
-	plt.ylabel('wallclock')
+	
 
 for figName in ['wallclock', 'speedup']:
 	plt.figure(figName)
 	plt.xlabel('nProc')
+	plt.ylabel(figName)
 	plt.legend()
 	plt.grid()
 	plt.tight_layout()
