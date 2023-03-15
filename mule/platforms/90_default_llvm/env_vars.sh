@@ -5,6 +5,7 @@
 # Start at version 30 and search downwards
 #
 
+
 type "clang++" 2> /dev/null 1>&2
 if [[ "$?" == "0" ]]; then
 	CLANG_POSTFIX=""
@@ -22,13 +23,12 @@ else
 	done
 
 	if [[ "$i" == "0" ]]; then
-		echo ""
-		echo "No clang++ compiler found!"
-		echo ""
-		echo "Not setting up any variables."
-		echo ""
-
-		exit 0
+		CLANG_POSTFIX=""
+		#echo "No clang++ compiler found!"
+		#echo ""
+		#echo "Not setting up any variables."
+		#echo ""
+		#exit 0
 	fi
 
 fi
