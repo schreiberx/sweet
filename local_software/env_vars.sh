@@ -20,9 +20,10 @@ function activate_miniconda_environment()
 {
 	if [[ ! -e "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" ]]; then
 		echo "Miniconda not found, skipping activation"
-		return
+		return 0
 	fi
 	source "$MULE_SOFTWARE_ROOT/local_software/local/python_venv_miniconda/bin/activate" 2>/dev/null
+	return 0
 }
 
 #
@@ -215,7 +216,7 @@ export MULE_LOCAL_ROOT="$MULE_SOFTWARE_ROOT/mule_local"
 # Setup platform specific parts
 #######################################################################
 
-source $MULE_ROOT/bin/load_platform.sh $@ || exit 1
+source $MULE_ROOT/bin/load_platform.sh $@ || return 1
 
 if [[ -z "$MULE_PLATFORM_DIR" ]]; then
 	unset MULE_ROOT
@@ -248,7 +249,7 @@ export MULE_BACKUP_PS1="$PS1"
 #######################################################################
 
 # Back to local software
-cd "$SCRIPTDIR" || exit 1
+cd "$SCRIPTDIR" || return 1
 
 #echo_info " + Setting up platform independent environment variables..."
 
@@ -315,7 +316,7 @@ export PYTHONPATH="$MULE_ROOT/env_pythonpath/:$PYTHONPATH"
 
 
 # Back to local software
-cd "$SCRIPTDIR" || exit 1
+cd "$SCRIPTDIR" || return 1
 
 # Test if 'realpath' exists
 type realpath >/dev/null 2>&1
@@ -334,10 +335,10 @@ fi
 #######################################################################
 #######################################################################
 
-cd "$MULE_BACKDIR" || exit 1
+cd "$MULE_BACKDIR" || return 1
 
 # Activate miniconda environment if available
-activate_miniconda_environment || exit 1
+activate_miniconda_environment || return 1
 
 echo_success_hline
 echo_success " MULE SOFTWARE environment setup successfully"
