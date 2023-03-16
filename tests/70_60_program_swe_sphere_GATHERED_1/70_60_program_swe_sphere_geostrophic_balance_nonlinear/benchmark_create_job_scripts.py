@@ -25,7 +25,7 @@ jg.compile.sphere_spectral_space = 'enable'
 jg.compile.sphere_spectral_dealiasing = 'enable'
 
 #jg.compile.quadmath = 'enable'
-jg.unique_id_filter = ['runtime.simparams', 'parallelization', 'benchmark', 'runtime.rexi_params']
+jg.unique_id_filter = ['runtime.simparams', 'parallelization', 'runtime.benchmark', 'runtime.rexi_params']
 
 
 """
