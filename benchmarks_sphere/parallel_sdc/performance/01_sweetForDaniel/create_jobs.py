@@ -108,6 +108,7 @@ if __name__ == "__main__":
 
             p.parallelization.init_phase = True
             p.parallelization.pType = 'Space Parallel' if nT < 2 else 'Space-Time Parallel'
+            p.parallelization.nProc = nS*nT
             p.parallelization.init_phase = False
             
 

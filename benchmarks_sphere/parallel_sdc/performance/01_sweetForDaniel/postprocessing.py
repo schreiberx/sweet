@@ -27,7 +27,7 @@ for key, g in job_groups.items():
 	print(key)
 
 
-tagname_x = 'parallelization.num_threads_per_rank'
+tagname_x = 'parallelization.nProc'
 tagname_y = 'output.simulation_benchmark_timings.main_timestepping'
 
 #
