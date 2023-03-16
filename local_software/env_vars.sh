@@ -283,6 +283,8 @@ if [ -d "$SCRIPTDIR/local/lib64" ]; then
 	export DYLD_LIBRARY_PATH="$SCRIPTDIR/local/lib64:$LD_LIBRARY_PATH"
 fi
 
+export LDFLAGS="-L$SCRIPTDIR/local/lib64 -L$SCRIPTDIR/local/lib $LDFLAGS"
+
 echo_success_hline
 echo_success " Setting up Python paths"
 echo_success_hline
