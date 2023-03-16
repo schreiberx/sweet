@@ -5,6 +5,7 @@ Some first string scaling tests for preliminary results
 
 import sys
 from itertools import product
+import multiprocessing
 
 from mule.JobGeneration import JobGeneration
 from mule.JobParallelizationDimOptions import JobParallelizationDimOptions
@@ -21,7 +22,10 @@ p.unique_id_filter = [
 nPointsSpace = 1024
 dt = 128/nPointsSpace*300.0
 nSteps = 10
-nProcSpace = [1, 2, 4, 8, 16, 32]
+nProcSpace = [1, 2]
+nProcMax = multiprocessing.cpu_count()
+while nProcSpace[-1]*2 <= nProcMax:
+    nProcSpace += [nProcSpace[-1]*2]
 nProcTime = [1, 4]
 spaceTimePar = {
     nT: [nS for nS in nProcSpace if nS*nT <= max(nProcSpace)]
