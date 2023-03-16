@@ -306,7 +306,17 @@ class JobParallelization(InfoError):
         # Number of total (e.g. OpenMP) threads per rank (There are no restrictions for logical threading)
         # self.num_threads_per_rank = _prod(i.num_threads_per_rank for i in self.pardims)
         # -- change for nested OpenMP parallelism
-        self.num_threads_per_rank = ','.join(str(i.num_threads_per_rank) for i in self.pardims)
+        lThreads = [i.num_threads_per_rank for i in self.pardims]
+        if len(lThreads) == 1:
+            self.num_threads_per_rank = lThreads[0]
+        elif len(lThreads) == 2:
+            if lThreads[1] == 1:
+                self.num_threads_per_rank = lThreads[0]
+            else:
+                self.num_threads_per_rank = ','.join([str(n) for n in lThreads])
+        else:
+            raise NotImplementedError('more than 2 level of openmp parallelism') 
+            
 
 
 

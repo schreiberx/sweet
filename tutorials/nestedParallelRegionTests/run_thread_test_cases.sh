@@ -5,7 +5,7 @@ hline() {
 }
 
 #EXEC=../../build/thread_affinities_COMP_plspec_pldeal_fft_thomp_release
-EXEC=../../build/thread_affinities_COMP_thomp_release
+EXEC=../../build/tutorials/nestedParallelRegions_COMP_thomp_release
 
 run_test() {
 	echo
