@@ -327,7 +327,7 @@ class JobRuntimeOptions(InfoError):
             # Benchmark options
             'benchmark_name': '--benchmark-name=',
             'benchmark_normal_modes_case': '--benchmark-normal-modes-case=',
-            'benchmark_galewsky_geostropic_setup': '-benchmark-galewsky-geostropic-setup=',
+            'benchmark_galewsky_geostropic_setup': '--benchmark-galewsky-geostropic-setup=',
             'benchmark_advection_rotation_angle': '--benchmark-advection-rotation-angle=',
             'benchmark_advection_velocity': '--benchmark-advection-velocity=',
             
